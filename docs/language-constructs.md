@@ -1258,7 +1258,7 @@ No return value. A function can omit `returns void`.
 wait for usersTask and ordersTask as users and orders
 ```
 
-Wait for scoped tasks without changing result order. A List<Task<T>> produces List<T>. A wait may encounter an unhandled sibling failure. Grouped waits observe all selected children before rethrowing the first failure. Waiting for I/O suspends a task.
+Wait for scoped tasks without changing result order. A List<Task<T>> produces List<T> and joins every child in the list. Waiting for one dynamically selected task leaves possible siblings captured until their scope joins them. A wait may encounter an unhandled sibling failure. Grouped waits observe all selected children before rethrowing the first failure. Waiting for I/O suspends a task.
 
 ## when
 

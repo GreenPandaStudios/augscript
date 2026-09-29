@@ -54,12 +54,19 @@ export class OwnershipFlow {
     this.taskLoans.set(task, {scope, origins:unionOrigins(previous?.origins ?? new Set(), reachable),
       exclusive:exclusive || !!previous?.exclusive, repeated:repeated || !!previous?.repeated});
   }
-  waitTasks(origins: Origins): void {
+  waitTasks(origins: Origins, all: boolean): void {
     const reachable = this.reachable(origins);
+    const matches = [...this.tasks.keys()].filter(task => reachable.has(task));
+    // A Task<T> read from an indexed collection or branch may have several
+    // possible origins. Only a List<Task<T>> wait joins every matching child.
+    if (!all && matches.length !== 1) return;
     // A static start site in a loop can represent several live children. Waiting for
     // one result cannot prove that earlier children from that site have finished.
-    for (const [task, loan] of this.taskLoans) if (reachable.has(task) && !loan.repeated) this.taskLoans.delete(task);
-    for (const [task, value] of this.tasks) if (reachable.has(task)) this.tasks.set(task, {...value, observed: true});
+    for (const task of matches) {
+      if (!this.taskLoans.get(task)?.repeated) this.taskLoans.delete(task);
+      const value = this.tasks.get(task)!;
+      this.tasks.set(task, {...value, observed: true});
+    }
   }
   registerTask(task: string, scope: string, errors: Ty[]): void {
     this.tasks.set(task, {scope, errors, observed: false});
