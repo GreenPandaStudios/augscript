@@ -86,9 +86,10 @@ for (const name of ['pkgconf', 'gmp', 'nettle', 'gnutls']) {
   const buildEnvironment = name === 'gnutls' && !mac ?
     {...environment, CFLAGS: environment.CFLAGS + ' -DCRAU_MAYBE_UNUSED='} : environment;
   process.stdout.write(`Building ${name}; logs: ${logs}\n`);
-  run(join(source, 'configure'), ['--prefix=' + prefix, '--enable-shared', '--disable-static', ...extra], source, name + '-configure', buildEnvironment);
+  run(join(source, 'configure'), ['--prefix=' + prefix, '--libdir=' + join(prefix, 'lib'), '--enable-shared', '--disable-static', ...extra], source, name + '-configure', buildEnvironment);
   run('/usr/bin/make', ['-j' + parallel], source, name + '-build', buildEnvironment);
   run('/usr/bin/make', ['install'], source, name + '-install', buildEnvironment);
+  if (name === 'nettle') run(join(prefix, 'bin', 'pkgconf'), ['--modversion', 'nettle', 'hogweed'], root, 'nettle-pkgconf', environment);
   writeFileSync(marker, checksum + '\n');
 }
 
@@ -101,7 +102,7 @@ if (existsSync(webMarker) && readFileSync(webMarker, 'utf8').trim() !== webCheck
 if (!existsSync(webMarker)) {
   process.stdout.write(`Building libwebsockets with GnuTLS, HTTP/2 and HTTP/3\n`);
   run(cmake, ['-S', join(sources, 'libwebsockets'), '-B', build,
-    '-DCMAKE_BUILD_TYPE=Release', '-DCMAKE_INSTALL_PREFIX=' + prefix, '-DCMAKE_PREFIX_PATH=' + prefix,
+    '-DCMAKE_BUILD_TYPE=Release', '-DCMAKE_INSTALL_PREFIX=' + prefix, '-DCMAKE_INSTALL_LIBDIR=lib', '-DCMAKE_PREFIX_PATH=' + prefix,
     '-DCMAKE_C_COMPILER=' + cc, ...(mac ? ['-DCMAKE_OSX_SYSROOT=' + sdk] : []),
     '-DLWS_GNUTLS_LIBRARIES=' + join(prefix, 'lib', mac ? 'libgnutls.dylib' : 'libgnutls.so'),
     '-DLWS_GNUTLS_INCLUDE_DIRS=' + join(prefix, 'include'),
