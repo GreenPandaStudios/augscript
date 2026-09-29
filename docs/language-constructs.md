@@ -390,7 +390,7 @@ Boolean type used by conditions and logical operators.
 borrow value { ... }
 ```
 
-Take exclusive mutable access for the duration of this block. Ordinary reads need no borrow. Managed List, Set, and Map mutations require one.
+Take exclusive mutable access for the duration of this block. Ordinary reads need no borrow. Managed List, Set, and Map mutations require one. Starting a child that reads the value suspends this mutation right until wait for the child.
 
 ```text
 borrow items { items.append(value=1) }
@@ -1130,7 +1130,7 @@ Match the present case of a nullable value and introduce a read-only non-null na
 task = start loadUsers()
 ```
 
-Start a child task in a scope. Receiver and arguments evaluate immediately. Scheduled errors are checked at waits and implicit scope joins; an unhandled child error cancels siblings. Arguments follow their ownership and mutation contracts.
+Start a child task in a scope. Receiver and arguments evaluate immediately. Scheduled errors are checked at waits and implicit scope joins; an unhandled child error cancels siblings. A captured object cannot be mutated by the parent until the child is waited for, including inside an existing borrow block.
 
 ## streams
 

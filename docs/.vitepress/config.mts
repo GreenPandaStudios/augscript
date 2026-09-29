@@ -56,7 +56,7 @@ export default defineConfig({
       { text: 'Library API', items: ['io', 'json', 'memory', 'time', 'web', 'crypto'].map(module => ({ text: `august.${module}`, link: `/api/${module}` })) },
       { text: 'Project and releases', items: [
         { text: 'Packages', link: '/packages' }, { text: 'Docker images', link: '/docker' },
-        { text: 'Production readiness', link: '/production-readiness' }, { text: 'Compatibility', link: '/compatibility' }, { text: 'Roadmap to 1.0', link: '/roadmap' },
+        { text: 'Production readiness', link: '/production-readiness' }, { text: 'Compatibility', link: '/compatibility' }, { text: 'Ownership and task conformance', link: '/language-conformance' }, { text: 'Roadmap to 1.0', link: '/roadmap' },
         { text: 'Release process', link: '/releasing' },
         { text: 'Documentation maintenance', link: '/maintaining-docs' }, { text: 'Library gaps', link: '/web-library-gaps' },
         { text: 'Implementation map', link: '/implementation-map' }, { text: 'Design audit', link: '/language-design-audit' }

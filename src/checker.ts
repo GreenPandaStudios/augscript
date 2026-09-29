@@ -1385,6 +1385,8 @@ class Checker {
           if (existing.origin === 'field' && existing.ownership !== 'own' &&
               !context.initializing && !context.borrowed.has('self') && context.locals.get('self')?.ownership !== 'borrow')
             this.report(stmt.target.span, `Mutating field ${stmt.target.name} requires borrow self`, 'BORROW');
+          if (existing.origin === 'field' && context.flow.hasTaskCapture(unionOrigins(context.flow.origins('self'), context.flow.origins(stmt.target.name))))
+            this.report(stmt.target.span, `Cannot mutate ${stmt.target.name} while a task uses it; wait for the task first`, 'CONCURRENCY');
           if (existing.origin === 'field' && !context.initializing) {
             const name = stmt.target.name;
             const storage = context.owner && 'fields' in context.owner.node ? fieldsOf(context.owner.node).find(field => field.name === name) : undefined;
@@ -1413,6 +1415,8 @@ class Checker {
         }
       } else if (stmt.target.kind === 'member') {
         const object = this.checkExpression(stmt.target.object, context);
+        if (context.flow.hasTaskCapture(this.placesOf(stmt.target.object, context)))
+          this.report(stmt.target.span, 'Cannot mutate a value while a task uses it; wait for the task first', 'CONCURRENCY');
         const target = this.memberType(object, stmt.target.name, stmt.target.span, context);
         if (!this.assignable(value, target)) this.report(stmt.value.span,
           `Cannot assign ${tyName(value)} to ${tyName(target)}`);
@@ -2169,6 +2173,8 @@ class Checker {
   }
 
   private requireMutation(expr: Expr, object: Expr, context: Context, display: string): void {
+    if (context.flow.hasTaskCapture(this.placesOf(object, context)))
+      this.report(expr.span, `Cannot mutate ${display} while a task uses it; wait for the task first`, 'CONCURRENCY');
     if (this.expressionTypes.get(object)?.readonly) this.report(expr.span,
       `${display} cannot mutate a read-only input or field`, 'MUTABILITY');
     this.requireChange(object, expr.span, context);
@@ -2644,6 +2650,8 @@ class Checker {
     } else if (this.ownershipOf(argument, context) === 'own' && param.ownership !== 'borrow')
       this.report(argument.span, 'Cannot copy an owned value into managed storage', 'OWN');
     if (param.ownership === 'borrow') {
+      if (context.flow.hasTaskCapture(this.placesOf(argument, context)))
+        this.report(argument.span, 'Cannot pass mutable access while a task uses the value; wait for the task first', 'CONCURRENCY');
       if (this.expressionTypes.get(argument)?.readonly) this.report(argument.span, 'Cannot borrow a read-only argument', 'BORROW');
       const name = sourceName(argument);
       if (name && !context.flow.activeGrant(name) && !['own', 'borrow'].includes(context.locals.get(name)?.ownership ?? 'managed'))

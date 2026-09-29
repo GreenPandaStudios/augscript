@@ -58,6 +58,10 @@ An own value moves into an own input/field/return. Do not copy it into managed s
 
 Alias tracking includes nested references, call arguments/results, DI identities, branches, and loop re-entry. An exclusive argument cannot overlap another argument or receiver. Quick Fix can wrap a standalone managed mutation in a borrow block when its local access is otherwise legal.
 
+### CONCURRENCY
+
+A child task keeps its captured objects available until `wait for` or its scope join. Wait before changing a captured object through a collection method, a borrowed call, or a field assignment. An already-open `borrow` block does not let the parent mutate while the child uses the object. See the [conformance rules](language-conformance.md).
+
 ### THROWS
 
 A checked error lacks a compatible catch or unless declaration. The language uses `unless`; THROWS is the diagnostic identifier retained for tooling.
