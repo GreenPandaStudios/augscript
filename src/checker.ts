@@ -2566,6 +2566,14 @@ class Checker {
         return source === undefined ? [] : [{ origins: this.placesOf(expr.args[source], context),
           exclusive: param.ownership !== 'managed', span: expr.args[source].span }];
       }),
+      ...fn.params.flatMap((param, index) => {
+        if (!param.injected) return [];
+        const source = plan.injectionSources?.[index];
+        const key = plan.bindingKeys[index];
+        const name = source?.startsWith('self.') ? source.slice(5) : source;
+        const origins = name ? context.flow.origins(name) : key ? this.bindingOrigins(key, context, expr.span) : new Set<string>();
+        return [{origins, exclusive: false, span: expr.span}];
+      }),
       ...(expr.callee.kind === 'member' ? [{ origins: this.placesOf(expr.callee.object, context),
         exclusive: contract.changes.some(path => path === 'self' || path.startsWith('self.')), span: expr.callee.span }] : []),
     ], (span, message) => this.report(span, message, 'BORROW'));

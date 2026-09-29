@@ -216,6 +216,33 @@ scope:
     assert.equal(result.status, 0, result.stderr);
   } finally { rmSync(root, {recursive: true, force: true}); }
 });
+test('injected read access cannot alias an exclusive written argument', () => {
+  const root = mkdtempSync(join(tmpdir(), 'aug-injected-call-alias-'));
+  try {
+    writeFileSync(join(root, 'operations.aug'), `interface Counter:
+    increment() changes self
+    value() returns int
+CounterImpl() implements Counter:
+    mutable int _count = 0
+    increment() changes self:
+        _count = _count + 1
+    value() returns int:
+        return _count
+readAndWrite(resolve Counter reader, borrow Counter target) changes target:
+    int previous = reader.value()
+    target.increment()
+`);
+    writeFileSync(join(root, 'main.aug'), `import Counter and CounterImpl and readAndWrite from operations
+implement Counter with CounterImpl shared mutable
+resolve Counter to counter
+borrow counter:
+    readAndWrite(target=counter)
+`);
+    const result = spawnSync(process.execPath, [cli, 'check', root], {encoding: 'utf8'});
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /exclusive argument aliases another argument/);
+  } finally { rmSync(root, {recursive: true, force: true}); }
+});
 test('dropping an owned Shared wrapper drops its transferred payload before later locals', () => {
   const root = mkdtempSync(join(tmpdir(), 'aug-shared-drop-'));
   try {
