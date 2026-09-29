@@ -1,5 +1,14 @@
 # Approved language changes — 0.15
 
+## 0.18 additions
+
+- User-authored source packages, public export boundaries, exact npm aliases/local snapshots, transitive dependency scopes and frozen locks are implemented. See [the author/consumer guide](packages.md).
+- Class implementations and private helpers infer capability effects while interface/public function contracts, mutation and checked errors remain explicit. Hover, explain and generated API docs expose inference.
+- [Performance graphs](performance.md) compare verified C/Node/Python workloads, memory and real HTTP throughput. Scaling and lifecycle gaps remain recorded; the measurements do not establish general production readiness.
+- Native scalar lowering retains wrapping integers and checked division, with scalar-only temporaries outside GC roots. Map/Set insertions reuse probes, destructured Map iteration copies fields without per-entry tuple allocation, and HTTP service drains bounded ready batches with coalesced I/O notifications. Behavioral regressions cover generic/default methods, GC, collection mutation and the existing HTTP pipeline.
+
+The original 0.15 map below records the earlier audit delivery.
+
 The September 28 audit recommendations and optional indentation blocks are approved. This map records the delivered implementation, accepted spelling, evidence, and practical limits.
 
 ## Syntax

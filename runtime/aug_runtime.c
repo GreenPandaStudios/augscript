@@ -169,7 +169,7 @@ static uint64_t hash_value(AugValue value) {
     case AUG_BOOL: return value.as.boolean ? 1231 : 1237;
     case AUG_INT:
     case AUG_FLOAT: {
-      double number = aug_cfloat(value);
+      double number = value.tag == AUG_INT ? (double)value.as.integer : value.as.floating;
       if (number == 0) number = 0; /* normalize negative zero */
       uint64_t bits;
       memcpy(&bits, &number, sizeof(bits));
@@ -196,16 +196,22 @@ static uint64_t hash_value(AugValue value) {
 
 /* Buckets store field offsets + 1; zero is an empty bucket. Fields also keep
    entries in insertion order and remain visible to the garbage collector. */
-static size_t bucket_for(AugObject *object, AugValue key) {
-  size_t bucket = (size_t)hash_value(key) & (object->bucket_count - 1);
-  while (object->buckets[bucket] && !equal(object->fields[object->buckets[bucket] - 1], key))
+static bool key_equal(AugValue left, AugValue right) {
+  if (left.tag == AUG_INT && right.tag == AUG_INT) return left.as.integer == right.as.integer;
+  return equal(left, right);
+}
+static size_t bucket_for_hash(AugObject *object, AugValue key, uint64_t hash) {
+  size_t bucket = (size_t)hash & (object->bucket_count - 1);
+  while (object->buckets[bucket] && !key_equal(object->fields[object->buckets[bucket] - 1], key))
     bucket = (bucket + 1) & (object->bucket_count - 1);
   return bucket;
 }
+static size_t bucket_for(AugObject *object, AugValue key) { return bucket_for_hash(object, key, hash_value(key)); }
 
-static void grow_table(AugObject *object, size_t stride) {
+static bool grow_table(AugObject *object, size_t stride) {
   size_t entries = object->field_count / stride;
-  if (!object->bucket_count || (entries + 1) * 10 > object->bucket_count * 7) {
+  bool rehashed = !object->bucket_count || (entries + 1) * 10 > object->bucket_count * 7;
+  if (rehashed) {
     size_t count = object->bucket_count ? object->bucket_count * 2 : 8;
     size_t *buckets = calloc(count, sizeof(size_t));
     if (!buckets) fail("out of memory");
@@ -222,6 +228,7 @@ static void grow_table(AugObject *object, size_t stride) {
     object->fields = fields;
     object->capacity = capacity;
   }
+  return rehashed;
 }
 
 AugValue aug_map_new(void) {
@@ -238,12 +245,14 @@ static AugObject *expect_map(AugValue value) {
 void aug_map_set(AugValue map, AugValue key, AugValue value) {
   AugObject *object = expect_map(map);
   if (object->frozen) fail("cannot mutate a frozen Map");
+  uint64_t hash = hash_value(key); size_t bucket = 0;
   if (object->bucket_count) {
-    size_t field = object->buckets[bucket_for(object, key)];
+    bucket = bucket_for_hash(object, key, hash);
+    size_t field = object->buckets[bucket];
     if (field) { object->fields[field] = value; return; }
   }
-  grow_table(object, 2);
-  object->buckets[bucket_for(object, key)] = object->field_count + 1;
+  if (grow_table(object, 2)) bucket = bucket_for_hash(object, key, hash);
+  object->buckets[bucket] = object->field_count + 1;
   object->fields[object->field_count++] = key;
   object->fields[object->field_count++] = value;
 }
@@ -288,11 +297,15 @@ AugValue aug_set_new(AugValue *items, size_t count) {
 }
 
 void aug_set_add(AugValue set, AugValue item) {
-  if (set.as.object->frozen) fail("cannot mutate a frozen Set");
   AugObject *object = expect_set(set);
-  if (object->bucket_count && object->buckets[bucket_for(object, item)]) return;
-  grow_table(object, 1);
-  object->buckets[bucket_for(object, item)] = object->field_count + 1;
+  if (object->frozen) fail("cannot mutate a frozen Set");
+  uint64_t hash = hash_value(item); size_t bucket = 0;
+  if (object->bucket_count) {
+    bucket = bucket_for_hash(object, item, hash);
+    if (object->buckets[bucket]) return;
+  }
+  if (grow_table(object, 1)) bucket = bucket_for_hash(object, item, hash);
+  object->buckets[bucket] = object->field_count + 1;
   object->fields[object->field_count++] = item;
 }
 
@@ -315,6 +328,15 @@ AugValue aug_iter_snapshot(AugValue collection) {
   }
   aug_frame_leave(&frame);
   return result;
+}
+
+/* Destructured Map loops need a snapshot of fields, not one heap Tuple per
+   entry. The copy preserves insertion order and isolates subsequent writes. */
+AugValue aug_map_entries_snapshot(AugValue map) {
+  AugObject *object = expect_map(map);
+  AugFrame frame; aug_frame_enter(&frame, &map, 1);
+  AugValue result = aug_list_new(object->fields, object->field_count);
+  aug_frame_leave(&frame); return result;
 }
 
 void aug_set_cli_args(int argc, char **argv) {

@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 
 typedef struct AugObject AugObject;
 typedef struct AugValue AugValue;
@@ -105,10 +106,28 @@ AugValue aug_missing(void);
 AugValue aug_int(int64_t value);
 AugValue aug_float(double value);
 AugValue aug_bool(bool value);
+/* The checker proves these operand types. Keep scalar arithmetic visible to
+   the C optimizer while preserving August's wrapping and checked semantics. */
+static inline AugValue aug_scalar_int(int64_t value) { return (AugValue){.tag=AUG_INT, .as.integer=value}; }
+static inline AugValue aug_scalar_float(double value) { return (AugValue){.tag=AUG_FLOAT, .as.floating=value}; }
+static inline AugValue aug_scalar_bool(bool value) { return (AugValue){.tag=AUG_BOOL, .as.boolean=value}; }
+static inline AugValue aug_scalar_null(void) { return (AugValue){.tag=AUG_NULL}; }
+static inline int64_t aug_signed_bits(uint64_t bits) {
+  /* Unsigned-to-signed casts are implementation-defined above INT64_MAX. */
+  int64_t value; memcpy(&value, &bits, sizeof(value)); return value;
+}
+AugValue aug_error_named(const char *name);
+static inline AugValue aug_scalar_int_divide(int64_t left, int64_t right) {
+  if (!right) return aug_error_named("ArithmeticError");
+  return aug_scalar_int(left == INT64_MIN && right == -1 ? INT64_MIN : left / right);
+}
+static inline AugValue aug_scalar_float_divide(double left, double right) {
+  if (right == 0) return aug_error_named("ArithmeticError");
+  return aug_scalar_float(left / right);
+}
 AugValue aug_string(const char *value);
 AugValue aug_string_n(const void *value, size_t length);
 AugValue aug_bytes(const void *value, size_t length, int kind);
-AugValue aug_error_named(const char *name);
 int64_t aug_string_length(AugValue value);
 AugValue aug_string_bytes(AugValue value);
 AugValue aug_string_split(AugValue value, AugValue separator);
@@ -173,6 +192,7 @@ void aug_list_append(AugValue list, AugValue item);
 AugValue aug_list_get(AugValue list, int64_t index);
 AugValue aug_list_at(AugValue list, int64_t index);
 AugValue aug_iter_snapshot(AugValue collection);
+AugValue aug_map_entries_snapshot(AugValue map);
 int64_t aug_list_length(AugValue list);
 AugValue aug_tuple_new(AugValue *items, size_t count);
 AugValue aug_tuple_get(AugValue tuple, int64_t index);

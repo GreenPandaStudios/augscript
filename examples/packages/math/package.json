@@ -1,0 +1,9 @@
+{
+  "name": "@example/aug-math",
+  "version": "0.1.0",
+  "description": "An August package authoring example",
+  "license": "MIT",
+  "files": ["src", "aug-package.json", "README.md"],
+  "exports": { "./aug-package.json": "./aug-package.json" },
+  "dependencies": {}
+}

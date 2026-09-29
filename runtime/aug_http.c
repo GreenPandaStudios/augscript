@@ -40,8 +40,11 @@ static void check_deadline(void) {
 }
 static volatile sig_atomic_t stopped;
 static struct lws_context *server_context;
+static bool io_wakeup_pending;
 static void service_io(bool wait);
-static void notify_io(void) {if(server_context)lws_cancel_service(server_context);}
+/* All scheduler callbacks run on this event-loop thread. Coalesce wakeups
+   until the next service call instead of writing one pipe byte per task. */
+static void notify_io(void) {if(server_context)io_wakeup_pending=true;}
 static int callback_client(struct lws *wsi, enum lws_callback_reasons reason, void *user, void *in, size_t length);
 static void stop_server(int signal_number) { (void)signal_number; stopped = 1; }
 void aug_http_configure(const char *host, const char *certificate, const char *private_key, const char *ca, size_t request_limit, size_t result_limit, bool http3) {
@@ -582,7 +585,6 @@ static void dispatch(struct lws *wsi, AugHttpSession *session) {
   job->roots[0]=session->roots[0];aug_retain(&job->retained,job->roots,2);
   AugValue arguments[3] = {session->roots[0], aug_int(session->route - served_routes),aug_int((int64_t)(intptr_t)job)};
   job->task = aug_task_spawn(request_task, aug_null(), arguments, 3, request_complete, job);
-  lws_cancel_service(server_context);
 }
 static int callback_http(struct lws *wsi, enum lws_callback_reasons reason, void *user, void *in, size_t length) {
   AugHttpSession *session = user;
@@ -685,7 +687,8 @@ static const struct lws_protocols protocols[] = {
 };
 static void service_io(bool wait) {
   if (!server_context) return;
-  if (!wait) lws_cancel_service(server_context);
+  if (!wait || io_wakeup_pending) lws_cancel_service(server_context);
+  io_wakeup_pending=false;
   lws_service(server_context, wait ? 100 : 0);
 }
 typedef struct {
@@ -700,7 +703,7 @@ static void client_done(AugClientRequest *request, bool failed) {
     request->roots[4] = aug_http_response_full(request->roots[4], request->roots[5], request->roots[2]);
   }
   if (request->task) aug_task_wake(request->task);
-  lws_cancel_service(server_context);
+  notify_io();
 }
 static int callback_client(struct lws *wsi, enum lws_callback_reasons reason, void *user, void *in, size_t length) {
   (void)user; AugClientRequest *request = lws_get_opaque_user_data(wsi); if (!request) return 0;
@@ -812,8 +815,12 @@ void aug_http_serve(const AugRoute *routes, size_t count, int64_t port) {
   sigaction(SIGTERM, &action, &previous_term); sigaction(SIGINT, &action, &previous_int);
   aug_scheduler_io = service_io;
   while (!stopped) {
-    bool progressed = aug_scheduler_step();
-    if (progressed) lws_cancel_service(server_context);
+    /* Drain a bounded batch before entering poll. One task per poll serialized
+       ready requests and repeatedly paid the event-loop wake-up cost. */
+    bool progressed = false;
+    for (unsigned i = 0; i < 32 && aug_scheduler_step(); i++) progressed = true;
+    if (progressed || io_wakeup_pending) lws_cancel_service(server_context);
+    io_wakeup_pending=false;
     if (lws_service(server_context, 100) < 0) break;
   }
   lws_context_destroy(server_context); server_context = NULL;

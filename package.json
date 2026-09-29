@@ -1,6 +1,6 @@
 {
   "name": "augscript",
-  "version": "0.17.0",
+  "version": "0.18.0",
   "description": "August language development monorepo",
   "license": "MIT",
   "repository": {
@@ -15,6 +15,7 @@
   "scripts": {
     "check": "tsc --noEmit",
     "test": "node --test tests/*.test.mjs",
+    "bench:compare": "node scripts/benchmark-suite.mjs",
     "docs:generate": "node scripts/generate-docs.mjs",
     "docs:check": "node scripts/generate-docs.mjs --check",
     "docs:dev": "vitepress dev docs",

@@ -17,6 +17,11 @@ if (errors.length) throw new Error('Cannot generate API docs from an invalid pro
 const project = checked.project;
 const header = source => source.slice(0, source.indexOf('\n') < 0 ? source.length : source.indexOf('\n')).trim().replace(/[:{]\s*$/, '');
 const signature = node => header(project.files.get(node.span.file).source.slice(node.span.start));
+const inferredEffects = node => {
+  const contract = checked.effectContracts.get(node);
+  return contract?.inferred ? '\n\nInferred capabilities: ' +
+    ([...contract.uses.values()].map(effect => `\`${effect.source}.${effect.operation}\``).join(', ') || 'none (pure)') + '.' : '';
+};
 const fence = text => `\`\`\`text\n${text}\n\`\`\``;
 // Hover examples are syntax fragments; runnable guides alone use executable aug fences.
 const reference = text => text.replace(/```aug(?=\s|$)/g, '```text');
@@ -40,7 +45,7 @@ for (const module of ['io', 'json', 'memory', 'time', 'web', 'crypto']) {
     for (const method of node.methods ?? []) {
       if (method.name.startsWith('_')) continue;
       const help = callableDocumentation(project, method, def);
-      sections.push(`### ${item.name}.${method.name}\n\n${fence(signature(method))}\n\n${help?.markdown ?? 'The signature declares inputs, result, effects and checked errors.'}\n\n${link(method)}`);
+      sections.push(`### ${item.name}.${method.name}\n\n${fence(signature(method))}\n\n${help?.markdown ?? 'The signature declares inputs, result, effects and checked errors.'}${inferredEffects(method)}\n\n${link(method)}`);
     }
   }
   outputs.set(`docs/api/${module}.md`, sections.join('\n\n') + '\n');

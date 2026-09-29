@@ -32,4 +32,7 @@ for (const path of ['package-lock.json', 'vscode/package-lock.json']) {
   if (process.argv[2] === '--check') { assert.equal(lock.version, version, path); assert.equal(lock.packages[''].version, version, path); }
   else { lock.version = lock.packages[''].version = version; write(path, lock); }
 }
+const example = 'examples/packages/math/aug-package.json', manifest = read(example);
+if (process.argv[2] === '--check') assert.equal(manifest.compiler, version, example);
+else { manifest.compiler = version; write(example, manifest); }
 process.stdout.write(`August ${version}: versions ${process.argv[2] === '--check' ? 'match' : 'updated'}\n`);

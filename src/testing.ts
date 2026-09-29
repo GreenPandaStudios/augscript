@@ -20,6 +20,7 @@ export function discoverTests(project: Project): { tests: UnitTest[]; diagnostic
   const report = (node: { span: TestDecl['span'] }, message: string) => diagnostics.push({
     file: node.span.file, line: node.span.line, column: node.span.column, code: 'TEST', message });
   for (const file of project.files.values()) {
+    if (file.builtin || file.package) continue;
     const suites = new Set<string>();
     for (const suite of file.items) {
       if (suite.kind !== 'test') continue;

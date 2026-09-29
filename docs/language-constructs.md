@@ -1218,7 +1218,7 @@ Permit calls to declared `extern C` functions within this block. The compiler do
 save(resolve FileWriter files, string path) uses files.write unless FileError
 ```
 
-Declare the external capability operations this callable may use. Effects are checked through calls and interceptor layers. Dependency parameters identify the actual adapter; interface contracts can name the capability type.
+Declare the external capability operations this callable may use. Interfaces, public standalone functions, default methods and interceptor around methods keep explicit contracts. Class implementations and private helpers infer uses when omitted; hover, explain and API docs show the result. An explicit uses clause remains an upper bound. Effects are checked through calls and interceptor layers; implementations cannot exceed their interface contract. changes and unless remain explicit, and construction stays pure.
 
 ## void
 

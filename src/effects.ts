@@ -9,14 +9,25 @@ export interface EffectEnvironment {
   report(span: Span, message: string): void;
 }
 
+export interface CapabilityEffect {
+  source: string;
+  operation: string;
+  span: Span;
+  capability?: Ty;
+}
+
+export const capabilityKey = (type: Ty, operation: string): string =>
+  `${type.id}<${type.args.map(tyName).join(',')}>.${operation}`;
+
 export interface EffectContract {
   changes: readonly string[];
-  uses: ReadonlyMap<string, { source: string; operation: string; span: Span }>;
+  uses: ReadonlyMap<string, CapabilityEffect>;
+  inferred?: boolean;
 }
 
 /** Resolves surface effect names once; callers compare capability identities. */
 export function effectContract(method: MethodDecl, environment: EffectEnvironment): EffectContract {
-  const uses = new Map<string, { source: string; operation: string; span: Span }>();
+  const uses = new Map<string, CapabilityEffect>();
   for (const effect of method.uses ?? []) {
     if (effect.source === 'C') {
       const native = environment.native(effect.operation);
@@ -29,7 +40,7 @@ export function effectContract(method: MethodDecl, environment: EffectEnvironmen
       type.def?.node.kind === 'interface' && type.def.node.capability && environment.operation(type, effect.operation)) : [];
     if (!capabilities.length) environment.report(effect.span,
       `${effect.source}.${effect.operation} must name an operation of a capability dependency or capability type`);
-    for (const type of capabilities) uses.set(`${type.id}<${type.args.map(tyName).join(',')}>.${effect.operation}`, effect);
+    for (const type of capabilities) uses.set(capabilityKey(type, effect.operation), { ...effect, capability: type });
   }
   return { changes: method.changes ?? [], uses };
 }

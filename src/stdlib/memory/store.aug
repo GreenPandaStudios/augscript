@@ -15,7 +15,7 @@ capability ExpiringStore<T implements Data>:
 /** A synchronized table with short critical sections and no I/O while locked. */
 MemoryStore<T implements Data>() implements ExpiringStore<T>:
     Shared<Map<string, _Entry<T>>> _entries = Shared(value=Map<string, _Entry<T>>())
-    put(string key, T value, int expires, int now) uses ExpiringStore.put unless StoreFull:
+    put(string key, T value, int expires, int now) unless StoreFull:
         entry = _Entry<T>(value=value, expires=expires)
         lock _entries as entries:
             for (name, saved) in entries:
@@ -24,7 +24,7 @@ MemoryStore<T implements Data>() implements ExpiringStore<T>:
             if entries.length() >= 512 && !entries.contains(key=key):
                 throw StoreFull()
             entries.set(key=key, value=entry)
-    take(string key, int now) returns T? uses ExpiringStore.take:
+    take(string key, int now) returns T?:
         lock _entries as entries:
             match entries.take(key=key):
                 when null:
@@ -33,7 +33,7 @@ MemoryStore<T implements Data>() implements ExpiringStore<T>:
                     if saved.expires <= now:
                         return null
                     return saved.value
-    get(string key, int now) returns T? uses ExpiringStore.get:
+    get(string key, int now) returns T?:
         lock _entries as entries:
             match entries.get(key=key):
                 when null:

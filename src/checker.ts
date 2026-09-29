@@ -8,7 +8,7 @@ import { canFallThrough, canRepeatNext } from './continuation.ts';
 import { returnsFresh } from './freshness.ts';
 import { inferType } from './inference.ts';
 import { sameType, tyName, type Ty } from './types.ts';
-import { coversChange, effectContract, type EffectContract } from './effects.ts';
+import { capabilityKey, coversChange, effectContract, type CapabilityEffect, type EffectContract } from './effects.ts';
 import { allocationOrigin, OwnershipFlow, sourceName, unionOrigins, type Origins } from './ownership.ts';
 import { builtinType as builtin, builtinTypes, builtinProperties, collectionOperations, errorNames, operationType } from './builtins.ts';
 import { orderGraph } from './di.ts';
@@ -152,12 +152,17 @@ class Checker {
   private readonly bindingByKey = new Map<string, BindingInfo>();
   private readonly constructorFreshness = new Map<ClassDecl, boolean>();
   private readonly constraintStack = new Set<string>();
+  private readonly inferredUses = new Map<MethodDecl, Map<string, CapabilityEffect>>();
+  private inferring = false;
+  private inferenceChanged = false;
+  private readonly changingInference = new Set<MethodDecl>();
   constructor(project: Project) { this.project = project; this.diagnostics = [...project.diagnostics]; }
 
   check(): CheckedProject {
     for (const def of this.project.definitions.values())
       if (def.node.kind === 'interceptor') this.checkInterceptorShape(def);
     this.planInterceptors();
+    this.inferImplementationEffects();
     for (const def of this.project.definitions.values()) {
       if (def.node.kind === 'class') this.checkClassShape(def);
       else if (def.node.kind === 'interface') this.checkInterfaceShape(def);
@@ -218,7 +223,7 @@ class Checker {
     }
     const served = new Set(this.project.main?.items.flatMap(item => item.kind === 'serve' ? item.names.map(name => this.project.scopes.get(this.project.main!.path)?.get(name)?.id) : []) ?? []);
     for (const [expr, plan] of this.actions) {
-      if (!served.has(plan.endpoint.id) && !this.project.testMode) this.report(expr.span, `Serve endpoint ${plan.endpoint.name} in main.aug before referring to its HTTP action`, 'HTTP');
+      if (!served.has(plan.endpoint.id) && !this.project.testMode && !this.project.library) this.report(expr.span, `Serve endpoint ${plan.endpoint.name} in main.aug before referring to its HTTP action`, 'HTTP');
       if ((plan.endpoint.node as MethodDecl).endpoint?.path === '/__aug/actions.js') this.report(expr.span, '/__aug/actions.js is reserved for HTTP action transport', 'HTTP');
     }
     if(this.actions.size)for(const def of this.project.definitions.values())
@@ -235,7 +240,51 @@ class Checker {
   }
 
   private report(span: Span, message: string, code = 'TYPE'): void {
+    if (this.inferring) return;
     this.diagnostics.push({ file: span.file, line: span.line, column: span.column, message, code });
+  }
+
+  /** Infer implementation details before comparing them with public contracts. */
+  private inferImplementationEffects(): void {
+    const bodies: { method: MethodDecl; definition: Definition; owner?: Definition }[] = [];
+    for (const definition of this.project.definitions.values()) {
+      const node = definition.node;
+      const methods = node.kind === 'function' ? [node] : 'methods' in node ? node.methods : [];
+      for (const method of methods) {
+        if (!method.body || method.externC || method.uses?.length || method.name === 'drop') continue;
+        if (node.kind !== 'class' && !isPrivateName(method.name)) continue;
+        if (node.kind === 'interface') continue;
+        this.inferredUses.set(method, new Map());
+        bodies.push({ method, definition, owner: node.kind === 'function' ? undefined : definition });
+      }
+    }
+    this.inferring = true;
+    try {
+      for (const { method, owner } of bodies) if (owner?.node.kind === 'class') {
+        const types = this.paramsFor(owner.node.typeParams, owner.node, owner.file);
+        for (const ref of owner.node.implements) {
+          const implemented = this.resolveType(ref, owner.file, types);
+          for (const entry of this.interfaceMethods(implemented, new Set()).get(method.name) ?? []) {
+            const contractOwner = this.project.definitions.get(entry.from);
+            if (contractOwner?.node.kind !== 'interface' || !contractOwner.node.capability) continue;
+            // Invoking a capability is itself an effect, including synchronized stores and test adapters.
+            const contract = this.contractFor(entry.method, entry.file, contractOwner, entry.params);
+            for (const [key, effect] of contract.uses) this.inferredUses.get(method)!.set(key, effect);
+          }
+        }
+      }
+      // A fixed point makes forward references and recursive helper calls order independent.
+      // Type-changing generic recursion must provide an explicit finite contract.
+      for (let pass = 0; pass <= bodies.length; pass++) {
+        this.inferenceChanged = false;
+        this.changingInference.clear();
+        for (const { method, definition, owner } of bodies)
+          this.checkFunctionBody(method, definition.file, owner);
+        if (!this.inferenceChanged) return;
+      }
+    } finally { this.inferring = false; }
+    for (const method of this.changingInference) this.report(method.span,
+      `Effect inference for ${method.name} did not reach a finite contract; declare uses on recursive generic helpers`, 'EFFECT');
   }
 
   private checkMemberVisibility(ownerId: string, ownerName: string, name: string,
@@ -1026,13 +1075,32 @@ class Checker {
       },
       report: (span, message) => this.report(span, message, 'EFFECT'),
     });
-    this.effectContracts.set(fn, result);
-    return result;
+    const inferred = this.inferredUses.get(fn);
+    if (!inferred) { this.effectContracts.set(fn, result); return result; }
+    const uses = new Map(result.uses);
+    for (const [key, effect] of inferred) {
+      const capability = effect.capability && this.substitute(effect.capability, types);
+      uses.set(capability ? capabilityKey(capability, effect.operation) : key,
+        { ...effect, capability, source: capability ? tyName(capability) : effect.source });
+    }
+    const contract = { ...result, uses, inferred: true };
+    this.effectContracts.set(fn, contract);
+    return contract;
   }
 
-  private requireUse(key: string, display: string, span: Span, context: Context): void {
+  private requireUse(key: string, display: string, span: Span, context: Context, effect?: CapabilityEffect): void {
     if (context.locked) this.report(span, `Release the lock before ${display}; I/O and capability calls cannot hold a lock`, 'CONCURRENCY');
     if (!context.callable) return;
+    const inferred = this.inferring && this.inferredUses.get(context.callable);
+    if (inferred) {
+      if (!inferred.has(key)) {
+        const separator = display.lastIndexOf('.');
+        inferred.set(key, effect ?? { source: display.slice(0, separator), operation: display.slice(separator + 1), span });
+        this.inferenceChanged = true;
+        this.changingInference.add(context.callable);
+      }
+      return;
+    }
     if (!context.effects?.uses.has(key)) this.report(span,
       `${context.callable.name} is pure for ${display}; declare uses ${display}`, 'EFFECT');
   }
@@ -1053,7 +1121,7 @@ class Checker {
         if (target !== undefined && fn.params[target]) changes.push([fn.params[target].name, ...path].join('.'));
       }
     }
-    const result = { changes: [...new Set(changes)], uses };
+    const result = { changes: [...new Set(changes)], uses, inferred: base.inferred };
     this.effectContracts.set(fn, result);
     return result;
   }
@@ -2478,7 +2546,7 @@ class Checker {
     const contract = this.effectiveContract(fn, fnFile, owner, params);
     plan.mutatesReceiver = contract.changes.some(change => change === 'self' || change.startsWith('self.'));
     for (const [key, effect] of contract.uses) this.requireUse(key,
-      `${effect.source}.${effect.operation}`, expr.span, context);
+      `${effect.source}.${effect.operation}`, expr.span, context, effect);
     for (const changed of contract.changes) {
       const root = changed.split('.')[0];
       if (root === 'self' && expr.callee.kind === 'member') this.requireMutation(expr, expr.callee.object, context, `${fn.name} changes self`);

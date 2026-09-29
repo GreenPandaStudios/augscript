@@ -151,110 +151,132 @@ GnuTLS-backed capability adapter. Its constructor performs no I/O or key generat
 ### GnuTlsCrypto.random
 
 ```text
-random(int size) returns Bytes uses Crypto.random unless CryptoError
+random(int size) returns Bytes unless CryptoError
 ```
 
 Generate unpredictable bytes with the operating-system-backed GnuTLS RNG.
+
+Inferred capabilities: `Crypto.random`.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/contracts.aug#L40)
 
 ### GnuTlsCrypto.sha256
 
 ```text
-sha256(Bytes input) returns Bytes uses Crypto.sha256 unless CryptoError
+sha256(Bytes input) returns Bytes unless CryptoError
 ```
 
 Hash the complete input using SHA-256.
+
+Inferred capabilities: `Crypto.sha256`.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/contracts.aug#L43)
 
 ### GnuTlsCrypto.generateRsa
 
 ```text
-generateRsa() returns RsaPrivateKey uses Crypto.generateRsa unless CryptoError
+generateRsa() returns RsaPrivateKey unless CryptoError
 ```
 
 Create a fresh 3072-bit RSA private key. Private material is opaque and scrubbed on reclamation.
+
+Inferred capabilities: `Crypto.generateRsa`.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/contracts.aug#L46)
 
 ### GnuTlsCrypto.publicRsa
 
 ```text
-publicRsa(RsaPrivateKey key) returns RsaPublicKey uses Crypto.publicRsa unless CryptoError
+publicRsa(RsaPrivateKey key) returns RsaPublicKey unless CryptoError
 ```
 
 Export the corresponding public key as an opaque immutable value.
+
+Inferred capabilities: `Crypto.publicRsa`.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/contracts.aug#L49)
 
 ### GnuTlsCrypto.signRsa
 
 ```text
-signRsa(RsaPrivateKey key, Bytes input) returns Bytes uses Crypto.signRsa unless CryptoError
+signRsa(RsaPrivateKey key, Bytes input) returns Bytes unless CryptoError
 ```
 
 Sign bytes using RSASSA-PKCS1-v1_5 with SHA-256 (JOSE RS256).
+
+Inferred capabilities: `Crypto.signRsa`.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/contracts.aug#L52)
 
 ### GnuTlsCrypto.verifyRsa
 
 ```text
-verifyRsa(RsaPublicKey publicKey, Bytes input, Bytes signature) returns bool uses Crypto.verifyRsa unless CryptoError
+verifyRsa(RsaPublicKey publicKey, Bytes input, Bytes signature) returns bool unless CryptoError
 ```
 
 Verify only RS256. Invalid signatures return false; invalid keys raise CryptoError.
+
+Inferred capabilities: `Crypto.verifyRsa`.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/contracts.aug#L55)
 
 ### GnuTlsCrypto.decodeBase64url
 
 ```text
-decodeBase64url(string input) returns Bytes uses Crypto.decodeBase64url unless CryptoError
+decodeBase64url(string input) returns Bytes unless CryptoError
 ```
 
 Decode canonical unpadded URL-safe base64, rejecting invalid characters and unused bits.
+
+Inferred capabilities: `Crypto.decodeBase64url`.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/contracts.aug#L58)
 
 ### GnuTlsCrypto.equal
 
 ```text
-equal(Bytes left, Bytes right) returns bool uses Crypto.equal
+equal(Bytes left, Bytes right) returns bool
 ```
 
 Compare bytes without early exit on their contents. Length remains observable.
+
+Inferred capabilities: `Crypto.equal`.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/contracts.aug#L61)
 
 ### GnuTlsCrypto.exportRsa
 
 ```text
-exportRsa(RsaPublicKey publicKey) returns Tuple<Bytes, Bytes> uses Crypto.exportRsa unless CryptoError
+exportRsa(RsaPublicKey publicKey) returns Tuple<Bytes, Bytes> unless CryptoError
 ```
 
 Export unsigned big-endian modulus and exponent for an RSA JWK.
+
+Inferred capabilities: `Crypto.exportRsa`.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/contracts.aug#L64)
 
 ### GnuTlsCrypto.importRsa
 
 ```text
-importRsa(Bytes modulus, Bytes exponent) returns RsaPublicKey uses Crypto.importRsa unless CryptoError
+importRsa(Bytes modulus, Bytes exponent) returns RsaPublicKey unless CryptoError
 ```
 
 Import canonical public RSA parameters. Keys must have 2048 to 8192 bits.
+
+Inferred capabilities: `Crypto.importRsa`.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/contracts.aug#L67)
 
 ### GnuTlsCrypto.passwordHash
 
 ```text
-passwordHash(Bytes password, Bytes salt, int iterations) returns Bytes uses Crypto.passwordHash unless CryptoError
+passwordHash(Bytes password, Bytes salt, int iterations) returns Bytes unless CryptoError
 ```
 
 PBKDF2-HMAC-SHA256, producing 32 bytes. Use a unique 16–64 byte salt; supported work factors are 100,000–2,000,000.
+
+Inferred capabilities: `Crypto.passwordHash`.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/contracts.aug#L70)
 

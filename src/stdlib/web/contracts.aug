@@ -16,7 +16,7 @@ capability RequestLogger:
 extern C value _aug_http_log(string method, string path, int status, int milliseconds) uses RequestLogger.complete
 /** Emit escaped JSON request metadata to standard error. Credentials and query strings are excluded. */
 WebRequestLogger() implements RequestLogger:
-    complete(string method, string path, int status, int milliseconds) uses RequestLogger.complete:
+    complete(string method, string path, int status, int milliseconds):
         unsafe:
             _aug_http_log(method, path, status, milliseconds)
 
@@ -29,7 +29,7 @@ extern C value _aug_http_request(string method, string url, optional Headers hea
 
 /** Native libwebsockets transport. No socket is opened by construction. */
 WebHttpClient() implements HttpClient:
-    request(string method, string url, optional Headers headers, optional Bytes body) returns HttpResponse<Bytes> uses HttpClient.request unless HttpError:
+    request(string method, string url, optional Headers headers, optional Bytes body) returns HttpResponse<Bytes> unless HttpError:
         unsafe:
             return _aug_http_request(method=method, url=url, headers=headers, body=body)
 

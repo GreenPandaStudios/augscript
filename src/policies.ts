@@ -10,7 +10,7 @@ export function projectPolicies(project: Project): Diagnostic[] {
   const report = (span: Span, message: string, code: string, warning = false) => diagnostics.push({
     file: span.file, line: span.line, column: span.column, message, code, severity: warning ? 'warning' as const : 'error' as const });
   const modules = new Map<string, { key: string; dependencies: string[]; span: Span }>();
-  const module = (path: string) => relative(project.root, dirname(path)).replaceAll('\\', '/') || '.';
+  const module = (path: string) => relative(project.sourceRoot, dirname(path)).replaceAll('\\', '/') || '.';
   const rules = project.config.module_dependencies.map(rule => { const [owner, targets] = rule.split(':');
     return { owner: owner.trim(), targets: targets.split(',').map(target => target.trim()).filter(Boolean) }; });
   const matches = (pattern: string, value: string) => pattern === '*' || pattern.endsWith('/*') ?
@@ -22,19 +22,20 @@ export function projectPolicies(project: Project): Diagnostic[] {
       const imports = project.imports.get(item) ?? [];
       for (const def of imports) {
         if (def.file !== file.path && !project.files.get(def.file)?.builtin) edges.add(def.file);
-        const from = module(file.path), to = module(def.file);
+        const from = module(file.path), to = project.files.get(def.file)?.package ? item.from.join('/') : module(def.file);
         const rule = rules.find(rule => matches(rule.owner, from));
-        if (rule && from !== to && !project.files.get(def.file)?.builtin && !rule.targets.some(target => matches(target, to)))
+        if (!file.package && rule && from !== to && !project.files.get(def.file)?.builtin && !rule.targets.some(target => matches(target, to)))
           report(item.span, `${from} may not depend on ${to}; allowed: ${rule.targets.join(', ') || 'none'}`, 'MODULE');
-        if (project.config.strict_modules && dirname(def.file) === dirname(file.path)) {
+        if (!file.package && project.config.strict_modules && dirname(def.file) === dirname(file.path)) {
           const surface = project.files.get(join(dirname(def.file), 'export.aug'));
           if (!surface?.items.some(entry => entry.kind === 'export' && entry.name === def.name && entry.from === basename(def.file, '.aug')))
             report(item.span, `Strict modules require ${def.name} from ${basename(def.file)} to appear in this folder's export.aug`, 'MODULE');
         }
       }
-      if (item.everything && enabled('wildcard_imports')) report(item.span, 'Expand everything to explicit named imports to keep dependencies visible', 'LINT', true);
+      if (!file.package && item.everything && enabled('wildcard_imports')) report(item.span, 'Expand everything to explicit named imports to keep dependencies visible', 'LINT', true);
     }
     modules.set(file.path, { key: file.path, dependencies: [...edges], span: file.items[0]?.span ?? { file: file.path, start: 0, end: 0, line: 1, column: 1 } });
+    if (file.package) continue;
     const publicNodes = file.items.filter(item => ['class', 'interface', 'interceptor', 'function', 'composition'].includes(item.kind) && 'name' in item && !item.name.startsWith('_'));
     if (enabled('architecture') && edges.size > project.config.max_dependencies)
       report(modules.get(file.path)!.span, `${basename(file.path)} depends on ${edges.size} files; consider a smaller module contract`, 'LINT', true);
@@ -61,7 +62,7 @@ export function projectPolicies(project: Project): Diagnostic[] {
     const declarations = [def.node, ...('methods' in def.node ? def.node.methods : [])];
     for (const node of declarations) {
       const doc = javadocBefore(source, 'annotations' in node && node.annotations?.length ? node.annotations[0].span.start : node.span.start);
-      if (!node.name.startsWith('_') && enabled('public_docs') && !doc) report(node.span, `Document public ${node.name}'s contract with Javadoc`, 'DOC', true);
+      if (!project.files.get(def.file)?.package && !node.name.startsWith('_') && enabled('public_docs') && !doc) report(node.span, `Document public ${node.name}'s contract with Javadoc`, 'DOC', true);
       if (doc) {
         const params = 'params' in node ? node.params : 'fields' in node ? node.fields : [];
         for (const label of doc.parameters.keys()) if (!params.some(param => (param.label ?? param.name) === label))
@@ -78,7 +79,7 @@ export function projectPolicies(project: Project): Diagnostic[] {
             report(node.span, `Unknown documentation tag @${tag.name}`, 'DOC');
         }
       }
-      if ('throws' in node && enabled('broad_errors') && node.throws.some(error => error.name === 'Error'))
+      if (!project.files.get(def.file)?.package && 'throws' in node && enabled('broad_errors') && node.throws.some(error => error.name === 'Error'))
         report(node.span, `Prefer specific public errors on ${node.name}; unless Error hides recoverable cases`, 'LINT', true);
       const visit = (body: Stmt[]) => {
         for (const stmt of body) {

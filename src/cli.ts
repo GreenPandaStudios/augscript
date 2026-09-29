@@ -14,6 +14,7 @@ import { formatFile } from './formatter.ts';
 import { runLanguageServer } from './lsp.ts';
 import { benchmark, compileNative, writeCoverage } from './native.ts';
 import {generateOpenApi} from './openapi.ts';
+import { initPackage, installPackages, preparePackage, packPackage } from './package-manager.ts';
 
 function printDiagnostics(diagnostics: Diagnostic[], json: boolean, root: string): void {
   if (json) {
@@ -34,6 +35,8 @@ function usage(): void {
     `Format: aug format [project directory] [--file path] [--write]\n` +
     `Context: aug context [project directory] [--file path] [--name declaration] [--budget characters]\n` +
     `Benchmark: aug bench [project directory] [--iterations 10] [--warmup 2] [--json] [-- args]\n` +
+    `Packages: aug package init DIRECTORY --name @owner/name; aug package pack DIRECTORY\n` +
+    `Dependencies: aug install [project directory] [--frozen] [--offline]\n` +
     `Entry point: main.aug at the project root.\n`);
 }
 
@@ -44,6 +47,28 @@ export async function main(argv: string[]): Promise<number> {
     return 0;
   }
   if (!command || command === '--help' || command === 'help') { usage(); return 0; }
+  if (command === 'install' || command === 'package') {
+    try {
+      const root = resolve((command === 'install' ? argv[1] : argv[2]) && !(command === 'install' ? argv[1] : argv[2]).startsWith('--')
+        ? (command === 'install' ? argv[1] : argv[2]) : process.cwd());
+      if (command === 'install') {
+        const lock = installPackages(root, argv.includes('--frozen'), argv.includes('--offline'));
+        process.stdout.write(`Installed ${lock.packages.length} August package(s); aug.lock.json is current.\n`);
+      } else if (argv[1] === 'init') {
+        const name = argv[argv.indexOf('--name') + 1];
+        if (!argv.includes('--name') || !name) throw new Error('Use aug package init DIRECTORY --name @owner/name');
+        initPackage(root, name); process.stdout.write(`Created August library ${name} in ${root}\n`);
+      } else if (argv[1] === 'pack') {
+        preparePackage(root);
+        const project = loadProject(root), checked = checkProject(project);
+        const tests = checkUnitTests(project, discoverTests(project).tests);
+        const diagnostics = uniqueDiagnostics([...checked.diagnostics, ...tests.flatMap(test => test.checked.diagnostics)]);
+        if (diagnostics.some(issue => issue.severity !== 'warning')) { printDiagnostics(diagnostics, argv.includes('--json'), root); return 1; }
+        process.stdout.write(packPackage(root) + '\n');
+      } else throw new Error('Use aug package init or aug package pack');
+      return 0;
+    } catch (error) { process.stderr.write((error as Error).message + '\n'); return 1; }
+  }
   if (command === 'lsp') return runLanguageServer(resolve(argv[1] ?? process.cwd()));
   if (!['check', 'build', 'run', 'emit-c', 'test', 'openapi', 'format', 'bench', 'explain', 'context', 'symbols', 'definition',
     'complete', 'hover', 'fixes', 'semantic-tokens'].includes(command)) {
@@ -106,8 +131,11 @@ export async function main(argv: string[]): Promise<number> {
       process.stdout.write(JSON.stringify(result) + '\n'); return 0;
     }
     const project = loadProject(root, overrides);
+    if (project.library && ['build', 'run', 'bench', 'openapi'].includes(command))
+      throw new Error('This is an August library; use check, test, or package pack. Import its exports from an application with main.aug to run it.');
     if (command === 'format') {
-      const files = sourceFile ? [project.files.get(resolve(sourceFile))].filter(file => !!file) : [...project.files.values()].filter(file => !file.builtin);
+      const files = (sourceFile ? [project.files.get(resolve(sourceFile))].filter(file => !!file) : [...project.files.values()])
+        .filter(file => !file.builtin && !file.package);
       if (!files.length) throw new Error('No source files to format');
       const formatted = files.map(file => ({ file: file.path, text: formatFile(project, file) }));
       if (options.includes('--write')) formatted.forEach(file => writeFileSync(file.file, file.text));

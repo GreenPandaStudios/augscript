@@ -2,7 +2,7 @@
 
 ![August — readable code, clear dependencies](banner.png)
 
-AugScript 0.17 includes the current compiler, language wiki, standard libraries,
+AugScript 0.18 includes the current compiler, language wiki, standard libraries,
 and editor tools. This page and its images are bundled with the extension and
 can be viewed offline.
 
@@ -29,6 +29,8 @@ to discover its contract.
 - [Testing](../compiler/docs/testing.md)
 - [Web and crypto](../compiler/docs/web.md)
 - [Native setup and editor tooling](../compiler/docs/tooling.md)
+- [Create and use packages](../compiler/docs/packages.md)
+- [Performance graphs and benchmark commands](../compiler/docs/performance.md)
 - [Standard I/O API](../compiler/docs/api/io.md)
 - [Web API](../compiler/docs/api/web.md)
 - [Crypto API](../compiler/docs/api/crypto.md)

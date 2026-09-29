@@ -75,29 +75,35 @@ A synchronized table with short critical sections and no I/O while locked.
 ### MemoryStore.put
 
 ```text
-put(string key, T value, int expires, int now) uses ExpiringStore.put unless StoreFull
+put(string key, T value, int expires, int now) unless StoreFull
 ```
 
 Remove expired entries, then store at most 512 live entries. Time is supplied by the caller.
+
+Inferred capabilities: `ExpiringStore<T>.put`.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/memory/store.aug#L18)
 
 ### MemoryStore.take
 
 ```text
-take(string key, int now) returns T? uses ExpiringStore.take
+take(string key, int now) returns T?
 ```
 
 Atomically remove a value. Expired or absent entries return null.
+
+Inferred capabilities: `ExpiringStore<T>.take`.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/memory/store.aug#L27)
 
 ### MemoryStore.get
 
 ```text
-get(string key, int now) returns T? uses ExpiringStore.get
+get(string key, int now) returns T?
 ```
 
 Read a live value without consuming it.
+
+Inferred capabilities: `ExpiringStore<T>.get`.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/memory/store.aug#L36)

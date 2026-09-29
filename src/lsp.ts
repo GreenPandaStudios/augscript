@@ -1,6 +1,7 @@
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { SemanticWorkspace, type SemanticDocument } from './semantic.ts';
 import { diagnosticHelp } from './help.ts';
+import { compilerVersion } from './package-manager.ts';
 
 const tokenTypes = ['class', 'interface', 'function', 'method', 'property', 'variable', 'parameter', 'type', 'keyword', 'decorator', 'typeParameter'];
 const offsetAt = (source: string, position: { line: number; character: number }) =>
@@ -38,7 +39,7 @@ export async function runLanguageServer(root: string): Promise<number> {
       textDocumentSync: { openClose: true, change: 1 }, hoverProvider: true, completionProvider: { triggerCharacters: ['.', '(', '=', ' '] },
       definitionProvider: true, documentFormattingProvider: true, codeActionProvider: true,
       semanticTokensProvider: { legend: { tokenTypes, tokenModifiers: ['declaration'] }, full: true },
-    }, serverInfo: { name: 'AugScript', version: '0.15.0' } };
+    }, serverInfo: { name: 'AugScript', version: compilerVersion() } };
     else if (message.method === 'shutdown') shutdown = true;
     else if (message.method === 'exit') { process.exitCode = shutdown ? 0 : 1; process.stdin.destroy(); return; }
     else if (message.method === 'textDocument/didOpen') {

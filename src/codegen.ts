@@ -191,7 +191,7 @@ class CGenerator {
       field.ownership === 'own' ? '1' : '0').join(', ') || '0'} };`);
     this.constructors.push([
       `static AugValue ${cls.kind === 'class' ? this.bodyName(cls, this.constructorName(def)) : this.constructorName(def)}(AugValue *args, int count) {`,
-      `  if (count != ${cls.fields.length}) { fprintf(stderr, "${cls.name} constructor argument mismatch\\n"); return aug_null(); }`,
+      `  if (count != ${cls.fields.length}) { fprintf(stderr, "${cls.name} constructor argument mismatch\\n"); return aug_scalar_null(); }`,
       `  AugValue roots[${cls.fields.length + 1}] = {0};`,
       `  AugFrame frame; aug_frame_enter(&frame, roots, ${cls.fields.length + 1});`,
       ...cls.fields.map((_, index) => `  roots[${index}] = args[${index}];`),
@@ -269,7 +269,7 @@ class CGenerator {
       `  (void)count; AugValue roots[${count + 2}] = {0}; AugFrame frame; aug_frame_enter(&frame, roots, ${count + 2});`,
       `  roots[${count + 1}] = incoming[0]; size_t scope_depth = aug_scope_depth(); aug_scope_enter(aug_scoped);`,
       ...statements.filter((_,index)=>fn.params[index].injected),
-      ...policies.map((policy,index)=>`  aug_http_policy(&${policyTable}[${index}], roots[${count+1}], ${policy.dependencies[0]===undefined?'aug_null()':`roots[${policy.dependencies[0]}]`}, ${policy.dependencies[1]===undefined?'aug_null()':`roots[${policy.dependencies[1]}]`}); if (aug_has_error) goto failed;`),
+      ...policies.map((policy,index)=>`  aug_http_policy(&${policyTable}[${index}], roots[${count+1}], ${policy.dependencies[0]===undefined?'aug_scalar_null()':`roots[${policy.dependencies[0]}]`}, ${policy.dependencies[1]===undefined?'aug_scalar_null()':`roots[${policy.dependencies[1]}]`}); if (aug_has_error) goto failed;`),
       ...statements.filter((_,index)=>!fn.params[index].injected),
       `  roots[${count}] = ${this.name(def)}(roots, ${count}); if (aug_has_error) goto failed;`,
       `  roots[${count}] = aug_http_response(roots[${count}], ${endpoint.status}); goto finished;`,
@@ -370,6 +370,7 @@ class BodyEmitter {
   private locals = new Map<string, number>();
   private readonly owned = new Set<number>();
   private readonly classFields = new Map<string, number>();
+  private readonly scalarSlots = new Set<number>();
   private slots = 1;
   private labelCounter = 0;
   private errorTarget = 'aug_cleanup';
@@ -402,7 +403,7 @@ class BodyEmitter {
     const array = this.label('interceptor_dependencies');
     const dependencies = this.continuation.dependencies();
     this.line(`AugValue ${array}[] = { ${dependencies.map(slot =>
-      slot === undefined ? 'aug_null()' : this.slot(slot)).join(', ') || 'aug_null()'} };`);
+      slot === undefined ? 'aug_scalar_null()' : this.slot(slot)).join(', ') || 'aug_scalar_null()'} };`);
     const self = this.newSlot();
     this.locals.set('self', self);
     this.line(`${this.slot(self)} = ${this.generator.cConstructor(layer.definition)}(${array}, ${dependencies.length});`);
@@ -414,7 +415,7 @@ class BodyEmitter {
       }
       const slot = this.newSlot();
       this.locals.set(input.name, slot);
-      this.line(`${this.slot(slot)} = ${input.slot === undefined ? 'aug_null()' : this.slot(input.slot)};`);
+      this.line(`${this.slot(slot)} = ${input.slot === undefined ? 'aug_scalar_null()' : this.slot(input.slot)};`);
     }
   }
 
@@ -430,13 +431,13 @@ class BodyEmitter {
     const plan = this.generator.callPlan(expr)!;
     const { args, transfers } = next.forward(plan.sourceIndices, values);
     const array = this.label('next_args');
-    this.line(`AugValue ${array}[] = { ${args.map(slot => this.slot(slot)).join(', ') || 'aug_null()'} };`);
+    this.line(`AugValue ${array}[] = { ${args.map(slot => this.slot(slot)).join(', ') || 'aug_scalar_null()'} };`);
     for (const { original, replacement } of transfers) {
       if (replacement !== original)
         this.line(`if (${this.slot(original)}.tag != AUG_NULL) aug_drop(${this.slot(original)});`);
-      this.line(`${this.slot(original)} = aug_null();`);
+      this.line(`${this.slot(original)} = aug_scalar_null();`);
       if (this.owned.has(replacement) && replacement !== original)
-        this.line(`${this.slot(replacement)} = aug_null();`);
+        this.line(`${this.slot(replacement)} = aug_scalar_null();`);
     }
     const slot = this.newSlot();
     this.line(`${this.slot(slot)} = ${next.target}(${next.receiver === undefined ? '' :
@@ -456,13 +457,26 @@ class BodyEmitter {
     return node?.kind === 'class' || node?.kind === 'interceptor' ? fieldsOf(node).findIndex(field => field.name === name) : -1;
   }
 
+  private isScalar(type: Ty | undefined): boolean {
+    return !!type && type.kind === 'builtin' && ['int', 'c_int', 'float', 'bool'].includes(type.name);
+  }
+
   private emitExpr(expr: Expr): number {
+    const firstNewSlot = this.slots;
+    const slot = this.emitValueExpr(expr);
+    // Scalar temporaries never contain a GC pointer. Keeping them outside the
+    // escaped root array lets the C optimizer keep arithmetic in registers.
+    if (slot >= firstNewSlot && this.isScalar(this.generator.expressionType(expr))) this.scalarSlots.add(slot);
+    return slot;
+  }
+
+  private emitValueExpr(expr: Expr): number {
     if (expr.kind === 'handle' && expr.call.kind === 'call') {
       const plan = this.generator.actionPlan(expr)!, endpoint = (plan.endpoint.node as MethodDecl).endpoint!;
       const metadata = {method:endpoint.method,path:endpoint.path,parameters:plan.parameters.map(({param,type,form}) => ({name:param.source?.name ?? param.name,source:param.source?.kind,form,schema:this.generator.actionSchema(type)}))};
       const args = plan.parameters.map(parameter => parameter.form || parameter.source === undefined ? undefined : this.emitExpr((expr.call as Extract<Expr,{kind:'call'}>).args[parameter.source]));
       const array = this.label('action_values'), slot = this.newSlot();
-      this.line(`AugValue ${array}[] = {${args.map(arg => arg === undefined ? 'aug_missing()' : this.slot(arg)).join(', ') || 'aug_null()'}};`);
+      this.line(`AugValue ${array}[] = {${args.map(arg => arg === undefined ? 'aug_missing()' : this.slot(arg)).join(', ') || 'aug_scalar_null()'}};`);
       this.line(`${this.slot(slot)} = aug_http_action(${cString(JSON.stringify(metadata))}, ${array}, ${args.length});`);
       this.line(`if (aug_has_error) goto ${this.errorTarget};`); return slot;
     }
@@ -474,8 +488,8 @@ class BodyEmitter {
       const names = expr.attributes.map(attribute => this.emitExpr({kind:'literal', value:attribute.name, span:attribute.span}));
       const attrs = expr.attributes.map(attribute => this.emitExpr(attribute.value)), children = expr.children.map(child => this.emitExpr(child));
       const array = this.label('html_attributes'), body = this.label('html_children'), slot = this.newSlot();
-      this.line(`AugValue ${array}[] = {${expr.attributes.flatMap((_, index) => [this.slot(names[index]), this.slot(attrs[index])]).join(', ') || 'aug_null()'}};`);
-      this.line(`AugValue ${body}[] = {${children.map(child => this.slot(child)).join(', ') || 'aug_null()'}};`);
+      this.line(`AugValue ${array}[] = {${expr.attributes.flatMap((_, index) => [this.slot(names[index]), this.slot(attrs[index])]).join(', ') || 'aug_scalar_null()'}};`);
+      this.line(`AugValue ${body}[] = {${children.map(child => this.slot(child)).join(', ') || 'aug_scalar_null()'}};`);
       this.line(`${this.slot(slot)} = aug_html_element(${cString(expr.tag)}, ${array}, ${attrs.length}, ${body}, ${children.length});`);
       this.line(`if (aug_has_error) goto ${this.errorTarget};`); return slot;
     }
@@ -489,8 +503,8 @@ class BodyEmitter {
         args.map((_, index) => thunk.locals.get(`argument_${index}`)!));
       thunk.line(`${thunk.slot(0)} = ${thunk.slot(result)};`);
       const name = this.generator.taskThunk(thunk, args.length), array = this.label('task_args'), slot = this.newSlot();
-      this.line(`AugValue ${array}[] = {${args.map(arg => this.slot(arg)).join(', ') || 'aug_null()'}};`);
-      this.line(`${this.slot(slot)} = aug_task_start(${name}, ${receiver === undefined ? 'aug_null()' : this.slot(receiver)}, ${array}, ${args.length});`);
+      this.line(`AugValue ${array}[] = {${args.map(arg => this.slot(arg)).join(', ') || 'aug_scalar_null()'}};`);
+      this.line(`${this.slot(slot)} = aug_task_start(${name}, ${receiver === undefined ? 'aug_scalar_null()' : this.slot(receiver)}, ${array}, ${args.length});`);
       this.clearMovedArgs(call, (this.generator.callPlan(call)?.ownerships ?? []).map(ownership => ({ownership:ownership ?? 'managed'})));
       this.line(`if (aug_has_error) goto ${this.errorTarget};`); return slot;
     }
@@ -511,15 +525,15 @@ class BodyEmitter {
         return slot;
       }
       const slot = this.newSlot();
-      this.line(`${this.slot(slot)} = aug_null();`);
+      this.line(`${this.slot(slot)} = aug_scalar_null();`);
       return slot;
     }
     if (expr.kind === 'literal') {
       const slot = this.newSlot();
-      const value = expr.missing ? 'aug_missing()' : expr.value === null ? 'aug_null()' : typeof expr.value === 'string' ?
+      const value = expr.missing ? 'aug_missing()' : expr.value === null ? 'aug_scalar_null()' : typeof expr.value === 'string' ?
         `aug_string(${cString(expr.value)})` : typeof expr.value === 'boolean' ?
-        `aug_bool(${expr.value})` : expr.numericType !== 'float' && Number.isInteger(expr.value) ?
-        `aug_int(${expr.numericText === '-9223372036854775808' ? 'INT64_MIN' : `INT64_C(${expr.numericText ?? expr.value})`})` : `aug_float(${expr.value})`;
+        `aug_scalar_bool(${expr.value})` : expr.numericType !== 'float' && Number.isInteger(expr.value) ?
+        `aug_scalar_int(${expr.numericText === '-9223372036854775808' ? 'INT64_MIN' : `INT64_C(${expr.numericText ?? expr.value})`})` : `aug_scalar_float(${expr.value})`;
       this.line(`${this.slot(slot)} = ${value};`);
       return slot;
     }
@@ -533,7 +547,7 @@ class BodyEmitter {
           this.line(`aug_map_set(${this.slot(slot)}, ${this.slot(args[index])}, ${this.slot(args[index + 1])});`);
       } else {
         const array = this.label('items');
-        this.line(`AugValue ${array}[] = { ${args.map(index => this.slot(index)).join(', ') || 'aug_null()'} };`);
+        this.line(`AugValue ${array}[] = { ${args.map(index => this.slot(index)).join(', ') || 'aug_scalar_null()'} };`);
         this.line(`${this.slot(slot)} = aug_${name.toLowerCase()}_new(${array}, ${args.length});`);
       }
       return slot;
@@ -554,23 +568,29 @@ class BodyEmitter {
     if (expr.kind === 'unary') {
       const value = this.emitExpr(expr.value);
       const slot = this.newSlot();
-      this.line(`${this.slot(slot)} = aug_unary(${cString(expr.op)}, ${this.slot(value)});`);
+      const type = this.generator.expressionType(expr.value);
+      const scalar = type && this.isScalar(type) && !type.nullable && !type.optional;
+      const operand = this.slot(value);
+      const fast = scalar && expr.op === '!' && type.name === 'bool' ? `aug_scalar_bool(!${operand}.as.boolean)` :
+        scalar && expr.op === '-' && ['int', 'c_int'].includes(type.name) ? `aug_scalar_int(aug_signed_bits(UINT64_C(0) - (uint64_t)${operand}.as.integer))` :
+        scalar && expr.op === '-' && type.name === 'float' ? `(${operand}.tag == AUG_FLOAT ? aug_scalar_float(-${operand}.as.floating) : aug_unary("-", ${operand}))` : undefined;
+      this.line(`${this.slot(slot)} = ${fast ?? `aug_unary(${cString(expr.op)}, ${operand})`};`);
       return slot;
     }
     if (expr.kind === 'binary') {
       const left = this.emitExpr(expr.left);
       if (expr.op === '&&' || expr.op === '||') {
         const slot = this.newSlot();
-        this.line(`${this.slot(slot)} = aug_bool(aug_truthy(${this.slot(left)}));`);
-        this.line(`if (${expr.op === '&&' ? 'aug_truthy' : '!aug_truthy'}(${this.slot(slot)})) {`);
+        this.line(`${this.slot(slot)} = aug_scalar_bool(${this.slot(left)}.as.boolean);`);
+        this.line(`if (${expr.op === '||' ? '!' : ''}${this.slot(slot)}.as.boolean) {`);
         const right = this.emitExpr(expr.right);
-        this.line(`${this.slot(slot)} = aug_bool(aug_truthy(${this.slot(right)}));`);
+        this.line(`${this.slot(slot)} = aug_scalar_bool(${this.slot(right)}.as.boolean);`);
         this.line('}');
         return slot;
       }
       const right = this.emitExpr(expr.right);
       const slot = this.newSlot();
-      this.line(`${this.slot(slot)} = aug_binary(${cString(expr.op)}, ${this.slot(left)}, ${this.slot(right)});`);
+      this.line(`${this.slot(slot)} = ${this.scalarBinary(expr, left, right) ?? `aug_binary(${cString(expr.op)}, ${this.slot(left)}, ${this.slot(right)})`};`);
       if (expr.op === '/') this.line(`if (aug_has_error) goto ${this.errorTarget};`);
       return slot;
     }
@@ -578,6 +598,29 @@ class BodyEmitter {
     if (expr.callee.kind === 'name' && expr.callee.name === 'next') return this.emitNext(expr);
     const {receiver, args} = this.emitArguments(expr);
     return this.emitInvoke(expr, receiver, args);
+  }
+
+  private scalarBinary(expr: Extract<Expr, {kind: 'binary'}>, left: number, right: number): string | undefined {
+    const a = this.generator.expressionType(expr.left), b = this.generator.expressionType(expr.right);
+    if (!a || !b || !this.isScalar(a) || !this.isScalar(b) || a.nullable || b.nullable || a.optional || b.optional) return;
+    if (a.name === 'bool' && b.name === 'bool' && ['==', '!='].includes(expr.op))
+      return `aug_scalar_bool(${this.slot(left)}.as.boolean ${expr.op} ${this.slot(right)}.as.boolean)`;
+    const numeric = (type: Ty) => ['int', 'c_int', 'float'].includes(type.name);
+    if (!numeric(a) || !numeric(b)) return;
+    const integer = a.name !== 'float' && b.name !== 'float';
+    const operand = (slot: number, type: Ty) => `${integer || type.name === 'float' ? '' : '(double)'}${this.slot(slot)}.as.${type.name === 'float' ? 'floating' : 'integer'}`;
+    const x = operand(left, a), y = operand(right, b);
+    let fast: string | undefined;
+    if (['==', '!=', '<', '>', '<=', '>='].includes(expr.op)) fast = `aug_scalar_bool(${x} ${expr.op} ${y})`;
+    else if (expr.op === '/') fast = `aug_scalar_${integer ? 'int' : 'float'}_divide(${x}, ${y})`;
+    else if (['+', '-', '*'].includes(expr.op)) fast = integer ?
+      `aug_scalar_int(aug_signed_bits((uint64_t)${x} ${expr.op} (uint64_t)${y}))` : `aug_scalar_float(${x} ${expr.op} ${y})`;
+    if (!fast || integer) return fast;
+    // Widening can leave an INT-tagged value in a statically float position.
+    // Use the existing numeric semantics until its representation is FLOAT.
+    const guards = [{type:a, slot:left}, {type:b, slot:right}].flatMap(({type, slot}) =>
+      type.name === 'float' ? [`${this.slot(slot)}.tag == AUG_FLOAT`] : []);
+    return `(${guards.join(' && ')} ? ${fast} : aug_binary(${cString(expr.op)}, ${this.slot(left)}, ${this.slot(right)}))`;
   }
 
   private emitArguments(expr: Extract<Expr, {kind: 'call'}>): {receiver?: number; args: number[]} {
@@ -604,7 +647,7 @@ class BodyEmitter {
   private emitInvoke(expr: Extract<Expr, {kind: 'call'}>, receiver: number | undefined, args: number[]): number {
     const slot = this.newSlot();
     const array = this.label('args');
-    this.line(`AugValue ${array}[] = { ${args.map(index => this.slot(index)).join(', ') || 'aug_null()'} };`);
+    this.line(`AugValue ${array}[] = { ${args.map(index => this.slot(index)).join(', ') || 'aug_scalar_null()'} };`);
     if (expr.callee.kind === 'name' && expr.callee.name === 'exit') {
       this.line(`int aug_exit_code_${slot} = (int)aug_cint(${this.slot(args[0])});`);
       this.line(`aug_cancelled = true; aug_shutdown(); exit(aug_exit_code_${slot} >= 0 && aug_exit_code_${slot} <= 255 ? aug_exit_code_${slot} : 1);`);
@@ -620,7 +663,7 @@ class BodyEmitter {
     }
     if (expr.callee.kind === 'name' && expr.callee.name === 'Shared') {
       this.line(`${this.slot(slot)} = aug_shared_new(${this.slot(args[0])});`);
-      if (expr.args[0]?.kind === 'name') {const source = this.locals.get(expr.args[0].name); if (source !== undefined && this.owned.has(source)) this.line(`${this.slot(source)} = aug_null();`);}
+      if (expr.args[0]?.kind === 'name') {const source = this.locals.get(expr.args[0].name); if (source !== undefined && this.owned.has(source)) this.line(`${this.slot(source)} = aug_scalar_null();`);}
       return slot;
     }
     if(expr.callee.kind==='name'&&expr.callee.name==='ServerEvent') {
@@ -638,12 +681,12 @@ class BodyEmitter {
     }
     if (expr.callee.kind === 'name' && expr.callee.name === 'print') {
       if (args[0] !== undefined) this.line(`aug_print(${this.slot(args[0])});`);
-      this.line(`${this.slot(slot)} = aug_null();`);
+      this.line(`${this.slot(slot)} = aug_scalar_null();`);
       return slot;
     }
     if (expr.callee.kind === 'name' && expr.callee.name === 'assert') {
       this.line(`aug_assert(${this.slot(args[0])}, ${cString(this.generator.expressionSource(expr.args[0]))}, ${cString(expr.span.file)}, ${expr.span.line});`);
-      this.line(`${this.slot(slot)} = aug_null();`);
+      this.line(`${this.slot(slot)} = aug_scalar_null();`);
       this.line(`if (aug_has_error) goto ${this.errorTarget};`);
       return slot;
     }
@@ -695,8 +738,8 @@ class BodyEmitter {
         }
         const values = [this.slot(receiver!), ...args.map((index, position) => operation.parameters[position]?.type === 'int' ? `aug_cint(${this.slot(index)})` : this.slot(index))];
         const call = `aug_${type!.name.toLowerCase()}_${operation.native}(${values.join(', ')})`;
-        if (operation.returns === 'void') { this.line(`${call};`); this.line(`${this.slot(slot)} = aug_null();`); }
-        else this.line(`${this.slot(slot)} = ${operation.returns === 'bool' ? `aug_bool(${call})` : operation.returns === 'int' ? `aug_int(${call})` : call};`);
+        if (operation.returns === 'void') { this.line(`${call};`); this.line(`${this.slot(slot)} = aug_scalar_null();`); }
+        else this.line(`${this.slot(slot)} = ${operation.returns === 'bool' ? `aug_scalar_bool(${call})` : operation.returns === 'int' ? `aug_scalar_int(${call})` : call};`);
       } else {
         this.line(`${this.slot(slot)} = aug_call_method(${this.slot(receiver!)}, ${cString(methodName)}, ${array}, ${args.length});`);
         const node = type?.def?.node;
@@ -717,7 +760,7 @@ class BodyEmitter {
         call.args[source]?.kind !== 'name') return;
       const name = (call.args[source] as Extract<Expr, { kind: 'name' }>).name;
       const slot = this.locals.get(name);
-      if (slot !== undefined && this.owned.has(slot)) this.line(`${this.slot(slot)} = aug_null();`);
+      if (slot !== undefined && this.owned.has(slot)) this.line(`${this.slot(slot)} = aug_scalar_null();`);
     });
   }
 
@@ -735,10 +778,10 @@ class BodyEmitter {
         type === 'bool' ? `aug_truthy(${this.slot(index)})` : this.slot(index);
     });
     const call = `${fn.name}(${values.join(', ')})`;
-    const convert = fn.returns.name === 'void' ? `${call}; ${this.slot(output)} = aug_null()` :
+    const convert = fn.returns.name === 'void' ? `${call}; ${this.slot(output)} = aug_scalar_null()` :
       fn.returns.name === 'string' ? `aug_string(${call})` :
-      ['int', 'c_int'].includes(fn.returns.name) ? `aug_int(${call})` :
-      fn.returns.name === 'float' ? `aug_float(${call})` : `aug_bool(${call})`;
+      ['int', 'c_int'].includes(fn.returns.name) ? `aug_scalar_int(${call})` :
+      fn.returns.name === 'float' ? `aug_scalar_float(${call})` : `aug_scalar_bool(${call})`;
     this.line(fn.returns.name === 'void' ? `${convert};` : `${this.slot(output)} = ${convert};`);
   }
 
@@ -778,15 +821,23 @@ class BodyEmitter {
     if (stmt.kind === 'for') {
       const value = this.emitExpr(stmt.iterable);
       const snapshot = this.newSlot();
-      this.line(`${this.slot(snapshot)} = aug_iter_snapshot(${this.slot(value)});`);
+      const iterableType = this.generator.expressionType(stmt.iterable);
+      const flatMap = stmt.names.length === 2 && iterableType?.kind === 'builtin' && iterableType.name === 'Map';
+      this.line(`${this.slot(snapshot)} = ${flatMap ? 'aug_map_entries_snapshot' : 'aug_iter_snapshot'}(${this.slot(value)});`);
       const index = this.label('aug_index');
       const names = new Map(this.locals);
       const slots = stmt.names.map(name => { const slot = this.newSlot(); this.locals.set(name, slot); return slot; });
-      this.line(`for (size_t ${index} = 0; ${index} < ${this.slot(snapshot)}.as.object->field_count; ${index}++) {`);
-      this.line('aug_task_checkpoint();');
+      if (flatMap) slots.forEach((slot, index) => {
+        if (this.isScalar(this.generator.expressionType(stmt.iterable)?.args[index])) this.scalarSlots.add(slot);
+      });
+      this.line(`for (size_t ${index} = 0; ${index} < ${this.slot(snapshot)}.as.object->field_count${flatMap ? ' / 2' : ''}; ${index}++) {`);
+      this.line('if (aug_execution->fiber || aug_task_checkpoint_hook) aug_task_checkpoint();');
       this.line(`if (aug_cancelled) goto ${this.returnTarget};`);
-      const item = this.newSlot(); this.line(`${this.slot(item)} = aug_field(${this.slot(snapshot)}, ${index});`);
-      slots.forEach((slot, position) => this.line(`${this.slot(slot)} = ${slots.length === 1 ? this.slot(item) : `aug_tuple_get(${this.slot(item)}, ${position})`};`));
+      if (flatMap) slots.forEach((slot, position) => this.line(`${this.slot(slot)} = ${this.slot(snapshot)}.as.object->fields[${index} * 2 + ${position}];`));
+      else {
+        const item = this.newSlot(); this.line(`${this.slot(item)} = ${this.slot(snapshot)}.as.object->fields[${index}];`);
+        slots.forEach((slot, position) => this.line(`${this.slot(slot)} = ${slots.length === 1 ? this.slot(item) : `aug_tuple_get(${this.slot(item)}, ${position})`};`));
+      }
       this.emitScoped(stmt.body);
       this.line('}');
       this.locals = names;
@@ -823,6 +874,8 @@ class BodyEmitter {
           const target = this.newSlot();
           this.locals.set(stmt.target.name, target);
           this.line(`${this.slot(target)} = ${this.slot(value)};`);
+          if (this.isScalar(this.generator.expressionType(stmt.value)) && (!stmt.declaredType || ['int', 'c_int', 'float', 'bool'].includes(stmt.declaredType.name)))
+            this.scalarSlots.add(target);
           if (stmt.ownership === 'own') this.owned.add(target);
         }
       } else if (stmt.target.kind === 'member') {
@@ -837,7 +890,7 @@ class BodyEmitter {
           field.name === memberName && field.ownership === 'own');
       }
       if (sourceSlot !== undefined && this.owned.has(sourceSlot) && targetOwns)
-        this.line(`${this.slot(sourceSlot)} = aug_null();`);
+        this.line(`${this.slot(sourceSlot)} = aug_scalar_null();`);
       return;
     }
     if(stmt.kind==='yield') {
@@ -846,21 +899,21 @@ class BodyEmitter {
     }
     if (stmt.kind === 'return') {
       const value = stmt.value ? this.emitExpr(stmt.value) : undefined;
-      this.line(`${this.slot(0)} = ${value === undefined ? 'aug_null()' : this.slot(value)};`);
-      if (value !== undefined && this.owned.has(value)) this.line(`${this.slot(value)} = aug_null();`);
+      this.line(`${this.slot(0)} = ${value === undefined ? 'aug_scalar_null()' : this.slot(value)};`);
+      if (value !== undefined && this.owned.has(value)) this.line(`${this.slot(value)} = aug_scalar_null();`);
       this.line(`goto ${this.returnTarget};`);
       return;
     }
     if (stmt.kind === 'throw') {
       const value = this.emitExpr(stmt.value);
       this.line(`aug_throw(${this.slot(value)});`);
-      if (this.owned.has(value)) this.line(`${this.slot(value)} = aug_null();`);
+      if (this.owned.has(value)) this.line(`${this.slot(value)} = aug_scalar_null();`);
       this.line(`goto ${this.errorTarget};`);
       return;
     }
     if (stmt.kind === 'if') {
       const condition = this.emitExpr(stmt.test);
-      this.line(`if (aug_truthy(${this.slot(condition)})) {`);
+      this.line(`if (${this.slot(condition)}.as.boolean) {`);
       this.emitScoped(stmt.then);
       this.line('} else {');
       this.emitScoped(stmt.otherwise);
@@ -869,10 +922,10 @@ class BodyEmitter {
     }
     if (stmt.kind === 'while') {
       this.line('while (1) {');
-      this.line('aug_task_checkpoint();');
+      this.line('if (aug_execution->fiber || aug_task_checkpoint_hook) aug_task_checkpoint();');
       this.line(`if (aug_cancelled) goto ${this.returnTarget};`);
       const condition = this.emitExpr(stmt.test);
-      this.line(`if (!aug_truthy(${this.slot(condition)})) break;`);
+      this.line(`if (!${this.slot(condition)}.as.boolean) break;`);
       this.emitScoped(stmt.body);
       this.line('}');
       return;
@@ -912,7 +965,7 @@ class BodyEmitter {
       this.line(`aug_lock_restore(${lockDepth});`);
       this.line(`if (aug_cancelled) goto ${this.returnTarget};`);
       for (const slot of this.owned) if (!ownedBefore.has(slot))
-        this.line(`if (${this.slot(slot)}.tag != AUG_NULL) { aug_drop(${this.slot(slot)}); ${this.slot(slot)} = aug_null(); }`);
+        this.line(`if (${this.slot(slot)}.tag != AUG_NULL) { aug_drop(${this.slot(slot)}); ${this.slot(slot)} = aug_scalar_null(); }`);
       for (const clause of stmt.catches) {
         this.line(`if (aug_error_is(${cString(clause.type.name)})) {`);
         const slot = this.newSlot();
@@ -952,7 +1005,7 @@ class BodyEmitter {
     }
     this.line(`goto ${failed};`); this.line(`${returned}: ${reason} = 1; goto ${cleanup};`);
     this.line(`${failed}: ${reason} = 2;`); this.line(`${cleanup}:;`);
-    this.line(`aug_scope_restore(${depth}); ${this.slot(pending)} = aug_has_error ? aug_take_error() : aug_null();`);
+    this.line(`aug_scope_restore(${depth}); ${this.slot(pending)} = aug_has_error ? aug_take_error() : aug_scalar_null();`);
     this.line(`aug_lock_restore(${locks});`);
     this.line(`${cancellation} = aug_cancelled; aug_cancelled = false;`);
     this.errorTarget = done; this.returnTarget = done; this.emitScoped(stmt.always!);
@@ -971,7 +1024,7 @@ class BodyEmitter {
     const endingOwned = [...this.owned].filter(slot => !owned.has(slot));
     if (joinBeforeDrop && endingOwned.length) this.line('aug_scope_join_to(aug_scope_depth() - 1);');
     for (const slot of endingOwned) {
-      this.line(`aug_drop(${this.slot(slot)}); ${this.slot(slot)} = aug_null();`);
+      this.line(`aug_drop(${this.slot(slot)}); ${this.slot(slot)} = aug_scalar_null();`);
     }
     if (endingOwned.length) {
       this.line(`if (aug_has_error) goto ${this.errorTarget};`);
@@ -981,17 +1034,27 @@ class BodyEmitter {
   }
 
   finish(name: string, method: boolean, paramCount: number): string {
-    const body = this.lines.map(line => `  ${line}`).join('\n');
+    const body = this.lines.map(line => `  ${line}`).join('\n')
+      // Match complete C strings first so source text and #line paths are never
+      // interpreted as generated identifiers or slot references.
+      .replace(/"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|\broots\[(\d+)\]|\baug_has_error\b|\baug_cancelled\b/g, (token, index) => {
+        if (index !== undefined) return this.scalarSlots.has(Number(index)) ? `scalar_${index}` : token;
+        if (token === 'aug_has_error') return 'aug_execution->has_error';
+        if (token === 'aug_cancelled') return 'aug_execution->cancelled';
+        return token;
+      });
     const ownedCleanup = [...this.owned].map(slot =>
-      `  if (${this.slot(slot)}.tag != AUG_NULL) { aug_drop(${this.slot(slot)}); ${this.slot(slot)} = aug_null(); }`).join('\n');
+      `  if (${this.slot(slot)}.tag != AUG_NULL) { aug_drop(${this.slot(slot)}); ${this.slot(slot)} = aug_scalar_null(); }`).join('\n');
     return [
       `static AugValue ${name}(${method ? 'AugValue self, ' : ''}AugValue *args, int count) {`,
       `  (void)args; (void)count;`,
+      `  AugExecution *aug_execution = aug_execution_current();`,
+      ...[...this.scalarSlots].map(slot => `  AugValue scalar_${slot} = {0};`),
       `  AugValue roots[${Math.max(1, this.slots)}] = {0};`,
       `  AugFrame frame; aug_frame_enter(&frame, roots, ${Math.max(1, this.slots)});`,
       `  size_t aug_scope_base = aug_scope_depth();`,
       `  size_t aug_lock_base = aug_lock_depth();`,
-      `  ${this.slot(0)} = aug_null();`,
+      `  ${this.slot(0)} = aug_scalar_null();`,
       body,
       `aug_cleanup:;`,
       `  aug_lock_restore(aug_lock_base);`,

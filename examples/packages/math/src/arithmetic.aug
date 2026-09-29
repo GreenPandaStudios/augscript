@@ -1,0 +1,8 @@
+/** Add two integers. @param left First value. @param right Second value. @return Their sum. */
+add(int left, int right) returns int:
+    return left + right
+
+test add:
+    when addition:
+        it adds_two_integers:
+            assert(add(left=2, right=3) == 5)

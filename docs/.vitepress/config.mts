@@ -1,5 +1,5 @@
 import { defineConfig } from 'vitepress';
-import { readFileSync } from 'node:fs';
+import { copyFileSync, readFileSync } from 'node:fs';
 import { dirname, relative, resolve } from 'node:path';
 
 const repo = 'https://github.com/GreenPandaStudios/augscript';
@@ -12,6 +12,10 @@ export default defineConfig({
   base: process.env.AUG_DOCS_BASE ?? '/augscript/',
   cleanUrls: true,
   lastUpdated: true,
+  buildEnd(site) {
+    for (const file of ['benchmark-results.json', 'benchmark-baseline.json', 'benchmarks.json'])
+      copyFileSync(resolve(root, 'docs', file), resolve(site.outDir, file));
+  },
   sitemap: { hostname: 'https://GreenPandaStudios.github.io/augscript/' },
   markdown: {
     languages: [{ ...grammar, name: 'aug', aliases: ['augscript'] }],
@@ -34,14 +38,15 @@ export default defineConfig({
   themeConfig: {
     siteTitle: `August ${version}`,
     nav: [{ text: 'Guide', link: '/reference' }, { text: 'Web', link: '/web' },
-      { text: 'Packages', link: '/packages' }, { text: 'GitHub', link: repo }],
+      { text: 'Packages', link: '/packages' }, { text: 'Performance', link: '/performance' }, { text: 'GitHub', link: repo }],
     search: { provider: 'local' },
     sidebar: [
       { text: 'Learn August', items: [
         { text: 'Start here', link: '/index' }, { text: 'Language guide', link: '/reference' },
         { text: 'Grammar', link: '/grammar' }, { text: 'Constructs and built-ins', link: '/language-constructs' },
         { text: 'Testing', link: '/testing' }, { text: 'Web and crypto', link: '/web' },
-        { text: 'Diagnostics', link: '/diagnostics' }, { text: 'CLI and VS Code', link: '/tooling' }
+        { text: 'Diagnostics', link: '/diagnostics' }, { text: 'CLI and VS Code', link: '/tooling' },
+        { text: 'Performance and benchmarks', link: '/performance' }
       ]},
       { text: 'Library API', items: ['io', 'json', 'memory', 'time', 'web', 'crypto'].map(module => ({ text: `august.${module}`, link: `/api/${module}` })) },
       { text: 'Project and releases', items: [

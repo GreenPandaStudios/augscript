@@ -1,8 +1,8 @@
 {
   "format": 1,
   "name": "august.stdlib",
-  "version": "0.17.0",
-  "compiler": "0.17.0",
+  "version": "0.18.0",
+  "compiler": "0.18.0",
   "source": "august",
   "modules": [
     "io",

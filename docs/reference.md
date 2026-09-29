@@ -1,6 +1,6 @@
 # AugScript language guide
 
-Version 0.15. The language aims for code that communicates behavior, dependencies, and effects to a developer seeing a module for the first time.
+Version 0.18. The language aims for code that communicates behavior, dependencies, and effects to a developer seeing a module for the first time.
 
 ## A complete project
 
@@ -26,7 +26,7 @@ interface Runnable:
 
 /** Construction receives dependencies and performs no I/O. */
 Application(resolve Console console) implements Runnable:
-    start() uses console.write:
+    start():
         console.write(value="Hello, AugScript!")
 ```
 
@@ -68,6 +68,8 @@ Cross-folder access requires the export entry. A dotted path also requires each 
 `import Logger and ConsoleLogger from logging` combines imports. `import everything from logging` imports visible declarations and rejects collisions; it never exposes a module's internal imports. The formatter and **Expand to named imports** action make this list explicit.
 
 Import cycles are errors. Optional module dependency policies and public-surface warnings are configured in `main.yaml`. `strict_modules: true` also requires sibling imports to appear in the local export file. Ctrl-click `from` or a path segment to open its source file or export file, including `august.io`.
+
+Project dependencies use aliases in `main.yaml`: `packages: math: "npm:@owner/aug-math@1.2.3"` as a nested YAML block. Run `aug install`, then write `import add from math`. A library exposes only its source folder's `export.aug`; internal modules and undeclared transitive dependencies are inaccessible. See [creating and using packages](packages.md#author-a-package).
 
 ## Types, labels, and generics
 
@@ -191,7 +193,7 @@ Tuple destructuring introduces new local names and checks arity. `for item in va
 
 A bare header without `implements` declares a function. Omitting `returns` means void. Non-void bodies must return or throw on every path. A bodyless top-level declaration cannot be called unless it is an extern declaration.
 
-Callables are pure by default. State transitions declare `changes self` or `changes input`; mutable reference inputs require `borrow` or `own`. A helper cannot mutate a managed input, an alias, or nested objects reachable through it.
+Public standalone functions and interface contracts are pure unless they declare capabilities. State transitions declare `changes self` or `changes input`; mutable reference inputs require `borrow` or `own`. A helper cannot mutate a managed input, an alias, or nested objects reachable through it.
 
 I/O uses capability interfaces and checked `uses dependency.operation` contracts. Capability types have interface behavior and permit explicit adapter substitution. The standard `august.io` folder provides Console/SystemConsole, FileReader/FileWriter/LocalFiles, and Arguments/ProcessArguments.
 
@@ -211,6 +213,28 @@ announce(resolve Console console, string message) uses console.write:
 ```
 
 A caller's contract must include the effects of its calls and interceptor layers. Interface implementations cannot add mutation or effects beyond the interface contract. A contract may name `Console.write` when a concrete dependency is exposed through another interface.
+
+### Short implementation headers
+
+Class methods and private `_helpers` infer `uses` when it is omitted. Interfaces, public standalone functions, interface default methods, and interceptor `around` methods retain explicit effect contracts. An explicit `uses` clause is an upper bound, including on implementations. `changes` and `unless` are still explicit.
+
+```text
+import Console from august.io
+
+interface Logger:
+    log(string message) uses Console.write
+
+ConsoleLogger(resolve Console console) implements Logger:
+    log(string message):
+        _write(console, message)
+
+_write(Console console, string message):
+    console.write(value=message)
+```
+
+Both bodies infer `Console.write`; the interface states it once. Inference follows calls, generic substitutions and interceptor layers to a fixed point, so declaration order does not matter. Hover and `aug explain` show inferred capabilities; generated library API pages include them. Calling an inferred helper from a pure public function is a compile error. A pure interface cannot acquire hidden I/O through its implementation.
+
+Capability implementations inherit their operation contract even when a test adapter does no I/O. This includes shared-state capabilities such as `ExpiringStore<T>`. Constructors and `drop()` remain pure; inference does not permit I/O while holding a lock. Type-changing recursive generic effect inference that cannot converge requires an explicit finite `uses` clause.
 
 Outside main and test setup, every injected dependency is declared in the callable/class header. Calls forward the one compatible header dependency; multiple candidates require a clearer header. Constructor and interceptor dependencies are checked the same way. Body-level `resolve` is rejected with a fix to lift it into the header.
 

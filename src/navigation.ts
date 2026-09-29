@@ -49,6 +49,12 @@ function importPathTarget(project: Project, importer: SourceFile, from: string[]
     for (let index = 1; index <= segment; index++) folder = libraryChild(project.libraries, folder, from[index]);
     return exportTarget(project, folder, name, segment < from.length - 1 ? from[segment + 1] : undefined);
   }
+  const owner = importer.package ? project.packages.scopes.get(importer.package) : undefined;
+  const dependency = owner ? project.packages.scopes.get(owner.dependencies[from[0]]) : project.packages.roots.get(from[0]);
+  if (dependency) {
+    const folder = join(dependency.sourceRoot, ...from.slice(1, segment + 1));
+    return exportTarget(project, folder, name, segment < from.length - 1 ? from[segment + 1] : undefined);
+  }
   if (from.length === 1) {
     const sibling = join(dirname(importer.path), `${from[0]}.aug`);
     if (project.files.has(sibling) && basename(sibling) !== 'export.aug')
@@ -56,7 +62,7 @@ function importPathTarget(project: Project, importer: SourceFile, from: string[]
   }
   const siblingFolder = join(dirname(importer.path), from[0]);
   let folder = from.length === 1 && directoryExists(siblingFolder) ?
-    siblingFolder : join(project.root, from[0]);
+    siblingFolder : join(owner?.sourceRoot ?? project.sourceRoot, from[0]);
   if (segment === 0 && from.length > 1)
     return exportTarget(project, folder, from[0], from[1]);
   for (let index = 1; index <= segment; index++) folder = join(folder, from[index]);

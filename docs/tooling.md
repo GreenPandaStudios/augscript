@@ -16,6 +16,9 @@ Use `aug` if installed or `node bin/aug.mjs` from the repository. Commands take 
 | `explain PROJECT --file PATH [--name NAME]` | Checked contracts, dependencies, layers, origins, tests, and module surface. |
 | `context PROJECT --file PATH [--name NAME] [--budget N]` | Bounded JSON context, including related declarations and source snippets. |
 | `lsp PROJECT` | Persistent language server over stdio. |
+| `package init DIRECTORY --name @owner/name` | Standalone source library with public exports, Javadoc and a same-file test. |
+| `package pack DIRECTORY` | Checked source archive ready for npm publishing or local installation. |
+| `install PROJECT [--frozen] [--offline]` | Explicit dependency snapshot and aug.lock.json. |
 
 Warnings are nonblocking. Machine diagnostics carry severity, code, file, line, column, and message. check/build fail on errors; invalid command usage returns nonzero. Test failure returns nonzero and includes the case output.
 
@@ -144,7 +147,7 @@ AUG_TRACE_DROPS=1 enables runtime cleanup tracing to stderr for lifecycle verifi
 
 `aug bench` compiles release C, runs warmups, then reports every sample, median, minimum, and p95 in milliseconds. Measurements include process startup and exclude compilation. The timeout bounds each native run.
 
-The [benchmark workload](../examples/benchmark/main.aug) exercises arithmetic, Map/Set insertion, lookups, and equality. [Recorded measurements](benchmarks.json) identify environment and workload: ten Apple M5 runs had a median of 4.78 ms, including startup, with 20,000 entries. These are single-machine measurements, not comparisons with Python/Rust or evidence that every AugScript program is faster.
+See [performance and benchmark graphs](performance.md) for measured comparisons with C, Node and Python, peak memory, HTTP throughput, raw results, and reproducible commands. `npm run bench:compare` measures the fixed workloads under `benchmarks/`. The earlier [single-workload baseline](benchmarks.json) is preserved as historical evidence.
 
 The runtime uses tagged values, dynamic member lookup, a managed heap, and runtime collection adapters. Speed claims require workload comparisons and profiling; translating to C alone does not establish them.
 
@@ -186,4 +189,4 @@ The language server implements the [LSP 3.17 protocol](https://github.com/Micros
 
 One server runs per project. Parsed modules and checked import closures are cached by source/configuration revision. Unrelated edits reuse the previous immutable semantic document; dependency edits invalidate its closure. Local files can be checked while main composition is incomplete. Whole-project check/build still validates all bindings and startup.
 
-Compiler and extension development dependencies use exact versions and lockfiles. Native maps record the selected C toolchain and inputs; C compiler/OS versions are environment requirements, not vendored binaries. There is one project and no package registry/resolver in this version.
+Compiler and extension development dependencies use exact versions and lockfiles. Native maps record the selected C toolchain and inputs; C compiler/OS versions are environment requirements, not vendored binaries. User-authored source packages use npm archives/registry transport, exact versions, and `aug.lock.json`; [the package guide](packages.md) covers creation, installation, public imports and frozen CI builds.

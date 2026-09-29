@@ -19,7 +19,7 @@ const genericFacts = (header: GenericHeader) => header.typeParams.map(name => ({
 
 export interface CallableFact {
   name: string; location: Span; inputs: { label: string; name: string; type: string; ownership: string; injected: boolean; source?:Param['source'] }[];
-  result: string; genericParameters: ReturnType<typeof genericFacts>; changes: string[]; capabilities: string[]; errors: string[];
+  result: string; genericParameters: ReturnType<typeof genericFacts>; changes: string[]; capabilities: string[]; inferredEffects: boolean; errors: string[];
   http?: {method:string; path:string; status:number; streaming:boolean; errors:{type:string;status:number}[]};
   policies: {name:string; order:number; options:Record<string,string|number|boolean|string[]>; dependencies:string[]}[];
   interceptors: { name: string; order: number; location: Span; dependencies: string[]; changes: string[]; capabilities: string[];
@@ -46,6 +46,7 @@ export function contractFacts(checked: CheckedProject): ContractFact[] {
       result: `${method.returnOwnership === 'own' ? 'own ' : ''}${typeName(method.returns)}`,
       changes: [...(contract?.changes ?? method.changes ?? [])],
       capabilities: [...(contract?.uses.values() ?? [])].map(effect => `${effect.source}.${effect.operation}`).concat(method.externC ? [`C.${method.name}`] : []),
+      inferredEffects: !!contract?.inferred,
       errors: [...new Set([...method.throws.map(typeName), ...layers.flatMap(layer => layer.errors.map(tyName))])],
       interceptors: layers.map((layer, order) => {
         const effects = checked.effectContracts.get(layer.around);
@@ -208,12 +209,12 @@ export class SemanticWorkspace {
     const root = basename(path) === 'main.aug';
     const relevant = root ? [...project.files.keys()] : [...closure];
     const key = createHash('sha256').update(JSON.stringify([project.config, relevant.map(file => [file, project.files.get(file)?.source]),
-      project.diagnostics.filter(issue => relevant.includes(issue.file))])).digest('hex');
+      project.diagnostics.filter(issue => relevant.includes(issue.file) || issue.code === 'PACKAGE')])).digest('hex');
     const cached = this.documents.get(path);
     if (cached?.key === key) { this.stats.cacheHits++; return cached.view; }
     const local: Project = root ? project : { ...project, main: undefined,
       definitions: new Map([...project.definitions].filter(([, def]) => closure.has(def.file))),
-      diagnostics: project.diagnostics.filter(issue => closure.has(issue.file) || issue.code === 'CONFIG') };
+      diagnostics: project.diagnostics.filter(issue => closure.has(issue.file) || issue.code === 'CONFIG' || issue.code === 'PACKAGE') };
     const checked = checkProject(local);
     const discovered = discoverTests(local);
     const tests = checkUnitTests(local, discovered.tests.filter(unit => root || closure.has(unit.file)));

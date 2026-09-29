@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.18.0
+
+- Inferred implementation/helper capabilities in hover and checked explain output.
+- User-authored package public imports with real-source navigation and Javadoc help.
+- Standalone library project roots; package manifest and lockfile change notifications.
+- Matching 0.18 compiler and standard declarations, file artwork and welcome guide.
+- Updated native runtime performance and benchmark examples in the language wiki.
+
 ## 0.17.0
 
 - August extension logo, illustrated README, and default light/dark language icons.

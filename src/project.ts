@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { basename, dirname, join, relative, resolve } from 'node:path';
 import type {
   ClassDecl, CompositionDecl, Diagnostic, ExportDecl, ImportDecl, InterfaceDecl, InterceptorDecl, MethodDecl,
@@ -9,6 +9,7 @@ import { loadConfig, type Config } from './config.ts';
 import { projectPolicies } from './policies.ts';
 import { builtinFunctions, builtinTypes } from './builtins.ts';
 import { libraryChild, libraryRelative, standardLibraries, type StandardLibraries } from './libraries.ts';
+import { projectPackages, readPackage, sourcePaths, type ProjectPackages, type PackageManifest } from './package-manager.ts';
 
 export type DefinitionNode = ClassDecl | InterfaceDecl | InterceptorDecl | MethodDecl | CompositionDecl;
 export interface Definition {
@@ -31,6 +32,9 @@ export interface Project {
   testEndpoint?: {file: string; name: string};
   stdlibRoot?: string;
   libraries: StandardLibraries;
+  packages: ProjectPackages;
+  library?: PackageManifest;
+  sourceRoot: string;
   config: Config;
 }
 
@@ -62,15 +66,29 @@ export function loadProject(projectRoot: string, overrides: Map<string, string> 
   const scopes = new Map<string, Map<string, Definition>>();
   const imports = new Map<ImportDecl, Definition[]>();
   const { config, diagnostics } = loadConfig(root);
+  let library: PackageManifest | undefined;
+  let sourceRoot = root;
+  if (existsSync(join(root, 'aug-package.json'))) {
+    try { const loaded = readPackage(root); library = loaded.manifest; sourceRoot = loaded.sourceRoot; }
+    catch (error) { diagnostics.push(diagnostic(join(root, 'aug-package.json'), 1, 1, (error as Error).message, 'PACKAGE')); }
+  }
+  const packages = projectPackages(root, library?.dependencies ?? config.packages, sourceRoot);
+  diagnostics.push(...packages.diagnostics);
   const read = (path: string) => {
     const source = overrides.get(path) ?? readFileSync(path, 'utf8');
     const cached = cache?.get(path);
     if (cached?.file.source === source) return cached;
     const parsed = parse(path, source); cache?.set(path, parsed); return parsed;
   };
-  for (const path of new Set([...sourceFiles(root), ...overrides.keys()].filter(path => path.endsWith('.aug')))) {
+  for (const path of new Set([...sourceFiles(sourceRoot), ...overrides.keys()].filter(path => path.endsWith('.aug')))) {
     const parsed = read(path);
     files.set(path, parsed.file);
+    diagnostics.push(...parsed.diagnostics);
+  }
+  for (const scope of new Set(packages.scopes.values())) for (const path of sourcePaths(scope.sourceRoot)) {
+    const parsed = read(path);
+    // Cached parse objects can be shared across project revisions.
+    files.set(path, { ...parsed.file, package: scope.path });
     diagnostics.push(...parsed.diagnostics);
   }
   const libraries = standardLibraries();
@@ -83,7 +101,7 @@ export function loadProject(projectRoot: string, overrides: Map<string, string> 
     diagnostics.push(...parsed.diagnostics);
   }
   const main = files.get(join(root, 'main.aug'));
-  if (!main) diagnostics.push(diagnostic(join(root, 'main.aug'), 1, 1,
+  if (!main && !library) diagnostics.push(diagnostic(join(root, 'main.aug'), 1, 1,
     'Project requires main.aug at its root', 'PROJECT'));
 
   for (const file of files.values()) {
@@ -118,7 +136,10 @@ export function loadProject(projectRoot: string, overrides: Map<string, string> 
             `Duplicate declaration ${item.name}`, 'NAME'));
           continue;
         }
-        const def: Definition = { id: `${file.builtin ? 'august/' + libraryRelative(libraries, file.path) : relative(root, file.path)}:${item.name}`,
+        const packageScope = file.package ? packages.scopes.get(file.package) : undefined;
+        const identity = packageScope ? `package/${packageScope.name}@${packageScope.version}/${relative(packageScope.sourceRoot, file.path)}` :
+          library && !file.builtin ? `package/${library.name}@${library.version}/${relative(sourceRoot, file.path)}` : relative(root, file.path);
+        const def: Definition = { id: `${file.builtin ? 'august/' + libraryRelative(libraries, file.path) : identity}:${item.name}`,
           name: item.name, file: file.path, node: item };
         local.set(item.name, def);
         definitions.set(def.id, def);
@@ -244,6 +265,21 @@ export function loadProject(projectRoot: string, overrides: Map<string, string> 
       }
       return select(folderExports(folder), 'does not export');
     }
+    const owner = files.get(importer)?.package;
+    const ownerScope = owner ? packages.scopes.get(owner) : undefined;
+    const dependency = ownerScope ? packages.scopes.get(ownerScope.dependencies[item.from[0]]) : packages.roots.get(item.from[0]);
+    if (dependency) {
+      let folder = dependency.sourceRoot;
+      for (const child of item.from.slice(1)) {
+        if (!exposedChild(folder, child)) {
+          diagnostics.push(diagnostic(importer, item.span.line, item.span.column,
+            `Package ${item.from[0]} does not export folder ${child}`, 'IMPORT'));
+          return result;
+        }
+        folder = join(folder, child);
+      }
+      return select(folderExports(folder), 'does not export');
+    }
     if (item.from.length === 1) {
       const sibling = join(dirname(importer), `${item.from[0]}.aug`);
       if (files.has(sibling) && basename(sibling) !== 'export.aug') {
@@ -254,7 +290,7 @@ export function loadProject(projectRoot: string, overrides: Map<string, string> 
     if (item.from.length === 1 && statExistsDirectory(join(dirname(importer), item.from[0]))) {
       folder = join(dirname(importer), item.from[0]);
     } else {
-      folder = join(root, item.from[0]);
+      folder = join(ownerScope?.sourceRoot ?? sourceRoot, item.from[0]);
       if (!statExistsDirectory(folder)) {
         diagnostics.push(diagnostic(importer, item.span.line, item.span.column,
           `Import folder ${source} does not exist`, 'IMPORT'));
@@ -272,7 +308,7 @@ export function loadProject(projectRoot: string, overrides: Map<string, string> 
     return select(folderExports(folder), 'does not export');
   }
 
-  const project = { root, files, definitions, scopes, imports, diagnostics, main, stdlibRoot, libraries, config };
+  const project = { root, sourceRoot, library, packages, files, definitions, scopes, imports, diagnostics, main, stdlibRoot, libraries, config };
   diagnostics.push(...projectPolicies(project));
   return project;
 }

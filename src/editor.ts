@@ -163,7 +163,7 @@ function methodItem(checked: CheckedProject, method: MethodDecl,
   const doc = methodDocumentation(checked, method, owner);
   const injectionHelp = injected.length ? `Injected from bindings: ${injected.map(parameterText).join(', ')}.` : '';
   const contract = checked.effectContracts.get(method);
-  const effects = contract ? `Effective contract: changes ${contract.changes.join(', ') || 'nothing'}; capabilities ` +
+  const effects = contract ? `${contract.inferred ? 'Inferred capabilities; effective' : 'Effective'} contract: changes ${contract.changes.join(', ') || 'nothing'}; capabilities ` +
     `${[...contract.uses.values()].map(effect => `${effect.source}.${effect.operation}`).join(', ') || 'none'}.` : '';
   return { label: method.name, kind, detail: label, signature: signature(method, true, errors),
     documentation: [doc?.markdown, isPrivateName(method.name) ? 'Private to its declaring type.' : '',
@@ -317,6 +317,9 @@ export function importItems(checked: CheckedProject, file: SourceFile): EditorIt
   const project = checked.project;
   const items: EditorItem[] = [];
   const currentFolder = dirname(file.path);
+  const owner = file.package ? project.packages.scopes.get(file.package) : undefined;
+  const aliases = owner ? new Map(Object.entries(owner.dependencies).map(([alias, path]) =>
+    [alias, project.packages.scopes.get(path)!])) : project.packages.roots;
   for (const sibling of project.files.values()) {
     if (dirname(sibling.path) !== currentFolder || sibling.path === file.path ||
         sibling.path.endsWith(`${sep}export.aug`) ||
@@ -333,16 +336,22 @@ export function importItems(checked: CheckedProject, file: SourceFile): EditorIt
   }
   for (const exportFile of project.files.values()) {
     if (!exportFile.path.endsWith(`${sep}export.aug`)) continue;
+    if (owner && !exportFile.package && !exportFile.builtin) continue;
     const folder = dirname(exportFile.path);
     if (folder === currentFolder) continue;
     const standard = exportFile.builtin && project.stdlibRoot;
-    const relativeFolder = standard ? libraryRelative(project.libraries, folder) : relative(project.root, folder);
+    const scope = exportFile.package ? project.packages.scopes.get(exportFile.package) : undefined;
+    const root = scope?.sourceRoot ?? project.sourceRoot;
+    const prefixes = standard ? [['august']] : scope && scope !== owner ?
+      [...aliases].filter(([, target]) => target === scope).map(([alias]) => [alias]) : [[]];
+    if (!prefixes.length) continue;
+    const relativeFolder = standard ? libraryRelative(project.libraries, folder) : relative(root, folder);
     if (relativeFolder.startsWith('..')) continue;
     const segments = relativeFolder.split(sep).filter(Boolean);
     if (segments.some(isPrivateName)) continue;
     let exposed = true;
-    for (let index = 1; index < segments.length; index++) {
-      let parentFolder = standard || project.root;
+    for (let index = scope && scope !== owner ? 0 : 1; index < segments.length; index++) {
+      let parentFolder = standard || root;
       for (const segment of segments.slice(0, index)) parentFolder = standard ?
         libraryChild(project.libraries, parentFolder, segment) : join(parentFolder, segment);
       const parent = join(parentFolder, 'export.aug');
@@ -350,8 +359,9 @@ export function importItems(checked: CheckedProject, file: SourceFile): EditorIt
           item.folder && item.name === segments[index])) { exposed = false; break; }
     }
     if (!exposed) continue;
-    const from = [...(standard ? ['august'] : []), ...segments].join('.');
-    for (const item of exportFile.items) {
+    for (const prefix of prefixes) for (const item of exportFile.items) {
+      const from = [...prefix, ...segments].join('.');
+      if (!from) continue;
       if (item.kind !== 'export' || item.folder) continue;
       if (isPrivateName(item.name) || (item.from && isPrivateName(item.from))) continue;
       const exported = project.scopes.get(join(folder, `${item.from}.aug`))?.get(item.name);

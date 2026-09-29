@@ -31,6 +31,17 @@ try {
   writeFileSync(join(project, 'main.aug'), main);
   aug('check', project);
   assert.equal(aug('run', project), 'installed August works\n');
+  const library = join(directory, 'my-math');
+  aug('package', 'init', library, '--name', '@example/aug-math');
+  aug('check', library);
+  const libraryTests = JSON.parse(aug('test', library, '--json'));
+  assert.equal(libraryTests.passed, 1);
+  const archive = aug('package', 'pack', library).trim();
+  const consumer = join(directory, 'my-app'); mkdirSync(consumer);
+  writeFileSync(join(consumer, 'main.yaml'), `packages:\n  math: "${archive}"\n`);
+  writeFileSync(join(consumer, 'main.aug'), 'import add from math\nprint(value=add(left=20, right=22))\n');
+  aug('install', consumer, '--offline'); aug('install', consumer, '--frozen', '--offline');
+  assert.equal(aug('run', consumer), '42\n');
   const globalPrefix = join(directory, 'global');
   run('npm', ['install', '--global', '--prefix', globalPrefix, '--offline', '--ignore-scripts', '--no-audit', '--no-fund',
     ...packages.map(pkg => join(artifacts, pkg.filename))]);

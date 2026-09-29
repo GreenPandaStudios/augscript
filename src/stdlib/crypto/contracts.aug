@@ -37,36 +37,36 @@ extern C value _aug_crypto_password_hash(Bytes password, Bytes salt, int iterati
 
 /** GnuTLS-backed capability adapter. Its constructor performs no I/O or key generation. */
 GnuTlsCrypto() implements Crypto:
-    random(int size) returns Bytes uses Crypto.random unless CryptoError:
+    random(int size) returns Bytes unless CryptoError:
         unsafe:
             return _aug_crypto_random(size)
-    sha256(Bytes input) returns Bytes uses Crypto.sha256 unless CryptoError:
+    sha256(Bytes input) returns Bytes unless CryptoError:
         unsafe:
             return _aug_crypto_sha256(input)
-    generateRsa() returns RsaPrivateKey uses Crypto.generateRsa unless CryptoError:
+    generateRsa() returns RsaPrivateKey unless CryptoError:
         unsafe:
             return _aug_crypto_generate_rsa()
-    publicRsa(RsaPrivateKey key) returns RsaPublicKey uses Crypto.publicRsa unless CryptoError:
+    publicRsa(RsaPrivateKey key) returns RsaPublicKey unless CryptoError:
         unsafe:
             return _aug_crypto_public_rsa(key)
-    signRsa(RsaPrivateKey key, Bytes input) returns Bytes uses Crypto.signRsa unless CryptoError:
+    signRsa(RsaPrivateKey key, Bytes input) returns Bytes unless CryptoError:
         unsafe:
             return _aug_crypto_sign_rsa(key, input)
-    verifyRsa(RsaPublicKey publicKey, Bytes input, Bytes signature) returns bool uses Crypto.verifyRsa unless CryptoError:
+    verifyRsa(RsaPublicKey publicKey, Bytes input, Bytes signature) returns bool unless CryptoError:
         unsafe:
             return _aug_crypto_verify_rsa(publicKey, input, signature)
-    decodeBase64url(string input) returns Bytes uses Crypto.decodeBase64url unless CryptoError:
+    decodeBase64url(string input) returns Bytes unless CryptoError:
         unsafe:
             return _aug_crypto_decode_base64url(input)
-    equal(Bytes left, Bytes right) returns bool uses Crypto.equal:
+    equal(Bytes left, Bytes right) returns bool:
         unsafe:
             return _aug_crypto_equal(left, right)
-    exportRsa(RsaPublicKey publicKey) returns Tuple<Bytes, Bytes> uses Crypto.exportRsa unless CryptoError:
+    exportRsa(RsaPublicKey publicKey) returns Tuple<Bytes, Bytes> unless CryptoError:
         unsafe:
             return _aug_crypto_export_rsa(publicKey)
-    importRsa(Bytes modulus, Bytes exponent) returns RsaPublicKey uses Crypto.importRsa unless CryptoError:
+    importRsa(Bytes modulus, Bytes exponent) returns RsaPublicKey unless CryptoError:
         unsafe:
             return _aug_crypto_import_rsa(modulus, exponent)
-    passwordHash(Bytes password, Bytes salt, int iterations) returns Bytes uses Crypto.passwordHash unless CryptoError:
+    passwordHash(Bytes password, Bytes salt, int iterations) returns Bytes unless CryptoError:
         unsafe:
             return _aug_crypto_password_hash(password, salt, iterations)

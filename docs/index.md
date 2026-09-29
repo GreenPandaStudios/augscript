@@ -14,6 +14,9 @@ hero:
     - theme: alt
       text: Build a web service
       link: /web
+    - theme: alt
+      text: See performance graphs
+      link: /performance
 features:
   - title: Understand a module in context
     details: Public exports, labeled inputs, same-file tests, and source comments tell a new reader what the code promises.

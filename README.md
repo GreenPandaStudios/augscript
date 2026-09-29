@@ -55,6 +55,7 @@ Ordinary callables are pure. Mutations declare `changes`; I/O declares `uses` an
 - [Same-app OpenID Connect login](examples/oidc-login/README.md) and the [library gap ledger](docs/web-library-gaps.md).
 - [Diagnostics and fixes](docs/diagnostics.md).
 - [Native build, debugging, benchmarks, and configuration](docs/tooling.md).
+- [Performance graphs and production assessment](docs/performance.md): C, Node and Python comparisons, memory, HTTP throughput, and reproduction commands.
 - [Delivered design changes](docs/implementation-map.md) and the [original design audit](docs/language-design-audit.md).
 - [VS Code extension](vscode/README.md): completion, hover help, navigation, formatting, tests, and debugging.
 
@@ -71,9 +72,9 @@ npm run docs:build
 npm run package:packages
 npm run test:packages
 npm run package:extension
-code --install-extension vscode/augscript-0.17.0.vsix --force
+code --install-extension vscode/augscript-0.18.0.vsix --force
 ```
 
 Development dependency versions are pinned in both manifests and lockfiles. The extension bundles the same compiler, runtime, guides and native bootstrap. Run `node scripts/bootstrap-native.mjs` for web/crypto examples; the extraction-only command above fetches the portable task/JSON sources. Set `augscript.nativeHome` to this repository's `.aug-native` directory to share it with the bundled compiler.
 
-This is a language prototype. The runtime uses tagged values and dynamic member lookup; native output alone is no performance guarantee. Ownership analysis is conservative and task scheduling currently uses one OS thread. The CLI resolves its matching first-party library packages; a general third-party August resolver remains future work. See the tooling guide for measured workloads and debugger limits, and the gap ledger for remaining web/runtime work.
+August is experimental. Tasks currently run on one OS thread, and some ownership and resource-lifetime cases remain incomplete. Developers can create and import source packages with public exports and frozen dependency locks. See the performance guide for measured comparisons and production assessment, the tooling guide for debugger limits, and the gap ledger for current support and limitations.

@@ -11,9 +11,11 @@ const lastFiles = new Map();
 const servers = new Map();
 
 function projectRoot(file) {
+  const snapshot = file.split(path.sep + '.aug-packages' + path.sep)[0];
+  if (snapshot !== file && (fs.existsSync(path.join(snapshot, 'main.aug')) || fs.existsSync(path.join(snapshot, 'aug-package.json')))) return snapshot;
   let folder = path.dirname(file);
   while (true) {
-    if (fs.existsSync(path.join(folder, 'main.aug'))) return folder;
+    if (fs.existsSync(path.join(folder, 'main.aug')) || fs.existsSync(path.join(folder, 'aug-package.json'))) return folder;
     const parent = path.dirname(folder);
     if (parent === folder) return vscode.workspace.getWorkspaceFolder(vscode.Uri.file(file))?.uri.fsPath ?? path.dirname(file);
     folder = parent;
@@ -233,6 +235,7 @@ const yamlHelp = {
   lint: 'List optional warnings: wildcard_imports, public_helpers, public_docs, broad_errors, discarded_errors, architecture.',
   strict_modules: 'When true, sibling imports must be listed in the folder export.aug.',
   module_dependencies: 'List allowed module edges, for example "domain: contracts, shared". Import cycles are always rejected.',
+  packages: 'Map import aliases to a local library folder, .tgz archive, or npm:name@exact-version. Run aug install and commit aug.lock.json.',
   max_public_symbols: 'Positive public-surface threshold used by the public_helpers warning. Default 12.',
   max_dependencies: 'Positive import fan-out threshold used by the architecture warning. Default 8.',
   output: 'Name of the executable built under `.aug-build`. An absolute path is also accepted.',
@@ -443,7 +446,7 @@ function activate(context) {
     provideDocumentFormattingEdits: async document => [vscode.TextEdit.replace(new vscode.Range(document.positionAt(0), document.positionAt(document.getText().length)),
       await editorData(context, document, 'format'))],
   }));
-  const watcher = vscode.workspace.createFileSystemWatcher('**/{*.aug,main.yaml}');
+  const watcher = vscode.workspace.createFileSystemWatcher('**/{*.aug,main.yaml,aug.lock.json,aug-package.json}');
   const changed = () => { for (const connection of servers.values()) connection.changed(); };
   context.subscriptions.push(watcher, watcher.onDidCreate(changed), watcher.onDidChange(changed), watcher.onDidDelete(changed));
   context.subscriptions.push(vscode.languages.registerHoverProvider(yamlSelector, {

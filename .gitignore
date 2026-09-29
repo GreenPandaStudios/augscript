@@ -1,6 +1,9 @@
 node_modules/
 .aug-native/
 .aug-build/
+.aug-packages/
+.aug-install-*/
+.aug-packages-old/
 *.vsix
 vscode/compiler/
 .DS_Store

@@ -102,10 +102,12 @@ Emit escaped JSON request metadata to standard error. Credentials and query stri
 ### WebRequestLogger.complete
 
 ```text
-complete(string method, string path, int status, int milliseconds) uses RequestLogger.complete
+complete(string method, string path, int status, int milliseconds)
 ```
 
 The signature declares inputs, result, effects and checked errors.
+
+Inferred capabilities: `RequestLogger.complete`.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/web/contracts.aug#L19)
 
@@ -142,10 +144,12 @@ Native libwebsockets transport. No socket is opened by construction.
 ### WebHttpClient.request
 
 ```text
-request(string method, string url, optional Headers headers, optional Bytes body) returns HttpResponse<Bytes> uses HttpClient.request unless HttpError
+request(string method, string url, optional Headers headers, optional Bytes body) returns HttpResponse<Bytes> unless HttpError
 ```
 
 Perform an HTTP request with bounded bytes. Inside a task, waiting suspends the task's C stack.
+
+Inferred capabilities: `HttpClient.request`.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/web/contracts.aug#L32)
 

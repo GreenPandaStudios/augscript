@@ -2,7 +2,7 @@
 
 ![August — readable code, clear dependencies](media/banner.png)
 
-Version 0.17 bundles the current compiler, runtime, native bootstrap, language wiki, and generated library API guides.
+Version 0.18 bundles the current compiler, runtime, native bootstrap, language wiki, and generated library API guides, including source packages and inferred implementation capabilities.
 
 ## Editing
 
@@ -64,4 +64,4 @@ Node.js 24+ is required. Native commands additionally require a C11 compiler. Co
 
 For web/crypto programs, run `node scripts/bootstrap-native.mjs` in the compiler repository, then set `augscript.nativeHome` to its absolute `.aug-native` directory. The compiler and bootstrap also accept AUG_NATIVE_HOME. The extension includes `compiler/scripts/bootstrap-native.mjs`; installed copies use a writable, versioned user cache by default. Native binaries are not bundled. The complete bootstrap currently targets macOS; `--extract-only --only minicoro,yyjson` supplies portable task/JSON sources for a C11 compiler.
 
-Use the guide commands to read the bundled documentation. The CLI and built-in standard, web and crypto libraries also have separate versioned distribution packages. This is an experimental language with conservative ownership analysis, one-project builds, cooperative tasks on one OS thread, and no third-party August package resolver. Multicore workers, channels/broadcasts and inbound streaming remain documented gaps.
+Use the guide commands to read the bundled documentation. The CLI and built-in standard, web and crypto libraries also have separate versioned distribution packages. Standalone user libraries have an aug-package.json root, public exports, package navigation and Javadoc help. Class implementations and private helpers show inferred capabilities in hover. This is an experimental language with conservative ownership analysis and cooperative tasks on one OS thread. Multicore workers, channels/broadcasts and inbound streaming remain documented gaps. See the wiki's performance graphs before choosing a production workload.

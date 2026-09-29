@@ -190,6 +190,7 @@ export interface SourceFile {
   source: string;
   items: TopLevel[];
   builtin?: boolean;
+  package?: string;
 }
 
 export function typeName(type: TypeRef): string {
