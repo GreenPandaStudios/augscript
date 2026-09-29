@@ -6,6 +6,7 @@ editLink: false
 prev: false
 next: false
 outline: [2, 3]
+pageClass: aug-example-page
 ---
 
 # `main.aug`
@@ -22,6 +23,10 @@ outline: [2, 3]
 - [`domain/numbers.aug`](domain/numbers.md)
 
 :::
+
+::::: example-compare
+
+:::: example-code
 
 ## Code {#code}
 
@@ -93,6 +98,10 @@ catch RangeError error {
 ```
 
 :::
+
+::::
+
+:::: example-spec
 
 ## Compiled specification {#specification}
 
@@ -200,3 +209,7 @@ Function from `domain`.
 ### Shared language rules
 
 See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
+
+::::
+
+:::::

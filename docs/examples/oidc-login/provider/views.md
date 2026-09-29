@@ -6,6 +6,7 @@ editLink: false
 prev: false
 next: false
 outline: [2, 3]
+pageClass: aug-example-page
 ---
 
 # `provider/views.aug`
@@ -39,6 +40,10 @@ outline: [2, 3]
 
 :::
 
+::::: example-compare
+
+:::: example-code
+
 ## Code {#code}
 
 ::: code-group
@@ -64,6 +69,10 @@ ProviderFailure(string message) returns Html {
 ```
 
 :::
+
+::::
+
+:::: example-spec
 
 ## Compiled specification {#specification}
 
@@ -122,3 +131,7 @@ Function from `common`.
 ### Shared language rules
 
 See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
+
+::::
+
+:::::

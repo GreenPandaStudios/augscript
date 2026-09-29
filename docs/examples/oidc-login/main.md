@@ -6,6 +6,7 @@ editLink: false
 prev: false
 next: false
 outline: [2, 3]
+pageClass: aug-example-page
 ---
 
 # `main.aug`
@@ -38,6 +39,10 @@ outline: [2, 3]
 - [`provider/views.aug`](provider/views.md)
 
 :::
+
+::::: example-compare
+
+:::: example-code
 
 ## Code {#code}
 
@@ -103,6 +108,10 @@ serve home and me and logout and startLogin and loginCallback and discovery and 
 ```
 
 :::
+
+::::
+
+:::: example-spec
 
 ## Compiled specification {#specification}
 
@@ -268,3 +277,7 @@ Function from `provider`.
 ### Shared language rules
 
 See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
+
+::::
+
+:::::

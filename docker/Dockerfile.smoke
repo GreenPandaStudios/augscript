@@ -1,0 +1,9 @@
+# syntax=docker/dockerfile:1
+FROM augscript/build:local AS build
+RUN aug init /tmp/hello-august \
+    && aug check /tmp/hello-august \
+    && aug test /tmp/hello-august \
+    && aug build /tmp/hello-august --out /tmp/program
+
+FROM augscript/run:local
+COPY --from=build --chown=august:august /tmp/program /app/program

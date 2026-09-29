@@ -1,0 +1,11 @@
+.git
+node_modules
+vscode/node_modules
+.aug-native
+.aug-build
+dist
+docs/.vitepress/cache
+docs/.vitepress/dist
+vscode/compiler
+*.vsix
+*.tgz

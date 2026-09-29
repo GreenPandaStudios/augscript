@@ -1,6 +1,6 @@
 # Performance and benchmarks
 
-Use this page to measure an August application, read the comparison graphs, and inspect the exact August programs behind each result. August 0.18 compiles to native code through C. Always measure work that resembles your application.
+Use this page to measure an August application, read the comparison graphs, and inspect the exact August programs behind each result. August 0.19 compiles to native code through C. Always measure work that resembles your application.
 
 ## Read the graphs
 

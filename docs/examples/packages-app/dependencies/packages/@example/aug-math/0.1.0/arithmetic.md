@@ -7,6 +7,7 @@ prev: false
 next: false
 outline: [2, 3]
 search: false
+pageClass: aug-example-page
 ---
 
 # `packages/@example/aug-math/0.1.0/arithmetic.aug`
@@ -14,6 +15,10 @@ search: false
 [Use a package](../../../../../index.md) · Dependency source and specification
 
 This is the exact dependency version used by this example.
+
+::::: example-compare
+
+:::: example-code
 
 ## Code {#code}
 
@@ -44,6 +49,10 @@ test add {
 ```
 
 :::
+
+::::
+
+:::: example-spec
 
 ## Compiled specification {#specification}
 
@@ -102,3 +111,7 @@ Same-file function tests for [`add`](arithmetic.md#symbol-add). Each case gets i
 ### Shared language rules
 
 See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
+
+::::
+
+:::::

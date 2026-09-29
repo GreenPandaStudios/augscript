@@ -6,6 +6,7 @@ editLink: false
 prev: false
 next: false
 outline: [2, 3]
+pageClass: aug-example-page
 ---
 
 # `provider/userinfo.aug`
@@ -38,6 +39,10 @@ outline: [2, 3]
 - [`provider/views.aug`](views.md)
 
 :::
+
+::::: example-compare
+
+:::: example-code
 
 ## Code {#code}
 
@@ -112,6 +117,10 @@ endpoint GET "/provider/userinfo" as userinfo(optional string authorization from
 ```
 
 :::
+
+::::
+
+:::: example-spec
 
 ## Compiled specification {#specification}
 
@@ -213,3 +222,7 @@ Record from `contracts`.
 ### Shared language rules
 
 See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
+
+::::
+
+:::::

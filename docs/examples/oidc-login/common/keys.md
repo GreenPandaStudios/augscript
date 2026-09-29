@@ -6,6 +6,7 @@ editLink: false
 prev: false
 next: false
 outline: [2, 3]
+pageClass: aug-example-page
 ---
 
 # `common/keys.aug`
@@ -38,6 +39,10 @@ outline: [2, 3]
 - [`provider/views.aug`](../provider/views.md)
 
 :::
+
+::::: example-compare
+
+:::: example-code
 
 ## Code {#code}
 
@@ -135,6 +140,10 @@ initializeKeys(resolve Crypto crypto, resolve SigningKeys keys) uses crypto.gene
 ```
 
 :::
+
+::::
+
+:::: example-spec
 
 ## Compiled specification {#specification}
 
@@ -321,3 +330,7 @@ Capability interface from `august.crypto`.
 ### Shared language rules
 
 See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
+
+::::
+
+:::::

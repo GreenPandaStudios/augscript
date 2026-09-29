@@ -6,6 +6,7 @@ editLink: false
 prev: false
 next: false
 outline: [2, 3]
+pageClass: aug-example-page
 ---
 
 # `app.aug`
@@ -20,6 +21,10 @@ outline: [2, 3]
 - [`logging.aug`](logging.md)
 
 :::
+
+::::: example-compare
+
+:::: example-code
 
 ## Code {#code}
 
@@ -84,6 +89,10 @@ Greeter(resolve Logger logger to _logger, string name) implements IGreeter {
 ```
 
 :::
+
+::::
+
+:::: example-spec
 
 ## Compiled specification {#specification}
 
@@ -235,3 +244,7 @@ Used as a type or provider.
 ### Shared language rules
 
 See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
+
+::::
+
+:::::

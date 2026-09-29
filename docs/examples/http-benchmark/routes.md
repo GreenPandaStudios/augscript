@@ -6,6 +6,7 @@ editLink: false
 prev: false
 next: false
 outline: [2, 3]
+pageClass: aug-example-page
 ---
 
 # `routes.aug`
@@ -18,6 +19,10 @@ outline: [2, 3]
 - [`routes.aug`](routes.md)
 
 :::
+
+::::: example-compare
+
+:::: example-code
 
 ## Code {#code}
 
@@ -37,6 +42,10 @@ endpoint GET "/bench" as reply() returns Reply {
 ```
 
 :::
+
+::::
+
+:::: example-spec
 
 ## Compiled specification {#specification}
 
@@ -73,3 +82,7 @@ HTTP route: `GET` `/bench`. Use status 200 when the handler returns a body; a re
 ### Shared language rules
 
 See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
+
+::::
+
+:::::

@@ -6,6 +6,7 @@ editLink: false
 prev: false
 next: false
 outline: [2, 3]
+pageClass: aug-example-page
 ---
 
 # `domain/numbers.aug`
@@ -22,6 +23,10 @@ outline: [2, 3]
 - [`domain/numbers.aug`](numbers.md)
 
 :::
+
+::::: example-compare
+
+:::: example-code
 
 ## Code {#code}
 
@@ -103,6 +108,10 @@ test double {
 ```
 
 :::
+
+::::
+
+:::: example-spec
 
 ## Compiled specification {#specification}
 
@@ -233,3 +242,7 @@ Run once for each row of a tuple containing `0`, `0`; a tuple containing `3`, `6
 ### Shared language rules
 
 See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
+
+::::
+
+:::::

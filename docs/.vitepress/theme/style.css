@@ -3,3 +3,33 @@
   outline-offset: -5px;
   border-radius: 6px;
 }
+.aug-example-page .VPDoc.has-aside .content-container,
+.aug-example-page .VPDoc .content-container {
+  max-width: none;
+}
+
+.aug-example-page .VPDoc.has-aside .aside {
+  display: none;
+}
+
+.aug-example-page .aug-example-compare {
+  display: grid;
+  gap: 2rem;
+  align-items: start;
+}
+
+@media (min-width: 1200px) {
+  .aug-example-page .aug-example-compare {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+
+.aug-example-page .aug-example-code,
+.aug-example-page .aug-example-spec {
+  min-width: 0;
+}
+
+.aug-example-page .aug-example-code .vp-code-group .line {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}

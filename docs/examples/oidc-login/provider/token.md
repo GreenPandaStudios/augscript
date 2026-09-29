@@ -6,6 +6,7 @@ editLink: false
 prev: false
 next: false
 outline: [2, 3]
+pageClass: aug-example-page
 ---
 
 # `provider/token.aug`
@@ -38,6 +39,10 @@ outline: [2, 3]
 - [`provider/views.aug`](views.md)
 
 :::
+
+::::: example-compare
+
+:::: example-code
 
 ## Code {#code}
 
@@ -131,6 +136,10 @@ endpoint POST "/provider/token" as token(HttpRequest http from request, resolve 
 ```
 
 :::
+
+::::
+
+:::: example-spec
 
 ## Compiled specification {#specification}
 
@@ -349,3 +358,7 @@ Record from `contracts`.
 ### Shared language rules
 
 See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
+
+::::
+
+:::::

@@ -6,6 +6,7 @@ editLink: false
 prev: false
 next: false
 outline: [2, 3]
+pageClass: aug-example-page
 ---
 
 # `common/views.aug`
@@ -39,6 +40,10 @@ outline: [2, 3]
 
 :::
 
+::::: example-compare
+
+:::: example-code
+
 ## Code {#code}
 
 ::: code-group
@@ -57,6 +62,10 @@ Page(string title, List<Html> children) returns Html {
 ```
 
 :::
+
+::::
+
+:::: example-spec
 
 ## Compiled specification {#specification}
 
@@ -88,3 +97,7 @@ Small server components keep each page's behavior and dependencies visible.
 ### Shared language rules
 
 See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
+
+::::
+
+:::::

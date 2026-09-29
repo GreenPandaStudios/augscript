@@ -16,6 +16,7 @@ import { runLanguageServer } from './lsp.ts';
 import { benchmark, compileNative, writeCoverage } from './native.ts';
 import {generateOpenApi} from './openapi.ts';
 import { initPackage, installPackages, preparePackage, packPackage } from './package-manager.ts';
+import { initProject } from './project-init.ts';
 
 function printDiagnostics(diagnostics: Diagnostic[], json: boolean, root: string): void {
   if (json) {
@@ -31,7 +32,8 @@ function printDiagnostics(diagnostics: Diagnostic[], json: boolean, root: string
 
 function usage(): void {
   process.stdout.write(`AugScript compiler\n\n` +
-    `Usage: aug <check|build|run|emit-c|test|openapi|format|migrate|spec|bench|explain|context|lsp|symbols|definition|complete|hover|fixes|semantic-tokens> [project directory] [options] [-- args]\n` +
+    `Usage: aug <init|check|build|run|emit-c|test|openapi|format|migrate|spec|bench|explain|context|lsp|symbols|definition|complete|hover|fixes|semantic-tokens> [project directory] [options] [-- args]\n` +
+    `New application: aug init DIRECTORY\n` +
     `Tests: aug test [project directory] [GROUP_NAME] [--group GROUP_NAME] [--list] [--coverage] [--json] [--timeout milliseconds]\n` +
     `Format: aug format [project directory] [--file path] [--write]\n` +
     `Specifications: aug spec [project directory] [--check] [--json]\n` +
@@ -51,6 +53,16 @@ export async function main(argv: string[]): Promise<number> {
     return 0;
   }
   if (!command || command === '--help' || command === 'help') { usage(); return 0; }
+  if (command === 'init') {
+    if (argv.length !== 2 || !argv[1] || argv[1].startsWith('--')) {
+      process.stderr.write('Use aug init DIRECTORY\n'); return 2;
+    }
+    try {
+      const root = initProject(argv[1]);
+      process.stdout.write(`Created August application in ${root}\nNext: cd ${argv[1]} && aug check . && aug test . && aug run .\n`);
+      return 0;
+    } catch (error) { process.stderr.write((error as Error).message + '\n'); return 1; }
+  }
   if (command === 'install' || command === 'package') {
     try {
       const root = resolve((command === 'install' ? argv[1] : argv[2]) && !(command === 'install' ? argv[1] : argv[2]).startsWith('--')

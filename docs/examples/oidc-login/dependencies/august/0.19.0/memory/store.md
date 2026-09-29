@@ -7,6 +7,7 @@ prev: false
 next: false
 outline: [2, 3]
 search: false
+pageClass: aug-example-page
 ---
 
 # `august/0.19.0/memory/store.aug`
@@ -14,6 +15,10 @@ search: false
 [OpenID Connect login application](../../../../index.md) · Dependency source and specification
 
 This is the exact dependency version used by this example.
+
+::::: example-compare
+
+:::: example-code
 
 ## Code {#code}
 
@@ -130,6 +135,10 @@ MemoryStore<T implements Data>() implements ExpiringStore<T> {
 ```
 
 :::
+
+::::
+
+:::: example-spec
 
 ## Compiled specification {#specification}
 
@@ -359,3 +368,7 @@ Type parameters: `T` must satisfy `Data`.
 ### Shared language rules
 
 See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
+
+::::
+
+:::::

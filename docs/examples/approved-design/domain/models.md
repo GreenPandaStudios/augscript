@@ -6,6 +6,7 @@ editLink: false
 prev: false
 next: false
 outline: [2, 3]
+pageClass: aug-example-page
 ---
 
 # `domain/models.aug`
@@ -23,6 +24,10 @@ outline: [2, 3]
 
 :::
 
+::::: example-compare
+
+:::: example-code
+
 ## Code {#code}
 
 ::: code-group
@@ -38,6 +43,10 @@ record Fruit(int code, string name)
 ```
 
 :::
+
+::::
+
+:::: example-spec
 
 ## Compiled specification {#specification}
 
@@ -65,3 +74,7 @@ Immutable fruit data, with public construction labels and structural equality.
 ### Shared language rules
 
 See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
+
+::::
+
+:::::

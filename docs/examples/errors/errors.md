@@ -6,6 +6,7 @@ editLink: false
 prev: false
 next: false
 outline: [2, 3]
+pageClass: aug-example-page
 ---
 
 # `errors.aug`
@@ -18,6 +19,10 @@ outline: [2, 3]
 - [`errors.aug`](errors.md)
 
 :::
+
+::::: example-compare
+
+:::: example-code
 
 ## Code {#code}
 
@@ -40,6 +45,10 @@ load(bool fail) returns string unless FileError {
 ```
 
 :::
+
+::::
+
+:::: example-spec
 
 ## Compiled specification {#specification}
 
@@ -70,3 +79,7 @@ Can fail with `FileError`. Callers must catch or propagate these errors.
 ### Shared language rules
 
 See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
+
+::::
+
+:::::

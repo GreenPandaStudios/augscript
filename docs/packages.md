@@ -4,7 +4,7 @@ The [augscript monorepo](https://github.com/GreenPandaStudios/augscript) version
 
 | Distribution | Package | Provides |
 | --- | --- | --- |
-| CLI | `@greenpandastudios/aug-cli` | `aug`, `aug-native`, compiler, language server, C runtime, guides and examples |
+| CLI | `@greenpandastudios/aug-cli` | `aug`, `aug-cli`, `aug-native`, compiler, language server, C runtime, guides and examples |
 | Standard library | `@greenpandastudios/aug-stdlib` | `august.io`, `august.json`, `august.time`, `august.memory` |
 | Web library | `@greenpandastudios/aug-web` | `august.web`, HTTP capabilities and helpers |
 | Crypto library | `@greenpandastudios/aug-crypto` | `august.crypto`, cryptographic capability, RSA JWK and signed JWT helpers |
@@ -48,11 +48,13 @@ For core programs and JSON without web/crypto, `aug-native --extract-only --only
 Once the owner has claimed the npm scope and configured publication:
 
 ```sh
+npx @greenpandastudios/aug-cli@next init hello-august
 npm install --global @greenpandastudios/aug-cli@next
+aug init another-app
 aug-native
 ```
 
-The CLI brings its three matching libraries. Early releases use the `next` dist tag. Registry and Marketplace publication require their own owner accounts; a GitHub account does not grant those identities. See [releasing](releasing.md) for configuration.
+`aug init DIRECTORY` creates a checked application with `main.aug`, a public interface and implementation, a same-file test, README, and `.gitignore`. It refuses a nonempty directory. The npm package exposes `aug-cli` as a binary so `npx` can select the executable by package name. The CLI brings its three matching libraries. Early releases use the `next` dist tag. **This npm package has not been published yet**, so use the checkout or release tarballs above until the owner configures npm access. Registry and Marketplace publication require their own owner accounts; a GitHub account does not grant those identities. See [releasing](releasing.md) for configuration and [getting started](getting-started.md) for a complete first project.
 
 ## VS Code
 

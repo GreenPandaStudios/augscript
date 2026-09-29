@@ -15,7 +15,7 @@ const slash=path=>path.replaceAll('\\','/');
 const url=path=>slash(path).split('/').map(encodeURIComponent).join('/');
 const compare=(a,b)=>a<b?-1:a>b?1:0;
 const safeAnchor=id=>id.replace(/[^A-Za-z0-9_.-]/g,char=>'-'+char.codePointAt(0).toString(16)+'-');
-const frontmatter=(title,source,dependency=false)=>`---\ntitle: ${JSON.stringify(title)}\ngenerated: true\nsource: ${JSON.stringify(source)}\neditLink: false\nprev: false\nnext: false\noutline: [2, 3]\n${dependency?'search: false\n':''}---\n\n`;
+const frontmatter=(title,source,dependency=false,exampleFile=false)=>`---\ntitle: ${JSON.stringify(title)}\ngenerated: true\nsource: ${JSON.stringify(source)}\neditLink: false\nprev: false\nnext: false\noutline: [2, 3]\n${dependency?'search: false\n':''}${exampleFile?'pageClass: aug-example-page\n':''}---\n\n`;
 const code=text=>`\`${text}\``;
 const fence=(source,language='aug',label='')=>{
   const delimiter='`'.repeat(Math.max(3,1+Math.max(0,...(source.match(/`+/g)??[]).map(part=>part.length))));
@@ -115,11 +115,11 @@ export function buildExamplePages() {
       });
       text=text.replace(/^(#{2,5}) /gm,'$1# ');
       const siblings=files.map(file=>`- [${code(slash(relative(directory,file.path)))}](${url(relative(dirname(page),sources.get(file.path)))})`).join('\n');
-      add(page,frontmatter(displayName+' · '+example.title,example.path+'/'+identity,dependency)+`# ${code(displayName)}\n\n`+
+      add(page,frontmatter(displayName+' · '+example.title,example.path+'/'+identity,dependency,true)+`# ${code(displayName)}\n\n`+
         `[${example.title}](${url(relative(dirname(page),home))}) · ${dependency?'Dependency source and specification':'Source and specification'}\n\n`+
         (dependency?'This is the exact dependency version used by this example.\n\n':`::: details Files in this project\n\n${siblings}\n\n:::\n\n`)+
-        '## Code {#code}\n\n::: code-group\n\n'+fence(formats[0],'aug','Indentation')+'\n'+fence(formats[1],'aug','Braces')+'\n:::\n\n'+
-        '## Compiled specification {#specification}\n\n'+text);
+        '::::: example-compare\n\n:::: example-code\n\n## Code {#code}\n\n::: code-group\n\n'+fence(formats[0],'aug','Indentation')+'\n'+fence(formats[1],'aug','Braces')+'\n:::\n\n::::\n\n'+
+        ':::: example-spec\n\n## Compiled specification {#specification}\n\n'+text+'\n::::\n\n:::::\n');
     }
   });
   let index=frontmatter('Example projects','examples and benchmarks')+'# Example projects\n\n'+

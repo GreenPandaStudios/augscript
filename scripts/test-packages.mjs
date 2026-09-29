@@ -38,6 +38,17 @@ try {
   };
   for(const name of ['stdlib','web','crypto'])verifySpecs(join(directory,`node_modules/@greenpandastudios/aug-${name}/august`));
   assert.match(aug('--help'), /Usage: aug/);
+  const starter = join(directory, 'starter');
+  aug('init', starter);
+  aug('check', starter);
+  assert.equal(JSON.parse(aug('test', starter, '--json')).passed, 1);
+  assert.equal(aug('run', starter), 'Hello, August!\n');
+  aug('spec', starter);
+  assert.ok(existsSync(join(starter, 'greeting.aug.md')));
+  const refused = spawnSync(process.execPath, [cli, 'init', starter], { cwd: directory, encoding: 'utf8' });
+  assert.notEqual(refused.status, 0);
+  assert.match(refused.stderr, /not empty/);
+  assert.ok(existsSync(join(directory, 'node_modules/.bin/aug-cli')));
   const project = join(directory, 'hello');
   mkdirSync(project);
   const main = `import Console and SystemConsole from august.io\nimplement Console with SystemConsole\nresolve Console to console\nconsole.write(value="installed August works")\n`;

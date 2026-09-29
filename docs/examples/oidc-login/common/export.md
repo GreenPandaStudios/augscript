@@ -6,6 +6,7 @@ editLink: false
 prev: false
 next: false
 outline: [2, 3]
+pageClass: aug-example-page
 ---
 
 # `common/export.aug`
@@ -39,6 +40,10 @@ outline: [2, 3]
 
 :::
 
+::::: example-compare
+
+:::: example-code
+
 ## Code {#code}
 
 ::: code-group
@@ -68,6 +73,10 @@ export withCookie from headers
 ```
 
 :::
+
+::::
+
+:::: example-spec
 
 ## Compiled specification {#specification}
 
@@ -100,3 +109,7 @@ August 0.19.0. This document is compiled from checked code with deterministic wo
 ### Shared language rules
 
 See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
+
+::::
+
+:::::

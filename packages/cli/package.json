@@ -8,6 +8,7 @@
     "node": ">=24"
   },
   "bin": {
+    "aug-cli": "bin/aug.mjs",
     "aug": "bin/aug.mjs",
     "aug-native": "scripts/bootstrap-native.mjs"
   },

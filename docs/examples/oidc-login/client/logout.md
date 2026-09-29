@@ -6,6 +6,7 @@ editLink: false
 prev: false
 next: false
 outline: [2, 3]
+pageClass: aug-example-page
 ---
 
 # `client/logout.aug`
@@ -38,6 +39,10 @@ outline: [2, 3]
 - [`provider/views.aug`](../provider/views.md)
 
 :::
+
+::::: example-compare
+
+:::: example-code
 
 ## Code {#code}
 
@@ -87,6 +92,10 @@ endpoint POST "/logout" as logout(LogoutForm input from form, optional string to
 ```
 
 :::
+
+::::
+
+:::: example-spec
 
 ## Compiled specification {#specification}
 
@@ -234,3 +243,7 @@ Function from `common`.
 ### Shared language rules
 
 See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
+
+::::
+
+:::::

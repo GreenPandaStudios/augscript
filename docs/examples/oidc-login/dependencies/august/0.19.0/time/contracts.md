@@ -7,6 +7,7 @@ prev: false
 next: false
 outline: [2, 3]
 search: false
+pageClass: aug-example-page
 ---
 
 # `august/0.19.0/time/contracts.aug`
@@ -14,6 +15,10 @@ search: false
 [OpenID Connect login application](../../../../index.md) · Dependency source and specification
 
 This is the exact dependency version used by this example.
+
+::::: example-compare
+
+:::: example-code
 
 ## Code {#code}
 
@@ -50,6 +55,10 @@ SystemClock() implements Clock {
 ```
 
 :::
+
+::::
+
+:::: example-spec
 
 ## Compiled specification {#specification}
 
@@ -135,3 +144,7 @@ Native C operation. Its declared inputs, result, effects, and errors are the vis
 ### Shared language rules
 
 See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
+
+::::
+
+:::::

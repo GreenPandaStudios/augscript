@@ -1,6 +1,7 @@
 import { defineConfig } from 'vitepress';
 import { copyFileSync, readFileSync } from 'node:fs';
 import { dirname, relative, resolve } from 'node:path';
+import container from 'markdown-it-container';
 
 const repo = 'https://github.com/GreenPandaStudios/augscript';
 const root = resolve(import.meta.dirname, '../..');
@@ -21,6 +22,8 @@ export default defineConfig({
     languages: [{ ...grammar, name: 'aug', aliases: ['augscript'] }],
     config(md) {
       md.set({ html: false });
+      for (const name of ['example-compare', 'example-code', 'example-spec'])
+        md.use(container, name, { render: (tokens, index) => `<${tokens[index].nesting === 1 ? 'div' : '/div'}${tokens[index].nesting === 1 ? ` class="aug-${name}"` : ''}>\n` });
       const render = md.renderer.rules.link_open;
       md.renderer.rules.link_open = (tokens, index, options, env, self) => {
         const token = tokens[index];
@@ -37,12 +40,12 @@ export default defineConfig({
   },
   themeConfig: {
     siteTitle: `August ${version}`,
-    nav: [{ text: 'Guide', link: '/reference' }, { text: 'Web', link: '/web' },
+    nav: [{ text: 'Get started', link: '/getting-started' }, { text: 'Guide', link: '/reference' }, { text: 'Web', link: '/web' },
       { text: 'Examples', link: '/examples/' }, { text: 'Packages', link: '/packages' }, { text: 'Performance', link: '/performance' }, { text: 'GitHub', link: repo }],
     search: { provider: 'local' },
     sidebar: [
       { text: 'Learn August', items: [
-        { text: 'Start here', link: '/index' }, { text: 'Language guide', link: '/reference' },
+        { text: 'Start here', link: '/index' }, { text: 'Getting started', link: '/getting-started' }, { text: 'Language guide', link: '/reference' },
         { text: 'Example projects', link: '/examples/' },
         { text: 'Grammar', link: '/grammar' }, { text: 'Constructs and built-ins', link: '/language-constructs' },
         { text: 'Testing', link: '/testing' }, { text: 'Web and crypto', link: '/web' },
@@ -52,7 +55,9 @@ export default defineConfig({
       ]},
       { text: 'Library API', items: ['io', 'json', 'memory', 'time', 'web', 'crypto'].map(module => ({ text: `august.${module}`, link: `/api/${module}` })) },
       { text: 'Project and releases', items: [
-        { text: 'Packages', link: '/packages' }, { text: 'Release process', link: '/releasing' },
+        { text: 'Packages', link: '/packages' }, { text: 'Docker images', link: '/docker' },
+        { text: 'Production readiness', link: '/production-readiness' }, { text: 'Roadmap to 1.0', link: '/roadmap' },
+        { text: 'Release process', link: '/releasing' },
         { text: 'Documentation maintenance', link: '/maintaining-docs' }, { text: 'Library gaps', link: '/web-library-gaps' },
         { text: 'Implementation map', link: '/implementation-map' }, { text: 'Design audit', link: '/language-design-audit' }
       ]}

@@ -6,6 +6,7 @@ editLink: false
 prev: false
 next: false
 outline: [2, 3]
+pageClass: aug-example-page
 ---
 
 # `provider/authorization.aug`
@@ -38,6 +39,10 @@ outline: [2, 3]
 - [`provider/views.aug`](views.md)
 
 :::
+
+::::: example-compare
+
+:::: example-code
 
 ## Code {#code}
 
@@ -183,6 +188,10 @@ endpoint POST "/provider/login" as providerLogin(LoginForm form from form, optio
 ```
 
 :::
+
+::::
+
+:::: example-spec
 
 ## Compiled specification {#specification}
 
@@ -442,3 +451,7 @@ Function from `views`.
 ### Shared language rules
 
 See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
+
+::::
+
+:::::

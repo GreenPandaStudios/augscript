@@ -6,6 +6,7 @@ editLink: false
 prev: false
 next: false
 outline: [2, 3]
+pageClass: aug-example-page
 ---
 
 # `common/settings.aug`
@@ -39,6 +40,10 @@ outline: [2, 3]
 
 :::
 
+::::: example-compare
+
+:::: example-code
+
 ## Code {#code}
 
 ::: code-group
@@ -59,6 +64,10 @@ settings() returns Settings {
 ```
 
 :::
+
+::::
+
+:::: example-spec
 
 ## Compiled specification {#specification}
 
@@ -101,3 +110,7 @@ Returns: [`Settings`](settings.md#symbol-Settings).
 ### Shared language rules
 
 See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
+
+::::
+
+:::::

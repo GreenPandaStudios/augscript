@@ -6,6 +6,7 @@ editLink: false
 prev: false
 next: false
 outline: [2, 3]
+pageClass: aug-example-page
 ---
 
 # `provider/credentials.aug`
@@ -38,6 +39,10 @@ outline: [2, 3]
 - [`provider/views.aug`](views.md)
 
 :::
+
+::::: example-compare
+
+:::: example-code
 
 ## Code {#code}
 
@@ -72,6 +77,10 @@ verifyCredentials(string username, string password, resolve Crypto crypto) retur
 ```
 
 :::
+
+::::
+
+:::: example-spec
 
 ## Compiled specification {#specification}
 
@@ -133,3 +142,7 @@ Capability interface from `august.crypto`.
 ### Shared language rules
 
 See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
+
+::::
+
+:::::

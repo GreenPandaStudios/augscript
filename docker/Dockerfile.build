@@ -1,0 +1,14 @@
+# syntax=docker/dockerfile:1
+FROM node:24-bookworm
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends clang make ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+WORKDIR /opt/augscript
+COPY . .
+RUN npm ci --no-audit --no-fund \
+    && node scripts/bootstrap-native.mjs --extract-only --only minicoro,yyjson \
+    && chmod +x /opt/augscript/bin/aug.mjs \
+    && ln -s /opt/augscript/bin/aug.mjs /usr/local/bin/aug
+WORKDIR /workspace
+ENTRYPOINT ["aug"]
+CMD ["--help"]
