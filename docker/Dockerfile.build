@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 FROM node:24-bookworm
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends clang make cmake m4 autoconf automake libtool python3 zlib1g-dev ca-certificates \
+    && apt-get install -y --no-install-recommends clang libclang-rt-14-dev make cmake m4 autoconf automake libtool python3 zlib1g-dev ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /opt/augscript
 COPY . .

@@ -1,6 +1,6 @@
 # Docker build and run images
 
-The repository supplies two base images. The **build** image contains Node.js 24, the August compiler, Clang, and the pinned native task, JSON, web, and crypto dependencies. The **run** image is a small Debian userland with the matching native shared libraries and CA certificates. It runs a compiled August executable as an unprivileged user. Build the run image after the build image so both use the same native dependency build.
+The repository supplies two base images. The **build** image contains Node.js 24, the August compiler, Clang and its sanitizer runtime, and the pinned native task, JSON, web, and crypto dependencies. The **run** image is a small Debian userland with the matching native shared libraries and CA certificates. It runs a compiled August executable as an unprivileged user. Build the run image after the build image so both use the same native dependency build.
 
 Build the images from the repository root:
 
