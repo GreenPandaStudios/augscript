@@ -6,6 +6,8 @@ August 0.19 is experimental. The compiler, CLI, packages, standard declarations,
 
 The repository checks compiler types, native execution, language examples, generated specs, package installation outside the checkout, and the VS Code extension in CI. [Performance measurements](performance.md) compare specific programs and HTTP loads on named hardware. A benchmark is evidence for that program and environment, not a general speed guarantee.
 
+The [robustness tests](../tests/robustness.test.mjs) mutate 5,000 source files through the parser and 1,000 through project checking, then compare generated native integer, Map, and Set programs in debug and release modes with independent JavaScript oracles. CI also runs [core native stress programs](../scripts/sanitize-core.mjs) for collections, task joining, and owned `Shared<T>` transfer with AddressSanitizer and UBSan on macOS and Linux. Run them locally with `npm run test:sanitizers`. This catches specific crashes, wrong results, and memory errors in the exercised paths; it does not prove the compiler, HTTP/crypto libraries, or all programs safe. Leak detection is disabled for this gate because the macOS AddressSanitizer runtime does not support it.
+
 The same-app [OpenID Connect example](examples/oidc-login/index.md) proves integration paths; it stores accounts, signing keys, and sessions in memory. It is a development demonstration, not a production identity service.
 
 ## Dependencies and licenses
