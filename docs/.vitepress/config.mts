@@ -45,6 +45,7 @@ export default defineConfig({
         { text: 'Start here', link: '/index' }, { text: 'Language guide', link: '/reference' },
         { text: 'Grammar', link: '/grammar' }, { text: 'Constructs and built-ins', link: '/language-constructs' },
         { text: 'Testing', link: '/testing' }, { text: 'Web and crypto', link: '/web' },
+        { text: 'Compiled specifications', link: '/specifications' },
         { text: 'Diagnostics', link: '/diagnostics' }, { text: 'CLI and VS Code', link: '/tooling' },
         { text: 'Performance and benchmarks', link: '/performance' }
       ]},

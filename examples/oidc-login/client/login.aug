@@ -24,24 +24,24 @@ endpoint GET "/login/start" as startLogin(resolve Crypto crypto, resolve Clock c
 
 /** Exchange a one-use code over HTTP, verify the provider JWT/JWKS and UserInfo subject, then issue a distinct app-session JWT. */
 endpoint GET "/login/callback" as loginCallback(string code from query, string state from query, optional string browser from cookie "aug_login", resolve Crypto crypto, resolve Clock clock, resolve HttpClient client, resolve SigningKeys keys, resolve ExpiringStore<LoginTransaction> transactions, resolve ExpiringStore<SessionClaims> sessions) returns HttpResponse<Html> uses crypto.equal and crypto.random and crypto.signRsa and crypto.decodeBase64url and crypto.importRsa and crypto.verifyRsa and clock.now and client.request and keys.session and transactions.take and sessions.put unless SessionError with status 400 and CryptoError with status 503 and TimeError with status 503 and KeyError and StoreFull with status 503 and JwtError and JsonError and HttpError:
-    if !code.isToken(min=43, max=43) || !state.isToken(min=43, max=43):
+    if (not code.isToken(min=43, max=43)) or (not state.isToken(min=43, max=43)):
         throw SessionError()
     match browser:
-        when missing:
+        when null:
             throw SessionError()
         when some secret:
             match transactions.take(key=secret, now=clock.now()):
                 when null:
                     throw SessionError()
                 when some transaction:
-                    if !crypto.equal(left=transaction.state.bytes(), right=state.bytes()):
+                    if (not crypto.equal(left=transaction.state.bytes(), right=state.bytes())):
                         throw SessionError()
                     config = settings()
                     document = discover()
                     body = "grant_type=authorization_code&code=" + urlEncode(input=code) + "&redirect_uri=" + urlEncode(input=config.callback) + "&client_id=" + urlEncode(input=config.clientId) + "&code_verifier=" + urlEncode(input=transaction.verifier)
                     headers = Headers().with(name="content-type", value="application/x-www-form-urlencoded")
                     tokens = responseJson(response=client.request(method="POST", url=document.token_endpoint, headers, body=body.bytes())).decode<TokenResponse>()
-                    if tokens.token_type != "Bearer" || !tokens.access_token.isToken(min=43, max=43) || tokens.expires_in <= 0:
+                    if tokens.token_type != "Bearer" or (not tokens.access_token.isToken(min=43, max=43)) or tokens.expires_in <= 0:
                         throw SessionError()
                     jwks = responseJson(response=client.request(method="GET", url=document.jwks_uri)).decode<RsaJwks>()
                     identity = validateIdentity(token=tokens.id_token, nonce=transaction.nonce, now=clock.now(), jwks)

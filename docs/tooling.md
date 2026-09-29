@@ -11,6 +11,8 @@ Use `aug` if installed or `node bin/aug.mjs` from the repository. Commands take 
 | `run PROJECT -- args...` | Builds and runs; program stdout is preserved. |
 | `emit-c PROJECT` | Generated C for inspection. |
 | `format PROJECT [--file PATH] [--write] [--json]` | Canonical source; --write updates files. |
+| `migrate PROJECT [--file PATH] [--write] [--json]` | Verified migration of rejected legacy syntax; preview by default. |
+| `spec PROJECT [--check] [--json]` | Adjacent Markdown specs and offline dependency explanations; --check detects drift without writing. |
 | `test PROJECT [--coverage] [--json]` | Isolated native tests and optional statement-line report. |
 | `bench PROJECT [--iterations N] [--warmup N] [--timeout MS] [--json] -- args...` | Release build with timed native executions. |
 | `explain PROJECT --file PATH [--name NAME]` | Checked contracts, dependencies, layers, origins, tests, and module surface. |
@@ -46,6 +48,8 @@ optimization: debug
 block_style: indent
 indentation: tabs
 assignment: to
+spec:
+  require_comments: none
 strict_modules: false
 max_public_symbols: 12
 max_dependencies: 8
@@ -72,6 +76,7 @@ library_paths:
 | block_style | Formatter braces or indent. |
 | indentation | Formatter spaces (four) or tabs. |
 | assignment | Formatter equals or to; both remain accepted source forms. |
+| spec.require_comments | Require Javadoc on none (default), public declarations/methods, or all declarations/methods. Inherited method docs satisfy it. |
 | strict_modules | Require sibling declarations to be listed in the folder export file. |
 | max_public_symbols | Public declaration/member warning threshold, default 12. |
 | max_dependencies | Import fan-out warning threshold, default 8. |

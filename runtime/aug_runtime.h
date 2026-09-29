@@ -10,7 +10,7 @@ typedef struct AugObject AugObject;
 typedef struct AugValue AugValue;
 typedef AugValue (*AugMethod)(AugValue self, AugValue *args, int count);
 
-enum { AUG_NULL, AUG_INT, AUG_FLOAT, AUG_BOOL, AUG_STRING, AUG_OBJECT, AUG_MISSING };
+enum { AUG_NULL, AUG_INT, AUG_FLOAT, AUG_BOOL, AUG_STRING, AUG_OBJECT };
 enum { AUG_LIST_KIND = 6, AUG_MAP_KIND, AUG_SET_KIND, AUG_TUPLE_KIND, AUG_RECORD_KIND, AUG_BYTES_KIND, AUG_PRIVATE_KEY_KIND, AUG_PUBLIC_KEY_KIND, AUG_JSON_KIND, AUG_HTTP_REQUEST_KIND, AUG_HTTP_RESPONSE_KIND, AUG_HEADERS_KIND, AUG_HTML_KIND, AUG_TASK_KIND, AUG_HTTP_ACTION_KIND };
 
 struct AugValue {
@@ -102,7 +102,6 @@ extern bool aug_test_failed;
 extern size_t aug_test_assertions;
 
 AugValue aug_null(void);
-AugValue aug_missing(void);
 AugValue aug_int(int64_t value);
 AugValue aug_float(double value);
 AugValue aug_bool(bool value);

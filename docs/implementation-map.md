@@ -1,5 +1,9 @@
 # Approved language changes — 0.15
 
+## 0.19 additions
+
+Deterministic adjacent source specs, used dependency surfaces with offline links, optional comment requirements, source-package specs, and VS Code preview/generation are described in [compiled specifications](specifications.md). Boolean operators use only `and`, `or`, and `not`; construction uses `initialize` inside declarations. DI uses `implement … with …` and `resolve … to …`; migration is available through the CLI and editor.
+
 ## 0.18 additions
 
 - User-authored source packages, public export boundaries, exact npm aliases/local snapshots, transitive dependency scopes and frozen locks are implemented. See [the author/consumer guide](packages.md).
@@ -18,7 +22,7 @@ The September 28 audit recommendations and optional indentation blocks are appro
 - [x] Immutable records and public constructor labels distinct from private storage.
 - [x] Snapshot iteration, tuple destructuring, and checked matching.
 
-Accepted forms: `if ready:`, `record Point(int x, int y)`, `Counter(mutable int initial to _count) implements Count`, `for (key, value) in map`, and `match value: when null: ... when some item: ...`. Class constructor bodies use `=>` before implements. The formatter verifies parsed structure and preserves declaration documentation.
+Accepted forms: `if ready:`, `record Point(int x, int y)`, `Counter(mutable int initial to _count) implements Count`, `for (key, value) in map`, and `match value: when null: ... when some item: ...`. Class initialization uses an internal `initialize` block. The formatter verifies parsed structure and preserves declaration documentation and wildcard imports.
 
 ## Compiler contracts
 

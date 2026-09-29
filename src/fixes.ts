@@ -5,6 +5,7 @@ import { importItems } from './editor.ts';
 import { languageHelp } from './help.ts';
 import { lex } from './lexer.ts';
 import { tyName } from './types.ts';
+import { migrateFile } from './formatter.ts';
 
 export interface TextFixEdit {
   file: string;
@@ -96,6 +97,14 @@ export function suggestedFixes(checked: CheckedProject, fileName: string): Edito
   const file = checked.project.files.get(resolve(fileName));
   if (!file) return [];
   const fixes: EditorFix[] = [];
+  const syntaxIssue = checked.diagnostics.find(issue => issue.file === file.path && issue.code === 'SYNTAX');
+  if (syntaxIssue) {
+    try {
+      const text = migrateFile(checked.project, file);
+      if (text !== file.source) fixes.push({title:'Upgrade this file to the current August syntax', issue:syntaxIssue,
+        edits:[{file:file.path, start:0, end:file.source.length, text}]});
+    } catch { /* Offer a migration only when the whole file can be parsed safely. */ }
+  }
   for (const item of file.items) if (item.kind === 'import' && item.everything) {
     const names = checked.project.imports.get(item)?.map(def => def.name) ?? [];
     if (names.length) fixes.push({ title: 'Expand to named imports', issue: { code: 'IMPORT', line: item.span.line, column: item.span.column,

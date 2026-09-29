@@ -841,10 +841,8 @@ class Checker {
 
   private assignable(source: Ty, target: Ty): boolean {
     if (source.kind === 'error' || target.kind === 'error') return true;
-    if (source.kind === 'missing') return !!target.optional;
-    if (source.optional && !target.optional) return false;
-    if (source.kind === 'null') return target.nullable;
-    if (source.nullable && !target.nullable) return false;
+    if (source.kind === 'null') return target.nullable || !!target.optional;
+    if ((source.nullable || source.optional) && !target.nullable && !target.optional) return false;
     if (target.id === 'builtin:Data') return this.immutableData({...source, nullable:false, optional:false});
     if (source.id === target.id) return this.compatibleArguments(source, target);
     if (source.kind === 'param' && source.bounds?.some(bound => this.assignable(bound, target))) return true;
@@ -1316,14 +1314,11 @@ class Checker {
         const inside = this.cloneContext(context);
         const key = clause.pattern === 'literal' ? JSON.stringify(clause.literal?.kind === 'literal' ? clause.literal.value : '?') :
           clause.pattern === 'type' ? typeName(clause.type!) : clause.pattern;
-        if (seen.has(key) || seen.has('else') || seen.has('some') && !['null', 'missing'].includes(clause.pattern))
+        if (seen.has(key) || seen.has('else') || seen.has('some') && clause.pattern !== 'null')
           this.report(clause.span, 'Unreachable or repeated match case', 'MATCH');
         seen.add(key);
         let narrowed = value;
-        if (clause.pattern === 'missing') {
-          if (!value.optional) this.report(clause.span, 'missing requires an optional value', 'MATCH');
-          narrowed = {...builtin('missing'), kind: 'missing'};
-        } else if (clause.pattern === 'null' || clause.pattern === 'some') {
+        if (clause.pattern === 'null' || clause.pattern === 'some') {
           if (clause.pattern === 'null' ? !value.nullable : !value.nullable && !value.optional) this.report(clause.span, 'null/some patterns require a nullable or optional value', 'MATCH');
           narrowed = clause.pattern === 'some' ? { ...value, nullable: false, optional: false } : nullTy;
         } else if (clause.pattern === 'literal') {
@@ -1342,8 +1337,7 @@ class Checker {
         this.checkStatements(clause.body, inside, clause.span);
         if (canFallThrough(clause.body)) branches.push(inside);
       }
-      const exhaustive = seen.has('else') || (value.nullable || value.optional) && (!value.nullable || seen.has('null')) &&
-        (!value.optional || seen.has('missing')) && seen.has('some') ||
+      const exhaustive = seen.has('else') || (value.nullable || value.optional) && seen.has('null') && seen.has('some') ||
         !value.nullable && !value.optional && value.id === 'builtin:bool' && seen.has('true') && seen.has('false');
       if (!exhaustive) this.report(stmt.span, 'Match is incomplete; cover both booleans, null and some, or add else', 'MATCH');
       this.mergeMoved(context, branches);
@@ -1596,7 +1590,7 @@ class Checker {
       expr.right.kind === 'name' && expr.left.kind === 'literal' && expr.left.value === null ? expr.right.name : undefined;
     if (name && (expr.op === '!=' ? truth : !truth)) {
       const local = context.locals.get(name);
-      if (local && local.origin !== 'field') local.type = { ...local.type, nullable: false };
+      if (local && local.origin !== 'field') local.type = { ...local.type, nullable: false, optional:false };
     }
   }
 
@@ -1842,7 +1836,7 @@ class Checker {
         }
         for (const child of expr.children) {
           const actual = this.checkExpression(child, context);
-          if (!['Html', 'string', 'int', 'float', 'bool', 'null', 'missing'].includes(actual.name) && !(actual.name === 'List' && actual.args[0]?.name === 'Html')) this.report(child.span, 'HTML children are Html, escaped text, numbers, or List<Html>', 'HTML');
+          if (!['Html', 'string', 'int', 'float', 'bool', 'null'].includes(actual.name) && !(actual.name === 'List' && actual.args[0]?.name === 'Html')) this.report(child.span, 'HTML children are Html, escaped text, numbers, or List<Html>', 'HTML');
         }
         type = builtin('Html');
       }
@@ -1890,7 +1884,7 @@ class Checker {
       if (typeof expr.value === 'number' && !Number.isFinite(expr.value)) this.report(expr.span, 'Numeric literals must be finite', 'NUMBER');
       if (typeof expr.value === 'string' && (expr.value.includes('\0') || !expr.value.isWellFormed()))
         this.report(expr.span, 'Strings are valid Unicode without NUL; use an unsafe byte adapter for binary data', 'TEXT');
-      type = expr.missing ? {...builtin('missing'), kind: 'missing'} : expr.value === null ? nullTy : typeof expr.value === 'string' ? builtin('string') :
+      type = expr.value === null ? nullTy : typeof expr.value === 'string' ? builtin('string') :
         typeof expr.value === 'boolean' ? builtin('bool') :
         builtin(expr.numericType ?? (Number.isInteger(expr.value) ? 'int' : 'float'));
     } else if (expr.kind === 'collection') {
@@ -1983,7 +1977,7 @@ class Checker {
       if (bound) return this.memberType(bound, name, span, context);
     }
     if (receiver.nullable) this.report(span, `Cannot access ${name} on nullable ${tyName(receiver)}`);
-    if (receiver.optional) this.report(span, `Match missing and some before accessing ${name} on ${tyName(receiver)}`);
+    if (receiver.optional && !receiver.nullable) this.report(span, `Match null and some before accessing ${name} on ${tyName(receiver)}`);
     const property = receiver.kind === 'builtin' && builtinProperties[receiver.name]?.find(property => property.name === name);
     if (property) return {...operationType(property.type, receiver), readonly: true};
     const def = receiver.def;

@@ -5,7 +5,7 @@ All first-party packages and the extension use one compiler-compatible version. 
 ## Verify and create artifacts
 
 ```sh
-node scripts/version.mjs 0.18.0
+node scripts/version.mjs 0.19.0
 npm ci
 npm --prefix vscode ci
 node scripts/bootstrap-native.mjs
@@ -27,8 +27,8 @@ Update both changelogs and relevant guides, and commit regenerated docs. The fin
 After verification and committing, create and push the version tag:
 
 ```sh
-git tag v0.18.0
-git push origin main v0.18.0
+git tag v0.19.0
+git push origin main v0.19.0
 ```
 
 `release.yml` validates the tag against every manifest, runs compiler/native/docs/package gates, and uploads artifacts to a **draft prerelease**. Review the draft and publish it in GitHub Releases. `ci.yml` checks pushes and pull requests. Linux verifies installed core programs with the portable task/JSON sources and checks web/crypto imports and editor support. Full native web/crypto gates run on macOS with the pinned native bootstrap.

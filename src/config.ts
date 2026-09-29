@@ -8,13 +8,14 @@ export interface Config {
   lint: string[]; strict_modules: boolean; max_public_symbols: number; max_dependencies: number;
   module_dependencies: string[];
   packages: Record<string, string>;
+  spec: {require_comments: 'none' | 'public' | 'all'};
   web: {host: string; body_limit: number; response_limit: number; tls: {certificate: string; private_key: string; ca: string}; http3: boolean};
   openapi: {enabled: boolean; title: string; version: string; path: string; docs: string; output: string};
 }
 export const lintRules = ['wildcard_imports', 'public_helpers', 'public_docs', 'broad_errors', 'discarded_errors', 'architecture'];
 export function loadConfig(root: string): { config: Config; diagnostics: Diagnostic[] } {
   const config: Config = { optimization: 'debug', libraries: [], library_paths: [], assignment: 'equals', block_style: 'braces',
-    indentation: 'spaces', lint: [], strict_modules: false, max_public_symbols: 12, max_dependencies: 8, module_dependencies: [], packages: {},
+    indentation: 'spaces', lint: [], strict_modules: false, max_public_symbols: 12, max_dependencies: 8, module_dependencies: [], packages: {}, spec: {require_comments:'none'},
     web:{host:'127.0.0.1', body_limit:1048576, response_limit:4194304, tls:{certificate:'', private_key:'', ca:''}, http3:false},
     openapi:{enabled:false, title:'August API', version:'0.1.0', path:'/openapi.json', docs:'/docs', output:'.aug-build/openapi.json'} };
   const file = join(root, 'main.yaml');
@@ -41,7 +42,7 @@ export function loadConfig(root: string): { config: Config; diagnostics: Diagnos
     const indentation = raw.length - raw.trimStart().length;
     while (sections.length && sections.at(-1)!.indentation >= indentation) sections.pop();
     const path = [...sections.map(section => section.name), entry?.[1]].join('.');
-    if (entry && (path === 'web' || path === 'openapi' || path === 'web.tls' || path === 'packages')) {
+    if (entry && (path === 'web' || path === 'openapi' || path === 'web.tls' || path === 'packages' || path === 'spec')) {
       if (entry[2]) report(index + 1, `${path} must be a configuration block`);
       if (seen.has(path)) report(index + 1, `Duplicate configuration key ${path}`);
       seen.add(path); sections.push({name:entry[1], indentation}); continue;
@@ -53,6 +54,11 @@ export function loadConfig(root: string): { config: Config; diagnostics: Diagnos
         if (!/^[a-z][a-z0-9_]*$/.test(entry[1]) || entry[1] === 'august' || !value)
           report(index + 1, 'Packages map lowercase public aliases to local paths or npm:name@exact-version');
         else config.packages[entry[1]] = value;
+        continue;
+      }
+      if (path === 'spec.require_comments') {
+        if (!['none','public','all'].includes(value)) report(index + 1, 'spec.require_comments must be none, public, or all');
+        else config.spec.require_comments = value as Config['spec']['require_comments'];
         continue;
       }
       const known = ['web.host', 'web.body_limit', 'web.response_limit', 'web.http3', 'web.tls.certificate', 'web.tls.private_key', 'web.tls.ca',

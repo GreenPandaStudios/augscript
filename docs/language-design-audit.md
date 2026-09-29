@@ -1,5 +1,24 @@
 # AugScript: simplicity and developer scalability
 
+## Readability audit, September 29, 2026
+
+August 0.19 uses ASD-STE100 as guidance for plain technical explanations. The language keeps local behavior and neighboring contracts in view. The deterministic [spec compiler](specifications.md) extends that context to readers who do not read code.
+
+| Finding | Change |
+| --- | --- |
+| Symbolic booleans required translation into prose. | Only `and`, `or`, and `not` are accepted. Comparisons bind before `not`. |
+| Constructor `=>` work interrupted the class header. | `initialize` sits inside the class or record beside its fields and behavior. |
+| Optional values had several spellings and separate missing/null states. | Only `optional Type` is accepted. Its value is T or null; omission becomes null. |
+| Several DI spellings described the same operation. | Use `implement … with …` and `resolve … to …`. Migration actions convert old spellings. |
+| Wildcard imports could obscure the actual dependency surface. | Preserve the requested import syntax; specs explain only names and operations used, with links to complete dependency explanations. |
+| A reader had to assemble branches, private helpers, errors, and tests by hand. | Each `.aug.md` describes all local behavior, with precise-version offline dependency docs. |
+| Required comments could repeat visible code and add ceremony. | Comments remain optional and are pulled into specs. Projects can require public or all declaration/method comments in `main.yaml`. |
+| Effect clauses repeated interface contracts in implementations. | The existing inference for implementations/private helpers remains checked and appears in specs and hover. Public contracts remain explicit. |
+
+Ordinary assignments retain both `=` and `to`. Labeled calls, explicit imports, folder exports, checked failures, mutable access, and scoped sharing retain their existing meaning. These constructs communicate context needed to understand a module; brevity must preserve that context.
+
+The historical audit below records the earlier findings and their evolution.
+
 Audit of the 0.14 compiler, runtime, module system, guide, and VS Code extension on September 28, 2026. The user approved all recommended solutions and optional indentation blocks. Version 0.15 implements that scope; see [the delivery map](implementation-map.md) for accepted spelling, modules, verification, and limits.
 
 The findings below describe the historical 0.14 baseline. Source links now point to the evolved implementation; the current guide and delivery map are authoritative for accepted behavior.

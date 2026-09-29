@@ -37,7 +37,7 @@ endpoint GET "/" as page() returns Html unless HttpError with status 500:
       location:{origin:base,reload(){}}, document:{addEventListener(name,handler){listeners.set(name,handler);}},
       fetch(url,options){sent={url:String(url),options};return Promise.resolve({ok:true,redirected:false});},
     });
-    for (const [index,path,body] of [[2,'/items/9007199254740993',undefined],[3,'/items/7','{"title":"Wide","priority":9007199254740993}']]) {
+    for (const [index,path,body] of [[2,'/items/9007199254740993',undefined],[3,'/items/7','{"title":"Wide","priority":9007199254740993,"values":null,"detail":null,"limit":null,"metadata":null}']]) {
       const element={dataset:{augAction:JSON.stringify(descriptors[index])}};
       listeners.get('click')({preventDefault(){},target:{closest(){return element;}}});
       assert.equal(sent.url,base+path,'captured int64 path remains exact');
@@ -51,7 +51,7 @@ endpoint GET "/" as page() returns Html unless HttpError with status 500:
     assert.equal(sent.options.body.get('metadata'),'"Ada"');
     response=await fetch(sent.url,sent.options);assert.equal(response.status,200);
     assert.equal(await response.text(),'{"title":"Complex","priority":9007199254740993,"values":[9007199254740993],"detail":{"id":9007199254740993},"limit":7,"metadata":"Ada"}');
-    response=await fetch(base+'/items/7',{method:'PATCH',headers:{'content-type':'application/json'},body:JSON.stringify({title:'Updated',priority:3})});assert.deepEqual(await response.json(),{title:'Updated',priority:3});
+    response=await fetch(base+'/items/7',{method:'PATCH',headers:{'content-type':'application/json'},body:JSON.stringify({title:'Updated',priority:3})});assert.deepEqual(await response.json(),{title:'Updated',priority:3,values:null,detail:null,limit:null,metadata:null});
     response=await fetch(base+'/items/7',{method:'DELETE'});assert.equal(await response.json(),'removed');
     server.kill('SIGTERM');await new Promise(resolve=>server.once('exit',resolve));server=undefined;
     writeFileSync(join(root,'endpoints.aug'),'endpoint GET "/" as page() returns Html unless HttpError with status 500:\n    return <button onClick="bad()">Bad</button>\n');

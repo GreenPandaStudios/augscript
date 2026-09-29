@@ -240,7 +240,7 @@ export function initPackage(directory: string, name: string): void {
   const manifest: PackageManifest = { format: 1, name, version: '0.1.0', compiler: compilerVersion(), source: 'src', dependencies: {} };
   writeJson(join(directory, 'aug-package.json'), manifest);
   writeJson(join(directory, 'package.json'), { name, version: manifest.version, description: 'An August source library',
-    files: ['src', 'aug-package.json', 'README.md', 'LICENSE'], exports: { './aug-package.json': './aug-package.json' }, dependencies: {} });
+    files: ['src', '.aug-spec', 'aug-package.json', 'README.md', 'LICENSE'], exports: { './aug-package.json': './aug-package.json' }, dependencies: {} });
   writeFileSync(join(directory, 'src/export.aug'), 'export add from arithmetic\n');
   writeFileSync(join(directory, 'src/arithmetic.aug'), '/** Add two integers. @param left First value. @param right Second value. @return Their sum. */\nadd(int left, int right) returns int {\n    return left + right\n}\n\ntest add {\n    when addition {\n        it adds_two_integers {\n            assert(add(left=2, right=3) == 5)\n        }\n    }\n}\n');
   writeFileSync(join(directory, 'README.md'), `# ${name}\n\nAugust ${compilerVersion()} source library. Public exports live in src/export.aug.\n`);
@@ -253,6 +253,7 @@ export function preparePackage(root: string): void {
   const transport = json(join(root, 'package.json'));
   transport.name = manifest.name; transport.version = manifest.version;
   transport.dependencies = manifest.dependencies ?? {};
+  transport.files = [...new Set([...(Array.isArray(transport.files)?transport.files:['README.md','LICENSE']),manifest.source,'.aug-spec','aug-package.json'])];
   writeJson(join(root, 'package.json'), transport);
   readPackage(root);
 }

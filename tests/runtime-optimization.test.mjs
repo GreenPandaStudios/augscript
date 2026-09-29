@@ -37,8 +37,8 @@ print(value=3 / 2.0)
 print(value=1 == 1.0)
 print(value=2.0 < 3)
 try:
-    print(value=false && 1 / 0 == 0)
-    print(value=true || 1 / 0 == 0)
+    print(value=false and 1 / 0 == 0)
+    print(value=true or 1 / 0 == 0)
     print(value=3.0 / -0.0)
 catch ArithmeticError error:
     print(value="checked")
@@ -75,7 +75,7 @@ print(value=unique.contains(value=-1))
 test('broad Data locals remain rooted when a primitive is replaced with a reference', () => run(`
 Data stored = 7
 stored = "retained"
-int? maybe = null
+optional int maybe = null
 maybe = 9
 int allocation = 0
 while allocation < 2500:

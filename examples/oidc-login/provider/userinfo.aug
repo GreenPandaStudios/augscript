@@ -6,7 +6,7 @@ import ExpiringStore from august.memory
 /** The opaque access token is valid only at this provider. Missing, expired and malformed credentials receive the same response. */
 endpoint GET "/provider/userinfo" as userinfo(optional string authorization from header, resolve Clock clock, resolve ExpiringStore<AccessGrant> access) returns HttpResponse<Json> uses clock.now and access.get unless TimeError and HttpError:
     match authorization:
-        when missing:
+        when null:
             pass
         when some header:
             parts = header.split(separator=" ")

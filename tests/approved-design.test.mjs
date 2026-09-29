@@ -27,7 +27,7 @@ const runs = (files, output) => project(files, root => {
 test('records, destructuring, snapshot iteration and checked matching run natively', () => runs({
   'data.aug': `record Point(int x, int y)
 record Box<T implements Data>(T value)
-describe(bool? value) returns string:
+describe(optional bool value) returns string:
     match value:
         when null:
             return "absent"
@@ -72,8 +72,8 @@ composition Counters:
 `,
   'main.aug': `import Counter and CounterImpl and Counters from counter
 include Counters
-left = resolve Counter
-right = resolve Counter
+resolve Counter to left
+resolve Counter to right
 print(value=left == right)
 `,
 }, 'false\n'));
@@ -104,7 +104,7 @@ test('formatting preserves comments and uses the configured canonical syntax', (
   const formatted = command(root, 'format', ['--write']); assert.equal(formatted.status, 0, formatted.stderr);
   const second = command(root, 'format', ['--json']); assert.equal(second.status, 0, second.stderr);
   const files = JSON.parse(second.stdout);
-  assert.match(files.find(file => file.file.endsWith('/main.aug')).text, /import add from math\n\/\/ Visible startup\nint value to/);
+  assert.match(files.find(file => file.file.endsWith('/main.aug')).text, /import everything from math\n\/\/ Visible startup\nint value to/);
   assert.match(files.find(file => file.file.endsWith('/math.aug')).text, /add\(int left, int right\) returns int:\n\treturn left \+ right/);
   const result = command(root, 'run'); assert.equal(result.status, 0, result.stderr); assert.equal(result.stdout, '3\n');
 }));
@@ -147,21 +147,21 @@ CounterImpl() implements Counter { increment() changes self { pass } }\n`;
   runs({ 'counter.aug': counter, 'main.aug': `import Counter and CounterImpl from counter
 implement Counter with CounterImpl scoped mutable
 scope:
-    first = resolve Counter
-    second = resolve Counter
+    resolve Counter to first
+    resolve Counter to second
     print(value=first == second)
     scope:
-        third = resolve Counter
+        resolve Counter to third
         print(value=first == third)
-    restored = resolve Counter
+    resolve Counter to restored
     print(value=first == restored)
 `, }, 'true\nfalse\ntrue\n');
   project({ 'counter.aug': counter, 'main.aug': `import Counter and CounterImpl from counter
 implement Counter with CounterImpl scoped mutable
-Counter? outside = null
+optional Counter outside = null
 scope:
-    outside = resolve Counter
-bad = resolve Counter
+    resolve Counter to outside
+resolve Counter to bad
 `, }, root => {
     const result = command(root, 'check', ['--json']);
     assert.equal(result.status, 1);
@@ -256,9 +256,9 @@ test('indented declarations, constructor bodies, interceptors and same-file test
   'main.aug': 'import NumberImpl and increment from number\nprint(value=NumberImpl(value=6).get())\nprint(value=increment(value=3))\n',
   'number.aug': `interface Number:
     get() returns int
-NumberImpl(int value) =>:
-    value = value + 1
-implements Number:
+NumberImpl(int value) implements Number:
+    initialize:
+        value = value + 1
     get() returns int:
         return value
 interceptor Identity<T>:
@@ -347,8 +347,8 @@ print(value=inspect(value=null))
 `,
   'item.aug': `interface Value { get() returns int }
 Item() implements Value { get() returns int { return 7 } }
-inspect(Value? value) returns int:
-    if value != null && value.get() == 7:
+inspect(optional Value value) returns int:
+    if value != null and value.get() == 7:
         return value.get()
     if value == null:
         return 0
@@ -397,7 +397,7 @@ test('pure bodies, read-only aliases, ambient I/O and hidden service lookups are
 Bad(int value) implements Data { read() returns int { return value } }
 mutate(List<int> values) { copy = values; borrow copy { copy.append(value=7) } }
 log() { print(value="hidden output") }
-lookup() { dependency = resolve app }
+lookup() { resolve app to dependency }
 `,
 }, root => {
   const result = command(root, 'check', ['--json']);
@@ -417,7 +417,7 @@ WorkerImpl(resolve Store store) implements Worker { read() returns int { return 
   'main.aug': `import Store and StoreImpl and Worker and WorkerImpl and readDependency from services
 implement Store with StoreImpl scoped
 implement Worker with WorkerImpl shared
-Store? outside = null
+optional Store outside = null
 scope {
     outside = readDependency()
 }

@@ -139,7 +139,7 @@ export type Expr =
   | {kind: 'formInput'; span: Span}
   | {kind: 'markup'; tag: string; attributes: {name: string; value: Expr; span: Span}[]; children: Expr[]; span: Span}
   | {kind: 'markupText'; text: string; span: Span}
-  | { kind: 'literal'; value: string | number | boolean | null; missing?: boolean; numericType?: 'int' | 'float'; numericText?: string; span: Span }
+  | { kind: 'literal'; value: string | number | boolean | null; numericType?: 'int' | 'float'; numericText?: string; span: Span }
   | { kind: 'collection'; collection: 'List' | 'Tuple' | 'Set' | 'Map' | 'empty';
       items: Expr[]; span: Span }
   | { kind: 'name'; name: string; span: Span }
@@ -165,7 +165,7 @@ export type Stmt =
   | { kind: 'while'; test: Expr; body: Stmt[]; span: Span }
   | { kind: 'for'; names: string[]; iterable: Expr; body: Stmt[]; span: Span }
   | { kind: 'destructure'; names: string[]; value: Expr; span: Span }
-  | { kind: 'match'; value: Expr; cases: { pattern: 'missing' | 'null' | 'some' | 'literal' | 'type' | 'else';
+  | { kind: 'match'; value: Expr; cases: { pattern: 'null' | 'some' | 'literal' | 'type' | 'else';
       literal?: Expr; type?: TypeRef; name?: string; body: Stmt[]; span: Span }[]; span: Span }
   | { kind: 'try'; body: Stmt[]; catches: { type: TypeRef; name: string; body: Stmt[]; span: Span }[]; always?: Stmt[]; span: Span }
   | { kind: 'unsafe'; body: Stmt[]; span: Span }
@@ -194,7 +194,7 @@ export interface SourceFile {
 }
 
 export function typeName(type: TypeRef): string {
-  return (type.optional ? 'optional ' : '') + type.name + (type.args.length ? `<${type.args.map(typeName).join(',')}>` : '') + (type.nullable ? '?' : '');
+  return (type.optional || type.nullable ? 'optional ' : '') + type.name + (type.args.length ? `<${type.args.map(typeName).join(',')}>` : '');
 }
 
 export function syntheticType(name: string, span: Span): TypeRef {

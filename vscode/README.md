@@ -2,7 +2,7 @@
 
 ![August — readable code, clear dependencies](media/banner.png)
 
-Version 0.18 bundles the current compiler, runtime, native bootstrap, language wiki, and generated library API guides, including source packages and inferred implementation capabilities.
+Version 0.19 bundles the current compiler, runtime, native bootstrap, language wiki, generated library API guides, and deterministic source specifications.
 
 ## Editing
 
@@ -26,6 +26,9 @@ Open a .aug file, then use the Command Palette:
 | AugScript: Open Welcome | Open the illustrated local overview, icons, and bundled guides. |
 | AugScript: Enable File Icons | Select the August file icon theme for the current workspace. |
 | AugScript: Build Project | Compile the complete project to native C. |
+| AugScript: Generate Specifications | Compile adjacent Markdown explanations and offline dependency docs. |
+| AugScript: Open Compiled Specification | Generate and preview the current source file's specification. |
+| AugScript: Migrate Project Syntax | Convert rejected legacy spellings after sources are saved. |
 | AugScript: Run Project | Build and execute startup. |
 | AugScript: Test Project | Run every test in a task terminal. |
 | AugScript: Refresh Tests | Refresh class/function suites and parameter rows. |

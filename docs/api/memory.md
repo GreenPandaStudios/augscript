@@ -45,7 +45,7 @@ Remove expired entries, then store at most 512 live entries. Time is supplied by
 ### ExpiringStore.take
 
 ```text
-take(string key, int now) returns T? uses ExpiringStore.take
+take(string key, int now) returns optional T uses ExpiringStore.take
 ```
 
 Atomically remove a value. Expired or absent entries return null.
@@ -55,7 +55,7 @@ Atomically remove a value. Expired or absent entries return null.
 ### ExpiringStore.get
 
 ```text
-get(string key, int now) returns T? uses ExpiringStore.get
+get(string key, int now) returns optional T uses ExpiringStore.get
 ```
 
 Read a live value without consuming it.
@@ -87,7 +87,7 @@ Inferred capabilities: `ExpiringStore<T>.put`.
 ### MemoryStore.take
 
 ```text
-take(string key, int now) returns T?
+take(string key, int now) returns optional T
 ```
 
 Atomically remove a value. Expired or absent entries return null.
@@ -99,7 +99,7 @@ Inferred capabilities: `ExpiringStore<T>.take`.
 ### MemoryStore.get
 
 ```text
-get(string key, int now) returns T?
+get(string key, int now) returns optional T
 ```
 
 Read a live value without consuming it.

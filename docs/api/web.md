@@ -42,7 +42,7 @@ Verify the request's credentials. null means unauthenticated; adapter failures r
 ### Authentication.authenticate
 
 ```text
-authenticate(HttpRequest request) returns Principal? uses Authentication.authenticate unless HttpError
+authenticate(HttpRequest request) returns optional Principal uses Authentication.authenticate unless HttpError
 ```
 
 The signature declares inputs, result, effects and checked errors.

@@ -81,9 +81,9 @@ implement Console with SystemConsole
 import Logger from logging;
 import ConsoleLogger from logging;
 import Greeter from app;
-bind Logger to ConsoleLogger;
-bind app to Greeter;
-greeter = resolve app;
+implement Logger with ConsoleLogger;
+implement app with Greeter;
+resolve app to greeter;
 greeter.greet(name="AugScript");
 `,
   'logging/export.aug': 'export Logger from logger;\nexport ConsoleLogger from console;\n',
@@ -234,8 +234,13 @@ interface Logger { log(resolve Console console, string message) uses Console.wri
 SilentLogger() implements Logger { log(resolve Console console, string message)  uses Console.write {} }
 ConsoleLogger() implements Logger { log(resolve Console console, string message)  uses Console.write { console.write(value=message); } }
 interface IGreeter { greet(resolve Console console) uses Console.write ; }
-Greeter(Logger logger) => { logger = ConsoleLogger(); } implements IGreeter {
-  greet(resolve Console console)  uses Console.write { logger.log(message="ready"); }
+Greeter(Logger logger) implements IGreeter {
+    initialize {
+        logger = ConsoleLogger()
+    }
+    greet(resolve Console console) uses Console.write {
+        logger.log(message="ready")
+    }
 }
 `,
 }, root => {
@@ -451,8 +456,8 @@ test('logical operators skip the unneeded operand', () => withProject({
   'main.aug': `import Console and SystemConsole from august.io
 implement Console with SystemConsole
 import probe from helper;
-print(value=false && probe());
-print(value=true || probe());
+print(value=false and probe());
+print(value=true or probe());
 `,
   'helper.aug': `import Console from august.io
 probe(resolve Console console) returns bool  uses Console.write { console.write(value="called"); return true; }
@@ -995,7 +1000,7 @@ test('underscore interface methods stay within their interface', () => withProje
 }));
 
 test('duplicate binding and dependency cycle are rejected', () => withProject({
-  'main.aug': 'import A from types;\nimport B from types;\nbind a to A;\nbind a to B;\nbind b to B;\n',
+  'main.aug': "import A from types;\nimport B from types;\nimplement a with A;\nimplement a with B;\nimplement b with B;\n",
   'types.aug': 'interface AugMarker_A {} A(resolve B b) implements AugMarker_A {}\ninterface AugMarker_B {} B(resolve A a) implements AugMarker_B {}\n',
 }, root => {
   const result = check(root);
@@ -1003,7 +1008,7 @@ test('duplicate binding and dependency cycle are rejected', () => withProject({
 }));
 
 test('dependency cycle is rejected without a duplicate binding', () => withProject({
-  'main.aug': 'import A from types;\nimport B from types;\nimport AImpl from types;\nimport BImpl from types;\nbind A to AImpl;\nbind B to BImpl;\n',
+  'main.aug': "import A from types;\nimport B from types;\nimport AImpl from types;\nimport BImpl from types;\nimplement A with AImpl;\nimplement B with BImpl;\n",
   'types.aug': 'interface A {}\ninterface B {}\nAImpl(resolve B b) implements A {}\nBImpl(resolve A a) implements B {}\n',
 }, root => {
   const result = check(root);
@@ -1019,7 +1024,7 @@ test('moving an owned value inside a branch invalidates later reads', () => with
 }));
 
 test('non-boolean logical operands are rejected', () => withProject({
-  'main.aug': 'print(value=1 && 2);\n',
+  'main.aug': "print(value=1 and 2);\n",
 }, root => {
   const result = check(root);
   assert.ok(result.issues.some(issue => /requires bool operands/.test(issue.message)));

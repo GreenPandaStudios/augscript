@@ -204,7 +204,7 @@
         },
         {
           "name": "constant.language.augscript",
-          "match": "\\b(?:true|false|null|missing)\\b"
+          "match": "\\b(?:true|false|null)\\b"
         }
       ]
     },
@@ -222,7 +222,7 @@
           }
         },
         {
-          "match": "^\\s*([A-Za-z_][A-Za-z0-9_]*)\\s*(?=(?:<[^>]+>)?\\([^;{}]*\\)\\s*(?:implements\\b|=>))",
+          "match": "^\\s*([A-Za-z_][A-Za-z0-9_]*)\\s*(?=(?:<[^>]+>)?\\([^;{}]*\\)\\s*implements\\b)",
           "captures": {
             "1": {
               "name": "entity.name.type.augscript"
@@ -276,7 +276,7 @@
           }
         },
         {
-          "match": "\\b(bind|implement|resolve)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+          "match": "\\b(implement|resolve)\\s+([A-Za-z_][A-Za-z0-9_]*)",
           "captures": {
             "1": {
               "name": "keyword.declaration.augscript"
@@ -349,11 +349,11 @@
       "patterns": [
         {
           "name": "keyword.control.augscript",
-          "match": "\\b(?:if|else|while|for|match|some|in|try|catch|always|throw|return|yield|unless|test|when|it|pass|start|wait|handle)\\b"
+          "match": "\\b(?:if|else|while|for|match|some|in|try|catch|always|throw|return|yield|unless|test|when|it|pass|start|wait|handle|initialize)\\b"
         },
         {
           "name": "keyword.declaration.augscript",
-          "match": "\\b(?:interceptor|interface|capability|record|fixture|composition|include|implements|extends|returns|streams|changes|uses|import|everything|and|from|export|folder|bind|implement|with|to|as|resolve|extern|C|out|pure|value|optional|endpoint|serve|on|port|status|input)\\b"
+          "match": "\\b(?:interceptor|interface|capability|record|fixture|composition|include|implements|extends|returns|streams|changes|uses|import|everything|from|export|folder|implement|with|to|as|resolve|extern|C|out|pure|value|optional|endpoint|serve|on|port|status|input)\\b"
         },
         {
           "name": "keyword.other.ownership.augscript",
@@ -365,7 +365,7 @@
       "patterns": [
         {
           "name": "keyword.operator.augscript",
-          "match": "=>|==|!=|<=|>=|&&|\\|\\||[+*/=<>!-]"
+          "match": "\\b(?:and|or|not)\\b|==|!=|<=|>=|[+*/=<>-]"
         }
       ]
     },

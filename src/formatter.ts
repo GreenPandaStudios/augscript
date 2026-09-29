@@ -6,8 +6,28 @@ import type { Project } from './project.ts';
 
 /** Canonical syntax comes from the parsed program; comments stay with their lexical owner. */
 export function formatFile(project: Project, file: SourceFile): string {
+  return printFile(project, file, false);
+}
+
+/** Upgrade rejected legacy spellings without accepting them during compilation. */
+export function migrateFile(project: Project, file: SourceFile): string {
+  return printFile(project, file, true);
+}
+
+function printFile(project: Project, file: SourceFile, migrate: boolean): string {
   const parsed = parse(file.path, file.source);
-  if (parsed.diagnostics.length) throw new Error('Fix syntax errors before formatting this file');
+  if (parsed.diagnostics.some(issue => !migrate || issue.code !== 'SYNTAX')) throw new Error('Fix syntax errors before formatting this file');
+  if(migrate) {
+    const inspect=(value:unknown):void=>{
+      if(!value||typeof value!=='object')return;
+      if(Array.isArray(value)){value.forEach(inspect);return;}
+      const node=value as {kind?:string;cases?:{pattern:string}[];span?:Span};
+      if(node.kind==='match'&&node.cases!.filter(clause=>clause.pattern==='null').length>1&&/\bwhen\s+missing\b/.test(file.source.slice(node.span!.start,node.span!.end)))
+        throw new Error('Merge the old missing and null cases into one null case before migrating; optional values now have two states');
+      for(const [key,child] of Object.entries(value))if(key!=='span')inspect(child);
+    };
+    inspect(parsed.file.items);
+  }
   const printer = new Printer(project, file);
   const result = printer.print();
   const verified = parse(file.path, result);
@@ -19,13 +39,6 @@ export function formatFile(project: Project, file: SourceFile): string {
     if (Array.isArray(value)) return value.filter(item => !(item?.kind === 'expr' && item.expr.kind === 'literal' && item.expr.value === null)).map(shape);
     if (!value || typeof value !== 'object') return value;
     const node = value as Record<string, unknown>;
-    if (node.kind === 'import' && node.everything) {
-      const resolved = project.imports.get(node as unknown as import('./ast.ts').ImportDecl);
-      // Match by original source position when this function reparsed the source.
-      const original = file.items.find(item => item.kind === 'import' && item.span.start === (node.span as Span)?.start);
-      const names = resolved ?? (original?.kind === 'import' ? project.imports.get(original) : undefined);
-      if (names?.length) return shape({ ...node, names: names.map(def => def.name), everything: false });
-    }
     return Object.fromEntries(Object.entries(node).filter(([key, value]) => !['span', 'nameSpan', 'sourceSpan'].includes(key) && value !== undefined)
       .sort(([a], [b]) => a.localeCompare(b)).map(([key, value]) => [key, shape(value)]));
   };
@@ -111,7 +124,7 @@ class Printer {
     if (expr.kind === 'markupText') value = expr.text;
     else if (expr.kind === 'markup') value = '<' + expr.tag + expr.attributes.map(attribute => ' ' + attribute.name + '={' + this.expression(attribute.value) + '}').join('') +
       (expr.children.length || !expr.tag ? '>' + expr.children.map(child => child.kind === 'markup' || child.kind === 'markupText' ? this.expression(child) : '{' + this.expression(child) + '}').join('') + '</' + expr.tag + '>' : ' />');
-    else if (expr.kind === 'literal') value = expr.missing ? 'missing' : expr.numericText ?? JSON.stringify(expr.value);
+    else if (expr.kind === 'literal') value = expr.numericText ?? JSON.stringify(expr.value);
     else if (expr.kind === 'name') value = expr.name;
     else if (expr.kind === 'handle') value = `handle ${this.expression(expr.call, 8)}`;
     else if (expr.kind === 'formInput') value = 'input from form';
@@ -127,10 +140,14 @@ class Printer {
       const values = expr.collection === 'Map' ? expr.items.filter((_, index) => index % 2 === 0).map((item, index) =>
         `${this.expression(item)}: ${this.expression(expr.items[index * 2 + 1])}`) : expr.items.map(item => this.expression(item));
       value = open + values.join(', ') + (expr.collection === 'Tuple' && values.length === 1 ? ',' : '') + this.inline(expr.span.end) + close;
-    } else if (expr.kind === 'unary') value = expr.op + this.expression(expr.value, 7);
+    } else if (expr.kind === 'unary') {
+      const power = expr.op === '!' ? 2.5 : 7;
+      value = (expr.op === '!' ? 'not ' : expr.op) + this.expression(expr.value, power);
+      if (power < precedence) value = '(' + value + ')';
+    }
     else {
       const powers: Record<string, number> = { '||': 1, '&&': 2, '==': 3, '!=': 3, '<': 4, '>': 4, '<=': 4, '>=': 4, '+': 5, '-': 5, '*': 6, '/': 6 };
-      const power = powers[expr.op]; value = `${this.expression(expr.left, power)} ${expr.op} ${this.expression(expr.right, power + 1)}`;
+      const power = powers[expr.op]; value = `${this.expression(expr.left, power)} ${expr.op === '&&' ? 'and' : expr.op === '||' ? 'or' : expr.op} ${this.expression(expr.right, power + 1)}`;
       if (power < precedence) value = '(' + value + ')';
     }
     return comment + value;
@@ -140,7 +157,7 @@ class Printer {
     if (stmt.kind === 'serve') this.line(`serve ${stmt.names.join(' and ')} on port ${this.expression(stmt.port)}`);
     else if (stmt.kind === 'lock') this.block(`lock ${this.expression(stmt.value)} as ${stmt.name}`, () => stmt.body.forEach(child => this.statement(child)), stmt.span);
     else if (stmt.kind === 'freeze') this.line(`freeze ${this.expression(stmt.value)} as ${stmt.name}`);
-    else if (stmt.kind === 'expr') this.line(stmt.expr.kind === 'literal' && stmt.expr.value === null && !stmt.expr.missing ? 'pass' : this.expression(stmt.expr));
+    else if (stmt.kind === 'expr') this.line(stmt.expr.kind === 'literal' && stmt.expr.value === null ? 'pass' : this.expression(stmt.expr));
     else if (stmt.kind === 'yield') this.line('yield ' + this.expression(stmt.value));
     else if (stmt.kind === 'assign') this.line(stmt.value.kind === 'resolve' && !stmt.declaredType && stmt.target.kind === 'name' ?
       `${this.expression(stmt.value)} to ${stmt.target.name}` : `${stmt.ownership === 'own' ? 'own ' : ''}` +
@@ -168,8 +185,7 @@ class Printer {
   private item(item: TopLevel) {
     this.before('annotations' in item ? item.annotations?.[0]?.span.start ?? item.span.start : item.span.start);
     if (item.kind === 'import') {
-      const names = item.everything ? (this.project.imports.get(item) ?? []).map(def => def.name) : item.names;
-      this.line(`import ${names.join(' and ') || 'everything'} from ${item.from.join('.')}`);
+      this.line(`import ${item.everything ? 'everything' : item.names.join(' and ')} from ${item.from.join('.')}`);
     } else if (item.kind === 'export') this.line('export ' + (item.folder ? 'folder ' + item.name : `${item.name} from ${item.from}`));
     else if (item.kind === 'include') this.line('include ' + item.name);
     else if (item.kind === 'bind') this.line(`implement ${item.key}${item.keyTypeArgs.length ? '<' + item.keyTypeArgs.map(typeName).join(', ') + '>' : ''} with ${typeName(item.target)}` +
@@ -181,12 +197,12 @@ class Printer {
       const header = `${item.record ? 'record ' : ''}${item.name}${this.generics(item)}(${item.fields.map(field => this.param(field, true)).join(', ')})`;
       if (item.record) {
         const errors = item.validationErrors?.length ? ` unless ${item.validationErrors.map(typeName).join(' and ')}` : '';
-        if (item.constructorBody) this.block(header + errors + ' =>', () => item.constructorBody!.forEach(stmt => this.statement(stmt)), item.span);
+        if (item.constructorBody) this.block(header + errors, () => this.initializer(item), item.span);
         else this.line(header + errors);
       } else {
-        if (item.constructorBody) this.block(header + ' =>', () => item.constructorBody!.forEach(stmt => this.statement(stmt)));
-        this.block((item.constructorBody ? '' : header + ' ') + 'implements ' + item.implements.map(typeName).join(', '), () => {
-          for (const field of item.stateFields ?? []) this.line(`${field.mutable ? 'mutable ' : ''}${typeName(field.type)} ${field.name} = ${this.expression(field.initializer)}`);
+        this.block(header + ' implements ' + item.implements.map(typeName).join(', '), () => {
+          for (const field of item.stateFields ?? []) { this.before(field.span.start); this.line(`${field.mutable ? 'mutable ' : ''}${typeName(field.type)} ${field.name} = ${this.expression(field.initializer)}`); }
+          if (item.constructorBody) this.initializer(item);
           item.methods.forEach(method => this.method(method));
         }, item.span);
       }
@@ -206,5 +222,10 @@ class Printer {
     for (const item of this.file.items) this.item(item);
     this.before(Infinity);
     return this.lines.join('\n').trimEnd() + '\n';
+  }
+  private initializer(item: ClassDecl): void {
+    const span = (item.constructorBody as Stmt[] & {span?: Span}).span;
+    if (span) this.before(span.start);
+    this.block('initialize', () => item.constructorBody!.forEach(stmt => this.statement(stmt)), span);
   }
 }

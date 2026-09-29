@@ -7,6 +7,7 @@ import { javadocBefore } from '../src/javadoc.ts';
 import { callableDocumentation } from '../src/documentation.ts';
 import { languageHelp } from '../src/help.ts';
 import { collectionOperations } from '../src/builtins.ts';
+import { generateSpecs } from '../src/spec.ts';
 
 const root = resolve(import.meta.dirname, '..');
 const check = process.argv.includes('--check');
@@ -58,6 +59,8 @@ for (const [type, operations] of Object.entries(collectionOperations)) {
   for (const operation of operations) constructs.push(`### ${type}.${operation.name}\n\n${operation.documentation}`);
 }
 outputs.set('docs/language-constructs.md', constructs.join('\n\n') + '\n');
+for (const output of generateSpecs(checked, { files: [...project.files.values()].filter(file => file.builtin), manifest: false }))
+  outputs.set(relative(root, output.path), output.text);
 const stale = [];
 for (const [path, content] of outputs) {
   const file = join(root, path);

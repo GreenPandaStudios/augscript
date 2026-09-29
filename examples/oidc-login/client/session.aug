@@ -7,7 +7,7 @@ import ExpiringStore from august.memory
 /** An app session has its own key, issuer, audience and token type. A live registry entry is required so logout revokes a signed token immediately. */
 authenticate(optional string token, resolve Crypto crypto, resolve Clock clock, resolve SigningKeys keys, resolve ExpiringStore<SessionClaims> sessions) returns SessionClaims uses crypto.publicRsa and crypto.decodeBase64url and crypto.verifyRsa and crypto.equal and clock.now and keys.session and sessions.get unless SessionError and KeyError and TimeError:
     match token:
-        when missing:
+        when null:
             throw SessionError()
         when some value:
             try:
@@ -15,15 +15,15 @@ authenticate(optional string token, resolve Crypto crypto, resolve Clock clock, 
                 claims = verifyJwt(token=value, publicKey, kid="session-1", tokenType="august-session+jwt").decode<SessionClaims>()
                 config = settings()
                 now = clock.now()
-                if claims.iss != config.baseUrl + "/app" || claims.aud != "august-app" || claims.sub.length() == 0 || claims.exp <= now || claims.iat > now + 30 || claims.iat < now - config.sessionSeconds || claims.exp <= claims.iat || claims.exp > now + config.sessionSeconds + 30:
+                if claims.iss != config.baseUrl + "/app" or claims.aud != "august-app" or claims.sub.length() == 0 or claims.exp <= now or claims.iat > now + 30 or claims.iat < now - config.sessionSeconds or claims.exp <= claims.iat or claims.exp > now + config.sessionSeconds + 30:
                     throw SessionError()
-                if !claims.jti.isToken(min=43, max=43) || !claims.csrf.isToken(min=43, max=43):
+                if (not claims.jti.isToken(min=43, max=43)) or (not claims.csrf.isToken(min=43, max=43)):
                     throw SessionError()
                 match sessions.get(key=claims.jti, now=now):
                     when null:
                         throw SessionError()
                     when some saved:
-                        if saved.sub != claims.sub || saved.exp != claims.exp || !crypto.equal(left=saved.csrf.bytes(), right=claims.csrf.bytes()):
+                        if saved.sub != claims.sub or saved.exp != claims.exp or (not crypto.equal(left=saved.csrf.bytes(), right=claims.csrf.bytes())):
                             throw SessionError()
                         return claims
             catch CryptoError error:

@@ -75,12 +75,12 @@ static void header_add(AugValue headers, const char *name, size_t name_size, con
   roots[2] = aug_tuple_new(roots, 2); aug_list_append(aug_field(headers, 0), roots[2]); aug_frame_leave(&frame);
 }
 static AugValue header_get(AugValue headers, const char *name, bool singular) {
-  AugValue entries = aug_field(headers, 0), result = aug_missing();
+  AugValue entries = aug_field(headers, 0), result = aug_null();
   for (size_t i = 0; i < entries.as.object->field_count; i++) {
     AugValue pair = entries.as.object->fields[i], label = aug_field(pair, 0);
     if (label.as.object->text_length == strlen(name) && !strncasecmp(label.as.object->text, name, strlen(name))) {
-      if (singular && result.tag != AUG_MISSING) return request_error("HttpBadRequest");
-      if (result.tag == AUG_MISSING) result = aug_field(pair, 1);
+      if (singular && result.tag != AUG_NULL) return request_error("HttpBadRequest");
+      if (result.tag == AUG_NULL) result = aug_field(pair, 1);
     }
   }
   return result;
@@ -93,7 +93,7 @@ AugValue aug_headers_with(AugValue headers, AugValue name, AugValue value) {
   header_add(result, name.as.object->text, name.as.object->text_length, value.as.object->text, value.as.object->text_length);
   aug_freeze(result); aug_release(&retained); aug_frame_leave(&frame); return result;
 }
-AugValue aug_headers_get(AugValue headers, AugValue name) {AugValue value = header_get(headers, aug_cstring(name), false); return value.tag == AUG_MISSING ? aug_null() : value;}
+AugValue aug_headers_get(AugValue headers, AugValue name) {AugValue value = header_get(headers, aug_cstring(name), false); return value.tag == AUG_NULL ? aug_null() : value;}
 AugValue aug_headers_all(AugValue headers, AugValue name) {
   AugValue result = aug_list_new(NULL, 0); AugFrame frame; aug_frame_enter(&frame, &result, 1); AugValue entries = aug_field(headers, 0);
   for (size_t i = 0; i < entries.as.object->field_count; i++) {AugValue pair = entries.as.object->fields[i]; if (!strcasecmp(aug_cstring(aug_field(pair, 0)), aug_cstring(name))) aug_list_append(result, aug_field(pair, 1));}
@@ -131,7 +131,7 @@ static void map_add(AugValue map, AugValue key, AugValue value) {
 }
 static AugValue map_scalar(AugValue map, const char *name) {
   AugValue key = aug_string(name), values = aug_map_get(map, key);
-  if (values.tag == AUG_NULL) return aug_missing();
+  if (values.tag == AUG_NULL) return aug_null();
   return values.as.object->field_count == 1 ? values.as.object->fields[0] : request_error("HttpBadRequest");
 }
 static bool match_path(const char *pattern, const char *path, AugValue captures, int *specificity) {
@@ -192,7 +192,7 @@ static const AugRoute *select_route(AugValue request, const AugRoute *routes, si
 }
 static AugValue coerce(AugValue value, const AugSchema *schema) {
   if (aug_has_error) return aug_null();
-  if (value.tag == AUG_MISSING) return schema->optional ? value : request_error("HttpBadRequest");
+  if (value.tag == AUG_NULL) return schema->optional ? value : request_error("HttpBadRequest");
   if (value.tag != AUG_STRING) return request_error("HttpBadRequest");
   const char *text = value.as.object->text; size_t size = value.as.object->text_length;
   if (memchr(text, 0, size)) return request_error("HttpBadRequest");
@@ -252,7 +252,7 @@ static bool listed(const char *list,const char *value) {
   size_t size=strlen(value);for(const char *part=list;*part;){const char *end=strchr(part,'\n');if(!end)end=part+strlen(part);if((size_t)(end-part)==size&&!memcmp(part,value,size))return true;part=*end?end+1:end;}return false;
 }
 static bool cors_apply(const AugHttpPolicy *policy,AugValue request,AugValue *headers,bool preflight) {
-  AugValue origin=header_get(aug_field(request,2),"origin",true);if(aug_has_error)return false;if(origin.tag==AUG_MISSING)return !preflight;
+  AugValue origin=header_get(aug_field(request,2),"origin",true);if(aug_has_error)return false;if(origin.tag==AUG_NULL)return !preflight;
   const char *name=aug_cstring(origin);bool wildcard=listed(policy->origins,"*");
   if(!wildcard&&!listed(policy->origins,name)){request_error("HttpForbidden");return false;}
   *headers=aug_headers_with(*headers,aug_string("access-control-allow-origin"),wildcard?aug_string("*"):origin);
@@ -313,7 +313,7 @@ void aug_http_policy(const AugHttpPolicy *policy,AugValue request,AugValue depen
 }
 static AugValue policy_response(AugHttpSession *session,AugValue response) {
   int64_t status=aug_cint(aug_field(response,1));
-  if(status==204||status==304||header_get(aug_field(response,2),"content-encoding",false).tag!=AUG_MISSING)session->compress=false;
+  if(status==204||status==304||header_get(aug_field(response,2),"content-encoding",false).tag!=AUG_NULL)session->compress=false;
   if(session->roots[4].tag==AUG_NULL&&!session->compress)return response;
   AugValue roots[2]={response,aug_field(response,2)};AugFrame frame;aug_frame_enter(&frame,roots,2);
   if(session->roots[4].tag==AUG_OBJECT){AugValue entries=aug_field(session->roots[4],0);for(size_t i=0;i<entries.as.object->field_count;i++){AugValue pair=entries.as.object->fields[i];roots[1]=aug_headers_with(roots[1],aug_field(pair,0),aug_field(pair,1));}}
@@ -341,8 +341,8 @@ AugValue aug_httptestclient_request(AugValue client,AugValue method,AugValue tar
   if(!size||*path!='/'||strchr(path,'#')||memchr(path,0,target.as.object->text_length)||memchr(aug_cstring(method),0,method.as.object->text_length)){aug_frame_leave(&frame);return request_error("HttpError");}
   session.roots[0]=aug_new_object("HttpRequest",7,NULL,NULL,0);session.roots[0].as.object->kind=AUG_HTTP_REQUEST_KIND;
   aug_set_field(session.roots[0],0,method);aug_set_field(session.roots[0],1,decode_form_part(path,size));
-  aug_set_field(session.roots[0],2,headers.tag==AUG_MISSING?aug_headers_new():headers);
-  aug_set_field(session.roots[0],3,body.tag==AUG_MISSING?aug_bytes("",0,AUG_BYTES_KIND):body);
+  aug_set_field(session.roots[0],2,headers.tag==AUG_NULL?aug_headers_new():headers);
+  aug_set_field(session.roots[0],3,body.tag==AUG_NULL?aug_bytes("",0,AUG_BYTES_KIND):body);
   aug_set_field(session.roots[0],4,aug_map_new());
   aug_set_field(session.roots[0],6,aug_string("127.0.0.1"));
   session.roots[3]=aug_bytes(query?query+1:"",query?strlen(query+1):0,AUG_BYTES_KIND);
@@ -369,13 +369,13 @@ serialize:;
   if(session.compress&&!session.streaming)session.roots[2]=gzip_bytes(session.roots[2]);
   if(aug_has_error||session.roots[2].as.object->text_length>response_limit){if(aug_has_error)aug_take_error();session.roots[1]=aug_http_problem(500);status=500;session.roots[2]=aug_json_stringify(aug_field(session.roots[1],0));}
   session.roots[3]=aug_field(session.roots[1],2);
-  if(header_get(session.roots[3],"content-type",false).tag==AUG_MISSING)session.roots[3]=aug_headers_with(session.roots[3],aug_string("content-type"),aug_string(type));
+  if(header_get(session.roots[3],"content-type",false).tag==AUG_NULL)session.roots[3]=aug_headers_with(session.roots[3],aug_string("content-type"),aug_string(type));
   if(!strcmp(aug_cstring(method),"HEAD")||status==204||status==304)session.roots[2]=aug_bytes("",0,AUG_BYTES_KIND);
   session.roots[1]=aug_http_response_full(session.roots[2],aug_int(status),session.roots[3]);
   AugValue result=session.roots[1];aug_frame_leave(&frame);return result;
 }
 static AugValue cookie_value(AugValue headers, const char *name) {
-  AugValue entries = aug_field(headers, 0), found = aug_missing(); AugFrame frame; aug_frame_enter(&frame, &found, 1);
+  AugValue entries = aug_field(headers, 0), found = aug_null(); AugFrame frame; aug_frame_enter(&frame, &found, 1);
   for (size_t i = 0; i < entries.as.object->field_count; i++) {
     AugValue pair = entries.as.object->fields[i]; if (strcasecmp(aug_cstring(aug_field(pair, 0)), "cookie")) continue;
     AugValue value = aug_field(pair, 1); const char *text = value.as.object->text, *end = text + value.as.object->text_length;
@@ -384,7 +384,7 @@ static AugValue cookie_value(AugValue headers, const char *name) {
       const char *last = memchr(text, ';', (size_t)(end - text)); if (!last) last = end;
       const char *equal = memchr(text, '=', (size_t)(last - text));
       if (equal && (size_t)(equal - text) == strlen(name) && !memcmp(text, name, strlen(name))) {
-        if (found.tag != AUG_MISSING) {aug_frame_leave(&frame); return request_error("HttpBadRequest");}
+        if (found.tag != AUG_NULL) {aug_frame_leave(&frame); return request_error("HttpBadRequest");}
         found = aug_string_n(equal + 1, (size_t)(last - equal - 1));
       }
       text = last == end ? end : last + 1;
@@ -438,7 +438,7 @@ AugValue aug_http_bind(AugValue request, const char *source, const char *name, c
     AugValue headers = aug_field(request, 2), type = header_get(headers, "content-type", true), encoding = header_get(headers, "content-encoding", true);
     if (aug_has_error) return aug_null();
     if (type.tag != AUG_STRING || (strncasecmp(type.as.object->text, "application/json", 16) || (type.as.object->text_length > 16 && type.as.object->text[16] != ';'))) return request_error("HttpUnsupportedMedia");
-    if (encoding.tag != AUG_MISSING && strcasecmp(encoding.as.object->text, "identity")) return request_error("HttpUnsupportedMedia");
+    if (encoding.tag != AUG_NULL && strcasecmp(encoding.as.object->text, "identity")) return request_error("HttpUnsupportedMedia");
     AugValue roots[2] = {aug_field(request, 3), aug_null()}; AugFrame frame; aug_frame_enter(&frame, roots, 2);
     roots[1] = aug_bytes_text(roots[0]);
     if (!aug_has_error) roots[1] = _aug_json_parse(roots[1]);
@@ -461,10 +461,10 @@ AugValue aug_httprequest_form(AugValue request, const AugSchema *schema) {
   if (aug_has_error) {aug_take_error(); return request_error("HttpError");} return result;
 }
 AugValue aug_http_response_full(AugValue body, AugValue status, AugValue headers) {
-  int64_t code = status.tag == AUG_MISSING ? 200 : aug_cint(status);
+  int64_t code = status.tag == AUG_NULL ? 200 : aug_cint(status);
   if (code < 200 || code > 599) return request_error("HttpError");
   AugValue result = aug_http_response(body, (int)code);
-  if (headers.tag != AUG_MISSING) aug_set_field(result, 2, headers);
+  if (headers.tag != AUG_NULL) aug_set_field(result, 2, headers);
   return result;
 }
 int aug_http_error_status(void) {
@@ -488,8 +488,8 @@ static AugValue request_task(AugValue self, AugValue *args, int count) {
 }
 AugValue aug_http_event(AugValue data, AugValue id, AugValue event, AugValue retry) {
   AugValue values[]={data,id,event,retry};
-  for(size_t i=1;i<3;i++)if(values[i].tag!=AUG_MISSING&&(values[i].tag!=AUG_STRING||memchr(values[i].as.object->text,0,values[i].as.object->text_length)||strchr(values[i].as.object->text,'\r')||strchr(values[i].as.object->text,'\n')))return request_error("HttpError");
-  if(retry.tag!=AUG_MISSING&&(retry.tag!=AUG_INT||retry.as.integer<0||retry.as.integer>2147483647))return request_error("HttpError");
+  for(size_t i=1;i<3;i++)if(values[i].tag!=AUG_NULL&&(values[i].tag!=AUG_STRING||memchr(values[i].as.object->text,0,values[i].as.object->text_length)||strchr(values[i].as.object->text,'\r')||strchr(values[i].as.object->text,'\n')))return request_error("HttpError");
+  if(retry.tag!=AUG_NULL&&(retry.tag!=AUG_INT||retry.as.integer<0||retry.as.integer>2147483647))return request_error("HttpError");
   AugFrame frame;aug_frame_enter(&frame,values,4);AugValue result=aug_new_object("ServerEvent",4,NULL,NULL,0);
   for(size_t i=0;i<4;i++)aug_set_field(result,i,values[i]);result.as.object->frozen=true;aug_frame_leave(&frame);return result;
 }
@@ -716,7 +716,7 @@ static int callback_client(struct lws *wsi, enum lws_callback_reasons reason, vo
         snprintf(label, sizeof(label), "%s:", aug_cstring(name));
         if (lws_add_http_header_by_name(wsi, (const unsigned char *)label, (const unsigned char *)aug_cstring(value), (int)value.as.object->text_length, next, end)) return -1;
       }
-      if (request->roots[3].tag != AUG_MISSING) {
+      if (request->roots[3].tag != AUG_NULL) {
         char size[32]; snprintf(size, sizeof(size), "%zu", request->roots[3].as.object->text_length);
         if (lws_add_http_header_by_token(wsi, WSI_TOKEN_HTTP_CONTENT_LENGTH, (unsigned char *)size, (int)strlen(size), next, end)) return -1;
         lws_client_http_body_pending(wsi, 1); lws_callback_on_writable(wsi);
@@ -724,7 +724,7 @@ static int callback_client(struct lws *wsi, enum lws_callback_reasons reason, vo
       return 0;
     }
     case LWS_CALLBACK_CLIENT_HTTP_WRITEABLE: {
-      AugValue body = request->roots[3]; if (body.tag == AUG_MISSING) return 0;
+      AugValue body = request->roots[3]; if (body.tag == AUG_NULL) return 0;
       size_t remaining = body.as.object->text_length - request->sent, amount = remaining > 16384 ? 16384 : remaining;
       unsigned char buffer[LWS_PRE + 16384]; if (amount) memcpy(buffer + LWS_PRE, body.as.object->text + request->sent, amount);
       bool final = amount == remaining;
@@ -772,7 +772,7 @@ AugValue _aug_http_request(AugValue method, AugValue url, AugValue headers, AugV
   AugClientRequest *request = calloc(1, sizeof(*request)); if (!request) {lws_parse_uri_destroy(&uri); return request_error("HttpError");}
   request->roots[0] = method; request->roots[1] = url; request->roots[2] = headers; request->roots[3] = body;
   aug_retain(&request->retained, request->roots, 6);
-  if (headers.tag == AUG_MISSING) request->roots[2] = aug_headers_new();
+  if (headers.tag == AUG_NULL) request->roots[2] = aug_headers_new();
   request->task = aug_task_current();
   struct lws_client_connect_info info; memset(&info, 0, sizeof(info));
   info.context = server_context; info.address = uri->host; info.host = uri->host; info.port = uri->port;

@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.19.0
+
+- Deterministic compiled specifications, project generation, and current-file Markdown preview.
+- Word-only boolean operators and initialize blocks in coloring, snippets, hover, and migration fixes.
+- Value-or-null optional types; updated signatures, migration fixes and hover explain that omission becomes null.
+- Project syntax migration command and spec comment-policy help for main.yaml.
+- Matching compiler, libraries, API guides, and offline source specs.
+
 ## 0.18.0
 
 - Inferred implementation/helper capabilities in hover and checked explain output.

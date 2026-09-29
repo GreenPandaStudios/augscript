@@ -57,6 +57,8 @@ const builtins: EditorItem[] = [
 ];
 
 const keywords: EditorItem[] = [
+  {label:'initialize block',kind:'snippet',detail:'Constructor initialization inside a class or record',documentation:languageHelp.initialize.documentation,
+    insertText:'initialize:\n    $0'},
   ...Object.entries(languageHelp).filter(([label, help]) => help.category === 'keyword' &&
     !['class', 'function', 'throws', 'bind'].includes(label))
     .map(([label, help]) => ({ label, kind: 'keyword' as const, detail: help.detail,

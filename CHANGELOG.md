@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.19.0
+
+- Deterministic `aug spec`, adjacent Markdown explanations, private behavior and same-file tests, used dependency surfaces, and precise-version offline dependency documents.
+- Successful native builds refresh specs; `aug spec --check` detects drift without writes; source packages carry their generated specs.
+- Optional Javadoc enforcement through `spec.require_comments: none | public | all`, with inherited interface documentation.
+- Word-only `and`, `or`, and `not`, with comparisons evaluated before `not` and unchanged short-circuit behavior.
+- One optional spelling, `optional Type`, and two states: a value or null. Omitted inputs and fields become null across calls, JSON, forms, cookies, headers, and queries. JSON serialization emits null optional fields.
+- Class and record `initialize` blocks; canonical `implement … with …` and `resolve … to …` with verified migration fixes for legacy spellings.
+- VS Code spec generation/preview and migration commands, updated syntax coloring, snippets, hover, and configuration help.
+- The formatter preserves `import everything`; compiled specs describe the dependency surface actually used.
+
 ## 0.18.0
 
 - User-authored August source packages: CLI scaffolding/packing, local archives/folders, exact npm aliases, transitive resolution, verified snapshots and frozen `aug.lock.json` installs.

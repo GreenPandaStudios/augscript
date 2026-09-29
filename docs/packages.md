@@ -182,4 +182,6 @@ aug build my-app
 
 Libraries support `check`, same-file `test`, formatting, explain, editor help, and packing. `run`, `build`, `bench` and server OpenAPI generation belong to an application with `main.aug`. Consumer tests run the consumer's suites; dependency tests are checked and executed by the package author. Arbitrary C source, native build hooks, precompiled August binaries, compiler plugins and stable native ABIs are outside this package format.
 
+`aug spec` also works on source libraries. `aug pack DIRECTORY` is an alias for `aug package pack DIRECTORY`. Packing refreshes and includes adjacent `.aug.md` files and `.aug-spec/` so the package carries complete source explanations and precise-version offline dependency links. See [compiled specifications](specifications.md).
+
 The [package example](../examples/packages/README.md) exercises the author and consumer workflow locally. The installer uses [npm aliases](https://docs.npmjs.com/cli/v11/using-npm/package-spec/) and [npm install](https://docs.npmjs.com/cli/v11/commands/npm-install/) with lifecycle scripts disabled and local packages installed as copied archives.

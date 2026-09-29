@@ -1,6 +1,6 @@
 {
   "name": "@greenpandastudios/aug-stdlib",
-  "version": "0.18.0",
+  "version": "0.19.0",
   "description": "August standard modules: explicit I/O, JSON, clocks and bounded immutable stores",
   "license": "MIT",
   "files": [

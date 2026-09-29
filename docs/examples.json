@@ -34,6 +34,7 @@
   "ffi-guide": {
     "stdout": "Hello from C\n"
   },
+  "spec-guide": {"stdout":"21\n"},
   "benchmark-startup": {"stdout":"7\n"},
   "benchmark-cpu": {"stdout":"819677333\n"},
   "benchmark-collections": {"stdout":"599970000\ntrue\n"},

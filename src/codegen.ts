@@ -476,7 +476,7 @@ class BodyEmitter {
       const metadata = {method:endpoint.method,path:endpoint.path,parameters:plan.parameters.map(({param,type,form}) => ({name:param.source?.name ?? param.name,source:param.source?.kind,form,schema:this.generator.actionSchema(type)}))};
       const args = plan.parameters.map(parameter => parameter.form || parameter.source === undefined ? undefined : this.emitExpr((expr.call as Extract<Expr,{kind:'call'}>).args[parameter.source]));
       const array = this.label('action_values'), slot = this.newSlot();
-      this.line(`AugValue ${array}[] = {${args.map(arg => arg === undefined ? 'aug_missing()' : this.slot(arg)).join(', ') || 'aug_scalar_null()'}};`);
+      this.line(`AugValue ${array}[] = {${args.map(arg => arg === undefined ? 'aug_null()' : this.slot(arg)).join(', ') || 'aug_scalar_null()'}};`);
       this.line(`${this.slot(slot)} = aug_http_action(${cString(JSON.stringify(metadata))}, ${array}, ${args.length});`);
       this.line(`if (aug_has_error) goto ${this.errorTarget};`); return slot;
     }
@@ -530,7 +530,7 @@ class BodyEmitter {
     }
     if (expr.kind === 'literal') {
       const slot = this.newSlot();
-      const value = expr.missing ? 'aug_missing()' : expr.value === null ? 'aug_scalar_null()' : typeof expr.value === 'string' ?
+      const value = expr.value === null ? 'aug_scalar_null()' : typeof expr.value === 'string' ?
         `aug_string(${cString(expr.value)})` : typeof expr.value === 'boolean' ?
         `aug_scalar_bool(${expr.value})` : expr.numericType !== 'float' && Number.isInteger(expr.value) ?
         `aug_scalar_int(${expr.numericText === '-9223372036854775808' ? 'INT64_MIN' : `INT64_C(${expr.numericText ?? expr.value})`})` : `aug_scalar_float(${expr.value})`;
@@ -637,7 +637,7 @@ class BodyEmitter {
         return slot;
       }
       const slot = this.newSlot();
-      this.line(`${this.slot(slot)} = ${plan.bindingKeys[index] ? `aug_resolve_${this.generator.bindingIndex(plan.bindingKeys[index]!)}()` : 'aug_missing()'};`);
+      this.line(`${this.slot(slot)} = ${plan.bindingKeys[index] ? `aug_resolve_${this.generator.bindingIndex(plan.bindingKeys[index]!)}()` : 'aug_null()'};`);
       this.line(`if (aug_has_error) goto ${this.errorTarget};`);
       return slot;
     }) : sourceArgs;
@@ -849,8 +849,8 @@ class BodyEmitter {
       for (const [index, clause] of stmt.cases.entries()) {
         const literal = literals[index];
         const type = clause.type ? this.generator.definition(this.file, clause.type.name) : undefined;
-        const condition = clause.pattern === 'else' ? '1' : clause.pattern === 'missing' ? `${this.slot(value)}.tag == AUG_MISSING` : clause.pattern === 'null' ? `${this.slot(value)}.tag == AUG_NULL` :
-          clause.pattern === 'some' ? `${this.slot(value)}.tag != AUG_NULL && ${this.slot(value)}.tag != AUG_MISSING` : clause.pattern === 'type' ?
+        const condition = clause.pattern === 'else' ? '1' : clause.pattern === 'null' ? `${this.slot(value)}.tag == AUG_NULL` :
+          clause.pattern === 'some' ? `${this.slot(value)}.tag != AUG_NULL` : clause.pattern === 'type' ?
             `${this.slot(value)}.tag == AUG_OBJECT && !strcmp(${this.slot(value)}.as.object->type_name, ${cString(type?.node.kind === 'class' && type.node.record ? type.id : clause.type!.name)})` :
             `aug_truthy(aug_binary("==", ${this.slot(value)}, ${this.slot(literal!)}))`;
         this.line(`${index ? 'else ' : ''}if (${condition}) {`);

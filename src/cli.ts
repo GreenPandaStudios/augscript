@@ -10,7 +10,8 @@ import { loadProject } from './project.ts';
 import { definitionAt } from './navigation.ts';
 import { checkUnitTests, discoverTests, mergeTestAnalysis, uniqueDiagnostics } from './testing.ts';
 import { describe, SemanticWorkspace } from './semantic.ts';
-import { formatFile } from './formatter.ts';
+import { formatFile, migrateFile } from './formatter.ts';
+import { updateSpecs } from './spec.ts';
 import { runLanguageServer } from './lsp.ts';
 import { benchmark, compileNative, writeCoverage } from './native.ts';
 import {generateOpenApi} from './openapi.ts';
@@ -30,9 +31,11 @@ function printDiagnostics(diagnostics: Diagnostic[], json: boolean, root: string
 
 function usage(): void {
   process.stdout.write(`AugScript compiler\n\n` +
-    `Usage: aug <check|build|run|emit-c|test|openapi|format|bench|explain|context|lsp|symbols|definition|complete|hover|fixes|semantic-tokens> [project directory] [options] [-- args]\n` +
+    `Usage: aug <check|build|run|emit-c|test|openapi|format|migrate|spec|bench|explain|context|lsp|symbols|definition|complete|hover|fixes|semantic-tokens> [project directory] [options] [-- args]\n` +
     `Tests: aug test [project directory] [GROUP_NAME] [--group GROUP_NAME] [--list] [--coverage] [--json] [--timeout milliseconds]\n` +
     `Format: aug format [project directory] [--file path] [--write]\n` +
+    `Specifications: aug spec [project directory] [--check] [--json]\n` +
+    `Migration: aug migrate [project directory] [--file path] [--write]\n` +
     `Context: aug context [project directory] [--file path] [--name declaration] [--budget characters]\n` +
     `Benchmark: aug bench [project directory] [--iterations 10] [--warmup 2] [--json] [-- args]\n` +
     `Packages: aug package init DIRECTORY --name @owner/name; aug package pack DIRECTORY\n` +
@@ -41,6 +44,7 @@ function usage(): void {
 }
 
 export async function main(argv: string[]): Promise<number> {
+  if(argv[0]==='pack')return main(['package','pack',...argv.slice(1)]);
   const command = argv[0];
   if (command === '--version' || command === 'version') {
     process.stdout.write(JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')).version + '\n');
@@ -64,13 +68,15 @@ export async function main(argv: string[]): Promise<number> {
         const tests = checkUnitTests(project, discoverTests(project).tests);
         const diagnostics = uniqueDiagnostics([...checked.diagnostics, ...tests.flatMap(test => test.checked.diagnostics)]);
         if (diagnostics.some(issue => issue.severity !== 'warning')) { printDiagnostics(diagnostics, argv.includes('--json'), root); return 1; }
+        mergeTestAnalysis(checked,tests);
+        updateSpecs(checked);
         process.stdout.write(packPackage(root) + '\n');
       } else throw new Error('Use aug package init or aug package pack');
       return 0;
     } catch (error) { process.stderr.write((error as Error).message + '\n'); return 1; }
   }
   if (command === 'lsp') return runLanguageServer(resolve(argv[1] ?? process.cwd()));
-  if (!['check', 'build', 'run', 'emit-c', 'test', 'openapi', 'format', 'bench', 'explain', 'context', 'symbols', 'definition',
+  if (!['check', 'build', 'run', 'emit-c', 'test', 'openapi', 'format', 'migrate', 'spec', 'bench', 'explain', 'context', 'symbols', 'definition',
     'complete', 'hover', 'fixes', 'semantic-tokens'].includes(command)) {
     process.stderr.write(`Unknown command ${command}\n`); usage(); return 2;
   }
@@ -133,11 +139,11 @@ export async function main(argv: string[]): Promise<number> {
     const project = loadProject(root, overrides);
     if (project.library && ['build', 'run', 'bench', 'openapi'].includes(command))
       throw new Error('This is an August library; use check, test, or package pack. Import its exports from an application with main.aug to run it.');
-    if (command === 'format') {
+    if (command === 'format' || command === 'migrate') {
       const files = (sourceFile ? [project.files.get(resolve(sourceFile))].filter(file => !!file) : [...project.files.values()])
         .filter(file => !file.builtin && !file.package);
       if (!files.length) throw new Error('No source files to format');
-      const formatted = files.map(file => ({ file: file.path, text: formatFile(project, file) }));
+      const formatted = files.map(file => ({ file: file.path, text: (command==='migrate'?migrateFile:formatFile)(project, file) }));
       if (options.includes('--write')) formatted.forEach(file => writeFileSync(file.file, file.text));
       else process.stdout.write(json ? JSON.stringify(formatted) + '\n' : formatted.map(file => file.text).join('\n'));
       return 0;
@@ -228,11 +234,17 @@ export async function main(argv: string[]): Promise<number> {
       process.stdout.write(JSON.stringify(symbols) + '\n');
       return checked.diagnostics.some(issue => issue.severity !== 'warning') ? 1 : 0;
     }
-    printDiagnostics(checked.diagnostics, json && command === 'check', root);
-    if (checked.diagnostics.some(issue => issue.severity !== 'warning')) return 1;
+    const hasErrors=checked.diagnostics.some(issue => issue.severity !== 'warning');
+    printDiagnostics(checked.diagnostics, json && (command === 'check' || command === 'spec' && hasErrors), root);
+    if (hasErrors) return 1;
     if (command === 'check') {
       if (!json) process.stdout.write('AugScript check passed\n');
       return 0;
+    }
+    if(command==='spec') {
+      const result=updateSpecs(checked,options.includes('--check'));
+      process.stdout.write(json?JSON.stringify(result)+'\n':result.stale.length?'Stale specifications:\n'+result.stale.map(file=>'  '+file).join('\n')+'\n':`${result.files} specification artifact(s) ${options.includes('--check')?'are current':'generated'}.\n`);
+      return result.stale.length?1:0;
     }
     const generated = generateC(checked);
     if (command === 'emit-c') { process.stdout.write(generated); return 0; }
@@ -245,6 +257,7 @@ export async function main(argv: string[]): Promise<number> {
       if (native.diagnostics.length) printDiagnostics(native.diagnostics, json, root);
       else process.stderr.write(native.error + '\n'); return native.status;
     }
+    updateSpecs(checked);
     if (command === 'build') {
       process.stdout.write(json ? JSON.stringify({ output, sourceMap: output + '.augmap.json' }) + '\n' : `${output}\n`);
       return 0;

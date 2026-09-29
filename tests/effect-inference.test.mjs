@@ -66,8 +66,13 @@ test('explicit uses is an upper bound; constructors and lock regions retain thei
   project(`import Console from august.io
 capability Reader { read() returns int uses Reader.read }
 interface Value { read() returns int }
-Bad(Console console) => { _write(console) } implements Value {
-    read() returns int { return 1 }
+Bad(Console console) implements Value {
+    initialize {
+        _write(console)
+    }
+    read() returns int {
+        return 1
+    }
 }
 _write(Console console) { console.write(value="hidden") }
 _limited(Console console, Reader reader) uses reader.read { _write(console) }

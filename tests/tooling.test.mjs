@@ -42,7 +42,7 @@ test endpoint user client:
 });
 
 test('immutable semantic revisions cache import closures and ignore unfinished composition', () => {
-  const root = create({ 'main.aug': 'broken = resolve Missing\n', 'math.aug': 'value() returns int { return 2 }\n',
+  const root = create({ 'main.aug': "resolve Missing to broken\n", 'math.aug': 'value() returns int { return 2 }\n',
     'worker.aug': 'import value from math\nread() returns int { return value() }\n', 'unrelated.aug': 'other() {}\n' });
   try {
     const workspace = new SemanticWorkspace(root), path = join(root, 'worker.aug');
@@ -63,7 +63,7 @@ test('immutable semantic revisions cache import closures and ignore unfinished c
 });
 
 test('persistent LSP handles split UTF-8 frames, local edits, definitions and cached revisions', async () => {
-  const root = create({ 'main.aug': 'missing = resolve Missing', 'math.aug': 'value() returns int { return 2 }\n' });
+  const root = create({ 'main.aug': 'resolve Missing to absent', 'math.aug': 'value() returns int { return 2 }\n' });
   const child = spawn(process.execPath, [cli, 'lsp', root], { stdio: ['pipe', 'pipe', 'pipe'] });
   let bytes = Buffer.alloc(0), sequence = 0, stderr = '';
   const pending = new Map();
@@ -155,7 +155,7 @@ test('native diagnostics point back to a foreign declaration and architecture sn
 test('dependency and checked-error fixes produce valid local and whole-project contracts', () => {
   const root = create({
     'store.aug': 'interface Store {}\nStoreImpl() implements Store {}\n',
-    'service.aug': 'import Store from store\nread() returns Store { service = resolve Store; return service }\n',
+    'service.aug': "import Store from store\nread() returns Store { resolve Store to service; return service }\n",
     'math.aug': 'first() returns int { values = [1]; return values.get(index=0) }\n',
     'main.aug': 'import Store and StoreImpl from store\nimport read from service\nimport first from math\nimplement Store with StoreImpl\nvalue = read()\ntry { print(value=first()) } catch IndexError error { print(value="failed") }\n',
   });

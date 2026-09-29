@@ -12,7 +12,7 @@ export const reservedKeywords = [
   'implements', 'extends', 'function', 'returns', 'throws', 'unless', 'return',
   'throw', 'if', 'else', 'while', 'try', 'catch', 'unsafe', 'extern', 'C',
   'resolve', 'own', 'borrow', 'true', 'false', 'null', 'interceptor',
-  'and', 'everything', 'test', 'when', 'it', 'pass', 'in', 'out', 'changes', 'uses', 'mutable', 'capability',
+  'and', 'or', 'not', 'initialize', 'everything', 'test', 'when', 'it', 'pass', 'in', 'out', 'changes', 'uses', 'mutable', 'capability',
   'record', 'for', 'match', 'some', 'shared', 'fresh', 'scoped', 'scope', 'composition', 'include', 'fixture',
   'pure',
   'optional', 'missing',
@@ -97,6 +97,7 @@ export function lex(file: string, source: string, comments = false): { tokens: T
       let value = '';
       while (/[A-Za-z0-9_]/.test(peek())) value += advance();
       emit(keywords.has(value) ? value : 'identifier', value, start, startLine, startColumn);
+      if(value==='missing')diagnostics.push({file,line:startLine,column:startColumn,code:'SYNTAX',message:'Use null instead of missing; optional values have only a value or null'});
       continue;
     }
     if (/[0-9]/.test(char)) {
@@ -127,9 +128,14 @@ export function lex(file: string, source: string, comments = false): { tokens: T
     }
     const two = char + peek(1);
     if (['==', '!=', '<=', '>=', '&&', '||', '->', '=>'].includes(two)) {
+      if (['&&', '||', '=>'].includes(two)) diagnostics.push({file, line: startLine, column: startColumn, code: 'SYNTAX',
+        message: two === '=>' ? 'Use an initialize block inside the class or record instead of =>'
+          : `Use ${two === '&&' ? 'and' : 'or'} instead of ${two}; boolean operators use words`});
       advance(); advance(); emit(two, two, start, startLine, startColumn); continue;
     }
     if ('{}();,.:<>?=+-*/![]'.includes(char)) {
+      if (char === '!') diagnostics.push({file, line: startLine, column: startColumn, code: 'SYNTAX',
+        message: 'Use not instead of !; boolean operators use words'});
       advance(); emit(char, char, start, startLine, startColumn); continue;
     }
     advance();

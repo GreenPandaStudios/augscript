@@ -1,0 +1,14 @@
+{
+  "format": 1,
+  "files": [
+    ".aug-spec/august/0.19.0/io/contracts.aug",
+    ".aug-spec/august/0.19.0/io/contracts.aug.md",
+    "counters.aug.md",
+    "domain/app.aug.md",
+    "domain/export.aug.md",
+    "domain/models.aug.md",
+    "domain/numbers.aug.md",
+    "main.aug.md"
+  ],
+  "digest": "70d8781792cd5f570fc8c3df243cc4152b8b6d56af6fba9c0264582dc210db61"
+}

@@ -121,7 +121,7 @@ print(value=counter.value())
 test('crypto capability hashes bytes and verifies native RSA signatures', () => withProject({
   'main.aug': `import Crypto and GnuTlsCrypto from august.crypto
 implement Crypto with GnuTlsCrypto
-crypto = resolve Crypto
+resolve Crypto to crypto
 try:
     input = "abc".bytes()
     digest = crypto.sha256(input)
@@ -161,12 +161,10 @@ catch JsonError error:
   assert.equal(result.stdout, 'Ada <script>\n9223372036854775807\n{"name":"Ada <script>","id":9223372036854775807}\n');
 }));
 
-test('optional JSON fields distinguish missing, null, and a value', () => withProject({
-  'data.aug': `record Patch(optional string? name)
+test('optional JSON fields unify omitted input and null, and preserve a present value', () => withProject({
+  'data.aug': `record Patch(optional string name)
 describe(Patch input) returns string:
     match input.name:
-        when missing:
-            return "missing"
         when null:
             return "null"
         when some value:
@@ -184,7 +182,7 @@ catch JsonError error:
 }, root => {
   const result = spawnSync(process.execPath, [cli, 'run', root], { encoding: 'utf8' });
   assert.equal(result.status, 0, result.stderr);
-  assert.equal(result.stdout, 'missing\nnull\nAda\n');
+  assert.equal(result.stdout, 'null\nnull\nAda\n');
 }));
 
 test('freeze shares collection data with records and removes mutation rights from every alias', () => withProject({

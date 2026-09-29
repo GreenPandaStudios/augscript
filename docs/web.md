@@ -28,7 +28,7 @@ import Authentication and Principal from august.web
 
 /** A demonstration adapter. Replace its credential check for a real application. */
 DemoAuthentication() implements Authentication:
-    authenticate(HttpRequest request) returns Principal? uses Authentication.authenticate unless HttpError:
+    authenticate(HttpRequest request) returns optional Principal uses Authentication.authenticate unless HttpError:
         match request.headers.get(name="authorization"):
             when null:
                 return null
@@ -115,7 +115,7 @@ Captured values and form inputs preserve signed 64-bit integers, including ident
 
 Every ordinary endpoint input states its source: `from path`, `from query`, `from header`, `from cookie`, `from body`, `from form`, or `from request`. A source can specify a wire name. `resolve` inputs come from the application's explicit DI composition. Only endpoints selected by `serve` are reachable over HTTP.
 
-JSON bodies decode into concrete immutable records. `optional T` represents missing/value; `T?` represents null/value; `optional T?` represents all three. Match every permitted state before reading it. Unknown or incorrectly typed record fields are rejected. An absent required query/header/form value and invalid scalar syntax return 400; invalid JSON syntax returns 400, a valid JSON schema mismatch returns 422, unsupported media returns 415, and an oversized body returns 413.
+JSON bodies decode into concrete immutable records. `optional T` allows a value or null. Omitted optional fields and inputs become null, including PATCH bodies. Match null/some before reading the value. Serializing a record includes null optional fields; it does not recreate whether a field was originally omitted. Unknown or incorrectly typed record fields are rejected. An absent required query/header/form value and invalid scalar syntax return 400; invalid JSON syntax returns 400, a valid JSON schema mismatch returns 422, unsupported media returns 415, and an oversized body returns 413.
 
 An ordinary return becomes the documented status and a JSON, Html, or Bytes representation. `HttpResponse<T>` selects status and immutable `Headers` explicitly. `Headers.with` appends a value, preserving repeated headers such as Set-Cookie; singular wire inputs reject duplicates. The `redirect` and `cookie` helpers validate header values. Cookie callers explicitly choose Secure and lifetime settings.
 

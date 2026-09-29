@@ -108,10 +108,15 @@ import Logger from app; import ScreenLogger from app; import Worker from app;
     }
     interceptor Construct<T>() { around() returns T { return next() } }
     [Construct]
-    Worker(resolve Logger logger, int x) => { x = x + 1; } implements Work {
-      [Trace]
-      work(resolve Logger logger, resolve Console console) uses Console.write { console.write(value=x); }
+    Worker(resolve Logger logger, int x) implements Work {
+    initialize {
+        x = x + 1
     }
+    [Trace]
+    work(resolve Logger logger, resolve Console console) uses Console.write {
+        console.write(value=x)
+    }
+}
   `,
 }, 'before\n9\nafter\nbefore\ndefault\nafter\n'));
 
@@ -438,9 +443,14 @@ test('constructor and interceptor roots survive repeated garbage collection', ()
     print(value=sum);`,
   'app.aug': `interceptor Pass<T>() { around() returns T { return next(); } }
     interface Readable { get() returns int; }
-    [Pass] Box(int value) => { temporary to List<int>(value); } implements Readable {
-      get() returns int { return value; }
-    }`,
+    [Pass] Box(int value) implements Readable {
+    initialize {
+        temporary = List<int>(value)
+    }
+    get() returns int {
+        return value
+    }
+}`,
 }, '2500\n'));
 
 test('around resolve parameters use DI and are omitted from argument mappings', () => runs({

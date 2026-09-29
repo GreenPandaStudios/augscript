@@ -37,7 +37,6 @@ static void fail(const char *message) {
 }
 
 AugValue aug_null(void) { return (AugValue){ .tag = AUG_NULL }; }
-AugValue aug_missing(void) { return (AugValue){ .tag = AUG_MISSING }; }
 AugValue aug_int(int64_t value) { return (AugValue){ .tag = AUG_INT, .as.integer = value }; }
 AugValue aug_float(double value) { return (AugValue){ .tag = AUG_FLOAT, .as.floating = value }; }
 AugValue aug_bool(bool value) { return (AugValue){ .tag = AUG_BOOL, .as.boolean = value }; }
@@ -485,7 +484,6 @@ static bool equal(AugValue left, AugValue right) {
     return aug_cfloat(left) == aug_cfloat(right);
   if (left.tag != right.tag) return false;
   switch (left.tag) {
-    case AUG_MISSING: return true;
     case AUG_NULL: return true;
     case AUG_INT: return left.as.integer == right.as.integer;
     case AUG_FLOAT: return left.as.floating == right.as.floating;

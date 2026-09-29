@@ -35,7 +35,7 @@ serve secured and permitted and limited and zipped and slow and slowChild and ev
 `);
     writeFileSync(join(root,'auth.aug'),`import Authentication and Authorization and Principal from august.web
 DemoAuthentication() implements Authentication:
-    authenticate(HttpRequest request) returns Principal? uses Authentication.authenticate unless HttpError:
+    authenticate(HttpRequest request) returns optional Principal uses Authentication.authenticate unless HttpError:
         match request.headers.get(name="authorization"):
             when null:
                 return null

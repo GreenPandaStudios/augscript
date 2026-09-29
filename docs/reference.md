@@ -51,6 +51,8 @@ Parentheses and collection literals allow continuation across lines; their inden
 
 A newline, a closing block brace, EOF, or an optional semicolon terminates a statement. Separate two statements on one line with a semicolon. An unfinished operator continues an expression; a leading operator or call parenthesis on a new line does not attach to the previous statement. Start a return value on the same line as `return`. See [the grammar](grammar.md).
 
+Use `and`, `or`, and `not` for booleans. They short-circuit. Comparisons bind before `not`: `not count == 0` means `not (count == 0)`. The symbolic boolean operators are rejected; `!=` still compares for inequality.
+
 ## Imports and visibility
 
 `import Name from sibling` imports only that sibling's own public declaration. Imports are explicit even within a folder. Names beginning with `_` are private to their declaring file, class, or interface, and cannot be imported or exported.
@@ -65,7 +67,7 @@ export folder nested
 
 Cross-folder access requires the export entry. A dotted path also requires each crossed child folder to be exposed by its parent. A folder with no export file exposes nothing across its boundary. `export.aug` accepts only exports. Private modules and folders cannot be exported.
 
-`import Logger and ConsoleLogger from logging` combines imports. `import everything from logging` imports visible declarations and rejects collisions; it never exposes a module's internal imports. The formatter and **Expand to named imports** action make this list explicit.
+`import Logger and ConsoleLogger from logging` combines imports. `import everything from logging` imports visible declarations and rejects collisions; it never exposes a module's internal imports. The formatter preserves it. Hover shows available names, **Expand to named imports** offers an explicit list, and the [compiled spec](specifications.md) explains dependencies actually used.
 
 Import cycles are errors. Optional module dependency policies and public-surface warnings are configured in `main.yaml`. `strict_modules: true` also requires sibling imports to appear in the local export file. Ctrl-click `from` or a path segment to open its source file or export file, including `august.io`.
 
@@ -73,7 +75,7 @@ Project dependencies use aliases in `main.yaml`: `packages: math: "npm:@owner/au
 
 ## Types, labels, and generics
 
-Built-in types include `int`, `c_int`, `float`, `bool`, `string`, `void`, `Error`, runtime error classes, `List<T>`, `Set<T>`, `Map<K,V>`, `Tuple<T1,...>`, Bytes, Json, Html, Task<T>, Shared<T>, HttpRequest, HttpResponse<T>, ServerEvent<T>, and opaque RSA key types. A trailing `?` allows null; `optional T` allows omission. `optional T?` has missing/null/value states.
+Built-in types include `int`, `c_int`, `float`, `bool`, `string`, `void`, `Error`, runtime error classes, `List<T>`, `Set<T>`, `Map<K,V>`, `Tuple<T1,...>`, Bytes, Json, Html, Task<T>, Shared<T>, HttpRequest, HttpResponse<T>, ServerEvent<T>, and opaque RSA key types. `optional T` allows a value of T or null. Omitted optional inputs and fields become null; there is no separate missing state. `Type?`, `optional Type?`, and the old missing keyword are rejected.
 
 Write `Type name = expression`, `Type name to expression`, or an inferred assignment. Every ordinary input in a call has its public label: `add(right=2, left=1)`. Each label is supplied once. Inputs marked `resolve` are supplied through composition and cannot be passed explicitly.
 
@@ -128,16 +130,16 @@ interface Count:
     increment() changes self
     value() returns int
 
-Counter(mutable int initial to _count) =>:
-    _count = _count + 1
-implements Count:
+Counter(mutable int initial to _count) implements Count:
+    initialize:
+        _count = _count + 1
     increment() changes self:
         _count = _count + 1
     value() returns int:
         return _count
 ```
 
-The optional `=>` constructor body runs after header initialization and must be pure. It may establish local fields. Put external startup work in a named method and call it from main.
+The optional `initialize` block runs after header and local field initialization and must be pure. It may establish local fields. Put it before methods. Put external startup work in a named method and call it from main.
 
 An immutable record is data and needs no marker interface:
 
@@ -165,7 +167,7 @@ match fruit.get(key=7):
 record Point(int x, int y)
 ```
 
-Record fields contain primitives, tuples, and immutable records. They cannot store mutable collections, capabilities, or ownership inputs. Records compare and hash by type and field values. Validation can use `record Positive(int value) unless DomainError => { ... }`; it may reject an input, and cannot replace immutable fields. Behavioral classes compare by identity.
+Record fields contain primitives, tuples, and immutable records. They cannot store mutable collections, capabilities, or ownership inputs. Records compare and hash by type and field values. Validation uses `record Positive(int value) unless DomainError { initialize { ... } }`; it may reject an input, and cannot replace immutable fields. Behavioral classes compare by identity.
 
 ## Collections and iteration
 
@@ -242,7 +244,7 @@ Raw `print`, `arguments`, `read_file`, and `write_file` are available to main/te
 
 ## Dependency injection and lifetimes
 
-Bind once per key before startup: `implement Logger with ConsoleLogger`. A named key such as `app` selects a class without a type key. `resolve app to program` retrieves it explicitly. The older `bind Logger to ConsoleLogger` and assignment-form resolve are accepted; formatting uses implement/with and resolve/to.
+Provide one implementation per key before startup: `implement Logger with ConsoleLogger`. A named key such as `app` selects a class without a type key. `resolve app to program` retrieves it explicitly. Legacy `bind` and assignment-form resolve are rejected; use `aug migrate` or the editor migration fix.
 
 A bound class must have only `resolve` header inputs. Duplicate bindings, missing dependencies, cycles, incompatible keys, and effectful bound construction are errors. Diagnostics show the dependency path. Declaration order does not determine initialization order.
 
@@ -337,6 +339,8 @@ See [the complete validation and testing example](../examples/approved-design/do
 ## Documentation, tests, and tooling
 
 Javadoc immediately before a declaration feeds hover, completion, and signature help. Supported tags include `@param`, `@return`, `@throws`/`@exception`, `@see`, and `@deprecated`; `{@code ...}` and `{@link ...}` format inline help. Parameter labels, return tags, and effective error tags are checked; mismatches are DOC errors. Implementations can inherit interface method documentation.
+
+`aug spec` compiles each file's complete behavior into an adjacent Markdown explanation. Comments are optional unless `main.yaml` sets `spec.require_comments` to `public` or `all`. See [compiled specifications](specifications.md).
 
 Enable the public_docs lint for missing public descriptions. Keep behavior examples in [same-file class or function suites](testing.md). [Explain/context](tooling.md#context-for-developers-and-llms) gathers contracts and provenance with a bounded output budget. The persistent editor server checks local modules while an application root is unfinished; complete composition remains a build gate.
 

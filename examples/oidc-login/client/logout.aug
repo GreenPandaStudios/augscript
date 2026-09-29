@@ -11,7 +11,7 @@ endpoint POST "/logout" as logout(LogoutForm input from form, optional string to
     if origin != config.baseUrl:
         throw SessionError()
     session = authenticate(token)
-    if !crypto.equal(left=input.csrf.bytes(), right=session.csrf.bytes()):
+    if (not crypto.equal(left=input.csrf.bytes(), right=session.csrf.bytes())):
         throw SessionError()
     sessions.take(key=session.jti, now=clock.now())
     headers = withCookie(headers=securityHeaders().with(name="location", value="/"), name="aug_session", value="", path="/", maxAge=0, secure=config.secureCookies)

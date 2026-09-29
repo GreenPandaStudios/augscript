@@ -3,7 +3,7 @@
   "displayName": "AugScript",
   "description": "Language support for AugScript",
   "icon": "media/augscript.png",
-  "version": "0.18.0",
+  "version": "0.19.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/GreenPandaStudios/augscript.git",
@@ -120,6 +120,18 @@
       }
     ],
     "commands": [
+      {
+        "command": "augscript.spec",
+        "title": "AugScript: Generate Specifications"
+      },
+      {
+        "command": "augscript.openSpec",
+        "title": "AugScript: Open Current File Specification"
+      },
+      {
+        "command": "augscript.migrate",
+        "title": "AugScript: Upgrade Project Syntax"
+      },
       {
         "command": "augscript.openWelcome",
         "title": "AugScript: Open Welcome"

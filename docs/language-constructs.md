@@ -51,10 +51,10 @@ After a block header, introduce a body indented with tabs or spaces. Dedenting e
 ## !
 
 ```text
-!value
+Use not
 ```
 
-Negate a `bool` value.
+Symbolic boolean negation is rejected. The migration fix preserves grouping when replacing ! with not.
 
 ## !=
 
@@ -67,10 +67,10 @@ Compare values for inequality; the result is `bool`.
 ## ?
 
 ```text
-Type?
+optional Type
 ```
 
-Mark a type as nullable. `Map.get` returns a nullable value.
+Type? is rejected. Use optional Type for a value or null; omitted optional inputs and fields also become null. The migration fix upgrades the spelling.
 
 ## .
 
@@ -227,10 +227,10 @@ Divide numbers. Integer division truncates toward zero. A potentially zero divis
 ## &&
 
 ```text
-left && right
+Use and
 ```
 
-Logical AND. Both operands must be `bool`; the right side is skipped when the left side is false.
+Symbolic boolean operators are rejected. Replace && with and; the right side is skipped when the left side is false.
 
 ## +
 
@@ -275,10 +275,10 @@ Compare values for equality; the result is `bool`.
 ## =>
 
 ```text
-Name(Type field) => { ... } implements Interface { ... }
+Use initialize
 ```
 
-Start an optional constructor body. Header fields are initialized before the block runs, so assigning a field name updates that field. An ordinary header field still requires a labeled constructor argument; only `resolve` fields come from DI.
+The arrow constructor spelling is rejected. Put initialize { ... } or its indented form inside the class or record. The editor migration fix moves the body and preserves behavior.
 
 ## >
 
@@ -299,10 +299,10 @@ Compare compatible numbers; the result is `bool`.
 ## ||
 
 ```text
-left || right
+Use or
 ```
 
-Logical OR. Both operands must be `bool`; the right side is skipped when the left side is true.
+Symbolic boolean operators are rejected. Replace || with or; the right side is skipped when the left side is true.
 
 ## always
 
@@ -315,10 +315,10 @@ Run cleanup on success, checked errors, returns and cancellation. Cancellation b
 ## and
 
 ```text
-import Logger and ConsoleLogger from logging
+left and right
 ```
 
-Join explicitly named imports. Also separates checked error types: `load() returns string unless FileError and ValidationError`. It is not a boolean operator; use `&&` for conditions.
+Logical AND on bool values. Skip the right operand when the left operand is false. Also join named imports, checked errors, contracts, and grouped task waits. Comparisons and not bind before and; and binds before or.
 
 ## arguments
 
@@ -363,10 +363,10 @@ Assert a bool in a test case or its setup. Catching an assertion failure cannot 
 ## bind
 
 ```text
-bind Interface to Implementation
+Use implement Interface with Implementation
 ```
 
-Legacy spelling for implement Interface with Implementation. The formatter emits implement with. Lifetimes, shared mutation choices, dependency ordering and provenance checks are identical for both spellings.
+This old binding spelling is rejected. Use implement Interface with Implementation. The editor migration fix or aug migrate --write upgrades old source without changing its binding contract.
 
 ## body
 
@@ -574,7 +574,7 @@ Declare a C function. Calls require unsafe and external callables declare uses C
 false
 ```
 
-Boolean false. `&&` and `||` evaluate the right side only when needed.
+Boolean false. and and or evaluate the right side only when needed. Conditions require bool values.
 
 ## FileError
 
@@ -742,7 +742,7 @@ Register an implementation in main or test setup. Stateless bindings are shared 
 Name() implements Interface { ... }
 ```
 
-Marks a declaration as a class and lists the interfaces it satisfies. Every class needs at least one interface. Method signatures must match. Multiple default implementations of the same method require an override. Add an optional constructor block before this clause: `Name(Type value) => { value = other; } implements Interface { ... }`.
+Marks a declaration as a class and lists the interfaces it satisfies. Every class needs at least one interface. Method signatures must match. Conflicting default implementations require an override. Put constructor work in an initialize block inside the class.
 
 ## import
 
@@ -775,6 +775,14 @@ IndexError implements Error
 ```
 
 Checked failure for an invalid List.get position. Catch it, declare unless IndexError, or use List.at for a nullable lookup.
+
+## initialize
+
+```text
+initialize: ...
+```
+
+Run constructor work once after header inputs and local fields are initialized, before returning the class or record. Put this block inside the declaration, before class methods. Construction stays pure. Records can validate inputs and raise declared unless errors, but cannot replace immutable fields.
 
 ## input
 
@@ -854,7 +862,7 @@ Map a resolve RequestLogger parameter and declare uses logger.complete. Observe 
 Map<K,V>
 ```
 
-Hash map: `{1: "apples", 2: "pears"}` infers Map<int, string>. A typed declaration supplies empty types: `Map<int, string> fruit = {}`. Duplicate keys keep the last value. `set(key=..., value=...)` requires mutable access; `get(key=...)` returns V?; `contains(key=...)` and `length()` read. Primitive keys and tuples compare by value; other objects use identity.
+Hash map: `{1: "apples", 2: "pears"}` infers Map<int, string>. A typed declaration supplies empty types: `Map<int, string> fruit = {}`. Duplicate keys keep the last value. `set(key=..., value=...)` requires mutable access; `get(key=...)` returns optional V; `contains(key=...)` and `length()` read. Primitive keys and tuples compare by value; other objects use identity.
 
 ## match
 
@@ -867,10 +875,10 @@ Choose a checked case. Cover true and false for bool, null and some for nullable
 ## missing
 
 ```text
-when missing: ...
+null
 ```
 
-The omitted state of an optional value. It is distinct from null; JSON omits missing fields and serializes null fields.
+The missing keyword is rejected. Use null. An omitted optional value and an explicit null have the same language value; there is no separate missing state.
 
 ## mutable
 
@@ -888,13 +896,21 @@ next(mappedLabel=value) returns TargetResult
 
 Continue to the next interceptor layer or the original function/constructor. Available only inside an interceptor around body. `next()` forwards original arguments unchanged; optional labeled overrides use the interceptor parameter names and map back to the target. Unselected arguments are forwarded automatically. The compiler requires at most one next call on each execution path. Target errors propagate through the chain; additional errors declared by around become checked errors of the tagged callable.
 
+## not
+
+```text
+not count == 0
+```
+
+Negate a bool expression. Comparisons bind before not, so not count == 0 means not (count == 0). not binds before and and or. Use parentheses to negate only one comparison operand. Symbolic ! is rejected; != remains inequality.
+
 ## null
 
 ```text
 null
 ```
 
-The absent value. Nullable types end in ?. Narrow local values with if value != null, an early return guard, or match null/some before calling members. Fields remain conservative because another alias may change their value.
+The absent value of optional Type. Omitted optional inputs also become null. Narrow local values with if value != null, an early return guard, or match null/some before calling members. Fields remain conservative because another alias may change their value.
 
 ## optional
 
@@ -902,7 +918,15 @@ The absent value. Nullable types end in ?. Narrow local values with if value != 
 optional T value
 ```
 
-A value may be omitted. Match missing or some before reading it. optional T? also allows null, and requires all three cases.
+Allow a value of T or null. Omitted optional inputs and fields become null. Match null and some, or check != null, before reading the value. This is the only optional type spelling; Type? is rejected.
+
+## or
+
+```text
+left or right
+```
+
+Logical OR on bool values. Skip the right operand when the left operand is true. This is the lowest-precedence boolean operator. Symbolic || is rejected.
 
 ## out
 
@@ -962,7 +986,7 @@ A trusted native value adapter promises no effects or mutation. The foreign call
 optional string search from query
 ```
 
-Bind one query parameter. Missing optional input stays missing; repeated scalar parameters are rejected.
+Bind one query parameter. Omitted optional input becomes null; repeated scalar parameters are rejected.
 
 ## RateLimit
 
@@ -986,7 +1010,7 @@ Root-only UTF-8 text input. Other callables receive FileReader. Invalid Unicode 
 record Point(int x, int y)
 ```
 
-Declare deeply immutable data with labeled construction and structural equality/hashing. Records contain primitives, tuples and other records. Optional unless errors and a => validation body establish the data contract.
+Declare deeply immutable data with labeled construction and structural equality/hashing. Records contain primitives, tuples and other records. An initialize block validates inputs; declare rejected inputs with unless ErrorType.
 
 ## request
 
@@ -1015,10 +1039,10 @@ Authenticate the request and authorize one literal permission before decoding. B
 ## resolve
 
 ```text
-resolve Logger logger
+resolve Logger logger; resolve app to program
 ```
 
-Declare a dependency in a class or callable header. Callers omit its argument and forward the matching header dependency. Only main and test setup retrieve bindings directly: resolve app to program or program = resolve app. Lifetime follows the selected binding; scoped dependencies require a scope block.
+Declare a dependency in a class or callable header. Callers omit its argument and forward the matching header dependency. Only main and test setup retrieve bindings directly with resolve app to program. Assignment-form resolve is rejected. Scoped dependencies require a scope block.
 
 ## return
 
@@ -1310,7 +1334,7 @@ Serialize this JSON value with checked UTF-8 escaping and exact int64 values.
 
 ### Json.get
 
-Read an object member. Missing is distinct from a JSON null value.
+Read an object member. An absent member or JSON null returns null.
 
 ### Json.require
 
@@ -1408,7 +1432,7 @@ Read the number of elements.
 
 ### Map.take
 
-Remove and return an entry under exclusive access. A missing key returns null.
+Remove and return an entry under exclusive access. An absent key returns null.
 
 ### Map.set
 
@@ -1416,7 +1440,7 @@ Insert or replace an entry with exclusive mutable access.
 
 ### Map.get
 
-Read a value by key; null means the key is absent.
+Read a value by key; an absent key returns null. contains distinguishes an absent key from a stored null.
 
 ### Map.contains
 

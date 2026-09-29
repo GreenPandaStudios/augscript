@@ -34,12 +34,12 @@ export const collectionOperations: Record<string, BuiltinOperation[]> = {
   HttpRequest: [{name: 'form', parameters: [], returns: 'decoded', errors: ['HttpError'], documentation: 'Decode a form record inside a handler so protocol-specific error responses can be returned.', native: 'form'}],
   Headers: [
     {name: 'with', parameters: [{label: 'name', type: 'string'}, {label: 'value', type: 'string'}], returns: 'Headers', errors: ['HttpError'], documentation: 'Return new headers with one additional validated field. Header names ignore case; duplicate values remain separate.', native: 'with'},
-    {name: 'get', parameters: [{label: 'name', type: 'string'}], returns: 'string?', documentation: 'Read the first case-insensitive header value, or null.', native: 'get'},
+    {name: 'get', parameters: [{label: 'name', type: 'string'}], returns: 'optional string', documentation: 'Read the first case-insensitive header value, or null.', native: 'get'},
     {name: 'all', parameters: [{label: 'name', type: 'string'}], returns: 'List<string>', documentation: 'Read every value of this header in wire order.', native: 'all'},
   ],
   Json: [
     {name: 'stringify', parameters: [], returns: 'string', errors: ['JsonError'], documentation: 'Serialize this JSON value with checked UTF-8 escaping and exact int64 values.', native: 'stringify'},
-    {name: 'get', parameters: [{label: 'name', type: 'string'}], returns: 'Json?', documentation: 'Read an object member. Missing is distinct from a JSON null value.', native: 'get'},
+    {name: 'get', parameters: [{label: 'name', type: 'string'}], returns: 'optional Json', documentation: 'Read an object member. An absent member or JSON null returns null.', native: 'get'},
     {name: 'require', parameters: [{label: 'name', type: 'string'}], returns: 'Json', errors: ['JsonError'], documentation: 'Read a required object member or raise JsonError.', native: 'require'},
     {name: 'string', parameters: [], returns: 'string', errors: ['JsonError'], documentation: 'Require a JSON string.', native: 'string'},
     {name: 'integer', parameters: [], returns: 'int', errors: ['JsonError'], documentation: 'Require an exact signed 64-bit JSON integer.', native: 'integer'},
@@ -63,7 +63,7 @@ export const collectionOperations: Record<string, BuiltinOperation[]> = {
       documentation: 'Append an element with exclusive mutable access. Read-only and owned aliases cannot be stored here.', native: 'append' },
     { name: 'get', parameters: [{ label: 'index', type: 'int' }], returns: 'T', errors: ['IndexError'],
       documentation: 'Read a zero-based position. An invalid index raises checked IndexError. Reference results grant reading.', native: 'get' },
-    { name: 'at', parameters: [{ label: 'index', type: 'int' }], returns: 'T?',
+    { name: 'at', parameters: [{ label: 'index', type: 'int' }], returns: 'optional T',
       documentation: 'Read a zero-based position, returning null when it is absent. Narrow the result before using it.', native: 'at' }, length,
   ],
   Set: [
@@ -72,10 +72,10 @@ export const collectionOperations: Record<string, BuiltinOperation[]> = {
     { name: 'contains', parameters: [{ label: 'value', type: 'T' }], returns: 'bool', documentation: 'Test structural or identity equality with a stored element.', native: 'contains' }, length,
   ],
   Map: [
-    {name: 'take', parameters: [{label: 'key', type: 'K'}], returns: 'V?', changes: true, documentation: 'Remove and return an entry under exclusive access. A missing key returns null.', native: 'take'},
+    {name: 'take', parameters: [{label: 'key', type: 'K'}], returns: 'optional V', changes: true, documentation: 'Remove and return an entry under exclusive access. An absent key returns null.', native: 'take'},
     { name: 'set', parameters: [{ label: 'key', type: 'K' }, { label: 'value', type: 'V' }], returns: 'void', changes: true,
       documentation: 'Insert or replace an entry with exclusive mutable access.', native: 'set' },
-    { name: 'get', parameters: [{ label: 'key', type: 'K' }], returns: 'V?', documentation: 'Read a value by key; null means the key is absent.', native: 'get' },
+    { name: 'get', parameters: [{ label: 'key', type: 'K' }], returns: 'optional V', documentation: 'Read a value by key; an absent key returns null. contains distinguishes an absent key from a stored null.', native: 'get' },
     { name: 'contains', parameters: [{ label: 'key', type: 'K' }], returns: 'bool', documentation: 'Check for a key, including entries whose value is null.', native: 'contains' }, length,
   ],
   Tuple: [{ name: 'get', parameters: [{ label: 'index', type: 'int' }], returns: 'position', documentation: 'Read a statically checked constant position. Prefer tuple destructuring when reading several positions.', native: 'get' }, length],
@@ -84,7 +84,8 @@ export function operationType(text: string, receiver: Ty, position?: number): Ty
   const optional = text.startsWith('optional '), name = text.replace(/^optional /, '').replace(/\?$/, '');
   const generic = /^(\w+)<(.+)>$/.exec(name);
   const type = generic ? {...builtinType(generic[1]), args: generic[2].split(',').map(arg => operationType(arg.trim(), receiver))} : name === 'position' ? receiver.args[position ?? -1] : name === 'T' || name === 'K' ? receiver.args[0] : name === 'V' ? receiver.args[1] : builtinType(name);
-  return { ...(type ?? builtinType('<error>')), nullable: text.endsWith('?') || !!type?.nullable, optional:optional || !!type?.optional };
+  const nullable=optional || text.endsWith('?') || !!type?.nullable || !!type?.optional;
+  return { ...(type ?? builtinType('<error>')), nullable, optional:nullable || undefined };
 }
 export const builtinFunctions: BuiltinOperation[] = [
   {name:'exit', parameters:[{label:'status', type:'int'}], returns:'void', documentation:'Exit from main with a status from 0 to 255 after cancellation and cleanup.', native:'exit'},

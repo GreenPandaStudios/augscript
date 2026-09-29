@@ -77,7 +77,6 @@ static yyjson_mut_val *write_value(yyjson_mut_doc *doc, AugValue value, size_t d
             key = yyjson_mut_strncpy(doc, label.as.object->text, label.as.object->text_length);
           } else {
             if (!object->field_names || object->field_names[i][0] == '_') { invalid(); return NULL; }
-            if (object->fields[i].tag == AUG_MISSING) continue;
             key = yyjson_mut_strcpy(doc, object->field_names[i]);
           }
           yyjson_mut_val *child = write_value(doc, object->fields[i + (object->kind == AUG_MAP_KIND ? 1 : 0)], depth + 1);
@@ -101,7 +100,8 @@ AugValue aug_json_stringify(AugValue value) {
 AugValue aug_json_get(AugValue value, AugValue name) {
   AugValue object = unwrap(value);
   if (object.tag != AUG_OBJECT || object.as.object->kind != AUG_MAP_KIND || !aug_map_contains(object, name)) return aug_null();
-  return aug_json_wrap(aug_map_get(object, name));
+  AugValue item = aug_map_get(object, name);
+  return item.tag == AUG_NULL ? aug_null() : aug_json_wrap(item);
 }
 AugValue aug_json_require(AugValue value, AugValue name) {
   AugValue result = aug_json_get(value, name); return result.tag == AUG_NULL ? invalid() : result;
@@ -118,7 +118,6 @@ AugValue aug_json_items(AugValue value) {
 }
 static AugValue decode(AugValue value, const AugSchema *schema, size_t depth) {
   if (depth > 64) return invalid();
-  if (value.tag == AUG_MISSING) return schema->optional ? value : invalid();
   if (value.tag == AUG_NULL && schema->nullable) return value;
   if (schema->kind == AUG_SCHEMA_JSON) return aug_json_wrap(value);
   if ((schema->kind == AUG_SCHEMA_INT && value.tag == AUG_INT) || (schema->kind == AUG_SCHEMA_BOOL && value.tag == AUG_BOOL) || (schema->kind == AUG_SCHEMA_STRING && value.tag == AUG_STRING)) return value;
@@ -145,7 +144,9 @@ static AugValue decode(AugValue value, const AugSchema *schema, size_t depth) {
     if (schema->kind == AUG_SCHEMA_RECORD) {
       AugValue name = aug_string(schema->names[i]);
       field = schema->fields[i];
-      item = aug_map_contains(value, name) ? aug_map_get(value, name) : aug_missing();
+      bool present = aug_map_contains(value, name);
+      if (!present && !field->optional) { invalid(); break; }
+      item = present ? aug_map_get(value, name) : aug_null();
     } else { item = object->fields[i]; field = schema->fields[schema->kind == AUG_SCHEMA_TUPLE ? i : schema->kind == AUG_SCHEMA_MAP ? i % 2 : 0]; }
     items[i] = decode(item, field, depth + 1); if (aug_has_error) break;
   }

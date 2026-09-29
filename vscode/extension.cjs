@@ -229,6 +229,8 @@ async function showContext(context, includeSource) {
 }
 
 const yamlHelp = {
+  spec: 'Deterministic specifications are generated beside source files during successful builds. aug spec regenerates them; aug spec --check checks for drift.',
+  'spec.require_comments': 'Require Javadoc on none (default), public declarations, or all declarations. Existing interface documentation can be inherited. Missing required comments are compiler errors.',
   assignment: 'Canonical assignments: `equals` or `to`. Both forms are accepted by the language.',
   block_style: 'Formatter block style: `braces` or `indent`. A colon starts an indented block.',
   indentation: 'Formatter indentation: `spaces` (four) or `tabs`. Mixed prefixes are compiler errors.',
@@ -303,6 +305,7 @@ function yamlHover(document, position) {
 function yamlCompletions(document, position) {
   if (!projectRoot(document.uri.fsPath)) return [];
   const prefix = document.lineAt(position.line).text.slice(0, position.character);
+  if(/^\s*require_comments:\s*\w*$/.test(prefix))return ['none','public','all'].map(value=>new vscode.CompletionItem(value,vscode.CompletionItemKind.Value));
   if (/^\s*optimization:\s*\w*$/.test(prefix)) return ['debug', 'release'].map(value => {
     const item = new vscode.CompletionItem(value, vscode.CompletionItemKind.Value);
     item.documentation = new vscode.MarkdownString(value === 'debug' ?
@@ -315,7 +318,7 @@ function yamlCompletions(document, position) {
     const key=path.split('.').at(-1);
     const item = new vscode.CompletionItem(key, vscode.CompletionItemKind.Property);
     item.insertText = new vscode.SnippetString(
-      ['libraries', 'library_paths', 'lint', 'module_dependencies'].includes(key) ? `${key}:\n  - $0` : ['web','web.tls','openapi'].includes(path) ? `${key}:\n  $0` : `${key}: $0`);
+      ['libraries', 'library_paths', 'lint', 'module_dependencies'].includes(key) ? `${key}:\n  - $0` : ['web','web.tls','openapi','spec'].includes(path) ? `${key}:\n  $0` : `${key}: $0`);
     item.documentation = new vscode.MarkdownString(help);
     return item;
   });
@@ -462,6 +465,31 @@ function activate(context) {
     provideDocumentSemanticTokens: document => semanticTokens(context, document),
   }, semanticLegend));
   context.subscriptions.push(vscode.commands.registerCommand('augscript.build', () => executeProject(context, 'build')));
+  context.subscriptions.push(vscode.commands.registerCommand('augscript.spec', () => executeProject(context, 'spec')));
+  context.subscriptions.push(vscode.commands.registerCommand('augscript.openSpec', async () => {
+    const editor=vscode.window.activeTextEditor;
+    if(!editor||editor.document.languageId!=='augscript')return;
+    const root=projectRoot(editor.document.uri.fsPath);
+    if(!root)return;
+    if(editor.document.isDirty){vscode.window.showInformationMessage('Save the source file before generating its specification.');return;}
+    try {
+      const result=await runCompiler(context,['spec',root]);
+      if(result.code!==0)throw new Error(result.stderr||result.stdout||'Specification generation failed.');
+      await vscode.commands.executeCommand('markdown.showPreview',vscode.Uri.file(editor.document.uri.fsPath+'.md'));
+    }catch(error){vscode.window.showErrorMessage(error.message);}
+  }));
+  context.subscriptions.push(vscode.commands.registerCommand('augscript.migrate', async () => {
+    const document=vscode.window.activeTextEditor?.document;
+    if(!document||document.languageId!=='augscript')return;
+    const root=projectRoot(document.uri.fsPath);
+    const dirty=vscode.workspace.textDocuments.find(doc=>doc.languageId==='augscript'&&projectRoot(doc.uri.fsPath)===root&&doc.isDirty);
+    if(dirty){vscode.window.showInformationMessage('Save the project sources before migrating their syntax.');return;}
+    try {
+      const result=await runCompiler(context,['migrate',root,'--write']);
+      if(result.code!==0)throw new Error(result.stderr||result.stdout||'Syntax migration failed.');
+      vscode.window.showInformationMessage(result.stdout.trim()||'Project syntax is current.');
+    }catch(error){vscode.window.showErrorMessage(error.message);}
+  }));
   context.subscriptions.push(vscode.commands.registerCommand('augscript.run', () => executeProject(context, 'run')));
   context.subscriptions.push(vscode.commands.registerCommand('augscript.test', () => executeProject(context, 'test')));
   context.subscriptions.push(vscode.commands.registerCommand('augscript.explain', () => showContext(context, false)));

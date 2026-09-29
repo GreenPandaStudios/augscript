@@ -28,7 +28,7 @@ features:
 
 ## Documentation for the code you run
 
-These pages are versioned with the compiler. Guide projects are compiled and tested in CI. Library API pages and language construct help are generated from the same declarations and comments that supply editor hover.
+These pages are versioned with the compiler. Guide projects are compiled and tested in CI. Library API pages and language construct help are generated from the same declarations and comments that supply editor hover. [Compiled specifications](specifications.md) explain each source file beside its code, including private behavior and links to offline dependency docs.
 
 Start with the [language guide](reference.md), [built-in testing](testing.md), or [HTTP endpoints](web.md). The [same-app OpenID Connect example](https://github.com/GreenPandaStudios/augscript/tree/main/examples/oidc-login) demonstrates a login page, provider, client, and separate session JWT.
 

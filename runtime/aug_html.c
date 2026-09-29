@@ -16,7 +16,7 @@ static void escape(HtmlBuffer *buffer, const char *value, size_t size) {
   }
 }
 static void value(HtmlBuffer *buffer, AugValue item, bool attribute) {
-  if (item.tag == AUG_NULL || item.tag == AUG_MISSING) return;
+  if (item.tag == AUG_NULL) return;
   if (item.tag == AUG_OBJECT && item.as.object->kind == AUG_HTML_KIND && !attribute) {append(buffer, item.as.object->text, item.as.object->text_length); return;}
   if (item.tag == AUG_OBJECT && item.as.object->kind == AUG_LIST_KIND && !attribute) {for (size_t i = 0; i < item.as.object->field_count; i++) value(buffer, item.as.object->fields[i], false); return;}
   if (item.tag == AUG_STRING) {escape(buffer, item.as.object->text, item.as.object->text_length); return;}
@@ -32,7 +32,7 @@ AugValue aug_http_action(const char *route, AugValue *values, size_t count) {
   text(&buffer,"{\"route\":"); text(&buffer,route); text(&buffer,",\"values\":[");
   for (size_t i=0;i<count;i++) {
     if(i) text(&buffer,",");
-    if(values[i].tag==AUG_MISSING) text(&buffer,"null");
+    if(values[i].tag==AUG_NULL) text(&buffer,"null");
     else {
       encoded[0] = aug_json_stringify(values[i]);
       if (!aug_has_error) encoded[1] = aug_json_stringify(encoded[0]);
@@ -40,7 +40,7 @@ AugValue aug_http_action(const char *route, AugValue *values, size_t count) {
       append(&buffer,encoded[1].as.object->text,encoded[1].as.object->text_length);
     }
   }
-  text(&buffer,"],\"present\":[");for(size_t i=0;i<count;i++){if(i)text(&buffer,",");text(&buffer,values[i].tag==AUG_MISSING?"false":"true");}text(&buffer,"]}");
+  text(&buffer,"],\"present\":[");for(size_t i=0;i<count;i++){if(i)text(&buffer,",");text(&buffer,values[i].tag==AUG_NULL?"false":"true");}text(&buffer,"]}");
   AugValue result=aug_bytes(buffer.text,buffer.size,AUG_HTTP_ACTION_KIND);free(buffer.text);aug_frame_leave(&encoded_frame);aug_frame_leave(&frame);return result;
 }
 #endif

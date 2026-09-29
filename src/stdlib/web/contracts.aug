@@ -3,7 +3,7 @@ record Principal(string subject, List<string> permissions)
 
 /** Verify the request's credentials. null means unauthenticated; adapter failures raise HttpError. */
 capability Authentication:
-    authenticate(HttpRequest request) returns Principal? uses Authentication.authenticate unless HttpError
+    authenticate(HttpRequest request) returns optional Principal uses Authentication.authenticate unless HttpError
 
 /** Decide whether a verified identity has one named permission. */
 capability Authorization:
@@ -37,7 +37,7 @@ WebHttpClient() implements HttpClient:
 redirect(string location, optional int status) returns HttpResponse<string> unless HttpError:
     code = 303
     match status:
-        when missing:
+        when null:
             pass
         when some value:
             code = value

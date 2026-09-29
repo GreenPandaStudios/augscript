@@ -17,7 +17,7 @@ rsaJwk(RsaPublicKey publicKey, string kid, resolve Crypto crypto) returns RsaJwk
 
 /** Import only an RSA signing key for RS256. The transport caller selects the trusted JWKS URL. */
 importJwk(RsaJwk jwk, resolve Crypto crypto) returns RsaPublicKey uses crypto.decodeBase64url and crypto.importRsa unless JwtError:
-    if jwk.kty != "RSA" || jwk.alg != "RS256" || jwk.use != "sig":
+    if jwk.kty != "RSA" or jwk.alg != "RS256" or jwk.use != "sig":
         throw JwtError()
     try:
         modulus = crypto.decodeBase64url(input=jwk.n)
@@ -51,10 +51,10 @@ verifyJwt(string token, RsaPublicKey publicKey, string kid, string tokenType, re
         second = parts.get(index=1)
         third = parts.get(index=2)
         header = parse(input=crypto.decodeBase64url(input=first).text()).decode<JwtHeader>()
-        if header.alg != "RS256" || header.kid != kid || header.typ != tokenType:
+        if header.alg != "RS256" or header.kid != kid or header.typ != tokenType:
             throw JwtError()
         signature = crypto.decodeBase64url(input=third)
-        if !crypto.verifyRsa(publicKey=publicKey, input=(first + "." + second).bytes(), signature=signature):
+        if not crypto.verifyRsa(publicKey=publicKey, input=(first + "." + second).bytes(), signature=signature):
             throw JwtError()
         return parse(input=crypto.decodeBase64url(input=second).text())
     catch CryptoError error:

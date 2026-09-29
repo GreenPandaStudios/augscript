@@ -13,7 +13,7 @@ responseJson(HttpResponse<Bytes> response) returns Json unless SessionError:
         when null:
             throw SessionError()
         when some contentType:
-            if !contentType.startsWith(prefix="application/json"):
+            if (not contentType.startsWith(prefix="application/json")):
                 throw SessionError()
     try:
         return parse(input=response.body.text())
@@ -28,7 +28,7 @@ discover(resolve HttpClient client) returns Discovery uses client.request unless
     json = responseJson(response=client.request(method="GET", url=config.issuer + "/.well-known/openid-configuration"))
     try:
         document = json.decode<Discovery>()
-        if document.issuer != config.issuer || document.authorization_endpoint != config.issuer + "/authorize" || document.token_endpoint != config.issuer + "/token" || document.jwks_uri != config.issuer + "/jwks" || document.userinfo_endpoint != config.issuer + "/userinfo":
+        if document.issuer != config.issuer or document.authorization_endpoint != config.issuer + "/authorize" or document.token_endpoint != config.issuer + "/token" or document.jwks_uri != config.issuer + "/jwks" or document.userinfo_endpoint != config.issuer + "/userinfo":
             throw SessionError()
         return document
     catch JsonError error:
@@ -45,11 +45,11 @@ validateIdentity(string token, string nonce, int now, RsaJwks jwks, resolve Cryp
             throw SessionError()
         publicKey = importJwk(jwk)
         claims = verifyJwt(token, publicKey, kid="provider-1", tokenType="JWT").decode<IdClaims>()
-        if claims.iss != config.issuer || claims.aud != config.clientId || claims.sub.length() == 0 || claims.sub.length() > 255:
+        if claims.iss != config.issuer or claims.aud != config.clientId or claims.sub.length() == 0 or claims.sub.length() > 255:
             throw SessionError()
-        if claims.exp <= now || claims.iat < now - 300 || claims.iat > now + 30 || claims.exp <= claims.iat || claims.exp > now + 330:
+        if claims.exp <= now or claims.iat < now - 300 or claims.iat > now + 30 or claims.exp <= claims.iat or claims.exp > now + 330:
             throw SessionError()
-        if !crypto.equal(left=claims.nonce.bytes(), right=nonce.bytes()):
+        if (not crypto.equal(left=claims.nonce.bytes(), right=nonce.bytes())):
             throw SessionError()
         return claims
     catch JwtError error:

@@ -16,7 +16,7 @@ endpoint POST "/provider/token" as token(HttpRequest http from request, resolve 
             return _oauthError(code="unsupported_grant_type", description="Only authorization_code is supported.")
         if form.client_id != config.clientId:
             return _oauthError(code="invalid_client", description="The registered client is required.")
-        if !form.code.isToken(min=43, max=43) || !form.code_verifier.isToken(min=43, max=128):
+        if (not form.code.isToken(min=43, max=43)) or (not form.code_verifier.isToken(min=43, max=128)):
             return _oauthError(code="invalid_grant", description="The authorization grant is invalid.")
         now = clock.now()
         match codes.take(key=form.code, now=now):
@@ -24,7 +24,7 @@ endpoint POST "/provider/token" as token(HttpRequest http from request, resolve 
                 return _oauthError(code="invalid_grant", description="The authorization grant is invalid.")
             when some grant:
                 challenge = crypto.sha256(input=form.code_verifier.bytes()).base64url()
-                if grant.clientId != form.client_id || grant.redirectUri != form.redirect_uri || !crypto.equal(left=challenge.bytes(), right=grant.challenge.bytes()):
+                if grant.clientId != form.client_id or grant.redirectUri != form.redirect_uri or (not crypto.equal(left=challenge.bytes(), right=grant.challenge.bytes())):
                     return _oauthError(code="invalid_grant", description="The authorization grant is invalid.")
                 claims = IdClaims(iss=config.issuer, sub=grant.subject, aud=grant.clientId, exp=now + 300, iat=now, nonce=grant.nonce, name=grant.name)
                 idToken = signJwt(key=keys.provider(), claims=Json(value=claims), kid="provider-1", tokenType="JWT")

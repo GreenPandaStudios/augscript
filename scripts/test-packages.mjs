@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { cpSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { spawnSync } from 'node:child_process';
 
@@ -24,12 +24,27 @@ try {
     env: { ...process.env, AUG_NATIVE_HOME: process.env.AUG_NATIVE_HOME ?? join(root, '.aug-native') }
   });
   assert.equal(aug('--version').trim(), packages.find(pkg => pkg.directory === 'cli').version);
+  const verifySpecs = folder => {
+    for(const entry of readdirSync(folder,{withFileTypes:true})) {
+      const file=join(folder,entry.name);
+      if(entry.isDirectory())verifySpecs(file);
+      else if(entry.name.endsWith('.aug.md'))for(const match of readFileSync(file,'utf8').matchAll(/\]\(([^)]+)\)/g)) {
+        if(/^[a-z]+:/i.test(match[1]))continue;
+        const [href,anchor]=match[1].split('#'),target=resolve(dirname(file),decodeURIComponent(href));
+        assert.ok(existsSync(target),`Broken installed spec link ${match[1]} in ${file}`);
+        if(target.endsWith('.aug.md')&&anchor)assert.ok(readFileSync(target,'utf8').includes(`id="${decodeURIComponent(anchor)}"`),`Broken installed spec anchor ${match[1]} in ${file}`);
+      }
+    }
+  };
+  for(const name of ['stdlib','web','crypto'])verifySpecs(join(directory,`node_modules/@greenpandastudios/aug-${name}/august`));
   assert.match(aug('--help'), /Usage: aug/);
   const project = join(directory, 'hello');
   mkdirSync(project);
   const main = `import Console and SystemConsole from august.io\nimplement Console with SystemConsole\nresolve Console to console\nconsole.write(value="installed August works")\n`;
   writeFileSync(join(project, 'main.aug'), main);
   aug('check', project);
+  aug('spec',project);aug('spec',project,'--check');
+  assert.ok(existsSync(join(project,'main.aug.md')));
   assert.equal(aug('run', project), 'installed August works\n');
   const library = join(directory, 'my-math');
   aug('package', 'init', library, '--name', '@example/aug-math');
