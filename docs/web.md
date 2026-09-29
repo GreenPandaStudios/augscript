@@ -170,7 +170,7 @@ openapi:
   output: .aug-build/openapi.json
 ```
 
-`web.tls` accepts certificate, private_key and optional outbound ca paths relative to the project. HTTP/3 requires TLS. Native HttpClient verifies peers and returns redirects for explicit handling. The private bootstrap enables libwebsockets HTTP/1.1, HTTP/2 and HTTP/3 on this tested macOS ARM host.
+`web.tls` accepts certificate, private_key and optional outbound ca paths relative to the project. HTTP/3 requires TLS. Native HttpClient verifies peers and returns redirects for explicit handling. The private bootstrap enables libwebsockets HTTP/1.1, HTTP/2 and HTTP/3 on tested macOS ARM and Linux ARM hosts.
 
 OpenAPI 3.2.1 includes selected endpoints, input sources, concrete record schemas, explicit response variants and Javadoc. Streams have item schemas. Unsupported contracts fail compilation when generation is enabled. `/docs` is the generated API explorer. [OpenAPI 3.2.1](https://spec.openapis.org/oas/v3.2.1.html) is the contract reference.
 

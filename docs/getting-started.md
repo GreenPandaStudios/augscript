@@ -78,4 +78,4 @@ For an application with multiple files, capabilities, errors, and unit tests, wo
 
 ## 7. Build an executable
 
-`aug build .` checks the project, emits C11, and invokes the native compiler. It prints the executable path under `.aug-build`. `aug run .` builds and runs in one step. [Docker build and run images](docker.md) cover the current portable core target. Web and crypto builds currently require the macOS native bootstrap; [production readiness](production-readiness.md) lists the remaining platform and operational work.
+`aug build .` checks the project, emits C11, and invokes the native compiler. It prints the executable path under `.aug-build`. `aug run .` builds and runs in one step. [Docker build and run images](docker.md) cover core, web, and crypto programs on Linux. The [native bootstrap](tooling.md) builds web and crypto dependencies on macOS and Linux; [production readiness](production-readiness.md) lists the remaining platform and operational work.

@@ -26,13 +26,13 @@ Warnings are nonblocking. Machine diagnostics carry severity, code, file, line, 
 
 ## Native standard libraries
 
-Web, crypto, JSON and tasks use pinned private C dependencies. On this macOS ARM host, bootstrap them once from the compiler directory:
+Web, crypto, JSON and tasks use pinned private C dependencies. On macOS or Linux, bootstrap them once from the compiler directory:
 
 ```sh
 node scripts/bootstrap-native.mjs
 ```
 
-The script verifies archive SHA-256 hashes and builds under `.aug-native`; it does not install system packages. `--extract-only` supplies yyjson and minicoro for JSON/task-only programs. Web and crypto require the complete native build. Sources, dependency revisions and hashes are recorded in scripts/native-dependencies.lock.json; the installed manifest also records host platform and architecture. The bootstrap currently targets macOS; other platforms remain unverified.
+The script verifies archive SHA-256 hashes and builds under `.aug-native`; it does not install system packages. `--extract-only` supplies yyjson and minicoro for JSON/task-only programs. Web and crypto require the complete native build. Sources, dependency revisions and hashes are recorded in scripts/native-dependencies.lock.json; the installed manifest also records host platform and architecture. The full build has run on macOS ARM and Linux ARM; Linux x86-64 is checked by the Docker CI job.
 
 Set `AUG_NATIVE_HOME` to share a dependency directory across compiler copies. It names the directory containing `sources/` and `prefix/`, not the prefix itself. Bootstrap and compilation both honor it. For the bundled VS Code compiler, set `augscript.nativeHome` to that same absolute directory. The extension bundles the bootstrap scripts and lockfile; it does not bundle host-specific native libraries. Node 24+ and a C11 compiler remain requirements.
 

@@ -1854,14 +1854,23 @@ class Checker {
       if (expr.call.kind === 'call' && context.scope) {
         const plan = this.callPlans.get(expr.call), task = [...allocationOrigin(expr.span)][0], scope = `tasks:${context.scope.file}:${context.scope.start}`;
         context.flow.registerTask(task, scope, errors);
-        const capture = (argument: Expr, exclusive: boolean) => {
-          const actual = this.expressionTypes.get(argument) ?? errorTy;
+        const captureOrigins = (origins: Origins, actual: Ty, exclusive: boolean, span: Span) => {
           if (!this.isReference(actual) || actual.frozen || actual.name === 'Shared' || actual.def?.node.kind === 'class' && actual.def.node.record ||
               ['Bytes', 'Json', 'Html', 'Headers', 'RsaPublicKey', 'RsaPrivateKey'].includes(actual.name)) return;
-          context.flow.captureTask(task, scope, this.placesOf(argument, context), exclusive, argument.span, (span, message) => this.report(span, message, 'CONCURRENCY'));
+          context.flow.captureTask(task, scope, origins, exclusive, span, (at, message) => this.report(at, message, 'CONCURRENCY'));
         };
+        const capture = (argument: Expr, exclusive: boolean) =>
+          captureOrigins(this.placesOf(argument, context), this.expressionTypes.get(argument) ?? errorTy, exclusive, argument.span);
         expr.call.args.forEach((argument, index) => capture(argument, ['own', 'borrow'].includes(plan?.ownerships?.[plan.sourceIndices.indexOf(index)] ?? '')));
         if (expr.call.callee.kind === 'member') capture(expr.call.callee.object, !!plan?.mutatesReceiver);
+        plan?.bindingKeys.forEach((key, index) => {
+          const source = plan.injectionSources?.[index];
+          if (!key && !source) return;
+          const name = source?.startsWith('self.') ? source.slice(5) : source;
+          const actual = name ? context.locals.get(name)?.type : key ? this.bindingByKey.get(key)?.exposedType : undefined;
+          const origins = name ? context.flow.origins(name) : key ? this.bindingOrigins(key, context, expr.call.span) : new Set<string>();
+          captureOrigins(origins, actual ?? errorTy, false, expr.call.span);
+        });
       }
     } else if (expr.kind === 'wait') {
       if (context.locked) this.report(expr.span, 'Release the lock before waiting for a task', 'CONCURRENCY');
@@ -2556,6 +2565,14 @@ class Checker {
         const source = plan.sourceIndices[index];
         return source === undefined ? [] : [{ origins: this.placesOf(expr.args[source], context),
           exclusive: param.ownership !== 'managed', span: expr.args[source].span }];
+      }),
+      ...fn.params.flatMap((param, index) => {
+        if (!param.injected) return [];
+        const source = plan.injectionSources?.[index];
+        const key = plan.bindingKeys[index];
+        const name = source?.startsWith('self.') ? source.slice(5) : source;
+        const origins = name ? context.flow.origins(name) : key ? this.bindingOrigins(key, context, expr.span) : new Set<string>();
+        return [{origins, exclusive: false, span: expr.span}];
       }),
       ...(expr.callee.kind === 'member' ? [{ origins: this.placesOf(expr.callee.object, context),
         exclusive: contract.changes.some(path => path === 'self' || path.startsWith('self.')), span: expr.callee.span }] : []),

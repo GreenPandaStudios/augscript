@@ -268,6 +268,8 @@ Default objects are managed and reclaimed by the runtime. Ordinary reads require
 
 Owned values are dropped on normal or error exits. An optional `drop()` method takes no inputs, returns void, and performs only local cleanup. Cleanup layers cannot add effects or errors. External shutdown work belongs in an explicit effect-declared method. Managed objects are collected at runtime safe points; process roots survive to shutdown.
 
+`Shared(value=...)` takes a fresh or owned value. The wrapper owns that payload, so dropping an owned `Shared<T>` also runs the payload's `drop()` before later local cleanup. A `resolve` dependency counts as a call input for alias checks: it cannot refer to an object also passed as an exclusive input. A scheduled task captures dependencies supplied through `resolve` as well as written call arguments. Wait for a task before mutably borrowing an object it reads through either path.
+
 The analysis intentionally rejects some programs when it cannot prove separate origins or freshness. This prototype is conservative; it is not a formal ownership proof. Threading semantics remain deferred.
 
 ## Null, matching, and checked failures
