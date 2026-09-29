@@ -300,6 +300,37 @@ print(value=items.length())
   });
 });
 
+test('TASK-6: collection pressure cannot reclaim a resource captured by a child', () => {
+  withProject({
+    'operations.aug': `interface Readable:
+    value() returns int
+    drop()
+Resource(int number) implements Readable:
+    value() returns int:
+        return number
+    drop():
+        pass
+read(borrow Resource resource) returns int:
+    return resource.value()
+`,
+    'main.aug': `import Resource and read from operations
+scope:
+    own Resource resource = Resource(number=7)
+    pending = start read(resource=resource)
+    int index = 0
+    while index < 2500:
+        trash = [index]
+        index = index + 1
+    print(value=wait for pending)
+`
+  }, root => {
+    const result = aug(root, 'run', { AUG_TRACE_DROPS: '1' });
+    assert.equal(result.status, 0, result.stderr);
+    assert.equal(result.stdout, '7\n');
+    assert.equal((result.stderr.match(/drop: Resource/g) ?? []).length, 1, result.stderr);
+  });
+});
+
 test('ERROR-1: starting defers a checked error until wait or implicit join', () => {
   const operations = `fail() returns int unless FileError:
     throw FileError()
@@ -352,6 +383,33 @@ catch HttpError error:
     assert.equal(result.status, 0, result.stderr);
     assert.equal(result.stdout, 'parent\n');
   });
+});
+
+test('ERROR-3: a public Task<T> parameter exposes Error at a helper wait', () => {
+  const operations = `fail() returns int unless FileError:
+    throw FileError()
+observe(Task<int> pending) returns int unless Error:
+    return wait for pending
+`;
+  withProject({
+    'operations.aug': operations,
+    'main.aug': `import fail and observe from operations
+try:
+    scope:
+        pending = start fail()
+        observe(pending=pending)
+catch Error error:
+    print(value="caught")
+`
+  }, root => {
+    const result = aug(root, 'run');
+    assert.equal(result.status, 0, result.stderr);
+    assert.equal(result.stdout, 'caught\n');
+  });
+  withProject({
+    'operations.aug': operations.replace('observe(Task<int> pending) returns int unless Error:', 'observe(Task<int> pending) returns int:'),
+    'main.aug': ''
+  }, root => assert.ok(diagnosticCodes(root).includes('THROWS')));
 });
 
 test('CLEANUP-1: always executes before a returned result is observed', () => {
