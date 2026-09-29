@@ -617,9 +617,10 @@ size_t aug_scope_depth(void) { return scope_count; }
 typedef struct AugHeldLock {struct AugHeldLock *previous; pthread_mutex_t *mutex; AugValue value;} AugHeldLock;
 void (*aug_mutex_wait_hook)(void);
 static void destroy_mutex(void *native) {pthread_mutex_destroy(native); free(native);}
+static const unsigned char shared_owned_field[] = {1};
 AugValue aug_shared_new(AugValue value) {
   AugFrame frame; aug_frame_enter(&frame, &value, 1);
-  AugValue result = aug_new_object("Shared", 1, NULL, NULL, 0);
+  AugValue result = aug_new_object("Shared", 1, shared_owned_field, NULL, 0);
   pthread_mutex_t *mutex = malloc(sizeof(*mutex)); if (!mutex || pthread_mutex_init(mutex, NULL)) fail("cannot initialize shared state");
   result.as.object->native = mutex; result.as.object->finalize = destroy_mutex; aug_set_field(result, 0, value);
   aug_frame_leave(&frame); return result;

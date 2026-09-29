@@ -186,6 +186,62 @@ test('a task pins mutable inputs until it is waited for and cannot escape its sc
     assert.notEqual(result.status, 0); assert.match(result.stderr, /scope/);
   } finally {rmSync(root, {recursive:true, force:true});}
 });
+test('tasks track mutable dependencies injected into scheduled calls', () => {
+  const root = mkdtempSync(join(tmpdir(), 'aug-injected-task-loans-'));
+  try {
+    writeFileSync(join(root, 'operations.aug'), `interface Counter:
+    increment() changes self
+    value() returns int
+CounterImpl() implements Counter:
+    mutable int _count = 0
+    increment() changes self:
+        _count = _count + 1
+    value() returns int:
+        return _count
+read(resolve Counter counter) returns int:
+    return counter.value()
+`);
+    const prefix = `import Counter and CounterImpl and read from operations
+implement Counter with CounterImpl shared mutable
+resolve Counter to counter
+scope:
+    first = start read()
+`;
+    writeFileSync(join(root, 'main.aug'), prefix + '    borrow counter:\n        counter.increment()\n    wait for first\n');
+    let result = spawnSync(process.execPath, [cli, 'check', root], {encoding: 'utf8'});
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /task/i);
+    writeFileSync(join(root, 'main.aug'), prefix + '    wait for first\n    borrow counter:\n        counter.increment()\n');
+    result = spawnSync(process.execPath, [cli, 'run', root], {encoding: 'utf8', timeout: 5000});
+    assert.equal(result.status, 0, result.stderr);
+  } finally { rmSync(root, {recursive: true, force: true}); }
+});
+test('dropping an owned Shared wrapper drops its transferred payload before later locals', () => {
+  const root = mkdtempSync(join(tmpdir(), 'aug-shared-drop-'));
+  try {
+    writeFileSync(join(root, 'operations.aug'), `interface Disposable:
+    drop()
+Resource() implements Disposable:
+    drop():
+        pass
+Marker() implements Disposable:
+    drop():
+        pass
+`);
+    writeFileSync(join(root, 'main.aug'), `import Resource and Marker from operations
+scope:
+    own Shared<Resource> state = Shared(value=Resource())
+own Marker marker = Marker()
+`);
+    const result = spawnSync(process.execPath, [cli, 'run', root], {
+      encoding: 'utf8', timeout: 5000, env: {...process.env, AUG_TRACE_DROPS: '1'}
+    });
+    assert.equal(result.status, 0, result.stderr);
+    const resource = result.stderr.indexOf('drop: Resource');
+    const marker = result.stderr.indexOf('drop: Marker');
+    assert.ok(resource >= 0 && marker > resource, result.stderr);
+  } finally { rmSync(root, {recursive: true, force: true}); }
+});
 test('scope-owned tasks support ordered grouped and collection waits', () => {
   const root = mkdtempSync(join(tmpdir(), 'aug-tasks-'));
   try {

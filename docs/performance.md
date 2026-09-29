@@ -528,7 +528,7 @@ else:
 | Tasks that capture injected mutable state; cleanup of owned shared values | These ownership and resource-lifetime cases still have gaps. Check the gap ledger before relying on them. |
 | Multicore workers, bounded channels and broadcasts | Tasks currently run on one OS thread; these features are not available yet. |
 | Independent HTTP conformance and adverse-client tests | Existing socket regressions do not cover the entire HTTP specification. |
-| Linux/Windows native web/crypto builds | The native bootstrap and full suite are verified on macOS ARM today. |
+| Other native platform builds | The native bootstrap and full suite are verified on macOS ARM and Linux ARM. Linux x86-64 runs in CI; Windows and other platforms remain unverified. |
 | Identity-provider hardening and durable storage | The OIDC demo is a development proof; persistence, key rotation, federation and certification remain. |
 | Stable package/native ABI and operational tooling | Source packages work, but compiler compatibility is exact and rich debugging remains limited. |
 

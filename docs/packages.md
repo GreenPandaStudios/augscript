@@ -12,7 +12,7 @@ The [augscript monorepo](https://github.com/GreenPandaStudios/augscript) version
 
 ## From a checkout
 
-Requires Node.js 24+, npm, and a C11 compiler. Web/crypto native dependency builds currently support **macOS**; the full suite is verified on Apple silicon. Broader platform support is tracked in the gap ledger.
+Requires Node.js 24+, npm, and a C11 compiler. Full web/crypto native builds run on macOS and Linux; the repository's Docker recipes supply the Linux build tools and libraries. Other platforms remain outside the tested support matrix.
 
 ```sh
 git clone git@github.com:GreenPandaStudios/augscript.git
@@ -41,7 +41,7 @@ The CLI depends on exact matching library versions. Import spellings stay `impor
 
 Native dependencies use `~/.cache/augscript/native/VERSION/PLATFORM-ARCH` for an installed CLI. Source checkouts use `.aug-native`. `AUG_NATIVE_HOME` selects a shared cache for CLI and VS Code; building dependencies is an explicit command.
 
-For core programs and JSON without web/crypto, `aug-native --extract-only --only minicoro,yyjson` downloads just the portable C sources. Compiler checkpoints use minicoro even in ordinary programs; this source dependency must be present before native execution. Full web/crypto bootstrap remains macOS only.
+For core programs and JSON without web/crypto, `aug-native --extract-only --only minicoro,yyjson` downloads just the portable C sources. Compiler checkpoints use minicoro even in ordinary programs; this source dependency must be present before native execution. Full web/crypto bootstrap is available on macOS and Linux.
 
 ## npm registry
 

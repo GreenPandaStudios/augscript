@@ -43,8 +43,9 @@ endpoint GET "/relay" as relay(HttpRequest request from request, resolve HttpCli
       assert.equal(session.socket.alpnProtocol,'h2');assert.equal(result.status,200);assert.deepEqual(JSON.parse(result.body),{message:'TLS verified'});
     } finally {session.destroy();}
     const prefix=resolve('.aug-native/prefix'), probe=join(root,'http3-probe');
-    const args=['-std=c11','-I'+join(prefix,'include'),resolve('tests/native/http3-client.c'),join(prefix,'lib/libwebsockets.a'),'-L'+join(prefix,'lib'),'-Wl,-rpath,'+join(prefix,'lib'),'-lgnutls','-lnettle','-lhogweed','-lgmp','-pthread','-o',probe];
+    const args=['-std=c11','-I'+join(prefix,'include'),resolve('tests/native/http3-client.c'),join(prefix,'lib/libwebsockets.a'),'-L'+join(prefix,'lib'),'-Wl,-rpath,'+join(prefix,'lib'),'-lgnutls','-lnettle','-lhogweed','-lgmp','-lz','-pthread','-o',probe];
     if(process.platform==='darwin')args.unshift('-isysroot','/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk','-D_DARWIN_C_SOURCE','-framework','CoreFoundation','-framework','SystemConfiguration');
+    if(process.platform==='linux')args.unshift('-D_GNU_SOURCE');
     const compiled=spawnSync('cc',args,{encoding:'utf8'});assert.equal(compiled.status,0,compiled.stderr);
     const result3=await new Promise((resolve,reject)=>{const child=spawn(probe,[String(port),cert]);let stdout='',stderr='';const timer=setTimeout(()=>{child.kill('SIGKILL');reject(Error('HTTP/3 probe timed out: '+stderr+errors));},10000);child.stdout.on('data',chunk=>stdout+=chunk);child.stderr.on('data',chunk=>stderr+=chunk);child.on('error',reject);child.on('exit',status=>{clearTimeout(timer);resolve({status,stdout,stderr});});});
     assert.equal(result3.status,0,result3.stderr+result3.stdout+errors+' Server signal: '+server.signalCode);assert.deepEqual(JSON.parse(result3.stdout),{message:'TLS verified'});

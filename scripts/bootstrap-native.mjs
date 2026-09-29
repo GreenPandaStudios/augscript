@@ -20,7 +20,7 @@ const downloads = join(directory, 'downloads');
 const sources = join(directory, 'sources');
 const logs = join(directory, 'logs');
 for (const path of [prefix, downloads, sources, logs]) mkdirSync(path, { recursive: true });
-if (!extractOnly && process.platform !== lock.platform) throw new Error(`Full native bootstrap currently targets ${lock.platform}; this host is ${process.platform}. Use --extract-only --only minicoro,yyjson for portable source dependencies.`);
+if (!extractOnly && !lock.platforms.includes(process.platform)) throw new Error(`Full native bootstrap supports ${lock.platforms.join(' and ')}; this host is ${process.platform}. Use --extract-only --only minicoro,yyjson for portable source dependencies.`);
 
 function run(command, args, cwd, label, env = process.env) {
   const path = join(logs, label + '.log');
@@ -31,7 +31,10 @@ function run(command, args, cwd, label, env = process.env) {
   if (result.error || result.status !== 0) throw new Error(`${label} failed: ${result.error?.message ?? result.status}. See ${path}\n` + readFileSync(path, 'utf8').split('\n').slice(-24).join('\n'));
 }
 
-for (const dependency of lock.dependencies.filter(dependency => !selected || selected.includes(dependency.name))) {
+const dependencies = lock.dependencies.filter(dependency => (!dependency.platforms || dependency.platforms.includes(process.platform)) && (!selected || selected.includes(dependency.name)));
+if (selected?.some(name => !dependencies.some(dependency => dependency.name === name)))
+  throw new Error(`One or more selected dependencies do not support ${process.platform}.`);
+for (const dependency of dependencies) {
   const archive = join(downloads, dependency.archive);
   if (!existsSync(archive)) {
     process.stdout.write(`Downloading ${dependency.name} ${dependency.version}\n`);
@@ -53,38 +56,55 @@ for (const dependency of lock.dependencies.filter(dependency => !selected || sel
 if (extractOnly) process.exit(0);
 
 const sdk = '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk';
-const cc = process.env.CC ?? '/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang';
-const environment = { ...process.env, SDKROOT: sdk, CC: cc, CC_FOR_BUILD: cc, CXX: cc.replace(/clang$/, 'clang++'),
-  CFLAGS: `-O2 -fPIC${existsSync(sdk) ? ' -isysroot ' + sdk : ''}`,
-  CXXFLAGS: `-O2 -fPIC${existsSync(sdk) ? ' -isysroot ' + sdk : ''}`,
-  CPPFLAGS: `-I${prefix}/include${existsSync(sdk) ? ' -isysroot ' + sdk : ''}`, LDFLAGS: `-L${prefix}/lib -Wl,-rpath,${prefix}/lib`,
+const mac = process.platform === 'darwin';
+const cc = process.env.CC ?? (mac ? '/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang' : 'clang');
+const sysroot = mac && existsSync(sdk) ? ' -isysroot ' + sdk : '';
+const environment = { ...process.env, ...(mac ? { SDKROOT: sdk } : {}), CC: cc, CC_FOR_BUILD: cc, CXX: process.env.CXX ?? cc.replace(/clang$/, 'clang++'),
+  CFLAGS: `-O2 -fPIC${sysroot}`,
+  CXXFLAGS: `-O2 -fPIC${sysroot}`,
+  CPPFLAGS: `-I${prefix}/include${sysroot}`, LDFLAGS: `-L${prefix}/lib -Wl,-rpath,${prefix}/lib`,
   PKG_CONFIG: join(prefix, 'bin', 'pkgconf'), PKG_CONFIG_PATH: join(prefix, 'lib', 'pkgconfig'),
+  LD_LIBRARY_PATH: `${prefix}/lib${process.env.LD_LIBRARY_PATH ? ':' + process.env.LD_LIBRARY_PATH : ''}`,
   PATH: join(prefix, 'bin') + ':' + process.env.PATH,
 };
 const parallel = String(Math.min(8, availableParallelism()));
 for (const name of ['pkgconf', 'gmp', 'nettle', 'gnutls']) {
   const marker = join(prefix, '.built-' + name);
-  if (existsSync(marker)) continue;
+  const checksum = lock.dependencies.find(dependency => dependency.name === name).sha256;
+  if (existsSync(marker)) {
+    if (readFileSync(marker, 'utf8').trim() !== checksum) throw new Error(`${name}: installed build differs from the dependency lock; choose a new build directory.`);
+    continue;
+  }
   const source = join(sources, name);
   const extra = name === 'gmp' ? ['--disable-cxx', '--with-pic'] : name === 'nettle' ? ['--disable-documentation'] : name === 'gnutls' ? [
     '--disable-doc', '--disable-tests', '--disable-tools', '--disable-cxx', '--disable-guile',
     '--disable-nls', '--disable-idn', '--without-p11-kit', '--without-brotli', '--without-zstd',
     '--with-included-libtasn1', '--with-included-unistring', '--disable-libdane',
   ] : [];
+  // GnuTLS 3.8.13's audit header does not define this diagnostic-only macro
+  // when Clang 14 reports __has_c_attribute but lacks [[maybe_unused]].
+  const buildEnvironment = name === 'gnutls' && !mac ?
+    {...environment, CFLAGS: environment.CFLAGS + ' -DCRAU_MAYBE_UNUSED='} : environment;
   process.stdout.write(`Building ${name}; logs: ${logs}\n`);
-  run(join(source, 'configure'), ['--prefix=' + prefix, '--enable-shared', '--disable-static', ...extra], source, name + '-configure', environment);
-  run('/usr/bin/make', ['-j' + parallel], source, name + '-build', environment);
-  run('/usr/bin/make', ['install'], source, name + '-install', environment);
-  writeFileSync(marker, lock.dependencies.find(dependency => dependency.name === name).sha256 + '\n');
+  run(join(source, 'configure'), ['--prefix=' + prefix, '--enable-shared', '--disable-static', ...extra], source, name + '-configure', buildEnvironment);
+  run('/usr/bin/make', ['-j' + parallel], source, name + '-build', buildEnvironment);
+  run('/usr/bin/make', ['install'], source, name + '-install', buildEnvironment);
+  writeFileSync(marker, checksum + '\n');
 }
 
-const cmake = join(sources, 'cmake', 'CMake.app', 'Contents', 'bin', 'cmake');
+const cmake = mac ? join(sources, 'cmake', 'CMake.app', 'Contents', 'bin', 'cmake') : 'cmake';
 const build = join(directory, 'build-libwebsockets');
-if (!existsSync(join(prefix, '.built-libwebsockets'))) {
+const webMarker = join(prefix, '.built-libwebsockets');
+const webChecksum = lock.dependencies.find(dependency => dependency.name === 'libwebsockets').sha256;
+if (existsSync(webMarker) && readFileSync(webMarker, 'utf8').trim() !== webChecksum)
+  throw new Error('libwebsockets: installed build differs from the dependency lock; choose a new build directory.');
+if (!existsSync(webMarker)) {
   process.stdout.write(`Building libwebsockets with GnuTLS, HTTP/2 and HTTP/3\n`);
   run(cmake, ['-S', join(sources, 'libwebsockets'), '-B', build,
     '-DCMAKE_BUILD_TYPE=Release', '-DCMAKE_INSTALL_PREFIX=' + prefix, '-DCMAKE_PREFIX_PATH=' + prefix,
-    '-DCMAKE_C_COMPILER=' + cc, '-DCMAKE_OSX_SYSROOT=' + sdk,
+    '-DCMAKE_C_COMPILER=' + cc, ...(mac ? ['-DCMAKE_OSX_SYSROOT=' + sdk] : []),
+    '-DLWS_GNUTLS_LIBRARIES=' + join(prefix, 'lib', mac ? 'libgnutls.dylib' : 'libgnutls.so'),
+    '-DLWS_GNUTLS_INCLUDE_DIRS=' + join(prefix, 'include'),
     '-DLWS_WITH_GNUTLS=ON', '-DLWS_WITH_HTTP2=ON', '-DLWS_WITH_HTTP3=ON',
     '-DLWS_WITH_STATIC=ON', '-DLWS_WITH_SHARED=OFF', '-DLWS_WITHOUT_TESTAPPS=ON',
     '-DLWS_WITHOUT_TEST_SERVER=ON', '-DLWS_WITHOUT_TEST_CLIENT=ON',
@@ -93,8 +113,8 @@ if (!existsSync(join(prefix, '.built-libwebsockets'))) {
   ], root, 'libwebsockets-configure', environment);
   run(cmake, ['--build', build, '--parallel', parallel], root, 'libwebsockets-build', environment);
   run(cmake, ['--install', build], root, 'libwebsockets-install', environment);
-  writeFileSync(join(prefix, '.built-libwebsockets'), lock.dependencies.find(dependency => dependency.name === 'libwebsockets').sha256 + '\n');
+  writeFileSync(webMarker, webChecksum + '\n');
 }
 writeFileSync(join(prefix, 'aug-native-manifest.json'), JSON.stringify({ platform: process.platform, architecture: process.arch,
-  dependencies: lock.dependencies.map(({name, version, revision, sha256}) => ({name, version, revision, sha256})) }, null, 2) + '\n');
+  dependencies: dependencies.map(({name, version, revision, sha256}) => ({name, version, revision, sha256})) }, null, 2) + '\n');
 process.stdout.write(`Native dependencies ready at ${prefix}\n`);

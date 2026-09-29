@@ -31,7 +31,7 @@ git tag v0.19.0
 git push origin main v0.19.0
 ```
 
-`release.yml` validates the tag against every manifest, runs compiler/native/docs/package gates, and uploads artifacts to a **draft prerelease**. Review the draft and publish it in GitHub Releases. `ci.yml` checks pushes and pull requests. Linux verifies installed core programs with the portable task/JSON sources and checks web/crypto imports and editor support. Full native web/crypto gates run on macOS with the pinned native bootstrap.
+`release.yml` validates the tag against every manifest, runs compiler/native/docs/package gates, and uploads artifacts to a **draft prerelease**. Review the draft and publish it in GitHub Releases. `ci.yml` checks pushes and pull requests. Linux CI builds the pinned full native stack, runs the native suite, and executes core and crypto apps in the matching runtime image. macOS CI runs the same native suite with its private bootstrap.
 
 ## npm publication
 
@@ -68,4 +68,4 @@ Enable GitHub Pages with **GitHub Actions** as its publishing source. `docs.yml`
 
 ## Current limits
 
-August is experimental. Native web/crypto bootstrap currently targets macOS; other platforms are unverified. Registry and Marketplace identities require owner configuration. User-authored source packages are supported through npm transport; prebuilt native dependency releases and a stable external native adapter ABI remain future work. See [the gap ledger](web-library-gaps.md) and [performance assessment](performance.md).
+August is experimental. Native web/crypto bootstrap supports macOS and Linux; other platforms are unverified. Registry and Marketplace identities require owner configuration. User-authored source packages are supported through npm transport; prebuilt native dependency releases and a stable external native adapter ABI remain future work. See [the gap ledger](web-library-gaps.md) and [performance assessment](performance.md).

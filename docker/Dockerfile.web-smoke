@@ -1,0 +1,7 @@
+# syntax=docker/dockerfile:1
+FROM augscript/build:local AS build
+COPY docker/web-smoke /tmp/web-smoke
+RUN aug build /tmp/web-smoke --out /tmp/program
+
+FROM augscript/run:local
+COPY --from=build --chown=august:august /tmp/program /app/program

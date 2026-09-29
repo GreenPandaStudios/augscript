@@ -1,6 +1,6 @@
 # Production readiness and dependencies
 
-August 0.19 is experimental. The compiler, CLI, packages, standard declarations, and editor can be tried today; the project does not claim general production readiness. Use the [getting-started guide](getting-started.md) for a first application and [the roadmap](roadmap.md) for the release gates.
+August 0.19 is experimental. The compiler, CLI, packages, standard declarations, and editor can be tried today; the project does not claim general production readiness. Use the [getting-started guide](getting-started.md) for a first application, [the roadmap](roadmap.md) for release gates, and [the compatibility page](compatibility.md) for the proposed 1.0 support contract.
 
 ## What is measured and verified
 
@@ -28,8 +28,8 @@ The exact versions, archive URLs, and SHA-256 values are in [`native-dependencie
 
 ## Release gates still open
 
-- **Platform support:** the full pinned web/crypto bootstrap is verified only on macOS. The [Docker build/run bases](docker.md) support core, JSON, and task programs on Linux, not full web/crypto apps.
-- **Concurrency and ownership:** tasks use one OS thread. Some mutable capture and shared payload lifetime cases need stronger compiler/runtime proof.
+- **Platform support:** the full pinned web/crypto bootstrap passes on macOS ARM and Linux ARM. [Docker build/run bases](docker.md) run core, web, and crypto programs on Linux. Linux x86-64 runs in CI; other platforms remain unverified.
+- **Concurrency and ownership:** tasks use one OS thread. Injected task captures and owned `Shared<T>` payload cleanup have regressions; broader adversarial conformance and a stable public delayed-error contract remain.
 - **Security and reliability:** HTTP and OIDC need broad protocol conformance, durable credentials and keys, rotation, long-running load tests, and deployment guidance. The [gap ledger](web-library-gaps.md) records the precise work.
 - **Package and ABI stability:** published npm identities, reproducible releases, compatibility policy, and native adapter ABI need stable release gates.
 - **Operational behavior:** failure handling, cancellation, instrumentation, platform builds, and resource ceilings need repeated CI and field testing.

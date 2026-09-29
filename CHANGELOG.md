@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Task capture analysis now includes injected dependencies; dropping an owned `Shared<T>` also drops its transferred payload in local cleanup order.
+- The pinned full native bootstrap builds on Linux as well as macOS. Linux build/run Docker images include web and crypto dependencies, with core, crypto, and typed HTTP runtime smoke programs.
+- The wiki separates web/OIDC library hardening from the language's 1.0 roadmap and documents the proposed compatibility and platform support policy.
+
 ## 0.19.0
 
 - Deterministic `aug spec`, adjacent Markdown explanations, private behavior and same-file tests, used dependency surfaces, and precise-version offline dependency documents.
