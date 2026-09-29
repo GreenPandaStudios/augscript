@@ -641,6 +641,31 @@ print(value=probe())
   });
 });
 
+test('TASK-19: waiting for a task that references another task does not join both', () => {
+  withProject({
+    'operations.aug': `size(List<int> values) returns int:
+    return values.length()
+echo(List<Task<int>> tasks) returns List<Task<int>>:
+    return tasks
+probe():
+    items = [1]
+    scope:
+        second = start size(values=items)
+        tasks = [second]
+        first = start echo(tasks=tasks)
+        wait for first
+        borrow items:
+            items.append(value=2)
+`,
+    'main.aug': `import probe from operations
+probe()
+`
+  }, root => {
+    const issues = diagnostics(root);
+    assert.ok(issues.some(issue => /Cannot borrow items while a task uses it/.test(issue.message)), JSON.stringify(issues));
+  });
+});
+
 test('ERROR-1: starting defers a checked error until wait or implicit join', () => {
   const operations = `fail() returns int unless FileError:
     throw FileError()
