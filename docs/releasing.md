@@ -53,6 +53,13 @@ Run **Publish npm packages** with an existing verified version tag. It checks ou
 
 Confirm ownership of the `augscript` Marketplace publisher. VSIX files can be installed directly. For Marketplace publication, follow [Microsoft's publishing guide](https://code.visualstudio.com/api/working-with-extensions/publishing-extension) and configure the publisher's Microsoft Entra identity/federation. Publish the verified VSIX with `vsce publish --packagePath ... --azure-credential` using that identity.
 
+The packaging script supplies the repository's `vscode` directory as the HTTPS
+base for README images. Verify those URLs are public before Marketplace
+publication; a private or not-yet-created repository cannot serve them to other
+users. The extension logo and **AugScript: Open Welcome** images are bundled
+locally and do not depend on that image host. To update artwork, run
+`npm --prefix vscode run artwork` and commit the rendered PNGs.
+
 Global Azure DevOps PATs retire on December 1, 2026; this project does not introduce a new long-lived Marketplace PAT. Marketplace identity setup is an external owner prerequisite.
 
 ## Documentation deployment

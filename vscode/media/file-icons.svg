@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="344" viewBox="0 0 1200 344">
+  <rect width="1200" height="344" rx="24" fill="#0C182B"/>
+  <g font-family="Arial, Helvetica, sans-serif">
+    <text x="40" y="57" fill="#F2F7FC" font-size="26" font-weight="700">Know a file's role at a glance</text>
+    <g transform="translate(36 98)">
+    <rect width="264" height="208" rx="16" fill="#132A40" stroke="#26435B"/>
+    <g transform="translate(100 20) scale(4)">
+  <path d="M3 1.5h6.3L13 5.2v8.9c0 .8-.5 1.4-1.3 1.4H4.3c-.8 0-1.3-.6-1.3-1.4V2.9c0-.8.5-1.4 1.3-1.4Z" fill="#163349" stroke="#54B9E8" stroke-width="1.1"/>
+  <path d="M9.3 1.7V5h3.3" fill="none" stroke="#54B9E8" stroke-width="1"/>
+  <path d="m6.5 6.3-1.4 1.1 1.4 1.1m3-2.2 1.4 1.1-1.4 1.1" fill="none" stroke="#BFEFFF" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2"/>
+  <path d="m8 10.1 1.5 2.6h-3L8 10.1Z" fill="#FFB45E"/>
+</g>
+    <text x="132" y="116" text-anchor="middle" fill="#79D3F5" font-size="22" font-weight="700">module.aug</text>
+    <text x="132" y="151" text-anchor="middle" fill="#B7CBDC" font-size="16">August source</text>
+    <g transform="translate(64 175)">
+  <path d="M3 1.5h6.3L13 5.2v8.9c0 .8-.5 1.4-1.3 1.4H4.3c-.8 0-1.3-.6-1.3-1.4V2.9c0-.8.5-1.4 1.3-1.4Z" fill="#163349" stroke="#54B9E8" stroke-width="1.1"/>
+  <path d="M9.3 1.7V5h3.3" fill="none" stroke="#54B9E8" stroke-width="1"/>
+  <path d="m6.5 6.3-1.4 1.1 1.4 1.1m3-2.2 1.4 1.1-1.4 1.1" fill="none" stroke="#BFEFFF" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2"/>
+  <path d="m8 10.1 1.5 2.6h-3L8 10.1Z" fill="#FFB45E"/>
+</g>
+    <text x="87" y="188" fill="#B7CBDC" font-size="13">Actual 16px size</text>
+  </g>
+<g transform="translate(324 98)">
+    <rect width="264" height="208" rx="16" fill="#132A40" stroke="#26435B"/>
+    <g transform="translate(100 20) scale(4)">
+  <path d="M3 1.5h6.3L13 5.2v8.9c0 .8-.5 1.4-1.3 1.4H4.3c-.8 0-1.3-.6-1.3-1.4V2.9c0-.8.5-1.4 1.3-1.4Z" fill="#163349" stroke="#F8B64F" stroke-width="1.1"/>
+  <path d="M9.3 1.7V5h3.3" fill="none" stroke="#F8B64F" stroke-width="1"/>
+  <circle cx="8" cy="9.9" r="3.5" fill="#F8B64F"/>
+  <path d="m7 7.7 3 2.2-3 2.2V7.7Z" fill="#193348"/>
+</g>
+    <text x="132" y="116" text-anchor="middle" fill="#F8B64F" font-size="22" font-weight="700">main.aug</text>
+    <text x="132" y="151" text-anchor="middle" fill="#B7CBDC" font-size="16">Application startup</text>
+    <g transform="translate(64 175)">
+  <path d="M3 1.5h6.3L13 5.2v8.9c0 .8-.5 1.4-1.3 1.4H4.3c-.8 0-1.3-.6-1.3-1.4V2.9c0-.8.5-1.4 1.3-1.4Z" fill="#163349" stroke="#F8B64F" stroke-width="1.1"/>
+  <path d="M9.3 1.7V5h3.3" fill="none" stroke="#F8B64F" stroke-width="1"/>
+  <circle cx="8" cy="9.9" r="3.5" fill="#F8B64F"/>
+  <path d="m7 7.7 3 2.2-3 2.2V7.7Z" fill="#193348"/>
+</g>
+    <text x="87" y="188" fill="#B7CBDC" font-size="13">Actual 16px size</text>
+  </g>
+<g transform="translate(612 98)">
+    <rect width="264" height="208" rx="16" fill="#132A40" stroke="#26435B"/>
+    <g transform="translate(100 20) scale(4)">
+  <path d="M3 1.5h6.3L13 5.2v8.9c0 .8-.5 1.4-1.3 1.4H4.3c-.8 0-1.3-.6-1.3-1.4V2.9c0-.8.5-1.4 1.3-1.4Z" fill="#302344" stroke="#B58CEB" stroke-width="1.1"/>
+  <path d="M9.3 1.7V5h3.3" fill="none" stroke="#B58CEB" stroke-width="1"/>
+  <path d="M5 11.8h2.1m-2.1-3h3.1m-.2 2.6 3-3m-2.8 0h2.8v2.8" fill="none" stroke="#E7D5FF" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.4"/>
+</g>
+    <text x="132" y="116" text-anchor="middle" fill="#B58CEB" font-size="22" font-weight="700">export.aug</text>
+    <text x="132" y="151" text-anchor="middle" fill="#B7CBDC" font-size="16">Public module surface</text>
+    <g transform="translate(64 175)">
+  <path d="M3 1.5h6.3L13 5.2v8.9c0 .8-.5 1.4-1.3 1.4H4.3c-.8 0-1.3-.6-1.3-1.4V2.9c0-.8.5-1.4 1.3-1.4Z" fill="#302344" stroke="#B58CEB" stroke-width="1.1"/>
+  <path d="M9.3 1.7V5h3.3" fill="none" stroke="#B58CEB" stroke-width="1"/>
+  <path d="M5 11.8h2.1m-2.1-3h3.1m-.2 2.6 3-3m-2.8 0h2.8v2.8" fill="none" stroke="#E7D5FF" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.4"/>
+</g>
+    <text x="87" y="188" fill="#B7CBDC" font-size="13">Actual 16px size</text>
+  </g>
+<g transform="translate(900 98)">
+    <rect width="264" height="208" rx="16" fill="#132A40" stroke="#26435B"/>
+    <g transform="translate(100 20) scale(4)">
+  <path d="M3 1.5h6.3L13 5.2v8.9c0 .8-.5 1.4-1.3 1.4H4.3c-.8 0-1.3-.6-1.3-1.4V2.9c0-.8.5-1.4 1.3-1.4Z" fill="#153D42" stroke="#48C7C5" stroke-width="1.1"/>
+  <path d="M9.3 1.7V5h3.3" fill="none" stroke="#48C7C5" stroke-width="1"/>
+  <path d="M5.2 7h5.6M5.2 9.6h5.6m-5.6 2.6h5.6" stroke="#B7F3EF" stroke-linecap="round" stroke-width="1"/>
+  <circle cx="7.2" cy="7" r="1" fill="#48C7C5"/><circle cx="9.5" cy="9.6" r="1" fill="#48C7C5"/><circle cx="6.6" cy="12.2" r="1" fill="#48C7C5"/>
+</g>
+    <text x="132" y="116" text-anchor="middle" fill="#48C7C5" font-size="22" font-weight="700">main.yaml</text>
+    <text x="132" y="151" text-anchor="middle" fill="#B7CBDC" font-size="16">Project configuration</text>
+    <g transform="translate(64 175)">
+  <path d="M3 1.5h6.3L13 5.2v8.9c0 .8-.5 1.4-1.3 1.4H4.3c-.8 0-1.3-.6-1.3-1.4V2.9c0-.8.5-1.4 1.3-1.4Z" fill="#153D42" stroke="#48C7C5" stroke-width="1.1"/>
+  <path d="M9.3 1.7V5h3.3" fill="none" stroke="#48C7C5" stroke-width="1"/>
+  <path d="M5.2 7h5.6M5.2 9.6h5.6m-5.6 2.6h5.6" stroke="#B7F3EF" stroke-linecap="round" stroke-width="1"/>
+  <circle cx="7.2" cy="7" r="1" fill="#48C7C5"/><circle cx="9.5" cy="9.6" r="1" fill="#48C7C5"/><circle cx="6.6" cy="12.2" r="1" fill="#48C7C5"/>
+</g>
+    <text x="87" y="188" fill="#B7CBDC" font-size="13">Actual 16px size</text>
+  </g>
+  </g>
+</svg>

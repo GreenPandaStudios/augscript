@@ -1,2 +1,5 @@
 prepare.mjs
+scripts/**
+media/*.svg
+media/README.md
 compiler/.aug-build/**

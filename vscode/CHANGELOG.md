@@ -2,6 +2,9 @@
 
 ## 0.17.0
 
+- August extension logo, illustrated README, and default light/dark language icons.
+- Illustrated offline welcome page with bundled images and guide links.
+- Enable File Icons command, with distinct source, startup, export, and configuration marks.
 - Shared repository, versioned language wiki and generated library API documentation.
 - Compiler parity with separately distributed CLI/stdlib/web/crypto packages.
 - Installed CLI version reporting and native cache support.

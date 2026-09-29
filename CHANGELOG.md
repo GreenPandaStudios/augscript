@@ -2,6 +2,7 @@
 
 ## 0.17.0
 
+- August extension artwork, default language icons, and workspace file icon activation.
 - Canonical language wiki with a searchable, mobile-friendly documentation site.
 - Generated public library API and language construct reference shared with editor documentation.
 - Versioned CLI, standard library, web, crypto and VS Code distribution manifests.

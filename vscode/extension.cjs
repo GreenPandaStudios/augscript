@@ -463,6 +463,14 @@ function activate(context) {
   context.subscriptions.push(vscode.commands.registerCommand('augscript.test', () => executeProject(context, 'test')));
   context.subscriptions.push(vscode.commands.registerCommand('augscript.explain', () => showContext(context, false)));
   context.subscriptions.push(vscode.commands.registerCommand('augscript.context', () => showContext(context, true)));
+  context.subscriptions.push(vscode.commands.registerCommand('augscript.openWelcome', () =>
+    vscode.commands.executeCommand('markdown.showPreview',
+      vscode.Uri.file(path.join(context.extensionPath, 'media', 'welcome.md')))));
+  context.subscriptions.push(vscode.commands.registerCommand('augscript.enableIcons', async () => {
+    const target = vscode.workspace.workspaceFolders?.length
+      ? vscode.ConfigurationTarget.Workspace : vscode.ConfigurationTarget.Global;
+    await vscode.workspace.getConfiguration('workbench').update('iconTheme', 'augscript-icons', target);
+  }));
   context.subscriptions.push(vscode.commands.registerCommand('augscript.openTestingGuide', () =>
     openGuide(context, 'testing.md')));
   context.subscriptions.push(vscode.commands.registerCommand('augscript.openGuide', () =>

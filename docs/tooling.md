@@ -158,6 +158,30 @@ Save a report, then compare architecture with --baseline previous.json. Reports 
 
 ## Persistent editor checks and reproducibility
 
+### File icons
+
+The VS Code extension includes an August logo and a file icon theme. Run
+**AugScript: Open Welcome** for the illustrated overview and guides; its images
+are bundled and work offline. Run
+**AugScript: Enable File Icons** to select it for the current workspace, or use
+**Preferences: File Icon Theme → AugScript Icons**. The repository already sets
+`workbench.iconTheme` to `augscript-icons` in its workspace settings.
+
+| File | Icon meaning |
+| --- | --- |
+| `.aug` | Blue source file. |
+| `main.aug` | Amber startup file. |
+| `export.aug` | Purple public module surface. |
+| `main.yaml` | Teal project configuration. |
+
+Default light/dark language icons also work with compatible icon themes. The
+August theme provides the special startup and export marks. After installing an
+updated VSIX, use **Developer: Reload Window** if the editor still displays the
+previous version. Editable vector artwork and its rendering instructions live
+in `vscode/media`.
+
+### Language server
+
 The language server implements the [LSP 3.17 protocol](https://github.com/Microsoft/language-server-protocol/blob/gh-pages/_specifications/lsp/3.17/specification.md) over Content-Length framed UTF-8 messages. It handles document versions, diagnostics, hover, completion, definitions, formatting, fixes, and semantic tokens.
 
 One server runs per project. Parsed modules and checked import closures are cached by source/configuration revision. Unrelated edits reuse the previous immutable semantic document; dependency edits invalidate its closure. Local files can be checked while main composition is incomplete. Whole-project check/build still validates all bindings and startup.

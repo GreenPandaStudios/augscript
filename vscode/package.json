@@ -2,6 +2,7 @@
   "name": "augscript",
   "displayName": "AugScript",
   "description": "Language support for AugScript",
+  "icon": "media/augscript.png",
   "version": "0.17.0",
   "repository": {
     "type": "git",
@@ -37,10 +38,12 @@
   ],
   "scripts": {
     "vscode:prepublish": "node prepare.mjs",
-    "package": "vsce package --no-dependencies"
+    "package": "vsce package --no-dependencies --baseContentUrl https://github.com/GreenPandaStudios/augscript/blob/main/vscode --baseImagesUrl https://github.com/GreenPandaStudios/augscript/raw/main/vscode",
+    "artwork": "node scripts/render-artwork.mjs"
   },
   "devDependencies": {
-    "@vscode/vsce": "3.9.2"
+    "@vscode/vsce": "3.9.2",
+    "sharp": "0.35.4"
   },
   "contributes": {
     "languages": [
@@ -53,7 +56,11 @@
         "extensions": [
           ".aug"
         ],
-        "configuration": "./language-configuration.json"
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./icons/aug-light.svg",
+          "dark": "./icons/aug.svg"
+        }
       }
     ],
     "grammars": [
@@ -113,6 +120,14 @@
       }
     ],
     "commands": [
+      {
+        "command": "augscript.openWelcome",
+        "title": "AugScript: Open Welcome"
+      },
+      {
+        "command": "augscript.enableIcons",
+        "title": "AugScript: Enable File Icons"
+      },
       {
         "command": "augscript.explain",
         "title": "AugScript: Explain Current File"

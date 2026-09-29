@@ -1,6 +1,8 @@
 # AugScript for VS Code
 
-Version 0.16 bundles the compiler, runtime, native bootstrap, and language guides.
+![August — readable code, clear dependencies](media/banner.png)
+
+Version 0.17 bundles the current compiler, runtime, native bootstrap, language wiki, and generated library API guides.
 
 ## Editing
 
@@ -21,6 +23,8 @@ Open a .aug file, then use the Command Palette:
 
 | Command | Action |
 | --- | --- |
+| AugScript: Open Welcome | Open the illustrated local overview, icons, and bundled guides. |
+| AugScript: Enable File Icons | Select the August file icon theme for the current workspace. |
 | AugScript: Build Project | Compile the complete project to native C. |
 | AugScript: Run Project | Build and execute startup. |
 | AugScript: Test Project | Run every test in a task terminal. |
@@ -46,12 +50,18 @@ The AugScript debugger builds the project, then uses LLVM lldb-dap. Install that
 
 Place /** Javadoc */ before a declaration. Parameter labels, return tags, and effective error tags are checked. Documentation follows imports and interface implementations. Supported tags include @param, @return, @throws, @see, and @deprecated.
 
-Choose **Preferences: File Icon Theme → AugScript Icons** for the bundled SVG theme. main.aug has the startup icon, export.aug the public-surface icon, and main.yaml the configuration icon. Other .aug files and common source/folder types have their own icons.
+![August source, startup, exports, and configuration file icons](media/file-icons.png)
+
+Run **AugScript: Enable File Icons**, or choose **Preferences: File Icon Theme → AugScript Icons**. `main.aug` has an amber startup icon, `export.aug` a purple public-surface icon, and `main.yaml` a teal configuration icon. Other `.aug` files and common source/folder types have their own icons. The August repository and login example enable this theme in their workspace settings.
+
+The extension also supplies light and dark default `.aug` language icons for themes that support language defaults. The bundled theme gives `main.aug` and `export.aug` their distinct marks.
+
+**AugScript: Open Welcome** displays the same artwork from the installed extension, including when offline. The Extensions details README uses hosted images from the repository.
 
 ## Requirements and settings
 
 Node.js 24+ is required. Native commands additionally require a C11 compiler. Configure augscript.nodePath if Node is not on VS Code's PATH, or augscript.compilerPath for a custom CLI. The extension otherwise uses its bundled compiler.
 
-For web/crypto/JSON/task programs, run `node scripts/bootstrap-native.mjs` in the compiler repository, then set `augscript.nativeHome` to its absolute `.aug-native` directory. The compiler and bootstrap also accept AUG_NATIVE_HOME. The extension includes compiler/scripts/bootstrap-native.mjs for a private dependency build; native binaries are not bundled. The pinned bootstrap currently targets macOS ARM.
+For web/crypto programs, run `node scripts/bootstrap-native.mjs` in the compiler repository, then set `augscript.nativeHome` to its absolute `.aug-native` directory. The compiler and bootstrap also accept AUG_NATIVE_HOME. The extension includes `compiler/scripts/bootstrap-native.mjs`; installed copies use a writable, versioned user cache by default. Native binaries are not bundled. The complete bootstrap currently targets macOS; `--extract-only --only minicoro,yyjson` supplies portable task/JSON sources for a C11 compiler.
 
-Use the guide commands to read the bundled documentation. This is an experimental language with conservative ownership analysis, one-project builds, cooperative tasks on one OS thread, and no package resolver. Multicore workers, channels/broadcasts and inbound streaming remain documented gaps.
+Use the guide commands to read the bundled documentation. The CLI and built-in standard, web and crypto libraries also have separate versioned distribution packages. This is an experimental language with conservative ownership analysis, one-project builds, cooperative tasks on one OS thread, and no third-party August package resolver. Multicore workers, channels/broadcasts and inbound streaming remain documented gaps.

@@ -1,3 +1,4 @@
 {
-  "augscript.nativeHome": "${workspaceFolder}/.aug-native"
+  "augscript.nativeHome": "${workspaceFolder}/.aug-native",
+  "workbench.iconTheme": "augscript-icons"
 }
