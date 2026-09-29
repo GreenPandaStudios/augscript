@@ -6,9 +6,10 @@ August 0.19 checks ownership before compiling and joins every child before its `
 
 | Rule | Developer-visible behavior | Conformance case |
 | --- | --- | --- |
-| Owned moves | Passing an `own` value to an `own` input or `Shared(value=...)` consumes the old name. A second use is a compile error. | `OWN-1`, `SHARED-1` |
+| Owned moves | Passing an `own` value to an `own` input or `Shared(value=...)` consumes the old name. A second use is a compile error. A value borrowed by a child cannot move through a call, another `Shared<T>`, a local declaration, or a return until the child finishes. | `OWN-1`, `SHARED-1`, `TASK-8`, `TASK-11` through `TASK-13` |
 | Mutable access | Reading through another alias during `borrow` is a compile error. The alias can be read again after the block. | `BORROW-1` |
-| Child captures | A child can read a managed object without copying it. The parent must wait before mutating that object through any alias, borrowed call, or field write. This applies even when the parent opened `borrow` before starting the child. Every possible branch must wait before mutation resumes. | `TASK-1` through `TASK-4` |
+| Child captures | A child can read a managed object without copying it. The parent must wait before mutating that object through any alias, borrowed call, or field write. This applies even when the parent opened `borrow` before starting the child. Every possible branch must wait before mutation resumes. Freezing also waits for active mutable access. | `TASK-1` through `TASK-4`, `TASK-10`, `TASK-14` |
+| Repeated starts | A `start` inside a loop can create several children. Waiting for one result does not release captures from other iterations; the enclosing `scope` joins them all. Put a `scope` inside the loop when each iteration should release its capture before the next iteration. | `TASK-7`, `TASK-15`, `TASK-16` |
 | Checked child errors | Starting a child checks errors in its argument expressions. An error from the scheduled operation is checked at `wait for` or at the implicit scope join. Within the same scope, the checker knows the child's declared errors. A helper given a public `Task<T>` parameter handles or declares `Error`, since that type does not carry a narrower error list. | `ERROR-1`, `ERROR-3` |
 
 The compiler tracks object origins through aliases and fields. It can reject code when it cannot prove that two references are separate. [The language guide](reference.md#ownership-and-read-access) explains `own`, `borrow`, `freeze`, and `Shared<T>`.
@@ -25,4 +26,4 @@ The compiler tracks object origins through aliases and fields. It can reject cod
 
 Tasks currently run cooperatively on one OS thread. A long loop reaches cancellation at compiler-inserted checkpoints. `Shared<T>` is the explicit path for synchronized mutable state. The runtime does not yet promise parallel CPU execution.
 
-Run the focused suite with `node --test tests/language-conformance.test.mjs`. The full repository test command also runs existing [concurrency](../tests/concurrency.test.mjs), ownership, errors, formatter, and generated-spec tests. The 0.x language semantics gate is met for this documented cooperative task model. The [roadmap](roadmap.md) tracks the remaining portable-build, distribution, and final compatibility gates before 1.0.
+Run the focused suite with `node --test tests/language-conformance.test.mjs`. The full repository test command also runs existing [concurrency](../tests/concurrency.test.mjs), ownership, errors, formatter, and generated-spec tests. This suite is growing through adversarial review; a green run does not establish complete ownership safety. The [roadmap](roadmap.md) keeps the language semantics gate open until that review and native CI finish.

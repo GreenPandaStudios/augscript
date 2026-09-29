@@ -1114,7 +1114,7 @@ Cache one stateless binding for the process. Sharing stateful instances requires
 Shared<T>
 ```
 
-Synchronized mutable state. Construction takes a fresh or owned value. Read and mutate the value only through lock shared as state.
+Synchronized mutable state. Construction takes a fresh or owned value. Read and mutate the value only through lock shared as state. A child borrowing an owned Shared<T> pins the wrapper until it finishes; the parent cannot move it into another owner while the child uses it.
 
 ## some
 
@@ -1130,7 +1130,7 @@ Match the present case of a nullable value and introduce a read-only non-null na
 task = start loadUsers()
 ```
 
-Start a child task in a scope. Receiver and arguments evaluate immediately. Scheduled errors are checked at waits and implicit scope joins; an unhandled child error cancels siblings. A captured object cannot be mutated by the parent until the child is waited for, including inside an existing borrow block.
+Start a child task in a scope. Receiver and arguments evaluate immediately. Scheduled errors are checked at waits and implicit scope joins; an unhandled child error cancels siblings. A captured object cannot be mutated or moved by the parent while the child uses it. When start runs inside a loop, waiting for one result does not release captures from other iterations; the enclosing scope joins them all.
 
 ## streams
 

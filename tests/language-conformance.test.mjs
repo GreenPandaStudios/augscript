@@ -331,6 +331,244 @@ scope:
   });
 });
 
+test('TASK-7: waiting for the last loop child does not release earlier captures', () => {
+  withProject({
+    'operations.aug': `inspect(List<int> values, int mode) returns int:
+    if mode == 0:
+        while true:
+            pass
+    return values.length()
+`,
+    'main.aug': `import inspect from operations
+items = [1]
+scope:
+    optional Task<int> pending = null
+    int index = 0
+    while index < 2:
+        pending = start inspect(values=items, mode=index)
+        index = index + 1
+    match pending:
+        when null:
+            pass
+        when some current:
+            wait for current
+    borrow items:
+        items.append(value=2)
+`
+  }, root => {
+    const issues = diagnostics(root);
+    assert.ok(issues.some(issue => /Cannot borrow items while a task uses it/.test(issue.message)), JSON.stringify(issues));
+  });
+});
+
+test('TASK-8: an owned Shared wrapper cannot move while a child borrows it', () => {
+  withProject({
+    'operations.aug': `touch(borrow Shared<List<int>> state):
+    pass
+consume(own Shared<List<int>> state):
+    pass
+`,
+    'main.aug': `import touch and consume from operations
+scope:
+    own Shared<List<int>> state = Shared(value=[1])
+    pending = start touch(state=state)
+    consume(state=state)
+    wait for pending
+`
+  }, root => {
+    const issues = diagnostics(root);
+    assert.ok(issues.some(issue => issue.code === 'CONCURRENCY' || issue.code === 'BORROW'), JSON.stringify(issues));
+  });
+});
+
+test('TASK-9: moving an owned Shared wrapper into its child transfers cleanup', () => {
+  withProject({
+    'operations.aug': `consume(own Shared<List<int>> state):
+    pass
+`,
+    'main.aug': `import consume from operations
+scope:
+    own Shared<List<int>> state = Shared(value=[1])
+    pending = start consume(state=state)
+    wait for pending
+`
+  }, root => {
+    const result = aug(root, 'run', { AUG_TRACE_DROPS: '1' });
+    assert.equal(result.status, 0, result.stderr);
+    assert.equal((result.stderr.match(/drop: Shared/g) ?? []).length, 1, result.stderr);
+  });
+});
+
+test('TASK-10: a child capture pins mutable nested fields through aliases', () => {
+  withProject({
+    'operations.aug': `interface BoxView:
+    size() returns int
+Box(mutable List<int> values) implements BoxView:
+    size() returns int:
+        return values.length()
+observe(BoxView value) returns int:
+    return value.size()
+`,
+    'main.aug': `import Box and observe from operations
+box = Box(values=[1])
+alias = box
+scope:
+    pending = start observe(value=box)
+    borrow alias:
+        alias.values.append(value=2)
+    wait for pending
+`
+  }, root => {
+    const issues = diagnostics(root);
+    assert.ok(issues.some(issue => issue.code === 'CONCURRENCY' && /mutate/.test(issue.message)), JSON.stringify(issues));
+  });
+});
+
+test('TASK-11: Shared construction cannot transfer a child-borrowed wrapper', () => {
+  withProject({
+    'operations.aug': `touch(borrow Shared<List<int>> state):
+    pass
+`,
+    'main.aug': `import touch from operations
+scope:
+    own Shared<List<int>> state = Shared(value=[1])
+    pending = start touch(state=state)
+    own Shared<Shared<List<int>>> outer = Shared(value=state)
+    wait for pending
+`
+  }, root => {
+    const issues = diagnostics(root);
+    assert.ok(issues.some(issue => /Cannot move state while a task uses it/.test(issue.message)), JSON.stringify(issues));
+  });
+});
+
+test('TASK-12: owned rebinding cannot transfer a child-borrowed wrapper', () => {
+  withProject({
+    'operations.aug': `touch(borrow Shared<List<int>> state):
+    pass
+`,
+    'main.aug': `import touch from operations
+scope:
+    own Shared<List<int>> state = Shared(value=[1])
+    pending = start touch(state=state)
+    own Shared<List<int>> transferred = state
+    wait for pending
+`
+  }, root => {
+    const issues = diagnostics(root);
+    assert.ok(issues.some(issue => /Cannot move state while a task uses it/.test(issue.message)), JSON.stringify(issues));
+  });
+});
+
+test('TASK-13: an owned return cannot outrun a child borrowing its value', () => {
+  withProject({
+    'operations.aug': `touch(borrow Shared<List<int>> state):
+    pass
+give(own Shared<List<int>> state) returns own Shared<List<int>>:
+    scope:
+        pending = start touch(state=state)
+        return state
+`,
+    'main.aug': `import give from operations
+own Shared<List<int>> result = give(state=Shared(value=[1]))
+`
+  }, root => {
+    const issues = diagnostics(root);
+    assert.ok(issues.some(issue => /Cannot move state while a task uses it/.test(issue.message)), JSON.stringify(issues));
+  });
+});
+
+test('TASK-14: freeze waits for a child with mutable access', () => {
+  withProject({
+    'operations.aug': `change(borrow List<int> values) changes values:
+    values.append(value=2)
+`,
+    'main.aug': `import change from operations
+scope:
+    own List<int> values = [1]
+    pending = start change(values=values)
+    freeze values as saved
+    wait for pending
+`
+  }, root => {
+    const issues = diagnostics(root);
+    assert.ok(issues.some(issue => /Cannot read values while a task has mutable access/.test(issue.message)), JSON.stringify(issues));
+  });
+  withProject({
+    'operations.aug': `change(borrow List<int> values) changes values:
+    values.append(value=2)
+`,
+    'main.aug': `import change from operations
+scope:
+    own List<int> values = [1]
+    pending = start change(values=values)
+    wait for pending
+    freeze values as saved
+    print(value=saved.length())
+`
+  }, root => {
+    const result = aug(root, 'run');
+    assert.equal(result.status, 0, result.stderr);
+    assert.equal(result.stdout, '2\n');
+  });
+});
+
+test('TASK-15: waiting for one loop iteration does not release earlier children', () => {
+  withProject({
+    'operations.aug': `inspect(List<int> values, int mode) returns int:
+    if mode == 0:
+        while true:
+            pass
+    return values.length()
+probe(borrow List<int> items) changes items:
+    scope:
+        optional Task<int> pending = null
+        int index = 0
+        while index < 2:
+            pending = start inspect(values=items, mode=index)
+            index = index + 1
+        match pending:
+            when null:
+                return
+            when some current:
+                wait for current
+        items.append(value=2)
+`,
+    'main.aug': `import probe from operations
+items = [1]
+borrow items:
+    probe(items=items)
+`
+  }, root => {
+    const issues = diagnostics(root);
+    assert.ok(issues.some(issue => /task/.test(issue.message) && /mutate|borrow/.test(issue.message)), JSON.stringify(issues));
+  });
+});
+
+test('TASK-16: a scope inside each loop iteration joins its own child', () => {
+  withProject({
+    'operations.aug': `size(List<int> values) returns int:
+    return values.length()
+`,
+    'main.aug': `import size from operations
+items = [1]
+int index = 0
+while index < 2:
+    scope:
+        pending = start size(values=items)
+        wait for pending
+    borrow items:
+        items.append(value=index)
+    index = index + 1
+print(value=items.length())
+`
+  }, root => {
+    const result = aug(root, 'run');
+    assert.equal(result.status, 0, result.stderr);
+    assert.equal(result.stdout, '3\n');
+  });
+});
+
 test('ERROR-1: starting defers a checked error until wait or implicit join', () => {
   const operations = `fail() returns int unless FileError:
     throw FileError()
@@ -500,6 +738,38 @@ try:
         running = start spin()
         broken = start fail()
         wait for running
+catch FileError error:
+    print(value="caught")
+`
+  }, root => {
+    const result = aug(root, 'run');
+    assert.equal(result.status, 0, result.stderr);
+    assert.equal(result.stdout, 'cleanup\ncaught\n');
+  });
+});
+
+test('CANCEL-2: an inner scope failure cancels outer siblings and joins cleanup', () => {
+  withProject({
+    'operations.aug': `import Console from august.io
+fail() returns int unless FileError:
+    throw FileError()
+spin(resolve Console output) uses output.write:
+    try:
+        while true:
+            pass
+    always:
+        output.write(value="cleanup")
+outer(resolve Console output) uses output.write unless FileError:
+    scope:
+        running = start spin()
+        scope:
+            broken = start fail()
+`,
+    'main.aug': `import outer from operations
+import Console and SystemConsole from august.io
+implement Console with SystemConsole
+try:
+    outer()
 catch FileError error:
     print(value="caught")
 `

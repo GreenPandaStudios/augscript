@@ -270,7 +270,11 @@ Owned values are dropped on normal or error exits. An optional `drop()` method t
 
 `Shared(value=...)` takes a fresh or owned value. The wrapper owns that payload, so dropping an owned `Shared<T>` also runs the payload's `drop()` before later local cleanup. A `resolve` dependency counts as a call input for alias checks: it cannot refer to an object also passed as an exclusive input. A scheduled task captures dependencies supplied through `resolve` as well as written call arguments. Wait for a task before mutably borrowing an object it reads through either path.
 
+A child borrowing an owned `Shared<T>` pins the wrapper until the child finishes. The parent cannot transfer it to another owner, put it in another `Shared<T>`, or return it while the child uses it. A child can still read a `Shared<T>` concurrently through its own reference. Use `lock` to access the payload.
+
 If a child starts while a `borrow` block is already open, the parent cannot mutate the captured object until it waits. The rule also applies to a borrowed function call or a direct field assignment. See the [executable conformance rules](language-conformance.md).
+
+If `start` runs inside a loop, a wait for one result may leave children from earlier iterations running. Their captures remain pinned until the enclosing `scope` joins them. To release captures on each iteration, put a `scope` inside the loop and finish its children there.
 
 The analysis intentionally rejects some programs when it cannot prove separate origins or freshness. This prototype is conservative; it is not a formal ownership proof. Threading semantics remain deferred.
 
