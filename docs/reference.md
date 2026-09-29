@@ -276,6 +276,8 @@ If a child starts while a `borrow` block is already open, the parent cannot muta
 
 If `start` runs inside a loop, a wait for one result may leave children from earlier iterations running. Their captures remain pinned until the enclosing `scope` joins them. To release captures on each iteration, put a `scope` inside the loop and finish its children there.
 
+For a collection of tasks, `wait for tasks` joins the whole list. Waiting for one task selected with a dynamic index cannot prove which sibling tasks remain active, so their captures stay pinned until the scope joins them.
+
 The analysis intentionally rejects some programs when it cannot prove separate origins or freshness. This prototype is conservative; it is not a formal ownership proof. Threading semantics remain deferred.
 
 ## Null, matching, and checked failures

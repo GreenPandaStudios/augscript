@@ -592,6 +592,55 @@ catch Failure error:
   });
 });
 
+test('TASK-18: waiting for a dynamic collection element does not release sibling captures', () => {
+  withProject({
+    'operations.aug': `size(List<int> values) returns int:
+    return values.length()
+probe() unless IndexError:
+    items = [1]
+    scope:
+        first = start size(values=items)
+        second = start size(values=items)
+        tasks = [first, second]
+        int index = 0
+        wait for tasks.get(index=index)
+        borrow items:
+            items.append(value=2)
+`,
+    'main.aug': `import probe from operations
+try:
+    probe()
+catch IndexError error:
+    pass
+`
+  }, root => {
+    const issues = diagnostics(root);
+    assert.ok(issues.some(issue => /Cannot borrow items while a task uses it/.test(issue.message)), JSON.stringify(issues));
+  });
+  withProject({
+    'operations.aug': `size(List<int> values) returns int:
+    return values.length()
+probe() returns int:
+    items = [1]
+    scope:
+        first = start size(values=items)
+        second = start size(values=items)
+        tasks = [first, second]
+        wait for tasks
+        borrow items:
+            items.append(value=2)
+    return items.length()
+`,
+    'main.aug': `import probe from operations
+print(value=probe())
+`
+  }, root => {
+    const result = aug(root, 'run');
+    assert.equal(result.status, 0, result.stderr);
+    assert.equal(result.stdout, '2\n');
+  });
+});
+
 test('ERROR-1: starting defers a checked error until wait or implicit join', () => {
   const operations = `fail() returns int unless FileError:
     throw FileError()

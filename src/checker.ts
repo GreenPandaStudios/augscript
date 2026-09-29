@@ -1888,7 +1888,7 @@ class Checker {
         const value = values[index], tracked = context.flow.taskErrors(this.placesOf(task, context));
         return tracked ?? (value.id === 'builtin:Task' || value.id === 'builtin:List' && value.args[0]?.id === 'builtin:Task' ? [builtin('Error')] : []);
       });
-      expr.tasks.forEach(task => context.flow.waitTasks(this.placesOf(task, context)));
+      expr.tasks.forEach((task, index) => context.flow.waitTasks(this.placesOf(task, context), values[index].id === 'builtin:List'));
       for (const error of errors) this.checkAllowedError(error, expr.span, context);
       const result = (value: Ty, index: number): Ty => {
         if (value.id === 'builtin:Task') return value.args[0];
