@@ -6,6 +6,7 @@
 - Injected dependencies participate in call alias and task capture checks; dropping an owned `Shared<T>` also drops its transferred payload in local cleanup order.
 - Pin owned `Shared<T>` and other reference values while a child borrows them. Ownership transfers now share one move check; repeated starts in a loop keep captured values pinned until their scope joins every child.
 - Waiting for a dynamically selected task from a collection no longer releases captures held by possible siblings; waiting for the whole task list still joins all listed children.
+- Add seeded parser/checker mutation tests, debug/release native arithmetic and collection differential tests, and macOS/Linux AddressSanitizer plus UBSan CI coverage for collections, task joining, and owned `Shared<T>` transfer.
 - The pinned full native bootstrap builds on Linux as well as macOS. Linux build/run Docker images include web and crypto dependencies, with core, crypto, and typed HTTP runtime smoke programs.
 - The wiki separates web/OIDC library hardening from the language's 1.0 roadmap and documents the proposed compatibility and platform support policy.
 
