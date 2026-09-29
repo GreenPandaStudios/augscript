@@ -150,382 +150,184 @@ cookie(string name, string value, string path, int maxAge, bool secure) returns 
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
-
-### In this file
-
-- [`Principal`](contracts.md#symbol-Principal) is an immutable record.
-- [`Authentication`](contracts.md#symbol-Authentication) is a capability interface.
-- [`Authorization`](contracts.md#symbol-Authorization) is a capability interface.
-- [`RequestLogger`](contracts.md#symbol-RequestLogger) is a capability interface.
-- [`_aug_http_log`](contracts.md#symbol-_aug_http_log) is a function.
-- [`WebRequestLogger`](contracts.md#symbol-WebRequestLogger) is a class implementing `RequestLogger`.
-- [`HttpClient`](contracts.md#symbol-HttpClient) is a capability interface.
-- [`_aug_http_request`](contracts.md#symbol-_aug_http_request) is a function returning `HttpResponse<Bytes>`.
-- [`WebHttpClient`](contracts.md#symbol-WebHttpClient) is a class implementing `HttpClient`.
-- [`redirect`](contracts.md#symbol-redirect) is a function returning `HttpResponse<string>`.
-- [`_aug_http_url_encode`](contracts.md#symbol-_aug_http_url_encode) is a function returning `string`.
-- [`urlEncode`](contracts.md#symbol-urlEncode) is a function returning `string`.
-- [`_aug_http_cookie`](contracts.md#symbol-_aug_http_cookie) is a function returning `Headers`.
-- [`cookie`](contracts.md#symbol-cookie) is a function returning `Headers`.
-
-### `Principal` {#symbol-Principal}
-
-[source](contracts.md#code)
-
-Immutable record.
-
-**Author documentation**
+<a id="symbol-Principal"></a>
+### `Principal` · immutable record · [source](contracts.md#code)
 
 Immutable identity returned by an explicitly injected authentication adapter.
 
-**Inputs**
+**Inputs:** Take `subject` (`string`); store read-only. Take `permissions` (`List<string>`); store read-only.
 
-- `subject` (`string`) — required labeled input — stored as `subject` and read-only after initialization.
-- `permissions` (`List<string>`) — required labeled input — stored as `permissions` and read-only after initialization.
-
-### `Authentication` {#symbol-Authentication}
-
-[source](contracts.md#code)
-
-Capability interface.
-
-**Author documentation**
+<a id="symbol-Authentication"></a>
+### `Authentication` · capability interface · [source](contracts.md#code)
 
 Verify the request's credentials. null means unauthenticated; adapter failures raise HttpError.
 
-#### `Authentication.authenticate` {#symbol-Authentication.authenticate}
+<a id="symbol-Authentication.authenticate"></a>
+#### `Authentication.authenticate` · [source](contracts.md#code)
 
-[source](contracts.md#code)
+**Inputs:** Take `request` (`HttpRequest`).
 
-**Inputs**
+Returns [`optional Principal`](contracts.md#symbol-Principal). Uses [`Authentication.authenticate`](contracts.md#symbol-Authentication.authenticate). Can fail with `HttpError`.
 
-- `request` (`HttpRequest`) — required labeled input.
-
-Returns: [`optional Principal`](contracts.md#symbol-Principal).
-
-Capabilities: [`Authentication.authenticate`](contracts.md#symbol-Authentication.authenticate).
-
-Can fail with `HttpError`. Callers must catch or propagate these errors.
-
-Interface contract. A selected implementation supplies the behavior.
-
-### `Authorization` {#symbol-Authorization}
-
-[source](contracts.md#code)
-
-Capability interface.
-
-**Author documentation**
+<a id="symbol-Authorization"></a>
+### `Authorization` · capability interface · [source](contracts.md#code)
 
 Decide whether a verified identity has one named permission.
 
-#### `Authorization.authorize` {#symbol-Authorization.authorize}
+<a id="symbol-Authorization.authorize"></a>
+#### `Authorization.authorize` · [source](contracts.md#code)
 
-[source](contracts.md#code)
+**Inputs:** Take `identity` ([`Principal`](contracts.md#symbol-Principal)). Take `permission` (`string`).
 
-**Inputs**
+Returns `bool`. Uses [`Authorization.authorize`](contracts.md#symbol-Authorization.authorize). Can fail with `HttpError`.
 
-- `identity` ([`Principal`](contracts.md#symbol-Principal)) — required labeled input.
-- `permission` (`string`) — required labeled input.
-
-Returns: `bool`.
-
-Capabilities: [`Authorization.authorize`](contracts.md#symbol-Authorization.authorize).
-
-Can fail with `HttpError`. Callers must catch or propagate these errors.
-
-Interface contract. A selected implementation supplies the behavior.
-
-### `RequestLogger` {#symbol-RequestLogger}
-
-[source](contracts.md#code)
-
-Capability interface.
-
-**Author documentation**
+<a id="symbol-RequestLogger"></a>
+### `RequestLogger` · capability interface · [source](contracts.md#code)
 
 Observe a completed HTTP exchange, including failures and disconnects.
 
-#### `RequestLogger.complete` {#symbol-RequestLogger.complete}
+<a id="symbol-RequestLogger.complete"></a>
+#### `RequestLogger.complete` · [source](contracts.md#code)
 
-[source](contracts.md#code)
+**Inputs:** Take `method` (`string`). Take `path` (`string`). Take `status` (`int`). Take `milliseconds` (`int`).
 
-**Inputs**
+Uses [`RequestLogger.complete`](contracts.md#symbol-RequestLogger.complete).
 
-- `method` (`string`) — required labeled input.
-- `path` (`string`) — required labeled input.
-- `status` (`int`) — required labeled input.
-- `milliseconds` (`int`) — required labeled input.
+<a id="symbol-WebRequestLogger"></a>
+### `WebRequestLogger` · class · [source](contracts.md#code)
 
-Returns: no value.
+Emit escaped JSON request metadata to standard error. Credentials and query strings are excluded. Implements [`RequestLogger`](contracts.md#symbol-RequestLogger).
 
-Capabilities: [`RequestLogger.complete`](contracts.md#symbol-RequestLogger.complete).
+<a id="symbol-WebRequestLogger.complete"></a>
+#### `WebRequestLogger.complete` · [source](contracts.md#code)
 
-Interface contract. A selected implementation supplies the behavior.
+**Inputs:** Take `method` (`string`). Take `path` (`string`). Take `status` (`int`). Take `milliseconds` (`int`).
 
-### `WebRequestLogger` {#symbol-WebRequestLogger}
+Uses [`RequestLogger.complete`](contracts.md#symbol-RequestLogger.complete).
 
-[source](contracts.md#code)
+- Use native code with its declared contract:
+  - Call [`_aug_http_log`](contracts.md#symbol-_aug_http_log) with `method`, `path`, `status`, `milliseconds`.
 
-Behavioral class.
-
-Satisfies [`RequestLogger`](contracts.md#symbol-RequestLogger).
-
-**Author documentation**
-
-Emit escaped JSON request metadata to standard error. Credentials and query strings are excluded.
-
-#### `WebRequestLogger.complete` {#symbol-WebRequestLogger.complete}
-
-[source](contracts.md#code)
-
-**Inputs**
-
-- `method` (`string`) — required labeled input.
-- `path` (`string`) — required labeled input.
-- `status` (`int`) — required labeled input.
-- `milliseconds` (`int`) — required labeled input.
-
-Returns: no value.
-
-Capabilities: [`RequestLogger.complete`](contracts.md#symbol-RequestLogger.complete).
-
-**What it does**
-
-- Enter an unsafe boundary. Native calls use their declared contracts; their foreign implementation is outside this specification:
-  - Call [`_aug_http_log`](contracts.md#symbol-_aug_http_log) with `method` = `method`; `path` = `path`; `status` = `status`; `milliseconds` = `milliseconds`.
-
-### `HttpClient` {#symbol-HttpClient}
-
-[source](contracts.md#code)
-
-Capability interface.
-
-**Author documentation**
+<a id="symbol-HttpClient"></a>
+### `HttpClient` · capability interface · [source](contracts.md#code)
 
 An explicit outbound network capability. TLS verifies the peer and redirects are returned to the caller.
 
-#### `HttpClient.request` {#symbol-HttpClient.request}
-
-[source](contracts.md#code)
-
-**Inputs**
-
-- `method` (`string`) — required labeled input.
-- `url` (`string`) — required labeled input.
-- `headers` (`optional Headers`) — optional labeled input; omission becomes null.
-- `body` (`optional Bytes`) — optional labeled input; omission becomes null.
-
-Returns: `HttpResponse<Bytes>`.
-
-Capabilities: [`HttpClient.request`](contracts.md#symbol-HttpClient.request).
-
-Can fail with `HttpError`. Callers must catch or propagate these errors.
-
-Interface contract. A selected implementation supplies the behavior.
-
-**Author documentation**
+<a id="symbol-HttpClient.request"></a>
+#### `HttpClient.request` · [source](contracts.md#code)
 
 Perform an HTTP request with bounded bytes. Inside a task, waiting suspends the task's C stack.
 
-### `WebHttpClient` {#symbol-WebHttpClient}
+**Inputs:** Take `method` (`string`). Take `url` (`string`). Take `headers` (`optional Headers`); omitted means null. Take `body` (`optional Bytes`); omitted means null.
 
-[source](contracts.md#code)
+Returns `HttpResponse<Bytes>`. Uses [`HttpClient.request`](contracts.md#symbol-HttpClient.request). Can fail with `HttpError`.
 
-Behavioral class.
+<a id="symbol-WebHttpClient"></a>
+### `WebHttpClient` · class · [source](contracts.md#code)
 
-Satisfies [`HttpClient`](contracts.md#symbol-HttpClient).
+Native libwebsockets transport. No socket is opened by construction. Implements [`HttpClient`](contracts.md#symbol-HttpClient).
 
-**Author documentation**
-
-Native libwebsockets transport. No socket is opened by construction.
-
-#### `WebHttpClient.request` {#symbol-WebHttpClient.request}
-
-[source](contracts.md#code)
-
-**Inputs**
-
-- `method` (`string`) — required labeled input.
-- `url` (`string`) — required labeled input.
-- `headers` (`optional Headers`) — optional labeled input; omission becomes null.
-- `body` (`optional Bytes`) — optional labeled input; omission becomes null.
-
-Returns: `HttpResponse<Bytes>`.
-
-Capabilities: [`HttpClient.request`](contracts.md#symbol-HttpClient.request).
-
-Can fail with `HttpError`. Callers must catch or propagate these errors.
-
-**What it does**
-
-- Enter an unsafe boundary. Native calls use their declared contracts; their foreign implementation is outside this specification:
-  - Return call [`_aug_http_request`](contracts.md#symbol-_aug_http_request) with `method` = `method`; `url` = `url`; `headers` = `headers`; `body` = `body`.
-
-**Author documentation**
+<a id="symbol-WebHttpClient.request"></a>
+#### `WebHttpClient.request` · [source](contracts.md#code)
 
 Perform an HTTP request with bounded bytes. Inside a task, waiting suspends the task's C stack.
 
-### `redirect` {#symbol-redirect}
+**Inputs:** Take `method` (`string`). Take `url` (`string`). Take `headers` (`optional Headers`); omitted means null. Take `body` (`optional Bytes`); omitted means null.
 
-[source](contracts.md#code)
+Returns `HttpResponse<Bytes>`. Uses [`HttpClient.request`](contracts.md#symbol-HttpClient.request). Can fail with `HttpError`.
 
-**Inputs**
+- Use native code with its declared contract:
+  - Return the result of [`_aug_http_request`](contracts.md#symbol-_aug_http_request) with `method`, `url`, `headers`, `body`.
 
-- `location` (`string`) — required labeled input.
-- `status` (`optional int`) — optional labeled input; omission becomes null.
-
-Returns: `HttpResponse<string>`.
-
-Can fail with `HttpError`. Callers must catch or propagate these errors.
-
-**What it does**
-
-- Set `code` to `303`.
-- Select the matching case for `status`:
-  - A null value, including omitted optional input:
-    - Continue without another operation.
-  - A present, non-null value, named `value`:
-    - Set `code` to `value`.
-- Set `headers` to call `with` on call `Headers` with `name` = `"location"`; `value` = `location`.
-- Return call `HttpResponse` with `body` = `""`; `status` = `code`; `headers` = `headers`.
-
-**Author documentation**
+<a id="symbol-redirect"></a>
+### `redirect` · [source](contracts.md#code)
 
 Return a redirect with an explicit status. Location is checked as a header value.
 
-### `urlEncode` {#symbol-urlEncode}
+**Inputs:** Take `location` (`string`). Take `status` (`optional int`); omitted means null.
 
-[source](contracts.md#code)
+Returns `HttpResponse<string>`. Can fail with `HttpError`.
 
-**Inputs**
+- Set `code` to `303`.
+- Match `status`:
+  - A null value, including omitted optional input:
+    - Continue.
+  - A present, non-null value, named `value`:
+    - Set `code` to `value`.
+- Set `headers` to the result of `with` on a new `Headers` with `name` as `"location"`, `value` as `location`.
+- Return a new `HttpResponse` with `body` as `""`, `status` as `code`, `headers`.
 
-- `input` (`string`) — required labeled input.
-
-Returns: `string`.
-
-Can fail with `HttpError`. Callers must catch or propagate these errors.
-
-**What it does**
-
-- Enter an unsafe boundary. Native calls use their declared contracts; their foreign implementation is outside this specification:
-  - Return call [`_aug_http_url_encode`](contracts.md#symbol-_aug_http_url_encode) with `input` = `input`.
-
-**Author documentation**
+<a id="symbol-urlEncode"></a>
+### `urlEncode` · [source](contracts.md#code)
 
 Encode a UTF-8 value as one URL query or form component using RFC 3986 unreserved characters.
 
-### `cookie` {#symbol-cookie}
+**Inputs:** Take `input` (`string`).
 
-[source](contracts.md#code)
+Returns `string`. Can fail with `HttpError`.
 
-**Inputs**
+- Use native code with its declared contract:
+  - Return the result of [`_aug_http_url_encode`](contracts.md#symbol-_aug_http_url_encode) with `input`.
 
-- `name` (`string`) — required labeled input.
-- `value` (`string`) — required labeled input.
-- `path` (`string`) — required labeled input.
-- `maxAge` (`int`) — required labeled input.
-- `secure` (`bool`) — required labeled input.
-
-Returns: `Headers`.
-
-Can fail with `HttpError`. Callers must catch or propagate these errors.
-
-**What it does**
-
-- Enter an unsafe boundary. Native calls use their declared contracts; their foreign implementation is outside this specification:
-  - Return call [`_aug_http_cookie`](contracts.md#symbol-_aug_http_cookie) with `name` = `name`; `value` = `value`; `path` = `path`; `maxAge` = `maxAge`; `secure` = `secure`.
-
-**Author documentation**
+<a id="symbol-cookie"></a>
+### `cookie` · [source](contracts.md#code)
 
 Construct an HttpOnly, SameSite=Lax session cookie. Secure defaults are chosen explicitly at the call site. Values and paths reject delimiters and controls. maxAge=0 clears the cookie.
 
-### `_aug_http_log` {#symbol-_aug_http_log}
+**Inputs:** Take `name` (`string`). Take `value` (`string`). Take `path` (`string`). Take `maxAge` (`int`). Take `secure` (`bool`).
 
-[source](contracts.md#code)
+Returns `Headers`. Can fail with `HttpError`.
 
-Private to its defining scope.
+- Use native code with its declared contract:
+  - Return the result of [`_aug_http_cookie`](contracts.md#symbol-_aug_http_cookie) with `name`, `value`, `path`, `maxAge`, `secure`.
 
-**Inputs**
-
-- `method` (`string`) — required labeled input.
-- `path` (`string`) — required labeled input.
-- `status` (`int`) — required labeled input.
-- `milliseconds` (`int`) — required labeled input.
-
-Returns: no value.
-
-Capabilities: [`RequestLogger.complete`](contracts.md#symbol-RequestLogger.complete).
-
-Native C operation. Its declared inputs, result, effects, and errors are the visible contract. The C implementation is outside this specification.
-
-### `_aug_http_request` {#symbol-_aug_http_request}
-
-[source](contracts.md#code)
+<a id="symbol-_aug_http_log"></a>
+### `_aug_http_log` · [source](contracts.md#code)
 
 Private to its defining scope.
 
-**Inputs**
+**Inputs:** Take `method` (`string`). Take `path` (`string`). Take `status` (`int`). Take `milliseconds` (`int`).
 
-- `method` (`string`) — required labeled input.
-- `url` (`string`) — required labeled input.
-- `headers` (`optional Headers`) — optional labeled input; omission becomes null.
-- `body` (`optional Bytes`) — optional labeled input; omission becomes null.
+Uses [`RequestLogger.complete`](contracts.md#symbol-RequestLogger.complete).
 
-Returns: `HttpResponse<Bytes>`.
+Native C implementation; only its declared contract is visible here.
 
-Capabilities: [`HttpClient.request`](contracts.md#symbol-HttpClient.request).
-
-Can fail with `HttpError`. Callers must catch or propagate these errors.
-
-Native C operation. Its declared inputs, result, effects, and errors are the visible contract. The C implementation is outside this specification.
-
-### `_aug_http_url_encode` {#symbol-_aug_http_url_encode}
-
-[source](contracts.md#code)
+<a id="symbol-_aug_http_request"></a>
+### `_aug_http_request` · [source](contracts.md#code)
 
 Private to its defining scope.
 
-**Inputs**
+**Inputs:** Take `method` (`string`). Take `url` (`string`). Take `headers` (`optional Headers`); omitted means null. Take `body` (`optional Bytes`); omitted means null.
 
-- `input` (`string`) — required labeled input.
+Returns `HttpResponse<Bytes>`. Uses [`HttpClient.request`](contracts.md#symbol-HttpClient.request). Can fail with `HttpError`.
 
-Returns: `string`.
+Native C implementation; only its declared contract is visible here.
 
-Can fail with `HttpError`. Callers must catch or propagate these errors.
-
-Native C operation. Its declared inputs, result, effects, and errors are the visible contract. The C implementation is outside this specification.
-
-### `_aug_http_cookie` {#symbol-_aug_http_cookie}
-
-[source](contracts.md#code)
+<a id="symbol-_aug_http_url_encode"></a>
+### `_aug_http_url_encode` · [source](contracts.md#code)
 
 Private to its defining scope.
 
-**Inputs**
+**Inputs:** Take `input` (`string`).
 
-- `name` (`string`) — required labeled input.
-- `value` (`string`) — required labeled input.
-- `path` (`string`) — required labeled input.
-- `maxAge` (`int`) — required labeled input.
-- `secure` (`bool`) — required labeled input.
+Returns `string`. Can fail with `HttpError`.
 
-Returns: `Headers`.
+Native C implementation; only its declared contract is visible here.
 
-Can fail with `HttpError`. Callers must catch or propagate these errors.
+<a id="symbol-_aug_http_cookie"></a>
+### `_aug_http_cookie` · [source](contracts.md#code)
 
-Native C operation. Its declared inputs, result, effects, and errors are the visible contract. The C implementation is outside this specification.
+Private to its defining scope.
 
-### Built-in operations used by this file
+**Inputs:** Take `name` (`string`). Take `value` (`string`). Take `path` (`string`). Take `maxAge` (`int`). Take `secure` (`bool`).
 
-- `Headers.with` (`name`: `string`, `value`: `string`) → `Headers`: Return new headers with one additional validated field. Header names ignore case; duplicate values remain separate. Can fail with `HttpError`.
+Returns `Headers`. Can fail with `HttpError`.
 
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
+Native C implementation; only its declared contract is visible here.
 
-### Shared language rules
+### Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
 
-See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
+- `Headers.with`: Return new headers with one additional validated field. Header names ignore case; duplicate values remain separate.
 
 ::::
 

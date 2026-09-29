@@ -88,25 +88,7 @@ export userinfo from userinfo
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
-
-### In this file
-
-- Export `AuthorizationRequest` from this folder.
-- Export `AuthorizationCode` from this folder.
-- Export `AccessGrant` from this folder.
-- Export `IdClaims` from this folder.
-- Export `TokenResponse` from this folder.
-- Export `UserInfo` from this folder.
-- Export `Discovery` from this folder.
-- Export `discovery` from this folder.
-- Export `jwks` from this folder.
-- Export `authorize` from this folder.
-- Export `providerLogin` from this folder.
-- Export `token` from this folder.
-- Export `userinfo` from this folder.
-
-### Folder exports
+### Exports
 
 - Export the declaration `AuthorizationRequest` from [`contracts.aug`](contracts.md#symbol-AuthorizationRequest).
 - Export the declaration `AuthorizationCode` from [`contracts.aug`](contracts.md#symbol-AuthorizationCode).
@@ -121,10 +103,6 @@ August 0.19.0. This document is compiled from checked code with deterministic wo
 - Export the declaration `providerLogin` from [`authorization.aug`](authorization.md#symbol-providerLogin).
 - Export the declaration `token` from [`token.aug`](token.md#symbol-token).
 - Export the declaration `userinfo` from [`userinfo.aug`](userinfo.md#symbol-userinfo).
-
-### Shared language rules
-
-See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
 
 ::::
 

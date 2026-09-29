@@ -30,7 +30,7 @@ test('the wiki gallery contains every example and measured August source, with a
     assert.match(text,/```aug \[Indentation\]/);
     assert.match(text,/```aug \[Braces\]/);
     assert.match(text,/## Compiled specification/);
-    assert.match(text,/This document is compiled from checked code/);
+    assert.doesNotMatch(text,/This document is compiled from checked code/);
   }
 });
 
@@ -58,7 +58,8 @@ test('wiki dependency links stay inside the generated gallery and resolve source
       assert.ok(outputs.has(target)||existsSync(join(root,target)),path+': missing '+href);
       if(target.startsWith('docs/examples/')&&fragment) {
         const body=outputs.get(target);
-        assert.ok(body.includes('{#'+decodeURIComponent(fragment)+'}'),path+': missing anchor '+href);
+        const anchor=decodeURIComponent(fragment);
+        assert.ok(body.includes('{#'+anchor+'}')||body.includes('<a id="'+anchor+'"></a>'),path+': missing anchor '+href);
       }
       if(path.includes('/dependencies/'))assert.ok(!href.includes('github.com'),path+': dependency must be readable in the wiki');
     }

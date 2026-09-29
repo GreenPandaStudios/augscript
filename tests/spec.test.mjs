@@ -11,6 +11,7 @@ import { generateSpecs, updateSpecs } from '../src/spec.ts';
 import { parse } from '../src/parser.ts';
 import { formatFile, migrateFile } from '../src/formatter.ts';
 import { compilerVersion } from '../src/package-manager.ts';
+import { block, flow, paragraph, renderSpecTree, section, sequence, step } from '../src/spec-tree.ts';
 
 const cli = resolve('bin/aug.mjs');
 function project(files, action) {
@@ -70,11 +71,12 @@ test('specs explain all local behavior and only the dependency surface used by w
   assert.match(main,/compute.*service\.aug\.md#symbol-compute/);
   assert.match(main,/through import everything/);
   assert.doesNotMatch(main,/_positive|unused|Sum valid values|For each/);
-  for(const word of ['Author documentation','Values to inspect','Private to its defining scope','For each','While','Otherwise','Try these operations','recover','cleanup','Fail with','valid values','sums values'])assert.ok(service.includes(word),word);
+  for(const word of ['Values to inspect','Private to its defining scope','For each','While','Otherwise','Try','Catch','Always','Fail with','valid values','sums values'])assert.ok(service.includes(word),word);
   assert.match(service,/If `total` does not equal `0` and/);
-  assert.ok(main.indexOf('## In this file')<main.indexOf('## Dependencies used by this file'));
-  assert.ok(service.indexOf('**What it does**')<service.indexOf('**Author documentation**\n\nSum valid values'));
-  assert.match(main,/Built-in operations.*print/s);
+  assert.ok(main.indexOf('## Startup')<main.indexOf('## Dependencies'));
+  assert.equal(service.match(/Sum valid values\./g)?.length,1);
+  assert.doesNotMatch(service,/Author documentation|What it does|In this file|Shared language rules|\n\n\n/);
+  assert.match(main,/## Built-ins.*print/s);
 }));
 
 test('spec generation is byte deterministic across project locations and validates all offline links', () => {
@@ -105,11 +107,10 @@ test('comment-free code yields a readable local flow and ordered long expression
   const result=checked(root);valid(result);
   const outputs=generateSpecs(result),main=outputs.find(output=>output.path.endsWith('main.aug.md')).text;
   const links=outputs.find(output=>output.path.endsWith('links.aug.md')).text;
-  assert.ok(main.indexOf('## Startup')<main.indexOf('## Dependencies used'));
+  assert.ok(main.indexOf('## Startup')<main.indexOf('## Dependencies'));
   assert.match(main,/Set `numbers` to a list of `int` containing `2`, `4`/);
   assert.match(main,/\[`address`\]\(links\.aug\.md#symbol-address\).*\(`host`: `string`, `path`: `string`\) → `string`/s);
-  assert.match(links,/Build `location` by joining these text parts without separators, in order:/);
-  for(const part of ['1. `"https://"`','2. `host`','3. `"/"`','4. `path`','5. `"?view=full"`'])assert.ok(links.includes(part),part);
+  assert.match(links,/Join `"https:\/\/"`, `host`, `"\/"`, `path` and `"\?view=full"` to make `location`/);
   assert.doesNotMatch(links,/Author documentation|the result of call|\(\(\(/);
 }));
 
@@ -262,7 +263,32 @@ catch IndexError error { print(value="invalid index") }
 },root=>{
   const result=command(root,'run');assert.equal(result.status,0,result.stderr);
   assert.equal(result.stdout,'none\nnone\npresent\ntrue\ntrue\ntrue\n{"text":null}\ntrue\n');
-  assert.match(readFileSync(join(root,'values.aug.md'),'utf8'),/omission becomes null/);
+  assert.match(readFileSync(join(root,'values.aug.md'),'utf8'),/omitted means null/);
+}));
+
+test('explanation tree keeps related steps together and renders nested control flow consistently', () => {
+  const document=section('`sample.aug`',1,[
+    section('`sample`',2,[
+      paragraph('Explain the operation.'),
+      flow([block('If the input is valid',[step('Save it.'),block('Otherwise',[step('Return null.')])]),
+        sequence('Join the parts in order',['the host','the path'])]),
+    ]),
+  ]);
+  assert.equal(renderSpecTree(document),
+    '# `sample.aug`\n\n## `sample`\n\nExplain the operation.\n\n- If the input is valid:\n  - Save it.\n  - Otherwise:\n    - Return null.\n- Join the parts in order:\n  1. the host\n  2. the path\n');
+});
+
+test('long header chains become one ordered operation', () => project({
+  'main.aug':`try {
+    headers = Headers().with(name="first", value="1").with(name="second", value="2").with(name="third", value="3")
+} catch HttpError error { pass }
+`,
+},root=>{
+  const result=checked(root);valid(result);
+  const text=generateSpecs(result).find(output=>output.path===join(root,'main.aug.md')).text;
+  assert.match(text,/Set `headers` from a new `Headers` by adding these header fields in order:/);
+  assert.match(text,/1\. `"first"` to `"1"`\n\s+2\. `"second"` to `"2"`\n\s+3\. `"third"` to `"3"`/);
+  assert.doesNotMatch(text,/the result of `with` on the result of `with`/);
 }));
 
 test('Type? and missing are rejected; simple migration uses optional Type and null, conflicting old cases require a choice', () => project({

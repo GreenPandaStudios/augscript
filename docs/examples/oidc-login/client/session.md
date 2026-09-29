@@ -142,155 +142,62 @@ authenticate(optional string token, resolve Crypto crypto, resolve Clock clock, 
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
-
-### In this file
-
-- [`authenticate`](session.md#symbol-authenticate) is a function returning `SessionClaims`.
-
-### `authenticate` {#symbol-authenticate}
-
-[source](session.md#code)
-
-**Inputs**
-
-- `token` (`optional string`) — optional labeled input; omission becomes null.
-- `crypto` ([`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto)) — injected; callers omit it.
-- `clock` ([`Clock`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock)) — injected; callers omit it.
-- `keys` ([`SigningKeys`](../common/keys.md#symbol-SigningKeys)) — injected; callers omit it.
-- `sessions` ([`ExpiringStore<SessionClaims>`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore)) — injected; callers omit it.
-
-Returns: [`SessionClaims`](contracts.md#symbol-SessionClaims).
-
-Capabilities: [`crypto.publicRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.publicRsa), [`crypto.decodeBase64url`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url), [`crypto.verifyRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.verifyRsa), [`crypto.equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal), [`clock.now`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now), [`keys.session`](../common/keys.md#symbol-SigningKeys.session), [`sessions.get`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.get).
-
-Can fail with `SessionError`, `KeyError`, `TimeError`. Callers must catch or propagate these errors.
-
-**What it does**
-
-- Select the matching case for `token`:
-  - A null value, including omitted optional input:
-    - Fail with call [`SessionError`](contracts.md#symbol-SessionError). Transfer control to a matching catch or propagate the failure.
-  - A present, non-null value, named `value`:
-    - Try these operations:
-      - Set `publicKey` to call [`Crypto.publicRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.publicRsa) on `crypto` with `key` = call [`SigningKeys.session`](../common/keys.md#symbol-SigningKeys.session) on `keys`.
-      - Set `claims` to call `decode` on call [`verifyJwt`](../dependencies/august/0.19.0/crypto/jose.md#symbol-verifyJwt) with `token` = `value`; `publicKey` = `publicKey`; `kid` = `"session-1"`; `tokenType` = `"august-session+jwt"`; inject `crypto` from `crypto` with type arguments [`SessionClaims`](contracts.md#symbol-SessionClaims).
-      - Set `config` to call [`settings`](../common/settings.md#symbol-settings).
-      - Set `now` to call [`Clock.now`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now) on `clock`.
-      - If (((((((`iss` of `claims` does not equal (`baseUrl` of `config` plus `"/app"`)) or (`aud` of `claims` does not equal `"august-app"`)) or (call `length` on `sub` of `claims` equals `0`)) or (`exp` of `claims` is at most `now`)) or (`iat` of `claims` is greater than (`now` plus `30`))) or (`iat` of `claims` is less than (`now` minus `sessionSeconds` of `config`))) or (`exp` of `claims` is at most `iat` of `claims`)) or (`exp` of `claims` is greater than ((`now` plus `sessionSeconds` of `config`) plus `30`)):
-        - Fail with call [`SessionError`](contracts.md#symbol-SessionError). Transfer control to a matching catch or propagate the failure.
-      - If not (call `isToken` on `jti` of `claims` with `min` = `43`; `max` = `43`) or not (call `isToken` on `csrf` of `claims` with `min` = `43`; `max` = `43`):
-        - Fail with call [`SessionError`](contracts.md#symbol-SessionError). Transfer control to a matching catch or propagate the failure.
-      - Select the matching case for call [`ExpiringStore.get`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.get) on `sessions` with `key` = `jti` of `claims`; `now` = `now`:
-        - A null value, including omitted optional input:
-          - Fail with call [`SessionError`](contracts.md#symbol-SessionError). Transfer control to a matching catch or propagate the failure.
-        - A present, non-null value, named `saved`:
-          - If ((`sub` of `saved` does not equal `sub` of `claims`) or (`exp` of `saved` does not equal `exp` of `claims`)) or not (call [`Crypto.equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal) on `crypto` with `left` = call `bytes` on `csrf` of `saved`; `right` = call `bytes` on `csrf` of `claims`):
-            - Fail with call [`SessionError`](contracts.md#symbol-SessionError). Transfer control to a matching catch or propagate the failure.
-          - Return `claims`.
-    - If they fail with `CryptoError`, name the failure `error` and recover:
-      - Fail with call [`SessionError`](contracts.md#symbol-SessionError). Transfer control to a matching catch or propagate the failure.
-    - If they fail with [`JwtError`](../dependencies/august/0.19.0/crypto/jose.md#symbol-JwtError), name the failure `error` and recover:
-      - Fail with call [`SessionError`](contracts.md#symbol-SessionError). Transfer control to a matching catch or propagate the failure.
-    - If they fail with `JsonError`, name the failure `error` and recover:
-      - Fail with call [`SessionError`](contracts.md#symbol-SessionError). Transfer control to a matching catch or propagate the failure.
-
-**Author documentation**
+<a id="symbol-authenticate"></a>
+### `authenticate` · [source](session.md#code)
 
 An app session has its own key, issuer, audience and token type. A live registry entry is required so logout revokes a signed token immediately.
 
-### Dependencies used by this file
+**Inputs:** Take `token` (`optional string`); omitted means null. Resolve [`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto) as `crypto`. Resolve [`Clock`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock) as `clock`. Resolve [`SigningKeys`](../common/keys.md#symbol-SigningKeys) as `keys`. Resolve [`ExpiringStore<SessionClaims>`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore) as `sessions`.
 
-Only referenced types and operations appear here. Each name links to its complete specification.
+Returns [`SessionClaims`](contracts.md#symbol-SessionClaims). Uses [`crypto.publicRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.publicRsa), [`crypto.decodeBase64url`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url), [`crypto.verifyRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.verifyRsa), [`crypto.equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal), [`clock.now`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now), [`keys.session`](../common/keys.md#symbol-SigningKeys.session), [`sessions.get`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.get). Can fail with `SessionError`, `KeyError`, `TimeError`.
 
-#### [`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto)
+- Match `token`:
+  - A null value, including omitted optional input:
+    - Fail with a new [`SessionError`](contracts.md#symbol-SessionError).
+  - A present, non-null value, named `value`:
+    - Try:
+      - Set `publicKey` to the result of [`Crypto.publicRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.publicRsa) on `crypto` with `key` as the result of [`SigningKeys.session`](../common/keys.md#symbol-SigningKeys.session) on `keys`.
+      - Set `claims` to the result of `decode` on the result of [`verifyJwt`](../dependencies/august/0.19.0/crypto/jose.md#symbol-verifyJwt) with `token` as `value`, `publicKey`, `kid` as `"session-1"`, `tokenType` as `"august-session+jwt"` using `crypto` with type arguments [`SessionClaims`](contracts.md#symbol-SessionClaims).
+      - Set `config` to the result of [`settings`](../common/settings.md#symbol-settings).
+      - Set `now` to the result of [`Clock.now`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now) on `clock`.
+      - If (((((((`iss` of `claims` does not equal (`baseUrl` of `config` plus `"/app"`)) or (`aud` of `claims` does not equal `"august-app"`)) or (the result of `length` on `sub` of `claims` equals `0`)) or (`exp` of `claims` is at most `now`)) or (`iat` of `claims` is greater than (`now` plus `30`))) or (`iat` of `claims` is less than (`now` minus `sessionSeconds` of `config`))) or (`exp` of `claims` is at most `iat` of `claims`)) or (`exp` of `claims` is greater than ((`now` plus `sessionSeconds` of `config`) plus `30`)):
+        - Fail with a new [`SessionError`](contracts.md#symbol-SessionError).
+      - If not (the result of `isToken` on `jti` of `claims` with `min` as `43`, `max` as `43`) or not (the result of `isToken` on `csrf` of `claims` with `min` as `43`, `max` as `43`):
+        - Fail with a new [`SessionError`](contracts.md#symbol-SessionError).
+      - Match the result of [`ExpiringStore.get`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.get) on `sessions` with `key` as `jti` of `claims`, `now`:
+        - A null value, including omitted optional input:
+          - Fail with a new [`SessionError`](contracts.md#symbol-SessionError).
+        - A present, non-null value, named `saved`:
+          - If ((`sub` of `saved` does not equal `sub` of `claims`) or (`exp` of `saved` does not equal `exp` of `claims`)) or not (the result of [`Crypto.equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal) on `crypto` with `left` as the result of `bytes` on `csrf` of `saved`, `right` as the result of `bytes` on `csrf` of `claims`):
+            - Fail with a new [`SessionError`](contracts.md#symbol-SessionError).
+          - Return `claims`.
+    - Catch `CryptoError` as `error`:
+      - Fail with a new [`SessionError`](contracts.md#symbol-SessionError).
+    - Catch [`JwtError`](../dependencies/august/0.19.0/crypto/jose.md#symbol-JwtError) as `error`:
+      - Fail with a new [`SessionError`](contracts.md#symbol-SessionError).
+    - Catch `JsonError` as `error`:
+      - Fail with a new [`SessionError`](contracts.md#symbol-SessionError).
 
-Capability interface from `august.crypto`.
+### Dependencies
 
-- [`Crypto.decodeBase64url`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url) (`input`: `string`) → `Bytes`; can fail with `CryptoError`.
-- [`Crypto.equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal) (`left`: `Bytes`, `right`: `Bytes`) → `bool`.
-- [`Crypto.publicRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.publicRsa) (`key`: `RsaPrivateKey`) → `RsaPublicKey`; can fail with `CryptoError`.
-- [`Crypto.verifyRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.verifyRsa) (`publicKey`: `RsaPublicKey`, `input`: `Bytes`, `signature`: `Bytes`) → `bool`; can fail with `CryptoError`.
+- [`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto) from `august.crypto`: [`decodeBase64url`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url) (`input`: `string`) → `Bytes`; can fail with `CryptoError`; [`equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal) (`left`: `Bytes`, `right`: `Bytes`) → `bool`; [`publicRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.publicRsa) (`key`: `RsaPrivateKey`) → `RsaPublicKey`; can fail with `CryptoError`; [`verifyRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.verifyRsa) (`publicKey`: `RsaPublicKey`, `input`: `Bytes`, `signature`: `Bytes`) → `bool`; can fail with `CryptoError`.
+- [`JwtError`](../dependencies/august/0.19.0/crypto/jose.md#symbol-JwtError) from `august.crypto`.
+- [`verifyJwt`](../dependencies/august/0.19.0/crypto/jose.md#symbol-verifyJwt) (`token`: `string`, `publicKey`: `RsaPublicKey`, `kid`: `string`, `tokenType`: `string`) → `Json`; can fail with `JwtError` from `august.crypto`.
+- [`ExpiringStore`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore) from `august.memory`: [`get`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.get) (`key`: `string`, `now`: `int`) → `optional T`.
+- [`Clock`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock) from `august.time`: [`now`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now) (no caller inputs) → `int`; can fail with `TimeError`.
+- [`SessionClaims`](contracts.md#symbol-SessionClaims) from `contracts`: read `aud` (`string`); read `csrf` (`string`); read `exp` (`int`); read `iat` (`int`); read `iss` (`string`); read `jti` (`string`); read `sub` (`string`).
+- [`SessionError`](contracts.md#symbol-SessionError) from `contracts`: construct with no caller inputs.
+- [`KeyError`](../common/keys.md#symbol-KeyError) from `common`.
+- [`SigningKeys`](../common/keys.md#symbol-SigningKeys) from `common`: [`session`](../common/keys.md#symbol-SigningKeys.session) (no caller inputs) → `RsaPrivateKey`; can fail with `KeyError`.
+- [`Settings`](../common/settings.md#symbol-Settings): read `baseUrl` (`string`); read `sessionSeconds` (`int`).
+- [`settings`](../common/settings.md#symbol-settings) (no caller inputs) → [`Settings`](../common/settings.md#symbol-Settings) from `common`.
 
-#### [`JwtError`](../dependencies/august/0.19.0/crypto/jose.md#symbol-JwtError)
+### Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
 
-Class from `august.crypto`.
-
-Used as a type or provider.
-
-#### [`verifyJwt`](../dependencies/august/0.19.0/crypto/jose.md#symbol-verifyJwt)
-
-Function from `august.crypto`.
-
-- [`verifyJwt`](../dependencies/august/0.19.0/crypto/jose.md#symbol-verifyJwt) (`token`: `string`, `publicKey`: `RsaPublicKey`, `kid`: `string`, `tokenType`: `string`) → `Json`; inject `crypto`: [`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto); uses [`crypto.decodeBase64url`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url), [`crypto.verifyRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.verifyRsa); can fail with `JwtError`.
-
-#### [`ExpiringStore`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore)
-
-Capability interface from `august.memory`.
-
-- [`ExpiringStore.get`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.get) (`key`: `string`, `now`: `int`) → `optional T`.
-
-#### [`Clock`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock)
-
-Capability interface from `august.time`.
-
-- [`Clock.now`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now) (no caller inputs) → `int`; can fail with `TimeError`.
-
-#### [`SessionClaims`](contracts.md#symbol-SessionClaims)
-
-Record from `contracts`.
-
-- Read `aud` (`string`).
-- Read `csrf` (`string`).
-- Read `exp` (`int`).
-- Read `iat` (`int`).
-- Read `iss` (`string`).
-- Read `jti` (`string`).
-- Read `sub` (`string`).
-
-#### [`SessionError`](contracts.md#symbol-SessionError)
-
-Class from `contracts`.
-
-- Construct with no caller inputs → [`SessionError`](contracts.md#symbol-SessionError).
-
-#### [`KeyError`](../common/keys.md#symbol-KeyError)
-
-Class from `common`.
-
-Used as a type or provider.
-
-#### [`SigningKeys`](../common/keys.md#symbol-SigningKeys)
-
-Capability interface from `common`.
-
-- [`SigningKeys.session`](../common/keys.md#symbol-SigningKeys.session) (no caller inputs) → `RsaPrivateKey`; can fail with `KeyError`.
-
-#### [`Settings`](../common/settings.md#symbol-Settings)
-
-Record.
-
-- Read `baseUrl` (`string`).
-- Read `sessionSeconds` (`int`).
-
-#### [`settings`](../common/settings.md#symbol-settings)
-
-Function from `common`.
-
-- [`settings`](../common/settings.md#symbol-settings) (no caller inputs) → [`Settings`](../common/settings.md#symbol-Settings).
-
-### Built-in operations used by this file
-
-- `Json.decode` (no inputs) → `SessionClaims`: Decode a checked record or data type: json.decode<Profile>(). Unknown fields, type mismatches, and validation errors are rejected. Can fail with `JsonError`.
-- `string.bytes` (no inputs) → `Bytes`: Encode this string as immutable UTF-8 bytes.
-- `string.isToken` (`min`: `int`, `max`: `int`) → `bool`: Require an ASCII RFC 3986 unreserved token with a bounded length.
-- `string.length` (no inputs) → `int`: Read the number of UTF-8 bytes. Unicode text is preserved losslessly.
-
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
-
-### Shared language rules
-
-See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
+- `Json.decode`: Decode a checked record or data type: json.decode<Profile>(). Unknown fields, type mismatches, and validation errors are rejected.
+- `string.bytes`: Encode this string as immutable UTF-8 bytes.
+- `string.isToken`: Require an ASCII RFC 3986 unreserved token with a bounded length.
+- `string.length`: Read the number of UTF-8 bytes. Unicode text is preserved losslessly.
 
 ::::
 

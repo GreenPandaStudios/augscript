@@ -124,104 +124,52 @@ endpoint GET "/provider/userinfo" as userinfo(optional string authorization from
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
-
-### In this file
-
-- [`userinfo`](userinfo.md#symbol-userinfo) handles `GET` `/provider/userinfo` returning `HttpResponse<Json>`.
-
-### `userinfo` {#symbol-userinfo}
-
-[source](userinfo.md#code)
-
-**Inputs**
-
-- `authorization` (`optional string`) — read from the HTTP header; absent value becomes null.
-- `clock` ([`Clock`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock)) — injected; callers omit it.
-- `access` ([`ExpiringStore<AccessGrant>`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore)) — injected; callers omit it.
-
-Returns: `HttpResponse<Json>`.
-
-Capabilities: [`clock.now`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now), [`access.get`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.get).
-
-Can fail with `TimeError`, `HttpError`. Callers must catch or propagate these errors.
-
-HTTP route: `GET` `/provider/userinfo`. Use status 200 when the handler returns a body; a returned HttpResponse can set its own status. An unhandled request failure returns status 500 and cancels its request tasks.
-
-**What it does**
-
-- Select the matching case for `authorization`:
-  - A null value, including omitted optional input:
-    - Continue without another operation.
-  - A present, non-null value, named `header`:
-    - Set `parts` to call `split` on `header` with `separator` = `" "`.
-    - If call `length` on `parts` equals `2`:
-      - Try these operations:
-        - If call `get` on `parts` with `index` = `0` equals `"Bearer"`:
-          - Set `token` to call `get` on `parts` with `index` = `1`.
-          - If call `isToken` on `token` with `min` = `43`; `max` = `43` is true:
-            - Select the matching case for call [`ExpiringStore.get`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.get) on `access` with `key` = `token`; `now` = call [`Clock.now`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now) on `clock`:
-              - A null value, including omitted optional input:
-                - Continue without another operation.
-              - A present, non-null value, named `grant`:
-                - Return call `HttpResponse` with `body` = call `Json` with `value` = call [`UserInfo`](contracts.md#symbol-UserInfo) with `sub` = `subject` of `grant`; `name` = `name` of `grant`; `headers` = call [`securityHeaders`](../common/headers.md#symbol-securityHeaders).
-      - If they fail with `IndexError`, name the failure `error` and recover:
-        - Continue without another operation.
-- Set `headers` to call `with` on call [`securityHeaders`](../common/headers.md#symbol-securityHeaders) with `name` = `"www-authenticate"`; `value` = `"Bearer error=\"invalid_token\""`.
-- Return call `HttpResponse` with `body` = call `Json` with `value` = a map with `"error"` mapped to `"invalid_token"`; `status` = `401`; `headers` = `headers`.
-
-**Author documentation**
+<a id="symbol-userinfo"></a>
+### `userinfo` · [source](userinfo.md#code)
 
 The opaque access token is valid only at this provider. Missing, expired and malformed credentials receive the same response.
 
-### Dependencies used by this file
+**Inputs:** Take `authorization` (`optional string`) from HTTP header; omitted means null. Resolve [`Clock`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock) as `clock`. Resolve [`ExpiringStore<AccessGrant>`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore) as `access`.
 
-Only referenced types and operations appear here. Each name links to its complete specification.
+Returns `HttpResponse<Json>`. Uses [`clock.now`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now), [`access.get`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.get). Can fail with `TimeError`, `HttpError`.
 
-#### [`ExpiringStore`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore)
+HTTP route: `GET` `/provider/userinfo`. Use status 200 when the handler returns a body; a returned HttpResponse can set its own status. An unhandled request failure returns status 500 and cancels its request tasks.
 
-Capability interface from `august.memory`.
+- Match `authorization`:
+  - A null value, including omitted optional input:
+    - Continue.
+  - A present, non-null value, named `header`:
+    - Set `parts` to the result of `split` on `header` with `separator` as `" "`.
+    - If the result of `length` on `parts` equals `2`:
+      - Try:
+        - If the result of `get` on `parts` with `index` as `0` equals `"Bearer"`:
+          - Set `token` to the result of `get` on `parts` with `index` as `1`.
+          - If the result of `isToken` on `token` with `min` as `43`, `max` as `43` is true:
+            - Match the result of [`ExpiringStore.get`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.get) on `access` with `key` as `token`, `now` as the result of [`Clock.now`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now) on `clock`:
+              - A null value, including omitted optional input:
+                - Continue.
+              - A present, non-null value, named `grant`:
+                - Return a new `HttpResponse` with `body` as a new `Json` with `value` as a new [`UserInfo`](contracts.md#symbol-UserInfo) with `sub` as `subject` of `grant`, `name` as `name` of `grant`, `headers` as the result of [`securityHeaders`](../common/headers.md#symbol-securityHeaders).
+      - Catch `IndexError` as `error`:
+        - Continue.
+- Set `headers` to the result of `with` on the result of [`securityHeaders`](../common/headers.md#symbol-securityHeaders) with `name` as `"www-authenticate"`, `value` as `"Bearer error=\"invalid_token\""`.
+- Return a new `HttpResponse` with `body` as a new `Json` with `value` as a map with `"error"` mapped to `"invalid_token"`, `status` as `401`, `headers`.
 
-- [`ExpiringStore.get`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.get) (`key`: `string`, `now`: `int`) → `optional T`.
+### Dependencies
 
-#### [`Clock`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock)
+- [`ExpiringStore`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore) from `august.memory`: [`get`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.get) (`key`: `string`, `now`: `int`) → `optional T`.
+- [`Clock`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock) from `august.time`: [`now`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now) (no caller inputs) → `int`; can fail with `TimeError`.
+- [`securityHeaders`](../common/headers.md#symbol-securityHeaders) (no caller inputs) → `Headers`; can fail with `HttpError` from `common`.
+- [`AccessGrant`](contracts.md#symbol-AccessGrant) from `contracts`: read `name` (`string`); read `subject` (`string`).
+- [`UserInfo`](contracts.md#symbol-UserInfo) from `contracts`: construct with `sub`: `string`, `name`: `string`.
 
-Capability interface from `august.time`.
+### Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
 
-- [`Clock.now`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now) (no caller inputs) → `int`; can fail with `TimeError`.
-
-#### [`securityHeaders`](../common/headers.md#symbol-securityHeaders)
-
-Function from `common`.
-
-- [`securityHeaders`](../common/headers.md#symbol-securityHeaders) (no caller inputs) → `Headers`; can fail with `HttpError`.
-
-#### [`AccessGrant`](contracts.md#symbol-AccessGrant)
-
-Record from `contracts`.
-
-- Read `name` (`string`).
-- Read `subject` (`string`).
-
-#### [`UserInfo`](contracts.md#symbol-UserInfo)
-
-Record from `contracts`.
-
-- Construct with `sub`: `string`, `name`: `string` → [`UserInfo`](contracts.md#symbol-UserInfo).
-
-### Built-in operations used by this file
-
-- `Headers.with` (`name`: `string`, `value`: `string`) → `Headers`: Return new headers with one additional validated field. Header names ignore case; duplicate values remain separate. Can fail with `HttpError`.
-- `List<string>.get` (`index`: `int`) → `string`: Read a zero-based position. An invalid index raises checked IndexError. Reference results grant reading. Can fail with `IndexError`.
-- `List<string>.length` (no inputs) → `int`: Read the number of elements.
-- `string.isToken` (`min`: `int`, `max`: `int`) → `bool`: Require an ASCII RFC 3986 unreserved token with a bounded length.
-- `string.split` (`separator`: `string`) → `List<string>`: Split at an exact separator, preserving empty parts.
-
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
-
-### Shared language rules
-
-See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
+- `Headers.with`: Return new headers with one additional validated field. Header names ignore case; duplicate values remain separate.
+- `List<string>.get`: Read a zero-based position. An invalid index raises checked IndexError. Reference results grant reading.
+- `List<string>.length`: Read the number of elements.
+- `string.isToken`: Require an ASCII RFC 3986 unreserved token with a bounded length.
+- `string.split`: Split at an exact separator, preserving empty parts.
 
 ::::
 

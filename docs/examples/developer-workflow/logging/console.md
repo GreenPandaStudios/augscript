@@ -59,65 +59,24 @@ ConsoleLogger() implements Logger {
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
+<a id="symbol-ConsoleLogger"></a>
+### `ConsoleLogger` · class · [source](console.md#code)
 
-### In this file
+Writes application messages to standard output. Implements [`Logger`](logger.md#symbol-Logger).
 
-- [`ConsoleLogger`](console.md#symbol-ConsoleLogger) is a class implementing `Logger`.
+<a id="symbol-ConsoleLogger.log"></a>
+#### `ConsoleLogger.log` · [source](console.md#code)
 
-### `ConsoleLogger` {#symbol-ConsoleLogger}
+**Inputs:** Resolve [`Console`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console) as `console`. Take `message` (`string`) — Text to write.
 
-[source](console.md#code)
+Uses [`Console.write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
 
-Behavioral class.
+- Call [`Console.write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write) on `console` with `value` as `message`.
 
-Satisfies [`Logger`](logger.md#symbol-Logger).
+### Dependencies
 
-**Author documentation**
-
-Writes application messages to standard output.
-
-#### `ConsoleLogger.log` {#symbol-ConsoleLogger.log}
-
-[source](console.md#code)
-
-**Inputs**
-
-- `console` ([`Console`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console)) — injected; callers omit it.
-- `message` (`string`) — required labeled input.
-
-Returns: no value.
-
-Capabilities: [`Console.write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
-
-**What it does**
-
-- Call [`Console.write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write) on `console` with `value` = `message`.
-
-**Author documentation**
-
-**Parameters**
-- `message`: Text to write.
-
-### Dependencies used by this file
-
-Only referenced types and operations appear here. Each name links to its complete specification.
-
-#### [`Console`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console)
-
-Capability interface from `august.io`.
-
-- [`Console.write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write)<`T`> (`value`: `T`) → `void`.
-
-#### [`Logger`](logger.md#symbol-Logger)
-
-Interface from `logger`.
-
-Used as a type or provider.
-
-### Shared language rules
-
-See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
+- [`Console`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console) from `august.io`: [`write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write)<`T`> (`value`: `T`) → `void`.
+- [`Logger`](logger.md#symbol-Logger) from `logger`.
 
 ::::
 

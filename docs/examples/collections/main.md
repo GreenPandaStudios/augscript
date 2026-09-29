@@ -73,45 +73,33 @@ catch IndexError error {
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
+### Startup
 
-### In this file
-
-- Run startup operations with checked error recovery.
-
-### Startup, in source order
-
-- Try these operations:
+- Try:
   - Set `numbers` to a list of `int` containing `2`, `4`.
-  - Grant exclusive mutable access to `numbers` for this block, then end the borrow:
-    - Call `append` on `numbers` with `value` = `6`.
-  - Call `print` with `value` = call `length` on `numbers`.
-  - Call `print` with `value` = call `get` on `numbers` with `index` = `1`.
+  - Mutably borrow `numbers` for this block:
+    - Call `append` on `numbers` with `value` as `6`.
+  - Call `print` with `value` as the result of `length` on `numbers`.
+  - Call `print` with `value` as the result of `get` on `numbers` with `index` as `1`.
   - Set `scores` to an empty map from `string` to `int`.
-  - Grant exclusive mutable access to `scores` for this block, then end the borrow:
-    - Call `set` on `scores` with `value` = `42`; `key` = `"ada"`.
-  - Call `print` with `value` = call `contains` on `scores` with `key` = `"ada"`.
-  - Call `print` with `value` = call `get` on `scores` with `key` = `"ada"`.
-  - Call `print` with `value` = call `length` on `scores`.
-- If they fail with `IndexError`, name the failure `error` and recover:
-  - Call `print` with `value` = `"unexpected index failure"`.
+  - Mutably borrow `scores` for this block:
+    - Call `set` on `scores` with `value` as `42`, `key` as `"ada"`.
+  - Call `print` with `value` as the result of `contains` on `scores` with `key` as `"ada"`.
+  - Call `print` with `value` as the result of `get` on `scores` with `key` as `"ada"`.
+  - Call `print` with `value` as the result of `length` on `scores`.
+- Catch `IndexError` as `error`:
+  - Call `print` with `value` as `"unexpected index failure"`.
 
-### Built-in operations used by this file
+### Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
 
-- `List<int>.append` (`value`: `int`) → `void`: Append an element with exclusive mutable access. Read-only and owned aliases cannot be stored here. Changes the receiver.
-- `List<int>.get` (`index`: `int`) → `int`: Read a zero-based position. An invalid index raises checked IndexError. Reference results grant reading. Can fail with `IndexError`.
-- `List<int>.length` (no inputs) → `int`: Read the number of elements.
-- `Map<string, int>.contains` (`key`: `string`) → `bool`: Check for a key, including entries whose value is null.
-- `Map<string, int>.get` (`key`: `string`) → `optional int`: Read a value by key; an absent key returns null. contains distinguishes an absent key from a stored null.
-- `Map<string, int>.length` (no inputs) → `int`: Read the number of elements.
-- `Map<string, int>.set` (`key`: `string`, `value`: `int`) → `void`: Insert or replace an entry with exclusive mutable access. Changes the receiver.
-- `print` (`value`: `any`) → `void`: Composition and test output. Other callables receive Console and declare uses console.write.
-
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
-
-### Shared language rules
-
-See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
+- `List<int>.append`: Append an element with exclusive mutable access. Read-only and owned aliases cannot be stored here.
+- `List<int>.get`: Read a zero-based position. An invalid index raises checked IndexError. Reference results grant reading.
+- `List<int>.length`: Read the number of elements.
+- `Map<string, int>.contains`: Check for a key, including entries whose value is null.
+- `Map<string, int>.get`: Read a value by key; an absent key returns null. contains distinguishes an absent key from a stored null.
+- `Map<string, int>.length`: Read the number of elements.
+- `Map<string, int>.set`: Insert or replace an entry with exclusive mutable access.
+- `print`: Composition and test output. Other callables receive Console and declare uses console.write.
 
 ::::
 

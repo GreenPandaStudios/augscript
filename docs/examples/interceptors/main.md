@@ -84,78 +84,35 @@ catch ValidationError error {
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
+### Providers
 
-### In this file
+- Provide [`SystemConsole`](dependencies/august/0.19.0/io/contracts.md#symbol-SystemConsole) for `Console`. Share one instance.
+- Provide [`ConsoleLogger`](logging.md#symbol-ConsoleLogger) for `Logger`. Share one instance.
 
-- Register 2 dependency providers before startup.
-- Run startup operations with checked error recovery.
-- Run 2 other startup steps in source order.
+### Startup
 
-### Dependency providers
+- Try:
+  - Call `print` with `value` as the result of [`describe`](app.md#symbol-describe) with `label` as `"value"`, `x` as `6` using `Logger` for `logger`, `Console` for `console`.
+- Catch [`ValidationError`](interceptors.md#symbol-ValidationError) as `error`:
+  - Call `print` with `value` as `"rejected"`.
+- Set `greeter` to a new [`Greeter`](app.md#symbol-Greeter) with `name` as `"AugScript"` using `Logger` for `_logger`.
+- Call `print` with `value` as the result of [`Greeter.greet`](app.md#symbol-Greeter.greet) on `greeter` using `Logger` for `logger`, `Console` for `console`.
+- Try:
+  - Call [`describe`](app.md#symbol-describe) with `x` as `-1`, `label` as `"invalid"` using `Logger` for `logger`, `Console` for `console`.
+- Catch [`ValidationError`](interceptors.md#symbol-ValidationError) as `error`:
+  - Call `print` with `value` as `"rejected"`.
 
-Register these providers before startup. Their declaration order does not set initialization order; shared instances initialize in dependency order.
+### Dependencies
 
-- Provide [`SystemConsole`](dependencies/august/0.19.0/io/contracts.md#symbol-SystemConsole) when `Console` is requested. Reuse one instance.
-- Provide [`ConsoleLogger`](logging.md#symbol-ConsoleLogger) when `Logger` is requested. Reuse one instance.
+- [`SystemConsole`](dependencies/august/0.19.0/io/contracts.md#symbol-SystemConsole) from `august.io`.
+- [`Greeter`](app.md#symbol-Greeter) from `app`: construct with `name`: `string`; [`greet`](app.md#symbol-Greeter.greet) (no caller inputs) → `string`.
+- [`describe`](app.md#symbol-describe) (`x`: `int`, `label`: `string`) → `string`; can fail with `ValidationError` from `app`.
+- [`ValidationError`](interceptors.md#symbol-ValidationError) from `interceptors`.
+- [`ConsoleLogger`](logging.md#symbol-ConsoleLogger) from `logging`.
 
-### Startup, in source order
+### Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
 
-- Try these operations:
-  - Call `print` with `value` = call [`describe`](app.md#symbol-describe) with `label` = `"value"`; `x` = `6`; inject `logger` from `Logger`, `console` from `Console`.
-- If they fail with [`ValidationError`](interceptors.md#symbol-ValidationError), name the failure `error` and recover:
-  - Call `print` with `value` = `"rejected"`.
-- Set `greeter` to call [`Greeter`](app.md#symbol-Greeter) with `name` = `"AugScript"`; inject `_logger` from `Logger`.
-- Call `print` with `value` = call [`Greeter.greet`](app.md#symbol-Greeter.greet) on `greeter`; inject `logger` from `Logger`, `console` from `Console`.
-- Try these operations:
-  - Call [`describe`](app.md#symbol-describe) with `x` = `-1`; `label` = `"invalid"`; inject `logger` from `Logger`, `console` from `Console`.
-- If they fail with [`ValidationError`](interceptors.md#symbol-ValidationError), name the failure `error` and recover:
-  - Call `print` with `value` = `"rejected"`.
-
-### Dependencies used by this file
-
-Only referenced types and operations appear here. Each name links to its complete specification.
-
-#### [`SystemConsole`](dependencies/august/0.19.0/io/contracts.md#symbol-SystemConsole)
-
-Class from `august.io`.
-
-Used as a type or provider.
-
-#### [`Greeter`](app.md#symbol-Greeter)
-
-Class from `app`.
-
-- Construct with `name`: `string` → [`Greeter`](app.md#symbol-Greeter).
-- [`Greeter.greet`](app.md#symbol-Greeter.greet) (no caller inputs) → `string`; inject `logger`: [`Logger`](logging.md#symbol-Logger), `console`: [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console); uses [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
-
-#### [`describe`](app.md#symbol-describe)
-
-Function from `app`.
-
-- [`describe`](app.md#symbol-describe) (`x`: `int`, `label`: `string`) → `string`; inject `logger`: [`Logger`](logging.md#symbol-Logger), `console`: [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console); uses [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write); can fail with `ValidationError`.
-
-#### [`ValidationError`](interceptors.md#symbol-ValidationError)
-
-Class from `interceptors`.
-
-Used as a type or provider.
-
-#### [`ConsoleLogger`](logging.md#symbol-ConsoleLogger)
-
-Class from `logging`.
-
-Used as a type or provider.
-
-### Built-in operations used by this file
-
-- `print` (`value`: `any`) → `void`: Composition and test output. Other callables receive Console and declare uses console.write.
-
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
-
-### Shared language rules
-
-See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
+- `print`: Composition and test output. Other callables receive Console and declare uses console.write.
 
 ::::
 

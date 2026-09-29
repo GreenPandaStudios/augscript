@@ -48,19 +48,9 @@ export Greeter from greeter
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
-
-### In this file
-
-- Export `Greeter` from this folder.
-
-### Folder exports
+### Exports
 
 - Export the declaration `Greeter` from [`greeter.aug`](greeter.md#symbol-Greeter).
-
-### Shared language rules
-
-See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
 
 ::::
 

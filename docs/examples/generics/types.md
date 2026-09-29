@@ -73,116 +73,68 @@ interface IBox<T> {
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
+<a id="symbol-Formatter"></a>
+### `Formatter` · interface · [source](types.md#code)
 
-### In this file
-
-- [`Formatter`](types.md#symbol-Formatter) is an interface.
-- [`TextFormatter`](types.md#symbol-TextFormatter) is a class implementing `Formatter`.
-- [`Box`](types.md#symbol-Box) is a class implementing `IBox<T>`.
-- [`IBox`](types.md#symbol-IBox) is an interface.
-
-### `Formatter` {#symbol-Formatter}
-
-[source](types.md#code)
-
-Interface.
-
-#### `Formatter.format` {#symbol-Formatter.format}
-
-[source](types.md#code)
+<a id="symbol-Formatter.format"></a>
+#### `Formatter.format` · [source](types.md#code)
 
 Type parameters: `T`.
 
-**Inputs**
+**Inputs:** Take `value` (`T`).
 
-- `value` (`T`) — required labeled input.
+Returns `string`.
 
-Returns: `string`.
+<a id="symbol-Formatter.title"></a>
+#### `Formatter.title` · [source](types.md#code)
 
-Interface contract. A selected implementation supplies the behavior.
-
-#### `Formatter.title` {#symbol-Formatter.title}
-
-[source](types.md#code)
-
-Returns: `string`.
-
-**What it does**
+Returns `string`.
 
 - Return `"formatted"`.
 
-### `TextFormatter` {#symbol-TextFormatter}
+<a id="symbol-TextFormatter"></a>
+### `TextFormatter` · class · [source](types.md#code)
 
-[source](types.md#code)
+Implements [`Formatter`](types.md#symbol-Formatter).
 
-Behavioral class.
-
-Satisfies [`Formatter`](types.md#symbol-Formatter).
-
-**Inherited default behavior**
+Inherited defaults:
 
 - [`Formatter.title`](types.md#symbol-Formatter.title).
 
-#### `TextFormatter.format` {#symbol-TextFormatter.format}
-
-[source](types.md#code)
+<a id="symbol-TextFormatter.format"></a>
+#### `TextFormatter.format` · [source](types.md#code)
 
 Type parameters: `T`.
 
-**Inputs**
+**Inputs:** Take `value` (`T`).
 
-- `value` (`T`) — required labeled input.
-
-Returns: `string`.
-
-**What it does**
+Returns `string`.
 
 - Return `"generic method called"`.
 
-### `Box` {#symbol-Box}
+<a id="symbol-Box"></a>
+### `Box` · class · [source](types.md#code)
 
-[source](types.md#code)
+Implements [`IBox`](types.md#symbol-IBox). Type parameters: `T`.
 
-Behavioral class.
+**Inputs:** Take `value` (`T`); store read-only.
 
-Type parameters: `T`.
+<a id="symbol-Box.get"></a>
+#### `Box.get` · [source](types.md#code)
 
-Satisfies [`IBox`](types.md#symbol-IBox).
-
-**Inputs**
-
-- `value` (`T`) — required labeled input — stored as `value` and read-only after initialization.
-
-#### `Box.get` {#symbol-Box.get}
-
-[source](types.md#code)
-
-Returns: `T`.
-
-**What it does**
+Returns `T`.
 
 - Return `value`.
 
-### `IBox` {#symbol-IBox}
-
-[source](types.md#code)
-
-Interface.
+<a id="symbol-IBox"></a>
+### `IBox` · interface · [source](types.md#code)
 
 Type parameters: `T`.
 
-#### `IBox.get` {#symbol-IBox.get}
+<a id="symbol-IBox.get"></a>
+#### `IBox.get` · [source](types.md#code)
 
-[source](types.md#code)
-
-Returns: `T`.
-
-Interface contract. A selected implementation supplies the behavior.
-
-### Shared language rules
-
-See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
+Returns `T`.
 
 ::::
 

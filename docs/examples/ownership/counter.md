@@ -65,75 +65,40 @@ interface ICounter {
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
+<a id="symbol-Counter"></a>
+### `Counter` · class · [source](counter.md#code)
 
-### In this file
+Implements [`ICounter`](counter.md#symbol-ICounter).
 
-- [`Counter`](counter.md#symbol-Counter) is a class implementing `ICounter`.
-- [`ICounter`](counter.md#symbol-ICounter) is an interface.
+**Inputs:** Take `value` (`int`); store mutably.
 
-### `Counter` {#symbol-Counter}
+<a id="symbol-Counter.increment"></a>
+#### `Counter.increment` · [source](counter.md#code)
 
-[source](counter.md#code)
+Changes `self`.
 
-Behavioral class.
-
-Satisfies [`ICounter`](counter.md#symbol-ICounter).
-
-**Inputs**
-
-- `value` (`int`) — required labeled input — stored as `value` and mutable.
-
-#### `Counter.increment` {#symbol-Counter.increment}
-
-[source](counter.md#code)
-
-Returns: no value.
-
-May change: `self`.
-
-**What it does**
-
-- Grant exclusive mutable access to `self` for this block, then end the borrow:
+- Mutably borrow `self` for this block:
   - Set `value` to `value` plus `1`.
 
-#### `Counter.read` {#symbol-Counter.read}
+<a id="symbol-Counter.read"></a>
+#### `Counter.read` · [source](counter.md#code)
 
-[source](counter.md#code)
-
-Returns: `int`.
-
-**What it does**
+Returns `int`.
 
 - Return `value`.
 
-### `ICounter` {#symbol-ICounter}
+<a id="symbol-ICounter"></a>
+### `ICounter` · interface · [source](counter.md#code)
 
-[source](counter.md#code)
+<a id="symbol-ICounter.increment"></a>
+#### `ICounter.increment` · [source](counter.md#code)
 
-Interface.
+Changes `self`.
 
-#### `ICounter.increment` {#symbol-ICounter.increment}
+<a id="symbol-ICounter.read"></a>
+#### `ICounter.read` · [source](counter.md#code)
 
-[source](counter.md#code)
-
-Returns: no value.
-
-May change: `self`.
-
-Interface contract. A selected implementation supplies the behavior.
-
-#### `ICounter.read` {#symbol-ICounter.read}
-
-[source](counter.md#code)
-
-Returns: `int`.
-
-Interface contract. A selected implementation supplies the behavior.
-
-### Shared language rules
-
-See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
+Returns `int`.
 
 ::::
 

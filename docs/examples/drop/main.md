@@ -48,37 +48,19 @@ print(value="using resource")
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
+### Startup
 
-### In this file
+- Set `resource` of type [`Resource`](resource.md#symbol-Resource) to a new [`Resource`](resource.md#symbol-Resource).
+- `resource` of type [`Resource`](resource.md#symbol-Resource) owns this value.
+- Call `print` with `value` as `"using resource"`.
 
-- Run 2 other startup steps in source order.
+### Dependencies
 
-### Startup, in source order
+- [`Resource`](resource.md#symbol-Resource) from `resource`: construct with no caller inputs.
 
-- Set `resource` of type [`Resource`](resource.md#symbol-Resource) to call [`Resource`](resource.md#symbol-Resource).
-- This variable owns the value.
-- Call `print` with `value` = `"using resource"`.
+### Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
 
-### Dependencies used by this file
-
-Only referenced types and operations appear here. Each name links to its complete specification.
-
-#### [`Resource`](resource.md#symbol-Resource)
-
-Class from `resource`.
-
-- Construct with no caller inputs → [`Resource`](resource.md#symbol-Resource).
-
-### Built-in operations used by this file
-
-- `print` (`value`: `any`) → `void`: Composition and test output. Other callables receive Console and declare uses console.write.
-
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
-
-### Shared language rules
-
-See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
+- `print`: Composition and test output. Other callables receive Console and declare uses console.write.
 
 ::::
 

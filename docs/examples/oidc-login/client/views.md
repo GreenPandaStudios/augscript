@@ -78,66 +78,28 @@ Welcome(SessionClaims session) returns Html unless HttpError {
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
+<a id="symbol-LoginPage"></a>
+### `LoginPage` · [source](views.md#code)
 
-### In this file
+Returns `Html`.
 
-- [`LoginPage`](views.md#symbol-LoginPage) is a function returning `Html`.
-- [`Welcome`](views.md#symbol-Welcome) is a function returning `Html`.
+- Return the server component [`Page`](../common/views.md#symbol-Page) with `title` = `"Sign in"` containing the HTML element `p` containing `This August app is both an OpenID Connect provider and a login client.` (server-rendered; text escaped), the HTML element `p` containing the HTML element `a` with `href` = `"/login/start"`, `style` = `"display:inline-block;padding:12px 20px;border-radius:10px;background:#4852d7;color:white;text-decoration:none"` containing `Sign in with OpenID Connect` (server-rendered; text escaped) (server-rendered; text escaped), the HTML element `p` containing `The server uses authorization codes, S256 PKCE, state and nonce validation. Your session is a separate signed JWT in an HttpOnly cookie.` (server-rendered; text escaped) (server-rendered; text escaped).
 
-### `LoginPage` {#symbol-LoginPage}
+<a id="symbol-Welcome"></a>
+### `Welcome` · [source](views.md#code)
 
-[source](views.md#code)
+**Inputs:** Take `session` ([`SessionClaims`](contracts.md#symbol-SessionClaims)).
 
-Returns: `Html`.
+Returns `Html`. Can fail with `HttpError`.
 
-**What it does**
+- Return the server component [`Page`](../common/views.md#symbol-Page) with `title` = `"Welcome, "` plus `name` of `session` containing the HTML element `p` containing `You are signed in as `, the HTML element `strong` containing `name` of `session` (server-rendered; text escaped), `.` (server-rendered; text escaped), the HTML element `p` containing `Subject: `, the HTML element `code` containing `sub` of `session` (server-rendered; text escaped) (server-rendered; text escaped), the HTML element `p` containing the HTML element `a` with `href` = `"/me"` containing `View the protected JSON endpoint` (server-rendered; text escaped) (server-rendered; text escaped), the HTML element `form` with `method` = `"post"`, `action` = `"/logout"`, `onSubmit` = a deferred HTTP form action for [`logout`](logout.md#symbol-logout); inputs: `1` from the checked form input supplied when the HTTP form is submitted; capture supplied values when rendering, and read form inputs when submitted; send the form to that endpoint with its declared HTTP method containing the HTML element `input` with `type` = `"hidden"`, `name` = `"csrf"`, `value` = `csrf` of `session` (server-rendered; text escaped), the HTML element `button` with `type` = `"submit"`, `style` = `"padding:10px 18px;border-radius:10px;border:0;background:#17233a;color:white;font:inherit"` containing `Sign out` (server-rendered; text escaped) (server-rendered; text escaped) (server-rendered; text escaped).
 
-- Return the server component [`Page`](../common/views.md#symbol-Page) with `title` = `"Sign in"` containing the HTML element `p` containing `This August app is both an OpenID Connect provider and a login client.` (rendered on the server with embedded text escaped), the HTML element `p` containing the HTML element `a` with `href` = `"/login/start"`, `style` = `"display:inline-block;padding:12px 20px;border-radius:10px;background:#4852d7;color:white;text-decoration:none"` containing `Sign in with OpenID Connect` (rendered on the server with embedded text escaped) (rendered on the server with embedded text escaped), the HTML element `p` containing `The server uses authorization codes, S256 PKCE, state and nonce validation. Your session is a separate signed JWT in an HttpOnly cookie.` (rendered on the server with embedded text escaped) (rendered on the server with embedded text escaped).
+### Dependencies
 
-### `Welcome` {#symbol-Welcome}
-
-[source](views.md#code)
-
-**Inputs**
-
-- `session` ([`SessionClaims`](contracts.md#symbol-SessionClaims)) — required labeled input.
-
-Returns: `Html`.
-
-Can fail with `HttpError`. Callers must catch or propagate these errors.
-
-**What it does**
-
-- Return the server component [`Page`](../common/views.md#symbol-Page) with `title` = `"Welcome, "` plus `name` of `session` containing the HTML element `p` containing `You are signed in as `, the HTML element `strong` containing `name` of `session` (rendered on the server with embedded text escaped), `.` (rendered on the server with embedded text escaped), the HTML element `p` containing `Subject: `, the HTML element `code` containing `sub` of `session` (rendered on the server with embedded text escaped) (rendered on the server with embedded text escaped), the HTML element `p` containing the HTML element `a` with `href` = `"/me"` containing `View the protected JSON endpoint` (rendered on the server with embedded text escaped) (rendered on the server with embedded text escaped), the HTML element `form` with `method` = `"post"`, `action` = `"/logout"`, `onSubmit` = a deferred HTTP form action for [`logout`](logout.md#symbol-logout); inputs: `1` from the checked form input supplied when the HTTP form is submitted; capture supplied values when rendering, and read form inputs when submitted; send the form to that endpoint with its declared HTTP method containing the HTML element `input` with `type` = `"hidden"`, `name` = `"csrf"`, `value` = `csrf` of `session` (rendered on the server with embedded text escaped), the HTML element `button` with `type` = `"submit"`, `style` = `"padding:10px 18px;border-radius:10px;border:0;background:#17233a;color:white;font:inherit"` containing `Sign out` (rendered on the server with embedded text escaped) (rendered on the server with embedded text escaped) (rendered on the server with embedded text escaped).
-
-### Dependencies used by this file
-
-Only referenced types and operations appear here. Each name links to its complete specification.
-
-#### [`SessionClaims`](contracts.md#symbol-SessionClaims)
-
-Record from `contracts`.
-
-- Read `csrf` (`string`).
-- Read `name` (`string`).
-- Read `sub` (`string`).
-
-#### [`logout`](logout.md#symbol-logout)
-
-Function from `logout`.
-
-- [`logout`](logout.md#symbol-logout) (`input`: [`LogoutForm`](contracts.md#symbol-LogoutForm) from HTTP form, `token`: `optional string` from HTTP cookie `aug_session`, `origin`: `optional string` from HTTP header) → `HttpResponse<Html>`; inject `crypto`: [`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto), `clock`: [`Clock`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock), `keys`: [`SigningKeys`](../common/keys.md#symbol-SigningKeys), `sessions`: [`ExpiringStore<SessionClaims>`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore); uses [`crypto.publicRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.publicRsa), [`crypto.decodeBase64url`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url), [`crypto.verifyRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.verifyRsa), [`crypto.equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal), [`clock.now`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now), [`keys.session`](../common/keys.md#symbol-SigningKeys.session), [`sessions.get`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.get), [`sessions.take`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.take); can fail with `SessionError`, `KeyError`, `TimeError`, `CryptoError`, `HttpError`.
-
-#### [`Page`](../common/views.md#symbol-Page)
-
-Function from `common`.
-
-- [`Page`](../common/views.md#symbol-Page) (`title`: `string`, `children`: `List<Html>`) → `Html`.
-
-### Shared language rules
-
-See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
+- [`LogoutForm`](contracts.md#symbol-LogoutForm).
+- [`SessionClaims`](contracts.md#symbol-SessionClaims) from `contracts`: read `csrf` (`string`); read `name` (`string`); read `sub` (`string`).
+- [`logout`](logout.md#symbol-logout) (`input`: [`LogoutForm`](contracts.md#symbol-LogoutForm) from HTTP form, `token`: `optional string` from HTTP cookie `aug_session`, `origin`: `optional string` from HTTP header) → `HttpResponse<Html>`; can fail with `SessionError`, `KeyError`, `TimeError`, `CryptoError`, `HttpError` from `logout`.
+- [`Page`](../common/views.md#symbol-Page) (`title`: `string`, `children`: `List<Html>`) → `Html` from `common`.
 
 ::::
 

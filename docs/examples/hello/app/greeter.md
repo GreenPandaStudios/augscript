@@ -87,103 +87,40 @@ interface IGreeter {
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
+<a id="symbol-Greeter"></a>
+### `Greeter` · class · [source](greeter.md#code)
 
-### In this file
+Welcomes a user through the configured logger. Implements [`IGreeter`](greeter.md#symbol-IGreeter).
 
-- [`Greeter`](greeter.md#symbol-Greeter) is a class implementing `IGreeter`.
-- [`IGreeter`](greeter.md#symbol-IGreeter) is an interface.
+**Inputs:** Resolve [`Logger`](../logging/logger.md#symbol-Logger) as `logger`; store read-only — The application logger, injected when resolved.
 
-### `Greeter` {#symbol-Greeter}
-
-[source](greeter.md#code)
-
-Behavioral class.
-
-Satisfies [`IGreeter`](greeter.md#symbol-IGreeter).
-
-**Author documentation**
-
-Welcomes a user through the configured logger.
-
-**Parameters**
-- `logger`: The application logger, injected when resolved.
-
-**Inputs**
-
-- `logger` ([`Logger`](../logging/logger.md#symbol-Logger)) — injected; callers omit it — stored as `logger` and read-only after initialization.
-
-#### `Greeter.greet` {#symbol-Greeter.greet}
-
-[source](greeter.md#code)
-
-**Inputs**
-
-- `console` ([`Console`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console)) — injected; callers omit it.
-- `name` (`string`) — required labeled input.
-
-Returns: no value.
-
-Capabilities: [`Console.write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
-
-**What it does**
-
-- Call [`Logger.log`](../logging/logger.md#symbol-Logger.log) on `logger` with `message` = (text formed by joining `"Hello, "`, `name`, `"!"` in order); inject `console` from `console`.
-
-**Author documentation**
+<a id="symbol-Greeter.greet"></a>
+#### `Greeter.greet` · [source](greeter.md#code)
 
 Prints a personalized greeting.
 
-**Parameters**
-- `name`: The user to welcome.
+**Inputs:** Resolve [`Console`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console) as `console`. Take `name` (`string`) — The user to welcome.
 
-### `IGreeter` {#symbol-IGreeter}
+Uses [`Console.write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
 
-[source](greeter.md#code)
+- Call [`Logger.log`](../logging/logger.md#symbol-Logger.log) on `logger` with `message` as text that joins `"Hello, "`, `name` and `"!"` using `console`.
 
-Interface.
+<a id="symbol-IGreeter"></a>
+### `IGreeter` · interface · [source](greeter.md#code)
 
-#### `IGreeter.greet` {#symbol-IGreeter.greet}
-
-[source](greeter.md#code)
-
-**Inputs**
-
-- `console` ([`Console`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console)) — injected; callers omit it.
-- `name` (`string`) — required labeled input.
-
-Returns: no value.
-
-Capabilities: [`Console.write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
-
-Interface contract. A selected implementation supplies the behavior.
-
-**Author documentation**
+<a id="symbol-IGreeter.greet"></a>
+#### `IGreeter.greet` · [source](greeter.md#code)
 
 Prints a personalized greeting.
 
-**Parameters**
-- `name`: The user to welcome.
+**Inputs:** Resolve [`Console`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console) as `console`. Take `name` (`string`) — The user to welcome.
 
-### Dependencies used by this file
+Uses [`Console.write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
 
-Only referenced types and operations appear here. Each name links to its complete specification.
+### Dependencies
 
-#### [`Console`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console)
-
-Capability interface from `august.io`.
-
-- [`Console.write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write)<`T`> (`value`: `T`) → `void`.
-
-#### [`Logger`](../logging/logger.md#symbol-Logger)
-
-Interface from `logging`.
-
-- [`Logger.log`](../logging/logger.md#symbol-Logger.log) (`message`: `string`) → `void`; inject `console`: [`Console`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console); uses [`Console.write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
-
-### Shared language rules
-
-See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
+- [`Console`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console) from `august.io`: [`write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write)<`T`> (`value`: `T`) → `void`.
+- [`Logger`](../logging/logger.md#symbol-Logger) from `logging`: [`log`](../logging/logger.md#symbol-Logger.log) (`message`: `string`) → `void`.
 
 ::::
 

@@ -71,45 +71,19 @@ settings() returns Settings {
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
-
-### In this file
-
-- [`Settings`](settings.md#symbol-Settings) is an immutable record.
-- [`settings`](settings.md#symbol-settings) is a function returning `Settings`.
-
-### `Settings` {#symbol-Settings}
-
-[source](settings.md#code)
-
-Immutable record.
-
-**Author documentation**
+<a id="symbol-Settings"></a>
+### `Settings` · immutable record · [source](settings.md#code)
 
 Explicit loopback development settings. The provider accepts one registered client and its exact callback URI.
 
-**Inputs**
+**Inputs:** Take `baseUrl` (`string`); store read-only. Take `issuer` (`string`); store read-only. Take `clientId` (`string`); store read-only. Take `callback` (`string`); store read-only. Take `sessionSeconds` (`int`); store read-only. Take `secureCookies` (`bool`); store read-only.
 
-- `baseUrl` (`string`) — required labeled input — stored as `baseUrl` and read-only after initialization.
-- `issuer` (`string`) — required labeled input — stored as `issuer` and read-only after initialization.
-- `clientId` (`string`) — required labeled input — stored as `clientId` and read-only after initialization.
-- `callback` (`string`) — required labeled input — stored as `callback` and read-only after initialization.
-- `sessionSeconds` (`int`) — required labeled input — stored as `sessionSeconds` and read-only after initialization.
-- `secureCookies` (`bool`) — required labeled input — stored as `secureCookies` and read-only after initialization.
+<a id="symbol-settings"></a>
+### `settings` · [source](settings.md#code)
 
-### `settings` {#symbol-settings}
+Returns [`Settings`](settings.md#symbol-Settings).
 
-[source](settings.md#code)
-
-Returns: [`Settings`](settings.md#symbol-Settings).
-
-**What it does**
-
-- Return call [`Settings`](settings.md#symbol-Settings) with `baseUrl` = `"http://127.0.0.1:8787"`; `issuer` = `"http://127.0.0.1:8787/provider"`; `clientId` = `"august-login-app"`; `callback` = `"http://127.0.0.1:8787/login/callback"`; `sessionSeconds` = `900`; `secureCookies` = `false`.
-
-### Shared language rules
-
-See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
+- Return a new [`Settings`](settings.md#symbol-Settings) with `baseUrl` as `"http://127.0.0.1:8787"`, `issuer` as `"http://127.0.0.1:8787/provider"`, `clientId` as `"august-login-app"`, `callback` as `"http://127.0.0.1:8787/login/callback"`, `sessionSeconds` as `900`, `secureCookies` as `false`.
 
 ::::
 

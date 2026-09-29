@@ -58,32 +58,19 @@ print(value=state)
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
-
-### In this file
-
-- Run 4 other startup steps in source order.
-
-### Startup, in source order
+### Startup
 
 - Set `state` of type `int` to `123`.
 - Set `index` of type `int` to `0`.
-- While `index` is less than `2000000`, repeat:
+- While `index` is less than `2000000`:
   - Set `product` of type `int` to `state` times `48271`.
   - Set `state` to `product` minus ((`product` divided by `2147483647`) times `2147483647`).
   - Set `index` to `index` plus `1`.
-  - Check the condition again before the next iteration.
-- Call `print` with `value` = `state`.
+- Call `print` with `value` as `state`.
 
-### Built-in operations used by this file
+### Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
 
-- `print` (`value`: `any`) → `void`: Composition and test output. Other callables receive Console and declare uses console.write.
-
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
-
-### Shared language rules
-
-See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
+- `print`: Composition and test output. Other callables receive Console and declare uses console.write.
 
 ::::
 

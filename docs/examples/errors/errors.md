@@ -52,33 +52,16 @@ load(bool fail) returns string unless FileError {
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
+<a id="symbol-load"></a>
+### `load` · [source](errors.md#code)
 
-### In this file
+**Inputs:** Take `fail` (`bool`).
 
-- [`load`](errors.md#symbol-load) is a function returning `string`.
-
-### `load` {#symbol-load}
-
-[source](errors.md#code)
-
-**Inputs**
-
-- `fail` (`bool`) — required labeled input.
-
-Returns: `string`.
-
-Can fail with `FileError`. Callers must catch or propagate these errors.
-
-**What it does**
+Returns `string`. Can fail with `FileError`.
 
 - If `fail` is true:
-  - Fail with call `FileError`. Transfer control to a matching catch or propagate the failure.
+  - Fail with a new `FileError`.
 - Return `"loaded"`.
-
-### Shared language rules
-
-See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
 
 ::::
 

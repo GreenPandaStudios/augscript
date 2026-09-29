@@ -50,21 +50,10 @@ export ConsoleLogger from console
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
-
-### In this file
-
-- Export `Logger` from this folder.
-- Export `ConsoleLogger` from this folder.
-
-### Folder exports
+### Exports
 
 - Export the declaration `Logger` from [`logger.aug`](logger.md#symbol-Logger).
 - Export the declaration `ConsoleLogger` from [`console.aug`](console.md#symbol-ConsoleLogger).
-
-### Shared language rules
-
-See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
 
 ::::
 

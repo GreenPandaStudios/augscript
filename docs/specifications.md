@@ -42,13 +42,13 @@ Without any comments, the generated spec lists `total` near the top of the file,
 >   - Return `price` times `quantity`.
 > - Return `0`.
 
-The generated document preserves the actual branch structure and links to the full explanation of each used dependency. Javadoc, when present, appears after the generated behavior as **Author documentation**. It can explain intent that a compiler cannot infer, but readers do not need comments to follow the checked inputs, operations, and outcomes.
+The generated document preserves the actual branch structure and links to the full explanation of each used dependency. Javadoc, when present, becomes part of the explanation: its summary introduces the declaration, parameter notes sit beside their inputs, and return and error notes sit beside those outcomes. Comments can explain intent that a compiler cannot infer, but readers do not need them to follow the checked inputs, operations, and outcomes.
 
 Optional contracts use `optional Type`. Specs describe two possible states: a value or null. Omitted inputs become null, so missing and explicit null follow the same branch. If an older program handles missing and null differently, combine those cases deliberately before using the syntax migration command.
 
 ## Dependencies stay small and navigable
 
-Each file starts with a short map of its declarations and startup steps, then explains local behavior. A compact dependency section follows it. Each used operation shows its inputs, result, injected values, changes, capabilities, and failures, with a link to the complete explanation. Dependency implementation bodies belong in their own documents.
+The document follows the file's declarations and startup steps. A short dependency section lists only used names and operations. It shows each operation's caller inputs, result, and checked failures, with a link to the complete explanation. The local declaration explains injected inputs, state changes, and capabilities. Dependency implementation bodies stay in their own documents.
 
 `import everything` stays valid. The spec lists the names and operations actually used by the file. Adding an unused export does not expand that list. VS Code hover still shows all names available from the import.
 
@@ -79,7 +79,7 @@ In VS Code, use **AugScript: Open Compiled Specification** to generate and previ
 
 ## Determinism and limits
 
-Generation is offline and deterministic for the same checked sources, configuration, installed dependency versions, and compiler version. It adds no timestamps or machine paths. It uses fixed templates and the compiler's semantic information.
+Generation is offline and deterministic for the same checked sources, configuration, installed dependency versions, and compiler version. It adds no timestamps or machine paths. The compiler first builds an explanation tree from checked declarations and nested operations, then renders that tree as Markdown. Branches and cleanup stay grouped, and spacing is consistent across files.
 
 ASD-STE100 guides the wording. The output is best effort Simplified Technical English, without a claim of formal compliance. Native C boundaries are explained through their declared contracts and author documentation; the compiler does not infer a foreign implementation's internals. Shared numeric, ownership, and task rules link to the language reference.
 

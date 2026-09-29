@@ -52,41 +52,22 @@ announce() uses C.puts {
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
+<a id="symbol-puts"></a>
+### `puts` · [source](native.md#code)
 
-### In this file
+**Inputs:** Take `message` (`string`).
 
-- [`puts`](native.md#symbol-puts) is a function returning `c_int`.
-- [`announce`](native.md#symbol-announce) is a function.
+Returns `c_int`.
 
-### `puts` {#symbol-puts}
+Native C implementation; only its declared contract is visible here.
 
-[source](native.md#code)
+<a id="symbol-announce"></a>
+### `announce` · [source](native.md#code)
 
-**Inputs**
+Uses `C.puts`.
 
-- `message` (`string`) — required labeled input.
-
-Returns: `c_int`.
-
-Native C operation. Its declared inputs, result, effects, and errors are the visible contract. The C implementation is outside this specification.
-
-### `announce` {#symbol-announce}
-
-[source](native.md#code)
-
-Returns: no value.
-
-Capabilities: `C.puts`.
-
-**What it does**
-
-- Enter an unsafe boundary. Native calls use their declared contracts; their foreign implementation is outside this specification:
-  - Call [`puts`](native.md#symbol-puts) with `message` = `"hello from C FFI"`.
-
-### Shared language rules
-
-See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
+- Use native code with its declared contract:
+  - Call [`puts`](native.md#symbol-puts) with `message` as `"hello from C FFI"`.
 
 ::::
 

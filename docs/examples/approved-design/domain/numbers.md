@@ -115,133 +115,71 @@ test double {
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
+<a id="symbol-RangeError"></a>
+### `RangeError` · class · [source](numbers.md#code)
 
-### In this file
+Raised when an input is outside the operation's domain. Implements `Error`.
 
-- [`RangeError`](numbers.md#symbol-RangeError) is a class implementing `Error`.
-- [`Positive`](numbers.md#symbol-Positive) is an interceptor.
-- [`double`](numbers.md#symbol-double) is a function returning `int`.
-- [`test double`](numbers.md#symbol-test-20-double) is a same-file test suite.
+**Inputs:** Take `value` (`int`); store read-only.
 
-### `RangeError` {#symbol-RangeError}
+<a id="symbol-Positive"></a>
+### `Positive` · interceptor · [source](numbers.md#code)
 
-[source](numbers.md#code)
+A pure validation layer, shared by any compatible callable. Type parameters: `T`.
 
-Behavioral class.
+Creates one interceptor per invocation. Its around operation may delegate once or finish early.
 
-Satisfies `Error`.
+<a id="symbol-Positive.around"></a>
+#### `Positive.around` · [source](numbers.md#code)
 
-**Author documentation**
+**Inputs:** Take `amount` (`int`).
 
-Raised when an input is outside the operation's domain.
-
-**Inputs**
-
-- `value` (`int`) — required labeled input — stored as `value` and read-only after initialization.
-
-### `Positive` {#symbol-Positive}
-
-[source](numbers.md#code)
-
-Function or constructor middleware.
-
-Type parameters: `T`.
-
-**Author documentation**
-
-A pure validation layer, shared by any compatible callable.
-
-Create a fresh interceptor for each invocation. Its around operation can delegate once, change selected inputs, or short-circuit with a compatible result or failure.
-
-#### `Positive.around` {#symbol-Positive.around}
-
-[source](numbers.md#code)
-
-**Inputs**
-
-- `amount` (`int`) — required labeled input.
-
-Returns: `T`.
-
-Can fail with `RangeError`. Callers must catch or propagate these errors.
-
-**What it does**
+Returns `T`. Can fail with `RangeError`.
 
 - If `amount` is less than `0`:
-  - Fail with call [`RangeError`](numbers.md#symbol-RangeError) with `value` = `amount`. Transfer control to a matching catch or propagate the failure.
-- Return call `next`.
+  - Fail with a new [`RangeError`](numbers.md#symbol-RangeError) with `value` as `amount`.
+- Return the result of `next`.
 
-### `double` {#symbol-double}
-
-[source](numbers.md#code)
-
-**Inputs**
-
-- `amount` (`int`) — required labeled input.
-
-Returns: `int`.
-
-Can fail with `RangeError`. Callers must catch or propagate these errors.
-
-**Interceptors, in execution order**
-
-1. Call [`Positive.around`](numbers.md#symbol-Positive.around). It can call the next layer or finish with its own result or failure. Unselected inputs pass through.
-
-The first layer wraps the remaining layers. HTTP policies run before wire decoding; custom interceptors run after decoding. Follow linked behavior to see its conditions, input changes, and calls to the next layer.
-
-**What it does**
-
-- Return `amount` times `2`.
-
-**Author documentation**
+<a id="symbol-double"></a>
+### `double` · [source](numbers.md#code)
 
 Double a nonnegative amount.
 
-**Returns** Twice the amount, with defined integer wrapping.
+**Inputs:** Take `amount` (`int`) — Integer to double.
 
-**Parameters**
-- `amount`: Integer to double.
+Returns `int` — Twice the amount, with defined integer wrapping. Can fail with `RangeError` (A validation layer rejected a negative input).
 
-**Throws**
-- `RangeError`: A validation layer rejected a negative input.
+Layers run in this order:
 
-### `test double` {#symbol-test-20-double}
+1. Call [`Positive.around`](numbers.md#symbol-Positive.around).
 
-[source](numbers.md#code)
+- Return `amount` times `2`.
 
-Same-file function tests for [`double`](numbers.md#symbol-double). Each case gets isolated setup and dependency bindings.
+<a id="symbol-test double"></a>
+### `test double` · [source](numbers.md#code)
 
-#### Group `positive`
+Tests [`double`](numbers.md#symbol-double). Each case gets fresh setup and dependencies.
 
-##### `doubles`
+#### `positive`
 
-[source](numbers.md#code)
+##### `doubles` · [source](numbers.md#code)
 
 Run once for each row of a tuple containing `0`, `0`; a tuple containing `3`, `6`; a tuple containing `7`, `14`. Bind row positions to `input`, `expected`.
 
-- Call `assert` with (call [`double`](numbers.md#symbol-double) with `amount` = `input` equals `expected`).
+- Call `assert` with the result of [`double`](numbers.md#symbol-double) with `amount` as `input` equals `expected`.
 
-##### `rejects_negative`
-
-[source](numbers.md#code)
+##### `rejects_negative` · [source](numbers.md#code)
 
 - Set `rejected` of type `bool` to `false`.
-- Try these operations:
-  - Call [`double`](numbers.md#symbol-double) with `amount` = `-1`.
-- If they fail with [`RangeError`](numbers.md#symbol-RangeError), name the failure `error` and recover:
+- Try:
+  - Call [`double`](numbers.md#symbol-double) with `amount` as `-1`.
+- Catch [`RangeError`](numbers.md#symbol-RangeError) as `error`:
   - Set `rejected` to `value` of `error` equals `-1`.
-- Call `assert` with `rejected` = `rejected`.
+- Call `assert` with `rejected`.
 
-### Built-in operations used by this file
+### Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
 
-- `assert` (`condition`: `bool`) → `void`: Assert a bool in a test case or its setup. Catching an assertion failure cannot make the case pass; every case must execute an assertion.
-
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
-
-### Shared language rules
-
-See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
+- `assert`: Assert a bool in a test case or its setup. Catching an assertion failure cannot make the case pass; every case must execute an assertion.
 
 ::::
 

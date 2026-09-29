@@ -50,53 +50,28 @@ parse(string input) returns Json unless JsonError {
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
-
-### In this file
-
-- [`_aug_json_parse`](contracts.md#symbol-_aug_json_parse) is a function returning `Json`.
-- [`parse`](contracts.md#symbol-parse) is a function returning `Json`.
-
-### `parse` {#symbol-parse}
-
-[source](contracts.md#code)
-
-**Inputs**
-
-- `input` (`string`) — required labeled input.
-
-Returns: `Json`.
-
-Can fail with `JsonError`. Callers must catch or propagate these errors.
-
-**What it does**
-
-- Enter an unsafe boundary. Native calls use their declared contracts; their foreign implementation is outside this specification:
-  - Return call [`_aug_json_parse`](contracts.md#symbol-_aug_json_parse) with `input` = `input`.
-
-**Author documentation**
+<a id="symbol-parse"></a>
+### `parse` · [source](contracts.md#code)
 
 Parse strict UTF-8 JSON. Duplicate keys, invalid Unicode, oversized integers, and nesting beyond 64 levels raise JsonError.
 
-### `_aug_json_parse` {#symbol-_aug_json_parse}
+**Inputs:** Take `input` (`string`).
 
-[source](contracts.md#code)
+Returns `Json`. Can fail with `JsonError`.
+
+- Use native code with its declared contract:
+  - Return the result of [`_aug_json_parse`](contracts.md#symbol-_aug_json_parse) with `input`.
+
+<a id="symbol-_aug_json_parse"></a>
+### `_aug_json_parse` · [source](contracts.md#code)
 
 Private to its defining scope.
 
-**Inputs**
+**Inputs:** Take `input` (`string`).
 
-- `input` (`string`) — required labeled input.
+Returns `Json`. Can fail with `JsonError`.
 
-Returns: `Json`.
-
-Can fail with `JsonError`. Callers must catch or propagate these errors.
-
-Native C operation. Its declared inputs, result, effects, and errors are the visible contract. The C implementation is outside this specification.
-
-### Shared language rules
-
-See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
+Native C implementation; only its declared contract is visible here.
 
 ::::
 
