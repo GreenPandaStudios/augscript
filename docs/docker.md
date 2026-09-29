@@ -13,6 +13,7 @@ Create a project with `aug init my-app`, then compile it for Linux. The mount is
 
 ```sh
 docker run --rm \
+  --user "$(id -u):$(id -g)" \
   --mount type=bind,source="$PWD/my-app",target=/workspace \
   augscript/build:0.19.0 build . --out /workspace/.aug-build/program
 ```
