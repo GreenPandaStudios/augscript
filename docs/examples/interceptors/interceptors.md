@@ -107,44 +107,14 @@ interceptor AddOne<T>() {
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code. Author documentation is labeled separately. It follows Simplified Technical English as guidance, with best-effort wording.
+August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
 
-### Dependencies used by this file
+### In this file
 
-#### [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console)
-
-Available from `august.io`.
-
-Interface. Follow the linked specification for its full explanation.
-
-**[`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write)**
-
-Type parameters: `T`.
-
-**Inputs and dependencies**
-
-- `value`: `T`. The caller supplies this labeled input. Read reference values without copying them.
-
-Result: finish without a result.
-
-Capabilities: [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
-
-#### [`Logger`](logging.md#symbol-Logger)
-
-Available from `logging`.
-
-Interface. Follow the linked specification for its full explanation.
-
-**[`Logger.log`](logging.md#symbol-Logger.log)**
-
-**Inputs and dependencies**
-
-- `console`: [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-- `message`: `string`. The caller supplies this labeled input. Read reference values without copying them.
-
-Result: finish without a result.
-
-Capabilities: [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
+- [`ValidationError`](interceptors.md#symbol-ValidationError) is a class implementing `Error`.
+- [`Audit`](interceptors.md#symbol-Audit) is an interceptor.
+- [`Positive`](interceptors.md#symbol-Positive) is an interceptor.
+- [`AddOne`](interceptors.md#symbol-AddOne) is an interceptor.
 
 ### `ValidationError` {#symbol-ValidationError}
 
@@ -158,9 +128,9 @@ Satisfies `Error`.
 
 Raised when a numeric input fails validation.
 
-**Inputs and dependencies**
+**Inputs**
 
-- `message`: `string`. The caller supplies this labeled input. Read reference values without copying them. Store it as `message`. The field is read-only after initialization.
+- `message` (`string`) — required labeled input — stored as `message` and read-only after initialization.
 
 ### `Audit` {#symbol-Audit}
 
@@ -178,9 +148,9 @@ Generic T is inferred from the annotated function or constructor.
 **Parameters**
 - `logger`: Shared application logger, injected for each fresh instance.
 
-**Inputs and dependencies**
+**Inputs**
 
-- `logger`: [`Logger`](logging.md#symbol-Logger). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them. Store it as `logger`. The field is read-only after initialization.
+- `logger` ([`Logger`](logging.md#symbol-Logger)) — injected; callers omit it — stored as `logger` and read-only after initialization.
 
 Create a fresh interceptor for each invocation. Its around operation can delegate once, change selected inputs, or short-circuit with a compatible result or failure.
 
@@ -188,24 +158,24 @@ Create a fresh interceptor for each invocation. Its around operation can delegat
 
 [source](interceptors.md#code)
 
-**Inputs and dependencies**
+**Inputs**
 
-- `console`: [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
+- `console` ([`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console)) — injected; callers omit it.
 
-Result: `T`.
+Returns: `T`.
 
 Capabilities: [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
+
+**What it does**
+
+- Call [`Logger.log`](logging.md#symbol-Logger.log) on `logger` with `message` = `"before"`; inject `console` from `console`.
+- Set `result` of type `T` to call `next`.
+- Call [`Logger.log`](logging.md#symbol-Logger.log) on `logger` with `message` = `"after"`; inject `console` from `console`.
+- Return `result`.
 
 **Author documentation**
 
 Wrap a call without changing its result.
-
-**Behavior when execution reaches this operation**
-
-- Call [`Logger.log`](logging.md#symbol-Logger.log) on `logger` with `message` set to `"before"`; supply dependencies `console` from `console`.
-- Set `result` of type `T` to the result of call `next`.
-- Call [`Logger.log`](logging.md#symbol-Logger.log) on `logger` with `message` set to `"after"`; supply dependencies `console` from `console`.
-- Return `result` and finish this operation.
 
 ### `Positive` {#symbol-Positive}
 
@@ -225,13 +195,19 @@ Create a fresh interceptor for each invocation. Its around operation can delegat
 
 [source](interceptors.md#code)
 
-**Inputs and dependencies**
+**Inputs**
 
-- `y`: `int`. The caller supplies this labeled input. Read reference values without copying them.
+- `y` (`int`) — required labeled input.
 
-Result: `T`.
+Returns: `T`.
 
-Possible failures: `ValidationError`. The caller must catch or propagate them.
+Can fail with `ValidationError`. Callers must catch or propagate these errors.
+
+**What it does**
+
+- If `y` is less than `0`:
+  - Fail with call [`ValidationError`](interceptors.md#symbol-ValidationError) with `message` = `"value must be nonnegative"`. Transfer control to a matching catch or propagate the failure.
+- Return call `next`.
 
 **Author documentation**
 
@@ -240,12 +216,6 @@ Possible failures: `ValidationError`. The caller must catch or propagate them.
 
 **Throws**
 - `ValidationError`: When the selected value is negative.
-
-**Behavior when execution reaches this operation**
-
-- If (`y` is less than `0`) is true:
-  - Fail with the result of call [`ValidationError`](interceptors.md#symbol-ValidationError) with `message` set to `"value must be nonnegative"`. Transfer control to a matching catch or propagate the failure.
-- Return the result of call `next` and finish this operation.
 
 ### `AddOne` {#symbol-AddOne}
 
@@ -265,22 +235,37 @@ Create a fresh interceptor for each invocation. Its around operation can delegat
 
 [source](interceptors.md#code)
 
-**Inputs and dependencies**
+**Inputs**
 
-- `y`: `int`. The caller supplies this labeled input. Read reference values without copying them.
+- `y` (`int`) — required labeled input.
 
-Result: `T`.
+Returns: `T`.
+
+**What it does**
+
+- Return call `next` with `y` = (`y` plus `1`).
 
 **Author documentation**
 
 **Parameters**
 - `y`: The input to increment.
 
-**Behavior when execution reaches this operation**
+### Dependencies used by this file
 
-- Return the result of call `next` with `y` set to (`y` plus `1`) and finish this operation.
+Only referenced types and operations appear here. Each name links to its complete specification.
 
+#### [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console)
 
-### Language rules
+Capability interface from `august.io`.
 
-Boolean operations short-circuit from left to right. int uses signed 64-bit values; addition, subtraction, multiplication, and negation wrap. Division by zero raises ArithmeticError. float uses double precision. Tuples and records compare by value; mutable collections and behavioral classes compare by identity. Optional values contain a value or null; omission becomes null. Managed references grant read access; ownership moves and mutable borrows remain checked. A scope joins its child tasks; an unhandled child failure cancels siblings. See the [language reference](https://greenpandastudios.github.io/augscript/reference) for shared rules.
+- [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write)<`T`> (`value`: `T`) → `void`.
+
+#### [`Logger`](logging.md#symbol-Logger)
+
+Interface from `logging`.
+
+- [`Logger.log`](logging.md#symbol-Logger.log) (`message`: `string`) → `void`; inject `console`: [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console); uses [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
+
+### Shared language rules
+
+See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.

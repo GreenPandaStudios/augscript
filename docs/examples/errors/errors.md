@@ -43,27 +43,30 @@ load(bool fail) returns string unless FileError {
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code. Author documentation is labeled separately. It follows Simplified Technical English as guidance, with best-effort wording.
+August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
+
+### In this file
+
+- [`load`](errors.md#symbol-load) is a function returning `string`.
 
 ### `load` {#symbol-load}
 
 [source](errors.md#code)
 
-**Inputs and dependencies**
+**Inputs**
 
-- `fail`: `bool`. The caller supplies this labeled input. Read reference values without copying them.
+- `fail` (`bool`) — required labeled input.
 
-Result: `string`.
+Returns: `string`.
 
-Possible failures: `FileError`. The caller must catch or propagate them.
+Can fail with `FileError`. Callers must catch or propagate these errors.
 
-**Behavior when execution reaches this operation**
+**What it does**
 
 - If `fail` is true:
-  - Fail with the result of call `FileError`. Transfer control to a matching catch or propagate the failure.
-- Return `"loaded"` and finish this operation.
+  - Fail with call `FileError`. Transfer control to a matching catch or propagate the failure.
+- Return `"loaded"`.
 
+### Shared language rules
 
-### Language rules
-
-Boolean operations short-circuit from left to right. int uses signed 64-bit values; addition, subtraction, multiplication, and negation wrap. Division by zero raises ArithmeticError. float uses double precision. Tuples and records compare by value; mutable collections and behavioral classes compare by identity. Optional values contain a value or null; omission becomes null. Managed references grant read access; ownership moves and mutable borrows remain checked. A scope joins its child tasks; an unhandled child failure cancels siblings. See the [language reference](https://greenpandastudios.github.io/augscript/reference) for shared rules.
+See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.

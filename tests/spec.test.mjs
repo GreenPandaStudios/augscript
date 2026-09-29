@@ -71,7 +71,9 @@ test('specs explain all local behavior and only the dependency surface used by w
   assert.match(main,/through import everything/);
   assert.doesNotMatch(main,/_positive|unused|Sum valid values|For each/);
   for(const word of ['Author documentation','Values to inspect','Private to its defining scope','For each','While','Otherwise','Try these operations','recover','cleanup','Fail with','valid values','sums values'])assert.ok(service.includes(word),word);
-  assert.match(service,/not \(\(`total` equals `0`\)\)/);
+  assert.match(service,/If `total` does not equal `0` and/);
+  assert.ok(main.indexOf('## In this file')<main.indexOf('## Dependencies used by this file'));
+  assert.ok(service.indexOf('**What it does**')<service.indexOf('**Author documentation**\n\nSum valid values'));
   assert.match(main,/Built-in operations.*print/s);
 }));
 
@@ -91,6 +93,25 @@ test('spec generation is byte deterministic across project locations and validat
     } else assert.ok(map.has(target)||Object.hasOwn(example,relative('/project',target)),`Missing source ${match[1]}`);
   }
 });
+
+test('comment-free code yields a readable local flow and ordered long expressions', () => project({
+  'main.aug':'import address from links\nnumbers = List<int>(2, 4)\nprint(value=address(host="example.test", path="users"))\n',
+  'links.aug':`address(string host, string path) returns string {
+    location = "https://" + host + "/" + path + "?view=full"
+    return location
+}
+`,
+},root=>{
+  const result=checked(root);valid(result);
+  const outputs=generateSpecs(result),main=outputs.find(output=>output.path.endsWith('main.aug.md')).text;
+  const links=outputs.find(output=>output.path.endsWith('links.aug.md')).text;
+  assert.ok(main.indexOf('## Startup')<main.indexOf('## Dependencies used'));
+  assert.match(main,/Set `numbers` to a list of `int` containing `2`, `4`/);
+  assert.match(main,/\[`address`\]\(links\.aug\.md#symbol-address\).*\(`host`: `string`, `path`: `string`\) → `string`/s);
+  assert.match(links,/Build `location` by joining these text parts without separators, in order:/);
+  for(const part of ['1. `"https://"`','2. `host`','3. `"/"`','4. `path`','5. `"?view=full"`'])assert.ok(links.includes(part),part);
+  assert.doesNotMatch(links,/Author documentation|the result of call|\(\(\(/);
+}));
 
 test('spec --check detects source drift and never writes; successful native builds refresh specs', () => project(files, root => {
   let result=command(root,'spec');assert.equal(result.status,0,result.stderr);

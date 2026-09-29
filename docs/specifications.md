@@ -30,28 +30,25 @@ print(value=total(price=7, quantity=3))
 ```
 
 ```aug project=spec-guide file=prices.aug
-/** Calculate the total for an order.
- * @param price Price of one item.
- * @param quantity Number of items.
- * @return The total, or zero for a nonpositive quantity.
- */
 total(int price, int quantity) returns int:
     if quantity > 0:
         return price * quantity
     return 0
 ```
 
-Its generated behavior reads:
+Without any comments, the generated spec lists `total` near the top of the file, explains its two labeled inputs and `int` result, and then describes its behavior:
 
-> If `quantity` is greater than `0`, return `price` times `quantity` and finish this operation. Otherwise, return `0` and finish this operation.
+> - If `quantity` is greater than `0`:
+>   - Return `price` times `quantity`.
+> - Return `0`.
 
-The generated document preserves the actual branch structure and labels the author's Javadoc separately. Comments can explain intent that a compiler cannot infer. The compiler's description remains derived from the checked program.
+The generated document preserves the actual branch structure and links to the full explanation of each used dependency. Javadoc, when present, appears after the generated behavior as **Author documentation**. It can explain intent that a compiler cannot infer, but readers do not need comments to follow the checked inputs, operations, and outcomes.
 
 Optional contracts use `optional Type`. Specs describe two possible states: a value or null. Omitted inputs become null, so missing and explicit null follow the same branch. If an older program handles missing and null differently, combine those cases deliberately before using the syntax migration command.
 
 ## Dependencies stay small and navigable
 
-Each file's document explains the dependency surface that it uses: inputs, results, fields, capabilities, and failures. It links to the full explanation of that dependency. Dependency implementation bodies belong in their own documents.
+Each file starts with a short map of its declarations and startup steps, then explains local behavior. A compact dependency section follows it. Each used operation shows its inputs, result, injected values, changes, capabilities, and failures, with a link to the complete explanation. Dependency implementation bodies belong in their own documents.
 
 `import everything` stays valid. The spec lists the names and operations actually used by the file. Adding an unused export does not expand that list. VS Code hover still shows all names available from the import.
 

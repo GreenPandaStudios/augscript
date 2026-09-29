@@ -82,111 +82,12 @@ catch IndexError error {
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code. Author documentation is labeled separately. It follows Simplified Technical English as guidance, with best-effort wording.
+August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
 
-### Dependencies used by this file
+### In this file
 
-#### [`SystemConsole`](dependencies/august/0.19.0/io/contracts.md#symbol-SystemConsole)
-
-Available from `august.io`.
-
-Class. Follow the linked specification for its full explanation.
-
-#### [`Calculator`](calculator.md#symbol-Calculator)
-
-Available from `calculator`.
-
-Class. Follow the linked specification for its full explanation.
-
-**Construction**
-
-**Inputs and dependencies**
-
-- `logger`: [`Logger`](logging/logger.md#symbol-Logger). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-
-Result: [`Calculator`](calculator.md#symbol-Calculator).
-
-**[`Calculator.add`](calculator.md#symbol-Calculator.add)**
-
-**Inputs and dependencies**
-
-- `console`: [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-- `left`: `int`. The caller supplies this labeled input. Read reference values without copying them.
-- `right`: `int`. The caller supplies this labeled input. Read reference values without copying them.
-
-Result: `int`.
-
-Capabilities: [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
-
-#### [`load`](calculator.md#symbol-load)
-
-Available from `calculator`.
-
-**Inputs and dependencies**
-
-- `fail`: `bool`. The caller supplies this labeled input. Read reference values without copying them.
-
-Result: `string`.
-
-Possible failures: `FileError`. The caller must catch or propagate them.
-
-#### [`ConsoleLogger`](logging/console.md#symbol-ConsoleLogger)
-
-Available from `logging`.
-
-Class. Follow the linked specification for its full explanation.
-
-### Built-in operations used by this file
-
-#### `List<int>.get`
-
-Read a zero-based position. An invalid index raises checked IndexError. Reference results grant reading.
-
-Inputs: `index`: `int`.
-
-Result: `int`.
-
-Possible failures: `IndexError`.
-
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
-
-#### `Map<int, string>.get`
-
-Read a value by key; an absent key returns null. contains distinguishes an absent key from a stored null.
-
-Inputs: `key`: `int`.
-
-Result: `optional string`.
-
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
-
-#### `Set<int>.length`
-
-Read the number of elements.
-
-Result: `int`.
-
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
-
-#### `Tuple<int, string>.get`
-
-Read a statically checked constant position. Prefer tuple destructuring when reading several positions.
-
-Inputs: `index`: `int`.
-
-Result: `string`.
-
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
-
-#### `print`
-
-Composition and test output. Other callables receive Console and declare uses console.write.
-
-Inputs: `value`: `any`.
-
-Result: `void`.
-
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
+- Register 2 dependency providers before startup.
+- Run startup operations with checked error recovery.
 
 ### Dependency providers
 
@@ -202,19 +103,57 @@ Register these providers before startup. Their declaration order does not set in
   - Set `pair` of type `Tuple<int,string>` to a tuple containing `1`, `"apple"`.
   - Set `unique` of type `Set<int>` to a set containing `1`, `2`, `1`.
   - Set `fruit` of type `Map<int,string>` to a map with `1` mapped to `"apples"`; `2` mapped to `"pears"`.
-  - Set `calculator` to the result of call [`Calculator`](calculator.md#symbol-Calculator); supply dependencies `_logger` from `Logger`.
-  - Call `print` with `value` set to the result of call [`Calculator.add`](calculator.md#symbol-Calculator.add) on `calculator` with `right` set to the result of call `get` on `numbers` with `index` set to `1`; `left` set to the result of call `get` on `numbers` with `index` set to `0`; supply dependencies `console` from `Console`.
-  - Call `print` with `value` set to the result of call `get` on `pair` with `index` set to `1`.
-  - Call `print` with `value` set to the result of call `length` on `unique`.
-  - Call `print` with `value` set to the result of call `get` on `fruit` with `key` set to `2`.
+  - Set `calculator` to call [`Calculator`](calculator.md#symbol-Calculator); inject `_logger` from `Logger`.
+  - Call `print` with `value` = call [`Calculator.add`](calculator.md#symbol-Calculator.add) on `calculator` with `right` = call `get` on `numbers` with `index` = `1`; `left` = call `get` on `numbers` with `index` = `0`; inject `console` from `Console`.
+  - Call `print` with `value` = call `get` on `pair` with `index` = `1`.
+  - Call `print` with `value` = call `length` on `unique`.
+  - Call `print` with `value` = call `get` on `fruit` with `key` = `2`.
   - Try these operations:
-    - Call `print` with `value` set to the result of call [`load`](calculator.md#symbol-load) with `fail` set to `true`.
+    - Call `print` with `value` = call [`load`](calculator.md#symbol-load) with `fail` = `true`.
   - If they fail with `FileError`, name the failure `error` and recover:
-    - Call `print` with `value` set to `"load failed as expected"`.
+    - Call `print` with `value` = `"load failed as expected"`.
 - If they fail with `IndexError`, name the failure `error` and recover:
-  - Call `print` with `value` set to `"unexpected index failure"`.
+  - Call `print` with `value` = `"unexpected index failure"`.
 
+### Dependencies used by this file
 
-### Language rules
+Only referenced types and operations appear here. Each name links to its complete specification.
 
-Boolean operations short-circuit from left to right. int uses signed 64-bit values; addition, subtraction, multiplication, and negation wrap. Division by zero raises ArithmeticError. float uses double precision. Tuples and records compare by value; mutable collections and behavioral classes compare by identity. Optional values contain a value or null; omission becomes null. Managed references grant read access; ownership moves and mutable borrows remain checked. A scope joins its child tasks; an unhandled child failure cancels siblings. See the [language reference](https://greenpandastudios.github.io/augscript/reference) for shared rules.
+#### [`SystemConsole`](dependencies/august/0.19.0/io/contracts.md#symbol-SystemConsole)
+
+Class from `august.io`.
+
+Used as a type or provider.
+
+#### [`Calculator`](calculator.md#symbol-Calculator)
+
+Class from `calculator`.
+
+- Construct with no caller inputs → [`Calculator`](calculator.md#symbol-Calculator).
+- [`Calculator.add`](calculator.md#symbol-Calculator.add) (`left`: `int`, `right`: `int`) → `int`; inject `console`: [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console); uses [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
+
+#### [`load`](calculator.md#symbol-load)
+
+Function from `calculator`.
+
+- [`load`](calculator.md#symbol-load) (`fail`: `bool`) → `string`; can fail with `FileError`.
+
+#### [`ConsoleLogger`](logging/console.md#symbol-ConsoleLogger)
+
+Class from `logging`.
+
+Used as a type or provider.
+
+### Built-in operations used by this file
+
+- `List<int>.get` (`index`: `int`) → `int`: Read a zero-based position. An invalid index raises checked IndexError. Reference results grant reading. Can fail with `IndexError`.
+- `Map<int, string>.get` (`key`: `int`) → `optional string`: Read a value by key; an absent key returns null. contains distinguishes an absent key from a stored null.
+- `Set<int>.length` (no inputs) → `int`: Read the number of elements.
+- `Tuple<int, string>.get` (`index`: `int`) → `string`: Read a statically checked constant position. Prefer tuple destructuring when reading several positions.
+- `print` (`value`: `any`) → `void`: Composition and test output. Other callables receive Console and declare uses console.write.
+
+[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
+
+### Shared language rules
+
+See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.

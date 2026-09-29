@@ -75,102 +75,61 @@ verifyCredentials(string username, string password, resolve Crypto crypto) retur
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code. Author documentation is labeled separately. It follows Simplified Technical English as guidance, with best-effort wording.
+August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
 
-### Dependencies used by this file
+### In this file
 
-#### [`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto)
-
-Available from `august.crypto`.
-
-Interface. Follow the linked specification for its full explanation.
-
-**[`Crypto.decodeBase64url`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url)**
-
-**Inputs and dependencies**
-
-- `input`: `string`. The caller supplies this labeled input. Read reference values without copying them.
-
-Result: `Bytes`.
-
-Capabilities: [`Crypto.decodeBase64url`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url).
-
-Possible failures: `CryptoError`. The caller must catch or propagate them.
-
-**[`Crypto.equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal)**
-
-**Inputs and dependencies**
-
-- `left`: `Bytes`. The caller supplies this labeled input. Read reference values without copying them.
-- `right`: `Bytes`. The caller supplies this labeled input. Read reference values without copying them.
-
-Result: `bool`.
-
-Capabilities: [`Crypto.equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal).
-
-**[`Crypto.passwordHash`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.passwordHash)**
-
-**Inputs and dependencies**
-
-- `password`: `Bytes`. The caller supplies this labeled input. Read reference values without copying them.
-- `salt`: `Bytes`. The caller supplies this labeled input. Read reference values without copying them.
-- `iterations`: `int`. The caller supplies this labeled input. Read reference values without copying them.
-
-Result: `Bytes`.
-
-Capabilities: [`Crypto.passwordHash`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.passwordHash).
-
-Possible failures: `CryptoError`. The caller must catch or propagate them.
-
-### Built-in operations used by this file
-
-#### `string.bytes`
-
-Encode this string as immutable UTF-8 bytes.
-
-Result: `Bytes`.
-
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
-
-#### `string.length`
-
-Read the number of UTF-8 bytes. Unicode text is preserved losslessly.
-
-Result: `int`.
-
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
+- [`verifyCredentials`](credentials.md#symbol-verifyCredentials) is a function returning `bool`.
 
 ### `verifyCredentials` {#symbol-verifyCredentials}
 
 [source](credentials.md#code)
 
-**Inputs and dependencies**
+**Inputs**
 
-- `username`: `string`. The caller supplies this labeled input. Read reference values without copying them.
-- `password`: `string`. The caller supplies this labeled input. Read reference values without copying them.
-- `crypto`: [`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
+- `username` (`string`) — required labeled input.
+- `password` (`string`) — required labeled input.
+- `crypto` ([`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto)) — injected; callers omit it.
 
-Result: `bool`.
+Returns: `bool`.
 
 Capabilities: [`crypto.passwordHash`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.passwordHash), [`crypto.decodeBase64url`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url), [`crypto.equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal).
 
-Possible failures: `CryptoError`. The caller must catch or propagate them.
+Can fail with `CryptoError`. Callers must catch or propagate these errors.
+
+**What it does**
+
+- If (call `length` on `username` is greater than `64`) or (call `length` on `password` is greater than `256`):
+  - Return `false`.
+- Set `actual` to call [`Crypto.passwordHash`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.passwordHash) on `crypto` with `password` = call `bytes` on `password`; `salt` = call `bytes` on `"August demo salt v1"`; `iterations` = `600000`.
+- Set `expected` to call [`Crypto.decodeBase64url`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url) on `crypto` with `input` = `"s70USYF6WohPz2f7VLA9haS_ZgEtenviSf_HG0o7B_A"`.
+- Set `userMatches` to call [`Crypto.equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal) on `crypto` with `left` = call `bytes` on `username`; `right` = call `bytes` on `"ada"`.
+- Set `passwordMatches` to call [`Crypto.equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal) on `crypto` with `left` = `actual`; `right` = `expected`.
+- Return `userMatches` and `passwordMatches`.
 
 **Author documentation**
 
 One development account with a PBKDF2-HMAC-SHA256 verifier. Production account storage is deliberately a separate capability.
 
-**Behavior when execution reaches this operation**
+### Dependencies used by this file
 
-- If ((the result of call `length` on `username` is greater than `64`) or (the result of call `length` on `password` is greater than `256`)) is true:
-  - Return `false` and finish this operation.
-- Set `actual` to the result of call [`Crypto.passwordHash`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.passwordHash) on `crypto` with `password` set to the result of call `bytes` on `password`; `salt` set to the result of call `bytes` on `"August demo salt v1"`; `iterations` set to `600000`.
-- Set `expected` to the result of call [`Crypto.decodeBase64url`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url) on `crypto` with `input` set to `"s70USYF6WohPz2f7VLA9haS_ZgEtenviSf_HG0o7B_A"`.
-- Set `userMatches` to the result of call [`Crypto.equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal) on `crypto` with `left` set to the result of call `bytes` on `username`; `right` set to the result of call `bytes` on `"ada"`.
-- Set `passwordMatches` to the result of call [`Crypto.equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal) on `crypto` with `left` set to `actual`; `right` set to `expected`.
-- Return (`userMatches` and `passwordMatches`) and finish this operation.
+Only referenced types and operations appear here. Each name links to its complete specification.
 
+#### [`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto)
 
-### Language rules
+Capability interface from `august.crypto`.
 
-Boolean operations short-circuit from left to right. int uses signed 64-bit values; addition, subtraction, multiplication, and negation wrap. Division by zero raises ArithmeticError. float uses double precision. Tuples and records compare by value; mutable collections and behavioral classes compare by identity. Optional values contain a value or null; omission becomes null. Managed references grant read access; ownership moves and mutable borrows remain checked. A scope joins its child tasks; an unhandled child failure cancels siblings. See the [language reference](https://greenpandastudios.github.io/augscript/reference) for shared rules.
+- [`Crypto.decodeBase64url`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url) (`input`: `string`) → `Bytes`; can fail with `CryptoError`.
+- [`Crypto.equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal) (`left`: `Bytes`, `right`: `Bytes`) → `bool`.
+- [`Crypto.passwordHash`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.passwordHash) (`password`: `Bytes`, `salt`: `Bytes`, `iterations`: `int`) → `Bytes`; can fail with `CryptoError`.
+
+### Built-in operations used by this file
+
+- `string.bytes` (no inputs) → `Bytes`: Encode this string as immutable UTF-8 bytes.
+- `string.length` (no inputs) → `int`: Read the number of UTF-8 bytes. Unicode text is preserved losslessly.
+
+[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
+
+### Shared language rules
+
+See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.

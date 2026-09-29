@@ -106,19 +106,14 @@ test double {
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code. Author documentation is labeled separately. It follows Simplified Technical English as guidance, with best-effort wording.
+August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
 
-### Built-in operations used by this file
+### In this file
 
-#### `assert`
-
-Assert a bool in a test case or its setup. Catching an assertion failure cannot make the case pass; every case must execute an assertion.
-
-Inputs: `condition`: `bool`.
-
-Result: `void`.
-
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
+- [`RangeError`](numbers.md#symbol-RangeError) is a class implementing `Error`.
+- [`Positive`](numbers.md#symbol-Positive) is an interceptor.
+- [`double`](numbers.md#symbol-double) is a function returning `int`.
+- [`test double`](numbers.md#symbol-test-20-double) is a same-file test suite.
 
 ### `RangeError` {#symbol-RangeError}
 
@@ -132,9 +127,9 @@ Satisfies `Error`.
 
 Raised when an input is outside the operation's domain.
 
-**Inputs and dependencies**
+**Inputs**
 
-- `value`: `int`. The caller supplies this labeled input. Read reference values without copying them. Store it as `value`. The field is read-only after initialization.
+- `value` (`int`) — required labeled input — stored as `value` and read-only after initialization.
 
 ### `Positive` {#symbol-Positive}
 
@@ -154,31 +149,41 @@ Create a fresh interceptor for each invocation. Its around operation can delegat
 
 [source](numbers.md#code)
 
-**Inputs and dependencies**
+**Inputs**
 
-- `amount`: `int`. The caller supplies this labeled input. Read reference values without copying them.
+- `amount` (`int`) — required labeled input.
 
-Result: `T`.
+Returns: `T`.
 
-Possible failures: `RangeError`. The caller must catch or propagate them.
+Can fail with `RangeError`. Callers must catch or propagate these errors.
 
-**Behavior when execution reaches this operation**
+**What it does**
 
-- If (`amount` is less than `0`) is true:
-  - Fail with the result of call [`RangeError`](numbers.md#symbol-RangeError) with `value` set to `amount`. Transfer control to a matching catch or propagate the failure.
-- Return the result of call `next` and finish this operation.
+- If `amount` is less than `0`:
+  - Fail with call [`RangeError`](numbers.md#symbol-RangeError) with `value` = `amount`. Transfer control to a matching catch or propagate the failure.
+- Return call `next`.
 
 ### `double` {#symbol-double}
 
 [source](numbers.md#code)
 
-**Inputs and dependencies**
+**Inputs**
 
-- `amount`: `int`. The caller supplies this labeled input. Read reference values without copying them.
+- `amount` (`int`) — required labeled input.
 
-Result: `int`.
+Returns: `int`.
 
-Possible failures: `RangeError`. The caller must catch or propagate them.
+Can fail with `RangeError`. Callers must catch or propagate these errors.
+
+**Interceptors, in execution order**
+
+1. Call [`Positive.around`](numbers.md#symbol-Positive.around). It can call the next layer or finish with its own result or failure. Unselected inputs pass through.
+
+The first layer wraps the remaining layers. HTTP policies run before wire decoding; custom interceptors run after decoding. Follow linked behavior to see its conditions, input changes, and calls to the next layer.
+
+**What it does**
+
+- Return `amount` times `2`.
 
 **Author documentation**
 
@@ -192,17 +197,7 @@ Double a nonnegative amount.
 **Throws**
 - `RangeError`: A validation layer rejected a negative input.
 
-**Interceptors, in execution order**
-
-1. Call [`Positive.around`](numbers.md#symbol-Positive.around). It can call the next layer or finish with its own result or failure. Unselected inputs pass through.
-
-The first layer wraps the remaining layers. HTTP policies run before wire decoding; custom interceptors run after decoding. Follow linked behavior to see its conditions, input changes, and calls to the next layer.
-
-**Behavior when execution reaches this operation**
-
-- Return (`amount` times `2`) and finish this operation.
-
-### `test double double` {#symbol-test-20-double-20-double}
+### `test double` {#symbol-test-20-double}
 
 [source](numbers.md#code)
 
@@ -216,7 +211,7 @@ Same-file function tests for [`double`](numbers.md#symbol-double). Each case get
 
 Run once for each row of a tuple containing `0`, `0`; a tuple containing `3`, `6`; a tuple containing `7`, `14`. Bind row positions to `input`, `expected`.
 
-- Call `assert` with (the result of call [`double`](numbers.md#symbol-double) with `amount` set to `input` equals `expected`).
+- Call `assert` with (call [`double`](numbers.md#symbol-double) with `amount` = `input` equals `expected`).
 
 ##### `rejects_negative`
 
@@ -224,12 +219,17 @@ Run once for each row of a tuple containing `0`, `0`; a tuple containing `3`, `6
 
 - Set `rejected` of type `bool` to `false`.
 - Try these operations:
-  - Call [`double`](numbers.md#symbol-double) with `amount` set to `-1`.
+  - Call [`double`](numbers.md#symbol-double) with `amount` = `-1`.
 - If they fail with [`RangeError`](numbers.md#symbol-RangeError), name the failure `error` and recover:
-  - Set `rejected` to (`value` of `error` equals `-1`).
-- Call `assert` with `rejected` set to `rejected`.
+  - Set `rejected` to `value` of `error` equals `-1`.
+- Call `assert` with `rejected` = `rejected`.
 
+### Built-in operations used by this file
 
-### Language rules
+- `assert` (`condition`: `bool`) → `void`: Assert a bool in a test case or its setup. Catching an assertion failure cannot make the case pass; every case must execute an assertion.
 
-Boolean operations short-circuit from left to right. int uses signed 64-bit values; addition, subtraction, multiplication, and negation wrap. Division by zero raises ArithmeticError. float uses double precision. Tuples and records compare by value; mutable collections and behavioral classes compare by identity. Optional values contain a value or null; omission becomes null. Managed references grant read access; ownership moves and mutable borrows remain checked. A scope joins its child tasks; an unhandled child failure cancels siblings. See the [language reference](https://greenpandastudios.github.io/augscript/reference) for shared rules.
+[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
+
+### Shared language rules
+
+See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.

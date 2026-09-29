@@ -87,104 +87,30 @@ Greeter(resolve Logger logger to _logger, string name) implements IGreeter {
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code. Author documentation is labeled separately. It follows Simplified Technical English as guidance, with best-effort wording.
+August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
 
-### Dependencies used by this file
+### In this file
 
-#### [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console)
-
-Available from `august.io`.
-
-Interface. Follow the linked specification for its full explanation.
-
-**[`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write)**
-
-Type parameters: `T`.
-
-**Inputs and dependencies**
-
-- `value`: `T`. The caller supplies this labeled input. Read reference values without copying them.
-
-Result: finish without a result.
-
-Capabilities: [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
-
-#### [`AddOne`](interceptors.md#symbol-AddOne)
-
-Available from `interceptors`.
-
-Interceptor. Follow the linked specification for its full explanation.
-
-**[`AddOne.around`](interceptors.md#symbol-AddOne.around)**
-
-**Inputs and dependencies**
-
-- `y`: `int`. The caller supplies this labeled input. Read reference values without copying them.
-
-Result: `T`.
-
-#### [`Audit`](interceptors.md#symbol-Audit)
-
-Available from `interceptors`.
-
-Interceptor. Follow the linked specification for its full explanation.
-
-**[`Audit.around`](interceptors.md#symbol-Audit.around)**
-
-**Inputs and dependencies**
-
-- `console`: [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-
-Result: `T`.
-
-Capabilities: [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
-
-#### [`Positive`](interceptors.md#symbol-Positive)
-
-Available from `interceptors`.
-
-Interceptor. Follow the linked specification for its full explanation.
-
-**[`Positive.around`](interceptors.md#symbol-Positive.around)**
-
-**Inputs and dependencies**
-
-- `y`: `int`. The caller supplies this labeled input. Read reference values without copying them.
-
-Result: `T`.
-
-Possible failures: `ValidationError`. The caller must catch or propagate them.
-
-#### [`Logger`](logging.md#symbol-Logger)
-
-Available from `logging`.
-
-Interface. Follow the linked specification for its full explanation.
+- [`describe`](app.md#symbol-describe) is a function returning `string`.
+- [`IGreeter`](app.md#symbol-IGreeter) is an interface.
+- [`Greeter`](app.md#symbol-Greeter) is a class implementing `IGreeter`.
 
 ### `describe` {#symbol-describe}
 
 [source](app.md#code)
 
-**Inputs and dependencies**
+**Inputs**
 
-- `logger`: [`Logger`](logging.md#symbol-Logger). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-- `console`: [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-- `x`: `int`. The caller supplies this labeled input. Read reference values without copying them.
-- `label`: `string`. The caller supplies this labeled input. Read reference values without copying them.
+- `logger` ([`Logger`](logging.md#symbol-Logger)) — injected; callers omit it.
+- `console` ([`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console)) — injected; callers omit it.
+- `x` (`int`) — required labeled input.
+- `label` (`string`) — required labeled input.
 
-Result: `string`.
+Returns: `string`.
 
 Capabilities: [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
 
-Possible failures: `ValidationError`. The caller must catch or propagate them.
-
-**Author documentation**
-
-Prints a number and returns its label.
-
-**Parameters**
-- `x`: The numeric input, validated and incremented by the chain.
-- `label`: Text forwarded through each layer unchanged.
+Can fail with `ValidationError`. Callers must catch or propagate these errors.
 
 **Interceptors, in execution order**
 
@@ -194,10 +120,18 @@ Prints a number and returns its label.
 
 The first layer wraps the remaining layers. HTTP policies run before wire decoding; custom interceptors run after decoding. Follow linked behavior to see its conditions, input changes, and calls to the next layer.
 
-**Behavior when execution reaches this operation**
+**What it does**
 
-- Call [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write) on `console` with `value` set to `x`.
-- Return `label` and finish this operation.
+- Call [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write) on `console` with `value` = `x`.
+- Return `label`.
+
+**Author documentation**
+
+Prints a number and returns its label.
+
+**Parameters**
+- `x`: The numeric input, validated and incremented by the chain.
+- `label`: Text forwarded through each layer unchanged.
 
 ### `IGreeter` {#symbol-IGreeter}
 
@@ -209,12 +143,12 @@ Interface.
 
 [source](app.md#code)
 
-**Inputs and dependencies**
+**Inputs**
 
-- `logger`: [`Logger`](logging.md#symbol-Logger). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-- `console`: [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
+- `logger` ([`Logger`](logging.md#symbol-Logger)) — injected; callers omit it.
+- `console` ([`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console)) — injected; callers omit it.
 
-Result: `string`.
+Returns: `string`.
 
 Capabilities: [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
 
@@ -232,27 +166,23 @@ Satisfies [`IGreeter`](app.md#symbol-IGreeter).
 
 Construction stores its inputs; startup is visible in the greet call.
 
-**Inputs and dependencies**
+**Inputs**
 
-- `logger`: [`Logger`](logging.md#symbol-Logger). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them. Store it as `_logger`. This field is private. The field is read-only after initialization.
-- `name`: `string`. The caller supplies this labeled input. Read reference values without copying them. Store it as `name`. The field is read-only after initialization.
+- `logger` ([`Logger`](logging.md#symbol-Logger)) — injected; callers omit it — stored as `_logger` (private) and read-only after initialization.
+- `name` (`string`) — required labeled input — stored as `name` and read-only after initialization.
 
 #### `Greeter.greet` {#symbol-Greeter.greet}
 
 [source](app.md#code)
 
-**Inputs and dependencies**
+**Inputs**
 
-- `logger`: [`Logger`](logging.md#symbol-Logger). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-- `console`: [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
+- `logger` ([`Logger`](logging.md#symbol-Logger)) — injected; callers omit it.
+- `console` ([`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console)) — injected; callers omit it.
 
-Result: `string`.
+Returns: `string`.
 
 Capabilities: [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
-
-**Author documentation**
-
-Method annotations wrap each method invocation separately.
 
 **Interceptors, in execution order**
 
@@ -260,11 +190,48 @@ Method annotations wrap each method invocation separately.
 
 The first layer wraps the remaining layers. HTTP policies run before wire decoding; custom interceptors run after decoding. Follow linked behavior to see its conditions, input changes, and calls to the next layer.
 
-**Behavior when execution reaches this operation**
+**What it does**
 
-- Return ((`"Hello, "` plus `name`) plus `"!"`) and finish this operation.
+- Return text formed by joining `"Hello, "`, `name`, `"!"` in order.
 
+**Author documentation**
 
-### Language rules
+Method annotations wrap each method invocation separately.
 
-Boolean operations short-circuit from left to right. int uses signed 64-bit values; addition, subtraction, multiplication, and negation wrap. Division by zero raises ArithmeticError. float uses double precision. Tuples and records compare by value; mutable collections and behavioral classes compare by identity. Optional values contain a value or null; omission becomes null. Managed references grant read access; ownership moves and mutable borrows remain checked. A scope joins its child tasks; an unhandled child failure cancels siblings. See the [language reference](https://greenpandastudios.github.io/augscript/reference) for shared rules.
+### Dependencies used by this file
+
+Only referenced types and operations appear here. Each name links to its complete specification.
+
+#### [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console)
+
+Capability interface from `august.io`.
+
+- [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write)<`T`> (`value`: `T`) → `void`.
+
+#### [`AddOne`](interceptors.md#symbol-AddOne)
+
+Interceptor from `interceptors`.
+
+- [`AddOne.around`](interceptors.md#symbol-AddOne.around) (`y`: `int`) → `T`.
+
+#### [`Audit`](interceptors.md#symbol-Audit)
+
+Interceptor from `interceptors`.
+
+- [`Audit.around`](interceptors.md#symbol-Audit.around) (no caller inputs) → `T`; inject `console`: [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console); uses [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
+
+#### [`Positive`](interceptors.md#symbol-Positive)
+
+Interceptor from `interceptors`.
+
+- [`Positive.around`](interceptors.md#symbol-Positive.around) (`y`: `int`) → `T`; can fail with `ValidationError`.
+
+#### [`Logger`](logging.md#symbol-Logger)
+
+Interface from `logging`.
+
+Used as a type or provider.
+
+### Shared language rules
+
+See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.

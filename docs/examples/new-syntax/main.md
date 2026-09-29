@@ -60,69 +60,12 @@ print(value=count)
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code. Author documentation is labeled separately. It follows Simplified Technical English as guidance, with best-effort wording.
+August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
 
-### Dependencies used by this file
+### In this file
 
-#### [`SystemConsole`](dependencies/august/0.19.0/io/contracts.md#symbol-SystemConsole)
-
-Available from `august.io`.
-
-Class. Follow the linked specification for its full explanation.
-
-#### [`ConsoleLogger`](console.md#symbol-ConsoleLogger)
-
-Available from `console`.
-
-Class. Follow the linked specification for its full explanation.
-
-#### [`Greeter`](greeter.md#symbol-Greeter)
-
-Available from `greeter`.
-
-Class. Follow the linked specification for its full explanation.
-
-**Construction**
-
-**Inputs and dependencies**
-
-- `logger`: [`Logger`](logger.md#symbol-Logger). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-- `x`: `int`. The caller supplies this labeled input. Read reference values without copying them.
-
-Result: [`Greeter`](greeter.md#symbol-Greeter).
-
-**[`Greeter.greet`](greeter.md#symbol-Greeter.greet)**
-
-**Inputs and dependencies**
-
-- `console`: [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-- `name`: `string`. The caller supplies this labeled input. Read reference values without copying them.
-
-Result: finish without a result.
-
-Capabilities: [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
-
-#### [`increment`](math.md#symbol-increment)
-
-Available from `math`.
-
-**Inputs and dependencies**
-
-- `value`: `int`. The caller supplies this labeled input. Read reference values without copying them.
-
-Result: `int`.
-
-### Built-in operations used by this file
-
-#### `print`
-
-Composition and test output. Other callables receive Console and declare uses console.write.
-
-Inputs: `value`: `any`.
-
-Result: `void`.
-
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
+- Register 2 dependency providers before startup.
+- Run 5 other startup steps in source order.
 
 ### Dependency providers
 
@@ -133,13 +76,47 @@ Register these providers before startup. Their declaration order does not set in
 
 ### Startup, in source order
 
-- Set `greeter` to the result of call [`Greeter`](greeter.md#symbol-Greeter) with `x` set to `4`; supply dependencies `logger` from `Logger`.
-- Call [`Greeter.greet`](greeter.md#symbol-Greeter.greet) on `greeter` with `name` set to `"AugScript"`; supply dependencies `console` from `Console`.
+- Set `greeter` to call [`Greeter`](greeter.md#symbol-Greeter) with `x` = `4`; inject `logger` from `Logger`.
+- Call [`Greeter.greet`](greeter.md#symbol-Greeter.greet) on `greeter` with `name` = `"AugScript"`; inject `console` from `Console`.
 - Set `count` of type `int` to `7`.
-- Set `count` to the result of call [`increment`](math.md#symbol-increment) with `value` set to `count`.
-- Call `print` with `value` set to `count`.
+- Set `count` to call [`increment`](math.md#symbol-increment) with `value` = `count`.
+- Call `print` with `value` = `count`.
 
+### Dependencies used by this file
 
-### Language rules
+Only referenced types and operations appear here. Each name links to its complete specification.
 
-Boolean operations short-circuit from left to right. int uses signed 64-bit values; addition, subtraction, multiplication, and negation wrap. Division by zero raises ArithmeticError. float uses double precision. Tuples and records compare by value; mutable collections and behavioral classes compare by identity. Optional values contain a value or null; omission becomes null. Managed references grant read access; ownership moves and mutable borrows remain checked. A scope joins its child tasks; an unhandled child failure cancels siblings. See the [language reference](https://greenpandastudios.github.io/augscript/reference) for shared rules.
+#### [`SystemConsole`](dependencies/august/0.19.0/io/contracts.md#symbol-SystemConsole)
+
+Class from `august.io`.
+
+Used as a type or provider.
+
+#### [`ConsoleLogger`](console.md#symbol-ConsoleLogger)
+
+Class from `console`.
+
+Used as a type or provider.
+
+#### [`Greeter`](greeter.md#symbol-Greeter)
+
+Class from `greeter`.
+
+- Construct with `x`: `int` → [`Greeter`](greeter.md#symbol-Greeter).
+- [`Greeter.greet`](greeter.md#symbol-Greeter.greet) (`name`: `string`) → `void`; inject `console`: [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console); uses [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
+
+#### [`increment`](math.md#symbol-increment)
+
+Function from `math`.
+
+- [`increment`](math.md#symbol-increment) (`value`: `int`) → `int`.
+
+### Built-in operations used by this file
+
+- `print` (`value`: `any`) → `void`: Composition and test output. Other callables receive Console and declare uses console.write.
+
+[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
+
+### Shared language rules
+
+See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.

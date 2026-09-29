@@ -266,511 +266,128 @@ test validateIdentity {
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code. Author documentation is labeled separately. It follows Simplified Technical English as guidance, with best-effort wording.
+August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
 
-### Dependencies used by this file
+### In this file
 
-#### [`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto)
-
-Available from `august.crypto`.
-
-Interface. Follow the linked specification for its full explanation.
-
-**[`Crypto.decodeBase64url`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url)**
-
-**Inputs and dependencies**
-
-- `input`: `string`. The caller supplies this labeled input. Read reference values without copying them.
-
-Result: `Bytes`.
-
-Capabilities: [`Crypto.decodeBase64url`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url).
-
-Possible failures: `CryptoError`. The caller must catch or propagate them.
-
-**[`Crypto.equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal)**
-
-**Inputs and dependencies**
-
-- `left`: `Bytes`. The caller supplies this labeled input. Read reference values without copying them.
-- `right`: `Bytes`. The caller supplies this labeled input. Read reference values without copying them.
-
-Result: `bool`.
-
-Capabilities: [`Crypto.equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal).
-
-**[`Crypto.generateRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.generateRsa)**
-
-Result: `RsaPrivateKey`.
-
-Capabilities: [`Crypto.generateRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.generateRsa).
-
-Possible failures: `CryptoError`. The caller must catch or propagate them.
-
-**[`Crypto.importRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.importRsa)**
-
-**Inputs and dependencies**
-
-- `modulus`: `Bytes`. The caller supplies this labeled input. Read reference values without copying them.
-- `exponent`: `Bytes`. The caller supplies this labeled input. Read reference values without copying them.
-
-Result: `RsaPublicKey`.
-
-Capabilities: [`Crypto.importRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.importRsa).
-
-Possible failures: `CryptoError`. The caller must catch or propagate them.
-
-**[`Crypto.publicRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.publicRsa)**
-
-**Inputs and dependencies**
-
-- `key`: `RsaPrivateKey`. The caller supplies this labeled input. Read reference values without copying them.
-
-Result: `RsaPublicKey`.
-
-Capabilities: [`Crypto.publicRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.publicRsa).
-
-Possible failures: `CryptoError`. The caller must catch or propagate them.
-
-**[`Crypto.verifyRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.verifyRsa)**
-
-**Inputs and dependencies**
-
-- `publicKey`: `RsaPublicKey`. The caller supplies this labeled input. Read reference values without copying them.
-- `input`: `Bytes`. The caller supplies this labeled input. Read reference values without copying them.
-- `signature`: `Bytes`. The caller supplies this labeled input. Read reference values without copying them.
-
-Result: `bool`.
-
-Capabilities: [`Crypto.verifyRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.verifyRsa).
-
-Possible failures: `CryptoError`. The caller must catch or propagate them.
-
-#### [`GnuTlsCrypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-GnuTlsCrypto)
-
-Available from `august.crypto`.
-
-Class. Follow the linked specification for its full explanation.
-
-#### [`JwtError`](../dependencies/august/0.19.0/crypto/jose.md#symbol-JwtError)
-
-Available from `august.crypto`.
-
-Class. Follow the linked specification for its full explanation.
-
-#### [`RsaJwk`](../dependencies/august/0.19.0/crypto/jose.md#symbol-RsaJwk)
-
-Immutable record. Follow the linked specification for its full explanation.
-
-Field `kid`: `string`. Read-only after initialization.
-
-#### [`RsaJwks`](../dependencies/august/0.19.0/crypto/jose.md#symbol-RsaJwks)
-
-Available from `august.crypto`.
-
-Immutable record. Follow the linked specification for its full explanation.
-
-**Construction**
-
-**Inputs and dependencies**
-
-- `keys`: `List<RsaJwk>`. The caller supplies this labeled input. Read reference values without copying them.
-
-Result: [`RsaJwks`](../dependencies/august/0.19.0/crypto/jose.md#symbol-RsaJwks).
-
-Field `keys`: `List<RsaJwk>`. Read-only after initialization.
-
-#### [`importJwk`](../dependencies/august/0.19.0/crypto/jose.md#symbol-importJwk)
-
-Available from `august.crypto`.
-
-**Inputs and dependencies**
-
-- `jwk`: [`RsaJwk`](../dependencies/august/0.19.0/crypto/jose.md#symbol-RsaJwk). The caller supplies this labeled input. Read reference values without copying them.
-- `crypto`: [`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-
-Result: `RsaPublicKey`.
-
-Capabilities: [`crypto.decodeBase64url`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url), [`crypto.importRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.importRsa).
-
-Possible failures: `JwtError`. The caller must catch or propagate them.
-
-#### [`rsaJwk`](../dependencies/august/0.19.0/crypto/jose.md#symbol-rsaJwk)
-
-Available from `august.crypto`.
-
-**Inputs and dependencies**
-
-- `publicKey`: `RsaPublicKey`. The caller supplies this labeled input. Read reference values without copying them.
-- `kid`: `string`. The caller supplies this labeled input. Read reference values without copying them.
-- `crypto`: [`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-
-Result: [`RsaJwk`](../dependencies/august/0.19.0/crypto/jose.md#symbol-RsaJwk).
-
-Capabilities: [`crypto.exportRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.exportRsa).
-
-Possible failures: `CryptoError`. The caller must catch or propagate them.
-
-#### [`signJwt`](../dependencies/august/0.19.0/crypto/jose.md#symbol-signJwt)
-
-Available from `august.crypto`.
-
-**Inputs and dependencies**
-
-- `key`: `RsaPrivateKey`. The caller supplies this labeled input. Read reference values without copying them.
-- `claims`: `Json`. The caller supplies this labeled input. Read reference values without copying them.
-- `kid`: `string`. The caller supplies this labeled input. Read reference values without copying them.
-- `tokenType`: `string`. The caller supplies this labeled input. Read reference values without copying them.
-- `crypto`: [`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-
-Result: `string`.
-
-Capabilities: [`crypto.signRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.signRsa).
-
-Possible failures: `JwtError`. The caller must catch or propagate them.
-
-#### [`verifyJwt`](../dependencies/august/0.19.0/crypto/jose.md#symbol-verifyJwt)
-
-Available from `august.crypto`.
-
-**Inputs and dependencies**
-
-- `token`: `string`. The caller supplies this labeled input. Read reference values without copying them.
-- `publicKey`: `RsaPublicKey`. The caller supplies this labeled input. Read reference values without copying them.
-- `kid`: `string`. The caller supplies this labeled input. Read reference values without copying them.
-- `tokenType`: `string`. The caller supplies this labeled input. Read reference values without copying them.
-- `crypto`: [`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-
-Result: `Json`.
-
-Capabilities: [`crypto.decodeBase64url`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url), [`crypto.verifyRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.verifyRsa).
-
-Possible failures: `JwtError`. The caller must catch or propagate them.
-
-#### [`parse`](../dependencies/august/0.19.0/json/contracts.md#symbol-parse)
-
-Available from `august.json`.
-
-**Inputs and dependencies**
-
-- `input`: `string`. The caller supplies this labeled input. Read reference values without copying them.
-
-Result: `Json`.
-
-Possible failures: `JsonError`. The caller must catch or propagate them.
-
-#### [`HttpClient`](../dependencies/august/0.19.0/web/contracts.md#symbol-HttpClient)
-
-Available from `august.web`.
-
-Interface. Follow the linked specification for its full explanation.
-
-**[`HttpClient.request`](../dependencies/august/0.19.0/web/contracts.md#symbol-HttpClient.request)**
-
-**Inputs and dependencies**
-
-- `method`: `string`. The caller supplies this labeled input. Read reference values without copying them.
-- `url`: `string`. The caller supplies this labeled input. Read reference values without copying them.
-- `headers`: `optional Headers`. The caller may supply this labeled input; omission becomes null. Read reference values without copying them.
-- `body`: `optional Bytes`. The caller may supply this labeled input; omission becomes null. Read reference values without copying them.
-
-Result: `HttpResponse<Bytes>`.
-
-Capabilities: [`HttpClient.request`](../dependencies/august/0.19.0/web/contracts.md#symbol-HttpClient.request).
-
-Possible failures: `HttpError`. The caller must catch or propagate them.
-
-#### [`SessionError`](contracts.md#symbol-SessionError)
-
-Available from `contracts`.
-
-Class. Follow the linked specification for its full explanation.
-
-**Construction**
-
-Result: [`SessionError`](contracts.md#symbol-SessionError).
-
-#### [`Settings`](../common/settings.md#symbol-Settings)
-
-Immutable record. Follow the linked specification for its full explanation.
-
-Field `issuer`: `string`. Read-only after initialization.
-
-Field `clientId`: `string`. Read-only after initialization.
-
-#### [`settings`](../common/settings.md#symbol-settings)
-
-Available from `common`.
-
-Result: [`Settings`](../common/settings.md#symbol-Settings).
-
-#### [`IdClaims`](../provider/contracts.md#symbol-IdClaims)
-
-Available from `provider`.
-
-Immutable record. Follow the linked specification for its full explanation.
-
-**Construction**
-
-**Inputs and dependencies**
-
-- `iss`: `string`. The caller supplies this labeled input. Read reference values without copying them.
-- `sub`: `string`. The caller supplies this labeled input. Read reference values without copying them.
-- `aud`: `string`. The caller supplies this labeled input. Read reference values without copying them.
-- `exp`: `int`. The caller supplies this labeled input. Read reference values without copying them.
-- `iat`: `int`. The caller supplies this labeled input. Read reference values without copying them.
-- `nonce`: `string`. The caller supplies this labeled input. Read reference values without copying them.
-- `name`: `string`. The caller supplies this labeled input. Read reference values without copying them.
-
-Result: [`IdClaims`](../provider/contracts.md#symbol-IdClaims).
-
-Field `iss`: `string`. Read-only after initialization.
-
-Field `aud`: `string`. Read-only after initialization.
-
-Field `sub`: `string`. Read-only after initialization.
-
-Field `exp`: `int`. Read-only after initialization.
-
-Field `iat`: `int`. Read-only after initialization.
-
-Field `nonce`: `string`. Read-only after initialization.
-
-#### [`Discovery`](../provider/discovery.md#symbol-Discovery)
-
-Available from `provider`.
-
-Immutable record. Follow the linked specification for its full explanation.
-
-Field `issuer`: `string`. Read-only after initialization.
-
-Field `authorization_endpoint`: `string`. Read-only after initialization.
-
-Field `token_endpoint`: `string`. Read-only after initialization.
-
-Field `jwks_uri`: `string`. Read-only after initialization.
-
-Field `userinfo_endpoint`: `string`. Read-only after initialization.
-
-### Built-in operations used by this file
-
-#### `HttpResponse.body`
-
-The typed response body.
-
-Field type: `Bytes`.
-
-#### `HttpResponse.headers`
-
-Immutable response headers. Duplicate Set-Cookie values are preserved.
-
-Field type: `Headers`.
-
-#### `HttpResponse.status`
-
-HTTP response status.
-
-Field type: `int`.
-
-#### `Bytes.text`
-
-Decode UTF-8 strictly. Invalid input raises ConversionError; embedded NUL is preserved.
-
-Result: `string`.
-
-Possible failures: `ConversionError`.
-
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
-
-#### `Headers.get`
-
-Read the first case-insensitive header value, or null.
-
-Inputs: `name`: `string`.
-
-Result: `optional string`.
-
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
-
-#### `Json.decode`
-
-Decode a checked record or data type: json.decode<Profile>(). Unknown fields, type mismatches, and validation errors are rejected.
-
-Result: `IdClaims`.
-
-Possible failures: `JsonError`.
-
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
-
-#### `List<RsaJwk>.get`
-
-Read a zero-based position. An invalid index raises checked IndexError. Reference results grant reading.
-
-Inputs: `index`: `int`.
-
-Result: `RsaJwk`.
-
-Possible failures: `IndexError`.
-
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
-
-#### `List<RsaJwk>.length`
-
-Read the number of elements.
-
-Result: `int`.
-
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
-
-#### `assert`
-
-Assert a bool in a test case or its setup. Catching an assertion failure cannot make the case pass; every case must execute an assertion.
-
-Inputs: `condition`: `bool`.
-
-Result: `void`.
-
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
-
-#### `string.bytes`
-
-Encode this string as immutable UTF-8 bytes.
-
-Result: `Bytes`.
-
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
-
-#### `string.length`
-
-Read the number of UTF-8 bytes. Unicode text is preserved losslessly.
-
-Result: `int`.
-
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
-
-#### `string.startsWith`
-
-Test an exact prefix.
-
-Inputs: `prefix`: `string`.
-
-Result: `bool`.
-
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
+- [`responseJson`](protocol.md#symbol-responseJson) is a function returning `Json`.
+- [`discover`](protocol.md#symbol-discover) is a function returning `Discovery`.
+- [`validateIdentity`](protocol.md#symbol-validateIdentity) is a function returning `IdClaims`.
+- [`test validateIdentity`](protocol.md#symbol-test-20-validateIdentity) is a same-file test suite.
 
 ### `responseJson` {#symbol-responseJson}
 
 [source](protocol.md#code)
 
-**Inputs and dependencies**
+**Inputs**
 
-- `response`: `HttpResponse<Bytes>`. The caller supplies this labeled input. Read reference values without copying them.
+- `response` (`HttpResponse<Bytes>`) — required labeled input.
 
-Result: `Json`.
+Returns: `Json`.
 
-Possible failures: `SessionError`. The caller must catch or propagate them.
+Can fail with `SessionError`. Callers must catch or propagate these errors.
+
+**What it does**
+
+- If `status` of `response` does not equal `200`:
+  - Fail with call [`SessionError`](contracts.md#symbol-SessionError). Transfer control to a matching catch or propagate the failure.
+- Select the matching case for call `get` on `headers` of `response` with `name` = `"content-type"`:
+  - A null value, including omitted optional input:
+    - Fail with call [`SessionError`](contracts.md#symbol-SessionError). Transfer control to a matching catch or propagate the failure.
+  - A present, non-null value, named `contentType`:
+    - If not (call `startsWith` on `contentType` with `prefix` = `"application/json"`):
+      - Fail with call [`SessionError`](contracts.md#symbol-SessionError). Transfer control to a matching catch or propagate the failure.
+- Try these operations:
+  - Return call [`parse`](../dependencies/august/0.19.0/json/contracts.md#symbol-parse) with `input` = call `text` on `body` of `response`.
+- If they fail with `ConversionError`, name the failure `error` and recover:
+  - Fail with call [`SessionError`](contracts.md#symbol-SessionError). Transfer control to a matching catch or propagate the failure.
+- If they fail with `JsonError`, name the failure `error` and recover:
+  - Fail with call [`SessionError`](contracts.md#symbol-SessionError). Transfer control to a matching catch or propagate the failure.
 
 **Author documentation**
 
 Accept only a successful JSON response. Redirects remain explicit and are never followed by the transport.
 
-**Behavior when execution reaches this operation**
-
-- If (`status` of `response` does not equal `200`) is true:
-  - Fail with the result of call [`SessionError`](contracts.md#symbol-SessionError). Transfer control to a matching catch or propagate the failure.
-- Select the matching case for the result of call `get` on `headers` of `response` with `name` set to `"content-type"`:
-  - A null value, including omitted optional input:
-    - Fail with the result of call [`SessionError`](contracts.md#symbol-SessionError). Transfer control to a matching catch or propagate the failure.
-  - A present, non-null value, named `contentType`:
-    - If not (the result of call `startsWith` on `contentType` with `prefix` set to `"application/json"`) is true:
-      - Fail with the result of call [`SessionError`](contracts.md#symbol-SessionError). Transfer control to a matching catch or propagate the failure.
-- Try these operations:
-  - Return the result of call [`parse`](../dependencies/august/0.19.0/json/contracts.md#symbol-parse) with `input` set to the result of call `text` on `body` of `response` and finish this operation.
-- If they fail with `ConversionError`, name the failure `error` and recover:
-  - Fail with the result of call [`SessionError`](contracts.md#symbol-SessionError). Transfer control to a matching catch or propagate the failure.
-- If they fail with `JsonError`, name the failure `error` and recover:
-  - Fail with the result of call [`SessionError`](contracts.md#symbol-SessionError). Transfer control to a matching catch or propagate the failure.
-
 ### `discover` {#symbol-discover}
 
 [source](protocol.md#code)
 
-**Inputs and dependencies**
+**Inputs**
 
-- `client`: [`HttpClient`](../dependencies/august/0.19.0/web/contracts.md#symbol-HttpClient). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
+- `client` ([`HttpClient`](../dependencies/august/0.19.0/web/contracts.md#symbol-HttpClient)) — injected; callers omit it.
 
-Result: [`Discovery`](../provider/discovery.md#symbol-Discovery).
+Returns: [`Discovery`](../provider/discovery.md#symbol-Discovery).
 
 Capabilities: [`client.request`](../dependencies/august/0.19.0/web/contracts.md#symbol-HttpClient.request).
 
-Possible failures: `SessionError`, `HttpError`. The caller must catch or propagate them.
+Can fail with `SessionError`, `HttpError`. Callers must catch or propagate these errors.
+
+**What it does**
+
+- Set `config` to call [`settings`](../common/settings.md#symbol-settings).
+- Set `json` to call [`responseJson`](protocol.md#symbol-responseJson) with `response` = call [`HttpClient.request`](../dependencies/august/0.19.0/web/contracts.md#symbol-HttpClient.request) on `client` with `method` = `"GET"`; `url` = (`issuer` of `config` plus `"/.well-known/openid-configuration"`).
+- Try these operations:
+  - Set `document` to call `decode` on `json` with type arguments [`Discovery`](../provider/discovery.md#symbol-Discovery).
+  - If ((((`issuer` of `document` does not equal `issuer` of `config`) or (`authorization_endpoint` of `document` does not equal (`issuer` of `config` plus `"/authorize"`))) or (`token_endpoint` of `document` does not equal (`issuer` of `config` plus `"/token"`))) or (`jwks_uri` of `document` does not equal (`issuer` of `config` plus `"/jwks"`))) or (`userinfo_endpoint` of `document` does not equal (`issuer` of `config` plus `"/userinfo"`)):
+    - Fail with call [`SessionError`](contracts.md#symbol-SessionError). Transfer control to a matching catch or propagate the failure.
+  - Return `document`.
+- If they fail with `JsonError`, name the failure `error` and recover:
+  - Fail with call [`SessionError`](contracts.md#symbol-SessionError). Transfer control to a matching catch or propagate the failure.
 
 **Author documentation**
 
 Discovery is fetched over HTTP. Every advertised URL is checked against the registered issuer before any credential is sent.
 
-**Behavior when execution reaches this operation**
-
-- Set `config` to the result of call [`settings`](../common/settings.md#symbol-settings).
-- Set `json` to the result of call [`responseJson`](protocol.md#symbol-responseJson) with `response` set to the result of call [`HttpClient.request`](../dependencies/august/0.19.0/web/contracts.md#symbol-HttpClient.request) on `client` with `method` set to `"GET"`; `url` set to (`issuer` of `config` plus `"/.well-known/openid-configuration"`).
-- Try these operations:
-  - Set `document` to the result of call `decode` on `json` with type arguments [`Discovery`](../provider/discovery.md#symbol-Discovery).
-  - If (((((`issuer` of `document` does not equal `issuer` of `config`) or (`authorization_endpoint` of `document` does not equal (`issuer` of `config` plus `"/authorize"`))) or (`token_endpoint` of `document` does not equal (`issuer` of `config` plus `"/token"`))) or (`jwks_uri` of `document` does not equal (`issuer` of `config` plus `"/jwks"`))) or (`userinfo_endpoint` of `document` does not equal (`issuer` of `config` plus `"/userinfo"`))) is true:
-    - Fail with the result of call [`SessionError`](contracts.md#symbol-SessionError). Transfer control to a matching catch or propagate the failure.
-  - Return `document` and finish this operation.
-- If they fail with `JsonError`, name the failure `error` and recover:
-  - Fail with the result of call [`SessionError`](contracts.md#symbol-SessionError). Transfer control to a matching catch or propagate the failure.
-
 ### `validateIdentity` {#symbol-validateIdentity}
 
 [source](protocol.md#code)
 
-**Inputs and dependencies**
+**Inputs**
 
-- `token`: `string`. The caller supplies this labeled input. Read reference values without copying them.
-- `nonce`: `string`. The caller supplies this labeled input. Read reference values without copying them.
-- `now`: `int`. The caller supplies this labeled input. Read reference values without copying them.
-- `jwks`: [`RsaJwks`](../dependencies/august/0.19.0/crypto/jose.md#symbol-RsaJwks). The caller supplies this labeled input. Read reference values without copying them.
-- `crypto`: [`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
+- `token` (`string`) — required labeled input.
+- `nonce` (`string`) — required labeled input.
+- `now` (`int`) — required labeled input.
+- `jwks` ([`RsaJwks`](../dependencies/august/0.19.0/crypto/jose.md#symbol-RsaJwks)) — required labeled input.
+- `crypto` ([`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto)) — injected; callers omit it.
 
-Result: [`IdClaims`](../provider/contracts.md#symbol-IdClaims).
+Returns: [`IdClaims`](../provider/contracts.md#symbol-IdClaims).
 
 Capabilities: [`crypto.decodeBase64url`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url), [`crypto.importRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.importRsa), [`crypto.verifyRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.verifyRsa), [`crypto.equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal).
 
-Possible failures: `SessionError`. The caller must catch or propagate them.
+Can fail with `SessionError`. Callers must catch or propagate these errors.
+
+**What it does**
+
+- Set `config` to call [`settings`](../common/settings.md#symbol-settings).
+- If call `length` on `keys` of `jwks` does not equal `1`:
+  - Fail with call [`SessionError`](contracts.md#symbol-SessionError). Transfer control to a matching catch or propagate the failure.
+- Try these operations:
+  - Set `jwk` to call `get` on `keys` of `jwks` with `index` = `0`.
+  - If `kid` of `jwk` does not equal `"provider-1"`:
+    - Fail with call [`SessionError`](contracts.md#symbol-SessionError). Transfer control to a matching catch or propagate the failure.
+  - Set `publicKey` to call [`importJwk`](../dependencies/august/0.19.0/crypto/jose.md#symbol-importJwk) with `jwk` = `jwk`; inject `crypto` from `crypto`.
+  - Set `claims` to call `decode` on call [`verifyJwt`](../dependencies/august/0.19.0/crypto/jose.md#symbol-verifyJwt) with `token` = `token`; `publicKey` = `publicKey`; `kid` = `"provider-1"`; `tokenType` = `"JWT"`; inject `crypto` from `crypto` with type arguments [`IdClaims`](../provider/contracts.md#symbol-IdClaims).
+  - If (((`iss` of `claims` does not equal `issuer` of `config`) or (`aud` of `claims` does not equal `clientId` of `config`)) or (call `length` on `sub` of `claims` equals `0`)) or (call `length` on `sub` of `claims` is greater than `255`):
+    - Fail with call [`SessionError`](contracts.md#symbol-SessionError). Transfer control to a matching catch or propagate the failure.
+  - If ((((`exp` of `claims` is at most `now`) or (`iat` of `claims` is less than (`now` minus `300`))) or (`iat` of `claims` is greater than (`now` plus `30`))) or (`exp` of `claims` is at most `iat` of `claims`)) or (`exp` of `claims` is greater than (`now` plus `330`)):
+    - Fail with call [`SessionError`](contracts.md#symbol-SessionError). Transfer control to a matching catch or propagate the failure.
+  - If not (call [`Crypto.equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal) on `crypto` with `left` = call `bytes` on `nonce` of `claims`; `right` = call `bytes` on `nonce`):
+    - Fail with call [`SessionError`](contracts.md#symbol-SessionError). Transfer control to a matching catch or propagate the failure.
+  - Return `claims`.
+- If they fail with [`JwtError`](../dependencies/august/0.19.0/crypto/jose.md#symbol-JwtError), name the failure `error` and recover:
+  - Fail with call [`SessionError`](contracts.md#symbol-SessionError). Transfer control to a matching catch or propagate the failure.
+- If they fail with `JsonError`, name the failure `error` and recover:
+  - Fail with call [`SessionError`](contracts.md#symbol-SessionError). Transfer control to a matching catch or propagate the failure.
+- If they fail with `IndexError`, name the failure `error` and recover:
+  - Fail with call [`SessionError`](contracts.md#symbol-SessionError). Transfer control to a matching catch or propagate the failure.
+- If they fail with `CryptoError`, name the failure `error` and recover:
+  - Fail with call [`SessionError`](contracts.md#symbol-SessionError). Transfer control to a matching catch or propagate the failure.
 
 **Author documentation**
 
 Validate the signed ID token using a public key from this issuer's HTTP JWKS, then validate the registered claims and one-use nonce.
 
-**Behavior when execution reaches this operation**
-
-- Set `config` to the result of call [`settings`](../common/settings.md#symbol-settings).
-- If (the result of call `length` on `keys` of `jwks` does not equal `1`) is true:
-  - Fail with the result of call [`SessionError`](contracts.md#symbol-SessionError). Transfer control to a matching catch or propagate the failure.
-- Try these operations:
-  - Set `jwk` to the result of call `get` on `keys` of `jwks` with `index` set to `0`.
-  - If (`kid` of `jwk` does not equal `"provider-1"`) is true:
-    - Fail with the result of call [`SessionError`](contracts.md#symbol-SessionError). Transfer control to a matching catch or propagate the failure.
-  - Set `publicKey` to the result of call [`importJwk`](../dependencies/august/0.19.0/crypto/jose.md#symbol-importJwk) with `jwk` set to `jwk`; supply dependencies `crypto` from `crypto`.
-  - Set `claims` to the result of call `decode` on the result of call [`verifyJwt`](../dependencies/august/0.19.0/crypto/jose.md#symbol-verifyJwt) with `token` set to `token`; `publicKey` set to `publicKey`; `kid` set to `"provider-1"`; `tokenType` set to `"JWT"`; supply dependencies `crypto` from `crypto` with type arguments [`IdClaims`](../provider/contracts.md#symbol-IdClaims).
-  - If ((((`iss` of `claims` does not equal `issuer` of `config`) or (`aud` of `claims` does not equal `clientId` of `config`)) or (the result of call `length` on `sub` of `claims` equals `0`)) or (the result of call `length` on `sub` of `claims` is greater than `255`)) is true:
-    - Fail with the result of call [`SessionError`](contracts.md#symbol-SessionError). Transfer control to a matching catch or propagate the failure.
-  - If (((((`exp` of `claims` is at most `now`) or (`iat` of `claims` is less than (`now` minus `300`))) or (`iat` of `claims` is greater than (`now` plus `30`))) or (`exp` of `claims` is at most `iat` of `claims`)) or (`exp` of `claims` is greater than (`now` plus `330`))) is true:
-    - Fail with the result of call [`SessionError`](contracts.md#symbol-SessionError). Transfer control to a matching catch or propagate the failure.
-  - If not (the result of call [`Crypto.equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal) on `crypto` with `left` set to the result of call `bytes` on `nonce` of `claims`; `right` set to the result of call `bytes` on `nonce`) is true:
-    - Fail with the result of call [`SessionError`](contracts.md#symbol-SessionError). Transfer control to a matching catch or propagate the failure.
-  - Return `claims` and finish this operation.
-- If they fail with [`JwtError`](../dependencies/august/0.19.0/crypto/jose.md#symbol-JwtError), name the failure `error` and recover:
-  - Fail with the result of call [`SessionError`](contracts.md#symbol-SessionError). Transfer control to a matching catch or propagate the failure.
-- If they fail with `JsonError`, name the failure `error` and recover:
-  - Fail with the result of call [`SessionError`](contracts.md#symbol-SessionError). Transfer control to a matching catch or propagate the failure.
-- If they fail with `IndexError`, name the failure `error` and recover:
-  - Fail with the result of call [`SessionError`](contracts.md#symbol-SessionError). Transfer control to a matching catch or propagate the failure.
-- If they fail with `CryptoError`, name the failure `error` and recover:
-  - Fail with the result of call [`SessionError`](contracts.md#symbol-SessionError). Transfer control to a matching catch or propagate the failure.
-
-### `test validateIdentity validateIdentity` {#symbol-test-20-validateIdentity-20-validateIdentity}
+### `test validateIdentity` {#symbol-test-20-validateIdentity}
 
 [source](protocol.md#code)
 
@@ -782,10 +399,10 @@ Same-file function tests for [`validateIdentity`](protocol.md#symbol-validateIde
 
 - Provide [`GnuTlsCrypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-GnuTlsCrypto) when `Crypto` is requested. Use a fresh instance when this provider retains state; otherwise reuse one instance.
 - Set `crypto` to the instance provided for `Crypto`.
-- Set `key` to the result of call [`Crypto.generateRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.generateRsa) on `crypto`.
-- Set `publicKey` to the result of call [`Crypto.publicRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.publicRsa) on `crypto` with `key` set to `key`.
-- Set `jwks` to the result of call [`RsaJwks`](../dependencies/august/0.19.0/crypto/jose.md#symbol-RsaJwks) with `keys` set to a list containing the result of call [`rsaJwk`](../dependencies/august/0.19.0/crypto/jose.md#symbol-rsaJwk) with `publicKey` set to `publicKey`; `kid` set to `"provider-1"`; supply dependencies `crypto` from `Crypto`.
-- Set `config` to the result of call [`settings`](../common/settings.md#symbol-settings).
+- Set `key` to call [`Crypto.generateRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.generateRsa) on `crypto`.
+- Set `publicKey` to call [`Crypto.publicRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.publicRsa) on `crypto` with `key` = `key`.
+- Set `jwks` to call [`RsaJwks`](../dependencies/august/0.19.0/crypto/jose.md#symbol-RsaJwks) with `keys` = a list containing call [`rsaJwk`](../dependencies/august/0.19.0/crypto/jose.md#symbol-rsaJwk) with `publicKey` = `publicKey`; `kid` = `"provider-1"`; inject `crypto` from `Crypto`.
+- Set `config` to call [`settings`](../common/settings.md#symbol-settings).
 - Set `now` to `1700000000`.
 - Set `expectedNonce` to `"nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn"`.
 
@@ -793,24 +410,24 @@ Same-file function tests for [`validateIdentity`](protocol.md#symbol-validateIde
 
 [source](protocol.md#code)
 
-- Set `claims` to the result of call [`IdClaims`](../provider/contracts.md#symbol-IdClaims) with `iss` set to `issuer` of `config`; `sub` set to `"ada"`; `aud` set to `clientId` of `config`; `exp` set to (`now` plus `300`); `iat` set to `now`; `nonce` set to `expectedNonce`; `name` set to `"Ada"`.
-- Set `token` to the result of call [`signJwt`](../dependencies/august/0.19.0/crypto/jose.md#symbol-signJwt) with `key` set to `key`; `claims` set to the result of call `Json` with `value` set to `claims`; `kid` set to `"provider-1"`; `tokenType` set to `"JWT"`; supply dependencies `crypto` from `Crypto`.
-- Set `identity` to the result of call [`validateIdentity`](protocol.md#symbol-validateIdentity) with `token` set to `token`; `nonce` set to `expectedNonce`; `now` set to `now`; `jwks` set to `jwks`; supply dependencies `crypto` from `Crypto`.
-- Call `assert` with `condition` set to (`sub` of `identity` equals `"ada"`).
+- Set `claims` to call [`IdClaims`](../provider/contracts.md#symbol-IdClaims) with `iss` = `issuer` of `config`; `sub` = `"ada"`; `aud` = `clientId` of `config`; `exp` = (`now` plus `300`); `iat` = `now`; `nonce` = `expectedNonce`; `name` = `"Ada"`.
+- Set `token` to call [`signJwt`](../dependencies/august/0.19.0/crypto/jose.md#symbol-signJwt) with `key` = `key`; `claims` = call `Json` with `value` = `claims`; `kid` = `"provider-1"`; `tokenType` = `"JWT"`; inject `crypto` from `Crypto`.
+- Set `identity` to call [`validateIdentity`](protocol.md#symbol-validateIdentity) with `token` = `token`; `nonce` = `expectedNonce`; `now` = `now`; `jwks` = `jwks`; inject `crypto` from `Crypto`.
+- Call `assert` with `condition` = (`sub` of `identity` equals `"ada"`).
 
 ##### `rejects_signed_invalid_claims`
 
 [source](protocol.md#code)
 
-Run once for each row of a tuple containing `"https://wrong-issuer.invalid"`, `clientId` of `config`, `"ada"`, `now`, (`now` plus `300`), `expectedNonce`; a tuple containing `issuer` of `config`, `"wrong-audience"`, `"ada"`, `now`, (`now` plus `300`), `expectedNonce`; a tuple containing `issuer` of `config`, `clientId` of `config`, `""`, `now`, (`now` plus `300`), `expectedNonce`; a tuple containing `issuer` of `config`, `clientId` of `config`, `"ada"`, (`now` minus `400`), (`now` plus `300`), `expectedNonce`; a tuple containing `issuer` of `config`, `clientId` of `config`, `"ada"`, (`now` plus `100`), (`now` plus `300`), `expectedNonce`; a tuple containing `issuer` of `config`, `clientId` of `config`, `"ada"`, `now`, `now`, `expectedNonce`; a tuple containing `issuer` of `config`, `clientId` of `config`, `"ada"`, `now`, (`now` plus `600`), `expectedNonce`; a tuple containing `issuer` of `config`, `clientId` of `config`, `"ada"`, `now`, (`now` plus `300`), `"wrong-nonce"`. Bind row positions to `issuer`, `audience`, `subject`, `issued`, `expires`, `nonce`.
+Run once for each row of a tuple containing `"https://wrong-issuer.invalid"`, `clientId` of `config`, `"ada"`, `now`, `now` plus `300`, `expectedNonce`; a tuple containing `issuer` of `config`, `"wrong-audience"`, `"ada"`, `now`, `now` plus `300`, `expectedNonce`; a tuple containing `issuer` of `config`, `clientId` of `config`, `""`, `now`, `now` plus `300`, `expectedNonce`; a tuple containing `issuer` of `config`, `clientId` of `config`, `"ada"`, `now` minus `400`, `now` plus `300`, `expectedNonce`; a tuple containing `issuer` of `config`, `clientId` of `config`, `"ada"`, `now` plus `100`, `now` plus `300`, `expectedNonce`; a tuple containing `issuer` of `config`, `clientId` of `config`, `"ada"`, `now`, `now`, `expectedNonce`; a tuple containing `issuer` of `config`, `clientId` of `config`, `"ada"`, `now`, `now` plus `600`, `expectedNonce`; a tuple containing `issuer` of `config`, `clientId` of `config`, `"ada"`, `now`, `now` plus `300`, `"wrong-nonce"`. Bind row positions to `issuer`, `audience`, `subject`, `issued`, `expires`, `nonce`.
 
-- Set `claims` to the result of call [`IdClaims`](../provider/contracts.md#symbol-IdClaims) with `iss` set to `issuer`; `sub` set to `subject`; `aud` set to `audience`; `exp` set to `expires`; `iat` set to `issued`; `nonce` set to `nonce`; `name` set to `"Ada"`.
-- Set `token` to the result of call [`signJwt`](../dependencies/august/0.19.0/crypto/jose.md#symbol-signJwt) with `key` set to `key`; `claims` set to the result of call `Json` with `value` set to `claims`; `kid` set to `"provider-1"`; `tokenType` set to `"JWT"`; supply dependencies `crypto` from `Crypto`.
+- Set `claims` to call [`IdClaims`](../provider/contracts.md#symbol-IdClaims) with `iss` = `issuer`; `sub` = `subject`; `aud` = `audience`; `exp` = `expires`; `iat` = `issued`; `nonce` = `nonce`; `name` = `"Ada"`.
+- Set `token` to call [`signJwt`](../dependencies/august/0.19.0/crypto/jose.md#symbol-signJwt) with `key` = `key`; `claims` = call `Json` with `value` = `claims`; `kid` = `"provider-1"`; `tokenType` = `"JWT"`; inject `crypto` from `Crypto`.
 - Try these operations:
-  - Call [`validateIdentity`](protocol.md#symbol-validateIdentity) with `token` set to `token`; `nonce` set to `expectedNonce`; `now` set to `now`; `jwks` set to `jwks`; supply dependencies `crypto` from `Crypto`.
-  - Call `assert` with `condition` set to `false`.
+  - Call [`validateIdentity`](protocol.md#symbol-validateIdentity) with `token` = `token`; `nonce` = `expectedNonce`; `now` = `now`; `jwks` = `jwks`; inject `crypto` from `Crypto`.
+  - Call `assert` with `condition` = `false`.
 - If they fail with [`SessionError`](contracts.md#symbol-SessionError), name the failure `error` and recover:
-  - Call `assert` with `condition` set to `true`.
+  - Call `assert` with `condition` = `true`.
 
 ##### `rejects_token_context`
 
@@ -818,15 +435,148 @@ Run once for each row of a tuple containing `"https://wrong-issuer.invalid"`, `c
 
 Run once for each row of a tuple containing `"wrong-key"`, `"JWT"`; a tuple containing `"provider-1"`, `"august-session+jwt"`. Bind row positions to `kid`, `tokenType`.
 
-- Set `claims` to the result of call [`IdClaims`](../provider/contracts.md#symbol-IdClaims) with `iss` set to `issuer` of `config`; `sub` set to `"ada"`; `aud` set to `clientId` of `config`; `exp` set to (`now` plus `300`); `iat` set to `now`; `nonce` set to `expectedNonce`; `name` set to `"Ada"`.
-- Set `token` to the result of call [`signJwt`](../dependencies/august/0.19.0/crypto/jose.md#symbol-signJwt) with `key` set to `key`; `claims` set to the result of call `Json` with `value` set to `claims`; `kid` set to `kid`; `tokenType` set to `tokenType`; supply dependencies `crypto` from `Crypto`.
+- Set `claims` to call [`IdClaims`](../provider/contracts.md#symbol-IdClaims) with `iss` = `issuer` of `config`; `sub` = `"ada"`; `aud` = `clientId` of `config`; `exp` = (`now` plus `300`); `iat` = `now`; `nonce` = `expectedNonce`; `name` = `"Ada"`.
+- Set `token` to call [`signJwt`](../dependencies/august/0.19.0/crypto/jose.md#symbol-signJwt) with `key` = `key`; `claims` = call `Json` with `value` = `claims`; `kid` = `kid`; `tokenType` = `tokenType`; inject `crypto` from `Crypto`.
 - Try these operations:
-  - Call [`validateIdentity`](protocol.md#symbol-validateIdentity) with `token` set to `token`; `nonce` set to `expectedNonce`; `now` set to `now`; `jwks` set to `jwks`; supply dependencies `crypto` from `Crypto`.
-  - Call `assert` with `condition` set to `false`.
+  - Call [`validateIdentity`](protocol.md#symbol-validateIdentity) with `token` = `token`; `nonce` = `expectedNonce`; `now` = `now`; `jwks` = `jwks`; inject `crypto` from `Crypto`.
+  - Call `assert` with `condition` = `false`.
 - If they fail with [`SessionError`](contracts.md#symbol-SessionError), name the failure `error` and recover:
-  - Call `assert` with `condition` set to `true`.
+  - Call `assert` with `condition` = `true`.
 
+### Dependencies used by this file
 
-### Language rules
+Only referenced types and operations appear here. Each name links to its complete specification.
 
-Boolean operations short-circuit from left to right. int uses signed 64-bit values; addition, subtraction, multiplication, and negation wrap. Division by zero raises ArithmeticError. float uses double precision. Tuples and records compare by value; mutable collections and behavioral classes compare by identity. Optional values contain a value or null; omission becomes null. Managed references grant read access; ownership moves and mutable borrows remain checked. A scope joins its child tasks; an unhandled child failure cancels siblings. See the [language reference](https://greenpandastudios.github.io/augscript/reference) for shared rules.
+#### [`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto)
+
+Capability interface from `august.crypto`.
+
+- [`Crypto.decodeBase64url`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url) (`input`: `string`) → `Bytes`; can fail with `CryptoError`.
+- [`Crypto.equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal) (`left`: `Bytes`, `right`: `Bytes`) → `bool`.
+- [`Crypto.generateRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.generateRsa) (no caller inputs) → `RsaPrivateKey`; can fail with `CryptoError`.
+- [`Crypto.importRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.importRsa) (`modulus`: `Bytes`, `exponent`: `Bytes`) → `RsaPublicKey`; can fail with `CryptoError`.
+- [`Crypto.publicRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.publicRsa) (`key`: `RsaPrivateKey`) → `RsaPublicKey`; can fail with `CryptoError`.
+- [`Crypto.verifyRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.verifyRsa) (`publicKey`: `RsaPublicKey`, `input`: `Bytes`, `signature`: `Bytes`) → `bool`; can fail with `CryptoError`.
+
+#### [`GnuTlsCrypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-GnuTlsCrypto)
+
+Class from `august.crypto`.
+
+Used as a type or provider.
+
+#### [`JwtError`](../dependencies/august/0.19.0/crypto/jose.md#symbol-JwtError)
+
+Class from `august.crypto`.
+
+Used as a type or provider.
+
+#### [`RsaJwk`](../dependencies/august/0.19.0/crypto/jose.md#symbol-RsaJwk)
+
+Record.
+
+- Read `kid` (`string`).
+
+#### [`RsaJwks`](../dependencies/august/0.19.0/crypto/jose.md#symbol-RsaJwks)
+
+Record from `august.crypto`.
+
+- Construct with `keys`: `List<RsaJwk>` → [`RsaJwks`](../dependencies/august/0.19.0/crypto/jose.md#symbol-RsaJwks).
+- Read `keys` (`List<RsaJwk>`).
+
+#### [`importJwk`](../dependencies/august/0.19.0/crypto/jose.md#symbol-importJwk)
+
+Function from `august.crypto`.
+
+- [`importJwk`](../dependencies/august/0.19.0/crypto/jose.md#symbol-importJwk) (`jwk`: [`RsaJwk`](../dependencies/august/0.19.0/crypto/jose.md#symbol-RsaJwk)) → `RsaPublicKey`; inject `crypto`: [`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto); uses [`crypto.decodeBase64url`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url), [`crypto.importRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.importRsa); can fail with `JwtError`.
+
+#### [`rsaJwk`](../dependencies/august/0.19.0/crypto/jose.md#symbol-rsaJwk)
+
+Function from `august.crypto`.
+
+- [`rsaJwk`](../dependencies/august/0.19.0/crypto/jose.md#symbol-rsaJwk) (`publicKey`: `RsaPublicKey`, `kid`: `string`) → [`RsaJwk`](../dependencies/august/0.19.0/crypto/jose.md#symbol-RsaJwk); inject `crypto`: [`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto); uses [`crypto.exportRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.exportRsa); can fail with `CryptoError`.
+
+#### [`signJwt`](../dependencies/august/0.19.0/crypto/jose.md#symbol-signJwt)
+
+Function from `august.crypto`.
+
+- [`signJwt`](../dependencies/august/0.19.0/crypto/jose.md#symbol-signJwt) (`key`: `RsaPrivateKey`, `claims`: `Json`, `kid`: `string`, `tokenType`: `string`) → `string`; inject `crypto`: [`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto); uses [`crypto.signRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.signRsa); can fail with `JwtError`.
+
+#### [`verifyJwt`](../dependencies/august/0.19.0/crypto/jose.md#symbol-verifyJwt)
+
+Function from `august.crypto`.
+
+- [`verifyJwt`](../dependencies/august/0.19.0/crypto/jose.md#symbol-verifyJwt) (`token`: `string`, `publicKey`: `RsaPublicKey`, `kid`: `string`, `tokenType`: `string`) → `Json`; inject `crypto`: [`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto); uses [`crypto.decodeBase64url`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url), [`crypto.verifyRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.verifyRsa); can fail with `JwtError`.
+
+#### [`parse`](../dependencies/august/0.19.0/json/contracts.md#symbol-parse)
+
+Function from `august.json`.
+
+- [`parse`](../dependencies/august/0.19.0/json/contracts.md#symbol-parse) (`input`: `string`) → `Json`; can fail with `JsonError`.
+
+#### [`HttpClient`](../dependencies/august/0.19.0/web/contracts.md#symbol-HttpClient)
+
+Capability interface from `august.web`.
+
+- [`HttpClient.request`](../dependencies/august/0.19.0/web/contracts.md#symbol-HttpClient.request) (`method`: `string`, `url`: `string`, `headers`: `optional Headers`, `body`: `optional Bytes`) → `HttpResponse<Bytes>`; can fail with `HttpError`.
+
+#### [`SessionError`](contracts.md#symbol-SessionError)
+
+Class from `contracts`.
+
+- Construct with no caller inputs → [`SessionError`](contracts.md#symbol-SessionError).
+
+#### [`Settings`](../common/settings.md#symbol-Settings)
+
+Record.
+
+- Read `clientId` (`string`).
+- Read `issuer` (`string`).
+
+#### [`settings`](../common/settings.md#symbol-settings)
+
+Function from `common`.
+
+- [`settings`](../common/settings.md#symbol-settings) (no caller inputs) → [`Settings`](../common/settings.md#symbol-Settings).
+
+#### [`IdClaims`](../provider/contracts.md#symbol-IdClaims)
+
+Record from `provider`.
+
+- Construct with `iss`: `string`, `sub`: `string`, `aud`: `string`, `exp`: `int`, `iat`: `int`, `nonce`: `string`, `name`: `string` → [`IdClaims`](../provider/contracts.md#symbol-IdClaims).
+- Read `aud` (`string`).
+- Read `exp` (`int`).
+- Read `iat` (`int`).
+- Read `iss` (`string`).
+- Read `nonce` (`string`).
+- Read `sub` (`string`).
+
+#### [`Discovery`](../provider/discovery.md#symbol-Discovery)
+
+Record from `provider`.
+
+- Read `authorization_endpoint` (`string`).
+- Read `issuer` (`string`).
+- Read `jwks_uri` (`string`).
+- Read `token_endpoint` (`string`).
+- Read `userinfo_endpoint` (`string`).
+
+### Built-in operations used by this file
+
+- `HttpResponse.body` (`Bytes`): The typed response body.
+- `HttpResponse.headers` (`Headers`): Immutable response headers. Duplicate Set-Cookie values are preserved.
+- `HttpResponse.status` (`int`): HTTP response status.
+- `Bytes.text` (no inputs) → `string`: Decode UTF-8 strictly. Invalid input raises ConversionError; embedded NUL is preserved. Can fail with `ConversionError`.
+- `Headers.get` (`name`: `string`) → `optional string`: Read the first case-insensitive header value, or null.
+- `Json.decode` (no inputs) → `IdClaims`: Decode a checked record or data type: json.decode<Profile>(). Unknown fields, type mismatches, and validation errors are rejected. Can fail with `JsonError`.
+- `List<RsaJwk>.get` (`index`: `int`) → `RsaJwk`: Read a zero-based position. An invalid index raises checked IndexError. Reference results grant reading. Can fail with `IndexError`.
+- `List<RsaJwk>.length` (no inputs) → `int`: Read the number of elements.
+- `assert` (`condition`: `bool`) → `void`: Assert a bool in a test case or its setup. Catching an assertion failure cannot make the case pass; every case must execute an assertion.
+- `string.bytes` (no inputs) → `Bytes`: Encode this string as immutable UTF-8 bytes.
+- `string.length` (no inputs) → `int`: Read the number of UTF-8 bytes. Unicode text is preserved losslessly.
+- `string.startsWith` (`prefix`: `string`) → `bool`: Test an exact prefix.
+
+[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
+
+### Shared language rules
+
+See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.

@@ -56,7 +56,12 @@ interface ICounter {
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code. Author documentation is labeled separately. It follows Simplified Technical English as guidance, with best-effort wording.
+August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
+
+### In this file
+
+- [`Counter`](counter.md#symbol-Counter) is a class implementing `ICounter`.
+- [`ICounter`](counter.md#symbol-ICounter) is an interface.
 
 ### `Counter` {#symbol-Counter}
 
@@ -66,32 +71,32 @@ Behavioral class.
 
 Satisfies [`ICounter`](counter.md#symbol-ICounter).
 
-**Inputs and dependencies**
+**Inputs**
 
-- `value`: `int`. The caller supplies this labeled input. Read reference values without copying them. Store it as `value`. The field can change with mutable access.
+- `value` (`int`) — required labeled input — stored as `value` and mutable.
 
 #### `Counter.increment` {#symbol-Counter.increment}
 
 [source](counter.md#code)
 
-Result: finish without a result.
+Returns: no value.
 
-Changes: `self`.
+May change: `self`.
 
-**Behavior when execution reaches this operation**
+**What it does**
 
 - Grant exclusive mutable access to `self` for this block, then end the borrow:
-  - Set `value` to (`value` plus `1`).
+  - Set `value` to `value` plus `1`.
 
 #### `Counter.read` {#symbol-Counter.read}
 
 [source](counter.md#code)
 
-Result: `int`.
+Returns: `int`.
 
-**Behavior when execution reaches this operation**
+**What it does**
 
-- Return `value` and finish this operation.
+- Return `value`.
 
 ### `ICounter` {#symbol-ICounter}
 
@@ -103,9 +108,9 @@ Interface.
 
 [source](counter.md#code)
 
-Result: finish without a result.
+Returns: no value.
 
-Changes: `self`.
+May change: `self`.
 
 Interface contract. A selected implementation supplies the behavior.
 
@@ -113,11 +118,10 @@ Interface contract. A selected implementation supplies the behavior.
 
 [source](counter.md#code)
 
-Result: `int`.
+Returns: `int`.
 
 Interface contract. A selected implementation supplies the behavior.
 
+### Shared language rules
 
-### Language rules
-
-Boolean operations short-circuit from left to right. int uses signed 64-bit values; addition, subtraction, multiplication, and negation wrap. Division by zero raises ArithmeticError. float uses double precision. Tuples and records compare by value; mutable collections and behavioral classes compare by identity. Optional values contain a value or null; omission becomes null. Managed references grant read access; ownership moves and mutable borrows remain checked. A scope joins its child tasks; an unhandled child failure cancels siblings. See the [language reference](https://greenpandastudios.github.io/augscript/reference) for shared rules.
+See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.

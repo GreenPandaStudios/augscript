@@ -91,7 +91,16 @@ composition Counters {
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code. Author documentation is labeled separately. It follows Simplified Technical English as guidance, with best-effort wording.
+August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
+
+### In this file
+
+- [`State`](counters.md#symbol-State) is an interface.
+- [`_Initial`](counters.md#symbol-_Initial) is a class implementing `State`.
+- [`_Updated`](counters.md#symbol-_Updated) is a class implementing `State`.
+- [`Counter`](counters.md#symbol-Counter) is an interface.
+- [`_Counter`](counters.md#symbol-_Counter) is a class implementing `Counter`.
+- [`Counters`](counters.md#symbol-Counters) declares 2 providers.
 
 ### `State` {#symbol-State}
 
@@ -107,7 +116,7 @@ Reading state has no mutation effect.
 
 [source](counters.md#code)
 
-Result: `int`.
+Returns: `int`.
 
 Interface contract. A selected implementation supplies the behavior.
 
@@ -125,9 +134,9 @@ A mutable counter with an explicit transition contract.
 
 [source](counters.md#code)
 
-Result: finish without a result.
+Returns: no value.
 
-Changes: `self`.
+May change: `self`.
 
 Interface contract. A selected implementation supplies the behavior.
 
@@ -135,7 +144,7 @@ Interface contract. A selected implementation supplies the behavior.
 
 [source](counters.md#code)
 
-Result: `int`.
+Returns: `int`.
 
 Interface contract. A selected implementation supplies the behavior.
 
@@ -164,11 +173,11 @@ Satisfies [`State`](counters.md#symbol-State).
 
 [source](counters.md#code)
 
-Result: `int`.
+Returns: `int`.
 
-**Behavior when execution reaches this operation**
+**What it does**
 
-- Return `0` and finish this operation.
+- Return `0`.
 
 ### `_Updated` {#symbol-_Updated}
 
@@ -178,19 +187,19 @@ Behavioral class, private to this file.
 
 Satisfies [`State`](counters.md#symbol-State).
 
-**Inputs and dependencies**
+**Inputs**
 
-- `count`: `int`. The caller supplies this labeled input. Read reference values without copying them. Store it as `count`. The field is read-only after initialization.
+- `count` (`int`) — required labeled input — stored as `count` and read-only after initialization.
 
 #### `_Updated.read` {#symbol-_Updated.read}
 
 [source](counters.md#code)
 
-Result: `int`.
+Returns: `int`.
 
-**Behavior when execution reaches this operation**
+**What it does**
 
-- Return `count` and finish this operation.
+- Return `count`.
 
 ### `_Counter` {#symbol-_Counter}
 
@@ -200,33 +209,32 @@ Behavioral class, private to this file.
 
 Satisfies [`Counter`](counters.md#symbol-Counter).
 
-**Inputs and dependencies**
+**Inputs**
 
-- `initial`: [`State`](counters.md#symbol-State). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them. Store it as `_state`. This field is private. The field can change with mutable access.
+- `initial` ([`State`](counters.md#symbol-State)) — injected; callers omit it — stored as `_state` (private) and mutable.
 
 #### `_Counter.increment` {#symbol-_Counter.increment}
 
 [source](counters.md#code)
 
-Result: finish without a result.
+Returns: no value.
 
-Changes: `self`.
+May change: `self`.
 
-**Behavior when execution reaches this operation**
+**What it does**
 
-- Set `_state` to the result of call [`_Updated`](counters.md#symbol-_Updated) with `count` set to (the result of call [`State.read`](counters.md#symbol-State.read) on `_state` plus `1`).
+- Set `_state` to call [`_Updated`](counters.md#symbol-_Updated) with `count` = (call [`State.read`](counters.md#symbol-State.read) on `_state` plus `1`).
 
 #### `_Counter.value` {#symbol-_Counter.value}
 
 [source](counters.md#code)
 
-Result: `int`.
+Returns: `int`.
 
-**Behavior when execution reaches this operation**
+**What it does**
 
-- Return the result of call [`State.read`](counters.md#symbol-State.read) on `_state` and finish this operation.
+- Return call [`State.read`](counters.md#symbol-State.read) on `_state`.
 
+### Shared language rules
 
-### Language rules
-
-Boolean operations short-circuit from left to right. int uses signed 64-bit values; addition, subtraction, multiplication, and negation wrap. Division by zero raises ArithmeticError. float uses double precision. Tuples and records compare by value; mutable collections and behavioral classes compare by identity. Optional values contain a value or null; omission becomes null. Managed references grant read access; ownership moves and mutable borrows remain checked. A scope joins its child tasks; an unhandled child failure cancels siblings. See the [language reference](https://greenpandastudios.github.io/augscript/reference) for shared rules.
+See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.

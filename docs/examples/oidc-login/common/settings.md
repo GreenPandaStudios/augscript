@@ -62,7 +62,12 @@ settings() returns Settings {
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code. Author documentation is labeled separately. It follows Simplified Technical English as guidance, with best-effort wording.
+August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
+
+### In this file
+
+- [`Settings`](settings.md#symbol-Settings) is an immutable record.
+- [`settings`](settings.md#symbol-settings) is a function returning `Settings`.
 
 ### `Settings` {#symbol-Settings}
 
@@ -74,26 +79,25 @@ Immutable record.
 
 Explicit loopback development settings. The provider accepts one registered client and its exact callback URI.
 
-**Inputs and dependencies**
+**Inputs**
 
-- `baseUrl`: `string`. The caller supplies this labeled input. Read reference values without copying them. Store it as `baseUrl`. The field is read-only after initialization.
-- `issuer`: `string`. The caller supplies this labeled input. Read reference values without copying them. Store it as `issuer`. The field is read-only after initialization.
-- `clientId`: `string`. The caller supplies this labeled input. Read reference values without copying them. Store it as `clientId`. The field is read-only after initialization.
-- `callback`: `string`. The caller supplies this labeled input. Read reference values without copying them. Store it as `callback`. The field is read-only after initialization.
-- `sessionSeconds`: `int`. The caller supplies this labeled input. Read reference values without copying them. Store it as `sessionSeconds`. The field is read-only after initialization.
-- `secureCookies`: `bool`. The caller supplies this labeled input. Read reference values without copying them. Store it as `secureCookies`. The field is read-only after initialization.
+- `baseUrl` (`string`) — required labeled input — stored as `baseUrl` and read-only after initialization.
+- `issuer` (`string`) — required labeled input — stored as `issuer` and read-only after initialization.
+- `clientId` (`string`) — required labeled input — stored as `clientId` and read-only after initialization.
+- `callback` (`string`) — required labeled input — stored as `callback` and read-only after initialization.
+- `sessionSeconds` (`int`) — required labeled input — stored as `sessionSeconds` and read-only after initialization.
+- `secureCookies` (`bool`) — required labeled input — stored as `secureCookies` and read-only after initialization.
 
 ### `settings` {#symbol-settings}
 
 [source](settings.md#code)
 
-Result: [`Settings`](settings.md#symbol-Settings).
+Returns: [`Settings`](settings.md#symbol-Settings).
 
-**Behavior when execution reaches this operation**
+**What it does**
 
-- Return the result of call [`Settings`](settings.md#symbol-Settings) with `baseUrl` set to `"http://127.0.0.1:8787"`; `issuer` set to `"http://127.0.0.1:8787/provider"`; `clientId` set to `"august-login-app"`; `callback` set to `"http://127.0.0.1:8787/login/callback"`; `sessionSeconds` set to `900`; `secureCookies` set to `false` and finish this operation.
+- Return call [`Settings`](settings.md#symbol-Settings) with `baseUrl` = `"http://127.0.0.1:8787"`; `issuer` = `"http://127.0.0.1:8787/provider"`; `clientId` = `"august-login-app"`; `callback` = `"http://127.0.0.1:8787/login/callback"`; `sessionSeconds` = `900`; `secureCookies` = `false`.
 
+### Shared language rules
 
-### Language rules
-
-Boolean operations short-circuit from left to right. int uses signed 64-bit values; addition, subtraction, multiplication, and negation wrap. Division by zero raises ArithmeticError. float uses double precision. Tuples and records compare by value; mutable collections and behavioral classes compare by identity. Optional values contain a value or null; omission becomes null. Managed references grant read access; ownership moves and mutable borrows remain checked. A scope joins its child tasks; an unhandled child failure cancels siblings. See the [language reference](https://greenpandastudios.github.io/augscript/reference) for shared rules.
+See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.

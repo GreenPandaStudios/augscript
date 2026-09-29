@@ -41,7 +41,11 @@ record Fruit(int code, string name)
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code. Author documentation is labeled separately. It follows Simplified Technical English as guidance, with best-effort wording.
+August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
+
+### In this file
+
+- [`Fruit`](models.md#symbol-Fruit) is an immutable record.
 
 ### `Fruit` {#symbol-Fruit}
 
@@ -53,12 +57,11 @@ Immutable record.
 
 Immutable fruit data, with public construction labels and structural equality.
 
-**Inputs and dependencies**
+**Inputs**
 
-- `code`: `int`. The caller supplies this labeled input. Read reference values without copying them. Store it as `code`. The field is read-only after initialization.
-- `name`: `string`. The caller supplies this labeled input. Read reference values without copying them. Store it as `name`. The field is read-only after initialization.
+- `code` (`int`) — required labeled input — stored as `code` and read-only after initialization.
+- `name` (`string`) — required labeled input — stored as `name` and read-only after initialization.
 
+### Shared language rules
 
-### Language rules
-
-Boolean operations short-circuit from left to right. int uses signed 64-bit values; addition, subtraction, multiplication, and negation wrap. Division by zero raises ArithmeticError. float uses double precision. Tuples and records compare by value; mutable collections and behavioral classes compare by identity. Optional values contain a value or null; omission becomes null. Managed references grant read access; ownership moves and mutable borrows remain checked. A scope joins its child tasks; an unhandled child failure cancels siblings. See the [language reference](https://greenpandastudios.github.io/augscript/reference) for shared rules.
+See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.

@@ -76,95 +76,74 @@ import cookie from august.web
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code. Author documentation is labeled separately. It follows Simplified Technical English as guidance, with best-effort wording.
+August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
 
-### Dependencies used by this file
+### In this file
 
-#### [`cookie`](../dependencies/august/0.19.0/web/contracts.md#symbol-cookie)
-
-Available from `august.web`.
-
-**Inputs and dependencies**
-
-- `name`: `string`. The caller supplies this labeled input. Read reference values without copying them.
-- `value`: `string`. The caller supplies this labeled input. Read reference values without copying them.
-- `path`: `string`. The caller supplies this labeled input. Read reference values without copying them.
-- `maxAge`: `int`. The caller supplies this labeled input. Read reference values without copying them.
-- `secure`: `bool`. The caller supplies this labeled input. Read reference values without copying them.
-
-Result: `Headers`.
-
-Possible failures: `HttpError`. The caller must catch or propagate them.
-
-### Built-in operations used by this file
-
-#### `Headers.all`
-
-Read every value of this header in wire order.
-
-Inputs: `name`: `string`.
-
-Result: `List<string>`.
-
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
-
-#### `Headers.with`
-
-Return new headers with one additional validated field. Header names ignore case; duplicate values remain separate.
-
-Inputs: `name`: `string`; `value`: `string`.
-
-Result: `Headers`.
-
-Possible failures: `HttpError`.
-
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
+- [`securityHeaders`](headers.md#symbol-securityHeaders) is a function returning `Headers`.
+- [`withCookie`](headers.md#symbol-withCookie) is a function returning `Headers`.
 
 ### `securityHeaders` {#symbol-securityHeaders}
 
 [source](headers.md#code)
 
-Result: `Headers`.
+Returns: `Headers`.
 
-Possible failures: `HttpError`. The caller must catch or propagate them.
+Can fail with `HttpError`. Callers must catch or propagate these errors.
+
+**What it does**
+
+- Return call `with` on call `with` on call `with` on call `with` on call `with` on call `Headers` with `name` = `"cache-control"`; `value` = `"no-store"` with `name` = `"pragma"`; `value` = `"no-cache"` with `name` = `"x-content-type-options"`; `value` = `"nosniff"` with `name` = `"referrer-policy"`; `value` = `"no-referrer"` with `name` = `"content-security-policy"`; `value` = `"default-src 'self'; style-src 'unsafe-inline'; script-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"`.
 
 **Author documentation**
 
 Responses containing identity data are never cached or embedded by another site.
 
-**Behavior when execution reaches this operation**
-
-- Return the result of call `with` on the result of call `with` on the result of call `with` on the result of call `with` on the result of call `with` on the result of call `Headers` with `name` set to `"cache-control"`; `value` set to `"no-store"` with `name` set to `"pragma"`; `value` set to `"no-cache"` with `name` set to `"x-content-type-options"`; `value` set to `"nosniff"` with `name` set to `"referrer-policy"`; `value` set to `"no-referrer"` with `name` set to `"content-security-policy"`; `value` set to `"default-src 'self'; style-src 'unsafe-inline'; script-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"` and finish this operation.
-
 ### `withCookie` {#symbol-withCookie}
 
 [source](headers.md#code)
 
-**Inputs and dependencies**
+**Inputs**
 
-- `headers`: `Headers`. The caller supplies this labeled input. Read reference values without copying them.
-- `name`: `string`. The caller supplies this labeled input. Read reference values without copying them.
-- `value`: `string`. The caller supplies this labeled input. Read reference values without copying them.
-- `path`: `string`. The caller supplies this labeled input. Read reference values without copying them.
-- `maxAge`: `int`. The caller supplies this labeled input. Read reference values without copying them.
-- `secure`: `bool`. The caller supplies this labeled input. Read reference values without copying them.
+- `headers` (`Headers`) — required labeled input.
+- `name` (`string`) — required labeled input.
+- `value` (`string`) — required labeled input.
+- `path` (`string`) — required labeled input.
+- `maxAge` (`int`) — required labeled input.
+- `secure` (`bool`) — required labeled input.
 
-Result: `Headers`.
+Returns: `Headers`.
 
-Possible failures: `HttpError`. The caller must catch or propagate them.
+Can fail with `HttpError`. Callers must catch or propagate these errors.
+
+**What it does**
+
+- Set `result` to `headers`.
+- For each `content` in a snapshot of call `all` on call [`cookie`](../dependencies/august/0.19.0/web/contracts.md#symbol-cookie) with `name` = `name`; `value` = `value`; `path` = `path`; `maxAge` = `maxAge`; `secure` = `secure` with `name` = `"set-cookie"`, in iteration order:
+  - Set `result` to call `with` on `result` with `name` = `"set-cookie"`; `value` = `content`.
+- Return `result`.
 
 **Author documentation**
 
 Add a checked cookie without losing duplicate Set-Cookie response fields.
 
-**Behavior when execution reaches this operation**
+### Dependencies used by this file
 
-- Set `result` to `headers`.
-- For each `content` in a snapshot of the result of call `all` on the result of call [`cookie`](../dependencies/august/0.19.0/web/contracts.md#symbol-cookie) with `name` set to `name`; `value` set to `value`; `path` set to `path`; `maxAge` set to `maxAge`; `secure` set to `secure` with `name` set to `"set-cookie"`, in iteration order:
-  - Set `result` to the result of call `with` on `result` with `name` set to `"set-cookie"`; `value` set to `content`.
-- Return `result` and finish this operation.
+Only referenced types and operations appear here. Each name links to its complete specification.
 
+#### [`cookie`](../dependencies/august/0.19.0/web/contracts.md#symbol-cookie)
 
-### Language rules
+Function from `august.web`.
 
-Boolean operations short-circuit from left to right. int uses signed 64-bit values; addition, subtraction, multiplication, and negation wrap. Division by zero raises ArithmeticError. float uses double precision. Tuples and records compare by value; mutable collections and behavioral classes compare by identity. Optional values contain a value or null; omission becomes null. Managed references grant read access; ownership moves and mutable borrows remain checked. A scope joins its child tasks; an unhandled child failure cancels siblings. See the [language reference](https://greenpandastudios.github.io/augscript/reference) for shared rules.
+- [`cookie`](../dependencies/august/0.19.0/web/contracts.md#symbol-cookie) (`name`: `string`, `value`: `string`, `path`: `string`, `maxAge`: `int`, `secure`: `bool`) → `Headers`; can fail with `HttpError`.
+
+### Built-in operations used by this file
+
+- `Headers.all` (`name`: `string`) → `List<string>`: Read every value of this header in wire order.
+- `Headers.with` (`name`: `string`, `value`: `string`) → `Headers`: Return new headers with one additional validated field. Header names ignore case; duplicate values remain separate. Can fail with `HttpError`.
+
+[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
+
+### Shared language rules
+
+See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.

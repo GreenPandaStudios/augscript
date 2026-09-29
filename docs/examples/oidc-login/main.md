@@ -106,313 +106,13 @@ serve home and me and logout and startLogin and loginCallback and discovery and 
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code. Author documentation is labeled separately. It follows Simplified Technical English as guidance, with best-effort wording.
+August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
 
-### Dependencies used by this file
+### In this file
 
-#### [`GnuTlsCrypto`](dependencies/august/0.19.0/crypto/contracts.md#symbol-GnuTlsCrypto)
-
-Available from `august.crypto`.
-
-Class. Follow the linked specification for its full explanation.
-
-#### [`MemoryStore`](dependencies/august/0.19.0/memory/store.md#symbol-MemoryStore)
-
-Available from `august.memory`.
-
-Class. Follow the linked specification for its full explanation.
-
-#### [`SystemClock`](dependencies/august/0.19.0/time/contracts.md#symbol-SystemClock)
-
-Available from `august.time`.
-
-Class. Follow the linked specification for its full explanation.
-
-#### [`WebHttpClient`](dependencies/august/0.19.0/web/contracts.md#symbol-WebHttpClient)
-
-Available from `august.web`.
-
-Class. Follow the linked specification for its full explanation.
-
-#### [`home`](client/endpoints.md#symbol-home)
-
-Available from `client`.
-
-**Inputs and dependencies**
-
-- `token`: `optional string`. The caller may supply this labeled input; omission becomes null. Read reference values without copying them. Read it from the HTTP cookie named `aug_session`.
-- `crypto`: [`Crypto`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-- `clock`: [`Clock`](dependencies/august/0.19.0/time/contracts.md#symbol-Clock). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-- `keys`: [`SigningKeys`](common/keys.md#symbol-SigningKeys). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-- `sessions`: [`ExpiringStore<SessionClaims>`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-
-Result: `HttpResponse<Html>`.
-
-Capabilities: [`crypto.publicRsa`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.publicRsa), [`crypto.decodeBase64url`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url), [`crypto.verifyRsa`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.verifyRsa), [`crypto.equal`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal), [`clock.now`](dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now), [`keys.session`](common/keys.md#symbol-SigningKeys.session), [`sessions.get`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.get).
-
-Possible failures: `KeyError`, `TimeError`, `HttpError`. The caller must catch or propagate them.
-
-HTTP route: `GET` `/`. Return status 200 on success. An unhandled request failure returns status 500 and cancels its request tasks.
-
-#### [`me`](client/endpoints.md#symbol-me)
-
-Available from `client`.
-
-**Inputs and dependencies**
-
-- `token`: `optional string`. The caller may supply this labeled input; omission becomes null. Read reference values without copying them. Read it from the HTTP cookie named `aug_session`.
-- `crypto`: [`Crypto`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-- `clock`: [`Clock`](dependencies/august/0.19.0/time/contracts.md#symbol-Clock). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-- `keys`: [`SigningKeys`](common/keys.md#symbol-SigningKeys). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-- `sessions`: [`ExpiringStore<SessionClaims>`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-
-Result: `HttpResponse<UserInfo>`.
-
-Capabilities: [`crypto.publicRsa`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.publicRsa), [`crypto.decodeBase64url`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url), [`crypto.verifyRsa`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.verifyRsa), [`crypto.equal`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal), [`clock.now`](dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now), [`keys.session`](common/keys.md#symbol-SigningKeys.session), [`sessions.get`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.get).
-
-Possible failures: `SessionError`, `KeyError`, `TimeError`, `HttpError`. The caller must catch or propagate them.
-
-HTTP route: `GET` `/me`. Return status 200 on success. An unhandled request failure returns status 500 and cancels its request tasks.
-
-Declared HTTP failures: `SessionError` returns status 401.
-
-#### [`loginCallback`](client/login.md#symbol-loginCallback)
-
-Available from `client`.
-
-**Inputs and dependencies**
-
-- `code`: `string`. The caller supplies this labeled input. Read reference values without copying them. Read it from the HTTP query.
-- `state`: `string`. The caller supplies this labeled input. Read reference values without copying them. Read it from the HTTP query.
-- `browser`: `optional string`. The caller may supply this labeled input; omission becomes null. Read reference values without copying them. Read it from the HTTP cookie named `aug_login`.
-- `crypto`: [`Crypto`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-- `clock`: [`Clock`](dependencies/august/0.19.0/time/contracts.md#symbol-Clock). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-- `client`: [`HttpClient`](dependencies/august/0.19.0/web/contracts.md#symbol-HttpClient). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-- `keys`: [`SigningKeys`](common/keys.md#symbol-SigningKeys). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-- `transactions`: [`ExpiringStore<LoginTransaction>`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-- `sessions`: [`ExpiringStore<SessionClaims>`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-
-Result: `HttpResponse<Html>`.
-
-Capabilities: [`crypto.equal`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal), [`crypto.random`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.random), [`crypto.signRsa`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.signRsa), [`crypto.decodeBase64url`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url), [`crypto.importRsa`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.importRsa), [`crypto.verifyRsa`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.verifyRsa), [`clock.now`](dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now), [`client.request`](dependencies/august/0.19.0/web/contracts.md#symbol-HttpClient.request), [`keys.session`](common/keys.md#symbol-SigningKeys.session), [`transactions.take`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.take), [`sessions.put`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.put).
-
-Possible failures: `SessionError`, `CryptoError`, `TimeError`, `KeyError`, `StoreFull`, `JwtError`, `JsonError`, `HttpError`. The caller must catch or propagate them.
-
-HTTP route: `GET` `/login/callback`. Return status 200 on success. An unhandled request failure returns status 500 and cancels its request tasks.
-
-Declared HTTP failures: `SessionError` returns status 400; `CryptoError` returns status 503; `TimeError` returns status 503; `StoreFull` returns status 503.
-
-#### [`startLogin`](client/login.md#symbol-startLogin)
-
-Available from `client`.
-
-**Inputs and dependencies**
-
-- `crypto`: [`Crypto`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-- `clock`: [`Clock`](dependencies/august/0.19.0/time/contracts.md#symbol-Clock). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-- `client`: [`HttpClient`](dependencies/august/0.19.0/web/contracts.md#symbol-HttpClient). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-- `transactions`: [`ExpiringStore<LoginTransaction>`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-
-Result: `HttpResponse<Html>`.
-
-Capabilities: [`crypto.random`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.random), [`crypto.sha256`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.sha256), [`clock.now`](dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now), [`client.request`](dependencies/august/0.19.0/web/contracts.md#symbol-HttpClient.request), [`transactions.put`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.put).
-
-Possible failures: `SessionError`, `CryptoError`, `TimeError`, `StoreFull`, `HttpError`. The caller must catch or propagate them.
-
-HTTP route: `GET` `/login/start`. Return status 200 on success. An unhandled request failure returns status 500 and cancels its request tasks.
-
-Declared HTTP failures: `SessionError` returns status 502; `CryptoError` returns status 503; `TimeError` returns status 503; `StoreFull` returns status 503.
-
-#### [`logout`](client/logout.md#symbol-logout)
-
-Available from `client`.
-
-**Inputs and dependencies**
-
-- `input`: [`LogoutForm`](client/contracts.md#symbol-LogoutForm). The caller supplies this labeled input. Read reference values without copying them. Read it from the HTTP form.
-- `token`: `optional string`. The caller may supply this labeled input; omission becomes null. Read reference values without copying them. Read it from the HTTP cookie named `aug_session`.
-- `origin`: `optional string`. The caller may supply this labeled input; omission becomes null. Read reference values without copying them. Read it from the HTTP header.
-- `crypto`: [`Crypto`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-- `clock`: [`Clock`](dependencies/august/0.19.0/time/contracts.md#symbol-Clock). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-- `keys`: [`SigningKeys`](common/keys.md#symbol-SigningKeys). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-- `sessions`: [`ExpiringStore<SessionClaims>`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-
-Result: `HttpResponse<Html>`.
-
-Capabilities: [`crypto.publicRsa`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.publicRsa), [`crypto.decodeBase64url`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url), [`crypto.verifyRsa`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.verifyRsa), [`crypto.equal`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal), [`clock.now`](dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now), [`keys.session`](common/keys.md#symbol-SigningKeys.session), [`sessions.get`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.get), [`sessions.take`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.take).
-
-Possible failures: `SessionError`, `KeyError`, `TimeError`, `CryptoError`, `HttpError`. The caller must catch or propagate them.
-
-HTTP route: `POST` `/logout`. Return status 200 on success. An unhandled request failure returns status 500 and cancels its request tasks.
-
-Declared HTTP failures: `SessionError` returns status 403.
-
-#### [`KeyError`](common/keys.md#symbol-KeyError)
-
-Available from `common`.
-
-Class. Follow the linked specification for its full explanation.
-
-#### [`MemorySigningKeys`](common/keys.md#symbol-MemorySigningKeys)
-
-Available from `common`.
-
-Class. Follow the linked specification for its full explanation.
-
-#### [`initializeKeys`](common/keys.md#symbol-initializeKeys)
-
-Available from `common`.
-
-**Inputs and dependencies**
-
-- `crypto`: [`Crypto`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-- `keys`: [`SigningKeys`](common/keys.md#symbol-SigningKeys). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-
-Result: finish without a result.
-
-Capabilities: [`crypto.generateRsa`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.generateRsa), [`keys.configure`](common/keys.md#symbol-SigningKeys.configure).
-
-Possible failures: `CryptoError`, `KeyError`. The caller must catch or propagate them.
-
-#### [`authorize`](provider/authorization.md#symbol-authorize)
-
-Available from `provider`.
-
-**Inputs and dependencies**
-
-- `response_type`: `string`. The caller supplies this labeled input. Read reference values without copying them. Read it from the HTTP query.
-- `client_id`: `string`. The caller supplies this labeled input. Read reference values without copying them. Read it from the HTTP query.
-- `redirect_uri`: `string`. The caller supplies this labeled input. Read reference values without copying them. Read it from the HTTP query.
-- `requestedScope`: `string`. The caller supplies this labeled input. Read reference values without copying them. Read it from the HTTP query named `scope`.
-- `state`: `string`. The caller supplies this labeled input. Read reference values without copying them. Read it from the HTTP query.
-- `nonce`: `string`. The caller supplies this labeled input. Read reference values without copying them. Read it from the HTTP query.
-- `code_challenge`: `string`. The caller supplies this labeled input. Read reference values without copying them. Read it from the HTTP query.
-- `code_challenge_method`: `string`. The caller supplies this labeled input. Read reference values without copying them. Read it from the HTTP query.
-- `crypto`: [`Crypto`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-- `clock`: [`Clock`](dependencies/august/0.19.0/time/contracts.md#symbol-Clock). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-- `requests`: [`ExpiringStore<AuthorizationRequest>`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-
-Result: `HttpResponse<Html>`.
-
-Capabilities: [`crypto.random`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.random), [`crypto.decodeBase64url`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url), [`clock.now`](dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now), [`requests.put`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.put).
-
-Possible failures: `LoginError`, `CryptoError`, `TimeError`, `StoreFull`, `HttpError`. The caller must catch or propagate them.
-
-HTTP route: `GET` `/provider/authorize`. Return status 200 on success. An unhandled request failure returns status 500 and cancels its request tasks.
-
-Declared HTTP failures: `LoginError` returns status 400; `CryptoError` returns status 503; `TimeError` returns status 503; `StoreFull` returns status 503.
-
-#### [`providerLogin`](provider/authorization.md#symbol-providerLogin)
-
-Available from `provider`.
-
-**Inputs and dependencies**
-
-- `form`: [`LoginForm`](provider/contracts.md#symbol-LoginForm). The caller supplies this labeled input. Read reference values without copying them. Read it from the HTTP form.
-- `browser`: `optional string`. The caller may supply this labeled input; omission becomes null. Read reference values without copying them. Read it from the HTTP cookie named `aug_authorize`.
-- `origin`: `optional string`. The caller may supply this labeled input; omission becomes null. Read reference values without copying them. Read it from the HTTP header named `origin`.
-- `crypto`: [`Crypto`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-- `clock`: [`Clock`](dependencies/august/0.19.0/time/contracts.md#symbol-Clock). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-- `requests`: [`ExpiringStore<AuthorizationRequest>`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-- `codes`: [`ExpiringStore<AuthorizationCode>`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-
-Result: `HttpResponse<Html>`.
-
-Capabilities: [`crypto.equal`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal), [`crypto.random`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.random), [`crypto.passwordHash`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.passwordHash), [`crypto.decodeBase64url`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url), [`clock.now`](dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now), [`requests.take`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.take), [`codes.put`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.put).
-
-Possible failures: `CryptoError`, `TimeError`, `StoreFull`, `HttpError`. The caller must catch or propagate them.
-
-HTTP route: `POST` `/provider/login`. Return status 200 on success. An unhandled request failure returns status 500 and cancels its request tasks.
-
-Declared HTTP failures: `CryptoError` returns status 503; `TimeError` returns status 503; `StoreFull` returns status 503.
-
-#### [`discovery`](provider/discovery.md#symbol-discovery)
-
-Available from `provider`.
-
-Result: [`Discovery`](provider/discovery.md#symbol-Discovery).
-
-HTTP route: `GET` `/provider/.well-known/openid-configuration`. Return status 200 on success. An unhandled request failure returns status 500 and cancels its request tasks.
-
-#### [`jwks`](provider/discovery.md#symbol-jwks)
-
-Available from `provider`.
-
-**Inputs and dependencies**
-
-- `crypto`: [`Crypto`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-- `keys`: [`SigningKeys`](common/keys.md#symbol-SigningKeys). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-
-Result: [`RsaJwks`](dependencies/august/0.19.0/crypto/jose.md#symbol-RsaJwks).
-
-Capabilities: [`keys.provider`](common/keys.md#symbol-SigningKeys.provider), [`crypto.publicRsa`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.publicRsa), [`crypto.exportRsa`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.exportRsa).
-
-Possible failures: `KeyError`, `CryptoError`. The caller must catch or propagate them.
-
-HTTP route: `GET` `/provider/jwks`. Return status 200 on success. An unhandled request failure returns status 500 and cancels its request tasks.
-
-#### [`token`](provider/token.md#symbol-token)
-
-Available from `provider`.
-
-**Inputs and dependencies**
-
-- `http`: `HttpRequest`. The caller supplies this labeled input. Read reference values without copying them. Read it from the HTTP request.
-- `crypto`: [`Crypto`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-- `clock`: [`Clock`](dependencies/august/0.19.0/time/contracts.md#symbol-Clock). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-- `keys`: [`SigningKeys`](common/keys.md#symbol-SigningKeys). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-- `codes`: [`ExpiringStore<AuthorizationCode>`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-- `access`: [`ExpiringStore<AccessGrant>`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-
-Result: `HttpResponse<Json>`.
-
-Capabilities: [`crypto.sha256`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.sha256), [`crypto.equal`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal), [`crypto.random`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.random), [`crypto.signRsa`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.signRsa), [`clock.now`](dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now), [`keys.provider`](common/keys.md#symbol-SigningKeys.provider), [`codes.take`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.take), [`access.put`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.put).
-
-Possible failures: `CryptoError`, `TimeError`, `KeyError`, `JwtError`, `StoreFull`, `HttpError`. The caller must catch or propagate them.
-
-HTTP route: `POST` `/provider/token`. Return status 200 on success. An unhandled request failure returns status 500 and cancels its request tasks.
-
-Declared HTTP failures: `CryptoError` returns status 503; `TimeError` returns status 503; `StoreFull` returns status 503.
-
-#### [`userinfo`](provider/userinfo.md#symbol-userinfo)
-
-Available from `provider`.
-
-**Inputs and dependencies**
-
-- `authorization`: `optional string`. The caller may supply this labeled input; omission becomes null. Read reference values without copying them. Read it from the HTTP header.
-- `clock`: [`Clock`](dependencies/august/0.19.0/time/contracts.md#symbol-Clock). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-- `access`: [`ExpiringStore<AccessGrant>`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-
-Result: `HttpResponse<Json>`.
-
-Capabilities: [`clock.now`](dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now), [`access.get`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.get).
-
-Possible failures: `TimeError`, `HttpError`. The caller must catch or propagate them.
-
-HTTP route: `GET` `/provider/userinfo`. Return status 200 on success. An unhandled request failure returns status 500 and cancels its request tasks.
-
-### Built-in operations used by this file
-
-#### `exit`
-
-Exit from main with a status from 0 to 255 after cancellation and cleanup.
-
-Inputs: `status`: `int`.
-
-Result: `void`.
-
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
-
-#### `print`
-
-Composition and test output. Other callables receive Console and declare uses console.write.
-
-Inputs: `value`: `any`.
-
-Result: `void`.
-
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
+- Register 9 dependency providers before startup.
+- Run startup operations with checked error recovery.
+- Serve 11 HTTP routes.
 
 ### HTTP configuration
 
@@ -428,25 +128,143 @@ Register these providers before startup. Their declaration order does not set in
 - Provide [`SystemClock`](dependencies/august/0.19.0/time/contracts.md#symbol-SystemClock) when `Clock` is requested. Reuse one instance.
 - Provide [`WebHttpClient`](dependencies/august/0.19.0/web/contracts.md#symbol-WebHttpClient) when `HttpClient` is requested. Reuse one instance.
 - Provide [`MemorySigningKeys`](common/keys.md#symbol-MemorySigningKeys) when `SigningKeys` is requested. Reuse one instance. Permit explicit shared mutation.
-- Provide [`MemoryStore`](dependencies/august/0.19.0/memory/store.md#symbol-MemoryStore) when `ExpiringStore` is requested. Reuse one instance. Permit explicit shared mutation.
-- Provide [`MemoryStore`](dependencies/august/0.19.0/memory/store.md#symbol-MemoryStore) when `ExpiringStore` is requested. Reuse one instance. Permit explicit shared mutation.
-- Provide [`MemoryStore`](dependencies/august/0.19.0/memory/store.md#symbol-MemoryStore) when `ExpiringStore` is requested. Reuse one instance. Permit explicit shared mutation.
-- Provide [`MemoryStore`](dependencies/august/0.19.0/memory/store.md#symbol-MemoryStore) when `ExpiringStore` is requested. Reuse one instance. Permit explicit shared mutation.
-- Provide [`MemoryStore`](dependencies/august/0.19.0/memory/store.md#symbol-MemoryStore) when `ExpiringStore` is requested. Reuse one instance. Permit explicit shared mutation.
+- Provide [`MemoryStore<LoginTransaction>`](dependencies/august/0.19.0/memory/store.md#symbol-MemoryStore) when `ExpiringStore<LoginTransaction>` is requested. Reuse one instance. Permit explicit shared mutation.
+- Provide [`MemoryStore<AuthorizationRequest>`](dependencies/august/0.19.0/memory/store.md#symbol-MemoryStore) when `ExpiringStore<AuthorizationRequest>` is requested. Reuse one instance. Permit explicit shared mutation.
+- Provide [`MemoryStore<AuthorizationCode>`](dependencies/august/0.19.0/memory/store.md#symbol-MemoryStore) when `ExpiringStore<AuthorizationCode>` is requested. Reuse one instance. Permit explicit shared mutation.
+- Provide [`MemoryStore<SessionClaims>`](dependencies/august/0.19.0/memory/store.md#symbol-MemoryStore) when `ExpiringStore<SessionClaims>` is requested. Reuse one instance. Permit explicit shared mutation.
+- Provide [`MemoryStore<AccessGrant>`](dependencies/august/0.19.0/memory/store.md#symbol-MemoryStore) when `ExpiringStore<AccessGrant>` is requested. Reuse one instance. Permit explicit shared mutation.
 
 ### Startup, in source order
 
 - Try these operations:
-  - Call [`initializeKeys`](common/keys.md#symbol-initializeKeys); supply dependencies `crypto` from `Crypto`, `keys` from `SigningKeys`.
+  - Call [`initializeKeys`](common/keys.md#symbol-initializeKeys); inject `crypto` from `Crypto`, `keys` from `SigningKeys`.
 - If they fail with `CryptoError`, name the failure `error` and recover:
-  - Call `print` with `value` set to `"Cryptographic initialization failed"`.
-  - Call `exit` with `status` set to `1`.
+  - Call `print` with `value` = `"Cryptographic initialization failed"`.
+  - Call `exit` with `status` = `1`.
 - If they fail with [`KeyError`](common/keys.md#symbol-KeyError), name the failure `error` and recover:
-  - Call `print` with `value` set to `"Signing keys could not be initialized"`.
-  - Call `exit` with `status` set to `1`.
+  - Call `print` with `value` = `"Signing keys could not be initialized"`.
+  - Call `exit` with `status` = `1`.
 - Serve [`home`](client/endpoints.md#symbol-home), [`me`](client/endpoints.md#symbol-me), [`logout`](client/logout.md#symbol-logout), [`startLogin`](client/login.md#symbol-startLogin), [`loginCallback`](client/login.md#symbol-loginCallback), [`discovery`](provider/discovery.md#symbol-discovery), [`jwks`](provider/discovery.md#symbol-jwks), [`authorize`](provider/authorization.md#symbol-authorize), [`providerLogin`](provider/authorization.md#symbol-providerLogin), [`token`](provider/token.md#symbol-token), [`userinfo`](provider/userinfo.md#symbol-userinfo) on port `8787`.
 
+### Dependencies used by this file
 
-### Language rules
+Only referenced types and operations appear here. Each name links to its complete specification.
 
-Boolean operations short-circuit from left to right. int uses signed 64-bit values; addition, subtraction, multiplication, and negation wrap. Division by zero raises ArithmeticError. float uses double precision. Tuples and records compare by value; mutable collections and behavioral classes compare by identity. Optional values contain a value or null; omission becomes null. Managed references grant read access; ownership moves and mutable borrows remain checked. A scope joins its child tasks; an unhandled child failure cancels siblings. See the [language reference](https://greenpandastudios.github.io/augscript/reference) for shared rules.
+#### [`GnuTlsCrypto`](dependencies/august/0.19.0/crypto/contracts.md#symbol-GnuTlsCrypto)
+
+Class from `august.crypto`.
+
+Used as a type or provider.
+
+#### [`MemoryStore`](dependencies/august/0.19.0/memory/store.md#symbol-MemoryStore)
+
+Class from `august.memory`.
+
+Used as a type or provider.
+
+#### [`SystemClock`](dependencies/august/0.19.0/time/contracts.md#symbol-SystemClock)
+
+Class from `august.time`.
+
+Used as a type or provider.
+
+#### [`WebHttpClient`](dependencies/august/0.19.0/web/contracts.md#symbol-WebHttpClient)
+
+Class from `august.web`.
+
+Used as a type or provider.
+
+#### [`home`](client/endpoints.md#symbol-home)
+
+Function from `client`.
+
+- [`home`](client/endpoints.md#symbol-home) (`token`: `optional string` from HTTP cookie `aug_session`) → `HttpResponse<Html>`; inject `crypto`: [`Crypto`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto), `clock`: [`Clock`](dependencies/august/0.19.0/time/contracts.md#symbol-Clock), `keys`: [`SigningKeys`](common/keys.md#symbol-SigningKeys), `sessions`: [`ExpiringStore<SessionClaims>`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore); uses [`crypto.publicRsa`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.publicRsa), [`crypto.decodeBase64url`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url), [`crypto.verifyRsa`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.verifyRsa), [`crypto.equal`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal), [`clock.now`](dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now), [`keys.session`](common/keys.md#symbol-SigningKeys.session), [`sessions.get`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.get); can fail with `KeyError`, `TimeError`, `HttpError`.
+
+#### [`me`](client/endpoints.md#symbol-me)
+
+Function from `client`.
+
+- [`me`](client/endpoints.md#symbol-me) (`token`: `optional string` from HTTP cookie `aug_session`) → `HttpResponse<UserInfo>`; inject `crypto`: [`Crypto`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto), `clock`: [`Clock`](dependencies/august/0.19.0/time/contracts.md#symbol-Clock), `keys`: [`SigningKeys`](common/keys.md#symbol-SigningKeys), `sessions`: [`ExpiringStore<SessionClaims>`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore); uses [`crypto.publicRsa`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.publicRsa), [`crypto.decodeBase64url`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url), [`crypto.verifyRsa`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.verifyRsa), [`crypto.equal`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal), [`clock.now`](dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now), [`keys.session`](common/keys.md#symbol-SigningKeys.session), [`sessions.get`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.get); can fail with `SessionError`, `KeyError`, `TimeError`, `HttpError`.
+
+#### [`loginCallback`](client/login.md#symbol-loginCallback)
+
+Function from `client`.
+
+- [`loginCallback`](client/login.md#symbol-loginCallback) (`code`: `string` from HTTP query, `state`: `string` from HTTP query, `browser`: `optional string` from HTTP cookie `aug_login`) → `HttpResponse<Html>`; inject `crypto`: [`Crypto`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto), `clock`: [`Clock`](dependencies/august/0.19.0/time/contracts.md#symbol-Clock), `client`: [`HttpClient`](dependencies/august/0.19.0/web/contracts.md#symbol-HttpClient), `keys`: [`SigningKeys`](common/keys.md#symbol-SigningKeys), `transactions`: [`ExpiringStore<LoginTransaction>`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore), `sessions`: [`ExpiringStore<SessionClaims>`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore); uses [`crypto.equal`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal), [`crypto.random`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.random), [`crypto.signRsa`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.signRsa), [`crypto.decodeBase64url`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url), [`crypto.importRsa`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.importRsa), [`crypto.verifyRsa`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.verifyRsa), [`clock.now`](dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now), [`client.request`](dependencies/august/0.19.0/web/contracts.md#symbol-HttpClient.request), [`keys.session`](common/keys.md#symbol-SigningKeys.session), [`transactions.take`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.take), [`sessions.put`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.put); can fail with `SessionError`, `CryptoError`, `TimeError`, `KeyError`, `StoreFull`, `JwtError`, `JsonError`, `HttpError`.
+
+#### [`startLogin`](client/login.md#symbol-startLogin)
+
+Function from `client`.
+
+- [`startLogin`](client/login.md#symbol-startLogin) (no caller inputs) → `HttpResponse<Html>`; inject `crypto`: [`Crypto`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto), `clock`: [`Clock`](dependencies/august/0.19.0/time/contracts.md#symbol-Clock), `client`: [`HttpClient`](dependencies/august/0.19.0/web/contracts.md#symbol-HttpClient), `transactions`: [`ExpiringStore<LoginTransaction>`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore); uses [`crypto.random`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.random), [`crypto.sha256`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.sha256), [`clock.now`](dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now), [`client.request`](dependencies/august/0.19.0/web/contracts.md#symbol-HttpClient.request), [`transactions.put`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.put); can fail with `SessionError`, `CryptoError`, `TimeError`, `StoreFull`, `HttpError`.
+
+#### [`logout`](client/logout.md#symbol-logout)
+
+Function from `client`.
+
+- [`logout`](client/logout.md#symbol-logout) (`input`: [`LogoutForm`](client/contracts.md#symbol-LogoutForm) from HTTP form, `token`: `optional string` from HTTP cookie `aug_session`, `origin`: `optional string` from HTTP header) → `HttpResponse<Html>`; inject `crypto`: [`Crypto`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto), `clock`: [`Clock`](dependencies/august/0.19.0/time/contracts.md#symbol-Clock), `keys`: [`SigningKeys`](common/keys.md#symbol-SigningKeys), `sessions`: [`ExpiringStore<SessionClaims>`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore); uses [`crypto.publicRsa`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.publicRsa), [`crypto.decodeBase64url`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url), [`crypto.verifyRsa`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.verifyRsa), [`crypto.equal`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal), [`clock.now`](dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now), [`keys.session`](common/keys.md#symbol-SigningKeys.session), [`sessions.get`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.get), [`sessions.take`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.take); can fail with `SessionError`, `KeyError`, `TimeError`, `CryptoError`, `HttpError`.
+
+#### [`KeyError`](common/keys.md#symbol-KeyError)
+
+Class from `common`.
+
+Used as a type or provider.
+
+#### [`MemorySigningKeys`](common/keys.md#symbol-MemorySigningKeys)
+
+Class from `common`.
+
+Used as a type or provider.
+
+#### [`initializeKeys`](common/keys.md#symbol-initializeKeys)
+
+Function from `common`.
+
+- [`initializeKeys`](common/keys.md#symbol-initializeKeys) (no caller inputs) → `void`; inject `crypto`: [`Crypto`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto), `keys`: [`SigningKeys`](common/keys.md#symbol-SigningKeys); uses [`crypto.generateRsa`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.generateRsa), [`keys.configure`](common/keys.md#symbol-SigningKeys.configure); can fail with `CryptoError`, `KeyError`.
+
+#### [`authorize`](provider/authorization.md#symbol-authorize)
+
+Function from `provider`.
+
+- [`authorize`](provider/authorization.md#symbol-authorize) (`response_type`: `string` from HTTP query, `client_id`: `string` from HTTP query, `redirect_uri`: `string` from HTTP query, `requestedScope`: `string` from HTTP query `scope`, `state`: `string` from HTTP query, `nonce`: `string` from HTTP query, `code_challenge`: `string` from HTTP query, `code_challenge_method`: `string` from HTTP query) → `HttpResponse<Html>`; inject `crypto`: [`Crypto`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto), `clock`: [`Clock`](dependencies/august/0.19.0/time/contracts.md#symbol-Clock), `requests`: [`ExpiringStore<AuthorizationRequest>`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore); uses [`crypto.random`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.random), [`crypto.decodeBase64url`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url), [`clock.now`](dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now), [`requests.put`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.put); can fail with `LoginError`, `CryptoError`, `TimeError`, `StoreFull`, `HttpError`.
+
+#### [`providerLogin`](provider/authorization.md#symbol-providerLogin)
+
+Function from `provider`.
+
+- [`providerLogin`](provider/authorization.md#symbol-providerLogin) (`form`: [`LoginForm`](provider/contracts.md#symbol-LoginForm) from HTTP form, `browser`: `optional string` from HTTP cookie `aug_authorize`, `origin`: `optional string` from HTTP header `origin`) → `HttpResponse<Html>`; inject `crypto`: [`Crypto`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto), `clock`: [`Clock`](dependencies/august/0.19.0/time/contracts.md#symbol-Clock), `requests`: [`ExpiringStore<AuthorizationRequest>`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore), `codes`: [`ExpiringStore<AuthorizationCode>`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore); uses [`crypto.equal`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal), [`crypto.random`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.random), [`crypto.passwordHash`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.passwordHash), [`crypto.decodeBase64url`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url), [`clock.now`](dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now), [`requests.take`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.take), [`codes.put`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.put); can fail with `CryptoError`, `TimeError`, `StoreFull`, `HttpError`.
+
+#### [`discovery`](provider/discovery.md#symbol-discovery)
+
+Function from `provider`.
+
+- [`discovery`](provider/discovery.md#symbol-discovery) (no caller inputs) → [`Discovery`](provider/discovery.md#symbol-Discovery).
+
+#### [`jwks`](provider/discovery.md#symbol-jwks)
+
+Function from `provider`.
+
+- [`jwks`](provider/discovery.md#symbol-jwks) (no caller inputs) → [`RsaJwks`](dependencies/august/0.19.0/crypto/jose.md#symbol-RsaJwks); inject `crypto`: [`Crypto`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto), `keys`: [`SigningKeys`](common/keys.md#symbol-SigningKeys); uses [`keys.provider`](common/keys.md#symbol-SigningKeys.provider), [`crypto.publicRsa`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.publicRsa), [`crypto.exportRsa`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.exportRsa); can fail with `KeyError`, `CryptoError`.
+
+#### [`token`](provider/token.md#symbol-token)
+
+Function from `provider`.
+
+- [`token`](provider/token.md#symbol-token) (`http`: `HttpRequest` from HTTP request) → `HttpResponse<Json>`; inject `crypto`: [`Crypto`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto), `clock`: [`Clock`](dependencies/august/0.19.0/time/contracts.md#symbol-Clock), `keys`: [`SigningKeys`](common/keys.md#symbol-SigningKeys), `codes`: [`ExpiringStore<AuthorizationCode>`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore), `access`: [`ExpiringStore<AccessGrant>`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore); uses [`crypto.sha256`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.sha256), [`crypto.equal`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal), [`crypto.random`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.random), [`crypto.signRsa`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.signRsa), [`clock.now`](dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now), [`keys.provider`](common/keys.md#symbol-SigningKeys.provider), [`codes.take`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.take), [`access.put`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.put); can fail with `CryptoError`, `TimeError`, `KeyError`, `JwtError`, `StoreFull`, `HttpError`.
+
+#### [`userinfo`](provider/userinfo.md#symbol-userinfo)
+
+Function from `provider`.
+
+- [`userinfo`](provider/userinfo.md#symbol-userinfo) (`authorization`: `optional string` from HTTP header) → `HttpResponse<Json>`; inject `clock`: [`Clock`](dependencies/august/0.19.0/time/contracts.md#symbol-Clock), `access`: [`ExpiringStore<AccessGrant>`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore); uses [`clock.now`](dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now), [`access.get`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.get); can fail with `TimeError`, `HttpError`.
+
+### Built-in operations used by this file
+
+- `exit` (`status`: `int`) → `void`: Exit from main with a status from 0 to 255 after cancellation and cleanup.
+- `print` (`value`: `any`) → `void`: Composition and test output. Other callables receive Console and declare uses console.write.
+
+[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
+
+### Shared language rules
+
+See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.

@@ -61,88 +61,42 @@ print(value=values.length() == unique.length())
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code. Author documentation is labeled separately. It follows Simplified Technical English as guidance, with best-effort wording.
+August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
 
-### Built-in operations used by this file
+### In this file
 
-#### `Map<int, int>.length`
-
-Read the number of elements.
-
-Result: `int`.
-
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
-
-#### `Map<int, int>.set`
-
-Insert or replace an entry with exclusive mutable access.
-
-Inputs: `key`: `int`; `value`: `int`.
-
-Result: `void`.
-
-Changes the receiver under exclusive mutable access.
-
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
-
-#### `Set<int>.add`
-
-Insert a unique element with exclusive mutable access.
-
-Inputs: `value`: `int`.
-
-Result: `void`.
-
-Changes the receiver under exclusive mutable access.
-
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
-
-#### `Set<int>.contains`
-
-Test structural or identity equality with a stored element.
-
-Inputs: `value`: `int`.
-
-Result: `bool`.
-
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
-
-#### `Set<int>.length`
-
-Read the number of elements.
-
-Result: `int`.
-
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
-
-#### `print`
-
-Composition and test output. Other callables receive Console and declare uses console.write.
-
-Inputs: `value`: `any`.
-
-Result: `void`.
-
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
+- Run 8 other startup steps in source order.
 
 ### Startup, in source order
 
-- Set `values` of type `Map<int,int>` to a context-typed empty collection with no items. This variable owns the value.
-- Set `unique` of type `Set<int>` to a context-typed empty collection with no items. This variable owns the value.
+- Set `values` of type `Map<int,int>` to a context-typed empty collection with no items.
+- This variable owns the value.
+- Set `unique` of type `Set<int>` to a context-typed empty collection with no items.
+- This variable owns the value.
 - Set `index` of type `int` to `0`.
-- While (`index` is less than `20000`) is true, repeat:
-  - Call `set` on `values` with `key` set to `index`; `value` set to (`index` times `3`).
-  - Call `add` on `unique` with `value` set to `index`.
-  - Set `index` to (`index` plus `1`).
+- While `index` is less than `20000`, repeat:
+  - Call `set` on `values` with `key` = `index`; `value` = (`index` times `3`).
+  - Call `add` on `unique` with `value` = `index`.
+  - Set `index` to `index` plus `1`.
   - Check the condition again before the next iteration.
 - Set `checksum` of type `int` to `0`.
 - For each `key` and `value` in a snapshot of `values`, in iteration order:
-  - If the result of call `contains` on `unique` with `value` set to `key` is true:
-    - Set `checksum` to (`checksum` plus `value`).
-- Call `print` with `value` set to `checksum`.
-- Call `print` with `value` set to (the result of call `length` on `values` equals the result of call `length` on `unique`).
+  - If call `contains` on `unique` with `value` = `key` is true:
+    - Set `checksum` to `checksum` plus `value`.
+- Call `print` with `value` = `checksum`.
+- Call `print` with `value` = (call `length` on `values` equals call `length` on `unique`).
 
+### Built-in operations used by this file
 
-### Language rules
+- `Map<int, int>.length` (no inputs) → `int`: Read the number of elements.
+- `Map<int, int>.set` (`key`: `int`, `value`: `int`) → `void`: Insert or replace an entry with exclusive mutable access. Changes the receiver.
+- `Set<int>.add` (`value`: `int`) → `void`: Insert a unique element with exclusive mutable access. Changes the receiver.
+- `Set<int>.contains` (`value`: `int`) → `bool`: Test structural or identity equality with a stored element.
+- `Set<int>.length` (no inputs) → `int`: Read the number of elements.
+- `print` (`value`: `any`) → `void`: Composition and test output. Other callables receive Console and declare uses console.write.
 
-Boolean operations short-circuit from left to right. int uses signed 64-bit values; addition, subtraction, multiplication, and negation wrap. Division by zero raises ArithmeticError. float uses double precision. Tuples and records compare by value; mutable collections and behavioral classes compare by identity. Optional values contain a value or null; omission becomes null. Managed references grant read access; ownership moves and mutable borrows remain checked. A scope joins its child tasks; an unhandled child failure cancels siblings. See the [language reference](https://greenpandastudios.github.io/augscript/reference) for shared rules.
+[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
+
+### Shared language rules
+
+See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.

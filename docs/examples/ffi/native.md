@@ -43,34 +43,38 @@ announce() uses C.puts {
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code. Author documentation is labeled separately. It follows Simplified Technical English as guidance, with best-effort wording.
+August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
+
+### In this file
+
+- [`puts`](native.md#symbol-puts) is a function returning `c_int`.
+- [`announce`](native.md#symbol-announce) is a function.
 
 ### `puts` {#symbol-puts}
 
 [source](native.md#code)
 
-**Inputs and dependencies**
+**Inputs**
 
-- `message`: `string`. The caller supplies this labeled input. Read reference values without copying them.
+- `message` (`string`) — required labeled input.
 
-Result: `c_int`.
+Returns: `c_int`.
 
-Native C operation. Use the declared inputs, result, effects, errors, and author documentation as its boundary contract.
+Native C operation. Its declared inputs, result, effects, and errors are the visible contract. The C implementation is outside this specification.
 
 ### `announce` {#symbol-announce}
 
 [source](native.md#code)
 
-Result: finish without a result.
+Returns: no value.
 
 Capabilities: `C.puts`.
 
-**Behavior when execution reaches this operation**
+**What it does**
 
 - Enter an unsafe boundary. Native calls use their declared contracts; their foreign implementation is outside this specification:
-  - Call [`puts`](native.md#symbol-puts) with `message` set to `"hello from C FFI"`.
+  - Call [`puts`](native.md#symbol-puts) with `message` = `"hello from C FFI"`.
 
+### Shared language rules
 
-### Language rules
-
-Boolean operations short-circuit from left to right. int uses signed 64-bit values; addition, subtraction, multiplication, and negation wrap. Division by zero raises ArithmeticError. float uses double precision. Tuples and records compare by value; mutable collections and behavioral classes compare by identity. Optional values contain a value or null; omission becomes null. Managed references grant read access; ownership moves and mutable borrows remain checked. A scope joins its child tasks; an unhandled child failure cancels siblings. See the [language reference](https://greenpandastudios.github.io/augscript/reference) for shared rules.
+See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.

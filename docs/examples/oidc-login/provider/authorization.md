@@ -186,462 +186,259 @@ endpoint POST "/provider/login" as providerLogin(LoginForm form from form, optio
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code. Author documentation is labeled separately. It follows Simplified Technical English as guidance, with best-effort wording.
+August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
 
-### Dependencies used by this file
+### In this file
 
-#### [`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto)
-
-Available from `august.crypto`.
-
-Interface. Follow the linked specification for its full explanation.
-
-**[`Crypto.decodeBase64url`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url)**
-
-**Inputs and dependencies**
-
-- `input`: `string`. The caller supplies this labeled input. Read reference values without copying them.
-
-Result: `Bytes`.
-
-Capabilities: [`Crypto.decodeBase64url`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url).
-
-Possible failures: `CryptoError`. The caller must catch or propagate them.
-
-**[`Crypto.equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal)**
-
-**Inputs and dependencies**
-
-- `left`: `Bytes`. The caller supplies this labeled input. Read reference values without copying them.
-- `right`: `Bytes`. The caller supplies this labeled input. Read reference values without copying them.
-
-Result: `bool`.
-
-Capabilities: [`Crypto.equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal).
-
-**[`Crypto.passwordHash`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.passwordHash)**
-
-**Inputs and dependencies**
-
-- `password`: `Bytes`. The caller supplies this labeled input. Read reference values without copying them.
-- `salt`: `Bytes`. The caller supplies this labeled input. Read reference values without copying them.
-- `iterations`: `int`. The caller supplies this labeled input. Read reference values without copying them.
-
-Result: `Bytes`.
-
-Capabilities: [`Crypto.passwordHash`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.passwordHash).
-
-Possible failures: `CryptoError`. The caller must catch or propagate them.
-
-**[`Crypto.random`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.random)**
-
-**Inputs and dependencies**
-
-- `size`: `int`. The caller supplies this labeled input. Read reference values without copying them.
-
-Result: `Bytes`.
-
-Capabilities: [`Crypto.random`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.random).
-
-Possible failures: `CryptoError`. The caller must catch or propagate them.
-
-#### [`ExpiringStore`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore)
-
-Available from `august.memory`.
-
-Interface. Follow the linked specification for its full explanation.
-
-**[`ExpiringStore.put`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.put)**
-
-**Inputs and dependencies**
-
-- `key`: `string`. The caller supplies this labeled input. Read reference values without copying them.
-- `value`: `T`. The caller supplies this labeled input. Read reference values without copying them.
-- `expires`: `int`. The caller supplies this labeled input. Read reference values without copying them.
-- `now`: `int`. The caller supplies this labeled input. Read reference values without copying them.
-
-Result: finish without a result.
-
-Capabilities: [`ExpiringStore.put`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.put).
-
-Possible failures: `StoreFull`. The caller must catch or propagate them.
-
-**[`ExpiringStore.take`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.take)**
-
-**Inputs and dependencies**
-
-- `key`: `string`. The caller supplies this labeled input. Read reference values without copying them.
-- `now`: `int`. The caller supplies this labeled input. Read reference values without copying them.
-
-Result: `optional T`.
-
-Capabilities: [`ExpiringStore.take`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.take).
-
-#### [`StoreFull`](../dependencies/august/0.19.0/memory/store.md#symbol-StoreFull)
-
-Available from `august.memory`.
-
-Class. Follow the linked specification for its full explanation.
-
-#### [`Clock`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock)
-
-Available from `august.time`.
-
-Interface. Follow the linked specification for its full explanation.
-
-**[`Clock.now`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now)**
-
-Result: `int`.
-
-Capabilities: [`Clock.now`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now).
-
-Possible failures: `TimeError`. The caller must catch or propagate them.
-
-#### [`urlEncode`](../dependencies/august/0.19.0/web/contracts.md#symbol-urlEncode)
-
-Available from `august.web`.
-
-**Inputs and dependencies**
-
-- `input`: `string`. The caller supplies this labeled input. Read reference values without copying them.
-
-Result: `string`.
-
-Possible failures: `HttpError`. The caller must catch or propagate them.
-
-#### [`securityHeaders`](../common/headers.md#symbol-securityHeaders)
-
-Available from `common`.
-
-Result: `Headers`.
-
-Possible failures: `HttpError`. The caller must catch or propagate them.
-
-#### [`withCookie`](../common/headers.md#symbol-withCookie)
-
-Available from `common`.
-
-**Inputs and dependencies**
-
-- `headers`: `Headers`. The caller supplies this labeled input. Read reference values without copying them.
-- `name`: `string`. The caller supplies this labeled input. Read reference values without copying them.
-- `value`: `string`. The caller supplies this labeled input. Read reference values without copying them.
-- `path`: `string`. The caller supplies this labeled input. Read reference values without copying them.
-- `maxAge`: `int`. The caller supplies this labeled input. Read reference values without copying them.
-- `secure`: `bool`. The caller supplies this labeled input. Read reference values without copying them.
-
-Result: `Headers`.
-
-Possible failures: `HttpError`. The caller must catch or propagate them.
-
-#### [`Settings`](../common/settings.md#symbol-Settings)
-
-Immutable record. Follow the linked specification for its full explanation.
-
-Field `clientId`: `string`. Read-only after initialization.
-
-Field `callback`: `string`. Read-only after initialization.
-
-Field `secureCookies`: `bool`. Read-only after initialization.
-
-Field `baseUrl`: `string`. Read-only after initialization.
-
-#### [`settings`](../common/settings.md#symbol-settings)
-
-Available from `common`.
-
-Result: [`Settings`](../common/settings.md#symbol-Settings).
-
-#### [`AuthorizationCode`](contracts.md#symbol-AuthorizationCode)
-
-Available from `contracts`.
-
-Immutable record. Follow the linked specification for its full explanation.
-
-**Construction**
-
-**Inputs and dependencies**
-
-- `clientId`: `string`. The caller supplies this labeled input. Read reference values without copying them.
-- `redirectUri`: `string`. The caller supplies this labeled input. Read reference values without copying them.
-- `challenge`: `string`. The caller supplies this labeled input. Read reference values without copying them.
-- `nonce`: `string`. The caller supplies this labeled input. Read reference values without copying them.
-- `subject`: `string`. The caller supplies this labeled input. Read reference values without copying them.
-- `name`: `string`. The caller supplies this labeled input. Read reference values without copying them.
-- `expires`: `int`. The caller supplies this labeled input. Read reference values without copying them.
-
-Result: [`AuthorizationCode`](contracts.md#symbol-AuthorizationCode).
-
-Field `expires`: `int`. Read-only after initialization.
-
-#### [`AuthorizationRequest`](contracts.md#symbol-AuthorizationRequest)
-
-Available from `contracts`.
-
-Immutable record. Follow the linked specification for its full explanation.
-
-**Construction**
-
-**Inputs and dependencies**
-
-- `clientId`: `string`. The caller supplies this labeled input. Read reference values without copying them.
-- `redirectUri`: `string`. The caller supplies this labeled input. Read reference values without copying them.
-- `state`: `string`. The caller supplies this labeled input. Read reference values without copying them.
-- `nonce`: `string`. The caller supplies this labeled input. Read reference values without copying them.
-- `challenge`: `string`. The caller supplies this labeled input. Read reference values without copying them.
-- `browser`: `string`. The caller supplies this labeled input. Read reference values without copying them.
-- `csrf`: `string`. The caller supplies this labeled input. Read reference values without copying them.
-- `expires`: `int`. The caller supplies this labeled input. Read reference values without copying them.
-
-Result: [`AuthorizationRequest`](contracts.md#symbol-AuthorizationRequest).
-
-Field `expires`: `int`. Read-only after initialization.
-
-Field `browser`: `string`. Read-only after initialization.
-
-Field `csrf`: `string`. Read-only after initialization.
-
-Field `clientId`: `string`. Read-only after initialization.
-
-Field `redirectUri`: `string`. Read-only after initialization.
-
-Field `challenge`: `string`. Read-only after initialization.
-
-Field `nonce`: `string`. Read-only after initialization.
-
-Field `state`: `string`. Read-only after initialization.
-
-#### [`LoginError`](contracts.md#symbol-LoginError)
-
-Available from `contracts`.
-
-Class. Follow the linked specification for its full explanation.
-
-**Construction**
-
-Result: [`LoginError`](contracts.md#symbol-LoginError).
-
-#### [`LoginForm`](contracts.md#symbol-LoginForm)
-
-Available from `contracts`.
-
-Immutable record. Follow the linked specification for its full explanation.
-
-Field `request_id`: `string`. Read-only after initialization.
-
-Field `csrf`: `string`. Read-only after initialization.
-
-Field `username`: `string`. Read-only after initialization.
-
-Field `password`: `string`. Read-only after initialization.
-
-#### [`verifyCredentials`](credentials.md#symbol-verifyCredentials)
-
-Available from `credentials`.
-
-**Inputs and dependencies**
-
-- `username`: `string`. The caller supplies this labeled input. Read reference values without copying them.
-- `password`: `string`. The caller supplies this labeled input. Read reference values without copying them.
-- `crypto`: [`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-
-Result: `bool`.
-
-Capabilities: [`crypto.passwordHash`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.passwordHash), [`crypto.decodeBase64url`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url), [`crypto.equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal).
-
-Possible failures: `CryptoError`. The caller must catch or propagate them.
-
-#### [`ProviderFailure`](views.md#symbol-ProviderFailure)
-
-Available from `views`.
-
-**Inputs and dependencies**
-
-- `message`: `string`. The caller supplies this labeled input. Read reference values without copying them.
-
-Result: `Html`.
-
-#### [`ProviderLogin`](views.md#symbol-ProviderLogin)
-
-Available from `views`.
-
-**Inputs and dependencies**
-
-- `requestId`: `string`. The caller supplies this labeled input. Read reference values without copying them.
-- `csrf`: `string`. The caller supplies this labeled input. Read reference values without copying them.
-- `message`: `string`. The caller supplies this labeled input. Read reference values without copying them.
-- `submit`: `HttpAction`. The caller supplies this labeled input. Read reference values without copying them.
-
-Result: `Html`.
-
-### Built-in operations used by this file
-
-#### `Bytes.base64url`
-
-Encode immutable bytes as unpadded RFC 4648 URL-safe base64.
-
-Result: `string`.
-
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
-
-#### `Bytes.length`
-
-Read the number of elements.
-
-Result: `int`.
-
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
-
-#### `Headers.with`
-
-Return new headers with one additional validated field. Header names ignore case; duplicate values remain separate.
-
-Inputs: `name`: `string`; `value`: `string`.
-
-Result: `Headers`.
-
-Possible failures: `HttpError`.
-
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
-
-#### `string.bytes`
-
-Encode this string as immutable UTF-8 bytes.
-
-Result: `Bytes`.
-
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
-
-#### `string.isToken`
-
-Require an ASCII RFC 3986 unreserved token with a bounded length.
-
-Inputs: `min`: `int`; `max`: `int`.
-
-Result: `bool`.
-
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
-
-#### `string.length`
-
-Read the number of UTF-8 bytes. Unicode text is preserved losslessly.
-
-Result: `int`.
-
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
+- [`authorize`](authorization.md#symbol-authorize) handles `GET` `/provider/authorize` returning `HttpResponse<Html>`.
+- [`providerLogin`](authorization.md#symbol-providerLogin) handles `POST` `/provider/login` returning `HttpResponse<Html>`.
 
 ### `authorize` {#symbol-authorize}
 
 [source](authorization.md#code)
 
-**Inputs and dependencies**
+**Inputs**
 
-- `response_type`: `string`. The caller supplies this labeled input. Read reference values without copying them. Read it from the HTTP query.
-- `client_id`: `string`. The caller supplies this labeled input. Read reference values without copying them. Read it from the HTTP query.
-- `redirect_uri`: `string`. The caller supplies this labeled input. Read reference values without copying them. Read it from the HTTP query.
-- `requestedScope`: `string`. The caller supplies this labeled input. Read reference values without copying them. Read it from the HTTP query named `scope`.
-- `state`: `string`. The caller supplies this labeled input. Read reference values without copying them. Read it from the HTTP query.
-- `nonce`: `string`. The caller supplies this labeled input. Read reference values without copying them. Read it from the HTTP query.
-- `code_challenge`: `string`. The caller supplies this labeled input. Read reference values without copying them. Read it from the HTTP query.
-- `code_challenge_method`: `string`. The caller supplies this labeled input. Read reference values without copying them. Read it from the HTTP query.
-- `crypto`: [`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-- `clock`: [`Clock`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-- `requests`: [`ExpiringStore<AuthorizationRequest>`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
+- `response_type` (`string`) — read from the HTTP query.
+- `client_id` (`string`) — read from the HTTP query.
+- `redirect_uri` (`string`) — read from the HTTP query.
+- `requestedScope` (`string`) — read from the HTTP query named `scope`.
+- `state` (`string`) — read from the HTTP query.
+- `nonce` (`string`) — read from the HTTP query.
+- `code_challenge` (`string`) — read from the HTTP query.
+- `code_challenge_method` (`string`) — read from the HTTP query.
+- `crypto` ([`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto)) — injected; callers omit it.
+- `clock` ([`Clock`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock)) — injected; callers omit it.
+- `requests` ([`ExpiringStore<AuthorizationRequest>`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore)) — injected; callers omit it.
 
-Result: `HttpResponse<Html>`.
+Returns: `HttpResponse<Html>`.
 
 Capabilities: [`crypto.random`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.random), [`crypto.decodeBase64url`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url), [`clock.now`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now), [`requests.put`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.put).
 
-Possible failures: `LoginError`, `CryptoError`, `TimeError`, `StoreFull`, `HttpError`. The caller must catch or propagate them.
+Can fail with `LoginError`, `CryptoError`, `TimeError`, `StoreFull`, `HttpError`. Callers must catch or propagate these errors.
 
-HTTP route: `GET` `/provider/authorize`. Return status 200 on success. An unhandled request failure returns status 500 and cancels its request tasks.
+HTTP route: `GET` `/provider/authorize`. Use status 200 when the handler returns a body; a returned HttpResponse can set its own status. An unhandled request failure returns status 500 and cancels its request tasks.
 
 Declared HTTP failures: [`LoginError`](contracts.md#symbol-LoginError) returns status 400; `CryptoError` returns status 503; `TimeError` returns status 503; [`StoreFull`](../dependencies/august/0.19.0/memory/store.md#symbol-StoreFull) returns status 503.
+
+**What it does**
+
+- Set `config` to call [`settings`](../common/settings.md#symbol-settings).
+- If (((`client_id` does not equal `clientId` of `config`) or (`redirect_uri` does not equal `callback` of `config`)) or (`response_type` does not equal `"code"`)) or (`code_challenge_method` does not equal `"S256"`):
+  - Fail with call [`LoginError`](contracts.md#symbol-LoginError). Transfer control to a matching catch or propagate the failure.
+- If (`requestedScope` does not equal `"openid"`) and (`requestedScope` does not equal `"openid profile"`):
+  - Fail with call [`LoginError`](contracts.md#symbol-LoginError). Transfer control to a matching catch or propagate the failure.
+- If (not (call `isToken` on `state` with `min` = `43`; `max` = `128`) or not (call `isToken` on `nonce` with `min` = `43`; `max` = `128`)) or (call `length` on `code_challenge` does not equal `43`):
+  - Fail with call [`LoginError`](contracts.md#symbol-LoginError). Transfer control to a matching catch or propagate the failure.
+- Try these operations:
+  - If call `length` on call [`Crypto.decodeBase64url`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url) on `crypto` with `input` = `code_challenge` does not equal `32`:
+    - Fail with call [`LoginError`](contracts.md#symbol-LoginError). Transfer control to a matching catch or propagate the failure.
+- If they fail with `CryptoError`, name the failure `error` and recover:
+  - Fail with call [`LoginError`](contracts.md#symbol-LoginError). Transfer control to a matching catch or propagate the failure.
+- Set `requestId` to call `base64url` on call [`Crypto.random`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.random) on `crypto` with `size` = `32`.
+- Set `browser` to call `base64url` on call [`Crypto.random`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.random) on `crypto` with `size` = `32`.
+- Set `csrf` to call `base64url` on call [`Crypto.random`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.random) on `crypto` with `size` = `32`.
+- Set `now` to call [`Clock.now`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now) on `clock`.
+- Set `request` to call [`AuthorizationRequest`](contracts.md#symbol-AuthorizationRequest) with `clientId` = `client_id`; `redirectUri` = `redirect_uri`; `state` = `state`; `nonce` = `nonce`; `challenge` = `code_challenge`; `browser` = `browser`; `csrf` = `csrf`; `expires` = (`now` plus `300`).
+- Call [`ExpiringStore.put`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.put) on `requests` with `key` = `requestId`; `value` = `request`; `expires` = `expires` of `request`; `now` = `now`.
+- Set `headers` to call [`withCookie`](../common/headers.md#symbol-withCookie) with `headers` = call [`securityHeaders`](../common/headers.md#symbol-securityHeaders); `name` = `"aug_authorize"`; `value` = `browser`; `path` = `"/provider"`; `maxAge` = `300`; `secure` = `secureCookies` of `config`.
+- Return call `HttpResponse` with `body` = call [`ProviderLogin`](views.md#symbol-ProviderLogin) with `requestId` = `requestId`; `csrf` = `csrf`; `message` = `"Authorize the registered August login app."`; `submit` = a deferred HTTP form action for [`providerLogin`](authorization.md#symbol-providerLogin); inputs: `1` from the checked form input supplied when the HTTP form is submitted; capture supplied values when rendering, and read form inputs when submitted; send the form to that endpoint with its declared HTTP method; `headers` = `headers`.
 
 **Author documentation**
 
 Validate the registered client before offering a login form. A malformed redirect is never followed.
 
-**Behavior when execution reaches this operation**
-
-- Set `config` to the result of call [`settings`](../common/settings.md#symbol-settings).
-- If ((((`client_id` does not equal `clientId` of `config`) or (`redirect_uri` does not equal `callback` of `config`)) or (`response_type` does not equal `"code"`)) or (`code_challenge_method` does not equal `"S256"`)) is true:
-  - Fail with the result of call [`LoginError`](contracts.md#symbol-LoginError). Transfer control to a matching catch or propagate the failure.
-- If ((`requestedScope` does not equal `"openid"`) and (`requestedScope` does not equal `"openid profile"`)) is true:
-  - Fail with the result of call [`LoginError`](contracts.md#symbol-LoginError). Transfer control to a matching catch or propagate the failure.
-- If ((not (the result of call `isToken` on `state` with `min` set to `43`; `max` set to `128`) or not (the result of call `isToken` on `nonce` with `min` set to `43`; `max` set to `128`)) or (the result of call `length` on `code_challenge` does not equal `43`)) is true:
-  - Fail with the result of call [`LoginError`](contracts.md#symbol-LoginError). Transfer control to a matching catch or propagate the failure.
-- Try these operations:
-  - If (the result of call `length` on the result of call [`Crypto.decodeBase64url`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url) on `crypto` with `input` set to `code_challenge` does not equal `32`) is true:
-    - Fail with the result of call [`LoginError`](contracts.md#symbol-LoginError). Transfer control to a matching catch or propagate the failure.
-- If they fail with `CryptoError`, name the failure `error` and recover:
-  - Fail with the result of call [`LoginError`](contracts.md#symbol-LoginError). Transfer control to a matching catch or propagate the failure.
-- Set `requestId` to the result of call `base64url` on the result of call [`Crypto.random`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.random) on `crypto` with `size` set to `32`.
-- Set `browser` to the result of call `base64url` on the result of call [`Crypto.random`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.random) on `crypto` with `size` set to `32`.
-- Set `csrf` to the result of call `base64url` on the result of call [`Crypto.random`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.random) on `crypto` with `size` set to `32`.
-- Set `now` to the result of call [`Clock.now`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now) on `clock`.
-- Set `request` to the result of call [`AuthorizationRequest`](contracts.md#symbol-AuthorizationRequest) with `clientId` set to `client_id`; `redirectUri` set to `redirect_uri`; `state` set to `state`; `nonce` set to `nonce`; `challenge` set to `code_challenge`; `browser` set to `browser`; `csrf` set to `csrf`; `expires` set to (`now` plus `300`).
-- Call [`ExpiringStore.put`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.put) on `requests` with `key` set to `requestId`; `value` set to `request`; `expires` set to `expires` of `request`; `now` set to `now`.
-- Set `headers` to the result of call [`withCookie`](../common/headers.md#symbol-withCookie) with `headers` set to the result of call [`securityHeaders`](../common/headers.md#symbol-securityHeaders); `name` set to `"aug_authorize"`; `value` set to `browser`; `path` set to `"/provider"`; `maxAge` set to `300`; `secure` set to `secureCookies` of `config`.
-- Return the result of call `HttpResponse` with `body` set to the result of call [`ProviderLogin`](views.md#symbol-ProviderLogin) with `requestId` set to `requestId`; `csrf` set to `csrf`; `message` set to `"Authorize the registered August login app."`; `submit` set to a deferred HTTP form action for [`providerLogin`](authorization.md#symbol-providerLogin); inputs: `1` from the checked form input supplied when the HTTP form is submitted; capture supplied values when rendering, and read form inputs when submitted; send the form to that endpoint with its declared HTTP method; `headers` set to `headers` and finish this operation.
-
 ### `providerLogin` {#symbol-providerLogin}
 
 [source](authorization.md#code)
 
-**Inputs and dependencies**
+**Inputs**
 
-- `form`: [`LoginForm`](contracts.md#symbol-LoginForm). The caller supplies this labeled input. Read reference values without copying them. Read it from the HTTP form.
-- `browser`: `optional string`. The caller may supply this labeled input; omission becomes null. Read reference values without copying them. Read it from the HTTP cookie named `aug_authorize`.
-- `origin`: `optional string`. The caller may supply this labeled input; omission becomes null. Read reference values without copying them. Read it from the HTTP header named `origin`.
-- `crypto`: [`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-- `clock`: [`Clock`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-- `requests`: [`ExpiringStore<AuthorizationRequest>`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-- `codes`: [`ExpiringStore<AuthorizationCode>`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
+- `form` ([`LoginForm`](contracts.md#symbol-LoginForm)) — read from the HTTP form.
+- `browser` (`optional string`) — read from the HTTP cookie named `aug_authorize`; absent value becomes null.
+- `origin` (`optional string`) — read from the HTTP header named `origin`; absent value becomes null.
+- `crypto` ([`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto)) — injected; callers omit it.
+- `clock` ([`Clock`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock)) — injected; callers omit it.
+- `requests` ([`ExpiringStore<AuthorizationRequest>`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore)) — injected; callers omit it.
+- `codes` ([`ExpiringStore<AuthorizationCode>`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore)) — injected; callers omit it.
 
-Result: `HttpResponse<Html>`.
+Returns: `HttpResponse<Html>`.
 
 Capabilities: [`crypto.equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal), [`crypto.random`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.random), [`crypto.passwordHash`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.passwordHash), [`crypto.decodeBase64url`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url), [`clock.now`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now), [`requests.take`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.take), [`codes.put`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.put).
 
-Possible failures: `CryptoError`, `TimeError`, `StoreFull`, `HttpError`. The caller must catch or propagate them.
+Can fail with `CryptoError`, `TimeError`, `StoreFull`, `HttpError`. Callers must catch or propagate these errors.
 
-HTTP route: `POST` `/provider/login`. Return status 200 on success. An unhandled request failure returns status 500 and cancels its request tasks.
+HTTP route: `POST` `/provider/login`. Use status 200 when the handler returns a body; a returned HttpResponse can set its own status. An unhandled request failure returns status 500 and cancels its request tasks.
 
 Declared HTTP failures: `CryptoError` returns status 503; `TimeError` returns status 503; [`StoreFull`](../dependencies/august/0.19.0/memory/store.md#symbol-StoreFull) returns status 503.
+
+**What it does**
+
+- Set `config` to call [`settings`](../common/settings.md#symbol-settings).
+- Try these operations:
+  - If `origin` does not equal `baseUrl` of `config`:
+    - Return call `HttpResponse` with `body` = call [`ProviderFailure`](views.md#symbol-ProviderFailure) with `message` = `"The sign-in form must come from this app."`; `status` = `403`; `headers` = call [`securityHeaders`](../common/headers.md#symbol-securityHeaders).
+  - Select the matching case for call [`ExpiringStore.take`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.take) on `requests` with `key` = `request_id` of `form`; `now` = call [`Clock.now`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now) on `clock`:
+    - A null value, including omitted optional input:
+      - Return call `HttpResponse` with `body` = call [`ProviderFailure`](views.md#symbol-ProviderFailure) with `message` = `"The sign-in request expired or was already used."`; `status` = `400`; `headers` = call [`securityHeaders`](../common/headers.md#symbol-securityHeaders).
+    - A present, non-null value, named `request`:
+      - Select the matching case for `browser`:
+        - A null value, including omitted optional input:
+          - Return call `HttpResponse` with `body` = call [`ProviderFailure`](views.md#symbol-ProviderFailure) with `message` = `"The browser binding is missing."`; `status` = `403`; `headers` = call [`securityHeaders`](../common/headers.md#symbol-securityHeaders).
+        - A present, non-null value, named `secret`:
+          - If not (call [`Crypto.equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal) on `crypto` with `left` = call `bytes` on `secret`; `right` = call `bytes` on `browser` of `request`) or not (call [`Crypto.equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal) on `crypto` with `left` = call `bytes` on `csrf` of `form`; `right` = call `bytes` on `csrf` of `request`):
+            - Return call `HttpResponse` with `body` = call [`ProviderFailure`](views.md#symbol-ProviderFailure) with `message` = `"The sign-in form could not be verified."`; `status` = `403`; `headers` = call [`securityHeaders`](../common/headers.md#symbol-securityHeaders).
+      - If not (call [`verifyCredentials`](credentials.md#symbol-verifyCredentials) with `username` = `username` of `form`; `password` = `password` of `form`; inject `crypto` from `crypto`):
+        - Return call `HttpResponse` with `body` = call [`ProviderFailure`](views.md#symbol-ProviderFailure) with `message` = `"The username or password was not accepted."`; `status` = `401`; `headers` = call [`securityHeaders`](../common/headers.md#symbol-securityHeaders).
+      - Set `now` to call [`Clock.now`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now) on `clock`.
+      - Set `code` to call `base64url` on call [`Crypto.random`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.random) on `crypto` with `size` = `32`.
+      - Set `grant` to call [`AuthorizationCode`](contracts.md#symbol-AuthorizationCode) with `clientId` = `clientId` of `request`; `redirectUri` = `redirectUri` of `request`; `challenge` = `challenge` of `request`; `nonce` = `nonce` of `request`; `subject` = `"demo-ada"`; `name` = `"Ada"`; `expires` = (`now` plus `60`).
+      - Call [`ExpiringStore.put`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.put) on `codes` with `key` = `code`; `value` = `grant`; `expires` = `expires` of `grant`; `now` = `now`.
+      - Build `location` by joining these text parts without separators, in order:
+        1. `redirectUri` of `request`
+        2. `"?code="`
+        3. call [`urlEncode`](../dependencies/august/0.19.0/web/contracts.md#symbol-urlEncode) with `input` = `code`
+        4. `"&state="`
+        5. call [`urlEncode`](../dependencies/august/0.19.0/web/contracts.md#symbol-urlEncode) with `input` = `state` of `request`
+      - Set `headers` to call [`withCookie`](../common/headers.md#symbol-withCookie) with `headers` = call `with` on call [`securityHeaders`](../common/headers.md#symbol-securityHeaders) with `name` = `"location"`; `value` = `location`; `name` = `"aug_authorize"`; `value` = `""`; `path` = `"/provider"`; `maxAge` = `0`; `secure` = `secureCookies` of `config`.
+      - Return call `HttpResponse` with `body` = the HTML element `p` containing `Returning to the application.` (rendered on the server with embedded text escaped); `status` = `303`; `headers` = `headers`.
+- If they fail with `HttpError`, name the failure `error` and recover:
+  - Return call `HttpResponse` with `body` = call [`ProviderFailure`](views.md#symbol-ProviderFailure) with `message` = `"The submitted form is invalid."`; `status` = `400`; `headers` = call [`securityHeaders`](../common/headers.md#symbol-securityHeaders).
 
 **Author documentation**
 
 The browser binding and CSRF token are checked before credentials. Each form request is consumed once.
 
-**Behavior when execution reaches this operation**
+### Dependencies used by this file
 
-- Set `config` to the result of call [`settings`](../common/settings.md#symbol-settings).
-- Try these operations:
-  - If (`origin` does not equal `baseUrl` of `config`) is true:
-    - Return the result of call `HttpResponse` with `body` set to the result of call [`ProviderFailure`](views.md#symbol-ProviderFailure) with `message` set to `"The sign-in form must come from this app."`; `status` set to `403`; `headers` set to the result of call [`securityHeaders`](../common/headers.md#symbol-securityHeaders) and finish this operation.
-  - Select the matching case for the result of call [`ExpiringStore.take`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.take) on `requests` with `key` set to `request_id` of `form`; `now` set to the result of call [`Clock.now`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now) on `clock`:
-    - A null value, including omitted optional input:
-      - Return the result of call `HttpResponse` with `body` set to the result of call [`ProviderFailure`](views.md#symbol-ProviderFailure) with `message` set to `"The sign-in request expired or was already used."`; `status` set to `400`; `headers` set to the result of call [`securityHeaders`](../common/headers.md#symbol-securityHeaders) and finish this operation.
-    - A present, non-null value, named `request`:
-      - Select the matching case for `browser`:
-        - A null value, including omitted optional input:
-          - Return the result of call `HttpResponse` with `body` set to the result of call [`ProviderFailure`](views.md#symbol-ProviderFailure) with `message` set to `"The browser binding is missing."`; `status` set to `403`; `headers` set to the result of call [`securityHeaders`](../common/headers.md#symbol-securityHeaders) and finish this operation.
-        - A present, non-null value, named `secret`:
-          - If (not (the result of call [`Crypto.equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal) on `crypto` with `left` set to the result of call `bytes` on `secret`; `right` set to the result of call `bytes` on `browser` of `request`) or not (the result of call [`Crypto.equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal) on `crypto` with `left` set to the result of call `bytes` on `csrf` of `form`; `right` set to the result of call `bytes` on `csrf` of `request`)) is true:
-            - Return the result of call `HttpResponse` with `body` set to the result of call [`ProviderFailure`](views.md#symbol-ProviderFailure) with `message` set to `"The sign-in form could not be verified."`; `status` set to `403`; `headers` set to the result of call [`securityHeaders`](../common/headers.md#symbol-securityHeaders) and finish this operation.
-      - If not (the result of call [`verifyCredentials`](credentials.md#symbol-verifyCredentials) with `username` set to `username` of `form`; `password` set to `password` of `form`; supply dependencies `crypto` from `crypto`) is true:
-        - Return the result of call `HttpResponse` with `body` set to the result of call [`ProviderFailure`](views.md#symbol-ProviderFailure) with `message` set to `"The username or password was not accepted."`; `status` set to `401`; `headers` set to the result of call [`securityHeaders`](../common/headers.md#symbol-securityHeaders) and finish this operation.
-      - Set `now` to the result of call [`Clock.now`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now) on `clock`.
-      - Set `code` to the result of call `base64url` on the result of call [`Crypto.random`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.random) on `crypto` with `size` set to `32`.
-      - Set `grant` to the result of call [`AuthorizationCode`](contracts.md#symbol-AuthorizationCode) with `clientId` set to `clientId` of `request`; `redirectUri` set to `redirectUri` of `request`; `challenge` set to `challenge` of `request`; `nonce` set to `nonce` of `request`; `subject` set to `"demo-ada"`; `name` set to `"Ada"`; `expires` set to (`now` plus `60`).
-      - Call [`ExpiringStore.put`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.put) on `codes` with `key` set to `code`; `value` set to `grant`; `expires` set to `expires` of `grant`; `now` set to `now`.
-      - Set `location` to ((((`redirectUri` of `request` plus `"?code="`) plus the result of call [`urlEncode`](../dependencies/august/0.19.0/web/contracts.md#symbol-urlEncode) with `input` set to `code`) plus `"&state="`) plus the result of call [`urlEncode`](../dependencies/august/0.19.0/web/contracts.md#symbol-urlEncode) with `input` set to `state` of `request`).
-      - Set `headers` to the result of call [`withCookie`](../common/headers.md#symbol-withCookie) with `headers` set to the result of call `with` on the result of call [`securityHeaders`](../common/headers.md#symbol-securityHeaders) with `name` set to `"location"`; `value` set to `location`; `name` set to `"aug_authorize"`; `value` set to `""`; `path` set to `"/provider"`; `maxAge` set to `0`; `secure` set to `secureCookies` of `config`.
-      - Return the result of call `HttpResponse` with `body` set to the HTML element `p`; children: `Returning to the application.`. Escape embedded text; render components on the server; `status` set to `303`; `headers` set to `headers` and finish this operation.
-- If they fail with `HttpError`, name the failure `error` and recover:
-  - Return the result of call `HttpResponse` with `body` set to the result of call [`ProviderFailure`](views.md#symbol-ProviderFailure) with `message` set to `"The submitted form is invalid."`; `status` set to `400`; `headers` set to the result of call [`securityHeaders`](../common/headers.md#symbol-securityHeaders) and finish this operation.
+Only referenced types and operations appear here. Each name links to its complete specification.
 
+#### [`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto)
 
-### Language rules
+Capability interface from `august.crypto`.
 
-Boolean operations short-circuit from left to right. int uses signed 64-bit values; addition, subtraction, multiplication, and negation wrap. Division by zero raises ArithmeticError. float uses double precision. Tuples and records compare by value; mutable collections and behavioral classes compare by identity. Optional values contain a value or null; omission becomes null. Managed references grant read access; ownership moves and mutable borrows remain checked. A scope joins its child tasks; an unhandled child failure cancels siblings. See the [language reference](https://greenpandastudios.github.io/augscript/reference) for shared rules.
+- [`Crypto.decodeBase64url`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url) (`input`: `string`) → `Bytes`; can fail with `CryptoError`.
+- [`Crypto.equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal) (`left`: `Bytes`, `right`: `Bytes`) → `bool`.
+- [`Crypto.passwordHash`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.passwordHash) (`password`: `Bytes`, `salt`: `Bytes`, `iterations`: `int`) → `Bytes`; can fail with `CryptoError`.
+- [`Crypto.random`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.random) (`size`: `int`) → `Bytes`; can fail with `CryptoError`.
+
+#### [`ExpiringStore`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore)
+
+Capability interface from `august.memory`.
+
+- [`ExpiringStore.put`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.put) (`key`: `string`, `value`: `T`, `expires`: `int`, `now`: `int`) → `void`; can fail with `StoreFull`.
+- [`ExpiringStore.take`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.take) (`key`: `string`, `now`: `int`) → `optional T`.
+
+#### [`StoreFull`](../dependencies/august/0.19.0/memory/store.md#symbol-StoreFull)
+
+Class from `august.memory`.
+
+Used as a type or provider.
+
+#### [`Clock`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock)
+
+Capability interface from `august.time`.
+
+- [`Clock.now`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now) (no caller inputs) → `int`; can fail with `TimeError`.
+
+#### [`urlEncode`](../dependencies/august/0.19.0/web/contracts.md#symbol-urlEncode)
+
+Function from `august.web`.
+
+- [`urlEncode`](../dependencies/august/0.19.0/web/contracts.md#symbol-urlEncode) (`input`: `string`) → `string`; can fail with `HttpError`.
+
+#### [`securityHeaders`](../common/headers.md#symbol-securityHeaders)
+
+Function from `common`.
+
+- [`securityHeaders`](../common/headers.md#symbol-securityHeaders) (no caller inputs) → `Headers`; can fail with `HttpError`.
+
+#### [`withCookie`](../common/headers.md#symbol-withCookie)
+
+Function from `common`.
+
+- [`withCookie`](../common/headers.md#symbol-withCookie) (`headers`: `Headers`, `name`: `string`, `value`: `string`, `path`: `string`, `maxAge`: `int`, `secure`: `bool`) → `Headers`; can fail with `HttpError`.
+
+#### [`Settings`](../common/settings.md#symbol-Settings)
+
+Record.
+
+- Read `baseUrl` (`string`).
+- Read `callback` (`string`).
+- Read `clientId` (`string`).
+- Read `secureCookies` (`bool`).
+
+#### [`settings`](../common/settings.md#symbol-settings)
+
+Function from `common`.
+
+- [`settings`](../common/settings.md#symbol-settings) (no caller inputs) → [`Settings`](../common/settings.md#symbol-Settings).
+
+#### [`AuthorizationCode`](contracts.md#symbol-AuthorizationCode)
+
+Record from `contracts`.
+
+- Construct with `clientId`: `string`, `redirectUri`: `string`, `challenge`: `string`, `nonce`: `string`, `subject`: `string`, `name`: `string`, `expires`: `int` → [`AuthorizationCode`](contracts.md#symbol-AuthorizationCode).
+- Read `expires` (`int`).
+
+#### [`AuthorizationRequest`](contracts.md#symbol-AuthorizationRequest)
+
+Record from `contracts`.
+
+- Construct with `clientId`: `string`, `redirectUri`: `string`, `state`: `string`, `nonce`: `string`, `challenge`: `string`, `browser`: `string`, `csrf`: `string`, `expires`: `int` → [`AuthorizationRequest`](contracts.md#symbol-AuthorizationRequest).
+- Read `browser` (`string`).
+- Read `challenge` (`string`).
+- Read `clientId` (`string`).
+- Read `csrf` (`string`).
+- Read `expires` (`int`).
+- Read `nonce` (`string`).
+- Read `redirectUri` (`string`).
+- Read `state` (`string`).
+
+#### [`LoginError`](contracts.md#symbol-LoginError)
+
+Class from `contracts`.
+
+- Construct with no caller inputs → [`LoginError`](contracts.md#symbol-LoginError).
+
+#### [`LoginForm`](contracts.md#symbol-LoginForm)
+
+Record from `contracts`.
+
+- Read `csrf` (`string`).
+- Read `password` (`string`).
+- Read `request_id` (`string`).
+- Read `username` (`string`).
+
+#### [`verifyCredentials`](credentials.md#symbol-verifyCredentials)
+
+Function from `credentials`.
+
+- [`verifyCredentials`](credentials.md#symbol-verifyCredentials) (`username`: `string`, `password`: `string`) → `bool`; inject `crypto`: [`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto); uses [`crypto.passwordHash`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.passwordHash), [`crypto.decodeBase64url`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url), [`crypto.equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal); can fail with `CryptoError`.
+
+#### [`ProviderFailure`](views.md#symbol-ProviderFailure)
+
+Function from `views`.
+
+- [`ProviderFailure`](views.md#symbol-ProviderFailure) (`message`: `string`) → `Html`.
+
+#### [`ProviderLogin`](views.md#symbol-ProviderLogin)
+
+Function from `views`.
+
+- [`ProviderLogin`](views.md#symbol-ProviderLogin) (`requestId`: `string`, `csrf`: `string`, `message`: `string`, `submit`: `HttpAction`) → `Html`.
+
+### Built-in operations used by this file
+
+- `Bytes.base64url` (no inputs) → `string`: Encode immutable bytes as unpadded RFC 4648 URL-safe base64.
+- `Bytes.length` (no inputs) → `int`: Read the number of elements.
+- `Headers.with` (`name`: `string`, `value`: `string`) → `Headers`: Return new headers with one additional validated field. Header names ignore case; duplicate values remain separate. Can fail with `HttpError`.
+- `string.bytes` (no inputs) → `Bytes`: Encode this string as immutable UTF-8 bytes.
+- `string.isToken` (`min`: `int`, `max`: `int`) → `bool`: Require an ASCII RFC 3986 unreserved token with a bounded length.
+- `string.length` (no inputs) → `int`: Read the number of UTF-8 bytes. Unicode text is preserved losslessly.
+
+[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
+
+### Shared language rules
+
+See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.

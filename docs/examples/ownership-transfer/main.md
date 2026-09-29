@@ -51,52 +51,12 @@ print(value="end of main")
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code. Author documentation is labeled separately. It follows Simplified Technical English as guidance, with best-effort wording.
+August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
 
-### Dependencies used by this file
+### In this file
 
-#### [`SystemConsole`](dependencies/august/0.19.0/io/contracts.md#symbol-SystemConsole)
-
-Available from `august.io`.
-
-Class. Follow the linked specification for its full explanation.
-
-#### [`Resource`](resource.md#symbol-Resource)
-
-Available from `resource`.
-
-Class. Follow the linked specification for its full explanation.
-
-#### [`consume`](resource.md#symbol-consume)
-
-Available from `resource`.
-
-**Inputs and dependencies**
-
-- `console`: [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-- `value`: [`Resource`](resource.md#symbol-Resource). The caller supplies this labeled input. Move ownership into this operation.
-
-Result: finish without a result.
-
-Capabilities: [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
-
-#### [`make`](resource.md#symbol-make)
-
-Available from `resource`.
-
-Result: transfer ownership of [`Resource`](resource.md#symbol-Resource).
-
-### Built-in operations used by this file
-
-#### `print`
-
-Composition and test output. Other callables receive Console and declare uses console.write.
-
-Inputs: `value`: `any`.
-
-Result: `void`.
-
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
+- Register 1 dependency provider before startup.
+- Run 4 other startup steps in source order.
 
 ### Dependency providers
 
@@ -106,12 +66,47 @@ Register these providers before startup. Their declaration order does not set in
 
 ### Startup, in source order
 
-- Set `first` of type [`Resource`](resource.md#symbol-Resource) to the result of call [`make`](resource.md#symbol-make). This variable owns the value.
-- Call [`consume`](resource.md#symbol-consume) with `value` set to `first`; supply dependencies `console` from `Console`.
-- Set `second` of type [`Resource`](resource.md#symbol-Resource) to the result of call [`make`](resource.md#symbol-make). This variable owns the value.
-- Call `print` with `value` set to `"end of main"`.
+- Set `first` of type [`Resource`](resource.md#symbol-Resource) to call [`make`](resource.md#symbol-make).
+- This variable owns the value.
+- Call [`consume`](resource.md#symbol-consume) with `value` = `first`; inject `console` from `Console`.
+- Set `second` of type [`Resource`](resource.md#symbol-Resource) to call [`make`](resource.md#symbol-make).
+- This variable owns the value.
+- Call `print` with `value` = `"end of main"`.
 
+### Dependencies used by this file
 
-### Language rules
+Only referenced types and operations appear here. Each name links to its complete specification.
 
-Boolean operations short-circuit from left to right. int uses signed 64-bit values; addition, subtraction, multiplication, and negation wrap. Division by zero raises ArithmeticError. float uses double precision. Tuples and records compare by value; mutable collections and behavioral classes compare by identity. Optional values contain a value or null; omission becomes null. Managed references grant read access; ownership moves and mutable borrows remain checked. A scope joins its child tasks; an unhandled child failure cancels siblings. See the [language reference](https://greenpandastudios.github.io/augscript/reference) for shared rules.
+#### [`SystemConsole`](dependencies/august/0.19.0/io/contracts.md#symbol-SystemConsole)
+
+Class from `august.io`.
+
+Used as a type or provider.
+
+#### [`Resource`](resource.md#symbol-Resource)
+
+Class from `resource`.
+
+Used as a type or provider.
+
+#### [`consume`](resource.md#symbol-consume)
+
+Function from `resource`.
+
+- [`consume`](resource.md#symbol-consume) (`value`: [`Resource`](resource.md#symbol-Resource)) → `void`; inject `console`: [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console); uses [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
+
+#### [`make`](resource.md#symbol-make)
+
+Function from `resource`.
+
+- [`make`](resource.md#symbol-make) (no caller inputs) → [`Resource`](resource.md#symbol-Resource).
+
+### Built-in operations used by this file
+
+- `print` (`value`: `any`) → `void`: Composition and test output. Other callables receive Console and declare uses console.write.
+
+[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
+
+### Shared language rules
+
+See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.

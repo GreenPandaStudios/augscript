@@ -47,30 +47,27 @@ test add {
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code. Author documentation is labeled separately. It follows Simplified Technical English as guidance, with best-effort wording.
+August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
 
-### Built-in operations used by this file
+### In this file
 
-#### `assert`
-
-Assert a bool in a test case or its setup. Catching an assertion failure cannot make the case pass; every case must execute an assertion.
-
-Inputs: `condition`: `bool`.
-
-Result: `void`.
-
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
+- [`add`](arithmetic.md#symbol-add) is a function returning `int`.
+- [`test add`](arithmetic.md#symbol-test-20-add) is a same-file test suite.
 
 ### `add` {#symbol-add}
 
 [source](arithmetic.md#code)
 
-**Inputs and dependencies**
+**Inputs**
 
-- `left`: `int`. The caller supplies this labeled input. Read reference values without copying them.
-- `right`: `int`. The caller supplies this labeled input. Read reference values without copying them.
+- `left` (`int`) — required labeled input.
+- `right` (`int`) — required labeled input.
 
-Result: `int`.
+Returns: `int`.
+
+**What it does**
+
+- Return `left` plus `right`.
 
 **Author documentation**
 
@@ -82,11 +79,7 @@ Add two integers.
 - `left`: First value.
 - `right`: Second value.
 
-**Behavior when execution reaches this operation**
-
-- Return (`left` plus `right`) and finish this operation.
-
-### `test add add` {#symbol-test-20-add-20-add}
+### `test add` {#symbol-test-20-add}
 
 [source](arithmetic.md#code)
 
@@ -98,9 +91,14 @@ Same-file function tests for [`add`](arithmetic.md#symbol-add). Each case gets i
 
 [source](arithmetic.md#code)
 
-- Call `assert` with (the result of call [`add`](arithmetic.md#symbol-add) with `left` set to `2`; `right` set to `3` equals `5`).
+- Call `assert` with (call [`add`](arithmetic.md#symbol-add) with `left` = `2`; `right` = `3` equals `5`).
 
+### Built-in operations used by this file
 
-### Language rules
+- `assert` (`condition`: `bool`) → `void`: Assert a bool in a test case or its setup. Catching an assertion failure cannot make the case pass; every case must execute an assertion.
 
-Boolean operations short-circuit from left to right. int uses signed 64-bit values; addition, subtraction, multiplication, and negation wrap. Division by zero raises ArithmeticError. float uses double precision. Tuples and records compare by value; mutable collections and behavioral classes compare by identity. Optional values contain a value or null; omission becomes null. Managed references grant read access; ownership moves and mutable borrows remain checked. A scope joins its child tasks; an unhandled child failure cancels siblings. See the [language reference](https://greenpandastudios.github.io/augscript/reference) for shared rules.
+[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
+
+### Shared language rules
+
+See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.

@@ -64,7 +64,14 @@ interface IBox<T> {
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code. Author documentation is labeled separately. It follows Simplified Technical English as guidance, with best-effort wording.
+August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
+
+### In this file
+
+- [`Formatter`](types.md#symbol-Formatter) is an interface.
+- [`TextFormatter`](types.md#symbol-TextFormatter) is a class implementing `Formatter`.
+- [`Box`](types.md#symbol-Box) is a class implementing `IBox<T>`.
+- [`IBox`](types.md#symbol-IBox) is an interface.
 
 ### `Formatter` {#symbol-Formatter}
 
@@ -78,11 +85,11 @@ Interface.
 
 Type parameters: `T`.
 
-**Inputs and dependencies**
+**Inputs**
 
-- `value`: `T`. The caller supplies this labeled input. Read reference values without copying them.
+- `value` (`T`) — required labeled input.
 
-Result: `string`.
+Returns: `string`.
 
 Interface contract. A selected implementation supplies the behavior.
 
@@ -90,11 +97,11 @@ Interface contract. A selected implementation supplies the behavior.
 
 [source](types.md#code)
 
-Result: `string`.
+Returns: `string`.
 
-**Behavior when execution reaches this operation**
+**What it does**
 
-- Return `"formatted"` and finish this operation.
+- Return `"formatted"`.
 
 ### `TextFormatter` {#symbol-TextFormatter}
 
@@ -114,15 +121,15 @@ Satisfies [`Formatter`](types.md#symbol-Formatter).
 
 Type parameters: `T`.
 
-**Inputs and dependencies**
+**Inputs**
 
-- `value`: `T`. The caller supplies this labeled input. Read reference values without copying them.
+- `value` (`T`) — required labeled input.
 
-Result: `string`.
+Returns: `string`.
 
-**Behavior when execution reaches this operation**
+**What it does**
 
-- Return `"generic method called"` and finish this operation.
+- Return `"generic method called"`.
 
 ### `Box` {#symbol-Box}
 
@@ -134,19 +141,19 @@ Type parameters: `T`.
 
 Satisfies [`IBox`](types.md#symbol-IBox).
 
-**Inputs and dependencies**
+**Inputs**
 
-- `value`: `T`. The caller supplies this labeled input. Read reference values without copying them. Store it as `value`. The field is read-only after initialization.
+- `value` (`T`) — required labeled input — stored as `value` and read-only after initialization.
 
 #### `Box.get` {#symbol-Box.get}
 
 [source](types.md#code)
 
-Result: `T`.
+Returns: `T`.
 
-**Behavior when execution reaches this operation**
+**What it does**
 
-- Return `value` and finish this operation.
+- Return `value`.
 
 ### `IBox` {#symbol-IBox}
 
@@ -160,11 +167,10 @@ Type parameters: `T`.
 
 [source](types.md#code)
 
-Result: `T`.
+Returns: `T`.
 
 Interface contract. A selected implementation supplies the behavior.
 
+### Shared language rules
 
-### Language rules
-
-Boolean operations short-circuit from left to right. int uses signed 64-bit values; addition, subtraction, multiplication, and negation wrap. Division by zero raises ArithmeticError. float uses double precision. Tuples and records compare by value; mutable collections and behavioral classes compare by identity. Optional values contain a value or null; omission becomes null. Managed references grant read access; ownership moves and mutable borrows remain checked. A scope joins its child tasks; an unhandled child failure cancels siblings. See the [language reference](https://greenpandastudios.github.io/augscript/reference) for shared rules.
+See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.

@@ -64,97 +64,55 @@ catch JsonError error {
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code. Author documentation is labeled separately. It follows Simplified Technical English as guidance, with best-effort wording.
+August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
 
-### Dependencies used by this file
+### In this file
 
-#### [`parse`](dependencies/august/0.19.0/json/contracts.md#symbol-parse)
-
-Available from `august.json`.
-
-**Inputs and dependencies**
-
-- `input`: `string`. The caller supplies this labeled input. Read reference values without copying them.
-
-Result: `Json`.
-
-Possible failures: `JsonError`. The caller must catch or propagate them.
-
-#### [`Payload`](data.md#symbol-Payload)
-
-Available from `data`.
-
-Immutable record. Follow the linked specification for its full explanation.
-
-Field `id`: `int`. Read-only after initialization.
-
-### Built-in operations used by this file
-
-#### `Json.decode`
-
-Decode a checked record or data type: json.decode<Profile>(). Unknown fields, type mismatches, and validation errors are rejected.
-
-Result: `Payload`.
-
-Possible failures: `JsonError`.
-
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
-
-#### `Json.stringify`
-
-Serialize this JSON value with checked UTF-8 escaping and exact int64 values.
-
-Result: `string`.
-
-Possible failures: `JsonError`.
-
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
-
-#### `exit`
-
-Exit from main with a status from 0 to 255 after cancellation and cleanup.
-
-Inputs: `status`: `int`.
-
-Result: `void`.
-
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
-
-#### `print`
-
-Composition and test output. Other callables receive Console and declare uses console.write.
-
-Inputs: `value`: `any`.
-
-Result: `void`.
-
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
-
-#### `string.length`
-
-Read the number of UTF-8 bytes. Unicode text is preserved losslessly.
-
-Result: `int`.
-
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
+- Run startup operations with checked error recovery.
+- Run 2 other startup steps in source order.
 
 ### Startup, in source order
 
 - Set `checksum` of type `int` to `0`.
 - Set `index` of type `int` to `0`.
 - Try these operations:
-  - While (`index` is less than `5000`) is true, repeat:
-    - Set `document` to the result of call [`parse`](dependencies/august/0.19.0/json/contracts.md#symbol-parse) with `input` set to `"{\"id\":7,\"message\":\"hello\",\"values\":[1,2,3]}"`.
-    - Set `payload` to the result of call `decode` on `document` with type arguments [`Payload`](data.md#symbol-Payload).
-    - Set `encoded` to the result of call `stringify` on the result of call `Json` with `value` set to `payload`.
-    - Set `checksum` to ((`checksum` plus `id` of `payload`) plus the result of call `length` on `encoded`).
-    - Set `index` to (`index` plus `1`).
+  - While `index` is less than `5000`, repeat:
+    - Set `document` to call [`parse`](dependencies/august/0.19.0/json/contracts.md#symbol-parse) with `input` = `"{\"id\":7,\"message\":\"hello\",\"values\":[1,2,3]}"`.
+    - Set `payload` to call `decode` on `document` with type arguments [`Payload`](data.md#symbol-Payload).
+    - Set `encoded` to call `stringify` on call `Json` with `value` = `payload`.
+    - Set `checksum` to (`checksum` plus `id` of `payload`) plus call `length` on `encoded`.
+    - Set `index` to `index` plus `1`.
     - Check the condition again before the next iteration.
-  - Call `print` with `value` set to `checksum`.
+  - Call `print` with `value` = `checksum`.
 - If they fail with `JsonError`, name the failure `error` and recover:
-  - Call `exit` with `status` set to `1`.
+  - Call `exit` with `status` = `1`.
 
+### Dependencies used by this file
 
-### Language rules
+Only referenced types and operations appear here. Each name links to its complete specification.
 
-Boolean operations short-circuit from left to right. int uses signed 64-bit values; addition, subtraction, multiplication, and negation wrap. Division by zero raises ArithmeticError. float uses double precision. Tuples and records compare by value; mutable collections and behavioral classes compare by identity. Optional values contain a value or null; omission becomes null. Managed references grant read access; ownership moves and mutable borrows remain checked. A scope joins its child tasks; an unhandled child failure cancels siblings. See the [language reference](https://greenpandastudios.github.io/augscript/reference) for shared rules.
+#### [`parse`](dependencies/august/0.19.0/json/contracts.md#symbol-parse)
+
+Function from `august.json`.
+
+- [`parse`](dependencies/august/0.19.0/json/contracts.md#symbol-parse) (`input`: `string`) → `Json`; can fail with `JsonError`.
+
+#### [`Payload`](data.md#symbol-Payload)
+
+Record from `data`.
+
+- Read `id` (`int`).
+
+### Built-in operations used by this file
+
+- `Json.decode` (no inputs) → `Payload`: Decode a checked record or data type: json.decode<Profile>(). Unknown fields, type mismatches, and validation errors are rejected. Can fail with `JsonError`.
+- `Json.stringify` (no inputs) → `string`: Serialize this JSON value with checked UTF-8 escaping and exact int64 values. Can fail with `JsonError`.
+- `exit` (`status`: `int`) → `void`: Exit from main with a status from 0 to 255 after cancellation and cleanup.
+- `print` (`value`: `any`) → `void`: Composition and test output. Other callables receive Console and declare uses console.write.
+- `string.length` (no inputs) → `int`: Read the number of UTF-8 bytes. Unicode text is preserved losslessly.
+
+[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
+
+### Shared language rules
+
+See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.

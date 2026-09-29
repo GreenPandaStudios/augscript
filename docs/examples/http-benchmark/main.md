@@ -37,17 +37,11 @@ serve reply on port 0
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code. Author documentation is labeled separately. It follows Simplified Technical English as guidance, with best-effort wording.
+August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
 
-### Dependencies used by this file
+### In this file
 
-#### [`reply`](routes.md#symbol-reply)
-
-Available from `routes`.
-
-Result: [`Reply`](routes.md#symbol-Reply).
-
-HTTP route: `GET` `/bench`. Return status 200 on success. An unhandled request failure returns status 500 and cancels its request tasks.
+- Serve 1 HTTP route.
 
 ### HTTP configuration
 
@@ -57,7 +51,16 @@ Listen on `127.0.0.1`. Limit request bodies to 1048576 bytes and buffered respon
 
 - Serve [`reply`](routes.md#symbol-reply) on port `0`.
 
+### Dependencies used by this file
 
-### Language rules
+Only referenced types and operations appear here. Each name links to its complete specification.
 
-Boolean operations short-circuit from left to right. int uses signed 64-bit values; addition, subtraction, multiplication, and negation wrap. Division by zero raises ArithmeticError. float uses double precision. Tuples and records compare by value; mutable collections and behavioral classes compare by identity. Optional values contain a value or null; omission becomes null. Managed references grant read access; ownership moves and mutable borrows remain checked. A scope joins its child tasks; an unhandled child failure cancels siblings. See the [language reference](https://greenpandastudios.github.io/augscript/reference) for shared rules.
+#### [`reply`](routes.md#symbol-reply)
+
+Function from `routes`.
+
+- [`reply`](routes.md#symbol-reply) (no caller inputs) → [`Reply`](routes.md#symbol-Reply).
+
+### Shared language rules
+
+See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.

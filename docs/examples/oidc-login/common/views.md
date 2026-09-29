@@ -60,28 +60,31 @@ Page(string title, List<Html> children) returns Html {
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code. Author documentation is labeled separately. It follows Simplified Technical English as guidance, with best-effort wording.
+August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
+
+### In this file
+
+- [`Page`](views.md#symbol-Page) is a function returning `Html`.
 
 ### `Page` {#symbol-Page}
 
 [source](views.md#code)
 
-**Inputs and dependencies**
+**Inputs**
 
-- `title`: `string`. The caller supplies this labeled input. Read reference values without copying them.
-- `children`: `List<Html>`. The caller supplies this labeled input. Read reference values without copying them.
+- `title` (`string`) — required labeled input.
+- `children` (`List<Html>`) — required labeled input.
 
-Result: `Html`.
+Returns: `Html`.
+
+**What it does**
+
+- Return the HTML element `html` with `lang` = `"en"` containing the HTML element `head` containing the HTML element `meta` with `charset` = `"utf-8"` (rendered on the server with embedded text escaped), the HTML element `meta` with `name` = `"viewport"`, `content` = `"width=device-width, initial-scale=1"` (rendered on the server with embedded text escaped), the HTML element `title` containing `title`, ` — August` (rendered on the server with embedded text escaped) (rendered on the server with embedded text escaped), the HTML element `body` with `style` = `"margin:0;background:#f3f5f9;color:#17233a;font:17px system-ui,sans-serif;line-height:1.6"` containing the HTML element `main` with `style` = `"max-width:640px;margin:48px auto;padding:28px;background:white;border-radius:20px;box-shadow:0 12px 48px #17233a12"` containing the HTML element `nav` containing the HTML element `a` with `href` = `"/"`, `style` = `"color:#4852d7;font-weight:750;text-decoration:none"` containing `August · OpenID Connect` (rendered on the server with embedded text escaped) (rendered on the server with embedded text escaped), the HTML element `h1` containing `title` (rendered on the server with embedded text escaped), `children` (rendered on the server with embedded text escaped) (rendered on the server with embedded text escaped) (rendered on the server with embedded text escaped).
 
 **Author documentation**
 
 Small server components keep each page's behavior and dependencies visible.
 
-**Behavior when execution reaches this operation**
+### Shared language rules
 
-- Return the HTML element `html` with `lang` set to `"en"`; children: the HTML element `head`; children: the HTML element `meta` with `charset` set to `"utf-8"`. Escape embedded text; render components on the server; the HTML element `meta` with `name` set to `"viewport"`, `content` set to `"width=device-width, initial-scale=1"`. Escape embedded text; render components on the server; the HTML element `title`; children: `title`; ` — August`. Escape embedded text; render components on the server. Escape embedded text; render components on the server; the HTML element `body` with `style` set to `"margin:0;background:#f3f5f9;color:#17233a;font:17px system-ui,sans-serif;line-height:1.6"`; children: the HTML element `main` with `style` set to `"max-width:640px;margin:48px auto;padding:28px;background:white;border-radius:20px;box-shadow:0 12px 48px #17233a12"`; children: the HTML element `nav`; children: the HTML element `a` with `href` set to `"/"`, `style` set to `"color:#4852d7;font-weight:750;text-decoration:none"`; children: `August · OpenID Connect`. Escape embedded text; render components on the server. Escape embedded text; render components on the server; the HTML element `h1`; children: `title`. Escape embedded text; render components on the server; `children`. Escape embedded text; render components on the server. Escape embedded text; render components on the server. Escape embedded text; render components on the server and finish this operation.
-
-
-### Language rules
-
-Boolean operations short-circuit from left to right. int uses signed 64-bit values; addition, subtraction, multiplication, and negation wrap. Division by zero raises ArithmeticError. float uses double precision. Tuples and records compare by value; mutable collections and behavioral classes compare by identity. Optional values contain a value or null; omission becomes null. Managed references grant read access; ownership moves and mutable borrows remain checked. A scope joins its child tasks; an unhandled child failure cancels siblings. See the [language reference](https://greenpandastudios.github.io/augscript/reference) for shared rules.
+See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.

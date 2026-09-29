@@ -39,38 +39,34 @@ print(value="using resource")
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code. Author documentation is labeled separately. It follows Simplified Technical English as guidance, with best-effort wording.
+August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
 
-### Dependencies used by this file
+### In this file
 
-#### [`Resource`](resource.md#symbol-Resource)
-
-Available from `resource`.
-
-Class. Follow the linked specification for its full explanation.
-
-**Construction**
-
-Result: [`Resource`](resource.md#symbol-Resource).
-
-### Built-in operations used by this file
-
-#### `print`
-
-Composition and test output. Other callables receive Console and declare uses console.write.
-
-Inputs: `value`: `any`.
-
-Result: `void`.
-
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
+- Run 2 other startup steps in source order.
 
 ### Startup, in source order
 
-- Set `resource` of type [`Resource`](resource.md#symbol-Resource) to the result of call [`Resource`](resource.md#symbol-Resource). This variable owns the value.
-- Call `print` with `value` set to `"using resource"`.
+- Set `resource` of type [`Resource`](resource.md#symbol-Resource) to call [`Resource`](resource.md#symbol-Resource).
+- This variable owns the value.
+- Call `print` with `value` = `"using resource"`.
 
+### Dependencies used by this file
 
-### Language rules
+Only referenced types and operations appear here. Each name links to its complete specification.
 
-Boolean operations short-circuit from left to right. int uses signed 64-bit values; addition, subtraction, multiplication, and negation wrap. Division by zero raises ArithmeticError. float uses double precision. Tuples and records compare by value; mutable collections and behavioral classes compare by identity. Optional values contain a value or null; omission becomes null. Managed references grant read access; ownership moves and mutable borrows remain checked. A scope joins its child tasks; an unhandled child failure cancels siblings. See the [language reference](https://greenpandastudios.github.io/augscript/reference) for shared rules.
+#### [`Resource`](resource.md#symbol-Resource)
+
+Class from `resource`.
+
+- Construct with no caller inputs → [`Resource`](resource.md#symbol-Resource).
+
+### Built-in operations used by this file
+
+- `print` (`value`: `any`) → `void`: Composition and test output. Other callables receive Console and declare uses console.write.
+
+[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
+
+### Shared language rules
+
+See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.

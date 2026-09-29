@@ -134,94 +134,15 @@ test Calculator calculator {
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code. Author documentation is labeled separately. It follows Simplified Technical English as guidance, with best-effort wording.
+August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
 
-### Dependencies used by this file
+### In this file
 
-#### [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console)
-
-Available from `august.io`.
-
-Interface. Follow the linked specification for its full explanation.
-
-**[`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write)**
-
-Type parameters: `T`.
-
-**Inputs and dependencies**
-
-- `value`: `T`. The caller supplies this labeled input. Read reference values without copying them.
-
-Result: finish without a result.
-
-Capabilities: [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
-
-#### [`SystemConsole`](dependencies/august/0.19.0/io/contracts.md#symbol-SystemConsole)
-
-Available from `august.io`.
-
-Class. Follow the linked specification for its full explanation.
-
-#### [`Logger`](logging/logger.md#symbol-Logger)
-
-Available from `logging`.
-
-Interface. Follow the linked specification for its full explanation.
-
-**[`Logger.log`](logging/logger.md#symbol-Logger.log)**
-
-**Inputs and dependencies**
-
-- `console`: [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-- `message`: `string`. The caller supplies this labeled input. Read reference values without copying them.
-
-Result: finish without a result.
-
-Capabilities: [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
-
-### Built-in operations used by this file
-
-#### `List<int>.append`
-
-Append an element with exclusive mutable access. Read-only and owned aliases cannot be stored here.
-
-Inputs: `value`: `int`.
-
-Result: `void`.
-
-Changes the receiver under exclusive mutable access.
-
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
-
-#### `List<int>.get`
-
-Read a zero-based position. An invalid index raises checked IndexError. Reference results grant reading.
-
-Inputs: `index`: `int`.
-
-Result: `int`.
-
-Possible failures: `IndexError`.
-
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
-
-#### `List<int>.length`
-
-Read the number of elements.
-
-Result: `int`.
-
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
-
-#### `assert`
-
-Assert a bool in a test case or its setup. Catching an assertion failure cannot make the case pass; every case must execute an assertion.
-
-Inputs: `condition`: `bool`.
-
-Result: `void`.
-
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
+- [`Arithmetic`](calculator.md#symbol-Arithmetic) is an interface.
+- [`Calculator`](calculator.md#symbol-Calculator) is a class implementing `Arithmetic`.
+- [`load`](calculator.md#symbol-load) is a function returning `string`.
+- [`_SilentLogger`](calculator.md#symbol-_SilentLogger) is a class implementing `Logger`.
+- [`test Calculator calculator`](calculator.md#symbol-test-20-Calculator-20-calculator) is a same-file test suite.
 
 ### `Arithmetic` {#symbol-Arithmetic}
 
@@ -237,13 +158,13 @@ Adds two integers.
 
 [source](calculator.md#code)
 
-**Inputs and dependencies**
+**Inputs**
 
-- `console`: [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-- `left`: `int`. The caller supplies this labeled input. Read reference values without copying them.
-- `right`: `int`. The caller supplies this labeled input. Read reference values without copying them.
+- `console` ([`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console)) — injected; callers omit it.
+- `left` (`int`) — required labeled input.
+- `right` (`int`) — required labeled input.
 
-Result: `int`.
+Returns: `int`.
 
 Capabilities: [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
 
@@ -261,23 +182,28 @@ Satisfies [`Arithmetic`](calculator.md#symbol-Arithmetic).
 
 Uses the selected logger to describe each addition.
 
-**Inputs and dependencies**
+**Inputs**
 
-- `logger`: [`Logger`](logging/logger.md#symbol-Logger). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them. Store it as `_logger`. This field is private. The field is read-only after initialization.
+- `logger` ([`Logger`](logging/logger.md#symbol-Logger)) — injected; callers omit it — stored as `_logger` (private) and read-only after initialization.
 
 #### `Calculator.add` {#symbol-Calculator.add}
 
 [source](calculator.md#code)
 
-**Inputs and dependencies**
+**Inputs**
 
-- `console`: [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-- `left`: `int`. The caller supplies this labeled input. Read reference values without copying them.
-- `right`: `int`. The caller supplies this labeled input. Read reference values without copying them.
+- `console` ([`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console)) — injected; callers omit it.
+- `left` (`int`) — required labeled input.
+- `right` (`int`) — required labeled input.
 
-Result: `int`.
+Returns: `int`.
 
 Capabilities: [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
+
+**What it does**
+
+- Call [`Logger.log`](logging/logger.md#symbol-Logger.log) on `_logger` with `message` = `"adding integers"`; inject `console` from `console`.
+- Return `left` plus `right`.
 
 **Author documentation**
 
@@ -289,22 +215,23 @@ Adds left and right, logging the operation.
 - `left`: First integer.
 - `right`: Second integer.
 
-**Behavior when execution reaches this operation**
-
-- Call [`Logger.log`](logging/logger.md#symbol-Logger.log) on `_logger` with `message` set to `"adding integers"`; supply dependencies `console` from `console`.
-- Return (`left` plus `right`) and finish this operation.
-
 ### `load` {#symbol-load}
 
 [source](calculator.md#code)
 
-**Inputs and dependencies**
+**Inputs**
 
-- `fail`: `bool`. The caller supplies this labeled input. Read reference values without copying them.
+- `fail` (`bool`) — required labeled input.
 
-Result: `string`.
+Returns: `string`.
 
-Possible failures: `FileError`. The caller must catch or propagate them.
+Can fail with `FileError`. Callers must catch or propagate these errors.
+
+**What it does**
+
+- If `fail` is true:
+  - Fail with call `FileError`. Transfer control to a matching catch or propagate the failure.
+- Return `"loaded"`.
 
 **Author documentation**
 
@@ -315,12 +242,6 @@ Demonstrates a checked failure instead of a successful result.
 
 **Throws**
 - `FileError`: When fail is true.
-
-**Behavior when execution reaches this operation**
-
-- If `fail` is true:
-  - Fail with the result of call `FileError`. Transfer control to a matching catch or propagate the failure.
-- Return `"loaded"` and finish this operation.
 
 ### `_SilentLogger` {#symbol-_SilentLogger}
 
@@ -338,23 +259,23 @@ Test adapter: keeps calculator tests independent of console output.
 
 [source](calculator.md#code)
 
-**Inputs and dependencies**
+**Inputs**
 
-- `console`: [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console). Get this dependency from the composition; the caller does not supply it. Read reference values without copying them.
-- `message`: `string`. The caller supplies this labeled input. Read reference values without copying them.
+- `console` ([`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console)) — injected; callers omit it.
+- `message` (`string`) — required labeled input.
 
-Result: finish without a result.
+Returns: no value.
 
 Capabilities: [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
+
+**What it does**
+
+- Continue without another operation.
 
 **Author documentation**
 
 **Parameters**
 - `message`: Text to write.
-
-**Behavior when execution reaches this operation**
-
-- Continue without another operation.
 
 ### `test Calculator calculator` {#symbol-test-20-Calculator-20-calculator}
 
@@ -368,26 +289,56 @@ Same-file class tests for [`Calculator`](calculator.md#symbol-Calculator). Each 
 
 - Provide [`SystemConsole`](dependencies/august/0.19.0/io/contracts.md#symbol-SystemConsole) when `Console` is requested. Use a fresh instance when this provider retains state; otherwise reuse one instance.
 - Provide [`_SilentLogger`](calculator.md#symbol-_SilentLogger) when `Logger` is requested. Use a fresh instance when this provider retains state; otherwise reuse one instance.
-- Set `calculator` to the result of call [`Calculator`](calculator.md#symbol-Calculator); supply dependencies `_logger` from `Logger`.
+- Set `calculator` to call [`Calculator`](calculator.md#symbol-Calculator); inject `_logger` from `Logger`.
 - Set `values` of type `List<int>` to a list containing `1`, `2`.
 
 ##### `adds labeled inputs`
 
 [source](calculator.md#code)
 
-- Call `assert` with (the result of call [`Calculator.add`](calculator.md#symbol-Calculator.add) on `calculator` with `right` set to `2`; `left` set to `1`; supply dependencies `console` from `Console` equals `3`).
+- Call `assert` with (call [`Calculator.add`](calculator.md#symbol-Calculator.add) on `calculator` with `right` = `2`; `left` = `1`; inject `console` from `Console` equals `3`).
 - Grant exclusive mutable access to `values` for this block, then end the borrow:
-  - Call `append` on `values` with `value` set to `3`.
-- Call `assert` with (the result of call `length` on `values` equals `3`).
+  - Call `append` on `values` with `value` = `3`.
+- Call `assert` with (call `length` on `values` equals `3`).
 
 ##### `starts with fresh setup`
 
 [source](calculator.md#code)
 
-- Call `assert` with (the result of call `length` on `values` equals `2`).
-- Call `assert` with (the result of call [`Calculator.add`](calculator.md#symbol-Calculator.add) on `calculator` with `left` set to the result of call `get` on `values` with `index` set to `0`; `right` set to the result of call `get` on `values` with `index` set to `1`; supply dependencies `console` from `Console` equals `3`).
+- Call `assert` with (call `length` on `values` equals `2`).
+- Call `assert` with (call [`Calculator.add`](calculator.md#symbol-Calculator.add) on `calculator` with `left` = call `get` on `values` with `index` = `0`; `right` = call `get` on `values` with `index` = `1`; inject `console` from `Console` equals `3`).
 
+### Dependencies used by this file
 
-### Language rules
+Only referenced types and operations appear here. Each name links to its complete specification.
 
-Boolean operations short-circuit from left to right. int uses signed 64-bit values; addition, subtraction, multiplication, and negation wrap. Division by zero raises ArithmeticError. float uses double precision. Tuples and records compare by value; mutable collections and behavioral classes compare by identity. Optional values contain a value or null; omission becomes null. Managed references grant read access; ownership moves and mutable borrows remain checked. A scope joins its child tasks; an unhandled child failure cancels siblings. See the [language reference](https://greenpandastudios.github.io/augscript/reference) for shared rules.
+#### [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console)
+
+Capability interface from `august.io`.
+
+- [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write)<`T`> (`value`: `T`) → `void`.
+
+#### [`SystemConsole`](dependencies/august/0.19.0/io/contracts.md#symbol-SystemConsole)
+
+Class from `august.io`.
+
+Used as a type or provider.
+
+#### [`Logger`](logging/logger.md#symbol-Logger)
+
+Interface from `logging`.
+
+- [`Logger.log`](logging/logger.md#symbol-Logger.log) (`message`: `string`) → `void`; inject `console`: [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console); uses [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
+
+### Built-in operations used by this file
+
+- `List<int>.append` (`value`: `int`) → `void`: Append an element with exclusive mutable access. Read-only and owned aliases cannot be stored here. Changes the receiver.
+- `List<int>.get` (`index`: `int`) → `int`: Read a zero-based position. An invalid index raises checked IndexError. Reference results grant reading. Can fail with `IndexError`.
+- `List<int>.length` (no inputs) → `int`: Read the number of elements.
+- `assert` (`condition`: `bool`) → `void`: Assert a bool in a test case or its setup. Catching an assertion failure cannot make the case pass; every case must execute an assertion.
+
+[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
+
+### Shared language rules
+
+See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.

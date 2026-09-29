@@ -56,7 +56,13 @@ _prefix() returns string {
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code. Author documentation is labeled separately. It follows Simplified Technical English as guidance, with best-effort wording.
+August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
+
+### In this file
+
+- [`ICounter`](counter.md#symbol-ICounter) is an interface.
+- [`Counter`](counter.md#symbol-Counter) is a class implementing `ICounter`.
+- [`_prefix`](counter.md#symbol-_prefix) is a function returning `string`.
 
 ### `ICounter` {#symbol-ICounter}
 
@@ -68,7 +74,7 @@ Interface.
 
 [source](counter.md#code)
 
-Result: `string`.
+Returns: `string`.
 
 Interface contract. A selected implementation supplies the behavior.
 
@@ -80,9 +86,9 @@ Behavioral class.
 
 Satisfies [`ICounter`](counter.md#symbol-ICounter).
 
-**Inputs and dependencies**
+**Inputs**
 
-- `value`: `int`. The caller supplies this labeled input. Read reference values without copying them. Store it as `value`. The field can change with mutable access.
+- `value` (`int`) — required labeled input — stored as `value` and mutable.
 
 #### `Counter._label` {#symbol-Counter._label}
 
@@ -90,21 +96,21 @@ Satisfies [`ICounter`](counter.md#symbol-ICounter).
 
 Private to its defining scope.
 
-Result: `string`.
+Returns: `string`.
 
-**Behavior when execution reaches this operation**
+**What it does**
 
-- Return the result of call [`_prefix`](counter.md#symbol-_prefix) and finish this operation.
+- Return call [`_prefix`](counter.md#symbol-_prefix).
 
 #### `Counter.label` {#symbol-Counter.label}
 
 [source](counter.md#code)
 
-Result: `string`.
+Returns: `string`.
 
-**Behavior when execution reaches this operation**
+**What it does**
 
-- Return the result of call [`Counter._label`](counter.md#symbol-Counter._label) on `self` and finish this operation.
+- Return call [`Counter._label`](counter.md#symbol-Counter._label) on `self`.
 
 ### `_prefix` {#symbol-_prefix}
 
@@ -112,13 +118,12 @@ Result: `string`.
 
 Private to its defining scope.
 
-Result: `string`.
+Returns: `string`.
 
-**Behavior when execution reaches this operation**
+**What it does**
 
-- Return `"count"` and finish this operation.
+- Return `"count"`.
 
+### Shared language rules
 
-### Language rules
-
-Boolean operations short-circuit from left to right. int uses signed 64-bit values; addition, subtraction, multiplication, and negation wrap. Division by zero raises ArithmeticError. float uses double precision. Tuples and records compare by value; mutable collections and behavioral classes compare by identity. Optional values contain a value or null; omission becomes null. Managed references grant read access; ownership moves and mutable borrows remain checked. A scope joins its child tasks; an unhandled child failure cancels siblings. See the [language reference](https://greenpandastudios.github.io/augscript/reference) for shared rules.
+See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.

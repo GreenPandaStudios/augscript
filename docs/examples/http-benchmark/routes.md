@@ -40,7 +40,12 @@ endpoint GET "/bench" as reply() returns Reply {
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code. Author documentation is labeled separately. It follows Simplified Technical English as guidance, with best-effort wording.
+August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
+
+### In this file
+
+- [`Reply`](routes.md#symbol-Reply) is an immutable record.
+- [`reply`](routes.md#symbol-reply) handles `GET` `/bench` returning `Reply`.
 
 ### `Reply` {#symbol-Reply}
 
@@ -48,24 +53,23 @@ August 0.19.0. This document is compiled from checked code. Author documentation
 
 Immutable record.
 
-**Inputs and dependencies**
+**Inputs**
 
-- `id`: `int`. The caller supplies this labeled input. Read reference values without copying them. Store it as `id`. The field is read-only after initialization.
-- `message`: `string`. The caller supplies this labeled input. Read reference values without copying them. Store it as `message`. The field is read-only after initialization.
+- `id` (`int`) — required labeled input — stored as `id` and read-only after initialization.
+- `message` (`string`) — required labeled input — stored as `message` and read-only after initialization.
 
 ### `reply` {#symbol-reply}
 
 [source](routes.md#code)
 
-Result: [`Reply`](routes.md#symbol-Reply).
+Returns: [`Reply`](routes.md#symbol-Reply).
 
-HTTP route: `GET` `/bench`. Return status 200 on success. An unhandled request failure returns status 500 and cancels its request tasks.
+HTTP route: `GET` `/bench`. Use status 200 when the handler returns a body; a returned HttpResponse can set its own status. An unhandled request failure returns status 500 and cancels its request tasks.
 
-**Behavior when execution reaches this operation**
+**What it does**
 
-- Return the result of call [`Reply`](routes.md#symbol-Reply) with `id` set to `7`; `message` set to `"hello"` and finish this operation.
+- Return call [`Reply`](routes.md#symbol-Reply) with `id` = `7`; `message` = `"hello"`.
 
+### Shared language rules
 
-### Language rules
-
-Boolean operations short-circuit from left to right. int uses signed 64-bit values; addition, subtraction, multiplication, and negation wrap. Division by zero raises ArithmeticError. float uses double precision. Tuples and records compare by value; mutable collections and behavioral classes compare by identity. Optional values contain a value or null; omission becomes null. Managed references grant read access; ownership moves and mutable borrows remain checked. A scope joins its child tasks; an unhandled child failure cancels siblings. See the [language reference](https://greenpandastudios.github.io/augscript/reference) for shared rules.
+See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
