@@ -18,7 +18,7 @@ export class OwnershipFlow {
   private heap = new Map<string, Map<string, HeapField>>();
   private regions: { origins: Origins; outerNames: Set<string> }[] = [];
   private frozenOrigins = new Set<string>();
-  private taskLoans = new Map<string, {origins: Origins; exclusive: boolean; scope: string}>();
+  private taskLoans = new Map<string, {origins: Origins; exclusive: boolean; scope: string; repeated: boolean}>();
   private tasks = new Map<string, {scope: string; errors: Ty[]; observed: boolean}>();
 
   clone(): OwnershipFlow {
@@ -45,17 +45,20 @@ export class OwnershipFlow {
   external(name: string): string | undefined { return this.places.get(name)?.external; }
   region(origins: Origins): void { this.regions.push({ origins, outerNames: new Set(this.places.keys()) }); }
 
-  captureTask(task: string, scope: string, origins: Origins, exclusive: boolean, span: Span,
+  captureTask(task: string, scope: string, origins: Origins, exclusive: boolean, repeated: boolean, span: Span,
     report: (span: Span, message: string) => void): void {
     const reachable = this.reachable(origins);
     for (const loan of this.taskLoans.values()) if ((exclusive || loan.exclusive) && overlap(reachable, loan.origins))
       report(span, 'Task captures overlap an active task with mutable access');
     const previous = this.taskLoans.get(task);
-    this.taskLoans.set(task, {scope, origins:unionOrigins(previous?.origins ?? new Set(), reachable), exclusive:exclusive || !!previous?.exclusive});
+    this.taskLoans.set(task, {scope, origins:unionOrigins(previous?.origins ?? new Set(), reachable),
+      exclusive:exclusive || !!previous?.exclusive, repeated:repeated || !!previous?.repeated});
   }
   waitTasks(origins: Origins): void {
     const reachable = this.reachable(origins);
-    for (const task of this.taskLoans.keys()) if (reachable.has(task)) this.taskLoans.delete(task);
+    // A static start site in a loop can represent several live children. Waiting for
+    // one result cannot prove that earlier children from that site have finished.
+    for (const [task, loan] of this.taskLoans) if (reachable.has(task) && !loan.repeated) this.taskLoans.delete(task);
     for (const [task, value] of this.tasks) if (reachable.has(task)) this.tasks.set(task, {...value, observed: true});
   }
   registerTask(task: string, scope: string, errors: Ty[]): void {
@@ -161,6 +164,8 @@ export class OwnershipFlow {
     const place = this.places.get(name);
     if (place && [...this.loans.values()].some(loan => overlap(loan.origins, this.reachable(place.origins, true))))
       report(span, `Cannot move ${name} while it is borrowed`);
+    if (place && this.hasTaskCapture(place.origins))
+      report(span, `Cannot move ${name} while a task uses it; wait for the task first`);
   }
 
   escape(origins: Origins, span: Span, report: (span: Span, message: string) => void, scoped = true, immutable = false): void {

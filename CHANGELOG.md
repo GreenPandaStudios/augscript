@@ -4,6 +4,7 @@
 
 - Add an executable ownership and task conformance suite and wiki contract. Reject parent mutation of a child-captured object through collection methods, borrowed calls, and direct fields until the child is waited for, including inside an existing borrow block.
 - Injected dependencies participate in call alias and task capture checks; dropping an owned `Shared<T>` also drops its transferred payload in local cleanup order.
+- Pin owned `Shared<T>` and other reference values while a child borrows them. Ownership transfers now share one move check; repeated starts in a loop keep captured values pinned until their scope joins every child.
 - The pinned full native bootstrap builds on Linux as well as macOS. Linux build/run Docker images include web and crypto dependencies, with core, crypto, and typed HTTP runtime smoke programs.
 - The wiki separates web/OIDC library hardening from the language's 1.0 roadmap and documents the proposed compatibility and platform support policy.
 
