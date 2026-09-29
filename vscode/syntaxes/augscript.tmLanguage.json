@@ -1,0 +1,422 @@
+{
+  "name": "AugScript",
+  "scopeName": "source.augscript",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#strings"
+    },
+    {
+      "include": "#numbers"
+    },
+    {
+      "include": "#web"
+    },
+    {
+      "include": "#markup"
+    },
+    {
+      "include": "#interceptors"
+    },
+    {
+      "include": "#tests"
+    },
+    {
+      "include": "#declarations"
+    },
+    {
+      "include": "#modules"
+    },
+    {
+      "include": "#members"
+    },
+    {
+      "include": "#calls"
+    },
+    {
+      "include": "#keywords"
+    },
+    {
+      "include": "#operators"
+    }
+  ],
+  "repository": {
+    "web": {
+      "patterns": [
+        {
+          "match": "\\b(endpoint)\\s+(GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS|CONNECT|TRACE)\\s+(\"[^\"]*\")\\s+(as)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+          "captures": {
+            "1": {"name": "keyword.declaration.augscript"},
+            "2": {"name": "constant.language.http-method.augscript"},
+            "3": {"name": "string.quoted.double.route.augscript"},
+            "4": {"name": "keyword.declaration.augscript"},
+            "5": {"name": "entity.name.function.endpoint.augscript"}
+          }
+        },
+        {
+          "match": "\\b(from)\\s+(path|query|header|body|cookie|form|request)\\b",
+          "captures": {
+            "1": {"name": "keyword.declaration.augscript"},
+            "2": {"name": "support.type.http-source.augscript"}
+          }
+        }
+      ]
+    },
+    "markup": {
+      "patterns": [
+        {
+          "match": "(?<![A-Za-z0-9_])(<)(/?)([A-Za-z][A-Za-z0-9]*)(?=\\s|/?>)",
+          "captures": {
+            "1": {"name": "punctuation.definition.tag.begin.augscript"},
+            "2": {"name": "punctuation.definition.tag.begin.augscript"},
+            "3": {"name": "entity.name.tag.augscript"}
+          }
+        },
+        {
+          "match": "\\b([A-Za-z][A-Za-z0-9-]*)(?=\\s*=\\s*(?:\\{|[\"']))",
+          "captures": {"1": {"name": "entity.other.attribute-name.augscript"}}
+        }
+      ]
+    },
+    "interceptors": {
+      "patterns": [
+        {
+          "match": "\\b(interceptor)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+          "captures": {
+            "1": {
+              "name": "keyword.declaration.augscript"
+            },
+            "2": {
+              "name": "entity.name.type.decorator.augscript"
+            }
+          }
+        },
+        {
+          "name": "meta.annotation.augscript",
+          "begin": "^\\s*(\\[)\\s*([A-Za-z_][A-Za-z0-9_]*)(?=\\s*(?:<[^>]+>)?\\s*(?:\\([^\\]]*\\))?\\s*\\]\\s*(?://.*)?$)",
+          "beginCaptures": {
+            "1": {
+              "name": "punctuation.definition.annotation.begin.augscript"
+            },
+            "2": {
+              "name": "entity.name.function.decorator.augscript"
+            }
+          },
+          "end": "\\]",
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.annotation.end.augscript"
+            }
+          },
+          "patterns": [
+            {
+              "include": "#strings"
+            },
+            {
+              "include": "#numbers"
+            },
+            {
+              "name": "variable.parameter.augscript",
+              "match": "\\b[A-Za-z_][A-Za-z0-9_]*\\b(?=\\s*(?:=|to\\b))"
+            },
+            {
+              "include": "#declarations"
+            },
+            {
+              "include": "#operators"
+            },
+            {
+              "include": "#keywords"
+            }
+          ]
+        },
+        {
+          "name": "support.function.builtin.augscript",
+          "match": "\\bnext\\b(?=\\s*\\()"
+        }
+      ]
+    },
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.number-sign.augscript",
+          "match": "#.*$"
+        },
+        {
+          "name": "comment.line.double-slash.augscript",
+          "match": "//.*$"
+        },
+        {
+          "name": "comment.block.documentation.augscript",
+          "begin": "/\\*\\*",
+          "end": "\\*/",
+          "patterns": [
+            {
+              "name": "storage.type.annotation.augscript",
+              "match": "@(param|return|returns|throws|exception|deprecated|see)\\b"
+            },
+            {
+              "name": "storage.type.annotation.augscript",
+              "match": "\\{@(?:code|link|inheritDoc)\\b|\\}"
+            }
+          ]
+        },
+        {
+          "name": "comment.block.augscript",
+          "begin": "/\\*",
+          "end": "\\*/"
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.double.augscript",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            {
+              "name": "constant.character.escape.augscript",
+              "match": "\\\\."
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.single.augscript",
+          "begin": "'",
+          "end": "'",
+          "patterns": [
+            {
+              "name": "constant.character.escape.augscript",
+              "match": "\\\\."
+            }
+          ]
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "name": "constant.numeric.augscript",
+          "match": "\\b[0-9]+(?:\\.[0-9]+)?\\b"
+        },
+        {
+          "name": "constant.language.augscript",
+          "match": "\\b(?:true|false|null|missing)\\b"
+        }
+      ]
+    },
+    "declarations": {
+      "patterns": [
+        {
+          "match": "\\b(interface|capability|record|composition)\\s+([A-Za-z_][A-Za-z0-9_]*)\\b",
+          "captures": {
+            "1": {
+              "name": "keyword.declaration.augscript"
+            },
+            "2": {
+              "name": "entity.name.type.augscript"
+            }
+          }
+        },
+        {
+          "match": "^\\s*([A-Za-z_][A-Za-z0-9_]*)\\s*(?=(?:<[^>]+>)?\\([^;{}]*\\)\\s*(?:implements\\b|=>))",
+          "captures": {
+            "1": {
+              "name": "entity.name.type.augscript"
+            }
+          }
+        },
+        {
+          "match": "^\\s*([A-Za-z_][A-Za-z0-9_]*)\\s*(?=(?:<[^>]+>)?\\([^;{}]*\\)\\s*(?:returns\\b|unless\\b|changes\\b|uses\\b|\\{|:))",
+          "captures": {
+            "1": {
+              "name": "entity.name.function.augscript"
+            }
+          }
+        },
+        {
+          "match": "^\\s*([A-Za-z_][A-Za-z0-9_]*)\\s*(?=(?:<[^>]+>)?\\([^)]*\\b[A-Za-z_][A-Za-z0-9_]*\\s+[A-Za-z_][A-Za-z0-9_]*[^)]*\\)\\s*(?:;|$|\\}))",
+          "captures": {
+            "1": {
+              "name": "entity.name.function.augscript"
+            }
+          }
+        },
+        {
+          "name": "storage.type.primitive.augscript",
+          "match": "\\b(?:int|c_int|float|bool|string|void|Error|Data|FileError|IndexError|ArithmeticError|ConversionError|CryptoError|JsonError|HttpError|TimeError|ConcurrencyError|List|Set|Tuple|Map|Bytes|Json|Html|Headers|HttpRequest|HttpResponse|HttpAction|HttpTestClient|ServerEvent|Task|Shared|RsaPrivateKey|RsaPublicKey)\\b"
+        },
+        {
+          "match": "\\b(returns|streams|unless|implements|extends|catch)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+          "captures": {
+            "1": {
+              "name": "keyword.declaration.augscript"
+            },
+            "2": {
+              "name": "entity.name.type.augscript"
+            }
+          }
+        }
+      ]
+    },
+    "modules": {
+      "patterns": [
+        {
+          "match": "\\b(import|export)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+          "captures": {
+            "1": {
+              "name": "keyword.declaration.augscript"
+            },
+            "2": {
+              "name": "entity.name.type.augscript"
+            }
+          }
+        },
+        {
+          "match": "\\b(bind|implement|resolve)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+          "captures": {
+            "1": {
+              "name": "keyword.declaration.augscript"
+            },
+            "2": {
+              "name": "variable.other.augscript"
+            }
+          }
+        },
+        {
+          "match": "\\b(from)\\s+([A-Za-z_][A-Za-z0-9_.]*)",
+          "captures": {
+            "1": {
+              "name": "keyword.declaration.augscript"
+            },
+            "2": {
+              "name": "entity.name.namespace.augscript"
+            }
+          }
+        }
+      ]
+    },
+    "members": {
+      "patterns": [
+        {
+          "match": "(\\.)([A-Za-z_][A-Za-z0-9_]*)(?=\\s*\\()",
+          "captures": {
+            "1": {
+              "name": "punctuation.accessor.augscript"
+            },
+            "2": {
+              "name": "entity.name.function.member.augscript"
+            }
+          }
+        },
+        {
+          "match": "(\\.)([A-Za-z_][A-Za-z0-9_]*)",
+          "captures": {
+            "1": {
+              "name": "punctuation.accessor.augscript"
+            },
+            "2": {
+              "name": "variable.other.property.augscript"
+            }
+          }
+        }
+      ]
+    },
+    "calls": {
+      "patterns": [
+        {
+          "match": "(?<=[(,])\\s*([A-Za-z_][A-Za-z0-9_]*)(?=\\s*(?:=|to\\b))",
+          "captures": {
+            "1": {
+              "name": "variable.parameter.augscript"
+            }
+          }
+        },
+        {
+          "name": "support.function.builtin.augscript",
+          "match": "\\b(?:assert|print|arguments|read_file|write_file|c_int|int)\\b(?=\\s*\\()"
+        },
+        {
+          "name": "entity.name.function.call.augscript",
+          "match": "\\b[A-Za-z_][A-Za-z0-9_]*\\b(?=\\s*(?:<[^>]+>)?\\()"
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.augscript",
+          "match": "\\b(?:if|else|while|for|match|some|in|try|catch|always|throw|return|yield|unless|test|when|it|pass|start|wait|handle)\\b"
+        },
+        {
+          "name": "keyword.declaration.augscript",
+          "match": "\\b(?:interceptor|interface|capability|record|fixture|composition|include|implements|extends|returns|streams|changes|uses|import|everything|and|from|export|folder|bind|implement|with|to|as|resolve|extern|C|out|pure|value|optional|endpoint|serve|on|port|status|input)\\b"
+        },
+        {
+          "name": "keyword.other.ownership.augscript",
+          "match": "\\b(?:own|borrow|mutable|unsafe|shared|fresh|scoped|scope|freeze|lock)\\b"
+        }
+      ]
+    },
+    "operators": {
+      "patterns": [
+        {
+          "name": "keyword.operator.augscript",
+          "match": "=>|==|!=|<=|>=|&&|\\|\\||[+*/=<>!-]"
+        }
+      ]
+    },
+    "tests": {
+      "patterns": [
+        {
+          "match": "\\b(test)\\s+(endpoint)\\s+([A-Za-z_][A-Za-z0-9_]*)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+          "captures": {
+            "1": {"name": "keyword.declaration.augscript"},
+            "2": {"name": "keyword.declaration.augscript"},
+            "3": {"name": "entity.name.function.endpoint.augscript"},
+            "4": {"name": "variable.other.augscript"}
+          }
+        },
+        {
+          "match": "\\b(test)\\s+([A-Za-z_][A-Za-z0-9_]*)(?:<[^>]+>)?\\s+([A-Za-z_][A-Za-z0-9_]*)",
+          "captures": {
+            "1": {
+              "name": "keyword.declaration.augscript"
+            },
+            "2": {
+              "name": "entity.name.type.augscript"
+            },
+            "3": {
+              "name": "variable.other.augscript"
+            }
+          }
+        },
+        {
+          "match": "\\b(when|it)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+          "captures": {
+            "1": {
+              "name": "keyword.control.augscript"
+            },
+            "2": {
+              "name": "entity.name.section.test.augscript"
+            }
+          }
+        },
+        {
+          "match": "\\b(test)\\s+([A-Za-z_][A-Za-z0-9_]*)(?=\\s*(?:\\{|:))",
+          "captures": {
+            "1": {
+              "name": "keyword.declaration.augscript"
+            },
+            "2": {
+              "name": "entity.name.function.augscript"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

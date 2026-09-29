@@ -1,0 +1,42 @@
+{
+  "iconDefinitions": {
+    "_file": { "iconPath": "./file.svg" },
+    "_folder": { "iconPath": "./folder.svg" },
+    "_folder_open": { "iconPath": "./folder-open.svg" },
+    "_aug": { "iconPath": "./aug.svg" },
+    "_main": { "iconPath": "./main.svg" },
+    "_export": { "iconPath": "./export.svg" },
+    "_config": { "iconPath": "./config.svg" },
+    "_typescript": { "iconPath": "./typescript.svg" },
+    "_javascript": { "iconPath": "./javascript.svg" },
+    "_native": { "iconPath": "./native.svg" },
+    "_json": { "iconPath": "./json.svg" },
+    "_markdown": { "iconPath": "./markdown.svg" }
+  },
+  "file": "_file",
+  "folder": "_folder",
+  "folderExpanded": "_folder_open",
+  "fileExtensions": {
+    "aug": "_aug",
+    "yaml": "_config",
+    "yml": "_config",
+    "ts": "_typescript",
+    "tsx": "_typescript",
+    "js": "_javascript",
+    "mjs": "_javascript",
+    "cjs": "_javascript",
+    "c": "_native",
+    "h": "_native",
+    "json": "_json",
+    "md": "_markdown"
+  },
+  "fileNames": {
+    "main.aug": "_main",
+    "export.aug": "_export",
+    "main.yaml": "_config",
+    "main.yml": "_config"
+  },
+  "languageIds": {
+    "augscript": "_aug"
+  }
+}

@@ -1,0 +1,182 @@
+{
+  "name": "augscript",
+  "displayName": "AugScript",
+  "description": "Language support for AugScript",
+  "version": "0.16.0",
+  "publisher": "augscript",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "main": "./extension.cjs",
+  "activationEvents": [
+    "onLanguage:augscript",
+    "onCommand:augscript.build",
+    "onCommand:augscript.run",
+    "onCommand:augscript.test",
+    "onCommand:augscript.refreshTests",
+    "onCommand:augscript.openTestingGuide",
+    "onCommand:augscript.openGuide",
+    "onCommand:augscript.openWebGuide",
+    "onCommand:augscript.openDiagnostics",
+    "onDebugResolve:augscript",
+    "onDebugInitialConfigurations:augscript"
+  ],
+  "scripts": {
+    "vscode:prepublish": "node prepare.mjs",
+    "package": "vsce package --no-dependencies --allow-missing-repository"
+  },
+  "devDependencies": {
+    "@vscode/vsce": "3.9.2"
+  },
+  "contributes": {
+    "languages": [
+      {
+        "id": "augscript",
+        "aliases": [
+          "AugScript",
+          "augscript"
+        ],
+        "extensions": [
+          ".aug"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "augscript",
+        "scopeName": "source.augscript",
+        "path": "./syntaxes/augscript.tmLanguage.json"
+      }
+    ],
+    "iconThemes": [
+      {
+        "id": "augscript-icons",
+        "label": "AugScript Icons",
+        "path": "./icons/augscript-icon-theme.json"
+      }
+    ],
+    "breakpoints": [
+      {
+        "language": "augscript"
+      }
+    ],
+    "debuggers": [
+      {
+        "type": "augscript",
+        "label": "AugScript (LLDB)",
+        "languages": [
+          "augscript"
+        ],
+        "configurationAttributes": {
+          "launch": {
+            "properties": {
+              "project": {
+                "type": "string",
+                "description": "Project folder containing main.aug."
+              },
+              "args": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "default": []
+              },
+              "stopOnEntry": {
+                "type": "boolean",
+                "default": false
+              }
+            }
+          }
+        },
+        "initialConfigurations": [
+          {
+            "type": "augscript",
+            "request": "launch",
+            "name": "Debug AugScript"
+          }
+        ]
+      }
+    ],
+    "commands": [
+      {
+        "command": "augscript.explain",
+        "title": "AugScript: Explain Current File"
+      },
+      {
+        "command": "augscript.context",
+        "title": "AugScript: Gather Context for Current File"
+      },
+      {
+        "command": "augscript.debugTerminal",
+        "title": "AugScript: Debug in LLDB Terminal"
+      },
+      {
+        "command": "augscript.build",
+        "title": "AugScript: Build Project"
+      },
+      {
+        "command": "augscript.run",
+        "title": "AugScript: Run Project"
+      },
+      {
+        "command": "augscript.test",
+        "title": "AugScript: Test Project"
+      },
+      {
+        "command": "augscript.refreshTests",
+        "title": "AugScript: Refresh Tests"
+      },
+      {
+        "command": "augscript.openTestingGuide",
+        "title": "AugScript: Open Testing Guide"
+      },
+      {
+        "command": "augscript.openGuide",
+        "title": "AugScript: Open Language Guide"
+      },
+      {
+        "command": "augscript.openDiagnostics",
+        "title": "AugScript: Open Diagnostics Guide"
+      },
+      {
+        "command": "augscript.openToolingGuide",
+        "title": "AugScript: Open Native Tooling Guide"
+      },
+      {
+        "command": "augscript.openWebGuide",
+        "title": "AugScript: Open Web and Crypto Guide"
+      }
+    ],
+    "configuration": {
+      "title": "AugScript",
+      "properties": {
+        "augscript.lldbDapPath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to LLVM lldb-dap for source debugging. Empty searches PATH and the selected Xcode toolchain."
+        },
+        "augscript.nodePath": {
+          "type": "string",
+          "default": "node",
+          "description": "Path to Node.js 24 or later for the AugScript compiler."
+        },
+        "augscript.compilerPath": {
+          "type": "string",
+          "default": "",
+          "description": "Optional path to a custom aug CLI executable or bin/aug.mjs."
+        },
+        "augscript.nativeHome": {
+          "type": "string",
+          "default": "",
+          "description": "Absolute path to native dependencies built by scripts/bootstrap-native.mjs. Share this .aug-native directory with the bundled compiler."
+        }
+      }
+    }
+  }
+}

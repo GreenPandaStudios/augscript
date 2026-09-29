@@ -1,0 +1,64 @@
+{
+  "format": 1,
+  "platform": "darwin",
+  "dependencies": [
+    {
+      "name": "cmake",
+      "version": "4.1.1",
+      "url": "https://github.com/Kitware/CMake/releases/download/v4.1.1/cmake-4.1.1-macos-universal.tar.gz",
+      "archive": "cmake.tar.gz",
+      "sha256": "3cd1da5341618645bdc85a3b99e273f29c4d48db2f545925a658db992e61f6f9"
+    },
+    {
+      "name": "gmp",
+      "version": "6.3.0",
+      "url": "https://ftp.gnu.org/gnu/gmp/gmp-6.3.0.tar.xz",
+      "archive": "gmp.tar.xz",
+      "sha256": "a3c2b80201b89e68616f4ad30bc66aee4927c3ce50e33929ca819d5c43538898"
+    },
+    {
+      "name": "nettle",
+      "version": "3.10.2",
+      "url": "https://ftp.gnu.org/gnu/nettle/nettle-3.10.2.tar.gz",
+      "archive": "nettle.tar.gz",
+      "sha256": "fe9ff51cb1f2abb5e65a6b8c10a92da0ab5ab6eaf26e7fc2b675c45f1fb519b5"
+    },
+    {
+      "name": "gnutls",
+      "version": "3.8.13",
+      "url": "https://www.gnupg.org/ftp/gcrypt/gnutls/v3.8/gnutls-3.8.13.tar.xz",
+      "archive": "gnutls.tar.xz",
+      "sha256": "ffed8ec1bf09c2426d4f14aae377de4753b53e537d685e604e99a8b16ca9c97e"
+    },
+    {
+      "name": "pkgconf",
+      "version": "2.3.0",
+      "url": "https://distfiles.ariadne.space/pkgconf/pkgconf-2.3.0.tar.xz",
+      "archive": "pkgconf.tar.xz",
+      "sha256": "3a9080ac51d03615e7c1910a0a2a8df08424892b5f13b0628a204d3fcce0ea8b"
+    },
+    {
+      "name": "libwebsockets",
+      "version": "5.0-stable",
+      "revision": "a842936f881921b6462b3328cce8e700b7a7ecd2",
+      "url": "https://codeload.github.com/warmcat/libwebsockets/tar.gz/a842936f881921b6462b3328cce8e700b7a7ecd2",
+      "archive": "libwebsockets.tar.gz",
+      "sha256": "aec47546b8b298fb10b021896873637d9bd1efcb9e0f6f165ac045f24e275cc2"
+    },
+    {
+      "name": "yyjson",
+      "version": "0.12.0",
+      "url": "https://codeload.github.com/ibireme/yyjson/tar.gz/refs/tags/0.12.0",
+      "archive": "yyjson.tar.gz",
+      "sha256": "b16246f617b2a136c78d73e5e2647c6f1de1313e46678062985bdcf1f40bb75d"
+    },
+    {
+      "name": "minicoro",
+      "version": "0.1.3",
+      "revision": "8673ca62ed938c0b436bc2a548f172865f65bf1d",
+      "url": "https://codeload.github.com/edubart/minicoro/tar.gz/8673ca62ed938c0b436bc2a548f172865f65bf1d",
+      "archive": "minicoro-0.1.3.tar.gz",
+      "sha256": "604a7b57615f7bbf38e72bad43e8f12d03b37aa8b9573f48bd056925924cc57d"
+    }
+  ]
+}

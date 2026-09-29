@@ -1,0 +1,38 @@
+{
+  "recordedAt": "2026-09-28T16:48:45.210Z",
+  "version": "0.15.0",
+  "workload": "examples/benchmark/main.aug",
+  "entries": 20000,
+  "expectedOutput": "599970000\ntrue\n",
+  "environment": {
+    "platform": "darwin",
+    "release": "25.6.0",
+    "architecture": "arm64",
+    "cpu": "Apple M5",
+    "node": "v24.18.0"
+  },
+  "optimization": "release (-O2)",
+  "iterations": 10,
+  "warmup": 2,
+  "includesProcessStartup": true,
+  "units": "milliseconds",
+  "samples": [
+    6.0544590000000085,
+    6.099375000000009,
+    5.33745799999997,
+    4.996000000000038,
+    4.762875000000008,
+    4.77962500000001,
+    4.676667000000009,
+    4.5241249999999695,
+    4.297333000000037,
+    4.267916999999954
+  ],
+  "median": 4.77962500000001,
+  "p95": 6.099375000000009,
+  "minimum": 4.267916999999954,
+  "compiler": {
+    "executable": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang",
+    "version": "Apple clang 21.0.0 (clang-2100.3.34.2)"
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "readme": {
+    "stdout": "4\n"
+  },
+  "quickstart": {
+    "stdout": "Hello, AugScript!\n"
+  },
+  "generics-guide": {
+    "stdout": "item\nitem\n"
+  },
+  "state-guide": {
+    "stdout": "6\n"
+  },
+  "data-guide": {
+    "stdout": "true\n1\npear\napple\npear\nmissing\n"
+  },
+  "capabilities-guide": {
+    "stdout": "Dependencies are visible\n"
+  },
+  "errors-guide": {
+    "stdout": "No configuration available\n"
+  },
+  "interceptors-guide": {
+    "stdout": "answer\n"
+  },
+  "testing-guide": {
+    "stdout": "3\n",
+    "tests": 4
+  },
+  "class-testing-guide": {
+    "stdout": "1\n",
+    "tests": 2
+  },
+  "ffi-guide": {
+    "stdout": "Hello from C\n"
+  },
+  "web-guide": {
+    "buildOnly": true,
+    "tests": 3
+  }
+}
