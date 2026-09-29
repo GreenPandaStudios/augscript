@@ -2,7 +2,7 @@
 layout: home
 hero:
   name: August
-  text: Code that explains itself.
+  text: The world runs on language
   tagline: A statically checked language for developers working with LLMs. Readable modules, clear dependencies, explicit effects, native C output.
   actions:
     - theme: brand

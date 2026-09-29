@@ -1,5 +1,7 @@
 # AugScript for VS Code
 
+**The world runs on language.**
+
 ![August — readable code, clear dependencies](media/banner.png)
 
 Version 0.19 bundles the current compiler, runtime, native bootstrap, language wiki, generated library API guides, and deterministic source specifications.

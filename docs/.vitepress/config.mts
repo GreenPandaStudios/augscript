@@ -64,6 +64,6 @@ export default defineConfig({
     ],
     editLink: { pattern: `${repo}/edit/main/docs/:path`, text: 'Edit this page on GitHub' },
     socialLinks: [{ icon: 'github', link: repo }],
-    footer: { message: 'Simplicity. Developer scalability. Explicit dependencies.', copyright: 'MIT · August contributors' }
+    footer: { message: 'The world runs on language', copyright: 'MIT · August contributors' }
   }
 });
