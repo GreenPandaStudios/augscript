@@ -38,11 +38,12 @@ export default defineConfig({
   themeConfig: {
     siteTitle: `August ${version}`,
     nav: [{ text: 'Guide', link: '/reference' }, { text: 'Web', link: '/web' },
-      { text: 'Packages', link: '/packages' }, { text: 'Performance', link: '/performance' }, { text: 'GitHub', link: repo }],
+      { text: 'Examples', link: '/examples/' }, { text: 'Packages', link: '/packages' }, { text: 'Performance', link: '/performance' }, { text: 'GitHub', link: repo }],
     search: { provider: 'local' },
     sidebar: [
       { text: 'Learn August', items: [
         { text: 'Start here', link: '/index' }, { text: 'Language guide', link: '/reference' },
+        { text: 'Example projects', link: '/examples/' },
         { text: 'Grammar', link: '/grammar' }, { text: 'Constructs and built-ins', link: '/language-constructs' },
         { text: 'Testing', link: '/testing' }, { text: 'Web and crypto', link: '/web' },
         { text: 'Compiled specifications', link: '/specifications' },

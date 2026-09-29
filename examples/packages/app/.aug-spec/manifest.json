@@ -1,0 +1,9 @@
+{
+  "format": 1,
+  "files": [
+    ".aug-spec/packages/@example/aug-math/0.1.0/arithmetic.aug",
+    ".aug-spec/packages/@example/aug-math/0.1.0/arithmetic.aug.md",
+    "main.aug.md"
+  ],
+  "digest": "63082aa3dd97b3d1e3fe6e8cc6fd260fd555d0f2dabca11ff1b8930f3c9717ea"
+}

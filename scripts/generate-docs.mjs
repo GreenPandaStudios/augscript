@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 import { loadProject } from '../src/project.ts';
 import { checkProject } from '../src/checker.ts';
@@ -8,6 +8,7 @@ import { callableDocumentation } from '../src/documentation.ts';
 import { languageHelp } from '../src/help.ts';
 import { collectionOperations } from '../src/builtins.ts';
 import { generateSpecs } from '../src/spec.ts';
+import { buildExamplePages } from './example-docs.mjs';
 
 const root = resolve(import.meta.dirname, '..');
 const check = process.argv.includes('--check');
@@ -61,6 +62,7 @@ for (const [type, operations] of Object.entries(collectionOperations)) {
 outputs.set('docs/language-constructs.md', constructs.join('\n\n') + '\n');
 for (const output of generateSpecs(checked, { files: [...project.files.values()].filter(file => file.builtin), manifest: false }))
   outputs.set(relative(root, output.path), output.text);
+for (const [path, text] of buildExamplePages()) outputs.set(path, text);
 const stale = [];
 for (const [path, content] of outputs) {
   const file = join(root, path);
@@ -69,5 +71,17 @@ for (const [path, content] of outputs) {
 }
 for (const file of readdirSync(join(root, 'docs/api'))) if (file.endsWith('.md') && !outputs.has('docs/api/' + file))
   stale.push('Unexpected generated API page: ' + file);
+const pruneGallery = directory => {
+  for (const entry of readdirSync(join(root, directory), { withFileTypes: true })) {
+    const path = directory + '/' + entry.name;
+    if (entry.isDirectory()) pruneGallery(path);
+    else if (entry.isFile() && path.endsWith('.md') && !outputs.has(path) &&
+      /^---\n[\s\S]*?\ngenerated: true\n[\s\S]*?\n---\n/.test(readFileSync(join(root, path), 'utf8'))) {
+      if (check) stale.push('Unexpected generated example page: ' + path);
+      else rmSync(join(root, path));
+    }
+  }
+};
+if (existsSync(join(root, 'docs/examples'))) pruneGallery('docs/examples');
 if (stale.length) throw new Error('Documentation is stale; run npm run docs:generate:\n' + stale.join('\n'));
-process.stdout.write(`${outputs.size} documentation pages ${check ? 'match source' : 'generated'}\n`);
+process.stdout.write(`${outputs.size} documentation files ${check ? 'match source' : 'generated'}\n`);

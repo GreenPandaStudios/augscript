@@ -10,6 +10,7 @@
 - Class and record `initialize` blocks; canonical `implement … with …` and `resolve … to …` with verified migration fixes for legacy spellings.
 - VS Code spec generation/preview and migration commands, updated syntax coloring, snippets, hover, and configuration help.
 - The formatter preserves `import everything`; compiled specs describe the dependency surface actually used.
+- Browse every repository example and measured August benchmark as a complete project in the wiki. Each file shows highlighted indentation and braces views, its compiled specification, and links to the exact dependency documentation. The code-style switch remembers the reader's choice and supports the keyboard. Documentation generation and CI check the displayed code and specs against repository sources.
 
 ## 0.18.0
 

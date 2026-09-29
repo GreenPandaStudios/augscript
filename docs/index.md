@@ -15,6 +15,9 @@ hero:
       text: Build a web service
       link: /web
     - theme: alt
+      text: Browse real projects
+      link: /examples/
+    - theme: alt
       text: See performance graphs
       link: /performance
 features:
@@ -30,6 +33,6 @@ features:
 
 These pages are versioned with the compiler. Guide projects are compiled and tested in CI. Library API pages and language construct help are generated from the same declarations and comments that supply editor hover. [Compiled specifications](specifications.md) explain each source file beside its code, including private behavior and links to offline dependency docs.
 
-Start with the [language guide](reference.md), [built-in testing](testing.md), or [HTTP endpoints](web.md). The [same-app OpenID Connect example](https://github.com/GreenPandaStudios/augscript/tree/main/examples/oidc-login) demonstrates a login page, provider, client, and separate session JWT.
+Start with the [language guide](reference.md), [built-in testing](testing.md), or [HTTP endpoints](web.md). [Browse complete projects](examples/index.md) with a choice of indentation or braces and compiled specifications beside the code. The [same-app OpenID Connect example](examples/oidc-login/index.md) demonstrates a login page, provider, client, and separate session JWT.
 
 August is experimental. The [gap ledger](web-library-gaps.md) records verified limits and remaining work. See [packages](packages.md) for installation and platform support.

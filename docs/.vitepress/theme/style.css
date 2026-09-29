@@ -1,0 +1,5 @@
+.vp-code-group .tabs input:focus-visible + label {
+  outline: 2px solid var(--vp-c-brand-1);
+  outline-offset: -5px;
+  border-radius: 6px;
+}

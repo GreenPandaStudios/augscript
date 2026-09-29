@@ -1,0 +1,160 @@
+---
+title: "main.aug · JSON benchmark"
+generated: true
+source: "benchmarks/json/main.aug"
+editLink: false
+prev: false
+next: false
+outline: [2, 3]
+---
+
+# `main.aug`
+
+[JSON benchmark](index.md) · Source and specification
+
+::: details Files in this project
+
+- [`main.aug`](main.md)
+- [`data.aug`](data.md)
+
+:::
+
+## Code {#code}
+
+::: code-group
+
+```aug [Indentation]
+import parse from august.json
+import Payload from data
+int checksum = 0
+int index = 0
+try:
+    while index < 5000:
+        document = parse(input="{\"id\":7,\"message\":\"hello\",\"values\":[1,2,3]}")
+        payload = document.decode<Payload>()
+        encoded = Json(value=payload).stringify()
+        checksum = checksum + payload.id + encoded.length()
+        index = index + 1
+    print(value=checksum)
+catch JsonError error:
+    exit(status=1)
+```
+
+```aug [Braces]
+import parse from august.json
+import Payload from data
+int checksum = 0
+int index = 0
+try {
+    while index < 5000 {
+        document = parse(input="{\"id\":7,\"message\":\"hello\",\"values\":[1,2,3]}")
+        payload = document.decode<Payload>()
+        encoded = Json(value=payload).stringify()
+        checksum = checksum + payload.id + encoded.length()
+        index = index + 1
+    }
+    print(value=checksum)
+}
+catch JsonError error {
+    exit(status=1)
+}
+```
+
+:::
+
+## Compiled specification {#specification}
+
+August 0.19.0. This document is compiled from checked code. Author documentation is labeled separately. It follows Simplified Technical English as guidance, with best-effort wording.
+
+### Dependencies used by this file
+
+#### [`parse`](dependencies/august/0.19.0/json/contracts.md#symbol-parse)
+
+Available from `august.json`.
+
+**Inputs and dependencies**
+
+- `input`: `string`. The caller supplies this labeled input. Read reference values without copying them.
+
+Result: `Json`.
+
+Possible failures: `JsonError`. The caller must catch or propagate them.
+
+#### [`Payload`](data.md#symbol-Payload)
+
+Available from `data`.
+
+Immutable record. Follow the linked specification for its full explanation.
+
+Field `id`: `int`. Read-only after initialization.
+
+### Built-in operations used by this file
+
+#### `Json.decode`
+
+Decode a checked record or data type: json.decode<Profile>(). Unknown fields, type mismatches, and validation errors are rejected.
+
+Result: `Payload`.
+
+Possible failures: `JsonError`.
+
+[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
+
+#### `Json.stringify`
+
+Serialize this JSON value with checked UTF-8 escaping and exact int64 values.
+
+Result: `string`.
+
+Possible failures: `JsonError`.
+
+[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
+
+#### `exit`
+
+Exit from main with a status from 0 to 255 after cancellation and cleanup.
+
+Inputs: `status`: `int`.
+
+Result: `void`.
+
+[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
+
+#### `print`
+
+Composition and test output. Other callables receive Console and declare uses console.write.
+
+Inputs: `value`: `any`.
+
+Result: `void`.
+
+[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
+
+#### `string.length`
+
+Read the number of UTF-8 bytes. Unicode text is preserved losslessly.
+
+Result: `int`.
+
+[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
+
+### Startup, in source order
+
+- Set `checksum` of type `int` to `0`.
+- Set `index` of type `int` to `0`.
+- Try these operations:
+  - While (`index` is less than `5000`) is true, repeat:
+    - Set `document` to the result of call [`parse`](dependencies/august/0.19.0/json/contracts.md#symbol-parse) with `input` set to `"{\"id\":7,\"message\":\"hello\",\"values\":[1,2,3]}"`.
+    - Set `payload` to the result of call `decode` on `document` with type arguments [`Payload`](data.md#symbol-Payload).
+    - Set `encoded` to the result of call `stringify` on the result of call `Json` with `value` set to `payload`.
+    - Set `checksum` to ((`checksum` plus `id` of `payload`) plus the result of call `length` on `encoded`).
+    - Set `index` to (`index` plus `1`).
+    - Check the condition again before the next iteration.
+  - Call `print` with `value` set to `checksum`.
+- If they fail with `JsonError`, name the failure `error` and recover:
+  - Call `exit` with `status` set to `1`.
+
+
+### Language rules
+
+Boolean operations short-circuit from left to right. int uses signed 64-bit values; addition, subtraction, multiplication, and negation wrap. Division by zero raises ArithmeticError. float uses double precision. Tuples and records compare by value; mutable collections and behavioral classes compare by identity. Optional values contain a value or null; omission becomes null. Managed references grant read access; ownership moves and mutable borrows remain checked. A scope joins its child tasks; an unhandled child failure cancels siblings. See the [language reference](https://greenpandastudios.github.io/augscript/reference) for shared rules.

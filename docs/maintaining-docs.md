@@ -26,6 +26,12 @@ The API generator reads each `export.aug`, resolves the actual public declaratio
 
 The generator also runs the deterministic spec compiler for every standard-library source file. Commit these adjacent `src/stdlib/**/*.aug.md` files. Unlike public API pages, full source specs include private helpers and all local behavior. For application or third-party package source changes, run `aug spec PROJECT` and verify `aug spec PROJECT --check`. See [the user workflow](specifications.md).
 
+## Repository example gallery
+
+`docs/example-projects.json` lists the complete projects shown in [the example gallery](examples/index.md), including the measured benchmark programs. `docs:generate` checks each application and its same-file tests, formats each file in indentation and braces styles, and runs the spec compiler. It publishes code and specs together under `docs/examples`, with dependency links that stay in the wiki. It also refreshes adjacent example specs and their offline dependency copies. Generation uses temporary project copies; the package-consumer example installs its local dependency offline there. It does not edit example source or create package locks in the checkout.
+
+Keep titles and descriptions in the catalog current when adding or changing an example. `docs:check` rejects source/spec drift. Gallery tests require every repository example and benchmark source to be represented, check both displayed syntax styles, and follow the wiki's generated links and declaration anchors. Readers can switch code style with a mouse or keyboard; their choice is kept between pages on the same browser.
+
 ## Executable examples
 
 Each runnable `aug` fence declares `project=NAME file=PATH`. A guide may spread one project across several fences. Add expected output/test counts to `docs/examples.json`. The documentation test assembles, checks, runs or builds, tests, formats, and checks those projects again. API signatures use `text` fences because a declaration header is not a complete application.

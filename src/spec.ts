@@ -22,7 +22,7 @@ const hash = (text: string) => createHash('sha256').update(text).digest('hex');
 const compare = (left:string, right:string) => left < right ? -1 : left > right ? 1 : 0;
 const unreachable = (node: never): never => { throw new Error(`No specification renderer for ${(node as {kind?:string}).kind}`); };
 
-export interface SpecOutput { path: string; text: string }
+export interface SpecOutput { path: string; text: string; source: string }
 export interface SpecOptions { files?: SourceFile[]; manifest?: boolean }
 
 /** Render checked code, never execute it. All paths and ordering are reproducible. */
@@ -48,8 +48,8 @@ export function generateSpecs(checked: CheckedProject, options: SpecOptions = {}
       const dependency = project.files.get(path);
       if (dependency && !seen.has(path)) queue.push(dependency);
     });
-    outputs.push({path:docs.get(file.path)!, text:writer.render()});
-    if (!own.has(file.path)) outputs.push({path:sources.get(file.path)!, text:copied + file.source});
+    outputs.push({path:docs.get(file.path)!, text:writer.render(), source:file.path});
+    if (!own.has(file.path)) outputs.push({path:sources.get(file.path)!, text:copied + file.source, source:file.path});
   }
   return outputs.sort((a,b) => compare(a.path,b.path));
 }

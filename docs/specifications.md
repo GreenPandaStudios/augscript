@@ -2,6 +2,8 @@
 
 August keeps explanations beside the code. `aug spec` compiles each checked source file into a neighboring Markdown file. It describes the code without running the application or sending it to a model.
 
+[See complete example projects](examples/index.md) with highlighted source in either indentation or braces style and the actual compiled spec for every file.
+
 ```sh
 aug spec .
 aug spec . --check
