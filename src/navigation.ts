@@ -3,6 +3,7 @@ import { basename, dirname, join, resolve } from 'node:path';
 import type { ClassDecl, MethodDecl, Param, SourceFile } from './ast.ts';
 import { lex, type Token } from './lexer.ts';
 import type { Definition, Project } from './project.ts';
+import { libraryChild } from './libraries.ts';
 
 export interface NavigationTarget {
   name: string;
@@ -45,7 +46,7 @@ function importPathTarget(project: Project, importer: SourceFile, from: string[]
   if (!from.length) return undefined;
   if (from[0] === 'august' && project.stdlibRoot) {
     let folder = project.stdlibRoot;
-    for (let index = 1; index <= segment; index++) folder = join(folder, from[index]);
+    for (let index = 1; index <= segment; index++) folder = libraryChild(project.libraries, folder, from[index]);
     return exportTarget(project, folder, name, segment < from.length - 1 ? from[segment + 1] : undefined);
   }
   if (from.length === 1) {
@@ -70,7 +71,7 @@ function unfinishedModuleTarget(project: Project, file: SourceFile,
   if (lineTokens[0]?.kind === 'export' && lineTokens[1]?.kind === 'folder' &&
       lineTokens[2]?.kind === 'identifier' &&
       (token === lineTokens[1] || token === lineTokens[2]))
-    return exportTarget(project, join(dirname(file.path), lineTokens[2].value),
+    return exportTarget(project, file.builtin ? libraryChild(project.libraries, dirname(file.path), lineTokens[2].value) : join(dirname(file.path), lineTokens[2].value),
       lineTokens[2].value);
   if (!['import', 'export'].includes(lineTokens[0]?.kind ?? '') ||
       lineTokens[1]?.kind !== 'identifier') return undefined;
@@ -143,7 +144,7 @@ export function definitionAt(project: Project, fileName: string,
   }
   if (item?.kind === 'export' && item.folder &&
       (token.kind === 'folder' || token.value === item.name))
-    return exportTarget(project, join(dirname(file.path), item.name), item.name);
+    return exportTarget(project, file.builtin ? libraryChild(project.libraries, dirname(file.path), item.name) : join(dirname(file.path), item.name), item.name);
   if (!item) {
     const unfinished = unfinishedModuleTarget(project, file, token, tokens);
     if (unfinished) return unfinished;

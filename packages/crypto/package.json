@@ -1,0 +1,32 @@
+{
+  "name": "@greenpandastudios/aug-crypto",
+  "version": "0.17.0",
+  "description": "August cryptographic capabilities, RSA JWK and signed JWT helpers",
+  "license": "MIT",
+  "files": [
+    "august",
+    "aug-package.json",
+    "docs",
+    "LICENSE",
+    "THIRD_PARTY_NOTICES.md"
+  ],
+  "exports": {
+    "./aug-package.json": "./aug-package.json"
+  },
+  "dependencies": {
+    "@greenpandastudios/aug-stdlib": "0.17.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "tag": "next"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GreenPandaStudios/augscript.git",
+    "directory": "packages/crypto"
+  },
+  "homepage": "https://GreenPandaStudios.github.io/augscript/api/crypto",
+  "bugs": {
+    "url": "https://github.com/GreenPandaStudios/augscript/issues"
+  }
+}

@@ -1,0 +1,40 @@
+name: Prepare release
+on:
+  push:
+    tags: ['v*']
+permissions:
+  contents: read
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: macos-15
+    timeout-minutes: 60
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - run: npm ci
+      - run: npm --prefix vscode ci
+      - run: node scripts/version.mjs --check --tag "$GITHUB_REF_NAME"
+      - run: node scripts/bootstrap-native.mjs
+      - run: npm run check
+      - run: npm test
+      - run: npm run docs:check
+      - run: npm run docs:build
+      - run: npm run package:packages
+      - run: npm run test:packages -- --native
+      - run: npm run package:extension
+      - run: node scripts/release-artifacts.mjs
+      - name: Upload draft prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" dist/release/* --draft --prerelease --verify-tag --title "August $GITHUB_REF_NAME" --notes-file CHANGELOG.md

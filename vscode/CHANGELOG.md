@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.17.0
+
+- Shared repository, versioned language wiki and generated library API documentation.
+- Compiler parity with separately distributed CLI/stdlib/web/crypto packages.
+- Installed CLI version reporting and native cache support.
+
 ## 0.16.0
 
 - First-party typed endpoints, literal HTTP policies, OpenAPI 3.2.1 and same-file endpoint pipeline tests.

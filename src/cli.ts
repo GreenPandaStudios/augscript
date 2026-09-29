@@ -39,6 +39,10 @@ function usage(): void {
 
 export async function main(argv: string[]): Promise<number> {
   const command = argv[0];
+  if (command === '--version' || command === 'version') {
+    process.stdout.write(JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')).version + '\n');
+    return 0;
+  }
   if (!command || command === '--help' || command === 'help') { usage(); return 0; }
   if (command === 'lsp') return runLanguageServer(resolve(argv[1] ?? process.cwd()));
   if (!['check', 'build', 'run', 'emit-c', 'test', 'openapi', 'format', 'bench', 'explain', 'context', 'symbols', 'definition',

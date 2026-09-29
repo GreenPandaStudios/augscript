@@ -7,6 +7,7 @@ import type { CheckedProject } from './checker.ts';
 import type { Diagnostic } from './ast.ts';
 import { loadConfig } from './config.ts';
 import {generateOpenApi} from './openapi.ts';
+import { nativeHome } from '../scripts/native-home.mjs';
 
 export function compileNative(root: string, generated: string, options: { output?: string; testIndex?: number; release?: boolean; checked?: CheckedProject } = {}) {
   const config = loadConfig(root).config;
@@ -20,7 +21,7 @@ export function compileNative(root: string, generated: string, options: { output
   const cPath = join(buildDir, `${name}.c`);
   writeFileSync(cPath, generated);
   const runtimeDir = resolve(dirname(fileURLToPath(import.meta.url)), '..', 'runtime');
-  const nativeRoot = resolve(process.env.AUG_NATIVE_HOME ?? join(runtimeDir, '..', '.aug-native'));
+  const nativeRoot = nativeHome(resolve(runtimeDir, '..'));
   const runtimePath = join(buildDir, 'aug_runtime.c');
   copyFileSync(join(runtimeDir, 'aug_runtime.c'), runtimePath);
   copyFileSync(join(runtimeDir, 'aug_runtime.h'), join(buildDir, 'aug_runtime.h'));

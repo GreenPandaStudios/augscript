@@ -4,3 +4,8 @@ node_modules/
 *.vsix
 vscode/compiler/
 .DS_Store
+dist/
+docs/.vitepress/cache/
+docs/.vitepress/dist/
+docs/.site/
+*.tgz

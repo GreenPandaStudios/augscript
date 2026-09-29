@@ -1,0 +1,10 @@
+{
+  "format": 1,
+  "name": "august.web",
+  "version": "0.17.0",
+  "compiler": "0.17.0",
+  "source": "august/web",
+  "modules": [
+    "web"
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "name": "@greenpandastudios/aug-cli",
+  "version": "0.17.0",
+  "description": "August compiler, native build CLI, tests and language server",
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": ">=24"
+  },
+  "bin": {
+    "aug": "bin/aug.mjs",
+    "aug-native": "scripts/bootstrap-native.mjs"
+  },
+  "files": [
+    "bin",
+    "src",
+    "runtime",
+    "scripts",
+    "docs",
+    "examples",
+    "LICENSE",
+    "THIRD_PARTY_NOTICES.md"
+  ],
+  "dependencies": {
+    "@greenpandastudios/aug-stdlib": "0.17.0",
+    "@greenpandastudios/aug-web": "0.17.0",
+    "@greenpandastudios/aug-crypto": "0.17.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "tag": "next"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GreenPandaStudios/augscript.git",
+    "directory": "packages/cli"
+  },
+  "homepage": "https://GreenPandaStudios.github.io/augscript/",
+  "bugs": {
+    "url": "https://github.com/GreenPandaStudios/augscript/issues"
+  },
+  "keywords": [
+    "august",
+    "augscript",
+    "compiler",
+    "language",
+    "llm"
+  ]
+}

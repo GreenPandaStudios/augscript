@@ -8,6 +8,7 @@ import { parse } from './parser.ts';
 import { loadConfig, type Config } from './config.ts';
 import { projectPolicies } from './policies.ts';
 import { builtinFunctions, builtinTypes } from './builtins.ts';
+import { libraryChild, libraryRelative, standardLibraries, type StandardLibraries } from './libraries.ts';
 
 export type DefinitionNode = ClassDecl | InterfaceDecl | InterceptorDecl | MethodDecl | CompositionDecl;
 export interface Definition {
@@ -29,6 +30,7 @@ export interface Project {
   testBodyStart?: number;
   testEndpoint?: {file: string; name: string};
   stdlibRoot?: string;
+  libraries: StandardLibraries;
   config: Config;
 }
 
@@ -71,8 +73,10 @@ export function loadProject(projectRoot: string, overrides: Map<string, string> 
     files.set(path, parsed.file);
     diagnostics.push(...parsed.diagnostics);
   }
-  const stdlibRoot = join(import.meta.dirname, 'stdlib');
-  for (const path of sourceFiles(stdlibRoot)) {
+  const libraries = standardLibraries();
+  const stdlibRoot = libraries.root;
+  const libraryFiles = new Set([stdlibRoot, ...libraries.modules.values()].flatMap(sourceFiles));
+  for (const path of libraryFiles) {
     const parsed = read(path);
     parsed.file.builtin = true;
     files.set(path, parsed.file);
@@ -114,7 +118,7 @@ export function loadProject(projectRoot: string, overrides: Map<string, string> 
             `Duplicate declaration ${item.name}`, 'NAME'));
           continue;
         }
-        const def: Definition = { id: `${file.builtin ? 'august/' + relative(stdlibRoot, file.path) : relative(root, file.path)}:${item.name}`,
+        const def: Definition = { id: `${file.builtin ? 'august/' + libraryRelative(libraries, file.path) : relative(root, file.path)}:${item.name}`,
           name: item.name, file: file.path, node: item };
         local.set(item.name, def);
         definitions.set(def.id, def);
@@ -181,7 +185,7 @@ export function loadProject(projectRoot: string, overrides: Map<string, string> 
           `Cannot export private folder ${item.name}`, 'PRIVATE'));
         continue;
       }
-      const path = join(dirname(file.path), item.name);
+      const path = file.builtin ? libraryChild(libraries, dirname(file.path), item.name) : join(dirname(file.path), item.name);
       if (!statExistsDirectory(path)) diagnostics.push(diagnostic(file.path, item.span.line,
         item.span.column, `Cannot export folder ${item.name}: it does not exist`, 'EXPORT'));
       else if (!files.has(join(path, 'export.aug'))) diagnostics.push(diagnostic(file.path,
@@ -236,7 +240,7 @@ export function loadProject(projectRoot: string, overrides: Map<string, string> 
             `Standard module august does not export ${child}`, 'IMPORT'));
           return result;
         }
-        folder = join(folder, child);
+        folder = libraryChild(libraries, folder, child);
       }
       return select(folderExports(folder), 'does not export');
     }
@@ -268,7 +272,7 @@ export function loadProject(projectRoot: string, overrides: Map<string, string> 
     return select(folderExports(folder), 'does not export');
   }
 
-  const project = { root, files, definitions, scopes, imports, diagnostics, main, stdlibRoot, config };
+  const project = { root, files, definitions, scopes, imports, diagnostics, main, stdlibRoot, libraries, config };
   diagnostics.push(...projectPolicies(project));
   return project;
 }

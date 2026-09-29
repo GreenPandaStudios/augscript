@@ -13,6 +13,7 @@ import { callableDocumentation } from './documentation.ts';
 import { interceptorBehavior } from './interceptors.ts';
 import {httpPolicyNames,httpPolicyOptions,httpPolicyOptionHelp,type HttpPolicyName} from './http-policies.ts';
 import {builtinTypes} from './builtins.ts';
+import { libraryChild, libraryRelative } from './libraries.ts';
 
 export interface EditorItem {
   label: string;
@@ -335,13 +336,16 @@ export function importItems(checked: CheckedProject, file: SourceFile): EditorIt
     const folder = dirname(exportFile.path);
     if (folder === currentFolder) continue;
     const standard = exportFile.builtin && project.stdlibRoot;
-    const relativeFolder = relative(standard || project.root, folder);
+    const relativeFolder = standard ? libraryRelative(project.libraries, folder) : relative(project.root, folder);
     if (relativeFolder.startsWith('..')) continue;
     const segments = relativeFolder.split(sep).filter(Boolean);
     if (segments.some(isPrivateName)) continue;
     let exposed = true;
     for (let index = 1; index < segments.length; index++) {
-      const parent = join(standard || project.root, ...segments.slice(0, index), 'export.aug');
+      let parentFolder = standard || project.root;
+      for (const segment of segments.slice(0, index)) parentFolder = standard ?
+        libraryChild(project.libraries, parentFolder, segment) : join(parentFolder, segment);
+      const parent = join(parentFolder, 'export.aug');
       if (!project.files.get(parent)?.items.some(item => item.kind === 'export' &&
           item.folder && item.name === segments[index])) { exposed = false; break; }
     }

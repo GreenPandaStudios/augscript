@@ -1,0 +1,48 @@
+name: Publish npm packages
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing published GitHub release tag, e.g. v0.17.0
+        type: string
+        required: true
+permissions:
+  contents: read
+concurrency:
+  group: npm-publication
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    environment: npm
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          ref: ${{ inputs.tag }}
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
+      - name: Require a reviewed GitHub release
+        env:
+          RELEASE_TAG: ${{ inputs.tag }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          node scripts/version.mjs --check --tag "$RELEASE_TAG"
+          test "$(gh release view "$RELEASE_TAG" --json isDraft --jq .isDraft)" = false
+      - run: npm ci
+      - run: npm run check
+      - run: npm run docs:check
+      - run: npm run package:packages
+      - run: node scripts/bootstrap-native.mjs --extract-only --only minicoro,yyjson
+      - run: npm run test:packages
+      - name: Publish matching packages using npm OIDC
+        run: |
+          for package in stdlib web crypto cli; do
+            npm publish "./dist/packages/$package" --access public --tag next
+          done

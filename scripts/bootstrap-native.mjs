@@ -5,16 +5,22 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync, openSync, closeSync
 import { dirname, join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { availableParallelism } from 'node:os';
+import { nativeHome } from './native-home.mjs';
 
 const root = resolve(import.meta.dirname, '..');
 const lock = JSON.parse(readFileSync(join(import.meta.dirname, 'native-dependencies.lock.json'), 'utf8'));
-const directory = resolve(process.env.AUG_NATIVE_HOME ?? join(root, '.aug-native'));
+const extractOnly = process.argv.includes('--extract-only');
+const onlyIndex = process.argv.indexOf('--only');
+const selected = onlyIndex >= 0 ? process.argv[onlyIndex + 1]?.split(',') : undefined;
+if (onlyIndex >= 0 && (!extractOnly || !selected?.length || selected.some(name => !lock.dependencies.some(dependency => dependency.name === name))))
+  throw new Error('--only requires --extract-only and comma-separated names from native-dependencies.lock.json.');
+const directory = nativeHome(root);
 const prefix = join(directory, 'prefix');
 const downloads = join(directory, 'downloads');
 const sources = join(directory, 'sources');
 const logs = join(directory, 'logs');
 for (const path of [prefix, downloads, sources, logs]) mkdirSync(path, { recursive: true });
-if (process.platform !== lock.platform) throw new Error(`Native bootstrap lock currently targets ${lock.platform}; this host is ${process.platform}.`);
+if (!extractOnly && process.platform !== lock.platform) throw new Error(`Full native bootstrap currently targets ${lock.platform}; this host is ${process.platform}. Use --extract-only --only minicoro,yyjson for portable source dependencies.`);
 
 function run(command, args, cwd, label, env = process.env) {
   const path = join(logs, label + '.log');
@@ -25,7 +31,7 @@ function run(command, args, cwd, label, env = process.env) {
   if (result.error || result.status !== 0) throw new Error(`${label} failed: ${result.error?.message ?? result.status}. See ${path}\n` + readFileSync(path, 'utf8').split('\n').slice(-24).join('\n'));
 }
 
-for (const dependency of lock.dependencies) {
+for (const dependency of lock.dependencies.filter(dependency => !selected || selected.includes(dependency.name))) {
   const archive = join(downloads, dependency.archive);
   if (!existsSync(archive)) {
     process.stdout.write(`Downloading ${dependency.name} ${dependency.version}\n`);
@@ -44,7 +50,7 @@ for (const dependency of lock.dependencies) {
     throw new Error(`${dependency.name}: source tree differs from the dependency lock; choose a new build directory.`);
   }
 }
-if (process.argv.includes('--extract-only')) process.exit(0);
+if (extractOnly) process.exit(0);
 
 const sdk = '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk';
 const cc = process.env.CC ?? '/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang';

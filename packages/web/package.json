@@ -1,0 +1,32 @@
+{
+  "name": "@greenpandastudios/aug-web",
+  "version": "0.17.0",
+  "description": "August HTTP capabilities and helpers for native first-party endpoints",
+  "license": "MIT",
+  "files": [
+    "august",
+    "aug-package.json",
+    "docs",
+    "LICENSE",
+    "THIRD_PARTY_NOTICES.md"
+  ],
+  "exports": {
+    "./aug-package.json": "./aug-package.json"
+  },
+  "dependencies": {
+    "@greenpandastudios/aug-stdlib": "0.17.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "tag": "next"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GreenPandaStudios/augscript.git",
+    "directory": "packages/web"
+  },
+  "homepage": "https://GreenPandaStudios.github.io/augscript/web",
+  "bugs": {
+    "url": "https://github.com/GreenPandaStudios/augscript/issues"
+  }
+}

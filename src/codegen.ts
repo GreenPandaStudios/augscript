@@ -147,7 +147,8 @@ class CGenerator {
       `int main(int argc, char **argv) {`,
       `  aug_register_globals(aug_bindings, ${bindingCount});`,
       `  aug_set_cli_args(argc, argv);`,
-      ...([...this.activeFiles].some(file => this.checked.project.files.get(file)?.items.some(item => item.kind === 'function' && !!item.endpoint) || file.includes('/stdlib/web/')) ? [this.httpConfiguration()] : []),
+      ...([...this.activeFiles].some(file => this.checked.project.files.get(file)?.items.some(item => item.kind === 'function' && !!item.endpoint) ||
+        [...this.checked.project.definitions.values()].some(def => def.file === file && def.id.startsWith('august/web/'))) ? [this.httpConfiguration()] : []),
       ...[...this.coverage.values()].map(point => `  aug_coverage_register(${cString(point.file)}, ${point.line});`),
       initializeBindings,
       `  AugValue result = aug_main_body(NULL, 0);`,

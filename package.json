@@ -1,6 +1,12 @@
 {
   "name": "augscript",
-  "version": "0.16.0",
+  "version": "0.17.0",
+  "description": "August language development monorepo",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GreenPandaStudios/augscript.git"
+  },
   "private": true,
   "type": "module",
   "engines": {
@@ -9,10 +15,19 @@
   "scripts": {
     "check": "tsc --noEmit",
     "test": "node --test tests/*.test.mjs",
+    "docs:generate": "node scripts/generate-docs.mjs",
+    "docs:check": "node scripts/generate-docs.mjs --check",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "build:packages": "node scripts/build-packages.mjs",
+    "package:packages": "node scripts/pack-packages.mjs",
+    "test:packages": "node scripts/test-packages.mjs",
+    "version:check": "node scripts/version.mjs --check",
     "package:extension": "npm --prefix vscode run package"
   },
   "devDependencies": {
     "@types/node": "24.19.0",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "vitepress": "1.6.4"
   }
 }

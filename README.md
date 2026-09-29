@@ -9,6 +9,7 @@ The TypeScript compiler emits C11 and builds a native executable. This repositor
 Requires Node.js 24+ and a C11 compiler. The CLI finds Xcode's Clang and SDK on macOS; set `CC` to select another compiler. Running the compiler needs no npm dependencies.
 
 ```sh
+node scripts/bootstrap-native.mjs --extract-only --only minicoro,yyjson
 node bin/aug.mjs check examples/approved-design
 node bin/aug.mjs run examples/approved-design
 node bin/aug.mjs test examples/approved-design --coverage
@@ -46,6 +47,7 @@ Ordinary callables are pure. Mutations declare `changes`; I/O declares `uses` an
 
 ## Guides
 
+- [Language wiki](docs/index.md), [packages and installation](docs/packages.md), and [release process](docs/releasing.md).
 - [Language reference](docs/reference.md): syntax, effects, ownership, DI, modules, collections, interceptors, and errors.
 - [Grammar and line boundaries](docs/grammar.md).
 - [Built-in testing](docs/testing.md): same-file class/function suites, rows, fixtures, filtering, and coverage.
@@ -64,10 +66,14 @@ All `aug` code fences in the guides identify a complete project and file. The do
 npm ci
 npm run check
 npm test
+npm run docs:check
+npm run docs:build
+npm run package:packages
+npm run test:packages
 npm run package:extension
-code --install-extension vscode/augscript-0.16.0.vsix --force
+code --install-extension vscode/augscript-0.17.0.vsix --force
 ```
 
-Development dependency versions are pinned in both manifests and lockfiles. The extension bundles the same compiler, runtime, guides and native bootstrap. Run `node scripts/bootstrap-native.mjs` for web/crypto/JSON/task examples; set `augscript.nativeHome` to this repository's `.aug-native` directory when using the bundled compiler.
+Development dependency versions are pinned in both manifests and lockfiles. The extension bundles the same compiler, runtime, guides and native bootstrap. Run `node scripts/bootstrap-native.mjs` for web/crypto examples; the extraction-only command above fetches the portable task/JSON sources. Set `augscript.nativeHome` to this repository's `.aug-native` directory to share it with the bundled compiler.
 
-This is a language prototype. The runtime uses tagged values and dynamic member lookup; native output alone is no performance guarantee. Ownership analysis is conservative, task scheduling currently uses one OS thread, and this version has no package resolver. See the tooling guide for measured workloads and debugger limits, and the gap ledger for remaining web/runtime work.
+This is a language prototype. The runtime uses tagged values and dynamic member lookup; native output alone is no performance guarantee. Ownership analysis is conservative and task scheduling currently uses one OS thread. The CLI resolves its matching first-party library packages; a general third-party August resolver remains future work. See the tooling guide for measured workloads and debugger limits, and the gap ledger for remaining web/runtime work.
