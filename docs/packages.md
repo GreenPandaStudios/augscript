@@ -109,7 +109,7 @@ export add from arithmetic
   "format": 1,
   "name": "@your-npm-name/aug-math",
   "version": "0.1.0",
-  "compiler": "0.18.0",
+  "compiler": "0.19.0",
   "source": "src",
   "dependencies": {}
 }
