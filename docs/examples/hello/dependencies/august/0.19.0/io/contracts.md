@@ -107,288 +107,123 @@ ProcessArguments() implements Arguments {
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
-
-### In this file
-
-- [`Console`](contracts.md#symbol-Console) is a capability interface.
-- [`SystemConsole`](contracts.md#symbol-SystemConsole) is a class implementing `Console`.
-- [`FileReader`](contracts.md#symbol-FileReader) is a capability interface.
-- [`FileWriter`](contracts.md#symbol-FileWriter) is a capability interface.
-- [`LocalFiles`](contracts.md#symbol-LocalFiles) is a class implementing `FileReader`, `FileWriter`.
-- [`Arguments`](contracts.md#symbol-Arguments) is a capability interface.
-- [`ProcessArguments`](contracts.md#symbol-ProcessArguments) is a class implementing `Arguments`.
-
-### `Console` {#symbol-Console}
-
-[source](contracts.md#code)
-
-Capability interface.
-
-**Author documentation**
+<a id="symbol-Console"></a>
+### `Console` · capability interface · [source](contracts.md#code)
 
 Permission to write to a console, provided by an explicitly selected adapter.
 
-#### `Console.write` {#symbol-Console.write}
-
-[source](contracts.md#code)
-
-Type parameters: `T`.
-
-**Inputs**
-
-- `value` (`T`) — required labeled input.
-
-Returns: no value.
-
-Capabilities: [`Console.write`](contracts.md#symbol-Console.write).
-
-Interface contract. A selected implementation supplies the behavior.
-
-**Author documentation**
+<a id="symbol-Console.write"></a>
+#### `Console.write` · [source](contracts.md#code)
 
 Write one line of text.
 
-**Parameters**
-- `value`: Text to display.
-
-### `SystemConsole` {#symbol-SystemConsole}
-
-[source](contracts.md#code)
-
-Behavioral class.
-
-Satisfies [`Console`](contracts.md#symbol-Console).
-
-**Author documentation**
-
-The native standard-output adapter. Construction performs no output.
-
-#### `SystemConsole.write` {#symbol-SystemConsole.write}
-
-[source](contracts.md#code)
-
 Type parameters: `T`.
 
-**Inputs**
+**Inputs:** Take `value` (`T`) — Text to display.
 
-- `value` (`T`) — required labeled input.
+Uses [`Console.write`](contracts.md#symbol-Console.write).
 
-Returns: no value.
+<a id="symbol-SystemConsole"></a>
+### `SystemConsole` · class · [source](contracts.md#code)
 
-Capabilities: [`Console.write`](contracts.md#symbol-Console.write).
+The native standard-output adapter. Construction performs no output. Implements [`Console`](contracts.md#symbol-Console).
 
-**What it does**
-
-- Call `print` with `value` = `value`.
-
-**Author documentation**
+<a id="symbol-SystemConsole.write"></a>
+#### `SystemConsole.write` · [source](contracts.md#code)
 
 Write one line of text.
 
-**Parameters**
-- `value`: Text to display.
+Type parameters: `T`.
 
-### `FileReader` {#symbol-FileReader}
+**Inputs:** Take `value` (`T`) — Text to display.
 
-[source](contracts.md#code)
+Uses [`Console.write`](contracts.md#symbol-Console.write).
 
-Capability interface.
+- Call `print` with `value`.
 
-**Author documentation**
+<a id="symbol-FileReader"></a>
+### `FileReader` · capability interface · [source](contracts.md#code)
 
 Read UTF-8 text through an explicitly selected filesystem adapter.
 
-#### `FileReader.read` {#symbol-FileReader.read}
-
-[source](contracts.md#code)
-
-**Inputs**
-
-- `path` (`string`) — required labeled input.
-
-Returns: `string`.
-
-Capabilities: [`FileReader.read`](contracts.md#symbol-FileReader.read).
-
-Can fail with `FileError`. Callers must catch or propagate these errors.
-
-Interface contract. A selected implementation supplies the behavior.
-
-**Author documentation**
+<a id="symbol-FileReader.read"></a>
+#### `FileReader.read` · [source](contracts.md#code)
 
 Read text.
 
-**Parameters**
-- `path`: File path.
+**Inputs:** Take `path` (`string`) — File path.
 
-**Throws**
-- `FileError`: The file could not be read.
+Returns `string`. Uses [`FileReader.read`](contracts.md#symbol-FileReader.read). Can fail with `FileError` (The file could not be read).
 
-### `FileWriter` {#symbol-FileWriter}
-
-[source](contracts.md#code)
-
-Capability interface.
-
-**Author documentation**
+<a id="symbol-FileWriter"></a>
+### `FileWriter` · capability interface · [source](contracts.md#code)
 
 Write UTF-8 text through an explicitly selected filesystem adapter.
 
-#### `FileWriter.write` {#symbol-FileWriter.write}
-
-[source](contracts.md#code)
-
-**Inputs**
-
-- `path` (`string`) — required labeled input.
-- `content` (`string`) — required labeled input.
-
-Returns: no value.
-
-Capabilities: [`FileWriter.write`](contracts.md#symbol-FileWriter.write).
-
-Can fail with `FileError`. Callers must catch or propagate these errors.
-
-Interface contract. A selected implementation supplies the behavior.
-
-**Author documentation**
+<a id="symbol-FileWriter.write"></a>
+#### `FileWriter.write` · [source](contracts.md#code)
 
 Write text.
 
-**Parameters**
-- `path`: File path.
-- `content`: Text.
+**Inputs:** Take `path` (`string`) — File path. Take `content` (`string`) — Text.
 
-**Throws**
-- `FileError`: Writing failed.
+Uses [`FileWriter.write`](contracts.md#symbol-FileWriter.write). Can fail with `FileError` (Writing failed).
 
-### `LocalFiles` {#symbol-LocalFiles}
+<a id="symbol-LocalFiles"></a>
+### `LocalFiles` · class · [source](contracts.md#code)
 
-[source](contracts.md#code)
+Native files. Operations are explicit; construction opens no files. Implements [`FileReader`](contracts.md#symbol-FileReader), [`FileWriter`](contracts.md#symbol-FileWriter).
 
-Behavioral class.
-
-Satisfies [`FileReader`](contracts.md#symbol-FileReader), [`FileWriter`](contracts.md#symbol-FileWriter).
-
-**Author documentation**
-
-Native files. Operations are explicit; construction opens no files.
-
-#### `LocalFiles.read` {#symbol-LocalFiles.read}
-
-[source](contracts.md#code)
-
-**Inputs**
-
-- `path` (`string`) — required labeled input.
-
-Returns: `string`.
-
-Capabilities: [`FileReader.read`](contracts.md#symbol-FileReader.read).
-
-Can fail with `FileError`. Callers must catch or propagate these errors.
-
-**What it does**
-
-- Return call `read_file` with `path` = `path`.
-
-**Author documentation**
+<a id="symbol-LocalFiles.read"></a>
+#### `LocalFiles.read` · [source](contracts.md#code)
 
 Read text.
 
-**Parameters**
-- `path`: File path.
+**Inputs:** Take `path` (`string`) — File path.
 
-**Throws**
-- `FileError`: The file could not be read.
+Returns `string`. Uses [`FileReader.read`](contracts.md#symbol-FileReader.read). Can fail with `FileError` (The file could not be read).
 
-#### `LocalFiles.write` {#symbol-LocalFiles.write}
+- Return the result of `read_file` with `path`.
 
-[source](contracts.md#code)
-
-**Inputs**
-
-- `path` (`string`) — required labeled input.
-- `content` (`string`) — required labeled input.
-
-Returns: no value.
-
-Capabilities: [`FileWriter.write`](contracts.md#symbol-FileWriter.write).
-
-Can fail with `FileError`. Callers must catch or propagate these errors.
-
-**What it does**
-
-- Call `write_file` with `path` = `path`; `content` = `content`.
-
-**Author documentation**
+<a id="symbol-LocalFiles.write"></a>
+#### `LocalFiles.write` · [source](contracts.md#code)
 
 Write text.
 
-**Parameters**
-- `path`: File path.
-- `content`: Text.
+**Inputs:** Take `path` (`string`) — File path. Take `content` (`string`) — Text.
 
-**Throws**
-- `FileError`: Writing failed.
+Uses [`FileWriter.write`](contracts.md#symbol-FileWriter.write). Can fail with `FileError` (Writing failed).
 
-### `Arguments` {#symbol-Arguments}
+- Call `write_file` with `path`, `content`.
 
-[source](contracts.md#code)
-
-Capability interface.
-
-**Author documentation**
+<a id="symbol-Arguments"></a>
+### `Arguments` · capability interface · [source](contracts.md#code)
 
 Read command-line input through an explicit dependency.
 
-#### `Arguments.read` {#symbol-Arguments.read}
+<a id="symbol-Arguments.read"></a>
+#### `Arguments.read` · [source](contracts.md#code)
 
-[source](contracts.md#code)
+Returns `List<string>`. Uses [`Arguments.read`](contracts.md#symbol-Arguments.read).
 
-Returns: `List<string>`.
+<a id="symbol-ProcessArguments"></a>
+### `ProcessArguments` · class · [source](contracts.md#code)
 
-Capabilities: [`Arguments.read`](contracts.md#symbol-Arguments.read).
+Native command-line arguments. Implements [`Arguments`](contracts.md#symbol-Arguments).
 
-Interface contract. A selected implementation supplies the behavior.
+<a id="symbol-ProcessArguments.read"></a>
+#### `ProcessArguments.read` · [source](contracts.md#code)
 
-### `ProcessArguments` {#symbol-ProcessArguments}
+Returns `List<string>`. Uses [`Arguments.read`](contracts.md#symbol-Arguments.read).
 
-[source](contracts.md#code)
+- Return the result of `arguments`.
 
-Behavioral class.
+### Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
 
-Satisfies [`Arguments`](contracts.md#symbol-Arguments).
-
-**Author documentation**
-
-Native command-line arguments.
-
-#### `ProcessArguments.read` {#symbol-ProcessArguments.read}
-
-[source](contracts.md#code)
-
-Returns: `List<string>`.
-
-Capabilities: [`Arguments.read`](contracts.md#symbol-Arguments.read).
-
-**What it does**
-
-- Return call `arguments`.
-
-### Built-in operations used by this file
-
-- `arguments` (no inputs) → `List<string>`: Composition arguments. Other callables receive the Arguments capability.
-- `print` (`value`: `any`) → `void`: Composition and test output. Other callables receive Console and declare uses console.write.
-- `read_file` (`path`: `string`) → `string`: Root-only UTF-8 text input. Other callables receive FileReader. Invalid Unicode and NUL raise FileError. Can fail with `FileError`.
-- `write_file` (`path`: `string`, `content`: `string`) → `void`: Root-only UTF-8 text output. Other callables receive FileWriter. Can fail with `FileError`.
-
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
-
-### Shared language rules
-
-See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
+- `arguments`: Composition arguments. Other callables receive the Arguments capability.
+- `print`: Composition and test output. Other callables receive Console and declare uses console.write.
+- `read_file`: Root-only UTF-8 text input. Other callables receive FileReader. Invalid Unicode and NUL raise FileError.
+- `write_file`: Root-only UTF-8 text output. Other callables receive FileWriter.
 
 ::::
 

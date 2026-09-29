@@ -74,91 +74,40 @@ ApplicationImpl(resolve Console console) implements Application {
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
-
-### In this file
-
-- [`Application`](app.md#symbol-Application) is an interface.
-- [`ApplicationImpl`](app.md#symbol-ApplicationImpl) is a class implementing `Application`.
-
-### `Application` {#symbol-Application}
-
-[source](app.md#code)
-
-Interface.
-
-**Author documentation**
+<a id="symbol-Application"></a>
+### `Application` · interface · [source](app.md#code)
 
 The application's explicit startup operation.
 
-#### `Application.start` {#symbol-Application.start}
-
-[source](app.md#code)
-
-Returns: no value.
-
-Capabilities: [`Console.write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
-
-Interface contract. A selected implementation supplies the behavior.
-
-**Author documentation**
+<a id="symbol-Application.start"></a>
+#### `Application.start` · [source](app.md#code)
 
 Writes the fruit names through the selected console.
 
-### `ApplicationImpl` {#symbol-ApplicationImpl}
+Uses [`Console.write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
 
-[source](app.md#code)
+<a id="symbol-ApplicationImpl"></a>
+### `ApplicationImpl` · class · [source](app.md#code)
 
-Behavioral class.
+Construction stores dependencies; start performs the visible external work. Implements [`Application`](app.md#symbol-Application).
 
-Satisfies [`Application`](app.md#symbol-Application).
+**Inputs:** Resolve [`Console`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console) as `console`; store read-only.
 
-**Author documentation**
-
-Construction stores dependencies; start performs the visible external work.
-
-**Inputs**
-
-- `console` ([`Console`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console)) — injected; callers omit it — stored as `console` and read-only after initialization.
-
-#### `ApplicationImpl.start` {#symbol-ApplicationImpl.start}
-
-[source](app.md#code)
-
-Returns: no value.
-
-Capabilities: [`console.write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
-
-**What it does**
-
-- Set `fruit` to a list containing call [`Fruit`](models.md#symbol-Fruit) with `code` = `1`; `name` = `"apple"`, call [`Fruit`](models.md#symbol-Fruit) with `name` = `"pear"`; `code` = `2`.
-- For each `item` in a snapshot of `fruit`, in iteration order:
-  - Call [`Console.write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write) on `console` with `value` = `name` of `item`.
-
-**Author documentation**
+<a id="symbol-ApplicationImpl.start"></a>
+#### `ApplicationImpl.start` · [source](app.md#code)
 
 Writes the fruit names through the selected console.
 
-### Dependencies used by this file
+Uses [`console.write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
 
-Only referenced types and operations appear here. Each name links to its complete specification.
+- Set `fruit` to a list containing a new [`Fruit`](models.md#symbol-Fruit) with `code` as `1`, `name` as `"apple"`, a new [`Fruit`](models.md#symbol-Fruit) with `name` as `"pear"`, `code` as `2`.
+- For each `item` in a snapshot of `fruit`:
+  - Call [`Console.write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write) on `console` with `value` as `name` of `item`.
 
-#### [`Console`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console)
+### Dependencies
 
-Capability interface from `august.io`.
-
-- [`Console.write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write)<`T`> (`value`: `T`) → `void`.
-
-#### [`Fruit`](models.md#symbol-Fruit)
-
-Record from `models`.
-
-- Construct with `code`: `int`, `name`: `string` → [`Fruit`](models.md#symbol-Fruit).
-- Read `name` (`string`).
-
-### Shared language rules
-
-See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
+- [`Console`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console) from `august.io`: [`write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write)<`T`> (`value`: `T`) → `void`.
+- [`Fruit`](models.md#symbol-Fruit) from `models`: construct with `code`: `int`, `name`: `string`; read `name` (`string`).
 
 ::::
 

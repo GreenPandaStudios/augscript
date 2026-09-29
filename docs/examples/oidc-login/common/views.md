@@ -69,34 +69,16 @@ Page(string title, List<Html> children) returns Html {
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
-
-### In this file
-
-- [`Page`](views.md#symbol-Page) is a function returning `Html`.
-
-### `Page` {#symbol-Page}
-
-[source](views.md#code)
-
-**Inputs**
-
-- `title` (`string`) — required labeled input.
-- `children` (`List<Html>`) — required labeled input.
-
-Returns: `Html`.
-
-**What it does**
-
-- Return the HTML element `html` with `lang` = `"en"` containing the HTML element `head` containing the HTML element `meta` with `charset` = `"utf-8"` (rendered on the server with embedded text escaped), the HTML element `meta` with `name` = `"viewport"`, `content` = `"width=device-width, initial-scale=1"` (rendered on the server with embedded text escaped), the HTML element `title` containing `title`, ` — August` (rendered on the server with embedded text escaped) (rendered on the server with embedded text escaped), the HTML element `body` with `style` = `"margin:0;background:#f3f5f9;color:#17233a;font:17px system-ui,sans-serif;line-height:1.6"` containing the HTML element `main` with `style` = `"max-width:640px;margin:48px auto;padding:28px;background:white;border-radius:20px;box-shadow:0 12px 48px #17233a12"` containing the HTML element `nav` containing the HTML element `a` with `href` = `"/"`, `style` = `"color:#4852d7;font-weight:750;text-decoration:none"` containing `August · OpenID Connect` (rendered on the server with embedded text escaped) (rendered on the server with embedded text escaped), the HTML element `h1` containing `title` (rendered on the server with embedded text escaped), `children` (rendered on the server with embedded text escaped) (rendered on the server with embedded text escaped) (rendered on the server with embedded text escaped).
-
-**Author documentation**
+<a id="symbol-Page"></a>
+### `Page` · [source](views.md#code)
 
 Small server components keep each page's behavior and dependencies visible.
 
-### Shared language rules
+**Inputs:** Take `title` (`string`). Take `children` (`List<Html>`).
 
-See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
+Returns `Html`.
+
+- Return the HTML element `html` with `lang` = `"en"` containing the HTML element `head` containing the HTML element `meta` with `charset` = `"utf-8"` (server-rendered; text escaped), the HTML element `meta` with `name` = `"viewport"`, `content` = `"width=device-width, initial-scale=1"` (server-rendered; text escaped), the HTML element `title` containing `title`, ` — August` (server-rendered; text escaped) (server-rendered; text escaped), the HTML element `body` with `style` = `"margin:0;background:#f3f5f9;color:#17233a;font:17px system-ui,sans-serif;line-height:1.6"` containing the HTML element `main` with `style` = `"max-width:640px;margin:48px auto;padding:28px;background:white;border-radius:20px;box-shadow:0 12px 48px #17233a12"` containing the HTML element `nav` containing the HTML element `a` with `href` = `"/"`, `style` = `"color:#4852d7;font-weight:750;text-decoration:none"` containing `August · OpenID Connect` (server-rendered; text escaped) (server-rendered; text escaped), the HTML element `h1` containing `title` (server-rendered; text escaped), `children` (server-rendered; text escaped) (server-rendered; text escaped) (server-rendered; text escaped).
 
 ::::
 

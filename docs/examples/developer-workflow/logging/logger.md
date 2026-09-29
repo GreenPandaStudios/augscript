@@ -56,55 +56,21 @@ interface Logger {
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
-
-### In this file
-
-- [`Logger`](logger.md#symbol-Logger) is an interface.
-
-### `Logger` {#symbol-Logger}
-
-[source](logger.md#code)
-
-Interface.
-
-**Author documentation**
+<a id="symbol-Logger"></a>
+### `Logger` · interface · [source](logger.md#code)
 
 Receives a message describing an application operation.
 
-#### `Logger.log` {#symbol-Logger.log}
+<a id="symbol-Logger.log"></a>
+#### `Logger.log` · [source](logger.md#code)
 
-[source](logger.md#code)
+**Inputs:** Resolve [`Console`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console) as `console`. Take `message` (`string`) — Text to write.
 
-**Inputs**
+Uses [`Console.write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
 
-- `console` ([`Console`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console)) — injected; callers omit it.
-- `message` (`string`) — required labeled input.
+### Dependencies
 
-Returns: no value.
-
-Capabilities: [`Console.write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
-
-Interface contract. A selected implementation supplies the behavior.
-
-**Author documentation**
-
-**Parameters**
-- `message`: Text to write.
-
-### Dependencies used by this file
-
-Only referenced types and operations appear here. Each name links to its complete specification.
-
-#### [`Console`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console)
-
-Capability interface from `august.io`.
-
-- [`Console.write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write)<`T`> (`value`: `T`) → `void`.
-
-### Shared language rules
-
-See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
+- [`Console`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console) from `august.io`: [`write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write)<`T`> (`value`: `T`) → `void`.
 
 ::::
 

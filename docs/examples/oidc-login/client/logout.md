@@ -99,150 +99,49 @@ endpoint POST "/logout" as logout(LogoutForm input from form, optional string to
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
+<a id="symbol-logout"></a>
+### `logout` · [source](logout.md#code)
 
-### In this file
+POST logout checks the origin and session-bound CSRF value, then removes the live registry entry before clearing the cookie.
 
-- [`logout`](logout.md#symbol-logout) handles `POST` `/logout` returning `HttpResponse<Html>`.
+**Inputs:** Take `input` ([`LogoutForm`](contracts.md#symbol-LogoutForm)) from HTTP form. Take `token` (`optional string`) from HTTP cookie `aug_session`; omitted means null. Take `origin` (`optional string`) from HTTP header; omitted means null. Resolve [`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto) as `crypto`. Resolve [`Clock`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock) as `clock`. Resolve [`SigningKeys`](../common/keys.md#symbol-SigningKeys) as `keys`. Resolve [`ExpiringStore<SessionClaims>`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore) as `sessions`.
 
-### `logout` {#symbol-logout}
-
-[source](logout.md#code)
-
-**Inputs**
-
-- `input` ([`LogoutForm`](contracts.md#symbol-LogoutForm)) — read from the HTTP form.
-- `token` (`optional string`) — read from the HTTP cookie named `aug_session`; absent value becomes null.
-- `origin` (`optional string`) — read from the HTTP header; absent value becomes null.
-- `crypto` ([`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto)) — injected; callers omit it.
-- `clock` ([`Clock`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock)) — injected; callers omit it.
-- `keys` ([`SigningKeys`](../common/keys.md#symbol-SigningKeys)) — injected; callers omit it.
-- `sessions` ([`ExpiringStore<SessionClaims>`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore)) — injected; callers omit it.
-
-Returns: `HttpResponse<Html>`.
-
-Capabilities: [`crypto.publicRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.publicRsa), [`crypto.decodeBase64url`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url), [`crypto.verifyRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.verifyRsa), [`crypto.equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal), [`clock.now`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now), [`keys.session`](../common/keys.md#symbol-SigningKeys.session), [`sessions.get`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.get), [`sessions.take`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.take).
-
-Can fail with `SessionError`, `KeyError`, `TimeError`, `CryptoError`, `HttpError`. Callers must catch or propagate these errors.
+Returns `HttpResponse<Html>`. Uses [`crypto.publicRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.publicRsa), [`crypto.decodeBase64url`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url), [`crypto.verifyRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.verifyRsa), [`crypto.equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal), [`clock.now`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now), [`keys.session`](../common/keys.md#symbol-SigningKeys.session), [`sessions.get`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.get), [`sessions.take`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.take). Can fail with `SessionError`, `KeyError`, `TimeError`, `CryptoError`, `HttpError`.
 
 HTTP route: `POST` `/logout`. Use status 200 when the handler returns a body; a returned HttpResponse can set its own status. An unhandled request failure returns status 500 and cancels its request tasks.
 
 Declared HTTP failures: [`SessionError`](contracts.md#symbol-SessionError) returns status 403.
 
-**What it does**
-
-- Set `config` to call [`settings`](../common/settings.md#symbol-settings).
+- Set `config` to the result of [`settings`](../common/settings.md#symbol-settings).
 - If `origin` does not equal `baseUrl` of `config`:
-  - Fail with call [`SessionError`](contracts.md#symbol-SessionError). Transfer control to a matching catch or propagate the failure.
-- Set `session` to call [`authenticate`](session.md#symbol-authenticate) with `token` = `token`; inject `crypto` from `crypto`, `clock` from `clock`, `keys` from `keys`, `sessions` from `sessions`.
-- If not (call [`Crypto.equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal) on `crypto` with `left` = call `bytes` on `csrf` of `input`; `right` = call `bytes` on `csrf` of `session`):
-  - Fail with call [`SessionError`](contracts.md#symbol-SessionError). Transfer control to a matching catch or propagate the failure.
-- Call [`ExpiringStore.take`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.take) on `sessions` with `key` = `jti` of `session`; `now` = call [`Clock.now`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now) on `clock`.
-- Set `headers` to call [`withCookie`](../common/headers.md#symbol-withCookie) with `headers` = call `with` on call [`securityHeaders`](../common/headers.md#symbol-securityHeaders) with `name` = `"location"`; `value` = `"/"`; `name` = `"aug_session"`; `value` = `""`; `path` = `"/"`; `maxAge` = `0`; `secure` = `secureCookies` of `config`.
-- Return call `HttpResponse` with `body` = the HTML element `p` containing `Signed out.` (rendered on the server with embedded text escaped); `status` = `303`; `headers` = `headers`.
+  - Fail with a new [`SessionError`](contracts.md#symbol-SessionError).
+- Set `session` to the result of [`authenticate`](session.md#symbol-authenticate) with `token` using `crypto`, `clock`, `keys`, `sessions`.
+- If not (the result of [`Crypto.equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal) on `crypto` with `left` as the result of `bytes` on `csrf` of `input`, `right` as the result of `bytes` on `csrf` of `session`):
+  - Fail with a new [`SessionError`](contracts.md#symbol-SessionError).
+- Call [`ExpiringStore.take`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.take) on `sessions` with `key` as `jti` of `session`, `now` as the result of [`Clock.now`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now) on `clock`.
+- Set `headers` to the result of [`withCookie`](../common/headers.md#symbol-withCookie) with `headers` as the result of `with` on the result of [`securityHeaders`](../common/headers.md#symbol-securityHeaders) with `name` as `"location"`, `value` as `"/"`, `name` as `"aug_session"`, `value` as `""`, `path` as `"/"`, `maxAge` as `0`, `secure` as `secureCookies` of `config`.
+- Return a new `HttpResponse` with `body` as the HTML element `p` containing `Signed out.` (server-rendered; text escaped), `status` as `303`, `headers`.
 
-**Author documentation**
+### Dependencies
 
-POST logout checks the origin and session-bound CSRF value, then removes the live registry entry before clearing the cookie.
+- [`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto) from `august.crypto`: [`decodeBase64url`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url) (`input`: `string`) → `Bytes`; can fail with `CryptoError`; [`equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal) (`left`: `Bytes`, `right`: `Bytes`) → `bool`; [`publicRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.publicRsa) (`key`: `RsaPrivateKey`) → `RsaPublicKey`; can fail with `CryptoError`; [`verifyRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.verifyRsa) (`publicKey`: `RsaPublicKey`, `input`: `Bytes`, `signature`: `Bytes`) → `bool`; can fail with `CryptoError`.
+- [`ExpiringStore`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore) from `august.memory`: [`get`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.get) (`key`: `string`, `now`: `int`) → `optional T`; [`take`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.take) (`key`: `string`, `now`: `int`) → `optional T`.
+- [`Clock`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock) from `august.time`: [`now`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now) (no caller inputs) → `int`; can fail with `TimeError`.
+- [`LogoutForm`](contracts.md#symbol-LogoutForm) from `contracts`: read `csrf` (`string`).
+- [`SessionClaims`](contracts.md#symbol-SessionClaims) from `contracts`: read `csrf` (`string`); read `jti` (`string`).
+- [`SessionError`](contracts.md#symbol-SessionError) from `contracts`: construct with no caller inputs.
+- [`authenticate`](session.md#symbol-authenticate) (`token`: `optional string`) → [`SessionClaims`](contracts.md#symbol-SessionClaims); can fail with `SessionError`, `KeyError`, `TimeError` from `session`.
+- [`securityHeaders`](../common/headers.md#symbol-securityHeaders) (no caller inputs) → `Headers`; can fail with `HttpError` from `common`.
+- [`withCookie`](../common/headers.md#symbol-withCookie) (`headers`: `Headers`, `name`: `string`, `value`: `string`, `path`: `string`, `maxAge`: `int`, `secure`: `bool`) → `Headers`; can fail with `HttpError` from `common`.
+- [`KeyError`](../common/keys.md#symbol-KeyError) from `common`.
+- [`SigningKeys`](../common/keys.md#symbol-SigningKeys) from `common`: [`session`](../common/keys.md#symbol-SigningKeys.session) (no caller inputs) → `RsaPrivateKey`; can fail with `KeyError`.
+- [`Settings`](../common/settings.md#symbol-Settings): read `baseUrl` (`string`); read `secureCookies` (`bool`).
+- [`settings`](../common/settings.md#symbol-settings) (no caller inputs) → [`Settings`](../common/settings.md#symbol-Settings) from `common`.
 
-### Dependencies used by this file
+### Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
 
-Only referenced types and operations appear here. Each name links to its complete specification.
-
-#### [`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto)
-
-Capability interface from `august.crypto`.
-
-- [`Crypto.decodeBase64url`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url) (`input`: `string`) → `Bytes`; can fail with `CryptoError`.
-- [`Crypto.equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal) (`left`: `Bytes`, `right`: `Bytes`) → `bool`.
-- [`Crypto.publicRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.publicRsa) (`key`: `RsaPrivateKey`) → `RsaPublicKey`; can fail with `CryptoError`.
-- [`Crypto.verifyRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.verifyRsa) (`publicKey`: `RsaPublicKey`, `input`: `Bytes`, `signature`: `Bytes`) → `bool`; can fail with `CryptoError`.
-
-#### [`ExpiringStore`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore)
-
-Capability interface from `august.memory`.
-
-- [`ExpiringStore.get`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.get) (`key`: `string`, `now`: `int`) → `optional T`.
-- [`ExpiringStore.take`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.take) (`key`: `string`, `now`: `int`) → `optional T`.
-
-#### [`Clock`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock)
-
-Capability interface from `august.time`.
-
-- [`Clock.now`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now) (no caller inputs) → `int`; can fail with `TimeError`.
-
-#### [`LogoutForm`](contracts.md#symbol-LogoutForm)
-
-Record from `contracts`.
-
-- Read `csrf` (`string`).
-
-#### [`SessionClaims`](contracts.md#symbol-SessionClaims)
-
-Record from `contracts`.
-
-- Read `csrf` (`string`).
-- Read `jti` (`string`).
-
-#### [`SessionError`](contracts.md#symbol-SessionError)
-
-Class from `contracts`.
-
-- Construct with no caller inputs → [`SessionError`](contracts.md#symbol-SessionError).
-
-#### [`authenticate`](session.md#symbol-authenticate)
-
-Function from `session`.
-
-- [`authenticate`](session.md#symbol-authenticate) (`token`: `optional string`) → [`SessionClaims`](contracts.md#symbol-SessionClaims); inject `crypto`: [`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto), `clock`: [`Clock`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock), `keys`: [`SigningKeys`](../common/keys.md#symbol-SigningKeys), `sessions`: [`ExpiringStore<SessionClaims>`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore); uses [`crypto.publicRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.publicRsa), [`crypto.decodeBase64url`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url), [`crypto.verifyRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.verifyRsa), [`crypto.equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal), [`clock.now`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now), [`keys.session`](../common/keys.md#symbol-SigningKeys.session), [`sessions.get`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.get); can fail with `SessionError`, `KeyError`, `TimeError`.
-
-#### [`securityHeaders`](../common/headers.md#symbol-securityHeaders)
-
-Function from `common`.
-
-- [`securityHeaders`](../common/headers.md#symbol-securityHeaders) (no caller inputs) → `Headers`; can fail with `HttpError`.
-
-#### [`withCookie`](../common/headers.md#symbol-withCookie)
-
-Function from `common`.
-
-- [`withCookie`](../common/headers.md#symbol-withCookie) (`headers`: `Headers`, `name`: `string`, `value`: `string`, `path`: `string`, `maxAge`: `int`, `secure`: `bool`) → `Headers`; can fail with `HttpError`.
-
-#### [`KeyError`](../common/keys.md#symbol-KeyError)
-
-Class from `common`.
-
-Used as a type or provider.
-
-#### [`SigningKeys`](../common/keys.md#symbol-SigningKeys)
-
-Capability interface from `common`.
-
-- [`SigningKeys.session`](../common/keys.md#symbol-SigningKeys.session) (no caller inputs) → `RsaPrivateKey`; can fail with `KeyError`.
-
-#### [`Settings`](../common/settings.md#symbol-Settings)
-
-Record.
-
-- Read `baseUrl` (`string`).
-- Read `secureCookies` (`bool`).
-
-#### [`settings`](../common/settings.md#symbol-settings)
-
-Function from `common`.
-
-- [`settings`](../common/settings.md#symbol-settings) (no caller inputs) → [`Settings`](../common/settings.md#symbol-Settings).
-
-### Built-in operations used by this file
-
-- `Headers.with` (`name`: `string`, `value`: `string`) → `Headers`: Return new headers with one additional validated field. Header names ignore case; duplicate values remain separate. Can fail with `HttpError`.
-- `string.bytes` (no inputs) → `Bytes`: Encode this string as immutable UTF-8 bytes.
-
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
-
-### Shared language rules
-
-See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
+- `Headers.with`: Return new headers with one additional validated field. Header names ignore case; duplicate values remain separate.
+- `string.bytes`: Encode this string as immutable UTF-8 bytes.
 
 ::::
 

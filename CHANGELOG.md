@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Compile specifications through a structured explanation tree with shorter prose, grouped control flow, integrated Javadoc, and compact linked dependency surfaces. Regenerate the wiki examples and adjacent specs.
 - Add an executable ownership and task conformance suite and wiki contract. Reject parent mutation of a child-captured object through collection methods, borrowed calls, and direct fields until the child is waited for, including inside an existing borrow block.
 - Injected dependencies participate in call alias and task capture checks; dropping an owned `Shared<T>` also drops its transferred payload in local cleanup order.
 - Pin owned `Shared<T>` and other reference values while a child borrows them. Ownership transfers now share one move check; repeated starts in a loop keep captured values pinned until their scope joins every child.

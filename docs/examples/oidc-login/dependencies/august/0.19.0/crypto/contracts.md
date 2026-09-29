@@ -202,723 +202,361 @@ GnuTlsCrypto() implements Crypto {
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
-
-### In this file
-
-- [`Crypto`](contracts.md#symbol-Crypto) is a capability interface.
-- [`_aug_crypto_random`](contracts.md#symbol-_aug_crypto_random) is a function returning `Bytes`.
-- [`_aug_crypto_sha256`](contracts.md#symbol-_aug_crypto_sha256) is a function returning `Bytes`.
-- [`_aug_crypto_generate_rsa`](contracts.md#symbol-_aug_crypto_generate_rsa) is a function returning `RsaPrivateKey`.
-- [`_aug_crypto_public_rsa`](contracts.md#symbol-_aug_crypto_public_rsa) is a function returning `RsaPublicKey`.
-- [`_aug_crypto_sign_rsa`](contracts.md#symbol-_aug_crypto_sign_rsa) is a function returning `Bytes`.
-- [`_aug_crypto_verify_rsa`](contracts.md#symbol-_aug_crypto_verify_rsa) is a function returning `bool`.
-- [`_aug_crypto_decode_base64url`](contracts.md#symbol-_aug_crypto_decode_base64url) is a function returning `Bytes`.
-- [`_aug_crypto_equal`](contracts.md#symbol-_aug_crypto_equal) is a function returning `bool`.
-- [`_aug_crypto_export_rsa`](contracts.md#symbol-_aug_crypto_export_rsa) is a function returning `Tuple<Bytes,Bytes>`.
-- [`_aug_crypto_import_rsa`](contracts.md#symbol-_aug_crypto_import_rsa) is a function returning `RsaPublicKey`.
-- [`_aug_crypto_password_hash`](contracts.md#symbol-_aug_crypto_password_hash) is a function returning `Bytes`.
-- [`GnuTlsCrypto`](contracts.md#symbol-GnuTlsCrypto) is a class implementing `Crypto`.
-
-### `Crypto` {#symbol-Crypto}
-
-[source](contracts.md#code)
-
-Capability interface.
-
-**Author documentation**
+<a id="symbol-Crypto"></a>
+### `Crypto` · capability interface · [source](contracts.md#code)
 
 Explicit permission for native cryptographic operations. Keys and bytes are immutable.
 
-#### `Crypto.random` {#symbol-Crypto.random}
-
-[source](contracts.md#code)
-
-**Inputs**
-
-- `size` (`int`) — required labeled input.
-
-Returns: `Bytes`.
-
-Capabilities: [`Crypto.random`](contracts.md#symbol-Crypto.random).
-
-Can fail with `CryptoError`. Callers must catch or propagate these errors.
-
-Interface contract. A selected implementation supplies the behavior.
-
-**Author documentation**
+<a id="symbol-Crypto.random"></a>
+#### `Crypto.random` · [source](contracts.md#code)
 
 Generate unpredictable bytes with the operating-system-backed GnuTLS RNG.
 
-#### `Crypto.sha256` {#symbol-Crypto.sha256}
+**Inputs:** Take `size` (`int`).
 
-[source](contracts.md#code)
+Returns `Bytes`. Uses [`Crypto.random`](contracts.md#symbol-Crypto.random). Can fail with `CryptoError`.
 
-**Inputs**
-
-- `input` (`Bytes`) — required labeled input.
-
-Returns: `Bytes`.
-
-Capabilities: [`Crypto.sha256`](contracts.md#symbol-Crypto.sha256).
-
-Can fail with `CryptoError`. Callers must catch or propagate these errors.
-
-Interface contract. A selected implementation supplies the behavior.
-
-**Author documentation**
+<a id="symbol-Crypto.sha256"></a>
+#### `Crypto.sha256` · [source](contracts.md#code)
 
 Hash the complete input using SHA-256.
 
-#### `Crypto.generateRsa` {#symbol-Crypto.generateRsa}
+**Inputs:** Take `input` (`Bytes`).
 
-[source](contracts.md#code)
+Returns `Bytes`. Uses [`Crypto.sha256`](contracts.md#symbol-Crypto.sha256). Can fail with `CryptoError`.
 
-Returns: `RsaPrivateKey`.
-
-Capabilities: [`Crypto.generateRsa`](contracts.md#symbol-Crypto.generateRsa).
-
-Can fail with `CryptoError`. Callers must catch or propagate these errors.
-
-Interface contract. A selected implementation supplies the behavior.
-
-**Author documentation**
+<a id="symbol-Crypto.generateRsa"></a>
+#### `Crypto.generateRsa` · [source](contracts.md#code)
 
 Create a fresh 3072-bit RSA private key. Private material is opaque and scrubbed on reclamation.
 
-#### `Crypto.publicRsa` {#symbol-Crypto.publicRsa}
+Returns `RsaPrivateKey`. Uses [`Crypto.generateRsa`](contracts.md#symbol-Crypto.generateRsa). Can fail with `CryptoError`.
 
-[source](contracts.md#code)
-
-**Inputs**
-
-- `key` (`RsaPrivateKey`) — required labeled input.
-
-Returns: `RsaPublicKey`.
-
-Capabilities: [`Crypto.publicRsa`](contracts.md#symbol-Crypto.publicRsa).
-
-Can fail with `CryptoError`. Callers must catch or propagate these errors.
-
-Interface contract. A selected implementation supplies the behavior.
-
-**Author documentation**
+<a id="symbol-Crypto.publicRsa"></a>
+#### `Crypto.publicRsa` · [source](contracts.md#code)
 
 Export the corresponding public key as an opaque immutable value.
 
-#### `Crypto.signRsa` {#symbol-Crypto.signRsa}
+**Inputs:** Take `key` (`RsaPrivateKey`).
 
-[source](contracts.md#code)
+Returns `RsaPublicKey`. Uses [`Crypto.publicRsa`](contracts.md#symbol-Crypto.publicRsa). Can fail with `CryptoError`.
 
-**Inputs**
-
-- `key` (`RsaPrivateKey`) — required labeled input.
-- `input` (`Bytes`) — required labeled input.
-
-Returns: `Bytes`.
-
-Capabilities: [`Crypto.signRsa`](contracts.md#symbol-Crypto.signRsa).
-
-Can fail with `CryptoError`. Callers must catch or propagate these errors.
-
-Interface contract. A selected implementation supplies the behavior.
-
-**Author documentation**
+<a id="symbol-Crypto.signRsa"></a>
+#### `Crypto.signRsa` · [source](contracts.md#code)
 
 Sign bytes using RSASSA-PKCS1-v1_5 with SHA-256 (JOSE RS256).
 
-#### `Crypto.verifyRsa` {#symbol-Crypto.verifyRsa}
+**Inputs:** Take `key` (`RsaPrivateKey`). Take `input` (`Bytes`).
 
-[source](contracts.md#code)
+Returns `Bytes`. Uses [`Crypto.signRsa`](contracts.md#symbol-Crypto.signRsa). Can fail with `CryptoError`.
 
-**Inputs**
-
-- `publicKey` (`RsaPublicKey`) — required labeled input.
-- `input` (`Bytes`) — required labeled input.
-- `signature` (`Bytes`) — required labeled input.
-
-Returns: `bool`.
-
-Capabilities: [`Crypto.verifyRsa`](contracts.md#symbol-Crypto.verifyRsa).
-
-Can fail with `CryptoError`. Callers must catch or propagate these errors.
-
-Interface contract. A selected implementation supplies the behavior.
-
-**Author documentation**
+<a id="symbol-Crypto.verifyRsa"></a>
+#### `Crypto.verifyRsa` · [source](contracts.md#code)
 
 Verify only RS256. Invalid signatures return false; invalid keys raise CryptoError.
 
-#### `Crypto.decodeBase64url` {#symbol-Crypto.decodeBase64url}
+**Inputs:** Take `publicKey` (`RsaPublicKey`). Take `input` (`Bytes`). Take `signature` (`Bytes`).
 
-[source](contracts.md#code)
+Returns `bool`. Uses [`Crypto.verifyRsa`](contracts.md#symbol-Crypto.verifyRsa). Can fail with `CryptoError`.
 
-**Inputs**
-
-- `input` (`string`) — required labeled input.
-
-Returns: `Bytes`.
-
-Capabilities: [`Crypto.decodeBase64url`](contracts.md#symbol-Crypto.decodeBase64url).
-
-Can fail with `CryptoError`. Callers must catch or propagate these errors.
-
-Interface contract. A selected implementation supplies the behavior.
-
-**Author documentation**
+<a id="symbol-Crypto.decodeBase64url"></a>
+#### `Crypto.decodeBase64url` · [source](contracts.md#code)
 
 Decode canonical unpadded URL-safe base64, rejecting invalid characters and unused bits.
 
-#### `Crypto.equal` {#symbol-Crypto.equal}
+**Inputs:** Take `input` (`string`).
 
-[source](contracts.md#code)
+Returns `Bytes`. Uses [`Crypto.decodeBase64url`](contracts.md#symbol-Crypto.decodeBase64url). Can fail with `CryptoError`.
 
-**Inputs**
-
-- `left` (`Bytes`) — required labeled input.
-- `right` (`Bytes`) — required labeled input.
-
-Returns: `bool`.
-
-Capabilities: [`Crypto.equal`](contracts.md#symbol-Crypto.equal).
-
-Interface contract. A selected implementation supplies the behavior.
-
-**Author documentation**
+<a id="symbol-Crypto.equal"></a>
+#### `Crypto.equal` · [source](contracts.md#code)
 
 Compare bytes without early exit on their contents. Length remains observable.
 
-#### `Crypto.exportRsa` {#symbol-Crypto.exportRsa}
+**Inputs:** Take `left` (`Bytes`). Take `right` (`Bytes`).
 
-[source](contracts.md#code)
+Returns `bool`. Uses [`Crypto.equal`](contracts.md#symbol-Crypto.equal).
 
-**Inputs**
-
-- `publicKey` (`RsaPublicKey`) — required labeled input.
-
-Returns: `Tuple<Bytes,Bytes>`.
-
-Capabilities: [`Crypto.exportRsa`](contracts.md#symbol-Crypto.exportRsa).
-
-Can fail with `CryptoError`. Callers must catch or propagate these errors.
-
-Interface contract. A selected implementation supplies the behavior.
-
-**Author documentation**
+<a id="symbol-Crypto.exportRsa"></a>
+#### `Crypto.exportRsa` · [source](contracts.md#code)
 
 Export unsigned big-endian modulus and exponent for an RSA JWK.
 
-#### `Crypto.importRsa` {#symbol-Crypto.importRsa}
+**Inputs:** Take `publicKey` (`RsaPublicKey`).
 
-[source](contracts.md#code)
+Returns `Tuple<Bytes,Bytes>`. Uses [`Crypto.exportRsa`](contracts.md#symbol-Crypto.exportRsa). Can fail with `CryptoError`.
 
-**Inputs**
-
-- `modulus` (`Bytes`) — required labeled input.
-- `exponent` (`Bytes`) — required labeled input.
-
-Returns: `RsaPublicKey`.
-
-Capabilities: [`Crypto.importRsa`](contracts.md#symbol-Crypto.importRsa).
-
-Can fail with `CryptoError`. Callers must catch or propagate these errors.
-
-Interface contract. A selected implementation supplies the behavior.
-
-**Author documentation**
+<a id="symbol-Crypto.importRsa"></a>
+#### `Crypto.importRsa` · [source](contracts.md#code)
 
 Import canonical public RSA parameters. Keys must have 2048 to 8192 bits.
 
-#### `Crypto.passwordHash` {#symbol-Crypto.passwordHash}
+**Inputs:** Take `modulus` (`Bytes`). Take `exponent` (`Bytes`).
 
-[source](contracts.md#code)
+Returns `RsaPublicKey`. Uses [`Crypto.importRsa`](contracts.md#symbol-Crypto.importRsa). Can fail with `CryptoError`.
 
-**Inputs**
-
-- `password` (`Bytes`) — required labeled input.
-- `salt` (`Bytes`) — required labeled input.
-- `iterations` (`int`) — required labeled input.
-
-Returns: `Bytes`.
-
-Capabilities: [`Crypto.passwordHash`](contracts.md#symbol-Crypto.passwordHash).
-
-Can fail with `CryptoError`. Callers must catch or propagate these errors.
-
-Interface contract. A selected implementation supplies the behavior.
-
-**Author documentation**
+<a id="symbol-Crypto.passwordHash"></a>
+#### `Crypto.passwordHash` · [source](contracts.md#code)
 
 PBKDF2-HMAC-SHA256, producing 32 bytes. Use a unique 16–64 byte salt; supported work factors are 100,000–2,000,000.
 
-### `GnuTlsCrypto` {#symbol-GnuTlsCrypto}
+**Inputs:** Take `password` (`Bytes`). Take `salt` (`Bytes`). Take `iterations` (`int`).
 
-[source](contracts.md#code)
+Returns `Bytes`. Uses [`Crypto.passwordHash`](contracts.md#symbol-Crypto.passwordHash). Can fail with `CryptoError`.
 
-Behavioral class.
+<a id="symbol-GnuTlsCrypto"></a>
+### `GnuTlsCrypto` · class · [source](contracts.md#code)
 
-Satisfies [`Crypto`](contracts.md#symbol-Crypto).
+GnuTLS-backed capability adapter. Its constructor performs no I/O or key generation. Implements [`Crypto`](contracts.md#symbol-Crypto).
 
-**Author documentation**
-
-GnuTLS-backed capability adapter. Its constructor performs no I/O or key generation.
-
-#### `GnuTlsCrypto.random` {#symbol-GnuTlsCrypto.random}
-
-[source](contracts.md#code)
-
-**Inputs**
-
-- `size` (`int`) — required labeled input.
-
-Returns: `Bytes`.
-
-Capabilities: [`Crypto.random`](contracts.md#symbol-Crypto.random).
-
-Can fail with `CryptoError`. Callers must catch or propagate these errors.
-
-**What it does**
-
-- Enter an unsafe boundary. Native calls use their declared contracts; their foreign implementation is outside this specification:
-  - Return call [`_aug_crypto_random`](contracts.md#symbol-_aug_crypto_random) with `size` = `size`.
-
-**Author documentation**
+<a id="symbol-GnuTlsCrypto.random"></a>
+#### `GnuTlsCrypto.random` · [source](contracts.md#code)
 
 Generate unpredictable bytes with the operating-system-backed GnuTLS RNG.
 
-#### `GnuTlsCrypto.sha256` {#symbol-GnuTlsCrypto.sha256}
+**Inputs:** Take `size` (`int`).
 
-[source](contracts.md#code)
+Returns `Bytes`. Uses [`Crypto.random`](contracts.md#symbol-Crypto.random). Can fail with `CryptoError`.
 
-**Inputs**
+- Use native code with its declared contract:
+  - Return the result of [`_aug_crypto_random`](contracts.md#symbol-_aug_crypto_random) with `size`.
 
-- `input` (`Bytes`) — required labeled input.
-
-Returns: `Bytes`.
-
-Capabilities: [`Crypto.sha256`](contracts.md#symbol-Crypto.sha256).
-
-Can fail with `CryptoError`. Callers must catch or propagate these errors.
-
-**What it does**
-
-- Enter an unsafe boundary. Native calls use their declared contracts; their foreign implementation is outside this specification:
-  - Return call [`_aug_crypto_sha256`](contracts.md#symbol-_aug_crypto_sha256) with `input` = `input`.
-
-**Author documentation**
+<a id="symbol-GnuTlsCrypto.sha256"></a>
+#### `GnuTlsCrypto.sha256` · [source](contracts.md#code)
 
 Hash the complete input using SHA-256.
 
-#### `GnuTlsCrypto.generateRsa` {#symbol-GnuTlsCrypto.generateRsa}
+**Inputs:** Take `input` (`Bytes`).
 
-[source](contracts.md#code)
+Returns `Bytes`. Uses [`Crypto.sha256`](contracts.md#symbol-Crypto.sha256). Can fail with `CryptoError`.
 
-Returns: `RsaPrivateKey`.
+- Use native code with its declared contract:
+  - Return the result of [`_aug_crypto_sha256`](contracts.md#symbol-_aug_crypto_sha256) with `input`.
 
-Capabilities: [`Crypto.generateRsa`](contracts.md#symbol-Crypto.generateRsa).
-
-Can fail with `CryptoError`. Callers must catch or propagate these errors.
-
-**What it does**
-
-- Enter an unsafe boundary. Native calls use their declared contracts; their foreign implementation is outside this specification:
-  - Return call [`_aug_crypto_generate_rsa`](contracts.md#symbol-_aug_crypto_generate_rsa).
-
-**Author documentation**
+<a id="symbol-GnuTlsCrypto.generateRsa"></a>
+#### `GnuTlsCrypto.generateRsa` · [source](contracts.md#code)
 
 Create a fresh 3072-bit RSA private key. Private material is opaque and scrubbed on reclamation.
 
-#### `GnuTlsCrypto.publicRsa` {#symbol-GnuTlsCrypto.publicRsa}
+Returns `RsaPrivateKey`. Uses [`Crypto.generateRsa`](contracts.md#symbol-Crypto.generateRsa). Can fail with `CryptoError`.
 
-[source](contracts.md#code)
+- Use native code with its declared contract:
+  - Return the result of [`_aug_crypto_generate_rsa`](contracts.md#symbol-_aug_crypto_generate_rsa).
 
-**Inputs**
-
-- `key` (`RsaPrivateKey`) — required labeled input.
-
-Returns: `RsaPublicKey`.
-
-Capabilities: [`Crypto.publicRsa`](contracts.md#symbol-Crypto.publicRsa).
-
-Can fail with `CryptoError`. Callers must catch or propagate these errors.
-
-**What it does**
-
-- Enter an unsafe boundary. Native calls use their declared contracts; their foreign implementation is outside this specification:
-  - Return call [`_aug_crypto_public_rsa`](contracts.md#symbol-_aug_crypto_public_rsa) with `key` = `key`.
-
-**Author documentation**
+<a id="symbol-GnuTlsCrypto.publicRsa"></a>
+#### `GnuTlsCrypto.publicRsa` · [source](contracts.md#code)
 
 Export the corresponding public key as an opaque immutable value.
 
-#### `GnuTlsCrypto.signRsa` {#symbol-GnuTlsCrypto.signRsa}
+**Inputs:** Take `key` (`RsaPrivateKey`).
 
-[source](contracts.md#code)
+Returns `RsaPublicKey`. Uses [`Crypto.publicRsa`](contracts.md#symbol-Crypto.publicRsa). Can fail with `CryptoError`.
 
-**Inputs**
+- Use native code with its declared contract:
+  - Return the result of [`_aug_crypto_public_rsa`](contracts.md#symbol-_aug_crypto_public_rsa) with `key`.
 
-- `key` (`RsaPrivateKey`) — required labeled input.
-- `input` (`Bytes`) — required labeled input.
-
-Returns: `Bytes`.
-
-Capabilities: [`Crypto.signRsa`](contracts.md#symbol-Crypto.signRsa).
-
-Can fail with `CryptoError`. Callers must catch or propagate these errors.
-
-**What it does**
-
-- Enter an unsafe boundary. Native calls use their declared contracts; their foreign implementation is outside this specification:
-  - Return call [`_aug_crypto_sign_rsa`](contracts.md#symbol-_aug_crypto_sign_rsa) with `key` = `key`; `input` = `input`.
-
-**Author documentation**
+<a id="symbol-GnuTlsCrypto.signRsa"></a>
+#### `GnuTlsCrypto.signRsa` · [source](contracts.md#code)
 
 Sign bytes using RSASSA-PKCS1-v1_5 with SHA-256 (JOSE RS256).
 
-#### `GnuTlsCrypto.verifyRsa` {#symbol-GnuTlsCrypto.verifyRsa}
+**Inputs:** Take `key` (`RsaPrivateKey`). Take `input` (`Bytes`).
 
-[source](contracts.md#code)
+Returns `Bytes`. Uses [`Crypto.signRsa`](contracts.md#symbol-Crypto.signRsa). Can fail with `CryptoError`.
 
-**Inputs**
+- Use native code with its declared contract:
+  - Return the result of [`_aug_crypto_sign_rsa`](contracts.md#symbol-_aug_crypto_sign_rsa) with `key`, `input`.
 
-- `publicKey` (`RsaPublicKey`) — required labeled input.
-- `input` (`Bytes`) — required labeled input.
-- `signature` (`Bytes`) — required labeled input.
-
-Returns: `bool`.
-
-Capabilities: [`Crypto.verifyRsa`](contracts.md#symbol-Crypto.verifyRsa).
-
-Can fail with `CryptoError`. Callers must catch or propagate these errors.
-
-**What it does**
-
-- Enter an unsafe boundary. Native calls use their declared contracts; their foreign implementation is outside this specification:
-  - Return call [`_aug_crypto_verify_rsa`](contracts.md#symbol-_aug_crypto_verify_rsa) with `publicKey` = `publicKey`; `input` = `input`; `signature` = `signature`.
-
-**Author documentation**
+<a id="symbol-GnuTlsCrypto.verifyRsa"></a>
+#### `GnuTlsCrypto.verifyRsa` · [source](contracts.md#code)
 
 Verify only RS256. Invalid signatures return false; invalid keys raise CryptoError.
 
-#### `GnuTlsCrypto.decodeBase64url` {#symbol-GnuTlsCrypto.decodeBase64url}
+**Inputs:** Take `publicKey` (`RsaPublicKey`). Take `input` (`Bytes`). Take `signature` (`Bytes`).
 
-[source](contracts.md#code)
+Returns `bool`. Uses [`Crypto.verifyRsa`](contracts.md#symbol-Crypto.verifyRsa). Can fail with `CryptoError`.
 
-**Inputs**
+- Use native code with its declared contract:
+  - Return the result of [`_aug_crypto_verify_rsa`](contracts.md#symbol-_aug_crypto_verify_rsa) with `publicKey`, `input`, `signature`.
 
-- `input` (`string`) — required labeled input.
-
-Returns: `Bytes`.
-
-Capabilities: [`Crypto.decodeBase64url`](contracts.md#symbol-Crypto.decodeBase64url).
-
-Can fail with `CryptoError`. Callers must catch or propagate these errors.
-
-**What it does**
-
-- Enter an unsafe boundary. Native calls use their declared contracts; their foreign implementation is outside this specification:
-  - Return call [`_aug_crypto_decode_base64url`](contracts.md#symbol-_aug_crypto_decode_base64url) with `input` = `input`.
-
-**Author documentation**
+<a id="symbol-GnuTlsCrypto.decodeBase64url"></a>
+#### `GnuTlsCrypto.decodeBase64url` · [source](contracts.md#code)
 
 Decode canonical unpadded URL-safe base64, rejecting invalid characters and unused bits.
 
-#### `GnuTlsCrypto.equal` {#symbol-GnuTlsCrypto.equal}
+**Inputs:** Take `input` (`string`).
 
-[source](contracts.md#code)
+Returns `Bytes`. Uses [`Crypto.decodeBase64url`](contracts.md#symbol-Crypto.decodeBase64url). Can fail with `CryptoError`.
 
-**Inputs**
+- Use native code with its declared contract:
+  - Return the result of [`_aug_crypto_decode_base64url`](contracts.md#symbol-_aug_crypto_decode_base64url) with `input`.
 
-- `left` (`Bytes`) — required labeled input.
-- `right` (`Bytes`) — required labeled input.
-
-Returns: `bool`.
-
-Capabilities: [`Crypto.equal`](contracts.md#symbol-Crypto.equal).
-
-**What it does**
-
-- Enter an unsafe boundary. Native calls use their declared contracts; their foreign implementation is outside this specification:
-  - Return call [`_aug_crypto_equal`](contracts.md#symbol-_aug_crypto_equal) with `left` = `left`; `right` = `right`.
-
-**Author documentation**
+<a id="symbol-GnuTlsCrypto.equal"></a>
+#### `GnuTlsCrypto.equal` · [source](contracts.md#code)
 
 Compare bytes without early exit on their contents. Length remains observable.
 
-#### `GnuTlsCrypto.exportRsa` {#symbol-GnuTlsCrypto.exportRsa}
+**Inputs:** Take `left` (`Bytes`). Take `right` (`Bytes`).
 
-[source](contracts.md#code)
+Returns `bool`. Uses [`Crypto.equal`](contracts.md#symbol-Crypto.equal).
 
-**Inputs**
+- Use native code with its declared contract:
+  - Return the result of [`_aug_crypto_equal`](contracts.md#symbol-_aug_crypto_equal) with `left`, `right`.
 
-- `publicKey` (`RsaPublicKey`) — required labeled input.
-
-Returns: `Tuple<Bytes,Bytes>`.
-
-Capabilities: [`Crypto.exportRsa`](contracts.md#symbol-Crypto.exportRsa).
-
-Can fail with `CryptoError`. Callers must catch or propagate these errors.
-
-**What it does**
-
-- Enter an unsafe boundary. Native calls use their declared contracts; their foreign implementation is outside this specification:
-  - Return call [`_aug_crypto_export_rsa`](contracts.md#symbol-_aug_crypto_export_rsa) with `publicKey` = `publicKey`.
-
-**Author documentation**
+<a id="symbol-GnuTlsCrypto.exportRsa"></a>
+#### `GnuTlsCrypto.exportRsa` · [source](contracts.md#code)
 
 Export unsigned big-endian modulus and exponent for an RSA JWK.
 
-#### `GnuTlsCrypto.importRsa` {#symbol-GnuTlsCrypto.importRsa}
+**Inputs:** Take `publicKey` (`RsaPublicKey`).
 
-[source](contracts.md#code)
+Returns `Tuple<Bytes,Bytes>`. Uses [`Crypto.exportRsa`](contracts.md#symbol-Crypto.exportRsa). Can fail with `CryptoError`.
 
-**Inputs**
+- Use native code with its declared contract:
+  - Return the result of [`_aug_crypto_export_rsa`](contracts.md#symbol-_aug_crypto_export_rsa) with `publicKey`.
 
-- `modulus` (`Bytes`) — required labeled input.
-- `exponent` (`Bytes`) — required labeled input.
-
-Returns: `RsaPublicKey`.
-
-Capabilities: [`Crypto.importRsa`](contracts.md#symbol-Crypto.importRsa).
-
-Can fail with `CryptoError`. Callers must catch or propagate these errors.
-
-**What it does**
-
-- Enter an unsafe boundary. Native calls use their declared contracts; their foreign implementation is outside this specification:
-  - Return call [`_aug_crypto_import_rsa`](contracts.md#symbol-_aug_crypto_import_rsa) with `modulus` = `modulus`; `exponent` = `exponent`.
-
-**Author documentation**
+<a id="symbol-GnuTlsCrypto.importRsa"></a>
+#### `GnuTlsCrypto.importRsa` · [source](contracts.md#code)
 
 Import canonical public RSA parameters. Keys must have 2048 to 8192 bits.
 
-#### `GnuTlsCrypto.passwordHash` {#symbol-GnuTlsCrypto.passwordHash}
+**Inputs:** Take `modulus` (`Bytes`). Take `exponent` (`Bytes`).
 
-[source](contracts.md#code)
+Returns `RsaPublicKey`. Uses [`Crypto.importRsa`](contracts.md#symbol-Crypto.importRsa). Can fail with `CryptoError`.
 
-**Inputs**
+- Use native code with its declared contract:
+  - Return the result of [`_aug_crypto_import_rsa`](contracts.md#symbol-_aug_crypto_import_rsa) with `modulus`, `exponent`.
 
-- `password` (`Bytes`) — required labeled input.
-- `salt` (`Bytes`) — required labeled input.
-- `iterations` (`int`) — required labeled input.
-
-Returns: `Bytes`.
-
-Capabilities: [`Crypto.passwordHash`](contracts.md#symbol-Crypto.passwordHash).
-
-Can fail with `CryptoError`. Callers must catch or propagate these errors.
-
-**What it does**
-
-- Enter an unsafe boundary. Native calls use their declared contracts; their foreign implementation is outside this specification:
-  - Return call [`_aug_crypto_password_hash`](contracts.md#symbol-_aug_crypto_password_hash) with `password` = `password`; `salt` = `salt`; `iterations` = `iterations`.
-
-**Author documentation**
+<a id="symbol-GnuTlsCrypto.passwordHash"></a>
+#### `GnuTlsCrypto.passwordHash` · [source](contracts.md#code)
 
 PBKDF2-HMAC-SHA256, producing 32 bytes. Use a unique 16–64 byte salt; supported work factors are 100,000–2,000,000.
 
-### `_aug_crypto_random` {#symbol-_aug_crypto_random}
+**Inputs:** Take `password` (`Bytes`). Take `salt` (`Bytes`). Take `iterations` (`int`).
 
-[source](contracts.md#code)
+Returns `Bytes`. Uses [`Crypto.passwordHash`](contracts.md#symbol-Crypto.passwordHash). Can fail with `CryptoError`.
 
-Private to its defining scope.
+- Use native code with its declared contract:
+  - Return the result of [`_aug_crypto_password_hash`](contracts.md#symbol-_aug_crypto_password_hash) with `password`, `salt`, `iterations`.
 
-**Inputs**
-
-- `size` (`int`) — required labeled input.
-
-Returns: `Bytes`.
-
-Capabilities: [`Crypto.random`](contracts.md#symbol-Crypto.random).
-
-Can fail with `CryptoError`. Callers must catch or propagate these errors.
-
-Native C operation. Its declared inputs, result, effects, and errors are the visible contract. The C implementation is outside this specification.
-
-### `_aug_crypto_sha256` {#symbol-_aug_crypto_sha256}
-
-[source](contracts.md#code)
+<a id="symbol-_aug_crypto_random"></a>
+### `_aug_crypto_random` · [source](contracts.md#code)
 
 Private to its defining scope.
 
-**Inputs**
+**Inputs:** Take `size` (`int`).
 
-- `input` (`Bytes`) — required labeled input.
+Returns `Bytes`. Uses [`Crypto.random`](contracts.md#symbol-Crypto.random). Can fail with `CryptoError`.
 
-Returns: `Bytes`.
+Native C implementation; only its declared contract is visible here.
 
-Capabilities: [`Crypto.sha256`](contracts.md#symbol-Crypto.sha256).
-
-Can fail with `CryptoError`. Callers must catch or propagate these errors.
-
-Native C operation. Its declared inputs, result, effects, and errors are the visible contract. The C implementation is outside this specification.
-
-### `_aug_crypto_generate_rsa` {#symbol-_aug_crypto_generate_rsa}
-
-[source](contracts.md#code)
+<a id="symbol-_aug_crypto_sha256"></a>
+### `_aug_crypto_sha256` · [source](contracts.md#code)
 
 Private to its defining scope.
 
-Returns: `RsaPrivateKey`.
+**Inputs:** Take `input` (`Bytes`).
 
-Capabilities: [`Crypto.generateRsa`](contracts.md#symbol-Crypto.generateRsa).
+Returns `Bytes`. Uses [`Crypto.sha256`](contracts.md#symbol-Crypto.sha256). Can fail with `CryptoError`.
 
-Can fail with `CryptoError`. Callers must catch or propagate these errors.
+Native C implementation; only its declared contract is visible here.
 
-Native C operation. Its declared inputs, result, effects, and errors are the visible contract. The C implementation is outside this specification.
-
-### `_aug_crypto_public_rsa` {#symbol-_aug_crypto_public_rsa}
-
-[source](contracts.md#code)
+<a id="symbol-_aug_crypto_generate_rsa"></a>
+### `_aug_crypto_generate_rsa` · [source](contracts.md#code)
 
 Private to its defining scope.
 
-**Inputs**
+Returns `RsaPrivateKey`. Uses [`Crypto.generateRsa`](contracts.md#symbol-Crypto.generateRsa). Can fail with `CryptoError`.
 
-- `key` (`RsaPrivateKey`) — required labeled input.
+Native C implementation; only its declared contract is visible here.
 
-Returns: `RsaPublicKey`.
-
-Capabilities: [`Crypto.publicRsa`](contracts.md#symbol-Crypto.publicRsa).
-
-Can fail with `CryptoError`. Callers must catch or propagate these errors.
-
-Native C operation. Its declared inputs, result, effects, and errors are the visible contract. The C implementation is outside this specification.
-
-### `_aug_crypto_sign_rsa` {#symbol-_aug_crypto_sign_rsa}
-
-[source](contracts.md#code)
+<a id="symbol-_aug_crypto_public_rsa"></a>
+### `_aug_crypto_public_rsa` · [source](contracts.md#code)
 
 Private to its defining scope.
 
-**Inputs**
+**Inputs:** Take `key` (`RsaPrivateKey`).
 
-- `key` (`RsaPrivateKey`) — required labeled input.
-- `input` (`Bytes`) — required labeled input.
+Returns `RsaPublicKey`. Uses [`Crypto.publicRsa`](contracts.md#symbol-Crypto.publicRsa). Can fail with `CryptoError`.
 
-Returns: `Bytes`.
+Native C implementation; only its declared contract is visible here.
 
-Capabilities: [`Crypto.signRsa`](contracts.md#symbol-Crypto.signRsa).
-
-Can fail with `CryptoError`. Callers must catch or propagate these errors.
-
-Native C operation. Its declared inputs, result, effects, and errors are the visible contract. The C implementation is outside this specification.
-
-### `_aug_crypto_verify_rsa` {#symbol-_aug_crypto_verify_rsa}
-
-[source](contracts.md#code)
+<a id="symbol-_aug_crypto_sign_rsa"></a>
+### `_aug_crypto_sign_rsa` · [source](contracts.md#code)
 
 Private to its defining scope.
 
-**Inputs**
+**Inputs:** Take `key` (`RsaPrivateKey`). Take `input` (`Bytes`).
 
-- `publicKey` (`RsaPublicKey`) — required labeled input.
-- `input` (`Bytes`) — required labeled input.
-- `signature` (`Bytes`) — required labeled input.
+Returns `Bytes`. Uses [`Crypto.signRsa`](contracts.md#symbol-Crypto.signRsa). Can fail with `CryptoError`.
 
-Returns: `bool`.
+Native C implementation; only its declared contract is visible here.
 
-Capabilities: [`Crypto.verifyRsa`](contracts.md#symbol-Crypto.verifyRsa).
-
-Can fail with `CryptoError`. Callers must catch or propagate these errors.
-
-Native C operation. Its declared inputs, result, effects, and errors are the visible contract. The C implementation is outside this specification.
-
-### `_aug_crypto_decode_base64url` {#symbol-_aug_crypto_decode_base64url}
-
-[source](contracts.md#code)
+<a id="symbol-_aug_crypto_verify_rsa"></a>
+### `_aug_crypto_verify_rsa` · [source](contracts.md#code)
 
 Private to its defining scope.
 
-**Inputs**
+**Inputs:** Take `publicKey` (`RsaPublicKey`). Take `input` (`Bytes`). Take `signature` (`Bytes`).
 
-- `input` (`string`) — required labeled input.
+Returns `bool`. Uses [`Crypto.verifyRsa`](contracts.md#symbol-Crypto.verifyRsa). Can fail with `CryptoError`.
 
-Returns: `Bytes`.
+Native C implementation; only its declared contract is visible here.
 
-Capabilities: [`Crypto.decodeBase64url`](contracts.md#symbol-Crypto.decodeBase64url).
-
-Can fail with `CryptoError`. Callers must catch or propagate these errors.
-
-Native C operation. Its declared inputs, result, effects, and errors are the visible contract. The C implementation is outside this specification.
-
-### `_aug_crypto_equal` {#symbol-_aug_crypto_equal}
-
-[source](contracts.md#code)
+<a id="symbol-_aug_crypto_decode_base64url"></a>
+### `_aug_crypto_decode_base64url` · [source](contracts.md#code)
 
 Private to its defining scope.
 
-**Inputs**
+**Inputs:** Take `input` (`string`).
 
-- `left` (`Bytes`) — required labeled input.
-- `right` (`Bytes`) — required labeled input.
+Returns `Bytes`. Uses [`Crypto.decodeBase64url`](contracts.md#symbol-Crypto.decodeBase64url). Can fail with `CryptoError`.
 
-Returns: `bool`.
+Native C implementation; only its declared contract is visible here.
 
-Capabilities: [`Crypto.equal`](contracts.md#symbol-Crypto.equal).
-
-Native C operation. Its declared inputs, result, effects, and errors are the visible contract. The C implementation is outside this specification.
-
-### `_aug_crypto_export_rsa` {#symbol-_aug_crypto_export_rsa}
-
-[source](contracts.md#code)
+<a id="symbol-_aug_crypto_equal"></a>
+### `_aug_crypto_equal` · [source](contracts.md#code)
 
 Private to its defining scope.
 
-**Inputs**
+**Inputs:** Take `left` (`Bytes`). Take `right` (`Bytes`).
 
-- `publicKey` (`RsaPublicKey`) — required labeled input.
+Returns `bool`. Uses [`Crypto.equal`](contracts.md#symbol-Crypto.equal).
 
-Returns: `Tuple<Bytes,Bytes>`.
+Native C implementation; only its declared contract is visible here.
 
-Capabilities: [`Crypto.exportRsa`](contracts.md#symbol-Crypto.exportRsa).
-
-Can fail with `CryptoError`. Callers must catch or propagate these errors.
-
-Native C operation. Its declared inputs, result, effects, and errors are the visible contract. The C implementation is outside this specification.
-
-### `_aug_crypto_import_rsa` {#symbol-_aug_crypto_import_rsa}
-
-[source](contracts.md#code)
+<a id="symbol-_aug_crypto_export_rsa"></a>
+### `_aug_crypto_export_rsa` · [source](contracts.md#code)
 
 Private to its defining scope.
 
-**Inputs**
+**Inputs:** Take `publicKey` (`RsaPublicKey`).
 
-- `modulus` (`Bytes`) — required labeled input.
-- `exponent` (`Bytes`) — required labeled input.
+Returns `Tuple<Bytes,Bytes>`. Uses [`Crypto.exportRsa`](contracts.md#symbol-Crypto.exportRsa). Can fail with `CryptoError`.
 
-Returns: `RsaPublicKey`.
+Native C implementation; only its declared contract is visible here.
 
-Capabilities: [`Crypto.importRsa`](contracts.md#symbol-Crypto.importRsa).
-
-Can fail with `CryptoError`. Callers must catch or propagate these errors.
-
-Native C operation. Its declared inputs, result, effects, and errors are the visible contract. The C implementation is outside this specification.
-
-### `_aug_crypto_password_hash` {#symbol-_aug_crypto_password_hash}
-
-[source](contracts.md#code)
+<a id="symbol-_aug_crypto_import_rsa"></a>
+### `_aug_crypto_import_rsa` · [source](contracts.md#code)
 
 Private to its defining scope.
 
-**Inputs**
+**Inputs:** Take `modulus` (`Bytes`). Take `exponent` (`Bytes`).
 
-- `password` (`Bytes`) — required labeled input.
-- `salt` (`Bytes`) — required labeled input.
-- `iterations` (`int`) — required labeled input.
+Returns `RsaPublicKey`. Uses [`Crypto.importRsa`](contracts.md#symbol-Crypto.importRsa). Can fail with `CryptoError`.
 
-Returns: `Bytes`.
+Native C implementation; only its declared contract is visible here.
 
-Capabilities: [`Crypto.passwordHash`](contracts.md#symbol-Crypto.passwordHash).
+<a id="symbol-_aug_crypto_password_hash"></a>
+### `_aug_crypto_password_hash` · [source](contracts.md#code)
 
-Can fail with `CryptoError`. Callers must catch or propagate these errors.
+Private to its defining scope.
 
-Native C operation. Its declared inputs, result, effects, and errors are the visible contract. The C implementation is outside this specification.
+**Inputs:** Take `password` (`Bytes`). Take `salt` (`Bytes`). Take `iterations` (`int`).
 
-### Shared language rules
+Returns `Bytes`. Uses [`Crypto.passwordHash`](contracts.md#symbol-Crypto.passwordHash). Can fail with `CryptoError`.
 
-See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
+Native C implementation; only its declared contract is visible here.
 
 ::::
 

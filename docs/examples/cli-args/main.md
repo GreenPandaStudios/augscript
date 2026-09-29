@@ -67,40 +67,28 @@ catch IndexError error {
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
+### Startup
 
-### In this file
-
-- Run startup operations with checked error recovery.
-
-### Startup, in source order
-
-- Try these operations:
-  - Set `args` to call `arguments`.
-  - Call `print` with `value` = call `length` on `args`.
-  - If call `length` on `args` is greater than `0`:
-    - Call `print` with `value` = call `get` on `args` with `index` = `0`.
+- Try:
+  - Set `args` to the result of `arguments`.
+  - Call `print` with `value` as the result of `length` on `args`.
+  - If the result of `length` on `args` is greater than `0`:
+    - Call `print` with `value` as the result of `get` on `args` with `index` as `0`.
   - Set `numbers` to a list of `int` containing `1`, `2`.
-  - Grant exclusive mutable access to `numbers` for this block, then end the borrow:
-    - Call `append` on `numbers` with `value` = `3`.
-  - Call `print` with `value` = call `get` on `numbers` with `index` = `2`.
-- If they fail with `IndexError`, name the failure `error` and recover:
-  - Call `print` with `value` = `"unexpected index failure"`.
+  - Mutably borrow `numbers` for this block:
+    - Call `append` on `numbers` with `value` as `3`.
+  - Call `print` with `value` as the result of `get` on `numbers` with `index` as `2`.
+- Catch `IndexError` as `error`:
+  - Call `print` with `value` as `"unexpected index failure"`.
 
-### Built-in operations used by this file
+### Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
 
-- `List<int>.append` (`value`: `int`) → `void`: Append an element with exclusive mutable access. Read-only and owned aliases cannot be stored here. Changes the receiver.
-- `List<int>.get` (`index`: `int`) → `int`: Read a zero-based position. An invalid index raises checked IndexError. Reference results grant reading. Can fail with `IndexError`.
-- `List<string>.get` (`index`: `int`) → `string`: Read a zero-based position. An invalid index raises checked IndexError. Reference results grant reading. Can fail with `IndexError`.
-- `List<string>.length` (no inputs) → `int`: Read the number of elements.
-- `arguments` (no inputs) → `List<string>`: Composition arguments. Other callables receive the Arguments capability.
-- `print` (`value`: `any`) → `void`: Composition and test output. Other callables receive Console and declare uses console.write.
-
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
-
-### Shared language rules
-
-See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
+- `List<int>.append`: Append an element with exclusive mutable access. Read-only and owned aliases cannot be stored here.
+- `List<int>.get`: Read a zero-based position. An invalid index raises checked IndexError. Reference results grant reading.
+- `List<string>.get`: Read a zero-based position. An invalid index raises checked IndexError. Reference results grant reading.
+- `List<string>.length`: Read the number of elements.
+- `arguments`: Composition arguments. Other callables receive the Arguments capability.
+- `print`: Composition and test output. Other callables receive Console and declare uses console.write.
 
 ::::
 

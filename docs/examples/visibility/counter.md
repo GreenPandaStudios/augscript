@@ -65,77 +65,45 @@ _prefix() returns string {
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
+<a id="symbol-ICounter"></a>
+### `ICounter` · interface · [source](counter.md#code)
 
-### In this file
+<a id="symbol-ICounter.label"></a>
+#### `ICounter.label` · [source](counter.md#code)
 
-- [`ICounter`](counter.md#symbol-ICounter) is an interface.
-- [`Counter`](counter.md#symbol-Counter) is a class implementing `ICounter`.
-- [`_prefix`](counter.md#symbol-_prefix) is a function returning `string`.
+Returns `string`.
 
-### `ICounter` {#symbol-ICounter}
+<a id="symbol-Counter"></a>
+### `Counter` · class · [source](counter.md#code)
 
-[source](counter.md#code)
+Implements [`ICounter`](counter.md#symbol-ICounter).
 
-Interface.
+**Inputs:** Take `value` (`int`); store mutably.
 
-#### `ICounter.label` {#symbol-ICounter.label}
-
-[source](counter.md#code)
-
-Returns: `string`.
-
-Interface contract. A selected implementation supplies the behavior.
-
-### `Counter` {#symbol-Counter}
-
-[source](counter.md#code)
-
-Behavioral class.
-
-Satisfies [`ICounter`](counter.md#symbol-ICounter).
-
-**Inputs**
-
-- `value` (`int`) — required labeled input — stored as `value` and mutable.
-
-#### `Counter._label` {#symbol-Counter._label}
-
-[source](counter.md#code)
+<a id="symbol-Counter._label"></a>
+#### `Counter._label` · [source](counter.md#code)
 
 Private to its defining scope.
 
-Returns: `string`.
+Returns `string`.
 
-**What it does**
+- Return the result of [`_prefix`](counter.md#symbol-_prefix).
 
-- Return call [`_prefix`](counter.md#symbol-_prefix).
+<a id="symbol-Counter.label"></a>
+#### `Counter.label` · [source](counter.md#code)
 
-#### `Counter.label` {#symbol-Counter.label}
+Returns `string`.
 
-[source](counter.md#code)
+- Return the result of [`Counter._label`](counter.md#symbol-Counter._label) on `self`.
 
-Returns: `string`.
-
-**What it does**
-
-- Return call [`Counter._label`](counter.md#symbol-Counter._label) on `self`.
-
-### `_prefix` {#symbol-_prefix}
-
-[source](counter.md#code)
+<a id="symbol-_prefix"></a>
+### `_prefix` · [source](counter.md#code)
 
 Private to its defining scope.
 
-Returns: `string`.
-
-**What it does**
+Returns `string`.
 
 - Return `"count"`.
-
-### Shared language rules
-
-See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
 
 ::::
 

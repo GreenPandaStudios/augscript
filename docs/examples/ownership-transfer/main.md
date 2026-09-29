@@ -60,65 +60,29 @@ print(value="end of main")
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
+### Providers
 
-### In this file
+- Provide [`SystemConsole`](dependencies/august/0.19.0/io/contracts.md#symbol-SystemConsole) for `Console`. Share one instance.
 
-- Register 1 dependency provider before startup.
-- Run 4 other startup steps in source order.
+### Startup
 
-### Dependency providers
+- Set `first` of type [`Resource`](resource.md#symbol-Resource) to the result of [`make`](resource.md#symbol-make).
+- `first` of type [`Resource`](resource.md#symbol-Resource) owns this value.
+- Call [`consume`](resource.md#symbol-consume) with `value` as `first` using `Console` for `console`.
+- Set `second` of type [`Resource`](resource.md#symbol-Resource) to the result of [`make`](resource.md#symbol-make).
+- `second` of type [`Resource`](resource.md#symbol-Resource) owns this value.
+- Call `print` with `value` as `"end of main"`.
 
-Register these providers before startup. Their declaration order does not set initialization order; shared instances initialize in dependency order.
+### Dependencies
 
-- Provide [`SystemConsole`](dependencies/august/0.19.0/io/contracts.md#symbol-SystemConsole) when `Console` is requested. Reuse one instance.
+- [`SystemConsole`](dependencies/august/0.19.0/io/contracts.md#symbol-SystemConsole) from `august.io`.
+- [`Resource`](resource.md#symbol-Resource) from `resource`.
+- [`consume`](resource.md#symbol-consume) (`value`: [`Resource`](resource.md#symbol-Resource)) → `void` from `resource`.
+- [`make`](resource.md#symbol-make) (no caller inputs) → [`Resource`](resource.md#symbol-Resource) from `resource`.
 
-### Startup, in source order
+### Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
 
-- Set `first` of type [`Resource`](resource.md#symbol-Resource) to call [`make`](resource.md#symbol-make).
-- This variable owns the value.
-- Call [`consume`](resource.md#symbol-consume) with `value` = `first`; inject `console` from `Console`.
-- Set `second` of type [`Resource`](resource.md#symbol-Resource) to call [`make`](resource.md#symbol-make).
-- This variable owns the value.
-- Call `print` with `value` = `"end of main"`.
-
-### Dependencies used by this file
-
-Only referenced types and operations appear here. Each name links to its complete specification.
-
-#### [`SystemConsole`](dependencies/august/0.19.0/io/contracts.md#symbol-SystemConsole)
-
-Class from `august.io`.
-
-Used as a type or provider.
-
-#### [`Resource`](resource.md#symbol-Resource)
-
-Class from `resource`.
-
-Used as a type or provider.
-
-#### [`consume`](resource.md#symbol-consume)
-
-Function from `resource`.
-
-- [`consume`](resource.md#symbol-consume) (`value`: [`Resource`](resource.md#symbol-Resource)) → `void`; inject `console`: [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console); uses [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
-
-#### [`make`](resource.md#symbol-make)
-
-Function from `resource`.
-
-- [`make`](resource.md#symbol-make) (no caller inputs) → [`Resource`](resource.md#symbol-Resource).
-
-### Built-in operations used by this file
-
-- `print` (`value`: `any`) → `void`: Composition and test output. Other callables receive Console and declare uses console.write.
-
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
-
-### Shared language rules
-
-See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
+- `print`: Composition and test output. Other callables receive Console and declare uses console.write.
 
 ::::
 

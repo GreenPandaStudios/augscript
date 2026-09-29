@@ -46,29 +46,13 @@ announce()
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
-
-### In this file
-
-- Run 1 other startup step in source order.
-
-### Startup, in source order
+### Startup
 
 - Call [`announce`](native.md#symbol-announce).
 
-### Dependencies used by this file
+### Dependencies
 
-Only referenced types and operations appear here. Each name links to its complete specification.
-
-#### [`announce`](native.md#symbol-announce)
-
-Function from `native`.
-
-- [`announce`](native.md#symbol-announce) (no caller inputs) → `void`; uses `C.puts`.
-
-### Shared language rules
-
-See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
+- [`announce`](native.md#symbol-announce) (no caller inputs) → `void` from `native`.
 
 ::::
 

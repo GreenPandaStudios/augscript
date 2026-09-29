@@ -56,61 +56,31 @@ test add {
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
-
-### In this file
-
-- [`add`](arithmetic.md#symbol-add) is a function returning `int`.
-- [`test add`](arithmetic.md#symbol-test-20-add) is a same-file test suite.
-
-### `add` {#symbol-add}
-
-[source](arithmetic.md#code)
-
-**Inputs**
-
-- `left` (`int`) — required labeled input.
-- `right` (`int`) — required labeled input.
-
-Returns: `int`.
-
-**What it does**
-
-- Return `left` plus `right`.
-
-**Author documentation**
+<a id="symbol-add"></a>
+### `add` · [source](arithmetic.md#code)
 
 Add two integers.
 
-**Returns** Their sum.
+**Inputs:** Take `left` (`int`) — First value. Take `right` (`int`) — Second value.
 
-**Parameters**
-- `left`: First value.
-- `right`: Second value.
+Returns `int` — Their sum.
 
-### `test add` {#symbol-test-20-add}
+- Return `left` plus `right`.
 
-[source](arithmetic.md#code)
+<a id="symbol-test add"></a>
+### `test add` · [source](arithmetic.md#code)
 
-Same-file function tests for [`add`](arithmetic.md#symbol-add). Each case gets isolated setup and dependency bindings.
+Tests [`add`](arithmetic.md#symbol-add). Each case gets fresh setup and dependencies.
 
-#### Group `addition`
+#### `addition`
 
-##### `adds_two_integers`
+##### `adds_two_integers` · [source](arithmetic.md#code)
 
-[source](arithmetic.md#code)
+- Call `assert` with the result of [`add`](arithmetic.md#symbol-add) with `left` as `2`, `right` as `3` equals `5`.
 
-- Call `assert` with (call [`add`](arithmetic.md#symbol-add) with `left` = `2`; `right` = `3` equals `5`).
+### Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
 
-### Built-in operations used by this file
-
-- `assert` (`condition`: `bool`) → `void`: Assert a bool in a test case or its setup. Catching an assertion failure cannot make the case pass; every case must execute an assertion.
-
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
-
-### Shared language rules
-
-See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
+- `assert`: Assert a bool in a test case or its setup. Catching an assertion failure cannot make the case pass; every case must execute an assertion.
 
 ::::
 

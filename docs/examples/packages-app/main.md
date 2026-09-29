@@ -45,35 +45,17 @@ print(value=add(left=20, right=22))
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
+### Startup
 
-### In this file
+- Call `print` with `value` as the result of [`add`](dependencies/packages/%40example/aug-math/0.1.0/arithmetic.md#symbol-add) with `left` as `20`, `right` as `22`.
 
-- Run 1 other startup step in source order.
+### Dependencies
 
-### Startup, in source order
+- [`add`](dependencies/packages/%40example/aug-math/0.1.0/arithmetic.md#symbol-add) (`left`: `int`, `right`: `int`) → `int` from `math`.
 
-- Call `print` with `value` = call [`add`](dependencies/packages/%40example/aug-math/0.1.0/arithmetic.md#symbol-add) with `left` = `20`; `right` = `22`.
+### Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
 
-### Dependencies used by this file
-
-Only referenced types and operations appear here. Each name links to its complete specification.
-
-#### [`add`](dependencies/packages/%40example/aug-math/0.1.0/arithmetic.md#symbol-add)
-
-Function from `math`.
-
-- [`add`](dependencies/packages/%40example/aug-math/0.1.0/arithmetic.md#symbol-add) (`left`: `int`, `right`: `int`) → `int`.
-
-### Built-in operations used by this file
-
-- `print` (`value`: `any`) → `void`: Composition and test output. Other callables receive Console and declare uses console.write.
-
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
-
-### Shared language rules
-
-See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
+- `print`: Composition and test output. Other callables receive Console and declare uses console.write.
 
 ::::
 

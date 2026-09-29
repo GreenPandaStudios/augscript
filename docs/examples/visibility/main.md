@@ -55,41 +55,21 @@ print(value=counter.value)
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
+### Startup
 
-### In this file
-
-- Run 4 other startup steps in source order.
-
-### Startup, in source order
-
-- Set `counter` to call [`Counter`](counter.md#symbol-Counter) with `value` = `1`.
-- Call `print` with `value` = call [`Counter.label`](counter.md#symbol-Counter.label) on `counter`.
-- Grant exclusive mutable access to `counter` for this block, then end the borrow:
+- Set `counter` to a new [`Counter`](counter.md#symbol-Counter) with `value` as `1`.
+- Call `print` with `value` as the result of [`Counter.label`](counter.md#symbol-Counter.label) on `counter`.
+- Mutably borrow `counter` for this block:
   - Set `value` of `counter` to `2`.
-- Call `print` with `value` = `value` of `counter`.
+- Call `print` with `value` as `value` of `counter`.
 
-### Dependencies used by this file
+### Dependencies
 
-Only referenced types and operations appear here. Each name links to its complete specification.
+- [`Counter`](counter.md#symbol-Counter) from `counter`: construct with `value`: `int`; read `value` (`int`), mutable; [`label`](counter.md#symbol-Counter.label) (no caller inputs) → `string`.
 
-#### [`Counter`](counter.md#symbol-Counter)
+### Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
 
-Class from `counter`.
-
-- Construct with `value`: `int` → [`Counter`](counter.md#symbol-Counter).
-- Read `value` (`int`); its owner can change it.
-- [`Counter.label`](counter.md#symbol-Counter.label) (no caller inputs) → `string`.
-
-### Built-in operations used by this file
-
-- `print` (`value`: `any`) → `void`: Composition and test output. Other callables receive Console and declare uses console.write.
-
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
-
-### Shared language rules
-
-See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
+- `print`: Composition and test output. Other callables receive Console and declare uses console.write.
 
 ::::
 

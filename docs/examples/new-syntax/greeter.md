@@ -62,83 +62,36 @@ interface IGreeter {
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
+<a id="symbol-Greeter"></a>
+### `Greeter` · class · [source](greeter.md#code)
 
-### In this file
+Implements [`IGreeter`](greeter.md#symbol-IGreeter).
 
-- [`Greeter`](greeter.md#symbol-Greeter) is a class implementing `IGreeter`.
-- [`IGreeter`](greeter.md#symbol-IGreeter) is an interface.
+**Inputs:** Resolve [`Logger`](logger.md#symbol-Logger) as `logger`; store read-only. Take `x` (`int`); store read-only.
 
-### `Greeter` {#symbol-Greeter}
+<a id="symbol-Greeter.greet"></a>
+#### `Greeter.greet` · [source](greeter.md#code)
 
-[source](greeter.md#code)
+**Inputs:** Resolve [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console) as `console`. Take `name` (`string`).
 
-Behavioral class.
+Uses [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
 
-Satisfies [`IGreeter`](greeter.md#symbol-IGreeter).
+- Call [`Logger.log`](logger.md#symbol-Logger.log) on `logger` with `message` as text that joins `"Hello, "`, `name` and `"!"` using `console`.
 
-**Inputs**
+<a id="symbol-IGreeter"></a>
+### `IGreeter` · interface · [source](greeter.md#code)
 
-- `logger` ([`Logger`](logger.md#symbol-Logger)) — injected; callers omit it — stored as `logger` and read-only after initialization.
-- `x` (`int`) — required labeled input — stored as `x` and read-only after initialization.
+<a id="symbol-IGreeter.greet"></a>
+#### `IGreeter.greet` · [source](greeter.md#code)
 
-#### `Greeter.greet` {#symbol-Greeter.greet}
+**Inputs:** Resolve [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console) as `console`. Take `name` (`string`).
 
-[source](greeter.md#code)
+Uses [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
 
-**Inputs**
+### Dependencies
 
-- `console` ([`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console)) — injected; callers omit it.
-- `name` (`string`) — required labeled input.
-
-Returns: no value.
-
-Capabilities: [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
-
-**What it does**
-
-- Call [`Logger.log`](logger.md#symbol-Logger.log) on `logger` with `message` = (text formed by joining `"Hello, "`, `name`, `"!"` in order); inject `console` from `console`.
-
-### `IGreeter` {#symbol-IGreeter}
-
-[source](greeter.md#code)
-
-Interface.
-
-#### `IGreeter.greet` {#symbol-IGreeter.greet}
-
-[source](greeter.md#code)
-
-**Inputs**
-
-- `console` ([`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console)) — injected; callers omit it.
-- `name` (`string`) — required labeled input.
-
-Returns: no value.
-
-Capabilities: [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
-
-Interface contract. A selected implementation supplies the behavior.
-
-### Dependencies used by this file
-
-Only referenced types and operations appear here. Each name links to its complete specification.
-
-#### [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console)
-
-Capability interface from `august.io`.
-
-- [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write)<`T`> (`value`: `T`) → `void`.
-
-#### [`Logger`](logger.md#symbol-Logger)
-
-Interface from `logger`.
-
-- [`Logger.log`](logger.md#symbol-Logger.log) (`message`: `string`) → `void`; inject `console`: [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console); uses [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
-
-### Shared language rules
-
-See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
+- [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console) from `august.io`: [`write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write)<`T`> (`value`: `T`) → `void`.
+- [`Logger`](logger.md#symbol-Logger) from `logger`: [`log`](logger.md#symbol-Logger.log) (`message`: `string`) → `void`.
 
 ::::
 

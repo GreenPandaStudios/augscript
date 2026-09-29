@@ -50,29 +50,14 @@ increment(int value) returns int {
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
+<a id="symbol-increment"></a>
+### `increment` · [source](math.md#code)
 
-### In this file
+**Inputs:** Take `value` (`int`).
 
-- [`increment`](math.md#symbol-increment) is a function returning `int`.
-
-### `increment` {#symbol-increment}
-
-[source](math.md#code)
-
-**Inputs**
-
-- `value` (`int`) — required labeled input.
-
-Returns: `int`.
-
-**What it does**
+Returns `int`.
 
 - Return `value` plus `1`.
-
-### Shared language rules
-
-See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
 
 ::::
 

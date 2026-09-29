@@ -100,153 +100,87 @@ composition Counters {
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
-
-### In this file
-
-- [`State`](counters.md#symbol-State) is an interface.
-- [`_Initial`](counters.md#symbol-_Initial) is a class implementing `State`.
-- [`_Updated`](counters.md#symbol-_Updated) is a class implementing `State`.
-- [`Counter`](counters.md#symbol-Counter) is an interface.
-- [`_Counter`](counters.md#symbol-_Counter) is a class implementing `Counter`.
-- [`Counters`](counters.md#symbol-Counters) declares 2 providers.
-
-### `State` {#symbol-State}
-
-[source](counters.md#code)
-
-Interface.
-
-**Author documentation**
+<a id="symbol-State"></a>
+### `State` · interface · [source](counters.md#code)
 
 Reading state has no mutation effect.
 
-#### `State.read` {#symbol-State.read}
+<a id="symbol-State.read"></a>
+#### `State.read` · [source](counters.md#code)
 
-[source](counters.md#code)
+Returns `int`.
 
-Returns: `int`.
-
-Interface contract. A selected implementation supplies the behavior.
-
-### `Counter` {#symbol-Counter}
-
-[source](counters.md#code)
-
-Interface.
-
-**Author documentation**
+<a id="symbol-Counter"></a>
+### `Counter` · interface · [source](counters.md#code)
 
 A mutable counter with an explicit transition contract.
 
-#### `Counter.increment` {#symbol-Counter.increment}
+<a id="symbol-Counter.increment"></a>
+#### `Counter.increment` · [source](counters.md#code)
 
-[source](counters.md#code)
+Changes `self`.
 
-Returns: no value.
+<a id="symbol-Counter.value"></a>
+#### `Counter.value` · [source](counters.md#code)
 
-May change: `self`.
+Returns `int`.
 
-Interface contract. A selected implementation supplies the behavior.
-
-#### `Counter.value` {#symbol-Counter.value}
-
-[source](counters.md#code)
-
-Returns: `int`.
-
-Interface contract. A selected implementation supplies the behavior.
-
-### `Counters` {#symbol-Counters}
-
-[source](counters.md#code)
-
-**Author documentation**
+<a id="symbol-Counters"></a>
+### `Counters` · [source](counters.md#code)
 
 The complete counter composition; its mutable state belongs to each scope.
 
-This composition declares these providers before startup:
+Provides these dependencies before startup:
 
-- Provide [`_Initial`](counters.md#symbol-_Initial) when `State` is requested. Reuse one instance.
-- Provide [`_Counter`](counters.md#symbol-_Counter) when `Counter` is requested. Reuse one instance per explicit scope. Permit explicit shared mutation. Required dependencies: `State`.
+- Provide [`_Initial`](counters.md#symbol-_Initial) for `State`. Share one instance.
+- Provide [`_Counter`](counters.md#symbol-_Counter) for `Counter`. Share one instance per scope. Allow shared mutation. Needs `State`.
 
-### `_Initial` {#symbol-_Initial}
+<a id="symbol-_Initial"></a>
+### `_Initial` · class · [source](counters.md#code)
 
-[source](counters.md#code)
+Implements [`State`](counters.md#symbol-State). Private to this file.
 
-Behavioral class, private to this file.
+<a id="symbol-_Initial.read"></a>
+#### `_Initial.read` · [source](counters.md#code)
 
-Satisfies [`State`](counters.md#symbol-State).
-
-#### `_Initial.read` {#symbol-_Initial.read}
-
-[source](counters.md#code)
-
-Returns: `int`.
-
-**What it does**
+Returns `int`.
 
 - Return `0`.
 
-### `_Updated` {#symbol-_Updated}
+<a id="symbol-_Updated"></a>
+### `_Updated` · class · [source](counters.md#code)
 
-[source](counters.md#code)
+Implements [`State`](counters.md#symbol-State). Private to this file.
 
-Behavioral class, private to this file.
+**Inputs:** Take `count` (`int`); store read-only.
 
-Satisfies [`State`](counters.md#symbol-State).
+<a id="symbol-_Updated.read"></a>
+#### `_Updated.read` · [source](counters.md#code)
 
-**Inputs**
-
-- `count` (`int`) — required labeled input — stored as `count` and read-only after initialization.
-
-#### `_Updated.read` {#symbol-_Updated.read}
-
-[source](counters.md#code)
-
-Returns: `int`.
-
-**What it does**
+Returns `int`.
 
 - Return `count`.
 
-### `_Counter` {#symbol-_Counter}
+<a id="symbol-_Counter"></a>
+### `_Counter` · class · [source](counters.md#code)
 
-[source](counters.md#code)
+Implements [`Counter`](counters.md#symbol-Counter). Private to this file.
 
-Behavioral class, private to this file.
+**Inputs:** Resolve [`State`](counters.md#symbol-State) as `initial`; store mutably and privately as `_state`.
 
-Satisfies [`Counter`](counters.md#symbol-Counter).
+<a id="symbol-_Counter.increment"></a>
+#### `_Counter.increment` · [source](counters.md#code)
 
-**Inputs**
+Changes `self`.
 
-- `initial` ([`State`](counters.md#symbol-State)) — injected; callers omit it — stored as `_state` (private) and mutable.
+- Set `_state` to a new [`_Updated`](counters.md#symbol-_Updated) with `count` as the result of [`State.read`](counters.md#symbol-State.read) on `_state` plus `1`.
 
-#### `_Counter.increment` {#symbol-_Counter.increment}
+<a id="symbol-_Counter.value"></a>
+#### `_Counter.value` · [source](counters.md#code)
 
-[source](counters.md#code)
+Returns `int`.
 
-Returns: no value.
-
-May change: `self`.
-
-**What it does**
-
-- Set `_state` to call [`_Updated`](counters.md#symbol-_Updated) with `count` = (call [`State.read`](counters.md#symbol-State.read) on `_state` plus `1`).
-
-#### `_Counter.value` {#symbol-_Counter.value}
-
-[source](counters.md#code)
-
-Returns: `int`.
-
-**What it does**
-
-- Return call [`State.read`](counters.md#symbol-State.read) on `_state`.
-
-### Shared language rules
-
-See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
+- Return the result of [`State.read`](counters.md#symbol-State.read) on `_state`.
 
 ::::
 

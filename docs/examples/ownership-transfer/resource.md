@@ -69,81 +69,40 @@ consume(resolve Console console, own Resource value) uses Console.write {
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
+<a id="symbol-Resource"></a>
+### `Resource` · class · [source](resource.md#code)
 
-### In this file
+Implements [`IResource`](resource.md#symbol-IResource).
 
-- [`Resource`](resource.md#symbol-Resource) is a class implementing `IResource`.
-- [`IResource`](resource.md#symbol-IResource) is an interface.
-- [`make`](resource.md#symbol-make) is a function returning `Resource`.
-- [`consume`](resource.md#symbol-consume) is a function.
+<a id="symbol-Resource.drop"></a>
+#### `Resource.drop` · [source](resource.md#code)
 
-### `Resource` {#symbol-Resource}
+- Continue.
 
-[source](resource.md#code)
+<a id="symbol-IResource"></a>
+### `IResource` · interface · [source](resource.md#code)
 
-Behavioral class.
+<a id="symbol-make"></a>
+### `make` · [source](resource.md#code)
 
-Satisfies [`IResource`](resource.md#symbol-IResource).
+Returns ownership of [`Resource`](resource.md#symbol-Resource).
 
-#### `Resource.drop` {#symbol-Resource.drop}
-
-[source](resource.md#code)
-
-Returns: no value.
-
-**What it does**
-
-- Continue without another operation.
-
-### `IResource` {#symbol-IResource}
-
-[source](resource.md#code)
-
-Interface.
-
-### `make` {#symbol-make}
-
-[source](resource.md#code)
-
-Returns: ownership of [`Resource`](resource.md#symbol-Resource).
-
-**What it does**
-
-- Set `value` of type [`Resource`](resource.md#symbol-Resource) to call [`Resource`](resource.md#symbol-Resource).
-- This variable owns the value.
+- Set `value` of type [`Resource`](resource.md#symbol-Resource) to a new [`Resource`](resource.md#symbol-Resource).
+- `value` of type [`Resource`](resource.md#symbol-Resource) owns this value.
 - Return `value`.
 
-### `consume` {#symbol-consume}
+<a id="symbol-consume"></a>
+### `consume` · [source](resource.md#code)
 
-[source](resource.md#code)
+**Inputs:** Resolve [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console) as `console`. Take `value` ([`Resource`](resource.md#symbol-Resource)); take ownership.
 
-**Inputs**
+Uses [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
 
-- `console` ([`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console)) — injected; callers omit it.
-- `value` ([`Resource`](resource.md#symbol-Resource)) — required labeled input — transfers ownership.
+- Call [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write) on `console` with `value` as `"consumed"`.
 
-Returns: no value.
+### Dependencies
 
-Capabilities: [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
-
-**What it does**
-
-- Call [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write) on `console` with `value` = `"consumed"`.
-
-### Dependencies used by this file
-
-Only referenced types and operations appear here. Each name links to its complete specification.
-
-#### [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console)
-
-Capability interface from `august.io`.
-
-- [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write)<`T`> (`value`: `T`) → `void`.
-
-### Shared language rules
-
-See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
+- [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console) from `august.io`: [`write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write)<`T`> (`value`: `T`) → `void`.
 
 ::::
 

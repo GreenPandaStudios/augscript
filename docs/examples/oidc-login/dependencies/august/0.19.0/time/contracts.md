@@ -62,88 +62,41 @@ SystemClock() implements Clock {
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
-
-### In this file
-
-- [`Clock`](contracts.md#symbol-Clock) is a capability interface.
-- [`_aug_time_now`](contracts.md#symbol-_aug_time_now) is a function returning `int`.
-- [`SystemClock`](contracts.md#symbol-SystemClock) is a class implementing `Clock`.
-
-### `Clock` {#symbol-Clock}
-
-[source](contracts.md#code)
-
-Capability interface.
-
-**Author documentation**
+<a id="symbol-Clock"></a>
+### `Clock` · capability interface · [source](contracts.md#code)
 
 An explicit clock dependency makes time-based behavior replaceable in tests.
 
-#### `Clock.now` {#symbol-Clock.now}
-
-[source](contracts.md#code)
-
-Returns: `int`.
-
-Capabilities: [`Clock.now`](contracts.md#symbol-Clock.now).
-
-Can fail with `TimeError`. Callers must catch or propagate these errors.
-
-Interface contract. A selected implementation supplies the behavior.
-
-**Author documentation**
+<a id="symbol-Clock.now"></a>
+#### `Clock.now` · [source](contracts.md#code)
 
 Read whole Unix seconds in UTC.
 
-### `SystemClock` {#symbol-SystemClock}
+Returns `int`. Uses [`Clock.now`](contracts.md#symbol-Clock.now). Can fail with `TimeError`.
 
-[source](contracts.md#code)
+<a id="symbol-SystemClock"></a>
+### `SystemClock` · class · [source](contracts.md#code)
 
-Behavioral class.
+Operating-system wall clock. Implements [`Clock`](contracts.md#symbol-Clock).
 
-Satisfies [`Clock`](contracts.md#symbol-Clock).
-
-**Author documentation**
-
-Operating-system wall clock.
-
-#### `SystemClock.now` {#symbol-SystemClock.now}
-
-[source](contracts.md#code)
-
-Returns: `int`.
-
-Capabilities: [`Clock.now`](contracts.md#symbol-Clock.now).
-
-Can fail with `TimeError`. Callers must catch or propagate these errors.
-
-**What it does**
-
-- Enter an unsafe boundary. Native calls use their declared contracts; their foreign implementation is outside this specification:
-  - Return call [`_aug_time_now`](contracts.md#symbol-_aug_time_now).
-
-**Author documentation**
+<a id="symbol-SystemClock.now"></a>
+#### `SystemClock.now` · [source](contracts.md#code)
 
 Read whole Unix seconds in UTC.
 
-### `_aug_time_now` {#symbol-_aug_time_now}
+Returns `int`. Uses [`Clock.now`](contracts.md#symbol-Clock.now). Can fail with `TimeError`.
 
-[source](contracts.md#code)
+- Use native code with its declared contract:
+  - Return the result of [`_aug_time_now`](contracts.md#symbol-_aug_time_now).
+
+<a id="symbol-_aug_time_now"></a>
+### `_aug_time_now` · [source](contracts.md#code)
 
 Private to its defining scope.
 
-Returns: `int`.
+Returns `int`. Uses [`Clock.now`](contracts.md#symbol-Clock.now). Can fail with `TimeError`.
 
-Capabilities: [`Clock.now`](contracts.md#symbol-Clock.now).
-
-Can fail with `TimeError`. Callers must catch or propagate these errors.
-
-Native C operation. Its declared inputs, result, effects, and errors are the visible contract. The C implementation is outside this specification.
-
-### Shared language rules
-
-See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
+Native C implementation; only its declared contract is visible here.
 
 ::::
 

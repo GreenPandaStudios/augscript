@@ -115,168 +115,64 @@ serve home and me and logout and startLogin and loginCallback and discovery and 
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
-
-### In this file
-
-- Register 9 dependency providers before startup.
-- Run startup operations with checked error recovery.
-- Serve 11 HTTP routes.
-
 ### HTTP configuration
 
-Listen on `127.0.0.1`. Limit request bodies to 16384 bytes and buffered responses to 1048576 bytes.
+Listen on `127.0.0.1`. Limit request bodies to 16384 bytes and buffered responses to 1048576 bytes. Serve OpenAPI at `/openapi.json` and API docs at `/docs`.
 
-Serve the OpenAPI document at `/openapi.json` and API documentation at `/docs`.
+### Providers
 
-### Dependency providers
+- Provide [`GnuTlsCrypto`](dependencies/august/0.19.0/crypto/contracts.md#symbol-GnuTlsCrypto) for `Crypto`. Share one instance.
+- Provide [`SystemClock`](dependencies/august/0.19.0/time/contracts.md#symbol-SystemClock) for `Clock`. Share one instance.
+- Provide [`WebHttpClient`](dependencies/august/0.19.0/web/contracts.md#symbol-WebHttpClient) for `HttpClient`. Share one instance.
+- Provide [`MemorySigningKeys`](common/keys.md#symbol-MemorySigningKeys) for `SigningKeys`. Share one instance. Allow shared mutation.
+- Provide [`MemoryStore<LoginTransaction>`](dependencies/august/0.19.0/memory/store.md#symbol-MemoryStore) for `ExpiringStore<LoginTransaction>`. Share one instance. Allow shared mutation.
+- Provide [`MemoryStore<AuthorizationRequest>`](dependencies/august/0.19.0/memory/store.md#symbol-MemoryStore) for `ExpiringStore<AuthorizationRequest>`. Share one instance. Allow shared mutation.
+- Provide [`MemoryStore<AuthorizationCode>`](dependencies/august/0.19.0/memory/store.md#symbol-MemoryStore) for `ExpiringStore<AuthorizationCode>`. Share one instance. Allow shared mutation.
+- Provide [`MemoryStore<SessionClaims>`](dependencies/august/0.19.0/memory/store.md#symbol-MemoryStore) for `ExpiringStore<SessionClaims>`. Share one instance. Allow shared mutation.
+- Provide [`MemoryStore<AccessGrant>`](dependencies/august/0.19.0/memory/store.md#symbol-MemoryStore) for `ExpiringStore<AccessGrant>`. Share one instance. Allow shared mutation.
 
-Register these providers before startup. Their declaration order does not set initialization order; shared instances initialize in dependency order.
+### Startup
 
-- Provide [`GnuTlsCrypto`](dependencies/august/0.19.0/crypto/contracts.md#symbol-GnuTlsCrypto) when `Crypto` is requested. Reuse one instance.
-- Provide [`SystemClock`](dependencies/august/0.19.0/time/contracts.md#symbol-SystemClock) when `Clock` is requested. Reuse one instance.
-- Provide [`WebHttpClient`](dependencies/august/0.19.0/web/contracts.md#symbol-WebHttpClient) when `HttpClient` is requested. Reuse one instance.
-- Provide [`MemorySigningKeys`](common/keys.md#symbol-MemorySigningKeys) when `SigningKeys` is requested. Reuse one instance. Permit explicit shared mutation.
-- Provide [`MemoryStore<LoginTransaction>`](dependencies/august/0.19.0/memory/store.md#symbol-MemoryStore) when `ExpiringStore<LoginTransaction>` is requested. Reuse one instance. Permit explicit shared mutation.
-- Provide [`MemoryStore<AuthorizationRequest>`](dependencies/august/0.19.0/memory/store.md#symbol-MemoryStore) when `ExpiringStore<AuthorizationRequest>` is requested. Reuse one instance. Permit explicit shared mutation.
-- Provide [`MemoryStore<AuthorizationCode>`](dependencies/august/0.19.0/memory/store.md#symbol-MemoryStore) when `ExpiringStore<AuthorizationCode>` is requested. Reuse one instance. Permit explicit shared mutation.
-- Provide [`MemoryStore<SessionClaims>`](dependencies/august/0.19.0/memory/store.md#symbol-MemoryStore) when `ExpiringStore<SessionClaims>` is requested. Reuse one instance. Permit explicit shared mutation.
-- Provide [`MemoryStore<AccessGrant>`](dependencies/august/0.19.0/memory/store.md#symbol-MemoryStore) when `ExpiringStore<AccessGrant>` is requested. Reuse one instance. Permit explicit shared mutation.
-
-### Startup, in source order
-
-- Try these operations:
-  - Call [`initializeKeys`](common/keys.md#symbol-initializeKeys); inject `crypto` from `Crypto`, `keys` from `SigningKeys`.
-- If they fail with `CryptoError`, name the failure `error` and recover:
-  - Call `print` with `value` = `"Cryptographic initialization failed"`.
-  - Call `exit` with `status` = `1`.
-- If they fail with [`KeyError`](common/keys.md#symbol-KeyError), name the failure `error` and recover:
-  - Call `print` with `value` = `"Signing keys could not be initialized"`.
-  - Call `exit` with `status` = `1`.
+- Try:
+  - Call [`initializeKeys`](common/keys.md#symbol-initializeKeys) using `Crypto` for `crypto`, `SigningKeys` for `keys`.
+- Catch `CryptoError` as `error`:
+  - Call `print` with `value` as `"Cryptographic initialization failed"`.
+  - Call `exit` with `status` as `1`.
+- Catch [`KeyError`](common/keys.md#symbol-KeyError) as `error`:
+  - Call `print` with `value` as `"Signing keys could not be initialized"`.
+  - Call `exit` with `status` as `1`.
 - Serve [`home`](client/endpoints.md#symbol-home), [`me`](client/endpoints.md#symbol-me), [`logout`](client/logout.md#symbol-logout), [`startLogin`](client/login.md#symbol-startLogin), [`loginCallback`](client/login.md#symbol-loginCallback), [`discovery`](provider/discovery.md#symbol-discovery), [`jwks`](provider/discovery.md#symbol-jwks), [`authorize`](provider/authorization.md#symbol-authorize), [`providerLogin`](provider/authorization.md#symbol-providerLogin), [`token`](provider/token.md#symbol-token), [`userinfo`](provider/userinfo.md#symbol-userinfo) on port `8787`.
 
-### Dependencies used by this file
+### Dependencies
 
-Only referenced types and operations appear here. Each name links to its complete specification.
+- [`GnuTlsCrypto`](dependencies/august/0.19.0/crypto/contracts.md#symbol-GnuTlsCrypto) from `august.crypto`.
+- [`RsaJwks`](dependencies/august/0.19.0/crypto/jose.md#symbol-RsaJwks).
+- [`MemoryStore`](dependencies/august/0.19.0/memory/store.md#symbol-MemoryStore) from `august.memory`.
+- [`SystemClock`](dependencies/august/0.19.0/time/contracts.md#symbol-SystemClock) from `august.time`.
+- [`WebHttpClient`](dependencies/august/0.19.0/web/contracts.md#symbol-WebHttpClient) from `august.web`.
+- [`LogoutForm`](client/contracts.md#symbol-LogoutForm).
+- [`home`](client/endpoints.md#symbol-home) (`token`: `optional string` from HTTP cookie `aug_session`) → `HttpResponse<Html>`; can fail with `KeyError`, `TimeError`, `HttpError` from `client`.
+- [`me`](client/endpoints.md#symbol-me) (`token`: `optional string` from HTTP cookie `aug_session`) → `HttpResponse<UserInfo>`; can fail with `SessionError`, `KeyError`, `TimeError`, `HttpError` from `client`.
+- [`loginCallback`](client/login.md#symbol-loginCallback) (`code`: `string` from HTTP query, `state`: `string` from HTTP query, `browser`: `optional string` from HTTP cookie `aug_login`) → `HttpResponse<Html>`; can fail with `SessionError`, `CryptoError`, `TimeError`, `KeyError`, `StoreFull`, `JwtError`, `JsonError`, `HttpError` from `client`.
+- [`startLogin`](client/login.md#symbol-startLogin) (no caller inputs) → `HttpResponse<Html>`; can fail with `SessionError`, `CryptoError`, `TimeError`, `StoreFull`, `HttpError` from `client`.
+- [`logout`](client/logout.md#symbol-logout) (`input`: [`LogoutForm`](client/contracts.md#symbol-LogoutForm) from HTTP form, `token`: `optional string` from HTTP cookie `aug_session`, `origin`: `optional string` from HTTP header) → `HttpResponse<Html>`; can fail with `SessionError`, `KeyError`, `TimeError`, `CryptoError`, `HttpError` from `client`.
+- [`KeyError`](common/keys.md#symbol-KeyError) from `common`.
+- [`MemorySigningKeys`](common/keys.md#symbol-MemorySigningKeys) from `common`.
+- [`initializeKeys`](common/keys.md#symbol-initializeKeys) (no caller inputs) → `void`; can fail with `CryptoError`, `KeyError` from `common`.
+- [`authorize`](provider/authorization.md#symbol-authorize) (`response_type`: `string` from HTTP query, `client_id`: `string` from HTTP query, `redirect_uri`: `string` from HTTP query, `requestedScope`: `string` from HTTP query `scope`, `state`: `string` from HTTP query, `nonce`: `string` from HTTP query, `code_challenge`: `string` from HTTP query, `code_challenge_method`: `string` from HTTP query) → `HttpResponse<Html>`; can fail with `LoginError`, `CryptoError`, `TimeError`, `StoreFull`, `HttpError` from `provider`.
+- [`providerLogin`](provider/authorization.md#symbol-providerLogin) (`form`: [`LoginForm`](provider/contracts.md#symbol-LoginForm) from HTTP form, `browser`: `optional string` from HTTP cookie `aug_authorize`, `origin`: `optional string` from HTTP header `origin`) → `HttpResponse<Html>`; can fail with `CryptoError`, `TimeError`, `StoreFull`, `HttpError` from `provider`.
+- [`LoginForm`](provider/contracts.md#symbol-LoginForm).
+- [`UserInfo`](provider/contracts.md#symbol-UserInfo).
+- [`Discovery`](provider/discovery.md#symbol-Discovery).
+- [`discovery`](provider/discovery.md#symbol-discovery) (no caller inputs) → [`Discovery`](provider/discovery.md#symbol-Discovery) from `provider`.
+- [`jwks`](provider/discovery.md#symbol-jwks) (no caller inputs) → [`RsaJwks`](dependencies/august/0.19.0/crypto/jose.md#symbol-RsaJwks); can fail with `KeyError`, `CryptoError` from `provider`.
+- [`token`](provider/token.md#symbol-token) (`http`: `HttpRequest` from HTTP request) → `HttpResponse<Json>`; can fail with `CryptoError`, `TimeError`, `KeyError`, `JwtError`, `StoreFull`, `HttpError` from `provider`.
+- [`userinfo`](provider/userinfo.md#symbol-userinfo) (`authorization`: `optional string` from HTTP header) → `HttpResponse<Json>`; can fail with `TimeError`, `HttpError` from `provider`.
 
-#### [`GnuTlsCrypto`](dependencies/august/0.19.0/crypto/contracts.md#symbol-GnuTlsCrypto)
+### Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
 
-Class from `august.crypto`.
-
-Used as a type or provider.
-
-#### [`MemoryStore`](dependencies/august/0.19.0/memory/store.md#symbol-MemoryStore)
-
-Class from `august.memory`.
-
-Used as a type or provider.
-
-#### [`SystemClock`](dependencies/august/0.19.0/time/contracts.md#symbol-SystemClock)
-
-Class from `august.time`.
-
-Used as a type or provider.
-
-#### [`WebHttpClient`](dependencies/august/0.19.0/web/contracts.md#symbol-WebHttpClient)
-
-Class from `august.web`.
-
-Used as a type or provider.
-
-#### [`home`](client/endpoints.md#symbol-home)
-
-Function from `client`.
-
-- [`home`](client/endpoints.md#symbol-home) (`token`: `optional string` from HTTP cookie `aug_session`) → `HttpResponse<Html>`; inject `crypto`: [`Crypto`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto), `clock`: [`Clock`](dependencies/august/0.19.0/time/contracts.md#symbol-Clock), `keys`: [`SigningKeys`](common/keys.md#symbol-SigningKeys), `sessions`: [`ExpiringStore<SessionClaims>`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore); uses [`crypto.publicRsa`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.publicRsa), [`crypto.decodeBase64url`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url), [`crypto.verifyRsa`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.verifyRsa), [`crypto.equal`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal), [`clock.now`](dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now), [`keys.session`](common/keys.md#symbol-SigningKeys.session), [`sessions.get`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.get); can fail with `KeyError`, `TimeError`, `HttpError`.
-
-#### [`me`](client/endpoints.md#symbol-me)
-
-Function from `client`.
-
-- [`me`](client/endpoints.md#symbol-me) (`token`: `optional string` from HTTP cookie `aug_session`) → `HttpResponse<UserInfo>`; inject `crypto`: [`Crypto`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto), `clock`: [`Clock`](dependencies/august/0.19.0/time/contracts.md#symbol-Clock), `keys`: [`SigningKeys`](common/keys.md#symbol-SigningKeys), `sessions`: [`ExpiringStore<SessionClaims>`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore); uses [`crypto.publicRsa`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.publicRsa), [`crypto.decodeBase64url`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url), [`crypto.verifyRsa`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.verifyRsa), [`crypto.equal`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal), [`clock.now`](dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now), [`keys.session`](common/keys.md#symbol-SigningKeys.session), [`sessions.get`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.get); can fail with `SessionError`, `KeyError`, `TimeError`, `HttpError`.
-
-#### [`loginCallback`](client/login.md#symbol-loginCallback)
-
-Function from `client`.
-
-- [`loginCallback`](client/login.md#symbol-loginCallback) (`code`: `string` from HTTP query, `state`: `string` from HTTP query, `browser`: `optional string` from HTTP cookie `aug_login`) → `HttpResponse<Html>`; inject `crypto`: [`Crypto`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto), `clock`: [`Clock`](dependencies/august/0.19.0/time/contracts.md#symbol-Clock), `client`: [`HttpClient`](dependencies/august/0.19.0/web/contracts.md#symbol-HttpClient), `keys`: [`SigningKeys`](common/keys.md#symbol-SigningKeys), `transactions`: [`ExpiringStore<LoginTransaction>`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore), `sessions`: [`ExpiringStore<SessionClaims>`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore); uses [`crypto.equal`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal), [`crypto.random`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.random), [`crypto.signRsa`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.signRsa), [`crypto.decodeBase64url`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url), [`crypto.importRsa`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.importRsa), [`crypto.verifyRsa`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.verifyRsa), [`clock.now`](dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now), [`client.request`](dependencies/august/0.19.0/web/contracts.md#symbol-HttpClient.request), [`keys.session`](common/keys.md#symbol-SigningKeys.session), [`transactions.take`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.take), [`sessions.put`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.put); can fail with `SessionError`, `CryptoError`, `TimeError`, `KeyError`, `StoreFull`, `JwtError`, `JsonError`, `HttpError`.
-
-#### [`startLogin`](client/login.md#symbol-startLogin)
-
-Function from `client`.
-
-- [`startLogin`](client/login.md#symbol-startLogin) (no caller inputs) → `HttpResponse<Html>`; inject `crypto`: [`Crypto`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto), `clock`: [`Clock`](dependencies/august/0.19.0/time/contracts.md#symbol-Clock), `client`: [`HttpClient`](dependencies/august/0.19.0/web/contracts.md#symbol-HttpClient), `transactions`: [`ExpiringStore<LoginTransaction>`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore); uses [`crypto.random`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.random), [`crypto.sha256`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.sha256), [`clock.now`](dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now), [`client.request`](dependencies/august/0.19.0/web/contracts.md#symbol-HttpClient.request), [`transactions.put`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.put); can fail with `SessionError`, `CryptoError`, `TimeError`, `StoreFull`, `HttpError`.
-
-#### [`logout`](client/logout.md#symbol-logout)
-
-Function from `client`.
-
-- [`logout`](client/logout.md#symbol-logout) (`input`: [`LogoutForm`](client/contracts.md#symbol-LogoutForm) from HTTP form, `token`: `optional string` from HTTP cookie `aug_session`, `origin`: `optional string` from HTTP header) → `HttpResponse<Html>`; inject `crypto`: [`Crypto`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto), `clock`: [`Clock`](dependencies/august/0.19.0/time/contracts.md#symbol-Clock), `keys`: [`SigningKeys`](common/keys.md#symbol-SigningKeys), `sessions`: [`ExpiringStore<SessionClaims>`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore); uses [`crypto.publicRsa`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.publicRsa), [`crypto.decodeBase64url`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url), [`crypto.verifyRsa`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.verifyRsa), [`crypto.equal`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal), [`clock.now`](dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now), [`keys.session`](common/keys.md#symbol-SigningKeys.session), [`sessions.get`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.get), [`sessions.take`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.take); can fail with `SessionError`, `KeyError`, `TimeError`, `CryptoError`, `HttpError`.
-
-#### [`KeyError`](common/keys.md#symbol-KeyError)
-
-Class from `common`.
-
-Used as a type or provider.
-
-#### [`MemorySigningKeys`](common/keys.md#symbol-MemorySigningKeys)
-
-Class from `common`.
-
-Used as a type or provider.
-
-#### [`initializeKeys`](common/keys.md#symbol-initializeKeys)
-
-Function from `common`.
-
-- [`initializeKeys`](common/keys.md#symbol-initializeKeys) (no caller inputs) → `void`; inject `crypto`: [`Crypto`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto), `keys`: [`SigningKeys`](common/keys.md#symbol-SigningKeys); uses [`crypto.generateRsa`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.generateRsa), [`keys.configure`](common/keys.md#symbol-SigningKeys.configure); can fail with `CryptoError`, `KeyError`.
-
-#### [`authorize`](provider/authorization.md#symbol-authorize)
-
-Function from `provider`.
-
-- [`authorize`](provider/authorization.md#symbol-authorize) (`response_type`: `string` from HTTP query, `client_id`: `string` from HTTP query, `redirect_uri`: `string` from HTTP query, `requestedScope`: `string` from HTTP query `scope`, `state`: `string` from HTTP query, `nonce`: `string` from HTTP query, `code_challenge`: `string` from HTTP query, `code_challenge_method`: `string` from HTTP query) → `HttpResponse<Html>`; inject `crypto`: [`Crypto`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto), `clock`: [`Clock`](dependencies/august/0.19.0/time/contracts.md#symbol-Clock), `requests`: [`ExpiringStore<AuthorizationRequest>`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore); uses [`crypto.random`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.random), [`crypto.decodeBase64url`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url), [`clock.now`](dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now), [`requests.put`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.put); can fail with `LoginError`, `CryptoError`, `TimeError`, `StoreFull`, `HttpError`.
-
-#### [`providerLogin`](provider/authorization.md#symbol-providerLogin)
-
-Function from `provider`.
-
-- [`providerLogin`](provider/authorization.md#symbol-providerLogin) (`form`: [`LoginForm`](provider/contracts.md#symbol-LoginForm) from HTTP form, `browser`: `optional string` from HTTP cookie `aug_authorize`, `origin`: `optional string` from HTTP header `origin`) → `HttpResponse<Html>`; inject `crypto`: [`Crypto`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto), `clock`: [`Clock`](dependencies/august/0.19.0/time/contracts.md#symbol-Clock), `requests`: [`ExpiringStore<AuthorizationRequest>`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore), `codes`: [`ExpiringStore<AuthorizationCode>`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore); uses [`crypto.equal`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal), [`crypto.random`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.random), [`crypto.passwordHash`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.passwordHash), [`crypto.decodeBase64url`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url), [`clock.now`](dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now), [`requests.take`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.take), [`codes.put`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.put); can fail with `CryptoError`, `TimeError`, `StoreFull`, `HttpError`.
-
-#### [`discovery`](provider/discovery.md#symbol-discovery)
-
-Function from `provider`.
-
-- [`discovery`](provider/discovery.md#symbol-discovery) (no caller inputs) → [`Discovery`](provider/discovery.md#symbol-Discovery).
-
-#### [`jwks`](provider/discovery.md#symbol-jwks)
-
-Function from `provider`.
-
-- [`jwks`](provider/discovery.md#symbol-jwks) (no caller inputs) → [`RsaJwks`](dependencies/august/0.19.0/crypto/jose.md#symbol-RsaJwks); inject `crypto`: [`Crypto`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto), `keys`: [`SigningKeys`](common/keys.md#symbol-SigningKeys); uses [`keys.provider`](common/keys.md#symbol-SigningKeys.provider), [`crypto.publicRsa`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.publicRsa), [`crypto.exportRsa`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.exportRsa); can fail with `KeyError`, `CryptoError`.
-
-#### [`token`](provider/token.md#symbol-token)
-
-Function from `provider`.
-
-- [`token`](provider/token.md#symbol-token) (`http`: `HttpRequest` from HTTP request) → `HttpResponse<Json>`; inject `crypto`: [`Crypto`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto), `clock`: [`Clock`](dependencies/august/0.19.0/time/contracts.md#symbol-Clock), `keys`: [`SigningKeys`](common/keys.md#symbol-SigningKeys), `codes`: [`ExpiringStore<AuthorizationCode>`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore), `access`: [`ExpiringStore<AccessGrant>`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore); uses [`crypto.sha256`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.sha256), [`crypto.equal`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal), [`crypto.random`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.random), [`crypto.signRsa`](dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.signRsa), [`clock.now`](dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now), [`keys.provider`](common/keys.md#symbol-SigningKeys.provider), [`codes.take`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.take), [`access.put`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.put); can fail with `CryptoError`, `TimeError`, `KeyError`, `JwtError`, `StoreFull`, `HttpError`.
-
-#### [`userinfo`](provider/userinfo.md#symbol-userinfo)
-
-Function from `provider`.
-
-- [`userinfo`](provider/userinfo.md#symbol-userinfo) (`authorization`: `optional string` from HTTP header) → `HttpResponse<Json>`; inject `clock`: [`Clock`](dependencies/august/0.19.0/time/contracts.md#symbol-Clock), `access`: [`ExpiringStore<AccessGrant>`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore); uses [`clock.now`](dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now), [`access.get`](dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.get); can fail with `TimeError`, `HttpError`.
-
-### Built-in operations used by this file
-
-- `exit` (`status`: `int`) → `void`: Exit from main with a status from 0 to 255 after cancellation and cleanup.
-- `print` (`value`: `any`) → `void`: Composition and test output. Other callables receive Console and declare uses console.write.
-
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
-
-### Shared language rules
-
-See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
+- `exit`: Exit from main with a status from 0 to 255 after cancellation and cleanup.
+- `print`: Composition and test output. Other callables receive Console and declare uses console.write.
 
 ::::
 

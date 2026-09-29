@@ -77,74 +77,29 @@ SessionError() implements Error {
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
-
-### In this file
-
-- [`LoginTransaction`](contracts.md#symbol-LoginTransaction) is an immutable record.
-- [`SessionClaims`](contracts.md#symbol-SessionClaims) is an immutable record.
-- [`LogoutForm`](contracts.md#symbol-LogoutForm) is an immutable record.
-- [`SessionError`](contracts.md#symbol-SessionError) is a class implementing `Error`.
-
-### `LoginTransaction` {#symbol-LoginTransaction}
-
-[source](contracts.md#code)
-
-Immutable record.
-
-**Author documentation**
+<a id="symbol-LoginTransaction"></a>
+### `LoginTransaction` · immutable record · [source](contracts.md#code)
 
 Browser-bound client state, nonce and PKCE verifier, consumed by the callback.
 
-**Inputs**
+**Inputs:** Take `state` (`string`); store read-only. Take `nonce` (`string`); store read-only. Take `verifier` (`string`); store read-only. Take `expires` (`int`); store read-only.
 
-- `state` (`string`) — required labeled input — stored as `state` and read-only after initialization.
-- `nonce` (`string`) — required labeled input — stored as `nonce` and read-only after initialization.
-- `verifier` (`string`) — required labeled input — stored as `verifier` and read-only after initialization.
-- `expires` (`int`) — required labeled input — stored as `expires` and read-only after initialization.
-
-### `SessionClaims` {#symbol-SessionClaims}
-
-[source](contracts.md#code)
-
-Immutable record.
-
-**Author documentation**
+<a id="symbol-SessionClaims"></a>
+### `SessionClaims` · immutable record · [source](contracts.md#code)
 
 Sessions require their own issuer, audience, key and JWT type, plus a live registry entry.
 
-**Inputs**
+**Inputs:** Take `iss` (`string`); store read-only. Take `sub` (`string`); store read-only. Take `aud` (`string`); store read-only. Take `exp` (`int`); store read-only. Take `iat` (`int`); store read-only. Take `jti` (`string`); store read-only. Take `csrf` (`string`); store read-only. Take `name` (`string`); store read-only.
 
-- `iss` (`string`) — required labeled input — stored as `iss` and read-only after initialization.
-- `sub` (`string`) — required labeled input — stored as `sub` and read-only after initialization.
-- `aud` (`string`) — required labeled input — stored as `aud` and read-only after initialization.
-- `exp` (`int`) — required labeled input — stored as `exp` and read-only after initialization.
-- `iat` (`int`) — required labeled input — stored as `iat` and read-only after initialization.
-- `jti` (`string`) — required labeled input — stored as `jti` and read-only after initialization.
-- `csrf` (`string`) — required labeled input — stored as `csrf` and read-only after initialization.
-- `name` (`string`) — required labeled input — stored as `name` and read-only after initialization.
+<a id="symbol-LogoutForm"></a>
+### `LogoutForm` · immutable record · [source](contracts.md#code)
 
-### `LogoutForm` {#symbol-LogoutForm}
+**Inputs:** Take `csrf` (`string`); store read-only.
 
-[source](contracts.md#code)
+<a id="symbol-SessionError"></a>
+### `SessionError` · class · [source](contracts.md#code)
 
-Immutable record.
-
-**Inputs**
-
-- `csrf` (`string`) — required labeled input — stored as `csrf` and read-only after initialization.
-
-### `SessionError` {#symbol-SessionError}
-
-[source](contracts.md#code)
-
-Behavioral class.
-
-Satisfies `Error`.
-
-### Shared language rules
-
-See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
+Implements `Error`.
 
 ::::
 

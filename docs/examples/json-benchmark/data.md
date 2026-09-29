@@ -44,27 +44,10 @@ record Payload(int id, string message, List<int> values)
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
+<a id="symbol-Payload"></a>
+### `Payload` · immutable record · [source](data.md#code)
 
-### In this file
-
-- [`Payload`](data.md#symbol-Payload) is an immutable record.
-
-### `Payload` {#symbol-Payload}
-
-[source](data.md#code)
-
-Immutable record.
-
-**Inputs**
-
-- `id` (`int`) — required labeled input — stored as `id` and read-only after initialization.
-- `message` (`string`) — required labeled input — stored as `message` and read-only after initialization.
-- `values` (`List<int>`) — required labeled input — stored as `values` and read-only after initialization.
-
-### Shared language rules
-
-See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
+**Inputs:** Take `id` (`int`); store read-only. Take `message` (`string`); store read-only. Take `values` (`List<int>`); store read-only.
 
 ::::
 

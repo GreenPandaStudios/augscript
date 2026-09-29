@@ -43,25 +43,13 @@ print(value=7)
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
+### Startup
 
-### In this file
+- Call `print` with `value` as `7`.
 
-- Run 1 other startup step in source order.
+### Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
 
-### Startup, in source order
-
-- Call `print` with `value` = `7`.
-
-### Built-in operations used by this file
-
-- `print` (`value`: `any`) → `void`: Composition and test output. Other callables receive Console and declare uses console.write.
-
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
-
-### Shared language rules
-
-See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
+- `print`: Composition and test output. Other callables receive Console and declare uses console.write.
 
 ::::
 

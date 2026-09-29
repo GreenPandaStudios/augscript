@@ -70,45 +70,32 @@ print(value=values.length() == unique.length())
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
-
-### In this file
-
-- Run 8 other startup steps in source order.
-
-### Startup, in source order
+### Startup
 
 - Set `values` of type `Map<int,int>` to a context-typed empty collection with no items.
-- This variable owns the value.
+- `values` of type `Map<int,int>` owns this value.
 - Set `unique` of type `Set<int>` to a context-typed empty collection with no items.
-- This variable owns the value.
+- `unique` of type `Set<int>` owns this value.
 - Set `index` of type `int` to `0`.
-- While `index` is less than `20000`, repeat:
-  - Call `set` on `values` with `key` = `index`; `value` = (`index` times `3`).
-  - Call `add` on `unique` with `value` = `index`.
+- While `index` is less than `20000`:
+  - Call `set` on `values` with `key` as `index`, `value` as `index` times `3`.
+  - Call `add` on `unique` with `value` as `index`.
   - Set `index` to `index` plus `1`.
-  - Check the condition again before the next iteration.
 - Set `checksum` of type `int` to `0`.
-- For each `key` and `value` in a snapshot of `values`, in iteration order:
-  - If call `contains` on `unique` with `value` = `key` is true:
+- For each `key` and `value` in a snapshot of `values`:
+  - If the result of `contains` on `unique` with `value` as `key` is true:
     - Set `checksum` to `checksum` plus `value`.
-- Call `print` with `value` = `checksum`.
-- Call `print` with `value` = (call `length` on `values` equals call `length` on `unique`).
+- Call `print` with `value` as `checksum`.
+- Call `print` with `value` as the result of `length` on `values` equals the result of `length` on `unique`.
 
-### Built-in operations used by this file
+### Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
 
-- `Map<int, int>.length` (no inputs) → `int`: Read the number of elements.
-- `Map<int, int>.set` (`key`: `int`, `value`: `int`) → `void`: Insert or replace an entry with exclusive mutable access. Changes the receiver.
-- `Set<int>.add` (`value`: `int`) → `void`: Insert a unique element with exclusive mutable access. Changes the receiver.
-- `Set<int>.contains` (`value`: `int`) → `bool`: Test structural or identity equality with a stored element.
-- `Set<int>.length` (no inputs) → `int`: Read the number of elements.
-- `print` (`value`: `any`) → `void`: Composition and test output. Other callables receive Console and declare uses console.write.
-
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
-
-### Shared language rules
-
-See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
+- `Map<int, int>.length`: Read the number of elements.
+- `Map<int, int>.set`: Insert or replace an entry with exclusive mutable access.
+- `Set<int>.add`: Insert a unique element with exclusive mutable access.
+- `Set<int>.contains`: Test structural or identity equality with a stored element.
+- `Set<int>.length`: Read the number of elements.
+- `print`: Composition and test output. Other callables receive Console and declare uses console.write.
 
 ::::
 

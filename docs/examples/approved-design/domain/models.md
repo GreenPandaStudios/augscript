@@ -50,30 +50,12 @@ record Fruit(int code, string name)
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
-
-### In this file
-
-- [`Fruit`](models.md#symbol-Fruit) is an immutable record.
-
-### `Fruit` {#symbol-Fruit}
-
-[source](models.md#code)
-
-Immutable record.
-
-**Author documentation**
+<a id="symbol-Fruit"></a>
+### `Fruit` · immutable record · [source](models.md#code)
 
 Immutable fruit data, with public construction labels and structural equality.
 
-**Inputs**
-
-- `code` (`int`) — required labeled input — stored as `code` and read-only after initialization.
-- `name` (`string`) — required labeled input — stored as `name` and read-only after initialization.
-
-### Shared language rules
-
-See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
+**Inputs:** Take `code` (`int`); store read-only. Take `name` (`string`); store read-only.
 
 ::::
 

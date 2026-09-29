@@ -70,110 +70,57 @@ interface IProgram {
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
-
-### In this file
-
-- [`Repository`](types.md#symbol-Repository) is an interface.
-- [`NumberRepository`](types.md#symbol-NumberRepository) is a class implementing `Repository<int>`.
-- [`Program`](types.md#symbol-Program) is a class implementing `IProgram`.
-- [`IProgram`](types.md#symbol-IProgram) is an interface.
-
-### `Repository` {#symbol-Repository}
-
-[source](types.md#code)
-
-Interface.
+<a id="symbol-Repository"></a>
+### `Repository` · interface · [source](types.md#code)
 
 Type parameters: `T`.
 
-#### `Repository.get` {#symbol-Repository.get}
+<a id="symbol-Repository.get"></a>
+#### `Repository.get` · [source](types.md#code)
 
-[source](types.md#code)
+Returns `T`.
 
-Returns: `T`.
+<a id="symbol-NumberRepository"></a>
+### `NumberRepository` · class · [source](types.md#code)
 
-Interface contract. A selected implementation supplies the behavior.
+Implements [`Repository`](types.md#symbol-Repository).
 
-### `NumberRepository` {#symbol-NumberRepository}
+<a id="symbol-NumberRepository.get"></a>
+#### `NumberRepository.get` · [source](types.md#code)
 
-[source](types.md#code)
-
-Behavioral class.
-
-Satisfies [`Repository`](types.md#symbol-Repository).
-
-#### `NumberRepository.get` {#symbol-NumberRepository.get}
-
-[source](types.md#code)
-
-Returns: `int`.
-
-**What it does**
+Returns `int`.
 
 - Return `7`.
 
-### `Program` {#symbol-Program}
+<a id="symbol-Program"></a>
+### `Program` · class · [source](types.md#code)
 
-[source](types.md#code)
+Implements [`IProgram`](types.md#symbol-IProgram).
 
-Behavioral class.
+**Inputs:** Resolve [`Repository<int>`](types.md#symbol-Repository) as `repository`; store read-only.
 
-Satisfies [`IProgram`](types.md#symbol-IProgram).
+<a id="symbol-Program.start"></a>
+#### `Program.start` · [source](types.md#code)
 
-**Inputs**
+**Inputs:** Resolve [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console) as `console`.
 
-- `repository` ([`Repository<int>`](types.md#symbol-Repository)) — injected; callers omit it — stored as `repository` and read-only after initialization.
+Uses [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
 
-#### `Program.start` {#symbol-Program.start}
+- Call [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write) on `console` with `value` as the result of [`Repository.get`](types.md#symbol-Repository.get) on `repository`.
 
-[source](types.md#code)
+<a id="symbol-IProgram"></a>
+### `IProgram` · interface · [source](types.md#code)
 
-**Inputs**
+<a id="symbol-IProgram.start"></a>
+#### `IProgram.start` · [source](types.md#code)
 
-- `console` ([`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console)) — injected; callers omit it.
+**Inputs:** Resolve [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console) as `console`.
 
-Returns: no value.
+Uses [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
 
-Capabilities: [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
+### Dependencies
 
-**What it does**
-
-- Call [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write) on `console` with `value` = call [`Repository.get`](types.md#symbol-Repository.get) on `repository`.
-
-### `IProgram` {#symbol-IProgram}
-
-[source](types.md#code)
-
-Interface.
-
-#### `IProgram.start` {#symbol-IProgram.start}
-
-[source](types.md#code)
-
-**Inputs**
-
-- `console` ([`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console)) — injected; callers omit it.
-
-Returns: no value.
-
-Capabilities: [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
-
-Interface contract. A selected implementation supplies the behavior.
-
-### Dependencies used by this file
-
-Only referenced types and operations appear here. Each name links to its complete specification.
-
-#### [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console)
-
-Capability interface from `august.io`.
-
-- [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write)<`T`> (`value`: `T`) → `void`.
-
-### Shared language rules
-
-See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
+- [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console) from `august.io`: [`write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write)<`T`> (`value`: `T`) → `void`.
 
 ::::
 

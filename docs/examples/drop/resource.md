@@ -55,40 +55,18 @@ interface IResource {
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
+<a id="symbol-Resource"></a>
+### `Resource` · class · [source](resource.md#code)
 
-### In this file
+Implements [`IResource`](resource.md#symbol-IResource).
 
-- [`Resource`](resource.md#symbol-Resource) is a class implementing `IResource`.
-- [`IResource`](resource.md#symbol-IResource) is an interface.
+<a id="symbol-Resource.drop"></a>
+#### `Resource.drop` · [source](resource.md#code)
 
-### `Resource` {#symbol-Resource}
+- Continue.
 
-[source](resource.md#code)
-
-Behavioral class.
-
-Satisfies [`IResource`](resource.md#symbol-IResource).
-
-#### `Resource.drop` {#symbol-Resource.drop}
-
-[source](resource.md#code)
-
-Returns: no value.
-
-**What it does**
-
-- Continue without another operation.
-
-### `IResource` {#symbol-IResource}
-
-[source](resource.md#code)
-
-Interface.
-
-### Shared language rules
-
-See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
+<a id="symbol-IResource"></a>
+### `IResource` · interface · [source](resource.md#code)
 
 ::::
 

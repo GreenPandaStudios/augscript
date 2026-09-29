@@ -94,173 +94,64 @@ CodeError() implements Error {
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
-
-### In this file
-
-- [`AuthorizationRequest`](contracts.md#symbol-AuthorizationRequest) is an immutable record.
-- [`AuthorizationCode`](contracts.md#symbol-AuthorizationCode) is an immutable record.
-- [`IdClaims`](contracts.md#symbol-IdClaims) is an immutable record.
-- [`AccessGrant`](contracts.md#symbol-AccessGrant) is an immutable record.
-- [`TokenResponse`](contracts.md#symbol-TokenResponse) is an immutable record.
-- [`OAuthError`](contracts.md#symbol-OAuthError) is an immutable record.
-- [`TokenForm`](contracts.md#symbol-TokenForm) is an immutable record.
-- [`LoginForm`](contracts.md#symbol-LoginForm) is an immutable record.
-- [`UserInfo`](contracts.md#symbol-UserInfo) is an immutable record.
-- [`LoginError`](contracts.md#symbol-LoginError) is a class implementing `Error`.
-- [`CodeError`](contracts.md#symbol-CodeError) is a class implementing `Error`.
-
-### `AuthorizationRequest` {#symbol-AuthorizationRequest}
-
-[source](contracts.md#code)
-
-Immutable record.
-
-**Author documentation**
+<a id="symbol-AuthorizationRequest"></a>
+### `AuthorizationRequest` · immutable record · [source](contracts.md#code)
 
 A provider request is bound to a browser cookie, a form CSRF token, and a registered client.
 
-**Inputs**
+**Inputs:** Take `clientId` (`string`); store read-only. Take `redirectUri` (`string`); store read-only. Take `state` (`string`); store read-only. Take `nonce` (`string`); store read-only. Take `challenge` (`string`); store read-only. Take `browser` (`string`); store read-only. Take `csrf` (`string`); store read-only. Take `expires` (`int`); store read-only.
 
-- `clientId` (`string`) — required labeled input — stored as `clientId` and read-only after initialization.
-- `redirectUri` (`string`) — required labeled input — stored as `redirectUri` and read-only after initialization.
-- `state` (`string`) — required labeled input — stored as `state` and read-only after initialization.
-- `nonce` (`string`) — required labeled input — stored as `nonce` and read-only after initialization.
-- `challenge` (`string`) — required labeled input — stored as `challenge` and read-only after initialization.
-- `browser` (`string`) — required labeled input — stored as `browser` and read-only after initialization.
-- `csrf` (`string`) — required labeled input — stored as `csrf` and read-only after initialization.
-- `expires` (`int`) — required labeled input — stored as `expires` and read-only after initialization.
-
-### `AuthorizationCode` {#symbol-AuthorizationCode}
-
-[source](contracts.md#code)
-
-Immutable record.
-
-**Author documentation**
+<a id="symbol-AuthorizationCode"></a>
+### `AuthorizationCode` · immutable record · [source](contracts.md#code)
 
 Codes are short-lived, single-use and bound to a redirect URI and S256 challenge.
 
-**Inputs**
+**Inputs:** Take `clientId` (`string`); store read-only. Take `redirectUri` (`string`); store read-only. Take `challenge` (`string`); store read-only. Take `nonce` (`string`); store read-only. Take `subject` (`string`); store read-only. Take `name` (`string`); store read-only. Take `expires` (`int`); store read-only.
 
-- `clientId` (`string`) — required labeled input — stored as `clientId` and read-only after initialization.
-- `redirectUri` (`string`) — required labeled input — stored as `redirectUri` and read-only after initialization.
-- `challenge` (`string`) — required labeled input — stored as `challenge` and read-only after initialization.
-- `nonce` (`string`) — required labeled input — stored as `nonce` and read-only after initialization.
-- `subject` (`string`) — required labeled input — stored as `subject` and read-only after initialization.
-- `name` (`string`) — required labeled input — stored as `name` and read-only after initialization.
-- `expires` (`int`) — required labeled input — stored as `expires` and read-only after initialization.
+<a id="symbol-IdClaims"></a>
+### `IdClaims` · immutable record · [source](contracts.md#code)
 
-### `IdClaims` {#symbol-IdClaims}
+**Inputs:** Take `iss` (`string`); store read-only. Take `sub` (`string`); store read-only. Take `aud` (`string`); store read-only. Take `exp` (`int`); store read-only. Take `iat` (`int`); store read-only. Take `nonce` (`string`); store read-only. Take `name` (`string`); store read-only.
 
-[source](contracts.md#code)
+<a id="symbol-AccessGrant"></a>
+### `AccessGrant` · immutable record · [source](contracts.md#code)
 
-Immutable record.
+**Inputs:** Take `subject` (`string`); store read-only. Take `name` (`string`); store read-only. Take `expires` (`int`); store read-only.
 
-**Inputs**
+<a id="symbol-TokenResponse"></a>
+### `TokenResponse` · immutable record · [source](contracts.md#code)
 
-- `iss` (`string`) — required labeled input — stored as `iss` and read-only after initialization.
-- `sub` (`string`) — required labeled input — stored as `sub` and read-only after initialization.
-- `aud` (`string`) — required labeled input — stored as `aud` and read-only after initialization.
-- `exp` (`int`) — required labeled input — stored as `exp` and read-only after initialization.
-- `iat` (`int`) — required labeled input — stored as `iat` and read-only after initialization.
-- `nonce` (`string`) — required labeled input — stored as `nonce` and read-only after initialization.
-- `name` (`string`) — required labeled input — stored as `name` and read-only after initialization.
+**Inputs:** Take `token_type` (`string`); store read-only. Take `access_token` (`string`); store read-only. Take `id_token` (`string`); store read-only. Take `expires_in` (`int`); store read-only. Take `scope` (`string`); store read-only.
 
-### `AccessGrant` {#symbol-AccessGrant}
+<a id="symbol-OAuthError"></a>
+### `OAuthError` · immutable record · [source](contracts.md#code)
 
-[source](contracts.md#code)
+**Inputs:** Take `error` (`string`); store read-only. Take `error_description` (`string`); store read-only.
 
-Immutable record.
+<a id="symbol-TokenForm"></a>
+### `TokenForm` · immutable record · [source](contracts.md#code)
 
-**Inputs**
+**Inputs:** Take `grant_type` (`string`); store read-only. Take `code` (`string`); store read-only. Take `redirect_uri` (`string`); store read-only. Take `client_id` (`string`); store read-only. Take `code_verifier` (`string`); store read-only.
 
-- `subject` (`string`) — required labeled input — stored as `subject` and read-only after initialization.
-- `name` (`string`) — required labeled input — stored as `name` and read-only after initialization.
-- `expires` (`int`) — required labeled input — stored as `expires` and read-only after initialization.
+<a id="symbol-LoginForm"></a>
+### `LoginForm` · immutable record · [source](contracts.md#code)
 
-### `TokenResponse` {#symbol-TokenResponse}
+**Inputs:** Take `request_id` (`string`); store read-only. Take `csrf` (`string`); store read-only. Take `username` (`string`); store read-only. Take `password` (`string`); store read-only.
 
-[source](contracts.md#code)
+<a id="symbol-UserInfo"></a>
+### `UserInfo` · immutable record · [source](contracts.md#code)
 
-Immutable record.
+**Inputs:** Take `sub` (`string`); store read-only. Take `name` (`string`); store read-only.
 
-**Inputs**
+<a id="symbol-LoginError"></a>
+### `LoginError` · class · [source](contracts.md#code)
 
-- `token_type` (`string`) — required labeled input — stored as `token_type` and read-only after initialization.
-- `access_token` (`string`) — required labeled input — stored as `access_token` and read-only after initialization.
-- `id_token` (`string`) — required labeled input — stored as `id_token` and read-only after initialization.
-- `expires_in` (`int`) — required labeled input — stored as `expires_in` and read-only after initialization.
-- `scope` (`string`) — required labeled input — stored as `scope` and read-only after initialization.
+Implements `Error`.
 
-### `OAuthError` {#symbol-OAuthError}
+<a id="symbol-CodeError"></a>
+### `CodeError` · class · [source](contracts.md#code)
 
-[source](contracts.md#code)
-
-Immutable record.
-
-**Inputs**
-
-- `error` (`string`) — required labeled input — stored as `error` and read-only after initialization.
-- `error_description` (`string`) — required labeled input — stored as `error_description` and read-only after initialization.
-
-### `TokenForm` {#symbol-TokenForm}
-
-[source](contracts.md#code)
-
-Immutable record.
-
-**Inputs**
-
-- `grant_type` (`string`) — required labeled input — stored as `grant_type` and read-only after initialization.
-- `code` (`string`) — required labeled input — stored as `code` and read-only after initialization.
-- `redirect_uri` (`string`) — required labeled input — stored as `redirect_uri` and read-only after initialization.
-- `client_id` (`string`) — required labeled input — stored as `client_id` and read-only after initialization.
-- `code_verifier` (`string`) — required labeled input — stored as `code_verifier` and read-only after initialization.
-
-### `LoginForm` {#symbol-LoginForm}
-
-[source](contracts.md#code)
-
-Immutable record.
-
-**Inputs**
-
-- `request_id` (`string`) — required labeled input — stored as `request_id` and read-only after initialization.
-- `csrf` (`string`) — required labeled input — stored as `csrf` and read-only after initialization.
-- `username` (`string`) — required labeled input — stored as `username` and read-only after initialization.
-- `password` (`string`) — required labeled input — stored as `password` and read-only after initialization.
-
-### `UserInfo` {#symbol-UserInfo}
-
-[source](contracts.md#code)
-
-Immutable record.
-
-**Inputs**
-
-- `sub` (`string`) — required labeled input — stored as `sub` and read-only after initialization.
-- `name` (`string`) — required labeled input — stored as `name` and read-only after initialization.
-
-### `LoginError` {#symbol-LoginError}
-
-[source](contracts.md#code)
-
-Behavioral class.
-
-Satisfies `Error`.
-
-### `CodeError` {#symbol-CodeError}
-
-[source](contracts.md#code)
-
-Behavioral class.
-
-Satisfies `Error`.
-
-### Shared language rules
-
-See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
+Implements `Error`.
 
 ::::
 

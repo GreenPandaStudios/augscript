@@ -46,33 +46,18 @@ serve reply on port 0
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
-
-### In this file
-
-- Serve 1 HTTP route.
-
 ### HTTP configuration
 
 Listen on `127.0.0.1`. Limit request bodies to 1048576 bytes and buffered responses to 4194304 bytes.
 
-### Startup, in source order
+### Startup
 
 - Serve [`reply`](routes.md#symbol-reply) on port `0`.
 
-### Dependencies used by this file
+### Dependencies
 
-Only referenced types and operations appear here. Each name links to its complete specification.
-
-#### [`reply`](routes.md#symbol-reply)
-
-Function from `routes`.
-
-- [`reply`](routes.md#symbol-reply) (no caller inputs) → [`Reply`](routes.md#symbol-Reply).
-
-### Shared language rules
-
-See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
+- [`Reply`](routes.md#symbol-Reply).
+- [`reply`](routes.md#symbol-reply) (no caller inputs) → [`Reply`](routes.md#symbol-Reply) from `routes`.
 
 ::::
 

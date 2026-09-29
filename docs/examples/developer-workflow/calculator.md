@@ -143,214 +143,102 @@ test Calculator calculator {
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
-
-### In this file
-
-- [`Arithmetic`](calculator.md#symbol-Arithmetic) is an interface.
-- [`Calculator`](calculator.md#symbol-Calculator) is a class implementing `Arithmetic`.
-- [`load`](calculator.md#symbol-load) is a function returning `string`.
-- [`_SilentLogger`](calculator.md#symbol-_SilentLogger) is a class implementing `Logger`.
-- [`test Calculator calculator`](calculator.md#symbol-test-20-Calculator-20-calculator) is a same-file test suite.
-
-### `Arithmetic` {#symbol-Arithmetic}
-
-[source](calculator.md#code)
-
-Interface.
-
-**Author documentation**
+<a id="symbol-Arithmetic"></a>
+### `Arithmetic` · interface · [source](calculator.md#code)
 
 Adds two integers.
 
-#### `Arithmetic.add` {#symbol-Arithmetic.add}
+<a id="symbol-Arithmetic.add"></a>
+#### `Arithmetic.add` · [source](calculator.md#code)
 
-[source](calculator.md#code)
+**Inputs:** Resolve [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console) as `console`. Take `left` (`int`). Take `right` (`int`).
 
-**Inputs**
+Returns `int`. Uses [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
 
-- `console` ([`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console)) — injected; callers omit it.
-- `left` (`int`) — required labeled input.
-- `right` (`int`) — required labeled input.
+<a id="symbol-Calculator"></a>
+### `Calculator` · class · [source](calculator.md#code)
 
-Returns: `int`.
+Uses the selected logger to describe each addition. Implements [`Arithmetic`](calculator.md#symbol-Arithmetic).
 
-Capabilities: [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
+**Inputs:** Resolve [`Logger`](logging/logger.md#symbol-Logger) as `logger`; store read-only and privately as `_logger`.
 
-Interface contract. A selected implementation supplies the behavior.
-
-### `Calculator` {#symbol-Calculator}
-
-[source](calculator.md#code)
-
-Behavioral class.
-
-Satisfies [`Arithmetic`](calculator.md#symbol-Arithmetic).
-
-**Author documentation**
-
-Uses the selected logger to describe each addition.
-
-**Inputs**
-
-- `logger` ([`Logger`](logging/logger.md#symbol-Logger)) — injected; callers omit it — stored as `_logger` (private) and read-only after initialization.
-
-#### `Calculator.add` {#symbol-Calculator.add}
-
-[source](calculator.md#code)
-
-**Inputs**
-
-- `console` ([`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console)) — injected; callers omit it.
-- `left` (`int`) — required labeled input.
-- `right` (`int`) — required labeled input.
-
-Returns: `int`.
-
-Capabilities: [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
-
-**What it does**
-
-- Call [`Logger.log`](logging/logger.md#symbol-Logger.log) on `_logger` with `message` = `"adding integers"`; inject `console` from `console`.
-- Return `left` plus `right`.
-
-**Author documentation**
+<a id="symbol-Calculator.add"></a>
+#### `Calculator.add` · [source](calculator.md#code)
 
 Adds left and right, logging the operation.
 
-**Returns** Sum of the two integers.
+**Inputs:** Resolve [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console) as `console`. Take `left` (`int`) — First integer. Take `right` (`int`) — Second integer.
 
-**Parameters**
-- `left`: First integer.
-- `right`: Second integer.
+Returns `int` — Sum of the two integers. Uses [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
 
-### `load` {#symbol-load}
+- Call [`Logger.log`](logging/logger.md#symbol-Logger.log) on `_logger` with `message` as `"adding integers"` using `console`.
+- Return `left` plus `right`.
 
-[source](calculator.md#code)
-
-**Inputs**
-
-- `fail` (`bool`) — required labeled input.
-
-Returns: `string`.
-
-Can fail with `FileError`. Callers must catch or propagate these errors.
-
-**What it does**
-
-- If `fail` is true:
-  - Fail with call `FileError`. Transfer control to a matching catch or propagate the failure.
-- Return `"loaded"`.
-
-**Author documentation**
+<a id="symbol-load"></a>
+### `load` · [source](calculator.md#code)
 
 Demonstrates a checked failure instead of a successful result.
 
-**Parameters**
-- `fail`: Whether to simulate a failed load.
+**Inputs:** Take `fail` (`bool`) — Whether to simulate a failed load.
 
-**Throws**
-- `FileError`: When fail is true.
+Returns `string`. Can fail with `FileError` (when fail is true).
 
-### `_SilentLogger` {#symbol-_SilentLogger}
+- If `fail` is true:
+  - Fail with a new `FileError`.
+- Return `"loaded"`.
 
-[source](calculator.md#code)
+<a id="symbol-_SilentLogger"></a>
+### `_SilentLogger` · class · [source](calculator.md#code)
 
-Behavioral class, private to this file.
+Test adapter: keeps calculator tests independent of console output. Implements [`Logger`](logging/logger.md#symbol-Logger). Private to this file.
 
-Satisfies [`Logger`](logging/logger.md#symbol-Logger).
+<a id="symbol-_SilentLogger.log"></a>
+#### `_SilentLogger.log` · [source](calculator.md#code)
 
-**Author documentation**
+**Inputs:** Resolve [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console) as `console`. Take `message` (`string`) — Text to write.
 
-Test adapter: keeps calculator tests independent of console output.
+Uses [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
 
-#### `_SilentLogger.log` {#symbol-_SilentLogger.log}
+- Continue.
 
-[source](calculator.md#code)
+<a id="symbol-test Calculator calculator"></a>
+### `test Calculator calculator` · [source](calculator.md#code)
 
-**Inputs**
+Tests [`Calculator`](calculator.md#symbol-Calculator). Each case gets fresh setup and dependencies.
 
-- `console` ([`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console)) — injected; callers omit it.
-- `message` (`string`) — required labeled input.
+#### `addition`
 
-Returns: no value.
+Setup for each case:
 
-Capabilities: [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
-
-**What it does**
-
-- Continue without another operation.
-
-**Author documentation**
-
-**Parameters**
-- `message`: Text to write.
-
-### `test Calculator calculator` {#symbol-test-20-Calculator-20-calculator}
-
-[source](calculator.md#code)
-
-Same-file class tests for [`Calculator`](calculator.md#symbol-Calculator). Each case gets isolated setup and dependency bindings.
-
-#### Group `addition`
-
-**Setup before each case**
-
-- Provide [`SystemConsole`](dependencies/august/0.19.0/io/contracts.md#symbol-SystemConsole) when `Console` is requested. Use a fresh instance when this provider retains state; otherwise reuse one instance.
-- Provide [`_SilentLogger`](calculator.md#symbol-_SilentLogger) when `Logger` is requested. Use a fresh instance when this provider retains state; otherwise reuse one instance.
-- Set `calculator` to call [`Calculator`](calculator.md#symbol-Calculator); inject `_logger` from `Logger`.
+- Provide [`SystemConsole`](dependencies/august/0.19.0/io/contracts.md#symbol-SystemConsole) for `Console`. Reuse stateless instances; create stateful instances per resolve.
+- Provide [`_SilentLogger`](calculator.md#symbol-_SilentLogger) for `Logger`. Reuse stateless instances; create stateful instances per resolve.
+- Set `calculator` to a new [`Calculator`](calculator.md#symbol-Calculator) using `Logger` for `_logger`.
 - Set `values` of type `List<int>` to a list containing `1`, `2`.
 
-##### `adds labeled inputs`
+##### `adds labeled inputs` · [source](calculator.md#code)
 
-[source](calculator.md#code)
+- Call `assert` with the result of [`Calculator.add`](calculator.md#symbol-Calculator.add) on `calculator` with `right` as `2`, `left` as `1` using `Console` for `console` equals `3`.
+- Mutably borrow `values` for this block:
+  - Call `append` on `values` with `value` as `3`.
+- Call `assert` with the result of `length` on `values` equals `3`.
 
-- Call `assert` with (call [`Calculator.add`](calculator.md#symbol-Calculator.add) on `calculator` with `right` = `2`; `left` = `1`; inject `console` from `Console` equals `3`).
-- Grant exclusive mutable access to `values` for this block, then end the borrow:
-  - Call `append` on `values` with `value` = `3`.
-- Call `assert` with (call `length` on `values` equals `3`).
+##### `starts with fresh setup` · [source](calculator.md#code)
 
-##### `starts with fresh setup`
+- Call `assert` with the result of `length` on `values` equals `2`.
+- Call `assert` with the result of [`Calculator.add`](calculator.md#symbol-Calculator.add) on `calculator` with `left` as the result of `get` on `values` with `index` as `0`, `right` as the result of `get` on `values` with `index` as `1` using `Console` for `console` equals `3`.
 
-[source](calculator.md#code)
+### Dependencies
 
-- Call `assert` with (call `length` on `values` equals `2`).
-- Call `assert` with (call [`Calculator.add`](calculator.md#symbol-Calculator.add) on `calculator` with `left` = call `get` on `values` with `index` = `0`; `right` = call `get` on `values` with `index` = `1`; inject `console` from `Console` equals `3`).
+- [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console) from `august.io`: [`write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write)<`T`> (`value`: `T`) → `void`.
+- [`SystemConsole`](dependencies/august/0.19.0/io/contracts.md#symbol-SystemConsole) from `august.io`.
+- [`Logger`](logging/logger.md#symbol-Logger) from `logging`: [`log`](logging/logger.md#symbol-Logger.log) (`message`: `string`) → `void`.
 
-### Dependencies used by this file
+### Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
 
-Only referenced types and operations appear here. Each name links to its complete specification.
-
-#### [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console)
-
-Capability interface from `august.io`.
-
-- [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write)<`T`> (`value`: `T`) → `void`.
-
-#### [`SystemConsole`](dependencies/august/0.19.0/io/contracts.md#symbol-SystemConsole)
-
-Class from `august.io`.
-
-Used as a type or provider.
-
-#### [`Logger`](logging/logger.md#symbol-Logger)
-
-Interface from `logging`.
-
-- [`Logger.log`](logging/logger.md#symbol-Logger.log) (`message`: `string`) → `void`; inject `console`: [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console); uses [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
-
-### Built-in operations used by this file
-
-- `List<int>.append` (`value`: `int`) → `void`: Append an element with exclusive mutable access. Read-only and owned aliases cannot be stored here. Changes the receiver.
-- `List<int>.get` (`index`: `int`) → `int`: Read a zero-based position. An invalid index raises checked IndexError. Reference results grant reading. Can fail with `IndexError`.
-- `List<int>.length` (no inputs) → `int`: Read the number of elements.
-- `assert` (`condition`: `bool`) → `void`: Assert a bool in a test case or its setup. Catching an assertion failure cannot make the case pass; every case must execute an assertion.
-
-[Full built-in reference](https://greenpandastudios.github.io/augscript/language-constructs).
-
-### Shared language rules
-
-See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
+- `List<int>.append`: Append an element with exclusive mutable access. Read-only and owned aliases cannot be stored here.
+- `List<int>.get`: Read a zero-based position. An invalid index raises checked IndexError. Reference results grant reading.
+- `List<int>.length`: Read the number of elements.
+- `assert`: Assert a bool in a test case or its setup. Catching an assertion failure cannot make the case pass; every case must execute an assertion.
 
 ::::
 

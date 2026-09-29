@@ -76,19 +76,7 @@ export loginCallback from login
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
-
-### In this file
-
-- Export `LoginTransaction` from this folder.
-- Export `SessionClaims` from this folder.
-- Export `home` from this folder.
-- Export `me` from this folder.
-- Export `logout` from this folder.
-- Export `startLogin` from this folder.
-- Export `loginCallback` from this folder.
-
-### Folder exports
+### Exports
 
 - Export the declaration `LoginTransaction` from [`contracts.aug`](contracts.md#symbol-LoginTransaction).
 - Export the declaration `SessionClaims` from [`contracts.aug`](contracts.md#symbol-SessionClaims).
@@ -97,10 +85,6 @@ August 0.19.0. This document is compiled from checked code with deterministic wo
 - Export the declaration `logout` from [`logout.aug`](logout.md#symbol-logout).
 - Export the declaration `startLogin` from [`login.aug`](login.md#symbol-startLogin).
 - Export the declaration `loginCallback` from [`login.aug`](login.md#symbol-loginCallback).
-
-### Shared language rules
-
-See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
 
 ::::
 

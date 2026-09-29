@@ -116,168 +116,75 @@ interceptor AddOne<T>() {
 
 ## Compiled specification {#specification}
 
-August 0.19.0. This document is compiled from checked code with deterministic wording guided by Simplified Technical English.
+<a id="symbol-ValidationError"></a>
+### `ValidationError` · class · [source](interceptors.md#code)
 
-### In this file
+Raised when a numeric input fails validation. Implements `Error`.
 
-- [`ValidationError`](interceptors.md#symbol-ValidationError) is a class implementing `Error`.
-- [`Audit`](interceptors.md#symbol-Audit) is an interceptor.
-- [`Positive`](interceptors.md#symbol-Positive) is an interceptor.
-- [`AddOne`](interceptors.md#symbol-AddOne) is an interceptor.
+**Inputs:** Take `message` (`string`); store read-only.
 
-### `ValidationError` {#symbol-ValidationError}
-
-[source](interceptors.md#code)
-
-Behavioral class.
-
-Satisfies `Error`.
-
-**Author documentation**
-
-Raised when a numeric input fails validation.
-
-**Inputs**
-
-- `message` (`string`) — required labeled input — stored as `message` and read-only after initialization.
-
-### `Audit` {#symbol-Audit}
-
-[source](interceptors.md#code)
-
-Function or constructor middleware.
-
-Type parameters: `T`.
-
-**Author documentation**
+<a id="symbol-Audit"></a>
+### `Audit` · interceptor · [source](interceptors.md#code)
 
 Logs before and after a successful call.
-Generic T is inferred from the annotated function or constructor.
+Generic T is inferred from the annotated function or constructor. Type parameters: `T`.
 
-**Parameters**
-- `logger`: Shared application logger, injected for each fresh instance.
+**Inputs:** Resolve [`Logger`](logging.md#symbol-Logger) as `logger`; store read-only.
 
-**Inputs**
+Creates one interceptor per invocation. Its around operation may delegate once or finish early.
 
-- `logger` ([`Logger`](logging.md#symbol-Logger)) — injected; callers omit it — stored as `logger` and read-only after initialization.
-
-Create a fresh interceptor for each invocation. Its around operation can delegate once, change selected inputs, or short-circuit with a compatible result or failure.
-
-#### `Audit.around` {#symbol-Audit.around}
-
-[source](interceptors.md#code)
-
-**Inputs**
-
-- `console` ([`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console)) — injected; callers omit it.
-
-Returns: `T`.
-
-Capabilities: [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
-
-**What it does**
-
-- Call [`Logger.log`](logging.md#symbol-Logger.log) on `logger` with `message` = `"before"`; inject `console` from `console`.
-- Set `result` of type `T` to call `next`.
-- Call [`Logger.log`](logging.md#symbol-Logger.log) on `logger` with `message` = `"after"`; inject `console` from `console`.
-- Return `result`.
-
-**Author documentation**
+<a id="symbol-Audit.around"></a>
+#### `Audit.around` · [source](interceptors.md#code)
 
 Wrap a call without changing its result.
 
-### `Positive` {#symbol-Positive}
+**Inputs:** Resolve [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console) as `console`.
 
-[source](interceptors.md#code)
+Returns `T`. Uses [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
 
-Function or constructor middleware.
+- Call [`Logger.log`](logging.md#symbol-Logger.log) on `logger` with `message` as `"before"` using `console`.
+- Set `result` of type `T` to the result of `next`.
+- Call [`Logger.log`](logging.md#symbol-Logger.log) on `logger` with `message` as `"after"` using `console`.
+- Return `result`.
 
-Type parameters: `T`.
+<a id="symbol-Positive"></a>
+### `Positive` · interceptor · [source](interceptors.md#code)
 
-**Author documentation**
+Rejects negative numbers before the target executes. Type parameters: `T`.
 
-Rejects negative numbers before the target executes.
+Creates one interceptor per invocation. Its around operation may delegate once or finish early.
 
-Create a fresh interceptor for each invocation. Its around operation can delegate once, change selected inputs, or short-circuit with a compatible result or failure.
+<a id="symbol-Positive.around"></a>
+#### `Positive.around` · [source](interceptors.md#code)
 
-#### `Positive.around` {#symbol-Positive.around}
+**Inputs:** Take `y` (`int`) — The target argument selected by a mapping such as y=x.
 
-[source](interceptors.md#code)
-
-**Inputs**
-
-- `y` (`int`) — required labeled input.
-
-Returns: `T`.
-
-Can fail with `ValidationError`. Callers must catch or propagate these errors.
-
-**What it does**
+Returns `T`. Can fail with `ValidationError` (when the selected value is negative).
 
 - If `y` is less than `0`:
-  - Fail with call [`ValidationError`](interceptors.md#symbol-ValidationError) with `message` = `"value must be nonnegative"`. Transfer control to a matching catch or propagate the failure.
-- Return call `next`.
+  - Fail with a new [`ValidationError`](interceptors.md#symbol-ValidationError) with `message` as `"value must be nonnegative"`.
+- Return the result of `next`.
 
-**Author documentation**
+<a id="symbol-AddOne"></a>
+### `AddOne` · interceptor · [source](interceptors.md#code)
 
-**Parameters**
-- `y`: The target argument selected by a mapping such as y=x.
+Adds one to the selected input before forwarding the call. Type parameters: `T`.
 
-**Throws**
-- `ValidationError`: When the selected value is negative.
+Creates one interceptor per invocation. Its around operation may delegate once or finish early.
 
-### `AddOne` {#symbol-AddOne}
+<a id="symbol-AddOne.around"></a>
+#### `AddOne.around` · [source](interceptors.md#code)
 
-[source](interceptors.md#code)
+**Inputs:** Take `y` (`int`) — The input to increment.
 
-Function or constructor middleware.
+Returns `T`.
 
-Type parameters: `T`.
+- Return the result of `next` with `y` as `y` plus `1`.
 
-**Author documentation**
+### Dependencies
 
-Adds one to the selected input before forwarding the call.
-
-Create a fresh interceptor for each invocation. Its around operation can delegate once, change selected inputs, or short-circuit with a compatible result or failure.
-
-#### `AddOne.around` {#symbol-AddOne.around}
-
-[source](interceptors.md#code)
-
-**Inputs**
-
-- `y` (`int`) — required labeled input.
-
-Returns: `T`.
-
-**What it does**
-
-- Return call `next` with `y` = (`y` plus `1`).
-
-**Author documentation**
-
-**Parameters**
-- `y`: The input to increment.
-
-### Dependencies used by this file
-
-Only referenced types and operations appear here. Each name links to its complete specification.
-
-#### [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console)
-
-Capability interface from `august.io`.
-
-- [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write)<`T`> (`value`: `T`) → `void`.
-
-#### [`Logger`](logging.md#symbol-Logger)
-
-Interface from `logging`.
-
-- [`Logger.log`](logging.md#symbol-Logger.log) (`message`: `string`) → `void`; inject `console`: [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console); uses [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
-
-### Shared language rules
-
-See the [language reference](https://greenpandastudios.github.io/augscript/reference) for numeric, equality, ownership, and task rules.
+- [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console) from `august.io`: [`write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write)<`T`> (`value`: `T`) → `void`.
+- [`Logger`](logging.md#symbol-Logger) from `logging`: [`log`](logging.md#symbol-Logger.log) (`message`: `string`) → `void`.
 
 ::::
 
