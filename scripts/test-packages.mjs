@@ -27,7 +27,7 @@ try {
   assert.match(aug('--help'), /Usage: aug/);
   const project = join(directory, 'hello');
   mkdirSync(project);
-  const main = `import Console and SystemConsole from august.io\nimport Crypto from august.crypto\nimport HttpClient from august.web\nimplement Console with SystemConsole\nresolve Console to console\nconsole.write(value="installed August works")\n`;
+  const main = `import Console and SystemConsole from august.io\nimplement Console with SystemConsole\nresolve Console to console\nconsole.write(value="installed August works")\n`;
   writeFileSync(join(project, 'main.aug'), main);
   aug('check', project);
   assert.equal(aug('run', project), 'installed August works\n');
@@ -49,16 +49,19 @@ try {
   assert.equal(run(globalAug, ['--version']).trim(), packages.find(pkg => pkg.directory === 'cli').version);
   assert.equal(run(globalAug, ['run', project], {env: {...process.env, AUG_NATIVE_HOME: process.env.AUG_NATIVE_HOME ?? join(root, '.aug-native')}}),
     'installed August works\n');
-  const definition = JSON.parse(aug('definition', project, '--file', join(project, 'main.aug'), '--offset', String(main.indexOf('from august.crypto') + 2)));
+  const editorMain = main + 'import Crypto from august.crypto\nimport HttpClient from august.web\n';
+  writeFileSync(join(project, 'main.aug'), editorMain);
+  aug('check', project);
+  const definition = JSON.parse(aug('definition', project, '--file', join(project, 'main.aug'), '--offset', String(editorMain.indexOf('from august.crypto') + 2)));
   assert.ok(definition.file.endsWith('/aug-crypto/august/crypto/export.aug'), JSON.stringify(definition));
   const rootExport = realpathSync(join(directory, 'node_modules/@greenpandastudios/aug-stdlib/august/export.aug'));
   const exportOffset = readFileSync(rootExport, 'utf8').indexOf('crypto');
   const folderDefinition = JSON.parse(aug('definition', project, '--file', rootExport, '--offset', String(exportOffset)));
   assert.ok(folderDefinition.file.endsWith('/aug-crypto/august/crypto/export.aug'), JSON.stringify(folderDefinition));
-  writeFileSync(join(project, 'main.aug'), main + 'import ');
-  const items = JSON.parse(aug('complete', project, '--file', join(project, 'main.aug'), '--offset', String(main.length + 7)));
+  writeFileSync(join(project, 'main.aug'), editorMain + 'import ');
+  const items = JSON.parse(aug('complete', project, '--file', join(project, 'main.aug'), '--offset', String(editorMain.length + 7)));
   assert.ok(items.some(item => item.detail === 'import GnuTlsCrypto from august.crypto'), JSON.stringify(items));
-  writeFileSync(join(project, 'main.aug'), main);
+  writeFileSync(join(project, 'main.aug'), editorMain);
   aug('check', join(cliRoot, 'examples/oidc-login'));
   const emitted = aug('emit-c', join(cliRoot, 'examples/oidc-login'));
   assert.match(emitted, /aug_http_configure/);
