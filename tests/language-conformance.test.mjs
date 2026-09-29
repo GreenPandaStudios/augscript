@@ -569,6 +569,29 @@ print(value=items.length())
   });
 });
 
+test('TASK-17: throwing an owned error cannot outrun a child borrowing it', () => {
+  withProject({
+    'operations.aug': `Failure() implements Error:
+    pass
+inspect(Failure value):
+    pass
+fail(own Failure failure) unless Failure:
+    scope:
+        pending = start inspect(value=failure)
+        throw failure
+`,
+    'main.aug': `import Failure and fail from operations
+try:
+    fail(failure=Failure())
+catch Failure error:
+    pass
+`
+  }, root => {
+    const issues = diagnostics(root);
+    assert.ok(issues.some(issue => /Cannot move failure while a task uses it/.test(issue.message)), JSON.stringify(issues));
+  });
+});
+
 test('ERROR-1: starting defers a checked error until wait or implicit join', () => {
   const operations = `fail() returns int unless FileError:
     throw FileError()
