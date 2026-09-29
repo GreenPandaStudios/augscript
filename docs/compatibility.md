@@ -2,6 +2,8 @@
 
 August 0.19 is a preview. This page states the proposed 1.0 compatibility contract and the evidence still needed before it takes effect. The [roadmap](roadmap.md) tracks that release gate.
 
+The [ownership and task conformance page](language-conformance.md) records executable candidate behavior for moves, aliasing, cleanup, cancellation, and delayed errors.
+
 ## What a 1.0 release will keep stable
 
 | Surface | 1.x promise |

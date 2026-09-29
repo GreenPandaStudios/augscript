@@ -270,6 +270,8 @@ Owned values are dropped on normal or error exits. An optional `drop()` method t
 
 `Shared(value=...)` takes a fresh or owned value. The wrapper owns that payload, so dropping an owned `Shared<T>` also runs the payload's `drop()` before later local cleanup. A `resolve` dependency counts as a call input for alias checks: it cannot refer to an object also passed as an exclusive input. A scheduled task captures dependencies supplied through `resolve` as well as written call arguments. Wait for a task before mutably borrowing an object it reads through either path.
 
+If a child starts while a `borrow` block is already open, the parent cannot mutate the captured object until it waits. The rule also applies to a borrowed function call or a direct field assignment. See the [executable conformance rules](language-conformance.md).
+
 The analysis intentionally rejects some programs when it cannot prove separate origins or freshness. This prototype is conservative; it is not a formal ownership proof. Threading semantics remain deferred.
 
 ## Null, matching, and checked failures
@@ -281,6 +283,8 @@ Nullable locals narrow after null checks, short-circuit conditions, match patter
 An error satisfies Error. A callable declares specific errors with `returns T unless FileError and DomainError`. It can throw any value satisfying its declaration; declaring Error accepts any Error implementation. Calls must catch or propagate all effective errors, including interceptor layers.
 
 `start` evaluates its receiver and arguments immediately; their errors belong to the scheduling statement. The scheduled operation's errors belong to a `wait for` or its owning scope's implicit join. Unobserved sibling failures can reach any wait in that group. Grouped waits observe every selected child, including cancellation cleanup, and rethrow the first failure. A helper awaiting a `Task<T>` parameter declares or handles `Error`, since that public type does not specify a narrower error contract yet.
+
+An error already leaving the parent remains the reported error if cancelling a child causes its cleanup to fail. `always` cleanup still runs for that child. A `return` from a scope joins its children before the caller receives the result.
 
 ```aug project=errors-guide file=main.aug
 import load from files
