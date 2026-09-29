@@ -29,7 +29,7 @@ The exact versions, archive URLs, and SHA-256 values are in [`native-dependencie
 ## Release gates still open
 
 - **Platform support:** the full pinned web/crypto bootstrap passes on macOS ARM and Linux ARM. [Docker build/run bases](docker.md) run core, web, and crypto programs on Linux. Linux x86-64 runs in CI; other platforms remain unverified.
-- **Concurrency and ownership:** tasks use one OS thread. The [conformance suite](language-conformance.md) exercises injected captures, mutation after a child starts inside `borrow`, owned `Shared<T>` cleanup, cancellation, and the public `Task<T>` error contract. Wider control-flow and platform conformance remain before a 1.0 support claim.
+- **Concurrency and ownership:** tasks use one OS thread. The [conformance suite](language-conformance.md) exercises injected captures, mutation after a child starts inside `borrow`, owned `Shared<T>` cleanup, branch joins, cancellation, and the public `Task<T>` error contract. A 1.0 support claim still depends on the platform, distribution, and compatibility gates.
 - **Security and reliability:** HTTP and OIDC need broad protocol conformance, durable credentials and keys, rotation, long-running load tests, and deployment guidance. The [gap ledger](web-library-gaps.md) records the precise work.
 - **Package and ABI stability:** published npm identities, reproducible releases, compatibility policy, and native adapter ABI need stable release gates.
 - **Operational behavior:** failure handling, cancellation, instrumentation, platform builds, and resource ceilings need repeated CI and field testing.
