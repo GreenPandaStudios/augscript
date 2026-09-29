@@ -83,4 +83,4 @@ jobs:
           container=$(docker run -d -p 127.0.0.1::8080 augscript/web-smoke:local)
           trap 'docker rm -f "$container" >/dev/null' EXIT
           port=$(docker port "$container" 8080/tcp)
-          test "$(curl --fail --silent --show-error --retry 20 --retry-connrefused --retry-delay 1 "http://$port/health")" = '{"status":"ok"}'
+          test "$(curl --fail --silent --show-error --retry 20 --retry-all-errors --retry-delay 1 "http://$port/health")" = '{"status":"ok"}'
