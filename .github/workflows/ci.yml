@@ -58,6 +58,7 @@ jobs:
       - run: npm run check
       - run: npm test
       - run: npm run test:sanitizers
+      - run: npm run test:safety
       - run: npm run package:extension
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
@@ -74,6 +75,7 @@ jobs:
       - run: docker build -f docker/Dockerfile.build -t augscript/build:local .
       - run: docker run --rm --entrypoint sh augscript/build:local -lc 'cd /opt/augscript && npm test'
       - run: docker run --rm --entrypoint sh augscript/build:local -lc 'cd /opt/augscript && npm run test:sanitizers'
+      - run: docker run --rm --entrypoint sh augscript/build:local -lc 'cd /opt/augscript && npm run test:safety'
       - run: docker build -f docker/Dockerfile.run -t augscript/run:local .
       - run: docker build -f docker/Dockerfile.smoke -t augscript/smoke:local .
       - run: test "$(docker run --rm augscript/smoke:local)" = "Hello, August!"

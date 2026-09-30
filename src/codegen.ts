@@ -646,8 +646,13 @@ class BodyEmitter {
 
   private emitInvoke(expr: Extract<Expr, {kind: 'call'}>, receiver: number | undefined, args: number[]): number {
     const slot = this.newSlot();
-    const array = this.label('args');
-    this.line(`AugValue ${array}[] = { ${args.map(index => this.slot(index)).join(', ') || 'aug_scalar_null()'} };`);
+    let array: string | undefined;
+    const argumentArray = (): string => {
+      if (array) return array;
+      array = this.label('args');
+      this.line(`AugValue ${array}[] = { ${args.map(index => this.slot(index)).join(', ') || 'aug_scalar_null()'} };`);
+      return array;
+    };
     if (expr.callee.kind === 'name' && expr.callee.name === 'exit') {
       this.line(`int aug_exit_code_${slot} = (int)aug_cint(${this.slot(args[0])});`);
       this.line(`aug_cancelled = true; aug_shutdown(); exit(aug_exit_code_${slot} >= 0 && aug_exit_code_${slot} <= 255 ? aug_exit_code_${slot} : 1);`);
@@ -705,7 +710,7 @@ class BodyEmitter {
       return slot;
     }
     if (expr.callee.kind === 'name' && ['List', 'Set', 'Tuple'].includes(expr.callee.name)) {
-      this.line(`${this.slot(slot)} = aug_${expr.callee.name.toLowerCase()}_new(${array}, ${args.length});`);
+      this.line(`${this.slot(slot)} = aug_${expr.callee.name.toLowerCase()}_new(${argumentArray()}, ${args.length});`);
       return slot;
     }
     if (expr.callee.kind === 'name' && expr.callee.name === 'Map') {
@@ -719,11 +724,11 @@ class BodyEmitter {
     if (expr.callee.kind === 'name') {
       const def = this.generator.definition(this.file, expr.callee.name);
       if (def?.node.kind === 'class') {
-        this.line(`${this.slot(slot)} = ${this.generator.cConstructor(def)}(${array}, ${args.length});`);
+        this.line(`${this.slot(slot)} = ${this.generator.cConstructor(def)}(${argumentArray()}, ${args.length});`);
         this.clearMovedArgs(expr, def.node.fields);
       } else if (def?.node.kind === 'function') {
         if (def.node.externC && !this.generator.hasInterceptors(def.node)) this.emitExternCall(def, args, slot);
-        else this.line(`${this.slot(slot)} = ${this.generator.cName(def)}(${array}, ${args.length});`);
+        else this.line(`${this.slot(slot)} = ${this.generator.cName(def)}(${argumentArray()}, ${args.length});`);
         this.clearMovedArgs(expr, def.node.params);
       }
     } else if (expr.callee.kind === 'member') {
@@ -741,7 +746,7 @@ class BodyEmitter {
         if (operation.returns === 'void') { this.line(`${call};`); this.line(`${this.slot(slot)} = aug_scalar_null();`); }
         else this.line(`${this.slot(slot)} = ${operation.returns === 'bool' ? `aug_scalar_bool(${call})` : operation.returns === 'int' ? `aug_scalar_int(${call})` : call};`);
       } else {
-        this.line(`${this.slot(slot)} = aug_call_method(${this.slot(receiver!)}, ${cString(methodName)}, ${array}, ${args.length});`);
+        this.line(`${this.slot(slot)} = aug_call_method(${this.slot(receiver!)}, ${cString(methodName)}, ${argumentArray()}, ${args.length});`);
         const node = type?.def?.node;
         const method = node?.kind === 'class' || node?.kind === 'interface' || node?.kind === 'interceptor' ?
           node.methods.find(item => item.name === methodName) : undefined;
@@ -1048,7 +1053,7 @@ class BodyEmitter {
     return [
       `static AugValue ${name}(${method ? 'AugValue self, ' : ''}AugValue *args, int count) {`,
       `  (void)args; (void)count;`,
-      `  AugExecution *aug_execution = aug_execution_current();`,
+      ...(body.includes('aug_execution->') ? [`  AugExecution *aug_execution = aug_execution_current();`] : []),
       ...[...this.scalarSlots].map(slot => `  AugValue scalar_${slot} = {0};`),
       `  AugValue roots[${Math.max(1, this.slots)}] = {0};`,
       `  AugFrame frame; aug_frame_enter(&frame, roots, ${Math.max(1, this.slots)});`,
