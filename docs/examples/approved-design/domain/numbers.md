@@ -117,30 +117,25 @@ test double {
 
 ## Compiled specification {#specification}
 
-<a id="symbol-RangeError"></a>
-### `RangeError` · class · [source](numbers.md#code)
+### `RangeError` · class · [source](numbers.md#code) {#symbol-RangeError}
 
 Raised when an input is outside the operation's domain. It implements `Error`. It takes `value` as an integer, kept read-only.
 
-<a id="symbol-Positive"></a>
-### `Positive` · interceptor · [source](numbers.md#code)
+### `Positive` · interceptor · [source](numbers.md#code) {#symbol-Positive}
 
 A pure validation layer, shared by any compatible callable. The type parameters are `T`. Creates one interceptor per invocation. Its around operation may delegate once or finish early.
 
-<a id="symbol-Positive.around"></a>
-#### `Positive.around` · [source](numbers.md#code)
+#### `Positive.around` · [source](numbers.md#code) {#symbol-Positive.around}
 
 It takes `amount` as an integer. Failures can raise [`RangeError`](numbers.md#symbol-RangeError). If `amount` is negative, it raises a [`RangeError`](numbers.md#symbol-RangeError) with `value` from `amount`. It returns `next`.
 
-<a id="symbol-double"></a>
-### `double` · [source](numbers.md#code)
+### `double` · [source](numbers.md#code) {#symbol-double}
 
 Double a nonnegative amount. It takes `amount` as an integer (Integer to double). It returns `int` — Twice the amount, with defined integer wrapping. Failures can raise [`RangeError`](numbers.md#symbol-RangeError) (A validation layer rejected a negative input).
 
 Layers run in the declared order. Call [`Positive.around`](numbers.md#symbol-Positive.around). It returns `amount` times `2`.
 
-<a id="symbol-test double"></a>
-### `test double` · [source](numbers.md#code)
+### `test double` · [source](numbers.md#code) {#symbol-test-20-double}
 
 Tests [`double`](numbers.md#symbol-double). Each case gets fresh setup and dependencies.
 

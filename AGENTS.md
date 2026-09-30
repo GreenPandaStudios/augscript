@@ -4,6 +4,8 @@ The language tenets are simplicity and developer scalability for developers work
 
 ## Documentation is part of a change
 
+Use the repository skill at `.agents/skills/maintain-august-wiki/SKILL.md` for documentation work and behavior changes. Its editorial contract is `docs/writing-docs.md`: keep the book, task guides, reference, rationale, and contributor notes distinct, and verify runnable examples and public claims against implemented behavior.
+
 Maintain `docs` as the canonical language wiki. A language, runtime, library, CLI, configuration, or editor behavior change must update a relevant handwritten guide or changelog in the same change. Update Javadoc and `src/help.ts` when their observable contracts change. Run `npm run docs:generate` and commit generated API/construct pages. See `docs/maintaining-docs.md` for the mapping and executable fence format.
 
 Keep `docs/web-library-gaps.md` honest. Pending approval work is not implemented scope. Do not silently change ownership, GC, worker/channel behavior or security policies that an earlier approval review blocked.

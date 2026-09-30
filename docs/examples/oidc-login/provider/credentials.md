@@ -86,8 +86,7 @@ verifyCredentials(string username, string password, resolve Crypto crypto) retur
 
 ## Compiled specification {#specification}
 
-<a id="symbol-verifyCredentials"></a>
-### `verifyCredentials` · [source](credentials.md#code)
+### `verifyCredentials` · [source](credentials.md#code) {#symbol-verifyCredentials}
 
 One development account with a PBKDF2-HMAC-SHA256 verifier. Production account storage is deliberately a separate capability. It takes `username` and `password` as strings. It gets `crypto` ([`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto)) from dependency injection.
 

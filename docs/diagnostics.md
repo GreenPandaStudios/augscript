@@ -1,6 +1,8 @@
-# AugScript diagnostics and fixes
+# Diagnostics and fixes
 
-Diagnostics include a code, source location, and expected/actual contract where relevant. VS Code shows them while editing, with hover guidance and lightbulb actions. Fixes are precise edits; they are offered only where the compiler has enough information. Warnings do not prevent a build.
+Start with the diagnostic's file, line, and message. The code identifies the rule that failed; the tables below explain likely remedies. VS Code shows the same diagnostics while you edit, with hover help and lightbulb actions where the compiler can offer a precise change. Warnings do not prevent a build.
+
+When a fix changes a dependency, effect, error, or mutable input, review the caller's contract too. A suggested edit can satisfy a language rule without deciding the right recovery or design for your application. [The book](learn/index.md) includes deliberate mistakes you can check and repair yourself.
 
 ## Syntax and data
 
@@ -40,7 +42,7 @@ Both braces and indentation are accepted. The formatter uses main.yaml preferenc
 
 ### EFFECT
 
-Callables are pure by default. Declare `changes self` for state transitions or `changes input` for an owned/borrowed input. Receive I/O capabilities through resolve headers and declare `uses dependency.operation`. Callers and interface contracts include every effective effect, including layers.
+Declare `changes self` for state transitions or `changes input` for an owned/borrowed input. Receive I/O capabilities through dependency headers. Public function and interface contracts declare their allowed effects with `uses dependency.operation`; implementations and private helpers can infer them. Calls and interceptor layers must fit the effective contract.
 
 Public fields and managed inputs grant reading. Mark local storage mutable when it needs initialization-independent changes. Constructors are pure; move startup effects into a named method. drop performs only local cleanup and cannot acquire effects/errors through interceptors.
 

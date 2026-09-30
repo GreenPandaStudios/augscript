@@ -3,44 +3,66 @@ layout: home
 hero:
   name: August
   text: The world runs on language
-  tagline: A statically checked language for developers working with LLMs. Readable modules, clear dependencies, explicit effects, native C output.
+  tagline: A programming language for understanding and changing code together—with teammates and coding agents.
   actions:
     - theme: brand
-      text: Build your first project
-      link: /getting-started
+      text: Learn August
+      link: /learn/
     - theme: alt
-      text: Install and try it
-      link: /packages
-    - theme: alt
-      text: Build a web service
-      link: /web
-    - theme: alt
-      text: Browse real projects
-      link: /examples/
-    - theme: alt
-      text: See performance graphs
-      link: /performance
-features:
-  - title: Understand a module in context
-    details: Public exports, labeled inputs, same-file tests, and source comments tell a new reader what the code promises.
-  - title: See dependencies and side effects
-    details: Interface contracts, resolve parameters, and changes clauses keep behavior visible at the module boundary. Implementation effects are inferred and explained in hover and specs.
-  - title: Build native applications
-    details: The CLI checks August, emits C11, and invokes the C compiler. First-party HTTP endpoints use narrow native library adapters.
+      text: Read a real project
+      link: /examples/hello/
 ---
 
-## Documentation for the code you run
+## Understand the change before you make it
 
-These pages are versioned with the compiler. Guide projects are compiled and tested in CI. Library API pages and language construct help are generated from the same declarations and comments that supply editor hover. [Compiled specifications](specifications.md) explain each source file beside its code, including private behavior and links to offline dependency docs.
+A new teammate opens a module. A coding agent receives a change request. Both need to know what the module does, which dependencies it uses, and what a change could affect.
 
-Start with [getting started](getting-started.md) to create, check, test, run, and explain a new project. [Browse complete projects](examples/index.md) with a choice of indentation or braces and compiled specifications beside the code. The [same-app OpenID Connect example](examples/oidc-login/index.md) demonstrates a login page, provider, client, and separate session JWT.
+August puts that information close to the code. Calls name their inputs. Modules expose a deliberate public surface. Interfaces describe behavior and effects. Tests live beside the declarations they check. The compiler can turn each source file into a linked, readable specification.
 
-## Why August
+Here is a complete application. Save these two files in the same folder:
 
-A developer opening an unfamiliar file should see what it provides, what it imports, which inputs each call takes, what it can change, and which errors it can raise. August puts tests beside declarations and generates a readable specification from checked code. Folder exports form a deliberate public boundary. These choices help people and code assistants work within small, explainable modules.
+**main.aug**
 
-## Performance and readiness
+```aug project=wiki-home file=main.aug
+import total from prices
 
-August emits C11 and builds native executables. In the [published benchmark suite](performance.md), the CPU loop took 7.24 ms in August and 8.17 ms in C on the measured host; a 200,000-item Map/Set workload took 15.10 ms in August and 6.38 ms in C. The HTTP result depends on load; at 16 clients the measured August server handled 73,370 requests per second, while at other client counts the comparison changes. See the graphs, code, inputs, hardware, and reproduction commands before drawing conclusions.
+print(value=total(price=7, quantity=3))
+```
 
-August is experimental. [Production readiness](production-readiness.md) identifies platform, licensing, security, and reliability gates. The [roadmap to 1.0.0](roadmap.md) and [gap ledger](web-library-gaps.md) show the work still required. See [packages](packages.md) for installation and the [Docker images](docker.md) for Linux core, web, and crypto applications.
+**prices.aug**
+
+```aug project=wiki-home file=prices.aug
+total(int price, int quantity) returns int:
+    if quantity > 0:
+        return price * quantity
+    return 0
+
+test total:
+    when quantities:
+        it calculates_a_total:
+            assert(total(price=7, quantity=3) == 21)
+        it treats_zero_as_empty:
+            assert(total(price=7, quantity=0) == 0)
+```
+
+`aug run .` prints `21`. `aug test .` runs the two cases. `aug spec .` generates an explanation of `total`:
+
+> It takes `price` and `quantity` as integers. It returns `price` times `quantity` if `quantity` is positive, or `0` otherwise.
+
+The explanation is generated from checked code, offline and deterministically. It links to the dependencies the file uses. Comments can supply the intent that code alone cannot express. [See code and its actual compiled specification](examples/hello/app/greeter.md), or follow [a review of an unfamiliar module](guides/change-a-module.md).
+
+## Learn it, then look things up
+
+The [August book](learn/index.md) assumes you already program in another language. It starts with installation and a running application, then introduces values, errors, modules, dependencies, and mutable state. Each chapter gives you a program to run and something to change.
+
+For a specific task, use the [guides](guides/index.md). For a syntax rule or API, use the [language reference](reference.md) and [library reference](api/io.md). The [project gallery](examples/index.md) shows complete applications with code and specifications side by side; you can switch between indentation and braces.
+
+## Native programs, measured openly
+
+August checks source, generates C11, and invokes a C compiler to build a native executable. The [performance page](performance.md) publishes the programs, graphs, raw samples, environment, and reproduction commands. Its results describe those workloads on that host. Measure your own application's work before making a performance decision.
+
+## A public preview
+
+August is experimental and has not reached 1.0. Syntax and package compatibility can change. Tasks currently run cooperatively on one OS thread. HTTP and crypto libraries have working examples and documented operational gaps; the login example is a development demonstration.
+
+Read [what August is designed for](about.md), [production readiness](production-readiness.md), and the [roadmap to 1.0](roadmap.md) before choosing it for a deployment. Installation options are maintained on the [packages page](packages.md). Source and issues are on [GitHub](https://github.com/GreenPandaStudios/augscript); the language repository is MIT licensed, and native dependencies have [their own terms](production-readiness.md#dependencies-and-licenses).

@@ -53,13 +53,11 @@ endpoint GET "/bench" as reply() returns Reply {
 
 Plain handler results default to HTTP 200 unless another status is declared. HttpResponse values choose their own status. Unhandled request failures return HTTP 500 and cancel the request tasks.
 
-<a id="symbol-Reply"></a>
-### `Reply` · immutable record · [source](routes.md#code)
+### `Reply` · immutable record · [source](routes.md#code) {#symbol-Reply}
 
 It takes `id` as an integer, kept read-only and `message` as a string, kept read-only.
 
-<a id="symbol-reply"></a>
-### `reply` · [source](routes.md#code)
+### `reply` · [source](routes.md#code) {#symbol-reply}
 
 `reply` handles `GET /bench`. It returns a [`Reply`](routes.md#symbol-Reply) with `id` `7` and `message` `"hello"`.
 

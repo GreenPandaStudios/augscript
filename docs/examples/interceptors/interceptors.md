@@ -118,43 +118,36 @@ interceptor AddOne<T>() {
 
 ## Compiled specification {#specification}
 
-<a id="symbol-ValidationError"></a>
-### `ValidationError` · class · [source](interceptors.md#code)
+### `ValidationError` · class · [source](interceptors.md#code) {#symbol-ValidationError}
 
 Raised when a numeric input fails validation. It implements `Error`. It takes `message` as a string, kept read-only.
 
-<a id="symbol-Audit"></a>
-### `Audit` · interceptor · [source](interceptors.md#code)
+### `Audit` · interceptor · [source](interceptors.md#code) {#symbol-Audit}
 
 Logs before and after a successful call.
 Generic T is inferred from the annotated function or constructor. The type parameters are `T`.
 
 The `logger` dependency is injected as [`Logger`](logging.md#symbol-Logger) and stored read-only. Creates one interceptor per invocation. Its around operation may delegate once or finish early.
 
-<a id="symbol-Audit.around"></a>
-#### `Audit.around` · [source](interceptors.md#code)
+#### `Audit.around` · [source](interceptors.md#code) {#symbol-Audit.around}
 
 Wrap a call without changing its result. It gets `console` ([`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console)) from dependency injection.
 
 It passes `"before"` to [`logger.log`](logging.md#symbol-Logger.log), using injected `console`. It sets `result` of type `T` to `next`. It passes `"after"` to [`logger.log`](logging.md#symbol-Logger.log), using injected `console`. It returns `result`.
 
-<a id="symbol-Positive"></a>
-### `Positive` · interceptor · [source](interceptors.md#code)
+### `Positive` · interceptor · [source](interceptors.md#code) {#symbol-Positive}
 
 Rejects negative numbers before the target executes. The type parameters are `T`. Creates one interceptor per invocation. Its around operation may delegate once or finish early.
 
-<a id="symbol-Positive.around"></a>
-#### `Positive.around` · [source](interceptors.md#code)
+#### `Positive.around` · [source](interceptors.md#code) {#symbol-Positive.around}
 
 It takes `y` as an integer (the target argument selected by a mapping such as y=x). Failures can raise [`ValidationError`](interceptors.md#symbol-ValidationError) (when the selected value is negative). If `y` is negative, it raises a [`ValidationError`](interceptors.md#symbol-ValidationError) with `message` `"value must be nonnegative"`. It returns `next`.
 
-<a id="symbol-AddOne"></a>
-### `AddOne` · interceptor · [source](interceptors.md#code)
+### `AddOne` · interceptor · [source](interceptors.md#code) {#symbol-AddOne}
 
 Adds one to the selected input before forwarding the call. The type parameters are `T`. Creates one interceptor per invocation. Its around operation may delegate once or finish early.
 
-<a id="symbol-AddOne.around"></a>
-#### `AddOne.around` · [source](interceptors.md#code)
+#### `AddOne.around` · [source](interceptors.md#code) {#symbol-AddOne.around}
 
 It takes `y` as an integer (the input to increment). It returns `next` with `y` from `y` plus `1`.
 

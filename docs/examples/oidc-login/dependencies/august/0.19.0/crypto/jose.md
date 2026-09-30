@@ -184,35 +184,29 @@ verifyJwt(string token, RsaPublicKey publicKey, string kid, string tokenType, re
 
 ## Compiled specification {#specification}
 
-<a id="symbol-JwtError"></a>
-### `JwtError` · class · [source](jose.md#code)
+### `JwtError` · class · [source](jose.md#code) {#symbol-JwtError}
 
 A failed JOSE validation reveals no unverified claims. It implements `Error`.
 
-<a id="symbol-JwtHeader"></a>
-### `JwtHeader` · immutable record · [source](jose.md#code)
+### `JwtHeader` · immutable record · [source](jose.md#code) {#symbol-JwtHeader}
 
 This profile accepts only RS256, a configured key id, and an explicit token type. It takes `alg`, `kid`, and `typ` as strings, kept read-only.
 
-<a id="symbol-RsaJwk"></a>
-### `RsaJwk` · immutable record · [source](jose.md#code)
+### `RsaJwk` · immutable record · [source](jose.md#code) {#symbol-RsaJwk}
 
 Public signing-key metadata in RFC 7517 / RFC 7518 form. It takes `kty`, `kid`, `alg`, `use`, `n`, and `e` as strings, kept read-only.
 
-<a id="symbol-RsaJwks"></a>
-### `RsaJwks` · immutable record · [source](jose.md#code)
+### `RsaJwks` · immutable record · [source](jose.md#code) {#symbol-RsaJwks}
 
 It takes `keys` as `List<RsaJwk>`, kept read-only.
 
-<a id="symbol-rsaJwk"></a>
-### `rsaJwk` · [source](jose.md#code)
+### `rsaJwk` · [source](jose.md#code) {#symbol-rsaJwk}
 
 Export public parameters. Private key material never enters the JSON document. It takes `publicKey` as `RsaPublicKey` and `kid` as a string. It gets `crypto` ([`Crypto`](contracts.md#symbol-Crypto)) from dependency injection.
 
 Failures can raise `CryptoError`. It splits [`crypto.exportRsa`](contracts.md#symbol-Crypto.exportRsa) with `publicKey` into `modulus` and `exponent` in order. It returns a [`RsaJwk`](jose.md#symbol-RsaJwk) with `kty` `"RSA"`, `kid`, `alg` `"RS256"`, `use` `"sig"`, `n` from the URL-safe base64 encoding of `modulus`, and `e` from the URL-safe base64 encoding of `exponent`.
 
-<a id="symbol-importJwk"></a>
-### `importJwk` · [source](jose.md#code)
+### `importJwk` · [source](jose.md#code) {#symbol-importJwk}
 
 Import only an RSA signing key for RS256. The transport caller selects the trusted JWKS URL. It takes `jwk` as [`RsaJwk`](jose.md#symbol-RsaJwk). It gets `crypto` ([`Crypto`](contracts.md#symbol-Crypto)) from dependency injection.
 
@@ -220,8 +214,7 @@ Failures can raise [`JwtError`](jose.md#symbol-JwtError). It checks that `jwk.kt
 
 It tries to set `modulus` to `jwk.n` decoded as URL-safe base64 by `crypto`, then set `exponent` to `jwk.e` decoded as URL-safe base64 by `crypto`, then return [`crypto.importRsa`](contracts.md#symbol-Crypto.importRsa) with `modulus` and `exponent`. If this work raises `CryptoError`, it raises a [`JwtError`](jose.md#symbol-JwtError).
 
-<a id="symbol-signJwt"></a>
-### `signJwt` · [source](jose.md#code)
+### `signJwt` · [source](jose.md#code) {#symbol-signJwt}
 
 Sign immutable JSON with an explicit key id and token type. Claims are validated by the protocol that consumes the token. It takes `key` as `RsaPrivateKey`, `claims` as `Json`, and `kid` and `tokenType` as strings. It gets `crypto` ([`Crypto`](contracts.md#symbol-Crypto)) from dependency injection.
 
@@ -231,8 +224,7 @@ It sets `header` to `stringify` on a `Json` with `value` from a [`JwtHeader`](jo
 
 It returns the text `{signing}.{the URL-safe base64 encoding of signature}`. If this work raises `CryptoError`, it raises a [`JwtError`](jose.md#symbol-JwtError). If this work raises `JsonError`, it raises a [`JwtError`](jose.md#symbol-JwtError).
 
-<a id="symbol-verifyJwt"></a>
-### `verifyJwt` · [source](jose.md#code)
+### `verifyJwt` · [source](jose.md#code) {#symbol-verifyJwt}
 
 Verify the signature and configured algorithm, key id, and type before exposing the JSON payload. Never follows token-supplied URLs. It takes `token` as a string, `publicKey` as `RsaPublicKey`, and `kid` and `tokenType` as strings. It gets `crypto` ([`Crypto`](contracts.md#symbol-Crypto)) from dependency injection.
 

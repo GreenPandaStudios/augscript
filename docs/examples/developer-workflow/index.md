@@ -10,9 +10,17 @@ outline: [2, 3]
 
 # A small tested application
 
-A calculator module with logging, fixtures, groups, and parameterized tests.
+A calculator logs each addition. Its nearby tests replace the logger and verify both labeled inputs and fresh setup.
 
-Read a file below to see its highlighted source and the Markdown produced by `aug spec`. Choose **Indentation** or **Braces** above the code. Both views describe the same checked program; your choice is kept when you open another file.
+Open a file to read its source beside the explanation produced by `aug spec`. **Indentation** and **Braces** display the same checked program; your choice carries across file pages.
+
+## Follow the program
+
+Read [`main.aug`](main.md). Startup supplies providers, uses collections, invokes the calculator, and catches a simulated load failure.
+
+Read [`calculator.aug`](calculator.md). Read the arithmetic contract, the injected logger, and the same-file cases together. The private silent adapter keeps tests independent of output.
+
+Read [`logging/logger.aug`](logging/logger.md). This is the contract used by both the production logger and the test adapter.
 
 ## Project files
 
@@ -25,13 +33,14 @@ Read a file below to see its highlighted source and the Markdown produced by `au
 
 ## Try this project
 
-From a repository checkout with August installed:
+[Download this project](/downloads/developer-workflow.zip), then extract the archive in an empty working folder. It contains the checked source, configuration, and generated specs. Prepare the [native dependencies](../../packages.md#npm-registry) once, then use the published CLI:
 
 ```sh
-aug check examples/developer-workflow
-aug spec examples/developer-workflow
-aug test examples/developer-workflow
-aug run examples/developer-workflow
+cd developer-workflow
+npx @greenpandastudios/aug-cli@next check .
+npx @greenpandastudios/aug-cli@next spec .
+npx @greenpandastudios/aug-cli@next test .
+npx @greenpandastudios/aug-cli@next run .
 ```
 
 [Browse all examples](../index.md)

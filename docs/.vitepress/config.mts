@@ -40,25 +40,47 @@ export default defineConfig({
   },
   themeConfig: {
     siteTitle: `August ${version}`,
-    nav: [{ text: 'Get started', link: '/getting-started' }, { text: 'Guide', link: '/reference' }, { text: 'Web', link: '/web' },
-      { text: 'Examples', link: '/examples/' }, { text: 'Packages', link: '/packages' }, { text: 'Performance', link: '/performance' }, { text: 'GitHub', link: repo }],
+    nav: [{ text: 'Learn', link: '/learn/' }, { text: 'Guides', link: '/guides/' },
+      { text: 'Reference', link: '/reference' }, { text: 'Examples', link: '/examples/' },
+      { text: 'About', link: '/about' }, { text: 'Performance', link: '/performance' }],
     search: { provider: 'local' },
     sidebar: [
-      { text: 'Learn August', items: [
-        { text: 'Start here', link: '/index' }, { text: 'Getting started', link: '/getting-started' }, { text: 'Language guide', link: '/reference' },
-        { text: 'Example projects', link: '/examples/' },
-        { text: 'Grammar', link: '/grammar' }, { text: 'Constructs and built-ins', link: '/language-constructs' },
-        { text: 'Testing', link: '/testing' }, { text: 'Web and crypto', link: '/web' },
-        { text: 'Compiled specifications', link: '/specifications' },
-        { text: 'Diagnostics', link: '/diagnostics' }, { text: 'CLI and VS Code', link: '/tooling' },
-        { text: 'Performance and benchmarks', link: '/performance' }
+      { text: 'The August book', items: [
+        { text: 'How to use this book', link: '/learn/' },
+        { text: '1. Your first project', link: '/getting-started' },
+        { text: '2. Values and functions', link: '/learn/values-and-functions' },
+        { text: '3. Data and failures', link: '/learn/data-and-errors' },
+        { text: '4. Modules and dependencies', link: '/learn/modules-and-dependencies' },
+        { text: '5. State and tests', link: '/learn/state-and-tests' },
+        { text: '6. Change an unfamiliar module', link: '/guides/change-a-module' }
       ]},
-      { text: 'Library API', items: ['io', 'json', 'memory', 'time', 'web', 'crypto'].map(module => ({ text: `august.${module}`, link: `/api/${module}` })) },
-      { text: 'Project and releases', items: [
-        { text: 'Packages', link: '/packages' }, { text: 'Docker images', link: '/docker' },
-        { text: 'Production readiness', link: '/production-readiness' }, { text: 'Compatibility', link: '/compatibility' }, { text: 'Ownership and task conformance', link: '/language-conformance' }, { text: 'Roadmap to 1.0', link: '/roadmap' },
+      { text: 'Task guides', collapsed: false, items: [
+        { text: 'Choose a guide', link: '/guides/' },
+        { text: 'Tests', link: '/testing' }, { text: 'Web applications', link: '/web' },
+        { text: 'Compiled specifications', link: '/specifications' },
+        { text: 'Packages and installation', link: '/packages' },
+        { text: 'Docker deployment', link: '/docker' },
+        { text: 'VS Code Dev Containers', link: '/dev-containers' },
+        { text: 'Diagnostics', link: '/diagnostics' }
+      ]},
+      { text: 'Language and tools', collapsed: true, items: [
+        { text: 'Language reference', link: '/reference' }, { text: 'Grammar', link: '/grammar' },
+        { text: 'Constructs and built-ins', link: '/language-constructs' },
+        { text: 'CLI, configuration, and editor', link: '/tooling' }
+      ]},
+      { text: 'Library reference', collapsed: true, items: ['io', 'json', 'memory', 'time', 'web', 'crypto'].map(module => ({ text: `august.${module}`, link: `/api/${module}` })) },
+      { text: 'About August', collapsed: true, items: [
+        { text: 'Why August exists', link: '/about' }, { text: 'Example projects', link: '/examples/' },
+        { text: 'Performance', link: '/performance' }, { text: 'Production readiness', link: '/production-readiness' },
+        { text: 'Roadmap to 1.0', link: '/roadmap' }, { text: 'Compatibility', link: '/compatibility' },
+        { text: 'Library gaps', link: '/web-library-gaps' }
+      ]},
+      { text: 'Contribute', collapsed: true, items: [
         { text: 'Release process', link: '/releasing' },
-        { text: 'Documentation maintenance', link: '/maintaining-docs' }, { text: 'Library gaps', link: '/web-library-gaps' },
+        { text: 'Benchmark maintenance', link: '/contributing-benchmarks' },
+        { text: 'Documentation maintenance', link: '/maintaining-docs' }, { text: 'Writing guide', link: '/writing-docs' },
+        { text: 'Editorial research', link: '/research/wiki-editorial-design' },
+        { text: 'Ownership and task conformance', link: '/language-conformance' },
         { text: 'Implementation map', link: '/implementation-map' }, { text: 'Design audit', link: '/language-design-audit' }
       ]}
     ],

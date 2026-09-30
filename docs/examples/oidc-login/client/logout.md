@@ -103,8 +103,7 @@ endpoint POST "/logout" as logout(LogoutForm input from form, optional string to
 
 Plain handler results default to HTTP 200 unless another status is declared. HttpResponse values choose their own status. Unhandled request failures return HTTP 500 and cancel the request tasks.
 
-<a id="symbol-logout"></a>
-### `logout` · [source](logout.md#code)
+### `logout` · [source](logout.md#code) {#symbol-logout}
 
 `logout` handles `POST /logout`. POST logout checks the origin and session-bound CSRF value, then removes the live registry entry before clearing the cookie.
 

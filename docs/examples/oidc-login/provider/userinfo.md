@@ -128,8 +128,7 @@ endpoint GET "/provider/userinfo" as userinfo(optional string authorization from
 
 Plain handler results default to HTTP 200 unless another status is declared. HttpResponse values choose their own status. Unhandled request failures return HTTP 500 and cancel the request tasks.
 
-<a id="symbol-userinfo"></a>
-### `userinfo` · [source](userinfo.md#code)
+### `userinfo` · [source](userinfo.md#code) {#symbol-userinfo}
 
 `userinfo` handles `GET /provider/userinfo`. The opaque access token is valid only at this provider. Missing, expired and malformed credentials receive the same response.
 

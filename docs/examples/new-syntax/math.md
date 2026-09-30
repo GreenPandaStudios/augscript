@@ -52,8 +52,7 @@ increment(int value) returns int {
 
 ## Compiled specification {#specification}
 
-<a id="symbol-increment"></a>
-### `increment` · [source](math.md#code)
+### `increment` · [source](math.md#code) {#symbol-increment}
 
 It takes `value` as an integer. It returns `value` plus `1`.
 

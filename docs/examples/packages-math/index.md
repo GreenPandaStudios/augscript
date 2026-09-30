@@ -12,7 +12,7 @@ outline: [2, 3]
 
 Publish a small arithmetic library through export.aug and test its public surface.
 
-Read a file below to see its highlighted source and the Markdown produced by `aug spec`. Choose **Indentation** or **Braces** above the code. Both views describe the same checked program; your choice is kept when you open another file.
+Open a file to read its source beside the explanation produced by `aug spec`. **Indentation** and **Braces** display the same checked program; your choice carries across file pages.
 
 ## Project files
 
@@ -24,13 +24,14 @@ Read a file below to see its highlighted source and the Markdown produced by `au
 
 ## Try this project
 
-From a repository checkout with August installed:
+[Download this project](/downloads/packages-math.zip), then extract the archive in an empty working folder. It contains the checked source, configuration, and generated specs. Both the application and its neighboring arithmetic library are included. Prepare the [native dependencies](../../packages.md#npm-registry) once, then use the published CLI:
 
 ```sh
-aug check examples/packages/math
-aug spec examples/packages/math
-aug test examples/packages/math
-aug pack examples/packages/math
+cd packages-math/math
+npx @greenpandastudios/aug-cli@next check .
+npx @greenpandastudios/aug-cli@next spec .
+npx @greenpandastudios/aug-cli@next test .
+npx @greenpandastudios/aug-cli@next pack .
 ```
 
 [Browse all examples](../index.md)

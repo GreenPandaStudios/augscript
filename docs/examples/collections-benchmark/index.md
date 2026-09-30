@@ -12,7 +12,7 @@ outline: [2, 3]
 
 Insert, find, and iterate over 20,000 collection entries.
 
-Read a file below to see its highlighted source and the Markdown produced by `aug spec`. Choose **Indentation** or **Braces** above the code. Both views describe the same checked program; your choice is kept when you open another file.
+Open a file to read its source beside the explanation produced by `aug spec`. **Indentation** and **Braces** display the same checked program; your choice carries across file pages.
 
 ## Project files
 
@@ -21,12 +21,13 @@ Read a file below to see its highlighted source and the Markdown produced by `au
 
 ## Try this project
 
-From a repository checkout with August installed:
+[Download this project](/downloads/collections-benchmark.zip), then extract the archive in an empty working folder. It contains the checked source, configuration, and generated specs. Prepare the [native dependencies](../../packages.md#npm-registry) once, then use the published CLI:
 
 ```sh
-aug check benchmarks/collections
-aug spec benchmarks/collections
-aug run benchmarks/collections
+cd collections-benchmark
+npx @greenpandastudios/aug-cli@next check .
+npx @greenpandastudios/aug-cli@next spec .
+npx @greenpandastudios/aug-cli@next run .
 ```
 
 See [the performance page](../../performance.md) for measurements, input sizes, and reproduction steps.

@@ -72,41 +72,33 @@ interface IProgram {
 
 ## Compiled specification {#specification}
 
-<a id="symbol-Repository"></a>
-### `Repository` · interface · [source](types.md#code)
+### `Repository` · interface · [source](types.md#code) {#symbol-Repository}
 
 The type parameters are `T`.
 
-<a id="symbol-Repository.get"></a>
-#### `Repository.get` · [source](types.md#code)
+#### `Repository.get` · [source](types.md#code) {#symbol-Repository.get}
 
 It returns `T`.
 
-<a id="symbol-NumberRepository"></a>
-### `NumberRepository` · class · [source](types.md#code)
+### `NumberRepository` · class · [source](types.md#code) {#symbol-NumberRepository}
 
 It implements [`Repository<int>`](types.md#symbol-Repository).
 
-<a id="symbol-NumberRepository.get"></a>
-#### `NumberRepository.get` · [source](types.md#code)
+#### `NumberRepository.get` · [source](types.md#code) {#symbol-NumberRepository.get}
 
 It returns `7`.
 
-<a id="symbol-Program"></a>
-### `Program` · class · [source](types.md#code)
+### `Program` · class · [source](types.md#code) {#symbol-Program}
 
 It implements [`IProgram`](types.md#symbol-IProgram). The `repository` dependency is injected as [`Repository<int>`](types.md#symbol-Repository) and stored read-only.
 
-<a id="symbol-Program.start"></a>
-#### `Program.start` · [source](types.md#code)
+#### `Program.start` · [source](types.md#code) {#symbol-Program.start}
 
 It gets `console` ([`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console)) from dependency injection. It passes [`repository.get`](types.md#symbol-Repository.get) to [`console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
 
-<a id="symbol-IProgram"></a>
-### `IProgram` · interface · [source](types.md#code)
+### `IProgram` · interface · [source](types.md#code) {#symbol-IProgram}
 
-<a id="symbol-IProgram.start"></a>
-#### `IProgram.start` · [source](types.md#code)
+#### `IProgram.start` · [source](types.md#code) {#symbol-IProgram.start}
 
 It gets `console` ([`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console)) from dependency injection. It can call [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
 

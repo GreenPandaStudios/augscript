@@ -199,8 +199,7 @@ endpoint POST "/provider/login" as providerLogin(LoginForm form from form, optio
 
 Plain handler results default to HTTP 200 unless another status is declared. HttpResponse values choose their own status. Unhandled request failures return HTTP 500 and cancel the request tasks.
 
-<a id="symbol-authorize"></a>
-### `authorize` · [source](authorization.md#code)
+### `authorize` · [source](authorization.md#code) {#symbol-authorize}
 
 `authorize` handles `GET /provider/authorize`. Validate the registered client before offering a login form. A malformed redirect is never followed.
 
@@ -214,8 +213,7 @@ It sets `now` to the current time from `clock`. It sets `request` to an [`Author
 
 It sets `headers` to [`withCookie`](../common/headers.md#symbol-withCookie) with `headers` from [`securityHeaders`](../common/headers.md#symbol-securityHeaders), `name` `"aug_authorize"`, `value` from `browser`, `path` `"/provider"`, `maxAge` `300`, and `secure` from `config.secureCookies`. It returns HTTP 200 with [`ProviderLogin`](views.md#symbol-ProviderLogin) with `requestId`, `csrf`, `message` `"Authorize the registered August login app."`, and `submit` from a form action that sends `POST /provider/login` to [`providerLogin`](authorization.md#symbol-providerLogin) on submission and `headers` headers.
 
-<a id="symbol-providerLogin"></a>
-### `providerLogin` · [source](authorization.md#code)
+### `providerLogin` · [source](authorization.md#code) {#symbol-providerLogin}
 
 `providerLogin` handles `POST /provider/login`. The browser binding and CSRF token are checked before credentials. Each form request is consumed once.
 

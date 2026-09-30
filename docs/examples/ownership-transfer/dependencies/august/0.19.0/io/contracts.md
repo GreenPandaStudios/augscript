@@ -109,80 +109,65 @@ ProcessArguments() implements Arguments {
 
 ## Compiled specification {#specification}
 
-<a id="symbol-Console"></a>
-### `Console` · capability interface · [source](contracts.md#code)
+### `Console` · capability interface · [source](contracts.md#code) {#symbol-Console}
 
 Permission to write to a console, provided by an explicitly selected adapter.
 
-<a id="symbol-Console.write"></a>
-#### `Console.write` · [source](contracts.md#code)
+#### `Console.write` · [source](contracts.md#code) {#symbol-Console.write}
 
 Write one line of text. The type parameters are `T`. It takes `value` as `T` (Text to display). It can call [`Console.write`](contracts.md#symbol-Console.write).
 
-<a id="symbol-SystemConsole"></a>
-### `SystemConsole` · class · [source](contracts.md#code)
+### `SystemConsole` · class · [source](contracts.md#code) {#symbol-SystemConsole}
 
 The native standard-output adapter. Construction performs no output. It implements [`Console`](contracts.md#symbol-Console).
 
-<a id="symbol-SystemConsole.write"></a>
-#### `SystemConsole.write` · [source](contracts.md#code)
+#### `SystemConsole.write` · [source](contracts.md#code) {#symbol-SystemConsole.write}
 
 Write one line of text. The type parameters are `T`. It takes `value` as `T` (Text to display). It prints `value`.
 
-<a id="symbol-FileReader"></a>
-### `FileReader` · capability interface · [source](contracts.md#code)
+### `FileReader` · capability interface · [source](contracts.md#code) {#symbol-FileReader}
 
 Read UTF-8 text through an explicitly selected filesystem adapter.
 
-<a id="symbol-FileReader.read"></a>
-#### `FileReader.read` · [source](contracts.md#code)
+#### `FileReader.read` · [source](contracts.md#code) {#symbol-FileReader.read}
 
 Read text. It takes `path` as a string (File path).
 
 It returns `string`. It can call [`FileReader.read`](contracts.md#symbol-FileReader.read). Failures can raise `FileError` (The file could not be read).
 
-<a id="symbol-FileWriter"></a>
-### `FileWriter` · capability interface · [source](contracts.md#code)
+### `FileWriter` · capability interface · [source](contracts.md#code) {#symbol-FileWriter}
 
 Write UTF-8 text through an explicitly selected filesystem adapter.
 
-<a id="symbol-FileWriter.write"></a>
-#### `FileWriter.write` · [source](contracts.md#code)
+#### `FileWriter.write` · [source](contracts.md#code) {#symbol-FileWriter.write}
 
 Write text. It takes `path` as a string (File path) and `content` as a string (Text). It can call [`FileWriter.write`](contracts.md#symbol-FileWriter.write). Failures can raise `FileError` (Writing failed).
 
-<a id="symbol-LocalFiles"></a>
-### `LocalFiles` · class · [source](contracts.md#code)
+### `LocalFiles` · class · [source](contracts.md#code) {#symbol-LocalFiles}
 
 Native files. Operations are explicit; construction opens no files. It implements [`FileReader`](contracts.md#symbol-FileReader) and [`FileWriter`](contracts.md#symbol-FileWriter).
 
-<a id="symbol-LocalFiles.read"></a>
-#### `LocalFiles.read` · [source](contracts.md#code)
+#### `LocalFiles.read` · [source](contracts.md#code) {#symbol-LocalFiles.read}
 
 Read text. It takes `path` as a string (File path). Failures can raise `FileError` (The file could not be read). It returns `read_file` with `path`.
 
-<a id="symbol-LocalFiles.write"></a>
-#### `LocalFiles.write` · [source](contracts.md#code)
+#### `LocalFiles.write` · [source](contracts.md#code) {#symbol-LocalFiles.write}
 
 Write text. It takes `path` as a string (File path) and `content` as a string (Text). Failures can raise `FileError` (Writing failed). It calls `write_file` with `path` and `content`.
 
-<a id="symbol-Arguments"></a>
-### `Arguments` · capability interface · [source](contracts.md#code)
+### `Arguments` · capability interface · [source](contracts.md#code) {#symbol-Arguments}
 
 Read command-line input through an explicit dependency.
 
-<a id="symbol-Arguments.read"></a>
-#### `Arguments.read` · [source](contracts.md#code)
+#### `Arguments.read` · [source](contracts.md#code) {#symbol-Arguments.read}
 
 It returns `List<string>`. It can call [`Arguments.read`](contracts.md#symbol-Arguments.read).
 
-<a id="symbol-ProcessArguments"></a>
-### `ProcessArguments` · class · [source](contracts.md#code)
+### `ProcessArguments` · class · [source](contracts.md#code) {#symbol-ProcessArguments}
 
 Native command-line arguments. It implements [`Arguments`](contracts.md#symbol-Arguments).
 
-<a id="symbol-ProcessArguments.read"></a>
-#### `ProcessArguments.read` · [source](contracts.md#code)
+#### `ProcessArguments.read` · [source](contracts.md#code) {#symbol-ProcessArguments.read}
 
 It returns `arguments`.
 

@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Document Docker application builds, HTTP deployment, registry transfer, and a VS Code Dev Container with the published CLI, native libraries, August extension, and forwarded ports. Check the deployment example and its endpoint test in the executable documentation gate.
+- Reorganize the public wiki into a sequential August book, task guides, language/library reference, design and readiness pages, and contributor documentation. Add checked lessons, a guided module review, primary-source editorial research, and a repository maintenance skill.
+- Check nested handwritten lessons in the executable documentation gate and keep benchmark and readiness claims scoped to their evidence.
+- Correct stale registry availability guidance after verifying the published 0.19.0 CLI and its matching libraries; the book starts with the npm bootstrap.
+- Render compact spec declaration anchors as wiki heading anchors, removing visible HTML metadata from the source/spec gallery.
+- Use the published npx starter throughout onboarding and provide deterministic downloads for every gallery project, including neighboring package sources. Remove repository setup from reader workflows and verify extracted downloads with the compiler.
+
 - Rewrite compiled specs as short developer explanations: group related checks and repeated assignments, describe responses and collection operations directly, show readable string templates, and link dependency contracts without repeating them.
 
 - Write compiled specs as connected prose, with explicit branch, loop, match, recovery, and cleanup relations; preserve statement provenance through sentence aggregation. Describe used dependency contracts in prose and document the academic research behind the generator.

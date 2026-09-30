@@ -277,8 +277,7 @@ test validateIdentity {
 
 ## Compiled specification {#specification}
 
-<a id="symbol-responseJson"></a>
-### `responseJson` · [source](protocol.md#code)
+### `responseJson` · [source](protocol.md#code) {#symbol-responseJson}
 
 Accept only a successful JSON response. Redirects remain explicit and are never followed by the transport. It takes `response` as `HttpResponse<Bytes>`. Failures can raise [`SessionError`](contracts.md#symbol-SessionError).
 
@@ -288,8 +287,7 @@ The non-null result becomes `contentType`. It checks that `contentType.startsWit
 
 It tries to return [`parse`](../dependencies/august/0.19.0/json/contracts.md#symbol-parse) with `input` from `response.body.text`. If this work raises `ConversionError`, it raises a [`SessionError`](contracts.md#symbol-SessionError). If this work raises `JsonError`, it raises a [`SessionError`](contracts.md#symbol-SessionError).
 
-<a id="symbol-discover"></a>
-### `discover` · [source](protocol.md#code)
+### `discover` · [source](protocol.md#code) {#symbol-discover}
 
 Discovery is fetched over HTTP. Every advertised URL is checked against the registered issuer before any credential is sent. It gets `client` ([`HttpClient`](../dependencies/august/0.19.0/web/contracts.md#symbol-HttpClient)) from dependency injection. Failures can raise [`SessionError`](contracts.md#symbol-SessionError) and `HttpError`.
 
@@ -297,8 +295,7 @@ It gets `config` from [`settings`](../common/settings.md#symbol-settings). It se
 
 It checks that `document.issuer` equals `config.issuer` and `document.authorization_endpoint` equals the text `{config.issuer}/authorize` and `document.token_endpoint` equals the text `{config.issuer}/token` and `document.jwks_uri` equals the text `{config.issuer}/jwks` and `document.userinfo_endpoint` equals the text `{config.issuer}/userinfo`. It raises a [`SessionError`](contracts.md#symbol-SessionError) at the first failed check. It returns `document`. If this work raises `JsonError`, it raises a [`SessionError`](contracts.md#symbol-SessionError).
 
-<a id="symbol-validateIdentity"></a>
-### `validateIdentity` · [source](protocol.md#code)
+### `validateIdentity` · [source](protocol.md#code) {#symbol-validateIdentity}
 
 Validate the signed ID token using a public key from this issuer's HTTP JWKS, then validate the registered claims and one-use nonce. It takes `token` and `nonce` as strings, `now` as an integer, and `jwks` as [`RsaJwks`](../dependencies/august/0.19.0/crypto/jose.md#symbol-RsaJwks). It gets `crypto` ([`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto)) from dependency injection. Failures can raise [`SessionError`](contracts.md#symbol-SessionError).
 
@@ -312,8 +309,7 @@ It returns `claims`. If this work raises [`JwtError`](../dependencies/august/0.1
 
 If this work raises `CryptoError`, it raises a [`SessionError`](contracts.md#symbol-SessionError).
 
-<a id="symbol-test validateIdentity"></a>
-### `test validateIdentity` · [source](protocol.md#code)
+### `test validateIdentity` · [source](protocol.md#code) {#symbol-test-20-validateIdentity}
 
 Tests [`validateIdentity`](protocol.md#symbol-validateIdentity). Each case gets fresh setup and dependencies.
 

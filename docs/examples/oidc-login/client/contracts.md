@@ -79,23 +79,19 @@ SessionError() implements Error {
 
 ## Compiled specification {#specification}
 
-<a id="symbol-LoginTransaction"></a>
-### `LoginTransaction` · immutable record · [source](contracts.md#code)
+### `LoginTransaction` · immutable record · [source](contracts.md#code) {#symbol-LoginTransaction}
 
 Browser-bound client state, nonce and PKCE verifier, consumed by the callback. It takes `state`, `nonce`, and `verifier` as strings, kept read-only and `expires` as an integer, kept read-only.
 
-<a id="symbol-SessionClaims"></a>
-### `SessionClaims` · immutable record · [source](contracts.md#code)
+### `SessionClaims` · immutable record · [source](contracts.md#code) {#symbol-SessionClaims}
 
 Sessions require their own issuer, audience, key and JWT type, plus a live registry entry. It takes `iss`, `sub`, and `aud` as strings, kept read-only, `exp` and `iat` as integers, kept read-only, and `jti`, `csrf`, and `name` as strings, kept read-only.
 
-<a id="symbol-LogoutForm"></a>
-### `LogoutForm` · immutable record · [source](contracts.md#code)
+### `LogoutForm` · immutable record · [source](contracts.md#code) {#symbol-LogoutForm}
 
 It takes `csrf` as a string, kept read-only.
 
-<a id="symbol-SessionError"></a>
-### `SessionError` · class · [source](contracts.md#code)
+### `SessionError` · class · [source](contracts.md#code) {#symbol-SessionError}
 
 It implements `Error`.
 

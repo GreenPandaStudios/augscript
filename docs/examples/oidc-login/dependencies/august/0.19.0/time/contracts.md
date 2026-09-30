@@ -64,28 +64,23 @@ SystemClock() implements Clock {
 
 ## Compiled specification {#specification}
 
-<a id="symbol-Clock"></a>
-### `Clock` · capability interface · [source](contracts.md#code)
+### `Clock` · capability interface · [source](contracts.md#code) {#symbol-Clock}
 
 An explicit clock dependency makes time-based behavior replaceable in tests.
 
-<a id="symbol-Clock.now"></a>
-#### `Clock.now` · [source](contracts.md#code)
+#### `Clock.now` · [source](contracts.md#code) {#symbol-Clock.now}
 
 Read whole Unix seconds in UTC. It returns `int`. It can call [`Clock.now`](contracts.md#symbol-Clock.now). Failures can raise `TimeError`.
 
-<a id="symbol-SystemClock"></a>
-### `SystemClock` · class · [source](contracts.md#code)
+### `SystemClock` · class · [source](contracts.md#code) {#symbol-SystemClock}
 
 Operating-system wall clock. It implements [`Clock`](contracts.md#symbol-Clock).
 
-<a id="symbol-SystemClock.now"></a>
-#### `SystemClock.now` · [source](contracts.md#code)
+#### `SystemClock.now` · [source](contracts.md#code) {#symbol-SystemClock.now}
 
 Read whole Unix seconds in UTC. Failures can raise `TimeError`. Within an unsafe block, it returns [`_aug_time_now`](contracts.md#symbol-_aug_time_now). Native operations must satisfy their declared C contracts.
 
-<a id="symbol-_aug_time_now"></a>
-### `_aug_time_now` · [source](contracts.md#code)
+### `_aug_time_now` · [source](contracts.md#code) {#symbol-_aug_time_now}
 
 It is private to its defining scope. It returns `int`. It can call [`Clock.now`](contracts.md#symbol-Clock.now). Failures can raise `TimeError`.
 

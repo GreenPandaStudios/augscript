@@ -1,6 +1,8 @@
 # Performance and benchmarks
 
-Use this page to measure an August application, read the comparison graphs, and inspect the exact August programs behind each result. The recorded results used August 0.18.0, which compiles to native code through C. The current compiler is 0.19.0; rerun the suite before comparing a new release. Always measure work that resembles your application.
+This page publishes measurements for specific August programs alongside C, Node, and Python versions. Read the graphs for a quick comparison, inspect each program below, and use the reproduction commands to measure work that resembles your application.
+
+The recorded suite used August 0.18.0 and native C output. The current compiler is 0.19.0; these graphs have not been remeasured for that release. A result for one workload and host does not establish a general speed advantage or production readiness. [Readiness](production-readiness.md) covers reliability and deployment evidence separately.
 
 ## Read the graphs
 
@@ -181,10 +183,10 @@ serve reply on port 0
 Start the app in one terminal:
 
 ```sh
-aug run path/to/http-example
+npx @greenpandastudios/aug-cli@next run path/to/http-example
 ```
 
-Save the load generator below as `http-load.mjs`, or use `scripts/http-load.mjs` from a repository checkout. In another terminal, replace `PORT` with the printed port. This is the **same load generator** the comparison suite uses:
+Save the load generator below as `http-load.mjs`. In another terminal, replace `PORT` with the printed port. This is the **same load generator** the comparison suite uses:
 
 ```sh
 node http-load.mjs --url http://127.0.0.1:PORT/bench \
@@ -322,50 +324,20 @@ The same August programs and measurement settings were run on this machine befor
 3. Measure a release executable repeatedly. Compilation is excluded; process startup is included.
 
 ```sh
-aug check path/to/project
-aug run path/to/project
-aug bench path/to/project --iterations 20 --warmup 3 --json > benchmark.json
+npx @greenpandastudios/aug-cli@next check path/to/project
+npx @greenpandastudios/aug-cli@next run path/to/project
+npx @greenpandastudios/aug-cli@next bench path/to/project --iterations 20 --warmup 3 --json > benchmark.json
 ```
 
 `aug bench` compiles with release optimization even when the project's normal setting is debug. Do not benchmark `aug run`: that command includes compiler work. Server programs run indefinitely, so use an HTTP load generator against a built server instead of `aug bench`. Record errors and latency as well as throughput. The comparison suite validates checksums; `aug bench` itself checks exit status, so verify your program's result first.
 
-## Reproduce the comparison graphs
+## Reproduce the programs
 
-From a checkout, with Node 24+, Python and a C11 compiler:
+Download a [measured project](examples/index.md#measured-programs), extract it, and prepare [native dependencies](packages.md#npm-registry). Each download contains the code and configuration shown in the gallery. Run finite programs with the commands under [Benchmark your own project](#benchmark-your-own-project); use [the HTTP load generator](#http-program) for the server. The complete C, Node, and Python reference programs are below, so you can save and inspect the comparison code too.
 
-```sh
-npm ci
-node scripts/bootstrap-native.mjs
-npm run bench:compare
-```
+The 200,000-entry collection run changes `20000` to `200000` in the downloaded Map/Set program. Keep the matching input count in each reference implementation and verify the published checksum before comparing timings. Record the machine, compiler, toolchain version, input size, and flags with your results.
 
-Set `AUG_BENCH_PYTHON=/path/to/python3` or `CC=/path/to/clang` to select the reference interpreter/compiler. `AUG_NATIVE_HOME` selects the native dependency cache. The raw result file records versions and a source fingerprint. Compilation timings are included separately from executable run time.
-
-For core/JSON only, extract the smaller native source dependencies and omit HTTP:
-
-```sh
-node scripts/bootstrap-native.mjs --extract-only --only minicoro,yyjson
-npm run bench:compare -- --skip-http
-```
-
-The full suite writes `docs/benchmark-results.json`; a core-only run writes `.aug-build/benchmarks/results-core.json` and preserves the complete wiki measurements. Focus on selected workloads while trying your own changes:
-
-```sh
-npm run bench:compare -- --only cpu,collections-200k
-npm run bench:compare -- --only http --http-requests 10000
-```
-
-Focused runs write `.aug-build/benchmarks/results-focused.json`. Use `--output PATH` to keep separate reports. Render graphs, tables and the exact source examples from the full result file using Python 3.12+:
-
-```sh
-python3 -m venv .aug-build/benchmark-plotting
-.aug-build/benchmark-plotting/bin/python -m pip install -r benchmarks/plot-requirements.txt
-.aug-build/benchmark-plotting/bin/python scripts/render-benchmarks.py
-.aug-build/benchmark-plotting/bin/python scripts/render-benchmarks.py --check
-npm run docs:build
-```
-
-The plot environment is isolated and ignored; published documentation includes the rendered graphs and needs no Python installation. Review this page's environment, interpretations and limitations when replacing measurements. Short exploratory runs can use `--iterations 3 --warmup 1 --http-rounds 1 --http-requests 1000`; they have less statistical coverage.
+[Maintaining the comparison suite](contributing-benchmarks.md) describes the contributor workflow that produces the full graphs, raw samples, and checked source panels.
 
 ### Comparison implementation sources
 

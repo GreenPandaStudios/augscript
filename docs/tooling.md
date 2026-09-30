@@ -1,8 +1,10 @@
 # Native builds and developer tooling
 
+Use this page to look up CLI commands, project configuration, native requirements, and editor behavior. If you need a running first project, follow [the book](learn/index.md). To use context reports during a change, follow [the module review guide](guides/change-a-module.md).
+
 ## CLI
 
-Use `aug` if installed or `node bin/aug.mjs` from the repository. Commands take a project folder, defaulting to the current directory. Editor commands also accept --file and --offset; use --help for the command inventory.
+Invoke `aug` commands below with `npx @greenpandastudios/aug-cli@next`, or use an installed `aug`. Commands take a project folder, defaulting to the current directory. Editor commands also accept --file and --offset; use --help for the command inventory.
 
 | Command | Output |
 | --- | --- |

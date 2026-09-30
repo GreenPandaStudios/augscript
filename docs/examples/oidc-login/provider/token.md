@@ -147,8 +147,7 @@ endpoint POST "/provider/token" as token(HttpRequest http from request, resolve 
 
 Plain handler results default to HTTP 200 unless another status is declared. HttpResponse values choose their own status. Unhandled request failures return HTTP 500 and cancel the request tasks.
 
-<a id="symbol-token"></a>
-### `token` · [source](token.md#code)
+### `token` · [source](token.md#code) {#symbol-token}
 
 `token` handles `POST /provider/token`. A real OAuth token endpoint. Exact client/redirect binding, S256 PKCE, expiry and one-use codes are enforced. Errors use OAuth JSON.
 
@@ -166,8 +165,7 @@ It stores `value` in `access` under `accessToken`, expiring at `value.expires`. 
 
 If this work raises `HttpError`, it returns [`_oauthError`](token.md#symbol-_oauthError) with `code` `"invalid_request"` and `description` `"Submit the required URL-encoded token fields once each."`.
 
-<a id="symbol-_oauthError"></a>
-### `_oauthError` · [source](token.md#code)
+### `_oauthError` · [source](token.md#code) {#symbol-_oauthError}
 
 It is private to its defining scope. It takes `code` and `description` as strings. Failures can raise `HttpError`. It returns HTTP 400 with a `Json` with `value` from an [`OAuthError`](contracts.md#symbol-OAuthError) with `error` from `code` and `error_description` from `description` and [`securityHeaders`](../common/headers.md#symbol-securityHeaders) headers.
 

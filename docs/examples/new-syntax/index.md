@@ -12,7 +12,7 @@ outline: [2, 3]
 
 Constructor injection, named inputs, ordinary functions, and same-file tests.
 
-Read a file below to see its highlighted source and the Markdown produced by `aug spec`. Choose **Indentation** or **Braces** above the code. Both views describe the same checked program; your choice is kept when you open another file.
+Open a file to read its source beside the explanation produced by `aug spec`. **Indentation** and **Braces** display the same checked program; your choice carries across file pages.
 
 ## Project files
 
@@ -25,12 +25,13 @@ Read a file below to see its highlighted source and the Markdown produced by `au
 
 ## Try this project
 
-From a repository checkout with August installed:
+[Download this project](/downloads/new-syntax.zip), then extract the archive in an empty working folder. It contains the checked source, configuration, and generated specs. Prepare the [native dependencies](../../packages.md#npm-registry) once, then use the published CLI:
 
 ```sh
-aug check examples/new-syntax
-aug spec examples/new-syntax
-aug run examples/new-syntax
+cd new-syntax
+npx @greenpandastudios/aug-cli@next check .
+npx @greenpandastudios/aug-cli@next spec .
+npx @greenpandastudios/aug-cli@next run .
 ```
 
 [Browse all examples](../index.md)

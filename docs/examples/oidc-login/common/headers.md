@@ -87,13 +87,11 @@ import cookie from august.web
 
 ## Compiled specification {#specification}
 
-<a id="symbol-securityHeaders"></a>
-### `securityHeaders` · [source](headers.md#code)
+### `securityHeaders` · [source](headers.md#code) {#symbol-securityHeaders}
 
 Responses containing identity data are never cached or embedded by another site. Failures can raise `HttpError`. It returns headers starting with a `Headers` and adding these fields in order: `"cache-control"` to `"no-store"`, `"pragma"` to `"no-cache"`, `"x-content-type-options"` to `"nosniff"`, `"referrer-policy"` to `"no-referrer"`, and `"content-security-policy"` to `"default-src 'self'; style-src 'unsafe-inline'; script-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"`.
 
-<a id="symbol-withCookie"></a>
-### `withCookie` · [source](headers.md#code)
+### `withCookie` · [source](headers.md#code) {#symbol-withCookie}
 
 Add a checked cookie without losing duplicate Set-Cookie response fields. It takes `headers` as `Headers`, `name`, `value`, and `path` as strings, `maxAge` as an integer, and `secure` as a boolean. Failures can raise `HttpError`.
 

@@ -108,8 +108,7 @@ endpoint GET "/me" as me(optional string token from cookie "aug_session", resolv
 
 Plain handler results default to HTTP 200 unless another status is declared. HttpResponse values choose their own status. Unhandled request failures return HTTP 500 and cancel the request tasks.
 
-<a id="symbol-home"></a>
-### `home` · [source](endpoints.md#code)
+### `home` · [source](endpoints.md#code) {#symbol-home}
 
 `home` handles `GET /`. The app renders a verified session or offers its OIDC login flow. No token claims are displayed before verification.
 
@@ -117,8 +116,7 @@ It takes `token` as `optional string` from the HTTP cookie `aug_session`. It get
 
 It tries to set `session` to [`authenticate`](session.md#symbol-authenticate) with `token` using injected `crypto`, `clock`, `keys`, and `sessions`, then return HTTP 200 with [`Welcome`](views.md#symbol-Welcome) with `session` and [`securityHeaders`](../common/headers.md#symbol-securityHeaders) headers. If this work raises [`SessionError`](contracts.md#symbol-SessionError), it returns HTTP 200 with [`LoginPage`](views.md#symbol-LoginPage) and [`securityHeaders`](../common/headers.md#symbol-securityHeaders) headers.
 
-<a id="symbol-me"></a>
-### `me` · [source](endpoints.md#code)
+### `me` · [source](endpoints.md#code) {#symbol-me}
 
 `me` handles `GET /me`. A protected JSON resource accepts only a live, verified application session.
 
