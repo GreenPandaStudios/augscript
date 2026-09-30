@@ -75,6 +75,7 @@ export default defineConfig({
       ]},
       { text: 'Contribute', collapsed: true, items: [
         { text: 'Release process', link: '/releasing' },
+        { text: 'Benchmark maintenance', link: '/contributing-benchmarks' },
         { text: 'Documentation maintenance', link: '/maintaining-docs' }, { text: 'Writing guide', link: '/writing-docs' },
         { text: 'Editorial research', link: '/research/wiki-editorial-design' },
         { text: 'Ownership and task conformance', link: '/language-conformance' },

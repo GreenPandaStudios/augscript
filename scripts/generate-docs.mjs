@@ -71,7 +71,7 @@ for (const [path, text] of buildExamplePages(sourceOverrides)) outputs.set(path,
 const stale = [];
 for (const [path, content] of outputs) {
   const file = join(root, path);
-  if (check) { if (!existsSync(file) || readFileSync(file, 'utf8') !== content) stale.push(path); }
+  if (check) { if (!existsSync(file) || !readFileSync(file).equals(Buffer.from(content))) stale.push(path); }
   else { mkdirSync(dirname(file), { recursive: true }); writeFileSync(file, content); }
 }
 for (const file of readdirSync(join(root, 'docs/api'))) if (file.endsWith('.md') && !outputs.has('docs/api/' + file))
@@ -88,5 +88,13 @@ const pruneGallery = directory => {
   }
 };
 if (existsSync(join(root, 'docs/examples'))) pruneGallery('docs/examples');
+const downloads='docs/public/downloads';
+if(existsSync(join(root,downloads)))for(const file of readdirSync(join(root,downloads))) {
+  const path=downloads+'/'+file;
+  if(/\.(?:zip|tar\.gz)$/.test(file)&&!outputs.has(path)) {
+    if(check)stale.push('Unexpected generated example download: '+path);
+    else rmSync(join(root,path));
+  }
+}
 if (stale.length) throw new Error('Documentation is stale; run npm run docs:generate:\n' + stale.join('\n'));
 process.stdout.write(`${outputs.size} documentation files ${check ? 'match source' : 'generated'}\n`);

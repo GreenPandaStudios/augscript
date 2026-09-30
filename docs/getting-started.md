@@ -11,28 +11,39 @@ next:
 
 Build a greeting application, run its test, and read its generated explanation. You will see how an August project starts and how a small module keeps its contract, implementation, and test together.
 
-You need Node.js 24 or later, npm, and a C11 compiler on macOS or Linux. On macOS, install Xcode Command Line Tools for Clang; on Linux, install a C toolchain. This chapter uses the published npm CLI. [Packages and installation](packages.md) also covers release archives and source checkouts.
+You need Node.js 24 or later and npm. To run native programs, you also need a C11 compiler on macOS or Linux. On macOS, install Xcode Command Line Tools for Clang; on Linux, install a C toolchain.
 
 ## Create and run the starter
 
-Run these commands from a terminal:
+Create the starter with one command:
 
 ```sh
 npx @greenpandastudios/aug-cli@next init hello-august
-npm install --global @greenpandastudios/aug-cli@next
-aug-native --extract-only --only minicoro,yyjson
-cd hello-august
-aug check .
-aug run .
 ```
 
-The native bootstrap downloads the pinned portable task and JSON sources needed for this program. It does not install system tools. `init` creates a starter and refuses to replace a nonempty destination. `check` verifies the project; `run` checks, compiles, and executes it. The program prints:
+`init` creates a starter and refuses to replace a nonempty destination. npm supplies the CLI and its matching libraries. The rest of this book invokes the same published CLI through `npx`.
+
+Enter your new project and check it:
+
+```sh
+cd hello-august
+npx @greenpandastudios/aug-cli@next check .
+```
+
+Checking needs no native dependency build. Before your first native run, prepare the small task and JSON source dependencies, then run the program:
+
+```sh
+npx --package=@greenpandastudios/aug-cli@next aug-native --extract-only --only minicoro,yyjson
+npx @greenpandastudios/aug-cli@next run .
+```
+
+The bootstrap downloads pinned portable C sources into a shared cache. It does not install system tools, and you can reuse that cache for subsequent projects. `run` checks, compiles, and executes the program. It prints:
 
 ```text
 Hello, August!
 ```
 
-Keep the terminal in `hello-august` for the rest of this chapter. The global install supplies `aug` and `aug-native`, with the CLI's three matching library packages. A source checkout can use `node /absolute/path/to/augscript/bin/aug.mjs` in place of `aug`.
+Keep the terminal in `hello-august` for the rest of this chapter. [Packages and installation](packages.md) explains version pinning and the additional native dependencies used by web and crypto programs.
 
 ## Read the startup file
 
@@ -81,9 +92,9 @@ The test lives beside the class. Its group constructs a greeter, and its case ch
 In `main.aug`, change `name="August"` to `name="Ada"`. Run:
 
 ```sh
-aug check .
-aug run .
-aug test .
+npx @greenpandastudios/aug-cli@next check .
+npx @greenpandastudios/aug-cli@next run .
+npx @greenpandastudios/aug-cli@next test .
 ```
 
 The application should print `Hello, Ada!`. The existing test should still pass: it constructs its own subject and checks the greeting for August. Application startup does not run during the test.
@@ -93,13 +104,13 @@ Now deliberately change the call's label from `name` to `person`. `check` should
 ## Read the generated explanation
 
 ```sh
-aug spec .
-aug spec . --check
+npx @greenpandastudios/aug-cli@next spec .
+npx @greenpandastudios/aug-cli@next spec . --check
 ```
 
 Open `main.aug.md` and `greeting.aug.md`. They describe the bindings, call, greeting behavior, and test. Their dependency links lead to the used declarations. Generation is deterministic and offline; it does not ask a model to summarize your application.
 
-Generation also adds a source comment pointing to each file's spec. After an edit, regenerate before committing the explanation. `--check` reports stale files and does not write them. [Compiled specifications](specifications.md) explains the full workflow and its limits.
+After an edit, regenerate before committing the explanation. `--check` reports stale files and does not write them. [Compiled specifications](specifications.md) explains the full workflow and its limits.
 
 ## Continue with a calculation
 

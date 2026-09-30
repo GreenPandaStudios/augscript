@@ -24,13 +24,14 @@ Open a file to read its source beside the explanation produced by `aug spec`. **
 
 ## Try this project
 
-Run these commands from the repository root with [the native toolchain ready](../../getting-started.md). Use an installed `aug`, or replace it with `node bin/aug.mjs` to use the checkout compiler.
+[Download this project](/downloads/packages-math.zip), then extract the archive in an empty working folder. It contains the checked source, configuration, and generated specs. Both the application and its neighboring arithmetic library are included. Prepare the [native dependencies](../../packages.md#npm-registry) once, then use the published CLI:
 
 ```sh
-aug check examples/packages/math
-aug spec examples/packages/math
-aug test examples/packages/math
-aug pack examples/packages/math
+cd packages-math/math
+npx @greenpandastudios/aug-cli@next check .
+npx @greenpandastudios/aug-cli@next spec .
+npx @greenpandastudios/aug-cli@next test .
+npx @greenpandastudios/aug-cli@next pack .
 ```
 
 [Browse all examples](../index.md)

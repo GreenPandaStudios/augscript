@@ -204,12 +204,20 @@ Crypto is an injected capability with GnuTlsCrypto as its native adapter. It pro
 
 `signJwt` requires an explicit key id and token type. `verifyJwt` accepts the configured RS256/key-id/type profile, rejects unsupported JOSE fields, verifies the signature before exposing claims, and follows no token-provided URL. The consuming protocol still validates issuer, audience, times, nonce and token purpose. The implementation follows the fixed-algorithm approach described in [JWT best current practices](https://www.rfc-editor.org/rfc/rfc8725.html).
 
-The [same-app login example](../examples/oidc-login/README.md) contains an OpenID Connect provider and relying party in one August application. It uses real loopback discovery, authorization, token, JWKS and UserInfo endpoints, Authorization Code with S256 PKCE, browser-bound state/nonce/CSRF, and a distinct application-session JWT with live revocation. The UI signs in and signs out through typed actions. See [OpenID Connect Core validation](https://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation) and [S256 PKCE](https://datatracker.ietf.org/doc/html/rfc7636).
+The [same-app login example](examples/oidc-login/index.md) contains an OpenID Connect provider and relying party in one August application. It uses real loopback discovery, authorization, token, JWKS and UserInfo endpoints, Authorization Code with S256 PKCE, browser-bound state/nonce/CSRF, and a distinct application-session JWT with live revocation. The UI signs in and signs out through typed actions. See [OpenID Connect Core validation](https://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation) and [S256 PKCE](https://datatracker.ietf.org/doc/html/rfc7636).
+
+Download and extract [the login project](examples/oidc-login/index.md#try-this-project). From the folder containing it:
 
 ```sh
-node scripts/bootstrap-native.mjs
-node bin/aug.mjs run examples/oidc-login
-node bin/aug.mjs test examples/oidc-login --group signed_identity_claims
+cd oidc-login
+npx --package=@greenpandastudios/aug-cli@next aug-native
+npx @greenpandastudios/aug-cli@next run .
+```
+
+In another terminal, run the signed-claim tests from the same project folder:
+
+```sh
+npx @greenpandastudios/aug-cli@next test . --group signed_identity_claims
 ```
 
 Open http://127.0.0.1:8787 and sign in as **ada** with **august-demo**. `/me` returns the protected identity; `/docs` exposes endpoint contracts. The [gap ledger](web-library-gaps.md) distinguishes this verified development profile from broader provider, library and runtime support.

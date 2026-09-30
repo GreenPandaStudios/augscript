@@ -28,6 +28,8 @@ For example, write: “The group constructs a new counter for each case. The sec
 
 A lesson assumes the reader knows programming, not August. State where commands run, which files to save, and the output to expect. Introduce one new mechanism at a time where practical. Put detailed alternatives and edge cases in the reference and link them from the lesson.
 
+The application entry point is one published starter command: `npx @greenpandastudios/aug-cli@next init NAME`. Continue lessons with npm tools and offer complete example downloads. Reader instructions must not require cloning the language repository or running its internal CLI files. Source-workspace build and maintenance commands belong in contributor pages. Describe native preparation where running code needs it; distinguish creating files from preparing or executing a program.
+
 Complete runnable source uses `aug project=NAME file=PATH` fences and an entry in `docs/examples.json`. Fragments use `text` and explicitly say they are fragments. Before an intentional failure, say what change the reader is making and that checking or running it should fail; afterward explain the result and how to restore working code. Test important failing examples as well as successful ones when the lesson depends on that behavior.
 
 Handwritten lesson code is checked and run by `tests/documentation.test.mjs`, including nested Learn and Guides pages. `docs/lesson-failures.json` describes the book's tested mistake transformations and expected diagnostics. Generated gallery pages get their examples from `docs/example-projects.json` and `scripts/example-docs.mjs`. Edit those inputs, source, or Javadoc and regenerate; do not hand-edit generated Markdown.

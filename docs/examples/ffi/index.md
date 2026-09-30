@@ -22,12 +22,13 @@ Open a file to read its source beside the explanation produced by `aug spec`. **
 
 ## Try this project
 
-Run these commands from the repository root with [the native toolchain ready](../../getting-started.md). Use an installed `aug`, or replace it with `node bin/aug.mjs` to use the checkout compiler.
+[Download this project](/downloads/ffi.zip), then extract the archive in an empty working folder. It contains the checked source, configuration, and generated specs. Prepare the [native dependencies](../../packages.md#npm-registry) once, then use the published CLI:
 
 ```sh
-aug check examples/ffi
-aug spec examples/ffi
-aug run examples/ffi
+cd ffi
+npx @greenpandastudios/aug-cli@next check .
+npx @greenpandastudios/aug-cli@next spec .
+npx @greenpandastudios/aug-cli@next run .
 ```
 
 [Browse all examples](../index.md)

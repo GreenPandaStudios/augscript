@@ -22,13 +22,14 @@ Open a file to read its source beside the explanation produced by `aug spec`. **
 
 ## Try this project
 
-Run these commands from the repository root with [the native toolchain ready](../../getting-started.md). Use an installed `aug`, or replace it with `node bin/aug.mjs` to use the checkout compiler.
+[Download this project](/downloads/packages-app.zip), then extract the archive in an empty working folder. It contains the checked source, configuration, and generated specs. Both the application and its neighboring arithmetic library are included. Prepare the [native dependencies](../../packages.md#npm-registry) once, then use the published CLI:
 
 ```sh
-aug install examples/packages/app --offline
-aug check examples/packages/app
-aug spec examples/packages/app
-aug run examples/packages/app
+cd packages-app/app
+npx @greenpandastudios/aug-cli@next install . --offline
+npx @greenpandastudios/aug-cli@next check .
+npx @greenpandastudios/aug-cli@next spec .
+npx @greenpandastudios/aug-cli@next run .
 ```
 
 [Browse all examples](../index.md)

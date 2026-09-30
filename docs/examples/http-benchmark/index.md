@@ -22,12 +22,13 @@ Open a file to read its source beside the explanation produced by `aug spec`. **
 
 ## Try this project
 
-Run these commands from the repository root with [the native toolchain ready](../../getting-started.md). Use an installed `aug`, or replace it with `node bin/aug.mjs` to use the checkout compiler.
+[Download this project](/downloads/http-benchmark.zip), then extract the archive in an empty working folder. It contains the checked source, configuration, and generated specs. Prepare the [native dependencies](../../packages.md#npm-registry) once, then use the published CLI:
 
 ```sh
-aug check benchmarks/http
-aug spec benchmarks/http
-aug run benchmarks/http
+cd http-benchmark
+npx @greenpandastudios/aug-cli@next check .
+npx @greenpandastudios/aug-cli@next spec .
+npx @greenpandastudios/aug-cli@next run .
 ```
 
 See [the performance page](../../performance.md) for measurements, input sizes, and reproduction steps.

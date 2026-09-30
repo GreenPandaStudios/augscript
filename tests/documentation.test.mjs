@@ -13,6 +13,19 @@ const handwrittenGuides = directory => readdirSync(directory, {withFileTypes: tr
   return entry.isDirectory() ? handwrittenGuides(file) : entry.name.endsWith('.md') ? [file] : [];
 });
 
+test('reader instructions use the published starter and do not require language source setup',()=>{
+  const guides=[join(root,'README.md'),...handwrittenGuides(join(root,'docs'))];
+  for(const guide of guides) {
+    const text=readFileSync(guide,'utf8');
+    assert.doesNotMatch(text,/\bgit\s+clone\b|\b(?:from|use) a checkout\b|\bnode\s+(?:\/[^\s`]+\/)?bin\/aug\.mjs\b/i,guide);
+  }
+  for(const name of ['README.md','docs/getting-started.md']) {
+    const text=readFileSync(join(root,name),'utf8');
+    const firstShell=/```sh\n([\s\S]*?)\n```/.exec(text)?.[1];
+    assert.equal(firstShell,'npx @greenpandastudios/aug-cli@next init hello-august',name+': one published starter command');
+  }
+});
+
 test('the guided calculator change adds a passing case and regenerates a current spec', () => {
   const directory = mkdtempSync(join(tmpdir(), 'aug-guide-change-'));
   try {

@@ -106,7 +106,7 @@ An uncaught checked error, a native crash, a nonzero exit, or a timeout fails th
 
 ## CLI and coverage
 
-Use `aug` when installed, or `node bin/aug.mjs` from this repository.
+Use `npx @greenpandastudios/aug-cli@next` in place of `aug` below, or use an installed `aug` command. See [Your first project](getting-started.md) for the npm workflow.
 
 | Command | Action |
 | --- | --- |

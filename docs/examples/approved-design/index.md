@@ -35,13 +35,14 @@ Read [`domain/numbers.aug`](domain/numbers.md). The validation interceptor rejec
 
 ## Try this project
 
-Run these commands from the repository root with [the native toolchain ready](../../getting-started.md). Use an installed `aug`, or replace it with `node bin/aug.mjs` to use the checkout compiler.
+[Download this project](/downloads/approved-design.zip), then extract the archive in an empty working folder. It contains the checked source, configuration, and generated specs. Prepare the [native dependencies](../../packages.md#npm-registry) once, then use the published CLI:
 
 ```sh
-aug check examples/approved-design
-aug spec examples/approved-design
-aug test examples/approved-design
-aug run examples/approved-design
+cd approved-design
+npx @greenpandastudios/aug-cli@next check .
+npx @greenpandastudios/aug-cli@next spec .
+npx @greenpandastudios/aug-cli@next test .
+npx @greenpandastudios/aug-cli@next run .
 ```
 
 [Browse all examples](../index.md)

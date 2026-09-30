@@ -50,7 +50,7 @@ summarize(int price, int quantity) returns Order unless InvalidQuantity:
     return Order(quantity, total=price * quantity)
 ```
 
-`aug run .` prints:
+`npx @greenpandastudios/aug-cli@next run .` prints:
 
 ```text
 21
@@ -68,7 +68,7 @@ Use a record for a value whose meaning is its data. A class implements an interf
 
 `unless InvalidQuantity` tells callers that `summarize` can fail with that checked error. `InvalidQuantity` is a class that implements `Error` and carries the rejected value. The caller must catch the failure or declare that it can propagate it. In this application, `try` contains the calls and `catch` prints a message when the second call fails. Operations after a throw in that block do not run.
 
-Try removing the catch while keeping a bare call to `summarize` in `main.aug`. `aug check .` should report the unhandled error. Restore the example afterward. A checked failure tells you what a call can raise; it does not decide how your application should recover.
+Try removing the catch while keeping a bare call to `summarize` in `main.aug`. `npx @greenpandastudios/aug-cli@next check .` should report the unhandled error. Restore the example afterward. A checked failure tells you what a call can raise; it does not decide how your application should recover.
 
 ## Distinguish a value from null
 

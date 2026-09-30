@@ -32,7 +32,7 @@ Application(resolve Console console) implements Runnable:
         console.write(value="Hello, AugScript!")
 ```
 
-Run `node bin/aug.mjs run PROJECT`, or choose **AugScript: Run Project** in VS Code. Node.js 24+ and a C11 compiler are required.
+Run `npx @greenpandastudios/aug-cli@next run PROJECT`, or choose **AugScript: Run Project** in VS Code. Node.js 24+ and a C11 compiler are required; prepare [native dependencies](packages.md#npm-registry) before execution.
 
 ## Blocks and statement boundaries
 
