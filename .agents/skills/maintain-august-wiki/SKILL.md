@@ -15,6 +15,8 @@ For lessons, state prerequisites, file locations, actions, and expected output. 
 
 Start application onboarding with `npx @greenpandastudios/aug-cli@next init NAME`. Verify it against the published package. Reader workflows must use published tools and downloadable example projects; do not instruct users to clone or check out the language repository, or invoke its internal `bin/aug.mjs`. Keep source-workspace commands in contributor guides. State native preparation when execution needs it; do not claim that `init` prepares dependencies unless the released implementation does so. Recheck installation instructions against the actual release when another task changes distribution.
 
+Keep Docker deployment and VS Code Dev Container recipes aligned with the published CLI version, native bootstrap, shared-library paths, and editor cache settings. Follow the container verification notes in `docs/maintaining-docs.md`; distinguish tested native execution from editor installation, forwarding, and host mount behavior.
+
 Generated API, construct, gallery, and adjacent spec files belong to their generators. Edit declarations, Javadoc, help, catalog, or generator inputs; run `npm run docs:generate` and commit the resulting artifacts. Keep indentation/braces views and dependency links intact. Do not edit `dist` or `vscode/compiler`.
 
 Before delivery, run `npm run check`, relevant regressions including `node --test tests/documentation.test.mjs`, `npm run docs:check`, and `npm run docs:build`. Run gallery regressions if its generation changes; run installed-package tests for distribution changes as required by `AGENTS.md`. Inspect a rendered page at narrow and wide sizes when changing layout or navigation. Report exact checks and remaining limits.

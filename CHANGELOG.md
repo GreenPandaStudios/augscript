@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Document Docker application builds, HTTP deployment, registry transfer, and a VS Code Dev Container with the published CLI, native libraries, August extension, and forwarded ports. Check the deployment example and its endpoint test in the executable documentation gate.
 - Reorganize the public wiki into a sequential August book, task guides, language/library reference, design and readiness pages, and contributor documentation. Add checked lessons, a guided module review, primary-source editorial research, and a repository maintenance skill.
 - Check nested handwritten lessons in the executable documentation gate and keep benchmark and readiness claims scoped to their evidence.
 - Correct stale registry availability guidance after verifying the published 0.19.0 CLI and its matching libraries; the book starts with the npm bootstrap.

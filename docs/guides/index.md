@@ -18,7 +18,8 @@ Choose a guide for the task you are doing. If you are learning August for the fi
 | --- | --- |
 | Add endpoints, pages, streams, or crypto | [Web applications](../web.md) |
 | Create or consume a source library | [Packages](../packages.md#author-a-package) |
-| Build and run in Linux containers | [Docker](../docker.md) |
+| Build and deploy a Linux application image | [Docker](../docker.md) |
+| Edit, run, and test inside a container | [VS Code Dev Containers](../dev-containers.md) |
 | Measure execution time or HTTP throughput | [Performance](../performance.md) |
 | Assess a trial deployment | [Production readiness](../production-readiness.md) |
 

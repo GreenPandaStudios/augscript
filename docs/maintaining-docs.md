@@ -11,10 +11,12 @@ For writing and navigation, use [the editorial guide](writing-docs.md). The repo
 | Syntax, type/effect/ownership/DI rules | `docs/reference.md`, relevant grammar/testing/web guide and `src/help.ts` |
 | Public library signature or behavior | Javadoc beside its declaration in `src/stdlib`, the relevant guide and gap ledger |
 | Diagnostic or editor behavior | `src/help.ts`, diagnostics/tooling guide and VS Code changelog |
-| CLI, packages, configuration or supported platform | Tooling/packages/releasing guide and package metadata |
+| CLI, packages, configuration or supported platform | Tooling/packages/releasing guide, Docker and Dev Container recipes, and package metadata |
 | Completed or deferred feature | Implementation map, gap ledger and changelog |
 
 Public comments should explain observable behavior, named inputs, errors, side effects, and limits. Keep dependencies explicit in examples. Record incomplete capabilities in the gap ledger; do not imply that an unimplemented proposal is usable.
+
+Container guides install the published CLI and prepare its native dependencies. Keep their pinned CLI version, build tools, native library paths, and editor cache setting aligned with the release. Verify the HTTP application image and run the starter's check/run/test/spec workflow as the Dev Container's non-root user. State any verification mount substitutions: a Docker engine that cannot share local folders can test execution in an isolated volume, but that does not verify the default VS Code bind mount or editor port forwarding.
 
 ## Generated reference
 

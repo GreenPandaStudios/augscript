@@ -47,6 +47,8 @@ Interface contracts describe capability effects with `uses`; implementations and
 
 Start with [the August book](docs/learn/index.md) for checked, runnable lessons. Use [task guides](docs/guides/index.md) to test a project, build a service, create a package, or [review an unfamiliar module](docs/guides/change-a-module.md). [Complete projects](docs/examples/index.md) show source and compiled specs together in indentation or braces style.
 
+[Deploy with Docker](docs/docker.md) or [develop in a VS Code Dev Container](docs/dev-containers.md) using the published CLI and prepared native libraries.
+
 Look up exact rules in the [language reference](docs/reference.md), [grammar](docs/grammar.md), and [CLI/editor reference](docs/tooling.md). Read [why August exists](docs/about.md), [performance evidence](docs/performance.md), [readiness](docs/production-readiness.md), and the [1.0 roadmap](docs/roadmap.md) when assessing it for a project. Contributors can use [the release process](docs/releasing.md) and [documentation maintenance](docs/maintaining-docs.md).
 
 All `aug` code fences in the guides identify a complete project and file. The documentation test assembles and checks them with the compiler; selected examples also run and execute their tests.

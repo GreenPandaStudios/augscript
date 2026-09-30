@@ -13,6 +13,8 @@ Build a greeting application, run its test, and read its generated explanation. 
 
 You need Node.js 24 or later and npm. To run native programs, you also need a C11 compiler on macOS or Linux. On macOS, install Xcode Command Line Tools for Clang; on Linux, install a C toolchain.
 
+You can run the compiler and native libraries in [a VS Code Dev Container](dev-containers.md) instead of installing a host C toolchain. The [Docker guide](docker.md) covers container builds and deployment.
+
 ## Create and run the starter
 
 Create the starter with one command:

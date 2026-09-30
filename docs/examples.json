@@ -49,6 +49,7 @@
   "benchmark-collections": {"stdout":"599970000\ntrue\n"},
   "benchmark-json": {"stdout":"250000\n"},
   "benchmark-http": {"buildOnly":true},
+  "docker-http": {"buildOnly":true, "tests":1},
   "web-guide": {
     "buildOnly": true,
     "tests": 3

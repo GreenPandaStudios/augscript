@@ -59,7 +59,9 @@ export default defineConfig({
         { text: 'Tests', link: '/testing' }, { text: 'Web applications', link: '/web' },
         { text: 'Compiled specifications', link: '/specifications' },
         { text: 'Packages and installation', link: '/packages' },
-        { text: 'Docker builds', link: '/docker' }, { text: 'Diagnostics', link: '/diagnostics' }
+        { text: 'Docker deployment', link: '/docker' },
+        { text: 'VS Code Dev Containers', link: '/dev-containers' },
+        { text: 'Diagnostics', link: '/diagnostics' }
       ]},
       { text: 'Language and tools', collapsed: true, items: [
         { text: 'Language reference', link: '/reference' }, { text: 'Grammar', link: '/grammar' },
