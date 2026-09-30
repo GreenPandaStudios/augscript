@@ -360,6 +360,7 @@ AugValue aug_httptestclient_request(AugValue client,AugValue method,AugValue tar
   if(aug_has_error){aug_report_error();aug_take_error();session.roots[1]=aug_http_problem(500);}
   if(session.streaming&&aug_cint(aug_field(session.roots[1],1))>=400){aug_frame_leave(&frame);return request_error("HttpError");}
 serialize:;
+  if(!session.route)session.streaming=false;
   AugValue value=aug_field(session.roots[1],0);int status=(int)aug_cint(aug_field(session.roots[1],1));
   const char *type="application/json";
   if(session.streaming)type=session.route->stream==1?"text/event-stream":session.route->stream==2?"application/octet-stream":"text/html; charset=utf-8";
@@ -638,6 +639,7 @@ static int callback_http(struct lws *wsi, enum lws_callback_reasons reason, void
     case LWS_CALLBACK_HTTP_WRITEABLE: {
       if (!session) return 0;
       if (session->roots[1].tag != AUG_OBJECT) return 0;
+      if (session->streaming && !session->route) return -1;
       AugValue response = session->roots[1], body = aug_field(response, 0), headers = aug_field(response, 2);
       if (!session->headers_sent) {
         session->roots[2] = session->streaming ? aug_bytes("",0,AUG_BYTES_KIND) : body.tag == AUG_OBJECT && body.as.object->kind == AUG_HTML_KIND ? aug_html_transport(body) : body.tag == AUG_OBJECT && body.as.object->kind == AUG_BYTES_KIND ? body : aug_json_stringify(body);

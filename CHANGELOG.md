@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Analyze generated C and copied runtime units for adversarial collection, error, task, ownership, JSON, crypto, and HTTP programs, then run them under AddressSanitizer and UBSan in macOS/Linux CI. Harden HTML buffer growth against size overflow and remove unused generated call arrays and execution-context lookups.
 - Compile specifications through a structured explanation tree with shorter prose, grouped control flow, integrated Javadoc, and compact linked dependency surfaces. Regenerate the wiki examples and adjacent specs.
 - Add an executable ownership and task conformance suite and wiki contract. Reject parent mutation of a child-captured object through collection methods, borrowed calls, and direct fields until the child is waited for, including inside an existing borrow block.
 - Injected dependencies participate in call alias and task capture checks; dropping an owned `Shared<T>` also drops its transferred payload in local cleanup order.
