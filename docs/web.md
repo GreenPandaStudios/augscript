@@ -1,10 +1,16 @@
 # HTTP, server pages, and crypto
 
-HTTP endpoints are language declarations. `august.web` supplies explicit network, authentication, authorization, and logging capabilities; `august.crypto` supplies cryptographic adapters. August source owns routing contracts and application decisions. The native boundary owns transport, serialization, and cryptographic primitives.
+Build a service by declaring its routes in August and serving them from `main.aug`. The declarations describe how HTTP inputs become typed values and how results become responses. Your application selects authentication, authorization, and logging capabilities explicitly. `august.web` and `august.crypto` provide adapters for native transport and cryptographic operations.
+
+This guide builds a service with JSON, a server-rendered page, a form action, and an event stream. Learn [modules and dependencies](learn/modules-and-dependencies.md) first if `implement` and `resolve` are unfamiliar. Full web and crypto runs need the [native bootstrap](tooling.md#native-standard-libraries). The service uses demonstration authentication; [the gap ledger](web-library-gaps.md) describes what remains before a production service claim.
 
 ## A complete service
 
-This project serves a protected JSON endpoint, an August page, a form action, and an event stream. The documentation gate builds it and runs its endpoint cases without starting a persistent server. Copy the files into one folder and run `aug run FOLDER` to listen on port 8080.
+Copy the following files into one folder. `aug check .` checks the contracts and `aug test .` runs the three endpoint cases. `aug run .` starts the server on port 8080. The documentation gate builds the service and runs its tests; it does not leave a server running.
+
+Read `main.aug` first. It supplies the authentication and request-logging implementations, then serves the four named endpoints. Read `api.aug` for the JSON route and stream, `actions.aug` for the POST, and the page/view files for HTML.
+
+**main.aug**
 
 ```aug project=web-guide file=main.aug
 import readUser and events from api
@@ -18,10 +24,14 @@ implement RequestLogger with WebRequestLogger scoped
 serve readUser and events and home and save on port 8080
 ```
 
+**models.aug**
+
 ```aug project=web-guide file=models.aug
 record User(int id, string name)
 record UserInput(string name)
 ```
+
+**auth.aug**
 
 ```aug project=web-guide file=auth.aug
 import Authentication and Principal from august.web
@@ -37,6 +47,8 @@ DemoAuthentication() implements Authentication:
                     return Principal(subject="ada", permissions=["users.read"])
                 return null
 ```
+
+**api.aug**
 
 ```aug project=web-guide file=api.aug
 import User from models
@@ -78,6 +90,8 @@ test endpoint events client:
             assert(condition=response.headers.get(name="content-type") == "text/event-stream")
 ```
 
+**actions.aug**
+
 ```aug project=web-guide file=actions.aug
 import UserInput from models
 import redirect from august.web
@@ -86,6 +100,8 @@ import redirect from august.web
 endpoint POST "/users" as save(UserInput input from form) returns HttpResponse<string> unless HttpError:
     return redirect(location="/")
 ```
+
+**views.aug**
 
 ```aug project=web-guide file=views.aug
 import User from models
@@ -97,6 +113,8 @@ UserCard(User user) returns Html:
 NewUser() returns Html unless HttpError:
     return <form onSubmit={handle save(input from form)}><label>Name <input name="name" required /></label><button type="submit">Save</button></form>
 ```
+
+**pages.aug**
 
 ```aug project=web-guide file=pages.aug
 import User from models

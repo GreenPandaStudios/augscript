@@ -1,0 +1,8 @@
+[
+  {"project":"getting-started","file":"main.aug","before":"greet(name=\"August\")","after":"greet(person=\"August\")","diagnostic":"has no parameter person"},
+  {"project":"book-functions","file":"main.aug","before":"quantity=0","after":"amount=0","diagnostic":"has no parameter amount"},
+  {"project":"book-data","file":"main.aug","source":"import summarize from orders\nsummarize(price=7, quantity=3)\n","diagnostic":"Unhandled InvalidQuantity"},
+  {"project":"book-modules","file":"greeting/export.aug","before":"export FriendlyGreeter from greeter\n","after":"","diagnostic":"does not export FriendlyGreeter"},
+  {"project":"book-state","file":"main.aug","before":"borrow counter:\n    counter.increment()","after":"counter.increment()","diagnostic":"requires borrow counter"},
+  {"project":"book-state","file":"counter.aug","before":"assert(counter.value() == 4)","after":"assert(counter.value() == 5)","command":"test","diagnostic":"advances"}
+]

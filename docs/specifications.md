@@ -16,7 +16,9 @@ aug spec . --check
 | `export.aug` | `export.aug.md`: the folder's public surface. |
 | An installed dependency | A versioned explanation and source copy under `.aug-spec/`. |
 
-Successful `build`, `run`, and `bench` commands refresh these documents after native compilation. `aug pack` refreshes them before creating the source archive. `--check` writes nothing and exits with a failure if a document, dependency copy, or manifest is missing or stale. Use it in CI after `aug check`.
+After a source change, run `aug check .` and `aug test .`, regenerate with `aug spec .`, and review the source and spec diffs together. Use `aug spec . --check` in CI to detect drift without writing files. It fails if a document, source pointer, dependency copy, or manifest is missing or stale.
+
+Successful `build`, `run`, and `bench` commands also refresh specs after native compilation. `aug pack` refreshes them before creating the source archive. [Change an unfamiliar module](guides/change-a-module.md) walks through this workflow.
 
 Generation also adds one managed comment at the top of each project source file:
 
@@ -48,13 +50,13 @@ Without any author comments, the generated explanation reads:
 
 > It takes `price` and `quantity` as integers. It returns `price` times `quantity` if `quantity` is positive, or `0` otherwise.
 
-The writer explains related work together. Checks with the same failure become a description of the requirements and what happens at the first failed check. It describes an HTTP result as a response, a collection update as adding or storing a value, and a null guard as an early exit followed by the value's use. Repeated assignments still evaluate their expressions separately. Conditions, evaluation order, repeated effects, recovery, and cleanup stay meaningful.
+Related work is explained together. Validation describes the requirements and what happens at the first failed check. HTTP results describe responses. Collection updates describe the values added or stored. Decisions, repeated effects, recovery, and cleanup remain part of the explanation.
 
-String construction appears as readable text such as `Hello, {name}!`. Braces mark inserted values; doubled braces represent literal braces. Long expressions keep the parentheses that change their meaning. The spec avoids statement lists, repeated signature descriptions, nested “the value from” phrases, and sentences that announce the ends of syntax blocks.
+String construction appears as readable text such as `Hello, {name}!`. Braces mark inserted values; doubled braces represent literal braces. Parentheses preserve expression grouping when it changes the meaning. These are conventions in the explanation, not new August source syntax.
 
 Javadoc, when present, becomes part of the explanation: its summary introduces the declaration, parameter notes sit beside their inputs, and return and error notes sit beside those outcomes. Comments can explain intent that a compiler cannot infer, but readers do not need them to follow the checked inputs, operations, and outcomes.
 
-Optional contracts use `optional Type`. Specs describe two possible states: a value or null. Omitted inputs become null, so missing and explicit null follow the same branch. If an older program handles missing and null differently, combine those cases deliberately before using the syntax migration command.
+Optional contracts describe a value or null. Omitted inputs become null too. The [language reference](reference.md#null-matching-and-checked-failures) gives the matching and narrowing rules.
 
 ## Dependencies stay small and navigable
 
@@ -89,9 +91,9 @@ In VS Code, use **AugScript: Open Compiled Specification** to generate and previ
 
 ## Determinism and limits
 
-Generation is offline and deterministic for the same checked sources, configuration, installed dependency versions, and compiler version. It adds no timestamps or machine paths. The compiler builds a behavior tree from checked declarations, groups related operations, and writes sentences and paragraphs. Source identities survive grouping; an internal coverage check rejects a plan that drops or reorders statement facts. Repeated calls remain distinct operations. Specific descriptions of collections, HTTP results, and standard-library operations use their checked contracts, not guesses about arbitrary function names.
+Generation is offline and deterministic for the same checked sources, configuration, installed dependencies, and compiler version. It adds no timestamps or machine paths. Explanations use checked contracts; the writer does not guess what an arbitrary function does from its name.
 
-The design draws on research in code summarization and natural language generation. Read [the research and its limits](research/code-to-natural-language.md). The coverage check verifies the planner's bookkeeping, not the correctness of every English interpretation. Regression examples check complete readable paragraphs as well as conditions, arithmetic grouping, effects, recovery, links, and reproducibility. Reader review is still needed for clarity and domain intent.
+The spec describes the checked program; it is not a proof that the implementation meets your domain's requirements. Review the explanation for clarity and intent, and use tests for behavior. [Research and implementation notes](research/code-to-natural-language.md) explain the generation approach and its evaluation limits.
 
 ASD-STE100 guides the wording. The output is best effort Simplified Technical English, without a claim of formal compliance. Native C boundaries are explained through their declared contracts and author documentation; the compiler does not infer a foreign implementation's internals. Shared numeric, ownership, and task rules link to the language reference.
 

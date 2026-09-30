@@ -3,6 +3,20 @@
   outline-offset: -5px;
   border-radius: 6px;
 }
+
+/* Keep prose comfortable to read and copied code intact on narrow screens. */
+.vp-doc p {
+  line-height: 1.75;
+}
+.vp-doc div[class*='language-'] .line {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.VPHome .vp-doc {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 0 24px 48px;
+}
 .aug-example-page .VPDoc.has-aside .content-container,
 .aug-example-page .VPDoc .content-container {
   max-width: none;

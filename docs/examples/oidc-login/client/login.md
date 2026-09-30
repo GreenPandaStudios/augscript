@@ -190,8 +190,7 @@ endpoint GET "/login/callback" as loginCallback(string code from query, string s
 
 Plain handler results default to HTTP 200 unless another status is declared. HttpResponse values choose their own status. Unhandled request failures return HTTP 500 and cancel the request tasks.
 
-<a id="symbol-startLogin"></a>
-### `startLogin` · [source](login.md#code)
+### `startLogin` · [source](login.md#code) {#symbol-startLogin}
 
 `startLogin` handles `GET /login/start`. Start a browser-bound, short-lived transaction. The PKCE verifier stays on the server. It gets `crypto` ([`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto)), `clock` ([`Clock`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock)), `client` ([`HttpClient`](../dependencies/august/0.19.0/web/contracts.md#symbol-HttpClient)), and `transactions` ([`ExpiringStore<LoginTransaction>`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore)) from dependency injection.
 
@@ -203,8 +202,7 @@ It stores `transaction` in `transactions` under `browser`, expiring at `transact
 
 It sets `headers` to [`withCookie`](../common/headers.md#symbol-withCookie) with `headers` from [`securityHeaders`](../common/headers.md#symbol-securityHeaders) with the header `"location"` set to `location`, `name` `"aug_login"`, `value` from `browser`, `path` `"/login"`, `maxAge` `300`, and `secure` from `config.secureCookies`. It returns HTTP 303 with a paragraph containing `Opening the identity provider.` with escaped text and `headers` headers.
 
-<a id="symbol-loginCallback"></a>
-### `loginCallback` · [source](login.md#code)
+### `loginCallback` · [source](login.md#code) {#symbol-loginCallback}
 
 `loginCallback` handles `GET /login/callback`. Exchange a one-use code over HTTP, verify the provider JWT/JWKS and UserInfo subject, then issue a distinct app-session JWT.
 

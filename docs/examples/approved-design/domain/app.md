@@ -76,23 +76,19 @@ ApplicationImpl(resolve Console console) implements Application {
 
 ## Compiled specification {#specification}
 
-<a id="symbol-Application"></a>
-### `Application` · interface · [source](app.md#code)
+### `Application` · interface · [source](app.md#code) {#symbol-Application}
 
 The application's explicit startup operation.
 
-<a id="symbol-Application.start"></a>
-#### `Application.start` · [source](app.md#code)
+#### `Application.start` · [source](app.md#code) {#symbol-Application.start}
 
 Writes the fruit names through the selected console. It can call [`Console.write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
 
-<a id="symbol-ApplicationImpl"></a>
-### `ApplicationImpl` · class · [source](app.md#code)
+### `ApplicationImpl` · class · [source](app.md#code) {#symbol-ApplicationImpl}
 
 Construction stores dependencies; start performs the visible external work. It implements [`Application`](app.md#symbol-Application). The `console` dependency is injected as [`Console`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console) and stored read-only.
 
-<a id="symbol-ApplicationImpl.start"></a>
-#### `ApplicationImpl.start` · [source](app.md#code)
+#### `ApplicationImpl.start` · [source](app.md#code) {#symbol-ApplicationImpl.start}
 
 Writes the fruit names through the selected console. It sets `fruit` to a list containing a [`Fruit`](models.md#symbol-Fruit) with `code` `1` and `name` `"apple"`, a [`Fruit`](models.md#symbol-Fruit) with `name` `"pear"` and `code` `2`. For each `item` in a snapshot of `fruit`, it passes `item.name` to [`console.write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
 

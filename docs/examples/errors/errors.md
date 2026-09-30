@@ -54,8 +54,7 @@ load(bool fail) returns string unless FileError {
 
 ## Compiled specification {#specification}
 
-<a id="symbol-load"></a>
-### `load` · [source](errors.md#code)
+### `load` · [source](errors.md#code) {#symbol-load}
 
 It takes `fail` as a boolean. Failures can raise `FileError`.
 

@@ -73,13 +73,11 @@ settings() returns Settings {
 
 ## Compiled specification {#specification}
 
-<a id="symbol-Settings"></a>
-### `Settings` · immutable record · [source](settings.md#code)
+### `Settings` · immutable record · [source](settings.md#code) {#symbol-Settings}
 
 Explicit loopback development settings. The provider accepts one registered client and its exact callback URI. It takes `baseUrl`, `issuer`, `clientId`, and `callback` as strings, kept read-only, `sessionSeconds` as an integer, kept read-only, and `secureCookies` as a boolean, kept read-only.
 
-<a id="symbol-settings"></a>
-### `settings` · [source](settings.md#code)
+### `settings` · [source](settings.md#code) {#symbol-settings}
 
 It returns a [`Settings`](settings.md#symbol-Settings) with `baseUrl` `"http://127.0.0.1:8787"`, `issuer` `"http://127.0.0.1:8787/provider"`, `clientId` `"august-login-app"`, `callback` `"http://127.0.0.1:8787/login/callback"`, `sessionSeconds` `900`, and `secureCookies` `false`.
 

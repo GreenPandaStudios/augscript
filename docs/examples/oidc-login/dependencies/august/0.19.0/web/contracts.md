@@ -152,77 +152,63 @@ cookie(string name, string value, string path, int maxAge, bool secure) returns 
 
 ## Compiled specification {#specification}
 
-<a id="symbol-Principal"></a>
-### `Principal` · immutable record · [source](contracts.md#code)
+### `Principal` · immutable record · [source](contracts.md#code) {#symbol-Principal}
 
 Immutable identity returned by an explicitly injected authentication adapter. It takes `subject` as a string, kept read-only and `permissions` as `List<string>`, kept read-only.
 
-<a id="symbol-Authentication"></a>
-### `Authentication` · capability interface · [source](contracts.md#code)
+### `Authentication` · capability interface · [source](contracts.md#code) {#symbol-Authentication}
 
 Verify the request's credentials. null means unauthenticated; adapter failures raise HttpError.
 
-<a id="symbol-Authentication.authenticate"></a>
-#### `Authentication.authenticate` · [source](contracts.md#code)
+#### `Authentication.authenticate` · [source](contracts.md#code) {#symbol-Authentication.authenticate}
 
 It takes `request` as `HttpRequest`. It returns [`optional Principal`](contracts.md#symbol-Principal). It can call [`Authentication.authenticate`](contracts.md#symbol-Authentication.authenticate). Failures can raise `HttpError`.
 
-<a id="symbol-Authorization"></a>
-### `Authorization` · capability interface · [source](contracts.md#code)
+### `Authorization` · capability interface · [source](contracts.md#code) {#symbol-Authorization}
 
 Decide whether a verified identity has one named permission.
 
-<a id="symbol-Authorization.authorize"></a>
-#### `Authorization.authorize` · [source](contracts.md#code)
+#### `Authorization.authorize` · [source](contracts.md#code) {#symbol-Authorization.authorize}
 
 It takes `identity` as [`Principal`](contracts.md#symbol-Principal) and `permission` as a string. It returns `bool`. It can call [`Authorization.authorize`](contracts.md#symbol-Authorization.authorize). Failures can raise `HttpError`.
 
-<a id="symbol-RequestLogger"></a>
-### `RequestLogger` · capability interface · [source](contracts.md#code)
+### `RequestLogger` · capability interface · [source](contracts.md#code) {#symbol-RequestLogger}
 
 Observe a completed HTTP exchange, including failures and disconnects.
 
-<a id="symbol-RequestLogger.complete"></a>
-#### `RequestLogger.complete` · [source](contracts.md#code)
+#### `RequestLogger.complete` · [source](contracts.md#code) {#symbol-RequestLogger.complete}
 
 It takes `method` and `path` as strings and `status` and `milliseconds` as integers. It can call [`RequestLogger.complete`](contracts.md#symbol-RequestLogger.complete).
 
-<a id="symbol-WebRequestLogger"></a>
-### `WebRequestLogger` · class · [source](contracts.md#code)
+### `WebRequestLogger` · class · [source](contracts.md#code) {#symbol-WebRequestLogger}
 
 Emit escaped JSON request metadata to standard error. Credentials and query strings are excluded. It implements [`RequestLogger`](contracts.md#symbol-RequestLogger).
 
-<a id="symbol-WebRequestLogger.complete"></a>
-#### `WebRequestLogger.complete` · [source](contracts.md#code)
+#### `WebRequestLogger.complete` · [source](contracts.md#code) {#symbol-WebRequestLogger.complete}
 
 It takes `method` and `path` as strings and `status` and `milliseconds` as integers. Within an unsafe block, it calls [`_aug_http_log`](contracts.md#symbol-_aug_http_log) with `method`, `path`, `status`, and `milliseconds`. Native operations must satisfy their declared C contracts.
 
-<a id="symbol-HttpClient"></a>
-### `HttpClient` · capability interface · [source](contracts.md#code)
+### `HttpClient` · capability interface · [source](contracts.md#code) {#symbol-HttpClient}
 
 An explicit outbound network capability. TLS verifies the peer and redirects are returned to the caller.
 
-<a id="symbol-HttpClient.request"></a>
-#### `HttpClient.request` · [source](contracts.md#code)
+#### `HttpClient.request` · [source](contracts.md#code) {#symbol-HttpClient.request}
 
 Perform an HTTP request with bounded bytes. Inside a task, waiting suspends the task's C stack. It takes `method` and `url` as strings, `headers` as `optional Headers`, and `body` as `optional Bytes`. Omitted optional inputs are null.
 
 It returns `HttpResponse<Bytes>`. It can call [`HttpClient.request`](contracts.md#symbol-HttpClient.request). Failures can raise `HttpError`.
 
-<a id="symbol-WebHttpClient"></a>
-### `WebHttpClient` · class · [source](contracts.md#code)
+### `WebHttpClient` · class · [source](contracts.md#code) {#symbol-WebHttpClient}
 
 Native libwebsockets transport. No socket is opened by construction. It implements [`HttpClient`](contracts.md#symbol-HttpClient).
 
-<a id="symbol-WebHttpClient.request"></a>
-#### `WebHttpClient.request` · [source](contracts.md#code)
+#### `WebHttpClient.request` · [source](contracts.md#code) {#symbol-WebHttpClient.request}
 
 Perform an HTTP request with bounded bytes. Inside a task, waiting suspends the task's C stack. It takes `method` and `url` as strings, `headers` as `optional Headers`, and `body` as `optional Bytes`. Omitted optional inputs are null.
 
 Failures can raise `HttpError`. Within an unsafe block, it returns [`_aug_http_request`](contracts.md#symbol-_aug_http_request) with `method`, `url`, `headers`, and `body`. Native operations must satisfy their declared C contracts.
 
-<a id="symbol-redirect"></a>
-### `redirect` · [source](contracts.md#code)
+### `redirect` · [source](contracts.md#code) {#symbol-redirect}
 
 Return a redirect with an explicit status. Location is checked as a header value. It takes `location` as a string and `status` as `optional int`. Omitted optional inputs are null.
 
@@ -232,41 +218,35 @@ It sets `code` to `303`. If `status` is null, it continues without an operation.
 
 It returns HTTP code with `""` and `headers` headers.
 
-<a id="symbol-urlEncode"></a>
-### `urlEncode` · [source](contracts.md#code)
+### `urlEncode` · [source](contracts.md#code) {#symbol-urlEncode}
 
 Encode a UTF-8 value as one URL query or form component using RFC 3986 unreserved characters. It takes `input` as a string. Failures can raise `HttpError`.
 
 Within an unsafe block, it returns [`_aug_http_url_encode`](contracts.md#symbol-_aug_http_url_encode) with `input`. Native operations must satisfy their declared C contracts.
 
-<a id="symbol-cookie"></a>
-### `cookie` · [source](contracts.md#code)
+### `cookie` · [source](contracts.md#code) {#symbol-cookie}
 
 Construct an HttpOnly, SameSite=Lax session cookie. Secure defaults are chosen explicitly at the call site. Values and paths reject delimiters and controls. maxAge=0 clears the cookie.
 
 It takes `name`, `value`, and `path` as strings, `maxAge` as an integer, and `secure` as a boolean. Failures can raise `HttpError`. Within an unsafe block, it returns [`_aug_http_cookie`](contracts.md#symbol-_aug_http_cookie) with `name`, `value`, `path`, `maxAge`, and `secure`. Native operations must satisfy their declared C contracts.
 
-<a id="symbol-_aug_http_log"></a>
-### `_aug_http_log` · [source](contracts.md#code)
+### `_aug_http_log` · [source](contracts.md#code) {#symbol-_aug_http_log}
 
 It is private to its defining scope. It takes `method` and `path` as strings and `status` and `milliseconds` as integers. It can call [`RequestLogger.complete`](contracts.md#symbol-RequestLogger.complete). Native C implementation; only its declared contract is visible here.
 
-<a id="symbol-_aug_http_request"></a>
-### `_aug_http_request` · [source](contracts.md#code)
+### `_aug_http_request` · [source](contracts.md#code) {#symbol-_aug_http_request}
 
 It is private to its defining scope. It takes `method` and `url` as strings, `headers` as `optional Headers`, and `body` as `optional Bytes`. Omitted optional inputs are null.
 
 It returns `HttpResponse<Bytes>`. It can call [`HttpClient.request`](contracts.md#symbol-HttpClient.request). Failures can raise `HttpError`. Native C implementation; only its declared contract is visible here.
 
-<a id="symbol-_aug_http_url_encode"></a>
-### `_aug_http_url_encode` · [source](contracts.md#code)
+### `_aug_http_url_encode` · [source](contracts.md#code) {#symbol-_aug_http_url_encode}
 
 It is private to its defining scope. It takes `input` as a string. It returns `string`. Failures can raise `HttpError`.
 
 Native C implementation; only its declared contract is visible here.
 
-<a id="symbol-_aug_http_cookie"></a>
-### `_aug_http_cookie` · [source](contracts.md#code)
+### `_aug_http_cookie` · [source](contracts.md#code) {#symbol-_aug_http_cookie}
 
 It is private to its defining scope. It takes `name`, `value`, and `path` as strings, `maxAge` as an integer, and `secure` as a boolean. It returns `Headers`. Failures can raise `HttpError`.
 

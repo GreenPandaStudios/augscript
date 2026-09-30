@@ -144,42 +144,35 @@ MemoryStore<T implements Data>() implements ExpiringStore<T> {
 
 ## Compiled specification {#specification}
 
-<a id="symbol-StoreFull"></a>
-### `StoreFull` · class · [source](store.md#code)
+### `StoreFull` · class · [source](store.md#code) {#symbol-StoreFull}
 
 The bounded store could not accept another live entry. It implements `Error`.
 
-<a id="symbol-ExpiringStore"></a>
-### `ExpiringStore` · capability interface · [source](store.md#code)
+### `ExpiringStore` · capability interface · [source](store.md#code) {#symbol-ExpiringStore}
 
 A bounded, expiring capability for immutable values. Each generic DI binding has its own table. The type parameters are `T` which must satisfy `Data`.
 
-<a id="symbol-ExpiringStore.put"></a>
-#### `ExpiringStore.put` · [source](store.md#code)
+#### `ExpiringStore.put` · [source](store.md#code) {#symbol-ExpiringStore.put}
 
 Remove expired entries, then store at most 512 live entries. Time is supplied by the caller. It takes `key` as a string, `value` as `T`, and `expires` and `now` as integers.
 
 It can call [`ExpiringStore.put`](store.md#symbol-ExpiringStore.put). Failures can raise [`StoreFull`](store.md#symbol-StoreFull).
 
-<a id="symbol-ExpiringStore.take"></a>
-#### `ExpiringStore.take` · [source](store.md#code)
+#### `ExpiringStore.take` · [source](store.md#code) {#symbol-ExpiringStore.take}
 
 Atomically remove a value. Expired or absent entries return null. It takes `key` as a string and `now` as an integer.
 
 It returns `optional T`. It can call [`ExpiringStore.take`](store.md#symbol-ExpiringStore.take).
 
-<a id="symbol-ExpiringStore.get"></a>
-#### `ExpiringStore.get` · [source](store.md#code)
+#### `ExpiringStore.get` · [source](store.md#code) {#symbol-ExpiringStore.get}
 
 Read a live value without consuming it. It takes `key` as a string and `now` as an integer. It returns `optional T`. It can call [`ExpiringStore.get`](store.md#symbol-ExpiringStore.get).
 
-<a id="symbol-MemoryStore"></a>
-### `MemoryStore` · class · [source](store.md#code)
+### `MemoryStore` · class · [source](store.md#code) {#symbol-MemoryStore}
 
 A synchronized table with short critical sections and no I/O while locked. It implements [`ExpiringStore<T>`](store.md#symbol-ExpiringStore). The type parameters are `T` which must satisfy `Data`. The read-only, private field `_entries` has type `Shared<Map<string,_Entry<T>>>` and starts as a `Shared` with `value` from an empty map from `string` to [`_Entry<T>`](store.md#symbol-_Entry).
 
-<a id="symbol-MemoryStore.put"></a>
-#### `MemoryStore.put` · [source](store.md#code)
+#### `MemoryStore.put` · [source](store.md#code) {#symbol-MemoryStore.put}
 
 Remove expired entries, then store at most 512 live entries. Time is supplied by the caller. It takes `key` as a string, `value` as `T`, and `expires` and `now` as integers. Failures can raise [`StoreFull`](store.md#symbol-StoreFull).
 
@@ -187,8 +180,7 @@ It sets `entry` to a [`_Entry`](store.md#symbol-_Entry) for `T` with `value` and
 
 It stores `entry` in `entries` under `key`. Release this lock when the block exits, including on return or failure.
 
-<a id="symbol-MemoryStore.take"></a>
-#### `MemoryStore.take` · [source](store.md#code)
+#### `MemoryStore.take` · [source](store.md#code) {#symbol-MemoryStore.take}
 
 Atomically remove a value. Expired or absent entries return null. It takes `key` as a string and `now` as an integer.
 
@@ -196,8 +188,7 @@ While holding the lock on `_entries` as mutable `entries`, it obtains `entries.t
 
 Release this lock when the block exits, including on return or failure.
 
-<a id="symbol-MemoryStore.get"></a>
-#### `MemoryStore.get` · [source](store.md#code)
+#### `MemoryStore.get` · [source](store.md#code) {#symbol-MemoryStore.get}
 
 Read a live value without consuming it. It takes `key` as a string and `now` as an integer.
 
@@ -205,8 +196,7 @@ While holding the lock on `_entries` as mutable `entries`, it obtains the value 
 
 Release this lock when the block exits, including on return or failure.
 
-<a id="symbol-_Entry"></a>
-### `_Entry` · immutable record · [source](store.md#code)
+### `_Entry` · immutable record · [source](store.md#code) {#symbol-_Entry}
 
 It is private to this file. The type parameters are `T` which must satisfy `Data`. It takes `value` as `T`, kept read-only and `expires` as an integer, kept read-only.
 

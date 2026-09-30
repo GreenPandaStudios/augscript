@@ -1,28 +1,42 @@
-# Getting started
+---
+prev:
+  text: The August book
+  link: /learn/
+next:
+  text: Values and functions
+  link: /learn/values-and-functions
+---
 
-August is a statically checked language for programs that a new teammate or an LLM can understand from nearby code. It makes public boundaries, inputs, dependencies, state changes, and errors visible. The compiler generates C11 and builds a native executable.
+# Your first project
 
-This guide builds a small greeting application. Each command runs from the project directory unless a path is shown.
+Build a greeting application, run its test, and read its generated explanation. You will see how an August project starts and how a small module keeps its contract, implementation, and test together.
 
-## 1. Prepare the toolchain
+You need Node.js 24 or later, npm, and a C11 compiler on macOS or Linux. On macOS, install Xcode Command Line Tools for Clang; on Linux, install a C toolchain. This chapter uses the published npm CLI. [Packages and installation](packages.md) also covers release archives and source checkouts.
 
-You need Node.js 24 or later, npm, and a C11 compiler. Start from a [release tarball or checkout](packages.md). Native runs also need the portable minicoro source. From the August checkout:
+## Create and run the starter
+
+Run these commands from a terminal:
 
 ```sh
-npm ci
-node scripts/bootstrap-native.mjs --extract-only --only minicoro,yyjson
-node bin/aug.mjs init hello-august
+npx @greenpandastudios/aug-cli@next init hello-august
+npm install --global @greenpandastudios/aug-cli@next
+aug-native --extract-only --only minicoro,yyjson
 cd hello-august
-node ../bin/aug.mjs check .
+aug check .
+aug run .
 ```
 
-If the checkout is elsewhere, use its absolute `bin/aug.mjs` path. A globally installed CLI uses `aug` in place of `node ../bin/aug.mjs`. Once the npm release is published, the one-command starter will be `npx @greenpandastudios/aug-cli@next init hello-august`. The npm package is not published yet; the [package page](packages.md) tracks distribution.
+The native bootstrap downloads the pinned portable task and JSON sources needed for this program. It does not install system tools. `init` creates a starter and refuses to replace a nonempty destination. `check` verifies the project; `run` checks, compiles, and executes it. The program prints:
 
-The starter refuses a nonempty destination, so it will not replace your work. It creates `main.aug`, `greeting.aug`, a README, and `.gitignore`.
+```text
+Hello, August!
+```
 
-## 2. Read the startup file
+Keep the terminal in `hello-august` for the rest of this chapter. The global install supplies `aug` and `aug-native`, with the CLI's three matching library packages. A source checkout can use `node /absolute/path/to/augscript/bin/aug.mjs` in place of `aug`.
 
-`main.aug` is the one entry point. It imports the names it needs, binds an interface to a class, resolves it, and starts the program:
+## Read the startup file
+
+The starter's `main.aug` contains its imports, dependency choice, and startup work:
 
 ```aug project=getting-started file=main.aug
 import Greeter and SimpleGreeter from greeting
@@ -32,11 +46,13 @@ resolve Greeter to greeter
 print(value=greeter.greet(name="August"))
 ```
 
-Every call input has a label. You can reorder labeled inputs without changing their meaning. `implement` makes a dependency choice at startup; other files do not fetch a hidden global service. `resolve` asks for the bound interface explicitly. Run `aug run .` to print `Hello, August!`.
+`main.aug` is the application entry point. It imports two public declarations from the sibling file `greeting.aug`. `implement` selects the provider for `Greeter`, and `resolve` obtains it as `greeter`. The last line asks for a greeting and prints the result.
 
-## 3. Read the module beside it
+The call labels its input `name`. You can read what the string is for without opening the declaration. Labels also let you reorder inputs when a call has several of them.
 
-`greeting.aug` keeps the public contract, implementation, explanation, and tests together:
+## Read the module beside it
+
+Open `greeting.aug`. These are the important declarations:
 
 ```aug project=getting-started file=greeting.aug
 /** Build a greeting for a named person. */
@@ -56,26 +72,37 @@ test SimpleGreeter greeter:
             assert(greeter.greet(name="August") == "Hello, August!")
 ```
 
-The interface states what callers can expect. The class names the interface it implements. Its constructor has no inputs, so `SimpleGreeter()` needs no labels. The `test` lives in the same file as the class it describes. Use `aug test .` to run it, or `aug test . greetings` to select the group.
+The interface is the caller's contract: give `greet` a string named `name`, and receive a string. `SimpleGreeter` implements that contract. Its constructor has no inputs. The method builds a string and returns it.
 
-## 4. Let the checker explain mistakes
+The test lives beside the class. Its group constructs a greeter, and its case checks an exact result. The comments explain intent and supply editor help. The code describes what happens when the operation runs.
 
-Run `aug check .` after an edit. Try changing `greet(name="August")` to `greet(person="August")` in `main.aug`; the checker reports that `person` is not an input. Restore the name and check again. `aug format . --write` formats either indentation or braces consistently. Both block styles express the same program; [the project gallery](examples/developer-workflow/index.md) lets you switch views.
+## Change the greeting
 
-Names beginning with `_` are private to their scope. Other names can be imported from a sibling file. Across folder boundaries, an `export.aug` file lists the public names; [the module guide](reference.md#modules-and-exports) explains this boundary.
+In `main.aug`, change `name="August"` to `name="Ada"`. Run:
 
-## 5. Generate the explanation
+```sh
+aug check .
+aug run .
+aug test .
+```
 
-Run `aug spec .`. August writes `main.aug.md` and `greeting.aug.md` beside the source. These deterministic specifications explain the behavior, dependencies, tests, and linked public surfaces, including Javadoc when present. They can be regenerated at any time. `aug spec . --check` fails if committed specs are stale.
+The application should print `Hello, Ada!`. The existing test should still pass: it constructs its own subject and checks the greeting for August. Application startup does not run during the test.
 
-The [example gallery](examples/index.md) shows actual formatted August files beside their generated specifications. Start with [Hello world](examples/hello/index.md) and then [a tested application](examples/developer-workflow/index.md).
+Now deliberately change the call's label from `name` to `person`. `check` should fail because `greet` has no input named `person`. Restore `name` and check again. The checker verifies the contract; the test verifies a behavior you chose to exercise.
 
-## 6. Grow the program in small modules
+## Read the generated explanation
 
-As a project grows, keep public contracts narrow. Import only the names used in a file. Put tests beside declarations. Mark side effects on interfaces; implementation and private helper effects are inferred and available in editor hover and generated specs. Mutable access uses `borrow`; read-only access does not need a copy. Checked failures use `unless ErrorType` and `try`/`catch`. These rules and examples are in the [language guide](reference.md), [testing guide](testing.md), and [web guide](web.md).
+```sh
+aug spec .
+aug spec . --check
+```
 
-For an application with multiple files, capabilities, errors, and unit tests, work through [the complete developer workflow example](examples/developer-workflow/index.md). The [package guide](packages.md#author-a-package) then shows how to publish a reusable source library and import only its exported surface.
+Open `main.aug.md` and `greeting.aug.md`. They describe the bindings, call, greeting behavior, and test. Their dependency links lead to the used declarations. Generation is deterministic and offline; it does not ask a model to summarize your application.
 
-## 7. Build an executable
+Generation also adds a source comment pointing to each file's spec. After an edit, regenerate before committing the explanation. `--check` reports stale files and does not write them. [Compiled specifications](specifications.md) explains the full workflow and its limits.
 
-`aug build .` checks the project, emits C11, and invokes the native compiler. It prints the executable path under `.aug-build`. `aug run .` builds and runs in one step. [Docker build and run images](docker.md) cover core, web, and crypto programs on Linux. The [native bootstrap](tooling.md) builds web and crypto dependencies on macOS and Linux; [production readiness](production-readiness.md) lists the remaining platform and operational work.
+## Continue with a calculation
+
+You have created, checked, run, tested, and explained an August application. In [Values and functions](learn/values-and-functions.md), you will write a calculation without an injected dependency and learn how labeled shorthand and conditions read.
+
+You can also [browse complete projects](examples/index.md) with code and actual compiled specs beside each other. The gallery's Indentation and Braces controls display the same checked program in either block style.

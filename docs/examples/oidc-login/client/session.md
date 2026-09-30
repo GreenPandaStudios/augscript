@@ -144,8 +144,7 @@ authenticate(optional string token, resolve Crypto crypto, resolve Clock clock, 
 
 ## Compiled specification {#specification}
 
-<a id="symbol-authenticate"></a>
-### `authenticate` · [source](session.md#code)
+### `authenticate` · [source](session.md#code) {#symbol-authenticate}
 
 An app session has its own key, issuer, audience and token type. A live registry entry is required so logout revokes a signed token immediately.
 

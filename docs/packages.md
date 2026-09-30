@@ -1,6 +1,8 @@
 # Packages and installation
 
-The [augscript monorepo](https://github.com/GreenPandaStudios/augscript) versions the compiler, libraries, documentation, and editor together. Release packages contain the files needed to use them; they do not run install scripts or silently build native libraries.
+Install the CLI and its matching libraries to create, check, test, and build projects. Install the matching VS Code extension for completion, navigation, and editor diagnostics. August versions these tools together while it is experimental.
+
+Start with [the npm CLI](#npm-registry), or use a [checkout](#from-a-checkout) or [GitHub release archives](#install-release-tarballs). To share your own August library, follow [Author a package](#author-a-package), then [Use a package](#use-a-package).
 
 | Distribution | Package | Provides |
 | --- | --- | --- |
@@ -15,7 +17,7 @@ The [augscript monorepo](https://github.com/GreenPandaStudios/augscript) version
 Requires Node.js 24+, npm, and a C11 compiler. Full web/crypto native builds run on macOS and Linux; the repository's Docker recipes supply the Linux build tools and libraries. Other platforms remain outside the tested support matrix.
 
 ```sh
-git clone git@github.com:GreenPandaStudios/augscript.git
+git clone https://github.com/GreenPandaStudios/augscript.git
 cd augscript
 npm ci
 node scripts/bootstrap-native.mjs --extract-only --only minicoro,yyjson
@@ -26,7 +28,7 @@ node bin/aug.mjs run examples/oidc-login
 
 ## Install release tarballs
 
-Until registry publication is configured, download all four `.tgz` files from the same [GitHub release](https://github.com/GreenPandaStudios/augscript/releases). Install them together, replacing VERSION with the release version:
+For archive installation, download all four `.tgz` files from the same [GitHub release](https://github.com/GreenPandaStudios/augscript/releases). Install them together, replacing VERSION with the release version:
 
 ```sh
 npm install --global ./greenpandastudios-aug-stdlib-VERSION.tgz ./greenpandastudios-aug-web-VERSION.tgz ./greenpandastudios-aug-crypto-VERSION.tgz ./greenpandastudios-aug-cli-VERSION.tgz
@@ -45,16 +47,21 @@ For core programs and JSON without web/crypto, `aug-native --extract-only --only
 
 ## npm registry
 
-Once the owner has claimed the npm scope and configured publication:
+Create a starter with the published CLI, then install it for subsequent commands:
 
 ```sh
 npx @greenpandastudios/aug-cli@next init hello-august
 npm install --global @greenpandastudios/aug-cli@next
-aug init another-app
-aug-native
+aug-native --extract-only --only minicoro,yyjson
+cd hello-august
+aug check .
+aug test .
+aug run .
 ```
 
-`aug init DIRECTORY` creates a checked application with `main.aug`, a public interface and implementation, a same-file test, README, and `.gitignore`. It refuses a nonempty directory. The npm package exposes `aug-cli` as a binary so `npx` can select the executable by package name. The CLI brings its three matching libraries. Early releases use the `next` dist tag. **This npm package has not been published yet**, so use the checkout or release tarballs above until the owner configures npm access. Registry and Marketplace publication require their own owner accounts; a GitHub account does not grant those identities. See [releasing](releasing.md) for configuration and [getting started](getting-started.md) for a complete first project.
+The [npm CLI package](https://www.npmjs.com/package/@greenpandastudios/aug-cli) and all three matching libraries were verified at version 0.19.0 on September 30, 2026; both `next` and `latest` pointed to that version. The installed published package passed starter checking, its native test, execution, and spec drift checking. `next` can advance: pin an exact release when you need a repeatable toolchain, and install matching versions together.
+
+`aug init DIRECTORY` creates `main.aug`, an interface and implementation, a same-file test, README, and `.gitignore`. It refuses a nonempty directory. Work through [Your first project](getting-started.md) for the full lesson. Publication setup belongs to [the contributor release process](releasing.md).
 
 ## VS Code
 
@@ -68,11 +75,9 @@ The extension bundles the same compiler sources, standard declarations, native b
 
 ## Package model
 
-`packages/*/package.json` and `aug-package.json` are release manifests. Canonical code lives in `src`, `runtime`, and `src/stdlib`; generated staging directories live under ignored `dist`. `npm run package:packages` builds JavaScript and real npm tarballs. `npm run test:packages` installs those tarballs outside the checkout and checks imports, navigation, native execution, and compatibility.
-
 User packages ship August source, retain their own public boundaries, and compile into the application's native executable. They use npm for archive/registry transport and August for visibility, compatibility, dependency scopes and checking. Changing builtin libraries independently of the compiler is unsupported; general native adapter ABI/version distribution remains future work.
 
-With the full native bootstrap ready, `npm run test:packages -- --native` additionally builds the OIDC example and runs its signed-identity tests using the installed CLI and separate packages.
+The repository's release gate installs real package archives outside the checkout and tests imports, navigation, native execution, and compatibility. See [the release process](releasing.md) for package-building and contributor commands.
 
 ## Author a package
 

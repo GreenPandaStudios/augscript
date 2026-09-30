@@ -145,47 +145,39 @@ test Calculator calculator {
 
 ## Compiled specification {#specification}
 
-<a id="symbol-Arithmetic"></a>
-### `Arithmetic` · interface · [source](calculator.md#code)
+### `Arithmetic` · interface · [source](calculator.md#code) {#symbol-Arithmetic}
 
 Adds two integers.
 
-<a id="symbol-Arithmetic.add"></a>
-#### `Arithmetic.add` · [source](calculator.md#code)
+#### `Arithmetic.add` · [source](calculator.md#code) {#symbol-Arithmetic.add}
 
 It takes `left` and `right` as integers. It gets `console` ([`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console)) from dependency injection. It returns `int`. It can call [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
 
-<a id="symbol-Calculator"></a>
-### `Calculator` · class · [source](calculator.md#code)
+### `Calculator` · class · [source](calculator.md#code) {#symbol-Calculator}
 
 Uses the selected logger to describe each addition. It implements [`Arithmetic`](calculator.md#symbol-Arithmetic). The `_logger` dependency is injected as [`Logger`](logging/logger.md#symbol-Logger) and stored read-only and privately.
 
-<a id="symbol-Calculator.add"></a>
-#### `Calculator.add` · [source](calculator.md#code)
+#### `Calculator.add` · [source](calculator.md#code) {#symbol-Calculator.add}
 
 Adds left and right, logging the operation. It takes `left` as an integer (First integer) and `right` as an integer (Second integer). It gets `console` ([`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console)) from dependency injection. It returns `int` — Sum of the two integers.
 
 It passes `"adding integers"` to [`_logger.log`](logging/logger.md#symbol-Logger.log), using injected `console`. It returns `left` plus `right`.
 
-<a id="symbol-load"></a>
-### `load` · [source](calculator.md#code)
+### `load` · [source](calculator.md#code) {#symbol-load}
 
 Demonstrates a checked failure instead of a successful result. It takes `fail` as a boolean (Whether to simulate a failed load). Failures can raise `FileError` (when fail is true).
 
 It checks that `fail` is false. It raises a `FileError` at the first failed check. It returns `"loaded"`.
 
-<a id="symbol-_SilentLogger"></a>
-### `_SilentLogger` · class · [source](calculator.md#code)
+### `_SilentLogger` · class · [source](calculator.md#code) {#symbol-_SilentLogger}
 
 Test adapter: keeps calculator tests independent of console output. It implements [`Logger`](logging/logger.md#symbol-Logger). It is private to this file.
 
-<a id="symbol-_SilentLogger.log"></a>
-#### `_SilentLogger.log` · [source](calculator.md#code)
+#### `_SilentLogger.log` · [source](calculator.md#code) {#symbol-_SilentLogger.log}
 
 It takes `message` as a string (Text to write). It gets `console` ([`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console)) from dependency injection. It continues without an operation.
 
-<a id="symbol-test Calculator calculator"></a>
-### `test Calculator calculator` · [source](calculator.md#code)
+### `test Calculator calculator` · [source](calculator.md#code) {#symbol-test-20-Calculator-20-calculator}
 
 Tests [`Calculator`](calculator.md#symbol-Calculator). Each case gets fresh setup and dependencies.
 

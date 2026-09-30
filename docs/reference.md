@@ -1,6 +1,8 @@
-# AugScript language guide
+# Language reference
 
-Version 0.18. The language aims for code that communicates behavior, dependencies, and effects to a developer seeing a module for the first time.
+Use this page to look up the implemented language rules. It covers syntax, types, visibility, effects, dependency injection, ownership, and checked failures. For a first introduction, read [the August book](learn/index.md). For the reasons behind the design, read [why August exists](about.md).
+
+The reference is maintained with the compiler in this repository. August is experimental; [compatibility](compatibility.md) describes its version policy. Examples marked with a project and filename form complete applications and are checked by the documentation tests. Short `text` blocks illustrate syntax and are not standalone projects.
 
 ## A complete project
 
@@ -182,9 +184,9 @@ Empty literals require context: `List<int> values = []`, `Set<int> values = {}`,
 
 | Type | Reading | Mutation |
 | --- | --- | --- |
-| List | `length()`, `get(index=...)` unless IndexError, `at(index=...)` returns T? | `append(value=...)` |
+| List | `length()`, `get(index=...)` unless IndexError, `at(index=...)` returns `optional T` | `append(value=...)` |
 | Set | `length()`, `contains(value=...)` | `add(value=...)` |
-| Map | `length()`, `contains(key=...)`, `get(key=...)` returns V? | `set(key=..., value=...)` |
+| Map | `length()`, `contains(key=...)`, `get(key=...)` returns `optional V` | `set(key=..., value=...)` |
 | Tuple | `length()`, `get(index=constant)` with compile-time bounds | None |
 
 Managed mutations need a borrow; owned collections mutate directly. Collections cannot store borrowed or owned references by copying them. Reference results grant reading.

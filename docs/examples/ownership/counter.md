@@ -67,31 +67,25 @@ interface ICounter {
 
 ## Compiled specification {#specification}
 
-<a id="symbol-Counter"></a>
-### `Counter` · class · [source](counter.md#code)
+### `Counter` · class · [source](counter.md#code) {#symbol-Counter}
 
 It implements [`ICounter`](counter.md#symbol-ICounter). It takes `value` as an integer, kept mutable.
 
-<a id="symbol-Counter.increment"></a>
-#### `Counter.increment` · [source](counter.md#code)
+#### `Counter.increment` · [source](counter.md#code) {#symbol-Counter.increment}
 
 It may change `self`. With temporary permission to change `self`, it increases `value` by `1`.
 
-<a id="symbol-Counter.read"></a>
-#### `Counter.read` · [source](counter.md#code)
+#### `Counter.read` · [source](counter.md#code) {#symbol-Counter.read}
 
 It returns `value`.
 
-<a id="symbol-ICounter"></a>
-### `ICounter` · interface · [source](counter.md#code)
+### `ICounter` · interface · [source](counter.md#code) {#symbol-ICounter}
 
-<a id="symbol-ICounter.increment"></a>
-#### `ICounter.increment` · [source](counter.md#code)
+#### `ICounter.increment` · [source](counter.md#code) {#symbol-ICounter.increment}
 
 It may change `self`.
 
-<a id="symbol-ICounter.read"></a>
-#### `ICounter.read` · [source](counter.md#code)
+#### `ICounter.read` · [source](counter.md#code) {#symbol-ICounter.read}
 
 It returns `int`.
 

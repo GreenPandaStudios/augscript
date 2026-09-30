@@ -59,13 +59,11 @@ ConsoleLogger() implements Logger {
 
 ## Compiled specification {#specification}
 
-<a id="symbol-ConsoleLogger"></a>
-### `ConsoleLogger` · class · [source](console.md#code)
+### `ConsoleLogger` · class · [source](console.md#code) {#symbol-ConsoleLogger}
 
 It implements [`Logger`](logger.md#symbol-Logger).
 
-<a id="symbol-ConsoleLogger.log"></a>
-#### `ConsoleLogger.log` · [source](console.md#code)
+#### `ConsoleLogger.log` · [source](console.md#code) {#symbol-ConsoleLogger.log}
 
 It takes `message` as a string (Text to display). It gets `console` ([`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console)) from dependency injection. It passes `message` to [`console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
 

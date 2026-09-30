@@ -71,8 +71,7 @@ Page(string title, List<Html> children) returns Html {
 
 ## Compiled specification {#specification}
 
-<a id="symbol-Page"></a>
-### `Page` · [source](views.md#code)
+### `Page` · [source](views.md#code) {#symbol-Page}
 
 Small server components keep each page's behavior and dependencies visible. It takes `title` as a string and `children` as `List<Html>`.
 

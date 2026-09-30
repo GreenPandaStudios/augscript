@@ -80,8 +80,16 @@ export function buildExamplePages(overrides) {
     }
     const nav=files.map(file=>`- [${code(slash(relative(directory,file.path)))}](${url(relative(dirname(home),sources.get(file.path)))})`).join('\n');
     let overview=frontmatter(example.title,example.path)+`# ${example.title}\n\n${example.description}\n\n`+
-      'Read a file below to see its highlighted source and the Markdown produced by `aug spec`. Choose **Indentation** or **Braces** above the code. Both views describe the same checked program; your choice is kept when you open another file.\n\n'+
-      `## Project files\n\n${nav}\n\n`;
+      'Open a file to read its source beside the explanation produced by `aug spec`. **Indentation** and **Braces** display the same checked program; your choice carries across file pages.\n\n';
+    if(example.walkthrough?.length) {
+      overview+='## Follow the program\n\n';
+      for(const step of example.walkthrough) {
+        const file=files.find(file=>slash(relative(directory,file.path))===step.file);
+        if(!file)throw new Error(example.path+': walkthrough refers to missing file '+step.file);
+        overview+=`Read [${code(step.file)}](${url(relative(dirname(home),sources.get(file.path)))}). ${step.explanation}\n\n`;
+      }
+    }
+    overview+=`## Project files\n\n${nav}\n\n`;
     const auxiliary=['main.yaml','aug-package.json','package.json'].filter(name=>existsSync(join(source,name)));
     for(const name of auxiliary) {
       const page=join(base,name.replaceAll('.','-')+'.md');
@@ -92,7 +100,7 @@ export function buildExamplePages(overrides) {
     if(example.path==='examples/packages/app')commands=`aug install ${example.path} --offline\n`+commands;
     if(project.library)commands+=`aug test ${example.path}\naug pack ${example.path}\n`;
     else commands+=(files.some(file=>file.items.some(item=>item.kind==='test'))?`aug test ${example.path}\n`:'')+`aug run ${example.path}\n`;
-    overview+='\n## Try this project\n\nFrom a repository checkout with August installed:\n\n'+fence(commands,'sh')+'\n';
+    overview+='\n## Try this project\n\nRun these commands from the repository root with [the native toolchain ready](../../getting-started.md). Use an installed `aug`, or replace it with `node bin/aug.mjs` to use the checkout compiler.\n\n'+fence(commands,'sh')+'\n';
     if(example.path==='examples/oidc-login')overview+='Open `http://127.0.0.1:8787` and sign in with **ada** / **august-demo**. This development example keeps accounts, signing keys, and sessions in process memory. See [web and crypto](../../web.md) and [the remaining library gaps](../../web-library-gaps.md).\n\n';
     if(example.group==='Measured programs')overview+='See [the performance page](../../performance.md) for measurements, input sizes, and reproduction steps.\n\n';
     overview+='[Browse all examples](../index.md)\n';
@@ -107,7 +115,7 @@ export function buildExamplePages(overrides) {
       const displayed=hinted?parse(file.path,hinted.text).file:file;
       const formats=['indent','braces'].map(style=>formatFile({...project,config:{...project.config,block_style:style,indentation:'spaces'}},displayed));
       let text=artifact.text.replace(/^<!--[^\n]*-->\n\n# [^\n]+\n\n/,'');
-      text=text.replace(/<a id="([^"]+)"><\/a>\n\n(#{2,6} [^\n]+)/g,(_,id,heading)=>heading+' {#'+safeAnchor(id)+'}');
+      text=text.replace(/<a id="([^"]+)"><\/a>\n+(#{2,6} [^\n]+)/g,(_,id,heading)=>heading+' {#'+safeAnchor(id)+'}');
       // Promote source links to the readable code on the same wiki; keep exact declaration anchors.
       text=text.replace(/\]\(([^\n)]+)\)/g,(original,href)=>{
         if(/^(?:https?:|mailto:|#)/.test(href))return original;
@@ -126,11 +134,12 @@ export function buildExamplePages(overrides) {
     }
   },overrides);
   let index=frontmatter('Example projects','examples and benchmarks')+'# Example projects\n\n'+
-    'Browse complete August projects here in the wiki. Each source file includes formatted code in **Indentation** and **Braces** styles and its actual compiled specification. Dependency links open the matching version’s source and explanation in this wiki.\n\n'+
-    'Start with [Hello world with dependencies](hello/index.md), then try [a small tested application](developer-workflow/index.md). The [OpenID Connect application](oidc-login/index.md) shows a larger project with server-rendered pages and HTTP handlers.\n\n';
+    'Read a complete program, follow its dependencies, and compare the source with its compiled explanation. Every file has highlighted **Indentation** and **Braces** views and the actual output of `aug spec`. Dependency links open the exact version used by the project.\n\n'+
+    'Start with [Hello world with dependencies](hello/index.md) to trace a greeting through two folder boundaries. Then [review a change to the tested calculator](../guides/change-a-module.md). For a larger application, the [OpenID Connect example](oidc-login/index.md) combines pages, provider and client endpoints, and a session JWT. It is a development demonstration with documented limits.\n\n'+
+    'If you are learning the language for the first time, use [the book](../learn/index.md). The gallery is for exploring whole projects and looking at the code behind a specific feature or measurement.\n\n';
   for(const group of new Set(examples.map(example=>example.group))) {
-    index+='## '+group+'\n\n';
-    for(const example of examples.filter(example=>example.group===group))index+=`- [${example.title}](${url(relative('docs/examples',join(exampleDirectory(example),'index.md')))}) — ${example.description}\n`;
+    index+='## '+group+'\n\n| Project | What it demonstrates |\n| --- | --- |\n';
+    for(const example of examples.filter(example=>example.group===group))index+=`| [${example.title}](${url(relative('docs/examples',join(exampleDirectory(example),'index.md')))}) | ${example.description.replaceAll('|','\\|')} |\n`;
     index+='\n';
   }
   add('docs/examples/index.md',index.trimEnd()+'\n');

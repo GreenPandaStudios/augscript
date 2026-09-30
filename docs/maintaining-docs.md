@@ -2,6 +2,8 @@
 
 Documentation is part of a language change. The canonical wiki is this repository's `docs` directory, reviewed and versioned with the compiler. GitHub Pages renders these same files; an independently edited GitHub Wiki would create a second source of truth.
 
+For writing and navigation, use [the editorial guide](writing-docs.md). The repository's `.agents/skills/maintain-august-wiki/SKILL.md` routes agents through that guide and this workflow. `AGENTS.md` requires it for documentation and behavior changes. The [research note](research/wiki-editorial-design.md) explains the source material and the decisions applied here.
+
 ## Where to make a change
 
 | Change | Update in the same commit |
@@ -35,6 +37,8 @@ Keep titles and descriptions in the catalog current when adding or changing an e
 ## Executable examples
 
 Each runnable `aug` fence declares `project=NAME file=PATH`. A guide may spread one project across several fences. Add expected output/test counts to `docs/examples.json`. The documentation test assembles, checks, runs or builds, tests, formats, and checks those projects again. API signatures use `text` fences because a declaration header is not a complete application.
+
+The test discovers handwritten Markdown recursively, including the book and task guides. Generated API/gallery pages and hidden build folders have separate generation checks. Complete examples need expected output; identify fragments and intended failures in the prose. Maintain the chapter links and the public navigation when adding a lesson.
 
 ```sh
 node --test tests/documentation.test.mjs

@@ -80,13 +80,11 @@ Welcome(SessionClaims session) returns Html unless HttpError {
 
 ## Compiled specification {#specification}
 
-<a id="symbol-LoginPage"></a>
-### `LoginPage` · [source](views.md#code)
+### `LoginPage` · [source](views.md#code) {#symbol-LoginPage}
 
 It returns the server component [`Page`](../common/views.md#symbol-Page) with `title` = `"Sign in"` containing a paragraph containing `This August app is both an OpenID Connect provider and a login client.` with escaped text, a paragraph containing a link with `href` = `"/login/start"`, `style` = `"display:inline-block;padding:12px 20px;border-radius:10px;background:#4852d7;color:white;text-decoration:none"` containing `Sign in with OpenID Connect` with escaped text with escaped text, a paragraph containing `The server uses authorization codes, S256 PKCE, state and nonce validation. Your session is a separate signed JWT in an HttpOnly cookie.` with escaped text with escaped text.
 
-<a id="symbol-Welcome"></a>
-### `Welcome` · [source](views.md#code)
+### `Welcome` · [source](views.md#code) {#symbol-Welcome}
 
 It takes `session` as [`SessionClaims`](contracts.md#symbol-SessionClaims). Failures can raise `HttpError`.
 

@@ -6,6 +6,11 @@
     "stdout": "Hello, August!\n",
     "tests": 1
   },
+  "wiki-home": {"stdout": "21\n", "tests": 2},
+  "book-functions": {"stdout": "21\n0\n"},
+  "book-data": {"stdout": "21\nQuantity must be positive\nNo name for this identifier\n"},
+  "book-modules": {"stdout": "Hello, August!\n"},
+  "book-state": {"stdout": "4\n", "tests": 2},
   "quickstart": {
     "stdout": "Hello, AugScript!\n"
   },

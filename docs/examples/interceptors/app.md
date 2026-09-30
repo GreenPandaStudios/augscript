@@ -98,8 +98,7 @@ Greeter(resolve Logger logger to _logger, string name) implements IGreeter {
 
 ## Compiled specification {#specification}
 
-<a id="symbol-describe"></a>
-### `describe` · [source](app.md#code)
+### `describe` · [source](app.md#code) {#symbol-describe}
 
 Prints a number and returns its label. It takes `x` as an integer (the numeric input, validated and incremented by the chain) and `label` as a string (Text forwarded through each layer unchanged). It gets `logger` ([`Logger`](logging.md#symbol-Logger)) and `console` ([`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console)) from dependency injection. Failures can raise `ValidationError`.
 
@@ -107,21 +106,17 @@ Layers run in the declared order. Call [`Audit.around`](interceptors.md#symbol-A
 
 It passes `x` to [`console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write). It returns `label`.
 
-<a id="symbol-IGreeter"></a>
-### `IGreeter` · interface · [source](app.md#code)
+### `IGreeter` · interface · [source](app.md#code) {#symbol-IGreeter}
 
-<a id="symbol-IGreeter.greet"></a>
-#### `IGreeter.greet` · [source](app.md#code)
+#### `IGreeter.greet` · [source](app.md#code) {#symbol-IGreeter.greet}
 
 It gets `logger` ([`Logger`](logging.md#symbol-Logger)) and `console` ([`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console)) from dependency injection. It returns `string`. It can call [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
 
-<a id="symbol-Greeter"></a>
-### `Greeter` · class · [source](app.md#code)
+### `Greeter` · class · [source](app.md#code) {#symbol-Greeter}
 
 Construction stores its inputs; startup is visible in the greet call. It implements [`IGreeter`](app.md#symbol-IGreeter). It takes `name` as a string, kept read-only. It gets `_logger` ([`Logger`](logging.md#symbol-Logger)), kept read-only and private as `_logger` from dependency injection.
 
-<a id="symbol-Greeter.greet"></a>
-#### `Greeter.greet` · [source](app.md#code)
+#### `Greeter.greet` · [source](app.md#code) {#symbol-Greeter.greet}
 
 Method annotations wrap each method invocation separately. It gets `logger` ([`Logger`](logging.md#symbol-Logger)) and `console` ([`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console)) from dependency injection. Layers run in the declared order. Call [`Audit.around`](interceptors.md#symbol-Audit.around).
 

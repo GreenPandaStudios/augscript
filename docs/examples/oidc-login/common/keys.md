@@ -149,38 +149,31 @@ initializeKeys(resolve Crypto crypto, resolve SigningKeys keys) uses crypto.gene
 
 ## Compiled specification {#specification}
 
-<a id="symbol-KeyError"></a>
-### `KeyError` · class · [source](keys.md#code)
+### `KeyError` · class · [source](keys.md#code) {#symbol-KeyError}
 
 It implements `Error`.
 
-<a id="symbol-SigningKeys"></a>
-### `SigningKeys` · capability interface · [source](keys.md#code)
+### `SigningKeys` · capability interface · [source](keys.md#code) {#symbol-SigningKeys}
 
 Keys are initialized explicitly in main and expose distinct provider and session roles.
 
-<a id="symbol-SigningKeys.configure"></a>
-#### `SigningKeys.configure` · [source](keys.md#code)
+#### `SigningKeys.configure` · [source](keys.md#code) {#symbol-SigningKeys.configure}
 
 It takes `provider` and `session` as `RsaPrivateKey`. It can call [`SigningKeys.configure`](keys.md#symbol-SigningKeys.configure). Failures can raise [`KeyError`](keys.md#symbol-KeyError).
 
-<a id="symbol-SigningKeys.provider"></a>
-#### `SigningKeys.provider` · [source](keys.md#code)
+#### `SigningKeys.provider` · [source](keys.md#code) {#symbol-SigningKeys.provider}
 
 It returns `RsaPrivateKey`. It can call [`SigningKeys.provider`](keys.md#symbol-SigningKeys.provider). Failures can raise [`KeyError`](keys.md#symbol-KeyError).
 
-<a id="symbol-SigningKeys.session"></a>
-#### `SigningKeys.session` · [source](keys.md#code)
+#### `SigningKeys.session` · [source](keys.md#code) {#symbol-SigningKeys.session}
 
 It returns `RsaPrivateKey`. It can call [`SigningKeys.session`](keys.md#symbol-SigningKeys.session). Failures can raise [`KeyError`](keys.md#symbol-KeyError).
 
-<a id="symbol-MemorySigningKeys"></a>
-### `MemorySigningKeys` · class · [source](keys.md#code)
+### `MemorySigningKeys` · class · [source](keys.md#code) {#symbol-MemorySigningKeys}
 
 It implements [`SigningKeys`](keys.md#symbol-SigningKeys). The read-only, private field `_keys` has type `Shared<Map<string,RsaPrivateKey>>` and starts as a `Shared` with `value` from an empty map from `string` to `RsaPrivateKey`.
 
-<a id="symbol-MemorySigningKeys.configure"></a>
-#### `MemorySigningKeys.configure` · [source](keys.md#code)
+#### `MemorySigningKeys.configure` · [source](keys.md#code) {#symbol-MemorySigningKeys.configure}
 
 It takes `provider` and `session` as `RsaPrivateKey`. Failures can raise [`KeyError`](keys.md#symbol-KeyError).
 
@@ -188,8 +181,7 @@ While holding the lock on `_keys` as mutable `keys`, it checks that the number o
 
 Release this lock when the block exits, including on return or failure.
 
-<a id="symbol-MemorySigningKeys.provider"></a>
-#### `MemorySigningKeys.provider` · [source](keys.md#code)
+#### `MemorySigningKeys.provider` · [source](keys.md#code) {#symbol-MemorySigningKeys.provider}
 
 Failures can raise [`KeyError`](keys.md#symbol-KeyError).
 
@@ -197,8 +189,7 @@ While holding the lock on `_keys` as mutable `keys`, it obtains the value under 
 
 Release this lock when the block exits, including on return or failure.
 
-<a id="symbol-MemorySigningKeys.session"></a>
-#### `MemorySigningKeys.session` · [source](keys.md#code)
+#### `MemorySigningKeys.session` · [source](keys.md#code) {#symbol-MemorySigningKeys.session}
 
 Failures can raise [`KeyError`](keys.md#symbol-KeyError).
 
@@ -206,8 +197,7 @@ While holding the lock on `_keys` as mutable `keys`, it obtains the value under 
 
 Release this lock when the block exits, including on return or failure.
 
-<a id="symbol-initializeKeys"></a>
-### `initializeKeys` · [source](keys.md#code)
+### `initializeKeys` · [source](keys.md#code) {#symbol-initializeKeys}
 
 It gets `crypto` ([`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto)) and `keys` ([`SigningKeys`](keys.md#symbol-SigningKeys)) from dependency injection. Failures can raise `CryptoError` and [`KeyError`](keys.md#symbol-KeyError). It sets `provider` and `session` separately, each to [`crypto.generateRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.generateRsa). It calls [`keys.configure`](keys.md#symbol-SigningKeys.configure) with `provider` and `session`.
 

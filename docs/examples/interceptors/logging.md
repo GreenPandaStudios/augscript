@@ -67,23 +67,19 @@ ConsoleLogger() implements Logger {
 
 ## Compiled specification {#specification}
 
-<a id="symbol-Logger"></a>
-### `Logger` · interface · [source](logging.md#code)
+### `Logger` · interface · [source](logging.md#code) {#symbol-Logger}
 
 Writes a message to the application log.
 
-<a id="symbol-Logger.log"></a>
-#### `Logger.log` · [source](logging.md#code)
+#### `Logger.log` · [source](logging.md#code) {#symbol-Logger.log}
 
 It takes `message` as a string (Text to display). It gets `console` ([`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console)) from dependency injection. It can call [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
 
-<a id="symbol-ConsoleLogger"></a>
-### `ConsoleLogger` · class · [source](logging.md#code)
+### `ConsoleLogger` · class · [source](logging.md#code) {#symbol-ConsoleLogger}
 
 Console logger shared by interceptor instances and the application. It implements [`Logger`](logging.md#symbol-Logger).
 
-<a id="symbol-ConsoleLogger.log"></a>
-#### `ConsoleLogger.log` · [source](logging.md#code)
+#### `ConsoleLogger.log` · [source](logging.md#code) {#symbol-ConsoleLogger.log}
 
 It takes `message` as a string (Text to display). It gets `console` ([`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console)) from dependency injection. It passes `message` to [`console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
 

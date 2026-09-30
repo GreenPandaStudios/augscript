@@ -31,6 +31,7 @@ test('the wiki gallery contains every example and measured August source, with a
     assert.match(text,/```aug \[Braces\]/);
     assert.match(text,/## Compiled specification/);
     assert.doesNotMatch(text,/This document is compiled from checked code/);
+    assert.doesNotMatch(withoutFences(text),/^<a id="[^"]+"><\/a>$/m,name+': compiler anchors must become wiki heading anchors, not visible HTML');
   }
 });
 

@@ -89,21 +89,17 @@ interface IGreeter {
 
 ## Compiled specification {#specification}
 
-<a id="symbol-Greeter"></a>
-### `Greeter` · class · [source](greeter.md#code)
+### `Greeter` · class · [source](greeter.md#code) {#symbol-Greeter}
 
 Welcomes a user through the configured logger. It implements [`IGreeter`](greeter.md#symbol-IGreeter). The `logger` dependency is injected as [`Logger`](../logging/logger.md#symbol-Logger) and stored read-only (The application logger, injected when resolved).
 
-<a id="symbol-Greeter.greet"></a>
-#### `Greeter.greet` · [source](greeter.md#code)
+#### `Greeter.greet` · [source](greeter.md#code) {#symbol-Greeter.greet}
 
 Prints a personalized greeting. It takes `name` as a string (the user to welcome). It gets `console` ([`Console`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console)) from dependency injection. It passes the text `Hello, {name}!` to [`logger.log`](../logging/logger.md#symbol-Logger.log), using injected `console`.
 
-<a id="symbol-IGreeter"></a>
-### `IGreeter` · interface · [source](greeter.md#code)
+### `IGreeter` · interface · [source](greeter.md#code) {#symbol-IGreeter}
 
-<a id="symbol-IGreeter.greet"></a>
-#### `IGreeter.greet` · [source](greeter.md#code)
+#### `IGreeter.greet` · [source](greeter.md#code) {#symbol-IGreeter.greet}
 
 Prints a personalized greeting. It takes `name` as a string (the user to welcome). It gets `console` ([`Console`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console)) from dependency injection. It can call [`Console.write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
 
