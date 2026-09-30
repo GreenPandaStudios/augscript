@@ -1,6 +1,6 @@
 // aug-spec: "jose.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Crypto from contracts
-import parse from august.json
+import parse from "https://github.com/GreenPandaStudios/augscript/src/stdlib/json#v0.19.0"
 
 /** A failed JOSE validation reveals no unverified claims. */
 JwtError() implements Error:
