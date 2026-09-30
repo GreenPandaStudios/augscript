@@ -35,7 +35,7 @@ git push origin main v0.19.0
 
 ## npm publication
 
-The intended scope is `@greenpandastudios`. Claim this npm identity or choose an owned scope consistently before the first registry release. Create the initial packages with the owner's authenticated npm account. GitHub tarballs work independently of registry setup.
+The npm scope is `@greenpandastudios`; all four 0.19.0 packages have been published with the owner’s authenticated npm account. All four packages now have the trusted publisher connection below configured for future automated releases. The exact `npx @greenpandastudios/aug-cli@next init hello-august` command has been verified from a fresh temporary directory. GitHub tarballs remain available for offline installation.
 
 Configure a trusted publisher for each of the four npm packages:
 
@@ -47,11 +47,13 @@ Configure a trusted publisher for each of the four npm packages:
 
 Use npm CLI 11.5.1+ and GitHub-hosted runners. The workflow grants `id-token: write` for OIDC and needs no stored npm publishing token. Match package repository URLs to this repository. See [npm's trusted publisher instructions](https://docs.npmjs.com/trusted-publishers/).
 
-Run **Publish npm packages** with an existing verified version tag. It checks out that tag, checks types/docs/installed artifacts, then publishes standard library, web, crypto and CLI in dependency order with public access and the `next` dist tag. The `npm` environment can hold owner-configured release protection. Existing versions cannot be overwritten; inspect partial runs before retrying.
+Publishing a reviewed GitHub release automatically runs **Publish npm packages**. To retry, dispatch that workflow with the existing verified version tag. It checks out the workflow run’s commit, requires its package versions to match the release tag, and downloads the four archives already checked by the release pipeline. Before any publication, it verifies every SHA-256 checksum, SHA-512 integrity, package identity, exact version and dependency manifest, then publishes in dependency order with lifecycle scripts disabled and the `next` dist tag. No build or dependency install runs in the npm job with publishing credentials. The `npm` environment permits only tags matching `v*`. For manual retries, select a protected `v*` workflow ref containing the publishing implementation and matching package version, and supply the published release tag as the tag input; branch refs cannot publish through this environment. Retries skip a published version only when its registry integrity matches the reviewed archive. Mismatched versions and registry failures other than a missing version fail closed. Already-published versions do not have their dist tags moved by a retry.
 
 ## VS Code Marketplace
 
-Confirm ownership of the `augscript` Marketplace publisher. VSIX files can be installed directly. For Marketplace publication, follow [Microsoft's publishing guide](https://code.visualstudio.com/api/working-with-extensions/publishing-extension) and configure the publisher's Microsoft Entra identity/federation. Publish the verified VSIX with `vsce publish --packagePath ... --azure-credential` using that identity.
+Extension updates are manual. The release pipeline builds a version-matched VSIX and includes it with the GitHub release artifacts. Upload the reviewed `augscript-VERSION.vsix` through [Manage Extensions](https://marketplace.visualstudio.com/manage/publishers/augscript) when an editor update is needed. Check its SHA-256 against the release's `SHA256SUMS` before uploading. npm publication does not update the Marketplace extension.
+
+The `augscript` publisher profile belongs to August Miller and links to https://augustmiller.info. Version 0.19.0 is public as [AugScript](https://marketplace.visualstudio.com/items?itemName=augscript.augscript). No Marketplace publishing credentials or Entra identity are needed in GitHub Actions.
 
 The packaging script supplies the repository's `vscode` directory as the HTTPS
 base for README images. Verify those URLs are public before Marketplace
@@ -60,12 +62,10 @@ users. The extension logo and **AugScript: Open Welcome** images are bundled
 locally and do not depend on that image host. To update artwork, run
 `npm --prefix vscode run artwork` and commit the rendered PNGs.
 
-Global Azure DevOps PATs retire on December 1, 2026; this project does not introduce a new long-lived Marketplace PAT. Marketplace identity setup is an external owner prerequisite.
-
 ## Documentation deployment
 
 Enable GitHub Pages with **GitHub Actions** as its publishing source. `docs.yml` checks generated pages, builds the same Markdown and deploys through the `github-pages` environment after successful CI on main. Private repositories need an eligible GitHub plan for Pages. Docs remain readable in the repo and offline artifact when Pages is unavailable. See [GitHub's workflow requirements](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages).
 
 ## Current limits
 
-August is experimental. Native web/crypto bootstrap supports macOS and Linux; other platforms are unverified. Registry and Marketplace identities require owner configuration. User-authored source packages are supported through npm transport; prebuilt native dependency releases and a stable external native adapter ABI remain future work. See [the gap ledger](web-library-gaps.md) and [performance assessment](performance.md).
+August is experimental. Native web/crypto bootstrap supports macOS and Linux; other platforms are unverified. Marketplace uploads require the publisher owner’s account. User-authored source packages are supported through npm transport; prebuilt native dependency releases and a stable external native adapter ABI remain future work. See [the gap ledger](web-library-gaps.md) and [performance assessment](performance.md).

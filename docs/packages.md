@@ -26,7 +26,7 @@ node bin/aug.mjs run examples/oidc-login
 
 ## Install release tarballs
 
-Until registry publication is configured, download all four `.tgz` files from the same [GitHub release](https://github.com/GreenPandaStudios/augscript/releases). Install them together, replacing VERSION with the release version:
+For offline installation, download all four `.tgz` files from the same [GitHub release](https://github.com/GreenPandaStudios/augscript/releases). Install them together, replacing VERSION with the release version:
 
 ```sh
 npm install --global ./greenpandastudios-aug-stdlib-VERSION.tgz ./greenpandastudios-aug-web-VERSION.tgz ./greenpandastudios-aug-crypto-VERSION.tgz ./greenpandastudios-aug-cli-VERSION.tgz
@@ -45,24 +45,19 @@ For core programs and JSON without web/crypto, `aug-native --extract-only --only
 
 ## npm registry
 
-Once the owner has claimed the npm scope and configured publication:
+Create a project with the published CLI:
 
 ```sh
 npx @greenpandastudios/aug-cli@next init hello-august
-npm install --global @greenpandastudios/aug-cli@next
-aug init another-app
-aug-native
 ```
 
-`aug init DIRECTORY` creates a checked application with `main.aug`, a public interface and implementation, a same-file test, README, and `.gitignore`. It refuses a nonempty directory. The npm package exposes `aug-cli` as a binary so `npx` can select the executable by package name. The CLI brings its three matching libraries. Early releases use the `next` dist tag. **This npm package has not been published yet**, so use the checkout or release tarballs above until the owner configures npm access. Registry and Marketplace publication require their own owner accounts; a GitHub account does not grant those identities. See [releasing](releasing.md) for configuration and [getting started](getting-started.md) for a complete first project.
+`aug init DIRECTORY` creates a checked application with `main.aug`, a public interface and implementation, a same-file test, README, and `.gitignore`. It refuses a nonempty directory. The npm package exposes `aug-cli` as a binary so `npx` can select the executable by package name. The CLI brings its three matching libraries. Early releases use the `next` dist tag. Version 0.19.0 has been published to npm. Registry and Marketplace publication require their own owner accounts; a GitHub account does not grant those identities. See [releasing](releasing.md) for configuration and [getting started](getting-started.md) for the starter command.
 
 ## VS Code
 
-Download the matching `.vsix` from a release and use **Extensions → Install from VSIX**, or:
+Install **AugScript** (`augscript.augscript`) from the VS Code Extensions view from its [Marketplace listing](https://marketplace.visualstudio.com/items?itemName=augscript.augscript). Version 0.19.0 is public under August Miller’s publisher profile. Extension updates are uploaded manually from the reviewed GitHub release VSIX as described in [releasing](releasing.md).
 
-```sh
-code --install-extension augscript-VERSION.vsix
-```
+For direct installation, download the matching `.vsix` from [GitHub Releases](https://github.com/GreenPandaStudios/augscript/releases) and choose **Extensions → Install from VSIX**.
 
 The extension bundles the same compiler sources, standard declarations, native bootstrap, guides, and examples. Set `augscript.nativeHome` to an existing dependency build directory. Node.js 24+ remains required.
 

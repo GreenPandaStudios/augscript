@@ -1,7 +1,7 @@
 {
   "name": "augscript",
   "displayName": "AugScript",
-  "description": "Language support for AugScript",
+  "description": "AugScript language support: completion, diagnostics, formatting, tests, native debugging and compiled specifications.",
   "icon": "media/augscript.png",
   "version": "0.19.0",
   "repository": {
@@ -214,5 +214,16 @@
         }
       }
     }
+  },
+  "keywords": [
+    "augscript",
+    "august",
+    "language",
+    "compiler",
+    "llm"
+  ],
+  "galleryBanner": {
+    "color": "#101820",
+    "theme": "dark"
   }
 }

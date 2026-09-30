@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Improve Marketplace search metadata and installation docs; show the single npm starter command.
+- Keep Marketplace updates as manual uploads of the verified GitHub release VSIX.
+
 ## 0.19.0
 
 - Deterministic compiled specifications, project generation, and current-file Markdown preview.

@@ -8,19 +8,9 @@ The TypeScript compiler emits C11 and builds a native executable. This repositor
 
 ## Start a project
 
-Requires Node.js 24+ and a C11 compiler. The CLI finds Xcode's Clang and SDK on macOS; set `CC` to select another compiler. From a checkout:
-
 ```sh
-npm ci
-node scripts/bootstrap-native.mjs --extract-only --only minicoro,yyjson
-node bin/aug.mjs init hello-august
-node bin/aug.mjs check hello-august
-node bin/aug.mjs test hello-august
-node bin/aug.mjs run hello-august
-node bin/aug.mjs spec hello-august
+npx @greenpandastudios/aug-cli@next init hello-august
 ```
-
-The starter refuses to overwrite a nonempty directory. The npm package adds `npx @greenpandastudios/aug-cli@next init hello-august` once the owner publishes it. See the [step-by-step getting-started guide](docs/getting-started.md), [complete example projects](docs/examples/index.md) with code beside compiled specs, and [packages](docs/packages.md) for current installation options.
 
 ## The language
 
