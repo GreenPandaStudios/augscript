@@ -36,13 +36,13 @@ Read [`logging/logger.aug`](logging/logger.md). The contract describes the log o
 
 ## Try this project
 
-[Download this project](/downloads/hello.zip), then extract the archive in an empty working folder. It contains the checked source, configuration, and generated specs. Prepare the [native dependencies](../../packages.md#npm-registry) once, then use the published CLI:
+[Download this project](/downloads/hello.zip), then extract the archive in an empty working folder. It contains the checked source, configuration, and generated specs. [Install August](../../getting-started.md) once, then run these commands. Native libraries are prepared automatically when needed:
 
 ```sh
 cd hello
-npx @greenpandastudios/aug-cli@next check .
-npx @greenpandastudios/aug-cli@next spec .
-npx @greenpandastudios/aug-cli@next run .
+aug check .
+aug spec .
+aug run .
 ```
 
 [Browse all examples](../index.md)

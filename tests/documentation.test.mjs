@@ -22,7 +22,7 @@ test('reader instructions use the published starter and do not require language 
   for(const name of ['README.md','docs/getting-started.md']) {
     const text=readFileSync(join(root,name),'utf8');
     const firstShell=/```sh\n([\s\S]*?)\n```/.exec(text)?.[1];
-    assert.equal(firstShell,'npx @greenpandastudios/aug-cli@next init hello-august',name+': one published starter command');
+    assert.equal(firstShell,'npm install --global @greenpandastudios/aug-cli@next\naug init hello-august\ncd hello-august\naug run',name+': install once, then create and run');
   }
 });
 

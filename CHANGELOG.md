@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Make `aug run` prepare declared source packages and the native dependencies its checked program uses before compiling and starting it. Reuse verified caches, support offline runs, isolate concurrent native setup, and resume interrupted preparation. Build/test/bench prepare their required native libraries too.
+- Explain missing tools, failed downloads/builds, cache problems, invalid options, and process signals. Terminal diagnostics include source excerpts, location pointers, and help. Simplify onboarding to install August once and use `aug init` and `aug run`.
+- Detect native runtime references as C identifiers so strings and comments cannot accidentally request extra libraries. Package the setup helpers with the CLI and VS Code compiler.
+- Fix fresh GnuTLS configuration through aliased cache paths; add a cold crypto/HTTP preparation gate that executes a digest and serves a real response.
+
 - Document Docker application builds, HTTP deployment, registry transfer, and a VS Code Dev Container with the published CLI, native libraries, August extension, and forwarded ports. Check the deployment example and its endpoint test in the executable documentation gate.
 - Reorganize the public wiki into a sequential August book, task guides, language/library reference, design and readiness pages, and contributor documentation. Add checked lessons, a guided module review, primary-source editorial research, and a repository maintenance skill.
 - Check nested handwritten lessons in the executable documentation gate and keep benchmark and readiness claims scoped to their evidence.

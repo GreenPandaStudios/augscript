@@ -210,14 +210,13 @@ Download and extract [the login project](examples/oidc-login/index.md#try-this-p
 
 ```sh
 cd oidc-login
-npx --package=@greenpandastudios/aug-cli@next aug-native
-npx @greenpandastudios/aug-cli@next run .
+aug run
 ```
 
 In another terminal, run the signed-claim tests from the same project folder:
 
 ```sh
-npx @greenpandastudios/aug-cli@next test . --group signed_identity_claims
+aug test --group signed_identity_claims
 ```
 
-Open http://127.0.0.1:8787 and sign in as **ada** with **august-demo**. `/me` returns the protected identity; `/docs` exposes endpoint contracts. The [gap ledger](web-library-gaps.md) distinguishes this verified development profile from broader provider, library and runtime support.
+The first run prepares the native HTTP and crypto libraries automatically; later runs reuse them. [Install August](getting-started.md) first if `aug` is not available. Open http://127.0.0.1:8787 and sign in as **ada** with **august-demo**. `/me` returns the protected identity; `/docs` exposes endpoint contracts. The [gap ledger](web-library-gaps.md) distinguishes this verified development profile from broader provider, library and runtime support.

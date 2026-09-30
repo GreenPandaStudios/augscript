@@ -34,7 +34,7 @@ total(int price, int quantity) returns int:
     return 0
 ```
 
-Run `npx @greenpandastudios/aug-cli@next check .`, then `npx @greenpandastudios/aug-cli@next run .`. The output is:
+Run `aug check .`, then `aug run .`. The output is:
 
 ```text
 21
@@ -57,6 +57,6 @@ Boolean conditions use `and`, `or`, and `not`. For example, `price > 0 and quant
 
 ## Try a change
 
-Change the first quantity to `4`. Run the program and check that the first result is `28`. Then change the second call's `quantity` label to `amount` and run `npx @greenpandastudios/aug-cli@next check .`. That call should fail checking because `total` has no input named `amount`. Restore the label before continuing.
+Change the first quantity to `4`. Run the program and check that the first result is `28`. Then change the second call's `quantity` label to `amount` and run `aug check .`. That call should fail checking because `total` has no input named `amount`. Restore the label before continuing.
 
-Run `npx @greenpandastudios/aug-cli@next spec .` and read `prices.aug.md`. It should explain the two return paths. The generated text describes the code; your comment explains why a nonpositive quantity produces zero. [The next chapter](data-and-errors.md) makes an invalid input an explicit failure instead.
+Run `aug spec .` and read `prices.aug.md`. It should explain the two return paths. The generated text describes the code; your comment explains why a nonpositive quantity produces zero. [The next chapter](data-and-errors.md) makes an invalid input an explicit failure instead.

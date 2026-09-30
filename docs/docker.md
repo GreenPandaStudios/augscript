@@ -78,7 +78,8 @@ The two images use the same Debian distribution and native library paths. A Linu
 Start a project using Node.js 24 and npm on your host:
 
 ```sh
-npx @greenpandastudios/aug-cli@next init my-api
+npm install --global @greenpandastudios/aug-cli@next
+aug init my-api
 cd my-api
 ```
 

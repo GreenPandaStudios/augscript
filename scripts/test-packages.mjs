@@ -43,6 +43,17 @@ try {
   aug('check', starter);
   assert.equal(JSON.parse(aug('test', starter, '--json')).passed, 1);
   assert.equal(aug('run', starter), 'Hello, August!\n');
+  // Installed JavaScript must include every setup helper and prepare a genuinely empty source cache.
+  const freshNative = join(directory, 'first-use-native');
+  mkdirSync(join(freshNative, 'downloads'), { recursive: true });
+  const pinned = JSON.parse(readFileSync(join(cliRoot, 'scripts/native-dependencies.lock.json')));
+  const jsonDependency = pinned.dependencies.find(item => item.name === 'yyjson');
+  cpSync(join(process.env.AUG_NATIVE_HOME ?? join(root, '.aug-native'), 'downloads', jsonDependency.archive), join(freshNative, 'downloads', jsonDependency.archive));
+  const jsonProject = join(directory, 'first-use-json'); mkdirSync(jsonProject);
+  writeFileSync(join(jsonProject, 'main.aug'), 'import parse from august.json\ntry:\n    value = parse(input="null")\n    print(value="parsed")\ncatch JsonError error:\n    exit(status=1)\n');
+  assert.equal(run(process.execPath, [cli, 'run', jsonProject, '--offline'], { env: { ...process.env, AUG_NATIVE_HOME: freshNative } }), 'parsed\n');
+  assert.ok(existsSync(join(freshNative, 'sources/yyjson/src/yyjson.c')));
+  assert.ok(!existsSync(join(freshNative, 'sources/gnutls')));
   aug('spec', starter);
   assert.ok(existsSync(join(starter, 'greeting.aug.md')));
   const refused = spawnSync(process.execPath, [cli, 'init', starter], { cwd: directory, encoding: 'utf8' });
@@ -66,8 +77,8 @@ try {
   const consumer = join(directory, 'my-app'); mkdirSync(consumer);
   writeFileSync(join(consumer, 'main.yaml'), `packages:\n  math: "${archive}"\n`);
   writeFileSync(join(consumer, 'main.aug'), 'import add from math\nprint(value=add(left=20, right=22))\n');
-  aug('install', consumer, '--offline'); aug('install', consumer, '--frozen', '--offline');
-  assert.equal(aug('run', consumer), '42\n');
+  assert.equal(aug('run', consumer, '--offline'), '42\n');
+  aug('install', consumer, '--frozen', '--offline');
   const globalPrefix = join(directory, 'global');
   run('npm', ['install', '--global', '--prefix', globalPrefix, '--offline', '--ignore-scripts', '--no-audit', '--no-fund',
     ...packages.map(pkg => join(artifacts, pkg.filename))]);

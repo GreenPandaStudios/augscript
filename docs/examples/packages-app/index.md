@@ -22,14 +22,14 @@ Open a file to read its source beside the explanation produced by `aug spec`. **
 
 ## Try this project
 
-[Download this project](/downloads/packages-app.zip), then extract the archive in an empty working folder. It contains the checked source, configuration, and generated specs. Both the application and its neighboring arithmetic library are included. Prepare the [native dependencies](../../packages.md#npm-registry) once, then use the published CLI:
+[Download this project](/downloads/packages-app.zip), then extract the archive in an empty working folder. It contains the checked source, configuration, and generated specs. Both the application and its neighboring arithmetic library are included. [Install August](../../getting-started.md) once, then run these commands. Native libraries are prepared automatically when needed:
 
 ```sh
 cd packages-app/app
-npx @greenpandastudios/aug-cli@next install . --offline
-npx @greenpandastudios/aug-cli@next check .
-npx @greenpandastudios/aug-cli@next spec .
-npx @greenpandastudios/aug-cli@next run .
+aug install . --offline
+aug check .
+aug spec .
+aug run .
 ```
 
 [Browse all examples](../index.md)

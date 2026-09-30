@@ -43,14 +43,14 @@ Open a file to read its source beside the explanation produced by `aug spec`. **
 
 ## Try this project
 
-[Download this project](/downloads/oidc-login.zip), then extract the archive in an empty working folder. It contains the checked source, configuration, and generated specs. Prepare the [native dependencies](../../packages.md#npm-registry) once, then use the published CLI:
+[Download this project](/downloads/oidc-login.zip), then extract the archive in an empty working folder. It contains the checked source, configuration, and generated specs. [Install August](../../getting-started.md) once, then run these commands. Native libraries are prepared automatically when needed:
 
 ```sh
 cd oidc-login
-npx @greenpandastudios/aug-cli@next check .
-npx @greenpandastudios/aug-cli@next spec .
-npx @greenpandastudios/aug-cli@next test .
-npx @greenpandastudios/aug-cli@next run .
+aug check .
+aug spec .
+aug test .
+aug run .
 ```
 
 Open `http://127.0.0.1:8787` and sign in with **ada** / **august-demo**. This development example keeps accounts, signing keys, and sessions in process memory. See [web and crypto](../../web.md) and [the remaining library gaps](../../web-library-gaps.md).

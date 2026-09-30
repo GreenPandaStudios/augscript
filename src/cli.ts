@@ -16,8 +16,18 @@ import { updateSpecHints } from './spec-hints.ts';
 import { runLanguageServer } from './lsp.ts';
 import { benchmark, compileNative, writeCoverage } from './native.ts';
 import {generateOpenApi} from './openapi.ts';
-import { initPackage, installPackages, preparePackage, packPackage } from './package-manager.ts';
+import { initPackage, installPackages, preparePackage, packPackage, prepareRunPackages } from './package-manager.ts';
 import { initProject } from './project-init.ts';
+import { prepareNativeDependencies } from '../scripts/native-setup.mjs';
+
+function failureMessage(error: unknown): string {
+  const message = error instanceof Error ? error.message : String(error);
+  if (error instanceof Error && 'code' in error && ['EACCES', 'EPERM', 'EROFS'].includes(String(error.code)))
+    return `${message}\nAugust needs a writable project and native cache. Check the folder permissions, or set AUG_NATIVE_HOME to a directory you own.`;
+  if (error instanceof Error && 'code' in error && error.code === 'ENOSPC')
+    return `${message}\nThere is not enough disk space to compile or prepare dependencies. Free space and retry aug run.`;
+  return message;
+}
 
 function printDiagnostics(diagnostics: Diagnostic[], json: boolean, root: string): void {
   if (json) {
@@ -25,9 +35,22 @@ function printDiagnostics(diagnostics: Diagnostic[], json: boolean, root: string
       help: diagnosticHelp[issue.code] }))) + '\n');
     return;
   }
+  const sources = new Map<string, string[]>();
   for (const issue of diagnostics) {
-    const file = issue.file.startsWith(root) ? issue.file.slice(root.length + 1) : issue.file;
+    const file = relative(root, issue.file) || issue.file;
     process.stderr.write(`${file}:${issue.line}:${issue.column}: ${issue.code}: ${issue.message}\n`);
+    try {
+      if (!sources.has(issue.file)) sources.set(issue.file, readFileSync(issue.file, 'utf8').split(/\r?\n/));
+      const line = sources.get(issue.file)?.[issue.line - 1];
+      if (line !== undefined) {
+        const column = Math.max(0, Math.min(line.length, issue.column - 1));
+        const start = Math.max(0, column - 70), end = Math.min(line.length, start + 150);
+        const text = (start ? '…' : '') + line.slice(start, end).replace(/\t/g, '    ') + (end < line.length ? '…' : '');
+        const padding = (start ? 1 : 0) + line.slice(start, column).replace(/\t/g, '    ').length;
+        process.stderr.write(`  ${issue.line} | ${text}\n  ${' '.repeat(String(issue.line).length)} | ${' '.repeat(padding)}^\n`);
+      }
+    } catch { /* Source may have been removed; the location and help remain useful. */ }
+    if (diagnosticHelp[issue.code]) process.stderr.write(`  help: ${diagnosticHelp[issue.code]}\n`);
   }
 }
 
@@ -35,6 +58,7 @@ function usage(): void {
   process.stdout.write(`AugScript compiler\n\n` +
     `Usage: aug <init|check|build|run|emit-c|test|openapi|format|migrate|spec|bench|explain|context|lsp|symbols|definition|complete|hover|fixes|semantic-tokens> [project directory] [options] [-- args]\n` +
     `New application: aug init DIRECTORY\n` +
+    `Run: aug run [project directory] [--offline] [-- args] — prepare dependencies, compile, and start\n` +
     `Tests: aug test [project directory] [GROUP_NAME] [--group GROUP_NAME] [--list] [--coverage] [--json] [--timeout milliseconds]\n` +
     `Format: aug format [project directory] [--file path] [--write]\n` +
     `Specifications: aug spec [project directory] [--check] [--json]\n` +
@@ -60,9 +84,9 @@ export async function main(argv: string[]): Promise<number> {
     }
     try {
       const root = initProject(argv[1]);
-      process.stdout.write(`Created August application in ${root}\nNext: cd ${argv[1]} && aug check . && aug test . && aug run .\n`);
+      process.stdout.write(`Created August application in ${root}\nNext: cd ${argv[1]}\n      aug run\n`);
       return 0;
-    } catch (error) { process.stderr.write((error as Error).message + '\n'); return 1; }
+    } catch (error) { process.stderr.write(failureMessage(error) + '\n'); return 1; }
   }
   if (command === 'install' || command === 'package') {
     try {
@@ -86,7 +110,7 @@ export async function main(argv: string[]): Promise<number> {
         process.stdout.write(packPackage(root) + '\n');
       } else throw new Error('Use aug package init or aug package pack');
       return 0;
-    } catch (error) { process.stderr.write((error as Error).message + '\n'); return 1; }
+    } catch (error) { process.stderr.write(failureMessage(error) + '\n'); return 1; }
   }
   if (command === 'lsp') return runLanguageServer(resolve(argv[1] ?? process.cwd()));
   if (!['check', 'build', 'run', 'emit-c', 'test', 'openapi', 'format', 'migrate', 'spec', 'bench', 'explain', 'context', 'symbols', 'definition',
@@ -96,6 +120,18 @@ export async function main(argv: string[]): Promise<number> {
   const separator = argv.indexOf('--');
   const options = separator >= 0 ? argv.slice(1, separator) : argv.slice(1);
   const programArgs = separator >= 0 ? argv.slice(separator + 1) : [];
+  if (options.includes('--help')) { usage(); return 0; }
+  const valueOptions = new Set(['--out', '--stdin-file', '--file', '--name', '--offset', '--budget', '--baseline', '--group', '--case', '--timeout', '--iterations', '--warmup']);
+  const booleanOptions = new Set(['--json', '--coverage', '--list', '--write', '--check', '--offline']);
+  for (let index = 0; index < options.length; index++) {
+    const option = options[index];
+    if (valueOptions.has(option)) {
+      if (!options[index + 1] || options[index + 1].startsWith('--')) { process.stderr.write(`${option} needs a value. See aug ${command} --help.\n`); return 2; }
+      index++;
+    } else if (option.startsWith('-') && !booleanOptions.has(option)) {
+      process.stderr.write(`Unknown option ${option}. See aug ${command} --help. To pass an option to your program, put it after --.\n`); return 2;
+    }
+  }
   const json = options.includes('--json');
   const outIndex = options.indexOf('--out');
   const outputOption = outIndex >= 0 ? options[outIndex + 1] : undefined;
@@ -149,6 +185,9 @@ export async function main(argv: string[]): Promise<number> {
         command === 'fixes' ? document.fixes() : document.tokens();
       process.stdout.write(JSON.stringify(result) + '\n'); return 0;
     }
+    if (!existsSync(root) || !statSync(root).isDirectory())
+      throw new Error(`Project directory does not exist: ${root}\nUse aug init DIRECTORY to create a project, or run aug run from the folder containing main.aug.`);
+    if (command === 'run') prepareRunPackages(root, options.includes('--offline'));
     const project = loadProject(root, overrides);
     if (project.library && ['build', 'run', 'bench', 'openapi'].includes(command))
       throw new Error('This is an August library; use check, test, or package pack. Import its exports from an application with main.aug to run it.');
@@ -184,7 +223,9 @@ export async function main(argv: string[]): Promise<number> {
       const results: { id: string; group: string; name: string; passed: boolean; stdout: string; stderr: string }[] = [];
       const coverage = options.includes('--coverage'), reports: string[] = [];
       for (const [index, { unit, checked: testChecked }] of checks.entries()) {
-        const native = compileNative(root, generateC(testChecked, { coverage }), { testIndex: index, checked: testChecked });
+        const generated = generateC(testChecked, { coverage });
+        await prepareNativeDependencies(generated, { offline: options.includes('--offline') });
+        const native = compileNative(root, generated, { testIndex: index, checked: testChecked });
         const report = join(root, '.aug-build', 'tests', `coverage-${index}.tsv`); reports.push(report);
         if (coverage) rmSync(report, { force: true });
         const run = native.status === 0 ? spawnSync(native.output, [], { encoding: 'utf8', cwd: root, timeout,
@@ -268,6 +309,7 @@ export async function main(argv: string[]): Promise<number> {
     if (command === 'bench' && (!Number.isInteger(iterations) || iterations < 1 || iterations > 1000 ||
       !Number.isInteger(warmup) || warmup < 0 || warmup > 100 || !Number.isInteger(timeout) || timeout < 1))
       throw new Error('bench requires iterations 1–1000, warmup 0–100, and a positive timeout');
+    await prepareNativeDependencies(generated, { offline: options.includes('--offline') });
     const native = compileNative(root, generated, { output: outputOption, release: command === 'bench' ? true : undefined, checked });
     const output = native.output;
     if (native.status !== 0) {
@@ -285,10 +327,12 @@ export async function main(argv: string[]): Promise<number> {
       return 0;
     }
     const run = spawnSync(output, programArgs, { stdio: 'inherit', cwd: root });
-    if (run.error) throw run.error;
+    if (run.error) throw new Error(`Cannot start the compiled program ${output}: ${run.error.message}.\nCheck executable permissions and the native shared-library paths.`);
+    if (run.signal) process.stderr.write(`Program stopped by ${run.signal}. Check the runtime message above; aug run compiled and started ${output}.\n`);
+    else if (run.status !== 0) process.stderr.write(`Program exited with status ${run.status}.\n`);
     return run.status ?? 1;
   } catch (error) {
-    process.stderr.write(`${error instanceof Error ? error.message : String(error)}\n`);
-    return 1;
+    process.stderr.write(failureMessage(error) + '\n');
+    return error instanceof Error && 'exitCode' in error && typeof error.exitCode === 'number' ? error.exitCode : 1;
   }
 }

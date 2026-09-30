@@ -11,7 +11,7 @@ for (const directory of ['bin', 'src', 'runtime', 'docs']) {
     filter: source => !relative(from, source).split(/[\\/]/).some(part => part.startsWith('.') && part!=='.aug-spec') });
 }
 mkdirSync(join(target, 'scripts'));
-for (const file of ['bootstrap-native.mjs', 'native-home.mjs', 'native-home.d.mts', 'native-dependencies.lock.json'])
+for (const file of ['bootstrap-native.mjs', 'native-home.mjs', 'native-home.d.mts', 'native-setup.mjs', 'native-setup.d.mts', 'native-toolchain.mjs', 'native-toolchain.d.mts', 'native-dependencies.lock.json'])
   cpSync(join(root, 'scripts', file), join(target, 'scripts', file));
 cpSync(join(root, 'examples'), join(target, 'examples'), { recursive: true,
   filter: source => !relative(join(root, 'examples'), source).split(/[\\/]/).some(part => part.startsWith('.') && part!=='.aug-spec') });
