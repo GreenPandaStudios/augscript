@@ -743,8 +743,13 @@ catch Error error:
   });
   withProject({
     'operations.aug': operations.replace('observe(Task<int> pending) returns int unless Error:', 'observe(Task<int> pending) returns int:'),
-    'main.aug': ''
-  }, root => assert.ok(diagnosticCodes(root).includes('THROWS')));
+    'main.aug': 'import observe from operations\n'
+  }, root => {
+    const result = spawnSync(process.execPath, [cli, 'explain', root, '--file', join(root, 'operations.aug'), '--json'], {encoding:'utf8'});
+    assert.equal(result.status, 0, result.stderr);
+    const facts = JSON.parse(result.stdout).contracts;
+    assert.deepEqual(facts.find(fact => fact.name === 'observe').callables[0].errors, ['Error']);
+  });
 });
 
 test('CLEANUP-1: always executes before a returned result is observed', () => {

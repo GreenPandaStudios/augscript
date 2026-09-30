@@ -3,13 +3,13 @@ interface ICounter {
     label() returns string
 }
 Counter(mutable int value) implements ICounter {
-    _label() returns string {
+    _label() {
         return _prefix()
     }
-    label() returns string {
+    label() {
         return self._label()
     }
 }
-_prefix() returns string {
+_prefix() {
     return "count"
 }

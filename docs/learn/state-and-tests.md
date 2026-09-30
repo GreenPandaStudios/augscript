@@ -32,10 +32,10 @@ interface Count:
     value() returns int
 
 Counter(mutable int initial to _count) implements Count:
-    increment() changes self:
+    increment():
         _count = _count + 1
 
-    value() returns int:
+    value():
         return _count
 
 test Counter counter:
@@ -54,7 +54,7 @@ test Counter counter:
 
 ## Read before you borrow
 
-`mutable int initial to _count` gives the constructor a public input named `initial` and stores it in a private mutable field named `_count`. The interface's `changes self` says that `increment` can change the receiving object.
+`mutable int initial to _count` gives the constructor a public input named `initial` and stores it in a private mutable field named `_count`. The interface's `changes self` permits `increment` to change the receiving object. The implementation infers that mutation from its assignment and inherits the read method's result type, so neither clause needs to be repeated.
 
 `borrow counter` grants mutable access for that block. The following call to `value()` only reads, so it needs no borrow. Read access shares a reference; it does not require copying the counter. Try moving `counter.increment()` outside the borrow block. `aug check .` should reject the mutation without permission. Restore the borrow before running again.
 

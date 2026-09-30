@@ -116,7 +116,7 @@ announce(message="Hello from C")
 ```aug project=ffi-guide file=native.aug
 extern C puts(string value) returns c_int
 
-announce(string message) uses C.puts:
+announce(string message):
     unsafe:
         result = puts(value=message)
 ```
@@ -130,7 +130,7 @@ announce(string message) uses C.puts:
 | string | const char* (UTF-8, no NUL) |
 | void | void |
 
-C calls require unsafe, and callables declare uses C.function. Ordinary scalar extern declarations have no generics, resolve parameters, ownership transfer, nullable boundary types, or checked error clause. For libc functions taking C int, explicitly narrow with c_int; do not declare their boundary as int64_t.
+C calls require unsafe, and executable callers infer uses C.function. Ordinary scalar extern declarations have no generics, resolve parameters, ownership transfer, nullable boundary types, or checked error clause. For libc functions taking C int, explicitly narrow with c_int; do not declare their boundary as int64_t.
 
 Standard adapters use `extern C value` for the managed AugValue ABI. Each C argument and result must actually be AugValue; headers expose the declared capability effect and checked failures. `pure` asserts a trusted native implementation has no observable effects. These declarations are unsafe contracts, not automatic C bindings. Crypto, HTTP, JSON and time adapters demonstrate this narrow boundary in src/stdlib and runtime.
 
@@ -201,3 +201,9 @@ The language server implements the [LSP 3.17 protocol](https://github.com/Micros
 One server runs per project. Parsed modules and checked import closures are cached by source/configuration revision. Unrelated edits reuse the previous immutable semantic document; dependency edits invalidate its closure. Local files can be checked while main composition is incomplete. Whole-project check/build still validates all bindings and startup.
 
 Compiler and extension development dependencies use exact versions and lockfiles. Native maps record the selected C toolchain and inputs; C compiler/OS versions are environment requirements, not vendored binaries. User-authored source packages use npm archives/registry transport, exact versions, and `aug.lock.json`; [the package guide](packages.md) covers creation, installation, public imports and frozen CI builds.
+
+## Inferred contract hints
+
+VS Code shows inferred results, mutations, capability operations, and escaping checked errors beside executable headers. Long capability/error lists collapse to counts; their tooltip shows the full contract. These hints use the checked project, including unsaved edits and imported declarations. They are display text; formatting and saving do not add them to source. Hover, signature help, `aug explain`, and compiled specs share the same contracts. Bodyless interfaces and foreign declarations keep explicit contracts.
+
+Hints are enabled by default. Disable `augscript.inferredContractHints` to hide them, or use VS Code’s `editor.inlayHints.enabled` setting. The language server supports `textDocument/inlayHint` with range filtering for other editors.

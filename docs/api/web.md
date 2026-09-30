@@ -107,7 +107,7 @@ complete(string method, string path, int status, int milliseconds)
 
 The signature declares inputs, result, effects and checked errors.
 
-Inferred capabilities: `RequestLogger.complete`.
+The compiler infers use of `RequestLogger.complete`.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/web/contracts.aug#L20)
 
@@ -144,19 +144,19 @@ Native libwebsockets transport. No socket is opened by construction.
 ### WebHttpClient.request
 
 ```text
-request(string method, string url, optional Headers headers, optional Bytes body) returns HttpResponse<Bytes> unless HttpError
+request(string method, string url, optional Headers headers, optional Bytes body)
 ```
 
 Perform an HTTP request with bounded bytes. Inside a task, waiting suspends the task's C stack.
 
-Inferred capabilities: `HttpClient.request`.
+The compiler infers a `HttpResponse<Bytes>` result, use of `HttpClient.request`, `HttpError` failures.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/web/contracts.aug#L33)
 
 ## redirect {#api-redirect}
 
 ```text
-redirect(string location, optional int status) returns HttpResponse<string> unless HttpError
+redirect(string location, optional int status)
 ```
 
 Return a redirect with an explicit status. Location is checked as a header value.
@@ -166,7 +166,7 @@ Return a redirect with an explicit status. Location is checked as a header value
 ## urlEncode {#api-urlEncode}
 
 ```text
-urlEncode(string input) returns string unless HttpError
+urlEncode(string input)
 ```
 
 Encode a UTF-8 value as one URL query or form component using RFC 3986 unreserved characters.
@@ -176,7 +176,7 @@ Encode a UTF-8 value as one URL query or form component using RFC 3986 unreserve
 ## cookie {#api-cookie}
 
 ```text
-cookie(string name, string value, string path, int maxAge, bool secure) returns Headers unless HttpError
+cookie(string name, string value, string path, int maxAge, bool secure)
 ```
 
 Construct an HttpOnly, SameSite=Lax session cookie. Secure defaults are chosen explicitly at the call site. Values and paths reject delimiters and controls. maxAge=0 clears the cookie.

@@ -61,7 +61,7 @@ import Authentication and RequestLogger and WebRequestLogger from august.web
 [RateLimit(requests=100, seconds=60)]
 [Timeout(milliseconds=1000)]
 [Compress]
-endpoint GET "/users/{id}" as readUser(int id from path, resolve Authentication auth, resolve RequestLogger logger) returns User uses auth.authenticate and logger.complete:
+endpoint GET "/users/{id}" as readUser(int id from path, resolve Authentication auth, resolve RequestLogger logger):
     return User(id, name="Ada")
 
 test endpoint readUser client:
@@ -97,7 +97,7 @@ import UserInput from models
 import redirect from august.web
 
 /** Accept a typed form and redirect after handling it. */
-endpoint POST "/users" as save(UserInput input from form) returns HttpResponse<string> unless HttpError:
+endpoint POST "/users" as save(UserInput input from form):
     return redirect(location="/")
 ```
 

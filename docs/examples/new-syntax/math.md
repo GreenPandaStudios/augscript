@@ -33,13 +33,13 @@ pageClass: aug-example-page
 
 ```aug [Indentation]
 // aug-spec: "math.aug.md" explains this file. Read it before changes; refresh with aug spec.
-increment(int value) returns int:
+increment(int value):
     return value + 1
 ```
 
 ```aug [Braces]
 // aug-spec: "math.aug.md" explains this file. Read it before changes; refresh with aug spec.
-increment(int value) returns int {
+increment(int value) {
     return value + 1
 }
 ```

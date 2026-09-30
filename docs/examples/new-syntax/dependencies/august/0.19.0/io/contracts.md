@@ -44,16 +44,16 @@ capability FileWriter:
     write(string path, string content) uses FileWriter.write unless FileError
 /** Native files. Operations are explicit; construction opens no files. */
 LocalFiles() implements FileReader, FileWriter:
-    read(string path) returns string unless FileError:
+    read(string path):
         return read_file(path=path)
-    write(string path, string content) unless FileError:
+    write(string path, string content):
         write_file(path=path, content=content)
 /** Read command-line input through an explicit dependency. */
 capability Arguments:
     read() returns List<string> uses Arguments.read
 /** Native command-line arguments. */
 ProcessArguments() implements Arguments:
-    read() returns List<string>:
+    read():
         return arguments()
 ```
 
@@ -82,10 +82,10 @@ capability FileWriter {
 }
 /** Native files. Operations are explicit; construction opens no files. */
 LocalFiles() implements FileReader, FileWriter {
-    read(string path) returns string unless FileError {
+    read(string path) {
         return read_file(path=path)
     }
-    write(string path, string content) unless FileError {
+    write(string path, string content) {
         write_file(path=path, content=content)
     }
 }
@@ -95,7 +95,7 @@ capability Arguments {
 }
 /** Native command-line arguments. */
 ProcessArguments() implements Arguments {
-    read() returns List<string> {
+    read() {
         return arguments()
     }
 }

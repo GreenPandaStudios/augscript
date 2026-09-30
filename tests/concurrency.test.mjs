@@ -48,7 +48,13 @@ test('task errors are checked at waits and implicit joins, rather than at schedu
         catch FileError error:
             pass
 `);
-    assert.ok(checkProject(loadProject(root)).diagnostics.some(issue => issue.code === 'THROWS' && /FileError/.test(issue.message)), 'implicit join occurs outside the catch');
+    const joined = checkProject(loadProject(root));
+    assert.deepEqual(joined.diagnostics, []);
+    const outer = joined.project.scopes.get(join(root, 'operations.aug')).get('outer').node;
+    assert.ok(joined.callableContracts.get(outer).errors.some(error => error.name === 'FileError'), 'implicit join occurs outside the catch and is inferred as escaping');
+    writeFileSync(join(root, 'main.aug'), 'import outer from operations\nouter()\n');
+    assert.ok(checkProject(loadProject(root)).diagnostics.some(issue => issue.code === 'THROWS' && /FileError/.test(issue.message)), 'main must handle the inferred join failure');
+    writeFileSync(join(root, 'main.aug'), '');
     writeFileSync(join(root, 'operations.aug'), failure + `outer():
     scope:
         pending = start fail()
@@ -69,7 +75,8 @@ test('task errors are checked at waits and implicit joins, rather than at schedu
         catch FileError error:
             pass
 `);
-    assert.ok(checkProject(loadProject(root)).diagnostics.some(issue => issue.code === 'THROWS' && /FileError/.test(issue.message)), 'an earlier caught error leaves the task for the join');
+    const early = checkProject(loadProject(root));
+    assert.ok(early.callableContracts.get(early.project.scopes.get(join(root,'operations.aug')).get('outer').node).errors.some(error => error.name === 'FileError'), 'an earlier caught error leaves the task for the join');
     writeFileSync(join(root, 'operations.aug'), failure + `spin():
     while true:
         pass
@@ -83,7 +90,8 @@ outer():
         catch FileError error:
             pass
 `);
-    assert.ok(checkProject(loadProject(root)).diagnostics.some(issue => issue.code === 'THROWS' && /FileError/.test(issue.message)), 'a wait can observe an unhandled sibling failure');
+    const sibling = checkProject(loadProject(root));
+    assert.ok(sibling.callableContracts.get(sibling.project.scopes.get(join(root,'operations.aug')).get('outer').node).errors.some(error => error.name === 'FileError'), 'a wait can observe an unhandled sibling failure');
   } finally {rmSync(root, {recursive:true, force:true});}
 });
 test('an unrelated owned local does not join children before a later cancellation', () => {

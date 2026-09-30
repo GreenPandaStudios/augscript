@@ -1,3 +1,4 @@
+import { callableResult, callableErrors } from './contracts.ts';
 import { dirname, join, relative, resolve, sep } from 'node:path';
 import type { ClassDecl, Expr, InterceptorDecl, MethodDecl, Param, SourceFile, Stmt, TypeRef } from './ast.ts';
 import { fieldsOf, typeName } from './ast.ts';
@@ -94,15 +95,18 @@ function parameterText(param: Param): string {
     (param.source ? ` from ${param.source.kind}${param.source.name ? ' ' + JSON.stringify(param.source.name) : ''}` : '');
 }
 
-function signature(method: MethodDecl, callSite = false, additionalErrors: string[] = []): string {
+function signature(method: MethodDecl, callSite = false, additionalErrors: string[] = [], checked?: CheckedProject): string {
   const generic = method.typeParams.length ? `<${method.typeParams.join(', ')}>` : '';
   const params = callSite ? method.params.filter(param => !param.injected)
     .map(param => `${param.label ?? param.name}=${typeName(param.type)}`) : method.params.map(parameterText);
-  const errors = [...new Set([...method.throws.map(typeName), ...additionalErrors])];
+  const errors = checked ? callableErrors(checked, method) : [...new Set([...method.throws.map(typeName), ...additionalErrors])];
+  const contract = checked?.effectContracts.get(method);
+  const changes = contract?.changes ?? method.changes ?? [];
+  const uses = [...(contract?.uses.values() ?? method.uses ?? [])].map(use => `${use.source}.${use.operation}`);
   return (method.endpoint ? `endpoint ${method.endpoint.method} ${JSON.stringify(method.endpoint.path)} as ` : '') + `${method.name}${generic}(${params.join(', ')}) ${method.endpoint?.streams ? 'streams' : 'returns'} ` +
-    `${method.returnOwnership === 'own' ? 'own ' : ''}${typeName(method.returns)}` +
-    (method.changes?.length ? ` changes ${method.changes.join(' and ')}` : '') +
-    (method.uses?.length ? ` uses ${method.uses.map(use => `${use.source}.${use.operation}`).join(' and ')}` : '') +
+    `${method.returnOwnership === 'own' ? 'own ' : ''}${checked ? tyName(callableResult(checked, method)) : typeName(method.returns)}` +
+    (changes.length ? ` changes ${changes.join(' and ')}` : '') +
+    (uses.length ? ` uses ${uses.join(' and ')}` : '') +
     (errors.length ? ` unless ${errors.join(', ')}` : '') +
     (method.endpoint && method.endpoint.status !== 200 ? ` with status ${method.endpoint.status}` : '');
 }
@@ -160,14 +164,14 @@ function methodDocumentation(checked: CheckedProject, method: MethodDecl,
 function methodItem(checked: CheckedProject, method: MethodDecl,
                     kind: 'method' | 'function', owner?: Definition): EditorItem {
   const errors = (checked.interceptorPlans.get(method) ?? []).flatMap(layer => layer.errors.map(tyName));
-  const label = signature(method, false, errors);
+  const label = signature(method, false, errors, checked);
   const injected = method.params.filter(param => param.injected);
   const doc = methodDocumentation(checked, method, owner);
   const injectionHelp = injected.length ? `Injected from bindings: ${injected.map(parameterText).join(', ')}.` : '';
   const contract = checked.effectContracts.get(method);
   const effects = contract ? `${contract.inferred ? 'Inferred capabilities; effective' : 'Effective'} contract: changes ${contract.changes.join(', ') || 'nothing'}; capabilities ` +
     `${[...contract.uses.values()].map(effect => `${effect.source}.${effect.operation}`).join(', ') || 'none'}.` : '';
-  return { label: method.name, kind, detail: label, signature: signature(method, true, errors),
+  return { label: method.name, kind, detail: label, signature: signature(method, true, errors, checked),
     documentation: [doc?.markdown, isPrivateName(method.name) ? 'Private to its declaring type.' : '',
       injectionHelp, effects, interceptorDescription(checked, method), 'Call arguments require labels; their order does not matter.']
       .filter(Boolean).join('\n\n'),
@@ -189,7 +193,7 @@ function definitionItem(checked: CheckedProject, def: Definition): EditorItem {
     const doc = around && methodDocumentation(checked, around, def);
     return { label: def.name, kind: 'interceptor',
       detail: `interceptor ${node.name}${node.typeParams.length ? `<${node.typeParams.join(', ')}>` : ''}` +
-        `(${node.fields.map(parameterText).join(', ')})` + (around ? `\n${signature(around)}` : ''),
+        `(${node.fields.map(parameterText).join(', ')})` + (around ? `\n${signature(around, false, [], checked)}` : ''),
       signature: `${node.name}(${params.map(param => `${param.name}=targetLabel`).join(', ')})`,
       parameters: params.map(param => `${param.name}=targetLabel`),
       parameterDocumentation: params.map(param => [doc?.parameters.get(param.name),

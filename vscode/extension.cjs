@@ -402,6 +402,21 @@ async function semanticTokens(context, document) {
   return builder.build();
 }
 
+async function inlayHints(context, document, range, token) {
+  if (!vscode.workspace.getConfiguration('augscript', document.uri).get('inferredContractHints', true)) return [];
+  try {
+    const hints = await editorData(context, document, 'inlay-hints', 0,
+      {start: document.offsetAt(range.start), end: document.offsetAt(range.end)});
+    if (token.isCancellationRequested) return [];
+    return hints.map(item => {
+      const hint = new vscode.InlayHint(document.positionAt(item.offset), item.label, vscode.InlayHintKind.Type);
+      hint.paddingLeft = true;
+      hint.tooltip = new vscode.MarkdownString(item.tooltip);
+      return hint;
+    });
+  } catch { return []; }
+}
+
 async function executeProject(context, command) {
   const document = vscode.window.activeTextEditor?.document;
   const root = document && projectRoot(document.uri.fsPath);
@@ -441,6 +456,15 @@ function activate(context) {
   context.subscriptions.push(vscode.languages.registerHoverProvider('augscript', {
     provideHover: (document, position) => hover(context, document, position),
   }));
+  const hintChanges = new vscode.EventEmitter();
+  context.subscriptions.push(hintChanges,
+    vscode.workspace.onDidChangeConfiguration(event => {
+      if (event.affectsConfiguration('augscript.inferredContractHints')) hintChanges.fire();
+    }),
+    vscode.languages.registerInlayHintsProvider('augscript', {
+      onDidChangeInlayHints: hintChanges.event,
+      provideInlayHints: (document, range, token) => inlayHints(context, document, range, token),
+    }));
   context.subscriptions.push(vscode.languages.registerCodeActionsProvider('augscript', {
     provideCodeActions: (document, range, actionContext) =>
       codeActions(context, document, actionContext),
@@ -450,7 +474,7 @@ function activate(context) {
       await editorData(context, document, 'format'))],
   }));
   const watcher = vscode.workspace.createFileSystemWatcher('**/{*.aug,main.yaml,aug.lock.json,aug-package.json}');
-  const changed = () => { for (const connection of servers.values()) connection.changed(); };
+  const changed = () => { for (const connection of servers.values()) connection.changed(); hintChanges.fire(); };
   context.subscriptions.push(watcher, watcher.onDidCreate(changed), watcher.onDidChange(changed), watcher.onDidDelete(changed));
   context.subscriptions.push(vscode.languages.registerHoverProvider(yamlSelector, {
     provideHover: yamlHover,

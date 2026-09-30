@@ -64,6 +64,9 @@ export interface MethodDecl extends GenericHeader {
   annotations?: InterceptorAnnotation[];
   changes?: string[];
   uses?: { source: string; operation: string; span: Span }[];
+  /** Clauses written by the author; inferred contracts live in CheckedProject. */
+  declared?: { returns: boolean; errors: boolean; changes: boolean; uses: boolean };
+  headerEnd?: number;
   fixture?: boolean;
   span: Span;
 }
@@ -72,6 +75,8 @@ export interface ClassDecl extends GenericHeader {
   kind: 'class';
   record?: boolean;
   validationErrors?: TypeRef[];
+  validationDeclared?: boolean;
+  headerEnd?: number;
   name: string;
   typeParams: string[];
   fields: Param[];

@@ -26,12 +26,12 @@ Interface   := ("interface" | "capability") Name [Generics]
 Interceptor := "interceptor" Name [Generics] ["(" ResolveFields ")"] Block
 Composition := "composition" Name BlockOfBindings
 Endpoint    := [Tags] "endpoint" HttpMethod String "as" Name "(" Parameters ")"
-               ("returns" Type | "streams" Type) ["uses" Paths]
+               ["returns" Type | "streams" Type] ["uses" Paths]
                ["unless" Type ["with status" Integer] {"and" Type ["with status" Integer]}]
                ["with status" Integer] Block
 ```
 
-An interface/class/interceptor block contains method declarations. A record ends after its header or validation block and has no behavior body. A function's absent returns clause means void. Its body is required for calls, except extern C. There is no class or function prefix.
+An interface/class/interceptor block contains method declarations. A record ends after its header or validation block and has no behavior body. An executable body infers an absent returns clause; no returned value means void. A bodyless signature defaults to void. Omitted changes, uses, and unless clauses are inferred from executable bodies; explicit clauses remain checked bounds. Its body is required for calls, except extern C. There is no class or function prefix.
 
 The implements clause identifies a class. Its initialize block appears inside the class before methods, and runs after field initialization. Records can contain one initialize block for validation. Nested function declarations are not supported. A root `counter()` statement is a call, not a declaration.
 

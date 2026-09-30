@@ -37,11 +37,11 @@ record JwtHeader(string alg, string kid, string typ)
 record RsaJwk(string kty, string kid, string alg, string use, string n, string e)
 record RsaJwks(List<RsaJwk> keys)
 /** Export public parameters. Private key material never enters the JSON document. */
-rsaJwk(RsaPublicKey publicKey, string kid, resolve Crypto crypto) returns RsaJwk uses crypto.exportRsa unless CryptoError:
+rsaJwk(RsaPublicKey publicKey, string kid, resolve Crypto crypto):
     (modulus, exponent) = crypto.exportRsa(publicKey)
     return RsaJwk(kty="RSA", kid=kid, alg="RS256", use="sig", n=modulus.base64url(), e=exponent.base64url())
 /** Import only an RSA signing key for RS256. The transport caller selects the trusted JWKS URL. */
-importJwk(RsaJwk jwk, resolve Crypto crypto) returns RsaPublicKey uses crypto.decodeBase64url and crypto.importRsa unless JwtError:
+importJwk(RsaJwk jwk, resolve Crypto crypto):
     if jwk.kty != "RSA" or jwk.alg != "RS256" or jwk.use != "sig":
         throw JwtError()
     try:
@@ -51,7 +51,7 @@ importJwk(RsaJwk jwk, resolve Crypto crypto) returns RsaPublicKey uses crypto.de
     catch CryptoError error:
         throw JwtError()
 /** Sign immutable JSON with an explicit key id and token type. Claims are validated by the protocol that consumes the token. */
-signJwt(RsaPrivateKey key, Json claims, string kid, string tokenType, resolve Crypto crypto) returns string uses crypto.signRsa unless JwtError:
+signJwt(RsaPrivateKey key, Json claims, string kid, string tokenType, resolve Crypto crypto):
     try:
         header = Json(value=JwtHeader(alg="RS256", kid=kid, typ=tokenType)).stringify()
         payload = claims.stringify()
@@ -63,7 +63,7 @@ signJwt(RsaPrivateKey key, Json claims, string kid, string tokenType, resolve Cr
     catch JsonError error:
         throw JwtError()
 /** Verify the signature and configured algorithm, key id, and type before exposing the JSON payload. Never follows token-supplied URLs. */
-verifyJwt(string token, RsaPublicKey publicKey, string kid, string tokenType, resolve Crypto crypto) returns Json uses crypto.decodeBase64url and crypto.verifyRsa unless JwtError:
+verifyJwt(string token, RsaPublicKey publicKey, string kid, string tokenType, resolve Crypto crypto):
     if token.length() > 16384:
         throw JwtError()
     parts = token.split(separator=".")
@@ -104,12 +104,12 @@ record JwtHeader(string alg, string kid, string typ)
 record RsaJwk(string kty, string kid, string alg, string use, string n, string e)
 record RsaJwks(List<RsaJwk> keys)
 /** Export public parameters. Private key material never enters the JSON document. */
-rsaJwk(RsaPublicKey publicKey, string kid, resolve Crypto crypto) returns RsaJwk uses crypto.exportRsa unless CryptoError {
+rsaJwk(RsaPublicKey publicKey, string kid, resolve Crypto crypto) {
     (modulus, exponent) = crypto.exportRsa(publicKey)
     return RsaJwk(kty="RSA", kid=kid, alg="RS256", use="sig", n=modulus.base64url(), e=exponent.base64url())
 }
 /** Import only an RSA signing key for RS256. The transport caller selects the trusted JWKS URL. */
-importJwk(RsaJwk jwk, resolve Crypto crypto) returns RsaPublicKey uses crypto.decodeBase64url and crypto.importRsa unless JwtError {
+importJwk(RsaJwk jwk, resolve Crypto crypto) {
     if jwk.kty != "RSA" or jwk.alg != "RS256" or jwk.use != "sig" {
         throw JwtError()
     }
@@ -123,7 +123,7 @@ importJwk(RsaJwk jwk, resolve Crypto crypto) returns RsaPublicKey uses crypto.de
     }
 }
 /** Sign immutable JSON with an explicit key id and token type. Claims are validated by the protocol that consumes the token. */
-signJwt(RsaPrivateKey key, Json claims, string kid, string tokenType, resolve Crypto crypto) returns string uses crypto.signRsa unless JwtError {
+signJwt(RsaPrivateKey key, Json claims, string kid, string tokenType, resolve Crypto crypto) {
     try {
         header = Json(value=JwtHeader(alg="RS256", kid=kid, typ=tokenType)).stringify()
         payload = claims.stringify()
@@ -139,7 +139,7 @@ signJwt(RsaPrivateKey key, Json claims, string kid, string tokenType, resolve Cr
     }
 }
 /** Verify the signature and configured algorithm, key id, and type before exposing the JSON payload. Never follows token-supplied URLs. */
-verifyJwt(string token, RsaPublicKey publicKey, string kid, string tokenType, resolve Crypto crypto) returns Json uses crypto.decodeBase64url and crypto.verifyRsa unless JwtError {
+verifyJwt(string token, RsaPublicKey publicKey, string kid, string tokenType, resolve Crypto crypto) {
     if token.length() > 16384 {
         throw JwtError()
     }

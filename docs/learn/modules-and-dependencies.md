@@ -46,7 +46,7 @@ interface Greeter:
     greet(string name) returns string
 
 FriendlyGreeter() implements Greeter:
-    greet(string name) returns string:
+    greet(string name):
         return "Hello, " + name + "!"
 ```
 

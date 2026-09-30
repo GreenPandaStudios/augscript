@@ -19,7 +19,7 @@ Discovery advertises exactly this provider's supported authorization-code profil
 
 `jwks` handles `GET /provider/jwks`. Only the provider's public signing key is published. Session keys never enter this JWKS. It gets `crypto` ([`Crypto`](../.aug-spec/august/0.19.0/crypto/contracts.aug.md#symbol-Crypto)) and `keys` ([`SigningKeys`](../common/keys.aug.md#symbol-SigningKeys)) from dependency injection.
 
-It can also raise `KeyError` and `CryptoError`. It sets `publicKey` to [`crypto.publicRsa`](../.aug-spec/august/0.19.0/crypto/contracts.aug.md#symbol-Crypto.publicRsa) with `key` from [`keys.provider`](../common/keys.aug.md#symbol-SigningKeys.provider). It returns a [`RsaJwks`](../.aug-spec/august/0.19.0/crypto/jose.aug.md#symbol-RsaJwks) with `keys` from a list containing [`rsaJwk`](../.aug-spec/august/0.19.0/crypto/jose.aug.md#symbol-rsaJwk) with `publicKey` and `kid` `"provider-1"` using injected `crypto`.
+It can also raise `CryptoError` and `KeyError`. It sets `publicKey` to [`crypto.publicRsa`](../.aug-spec/august/0.19.0/crypto/contracts.aug.md#symbol-Crypto.publicRsa) with `key` from [`keys.provider`](../common/keys.aug.md#symbol-SigningKeys.provider). It returns a [`RsaJwks`](../.aug-spec/august/0.19.0/crypto/jose.aug.md#symbol-RsaJwks) with `keys` from a list containing [`rsaJwk`](../.aug-spec/august/0.19.0/crypto/jose.aug.md#symbol-rsaJwk) with `publicKey` and `kid` `"provider-1"` using injected `crypto`.
 
 ## Dependencies
 

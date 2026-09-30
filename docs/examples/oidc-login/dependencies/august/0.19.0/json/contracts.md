@@ -28,7 +28,7 @@ This is the exact dependency version used by this example.
 // aug-spec: "contracts.aug.md" explains this file. Read it before changes; refresh with aug spec.
 extern C value pure _aug_json_parse(string input) returns Json unless JsonError
 /** Parse strict UTF-8 JSON. Duplicate keys, invalid Unicode, oversized integers, and nesting beyond 64 levels raise JsonError. */
-parse(string input) returns Json unless JsonError:
+parse(string input):
     unsafe:
         return _aug_json_parse(input)
 ```
@@ -37,7 +37,7 @@ parse(string input) returns Json unless JsonError:
 // aug-spec: "contracts.aug.md" explains this file. Read it before changes; refresh with aug spec.
 extern C value pure _aug_json_parse(string input) returns Json unless JsonError
 /** Parse strict UTF-8 JSON. Duplicate keys, invalid Unicode, oversized integers, and nesting beyond 64 levels raise JsonError. */
-parse(string input) returns Json unless JsonError {
+parse(string input) {
     unsafe {
         return _aug_json_parse(input)
     }

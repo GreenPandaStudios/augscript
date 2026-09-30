@@ -28,7 +28,7 @@ print(value=total(quantity=0, price))
 
 ```aug project=book-functions file=prices.aug
 /** Calculate the price for a positive quantity; otherwise return zero. */
-total(int price, int quantity) returns int:
+total(int price, int quantity):
     if quantity > 0:
         return price * quantity
     return 0
@@ -47,7 +47,7 @@ Run `aug check .`, then `aug run .`. The output is:
 
 Every call input has a label. `total(price, quantity)` is shorthand for `total(price=price, quantity=quantity)`: the local names match the labels. The second call supplies a different quantity. Labels let you reorder inputs without making the reader guess which argument is which.
 
-The declaration begins with the function's name; it needs no `function` keyword. `returns int` is its result contract. A declaration with no `returns` has a void result. This function reads its inputs and calculates a value. It has no dependency or mutable state.
+The declaration begins with the function's name; it needs no `function` keyword. The compiler infers an integer result from its return expressions. VS Code shows `returns int` beside the header as a hint; it is absent from saved source. You can write a return type to require a particular result. This function reads its inputs and calculates a value. It has no dependency or mutable state.
 
 ## Read the decision
 

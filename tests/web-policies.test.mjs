@@ -8,12 +8,15 @@ import {createInterface} from 'node:readline';
 import {get} from 'node:http';
 import {loadProject} from '../src/project.ts';
 import {checkProject} from '../src/checker.ts';
-test('HTTP response status literals are bounded and dynamic statuses declare HttpError',()=>{
+test('HTTP response status literals are bounded and dynamic statuses infer HttpError',()=>{
   const root=mkdtempSync(join(tmpdir(),'aug-response-status-'));
   try {
     writeFileSync(join(root,'main.aug'),'');
     writeFileSync(join(root,'response.aug'),'make(int status) returns HttpResponse<string>:\n    return HttpResponse(body="ok", status=status)\n');
-    assert.ok(checkProject(loadProject(root)).diagnostics.some(issue=>issue.code==='THROWS'&&/HttpError/.test(issue.message)));
+    const checked=checkProject(loadProject(root));
+    assert.deepEqual(checked.diagnostics,[]);
+    const method=checked.project.scopes.get(join(root,'response.aug')).get('make').node;
+    assert.deepEqual(checked.callableContracts.get(method).errors.map(error=>error.name),['HttpError']);
     writeFileSync(join(root,'response.aug'),'make() returns HttpResponse<string>:\n    return HttpResponse(body="ok", status=199)\n');
     assert.ok(checkProject(loadProject(root)).diagnostics.some(issue=>issue.code==='HTTP'&&/200.*599/.test(issue.message)));
     writeFileSync(join(root,'response.aug'),'make(int status) returns HttpResponse<string> unless HttpError:\n    return HttpResponse(body="ok", status=status)\n');

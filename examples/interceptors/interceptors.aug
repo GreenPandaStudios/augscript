@@ -12,7 +12,7 @@ ValidationError(string message) implements Error {
 */
 interceptor Audit<T>(resolve Logger logger) {
     /** Wrap a call without changing its result. */
-    around(resolve Console console) returns T uses Console.write {
+    around(resolve Console console) {
         logger.log(message="before")
         T result = next()
         logger.log(message="after")
@@ -25,7 +25,7 @@ interceptor Positive<T>() {
     * @param y The target argument selected by a mapping such as y=x.
     * @throws ValidationError When the selected value is negative.
     */
-    around(int y) returns T unless ValidationError {
+    around(int y) returns T {
         if y < 0 {
             throw ValidationError(message="value must be nonnegative")
         }

@@ -131,9 +131,9 @@ announce(resolve Console console)  uses Console.write { console.write(value="don
   assert.match(method?.detail ?? '', /returns void/);
 }));
 
-test('a function without a return type cannot return a value', () => withProject({
+test('an explicitly void function cannot return a value', () => withProject({
   'main.aug': 'import value from helper;\nvalue();\n',
-  'helper.aug': 'value() { return 7; }\n',
+  'helper.aug': 'value() returns void { return 7; }\n',
 }, root => {
   const result = check(root);
   assert.notEqual(result.status, 0);

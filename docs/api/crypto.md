@@ -151,132 +151,132 @@ GnuTLS-backed capability adapter. Its constructor performs no I/O or key generat
 ### GnuTlsCrypto.random
 
 ```text
-random(int size) returns Bytes unless CryptoError
+random(int size)
 ```
 
 Generate unpredictable bytes with the operating-system-backed GnuTLS RNG.
 
-Inferred capabilities: `Crypto.random`.
+The compiler infers a `Bytes` result, use of `Crypto.random`, `CryptoError` failures.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/contracts.aug#L41)
 
 ### GnuTlsCrypto.sha256
 
 ```text
-sha256(Bytes input) returns Bytes unless CryptoError
+sha256(Bytes input)
 ```
 
 Hash the complete input using SHA-256.
 
-Inferred capabilities: `Crypto.sha256`.
+The compiler infers a `Bytes` result, use of `Crypto.sha256`, `CryptoError` failures.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/contracts.aug#L44)
 
 ### GnuTlsCrypto.generateRsa
 
 ```text
-generateRsa() returns RsaPrivateKey unless CryptoError
+generateRsa()
 ```
 
 Create a fresh 3072-bit RSA private key. Private material is opaque and scrubbed on reclamation.
 
-Inferred capabilities: `Crypto.generateRsa`.
+The compiler infers a `RsaPrivateKey` result, use of `Crypto.generateRsa`, `CryptoError` failures.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/contracts.aug#L47)
 
 ### GnuTlsCrypto.publicRsa
 
 ```text
-publicRsa(RsaPrivateKey key) returns RsaPublicKey unless CryptoError
+publicRsa(RsaPrivateKey key)
 ```
 
 Export the corresponding public key as an opaque immutable value.
 
-Inferred capabilities: `Crypto.publicRsa`.
+The compiler infers a `RsaPublicKey` result, use of `Crypto.publicRsa`, `CryptoError` failures.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/contracts.aug#L50)
 
 ### GnuTlsCrypto.signRsa
 
 ```text
-signRsa(RsaPrivateKey key, Bytes input) returns Bytes unless CryptoError
+signRsa(RsaPrivateKey key, Bytes input)
 ```
 
 Sign bytes using RSASSA-PKCS1-v1_5 with SHA-256 (JOSE RS256).
 
-Inferred capabilities: `Crypto.signRsa`.
+The compiler infers a `Bytes` result, use of `Crypto.signRsa`, `CryptoError` failures.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/contracts.aug#L53)
 
 ### GnuTlsCrypto.verifyRsa
 
 ```text
-verifyRsa(RsaPublicKey publicKey, Bytes input, Bytes signature) returns bool unless CryptoError
+verifyRsa(RsaPublicKey publicKey, Bytes input, Bytes signature)
 ```
 
 Verify only RS256. Invalid signatures return false; invalid keys raise CryptoError.
 
-Inferred capabilities: `Crypto.verifyRsa`.
+The compiler infers a `bool` result, use of `Crypto.verifyRsa`, `CryptoError` failures.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/contracts.aug#L56)
 
 ### GnuTlsCrypto.decodeBase64url
 
 ```text
-decodeBase64url(string input) returns Bytes unless CryptoError
+decodeBase64url(string input)
 ```
 
 Decode canonical unpadded URL-safe base64, rejecting invalid characters and unused bits.
 
-Inferred capabilities: `Crypto.decodeBase64url`.
+The compiler infers a `Bytes` result, use of `Crypto.decodeBase64url`, `CryptoError` failures.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/contracts.aug#L59)
 
 ### GnuTlsCrypto.equal
 
 ```text
-equal(Bytes left, Bytes right) returns bool
+equal(Bytes left, Bytes right)
 ```
 
 Compare bytes without early exit on their contents. Length remains observable.
 
-Inferred capabilities: `Crypto.equal`.
+The compiler infers a `bool` result, use of `Crypto.equal`.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/contracts.aug#L62)
 
 ### GnuTlsCrypto.exportRsa
 
 ```text
-exportRsa(RsaPublicKey publicKey) returns Tuple<Bytes, Bytes> unless CryptoError
+exportRsa(RsaPublicKey publicKey)
 ```
 
 Export unsigned big-endian modulus and exponent for an RSA JWK.
 
-Inferred capabilities: `Crypto.exportRsa`.
+The compiler infers a `Tuple<Bytes, Bytes>` result, use of `Crypto.exportRsa`, `CryptoError` failures.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/contracts.aug#L65)
 
 ### GnuTlsCrypto.importRsa
 
 ```text
-importRsa(Bytes modulus, Bytes exponent) returns RsaPublicKey unless CryptoError
+importRsa(Bytes modulus, Bytes exponent)
 ```
 
 Import canonical public RSA parameters. Keys must have 2048 to 8192 bits.
 
-Inferred capabilities: `Crypto.importRsa`.
+The compiler infers a `RsaPublicKey` result, use of `Crypto.importRsa`, `CryptoError` failures.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/contracts.aug#L68)
 
 ### GnuTlsCrypto.passwordHash
 
 ```text
-passwordHash(Bytes password, Bytes salt, int iterations) returns Bytes unless CryptoError
+passwordHash(Bytes password, Bytes salt, int iterations)
 ```
 
 PBKDF2-HMAC-SHA256, producing 32 bytes. Use a unique 16–64 byte salt; supported work factors are 100,000–2,000,000.
 
-Inferred capabilities: `Crypto.passwordHash`.
+The compiler infers a `Bytes` result, use of `Crypto.passwordHash`, `CryptoError` failures.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/contracts.aug#L71)
 
@@ -313,7 +313,7 @@ The signature defines this public contract.
 ## rsaJwk {#api-rsaJwk}
 
 ```text
-rsaJwk(RsaPublicKey publicKey, string kid, resolve Crypto crypto) returns RsaJwk uses crypto.exportRsa unless CryptoError
+rsaJwk(RsaPublicKey publicKey, string kid, resolve Crypto crypto)
 ```
 
 Export public parameters. Private key material never enters the JSON document.
@@ -323,7 +323,7 @@ Export public parameters. Private key material never enters the JSON document.
 ## importJwk {#api-importJwk}
 
 ```text
-importJwk(RsaJwk jwk, resolve Crypto crypto) returns RsaPublicKey uses crypto.decodeBase64url and crypto.importRsa unless JwtError
+importJwk(RsaJwk jwk, resolve Crypto crypto)
 ```
 
 Import only an RSA signing key for RS256. The transport caller selects the trusted JWKS URL.
@@ -333,7 +333,7 @@ Import only an RSA signing key for RS256. The transport caller selects the trust
 ## signJwt {#api-signJwt}
 
 ```text
-signJwt(RsaPrivateKey key, Json claims, string kid, string tokenType, resolve Crypto crypto) returns string uses crypto.signRsa unless JwtError
+signJwt(RsaPrivateKey key, Json claims, string kid, string tokenType, resolve Crypto crypto)
 ```
 
 Sign immutable JSON with an explicit key id and token type. Claims are validated by the protocol that consumes the token.
@@ -343,7 +343,7 @@ Sign immutable JSON with an explicit key id and token type. Claims are validated
 ## verifyJwt {#api-verifyJwt}
 
 ```text
-verifyJwt(string token, RsaPublicKey publicKey, string kid, string tokenType, resolve Crypto crypto) returns Json uses crypto.decodeBase64url and crypto.verifyRsa unless JwtError
+verifyJwt(string token, RsaPublicKey publicKey, string kid, string tokenType, resolve Crypto crypto)
 ```
 
 Verify the signature and configured algorithm, key id, and type before exposing the JSON payload. Never follows token-supplied URLs.

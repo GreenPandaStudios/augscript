@@ -31,12 +31,12 @@ extern C value _aug_http_request(string method, string url, optional Headers hea
 
 /** Native libwebsockets transport. No socket is opened by construction. */
 WebHttpClient() implements HttpClient:
-    request(string method, string url, optional Headers headers, optional Bytes body) returns HttpResponse<Bytes> unless HttpError:
+    request(string method, string url, optional Headers headers, optional Bytes body) :
         unsafe:
             return _aug_http_request(method=method, url=url, headers=headers, body=body)
 
 /** Return a redirect with an explicit status. Location is checked as a header value. */
-redirect(string location, optional int status) returns HttpResponse<string> unless HttpError:
+redirect(string location, optional int status) :
     code = 303
     match status:
         when null:
@@ -48,12 +48,12 @@ redirect(string location, optional int status) returns HttpResponse<string> unle
 
 extern C value pure _aug_http_url_encode(string input) returns string unless HttpError
 /** Encode a UTF-8 value as one URL query or form component using RFC 3986 unreserved characters. */
-urlEncode(string input) returns string unless HttpError:
+urlEncode(string input) :
     unsafe:
         return _aug_http_url_encode(input)
 
 extern C value pure _aug_http_cookie(string name, string value, string path, int maxAge, bool secure) returns Headers unless HttpError
 /** Construct an HttpOnly, SameSite=Lax session cookie. Secure defaults are chosen explicitly at the call site. Values and paths reject delimiters and controls. maxAge=0 clears the cookie. */
-cookie(string name, string value, string path, int maxAge, bool secure) returns Headers unless HttpError:
+cookie(string name, string value, string path, int maxAge, bool secure) :
     unsafe:
         return _aug_http_cookie(name, value, path, maxAge, secure)

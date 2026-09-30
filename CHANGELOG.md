@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Infer omitted result, mutation, capability, and checked-error contracts for executable bodies, including public functions, interface defaults, forwarding interceptors, HTTP policy dependencies, and record validation. Keep explicit clauses as checked assertions and preserve ownership, purity, and interface limits.
+- Show inferred contracts as non-editable VS Code/LSP hints; share them with hover, signature help, OpenAPI, semantic descriptions, and compiled specs. Keep source formatting concise and preserve explicit void assertions.
+
 - Make `aug run` prepare declared source packages and the native dependencies its checked program uses before compiling and starting it. Reuse verified caches, support offline runs, isolate concurrent native setup, and resume interrupted preparation. Build/test/bench prepare their required native libraries too.
 - Explain missing tools, failed downloads/builds, cache problems, invalid options, and process signals. Terminal diagnostics include source excerpts, location pointers, and help. Simplify onboarding to install August once and use `aug init` and `aug run`.
 - Detect native runtime references as C identifiers so strings and comments cannot accidentally request extra libraries. Package the setup helpers with the CLI and VS Code compiler.

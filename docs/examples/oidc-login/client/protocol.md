@@ -57,7 +57,7 @@ import HttpClient from august.web
 import parse from august.json
 import Crypto and GnuTlsCrypto and RsaJwks and rsaJwk and signJwt and importJwk and verifyJwt and JwtError from august.crypto
 /** Accept only a successful JSON response. Redirects remain explicit and are never followed by the transport. */
-responseJson(HttpResponse<Bytes> response) returns Json unless SessionError:
+responseJson(HttpResponse<Bytes> response):
     if response.status != 200:
         throw SessionError()
     match response.headers.get(name="content-type"):
@@ -73,7 +73,7 @@ responseJson(HttpResponse<Bytes> response) returns Json unless SessionError:
     catch JsonError error:
         throw SessionError()
 /** Discovery is fetched over HTTP. Every advertised URL is checked against the registered issuer before any credential is sent. */
-discover(resolve HttpClient client) returns Discovery uses client.request unless SessionError and HttpError:
+discover(resolve HttpClient client):
     config = settings()
     json = responseJson(response=client.request(method="GET", url=config.issuer + "/.well-known/openid-configuration"))
     try:
@@ -84,7 +84,7 @@ discover(resolve HttpClient client) returns Discovery uses client.request unless
     catch JsonError error:
         throw SessionError()
 /** Validate the signed ID token using a public key from this issuer's HTTP JWKS, then validate the registered claims and one-use nonce. */
-validateIdentity(string token, string nonce, int now, RsaJwks jwks, resolve Crypto crypto) returns IdClaims uses crypto.decodeBase64url and crypto.importRsa and crypto.verifyRsa and crypto.equal unless SessionError:
+validateIdentity(string token, string nonce, int now, RsaJwks jwks, resolve Crypto crypto):
     config = settings()
     if jwks.keys.length() != 1:
         throw SessionError()
@@ -151,7 +151,7 @@ import HttpClient from august.web
 import parse from august.json
 import Crypto and GnuTlsCrypto and RsaJwks and rsaJwk and signJwt and importJwk and verifyJwt and JwtError from august.crypto
 /** Accept only a successful JSON response. Redirects remain explicit and are never followed by the transport. */
-responseJson(HttpResponse<Bytes> response) returns Json unless SessionError {
+responseJson(HttpResponse<Bytes> response) {
     if response.status != 200 {
         throw SessionError()
     }
@@ -176,7 +176,7 @@ responseJson(HttpResponse<Bytes> response) returns Json unless SessionError {
     }
 }
 /** Discovery is fetched over HTTP. Every advertised URL is checked against the registered issuer before any credential is sent. */
-discover(resolve HttpClient client) returns Discovery uses client.request unless SessionError and HttpError {
+discover(resolve HttpClient client) {
     config = settings()
     json = responseJson(response=client.request(method="GET", url=config.issuer + "/.well-known/openid-configuration"))
     try {
@@ -191,7 +191,7 @@ discover(resolve HttpClient client) returns Discovery uses client.request unless
     }
 }
 /** Validate the signed ID token using a public key from this issuer's HTTP JWKS, then validate the registered claims and one-use nonce. */
-validateIdentity(string token, string nonce, int now, RsaJwks jwks, resolve Crypto crypto) returns IdClaims uses crypto.decodeBase64url and crypto.importRsa and crypto.verifyRsa and crypto.equal unless SessionError {
+validateIdentity(string token, string nonce, int now, RsaJwks jwks, resolve Crypto crypto) {
     config = settings()
     if jwks.keys.length() != 1 {
         throw SessionError()
@@ -289,7 +289,7 @@ It tries to return [`parse`](../dependencies/august/0.19.0/json/contracts.md#sym
 
 ### `discover` · [source](protocol.md#code) {#symbol-discover}
 
-Discovery is fetched over HTTP. Every advertised URL is checked against the registered issuer before any credential is sent. It gets `client` ([`HttpClient`](../dependencies/august/0.19.0/web/contracts.md#symbol-HttpClient)) from dependency injection. Failures can raise [`SessionError`](contracts.md#symbol-SessionError) and `HttpError`.
+Discovery is fetched over HTTP. Every advertised URL is checked against the registered issuer before any credential is sent. It gets `client` ([`HttpClient`](../dependencies/august/0.19.0/web/contracts.md#symbol-HttpClient)) from dependency injection. Failures can raise `HttpError` and [`SessionError`](contracts.md#symbol-SessionError).
 
 It gets `config` from [`settings`](../common/settings.md#symbol-settings). It sets `json` to [`responseJson`](protocol.md#symbol-responseJson) with `response` from [`client.request`](../dependencies/august/0.19.0/web/contracts.md#symbol-HttpClient.request) with `method` `"GET"` and `url` from the text `{config.issuer}/.well-known/openid-configuration`. It sets `document` to `json.decode` for [`Discovery`](../provider/discovery.md#symbol-Discovery).
 

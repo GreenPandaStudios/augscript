@@ -46,7 +46,7 @@ Calculator(resolve Logger logger to _logger) implements Arithmetic:
     * @param right Second integer.
     * @return Sum of the two integers.
     */
-    add(resolve Console console, int left, int right) returns int uses Console.write:
+    add(resolve Console console, int left, int right):
         _logger.log(message="adding integers")
         return left + right
 /**
@@ -54,7 +54,7 @@ Calculator(resolve Logger logger to _logger) implements Arithmetic:
 * @param fail Whether to simulate a failed load.
 * @throws FileError When fail is true.
 */
-load(bool fail) returns string unless FileError:
+load(bool fail):
     if fail:
         throw FileError()
     return "loaded"
@@ -94,7 +94,7 @@ Calculator(resolve Logger logger to _logger) implements Arithmetic {
     * @param right Second integer.
     * @return Sum of the two integers.
     */
-    add(resolve Console console, int left, int right) returns int uses Console.write {
+    add(resolve Console console, int left, int right) {
         _logger.log(message="adding integers")
         return left + right
     }
@@ -104,7 +104,7 @@ Calculator(resolve Logger logger to _logger) implements Arithmetic {
 * @param fail Whether to simulate a failed load.
 * @throws FileError When fail is true.
 */
-load(bool fail) returns string unless FileError {
+load(bool fail) {
     if fail {
         throw FileError()
     }

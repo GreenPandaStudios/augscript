@@ -3,6 +3,8 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync
 import { dirname, join, relative, resolve } from 'node:path';
 import { loadProject } from '../src/project.ts';
 import { checkProject } from '../src/checker.ts';
+import { callableResult, callableErrors } from '../src/contracts.ts';
+import { tyName } from '../src/types.ts';
 import { javadocBefore } from '../src/javadoc.ts';
 import { callableDocumentation } from '../src/documentation.ts';
 import { languageHelp } from '../src/help.ts';
@@ -22,12 +24,17 @@ const checked = checkProject(loadProject(entry,sourceOverrides));
 const errors = checked.diagnostics.filter(issue => issue.severity !== 'warning');
 if (errors.length) throw new Error('Cannot generate API docs from an invalid project: ' + JSON.stringify(errors));
 const project = checked.project;
-const header = source => source.slice(0, source.indexOf('\n') < 0 ? source.length : source.indexOf('\n')).trim().replace(/[:{]\s*$/, '');
+const header = source => source.slice(0, source.indexOf('\n') < 0 ? source.length : source.indexOf('\n')).trim().replace(/[:{]\s*$/, '').trimEnd();
 const signature = node => header(project.files.get(node.span.file).source.slice(node.span.start));
 const inferredEffects = node => {
-  const contract = checked.effectContracts.get(node);
-  return contract?.inferred ? '\n\nInferred capabilities: ' +
-    ([...contract.uses.values()].map(effect => `\`${effect.source}.${effect.operation}\``).join(', ') || 'none (pure)') + '.' : '';
+  const effects = checked.effectContracts.get(node), contract = checked.callableContracts.get(node);
+  const facts = [];
+  if (contract?.inferredResult && contract.result.name !== 'void') facts.push('a `' + tyName(callableResult(checked,node)) + '` result');
+  if (effects?.inferredChanges && effects.changes.length) facts.push('changes to ' + effects.changes.map(name=>'`'+name+'`').join(' and '));
+  if (effects?.inferred && effects.uses.size) facts.push('use of ' + [...effects.uses.values()].map(effect=>'`'+effect.source+'.'+effect.operation+'`').join(' and '));
+  const errors = contract?.inferredErrors ? callableErrors(checked,node) : [];
+  if (errors.length) facts.push(errors.map(name=>'`'+name+'`').join(' and ') + ' failures');
+  return facts.length ? '\n\nThe compiler infers ' + facts.join(', ') + '.' : '';
 };
 const fence = text => `\`\`\`text\n${text}\n\`\`\``;
 // Hover examples are syntax fragments; runnable guides alone use executable aug fences.

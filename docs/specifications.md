@@ -40,7 +40,7 @@ print(value=total(price=7, quantity=3))
 ```
 
 ```aug project=spec-guide file=prices.aug
-total(int price, int quantity) returns int:
+total(int price, int quantity):
     if quantity > 0:
         return price * quantity
     return 0
@@ -91,7 +91,7 @@ In VS Code, use **AugScript: Open Compiled Specification** to generate and previ
 
 ## Determinism and limits
 
-Generation is offline and deterministic for the same checked sources, configuration, installed dependencies, and compiler version. It adds no timestamps or machine paths. Explanations use checked contracts; the writer does not guess what an arbitrary function does from its name.
+Generation is offline and deterministic for the same checked sources, configuration, installed dependencies, and compiler version. It adds no timestamps or machine paths. Explanations include inferred result types, mutations, dependencies, and escaping errors even when their clauses are absent from source. Explanations use checked contracts; the writer does not guess what an arbitrary function does from its name.
 
 The spec describes the checked program; it is not a proof that the implementation meets your domain's requirements. Review the explanation for clarity and intent, and use tests for behavior. [Research and implementation notes](research/code-to-natural-language.md) explain the generation approach and its evaluation limits.
 

@@ -24,7 +24,7 @@ It sets `headers` to [`withCookie`](../common/headers.aug.md#symbol-withCookie) 
 
 It takes `code` and `state` as strings from the HTTP query and `browser` as `optional string` from the HTTP cookie `aug_login`. It gets `crypto` ([`Crypto`](../.aug-spec/august/0.19.0/crypto/contracts.aug.md#symbol-Crypto)), `clock` ([`Clock`](../.aug-spec/august/0.19.0/time/contracts.aug.md#symbol-Clock)), `client` ([`HttpClient`](../.aug-spec/august/0.19.0/web/contracts.aug.md#symbol-HttpClient)), `keys` ([`SigningKeys`](../common/keys.aug.md#symbol-SigningKeys)), `transactions` ([`ExpiringStore<LoginTransaction>`](../.aug-spec/august/0.19.0/memory/store.aug.md#symbol-ExpiringStore)), and `sessions` ([`ExpiringStore<SessionClaims>`](../.aug-spec/august/0.19.0/memory/store.aug.md#symbol-ExpiringStore)) from dependency injection. Omitted optional inputs are null. The handler responds with HTTP 400 for [`SessionError`](contracts.aug.md#symbol-SessionError), HTTP 503 for `CryptoError`, HTTP 503 for `TimeError`, and HTTP 503 for [`StoreFull`](../.aug-spec/august/0.19.0/memory/store.aug.md#symbol-StoreFull).
 
-It can also raise `KeyError`, `JwtError`, `JsonError`, and `HttpError`.
+It can also raise `HttpError`, `JsonError`, `JwtError`, and `KeyError`.
 
 It checks that `code` is a URL-safe ASCII token with `43` to `43` characters and `state` is a URL-safe ASCII token with `43` to `43` characters. It raises a [`SessionError`](contracts.aug.md#symbol-SessionError) at the first failed check. If `browser` is null, it raises a [`SessionError`](contracts.aug.md#symbol-SessionError). The non-null `browser` becomes `secret`.
 

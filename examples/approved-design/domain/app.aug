@@ -7,7 +7,7 @@ interface Application:
 	start() uses Console.write
 /** Construction stores dependencies; start performs the visible external work. */
 ApplicationImpl(resolve Console console) implements Application:
-	start() uses console.write:
+	start() :
 		fruit to [Fruit(code=1, name="apple"), Fruit(name="pear", code=2)]
 		for item in fruit:
 			console.write(value=item.name)

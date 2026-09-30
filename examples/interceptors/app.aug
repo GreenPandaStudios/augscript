@@ -12,7 +12,7 @@ import AddOne from interceptors
 [Audit]
 [Positive(y=x)]
 [AddOne(y=x)]
-describe(resolve Logger logger, resolve Console console, int x, string label) returns string uses Console.write {
+describe(resolve Logger logger, resolve Console console, int x, string label) {
     console.write(value=x)
     return label
 }
@@ -23,7 +23,7 @@ interface IGreeter {
 Greeter(resolve Logger logger to _logger, string name) implements IGreeter {
     /** Method annotations wrap each method invocation separately. */
     [Audit]
-    greet(resolve Logger logger, resolve Console console) returns string uses Console.write {
+    greet(resolve Logger logger, resolve Console console) {
         return "Hello, " + name + "!"
     }
 }
