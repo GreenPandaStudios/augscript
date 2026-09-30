@@ -4,17 +4,12 @@
 
 ## Providers
 
-- Provide [`SystemConsole`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-SystemConsole) for `Console`. Share one instance.
-- Provide [`ConsoleLogger`](logging/console.aug.md#symbol-ConsoleLogger) for `Logger`. Share one instance.
-- Provide [`Greeter`](app/greeter.aug.md#symbol-Greeter) for `app`. Share one instance. Needs `Logger`.
+Provide [`SystemConsole`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-SystemConsole) for `Console`. Share one instance. Provide [`ConsoleLogger`](logging/console.aug.md#symbol-ConsoleLogger) for `Logger`. Share one instance. Provide [`Greeter`](app/greeter.aug.md#symbol-Greeter) for `app`. Share one instance. Needs `Logger`.
 
 ## Startup
 
-- Set `greeter` to the instance provided for `app`.
-- Call [`Greeter.greet`](app/greeter.aug.md#symbol-Greeter.greet) on `greeter` with `name` as `"AugScript"` using `Console` for `console`.
+It sets `greeter` to the instance provided for `app`. It calls [`Greeter.greet`](app/greeter.aug.md#symbol-Greeter.greet) on `greeter` (`name` set to `"AugScript"`) using `Console` for `console`.
 
 ## Dependencies
 
-- [`SystemConsole`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-SystemConsole) from `august.io`.
-- [`Greeter`](app/greeter.aug.md#symbol-Greeter) from `app`: [`greet`](app/greeter.aug.md#symbol-Greeter.greet) (`name`: `string`) → `void`.
-- [`ConsoleLogger`](logging/console.aug.md#symbol-ConsoleLogger) from `logging`.
+The file uses [`Console`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console) from `august.io`. [`write`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write) takes `value` as `T`. It returns no value. The type parameters are `T`. It can use [`Console.write`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write). The file uses [`SystemConsole`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-SystemConsole) from `august.io`. The file uses [`Greeter`](app/greeter.aug.md#symbol-Greeter) from `app`. [`greet`](app/greeter.aug.md#symbol-Greeter.greet) takes `name` as `string`. It returns no value. Dependency injection supplies `console` as [`Console`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console). It can use [`Console.write`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write). The file uses [`ConsoleLogger`](logging/console.aug.md#symbol-ConsoleLogger) from `logging`.

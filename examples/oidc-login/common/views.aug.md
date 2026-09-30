@@ -3,12 +3,8 @@
 # `views.aug`
 
 <a id="symbol-Page"></a>
-## `Page` · [source](views.aug#L2)
+## `Page` · [source](views.aug#L3)
 
-Small server components keep each page's behavior and dependencies visible.
+Small server components keep each page's behavior and dependencies visible. The caller supplies `title` as `string` and `children` as `List<Html>`. The result is `Html`.
 
-**Inputs:** Take `title` (`string`). Take `children` (`List<Html>`).
-
-Returns `Html`.
-
-- Return the HTML element `html` with `lang` = `"en"` containing the HTML element `head` containing the HTML element `meta` with `charset` = `"utf-8"` (server-rendered; text escaped), the HTML element `meta` with `name` = `"viewport"`, `content` = `"width=device-width, initial-scale=1"` (server-rendered; text escaped), the HTML element `title` containing `title`, ` — August` (server-rendered; text escaped) (server-rendered; text escaped), the HTML element `body` with `style` = `"margin:0;background:#f3f5f9;color:#17233a;font:17px system-ui,sans-serif;line-height:1.6"` containing the HTML element `main` with `style` = `"max-width:640px;margin:48px auto;padding:28px;background:white;border-radius:20px;box-shadow:0 12px 48px #17233a12"` containing the HTML element `nav` containing the HTML element `a` with `href` = `"/"`, `style` = `"color:#4852d7;font-weight:750;text-decoration:none"` containing `August · OpenID Connect` (server-rendered; text escaped) (server-rendered; text escaped), the HTML element `h1` containing `title` (server-rendered; text escaped), `children` (server-rendered; text escaped) (server-rendered; text escaped) (server-rendered; text escaped).
+It returns the HTML element `html` with `lang` = `"en"` containing the HTML element `head` containing the HTML element `meta` with `charset` = `"utf-8"` (server-rendered; text escaped), the HTML element `meta` with `name` = `"viewport"`, `content` = `"width=device-width, initial-scale=1"` (server-rendered; text escaped), the HTML element `title` containing `title`, ` — August` (server-rendered; text escaped) (server-rendered; text escaped), the HTML element `body` with `style` = `"margin:0;background:#f3f5f9;color:#17233a;font:17px system-ui,sans-serif;line-height:1.6"` containing the HTML element `main` with `style` = `"max-width:640px;margin:48px auto;padding:28px;background:white;border-radius:20px;box-shadow:0 12px 48px #17233a12"` containing the HTML element `nav` containing the HTML element `a` with `href` = `"/"`, `style` = `"color:#4852d7;font-weight:750;text-decoration:none"` containing `August · OpenID Connect` (server-rendered; text escaped) (server-rendered; text escaped), the HTML element `h1` containing `title` (server-rendered; text escaped), `children` (server-rendered; text escaped) (server-rendered; text escaped) (server-rendered; text escaped).

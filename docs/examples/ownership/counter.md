@@ -29,6 +29,7 @@ pageClass: aug-example-page
 ::: code-group
 
 ```aug [Indentation]
+// aug-spec: "counter.aug.md" explains this file. Read it before changes; refresh with aug spec.
 Counter(mutable int value) implements ICounter:
     increment() changes self:
         borrow self:
@@ -41,6 +42,7 @@ interface ICounter:
 ```
 
 ```aug [Braces]
+// aug-spec: "counter.aug.md" explains this file. Read it before changes; refresh with aug spec.
 Counter(mutable int value) implements ICounter {
     increment() changes self {
         borrow self {
@@ -68,24 +70,19 @@ interface ICounter {
 <a id="symbol-Counter"></a>
 ### `Counter` · class · [source](counter.md#code)
 
-Implements [`ICounter`](counter.md#symbol-ICounter).
-
-**Inputs:** Take `value` (`int`); store mutably.
+Implements [`ICounter`](counter.md#symbol-ICounter). The caller supplies `value` as `int`, stored mutably.
 
 <a id="symbol-Counter.increment"></a>
 #### `Counter.increment` · [source](counter.md#code)
 
-Changes `self`.
+It may change `self`. While mutably borrowing `self`, it increases `value` by `1`.
 
-- Mutably borrow `self` for this block:
-  - Set `value` to `value` plus `1`.
+The mutable borrow ends when this block exits.
 
 <a id="symbol-Counter.read"></a>
 #### `Counter.read` · [source](counter.md#code)
 
-Returns `int`.
-
-- Return `value`.
+The result is `int`. It returns `value`.
 
 <a id="symbol-ICounter"></a>
 ### `ICounter` · interface · [source](counter.md#code)
@@ -93,12 +90,12 @@ Returns `int`.
 <a id="symbol-ICounter.increment"></a>
 #### `ICounter.increment` · [source](counter.md#code)
 
-Changes `self`.
+It may change `self`.
 
 <a id="symbol-ICounter.read"></a>
 #### `ICounter.read` · [source](counter.md#code)
 
-Returns `int`.
+The result is `int`.
 
 ::::
 

@@ -28,6 +28,7 @@ pageClass: aug-example-page
 ::: code-group
 
 ```aug [Indentation]
+// aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 // A loop-carried dependency prevents removal of the computation.
 int state = 123
 int index = 0
@@ -39,6 +40,7 @@ print(value=state)
 ```
 
 ```aug [Braces]
+// aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 // A loop-carried dependency prevents removal of the computation.
 int state = 123
 int index = 0
@@ -60,17 +62,11 @@ print(value=state)
 
 ### Startup
 
-- Set `state` of type `int` to `123`.
-- Set `index` of type `int` to `0`.
-- While `index` is less than `2000000`:
-  - Set `product` of type `int` to `state` times `48271`.
-  - Set `state` to `product` minus ((`product` divided by `2147483647`) times `2147483647`).
-  - Set `index` to `index` plus `1`.
-- Call `print` with `value` as `state`.
+It sets `state` of type `int` to `123`. It sets `index` of type `int` to `0`. While `index` is less than `2000000`, it sets `product` of type `int` to `state` times `48271`; then it sets `state` to `product` minus ((`product` divided by `2147483647`) times `2147483647`); then it increases `index` by `1`. It calls `print` (`value` set to `state`).
 
 ### Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
 
-- `print`: Composition and test output. Other callables receive Console and declare uses console.write.
+`print`: Composition and test output. Other callables receive Console and declare uses console.write.
 
 ::::
 

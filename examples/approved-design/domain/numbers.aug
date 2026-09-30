@@ -1,3 +1,4 @@
+// aug-spec: "numbers.aug.md" explains this file. Read it before changes; refresh with aug spec.
 /** Raised when an input is outside the operation's domain. */
 RangeError(int value) implements Error:
 	pass

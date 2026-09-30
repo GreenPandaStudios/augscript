@@ -49,6 +49,7 @@ pageClass: aug-example-page
 ::: code-group
 
 ```aug [Indentation]
+// aug-spec: "credentials.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Crypto from august.crypto
 /** One development account with a PBKDF2-HMAC-SHA256 verifier. Production account storage is deliberately a separate capability. */
 verifyCredentials(string username, string password, resolve Crypto crypto) returns bool uses crypto.passwordHash and crypto.decodeBase64url and crypto.equal unless CryptoError:
@@ -62,6 +63,7 @@ verifyCredentials(string username, string password, resolve Crypto crypto) retur
 ```
 
 ```aug [Braces]
+// aug-spec: "credentials.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Crypto from august.crypto
 /** One development account with a PBKDF2-HMAC-SHA256 verifier. Production account storage is deliberately a separate capability. */
 verifyCredentials(string username, string password, resolve Crypto crypto) returns bool uses crypto.passwordHash and crypto.decodeBase64url and crypto.equal unless CryptoError {
@@ -87,28 +89,19 @@ verifyCredentials(string username, string password, resolve Crypto crypto) retur
 <a id="symbol-verifyCredentials"></a>
 ### `verifyCredentials` · [source](credentials.md#code)
 
-One development account with a PBKDF2-HMAC-SHA256 verifier. Production account storage is deliberately a separate capability.
+One development account with a PBKDF2-HMAC-SHA256 verifier. Production account storage is deliberately a separate capability. The caller supplies `username` and `password` as `string`. Dependency injection supplies `crypto` as [`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto). The result is `bool`. It can use [`crypto.passwordHash`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.passwordHash), [`crypto.decodeBase64url`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url), and [`crypto.equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal). It can fail with `CryptoError`.
 
-**Inputs:** Take `username` (`string`). Take `password` (`string`). Resolve [`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto) as `crypto`.
+If the byte length of `username` is greater than `64` or the byte length of `password` is greater than `256`, it returns `false`. It sets `actual` to the value from [`Crypto.passwordHash`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.passwordHash) on `crypto` (`password` set to the UTF-8 bytes of `password`, `salt` set to the UTF-8 bytes of `"August demo salt v1"`, and `iterations` set to `600000`). It sets `expected` to the value from [`Crypto.decodeBase64url`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url) on `crypto` (`input` set to `"s70USYF6WohPz2f7VLA9haS_ZgEtenviSf_HG0o7B_A"`).
 
-Returns `bool`. Uses [`crypto.passwordHash`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.passwordHash), [`crypto.decodeBase64url`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url), [`crypto.equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal). Can fail with `CryptoError`.
-
-- If (the result of `length` on `username` is greater than `64`) or (the result of `length` on `password` is greater than `256`):
-  - Return `false`.
-- Set `actual` to the result of [`Crypto.passwordHash`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.passwordHash) on `crypto` with `password` as the result of `bytes` on `password`, `salt` as the result of `bytes` on `"August demo salt v1"`, `iterations` as `600000`.
-- Set `expected` to the result of [`Crypto.decodeBase64url`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url) on `crypto` with `input` as `"s70USYF6WohPz2f7VLA9haS_ZgEtenviSf_HG0o7B_A"`.
-- Set `userMatches` to the result of [`Crypto.equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal) on `crypto` with `left` as the result of `bytes` on `username`, `right` as the result of `bytes` on `"ada"`.
-- Set `passwordMatches` to the result of [`Crypto.equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal) on `crypto` with `left` as `actual`, `right` as `expected`.
-- Return `userMatches` and `passwordMatches`.
+It sets `userMatches` to the value from [`Crypto.equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal) on `crypto` (`left` set to the UTF-8 bytes of `username` and `right` set to the UTF-8 bytes of `"ada"`). It sets `passwordMatches` to the value from [`Crypto.equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal) on `crypto` (`left` set to `actual` and `right` set to `expected`). It returns `userMatches` and `passwordMatches`.
 
 ### Dependencies
 
-- [`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto) from `august.crypto`: [`decodeBase64url`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url) (`input`: `string`) → `Bytes`; can fail with `CryptoError`; [`equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal) (`left`: `Bytes`, `right`: `Bytes`) → `bool`; [`passwordHash`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.passwordHash) (`password`: `Bytes`, `salt`: `Bytes`, `iterations`: `int`) → `Bytes`; can fail with `CryptoError`.
+The file uses [`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto) from `august.crypto`. [`decodeBase64url`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url) takes `input` as `string`. It returns `Bytes`. It can use [`Crypto.decodeBase64url`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url). It can fail with `CryptoError`. [`equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal) takes `left` and `right` as `Bytes`. It returns `bool`. It can use [`Crypto.equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal). [`passwordHash`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.passwordHash) takes `password` and `salt` as `Bytes` and `iterations` as `int`. It returns `Bytes`. It can use [`Crypto.passwordHash`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.passwordHash). It can fail with `CryptoError`.
 
 ### Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
 
-- `string.bytes`: Encode this string as immutable UTF-8 bytes.
-- `string.length`: Read the number of UTF-8 bytes. Unicode text is preserved losslessly.
+`string.bytes`: Encode this string as immutable UTF-8 bytes. `string.length`: Read the number of UTF-8 bytes. Unicode text is preserved losslessly.
 
 ::::
 

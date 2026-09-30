@@ -3,67 +3,42 @@
 # `numbers.aug`
 
 <a id="symbol-RangeError"></a>
-## `RangeError` · class · [source](numbers.aug#L2)
+## `RangeError` · class · [source](numbers.aug#L3)
 
-Raised when an input is outside the operation's domain. Implements `Error`.
-
-**Inputs:** Take `value` (`int`); store read-only.
+Raised when an input is outside the operation's domain. Implements `Error`. The caller supplies `value` as `int`, stored read-only.
 
 <a id="symbol-Positive"></a>
-## `Positive` · interceptor · [source](numbers.aug#L5)
+## `Positive` · interceptor · [source](numbers.aug#L6)
 
-A pure validation layer, shared by any compatible callable. Type parameters: `T`.
-
-Creates one interceptor per invocation. Its around operation may delegate once or finish early.
+A pure validation layer, shared by any compatible callable. The type parameters are `T`. Creates one interceptor per invocation. Its around operation may delegate once or finish early.
 
 <a id="symbol-Positive.around"></a>
-### `Positive.around` · [source](numbers.aug#L6)
+### `Positive.around` · [source](numbers.aug#L7)
 
-**Inputs:** Take `amount` (`int`).
-
-Returns `T`. Can fail with `RangeError`.
-
-- If `amount` is less than `0`:
-  - Fail with a new [`RangeError`](numbers.aug.md#symbol-RangeError) with `value` as `amount`.
-- Return the result of `next`.
+The caller supplies `amount` as `int`. The result is `T`. It can fail with `RangeError`. If `amount` is less than `0`, it fails with a new [`RangeError`](numbers.aug.md#symbol-RangeError) (`value` set to `amount`). Otherwise, it returns the value from `next`.
 
 <a id="symbol-double"></a>
-## `double` · [source](numbers.aug#L17)
+## `double` · [source](numbers.aug#L18)
 
-Double a nonnegative amount.
-
-**Inputs:** Take `amount` (`int`) — Integer to double.
-
-Returns `int` — Twice the amount, with defined integer wrapping. Can fail with `RangeError` (A validation layer rejected a negative input).
-
-Layers run in this order:
-
-1. Call [`Positive.around`](numbers.aug.md#symbol-Positive.around).
-
-- Return `amount` times `2`.
+Double a nonnegative amount. The caller supplies `amount` as `int` (Integer to double). The result is `int` — Twice the amount, with defined integer wrapping. It can fail with `RangeError` (A validation layer rejected a negative input). Layers run in the declared order. Call [`Positive.around`](numbers.aug.md#symbol-Positive.around). It returns `amount` times `2`.
 
 <a id="symbol-test double"></a>
-## `test double` · [source](numbers.aug#L19)
+## `test double` · [source](numbers.aug#L20)
 
 Tests [`double`](numbers.aug.md#symbol-double). Each case gets fresh setup and dependencies.
 
 ### `positive`
 
-#### `doubles` · [source](numbers.aug#L21)
+#### `doubles` · [source](numbers.aug#L22)
 
-Run once for each row of a tuple containing `0`, `0`; a tuple containing `3`, `6`; a tuple containing `7`, `14`. Bind row positions to `input`, `expected`.
+Run once for each row of a tuple containing `0`, `0`; a tuple containing `3`, `6`; a tuple containing `7`, `14`. Bind row positions to `input`, `expected`. It calls `assert` (the value from [`double`](numbers.aug.md#symbol-double) (`amount` set to `input`) equals `expected`).
 
-- Call `assert` with the result of [`double`](numbers.aug.md#symbol-double) with `amount` as `input` equals `expected`.
+#### `rejects_negative` · [source](numbers.aug#L24)
 
-#### `rejects_negative` · [source](numbers.aug#L23)
+It sets `rejected` of type `bool` to `false`.
 
-- Set `rejected` of type `bool` to `false`.
-- Try:
-  - Call [`double`](numbers.aug.md#symbol-double) with `amount` as `-1`.
-- Catch [`RangeError`](numbers.aug.md#symbol-RangeError) as `error`:
-  - Set `rejected` to `value` of `error` equals `-1`.
-- Call `assert` with `rejected`.
+It tries to call [`double`](numbers.aug.md#symbol-double) (`amount` set to `-1`). If this attempt raises [`RangeError`](numbers.aug.md#symbol-RangeError), it catches it as `error` and sets `rejected` to `error.value` equals `-1`. It calls `assert` (`rejected`).
 
 ## Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
 
-- `assert`: Assert a bool in a test case or its setup. Catching an assertion failure cannot make the case pass; every case must execute an assertion.
+`assert`: Assert a bool in a test case or its setup. Catching an assertion failure cannot make the case pass; every case must execute an assertion.

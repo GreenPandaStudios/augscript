@@ -4,23 +4,10 @@
 
 ## Startup
 
-- Try:
-  - Set `args` to the result of `arguments`.
-  - Call `print` with `value` as the result of `length` on `args`.
-  - If the result of `length` on `args` is greater than `0`:
-    - Call `print` with `value` as the result of `get` on `args` with `index` as `0`.
-  - Set `numbers` to a list of `int` containing `1`, `2`.
-  - Mutably borrow `numbers` for this block:
-    - Call `append` on `numbers` with `value` as `3`.
-  - Call `print` with `value` as the result of `get` on `numbers` with `index` as `2`.
-- Catch `IndexError` as `error`:
-  - Call `print` with `value` as `"unexpected index failure"`.
+It tries the following steps. It sets `args` to the value from `arguments`. It calls `print` (`value` set to the number of elements in `args`). If the number of elements in `args` is greater than `0`, it calls `print` (`value` set to the value from `get` on `args` (`index` set to `0`)). It sets `numbers` to a list of `int` containing `1`, `2`. While mutably borrowing `numbers`, it calls `append` on `numbers` (`value` set to `3`).
+
+The mutable borrow ends when this block exits. It calls `print` (`value` set to the value from `get` on `numbers` (`index` set to `2`)). If this attempt raises `IndexError`, it catches it as `error` and calls `print` (`value` set to `"unexpected index failure"`).
 
 ## Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
 
-- `List<int>.append`: Append an element with exclusive mutable access. Read-only and owned aliases cannot be stored here.
-- `List<int>.get`: Read a zero-based position. An invalid index raises checked IndexError. Reference results grant reading.
-- `List<string>.get`: Read a zero-based position. An invalid index raises checked IndexError. Reference results grant reading.
-- `List<string>.length`: Read the number of elements.
-- `arguments`: Composition arguments. Other callables receive the Arguments capability.
-- `print`: Composition and test output. Other callables receive Console and declare uses console.write.
+`List<int>.append`: Append an element with exclusive mutable access. Read-only and owned aliases cannot be stored here. `List<int>.get`: Read a zero-based position. An invalid index raises checked IndexError. Reference results grant reading. `List<string>.get`: Read a zero-based position. An invalid index raises checked IndexError. Reference results grant reading. `List<string>.length`: Read the number of elements. `arguments`: Composition arguments. Other callables receive the Arguments capability. `print`: Composition and test output. Other callables receive Console and declare uses console.write.

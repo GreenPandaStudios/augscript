@@ -18,6 +18,14 @@ aug spec . --check
 
 Successful `build`, `run`, and `bench` commands refresh these documents after native compilation. `aug pack` refreshes them before creating the source archive. `--check` writes nothing and exits with a failure if a document, dependency copy, or manifest is missing or stale. Use it in CI after `aug check`.
 
+Generation also adds one managed comment at the top of each project source file:
+
+```text
+// aug-spec: "orders.aug.md" explains this file. Read it before changes; refresh with aug spec.
+```
+
+This points readers and coding agents to the explanation before they edit the code. The compiler keeps the pointer current after a rename and preserves handwritten comments. It does not edit installed dependencies. Native builds add the pointer after checking and before C emission, so source maps use the correct lines. `aug spec --check` reports missing or outdated pointers without adding them.
+
 ## What the document explains
 
 The compiler describes labeled inputs, injected dependencies, return values, state changes, capabilities, and checked failures. It follows each local branch, loop, match, recovery path, and cleanup block. It includes private helpers and same-file tests. For endpoints, it describes routes, wire inputs, policies, middleware ordering, and configured HTTP behavior.
@@ -36,19 +44,19 @@ total(int price, int quantity) returns int:
     return 0
 ```
 
-Without any comments, the generated spec lists `total` near the top of the file, explains its two labeled inputs and `int` result, and then describes its behavior:
+Without any author comments, the generated explanation reads:
 
-> - If `quantity` is greater than `0`:
->   - Return `price` times `quantity`.
-> - Return `0`.
+> The caller supplies `price` and `quantity` as `int`. The result is `int`. If `quantity` is greater than `0`, it returns `price` times `quantity`. Otherwise, it returns `0`.
 
-The generated document preserves the actual branch structure and links to the full explanation of each used dependency. Javadoc, when present, becomes part of the explanation: its summary introduces the declaration, parameter notes sit beside their inputs, and return and error notes sit beside those outcomes. Comments can explain intent that a compiler cannot infer, but readers do not need them to follow the checked inputs, operations, and outcomes.
+The generated document uses connected paragraphs. It keeps branch conditions, repetition, recovery, and cleanup in their original scopes. A guard that returns, followed by a final return, can read as an explicit alternative. Longer nested paths retain scope boundaries so that a later operation cannot be mistaken for part of an earlier branch.
+
+Javadoc, when present, becomes part of the explanation: its summary introduces the declaration, parameter notes sit beside their inputs, and return and error notes sit beside those outcomes. Comments can explain intent that a compiler cannot infer, but readers do not need them to follow the checked inputs, operations, and outcomes.
 
 Optional contracts use `optional Type`. Specs describe two possible states: a value or null. Omitted inputs become null, so missing and explicit null follow the same branch. If an older program handles missing and null differently, combine those cases deliberately before using the syntax migration command.
 
 ## Dependencies stay small and navigable
 
-The document follows the file's declarations and startup steps. A short dependency section lists only used names and operations. It shows each operation's caller inputs, result, and checked failures, with a link to the complete explanation. The local declaration explains injected inputs, state changes, and capabilities. Dependency implementation bodies stay in their own documents.
+The document follows the file's declarations and startup steps. A short dependency section describes only used names and operations in prose. It explains caller inputs, injected inputs, results, mutation permissions, and checked failures, with links to their complete explanations. Dependency implementation bodies stay in their own documents.
 
 `import everything` stays valid. The spec lists the names and operations actually used by the file. Adding an unused export does not expand that list. VS Code hover still shows all names available from the import.
 
@@ -79,7 +87,9 @@ In VS Code, use **AugScript: Open Compiled Specification** to generate and previ
 
 ## Determinism and limits
 
-Generation is offline and deterministic for the same checked sources, configuration, installed dependency versions, and compiler version. It adds no timestamps or machine paths. The compiler first builds an explanation tree from checked declarations and nested operations, then renders that tree as Markdown. Branches and cleanup stay grouped, and spacing is consistent across files.
+Generation is offline and deterministic for the same checked sources, configuration, installed dependency versions, and compiler version. It adds no timestamps or machine paths. The compiler builds a behavior tree from checked declarations, plans sentences within their scopes, combines compatible clauses, and lays out paragraphs. Source identities survive sentence planning; an internal coverage check rejects a plan that drops or reorders statement facts. Repeated calls remain distinct operations.
+
+The design draws on research in code summarization and natural language generation, including document planning, clause aggregation, and grammatical realization. Read [the research and its limits](research/code-to-natural-language.md). Summary research often selects important statements; August retains local behavior instead. The coverage check verifies the planner's bookkeeping, not the correctness of every English interpretation. Regression examples check conditions, arithmetic grouping, effects, recovery, links, and reproducibility. Reader review is still needed for clarity and domain intent.
 
 ASD-STE100 guides the wording. The output is best effort Simplified Technical English, without a claim of formal compliance. Native C boundaries are explained through their declared contracts and author documentation; the compiler does not infer a foreign implementation's internals. Shared numeric, ownership, and task rules link to the language reference.
 

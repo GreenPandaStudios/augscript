@@ -49,6 +49,7 @@ pageClass: aug-example-page
 ::: code-group
 
 ```aug [Indentation]
+// aug-spec: "contracts.aug.md" explains this file. Read it before changes; refresh with aug spec.
 /** A provider request is bound to a browser cookie, a form CSRF token, and a registered client. */
 record AuthorizationRequest(string clientId, string redirectUri, string state, string nonce, string challenge, string browser, string csrf, int expires)
 /** Codes are short-lived, single-use and bound to a redirect URI and S256 challenge. */
@@ -67,6 +68,7 @@ CodeError() implements Error:
 ```
 
 ```aug [Braces]
+// aug-spec: "contracts.aug.md" explains this file. Read it before changes; refresh with aug spec.
 /** A provider request is bound to a browser cookie, a form CSRF token, and a registered client. */
 record AuthorizationRequest(string clientId, string redirectUri, string state, string nonce, string challenge, string browser, string csrf, int expires)
 /** Codes are short-lived, single-use and bound to a redirect URI and S256 challenge. */
@@ -97,51 +99,47 @@ CodeError() implements Error {
 <a id="symbol-AuthorizationRequest"></a>
 ### `AuthorizationRequest` · immutable record · [source](contracts.md#code)
 
-A provider request is bound to a browser cookie, a form CSRF token, and a registered client.
-
-**Inputs:** Take `clientId` (`string`); store read-only. Take `redirectUri` (`string`); store read-only. Take `state` (`string`); store read-only. Take `nonce` (`string`); store read-only. Take `challenge` (`string`); store read-only. Take `browser` (`string`); store read-only. Take `csrf` (`string`); store read-only. Take `expires` (`int`); store read-only.
+A provider request is bound to a browser cookie, a form CSRF token, and a registered client. The caller supplies `clientId`, `redirectUri`, `state`, `nonce`, `challenge`, `browser`, and `csrf` as `string`, stored read-only and `expires` as `int`, stored read-only.
 
 <a id="symbol-AuthorizationCode"></a>
 ### `AuthorizationCode` · immutable record · [source](contracts.md#code)
 
-Codes are short-lived, single-use and bound to a redirect URI and S256 challenge.
-
-**Inputs:** Take `clientId` (`string`); store read-only. Take `redirectUri` (`string`); store read-only. Take `challenge` (`string`); store read-only. Take `nonce` (`string`); store read-only. Take `subject` (`string`); store read-only. Take `name` (`string`); store read-only. Take `expires` (`int`); store read-only.
+Codes are short-lived, single-use and bound to a redirect URI and S256 challenge. The caller supplies `clientId`, `redirectUri`, `challenge`, `nonce`, `subject`, and `name` as `string`, stored read-only and `expires` as `int`, stored read-only.
 
 <a id="symbol-IdClaims"></a>
 ### `IdClaims` · immutable record · [source](contracts.md#code)
 
-**Inputs:** Take `iss` (`string`); store read-only. Take `sub` (`string`); store read-only. Take `aud` (`string`); store read-only. Take `exp` (`int`); store read-only. Take `iat` (`int`); store read-only. Take `nonce` (`string`); store read-only. Take `name` (`string`); store read-only.
+The caller supplies `iss`, `sub`, and `aud` as `string`, stored read-only, `exp` and `iat` as `int`, stored read-only, and `nonce` and `name` as `string`, stored read-only.
 
 <a id="symbol-AccessGrant"></a>
 ### `AccessGrant` · immutable record · [source](contracts.md#code)
 
-**Inputs:** Take `subject` (`string`); store read-only. Take `name` (`string`); store read-only. Take `expires` (`int`); store read-only.
+The caller supplies `subject` and `name` as `string`, stored read-only and `expires` as `int`, stored read-only.
 
 <a id="symbol-TokenResponse"></a>
 ### `TokenResponse` · immutable record · [source](contracts.md#code)
 
-**Inputs:** Take `token_type` (`string`); store read-only. Take `access_token` (`string`); store read-only. Take `id_token` (`string`); store read-only. Take `expires_in` (`int`); store read-only. Take `scope` (`string`); store read-only.
+The caller supplies `token_type`, `access_token`, and `id_token` as `string`, stored read-only, `expires_in` as `int`, stored read-only, and `scope` as `string`, stored read-only.
 
 <a id="symbol-OAuthError"></a>
 ### `OAuthError` · immutable record · [source](contracts.md#code)
 
-**Inputs:** Take `error` (`string`); store read-only. Take `error_description` (`string`); store read-only.
+The caller supplies `error` and `error_description` as `string`, stored read-only.
 
 <a id="symbol-TokenForm"></a>
 ### `TokenForm` · immutable record · [source](contracts.md#code)
 
-**Inputs:** Take `grant_type` (`string`); store read-only. Take `code` (`string`); store read-only. Take `redirect_uri` (`string`); store read-only. Take `client_id` (`string`); store read-only. Take `code_verifier` (`string`); store read-only.
+The caller supplies `grant_type`, `code`, `redirect_uri`, `client_id`, and `code_verifier` as `string`, stored read-only.
 
 <a id="symbol-LoginForm"></a>
 ### `LoginForm` · immutable record · [source](contracts.md#code)
 
-**Inputs:** Take `request_id` (`string`); store read-only. Take `csrf` (`string`); store read-only. Take `username` (`string`); store read-only. Take `password` (`string`); store read-only.
+The caller supplies `request_id`, `csrf`, `username`, and `password` as `string`, stored read-only.
 
 <a id="symbol-UserInfo"></a>
 ### `UserInfo` · immutable record · [source](contracts.md#code)
 
-**Inputs:** Take `sub` (`string`); store read-only. Take `name` (`string`); store read-only.
+The caller supplies `sub` and `name` as `string`, stored read-only.
 
 <a id="symbol-LoginError"></a>
 ### `LoginError` · class · [source](contracts.md#code)

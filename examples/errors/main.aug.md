@@ -4,15 +4,12 @@
 
 ## Startup
 
-- Try:
-  - Call `print` with `value` as the result of [`load`](errors.aug.md#symbol-load) with `fail` as `true`.
-- Catch `FileError` as `error`:
-  - Call `print` with `value` as `"caught FileError"`.
+It tries to call `print` (`value` set to the value from [`load`](errors.aug.md#symbol-load) (`fail` set to `true`)). If this attempt raises `FileError`, it catches it as `error` and calls `print` (`value` set to `"caught FileError"`).
 
 ## Dependencies
 
-- [`load`](errors.aug.md#symbol-load) (`fail`: `bool`) → `string`; can fail with `FileError` from `errors`.
+[`load`](errors.aug.md#symbol-load) from `errors` takes `fail` as `bool`. It returns `string`. It can fail with `FileError`.
 
 ## Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
 
-- `print`: Composition and test output. Other callables receive Console and declare uses console.write.
+`print`: Composition and test output. Other callables receive Console and declare uses console.write.

@@ -33,10 +33,12 @@ pageClass: aug-example-page
 ::: code-group
 
 ```aug [Indentation]
+// aug-spec: "export.aug.md" explains this file. Read it before changes; refresh with aug spec.
 export Greeter from greeter
 ```
 
 ```aug [Braces]
+// aug-spec: "export.aug.md" explains this file. Read it before changes; refresh with aug spec.
 export Greeter from greeter
 ```
 
@@ -50,7 +52,7 @@ export Greeter from greeter
 
 ### Exports
 
-- Export the declaration `Greeter` from [`greeter.aug`](greeter.md#symbol-Greeter).
+Export the declaration `Greeter` from [`greeter.aug`](greeter.md#symbol-Greeter).
 
 ::::
 

@@ -4,30 +4,20 @@
 
 ## Providers
 
-- Provide [`SystemConsole`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-SystemConsole) for `Console`. Share one instance.
-- Provide [`ConsoleLogger`](logging.aug.md#symbol-ConsoleLogger) for `Logger`. Share one instance.
+Provide [`SystemConsole`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-SystemConsole) for `Console`. Share one instance. Provide [`ConsoleLogger`](logging.aug.md#symbol-ConsoleLogger) for `Logger`. Share one instance.
 
 ## Startup
 
-- Try:
-  - Call `print` with `value` as the result of [`describe`](app.aug.md#symbol-describe) with `label` as `"value"`, `x` as `6` using `Logger` for `logger`, `Console` for `console`.
-- Catch [`ValidationError`](interceptors.aug.md#symbol-ValidationError) as `error`:
-  - Call `print` with `value` as `"rejected"`.
-- Set `greeter` to a new [`Greeter`](app.aug.md#symbol-Greeter) with `name` as `"AugScript"` using `Logger` for `_logger`.
-- Call `print` with `value` as the result of [`Greeter.greet`](app.aug.md#symbol-Greeter.greet) on `greeter` using `Logger` for `logger`, `Console` for `console`.
-- Try:
-  - Call [`describe`](app.aug.md#symbol-describe) with `x` as `-1`, `label` as `"invalid"` using `Logger` for `logger`, `Console` for `console`.
-- Catch [`ValidationError`](interceptors.aug.md#symbol-ValidationError) as `error`:
-  - Call `print` with `value` as `"rejected"`.
+It tries to call `print` (`value` set to the value from [`describe`](app.aug.md#symbol-describe) (`label` set to `"value"` and `x` set to `6`) using `Logger` for `logger`, `Console` for `console`). If this attempt raises [`ValidationError`](interceptors.aug.md#symbol-ValidationError), it catches it as `error` and calls `print` (`value` set to `"rejected"`). It sets `greeter` to a new [`Greeter`](app.aug.md#symbol-Greeter) (`name` set to `"AugScript"`) using `Logger` for `_logger`. It calls `print` (`value` set to the value from [`Greeter.greet`](app.aug.md#symbol-Greeter.greet) on `greeter` using `Logger` for `logger`, `Console` for `console`).
+
+It tries to call [`describe`](app.aug.md#symbol-describe) (`x` set to `-1` and `label` set to `"invalid"`) using `Logger` for `logger`, `Console` for `console`. If this attempt raises [`ValidationError`](interceptors.aug.md#symbol-ValidationError), it catches it as `error` and calls `print` (`value` set to `"rejected"`).
 
 ## Dependencies
 
-- [`SystemConsole`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-SystemConsole) from `august.io`.
-- [`Greeter`](app.aug.md#symbol-Greeter) from `app`: construct with `name`: `string`; [`greet`](app.aug.md#symbol-Greeter.greet) (no caller inputs) → `string`.
-- [`describe`](app.aug.md#symbol-describe) (`x`: `int`, `label`: `string`) → `string`; can fail with `ValidationError` from `app`.
-- [`ValidationError`](interceptors.aug.md#symbol-ValidationError) from `interceptors`.
-- [`ConsoleLogger`](logging.aug.md#symbol-ConsoleLogger) from `logging`.
+The file uses [`Console`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console) from `august.io`. [`write`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write) takes `value` as `T`. It returns no value. The type parameters are `T`. It can use [`Console.write`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write). The file uses [`SystemConsole`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-SystemConsole) from `august.io`. The file uses [`Greeter`](app.aug.md#symbol-Greeter) from `app`. Construction takes `name` as `string`. [`greet`](app.aug.md#symbol-Greeter.greet) takes no caller inputs. It returns `string`. Dependency injection supplies `logger` as [`Logger`](logging.aug.md#symbol-Logger) and `console` as [`Console`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console). It can use [`Console.write`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write).
+
+[`describe`](app.aug.md#symbol-describe) from `app` takes `x` as `int` and `label` as `string`. It returns `string`. Dependency injection supplies `logger` as [`Logger`](logging.aug.md#symbol-Logger) and `console` as [`Console`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console). It can use [`Console.write`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write). It can fail with `ValidationError`. The file uses [`ValidationError`](interceptors.aug.md#symbol-ValidationError) from `interceptors`. The file uses [`ConsoleLogger`](logging.aug.md#symbol-ConsoleLogger) from `logging`. The file uses [`Logger`](logging.aug.md#symbol-Logger) from `logging`.
 
 ## Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
 
-- `print`: Composition and test output. Other callables receive Console and declare uses console.write.
+`print`: Composition and test output. Other callables receive Console and declare uses console.write.

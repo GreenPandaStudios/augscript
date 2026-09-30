@@ -1,3 +1,4 @@
+// aug-spec: "userinfo.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import UserInfo and AccessGrant from contracts
 import securityHeaders from common
 import Clock from august.time

@@ -29,6 +29,7 @@ pageClass: aug-example-page
 ::: code-group
 
 ```aug [Indentation]
+// aug-spec: "types.aug.md" explains this file. Read it before changes; refresh with aug spec.
 interface Formatter:
     format<T>(T value) returns string
     title() returns string:
@@ -44,6 +45,7 @@ interface IBox<T>:
 ```
 
 ```aug [Braces]
+// aug-spec: "types.aug.md" explains this file. Read it before changes; refresh with aug spec.
 interface Formatter {
     format<T>(T value) returns string
     title() returns string {
@@ -79,62 +81,42 @@ interface IBox<T> {
 <a id="symbol-Formatter.format"></a>
 #### `Formatter.format` · [source](types.md#code)
 
-Type parameters: `T`.
-
-**Inputs:** Take `value` (`T`).
-
-Returns `string`.
+The type parameters are `T`. The caller supplies `value` as `T`. The result is `string`.
 
 <a id="symbol-Formatter.title"></a>
 #### `Formatter.title` · [source](types.md#code)
 
-Returns `string`.
-
-- Return `"formatted"`.
+The result is `string`. It returns `"formatted"`.
 
 <a id="symbol-TextFormatter"></a>
 ### `TextFormatter` · class · [source](types.md#code)
 
-Implements [`Formatter`](types.md#symbol-Formatter).
-
-Inherited defaults:
-
-- [`Formatter.title`](types.md#symbol-Formatter.title).
+Implements [`Formatter`](types.md#symbol-Formatter). It inherits the default implementations of [`Formatter.title`](types.md#symbol-Formatter.title).
 
 <a id="symbol-TextFormatter.format"></a>
 #### `TextFormatter.format` · [source](types.md#code)
 
-Type parameters: `T`.
-
-**Inputs:** Take `value` (`T`).
-
-Returns `string`.
-
-- Return `"generic method called"`.
+The type parameters are `T`. The caller supplies `value` as `T`. The result is `string`. It returns `"generic method called"`.
 
 <a id="symbol-Box"></a>
 ### `Box` · class · [source](types.md#code)
 
-Implements [`IBox`](types.md#symbol-IBox). Type parameters: `T`.
-
-**Inputs:** Take `value` (`T`); store read-only.
+Implements [`IBox<T>`](types.md#symbol-IBox). The type parameters are `T`. The caller supplies `value` as `T`, stored read-only.
 
 <a id="symbol-Box.get"></a>
 #### `Box.get` · [source](types.md#code)
 
-Returns `T`.
-
-- Return `value`.
+The result is `T`. It returns `value`.
 
 <a id="symbol-IBox"></a>
 ### `IBox` · interface · [source](types.md#code)
 
-Type parameters: `T`.
+The type parameters are `T`.
 
 <a id="symbol-IBox.get"></a>
 #### `IBox.get` · [source](types.md#code)
 
-Returns `T`.
+The result is `T`.
 
 ::::
 

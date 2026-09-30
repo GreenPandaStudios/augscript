@@ -4,22 +4,16 @@
 
 ## Providers
 
-- Provide [`TextFormatter`](types.aug.md#symbol-TextFormatter) for `Formatter`. Share one instance.
+Provide [`TextFormatter`](types.aug.md#symbol-TextFormatter) for `Formatter`. Share one instance.
 
 ## Startup
 
-- Set `formatter` to the instance provided for `Formatter`.
-- Call `print` with `value` as the result of [`Formatter.title`](types.aug.md#symbol-Formatter.title) on `formatter`.
-- Call `print` with `value` as the result of [`Formatter.format`](types.aug.md#symbol-Formatter.format) on `formatter` with type arguments `int` with `value` as `42`.
-- Set `box` to a new [`Box`](types.aug.md#symbol-Box) with type arguments `string` with `value` as `"inside a generic box"`.
-- Call `print` with `value` as the result of [`Box.get`](types.aug.md#symbol-Box.get) on `box`.
+It sets `formatter` to the instance provided for `Formatter`. It calls `print` (`value` set to the value from [`Formatter.title`](types.aug.md#symbol-Formatter.title) on `formatter`). It calls `print` (`value` set to the value from [`Formatter.format`](types.aug.md#symbol-Formatter.format) on `formatter` with type arguments `int` (`value` set to `42`)). It sets `box` to a new [`Box`](types.aug.md#symbol-Box) with type arguments `string` (`value` set to `"inside a generic box"`). It calls `print` (`value` set to the value from [`Box.get`](types.aug.md#symbol-Box.get) on `box`).
 
 ## Dependencies
 
-- [`Box`](types.aug.md#symbol-Box) from `types`: construct with `value`: `T`; [`get`](types.aug.md#symbol-Box.get) (no caller inputs) → `T`.
-- [`Formatter`](types.aug.md#symbol-Formatter) from `types`: [`format`](types.aug.md#symbol-Formatter.format)<`T`> (`value`: `T`) → `string`; [`title`](types.aug.md#symbol-Formatter.title) (no caller inputs) → `string`.
-- [`TextFormatter`](types.aug.md#symbol-TextFormatter) from `types`.
+The file uses [`Box`](types.aug.md#symbol-Box) from `types`. The type parameters are `T`. Construction takes `value` as `T`. [`get`](types.aug.md#symbol-Box.get) takes no caller inputs. It returns `T`. The file uses [`Formatter`](types.aug.md#symbol-Formatter) from `types`. [`format`](types.aug.md#symbol-Formatter.format) takes `value` as `T`. It returns `string`. The type parameters are `T`. [`title`](types.aug.md#symbol-Formatter.title) takes no caller inputs. It returns `string`. The file uses [`TextFormatter`](types.aug.md#symbol-TextFormatter) from `types`.
 
 ## Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
 
-- `print`: Composition and test output. Other callables receive Console and declare uses console.write.
+`print`: Composition and test output. Other callables receive Console and declare uses console.write.

@@ -1,3 +1,4 @@
+// aug-spec: "keys.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Crypto from august.crypto
 
 KeyError() implements Error:

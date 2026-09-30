@@ -29,6 +29,7 @@ pageClass: aug-example-page
 ::: code-group
 
 ```aug [Indentation]
+// aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Counter from counter
 counter = Counter(value=1)
 print(value=counter.label())
@@ -38,6 +39,7 @@ print(value=counter.value)
 ```
 
 ```aug [Braces]
+// aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Counter from counter
 counter = Counter(value=1)
 print(value=counter.label())
@@ -57,19 +59,17 @@ print(value=counter.value)
 
 ### Startup
 
-- Set `counter` to a new [`Counter`](counter.md#symbol-Counter) with `value` as `1`.
-- Call `print` with `value` as the result of [`Counter.label`](counter.md#symbol-Counter.label) on `counter`.
-- Mutably borrow `counter` for this block:
-  - Set `value` of `counter` to `2`.
-- Call `print` with `value` as `value` of `counter`.
+It sets `counter` to a new [`Counter`](counter.md#symbol-Counter) (`value` set to `1`). It calls `print` (`value` set to the value from [`Counter.label`](counter.md#symbol-Counter.label) on `counter`). While mutably borrowing `counter`, it sets `counter.value` to `2`.
+
+The mutable borrow ends when this block exits. It calls `print` (`value` set to `counter.value`).
 
 ### Dependencies
 
-- [`Counter`](counter.md#symbol-Counter) from `counter`: construct with `value`: `int`; read `value` (`int`), mutable; [`label`](counter.md#symbol-Counter.label) (no caller inputs) → `string`.
+The file uses [`Counter`](counter.md#symbol-Counter) from `counter`. Construction takes `value` as `int`. `value` is a mutable field of type `int`. [`label`](counter.md#symbol-Counter.label) takes no caller inputs. It returns `string`.
 
 ### Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
 
-- `print`: Composition and test output. Other callables receive Console and declare uses console.write.
+`print`: Composition and test output. Other callables receive Console and declare uses console.write.
 
 ::::
 

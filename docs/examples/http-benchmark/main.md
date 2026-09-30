@@ -29,11 +29,13 @@ pageClass: aug-example-page
 ::: code-group
 
 ```aug [Indentation]
+// aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import reply from routes
 serve reply on port 0
 ```
 
 ```aug [Braces]
+// aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import reply from routes
 serve reply on port 0
 ```
@@ -52,12 +54,11 @@ Listen on `127.0.0.1`. Limit request bodies to 1048576 bytes and buffered respon
 
 ### Startup
 
-- Serve [`reply`](routes.md#symbol-reply) on port `0`.
+It serves [`reply`](routes.md#symbol-reply) on port `0`.
 
 ### Dependencies
 
-- [`Reply`](routes.md#symbol-Reply).
-- [`reply`](routes.md#symbol-reply) (no caller inputs) → [`Reply`](routes.md#symbol-Reply) from `routes`.
+The file uses [`Reply`](routes.md#symbol-Reply). [`reply`](routes.md#symbol-reply) from `routes` takes no caller inputs. It returns [`Reply`](routes.md#symbol-Reply).
 
 ::::
 

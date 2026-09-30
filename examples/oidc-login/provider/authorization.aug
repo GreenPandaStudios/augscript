@@ -1,3 +1,4 @@
+// aug-spec: "authorization.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import AuthorizationRequest and AuthorizationCode and LoginForm and LoginError from contracts
 import ProviderLogin and ProviderFailure from views
 import verifyCredentials from credentials

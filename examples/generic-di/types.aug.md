@@ -3,53 +3,43 @@
 # `types.aug`
 
 <a id="symbol-Repository"></a>
-## `Repository` · interface · [source](types.aug#L2)
+## `Repository` · interface · [source](types.aug#L3)
 
-Type parameters: `T`.
+The type parameters are `T`.
 
 <a id="symbol-Repository.get"></a>
-### `Repository.get` · [source](types.aug#L3)
+### `Repository.get` · [source](types.aug#L4)
 
-Returns `T`.
+The result is `T`.
 
 <a id="symbol-NumberRepository"></a>
-## `NumberRepository` · class · [source](types.aug#L5)
+## `NumberRepository` · class · [source](types.aug#L6)
 
-Implements [`Repository`](types.aug.md#symbol-Repository).
+Implements [`Repository<int>`](types.aug.md#symbol-Repository).
 
 <a id="symbol-NumberRepository.get"></a>
-### `NumberRepository.get` · [source](types.aug#L6)
+### `NumberRepository.get` · [source](types.aug#L7)
 
-Returns `int`.
-
-- Return `7`.
+The result is `int`. It returns `7`.
 
 <a id="symbol-Program"></a>
-## `Program` · class · [source](types.aug#L10)
+## `Program` · class · [source](types.aug#L11)
 
-Implements [`IProgram`](types.aug.md#symbol-IProgram).
-
-**Inputs:** Resolve [`Repository<int>`](types.aug.md#symbol-Repository) as `repository`; store read-only.
+Implements [`IProgram`](types.aug.md#symbol-IProgram). Dependency injection supplies `repository` as [`Repository<int>`](types.aug.md#symbol-Repository), stored read-only.
 
 <a id="symbol-Program.start"></a>
-### `Program.start` · [source](types.aug#L11)
+### `Program.start` · [source](types.aug#L12)
 
-**Inputs:** Resolve [`Console`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console) as `console`.
-
-Uses [`Console.write`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write).
-
-- Call [`Console.write`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write) on `console` with `value` as the result of [`Repository.get`](types.aug.md#symbol-Repository.get) on `repository`.
+Dependency injection supplies `console` as [`Console`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console). It can use [`Console.write`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write). It calls [`Console.write`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write) on `console` (`value` set to the value from [`Repository.get`](types.aug.md#symbol-Repository.get) on `repository`).
 
 <a id="symbol-IProgram"></a>
-## `IProgram` · interface · [source](types.aug#L15)
+## `IProgram` · interface · [source](types.aug#L16)
 
 <a id="symbol-IProgram.start"></a>
-### `IProgram.start` · [source](types.aug#L16)
+### `IProgram.start` · [source](types.aug#L17)
 
-**Inputs:** Resolve [`Console`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console) as `console`.
-
-Uses [`Console.write`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write).
+Dependency injection supplies `console` as [`Console`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console). It can use [`Console.write`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write).
 
 ## Dependencies
 
-- [`Console`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console) from `august.io`: [`write`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write)<`T`> (`value`: `T`) → `void`.
+The file uses [`Console`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console) from `august.io`. [`write`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write) takes `value` as `T`. It returns no value. The type parameters are `T`. It can use [`Console.write`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write).

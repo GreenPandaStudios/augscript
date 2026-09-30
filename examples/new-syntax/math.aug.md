@@ -3,10 +3,6 @@
 # `math.aug`
 
 <a id="symbol-increment"></a>
-## `increment` · [source](math.aug#L1)
+## `increment` · [source](math.aug#L2)
 
-**Inputs:** Take `value` (`int`).
-
-Returns `int`.
-
-- Return `value` plus `1`.
+The caller supplies `value` as `int`. The result is `int`. It returns `value` plus `1`.

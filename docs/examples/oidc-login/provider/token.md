@@ -49,6 +49,7 @@ pageClass: aug-example-page
 ::: code-group
 
 ```aug [Indentation]
+// aug-spec: "token.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import AuthorizationCode and AccessGrant and TokenForm and TokenResponse and OAuthError and IdClaims from contracts
 import settings and SigningKeys and KeyError and securityHeaders from common
 import Crypto and signJwt and JwtError from august.crypto
@@ -87,6 +88,7 @@ endpoint POST "/provider/token" as token(HttpRequest http from request, resolve 
 ```
 
 ```aug [Braces]
+// aug-spec: "token.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import AuthorizationCode and AccessGrant and TokenForm and TokenResponse and OAuthError and IdClaims from contracts
 import settings and SigningKeys and KeyError and securityHeaders from common
 import Crypto and signJwt and JwtError from august.crypto
@@ -146,80 +148,50 @@ endpoint POST "/provider/token" as token(HttpRequest http from request, resolve 
 <a id="symbol-token"></a>
 ### `token` · [source](token.md#code)
 
-A real OAuth token endpoint. Exact client/redirect binding, S256 PKCE, expiry and one-use codes are enforced. Errors use OAuth JSON.
+A real OAuth token endpoint. Exact client/redirect binding, S256 PKCE, expiry and one-use codes are enforced. Errors use OAuth JSON. The caller supplies `http` as `HttpRequest` from HTTP request. Dependency injection supplies `crypto` as [`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto), `clock` as [`Clock`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock), `keys` as [`SigningKeys`](../common/keys.md#symbol-SigningKeys), `codes` as [`ExpiringStore<AuthorizationCode>`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore), and `access` as [`ExpiringStore<AccessGrant>`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore). The result is `HttpResponse<Json>`. It can use [`crypto.sha256`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.sha256), [`crypto.equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal), [`crypto.random`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.random), [`crypto.signRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.signRsa), [`clock.now`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now), [`keys.provider`](../common/keys.md#symbol-SigningKeys.provider), [`codes.take`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.take), and [`access.put`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.put). It can fail with `CryptoError`, `TimeError`, `KeyError`, `JwtError`, `StoreFull`, and `HttpError`.
 
-**Inputs:** Take `http` (`HttpRequest`) from HTTP request. Resolve [`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto) as `crypto`. Resolve [`Clock`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock) as `clock`. Resolve [`SigningKeys`](../common/keys.md#symbol-SigningKeys) as `keys`. Resolve [`ExpiringStore<AuthorizationCode>`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore) as `codes`. Resolve [`ExpiringStore<AccessGrant>`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore) as `access`.
+This handles `POST` requests at `/provider/token`. Use status 200 when the handler returns a body; a returned HttpResponse can set its own status. An unhandled request failure returns status 500 and cancels its request tasks. For declared failures, `CryptoError` returns status 503, `TimeError` returns status 503, and [`StoreFull`](../dependencies/august/0.19.0/memory/store.md#symbol-StoreFull) returns status 503. It sets `config` to the value from [`settings`](../common/settings.md#symbol-settings).
 
-Returns `HttpResponse<Json>`. Uses [`crypto.sha256`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.sha256), [`crypto.equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal), [`crypto.random`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.random), [`crypto.signRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.signRsa), [`clock.now`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now), [`keys.provider`](../common/keys.md#symbol-SigningKeys.provider), [`codes.take`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.take), [`access.put`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.put). Can fail with `CryptoError`, `TimeError`, `KeyError`, `JwtError`, `StoreFull`, `HttpError`.
+It tries the following steps. It sets `form` to the value from `form` on `http` with type arguments [`TokenForm`](contracts.md#symbol-TokenForm). If `form.grant_type` does not equal `"authorization_code"`, it returns the value from [`_oauthError`](token.md#symbol-_oauthError) (`code` set to `"unsupported_grant_type"` and `description` set to `"Only authorization_code is supported."`). If `form.client_id` does not equal `config.clientId`, it returns the value from [`_oauthError`](token.md#symbol-_oauthError) (`code` set to `"invalid_client"` and `description` set to `"The registered client is required."`).
 
-HTTP route: `POST` `/provider/token`. Use status 200 when the handler returns a body; a returned HttpResponse can set its own status. An unhandled request failure returns status 500 and cancels its request tasks.
+If not (the value from `isToken` on `form.code` (`min` set to `43` and `max` set to `43`)) or not (the value from `isToken` on `form.code_verifier` (`min` set to `43` and `max` set to `128`)), it returns the value from [`_oauthError`](token.md#symbol-_oauthError) (`code` set to `"invalid_grant"` and `description` set to `"The authorization grant is invalid."`). It sets `now` to the value from [`Clock.now`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now) on `clock`.
 
-Declared HTTP failures: `CryptoError` returns status 503; `TimeError` returns status 503; [`StoreFull`](../dependencies/august/0.19.0/memory/store.md#symbol-StoreFull) returns status 503.
+Select the first matching case for the value from [`ExpiringStore.take`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.take) on `codes` (`key` set to `form.code` and `now`). If the selected value is null, it returns the value from [`_oauthError`](token.md#symbol-_oauthError) (`code` set to `"invalid_grant"` and `description` set to `"The authorization grant is invalid."`).
 
-- Set `config` to the result of [`settings`](../common/settings.md#symbol-settings).
-- Try:
-  - Set `form` to the result of `form` on `http` with type arguments [`TokenForm`](contracts.md#symbol-TokenForm).
-  - If `grant_type` of `form` does not equal `"authorization_code"`:
-    - Return the result of [`_oauthError`](token.md#symbol-_oauthError) with `code` as `"unsupported_grant_type"`, `description` as `"Only authorization_code is supported."`.
-  - If `client_id` of `form` does not equal `clientId` of `config`:
-    - Return the result of [`_oauthError`](token.md#symbol-_oauthError) with `code` as `"invalid_client"`, `description` as `"The registered client is required."`.
-  - If not (the result of `isToken` on `code` of `form` with `min` as `43`, `max` as `43`) or not (the result of `isToken` on `code_verifier` of `form` with `min` as `43`, `max` as `128`):
-    - Return the result of [`_oauthError`](token.md#symbol-_oauthError) with `code` as `"invalid_grant"`, `description` as `"The authorization grant is invalid."`.
-  - Set `now` to the result of [`Clock.now`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now) on `clock`.
-  - Match the result of [`ExpiringStore.take`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.take) on `codes` with `key` as `code` of `form`, `now`:
-    - A null value, including omitted optional input:
-      - Return the result of [`_oauthError`](token.md#symbol-_oauthError) with `code` as `"invalid_grant"`, `description` as `"The authorization grant is invalid."`.
-    - A present, non-null value, named `grant`:
-      - Set `challenge` to the result of `base64url` on the result of [`Crypto.sha256`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.sha256) on `crypto` with `input` as the result of `bytes` on `code_verifier` of `form`.
-      - If ((`clientId` of `grant` does not equal `client_id` of `form`) or (`redirectUri` of `grant` does not equal `redirect_uri` of `form`)) or not (the result of [`Crypto.equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal) on `crypto` with `left` as the result of `bytes` on `challenge`, `right` as the result of `bytes` on `challenge` of `grant`):
-        - Return the result of [`_oauthError`](token.md#symbol-_oauthError) with `code` as `"invalid_grant"`, `description` as `"The authorization grant is invalid."`.
-      - Set `claims` to a new [`IdClaims`](contracts.md#symbol-IdClaims) with `iss` as `issuer` of `config`, `sub` as `subject` of `grant`, `aud` as `clientId` of `grant`, `exp` as `now` plus `300`, `iat` as `now`, `nonce` as `nonce` of `grant`, `name` as `name` of `grant`.
-      - Set `idToken` to the result of [`signJwt`](../dependencies/august/0.19.0/crypto/jose.md#symbol-signJwt) with `key` as the result of [`SigningKeys.provider`](../common/keys.md#symbol-SigningKeys.provider) on `keys`, `claims` as a new `Json` with `value` as `claims`, `kid` as `"provider-1"`, `tokenType` as `"JWT"` using `crypto`.
-      - Set `accessToken` to the result of `base64url` on the result of [`Crypto.random`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.random) on `crypto` with `size` as `32`.
-      - Set `value` to a new [`AccessGrant`](contracts.md#symbol-AccessGrant) with `subject` as `subject` of `grant`, `name` as `name` of `grant`, `expires` as `now` plus `300`.
-      - Call [`ExpiringStore.put`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.put) on `access` with `key` as `accessToken`, `value`, `expires` as `expires` of `value`, `now`.
-      - Set `body` to a new [`TokenResponse`](contracts.md#symbol-TokenResponse) with `token_type` as `"Bearer"`, `access_token` as `accessToken`, `id_token` as `idToken`, `expires_in` as `300`, `scope` as `"openid profile"`.
-      - Return a new `HttpResponse` with `body` as a new `Json` with `value` as `body`, `headers` as the result of [`securityHeaders`](../common/headers.md#symbol-securityHeaders).
-- Catch `HttpError` as `error`:
-  - Return the result of [`_oauthError`](token.md#symbol-_oauthError) with `code` as `"invalid_request"`, `description` as `"Submit the required URL-encoded token fields once each."`.
+If the selected value is not null, it names it `grant` and follows these steps. It sets `challenge` to the unpadded URL-safe base64 encoding of the value from [`Crypto.sha256`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.sha256) on `crypto` (`input` set to the UTF-8 bytes of `form.code_verifier`).
+
+If `grant.clientId` does not equal `form.client_id` or `grant.redirectUri` does not equal `form.redirect_uri` or not (the value from [`Crypto.equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal) on `crypto` (`left` set to the UTF-8 bytes of `challenge` and `right` set to the UTF-8 bytes of `grant.challenge`)), it returns the value from [`_oauthError`](token.md#symbol-_oauthError) (`code` set to `"invalid_grant"` and `description` set to `"The authorization grant is invalid."`).
+
+It sets `claims` to a new [`IdClaims`](contracts.md#symbol-IdClaims) (`iss` set to `config.issuer`, `sub` set to `grant.subject`, `aud` set to `grant.clientId`, `exp` set to `now` plus `300`, `iat` set to `now`, `nonce` set to `grant.nonce`, and `name` set to `grant.name`). It sets `idToken` to the value from [`signJwt`](../dependencies/august/0.19.0/crypto/jose.md#symbol-signJwt) (`key` set to the value from [`SigningKeys.provider`](../common/keys.md#symbol-SigningKeys.provider) on `keys`, `claims` set to a new `Json` (`value` set to `claims`), `kid` set to `"provider-1"`, and `tokenType` set to `"JWT"`) using `crypto`.
+
+It sets `accessToken` to the unpadded URL-safe base64 encoding of the value from [`Crypto.random`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.random) on `crypto` (`size` set to `32`). It sets `value` to a new [`AccessGrant`](contracts.md#symbol-AccessGrant) (`subject` set to `grant.subject`, `name` set to `grant.name`, and `expires` set to `now` plus `300`). It calls [`ExpiringStore.put`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.put) on `access` (`key` set to `accessToken`, `value`, `expires` set to `value.expires`, and `now`).
+
+It sets `body` to a new [`TokenResponse`](contracts.md#symbol-TokenResponse) (`token_type` set to `"Bearer"`, `access_token` set to `accessToken`, `id_token` set to `idToken`, `expires_in` set to `300`, and `scope` set to `"openid profile"`). It returns a new `HttpResponse` (`body` set to a new `Json` (`value` set to `body`) and `headers` set to the value from [`securityHeaders`](../common/headers.md#symbol-securityHeaders)). If this attempt raises `HttpError`, it catches it as `error` and returns the value from [`_oauthError`](token.md#symbol-_oauthError) (`code` set to `"invalid_request"` and `description` set to `"Submit the required URL-encoded token fields once each."`).
 
 <a id="symbol-_oauthError"></a>
 ### `_oauthError` · [source](token.md#code)
 
-Private to its defining scope.
-
-**Inputs:** Take `code` (`string`). Take `description` (`string`).
-
-Returns `HttpResponse<Json>`. Can fail with `HttpError`.
-
-- Return a new `HttpResponse` with `body` as a new `Json` with `value` as a new [`OAuthError`](contracts.md#symbol-OAuthError) with `error` as `code`, `error_description` as `description`, `status` as `400`, `headers` as the result of [`securityHeaders`](../common/headers.md#symbol-securityHeaders).
+Private to its defining scope. The caller supplies `code` and `description` as `string`. The result is `HttpResponse<Json>`. It can fail with `HttpError`. It returns a new `HttpResponse` (`body` set to a new `Json` (`value` set to a new [`OAuthError`](contracts.md#symbol-OAuthError) (`error` set to `code` and `error_description` set to `description`)), `status` set to `400`, and `headers` set to the value from [`securityHeaders`](../common/headers.md#symbol-securityHeaders)).
 
 ### Dependencies
 
-- [`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto) from `august.crypto`: [`equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal) (`left`: `Bytes`, `right`: `Bytes`) → `bool`; [`random`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.random) (`size`: `int`) → `Bytes`; can fail with `CryptoError`; [`sha256`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.sha256) (`input`: `Bytes`) → `Bytes`; can fail with `CryptoError`; [`signRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.signRsa) (`key`: `RsaPrivateKey`, `input`: `Bytes`) → `Bytes`; can fail with `CryptoError`.
-- [`JwtError`](../dependencies/august/0.19.0/crypto/jose.md#symbol-JwtError) from `august.crypto`.
-- [`signJwt`](../dependencies/august/0.19.0/crypto/jose.md#symbol-signJwt) (`key`: `RsaPrivateKey`, `claims`: `Json`, `kid`: `string`, `tokenType`: `string`) → `string`; can fail with `JwtError` from `august.crypto`.
-- [`ExpiringStore`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore) from `august.memory`: [`put`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.put) (`key`: `string`, `value`: `T`, `expires`: `int`, `now`: `int`) → `void`; can fail with `StoreFull`; [`take`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.take) (`key`: `string`, `now`: `int`) → `optional T`.
-- [`StoreFull`](../dependencies/august/0.19.0/memory/store.md#symbol-StoreFull) from `august.memory`.
-- [`Clock`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock) from `august.time`: [`now`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now) (no caller inputs) → `int`; can fail with `TimeError`.
-- [`securityHeaders`](../common/headers.md#symbol-securityHeaders) (no caller inputs) → `Headers`; can fail with `HttpError` from `common`.
-- [`KeyError`](../common/keys.md#symbol-KeyError) from `common`.
-- [`SigningKeys`](../common/keys.md#symbol-SigningKeys) from `common`: [`provider`](../common/keys.md#symbol-SigningKeys.provider) (no caller inputs) → `RsaPrivateKey`; can fail with `KeyError`.
-- [`Settings`](../common/settings.md#symbol-Settings): read `clientId` (`string`); read `issuer` (`string`).
-- [`settings`](../common/settings.md#symbol-settings) (no caller inputs) → [`Settings`](../common/settings.md#symbol-Settings) from `common`.
-- [`AccessGrant`](contracts.md#symbol-AccessGrant) from `contracts`: construct with `subject`: `string`, `name`: `string`, `expires`: `int`; read `expires` (`int`).
-- [`AuthorizationCode`](contracts.md#symbol-AuthorizationCode) from `contracts`: read `challenge` (`string`); read `clientId` (`string`); read `name` (`string`); read `nonce` (`string`); read `redirectUri` (`string`); read `subject` (`string`).
-- [`IdClaims`](contracts.md#symbol-IdClaims) from `contracts`: construct with `iss`: `string`, `sub`: `string`, `aud`: `string`, `exp`: `int`, `iat`: `int`, `nonce`: `string`, `name`: `string`.
-- [`OAuthError`](contracts.md#symbol-OAuthError) from `contracts`: construct with `error`: `string`, `error_description`: `string`.
-- [`TokenForm`](contracts.md#symbol-TokenForm) from `contracts`: read `client_id` (`string`); read `code` (`string`); read `code_verifier` (`string`); read `grant_type` (`string`); read `redirect_uri` (`string`).
-- [`TokenResponse`](contracts.md#symbol-TokenResponse) from `contracts`: construct with `token_type`: `string`, `access_token`: `string`, `id_token`: `string`, `expires_in`: `int`, `scope`: `string`.
+The file uses [`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto) from `august.crypto`. [`equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal) takes `left` and `right` as `Bytes`. It returns `bool`. It can use [`Crypto.equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal). [`random`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.random) takes `size` as `int`. It returns `Bytes`. It can use [`Crypto.random`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.random). It can fail with `CryptoError`. [`sha256`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.sha256) takes `input` as `Bytes`. It returns `Bytes`. It can use [`Crypto.sha256`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.sha256). It can fail with `CryptoError`. [`signRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.signRsa) takes `key` as `RsaPrivateKey` and `input` as `Bytes`. It returns `Bytes`. It can use [`Crypto.signRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.signRsa). It can fail with `CryptoError`. The file uses [`JwtError`](../dependencies/august/0.19.0/crypto/jose.md#symbol-JwtError) from `august.crypto`.
+
+[`signJwt`](../dependencies/august/0.19.0/crypto/jose.md#symbol-signJwt) from `august.crypto` takes `key` as `RsaPrivateKey`, `claims` as `Json`, and `kid` and `tokenType` as `string`. It returns `string`. Dependency injection supplies `crypto` as [`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto). It can use [`crypto.signRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.signRsa). It can fail with `JwtError`.
+
+The file uses [`ExpiringStore`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore) from `august.memory`. The type parameters are `T` which must satisfy `Data`. [`put`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.put) takes `key` as `string`, `value` as `T`, and `expires` and `now` as `int`. It returns no value. It can use [`ExpiringStore.put`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.put). It can fail with `StoreFull`. [`take`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.take) takes `key` as `string` and `now` as `int`. It returns `optional T`. It can use [`ExpiringStore.take`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.take). The file uses [`StoreFull`](../dependencies/august/0.19.0/memory/store.md#symbol-StoreFull) from `august.memory`.
+
+The file uses [`Clock`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock) from `august.time`. [`now`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now) takes no caller inputs. It returns `int`. It can use [`Clock.now`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now). It can fail with `TimeError`. [`securityHeaders`](../common/headers.md#symbol-securityHeaders) from `common` takes no caller inputs. It returns `Headers`. It can fail with `HttpError`. The file uses [`KeyError`](../common/keys.md#symbol-KeyError) from `common`. The file uses [`SigningKeys`](../common/keys.md#symbol-SigningKeys) from `common`. [`provider`](../common/keys.md#symbol-SigningKeys.provider) takes no caller inputs. It returns `RsaPrivateKey`. It can use [`SigningKeys.provider`](../common/keys.md#symbol-SigningKeys.provider). It can fail with `KeyError`.
+
+The file uses [`Settings`](../common/settings.md#symbol-Settings). `clientId` is a read-only field of type `string`. `issuer` is a read-only field of type `string`. [`settings`](../common/settings.md#symbol-settings) from `common` takes no caller inputs. It returns [`Settings`](../common/settings.md#symbol-Settings). The file uses [`AccessGrant`](contracts.md#symbol-AccessGrant) from `contracts`. Construction takes `subject` and `name` as `string` and `expires` as `int`. `expires` is a read-only field of type `int`.
+
+The file uses [`AuthorizationCode`](contracts.md#symbol-AuthorizationCode) from `contracts`. `challenge` is a read-only field of type `string`. `clientId` is a read-only field of type `string`. `name` is a read-only field of type `string`. `nonce` is a read-only field of type `string`. `redirectUri` is a read-only field of type `string`. `subject` is a read-only field of type `string`. The file uses [`IdClaims`](contracts.md#symbol-IdClaims) from `contracts`. Construction takes `iss`, `sub`, and `aud` as `string`, `exp` and `iat` as `int`, and `nonce` and `name` as `string`.
+
+The file uses [`OAuthError`](contracts.md#symbol-OAuthError) from `contracts`. Construction takes `error` and `error_description` as `string`. The file uses [`TokenForm`](contracts.md#symbol-TokenForm) from `contracts`. `client_id` is a read-only field of type `string`. `code` is a read-only field of type `string`. `code_verifier` is a read-only field of type `string`. `grant_type` is a read-only field of type `string`. `redirect_uri` is a read-only field of type `string`. The file uses [`TokenResponse`](contracts.md#symbol-TokenResponse) from `contracts`. Construction takes `token_type`, `access_token`, and `id_token` as `string`, `expires_in` as `int`, and `scope` as `string`.
 
 ### Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
 
-- `Bytes.base64url`: Encode immutable bytes as unpadded RFC 4648 URL-safe base64.
-- `HttpRequest.form`: Decode a form record inside a handler so protocol-specific error responses can be returned.
-- `string.bytes`: Encode this string as immutable UTF-8 bytes.
-- `string.isToken`: Require an ASCII RFC 3986 unreserved token with a bounded length.
+`Bytes.base64url`: Encode immutable bytes as unpadded RFC 4648 URL-safe base64. `HttpRequest.form`: Decode a form record inside a handler so protocol-specific error responses can be returned. `string.bytes`: Encode this string as immutable UTF-8 bytes. `string.isToken`: Require an ASCII RFC 3986 unreserved token with a bounded length.
 
 ::::
 

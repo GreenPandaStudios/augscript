@@ -4,8 +4,8 @@
 
 ## Startup
 
-- Call `print` with `value` as `7`.
+It calls `print` (`value` set to `7`).
 
 ## Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
 
-- `print`: Composition and test output. Other callables receive Console and declare uses console.write.
+`print`: Composition and test output. Other callables receive Console and declare uses console.write.

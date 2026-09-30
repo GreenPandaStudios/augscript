@@ -3,24 +3,13 @@
 # `contracts.aug`
 
 <a id="symbol-parse"></a>
-## `parse` · [source](contracts.aug#L3)
+## `parse` · [source](contracts.aug#L4)
 
-Parse strict UTF-8 JSON. Duplicate keys, invalid Unicode, oversized integers, and nesting beyond 64 levels raise JsonError.
+Parse strict UTF-8 JSON. Duplicate keys, invalid Unicode, oversized integers, and nesting beyond 64 levels raise JsonError. The caller supplies `input` as `string`. The result is `Json`. It can fail with `JsonError`. Within an unsafe block, it returns the value from [`_aug_json_parse`](contracts.aug.md#symbol-_aug_json_parse) (`input`).
 
-**Inputs:** Take `input` (`string`).
-
-Returns `Json`. Can fail with `JsonError`.
-
-- Use native code with its declared contract:
-  - Return the result of [`_aug_json_parse`](contracts.aug.md#symbol-_aug_json_parse) with `input`.
+Native operations must satisfy their declared C contracts.
 
 <a id="symbol-_aug_json_parse"></a>
-## `_aug_json_parse` · [source](contracts.aug#L1)
+## `_aug_json_parse` · [source](contracts.aug#L2)
 
-Private to its defining scope.
-
-**Inputs:** Take `input` (`string`).
-
-Returns `Json`. Can fail with `JsonError`.
-
-Native C implementation; only its declared contract is visible here.
+Private to its defining scope. The caller supplies `input` as `string`. The result is `Json`. It can fail with `JsonError`. Native C implementation; only its declared contract is visible here.

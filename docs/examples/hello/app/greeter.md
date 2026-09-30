@@ -33,6 +33,7 @@ pageClass: aug-example-page
 ::: code-group
 
 ```aug [Indentation]
+// aug-spec: "greeter.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Console from august.io
 import Logger from logging
 /**
@@ -55,6 +56,7 @@ interface IGreeter:
 ```
 
 ```aug [Braces]
+// aug-spec: "greeter.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Console from august.io
 import Logger from logging
 /**
@@ -90,20 +92,12 @@ interface IGreeter {
 <a id="symbol-Greeter"></a>
 ### `Greeter` · class · [source](greeter.md#code)
 
-Welcomes a user through the configured logger. Implements [`IGreeter`](greeter.md#symbol-IGreeter).
-
-**Inputs:** Resolve [`Logger`](../logging/logger.md#symbol-Logger) as `logger`; store read-only — The application logger, injected when resolved.
+Welcomes a user through the configured logger. Implements [`IGreeter`](greeter.md#symbol-IGreeter). Dependency injection supplies `logger` as [`Logger`](../logging/logger.md#symbol-Logger), stored read-only (the application logger, injected when resolved).
 
 <a id="symbol-Greeter.greet"></a>
 #### `Greeter.greet` · [source](greeter.md#code)
 
-Prints a personalized greeting.
-
-**Inputs:** Resolve [`Console`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console) as `console`. Take `name` (`string`) — The user to welcome.
-
-Uses [`Console.write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
-
-- Call [`Logger.log`](../logging/logger.md#symbol-Logger.log) on `logger` with `message` as text that joins `"Hello, "`, `name` and `"!"` using `console`.
+Prints a personalized greeting. The caller supplies `name` as `string` (the user to welcome). Dependency injection supplies `console` as [`Console`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console). It can use [`Console.write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write). It calls [`Logger.log`](../logging/logger.md#symbol-Logger.log) on `logger` (`message` set to text that joins `"Hello, "`, `name` and `"!"`) using `console`.
 
 <a id="symbol-IGreeter"></a>
 ### `IGreeter` · interface · [source](greeter.md#code)
@@ -111,16 +105,11 @@ Uses [`Console.write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Cons
 <a id="symbol-IGreeter.greet"></a>
 #### `IGreeter.greet` · [source](greeter.md#code)
 
-Prints a personalized greeting.
-
-**Inputs:** Resolve [`Console`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console) as `console`. Take `name` (`string`) — The user to welcome.
-
-Uses [`Console.write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
+Prints a personalized greeting. The caller supplies `name` as `string` (the user to welcome). Dependency injection supplies `console` as [`Console`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console). It can use [`Console.write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
 
 ### Dependencies
 
-- [`Console`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console) from `august.io`: [`write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write)<`T`> (`value`: `T`) → `void`.
-- [`Logger`](../logging/logger.md#symbol-Logger) from `logging`: [`log`](../logging/logger.md#symbol-Logger.log) (`message`: `string`) → `void`.
+The file uses [`Console`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console) from `august.io`. [`write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write) takes `value` as `T`. It returns no value. The type parameters are `T`. It can use [`Console.write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write). The file uses [`Logger`](../logging/logger.md#symbol-Logger) from `logging`. [`log`](../logging/logger.md#symbol-Logger.log) takes `message` as `string`. It returns no value. Dependency injection supplies `console` as [`Console`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console). It can use [`Console.write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
 
 ::::
 

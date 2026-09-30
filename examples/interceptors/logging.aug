@@ -1,3 +1,4 @@
+// aug-spec: "logging.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Console from august.io
 /** Writes a message to the application log. */
 interface Logger {

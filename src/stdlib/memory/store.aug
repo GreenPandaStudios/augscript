@@ -1,3 +1,4 @@
+// aug-spec: "store.aug.md" explains this file. Read it before changes; refresh with aug spec.
 /** The bounded store could not accept another live entry. */
 StoreFull() implements Error:
     pass

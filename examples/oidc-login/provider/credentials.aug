@@ -1,3 +1,4 @@
+// aug-spec: "credentials.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Crypto from august.crypto
 /** One development account with a PBKDF2-HMAC-SHA256 verifier. Production account storage is deliberately a separate capability. */
 verifyCredentials(string username, string password, resolve Crypto crypto) returns bool uses crypto.passwordHash and crypto.decodeBase64url and crypto.equal unless CryptoError:

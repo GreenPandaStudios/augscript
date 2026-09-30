@@ -3,98 +3,63 @@
 # `calculator.aug`
 
 <a id="symbol-Arithmetic"></a>
-## `Arithmetic` · interface · [source](calculator.aug#L4)
+## `Arithmetic` · interface · [source](calculator.aug#L5)
 
 Adds two integers.
 
 <a id="symbol-Arithmetic.add"></a>
-### `Arithmetic.add` · [source](calculator.aug#L5)
+### `Arithmetic.add` · [source](calculator.aug#L6)
 
-**Inputs:** Resolve [`Console`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console) as `console`. Take `left` (`int`). Take `right` (`int`).
-
-Returns `int`. Uses [`Console.write`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write).
+The caller supplies `left` and `right` as `int`. Dependency injection supplies `console` as [`Console`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console). The result is `int`. It can use [`Console.write`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write).
 
 <a id="symbol-Calculator"></a>
-## `Calculator` · class · [source](calculator.aug#L8)
+## `Calculator` · class · [source](calculator.aug#L9)
 
-Uses the selected logger to describe each addition. Implements [`Arithmetic`](calculator.aug.md#symbol-Arithmetic).
-
-**Inputs:** Resolve [`Logger`](logging/logger.aug.md#symbol-Logger) as `logger`; store read-only and privately as `_logger`.
+Uses the selected logger to describe each addition. Implements [`Arithmetic`](calculator.aug.md#symbol-Arithmetic). Dependency injection supplies `logger` as [`Logger`](logging/logger.aug.md#symbol-Logger), stored read-only and privately as `_logger`.
 
 <a id="symbol-Calculator.add"></a>
-### `Calculator.add` · [source](calculator.aug#L15)
+### `Calculator.add` · [source](calculator.aug#L16)
 
-Adds left and right, logging the operation.
-
-**Inputs:** Resolve [`Console`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console) as `console`. Take `left` (`int`) — First integer. Take `right` (`int`) — Second integer.
-
-Returns `int` — Sum of the two integers. Uses [`Console.write`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write).
-
-- Call [`Logger.log`](logging/logger.aug.md#symbol-Logger.log) on `_logger` with `message` as `"adding integers"` using `console`.
-- Return `left` plus `right`.
+Adds left and right, logging the operation. The caller supplies `left` as `int` (First integer) and `right` as `int` (Second integer). Dependency injection supplies `console` as [`Console`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console). The result is `int` — Sum of the two integers. It can use [`Console.write`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write). It calls [`Logger.log`](logging/logger.aug.md#symbol-Logger.log) on `_logger` (`message` set to `"adding integers"`) using `console`. It returns `left` plus `right`.
 
 <a id="symbol-load"></a>
-## `load` · [source](calculator.aug#L25)
+## `load` · [source](calculator.aug#L26)
 
-Demonstrates a checked failure instead of a successful result.
-
-**Inputs:** Take `fail` (`bool`) — Whether to simulate a failed load.
-
-Returns `string`. Can fail with `FileError` (when fail is true).
-
-- If `fail` is true:
-  - Fail with a new `FileError`.
-- Return `"loaded"`.
+Demonstrates a checked failure instead of a successful result. The caller supplies `fail` as `bool` (Whether to simulate a failed load). The result is `string`. It can fail with `FileError` (when fail is true). If `fail` is true, it fails with a new `FileError`. Otherwise, it returns `"loaded"`.
 
 <a id="symbol-_SilentLogger"></a>
-## `_SilentLogger` · class · [source](calculator.aug#L32)
+## `_SilentLogger` · class · [source](calculator.aug#L33)
 
 Test adapter: keeps calculator tests independent of console output. Implements [`Logger`](logging/logger.aug.md#symbol-Logger). Private to this file.
 
 <a id="symbol-_SilentLogger.log"></a>
-### `_SilentLogger.log` · [source](calculator.aug#L33)
+### `_SilentLogger.log` · [source](calculator.aug#L34)
 
-**Inputs:** Resolve [`Console`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console) as `console`. Take `message` (`string`) — Text to write.
-
-Uses [`Console.write`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write).
-
-- Continue.
+The caller supplies `message` as `string` (Text to write). Dependency injection supplies `console` as [`Console`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console). It can use [`Console.write`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write). It continues without an operation.
 
 <a id="symbol-test Calculator calculator"></a>
-## `test Calculator calculator` · [source](calculator.aug#L37)
+## `test Calculator calculator` · [source](calculator.aug#L38)
 
 Tests [`Calculator`](calculator.aug.md#symbol-Calculator). Each case gets fresh setup and dependencies.
 
 ### `addition`
 
-Setup for each case:
+Setup for each case: Provide [`SystemConsole`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-SystemConsole) for `Console`. Reuse stateless instances; create stateful instances per resolve. Provide [`_SilentLogger`](calculator.aug.md#symbol-_SilentLogger) for `Logger`. Reuse stateless instances; create stateful instances per resolve. It sets `calculator` to a new [`Calculator`](calculator.aug.md#symbol-Calculator) using `Logger` for `_logger`. It sets `values` of type `List<int>` to a list containing `1`, `2`.
 
-- Provide [`SystemConsole`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-SystemConsole) for `Console`. Reuse stateless instances; create stateful instances per resolve.
-- Provide [`_SilentLogger`](calculator.aug.md#symbol-_SilentLogger) for `Logger`. Reuse stateless instances; create stateful instances per resolve.
-- Set `calculator` to a new [`Calculator`](calculator.aug.md#symbol-Calculator) using `Logger` for `_logger`.
-- Set `values` of type `List<int>` to a list containing `1`, `2`.
+#### `adds labeled inputs` · [source](calculator.aug#L44)
 
-#### `adds labeled inputs` · [source](calculator.aug#L43)
+It calls `assert` (the value from [`Calculator.add`](calculator.aug.md#symbol-Calculator.add) on `calculator` (`right` set to `2` and `left` set to `1`) using `Console` for `console` equals `3`). While mutably borrowing `values`, it calls `append` on `values` (`value` set to `3`).
 
-- Call `assert` with the result of [`Calculator.add`](calculator.aug.md#symbol-Calculator.add) on `calculator` with `right` as `2`, `left` as `1` using `Console` for `console` equals `3`.
-- Mutably borrow `values` for this block:
-  - Call `append` on `values` with `value` as `3`.
-- Call `assert` with the result of `length` on `values` equals `3`.
+The mutable borrow ends when this block exits. It calls `assert` (the number of elements in `values` equals `3`).
 
-#### `starts with fresh setup` · [source](calculator.aug#L50)
+#### `starts with fresh setup` · [source](calculator.aug#L51)
 
-- Call `assert` with the result of `length` on `values` equals `2`.
-- Call `assert` with the result of [`Calculator.add`](calculator.aug.md#symbol-Calculator.add) on `calculator` with `left` as the result of `get` on `values` with `index` as `0`, `right` as the result of `get` on `values` with `index` as `1` using `Console` for `console` equals `3`.
+It calls `assert` (the number of elements in `values` equals `2`). It calls `assert` (the value from [`Calculator.add`](calculator.aug.md#symbol-Calculator.add) on `calculator` (`left` set to the value from `get` on `values` (`index` set to `0`) and `right` set to the value from `get` on `values` (`index` set to `1`)) using `Console` for `console` equals `3`).
 
 ## Dependencies
 
-- [`Console`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console) from `august.io`: [`write`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write)<`T`> (`value`: `T`) → `void`.
-- [`SystemConsole`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-SystemConsole) from `august.io`.
-- [`Logger`](logging/logger.aug.md#symbol-Logger) from `logging`: [`log`](logging/logger.aug.md#symbol-Logger.log) (`message`: `string`) → `void`.
+The file uses [`Console`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console) from `august.io`. [`write`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write) takes `value` as `T`. It returns no value. The type parameters are `T`. It can use [`Console.write`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write). The file uses [`SystemConsole`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-SystemConsole) from `august.io`. The file uses [`Logger`](logging/logger.aug.md#symbol-Logger) from `logging`. [`log`](logging/logger.aug.md#symbol-Logger.log) takes `message` as `string`. It returns no value. Dependency injection supplies `console` as [`Console`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console). It can use [`Console.write`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write).
 
 ## Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
 
-- `List<int>.append`: Append an element with exclusive mutable access. Read-only and owned aliases cannot be stored here.
-- `List<int>.get`: Read a zero-based position. An invalid index raises checked IndexError. Reference results grant reading.
-- `List<int>.length`: Read the number of elements.
-- `assert`: Assert a bool in a test case or its setup. Catching an assertion failure cannot make the case pass; every case must execute an assertion.
+`List<int>.append`: Append an element with exclusive mutable access. Read-only and owned aliases cannot be stored here. `List<int>.get`: Read a zero-based position. An invalid index raises checked IndexError. Reference results grant reading. `List<int>.length`: Read the number of elements. `assert`: Assert a bool in a test case or its setup. Catching an assertion failure cannot make the case pass; every case must execute an assertion.

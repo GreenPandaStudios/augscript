@@ -25,6 +25,7 @@ This is the exact dependency version used by this example.
 ::: code-group
 
 ```aug [Indentation]
+// aug-spec: "contracts.aug.md" explains this file. Read it before changes; refresh with aug spec.
 extern C value pure _aug_json_parse(string input) returns Json unless JsonError
 /** Parse strict UTF-8 JSON. Duplicate keys, invalid Unicode, oversized integers, and nesting beyond 64 levels raise JsonError. */
 parse(string input) returns Json unless JsonError:
@@ -33,6 +34,7 @@ parse(string input) returns Json unless JsonError:
 ```
 
 ```aug [Braces]
+// aug-spec: "contracts.aug.md" explains this file. Read it before changes; refresh with aug spec.
 extern C value pure _aug_json_parse(string input) returns Json unless JsonError
 /** Parse strict UTF-8 JSON. Duplicate keys, invalid Unicode, oversized integers, and nesting beyond 64 levels raise JsonError. */
 parse(string input) returns Json unless JsonError {
@@ -53,25 +55,14 @@ parse(string input) returns Json unless JsonError {
 <a id="symbol-parse"></a>
 ### `parse` · [source](contracts.md#code)
 
-Parse strict UTF-8 JSON. Duplicate keys, invalid Unicode, oversized integers, and nesting beyond 64 levels raise JsonError.
+Parse strict UTF-8 JSON. Duplicate keys, invalid Unicode, oversized integers, and nesting beyond 64 levels raise JsonError. The caller supplies `input` as `string`. The result is `Json`. It can fail with `JsonError`. Within an unsafe block, it returns the value from [`_aug_json_parse`](contracts.md#symbol-_aug_json_parse) (`input`).
 
-**Inputs:** Take `input` (`string`).
-
-Returns `Json`. Can fail with `JsonError`.
-
-- Use native code with its declared contract:
-  - Return the result of [`_aug_json_parse`](contracts.md#symbol-_aug_json_parse) with `input`.
+Native operations must satisfy their declared C contracts.
 
 <a id="symbol-_aug_json_parse"></a>
 ### `_aug_json_parse` · [source](contracts.md#code)
 
-Private to its defining scope.
-
-**Inputs:** Take `input` (`string`).
-
-Returns `Json`. Can fail with `JsonError`.
-
-Native C implementation; only its declared contract is visible here.
+Private to its defining scope. The caller supplies `input` as `string`. The result is `Json`. It can fail with `JsonError`. Native C implementation; only its declared contract is visible here.
 
 ::::
 

@@ -4,24 +4,16 @@
 
 ## Providers
 
-- Provide [`SystemConsole`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-SystemConsole) for `Console`. Share one instance.
-- Provide [`ConsoleLogger`](console.aug.md#symbol-ConsoleLogger) for `Logger`. Share one instance.
+Provide [`SystemConsole`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-SystemConsole) for `Console`. Share one instance. Provide [`ConsoleLogger`](console.aug.md#symbol-ConsoleLogger) for `Logger`. Share one instance.
 
 ## Startup
 
-- Set `greeter` to a new [`Greeter`](greeter.aug.md#symbol-Greeter) with `x` as `4` using `Logger` for `logger`.
-- Call [`Greeter.greet`](greeter.aug.md#symbol-Greeter.greet) on `greeter` with `name` as `"AugScript"` using `Console` for `console`.
-- Set `count` of type `int` to `7`.
-- Set `count` to the result of [`increment`](math.aug.md#symbol-increment) with `value` as `count`.
-- Call `print` with `value` as `count`.
+It sets `greeter` to a new [`Greeter`](greeter.aug.md#symbol-Greeter) (`x` set to `4`) using `Logger` for `logger`. It calls [`Greeter.greet`](greeter.aug.md#symbol-Greeter.greet) on `greeter` (`name` set to `"AugScript"`) using `Console` for `console`. It sets `count` of type `int` to `7`. It sets `count` to the value from [`increment`](math.aug.md#symbol-increment) (`value` set to `count`). It calls `print` (`value` set to `count`).
 
 ## Dependencies
 
-- [`SystemConsole`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-SystemConsole) from `august.io`.
-- [`ConsoleLogger`](console.aug.md#symbol-ConsoleLogger) from `console`.
-- [`Greeter`](greeter.aug.md#symbol-Greeter) from `greeter`: construct with `x`: `int`; [`greet`](greeter.aug.md#symbol-Greeter.greet) (`name`: `string`) → `void`.
-- [`increment`](math.aug.md#symbol-increment) (`value`: `int`) → `int` from `math`.
+The file uses [`Console`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console) from `august.io`. [`write`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write) takes `value` as `T`. It returns no value. The type parameters are `T`. It can use [`Console.write`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write). The file uses [`SystemConsole`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-SystemConsole) from `august.io`. The file uses [`ConsoleLogger`](console.aug.md#symbol-ConsoleLogger) from `console`. The file uses [`Greeter`](greeter.aug.md#symbol-Greeter) from `greeter`. Construction takes `x` as `int`. [`greet`](greeter.aug.md#symbol-Greeter.greet) takes `name` as `string`. It returns no value. Dependency injection supplies `console` as [`Console`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console). It can use [`Console.write`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write). [`increment`](math.aug.md#symbol-increment) from `math` takes `value` as `int`. It returns `int`.
 
 ## Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
 
-- `print`: Composition and test output. Other callables receive Console and declare uses console.write.
+`print`: Composition and test output. Other callables receive Console and declare uses console.write.

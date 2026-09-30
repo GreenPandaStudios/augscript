@@ -31,6 +31,7 @@ pageClass: aug-example-page
 ::: code-group
 
 ```aug [Indentation]
+// aug-spec: "logging.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Console from august.io
 /** Writes a message to the application log. */
 interface Logger:
@@ -43,6 +44,7 @@ ConsoleLogger() implements Logger:
 ```
 
 ```aug [Braces]
+// aug-spec: "logging.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Console from august.io
 /** Writes a message to the application log. */
 interface Logger {
@@ -73,9 +75,7 @@ Writes a message to the application log.
 <a id="symbol-Logger.log"></a>
 #### `Logger.log` · [source](logging.md#code)
 
-**Inputs:** Resolve [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console) as `console`. Take `message` (`string`) — Text to display.
-
-Uses [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
+The caller supplies `message` as `string` (Text to display). Dependency injection supplies `console` as [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console). It can use [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
 
 <a id="symbol-ConsoleLogger"></a>
 ### `ConsoleLogger` · class · [source](logging.md#code)
@@ -85,15 +85,11 @@ Console logger shared by interceptor instances and the application. Implements [
 <a id="symbol-ConsoleLogger.log"></a>
 #### `ConsoleLogger.log` · [source](logging.md#code)
 
-**Inputs:** Resolve [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console) as `console`. Take `message` (`string`) — Text to display.
-
-Uses [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
-
-- Call [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write) on `console` with `value` as `message`.
+The caller supplies `message` as `string` (Text to display). Dependency injection supplies `console` as [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console). It can use [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write). It calls [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write) on `console` (`value` set to `message`).
 
 ### Dependencies
 
-- [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console) from `august.io`: [`write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write)<`T`> (`value`: `T`) → `void`.
+The file uses [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console) from `august.io`. [`write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write) takes `value` as `T`. It returns no value. The type parameters are `T`. It can use [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
 
 ::::
 

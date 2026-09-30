@@ -1,3 +1,4 @@
+// aug-spec: "views.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import SessionClaims from contracts
 import Page from common
 import logout from logout

@@ -1,3 +1,4 @@
+// aug-spec: "contracts.aug.md" explains this file. Read it before changes; refresh with aug spec.
 /** Explicit permission for native cryptographic operations. Keys and bytes are immutable. */
 capability Crypto:
     /** Generate unpredictable bytes with the operating-system-backed GnuTLS RNG. */

@@ -29,6 +29,7 @@ pageClass: aug-example-page
 ::: code-group
 
 ```aug [Indentation]
+// aug-spec: "native.aug.md" explains this file. Read it before changes; refresh with aug spec.
 extern C puts(string message) returns c_int
 announce() uses C.puts:
     unsafe:
@@ -36,6 +37,7 @@ announce() uses C.puts:
 ```
 
 ```aug [Braces]
+// aug-spec: "native.aug.md" explains this file. Read it before changes; refresh with aug spec.
 extern C puts(string message) returns c_int
 announce() uses C.puts {
     unsafe {
@@ -55,19 +57,14 @@ announce() uses C.puts {
 <a id="symbol-puts"></a>
 ### `puts` · [source](native.md#code)
 
-**Inputs:** Take `message` (`string`).
-
-Returns `c_int`.
-
-Native C implementation; only its declared contract is visible here.
+The caller supplies `message` as `string`. The result is `c_int`. Native C implementation; only its declared contract is visible here.
 
 <a id="symbol-announce"></a>
 ### `announce` · [source](native.md#code)
 
-Uses `C.puts`.
+It can use `C.puts`. Within an unsafe block, it calls [`puts`](native.md#symbol-puts) (`message` set to `"hello from C FFI"`).
 
-- Use native code with its declared contract:
-  - Call [`puts`](native.md#symbol-puts) with `message` as `"hello from C FFI"`.
+Native operations must satisfy their declared C contracts.
 
 ::::
 

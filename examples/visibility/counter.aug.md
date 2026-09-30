@@ -3,41 +3,29 @@
 # `counter.aug`
 
 <a id="symbol-ICounter"></a>
-## `ICounter` · interface · [source](counter.aug#L1)
+## `ICounter` · interface · [source](counter.aug#L2)
 
 <a id="symbol-ICounter.label"></a>
-### `ICounter.label` · [source](counter.aug#L2)
+### `ICounter.label` · [source](counter.aug#L3)
 
-Returns `string`.
+The result is `string`.
 
 <a id="symbol-Counter"></a>
-## `Counter` · class · [source](counter.aug#L4)
+## `Counter` · class · [source](counter.aug#L5)
 
-Implements [`ICounter`](counter.aug.md#symbol-ICounter).
-
-**Inputs:** Take `value` (`int`); store mutably.
+Implements [`ICounter`](counter.aug.md#symbol-ICounter). The caller supplies `value` as `int`, stored mutably.
 
 <a id="symbol-Counter._label"></a>
-### `Counter._label` · [source](counter.aug#L5)
+### `Counter._label` · [source](counter.aug#L6)
 
-Private to its defining scope.
-
-Returns `string`.
-
-- Return the result of [`_prefix`](counter.aug.md#symbol-_prefix).
+Private to its defining scope. The result is `string`. It returns the value from [`_prefix`](counter.aug.md#symbol-_prefix).
 
 <a id="symbol-Counter.label"></a>
-### `Counter.label` · [source](counter.aug#L8)
+### `Counter.label` · [source](counter.aug#L9)
 
-Returns `string`.
-
-- Return the result of [`Counter._label`](counter.aug.md#symbol-Counter._label) on `self`.
+The result is `string`. It returns the value from [`Counter._label`](counter.aug.md#symbol-Counter._label) on `self`.
 
 <a id="symbol-_prefix"></a>
-## `_prefix` · [source](counter.aug#L12)
+## `_prefix` · [source](counter.aug#L13)
 
-Private to its defining scope.
-
-Returns `string`.
-
-- Return `"count"`.
+Private to its defining scope. The result is `string`. It returns `"count"`.

@@ -49,6 +49,7 @@ pageClass: aug-example-page
 ::: code-group
 
 ```aug [Indentation]
+// aug-spec: "contracts.aug.md" explains this file. Read it before changes; refresh with aug spec.
 /** Browser-bound client state, nonce and PKCE verifier, consumed by the callback. */
 record LoginTransaction(string state, string nonce, string verifier, int expires)
 /** Sessions require their own issuer, audience, key and JWT type, plus a live registry entry. */
@@ -59,6 +60,7 @@ SessionError() implements Error:
 ```
 
 ```aug [Braces]
+// aug-spec: "contracts.aug.md" explains this file. Read it before changes; refresh with aug spec.
 /** Browser-bound client state, nonce and PKCE verifier, consumed by the callback. */
 record LoginTransaction(string state, string nonce, string verifier, int expires)
 /** Sessions require their own issuer, audience, key and JWT type, plus a live registry entry. */
@@ -80,21 +82,17 @@ SessionError() implements Error {
 <a id="symbol-LoginTransaction"></a>
 ### `LoginTransaction` · immutable record · [source](contracts.md#code)
 
-Browser-bound client state, nonce and PKCE verifier, consumed by the callback.
-
-**Inputs:** Take `state` (`string`); store read-only. Take `nonce` (`string`); store read-only. Take `verifier` (`string`); store read-only. Take `expires` (`int`); store read-only.
+Browser-bound client state, nonce and PKCE verifier, consumed by the callback. The caller supplies `state`, `nonce`, and `verifier` as `string`, stored read-only and `expires` as `int`, stored read-only.
 
 <a id="symbol-SessionClaims"></a>
 ### `SessionClaims` · immutable record · [source](contracts.md#code)
 
-Sessions require their own issuer, audience, key and JWT type, plus a live registry entry.
-
-**Inputs:** Take `iss` (`string`); store read-only. Take `sub` (`string`); store read-only. Take `aud` (`string`); store read-only. Take `exp` (`int`); store read-only. Take `iat` (`int`); store read-only. Take `jti` (`string`); store read-only. Take `csrf` (`string`); store read-only. Take `name` (`string`); store read-only.
+Sessions require their own issuer, audience, key and JWT type, plus a live registry entry. The caller supplies `iss`, `sub`, and `aud` as `string`, stored read-only, `exp` and `iat` as `int`, stored read-only, and `jti`, `csrf`, and `name` as `string`, stored read-only.
 
 <a id="symbol-LogoutForm"></a>
 ### `LogoutForm` · immutable record · [source](contracts.md#code)
 
-**Inputs:** Take `csrf` (`string`); store read-only.
+The caller supplies `csrf` as `string`, stored read-only.
 
 <a id="symbol-SessionError"></a>
 ### `SessionError` · class · [source](contracts.md#code)

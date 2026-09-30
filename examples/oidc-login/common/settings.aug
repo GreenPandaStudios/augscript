@@ -1,3 +1,4 @@
+// aug-spec: "settings.aug.md" explains this file. Read it before changes; refresh with aug spec.
 /** Explicit loopback development settings. The provider accepts one registered client and its exact callback URI. */
 record Settings(string baseUrl, string issuer, string clientId, string callback, int sessionSeconds, bool secureCookies)
 settings() returns Settings:

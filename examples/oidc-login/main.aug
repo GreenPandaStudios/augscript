@@ -1,3 +1,4 @@
+// aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Crypto and GnuTlsCrypto from august.crypto
 import Clock and SystemClock from august.time
 import HttpClient and WebHttpClient from august.web

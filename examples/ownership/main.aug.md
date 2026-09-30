@@ -4,15 +4,12 @@
 
 ## Startup
 
-- Set `counter` of type [`Counter`](counter.aug.md#symbol-Counter) to a new [`Counter`](counter.aug.md#symbol-Counter) with `value` as `1`.
-- `counter` of type [`Counter`](counter.aug.md#symbol-Counter) owns this value.
-- Call [`Counter.increment`](counter.aug.md#symbol-Counter.increment) on `counter`.
-- Call `print` with `value` as the result of [`Counter.read`](counter.aug.md#symbol-Counter.read) on `counter`.
+It sets `counter` of type [`Counter`](counter.aug.md#symbol-Counter) to a new [`Counter`](counter.aug.md#symbol-Counter) (`value` set to `1`). `counter` of type [`Counter`](counter.aug.md#symbol-Counter) owns this value. It calls [`Counter.increment`](counter.aug.md#symbol-Counter.increment) on `counter`. It calls `print` (`value` set to the value from [`Counter.read`](counter.aug.md#symbol-Counter.read) on `counter`).
 
 ## Dependencies
 
-- [`Counter`](counter.aug.md#symbol-Counter) from `counter`: construct with `value`: `int`; [`increment`](counter.aug.md#symbol-Counter.increment) (no caller inputs) → `void`; [`read`](counter.aug.md#symbol-Counter.read) (no caller inputs) → `int`.
+The file uses [`Counter`](counter.aug.md#symbol-Counter) from `counter`. Construction takes `value` as `int`. [`increment`](counter.aug.md#symbol-Counter.increment) takes no caller inputs. It returns no value. It may change `self`. [`read`](counter.aug.md#symbol-Counter.read) takes no caller inputs. It returns `int`.
 
 ## Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
 
-- `print`: Composition and test output. Other callables receive Console and declare uses console.write.
+`print`: Composition and test output. Other callables receive Console and declare uses console.write.

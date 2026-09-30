@@ -29,12 +29,14 @@ pageClass: aug-example-page
 ::: code-group
 
 ```aug [Indentation]
+// aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Resource from resource
 own Resource resource = Resource()
 print(value="using resource")
 ```
 
 ```aug [Braces]
+// aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Resource from resource
 own Resource resource = Resource()
 print(value="using resource")
@@ -50,17 +52,15 @@ print(value="using resource")
 
 ### Startup
 
-- Set `resource` of type [`Resource`](resource.md#symbol-Resource) to a new [`Resource`](resource.md#symbol-Resource).
-- `resource` of type [`Resource`](resource.md#symbol-Resource) owns this value.
-- Call `print` with `value` as `"using resource"`.
+It sets `resource` of type [`Resource`](resource.md#symbol-Resource) to a new [`Resource`](resource.md#symbol-Resource). `resource` of type [`Resource`](resource.md#symbol-Resource) owns this value. It calls `print` (`value` set to `"using resource"`).
 
 ### Dependencies
 
-- [`Resource`](resource.md#symbol-Resource) from `resource`: construct with no caller inputs.
+The file uses [`Resource`](resource.md#symbol-Resource) from `resource`. Construction takes no caller inputs.
 
 ### Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
 
-- `print`: Composition and test output. Other callables receive Console and declare uses console.write.
+`print`: Composition and test output. Other callables receive Console and declare uses console.write.
 
 ::::
 

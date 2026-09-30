@@ -4,6 +4,4 @@
 
 ## Exports
 
-- Export the declaration `StoreFull` from [`store.aug`](store.aug.md#symbol-StoreFull).
-- Export the declaration `ExpiringStore` from [`store.aug`](store.aug.md#symbol-ExpiringStore).
-- Export the declaration `MemoryStore` from [`store.aug`](store.aug.md#symbol-MemoryStore).
+Export the declaration `StoreFull` from [`store.aug`](store.aug.md#symbol-StoreFull). Export the declaration `ExpiringStore` from [`store.aug`](store.aug.md#symbol-ExpiringStore). Export the declaration `MemoryStore` from [`store.aug`](store.aug.md#symbol-MemoryStore).

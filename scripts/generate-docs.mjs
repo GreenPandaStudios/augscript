@@ -8,12 +8,17 @@ import { callableDocumentation } from '../src/documentation.ts';
 import { languageHelp } from '../src/help.ts';
 import { collectionOperations } from '../src/builtins.ts';
 import { generateSpecs } from '../src/spec.ts';
+import { specHint } from '../src/spec-hints.ts';
 import { buildExamplePages } from './example-docs.mjs';
 
 const root = resolve(import.meta.dirname, '..');
 const check = process.argv.includes('--check');
 const outputs = new Map();
-const checked = checkProject(loadProject(join(root, 'examples/approved-design')));
+// Analyze the pending source pointers too, so one generation pass has correct API/source links.
+const entry=join(root,'examples/approved-design');
+const initial=checkProject(loadProject(entry));
+const sourceOverrides=new Map([...initial.project.files.values()].filter(file=>file.builtin).map(file=>[file.path,specHint(file).text]));
+const checked = checkProject(loadProject(entry,sourceOverrides));
 const errors = checked.diagnostics.filter(issue => issue.severity !== 'warning');
 if (errors.length) throw new Error('Cannot generate API docs from an invalid project: ' + JSON.stringify(errors));
 const project = checked.project;
@@ -62,7 +67,7 @@ for (const [type, operations] of Object.entries(collectionOperations)) {
 outputs.set('docs/language-constructs.md', constructs.join('\n\n') + '\n');
 for (const output of generateSpecs(checked, { files: [...project.files.values()].filter(file => file.builtin), manifest: false }))
   outputs.set(relative(root, output.path), output.text);
-for (const [path, text] of buildExamplePages()) outputs.set(path, text);
+for (const [path, text] of buildExamplePages(sourceOverrides)) outputs.set(path, text);
 const stale = [];
 for (const [path, content] of outputs) {
   const file = join(root, path);

@@ -28,6 +28,7 @@ pageClass: aug-example-page
 ::: code-group
 
 ```aug [Indentation]
+// aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 try:
     numbers = List<int>(2, 4)
     borrow numbers:
@@ -45,6 +46,7 @@ catch IndexError error:
 ```
 
 ```aug [Braces]
+// aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 try {
     numbers = List<int>(2, 4)
     borrow numbers {
@@ -75,31 +77,17 @@ catch IndexError error {
 
 ### Startup
 
-- Try:
-  - Set `numbers` to a list of `int` containing `2`, `4`.
-  - Mutably borrow `numbers` for this block:
-    - Call `append` on `numbers` with `value` as `6`.
-  - Call `print` with `value` as the result of `length` on `numbers`.
-  - Call `print` with `value` as the result of `get` on `numbers` with `index` as `1`.
-  - Set `scores` to an empty map from `string` to `int`.
-  - Mutably borrow `scores` for this block:
-    - Call `set` on `scores` with `value` as `42`, `key` as `"ada"`.
-  - Call `print` with `value` as the result of `contains` on `scores` with `key` as `"ada"`.
-  - Call `print` with `value` as the result of `get` on `scores` with `key` as `"ada"`.
-  - Call `print` with `value` as the result of `length` on `scores`.
-- Catch `IndexError` as `error`:
-  - Call `print` with `value` as `"unexpected index failure"`.
+It tries the following steps. It sets `numbers` to a list of `int` containing `2`, `4`. While mutably borrowing `numbers`, it calls `append` on `numbers` (`value` set to `6`).
+
+The mutable borrow ends when this block exits. It calls `print` (`value` set to the number of elements in `numbers`). It calls `print` (`value` set to the value from `get` on `numbers` (`index` set to `1`)). It sets `scores` to an empty map from `string` to `int`. While mutably borrowing `scores`, it calls `set` on `scores` (`value` set to `42` and `key` set to `"ada"`).
+
+The mutable borrow ends when this block exits. It calls `print` (`value` set to the value from `contains` on `scores` (`key` set to `"ada"`)). It calls `print` (`value` set to the value from `get` on `scores` (`key` set to `"ada"`)). It calls `print` (`value` set to the number of elements in `scores`). If this attempt raises `IndexError`, it catches it as `error` and calls `print` (`value` set to `"unexpected index failure"`).
 
 ### Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
 
-- `List<int>.append`: Append an element with exclusive mutable access. Read-only and owned aliases cannot be stored here.
-- `List<int>.get`: Read a zero-based position. An invalid index raises checked IndexError. Reference results grant reading.
-- `List<int>.length`: Read the number of elements.
-- `Map<string, int>.contains`: Check for a key, including entries whose value is null.
-- `Map<string, int>.get`: Read a value by key; an absent key returns null. contains distinguishes an absent key from a stored null.
-- `Map<string, int>.length`: Read the number of elements.
-- `Map<string, int>.set`: Insert or replace an entry with exclusive mutable access.
-- `print`: Composition and test output. Other callables receive Console and declare uses console.write.
+`List<int>.append`: Append an element with exclusive mutable access. Read-only and owned aliases cannot be stored here. `List<int>.get`: Read a zero-based position. An invalid index raises checked IndexError. Reference results grant reading. `List<int>.length`: Read the number of elements. `Map<string, int>.contains`: Check for a key, including entries whose value is null. `Map<string, int>.get`: Read a value by key; an absent key returns null. contains distinguishes an absent key from a stored null. `Map<string, int>.length`: Read the number of elements.
+
+`Map<string, int>.set`: Insert or replace an entry with exclusive mutable access. `print`: Composition and test output. Other callables receive Console and declare uses console.write.
 
 ::::
 

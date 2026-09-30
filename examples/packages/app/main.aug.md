@@ -4,12 +4,12 @@
 
 ## Startup
 
-- Call `print` with `value` as the result of [`add`](.aug-spec/packages/%40example/aug-math/0.1.0/arithmetic.aug.md#symbol-add) with `left` as `20`, `right` as `22`.
+It calls `print` (`value` set to the value from [`add`](.aug-spec/packages/%40example/aug-math/0.1.0/arithmetic.aug.md#symbol-add) (`left` set to `20` and `right` set to `22`)).
 
 ## Dependencies
 
-- [`add`](.aug-spec/packages/%40example/aug-math/0.1.0/arithmetic.aug.md#symbol-add) (`left`: `int`, `right`: `int`) → `int` from `math`.
+[`add`](.aug-spec/packages/%40example/aug-math/0.1.0/arithmetic.aug.md#symbol-add) from `math` takes `left` and `right` as `int`. It returns `int`.
 
 ## Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
 
-- `print`: Composition and test output. Other callables receive Console and declare uses console.write.
+`print`: Composition and test output. Other callables receive Console and declare uses console.write.

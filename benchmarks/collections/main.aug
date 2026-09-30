@@ -1,3 +1,4 @@
+// aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 own Map<int, int> values = {}
 own Set<int> unique = {}
 int index = 0

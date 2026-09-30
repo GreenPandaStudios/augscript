@@ -29,6 +29,7 @@ pageClass: aug-example-page
 ::: code-group
 
 ```aug [Indentation]
+// aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Counter from counter
 own Counter counter = Counter(value=1)
 counter.increment()
@@ -36,6 +37,7 @@ print(value=counter.read())
 ```
 
 ```aug [Braces]
+// aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Counter from counter
 own Counter counter = Counter(value=1)
 counter.increment()
@@ -52,18 +54,15 @@ print(value=counter.read())
 
 ### Startup
 
-- Set `counter` of type [`Counter`](counter.md#symbol-Counter) to a new [`Counter`](counter.md#symbol-Counter) with `value` as `1`.
-- `counter` of type [`Counter`](counter.md#symbol-Counter) owns this value.
-- Call [`Counter.increment`](counter.md#symbol-Counter.increment) on `counter`.
-- Call `print` with `value` as the result of [`Counter.read`](counter.md#symbol-Counter.read) on `counter`.
+It sets `counter` of type [`Counter`](counter.md#symbol-Counter) to a new [`Counter`](counter.md#symbol-Counter) (`value` set to `1`). `counter` of type [`Counter`](counter.md#symbol-Counter) owns this value. It calls [`Counter.increment`](counter.md#symbol-Counter.increment) on `counter`. It calls `print` (`value` set to the value from [`Counter.read`](counter.md#symbol-Counter.read) on `counter`).
 
 ### Dependencies
 
-- [`Counter`](counter.md#symbol-Counter) from `counter`: construct with `value`: `int`; [`increment`](counter.md#symbol-Counter.increment) (no caller inputs) → `void`; [`read`](counter.md#symbol-Counter.read) (no caller inputs) → `int`.
+The file uses [`Counter`](counter.md#symbol-Counter) from `counter`. Construction takes `value` as `int`. [`increment`](counter.md#symbol-Counter.increment) takes no caller inputs. It returns no value. It may change `self`. [`read`](counter.md#symbol-Counter.read) takes no caller inputs. It returns `int`.
 
 ### Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
 
-- `print`: Composition and test output. Other callables receive Console and declare uses console.write.
+`print`: Composition and test output. Other callables receive Console and declare uses console.write.
 
 ::::
 

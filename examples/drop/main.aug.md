@@ -4,14 +4,12 @@
 
 ## Startup
 
-- Set `resource` of type [`Resource`](resource.aug.md#symbol-Resource) to a new [`Resource`](resource.aug.md#symbol-Resource).
-- `resource` of type [`Resource`](resource.aug.md#symbol-Resource) owns this value.
-- Call `print` with `value` as `"using resource"`.
+It sets `resource` of type [`Resource`](resource.aug.md#symbol-Resource) to a new [`Resource`](resource.aug.md#symbol-Resource). `resource` of type [`Resource`](resource.aug.md#symbol-Resource) owns this value. It calls `print` (`value` set to `"using resource"`).
 
 ## Dependencies
 
-- [`Resource`](resource.aug.md#symbol-Resource) from `resource`: construct with no caller inputs.
+The file uses [`Resource`](resource.aug.md#symbol-Resource) from `resource`. Construction takes no caller inputs.
 
 ## Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
 
-- `print`: Composition and test output. Other callables receive Console and declare uses console.write.
+`print`: Composition and test output. Other callables receive Console and declare uses console.write.

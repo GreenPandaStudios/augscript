@@ -11,7 +11,8 @@ import { generateSpecs, updateSpecs } from '../src/spec.ts';
 import { parse } from '../src/parser.ts';
 import { formatFile, migrateFile } from '../src/formatter.ts';
 import { compilerVersion } from '../src/package-manager.ts';
-import { block, flow, paragraph, renderSpecTree, section, sequence, step } from '../src/spec-tree.ts';
+import { action, attempt, branch, choice, flow, loop, paragraph, planFlow, renderSpecTree, scope, section, sequence, step } from '../src/spec-tree.ts';
+import { updateSpecHints } from '../src/spec-hints.ts';
 
 const cli = resolve('bin/aug.mjs');
 function project(files, action) {
@@ -71,12 +72,13 @@ test('specs explain all local behavior and only the dependency surface used by w
   assert.match(main,/compute.*service\.aug\.md#symbol-compute/);
   assert.match(main,/through import everything/);
   assert.doesNotMatch(main,/_positive|unused|Sum valid values|For each/);
-  for(const word of ['Values to inspect','Private to its defining scope','For each','While','Otherwise','Try','Catch','Always','Fail with','valid values','sums values'])assert.ok(service.includes(word),word);
+  for(const word of ['Values to inspect','Private to its defining scope','For each','While','Otherwise','tries','catches','always','fails with','valid values','sums values'])assert.ok(service.includes(word),word);
   assert.match(service,/If `total` does not equal `0` and/);
   assert.ok(main.indexOf('## Startup')<main.indexOf('## Dependencies'));
   assert.equal(service.match(/Sum valid values\./g)?.length,1);
   assert.doesNotMatch(service,/Author documentation|What it does|In this file|Shared language rules|\n\n\n/);
   assert.match(main,/## Built-ins.*print/s);
+  assert.doesNotMatch(service,/^\s*(?:-|\d+\.) /m,'generated behavior must be prose, without outline lists');
 }));
 
 test('spec generation is byte deterministic across project locations and validates all offline links', () => {
@@ -108,9 +110,9 @@ test('comment-free code yields a readable local flow and ordered long expression
   const outputs=generateSpecs(result),main=outputs.find(output=>output.path.endsWith('main.aug.md')).text;
   const links=outputs.find(output=>output.path.endsWith('links.aug.md')).text;
   assert.ok(main.indexOf('## Startup')<main.indexOf('## Dependencies'));
-  assert.match(main,/Set `numbers` to a list of `int` containing `2`, `4`/);
-  assert.match(main,/\[`address`\]\(links\.aug\.md#symbol-address\).*\(`host`: `string`, `path`: `string`\) → `string`/s);
-  assert.match(links,/Join `"https:\/\/"`, `host`, `"\/"`, `path` and `"\?view=full"` to make `location`/);
+  assert.match(main,/sets `numbers` to a list of `int` containing `2`, `4`/);
+  assert.match(main,/\[`address`\]\(links\.aug\.md#symbol-address\).*takes `host` and `path` as `string`\. It returns `string`/s);
+  assert.match(links,/joins these parts in order to make `location`: `"https:\/\/"`, `host`, `"\/"`, `path`, and `"\?view=full"`/);
   assert.doesNotMatch(links,/Author documentation|the result of call|\(\(\(/);
 }));
 
@@ -122,7 +124,7 @@ test('spec --check detects source drift and never writes; successful native buil
   assert.ok(JSON.parse(result.stdout).stale.includes('service.aug.md'));
   assert.equal(readFileSync(file,'utf8'),original);assert.equal(statSync(file).mtimeMs,modified);
   result=command(root,'build');assert.equal(result.status,0,result.stderr);
-  assert.match(readFileSync(file,'utf8'),/Return `78`/);
+  assert.match(readFileSync(file,'utf8'),/returns `78`/);
   assert.equal(command(root,'spec',['--check']).status,0);
 }));
 
@@ -270,12 +272,12 @@ test('explanation tree keeps related steps together and renders nested control f
   const document=section('`sample.aug`',1,[
     section('`sample`',2,[
       paragraph('Explain the operation.'),
-      flow([block('If the input is valid',[step('Save it.'),block('Otherwise',[step('Return null.')])]),
+      flow([branch('the input is valid',[action('set','`saved` to the input')],[action('return','null')]),
         sequence('Join the parts in order',['the host','the path'])]),
     ]),
   ]);
   assert.equal(renderSpecTree(document),
-    '# `sample.aug`\n\n## `sample`\n\nExplain the operation.\n\n- If the input is valid:\n  - Save it.\n  - Otherwise:\n    - Return null.\n- Join the parts in order:\n  1. the host\n  2. the path\n');
+    '# `sample.aug`\n\n## `sample`\n\nExplain the operation. If the input is valid, it sets `saved` to the input. Otherwise, it returns null. Join the parts in order: the host and the path.\n');
 });
 
 test('long header chains become one ordered operation', () => project({
@@ -286,9 +288,111 @@ test('long header chains become one ordered operation', () => project({
 },root=>{
   const result=checked(root);valid(result);
   const text=generateSpecs(result).find(output=>output.path===join(root,'main.aug.md')).text;
-  assert.match(text,/Set `headers` from a new `Headers` by adding these header fields in order:/);
-  assert.match(text,/1\. `"first"` to `"1"`\n\s+2\. `"second"` to `"2"`\n\s+3\. `"third"` to `"3"`/);
+  assert.match(text,/sets? `headers` from a new `Headers` by adding these header fields in order:/);
+  assert.match(text,/`"first"` to `"1"`, `"second"` to `"2"`, and `"third"` to `"3"`/);
   assert.doesNotMatch(text,/the result of `with` on the result of `with`/);
+}));
+
+test('prose planning preserves nested scopes, repeated effects and a source ledger through aggregation', () => {
+  let identity=0;
+  const fact=node=>({...node,source:'fact-'+identity++});
+  const repeated=()=>fact(action('call','`audit`'));
+  const body=[fact(loop('For each `item` in `items`',[
+    fact(attempt([
+      fact(branch('`ready` is true',[repeated(),repeated()],[fact(action('fail','with `BadInput`'))])),
+    ],[{error:'`BadInput`',name:'`error`',children:[fact(action('set','`recovered` to true'))]}],
+    [fact(action('call','`cleanup`'))])),
+  ],'Repeat for each remaining item.')),
+  fact(scope('While holding the lock on `shared`',[fact(action('set','`value` to `1`'))],'Release the lock on exit.')),
+  fact(choice('`value`',[
+    {condition:'If the selected value is null',children:[fact(action('return','null'))]},
+    {condition:'Otherwise',children:[fact(action('return','`value`'))]},
+  ])),fact(action('call','`after`'))];
+  const result=planFlow(body), prose=result.paragraphs.join('\n\n');
+  assert.equal(new Set(result.sources).size,identity);
+  assert.equal(result.sources.length,identity);
+  assert.equal((prose.match(/calls `audit`/g)??[]).length,2,'identical calls are distinct effects');
+  assert.match(prose,/If `ready` is true, it calls `audit`; then it calls `audit`\. Otherwise, it fails/);
+  assert.ok(prose.indexOf('catches it as `error`')<prose.indexOf('always calls `cleanup`'));
+  assert.ok(prose.indexOf('always calls `cleanup`')<prose.indexOf('Repeat for each remaining item'));
+  assert.ok(prose.indexOf('Release the lock')<prose.indexOf('Select the first matching case'));
+  assert.match(prose,/After the match, execution continues unless the selected case returned or failed\. It calls `after`/);
+  assert.doesNotMatch(prose,/^\s*[-\d]+[. ]/m);
+});
+
+test('scope-free sentences keep negation, short circuit order and numeric grouping',()=>project({
+  'main.aug':'import calculate from numbers\ntry { print(value=calculate(left=1, right=2)) } catch ArithmeticError error { pass }\n',
+  'numbers.aug':`calculate(int left,int right) returns int unless ArithmeticError {
+    if left == 1 or right == 2 or left == 3 { return left - (right - 1) }
+    if not (left == 1 and right == 2) { return left / (right / 2) }
+    return left + (right + 1)
+}
+`,
+},root=>{
+  const result=checked(root);valid(result);
+  const text=generateSpecs(result).find(output=>output.path.endsWith('numbers.aug.md')).text;
+  assert.match(text,/If `left` equals `1` or `right` equals `2` or `left` equals `3`, it returns `left` minus \(`right` minus `1`\)/);
+  assert.match(text,/not \(.*and.*\).*returns `left` divided by \(`right` divided by `2`\)/);
+  assert.match(text,/returns `left` plus \(`right` plus `1`\)/);
+}));
+
+test('spec pointers are idempotent, preserve comments and CRLF, refresh after renames and never enter the removable manifest',()=>project({
+  'main.aug':'// Handwritten context.\r\nprint(value=7)\r\n',
+},root=>{
+  const path=join(root,'main.aug'), original=readFileSync(path,'utf8');
+  const preview=updateSpecs(checked(root),true);
+  assert.ok(preview.stale.includes('main.aug'));assert.equal(readFileSync(path,'utf8'),original);
+  updateSpecs(checked(root));
+  const hinted=readFileSync(path,'utf8');
+  assert.match(hinted,/^\/\/ aug-spec: "main\.aug\.md".*Read it before changes.*\r\n/);
+  assert.equal(hinted.slice(hinted.indexOf('\n')+1),original);
+  const manifest=readFileSync(join(root,'.aug-spec/manifest.json'),'utf8');
+  assert.ok(!JSON.parse(manifest).files.includes('main.aug'));
+  assert.deepEqual(updateSpecs(checked(root),true).stale,[]);
+  updateSpecs(checked(root));assert.equal(readFileSync(path,'utf8'),hinted);
+  assert.equal(readFileSync(join(root,'.aug-spec/manifest.json'),'utf8'),manifest);
+  writeFileSync(join(root,'renamed.aug'),hinted.replace('print(value=7)','example() returns int { return 7 }'));
+  updateSpecs(checked(root));
+  const renamed=readFileSync(join(root,'renamed.aug'),'utf8');
+  assert.match(renamed,/^\/\/ aug-spec: "renamed\.aug\.md"/);
+  assert.equal((renamed.match(/\/\/ aug-spec:/g)??[]).length,1);
+  assert.match(readFileSync(join(root,'renamed.aug.md'),'utf8'),/source\]\(renamed\.aug#L3\)/);
+}));
+
+test('native preparation reparses pointers before source maps and rejects changed sources without overwriting them',()=>project({
+  'main.aug':'print(value=7)\n',
+},root=>{
+  const first=checked(root), refreshed=updateSpecHints(first), path=join(root,'main.aug');
+  assert.equal(first.project.files.get(path).items[0].span.line,1);
+  assert.equal(refreshed.project.files.get(path).items[0].span.line,2);
+  assert.equal(updateSpecHints(refreshed),refreshed);
+  const disk=readFileSync(path,'utf8').replace('7','8');writeFileSync(path,disk);
+  // Remove the managed line in the older checked view to force pointer preparation.
+  first.project.files.get(path).source='print(value=7)\n';
+  assert.throws(()=>updateSpecHints(first),/Source changed during compilation/);
+  assert.equal(readFileSync(path,'utf8'),disk);
+}));
+
+test('dependency prose resolves foreign generic constraints and checked errors, and type parameters shadow named types',()=>project({
+  'main.aug':'import describe and T from contract\ntry { print(value=describe(value=T())) } catch Error error { pass }\n',
+  'contract.aug':`interface Named { name() returns string }
+Failure() implements Error {}
+T() implements Named { name() returns string { return "named" } }
+describe<T implements Named>(T value) returns string unless Failure { return value.name() }
+interface Box<T> { read() returns T }
+IntBox(int value) implements Box<int> { read() returns int { return value } }
+`,
+},root=>{
+  const result=checked(root);valid(result);
+  const specs=generateSpecs(result), main=specs.find(output=>output.path.endsWith('main.aug.md')).text;
+  const contract=specs.find(output=>output.path.endsWith('contract.aug.md')).text;
+  assert.match(main,/must satisfy \[`Named`\]\(contract\.aug\.md#symbol-Named\)/);
+  assert.match(main,/The file uses \[`Failure`\]\(contract\.aug\.md#symbol-Failure\)/);
+  const describe=contract.split('## `describe`')[1].split('<a id="symbol-Box">')[0];
+  assert.match(describe,/`value` as `T`/);
+  assert.doesNotMatch(describe,/\[`T`\]/);
+  assert.match(describe,/\[`Named.name`\]\(contract\.aug\.md#symbol-Named.name\)/);
+  assert.match(contract,/Implements \[`Box<int>`\]\(contract\.aug\.md#symbol-Box\)/);
 }));
 
 test('Type? and missing are rejected; simple migration uses optional Type and null, conflicting old cases require a choice', () => project({

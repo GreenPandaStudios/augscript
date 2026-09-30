@@ -49,6 +49,7 @@ pageClass: aug-example-page
 ::: code-group
 
 ```aug [Indentation]
+// aug-spec: "discovery.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import settings and SigningKeys and KeyError from common
 import Crypto and RsaJwks and rsaJwk from august.crypto
 /** Discovery advertises exactly this provider's supported authorization-code profile. */
@@ -63,6 +64,7 @@ endpoint GET "/provider/jwks" as jwks(resolve Crypto crypto, resolve SigningKeys
 ```
 
 ```aug [Braces]
+// aug-spec: "discovery.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import settings and SigningKeys and KeyError from common
 import Crypto and RsaJwks and rsaJwk from august.crypto
 /** Discovery advertises exactly this provider's supported authorization-code profile. */
@@ -89,44 +91,27 @@ endpoint GET "/provider/jwks" as jwks(resolve Crypto crypto, resolve SigningKeys
 <a id="symbol-Discovery"></a>
 ### `Discovery` · immutable record · [source](discovery.md#code)
 
-Discovery advertises exactly this provider's supported authorization-code profile.
-
-**Inputs:** Take `issuer` (`string`); store read-only. Take `authorization_endpoint` (`string`); store read-only. Take `token_endpoint` (`string`); store read-only. Take `userinfo_endpoint` (`string`); store read-only. Take `jwks_uri` (`string`); store read-only. Take `response_types_supported` (`List<string>`); store read-only. Take `grant_types_supported` (`List<string>`); store read-only. Take `subject_types_supported` (`List<string>`); store read-only. Take `id_token_signing_alg_values_supported` (`List<string>`); store read-only. Take `token_endpoint_auth_methods_supported` (`List<string>`); store read-only. Take `scopes_supported` (`List<string>`); store read-only. Take `claims_supported` (`List<string>`); store read-only. Take `code_challenge_methods_supported` (`List<string>`); store read-only.
+Discovery advertises exactly this provider's supported authorization-code profile. The caller supplies `issuer`, `authorization_endpoint`, `token_endpoint`, `userinfo_endpoint`, and `jwks_uri` as `string`, stored read-only and `response_types_supported`, `grant_types_supported`, `subject_types_supported`, `id_token_signing_alg_values_supported`, `token_endpoint_auth_methods_supported`, `scopes_supported`, `claims_supported`, and `code_challenge_methods_supported` as `List<string>`, stored read-only.
 
 <a id="symbol-discovery"></a>
 ### `discovery` · [source](discovery.md#code)
 
-Returns [`Discovery`](discovery.md#symbol-Discovery).
+The result is [`Discovery`](discovery.md#symbol-Discovery). This handles `GET` requests at `/provider/.well-known/openid-configuration`. Use status 200 when the handler returns a body; a returned HttpResponse can set its own status. An unhandled request failure returns status 500 and cancels its request tasks. It sets `config` to the value from [`settings`](../common/settings.md#symbol-settings).
 
-HTTP route: `GET` `/provider/.well-known/openid-configuration`. Use status 200 when the handler returns a body; a returned HttpResponse can set its own status. An unhandled request failure returns status 500 and cancels its request tasks.
-
-- Set `config` to the result of [`settings`](../common/settings.md#symbol-settings).
-- Return a new [`Discovery`](discovery.md#symbol-Discovery) with `issuer` as `issuer` of `config`, `authorization_endpoint` as `issuer` of `config` plus `"/authorize"`, `token_endpoint` as `issuer` of `config` plus `"/token"`, `userinfo_endpoint` as `issuer` of `config` plus `"/userinfo"`, `jwks_uri` as `issuer` of `config` plus `"/jwks"`, `response_types_supported` as a list containing `"code"`, `grant_types_supported` as a list containing `"authorization_code"`, `subject_types_supported` as a list containing `"public"`, `id_token_signing_alg_values_supported` as a list containing `"RS256"`, `token_endpoint_auth_methods_supported` as a list containing `"none"`, `scopes_supported` as a list containing `"openid"`, `"profile"`, `claims_supported` as a list containing `"iss"`, `"sub"`, `"aud"`, `"exp"`, `"iat"`, `"nonce"`, `"name"`, `code_challenge_methods_supported` as a list containing `"S256"`.
+It returns a new [`Discovery`](discovery.md#symbol-Discovery) (`issuer` set to `config.issuer`, `authorization_endpoint` set to `config.issuer` plus `"/authorize"`, `token_endpoint` set to `config.issuer` plus `"/token"`, `userinfo_endpoint` set to `config.issuer` plus `"/userinfo"`, `jwks_uri` set to `config.issuer` plus `"/jwks"`, `response_types_supported` set to a list containing `"code"`, `grant_types_supported` set to a list containing `"authorization_code"`, `subject_types_supported` set to a list containing `"public"`, `id_token_signing_alg_values_supported` set to a list containing `"RS256"`, `token_endpoint_auth_methods_supported` set to a list containing `"none"`, `scopes_supported` set to a list containing `"openid"`, `"profile"`, `claims_supported` set to a list containing `"iss"`, `"sub"`, `"aud"`, `"exp"`, `"iat"`, `"nonce"`, `"name"`, and `code_challenge_methods_supported` set to a list containing `"S256"`).
 
 <a id="symbol-jwks"></a>
 ### `jwks` · [source](discovery.md#code)
 
-Only the provider's public signing key is published. Session keys never enter this JWKS.
+Only the provider's public signing key is published. Session keys never enter this JWKS. Dependency injection supplies `crypto` as [`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto) and `keys` as [`SigningKeys`](../common/keys.md#symbol-SigningKeys). The result is [`RsaJwks`](../dependencies/august/0.19.0/crypto/jose.md#symbol-RsaJwks). It can use [`keys.provider`](../common/keys.md#symbol-SigningKeys.provider), [`crypto.publicRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.publicRsa), and [`crypto.exportRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.exportRsa). It can fail with `KeyError` and `CryptoError`. This handles `GET` requests at `/provider/jwks`. Use status 200 when the handler returns a body; a returned HttpResponse can set its own status. An unhandled request failure returns status 500 and cancels its request tasks.
 
-**Inputs:** Resolve [`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto) as `crypto`. Resolve [`SigningKeys`](../common/keys.md#symbol-SigningKeys) as `keys`.
-
-Returns [`RsaJwks`](../dependencies/august/0.19.0/crypto/jose.md#symbol-RsaJwks). Uses [`keys.provider`](../common/keys.md#symbol-SigningKeys.provider), [`crypto.publicRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.publicRsa), [`crypto.exportRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.exportRsa). Can fail with `KeyError`, `CryptoError`.
-
-HTTP route: `GET` `/provider/jwks`. Use status 200 when the handler returns a body; a returned HttpResponse can set its own status. An unhandled request failure returns status 500 and cancels its request tasks.
-
-- Set `publicKey` to the result of [`Crypto.publicRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.publicRsa) on `crypto` with `key` as the result of [`SigningKeys.provider`](../common/keys.md#symbol-SigningKeys.provider) on `keys`.
-- Return a new [`RsaJwks`](../dependencies/august/0.19.0/crypto/jose.md#symbol-RsaJwks) with `keys` as a list containing the result of [`rsaJwk`](../dependencies/august/0.19.0/crypto/jose.md#symbol-rsaJwk) with `publicKey`, `kid` as `"provider-1"` using `crypto`.
+It sets `publicKey` to the value from [`Crypto.publicRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.publicRsa) on `crypto` (`key` set to the value from [`SigningKeys.provider`](../common/keys.md#symbol-SigningKeys.provider) on `keys`). It returns a new [`RsaJwks`](../dependencies/august/0.19.0/crypto/jose.md#symbol-RsaJwks) (`keys` set to a list containing the value from [`rsaJwk`](../dependencies/august/0.19.0/crypto/jose.md#symbol-rsaJwk) (`publicKey` and `kid` set to `"provider-1"`) using `crypto`).
 
 ### Dependencies
 
-- [`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto) from `august.crypto`: [`exportRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.exportRsa) (`publicKey`: `RsaPublicKey`) → `Tuple<Bytes,Bytes>`; can fail with `CryptoError`; [`publicRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.publicRsa) (`key`: `RsaPrivateKey`) → `RsaPublicKey`; can fail with `CryptoError`.
-- [`RsaJwk`](../dependencies/august/0.19.0/crypto/jose.md#symbol-RsaJwk).
-- [`RsaJwks`](../dependencies/august/0.19.0/crypto/jose.md#symbol-RsaJwks) from `august.crypto`: construct with `keys`: `List<RsaJwk>`.
-- [`rsaJwk`](../dependencies/august/0.19.0/crypto/jose.md#symbol-rsaJwk) (`publicKey`: `RsaPublicKey`, `kid`: `string`) → [`RsaJwk`](../dependencies/august/0.19.0/crypto/jose.md#symbol-RsaJwk); can fail with `CryptoError` from `august.crypto`.
-- [`KeyError`](../common/keys.md#symbol-KeyError) from `common`.
-- [`SigningKeys`](../common/keys.md#symbol-SigningKeys) from `common`: [`provider`](../common/keys.md#symbol-SigningKeys.provider) (no caller inputs) → `RsaPrivateKey`; can fail with `KeyError`.
-- [`Settings`](../common/settings.md#symbol-Settings): read `issuer` (`string`).
-- [`settings`](../common/settings.md#symbol-settings) (no caller inputs) → [`Settings`](../common/settings.md#symbol-Settings) from `common`.
+The file uses [`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto) from `august.crypto`. [`exportRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.exportRsa) takes `publicKey` as `RsaPublicKey`. It returns `Tuple<Bytes,Bytes>`. It can use [`Crypto.exportRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.exportRsa). It can fail with `CryptoError`. [`publicRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.publicRsa) takes `key` as `RsaPrivateKey`. It returns `RsaPublicKey`. It can use [`Crypto.publicRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.publicRsa). It can fail with `CryptoError`. The file uses [`RsaJwk`](../dependencies/august/0.19.0/crypto/jose.md#symbol-RsaJwk). The file uses [`RsaJwks`](../dependencies/august/0.19.0/crypto/jose.md#symbol-RsaJwks) from `august.crypto`. Construction takes `keys` as `List<RsaJwk>`. [`rsaJwk`](../dependencies/august/0.19.0/crypto/jose.md#symbol-rsaJwk) from `august.crypto` takes `publicKey` as `RsaPublicKey` and `kid` as `string`. It returns [`RsaJwk`](../dependencies/august/0.19.0/crypto/jose.md#symbol-RsaJwk). Dependency injection supplies `crypto` as [`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto). It can use [`crypto.exportRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.exportRsa). It can fail with `CryptoError`.
+
+The file uses [`KeyError`](../common/keys.md#symbol-KeyError) from `common`. The file uses [`SigningKeys`](../common/keys.md#symbol-SigningKeys) from `common`. [`provider`](../common/keys.md#symbol-SigningKeys.provider) takes no caller inputs. It returns `RsaPrivateKey`. It can use [`SigningKeys.provider`](../common/keys.md#symbol-SigningKeys.provider). It can fail with `KeyError`. The file uses [`Settings`](../common/settings.md#symbol-Settings). `issuer` is a read-only field of type `string`. [`settings`](../common/settings.md#symbol-settings) from `common` takes no caller inputs. It returns [`Settings`](../common/settings.md#symbol-Settings).
 
 ::::
 

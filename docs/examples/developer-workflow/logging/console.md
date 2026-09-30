@@ -32,6 +32,7 @@ pageClass: aug-example-page
 ::: code-group
 
 ```aug [Indentation]
+// aug-spec: "console.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Console from august.io
 import Logger from logger
 /** Writes application messages to standard output. */
@@ -41,6 +42,7 @@ ConsoleLogger() implements Logger:
 ```
 
 ```aug [Braces]
+// aug-spec: "console.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Console from august.io
 import Logger from logger
 /** Writes application messages to standard output. */
@@ -67,16 +69,11 @@ Writes application messages to standard output. Implements [`Logger`](logger.md#
 <a id="symbol-ConsoleLogger.log"></a>
 #### `ConsoleLogger.log` · [source](console.md#code)
 
-**Inputs:** Resolve [`Console`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console) as `console`. Take `message` (`string`) — Text to write.
-
-Uses [`Console.write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
-
-- Call [`Console.write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write) on `console` with `value` as `message`.
+The caller supplies `message` as `string` (Text to write). Dependency injection supplies `console` as [`Console`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console). It can use [`Console.write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write). It calls [`Console.write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write) on `console` (`value` set to `message`).
 
 ### Dependencies
 
-- [`Console`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console) from `august.io`: [`write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write)<`T`> (`value`: `T`) → `void`.
-- [`Logger`](logger.md#symbol-Logger) from `logger`.
+The file uses [`Console`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console) from `august.io`. [`write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write) takes `value` as `T`. It returns no value. The type parameters are `T`. It can use [`Console.write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write). The file uses [`Logger`](logger.md#symbol-Logger) from `logger`.
 
 ::::
 

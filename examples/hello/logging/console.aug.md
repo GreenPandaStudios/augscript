@@ -3,22 +3,15 @@
 # `console.aug`
 
 <a id="symbol-ConsoleLogger"></a>
-## `ConsoleLogger` · class · [source](console.aug#L3)
+## `ConsoleLogger` · class · [source](console.aug#L4)
 
 Implements [`Logger`](logger.aug.md#symbol-Logger).
 
 <a id="symbol-ConsoleLogger.log"></a>
-### `ConsoleLogger.log` · [source](console.aug#L4)
+### `ConsoleLogger.log` · [source](console.aug#L5)
 
-Writes one message.
-
-**Inputs:** Resolve [`Console`](../.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console) as `console`. Take `message` (`string`) — Text to write.
-
-Uses [`Console.write`](../.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write).
-
-- Call [`Console.write`](../.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write) on `console` with `value` as `message`.
+Writes one message. The caller supplies `message` as `string` (Text to write). Dependency injection supplies `console` as [`Console`](../.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console). It can use [`Console.write`](../.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write). It calls [`Console.write`](../.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write) on `console` (`value` set to `message`).
 
 ## Dependencies
 
-- [`Console`](../.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console) from `august.io`: [`write`](../.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write)<`T`> (`value`: `T`) → `void`.
-- [`Logger`](logger.aug.md#symbol-Logger) from `logger`.
+The file uses [`Console`](../.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console) from `august.io`. [`write`](../.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write) takes `value` as `T`. It returns no value. The type parameters are `T`. It can use [`Console.write`](../.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write). The file uses [`Logger`](logger.aug.md#symbol-Logger) from `logger`.

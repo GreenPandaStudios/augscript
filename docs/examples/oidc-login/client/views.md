@@ -49,6 +49,7 @@ pageClass: aug-example-page
 ::: code-group
 
 ```aug [Indentation]
+// aug-spec: "views.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import SessionClaims from contracts
 import Page from common
 import logout from logout
@@ -59,6 +60,7 @@ Welcome(SessionClaims session) returns Html unless HttpError:
 ```
 
 ```aug [Braces]
+// aug-spec: "views.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import SessionClaims from contracts
 import Page from common
 import logout from logout
@@ -81,25 +83,28 @@ Welcome(SessionClaims session) returns Html unless HttpError {
 <a id="symbol-LoginPage"></a>
 ### `LoginPage` · [source](views.md#code)
 
-Returns `Html`.
+The result is `Html`.
 
-- Return the server component [`Page`](../common/views.md#symbol-Page) with `title` = `"Sign in"` containing the HTML element `p` containing `This August app is both an OpenID Connect provider and a login client.` (server-rendered; text escaped), the HTML element `p` containing the HTML element `a` with `href` = `"/login/start"`, `style` = `"display:inline-block;padding:12px 20px;border-radius:10px;background:#4852d7;color:white;text-decoration:none"` containing `Sign in with OpenID Connect` (server-rendered; text escaped) (server-rendered; text escaped), the HTML element `p` containing `The server uses authorization codes, S256 PKCE, state and nonce validation. Your session is a separate signed JWT in an HttpOnly cookie.` (server-rendered; text escaped) (server-rendered; text escaped).
+It returns the server component [`Page`](../common/views.md#symbol-Page) with `title` = `"Sign in"` containing the HTML element `p` containing `This August app is both an OpenID Connect provider and a login client.` (server-rendered; text escaped), the HTML element `p` containing the HTML element `a` with `href` = `"/login/start"`, `style` = `"display:inline-block;padding:12px 20px;border-radius:10px;background:#4852d7;color:white;text-decoration:none"` containing `Sign in with OpenID Connect` (server-rendered; text escaped) (server-rendered; text escaped), the HTML element `p` containing `The server uses authorization codes, S256 PKCE, state and nonce validation. Your session is a separate signed JWT in an HttpOnly cookie.` (server-rendered; text escaped) (server-rendered; text escaped).
 
 <a id="symbol-Welcome"></a>
 ### `Welcome` · [source](views.md#code)
 
-**Inputs:** Take `session` ([`SessionClaims`](contracts.md#symbol-SessionClaims)).
+The caller supplies `session` as [`SessionClaims`](contracts.md#symbol-SessionClaims). The result is `Html`. It can fail with `HttpError`.
 
-Returns `Html`. Can fail with `HttpError`.
-
-- Return the server component [`Page`](../common/views.md#symbol-Page) with `title` = `"Welcome, "` plus `name` of `session` containing the HTML element `p` containing `You are signed in as `, the HTML element `strong` containing `name` of `session` (server-rendered; text escaped), `.` (server-rendered; text escaped), the HTML element `p` containing `Subject: `, the HTML element `code` containing `sub` of `session` (server-rendered; text escaped) (server-rendered; text escaped), the HTML element `p` containing the HTML element `a` with `href` = `"/me"` containing `View the protected JSON endpoint` (server-rendered; text escaped) (server-rendered; text escaped), the HTML element `form` with `method` = `"post"`, `action` = `"/logout"`, `onSubmit` = a deferred HTTP form action for [`logout`](logout.md#symbol-logout); inputs: `1` from the checked form input supplied when the HTTP form is submitted; capture supplied values when rendering, and read form inputs when submitted; send the form to that endpoint with its declared HTTP method containing the HTML element `input` with `type` = `"hidden"`, `name` = `"csrf"`, `value` = `csrf` of `session` (server-rendered; text escaped), the HTML element `button` with `type` = `"submit"`, `style` = `"padding:10px 18px;border-radius:10px;border:0;background:#17233a;color:white;font:inherit"` containing `Sign out` (server-rendered; text escaped) (server-rendered; text escaped) (server-rendered; text escaped).
+It returns the server component [`Page`](../common/views.md#symbol-Page) with `title` = `"Welcome, "` plus `session.name` containing the HTML element `p` containing `You are signed in as `, the HTML element `strong` containing `session.name` (server-rendered; text escaped), `.` (server-rendered; text escaped), the HTML element `p` containing `Subject: `, the HTML element `code` containing `session.sub` (server-rendered; text escaped) (server-rendered; text escaped), the HTML element `p` containing the HTML element `a` with `href` = `"/me"` containing `View the protected JSON endpoint` (server-rendered; text escaped) (server-rendered; text escaped), the HTML element `form` with `method` = `"post"`, `action` = `"/logout"`, `onSubmit` = a deferred HTTP form action for [`logout`](logout.md#symbol-logout); inputs: `1` from the checked form input supplied when the HTTP form is submitted; capture supplied values when rendering, and read form inputs when submitted; send the form to that endpoint with its declared HTTP method containing the HTML element `input` with `type` = `"hidden"`, `name` = `"csrf"`, `value` = `session.csrf` (server-rendered; text escaped), the HTML element `button` with `type` = `"submit"`, `style` = `"padding:10px 18px;border-radius:10px;border:0;background:#17233a;color:white;font:inherit"` containing `Sign out` (server-rendered; text escaped) (server-rendered; text escaped) (server-rendered; text escaped).
 
 ### Dependencies
 
-- [`LogoutForm`](contracts.md#symbol-LogoutForm).
-- [`SessionClaims`](contracts.md#symbol-SessionClaims) from `contracts`: read `csrf` (`string`); read `name` (`string`); read `sub` (`string`).
-- [`logout`](logout.md#symbol-logout) (`input`: [`LogoutForm`](contracts.md#symbol-LogoutForm) from HTTP form, `token`: `optional string` from HTTP cookie `aug_session`, `origin`: `optional string` from HTTP header) → `HttpResponse<Html>`; can fail with `SessionError`, `KeyError`, `TimeError`, `CryptoError`, `HttpError` from `logout`.
-- [`Page`](../common/views.md#symbol-Page) (`title`: `string`, `children`: `List<Html>`) → `Html` from `common`.
+The file uses [`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto). [`decodeBase64url`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url) takes `input` as `string`. It returns `Bytes`. It can use [`Crypto.decodeBase64url`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url). It can fail with `CryptoError`. [`equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal) takes `left` and `right` as `Bytes`. It returns `bool`. It can use [`Crypto.equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal). [`publicRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.publicRsa) takes `key` as `RsaPrivateKey`. It returns `RsaPublicKey`. It can use [`Crypto.publicRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.publicRsa). It can fail with `CryptoError`. [`verifyRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.verifyRsa) takes `publicKey` as `RsaPublicKey` and `input` and `signature` as `Bytes`. It returns `bool`. It can use [`Crypto.verifyRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.verifyRsa). It can fail with `CryptoError`.
+
+The file uses [`ExpiringStore`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore). The type parameters are `T` which must satisfy `Data`. [`get`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.get) takes `key` as `string` and `now` as `int`. It returns `optional T`. It can use [`ExpiringStore.get`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.get). [`take`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.take) takes `key` as `string` and `now` as `int`. It returns `optional T`. It can use [`ExpiringStore.take`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.take). The file uses [`Clock`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock). [`now`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now) takes no caller inputs. It returns `int`. It can use [`Clock.now`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now). It can fail with `TimeError`. The file uses [`LogoutForm`](contracts.md#symbol-LogoutForm).
+
+The file uses [`SessionClaims`](contracts.md#symbol-SessionClaims) from `contracts`. `csrf` is a read-only field of type `string`. `name` is a read-only field of type `string`. `sub` is a read-only field of type `string`. The file uses [`SessionError`](contracts.md#symbol-SessionError).
+
+[`logout`](logout.md#symbol-logout) from `logout` takes `input` as [`LogoutForm`](contracts.md#symbol-LogoutForm) from HTTP form, `token` as `optional string` from HTTP cookie `aug_session` (omitted means null), and `origin` as `optional string` from HTTP header (omitted means null). It returns `HttpResponse<Html>`. Dependency injection supplies `crypto` as [`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto), `clock` as [`Clock`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock), `keys` as [`SigningKeys`](../common/keys.md#symbol-SigningKeys), and `sessions` as [`ExpiringStore<SessionClaims>`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore). It can use [`crypto.publicRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.publicRsa), [`crypto.decodeBase64url`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url), [`crypto.verifyRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.verifyRsa), [`crypto.equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal), [`clock.now`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now), [`keys.session`](../common/keys.md#symbol-SigningKeys.session), [`sessions.get`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.get), and [`sessions.take`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.take). It can fail with `SessionError`, `KeyError`, `TimeError`, `CryptoError`, and `HttpError`. The file uses [`KeyError`](../common/keys.md#symbol-KeyError).
+
+The file uses [`SigningKeys`](../common/keys.md#symbol-SigningKeys). [`session`](../common/keys.md#symbol-SigningKeys.session) takes no caller inputs. It returns `RsaPrivateKey`. It can use [`SigningKeys.session`](../common/keys.md#symbol-SigningKeys.session). It can fail with `KeyError`. [`Page`](../common/views.md#symbol-Page) from `common` takes `title` as `string` and `children` as `List<Html>`. It returns `Html`.
 
 ::::
 

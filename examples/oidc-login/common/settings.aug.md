@@ -3,15 +3,11 @@
 # `settings.aug`
 
 <a id="symbol-Settings"></a>
-## `Settings` · immutable record · [source](settings.aug#L2)
+## `Settings` · immutable record · [source](settings.aug#L3)
 
-Explicit loopback development settings. The provider accepts one registered client and its exact callback URI.
-
-**Inputs:** Take `baseUrl` (`string`); store read-only. Take `issuer` (`string`); store read-only. Take `clientId` (`string`); store read-only. Take `callback` (`string`); store read-only. Take `sessionSeconds` (`int`); store read-only. Take `secureCookies` (`bool`); store read-only.
+Explicit loopback development settings. The provider accepts one registered client and its exact callback URI. The caller supplies `baseUrl`, `issuer`, `clientId`, and `callback` as `string`, stored read-only, `sessionSeconds` as `int`, stored read-only, and `secureCookies` as `bool`, stored read-only.
 
 <a id="symbol-settings"></a>
-## `settings` · [source](settings.aug#L3)
+## `settings` · [source](settings.aug#L4)
 
-Returns [`Settings`](settings.aug.md#symbol-Settings).
-
-- Return a new [`Settings`](settings.aug.md#symbol-Settings) with `baseUrl` as `"http://127.0.0.1:8787"`, `issuer` as `"http://127.0.0.1:8787/provider"`, `clientId` as `"august-login-app"`, `callback` as `"http://127.0.0.1:8787/login/callback"`, `sessionSeconds` as `900`, `secureCookies` as `false`.
+The result is [`Settings`](settings.aug.md#symbol-Settings). It returns a new [`Settings`](settings.aug.md#symbol-Settings) (`baseUrl` set to `"http://127.0.0.1:8787"`, `issuer` set to `"http://127.0.0.1:8787/provider"`, `clientId` set to `"august-login-app"`, `callback` set to `"http://127.0.0.1:8787/login/callback"`, `sessionSeconds` set to `900`, and `secureCookies` set to `false`).

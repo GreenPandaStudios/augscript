@@ -42,7 +42,7 @@ endpoint GET "/relay" as relay(HttpRequest request from request, resolve HttpCli
       result=await new Promise((resolve,reject)=>{const req=session.request({':path':'/answer'});let body='',status;req.on('response',headers=>status=headers[':status']);req.setEncoding('utf8');req.on('data',chunk=>body+=chunk);req.on('end',()=>resolve({body,status}));req.on('error',reject);req.end();});
       assert.equal(session.socket.alpnProtocol,'h2');assert.equal(result.status,200);assert.deepEqual(JSON.parse(result.body),{message:'TLS verified'});
     } finally {session.destroy();}
-    const prefix=resolve('.aug-native/prefix'), probe=join(root,'http3-probe');
+    const prefix=resolve(process.env.AUG_NATIVE_HOME??'.aug-native','prefix'), probe=join(root,'http3-probe');
     const args=['-std=c11','-I'+join(prefix,'include'),resolve('tests/native/http3-client.c'),join(prefix,'lib/libwebsockets.a'),'-L'+join(prefix,'lib'),'-Wl,-rpath,'+join(prefix,'lib'),'-lgnutls','-lnettle','-lhogweed','-lgmp','-lz','-pthread','-o',probe];
     if(process.platform==='darwin')args.unshift('-isysroot','/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk','-D_DARWIN_C_SOURCE','-framework','CoreFoundation','-framework','SystemConfiguration');
     if(process.platform==='linux')args.unshift('-D_GNU_SOURCE');

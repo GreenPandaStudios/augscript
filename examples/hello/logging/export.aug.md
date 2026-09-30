@@ -4,5 +4,4 @@
 
 ## Exports
 
-- Export the declaration `Logger` from [`logger.aug`](logger.aug.md#symbol-Logger).
-- Export the declaration `ConsoleLogger` from [`console.aug`](console.aug.md#symbol-ConsoleLogger).
+Export the declaration `Logger` from [`logger.aug`](logger.aug.md#symbol-Logger). Export the declaration `ConsoleLogger` from [`console.aug`](console.aug.md#symbol-ConsoleLogger).

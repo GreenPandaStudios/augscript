@@ -49,6 +49,7 @@ pageClass: aug-example-page
 ::: code-group
 
 ```aug [Indentation]
+// aug-spec: "settings.aug.md" explains this file. Read it before changes; refresh with aug spec.
 /** Explicit loopback development settings. The provider accepts one registered client and its exact callback URI. */
 record Settings(string baseUrl, string issuer, string clientId, string callback, int sessionSeconds, bool secureCookies)
 settings() returns Settings:
@@ -56,6 +57,7 @@ settings() returns Settings:
 ```
 
 ```aug [Braces]
+// aug-spec: "settings.aug.md" explains this file. Read it before changes; refresh with aug spec.
 /** Explicit loopback development settings. The provider accepts one registered client and its exact callback URI. */
 record Settings(string baseUrl, string issuer, string clientId, string callback, int sessionSeconds, bool secureCookies)
 settings() returns Settings {
@@ -74,16 +76,12 @@ settings() returns Settings {
 <a id="symbol-Settings"></a>
 ### `Settings` · immutable record · [source](settings.md#code)
 
-Explicit loopback development settings. The provider accepts one registered client and its exact callback URI.
-
-**Inputs:** Take `baseUrl` (`string`); store read-only. Take `issuer` (`string`); store read-only. Take `clientId` (`string`); store read-only. Take `callback` (`string`); store read-only. Take `sessionSeconds` (`int`); store read-only. Take `secureCookies` (`bool`); store read-only.
+Explicit loopback development settings. The provider accepts one registered client and its exact callback URI. The caller supplies `baseUrl`, `issuer`, `clientId`, and `callback` as `string`, stored read-only, `sessionSeconds` as `int`, stored read-only, and `secureCookies` as `bool`, stored read-only.
 
 <a id="symbol-settings"></a>
 ### `settings` · [source](settings.md#code)
 
-Returns [`Settings`](settings.md#symbol-Settings).
-
-- Return a new [`Settings`](settings.md#symbol-Settings) with `baseUrl` as `"http://127.0.0.1:8787"`, `issuer` as `"http://127.0.0.1:8787/provider"`, `clientId` as `"august-login-app"`, `callback` as `"http://127.0.0.1:8787/login/callback"`, `sessionSeconds` as `900`, `secureCookies` as `false`.
+The result is [`Settings`](settings.md#symbol-Settings). It returns a new [`Settings`](settings.md#symbol-Settings) (`baseUrl` set to `"http://127.0.0.1:8787"`, `issuer` set to `"http://127.0.0.1:8787/provider"`, `clientId` set to `"august-login-app"`, `callback` set to `"http://127.0.0.1:8787/login/callback"`, `sessionSeconds` set to `900`, and `secureCookies` set to `false`).
 
 ::::
 

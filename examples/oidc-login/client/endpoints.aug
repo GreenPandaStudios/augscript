@@ -1,3 +1,4 @@
+// aug-spec: "endpoints.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import SessionClaims and SessionError from contracts
 import authenticate from session
 import LoginPage and Welcome from views

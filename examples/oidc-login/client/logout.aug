@@ -1,3 +1,4 @@
+// aug-spec: "logout.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import SessionClaims and SessionError and LogoutForm from contracts
 import authenticate from session
 import settings and SigningKeys and KeyError and securityHeaders and withCookie from common

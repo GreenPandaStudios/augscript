@@ -143,7 +143,8 @@ test('native diagnostics point back to a foreign declaration and architecture sn
   const root = create({ 'main.aug': '', 'foreign.aug': 'extern C stdin() returns int\n', 'math.aug': 'value() returns int { return 1 }\n' });
   try {
     const native = command(root, 'build', ['--json']); assert.equal(native.status, 1, native.stdout);
-    assert.ok(JSON.parse(native.stdout).some(issue => issue.code === 'NATIVE' && issue.file.endsWith('/foreign.aug') && issue.line === 1), native.stderr || native.stdout);
+    assert.match(readFileSync(join(root,'foreign.aug'),'utf8'),/^\/\/ aug-spec:/);
+    assert.ok(JSON.parse(native.stdout).some(issue => issue.code === 'NATIVE' && issue.file.endsWith('/foreign.aug') && issue.line === 2), native.stderr || native.stdout);
     const baseline = command(root, 'explain', ['--file', join(root, 'math.aug'), '--json']); assert.equal(baseline.status, 0);
     writeFileSync(join(root, 'before.json'), baseline.stdout);
     writeFileSync(join(root, 'math.aug'), 'value() returns int { return 1 }\nother() returns int { return 2 }\n');

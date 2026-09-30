@@ -25,6 +25,7 @@ This is the exact dependency version used by this example.
 ::: code-group
 
 ```aug [Indentation]
+// aug-spec: "contracts.aug.md" explains this file. Read it before changes; refresh with aug spec.
 /** An explicit clock dependency makes time-based behavior replaceable in tests. */
 capability Clock:
     /** Read whole Unix seconds in UTC. */
@@ -38,6 +39,7 @@ SystemClock() implements Clock:
 ```
 
 ```aug [Braces]
+// aug-spec: "contracts.aug.md" explains this file. Read it before changes; refresh with aug spec.
 /** An explicit clock dependency makes time-based behavior replaceable in tests. */
 capability Clock {
     /** Read whole Unix seconds in UTC. */
@@ -70,9 +72,7 @@ An explicit clock dependency makes time-based behavior replaceable in tests.
 <a id="symbol-Clock.now"></a>
 #### `Clock.now` · [source](contracts.md#code)
 
-Read whole Unix seconds in UTC.
-
-Returns `int`. Uses [`Clock.now`](contracts.md#symbol-Clock.now). Can fail with `TimeError`.
+Read whole Unix seconds in UTC. The result is `int`. It can use [`Clock.now`](contracts.md#symbol-Clock.now). It can fail with `TimeError`.
 
 <a id="symbol-SystemClock"></a>
 ### `SystemClock` · class · [source](contracts.md#code)
@@ -82,21 +82,14 @@ Operating-system wall clock. Implements [`Clock`](contracts.md#symbol-Clock).
 <a id="symbol-SystemClock.now"></a>
 #### `SystemClock.now` · [source](contracts.md#code)
 
-Read whole Unix seconds in UTC.
+Read whole Unix seconds in UTC. The result is `int`. It can use [`Clock.now`](contracts.md#symbol-Clock.now). It can fail with `TimeError`. Within an unsafe block, it returns the value from [`_aug_time_now`](contracts.md#symbol-_aug_time_now).
 
-Returns `int`. Uses [`Clock.now`](contracts.md#symbol-Clock.now). Can fail with `TimeError`.
-
-- Use native code with its declared contract:
-  - Return the result of [`_aug_time_now`](contracts.md#symbol-_aug_time_now).
+Native operations must satisfy their declared C contracts.
 
 <a id="symbol-_aug_time_now"></a>
 ### `_aug_time_now` · [source](contracts.md#code)
 
-Private to its defining scope.
-
-Returns `int`. Uses [`Clock.now`](contracts.md#symbol-Clock.now). Can fail with `TimeError`.
-
-Native C implementation; only its declared contract is visible here.
+Private to its defining scope. The result is `int`. It can use [`Clock.now`](contracts.md#symbol-Clock.now). It can fail with `TimeError`. Native C implementation; only its declared contract is visible here.
 
 ::::
 

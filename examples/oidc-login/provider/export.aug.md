@@ -4,16 +4,4 @@
 
 ## Exports
 
-- Export the declaration `AuthorizationRequest` from [`contracts.aug`](contracts.aug.md#symbol-AuthorizationRequest).
-- Export the declaration `AuthorizationCode` from [`contracts.aug`](contracts.aug.md#symbol-AuthorizationCode).
-- Export the declaration `AccessGrant` from [`contracts.aug`](contracts.aug.md#symbol-AccessGrant).
-- Export the declaration `IdClaims` from [`contracts.aug`](contracts.aug.md#symbol-IdClaims).
-- Export the declaration `TokenResponse` from [`contracts.aug`](contracts.aug.md#symbol-TokenResponse).
-- Export the declaration `UserInfo` from [`contracts.aug`](contracts.aug.md#symbol-UserInfo).
-- Export the declaration `Discovery` from [`discovery.aug`](discovery.aug.md#symbol-Discovery).
-- Export the declaration `discovery` from [`discovery.aug`](discovery.aug.md#symbol-discovery).
-- Export the declaration `jwks` from [`discovery.aug`](discovery.aug.md#symbol-jwks).
-- Export the declaration `authorize` from [`authorization.aug`](authorization.aug.md#symbol-authorize).
-- Export the declaration `providerLogin` from [`authorization.aug`](authorization.aug.md#symbol-providerLogin).
-- Export the declaration `token` from [`token.aug`](token.aug.md#symbol-token).
-- Export the declaration `userinfo` from [`userinfo.aug`](userinfo.aug.md#symbol-userinfo).
+Export the declaration `AuthorizationRequest` from [`contracts.aug`](contracts.aug.md#symbol-AuthorizationRequest). Export the declaration `AuthorizationCode` from [`contracts.aug`](contracts.aug.md#symbol-AuthorizationCode). Export the declaration `AccessGrant` from [`contracts.aug`](contracts.aug.md#symbol-AccessGrant). Export the declaration `IdClaims` from [`contracts.aug`](contracts.aug.md#symbol-IdClaims). Export the declaration `TokenResponse` from [`contracts.aug`](contracts.aug.md#symbol-TokenResponse). Export the declaration `UserInfo` from [`contracts.aug`](contracts.aug.md#symbol-UserInfo). Export the declaration `Discovery` from [`discovery.aug`](discovery.aug.md#symbol-Discovery). Export the declaration `discovery` from [`discovery.aug`](discovery.aug.md#symbol-discovery). Export the declaration `jwks` from [`discovery.aug`](discovery.aug.md#symbol-jwks). Export the declaration `authorize` from [`authorization.aug`](authorization.aug.md#symbol-authorize). Export the declaration `providerLogin` from [`authorization.aug`](authorization.aug.md#symbol-providerLogin). Export the declaration `token` from [`token.aug`](token.aug.md#symbol-token). Export the declaration `userinfo` from [`userinfo.aug`](userinfo.aug.md#symbol-userinfo).

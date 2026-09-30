@@ -28,10 +28,12 @@ pageClass: aug-example-page
 ::: code-group
 
 ```aug [Indentation]
+// aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 print(value=7)
 ```
 
 ```aug [Braces]
+// aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 print(value=7)
 ```
 
@@ -45,11 +47,11 @@ print(value=7)
 
 ### Startup
 
-- Call `print` with `value` as `7`.
+It calls `print` (`value` set to `7`).
 
 ### Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
 
-- `print`: Composition and test output. Other callables receive Console and declare uses console.write.
+`print`: Composition and test output. Other callables receive Console and declare uses console.write.
 
 ::::
 

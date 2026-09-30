@@ -32,6 +32,7 @@ pageClass: aug-example-page
 ::: code-group
 
 ```aug [Indentation]
+// aug-spec: "logger.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Console from august.io
 /** Receives a message describing an application operation. */
 interface Logger:
@@ -40,6 +41,7 @@ interface Logger:
 ```
 
 ```aug [Braces]
+// aug-spec: "logger.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Console from august.io
 /** Receives a message describing an application operation. */
 interface Logger {
@@ -64,13 +66,11 @@ Receives a message describing an application operation.
 <a id="symbol-Logger.log"></a>
 #### `Logger.log` · [source](logger.md#code)
 
-**Inputs:** Resolve [`Console`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console) as `console`. Take `message` (`string`) — Text to write.
-
-Uses [`Console.write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
+The caller supplies `message` as `string` (Text to write). Dependency injection supplies `console` as [`Console`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console). It can use [`Console.write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
 
 ### Dependencies
 
-- [`Console`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console) from `august.io`: [`write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write)<`T`> (`value`: `T`) → `void`.
+The file uses [`Console`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console) from `august.io`. [`write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write) takes `value` as `T`. It returns no value. The type parameters are `T`. It can use [`Console.write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
 
 ::::
 

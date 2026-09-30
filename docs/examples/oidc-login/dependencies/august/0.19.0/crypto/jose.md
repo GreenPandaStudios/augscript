@@ -25,6 +25,7 @@ This is the exact dependency version used by this example.
 ::: code-group
 
 ```aug [Indentation]
+// aug-spec: "jose.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Crypto from contracts
 import parse from august.json
 /** A failed JOSE validation reveals no unverified claims. */
@@ -90,6 +91,7 @@ verifyJwt(string token, RsaPublicKey publicKey, string kid, string tokenType, re
 ```
 
 ```aug [Braces]
+// aug-spec: "jose.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Crypto from contracts
 import parse from august.json
 /** A failed JOSE validation reveals no unverified claims. */
@@ -190,122 +192,67 @@ A failed JOSE validation reveals no unverified claims. Implements `Error`.
 <a id="symbol-JwtHeader"></a>
 ### `JwtHeader` · immutable record · [source](jose.md#code)
 
-This profile accepts only RS256, a configured key id, and an explicit token type.
-
-**Inputs:** Take `alg` (`string`); store read-only. Take `kid` (`string`); store read-only. Take `typ` (`string`); store read-only.
+This profile accepts only RS256, a configured key id, and an explicit token type. The caller supplies `alg`, `kid`, and `typ` as `string`, stored read-only.
 
 <a id="symbol-RsaJwk"></a>
 ### `RsaJwk` · immutable record · [source](jose.md#code)
 
-Public signing-key metadata in RFC 7517 / RFC 7518 form.
-
-**Inputs:** Take `kty` (`string`); store read-only. Take `kid` (`string`); store read-only. Take `alg` (`string`); store read-only. Take `use` (`string`); store read-only. Take `n` (`string`); store read-only. Take `e` (`string`); store read-only.
+Public signing-key metadata in RFC 7517 / RFC 7518 form. The caller supplies `kty`, `kid`, `alg`, `use`, `n`, and `e` as `string`, stored read-only.
 
 <a id="symbol-RsaJwks"></a>
 ### `RsaJwks` · immutable record · [source](jose.md#code)
 
-**Inputs:** Take `keys` (`List<RsaJwk>`); store read-only.
+The caller supplies `keys` as `List<RsaJwk>`, stored read-only.
 
 <a id="symbol-rsaJwk"></a>
 ### `rsaJwk` · [source](jose.md#code)
 
-Export public parameters. Private key material never enters the JSON document.
+Export public parameters. Private key material never enters the JSON document. The caller supplies `publicKey` as `RsaPublicKey` and `kid` as `string`. Dependency injection supplies `crypto` as [`Crypto`](contracts.md#symbol-Crypto). The result is [`RsaJwk`](jose.md#symbol-RsaJwk). It can use [`crypto.exportRsa`](contracts.md#symbol-Crypto.exportRsa). It can fail with `CryptoError`.
 
-**Inputs:** Take `publicKey` (`RsaPublicKey`). Take `kid` (`string`). Resolve [`Crypto`](contracts.md#symbol-Crypto) as `crypto`.
-
-Returns [`RsaJwk`](jose.md#symbol-RsaJwk). Uses [`crypto.exportRsa`](contracts.md#symbol-Crypto.exportRsa). Can fail with `CryptoError`.
-
-- Split the result of [`Crypto.exportRsa`](contracts.md#symbol-Crypto.exportRsa) on `crypto` with `publicKey` into `modulus`, `exponent` in order.
-- Return a new [`RsaJwk`](jose.md#symbol-RsaJwk) with `kty` as `"RSA"`, `kid`, `alg` as `"RS256"`, `use` as `"sig"`, `n` as the result of `base64url` on `modulus`, `e` as the result of `base64url` on `exponent`.
+It splits the value from [`Crypto.exportRsa`](contracts.md#symbol-Crypto.exportRsa) on `crypto` (`publicKey`) into `modulus` and `exponent` in order. It returns a new [`RsaJwk`](jose.md#symbol-RsaJwk) (`kty` set to `"RSA"`, `kid`, `alg` set to `"RS256"`, `use` set to `"sig"`, `n` set to the unpadded URL-safe base64 encoding of `modulus`, and `e` set to the unpadded URL-safe base64 encoding of `exponent`).
 
 <a id="symbol-importJwk"></a>
 ### `importJwk` · [source](jose.md#code)
 
-Import only an RSA signing key for RS256. The transport caller selects the trusted JWKS URL.
+Import only an RSA signing key for RS256. The transport caller selects the trusted JWKS URL. The caller supplies `jwk` as [`RsaJwk`](jose.md#symbol-RsaJwk). Dependency injection supplies `crypto` as [`Crypto`](contracts.md#symbol-Crypto). The result is `RsaPublicKey`. It can use [`crypto.decodeBase64url`](contracts.md#symbol-Crypto.decodeBase64url) and [`crypto.importRsa`](contracts.md#symbol-Crypto.importRsa). It can fail with `JwtError`. If `jwk.kty` does not equal `"RSA"` or `jwk.alg` does not equal `"RS256"` or `jwk.use` does not equal `"sig"`, it fails with a new [`JwtError`](jose.md#symbol-JwtError).
 
-**Inputs:** Take `jwk` ([`RsaJwk`](jose.md#symbol-RsaJwk)). Resolve [`Crypto`](contracts.md#symbol-Crypto) as `crypto`.
-
-Returns `RsaPublicKey`. Uses [`crypto.decodeBase64url`](contracts.md#symbol-Crypto.decodeBase64url), [`crypto.importRsa`](contracts.md#symbol-Crypto.importRsa). Can fail with `JwtError`.
-
-- If ((`kty` of `jwk` does not equal `"RSA"`) or (`alg` of `jwk` does not equal `"RS256"`)) or (`use` of `jwk` does not equal `"sig"`):
-  - Fail with a new [`JwtError`](jose.md#symbol-JwtError).
-- Try:
-  - Set `modulus` to the result of [`Crypto.decodeBase64url`](contracts.md#symbol-Crypto.decodeBase64url) on `crypto` with `input` as `n` of `jwk`.
-  - Set `exponent` to the result of [`Crypto.decodeBase64url`](contracts.md#symbol-Crypto.decodeBase64url) on `crypto` with `input` as `e` of `jwk`.
-  - Return the result of [`Crypto.importRsa`](contracts.md#symbol-Crypto.importRsa) on `crypto` with `modulus`, `exponent`.
-- Catch `CryptoError` as `error`:
-  - Fail with a new [`JwtError`](jose.md#symbol-JwtError).
+It tries to set `modulus` to the value from [`Crypto.decodeBase64url`](contracts.md#symbol-Crypto.decodeBase64url) on `crypto` (`input` set to `jwk.n`), then set `exponent` to the value from [`Crypto.decodeBase64url`](contracts.md#symbol-Crypto.decodeBase64url) on `crypto` (`input` set to `jwk.e`), then return the value from [`Crypto.importRsa`](contracts.md#symbol-Crypto.importRsa) on `crypto` (`modulus` and `exponent`). If this attempt raises `CryptoError`, it catches it as `error` and fails with a new [`JwtError`](jose.md#symbol-JwtError).
 
 <a id="symbol-signJwt"></a>
 ### `signJwt` · [source](jose.md#code)
 
-Sign immutable JSON with an explicit key id and token type. Claims are validated by the protocol that consumes the token.
+Sign immutable JSON with an explicit key id and token type. Claims are validated by the protocol that consumes the token. The caller supplies `key` as `RsaPrivateKey`, `claims` as `Json`, and `kid` and `tokenType` as `string`. Dependency injection supplies `crypto` as [`Crypto`](contracts.md#symbol-Crypto). The result is `string`. It can use [`crypto.signRsa`](contracts.md#symbol-Crypto.signRsa). It can fail with `JwtError`.
 
-**Inputs:** Take `key` (`RsaPrivateKey`). Take `claims` (`Json`). Take `kid` (`string`). Take `tokenType` (`string`). Resolve [`Crypto`](contracts.md#symbol-Crypto) as `crypto`.
+It tries the following steps. It sets `header` to the value from `stringify` on a new `Json` (`value` set to a new [`JwtHeader`](jose.md#symbol-JwtHeader) (`alg` set to `"RS256"`, `kid`, and `typ` set to `tokenType`)). It sets `payload` to the value from `stringify` on `claims`. It sets `signing` to text that joins the unpadded URL-safe base64 encoding of the UTF-8 bytes of `header`, `"."` and the unpadded URL-safe base64 encoding of the UTF-8 bytes of `payload`.
 
-Returns `string`. Uses [`crypto.signRsa`](contracts.md#symbol-Crypto.signRsa). Can fail with `JwtError`.
-
-- Try:
-  - Set `header` to the result of `stringify` on a new `Json` with `value` as a new [`JwtHeader`](jose.md#symbol-JwtHeader) with `alg` as `"RS256"`, `kid`, `typ` as `tokenType`.
-  - Set `payload` to the result of `stringify` on `claims`.
-  - Set `signing` to text that joins the result of `base64url` on the result of `bytes` on `header`, `"."` and the result of `base64url` on the result of `bytes` on `payload`.
-  - Set `signature` to the result of [`Crypto.signRsa`](contracts.md#symbol-Crypto.signRsa) on `crypto` with `key`, `input` as the result of `bytes` on `signing`.
-  - Return text that joins `signing`, `"."` and the result of `base64url` on `signature`.
-- Catch `CryptoError` as `error`:
-  - Fail with a new [`JwtError`](jose.md#symbol-JwtError).
-- Catch `JsonError` as `error`:
-  - Fail with a new [`JwtError`](jose.md#symbol-JwtError).
+It sets `signature` to the value from [`Crypto.signRsa`](contracts.md#symbol-Crypto.signRsa) on `crypto` (`key` and `input` set to the UTF-8 bytes of `signing`). It returns text that joins `signing`, `"."` and the unpadded URL-safe base64 encoding of `signature`. If this attempt raises `CryptoError`, it catches it as `error` and fails with a new [`JwtError`](jose.md#symbol-JwtError). If this attempt raises `JsonError`, it catches it as `error` and fails with a new [`JwtError`](jose.md#symbol-JwtError).
 
 <a id="symbol-verifyJwt"></a>
 ### `verifyJwt` · [source](jose.md#code)
 
-Verify the signature and configured algorithm, key id, and type before exposing the JSON payload. Never follows token-supplied URLs.
+Verify the signature and configured algorithm, key id, and type before exposing the JSON payload. Never follows token-supplied URLs. The caller supplies `token` as `string`, `publicKey` as `RsaPublicKey`, and `kid` and `tokenType` as `string`. Dependency injection supplies `crypto` as [`Crypto`](contracts.md#symbol-Crypto). The result is `Json`. It can use [`crypto.decodeBase64url`](contracts.md#symbol-Crypto.decodeBase64url) and [`crypto.verifyRsa`](contracts.md#symbol-Crypto.verifyRsa). It can fail with `JwtError`.
 
-**Inputs:** Take `token` (`string`). Take `publicKey` (`RsaPublicKey`). Take `kid` (`string`). Take `tokenType` (`string`). Resolve [`Crypto`](contracts.md#symbol-Crypto) as `crypto`.
+If the byte length of `token` is greater than `16384`, it fails with a new [`JwtError`](jose.md#symbol-JwtError). It sets `parts` to the value from `split` on `token` (`separator` set to `"."`). If the number of elements in `parts` does not equal `3`, it fails with a new [`JwtError`](jose.md#symbol-JwtError).
 
-Returns `Json`. Uses [`crypto.decodeBase64url`](contracts.md#symbol-Crypto.decodeBase64url), [`crypto.verifyRsa`](contracts.md#symbol-Crypto.verifyRsa). Can fail with `JwtError`.
+It tries the following steps. It sets `first` to the value from `get` on `parts` (`index` set to `0`). It sets `second` to the value from `get` on `parts` (`index` set to `1`). It sets `third` to the value from `get` on `parts` (`index` set to `2`). It sets `header` to the value from `decode` on the value from [`parse`](../json/contracts.md#symbol-parse) (`input` set to the value from `text` on the value from [`Crypto.decodeBase64url`](contracts.md#symbol-Crypto.decodeBase64url) on `crypto` (`input` set to `first`)) with type arguments [`JwtHeader`](jose.md#symbol-JwtHeader).
 
-- If the result of `length` on `token` is greater than `16384`:
-  - Fail with a new [`JwtError`](jose.md#symbol-JwtError).
-- Set `parts` to the result of `split` on `token` with `separator` as `"."`.
-- If the result of `length` on `parts` does not equal `3`:
-  - Fail with a new [`JwtError`](jose.md#symbol-JwtError).
-- Try:
-  - Set `first` to the result of `get` on `parts` with `index` as `0`.
-  - Set `second` to the result of `get` on `parts` with `index` as `1`.
-  - Set `third` to the result of `get` on `parts` with `index` as `2`.
-  - Set `header` to the result of `decode` on the result of [`parse`](../json/contracts.md#symbol-parse) with `input` as the result of `text` on the result of [`Crypto.decodeBase64url`](contracts.md#symbol-Crypto.decodeBase64url) on `crypto` with `input` as `first` with type arguments [`JwtHeader`](jose.md#symbol-JwtHeader).
-  - If ((`alg` of `header` does not equal `"RS256"`) or (`kid` of `header` does not equal `kid`)) or (`typ` of `header` does not equal `tokenType`):
-    - Fail with a new [`JwtError`](jose.md#symbol-JwtError).
-  - Set `signature` to the result of [`Crypto.decodeBase64url`](contracts.md#symbol-Crypto.decodeBase64url) on `crypto` with `input` as `third`.
-  - If not (the result of [`Crypto.verifyRsa`](contracts.md#symbol-Crypto.verifyRsa) on `crypto` with `publicKey`, `input` as the result of `bytes` on text that joins `first`, `"."` and `second`, `signature`):
-    - Fail with a new [`JwtError`](jose.md#symbol-JwtError).
-  - Return the result of [`parse`](../json/contracts.md#symbol-parse) with `input` as the result of `text` on the result of [`Crypto.decodeBase64url`](contracts.md#symbol-Crypto.decodeBase64url) on `crypto` with `input` as `second`.
-- Catch `CryptoError` as `error`:
-  - Fail with a new [`JwtError`](jose.md#symbol-JwtError).
-- Catch `ConversionError` as `error`:
-  - Fail with a new [`JwtError`](jose.md#symbol-JwtError).
-- Catch `JsonError` as `error`:
-  - Fail with a new [`JwtError`](jose.md#symbol-JwtError).
-- Catch `IndexError` as `error`:
-  - Fail with a new [`JwtError`](jose.md#symbol-JwtError).
+If `header.alg` does not equal `"RS256"` or `header.kid` does not equal `kid` or `header.typ` does not equal `tokenType`, it fails with a new [`JwtError`](jose.md#symbol-JwtError). It sets `signature` to the value from [`Crypto.decodeBase64url`](contracts.md#symbol-Crypto.decodeBase64url) on `crypto` (`input` set to `third`). If not (the value from [`Crypto.verifyRsa`](contracts.md#symbol-Crypto.verifyRsa) on `crypto` (`publicKey`, `input` set to the UTF-8 bytes of text that joins `first`, `"."` and `second`, and `signature`)), it fails with a new [`JwtError`](jose.md#symbol-JwtError).
+
+Otherwise, it returns the value from [`parse`](../json/contracts.md#symbol-parse) (`input` set to the value from `text` on the value from [`Crypto.decodeBase64url`](contracts.md#symbol-Crypto.decodeBase64url) on `crypto` (`input` set to `second`)). If this attempt raises `CryptoError`, it catches it as `error` and fails with a new [`JwtError`](jose.md#symbol-JwtError). If this attempt raises `ConversionError`, it catches it as `error` and fails with a new [`JwtError`](jose.md#symbol-JwtError). If this attempt raises `JsonError`, it catches it as `error` and fails with a new [`JwtError`](jose.md#symbol-JwtError).
+
+If this attempt raises `IndexError`, it catches it as `error` and fails with a new [`JwtError`](jose.md#symbol-JwtError).
 
 ### Dependencies
 
-- [`Crypto`](contracts.md#symbol-Crypto) from `contracts`: [`decodeBase64url`](contracts.md#symbol-Crypto.decodeBase64url) (`input`: `string`) → `Bytes`; can fail with `CryptoError`; [`exportRsa`](contracts.md#symbol-Crypto.exportRsa) (`publicKey`: `RsaPublicKey`) → `Tuple<Bytes,Bytes>`; can fail with `CryptoError`; [`importRsa`](contracts.md#symbol-Crypto.importRsa) (`modulus`: `Bytes`, `exponent`: `Bytes`) → `RsaPublicKey`; can fail with `CryptoError`; [`signRsa`](contracts.md#symbol-Crypto.signRsa) (`key`: `RsaPrivateKey`, `input`: `Bytes`) → `Bytes`; can fail with `CryptoError`; [`verifyRsa`](contracts.md#symbol-Crypto.verifyRsa) (`publicKey`: `RsaPublicKey`, `input`: `Bytes`, `signature`: `Bytes`) → `bool`; can fail with `CryptoError`.
-- [`parse`](../json/contracts.md#symbol-parse) (`input`: `string`) → `Json`; can fail with `JsonError` from `august.json`.
+The file uses [`Crypto`](contracts.md#symbol-Crypto) from `contracts`. [`decodeBase64url`](contracts.md#symbol-Crypto.decodeBase64url) takes `input` as `string`. It returns `Bytes`. It can use [`Crypto.decodeBase64url`](contracts.md#symbol-Crypto.decodeBase64url). It can fail with `CryptoError`. [`exportRsa`](contracts.md#symbol-Crypto.exportRsa) takes `publicKey` as `RsaPublicKey`. It returns `Tuple<Bytes,Bytes>`. It can use [`Crypto.exportRsa`](contracts.md#symbol-Crypto.exportRsa). It can fail with `CryptoError`. [`importRsa`](contracts.md#symbol-Crypto.importRsa) takes `modulus` and `exponent` as `Bytes`. It returns `RsaPublicKey`. It can use [`Crypto.importRsa`](contracts.md#symbol-Crypto.importRsa). It can fail with `CryptoError`. [`signRsa`](contracts.md#symbol-Crypto.signRsa) takes `key` as `RsaPrivateKey` and `input` as `Bytes`. It returns `Bytes`. It can use [`Crypto.signRsa`](contracts.md#symbol-Crypto.signRsa). It can fail with `CryptoError`. [`verifyRsa`](contracts.md#symbol-Crypto.verifyRsa) takes `publicKey` as `RsaPublicKey` and `input` and `signature` as `Bytes`. It returns `bool`. It can use [`Crypto.verifyRsa`](contracts.md#symbol-Crypto.verifyRsa). It can fail with `CryptoError`.
+
+[`parse`](../json/contracts.md#symbol-parse) from `august.json` takes `input` as `string`. It returns `Json`. It can fail with `JsonError`.
 
 ### Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
 
-- `Bytes.base64url`: Encode immutable bytes as unpadded RFC 4648 URL-safe base64.
-- `Bytes.text`: Decode UTF-8 strictly. Invalid input raises ConversionError; embedded NUL is preserved.
-- `Json.decode`: Decode a checked record or data type: json.decode<Profile>(). Unknown fields, type mismatches, and validation errors are rejected.
-- `Json.stringify`: Serialize this JSON value with checked UTF-8 escaping and exact int64 values.
-- `List<string>.get`: Read a zero-based position. An invalid index raises checked IndexError. Reference results grant reading.
-- `List<string>.length`: Read the number of elements.
-- `string.bytes`: Encode this string as immutable UTF-8 bytes.
-- `string.length`: Read the number of UTF-8 bytes. Unicode text is preserved losslessly.
-- `string.split`: Split at an exact separator, preserving empty parts.
+`Bytes.base64url`: Encode immutable bytes as unpadded RFC 4648 URL-safe base64. `Bytes.text`: Decode UTF-8 strictly. Invalid input raises ConversionError; embedded NUL is preserved. `Json.decode`: Decode a checked record or data type: json.decode<Profile>(). Unknown fields, type mismatches, and validation errors are rejected. `Json.stringify`: Serialize this JSON value with checked UTF-8 escaping and exact int64 values. `List<string>.get`: Read a zero-based position. An invalid index raises checked IndexError. Reference results grant reading. `List<string>.length`: Read the number of elements. `string.bytes`: Encode this string as immutable UTF-8 bytes.
+
+`string.length`: Read the number of UTF-8 bytes. Unicode text is preserved losslessly. `string.split`: Split at an exact separator, preserving empty parts.
 
 ::::
 
