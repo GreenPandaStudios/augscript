@@ -4,7 +4,17 @@
 
 ![August — readable code, clear dependencies](media/banner.png)
 
-Version 0.19 bundles the current compiler, runtime, native bootstrap, language wiki, generated library API guides, and deterministic source specifications.
+AugScript makes dependencies, state changes, checked errors, and public contracts visible in nearby code. This extension includes the compiler, runtime, language server, and offline language wiki.
+
+## Install
+
+Install **AugScript** (`augscript.augscript`) from the VS Code Extensions view. Release VSIX files are also available from [GitHub Releases](https://github.com/GreenPandaStudios/augscript/releases) through **Extensions → Install from VSIX**. Marketplace publication status and publisher setup are tracked in the [release guide](https://github.com/GreenPandaStudios/augscript/blob/main/docs/releasing.md).
+
+## Start a project
+
+```sh
+npx @greenpandastudios/aug-cli@next init hello-august
+```
 
 ## Editing
 
@@ -29,8 +39,8 @@ Open a .aug file, then use the Command Palette:
 | AugScript: Enable File Icons | Select the August file icon theme for the current workspace. |
 | AugScript: Build Project | Compile the complete project to native C. |
 | AugScript: Generate Specifications | Compile adjacent Markdown explanations and offline dependency docs. |
-| AugScript: Open Compiled Specification | Generate and preview the current source file's specification. |
-| AugScript: Migrate Project Syntax | Convert rejected legacy spellings after sources are saved. |
+| AugScript: Open Current File Specification | Generate and preview the current source file's specification. |
+| AugScript: Upgrade Project Syntax | Convert rejected legacy spellings after sources are saved. |
 | AugScript: Run Project | Build and execute startup. |
 | AugScript: Test Project | Run every test in a task terminal. |
 | AugScript: Refresh Tests | Refresh class/function suites and parameter rows. |
@@ -67,6 +77,6 @@ The extension also supplies light and dark default `.aug` language icons for the
 
 Node.js 24+ is required. Native commands additionally require a C11 compiler. Configure augscript.nodePath if Node is not on VS Code's PATH, or augscript.compilerPath for a custom CLI. The extension otherwise uses its bundled compiler.
 
-For web/crypto programs, run `node scripts/bootstrap-native.mjs` in the compiler repository, then set `augscript.nativeHome` to its absolute `.aug-native` directory. The compiler and bootstrap also accept AUG_NATIVE_HOME. The extension includes `compiler/scripts/bootstrap-native.mjs`; installed copies use a writable, versioned user cache by default. Native binaries are not bundled. The complete bootstrap currently targets macOS; `--extract-only --only minicoro,yyjson` supplies portable task/JSON sources for a C11 compiler.
+For web/crypto programs, run `node scripts/bootstrap-native.mjs` in the compiler repository, then set `augscript.nativeHome` to its absolute `.aug-native` directory. The compiler and bootstrap also accept AUG_NATIVE_HOME. The extension includes `compiler/scripts/bootstrap-native.mjs`; installed copies use a writable, versioned user cache by default. Native binaries are not bundled. The complete bootstrap supports macOS and Linux; `--extract-only --only minicoro,yyjson` supplies portable task/JSON sources for a C11 compiler.
 
 Use the guide commands to read the bundled documentation. The CLI and built-in standard, web and crypto libraries also have separate versioned distribution packages. Standalone user libraries have an aug-package.json root, public exports, package navigation and Javadoc help. Class implementations and private helpers show inferred capabilities in hover. This is an experimental language with conservative ownership analysis and cooperative tasks on one OS thread. Multicore workers, channels/broadcasts and inbound streaming remain documented gaps. See the wiki's performance graphs before choosing a production workload.

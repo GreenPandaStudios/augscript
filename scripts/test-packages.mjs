@@ -39,7 +39,7 @@ try {
   for(const name of ['stdlib','web','crypto'])verifySpecs(join(directory,`node_modules/@greenpandastudios/aug-${name}/august`));
   assert.match(aug('--help'), /Usage: aug/);
   const starter = join(directory, 'starter');
-  aug('init', starter);
+  run('npm', ['exec', '--offline', '--package', `@greenpandastudios/aug-cli@${packages.find(pkg => pkg.directory === 'cli').version}`, '--', 'aug-cli', 'init', starter]);
   aug('check', starter);
   assert.equal(JSON.parse(aug('test', starter, '--json')).passed, 1);
   assert.equal(aug('run', starter), 'Hello, August!\n');

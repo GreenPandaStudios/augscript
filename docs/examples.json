@@ -2,10 +2,6 @@
   "readme": {
     "stdout": "4\n"
   },
-  "getting-started": {
-    "stdout": "Hello, August!\n",
-    "tests": 1
-  },
   "quickstart": {
     "stdout": "Hello, AugScript!\n"
   },
