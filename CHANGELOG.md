@@ -11,7 +11,7 @@
 
 - Add release-triggered VS Code Marketplace publication of the checksum-verified release VSIX using Microsoft Entra federation, plus refreshed listing metadata and installation docs. Publisher identity setup remains required.
 
-- Reduce getting started to one `npx @greenpandastudios/aug-cli@next init hello-august` command. Publishing a reviewed GitHub release now triggers the verified npm publication workflow; initial npm ownership and trusted publisher setup remain required.
+- Reduce getting started to one `npx @greenpandastudios/aug-cli@next init hello-august` command. Publishing a reviewed GitHub release now triggers the verified npm publication workflow; npm ownership and all four trusted publishers are configured.
 
 - Add an executable ownership and task conformance suite and wiki contract. Reject parent mutation of a child-captured object through collection methods, borrowed calls, and direct fields until the child is waited for, including inside an existing borrow block.
 - Injected dependencies participate in call alias and task capture checks; dropping an owned `Shared<T>` also drops its transferred payload in local cleanup order.
