@@ -3,119 +3,80 @@
 # `contracts.aug`
 
 <a id="symbol-Console"></a>
-## `Console` · capability interface · [source](contracts.aug#L2)
+## `Console` · capability interface · [source](contracts.aug#L3)
 
 Permission to write to a console, provided by an explicitly selected adapter.
 
 <a id="symbol-Console.write"></a>
-### `Console.write` · [source](contracts.aug#L4)
+### `Console.write` · [source](contracts.aug#L5)
 
-Write one line of text.
-
-Type parameters: `T`.
-
-**Inputs:** Take `value` (`T`) — Text to display.
-
-Uses [`Console.write`](contracts.aug.md#symbol-Console.write).
+Write one line of text. The type parameters are `T`. It takes `value` as `T` (Text to display). It can call [`Console.write`](contracts.aug.md#symbol-Console.write).
 
 <a id="symbol-SystemConsole"></a>
-## `SystemConsole` · class · [source](contracts.aug#L7)
+## `SystemConsole` · class · [source](contracts.aug#L8)
 
-The native standard-output adapter. Construction performs no output. Implements [`Console`](contracts.aug.md#symbol-Console).
+The native standard-output adapter. Construction performs no output. It implements [`Console`](contracts.aug.md#symbol-Console).
 
 <a id="symbol-SystemConsole.write"></a>
-### `SystemConsole.write` · [source](contracts.aug#L8)
+### `SystemConsole.write` · [source](contracts.aug#L9)
 
-Write one line of text.
-
-Type parameters: `T`.
-
-**Inputs:** Take `value` (`T`) — Text to display.
-
-Uses [`Console.write`](contracts.aug.md#symbol-Console.write).
-
-- Call `print` with `value`.
+Write one line of text. The type parameters are `T`. It takes `value` as `T` (Text to display). It prints `value`.
 
 <a id="symbol-FileReader"></a>
-## `FileReader` · capability interface · [source](contracts.aug#L12)
+## `FileReader` · capability interface · [source](contracts.aug#L13)
 
 Read UTF-8 text through an explicitly selected filesystem adapter.
 
 <a id="symbol-FileReader.read"></a>
-### `FileReader.read` · [source](contracts.aug#L14)
+### `FileReader.read` · [source](contracts.aug#L15)
 
-Read text.
+Read text. It takes `path` as a string (File path).
 
-**Inputs:** Take `path` (`string`) — File path.
-
-Returns `string`. Uses [`FileReader.read`](contracts.aug.md#symbol-FileReader.read). Can fail with `FileError` (The file could not be read).
+It returns `string`. It can call [`FileReader.read`](contracts.aug.md#symbol-FileReader.read). Failures can raise `FileError` (The file could not be read).
 
 <a id="symbol-FileWriter"></a>
-## `FileWriter` · capability interface · [source](contracts.aug#L17)
+## `FileWriter` · capability interface · [source](contracts.aug#L18)
 
 Write UTF-8 text through an explicitly selected filesystem adapter.
 
 <a id="symbol-FileWriter.write"></a>
-### `FileWriter.write` · [source](contracts.aug#L19)
+### `FileWriter.write` · [source](contracts.aug#L20)
 
-Write text.
-
-**Inputs:** Take `path` (`string`) — File path. Take `content` (`string`) — Text.
-
-Uses [`FileWriter.write`](contracts.aug.md#symbol-FileWriter.write). Can fail with `FileError` (Writing failed).
+Write text. It takes `path` as a string (File path) and `content` as a string (Text). It can call [`FileWriter.write`](contracts.aug.md#symbol-FileWriter.write). Failures can raise `FileError` (Writing failed).
 
 <a id="symbol-LocalFiles"></a>
-## `LocalFiles` · class · [source](contracts.aug#L22)
+## `LocalFiles` · class · [source](contracts.aug#L23)
 
-Native files. Operations are explicit; construction opens no files. Implements [`FileReader`](contracts.aug.md#symbol-FileReader), [`FileWriter`](contracts.aug.md#symbol-FileWriter).
+Native files. Operations are explicit; construction opens no files. It implements [`FileReader`](contracts.aug.md#symbol-FileReader) and [`FileWriter`](contracts.aug.md#symbol-FileWriter).
 
 <a id="symbol-LocalFiles.read"></a>
-### `LocalFiles.read` · [source](contracts.aug#L23)
+### `LocalFiles.read` · [source](contracts.aug#L24)
 
-Read text.
-
-**Inputs:** Take `path` (`string`) — File path.
-
-Returns `string`. Uses [`FileReader.read`](contracts.aug.md#symbol-FileReader.read). Can fail with `FileError` (The file could not be read).
-
-- Return the result of `read_file` with `path`.
+Read text. It takes `path` as a string (File path). Failures can raise `FileError` (The file could not be read). It returns `read_file` with `path`.
 
 <a id="symbol-LocalFiles.write"></a>
-### `LocalFiles.write` · [source](contracts.aug#L25)
+### `LocalFiles.write` · [source](contracts.aug#L26)
 
-Write text.
-
-**Inputs:** Take `path` (`string`) — File path. Take `content` (`string`) — Text.
-
-Uses [`FileWriter.write`](contracts.aug.md#symbol-FileWriter.write). Can fail with `FileError` (Writing failed).
-
-- Call `write_file` with `path`, `content`.
+Write text. It takes `path` as a string (File path) and `content` as a string (Text). Failures can raise `FileError` (Writing failed). It calls `write_file` with `path` and `content`.
 
 <a id="symbol-Arguments"></a>
-## `Arguments` · capability interface · [source](contracts.aug#L29)
+## `Arguments` · capability interface · [source](contracts.aug#L30)
 
 Read command-line input through an explicit dependency.
 
 <a id="symbol-Arguments.read"></a>
-### `Arguments.read` · [source](contracts.aug#L30)
+### `Arguments.read` · [source](contracts.aug#L31)
 
-Returns `List<string>`. Uses [`Arguments.read`](contracts.aug.md#symbol-Arguments.read).
+It returns `List<string>`. It can call [`Arguments.read`](contracts.aug.md#symbol-Arguments.read).
 
 <a id="symbol-ProcessArguments"></a>
-## `ProcessArguments` · class · [source](contracts.aug#L33)
+## `ProcessArguments` · class · [source](contracts.aug#L34)
 
-Native command-line arguments. Implements [`Arguments`](contracts.aug.md#symbol-Arguments).
+Native command-line arguments. It implements [`Arguments`](contracts.aug.md#symbol-Arguments).
 
 <a id="symbol-ProcessArguments.read"></a>
-### `ProcessArguments.read` · [source](contracts.aug#L34)
+### `ProcessArguments.read` · [source](contracts.aug#L35)
 
-Returns `List<string>`. Uses [`Arguments.read`](contracts.aug.md#symbol-Arguments.read).
+It returns `arguments`.
 
-- Return the result of `arguments`.
-
-## Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
-
-- `arguments`: Composition arguments. Other callables receive the Arguments capability.
-- `print`: Composition and test output. Other callables receive Console and declare uses console.write.
-- `read_file`: Root-only UTF-8 text input. Other callables receive FileReader. Invalid Unicode and NUL raise FileError.
-- `write_file`: Root-only UTF-8 text output. Other callables receive FileWriter.
+Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).

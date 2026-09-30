@@ -18,4 +18,4 @@ parse(string input) returns Json unless JsonError
 
 Parse strict UTF-8 JSON. Duplicate keys, invalid Unicode, oversized integers, and nesting beyond 64 levels raise JsonError.
 
-[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/json/contracts.aug#L3)
+[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/json/contracts.aug#L4)

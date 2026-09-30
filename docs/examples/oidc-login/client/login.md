@@ -49,6 +49,7 @@ pageClass: aug-example-page
 ::: code-group
 
 ```aug [Indentation]
+// aug-spec: "login.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import LoginTransaction and SessionClaims and SessionError from contracts
 import discover and responseJson and validateIdentity from protocol
 import TokenResponse and UserInfo from provider
@@ -108,6 +109,7 @@ endpoint GET "/login/callback" as loginCallback(string code from query, string s
 ```
 
 ```aug [Braces]
+// aug-spec: "login.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import LoginTransaction and SessionClaims and SessionError from contracts
 import discover and responseJson and validateIdentity from protocol
 import TokenResponse and UserInfo from provider
@@ -186,133 +188,57 @@ endpoint GET "/login/callback" as loginCallback(string code from query, string s
 
 ## Compiled specification {#specification}
 
+Plain handler results default to HTTP 200 unless another status is declared. HttpResponse values choose their own status. Unhandled request failures return HTTP 500 and cancel the request tasks.
+
 <a id="symbol-startLogin"></a>
 ### `startLogin` · [source](login.md#code)
 
-Start a browser-bound, short-lived transaction. The PKCE verifier stays on the server.
+`startLogin` handles `GET /login/start`. Start a browser-bound, short-lived transaction. The PKCE verifier stays on the server. It gets `crypto` ([`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto)), `clock` ([`Clock`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock)), `client` ([`HttpClient`](../dependencies/august/0.19.0/web/contracts.md#symbol-HttpClient)), and `transactions` ([`ExpiringStore<LoginTransaction>`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore)) from dependency injection.
 
-**Inputs:** Resolve [`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto) as `crypto`. Resolve [`Clock`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock) as `clock`. Resolve [`HttpClient`](../dependencies/august/0.19.0/web/contracts.md#symbol-HttpClient) as `client`. Resolve [`ExpiringStore<LoginTransaction>`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore) as `transactions`.
+The handler responds with HTTP 502 for [`SessionError`](contracts.md#symbol-SessionError), HTTP 503 for `CryptoError`, HTTP 503 for `TimeError`, and HTTP 503 for [`StoreFull`](../dependencies/august/0.19.0/memory/store.md#symbol-StoreFull). It can also raise `HttpError`.
 
-Returns `HttpResponse<Html>`. Uses [`crypto.random`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.random), [`crypto.sha256`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.sha256), [`clock.now`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now), [`client.request`](../dependencies/august/0.19.0/web/contracts.md#symbol-HttpClient.request), [`transactions.put`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.put). Can fail with `SessionError`, `CryptoError`, `TimeError`, `StoreFull`, `HttpError`.
+It gets `config` from [`settings`](../common/settings.md#symbol-settings). It gets `document` from [`discover`](protocol.md#symbol-discover) using injected `client`. It sets `browser`, `state`, `nonce`, and `verifier` separately, each to the URL-safe base64 encoding of `32` random bytes from `crypto`. It sets `transaction` to a [`LoginTransaction`](contracts.md#symbol-LoginTransaction) with `state`, `nonce`, `verifier`, and `expires` from the current time from `clock` plus `300`.
 
-HTTP route: `GET` `/login/start`. Use status 200 when the handler returns a body; a returned HttpResponse can set its own status. An unhandled request failure returns status 500 and cancels its request tasks.
+It stores `transaction` in `transactions` under `browser`, expiring at `transaction.expires`. The current time for this write is the current time from `clock`. It sets `challenge` to the URL-safe base64 encoding of [`crypto.sha256`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.sha256) with `input` from the UTF-8 bytes of `verifier`. It builds `location` as the text `{document.authorization_endpoint}?response_type=code&client_id={URL-encoded config.clientId}&redirect_uri={URL-encoded config.callback}&scope=openid%20profile&state={URL-encoded state}&nonce={URL-encoded nonce}&code_challenge={URL-encoded challenge}&code_challenge_method=S256`.
 
-Declared HTTP failures: [`SessionError`](contracts.md#symbol-SessionError) returns status 502; `CryptoError` returns status 503; `TimeError` returns status 503; [`StoreFull`](../dependencies/august/0.19.0/memory/store.md#symbol-StoreFull) returns status 503.
-
-- Set `config` to the result of [`settings`](../common/settings.md#symbol-settings).
-- Set `document` to the result of [`discover`](protocol.md#symbol-discover) using `client`.
-- Set `browser` to the result of `base64url` on the result of [`Crypto.random`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.random) on `crypto` with `size` as `32`.
-- Set `state` to the result of `base64url` on the result of [`Crypto.random`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.random) on `crypto` with `size` as `32`.
-- Set `nonce` to the result of `base64url` on the result of [`Crypto.random`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.random) on `crypto` with `size` as `32`.
-- Set `verifier` to the result of `base64url` on the result of [`Crypto.random`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.random) on `crypto` with `size` as `32`.
-- Set `transaction` to a new [`LoginTransaction`](contracts.md#symbol-LoginTransaction) with `state`, `nonce`, `verifier`, `expires` as the result of [`Clock.now`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now) on `clock` plus `300`.
-- Call [`ExpiringStore.put`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.put) on `transactions` with `key` as `browser`, `value` as `transaction`, `expires` as `expires` of `transaction`, `now` as the result of [`Clock.now`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now) on `clock`.
-- Set `challenge` to the result of `base64url` on the result of [`Crypto.sha256`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.sha256) on `crypto` with `input` as the result of `bytes` on `verifier`.
-- Join these parts in order to make `location`:
-  1. `authorization_endpoint` of `document`
-  2. `"?response_type=code&client_id="`
-  3. the result of [`urlEncode`](../dependencies/august/0.19.0/web/contracts.md#symbol-urlEncode) with `input` as `clientId` of `config`
-  4. `"&redirect_uri="`
-  5. the result of [`urlEncode`](../dependencies/august/0.19.0/web/contracts.md#symbol-urlEncode) with `input` as `callback` of `config`
-  6. `"&scope=openid%20profile&state="`
-  7. the result of [`urlEncode`](../dependencies/august/0.19.0/web/contracts.md#symbol-urlEncode) with `input` as `state`
-  8. `"&nonce="`
-  9. the result of [`urlEncode`](../dependencies/august/0.19.0/web/contracts.md#symbol-urlEncode) with `input` as `nonce`
-  10. `"&code_challenge="`
-  11. the result of [`urlEncode`](../dependencies/august/0.19.0/web/contracts.md#symbol-urlEncode) with `input` as `challenge`
-  12. `"&code_challenge_method=S256"`
-- Set `headers` to the result of [`withCookie`](../common/headers.md#symbol-withCookie) with `headers` as the result of `with` on the result of [`securityHeaders`](../common/headers.md#symbol-securityHeaders) with `name` as `"location"`, `value` as `location`, `name` as `"aug_login"`, `value` as `browser`, `path` as `"/login"`, `maxAge` as `300`, `secure` as `secureCookies` of `config`.
-- Return a new `HttpResponse` with `body` as the HTML element `p` containing `Opening the identity provider.` (server-rendered; text escaped), `status` as `303`, `headers`.
+It sets `headers` to [`withCookie`](../common/headers.md#symbol-withCookie) with `headers` from [`securityHeaders`](../common/headers.md#symbol-securityHeaders) with the header `"location"` set to `location`, `name` `"aug_login"`, `value` from `browser`, `path` `"/login"`, `maxAge` `300`, and `secure` from `config.secureCookies`. It returns HTTP 303 with a paragraph containing `Opening the identity provider.` with escaped text and `headers` headers.
 
 <a id="symbol-loginCallback"></a>
 ### `loginCallback` · [source](login.md#code)
 
-Exchange a one-use code over HTTP, verify the provider JWT/JWKS and UserInfo subject, then issue a distinct app-session JWT.
+`loginCallback` handles `GET /login/callback`. Exchange a one-use code over HTTP, verify the provider JWT/JWKS and UserInfo subject, then issue a distinct app-session JWT.
 
-**Inputs:** Take `code` (`string`) from HTTP query. Take `state` (`string`) from HTTP query. Take `browser` (`optional string`) from HTTP cookie `aug_login`; omitted means null. Resolve [`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto) as `crypto`. Resolve [`Clock`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock) as `clock`. Resolve [`HttpClient`](../dependencies/august/0.19.0/web/contracts.md#symbol-HttpClient) as `client`. Resolve [`SigningKeys`](../common/keys.md#symbol-SigningKeys) as `keys`. Resolve [`ExpiringStore<LoginTransaction>`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore) as `transactions`. Resolve [`ExpiringStore<SessionClaims>`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore) as `sessions`.
+It takes `code` and `state` as strings from the HTTP query and `browser` as `optional string` from the HTTP cookie `aug_login`. It gets `crypto` ([`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto)), `clock` ([`Clock`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock)), `client` ([`HttpClient`](../dependencies/august/0.19.0/web/contracts.md#symbol-HttpClient)), `keys` ([`SigningKeys`](../common/keys.md#symbol-SigningKeys)), `transactions` ([`ExpiringStore<LoginTransaction>`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore)), and `sessions` ([`ExpiringStore<SessionClaims>`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore)) from dependency injection. Omitted optional inputs are null. The handler responds with HTTP 400 for [`SessionError`](contracts.md#symbol-SessionError), HTTP 503 for `CryptoError`, HTTP 503 for `TimeError`, and HTTP 503 for [`StoreFull`](../dependencies/august/0.19.0/memory/store.md#symbol-StoreFull).
 
-Returns `HttpResponse<Html>`. Uses [`crypto.equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal), [`crypto.random`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.random), [`crypto.signRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.signRsa), [`crypto.decodeBase64url`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url), [`crypto.importRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.importRsa), [`crypto.verifyRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.verifyRsa), [`clock.now`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now), [`client.request`](../dependencies/august/0.19.0/web/contracts.md#symbol-HttpClient.request), [`keys.session`](../common/keys.md#symbol-SigningKeys.session), [`transactions.take`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.take), [`sessions.put`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.put). Can fail with `SessionError`, `CryptoError`, `TimeError`, `KeyError`, `StoreFull`, `JwtError`, `JsonError`, `HttpError`.
+It can also raise `KeyError`, `JwtError`, `JsonError`, and `HttpError`.
 
-HTTP route: `GET` `/login/callback`. Use status 200 when the handler returns a body; a returned HttpResponse can set its own status. An unhandled request failure returns status 500 and cancels its request tasks.
+It checks that `code` is a URL-safe ASCII token with `43` to `43` characters and `state` is a URL-safe ASCII token with `43` to `43` characters. It raises a [`SessionError`](contracts.md#symbol-SessionError) at the first failed check. If `browser` is null, it raises a [`SessionError`](contracts.md#symbol-SessionError). The non-null `browser` becomes `secret`.
 
-Declared HTTP failures: [`SessionError`](contracts.md#symbol-SessionError) returns status 400; `CryptoError` returns status 503; `TimeError` returns status 503; [`StoreFull`](../dependencies/august/0.19.0/memory/store.md#symbol-StoreFull) returns status 503.
+It obtains the live value removed from `transactions` under `secret`, using the current time from `clock` as the current time. If no value is found, it raises a [`SessionError`](contracts.md#symbol-SessionError). The non-null result becomes `transaction`.
 
-- If not (the result of `isToken` on `code` with `min` as `43`, `max` as `43`) or not (the result of `isToken` on `state` with `min` as `43`, `max` as `43`):
-  - Fail with a new [`SessionError`](contracts.md#symbol-SessionError).
-- Match `browser`:
-  - A null value, including omitted optional input:
-    - Fail with a new [`SessionError`](contracts.md#symbol-SessionError).
-  - A present, non-null value, named `secret`:
-    - Match the result of [`ExpiringStore.take`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.take) on `transactions` with `key` as `secret`, `now` as the result of [`Clock.now`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now) on `clock`:
-      - A null value, including omitted optional input:
-        - Fail with a new [`SessionError`](contracts.md#symbol-SessionError).
-      - A present, non-null value, named `transaction`:
-        - If not (the result of [`Crypto.equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal) on `crypto` with `left` as the result of `bytes` on `state` of `transaction`, `right` as the result of `bytes` on `state`):
-          - Fail with a new [`SessionError`](contracts.md#symbol-SessionError).
-        - Set `config` to the result of [`settings`](../common/settings.md#symbol-settings).
-        - Set `document` to the result of [`discover`](protocol.md#symbol-discover) using `client`.
-        - Join these parts in order to make `body`:
-          1. `"grant_type=authorization_code&code="`
-          2. the result of [`urlEncode`](../dependencies/august/0.19.0/web/contracts.md#symbol-urlEncode) with `input` as `code`
-          3. `"&redirect_uri="`
-          4. the result of [`urlEncode`](../dependencies/august/0.19.0/web/contracts.md#symbol-urlEncode) with `input` as `callback` of `config`
-          5. `"&client_id="`
-          6. the result of [`urlEncode`](../dependencies/august/0.19.0/web/contracts.md#symbol-urlEncode) with `input` as `clientId` of `config`
-          7. `"&code_verifier="`
-          8. the result of [`urlEncode`](../dependencies/august/0.19.0/web/contracts.md#symbol-urlEncode) with `input` as `verifier` of `transaction`
-        - Set `headers` to the result of `with` on a new `Headers` with `name` as `"content-type"`, `value` as `"application/x-www-form-urlencoded"`.
-        - Set `tokens` to the result of `decode` on the result of [`responseJson`](protocol.md#symbol-responseJson) with `response` as the result of [`HttpClient.request`](../dependencies/august/0.19.0/web/contracts.md#symbol-HttpClient.request) on `client` with `method` as `"POST"`, `url` as `token_endpoint` of `document`, `headers`, `body` as the result of `bytes` on `body` with type arguments [`TokenResponse`](../provider/contracts.md#symbol-TokenResponse).
-        - If ((`token_type` of `tokens` does not equal `"Bearer"`) or not (the result of `isToken` on `access_token` of `tokens` with `min` as `43`, `max` as `43`)) or (`expires_in` of `tokens` is at most `0`):
-          - Fail with a new [`SessionError`](contracts.md#symbol-SessionError).
-        - Set `jwks` to the result of `decode` on the result of [`responseJson`](protocol.md#symbol-responseJson) with `response` as the result of [`HttpClient.request`](../dependencies/august/0.19.0/web/contracts.md#symbol-HttpClient.request) on `client` with `method` as `"GET"`, `url` as `jwks_uri` of `document` with type arguments [`RsaJwks`](../dependencies/august/0.19.0/crypto/jose.md#symbol-RsaJwks).
-        - Set `identity` to the result of [`validateIdentity`](protocol.md#symbol-validateIdentity) with `token` as `id_token` of `tokens`, `nonce` as `nonce` of `transaction`, `now` as the result of [`Clock.now`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now) on `clock`, `jwks` using `crypto`.
-        - Set `authHeaders` to the result of `with` on a new `Headers` with `name` as `"authorization"`, `value` as `"Bearer "` plus `access_token` of `tokens`.
-        - Set `user` to the result of `decode` on the result of [`responseJson`](protocol.md#symbol-responseJson) with `response` as the result of [`HttpClient.request`](../dependencies/august/0.19.0/web/contracts.md#symbol-HttpClient.request) on `client` with `method` as `"GET"`, `url` as `userinfo_endpoint` of `document`, `headers` as `authHeaders` with type arguments [`UserInfo`](../provider/contracts.md#symbol-UserInfo).
-        - If `sub` of `user` does not equal `sub` of `identity`:
-          - Fail with a new [`SessionError`](contracts.md#symbol-SessionError).
-        - Set `now` to the result of [`Clock.now`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now) on `clock`.
-        - Set `session` to a new [`SessionClaims`](contracts.md#symbol-SessionClaims) with `iss` as `baseUrl` of `config` plus `"/app"`, `sub` as `sub` of `identity`, `aud` as `"august-app"`, `exp` as `now` plus `sessionSeconds` of `config`, `iat` as `now`, `jti` as the result of `base64url` on the result of [`Crypto.random`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.random) on `crypto` with `size` as `32`, `csrf` as the result of `base64url` on the result of [`Crypto.random`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.random) on `crypto` with `size` as `32`, `name` as `name` of `user`.
-        - Set `jwt` to the result of [`signJwt`](../dependencies/august/0.19.0/crypto/jose.md#symbol-signJwt) with `key` as the result of [`SigningKeys.session`](../common/keys.md#symbol-SigningKeys.session) on `keys`, `claims` as a new `Json` with `value` as `session`, `kid` as `"session-1"`, `tokenType` as `"august-session+jwt"` using `crypto`.
-        - Call [`ExpiringStore.put`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.put) on `sessions` with `key` as `jti` of `session`, `value` as `session`, `expires` as `exp` of `session`, `now`.
-        - Set `responseHeaders` to the result of [`withCookie`](../common/headers.md#symbol-withCookie) with `headers` as the result of `with` on the result of [`securityHeaders`](../common/headers.md#symbol-securityHeaders) with `name` as `"location"`, `value` as `"/"`, `name` as `"aug_session"`, `value` as `jwt`, `path` as `"/"`, `maxAge` as `sessionSeconds` of `config`, `secure` as `secureCookies` of `config`.
-        - Set `responseHeaders` to the result of [`withCookie`](../common/headers.md#symbol-withCookie) with `headers` as `responseHeaders`, `name` as `"aug_login"`, `value` as `""`, `path` as `"/login"`, `maxAge` as `0`, `secure` as `secureCookies` of `config`.
-        - Return a new `HttpResponse` with `body` as the HTML element `p` containing `Signed in.` (server-rendered; text escaped), `status` as `303`, `headers` as `responseHeaders`.
+It checks that the UTF-8 bytes of `transaction.state` and the UTF-8 bytes of `state` match when compared by `crypto`. It raises a [`SessionError`](contracts.md#symbol-SessionError) at the first failed check. It gets `config` from [`settings`](../common/settings.md#symbol-settings). It gets `document` from [`discover`](protocol.md#symbol-discover) using injected `client`.
+
+It builds `body` as the text `grant_type=authorization_code&code={URL-encoded code}&redirect_uri={URL-encoded config.callback}&client_id={URL-encoded config.clientId}&code_verifier={URL-encoded transaction.verifier}`. It sets `headers` to a `Headers` with the header `"content-type"` set to `"application/x-www-form-urlencoded"`. It sets `tokens` to `decode` on [`responseJson`](protocol.md#symbol-responseJson) with `response` from [`client.request`](../dependencies/august/0.19.0/web/contracts.md#symbol-HttpClient.request) with `method` `"POST"`, `url` from `document.token_endpoint`, `headers`, and `body` from the UTF-8 bytes of `body` for [`TokenResponse`](../provider/contracts.md#symbol-TokenResponse).
+
+It checks that `tokens.token_type` equals `"Bearer"` and `tokens.access_token` is a URL-safe ASCII token with `43` to `43` characters and `tokens.expires_in` is greater than `0`. It raises a [`SessionError`](contracts.md#symbol-SessionError) at the first failed check. It sets `jwks` to `decode` on [`responseJson`](protocol.md#symbol-responseJson) with `response` from [`client.request`](../dependencies/august/0.19.0/web/contracts.md#symbol-HttpClient.request) with `method` `"GET"` and `url` from `document.jwks_uri` for [`RsaJwks`](../dependencies/august/0.19.0/crypto/jose.md#symbol-RsaJwks). It sets `identity` to [`validateIdentity`](protocol.md#symbol-validateIdentity) with `token` from `tokens.id_token`, `transaction.nonce`, `now` from the current time from `clock`, and `jwks` using injected `crypto`.
+
+It sets `authHeaders` to a `Headers` with the header `"authorization"` set to the text `Bearer {tokens.access_token}`. It sets `user` to `decode` on [`responseJson`](protocol.md#symbol-responseJson) with `response` from [`client.request`](../dependencies/august/0.19.0/web/contracts.md#symbol-HttpClient.request) with `method` `"GET"`, `url` from `document.userinfo_endpoint`, and `headers` from `authHeaders` for [`UserInfo`](../provider/contracts.md#symbol-UserInfo). It checks that `user.sub` equals `identity.sub`. It raises a [`SessionError`](contracts.md#symbol-SessionError) at the first failed check.
+
+It sets `now` to the current time from `clock`. It sets `session` to a [`SessionClaims`](contracts.md#symbol-SessionClaims) with `iss` from the text `{config.baseUrl}/app`, `identity.sub`, `aud` `"august-app"`, `exp` from `now` plus `config.sessionSeconds`, `iat` from `now`, `jti` from the URL-safe base64 encoding of `32` random bytes from `crypto`, `csrf` from the URL-safe base64 encoding of `32` random bytes from `crypto`, and `user.name`. It sets `jwt` to [`signJwt`](../dependencies/august/0.19.0/crypto/jose.md#symbol-signJwt) with `key` from [`keys.session`](../common/keys.md#symbol-SigningKeys.session), `claims` from a `Json` with `value` from `session`, `kid` `"session-1"`, and `tokenType` `"august-session+jwt"` using injected `crypto`.
+
+It stores `session` in `sessions` under `session.jti`, expiring at `session.exp`. The current time for this write is `now`. It sets `responseHeaders` to [`withCookie`](../common/headers.md#symbol-withCookie) with `headers` from [`securityHeaders`](../common/headers.md#symbol-securityHeaders) with the header `"location"` set to `"/"`, `name` `"aug_session"`, `value` from `jwt`, `path` `"/"`, `maxAge` from `config.sessionSeconds`, and `secure` from `config.secureCookies`. It sets `responseHeaders` to [`withCookie`](../common/headers.md#symbol-withCookie) with `headers` from `responseHeaders`, `name` `"aug_login"`, `value` `""`, `path` `"/login"`, `maxAge` `0`, and `secure` from `config.secureCookies`.
+
+It returns HTTP 303 with a paragraph containing `Signed in.` with escaped text and `responseHeaders` headers.
 
 ### Dependencies
 
-- [`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto) from `august.crypto`: [`decodeBase64url`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url) (`input`: `string`) → `Bytes`; can fail with `CryptoError`; [`equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal) (`left`: `Bytes`, `right`: `Bytes`) → `bool`; [`importRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.importRsa) (`modulus`: `Bytes`, `exponent`: `Bytes`) → `RsaPublicKey`; can fail with `CryptoError`; [`random`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.random) (`size`: `int`) → `Bytes`; can fail with `CryptoError`; [`sha256`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.sha256) (`input`: `Bytes`) → `Bytes`; can fail with `CryptoError`; [`signRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.signRsa) (`key`: `RsaPrivateKey`, `input`: `Bytes`) → `Bytes`; can fail with `CryptoError`; [`verifyRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.verifyRsa) (`publicKey`: `RsaPublicKey`, `input`: `Bytes`, `signature`: `Bytes`) → `bool`; can fail with `CryptoError`.
-- [`JwtError`](../dependencies/august/0.19.0/crypto/jose.md#symbol-JwtError) from `august.crypto`.
-- [`RsaJwks`](../dependencies/august/0.19.0/crypto/jose.md#symbol-RsaJwks) from `august.crypto`.
-- [`signJwt`](../dependencies/august/0.19.0/crypto/jose.md#symbol-signJwt) (`key`: `RsaPrivateKey`, `claims`: `Json`, `kid`: `string`, `tokenType`: `string`) → `string`; can fail with `JwtError` from `august.crypto`.
-- [`ExpiringStore`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore) from `august.memory`: [`put`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.put) (`key`: `string`, `value`: `T`, `expires`: `int`, `now`: `int`) → `void`; can fail with `StoreFull`; [`take`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.take) (`key`: `string`, `now`: `int`) → `optional T`.
-- [`StoreFull`](../dependencies/august/0.19.0/memory/store.md#symbol-StoreFull) from `august.memory`.
-- [`Clock`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock) from `august.time`: [`now`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now) (no caller inputs) → `int`; can fail with `TimeError`.
-- [`HttpClient`](../dependencies/august/0.19.0/web/contracts.md#symbol-HttpClient) from `august.web`: [`request`](../dependencies/august/0.19.0/web/contracts.md#symbol-HttpClient.request) (`method`: `string`, `url`: `string`, `headers`: `optional Headers`, `body`: `optional Bytes`) → `HttpResponse<Bytes>`; can fail with `HttpError`.
-- [`urlEncode`](../dependencies/august/0.19.0/web/contracts.md#symbol-urlEncode) (`input`: `string`) → `string`; can fail with `HttpError` from `august.web`.
-- [`LoginTransaction`](contracts.md#symbol-LoginTransaction) from `contracts`: construct with `state`: `string`, `nonce`: `string`, `verifier`: `string`, `expires`: `int`; read `expires` (`int`); read `nonce` (`string`); read `state` (`string`); read `verifier` (`string`).
-- [`SessionClaims`](contracts.md#symbol-SessionClaims) from `contracts`: construct with `iss`: `string`, `sub`: `string`, `aud`: `string`, `exp`: `int`, `iat`: `int`, `jti`: `string`, `csrf`: `string`, `name`: `string`; read `exp` (`int`); read `jti` (`string`).
-- [`SessionError`](contracts.md#symbol-SessionError) from `contracts`: construct with no caller inputs.
-- [`discover`](protocol.md#symbol-discover) (no caller inputs) → [`Discovery`](../provider/discovery.md#symbol-Discovery); can fail with `SessionError`, `HttpError` from `protocol`.
-- [`responseJson`](protocol.md#symbol-responseJson) (`response`: `HttpResponse<Bytes>`) → `Json`; can fail with `SessionError` from `protocol`.
-- [`validateIdentity`](protocol.md#symbol-validateIdentity) (`token`: `string`, `nonce`: `string`, `now`: `int`, `jwks`: [`RsaJwks`](../dependencies/august/0.19.0/crypto/jose.md#symbol-RsaJwks)) → [`IdClaims`](../provider/contracts.md#symbol-IdClaims); can fail with `SessionError` from `protocol`.
-- [`securityHeaders`](../common/headers.md#symbol-securityHeaders) (no caller inputs) → `Headers`; can fail with `HttpError` from `common`.
-- [`withCookie`](../common/headers.md#symbol-withCookie) (`headers`: `Headers`, `name`: `string`, `value`: `string`, `path`: `string`, `maxAge`: `int`, `secure`: `bool`) → `Headers`; can fail with `HttpError` from `common`.
-- [`KeyError`](../common/keys.md#symbol-KeyError) from `common`.
-- [`SigningKeys`](../common/keys.md#symbol-SigningKeys) from `common`: [`session`](../common/keys.md#symbol-SigningKeys.session) (no caller inputs) → `RsaPrivateKey`; can fail with `KeyError`.
-- [`Settings`](../common/settings.md#symbol-Settings): read `baseUrl` (`string`); read `callback` (`string`); read `clientId` (`string`); read `secureCookies` (`bool`); read `sessionSeconds` (`int`).
-- [`settings`](../common/settings.md#symbol-settings) (no caller inputs) → [`Settings`](../common/settings.md#symbol-Settings) from `common`.
-- [`IdClaims`](../provider/contracts.md#symbol-IdClaims): read `sub` (`string`).
-- [`TokenResponse`](../provider/contracts.md#symbol-TokenResponse) from `provider`: read `access_token` (`string`); read `expires_in` (`int`); read `id_token` (`string`); read `token_type` (`string`).
-- [`UserInfo`](../provider/contracts.md#symbol-UserInfo) from `provider`: read `name` (`string`); read `sub` (`string`).
-- [`Discovery`](../provider/discovery.md#symbol-Discovery): read `authorization_endpoint` (`string`); read `jwks_uri` (`string`); read `token_endpoint` (`string`); read `userinfo_endpoint` (`string`).
+It uses [`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto) ([`decodeBase64url`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url), [`equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal), [`importRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.importRsa), [`random`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.random), [`sha256`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.sha256), [`signRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.signRsa), and [`verifyRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.verifyRsa)), [`JwtError`](../dependencies/august/0.19.0/crypto/jose.md#symbol-JwtError), [`RsaJwks`](../dependencies/august/0.19.0/crypto/jose.md#symbol-RsaJwks), and [`signJwt`](../dependencies/august/0.19.0/crypto/jose.md#symbol-signJwt) from `august.crypto`. It uses [`ExpiringStore`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore) ([`put`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.put) and [`take`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.take)) and [`StoreFull`](../dependencies/august/0.19.0/memory/store.md#symbol-StoreFull) from `august.memory`. It uses [`Clock`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock) ([`now`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now)) from `august.time`. It uses [`HttpClient`](../dependencies/august/0.19.0/web/contracts.md#symbol-HttpClient) ([`request`](../dependencies/august/0.19.0/web/contracts.md#symbol-HttpClient.request)) and [`urlEncode`](../dependencies/august/0.19.0/web/contracts.md#symbol-urlEncode) from `august.web`.
 
-### Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
+It uses [`LoginTransaction`](contracts.md#symbol-LoginTransaction) (`expires`, `nonce`, `state`, and `verifier`), [`SessionClaims`](contracts.md#symbol-SessionClaims) (`exp` and `jti`), and [`SessionError`](contracts.md#symbol-SessionError) from `contracts`. It uses [`discover`](protocol.md#symbol-discover), [`responseJson`](protocol.md#symbol-responseJson), and [`validateIdentity`](protocol.md#symbol-validateIdentity) from `protocol`. It uses [`securityHeaders`](../common/headers.md#symbol-securityHeaders), [`withCookie`](../common/headers.md#symbol-withCookie), [`KeyError`](../common/keys.md#symbol-KeyError), [`SigningKeys`](../common/keys.md#symbol-SigningKeys) ([`session`](../common/keys.md#symbol-SigningKeys.session)), and [`settings`](../common/settings.md#symbol-settings) from `common`. It uses [`Settings`](../common/settings.md#symbol-Settings) (`baseUrl`, `callback`, `clientId`, `secureCookies`, and `sessionSeconds`), [`IdClaims`](../provider/contracts.md#symbol-IdClaims) (`sub`), and [`Discovery`](../provider/discovery.md#symbol-Discovery) (`authorization_endpoint`, `jwks_uri`, `token_endpoint`, and `userinfo_endpoint`).
 
-- `Bytes.base64url`: Encode immutable bytes as unpadded RFC 4648 URL-safe base64.
-- `Headers.with`: Return new headers with one additional validated field. Header names ignore case; duplicate values remain separate.
-- `Json.decode`: Decode a checked record or data type: json.decode<Profile>(). Unknown fields, type mismatches, and validation errors are rejected.
-- `string.bytes`: Encode this string as immutable UTF-8 bytes.
-- `string.isToken`: Require an ASCII RFC 3986 unreserved token with a bounded length.
+It uses [`TokenResponse`](../provider/contracts.md#symbol-TokenResponse) (`access_token`, `expires_in`, `id_token`, and `token_type`) and [`UserInfo`](../provider/contracts.md#symbol-UserInfo) (`name` and `sub`) from `provider`. These links explain the full dependency contracts.
+
+Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).
 
 ::::
 

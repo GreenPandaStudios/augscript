@@ -1,3 +1,4 @@
+// aug-spec: "counters.aug.md" explains this file. Read it before changes; refresh with aug spec.
 /** Reading state has no mutation effect. */
 interface State:
 	read() returns int

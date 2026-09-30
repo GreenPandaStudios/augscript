@@ -4,15 +4,10 @@
 
 ## Startup
 
-- Set `counter` of type [`Counter`](counter.aug.md#symbol-Counter) to a new [`Counter`](counter.aug.md#symbol-Counter) with `value` as `1`.
-- `counter` of type [`Counter`](counter.aug.md#symbol-Counter) owns this value.
-- Call [`Counter.increment`](counter.aug.md#symbol-Counter.increment) on `counter`.
-- Call `print` with `value` as the result of [`Counter.read`](counter.aug.md#symbol-Counter.read) on `counter`.
+It sets `counter` of type [`Counter`](counter.aug.md#symbol-Counter) to a [`Counter`](counter.aug.md#symbol-Counter) with `value` `1`. `counter` of type [`Counter`](counter.aug.md#symbol-Counter) owns this value. It calls [`counter.increment`](counter.aug.md#symbol-Counter.increment). It prints [`counter.read`](counter.aug.md#symbol-Counter.read).
 
 ## Dependencies
 
-- [`Counter`](counter.aug.md#symbol-Counter) from `counter`: construct with `value`: `int`; [`increment`](counter.aug.md#symbol-Counter.increment) (no caller inputs) → `void`; [`read`](counter.aug.md#symbol-Counter.read) (no caller inputs) → `int`.
+It uses [`Counter`](counter.aug.md#symbol-Counter) ([`increment`](counter.aug.md#symbol-Counter.increment) and [`read`](counter.aug.md#symbol-Counter.read)) from `counter`. These links explain the full dependency contracts.
 
-## Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
-
-- `print`: Composition and test output. Other callables receive Console and declare uses console.write.
+Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).

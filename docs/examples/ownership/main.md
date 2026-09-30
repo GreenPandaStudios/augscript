@@ -29,6 +29,7 @@ pageClass: aug-example-page
 ::: code-group
 
 ```aug [Indentation]
+// aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Counter from counter
 own Counter counter = Counter(value=1)
 counter.increment()
@@ -36,6 +37,7 @@ print(value=counter.read())
 ```
 
 ```aug [Braces]
+// aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Counter from counter
 own Counter counter = Counter(value=1)
 counter.increment()
@@ -52,18 +54,13 @@ print(value=counter.read())
 
 ### Startup
 
-- Set `counter` of type [`Counter`](counter.md#symbol-Counter) to a new [`Counter`](counter.md#symbol-Counter) with `value` as `1`.
-- `counter` of type [`Counter`](counter.md#symbol-Counter) owns this value.
-- Call [`Counter.increment`](counter.md#symbol-Counter.increment) on `counter`.
-- Call `print` with `value` as the result of [`Counter.read`](counter.md#symbol-Counter.read) on `counter`.
+It sets `counter` of type [`Counter`](counter.md#symbol-Counter) to a [`Counter`](counter.md#symbol-Counter) with `value` `1`. `counter` of type [`Counter`](counter.md#symbol-Counter) owns this value. It calls [`counter.increment`](counter.md#symbol-Counter.increment). It prints [`counter.read`](counter.md#symbol-Counter.read).
 
 ### Dependencies
 
-- [`Counter`](counter.md#symbol-Counter) from `counter`: construct with `value`: `int`; [`increment`](counter.md#symbol-Counter.increment) (no caller inputs) → `void`; [`read`](counter.md#symbol-Counter.read) (no caller inputs) → `int`.
+It uses [`Counter`](counter.md#symbol-Counter) ([`increment`](counter.md#symbol-Counter.increment) and [`read`](counter.md#symbol-Counter.read)) from `counter`. These links explain the full dependency contracts.
 
-### Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
-
-- `print`: Composition and test output. Other callables receive Console and declare uses console.write.
+Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).
 
 ::::
 

@@ -29,12 +29,14 @@ pageClass: aug-example-page
 ::: code-group
 
 ```aug [Indentation]
+// aug-spec: "routes.aug.md" explains this file. Read it before changes; refresh with aug spec.
 record Reply(int id, string message)
 endpoint GET "/bench" as reply() returns Reply:
     return Reply(id=7, message="hello")
 ```
 
 ```aug [Braces]
+// aug-spec: "routes.aug.md" explains this file. Read it before changes; refresh with aug spec.
 record Reply(int id, string message)
 endpoint GET "/bench" as reply() returns Reply {
     return Reply(id=7, message="hello")
@@ -49,19 +51,17 @@ endpoint GET "/bench" as reply() returns Reply {
 
 ## Compiled specification {#specification}
 
+Plain handler results default to HTTP 200 unless another status is declared. HttpResponse values choose their own status. Unhandled request failures return HTTP 500 and cancel the request tasks.
+
 <a id="symbol-Reply"></a>
 ### `Reply` · immutable record · [source](routes.md#code)
 
-**Inputs:** Take `id` (`int`); store read-only. Take `message` (`string`); store read-only.
+It takes `id` as an integer, kept read-only and `message` as a string, kept read-only.
 
 <a id="symbol-reply"></a>
 ### `reply` · [source](routes.md#code)
 
-Returns [`Reply`](routes.md#symbol-Reply).
-
-HTTP route: `GET` `/bench`. Use status 200 when the handler returns a body; a returned HttpResponse can set its own status. An unhandled request failure returns status 500 and cancels its request tasks.
-
-- Return a new [`Reply`](routes.md#symbol-Reply) with `id` as `7`, `message` as `"hello"`.
+`reply` handles `GET /bench`. It returns a [`Reply`](routes.md#symbol-Reply) with `id` `7` and `message` `"hello"`.
 
 ::::
 

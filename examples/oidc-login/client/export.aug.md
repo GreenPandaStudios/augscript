@@ -4,10 +4,6 @@
 
 ## Exports
 
-- Export the declaration `LoginTransaction` from [`contracts.aug`](contracts.aug.md#symbol-LoginTransaction).
-- Export the declaration `SessionClaims` from [`contracts.aug`](contracts.aug.md#symbol-SessionClaims).
-- Export the declaration `home` from [`endpoints.aug`](endpoints.aug.md#symbol-home).
-- Export the declaration `me` from [`endpoints.aug`](endpoints.aug.md#symbol-me).
-- Export the declaration `logout` from [`logout.aug`](logout.aug.md#symbol-logout).
-- Export the declaration `startLogin` from [`login.aug`](login.aug.md#symbol-startLogin).
-- Export the declaration `loginCallback` from [`login.aug`](login.aug.md#symbol-loginCallback).
+Export the declaration `LoginTransaction` from [`contracts.aug`](contracts.aug.md#symbol-LoginTransaction). Export the declaration `SessionClaims` from [`contracts.aug`](contracts.aug.md#symbol-SessionClaims). Export the declaration `home` from [`endpoints.aug`](endpoints.aug.md#symbol-home). Export the declaration `me` from [`endpoints.aug`](endpoints.aug.md#symbol-me).
+
+Export the declaration `logout` from [`logout.aug`](logout.aug.md#symbol-logout). Export the declaration `startLogin` from [`login.aug`](login.aug.md#symbol-startLogin). Export the declaration `loginCallback` from [`login.aug`](login.aug.md#symbol-loginCallback).

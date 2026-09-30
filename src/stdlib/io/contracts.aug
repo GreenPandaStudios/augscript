@@ -1,3 +1,4 @@
+// aug-spec: "contracts.aug.md" explains this file. Read it before changes; refresh with aug spec.
 /** Permission to write to a console, provided by an explicitly selected adapter. */
 capability Console:
     /** Write one line of text. @param value Text to display. */

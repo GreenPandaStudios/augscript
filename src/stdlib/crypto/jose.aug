@@ -1,3 +1,4 @@
+// aug-spec: "jose.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Crypto from contracts
 import parse from august.json
 

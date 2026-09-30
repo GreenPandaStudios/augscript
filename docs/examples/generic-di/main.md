@@ -29,6 +29,7 @@ pageClass: aug-example-page
 ::: code-group
 
 ```aug [Indentation]
+// aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Console and SystemConsole from august.io
 implement Console with SystemConsole
 import Repository from types
@@ -41,6 +42,7 @@ program.start()
 ```
 
 ```aug [Braces]
+// aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Console and SystemConsole from august.io
 implement Console with SystemConsole
 import Repository from types
@@ -62,20 +64,17 @@ program.start()
 
 ### Providers
 
-- Provide [`SystemConsole`](dependencies/august/0.19.0/io/contracts.md#symbol-SystemConsole) for `Console`. Share one instance.
-- Provide [`NumberRepository`](types.md#symbol-NumberRepository) for `Repository<int>`. Share one instance.
-- Provide [`Program`](types.md#symbol-Program) for `app`. Share one instance. Needs `Repository<int>`.
+`Console` is provided by [`SystemConsole`](dependencies/august/0.19.0/io/contracts.md#symbol-SystemConsole). The same instance is shared. `Repository<int>` is provided by [`NumberRepository`](types.md#symbol-NumberRepository). The same instance is shared.
+
+`app` is provided by [`Program`](types.md#symbol-Program). The same instance is shared. It requires bindings for `Repository<int>`.
 
 ### Startup
 
-- Set `program` to the instance provided for `app`.
-- Call [`Program.start`](types.md#symbol-Program.start) on `program` using `Console` for `console`.
+It sets `program` to the instance provided for `app`. It calls [`program.start`](types.md#symbol-Program.start) using injected `Console` for `console`.
 
 ### Dependencies
 
-- [`SystemConsole`](dependencies/august/0.19.0/io/contracts.md#symbol-SystemConsole) from `august.io`.
-- [`NumberRepository`](types.md#symbol-NumberRepository) from `types`.
-- [`Program`](types.md#symbol-Program) from `types`: [`start`](types.md#symbol-Program.start) (no caller inputs) → `void`.
+It uses [`SystemConsole`](dependencies/august/0.19.0/io/contracts.md#symbol-SystemConsole) from `august.io`. It uses [`NumberRepository`](types.md#symbol-NumberRepository) and [`Program`](types.md#symbol-Program) ([`start`](types.md#symbol-Program.start)) from `types`. These links explain the full dependency contracts.
 
 ::::
 

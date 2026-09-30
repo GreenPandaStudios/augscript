@@ -49,6 +49,7 @@ pageClass: aug-example-page
 ::: code-group
 
 ```aug [Indentation]
+// aug-spec: "keys.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Crypto from august.crypto
 KeyError() implements Error:
     pass
@@ -86,6 +87,7 @@ initializeKeys(resolve Crypto crypto, resolve SigningKeys keys) uses crypto.gene
 ```
 
 ```aug [Braces]
+// aug-spec: "keys.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Crypto from august.crypto
 KeyError() implements Error {
     pass
@@ -150,7 +152,7 @@ initializeKeys(resolve Crypto crypto, resolve SigningKeys keys) uses crypto.gene
 <a id="symbol-KeyError"></a>
 ### `KeyError` · class · [source](keys.md#code)
 
-Implements `Error`.
+It implements `Error`.
 
 <a id="symbol-SigningKeys"></a>
 ### `SigningKeys` · capability interface · [source](keys.md#code)
@@ -160,86 +162,60 @@ Keys are initialized explicitly in main and expose distinct provider and session
 <a id="symbol-SigningKeys.configure"></a>
 #### `SigningKeys.configure` · [source](keys.md#code)
 
-**Inputs:** Take `provider` (`RsaPrivateKey`). Take `session` (`RsaPrivateKey`).
-
-Uses [`SigningKeys.configure`](keys.md#symbol-SigningKeys.configure). Can fail with `KeyError`.
+It takes `provider` and `session` as `RsaPrivateKey`. It can call [`SigningKeys.configure`](keys.md#symbol-SigningKeys.configure). Failures can raise [`KeyError`](keys.md#symbol-KeyError).
 
 <a id="symbol-SigningKeys.provider"></a>
 #### `SigningKeys.provider` · [source](keys.md#code)
 
-Returns `RsaPrivateKey`. Uses [`SigningKeys.provider`](keys.md#symbol-SigningKeys.provider). Can fail with `KeyError`.
+It returns `RsaPrivateKey`. It can call [`SigningKeys.provider`](keys.md#symbol-SigningKeys.provider). Failures can raise [`KeyError`](keys.md#symbol-KeyError).
 
 <a id="symbol-SigningKeys.session"></a>
 #### `SigningKeys.session` · [source](keys.md#code)
 
-Returns `RsaPrivateKey`. Uses [`SigningKeys.session`](keys.md#symbol-SigningKeys.session). Can fail with `KeyError`.
+It returns `RsaPrivateKey`. It can call [`SigningKeys.session`](keys.md#symbol-SigningKeys.session). Failures can raise [`KeyError`](keys.md#symbol-KeyError).
 
 <a id="symbol-MemorySigningKeys"></a>
 ### `MemorySigningKeys` · class · [source](keys.md#code)
 
-Implements [`SigningKeys`](keys.md#symbol-SigningKeys).
-
-Initialize fields:
-
-- `_keys` (`Shared<Map<string,RsaPrivateKey>>`) = a new `Shared` with `value` as an empty map from `string` to `RsaPrivateKey`; read-only, private.
+It implements [`SigningKeys`](keys.md#symbol-SigningKeys). The read-only, private field `_keys` has type `Shared<Map<string,RsaPrivateKey>>` and starts as a `Shared` with `value` from an empty map from `string` to `RsaPrivateKey`.
 
 <a id="symbol-MemorySigningKeys.configure"></a>
 #### `MemorySigningKeys.configure` · [source](keys.md#code)
 
-**Inputs:** Take `provider` (`RsaPrivateKey`). Take `session` (`RsaPrivateKey`).
+It takes `provider` and `session` as `RsaPrivateKey`. Failures can raise [`KeyError`](keys.md#symbol-KeyError).
 
-Uses [`SigningKeys.configure`](keys.md#symbol-SigningKeys.configure). Can fail with `KeyError`.
+While holding the lock on `_keys` as mutable `keys`, it checks that the number of elements in `keys` equals `0`. It raises a [`KeyError`](keys.md#symbol-KeyError) at the first failed check. It stores `provider` in `keys` under `"provider"`. It stores `session` in `keys` under `"session"`.
 
-- Lock `_keys` as mutable `keys` for this block:
-  - If the result of `length` on `keys` does not equal `0`:
-    - Fail with a new [`KeyError`](keys.md#symbol-KeyError).
-  - Call `set` on `keys` with `key` as `"provider"`, `value` as `provider`.
-  - Call `set` on `keys` with `key` as `"session"`, `value` as `session`.
+Release this lock when the block exits, including on return or failure.
 
 <a id="symbol-MemorySigningKeys.provider"></a>
 #### `MemorySigningKeys.provider` · [source](keys.md#code)
 
-Returns `RsaPrivateKey`. Uses [`SigningKeys.provider`](keys.md#symbol-SigningKeys.provider). Can fail with `KeyError`.
+Failures can raise [`KeyError`](keys.md#symbol-KeyError).
 
-- Lock `_keys` as mutable `keys` for this block:
-  - Match the result of `get` on `keys` with `key` as `"provider"`:
-    - A null value, including omitted optional input:
-      - Fail with a new [`KeyError`](keys.md#symbol-KeyError).
-    - A present, non-null value, named `key`:
-      - Return `key`.
+While holding the lock on `_keys` as mutable `keys`, it obtains the value under `"provider"` in `keys`. If no value is found, it raises a [`KeyError`](keys.md#symbol-KeyError). The non-null result becomes `key`. It returns `key`.
+
+Release this lock when the block exits, including on return or failure.
 
 <a id="symbol-MemorySigningKeys.session"></a>
 #### `MemorySigningKeys.session` · [source](keys.md#code)
 
-Returns `RsaPrivateKey`. Uses [`SigningKeys.session`](keys.md#symbol-SigningKeys.session). Can fail with `KeyError`.
+Failures can raise [`KeyError`](keys.md#symbol-KeyError).
 
-- Lock `_keys` as mutable `keys` for this block:
-  - Match the result of `get` on `keys` with `key` as `"session"`:
-    - A null value, including omitted optional input:
-      - Fail with a new [`KeyError`](keys.md#symbol-KeyError).
-    - A present, non-null value, named `key`:
-      - Return `key`.
+While holding the lock on `_keys` as mutable `keys`, it obtains the value under `"session"` in `keys`. If no value is found, it raises a [`KeyError`](keys.md#symbol-KeyError). The non-null result becomes `key`. It returns `key`.
+
+Release this lock when the block exits, including on return or failure.
 
 <a id="symbol-initializeKeys"></a>
 ### `initializeKeys` · [source](keys.md#code)
 
-**Inputs:** Resolve [`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto) as `crypto`. Resolve [`SigningKeys`](keys.md#symbol-SigningKeys) as `keys`.
-
-Uses [`crypto.generateRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.generateRsa), [`keys.configure`](keys.md#symbol-SigningKeys.configure). Can fail with `CryptoError`, `KeyError`.
-
-- Set `provider` to the result of [`Crypto.generateRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.generateRsa) on `crypto`.
-- Set `session` to the result of [`Crypto.generateRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.generateRsa) on `crypto`.
-- Call [`SigningKeys.configure`](keys.md#symbol-SigningKeys.configure) on `keys` with `provider`, `session`.
+It gets `crypto` ([`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto)) and `keys` ([`SigningKeys`](keys.md#symbol-SigningKeys)) from dependency injection. Failures can raise `CryptoError` and [`KeyError`](keys.md#symbol-KeyError). It sets `provider` and `session` separately, each to [`crypto.generateRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.generateRsa). It calls [`keys.configure`](keys.md#symbol-SigningKeys.configure) with `provider` and `session`.
 
 ### Dependencies
 
-- [`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto) from `august.crypto`: [`generateRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.generateRsa) (no caller inputs) → `RsaPrivateKey`; can fail with `CryptoError`.
+It uses [`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto) ([`generateRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.generateRsa)) from `august.crypto`. These links explain the full dependency contracts.
 
-### Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
-
-- `Map<string, RsaPrivateKey>.get`: Read a value by key; an absent key returns null. contains distinguishes an absent key from a stored null.
-- `Map<string, RsaPrivateKey>.length`: Read the number of elements.
-- `Map<string, RsaPrivateKey>.set`: Insert or replace an entry with exclusive mutable access.
+Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).
 
 ::::
 

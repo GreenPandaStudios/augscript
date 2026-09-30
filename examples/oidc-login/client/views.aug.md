@@ -3,24 +3,17 @@
 # `views.aug`
 
 <a id="symbol-LoginPage"></a>
-## `LoginPage` · [source](views.aug#L5)
+## `LoginPage` · [source](views.aug#L6)
 
-Returns `Html`.
-
-- Return the server component [`Page`](../common/views.aug.md#symbol-Page) with `title` = `"Sign in"` containing the HTML element `p` containing `This August app is both an OpenID Connect provider and a login client.` (server-rendered; text escaped), the HTML element `p` containing the HTML element `a` with `href` = `"/login/start"`, `style` = `"display:inline-block;padding:12px 20px;border-radius:10px;background:#4852d7;color:white;text-decoration:none"` containing `Sign in with OpenID Connect` (server-rendered; text escaped) (server-rendered; text escaped), the HTML element `p` containing `The server uses authorization codes, S256 PKCE, state and nonce validation. Your session is a separate signed JWT in an HttpOnly cookie.` (server-rendered; text escaped) (server-rendered; text escaped).
+It returns the server component [`Page`](../common/views.aug.md#symbol-Page) with `title` = `"Sign in"` containing a paragraph containing `This August app is both an OpenID Connect provider and a login client.` with escaped text, a paragraph containing a link with `href` = `"/login/start"`, `style` = `"display:inline-block;padding:12px 20px;border-radius:10px;background:#4852d7;color:white;text-decoration:none"` containing `Sign in with OpenID Connect` with escaped text with escaped text, a paragraph containing `The server uses authorization codes, S256 PKCE, state and nonce validation. Your session is a separate signed JWT in an HttpOnly cookie.` with escaped text with escaped text.
 
 <a id="symbol-Welcome"></a>
-## `Welcome` · [source](views.aug#L12)
+## `Welcome` · [source](views.aug#L13)
 
-**Inputs:** Take `session` ([`SessionClaims`](contracts.aug.md#symbol-SessionClaims)).
+It takes `session` as [`SessionClaims`](contracts.aug.md#symbol-SessionClaims). Failures can raise `HttpError`.
 
-Returns `Html`. Can fail with `HttpError`.
-
-- Return the server component [`Page`](../common/views.aug.md#symbol-Page) with `title` = `"Welcome, "` plus `name` of `session` containing the HTML element `p` containing `You are signed in as `, the HTML element `strong` containing `name` of `session` (server-rendered; text escaped), `.` (server-rendered; text escaped), the HTML element `p` containing `Subject: `, the HTML element `code` containing `sub` of `session` (server-rendered; text escaped) (server-rendered; text escaped), the HTML element `p` containing the HTML element `a` with `href` = `"/me"` containing `View the protected JSON endpoint` (server-rendered; text escaped) (server-rendered; text escaped), the HTML element `form` with `method` = `"post"`, `action` = `"/logout"`, `onSubmit` = a deferred HTTP form action for [`logout`](logout.aug.md#symbol-logout); inputs: `1` from the checked form input supplied when the HTTP form is submitted; capture supplied values when rendering, and read form inputs when submitted; send the form to that endpoint with its declared HTTP method containing the HTML element `input` with `type` = `"hidden"`, `name` = `"csrf"`, `value` = `csrf` of `session` (server-rendered; text escaped), the HTML element `button` with `type` = `"submit"`, `style` = `"padding:10px 18px;border-radius:10px;border:0;background:#17233a;color:white;font:inherit"` containing `Sign out` (server-rendered; text escaped) (server-rendered; text escaped) (server-rendered; text escaped).
+It returns the server component [`Page`](../common/views.aug.md#symbol-Page) with `title` = the text `Welcome, {session.name}` containing a paragraph containing `You are signed in as `, the HTML element `strong` containing `session.name` with escaped text, `.` with escaped text, a paragraph containing `Subject: `, the HTML element `code` containing `session.sub` with escaped text with escaped text, a paragraph containing a link with `href` = `"/me"` containing `View the protected JSON endpoint` with escaped text with escaped text, the HTML element `form` with `method` = `"post"`, `action` = `"/logout"`, `onSubmit` = a form action that sends `POST /logout` to [`logout`](logout.aug.md#symbol-logout) on submission containing the HTML element `input` with `type` = `"hidden"`, `name` = `"csrf"`, `value` = `session.csrf` with escaped text, a button with `type` = `"submit"`, `style` = `"padding:10px 18px;border-radius:10px;border:0;background:#17233a;color:white;font:inherit"` containing `Sign out` with escaped text with escaped text with escaped text.
 
 ## Dependencies
 
-- [`LogoutForm`](contracts.aug.md#symbol-LogoutForm).
-- [`SessionClaims`](contracts.aug.md#symbol-SessionClaims) from `contracts`: read `csrf` (`string`); read `name` (`string`); read `sub` (`string`).
-- [`logout`](logout.aug.md#symbol-logout) (`input`: [`LogoutForm`](contracts.aug.md#symbol-LogoutForm) from HTTP form, `token`: `optional string` from HTTP cookie `aug_session`, `origin`: `optional string` from HTTP header) → `HttpResponse<Html>`; can fail with `SessionError`, `KeyError`, `TimeError`, `CryptoError`, `HttpError` from `logout`.
-- [`Page`](../common/views.aug.md#symbol-Page) (`title`: `string`, `children`: `List<Html>`) → `Html` from `common`.
+It uses [`SessionClaims`](contracts.aug.md#symbol-SessionClaims) (`csrf`, `name`, and `sub`) from `contracts`. It uses [`logout`](logout.aug.md#symbol-logout) from `logout`. It uses [`Page`](../common/views.aug.md#symbol-Page) from `common`. These links explain the full dependency contracts.

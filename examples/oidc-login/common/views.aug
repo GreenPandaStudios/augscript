@@ -1,3 +1,4 @@
+// aug-spec: "views.aug.md" explains this file. Read it before changes; refresh with aug spec.
 /** Small server components keep each page's behavior and dependencies visible. */
 Page(string title, List<Html> children) returns Html:
     return <html lang="en">

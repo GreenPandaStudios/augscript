@@ -1,3 +1,4 @@
+// aug-spec: "session.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import SessionClaims and SessionError from contracts
 import settings and SigningKeys and KeyError from common
 import Crypto and verifyJwt and JwtError from august.crypto

@@ -29,6 +29,7 @@ pageClass: aug-example-page
 ::: code-group
 
 ```aug [Indentation]
+// aug-spec: "resource.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Console from august.io
 Resource() implements IResource:
     drop():
@@ -43,6 +44,7 @@ consume(resolve Console console, own Resource value) uses Console.write:
 ```
 
 ```aug [Braces]
+// aug-spec: "resource.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Console from august.io
 Resource() implements IResource {
     drop() {
@@ -72,12 +74,12 @@ consume(resolve Console console, own Resource value) uses Console.write {
 <a id="symbol-Resource"></a>
 ### `Resource` · class · [source](resource.md#code)
 
-Implements [`IResource`](resource.md#symbol-IResource).
+It implements [`IResource`](resource.md#symbol-IResource).
 
 <a id="symbol-Resource.drop"></a>
 #### `Resource.drop` · [source](resource.md#code)
 
-- Continue.
+It continues without an operation.
 
 <a id="symbol-IResource"></a>
 ### `IResource` · interface · [source](resource.md#code)
@@ -85,24 +87,16 @@ Implements [`IResource`](resource.md#symbol-IResource).
 <a id="symbol-make"></a>
 ### `make` · [source](resource.md#code)
 
-Returns ownership of [`Resource`](resource.md#symbol-Resource).
-
-- Set `value` of type [`Resource`](resource.md#symbol-Resource) to a new [`Resource`](resource.md#symbol-Resource).
-- `value` of type [`Resource`](resource.md#symbol-Resource) owns this value.
-- Return `value`.
+It returns ownership of [`Resource`](resource.md#symbol-Resource). It sets `value` of type [`Resource`](resource.md#symbol-Resource) to a [`Resource`](resource.md#symbol-Resource). `value` of type [`Resource`](resource.md#symbol-Resource) owns this value. It returns `value`.
 
 <a id="symbol-consume"></a>
 ### `consume` · [source](resource.md#code)
 
-**Inputs:** Resolve [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console) as `console`. Take `value` ([`Resource`](resource.md#symbol-Resource)); take ownership.
-
-Uses [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
-
-- Call [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write) on `console` with `value` as `"consumed"`.
+It takes `value` as [`Resource`](resource.md#symbol-Resource) with ownership transferred. It gets `console` ([`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console)) from dependency injection. It passes `"consumed"` to [`console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
 
 ### Dependencies
 
-- [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console) from `august.io`: [`write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write)<`T`> (`value`: `T`) → `void`.
+It uses [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console) ([`write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write)) from `august.io`. These links explain the full dependency contracts.
 
 ::::
 

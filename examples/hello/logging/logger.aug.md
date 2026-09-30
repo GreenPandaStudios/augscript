@@ -3,19 +3,15 @@
 # `logger.aug`
 
 <a id="symbol-Logger"></a>
-## `Logger` · interface · [source](logger.aug#L3)
+## `Logger` · interface · [source](logger.aug#L4)
 
 Writes messages to an application log.
 
 <a id="symbol-Logger.log"></a>
-### `Logger.log` · [source](logger.aug#L8)
+### `Logger.log` · [source](logger.aug#L9)
 
-Writes one message.
-
-**Inputs:** Resolve [`Console`](../.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console) as `console`. Take `message` (`string`) — Text to write.
-
-Uses [`Console.write`](../.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write).
+Writes one message. It takes `message` as a string (Text to write). It gets `console` ([`Console`](../.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console)) from dependency injection. It can call [`Console.write`](../.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write).
 
 ## Dependencies
 
-- [`Console`](../.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console) from `august.io`: [`write`](../.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write)<`T`> (`value`: `T`) → `void`.
+It uses [`Console`](../.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console) ([`write`](../.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write)) from `august.io`. These links explain the full dependency contracts.

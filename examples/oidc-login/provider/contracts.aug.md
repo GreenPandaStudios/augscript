@@ -3,60 +3,56 @@
 # `contracts.aug`
 
 <a id="symbol-AuthorizationRequest"></a>
-## `AuthorizationRequest` · immutable record · [source](contracts.aug#L2)
+## `AuthorizationRequest` · immutable record · [source](contracts.aug#L3)
 
-A provider request is bound to a browser cookie, a form CSRF token, and a registered client.
-
-**Inputs:** Take `clientId` (`string`); store read-only. Take `redirectUri` (`string`); store read-only. Take `state` (`string`); store read-only. Take `nonce` (`string`); store read-only. Take `challenge` (`string`); store read-only. Take `browser` (`string`); store read-only. Take `csrf` (`string`); store read-only. Take `expires` (`int`); store read-only.
+A provider request is bound to a browser cookie, a form CSRF token, and a registered client. It takes `clientId`, `redirectUri`, `state`, `nonce`, `challenge`, `browser`, and `csrf` as strings, kept read-only and `expires` as an integer, kept read-only.
 
 <a id="symbol-AuthorizationCode"></a>
-## `AuthorizationCode` · immutable record · [source](contracts.aug#L4)
+## `AuthorizationCode` · immutable record · [source](contracts.aug#L5)
 
-Codes are short-lived, single-use and bound to a redirect URI and S256 challenge.
-
-**Inputs:** Take `clientId` (`string`); store read-only. Take `redirectUri` (`string`); store read-only. Take `challenge` (`string`); store read-only. Take `nonce` (`string`); store read-only. Take `subject` (`string`); store read-only. Take `name` (`string`); store read-only. Take `expires` (`int`); store read-only.
+Codes are short-lived, single-use and bound to a redirect URI and S256 challenge. It takes `clientId`, `redirectUri`, `challenge`, `nonce`, `subject`, and `name` as strings, kept read-only and `expires` as an integer, kept read-only.
 
 <a id="symbol-IdClaims"></a>
-## `IdClaims` · immutable record · [source](contracts.aug#L5)
+## `IdClaims` · immutable record · [source](contracts.aug#L6)
 
-**Inputs:** Take `iss` (`string`); store read-only. Take `sub` (`string`); store read-only. Take `aud` (`string`); store read-only. Take `exp` (`int`); store read-only. Take `iat` (`int`); store read-only. Take `nonce` (`string`); store read-only. Take `name` (`string`); store read-only.
+It takes `iss`, `sub`, and `aud` as strings, kept read-only, `exp` and `iat` as integers, kept read-only, and `nonce` and `name` as strings, kept read-only.
 
 <a id="symbol-AccessGrant"></a>
-## `AccessGrant` · immutable record · [source](contracts.aug#L6)
+## `AccessGrant` · immutable record · [source](contracts.aug#L7)
 
-**Inputs:** Take `subject` (`string`); store read-only. Take `name` (`string`); store read-only. Take `expires` (`int`); store read-only.
+It takes `subject` and `name` as strings, kept read-only and `expires` as an integer, kept read-only.
 
 <a id="symbol-TokenResponse"></a>
-## `TokenResponse` · immutable record · [source](contracts.aug#L7)
+## `TokenResponse` · immutable record · [source](contracts.aug#L8)
 
-**Inputs:** Take `token_type` (`string`); store read-only. Take `access_token` (`string`); store read-only. Take `id_token` (`string`); store read-only. Take `expires_in` (`int`); store read-only. Take `scope` (`string`); store read-only.
+It takes `token_type`, `access_token`, and `id_token` as strings, kept read-only, `expires_in` as an integer, kept read-only, and `scope` as a string, kept read-only.
 
 <a id="symbol-OAuthError"></a>
-## `OAuthError` · immutable record · [source](contracts.aug#L8)
+## `OAuthError` · immutable record · [source](contracts.aug#L9)
 
-**Inputs:** Take `error` (`string`); store read-only. Take `error_description` (`string`); store read-only.
+It takes `error` and `error_description` as strings, kept read-only.
 
 <a id="symbol-TokenForm"></a>
-## `TokenForm` · immutable record · [source](contracts.aug#L9)
+## `TokenForm` · immutable record · [source](contracts.aug#L10)
 
-**Inputs:** Take `grant_type` (`string`); store read-only. Take `code` (`string`); store read-only. Take `redirect_uri` (`string`); store read-only. Take `client_id` (`string`); store read-only. Take `code_verifier` (`string`); store read-only.
+It takes `grant_type`, `code`, `redirect_uri`, `client_id`, and `code_verifier` as strings, kept read-only.
 
 <a id="symbol-LoginForm"></a>
-## `LoginForm` · immutable record · [source](contracts.aug#L10)
+## `LoginForm` · immutable record · [source](contracts.aug#L11)
 
-**Inputs:** Take `request_id` (`string`); store read-only. Take `csrf` (`string`); store read-only. Take `username` (`string`); store read-only. Take `password` (`string`); store read-only.
+It takes `request_id`, `csrf`, `username`, and `password` as strings, kept read-only.
 
 <a id="symbol-UserInfo"></a>
-## `UserInfo` · immutable record · [source](contracts.aug#L11)
+## `UserInfo` · immutable record · [source](contracts.aug#L12)
 
-**Inputs:** Take `sub` (`string`); store read-only. Take `name` (`string`); store read-only.
+It takes `sub` and `name` as strings, kept read-only.
 
 <a id="symbol-LoginError"></a>
-## `LoginError` · class · [source](contracts.aug#L12)
+## `LoginError` · class · [source](contracts.aug#L13)
 
-Implements `Error`.
+It implements `Error`.
 
 <a id="symbol-CodeError"></a>
-## `CodeError` · class · [source](contracts.aug#L14)
+## `CodeError` · class · [source](contracts.aug#L15)
 
-Implements `Error`.
+It implements `Error`.

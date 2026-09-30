@@ -1,3 +1,4 @@
+// aug-spec: "console.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Console from august.io
 import Logger from logger
 ConsoleLogger() implements Logger {

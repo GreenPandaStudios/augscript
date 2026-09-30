@@ -49,6 +49,7 @@ pageClass: aug-example-page
 ::: code-group
 
 ```aug [Indentation]
+// aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Crypto and GnuTlsCrypto from august.crypto
 import Clock and SystemClock from august.time
 import HttpClient and WebHttpClient from august.web
@@ -77,6 +78,7 @@ serve home and me and logout and startLogin and loginCallback and discovery and 
 ```
 
 ```aug [Braces]
+// aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Crypto and GnuTlsCrypto from august.crypto
 import Clock and SystemClock from august.time
 import HttpClient and WebHttpClient from august.web
@@ -121,58 +123,33 @@ Listen on `127.0.0.1`. Limit request bodies to 16384 bytes and buffered response
 
 ### Providers
 
-- Provide [`GnuTlsCrypto`](dependencies/august/0.19.0/crypto/contracts.md#symbol-GnuTlsCrypto) for `Crypto`. Share one instance.
-- Provide [`SystemClock`](dependencies/august/0.19.0/time/contracts.md#symbol-SystemClock) for `Clock`. Share one instance.
-- Provide [`WebHttpClient`](dependencies/august/0.19.0/web/contracts.md#symbol-WebHttpClient) for `HttpClient`. Share one instance.
-- Provide [`MemorySigningKeys`](common/keys.md#symbol-MemorySigningKeys) for `SigningKeys`. Share one instance. Allow shared mutation.
-- Provide [`MemoryStore<LoginTransaction>`](dependencies/august/0.19.0/memory/store.md#symbol-MemoryStore) for `ExpiringStore<LoginTransaction>`. Share one instance. Allow shared mutation.
-- Provide [`MemoryStore<AuthorizationRequest>`](dependencies/august/0.19.0/memory/store.md#symbol-MemoryStore) for `ExpiringStore<AuthorizationRequest>`. Share one instance. Allow shared mutation.
-- Provide [`MemoryStore<AuthorizationCode>`](dependencies/august/0.19.0/memory/store.md#symbol-MemoryStore) for `ExpiringStore<AuthorizationCode>`. Share one instance. Allow shared mutation.
-- Provide [`MemoryStore<SessionClaims>`](dependencies/august/0.19.0/memory/store.md#symbol-MemoryStore) for `ExpiringStore<SessionClaims>`. Share one instance. Allow shared mutation.
-- Provide [`MemoryStore<AccessGrant>`](dependencies/august/0.19.0/memory/store.md#symbol-MemoryStore) for `ExpiringStore<AccessGrant>`. Share one instance. Allow shared mutation.
+`Crypto` is provided by [`GnuTlsCrypto`](dependencies/august/0.19.0/crypto/contracts.md#symbol-GnuTlsCrypto). The same instance is shared. `Clock` is provided by [`SystemClock`](dependencies/august/0.19.0/time/contracts.md#symbol-SystemClock). The same instance is shared.
+
+`HttpClient` is provided by [`WebHttpClient`](dependencies/august/0.19.0/web/contracts.md#symbol-WebHttpClient). The same instance is shared.
+
+`SigningKeys` is provided by [`MemorySigningKeys`](common/keys.md#symbol-MemorySigningKeys). The same instance is shared. Shared mutation is allowed.
+
+`ExpiringStore<LoginTransaction>` is provided by [`MemoryStore<LoginTransaction>`](dependencies/august/0.19.0/memory/store.md#symbol-MemoryStore). The same instance is shared. Shared mutation is allowed.
+
+`ExpiringStore<AuthorizationRequest>` is provided by [`MemoryStore<AuthorizationRequest>`](dependencies/august/0.19.0/memory/store.md#symbol-MemoryStore). The same instance is shared. Shared mutation is allowed.
+
+`ExpiringStore<AuthorizationCode>` is provided by [`MemoryStore<AuthorizationCode>`](dependencies/august/0.19.0/memory/store.md#symbol-MemoryStore). The same instance is shared. Shared mutation is allowed.
+
+`ExpiringStore<SessionClaims>` is provided by [`MemoryStore<SessionClaims>`](dependencies/august/0.19.0/memory/store.md#symbol-MemoryStore). The same instance is shared. Shared mutation is allowed.
+
+`ExpiringStore<AccessGrant>` is provided by [`MemoryStore<AccessGrant>`](dependencies/august/0.19.0/memory/store.md#symbol-MemoryStore). The same instance is shared. Shared mutation is allowed.
 
 ### Startup
 
-- Try:
-  - Call [`initializeKeys`](common/keys.md#symbol-initializeKeys) using `Crypto` for `crypto`, `SigningKeys` for `keys`.
-- Catch `CryptoError` as `error`:
-  - Call `print` with `value` as `"Cryptographic initialization failed"`.
-  - Call `exit` with `status` as `1`.
-- Catch [`KeyError`](common/keys.md#symbol-KeyError) as `error`:
-  - Call `print` with `value` as `"Signing keys could not be initialized"`.
-  - Call `exit` with `status` as `1`.
-- Serve [`home`](client/endpoints.md#symbol-home), [`me`](client/endpoints.md#symbol-me), [`logout`](client/logout.md#symbol-logout), [`startLogin`](client/login.md#symbol-startLogin), [`loginCallback`](client/login.md#symbol-loginCallback), [`discovery`](provider/discovery.md#symbol-discovery), [`jwks`](provider/discovery.md#symbol-jwks), [`authorize`](provider/authorization.md#symbol-authorize), [`providerLogin`](provider/authorization.md#symbol-providerLogin), [`token`](provider/token.md#symbol-token), [`userinfo`](provider/userinfo.md#symbol-userinfo) on port `8787`.
+It tries to call [`initializeKeys`](common/keys.md#symbol-initializeKeys) using injected `Crypto` for `crypto` and `SigningKeys` for `keys`. If this work raises `CryptoError`, it prints `"Cryptographic initialization failed"`; then it calls `exit` with `status` `1`. If this work raises [`KeyError`](common/keys.md#symbol-KeyError), it prints `"Signing keys could not be initialized"`; then it calls `exit` with `status` `1`. It serves [`home`](client/endpoints.md#symbol-home), [`me`](client/endpoints.md#symbol-me), [`logout`](client/logout.md#symbol-logout), [`startLogin`](client/login.md#symbol-startLogin), [`loginCallback`](client/login.md#symbol-loginCallback), [`discovery`](provider/discovery.md#symbol-discovery), [`jwks`](provider/discovery.md#symbol-jwks), [`authorize`](provider/authorization.md#symbol-authorize), [`providerLogin`](provider/authorization.md#symbol-providerLogin), [`token`](provider/token.md#symbol-token), and [`userinfo`](provider/userinfo.md#symbol-userinfo) on port `8787`.
 
 ### Dependencies
 
-- [`GnuTlsCrypto`](dependencies/august/0.19.0/crypto/contracts.md#symbol-GnuTlsCrypto) from `august.crypto`.
-- [`RsaJwks`](dependencies/august/0.19.0/crypto/jose.md#symbol-RsaJwks).
-- [`MemoryStore`](dependencies/august/0.19.0/memory/store.md#symbol-MemoryStore) from `august.memory`.
-- [`SystemClock`](dependencies/august/0.19.0/time/contracts.md#symbol-SystemClock) from `august.time`.
-- [`WebHttpClient`](dependencies/august/0.19.0/web/contracts.md#symbol-WebHttpClient) from `august.web`.
-- [`LogoutForm`](client/contracts.md#symbol-LogoutForm).
-- [`home`](client/endpoints.md#symbol-home) (`token`: `optional string` from HTTP cookie `aug_session`) → `HttpResponse<Html>`; can fail with `KeyError`, `TimeError`, `HttpError` from `client`.
-- [`me`](client/endpoints.md#symbol-me) (`token`: `optional string` from HTTP cookie `aug_session`) → `HttpResponse<UserInfo>`; can fail with `SessionError`, `KeyError`, `TimeError`, `HttpError` from `client`.
-- [`loginCallback`](client/login.md#symbol-loginCallback) (`code`: `string` from HTTP query, `state`: `string` from HTTP query, `browser`: `optional string` from HTTP cookie `aug_login`) → `HttpResponse<Html>`; can fail with `SessionError`, `CryptoError`, `TimeError`, `KeyError`, `StoreFull`, `JwtError`, `JsonError`, `HttpError` from `client`.
-- [`startLogin`](client/login.md#symbol-startLogin) (no caller inputs) → `HttpResponse<Html>`; can fail with `SessionError`, `CryptoError`, `TimeError`, `StoreFull`, `HttpError` from `client`.
-- [`logout`](client/logout.md#symbol-logout) (`input`: [`LogoutForm`](client/contracts.md#symbol-LogoutForm) from HTTP form, `token`: `optional string` from HTTP cookie `aug_session`, `origin`: `optional string` from HTTP header) → `HttpResponse<Html>`; can fail with `SessionError`, `KeyError`, `TimeError`, `CryptoError`, `HttpError` from `client`.
-- [`KeyError`](common/keys.md#symbol-KeyError) from `common`.
-- [`MemorySigningKeys`](common/keys.md#symbol-MemorySigningKeys) from `common`.
-- [`initializeKeys`](common/keys.md#symbol-initializeKeys) (no caller inputs) → `void`; can fail with `CryptoError`, `KeyError` from `common`.
-- [`authorize`](provider/authorization.md#symbol-authorize) (`response_type`: `string` from HTTP query, `client_id`: `string` from HTTP query, `redirect_uri`: `string` from HTTP query, `requestedScope`: `string` from HTTP query `scope`, `state`: `string` from HTTP query, `nonce`: `string` from HTTP query, `code_challenge`: `string` from HTTP query, `code_challenge_method`: `string` from HTTP query) → `HttpResponse<Html>`; can fail with `LoginError`, `CryptoError`, `TimeError`, `StoreFull`, `HttpError` from `provider`.
-- [`providerLogin`](provider/authorization.md#symbol-providerLogin) (`form`: [`LoginForm`](provider/contracts.md#symbol-LoginForm) from HTTP form, `browser`: `optional string` from HTTP cookie `aug_authorize`, `origin`: `optional string` from HTTP header `origin`) → `HttpResponse<Html>`; can fail with `CryptoError`, `TimeError`, `StoreFull`, `HttpError` from `provider`.
-- [`LoginForm`](provider/contracts.md#symbol-LoginForm).
-- [`UserInfo`](provider/contracts.md#symbol-UserInfo).
-- [`Discovery`](provider/discovery.md#symbol-Discovery).
-- [`discovery`](provider/discovery.md#symbol-discovery) (no caller inputs) → [`Discovery`](provider/discovery.md#symbol-Discovery) from `provider`.
-- [`jwks`](provider/discovery.md#symbol-jwks) (no caller inputs) → [`RsaJwks`](dependencies/august/0.19.0/crypto/jose.md#symbol-RsaJwks); can fail with `KeyError`, `CryptoError` from `provider`.
-- [`token`](provider/token.md#symbol-token) (`http`: `HttpRequest` from HTTP request) → `HttpResponse<Json>`; can fail with `CryptoError`, `TimeError`, `KeyError`, `JwtError`, `StoreFull`, `HttpError` from `provider`.
-- [`userinfo`](provider/userinfo.md#symbol-userinfo) (`authorization`: `optional string` from HTTP header) → `HttpResponse<Json>`; can fail with `TimeError`, `HttpError` from `provider`.
+It uses [`GnuTlsCrypto`](dependencies/august/0.19.0/crypto/contracts.md#symbol-GnuTlsCrypto) from `august.crypto`. It uses [`MemoryStore`](dependencies/august/0.19.0/memory/store.md#symbol-MemoryStore) from `august.memory`. It uses [`SystemClock`](dependencies/august/0.19.0/time/contracts.md#symbol-SystemClock) from `august.time`. It uses [`WebHttpClient`](dependencies/august/0.19.0/web/contracts.md#symbol-WebHttpClient) from `august.web`.
 
-### Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
+It uses [`home`](client/endpoints.md#symbol-home), [`me`](client/endpoints.md#symbol-me), [`loginCallback`](client/login.md#symbol-loginCallback), [`startLogin`](client/login.md#symbol-startLogin), and [`logout`](client/logout.md#symbol-logout) from `client`. It uses [`KeyError`](common/keys.md#symbol-KeyError), [`MemorySigningKeys`](common/keys.md#symbol-MemorySigningKeys), and [`initializeKeys`](common/keys.md#symbol-initializeKeys) from `common`. It uses [`authorize`](provider/authorization.md#symbol-authorize), [`providerLogin`](provider/authorization.md#symbol-providerLogin), [`discovery`](provider/discovery.md#symbol-discovery), [`jwks`](provider/discovery.md#symbol-jwks), [`token`](provider/token.md#symbol-token), and [`userinfo`](provider/userinfo.md#symbol-userinfo) from `provider`. These links explain the full dependency contracts.
 
-- `exit`: Exit from main with a status from 0 to 255 after cancellation and cleanup.
-- `print`: Composition and test output. Other callables receive Console and declare uses console.write.
+Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).
 
 ::::
 

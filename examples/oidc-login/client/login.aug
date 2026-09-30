@@ -1,3 +1,4 @@
+// aug-spec: "login.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import LoginTransaction and SessionClaims and SessionError from contracts
 import discover and responseJson and validateIdentity from protocol
 import TokenResponse and UserInfo from provider

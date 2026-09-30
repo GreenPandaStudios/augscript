@@ -6,6 +6,7 @@ import {checkProject} from '../src/checker.ts';
 import {loadConfig} from '../src/config.ts';
 import {installPackages} from '../src/package-manager.ts';
 import {formatFile} from '../src/formatter.ts';
+import {parse} from '../src/parser.ts';
 import {generateSpecs, updateSpecs} from '../src/spec.ts';
 import {checkUnitTests, discoverTests, mergeTestAnalysis} from '../src/testing.ts';
 
@@ -34,7 +35,7 @@ function checkedProject(project) {
 }
 
 /** Work in a temporary copy, including offline local package installation. Source files stay untouched. */
-export function withExampleProject(example, action) {
+export function withExampleProject(example, action, overrides) {
   const temporary=realpathSync(mkdtempSync(join(tmpdir(),'aug-wiki-example-')));
   try {
     const source=join(root,example.path), packages=example.path.startsWith('examples/packages/');
@@ -47,13 +48,13 @@ export function withExampleProject(example, action) {
     }});
     const directory=packages?join(destination,basename(source)):destination;
     if(Object.keys(loadConfig(directory).config.packages).length)installPackages(directory,false,true);
-    const project=loadProject(directory), checked=checkedProject(project);
+    const project=loadProject(directory,overrides), checked=checkedProject(project);
     return action({project,checked,directory,source});
   } finally {rmSync(temporary,{recursive:true,force:true});}
 }
 
 /** Build source views with the real formatter and explanations with the real spec compiler. */
-export function buildExamplePages() {
+export function buildExamplePages(overrides) {
   const outputs=new Map();
   const add=(path,text)=>{
     if(!/^(?:docs\/examples|examples|benchmarks)\//.test(path)||relative(root,resolve(root,path)).startsWith('..'))
@@ -102,7 +103,9 @@ export function buildExamplePages() {
       const displayName=dependency?identity.replace(/^\.aug-spec\//,''):identity;
       const file=project.files.get(artifact.source);
       if(!file)throw new Error('Cannot find source for '+identity);
-      const formats=['indent','braces'].map(style=>formatFile({...project,config:{...project.config,block_style:style,indentation:'spaces'}},file));
+      const hinted=artifacts.find(output=>output.kind==='source-hint'&&output.source===file.path);
+      const displayed=hinted?parse(file.path,hinted.text).file:file;
+      const formats=['indent','braces'].map(style=>formatFile({...project,config:{...project.config,block_style:style,indentation:'spaces'}},displayed));
       let text=artifact.text.replace(/^<!--[^\n]*-->\n\n# [^\n]+\n\n/,'');
       text=text.replace(/<a id="([^"]+)"><\/a>\n\n(#{2,6} [^\n]+)/g,(_,id,heading)=>heading+' {#'+safeAnchor(id)+'}');
       // Promote source links to the readable code on the same wiki; keep exact declaration anchors.
@@ -121,7 +124,7 @@ export function buildExamplePages() {
         '::::: example-compare\n\n:::: example-code\n\n## Code {#code}\n\n::: code-group\n\n'+fence(formats[0],'aug','Indentation')+'\n'+fence(formats[1],'aug','Braces')+'\n:::\n\n::::\n\n'+
         ':::: example-spec\n\n## Compiled specification {#specification}\n\n'+text+'\n::::\n\n:::::\n');
     }
-  });
+  },overrides);
   let index=frontmatter('Example projects','examples and benchmarks')+'# Example projects\n\n'+
     'Browse complete August projects here in the wiki. Each source file includes formatted code in **Indentation** and **Braces** styles and its actual compiled specification. Dependency links open the matching version’s source and explanation in this wiki.\n\n'+
     'Start with [Hello world with dependencies](hello/index.md), then try [a small tested application](developer-workflow/index.md). The [OpenID Connect application](oidc-login/index.md) shows a larger project with server-rendered pages and HTTP handlers.\n\n';

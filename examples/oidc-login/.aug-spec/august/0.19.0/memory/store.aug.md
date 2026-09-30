@@ -3,116 +3,69 @@
 # `store.aug`
 
 <a id="symbol-StoreFull"></a>
-## `StoreFull` · class · [source](store.aug#L3)
+## `StoreFull` · class · [source](store.aug#L4)
 
-The bounded store could not accept another live entry. Implements `Error`.
+The bounded store could not accept another live entry. It implements `Error`.
 
 <a id="symbol-ExpiringStore"></a>
-## `ExpiringStore` · capability interface · [source](store.aug#L8)
+## `ExpiringStore` · capability interface · [source](store.aug#L9)
 
-A bounded, expiring capability for immutable values. Each generic DI binding has its own table. Type parameters: `T` must satisfy `Data`.
+A bounded, expiring capability for immutable values. Each generic DI binding has its own table. The type parameters are `T` which must satisfy `Data`.
 
 <a id="symbol-ExpiringStore.put"></a>
-### `ExpiringStore.put` · [source](store.aug#L10)
+### `ExpiringStore.put` · [source](store.aug#L11)
 
-Remove expired entries, then store at most 512 live entries. Time is supplied by the caller.
+Remove expired entries, then store at most 512 live entries. Time is supplied by the caller. It takes `key` as a string, `value` as `T`, and `expires` and `now` as integers.
 
-**Inputs:** Take `key` (`string`). Take `value` (`T`). Take `expires` (`int`). Take `now` (`int`).
-
-Uses [`ExpiringStore.put`](store.aug.md#symbol-ExpiringStore.put). Can fail with `StoreFull`.
+It can call [`ExpiringStore.put`](store.aug.md#symbol-ExpiringStore.put). Failures can raise [`StoreFull`](store.aug.md#symbol-StoreFull).
 
 <a id="symbol-ExpiringStore.take"></a>
-### `ExpiringStore.take` · [source](store.aug#L12)
+### `ExpiringStore.take` · [source](store.aug#L13)
 
-Atomically remove a value. Expired or absent entries return null.
+Atomically remove a value. Expired or absent entries return null. It takes `key` as a string and `now` as an integer.
 
-**Inputs:** Take `key` (`string`). Take `now` (`int`).
-
-Returns `optional T`. Uses [`ExpiringStore.take`](store.aug.md#symbol-ExpiringStore.take).
+It returns `optional T`. It can call [`ExpiringStore.take`](store.aug.md#symbol-ExpiringStore.take).
 
 <a id="symbol-ExpiringStore.get"></a>
-### `ExpiringStore.get` · [source](store.aug#L14)
+### `ExpiringStore.get` · [source](store.aug#L15)
 
-Read a live value without consuming it.
-
-**Inputs:** Take `key` (`string`). Take `now` (`int`).
-
-Returns `optional T`. Uses [`ExpiringStore.get`](store.aug.md#symbol-ExpiringStore.get).
+Read a live value without consuming it. It takes `key` as a string and `now` as an integer. It returns `optional T`. It can call [`ExpiringStore.get`](store.aug.md#symbol-ExpiringStore.get).
 
 <a id="symbol-MemoryStore"></a>
-## `MemoryStore` · class · [source](store.aug#L17)
+## `MemoryStore` · class · [source](store.aug#L18)
 
-A synchronized table with short critical sections and no I/O while locked. Implements [`ExpiringStore`](store.aug.md#symbol-ExpiringStore). Type parameters: `T` must satisfy `Data`.
-
-Initialize fields:
-
-- `_entries` (`Shared<Map<string,_Entry<T>>>`) = a new `Shared` with `value` as an empty map from `string` to [`_Entry<T>`](store.aug.md#symbol-_Entry); read-only, private.
+A synchronized table with short critical sections and no I/O while locked. It implements [`ExpiringStore<T>`](store.aug.md#symbol-ExpiringStore). The type parameters are `T` which must satisfy `Data`. The read-only, private field `_entries` has type `Shared<Map<string,_Entry<T>>>` and starts as a `Shared` with `value` from an empty map from `string` to [`_Entry<T>`](store.aug.md#symbol-_Entry).
 
 <a id="symbol-MemoryStore.put"></a>
-### `MemoryStore.put` · [source](store.aug#L19)
+### `MemoryStore.put` · [source](store.aug#L20)
 
-Remove expired entries, then store at most 512 live entries. Time is supplied by the caller.
+Remove expired entries, then store at most 512 live entries. Time is supplied by the caller. It takes `key` as a string, `value` as `T`, and `expires` and `now` as integers. Failures can raise [`StoreFull`](store.aug.md#symbol-StoreFull).
 
-**Inputs:** Take `key` (`string`). Take `value` (`T`). Take `expires` (`int`). Take `now` (`int`).
+It sets `entry` to a [`_Entry`](store.aug.md#symbol-_Entry) for `T` with `value` and `expires`. While holding the lock on `_entries` as mutable `entries`, for each `name` and `saved` in a snapshot of `entries`, if `saved.expires` is at most `now`, it removes the key `name` from `entries`. After the loop, it checks that the number of elements in `entries` is less than `512` or whether `entries` contains the key `key` returns true. It raises a [`StoreFull`](store.aug.md#symbol-StoreFull) at the first failed check.
 
-Uses [`ExpiringStore<T>.put`](store.aug.md#symbol-ExpiringStore.put). Can fail with `StoreFull`.
-
-- Set `entry` to a new [`_Entry`](store.aug.md#symbol-_Entry) with type arguments `T` with `value`, `expires`.
-- Lock `_entries` as mutable `entries` for this block:
-  - For each `name` and `saved` in a snapshot of `entries`:
-    - If `expires` of `saved` is at most `now`:
-      - Call `take` on `entries` with `key` as `name`.
-  - If (the result of `length` on `entries` is at least `512`) and not (the result of `contains` on `entries` with `key`):
-    - Fail with a new [`StoreFull`](store.aug.md#symbol-StoreFull).
-  - Call `set` on `entries` with `key`, `value` as `entry`.
+It stores `entry` in `entries` under `key`. Release this lock when the block exits, including on return or failure.
 
 <a id="symbol-MemoryStore.take"></a>
-### `MemoryStore.take` · [source](store.aug#L28)
+### `MemoryStore.take` · [source](store.aug#L29)
 
-Atomically remove a value. Expired or absent entries return null.
+Atomically remove a value. Expired or absent entries return null. It takes `key` as a string and `now` as an integer.
 
-**Inputs:** Take `key` (`string`). Take `now` (`int`).
+While holding the lock on `_entries` as mutable `entries`, it obtains `entries.take` with `key`. If no value is found, it returns null. The non-null result becomes `saved`. It returns null if `saved.expires` is at most `now`, or `saved.value` otherwise.
 
-Returns `optional T`. Uses [`ExpiringStore<T>.take`](store.aug.md#symbol-ExpiringStore.take).
-
-- Lock `_entries` as mutable `entries` for this block:
-  - Match the result of `take` on `entries` with `key`:
-    - A null value, including omitted optional input:
-      - Return null.
-    - A present, non-null value, named `saved`:
-      - If `expires` of `saved` is at most `now`:
-        - Return null.
-      - Return `value` of `saved`.
+Release this lock when the block exits, including on return or failure.
 
 <a id="symbol-MemoryStore.get"></a>
-### `MemoryStore.get` · [source](store.aug#L37)
+### `MemoryStore.get` · [source](store.aug#L38)
 
-Read a live value without consuming it.
+Read a live value without consuming it. It takes `key` as a string and `now` as an integer.
 
-**Inputs:** Take `key` (`string`). Take `now` (`int`).
+While holding the lock on `_entries` as mutable `entries`, it obtains the value under `key` in `entries`. If no value is found, it returns null. The non-null result becomes `saved`. It returns null if `saved.expires` is at most `now`, or `saved.value` otherwise.
 
-Returns `optional T`. Uses [`ExpiringStore<T>.get`](store.aug.md#symbol-ExpiringStore.get).
-
-- Lock `_entries` as mutable `entries` for this block:
-  - Match the result of `get` on `entries` with `key`:
-    - A null value, including omitted optional input:
-      - Return null.
-    - A present, non-null value, named `saved`:
-      - If `expires` of `saved` is at most `now`:
-        - Return null.
-      - Return `value` of `saved`.
+Release this lock when the block exits, including on return or failure.
 
 <a id="symbol-_Entry"></a>
-## `_Entry` · immutable record · [source](store.aug#L5)
+## `_Entry` · immutable record · [source](store.aug#L6)
 
-Private to this file. Type parameters: `T` must satisfy `Data`.
+It is private to this file. The type parameters are `T` which must satisfy `Data`. It takes `value` as `T`, kept read-only and `expires` as an integer, kept read-only.
 
-**Inputs:** Take `value` (`T`); store read-only. Take `expires` (`int`); store read-only.
-
-## Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
-
-- `Map<string, _Entry<T>>.contains`: Check for a key, including entries whose value is null.
-- `Map<string, _Entry<T>>.get`: Read a value by key; an absent key returns null. contains distinguishes an absent key from a stored null.
-- `Map<string, _Entry<T>>.length`: Read the number of elements.
-- `Map<string, _Entry<T>>.set`: Insert or replace an entry with exclusive mutable access.
-- `Map<string, _Entry<T>>.take`: Remove and return an entry under exclusive access. An absent key returns null.
+Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).

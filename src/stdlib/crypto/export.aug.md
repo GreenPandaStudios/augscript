@@ -4,12 +4,8 @@
 
 ## Exports
 
-- Export the declaration `Crypto` from [`contracts.aug`](contracts.aug.md#symbol-Crypto).
-- Export the declaration `GnuTlsCrypto` from [`contracts.aug`](contracts.aug.md#symbol-GnuTlsCrypto).
-- Export the declaration `JwtError` from [`jose.aug`](jose.aug.md#symbol-JwtError).
-- Export the declaration `RsaJwk` from [`jose.aug`](jose.aug.md#symbol-RsaJwk).
-- Export the declaration `RsaJwks` from [`jose.aug`](jose.aug.md#symbol-RsaJwks).
-- Export the declaration `rsaJwk` from [`jose.aug`](jose.aug.md#symbol-rsaJwk).
-- Export the declaration `importJwk` from [`jose.aug`](jose.aug.md#symbol-importJwk).
-- Export the declaration `signJwt` from [`jose.aug`](jose.aug.md#symbol-signJwt).
-- Export the declaration `verifyJwt` from [`jose.aug`](jose.aug.md#symbol-verifyJwt).
+Export the declaration `Crypto` from [`contracts.aug`](contracts.aug.md#symbol-Crypto). Export the declaration `GnuTlsCrypto` from [`contracts.aug`](contracts.aug.md#symbol-GnuTlsCrypto). Export the declaration `JwtError` from [`jose.aug`](jose.aug.md#symbol-JwtError). Export the declaration `RsaJwk` from [`jose.aug`](jose.aug.md#symbol-RsaJwk).
+
+Export the declaration `RsaJwks` from [`jose.aug`](jose.aug.md#symbol-RsaJwks). Export the declaration `rsaJwk` from [`jose.aug`](jose.aug.md#symbol-rsaJwk). Export the declaration `importJwk` from [`jose.aug`](jose.aug.md#symbol-importJwk). Export the declaration `signJwt` from [`jose.aug`](jose.aug.md#symbol-signJwt).
+
+Export the declaration `verifyJwt` from [`jose.aug`](jose.aug.md#symbol-verifyJwt).

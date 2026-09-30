@@ -12,6 +12,7 @@ import { checkUnitTests, discoverTests, mergeTestAnalysis, uniqueDiagnostics } f
 import { describe, SemanticWorkspace } from './semantic.ts';
 import { formatFile, migrateFile } from './formatter.ts';
 import { updateSpecs } from './spec.ts';
+import { updateSpecHints } from './spec-hints.ts';
 import { runLanguageServer } from './lsp.ts';
 import { benchmark, compileNative, writeCoverage } from './native.ts';
 import {generateOpenApi} from './openapi.ts';
@@ -206,7 +207,7 @@ export async function main(argv: string[]): Promise<number> {
         `${passed} passed, ${failed} failed\n` + (report ? `Coverage: ${report.covered}/${report.executable} statement lines (${report.percent.toFixed(1)}%); ${report.path}\n` : ''));
       return failed ? 1 : 0;
     }
-    const checked = checkProject(project);
+    let checked = checkProject(project);
     const testChecks = checkUnitTests(project, discovered.tests);
     checked.diagnostics = uniqueDiagnostics([...checked.diagnostics, ...discovered.diagnostics,
       ...testChecks.flatMap(entry => entry.checked.diagnostics)]);
@@ -257,6 +258,10 @@ export async function main(argv: string[]): Promise<number> {
       const result=updateSpecs(checked,options.includes('--check'));
       process.stdout.write(json?JSON.stringify(result)+'\n':result.stale.length?'Stale specifications:\n'+result.stale.map(file=>'  '+file).join('\n')+'\n':`${result.files} specification artifact(s) ${options.includes('--check')?'are current':'generated'}.\n`);
       return result.stale.length?1:0;
+    }
+    if(['build','run','bench'].includes(command)) {
+      checked=updateSpecHints(checked);
+      if(checked.diagnostics.some(issue=>issue.severity!=='warning')) {printDiagnostics(checked.diagnostics,json,root);return 1;}
     }
     const generated = generateC(checked);
     if (command === 'emit-c') { process.stdout.write(generated); return 0; }

@@ -3,31 +3,25 @@
 # `logging.aug`
 
 <a id="symbol-Logger"></a>
-## `Logger` · interface · [source](logging.aug#L3)
+## `Logger` · interface · [source](logging.aug#L4)
 
 Writes a message to the application log.
 
 <a id="symbol-Logger.log"></a>
-### `Logger.log` · [source](logging.aug#L5)
+### `Logger.log` · [source](logging.aug#L6)
 
-**Inputs:** Resolve [`Console`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console) as `console`. Take `message` (`string`) — Text to display.
-
-Uses [`Console.write`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write).
+It takes `message` as a string (Text to display). It gets `console` ([`Console`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console)) from dependency injection. It can call [`Console.write`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write).
 
 <a id="symbol-ConsoleLogger"></a>
-## `ConsoleLogger` · class · [source](logging.aug#L8)
+## `ConsoleLogger` · class · [source](logging.aug#L9)
 
-Console logger shared by interceptor instances and the application. Implements [`Logger`](logging.aug.md#symbol-Logger).
+Console logger shared by interceptor instances and the application. It implements [`Logger`](logging.aug.md#symbol-Logger).
 
 <a id="symbol-ConsoleLogger.log"></a>
-### `ConsoleLogger.log` · [source](logging.aug#L9)
+### `ConsoleLogger.log` · [source](logging.aug#L10)
 
-**Inputs:** Resolve [`Console`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console) as `console`. Take `message` (`string`) — Text to display.
-
-Uses [`Console.write`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write).
-
-- Call [`Console.write`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write) on `console` with `value` as `message`.
+It takes `message` as a string (Text to display). It gets `console` ([`Console`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console)) from dependency injection. It passes `message` to [`console.write`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write).
 
 ## Dependencies
 
-- [`Console`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console) from `august.io`: [`write`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write)<`T`> (`value`: `T`) → `void`.
+It uses [`Console`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console) ([`write`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write)) from `august.io`. These links explain the full dependency contracts.

@@ -3,27 +3,18 @@
 # `credentials.aug`
 
 <a id="symbol-verifyCredentials"></a>
-## `verifyCredentials` · [source](credentials.aug#L3)
+## `verifyCredentials` · [source](credentials.aug#L4)
 
-One development account with a PBKDF2-HMAC-SHA256 verifier. Production account storage is deliberately a separate capability.
+One development account with a PBKDF2-HMAC-SHA256 verifier. Production account storage is deliberately a separate capability. It takes `username` and `password` as strings. It gets `crypto` ([`Crypto`](../.aug-spec/august/0.19.0/crypto/contracts.aug.md#symbol-Crypto)) from dependency injection.
 
-**Inputs:** Take `username` (`string`). Take `password` (`string`). Resolve [`Crypto`](../.aug-spec/august/0.19.0/crypto/contracts.aug.md#symbol-Crypto) as `crypto`.
+Failures can raise `CryptoError`.
 
-Returns `bool`. Uses [`crypto.passwordHash`](../.aug-spec/august/0.19.0/crypto/contracts.aug.md#symbol-Crypto.passwordHash), [`crypto.decodeBase64url`](../.aug-spec/august/0.19.0/crypto/contracts.aug.md#symbol-Crypto.decodeBase64url), [`crypto.equal`](../.aug-spec/august/0.19.0/crypto/contracts.aug.md#symbol-Crypto.equal). Can fail with `CryptoError`.
+If the byte length of `username` is greater than `64` or the byte length of `password` is greater than `256`, it returns `false`. It sets `actual` to [`crypto.passwordHash`](../.aug-spec/august/0.19.0/crypto/contracts.aug.md#symbol-Crypto.passwordHash) with `password` from the UTF-8 bytes of `password`, `salt` from the UTF-8 bytes of `"August demo salt v1"`, and `iterations` `600000`. It sets `expected` to `"s70USYF6WohPz2f7VLA9haS_ZgEtenviSf_HG0o7B_A"` decoded as URL-safe base64 by `crypto`. It sets `userMatches` to [`crypto.equal`](../.aug-spec/august/0.19.0/crypto/contracts.aug.md#symbol-Crypto.equal) with `left` from the UTF-8 bytes of `username` and `right` from the UTF-8 bytes of `"ada"`.
 
-- If (the result of `length` on `username` is greater than `64`) or (the result of `length` on `password` is greater than `256`):
-  - Return `false`.
-- Set `actual` to the result of [`Crypto.passwordHash`](../.aug-spec/august/0.19.0/crypto/contracts.aug.md#symbol-Crypto.passwordHash) on `crypto` with `password` as the result of `bytes` on `password`, `salt` as the result of `bytes` on `"August demo salt v1"`, `iterations` as `600000`.
-- Set `expected` to the result of [`Crypto.decodeBase64url`](../.aug-spec/august/0.19.0/crypto/contracts.aug.md#symbol-Crypto.decodeBase64url) on `crypto` with `input` as `"s70USYF6WohPz2f7VLA9haS_ZgEtenviSf_HG0o7B_A"`.
-- Set `userMatches` to the result of [`Crypto.equal`](../.aug-spec/august/0.19.0/crypto/contracts.aug.md#symbol-Crypto.equal) on `crypto` with `left` as the result of `bytes` on `username`, `right` as the result of `bytes` on `"ada"`.
-- Set `passwordMatches` to the result of [`Crypto.equal`](../.aug-spec/august/0.19.0/crypto/contracts.aug.md#symbol-Crypto.equal) on `crypto` with `left` as `actual`, `right` as `expected`.
-- Return `userMatches` and `passwordMatches`.
+It sets `passwordMatches` to [`crypto.equal`](../.aug-spec/august/0.19.0/crypto/contracts.aug.md#symbol-Crypto.equal) with `left` from `actual` and `right` from `expected`. It returns `userMatches` and `passwordMatches`.
 
 ## Dependencies
 
-- [`Crypto`](../.aug-spec/august/0.19.0/crypto/contracts.aug.md#symbol-Crypto) from `august.crypto`: [`decodeBase64url`](../.aug-spec/august/0.19.0/crypto/contracts.aug.md#symbol-Crypto.decodeBase64url) (`input`: `string`) → `Bytes`; can fail with `CryptoError`; [`equal`](../.aug-spec/august/0.19.0/crypto/contracts.aug.md#symbol-Crypto.equal) (`left`: `Bytes`, `right`: `Bytes`) → `bool`; [`passwordHash`](../.aug-spec/august/0.19.0/crypto/contracts.aug.md#symbol-Crypto.passwordHash) (`password`: `Bytes`, `salt`: `Bytes`, `iterations`: `int`) → `Bytes`; can fail with `CryptoError`.
+It uses [`Crypto`](../.aug-spec/august/0.19.0/crypto/contracts.aug.md#symbol-Crypto) ([`decodeBase64url`](../.aug-spec/august/0.19.0/crypto/contracts.aug.md#symbol-Crypto.decodeBase64url), [`equal`](../.aug-spec/august/0.19.0/crypto/contracts.aug.md#symbol-Crypto.equal), and [`passwordHash`](../.aug-spec/august/0.19.0/crypto/contracts.aug.md#symbol-Crypto.passwordHash)) from `august.crypto`. These links explain the full dependency contracts.
 
-## Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
-
-- `string.bytes`: Encode this string as immutable UTF-8 bytes.
-- `string.length`: Read the number of UTF-8 bytes. Unicode text is preserved losslessly.
+Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).

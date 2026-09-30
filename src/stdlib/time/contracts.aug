@@ -1,3 +1,4 @@
+// aug-spec: "contracts.aug.md" explains this file. Read it before changes; refresh with aug spec.
 /** An explicit clock dependency makes time-based behavior replaceable in tests. */
 capability Clock:
     /** Read whole Unix seconds in UTC. */

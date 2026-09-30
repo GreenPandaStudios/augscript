@@ -1,3 +1,4 @@
+// aug-spec: "calculator.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Console and SystemConsole from august.io
 import Logger from logging
 /** Adds two integers. */

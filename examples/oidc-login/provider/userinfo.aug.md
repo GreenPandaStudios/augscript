@@ -2,49 +2,23 @@
 
 # `userinfo.aug`
 
+Plain handler results default to HTTP 200 unless another status is declared. HttpResponse values choose their own status. Unhandled request failures return HTTP 500 and cancel the request tasks.
+
 <a id="symbol-userinfo"></a>
-## `userinfo` · [source](userinfo.aug#L7)
+## `userinfo` · [source](userinfo.aug#L8)
 
-The opaque access token is valid only at this provider. Missing, expired and malformed credentials receive the same response.
+`userinfo` handles `GET /provider/userinfo`. The opaque access token is valid only at this provider. Missing, expired and malformed credentials receive the same response.
 
-**Inputs:** Take `authorization` (`optional string`) from HTTP header; omitted means null. Resolve [`Clock`](../.aug-spec/august/0.19.0/time/contracts.aug.md#symbol-Clock) as `clock`. Resolve [`ExpiringStore<AccessGrant>`](../.aug-spec/august/0.19.0/memory/store.aug.md#symbol-ExpiringStore) as `access`.
+It takes `authorization` as `optional string` from the HTTP header. It gets `clock` ([`Clock`](../.aug-spec/august/0.19.0/time/contracts.aug.md#symbol-Clock)) and `access` ([`ExpiringStore<AccessGrant>`](../.aug-spec/august/0.19.0/memory/store.aug.md#symbol-ExpiringStore)) from dependency injection. Omitted optional inputs are null. It can also raise `TimeError` and `HttpError`.
 
-Returns `HttpResponse<Json>`. Uses [`clock.now`](../.aug-spec/august/0.19.0/time/contracts.aug.md#symbol-Clock.now), [`access.get`](../.aug-spec/august/0.19.0/memory/store.aug.md#symbol-ExpiringStore.get). Can fail with `TimeError`, `HttpError`.
+If `authorization` is null, it continues without an operation. If `authorization` is not null, using `header` for it sets `parts` to `header.split` with `separator` `" "`. If the number of elements in `parts` equals `2`, if the item at index `0` in `parts` equals `"Bearer"`, it sets `token` to the item at index `1` in `parts`. If `token` is a URL-safe ASCII token with `43` to `43` characters, if the live value in `access` under `token`, using the current time from `clock` as the current time is null, it continues without an operation.
 
-HTTP route: `GET` `/provider/userinfo`. Use status 200 when the handler returns a body; a returned HttpResponse can set its own status. An unhandled request failure returns status 500 and cancels its request tasks.
-
-- Match `authorization`:
-  - A null value, including omitted optional input:
-    - Continue.
-  - A present, non-null value, named `header`:
-    - Set `parts` to the result of `split` on `header` with `separator` as `" "`.
-    - If the result of `length` on `parts` equals `2`:
-      - Try:
-        - If the result of `get` on `parts` with `index` as `0` equals `"Bearer"`:
-          - Set `token` to the result of `get` on `parts` with `index` as `1`.
-          - If the result of `isToken` on `token` with `min` as `43`, `max` as `43` is true:
-            - Match the result of [`ExpiringStore.get`](../.aug-spec/august/0.19.0/memory/store.aug.md#symbol-ExpiringStore.get) on `access` with `key` as `token`, `now` as the result of [`Clock.now`](../.aug-spec/august/0.19.0/time/contracts.aug.md#symbol-Clock.now) on `clock`:
-              - A null value, including omitted optional input:
-                - Continue.
-              - A present, non-null value, named `grant`:
-                - Return a new `HttpResponse` with `body` as a new `Json` with `value` as a new [`UserInfo`](contracts.aug.md#symbol-UserInfo) with `sub` as `subject` of `grant`, `name` as `name` of `grant`, `headers` as the result of [`securityHeaders`](../common/headers.aug.md#symbol-securityHeaders).
-      - Catch `IndexError` as `error`:
-        - Continue.
-- Set `headers` to the result of `with` on the result of [`securityHeaders`](../common/headers.aug.md#symbol-securityHeaders) with `name` as `"www-authenticate"`, `value` as `"Bearer error=\"invalid_token\""`.
-- Return a new `HttpResponse` with `body` as a new `Json` with `value` as a map with `"error"` mapped to `"invalid_token"`, `status` as `401`, `headers`.
+If the live value in `access` under `token`, using the current time from `clock` as the current time is not null, using `grant` for it returns HTTP 200 with a `Json` with `value` from an [`UserInfo`](contracts.aug.md#symbol-UserInfo) with `sub` from `grant.subject` and `grant.name` and [`securityHeaders`](../common/headers.aug.md#symbol-securityHeaders) headers. If this work raises `IndexError`, it continues without an operation. It sets `headers` to [`securityHeaders`](../common/headers.aug.md#symbol-securityHeaders) with the header `"www-authenticate"` set to `"Bearer error=\"invalid_token\""`. It returns HTTP 401 with a `Json` with `value` from a map with `"error"` mapped to `"invalid_token"` and `headers` headers.
 
 ## Dependencies
 
-- [`ExpiringStore`](../.aug-spec/august/0.19.0/memory/store.aug.md#symbol-ExpiringStore) from `august.memory`: [`get`](../.aug-spec/august/0.19.0/memory/store.aug.md#symbol-ExpiringStore.get) (`key`: `string`, `now`: `int`) → `optional T`.
-- [`Clock`](../.aug-spec/august/0.19.0/time/contracts.aug.md#symbol-Clock) from `august.time`: [`now`](../.aug-spec/august/0.19.0/time/contracts.aug.md#symbol-Clock.now) (no caller inputs) → `int`; can fail with `TimeError`.
-- [`securityHeaders`](../common/headers.aug.md#symbol-securityHeaders) (no caller inputs) → `Headers`; can fail with `HttpError` from `common`.
-- [`AccessGrant`](contracts.aug.md#symbol-AccessGrant) from `contracts`: read `name` (`string`); read `subject` (`string`).
-- [`UserInfo`](contracts.aug.md#symbol-UserInfo) from `contracts`: construct with `sub`: `string`, `name`: `string`.
+It uses [`ExpiringStore`](../.aug-spec/august/0.19.0/memory/store.aug.md#symbol-ExpiringStore) ([`get`](../.aug-spec/august/0.19.0/memory/store.aug.md#symbol-ExpiringStore.get)) from `august.memory`. It uses [`Clock`](../.aug-spec/august/0.19.0/time/contracts.aug.md#symbol-Clock) ([`now`](../.aug-spec/august/0.19.0/time/contracts.aug.md#symbol-Clock.now)) from `august.time`. It uses [`securityHeaders`](../common/headers.aug.md#symbol-securityHeaders) from `common`. It uses [`AccessGrant`](contracts.aug.md#symbol-AccessGrant) (`name` and `subject`) and [`UserInfo`](contracts.aug.md#symbol-UserInfo) from `contracts`.
 
-## Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
+These links explain the full dependency contracts.
 
-- `Headers.with`: Return new headers with one additional validated field. Header names ignore case; duplicate values remain separate.
-- `List<string>.get`: Read a zero-based position. An invalid index raises checked IndexError. Reference results grant reading.
-- `List<string>.length`: Read the number of elements.
-- `string.isToken`: Require an ASCII RFC 3986 unreserved token with a bounded length.
-- `string.split`: Split at an exact separator, preserving empty parts.
+Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).

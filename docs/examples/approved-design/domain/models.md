@@ -33,11 +33,13 @@ pageClass: aug-example-page
 ::: code-group
 
 ```aug [Indentation]
+// aug-spec: "models.aug.md" explains this file. Read it before changes; refresh with aug spec.
 /** Immutable fruit data, with public construction labels and structural equality. */
 record Fruit(int code, string name)
 ```
 
 ```aug [Braces]
+// aug-spec: "models.aug.md" explains this file. Read it before changes; refresh with aug spec.
 /** Immutable fruit data, with public construction labels and structural equality. */
 record Fruit(int code, string name)
 ```
@@ -53,9 +55,7 @@ record Fruit(int code, string name)
 <a id="symbol-Fruit"></a>
 ### `Fruit` · immutable record · [source](models.md#code)
 
-Immutable fruit data, with public construction labels and structural equality.
-
-**Inputs:** Take `code` (`int`); store read-only. Take `name` (`string`); store read-only.
+Immutable fruit data, with public construction labels and structural equality. It takes `code` as an integer, kept read-only and `name` as a string, kept read-only.
 
 ::::
 

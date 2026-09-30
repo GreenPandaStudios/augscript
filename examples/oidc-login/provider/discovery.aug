@@ -1,3 +1,4 @@
+// aug-spec: "discovery.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import settings and SigningKeys and KeyError from common
 import Crypto and RsaJwks and rsaJwk from august.crypto
 

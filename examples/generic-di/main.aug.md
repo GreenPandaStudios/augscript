@@ -4,17 +4,14 @@
 
 ## Providers
 
-- Provide [`SystemConsole`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-SystemConsole) for `Console`. Share one instance.
-- Provide [`NumberRepository`](types.aug.md#symbol-NumberRepository) for `Repository<int>`. Share one instance.
-- Provide [`Program`](types.aug.md#symbol-Program) for `app`. Share one instance. Needs `Repository<int>`.
+`Console` is provided by [`SystemConsole`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-SystemConsole). The same instance is shared. `Repository<int>` is provided by [`NumberRepository`](types.aug.md#symbol-NumberRepository). The same instance is shared.
+
+`app` is provided by [`Program`](types.aug.md#symbol-Program). The same instance is shared. It requires bindings for `Repository<int>`.
 
 ## Startup
 
-- Set `program` to the instance provided for `app`.
-- Call [`Program.start`](types.aug.md#symbol-Program.start) on `program` using `Console` for `console`.
+It sets `program` to the instance provided for `app`. It calls [`program.start`](types.aug.md#symbol-Program.start) using injected `Console` for `console`.
 
 ## Dependencies
 
-- [`SystemConsole`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-SystemConsole) from `august.io`.
-- [`NumberRepository`](types.aug.md#symbol-NumberRepository) from `types`.
-- [`Program`](types.aug.md#symbol-Program) from `types`: [`start`](types.aug.md#symbol-Program.start) (no caller inputs) → `void`.
+It uses [`SystemConsole`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-SystemConsole) from `august.io`. It uses [`NumberRepository`](types.aug.md#symbol-NumberRepository) and [`Program`](types.aug.md#symbol-Program) ([`start`](types.aug.md#symbol-Program.start)) from `types`. These links explain the full dependency contracts.

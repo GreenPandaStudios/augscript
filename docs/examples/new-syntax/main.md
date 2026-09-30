@@ -32,6 +32,7 @@ pageClass: aug-example-page
 ::: code-group
 
 ```aug [Indentation]
+// aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Console and SystemConsole from august.io
 implement Console with SystemConsole
 import Logger from logger
@@ -47,6 +48,7 @@ print(value=count)
 ```
 
 ```aug [Braces]
+// aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Console and SystemConsole from august.io
 implement Console with SystemConsole
 import Logger from logger
@@ -71,27 +73,21 @@ print(value=count)
 
 ### Providers
 
-- Provide [`SystemConsole`](dependencies/august/0.19.0/io/contracts.md#symbol-SystemConsole) for `Console`. Share one instance.
-- Provide [`ConsoleLogger`](console.md#symbol-ConsoleLogger) for `Logger`. Share one instance.
+`Console` is provided by [`SystemConsole`](dependencies/august/0.19.0/io/contracts.md#symbol-SystemConsole). The same instance is shared. `Logger` is provided by [`ConsoleLogger`](console.md#symbol-ConsoleLogger). The same instance is shared.
 
 ### Startup
 
-- Set `greeter` to a new [`Greeter`](greeter.md#symbol-Greeter) with `x` as `4` using `Logger` for `logger`.
-- Call [`Greeter.greet`](greeter.md#symbol-Greeter.greet) on `greeter` with `name` as `"AugScript"` using `Console` for `console`.
-- Set `count` of type `int` to `7`.
-- Set `count` to the result of [`increment`](math.md#symbol-increment) with `value` as `count`.
-- Call `print` with `value` as `count`.
+It sets `greeter` to a [`Greeter`](greeter.md#symbol-Greeter) with `x` `4` using injected `Logger` for `logger`. It passes `"AugScript"` to [`greeter.greet`](greeter.md#symbol-Greeter.greet), using injected `Console`. It sets `count` to `7`. It sets `count` to [`increment`](math.md#symbol-increment) with `value` from `count`.
+
+It prints `count`.
 
 ### Dependencies
 
-- [`SystemConsole`](dependencies/august/0.19.0/io/contracts.md#symbol-SystemConsole) from `august.io`.
-- [`ConsoleLogger`](console.md#symbol-ConsoleLogger) from `console`.
-- [`Greeter`](greeter.md#symbol-Greeter) from `greeter`: construct with `x`: `int`; [`greet`](greeter.md#symbol-Greeter.greet) (`name`: `string`) → `void`.
-- [`increment`](math.md#symbol-increment) (`value`: `int`) → `int` from `math`.
+It uses [`SystemConsole`](dependencies/august/0.19.0/io/contracts.md#symbol-SystemConsole) from `august.io`. It uses [`ConsoleLogger`](console.md#symbol-ConsoleLogger) from `console`. It uses [`Greeter`](greeter.md#symbol-Greeter) ([`greet`](greeter.md#symbol-Greeter.greet)) from `greeter`. It uses [`increment`](math.md#symbol-increment) from `math`.
 
-### Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
+These links explain the full dependency contracts.
 
-- `print`: Composition and test output. Other callables receive Console and declare uses console.write.
+Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).
 
 ::::
 

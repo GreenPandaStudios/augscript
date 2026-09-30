@@ -4,24 +4,18 @@
 
 ## Providers
 
-- Provide [`SystemConsole`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-SystemConsole) for `Console`. Share one instance.
-- Provide [`ConsoleLogger`](console.aug.md#symbol-ConsoleLogger) for `Logger`. Share one instance.
+`Console` is provided by [`SystemConsole`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-SystemConsole). The same instance is shared. `Logger` is provided by [`ConsoleLogger`](console.aug.md#symbol-ConsoleLogger). The same instance is shared.
 
 ## Startup
 
-- Set `greeter` to a new [`Greeter`](greeter.aug.md#symbol-Greeter) with `x` as `4` using `Logger` for `logger`.
-- Call [`Greeter.greet`](greeter.aug.md#symbol-Greeter.greet) on `greeter` with `name` as `"AugScript"` using `Console` for `console`.
-- Set `count` of type `int` to `7`.
-- Set `count` to the result of [`increment`](math.aug.md#symbol-increment) with `value` as `count`.
-- Call `print` with `value` as `count`.
+It sets `greeter` to a [`Greeter`](greeter.aug.md#symbol-Greeter) with `x` `4` using injected `Logger` for `logger`. It passes `"AugScript"` to [`greeter.greet`](greeter.aug.md#symbol-Greeter.greet), using injected `Console`. It sets `count` to `7`. It sets `count` to [`increment`](math.aug.md#symbol-increment) with `value` from `count`.
+
+It prints `count`.
 
 ## Dependencies
 
-- [`SystemConsole`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-SystemConsole) from `august.io`.
-- [`ConsoleLogger`](console.aug.md#symbol-ConsoleLogger) from `console`.
-- [`Greeter`](greeter.aug.md#symbol-Greeter) from `greeter`: construct with `x`: `int`; [`greet`](greeter.aug.md#symbol-Greeter.greet) (`name`: `string`) → `void`.
-- [`increment`](math.aug.md#symbol-increment) (`value`: `int`) → `int` from `math`.
+It uses [`SystemConsole`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-SystemConsole) from `august.io`. It uses [`ConsoleLogger`](console.aug.md#symbol-ConsoleLogger) from `console`. It uses [`Greeter`](greeter.aug.md#symbol-Greeter) ([`greet`](greeter.aug.md#symbol-Greeter.greet)) from `greeter`. It uses [`increment`](math.aug.md#symbol-increment) from `math`.
 
-## Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
+These links explain the full dependency contracts.
 
-- `print`: Composition and test output. Other callables receive Console and declare uses console.write.
+Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).

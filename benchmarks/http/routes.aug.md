@@ -2,16 +2,14 @@
 
 # `routes.aug`
 
-<a id="symbol-Reply"></a>
-## `Reply` · immutable record · [source](routes.aug#L1)
+Plain handler results default to HTTP 200 unless another status is declared. HttpResponse values choose their own status. Unhandled request failures return HTTP 500 and cancel the request tasks.
 
-**Inputs:** Take `id` (`int`); store read-only. Take `message` (`string`); store read-only.
+<a id="symbol-Reply"></a>
+## `Reply` · immutable record · [source](routes.aug#L2)
+
+It takes `id` as an integer, kept read-only and `message` as a string, kept read-only.
 
 <a id="symbol-reply"></a>
-## `reply` · [source](routes.aug#L2)
+## `reply` · [source](routes.aug#L3)
 
-Returns [`Reply`](routes.aug.md#symbol-Reply).
-
-HTTP route: `GET` `/bench`. Use status 200 when the handler returns a body; a returned HttpResponse can set its own status. An unhandled request failure returns status 500 and cancels its request tasks.
-
-- Return a new [`Reply`](routes.aug.md#symbol-Reply) with `id` as `7`, `message` as `"hello"`.
+`reply` handles `GET /bench`. It returns a [`Reply`](routes.aug.md#symbol-Reply) with `id` `7` and `message` `"hello"`.

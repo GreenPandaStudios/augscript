@@ -1,3 +1,4 @@
+// aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 try {
     numbers = List<int>(2, 4)
     borrow numbers {

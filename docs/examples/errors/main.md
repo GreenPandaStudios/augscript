@@ -29,6 +29,7 @@ pageClass: aug-example-page
 ::: code-group
 
 ```aug [Indentation]
+// aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import load from errors
 try:
     print(value=load(fail=true))
@@ -37,6 +38,7 @@ catch FileError error:
 ```
 
 ```aug [Braces]
+// aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import load from errors
 try {
     print(value=load(fail=true))
@@ -56,18 +58,13 @@ catch FileError error {
 
 ### Startup
 
-- Try:
-  - Call `print` with `value` as the result of [`load`](errors.md#symbol-load) with `fail` as `true`.
-- Catch `FileError` as `error`:
-  - Call `print` with `value` as `"caught FileError"`.
+It prints [`load`](errors.md#symbol-load) with `fail` `true`. If this work raises `FileError`, it prints `"caught FileError"`.
 
 ### Dependencies
 
-- [`load`](errors.md#symbol-load) (`fail`: `bool`) → `string`; can fail with `FileError` from `errors`.
+It uses [`load`](errors.md#symbol-load) from `errors`. These links explain the full dependency contracts.
 
-### Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
-
-- `print`: Composition and test output. Other callables receive Console and declare uses console.write.
+Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).
 
 ::::
 

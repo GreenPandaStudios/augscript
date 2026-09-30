@@ -1,3 +1,4 @@
+// aug-spec: "contracts.aug.md" explains this file. Read it before changes; refresh with aug spec.
 /** Immutable identity returned by an explicitly injected authentication adapter. */
 record Principal(string subject, List<string> permissions)
 

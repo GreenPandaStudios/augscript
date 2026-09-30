@@ -4,4 +4,4 @@
 
 ## Exports
 
-- Export the declaration `Greeter` from [`greeter.aug`](greeter.aug.md#symbol-Greeter).
+Export the declaration `Greeter` from [`greeter.aug`](greeter.aug.md#symbol-Greeter).

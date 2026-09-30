@@ -28,6 +28,7 @@ pageClass: aug-example-page
 ::: code-group
 
 ```aug [Indentation]
+// aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 try:
     numbers = List<int>(2, 4)
     borrow numbers:
@@ -45,6 +46,7 @@ catch IndexError error:
 ```
 
 ```aug [Braces]
+// aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 try {
     numbers = List<int>(2, 4)
     borrow numbers {
@@ -75,31 +77,13 @@ catch IndexError error {
 
 ### Startup
 
-- Try:
-  - Set `numbers` to a list of `int` containing `2`, `4`.
-  - Mutably borrow `numbers` for this block:
-    - Call `append` on `numbers` with `value` as `6`.
-  - Call `print` with `value` as the result of `length` on `numbers`.
-  - Call `print` with `value` as the result of `get` on `numbers` with `index` as `1`.
-  - Set `scores` to an empty map from `string` to `int`.
-  - Mutably borrow `scores` for this block:
-    - Call `set` on `scores` with `value` as `42`, `key` as `"ada"`.
-  - Call `print` with `value` as the result of `contains` on `scores` with `key` as `"ada"`.
-  - Call `print` with `value` as the result of `get` on `scores` with `key` as `"ada"`.
-  - Call `print` with `value` as the result of `length` on `scores`.
-- Catch `IndexError` as `error`:
-  - Call `print` with `value` as `"unexpected index failure"`.
+It sets `numbers` to a list of `int` containing `2`, `4`. With temporary permission to change `numbers`, it appends `6` to `numbers`. It prints the number of elements in `numbers`. It prints the item at index `1` in `numbers`.
 
-### Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
+It sets `scores` to an empty map from `string` to `int`. With temporary permission to change `scores`, it stores `42` in `scores` under `"ada"`. It prints whether `scores` contains the key `"ada"`. It prints the value under `"ada"` in `scores`.
 
-- `List<int>.append`: Append an element with exclusive mutable access. Read-only and owned aliases cannot be stored here.
-- `List<int>.get`: Read a zero-based position. An invalid index raises checked IndexError. Reference results grant reading.
-- `List<int>.length`: Read the number of elements.
-- `Map<string, int>.contains`: Check for a key, including entries whose value is null.
-- `Map<string, int>.get`: Read a value by key; an absent key returns null. contains distinguishes an absent key from a stored null.
-- `Map<string, int>.length`: Read the number of elements.
-- `Map<string, int>.set`: Insert or replace an entry with exclusive mutable access.
-- `print`: Composition and test output. Other callables receive Console and declare uses console.write.
+It prints the number of elements in `scores`. If this work raises `IndexError`, it prints `"unexpected index failure"`.
+
+Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).
 
 ::::
 

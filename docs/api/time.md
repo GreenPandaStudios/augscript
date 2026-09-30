@@ -19,7 +19,7 @@ capability Clock
 
 An explicit clock dependency makes time-based behavior replaceable in tests.
 
-[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/time/contracts.aug#L2)
+[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/time/contracts.aug#L3)
 
 ### Clock.now
 
@@ -29,7 +29,7 @@ now() returns int uses Clock.now unless TimeError
 
 Read whole Unix seconds in UTC.
 
-[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/time/contracts.aug#L4)
+[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/time/contracts.aug#L5)
 
 ## SystemClock {#api-SystemClock}
 
@@ -39,7 +39,7 @@ SystemClock() implements Clock
 
 Operating-system wall clock.
 
-[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/time/contracts.aug#L7)
+[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/time/contracts.aug#L8)
 
 ### SystemClock.now
 
@@ -51,4 +51,4 @@ Read whole Unix seconds in UTC.
 
 Inferred capabilities: `Clock.now`.
 
-[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/time/contracts.aug#L8)
+[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/time/contracts.aug#L9)

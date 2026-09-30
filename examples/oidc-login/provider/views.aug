@@ -1,3 +1,4 @@
+// aug-spec: "views.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Page from common
 /** A server form with a checked HTTP action. The browser submits to the provider endpoint. */
 ProviderLogin(string requestId, string csrf, string message, HttpAction submit) returns Html:

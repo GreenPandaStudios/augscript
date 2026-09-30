@@ -33,6 +33,7 @@ pageClass: aug-example-page
 ::: code-group
 
 ```aug [Indentation]
+// aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Console and SystemConsole from august.io
 implement Console with SystemConsole
 import Logger from logging
@@ -45,6 +46,7 @@ greeter.greet(name="AugScript")
 ```
 
 ```aug [Braces]
+// aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Console and SystemConsole from august.io
 implement Console with SystemConsole
 import Logger from logging
@@ -66,20 +68,17 @@ greeter.greet(name="AugScript")
 
 ### Providers
 
-- Provide [`SystemConsole`](dependencies/august/0.19.0/io/contracts.md#symbol-SystemConsole) for `Console`. Share one instance.
-- Provide [`ConsoleLogger`](logging/console.md#symbol-ConsoleLogger) for `Logger`. Share one instance.
-- Provide [`Greeter`](app/greeter.md#symbol-Greeter) for `app`. Share one instance. Needs `Logger`.
+`Console` is provided by [`SystemConsole`](dependencies/august/0.19.0/io/contracts.md#symbol-SystemConsole). The same instance is shared. `Logger` is provided by [`ConsoleLogger`](logging/console.md#symbol-ConsoleLogger). The same instance is shared.
+
+`app` is provided by [`Greeter`](app/greeter.md#symbol-Greeter). The same instance is shared. It requires bindings for `Logger`.
 
 ### Startup
 
-- Set `greeter` to the instance provided for `app`.
-- Call [`Greeter.greet`](app/greeter.md#symbol-Greeter.greet) on `greeter` with `name` as `"AugScript"` using `Console` for `console`.
+It sets `greeter` to the instance provided for `app`. It passes `"AugScript"` to [`greeter.greet`](app/greeter.md#symbol-Greeter.greet), using injected `Console`.
 
 ### Dependencies
 
-- [`SystemConsole`](dependencies/august/0.19.0/io/contracts.md#symbol-SystemConsole) from `august.io`.
-- [`Greeter`](app/greeter.md#symbol-Greeter) from `app`: [`greet`](app/greeter.md#symbol-Greeter.greet) (`name`: `string`) → `void`.
-- [`ConsoleLogger`](logging/console.md#symbol-ConsoleLogger) from `logging`.
+It uses [`SystemConsole`](dependencies/august/0.19.0/io/contracts.md#symbol-SystemConsole) from `august.io`. It uses [`Greeter`](app/greeter.md#symbol-Greeter) ([`greet`](app/greeter.md#symbol-Greeter.greet)) from `app`. It uses [`ConsoleLogger`](logging/console.md#symbol-ConsoleLogger) from `logging`. These links explain the full dependency contracts.
 
 ::::
 

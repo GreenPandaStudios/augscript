@@ -3,14 +3,14 @@
 # `resource.aug`
 
 <a id="symbol-Resource"></a>
-## `Resource` · class · [source](resource.aug#L1)
+## `Resource` · class · [source](resource.aug#L2)
 
-Implements [`IResource`](resource.aug.md#symbol-IResource).
+It implements [`IResource`](resource.aug.md#symbol-IResource).
 
 <a id="symbol-Resource.drop"></a>
-### `Resource.drop` · [source](resource.aug#L2)
+### `Resource.drop` · [source](resource.aug#L3)
 
-- Continue.
+It continues without an operation.
 
 <a id="symbol-IResource"></a>
-## `IResource` · interface · [source](resource.aug#L6)
+## `IResource` · interface · [source](resource.aug#L7)

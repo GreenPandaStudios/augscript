@@ -29,6 +29,7 @@ pageClass: aug-example-page
 ::: code-group
 
 ```aug [Indentation]
+// aug-spec: "counter.aug.md" explains this file. Read it before changes; refresh with aug spec.
 interface ICounter:
     label() returns string
 Counter(mutable int value) implements ICounter:
@@ -41,6 +42,7 @@ _prefix() returns string:
 ```
 
 ```aug [Braces]
+// aug-spec: "counter.aug.md" explains this file. Read it before changes; refresh with aug spec.
 interface ICounter {
     label() returns string
 }
@@ -71,39 +73,27 @@ _prefix() returns string {
 <a id="symbol-ICounter.label"></a>
 #### `ICounter.label` · [source](counter.md#code)
 
-Returns `string`.
+It returns `string`.
 
 <a id="symbol-Counter"></a>
 ### `Counter` · class · [source](counter.md#code)
 
-Implements [`ICounter`](counter.md#symbol-ICounter).
-
-**Inputs:** Take `value` (`int`); store mutably.
+It implements [`ICounter`](counter.md#symbol-ICounter). It takes `value` as an integer, kept mutable.
 
 <a id="symbol-Counter._label"></a>
 #### `Counter._label` · [source](counter.md#code)
 
-Private to its defining scope.
-
-Returns `string`.
-
-- Return the result of [`_prefix`](counter.md#symbol-_prefix).
+It is private to its defining scope. It returns [`_prefix`](counter.md#symbol-_prefix).
 
 <a id="symbol-Counter.label"></a>
 #### `Counter.label` · [source](counter.md#code)
 
-Returns `string`.
-
-- Return the result of [`Counter._label`](counter.md#symbol-Counter._label) on `self`.
+It returns [`self._label`](counter.md#symbol-Counter._label).
 
 <a id="symbol-_prefix"></a>
 ### `_prefix` · [source](counter.md#code)
 
-Private to its defining scope.
-
-Returns `string`.
-
-- Return `"count"`.
+It is private to its defining scope. It returns `"count"`.
 
 ::::
 

@@ -1,3 +1,4 @@
+// aug-spec: "app.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Console from august.io
 import Fruit from models
 /** The application's explicit startup operation. */

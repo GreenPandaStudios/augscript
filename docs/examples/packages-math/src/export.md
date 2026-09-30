@@ -29,10 +29,12 @@ pageClass: aug-example-page
 ::: code-group
 
 ```aug [Indentation]
+// aug-spec: "export.aug.md" explains this file. Read it before changes; refresh with aug spec.
 export add from arithmetic
 ```
 
 ```aug [Braces]
+// aug-spec: "export.aug.md" explains this file. Read it before changes; refresh with aug spec.
 export add from arithmetic
 ```
 
@@ -46,7 +48,7 @@ export add from arithmetic
 
 ### Exports
 
-- Export the declaration `add` from [`arithmetic.aug`](arithmetic.md#symbol-add).
+Export the declaration `add` from [`arithmetic.aug`](arithmetic.md#symbol-add).
 
 ::::
 

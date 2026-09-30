@@ -1,3 +1,4 @@
+// aug-spec: "types.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Console from august.io
 interface Repository<T> {
     get() returns T

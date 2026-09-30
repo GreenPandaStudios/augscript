@@ -1,3 +1,4 @@
+// aug-spec: "protocol.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import SessionError from contracts
 import Discovery and IdClaims from provider
 import settings from common

@@ -29,6 +29,7 @@ pageClass: aug-example-page
 ::: code-group
 
 ```aug [Indentation]
+// aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Counter from counter
 counter = Counter(value=1)
 print(value=counter.label())
@@ -38,6 +39,7 @@ print(value=counter.value)
 ```
 
 ```aug [Braces]
+// aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Counter from counter
 counter = Counter(value=1)
 print(value=counter.label())
@@ -57,19 +59,13 @@ print(value=counter.value)
 
 ### Startup
 
-- Set `counter` to a new [`Counter`](counter.md#symbol-Counter) with `value` as `1`.
-- Call `print` with `value` as the result of [`Counter.label`](counter.md#symbol-Counter.label) on `counter`.
-- Mutably borrow `counter` for this block:
-  - Set `value` of `counter` to `2`.
-- Call `print` with `value` as `value` of `counter`.
+It sets `counter` to a [`Counter`](counter.md#symbol-Counter) with `value` `1`. It prints [`counter.label`](counter.md#symbol-Counter.label). With temporary permission to change `counter`, it sets `counter.value` to `2`. It prints `counter.value`.
 
 ### Dependencies
 
-- [`Counter`](counter.md#symbol-Counter) from `counter`: construct with `value`: `int`; read `value` (`int`), mutable; [`label`](counter.md#symbol-Counter.label) (no caller inputs) → `string`.
+It uses [`Counter`](counter.md#symbol-Counter) ([`label`](counter.md#symbol-Counter.label) and `value`) from `counter`. These links explain the full dependency contracts.
 
-### Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
-
-- `print`: Composition and test output. Other callables receive Console and declare uses console.write.
+Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).
 
 ::::
 
