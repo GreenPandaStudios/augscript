@@ -16,7 +16,7 @@ It tries to return [`parse`](../.aug-spec/august/0.19.0/json/contracts.aug.md#sy
 <a id="symbol-discover"></a>
 ## `discover` · [source](protocol.aug#L27)
 
-Discovery is fetched over HTTP. Every advertised URL is checked against the registered issuer before any credential is sent. It gets `client` ([`HttpClient`](../.aug-spec/august/0.19.0/web/contracts.aug.md#symbol-HttpClient)) from dependency injection. Failures can raise [`SessionError`](contracts.aug.md#symbol-SessionError) and `HttpError`.
+Discovery is fetched over HTTP. Every advertised URL is checked against the registered issuer before any credential is sent. It gets `client` ([`HttpClient`](../.aug-spec/august/0.19.0/web/contracts.aug.md#symbol-HttpClient)) from dependency injection. Failures can raise `HttpError` and [`SessionError`](contracts.aug.md#symbol-SessionError).
 
 It gets `config` from [`settings`](../common/settings.aug.md#symbol-settings). It sets `json` to [`responseJson`](protocol.aug.md#symbol-responseJson) with `response` from [`client.request`](../.aug-spec/august/0.19.0/web/contracts.aug.md#symbol-HttpClient.request) with `method` `"GET"` and `url` from the text `{config.issuer}/.well-known/openid-configuration`. It sets `document` to `json.decode` for [`Discovery`](../provider/discovery.aug.md#symbol-Discovery).
 

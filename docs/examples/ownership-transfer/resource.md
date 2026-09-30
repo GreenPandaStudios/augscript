@@ -39,7 +39,7 @@ interface IResource:
 make() returns own Resource:
     own Resource value = Resource()
     return value
-consume(resolve Console console, own Resource value) uses Console.write:
+consume(resolve Console console, own Resource value):
     console.write(value="consumed")
 ```
 
@@ -58,7 +58,7 @@ make() returns own Resource {
     own Resource value = Resource()
     return value
 }
-consume(resolve Console console, own Resource value) uses Console.write {
+consume(resolve Console console, own Resource value) {
     console.write(value="consumed")
 }
 ```

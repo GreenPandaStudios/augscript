@@ -342,7 +342,7 @@ Checked failure for division by zero. int arithmetic otherwise wraps in the sign
 around(Type input) returns Type { return next(); }
 ```
 
-The required entry point of an interceptor. Its parameters select target arguments, and its result must fit the target return type. Omit `returns` for void. It may validate, override mapped arguments, inspect the result, throw a checked error, or return early. Declare generic parameters on the interceptor header. Helper methods can be declared alongside around.
+The required entry point of an interceptor. Its parameters select target arguments, and its result must fit the target return type. A forwarding body can omit returns and inherit the target result. It may validate, override mapped arguments, inspect the result, throw a checked error, or return early. Declare generic parameters on the interceptor header. Helper methods can be declared alongside around.
 
 ## as
 
@@ -426,7 +426,7 @@ Signed 32-bit C int. Convert explicitly with c_int(value=number), which raises C
 capability Console { write(string value) uses Console.write }
 ```
 
-Declare an interface for an external effect. Import the standard Console, FileReader, FileWriter and Arguments contracts from august.io, select adapters in main, and receive them through resolve parameters. Operations remain visible in uses clauses and can be replaced in tests.
+Declare an interface for an external effect. Import the standard Console, FileReader, FileWriter and Arguments contracts from august.io, select adapters in main, and receive them through resolve parameters. Operations stay visible in inferred hints, hover and specs and can be replaced in tests.
 
 ## catch
 
@@ -442,7 +442,7 @@ Handle a thrown error from the preceding `try` block. The caught value is availa
 increment() changes self
 ```
 
-Declare observable mutation of self or a borrowed input. Callers must provide mutable access. Ordinary functions and methods are pure by default; changing a local variable or a fresh local object does not change caller-owned state.
+Describe observable mutation of self or a borrowed input. Bodies infer changes when omitted; callers still need mutable access. Bodyless interface contracts declare permitted mutation. Local variables and fresh local objects do not change caller-owned state. An explicit clause limits the body.
 
 ## class
 
@@ -566,7 +566,7 @@ Inherit methods from one or more interfaces. Class inheritance is not supported.
 extern C name(Type arg) returns Type
 ```
 
-Declare a C function. Calls require unsafe and external callables declare uses C.name. int maps to int64_t, c_int to signed 32-bit int, float to double, bool to C bool, and string to a temporary UTF-8 const char pointer. Foreign code must respect the declared ABI and cannot retain managed pointers.
+Declare a C function. Calls require unsafe and executable callers infer uses C.name. int maps to int64_t, c_int to signed 32-bit int, float to double, bool to C bool, and string to a temporary UTF-8 const char pointer. Foreign code must respect the declared ABI and cannot retain managed pointers.
 
 ## false
 
@@ -654,7 +654,7 @@ Names the source of an import or export. Dotted paths cross folders; each crosse
 No function keyword
 ```
 
-Functions and methods start with their name: `greet(string name) { ... }` or `greet(string name) returns string;`. Remove the old `function` prefix. Parameters use `Type name` order and callers use labels. Omit `returns` for a `void` result.
+Functions and methods start with their name: greet(string name) { ... }. Remove the old function prefix. Parameters use Type name order and callers use labels. Bodies infer omitted returns, changes, uses and unless clauses; declarations without a body keep explicit contracts.
 
 ## handle
 
@@ -854,7 +854,7 @@ Grant exclusive mutation of Shared<T> for a short block. Waiting, starting tasks
 [LogRequest(logger=logger)]
 ```
 
-Map a resolve RequestLogger parameter and declare uses logger.complete. Observe the final status and monotonic duration after output finishes, or status 499 on disconnect. Layers complete in reverse written order.
+Map a resolve RequestLogger parameter and infer its complete operation. Observe the final status and monotonic duration after output finishes, or status 499 on disconnect. Layers complete in reverse written order.
 
 ## Map
 
@@ -886,7 +886,7 @@ The missing keyword is rejected. Use null. An omitted optional value and an expl
 Counter(mutable int initial to _count)
 ```
 
-Declare mutable class storage. Header fields are otherwise read-only after construction. An explicit public argument label can initialize private storage with Type label to _field. Mutating methods declare changes self and callers provide mutable access.
+Declare mutable class storage. Header fields are otherwise read-only after construction. An explicit public argument label can initialize private storage with Type label to _field. Bodies infer changes self; callers provide mutable access.
 
 ## next
 
@@ -1010,7 +1010,7 @@ Root-only UTF-8 text input. Other callables receive FileReader. Invalid Unicode 
 record Point(int x, int y)
 ```
 
-Declare deeply immutable data with labeled construction and structural equality/hashing. Records contain primitives, tuples and other records. An initialize block validates inputs; declare rejected inputs with unless ErrorType.
+Declare deeply immutable data with labeled construction and structural equality/hashing. Records contain primitives, tuples and other records. An initialize block validates inputs; validation infers rejected inputs; an explicit unless ErrorType limits permitted failures.
 
 ## request
 
@@ -1026,7 +1026,7 @@ Receive the immutable raw request when a protocol requires its own binding and e
 [RequireLogin(authentication=auth)]
 ```
 
-Verify credentials before typed body decoding. Map auth to an explicit resolve Authentication parameter and declare uses auth.authenticate. null produces 401; the adapter validates the credential. HTTP policies precede custom parameter interceptors.
+Verify credentials before typed body decoding. Map auth to an explicit resolve Authentication parameter and infer its authenticate operation. null produces 401; the adapter validates the credential. HTTP policies precede custom parameter interceptors.
 
 ## RequirePermission
 
@@ -1058,7 +1058,7 @@ Finish the current function or method and give its result to the caller. A `void
 name() returns Type
 ```
 
-Specify a function or method return type. Without this clause, the result is `void`; the body may end without `return` or use `return;`. Returning a value requires a declared return type. `returns own Type` transfers ownership to the caller.
+Bodies infer their result from return expressions or their implemented interface when this clause is omitted. No returned value means void. Bodyless signatures still need non-void result types. Explicit result types are checked assertions; returns own Type explicitly transfers ownership. Recursive or ambiguous results may require a type anchor.
 
 ## scope
 
@@ -1170,7 +1170,7 @@ Declare tests beside the class, function, or endpoint. Class suites initialize t
 throw error;
 ```
 
-Raise a value whose class implements `Error`. The enclosing function must declare the error or the call must be handled by a matching `catch`.
+Raise a value whose class implements `Error`. An executable body infers uncaught errors; main must handle them with a matching catch.
 
 ## throws
 
@@ -1223,10 +1223,10 @@ Fixed immutable positions: `(1, 2)` infers Tuple<int, int>, `(1, "apple")` infer
 ## unless
 
 ```text
-load(bool fail) returns string unless FileError
+load(bool fail) unless FileError
 ```
 
-Declare checked failures a function may raise instead of returning its result. Callers must catch the failures or declare them with unless too. Separate several types with `and` or commas; `unless Error` accepts any error type. The statement that raises an error remains `throw`.
+Describe checked failures that escape a call. Bodies infer uncaught errors when unless is omitted; catch blocks remove handled errors. Main must handle escaping errors. Bodyless interfaces declare permitted failures. Explicit unless remains an upper bound; unless Error accepts any error type. Record validation can infer its failures too.
 
 ## unsafe
 
@@ -1239,10 +1239,10 @@ Permit calls to declared `extern C` functions within this block. The compiler do
 ## uses
 
 ```text
-save(resolve FileWriter files, string path) uses files.write unless FileError
+save(resolve FileWriter files, string path)
 ```
 
-Declare the external capability operations this callable may use. Interfaces, public standalone functions, default methods and interceptor around methods keep explicit contracts. Class implementations and private helpers infer uses when omitted; hover, explain and API docs show the result. An explicit uses clause remains an upper bound. Effects are checked through calls and interceptor layers; implementations cannot exceed their interface contract. changes and unless remain explicit, and construction stays pure.
+Bodies infer external capability operations when uses is omitted, including public functions, default methods and interceptor around methods. The editor shows non-editable inline hints; hover, explain, API docs and compiled specs expose checked contracts. Bodyless interfaces and extern declarations keep explicit contracts. An explicit uses clause remains an upper bound. Implementations cannot exceed their interface contract; construction and cleanup stay pure.
 
 ## void
 

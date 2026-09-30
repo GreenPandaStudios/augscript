@@ -52,7 +52,7 @@ pageClass: aug-example-page
 // aug-spec: "credentials.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Crypto from august.crypto
 /** One development account with a PBKDF2-HMAC-SHA256 verifier. Production account storage is deliberately a separate capability. */
-verifyCredentials(string username, string password, resolve Crypto crypto) returns bool uses crypto.passwordHash and crypto.decodeBase64url and crypto.equal unless CryptoError:
+verifyCredentials(string username, string password, resolve Crypto crypto):
     if username.length() > 64 or password.length() > 256:
         return false
     actual = crypto.passwordHash(password=password.bytes(), salt="August demo salt v1".bytes(), iterations=600000)
@@ -66,7 +66,7 @@ verifyCredentials(string username, string password, resolve Crypto crypto) retur
 // aug-spec: "credentials.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Crypto from august.crypto
 /** One development account with a PBKDF2-HMAC-SHA256 verifier. Production account storage is deliberately a separate capability. */
-verifyCredentials(string username, string password, resolve Crypto crypto) returns bool uses crypto.passwordHash and crypto.decodeBase64url and crypto.equal unless CryptoError {
+verifyCredentials(string username, string password, resolve Crypto crypto) {
     if username.length() > 64 or password.length() > 256 {
         return false
     }

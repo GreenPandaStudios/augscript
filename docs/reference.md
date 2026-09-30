@@ -195,9 +195,9 @@ Tuple destructuring introduces new local names and checks arity. `for item in va
 
 ## Functions, effects, and capabilities
 
-A bare header without `implements` declares a function. Omitting `returns` means void. Non-void bodies must return or throw on every path. A bodyless top-level declaration cannot be called unless it is an extern declaration.
+A bare header without `implements` declares a function. A body infers its result from return expressions or an implemented interface. A body with no returned value has a void result; a bodyless signature needs `returns T` for a non-void result. Non-void bodies must return or throw on every path. A bodyless top-level declaration cannot be called unless it is an extern declaration.
 
-Public standalone functions and interface contracts are pure unless they declare capabilities. State transitions declare `changes self` or `changes input`; mutable reference inputs require `borrow` or `own`. A helper cannot mutate a managed input, an alias, or nested objects reachable through it.
+Bodies infer capability use and state transitions. Bodyless interfaces declare permitted `uses` and `changes`; mutable reference inputs require `borrow` or `own`. A helper cannot mutate a managed input, an alias, or nested objects reachable through it.
 
 I/O uses capability interfaces and checked `uses dependency.operation` contracts. Capability types have interface behavior and permit explicit adapter substitution. The standard `august.io` folder provides Console/SystemConsole, FileReader/FileWriter/LocalFiles, and Arguments/ProcessArguments.
 
@@ -212,7 +212,7 @@ announce(message="Dependencies are visible")
 ```aug project=capabilities-guide file=messages.aug
 import Console from august.io
 
-announce(resolve Console console, string message) uses console.write:
+announce(resolve Console console, string message):
     console.write(value=message)
 ```
 
@@ -220,25 +220,29 @@ A caller's contract must include the effects of its calls and interceptor layers
 
 ### Short implementation headers
 
-Class methods and private `_helpers` infer `uses` when it is omitted. Interfaces, public standalone functions, interface default methods, and interceptor `around` methods retain explicit effect contracts. An explicit `uses` clause is an upper bound, including on implementations. `changes` and `unless` are still explicit.
+Executable functions, methods, interface defaults, and interceptors infer omitted `returns`, `changes`, `uses`, and `unless` clauses. You write the work once. Return expressions determine the result; calls and writes determine capabilities and observable mutations; failures that escape catches determine checked errors. Record validation also infers escaping failures.
 
 ```text
-import Console from august.io
+import Console and FileReader from august.io
 
 interface Logger:
     log(string message) uses Console.write
 
 ConsoleLogger(resolve Console console) implements Logger:
     log(string message):
-        _write(console, message)
+        console.write(value=message)
 
-_write(Console console, string message):
-    console.write(value=message)
+load(resolve FileReader files, string path):
+    return files.read(path)
 ```
 
-Both bodies infer `Console.write`; the interface states it once. Inference follows calls, generic substitutions and interceptor layers to a fixed point, so declaration order does not matter. Hover and `aug explain` show inferred capabilities; generated library API pages include them. Calling an inferred helper from a pure public function is a compile error. A pure interface cannot acquire hidden I/O through its implementation.
+The editor shows `uses Console.write` beside `log` and `returns string uses FileReader.read unless FileError` beside `load` as non-editable hints. These clauses are absent from saved code. Hover, `aug explain`, generated API docs, and `aug spec` use the same checked contracts. Formatting keeps concise source; it preserves annotations you wrote deliberately.
 
-Capability implementations inherit their operation contract even when a test adapter does no I/O. This includes shared-state capabilities such as `ExpiringStore<T>`. Constructors and `drop()` remain pure; inference does not permit I/O while holding a lock. Type-changing recursive generic effect inference that cannot converge requires an explicit finite `uses` clause.
+Bodyless interfaces and foreign declarations describe contracts the compiler cannot inspect. A written clause remains a checked assertion: `returns void` rejects a returned value, and an explicit `uses` or `unless` limits the body. Implementations must satisfy their interface. An interface with no effects remains pure. Inference follows calls and generic substitutions independently of declaration order. Recursive results without an anchor, empty collections without a contextual type, and expanding generic contracts need an explicit type or finite contract.
+
+`borrow`, `own`, `resolve`, `mutable`, HTTP input sources and error-status mappings express permissions or choices. They stay in source. Inferred mutation cannot grant access to a managed input. Constructors and `drop()` keep their purity rules, and inferred I/O remains forbidden under a lock. A fresh local `Shared` value needs no artificial external-effect clause; retained external shared state still requires its capability or mutation contract. A forwarding interceptor can inherit each target's result; an interceptor that needs a fixed result contract can state it.
+
+Capability implementations inherit their operation contract even when a test adapter does no I/O. This includes shared-state capabilities such as `ExpiringStore<T>`. An unhandled error in main still fails checking; inferred propagation through a helper does not handle that failure.
 
 Outside main and test setup, every injected dependency is declared in the callable/class header. Calls forward the one compatible header dependency; multiple candidates require a clearer header. Constructor and interceptor dependencies are checked the same way. Body-level `resolve` is rejected with a fix to lift it into the header.
 
@@ -288,7 +292,7 @@ Nullable locals narrow after null checks, short-circuit conditions, match patter
 
 `match value` uses `when null`, `when some name`, `when true`, `when false`, or `when Type name`. Nullable and bool matches must cover every case. Open class/interface domains require `else`. Duplicate/unreachable cases and incompatible patterns are errors.
 
-An error satisfies Error. A callable declares specific errors with `returns T unless FileError and DomainError`. It can throw any value satisfying its declaration; declaring Error accepts any Error implementation. Calls must catch or propagate all effective errors, including interceptor layers.
+An error satisfies Error. A body infers escaping errors. A bodyless signature or explicit bound names specific errors with `returns T unless FileError and DomainError`. It can throw any value satisfying its declaration; declaring Error accepts any Error implementation. Calls must catch or propagate all effective errors, including interceptor layers; executable callers infer propagation when unless is omitted.
 
 `start` evaluates its receiver and arguments immediately; their errors belong to the scheduling statement. The scheduled operation's errors belong to a `wait for` or its owning scope's implicit join. Unobserved sibling failures can reach any wait in that group. Grouped waits observe every selected child, including cancellation cleanup, and rethrow the first failure. A helper awaiting a `Task<T>` parameter declares or handles `Error`, since that public type does not specify a narrower error contract yet.
 
@@ -314,7 +318,7 @@ import FileReader from august.io
  * @return UTF-8 text.
  * @throws FileError Reading failed or the text is invalid.
  */
-load(resolve FileReader files, string path) returns string uses files.read unless FileError:
+load(resolve FileReader files, string path):
     return files.read(path=path)
 ```
 

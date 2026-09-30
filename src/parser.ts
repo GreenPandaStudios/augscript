@@ -416,10 +416,12 @@ class Parser {
     const header = this.parseTypeParams();
     const fields = this.parseParams(true);
     const validationErrors: TypeRef[] = [];
-    if (this.match('unless')) {
+    const validationDeclared = !!this.match('unless');
+    if (validationDeclared) {
       validationErrors.push(this.parseType());
       while (this.match('and') || this.match(',')) validationErrors.push(this.parseType());
     }
+    const headerEnd = this.current().span.start;
     let constructorBody = this.match('=>') ? this.parseBlock(start) : undefined;
     let hasBody = !!constructorBody;
     if (!constructorBody && (this.at('{') || this.at(':'))) {
@@ -436,7 +438,7 @@ class Parser {
     }
     if (!hasBody) this.endStatement();
     return { kind: 'class', record: true, name, ...header, fields, constructorBody,
-      validationErrors, implements: [], methods: [], span: this.span(start) };
+      validationErrors, validationDeclared, headerEnd, implements: [], methods: [], span: this.span(start) };
   }
 
   private parseClass(): ClassDecl {
@@ -562,13 +564,16 @@ class Parser {
         } while (this.match(',') || this.match('and'));
       }
     }
+    const headerEnd = this.current().span.start;
     const body = this.at('{') || this.at(':') ? this.parseBlock(start) : (this.endStatement(), undefined);
     if (externC && body) {
       throw new ParseFailure({ file: start.file, line: start.line, column: start.column,
         message: 'extern C functions cannot have a body', code: 'PARSE' });
     }
     return { kind: 'function', name, typeParams, typeConstraints, typeVariance, params, returns, returnOwnership,
-      throws, changes, uses, body, externC, valueAbi, nativePure, endpoint, annotations, span: this.span(start) };
+      throws, changes, uses, body, externC, valueAbi, nativePure, endpoint, annotations,
+      declared: { returns: clauses.has('returns') || clauses.has('streams'), errors: clauses.has('unless'),
+        changes: clauses.has('changes'), uses: clauses.has('uses') }, headerEnd, span: this.span(start) };
   }
 
   private parseTypeParams(): GenericHeader {

@@ -57,7 +57,7 @@ import Crypto from august.crypto
 import Clock from august.time
 import ExpiringStore from august.memory
 /** POST logout checks the origin and session-bound CSRF value, then removes the live registry entry before clearing the cookie. */
-endpoint POST "/logout" as logout(LogoutForm input from form, optional string token from cookie "aug_session", optional string origin from header, resolve Crypto crypto, resolve Clock clock, resolve SigningKeys keys, resolve ExpiringStore<SessionClaims> sessions) returns HttpResponse<Html> uses crypto.publicRsa and crypto.decodeBase64url and crypto.verifyRsa and crypto.equal and clock.now and keys.session and sessions.get and sessions.take unless SessionError with status 403 and KeyError and TimeError and CryptoError and HttpError:
+endpoint POST "/logout" as logout(LogoutForm input from form, optional string token from cookie "aug_session", optional string origin from header, resolve Crypto crypto, resolve Clock clock, resolve SigningKeys keys, resolve ExpiringStore<SessionClaims> sessions) unless SessionError with status 403 and KeyError and TimeError and CryptoError and HttpError:
     config = settings()
     if origin != config.baseUrl:
         throw SessionError()
@@ -78,7 +78,7 @@ import Crypto from august.crypto
 import Clock from august.time
 import ExpiringStore from august.memory
 /** POST logout checks the origin and session-bound CSRF value, then removes the live registry entry before clearing the cookie. */
-endpoint POST "/logout" as logout(LogoutForm input from form, optional string token from cookie "aug_session", optional string origin from header, resolve Crypto crypto, resolve Clock clock, resolve SigningKeys keys, resolve ExpiringStore<SessionClaims> sessions) returns HttpResponse<Html> uses crypto.publicRsa and crypto.decodeBase64url and crypto.verifyRsa and crypto.equal and clock.now and keys.session and sessions.get and sessions.take unless SessionError with status 403 and KeyError and TimeError and CryptoError and HttpError {
+endpoint POST "/logout" as logout(LogoutForm input from form, optional string token from cookie "aug_session", optional string origin from header, resolve Crypto crypto, resolve Clock clock, resolve SigningKeys keys, resolve ExpiringStore<SessionClaims> sessions) unless SessionError with status 403 and KeyError and TimeError and CryptoError and HttpError {
     config = settings()
     if origin != config.baseUrl {
         throw SessionError()
@@ -109,7 +109,7 @@ Plain handler results default to HTTP 200 unless another status is declared. Htt
 
 It takes `input` as [`LogoutForm`](contracts.md#symbol-LogoutForm) from the HTTP form, `token` as `optional string` from the HTTP cookie `aug_session`, and `origin` as `optional string` from the HTTP header. It gets `crypto` ([`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto)), `clock` ([`Clock`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock)), `keys` ([`SigningKeys`](../common/keys.md#symbol-SigningKeys)), and `sessions` ([`ExpiringStore<SessionClaims>`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore)) from dependency injection. Omitted optional inputs are null. The handler responds with HTTP 403 for [`SessionError`](contracts.md#symbol-SessionError).
 
-It can also raise `KeyError`, `TimeError`, `CryptoError`, and `HttpError`.
+It can also raise `CryptoError`, `HttpError`, `KeyError`, and `TimeError`.
 
 It gets `config` from [`settings`](../common/settings.md#symbol-settings). It checks that `origin` equals `config.baseUrl`. It raises a [`SessionError`](contracts.md#symbol-SessionError) at the first failed check. It sets `session` to [`authenticate`](session.md#symbol-authenticate) with `token` using injected `crypto`, `clock`, `keys`, and `sessions`.
 

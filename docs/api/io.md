@@ -60,7 +60,7 @@ Write one line of text.
 **Parameters**
 - `value`: Text to display.
 
-Inferred capabilities: `Console.write`.
+The compiler infers use of `Console.write`.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/io/contracts.aug#L9)
 
@@ -130,7 +130,7 @@ Native files. Operations are explicit; construction opens no files.
 ### LocalFiles.read
 
 ```text
-read(string path) returns string unless FileError
+read(string path)
 ```
 
 Read text.
@@ -141,14 +141,14 @@ Read text.
 **Throws**
 - `FileError`: The file could not be read.
 
-Inferred capabilities: `FileReader.read`.
+The compiler infers a `string` result, use of `FileReader.read`, `FileError` failures.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/io/contracts.aug#L24)
 
 ### LocalFiles.write
 
 ```text
-write(string path, string content) unless FileError
+write(string path, string content)
 ```
 
 Write text.
@@ -160,7 +160,7 @@ Write text.
 **Throws**
 - `FileError`: Writing failed.
 
-Inferred capabilities: `FileWriter.write`.
+The compiler infers use of `FileWriter.write`, `FileError` failures.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/io/contracts.aug#L26)
 
@@ -197,11 +197,11 @@ Native command-line arguments.
 ### ProcessArguments.read
 
 ```text
-read() returns List<string>
+read()
 ```
 
 The signature declares inputs, result, effects and checked errors.
 
-Inferred capabilities: `Arguments.read`.
+The compiler infers a `List<string>` result, use of `Arguments.read`.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/io/contracts.aug#L35)

@@ -9,7 +9,7 @@ Plain handler results default to HTTP 200 unless another status is declared. Htt
 
 `userinfo` handles `GET /provider/userinfo`. The opaque access token is valid only at this provider. Missing, expired and malformed credentials receive the same response.
 
-It takes `authorization` as `optional string` from the HTTP header. It gets `clock` ([`Clock`](../.aug-spec/august/0.19.0/time/contracts.aug.md#symbol-Clock)) and `access` ([`ExpiringStore<AccessGrant>`](../.aug-spec/august/0.19.0/memory/store.aug.md#symbol-ExpiringStore)) from dependency injection. Omitted optional inputs are null. It can also raise `TimeError` and `HttpError`.
+It takes `authorization` as `optional string` from the HTTP header. It gets `clock` ([`Clock`](../.aug-spec/august/0.19.0/time/contracts.aug.md#symbol-Clock)) and `access` ([`ExpiringStore<AccessGrant>`](../.aug-spec/august/0.19.0/memory/store.aug.md#symbol-ExpiringStore)) from dependency injection. Omitted optional inputs are null. It can also raise `HttpError` and `TimeError`.
 
 If `authorization` is null, it continues without an operation. If `authorization` is not null, using `header` for it sets `parts` to `header.split` with `separator` `" "`. If the number of elements in `parts` equals `2`, if the item at index `0` in `parts` equals `"Bearer"`, it sets `token` to the item at index `1` in `parts`. If `token` is a URL-safe ASCII token with `43` to `43` characters, if the live value in `access` under `token`, using the current time from `clock` as the current time is null, it continues without an operation.
 

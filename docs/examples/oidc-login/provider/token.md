@@ -55,10 +55,10 @@ import settings and SigningKeys and KeyError and securityHeaders from common
 import Crypto and signJwt and JwtError from august.crypto
 import Clock from august.time
 import ExpiringStore and StoreFull from august.memory
-_oauthError(string code, string description) returns HttpResponse<Json> unless HttpError:
+_oauthError(string code, string description):
     return HttpResponse(body=Json(value=OAuthError(error=code, error_description=description)), status=400, headers=securityHeaders())
 /** A real OAuth token endpoint. Exact client/redirect binding, S256 PKCE, expiry and one-use codes are enforced. Errors use OAuth JSON. */
-endpoint POST "/provider/token" as token(HttpRequest http from request, resolve Crypto crypto, resolve Clock clock, resolve SigningKeys keys, resolve ExpiringStore<AuthorizationCode> codes, resolve ExpiringStore<AccessGrant> access) returns HttpResponse<Json> uses crypto.sha256 and crypto.equal and crypto.random and crypto.signRsa and clock.now and keys.provider and codes.take and access.put unless CryptoError with status 503 and TimeError with status 503 and KeyError and JwtError and StoreFull with status 503 and HttpError:
+endpoint POST "/provider/token" as token(HttpRequest http from request, resolve Crypto crypto, resolve Clock clock, resolve SigningKeys keys, resolve ExpiringStore<AuthorizationCode> codes, resolve ExpiringStore<AccessGrant> access) unless CryptoError with status 503 and TimeError with status 503 and KeyError and JwtError and StoreFull with status 503 and HttpError:
     config = settings()
     try:
         form = http.form<TokenForm>()
@@ -94,11 +94,11 @@ import settings and SigningKeys and KeyError and securityHeaders from common
 import Crypto and signJwt and JwtError from august.crypto
 import Clock from august.time
 import ExpiringStore and StoreFull from august.memory
-_oauthError(string code, string description) returns HttpResponse<Json> unless HttpError {
+_oauthError(string code, string description) {
     return HttpResponse(body=Json(value=OAuthError(error=code, error_description=description)), status=400, headers=securityHeaders())
 }
 /** A real OAuth token endpoint. Exact client/redirect binding, S256 PKCE, expiry and one-use codes are enforced. Errors use OAuth JSON. */
-endpoint POST "/provider/token" as token(HttpRequest http from request, resolve Crypto crypto, resolve Clock clock, resolve SigningKeys keys, resolve ExpiringStore<AuthorizationCode> codes, resolve ExpiringStore<AccessGrant> access) returns HttpResponse<Json> uses crypto.sha256 and crypto.equal and crypto.random and crypto.signRsa and clock.now and keys.provider and codes.take and access.put unless CryptoError with status 503 and TimeError with status 503 and KeyError and JwtError and StoreFull with status 503 and HttpError {
+endpoint POST "/provider/token" as token(HttpRequest http from request, resolve Crypto crypto, resolve Clock clock, resolve SigningKeys keys, resolve ExpiringStore<AuthorizationCode> codes, resolve ExpiringStore<AccessGrant> access) unless CryptoError with status 503 and TimeError with status 503 and KeyError and JwtError and StoreFull with status 503 and HttpError {
     config = settings()
     try {
         form = http.form<TokenForm>()
@@ -151,7 +151,7 @@ Plain handler results default to HTTP 200 unless another status is declared. Htt
 
 `token` handles `POST /provider/token`. A real OAuth token endpoint. Exact client/redirect binding, S256 PKCE, expiry and one-use codes are enforced. Errors use OAuth JSON.
 
-It takes `http` as `HttpRequest` from the HTTP request. It gets `crypto` ([`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto)), `clock` ([`Clock`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock)), `keys` ([`SigningKeys`](../common/keys.md#symbol-SigningKeys)), `codes` ([`ExpiringStore<AuthorizationCode>`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore)), and `access` ([`ExpiringStore<AccessGrant>`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore)) from dependency injection. The handler responds with HTTP 503 for `CryptoError`, HTTP 503 for `TimeError`, and HTTP 503 for [`StoreFull`](../dependencies/august/0.19.0/memory/store.md#symbol-StoreFull). It can also raise `KeyError`, `JwtError`, and `HttpError`.
+It takes `http` as `HttpRequest` from the HTTP request. It gets `crypto` ([`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto)), `clock` ([`Clock`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock)), `keys` ([`SigningKeys`](../common/keys.md#symbol-SigningKeys)), `codes` ([`ExpiringStore<AuthorizationCode>`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore)), and `access` ([`ExpiringStore<AccessGrant>`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore)) from dependency injection. The handler responds with HTTP 503 for `CryptoError`, HTTP 503 for `TimeError`, and HTTP 503 for [`StoreFull`](../dependencies/august/0.19.0/memory/store.md#symbol-StoreFull). It can also raise `HttpError`, `JwtError`, and `KeyError`.
 
 It gets `config` from [`settings`](../common/settings.md#symbol-settings). It sets `form` to `http.form` for [`TokenForm`](contracts.md#symbol-TokenForm). If `form.grant_type` does not equal `"authorization_code"`, it returns [`_oauthError`](token.md#symbol-_oauthError) with `code` `"unsupported_grant_type"` and `description` `"Only authorization_code is supported."`. If `form.client_id` does not equal `config.clientId`, it returns [`_oauthError`](token.md#symbol-_oauthError) with `code` `"invalid_client"` and `description` `"The registered client is required."`.
 

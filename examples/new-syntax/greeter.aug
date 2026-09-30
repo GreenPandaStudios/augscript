@@ -2,7 +2,7 @@
 import Console from august.io
 import Logger from logger
 Greeter(resolve Logger logger, int x) implements IGreeter {
-    greet(resolve Console console, string name) uses Console.write {
+    greet(resolve Console console, string name) {
         logger.log(message="Hello, " + name + "!")
     }
 }

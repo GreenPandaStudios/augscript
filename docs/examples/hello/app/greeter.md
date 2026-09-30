@@ -45,7 +45,7 @@ Greeter(resolve Logger logger) implements IGreeter:
     * Prints a personalized greeting.
     * @param name The user to welcome.
     */
-    greet(resolve Console console, string name) uses Console.write:
+    greet(resolve Console console, string name):
         logger.log(message="Hello, " + name + "!")
 interface IGreeter:
     /**
@@ -68,7 +68,7 @@ Greeter(resolve Logger logger) implements IGreeter {
     * Prints a personalized greeting.
     * @param name The user to welcome.
     */
-    greet(resolve Console console, string name) uses Console.write {
+    greet(resolve Console console, string name) {
         logger.log(message="Hello, " + name + "!")
     }
 }

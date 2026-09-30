@@ -6,7 +6,7 @@ import Clock from august.time
 import ExpiringStore from august.memory
 
 /** An app session has its own key, issuer, audience and token type. A live registry entry is required so logout revokes a signed token immediately. */
-authenticate(optional string token, resolve Crypto crypto, resolve Clock clock, resolve SigningKeys keys, resolve ExpiringStore<SessionClaims> sessions) returns SessionClaims uses crypto.publicRsa and crypto.decodeBase64url and crypto.verifyRsa and crypto.equal and clock.now and keys.session and sessions.get unless SessionError and KeyError and TimeError:
+authenticate(optional string token, resolve Crypto crypto, resolve Clock clock, resolve SigningKeys keys, resolve ExpiringStore<SessionClaims> sessions) :
     match token:
         when null:
             throw SessionError()

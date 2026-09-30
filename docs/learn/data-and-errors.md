@@ -44,7 +44,7 @@ InvalidQuantity(int value) implements Error:
     pass
 
 /** Reject nonpositive quantities and return the calculated summary. */
-summarize(int price, int quantity) returns Order unless InvalidQuantity:
+summarize(int price, int quantity):
     if quantity <= 0:
         throw InvalidQuantity(value=quantity)
     return Order(quantity, total=price * quantity)
@@ -66,7 +66,7 @@ Use a record for a value whose meaning is its data. A class implements an interf
 
 ## Make failure part of the contract
 
-`unless InvalidQuantity` tells callers that `summarize` can fail with that checked error. `InvalidQuantity` is a class that implements `Error` and carries the rejected value. The caller must catch the failure or declare that it can propagate it. In this application, `try` contains the calls and `catch` prints a message when the second call fails. Operations after a throw in that block do not run.
+The throw tells the compiler that `summarize` can fail with `InvalidQuantity`. Its return expression supplies the `Order` result type. Hints, hover, and the compiled spec show this contract without repeating it in the header. `InvalidQuantity` is a class that implements `Error` and carries the rejected value. The caller must catch the failure or propagate it through an inferred or explicit contract. Main must handle it. In this application, `try` contains the calls and `catch` prints a message when the second call fails. Operations after a throw in that block do not run.
 
 Try removing the catch while keeping a bare call to `summarize` in `main.aug`. `aug check .` should report the unhandled error. Restore the example afterward. A checked failure tells you what a call can raise; it does not decide how your application should recover.
 

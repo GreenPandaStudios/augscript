@@ -7,6 +7,6 @@ capability Clock:
 extern C value _aug_time_now() returns int uses Clock.now unless TimeError
 /** Operating-system wall clock. */
 SystemClock() implements Clock:
-    now() returns int unless TimeError:
+    now() :
         unsafe:
             return _aug_time_now()

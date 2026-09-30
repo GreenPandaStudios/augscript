@@ -11,7 +11,7 @@ Plain handler results default to HTTP 200 unless another status is declared. Htt
 
 It takes `input` as [`LogoutForm`](contracts.aug.md#symbol-LogoutForm) from the HTTP form, `token` as `optional string` from the HTTP cookie `aug_session`, and `origin` as `optional string` from the HTTP header. It gets `crypto` ([`Crypto`](../.aug-spec/august/0.19.0/crypto/contracts.aug.md#symbol-Crypto)), `clock` ([`Clock`](../.aug-spec/august/0.19.0/time/contracts.aug.md#symbol-Clock)), `keys` ([`SigningKeys`](../common/keys.aug.md#symbol-SigningKeys)), and `sessions` ([`ExpiringStore<SessionClaims>`](../.aug-spec/august/0.19.0/memory/store.aug.md#symbol-ExpiringStore)) from dependency injection. Omitted optional inputs are null. The handler responds with HTTP 403 for [`SessionError`](contracts.aug.md#symbol-SessionError).
 
-It can also raise `KeyError`, `TimeError`, `CryptoError`, and `HttpError`.
+It can also raise `CryptoError`, `HttpError`, `KeyError`, and `TimeError`.
 
 It gets `config` from [`settings`](../common/settings.aug.md#symbol-settings). It checks that `origin` equals `config.baseUrl`. It raises a [`SessionError`](contracts.aug.md#symbol-SessionError) at the first failed check. It sets `session` to [`authenticate`](session.aug.md#symbol-authenticate) with `token` using injected `crypto`, `clock`, `keys`, and `sessions`.
 

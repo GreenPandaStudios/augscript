@@ -37,7 +37,7 @@ import Console from august.io
 import Logger from logger
 /** Writes application messages to standard output. */
 ConsoleLogger() implements Logger:
-    log(resolve Console console, string message) uses Console.write:
+    log(resolve Console console, string message):
         console.write(value=message)
 ```
 
@@ -47,7 +47,7 @@ import Console from august.io
 import Logger from logger
 /** Writes application messages to standard output. */
 ConsoleLogger() implements Logger {
-    log(resolve Console console, string message) uses Console.write {
+    log(resolve Console console, string message) {
         console.write(value=message)
     }
 }

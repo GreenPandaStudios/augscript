@@ -13,6 +13,7 @@ import { javadocBefore } from './javadoc.ts';
 import { checkUnitTests, discoverTests, mergeTestAnalysis, uniqueDiagnostics } from './testing.ts';
 import { formatFile } from './formatter.ts';
 import { interceptorBehavior } from './interceptors.ts';
+import { callableResult, callableErrors } from './contracts.ts';
 
 const genericFacts = (header: GenericHeader) => header.typeParams.map(name => ({ name,
   variance: header.typeVariance?.[name] ?? 'invariant', constraints: (header.typeConstraints?.[name] ?? []).map(typeName) }));
@@ -43,11 +44,12 @@ export function contractFacts(checked: CheckedProject): ContractFact[] {
         streaming:!!method.endpoint.streams,errors:method.endpoint.errors.map(error=>({type:typeName(error.type),status:error.status}))}:undefined,
       policies:(checked.httpPolicies.get(method)??[]).map((policy,index)=>({name:policy.name,order:index+1,options:policy.options,
         dependencies:policy.dependencies.map(index=>method.params[index]?.label??method.params[index]?.name??'')})),
-      result: `${method.returnOwnership === 'own' ? 'own ' : ''}${typeName(method.returns)}`,
+      result: `${method.returnOwnership === 'own' ? 'own ' : ''}${tyName(callableResult(checked, method))}`,
       changes: [...(contract?.changes ?? method.changes ?? [])],
       capabilities: [...(contract?.uses.values() ?? [])].map(effect => `${effect.source}.${effect.operation}`).concat(method.externC ? [`C.${method.name}`] : []),
       inferredEffects: !!contract?.inferred,
-      errors: [...new Set([...method.throws.map(typeName), ...layers.flatMap(layer => layer.errors.map(tyName))])],
+      errors: constructor ? [...new Set([...(checked.constructorContracts.get(constructor)?.errors.map(tyName) ?? constructor.validationErrors?.map(typeName) ?? []),
+        ...layers.flatMap(layer => layer.errors.map(tyName))])].sort() : callableErrors(checked, method),
       interceptors: layers.map((layer, order) => {
         const effects = checked.effectContracts.get(layer.around);
         return { name: layer.definition.name, order: order + 1, location: layer.definition.node.span,
@@ -169,6 +171,39 @@ export class SemanticDocument {
   complete(offset: number) { return completions(this.checked, this.path, offset); }
   tokens() { return semanticTokens(this.checked, this.path); }
   fixes() { return suggestedFixes(this.checked, this.path); }
+  /** Non-editable declaration hints. Formatting never adds inferred source clauses. */
+  inlayHints(start = 0, end = this.source.length) {
+    const hints: { offset: number; label: string; tooltip: string }[] = [];
+    for (const [method, contract] of this.checked.callableContracts) {
+      if (method.span.file !== this.path || !method.body || method.headerEnd === undefined) continue;
+      let offset = method.headerEnd;
+      while (offset > method.span.start && /\s/.test(this.source[offset - 1])) offset--;
+      if (offset < start || offset > end) continue;
+      const clauses: string[] = [];
+      if (contract.inferredResult && contract.result.kind !== 'error' && contract.result.name !== 'void')
+        clauses.push(contract.result.name === '<target result>' ? 'returns the target result' : `returns ${tyName(contract.result)}`);
+      const effects = this.checked.effectContracts.get(method);
+      if (effects?.inferredChanges && effects.changes.length) clauses.push(`changes ${effects.changes.join(' and ')}`);
+      const uses = [...(effects?.uses.values() ?? [])].map(effect => `${effect.source}.${effect.operation}`).sort();
+      if (effects?.inferred && uses.length) clauses.push(`uses ${[...new Set(uses)].join(' and ')}`);
+      const errors = callableErrors(this.checked, method);
+      if (contract.inferredErrors && errors.length) clauses.push(`unless ${errors.join(' and ')}`);
+      const complete = clauses.join(' ');
+      const compact = complete.length > 120 ? clauses.map(clause =>
+        clause.startsWith('uses ') && clause.length > 50 ? `uses ${new Set(uses).size} operations` :
+        clause.startsWith('unless ') && clause.length > 50 ? `unless ${errors.length} errors` : clause).join(' ') : complete;
+      if (clauses.length) hints.push({offset, label: compact,
+        tooltip: `\`\`\`augscript\n${complete}\n\`\`\`\n\n` + 'Inferred from the body, implemented interface, and interceptor layers. These hints are not source text. The compiler still checks ownership, interface limits, and escaping errors. See the adjacent .aug.md spec for the full explanation.'});
+    }
+    for (const [record, contract] of this.checked.constructorContracts) {
+      if (record.span.file !== this.path || !contract.inferredErrors || !contract.errors.length || record.headerEnd === undefined) continue;
+      let offset = record.headerEnd;
+      while (offset > record.span.start && /\s/.test(this.source[offset - 1])) offset--;
+      if (offset >= start && offset <= end) hints.push({offset, label:'unless ' + contract.errors.map(tyName).sort().join(' and '),
+        tooltip:'Checked errors inferred from record validation. Callers must catch or propagate them. These hints are not saved source.'});
+    }
+    return hints.sort((left, right) => left.offset - right.offset);
+  }
   format() { return formatFile(this.checked.project, this.checked.project.files.get(this.path)!); }
   describe(options?: Parameters<typeof describe>[2]) { return describe(this.checked, this.path, options); }
   definition(offset: number) {

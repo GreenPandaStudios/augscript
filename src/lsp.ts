@@ -37,7 +37,7 @@ export async function runLanguageServer(root: string): Promise<number> {
     if (message.id !== undefined && cancelled.delete(message.id)) { send({ jsonrpc: '2.0', id: message.id, error: { code: -32800, message: 'Request cancelled' } }); return; }
     if (message.method === 'initialize') result = { capabilities: {
       textDocumentSync: { openClose: true, change: 1 }, hoverProvider: true, completionProvider: { triggerCharacters: ['.', '(', '=', ' '] },
-      definitionProvider: true, documentFormattingProvider: true, codeActionProvider: true,
+      definitionProvider: true, documentFormattingProvider: true, codeActionProvider: true, inlayHintProvider: true,
       semanticTokensProvider: { legend: { tokenTypes, tokenModifiers: ['declaration'] }, full: true },
     }, serverInfo: { name: 'AugScript', version: compilerVersion() } };
     else if (message.method === 'shutdown') shutdown = true;
@@ -61,13 +61,20 @@ export async function runLanguageServer(root: string): Promise<number> {
       const view = document(uri), offset = params.offset ?? 0;
       result = params.command === 'hover' ? view.hover(offset) ?? null : params.command === 'complete' ? view.complete(offset) :
         params.command === 'fixes' ? view.fixes() : params.command === 'semantic-tokens' ? view.tokens() :
+          params.command === 'inlay-hints' ? view.inlayHints(params.options?.start, params.options?.end) :
           params.command === 'format' ? view.format() : params.command === 'definition' ? view.definition(offset) ?? null : params.command === 'diagnostics' ? view.diagnostics.map(issue => ({ ...issue, help: diagnosticHelp[issue.code] })) : view.describe(params.options);
     } else if (message.method.startsWith('textDocument/')) {
       const view = document(params.textDocument.uri);
       const offset = params.position ? offsetAt(view.source, params.position) : 0;
       if (message.method === 'textDocument/hover') {
         const hover = view.hover(offset); result = hover ? { contents: { kind: 'markdown', value: `\`\`\`augscript\n${hover.detail}\n\`\`\`\n\n${hover.documentation ?? ''}` } } : null;
-      } else if (message.method === 'textDocument/completion') result = view.complete(offset).map(item => ({ label: item.label,
+      } else if (message.method === 'textDocument/inlayHint') result = view.inlayHints(
+        params.range ? offsetAt(view.source, params.range.start) : undefined,
+        params.range ? offsetAt(view.source, params.range.end) : undefined).map(hint => ({
+          position: positionAt(view.source, hint.offset), label: hint.label, kind: 1,
+          paddingLeft: true, tooltip: {kind: 'markdown', value: hint.tooltip},
+        }));
+      else if (message.method === 'textDocument/completion') result = view.complete(offset).map(item => ({ label: item.label,
         kind: ({ method: 2, function: 3, variable: 6, class: 7, interface: 8, property: 10, keyword: 14, snippet: 15, type: 25 } as Record<string, number>)[item.kind] ?? 6,
         detail: item.detail, documentation: { kind: 'markdown', value: item.documentation ?? '' }, insertText: item.insertText ?? item.label,
         insertTextFormat: item.kind === 'snippet' ? 2 : 1 }));

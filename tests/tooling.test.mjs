@@ -87,10 +87,15 @@ test('persistent LSP handles split UTF-8 frames, local edits, definitions and ca
     child.stdin.write(packet.subarray(0, 13)); child.stdin.write(packet.subarray(13));
   });
   try {
-    assert.equal((await request('initialize', { capabilities: {} })).capabilities.textDocumentSync.change, 1);
+    const capabilities = (await request('initialize', { capabilities: {} })).capabilities;
+    assert.equal(capabilities.textDocumentSync.change, 1);
+    assert.equal(capabilities.inlayHintProvider, true);
     const uri = pathToFileURL(join(root, 'worker.aug')).href;
-    const source = 'import value from math\n/** Café 🍐. */\nread() returns int { return value() }\n';
+    const source = 'import value from math\n/** Café 🍐. */\nread() { return value() }\n';
     const issues = await request('aug/editor', { uri, text: source, version: 4, command: 'diagnostics' }); assert.deepEqual(issues, []);
+    const hints = await request('textDocument/inlayHint', {textDocument:{uri},range:{start:{line:2,character:0},end:{line:3,character:0}}});
+    assert.equal(hints[0].label, 'returns int');
+    assert.deepEqual(hints[0].position, {line:2,character:6});
     const target = await request('aug/editor', { uri, command: 'definition', offset: source.lastIndexOf('value()') });
     assert.equal(target.file, join(root, 'math.aug'));
     const before = await request('aug/stats', {});
@@ -157,8 +162,8 @@ test('dependency and checked-error fixes produce valid local and whole-project c
   const root = create({
     'store.aug': 'interface Store {}\nStoreImpl() implements Store {}\n',
     'service.aug': "import Store from store\nread() returns Store { resolve Store to service; return service }\n",
-    'math.aug': 'first() returns int { values = [1]; return values.get(index=0) }\n',
-    'main.aug': 'import Store and StoreImpl from store\nimport read from service\nimport first from math\nimplement Store with StoreImpl\nvalue = read()\ntry { print(value=first()) } catch IndexError error { print(value="failed") }\n',
+    'math.aug': 'first() returns int unless FileError { values = [1]; return values.get(index=0) }\n',
+    'main.aug': 'import Store and StoreImpl from store\nimport read from service\nimport first from math\nimplement Store with StoreImpl\nvalue = read()\ntry { print(value=first()) } catch Error error { print(value="failed") }\n',
   });
   try {
     const workspace = new SemanticWorkspace(root);

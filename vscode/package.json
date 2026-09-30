@@ -192,6 +192,11 @@
     "configuration": {
       "title": "AugScript",
       "properties": {
+        "augscript.inferredContractHints": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show inferred return types, mutations, capability use, and checked errors as non-editable inline hints. These hints do not change saved source."
+        },
         "augscript.lldbDapPath": {
           "type": "string",
           "default": "",

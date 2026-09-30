@@ -39,7 +39,7 @@ interface Logger:
     log(resolve Console console, string message) uses Console.write
 /** Console logger shared by interceptor instances and the application. */
 ConsoleLogger() implements Logger:
-    log(resolve Console console, string message) uses Console.write:
+    log(resolve Console console, string message):
         console.write(value=message)
 ```
 
@@ -53,7 +53,7 @@ interface Logger {
 }
 /** Console logger shared by interceptor instances and the application. */
 ConsoleLogger() implements Logger {
-    log(resolve Console console, string message) uses Console.write {
+    log(resolve Console console, string message) {
         console.write(value=message)
     }
 }

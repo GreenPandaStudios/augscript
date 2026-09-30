@@ -44,11 +44,11 @@ Operating-system wall clock.
 ### SystemClock.now
 
 ```text
-now() returns int unless TimeError
+now()
 ```
 
 Read whole Unix seconds in UTC.
 
-Inferred capabilities: `Clock.now`.
+The compiler infers a `int` result, use of `Clock.now`, `TimeError` failures.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/time/contracts.aug#L9)

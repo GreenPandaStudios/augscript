@@ -56,7 +56,7 @@ import Crypto and verifyJwt and JwtError from august.crypto
 import Clock from august.time
 import ExpiringStore from august.memory
 /** An app session has its own key, issuer, audience and token type. A live registry entry is required so logout revokes a signed token immediately. */
-authenticate(optional string token, resolve Crypto crypto, resolve Clock clock, resolve SigningKeys keys, resolve ExpiringStore<SessionClaims> sessions) returns SessionClaims uses crypto.publicRsa and crypto.decodeBase64url and crypto.verifyRsa and crypto.equal and clock.now and keys.session and sessions.get unless SessionError and KeyError and TimeError:
+authenticate(optional string token, resolve Crypto crypto, resolve Clock clock, resolve SigningKeys keys, resolve ExpiringStore<SessionClaims> sessions):
     match token:
         when null:
             throw SessionError()
@@ -93,7 +93,7 @@ import Crypto and verifyJwt and JwtError from august.crypto
 import Clock from august.time
 import ExpiringStore from august.memory
 /** An app session has its own key, issuer, audience and token type. A live registry entry is required so logout revokes a signed token immediately. */
-authenticate(optional string token, resolve Crypto crypto, resolve Clock clock, resolve SigningKeys keys, resolve ExpiringStore<SessionClaims> sessions) returns SessionClaims uses crypto.publicRsa and crypto.decodeBase64url and crypto.verifyRsa and crypto.equal and clock.now and keys.session and sessions.get unless SessionError and KeyError and TimeError {
+authenticate(optional string token, resolve Crypto crypto, resolve Clock clock, resolve SigningKeys keys, resolve ExpiringStore<SessionClaims> sessions) {
     match token {
         when null {
             throw SessionError()
@@ -148,7 +148,7 @@ authenticate(optional string token, resolve Crypto crypto, resolve Clock clock, 
 
 An app session has its own key, issuer, audience and token type. A live registry entry is required so logout revokes a signed token immediately.
 
-It takes `token` as `optional string`. It gets `crypto` ([`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto)), `clock` ([`Clock`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock)), `keys` ([`SigningKeys`](../common/keys.md#symbol-SigningKeys)), and `sessions` ([`ExpiringStore<SessionClaims>`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore)) from dependency injection. Omitted optional inputs are null. Failures can raise [`SessionError`](contracts.md#symbol-SessionError), [`KeyError`](../common/keys.md#symbol-KeyError), and `TimeError`.
+It takes `token` as `optional string`. It gets `crypto` ([`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto)), `clock` ([`Clock`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock)), `keys` ([`SigningKeys`](../common/keys.md#symbol-SigningKeys)), and `sessions` ([`ExpiringStore<SessionClaims>`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore)) from dependency injection. Omitted optional inputs are null. Failures can raise [`KeyError`](../common/keys.md#symbol-KeyError), [`SessionError`](contracts.md#symbol-SessionError), and `TimeError`.
 
 If `token` is null, it raises a [`SessionError`](contracts.md#symbol-SessionError). The non-null `token` becomes `value`. It sets `publicKey` to [`crypto.publicRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.publicRsa) with `key` from [`keys.session`](../common/keys.md#symbol-SigningKeys.session). It sets `claims` to `decode` on [`verifyJwt`](../dependencies/august/0.19.0/crypto/jose.md#symbol-verifyJwt) with `token` from `value`, `publicKey`, `kid` `"session-1"`, and `tokenType` `"august-session+jwt"` using injected `crypto` for [`SessionClaims`](contracts.md#symbol-SessionClaims).
 

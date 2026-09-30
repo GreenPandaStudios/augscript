@@ -46,7 +46,7 @@ Both braces and indentation are accepted. The formatter uses main.yaml preferenc
 
 ### EFFECT
 
-Declare `changes self` for state transitions or `changes input` for an owned/borrowed input. Receive I/O capabilities through dependency headers. Public function and interface contracts declare their allowed effects with `uses dependency.operation`; implementations and private helpers can infer them. Calls and interceptor layers must fit the effective contract.
+Bodies infer `changes self` for state transitions and `changes input` for borrowed inputs. Bodyless interfaces declare permitted changes. Receive I/O capabilities through dependency headers. Executable bodies infer capability operations, mutations, and escaping checked errors. Bodyless interfaces declare their allowed effects with `uses dependency.operation`; explicit clauses remain checked bounds. Calls and interceptor layers must fit the effective contract.
 
 Public fields and managed inputs grant reading. Mark local storage mutable when it needs initialization-independent changes. Constructors are pure; move startup effects into a named method. drop performs only local cleanup and cannot acquire effects/errors through interceptors.
 
@@ -70,7 +70,7 @@ A child task keeps its captured objects available until `wait for` or its scope 
 
 ### THROWS
 
-A checked error lacks a compatible catch or unless declaration. The language uses `unless`; THROWS is the diagnostic identifier retained for tooling.
+A checked error reaches main without a compatible catch, or exceeds an explicit unless bound. Bodies infer escaping errors when unless is omitted. The language uses `unless`; THROWS is the diagnostic identifier retained for tooling.
 
 **Propagate with unless** adds the specific error to the enclosing contract. At composition statements, **Catch and report the failure** creates a visible recovery template. Choose domain recovery deliberately; no fix silently discards an error.
 
@@ -97,7 +97,11 @@ Next exists only inside around. `next()` forwards original inputs; `next(y=value
 | TEST | Put a class/function suite beside its declaration. Unique groups/cases; bindings before setup before cases. Check row arity/types and execute a bool assertion in each case. |
 | DOC | @param labels, value-return tags, and error tags must match the effective signature. Unknown tags are errors. Missing public docs become warnings only when enabled. |
 | CONFIG | main.yaml uses the supported keys and simple YAML lists. Unknown/duplicate keys and invalid values fail during check. |
-| FFI | Use supported boundary types, matching C widths, labeled inputs, unsafe, and uses C.function in callable contracts. |
+| FFI | Use supported boundary types, matching C widths, labeled inputs, unsafe, and an inferred or declared C.function effect. |
 | NATIVE | A C compiler error mapped to its .aug file and line. Fix the boundary declaration or linker configuration; inspect emit-c for generated details. |
 
 See [testing](testing.md) and [native tooling](tooling.md) for executable examples and exact limits.
+
+## INFERENCE: add a type anchor
+
+The compiler cannot infer a result when recursive calls have no concrete return evidence, or when generic contracts keep expanding. State a finite `returns T`, `uses`, or `unless` contract at that boundary. Empty collections also need a contextual item type. This does not require repeating contracts on ordinary bodies.

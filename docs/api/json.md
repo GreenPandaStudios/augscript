@@ -13,7 +13,7 @@ Public declarations exported by this module. Import names explicitly from `augus
 ## parse {#api-parse}
 
 ```text
-parse(string input) returns Json unless JsonError
+parse(string input)
 ```
 
 Parse strict UTF-8 JSON. Duplicate keys, invalid Unicode, oversized integers, and nesting beyond 64 levels raise JsonError.

@@ -1,3 +1,4 @@
+import { callableResult, callableErrors } from './contracts.ts';
 import { createHash } from 'node:crypto';
 import { existsSync, lstatSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, relative, resolve } from 'node:path';
@@ -163,7 +164,9 @@ class SpecWriter {
   private contract(method:MethodDecl, documentation?:Javadoc): SpecNode[] {
     const effects=this.checked.effectContracts.get(method);
     const layers=this.checked.interceptorPlans.get(method)??[];
-    const errors=[...new Set([...method.throws.map(type=>{this.type(type,method.span.file);return typeName(type);}),...layers.flatMap(layer=>layer.errors.map(tyName))])];
+    for (const type of method.throws) this.type(type,method.span.file);
+    const errors=callableErrors(this.checked,method);
+    for (const error of this.checked.callableContracts.get(method)?.errors ?? []) this.use(error.def);
     const changes=effects?.changes??method.changes??[];
     const uses=[...(effects?.uses.values()??method.uses??[])];
     const result:SpecNode[]=[];
@@ -175,8 +178,12 @@ class SpecWriter {
       documentation?.markdown.match(/\*\*Returns\*\* ([^\n]+)/)?.[1];
     // Implementations explain their actual returns below. Contracts need the
     // result type; repeating it before every return adds noise to the narrative.
-    this.type(method.returns,method.span.file);
-    if(method.returns.name!=='void'&&(!method.body||returnNote||method.returnOwnership==='own'))facts.push(`It returns ${(method.returnOwnership==='own'?'ownership of ':'')+this.type(method.returns,method.span.file)}`+
+    const resultType=callableResult(this.checked,method);
+    const reference=(type:import('./types.ts').Ty):import('./ast.ts').TypeRef=>({name:type.name,args:type.args.map(reference),nullable:type.nullable,optional:type.optional,span:method.returns.span});
+    const returns=reference(resultType);
+    this.use(resultType.def);
+    this.type(returns,method.span.file);
+    if(returns.name!=='void'&&(!method.body||returnNote||method.returnOwnership==='own'))facts.push(`It returns ${(method.returnOwnership==='own'?'ownership of ':'')+this.type(returns,method.span.file)}`+
       (returnNote?` — ${returnNote.replace(/[.!?]$/,'')}`:'')+'.');
     if(changes.length)facts.push('It may change '+coordinate(changes.map(code))+'.');
     const capabilities=uses.map(effect=>{
@@ -239,7 +246,7 @@ class SpecWriter {
     if(expr.kind==='call'&&expr.callee.kind==='name') {
       const def=this.definition(expr.callee.name);
       if(def?.node.kind==='class')return def;
-      if(def?.node.kind==='function')return this.definition(def.node.returns.name);
+      if(def?.node.kind==='function')return callableResult(this.checked,def.node).def;
     }
     return undefined;
   }
@@ -543,7 +550,7 @@ class SpecWriter {
               if(type==='Map'&&stmt.expr.callee.name==='set')return [step('It stores '+arg('value')+' in '+this.expression(receiver)+' under '+arg('key')+'.')];
               if(type==='Map'&&stmt.expr.callee.name==='take')return [step('It removes the key '+arg('key')+' from '+this.expression(receiver)+'.')];
             }
-            if(method?.returns.name==='void'&&method.params.filter(param=>!param.injected).length===1&&stmt.expr.args.length===1) {
+            if(method&&callableResult(this.checked,method).name==='void'&&method.params.filter(param=>!param.injected).length===1&&stmt.expr.args.length===1) {
               const owner=[...this.checked.project.definitions.values()].find(owner=>'methods' in owner.node&&owner.node.methods.includes(method))!;
               const target=this.link(owner,owner.name+'.'+method.name,this.memberPath(stmt.expr.callee)??method.name);
               const plan=this.checked.callPlans.get(stmt.expr);
@@ -676,7 +683,9 @@ class SpecWriter {
         if(introduction)children.push(paragraph(introduction));
         if(inputs)children.push(paragraph(inputs));
         children.push(...this.layers(item));
-        if(item.validationErrors?.length)children.push(paragraph('Construction can fail with '+item.validationErrors.map(type=>this.type(type)).join(', ')+'.'));
+        const errors=this.checked.constructorContracts.get(item)?.errors;
+        if(errors?.length)children.push(paragraph('Construction can fail with '+errors.map(type=>{this.use(type.def);return type.def?this.link(type.def):code(tyName(type));}).join(', ')+'.'));
+        else if(item.validationErrors?.length)children.push(paragraph('Construction can fail with '+item.validationErrors.map(type=>this.type(type)).join(', ')+'.'));
         if(item.stateFields?.length)children.push(...item.stateFields.map(field=>{this.locals.set(field.name,field.type);return paragraph(`The ${field.mutable?'mutable':'read-only'}${field.name.startsWith('_')?', private':''} field ${code(field.name)} has type ${this.type(field.type)} and starts as ${this.expression(field.initializer)}.`);}));
         if(item.constructorBody)children.push(this.heading(item.name+'.initialize',item.span,3,[flow(this.statements(item.constructorBody))]));
         if(!item.record) {
