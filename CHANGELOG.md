@@ -7,9 +7,9 @@
 - Write compiled specs as connected prose, with explicit branch, loop, match, recovery, and cleanup relations; preserve statement provenance through sentence aggregation. Describe used dependency contracts in prose and document the academic research behind the generator.
 - Add an idempotent `// aug-spec:` source pointer during spec generation and native build preparation, directing readers and coding agents to the adjacent explanation. Read-only checks detect pointer drift; native emission uses reparsed source lines.
 - Compile specifications through a structured explanation tree with shorter prose, grouped control flow, integrated Javadoc, and compact linked dependency surfaces. Regenerate the wiki examples and adjacent specs.
-- Harden npm publication to use checksum-verified reviewed release archives, disable publishing lifecycle scripts, and safely resume identical partial releases. Disable lifecycle scripts when installing Marketplace publication tooling.
+- Harden npm publication to use checksum-verified reviewed release archives, disable publishing lifecycle scripts, and safely resume identical partial releases.
 
-- Add release-triggered VS Code Marketplace publication of the checksum-verified release VSIX using Microsoft Entra federation, plus refreshed listing metadata and installation docs. Publisher identity setup remains required.
+- Refresh Marketplace listing metadata and installation docs; keep extension updates as manual uploads of the reviewed release VSIX.
 
 - Reduce getting started to one `npx @greenpandastudios/aug-cli@next init hello-august` command. Publishing a reviewed GitHub release now triggers the verified npm publication workflow; npm ownership and all four trusted publishers are configured.
 

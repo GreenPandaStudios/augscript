@@ -3,7 +3,7 @@
 ## Unreleased
 
 - Improve Marketplace search metadata and installation docs; show the single npm starter command.
-- Publish the verified GitHub release VSIX through Microsoft Entra federation after publisher setup.
+- Keep Marketplace updates as manual uploads of the verified GitHub release VSIX.
 
 ## 0.19.0
 

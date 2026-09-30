@@ -55,7 +55,7 @@ npx @greenpandastudios/aug-cli@next init hello-august
 
 ## VS Code
 
-Install **AugScript** (`augscript.augscript`) from the VS Code Extensions view once its [Marketplace listing](https://marketplace.visualstudio.com/items?itemName=augscript.augscript) is published. The 0.19.0 VSIX has been submitted under August Miller’s publisher profile and is awaiting Marketplace verification. Release publication runs the Marketplace workflow described in [releasing](releasing.md).
+Install **AugScript** (`augscript.augscript`) from the VS Code Extensions view from its [Marketplace listing](https://marketplace.visualstudio.com/items?itemName=augscript.augscript). Version 0.19.0 is public under August Miller’s publisher profile. Extension updates are uploaded manually from the reviewed GitHub release VSIX as described in [releasing](releasing.md).
 
 For direct installation, download the matching `.vsix` from [GitHub Releases](https://github.com/GreenPandaStudios/augscript/releases) and choose **Extensions → Install from VSIX**.
 
