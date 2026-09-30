@@ -92,12 +92,12 @@ interface IGreeter {
 <a id="symbol-Greeter"></a>
 ### `Greeter` · class · [source](greeter.md#code)
 
-Welcomes a user through the configured logger. Implements [`IGreeter`](greeter.md#symbol-IGreeter). Dependency injection supplies `logger` as [`Logger`](../logging/logger.md#symbol-Logger), stored read-only (the application logger, injected when resolved).
+Welcomes a user through the configured logger. It implements [`IGreeter`](greeter.md#symbol-IGreeter). The `logger` dependency is injected as [`Logger`](../logging/logger.md#symbol-Logger) and stored read-only (The application logger, injected when resolved).
 
 <a id="symbol-Greeter.greet"></a>
 #### `Greeter.greet` · [source](greeter.md#code)
 
-Prints a personalized greeting. The caller supplies `name` as `string` (the user to welcome). Dependency injection supplies `console` as [`Console`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console). It can use [`Console.write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write). It calls [`Logger.log`](../logging/logger.md#symbol-Logger.log) on `logger` (`message` set to text that joins `"Hello, "`, `name` and `"!"`) using `console`.
+Prints a personalized greeting. It takes `name` as a string (the user to welcome). It gets `console` ([`Console`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console)) from dependency injection. It passes the text `Hello, {name}!` to [`logger.log`](../logging/logger.md#symbol-Logger.log), using injected `console`.
 
 <a id="symbol-IGreeter"></a>
 ### `IGreeter` · interface · [source](greeter.md#code)
@@ -105,11 +105,11 @@ Prints a personalized greeting. The caller supplies `name` as `string` (the user
 <a id="symbol-IGreeter.greet"></a>
 #### `IGreeter.greet` · [source](greeter.md#code)
 
-Prints a personalized greeting. The caller supplies `name` as `string` (the user to welcome). Dependency injection supplies `console` as [`Console`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console). It can use [`Console.write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
+Prints a personalized greeting. It takes `name` as a string (the user to welcome). It gets `console` ([`Console`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console)) from dependency injection. It can call [`Console.write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
 
 ### Dependencies
 
-The file uses [`Console`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console) from `august.io`. [`write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write) takes `value` as `T`. It returns no value. The type parameters are `T`. It can use [`Console.write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write). The file uses [`Logger`](../logging/logger.md#symbol-Logger) from `logging`. [`log`](../logging/logger.md#symbol-Logger.log) takes `message` as `string`. It returns no value. Dependency injection supplies `console` as [`Console`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console). It can use [`Console.write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
+It uses [`Console`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console) ([`write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write)) from `august.io`. It uses [`Logger`](../logging/logger.md#symbol-Logger) ([`log`](../logging/logger.md#symbol-Logger.log)) from `logging`. These links explain the full dependency contracts.
 
 ::::
 

@@ -5,4 +5,4 @@
 <a id="symbol-Payload"></a>
 ## `Payload` · immutable record · [source](data.aug#L2)
 
-The caller supplies `id` as `int`, stored read-only, `message` as `string`, stored read-only, and `values` as `List<int>`, stored read-only.
+It takes `id` as an integer, kept read-only, `message` as a string, kept read-only, and `values` as `List<int>`, kept read-only.

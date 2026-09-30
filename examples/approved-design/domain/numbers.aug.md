@@ -5,7 +5,7 @@
 <a id="symbol-RangeError"></a>
 ## `RangeError` · class · [source](numbers.aug#L3)
 
-Raised when an input is outside the operation's domain. Implements `Error`. The caller supplies `value` as `int`, stored read-only.
+Raised when an input is outside the operation's domain. It implements `Error`. It takes `value` as an integer, kept read-only.
 
 <a id="symbol-Positive"></a>
 ## `Positive` · interceptor · [source](numbers.aug#L6)
@@ -15,12 +15,14 @@ A pure validation layer, shared by any compatible callable. The type parameters 
 <a id="symbol-Positive.around"></a>
 ### `Positive.around` · [source](numbers.aug#L7)
 
-The caller supplies `amount` as `int`. The result is `T`. It can fail with `RangeError`. If `amount` is less than `0`, it fails with a new [`RangeError`](numbers.aug.md#symbol-RangeError) (`value` set to `amount`). Otherwise, it returns the value from `next`.
+It takes `amount` as an integer. Failures can raise [`RangeError`](numbers.aug.md#symbol-RangeError). If `amount` is negative, it raises a [`RangeError`](numbers.aug.md#symbol-RangeError) with `value` from `amount`. It returns `next`.
 
 <a id="symbol-double"></a>
 ## `double` · [source](numbers.aug#L18)
 
-Double a nonnegative amount. The caller supplies `amount` as `int` (Integer to double). The result is `int` — Twice the amount, with defined integer wrapping. It can fail with `RangeError` (A validation layer rejected a negative input). Layers run in the declared order. Call [`Positive.around`](numbers.aug.md#symbol-Positive.around). It returns `amount` times `2`.
+Double a nonnegative amount. It takes `amount` as an integer (Integer to double). It returns `int` — Twice the amount, with defined integer wrapping. Failures can raise [`RangeError`](numbers.aug.md#symbol-RangeError) (A validation layer rejected a negative input).
+
+Layers run in the declared order. Call [`Positive.around`](numbers.aug.md#symbol-Positive.around). It returns `amount` times `2`.
 
 <a id="symbol-test double"></a>
 ## `test double` · [source](numbers.aug#L20)
@@ -31,14 +33,12 @@ Tests [`double`](numbers.aug.md#symbol-double). Each case gets fresh setup and d
 
 #### `doubles` · [source](numbers.aug#L22)
 
-Run once for each row of a tuple containing `0`, `0`; a tuple containing `3`, `6`; a tuple containing `7`, `14`. Bind row positions to `input`, `expected`. It calls `assert` (the value from [`double`](numbers.aug.md#symbol-double) (`amount` set to `input`) equals `expected`).
+Run once for each row of a tuple containing `0`, `0`; a tuple containing `3`, `6`; a tuple containing `7`, `14`. Bind row positions to `input`, `expected`. The test requires [`double`](numbers.aug.md#symbol-double) with `amount` from `input` equals `expected`.
 
 #### `rejects_negative` · [source](numbers.aug#L24)
 
-It sets `rejected` of type `bool` to `false`.
+It sets `rejected` to `false`.
 
-It tries to call [`double`](numbers.aug.md#symbol-double) (`amount` set to `-1`). If this attempt raises [`RangeError`](numbers.aug.md#symbol-RangeError), it catches it as `error` and sets `rejected` to `error.value` equals `-1`. It calls `assert` (`rejected`).
+It tries to call [`double`](numbers.aug.md#symbol-double) with `amount` `-1`. If this work raises [`RangeError`](numbers.aug.md#symbol-RangeError) as `error`, it sets `rejected` to `error.value` equals `-1`. The test requires `rejected` is true.
 
-## Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
-
-`assert`: Assert a bool in a test case or its setup. Catching an assertion failure cannot make the case pass; every case must execute an assertion.
+Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).

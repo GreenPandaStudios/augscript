@@ -70,19 +70,17 @@ interface ICounter {
 <a id="symbol-Counter"></a>
 ### `Counter` · class · [source](counter.md#code)
 
-Implements [`ICounter`](counter.md#symbol-ICounter). The caller supplies `value` as `int`, stored mutably.
+It implements [`ICounter`](counter.md#symbol-ICounter). It takes `value` as an integer, kept mutable.
 
 <a id="symbol-Counter.increment"></a>
 #### `Counter.increment` · [source](counter.md#code)
 
-It may change `self`. While mutably borrowing `self`, it increases `value` by `1`.
-
-The mutable borrow ends when this block exits.
+It may change `self`. With temporary permission to change `self`, it increases `value` by `1`.
 
 <a id="symbol-Counter.read"></a>
 #### `Counter.read` · [source](counter.md#code)
 
-The result is `int`. It returns `value`.
+It returns `value`.
 
 <a id="symbol-ICounter"></a>
 ### `ICounter` · interface · [source](counter.md#code)
@@ -95,7 +93,7 @@ It may change `self`.
 <a id="symbol-ICounter.read"></a>
 #### `ICounter.read` · [source](counter.md#code)
 
-The result is `int`.
+It returns `int`.
 
 ::::
 

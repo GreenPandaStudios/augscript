@@ -5,4 +5,4 @@
 <a id="symbol-Fruit"></a>
 ## `Fruit` · immutable record · [source](models.aug#L3)
 
-Immutable fruit data, with public construction labels and structural equality. The caller supplies `code` as `int`, stored read-only and `name` as `string`, stored read-only.
+Immutable fruit data, with public construction labels and structural equality. It takes `code` as an integer, kept read-only and `name` as a string, kept read-only.

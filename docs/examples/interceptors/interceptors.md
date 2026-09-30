@@ -121,7 +121,7 @@ interceptor AddOne<T>() {
 <a id="symbol-ValidationError"></a>
 ### `ValidationError` · class · [source](interceptors.md#code)
 
-Raised when a numeric input fails validation. Implements `Error`. The caller supplies `message` as `string`, stored read-only.
+Raised when a numeric input fails validation. It implements `Error`. It takes `message` as a string, kept read-only.
 
 <a id="symbol-Audit"></a>
 ### `Audit` · interceptor · [source](interceptors.md#code)
@@ -129,12 +129,14 @@ Raised when a numeric input fails validation. Implements `Error`. The caller sup
 Logs before and after a successful call.
 Generic T is inferred from the annotated function or constructor. The type parameters are `T`.
 
-Dependency injection supplies `logger` as [`Logger`](logging.md#symbol-Logger), stored read-only. Creates one interceptor per invocation. Its around operation may delegate once or finish early.
+The `logger` dependency is injected as [`Logger`](logging.md#symbol-Logger) and stored read-only. Creates one interceptor per invocation. Its around operation may delegate once or finish early.
 
 <a id="symbol-Audit.around"></a>
 #### `Audit.around` · [source](interceptors.md#code)
 
-Wrap a call without changing its result. Dependency injection supplies `console` as [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console). The result is `T`. It can use [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write). It calls [`Logger.log`](logging.md#symbol-Logger.log) on `logger` (`message` set to `"before"`) using `console`. It sets `result` of type `T` to the value from `next`. It calls [`Logger.log`](logging.md#symbol-Logger.log) on `logger` (`message` set to `"after"`) using `console`. It returns `result`.
+Wrap a call without changing its result. It gets `console` ([`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console)) from dependency injection.
+
+It passes `"before"` to [`logger.log`](logging.md#symbol-Logger.log), using injected `console`. It sets `result` of type `T` to `next`. It passes `"after"` to [`logger.log`](logging.md#symbol-Logger.log), using injected `console`. It returns `result`.
 
 <a id="symbol-Positive"></a>
 ### `Positive` · interceptor · [source](interceptors.md#code)
@@ -144,7 +146,7 @@ Rejects negative numbers before the target executes. The type parameters are `T`
 <a id="symbol-Positive.around"></a>
 #### `Positive.around` · [source](interceptors.md#code)
 
-The caller supplies `y` as `int` (the target argument selected by a mapping such as y=x). The result is `T`. It can fail with `ValidationError` (when the selected value is negative). If `y` is less than `0`, it fails with a new [`ValidationError`](interceptors.md#symbol-ValidationError) (`message` set to `"value must be nonnegative"`). Otherwise, it returns the value from `next`.
+It takes `y` as an integer (the target argument selected by a mapping such as y=x). Failures can raise [`ValidationError`](interceptors.md#symbol-ValidationError) (when the selected value is negative). If `y` is negative, it raises a [`ValidationError`](interceptors.md#symbol-ValidationError) with `message` `"value must be nonnegative"`. It returns `next`.
 
 <a id="symbol-AddOne"></a>
 ### `AddOne` · interceptor · [source](interceptors.md#code)
@@ -154,11 +156,11 @@ Adds one to the selected input before forwarding the call. The type parameters a
 <a id="symbol-AddOne.around"></a>
 #### `AddOne.around` · [source](interceptors.md#code)
 
-The caller supplies `y` as `int` (the input to increment). The result is `T`. It returns the value from `next` (`y` set to `y` plus `1`).
+It takes `y` as an integer (the input to increment). It returns `next` with `y` from `y` plus `1`.
 
 ### Dependencies
 
-The file uses [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console) from `august.io`. [`write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write) takes `value` as `T`. It returns no value. The type parameters are `T`. It can use [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write). The file uses [`Logger`](logging.md#symbol-Logger) from `logging`. [`log`](logging.md#symbol-Logger.log) takes `message` as `string`. It returns no value. Dependency injection supplies `console` as [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console). It can use [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
+It uses [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console) ([`write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write)) from `august.io`. It uses [`Logger`](logging.md#symbol-Logger) ([`log`](logging.md#symbol-Logger.log)) from `logging`. These links explain the full dependency contracts.
 
 ::::
 

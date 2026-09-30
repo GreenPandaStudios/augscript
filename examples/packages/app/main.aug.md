@@ -4,12 +4,10 @@
 
 ## Startup
 
-It calls `print` (`value` set to the value from [`add`](.aug-spec/packages/%40example/aug-math/0.1.0/arithmetic.aug.md#symbol-add) (`left` set to `20` and `right` set to `22`)).
+It prints [`add`](.aug-spec/packages/%40example/aug-math/0.1.0/arithmetic.aug.md#symbol-add) with `left` `20` and `right` `22`.
 
 ## Dependencies
 
-[`add`](.aug-spec/packages/%40example/aug-math/0.1.0/arithmetic.aug.md#symbol-add) from `math` takes `left` and `right` as `int`. It returns `int`.
+It uses [`add`](.aug-spec/packages/%40example/aug-math/0.1.0/arithmetic.aug.md#symbol-add) from `math`. These links explain the full dependency contracts.
 
-## Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
-
-`print`: Composition and test output. Other callables receive Console and declare uses console.write.
+Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).

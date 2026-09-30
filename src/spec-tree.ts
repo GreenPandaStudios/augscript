@@ -5,7 +5,7 @@ export type FlowNode = Evidence & (
   | { kind: 'step'; text: string }
   | { kind: 'action'; verb: ActionVerb; object: string }
   | { kind: 'sequence'; lead: string; items: string[]; infinitive?: string }
-  | { kind: 'branch'; condition: string; then: FlowNode[]; otherwise: FlowNode[] }
+  | { kind: 'branch'; condition: string; then: FlowNode[]; otherwise: FlowNode[]; requirement?: string }
   | { kind: 'loop'; lead: string; children: FlowNode[]; end: string }
   | { kind: 'choice'; value: string; cases: { condition: string; end?: string; children: FlowNode[] }[] }
   | { kind: 'attempt'; children: FlowNode[]; catches: { error: string; name: string; children: FlowNode[] }[]; always?: FlowNode[] }
@@ -42,13 +42,57 @@ const clause = (text: string) => text.charAt(0).toLowerCase() + text.slice(1).re
 const bare = (text: string) => clause(text).replace(/^it /, '');
 const visible = (text: string) => text.replace(/\[([^\]]+)\]\([^)]*\)/g, '$1').replace(/[`*_]/g, '');
 const words = (text: string) => visible(text).split(/\s+/).filter(Boolean).length;
+const sentencesIn = (text:string) => (text.replace(/(`+)[\s\S]*?\1/g,'').match(/[.!?](?:\s|$)/g)??[]).length;
 type Sentence = { text: string; sources: string[]; boundary?: boolean; infinitive?: string };
 export interface ProsePlan { paragraphs: string[]; sources: string[] }
 
 /** Small deterministic microplanner. A clause may join only other clauses in its own scope. */
 export function planFlow(nodes: FlowNode[]): ProsePlan {
   const sentence = (text: string, sources: string[] = [], boundary = false): Sentence => ({text, sources, boundary});
-  const plan = (children: FlowNode[]): Sentence[] => children.flatMap((node,index)=>realize(node,index<children.length-1));
+  const plan = (children: FlowNode[]): Sentence[] => {
+    const result:Sentence[]=[];
+    let transition='';
+    const append=(items:Sentence[])=>{
+      if(transition&&items.length)items[0].text=transition+', '+clause(items[0].text)+'.';
+      transition='';result.push(...items);
+    };
+    for(let index=0;index<children.length;index++) {
+      const node=children[index];
+      const setting=node.kind==='action'&&node.verb==='set'?node.object.match(/^(`[^`]+`) to (.+)$/):undefined;
+      if(setting) {
+        const settings=[node];
+        while(index+1<children.length) {
+          const next=children[index+1], match=next.kind==='action'&&next.verb==='set'?next.object.match(/^(`[^`]+`) to (.+)$/):undefined;
+          if(!match||match[2]!==setting[2])break;
+          settings.push(next);index++;
+        }
+        if(settings.length>1) {
+          append([sentence('It sets '+coordinate(settings.map(item=>(item as Extract<FlowNode,{kind:'action'}>).object.match(/^(`[^`]+`)/)![1]))+
+            ' separately, each to '+setting[2]+'.',settings.flatMap(item=>item.source?[item.source]:[]))]);
+          continue;
+        }
+      }
+      // Adjacent validation guards have one outcome. Explain the checks together,
+      // retaining every guard and failure in the evidence ledger.
+      if(node.kind==='branch'&&node.requirement&&!node.otherwise.length) {
+        const guards=[node];
+        while(index+1<children.length) {
+          const next=children[index+1];
+          if(next.kind!=='branch'||!next.requirement||next.otherwise.length||next.then[0]?.kind!=='action'||node.then[0]?.kind!=='action'||
+            next.then[0].object!==node.then[0].object||words(guards.map(guard=>guard.requirement).join(' ')+next.requirement)>65)break;
+          guards.push(next);index++;
+        }
+        const failure=node.then[0] as Extract<FlowNode,{kind:'action'}>;
+        append([sentence('It checks that '+coordinate(guards.map(guard=>guard.requirement!))+'. It raises '+failure.object.replace(/^with /,'')+' at the first failed check.',
+          guards.flatMap(guard=>[...(guard.source?[guard.source]:[]),...plan(guard.then).flatMap(item=>item.sources)]))]);
+      }else {
+        append(realize(node,index<children.length-1));
+        if(node.kind==='loop')transition='After the loop';
+        if(node.kind==='branch'&&(!compact(node.then)&&!exits(node.then)||node.otherwise.length&&!compact(node.otherwise)&&!exits(node.otherwise)))transition='After that conditional work';
+      }
+    }
+    return result;
+  };
   const compact = (children: FlowNode[]): Sentence | undefined => {
     if (!children.length) return sentence('Do nothing.');
     if (children.length > 3 || children.some(child => !['step','action','sequence'].includes(child.kind))) return;
@@ -66,7 +110,7 @@ export function planFlow(nodes: FlowNode[]): ProsePlan {
       last.kind==='attempt'?exits(last.children)&&last.catches.every(handler=>exits(handler.children)):false;
   };
   const under = (lead: string, children: FlowNode[], end: string): Sentence[] => {
-    const continuation = /(?: and| always)$/.test(lead);
+    const continuation = /(?: and| always| it)$/.test(lead);
     const join = continuation ? ' ' : ', ';
     const small = compact(children);
     if (small) {
@@ -75,43 +119,51 @@ export function planFlow(nodes: FlowNode[]): ProsePlan {
       return [sentence(`${lead}${join}${items.length ? items.map((item,index)=>
         (index ? 'then ' : '') + (continuation && !index ? bare(item.text) : clause(item.text))).join('; ') : continuation?'does nothing':'it does nothing'}.`, small.sources)];
     }
-    return [sentence(`${lead}${join}${continuation?'follows':'it follows'} these steps.`, [], true), ...plan(children),
-      ...(exits(children)?[]:[sentence(end, [], true)])];
+    const items=plan(children);
+    if(!items.length)return [sentence(`${lead}${join}it does nothing.`)];
+    items[0].text=lead+join+(continuation?bare(items[0].text):clause(items[0].text))+'.';
+    // The paragraph itself expresses the scope. Only loops and resource scopes
+    // need an exit contract; avoid narrating the edges of the syntax tree.
+    return items;
   };
   const realize = (node: FlowNode, hasNext: boolean): Sentence[] => {
     let result: Sentence[];
     switch (node.kind) {
       case 'step': result = [sentence(node.text)]; break;
       case 'action': {
-        const verbs:Record<ActionVerb,string>={set:'sets',split:'splits',call:'calls',construct:'constructs',evaluate:'evaluates',return:'returns',fail:'fails',send:'sends',freeze:'freezes',serve:'serves',increase:'increases',decrease:'decreases',continue:'continues'};
+        const verbs:Record<ActionVerb,string>={set:'sets',split:'splits',call:'calls',construct:'creates',evaluate:'evaluates',return:'returns',fail:'raises',send:'sends',freeze:'freezes',serve:'serves',increase:'increases',decrease:'decreases',continue:'continues'};
         const object=node.object?' '+node.object:'';
-        result = [{...sentence(`It ${verbs[node.verb]}${object}.`),infinitive:node.verb+object}]; break;
+        const realized=node.verb==='fail'?`It raises ${node.object.replace(/^with /,'')}.`:`It ${verbs[node.verb]}${object}.`;
+        result = [{...sentence(realized),infinitive:node.verb==='fail'?'raise '+node.object.replace(/^with /,''):node.verb+object}]; break;
       }
       case 'sequence': result = [{...sentence(`${node.lead}: ${coordinate(node.items)}.`),
         infinitive:node.infinitive?node.infinitive+': '+coordinate(node.items):undefined}]; break;
-      case 'branch': result = [
-        ...under('If ' + node.condition, node.then, 'This ends that branch.'),
-        ...(node.otherwise.length ? under('Otherwise', node.otherwise, 'This ends the alternative branch.') : []),
-      ]; break;
+      case 'branch': {
+        const yes=node.then[0],no=node.otherwise[0];
+        if(node.then.length===1&&node.otherwise.length===1&&yes.kind==='action'&&no.kind==='action'&&yes.verb==='return'&&no.verb==='return')
+          result=[sentence(`It returns ${yes.object} if ${node.condition}, or ${no.object} otherwise.`,[...(yes.source?[yes.source]:[]),...(no.source?[no.source]:[])])];
+        else result=[...under('If '+node.condition,node.then,''),...(node.otherwise.length?under('Otherwise',node.otherwise,''):[])];
+        break;
+      }
       case 'loop': result = under(node.lead, node.children, node.end); break;
       case 'choice': {
-        result = [sentence(`Select the first matching case for ${node.value}.`, [], true)];
+        result = node.cases.length>2||node.cases.some(item=>item.condition.includes(' satisfies '))?
+          [sentence('It handles '+node.value+' with the first matching case.')]:[];
         for (const alternative of node.cases) result.push(...under(alternative.condition, alternative.children, alternative.end??'This ends that case.'));
-        // This explicit boundary prevents a following action inheriting the final case's guard.
-        if(hasNext)result.push(sentence('After the match, execution continues unless the selected case returned or failed.', [], true));
         break;
       }
       case 'attempt': {
         const small = compact(node.children);
         result = small?.infinitive||!node.children.length ? [sentence(node.children.length?'It tries to '+small!.infinitive+'.':'This attempt has no operation.', small?.sources??[], true)] :
-          [sentence('It tries the following steps.', [], true), ...plan(node.children)];
-        for (const handler of node.catches) result.push(...under(`If this attempt raises ${handler.error}, it catches it as ${handler.name} and`, handler.children, 'This ends that recovery path.'));
-        if (node.always !== undefined) result.push(...under('Before leaving this attempt, it always', node.always, 'This ends the cleanup.'));
-        if (hasNext&&(!small || node.catches.some(handler=>!compact(handler.children))))
-          result.push(sentence('After the attempt, execution continues unless it returned or failed.', [], true));
+          plan(node.children);
+        for (const handler of node.catches) {
+          const used=plan(handler.children).some(item=>visible(item.text).includes(visible(handler.name)));
+          result.push(...under(`If this work raises ${handler.error}${used?' as '+handler.name:''}, it`,handler.children,''));
+        }
+        if (node.always !== undefined) result.push(...under('Whether it succeeds or fails, it always', node.always, ''));
         break;
       }
-      case 'scope': result = [...under(node.lead, node.children, 'This ends the block.'), sentence(node.end, [], true)]; break;
+      case 'scope': result = [...under(node.lead, node.children, ''), ...(node.end?[sentence(node.end)]:[])]; break;
     }
     if (node.source) result[0].sources.unshift(node.source);
     return result;
@@ -119,7 +171,7 @@ export function planFlow(nodes: FlowNode[]): ProsePlan {
   const sentences = plan(nodes), paragraphs: string[] = [];
   let current = '';
   for (const item of sentences) {
-    if (current && (item.boundary || words(current + ' ' + item.text) > 85)) { paragraphs.push(current); current = ''; }
+    if (current && (item.boundary || words(current + ' ' + item.text) > 110 || sentencesIn(current+' '+item.text)>4)) { paragraphs.push(current); current = ''; }
     current += (current ? ' ' : '') + item.text;
   }
   if (current) paragraphs.push(current);
@@ -142,7 +194,7 @@ function renderChildren(children:SpecNode[]):string {
     if(!text.trim())return;
     // Author Markdown keeps its structure; generated contracts and small bodies form connected prose.
     if(text.includes('\n')) {flush();blocks.push(text.trim());return;}
-    if(current&&words(current+' '+text)>85)flush();
+    if(current&&(words(current+' '+text)>110||sentencesIn(current+' '+text)>4))flush();
     current+=(current?' ':'')+text.trim();
   };
   for(const child of children) {

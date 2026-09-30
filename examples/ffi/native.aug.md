@@ -5,11 +5,9 @@
 <a id="symbol-puts"></a>
 ## `puts` · [source](native.aug#L2)
 
-The caller supplies `message` as `string`. The result is `c_int`. Native C implementation; only its declared contract is visible here.
+It takes `message` as a string. It returns `c_int`. Native C implementation; only its declared contract is visible here.
 
 <a id="symbol-announce"></a>
 ## `announce` · [source](native.aug#L3)
 
-It can use `C.puts`. Within an unsafe block, it calls [`puts`](native.aug.md#symbol-puts) (`message` set to `"hello from C FFI"`).
-
-Native operations must satisfy their declared C contracts.
+Within an unsafe block, it calls [`puts`](native.aug.md#symbol-puts) with `message` `"hello from C FFI"`. Native operations must satisfy their declared C contracts.

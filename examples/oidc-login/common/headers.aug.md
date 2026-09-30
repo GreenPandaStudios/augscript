@@ -5,19 +5,17 @@
 <a id="symbol-securityHeaders"></a>
 ## `securityHeaders` · [source](headers.aug#L3)
 
-Responses containing identity data are never cached or embedded by another site. The result is `Headers`. It can fail with `HttpError`. It returns headers starting with a new `Headers` and adding these fields in order: `"cache-control"` to `"no-store"`, `"pragma"` to `"no-cache"`, `"x-content-type-options"` to `"nosniff"`, `"referrer-policy"` to `"no-referrer"`, and `"content-security-policy"` to `"default-src 'self'; style-src 'unsafe-inline'; script-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"`.
+Responses containing identity data are never cached or embedded by another site. Failures can raise `HttpError`. It returns headers starting with a `Headers` and adding these fields in order: `"cache-control"` to `"no-store"`, `"pragma"` to `"no-cache"`, `"x-content-type-options"` to `"nosniff"`, `"referrer-policy"` to `"no-referrer"`, and `"content-security-policy"` to `"default-src 'self'; style-src 'unsafe-inline'; script-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"`.
 
 <a id="symbol-withCookie"></a>
 ## `withCookie` · [source](headers.aug#L7)
 
-Add a checked cookie without losing duplicate Set-Cookie response fields. The caller supplies `headers` as `Headers`, `name`, `value`, and `path` as `string`, `maxAge` as `int`, and `secure` as `bool`. The result is `Headers`. It can fail with `HttpError`.
+Add a checked cookie without losing duplicate Set-Cookie response fields. It takes `headers` as `Headers`, `name`, `value`, and `path` as strings, `maxAge` as an integer, and `secure` as a boolean. Failures can raise `HttpError`.
 
-It sets `result` to `headers`. For each `content` in a snapshot of the value from `all` on the value from [`cookie`](../.aug-spec/august/0.19.0/web/contracts.aug.md#symbol-cookie) (`name`, `value`, `path`, `maxAge`, and `secure`) (`name` set to `"set-cookie"`), it sets `result` to the value from `with` on `result` (`name` set to `"set-cookie"` and `value` set to `content`). It returns `result`.
+It sets `result` to `headers`. For each `content` in a snapshot of `all` on [`cookie`](../.aug-spec/august/0.19.0/web/contracts.aug.md#symbol-cookie) with `name`, `value`, `path`, `maxAge`, and `secure` with `name` `"set-cookie"`, it sets `result` to `result` with the header `"set-cookie"` set to `content`. After the loop, it returns `result`.
 
 ## Dependencies
 
-[`cookie`](../.aug-spec/august/0.19.0/web/contracts.aug.md#symbol-cookie) from `august.web` takes `name`, `value`, and `path` as `string`, `maxAge` as `int`, and `secure` as `bool`. It returns `Headers`. It can fail with `HttpError`.
+It uses [`cookie`](../.aug-spec/august/0.19.0/web/contracts.aug.md#symbol-cookie) from `august.web`. These links explain the full dependency contracts.
 
-## Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
-
-`Headers.all`: Read every value of this header in wire order. `Headers.with`: Return new headers with one additional validated field. Header names ignore case; duplicate values remain separate.
+Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).

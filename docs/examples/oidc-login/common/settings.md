@@ -76,12 +76,12 @@ settings() returns Settings {
 <a id="symbol-Settings"></a>
 ### `Settings` · immutable record · [source](settings.md#code)
 
-Explicit loopback development settings. The provider accepts one registered client and its exact callback URI. The caller supplies `baseUrl`, `issuer`, `clientId`, and `callback` as `string`, stored read-only, `sessionSeconds` as `int`, stored read-only, and `secureCookies` as `bool`, stored read-only.
+Explicit loopback development settings. The provider accepts one registered client and its exact callback URI. It takes `baseUrl`, `issuer`, `clientId`, and `callback` as strings, kept read-only, `sessionSeconds` as an integer, kept read-only, and `secureCookies` as a boolean, kept read-only.
 
 <a id="symbol-settings"></a>
 ### `settings` · [source](settings.md#code)
 
-The result is [`Settings`](settings.md#symbol-Settings). It returns a new [`Settings`](settings.md#symbol-Settings) (`baseUrl` set to `"http://127.0.0.1:8787"`, `issuer` set to `"http://127.0.0.1:8787/provider"`, `clientId` set to `"august-login-app"`, `callback` set to `"http://127.0.0.1:8787/login/callback"`, `sessionSeconds` set to `900`, and `secureCookies` set to `false`).
+It returns a [`Settings`](settings.md#symbol-Settings) with `baseUrl` `"http://127.0.0.1:8787"`, `issuer` `"http://127.0.0.1:8787/provider"`, `clientId` `"august-login-app"`, `callback` `"http://127.0.0.1:8787/login/callback"`, `sessionSeconds` `900`, and `secureCookies` `false`.
 
 ::::
 

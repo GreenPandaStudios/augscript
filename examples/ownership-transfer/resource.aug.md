@@ -5,7 +5,7 @@
 <a id="symbol-Resource"></a>
 ## `Resource` · class · [source](resource.aug#L3)
 
-Implements [`IResource`](resource.aug.md#symbol-IResource).
+It implements [`IResource`](resource.aug.md#symbol-IResource).
 
 <a id="symbol-Resource.drop"></a>
 ### `Resource.drop` · [source](resource.aug#L4)
@@ -18,13 +18,13 @@ It continues without an operation.
 <a id="symbol-make"></a>
 ## `make` · [source](resource.aug#L11)
 
-The result is ownership of [`Resource`](resource.aug.md#symbol-Resource). It sets `value` of type [`Resource`](resource.aug.md#symbol-Resource) to a new [`Resource`](resource.aug.md#symbol-Resource). `value` of type [`Resource`](resource.aug.md#symbol-Resource) owns this value. It returns `value`.
+It returns ownership of [`Resource`](resource.aug.md#symbol-Resource). It sets `value` of type [`Resource`](resource.aug.md#symbol-Resource) to a [`Resource`](resource.aug.md#symbol-Resource). `value` of type [`Resource`](resource.aug.md#symbol-Resource) owns this value. It returns `value`.
 
 <a id="symbol-consume"></a>
 ## `consume` · [source](resource.aug#L15)
 
-The caller supplies `value` as [`Resource`](resource.aug.md#symbol-Resource) with ownership transferred. Dependency injection supplies `console` as [`Console`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console). It can use [`Console.write`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write). It calls [`Console.write`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write) on `console` (`value` set to `"consumed"`).
+It takes `value` as [`Resource`](resource.aug.md#symbol-Resource) with ownership transferred. It gets `console` ([`Console`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console)) from dependency injection. It passes `"consumed"` to [`console.write`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write).
 
 ## Dependencies
 
-The file uses [`Console`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console) from `august.io`. [`write`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write) takes `value` as `T`. It returns no value. The type parameters are `T`. It can use [`Console.write`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write).
+It uses [`Console`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console) ([`write`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write)) from `august.io`. These links explain the full dependency contracts.

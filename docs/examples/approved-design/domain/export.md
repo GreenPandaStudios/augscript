@@ -60,7 +60,9 @@ export RangeError from numbers
 
 ### Exports
 
-Export the declaration `Application` from [`app.aug`](app.md#symbol-Application). Export the declaration `ApplicationImpl` from [`app.aug`](app.md#symbol-ApplicationImpl). Export the declaration `Fruit` from [`models.aug`](models.md#symbol-Fruit). Export the declaration `double` from [`numbers.aug`](numbers.md#symbol-double). Export the declaration `RangeError` from [`numbers.aug`](numbers.md#symbol-RangeError).
+Export the declaration `Application` from [`app.aug`](app.md#symbol-Application). Export the declaration `ApplicationImpl` from [`app.aug`](app.md#symbol-ApplicationImpl). Export the declaration `Fruit` from [`models.aug`](models.md#symbol-Fruit). Export the declaration `double` from [`numbers.aug`](numbers.md#symbol-double).
+
+Export the declaration `RangeError` from [`numbers.aug`](numbers.md#symbol-RangeError).
 
 ::::
 

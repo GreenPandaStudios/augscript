@@ -4,32 +4,22 @@
 
 ## Providers
 
-Provide [`SystemConsole`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-SystemConsole) for `Console`. Share one instance. Provide [`ApplicationImpl`](domain/app.aug.md#symbol-ApplicationImpl) for `Application`. Share one instance. Needs `Console`. Include providers from [`Counters`](counters.aug.md#symbol-Counters).
+`Console` is provided by [`SystemConsole`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-SystemConsole). The same instance is shared.
+
+`Application` is provided by [`ApplicationImpl`](domain/app.aug.md#symbol-ApplicationImpl). The same instance is shared. It requires bindings for `Console`. Include providers from [`Counters`](counters.aug.md#symbol-Counters).
 
 ## Startup
 
-It sets `app` to the instance provided for `Application`. It calls [`Application.start`](domain/app.aug.md#symbol-Application.start) on `app`. It sets `names` to a map with `1` mapped to `"apple"`; `2` mapped to `"pear"`.
+It sets `app` to the instance provided for `Application`. It calls [`app.start`](domain/app.aug.md#symbol-Application.start). It sets `names` to a map with `1` mapped to `"apple"`; `2` mapped to `"pear"`. If the value under `2` in `names` is null, it prints `"missing fruit"`.
 
-Select the first matching case for the value from `get` on `names` (`key` set to `2`). If the selected value is null, it calls `print` (`value` set to `"missing fruit"`). If the selected value is not null, it names it `name` and calls `print` (`value` set to `name`).
+If the value under `2` in `names` is not null, using `name` for it prints `name`. It splits a tuple containing `3`, `"plum"` into `code` and `label` in order. It prints the number of elements in a set containing a [`Fruit`](domain/models.aug.md#symbol-Fruit) with `code` and `name` from `label`, a [`Fruit`](domain/models.aug.md#symbol-Fruit) with `name` from `label` and `code`. Within a task and ownership scope, it sets `counter` to the instance provided for `Counter`.
 
-After the match, execution continues unless the selected case returned or failed. It splits a tuple containing `3`, `"plum"` into `code` and `label` in order. It calls `print` (`value` set to the number of elements in a set containing a new [`Fruit`](domain/models.aug.md#symbol-Fruit) (`code` and `name` set to `label`), a new [`Fruit`](domain/models.aug.md#symbol-Fruit) (`name` set to `label` and `code`)).
+With temporary permission to change `counter`, it calls [`counter.increment`](counters.aug.md#symbol-Counter.increment). It prints [`counter.value`](counters.aug.md#symbol-Counter.value). On leaving this scope, join its child tasks and release its local values. It prints [`double`](domain/numbers.aug.md#symbol-double) with `amount` `7`.
 
-Within a task and ownership scope, it follows these steps. It sets `counter` to the instance provided for `Counter`. While mutably borrowing `counter`, it calls [`Counter.increment`](counters.aug.md#symbol-Counter.increment) on `counter`.
-
-The mutable borrow ends when this block exits. It calls `print` (`value` set to the value from [`Counter.value`](counters.aug.md#symbol-Counter.value) on `counter`).
-
-This ends the block.
-
-On leaving this scope, join its child tasks and release its local values.
-
-It tries to call `print` (`value` set to the value from [`double`](domain/numbers.aug.md#symbol-double) (`amount` set to `7`)), then call [`double`](domain/numbers.aug.md#symbol-double) (`amount` set to `-1`). If this attempt raises [`RangeError`](domain/numbers.aug.md#symbol-RangeError), it catches it as `error` and calls `print` (`value` set to `"negative amount rejected"`).
+It calls [`double`](domain/numbers.aug.md#symbol-double) with `amount` `-1`. If this work raises [`RangeError`](domain/numbers.aug.md#symbol-RangeError), it prints `"negative amount rejected"`.
 
 ## Dependencies
 
-The file uses [`Console`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console) from `august.io`. [`write`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write) takes `value` as `T`. It returns no value. The type parameters are `T`. It can use [`Console.write`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write). The file uses [`SystemConsole`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-SystemConsole) from `august.io`. The file uses [`Counter`](counters.aug.md#symbol-Counter) from `counters`. [`increment`](counters.aug.md#symbol-Counter.increment) takes no caller inputs. It returns no value. It may change `self`. [`value`](counters.aug.md#symbol-Counter.value) takes no caller inputs. It returns `int`. The file uses [`Counters`](counters.aug.md#symbol-Counters) from `counters`. The file uses [`Application`](domain/app.aug.md#symbol-Application) from `domain`. [`start`](domain/app.aug.md#symbol-Application.start) takes no caller inputs. It returns no value. It can use [`Console.write`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write).
+It uses [`SystemConsole`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-SystemConsole) from `august.io`. It uses [`Counter`](counters.aug.md#symbol-Counter) ([`increment`](counters.aug.md#symbol-Counter.increment) and [`value`](counters.aug.md#symbol-Counter.value)) and [`Counters`](counters.aug.md#symbol-Counters) from `counters`. It uses [`Application`](domain/app.aug.md#symbol-Application) ([`start`](domain/app.aug.md#symbol-Application.start)), [`ApplicationImpl`](domain/app.aug.md#symbol-ApplicationImpl), [`Fruit`](domain/models.aug.md#symbol-Fruit), [`RangeError`](domain/numbers.aug.md#symbol-RangeError), and [`double`](domain/numbers.aug.md#symbol-double) from `domain`. These links explain the full dependency contracts.
 
-The file uses [`ApplicationImpl`](domain/app.aug.md#symbol-ApplicationImpl) from `domain`. The file uses [`Fruit`](domain/models.aug.md#symbol-Fruit) from `domain`. Construction takes `code` as `int` and `name` as `string`. The file uses [`RangeError`](domain/numbers.aug.md#symbol-RangeError) from `domain`. [`double`](domain/numbers.aug.md#symbol-double) from `domain` takes `amount` as `int`. It returns `int`. It can fail with `RangeError`.
-
-## Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
-
-`Map<int, string>.get`: Read a value by key; an absent key returns null. contains distinguishes an absent key from a stored null. `Set<Fruit>.length`: Read the number of elements. `print`: Composition and test output. Other callables receive Console and declare uses console.write.
+Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).

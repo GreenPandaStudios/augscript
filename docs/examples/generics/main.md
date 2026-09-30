@@ -64,19 +64,19 @@ print(value=box.get())
 
 ### Providers
 
-Provide [`TextFormatter`](types.md#symbol-TextFormatter) for `Formatter`. Share one instance.
+`Formatter` is provided by [`TextFormatter`](types.md#symbol-TextFormatter). The same instance is shared.
 
 ### Startup
 
-It sets `formatter` to the instance provided for `Formatter`. It calls `print` (`value` set to the value from [`Formatter.title`](types.md#symbol-Formatter.title) on `formatter`). It calls `print` (`value` set to the value from [`Formatter.format`](types.md#symbol-Formatter.format) on `formatter` with type arguments `int` (`value` set to `42`)). It sets `box` to a new [`Box`](types.md#symbol-Box) with type arguments `string` (`value` set to `"inside a generic box"`). It calls `print` (`value` set to the value from [`Box.get`](types.md#symbol-Box.get) on `box`).
+It sets `formatter` to the instance provided for `Formatter`. It prints [`formatter.title`](types.md#symbol-Formatter.title). It prints [`formatter.format`](types.md#symbol-Formatter.format) for `int` with `value` `42`. It sets `box` to a [`Box`](types.md#symbol-Box) for `string` with `value` `"inside a generic box"`.
+
+It prints [`box.get`](types.md#symbol-Box.get).
 
 ### Dependencies
 
-The file uses [`Box`](types.md#symbol-Box) from `types`. The type parameters are `T`. Construction takes `value` as `T`. [`get`](types.md#symbol-Box.get) takes no caller inputs. It returns `T`. The file uses [`Formatter`](types.md#symbol-Formatter) from `types`. [`format`](types.md#symbol-Formatter.format) takes `value` as `T`. It returns `string`. The type parameters are `T`. [`title`](types.md#symbol-Formatter.title) takes no caller inputs. It returns `string`. The file uses [`TextFormatter`](types.md#symbol-TextFormatter) from `types`.
+It uses [`Box`](types.md#symbol-Box) ([`get`](types.md#symbol-Box.get)), [`Formatter`](types.md#symbol-Formatter) ([`format`](types.md#symbol-Formatter.format) and [`title`](types.md#symbol-Formatter.title)), and [`TextFormatter`](types.md#symbol-TextFormatter) from `types`. These links explain the full dependency contracts.
 
-### Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
-
-`print`: Composition and test output. Other callables receive Console and declare uses console.write.
+Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).
 
 ::::
 

@@ -8,4 +8,4 @@ It calls [`announce`](native.aug.md#symbol-announce).
 
 ## Dependencies
 
-[`announce`](native.aug.md#symbol-announce) from `native` takes no caller inputs. It returns no value. It can use `C.puts`.
+It uses [`announce`](native.aug.md#symbol-announce) from `native`. These links explain the full dependency contracts.

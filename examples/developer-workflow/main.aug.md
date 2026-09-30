@@ -4,22 +4,18 @@
 
 ## Providers
 
-Provide [`SystemConsole`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-SystemConsole) for `Console`. Share one instance. Provide [`ConsoleLogger`](logging/console.aug.md#symbol-ConsoleLogger) for `Logger`. Share one instance.
+`Console` is provided by [`SystemConsole`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-SystemConsole). The same instance is shared. `Logger` is provided by [`ConsoleLogger`](logging/console.aug.md#symbol-ConsoleLogger). The same instance is shared.
 
 ## Startup
 
-It tries the following steps. It sets `numbers` of type `List<int>` to a list containing `1`, `2`. It sets `pair` of type `Tuple<int,string>` to a tuple containing `1`, `"apple"`. It sets `unique` of type `Set<int>` to a set containing `1`, `2`, `1`. It sets `fruit` of type `Map<int,string>` to a map with `1` mapped to `"apples"`; `2` mapped to `"pears"`. It sets `calculator` to a new [`Calculator`](calculator.aug.md#symbol-Calculator) using `Logger` for `_logger`.
+It sets `numbers` of type `List<int>` to a list containing `1`, `2`. It sets `pair` of type `Tuple<int,string>` to a tuple containing `1`, `"apple"`. It sets `unique` of type `Set<int>` to a set containing `1`, `2`, `1`. It sets `fruit` of type `Map<int,string>` to a map with `1` mapped to `"apples"`; `2` mapped to `"pears"`.
 
-It calls `print` (`value` set to the value from [`Calculator.add`](calculator.aug.md#symbol-Calculator.add) on `calculator` (`right` set to the value from `get` on `numbers` (`index` set to `1`) and `left` set to the value from `get` on `numbers` (`index` set to `0`)) using `Console` for `console`). It calls `print` (`value` set to the value from `get` on `pair` (`index` set to `1`)). It calls `print` (`value` set to the number of elements in `unique`).
+It sets `calculator` to a [`Calculator`](calculator.aug.md#symbol-Calculator) using injected `Logger` for `_logger`. It prints [`calculator.add`](calculator.aug.md#symbol-Calculator.add) with `right` from the item at index `1` in `numbers` and `left` from the item at index `0` in `numbers` using injected `Console` for `console`. It prints `pair.get` with `index` `1`. It prints the number of elements in `unique`.
 
-It calls `print` (`value` set to the value from `get` on `fruit` (`key` set to `2`)).
-
-It tries to call `print` (`value` set to the value from [`load`](calculator.aug.md#symbol-load) (`fail` set to `true`)). If this attempt raises `FileError`, it catches it as `error` and calls `print` (`value` set to `"load failed as expected"`). If this attempt raises `IndexError`, it catches it as `error` and calls `print` (`value` set to `"unexpected index failure"`).
+It prints the value under `2` in `fruit`. It prints [`load`](calculator.aug.md#symbol-load) with `fail` `true`. If this work raises `FileError`, it prints `"load failed as expected"`. If this work raises `IndexError`, it prints `"unexpected index failure"`.
 
 ## Dependencies
 
-The file uses [`Console`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console) from `august.io`. [`write`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write) takes `value` as `T`. It returns no value. The type parameters are `T`. It can use [`Console.write`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write). The file uses [`SystemConsole`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-SystemConsole) from `august.io`. The file uses [`Calculator`](calculator.aug.md#symbol-Calculator) from `calculator`. Construction takes no caller inputs. [`add`](calculator.aug.md#symbol-Calculator.add) takes `left` and `right` as `int`. It returns `int`. Dependency injection supplies `console` as [`Console`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console). It can use [`Console.write`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write). [`load`](calculator.aug.md#symbol-load) from `calculator` takes `fail` as `bool`. It returns `string`. It can fail with `FileError`. The file uses [`ConsoleLogger`](logging/console.aug.md#symbol-ConsoleLogger) from `logging`.
+It uses [`SystemConsole`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-SystemConsole) from `august.io`. It uses [`Calculator`](calculator.aug.md#symbol-Calculator) ([`add`](calculator.aug.md#symbol-Calculator.add)) and [`load`](calculator.aug.md#symbol-load) from `calculator`. It uses [`ConsoleLogger`](logging/console.aug.md#symbol-ConsoleLogger) from `logging`. These links explain the full dependency contracts.
 
-## Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
-
-`List<int>.get`: Read a zero-based position. An invalid index raises checked IndexError. Reference results grant reading. `Map<int, string>.get`: Read a value by key; an absent key returns null. contains distinguishes an absent key from a stored null. `Set<int>.length`: Read the number of elements. `Tuple<int, string>.get`: Read a statically checked constant position. Prefer tuple destructuring when reading several positions. `print`: Composition and test output. Other callables receive Console and declare uses console.write.
+Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).

@@ -4,14 +4,10 @@
 
 ## Startup
 
-It sets `counter` to a new [`Counter`](counter.aug.md#symbol-Counter) (`value` set to `1`). It calls `print` (`value` set to the value from [`Counter.label`](counter.aug.md#symbol-Counter.label) on `counter`). While mutably borrowing `counter`, it sets `counter.value` to `2`.
-
-The mutable borrow ends when this block exits. It calls `print` (`value` set to `counter.value`).
+It sets `counter` to a [`Counter`](counter.aug.md#symbol-Counter) with `value` `1`. It prints [`counter.label`](counter.aug.md#symbol-Counter.label). With temporary permission to change `counter`, it sets `counter.value` to `2`. It prints `counter.value`.
 
 ## Dependencies
 
-The file uses [`Counter`](counter.aug.md#symbol-Counter) from `counter`. Construction takes `value` as `int`. `value` is a mutable field of type `int`. [`label`](counter.aug.md#symbol-Counter.label) takes no caller inputs. It returns `string`.
+It uses [`Counter`](counter.aug.md#symbol-Counter) ([`label`](counter.aug.md#symbol-Counter.label) and `value`) from `counter`. These links explain the full dependency contracts.
 
-## Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
-
-`print`: Composition and test output. Other callables receive Console and declare uses console.write.
+Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).

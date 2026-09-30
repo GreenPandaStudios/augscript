@@ -62,11 +62,9 @@ print(value=state)
 
 ### Startup
 
-It sets `state` of type `int` to `123`. It sets `index` of type `int` to `0`. While `index` is less than `2000000`, it sets `product` of type `int` to `state` times `48271`; then it sets `state` to `product` minus ((`product` divided by `2147483647`) times `2147483647`); then it increases `index` by `1`. It calls `print` (`value` set to `state`).
+It sets `state` to `123`. It sets `index` to `0`. While `index` is less than `2000000`, it sets `product` to `state` times `48271`; then it sets `state` to `product` minus ((`product` divided by `2147483647`) times `2147483647`); then it increases `index` by `1`. After the loop, it prints `state`.
 
-### Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
-
-`print`: Composition and test output. Other callables receive Console and declare uses console.write.
+Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).
 
 ::::
 

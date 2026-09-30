@@ -5,54 +5,54 @@
 <a id="symbol-AuthorizationRequest"></a>
 ## `AuthorizationRequest` · immutable record · [source](contracts.aug#L3)
 
-A provider request is bound to a browser cookie, a form CSRF token, and a registered client. The caller supplies `clientId`, `redirectUri`, `state`, `nonce`, `challenge`, `browser`, and `csrf` as `string`, stored read-only and `expires` as `int`, stored read-only.
+A provider request is bound to a browser cookie, a form CSRF token, and a registered client. It takes `clientId`, `redirectUri`, `state`, `nonce`, `challenge`, `browser`, and `csrf` as strings, kept read-only and `expires` as an integer, kept read-only.
 
 <a id="symbol-AuthorizationCode"></a>
 ## `AuthorizationCode` · immutable record · [source](contracts.aug#L5)
 
-Codes are short-lived, single-use and bound to a redirect URI and S256 challenge. The caller supplies `clientId`, `redirectUri`, `challenge`, `nonce`, `subject`, and `name` as `string`, stored read-only and `expires` as `int`, stored read-only.
+Codes are short-lived, single-use and bound to a redirect URI and S256 challenge. It takes `clientId`, `redirectUri`, `challenge`, `nonce`, `subject`, and `name` as strings, kept read-only and `expires` as an integer, kept read-only.
 
 <a id="symbol-IdClaims"></a>
 ## `IdClaims` · immutable record · [source](contracts.aug#L6)
 
-The caller supplies `iss`, `sub`, and `aud` as `string`, stored read-only, `exp` and `iat` as `int`, stored read-only, and `nonce` and `name` as `string`, stored read-only.
+It takes `iss`, `sub`, and `aud` as strings, kept read-only, `exp` and `iat` as integers, kept read-only, and `nonce` and `name` as strings, kept read-only.
 
 <a id="symbol-AccessGrant"></a>
 ## `AccessGrant` · immutable record · [source](contracts.aug#L7)
 
-The caller supplies `subject` and `name` as `string`, stored read-only and `expires` as `int`, stored read-only.
+It takes `subject` and `name` as strings, kept read-only and `expires` as an integer, kept read-only.
 
 <a id="symbol-TokenResponse"></a>
 ## `TokenResponse` · immutable record · [source](contracts.aug#L8)
 
-The caller supplies `token_type`, `access_token`, and `id_token` as `string`, stored read-only, `expires_in` as `int`, stored read-only, and `scope` as `string`, stored read-only.
+It takes `token_type`, `access_token`, and `id_token` as strings, kept read-only, `expires_in` as an integer, kept read-only, and `scope` as a string, kept read-only.
 
 <a id="symbol-OAuthError"></a>
 ## `OAuthError` · immutable record · [source](contracts.aug#L9)
 
-The caller supplies `error` and `error_description` as `string`, stored read-only.
+It takes `error` and `error_description` as strings, kept read-only.
 
 <a id="symbol-TokenForm"></a>
 ## `TokenForm` · immutable record · [source](contracts.aug#L10)
 
-The caller supplies `grant_type`, `code`, `redirect_uri`, `client_id`, and `code_verifier` as `string`, stored read-only.
+It takes `grant_type`, `code`, `redirect_uri`, `client_id`, and `code_verifier` as strings, kept read-only.
 
 <a id="symbol-LoginForm"></a>
 ## `LoginForm` · immutable record · [source](contracts.aug#L11)
 
-The caller supplies `request_id`, `csrf`, `username`, and `password` as `string`, stored read-only.
+It takes `request_id`, `csrf`, `username`, and `password` as strings, kept read-only.
 
 <a id="symbol-UserInfo"></a>
 ## `UserInfo` · immutable record · [source](contracts.aug#L12)
 
-The caller supplies `sub` and `name` as `string`, stored read-only.
+It takes `sub` and `name` as strings, kept read-only.
 
 <a id="symbol-LoginError"></a>
 ## `LoginError` · class · [source](contracts.aug#L13)
 
-Implements `Error`.
+It implements `Error`.
 
 <a id="symbol-CodeError"></a>
 ## `CodeError` · class · [source](contracts.aug#L15)
 
-Implements `Error`.
+It implements `Error`.

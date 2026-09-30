@@ -10,7 +10,7 @@ Reading state has no mutation effect.
 <a id="symbol-State.read"></a>
 ### `State.read` · [source](counters.aug#L4)
 
-The result is `int`.
+It returns `int`.
 
 <a id="symbol-Counter"></a>
 ## `Counter` · interface · [source](counters.aug#L12)
@@ -25,44 +25,46 @@ It may change `self`.
 <a id="symbol-Counter.value"></a>
 ### `Counter.value` · [source](counters.aug#L14)
 
-The result is `int`.
+It returns `int`.
 
 <a id="symbol-Counters"></a>
 ## `Counters` · [source](counters.aug#L21)
 
-The complete counter composition; its mutable state belongs to each scope. These providers are registered before startup. Provide [`_Initial`](counters.aug.md#symbol-_Initial) for `State`. Share one instance. Provide [`_Counter`](counters.aug.md#symbol-_Counter) for `Counter`. Share one instance per scope. Allow shared mutation. Needs `State`.
+The complete counter composition; its mutable state belongs to each scope.
+
+These providers are registered before startup. `State` is provided by [`_Initial`](counters.aug.md#symbol-_Initial). The same instance is shared. `Counter` is provided by [`_Counter`](counters.aug.md#symbol-_Counter). Each scope shares one instance. Shared mutation is allowed. It requires bindings for `State`.
 
 <a id="symbol-_Initial"></a>
 ## `_Initial` · class · [source](counters.aug#L5)
 
-Implements [`State`](counters.aug.md#symbol-State). Private to this file.
+It implements [`State`](counters.aug.md#symbol-State). It is private to this file.
 
 <a id="symbol-_Initial.read"></a>
 ### `_Initial.read` · [source](counters.aug#L6)
 
-The result is `int`. It returns `0`.
+It returns `0`.
 
 <a id="symbol-_Updated"></a>
 ## `_Updated` · class · [source](counters.aug#L8)
 
-Implements [`State`](counters.aug.md#symbol-State). Private to this file. The caller supplies `count` as `int`, stored read-only.
+It implements [`State`](counters.aug.md#symbol-State). It is private to this file. It takes `count` as an integer, kept read-only.
 
 <a id="symbol-_Updated.read"></a>
 ### `_Updated.read` · [source](counters.aug#L9)
 
-The result is `int`. It returns `count`.
+It returns `count`.
 
 <a id="symbol-_Counter"></a>
 ## `_Counter` · class · [source](counters.aug#L15)
 
-Implements [`Counter`](counters.aug.md#symbol-Counter). Private to this file. Dependency injection supplies `initial` as [`State`](counters.aug.md#symbol-State), stored mutably and privately as `_state`.
+It implements [`Counter`](counters.aug.md#symbol-Counter). It is private to this file. The `_state` dependency is injected as [`State`](counters.aug.md#symbol-State) and stored mutably and privately.
 
 <a id="symbol-_Counter.increment"></a>
 ### `_Counter.increment` · [source](counters.aug#L16)
 
-It may change `self`. It sets `_state` to a new [`_Updated`](counters.aug.md#symbol-_Updated) (`count` set to the value from [`State.read`](counters.aug.md#symbol-State.read) on `_state` plus `1`).
+It may change `self`. It sets `_state` to a [`_Updated`](counters.aug.md#symbol-_Updated) with `count` from [`_state.read`](counters.aug.md#symbol-State.read) plus `1`.
 
 <a id="symbol-_Counter.value"></a>
 ### `_Counter.value` · [source](counters.aug#L18)
 
-The result is `int`. It returns the value from [`State.read`](counters.aug.md#symbol-State.read) on `_state`.
+It returns [`_state.read`](counters.aug.md#symbol-State.read).

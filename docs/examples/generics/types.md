@@ -81,32 +81,32 @@ interface IBox<T> {
 <a id="symbol-Formatter.format"></a>
 #### `Formatter.format` · [source](types.md#code)
 
-The type parameters are `T`. The caller supplies `value` as `T`. The result is `string`.
+The type parameters are `T`. It takes `value` as `T`. It returns `string`.
 
 <a id="symbol-Formatter.title"></a>
 #### `Formatter.title` · [source](types.md#code)
 
-The result is `string`. It returns `"formatted"`.
+It returns `"formatted"`.
 
 <a id="symbol-TextFormatter"></a>
 ### `TextFormatter` · class · [source](types.md#code)
 
-Implements [`Formatter`](types.md#symbol-Formatter). It inherits the default implementations of [`Formatter.title`](types.md#symbol-Formatter.title).
+It implements [`Formatter`](types.md#symbol-Formatter). It inherits the default implementations of [`Formatter.title`](types.md#symbol-Formatter.title).
 
 <a id="symbol-TextFormatter.format"></a>
 #### `TextFormatter.format` · [source](types.md#code)
 
-The type parameters are `T`. The caller supplies `value` as `T`. The result is `string`. It returns `"generic method called"`.
+The type parameters are `T`. It takes `value` as `T`. It returns `"generic method called"`.
 
 <a id="symbol-Box"></a>
 ### `Box` · class · [source](types.md#code)
 
-Implements [`IBox<T>`](types.md#symbol-IBox). The type parameters are `T`. The caller supplies `value` as `T`, stored read-only.
+It implements [`IBox<T>`](types.md#symbol-IBox). The type parameters are `T`. It takes `value` as `T`, kept read-only.
 
 <a id="symbol-Box.get"></a>
 #### `Box.get` · [source](types.md#code)
 
-The result is `T`. It returns `value`.
+It returns `value`.
 
 <a id="symbol-IBox"></a>
 ### `IBox` · interface · [source](types.md#code)
@@ -116,7 +116,7 @@ The type parameters are `T`.
 <a id="symbol-IBox.get"></a>
 #### `IBox.get` · [source](types.md#code)
 
-The result is `T`.
+It returns `T`.
 
 ::::
 

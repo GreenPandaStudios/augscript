@@ -23,6 +23,7 @@ const anchor = (name: string) => 'symbol-' + name;
 const hash = (text: string) => createHash('sha256').update(text).digest('hex');
 const compare = (left:string, right:string) => left < right ? -1 : left > right ? 1 : 0;
 const unreachable = (node: never): never => { throw new Error(`No specification renderer for ${(node as {kind?:string}).kind}`); };
+const plain = (text:string) => text.replace(/\[([^\]]+)\]\([^)]*\)/g,'$1').replaceAll('`','');
 
 export interface SpecOutput { path: string; text: string; source: string; kind?: 'source-hint' }
 export interface SpecOptions { files?: SourceFile[]; manifest?: boolean }
@@ -115,24 +116,38 @@ class SpecWriter {
   }
   private inputs(params:Param[], fields=false, file=this.file.path, descriptions=new Map<string,string>()): string {
     if(!params.length)return '';
+    if(fields&&params.length===1&&params[0].injected) {
+      const param=params[0];this.locals.set(param.name,param.type);
+      return 'The '+code(param.name)+' dependency is injected as '+this.type(param.type,file)+' and stored '+(param.mutable?'mutably':'read-only')+
+        (param.name.startsWith('_')?' and privately':'')+(param.ownership==='own'?' with ownership transferred':param.ownership==='borrow'?' with permission to mutate it':'')+
+        (descriptions.has(param.name)?' ('+descriptions.get(param.name)!.replace(/[.!?]$/,'')+')':'')+'.';
+    }
     const describe=(group:Param[])=>{
       const param=group[0];
       group.forEach(param=>this.locals.set(param.name,param.type));
-      this.locals.set(param.name,param.type);
       const name=coordinate(group.map(param=>code(param.label??param.name))), type=this.type(param.type,file);
-      let sentence=`${name} as ${type}`;
-      if(param.source)sentence+=` from HTTP ${param.source.kind}${param.source.name?' '+code(param.source.name):''}`;
-      if(param.type.optional)sentence+=' (omitted means null)';
+      const simple:Record<string,string>={int:group.length===1?'an integer':'integers',float:group.length===1?'a number':'numbers',string:group.length===1?'a string':'strings',bool:group.length===1?'a boolean':'booleans'};
+      let sentence=param.injected?coordinate(group.map(param=>code(param.name)))+' ('+type+')':name+' as '+(simple[param.type.name]&&!param.type.optional?simple[param.type.name]:type);
+      if(param.source)sentence+=` from the HTTP ${param.source.kind}${param.source.name?' '+code(param.source.name):''}`;
       if(param.ownership==='own')sentence+=' with ownership transferred';
       else if(param.ownership==='borrow')sentence+=' with permission to mutate it during the call';
-      if(fields)sentence+=`, stored ${param.mutable?'mutably':'read-only'}${param.name.startsWith('_')?' and privately':''}${param.label&&param.label!==param.name?' as '+code(param.name):''}`;
+      if(fields)sentence+=`, kept ${param.mutable?'mutable':'read-only'}${param.name.startsWith('_')?' and private':''}${param.label&&param.label!==param.name?' as '+code(param.name):''}`;
       const description=descriptions.get(param.name);
       if(description)sentence+=' ('+description.replace(/[.!?]$/,'').replace(/^The /,'the ')+')';
       return sentence;
     };
     const groups=(injected:boolean)=>this.parameterGroups(params.filter(param=>param.injected===injected),fields,descriptions).map(describe);
     const supplied=groups(false), injected=groups(true);
-    return [supplied.length?'The caller supplies '+coordinate(supplied)+'.':'',injected.length?'Dependency injection supplies '+coordinate(injected)+'.':''].filter(Boolean).join(' ');
+    const queries=params.filter(param=>!param.injected&&param.source?.kind==='query');
+    const onlyQueries=queries.length&&queries.length===params.filter(param=>!param.injected).length;
+    const aliases=queries.filter(param=>param.source?.name&&param.source.name!==param.name);
+    const typedQueries=queries.filter(param=>param.type.name!=='string');
+    const suppliedText=onlyQueries?'It reads '+coordinate(queries.map(param=>code(param.source?.name??param.label??param.name)))+' from the HTTP query.'+
+      (aliases.length?' '+coordinate(aliases.map(param=>code(param.source!.name!)+' is called '+code(param.name)+' here'))+'.':'')+
+      (typedQueries.length?' It parses '+coordinate(typedQueries.map(param=>code(param.name)+' as '+this.type(param.type,file)))+'.':''):
+      supplied.length?'It takes '+coordinate(supplied)+'.':'';
+    return [suppliedText,injected.length?'It gets '+coordinate(injected)+' from dependency injection.':'',
+      params.some(param=>param.type.optional)?'Omitted optional inputs are null.':''].filter(Boolean).join(' ');
   }
   private parameterGroups(params:Param[], fields=false, descriptions=new Map<string,string>()): Param[][] {
     const groups:Param[][]=[];
@@ -158,28 +173,34 @@ class SpecWriter {
     const facts:string[]=[];
     const returnNote=documentation?.tags?.find(tag=>tag.name==='return'||tag.name==='returns')?.value??
       documentation?.markdown.match(/\*\*Returns\*\* ([^\n]+)/)?.[1];
-    if(method.returns.name!=='void')facts.push(`The result is ${(method.returnOwnership==='own'?'ownership of ':'')+this.type(method.returns,method.span.file)}`+
+    // Implementations explain their actual returns below. Contracts need the
+    // result type; repeating it before every return adds noise to the narrative.
+    this.type(method.returns,method.span.file);
+    if(method.returns.name!=='void'&&(!method.body||returnNote||method.returnOwnership==='own'))facts.push(`It returns ${(method.returnOwnership==='own'?'ownership of ':'')+this.type(method.returns,method.span.file)}`+
       (returnNote?` — ${returnNote.replace(/[.!?]$/,'')}`:'')+'.');
     if(changes.length)facts.push('It may change '+coordinate(changes.map(code))+'.');
-    if(uses.length)facts.push('It can use '+coordinate(uses.map(effect=>{
+    const capabilities=uses.map(effect=>{
       const def='capability' in effect?effect.capability?.def:undefined;
       const target=def??this.definition(effect.source);
       const operation=target&&'methods' in target.node?target.node.methods.find(method=>method.name===effect.operation):undefined;
       this.use(target,operation);
       return target?this.link(target,operation?`${target.name}.${operation.name}`:target.name,`${effect.source}.${effect.operation}`):code(`${effect.source}.${effect.operation}`);
-    }))+'.');
-    if(errors.length)facts.push('It can fail with '+coordinate(errors.map(name=>{
+    });
+    if(capabilities.length&&!method.body)facts.push('It can call '+coordinate(capabilities)+'.');
+    if(errors.length&&!method.endpoint)facts.push('Failures can raise '+coordinate(errors.map(name=>{
       const note=documentation?.tags?.find(tag=>(tag.name==='throws'||tag.name==='exception')&&tag.value.startsWith(name+' '))?.value.slice(name.length).trim()??
         documentation?.markdown.split('**Throws**\n')[1]?.split('\n\n')[0]?.split('\n').find(line=>line.startsWith('- '+code(name)+': '))?.slice(('- '+code(name)+': ').length);
-      return code(name)+(note?` (${note.replace(/[.!?]$/,'').replace(/^When\b/,'when')})`:'');
+      const def=this.checked.project.scopes.get(method.span.file)?.get(name);
+      return (def?this.link(def):code(name))+(note?` (${note.replace(/[.!?]$/,'').replace(/^When\b/,'when')})`:'');
     }))+'.');
     if(facts.length)result.push(paragraph(facts.join(' ')));
     if(method.endpoint) {
       const endpoint=method.endpoint;
-      result.push(paragraph(`This handles ${code(endpoint.method)} requests at ${code(endpoint.path)}. `+
-        (endpoint.streams?`Stream ${this.type(method.returns)} items. `:`Use status ${endpoint.status} when the handler returns a body; a returned HttpResponse can set its own status. `)+
-        'An unhandled request failure returns status 500 and cancels its request tasks.'));
-      if(endpoint.errors.length)result.push(paragraph('For declared failures, '+coordinate(endpoint.errors.map(error=>`${this.type(error.type)} returns status ${error.status}`))+'.'));
+      if(endpoint.streams)result.push(paragraph(`It streams ${this.type(method.returns)} items.`));
+      else if(endpoint.status!==200)result.push(paragraph(`A plain response body uses HTTP status ${endpoint.status}.`));
+      if(endpoint.errors.length)result.push(paragraph('The handler responds with '+coordinate(endpoint.errors.map(error=>`HTTP ${error.status} for ${this.type(error.type)}`))+'.'));
+      const unmapped=errors.filter(name=>!endpoint.errors.some(error=>typeName(error.type)===name));
+      if(unmapped.length)result.push(paragraph('It can also raise '+coordinate(unmapped.map(code))+'.'));
     }
     return result;
   }
@@ -244,15 +265,21 @@ class SpecWriter {
       case 'unary': {
         if(expr.op==='!'&&expr.value.kind==='binary'&&(expr.value.op==='=='||expr.value.op==='!='))
           return `${this.expression(expr.value.left,true)} ${expr.value.op==='=='?'does not equal':'equals'} ${this.expression(expr.value.right,true)}`;
+        if(expr.op==='!'&&expr.value.kind==='call')return this.predicate(expr.value,false);
         return `${expr.op==='!'?'not':'the negative of'} (${this.expression(expr.value)})`;
       }
       case 'binary': {
         const words:Record<string,string>={'+':'plus','-':'minus','*':'times','/':'divided by','==':'equals','!=':'does not equal','<':'is less than','>':'is greater than','<=':'is at most','>=':'is at least','&&':'and','||':'or'};
         if(!words[expr.op])throw new Error(`No specification renderer for operator ${expr.op}`);
+        if(expr.right.kind==='literal'&&expr.right.value===null&&['==','!='].includes(expr.op))
+          return this.expression(expr.left)+(expr.op==='=='?' is null':' is not null');
+        if(expr.right.kind==='literal'&&expr.right.value===0&&['>','<'].includes(expr.op))
+          return this.expression(expr.left)+(expr.op==='>'?' is positive':' is negative');
         const textParts=this.stringParts(expr);
-        if(expr.op==='+'&&textParts.length>=3) {
-          const parts=textParts.map(part=>this.expression(part));
-          return 'text that joins '+parts.slice(0,-1).join(', ')+' and '+parts.at(-1);
+        if(expr.op==='+'&&textParts.length>=2) {
+          const text=textParts.map(part=>part.kind==='literal'&&typeof part.value==='string'?
+            part.value.replaceAll('{','{{').replaceAll('}','}}'):'{'+plain(this.expression(part))+'}').join('');
+          return 'the text '+code(text);
         }
         const child=(value:Expr)=>this.expression(value,value.kind==='binary'&&!(['&&','||'].includes(expr.op)&&
           (value.op===expr.op||['==','!=','<','>','<=','>='].includes(value.op))));
@@ -266,31 +293,35 @@ class SpecWriter {
       case 'resolve':return `the instance provided for ${code(expr.name)}${expr.typeArgs.length?' with type arguments '+expr.typeArgs.map(type=>this.type(type)).join(', '):''}`;
       case 'call': {
         const action=this.call(expr);
+        const known=this.knownValue(expr);if(known)return known;
         if(expr.callee.kind==='member') {
           const receiver=expr.callee.object, type=this.checked.expressionTypes.get(receiver)?.name;
           if(!this.receiver(receiver)&&['string','Bytes','List','Set','Map','Tuple'].includes(type??'')&&!expr.args.length) {
             const value=this.expression(receiver);
             if(expr.callee.name==='bytes'&&type==='string')return 'the UTF-8 bytes of '+value;
-            if(expr.callee.name==='base64url'&&type==='Bytes')return 'the unpadded URL-safe base64 encoding of '+value;
+            if(expr.callee.name==='base64url'&&type==='Bytes')return 'the URL-safe base64 encoding of '+value;
             if(expr.callee.name==='length')return (type==='string'||type==='Bytes'?'the byte length of ':'the number of elements in ')+value;
           }
         }
-        return action.startsWith('construct ')?'a new '+action.slice('construct '.length):
-          action.startsWith('call ')?'the value from '+action.slice('call '.length):action;
+        const name=expr.callee.kind==='name'?expr.callee.name:'';
+        return action.startsWith('construct ')?(/^[AEIOU]/i.test(name)?'an ':'a ')+action.slice('construct '.length):
+          action.startsWith('call ')?action.slice('call '.length):action;
       }
       case 'start':return `a child task running ${this.expression(expr.call)} with its inputs captured now`;
       case 'wait':return `the result of waiting for ${expr.tasks.map(task=>this.expression(task)).join(' and ')}${expr.tasks.length>1?' in input order':''}; propagate failures`;
-      case 'handle': {const plan=this.checked.actions.get(expr);return `a deferred HTTP form action for ${plan?this.link(plan.endpoint):this.expression(expr.call)}`+
-        (expr.call.kind==='call'&&expr.call.args.length?'; inputs: '+expr.call.args.map((value,index)=>(expr.call.kind==='call'?code(expr.call.argLabels[index]??(value.kind==='name'?value.name:String(index+1)))+' from ':'')+this.expression(value)).join('; '):'')+
-        '; capture supplied values when rendering, and read form inputs when submitted; send the form to that endpoint with its declared HTTP method';}
-      case 'formInput':return 'the checked form input supplied when the HTTP form is submitted';
+      case 'handle': {const plan=this.checked.actions.get(expr), endpoint=plan?.endpoint.node.kind==='function'?plan.endpoint.node.endpoint:undefined;
+        const captures=expr.call.kind==='call'?expr.call.args.filter(value=>value.kind!=='formInput').map(value=>this.expression(value)):[];
+        return endpoint?`a form action that sends ${code(endpoint.method+' '+endpoint.path)} to ${this.link(plan!.endpoint)} on submission`+
+          (captures.length?' with captured '+coordinate(captures):''):`a form action for ${this.expression(expr.call)}`;}
+      case 'formInput':return 'the submitted form data';
       case 'markupText':return code(expr.text);
       case 'markup': {
         const def=this.definition(expr.tag);this.use(def);
-        return (def?'the server component '+this.link(def):'the HTML element '+code(expr.tag||'fragment'))+
+        const elements:Record<string,string>={p:'a paragraph',h1:'a heading',h2:'a heading',button:'a button',a:'a link'};
+        return (def?'the server component '+this.link(def):elements[expr.tag]??'the HTML element '+code(expr.tag||'fragment'))+
           (expr.attributes.length?' with '+expr.attributes.map(attribute=>`${code(attribute.name)} = ${this.expression(attribute.value)}`).join(', '):'')+
           (expr.children.length?' containing '+expr.children.map(child=>this.expression(child)).join(', '):'')+
-          ' (server-rendered; text escaped)';
+          ' with escaped text';
       }
       default:return unreachable(expr);
     }
@@ -299,6 +330,75 @@ class SpecWriter {
     if(expr.kind==='name'&&!this.definition(expr.name))return expr.name;
     if(expr.kind==='name'&&this.locals.has(expr.name))return expr.name;
     if(expr.kind==='member') {const object=this.memberPath(expr.object);return object?object+'.'+expr.name:undefined;}
+  }
+  private argument(expr:Extract<Expr,{kind:'call'}>, label:string): Expr|undefined {
+    const explicit=expr.args.findIndex((arg,index)=>(expr.argLabels[index]??(arg.kind==='name'?arg.name:''))===label);
+    if(explicit>=0)return expr.args[explicit];
+    const plan=this.checked.callPlans.get(expr);
+    const def=expr.callee.kind==='name'?this.definition(expr.callee.name):expr.callee.kind==='member'?this.receiver(expr.callee.object,expr.callee.name):undefined;
+    const method=def?.node.kind==='function'?def.node:expr.callee.kind==='member'&&def?this.method(def,expr.callee.name):undefined;
+    const params=method?.params??(def?.node.kind==='class'?def.node.fields:[]);
+    const slot=params.findIndex(param=>(param.label??param.name)===label);
+    const index=slot>=0?plan?.sourceIndices[slot]:undefined;
+    return index!==undefined&&index>=0?expr.args[index]:undefined;
+  }
+  /** Interpret only compiler built-ins and the canonical standard-library contracts. */
+  private standardOperation(expr:Extract<Expr,{kind:'call'}>): string|undefined {
+    if(expr.callee.kind!=='member')return;
+    const def=this.receiver(expr.callee.object,expr.callee.name);
+    if(!def||!this.checked.project.files.get(def.file)?.builtin)return;
+    return libraryRelative(this.checked.project.libraries,def.file).replaceAll('\\','/')+':'+def.name+'.'+expr.callee.name;
+  }
+  private knownValue(expr:Extract<Expr,{kind:'call'}>): string|undefined {
+    const arg=(label:string)=>{const value=this.argument(expr,label);return value?this.expression(value):undefined;};
+    const receiver=expr.callee.kind==='member'?this.expression(expr.callee.object):'';
+    switch(this.standardOperation(expr)) {
+      case 'crypto/contracts.aug:Crypto.random':case 'crypto/contracts.aug:GnuTlsCrypto.random':
+        return `${arg('size')} random bytes from ${receiver}`;
+      case 'crypto/contracts.aug:Crypto.decodeBase64url':case 'crypto/contracts.aug:GnuTlsCrypto.decodeBase64url':
+        return `${arg('input')} decoded as URL-safe base64 by ${receiver}`;
+      case 'time/contracts.aug:Clock.now':case 'time/contracts.aug:SystemClock.now':return 'the current time from '+receiver;
+      case 'memory/store.aug:ExpiringStore.take':case 'memory/store.aug:MemoryStore.take':
+        return `the live value removed from ${receiver} under ${arg('key')}, using ${arg('now')} as the current time`;
+      case 'memory/store.aug:ExpiringStore.get':case 'memory/store.aug:MemoryStore.get':
+        return `the live value in ${receiver} under ${arg('key')}, using ${arg('now')} as the current time`;
+    }
+    if(expr.callee.kind==='member'&&!this.receiver(expr.callee.object)) {
+      const type=this.checked.expressionTypes.get(expr.callee.object)?.name;
+      if(expr.callee.name==='get'&&type==='List')return `the item at index ${arg('index')} in ${receiver}`;
+      if(expr.callee.name==='get'&&type==='Map')return `the value under ${arg('key')} in ${receiver}`;
+      if(expr.callee.name==='contains'&&type==='Map')return `whether ${receiver} contains the key ${arg('key')}`;
+      if(expr.callee.name==='contains'&&type==='Set')return `whether ${receiver} contains ${arg('value')}`;
+      if(expr.callee.name==='with'&&type==='Headers')return `${receiver} with the header ${arg('name')} set to ${arg('value')}`;
+    }
+    if(expr.callee.kind==='name') {
+      const def=this.definition(expr.callee.name);
+      if(def?.file&&this.checked.project.files.get(def.file)?.builtin&&libraryRelative(this.checked.project.libraries,def.file).replaceAll('\\','/')==='web/contracts.aug'&&def.name==='urlEncode')
+        return 'URL-encoded '+arg('input');
+      if(this.checked.expressionTypes.get(expr)?.name==='Html') {
+        const message=this.argument(expr,'message');
+        if(message&&expr.args.length===1)return this.expression(expr.callee)+' showing '+this.expression(message);
+      }
+    }
+    if(expr.callee.kind==='name'&&!this.definition(expr.callee.name)&&expr.callee.name==='HttpResponse') {
+      const body=arg('body'), status=arg('status')??'200', headers=arg('headers');
+      return `HTTP ${status.replaceAll('`','')} with ${body??'an empty body'}`+(headers?' and '+headers+' headers':'');
+    }
+  }
+  private predicate(expr:Extract<Expr,{kind:'call'}>, expected=true): string {
+    this.call(expr);
+    if(expr.callee.kind==='member'&&!this.receiver(expr.callee.object)&&
+      this.checked.expressionTypes.get(expr.callee.object)?.name==='string'&&expr.callee.name==='isToken') {
+      const min=this.argument(expr,'min'),max=this.argument(expr,'max');
+      return this.expression(expr.callee.object)+` is ${expected?'':'not '}a URL-safe ASCII token`+
+        (min&&max?' with '+this.expression(min)+' to '+this.expression(max)+' characters':'');
+    }
+    const operation=this.standardOperation(expr);
+    if(operation==='crypto/contracts.aug:Crypto.equal'||operation==='crypto/contracts.aug:GnuTlsCrypto.equal') {
+      const left=this.argument(expr,'left')!,right=this.argument(expr,'right')!;
+      return this.expression(left)+' and '+this.expression(right)+(expected?' match':' differ')+' when compared by '+this.expression(expr.callee.kind==='member'?expr.callee.object:expr.callee);
+    }
+    return this.expression(expr)+` returns ${expected?'true':'false'}`;
   }
   private call(expr:Extract<Expr,{kind:'call'}>): string {
     if(expr.callee.kind==='name'&&['List','Set','Map'].includes(expr.callee.name)&&!this.definition(expr.callee.name)) {
@@ -332,7 +432,9 @@ class SpecWriter {
       // An inherited operation links to the interface that actually declares it.
       const owner=method&&[...this.checked.project.definitions.values()].find(def=>'methods' in def.node&&def.node.methods.includes(method!));
       this.use(owner,method);
-      target=(owner?this.link(owner,`${owner.name}.${method!.name}`):code(expr.callee.name))+' on '+this.expression(expr.callee.object);
+      const object=this.expression(expr.callee.object),path=this.memberPath(expr.callee);
+      target=owner?this.link(owner,`${owner.name}.${method!.name}`,path??expr.callee.name):code(path??expr.callee.name);
+      if(!path)target+=' on '+object;
     }else target=this.expression(expr.callee);
     expr.typeArgs.forEach(type=>this.type(type));
     const plan=this.checked.callPlans.get(expr);
@@ -341,15 +443,17 @@ class SpecWriter {
     const inputs=expr.args.map((arg,index)=>{
       const slot=plan?.sourceIndices.indexOf(index);
       const label=expr.argLabels[index]??(slot!==undefined&&slot>=0?parameters[slot]?.label??parameters[slot]?.name:arg.kind==='name'?arg.name:undefined);
-      return (label&&!(arg.kind==='name'&&arg.name===label)?code(label)+' set to ':'')+this.expression(arg);
+      const same=arg.kind==='name'&&arg.name===label||arg.kind==='member'&&arg.name===label;
+      const value=this.expression(arg);
+      return label&&!same?code(label)+(arg.kind==='literal'?' ':' from ')+value:value;
     });
-    let text=`${constructs?'construct':'call'} ${target}`+(expr.typeArgs.length?' with type arguments '+coordinate(expr.typeArgs.map(type=>this.type(type))):'')+(inputs.length?' ('+coordinate(inputs)+')':'');
+    let text=`${constructs?'construct':'call'} ${target}`+(expr.typeArgs.length?' for '+coordinate(expr.typeArgs.map(type=>this.type(type))):'')+(inputs.length?' with '+coordinate(inputs):'');
     const injected=parameters.flatMap((param,index)=>{
       if(!param.injected)return [];
       const source=plan?.injectionSources?.[index]??plan?.bindingKeys[index]??typeName(param.type);
       return [code(source)+(source===param.name?'':' for '+code(param.name))];
     });
-    if(injected.length)text+=' using '+injected.join(', ');
+    if(injected.length)text+=' using injected '+coordinate(injected);
     return text;
   }
   private stringParts(expr:Expr): Expr[] {
@@ -358,10 +462,8 @@ class SpecWriter {
     return [expr];
   }
   private joinedText(target:string, value:Expr): FlowNode|undefined {
-    const parts=this.stringParts(value);
-    if(parts.length<4)return;
-    const items=parts.map(part=>this.expression(part));
-    return sequence(`It joins these parts in order to make ${target}`,items,`join these parts in order to make ${target}`);
+    if(this.stringParts(value).length<2)return;
+    return step(`It builds ${target} as ${this.expression(value)}.`);
   }
   private headerFields(value:Expr): {base:Expr; fields:string[]}|undefined {
     let current=value;
@@ -388,8 +490,8 @@ class SpecWriter {
     for(let index=0;index<body.length;index++) {
       const stmt=body[index], nodes=this.statement(stmt), tail=body[index+1];
       // A terminal guard and final return are exact alternatives, even without a written else.
-      if(stmt.kind==='if'&&!stmt.otherwise.length&&index===body.length-2&&tail&&['return','throw'].includes(tail.kind)&&
-        ['return','throw'].includes(stmt.then.at(-1)?.kind??'')&&nodes[0].kind==='branch') {
+      if(stmt.kind==='if'&&!stmt.otherwise.length&&index===body.length-2&&tail?.kind==='return'&&
+        stmt.then.at(-1)?.kind==='return'&&nodes[0].kind==='branch') {
         nodes[0].otherwise=this.statement(tail);index++;
       }
       result.push(...nodes);
@@ -411,11 +513,14 @@ class SpecWriter {
           if(type)this.locals.set(stmt.target.name,{name:type.name,args:[],nullable:type.nullable,optional:type.optional,span:stmt.span});
           else if(stmt.value.kind==='call'&&stmt.value.callee.kind==='name') {const def=this.definition(stmt.value.callee.name);if(def?.node.kind==='class')this.locals.set(stmt.target.name,{name:def.name,args:[],nullable:false,span:stmt.span});}
         }
-        const target=this.expression(stmt.target)+(stmt.declaredType?' of type '+this.type(stmt.declaredType):'');
+        if(stmt.declaredType)this.type(stmt.declaredType);
+        const target=this.expression(stmt.target)+(stmt.declaredType&&!['int','float','string','bool'].includes(stmt.declaredType.name)?' of type '+this.type(stmt.declaredType):'');
         const headers=this.headerFields(stmt.value);
         const arithmetic=stmt.value.kind==='binary'&&['+','-'].includes(stmt.value.op)&&stmt.value.left.kind==='name'&&stmt.target.kind==='name'&&stmt.target.name===stmt.value.left.name&&['int','float','c_int'].includes(this.checked.expressionTypes.get(stmt.value)?.name??'');
         const headerLead=headers?`set ${target} from ${this.expression(headers.base)} by adding these header fields in order`:undefined;
+        const getter=stmt.value.kind==='call'&&!stmt.value.args.length&&stmt.value.callee.kind==='name'&&this.definition(stmt.value.callee.name)?.node.kind==='function';
         const explanation=headers?sequence('It '+headerLead!.replace(/^set /,'sets '),headers.fields,headerLead):
+          getter?step('It gets '+target+' from '+this.expression(stmt.value)+'.'):
           this.joinedText(target,stmt.value)??(arithmetic&&stmt.value.kind==='binary'?action(stmt.value.op==='+'?'increase':'decrease',`${target} by ${this.expression(stmt.value.right)}`):action('set',`${target} to ${this.expression(stmt.value)}`));
         return stmt.ownership==='own'?[explanation,step(`${target} owns this value.`)]:[explanation];
       }
@@ -424,6 +529,33 @@ class SpecWriter {
         if(stmt.expr.kind==='literal'&&stmt.expr.value===null)return [action('continue','without an operation')];
         if(stmt.expr.kind==='call') {
           const call=this.call(stmt.expr);
+          if(stmt.expr.callee.kind==='name'&&!this.definition(stmt.expr.callee.name)) {
+            if(stmt.expr.callee.name==='print')return [step('It prints '+this.expression(stmt.expr.args[0])+'.')];
+            if(stmt.expr.callee.name==='assert')return [step('The test requires '+this.condition(stmt.expr.args[0])+'.')];
+          }
+          if(stmt.expr.callee.kind==='member') {
+            const receiver=stmt.expr.callee.object, def=this.receiver(receiver,stmt.expr.callee.name), method=def&&this.method(def,stmt.expr.callee.name);
+            const type=this.checked.expressionTypes.get(receiver)?.name;
+            const arg=(name:string)=>this.expression(this.argument(stmt.expr as Extract<Expr,{kind:'call'}>,name)!);
+            if(!def) {
+              if(type==='List'&&stmt.expr.callee.name==='append')return [step('It appends '+arg('value')+' to '+this.expression(receiver)+'.')];
+              if(type==='Set'&&stmt.expr.callee.name==='add')return [step('It adds '+arg('value')+' to '+this.expression(receiver)+'.')];
+              if(type==='Map'&&stmt.expr.callee.name==='set')return [step('It stores '+arg('value')+' in '+this.expression(receiver)+' under '+arg('key')+'.')];
+              if(type==='Map'&&stmt.expr.callee.name==='take')return [step('It removes the key '+arg('key')+' from '+this.expression(receiver)+'.')];
+            }
+            if(method?.returns.name==='void'&&method.params.filter(param=>!param.injected).length===1&&stmt.expr.args.length===1) {
+              const owner=[...this.checked.project.definitions.values()].find(owner=>'methods' in owner.node&&owner.node.methods.includes(method))!;
+              const target=this.link(owner,owner.name+'.'+method.name,this.memberPath(stmt.expr.callee)??method.name);
+              const plan=this.checked.callPlans.get(stmt.expr);
+              const injected=method.params.flatMap((param,index)=>param.injected?[code(plan?.injectionSources?.[index]??plan?.bindingKeys[index]??typeName(param.type))]:[]);
+              return [step('It passes '+this.expression(stmt.expr.args[0])+' to '+target+(injected.length?', using injected '+coordinate(injected):'')+'.')];
+            }
+          }
+          const stored=this.standardOperation(stmt.expr);
+          if(stored==='memory/store.aug:ExpiringStore.put'||stored==='memory/store.aug:MemoryStore.put') {
+            const arg=(name:string)=>this.expression(this.argument(stmt.expr as Extract<Expr,{kind:'call'}>,name)!);
+            return [step(`It stores ${arg('value')} in ${this.expression(stmt.expr.callee.kind==='member'?stmt.expr.callee.object:stmt.expr.callee)} under ${arg('key')}, expiring at ${arg('expires')}. The current time for this write is ${arg('now')}.`)];
+          }
           if(call.startsWith('call '))return [action('call',call.slice(5))];
           if(call.startsWith('construct '))return [action('construct',call.slice(10))];
         }
@@ -436,23 +568,39 @@ class SpecWriter {
           const lead=`return headers starting with ${this.expression(headers.base)} and adding these fields in order`;
           return [sequence('It '+lead.replace(/^return /,'returns '),headers.fields,lead)];
         }
-        const joined=this.joinedText('the return value',stmt.value);
-        return joined?[joined,action('return','that text')]:[action('return',this.expression(stmt.value))];
+        return [action('return',this.expression(stmt.value))];
       }
       case 'throw':return [action('fail','with '+this.expression(stmt.value))];
       case 'yield':return [action('send',this.expression(stmt.value)+' as the next stream item')];
-      case 'if':return [branch(this.condition(stmt.test),nested(stmt.then),nested(stmt.otherwise))];
+      case 'if': {
+        const node=branch(this.condition(stmt.test),nested(stmt.then),nested(stmt.otherwise));
+        if(node.kind==='branch'&&!stmt.otherwise.length&&stmt.then.length===1&&stmt.then[0].kind==='throw'&&
+          stmt.then[0].value.kind==='call'&&stmt.then[0].value.args.length===0)node.requirement=this.requirement(stmt.test);
+        return [node];
+      }
       case 'while':return [loop('While '+this.condition(stmt.test),nested(stmt.body),'Repeat this loop while its condition remains true.')];
       case 'for':return [loop('For each '+coordinate(stmt.names.map(code))+' in a snapshot of '+this.expression(stmt.iterable),nested(stmt.body),'Repeat these steps for each remaining item in the snapshot.')];
-      case 'match':return [choice(this.expression(stmt.value),stmt.cases.map(clause=>{
-        const condition=clause.pattern==='else'?'Otherwise':clause.pattern==='some'?'If the selected value is not null, it names it '+code(clause.name!)+' and':
-          clause.pattern==='type'?'If the selected value satisfies '+this.type(clause.type!)+', it names it '+code(clause.name!)+' and':
-          clause.pattern==='literal'?'If the selected value equals '+this.expression(clause.literal!):'If the selected value is null';
-        return {condition,end:clause.name?'This ends the case that names '+code(clause.name)+'.':'This ends that case.',children:nested(clause.body)};
-      }))];
+      case 'match': {
+        const value=this.expression(stmt.value);
+        const terminal=(body:Stmt[])=>['return','throw'].includes(body.at(-1)?.kind??'');
+        // A null guard that exits is followed only by the non-null path. This is
+        // a sequential explanation, not a nested tour through match syntax.
+        if(stmt.cases.length===2&&stmt.cases[0].pattern==='null'&&terminal(stmt.cases[0].body)&&stmt.cases[1].pattern==='some') {
+          const read=stmt.value.kind==='call', second=stmt.cases[1];
+          const first=branch(read?'no value is found':value+' is null',nested(stmt.cases[0].body));
+          return [...(read?[step('It obtains '+value+'.')]:[]),first,
+            step('The non-null '+(read?'result':value)+' becomes '+code(second.name!)+'.'),...nested(second.body)];
+        }
+        return [choice(value,stmt.cases.map(clause=>{
+          const condition=clause.pattern==='else'?'Otherwise':clause.pattern==='some'?'If '+value+' is not null, using '+code(clause.name!)+' for it':
+            clause.pattern==='type'?'If '+value+' satisfies '+this.type(clause.type!)+', using '+code(clause.name!)+' for it':
+            clause.pattern==='literal'?'If '+value+' equals '+this.expression(clause.literal!):'If '+value+' is null';
+          return {condition,children:nested(clause.body)};
+        }))];
+      }
       case 'try':return [attempt(nested(stmt.body),stmt.catches.map(clause=>({error:this.type(clause.type),name:code(clause.name),children:nested(clause.body)})),stmt.always?nested(stmt.always):undefined)];
       case 'unsafe':return [scope('Within an unsafe block',nested(stmt.body),'Native operations must satisfy their declared C contracts.')];
-      case 'borrow':return [scope('While mutably borrowing '+code(stmt.name),nested(stmt.body),'The mutable borrow ends when this block exits.')];
+      case 'borrow':return [scope('With temporary permission to change '+code(stmt.name),nested(stmt.body),'')];
       case 'scope':return [scope('Within a task and ownership scope',nested(stmt.body),'On leaving this scope, join its child tasks and release its local values.')];
       case 'lock':return [scope('While holding the lock on '+this.expression(stmt.value)+' as mutable '+code(stmt.name),nested(stmt.body),'Release this lock when the block exits, including on return or failure.')];
       case 'freeze':return [action('freeze',this.expression(stmt.value)+' as '+code(stmt.name)),step('The immutable value is shared without copying it.')];
@@ -461,24 +609,41 @@ class SpecWriter {
     }
   }
   private condition(expr:Expr): string {
-    return this.expression(expr)+(['binary','unary'].includes(expr.kind)?'':' is true');
+    return expr.kind==='call'?this.predicate(expr):this.expression(expr)+(['binary','unary'].includes(expr.kind)?'':' is true');
+  }
+  private requirement(expr:Expr, nested=false): string {
+    if(expr.kind==='unary'&&expr.op==='!')return this.condition(expr.value);
+    if(expr.kind==='binary') {
+      if(expr.op==='||'||expr.op==='&&') {
+        if(expr.op==='&&'&&expr.left.kind==='binary'&&expr.right.kind==='binary'&&expr.left.op==='!='&&expr.right.op==='!='&&
+          this.memberPath(expr.left.left)===this.memberPath(expr.right.left)&&this.memberPath(expr.left.left))
+          return this.expression(expr.left.left)+' is either '+this.expression(expr.left.right)+' or '+this.expression(expr.right.right);
+        const child=(value:Expr)=>this.requirement(value,value.kind==='binary'&&['&&','||'].includes(value.op)&&value.op!==expr.op);
+        const text=child(expr.left)+(expr.op==='||'?' and ':' or ')+child(expr.right);
+        return nested?'('+text+')':text;
+      }
+      const inverse:Record<string,string>={'==':'does not equal','!=':'equals','<':'is at least','>':'is at most','<=':'is greater than','>=':'is less than'};
+      if(inverse[expr.op])return this.expression(expr.left,true)+' '+inverse[expr.op]+' '+this.expression(expr.right,true);
+    }
+    return expr.kind==='call'?this.predicate(expr,false):this.expression(expr)+' is false';
   }
   private binding(binding:BindDecl): string {
     const info=this.checked.bindings.find(info=>info.declaration===binding);
     const def=this.definition(binding.target.name);this.use(def);
     const lifetime=binding.lifetime??info?.lifetime;
     const key=binding.key+(binding.keyTypeArgs.length?'<'+binding.keyTypeArgs.map(type=>typeName(type)).join(', ')+'>':'');
-    return (`Provide ${def?this.link(def,def.name,typeName(binding.target)):this.type(binding.target)} for ${code(key)}. `+
-      (lifetime==='shared'?'Share one instance. ':lifetime==='scoped'?'Share one instance per scope. ':lifetime==='fresh'?'Create one instance per resolve. ':'Reuse stateless instances; create stateful instances per resolve. ')+
-      (binding.sharedMutation?'Allow shared mutation. ':'')+
-      (info?.dependencies.length?'Needs '+info.dependencies.map(code).join(', ')+'. ':'')).trimEnd();
+    return (`${code(key)} is provided by ${def?this.link(def,def.name,typeName(binding.target)):this.type(binding.target)}. `+
+      (lifetime==='shared'?'The same instance is shared. ':lifetime==='scoped'?'Each scope shares one instance. ':lifetime==='fresh'?'Each resolve creates a new instance. ':'Stateless instances are reused; stateful instances are created for each resolve. ')+
+      (binding.sharedMutation?'Shared mutation is allowed. ':'')+
+      (info?.dependencies.length?'It requires bindings for '+coordinate(info.dependencies.map(code))+'. ':'')).trimEnd();
   }
   private callable(method:MethodDecl, owner?:Definition): SpecNode {
     this.locals=new Map(owner&&'fields' in owner.node?fieldsOf(owner.node as ClassDecl).map(field=>[field.name,field.type]):[]);
     const name=owner&&owner.node.kind!=='function'?`${owner.name}.${method.name}`:method.name;
     const documentation=callableDocumentation(this.checked.project,method,owner);
     const children:SpecNode[]=[];
-    if(method.name.startsWith('_'))children.push(paragraph('Private to its defining scope.'));
+    if(method.endpoint)children.push(paragraph(code(method.name)+' handles '+code(method.endpoint.method+' '+method.endpoint.path)+'.'));
+    if(method.name.startsWith('_'))children.push(paragraph('It is private to its defining scope.'));
     const notes=this.notes(documentation);
     if(notes)children.push(paragraph(notes));
     children.push(...this.contract(method,documentation),...this.layers(method));
@@ -506,8 +671,8 @@ class SpecWriter {
         const children:SpecNode[]=[];
         const generics=this.generics(item), notes=this.notes(documentation);
         const inputs=this.inputs(item.fields,true,this.file.path,documentation?.parameters);
-        const implementsText=item.implements.length?'Implements '+coordinate(item.implements.map(type=>this.type(type)))+'.':'';
-        const introduction=[notes,implementsText,item.name.startsWith('_')?'Private to this file.':'',generics].filter(Boolean).join(' ');
+        const implementsText=item.implements.length?'It implements '+coordinate(item.implements.map(type=>this.type(type)))+'.':'';
+        const introduction=[notes,implementsText,item.name.startsWith('_')?'It is private to this file.':'',generics].filter(Boolean).join(' ');
         if(introduction)children.push(paragraph(introduction));
         if(inputs)children.push(paragraph(inputs));
         children.push(...this.layers(item));
@@ -526,9 +691,9 @@ class SpecWriter {
         const def=this.definition(item.name)!;this.locals=new Map();
         const generics=this.generics(item),notes=this.notes(javadocBefore(this.file.source,item.span.start));
         const role=item.kind==='interceptor'?'interceptor':item.capability?'capability interface':'interface';
-        const introduction=[notes,item.name.startsWith('_')?'Private to this file.':'',generics].filter(Boolean).join(' ');
+        const introduction=[notes,item.name.startsWith('_')?'It is private to this file.':'',generics].filter(Boolean).join(' ');
         const children:SpecNode[]=introduction?[paragraph(introduction)]:[];
-        if(item.kind==='interface'&&item.extends.length)children.push(paragraph('Inherits '+coordinate(item.extends.map(type=>this.type(type)))+'.'));
+        if(item.kind==='interface'&&item.extends.length)children.push(paragraph('It inherits '+coordinate(item.extends.map(type=>this.type(type)))+'.'));
         if(item.kind==='interceptor') {
           const inputs=this.inputs(item.fields,true);
           if(inputs)children.push(paragraph(inputs));
@@ -571,56 +736,19 @@ class SpecWriter {
   private dependencySurface(): SpecNode|undefined {
     if(!this.used.size)return;
     const entries=[...this.used.values()].sort((a,b)=>compare(relative(this.checked.project.root,this.docs.get(a.def.file)!)+':'+a.def.name,relative(this.checked.project.root,this.docs.get(b.def.file)!)+':'+b.def.name));
-    const lines:string[]=[];
+    const groups=new Map<string,string[]>();
     for(const entry of entries) {
       const def=entry.def, node=def.node;
       const imported=this.file.items.find(item=>item.kind==='import'&&(this.checked.project.imports.get(item)??[]).some(imported=>imported.id===def.id));
-      const origin=imported?.kind==='import'?' from '+code(imported.from.join('.'))+(imported.everything?' through import everything':''):'';
-      let text=node.kind==='function'?this.dependencyOperation(node,def,origin):'The file uses '+this.link(def)+origin+'.';
-      const details:string[]=[];
-      if(node.kind!=='function') {const generic=this.generics(node,def.file);if(generic)details.push(generic);}
-      if(node.kind==='class'&&entry.constructed)details.push('Construction takes '+this.shortInputs(node.fields,def.file)+'.'+
-        (node.validationErrors?.length?' Construction can fail with '+coordinate(node.validationErrors.map(type=>this.type(type,def.file)))+'.':''));
-      if(node.kind==='class'&&entry.fields.size)for(const name of [...entry.fields].sort(compare)){
-        const field=fieldsOf(node).find(field=>field.name===name);
-        if(field)details.push(code(name)+' is a '+(field.mutable?'mutable':'read-only')+' field of type '+this.type(field.type,def.file)+'.');
-      }
-      if('methods' in node)for(const method of [...entry.operations].sort((a,b)=>compare(a.name,b.name)))details.push(this.dependencyOperation(method,def));
-      text+=(details.length?' '+details.join(' '):'');
-      lines.push(text);
+      const origin=imported?.kind==='import'?code(imported.from.join('.'))+(imported.everything?' through import everything':''):'';
+      const names=[this.link(def)];
+      const members=[...entry.operations].sort((a,b)=>compare(a.name,b.name)).map(method=>this.link(def,def.name+'.'+method.name,method.name));
+      members.push(...[...entry.fields].sort(compare).map(name=>code(name)));
+      if(members.length)names[0]+=' ('+coordinate(members)+')';
+      const group=groups.get(origin)??[];group.push(...names);groups.set(origin,group);
     }
-    return section('Dependencies',2,lines.map(paragraph));
-  }
-  private shortInputs(params:Param[], file:string): string {
-    return coordinate(this.parameterGroups(params.filter(param=>!param.injected)).map(group=>{
-      const param=group[0];
-      return coordinate(group.map(param=>code(param.label??param.name)))+' as '+this.type(param.type,file)+
-      (param.source?' from HTTP '+param.source.kind+(param.source.name?' '+code(param.source.name):''):'')+
-      (param.type.optional?' (omitted means null)':'')+
-      (param.ownership==='own'?' with ownership transferred':param.ownership==='borrow'?' with permission to mutate it':'');
-    }))||'no caller inputs';
-  }
-  private dependencyOperation(method:MethodDecl, owner:Definition, origin=''): string {
-    const layers=this.checked.interceptorPlans.get(method)??[];
-    const errors=[...new Set([...method.throws.map(type=>{this.type(type,method.span.file);return typeName(type);}),...layers.flatMap(layer=>layer.errors.map(type=>{this.use(type.def);return tyName(type);}))])];
-    const name=owner.node.kind==='function'?owner.name:owner.name+'.'+method.name;
-    let text=this.link(owner,name,owner.node.kind==='function'?owner.name:method.name)+origin+
-      ' takes '+this.shortInputs(method.params,method.span.file)+'. It '+(method.returns.name==='void'?'returns no value':
-        'returns '+(method.returnOwnership==='own'?'ownership of ':'')+this.type(method.returns,method.span.file))+'.';
-    if(method.typeParams.length)text+=' '+this.generics(method,method.span.file);
-    const injected=method.params.filter(param=>param.injected);
-    if(injected.length)text+=' Dependency injection supplies '+coordinate(injected.map(param=>code(param.name)+' as '+this.type(param.type,method.span.file)))+'.';
-    const changes=this.checked.effectContracts.get(method)?.changes??method.changes??[];
-    if(changes.length)text+=' It may change '+coordinate(changes.map(code))+'.';
-    const effects=[...(this.checked.effectContracts.get(method)?.uses.values()??method.uses??[])];
-    if(effects.length)text+=' It can use '+coordinate(effects.map(effect=>{
-      const target=('capability' in effect?effect.capability?.def:undefined)??this.checked.project.scopes.get(method.span.file)?.get(effect.source);
-      const operation=target&&'methods' in target.node?target.node.methods.find(method=>method.name===effect.operation):undefined;
-      this.use(target,operation);
-      return target?this.link(target,operation?target.name+'.'+operation.name:target.name,effect.source+'.'+effect.operation):code(effect.source+'.'+effect.operation);
-    }))+'.';
-    if(errors.length)text+=' It can fail with '+coordinate(errors.map(code))+'.';
-    return text;
+    return section('Dependencies',2,[...[...groups].map(([origin,names])=>paragraph(
+      'It uses '+coordinate(names)+(origin?' from '+origin:'')+'.')),paragraph('These links explain the full dependency contracts.')]);
   }
   render(): string {
     const exports=this.file.items.filter(item=>item.kind==='export');
@@ -628,6 +756,8 @@ class SpecWriter {
     const providers=this.file.items.filter(item=>item.kind==='bind'||item.kind==='include');
     const startup=this.file.items.filter(item=>item.kind!=='import'&&item.kind!=='export'&&item.kind!=='test'&&item.kind!=='bind'&&item.kind!=='include'&&!declarations.includes(item));
     const children:SpecNode[]=[];
+    if(declarations.some(item=>item.kind==='function'&&item.endpoint))children.push(paragraph(
+      'Plain handler results default to HTTP 200 unless another status is declared. HttpResponse values choose their own status. Unhandled request failures return HTTP 500 and cancel the request tasks.'));
     if(basename(this.file.path)==='main.aug') {
       const project=this.checked.project;
       if(project.files.get(this.file.path)?.items.some(item=>item.kind==='serve'))children.push(section('HTTP configuration',2,[paragraph(
@@ -643,7 +773,7 @@ class SpecWriter {
     children.push(...declarations.sort((a,b)=>Number('name' in a&&a.name.startsWith('_'))-Number('name' in b&&b.name.startsWith('_'))).map(item=>this.declaration(item)));
     children.push(...this.file.items.filter(item=>item.kind==='test').map(item=>this.declaration(item)));
     if(!children.length)children.push(paragraph('This file declares no operations.'));
-    // Dependency signatures can reference more imported types. Walk until the surface is closed.
+    // Links may add inherited operation owners. Walk until the surface is closed.
     const surfaceSize=()=>[...this.used.values()].reduce((size,entry)=>size+1+entry.operations.size+entry.fields.size+Number(entry.constructed??false),0);
     let surface:SpecNode|undefined, size=-1;
     do {size=surfaceSize();surface=this.dependencySurface();} while(surfaceSize()!==size);
@@ -653,11 +783,7 @@ class SpecWriter {
   }
   private builtinSurface(): SpecNode|undefined {
     if(!this.builtins.size&&!this.properties.size)return;
-    const items=[...this.properties].sort(([a],[b])=>compare(a,b)).map(([name,property])=>
-      `${code(name)}: ${property.documentation}`);
-    items.push(...[...this.builtins].sort(([a],[b])=>compare(a,b)).map(([name,operation])=>
-      `${code(name)}: ${operation.documentation}`));
-    return section('Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)',2,items.map(paragraph));
+    return paragraph('Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).');
   }
 }
 

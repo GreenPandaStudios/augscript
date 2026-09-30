@@ -5,19 +5,19 @@
 <a id="symbol-LoginTransaction"></a>
 ## `LoginTransaction` · immutable record · [source](contracts.aug#L3)
 
-Browser-bound client state, nonce and PKCE verifier, consumed by the callback. The caller supplies `state`, `nonce`, and `verifier` as `string`, stored read-only and `expires` as `int`, stored read-only.
+Browser-bound client state, nonce and PKCE verifier, consumed by the callback. It takes `state`, `nonce`, and `verifier` as strings, kept read-only and `expires` as an integer, kept read-only.
 
 <a id="symbol-SessionClaims"></a>
 ## `SessionClaims` · immutable record · [source](contracts.aug#L5)
 
-Sessions require their own issuer, audience, key and JWT type, plus a live registry entry. The caller supplies `iss`, `sub`, and `aud` as `string`, stored read-only, `exp` and `iat` as `int`, stored read-only, and `jti`, `csrf`, and `name` as `string`, stored read-only.
+Sessions require their own issuer, audience, key and JWT type, plus a live registry entry. It takes `iss`, `sub`, and `aud` as strings, kept read-only, `exp` and `iat` as integers, kept read-only, and `jti`, `csrf`, and `name` as strings, kept read-only.
 
 <a id="symbol-LogoutForm"></a>
 ## `LogoutForm` · immutable record · [source](contracts.aug#L6)
 
-The caller supplies `csrf` as `string`, stored read-only.
+It takes `csrf` as a string, kept read-only.
 
 <a id="symbol-SessionError"></a>
 ## `SessionError` · class · [source](contracts.aug#L7)
 
-Implements `Error`.
+It implements `Error`.

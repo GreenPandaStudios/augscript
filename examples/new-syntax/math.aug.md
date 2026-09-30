@@ -5,4 +5,4 @@
 <a id="symbol-increment"></a>
 ## `increment` · [source](math.aug#L2)
 
-The caller supplies `value` as `int`. The result is `int`. It returns `value` plus `1`.
+It takes `value` as an integer. It returns `value` plus `1`.

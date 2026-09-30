@@ -80,7 +80,9 @@ export loginCallback from login
 
 ### Exports
 
-Export the declaration `LoginTransaction` from [`contracts.aug`](contracts.md#symbol-LoginTransaction). Export the declaration `SessionClaims` from [`contracts.aug`](contracts.md#symbol-SessionClaims). Export the declaration `home` from [`endpoints.aug`](endpoints.md#symbol-home). Export the declaration `me` from [`endpoints.aug`](endpoints.md#symbol-me). Export the declaration `logout` from [`logout.aug`](logout.md#symbol-logout). Export the declaration `startLogin` from [`login.aug`](login.md#symbol-startLogin). Export the declaration `loginCallback` from [`login.aug`](login.md#symbol-loginCallback).
+Export the declaration `LoginTransaction` from [`contracts.aug`](contracts.md#symbol-LoginTransaction). Export the declaration `SessionClaims` from [`contracts.aug`](contracts.md#symbol-SessionClaims). Export the declaration `home` from [`endpoints.aug`](endpoints.md#symbol-home). Export the declaration `me` from [`endpoints.aug`](endpoints.md#symbol-me).
+
+Export the declaration `logout` from [`logout.aug`](logout.md#symbol-logout). Export the declaration `startLogin` from [`login.aug`](login.md#symbol-startLogin). Export the declaration `loginCallback` from [`login.aug`](login.md#symbol-loginCallback).
 
 ::::
 

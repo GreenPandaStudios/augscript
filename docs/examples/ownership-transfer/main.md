@@ -64,19 +64,19 @@ print(value="end of main")
 
 ### Providers
 
-Provide [`SystemConsole`](dependencies/august/0.19.0/io/contracts.md#symbol-SystemConsole) for `Console`. Share one instance.
+`Console` is provided by [`SystemConsole`](dependencies/august/0.19.0/io/contracts.md#symbol-SystemConsole). The same instance is shared.
 
 ### Startup
 
-It sets `first` of type [`Resource`](resource.md#symbol-Resource) to the value from [`make`](resource.md#symbol-make). `first` of type [`Resource`](resource.md#symbol-Resource) owns this value. It calls [`consume`](resource.md#symbol-consume) (`value` set to `first`) using `Console` for `console`. It sets `second` of type [`Resource`](resource.md#symbol-Resource) to the value from [`make`](resource.md#symbol-make). `second` of type [`Resource`](resource.md#symbol-Resource) owns this value. It calls `print` (`value` set to `"end of main"`).
+It gets `first` of type [`Resource`](resource.md#symbol-Resource) from [`make`](resource.md#symbol-make). `first` of type [`Resource`](resource.md#symbol-Resource) owns this value. It calls [`consume`](resource.md#symbol-consume) with `value` from `first` using injected `Console` for `console`. It gets `second` of type [`Resource`](resource.md#symbol-Resource) from [`make`](resource.md#symbol-make).
+
+`second` of type [`Resource`](resource.md#symbol-Resource) owns this value. It prints `"end of main"`.
 
 ### Dependencies
 
-The file uses [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console) from `august.io`. [`write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write) takes `value` as `T`. It returns no value. The type parameters are `T`. It can use [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write). The file uses [`SystemConsole`](dependencies/august/0.19.0/io/contracts.md#symbol-SystemConsole) from `august.io`. The file uses [`Resource`](resource.md#symbol-Resource) from `resource`. [`consume`](resource.md#symbol-consume) from `resource` takes `value` as [`Resource`](resource.md#symbol-Resource) with ownership transferred. It returns no value. Dependency injection supplies `console` as [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console). It can use [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write). [`make`](resource.md#symbol-make) from `resource` takes no caller inputs. It returns ownership of [`Resource`](resource.md#symbol-Resource).
+It uses [`SystemConsole`](dependencies/august/0.19.0/io/contracts.md#symbol-SystemConsole) from `august.io`. It uses [`Resource`](resource.md#symbol-Resource), [`consume`](resource.md#symbol-consume), and [`make`](resource.md#symbol-make) from `resource`. These links explain the full dependency contracts.
 
-### Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
-
-`print`: Composition and test output. Other callables receive Console and declare uses console.write.
+Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).
 
 ::::
 

@@ -84,21 +84,21 @@ The application's explicit startup operation.
 <a id="symbol-Application.start"></a>
 #### `Application.start` · [source](app.md#code)
 
-Writes the fruit names through the selected console. It can use [`Console.write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
+Writes the fruit names through the selected console. It can call [`Console.write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
 
 <a id="symbol-ApplicationImpl"></a>
 ### `ApplicationImpl` · class · [source](app.md#code)
 
-Construction stores dependencies; start performs the visible external work. Implements [`Application`](app.md#symbol-Application). Dependency injection supplies `console` as [`Console`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console), stored read-only.
+Construction stores dependencies; start performs the visible external work. It implements [`Application`](app.md#symbol-Application). The `console` dependency is injected as [`Console`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console) and stored read-only.
 
 <a id="symbol-ApplicationImpl.start"></a>
 #### `ApplicationImpl.start` · [source](app.md#code)
 
-Writes the fruit names through the selected console. It can use [`console.write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write). It sets `fruit` to a list containing a new [`Fruit`](models.md#symbol-Fruit) (`code` set to `1` and `name` set to `"apple"`), a new [`Fruit`](models.md#symbol-Fruit) (`name` set to `"pear"` and `code` set to `2`). For each `item` in a snapshot of `fruit`, it calls [`Console.write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write) on `console` (`value` set to `item.name`).
+Writes the fruit names through the selected console. It sets `fruit` to a list containing a [`Fruit`](models.md#symbol-Fruit) with `code` `1` and `name` `"apple"`, a [`Fruit`](models.md#symbol-Fruit) with `name` `"pear"` and `code` `2`. For each `item` in a snapshot of `fruit`, it passes `item.name` to [`console.write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
 
 ### Dependencies
 
-The file uses [`Console`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console) from `august.io`. [`write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write) takes `value` as `T`. It returns no value. The type parameters are `T`. It can use [`Console.write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write). The file uses [`Fruit`](models.md#symbol-Fruit) from `models`. Construction takes `code` as `int` and `name` as `string`. `name` is a read-only field of type `string`.
+It uses [`Console`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console) ([`write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write)) from `august.io`. It uses [`Fruit`](models.md#symbol-Fruit) (`name`) from `models`. These links explain the full dependency contracts.
 
 ::::
 

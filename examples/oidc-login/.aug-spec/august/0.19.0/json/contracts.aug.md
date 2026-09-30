@@ -5,11 +5,13 @@
 <a id="symbol-parse"></a>
 ## `parse` · [source](contracts.aug#L5)
 
-Parse strict UTF-8 JSON. Duplicate keys, invalid Unicode, oversized integers, and nesting beyond 64 levels raise JsonError. The caller supplies `input` as `string`. The result is `Json`. It can fail with `JsonError`. Within an unsafe block, it returns the value from [`_aug_json_parse`](contracts.aug.md#symbol-_aug_json_parse) (`input`).
+Parse strict UTF-8 JSON. Duplicate keys, invalid Unicode, oversized integers, and nesting beyond 64 levels raise JsonError. It takes `input` as a string. Failures can raise `JsonError`.
 
-Native operations must satisfy their declared C contracts.
+Within an unsafe block, it returns [`_aug_json_parse`](contracts.aug.md#symbol-_aug_json_parse) with `input`. Native operations must satisfy their declared C contracts.
 
 <a id="symbol-_aug_json_parse"></a>
 ## `_aug_json_parse` · [source](contracts.aug#L3)
 
-Private to its defining scope. The caller supplies `input` as `string`. The result is `Json`. It can fail with `JsonError`. Native C implementation; only its declared contract is visible here.
+It is private to its defining scope. It takes `input` as a string. It returns `Json`. Failures can raise `JsonError`.
+
+Native C implementation; only its declared contract is visible here.

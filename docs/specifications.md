@@ -28,7 +28,7 @@ This points readers and coding agents to the explanation before they edit the co
 
 ## What the document explains
 
-The compiler describes labeled inputs, injected dependencies, return values, state changes, capabilities, and checked failures. It follows each local branch, loop, match, recovery path, and cleanup block. It includes private helpers and same-file tests. For endpoints, it describes routes, wire inputs, policies, middleware ordering, and configured HTTP behavior.
+Read a spec as a developer's explanation of the file. Each declaration has a short introduction and ordinary paragraphs about its behavior. The text explains inputs, dependencies, decisions, changes, results, and failures. It includes private helpers and same-file tests. Endpoint explanations include their routes, request inputs, policies, and HTTP outcomes.
 
 For example, this complete program uses two source files:
 
@@ -46,9 +46,11 @@ total(int price, int quantity) returns int:
 
 Without any author comments, the generated explanation reads:
 
-> The caller supplies `price` and `quantity` as `int`. The result is `int`. If `quantity` is greater than `0`, it returns `price` times `quantity`. Otherwise, it returns `0`.
+> It takes `price` and `quantity` as integers. It returns `price` times `quantity` if `quantity` is positive, or `0` otherwise.
 
-The generated document uses connected paragraphs. It keeps branch conditions, repetition, recovery, and cleanup in their original scopes. A guard that returns, followed by a final return, can read as an explicit alternative. Longer nested paths retain scope boundaries so that a later operation cannot be mistaken for part of an earlier branch.
+The writer explains related work together. Checks with the same failure become a description of the requirements and what happens at the first failed check. It describes an HTTP result as a response, a collection update as adding or storing a value, and a null guard as an early exit followed by the value's use. Repeated assignments still evaluate their expressions separately. Conditions, evaluation order, repeated effects, recovery, and cleanup stay meaningful.
+
+String construction appears as readable text such as `Hello, {name}!`. Braces mark inserted values; doubled braces represent literal braces. Long expressions keep the parentheses that change their meaning. The spec avoids statement lists, repeated signature descriptions, nested “the value from” phrases, and sentences that announce the ends of syntax blocks.
 
 Javadoc, when present, becomes part of the explanation: its summary introduces the declaration, parameter notes sit beside their inputs, and return and error notes sit beside those outcomes. Comments can explain intent that a compiler cannot infer, but readers do not need them to follow the checked inputs, operations, and outcomes.
 
@@ -56,7 +58,7 @@ Optional contracts use `optional Type`. Specs describe two possible states: a va
 
 ## Dependencies stay small and navigable
 
-The document follows the file's declarations and startup steps. A short dependency section describes only used names and operations in prose. It explains caller inputs, injected inputs, results, mutation permissions, and checked failures, with links to their complete explanations. Dependency implementation bodies stay in their own documents.
+The document follows the file's declarations and startup work. A short dependency section names only the types, operations, and fields used here, grouped by module. Their links lead to complete explanations. It does not repeat dependency signatures or implementation bodies. Built-in contracts link to the language reference.
 
 `import everything` stays valid. The spec lists the names and operations actually used by the file. Adding an unused export does not expand that list. VS Code hover still shows all names available from the import.
 
@@ -87,9 +89,9 @@ In VS Code, use **AugScript: Open Compiled Specification** to generate and previ
 
 ## Determinism and limits
 
-Generation is offline and deterministic for the same checked sources, configuration, installed dependency versions, and compiler version. It adds no timestamps or machine paths. The compiler builds a behavior tree from checked declarations, plans sentences within their scopes, combines compatible clauses, and lays out paragraphs. Source identities survive sentence planning; an internal coverage check rejects a plan that drops or reorders statement facts. Repeated calls remain distinct operations.
+Generation is offline and deterministic for the same checked sources, configuration, installed dependency versions, and compiler version. It adds no timestamps or machine paths. The compiler builds a behavior tree from checked declarations, groups related operations, and writes sentences and paragraphs. Source identities survive grouping; an internal coverage check rejects a plan that drops or reorders statement facts. Repeated calls remain distinct operations. Specific descriptions of collections, HTTP results, and standard-library operations use their checked contracts, not guesses about arbitrary function names.
 
-The design draws on research in code summarization and natural language generation, including document planning, clause aggregation, and grammatical realization. Read [the research and its limits](research/code-to-natural-language.md). Summary research often selects important statements; August retains local behavior instead. The coverage check verifies the planner's bookkeeping, not the correctness of every English interpretation. Regression examples check conditions, arithmetic grouping, effects, recovery, links, and reproducibility. Reader review is still needed for clarity and domain intent.
+The design draws on research in code summarization and natural language generation. Read [the research and its limits](research/code-to-natural-language.md). The coverage check verifies the planner's bookkeeping, not the correctness of every English interpretation. Regression examples check complete readable paragraphs as well as conditions, arithmetic grouping, effects, recovery, links, and reproducibility. Reader review is still needed for clarity and domain intent.
 
 ASD-STE100 guides the wording. The output is best effort Simplified Technical English, without a claim of formal compliance. Native C boundaries are explained through their declared contracts and author documentation; the compiler does not infer a foreign implementation's internals. Shared numeric, ownership, and task rules link to the language reference.
 

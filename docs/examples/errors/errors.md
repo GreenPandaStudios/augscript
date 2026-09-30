@@ -57,7 +57,9 @@ load(bool fail) returns string unless FileError {
 <a id="symbol-load"></a>
 ### `load` · [source](errors.md#code)
 
-The caller supplies `fail` as `bool`. The result is `string`. It can fail with `FileError`. If `fail` is true, it fails with a new `FileError`. Otherwise, it returns `"loaded"`.
+It takes `fail` as a boolean. Failures can raise `FileError`.
+
+It checks that `fail` is false. It raises a `FileError` at the first failed check. It returns `"loaded"`.
 
 ::::
 

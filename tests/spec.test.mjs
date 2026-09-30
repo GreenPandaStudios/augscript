@@ -72,12 +72,12 @@ test('specs explain all local behavior and only the dependency surface used by w
   assert.match(main,/compute.*service\.aug\.md#symbol-compute/);
   assert.match(main,/through import everything/);
   assert.doesNotMatch(main,/_positive|unused|Sum valid values|For each/);
-  for(const word of ['Values to inspect','Private to its defining scope','For each','While','Otherwise','tries','catches','always','fails with','valid values','sums values'])assert.ok(service.includes(word),word);
-  assert.match(service,/If `total` does not equal `0` and/);
+  for(const word of ['Values to inspect','Private to its defining scope','For each','while','otherwise','tries','raises','always','valid values','sums values'])assert.ok(service.toLowerCase().includes(word.toLowerCase()),word);
+  assert.match(service,/if `total` does not equal `0` and/);
   assert.ok(main.indexOf('## Startup')<main.indexOf('## Dependencies'));
   assert.equal(service.match(/Sum valid values\./g)?.length,1);
   assert.doesNotMatch(service,/Author documentation|What it does|In this file|Shared language rules|\n\n\n/);
-  assert.match(main,/## Built-ins.*print/s);
+  assert.match(main,/Built-in operations follow.*language reference/);
   assert.doesNotMatch(service,/^\s*(?:-|\d+\.) /m,'generated behavior must be prose, without outline lists');
 }));
 
@@ -111,8 +111,10 @@ test('comment-free code yields a readable local flow and ordered long expression
   const links=outputs.find(output=>output.path.endsWith('links.aug.md')).text;
   assert.ok(main.indexOf('## Startup')<main.indexOf('## Dependencies'));
   assert.match(main,/sets `numbers` to a list of `int` containing `2`, `4`/);
-  assert.match(main,/\[`address`\]\(links\.aug\.md#symbol-address\).*takes `host` and `path` as `string`\. It returns `string`/s);
-  assert.match(links,/joins these parts in order to make `location`: `"https:\/\/"`, `host`, `"\/"`, `path`, and `"\?view=full"`/);
+  assert.match(main,/uses \[`address`\]\(links\.aug\.md#symbol-address\) from `links`/);
+  assert.doesNotMatch(main,/takes `host`|The result is|type parameters/,'dependency contracts are linked, not copied');
+  assert.match(links,/takes `host` and `path` as strings/);
+  assert.match(links,/builds `location` as the text `https:\/\/{host}\/{path}\?view=full`/);
   assert.doesNotMatch(links,/Author documentation|the result of call|\(\(\(/);
 }));
 
@@ -265,7 +267,7 @@ catch IndexError error { print(value="invalid index") }
 },root=>{
   const result=command(root,'run');assert.equal(result.status,0,result.stderr);
   assert.equal(result.stdout,'none\nnone\npresent\ntrue\ntrue\ntrue\n{"text":null}\ntrue\n');
-  assert.match(readFileSync(join(root,'values.aug.md'),'utf8'),/omitted means null/);
+  assert.match(readFileSync(join(root,'values.aug.md'),'utf8'),/Omitted optional inputs are null/);
 }));
 
 test('explanation tree keeps related steps together and renders nested control flow consistently', () => {
@@ -288,7 +290,7 @@ test('long header chains become one ordered operation', () => project({
 },root=>{
   const result=checked(root);valid(result);
   const text=generateSpecs(result).find(output=>output.path===join(root,'main.aug.md')).text;
-  assert.match(text,/sets? `headers` from a new `Headers` by adding these header fields in order:/);
+  assert.match(text,/sets? `headers` from a `Headers` by adding these header fields in order:/);
   assert.match(text,/`"first"` to `"1"`, `"second"` to `"2"`, and `"third"` to `"3"`/);
   assert.doesNotMatch(text,/the result of `with` on the result of `with`/);
 }));
@@ -305,18 +307,19 @@ test('prose planning preserves nested scopes, repeated effects and a source ledg
   ],'Repeat for each remaining item.')),
   fact(scope('While holding the lock on `shared`',[fact(action('set','`value` to `1`'))],'Release the lock on exit.')),
   fact(choice('`value`',[
-    {condition:'If the selected value is null',children:[fact(action('return','null'))]},
+    {condition:'If `value` is null',children:[fact(action('return','null'))]},
     {condition:'Otherwise',children:[fact(action('return','`value`'))]},
   ])),fact(action('call','`after`'))];
   const result=planFlow(body), prose=result.paragraphs.join('\n\n');
   assert.equal(new Set(result.sources).size,identity);
   assert.equal(result.sources.length,identity);
   assert.equal((prose.match(/calls `audit`/g)??[]).length,2,'identical calls are distinct effects');
-  assert.match(prose,/If `ready` is true, it calls `audit`; then it calls `audit`\. Otherwise, it fails/);
-  assert.ok(prose.indexOf('catches it as `error`')<prose.indexOf('always calls `cleanup`'));
-  assert.ok(prose.indexOf('always calls `cleanup`')<prose.indexOf('Repeat for each remaining item'));
-  assert.ok(prose.indexOf('Release the lock')<prose.indexOf('Select the first matching case'));
-  assert.match(prose,/After the match, execution continues unless the selected case returned or failed\. It calls `after`/);
+  assert.match(prose,/if `ready` is true, it calls `audit`; then it calls `audit`\. Otherwise, it raises/);
+  assert.ok(prose.indexOf('If this work raises `BadInput`')<prose.indexOf('always calls `cleanup`'));
+  assert.ok(prose.indexOf('always calls `cleanup`')<prose.indexOf('After the loop'));
+  assert.ok(prose.indexOf('Release the lock')<prose.indexOf('If `value` is null'));
+  assert.match(prose,/Otherwise, it returns `value`\.\s+It calls `after`/);
+  assert.doesNotMatch(prose,/This ends|execution continues|following steps|Repeat for each remaining/);
   assert.doesNotMatch(prose,/^\s*[-\d]+[. ]/m);
 });
 
@@ -332,8 +335,71 @@ test('scope-free sentences keep negation, short circuit order and numeric groupi
   const result=checked(root);valid(result);
   const text=generateSpecs(result).find(output=>output.path.endsWith('numbers.aug.md')).text;
   assert.match(text,/If `left` equals `1` or `right` equals `2` or `left` equals `3`, it returns `left` minus \(`right` minus `1`\)/);
-  assert.match(text,/not \(.*and.*\).*returns `left` divided by \(`right` divided by `2`\)/);
-  assert.match(text,/returns `left` plus \(`right` plus `1`\)/);
+  assert.match(text,/returns `left` divided by \(`right` divided by `2`\) if not \(.*and.*\)/);
+  assert.match(text,/or `left` plus \(`right` plus `1`\) otherwise/);
+}));
+
+test('complete generated paragraphs read as concise explanations without contract or block boilerplate',()=>project({
+  'main.aug':'import total and welcome from text\nprint(value=total(price=7, quantity=3))\nprint(value=welcome(name="Ada"))\n',
+  'text.aug':`total(int price,int quantity) returns int {
+    if quantity > 0 { return price * quantity }
+    return 0
+}
+welcome(string name) returns string { return "Hello, " + name + "!" }
+`,
+},root=>{
+  const result=checked(root);valid(result);
+  const text=generateSpecs(result).find(output=>output.path.endsWith('text.aug.md')).text;
+  const prose=text.split('\n').filter(line=>line&&!line.startsWith('#')&&!line.startsWith('<')).join('\n');
+  assert.equal(prose,'It takes `price` and `quantity` as integers. It returns `price` times `quantity` if `quantity` is positive, or `0` otherwise.\nIt takes `name` as a string. It returns the text `Hello, {name}!`.');
+  assert.doesNotMatch(text,/The caller supplies|The result is|It can use|the value from|This ends|execution continues|^\s*[-*] /m);
+}));
+
+test('grouped validations and repeated value generation preserve each source operation',()=>project({
+  'main.aug':'import requireValid and BadInput from inputs\ntry { print(value=requireValid(value=3, mode="read")) } catch BadInput error { pass }\n',
+  'inputs.aug':`BadInput() implements Error {}
+requireValid(int value,string mode) returns int unless BadInput {
+    if value < 0 { throw BadInput() }
+    if mode != "read" and mode != "write" { throw BadInput() }
+    return value
+}
+`,
+},root=>{
+  const result=checked(root);valid(result);
+  const text=generateSpecs(result).find(output=>output.path.endsWith('inputs.aug.md')).text;
+  assert.match(text,/checks that `value` is at least `0` and `mode` is either `"read"` or `"write"/);
+  assert.equal((text.match(/at the first failed check/g)??[]).length,1);
+  assert.match(text,/It returns `value`/);
+  const nodes=['first','second','third'].map(name=>({...action('set','`'+name+'` to `create`'),source:name}));
+  const plan=planFlow(nodes);
+  assert.deepEqual(plan.sources,['first','second','third']);
+  assert.deepEqual(plan.paragraphs,['It sets `first`, `second`, and `third` separately, each to `create`.']);
+}));
+
+test('plain HTTP and collection descriptions follow checked built-ins, not arbitrary operation names',()=>project({
+  'main.aug':`import FakeCrypto from fake
+value = FakeCrypto().random(size=7)
+try {
+    numbers = [1,2]
+    borrow numbers { numbers.append(value=3) }
+    print(value=numbers.get(index=1))
+} catch IndexError error { pass }
+`,
+  'fake.aug':`interface Crypto { random(int size) returns int }
+FakeCrypto() implements Crypto { random(int size) returns int { return size } }
+endpoint GET "/failure" as failure() returns HttpResponse<string> { return HttpResponse(body="No such item", status=404) }
+endpoint GET "/page" as page(int number from query) returns int { return number }
+`,
+},root=>{
+  const result=checked(root);valid(result);
+  const specs=generateSpecs(result), main=specs.find(output=>output.path.endsWith('main.aug.md')).text, fake=specs.find(output=>output.path.endsWith('fake.aug.md')).text;
+  assert.match(main,/appends `3` to `numbers`/);
+  assert.match(main,/prints the item at index `1` in `numbers`/);
+  assert.doesNotMatch(main,/random bytes|the value from/);
+  assert.match(fake,/It returns HTTP 404 with `"No such item"`/);
+  assert.match(fake,/It parses `number` as `int`/);
+  assert.equal((fake.match(/Unhandled request failures/g)??[]).length,1,'shared HTTP behavior is explained once per file');
+  assert.doesNotMatch(fake,/a new `HttpResponse`|\(`body`/);
 }));
 
 test('spec pointers are idempotent, preserve comments and CRLF, refresh after renames and never enter the removable manifest',()=>project({
@@ -386,13 +452,15 @@ IntBox(int value) implements Box<int> { read() returns int { return value } }
   const result=checked(root);valid(result);
   const specs=generateSpecs(result), main=specs.find(output=>output.path.endsWith('main.aug.md')).text;
   const contract=specs.find(output=>output.path.endsWith('contract.aug.md')).text;
-  assert.match(main,/must satisfy \[`Named`\]\(contract\.aug\.md#symbol-Named\)/);
-  assert.match(main,/The file uses \[`Failure`\]\(contract\.aug\.md#symbol-Failure\)/);
+  assert.match(main,/\[`describe`\]\(contract\.aug\.md#symbol-describe\)/);
+  assert.doesNotMatch(main,/must satisfy|Failures can raise/,'the importing file links the contract');
   const describe=contract.split('## `describe`')[1].split('<a id="symbol-Box">')[0];
   assert.match(describe,/`value` as `T`/);
+  assert.match(describe,/must satisfy \[`Named`\]\(contract\.aug\.md#symbol-Named\)/);
+  assert.match(describe,/Failures can raise \[`Failure`\]\(contract\.aug\.md#symbol-Failure\)/);
   assert.doesNotMatch(describe,/\[`T`\]/);
-  assert.match(describe,/\[`Named.name`\]\(contract\.aug\.md#symbol-Named.name\)/);
-  assert.match(contract,/Implements \[`Box<int>`\]\(contract\.aug\.md#symbol-Box\)/);
+  assert.match(describe,/\[`value.name`\]\(contract\.aug\.md#symbol-Named.name\)/);
+  assert.match(contract,/implements \[`Box<int>`\]\(contract\.aug\.md#symbol-Box\)/);
 }));
 
 test('Type? and missing are rejected; simple migration uses optional Type and null, conflicting old cases require a choice', () => project({

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Rewrite compiled specs as short developer explanations: group related checks and repeated assignments, describe responses and collection operations directly, show readable string templates, and link dependency contracts without repeating them.
+
 - Write compiled specs as connected prose, with explicit branch, loop, match, recovery, and cleanup relations; preserve statement provenance through sentence aggregation. Describe used dependency contracts in prose and document the academic research behind the generator.
 - Add an idempotent `// aug-spec:` source pointer during spec generation and native build preparation, directing readers and coding agents to the adjacent explanation. Read-only checks detect pointer drift; native emission uses reparsed source lines.
 - Compile specifications through a structured explanation tree with shorter prose, grouped control flow, integrated Javadoc, and compact linked dependency surfaces. Regenerate the wiki examples and adjacent specs.

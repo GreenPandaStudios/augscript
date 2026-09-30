@@ -74,17 +74,13 @@ print(value=values.length() == unique.length())
 
 ### Startup
 
-It sets `values` of type `Map<int,int>` to a context-typed empty collection with no items. `values` of type `Map<int,int>` owns this value. It sets `unique` of type `Set<int>` to a context-typed empty collection with no items. `unique` of type `Set<int>` owns this value. It sets `index` of type `int` to `0`.
+It sets `values` of type `Map<int,int>` to a context-typed empty collection with no items. `values` of type `Map<int,int>` owns this value. It sets `unique` of type `Set<int>` to a context-typed empty collection with no items. `unique` of type `Set<int>` owns this value.
 
-While `index` is less than `20000`, it calls `set` on `values` (`key` set to `index` and `value` set to `index` times `3`); then it calls `add` on `unique` (`value` set to `index`); then it increases `index` by `1`. It sets `checksum` of type `int` to `0`.
+It sets `index` to `0`. While `index` is less than `20000`, it stores `index` times `3` in `values` under `index`; then it adds `index` to `unique`; then it increases `index` by `1`. After the loop, it sets `checksum` to `0`. For each `key` and `value` in a snapshot of `values`, if whether `unique` contains `key` returns true, it increases `checksum` by `value`.
 
-For each `key` and `value` in a snapshot of `values`, it follows these steps. If the value from `contains` on `unique` (`value` set to `key`) is true, it increases `checksum` by `value`.
+After the loop, it prints `checksum`. It prints the number of elements in `values` equals the number of elements in `unique`.
 
-Repeat these steps for each remaining item in the snapshot. It calls `print` (`value` set to `checksum`). It calls `print` (`value` set to the number of elements in `values` equals the number of elements in `unique`).
-
-### Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
-
-`Map<int, int>.length`: Read the number of elements. `Map<int, int>.set`: Insert or replace an entry with exclusive mutable access. `Set<int>.add`: Insert a unique element with exclusive mutable access. `Set<int>.contains`: Test structural or identity equality with a stored element. `Set<int>.length`: Read the number of elements. `print`: Composition and test output. Other callables receive Console and declare uses console.write.
+Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).
 
 ::::
 

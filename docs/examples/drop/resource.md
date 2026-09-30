@@ -60,7 +60,7 @@ interface IResource {
 <a id="symbol-Resource"></a>
 ### `Resource` · class · [source](resource.md#code)
 
-Implements [`IResource`](resource.md#symbol-IResource).
+It implements [`IResource`](resource.md#symbol-IResource).
 
 <a id="symbol-Resource.drop"></a>
 #### `Resource.drop` · [source](resource.md#code)

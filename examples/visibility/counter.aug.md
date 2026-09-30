@@ -8,24 +8,24 @@
 <a id="symbol-ICounter.label"></a>
 ### `ICounter.label` · [source](counter.aug#L3)
 
-The result is `string`.
+It returns `string`.
 
 <a id="symbol-Counter"></a>
 ## `Counter` · class · [source](counter.aug#L5)
 
-Implements [`ICounter`](counter.aug.md#symbol-ICounter). The caller supplies `value` as `int`, stored mutably.
+It implements [`ICounter`](counter.aug.md#symbol-ICounter). It takes `value` as an integer, kept mutable.
 
 <a id="symbol-Counter._label"></a>
 ### `Counter._label` · [source](counter.aug#L6)
 
-Private to its defining scope. The result is `string`. It returns the value from [`_prefix`](counter.aug.md#symbol-_prefix).
+It is private to its defining scope. It returns [`_prefix`](counter.aug.md#symbol-_prefix).
 
 <a id="symbol-Counter.label"></a>
 ### `Counter.label` · [source](counter.aug#L9)
 
-The result is `string`. It returns the value from [`Counter._label`](counter.aug.md#symbol-Counter._label) on `self`.
+It returns [`self._label`](counter.aug.md#symbol-Counter._label).
 
 <a id="symbol-_prefix"></a>
 ## `_prefix` · [source](counter.aug#L13)
 
-Private to its defining scope. The result is `string`. It returns `"count"`.
+It is private to its defining scope. It returns `"count"`.

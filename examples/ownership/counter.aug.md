@@ -5,19 +5,17 @@
 <a id="symbol-Counter"></a>
 ## `Counter` · class · [source](counter.aug#L2)
 
-Implements [`ICounter`](counter.aug.md#symbol-ICounter). The caller supplies `value` as `int`, stored mutably.
+It implements [`ICounter`](counter.aug.md#symbol-ICounter). It takes `value` as an integer, kept mutable.
 
 <a id="symbol-Counter.increment"></a>
 ### `Counter.increment` · [source](counter.aug#L3)
 
-It may change `self`. While mutably borrowing `self`, it increases `value` by `1`.
-
-The mutable borrow ends when this block exits.
+It may change `self`. With temporary permission to change `self`, it increases `value` by `1`.
 
 <a id="symbol-Counter.read"></a>
 ### `Counter.read` · [source](counter.aug#L8)
 
-The result is `int`. It returns `value`.
+It returns `value`.
 
 <a id="symbol-ICounter"></a>
 ## `ICounter` · interface · [source](counter.aug#L12)
@@ -30,4 +28,4 @@ It may change `self`.
 <a id="symbol-ICounter.read"></a>
 ### `ICounter.read` · [source](counter.aug#L14)
 
-The result is `int`.
+It returns `int`.

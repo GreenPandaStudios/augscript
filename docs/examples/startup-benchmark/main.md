@@ -47,11 +47,9 @@ print(value=7)
 
 ### Startup
 
-It calls `print` (`value` set to `7`).
+It prints `7`.
 
-### Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
-
-`print`: Composition and test output. Other callables receive Console and declare uses console.write.
+Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).
 
 ::::
 

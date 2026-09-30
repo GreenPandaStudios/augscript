@@ -4,4 +4,6 @@
 
 ## Exports
 
-Export the declaration `Console` from [`contracts.aug`](contracts.aug.md#symbol-Console). Export the declaration `SystemConsole` from [`contracts.aug`](contracts.aug.md#symbol-SystemConsole). Export the declaration `FileReader` from [`contracts.aug`](contracts.aug.md#symbol-FileReader). Export the declaration `FileWriter` from [`contracts.aug`](contracts.aug.md#symbol-FileWriter). Export the declaration `LocalFiles` from [`contracts.aug`](contracts.aug.md#symbol-LocalFiles). Export the declaration `Arguments` from [`contracts.aug`](contracts.aug.md#symbol-Arguments). Export the declaration `ProcessArguments` from [`contracts.aug`](contracts.aug.md#symbol-ProcessArguments).
+Export the declaration `Console` from [`contracts.aug`](contracts.aug.md#symbol-Console). Export the declaration `SystemConsole` from [`contracts.aug`](contracts.aug.md#symbol-SystemConsole). Export the declaration `FileReader` from [`contracts.aug`](contracts.aug.md#symbol-FileReader). Export the declaration `FileWriter` from [`contracts.aug`](contracts.aug.md#symbol-FileWriter).
+
+Export the declaration `LocalFiles` from [`contracts.aug`](contracts.aug.md#symbol-LocalFiles). Export the declaration `Arguments` from [`contracts.aug`](contracts.aug.md#symbol-Arguments). Export the declaration `ProcessArguments` from [`contracts.aug`](contracts.aug.md#symbol-ProcessArguments).

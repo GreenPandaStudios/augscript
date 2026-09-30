@@ -5,12 +5,12 @@
 <a id="symbol-Greeter"></a>
 ## `Greeter` · class · [source](greeter.aug#L4)
 
-Implements [`IGreeter`](greeter.aug.md#symbol-IGreeter). The caller supplies `x` as `int`, stored read-only. Dependency injection supplies `logger` as [`Logger`](logger.aug.md#symbol-Logger), stored read-only.
+It implements [`IGreeter`](greeter.aug.md#symbol-IGreeter). It takes `x` as an integer, kept read-only. It gets `logger` ([`Logger`](logger.aug.md#symbol-Logger)), kept read-only from dependency injection.
 
 <a id="symbol-Greeter.greet"></a>
 ### `Greeter.greet` · [source](greeter.aug#L5)
 
-The caller supplies `name` as `string`. Dependency injection supplies `console` as [`Console`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console). It can use [`Console.write`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write). It calls [`Logger.log`](logger.aug.md#symbol-Logger.log) on `logger` (`message` set to text that joins `"Hello, "`, `name` and `"!"`) using `console`.
+It takes `name` as a string. It gets `console` ([`Console`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console)) from dependency injection. It passes the text `Hello, {name}!` to [`logger.log`](logger.aug.md#symbol-Logger.log), using injected `console`.
 
 <a id="symbol-IGreeter"></a>
 ## `IGreeter` · interface · [source](greeter.aug#L9)
@@ -18,8 +18,8 @@ The caller supplies `name` as `string`. Dependency injection supplies `console` 
 <a id="symbol-IGreeter.greet"></a>
 ### `IGreeter.greet` · [source](greeter.aug#L10)
 
-The caller supplies `name` as `string`. Dependency injection supplies `console` as [`Console`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console). It can use [`Console.write`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write).
+It takes `name` as a string. It gets `console` ([`Console`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console)) from dependency injection. It can call [`Console.write`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write).
 
 ## Dependencies
 
-The file uses [`Console`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console) from `august.io`. [`write`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write) takes `value` as `T`. It returns no value. The type parameters are `T`. It can use [`Console.write`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write). The file uses [`Logger`](logger.aug.md#symbol-Logger) from `logger`. [`log`](logger.aug.md#symbol-Logger.log) takes `message` as `string`. It returns no value. Dependency injection supplies `console` as [`Console`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console). It can use [`Console.write`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write).
+It uses [`Console`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console) ([`write`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write)) from `august.io`. It uses [`Logger`](logger.aug.md#symbol-Logger) ([`log`](logger.aug.md#symbol-Logger.log)) from `logger`. These links explain the full dependency contracts.

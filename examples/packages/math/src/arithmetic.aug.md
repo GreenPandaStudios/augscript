@@ -5,7 +5,7 @@
 <a id="symbol-add"></a>
 ## `add` · [source](arithmetic.aug#L3)
 
-Add two integers. The caller supplies `left` as `int` (First value) and `right` as `int` (Second value). The result is `int` — Their sum. It returns `left` plus `right`.
+Add two integers. It takes `left` as an integer (First value) and `right` as an integer (Second value). It returns `int` — Their sum. It returns `left` plus `right`.
 
 <a id="symbol-test add"></a>
 ## `test add` · [source](arithmetic.aug#L6)
@@ -16,8 +16,6 @@ Tests [`add`](arithmetic.aug.md#symbol-add). Each case gets fresh setup and depe
 
 #### `adds_two_integers` · [source](arithmetic.aug#L8)
 
-It calls `assert` (the value from [`add`](arithmetic.aug.md#symbol-add) (`left` set to `2` and `right` set to `3`) equals `5`).
+The test requires [`add`](arithmetic.aug.md#symbol-add) with `left` `2` and `right` `3` equals `5`.
 
-## Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
-
-`assert`: Assert a bool in a test case or its setup. Catching an assertion failure cannot make the case pass; every case must execute an assertion.
+Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).

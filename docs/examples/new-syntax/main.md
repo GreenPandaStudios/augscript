@@ -73,19 +73,21 @@ print(value=count)
 
 ### Providers
 
-Provide [`SystemConsole`](dependencies/august/0.19.0/io/contracts.md#symbol-SystemConsole) for `Console`. Share one instance. Provide [`ConsoleLogger`](console.md#symbol-ConsoleLogger) for `Logger`. Share one instance.
+`Console` is provided by [`SystemConsole`](dependencies/august/0.19.0/io/contracts.md#symbol-SystemConsole). The same instance is shared. `Logger` is provided by [`ConsoleLogger`](console.md#symbol-ConsoleLogger). The same instance is shared.
 
 ### Startup
 
-It sets `greeter` to a new [`Greeter`](greeter.md#symbol-Greeter) (`x` set to `4`) using `Logger` for `logger`. It calls [`Greeter.greet`](greeter.md#symbol-Greeter.greet) on `greeter` (`name` set to `"AugScript"`) using `Console` for `console`. It sets `count` of type `int` to `7`. It sets `count` to the value from [`increment`](math.md#symbol-increment) (`value` set to `count`). It calls `print` (`value` set to `count`).
+It sets `greeter` to a [`Greeter`](greeter.md#symbol-Greeter) with `x` `4` using injected `Logger` for `logger`. It passes `"AugScript"` to [`greeter.greet`](greeter.md#symbol-Greeter.greet), using injected `Console`. It sets `count` to `7`. It sets `count` to [`increment`](math.md#symbol-increment) with `value` from `count`.
+
+It prints `count`.
 
 ### Dependencies
 
-The file uses [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console) from `august.io`. [`write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write) takes `value` as `T`. It returns no value. The type parameters are `T`. It can use [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write). The file uses [`SystemConsole`](dependencies/august/0.19.0/io/contracts.md#symbol-SystemConsole) from `august.io`. The file uses [`ConsoleLogger`](console.md#symbol-ConsoleLogger) from `console`. The file uses [`Greeter`](greeter.md#symbol-Greeter) from `greeter`. Construction takes `x` as `int`. [`greet`](greeter.md#symbol-Greeter.greet) takes `name` as `string`. It returns no value. Dependency injection supplies `console` as [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console). It can use [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write). [`increment`](math.md#symbol-increment) from `math` takes `value` as `int`. It returns `int`.
+It uses [`SystemConsole`](dependencies/august/0.19.0/io/contracts.md#symbol-SystemConsole) from `august.io`. It uses [`ConsoleLogger`](console.md#symbol-ConsoleLogger) from `console`. It uses [`Greeter`](greeter.md#symbol-Greeter) ([`greet`](greeter.md#symbol-Greeter.greet)) from `greeter`. It uses [`increment`](math.md#symbol-increment) from `math`.
 
-### Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
+These links explain the full dependency contracts.
 
-`print`: Composition and test output. Other callables receive Console and declare uses console.write.
+Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).
 
 ::::
 

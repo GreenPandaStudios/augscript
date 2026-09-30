@@ -5,7 +5,7 @@
 <a id="symbol-Resource"></a>
 ## `Resource` · class · [source](resource.aug#L2)
 
-Implements [`IResource`](resource.aug.md#symbol-IResource).
+It implements [`IResource`](resource.aug.md#symbol-IResource).
 
 <a id="symbol-Resource.drop"></a>
 ### `Resource.drop` · [source](resource.aug#L3)

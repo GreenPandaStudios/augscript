@@ -12,4 +12,4 @@ It serves [`reply`](routes.aug.md#symbol-reply) on port `0`.
 
 ## Dependencies
 
-The file uses [`Reply`](routes.aug.md#symbol-Reply). [`reply`](routes.aug.md#symbol-reply) from `routes` takes no caller inputs. It returns [`Reply`](routes.aug.md#symbol-Reply).
+It uses [`reply`](routes.aug.md#symbol-reply) from `routes`. These links explain the full dependency contracts.
