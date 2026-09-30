@@ -173,8 +173,42 @@ export function projectPackages(root: string, specifications: Record<string, str
 
 function npm(args: string[], cwd: string): string {
   const process = spawnSync('npm', args, { cwd, encoding: 'utf8', timeout: 120000 });
-  if (process.error || process.status !== 0) throw new Error(process.error?.message ?? process.stderr ?? 'npm failed');
+  if (process.error) throw new Error(`Cannot install August packages: ${'code' in process.error && process.error.code === 'ENOENT' ? 'npm is missing from PATH. Install Node.js 24 or newer, which includes npm.' : process.error.message}\nRetry aug run after fixing the package installer.`);
+  if (process.status !== 0) throw new Error(`August package installation failed.\n${(process.stderr || process.stdout || `npm exited ${process.status}`).trim()}\nCheck the package versions and paths in main.yaml, your network connection, and npm registry configuration. Retry aug run; use aug install for an explicit installation.`);
   return process.stdout;
+}
+
+/** Running an application prepares its declared packages; checking remains read-only. */
+export function prepareRunPackages(root: string, offline = false): void {
+  if (existsSync(join(root, 'aug-package.json'))) return;
+  const loaded = loadConfig(root);
+  if (loaded.diagnostics.length) return; // The checker renders the configuration's source diagnostics.
+  const specifications = loaded.config.packages;
+  if (!Object.keys(specifications).length) return;
+  const lockPath = join(root, 'aug.lock.json');
+  let lock: PackageLock | undefined;
+  if (existsSync(lockPath)) {
+    try { lock = json(lockPath); }
+    catch { throw new Error('aug.lock.json is unreadable. Restore it from version control or run aug install to recreate it.'); }
+    if (lock?.format !== 1 || !Array.isArray(lock.packages) || !lock.specifications || typeof lock.specifications !== 'object')
+      throw new Error('aug.lock.json has an unsupported structure. Run aug install to recreate it.');
+  }
+  const matching = lock?.compiler === compilerVersion() && sameSpecifications(lock.specifications, specifications);
+  if (!matching) {
+    process.stderr.write('Installing declared August packages from main.yaml…\n');
+    installPackages(root, false, offline); return;
+  }
+  const snapshot = resolve(root, '.aug-packages');
+  const missing = lock!.packages.some(entry => {
+    if (typeof entry.path !== 'string' || isAbsolute(entry.path) || !inside(snapshot, resolve(snapshot, entry.path)))
+      throw new Error('Package lock contains a path outside its snapshot. Run aug install to recreate it.');
+    return !existsSync(resolve(snapshot, entry.path));
+  });
+  if (missing) {
+    process.stderr.write('Restoring August packages from aug.lock.json…\n');
+    installPackages(root, true, offline);
+  }
+  // projectPackages checks contents and integrity before compilation. Changed installed sources are never silently replaced.
 }
 
 export function installPackages(root: string, frozen = false, offline = false): PackageLock {

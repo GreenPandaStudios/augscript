@@ -210,7 +210,7 @@
         "augscript.nativeHome": {
           "type": "string",
           "default": "",
-          "description": "Absolute path to native dependencies built by scripts/bootstrap-native.mjs. Share this .aug-native directory with the bundled compiler."
+          "description": "Optional absolute native cache directory containing sources/ and prefix/. Native commands prepare required dependencies automatically; use this setting to share a cache with the CLI."
         }
       }
     }

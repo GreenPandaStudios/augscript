@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Bundled native commands prepare only required pinned dependencies and reuse their cache. Missing tools and setup failures include recovery steps; terminal source diagnostics show the code and help.
+
 ## 0.19.0
 
 - Deterministic compiled specifications, project generation, and current-file Markdown preview.

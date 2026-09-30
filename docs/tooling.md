@@ -4,13 +4,13 @@ Use this page to look up CLI commands, project configuration, native requirement
 
 ## CLI
 
-Invoke `aug` commands below with `npx @greenpandastudios/aug-cli@next`, or use an installed `aug`. Commands take a project folder, defaulting to the current directory. Editor commands also accept --file and --offset; use --help for the command inventory.
+Install `aug` once as shown in [Your first project](getting-started.md). Commands take a project folder, defaulting to the current directory. Editor commands also accept --file and --offset; use --help for the command inventory.
 
 | Command | Output |
 | --- | --- |
 | `check PROJECT [--json]` | Production, tests, module policy, documentation, and configuration diagnostics. |
 | `build PROJECT [--out NAME] [--json]` | Native path; JSON contains output and sourceMap. |
-| `run PROJECT -- args...` | Builds and runs; program stdout is preserved. |
+| `run [PROJECT] [--offline] -- args...` | Prepares declared packages and required native libraries, checks, compiles, and runs; program stdout is preserved. |
 | `emit-c PROJECT` | Generated C for inspection. |
 | `format PROJECT [--file PATH] [--write] [--json]` | Canonical source; --write updates files. |
 | `migrate PROJECT [--file PATH] [--write] [--json]` | Verified migration of rejected legacy syntax; preview by default. |
@@ -24,17 +24,21 @@ Invoke `aug` commands below with `npx @greenpandastudios/aug-cli@next`, or use a
 | `package pack DIRECTORY` | Checked source archive ready for npm publishing or local installation. |
 | `install PROJECT [--frozen] [--offline]` | Explicit dependency snapshot and aug.lock.json. |
 
-Warnings are nonblocking. Machine diagnostics carry severity, code, file, line, column, and message. check/build fail on errors; invalid command usage returns nonzero. Test failure returns nonzero and includes the case output.
+Warnings are nonblocking. Human diagnostics show the source line, a pointer, and help. Machine diagnostics carry severity, code, file, line, column, message, and help. check/build fail on errors; invalid options and missing option values return status 2. Test failure returns nonzero and includes the case output. Put runtime arguments after `--`, for example `aug run -- --port 8080`.
 
 ## Native standard libraries
 
-Web, crypto, JSON and tasks use pinned private C dependencies. On macOS or Linux, bootstrap them once from the compiler directory:
+`aug run` handles dependency preparation. `build`, `test`, and `bench` also prepare the native libraries their checked programs need; they require source packages to be installed already. Pure programs need only a C11 compiler. JSON needs yyjson, tasks need minicoro, crypto needs the pinned cryptographic libraries, and HTTP needs the full transport stack. Unused libraries are not downloaded.
+
+The first native preparation can take several minutes for web/crypto; progress names the current download or build. Later runs reuse the cache. Downloaded archives must match their pinned SHA-256 hashes. Interrupted preparation can resume, and simultaneous projects sharing a cache wait for its writer. Native setup never installs system packages. Missing compilers or build tools produce a recovery command. On Linux, HTTP builds also need CMake and zlib development headers. macOS works with Xcode or its Command Line Tools.
+
+For an offline run, prepare the project once with network access, then use:
 
 ```sh
-node scripts/bootstrap-native.mjs
+aug run --offline
 ```
 
-The script verifies archive SHA-256 hashes and builds under `.aug-native`; it does not install system packages. `--extract-only` supplies yyjson and minicoro for JSON/task-only programs. Web and crypto require the complete native build. Sources, dependency revisions and hashes are recorded in scripts/native-dependencies.lock.json; the installed manifest also records host platform and architecture. The full build has run on macOS ARM and Linux ARM; Linux x86-64 is checked by the Docker CI job.
+`--offline` prevents dependency downloads; it does not restrict application networking. Native commands accept it too. You can prewarm libraries without running an application using `aug-native --extract-only --only yyjson,minicoro`, `aug-native --profile crypto`, or `aug-native` for all libraries. The installed manifest records the host platform and architecture; a cache from another host produces an actionable error. The full build has run on macOS ARM and Linux ARM; Linux x86-64 is checked by the Docker CI job.
 
 Set `AUG_NATIVE_HOME` to share a dependency directory across compiler copies. It names the directory containing `sources/` and `prefix/`, not the prefix itself. Bootstrap and compilation both honor it. For the bundled VS Code compiler, set `augscript.nativeHome` to that same absolute directory. The extension bundles the bootstrap scripts and lockfile; it does not bundle host-specific native libraries. Node 24+ and a C11 compiler remain requirements.
 

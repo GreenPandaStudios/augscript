@@ -17,35 +17,22 @@ You can run the compiler and native libraries in [a VS Code Dev Container](dev-c
 
 ## Create and run the starter
 
-Create the starter with one command:
+Install August once, then create and run the starter:
 
 ```sh
-npx @greenpandastudios/aug-cli@next init hello-august
-```
-
-`init` creates a starter and refuses to replace a nonempty destination. npm supplies the CLI and its matching libraries. The rest of this book invokes the same published CLI through `npx`.
-
-Enter your new project and check it:
-
-```sh
+npm install --global @greenpandastudios/aug-cli@next
+aug init hello-august
 cd hello-august
-npx @greenpandastudios/aug-cli@next check .
+aug run
 ```
 
-Checking needs no native dependency build. Before your first native run, prepare the small task and JSON source dependencies, then run the program:
-
-```sh
-npx --package=@greenpandastudios/aug-cli@next aug-native --extract-only --only minicoro,yyjson
-npx @greenpandastudios/aug-cli@next run .
-```
-
-The bootstrap downloads pinned portable C sources into a shared cache. It does not install system tools, and you can reuse that cache for subsequent projects. `run` checks, compiles, and executes the program. It prints:
+`init` creates a starter and refuses to replace a nonempty destination. npm supplies the CLI and its matching libraries. `aug run` defaults to the current folder: it checks the project, prepares its dependencies, compiles it, and starts it. The starter needs no additional native libraries. It prints:
 
 ```text
 Hello, August!
 ```
 
-Keep the terminal in `hello-august` for the rest of this chapter. [Packages and installation](packages.md) explains version pinning and the additional native dependencies used by web and crypto programs.
+Keep the terminal in `hello-august` for the rest of this chapter. When you later use JSON, tasks, crypto, or HTTP, the first run downloads verified native sources and builds the required libraries in a reusable cache. Setup progress goes to the terminal's error stream so it does not become application output. August reports a missing system tool with an installation step; it does not install system software for you. [Packages and installation](packages.md) covers version pinning, offline runs, and the optional `npx` workflow.
 
 ## Read the startup file
 
@@ -94,9 +81,9 @@ The test lives beside the class. Its group constructs a greeter, and its case ch
 In `main.aug`, change `name="August"` to `name="Ada"`. Run:
 
 ```sh
-npx @greenpandastudios/aug-cli@next check .
-npx @greenpandastudios/aug-cli@next run .
-npx @greenpandastudios/aug-cli@next test .
+aug check .
+aug run .
+aug test .
 ```
 
 The application should print `Hello, Ada!`. The existing test should still pass: it constructs its own subject and checks the greeting for August. Application startup does not run during the test.
@@ -106,8 +93,8 @@ Now deliberately change the call's label from `name` to `person`. `check` should
 ## Read the generated explanation
 
 ```sh
-npx @greenpandastudios/aug-cli@next spec .
-npx @greenpandastudios/aug-cli@next spec . --check
+aug spec .
+aug spec . --check
 ```
 
 Open `main.aug.md` and `greeting.aug.md`. They describe the bindings, call, greeting behavior, and test. Their dependency links lead to the used declarations. Generation is deterministic and offline; it does not ask a model to summarize your application.

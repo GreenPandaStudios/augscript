@@ -35,14 +35,14 @@ Read [`domain/numbers.aug`](domain/numbers.md). The validation interceptor rejec
 
 ## Try this project
 
-[Download this project](/downloads/approved-design.zip), then extract the archive in an empty working folder. It contains the checked source, configuration, and generated specs. Prepare the [native dependencies](../../packages.md#npm-registry) once, then use the published CLI:
+[Download this project](/downloads/approved-design.zip), then extract the archive in an empty working folder. It contains the checked source, configuration, and generated specs. [Install August](../../getting-started.md) once, then run these commands. Native libraries are prepared automatically when needed:
 
 ```sh
 cd approved-design
-npx @greenpandastudios/aug-cli@next check .
-npx @greenpandastudios/aug-cli@next spec .
-npx @greenpandastudios/aug-cli@next test .
-npx @greenpandastudios/aug-cli@next run .
+aug check .
+aug spec .
+aug test .
+aug run .
 ```
 
 [Browse all examples](../index.md)

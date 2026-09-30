@@ -14,35 +14,40 @@ Start a project with [the npm CLI](#npm-registry). To share your own August libr
 
 ## npm registry
 
-Create a starter with one command:
+Install the CLI once, then create and run a starter:
 
 ```sh
-npx @greenpandastudios/aug-cli@next init hello-august
+npm install --global @greenpandastudios/aug-cli@next
+aug init hello-august
+cd hello-august
+aug run
 ```
 
 The [npm CLI package](https://www.npmjs.com/package/@greenpandastudios/aug-cli) and all three matching libraries were verified at version 0.19.0 on September 30, 2026; both `next` and `latest` pointed to that version. The installed published package passed starter checking, its native test, execution, and spec drift checking. `next` can advance: pin an exact release when you need a repeatable toolchain, and install matching versions together.
 
 `aug init DIRECTORY` creates `main.aug`, an interface and implementation, a same-file test, README, and `.gitignore`. It refuses a nonempty directory. Work through [Your first project](getting-started.md) for the full lesson. Publication setup belongs to [the contributor release process](releasing.md).
 
-Commands written as `aug` in the reference use the same compiler. Invoke them with `npx @greenpandastudios/aug-cli@next`, for example:
+The compiler defaults to the current folder. Check a project, run its tests, or generate its explanation with:
 
 ```sh
-cd hello-august
-npx @greenpandastudios/aug-cli@next check .
-npx @greenpandastudios/aug-cli@next test .
-npx @greenpandastudios/aug-cli@next spec .
+aug check
+aug test
+aug spec
 ```
 
-Native execution needs a C11 compiler and pinned C dependencies. Prepare the portable task/JSON sources once for ordinary programs:
+`aug run` installs source packages declared in `main.yaml`, checks the program, prepares only its required native libraries, compiles it, and starts it. Pure programs need no optional C libraries. JSON, tasks, web, and crypto obtain pinned dependencies on first use and reuse them afterward. Native `build`, `test`, and `bench` also prepare their required libraries; source package installation remains explicit for those commands.
+
+Node.js 24+, npm, and a system C11 compiler remain prerequisites. Web/crypto dependency builds also need standard build tools; Linux HTTP builds need CMake and zlib development headers. Missing tools produce an error with an installation step. macOS and Linux are tested; other platforms remain outside the support matrix. [Docker](docker.md) provides a Linux toolchain option. `init` creates source files; it does not prepare native dependencies.
+
+If you prefer not to install a global command, use npm's temporary runner:
 
 ```sh
-npx --package=@greenpandastudios/aug-cli@next aug-native --extract-only --only minicoro,yyjson
+npx @greenpandastudios/aug-cli@next init another-app
+cd another-app
 npx @greenpandastudios/aug-cli@next run .
 ```
 
-For web/crypto programs, run `npx --package=@greenpandastudios/aug-cli@next aug-native` to build the full dependency set. macOS and Linux are tested; other platforms remain outside the support matrix. [Docker](docker.md) provides a Linux toolchain option. `init` creates source files; it does not prepare these native dependencies.
-
-If you prefer a persistent `aug` command, `npm install --global @greenpandastudios/aug-cli@next` installs it. This is optional. Use an exact version in place of `next` when pinning a toolchain.
+Use an exact version in place of `next` when pinning a toolchain.
 
 ## VS Code
 
@@ -58,7 +63,7 @@ For a pinned release, download its matching `.vsix` and use **Extensions → Ins
 code --install-extension augscript-VERSION.vsix
 ```
 
-The extension bundles the same compiler sources, standard declarations, native bootstrap, guides, and examples. Set `augscript.nativeHome` to an existing dependency build directory. Node.js 24+ remains required.
+The extension bundles the same compiler sources, standard declarations, automatic native setup, guides, and examples. Set `augscript.nativeHome` only when sharing a particular cache. Node.js 24+ remains required.
 
 ## Install release tarballs
 
@@ -68,16 +73,15 @@ For archive installation, download all four `.tgz` files from the same [GitHub r
 npm install --global ./greenpandastudios-aug-stdlib-VERSION.tgz ./greenpandastudios-aug-web-VERSION.tgz ./greenpandastudios-aug-crypto-VERSION.tgz ./greenpandastudios-aug-cli-VERSION.tgz
 aug --version
 aug --help
-aug-native
 aug check path/to/project
 aug run path/to/project
 ```
 
 The CLI depends on exact matching library versions. Import spellings stay `import Crypto from august.crypto`; npm package names never enter August source. The packaged CLI loads the separate installed libraries, and editor navigation opens their real `.aug` files.
 
-Native dependencies use `~/.cache/augscript/native/VERSION/PLATFORM-ARCH`. `AUG_NATIVE_HOME` selects a shared cache for CLI and VS Code; building dependencies is an explicit command.
+Native dependencies use `~/.cache/augscript/native/VERSION/PLATFORM-ARCH`. `AUG_NATIVE_HOME` selects a shared cache for CLI and VS Code. Preparation is automatic; `aug-native` remains available for prewarming a cache without running an application.
 
-For core programs and JSON without web/crypto, `aug-native --extract-only --only minicoro,yyjson` downloads just the portable C sources. Compiler checkpoints use minicoro even in ordinary programs; this source dependency must be present before native execution. Full web/crypto bootstrap is available on macOS and Linux.
+`aug-native --extract-only --only minicoro,yyjson` prewarms portable task/JSON sources. `aug-native --profile crypto` builds only crypto libraries, and `aug-native` prepares the full set. For an offline run, first prepare the project online, then use `aug run --offline`. An uncached dependency produces an error with the missing archive path; the program's own networking is unaffected by this flag.
 
 ## Package model
 
@@ -145,10 +149,9 @@ packages:
   math: "npm:@your-npm-name/aug-math@0.1.0"
 ```
 
-Install explicitly, then import the public name:
+Import the public name and run the application. The first run installs the declared dependency:
 
 ```sh
-aug install my-app
 aug run my-app
 ```
 
@@ -158,7 +161,9 @@ import add from math
 print(value=add(left=20, right=22))
 ```
 
-Local development uses the same source syntax. Replace the specification with `"../my-math"`, `"file:../my-math"`, or a path to the `.tgz`. `aug install` snapshots a local directory, so reinstall after editing its source. Check and build never fetch dependencies or silently refresh a local package. There are no symlinked live dependencies.
+`aug run` creates or updates `aug.lock.json` when declared package specifications or the compiler version change. With a matching lock, it restores missing installed package folders using a frozen installation. Commit the lock. Edits inside an installed snapshot are reported rather than silently replaced; use `aug install` to reinstall deliberately.
+
+Local development uses the same source syntax. Replace the specification with `"../my-math"`, `"file:../my-math"`, or a path to the `.tgz`. Installation snapshots a local directory, so use `aug install` after editing the library's source. Check and build never fetch source packages or silently refresh a local package. There are no symlinked live dependencies. August only installs explicitly declared aliases; it does not guess registry packages from unknown import names.
 
 Only the source root's `export.aug` is visible to another package. To expose a submodule, write `export folder parsing` there and provide `src/parsing/export.aug`; consumers can then use `import Parser from math.parsing`. Private `_names`, files and folders remain inaccessible. `import everything` follows the same public surface. An alias cannot shadow a local file/folder or use the reserved `august` name.
 

@@ -50,13 +50,13 @@ FriendlyGreeter() implements Greeter:
         return "Hello, " + name + "!"
 ```
 
-Run `npx @greenpandastudios/aug-cli@next check .` and `npx @greenpandastudios/aug-cli@next run .`. The output is `Hello, August!`.
+Run `aug check .` and `aug run .`. The output is `Hello, August!`.
 
 ## Choose what the folder exposes
 
 `export.aug` is the folder's public boundary. A file outside `greeting` can import the names listed there. It cannot reach other declarations in that folder merely by knowing their paths. Within a folder, sibling files also need explicit imports. A folder without `export.aug` exposes no names across its boundary.
 
-Try removing the export line for `FriendlyGreeter`. The import in `main.aug` should fail. Restore it after running `npx @greenpandastudios/aug-cli@next check .`. This is a boundary check; a private name beginning with `_` cannot be exported at all.
+Try removing the export line for `FriendlyGreeter`. The import in `main.aug` should fail. Restore it after running `aug check .`. This is a boundary check; a private name beginning with `_` cannot be exported at all.
 
 ## Select behavior at startup
 
@@ -68,6 +68,6 @@ Reading the entry point tells you the application's dependency choices. Reading 
 
 ## Follow a dependency
 
-Run `npx @greenpandastudios/aug-cli@next spec .` and read `main.aug.md`. Follow its links to the greeting's explanation, then read `greeting/export.aug.md` to see the public surface. In VS Code, Ctrl-click `from` or the module path to open the source or export file. This is the workflow you can use in a larger unfamiliar project too.
+Run `aug spec .` and read `main.aug.md`. Follow its links to the greeting's explanation, then read `greeting/export.aug.md` to see the public surface. In VS Code, Ctrl-click `from` or the module path to open the source or export file. This is the workflow you can use in a larger unfamiliar project too.
 
 Keep exports narrow as a folder grows. Add an implementation to the public surface when its caller needs to compose it. Keep helpers private and explain design intent beside the declaration. [The next chapter](state-and-tests.md) adds state and tests while preserving that local view.

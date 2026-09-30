@@ -15,6 +15,7 @@
   "scripts": {
     "check": "tsc --noEmit",
     "test": "node --test tests/*.test.mjs",
+    "test:setup-cold": "AUG_TEST_COLD_NATIVE=1 node --test tests/native-setup-cold.test.mjs",
     "test:sanitizers": "node scripts/sanitize-core.mjs",
     "bench:compare": "node scripts/benchmark-suite.mjs",
     "docs:generate": "node scripts/generate-docs.mjs",

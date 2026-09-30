@@ -26,7 +26,7 @@ const fence=(source,language='aug',label='')=>{
 const slug=example=>example.path.replace(/^(examples|benchmarks)\//,'').replaceAll('/','-')+(example.path.startsWith('benchmarks/')?'-benchmark':'');
 export const exampleDirectory=example=>'docs/examples/'+slug(example);
 export const exampleDownload=example=>'docs/public/downloads/'+slug(example)+'.zip';
-const npmAug='npx @greenpandastudios/aug-cli@next';
+const npmAug='aug';
 const downloadFiles=directory=>readdirSync(directory,{withFileTypes:true}).flatMap(entry=>{
   if(entry.name.startsWith('.')&&entry.name!=='.aug-spec'||['node_modules','dist','aug.lock.json'].includes(entry.name))return [];
   const file=join(directory,entry.name);
@@ -116,10 +116,10 @@ export function buildExamplePages(overrides) {
     overview+='\n## Try this project\n\n'+
       `[Download this project](/downloads/${slug(example)}.zip), then extract the archive in an empty working folder. It contains the checked source, configuration, and generated specs.`+
       (packagePair?' Both the application and its neighboring arithmetic library are included.':'')+
-      ' Prepare the [native dependencies](../../packages.md#npm-registry) once, then use the published CLI:\n\n'+fence(commands,'sh')+'\n';
+      ' [Install August](../../getting-started.md) once, then run these commands. Native libraries are prepared automatically when needed:\n\n'+fence(commands,'sh')+'\n';
     const archiveFiles=new Map(downloadFiles(downloadRoot).map(file=>[slug(example)+'/'+slash(relative(downloadRoot,file)),readFileSync(file)]));
     archiveFiles.set(slug(example)+'/LICENSE',readFileSync(join(root,'LICENSE')));
-    archiveFiles.set(slug(example)+'/README.md',`# ${example.title}\n\n${example.description}\n\nPrepare native dependencies as described at https://greenpandastudios.github.io/augscript/packages#npm-registry.\n\nFrom the folder containing this extracted project:\n\n${fence(commands,'sh')}\nRead the source beside its compiled specification at https://greenpandastudios.github.io/augscript/examples/${slug(example)}/.\n`);
+    archiveFiles.set(slug(example)+'/README.md',`# ${example.title}\n\n${example.description}\n\nInstall August as described at https://greenpandastudios.github.io/augscript/getting-started. Native commands prepare required libraries automatically.\n\nFrom the folder containing this extracted project:\n\n${fence(commands,'sh')}\nRead the source beside its compiled specification at https://greenpandastudios.github.io/augscript/examples/${slug(example)}/.\n`);
     add(exampleDownload(example),projectArchive(archiveFiles));
     if(example.path==='examples/oidc-login')overview+='Open `http://127.0.0.1:8787` and sign in with **ada** / **august-demo**. This development example keeps accounts, signing keys, and sessions in process memory. See [web and crypto](../../web.md) and [the remaining library gaps](../../web-library-gaps.md).\n\n';
     if(example.group==='Measured programs')overview+='See [the performance page](../../performance.md) for measurements, input sizes, and reproduction steps.\n\n';

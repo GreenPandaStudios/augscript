@@ -2,7 +2,7 @@
 
 Run the August compiler, tests, and native dependencies inside a Linux container while editing your local project in VS Code. This keeps the C toolchain off your host. The project folder stays on your machine; the compiler and prepared dependencies live in the container image.
 
-You need Docker with a running Linux engine, VS Code, and Microsoft's [Dev Containers extension](https://code.visualstudio.com/docs/devcontainers/containers). Creating a new project with `npx` also needs Node.js 24 and npm on the host. You can instead open an existing project or a [downloaded example](examples/index.md).
+You need Docker with a running Linux engine, VS Code, and Microsoft's [Dev Containers extension](https://code.visualstudio.com/docs/devcontainers/containers). Creating a new project also needs Node.js 24 and npm on the host. You can instead open an existing project or a [downloaded example](examples/index.md).
 
 Keep your project in a writable folder shared with the Docker engine. If container creation reports that the bind source path does not exist, enable that folder in your engine's file-sharing settings. A remote Docker engine needs a separate workspace-sharing setup; [Docker's bind mount guide](https://docs.docker.com/engine/storage/bind-mounts/#considerations-and-constraints) explains the constraint.
 
@@ -11,7 +11,8 @@ Keep your project in a writable folder shared with the Docker engine. If contain
 Start a project:
 
 ```sh
-npx @greenpandastudios/aug-cli@next init hello-august
+npm install --global @greenpandastudios/aug-cli@next
+aug init hello-august
 cd hello-august
 mkdir .devcontainer
 ```

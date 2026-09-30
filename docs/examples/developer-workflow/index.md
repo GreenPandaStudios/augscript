@@ -33,14 +33,14 @@ Read [`logging/logger.aug`](logging/logger.md). This is the contract used by bot
 
 ## Try this project
 
-[Download this project](/downloads/developer-workflow.zip), then extract the archive in an empty working folder. It contains the checked source, configuration, and generated specs. Prepare the [native dependencies](../../packages.md#npm-registry) once, then use the published CLI:
+[Download this project](/downloads/developer-workflow.zip), then extract the archive in an empty working folder. It contains the checked source, configuration, and generated specs. [Install August](../../getting-started.md) once, then run these commands. Native libraries are prepared automatically when needed:
 
 ```sh
 cd developer-workflow
-npx @greenpandastudios/aug-cli@next check .
-npx @greenpandastudios/aug-cli@next spec .
-npx @greenpandastudios/aug-cli@next test .
-npx @greenpandastudios/aug-cli@next run .
+aug check .
+aug spec .
+aug test .
+aug run .
 ```
 
 [Browse all examples](../index.md)

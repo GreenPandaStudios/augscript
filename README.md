@@ -8,13 +8,16 @@ The TypeScript compiler emits C11 and builds a native executable. This repositor
 
 ## Start a project
 
-Create an application with the published CLI:
+Install the CLI once, then create and run an application:
 
 ```sh
-npx @greenpandastudios/aug-cli@next init hello-august
+npm install --global @greenpandastudios/aug-cli@next
+aug init hello-august
+cd hello-august
+aug run
 ```
 
-Requires Node.js 24+ and npm; running native programs also needs a C11 compiler on macOS or Linux. The starter refuses to overwrite a nonempty directory. [Your first project](https://greenpandastudios.github.io/augscript/getting-started) walks through running, testing, and explaining it with npm tools. See [the August book](docs/learn/index.md), [downloadable example projects](docs/examples/index.md) with code beside compiled specs, and [packages](docs/packages.md) for toolchain details.
+Requires Node.js 24+ and npm; running native programs also needs a C11 compiler on macOS or Linux. `aug run` prepares declared packages and the native dependencies the program uses, compiles it, and starts it. The starter refuses to overwrite a nonempty directory. [Your first project](https://greenpandastudios.github.io/augscript/getting-started) walks through running, testing, and explaining it. See [the August book](docs/learn/index.md), [downloadable example projects](docs/examples/index.md) with code beside compiled specs, and [packages](docs/packages.md) for toolchain details.
 
 ## The language
 
@@ -67,6 +70,6 @@ npm run package:extension
 code --install-extension vscode/augscript-0.19.0.vsix --force
 ```
 
-Development dependency versions are pinned in both manifests and lockfiles. The extension bundles the same compiler, runtime, guides and native bootstrap. Run `node scripts/bootstrap-native.mjs` for web/crypto examples; the extraction-only command above fetches the portable task/JSON sources. Set `augscript.nativeHome` to this repository's `.aug-native` directory to share it with the bundled compiler.
+Development dependency versions are pinned in both manifests and lockfiles. The extension bundles the same compiler, runtime, guides and native bootstrap. Native commands prepare required libraries automatically; contributors can prewarm all dependencies with `node scripts/bootstrap-native.mjs`. Set `augscript.nativeHome` to this repository's `.aug-native` directory to share it with the bundled compiler.
 
 August is experimental. Tasks currently run on one OS thread, and some ownership and resource-lifetime cases remain incomplete. Developers can create and import source packages with public exports and frozen dependency locks. The [production readiness review](docs/production-readiness.md), [roadmap](docs/roadmap.md), and [gap ledger](docs/web-library-gaps.md) state current limits and release gates.

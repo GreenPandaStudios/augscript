@@ -8,6 +8,8 @@ import type { Diagnostic } from './ast.ts';
 import { loadConfig } from './config.ts';
 import {generateOpenApi} from './openapi.ts';
 import { nativeHome } from '../scripts/native-home.mjs';
+import { nativeRequirements } from '../scripts/native-setup.mjs';
+import { cCompiler, compilerHelp } from '../scripts/native-toolchain.mjs';
 
 export function compileNative(root: string, generated: string, options: { output?: string; testIndex?: number; release?: boolean; checked?: CheckedProject } = {}) {
   const config = loadConfig(root).config;
@@ -29,27 +31,27 @@ export function compileNative(root: string, generated: string, options: { output
   copyFileSync(join(runtimeDir, 'aug_values.c'), valuesPath);
   const outputName = options.testIndex === undefined ? options.output ?? config.output ?? basename(root) : name;
   const output = isAbsolute(outputName) ? outputName : join(buildDir, outputName);
-  const cc = process.env.CC ?? (existsSync('/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang') ?
-    '/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang' : 'clang');
+  mkdirSync(dirname(output), { recursive: true });
+  const cc = cCompiler();
   const release = options.release ?? config.optimization === 'release';
   const args = [release ? '-O2' : '-O0', '-g', '-std=c11', '-D_POSIX_C_SOURCE=200809L', '-Wall', '-Wextra',
     '-pthread',
     cPath, runtimePath, valuesPath, ...config.library_paths.map(path => `-L${resolve(root, path)}`), ...config.libraries.map(name => `-l${name}`), '-o', output];
-  const web = generated.includes('aug_http_') || generated.includes('_aug_http_') || generated.includes('aug_headers_');
+  const needs = nativeRequirements(generated), web = needs.web;
   if (web) args.push('-DAUG_HTTP_RUNTIME');
-  if (generated.includes('aug_html_') || web) {const htmlSource = join(buildDir, 'aug_html.c'); copyFileSync(join(runtimeDir, 'aug_html.c'), htmlSource); args.push(htmlSource);}
-  if (generated.includes('_aug_time_')) {const timeSource = join(buildDir, 'aug_time.c'); copyFileSync(join(runtimeDir, 'aug_time.c'), timeSource); args.push(timeSource);}
-  if (web || generated.includes('aug_task_')) {
+  if (needs.html) {const htmlSource = join(buildDir, 'aug_html.c'); copyFileSync(join(runtimeDir, 'aug_html.c'), htmlSource); args.push(htmlSource);}
+  if (needs.time) {const timeSource = join(buildDir, 'aug_time.c'); copyFileSync(join(runtimeDir, 'aug_time.c'), timeSource); args.push(timeSource);}
+  if (needs.tasks) {
     const taskSource = join(buildDir, 'aug_tasks.c'); copyFileSync(join(runtimeDir, 'aug_tasks.c'), taskSource);
     const minicoro = join(nativeRoot, 'sources', 'minicoro');
-    if (!existsSync(join(minicoro, 'minicoro.h'))) throw new Error('Task dependency is missing. Run the compiler scripts/bootstrap-native.mjs with --extract-only; AUG_NATIVE_HOME selects its directory.');
+    if (!existsSync(join(minicoro, 'minicoro.h'))) throw new Error('Task dependencies are missing. Run aug run to prepare them automatically, or use aug-native --extract-only --only minicoro to prewarm the cache.');
     args.push(taskSource, '-I' + minicoro,
       process.platform === 'darwin' ? '-D_DARWIN_C_SOURCE' : '-D_DEFAULT_SOURCE');
   }
-  if (generated.includes('_aug_crypto_') || web) {
+  if (needs.crypto) {
     const prefix = join(nativeRoot, 'prefix');
     const manifestPath=join(prefix, 'aug-native-manifest.json');
-    if (!existsSync(manifestPath)) throw new Error('Native libraries are not ready. Run node scripts/bootstrap-native.mjs in the compiler directory; AUG_NATIVE_HOME selects its directory.');
+    if (!existsSync(manifestPath)) throw new Error('Native libraries are not ready. Run aug run to prepare them automatically, or use aug-native to prewarm the cache.');
     const manifest=JSON.parse(readFileSync(manifestPath,'utf8'));
     if(manifest.platform!==process.platform||manifest.architecture!==process.arch)
       throw new Error(`Native dependencies target ${manifest.platform}/${manifest.architecture}; this compiler runs on ${process.platform}/${process.arch}. Build dependencies on this host.`);
@@ -63,17 +65,21 @@ export function compileNative(root: string, generated: string, options: { output
       if (process.platform === 'darwin') args.push('-framework', 'CoreFoundation', '-framework', 'SystemConfiguration');
     }
   }
-  if (generated.includes('_aug_json_') || generated.includes('aug_json_') || web) {
+  if (needs.json) {
     const jsonSource = join(buildDir, 'aug_json.c'); copyFileSync(join(runtimeDir, 'aug_json.c'), jsonSource);
     const yyjson = join(nativeRoot, 'sources', 'yyjson', 'src');
-    if (!existsSync(join(yyjson, 'yyjson.c'))) throw new Error('JSON dependency is missing. Run node scripts/bootstrap-native.mjs --extract-only.');
+    if (!existsSync(join(yyjson, 'yyjson.c'))) throw new Error('JSON dependencies are missing. Run aug run to prepare them automatically, or use aug-native --extract-only --only yyjson to prewarm the cache.');
     args.push(jsonSource, join(yyjson, 'yyjson.c'), '-I' + yyjson);
   }
   const sdk = '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk';
   if (process.platform === 'darwin' && existsSync(sdk) && !process.env.SDKROOT) args.unshift('-isysroot', sdk);
   const compile = spawnSync(cc, args, { encoding: 'utf8', cwd: root });
-  if (compile.error) throw compile.error;
-  const error = compile.status === 0 ? '' : compile.stderr || compile.stdout || 'C compiler failed';
+  if (compile.error) throw new Error(`Cannot compile the program with ${cc}: ${compile.error.message}.\n${compilerHelp()}`);
+  const detail = (compile.stderr || compile.stdout || (compile.signal ? `Compiler stopped by ${compile.signal}` : 'C compiler failed')).trim();
+  const error = compile.status === 0 ? '' : `Native compilation failed with ${cc}.\n${detail}\n` +
+    (/cannot find -l|library not found|file not found|No such file/.test(detail) ?
+      'Check main.yaml libraries/library_paths and the named header or library. On Linux, HTTP also needs zlib development headers.\n' : '') +
+    `Generated C: ${cPath}\nIf this is valid August code without external C declarations, please report it with this compiler output.`;
   const diagnostics: Diagnostic[] = [];
   for (const match of error.matchAll(/^(.+\.aug):(\d+):(\d+):\s*(?:fatal )?error:\s*(.+)$/gm))
     diagnostics.push({ file: match[1], line: Number(match[2]), column: Number(match[3]), code: 'NATIVE', message: match[4] });
