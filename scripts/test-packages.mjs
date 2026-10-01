@@ -10,14 +10,18 @@ const root = resolve(import.meta.dirname, '..');
 const artifacts = join(root, 'dist/release');
 const packages = JSON.parse(readFileSync(join(artifacts, 'packages.json'), 'utf8'));
 const directory = mkdtempSync(join(tmpdir(), 'aug-installed-'));
+const npmCache = join(directory, 'npm-cache');
 const run = (command, args, options = {}) => {
-  const result = spawnSync(command, args, { cwd: directory, encoding: 'utf8', ...options });
+  const result = spawnSync(command, args, { cwd: directory, encoding: 'utf8', ...options,
+    env: { ...(options.env ?? process.env), ...(command === 'npm' ? { npm_config_cache: npmCache } : {}) } });
   assert.equal(result.status, 0, `${command} ${args.join(' ')}\n${result.stderr}\n${result.stdout}`);
   return result.stdout;
 };
 try {
   for (const pkg of packages) assert.equal(createHash('sha256').update(readFileSync(join(artifacts, pkg.filename))).digest('hex'), pkg.sha256);
-  run('npm', ['install', '--offline', '--ignore-scripts', '--no-audit', '--no-fund', ...packages.map(pkg => join(artifacts, pkg.filename))]);
+  // A first install must fetch production dependencies from an empty npm cache.
+  // The later global install proves those same archives work offline afterward.
+  run('npm', ['install', '--ignore-scripts', '--no-audit', '--no-fund', ...packages.map(pkg => join(artifacts, pkg.filename))]);
   const cliRoot = join(directory, 'node_modules/@greenpandastudios/aug-cli');
   const cli = join(cliRoot, 'bin/aug.mjs');
   const aug = (...args) => run(process.execPath, [cli, ...args], {
