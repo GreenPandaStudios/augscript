@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, realpathSync} from 'node:fs';
+import {mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, realpathSync,existsSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {test} from 'node:test';
@@ -12,7 +12,7 @@ import {checkProject} from '../src/checker.ts';
 import {formatFile} from '../src/formatter.ts';
 import {contractFacts,describe} from '../src/semantic.ts';
 import {hoverInfo} from '../src/editor.ts';
-import {generateSpecs} from '../src/spec.ts';
+import {generateSpecs,updateSpecs} from '../src/spec.ts';
 
 const descriptor = {format:1, profile:'aug-native-abi-1', resources:[], functions:[]};
 const target = {triple:'aarch64-apple-darwin', os:'macos', arch:'arm64', minimumOS:'14.0', cpuBaseline:'armv8-a', libc:'libSystem'};
@@ -35,6 +35,25 @@ test('format 2 retains a verified native contract alongside ordinary August sour
   const {manifest,sourceRoot}=readPackage(root);
   assert.equal(manifest.native.profile,'aug-native-abi-1');
   assert.equal(sourceRoot,realpathSync(join(root,'src')));
+}));
+
+test('native descriptor copies regenerate, check drift and protect local edits',()=>fixture((root,manifest,save)=>{
+  const checked=()=>checkProject(loadProject(root));
+  const path=join(root,'.aug-spec/packages/@example/native/1.0.0/native.abi.json');
+  updateSpecs(checked());updateSpecs(checked());
+  assert.deepEqual(updateSpecs(checked(),true).stale,[]);
+  const changed=JSON.stringify(descriptor,null,2)+'\n';
+  writeFileSync(join(root,'native.abi.json'),changed);
+  manifest.native.bindingsSha256=createHash('sha256').update(changed).digest('hex');save();
+  assert.ok(updateSpecs(checked(),true).stale.some(p=>p.endsWith('/native.abi.json')));
+  updateSpecs(checked());assert.equal(readFileSync(path,'utf8'),changed);
+  const without=()=>{const result=checked();result.native.providerDescriptors.clear();return result;};
+  writeFileSync(path,'{"handwritten":true}\n');
+  assert.throws(()=>updateSpecs(checked()),/edited native descriptor/);
+  assert.throws(()=>updateSpecs(without()),/edited native descriptor/);
+  assert.equal(readFileSync(path,'utf8'),'{"handwritten":true}\n');
+  writeFileSync(path,changed);updateSpecs(without());assert.equal(existsSync(path),false);
+  assert.deepEqual(updateSpecs(without(),true).stale,[]);
 }));
 
 test('foreign declarations cannot be silently changed after their contract was pinned',()=>fixture(root=>{
@@ -118,9 +137,13 @@ test('opaque resources have checked acquisition, labeled loans, errors and owner
   assert.match(hover.documentation,/@example\/native@1\.0\.0/);
   assert.match(hover.documentation,/caller thread.*blocking native call/);
   assert.match(hover.documentation,/does not prove those promises/);
+  assert.match(hover.documentation,/\[`native\.abi\.json`\]\(file:\/\//);
   const specs=generateSpecs(checked);
   assert.match(specs.find(spec=>spec.path===join(root,'src/bindings.aug.md')).text,/example_tensor_release_v1/);
   assert.match(specs.find(spec=>spec.path===join(root,'src/api.aug.md')).text,/example_tensor_sum_v1.*lends read access/);
+  const copiedContract=specs.find(spec=>spec.path===join(root,'.aug-spec/packages/@example/native/1.0.0/native.abi.json'));
+  assert.equal(copiedContract.text,bytes);
+  assert.match(specs.find(spec=>spec.path===join(root,'src/api.aug.md')).text,/\[.*native\.abi\.json.*\]\(.*1\.0\.0\/native\.abi\.json\)/);
   assert.deepEqual(generateSpecs(checked),specs,'native specifications remain deterministic');
   assert.equal(formatFile(checked.project,checked.project.files.get(join(root,'src/bindings.aug'))),'extern C resource Tensor\n');
   writeFileSync(join(root,'src/api.aug'),readFileSync(join(root,'src/api.aug'),'utf8').replace('returns own Tensor unless','returns Tensor unless'));

@@ -201,7 +201,7 @@ class CGenerator {
       `  AugValue value = roots[${cls.fields.length}];`,
       `  value.as.object->field_names = ${this.name(def)}_field_names;`,
       ...(cls.kind === 'class' && initializationOf(cls).length ? [`  ${this.initializerName(def)}(value, NULL, 0);`] : []),
-      `  if (aug_has_error) { aug_drop(value); value = aug_scalar_null(); }`,
+      `  if (aug_has_error) { aug_drop_partial(value); value = aug_scalar_null(); }`,
       ...(cls.kind === 'class' && cls.record ? ['  if (!aug_has_error) aug_freeze(value);'] : []),
       `  aug_frame_leave(&frame);`,
       `  return value;`,

@@ -8,16 +8,17 @@ import {loadProject} from '../src/project.ts';
 import {checkProject} from '../src/checker.ts';
 import {compileLLVM} from '../src/llvm-native.ts';
 
-function runProgram(files, expected) {
+function runProgram(files, expected, {traceDrops=false,checkStderr}={}) {
   const root=realpathSync(mkdtempSync(join(tmpdir(),'aug-llvm-')));
   try {
     for(const [name,source] of Object.entries(files))writeFileSync(join(root,name),source);
     const checked=checkProject(loadProject(root));
     assert.deepEqual(checked.diagnostics.filter(d=>d.severity!=='warning'),[]);
     const compiled=compileLLVM(checked);
-    const run=spawnSync(compiled.output,[],{encoding:'utf8',timeout:10000,env:{...process.env,SDKROOT:'/nonexistent',DEVELOPER_DIR:'/nonexistent'}});
+    const run=spawnSync(compiled.output,[],{encoding:'utf8',timeout:10000,env:{...process.env,SDKROOT:'/nonexistent',DEVELOPER_DIR:'/nonexistent',...(traceDrops?{AUG_TRACE_DROPS:'1'}:{})}});
     assert.equal(run.status,0,run.stderr||run.error?.message);
     assert.equal(run.stdout,expected);
+    checkStderr?.(run.stderr);
     assert.match(readFileSync(join(root,'.aug-build/program.ll'),'utf8'),/define i32 @main/);
     return readFileSync(join(root,'.aug-build/program.ll'),'utf8');
   } finally {rmSync(root,{recursive:true,force:true});}
@@ -102,3 +103,10 @@ test('LLVM cleans transferred fields when a checked constructor fails',{skip:!en
   'operations.aug':`interface Item:\n    pass\nResource() implements Item:\n    pass\nFailure(int code, string message) implements Error:\n    pass\nHolder(own Resource value) unless Failure implements Item:\n    initialize:\n        throw Failure(code=9, message="rejected")\n`,
   'main.aug':`import Resource and Holder and Failure from operations\ntry:\n    own Resource value = Resource()\n    Holder(value)\ncatch Failure error:\n    print(value=error.code)\nprint(value="done")\n`
 },'9\ndone\n'));
+
+test('partial construction does not call drop against uninitialized local fields',{skip:!enabled},()=>runProgram({
+  'operations.aug':`interface Item:\n    pass\nResource() implements Item:\n    pass\nFailure() implements Error:\n    pass\nfail() returns int unless Failure:\n    throw Failure()\nBroken(own Resource item) unless Failure implements Item:\n    int first = fail()\n    int second = 4\n    drop():\n        int value = second + 1\n`,
+  'main.aug':`import Resource and Broken and Failure from operations\ntry:\n    own Resource item = Resource()\n    Broken(item)\ncatch Failure error:\n    print(value="constructor error")\n`
+},'constructor error\n',{traceDrops:true,checkStderr(stderr){
+  assert.equal(stderr.match(/drop: .*Resource\n/g)?.length,1);assert.doesNotMatch(stderr,/drop: .*Broken\n/);
+}}));

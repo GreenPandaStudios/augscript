@@ -239,6 +239,8 @@ void aug_scope_restore(size_t depth);
 void aug_collect(void);
 void aug_freeze(AugValue value);
 void aug_drop(AugValue value);
+/* Failed construction releases initialized ownership without invoking drop. */
+void aug_drop_partial(AugValue value);
 void aug_throw(AugValue value);
 AugValue aug_take_error(void);
 bool aug_error_is(const char *name);

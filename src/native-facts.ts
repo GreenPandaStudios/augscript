@@ -27,7 +27,7 @@ export function nativeFact(checked:CheckedProject,node:MethodDecl|ResourceDecl):
   const contract=checked.native.functions.get(node);
   return contract?{...common,kind:'function',contract,
     compilerChecks:['provider identity','descriptor digest','August signature','ownership at August call sites'],
-    nativeAuthorPromises:['inputs are not retained','execution stays on the caller thread','C ABI boundary does not unwind into August']}:undefined;
+    nativeAuthorPromises:['inputs are not retained','boundary entry stays on the caller thread','foreign threads do not enter August','C ABI boundary does not unwind into August']}:undefined;
 }
 
 /** Resolve only standalone calls. Member dispatch is not claimed as complete. */
@@ -53,15 +53,15 @@ export function nativeDependencies(checked:CheckedProject,method:MethodDecl):Nat
   return [...found.values()].sort((a,b)=>(a.provider+'/'+a.contract.symbol).localeCompare(b.provider+'/'+b.contract.symbol,'en'));
 }
 
-export function nativeDescription(fact:NativeFunctionFact|NativeResourceFact):string {
+export function nativeDescription(fact:NativeFunctionFact|NativeResourceFact,contractLink?:string):string {
   const quote=(text:string)=>'`'+text+'`';
   const targets=fact.supportedTargets.map(target=>target.os+' '+target.arch+(target.minimumOS?' '+target.minimumOS+'+':'')).join(', ');
-  const origin=`Native implementation: ${quote(fact.provider)}, ${quote(fact.upstream.version)}. Supported targets: ${targets}.`;
+  const origin=`Native implementation: ${quote(fact.provider)}, ${quote(fact.upstream.version)}. Supported targets: ${targets}. Binding contract: ${contractLink??quote(fact.descriptor)} (SHA-256 ${quote(fact.descriptorSha256)}).`;
   if(fact.kind==='resource')return `${origin} An owned value releases its opaque handle through ${quote(fact.contract.release)} when its scope ends, including error and return paths.`;
   const contract=fact.contract;
   const loans=contract.params.filter(param=>param.kind==='resource').map(param=>quote(param.name)+(param.ownership==='consume'?' transfers ownership':param.ownership==='borrow'?' lends mutable access for this call':' lends read access for this call'));
   const result=contract.result.kind==='resource'?'The caller owns the returned handle.':contract.result.release?
     `August copies the returned buffer, then calls ${quote(contract.result.release)} to release it.`:'';
   return `${origin} It calls ${quote(contract.symbol)} through the C ABI on the caller thread; a blocking native call blocks that thread. ${loans.length?loans.join('; ')+'. ':''}${result?result+' ':''}`+
-    'The compiler checks the provider, descriptor digest, signature and ownership at August call sites. The native author promises not to retain inputs or unwind across the C boundary; the compiler does not prove those promises.';
+    'The compiler checks the provider, descriptor digest, signature and ownership at August call sites. The native author promises not to retain inputs, enter August from foreign threads, or unwind across the C boundary; internal native workers may run. The compiler does not prove those promises.';
 }

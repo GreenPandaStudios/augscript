@@ -467,10 +467,18 @@ test('checked constructor failure releases transferred fields and retains its de
 }, root => {
   const result=run(root,true);assert.equal(result.status,0,result.stderr);assert.equal(result.stdout,'9\ndone\n');
   assert.equal(result.stderr.match(/drop: Resource\n/g)?.length,1);
-  assert.equal(result.stderr.match(/drop: Holder\n/g)?.length,1);
+  assert.doesNotMatch(result.stderr,/drop: Holder\n/);
   const file=join(root,'main.aug'),source=readFileSync(file,'utf8');
   writeFileSync(file,source.slice(0,source.indexOf('try:'))+'own Resource value = Resource()\nHolder(value)\n');
   assert.ok(check(root).issues.some(issue=>issue.code==='THROWS'&&/Unhandled Failure/.test(issue.message)));
+}));
+
+test('partial constructor cleanup skips the completed-object drop method',()=>withProject({
+  'operations.aug':`interface Item:\n    pass\nResource() implements Item:\n    pass\nFailure() implements Error:\n    pass\nfail() returns int unless Failure:\n    throw Failure()\nBroken(own Resource item) unless Failure implements Item:\n    int first = fail()\n    int second = 4\n    drop():\n        int value = second + 1\n`,
+  'main.aug':`import Resource and Broken and Failure from operations\ntry:\n    own Resource item = Resource()\n    Broken(item)\ncatch Failure error:\n    print(value="constructor error")\n`
+},root=>{
+  const result=run(root,true);assert.equal(result.status,0,result.stderr);assert.equal(result.stdout,'constructor error\n');
+  assert.equal(result.stderr.match(/drop: Resource\n/g)?.length,1);assert.doesNotMatch(result.stderr,/drop: Broken\n/);
 }));
 
 test('C FFI call inside unsafe block runs', () => {

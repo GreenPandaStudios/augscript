@@ -69,7 +69,7 @@ try:
 catch TensorError error:
     print(value=error.message)
 `},
-  {name:'sqlite',commit:'67a528cc853ccb63f246a8d65876b43f8a93770d',sha256:'f05a6143f852de47cb0e5002646bdfdd55b2b6a86b7524e7446d6fb31e61a79b',expected:'August\n',source:`import Database and SqliteError and openMemory and execute and queryScalar from REPOSITORY
+  {name:'sqlite',version:'0.1.2',commit:'9065377d9adf991be89952adaea5217688169b9e',sha256:'c79b70da65fefd610d9741d8f989d2909dacbb4a34238eb1a20de9494c422e03',expected:'August\n',source:`import Database and SqliteError and openMemory and execute and queryScalar from REPOSITORY
 try:
     own Database database = openMemory()
     borrow database:
@@ -101,7 +101,7 @@ catch HashError error:
 const outcomes=[];
 for(const fixture of cases){
   const project=join(directory,fixture.name);mkdirSync(project);
-  const repository=`https://github.com/GreenPandaStudios/aug-${fixture.name}#v0.1.1`;
+  const repository=`https://github.com/GreenPandaStudios/aug-${fixture.name}#v${fixture.version??'0.1.1'}`;
   writeFileSync(join(project,'main.aug'),fixture.source.replace('REPOSITORY',JSON.stringify(repository)));
   assert.equal(aug('run',project),fixture.expected);
   const lock=JSON.parse(readFileSync(join(project,'aug.lock.json')));

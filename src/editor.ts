@@ -18,6 +18,7 @@ import { libraryChild, libraryRelative } from './libraries.ts';
 import { importSource, isGitSource, sourceAlias } from './git-packages.ts';
 import { snippetBody, snippetCatalog } from './snippets.ts';
 import {nativeFact,nativeDependencies,nativeDescription} from './native-facts.ts';
+import {pathToFileURL} from 'node:url';
 
 export interface EditorItem {
   label: string;
@@ -179,7 +180,8 @@ function methodItem(checked: CheckedProject, method: MethodDecl,
   const contract = checked.effectContracts.get(method);
   const effects = contract ? `${contract.inferred ? 'Inferred capabilities; effective' : 'Effective'} contract: changes ${contract.changes.join(', ') || 'nothing'}; capabilities ` +
     `${[...contract.uses.values()].map(effect => `${effect.source}.${effect.operation}`).join(', ') || 'none'}.` : '';
-  const native=nativeDependencies(checked,method).map(nativeDescription).join('\n\n');
+  const native=nativeDependencies(checked,method).map(fact=>nativeDescription(fact,
+    '[`native.abi.json`]('+pathToFileURL(checked.native.providerDescriptors.get(fact.provider)!).href+')')).join('\n\n');
   return { label: method.name, kind, detail: label, signature: signature(method, true, errors, checked),
     documentation: [doc?.markdown, isPrivateName(method.name) ? 'Private to its declaring type.' : '',
       injectionHelp, effects, native, interceptorDescription(checked, method), 'Call arguments require labels; their order does not matter.']
@@ -195,7 +197,7 @@ function definitionItem(checked: CheckedProject, def: Definition): EditorItem {
   if(node.kind==='resource'){
     const native=nativeFact(checked,node);
     return {label:def.name,kind:'type',detail:'extern C resource '+def.name,
-      documentation:native?nativeDescription(native):'Opaque native resource. Its package must declare a release identity.'};
+      documentation:native?nativeDescription(native,'[`native.abi.json`]('+pathToFileURL(checked.native.providerDescriptors.get(native.provider)!).href+')'):'Opaque native resource. Its package must declare a release identity.'};
   }
   if (node.kind === 'function') return methodItem(checked, node, 'function');
   if (node.kind === 'interface') return { label: def.name, kind: 'interface',

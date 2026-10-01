@@ -14,6 +14,7 @@ jobs:
     env:
       AUG_LLVM_HOME: ${{ github.workspace }}/.aug-build/llvm-tools
       AUG_RELEASE_NATIVE_REQUIRED: '1'
+      AUG_GITHUB_TOKEN: ${{ github.token }}
     permissions:
       contents: write
     steps:

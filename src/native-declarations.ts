@@ -7,12 +7,13 @@ export interface NativeDeclarations {
   functions:Map<MethodDecl,NativeFunction>; resources:Map<ResourceDecl,NativeResource>;
   providers:Map<MethodDecl|ResourceDecl,string>; diagnostics:Diagnostic[];
   providerMetadata:Map<string,NativeManifest>;
+  providerDescriptors:Map<string,string>;
   errors:Map<MethodDecl,Definition>;
 }
 
 /** Resolve descriptors against exact source declarations, never unqualified spellings. */
 export function nativeDeclarations(project:Project):NativeDeclarations {
-  const result:NativeDeclarations={functions:new Map(),resources:new Map(),providers:new Map(),providerMetadata:new Map(),errors:new Map(),diagnostics:[]};
+  const result:NativeDeclarations={functions:new Map(),resources:new Map(),providers:new Map(),providerMetadata:new Map(),providerDescriptors:new Map(),errors:new Map(),diagnostics:[]};
   const issue=(span:Span,message:string)=>result.diagnostics.push({...span,code:'NATIVE_ABI',message});
   const sources:{directory:string;sourceRoot:string;native:NativeManifest;identity:string}[]=[];
   const symbols=new Map<string,string>();
@@ -24,6 +25,7 @@ export function nativeDeclarations(project:Project):NativeDeclarations {
   }
   for(const source of sources){
     result.providerMetadata.set(source.identity,source.native);
+    result.providerDescriptors.set(source.identity,resolve(source.directory,source.native.bindings));
     let descriptor;
     try{descriptor=readNativeDescriptor(source.directory,source.native);}
     catch(error){issue({file:resolve(source.directory,source.native.bindings),start:0,end:0,line:1,column:1},error instanceof Error?error.message:String(error));continue;}

@@ -775,6 +775,18 @@ void aug_drop(AugValue value) {
 }
 
 void aug_throw(AugValue value) { aug_error = value; aug_has_error = true; }
+void aug_drop_partial(AugValue value) {
+  if(value.tag!=AUG_OBJECT||!value.as.object||value.as.object->dropped)return;
+  AugValue roots[2]={value,aug_error};AugFrame frame;aug_frame_enter(&frame,roots,2);
+  bool pending=aug_has_error,cancelled=aug_cancelled;
+  aug_error=aug_null();aug_has_error=false;aug_cancelled=false;
+  AugObject *object=value.as.object;object->dropped=true;
+  for(size_t i=0;i<object->field_count;i++)
+    if(object->owned_fields&&object->owned_fields[i])aug_drop(object->fields[i]);
+  /* A constructor's checked failure remains primary during implicit cleanup. */
+  if(pending)aug_throw(roots[1]);aug_cancelled=aug_cancelled||cancelled;
+  aug_frame_leave(&frame);
+}
 AugValue aug_take_error(void) {
   AugValue value = aug_error;
   aug_error = aug_null();

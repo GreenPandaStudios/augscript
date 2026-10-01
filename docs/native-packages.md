@@ -16,7 +16,7 @@ The [PyTorch](https://github.com/GreenPandaStudios/aug-pytorch),
 [SQLite](https://github.com/GreenPandaStudios/aug-sqlite),
 [zlib](https://github.com/GreenPandaStudios/aug-zlib), and
 [BLAKE3](https://github.com/GreenPandaStudios/aug-blake3) repositories publish
-`v0.1.1` source and native preview archives. Their imports have passed using the
+`v0.1.1` source and native preview archives (SQLite uses `v0.1.2`). Their imports have passed using the
 packaged CLI, public downloads, and fresh caches on macOS ARM64. The matching
 compiler release and minimum OS qualification are still pending.
 
@@ -65,6 +65,11 @@ this profile. August downloads its own pinned LLVM tools and runtime. A missing
 or incompatible artifact produces a diagnostic; it never starts a source build.
 Use `aug run --offline --frozen` after an online installation to require the
 recorded artifacts without downloading replacements.
+
+Public GitHub source downloads use HTTPS and do not require Git. If GitHub's
+shared API rate limit stops installation, retry later or set `AUG_GITHUB_TOKEN`
+to authenticate API reads. August sends this token only to `api.github.com`,
+rejects redirects, and never writes it to source caches or lockfiles.
 
 Keep the executable together with its adjacent `lib` and `share` directories.
 The libraries load relative to the executable. `share/august-native` preserves

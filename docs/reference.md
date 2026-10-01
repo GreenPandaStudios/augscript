@@ -120,7 +120,10 @@ An initializer can reject construction with a checked error. Declare that error
 before `implements`, as in `Session(own Handle handle) unless SessionError
 implements ActiveSession`. Callers catch or propagate the error. If construction
 fails after ownership transfers, August releases the partial object and its owned
-fields before the error reaches the caller. Class constructors require a written
+fields before the error reaches the caller. `drop` runs only on a successfully
+constructed object. Partial cleanup releases
+initialized owned fields and keeps the constructor error; it does not run `drop`
+against fields that might not have been initialized. Class constructors require a written
 `unless` contract; record validation can infer its failures.
 Fallible class constructors currently require explicit construction. They cannot
 be DI binding targets; startup and injected-construction failure handling need a

@@ -54,7 +54,7 @@ void aug_ir_operation(AugValue *out,int op,AugValue *a,int count,const char *tex
 void aug_ir_string(AugValue *out,const void *text,uint64_t count){*out=aug_string_n(text,(size_t)count);}
 void aug_ir_assert(const AugValue *condition,const char *expression,const char *file,int line){aug_assert(*condition,expression,file,line);}
 void aug_ir_drop(AugValue *value){aug_drop(*value);*value=aug_null();}
-void aug_ir_failed_result(AugValue *value){if(aug_has_error)aug_ir_drop(value);}
+void aug_ir_failed_result(AugValue *value){if(aug_has_error){aug_drop_partial(*value);*value=aug_null();}}
 void aug_ir_throw(const AugValue *value){aug_throw(*value);}
 void aug_ir_take_error(AugValue *out){*out=aug_take_error();}
 bool aug_ir_has_error(void){return aug_has_error;}

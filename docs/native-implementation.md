@@ -17,9 +17,9 @@ import stub. Consumers install a pinned compiler pack. Opaque resources have
 deterministic release, call-duration loans, and checked package/provider identities.
 Native failures use their resolved August constructors and method tables.
 
-All four real adapters have been built and tested locally. Nine August cases
+All four real adapters have been built and tested locally. Ten August cases
 pass through the installed tool pack with native compilers, Git and SDK paths
-unavailable to the test processes. Their `v0.1.1` sources and native archives are
+unavailable to the test processes. Their `v0.1.1` sources and native archives (SQLite `v0.1.2`) are
 published in separate public repositories. A second check installs the npm CLI
 archives into a fresh `node_modules`, downloads each library from GitHub, and
 runs its program through LLVM using both URL imports and named package aliases.
@@ -34,6 +34,8 @@ check on a fresh macOS 14 ARM64 runner before the preview is qualified.
 The independent native clients run
 1,000 cleanup cycles per library. SQLite also checks persistent storage and
 rejects SQL attachment/VACUUM INTO before they can expand filesystem authority.
+Scalar reads authorize only queries before execution, rejecting PRAGMA commands,
+transactions, savepoints, and writes without changing the connection.
 
 The compiler suite checks owned field transfers, native error dispatch, bounded
 direct calls, archive integrity, modified lock metadata and ambiguous physical
