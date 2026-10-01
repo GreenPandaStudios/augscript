@@ -6,6 +6,8 @@ Completion inserts labeled arguments and public imports. New templates cover dec
 
 ## Unreleased
 
+- Publish the reviewed release VSIX from GitHub Actions using Marketplace trusted publishing. Verify the bundled compiler, artwork, manifest and checksum before uploading; retries check the existing extension contents.
+
 - Show inferred return, mutation, capability, and checked-error contracts as inline hints, enabled by default. Toggle augscript.inferredContractHints; formatting never inserts inferred clauses. Hover and signature help use the inferred contracts too.
 
 - Bundled native commands prepare only required pinned dependencies and reuse their cache. Missing tools and setup failures include recovery steps; terminal source diagnostics show the code and help.
