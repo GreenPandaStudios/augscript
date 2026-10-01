@@ -9,8 +9,12 @@ import {withPackageLockAsync} from './package-locking.ts';
 const selected=(name:string)=>!name.split('/').some(part=>part.startsWith('.'))&&(name.endsWith('.aug')||['aug-package.json','package.json','main.yaml','README.md','LICENSE','native.abi.json','THIRD_PARTY_NOTICES.md'].includes(name));
 async function bytes(url:string,maximum:number):Promise<Buffer>{
   const address=new URL(url);if(address.protocol!=='https:'||!['api.github.com','raw.githubusercontent.com'].includes(address.hostname)||address.username||address.password)throw new Error('Invalid source transport URL');
-  const response=await fetch(address,{redirect:'error',signal:AbortSignal.timeout(60000),headers:{Accept:'application/vnd.github+json','User-Agent':'August-source-packages'}});
-  if(!response.ok||!response.body)throw new Error(`Cannot read public GitHub source (${response.status}). Check the repository/revision; GitHub rate limits can require retrying later.`);
+  const headers:Record<string,string>={Accept:'application/vnd.github+json','User-Agent':'August-source-packages'};
+  // Only the API receives an explicitly supplied token. Raw downloads and
+  // redirects cannot carry it, and it never enters package metadata or logs.
+  if(address.hostname==='api.github.com'&&process.env.AUG_GITHUB_TOKEN)headers.Authorization='Bearer '+process.env.AUG_GITHUB_TOKEN;
+  const response=await fetch(address,{redirect:'error',signal:AbortSignal.timeout(60000),headers});
+  if(!response.ok||!response.body)throw new Error(`Cannot read public GitHub source (${response.status}). Check the repository/revision. For API rate limits, retry later or supply AUG_GITHUB_TOKEN for authenticated public reads.`);
   if(Number(response.headers.get('content-length')??0)>maximum)throw new Error('GitHub source response exceeds its size limit');
   const chunks:Buffer[]=[];let length=0;for await(const chunk of response.body as any){length+=chunk.length;if(length>maximum)throw new Error('GitHub source response exceeds its size limit');chunks.push(Buffer.from(chunk));}return Buffer.concat(chunks);
 }
