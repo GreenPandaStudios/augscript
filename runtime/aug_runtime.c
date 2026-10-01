@@ -79,7 +79,7 @@ AugValue aug_string_n(const void *value, size_t length) {
   AugObject *object = allocate(AUG_STRING, "string", 0, NULL, NULL, 0);
   object->text = malloc(length + 1);
   if (!object->text) fail("out of memory");
-  memcpy(object->text, value, length);
+  if (length) memcpy(object->text, value, length);
   object->text[length] = 0;
   object->text_length = length;
   return (AugValue){ .tag = AUG_STRING, .as.object = object };
@@ -409,6 +409,10 @@ void aug_set_field(AugValue object, size_t index, AugValue value) {
     fail("invalid field assignment");
   if (object.as.object->dropped) fail("use of dropped object");
   if (object.as.object->frozen) fail("cannot assign a frozen field");
+  AugValue previous = object.as.object->fields[index];
+  if (object.as.object->owned_fields && object.as.object->owned_fields[index] &&
+      !(previous.tag == AUG_OBJECT && value.tag == AUG_OBJECT && previous.as.object == value.as.object))
+    aug_drop(previous);
   object.as.object->fields[index] = value;
 }
 
@@ -417,7 +421,10 @@ AugValue aug_call_method(AugValue object, const char *name, AugValue *args, int 
   if (object.as.object->dropped) fail("use of dropped object");
   for (size_t i = 0; i < object.as.object->method_count; i++) {
     const AugMethodEntry *entry = &object.as.object->methods[i];
-    if (strcmp(entry->name, name) == 0) return entry->function(object, args, count);
+    if (strcmp(entry->name, name) == 0) {
+      if(entry->pointer_function){AugValue result=aug_null();entry->pointer_function(&result,&object,args,count);return result;}
+      return entry->function(object, args, count);
+    }
   }
   fprintf(stderr, "AugScript runtime error: %s has no method %s\n",
           object.as.object->type_name, name);
@@ -752,11 +759,17 @@ void aug_drop(AugValue value) {
     if (getenv("AUG_TRACE_DROPS")) fprintf(stderr, "drop: %s\n", object->type_name);
     for (size_t i = 0; i < object->method_count; i++)
       if (strcmp(object->methods[i].name, "drop") == 0) {
-        object->methods[i].function(value, NULL, 0);
+        if(object->methods[i].pointer_function){AugValue ignored=aug_null();object->methods[i].pointer_function(&ignored,&value,NULL,0);}
+        else object->methods[i].function(value, NULL, 0);
         break;
       }
   }
   object->dropped = true;
+  if(object->kind==AUG_NATIVE_RESOURCE_KIND&&object->finalize){
+    void *native=object->native;void(*release)(void *)=object->finalize;
+    object->native=NULL;object->finalize=NULL;
+    if(native)release(native);
+  }
   for (size_t i = 0; i < object->field_count; i++)
     if (object->owned_fields && object->owned_fields[i]) aug_drop(object->fields[i]);
 }

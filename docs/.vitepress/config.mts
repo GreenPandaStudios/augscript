@@ -60,6 +60,7 @@ export default defineConfig({
         { text: 'Tests', link: '/testing' }, { text: 'Web applications', link: '/web' },
         { text: 'Compiled specifications', link: '/specifications' },
         { text: 'Packages and installation', link: '/packages' },
+        { text: 'Native packages and LLVM preview', link: '/native-packages' },
         { text: 'Docker deployment', link: '/docker' },
         { text: 'VS Code Dev Containers', link: '/dev-containers' },
         { text: 'Diagnostics', link: '/diagnostics' }

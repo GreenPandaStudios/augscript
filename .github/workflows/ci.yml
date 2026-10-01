@@ -48,6 +48,8 @@ jobs:
   native:
     runs-on: macos-15
     timeout-minutes: 60
+    env:
+      AUG_LLVM_HOME: ${{ github.workspace }}/.aug-build/llvm-tools
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
@@ -64,15 +66,54 @@ jobs:
       - run: npm --prefix vscode ci
       - run: npm --prefix vscode audit --audit-level=moderate
       - run: node scripts/bootstrap-native.mjs
+      - run: node scripts/prepare-llvm-tools.mjs
+      - run: node scripts/build-runtime-pack.mjs
       - run: npm run check
       - run: npm test
       - run: npm run test:setup-cold
       - run: npm run test:sanitizers
+      - run: node scripts/build-llvm-pack.mjs
+      - run: npm run package:packages
       - run: npm run package:extension
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: native-consumer-inputs
+          include-hidden-files: true
+          path: |
+            dist/release/*.tgz
+            dist/release/packages.json
+            .aug-build/aug-llvm-macos-arm64.tar.gz
+          if-no-files-found: error
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: vscode-preview
           path: vscode/*.vsix
+          if-no-files-found: error
+  native-consumer-macos14:
+    needs: native
+    runs-on: macos-14
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          name: native-consumer-inputs
+          path: .
+      - name: Require the advertised minimum platform
+        run: node --input-type=module -e 'import assert from "node:assert/strict"; import {release} from "node:os"; assert.equal(process.arch,"arm64"); assert.equal(Number(release().split(".")[0]),23);'
+      - name: Qualify installed CLI and public library downloads with native tools unavailable
+        run: node scripts/qualify-native-consumers.mjs --local-compiler
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: native-consumer-macos14-evidence
+          include-hidden-files: true
+          path: .aug-build/native-consumer-qualification.json
           if-no-files-found: error
   docker-native:
     runs-on: ubuntu-24.04

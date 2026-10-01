@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { packageOrder, repositoryRoot, releaseChecksums, validateReleaseRequest, verifyNpmRelease,
-  verifyExtensionRelease, vsixEntries, extensionMatches } from '../scripts/release-publication.mjs';
+  verifyExtensionRelease, vsixEntries, extensionMatches, verifyLLVMCompilerPins } from '../scripts/release-publication.mjs';
 import { registryMatches, publishPackages } from '../scripts/publish-release.mjs';
 import { publishedExtensionMatches, publishExtension } from '../scripts/publish-extension.mjs';
 import { projectArchive } from '../scripts/doc-downloads.mjs';
@@ -96,6 +96,25 @@ test('downloads resolve annotated tags and select reviewed archives for each des
 
 test('all npm artifacts and canonical manifests verify in dependency order', t => {
   const { root } = npmFixture(t); assert.deepEqual(verifyNpmRelease(root).map(pkg => pkg.directory), packageOrder);
+});
+
+test('LLVM release pin checks reject stale consumer archives even when build staging is current', t => {
+  const {root,packages}=npmFixture(t),expected=JSON.stringify({compiler:read(join(repositoryRoot,'package.json')).version,packs:[{archive:{sha256:'a'.repeat(64)}}]})+'\n';
+  const native=join(root,'cli/package/native');mkdirSync(native);
+  const manifest=join(native,'compiler-packs.json');writeFileSync(manifest,expected);
+  const cli=packages.find(pkg=>pkg.directory==='cli');
+  const pack=()=>assert.equal(spawnSync('tar',['-czf',join(root,cli.filename),'-C',join(root,'cli'),'package']).status,0);
+  pack();
+  const version=JSON.parse(expected).compiler;
+  const editor=pin=>writeFileSync(join(root,`augscript-${version}.vsix`),projectArchive(new Map([
+    ['extension/compiler/native/compiler-packs.json',Buffer.from(pin)]
+  ])));
+  editor(expected);verifyLLVMCompilerPins(root,expected);
+  // A staging fix must not hide the obsolete archive already packed for npm.
+  writeFileSync(manifest,expected.replace('a'.repeat(64),'b'.repeat(64)));pack();writeFileSync(manifest,expected);
+  assert.throws(()=>verifyLLVMCompilerPins(root,expected),/Packaged CLI has a different/);
+  pack();editor(expected.replace('a'.repeat(64),'b'.repeat(64)));
+  assert.throws(()=>verifyLLVMCompilerPins(root,expected),/Packaged extension has a different/);
 });
 
 test('release verification rejects tampered metadata, archives, integrity and manifests', t => {

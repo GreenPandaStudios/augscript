@@ -1,0 +1,12 @@
+--- !tapi-tbd-v3
+# Independently authored import declarations for LLVM-lowered application code.
+# OS service calls remain in the maintainer-built August runtime dylib.
+archs: [ arm64 ]
+platform: macosx
+install-name: /usr/lib/libSystem.B.dylib
+current-version: 1.0.0
+compatibility-version: 1.0.0
+exports:
+  - archs: [ arm64 ]
+    symbols: [ _memcpy, _memmove, _memset, _bzero, ___stack_chk_fail, ___stack_chk_guard, dyld_stub_binder ]
+...

@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import type { Diagnostic } from './ast.ts';
 
 export interface Config {
+  backend?: 'c' | 'llvm';
   output?: string; optimization: 'debug' | 'release'; libraries: string[]; library_paths: string[];
   assignment: 'equals' | 'to'; block_style: 'braces' | 'indent'; indentation: 'spaces' | 'tabs';
   lint: string[]; strict_modules: boolean; max_public_symbols: number; max_dependencies: number;
@@ -80,7 +81,7 @@ export function loadConfig(root: string): { config: Config; diagnostics: Diagnos
       }
       continue;
     }
-    if (!entry || !(entry[1] in config || entry[1] === 'output')) { report(index + 1, `Unsupported configuration line ${JSON.stringify(raw)}`); continue; }
+    if (!entry || !(entry[1] in config || ['output','backend'].includes(entry[1]))) { report(index + 1, `Unsupported configuration line ${JSON.stringify(raw)}`); continue; }
     const key = entry[1] as keyof Config;
     const value = (entry[2] ?? '').replace(/^(['"])(.*)\1$/, '$2');
     if (seen.has(key)) { report(index + 1, `Duplicate configuration key ${key}`); continue; }
@@ -95,7 +96,7 @@ export function loadConfig(root: string): { config: Config; diagnostics: Diagnos
       if (!/^[1-9]\d*$/.test(value)) report(index + 1, `${key} must be a positive integer`);
       else config[key] = Number(value);
     } else {
-      const choices: Partial<Record<keyof Config, string[]>> = { optimization: ['debug', 'release'], assignment: ['equals', 'to'],
+      const choices: Partial<Record<keyof Config, string[]>> = { backend: ['c','llvm'], optimization: ['debug', 'release'], assignment: ['equals', 'to'],
         block_style: ['braces', 'indent'], indentation: ['spaces', 'tabs'] };
       if (!value || choices[key] && !choices[key]!.includes(value)) report(index + 1, `${key} needs ${choices[key]?.join(' or ') ?? 'a value'}`);
       else Object.assign(config, { [key]: value });

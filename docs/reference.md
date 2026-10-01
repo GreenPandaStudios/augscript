@@ -116,6 +116,16 @@ Constraints name interfaces. Multiple constraints use `and`. Only interfaces dec
 
 A class starts with its name and ends its header with `implements Interface`. There is no `class` or `function` prefix and no class inheritance. Interfaces can extend several interfaces and supply default methods; conflicting inherited defaults require an explicit override. Interfaces have methods and no fields.
 
+An initializer can reject construction with a checked error. Declare that error
+before `implements`, as in `Session(own Handle handle) unless SessionError
+implements ActiveSession`. Callers catch or propagate the error. If construction
+fails after ownership transfers, August releases the partial object and its owned
+fields before the error reaches the caller. Class constructors require a written
+`unless` contract; record validation can infer its failures.
+Fallible class constructors currently require explicit construction. They cannot
+be DI binding targets; startup and injected-construction failure handling need a
+separate contract before that form is supported.
+
 Header inputs become fields. Fields are read-only after initialization unless marked `mutable`. Public names grant access; names starting with `_` keep storage private. Separate a public constructor label from private storage with `int initial to _count`. The shorthand `int _count` exposes the input label `count`.
 
 ```aug project=state-guide file=main.aug

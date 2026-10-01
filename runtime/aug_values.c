@@ -25,22 +25,28 @@ AugValue aug_string_split(AugValue value, AugValue separator) {
   AugValue result = roots[1]; aug_frame_leave(&frame); return result;
 }
 int64_t aug_bytes_length(AugValue value) { return (int64_t)value.as.object->text_length; }
-AugValue aug_bytes_text(AugValue value) {
-  const unsigned char *text = (const unsigned char *)value.as.object->text;
-  size_t size = value.as.object->text_length;
+bool aug_valid_utf8(const void *data, size_t size) {
+  if (!data && size) return false;
+  const unsigned char *text = data;
   for (size_t i = 0; i < size;) {
     unsigned char first = text[i++];
     if (first < 0x80) continue;
     int extra = first >= 0xc2 && first <= 0xdf ? 1 : first >= 0xe0 && first <= 0xef ? 2 : first >= 0xf0 && first <= 0xf4 ? 3 : -1;
-    if (extra < 0 || i + (size_t)extra > size) return aug_error_named("ConversionError");
+    if (extra < 0 || (size_t)extra > size - i) return false;
     uint32_t code = first & (extra == 1 ? 0x1f : extra == 2 ? 0x0f : 0x07);
     for (int j = 0; j < extra; j++) {
       unsigned char next = text[i++];
-      if ((next & 0xc0) != 0x80) return aug_error_named("ConversionError");
+      if ((next & 0xc0) != 0x80) return false;
       code = (code << 6) | (next & 0x3f);
     }
-    if (code < (extra == 1 ? 0x80u : extra == 2 ? 0x800u : 0x10000u) || code > 0x10ffff || (code >= 0xd800 && code <= 0xdfff)) return aug_error_named("ConversionError");
+    if (code < (extra == 1 ? 0x80u : extra == 2 ? 0x800u : 0x10000u) || code > 0x10ffff || (code >= 0xd800 && code <= 0xdfff)) return false;
   }
+  return true;
+}
+AugValue aug_bytes_text(AugValue value) {
+  const void *text = value.as.object->text;
+  size_t size = value.as.object->text_length;
+  if (!aug_valid_utf8(text, size)) return aug_error_named("ConversionError");
   return aug_string_n(text, size);
 }
 

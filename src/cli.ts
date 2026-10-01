@@ -5,6 +5,11 @@ import type { Diagnostic } from './ast.ts';
 import { typeName } from './ast.ts';
 import { checkProject } from './checker.ts';
 import { generateC } from './codegen.ts';
+import {generateLLVM} from './llvm.ts';
+import {lowerToIR,BackendUnsupported} from './ir.ts';
+import {compileLLVM} from './llvm-native.ts';
+import {prepareNativePackages} from './native-artifacts.ts';
+import {prepareLLVMCompiler} from './compiler-packs.ts';
 import { diagnosticHelp } from './help.ts';
 import { loadProject } from './project.ts';
 import { definitionAt } from './navigation.ts';
@@ -56,9 +61,10 @@ function printDiagnostics(diagnostics: Diagnostic[], json: boolean, root: string
 
 function usage(): void {
   process.stdout.write(`AugScript compiler\n\n` +
-    `Usage: aug <init|check|build|run|emit-c|test|openapi|format|migrate|spec|bench|explain|context|lsp|symbols|definition|complete|hover|fixes|semantic-tokens> [project directory] [options] [-- args]\n` +
+    `Usage: aug <init|check|build|run|emit-c|emit-llvm|test|openapi|format|migrate|spec|bench|explain|context|lsp|symbols|definition|complete|hover|fixes|semantic-tokens> [project directory] [options] [-- args]\n` +
     `New application: aug init DIRECTORY [--template hello|weather]\n` +
     `Run: aug run [project directory] [--offline] [-- args] — prepare dependencies, compile, and start\n` +
+    `Backend: --backend llvm selects direct LLVM compilation on macOS ARM64; --backend c selects the migration reference. Unsupported LLVM features produce an error.\n` +
     `Tests: aug test [project directory] [GROUP_NAME] [--group GROUP_NAME] [--list] [--coverage] [--json] [--timeout milliseconds]\n` +
     `Format: aug format [project directory] [--file path] [--write]\n` +
     `Specifications: aug spec [project directory] [--check] [--json]\n` +
@@ -90,6 +96,7 @@ export async function main(argv: string[]): Promise<number> {
     try {
       const alias = argv[aliasIndex + 1], root = resolve(projectIndex < 0 ? process.cwd() : argv[projectIndex + 1]);
       const lock = addPackage(root, argv[1], alias, argv.includes('--offline'));
+      await prepareNativePackages(root,{offline:argv.includes('--offline')});
       process.stdout.write(`Added ${alias}; installed ${lock.packages.length} source package(s).\nImport public names with: import NAME from ${alias}\n`); return 0;
     } catch (error) { process.stderr.write(failureMessage(error) + '\n'); return 1; }
   }
@@ -110,6 +117,7 @@ export async function main(argv: string[]): Promise<number> {
         ? (command === 'install' ? argv[1] : argv[2]) : process.cwd());
       if (command === 'install') {
         const lock = installPackages(root, argv.includes('--frozen'), argv.includes('--offline'), argv.includes('--update'));
+        await prepareNativePackages(root,{offline:argv.includes('--offline'),frozen:argv.includes('--frozen')});
         process.stdout.write(`Installed ${lock.packages.length} August package(s); aug.lock.json is current.\n`);
       } else if (argv[1] === 'init') {
         const name = argv.includes('--name') ? argv[argv.indexOf('--name') + 1] : root.split(/[\\/]/).at(-1)!;
@@ -130,7 +138,7 @@ export async function main(argv: string[]): Promise<number> {
     } catch (error) { process.stderr.write(failureMessage(error) + '\n'); return 1; }
   }
   if (command === 'lsp') return runLanguageServer(resolve(argv[1] ?? process.cwd()));
-  if (!['check', 'build', 'run', 'emit-c', 'test', 'openapi', 'format', 'migrate', 'spec', 'bench', 'explain', 'context', 'symbols', 'definition',
+  if (!['check', 'build', 'run', 'emit-c', 'emit-llvm', 'test', 'openapi', 'format', 'migrate', 'spec', 'bench', 'explain', 'context', 'symbols', 'definition',
     'complete', 'hover', 'fixes', 'semantic-tokens'].includes(command)) {
     process.stderr.write(`Unknown command ${command}\n`); usage(); return 2;
   }
@@ -138,8 +146,8 @@ export async function main(argv: string[]): Promise<number> {
   const options = separator >= 0 ? argv.slice(1, separator) : argv.slice(1);
   const programArgs = separator >= 0 ? argv.slice(separator + 1) : [];
   if (options.includes('--help')) { usage(); return 0; }
-  const valueOptions = new Set(['--out', '--stdin-file', '--file', '--name', '--offset', '--budget', '--baseline', '--group', '--case', '--timeout', '--iterations', '--warmup']);
-  const booleanOptions = new Set(['--json', '--coverage', '--list', '--write', '--check', '--offline']);
+  const valueOptions = new Set(['--backend','--out', '--stdin-file', '--file', '--name', '--offset', '--budget', '--baseline', '--group', '--case', '--timeout', '--iterations', '--warmup']);
+  const booleanOptions = new Set(['--json', '--coverage', '--list', '--write', '--check', '--offline', '--frozen']);
   for (let index = 0; index < options.length; index++) {
     const option = options[index];
     if (valueOptions.has(option)) {
@@ -150,6 +158,8 @@ export async function main(argv: string[]): Promise<number> {
     }
   }
   const json = options.includes('--json');
+  const backendIndex=options.indexOf('--backend');let backend=backendIndex<0?'c':options[backendIndex+1];
+  if(!['c','llvm'].includes(backend)){process.stderr.write('--backend must be c or llvm\n');return 2;}
   const outIndex = options.indexOf('--out');
   const outputOption = outIndex >= 0 ? options[outIndex + 1] : undefined;
   const stdinIndex = options.indexOf('--stdin-file');
@@ -174,6 +184,7 @@ export async function main(argv: string[]): Promise<number> {
   const iterations = iterationsIndex >= 0 ? Number(options[iterationsIndex + 1]) : 10;
   const warmup = warmupIndex >= 0 ? Number(options[warmupIndex + 1]) : 2;
   const positionals = options.filter((arg, i) => !arg.startsWith('--') &&
+    (backendIndex < 0 || i !== backendIndex + 1) &&
     (outIndex < 0 || i !== outIndex + 1) &&
     (stdinIndex < 0 || i !== stdinIndex + 1) &&
     (fileIndex < 0 || i !== fileIndex + 1) &&
@@ -204,8 +215,9 @@ export async function main(argv: string[]): Promise<number> {
     }
     if (!existsSync(root) || !statSync(root).isDirectory())
       throw new Error(`Project directory does not exist: ${root}\nUse aug init DIRECTORY to create a project, or run aug run from the folder containing main.aug.`);
-    if (command === 'run') prepareRunPackages(root, options.includes('--offline'));
+    if (command === 'run') prepareRunPackages(root, options.includes('--offline'), options.includes('--frozen'));
     const project = loadProject(root, overrides);
+    if(backendIndex<0)backend=project.config.backend??(project.library?.native||[...project.packages.scopes.values()].some(p=>p.native)?'llvm':'c');
     if (project.library && ['build', 'run', 'bench', 'openapi'].includes(command))
       throw new Error('This is an August library; use check, test, or package pack. Import its exports from an application with main.aug to run it.');
     if (command === 'format' || command === 'migrate') {
@@ -239,10 +251,15 @@ export async function main(argv: string[]): Promise<number> {
       }
       const results: { id: string; group: string; name: string; passed: boolean; stdout: string; stderr: string }[] = [];
       const coverage = options.includes('--coverage'), reports: string[] = [];
+      if(coverage&&backend==='llvm')throw new Error('BACKEND_UNSUPPORTED: LLVM statement coverage is not available yet. Use --backend c for coverage.');
+      const nativeInputs=backend==='llvm'?await prepareNativePackages(root,{offline:options.includes('--offline'),frozen:options.includes('--frozen')}):undefined;
+      const toolchain=backend==='llvm'?await prepareLLVMCompiler(options.includes('--offline'),{root,frozen:options.includes('--frozen')}):undefined;
       for (const [index, { unit, checked: testChecked }] of checks.entries()) {
-        const generated = generateC(testChecked, { coverage });
-        await prepareNativeDependencies(generated, { offline: options.includes('--offline') });
-        const native = compileNative(root, generated, { testIndex: index, checked: testChecked });
+        let native;
+        if(backend==='llvm')native=compileLLVM(testChecked,{testIndex:index,native:nativeInputs,toolchain});
+        else{const generated = generateC(testChecked, { coverage });
+          await prepareNativeDependencies(generated, { offline: options.includes('--offline') });
+          native = compileNative(root, generated, { testIndex: index, checked: testChecked });}
         const report = join(root, '.aug-build', 'tests', `coverage-${index}.tsv`); reports.push(report);
         if (coverage) rmSync(report, { force: true });
         const run = native.status === 0 ? spawnSync(native.output, [], { encoding: 'utf8', cwd: root, timeout,
@@ -317,23 +334,33 @@ export async function main(argv: string[]): Promise<number> {
       process.stdout.write(json?JSON.stringify(result)+'\n':result.stale.length?'Stale specifications:\n'+result.stale.map(file=>'  '+file).join('\n')+'\n':`${result.files} specification artifact(s) ${options.includes('--check')?'are current':'generated'}.\n`);
       return result.stale.length?1:0;
     }
-    if(['build','run','bench'].includes(command)) {
+    if(['build','run','bench'].includes(command)&&!options.includes('--frozen')) {
       checked=updateSpecHints(checked);
       if(checked.diagnostics.some(issue=>issue.severity!=='warning')) {printDiagnostics(checked.diagnostics,json,root);return 1;}
     }
-    const generated = generateC(checked);
-    if (command === 'emit-c') { process.stdout.write(generated); return 0; }
+    if(command==='emit-llvm'){process.stdout.write(generateLLVM(lowerToIR(checked)));return 0;}
+    if((backend==='c'||command==='emit-c')&&checked.native.resources.size+checked.native.functions.size)
+      throw new Error('NATIVE_BACKEND: Checked native packages require --backend llvm. The C reference backend cannot lower this native ABI.');
+    if(command==='emit-c'){process.stdout.write(generateC(checked));return 0;}
     if (command === 'bench' && (!Number.isInteger(iterations) || iterations < 1 || iterations > 1000 ||
       !Number.isInteger(warmup) || warmup < 0 || warmup > 100 || !Number.isInteger(timeout) || timeout < 1))
       throw new Error('bench requires iterations 1–1000, warmup 0–100, and a positive timeout');
-    await prepareNativeDependencies(generated, { offline: options.includes('--offline') });
-    const native = compileNative(root, generated, { output: outputOption, release: command === 'bench' ? true : undefined, checked });
+    let native;
+    if(backend==='llvm'){
+      const inputs=await prepareNativePackages(root,{offline:options.includes('--offline'),frozen:options.includes('--frozen')});
+      const toolchain=await prepareLLVMCompiler(options.includes('--offline'),{root,frozen:options.includes('--frozen')});
+      native=compileLLVM(checked,{output:outputOption,release:command==='bench'||project.config.optimization==='release',native:inputs,toolchain});
+    }else{
+      const generated=generateC(checked);
+      await prepareNativeDependencies(generated, { offline: options.includes('--offline') });
+      native = compileNative(root, generated, { output: outputOption, release: command === 'bench' ? true : undefined, checked });
+    }
     const output = native.output;
     if (native.status !== 0) {
       if (native.diagnostics.length) printDiagnostics(native.diagnostics, json, root);
       else process.stderr.write(native.error + '\n'); return native.status;
     }
-    updateSpecs(checked);
+    if(!options.includes('--frozen'))updateSpecs(checked);
     if (command === 'build') {
       process.stdout.write(json ? JSON.stringify({ output, sourceMap: output + '.augmap.json' }) + '\n' : `${output}\n`);
       return 0;
@@ -349,6 +376,7 @@ export async function main(argv: string[]): Promise<number> {
     else if (run.status !== 0) process.stderr.write(`Program exited with status ${run.status}.\n`);
     return run.status ?? 1;
   } catch (error) {
+    if(error instanceof BackendUnsupported){printDiagnostics([{...error.span,code:error.code,message:error.message}],json,root);return 1;}
     process.stderr.write(failureMessage(error) + '\n');
     return error instanceof Error && 'exitCode' in error && typeof error.exitCode === 'number' ? error.exitCode : 1;
   }

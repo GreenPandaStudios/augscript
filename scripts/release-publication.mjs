@@ -61,6 +61,19 @@ export function verifyNpmRelease(directory, root = repositoryRoot) {
   });
 }
 
+/** Check pins in the archives consumers install, independently of build staging. */
+export function verifyLLVMCompilerPins(directory, expected) {
+  const pin=JSON.parse(expected),packages=json(join(directory,'packages.json'));
+  const cli=packages.find(pkg=>pkg.directory==='cli');
+  assert.ok(cli,'Missing CLI archive');assert.match(cli.filename,/^[A-Za-z0-9][A-Za-z0-9._-]*$/);
+  const archive=spawnSync('tar',['-xOf',join(directory,cli.filename),'package/native/compiler-packs.json'],{encoding:'utf8',maxBuffer:1024*1024});
+  assert.equal(archive.status,0,'Packaged CLI is missing its compiler-owned LLVM manifest');
+  assert.equal(archive.stdout,expected,'Packaged CLI has a different LLVM artifact pin');
+  const editor=spawnSync('unzip',['-p',join(directory,`augscript-${pin.compiler}.vsix`),'extension/compiler/native/compiler-packs.json'],{encoding:'utf8',maxBuffer:1024*1024});
+  assert.equal(editor.status,0,'Packaged extension is missing its compiler-owned LLVM manifest');
+  assert.equal(editor.stdout,expected,'Packaged extension has a different LLVM artifact pin');
+}
+
 /** Read entries without extracting paths or executing archive contents. */
 export function vsixEntries(file) {
   const listing = spawnSync('unzip', ['-Z1', file], { encoding: 'utf8', maxBuffer: 1024 * 1024 });

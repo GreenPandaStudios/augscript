@@ -58,6 +58,27 @@ function withProject(files, callback) {
   try { callback(root); } finally { rmSync(root, { recursive: true, force: true }); }
 }
 
+test('an implicit owned field assignment transfers its replacement', () => withProject({
+  'holder.aug': `interface Item { value() returns int }
+Resource(int number) implements Item { value() returns int { return number } }
+interface Container { replace(own Resource replacement) changes self; value() returns int }
+Holder(mutable own Resource item) implements Container {
+    replace(own Resource replacement) { item = replacement }
+    value() returns int { return item.value() }
+}
+`,
+  'main.aug': `import Resource and Holder from holder
+own Resource initial = Resource(number=1)
+own Holder holder = Holder(item=initial)
+own Resource replacement = Resource(number=7)
+borrow holder { holder.replace(replacement) }
+print(value=holder.value())
+`
+}, root => {
+  const checked=check(root);assert.equal(checked.status,0,JSON.stringify(checked.issues));
+  const result=run(root);assert.equal(result.status,0,result.stderr);assert.equal(result.stdout,'7\n');
+}));
+
 function completionItems(root, file, source, offset = source.length) {
   const path = join(root, file);
   const result = spawnSync(process.execPath, [cli, 'complete', root, '--file', path,
@@ -439,6 +460,18 @@ test('checked exception is caught at runtime', () => {
   assert.equal(result.status, 0, result.stderr);
   assert.equal(result.stdout, 'caught FileError\n');
 });
+
+test('checked constructor failure releases transferred fields and retains its declared error', () => withProject({
+  'operations.aug': `interface Item:\n    pass\nResource() implements Item:\n    pass\nFailure(int code, string message) implements Error:\n    pass\nHolder(own Resource value) unless Failure implements Item:\n    initialize:\n        throw Failure(code=9, message="rejected")\n`,
+  'main.aug': `import Resource and Holder and Failure from operations\ntry:\n    own Resource value = Resource()\n    Holder(value)\ncatch Failure error:\n    print(value=error.code)\nprint(value="done")\n`
+}, root => {
+  const result=run(root,true);assert.equal(result.status,0,result.stderr);assert.equal(result.stdout,'9\ndone\n');
+  assert.equal(result.stderr.match(/drop: Resource\n/g)?.length,1);
+  assert.equal(result.stderr.match(/drop: Holder\n/g)?.length,1);
+  const file=join(root,'main.aug'),source=readFileSync(file,'utf8');
+  writeFileSync(file,source.slice(0,source.indexOf('try:'))+'own Resource value = Resource()\nHolder(value)\n');
+  assert.ok(check(root).issues.some(issue=>issue.code==='THROWS'&&/Unhandled Failure/.test(issue.message)));
+}));
 
 test('C FFI call inside unsafe block runs', () => {
   const result = run(join(repository, 'examples', 'ffi'));

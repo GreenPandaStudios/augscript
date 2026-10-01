@@ -31,6 +31,14 @@ The exact versions, archive URLs, and SHA-256 values are in [`native-dependencie
 
 ## Release gates still open
 
+The [LLVM/native preview](native-implementation.md) supports real repository
+imports of CPU LibTorch, SQLite, zlib and Rust BLAKE3 on macOS ARM64. Installed
+CLI checks cover public downloads, exact locks, offline reuse, relocated bundles
+and finite ownership cases without native tools on PATH. The compiler pack is
+still awaiting publication and minimum macOS 14 qualification. Full language
+parity, debug information, Linux packs and switching the default backend remain
+open; ordinary applications still use C during migration.
+
 - **Platform support:** the full pinned web/crypto bootstrap passes on macOS ARM and Linux ARM. [Docker build/run bases](docker.md) run core, web, and crypto programs on Linux. Linux x86-64 runs in CI; other platforms remain unverified.
 - **Concurrency and ownership:** tasks use one OS thread. The [conformance suite](language-conformance.md) exercises injected captures, mutation after a child starts inside `borrow`, owned `Shared<T>` cleanup, branch joins, cancellation, and the public `Task<T>` error contract. A 1.0 support claim still depends on the platform, distribution, and compatibility gates.
 - **Security and reliability:** HTTP and OIDC need broad protocol conformance, durable credentials and keys, rotation, long-running load tests, and deployment guidance. The [gap ledger](web-library-gaps.md) records the precise work.

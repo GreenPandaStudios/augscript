@@ -9,9 +9,10 @@
 typedef struct AugObject AugObject;
 typedef struct AugValue AugValue;
 typedef AugValue (*AugMethod)(AugValue self, AugValue *args, int count);
+typedef void (*AugPointerMethod)(AugValue *out, const AugValue *self, AugValue *args, int count);
 
 enum { AUG_NULL, AUG_INT, AUG_FLOAT, AUG_BOOL, AUG_STRING, AUG_OBJECT };
-enum { AUG_LIST_KIND = 6, AUG_MAP_KIND, AUG_SET_KIND, AUG_TUPLE_KIND, AUG_RECORD_KIND, AUG_BYTES_KIND, AUG_PRIVATE_KEY_KIND, AUG_PUBLIC_KEY_KIND, AUG_JSON_KIND, AUG_HTTP_REQUEST_KIND, AUG_HTTP_RESPONSE_KIND, AUG_HEADERS_KIND, AUG_HTML_KIND, AUG_TASK_KIND, AUG_HTTP_ACTION_KIND };
+enum { AUG_LIST_KIND = 6, AUG_MAP_KIND, AUG_SET_KIND, AUG_TUPLE_KIND, AUG_RECORD_KIND, AUG_BYTES_KIND, AUG_PRIVATE_KEY_KIND, AUG_PUBLIC_KEY_KIND, AUG_JSON_KIND, AUG_HTTP_REQUEST_KIND, AUG_HTTP_RESPONSE_KIND, AUG_HEADERS_KIND, AUG_HTML_KIND, AUG_TASK_KIND, AUG_HTTP_ACTION_KIND, AUG_NATIVE_RESOURCE_KIND };
 
 struct AugValue {
   int tag;
@@ -21,6 +22,7 @@ struct AugValue {
 typedef struct {
   const char *name;
   AugMethod function;
+  AugPointerMethod pointer_function;
 } AugMethodEntry;
 
 struct AugObject {
@@ -134,6 +136,7 @@ bool aug_string_starts_with(AugValue value, AugValue prefix);
 bool aug_string_is_token(AugValue value, int64_t minimum, int64_t maximum);
 int64_t aug_bytes_length(AugValue value);
 AugValue aug_bytes_text(AugValue value);
+bool aug_valid_utf8(const void *text, size_t size);
 AugValue aug_bytes_base64url(AugValue value);
 AugValue aug_base64url_decode(AugValue value);
 

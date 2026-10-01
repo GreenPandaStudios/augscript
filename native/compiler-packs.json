@@ -1,0 +1,19 @@
+{
+  "format": 1,
+  "compiler": "0.21.0",
+  "llvm": "23.1.2",
+  "packs": [
+    {
+      "host": "darwin-arm64",
+      "target": "aarch64-apple-darwin",
+      "minimumOS": "14.0",
+      "archive": {
+        "url": "https://github.com/GreenPandaStudios/augscript/releases/download/v0.21.0/aug-llvm-macos-arm64.tar.gz",
+        "sha256": "337400ebe72600f9b25fd31f58211ab8808fef8c49a7fc6073084b0c57dfb6e8",
+        "maximumDownloadBytes": 133286160,
+        "maximumUnpackedBytes": 420624359,
+        "fileManifest": "files.json"
+      }
+    }
+  ]
+}

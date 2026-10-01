@@ -1,6 +1,6 @@
 # Grammar and line boundaries
 
-This is the compact accepted grammar for 0.20. `Name` is an identifier, and bracketed grammar groups below are optional. These text blocks describe syntax rather than executable snippets.
+This is the compact accepted grammar for 0.21. `Name` is an identifier, and bracketed grammar groups below are optional. These text blocks describe syntax rather than executable snippets.
 
 ## Blocks and declarations
 
@@ -13,7 +13,7 @@ Function    := [Tags] ["fixture"] Name [Generics] "(" Parameters ")"
                ["uses" Paths] ["unless" Types] (Block | End)
 
 Class       := [Tags] Name [Generics] ["(" Fields ")"]
-               "implements" Type {"," Type} ClassBlock
+               ["unless" Types] "implements" Type {"," Type} ClassBlock
 ClassBlock  := BlockOfFieldsAndMethodsWithOptionalInitialize
 Initialize  := "initialize" Block
 

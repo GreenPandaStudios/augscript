@@ -12,6 +12,7 @@ Install `aug` once as shown in [Your first project](getting-started.md). Command
 | `build PROJECT [--out NAME] [--json]` | Native path; JSON contains output and sourceMap. |
 | `run [PROJECT] [--offline] -- args...` | Prepares declared packages and required native libraries, checks, compiles, and runs; program stdout is preserved. |
 | `emit-c PROJECT` | Generated C for inspection. |
+| `emit-llvm PROJECT` | Checked execution IR lowered directly to LLVM IR. |
 | `format PROJECT [--file PATH] [--write] [--json]` | Canonical source; --write updates files. |
 | `migrate PROJECT [--file PATH] [--write] [--json]` | Verified migration of rejected legacy syntax; preview by default. |
 | `spec PROJECT [--check] [--json]` | Adjacent Markdown specs and offline dependency explanations; --check detects drift without writing. |

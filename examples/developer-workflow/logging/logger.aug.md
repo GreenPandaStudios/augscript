@@ -10,8 +10,8 @@ Receives a message describing an application operation.
 <a id="symbol-Logger.log"></a>
 ### `Logger.log` · [source](logger.aug#L6)
 
-It takes `message` as a string (Text to write). It gets `console` ([`Console`](../.aug-spec/august/0.20.1/io/contracts.aug.md#symbol-Console)) from dependency injection. It can call [`Console.write`](../.aug-spec/august/0.20.1/io/contracts.aug.md#symbol-Console.write).
+It takes `message` as a string (Text to write). It gets `console` ([`Console`](../.aug-spec/august/0.21.0/io/contracts.aug.md#symbol-Console)) from dependency injection. It can call [`Console.write`](../.aug-spec/august/0.21.0/io/contracts.aug.md#symbol-Console.write).
 
 ## Dependencies
 
-It uses [`Console`](../.aug-spec/august/0.20.1/io/contracts.aug.md#symbol-Console) ([`write`](../.aug-spec/august/0.20.1/io/contracts.aug.md#symbol-Console.write)) from `august.io`.
+It uses [`Console`](../.aug-spec/august/0.21.0/io/contracts.aug.md#symbol-Console) ([`write`](../.aug-spec/august/0.21.0/io/contracts.aug.md#symbol-Console.write)) from `august.io`.

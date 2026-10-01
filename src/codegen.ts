@@ -201,7 +201,8 @@ class CGenerator {
       `  AugValue value = roots[${cls.fields.length}];`,
       `  value.as.object->field_names = ${this.name(def)}_field_names;`,
       ...(cls.kind === 'class' && initializationOf(cls).length ? [`  ${this.initializerName(def)}(value, NULL, 0);`] : []),
-      ...(cls.kind === 'class' && cls.record ? ['  aug_freeze(value);'] : []),
+      `  if (aug_has_error) { aug_drop(value); value = aug_scalar_null(); }`,
+      ...(cls.kind === 'class' && cls.record ? ['  if (!aug_has_error) aug_freeze(value);'] : []),
       `  aug_frame_leave(&frame);`,
       `  return value;`,
       `}`,
@@ -370,6 +371,7 @@ class BodyEmitter {
   private locals = new Map<string, number>();
   private readonly owned = new Set<number>();
   private readonly classFields = new Map<string, number>();
+  private readonly ownedClassFields = new Set<string>();
   private readonly scalarSlots = new Set<number>();
   private slots = 1;
   private labelCounter = 0;
@@ -380,7 +382,10 @@ class BodyEmitter {
     this.generator = generator;
     this.file = file;
     this.def = def;
-    if (owner) fieldsOf(owner).forEach((field, index) => this.classFields.set(field.name, index));
+    if (owner) fieldsOf(owner).forEach((field, index) => {
+      this.classFields.set(field.name, index);
+      if(field.ownership==='own')this.ownedClassFields.add(field.name);
+    });
   }
 
   addParameter(name: string, index: number, owned = false): void {
@@ -883,6 +888,7 @@ class BodyEmitter {
         this.line(`aug_set_field(${this.slot(object)}, ${this.memberIndex(stmt.target.object, stmt.target.name)}, ${this.slot(value)});`);
       }
       let targetOwns = stmt.ownership === 'own';
+      if(stmt.target.kind==='name'&&!this.locals.has(stmt.target.name))targetOwns ||= this.ownedClassFields.has(stmt.target.name);
       if (stmt.target.kind === 'member') {
         const memberName = stmt.target.name;
         const node = this.generator.expressionType(stmt.target.object)?.def?.node;

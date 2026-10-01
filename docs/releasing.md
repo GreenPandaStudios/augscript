@@ -43,6 +43,14 @@ The manually published Marketplace `0.19.0` contains files that differ from the 
 
 ## npm publication
 
+The LLVM preview release builds official pinned LLVM tools and the August runtime
+before packaging. It records the exact compiler archive hash in the CLI and
+bundled editor compiler, and includes that archive in the GitHub release.
+Runtime compilation remains a maintainer operation. Application installation
+downloads the reviewed pack and does not build LLVM or invoke Clang. CI runs the
+LLVM execution tests with its prepared toolchain; unsupported platforms retain
+explicit preview diagnostics. See [native packages](native-packages.md).
+
 The packages use the `@greenpandastudios` npm scope. Verify ownership and each package's trusted publisher before a release. GitHub tarballs can also be installed directly.
 
 Configure a trusted publisher for each of the four npm packages:
@@ -93,3 +101,18 @@ Enable GitHub Pages with **GitHub Actions** as its publishing source. `docs.yml`
 ## Current limits
 
 August is experimental. Native web/crypto bootstrap supports macOS and Linux; other platforms are unverified. npm and Marketplace deployment require owner-configured trust. The first `v0.20.1` Marketplace attempt failed during the VSCE 4.0.0 OIDC token exchange with an API-version error; automated Marketplace publication remains unverified, and the checked VSIX is available from GitHub Releases. User libraries can use public Git repositories, local folders, or npm archives. Prebuilt native dependency releases and a stable external native adapter ABI remain future work. See [the gap ledger](web-library-gaps.md) and [performance assessment](performance.md).
+## Native preview qualification
+
+Before publishing a compiler with native package support, build its LLVM pack
+before the npm archives and extension. `scripts/release-artifacts.mjs` checks
+that both shipped manifests pin that exact compiler archive. The release job
+runs `scripts/qualify-native-consumers.mjs --local-compiler`: it installs the npm
+archives, fetches the four native libraries from their public repositories and
+release URLs, then runs LLVM programs through URL imports and named aliases.
+Git, native compilers, and SDK paths are unavailable to those CLI processes.
+Frozen offline runs must preserve the locks and produce the same results.
+
+The CI consumer job repeats this check on macOS 14 ARM64. A local result on a
+newer OS does not qualify the minimum OS. After release publication, omit
+`--local-compiler` to verify the compiler download too. Keep the resulting JSON
+report with release evidence; never commit artifact caches or generated binaries.

@@ -11,6 +11,9 @@ jobs:
   release:
     runs-on: macos-15
     timeout-minutes: 60
+    env:
+      AUG_LLVM_HOME: ${{ github.workspace }}/.aug-build/llvm-tools
+      AUG_RELEASE_NATIVE_REQUIRED: '1'
     permissions:
       contents: write
     steps:
@@ -26,12 +29,18 @@ jobs:
       - run: npm --prefix vscode ci
       - run: node scripts/version.mjs --check --tag "$GITHUB_REF_NAME"
       - run: node scripts/bootstrap-native.mjs
+      - run: node scripts/prepare-llvm-tools.mjs
+      - run: node scripts/build-runtime-pack.mjs
+      - name: Build compiler pack and pin the exact archive in release packages
+        run: node scripts/build-llvm-pack.mjs
       - run: npm run check
       - run: npm test
       - run: npm run docs:check
       - run: npm run docs:build
       - run: npm run package:packages
       - run: npm run test:packages -- --native
+      - name: Qualify cold public native imports from the installed CLI
+        run: node scripts/qualify-native-consumers.mjs --local-compiler
       - run: npm run package:extension
       - run: node scripts/release-artifacts.mjs
       - name: Verify the artifacts consumed by publishing workflows

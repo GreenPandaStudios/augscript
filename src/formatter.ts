@@ -202,16 +202,17 @@ class Printer {
     else if (item.kind === 'bind') this.line(`implement ${item.key}${item.keyTypeArgs.length ? '<' + item.keyTypeArgs.map(typeName).join(', ') + '>' : ''} with ${typeName(item.target)}` +
       (item.lifetime ? ' ' + item.lifetime : '') + (item.sharedMutation ? ' mutable' : ''));
     else if (item.kind === 'composition') this.block('composition ' + item.name, () => item.bindings.forEach(binding => this.item(binding)), item.span);
+    else if (item.kind === 'resource') this.line('extern C resource '+item.name);
     else if (item.kind === 'function') this.method(item);
     else if (item.kind === 'class') {
       this.annotations(item.annotations);
       const header = `${item.record ? 'record ' : ''}${item.name}${this.generics(item)}(${item.fields.map(field => this.param(field, true)).join(', ')})`;
+      const errors = item.validationErrors?.length ? ` unless ${item.validationErrors.map(typeName).join(' and ')}` : '';
       if (item.record) {
-        const errors = item.validationErrors?.length ? ` unless ${item.validationErrors.map(typeName).join(' and ')}` : '';
         if (item.constructorBody) this.block(header + errors, () => this.initializer(item), item.span);
         else this.line(header + errors);
       } else {
-        this.block(header + ' implements ' + item.implements.map(typeName).join(', '), () => {
+        this.block(header + errors + ' implements ' + item.implements.map(typeName).join(', '), () => {
           for (const field of item.stateFields ?? []) { this.before(field.span.start); this.line(`${field.mutable ? 'mutable ' : ''}${typeName(field.type)} ${field.name} = ${this.expression(field.initializer)}`); }
           if (item.constructorBody) this.initializer(item);
           item.methods.forEach(method => this.method(method));

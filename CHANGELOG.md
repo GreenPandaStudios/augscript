@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Add the macOS ARM64 LLVM preview, checked execution IR, pinned compiler/runtime packs, and SDK-free linking. Native ABI packages select LLVM automatically; other applications keep the C backend during migration. Unsupported LLVM constructs produce a source diagnostic without fallback.
+- Add format 2 native packages, opaque owned resources, descriptor-checked labels/types/errors/effects, bounded verified artifacts, target and compiler locks, and deployment notices. Consumers do not run package build scripts. Public GitHub source imports use verified HTTPS snapshots without requiring Git.
+- Exercise real CPU LibTorch, SQLite, zlib, and Rust BLAKE3 adapters. Fix owned-field transfer/replacement cleanup, preserve native error methods, reject ambiguous native symbols and lock metadata changes, and reject direct scalar contract violations. Public release and clean-machine qualification are in progress.
+- Allow a class constructor to declare checked failures with `unless ErrorType` before `implements`. Failed construction releases the partial object and transferred owned fields in both backends. Frozen execution rejects changed source dependencies before changing the accepted snapshot or lockfile. Native hover, context and specs describe the provider, targets, ownership and release contract and distinguish foreign-code promises from compiler checks.
+
 - Wait for npm's public registry to expose an accepted upload before publishing the next package. Visibility checks remain bounded; authorization, service, and integrity errors stop the deployment immediately.
 
 ## 0.20.1
