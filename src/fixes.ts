@@ -106,10 +106,26 @@ function wrappedStatement(file: SourceFile, issue: Diagnostic,
     text: `${opener} {\n${indent}    ${body}\n${indent}${closer}` };
 }
 
+/** Deterministic parser repairs also apply to rejected, isolated source units. */
+export function syntaxFixes(file:SourceFile,diagnostics:Diagnostic[]):EditorFix[]{
+  return diagnostics.filter(issue=>issue.file===file.path).flatMap(issue=>{
+    const start=offsetAt(file.source,issue.line,issue.column);
+    if(issue.code==='BINDING'){
+      const match=/^let\s+/.exec(file.source.slice(start));
+      if(match)return [{title:'Use an inferred August binding',issue,edits:[{file:file.path,start,end:start+match[0].length,text:''}]}];
+    }
+    if(issue.code==='COMPARISON'){
+      const token=lex(file.path,file.source).tokens.find(token=>token.span.start===start);
+      if(token&&['=','to'].includes(token.kind))return [{title:'Compare for equality with ==',issue,edits:[{file:file.path,start,end:token.span.end,text:'=='}]}];
+    }
+    return [];
+  });
+}
+
 export function suggestedFixes(checked: CheckedProject, fileName: string): EditorFix[] {
   const file = checked.project.files.get(resolve(fileName));
   if (!file) return [];
-  const fixes: EditorFix[] = [];
+  const fixes: EditorFix[] = syntaxFixes(file,checked.diagnostics);
   const syntaxIssue = checked.diagnostics.find(issue => issue.file === file.path && issue.code === 'SYNTAX');
   if (syntaxIssue) {
     try {

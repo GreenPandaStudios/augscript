@@ -1,6 +1,6 @@
 # Grammar and line boundaries
 
-This is the compact accepted grammar for 0.20. `Name` is an identifier, and bracketed grammar groups below are optional. These text blocks describe syntax rather than executable snippets.
+This is the compact accepted grammar for 0.20 and the AUG-0001 development addition. `Name` is an identifier, and bracketed grammar groups below are optional. These text blocks describe syntax rather than executable snippets. Forwarding requires the development build described in [checked changes](checked-changes.md).
 
 ## Blocks and declarations
 
@@ -11,6 +11,8 @@ Block       := "{" Statements "}"
 Function    := [Tags] ["fixture"] Name [Generics] "(" Parameters ")"
                ["returns" ["own"] Type] ["changes" Paths]
                ["uses" Paths] ["unless" Types] (Block | End)
+
+Forward     := "forward" Name "to" Name NEWLINE
 
 Class       := [Tags] Name [Generics] ["(" Fields ")"]
                "implements" Type {"," Type} ClassBlock

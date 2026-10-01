@@ -28,7 +28,7 @@ npx @greenpandastudios/aug-cli@next explain . --file calculator.aug --name Calcu
 npx @greenpandastudios/aug-cli@next context . --file calculator.aug --name Calculator --budget 6000
 ```
 
-The report gives checked contracts and related context. It helps you choose which files to read; it does not establish that the requested behavior is correct. A bounded result can be truncated. Check its `truncated` flag and increase the budget or follow the source links when the required contract is absent.
+The report gives checked contracts and related context. It helps you choose which files to read; it does not establish that the requested behavior is correct. The development protocol reports `coverage.requiredContextComplete`, required omissions and unresolved dispatch boundaries. Increase the budget for omitted contracts; unresolved boundaries need explicit investigation. A description from the editor's import closure does not enumerate all reverse callers. See [checked changes](../checked-changes.md) for supported standalone plans and independent acceptance gates.
 
 ## Make and check the change
 

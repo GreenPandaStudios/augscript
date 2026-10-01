@@ -6,6 +6,9 @@ Completion inserts labeled arguments and public imports. New templates cover dec
 
 ## Unreleased
 
+- Show expanded forwarding signatures and inherited documentation, immediate target and final implementation. Navigate alias and implementation separately; complete imported targets without inserting call syntax, and color forwarding declarations contextually.
+- Offer specific inferred-binding and condition-comparison fixes. The bundled compiler includes revision-bearing checked changes and experimental typed-row evidence; the wiki explains their profile and acceptance limits.
+
 - Show inferred return, mutation, capability, and checked-error contracts as inline hints, enabled by default. Toggle augscript.inferredContractHints; formatting never inserts inferred clauses. Hover and signature help use the inferred contracts too.
 
 - Bundled native commands prepare only required pinned dependencies and reuse their cache. Missing tools and setup failures include recovery steps; terminal source diagnostics show the code and help.

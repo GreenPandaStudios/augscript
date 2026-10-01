@@ -124,7 +124,7 @@ test('module policy, documentation validation, and configuration run during chec
   assert.ok(issues.some(issue => issue.message.includes('may not depend')), result.stdout);
 }));
 
-test('explain exposes effects and context obeys its output budget', () => project({
+test('explain exposes effects and truncated revision context refuses complete coverage', () => project({
   'main.aug': 'import save from service\n',
   'service.aug': `import FileWriter from august.io
 /** Save text. @see FileWriter */
@@ -138,7 +138,8 @@ save(resolve FileWriter files, string path, string content) uses files.write unl
   assert.equal(fact.callables[0].capabilities[0], 'files.write');
   assert.deepEqual(fact.callables[0].errors, ['FileError']);
   const context = command(root, 'context', ['--file', join(root, 'service.aug'), '--budget', '1024', '--json']);
-  assert.equal(context.status, 0, context.stderr); assert.ok(context.stdout.trim().length <= 1024, context.stdout);
+  assert.equal(context.status, 1, context.stderr);const packet=JSON.parse(context.stdout);
+  assert.equal(packet.coverage.requiredContextComplete,false);assert.equal(packet.status.mandatory,'incomplete');assert(packet.omissions.length>0);
 }));
 
 test('scoped DI caches within a scope, restores nested scopes, and rejects escape', () => {

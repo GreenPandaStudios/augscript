@@ -13,6 +13,7 @@ For writing and navigation, use [the editorial guide](writing-docs.md). The repo
 | Diagnostic or editor behavior | `src/help.ts`, diagnostics/tooling guide and VS Code changelog |
 | CLI, packages, configuration or supported platform | Tooling/packages/releasing guide, Docker and Dev Container recipes, and package metadata |
 | Completed or deferred feature | Implementation map, gap ledger and changelog |
+| Checked-change schema, forwarding, transactions or bounded evidence | `docs/checked-changes.md`, amendment status, tooling/diagnostics guide, help/editor contracts, installed-package and independent mutation/recovery regressions |
 
 Public comments should explain observable behavior, named inputs, errors, side effects, and limits. Keep dependencies explicit in examples. Record incomplete capabilities in the gap ledger; do not imply that an unimplemented proposal is usable.
 

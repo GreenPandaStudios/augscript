@@ -59,6 +59,7 @@ export default defineConfig({
         { text: 'Weather API', link: '/weather-api' }, { text: 'VS Code', link: '/editor' },
         { text: 'Tests', link: '/testing' }, { text: 'Web applications', link: '/web' },
         { text: 'Compiled specifications', link: '/specifications' },
+        { text: 'Checked changes', link: '/checked-changes' },
         { text: 'Packages and installation', link: '/packages' },
         { text: 'Docker deployment', link: '/docker' },
         { text: 'VS Code Dev Containers', link: '/dev-containers' },

@@ -113,7 +113,7 @@ export function projectForTest(project: Project, unit: UnitTest): Project {
     if (Array.isArray(value)) { value.forEach(item => visit(item, file)); return; }
     const record = value as Record<string, unknown>;
     if (typeof record.name === 'string') {
-      const def = project.scopes.get(file)?.get(record.name);
+      const def = typeof record.definitionId==='string'?project.definitions.get(record.definitionId):project.scopes.get(file)?.get(record.name);
       if (def) include(def);
     }
     if (record.kind === 'bind' && typeof record.key === 'string') {
@@ -149,6 +149,8 @@ export function mergeTestAnalysis(checked: CheckedProject, tests: { checked: Che
       if (type) checked.expressionTypes.set(expr, type);
       const plan = entry.checked.callPlans.get(expr);
       if (plan) checked.callPlans.set(expr, plan);
+      const name=entry.checked.resolvedNames.get(expr);
+      if(name)checked.resolvedNames.set(expr,name);
       for (const [key, child] of Object.entries(value)) if (key !== 'span') visit(child);
     };
     visit(entry.checked.project.main?.items);
