@@ -132,7 +132,7 @@ test('registry retries skip identical versions and reject mismatches and service
     assert.throws(() => registryMatches(result(1, { error: { code } }), 'sha512-same'), /lookup failed/);
 });
 
-test('npm preflights every package before writes and resumes a partial publication', t => {
+test('npm preflights every package before writes and resumes a partial publication', async t => {
   const { root } = npmFixture(t), packages = verifyNpmRelease(root), published = new Map([[packages[0].name, packages[0].integrity]]), calls = [];
   const run = (command, args) => {
     calls.push(args);
@@ -142,24 +142,68 @@ test('npm preflights every package before writes and resumes a partial publicati
     }
     const pkg = packages.find(pkg => pkg.file === args[1]); published.set(pkg.name, pkg.integrity); return { status: 0 };
   };
-  publishPackages(packages, run, () => {});
+  await publishPackages(packages, run, () => {});
   assert(calls.slice(0, 4).every(args => args[0] === 'view'));
   assert.deepEqual(calls.filter(args => args[0] === 'publish').map(args => args[1]), packages.slice(1).map(pkg => pkg.file));
   assert(calls.filter(args => args[0] === 'publish').every(args => args.includes('--ignore-scripts') && args.includes('next')));
-  calls.length = 0; publishPackages(packages, run, () => {}); assert.equal(calls.length, 4);
+  calls.length = 0; await publishPackages(packages, run, () => {}); assert.equal(calls.length, 4);
   published.set(packages[3].name, 'sha512-unreviewed'); calls.length = 0;
-  assert.throws(() => publishPackages(packages, run, () => {}), /differs/);
+  await assert.rejects(publishPackages(packages, run, () => {}), /differs/);
   assert(!calls.some(args => args[0] === 'publish'));
 });
 
-test('npm stops on publication failure and never publishes the CLI before its libraries', t => {
+test('npm stops on publication failure and never publishes the CLI before its libraries', async t => {
   const { root } = npmFixture(t), calls = [], packages = verifyNpmRelease(root);
   const run = (command, args) => {
     calls.push(args);
     return args[0] === 'view' ? result(1, { error: { code: 'E404' } }) : { status: 1 };
   };
-  assert.throws(() => publishPackages(packages, run, () => {}), /Publication failed/);
+  await assert.rejects(publishPackages(packages, run, () => {}), /Publication failed/);
   assert.deepEqual(calls.filter(args => args[0] === 'publish').map(args => args[1]), [packages[0].file]);
+});
+
+test('npm waits for public visibility without uploading a package twice or advancing early', async t => {
+  const { root } = npmFixture(t), packages = verifyNpmRelease(root), uploaded = [], probes = new Map(), pauses = [], messages = [];
+  const run = (command, args) => {
+    if (args[0] === 'publish') {
+      const pkg = packages.find(pkg => pkg.file === args[1]);
+      assert(uploaded.every(previous => probes.get(previous.name) >= 3));
+      uploaded.push(pkg); return { status: 0 };
+    }
+    const pkg = packages.find(pkg => `${pkg.name}@${pkg.version}` === args[1]);
+    if (!uploaded.includes(pkg)) return result(1, { error: { code: 'E404' } });
+    const count = (probes.get(pkg.name) ?? 0) + 1; probes.set(pkg.name, count);
+    return count >= 3 ? result(0, pkg.integrity) : result(1, { error: { code: 'E404' } });
+  };
+  await publishPackages(packages, run, text => messages.push(text), { pause: async ms => { pauses.push(ms); } });
+  assert.deepEqual(uploaded, packages);
+  assert.deepEqual(pauses, Array(8).fill(5000));
+  assert.equal(messages.filter(text => text.startsWith('Upload accepted:')).length, 4);
+});
+
+test('npm visibility waits remain bounded and stop before publishing later packages', async t => {
+  const { root } = npmFixture(t), packages = verifyNpmRelease(root), uploads = []; let pauses = 0;
+  const run = (command, args) => {
+    if (args[0] === 'publish') { uploads.push(args[1]); return { status: 0 }; }
+    return result(1, { error: { code: 'E404' } });
+  };
+  await assert.rejects(publishPackages(packages, run, () => {}, { pause: async () => { pauses++; } }), /bounded visibility wait/);
+  assert.equal(pauses, 60);
+  assert.deepEqual(uploads, [packages[0].file]);
+});
+
+test('npm never retries service errors or mismatched integrity during visibility confirmation', async t => {
+  const { root } = npmFixture(t), packages = verifyNpmRelease(root);
+  for (const failure of [result(0, 'sha512-unreviewed'), ...['E401', 'E403', 'E500', 'ETIMEDOUT'].map(code => result(1, { error: { code } }))]) {
+    const uploads = []; let pauses = 0;
+    const run = (command, args) => {
+      if (args[0] === 'publish') { uploads.push(args[1]); return { status: 0 }; }
+      return uploads.length ? failure : result(1, { error: { code: 'E404' } });
+    };
+    await assert.rejects(publishPackages(packages, run, () => {}, { pause: async () => { pauses++; } }), /differs|lookup failed/);
+    assert.equal(pauses, 0);
+    assert.deepEqual(uploads, [packages[0].file]);
+  }
 });
 
 test('VSIX verification checks complete identity, artwork and bundled compiler', t => {
