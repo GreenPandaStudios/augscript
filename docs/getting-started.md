@@ -26,7 +26,7 @@ cd hello-august
 aug run
 ```
 
-`init` creates a starter and refuses to replace a nonempty destination. npm supplies the CLI and its matching libraries. `aug run` defaults to the current folder: it checks the project, prepares its dependencies, compiles it, and starts it. The starter needs no additional native libraries. It prints:
+`init` creates a starter, including `AGENTS.md`, and refuses to replace a nonempty destination. npm supplies the CLI and its core I/O library. `aug run` defaults to the current folder: it checks the project, prepares its dependencies, compiles it, and starts it. The starter needs no additional native libraries. It prints:
 
 ```text
 Hello, August!
@@ -62,7 +62,7 @@ interface Greeter:
 
 /** A plain-language greeting. */
 SimpleGreeter() implements Greeter:
-    greet(string name) returns string:
+    greet(string name):
         return "Hello, " + name + "!"
 
 test SimpleGreeter greeter:
@@ -105,4 +105,4 @@ After an edit, regenerate before committing the explanation. `--check` reports s
 
 You have created, checked, run, tested, and explained an August application. In [Values and functions](learn/values-and-functions.md), you will write a calculation without an injected dependency and learn how labeled shorthand and conditions read.
 
-You can also [browse complete projects](examples/index.md) with code and actual compiled specs beside each other. The gallery's Indentation and Braces controls display the same checked program in either block style.
+For a service, try [the weather API starter](weather-api.md). You can also [browse complete projects](examples/index.md) with code and actual compiled specs beside each other. The gallery's Indentation and Braces controls display the same checked program in either block style.

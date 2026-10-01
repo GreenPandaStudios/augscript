@@ -25,6 +25,13 @@ If you are learning the language for the first time, use [the book](../learn/ind
 | [A small tested application](developer-workflow/index.md) | A calculator logs each addition. Its nearby tests replace the logger and verify both labeled inputs and fresh setup. |
 | [Command-line arguments](cli-args/index.md) | Read arguments, inspect collections, and return a process exit status. |
 
+## Web applications
+
+| Project | What it demonstrates |
+| --- | --- |
+| [Weather API](weather-api/index.md) | Serve five simulated forecasts as typed JSON. The record, endpoint, and tests share a file; main.aug starts the listener and main.yaml enables OpenAPI. |
+| [OpenID Connect login application](oidc-login/index.md) | One executable hosts a login page, an OpenID Connect provider and client, session JWTs, and logout. Accounts, keys, and sessions are held in memory for this development demonstration. |
+
 ## Values and errors
 
 | Project | What it demonstrates |
@@ -58,12 +65,6 @@ If you are learning the language for the first time, use [the book](../learn/ind
 | --- | --- |
 | [A native C boundary](ffi/index.md) | Declare a C operation and call it inside an unsafe block. |
 | [A finite benchmark](benchmark/index.md) | Measure a deterministic arithmetic workload with aug bench. |
-
-## Web applications
-
-| Project | What it demonstrates |
-| --- | --- |
-| [OpenID Connect login application](oidc-login/index.md) | One executable hosts a login page, an OpenID Connect provider and client, session JWTs, and logout. Accounts, keys, and sessions are held in memory for this development demonstration. |
 
 ## Measured programs
 

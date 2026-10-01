@@ -1,3 +1,7 @@
+## 0.20.0
+
+Completion inserts labeled arguments and public imports. New templates cover declarations, tests, HTTP methods, streams, tasks, and locks. Fixes correct nearby names and input labels, scaffold interface methods, and install missing source packages. The bundled compiler uses regular Git/local/npm packages for optional libraries. Updated guides cover the editor and weather starter.
+
 # Changelog
 
 ## Unreleased

@@ -295,6 +295,21 @@ class SpecWriter {
       }
       case 'collection': {
         if(expr.collection==='Map')return 'a map with '+expr.items.filter((_,index)=>index%2===0).map((key,index)=>`${this.expression(key)} mapped to ${this.expression(expr.items[index*2+1])}`).join('; ');
+        const first=expr.items[0];
+        if(expr.collection==='List'&&expr.items.length>=3&&first?.kind==='call'&&first.callee.kind==='name'&&!this.locals.has(first.callee.name)) {
+          const name=first.callee.name,def=this.definition(name);
+          const labels=first.argLabels;
+          if(def?.node.kind==='class'&&def.node.record&&labels.every(Boolean)&&expr.items.every(item=>
+            item.kind==='call'&&item.callee.kind==='name'&&item.callee.name===name&&
+            item.typeArgs.map(typeName).join(',')===first.typeArgs.map(typeName).join(',')&&
+            item.args.every(arg=>arg.kind==='literal')&&item.argLabels.length===labels.length&&
+            item.argLabels.every((label,index)=>label===labels[index]))) {
+            this.call(first);
+            const rows=expr.items.map(item=>code('('+ (item as Extract<Expr,{kind:'call'}>).args.map(arg=>
+              arg.kind==='literal'?arg.numericText??JSON.stringify(arg.value):'').join(', ')+')'));
+            return `a list of ${expr.items.length} ${this.link(def)} records, with ${code('('+labels.join(', ')+')')} values of ${coordinate(rows)}, in that order`;
+          }
+        }
         return `a ${expr.collection==='empty'?'context-typed empty collection':expr.collection.toLowerCase()}`+(expr.items.length?' containing '+expr.items.map(item=>this.expression(item)).join(', '):' with no items');
       }
       case 'resolve':return `the instance provided for ${code(expr.name)}${expr.typeArgs.length?' with type arguments '+expr.typeArgs.map(type=>this.type(type)).join(', '):''}`;
@@ -757,7 +772,7 @@ class SpecWriter {
       const group=groups.get(origin)??[];group.push(...names);groups.set(origin,group);
     }
     return section('Dependencies',2,[...[...groups].map(([origin,names])=>paragraph(
-      'It uses '+coordinate(names)+(origin?' from '+origin:'')+'.')),paragraph('These links explain the full dependency contracts.')]);
+      'It uses '+coordinate(names)+(origin?' from '+origin:'')+'.'))]);
   }
   render(): string {
     const exports=this.file.items.filter(item=>item.kind==='export');

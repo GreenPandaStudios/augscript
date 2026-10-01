@@ -1,12 +1,13 @@
+import { prepareLibraryFixtures } from './library-fixtures.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {mkdtempSync,writeFileSync,rmSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join,resolve} from 'node:path';
-import {spawn,spawnSync} from 'node:child_process';
+import {spawn,spawnSync as fixtureSpawnSync} from 'node:child_process';
 import {createInterface} from 'node:readline';
 import {get} from 'node:http';
-import {loadProject} from '../src/project.ts';
+import {loadProject as fixtureLoadProject} from '../src/project.ts';
 import {checkProject} from '../src/checker.ts';
 test('HTTP response status literals are bounded and dynamic statuses infer HttpError',()=>{
   const root=mkdtempSync(join(tmpdir(),'aug-response-status-'));
@@ -29,14 +30,14 @@ test('HTTP policies guard decoding, bound requests, handle CORS, compress output
   try {
     writeFileSync(join(root,'main.yaml'),'openapi:\n  enabled: true\n');
     writeFileSync(join(root,'main.aug'),`import secured and permitted and limited and zipped and slow and slowChild and events and endless and encoded and empty from endpoints
-import Authentication and Authorization and RequestLogger and WebRequestLogger from august.web
+import Authentication and Authorization and RequestLogger and WebRequestLogger from web
 import DemoAuthentication and DemoAuthorization from auth
 implement Authentication with DemoAuthentication
 implement Authorization with DemoAuthorization
 implement RequestLogger with WebRequestLogger scoped
 serve secured and permitted and limited and zipped and slow and slowChild and events and endless and encoded and empty on port 0
 `);
-    writeFileSync(join(root,'auth.aug'),`import Authentication and Authorization and Principal from august.web
+    writeFileSync(join(root,'auth.aug'),`import Authentication and Authorization and Principal from web
 DemoAuthentication() implements Authentication:
     authenticate(HttpRequest request) returns optional Principal uses Authentication.authenticate unless HttpError:
         match request.headers.get(name="authorization"):
@@ -53,7 +54,7 @@ DemoAuthorization() implements Authorization:
                 return true
         return false
 `);
-    writeFileSync(join(root,'endpoints.aug'),`import Authentication and Authorization and RequestLogger from august.web
+    writeFileSync(join(root,'endpoints.aug'),`import Authentication and Authorization and RequestLogger from web
 record Message(string value)
 [LogRequest(logger=logger)]
 [RequireLogin(authentication=auth)]
@@ -137,7 +138,7 @@ test('HTTP policy dependencies are canonical capabilities and singleton policies
 endpoint GET "/" as home(resolve Authentication auth) returns string uses auth.authenticate:
     return "ok"
 `);
-    assert.ok(checkProject(loadProject(root)).diagnostics.some(issue=>issue.code==='HTTP'&&/august.web Authentication/.test(issue.message)));
+    assert.ok(checkProject(loadProject(root)).diagnostics.some(issue=>issue.code==='HTTP'&&/compatible Authentication/.test(issue.message)));
     writeFileSync(join(root,'api.aug'),`[Cors(origins=["https://one.test"])]
 [Cors(origins=["https://two.test"])]
 endpoint GET "/" as home() returns string:
@@ -146,3 +147,10 @@ endpoint GET "/" as home() returns string:
     assert.ok(checkProject(loadProject(root)).diagnostics.some(issue=>issue.code==='HTTP'&&/only once/.test(issue.message)));
   } finally {rmSync(root,{recursive:true,force:true});}
 });
+
+function spawnSync(command, args, options) {
+  if (args?.[0]?.endsWith("aug.mjs") && args[2]) prepareLibraryFixtures(args[2]);
+  return fixtureSpawnSync(command, args, options);
+}
+
+function loadProject(root, ...args) { prepareLibraryFixtures(root); return fixtureLoadProject(root, ...args); }

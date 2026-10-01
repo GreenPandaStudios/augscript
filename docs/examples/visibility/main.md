@@ -63,7 +63,7 @@ It sets `counter` to a [`Counter`](counter.md#symbol-Counter) with `value` `1`. 
 
 ### Dependencies
 
-It uses [`Counter`](counter.md#symbol-Counter) ([`label`](counter.md#symbol-Counter.label) and `value`) from `counter`. These links explain the full dependency contracts.
+It uses [`Counter`](counter.md#symbol-Counter) ([`label`](counter.md#symbol-Counter.label) and `value`) from `counter`.
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).
 

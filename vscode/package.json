@@ -3,7 +3,7 @@
   "displayName": "AugScript",
   "description": "Language support for AugScript",
   "icon": "media/augscript.png",
-  "version": "0.19.0",
+  "version": "0.20.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/GreenPandaStudios/augscript.git",
@@ -46,6 +46,23 @@
     "sharp": "0.35.4"
   },
   "contributes": {
+    "snippets": [
+      {
+        "language": "augscript",
+        "path": "./augscript.code-snippets"
+      }
+    ],
+    "configurationDefaults": {
+      "[augscript]": {
+        "editor.tabCompletion": "on",
+        "editor.parameterHints.enabled": true,
+        "editor.quickSuggestions": {
+          "other": "on",
+          "comments": "off",
+          "strings": "off"
+        }
+      }
+    },
     "languages": [
       {
         "id": "augscript",
@@ -187,6 +204,10 @@
       {
         "command": "augscript.openWebGuide",
         "title": "AugScript: Open Web and Crypto Guide"
+      },
+      {
+        "command": "augscript.installPackages",
+        "title": "AugScript: Install Source Packages"
       }
     ],
     "configuration": {

@@ -20,9 +20,10 @@ Install `aug` once as shown in [Your first project](getting-started.md). Command
 | `explain PROJECT --file PATH [--name NAME]` | Checked contracts, dependencies, layers, origins, tests, and module surface. |
 | `context PROJECT --file PATH [--name NAME] [--budget N]` | Bounded JSON context, including related declarations and source snippets. |
 | `lsp PROJECT` | Persistent language server over stdio. |
-| `package init DIRECTORY --name @owner/name` | Standalone source library with public exports, Javadoc and a same-file test. |
+| `package init DIRECTORY [--name @owner/name]` | Standalone source library with public exports, Javadoc and a same-file test. |
 | `package pack DIRECTORY` | Checked source archive ready for npm publishing or local installation. |
-| `install PROJECT [--frozen] [--offline]` | Explicit dependency snapshot and aug.lock.json. |
+| `add URL --as NAME [--project DIRECTORY]` | Installs a repository or archive under a short import alias. |
+| `install PROJECT [--frozen|--update] [--offline]` | Explicit dependency snapshot and aug.lock.json. |
 
 Warnings are nonblocking. Human diagnostics show the source line, a pointer, and help. Machine diagnostics carry severity, code, file, line, column, message, and help. check/build fail on errors; invalid options and missing option values return status 2. Test failure returns nonzero and includes the case output. Put runtime arguments after `--`, for example `aug run -- --port 8080`.
 
@@ -150,7 +151,7 @@ run
 bt
 ```
 
-Debug information resolves source breakpoints. Variables currently display the C runtime's tagged representation; rich AugScript variable views, expression evaluation, and ownership-aware debugging are future work. This machine has LLDB but no lldb-dap, so the DAP launch path requires installing/configuring that adapter. The source-breakpoint smoke test resolved two locations; native launch then stalled on this host and was stopped, so interactive stepping and call-stack behavior remain unverified here.
+Debug information resolves source breakpoints. Variables currently display the C runtime's tagged representation; rich AugScript variable views, expression evaluation, and ownership-aware debugging are future work. Configure an LLDB DAP adapter to use the debug launch path. Native variables still use the runtime’s tagged representation; richer August views remain on the roadmap.
 
 AUG_TRACE_DROPS=1 enables runtime cleanup tracing to stderr for lifecycle verification; it is developer instrumentation, not a language I/O capability.
 
@@ -200,7 +201,7 @@ The language server implements the [LSP 3.17 protocol](https://github.com/Micros
 
 One server runs per project. Parsed modules and checked import closures are cached by source/configuration revision. Unrelated edits reuse the previous immutable semantic document; dependency edits invalidate its closure. Local files can be checked while main composition is incomplete. Whole-project check/build still validates all bindings and startup.
 
-Compiler and extension development dependencies use exact versions and lockfiles. Native maps record the selected C toolchain and inputs; C compiler/OS versions are environment requirements, not vendored binaries. User-authored source packages use npm archives/registry transport, exact versions, and `aug.lock.json`; [the package guide](packages.md) covers creation, installation, public imports and frozen CI builds.
+Compiler and extension development dependencies use exact versions and lockfiles. Native maps record the selected C toolchain and inputs; C compiler/OS versions are environment requirements, not vendored binaries. Source packages use public repository URLs, local folders, or npm archives, with revisions and integrity recorded in `aug.lock.json`; [the package guide](packages.md) covers creation, installation, public imports and frozen CI builds.
 
 ## Inferred contract hints
 

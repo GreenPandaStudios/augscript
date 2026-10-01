@@ -6,18 +6,9 @@ editLink: false
 
 # august.web
 
-Public declarations exported by this module. Import names explicitly from `august.web`. Built-in wire/value types are described in [language constructs](../language-constructs.md).
+Install this source library with `aug add https://github.com/GreenPandaStudios/augscript/src/stdlib/web --as web`, then import its public names from `web`.
 
-- [Principal](#api-Principal)
-- [Authentication](#api-Authentication)
-- [Authorization](#api-Authorization)
-- [RequestLogger](#api-RequestLogger)
-- [WebRequestLogger](#api-WebRequestLogger)
-- [HttpClient](#api-HttpClient)
-- [WebHttpClient](#api-WebHttpClient)
-- [redirect](#api-redirect)
-- [urlEncode](#api-urlEncode)
-- [cookie](#api-cookie)
+The signatures below include checked results and failures, including those inferred from a body. See [packages](../packages.md) for revision pinning and [language constructs](../language-constructs.md) for built-in value types.
 
 ## Principal {#api-Principal}
 
@@ -42,10 +33,10 @@ Verify the request's credentials. null means unauthenticated; adapter failures r
 ### Authentication.authenticate
 
 ```text
-authenticate(HttpRequest request) returns optional Principal uses Authentication.authenticate unless HttpError
+authenticate(HttpRequest request) returns optional Principal unless HttpError
 ```
 
-The signature declares inputs, result, effects and checked errors.
+
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/web/contracts.aug#L7)
 
@@ -62,10 +53,10 @@ Decide whether a verified identity has one named permission.
 ### Authorization.authorize
 
 ```text
-authorize(Principal identity, string permission) returns bool uses Authorization.authorize unless HttpError
+authorize(Principal identity, string permission) returns bool unless HttpError
 ```
 
-The signature declares inputs, result, effects and checked errors.
+
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/web/contracts.aug#L11)
 
@@ -82,10 +73,12 @@ Observe a completed HTTP exchange, including failures and disconnects.
 ### RequestLogger.complete
 
 ```text
-complete(string method, string path, int status, int milliseconds) uses RequestLogger.complete
+complete(string method, string path, int status, int milliseconds)
 ```
 
-The signature declares inputs, result, effects and checked errors.
+
+
+Requires `RequestLogger.complete`.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/web/contracts.aug#L15)
 
@@ -105,9 +98,9 @@ Emit escaped JSON request metadata to standard error. Credentials and query stri
 complete(string method, string path, int status, int milliseconds)
 ```
 
-The signature declares inputs, result, effects and checked errors.
 
-The compiler infers use of `RequestLogger.complete`.
+
+Requires `RequestLogger.complete`.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/web/contracts.aug#L20)
 
@@ -124,10 +117,12 @@ An explicit outbound network capability. TLS verifies the peer and redirects are
 ### HttpClient.request
 
 ```text
-request(string method, string url, optional Headers headers, optional Bytes body) returns HttpResponse<Bytes> uses HttpClient.request unless HttpError
+request(string method, string url, optional Headers headers, optional Bytes body) returns HttpResponse<Bytes> unless HttpError
 ```
 
 Perform an HTTP request with bounded bytes. Inside a task, waiting suspends the task's C stack.
+
+Requires `HttpClient.request`.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/web/contracts.aug#L27)
 
@@ -144,19 +139,19 @@ Native libwebsockets transport. No socket is opened by construction.
 ### WebHttpClient.request
 
 ```text
-request(string method, string url, optional Headers headers, optional Bytes body)
+request(string method, string url, optional Headers headers, optional Bytes body) returns HttpResponse<Bytes> unless HttpError
 ```
 
 Perform an HTTP request with bounded bytes. Inside a task, waiting suspends the task's C stack.
 
-The compiler infers a `HttpResponse<Bytes>` result, use of `HttpClient.request`, `HttpError` failures.
+Requires `HttpClient.request`.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/web/contracts.aug#L33)
 
 ## redirect {#api-redirect}
 
 ```text
-redirect(string location, optional int status)
+redirect(string location, optional int status) returns HttpResponse<string> unless HttpError
 ```
 
 Return a redirect with an explicit status. Location is checked as a header value.
@@ -166,7 +161,7 @@ Return a redirect with an explicit status. Location is checked as a header value
 ## urlEncode {#api-urlEncode}
 
 ```text
-urlEncode(string input)
+urlEncode(string input) returns string unless HttpError
 ```
 
 Encode a UTF-8 value as one URL query or form component using RFC 3986 unreserved characters.
@@ -176,7 +171,7 @@ Encode a UTF-8 value as one URL query or form component using RFC 3986 unreserve
 ## cookie {#api-cookie}
 
 ```text
-cookie(string name, string value, string path, int maxAge, bool secure)
+cookie(string name, string value, string path, int maxAge, bool secure) returns Headers unless HttpError
 ```
 
 Construct an HttpOnly, SameSite=Lax session cookie. Secure defaults are chosen explicitly at the call site. Values and paths reject delimiters and controls. maxAge=0 clears the cookie.

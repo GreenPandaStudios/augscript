@@ -50,7 +50,7 @@ pageClass: aug-example-page
 
 ```aug [Indentation]
 // aug-spec: "keys.aug.md" explains this file. Read it before changes; refresh with aug spec.
-import Crypto from august.crypto
+import Crypto from crypto
 KeyError() implements Error:
     pass
 /** Keys are initialized explicitly in main and expose distinct provider and session roles. */
@@ -88,7 +88,7 @@ initializeKeys(resolve Crypto crypto, resolve SigningKeys keys):
 
 ```aug [Braces]
 // aug-spec: "keys.aug.md" explains this file. Read it before changes; refresh with aug spec.
-import Crypto from august.crypto
+import Crypto from crypto
 KeyError() implements Error {
     pass
 }
@@ -199,11 +199,11 @@ Release this lock when the block exits, including on return or failure.
 
 ### `initializeKeys` · [source](keys.md#code) {#symbol-initializeKeys}
 
-It gets `crypto` ([`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto)) and `keys` ([`SigningKeys`](keys.md#symbol-SigningKeys)) from dependency injection. Failures can raise `CryptoError` and [`KeyError`](keys.md#symbol-KeyError). It sets `provider` and `session` separately, each to [`crypto.generateRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.generateRsa). It calls [`keys.configure`](keys.md#symbol-SigningKeys.configure) with `provider` and `session`.
+It gets `crypto` ([`Crypto`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto)) and `keys` ([`SigningKeys`](keys.md#symbol-SigningKeys)) from dependency injection. Failures can raise `CryptoError` and [`KeyError`](keys.md#symbol-KeyError). It sets `provider` and `session` separately, each to [`crypto.generateRsa`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto.generateRsa). It calls [`keys.configure`](keys.md#symbol-SigningKeys.configure) with `provider` and `session`.
 
 ### Dependencies
 
-It uses [`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto) ([`generateRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.generateRsa)) from `august.crypto`. These links explain the full dependency contracts.
+It uses [`Crypto`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto) ([`generateRsa`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto.generateRsa)) from `crypto`.
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).
 

@@ -4,7 +4,7 @@
 
 ![August — readable code, clear dependencies](media/banner.png)
 
-Version 0.19 bundles the current compiler, runtime, native bootstrap, language wiki, generated library API guides, and deterministic source specifications.
+The extension bundles the current compiler, runtime, native bootstrap, language wiki, generated library API guides, and deterministic source specifications.
 
 ## Editing
 
@@ -69,8 +69,14 @@ Node.js 24+ is required. Native commands additionally require a C11 compiler. Co
 
 Native commands automatically prepare the pinned libraries their programs use. The first web/crypto build can take several minutes; setup progress and missing-tool recovery steps appear in the terminal. Installed copies use a writable, versioned user cache by default. To share a cache, set `augscript.nativeHome` to the absolute directory containing `sources/` and `prefix/`, or set AUG_NATIVE_HOME. Native binaries are not bundled. Full setup supports macOS and Linux; JSON/tasks prepare only portable C sources. Use `--offline` after preparing dependencies when downloads are unavailable.
 
-Use the guide commands to read the bundled documentation. The CLI and built-in standard, web and crypto libraries also have separate versioned distribution packages. Standalone user libraries have an aug-package.json root, public exports, package navigation and Javadoc help. Class implementations and private helpers show inferred capabilities in hover. This is an experimental language with conservative ownership analysis and cooperative tasks on one OS thread. Multicore workers, channels/broadcasts and inbound streaming remain documented gaps. See the wiki's performance graphs before choosing a production workload.
+Use the guide commands to read the bundled documentation. Core I/O ships with the CLI; web, crypto, JSON, time, and memory are ordinary source packages. A library needs an export.aug file and can be imported from a public Git URL. Package navigation and Javadoc help work across these imports. Executable bodies show inferred contracts in hover and inline hints. August remains a preview with conservative ownership analysis and cooperative tasks on one OS thread. Multicore workers, channels, and inbound streaming remain documented gaps. See the wiki's performance graphs before choosing a production workload.
 
 ## Inferred contract hints
 
 Executable bodies infer omitted returns, changes, uses and unless clauses. The extension displays the inferred contracts as non-editable hints beside their headers, using the same checked metadata as hover and compiled specs. Set `augscript.inferredContractHints` to false to hide them. Saving or formatting never writes the hints into your source. Explicit clauses remain checked assertions; ownership and DI choices stay explicit.
+
+## Completion and fixes
+
+Choose a function or constructor to insert labeled arguments, then press Tab through their values. Injected inputs are omitted. Public declarations from neighboring modules and installed packages can add their imports. Templates cover declarations, endpoint methods, tests, tasks, locks, and comments; completions follow the project's block style.
+
+The lightbulb offers name and argument-label corrections, missing method scaffolds, imports, bounded borrow/unsafe edits, and source-package installation. Review suggested edits and run your tests. Read [the editor guide](https://greenpandastudios.github.io/augscript/editor) for the complete workflow.

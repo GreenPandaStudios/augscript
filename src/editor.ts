@@ -15,6 +15,8 @@ import { interceptorBehavior } from './interceptors.ts';
 import {httpPolicyNames,httpPolicyOptions,httpPolicyOptionHelp,type HttpPolicyName} from './http-policies.ts';
 import {builtinTypes} from './builtins.ts';
 import { libraryChild, libraryRelative } from './libraries.ts';
+import { importSource, isGitSource, sourceAlias } from './git-packages.ts';
+import { snippetBody, snippetCatalog } from './snippets.ts';
 
 export interface EditorItem {
   label: string;
@@ -26,6 +28,9 @@ export interface EditorItem {
   parameters?: string[];
   parameterDocumentation?: (string | undefined)[];
   insertText?: string;
+  replacement?: { start: number; end: number };
+  additionalEdits?: { start: number; end: number; text: string }[];
+  sortText?: string;
 }
 
 export interface EditorToken {
@@ -58,6 +63,8 @@ const builtins: EditorItem[] = [
 ];
 
 const keywords: EditorItem[] = [
+  ...snippetCatalog.map(snippet => ({label:snippet.prefix+' template',kind:'snippet' as const,detail:snippet.description,
+    documentation:snippet.description,insertText:snippet.body})),
   {label:'initialize block',kind:'snippet',detail:'Constructor initialization inside a class or record',documentation:languageHelp.initialize.documentation,
     insertText:'initialize:\n    $0'},
   ...Object.entries(languageHelp).filter(([label, help]) => help.category === 'keyword' &&
@@ -72,7 +79,7 @@ const keywords: EditorItem[] = [
     insertText: 'borrow ${1:value} {\n    $0\n}' },
   { label: 'interceptor declaration', kind: 'snippet', detail: 'Generic interceptor wrapping any result type',
     documentation: languageHelp.interceptor.documentation,
-    insertText: 'interceptor ${1:Audit}<T>() {\n    around() returns T {\n        T result to next()\n        $0\n        return result\n    }\n}' },
+    insertText: 'interceptor ${1:Audit}<T>() {\n    around() {\n        result = next()\n        $0\n        return result\n    }\n}' },
   { label: 'test suite', kind: 'snippet', detail: 'Same-file class tests with fresh setup per case',
     documentation: languageHelp.test.documentation,
     insertText: 'test ${1:Worker} ${2:worker} {\n    when ${3:ready} {\n        ${2:worker} = ${1:Worker}()\n        it ${4:works} {\n            assert(${5:true})\n        }\n    }\n}' },
@@ -335,7 +342,9 @@ export function importItems(checked: CheckedProject, file: SourceFile): EditorIt
       if (item.kind !== 'class' && item.kind !== 'interface' && item.kind !== 'function' && item.kind !== 'interceptor') continue;
       if (isPrivateName(item.name)) continue;
       items.push({ label: item.name, kind: 'snippet',
-        detail: `import ${item.name} from ${from}`, insertText: `${item.name} from ${from};`,
+        detail: `import ${item.name} from ${from}`, insertText: `${item.name} from ${from}`,
+        signature: definitionItem(checked, project.scopes.get(sibling.path)!.get(item.name)!).signature,
+        parameters: definitionItem(checked, project.scopes.get(sibling.path)!.get(item.name)!).parameters,
         documentation: item.kind === 'interface' ? documentation(checked, sibling.path, item.span.start)?.markdown :
           declarationDocumentation(checked, item)?.markdown });
     }
@@ -366,20 +375,23 @@ export function importItems(checked: CheckedProject, file: SourceFile): EditorIt
     }
     if (!exposed) continue;
     for (const prefix of prefixes) for (const item of exportFile.items) {
-      const from = [...prefix, ...segments].join('.');
+      const specification = (owner?.specifications ?? project.packages.specifications)[prefix[0]];
+      const from = isGitSource(specification ?? '') && prefix[0] === sourceAlias(specification) ? importSource([specification, ...segments]) : [...prefix, ...segments].join('.');
       if (!from) continue;
       if (item.kind !== 'export' || item.folder) continue;
       if (isPrivateName(item.name) || (item.from && isPrivateName(item.from))) continue;
       const exported = project.scopes.get(join(folder, `${item.from}.aug`))?.get(item.name);
       items.push({ label: item.name, kind: 'snippet',
-        detail: `import ${item.name} from ${from}`, insertText: `${item.name} from ${from};`,
+        detail: `import ${item.name} from ${from}`, insertText: `${item.name} from ${from}`,
+        signature: exported && definitionItem(checked, exported).signature,
+        parameters: exported && definitionItem(checked, exported).parameters,
         documentation: exported && definitionItem(checked, exported).documentation });
     }
   }
   return items;
 }
 
-export function completions(checked: CheckedProject, fileName: string, offset: number): EditorItem[] {
+function rawCompletions(checked: CheckedProject, fileName: string, offset: number): EditorItem[] {
   const file = checked.project.files.get(resolve(fileName));
   if (!file) return [];
   const prefix = file.source.slice(0, offset);
@@ -391,11 +403,12 @@ export function completions(checked: CheckedProject, fileName: string, offset: n
     const used = new Set(joined[1].split(/\s+and\s+/));
     return unique(imports.filter(item => !used.has(item.label)).map(item => ({ ...item, kind: 'snippet', insertText: item.label })));
   }
-  const from = /^\s*import\s+(.+?)\s+from\s+[A-Za-z_0-9.]*$/.exec(line);
+  const from = /^\s*import\s+(.+?)\s+from\s+([A-Za-z_0-9.]*|"[^"\n]*"?(?:\.[A-Za-z_0-9.]*)?)$/.exec(line);
   if (from) return unique(imports.filter(item => from[1] === 'everything' || item.label === from[1].split(/\s+and\s+/)[0]).map(item => {
     const path = item.detail.slice(item.detail.lastIndexOf(' from ') + 6);
     return { label: path, kind: 'snippet' as const, detail: item.detail,
-      insertText: `${path};`, documentation: item.documentation };
+      insertText: path, documentation: item.documentation,
+      replacement: { start: offset - from[2].length, end: offset } };
   }));
   const annotation = /(?<=^|\n)[ \t]*\[\s*([A-Za-z_][A-Za-z0-9_]*|)(?:<[^\[\]()]*>)?(?:\(([^\n()]*))?$/.exec(prefix);
   if (annotation) {
@@ -482,7 +495,47 @@ export function completions(checked: CheckedProject, fileName: string, offset: n
     return all.filter(item => item.kind === 'interface');
   if (/\b(?:returns|unless|catch)\s+[A-Za-z_0-9]*$/.test(prefix))
     return all.filter(item => ['class', 'interface', 'type'].includes(item.kind));
-  return all;
+  const visible = new Set(all.map(item => item.label));
+  const importsEnd = file.items.filter(item => item.kind === 'import').at(-1)?.span.end ?? 0;
+  const insertion = importsEnd ? file.source.indexOf('\n', importsEnd) : 0;
+  return [...all, ...imports.filter(item => !visible.has(item.label)).map(item => ({ ...item,
+    kind: item.signature ? 'function' as const : 'type' as const,
+    insertText: item.label, sortText: '2-' + item.label,
+    additionalEdits: [{ start: insertion < 0 ? file.source.length : insertion, end: insertion < 0 ? file.source.length : insertion,
+      text: `${importsEnd ? '\n' : ''}${item.detail}${importsEnd ? '' : '\n'}` }] }))];
+}
+
+/** Fill labeled calls, keep dependency imports visible, and replace only the token being completed. */
+export function completions(checked: CheckedProject, fileName: string, offset: number): EditorItem[] {
+  const file = checked.project.files.get(resolve(fileName));
+  if (!file) return [];
+  const prefix = file.source.slice(0, offset), line = prefix.slice(prefix.lastIndexOf('\n') + 1);
+  const typeContext = /\b(?:import|export|implement|implements|extends|returns|unless|catch|resolve)\b[^\n]*$/.test(line);
+  const token = /[A-Za-z_][A-Za-z0-9_]*$/.exec(prefix);
+  const start = token ? offset - token[0].length : offset;
+  const end = offset + (/^[A-Za-z0-9_]*/.exec(file.source.slice(offset))?.[0].length ?? 0);
+  const escape = (text: string) => text.replace(/[\\$}]/g, '\\$&');
+  const argument = (parameter: string, index: number) => {
+    const [name, type] = parameter.split('=');
+    const value = type === 'string' ? '""' : type === 'bool' ? 'false' : ['int', 'float', 'c_int'].includes(type) ? '0' : name;
+    return `${name}=\${${index + 1}:${escape(value)}}`;
+  };
+  return rawCompletions(checked, fileName, offset).map(item => {
+    const callable = !typeContext && ['function', 'method', 'class'].includes(item.kind) && item.signature &&
+      !/^\s*\(/.test(file.source.slice(offset));
+    let insertText = callable ? `${item.label}(${(item.parameters ?? []).map(argument).join(', ')})$0` : item.insertText;
+    const template = snippetCatalog.find(snippet => item.label === snippet.prefix + ' template');
+    if (template) insertText = snippetBody(template.body, checked.project.config.block_style, checked.project.config.indentation === 'tabs');
+    if (item.kind === 'snippet' && insertText && checked.project.config.block_style === 'indent' && insertText.includes('{\n'))
+      insertText = insertText.replace(/^(\s*)\} catch /gm, '$1catch ').replace(/ \{\n/g, ':\n').replace(/^[ \t]*\}\n?/gm, '').trimEnd();
+    let additionalEdits = item.additionalEdits;
+    if (additionalEdits?.some(edit => edit.start >= start && edit.start <= end)) {
+      insertText = additionalEdits.map(edit => escape(edit.text)).join('') + (insertText ?? item.label);
+      additionalEdits = undefined;
+    }
+    return { ...item, insertText, additionalEdits, replacement: item.replacement ?? { start, end },
+      sortText: item.sortText ?? (['variable', 'parameter', 'property'].includes(item.kind) ? '0-' : '1-') + item.label };
+  });
 }
 
 /** Resolve exactly the token under the cursor, including syntax outside completion contexts. */

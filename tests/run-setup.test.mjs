@@ -1,9 +1,10 @@
+import { prepareLibraryFixtures } from './library-fixtures.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import { spawn, spawnSync } from 'node:child_process';
+import { spawn as fixtureSpawn, spawnSync as fixtureSpawnSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
 import { once } from 'node:events';
 
@@ -21,7 +22,7 @@ function fixture(source, action) {
 }
 
 test('run prepares only the JSON dependency, reuses it, and keeps setup out of program stdout', () => {
-  fixture('import parse from august.json\ntry:\n    value = parse(input="null")\n    print(value="parsed")\ncatch JsonError error:\n    exit(status=1)\n', ({ directory, native, run }) => {
+  fixture('import parse from json\ntry:\n    value = parse(input="null")\n    print(value="parsed")\ncatch JsonError error:\n    exit(status=1)\n', ({ directory, native, run }) => {
     // Exercise the download and checksum path with the actual pinned archive, without relying on a public server.
     const dependency = JSON.parse(readFileSync(join(root, 'scripts/native-dependencies.lock.json'))).dependencies.find(item => item.name === 'yyjson');
     const archive = join(fixtureCache, 'downloads', dependency.archive);
@@ -92,14 +93,14 @@ test('run installs declared packages on first use and restores a missing snapsho
     const restored = run(['--offline']);
     assert.equal(restored.status, 0, restored.stderr); assert.equal(restored.stdout, '42\n');
     assert.equal(readFileSync(join(app, 'aug.lock.json'), 'utf8'), lock);
-    writeFileSync(join(app, '.aug-packages/node_modules/math/src/arithmetic.aug'), 'add(int left, int right) returns int { return 0 }\n');
+    writeFileSync(join(app, '.aug-packages', JSON.parse(readFileSync(join(app,'aug.lock.json'),'utf8')).roots.math, 'src/arithmetic.aug'), 'add(int left, int right) returns int { return 0 }\n');
     const changed = run(['--offline']);
     assert.equal(changed.status, 1); assert.match(changed.stderr, /changed/); assert.match(changed.stderr, /aug install/);
   });
 });
 
 test('offline setup and invalid options fail with useful errors before running a program', () => {
-  fixture('import parse from august.json\ntry:\n    value = parse(input="null")\ncatch JsonError error:\n    exit(status=1)\n', ({ run }) => {
+  fixture('import parse from json\ntry:\n    value = parse(input="null")\ncatch JsonError error:\n    exit(status=1)\n', ({ run }) => {
     const result = run(['--offline']);
     assert.equal(result.status, 1); assert.match(result.stderr, /offline/i); assert.match(result.stderr, /aug run/);
   });
@@ -123,7 +124,7 @@ test('task programs prepare minicoro without downloading JSON or the HTTP stack'
 });
 
 test('a failed download has recovery guidance, no stack, and leaves no unverified archive or lock', () => {
-  fixture('import parse from august.json\ntry:\n    value = parse(input="null")\ncatch JsonError error:\n    exit(status=1)\n', ({ directory, native, run }) => {
+  fixture('import parse from json\ntry:\n    value = parse(input="null")\ncatch JsonError error:\n    exit(status=1)\n', ({ directory, native, run }) => {
     const preload = join(directory, 'fetch.mjs');
     writeFileSync(preload, 'globalThis.fetch = async () => { throw Error("connection unavailable"); };\n');
     const result = run([], { NODE_OPTIONS: `--import=${pathToFileURL(preload)}` });
@@ -145,7 +146,7 @@ test('two projects can prepare and use one native cache concurrently', async () 
     writeFileSync(preload, `import {readFileSync} from 'node:fs';\nglobalThis.fetch = async () => { await new Promise(resolve => setTimeout(resolve, 800)); return new Response(readFileSync(${JSON.stringify(join(fixtureCache, 'downloads', dependency.archive))})); };\n`);
     const runs = ['first', 'second'].map(name => {
       const app = join(directory, name); mkdirSync(app);
-      writeFileSync(join(app, 'main.aug'), 'import parse from august.json\ntry:\n    value = parse(input="null")\n    print(value="parsed")\ncatch JsonError error:\n    exit(status=1)\n');
+      writeFileSync(join(app, 'main.aug'), 'import parse from json\ntry:\n    value = parse(input="null")\n    print(value="parsed")\ncatch JsonError error:\n    exit(status=1)\n');
       return new Promise((accept, reject) => {
         const child = spawn(process.execPath, [cli, 'run', app], { env: { ...process.env, AUG_NATIVE_HOME: native, NODE_OPTIONS: `--import=${pathToFileURL(preload)}` } });
         let stdout = '', stderr = ''; child.stdout.on('data', data => stdout += data); child.stderr.on('data', data => stderr += data);
@@ -178,7 +179,7 @@ test('interrupting setup stops its child process and a subsequent run recovers i
   let child, owner;
   try {
     const app = join(directory, 'app'), native = join(directory, 'native'), preload = join(directory, 'fetch.mjs');
-    mkdirSync(app); writeFileSync(join(app, 'main.aug'), 'import parse from august.json\ntry:\n    value = parse(input="null")\n    print(value="parsed")\ncatch JsonError error:\n    exit(status=1)\n');
+    mkdirSync(app); writeFileSync(join(app, 'main.aug'), 'import parse from json\ntry:\n    value = parse(input="null")\n    print(value="parsed")\ncatch JsonError error:\n    exit(status=1)\n');
     writeFileSync(preload, 'globalThis.fetch = async () => { await new Promise(accept => setTimeout(accept, 30000)); throw Error("interrupted"); };\n');
     child = spawn(process.execPath, [cli, 'run', app], { env: { ...process.env, AUG_NATIVE_HOME: native, NODE_OPTIONS: `--import=${pathToFileURL(preload)}` } });
     let errors = ''; child.stderr.on('data', data => errors += data); child.stdout.resume();
@@ -197,3 +198,13 @@ test('interrupting setup stops its child process and a subsequent run recovers i
     rmSync(directory, { recursive: true, force: true });
   }
 });
+
+function spawnSync(command, args, options) {
+  if (args?.[0]?.endsWith("aug.mjs") && args[2]) prepareLibraryFixtures(args[2]);
+  return fixtureSpawnSync(command, args, options);
+}
+
+function spawn(command, args, options) {
+  if (args?.[0]?.endsWith("aug.mjs") && args[2]) prepareLibraryFixtures(args[2]);
+  return fixtureSpawn(command, args, options);
+}

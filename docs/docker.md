@@ -10,11 +10,11 @@ Save this as `Dockerfile.build` in an empty working folder. It installs the publ
 
 ```dockerfile
 FROM node:24-bookworm
-ARG AUG_VERSION=0.19.0
+ARG AUG_VERSION=0.20.0
 ENV AUG_NATIVE_HOME=/opt/augscript/.aug-native
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-       clang libclang-rt-14-dev make cmake m4 autoconf \
+       git clang libclang-rt-14-dev make cmake m4 autoconf \
        automake libtool python3 zlib1g-dev ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 RUN npm install --global --ignore-scripts --no-audit --no-fund \
@@ -57,6 +57,11 @@ Create your application with the [npx starter](getting-started.md) or download a
 Keep the project in a directory shared with your Docker engine. If Docker reports that the bind source path does not exist, check the engine's file-sharing settings. A remote engine cannot mount a folder that exists only on your client machine; see [bind mount constraints](https://docs.docker.com/engine/storage/bind-mounts/#considerations-and-constraints).
 
 ```sh
+docker run --rm \
+  --user "$(id -u):$(id -g)" \
+  --mount type=bind,source="$PWD/my-app",target=/workspace \
+  augscript/build:local install .
+
 docker run --rm \
   --user "$(id -u):$(id -g)" \
   --mount type=bind,source="$PWD/my-app",target=/workspace \

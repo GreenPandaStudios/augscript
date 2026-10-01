@@ -2,9 +2,9 @@
 import SessionError from contracts
 import Discovery and IdClaims from provider
 import settings from common
-import HttpClient from august.web
-import parse from august.json
-import Crypto and GnuTlsCrypto and RsaJwks and rsaJwk and signJwt and importJwk and verifyJwt and JwtError from august.crypto
+import HttpClient from web
+import parse from json
+import Crypto and GnuTlsCrypto and RsaJwks and rsaJwk and signJwt and importJwk and verifyJwt and JwtError from crypto
 
 /** Accept only a successful JSON response. Redirects remain explicit and are never followed by the transport. */
 responseJson(HttpResponse<Bytes> response) :

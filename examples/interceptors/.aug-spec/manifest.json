@@ -1,12 +1,12 @@
 {
   "format": 1,
   "files": [
-    ".aug-spec/august/0.19.0/io/contracts.aug",
-    ".aug-spec/august/0.19.0/io/contracts.aug.md",
+    ".aug-spec/august/0.20.0/io/contracts.aug",
+    ".aug-spec/august/0.20.0/io/contracts.aug.md",
     "app.aug.md",
     "interceptors.aug.md",
     "logging.aug.md",
     "main.aug.md"
   ],
-  "digest": "c1fb27d535a824526444747bbd063e99fdb66b18587a1901541ae3b830651489"
+  "digest": "ec91f8606ad1f10fe72c255b589f20249ca5d01b7465341bc1c5b18635e7b7d1"
 }

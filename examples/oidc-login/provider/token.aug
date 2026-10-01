@@ -1,9 +1,9 @@
 // aug-spec: "token.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import AuthorizationCode and AccessGrant and TokenForm and TokenResponse and OAuthError and IdClaims from contracts
 import settings and SigningKeys and KeyError and securityHeaders from common
-import Crypto and signJwt and JwtError from august.crypto
-import Clock from august.time
-import ExpiringStore and StoreFull from august.memory
+import Crypto and signJwt and JwtError from crypto
+import Clock from time
+import ExpiringStore and StoreFull from memory
 
 _oauthError(string code, string description) :
     return HttpResponse(body=Json(value=OAuthError(error=code, error_description=description)), status=400, headers=securityHeaders())

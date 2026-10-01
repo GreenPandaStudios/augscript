@@ -162,6 +162,11 @@ async function complete(context, document, position) {
       item.detail = entry.detail;
       if (entry.documentation) item.documentation = new vscode.MarkdownString(entry.documentation);
       if (entry.insertText) item.insertText = new vscode.SnippetString(entry.insertText);
+      if (entry.replacement) item.range = new vscode.Range(document.positionAt(entry.replacement.start), document.positionAt(entry.replacement.end));
+      item.sortText = entry.sortText;
+      if (entry.additionalEdits) item.additionalTextEdits = entry.additionalEdits.map(edit =>
+        vscode.TextEdit.replace(new vscode.Range(document.positionAt(edit.start), document.positionAt(edit.end)), edit.text));
+      if (['function', 'method', 'class'].includes(entry.kind)) item.command = { command: 'editor.action.triggerParameterHints', title: 'Show labeled inputs' };
       return item;
     });
   } catch { return []; }
@@ -192,16 +197,23 @@ async function codeActions(context, document, actionContext) {
       if (!diagnostic && fix.title !== 'Expand to named imports') continue;
       const action = new vscode.CodeAction(fix.title, diagnostic ? vscode.CodeActionKind.QuickFix : vscode.CodeActionKind.RefactorRewrite);
       action.diagnostics = diagnostic ? [diagnostic] : [];
+      action.isPreferred = !!fix.preferred;
       action.edit = new vscode.WorkspaceEdit();
       for (const edit of fix.edits) {
-        if (path.resolve(edit.file) !== document.uri.fsPath) continue;
-        action.edit.replace(document.uri,
-          new vscode.Range(document.positionAt(edit.start), document.positionAt(edit.end)), edit.text);
+        const target = path.resolve(edit.file) === document.uri.fsPath ? document : await vscode.workspace.openTextDocument(edit.file);
+        action.edit.replace(target.uri,
+          new vscode.Range(target.positionAt(edit.start), target.positionAt(edit.end)), edit.text);
       }
       actions.push(action);
     }
     for (const issue of actionContext.diagnostics) {
       if (issue.source !== 'AugScript') continue;
+      if (issue.code === 'PACKAGE') {
+        const install = new vscode.CodeAction('Install project source packages', vscode.CodeActionKind.QuickFix);
+        install.diagnostics = [issue];
+        install.command = {title:install.title,command:'augscript.installPackages'};
+        actions.push(install);
+      }
       const action = new vscode.CodeAction(`Explain ${issue.code} error`, vscode.CodeActionKind.QuickFix);
       action.diagnostics = [issue];
       action.command = { title: action.title, command: 'augscript.explainDiagnostic',
@@ -237,7 +249,7 @@ const yamlHelp = {
   lint: 'List optional warnings: wildcard_imports, public_helpers, public_docs, broad_errors, discarded_errors, architecture.',
   strict_modules: 'When true, sibling imports must be listed in the folder export.aug.',
   module_dependencies: 'List allowed module edges, for example "domain: contracts, shared". Import cycles are always rejected.',
-  packages: 'Map import aliases to a local library folder, .tgz archive, or npm:name@exact-version. Run aug install and commit aug.lock.json.',
+  packages: 'Map import aliases to a public repository URL, local folder, archive, or exact npm version. Run aug install and commit aug.lock.json.',
   max_public_symbols: 'Positive public-surface threshold used by the public_helpers warning. Default 12.',
   max_dependencies: 'Positive import fan-out threshold used by the architecture warning. Default 8.',
   output: 'Name of the executable built under `.aug-build`. An absolute path is also accepted.',
@@ -514,6 +526,7 @@ function activate(context) {
       vscode.window.showInformationMessage(result.stdout.trim()||'Project syntax is current.');
     }catch(error){vscode.window.showErrorMessage(error.message);}
   }));
+  context.subscriptions.push(vscode.commands.registerCommand('augscript.installPackages', () => executeProject(context, 'install')));
   context.subscriptions.push(vscode.commands.registerCommand('augscript.run', () => executeProject(context, 'run')));
   context.subscriptions.push(vscode.commands.registerCommand('augscript.test', () => executeProject(context, 'test')));
   context.subscriptions.push(vscode.commands.registerCommand('augscript.explain', () => showContext(context, false)));

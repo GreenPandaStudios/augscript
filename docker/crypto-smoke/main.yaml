@@ -1,0 +1,3 @@
+
+packages:
+  crypto: "https://github.com/GreenPandaStudios/augscript/src/stdlib/crypto#b14a0f9aa41f1ce58bd51133bcdc424033e40d40"

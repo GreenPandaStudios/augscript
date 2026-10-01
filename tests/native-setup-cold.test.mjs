@@ -1,3 +1,4 @@
+import {prepareRunPackages} from '../src/package-manager.ts';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { cpSync, mkdtempSync, mkdirSync, readFileSync, rmSync, symlinkSync, existsSync, writeFileSync } from 'node:fs';
@@ -20,6 +21,7 @@ test('cold crypto and HTTP setup works through an aliased cache and serves a rea
       cpSync(join(prepared, 'downloads', dependency.archive), join(actual, 'downloads', dependency.archive));
     const env = { ...process.env, AUG_NATIVE_HOME: alias }, cli = join(root, 'bin/aug.mjs');
     const crypto = join(directory, 'crypto'); cpSync(join(root, 'docker/crypto-smoke'), crypto, { recursive: true });
+    prepareRunPackages(crypto);
     const digest = spawnSync(process.execPath, [cli, 'run', crypto, '--offline'], { env, encoding: 'utf8', timeout: 600000 });
     assert.equal(digest.status, 0, digest.stderr);
     assert.equal(digest.stdout, 'ungWv48Bz-pBQUDeXa4iI7ADYaOWF3qctBD_YfIAFa0\n');

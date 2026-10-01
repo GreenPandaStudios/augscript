@@ -2,7 +2,7 @@
 
 ## Readability audit, September 29, 2026
 
-August 0.19 uses ASD-STE100 as guidance for plain technical explanations. The language keeps local behavior and neighboring contracts in view. The deterministic [spec compiler](specifications.md) extends that context to readers who do not read code.
+August 0.20 uses ASD-STE100 as guidance for plain technical explanations. The language keeps local behavior and neighboring contracts in view. The deterministic [spec compiler](specifications.md) extends that context to readers who do not read code.
 
 | Finding | Change |
 | --- | --- |

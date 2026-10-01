@@ -1,4 +1,4 @@
-import Crypto and GnuTlsCrypto from august.crypto
+import Crypto and GnuTlsCrypto from crypto
 
 implement Crypto with GnuTlsCrypto
 resolve Crypto to crypto

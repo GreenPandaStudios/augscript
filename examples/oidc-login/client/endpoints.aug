@@ -4,9 +4,9 @@ import authenticate from session
 import LoginPage and Welcome from views
 import UserInfo from provider
 import settings and SigningKeys and KeyError and securityHeaders and withCookie from common
-import Crypto from august.crypto
-import Clock from august.time
-import ExpiringStore from august.memory
+import Crypto from crypto
+import Clock from time
+import ExpiringStore from memory
 
 /** The app renders a verified session or offers its OIDC login flow. No token claims are displayed before verification. */
 endpoint GET "/" as home(optional string token from cookie "aug_session", resolve Crypto crypto, resolve Clock clock, resolve SigningKeys keys, resolve ExpiringStore<SessionClaims> sessions) :

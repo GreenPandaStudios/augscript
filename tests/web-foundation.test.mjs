@@ -1,9 +1,10 @@
+import { prepareLibraryFixtures } from './library-fixtures.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, dirname, resolve } from 'node:path';
-import { spawnSync } from 'node:child_process';
+import { spawnSync as fixtureSpawnSync } from 'node:child_process';
 
 const cli = resolve('bin/aug.mjs');
 function withProject(files, action) {
@@ -119,7 +120,7 @@ print(value=counter.value())
 }));
 
 test('crypto capability hashes bytes and verifies native RSA signatures', () => withProject({
-  'main.aug': `import Crypto and GnuTlsCrypto from august.crypto
+  'main.aug': `import Crypto and GnuTlsCrypto from crypto
 implement Crypto with GnuTlsCrypto
 resolve Crypto to crypto
 try:
@@ -144,7 +145,7 @@ catch CryptoError error:
 test('typed JSON preserves integer precision, validates records, and escapes strings', () => withProject({
   'data.aug': `record Profile(string name, int id)
 `,
-  'main.aug': `import parse from august.json
+  'main.aug': `import parse from json
 import Profile from data
 try:
     json = parse(input="{\\\"name\\\":\\\"Ada <script>\\\",\\\"id\\\":9223372036854775807}")
@@ -170,7 +171,7 @@ describe(Patch input) returns string:
         when some value:
             return value
 `,
-  'main.aug': `import parse from august.json
+  'main.aug': `import parse from json
 import Patch and describe from data
 try:
     print(value=describe(input=parse(input="{}").decode<Patch>()))
@@ -205,3 +206,8 @@ print(value=inventory.items.length())
   assert.notEqual(result.status, 0);
   assert.match(result.stderr, /frozen|read-only/i);
 }));
+
+function spawnSync(command, args, options) {
+  if (args?.[0]?.endsWith("aug.mjs") && args[2]) prepareLibraryFixtures(args[2]);
+  return fixtureSpawnSync(command, args, options);
+}

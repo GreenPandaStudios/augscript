@@ -16,4 +16,4 @@ It takes `message` as a string. It returns the server component [`Page`](../comm
 
 ## Dependencies
 
-It uses [`Page`](../common/views.aug.md#symbol-Page) from `common`. These links explain the full dependency contracts.
+It uses [`Page`](../common/views.aug.md#symbol-Page) from `common`.

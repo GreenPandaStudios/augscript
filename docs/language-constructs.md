@@ -750,7 +750,7 @@ Marks a declaration as a class and lists the interfaces it satisfies. Every clas
 import Logger and ConsoleLogger from logging
 ```
 
-Bring public declarations into this file. Use `and` for several names, or `import everything from logging` for all public sibling declarations or folder exports. Imported dependencies are never re-exported implicitly. Names or modules starting with `_` stay private. A sibling module uses its filename without `.aug`; a folder exposes only names listed in `export.aug`.
+Bring public declarations into this file. Use `and` for several names, or `import everything from logging` for all public sibling declarations or folder exports. Imported dependencies are never re-exported implicitly. Names or modules starting with `_` stay private. A sibling module uses its filename without `.aug`; a folder exposes only names listed in `export.aug`. A quoted public repository URL declares a source dependency; `aug run` installs it and locks its commit. Use `aug add URL --as NAME` for a shorter import alias.
 
 ## in
 
@@ -830,7 +830,7 @@ Define a test case within a when group. Names may be identifiers or quoted descr
 Json
 ```
 
-Immutable JSON data. Parse with august.json, decode concrete records with decode<T>(), and stringify with lossless integer handling.
+Immutable JSON data. Import parse from the JSON source package, decode concrete records with decode<T>(), and stringify with lossless integer handling.
 
 ## List
 

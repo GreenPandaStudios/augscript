@@ -10,12 +10,13 @@ Choose a guide for the task you are doing. If you are learning August for the fi
 | Generate and check the neighboring explanations | [Compiled specifications](../specifications.md) |
 | Verify behavior and substitute test dependencies | [Unit tests](../testing.md) |
 | Inspect a diagnostic or find a fix | [Diagnostics](../diagnostics.md) |
-| Use completion, navigation, context, or native builds | [CLI and VS Code](../tooling.md) |
+| Use completion, navigation, context, or native builds | [VS Code](../editor.md) and [CLI](../tooling.md) |
 
 ## Build and distribute an application
 
 | Task | Guide |
 | --- | --- |
+| Build your first HTTP service | [Weather API](../weather-api.md) |
 | Add endpoints, pages, streams, or crypto | [Web applications](../web.md) |
 | Create or consume a source library | [Packages](../packages.md#author-a-package) |
 | Build and deploy a Linux application image | [Docker](../docker.md) |

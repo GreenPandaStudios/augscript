@@ -62,10 +62,10 @@ Release this lock when the block exits, including on return or failure.
 <a id="symbol-initializeKeys"></a>
 ## `initializeKeys` · [source](keys.aug#L35)
 
-It gets `crypto` ([`Crypto`](../.aug-spec/august/0.19.0/crypto/contracts.aug.md#symbol-Crypto)) and `keys` ([`SigningKeys`](keys.aug.md#symbol-SigningKeys)) from dependency injection. Failures can raise `CryptoError` and [`KeyError`](keys.aug.md#symbol-KeyError). It sets `provider` and `session` separately, each to [`crypto.generateRsa`](../.aug-spec/august/0.19.0/crypto/contracts.aug.md#symbol-Crypto.generateRsa). It calls [`keys.configure`](keys.aug.md#symbol-SigningKeys.configure) with `provider` and `session`.
+It gets `crypto` ([`Crypto`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto)) and `keys` ([`SigningKeys`](keys.aug.md#symbol-SigningKeys)) from dependency injection. Failures can raise `CryptoError` and [`KeyError`](keys.aug.md#symbol-KeyError). It sets `provider` and `session` separately, each to [`crypto.generateRsa`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.generateRsa). It calls [`keys.configure`](keys.aug.md#symbol-SigningKeys.configure) with `provider` and `session`.
 
 ## Dependencies
 
-It uses [`Crypto`](../.aug-spec/august/0.19.0/crypto/contracts.aug.md#symbol-Crypto) ([`generateRsa`](../.aug-spec/august/0.19.0/crypto/contracts.aug.md#symbol-Crypto.generateRsa)) from `august.crypto`. These links explain the full dependency contracts.
+It uses [`Crypto`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto) ([`generateRsa`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.generateRsa)) from `crypto`.
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).

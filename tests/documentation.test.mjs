@@ -61,9 +61,10 @@ function guideProjects() {
   const guides = [join(root, 'README.md'), ...handwrittenGuides(join(root, 'docs'))];
   for (const guide of guides) {
     const markdown = readFileSync(guide, 'utf8');
-    const fences = [...markdown.matchAll(/```aug([^\n]*)\n([\s\S]*?)\n```/g)];
-    for (const [, metadata, source] of fences) {
+    const fences = [...markdown.matchAll(/```(aug|yaml)([^\n]*)\n([\s\S]*?)\n```/g)];
+    for (const [, language, metadata, source] of fences) {
       const attributes = Object.fromEntries(metadata.trim().split(/\s+/).map(value => value.split('=')));
+      if (language === 'yaml' && !attributes.project) continue;
       assert.ok(attributes.project && attributes.file, guide + ': executable aug fences need project and file metadata');
       assert.ok(!attributes.file.includes('..') && !attributes.file.startsWith('/'));
       const files = projects.get(attributes.project) ?? new Map();
@@ -82,6 +83,7 @@ test('guide code fences assemble, check, run and execute their documented tests'
     const directory = mkdtempSync(join(tmpdir(), 'aug-guide-' + name + '-'));
     try {
       for (const [path, source] of files) { const file = join(directory, path); mkdirSync(dirname(file), { recursive: true }); writeFileSync(file, source); }
+      const install = command(directory, 'install'); assert.equal(install.status, 0, install.stderr);
       const check = command(directory, 'check'); assert.equal(check.status, 0, name + ': ' + check.stderr + check.stdout);
       const buildOnly=!!expected[name].buildOnly;
       const run = command(directory, buildOnly?'build':'run'); assert.equal(run.status, 0, name + ': ' + run.stderr);

@@ -2,6 +2,7 @@ import type { ClassDecl, Expr, GenericHeader, InterceptorAnnotation, MethodDecl,
 import { typeName } from './ast.ts';
 import { lex } from './lexer.ts';
 import { parse } from './parser.ts';
+import { importSource } from './git-packages.ts';
 import type { Project } from './project.ts';
 
 /** Canonical syntax comes from the parsed program; comments stay with their lexical owner. */
@@ -62,7 +63,14 @@ class Printer {
     this.indent = project.config.block_style === 'indent';
     this.assign = project.config.assignment === 'to' ? 'to' : '=';
   }
-  private line(text = '') { this.lines.push(text ? this.step.repeat(this.level) + text : ''); }
+  private line(text = '') {
+    this.lines.push(...text.split('\n').map(line => line ? this.step.repeat(this.level) + line : ''));
+  }
+  private delimited(open: string, values: string[], close: string, trailing = ''): string {
+    const flat = open + values.join(', ') + trailing + close;
+    if (!values.length || (!flat.includes('\n') && flat.length <= 80 - this.level * 4)) return flat;
+    return open + '\n' + values.map(value => this.step + value.replaceAll('\n', '\n' + this.step)).join(',\n') + trailing + '\n' + close;
+  }
   private before(offset: number, parentColumn?: number) {
     while (this.comments[0]?.span.start < offset) {
       if (parentColumn !== undefined && this.comments[0].span.column <= parentColumn) break;
@@ -132,14 +140,17 @@ class Printer {
     else if (expr.kind === 'wait') value = `wait for ${expr.tasks.map(task => this.expression(task, 8)).join(' and ')}`;
     else if (expr.kind === 'resolve') value = `resolve ${expr.name}` + (expr.typeArgs.length ? '<' + expr.typeArgs.map(typeName).join(', ') + '>' : '');
     else if (expr.kind === 'member') value = `${this.expression(expr.object, 8)}.${expr.name}`;
-    else if (expr.kind === 'call') value = this.expression(expr.callee, 8) + (expr.typeArgs.length ? '<' + expr.typeArgs.map(typeName).join(', ') + '>' : '') +
-      '(' + expr.args.map((arg, index) => (expr.argLabels[index] ? expr.argLabels[index] + '=' : '') + this.expression(arg)).join(', ') + this.inline(expr.span.end) + ')';
+    else if (expr.kind === 'call') {
+      const open = this.expression(expr.callee, 8) + (expr.typeArgs.length ? '<' + expr.typeArgs.map(typeName).join(', ') + '>' : '') + '(';
+      const values = expr.args.map((arg, index) => (expr.argLabels[index] ? expr.argLabels[index] + '=' : '') + this.expression(arg));
+      value = this.delimited(open, values, ')', this.inline(expr.span.end));
+    }
     else if (expr.kind === 'collection') {
       const open = expr.collection === 'List' ? '[' : expr.collection === 'Tuple' ? '(' : '{';
       const close = open === '[' ? ']' : open === '(' ? ')' : '}';
       const values = expr.collection === 'Map' ? expr.items.filter((_, index) => index % 2 === 0).map((item, index) =>
         `${this.expression(item)}: ${this.expression(expr.items[index * 2 + 1])}`) : expr.items.map(item => this.expression(item));
-      value = open + values.join(', ') + (expr.collection === 'Tuple' && values.length === 1 ? ',' : '') + this.inline(expr.span.end) + close;
+      value = this.delimited(open, values, close, (expr.collection === 'Tuple' && values.length === 1 ? ',' : '') + this.inline(expr.span.end));
     } else if (expr.kind === 'unary') {
       const power = expr.op === '!' ? 2.5 : 7;
       value = (expr.op === '!' ? 'not ' : expr.op) + this.expression(expr.value, power);
@@ -185,7 +196,7 @@ class Printer {
   private item(item: TopLevel) {
     this.before('annotations' in item ? item.annotations?.[0]?.span.start ?? item.span.start : item.span.start);
     if (item.kind === 'import') {
-      this.line(`import ${item.everything ? 'everything' : item.names.join(' and ')} from ${item.from.join('.')}`);
+      this.line(`import ${item.everything ? 'everything' : item.names.join(' and ')} from ${importSource(item.from)}`);
     } else if (item.kind === 'export') this.line('export ' + (item.folder ? 'folder ' + item.name : `${item.name} from ${item.from}`));
     else if (item.kind === 'include') this.line('include ' + item.name);
     else if (item.kind === 'bind') this.line(`implement ${item.key}${item.keyTypeArgs.length ? '<' + item.keyTypeArgs.map(typeName).join(', ') + '>' : ''} with ${typeName(item.target)}` +

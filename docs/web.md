@@ -1,14 +1,21 @@
 # HTTP, server pages, and crypto
 
-Build a service by declaring its routes in August and serving them from `main.aug`. The declarations describe how HTTP inputs become typed values and how results become responses. Your application selects authentication, authorization, and logging capabilities explicitly. `august.web` and `august.crypto` provide adapters for native transport and cryptographic operations.
+Build a service by declaring its routes in August and serving them from `main.aug`. The declarations describe how HTTP inputs become typed values and how results become responses. Your application selects authentication, authorization, and logging capabilities explicitly. The optional web and crypto packages provide adapters for native transport and cryptographic operations.
 
 This guide builds a service with JSON, a server-rendered page, a form action, and an event stream. Learn [modules and dependencies](learn/modules-and-dependencies.md) first if `implement` and `resolve` are unfamiliar. Full web and crypto runs need the [native bootstrap](tooling.md#native-standard-libraries). The service uses demonstration authentication; [the gap ledger](web-library-gaps.md) describes what remains before a production service claim.
 
 ## A complete service
 
-Copy the following files into one folder. `aug check .` checks the contracts and `aug test .` runs the three endpoint cases. `aug run .` starts the server on port 8080. The documentation gate builds the service and runs its tests; it does not leave a server running.
+Copy the following files into one folder and run `aug install`. `aug check .` checks the contracts and `aug test .` runs the three endpoint cases. `aug run .` starts the server on port 8080. The documentation gate builds the service and runs its tests; it does not leave a server running.
 
 Read `main.aug` first. It supplies the authentication and request-logging implementations, then serves the four named endpoints. Read `api.aug` for the JSON route and stream, `actions.aug` for the POST, and the page/view files for HTML.
+
+**main.yaml**
+
+```yaml project=web-guide file=main.yaml
+packages:
+  web: "https://github.com/GreenPandaStudios/augscript/src/stdlib/web#v0.19.0"
+```
 
 **main.aug**
 
@@ -17,7 +24,7 @@ import readUser and events from api
 import home from pages
 import save from actions
 import DemoAuthentication from auth
-import Authentication and RequestLogger and WebRequestLogger from august.web
+import Authentication and RequestLogger and WebRequestLogger from web
 
 implement Authentication with DemoAuthentication
 implement RequestLogger with WebRequestLogger scoped
@@ -34,7 +41,7 @@ record UserInput(string name)
 **auth.aug**
 
 ```aug project=web-guide file=auth.aug
-import Authentication and Principal from august.web
+import Authentication and Principal from web
 
 /** A demonstration adapter. Replace its credential check for a real application. */
 DemoAuthentication() implements Authentication:
@@ -53,7 +60,7 @@ DemoAuthentication() implements Authentication:
 ```aug project=web-guide file=api.aug
 import User from models
 import DemoAuthentication from auth
-import Authentication and RequestLogger and WebRequestLogger from august.web
+import Authentication and RequestLogger and WebRequestLogger from web
 
 /** Look up one user. Authentication runs before the identifier is decoded. */
 [LogRequest(logger=logger)]
@@ -94,7 +101,7 @@ test endpoint events client:
 
 ```aug project=web-guide file=actions.aug
 import UserInput from models
-import redirect from august.web
+import redirect from web
 
 /** Accept a typed form and redirect after handling it. */
 endpoint POST "/users" as save(UserInput input from form):
@@ -147,15 +154,15 @@ The first written HTTP policy is outermost. Policies execute before wire decodin
 
 | Policy | Inputs and behavior |
 | --- | --- |
-| RequireLogin | `authentication=auth` maps an explicit `resolve Authentication auth`; declare `uses auth.authenticate`. A null identity returns 401. The adapter validates credentials. |
-| RequirePermission | Maps Authentication and Authorization dependencies plus a literal permission; denied access returns 403. Declare both capability operations. |
-| LogRequest | Maps `resolve RequestLogger logger` and `uses logger.complete`. Calls completion in reverse layer order after transport completion or disconnect. Disconnect status is 499 for logging. WebRequestLogger emits escaped JSON metadata without credentials or query strings. |
+| RequireLogin | `authentication=auth` maps an explicit `resolve Authentication auth`. The compiler includes `auth.authenticate` in the handler's inferred contract. A null identity returns 401. The adapter validates credentials. |
+| RequirePermission | Maps Authentication and Authorization dependencies plus a literal permission; denied access returns 403. Both capability operations appear in the inferred contract. |
+| LogRequest | Maps `resolve RequestLogger logger` and adds `logger.complete` to the inferred contract. Calls completion in reverse layer order after transport completion or disconnect. Disconnect status is 499 for logging. WebRequestLogger emits escaped JSON metadata without credentials or query strings. |
 | RateLimit | Literal requests and seconds; a bounded fixed-window counter per endpoint and trusted transport peer. It ignores client-supplied forwarding headers. Excess returns 429. |
 | Timeout | Literal milliseconds; handler, scoped tasks, streaming and transport share the deadline. Before output, timeout returns 504; after headers it terminates output. C calls finish before cooperative cancellation is observed. Buffered request reception precedes this deadline. |
 | Cors | Literal exact origins, optional request-header allowlist and credentials. A supplied disallowed origin returns 403. Preflight checks the selected route's method and requested headers. Wildcard cannot enable credentials. CORS is not authentication or CSRF protection. |
 | Compress | Negotiates gzip, respects an existing Content-Encoding, and skips bodyless statuses. Stream items use complete concatenated gzip members as permitted by [RFC 1952](https://www.rfc-editor.org/rfc/rfc1952.html). |
 
-Options are compile-time literals; dependency mappings must reference the canonical `august.web` capabilities. Cors and Compress may each appear once. Multiple deadlines choose the earliest. Custom interceptors retain their checked around/next contracts and written order.
+Options are compile-time literals. Import the policy interfaces from the web source package; the compiler checks their signatures against the native adapter contract. Cors and Compress may each appear once. Multiple deadlines choose the earliest. Custom interceptors retain their checked around/next contracts and written order.
 
 ## Streams and scoped tasks
 

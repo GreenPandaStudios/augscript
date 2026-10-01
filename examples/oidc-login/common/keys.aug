@@ -1,5 +1,5 @@
 // aug-spec: "keys.aug.md" explains this file. Read it before changes; refresh with aug spec.
-import Crypto from august.crypto
+import Crypto from crypto
 
 KeyError() implements Error:
     pass

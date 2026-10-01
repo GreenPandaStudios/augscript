@@ -53,7 +53,7 @@ It prints [`add`](dependencies/packages/%40example/aug-math/0.1.0/arithmetic.md#
 
 ### Dependencies
 
-It uses [`add`](dependencies/packages/%40example/aug-math/0.1.0/arithmetic.md#symbol-add) from `math`. These links explain the full dependency contracts.
+It uses [`add`](dependencies/packages/%40example/aug-math/0.1.0/arithmetic.md#symbol-add) from `math`.
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).
 

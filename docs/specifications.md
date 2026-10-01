@@ -52,6 +52,8 @@ Without any author comments, the generated explanation reads:
 
 Related work is explained together. Validation describes the requirements and what happens at the first failed check. HTTP results describe responses. Collection updates describe the values added or stored. Decisions, repeated effects, recovery, and cleanup remain part of the explanation.
 
+For a list of literal records, the spec names the fields once and gives the rows in their original order. Calls with computed inputs keep their individual explanations, so the shorter description does not hide work or dependencies.
+
 String construction appears as readable text such as `Hello, {name}!`. Braces mark inserted values; doubled braces represent literal braces. Parentheses preserve expression grouping when it changes the meaning. These are conventions in the explanation, not new August source syntax.
 
 Javadoc, when present, becomes part of the explanation: its summary introduces the declaration, parameter notes sit beside their inputs, and return and error notes sit beside those outcomes. Comments can explain intent that a compiler cannot infer, but readers do not need them to follow the checked inputs, operations, and outcomes.
