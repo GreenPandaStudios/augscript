@@ -1,7 +1,7 @@
 ---
-title: "august/0.20.0/io/contracts.aug · Move ownership"
+title: "august/0.20.1/io/contracts.aug · Modules and composition"
 generated: true
-source: "examples/ownership-transfer/.aug-spec/august/0.20.0/io/contracts.aug"
+source: "examples/approved-design/.aug-spec/august/0.20.1/io/contracts.aug"
 editLink: false
 prev: false
 next: false
@@ -10,9 +10,9 @@ search: false
 pageClass: aug-example-page
 ---
 
-# `august/0.20.0/io/contracts.aug`
+# `august/0.20.1/io/contracts.aug`
 
-[Move ownership](../../../../index.md) · Dependency source and specification
+[Modules and composition](../../../../index.md) · Dependency source and specification
 
 This is the exact dependency version used by this example.
 

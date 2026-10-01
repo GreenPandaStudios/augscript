@@ -21,7 +21,7 @@ Save `.devcontainer/Dockerfile` with these contents. It installs the published C
 
 ```dockerfile
 FROM node:24-bookworm
-ARG AUG_VERSION=0.20.0
+ARG AUG_VERSION=0.20.1
 ENV AUG_NATIVE_HOME=/opt/augscript/.aug-native
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \

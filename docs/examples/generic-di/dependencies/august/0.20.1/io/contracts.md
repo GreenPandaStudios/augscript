@@ -1,7 +1,7 @@
 ---
-title: "august/0.20.0/io/contracts.aug · Hello world with dependencies"
+title: "august/0.20.1/io/contracts.aug · Generic dependency injection"
 generated: true
-source: "examples/hello/.aug-spec/august/0.20.0/io/contracts.aug"
+source: "examples/generic-di/.aug-spec/august/0.20.1/io/contracts.aug"
 editLink: false
 prev: false
 next: false
@@ -10,9 +10,9 @@ search: false
 pageClass: aug-example-page
 ---
 
-# `august/0.20.0/io/contracts.aug`
+# `august/0.20.1/io/contracts.aug`
 
-[Hello world with dependencies](../../../../index.md) · Dependency source and specification
+[Generic dependency injection](../../../../index.md) · Dependency source and specification
 
 This is the exact dependency version used by this example.
 

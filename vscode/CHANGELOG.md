@@ -1,12 +1,12 @@
+# Changelog
+
+## 0.20.1
+
+- Publish the reviewed release VSIX from GitHub Actions using Marketplace trusted publishing. Verify the bundled compiler, artwork, manifest and checksum before uploading; retries check the existing extension contents.
+
 ## 0.20.0
 
 Completion inserts labeled arguments and public imports. New templates cover declarations, tests, HTTP methods, streams, tasks, and locks. Fixes correct nearby names and input labels, scaffold interface methods, and install missing source packages. The bundled compiler uses regular Git/local/npm packages for optional libraries. Updated guides cover the editor and weather starter.
-
-# Changelog
-
-## Unreleased
-
-- Publish the reviewed release VSIX from GitHub Actions using Marketplace trusted publishing. Verify the bundled compiler, artwork, manifest and checksum before uploading; retries check the existing extension contents.
 
 - Show inferred return, mutation, capability, and checked-error contracts as inline hints, enabled by default. Toggle augscript.inferredContractHints; formatting never inserts inferred clauses. Hover and signature help use the inferred contracts too.
 

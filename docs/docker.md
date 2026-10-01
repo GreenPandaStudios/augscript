@@ -10,7 +10,7 @@ Save this as `Dockerfile.build` in an empty working folder. It installs the publ
 
 ```dockerfile
 FROM node:24-bookworm
-ARG AUG_VERSION=0.20.0
+ARG AUG_VERSION=0.20.1
 ENV AUG_NATIVE_HOME=/opt/augscript/.aug-native
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \

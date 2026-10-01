@@ -5,7 +5,7 @@ All first-party packages and the extension use one compiler-compatible version. 
 ## Verify and create artifacts
 
 ```sh
-node scripts/version.mjs 0.20.0
+node scripts/version.mjs 0.20.1
 npm ci
 npm --prefix vscode ci
 node scripts/bootstrap-native.mjs
@@ -29,15 +29,15 @@ Update both changelogs and relevant guides, and commit regenerated docs. The fin
 After verification and committing, create and push the version tag:
 
 ```sh
-git tag v0.20.0
-git push origin main v0.20.0
+git tag v0.20.1
+git push origin main v0.20.1
 ```
 
 `release.yml` validates the tag against every manifest, runs compiler/native/docs/package gates, and uploads artifacts to a **draft prerelease**. Review the draft and publish it in GitHub Releases. Publishing starts **Publish npm packages** and **Publish VS Code extension** automatically. Each workflow deploys the archives attached to that release. Changing an asset after review invalidates its checksum.
 
 `ci.yml` checks pushes and pull requests. Linux CI builds the pinned full native stack, runs the native suite, and executes core and crypto apps in the matching runtime image. macOS CI runs the same native suite with its private bootstrap.
 
-The automatic publishers are an unreleased pipeline change. They must be merged and included in a new version tag before that tag can use them. Existing tags keep their original workflows; the current `v0.20.0` draft does not contain these scripts.
+The automatic publishers are included starting with `v0.20.1`. Existing tags keep their original workflows; the `v0.20.0` draft does not contain these scripts.
 
 The manually published Marketplace `0.19.0` contains files that differ from the VSIX attached to the `v0.19.0` GitHub release. It is not a matching deployment of that archive. Use a new version for the first automated extension release; do not bypass the content comparison to skip an older mismatch.
 

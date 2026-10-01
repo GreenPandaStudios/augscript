@@ -67,7 +67,7 @@ npm run docs:build
 npm run package:packages
 npm run test:packages
 npm run package:extension
-code --install-extension vscode/augscript-0.19.0.vsix --force
+code --install-extension vscode/augscript-0.20.1.vsix --force
 ```
 
 Development dependency versions are pinned in both manifests and lockfiles. The extension bundles the same compiler, runtime, guides and native bootstrap. Native commands prepare required libraries automatically; contributors can prewarm all dependencies with `node scripts/bootstrap-native.mjs`. Set `augscript.nativeHome` to this repository's `.aug-native` directory to share it with the bundled compiler.
