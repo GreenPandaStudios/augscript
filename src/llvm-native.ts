@@ -10,6 +10,7 @@ import {compilerVersion} from './package-manager.ts';
 import {nativePath,nativeHostTarget} from './native-contracts.ts';
 import type {LLVMToolchain} from './compiler-packs.ts';
 import {runtimeIdentifierSha256} from './runtime-abi.ts';
+import {generateOpenApi} from './openapi.ts';
 
 export interface RuntimeComponent {libraries:string[];runtimeFiles:string[];metadata:string[]}
 export interface RuntimePack {format:1;version:string;target:string;minimumOS:string;layout:RuntimeLayout;identifierSha256:string;files:Record<string,string>;libraries:string[];components:Record<string,RuntimeComponent>;sourceSha256:string}
@@ -36,26 +37,35 @@ export function readRuntimePack(directory:string):RuntimePack {
 }
 
 /** Link target objects with prebuilt runtimes. Application builds never invoke Clang. */
-export function compileLLVM(checked:CheckedProject,options:{output?:string;release?:boolean;testIndex?:number;bundle?:string;native?:NativeLinkInput[];toolchain?:LLVMToolchain}={}) {
+export function compileLLVM(checked:CheckedProject,options:{output?:string;release?:boolean;coverage?:boolean;testIndex?:number;bundle?:string;native?:NativeLinkInput[];toolchain?:LLVMToolchain}={}) {
   const root=checked.project.root,target=nativeHostTarget();
+  const config=checked.project.config;
+  const release=options.release??config.optimization==='release';
+  if(config.libraries.length||config.library_paths.length)throw new Error('LLVM_LINK_INPUT: LLVM builds require native libraries to be declared by a locked August package. Remove main.yaml libraries/library_paths or use the C reference backend for this local toolchain build.');
   if(target.triple!=='aarch64-apple-darwin'||Number(target.minimumOS?.split('.')[0])<14)throw new Error('NATIVE_TARGET: LLVM preview currently requires macOS 14+ ARM64');
   const compilerRoot=resolve(dirname(fileURLToPath(import.meta.url)),'..');
   const tools=options.toolchain?.tools??process.env.AUG_LLVM_HOME,runtime=resolve(options.toolchain?.runtime??process.env.AUG_RUNTIME_PACK??join(compilerRoot,'.aug-native/llvm/runtime'));
   if(!tools)throw new Error('LLVM_TOOLS: Prepare the compiler-owned tool pack before invoking the LLVM compilation API. The CLI installs it automatically.');
-  const llc=join(tools,'bin/llc'),lld=join(tools,'bin/lld'),opt=join(tools,'bin/opt');
-  if(!existsSync(llc)||!existsSync(lld)||!existsSync(opt))throw new Error('LLVM_TOOLS: The configured tool pack is missing llc, opt or lld');
-  const pack=readRuntimePack(runtime),ir=lowerToIR(checked),module=generateLLVM(ir,{layout:pack.layout});
+  const llc=join(tools,'bin/llc'),lld=join(tools,'bin/lld'),opt=join(tools,'bin/opt'),dsymutil=join(tools,'bin/dsymutil');
+  if(!existsSync(llc)||!existsSync(lld)||!existsSync(opt)||!existsSync(dsymutil))throw new Error('LLVM_TOOLS: The configured tool pack is missing llc, opt, lld or dsymutil');
+  const pack=readRuntimePack(runtime),ir=lowerToIR(checked,{coverage:options.coverage}),module=generateLLVM(ir,{layout:pack.layout,release});
   const directory=resolve(options.bundle??join(root,'.aug-build',...(options.testIndex===undefined?[]:['tests'])));
   mkdirSync(join(directory,'lib'),{recursive:true});
   const name=options.testIndex===undefined?'program':'test-'+options.testIndex;
-  const source=join(directory,name+'.ll'),object=join(directory,name+'.o'),output=options.output?resolve(directory,options.output):join(directory,options.testIndex===undefined?basename(root):name);
+  const source=join(directory,name+'.ll'),object=join(directory,name+'.o');
+  const outputName=options.testIndex===undefined?options.output??config.output??basename(root):name;
+  const output=resolve(directory,outputName);
   const deployment=join(dirname(output),'lib');mkdirSync(deployment,{recursive:true});
   writeFileSync(source,module);writeFileSync(join(directory,name+'.aug-ir.json'),JSON.stringify(ir,null,2)+'\n');
+  if(config.openapi.enabled&&options.testIndex===undefined){
+    const target=resolve(root,config.openapi.output);mkdirSync(dirname(target),{recursive:true});
+    writeFileSync(target,JSON.stringify(generateOpenApi(checked).document,null,2)+'\n');
+  }
   const run=(tool:string,args:string[])=>{const result=spawnSync(tool,args,{encoding:'utf8',cwd:root,env:{...process.env,SDKROOT:'/nonexistent',DEVELOPER_DIR:'/nonexistent'}});if(result.status!==0)throw new Error(`LLVM compilation failed with ${basename(tool)}.\n${result.stderr||result.error?.message||result.stdout}\nLLVM IR: ${source}`);return result;};
   const optimized=join(directory,name+'.optimized.ll');
   run(opt,['-passes=verify','-disable-output',source]);
-  if(options.release)run(opt,['-passes=default<O2>','-S',source,'-o',optimized]);
-  run(llc,['-filetype=obj',options.release?'-O=2':'-O=0','-relocation-model=pic',options.release?optimized:source,'-o',object]);
+  if(release)run(opt,['-passes=default<O2>','-S',source,'-o',optimized]);
+  run(llc,['-filetype=obj',release?'-O=2':'-O=0','-relocation-model=pic',release?optimized:source,'-o',object]);
   const libraries:string[]=[],deployed=new Map<string,string>();
   const deploy=(origin:string,path:string,link:boolean)=>{nativePath(path);const destination=join(deployment,basename(path));
     const digest=createHash('sha256').update(readFileSync(join(origin,path))).digest('hex');
@@ -78,6 +88,8 @@ export function compileLLVM(checked:CheckedProject,options:{output?:string;relea
   for(const input of options.native??[]){for(const library of input.libraries)deploy(input.directory,library,true);for(const file of input.runtimeFiles)if(!input.libraries.includes(file))deploy(input.directory,file,false);
     if(input.metadata?.length){if(!/^[0-9a-f]{64}$/.test(input.artifactSha256??''))throw new Error('NATIVE_INTEGRITY: Deployment metadata requires an artifact identity');metadata(input.directory,input.artifactSha256!,input.metadata);}}
   run(lld,['-flavor','darwin','-arch','arm64','-platform_version','macos','14.0','14.0','-Z','-fixup_chains','-adhoc_codesign','-e','_main','-rpath','@executable_path/lib',object,...libraries,join(runtime,'platform/libSystem.tbd'),'-o',output]);
-  writeFileSync(output+'.augmap.json',JSON.stringify({format:1,backend:'llvm',version:compilerVersion(),target:pack.target,sourceRevision:ir.sourceRevision,llvmIR:source,object,runtime:pack.sourceSha256,compilerArtifact:options.toolchain?.archiveSha256,developmentToolchain:options.toolchain?.developmentOverride??true,nativeArtifacts:options.native?.map(input=>input.artifactSha256),libraries:[...deployed].map(([file,sha256])=>({file:basename(file),sha256})),symbols:ir.functions.map(f=>({name:f.name,location:f.span}))},null,2)+'\n');
+  const debugInfo=output+'.dSYM';run(dsymutil,[output,'-o',debugInfo]);
+  const hash=(file:string)=>createHash('sha256').update(readFileSync(file)).digest('hex');
+  writeFileSync(output+'.augmap.json',JSON.stringify({format:1,backend:'llvm',version:compilerVersion(),llvm:'23.1.2',mode:release?'release':'development',target:pack.target,sourceRevision:ir.sourceRevision,llvmIR:source,llvmIRSha256:hash(source),optimizedIRSha256:release?hash(optimized):undefined,object,objectSha256:hash(object),executableSha256:hash(output),debugInfo,debugInfoSha256:hash(join(debugInfo,'Contents/Resources/DWARF',basename(output))),runtime:pack.sourceSha256,compilerArtifact:options.toolchain?.archiveSha256,developmentToolchain:options.toolchain?.developmentOverride??true,nativeArtifacts:options.native?.map(input=>input.artifactSha256),libraries:[...deployed].map(([file,sha256])=>({file:basename(file),sha256})),symbols:ir.functions.map(f=>({name:f.name,sourceName:f.sourceName,location:f.span}))},null,2)+'\n');
   return {output,status:0,error:'',diagnostics:[]};
 }

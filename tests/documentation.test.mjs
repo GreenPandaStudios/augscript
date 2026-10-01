@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { cpSync, readFileSync, readdirSync, mkdirSync, mkdtempSync, writeFileSync, rmSync } from 'node:fs';
 import { resolve, join, dirname, basename } from 'node:path';
 import { tmpdir } from 'node:os';
-import { spawnSync } from 'node:child_process';
+import { spawnSync } from './compiler-process.mjs';
 const root = resolve('.');
 const cli = join(root, 'bin/aug.mjs');
 const command = (project, name, args = []) => spawnSync(process.execPath, [cli, name, project, ...args], { encoding: 'utf8' });

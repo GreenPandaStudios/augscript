@@ -11,7 +11,7 @@ const llvm=resolve(process.argv[2]??join(root,'.aug-build/llvm-tools'));
 const runtime=resolve(process.argv[3]??join(root,'.aug-native/llvm/runtime'));
 const directory=join(root,'.aug-build/compiler-pack'),output=join(root,'.aug-build/aug-llvm-macos-arm64.tar.gz');
 const sha=file=>createHash('sha256').update(readFileSync(file)).digest('hex');
-const pins={llc:'7a9ff3ffea3ed5f3e4c2e6603b5792446702cfcb46d978e80bc6cd1678f192eb',lld:'87de299f2482f07991579207d3673694f5e152cfcd41e9c8c7c864fc91d1398e',opt:'c171130f261590f9fa30f015d8a2bb161216eadae13c0d9b114c93685bc64a09'};
+const pins={llc:'7a9ff3ffea3ed5f3e4c2e6603b5792446702cfcb46d978e80bc6cd1678f192eb',lld:'87de299f2482f07991579207d3673694f5e152cfcd41e9c8c7c864fc91d1398e',opt:'c171130f261590f9fa30f015d8a2bb161216eadae13c0d9b114c93685bc64a09',dsymutil:'f715be35dd492c435f8a064cac7ca9c69f11e00139bcb2c3aca586e1036240cc'};
 rmSync(directory,{recursive:true,force:true});for(const path of ['bin','runtime','licenses'])mkdirSync(join(directory,path),{recursive:true});
 for(const [tool,digest] of Object.entries(pins)){
   const source=join(llvm,'bin',tool);if(sha(source)!==digest)throw new Error('Official LLVM tool changed: '+tool);copyFileSync(source,join(directory,'bin',tool));

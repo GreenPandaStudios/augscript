@@ -17,7 +17,7 @@ enum AugIrOperation {
   AUG_IR_ARGUMENTS, AUG_IR_FREEZE, AUG_IR_ITER, AUG_IR_MAP_ITER, AUG_IR_IS_TYPE,
   AUG_IR_SHARED, AUG_IR_SHARED_LOCK, AUG_IR_JSON_WRAP, AUG_IR_JSON_PARSE,
   AUG_IR_JSON_STRINGIFY, AUG_IR_JSON_GET, AUG_IR_JSON_REQUIRE, AUG_IR_JSON_STRING,
-  AUG_IR_JSON_INTEGER, AUG_IR_JSON_BOOLEAN, AUG_IR_JSON_ITEMS, AUG_IR_TIME_NOW
+  AUG_IR_JSON_INTEGER, AUG_IR_JSON_BOOLEAN, AUG_IR_JSON_ITEMS, AUG_IR_TIME_NOW, AUG_IR_EXIT, AUG_IR_TEST_CASE
 };
 void aug_ir_operation(AugValue *out, int operation, AugValue *args, int count, const char *text, int64_t number);
 void aug_ir_json_decode(AugValue *out, const AugValue *value, const AugSchema *schema);

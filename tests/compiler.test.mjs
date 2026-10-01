@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import { spawnSync } from 'node:child_process';
+import { spawnSync } from './compiler-process.mjs';
 import { languageHelp } from '../src/help.ts';
 import { reservedKeywords } from '../src/lexer.ts';
 
@@ -448,11 +448,11 @@ test('ownership examples run and drop resources', () => {
   const drop = run(join(repository, 'examples', 'drop'), true);
   assert.equal(drop.status, 0, drop.stderr);
   assert.equal(drop.stdout, 'using resource\n');
-  assert.equal(drop.stderr.match(/drop: Resource\n/g)?.length, 1);
+  assert.equal(drop.stderr.match(/drop: (?:[^\n]+:)?Resource\n/g)?.length, 1);
   const transfer = run(join(repository, 'examples', 'ownership-transfer'), true);
   assert.equal(transfer.status, 0, transfer.stderr);
   assert.equal(transfer.stdout, 'consumed\nend of main\n');
-  assert.equal(transfer.stderr.match(/drop: Resource\n/g)?.length, 2);
+  assert.equal(transfer.stderr.match(/drop: (?:[^\n]+:)?Resource\n/g)?.length, 2);
 });
 
 test('checked exception is caught at runtime', () => {
@@ -466,8 +466,8 @@ test('checked constructor failure releases transferred fields and retains its de
   'main.aug': `import Resource and Holder and Failure from operations\ntry:\n    own Resource value = Resource()\n    Holder(value)\ncatch Failure error:\n    print(value=error.code)\nprint(value="done")\n`
 }, root => {
   const result=run(root,true);assert.equal(result.status,0,result.stderr);assert.equal(result.stdout,'9\ndone\n');
-  assert.equal(result.stderr.match(/drop: Resource\n/g)?.length,1);
-  assert.doesNotMatch(result.stderr,/drop: Holder\n/);
+  assert.equal(result.stderr.match(/drop: (?:[^\n]+:)?Resource\n/g)?.length,1);
+  assert.doesNotMatch(result.stderr,/drop: (?:[^\n]+:)?Holder\n/);
   const file=join(root,'main.aug'),source=readFileSync(file,'utf8');
   writeFileSync(file,source.slice(0,source.indexOf('try:'))+'own Resource value = Resource()\nHolder(value)\n');
   assert.ok(check(root).issues.some(issue=>issue.code==='THROWS'&&/Unhandled Failure/.test(issue.message)));
@@ -478,7 +478,7 @@ test('partial constructor cleanup skips the completed-object drop method',()=>wi
   'main.aug':`import Resource and Broken and Failure from operations\ntry:\n    own Resource item = Resource()\n    Broken(item)\ncatch Failure error:\n    print(value="constructor error")\n`
 },root=>{
   const result=run(root,true);assert.equal(result.status,0,result.stderr);assert.equal(result.stdout,'constructor error\n');
-  assert.equal(result.stderr.match(/drop: Resource\n/g)?.length,1);assert.doesNotMatch(result.stderr,/drop: Broken\n/);
+  assert.equal(result.stderr.match(/drop: (?:[^\n]+:)?Resource\n/g)?.length,1);assert.doesNotMatch(result.stderr,/drop: (?:[^\n]+:)?Broken\n/);
 }));
 
 test('C FFI call inside unsafe block runs', () => {

@@ -31,7 +31,7 @@ export async function prepareLLVMCompiler(offline=false,project?:{root:string;fr
     const lock:PackageLock=initial?JSON.parse(initial):{format:1,compiler:compilerVersion(),specifications:{},roots:{},packages:[],npm:{}};
     if(lock.compiler!==compilerVersion())throw new Error('LLVM_LOCK: Project lock belongs to another compiler. Run aug install.');
     if(project?.frozen&&(!lock.native?.compiler||lock.native.compiler.artifactSha256!==pack.archive.sha256))throw new Error('LLVM_LOCK: Frozen build has no matching compiler artifact. Run aug build --backend llvm online once.');
-    const directory=await ensureVerifiedArchive(pack.archive,{offline,executables:['bin/llc','bin/lld','bin/opt']});
+    const directory=await ensureVerifiedArchive(pack.archive,{offline,executables:['bin/llc','bin/lld','bin/opt','bin/dsymutil']});
     const identity=JSON.parse(readFileSync(join(directory,'compiler-pack.json'),'utf8'));
     if(identity.format!==1||identity.compiler!==manifest.compiler||identity.llvm!==manifest.llvm||identity.host!==host||identity.target!==target.triple)throw new Error('LLVM_TOOLS: Verified archive has a different compiler/host/target identity');
     const runtime=readRuntimePack(join(directory,'runtime'));

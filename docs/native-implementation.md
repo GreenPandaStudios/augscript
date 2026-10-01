@@ -61,7 +61,9 @@ streams, server HTML/actions, and interceptor chains. Both backends use one
 concrete schema graph; JSON and forms invoke the appropriate checked constructor
 callback. LLVM verification runs before native object generation in development
 and optimized builds. The existing web and interceptor fixtures run against the
-LLVM path during migration.
+LLVM path during migration. CI and release builds share
+`node scripts/check-llvm-parity.mjs` to run the existing language, task, web and
+real-app expectations through LLVM with bounded test concurrency.
 
 Constructor layers track fresh results from `next()`. If interception fails after
 construction, cleanup releases the completed object's owned fields before the
@@ -75,8 +77,32 @@ deploy the components named by their checked IR. Their GnuTLS, Nettle and GMP
 libraries remain replaceable dynamic files, with source archives, August adapter
 sources, build recipes and notices in the deployment metadata. Maintainer builds
 target macOS 14 and reject binaries with a higher deployment requirement. The
-macOS 14 consumer gate must qualify this expanded pack before release; local
-execution on a newer Mac does not establish that platform requirement.
+macOS 14 consumer gate passed for the expanded pack in
+[CI run 36938094736](https://github.com/GreenPandaStudios/augscript/actions/runs/36938094736),
+on commit `e72a8a2`. Later compiler candidates must pass that gate again.
+
+Execution IR now records checked source types, parameter labels, rooted cells and
+source locations. A structural verifier checks frame bounds, control-flow targets,
+cleanup returns, resolved calls, data schemas and private runtime signatures before
+LLVM emission. The frontend remains responsible for source typing and ownership;
+this verifier does not prove foreign code safe. Contributors can inspect it with
+`aug emit-ir`.
+
+LLVM output includes DWARF source lines and variables in both development and
+optimized builds. The compiler pack contains `dsymutil`, which writes an adjacent
+dSYM without an SDK. `.augmap.json` identifies the IR, object, executable, debug
+file and selected native artifacts. Tests inspect the actual DWARF for source
+functions, sibling lexical scopes, parameters, loop bindings and catch variables.
+Local variable declarations appear at their source position. Debugger values use the real tagged representation;
+rich views are future work. LLVM tests also collect statement-line coverage,
+including zero counts for unexecuted statements. Setup assertions do not count
+toward a test case's required assertions. Same-file tests honor the configured
+development or release optimization mode.
+
+Configured executable and OpenAPI output paths work with LLVM. Local
+`libraries` and `library_paths` settings require the C reference backend; LLVM
+requires package-declared native link inputs so its deployment closure stays
+locked and does not depend on a consumer's toolchain.
 
 ## Delivery order
 

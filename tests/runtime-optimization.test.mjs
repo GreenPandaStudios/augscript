@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {mkdtempSync, writeFileSync, rmSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join, resolve} from 'node:path';
-import {spawnSync} from 'node:child_process';
+import {spawnSync} from './compiler-process.mjs';
 
 const cli = resolve('bin/aug.mjs');
 function run(source, expected, files = {}) {

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {mkdtempSync, writeFileSync, rmSync, readFileSync, realpathSync} from 'node:fs';
+import {mkdtempSync, writeFileSync, rmSync, readFileSync, realpathSync, existsSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {spawnSync} from 'node:child_process';
@@ -28,6 +28,91 @@ function runProgram(files, expected, {traceDrops=false,checkStderr,release=false
 }
 
 const enabled=process.platform==='darwin'&&process.arch==='arm64'&&!!process.env.AUG_LLVM_HOME;
+const dwarfTool='/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/llvm-dwarfdump';
+for(const release of [false,true])test('LLVM produces source DWARF and a matching dSYM '+(release?'optimized':'development'),{skip:!enabled||!existsSync(dwarfTool)},()=>{
+  const root=realpathSync(mkdtempSync(join(tmpdir(),'aug-llvm-debug-')));
+  try {
+    writeFileSync(join(root,'main.aug'),'import choose from math\nprint(value=choose(left=true))\n');
+    writeFileSync(join(root,'math.aug'),'choose(bool left) returns int:\n    int answer = 7\n    if left:\n        return answer\n    return 9\n');
+    writeFileSync(join(root,'main.yaml'),'output: nested/debug-app\noptimization: '+(release?'release':'debug')+'\n');
+    const checked=checkProject(loadProject(root));assert.deepEqual(checked.diagnostics,[]);
+    const compiled=compileLLVM(checked);assert.equal(compiled.output,join(root,'.aug-build/nested/debug-app'));
+    const map=JSON.parse(readFileSync(compiled.output+'.augmap.json','utf8'));
+    assert.equal(map.mode,release?'release':'development');assert.match(map.debugInfoSha256,/^[0-9a-f]{64}$/);
+    assert.equal(map.symbols.find(symbol=>symbol.sourceName==='choose').location.file,join(root,'math.aug'));
+    const dwarf=spawnSync(dwarfTool,['--debug-info','--debug-line',map.debugInfo],{encoding:'utf8'});
+    assert.equal(dwarf.status,0,dwarf.stderr);assert.match(dwarf.stdout,/DW_AT_name\s+\("choose"\)/);
+    assert.match(dwarf.stdout,/DW_AT_name\s+\("left"\)/);assert.match(dwarf.stdout,/DW_AT_name\s+\("answer"\)/);
+    assert.match(dwarf.stdout,/math\.aug/);assert.match(dwarf.stdout,/DW_AT_byte_size\s+\(0x10\)/);
+    const run=spawnSync(compiled.output,[],{encoding:'utf8'});assert.equal(run.status,0,run.stderr);assert.equal(run.stdout,'7\n');
+  } finally {rmSync(root,{recursive:true,force:true});}
+});
+test('LLVM debug scopes separate sibling locals and retain loop and catch bindings',{skip:!enabled||!existsSync(dwarfTool)},()=>{
+  const root=realpathSync(mkdtempSync(join(tmpdir(),'aug-llvm-scopes-')));
+  try {
+    writeFileSync(join(root,'main.aug'),'import choose and summarize from math\nprint(value=choose(left=true))\nprint(value=choose(left=false))\nprint(value=summarize())\n');
+    writeFileSync(join(root,'math.aug'),`choose(bool left) returns int:
+    if left:
+        int answer = 7
+        return answer
+    else:
+        int answer = 9
+        return answer
+summarize() returns int:
+    int total = 0
+    for item in [1, 2]:
+        total = total + item
+    try:
+        int zero = 0
+        total = total + 1 / zero
+    catch ArithmeticError failure:
+        total = total + 0
+    return total
+`);
+    const checked=checkProject(loadProject(root));assert.deepEqual(checked.diagnostics.filter(d=>d.severity!=='warning'),[]);
+    const compiled=compileLLVM(checked),map=JSON.parse(readFileSync(compiled.output+'.augmap.json','utf8'));
+    const ir=JSON.parse(readFileSync(join(root,'.aug-build/program.aug-ir.json'),'utf8'));
+    const choose=ir.functions.find(fn=>fn.sourceName==='choose'),answers=choose.variables.filter(variable=>variable.name==='answer');
+    assert.equal(answers.length,2);assert.notEqual(answers[0].scope,answers[1].scope);
+    const dwarf=spawnSync(dwarfTool,['--debug-info',map.debugInfo],{encoding:'utf8'});assert.equal(dwarf.status,0,dwarf.stderr);
+    assert.equal([...dwarf.stdout.matchAll(/DW_AT_name\s+\("answer"\)/g)].length,2);
+    assert.match(dwarf.stdout,/DW_TAG_lexical_block/);assert.match(dwarf.stdout,/DW_AT_name\s+\("item"\)/);
+    assert.match(dwarf.stdout,/DW_AT_name\s+\("failure"\)/);
+    const run=spawnSync(compiled.output,[],{encoding:'utf8'});assert.equal(run.status,0,run.stderr);assert.equal(run.stdout,'7\n9\n3\n');
+  } finally {rmSync(root,{recursive:true,force:true});}
+});
+test('LLVM same-file tests honor configured release optimization',{skip:!enabled},()=>{
+  const root=realpathSync(mkdtempSync(join(tmpdir(),'aug-llvm-test-release-')));
+  try {
+    writeFileSync(join(root,'main.aug'),'');writeFileSync(join(root,'main.yaml'),'optimization: release\n');
+    writeFileSync(join(root,'math.aug'),'answer() returns int:\n    return 42\ntest answer:\n    when release:\n        it returns_answer:\n            assert(answer() == 42)\n');
+    const run=spawnSync(process.execPath,[join(import.meta.dirname,'../bin/aug.mjs'),'test',root,'--backend','llvm','--json'],{encoding:'utf8',timeout:30000});
+    assert.equal(run.status,0,run.stderr);
+    const map=JSON.parse(readFileSync(join(root,'.aug-build/tests/test-0.augmap.json'),'utf8'));
+    assert.equal(map.mode,'release');assert.match(map.optimizedIRSha256,/^[0-9a-f]{64}$/);
+  } finally {rmSync(root,{recursive:true,force:true});}
+});
+test('LLVM statement coverage reports both executed and unexecuted source lines',{skip:!enabled},()=>{
+  const root=realpathSync(mkdtempSync(join(tmpdir(),'aug-llvm-coverage-')));
+  try {
+    writeFileSync(join(root,'main.aug'),'');
+    writeFileSync(join(root,'math.aug'),`choose(bool left) returns int:
+    if left:
+        return 1
+    return 2
+test choose:
+    when coverage:
+        it covers_one_branch:
+            assert(choose(left=true) == 1)
+`);
+    const result=spawnSync(process.execPath,[join(import.meta.dirname,'../bin/aug.mjs'),'test',root,'--backend','llvm','--coverage','--json'],{encoding:'utf8',timeout:30000});
+    assert.equal(result.status,0,result.stderr);const coverage=JSON.parse(result.stdout).coverage;
+    assert.ok(coverage.covered>0&&coverage.covered<coverage.executable);
+    const file=coverage.files.find(file=>file.file.endsWith('/math.aug'));
+    assert.equal(file.lines.find(line=>line.line===3).count,1);
+    assert.equal(file.lines.find(line=>line.line===4).count,0);
+  } finally {rmSync(root,{recursive:true,force:true});}
+});
 for(const release of [false,true])test('LLVM JSON decodes concrete generic records and checked collections '+(release?'optimized':'development'),{skip:!enabled},()=>runProgram({
   'data.aug':`record Envelope<T implements Data>(T value)
 record Profile(string name, optional string nickname, List<int> scores)

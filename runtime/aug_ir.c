@@ -61,6 +61,8 @@ void aug_ir_operation(AugValue *out,int op,AugValue *a,int count,const char *tex
     case AUG_IR_JSON_BOOLEAN: *out=aug_bool(aug_json_boolean(a[0])); break;
     case AUG_IR_JSON_ITEMS: *out=aug_json_items(a[0]); break;
     case AUG_IR_TIME_NOW: *out=_aug_time_now(); break;
+    case AUG_IR_EXIT: {int64_t status=aug_cint(a[0]);aug_cancelled=true;aug_shutdown();exit(status>=0&&status<=255?(int)status:1);}
+    case AUG_IR_TEST_CASE: aug_test_assertions=0;break;
     default: *out=aug_error_named("NativeContractError"); break;
   }
 }

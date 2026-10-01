@@ -25,9 +25,9 @@ if(!existsSync(archive)){
 const archiveHash=createHash('sha256');let archiveBytes=0;
 for await(const chunk of createReadStream(archive)){archiveHash.update(chunk);archiveBytes+=chunk.length;}
 if(archiveBytes!==upstream.bytes||archiveHash.digest('hex')!==upstream.sha256)throw new Error('Cached official LLVM archive changed');
-const selected=new Set(['llc','lld','opt']),pending=[],seen=new Set();
+const selected=new Set(['llc','lld','opt','dsymutil']),pending=[],seen=new Set();
 const parser=new Parser({strict:true,onReadEntry(entry){
-  const match=/^LLVM-23\.1\.2-macOS-ARM64\/bin\/(llc|lld|opt)$/.exec(entry.path);
+  const match=/^LLVM-23\.1\.2-macOS-ARM64\/bin\/(llc|lld|opt|dsymutil)$/.exec(entry.path);
   if(match){
     const name=match[1];if(entry.type!=='File'||seen.has(name)||entry.size>200000000)throw new Error('Unexpected LLVM tool archive entry');seen.add(name);
     pending.push(pipeline(entry,createWriteStream(join(directory,'bin',name))));

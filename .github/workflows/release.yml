@@ -37,8 +37,8 @@ jobs:
         run: node scripts/build-llvm-pack.mjs
       - run: npm run check
       - run: npm test
-      - name: LLVM native runtime parity
-        run: AUG_TEST_BACKEND=llvm node --test --test-concurrency=2 tests/concurrency.test.mjs tests/interceptors.test.mjs tests/web-foundation.test.mjs tests/web-actions.test.mjs tests/web-http.test.mjs tests/web-testing.test.mjs tests/web-policies.test.mjs tests/web-streams.test.mjs tests/web-tls.test.mjs
+      - name: LLVM language, runtime and real application parity
+        run: node scripts/check-llvm-parity.mjs
       - run: npm run docs:check
       - run: npm run docs:build
       - run: npm run package:packages

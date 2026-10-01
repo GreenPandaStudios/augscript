@@ -74,10 +74,8 @@ jobs:
       - run: node scripts/build-runtime-pack.mjs
       - run: npm run check
       - run: npm test
-      - name: Existing task conformance through LLVM
-        run: AUG_TEST_BACKEND=llvm node --test tests/concurrency.test.mjs
-      - name: Existing native libraries, web and interceptors through LLVM
-        run: AUG_TEST_BACKEND=llvm node --test --test-concurrency=2 tests/llvm-backend.test.mjs tests/interceptors.test.mjs tests/web-foundation.test.mjs tests/web-actions.test.mjs tests/web-http.test.mjs tests/web-testing.test.mjs tests/web-policies.test.mjs tests/web-streams.test.mjs tests/web-tls.test.mjs
+      - name: Existing language, runtime and real applications through LLVM
+        run: node scripts/check-llvm-parity.mjs
       - run: npm run test:setup-cold
       - run: npm run test:sanitizers
       - run: node scripts/build-llvm-pack.mjs

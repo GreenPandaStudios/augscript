@@ -7,6 +7,7 @@ import { checkProject } from './checker.ts';
 import { generateC } from './codegen.ts';
 import {generateLLVM} from './llvm.ts';
 import {lowerToIR,BackendUnsupported} from './ir.ts';
+import {IRVerificationError} from './ir-verify.ts';
 import {compileLLVM} from './llvm-native.ts';
 import {prepareNativePackages} from './native-artifacts.ts';
 import {prepareLLVMCompiler} from './compiler-packs.ts';
@@ -61,7 +62,7 @@ function printDiagnostics(diagnostics: Diagnostic[], json: boolean, root: string
 
 function usage(): void {
   process.stdout.write(`AugScript compiler\n\n` +
-    `Usage: aug <init|check|build|run|emit-c|emit-llvm|test|openapi|format|migrate|spec|bench|explain|context|lsp|symbols|definition|complete|hover|fixes|semantic-tokens> [project directory] [options] [-- args]\n` +
+    `Usage: aug <init|check|build|run|emit-c|emit-llvm|emit-ir|test|openapi|format|migrate|spec|bench|explain|context|lsp|symbols|definition|complete|hover|fixes|semantic-tokens> [project directory] [options] [-- args]\n` +
     `New application: aug init DIRECTORY [--template hello|weather]\n` +
     `Run: aug run [project directory] [--offline] [-- args] — prepare dependencies, compile, and start\n` +
     `Backend: --backend llvm selects direct LLVM compilation on macOS ARM64; --backend c selects the migration reference. Unsupported LLVM features produce an error.\n` +
@@ -138,7 +139,7 @@ export async function main(argv: string[]): Promise<number> {
     } catch (error) { process.stderr.write(failureMessage(error) + '\n'); return 1; }
   }
   if (command === 'lsp') return runLanguageServer(resolve(argv[1] ?? process.cwd()));
-  if (!['check', 'build', 'run', 'emit-c', 'emit-llvm', 'test', 'openapi', 'format', 'migrate', 'spec', 'bench', 'explain', 'context', 'symbols', 'definition',
+  if (!['check', 'build', 'run', 'emit-c', 'emit-llvm', 'emit-ir', 'test', 'openapi', 'format', 'migrate', 'spec', 'bench', 'explain', 'context', 'symbols', 'definition',
     'complete', 'hover', 'fixes', 'semantic-tokens'].includes(command)) {
     process.stderr.write(`Unknown command ${command}\n`); usage(); return 2;
   }
@@ -251,12 +252,11 @@ export async function main(argv: string[]): Promise<number> {
       }
       const results: { id: string; group: string; name: string; passed: boolean; stdout: string; stderr: string }[] = [];
       const coverage = options.includes('--coverage'), reports: string[] = [];
-      if(coverage&&backend==='llvm')throw new Error('BACKEND_UNSUPPORTED: LLVM statement coverage is not available yet. Use --backend c for coverage.');
       const nativeInputs=backend==='llvm'?await prepareNativePackages(root,{offline:options.includes('--offline'),frozen:options.includes('--frozen')}):undefined;
       const toolchain=backend==='llvm'?await prepareLLVMCompiler(options.includes('--offline'),{root,frozen:options.includes('--frozen')}):undefined;
       for (const [index, { unit, checked: testChecked }] of checks.entries()) {
         let native;
-        if(backend==='llvm')native=compileLLVM(testChecked,{testIndex:index,native:nativeInputs,toolchain});
+        if(backend==='llvm')native=compileLLVM(testChecked,{testIndex:index,coverage,native:nativeInputs,toolchain});
         else{const generated = generateC(testChecked, { coverage });
           await prepareNativeDependencies(generated, { offline: options.includes('--offline') });
           native = compileNative(root, generated, { testIndex: index, checked: testChecked });}
@@ -339,6 +339,7 @@ export async function main(argv: string[]): Promise<number> {
       if(checked.diagnostics.some(issue=>issue.severity!=='warning')) {printDiagnostics(checked.diagnostics,json,root);return 1;}
     }
     if(command==='emit-llvm'){process.stdout.write(generateLLVM(lowerToIR(checked)));return 0;}
+    if(command==='emit-ir'){process.stdout.write(JSON.stringify(lowerToIR(checked),null,2)+'\n');return 0;}
     if((backend==='c'||command==='emit-c')&&checked.native.resources.size+checked.native.functions.size)
       throw new Error('NATIVE_BACKEND: Checked native packages require --backend llvm. The C reference backend cannot lower this native ABI.');
     if(command==='emit-c'){process.stdout.write(generateC(checked));return 0;}
@@ -376,7 +377,7 @@ export async function main(argv: string[]): Promise<number> {
     else if (run.status !== 0) process.stderr.write(`Program exited with status ${run.status}.\n`);
     return run.status ?? 1;
   } catch (error) {
-    if(error instanceof BackendUnsupported){printDiagnostics([{...error.span,code:error.code,message:error.message}],json,root);return 1;}
+    if(error instanceof BackendUnsupported||error instanceof IRVerificationError){printDiagnostics([{...error.span,code:error.code,message:error.message}],json,root);return 1;}
     process.stderr.write(failureMessage(error) + '\n');
     return error instanceof Error && 'exitCode' in error && typeof error.exitCode === 'number' ? error.exitCode : 1;
   }

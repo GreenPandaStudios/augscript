@@ -14,13 +14,16 @@ import {actionSchema,actionTransport} from './actions.ts';
 import {httpPolicyNames,type HttpPolicyPlan} from './http-policies.ts';
 import type {Config} from './config.ts';
 import {interceptorChain,InterceptorInvocation} from './interceptors.ts';
+import {verifyIR} from './ir-verify.ts';
 
 export interface IrHttpPolicy {kind:number;permission:string;amount:number;seconds:number;credentials:boolean;origins:string;headers:string}
 export interface IrRoute {method:string;path:string;function:string;stream:number;status:number;policies:IrHttpPolicy[]}
 
-export type IrInstruction = {span:Span}&(
+export type IrInstruction = {span:Span;debugScope?:string}&(
   {op:'literal';out:number;value:string|boolean|null;numeric?:{kind:'int'|'float';text:string}}|
   {op:'copy';out:number;input:number}|{op:'clear';slot:number}|
+  {op:'cover';file:string;line:number}|
+  {op:'debug-variable';variable:number}|
   {op:'runtime';out:number;operation:string;args:number[];text?:string;number?:number}|
   {op:'decode';out:number;input:number;schema:string;format:'json'|'form'}|
   {op:'adapter';out:number;name:string;args:number[]}|
@@ -47,12 +50,19 @@ export type IrTerminator = {op:'jump';target:string}|{op:'branch';condition:numb
   {op:'cancel';then:string;otherwise:string}|
   {op:'null';input:number;then:string;otherwise:string}|{op:'return'};
 export interface IrBlock {name:string;instructions:IrInstruction[];terminator:IrTerminator}
-export interface IrFunction {name:string;span:Span;slots:number;parameters:number[];receiver?:number;owned:number[];constructorResults:number[];failedResult?:boolean;blocks:IrBlock[]}
+export interface IrType {id:string;name:string;args:IrType[];nullable:boolean;optional:boolean}
+export interface IrValue {storage:'rooted-value';type:IrType;span:Span}
+export interface IrVariable {name:string;slot:number;span:Span;type:IrType;argument?:number;scope?:string}
+export interface IrLexicalScope {name:string;parent?:string;span:Span}
+export interface IrFunction {name:string;sourceName:string;span:Span;slots:number;values:IrValue[];variables:IrVariable[];scopes:IrLexicalScope[];parameters:number[];receiver?:number;owned:number[];constructorResults:number[];failedResult?:boolean;blocks:IrBlock[]}
 export interface AugustIR {
   format:1;sourceRevision:string;functions:IrFunction[];main:string;bindings:{function:string;shared:boolean}[];
   scoped:boolean[];test:boolean;schemas:DataSchema[];components:string[];
   routes:{name:string;items:IrRoute[]}[];web:Config['web'];
+  coverage:{file:string;line:number}[];
 }
+const dynamicType:IrType={id:'compiler:dynamic',name:'Data',args:[],nullable:true,optional:false};
+const irType=(type:Ty):IrType=>({id:type.id,name:type.name,args:type.args.map(irType),nullable:type.nullable,optional:!!type.optional});
 
 export class BackendUnsupported extends Error {
   readonly span:Span;readonly code='BACKEND_UNSUPPORTED';
@@ -60,16 +70,17 @@ export class BackendUnsupported extends Error {
 }
 
 /** Checked, resolved execution IR. Source AST and semantic facts remain read-only. */
-export function lowerToIR(checked:CheckedProject):AugustIR {
+export function lowerToIR(checked:CheckedProject,options:{coverage?:boolean}={}):AugustIR {
   if(checked.diagnostics.some(d=>d.severity!=='warning'))throw new Error('Cannot lower a rejected August project');
-  return new Lowering(checked).lower();
+  const ir=new Lowering(checked,options).lower();verifyIR(ir);return ir;
 }
 class Lowering {
   readonly checked:CheckedProject;readonly names=new Map<string,string>();readonly functions:IrFunction[]=[];
   readonly schemas:DataSchemas;
   readonly components=new Set<string>();
   readonly routes:{name:string;items:IrRoute[]}[]=[];
-  constructor(checked:CheckedProject){this.checked=checked;let i=0;for(const def of checked.project.definitions.values())this.names.set(def.id,'aug_fn_'+i++);this.schemas=new DataSchemas(checked.project,def=>this.name(def));}
+  readonly coverage=new Map<string,{file:string;line:number}>();readonly options:{coverage?:boolean};
+  constructor(checked:CheckedProject,options:{coverage?:boolean}){this.checked=checked;this.options=options;let i=0;for(const def of checked.project.definitions.values())this.names.set(def.id,'aug_fn_'+i++);this.schemas=new DataSchemas(checked.project,def=>this.name(def));}
   name(def:Definition){return this.names.get(def.id)!;}
   method(def:Definition,name:string){return this.name(def)+'_'+name;}
   binding(key:string){const i=this.checked.bindings.findIndex(b=>b.key===key);if(i<0)throw new Error('Missing checked binding '+key);return 'aug_resolve_'+i;}
@@ -119,7 +130,10 @@ class Lowering {
     });
     const main=this.checked.project.main;if(!main)throw new Error('LLVM executable requires main.aug');
     const body=new FunctionLowering(this,main.path,{file:main.path,start:0,end:main.source.length,line:1,column:1});
-    for(const stmt of main.items)if(isStatement(stmt))body.statement(stmt);
+    for(let index=0;index<=main.items.length;index++){
+      if(this.checked.project.testBodyStart===index)body.runtime('TEST_CASE',[]);
+      const stmt=main.items[index];if(stmt&&isStatement(stmt))body.statement(stmt);
+    }
     this.functions.push(body.finish('aug_main_body'));
     const project=this.checked.project,scopes=[...project.packages.scopes.values()];
     const hashes=[...project.files.values()].map(f=>{
@@ -129,7 +143,7 @@ class Lowering {
     }).sort((a,b)=>a[0]<b[0]?-1:a[0]>b[0]?1:0);
     const dependencies=scopes.map(s=>({name:s.name,version:s.version,digest:s.digest,native:s.native?.bindingsSha256})).sort((a,b)=>a.name.localeCompare(b.name,'en'));
     const web=project.config.web,tls=Object.fromEntries(Object.entries(web.tls).map(([key,value])=>[key,value?resolve(project.root,value):''])) as Config['web']['tls'];
-    return {format:1,sourceRevision:createHash('sha256').update(JSON.stringify({sources:hashes,configuration:project.config,dependencies})).digest('hex'),functions:this.functions,main:'aug_main_body',bindings:this.checked.bindings.map((b,i)=>({function:'aug_resolve_'+i,shared:b.lifetime==='shared'})),scoped:this.checked.bindings.map(b=>b.lifetime==='scoped'),test:!!this.checked.project.testMode,schemas:this.schemas.nodes,components:[...this.components].sort(),routes:this.routes,web:{...web,tls}};
+    return {format:1,sourceRevision:createHash('sha256').update(JSON.stringify({sources:hashes,configuration:project.config,dependencies})).digest('hex'),functions:this.functions,main:'aug_main_body',bindings:this.checked.bindings.map((b,i)=>({function:'aug_resolve_'+i,shared:b.lifetime==='shared'})),scoped:this.checked.bindings.map(b=>b.lifetime==='scoped'),test:!!this.checked.project.testMode,schemas:this.schemas.nodes,components:[...this.components].sort(),routes:this.routes,web:{...web,tls},coverage:[...this.coverage.values()].sort((a,b)=>a.file.localeCompare(b.file,'en')||a.line-b.line)};
   }
   policy(plan:HttpPolicyPlan):IrHttpPolicy {
     const options=plan.options;return {kind:httpPolicyNames.indexOf(plan.name)+1,permission:String(options.permission??''),amount:Number(options.requests??options.milliseconds??0),seconds:Number(options.seconds??0),credentials:!!options.credentials,origins:(options.origins as string[]??[]).join('\n'),headers:(options.headers as string[]??[]).map(header=>header.toLowerCase()).join(', ')};
@@ -157,12 +171,14 @@ class Lowering {
   }
   add(def:Definition,name:string,method:MethodDecl,params:Param[],stmts:Stmt[],receiver=false){
     const body=new FunctionLowering(this,method.span.file,method.span,receiver?def:undefined);
+    body.sourceName=method.name;
     if(receiver){body.receiver=body.slot();body.locals.set('self',body.receiver);}
     params.forEach((p,i)=>body.parameter(p,i));stmts.forEach(s=>body.statement(s));this.functions.push(body.finish(interceptorChain(name,this.checked.interceptorPlans.get(method)??[]).body));this.layers(method,name,params,receiver);
   }
   layers(node:MethodDecl|ClassDecl,name:string,params:Param[],receiver:boolean){
     for(const entry of interceptorChain(name,this.checked.interceptorPlans.get(node)??[]).entries){
       const body=new FunctionLowering(this,entry.layer.definition.file,entry.layer.around.span,entry.layer.definition);
+      body.sourceName=node.name+' ['+entry.layer.definition.name+']';
       if(receiver){body.receiver=body.slot();body.locals.set('self',body.receiver);}
       params.forEach((param,index)=>body.parameter(param,index));body.interceptor(entry.layer,params,entry.next);
       entry.layer.around.body!.forEach(stmt=>body.statement(stmt));this.functions.push(body.finish(entry.name));
@@ -174,18 +190,26 @@ type InstructionInput = IrInstruction extends infer I ? I extends IrInstruction 
 class FunctionLowering {
   readonly generator:Lowering;readonly file:string;readonly span:Span;readonly owner?:Definition;
   readonly parameters:number[]=[];receiver?:number;readonly locals=new Map<string,number>();readonly owned=new Set<number>();
+  readonly values:IrValue[]=[];readonly variables:IrVariable[]=[];
+  readonly scopes:IrLexicalScope[]=[];private debugScope?:string;
+  sourceName?:string;
   private continuation?:InterceptorInvocation;
   private constructionNext=false;private readonly constructorResults=new Set<number>();
   private slots=1;private sequence=0;private source:Span;private error='cleanup';private returning='cleanup';
   private blocks:{name:string;instructions:IrInstruction[];terminator?:IrTerminator}[]=[];
   private current:{name:string;instructions:IrInstruction[];terminator?:IrTerminator};
-  constructor(generator:Lowering,file:string,span:Span,owner?:Definition){this.generator=generator;this.file=file;this.span=span;this.source=span;this.owner=owner;this.current={name:'entry_body',instructions:[]};this.blocks.push(this.current);}
-  slot(){return this.slots++;}
+  constructor(generator:Lowering,file:string,span:Span,owner?:Definition){this.generator=generator;this.file=file;this.span=span;this.source=span;this.owner=owner;this.values.push({storage:'rooted-value',type:dynamicType,span});this.current={name:'entry_body',instructions:[]};this.blocks.push(this.current);}
+  slot(type:IrType=dynamicType){this.values.push({storage:'rooted-value',type,span:this.source});return this.slots++;}
   block(){return 'block_'+this.sequence++;}
   enter(name:string){this.current={name,instructions:[]};this.blocks.push(this.current);}
   terminate(terminator:IrTerminator){this.current.terminator=terminator;}
-  instruction(value:InstructionInput){if(this.current.terminator)this.enter(this.block());this.current.instructions.push({...value,span:this.source} as IrInstruction);}
-  parameter(param:Param,index:number){const slot=this.slot();this.parameters[index]=slot;this.locals.set(param.name,slot);if(param.ownership==='own')this.owned.add(slot);}
+  instruction(value:InstructionInput){if(this.current.terminator)this.enter(this.block());this.current.instructions.push({...value,span:this.source,debugScope:this.debugScope} as IrInstruction);}
+  private local(name:string,slot:number,span:Span,type:IrType=this.values[slot].type){
+    this.locals.set(name,slot);this.values[slot].type=type;
+    const variable=this.variables.length;this.variables.push({name,slot,span,type,scope:this.debugScope});
+    const source=this.source;this.source=span;this.instruction({op:'debug-variable',variable});this.source=source;
+  }
+  parameter(param:Param,index:number){const type=irType(schemaType(this.generator.checked.project,param.type,this.file)),slot=this.slot(type);this.parameters[index]=slot;this.locals.set(param.name,slot);this.variables.push({name:param.name,slot,span:param.span,type,argument:index+1});if(param.ownership==='own')this.owned.add(slot);}
   checkError(){const errors=this.block(),next=this.block();this.terminate({op:'cancel',then:this.returning,otherwise:errors});this.enter(errors);this.terminate({op:'error',failed:this.error,success:next});this.enter(next);}
   runtime(operation:string,args:number[],text?:string,number?:number){if(operation.startsWith('HTTP_'))this.generator.components.add('http');const out=this.slot();this.instruction({op:'runtime',out,operation,args,text,number});this.checkError();return out;}
   call(name:string,args:number[],receiver?:number){const out=this.slot();this.instruction({op:'call',out,function:name,args,receiver});this.checkError();return out;}
@@ -205,6 +229,11 @@ class FunctionLowering {
     }):source;
   }
   expression(expr:Expr):number {
+    const firstNewSlot=this.slots,result=this.expressionValue(expr),type=this.generator.checked.expressionTypes.get(expr);
+    if(result>=firstNewSlot&&type)this.values[result].type=irType(type);
+    return result;
+  }
+  private expressionValue(expr:Expr):number {
     this.source=expr.span;
     if(expr.kind==='handle'){
       const plan=this.generator.checked.actions.get(expr)!,endpoint=(plan.endpoint.node as MethodDecl).endpoint!;
@@ -321,7 +350,7 @@ class FunctionLowering {
       const endpoint=this.generator.checked.project.testEndpoint!,out=this.slot(),routes=this.generator.routeTable(endpoint.file,[endpoint.name]);
       this.instruction({op:'routes',out,name:routes});this.checkError();return out;
     }
-    const builtins:Record<string,string>={print:'PRINT',arguments:'ARGUMENTS',c_int:'C_INT',read_file:'READ_FILE',write_file:'WRITE_FILE',base64url_decode:'BASE64URL_DECODE',Json:'JSON_WRAP',Headers:'HTTP_HEADERS',HttpResponse:'HTTP_RESPONSE',ServerEvent:'HTTP_EVENT'};
+    const builtins:Record<string,string>={exit:'EXIT',print:'PRINT',arguments:'ARGUMENTS',c_int:'C_INT',read_file:'READ_FILE',write_file:'WRITE_FILE',base64url_decode:'BASE64URL_DECODE',Json:'JSON_WRAP',Headers:'HTTP_HEADERS',HttpResponse:'HTTP_RESPONSE',ServerEvent:'HTTP_EVENT'};
     if(builtins[name])return this.runtime(builtins[name],args);
     if(['List','Tuple','Set','Map'].includes(name))return this.runtime(name.toUpperCase(),args);
     const def=this.generator.definition(this.file,name);if(!def)throw new BackendUnsupported(expr.span,'builtin '+name);
@@ -389,10 +418,15 @@ class FunctionLowering {
     const result=this.invoke(call,undefined,[...this.parameters],true);this.instruction({op:'copy',out:0,input:result});
     if(this.owned.has(result))this.instruction({op:'clear',slot:result});
   }
-  private scoped(stmts:Stmt[],composition=false){const locals=new Map(this.locals),owned=new Set(this.owned);for(const stmt of stmts)this.statement(stmt);
+  private scoped(stmts:Stmt[],composition=false,setup?:()=>void,span?:Span){
+    const locals=new Map(this.locals),owned=new Set(this.owned),parent=this.debugScope;
+    const first=span??stmts[0]?.span??this.source,last=stmts.at(-1)?.span;
+    this.debugScope='scope_'+this.scopes.length;this.scopes.push({name:this.debugScope,parent,span:{...first,end:last?.end??first.end}});
+    setup?.();for(const stmt of stmts)this.statement(stmt);
     if(composition&&!this.current.terminator)this.instruction({op:'scope',action:'join'});
     if(!this.current.terminator)for(const slot of this.owned)if(!owned.has(slot))this.instruction({op:'drop',slot});
     this.locals.clear();for(const [name,slot] of locals)this.locals.set(name,slot);
+    this.debugScope=parent;
   }
   endpoint(def:Definition){
     const fn=def.node as MethodDecl,endpoint=fn.endpoint!,request=this.slot(),failed=this.block(),finished=this.block();
@@ -431,8 +465,8 @@ class FunctionLowering {
     const handlers=this.block();this.terminate({op:'cancel',then:failed,otherwise:handlers});this.enter(handlers);this.error=failed;
     for(const clause of stmt.catches){
       const handler=this.block(),next=this.block();this.terminate({op:'error-type',type:this.generator.definition(this.file,clause.type.name)?.id??clause.type.name,then:handler,otherwise:next});this.enter(handler);
-      const error=this.slot();this.instruction({op:'take-error',out:error});const names=new Map(this.locals);this.locals.set(clause.name,error);this.scoped(clause.body);
-      this.locals.clear();for(const entry of names)this.locals.set(...entry);
+      const error=this.slot();this.instruction({op:'take-error',out:error});
+      this.scoped(clause.body,false,()=>this.local(clause.name,error,clause.span,irType(schemaType(this.generator.checked.project,clause.type,this.file))),clause.span);
       if(!this.current.terminator)this.terminate({op:'jump',target:cleanup});this.enter(next);
     }
     this.terminate({op:'jump',target:failed});this.enter(failed);this.instruction({op:'copy',out:failure,input:this.literal(true)});this.terminate({op:'jump',target:cleanup});
@@ -452,6 +486,10 @@ class FunctionLowering {
   }
   statement(stmt:Stmt):void {
     this.source=stmt.span;if(this.current.terminator)this.enter(this.block());
+    if(this.generator.options.coverage&&!this.generator.checked.project.files.get(stmt.span.file)?.builtin){
+      this.generator.coverage.set(stmt.span.file+':'+stmt.span.line,{file:stmt.span.file,line:stmt.span.line});
+      this.instruction({op:'cover',file:stmt.span.file,line:stmt.span.line});
+    }
     if(stmt.kind==='serve'){const port=this.expression(stmt.port),routes=this.generator.routeTable(this.file,stmt.names);this.instruction({op:'routes',name:routes,port});this.checkError();return;}
     if(stmt.kind==='yield'){this.runtime('HTTP_YIELD',[this.expression(stmt.value)]);return;}
     if(stmt.kind==='expr'){const value=this.expression(stmt.expr);if(this.owned.has(value))this.instruction({op:'drop',slot:value});return;}
@@ -464,7 +502,7 @@ class FunctionLowering {
           targetOwns ||= this.owner?.node.kind==='class'&&fieldsOf(this.owner.node)[field].ownership==='own';
           this.runtime('SET_FIELD',[this.locals.get('self')!,value],undefined,field);
         }
-        else{let out=this.locals.get(stmt.target.name);if(out===undefined){out=this.slot();this.locals.set(stmt.target.name,out);}this.instruction({op:'copy',out,input:value});if(stmt.ownership==='own')this.owned.add(out);}
+        else{let out=this.locals.get(stmt.target.name);if(out===undefined){const type=stmt.declaredType?irType(schemaType(this.generator.checked.project,stmt.declaredType,this.file)):this.values[value].type;out=this.slot(type);this.local(stmt.target.name,out,stmt.span,type);}this.instruction({op:'copy',out,input:value});if(stmt.ownership==='own')this.owned.add(out);}
       }else if(stmt.target.kind==='member'){
         const fieldName=stmt.target.name;
         const node=this.generator.checked.expressionTypes.get(stmt.target.object)?.def?.node;
@@ -484,8 +522,8 @@ class FunctionLowering {
       if(!this.current.terminator){this.instruction({op:'scope',action:'leave'});this.checkError();}return;
     }
     if(stmt.kind==='lock'){
-      const names=new Map(this.locals),value=this.runtime('SHARED_LOCK',[this.expression(stmt.value)]);this.locals.set(stmt.name,value);
-      this.scoped(stmt.body);this.locals.clear();for(const entry of names)this.locals.set(...entry);
+      const value=this.runtime('SHARED_LOCK',[this.expression(stmt.value)]);
+      this.scoped(stmt.body,false,()=>this.local(stmt.name,value,stmt.span),stmt.span);
       if(!this.current.terminator){this.instruction({op:'lock',action:'leave'});this.checkError();}return;
     }
     if(stmt.kind==='if'){
@@ -506,8 +544,7 @@ class FunctionLowering {
           const condition=clause.pattern==='type'?this.runtime('IS_TYPE',[value],this.generator.definition(this.file,clause.type!.name)?.id??clause.type!.name):this.runtime('BINARY',[value,literals[index]!],'==');
           this.terminate({op:'branch',condition,then:body,otherwise:next});
         }
-        this.enter(body);const names=new Map(this.locals);if(clause.name)this.locals.set(clause.name,value);
-        this.scoped(clause.body);this.locals.clear();for(const entry of names)this.locals.set(...entry);
+        this.enter(body);this.scoped(clause.body,false,()=>{if(clause.name)this.local(clause.name,value,clause.span);},clause.span);
         if(!this.current.terminator)this.terminate({op:'jump',target:done});this.enter(next);
       }
       this.terminate({op:'jump',target:done});this.enter(done);return;
@@ -518,9 +555,9 @@ class FunctionLowering {
       const condition=this.expression(stmt.test);this.terminate({op:'branch',condition,then:body,otherwise:done});this.enter(body);this.scoped(stmt.body);
       if(!this.current.terminator)this.terminate({op:'jump',target:test});this.enter(done);return;
     }
-    if(stmt.kind==='freeze'){const value=this.expression(stmt.value),out=this.runtime('FREEZE',[value]);this.locals.set(stmt.name,out);if(this.owned.has(value))this.instruction({op:'clear',slot:value});return;}
+    if(stmt.kind==='freeze'){const value=this.expression(stmt.value),out=this.runtime('FREEZE',[value]);this.local(stmt.name,out,stmt.span);if(this.owned.has(value))this.instruction({op:'clear',slot:value});return;}
     if(stmt.kind==='destructure'){
-      const value=this.expression(stmt.value);stmt.names.forEach((name,i)=>this.locals.set(name,this.runtime('TUPLE_GET',[value,this.literal(null,{kind:'int',text:String(i)})])));return;
+      const value=this.expression(stmt.value);stmt.names.forEach((name,i)=>this.local(name,this.runtime('TUPLE_GET',[value,this.literal(null,{kind:'int',text:String(i)})]),stmt.span,this.values[value].type.args[i]??dynamicType));return;
     }
     if(stmt.kind==='for'){
       const iterable=this.expression(stmt.iterable),map=this.generator.checked.expressionTypes.get(stmt.iterable)?.name==='Map'&&stmt.names.length===2;
@@ -528,10 +565,10 @@ class FunctionLowering {
       const length=this.runtime('LIST_LENGTH',[values]),test=this.block(),body=this.block(),done=this.block();this.terminate({op:'jump',target:test});this.enter(test);
       this.instruction({op:'checkpoint'});this.checkError();
       const condition=this.runtime('BINARY',[index,length],'<');this.terminate({op:'branch',condition,then:body,otherwise:done});this.enter(body);
-      const names=new Map(this.locals);
-      if(map){stmt.names.forEach(name=>{this.locals.set(name,this.runtime('LIST_GET',[values,index]));this.instruction({op:'copy',out:index,input:this.runtime('BINARY',[index,one],'+')});});}
-      else{const item=this.runtime('LIST_GET',[values,index]);stmt.names.forEach((name,i)=>this.locals.set(name,stmt.names.length===1?item:this.runtime('TUPLE_GET',[item,this.literal(null,{kind:'int',text:String(i)})])));this.instruction({op:'copy',out:index,input:this.runtime('BINARY',[index,one],'+')});}
-      this.scoped(stmt.body);this.locals.clear();for(const entry of names)this.locals.set(...entry);
+      this.scoped(stmt.body,false,()=>{
+        if(map){stmt.names.forEach((name,i)=>{this.local(name,this.runtime('LIST_GET',[values,index]),stmt.span,this.values[iterable].type.args[i]??dynamicType);this.instruction({op:'copy',out:index,input:this.runtime('BINARY',[index,one],'+')});});}
+        else{const item=this.runtime('LIST_GET',[values,index]);stmt.names.forEach((name,i)=>this.local(name,stmt.names.length===1?item:this.runtime('TUPLE_GET',[item,this.literal(null,{kind:'int',text:String(i)})]),stmt.span,(stmt.names.length===1?this.values[iterable].type.args[0]:this.values[iterable].type.args[0]?.args[i])??dynamicType));this.instruction({op:'copy',out:index,input:this.runtime('BINARY',[index,one],'+')});}
+      },stmt.span);
       if(!this.current.terminator)this.terminate({op:'jump',target:test});this.enter(done);return;
     }
     if(stmt.kind==='try'){
@@ -543,7 +580,7 @@ class FunctionLowering {
       for(const slot of this.owned)if(!owned.has(slot))this.instruction({op:'drop',slot});
       this.instruction({op:'scope',action:'restore',depth});
       stmt.catches.forEach(clause=>{const handler=this.block(),next=this.block();this.terminate({op:'error-type',type:this.generator.definition(this.file,clause.type.name)?.id??clause.type.name,then:handler,otherwise:next});this.enter(handler);
-        const error=this.slot();this.instruction({op:'take-error',out:error});const names=new Map(this.locals);this.locals.set(clause.name,error);this.scoped(clause.body);this.locals.clear();for(const entry of names)this.locals.set(...entry);
+        const error=this.slot();this.instruction({op:'take-error',out:error});this.scoped(clause.body,false,()=>this.local(clause.name,error,clause.span,irType(schemaType(this.generator.checked.project,clause.type,this.file))),clause.span);
         if(!this.current.terminator)this.terminate({op:'jump',target:done});this.enter(next);
       });this.terminate({op:'jump',target:outer});this.enter(done);return;
     }
@@ -552,6 +589,6 @@ class FunctionLowering {
   finish(name:string):IrFunction {
     if(!this.current.terminator)this.terminate({op:'jump',target:'cleanup'});
     this.enter('cleanup');this.terminate({op:'return'});
-    return {name,span:this.span,slots:this.slots,parameters:this.parameters,receiver:this.receiver,owned:[...this.owned],constructorResults:[...this.constructorResults],blocks:this.blocks as IrBlock[]};
+    return {name,sourceName:this.sourceName??this.owner?.name??(name==='aug_main_body'?'main':name),span:this.span,slots:this.slots,values:this.values,variables:this.variables,scopes:this.scopes,parameters:this.parameters,receiver:this.receiver,owned:[...this.owned],constructorResults:[...this.constructorResults],blocks:this.blocks as IrBlock[]};
   }
 }

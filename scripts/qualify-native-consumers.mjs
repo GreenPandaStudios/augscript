@@ -115,6 +115,8 @@ for(const fixture of cases){
   assert.equal(readFileSync(join(project,'aug.lock.json'),'utf8'),saved);
   const map=JSON.parse(readFileSync(join(project,'.aug-build',fixture.name+'.augmap.json')));
   assert.equal(map.backend,'llvm');assert.equal(map.developmentToolchain,false);
+  assert.equal(map.llvm,'23.1.2');assert.match(map.debugInfoSha256,/^[0-9a-f]{64}$/);
+  assert.ok(existsSync(map.debugInfo));
   assert.ok(map.nativeArtifacts.includes(fixture.sha256));
   assert.ok(existsSync(join(project,'.aug-build/program.ll')));
   assert.ok(!existsSync(join(project,'.aug-build/program.c')));

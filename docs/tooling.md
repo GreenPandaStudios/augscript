@@ -4,7 +4,7 @@ Use this page to look up CLI commands, project configuration, native requirement
 
 ## CLI
 
-Install `aug` once as shown in [Your first project](getting-started.md). Commands take a project folder, defaulting to the current directory. Editor commands also accept --file and --offset; use --help for the command inventory.
+Install `aug` once as shown in [Your first project](getting-started.md). Commands take a project folder, defaulting to the current directory. Editor commands also accept --file and --offset; use --help for the command inventory. `emit-ir`, `emit-llvm`, and the LLVM backend below require the unpublished development compiler until its matching preview release is available.
 
 | Command | Output |
 | --- | --- |
@@ -13,6 +13,7 @@ Install `aug` once as shown in [Your first project](getting-started.md). Command
 | `run [PROJECT] [--offline] -- args...` | Prepares declared packages and required native libraries, checks, compiles, and runs; program stdout is preserved. |
 | `emit-c PROJECT` | Generated C for inspection. |
 | `emit-llvm PROJECT` | Checked execution IR lowered directly to LLVM IR. |
+| `emit-ir PROJECT` | Verified August execution IR with typed root cells and source locations, for compiler contributors. |
 | `format PROJECT [--file PATH] [--write] [--json]` | Canonical source; --write updates files. |
 | `migrate PROJECT [--file PATH] [--write] [--json]` | Verified migration of rejected legacy syntax; preview by default. |
 | `spec PROJECT [--check] [--json]` | Adjacent Markdown specs and offline dependency explanations; --check detects drift without writing. |
@@ -142,7 +143,9 @@ The extern declaration must match the real native ABI. This version does not exp
 
 Native output lives under .aug-build. Generated C has #line locations for executable AugScript statements and extern declarations. Native compiler errors at those locations become NATIVE diagnostics. A successful build writes EXECUTABLE.augmap.json with compiler version, exact C arguments, source hashes, generated hash, and symbol origins.
 
-Every build uses -g. Use **Debug AugScript** in VS Code with LLVM lldb-dap on PATH, or configure augscript.lldbDapPath. The extension builds the project and launches the standard adapter. See the [VS Code debugger API](https://code.visualstudio.com/api/extension-guides/debugger-extension) and [LLDB DAP documentation](https://lldb.llvm.org/use/lldbdap.html).
+Both development and optimized builds include source debug information. The development LLVM backend writes a dSYM beside the executable using its bundled `dsymutil`; consumers do not need Apple developer tools to create it. LLVM builds record IR, object, executable and dSYM hashes in `.augmap.json`, with native artifact identities and source symbol locations. Source variables describe the actual tagged storage; optimized variables may be unavailable. Rich collection views and August expression evaluation remain unfinished.
+
+Use **Debug AugScript** in VS Code with LLVM lldb-dap on PATH, or configure augscript.lldbDapPath. The extension builds the project and launches the standard adapter. See the [VS Code debugger API](https://code.visualstudio.com/api/extension-guides/debugger-extension) and [LLDB DAP documentation](https://lldb.llvm.org/use/lldbdap.html).
 
 **AugScript: Debug in LLDB Terminal** works with an ordinary lldb executable. Example terminal commands:
 
@@ -158,7 +161,7 @@ AUG_TRACE_DROPS=1 enables runtime cleanup tracing to stderr for lifecycle verifi
 
 ## Benchmarks
 
-`aug bench` compiles release C, runs warmups, then reports every sample, median, minimum, and p95 in milliseconds. Measurements include process startup and exclude compilation. The timeout bounds each native run.
+`aug bench` uses the selected backend's release mode, runs warmups, then reports every sample, median, minimum, and p95 in milliseconds. Measurements include process startup and exclude compilation. The timeout bounds each native run.
 
 See [performance and benchmark graphs](performance.md) for measured comparisons with C, Node and Python, peak memory, HTTP throughput, raw results, and reproducible commands. `npm run bench:compare` measures the fixed workloads under `benchmarks/`. The earlier [single-workload baseline](benchmarks.json) is preserved as historical evidence.
 

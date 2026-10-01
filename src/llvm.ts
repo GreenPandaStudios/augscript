@@ -1,6 +1,8 @@
 import type {AugustIR,IrFunction,IrInstruction,IrTerminator,IrHttpPolicy} from './ir.ts';
 import type {NativeView} from './native-contracts.ts';
 import {runtimeOperations as operations,httpOperations,schemaKinds} from './runtime-abi.ts';
+import {verifyIR} from './ir-verify.ts';
+import {DebugMetadata} from './llvm-debug.ts';
 
 export interface RuntimeLayout {
   abi:'compiler-private-runtime-v1';valueSize:16;valueAlignment:8;valuePayloadOffset:8;
@@ -11,14 +13,16 @@ export const runtimeLayout:RuntimeLayout={abi:'compiler-private-runtime-v1',valu
 const symbol=(name:string)=>'@'+name;
 
 /** Emit LLVM directly from checked August execution IR. No application C is generated. */
-export function generateLLVM(ir:AugustIR,options:{triple?:string;layout?:RuntimeLayout}={}):string {
+export function generateLLVM(ir:AugustIR,options:{triple?:string;layout?:RuntimeLayout;release?:boolean}={}):string {
+  verifyIR(ir);
   if(JSON.stringify(options.layout??runtimeLayout)!==JSON.stringify(runtimeLayout))throw new Error('NATIVE_ABI: Runtime pack layout differs from this compiler');
-  const module=new ModuleEmitter(ir,options.triple??'arm64-apple-macosx14.0.0');return module.generate();
+  const module=new ModuleEmitter(ir,options.triple??'arm64-apple-macosx14.0.0',!!options.release);return module.generate();
 }
 class ModuleEmitter {
   readonly ir:AugustIR;readonly triple:string;readonly globals:string[]=[];readonly declarations=new Map<string,string>();
+  readonly debug:DebugMetadata;
   private strings=new Map<string,string>();private sequence=0;
-  constructor(ir:AugustIR,triple:string){this.ir=ir;this.triple=triple;}
+  constructor(ir:AugustIR,triple:string,release:boolean){this.ir=ir;this.triple=triple;this.debug=new DebugMetadata(ir,release);}
   text(value:string):string {
     const found=this.strings.get(value);if(found)return found;
     const name='@aug_text_'+this.sequence++,bytes=Buffer.from(value+'\0','utf8');
@@ -59,6 +63,8 @@ class ModuleEmitter {
     this.declare('aug_register_globals','void',['ptr','i64']);this.declare('aug_set_cli_args','void',['i32','ptr']);
     this.declare('aug_ir_exit_status','i32',['i1 zeroext']);this.declare('aug_shutdown','void',[]);
     const globalCount=this.ir.bindings.length;
+    const coverage=this.ir.coverage.map(point=>`  call void @aug_coverage_register(ptr ${this.text(point.file)}, i64 ${point.line})`);
+    if(coverage.length)this.declare('aug_coverage_register','void',['ptr','i64']);
     const web=this.ir.web,configure=this.ir.components.includes('http')?[
       `  call void @aug_http_configure(ptr ${this.text(web.host)}, ptr ${this.text(web.tls.certificate)}, ptr ${this.text(web.tls.private_key)}, ptr ${this.text(web.tls.ca)}, i64 ${web.body_limit}, i64 ${web.response_limit}, i1 zeroext ${web.http3?'true':'false'})`
     ]:[];
@@ -68,25 +74,28 @@ class ModuleEmitter {
       `  %binding_error_${i} = call zeroext i1 @aug_ir_has_error()`,
       `  br i1 %binding_error_${i}, label %done, label %binding_ready_${i}`,
       `binding_ready_${i}:`]);
-    const main=[`define i32 @main(i32 %argc, ptr %argv) {`,`entry:`,`  %result = alloca %AugValue, align 8`,`  store %AugValue zeroinitializer, ptr %result, align 8`,
-      `  call void @aug_register_globals(ptr @aug_globals, i64 ${globalCount})`,`  call void @aug_set_cli_args(i32 %argc, ptr %argv)`,...configure,...startup,
+    const entryFunction={...this.ir.functions.find(fn=>fn.name===this.ir.main)!,name:'main',sourceName:'August entry'};
+    const entrySubprogram=this.debug.function(entryFunction),entryLocation=this.debug.location(entryFunction,entryFunction.span);
+    const main=[`define i32 @main(i32 %argc, ptr %argv) !dbg ${entrySubprogram} {`,`entry:`,`  %result = alloca %AugValue, align 8`,`  store %AugValue zeroinitializer, ptr %result, align 8`,
+      `  call void @aug_register_globals(ptr @aug_globals, i64 ${globalCount})`,`  call void @aug_set_cli_args(i32 %argc, ptr %argv)`,...coverage,...configure,...startup,
       `  %startup_error = call zeroext i1 @aug_ir_has_error()`,`  br i1 %startup_error, label %done, label %run`,`run:`,
       `  call void @${this.ir.main}(ptr %result, ptr null, ptr null, i32 0)`,`  br label %done`,`done:`,
-      `  %status = call i32 @aug_ir_exit_status(i1 zeroext ${this.ir.test?'true':'false'})`,`  call void @aug_shutdown()`,`  ret i32 %status`,`}`].join('\n');
+      `  %status = call i32 @aug_ir_exit_status(i1 zeroext ${this.ir.test?'true':'false'})`,`  call void @aug_shutdown()`,`  ret i32 %status`,`}`].map(line=>line.startsWith('  ')?line+', !dbg '+entryLocation:line).join('\n');
     this.declare('aug_ir_has_error','zeroext i1',[]);
     return [`; August checked execution IR ${this.ir.format}; source revision ${this.ir.sourceRevision}`,`target triple = "${this.triple}"`,
       `%AugValue = type {i32, i64}`,`%AugFrame = type {ptr, i64, ptr}`,`%AugMethodEntry = type {ptr, ptr, ptr}`,`%AugSchema = type {i32, i8, i8, i64, ptr, ptr, ptr, ptr}`,`%NativeError = type {i32, i32, [512 x i8]}`,
       `%AugRoute = type {ptr, ptr, ptr, i32, i32, ptr, i64, ptr}`,`%AugHttpPolicy = type {i32, ptr, i64, i64, i8, ptr, ptr}`,`%AugHttpError = type {ptr, i32}`,
       `@aug_globals = internal global [${Math.max(1,globalCount)} x %AugValue] zeroinitializer, align 8`,
-      `@aug_scoped = private constant [${Math.max(1,globalCount)} x i8] [${globalCount?this.ir.scoped.map(scoped=>'i8 '+(scoped?1:0)).join(', '):'i8 0'}]`,...this.globals,...this.declarations.values(),...bodies,main,''].join('\n\n');
+      `@aug_scoped = private constant [${Math.max(1,globalCount)} x i8] [${globalCount?this.ir.scoped.map(scoped=>'i8 '+(scoped?1:0)).join(', '):'i8 0'}]`,...this.globals,...this.declarations.values(),...bodies,main,this.debug.generate(),''].join('\n\n');
   }
 }
 class FunctionEmitter {
   readonly module:ModuleEmitter;readonly fn:IrFunction;private sequence=0;private lines:string[]=[];private allocations:string[]=[];
+  private debugLocation?:string;
   constructor(module:ModuleEmitter,fn:IrFunction){this.module=module;this.fn=fn;}
   private temp(prefix='value'){return '%'+prefix+'_'+this.sequence++;}
   private label(prefix='native'){return prefix+'_'+this.sequence++;}
-  private line(value:string){this.lines.push('  '+value);}
+  private line(value:string){this.lines.push('  '+value+(this.debugLocation?', !dbg '+this.debugLocation:''));}
   private allocate(type:string){const name=this.temp('storage');this.allocations.push(`  ${name} = alloca ${type}, align 8`);return name;}
   private ptr(slot:number){return '%slot_'+slot;}
   private load(slot:number){const name=this.temp();this.line(`${name} = load %AugValue, ptr ${this.ptr(slot)}, align 8`);return name;}
@@ -115,6 +124,8 @@ class FunctionEmitter {
       }
       case 'copy':this.store(i.out,this.load(i.input));return;
       case 'clear':this.clear(i.slot);return;
+      case 'cover':this.call('aug_cover','void',[{type:'ptr',value:this.module.text(i.file)},{type:'i64',value:String(i.line)}]);return;
+      case 'debug-variable':this.lines.push(this.variable(this.fn.variables[i.variable]));return;
       case 'runtime':{
         const http=i.operation.startsWith('HTTP_'),catalog:readonly string[]=http?httpOperations:operations,op=catalog.indexOf(i.operation)+1;if(!op)throw new Error('Unknown IR runtime operation '+i.operation);
         this.call(http?'aug_ir_http_operation':'aug_ir_operation','void',[{type:'ptr',value:this.ptr(i.out)},{type:'i32',value:String(op)},{type:'ptr',value:this.args(i.args)},{type:'i32',value:String(i.args.length)},{type:'ptr',value:i.text===undefined?'null':this.module.text(i.text)},{type:'i64',value:String(i.number??0)}]);return;
@@ -278,16 +289,22 @@ class FunctionEmitter {
     this.line(`br i1 ${condition}, label %${yes}, label %${no}`);
   }
   generate(){
-    for(const block of this.fn.blocks){this.lines.push(block.name+':');for(const instruction of block.instructions)this.instruction(instruction);this.terminator(block.terminator);}
-    const prologue=[`define internal void @${this.fn.name}(ptr %out, ptr %self, ptr %args, i32 %count) {`,`entry:`,
+    const subprogram=this.module.debug.function(this.fn);
+    for(const block of this.fn.blocks){this.lines.push(block.name+':');for(const instruction of block.instructions){this.debugLocation=this.module.debug.location(this.fn,instruction.span,instruction.debugScope);this.instruction(instruction);}this.terminator(block.terminator);}
+    const variables=this.fn.variables.filter(variable=>variable.argument).map(variable=>this.variable(variable));
+    const prologue=[`define internal void @${this.fn.name}(ptr %out, ptr %self, ptr %args, i32 %count) !dbg ${subprogram} {`,`entry:`,
       `  %roots = alloca [${this.fn.slots} x %AugValue], align 8`,`  %frame = alloca %AugFrame, align 8`,...this.allocations,
       `  store [${this.fn.slots} x %AugValue] zeroinitializer, ptr %roots, align 8`,
       ...Array.from({length:this.fn.slots},(_,i)=>`  %slot_${i} = getelementptr [${this.fn.slots} x %AugValue], ptr %roots, i64 0, i64 ${i}`),
       ...this.fn.parameters.flatMap((slot,i)=>[`  %parameter_ptr_${i} = getelementptr %AugValue, ptr %args, i64 ${i}`,`  %parameter_${i} = load %AugValue, ptr %parameter_ptr_${i}, align 8`,`  store %AugValue %parameter_${i}, ptr %slot_${slot}, align 8`]),
       ...(this.fn.receiver===undefined?[]:[`  %receiver = load %AugValue, ptr %self, align 8`,`  store %AugValue %receiver, ptr %slot_${this.fn.receiver}, align 8`]),
+      ...variables,
       `  call void @aug_ir_frame_enter(ptr %frame, ptr %roots, i64 ${this.fn.slots})`,`  %scope_base = call i64 @aug_scope_depth()`,`  %lock_base = call i64 @aug_lock_depth()`,`  br label %entry_body`];
     this.module.declare('aug_scope_depth','i64',[]);
     this.module.declare('aug_lock_depth','i64',[]);
     this.module.declare('aug_ir_frame_enter','void',['ptr','ptr','i64']);return [...prologue,...this.lines,'}'].join('\n');
+  }
+  private variable(variable:IrFunction['variables'][number]){
+    return `  #dbg_declare(ptr %roots, ${this.module.debug.variable(this.fn,variable)}, !DIExpression(DW_OP_plus_uconst, ${variable.slot*runtimeLayout.valueSize}), ${this.module.debug.location(this.fn,variable.span,variable.scope)})`;
   }
 }
