@@ -87,7 +87,11 @@ extern void (*aug_mutex_wait_hook)(void);
 typedef struct AugTask AugTask;
 typedef void (*AugTaskCompletion)(AugValue task, void *data);
 AugValue aug_task_start(AugMethod function, AugValue receiver, AugValue *args, int count);
+AugValue aug_task_start_owned(AugMethod function, AugValue receiver, AugValue *args, int count, const unsigned char *owned);
 AugValue aug_task_spawn(AugMethod function, AugValue receiver, AugValue *args, int count, AugTaskCompletion completion, void *data);
+/* Compiler-private entry points; native package callbacks have a separate ABI. */
+void aug_task_start_pointer(AugValue *out, AugPointerMethod function, const AugValue *receiver, AugValue *args, int count, const unsigned char *owned);
+void aug_task_spawn_pointer(AugValue *out, AugPointerMethod function, const AugValue *receiver, AugValue *args, int count, AugTaskCompletion completion, void *data);
 AugValue aug_task_wait(AugValue *tasks, int count);
 AugTask *aug_task_current(void);
 bool aug_task_finished(AugValue task);

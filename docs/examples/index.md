@@ -10,11 +10,20 @@ outline: [2, 3]
 
 # Example projects
 
-Read a complete program, follow its dependencies, and compare the source with its compiled explanation. Every file has highlighted **Indentation** and **Braces** views and the actual output of `aug spec`. Dependency links open the exact version used by the project. Each project has a download you can run with the published npm CLI.
+Read a complete program, follow its dependencies, and compare the source with its compiled explanation. Every file has highlighted **Indentation** and **Braces** views and the actual output of `aug spec`. Dependency links open the exact version used by the project. Download a project to try it; native examples require the LLVM preview described on their pages.
 
 Start with [Hello world with dependencies](hello/index.md) to trace a greeting through two folder boundaries. Then [review a change to the tested calculator](../guides/change-a-module.md). For a larger application, the [OpenID Connect example](oidc-login/index.md) combines pages, provider and client endpoints, and a session JWT. It is a development demonstration with documented limits.
 
 If you are learning the language for the first time, use [the book](../learn/index.md). The gallery is for exploring whole projects and looking at the code behind a specific feature or measurement.
+
+## Native libraries (LLVM preview)
+
+| Project | What it demonstrates |
+| --- | --- |
+| [CPU tensors with PyTorch](native-pytorch/index.md) | Import real LibTorch from its public August package, add CPU tensors, and verify the elements and sum. Owned tensors are released when their scope ends. |
+| [A database with SQLite](native-sqlite/index.md) | Create an in-memory database, insert a labeled bound value, and query it through the real SQLite implementation. Mutation requires a borrow; scope exit closes the database. |
+| [Compression with zlib](native-zlib/index.md) | Compress a buffer with zlib and verify the restored bytes. A fixed output limit bounds decompression. |
+| [Hashing with Rust BLAKE3](native-blake3/index.md) | Import a Rust implementation through an ordinary August package and verify a published BLAKE3 hash vector. |
 
 ## Start here
 

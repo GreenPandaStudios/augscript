@@ -109,6 +109,7 @@ for(const fixture of cases){
   const native=Object.values(lock.native.targets)[0].packages[0];
   assert.equal(native.sourceCommit,fixture.commit);assert.equal(native.artifact.sha256,fixture.sha256);
   assert.equal(lock.native.compiler.artifactSha256,tools.packs[0].archive.sha256);
+  aug('spec',project);aug('spec',project);aug('spec',project,'--check');
   const saved=readFileSync(join(project,'aug.lock.json'),'utf8');
   assert.equal(aug('run',project,'--offline','--frozen'),fixture.expected);
   assert.equal(readFileSync(join(project,'aug.lock.json'),'utf8'),saved);
@@ -127,8 +128,20 @@ for(const fixture of cases){
   aug('add',repository,'--as',fixture.name,'--project',aliasProject);
   assert.equal(aug('run',aliasProject),fixture.expected);
   outcomes.push({package:fixture.name,repository,commit:fixture.commit,artifactSha256:fixture.sha256,
-    stdout:fixture.expected,urlImport:true,namedAlias:true,frozenOffline:true,relocatedBundle:true,backend:'llvm'});
+    stdout:fixture.expected,urlImport:true,namedAlias:true,frozenOffline:true,relocatedBundle:true,repeatedSpec:true,backend:'llvm'});
   console.log(`${fixture.name}: public download, URL import, named alias, LLVM execution, frozen/offline pass`);
+}
+const gallery=[];
+for(const fixture of cases){
+  const project=join(directory,'gallery-'+fixture.name);
+  cpSync(join(root,'examples/native-'+fixture.name),project,{recursive:true,filter:path=>!path.split('/').some(part=>['.aug-build','.aug-packages','node_modules'].includes(part))});
+  aug('install',project);aug('check',project);aug('spec',project);aug('spec',project,'--check');
+  const expected=fixture.name==='pytorch'?'21\n':fixture.expected;
+  assert.equal(aug('run',project),expected);
+  const result=JSON.parse(aug('test',project,'--json','--offline','--frozen'));
+  assert.equal(result.failed,0);assert.equal(result.passed,1);
+  gallery.push({package:fixture.name,run:true,test:true,spec:true,backend:'llvm'});
+  console.log(`${fixture.name}: complete wiki project runs and its independent same-file case passes`);
 }
 // Independent ownership cases use the real adapter's test counters. These
 // unsafe probes are qualification instrumentation, not a proposed public API.
@@ -143,6 +156,10 @@ _Failing(own Tensor value) unless TensorError implements _Container:
         throw TensorError(code=99, message="constructor cleanup")
 _earlyReturn(own Tensor value) returns float:
     return sum(tensor=value)
+_consume(own Tensor value):
+    pass
+_fail() unless FileError:
+    throw FileError()
 verify():
     pass
 test verify:
@@ -169,18 +186,53 @@ test verify:
             unsafe:
                 assert(aug_probe_live_tensors_v1() == before)
                 assert(aug_probe_live_buffers_v1() == 0)
+        it releases_owned_inputs_when_cancelled_before_entry:
+            int before = 0
+            unsafe:
+                before = aug_probe_live_tensors_v1()
+            try:
+                scope:
+                    own Tensor value = tensor(values=[1.0])
+                    failing = start _fail()
+                    consuming = start _consume(value)
+                    wait for failing
+            catch FileError error:
+                pass
+            unsafe:
+                assert(aug_probe_live_tensors_v1() == before)
 `);
 writeFileSync(join(cleanup,'main.aug'),'');
 aug('install',cleanup);
 for(const args of [[],['--offline','--frozen']]){
   const result=JSON.parse(aug('test',cleanup,'--json',...args));
-  assert.equal(result.failed,0);assert.equal(result.passed,2);
+  assert.equal(result.failed,0);assert.equal(result.passed,3);
 }
 console.log('pytorch: real counters prove failed-constructor and early-return cleanup');
+const taskProject=join(directory,'pytorch-tasks');mkdirSync(taskProject);
+writeFileSync(join(taskProject,'operations.aug'),`import Tensor and TensorError and tensor and sum from "https://github.com/GreenPandaStudios/aug-pytorch#v0.1.1"
+calculate(float first) returns float unless TensorError:
+    own Tensor value = tensor(values=[first, 2.0])
+    return sum(tensor=value)
+`);
+writeFileSync(join(taskProject,'main.aug'),`import calculate from operations
+import TensorError from "https://github.com/GreenPandaStudios/aug-pytorch#v0.1.1"
+try:
+    scope:
+        first = start calculate(first=1.0)
+        second = start calculate(first=3.0)
+        wait for first and second to a and b
+        print(value=a)
+        print(value=b)
+catch TensorError error:
+    print(value=error.message)
+`);
+assert.equal(aug('run',taskProject),'3\n5\n');
+assert.equal(aug('run',taskProject,'--offline','--frozen'),'3\n5\n');
+console.log('pytorch: LLVM tasks call the real library and preserve grouped wait order');
 const report={format:1,compiler:cliPackage.version,host:process.platform+'-'+process.arch,
   installation:'npm-archive-in-node_modules',nativeToolsOnPath:false,sourceCache:'fresh',artifactCache:'fresh',
   libraryTransport:'public-release-assets',compilerTransport:localCompiler?'local-release-asset':'public-release-asset',
   osRelease:osRelease(),minimumOSQualification:process.platform==='darwin'&&Number(osRelease().split('.')[0])===23,
-  realResourceCounters:{failedConstructor:true,earlyReturn:true,liveBuffers:0},directory,outcomes};
+  realResourceCounters:{failedConstructor:true,earlyReturn:true,cancelledBeforeEntry:true,liveBuffers:0},nativeTasks:true,directory,outcomes,gallery};
 writeFileSync(join(root,'.aug-build/native-consumer-qualification.json'),JSON.stringify(report,null,2)+'\n');
 console.log('Consumer qualification report: '+join(root,'.aug-build/native-consumer-qualification.json'));

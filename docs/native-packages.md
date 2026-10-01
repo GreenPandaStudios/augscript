@@ -18,7 +18,8 @@ The [PyTorch](https://github.com/GreenPandaStudios/aug-pytorch),
 [BLAKE3](https://github.com/GreenPandaStudios/aug-blake3) repositories publish
 `v0.1.1` source and native preview archives (SQLite uses `v0.1.2`). Their imports have passed using the
 packaged CLI, public downloads, and fresh caches on macOS ARM64. The matching
-compiler release and minimum OS qualification are still pending.
+compiler release is still pending. The macOS 14 ARM64 consumer gate passed in CI;
+subsequent compiler revisions must pass it again before publication.
 
 After the matching compiler preview is published, use the normal
 package commands. This example adds CPU LibTorch under a short name:
@@ -51,6 +52,14 @@ SQLite, zlib, and Rust BLAKE3 use the same package path. The
 [package examples](native-package-examples.md) show their operations; the
 [implementation record](native-implementation.md) separates verified behavior
 from release and platform work still in progress.
+
+Read the complete projects with their compiled explanations:
+[PyTorch](examples/native-pytorch/index.md),
+[SQLite](examples/native-sqlite/index.md),
+[zlib](examples/native-zlib/index.md), and
+[Rust BLAKE3](examples/native-blake3/index.md). Each includes a same-file test and
+a downloadable project. Native dependency pages link to the exact binding
+descriptor, so ownership and native boundaries stay visible beside the code.
 
 ## Installation and deployment
 

@@ -309,6 +309,17 @@ An error satisfies Error. A body infers escaping errors. A bodyless signature or
 
 `start` evaluates its receiver and arguments immediately; their errors belong to the scheduling statement. The scheduled operation's errors belong to a `wait for` or its owning scope's implicit join. Unobserved sibling failures can reach any wait in that group. Grouped waits observe every selected child, including cancellation cleanup, and rethrow the first failure. A helper awaiting a `Task<T>` parameter declares or handles `Error`, since that public type does not specify a narrower error contract yet.
 
+A task can take an owned input. Scheduling transfers cleanup responsibility to
+the child, including when cancellation occurs before its function runs. A task
+cannot return an `own` value: `Task<T>` has no owned-result transfer contract.
+Create and release resources inside the task, then return immutable data.
+
+Owned locals in a `try` or `catch` body are released when that body exits, before
+its `always` block runs. This order applies to normal execution, returns and
+errors. Values owned by the enclosing function remain live until that function
+exits. Cleanup suspends pending errors and cancellation while a `drop` method
+runs, then restores them.
+
 An error already leaving the parent remains the reported error if cancelling a child causes its cleanup to fail. `always` cleanup still runs for that child. A `return` from a scope joins its children before the caller receives the result.
 
 ```aug project=errors-guide file=main.aug

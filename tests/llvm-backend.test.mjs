@@ -25,6 +25,159 @@ function runProgram(files, expected, {traceDrops=false,checkStderr}={}) {
 }
 
 const enabled=process.platform==='darwin'&&process.arch==='arm64'&&!!process.env.AUG_LLVM_HOME;
+test('LLVM matches optional values, literals and resolved record identities',{skip:!enabled},()=>runProgram({
+  'data.aug':`record Point(int x, int y)
+record Label(string value)
+describe(optional bool value) returns string:
+    match value:
+        when null:
+            return "absent"
+        when some present:
+            match present:
+                when true:
+                    return "yes"
+                when false:
+                    return "no"
+shape(Data value) returns string:
+    match value:
+        when Point point:
+            return "point"
+        when Label label:
+            return label.value
+        else:
+            return "other"
+`,
+  'main.aug':`import Point and Label and describe and shape from data
+print(value=describe(value=null))
+print(value=describe(value=true))
+print(value=describe(value=false))
+print(value=shape(value=Point(x=1, y=2)))
+print(value=shape(value=Label(value="named")))
+print(value=shape(value=7))
+`
+},'absent\nyes\nno\npoint\nnamed\nother\n'));
+
+test('LLVM scoped DI restores nested scopes after fallthrough, failure and return',{skip:!enabled},()=>runProgram({
+  'counter.aug':`interface Counter:
+    increment() changes self
+CounterImpl() implements Counter:
+    increment() changes self:
+        pass
+Failure() implements Error:
+    pass
+same(resolve Counter first, resolve Counter second) returns bool:
+    return first == second
+checkReturn(resolve Counter first) returns bool:
+    scope:
+        return same()
+fail(resolve Counter first) unless Failure:
+    scope:
+        same()
+        throw Failure()
+`,
+  'main.aug':`import Counter and CounterImpl and Failure and fail and checkReturn from counter
+implement Counter with CounterImpl scoped mutable
+scope:
+    resolve Counter to first
+    resolve Counter to second
+    print(value=first == second)
+    scope:
+        resolve Counter to nested
+        print(value=first == nested)
+    try:
+        fail()
+    catch Failure error:
+        resolve Counter to restored
+        print(value=first == restored)
+    print(value=checkReturn())
+    resolve Counter to afterReturn
+    print(value=first == afterReturn)
+`
+},'true\nfalse\ntrue\ntrue\ntrue\n'));
+
+test('LLVM always blocks preserve returns, catches, pending errors and cleanup failures',{skip:!enabled},()=>runProgram({
+  'operations.aug':`import Console from august.io
+Failure(int code) implements Error:
+    pass
+work(resolve Console console, int mode) returns int unless Failure:
+    try:
+        if mode == 1:
+            return 7
+        if mode == 2 or mode == 3:
+            throw Failure(code=mode)
+        console.write(value="body")
+    catch Failure error:
+        console.write(value=error.code)
+        if mode == 3:
+            throw Failure(code=30)
+    always:
+        console.write(value="cleanup")
+    return 9
+cleanupFailure() unless Failure:
+    try:
+        throw Failure(code=1)
+    always:
+        throw Failure(code=2)
+nested(resolve Console console) returns int:
+    try:
+        try:
+            return 5
+        always:
+            console.write(value="inner")
+    always:
+        console.write(value="outer")
+`,
+  'main.aug':`import Failure and work and cleanupFailure and nested from operations
+import Console and SystemConsole from august.io
+implement Console with SystemConsole
+try:
+    print(value=work(mode=0))
+    print(value=work(mode=1))
+    print(value=work(mode=2))
+    work(mode=3)
+catch Failure error:
+    print(value=error.code)
+try:
+    cleanupFailure()
+catch Failure error:
+    print(value=error.code)
+print(value=nested())
+`
+},'body\ncleanup\n9\ncleanup\n7\n2\ncleanup\n9\n3\ncleanup\n30\n2\ninner\nouter\n5\n'));
+
+test('LLVM releases locks before catch, always and return paths',{skip:!enabled},()=>runProgram({
+  'operations.aug':`capability Counter:
+    update() uses Counter.update
+edit(Shared<List<int>> state, bool fail) returns int uses Counter.update unless FileError:
+    try:
+        lock state as values:
+            values.append(value=2)
+            if fail:
+                throw FileError()
+            return values.length()
+    always:
+        lock state as values:
+            values.append(value=3)
+`,
+  'main.aug':`import edit from operations
+state = Shared(value=[1])
+int afterFailure = 0
+try:
+    edit(state, fail=true)
+catch FileError error:
+    lock state as values:
+        afterFailure = values.length()
+print(value=afterFailure)
+try:
+    print(value=edit(state, fail=false))
+catch FileError error:
+    print(value="unexpected")
+int length = 0
+lock state as values:
+    length = values.length()
+print(value=length)
+`
+},'3\n4\n5\n'));
 test('LLVM runs labeled calls, loops, short circuit logic and collections',{skip:!enabled},()=>{
   const ir=runProgram({
     'math.aug':`add(int left, int right) returns int:

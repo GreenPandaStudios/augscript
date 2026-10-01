@@ -28,9 +28,10 @@ locks offline. Each executable also runs after relocation with its deployment li
 notices. Real LibTorch adapter counters verify that a failed class constructor
 releases its transferred handle and that an owned function input is released
 before an early return reaches its caller. The check supplies only the unpublished
-compiler archive locally; it uses real public transport for every library. Compiler release publication
-and minimum macOS 14 qualification remain outstanding. CI now runs that consumer
-check on a fresh macOS 14 ARM64 runner before the preview is qualified.
+compiler archive locally; it uses real public transport for every library. The
+macOS 14 ARM64 consumer gate passed in CI on commit `298c0a6`, including frozen,
+offline and relocated execution. Compiler release publication remains outstanding;
+each subsequent compiler change must pass that same gate before publication.
 The independent native clients run
 1,000 cleanup cycles per library. SQLite also checks persistent storage and
 rejects SQL attachment/VACUUM INTO before they can expand filesystem authority.
@@ -42,6 +43,17 @@ direct calls, archive integrity, modified lock metadata and ambiguous physical
 symbols. These finite checks do not establish arbitrary foreign-code safety.
 LibTorch's collected redistribution notices do not replace an exhaustive upstream
 binary SBOM; the qualification research records that gap.
+
+LLVM also lowers optional and nominal record matches, nested dependency scopes,
+`Shared` locks, `always` cleanup and cooperative tasks. The existing concurrency
+fixtures run against both backends: grouped and collection waits retain order,
+child failures cancel siblings, cancellation runs cleanup, and scopes join child
+loans before dropping their resources. A task cancelled before entry releases
+its transferred owned inputs even though its function never runs. Native regressions check normal execution,
+early returns, caught and pending errors, and errors raised during cleanup.
+The [native example projects](examples/index.md#native-libraries-llvm-preview)
+include checked source, generated explanations and same-file tests. They require
+the development compiler until its matching npm release and compiler pack are public.
 
 ## Delivery order
 

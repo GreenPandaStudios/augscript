@@ -35,7 +35,8 @@ The [LLVM/native preview](native-implementation.md) supports real repository
 imports of CPU LibTorch, SQLite, zlib and Rust BLAKE3 on macOS ARM64. Installed
 CLI checks cover public downloads, exact locks, offline reuse, relocated bundles
 and finite ownership cases without native tools on PATH. The compiler pack is
-still awaiting publication and minimum macOS 14 qualification. Full language
+still awaiting publication. The macOS 14 ARM64 CI consumer gate passed on commit
+`298c0a6`; later compiler changes must pass it again. Full language
 parity, debug information, Linux packs and switching the default backend remain
 open; ordinary applications still use C during migration.
 

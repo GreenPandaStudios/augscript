@@ -48,6 +48,9 @@ void aug_ir_operation(AugValue *out,int op,AugValue *a,int count,const char *tex
     case AUG_IR_FREEZE: aug_freeze(a[0]); *out=a[0]; break;
     case AUG_IR_ITER: *out=aug_iter_snapshot(a[0]); break;
     case AUG_IR_MAP_ITER: *out=aug_map_entries_snapshot(a[0]); break;
+    case AUG_IR_IS_TYPE: *out=aug_bool(a[0].tag==AUG_OBJECT&&a[0].as.object&&!strcmp(a[0].as.object->type_name,text)); break;
+    case AUG_IR_SHARED: *out=aug_shared_new(a[0]); break;
+    case AUG_IR_SHARED_LOCK: *out=aug_shared_lock(a[0]); break;
     default: *out=aug_error_named("NativeContractError"); break;
   }
 }
@@ -57,7 +60,14 @@ void aug_ir_drop(AugValue *value){aug_drop(*value);*value=aug_null();}
 void aug_ir_failed_result(AugValue *value){if(aug_has_error){aug_drop_partial(*value);*value=aug_null();}}
 void aug_ir_throw(const AugValue *value){aug_throw(*value);}
 void aug_ir_take_error(AugValue *out){*out=aug_take_error();}
+void aug_ir_save_error_state(AugValue *error,AugValue *cancelled){
+  *error=aug_has_error?aug_take_error():aug_null();*cancelled=aug_bool(aug_cancelled);aug_cancelled=false;
+}
+void aug_ir_restore_error_state(const AugValue *error,const AugValue *cancelled){
+  aug_cancelled=aug_truthy(*cancelled);if(!aug_has_error&&error->tag!=AUG_NULL)aug_throw(*error);
+}
 bool aug_ir_has_error(void){return aug_has_error;}
+void aug_ir_task_wait(AugValue *out,AugValue *tasks,int count){*out=aug_task_wait(tasks,count);}
 bool aug_ir_cancelled(void){return aug_cancelled;}
 bool aug_ir_is_null(const AugValue *value){return value->tag==AUG_NULL;}
 bool aug_ir_truthy(const AugValue *value){return aug_truthy(*value);}

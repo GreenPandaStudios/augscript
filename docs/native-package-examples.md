@@ -1,8 +1,8 @@
-# Proposed native package repositories and examples
+# Native package design examples
 
-**Design examples, not executable shipping instructions.** These repositories and native APIs are proposed by the [LLVM/native architecture plan](native-interop-llvm-plan.md). Ordinary `aug package init`, `aug add`, tagged Git URL imports, `export.aug`, ownership, capabilities, and labeled calls already exist. Manifest format 2, `extern C resource`, marshalled `extern C` calls, native binding/build commands, backend selection, and bundle output are **new proposals**. `LLVM_PREVIEW_VERSION`, digest placeholders, and archive sizes must be replaced with measured release values before publishing.
+This page records design examples from the [LLVM/native architecture plan](native-interop-llvm-plan.md). The four package repositories now exist and their real native adapters pass local LLVM qualification. Read [native packages](native-packages.md) for the implemented profile. The examples below include future binding-generation and library-output commands; these remain proposals. Placeholder digests and sizes are illustrative.
 
-The four packages use real upstream implementations. Candidate source pins are LibTorch **2.14.1**, SQLite **3.53.4**, zlib **1.3.2**, and Rust `blake3` **1.8.7**. LLVM **23.1.2** is the candidate compiler pin. These releases were located in primary sources; their August artifacts have not been built or qualified. The [research note](research/native-interop-llvm.md#verified-release-candidates) explains those limits.
+The implemented packages use LibTorch **2.14.1**, SQLite **3.53.4**, zlib **1.3.2**, and Rust `blake3` **1.8.7**, with LLVM **23.1.2**. Their public native archives have passed installed-CLI checks locally and on a macOS 14 ARM64 CI runner. Compiler publication and broader LLVM parity are still pending; the [implementation record](native-implementation.md) tracks those limits. Complete source/spec examples are available for [PyTorch](examples/native-pytorch/index.md), [SQLite](examples/native-sqlite/index.md), [zlib](examples/native-zlib/index.md), and [BLAKE3](examples/native-blake3/index.md).
 
 ## Shared repository and artifact convention
 

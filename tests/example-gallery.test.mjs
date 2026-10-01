@@ -74,6 +74,17 @@ test('wiki dependency links stay inside the generated gallery and resolve source
   }
 });
 
+test('native examples expose exact binding contracts and include them in project downloads',()=>{
+  const outputs=pages();
+  for(const example of examples.filter(example=>example.group==='Native libraries (LLVM preview)')){
+    const prefix='docs/examples/'+example.path.slice('examples/'.length)+'/dependencies/';
+    const contracts=[...outputs].filter(([path])=>path.startsWith(prefix)&&path.endsWith('/native.abi-json.md'));
+    assert.equal(contracts.length,1,example.path);
+    assert.match(contracts[0][1],/```json\n/);assert.match(contracts[0][1],/aug-native-abi-1/);
+    assert.ok([...outputs].some(([path,text])=>path.startsWith(prefix)&&path.endsWith('.md')&&text.includes('native.abi-json.md')));
+  }
+});
+
 test('example generation is deterministic and keeps project sources and package locks untouched',()=>{
   const before=sources(join(root,'examples')).map(file=>[file,readFileSync(file,'utf8')]);
   const lock=join(root,'examples/packages/app/aug.lock.json'), hadLock=existsSync(lock);

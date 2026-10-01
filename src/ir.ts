@@ -6,6 +6,7 @@ import type {CheckedProject,CallPlan} from './checker.ts';
 import type {Definition} from './project.ts';
 import type {Ty} from './types.ts';
 import type {NativeFunction} from './native-contracts.ts';
+import {errorNames} from './builtins.ts';
 
 export type IrInstruction = {span:Span}&(
   {op:'literal';out:number;value:string|boolean|null;numeric?:{kind:'int'|'float';text:string}}|
@@ -13,14 +14,20 @@ export type IrInstruction = {span:Span}&(
   {op:'runtime';out:number;operation:string;args:number[];text?:string;number?:number}|
   {op:'call';out:number;function:string;args:number[];receiver?:number}|
   {op:'method';out:number;receiver:number;name:string;args:number[]}|
+  {op:'start';out:number;function:string;receiver?:number;args:number[];owned:boolean[]}|
+  {op:'wait';out:number;tasks:number[]}|{op:'checkpoint'}|
   {op:'native';out:number;binding:NativeFunction;args:number[];resources:Record<string,{id:string;release:string}>;error?:string;errorFactory?:string}|
   {op:'extern';out:number;name:string;types:string[];result:string;args:number[]}|
   {op:'object';out:number;type:string;fields:string[];owned:boolean[];methods:{name:string;function:string}[];record:boolean}|
   {op:'assert';input:number;expression:string}|{op:'throw';input:number}|{op:'take-error';out:number}|
-  {op:'drop';slot:number}|{op:'binding-get';out:number;index:number}|{op:'binding-set';input:number;index:number}
+  {op:'drop';slot:number}|{op:'binding-get';out:number;index:number}|{op:'binding-set';input:number;index:number}|
+  {op:'scope-depth';out:number}|{op:'scope';action:'enter'|'leave'|'join'|'restore';depth?:number}|
+  {op:'lock-depth';out:number}|{op:'lock';action:'leave'|'restore';depth?:number}|
+  {op:'error-state';action:'save'|'restore';error:number;cancelled:number}
 );
 export type IrTerminator = {op:'jump';target:string}|{op:'branch';condition:number;then:string;otherwise:string}|
   {op:'error';failed:string;success:string}|{op:'error-type';type:string;then:string;otherwise:string}|
+  {op:'cancel';then:string;otherwise:string}|
   {op:'null';input:number;then:string;otherwise:string}|{op:'return'};
 export interface IrBlock {name:string;instructions:IrInstruction[];terminator:IrTerminator}
 export interface IrFunction {name:string;span:Span;slots:number;parameters:number[];receiver?:number;owned:number[];failedResult?:boolean;blocks:IrBlock[]}
@@ -77,7 +84,6 @@ class Lowering {
     }
     this.checked.bindings.forEach((binding,index)=>{
       const body=new FunctionLowering(this,binding.declaration.span.file,binding.declaration.span);
-      if(binding.lifetime==='scoped')throw new BackendUnsupported(binding.declaration.span,'scoped dependency bindings');
       if(binding.lifetime!=='fresh'){
         body.instruction({op:'binding-get',out:0,index});const create=body.block(),done=body.block();
         body.terminate({op:'null',input:0,then:create,otherwise:done});body.enter(done);body.terminate({op:'jump',target:'cleanup'});body.enter(create);
@@ -121,7 +127,7 @@ class FunctionLowering {
   terminate(terminator:IrTerminator){this.current.terminator=terminator;}
   instruction(value:InstructionInput){if(this.current.terminator)this.enter(this.block());this.current.instructions.push({...value,span:this.source} as IrInstruction);}
   parameter(param:Param,index:number){const slot=this.slot();this.parameters[index]=slot;this.locals.set(param.name,slot);if(param.ownership==='own')this.owned.add(slot);}
-  checkError(){const next=this.block();this.terminate({op:'error',failed:this.error,success:next});this.enter(next);}
+  checkError(){const errors=this.block(),next=this.block();this.terminate({op:'cancel',then:this.returning,otherwise:errors});this.enter(errors);this.terminate({op:'error',failed:this.error,success:next});this.enter(next);}
   runtime(operation:string,args:number[],text?:string,number?:number){const out=this.slot();this.instruction({op:'runtime',out,operation,args,text,number});this.checkError();return out;}
   call(name:string,args:number[],receiver?:number){const out=this.slot();this.instruction({op:'call',out,function:name,args,receiver});this.checkError();return out;}
   literal(value:string|boolean|null,numeric?:{kind:'int'|'float';text:string}){const out=this.slot();this.instruction({op:'literal',out,value,numeric});return out;}
@@ -163,9 +169,34 @@ class FunctionLowering {
       if(kind==='Map'){const out=this.runtime('MAP',[]);for(let i=0;i<values.length;i+=2)this.runtime('MAP_SET',[out,values[i],values[i+1]]);return out;}
       return this.runtime(kind.toUpperCase(),values);
     }
+    if(expr.kind==='wait'){
+      const tasks=expr.tasks.map(task=>this.expression(task)),out=this.slot();this.instruction({op:'wait',out,tasks});this.checkError();return out;
+    }
+    if(expr.kind==='start'&&expr.call.kind==='call'){
+      const call=expr.call,receiver=call.callee.kind==='member'?this.expression(call.callee.object):undefined;
+      // Capture evaluation and injected dependencies in the parent. The child
+      // receives those values; it never reevaluates an argument or resolves DI.
+      const args=this.arguments(call,this.generator.checked.callPlans.get(call));
+      const thunk=new FunctionLowering(this.generator,this.file,expr.span,this.owner);
+      if(receiver!==undefined)thunk.receiver=thunk.slot();
+      args.forEach((_,i)=>{const slot=thunk.slot();thunk.parameters[i]=slot;
+        if(this.generator.checked.callPlans.get(call)?.ownerships?.[i]==='own')thunk.owned.add(slot);
+      });
+      const result=thunk.invoke(call,thunk.receiver,[...thunk.parameters]);thunk.instruction({op:'copy',out:0,input:result});
+      if(thunk.owned.has(result))thunk.instruction({op:'clear',slot:result});
+      const name='aug_task_thunk_'+this.generator.functions.length;
+      this.generator.functions.push(thunk.finish(name));
+      const out=this.slot();this.instruction({op:'start',out,function:name,receiver,args,owned:args.map((_,i)=>this.generator.checked.callPlans.get(call)?.ownerships?.[i]==='own')});
+      this.generator.checked.callPlans.get(call)?.ownerships?.forEach((mode,i)=>{if(mode==='own')this.instruction({op:'clear',slot:args[i]});});
+      this.checkError();return out;
+    }
     if(expr.kind!=='call')throw new BackendUnsupported(expr.span,expr.kind+' expressions');
     const receiver=expr.callee.kind==='member'?this.expression(expr.callee.object):undefined;
-    let args=this.arguments(expr,this.generator.checked.callPlans.get(expr));this.source=expr.span;
+    const args=this.arguments(expr,this.generator.checked.callPlans.get(expr));
+    return this.invoke(expr,receiver,args);
+  }
+  private invoke(expr:Extract<Expr,{kind:'call'}>,receiver:number|undefined,args:number[]):number {
+    this.source=expr.span;
     if(expr.callee.kind==='member'){
       const type=this.generator.checked.expressionTypes.get(expr.callee.object)!,name=expr.callee.name;
       const operations:Record<string,string>={
@@ -184,6 +215,12 @@ class FunctionLowering {
     const name=expr.callee.name;
     if(name==='assert'){this.instruction({op:'assert',input:args[0],expression:this.generator.checked.project.files.get(this.file)?.source.slice(expr.args[0].span.start,expr.args[0].span.end)??'assertion'});this.checkError();return this.literal(null);}
     if(name==='int')return args[0];
+    if(errorNames.includes(name)){
+      const out=this.slot();this.instruction({op:'object',out,type:name,fields:[],owned:[],methods:[],record:false});return out;
+    }
+    if(name==='Shared'){
+      const result=this.runtime('SHARED',[args[0]]);if(this.owned.has(args[0]))this.instruction({op:'clear',slot:args[0]});return result;
+    }
     const builtins:Record<string,string>={print:'PRINT',arguments:'ARGUMENTS',c_int:'C_INT',read_file:'READ_FILE',write_file:'WRITE_FILE',base64url_decode:'BASE64URL_DECODE'};
     if(builtins[name])return this.runtime(builtins[name],args);
     if(['List','Tuple','Set','Map'].includes(name))return this.runtime(name.toUpperCase(),args);
@@ -222,9 +259,43 @@ class FunctionLowering {
       if(native)this.owned.add(temporary);
     });return transferred;
   }
-  private scoped(stmts:Stmt[]){const locals=new Map(this.locals),owned=new Set(this.owned);for(const stmt of stmts)this.statement(stmt);
+  private scoped(stmts:Stmt[],composition=false){const locals=new Map(this.locals),owned=new Set(this.owned);for(const stmt of stmts)this.statement(stmt);
+    if(composition&&!this.current.terminator)this.instruction({op:'scope',action:'join'});
     if(!this.current.terminator)for(const slot of this.owned)if(!owned.has(slot))this.instruction({op:'drop',slot});
     this.locals.clear();for(const [name,slot] of locals)this.locals.set(name,slot);
+  }
+  private tryAlways(stmt:Extract<Stmt,{kind:'try'}>){
+    const outerError=this.error,outerReturn=this.returning,owned=new Set(this.owned);
+    const caught=this.block(),failed=this.block(),returned=this.block(),cleanup=this.block(),finalized=this.block(),done=this.block();
+    const depth=this.slot(),locks=this.slot(),pending=this.slot(),cancelled=this.slot(),returning=this.slot(),failure=this.slot();
+    this.instruction({op:'scope-depth',out:depth});this.instruction({op:'lock-depth',out:locks});
+    this.instruction({op:'copy',out:returning,input:this.literal(false)});this.instruction({op:'copy',out:failure,input:this.literal(false)});
+    this.error=caught;this.returning=returned;this.scoped(stmt.body);
+    if(!this.current.terminator)this.terminate({op:'jump',target:cleanup});
+    this.enter(caught);this.instruction({op:'lock',action:'restore',depth:locks});this.instruction({op:'scope',action:'join',depth});
+    for(const slot of this.owned)if(!owned.has(slot))this.instruction({op:'drop',slot});
+    this.instruction({op:'scope',action:'restore',depth});
+    const handlers=this.block();this.terminate({op:'cancel',then:failed,otherwise:handlers});this.enter(handlers);this.error=failed;
+    for(const clause of stmt.catches){
+      const handler=this.block(),next=this.block();this.terminate({op:'error-type',type:this.generator.definition(this.file,clause.type.name)?.id??clause.type.name,then:handler,otherwise:next});this.enter(handler);
+      const error=this.slot();this.instruction({op:'take-error',out:error});const names=new Map(this.locals);this.locals.set(clause.name,error);this.scoped(clause.body);
+      this.locals.clear();for(const entry of names)this.locals.set(...entry);
+      if(!this.current.terminator)this.terminate({op:'jump',target:cleanup});this.enter(next);
+    }
+    this.terminate({op:'jump',target:failed});this.enter(failed);this.instruction({op:'copy',out:failure,input:this.literal(true)});this.terminate({op:'jump',target:cleanup});
+    this.enter(returned);this.instruction({op:'copy',out:returning,input:this.literal(true)});this.terminate({op:'jump',target:cleanup});
+    this.enter(cleanup);this.instruction({op:'lock',action:'restore',depth:locks});this.instruction({op:'scope',action:'join',depth});
+    for(const slot of this.owned)if(!owned.has(slot))this.instruction({op:'drop',slot});
+    this.instruction({op:'scope',action:'restore',depth});this.instruction({op:'error-state',action:'save',error:pending,cancelled});
+    this.error=finalized;this.returning=finalized;this.scoped(stmt.always!);
+    if(!this.current.terminator)this.terminate({op:'jump',target:finalized});
+    this.enter(finalized);this.instruction({op:'error-state',action:'restore',error:pending,cancelled});
+    const returnedCheck=this.block(),errorCheck=this.block(),failedCheck=this.block();
+    this.terminate({op:'cancel',then:outerReturn,otherwise:returnedCheck});this.enter(returnedCheck);
+    this.terminate({op:'branch',condition:returning,then:outerReturn,otherwise:errorCheck});this.enter(errorCheck);
+    this.terminate({op:'error',failed:outerError,success:failedCheck});this.enter(failedCheck);
+    this.terminate({op:'branch',condition:failure,then:outerError,otherwise:done});this.enter(done);
+    this.error=outerError;this.returning=outerReturn;
   }
   statement(stmt:Stmt):void {
     this.source=stmt.span;if(this.current.terminator)this.enter(this.block());
@@ -252,14 +323,43 @@ class FunctionLowering {
       this.terminate({op:'jump',target:this.returning});return;
     }
     if(stmt.kind==='throw'){this.instruction({op:'throw',input:this.expression(stmt.value)});this.terminate({op:'jump',target:this.error});return;}
-    if(stmt.kind==='unsafe'||stmt.kind==='borrow'||stmt.kind==='scope'){this.scoped(stmt.body);return;}
+    if(stmt.kind==='unsafe'||stmt.kind==='borrow'){this.scoped(stmt.body);return;}
+    if(stmt.kind==='scope'){
+      this.instruction({op:'scope',action:'enter'});this.scoped(stmt.body,true);
+      if(!this.current.terminator){this.instruction({op:'scope',action:'leave'});this.checkError();}return;
+    }
+    if(stmt.kind==='lock'){
+      const names=new Map(this.locals),value=this.runtime('SHARED_LOCK',[this.expression(stmt.value)]);this.locals.set(stmt.name,value);
+      this.scoped(stmt.body);this.locals.clear();for(const entry of names)this.locals.set(...entry);
+      if(!this.current.terminator){this.instruction({op:'lock',action:'leave'});this.checkError();}return;
+    }
     if(stmt.kind==='if'){
       const condition=this.expression(stmt.test),yes=this.block(),no=this.block(),done=this.block();this.terminate({op:'branch',condition,then:yes,otherwise:no});
       this.enter(yes);this.scoped(stmt.then);if(!this.current.terminator)this.terminate({op:'jump',target:done});
       this.enter(no);this.scoped(stmt.otherwise);if(!this.current.terminator)this.terminate({op:'jump',target:done});this.enter(done);return;
     }
+    if(stmt.kind==='match'){
+      const value=this.expression(stmt.value),done=this.block();
+      // Match literals are checked constants. Keep the source ordering used by
+      // the reference backend, while evaluating the matched value only once.
+      const literals=stmt.cases.map(clause=>clause.literal?this.expression(clause.literal):undefined);
+      for(const [index,clause] of stmt.cases.entries()){
+        const body=this.block(),next=this.block();
+        if(clause.pattern==='else')this.terminate({op:'jump',target:body});
+        else if(clause.pattern==='null'||clause.pattern==='some')this.terminate({op:'null',input:value,then:clause.pattern==='null'?body:next,otherwise:clause.pattern==='null'?next:body});
+        else{
+          const condition=clause.pattern==='type'?this.runtime('IS_TYPE',[value],this.generator.definition(this.file,clause.type!.name)?.id??clause.type!.name):this.runtime('BINARY',[value,literals[index]!],'==');
+          this.terminate({op:'branch',condition,then:body,otherwise:next});
+        }
+        this.enter(body);const names=new Map(this.locals);if(clause.name)this.locals.set(clause.name,value);
+        this.scoped(clause.body);this.locals.clear();for(const entry of names)this.locals.set(...entry);
+        if(!this.current.terminator)this.terminate({op:'jump',target:done});this.enter(next);
+      }
+      this.terminate({op:'jump',target:done});this.enter(done);return;
+    }
     if(stmt.kind==='while'){
       const test=this.block(),body=this.block(),done=this.block();this.terminate({op:'jump',target:test});this.enter(test);
+      this.instruction({op:'checkpoint'});this.checkError();
       const condition=this.expression(stmt.test);this.terminate({op:'branch',condition,then:body,otherwise:done});this.enter(body);this.scoped(stmt.body);
       if(!this.current.terminator)this.terminate({op:'jump',target:test});this.enter(done);return;
     }
@@ -271,6 +371,7 @@ class FunctionLowering {
       const iterable=this.expression(stmt.iterable),map=this.generator.checked.expressionTypes.get(stmt.iterable)?.name==='Map'&&stmt.names.length===2;
       const values=this.runtime(map?'MAP_ITER':'ITER',[iterable]),index=this.slot(),one=this.literal(null,{kind:'int',text:'1'});this.instruction({op:'copy',out:index,input:this.literal(null,{kind:'int',text:'0'})});
       const length=this.runtime('LIST_LENGTH',[values]),test=this.block(),body=this.block(),done=this.block();this.terminate({op:'jump',target:test});this.enter(test);
+      this.instruction({op:'checkpoint'});this.checkError();
       const condition=this.runtime('BINARY',[index,length],'<');this.terminate({op:'branch',condition,then:body,otherwise:done});this.enter(body);
       const names=new Map(this.locals);
       if(map){stmt.names.forEach(name=>{this.locals.set(name,this.runtime('LIST_GET',[values,index]));this.instruction({op:'copy',out:index,input:this.runtime('BINARY',[index,one],'+')});});}
@@ -279,10 +380,13 @@ class FunctionLowering {
       if(!this.current.terminator)this.terminate({op:'jump',target:test});this.enter(done);return;
     }
     if(stmt.kind==='try'){
-      if(stmt.always)throw new BackendUnsupported(stmt.span,'always cleanup blocks');
-      const outer=this.error,failed=this.block(),done=this.block(),owned=new Set(this.owned);this.error=failed;this.scoped(stmt.body);
+      if(stmt.always){this.tryAlways(stmt);return;}
+      const outer=this.error,failed=this.block(),done=this.block(),owned=new Set(this.owned),depth=this.slot(),locks=this.slot();
+      this.instruction({op:'scope-depth',out:depth});this.instruction({op:'lock-depth',out:locks});this.error=failed;this.scoped(stmt.body);
       if(!this.current.terminator)this.terminate({op:'jump',target:done});this.enter(failed);this.error=outer;
+      this.instruction({op:'lock',action:'restore',depth:locks});this.instruction({op:'scope',action:'join',depth});
       for(const slot of this.owned)if(!owned.has(slot))this.instruction({op:'drop',slot});
+      this.instruction({op:'scope',action:'restore',depth});
       stmt.catches.forEach(clause=>{const handler=this.block(),next=this.block();this.terminate({op:'error-type',type:this.generator.definition(this.file,clause.type.name)?.id??clause.type.name,then:handler,otherwise:next});this.enter(handler);
         const error=this.slot();this.instruction({op:'take-error',out:error});const names=new Map(this.locals);this.locals.set(clause.name,error);this.scoped(clause.body);this.locals.clear();for(const entry of names)this.locals.set(...entry);
         if(!this.current.terminator)this.terminate({op:'jump',target:done});this.enter(next);

@@ -1,0 +1,18 @@
+{
+  "format": 1,
+  "files": [
+    ".aug-spec/packages/@greenpandastudios/aug-pytorch/0.1.1/api.aug",
+    ".aug-spec/packages/@greenpandastudios/aug-pytorch/0.1.1/api.aug.md",
+    ".aug-spec/packages/@greenpandastudios/aug-pytorch/0.1.1/bindings.aug",
+    ".aug-spec/packages/@greenpandastudios/aug-pytorch/0.1.1/bindings.aug.md",
+    ".aug-spec/packages/@greenpandastudios/aug-pytorch/0.1.1/contracts.aug",
+    ".aug-spec/packages/@greenpandastudios/aug-pytorch/0.1.1/contracts.aug.md",
+    ".aug-spec/packages/@greenpandastudios/aug-pytorch/0.1.1/native.abi.json",
+    "main.aug.md",
+    "tensors.aug.md"
+  ],
+  "nativeDescriptors": {
+    ".aug-spec/packages/@greenpandastudios/aug-pytorch/0.1.1/native.abi.json": "f07b8cab89ad7cfe368edcd9daf87ecc810adb6a2eed1f446d7b71fb664e91f5"
+  },
+  "digest": "07b569ee9808a2c4c27040dea29e282f34859bdef918d8d686acf1fd282f156f"
+}

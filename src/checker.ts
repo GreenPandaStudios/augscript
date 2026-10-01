@@ -2087,6 +2087,8 @@ class Checker {
       type = {...builtin('Task'), args: [result]};
       if (expr.call.kind === 'call' && context.scope) {
         const plan = this.callPlans.get(expr.call), task = [...allocationOrigin(expr.span)][0], scope = `tasks:${context.scope.file}:${context.scope.start}`;
+        if (plan?.returnOwnership === 'own') this.report(expr.call.span,
+          'A task cannot return an owned value. Return immutable data, or create and release the owned resource inside the task.', 'CONCURRENCY');
         context.flow.registerTask(task, scope, errors);
         const captureOrigins = (origins: Origins, actual: Ty, exclusive: boolean, span: Span) => {
           if (!this.isReference(actual)) return;
@@ -2494,6 +2496,7 @@ class Checker {
     }
     if (expr.callee.kind === 'name' && expr.callee.name === 'Shared') {
       const plan = this.planCall(expr, ['value'], 'Shared'), index = plan.sourceIndices[0];
+      plan.ownerships = ['own'];
       const result = index === undefined ? errorTy : argTypes[index];
       if (index !== undefined && !['fresh', 'own'].includes(this.ownershipOf(expr.args[index], context))) this.report(expr.args[index].span, 'Shared takes a fresh value or an owned value; existing mutable aliases cannot survive the transfer', 'OWN');
       if (expr.typeArgs.length > 1 || expr.typeArgs[0] && !this.assignable(result, this.resolveType(expr.typeArgs[0], context.file, context.types))) this.report(expr.span, 'Shared type argument must match its value', 'TYPE');

@@ -14,7 +14,8 @@ enum AugIrOperation {
   AUG_IR_STRING_SPLIT, AUG_IR_STRING_STARTS_WITH, AUG_IR_STRING_IS_TOKEN,
   AUG_IR_BYTES_LENGTH, AUG_IR_BYTES_TEXT, AUG_IR_BYTES_BASE64URL,
   AUG_IR_BASE64URL_DECODE, AUG_IR_C_INT, AUG_IR_READ_FILE, AUG_IR_WRITE_FILE,
-  AUG_IR_ARGUMENTS, AUG_IR_FREEZE, AUG_IR_ITER, AUG_IR_MAP_ITER
+  AUG_IR_ARGUMENTS, AUG_IR_FREEZE, AUG_IR_ITER, AUG_IR_MAP_ITER, AUG_IR_IS_TYPE,
+  AUG_IR_SHARED, AUG_IR_SHARED_LOCK
 };
 void aug_ir_operation(AugValue *out, int operation, AugValue *args, int count, const char *text, int64_t number);
 void aug_ir_string(AugValue *out, const void *text, uint64_t count);
@@ -23,6 +24,9 @@ void aug_ir_drop(AugValue *value);
 void aug_ir_failed_result(AugValue *value);
 void aug_ir_throw(const AugValue *value);
 void aug_ir_take_error(AugValue *out);
+void aug_ir_save_error_state(AugValue *error,AugValue *cancelled);
+void aug_ir_restore_error_state(const AugValue *error,const AugValue *cancelled);
+void aug_ir_task_wait(AugValue *out, AugValue *tasks, int count);
 bool aug_ir_has_error(void);
 bool aug_ir_cancelled(void);
 bool aug_ir_is_null(const AugValue *value);

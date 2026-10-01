@@ -6,7 +6,7 @@ export interface RuntimeLayout {
   frameSize:24;methodEntrySize:24;pointerSize:8;
 }
 export const runtimeLayout:RuntimeLayout={abi:'compiler-private-runtime-v1',valueSize:16,valueAlignment:8,valuePayloadOffset:8,frameSize:24,methodEntrySize:24,pointerSize:8};
-const operations=['PRINT','BINARY','UNARY','FIELD','SET_FIELD','LIST','TUPLE','SET','MAP','MAP_SET','LIST_LENGTH','LIST_GET','LIST_AT','LIST_APPEND','TUPLE_LENGTH','TUPLE_GET','SET_LENGTH','SET_ADD','SET_CONTAINS','MAP_LENGTH','MAP_GET','MAP_TAKE','MAP_CONTAINS','STRING_LENGTH','STRING_BYTES','STRING_SPLIT','STRING_STARTS_WITH','STRING_IS_TOKEN','BYTES_LENGTH','BYTES_TEXT','BYTES_BASE64URL','BASE64URL_DECODE','C_INT','READ_FILE','WRITE_FILE','ARGUMENTS','FREEZE','ITER','MAP_ITER'];
+const operations=['PRINT','BINARY','UNARY','FIELD','SET_FIELD','LIST','TUPLE','SET','MAP','MAP_SET','LIST_LENGTH','LIST_GET','LIST_AT','LIST_APPEND','TUPLE_LENGTH','TUPLE_GET','SET_LENGTH','SET_ADD','SET_CONTAINS','MAP_LENGTH','MAP_GET','MAP_TAKE','MAP_CONTAINS','STRING_LENGTH','STRING_BYTES','STRING_SPLIT','STRING_STARTS_WITH','STRING_IS_TOKEN','BYTES_LENGTH','BYTES_TEXT','BYTES_BASE64URL','BASE64URL_DECODE','C_INT','READ_FILE','WRITE_FILE','ARGUMENTS','FREEZE','ITER','MAP_ITER','IS_TYPE','SHARED','SHARED_LOCK'];
 const symbol=(name:string)=>'@'+name;
 
 /** Emit LLVM directly from checked August execution IR. No application C is generated. */
@@ -53,7 +53,8 @@ class ModuleEmitter {
     this.declare('aug_ir_has_error','zeroext i1',[]);
     return [`; August checked execution IR ${this.ir.format}; source revision ${this.ir.sourceRevision}`,`target triple = "${this.triple}"`,
       `%AugValue = type {i32, i64}`,`%AugFrame = type {ptr, i64, ptr}`,`%AugMethodEntry = type {ptr, ptr, ptr}`,`%NativeError = type {i32, i32, [512 x i8]}`,
-      `@aug_globals = internal global [${Math.max(1,globalCount)} x %AugValue] zeroinitializer, align 8`,...this.globals,...this.declarations.values(),...bodies,main,''].join('\n\n');
+      `@aug_globals = internal global [${Math.max(1,globalCount)} x %AugValue] zeroinitializer, align 8`,
+      `@aug_scoped = private constant [${Math.max(1,globalCount)} x i8] [${globalCount?this.ir.scoped.map(scoped=>'i8 '+(scoped?1:0)).join(', '):'i8 0'}]`,...this.globals,...this.declarations.values(),...bodies,main,''].join('\n\n');
   }
 }
 class FunctionEmitter {
@@ -96,6 +97,13 @@ class FunctionEmitter {
       }
       case 'call':this.line(`call void @${i.function}(ptr ${this.ptr(i.out)}, ptr ${i.receiver===undefined?'null':this.ptr(i.receiver)}, ptr ${this.args(i.args)}, i32 ${i.args.length})`);return;
       case 'method':this.call('aug_ir_method','void',[{type:'ptr',value:this.ptr(i.out)},{type:'ptr',value:this.ptr(i.receiver)},{type:'ptr',value:this.module.text(i.name)},{type:'ptr',value:this.args(i.args)},{type:'i32',value:String(i.args.length)}]);return;
+      case 'start':{
+        const mask=this.allocate(`[${Math.max(1,i.owned.length)} x i8]`);
+        this.line(`store [${Math.max(1,i.owned.length)} x i8] [${i.owned.length?i.owned.map(own=>'i8 '+(own?1:0)).join(', '):'i8 0'}], ptr ${mask}, align 1`);
+        this.call('aug_task_start_pointer','void',[{type:'ptr',value:this.ptr(i.out)},{type:'ptr',value:'@'+i.function},{type:'ptr',value:i.receiver===undefined?'null':this.ptr(i.receiver)},{type:'ptr',value:this.args(i.args)},{type:'i32',value:String(i.args.length)},{type:'ptr',value:mask}]);return;
+      }
+      case 'wait':this.call('aug_ir_task_wait','void',[{type:'ptr',value:this.ptr(i.out)},{type:'ptr',value:this.args(i.tasks)},{type:'i32',value:String(i.tasks.length)}]);return;
+      case 'checkpoint':this.call('aug_task_checkpoint','void',[]);return;
       case 'drop':this.call('aug_ir_drop','void',[{type:'ptr',value:this.ptr(i.slot)}]);return;
       case 'throw':this.call('aug_ir_throw','void',[{type:'ptr',value:this.ptr(i.input)}]);return;
       case 'take-error':this.call('aug_ir_take_error','void',[{type:'ptr',value:this.ptr(i.out)}]);return;
@@ -106,6 +114,20 @@ class FunctionEmitter {
       }
       case 'binding-get':this.call('aug_ir_binding_get','void',[{type:'ptr',value:this.ptr(i.out)},{type:'i64',value:String(i.index)}]);return;
       case 'binding-set':this.call('aug_ir_binding_set','void',[{type:'i64',value:String(i.index)},{type:'ptr',value:this.ptr(i.input)}]);return;
+      case 'scope-depth':this.boxed(i.out,1,this.call('aug_scope_depth','i64',[]));return;
+      case 'lock-depth':this.boxed(i.out,1,this.call('aug_lock_depth','i64',[]));return;
+      case 'lock':this.call(i.action==='leave'?'aug_lock_leave':'aug_lock_restore','void',i.depth===undefined?[]:[{type:'i64',value:this.integer(i.depth)}]);return;
+      case 'error-state':this.call(i.action==='save'?'aug_ir_save_error_state':'aug_ir_restore_error_state','void',[{type:'ptr',value:this.ptr(i.error)},{type:'ptr',value:this.ptr(i.cancelled)}]);return;
+      case 'scope':{
+        if(i.action==='enter')this.call('aug_scope_enter','void',[{type:'ptr',value:'@aug_scoped'}]);
+        else if(i.action==='leave')this.call('aug_scope_leave','void',[]);
+        else{
+          let depth:string;
+          if(i.depth===undefined){const current=this.call('aug_scope_depth','i64',[]);depth=this.temp('scope_parent');this.line(`${depth} = sub i64 ${current}, 1`);}
+          else depth=this.integer(i.depth);
+          this.call(i.action==='join'?'aug_scope_join_to':'aug_scope_restore','void',[{type:'i64',value:depth}]);
+        }return;
+      }
       case 'native':this.native(i);return;
       case 'extern':{
         const params=i.types.map((type,n)=>{
@@ -200,12 +222,16 @@ class FunctionEmitter {
   private terminator(t:IrTerminator){
     if(t.op==='jump'){this.line('br label %'+t.target);return;}
     if(t.op==='return'){
+      this.call('aug_lock_restore','void',[{type:'i64',value:'%lock_base'}]);
+      this.call('aug_scope_join_to','void',[{type:'i64',value:'%scope_base'}]);
       for(const slot of this.fn.owned)this.call('aug_ir_drop','void',[{type:'ptr',value:this.ptr(slot)}]);
       if(this.fn.failedResult)this.call('aug_ir_failed_result','void',[{type:'ptr',value:this.ptr(0)}]);
+      this.call('aug_scope_restore','void',[{type:'i64',value:'%scope_base'}]);
       this.line(`store %AugValue ${this.load(0)}, ptr %out, align 8`);this.call('aug_frame_leave','void',[{type:'ptr',value:'%frame'}]);this.line('ret void');return;
     }
     let condition:string,yes:string,no:string;
     if(t.op==='error'){condition=this.call('aug_ir_has_error','zeroext i1',[]);yes=t.failed;no=t.success;}
+    else if(t.op==='cancel'){condition=this.call('aug_ir_cancelled','zeroext i1',[]);yes=t.then;no=t.otherwise;}
     else if(t.op==='error-type'){condition=this.call('aug_error_is','zeroext i1',[{type:'ptr',value:this.module.text(t.type)}]);yes=t.then;no=t.otherwise;}
     else if(t.op==='null'){condition=this.call('aug_ir_is_null','zeroext i1',[{type:'ptr',value:this.ptr(t.input)}]);yes=t.then;no=t.otherwise;}
     else{condition=this.call('aug_ir_truthy','zeroext i1',[{type:'ptr',value:this.ptr(t.condition)}]);yes=t.then;no=t.otherwise;}
@@ -219,7 +245,9 @@ class FunctionEmitter {
       ...Array.from({length:this.fn.slots},(_,i)=>`  %slot_${i} = getelementptr [${this.fn.slots} x %AugValue], ptr %roots, i64 0, i64 ${i}`),
       ...this.fn.parameters.flatMap((slot,i)=>[`  %parameter_ptr_${i} = getelementptr %AugValue, ptr %args, i64 ${i}`,`  %parameter_${i} = load %AugValue, ptr %parameter_ptr_${i}, align 8`,`  store %AugValue %parameter_${i}, ptr %slot_${slot}, align 8`]),
       ...(this.fn.receiver===undefined?[]:[`  %receiver = load %AugValue, ptr %self, align 8`,`  store %AugValue %receiver, ptr %slot_${this.fn.receiver}, align 8`]),
-      `  call void @aug_ir_frame_enter(ptr %frame, ptr %roots, i64 ${this.fn.slots})`,`  br label %entry_body`];
+      `  call void @aug_ir_frame_enter(ptr %frame, ptr %roots, i64 ${this.fn.slots})`,`  %scope_base = call i64 @aug_scope_depth()`,`  %lock_base = call i64 @aug_lock_depth()`,`  br label %entry_body`];
+    this.module.declare('aug_scope_depth','i64',[]);
+    this.module.declare('aug_lock_depth','i64',[]);
     this.module.declare('aug_ir_frame_enter','void',['ptr','ptr','i64']);return [...prologue,...this.lines,'}'].join('\n');
   }
 }

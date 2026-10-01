@@ -509,7 +509,9 @@ class BodyEmitter {
       thunk.line(`${thunk.slot(0)} = ${thunk.slot(result)};`);
       const name = this.generator.taskThunk(thunk, args.length), array = this.label('task_args'), slot = this.newSlot();
       this.line(`AugValue ${array}[] = {${args.map(arg => this.slot(arg)).join(', ') || 'aug_scalar_null()'}};`);
-      this.line(`${this.slot(slot)} = aug_task_start(${name}, ${receiver === undefined ? 'aug_scalar_null()' : this.slot(receiver)}, ${array}, ${args.length});`);
+      const captures=this.label('task_owned');
+      this.line(`const unsigned char ${captures}[] = {${args.map((_,i)=>this.generator.callPlan(call)?.ownerships?.[i]==='own'?'1':'0').join(', ')||'0'}};`);
+      this.line(`${this.slot(slot)} = aug_task_start_owned(${name}, ${receiver === undefined ? 'aug_scalar_null()' : this.slot(receiver)}, ${array}, ${args.length}, ${captures});`);
       this.clearMovedArgs(call, (this.generator.callPlan(call)?.ownerships ?? []).map(ownership => ({ownership:ownership ?? 'managed'})));
       this.line(`if (aug_has_error) goto ${this.errorTarget};`); return slot;
     }
@@ -991,6 +993,7 @@ class BodyEmitter {
 
   private emitTryAlways(stmt: Extract<Stmt, {kind: 'try'}>): void {
     const outerError = this.errorTarget, outerReturn = this.returnTarget;
+    const ownedBefore = new Set(this.owned);
     const caught = this.label('aug_final_catch'), failed = this.label('aug_final_error'), returned = this.label('aug_final_return');
     const cleanup = this.label('aug_always'), done = this.label('aug_always_done'), after = this.label('aug_always_after');
     const reason = this.label('aug_exit_reason'), depth = this.label('aug_final_depth'), cancellation = this.label('aug_final_cancel');
@@ -1000,8 +1003,10 @@ class BodyEmitter {
     this.line(`size_t ${locks} = aug_lock_depth();`);
     this.errorTarget = caught; this.returnTarget = returned; this.emitScoped(stmt.body);
     this.line(`goto ${cleanup};`); this.line(`${caught}:;`);
-    this.line(`aug_scope_restore(${depth}); if (aug_cancelled) goto ${failed};`);
     this.line(`aug_lock_restore(${locks});`);
+    this.line(`aug_scope_restore(${depth}); if (aug_cancelled) goto ${failed};`);
+    for (const slot of this.owned) if (!ownedBefore.has(slot))
+      this.line(`aug_drop(${this.slot(slot)}); ${this.slot(slot)} = aug_scalar_null();`);
     this.errorTarget = failed;
     for (const clause of stmt.catches) {
       this.line(`if (aug_error_is(${cString(clause.type.name)})) {`);
@@ -1011,8 +1016,11 @@ class BodyEmitter {
     }
     this.line(`goto ${failed};`); this.line(`${returned}: ${reason} = 1; goto ${cleanup};`);
     this.line(`${failed}: ${reason} = 2;`); this.line(`${cleanup}:;`);
-    this.line(`aug_scope_restore(${depth}); ${this.slot(pending)} = aug_has_error ? aug_take_error() : aug_scalar_null();`);
     this.line(`aug_lock_restore(${locks});`);
+    this.line(`aug_scope_restore(${depth});`);
+    for (const slot of this.owned) if (!ownedBefore.has(slot))
+      this.line(`aug_drop(${this.slot(slot)}); ${this.slot(slot)} = aug_scalar_null();`);
+    this.line(`${this.slot(pending)} = aug_has_error ? aug_take_error() : aug_scalar_null();`);
     this.line(`${cancellation} = aug_cancelled; aug_cancelled = false;`);
     this.errorTarget = done; this.returnTarget = done; this.emitScoped(stmt.always!);
     this.line(`${done}:; aug_cancelled = ${cancellation};`);

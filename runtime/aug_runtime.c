@@ -755,6 +755,9 @@ void aug_drop(AugValue value) {
   if (value.tag != AUG_OBJECT && value.tag != AUG_STRING) return;
   AugObject *object = value.as.object;
   if (!object || object->dropped) return;
+  AugValue roots[2] = {value, aug_error}; AugFrame frame; aug_frame_enter(&frame, roots, 2);
+  bool failed = aug_has_error, cancelled = aug_cancelled;
+  aug_error = aug_null(); aug_has_error = false; aug_cancelled = false;
   if (object->kind == AUG_OBJECT) {
     if (getenv("AUG_TRACE_DROPS")) fprintf(stderr, "drop: %s\n", object->type_name);
     for (size_t i = 0; i < object->method_count; i++)
@@ -772,6 +775,8 @@ void aug_drop(AugValue value) {
   }
   for (size_t i = 0; i < object->field_count; i++)
     if (object->owned_fields && object->owned_fields[i]) aug_drop(object->fields[i]);
+  if (failed) aug_throw(roots[1]); aug_cancelled = aug_cancelled || cancelled;
+  aug_frame_leave(&frame);
 }
 
 void aug_throw(AugValue value) { aug_error = value; aug_has_error = true; }
