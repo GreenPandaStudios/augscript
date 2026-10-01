@@ -9,13 +9,15 @@ import type {CheckedProject} from './checker.ts';
 import {compilerVersion} from './package-manager.ts';
 import {nativePath,nativeHostTarget} from './native-contracts.ts';
 import type {LLVMToolchain} from './compiler-packs.ts';
+import {runtimeIdentifierSha256} from './runtime-abi.ts';
 
 export interface RuntimeComponent {libraries:string[];runtimeFiles:string[];metadata:string[]}
-export interface RuntimePack {format:1;version:string;target:string;minimumOS:string;layout:RuntimeLayout;files:Record<string,string>;libraries:string[];components:Record<string,RuntimeComponent>;sourceSha256:string}
+export interface RuntimePack {format:1;version:string;target:string;minimumOS:string;layout:RuntimeLayout;identifierSha256:string;files:Record<string,string>;libraries:string[];components:Record<string,RuntimeComponent>;sourceSha256:string}
 export interface NativeLinkInput {directory:string;libraries:string[];runtimeFiles:string[];artifactSha256?:string;metadata?:string[]}
 export function readRuntimePack(directory:string):RuntimePack {
   if(!existsSync(join(directory,'runtime.json')))throw new Error('LLVM_RUNTIME: A matching prebuilt August runtime is not available. Contributor builds can run node scripts/build-runtime-pack.mjs.');
   const pack=JSON.parse(readFileSync(join(directory,'runtime.json'),'utf8')) as RuntimePack;
+  if(pack.identifierSha256!==runtimeIdentifierSha256)throw new Error('LLVM_RUNTIME: Runtime operation identifiers differ from this compiler');
   if(!pack||pack.format!==1||pack.version!==compilerVersion()||pack.target!==nativeHostTarget().triple||pack.minimumOS!=='14.0'||!pack.files||typeof pack.files!=='object'||Array.isArray(pack.files)||!Array.isArray(pack.libraries)||!pack.libraries.length||!/^([0-9a-f]{64})$/.test(pack.sourceSha256)||JSON.stringify(pack.layout)!==JSON.stringify(runtimeLayout))throw new Error('LLVM_RUNTIME: Runtime pack does not match this compiler, layout and target');
   const root=realpathSync(directory);
   for(const [path,expected] of Object.entries(pack.files)){

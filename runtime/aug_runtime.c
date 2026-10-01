@@ -780,6 +780,11 @@ void aug_drop(AugValue value) {
 }
 
 void aug_throw(AugValue value) { aug_error = value; aug_has_error = true; }
+void aug_constructor_result_cleanup(AugValue value, AugValue result) {
+  if (value.tag != AUG_OBJECT || !value.as.object || value.as.object->dropped) return;
+  if (aug_has_error || aug_cancelled || result.tag != AUG_OBJECT || result.as.object != value.as.object)
+    aug_drop(value);
+}
 void aug_drop_partial(AugValue value) {
   if(value.tag!=AUG_OBJECT||!value.as.object||value.as.object->dropped)return;
   AugValue roots[2]={value,aug_error};AugFrame frame;aug_frame_enter(&frame,roots,2);

@@ -7,6 +7,37 @@ import {spawn,spawnSync} from 'node:child_process';
 import {createInterface} from 'node:readline';
 import {runInNewContext} from 'node:vm';
 const cli=resolve('bin/aug.mjs');
+for (const backend of ['c','llvm']) test(`HTTP action captures evaluate labeled expressions once in written order (${backend})`, {skip:backend==='llvm'&&!process.env.AUG_LLVM_HOME},()=>{
+  const root=mkdtempSync(join(tmpdir(),'aug-action-order-'));
+  try {
+    writeFileSync(join(root,'main.aug'),`import view and remove from actions
+import Console and SystemConsole from august.io
+implement Console with SystemConsole
+serve remove on port 0
+`);
+    writeFileSync(join(root,'actions.aug'),`import Console and SystemConsole from august.io
+first(resolve Console console) returns int:
+    console.write(value="first")
+    return 1
+second(resolve Console console) returns int:
+    console.write(value="second")
+    return 2
+endpoint DELETE "/{a}/{b}" as remove(int a from path, int b from path) returns int:
+    return a + b
+view(resolve Console console) returns Html:
+    return <button onClick={handle remove(b=second(), a=first())}>Delete</button>
+test view:
+    when capture_order:
+        implement Console with SystemConsole
+        it evaluates_once_in_written_order:
+            view()
+            assert(condition=true)
+`);
+    const result=spawnSync(process.execPath,[cli,'test',root,'--backend',backend],{encoding:'utf8',timeout:30000});
+    assert.equal(result.status,0,result.stderr);assert.match(result.stdout,/second\nfirst\n/);
+    assert.equal(result.stdout.match(/^second$/gm)?.length,1);assert.equal(result.stdout.match(/^first$/gm)?.length,1);
+  } finally {rmSync(root,{recursive:true,force:true});}
+});
 test('typed server actions describe HTTP calls without running their handlers', {timeout:30000}, async()=>{
   const root=mkdtempSync(join(tmpdir(),'aug-actions-'));let server;
   try {

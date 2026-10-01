@@ -63,6 +63,13 @@ callback. LLVM verification runs before native object generation in development
 and optimized builds. The existing web and interceptor fixtures run against the
 LLVM path during migration.
 
+Constructor layers track fresh results from `next()`. If interception fails after
+construction, cleanup releases the completed object's owned fields before the
+failure reaches its caller. Action captures evaluate labeled inputs once in their
+written order. Runtime-pack builds also check operation, schema and policy
+identifiers against the compiled headers; installation rejects a different
+identifier contract.
+
 Crypto and HTTP are separate prebuilt runtime components. Programs link and
 deploy the components named by their checked IR. Their GnuTLS, Nettle and GMP
 libraries remain replaceable dynamic files, with source archives, August adapter

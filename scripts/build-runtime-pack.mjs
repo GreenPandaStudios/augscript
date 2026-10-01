@@ -5,6 +5,7 @@ import {resolve,join} from 'node:path';
 import {spawnSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
 import {buildRuntimeComponents} from './runtime-components.mjs';
+import {runtimeIdentifiers,runtimeIdentifierSha256} from '../src/runtime-abi.ts';
 const root=resolve(import.meta.dirname,'..'),output=resolve(process.argv[2]??join(root,'.aug-native/llvm/runtime'));
 if(process.platform!=='darwin'||process.arch!=='arm64')throw new Error('Initial runtime pack builder requires macOS ARM64');
 const cc=process.env.AUG_CC??'/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang';
@@ -28,7 +29,7 @@ run(['-dynamiclib','-Wl,-install_name,@rpath/libaug_runtime.1.dylib',...sources.
 const probe=join(output,'layout.c'),binary=join(output,'layout');
 const measurements={valueSize:'sizeof(AugValue)',valueAlignment:'_Alignof(AugValue)',valuePayloadOffset:'offsetof(AugValue,as)',frameSize:'sizeof(AugFrame)',methodEntrySize:'sizeof(AugMethodEntry)',pointerSize:'sizeof(void*)',schemaSize:'sizeof(AugSchema)',schemaPointerMakerOffset:'offsetof(AugSchema,pointer_make)',routeSize:'sizeof(AugRoute)',routePointerHandlerOffset:'offsetof(AugRoute,pointer_handler)',policySize:'sizeof(AugHttpPolicy)',httpErrorSize:'sizeof(AugIrHttpError)'};
 const probeFormat='{"abi":"compiler-private-runtime-v1",'+Object.keys(measurements).map(key=>'"'+key+'":%zu').join(',')+'}\n';
-writeFileSync(probe,'#include "aug_http_ir.h"\n#include <stdio.h>\nint main(void){printf('+JSON.stringify(probeFormat)+','+Object.values(measurements).join(',')+');}\n');
+writeFileSync(probe,'#include "aug_http_ir.h"\n#include <stdio.h>\n'+Object.entries(runtimeIdentifiers).map(([name,value])=>`_Static_assert(${name}==${value},"Runtime identifier ${name}");`).join('\n')+'\nint main(void){printf('+JSON.stringify(probeFormat)+','+Object.values(measurements).join(',')+');}\n');
 run([probe,'-o',binary]);const measurement=spawnSync(binary,[],{encoding:'utf8'});if(measurement.status!==0)throw new Error('Runtime layout probe failed');
 const layout=JSON.parse(measurement.stdout);
 copyFileSync(join(root,'native/platform/macos-arm64/libSystem.tbd'),join(output,'platform/libSystem.tbd'));
@@ -44,5 +45,5 @@ for(const file of Object.keys(inputPins))sourceDigest.update('minicoro/'+file+'\
 for(const file of Object.keys(jsonPins))sourceDigest.update('yyjson/'+file+'\0').update(readFileSync(join(yyjson,file)));
 for(const file of ['scripts/runtime-components.mjs','scripts/build-runtime-pack.mjs','src/runtime-adapters.ts'])sourceDigest.update(file+'\0').update(readFileSync(join(root,file)));
 for(const file of extra.files.filter(file=>file.startsWith('sources/')||file.startsWith('licenses/')).sort())sourceDigest.update(file+'\0').update(readFileSync(join(output,file)));
-writeFileSync(join(output,'runtime.json'),JSON.stringify({format:1,version:JSON.parse(readFileSync(join(root,'package.json'))).version,target:'aarch64-apple-darwin',minimumOS:'14.0',layout,files:Object.fromEntries(files.map(f=>[f,sha(join(output,f))])),libraries:['lib/libaug_runtime.1.dylib'],components:extra.components,sourceSha256:sourceDigest.digest('hex'),compiler:spawnSync(cc,['--version'],{encoding:'utf8'}).stdout.trim()},null,2)+'\n');
+writeFileSync(join(output,'runtime.json'),JSON.stringify({format:1,version:JSON.parse(readFileSync(join(root,'package.json'))).version,target:'aarch64-apple-darwin',minimumOS:'14.0',layout,identifierSha256:runtimeIdentifierSha256,files:Object.fromEntries(files.map(f=>[f,sha(join(output,f))])),libraries:['lib/libaug_runtime.1.dylib'],components:extra.components,sourceSha256:sourceDigest.digest('hex'),compiler:spawnSync(cc,['--version'],{encoding:'utf8'}).stdout.trim()},null,2)+'\n');
 console.log('Built maintainer runtime pack: '+output);

@@ -1,5 +1,6 @@
 import type {AugustIR,IrFunction,IrInstruction,IrTerminator,IrHttpPolicy} from './ir.ts';
 import type {NativeView} from './native-contracts.ts';
+import {runtimeOperations as operations,httpOperations,schemaKinds} from './runtime-abi.ts';
 
 export interface RuntimeLayout {
   abi:'compiler-private-runtime-v1';valueSize:16;valueAlignment:8;valuePayloadOffset:8;
@@ -7,9 +8,7 @@ export interface RuntimeLayout {
   routeSize:56;routePointerHandlerOffset:48;policySize:56;httpErrorSize:16;
 }
 export const runtimeLayout:RuntimeLayout={abi:'compiler-private-runtime-v1',valueSize:16,valueAlignment:8,valuePayloadOffset:8,frameSize:24,methodEntrySize:24,pointerSize:8,schemaSize:48,schemaPointerMakerOffset:40,routeSize:56,routePointerHandlerOffset:48,policySize:56,httpErrorSize:16};
-const operations=['PRINT','BINARY','UNARY','FIELD','SET_FIELD','LIST','TUPLE','SET','MAP','MAP_SET','LIST_LENGTH','LIST_GET','LIST_AT','LIST_APPEND','TUPLE_LENGTH','TUPLE_GET','SET_LENGTH','SET_ADD','SET_CONTAINS','MAP_LENGTH','MAP_GET','MAP_TAKE','MAP_CONTAINS','STRING_LENGTH','STRING_BYTES','STRING_SPLIT','STRING_STARTS_WITH','STRING_IS_TOKEN','BYTES_LENGTH','BYTES_TEXT','BYTES_BASE64URL','BASE64URL_DECODE','C_INT','READ_FILE','WRITE_FILE','ARGUMENTS','FREEZE','ITER','MAP_ITER','IS_TYPE','SHARED','SHARED_LOCK','JSON_WRAP','JSON_PARSE','JSON_STRINGIFY','JSON_GET','JSON_REQUIRE','JSON_STRING','JSON_INTEGER','JSON_BOOLEAN','JSON_ITEMS','TIME_NOW'];
 const symbol=(name:string)=>'@'+name;
-const httpOperations=['HTTP_HEADERS','HTTP_HEADERS_WITH','HTTP_HEADERS_GET','HTTP_HEADERS_ALL','HTTP_RESPONSE','HTTP_RESPONSE_STATUS','HTTP_FINISH','HTTP_EVENT','HTTP_YIELD','HTTP_CLIENT_REQUEST','HTTP_ACTION'];
 
 /** Emit LLVM directly from checked August execution IR. No application C is generated. */
 export function generateLLVM(ir:AugustIR,options:{triple?:string;layout?:RuntimeLayout}={}):string {
@@ -41,7 +40,7 @@ class ModuleEmitter {
   policy(policy:IrHttpPolicy){const name='@aug_policy_'+this.sequence++;this.globals.push(`${name} = private constant %AugHttpPolicy ${this.policyValue(policy)}, align 8`);return name;}
   generate(){
     const bodies=this.ir.functions.map(fn=>new FunctionEmitter(this,fn).generate());
-    const kinds=['INT','C_INT','FLOAT','BOOL','STRING','LIST','MAP','SET','TUPLE','RECORD','JSON'];
+    const kinds:readonly string[]=schemaKinds;
     for(const schema of this.ir.schemas){
       const kind=kinds.indexOf(schema.kind);if(kind<0)throw new Error('Unknown IR schema kind '+schema.kind);
       const fields='@'+schema.name+'_fields',names='@'+schema.name+'_names';
@@ -117,7 +116,7 @@ class FunctionEmitter {
       case 'copy':this.store(i.out,this.load(i.input));return;
       case 'clear':this.clear(i.slot);return;
       case 'runtime':{
-        const http=i.operation.startsWith('HTTP_'),op=(http?httpOperations:operations).indexOf(i.operation)+1;if(!op)throw new Error('Unknown IR runtime operation '+i.operation);
+        const http=i.operation.startsWith('HTTP_'),catalog:readonly string[]=http?httpOperations:operations,op=catalog.indexOf(i.operation)+1;if(!op)throw new Error('Unknown IR runtime operation '+i.operation);
         this.call(http?'aug_ir_http_operation':'aug_ir_operation','void',[{type:'ptr',value:this.ptr(i.out)},{type:'i32',value:String(op)},{type:'ptr',value:this.args(i.args)},{type:'i32',value:String(i.args.length)},{type:'ptr',value:i.text===undefined?'null':this.module.text(i.text)},{type:'i64',value:String(i.number??0)}]);return;
       }
       case 'decode':this.call(i.format==='form'?'aug_ir_http_form':'aug_ir_json_decode','void',[{type:'ptr',value:this.ptr(i.out)},{type:'ptr',value:this.ptr(i.input)},{type:'ptr',value:'@'+i.schema}]);return;
@@ -265,6 +264,7 @@ class FunctionEmitter {
       this.call('aug_lock_restore','void',[{type:'i64',value:'%lock_base'}]);
       this.call('aug_scope_join_to','void',[{type:'i64',value:'%scope_base'}]);
       for(const slot of this.fn.owned)this.call('aug_ir_drop','void',[{type:'ptr',value:this.ptr(slot)}]);
+      for(const slot of this.fn.constructorResults)this.call('aug_ir_constructor_result','void',[{type:'ptr',value:this.ptr(slot)},{type:'ptr',value:this.ptr(0)}]);
       if(this.fn.failedResult)this.call('aug_ir_failed_result','void',[{type:'ptr',value:this.ptr(0)}]);
       this.call('aug_scope_restore','void',[{type:'i64',value:'%scope_base'}]);
       this.line(`store %AugValue ${this.load(0)}, ptr %out, align 8`);this.call('aug_frame_leave','void',[{type:'ptr',value:'%frame'}]);this.line('ret void');return;

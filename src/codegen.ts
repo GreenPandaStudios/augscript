@@ -378,6 +378,8 @@ class BodyEmitter {
   private errorTarget = 'aug_cleanup';
   private returnTarget = 'aug_cleanup';
   private continuation?: InterceptorInvocation;
+  private constructionNext = false;
+  private readonly constructorResults = new Set<number>();
   constructor(generator: CGenerator, file: string, def?: Definition, owner?: ClassDecl | InterceptorDecl) {
     this.generator = generator;
     this.file = file;
@@ -396,6 +398,7 @@ class BodyEmitter {
   }
 
   initializeInterceptor(layer: InterceptorLayer, params: Param[], name: string, method: boolean): void {
+    this.constructionNext = layer.constructorResultFresh === true;
     const receiver = method ? this.newSlot() : undefined;
     if (receiver !== undefined) this.line(`${this.slot(receiver)} = self;`);
     const original = params.map((param, index) => {
@@ -447,6 +450,7 @@ class BodyEmitter {
     const slot = this.newSlot();
     this.line(`${this.slot(slot)} = ${next.target}(${next.receiver === undefined ? '' :
       `${this.slot(next.receiver)}, `}${array}, ${args.length});`);
+    if (this.constructionNext) this.constructorResults.add(slot);
     this.line(`if (aug_has_error) goto ${this.errorTarget};`);
     return slot;
   }
@@ -479,7 +483,8 @@ class BodyEmitter {
     if (expr.kind === 'handle' && expr.call.kind === 'call') {
       const plan = this.generator.actionPlan(expr)!, endpoint = (plan.endpoint.node as MethodDecl).endpoint!;
       const metadata = {method:endpoint.method,path:endpoint.path,parameters:plan.parameters.map(({param,type,form}) => ({name:param.source?.name ?? param.name,source:param.source?.kind,form,schema:this.generator.actionSchema(type)}))};
-      const args = plan.parameters.map(parameter => parameter.form || parameter.source === undefined ? undefined : this.emitExpr((expr.call as Extract<Expr,{kind:'call'}>).args[parameter.source]));
+      const values = expr.call.args.map(argument => argument.kind === 'formInput' ? undefined : this.emitExpr(argument));
+      const args = plan.parameters.map(parameter => parameter.form || parameter.source === undefined ? undefined : values[parameter.source]);
       const array = this.label('action_values'), slot = this.newSlot();
       this.line(`AugValue ${array}[] = {${args.map(arg => arg === undefined ? 'aug_null()' : this.slot(arg)).join(', ') || 'aug_scalar_null()'}};`);
       this.line(`${this.slot(slot)} = aug_http_action(${cString(JSON.stringify(metadata))}, ${array}, ${args.length});`);
@@ -1074,6 +1079,7 @@ class BodyEmitter {
       `  aug_lock_restore(aug_lock_base);`,
       `  aug_scope_join_to(aug_scope_base);`,
       ownedCleanup,
+      ...[...this.constructorResults].map(slot => `  aug_constructor_result_cleanup(${this.slot(slot)}, ${this.slot(0)});`),
       `  aug_scope_restore(aug_scope_base);`,
       `  AugValue result = ${this.slot(0)};`,
       `  aug_frame_leave(&frame);`,

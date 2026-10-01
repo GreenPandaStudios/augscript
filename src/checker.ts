@@ -80,6 +80,8 @@ export interface ScopeFact {
 }
 
 export interface InterceptorLayer {
+  /** The constructor entry reached by next returns a fresh, unescaped object. */
+  constructorResultFresh?: boolean;
   annotation: InterceptorAnnotation;
   definition: Definition;
   around: MethodDecl;
@@ -284,6 +286,10 @@ class Checker {
     if(this.actions.size)for(const def of this.project.definitions.values())
       if(served.has(def.id)&&def.node.kind==='function'&&def.node.endpoint?.path==='/__aug/actions.js')
         this.report(def.node.span,'/__aug/actions.js is reserved for HTTP action transport','HTTP');
+    for (const [node, layers] of this.interceptorPlans) if (node.kind === 'class') {
+      for (const [index, layer] of layers.entries()) layer.constructorResultFresh =
+        layers.slice(index + 1).every(inner => this.layerReturnsFresh(inner));
+    }
     return { project: this.project, diagnostics: this.diagnostics, bindings: this.bindings,
       expressionTypes: this.expressionTypes, defaults: this.defaults, callPlans: this.callPlans,
       interceptorPlans: this.interceptorPlans, effectContracts: this.effectContracts, callableContracts: this.callableContracts, constructorContracts: this.constructorContracts,
@@ -1965,18 +1971,20 @@ class Checker {
     if (cached !== undefined) return cached;
     if (visiting.has(node)) return false;
     visiting.add(node);
-    const result = (this.interceptorPlans.get(node) ?? []).every(layer => {
-      const interceptor = layer.definition.node as InterceptorDecl;
-      return returnsFresh(layer.around.body ?? [], new Set(interceptor.fields.map(field => field.name)), expr => {
-        if (expr.kind !== 'call' || expr.callee.kind !== 'name') return false;
-        if (expr.callee.name === 'next') return true;
-        const def = this.project.scopes.get(layer.definition.file)?.get(expr.callee.name);
-        return def?.node.kind === 'class' && this.constructorIsFresh(def.node, visiting);
-      });
-    });
+    const result = (this.interceptorPlans.get(node) ?? []).every(layer => this.layerReturnsFresh(layer, visiting));
     visiting.delete(node);
     this.constructorFreshness.set(node, result);
     return result;
+  }
+
+  private layerReturnsFresh(layer: InterceptorLayer, visiting = new Set<ClassDecl>()): boolean {
+    const interceptor = layer.definition.node as InterceptorDecl;
+    return returnsFresh(layer.around.body ?? [], new Set(interceptor.fields.map(field => field.name)), expr => {
+      if (expr.kind !== 'call' || expr.callee.kind !== 'name') return false;
+      if (expr.callee.name === 'next') return true;
+      const def = this.project.scopes.get(layer.definition.file)?.get(expr.callee.name);
+      return def?.node.kind === 'class' && this.constructorIsFresh(def.node, visiting);
+    });
   }
 
   private checkAllowedError(type: Ty, span: Span, context: Context): void {

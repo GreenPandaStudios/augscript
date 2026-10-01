@@ -47,7 +47,7 @@ export type IrTerminator = {op:'jump';target:string}|{op:'branch';condition:numb
   {op:'cancel';then:string;otherwise:string}|
   {op:'null';input:number;then:string;otherwise:string}|{op:'return'};
 export interface IrBlock {name:string;instructions:IrInstruction[];terminator:IrTerminator}
-export interface IrFunction {name:string;span:Span;slots:number;parameters:number[];receiver?:number;owned:number[];failedResult?:boolean;blocks:IrBlock[]}
+export interface IrFunction {name:string;span:Span;slots:number;parameters:number[];receiver?:number;owned:number[];constructorResults:number[];failedResult?:boolean;blocks:IrBlock[]}
 export interface AugustIR {
   format:1;sourceRevision:string;functions:IrFunction[];main:string;bindings:{function:string;shared:boolean}[];
   scoped:boolean[];test:boolean;schemas:DataSchema[];components:string[];
@@ -175,6 +175,7 @@ class FunctionLowering {
   readonly generator:Lowering;readonly file:string;readonly span:Span;readonly owner?:Definition;
   readonly parameters:number[]=[];receiver?:number;readonly locals=new Map<string,number>();readonly owned=new Set<number>();
   private continuation?:InterceptorInvocation;
+  private constructionNext=false;private readonly constructorResults=new Set<number>();
   private slots=1;private sequence=0;private source:Span;private error='cleanup';private returning='cleanup';
   private blocks:{name:string;instructions:IrInstruction[];terminator?:IrTerminator}[]=[];
   private current:{name:string;instructions:IrInstruction[];terminator?:IrTerminator};
@@ -208,7 +209,8 @@ class FunctionLowering {
     if(expr.kind==='handle'){
       const plan=this.generator.checked.actions.get(expr)!,endpoint=(plan.endpoint.node as MethodDecl).endpoint!;
       const metadata={method:endpoint.method,path:endpoint.path,parameters:plan.parameters.map(({param,type,form})=>({name:param.source?.name??param.name,source:param.source?.kind,form,schema:actionSchema(this.generator.checked.project,type)}))};
-      const args=plan.parameters.map(parameter=>parameter.form||parameter.source===undefined?this.literal(null):this.expression((expr.call as Extract<Expr,{kind:'call'}>).args[parameter.source]));
+      const values=(expr.call as Extract<Expr,{kind:'call'}>).args.map(argument=>argument.kind==='formInput'?this.literal(null):this.expression(argument));
+      const args=plan.parameters.map(parameter=>parameter.form||parameter.source===undefined?this.literal(null):values[parameter.source]);
       return this.runtime('HTTP_ACTION',args,JSON.stringify(metadata));
     }
     if(expr.kind==='markupText')return this.literal(expr.text);
@@ -304,6 +306,7 @@ class FunctionLowering {
         if(replacement!==original&&this.owned.has(replacement))this.instruction({op:'clear',slot:replacement});
       }
       const out=this.call(next.target,argumentsList,next.receiver);
+      if(this.constructionNext)this.constructorResults.add(out);
       if(plan.returnOwnership==='own')this.owned.add(out);return out;
     }
     if(name==='assert'){this.instruction({op:'assert',input:args[0],expression:this.generator.checked.project.files.get(this.file)?.source.slice(expr.args[0].span.start,expr.args[0].span.end)??'assertion'});this.checkError();return this.literal(null);}
@@ -372,6 +375,7 @@ class FunctionLowering {
     });return transferred;
   }
   interceptor(layer:InterceptorLayer,params:Param[],next:string){
+    this.constructionNext=layer.constructorResultFresh===true;
     this.continuation=new InterceptorInvocation(layer,params,[...this.parameters],next,this.receiver);
     const dependencies=this.continuation.dependencies().map(slot=>slot??this.literal(null));
     const self=this.call(this.generator.name(layer.definition),dependencies);this.locals.set('self',self);
@@ -548,6 +552,6 @@ class FunctionLowering {
   finish(name:string):IrFunction {
     if(!this.current.terminator)this.terminate({op:'jump',target:'cleanup'});
     this.enter('cleanup');this.terminate({op:'return'});
-    return {name,span:this.span,slots:this.slots,parameters:this.parameters,receiver:this.receiver,owned:[...this.owned],blocks:this.blocks as IrBlock[]};
+    return {name,span:this.span,slots:this.slots,parameters:this.parameters,receiver:this.receiver,owned:[...this.owned],constructorResults:[...this.constructorResults],blocks:this.blocks as IrBlock[]};
   }
 }

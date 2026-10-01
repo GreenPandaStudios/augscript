@@ -158,6 +158,13 @@ _earlyReturn(own Tensor value) returns float:
     return sum(tensor=value)
 _consume(own Tensor value):
     pass
+interceptor _Reject<T>():
+    around() returns T unless TensorError:
+        T completed = next()
+        throw TensorError(code=98, message="interceptor cleanup")
+[_Reject]
+_Intercepted(own Tensor value) unless TensorError implements _Container:
+    pass
 _fail() unless FileError:
     throw FileError()
 verify():
@@ -186,6 +193,19 @@ test verify:
             unsafe:
                 assert(aug_probe_live_tensors_v1() == before)
                 assert(aug_probe_live_buffers_v1() == 0)
+        it releases_a_completed_constructor_after_interception_fails:
+            int before = 0
+            unsafe:
+                before = aug_probe_live_tensors_v1()
+            bool caught = false
+            try:
+                own Tensor value = tensor(values=[1.0])
+                _Intercepted(value)
+            catch TensorError error:
+                caught = error.code == 98
+            assert(caught)
+            unsafe:
+                assert(aug_probe_live_tensors_v1() == before)
         it releases_owned_inputs_when_cancelled_before_entry:
             int before = 0
             unsafe:
@@ -205,7 +225,7 @@ writeFileSync(join(cleanup,'main.aug'),'');
 aug('install',cleanup);
 for(const args of [[],['--offline','--frozen']]){
   const result=JSON.parse(aug('test',cleanup,'--json',...args));
-  assert.equal(result.failed,0);assert.equal(result.passed,3);
+  assert.equal(result.failed,0);assert.equal(result.passed,4);
 }
 console.log('pytorch: real counters prove failed-constructor and early-return cleanup');
 const taskProject=join(directory,'pytorch-tasks');mkdirSync(taskProject);

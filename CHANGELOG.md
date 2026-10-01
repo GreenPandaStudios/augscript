@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- HTTP action captures evaluate labeled arguments once in the order written, on both compiler backends.
+- Constructor interception releases a fresh completed result when an outer layer fails or returns a different result, including its transferred native resources.
+- Runtime pack builds verify every operation, schema and policy identifier against the compiled headers; consumers reject mismatched identifier contracts.
+
 - Add the macOS ARM64 LLVM preview, checked execution IR, pinned compiler/runtime packs, and SDK-free linking. Native ABI packages select LLVM automatically; other applications keep the C backend during migration. Unsupported LLVM constructs produce a source diagnostic without fallback.
 - Add format 2 native packages, opaque owned resources, descriptor-checked labels/types/errors/effects, bounded verified artifacts, target and compiler locks, and deployment notices. Consumers do not run package build scripts. Public GitHub source imports use verified HTTPS snapshots without requiring Git.
 - Exercise real CPU LibTorch, SQLite, zlib, and Rust BLAKE3 adapters. Fix owned-field transfer/replacement cleanup, preserve native error methods, reject ambiguous native symbols and lock metadata changes, and reject direct scalar contract violations. Public release and clean-machine qualification are in progress.
