@@ -115,6 +115,13 @@ jobs:
           path: .
       - name: Require the advertised minimum platform
         run: node --input-type=module -e 'import assert from "node:assert/strict"; import {release} from "node:os"; assert.equal(process.arch,"arm64"); assert.equal(Number(release().split(".")[0]),23);'
+      - name: Remove developer tools from the disposable consumer runner
+        run: |
+          test "$GITHUB_ACTIONS" = true
+          test "$RUNNER_ENVIRONMENT" = github-hosted
+          sudo rm -rf /Applications/Xcode*.app /Library/Developer/CommandLineTools
+          test -z "$(command -v clang || true)" || ! clang --version
+          ! xcrun --show-sdk-path
       - name: Qualify installed CLI and public library downloads with native tools unavailable
         run: node scripts/qualify-native-consumers.mjs --local-compiler
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7

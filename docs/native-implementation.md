@@ -80,6 +80,10 @@ target macOS 14 and reject binaries with a higher deployment requirement. The
 macOS 14 consumer gate passed for the expanded pack in
 [CI run 36938094736](https://github.com/GreenPandaStudios/augscript/actions/runs/36938094736),
 on commit `e72a8a2`. Later compiler candidates must pass that gate again.
+That run disabled compiler, SDK and Git paths. The next qualification also
+removes Xcode and Command Line Tools from the disposable GitHub-hosted consumer
+runner before installation, so an installed SDK cannot satisfy an accidental
+toolchain dependency. This removal is confined to that CI job.
 
 Execution IR now records checked source types, parameter labels, rooted cells and
 source locations. A structural verifier checks frame bounds, control-flow targets,
