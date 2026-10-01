@@ -7,6 +7,7 @@
 - Include `AGENTS.md` in application and library starters. Add `aug init NAME --template weather` with a typed forecast endpoint, same-file tests, OpenAPI, and an HTTP request file.
 - Fill labeled call arguments in completion, add public imports, supply declaration/test/HTTP templates, and offer name, label, missing-method, and package-install fixes. Show the same edits through VS Code and LSP.
 - Rewrite package onboarding, add weather and editor guides, and generate API signatures from checked contracts. Wrap long calls and collections in formatted examples; describe literal record data without repeating each field name. Remove repetitive prose and update dependency notices. The CLI and extension use tar 7.5.22 for bounded registry extraction.
+- Prepare JSON and task sources needed by crypto packages before building their native libraries. Verify first use with empty source/native caches; report missing dependency names and preserve completed setup work for retries.
 
 
 - Infer omitted result, mutation, capability, and checked-error contracts for executable bodies, including public functions, interface defaults, forwarding interceptors, HTTP policy dependencies, and record validation. Keep explicit clauses as checked assertions and preserve ownership, purity, and interface limits.
