@@ -53,6 +53,7 @@ jobs:
     env:
       AUG_LLVM_HOME: ${{ github.workspace }}/.aug-build/llvm-tools
       AUG_GITHUB_TOKEN: ${{ github.token }}
+      MACOSX_DEPLOYMENT_TARGET: '14.0'
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
@@ -75,6 +76,8 @@ jobs:
       - run: npm test
       - name: Existing task conformance through LLVM
         run: AUG_TEST_BACKEND=llvm node --test tests/concurrency.test.mjs
+      - name: Existing native libraries, web and interceptors through LLVM
+        run: AUG_TEST_BACKEND=llvm node --test --test-concurrency=2 tests/llvm-backend.test.mjs tests/interceptors.test.mjs tests/web-foundation.test.mjs tests/web-actions.test.mjs tests/web-http.test.mjs tests/web-testing.test.mjs tests/web-policies.test.mjs tests/web-streams.test.mjs tests/web-tls.test.mjs
       - run: npm run test:setup-cold
       - run: npm run test:sanitizers
       - run: node scripts/build-llvm-pack.mjs

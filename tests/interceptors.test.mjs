@@ -18,6 +18,7 @@ function withProject(files, callback) {
   } finally { rmSync(root, { recursive: true, force: true }); }
 }
 function command(root, name, file, source, offset, traceDrops = false) {
+  if(process.env.AUG_TEST_BACKEND==='llvm')writeFileSync(join(root,'main.yaml'),'backend: llvm\n');
   const args = [cli, name, root];
   if (name === 'check') args.push('--json');
   if (file) args.push('--file', join(root, file), '--stdin-file', join(root, file));
@@ -32,7 +33,7 @@ function runs(files, output, drops) {
     const result = command(root, 'run', undefined, undefined, undefined, drops !== undefined);
     assert.equal(result.status, 0, result.stderr);
     assert.equal(result.stdout, output);
-    if (drops !== undefined) assert.equal(result.stderr.match(/drop: Resource\n/g)?.length ?? 0, drops);
+    if (drops !== undefined) assert.equal(result.stderr.match(/drop: (?:[^\n]*[:/])?Resource\n/g)?.length ?? 0, drops);
   });
 }
 function issues(files) {

@@ -229,10 +229,52 @@ catch TensorError error:
 assert.equal(aug('run',taskProject),'3\n5\n');
 assert.equal(aug('run',taskProject,'--offline','--frozen'),'3\n5\n');
 console.log('pytorch: LLVM tasks call the real library and preserve grouped wait order');
+const standard=join(directory,'standard-runtime');mkdirSync(standard);
+writeFileSync(join(standard,'main.yaml'),'backend: llvm\n');
+writeFileSync(join(standard,'main.aug'),`import Crypto and GnuTlsCrypto from "https://github.com/GreenPandaStudios/augscript/src/stdlib/crypto#v0.20.1"
+import Clock and SystemClock from "https://github.com/GreenPandaStudios/augscript/src/stdlib/time#v0.20.1"
+import parse from "https://github.com/GreenPandaStudios/augscript/src/stdlib/json#v0.20.1"
+implement Crypto with GnuTlsCrypto
+implement Clock with SystemClock
+resolve Crypto to crypto
+resolve Clock to clock
+try:
+    print(value=crypto.sha256(input="abc".bytes()).base64url())
+    print(value=clock.now() > 1700000000)
+    print(value=parse(input="42").integer())
+catch CryptoError error:
+    print(value="crypto failed")
+catch TimeError error:
+    print(value="clock failed")
+catch JsonError error:
+    print(value="json failed")
+`);
+writeFileSync(join(standard,'endpoints.aug'),`record Greeting(string name)
+endpoint POST "/form" as submit(Greeting input from form) returns Greeting:
+    return input
+test endpoint submit client:
+    when form_binding:
+        it calls_llvm_factory:
+            response = client.request(method="POST", path="/form", headers=Headers().with(name="content-type", value="application/x-www-form-urlencoded"), body="name=Ada".bytes())
+            assert(condition=response.status == 200)
+            assert(condition=response.body.text() == "{\\"name\\":\\"Ada\\"}")
+`);
+const standardOutput='ungWv48Bz-pBQUDeXa4iI7ADYaOWF3qctBD_YfIAFa0\ntrue\n42\n';
+assert.equal(aug('run',standard),standardOutput);
+assert.equal(aug('run',standard,'--offline','--frozen'),standardOutput);
+const standardCases=JSON.parse(aug('test',standard,'--json','--offline','--frozen'));
+assert.equal(standardCases.failed,0);assert.equal(standardCases.passed,1);
+const relocatedStandard=join(directory,'relocated-standard');mkdirSync(relocatedStandard);
+cpSync(join(standard,'.aug-build/standard-runtime'),join(relocatedStandard,'program'));
+for(const path of ['lib','share'])cpSync(join(standard,'.aug-build',path),join(relocatedStandard,path),{recursive:true});
+assert.equal(run(join(relocatedStandard,'program'),[],{cwd:relocatedStandard,env}),standardOutput);
+const notices=join(relocatedStandard,'share/august-native');
+assert.ok(existsSync(notices),'Runtime components must retain redistribution metadata.');
+console.log('JSON, clock, crypto and HTTP form callbacks pass without a native toolchain');
 const report={format:1,compiler:cliPackage.version,host:process.platform+'-'+process.arch,
   installation:'npm-archive-in-node_modules',nativeToolsOnPath:false,sourceCache:'fresh',artifactCache:'fresh',
   libraryTransport:'public-release-assets',compilerTransport:localCompiler?'local-release-asset':'public-release-asset',
   osRelease:osRelease(),minimumOSQualification:process.platform==='darwin'&&Number(osRelease().split('.')[0])===23,
-  realResourceCounters:{failedConstructor:true,earlyReturn:true,cancelledBeforeEntry:true,liveBuffers:0},nativeTasks:true,directory,outcomes,gallery};
+  realResourceCounters:{failedConstructor:true,earlyReturn:true,cancelledBeforeEntry:true,liveBuffers:0},nativeTasks:true,standardRuntime:{json:true,clock:true,crypto:true,httpForms:true,relocation:true},directory,outcomes,gallery};
 writeFileSync(join(root,'.aug-build/native-consumer-qualification.json'),JSON.stringify(report,null,2)+'\n');
 console.log('Consumer qualification report: '+join(root,'.aug-build/native-consumer-qualification.json'));

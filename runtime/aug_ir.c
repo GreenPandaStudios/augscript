@@ -51,9 +51,20 @@ void aug_ir_operation(AugValue *out,int op,AugValue *a,int count,const char *tex
     case AUG_IR_IS_TYPE: *out=aug_bool(a[0].tag==AUG_OBJECT&&a[0].as.object&&!strcmp(a[0].as.object->type_name,text)); break;
     case AUG_IR_SHARED: *out=aug_shared_new(a[0]); break;
     case AUG_IR_SHARED_LOCK: *out=aug_shared_lock(a[0]); break;
+    case AUG_IR_JSON_WRAP: *out=aug_json_wrap(a[0]); break;
+    case AUG_IR_JSON_PARSE: *out=_aug_json_parse(a[0]); break;
+    case AUG_IR_JSON_STRINGIFY: *out=aug_json_stringify(a[0]); break;
+    case AUG_IR_JSON_GET: *out=aug_json_get(a[0],a[1]); break;
+    case AUG_IR_JSON_REQUIRE: *out=aug_json_require(a[0],a[1]); break;
+    case AUG_IR_JSON_STRING: *out=aug_json_string(a[0]); break;
+    case AUG_IR_JSON_INTEGER: *out=aug_int(aug_json_integer(a[0])); break;
+    case AUG_IR_JSON_BOOLEAN: *out=aug_bool(aug_json_boolean(a[0])); break;
+    case AUG_IR_JSON_ITEMS: *out=aug_json_items(a[0]); break;
+    case AUG_IR_TIME_NOW: *out=_aug_time_now(); break;
     default: *out=aug_error_named("NativeContractError"); break;
   }
 }
+void aug_ir_json_decode(AugValue *out,const AugValue *value,const AugSchema *schema){*out=aug_json_decode(*value,schema);}
 void aug_ir_string(AugValue *out,const void *text,uint64_t count){*out=aug_string_n(text,(size_t)count);}
 void aug_ir_assert(const AugValue *condition,const char *expression,const char *file,int line){aug_assert(*condition,expression,file,line);}
 void aug_ir_drop(AugValue *value){aug_drop(*value);*value=aug_null();}

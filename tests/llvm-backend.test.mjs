@@ -7,15 +7,18 @@ import {test} from 'node:test';
 import {loadProject} from '../src/project.ts';
 import {checkProject} from '../src/checker.ts';
 import {compileLLVM} from '../src/llvm-native.ts';
+import {prepareLibraryFixtures} from './library-fixtures.mjs';
 
-function runProgram(files, expected, {traceDrops=false,checkStderr}={}) {
+function runProgram(files, expected, {traceDrops=false,checkStderr,release=false,testMode=false}={}) {
   const root=realpathSync(mkdtempSync(join(tmpdir(),'aug-llvm-')));
   try {
     for(const [name,source] of Object.entries(files))writeFileSync(join(root,name),source);
-    const checked=checkProject(loadProject(root));
+    prepareLibraryFixtures(root);
+    const project=loadProject(root);project.testMode=testMode;
+    const checked=checkProject(project);
     assert.deepEqual(checked.diagnostics.filter(d=>d.severity!=='warning'),[]);
-    const compiled=compileLLVM(checked);
-    const run=spawnSync(compiled.output,[],{encoding:'utf8',timeout:10000,env:{...process.env,SDKROOT:'/nonexistent',DEVELOPER_DIR:'/nonexistent',...(traceDrops?{AUG_TRACE_DROPS:'1'}:{})}});
+    const compiled=compileLLVM(checked,{release});
+    const run=spawnSync(compiled.output,[],{encoding:'utf8',timeout:30000,env:{...process.env,SDKROOT:'/nonexistent',DEVELOPER_DIR:'/nonexistent',...(traceDrops?{AUG_TRACE_DROPS:'1'}:{})}});
     assert.equal(run.status,0,run.stderr||run.error?.message);
     assert.equal(run.stdout,expected);
     checkStderr?.(run.stderr);
@@ -25,6 +28,89 @@ function runProgram(files, expected, {traceDrops=false,checkStderr}={}) {
 }
 
 const enabled=process.platform==='darwin'&&process.arch==='arm64'&&!!process.env.AUG_LLVM_HOME;
+for(const release of [false,true])test('LLVM JSON decodes concrete generic records and checked collections '+(release?'optimized':'development'),{skip:!enabled},()=>runProgram({
+  'data.aug':`record Envelope<T implements Data>(T value)
+record Profile(string name, optional string nickname, List<int> scores)
+`,
+  'main.aug':`import parse from json
+import Envelope and Profile from data
+try:
+    profile = parse(input="{\\\"value\\\":{\\\"name\\\":\\\"August\\\",\\\"scores\\\":[3,5]}}").decode<Envelope<Profile>>()
+    assert(condition=profile.value.name == "August")
+    assert(condition=profile.value.nickname == null)
+    assert(condition=profile.value.scores.get(index=1) == 5)
+    numbers = parse(input="[2,2,3]").decode<Set<int>>()
+    assert(condition=numbers.length() == 2)
+    pair = parse(input="[7,\\\"seven\\\"]").decode<Tuple<int,string>>()
+    assert(condition=pair.get(index=0) == 7)
+    names = parse(input="{\\\"first\\\":\\\"Ada\\\"}").decode<Map<string,string>>()
+    assert(condition=names.get(key="first") == "Ada")
+    item = parse(input="{\\\"active\\\":true,\\\"count\\\":9}")
+    assert(condition=item.require(name="active").boolean())
+    assert(condition=item.require(name="count").integer() == 9)
+    assert(condition=item.get(name="missing") == null)
+    assert(condition=parse(input=Json(value=42).stringify()).integer() == 42)
+    assert(condition=parse(input="[1,2]").items().get(index=0).integer() == 1)
+    print(value="json works")
+catch JsonError error:
+    assert(condition=false)
+try:
+    parse(input="{\\\"name\\\":\\\"A\\\",\\\"scores\\\":[],\\\"extra\\\":1}").decode<Profile>()
+    assert(condition=false)
+catch JsonError error:
+    print(value="unknown field rejected")
+try:
+    parse(input="{\\\"name\\\":\\\"A\\\",\\\"scores\\\":[\\\"wrong\\\"]}").decode<Profile>()
+    assert(condition=false)
+catch JsonError error:
+    print(value="type rejected")
+try:
+    parse(input="{\\\"a\\\":1,\\\"a\\\":2}")
+    assert(condition=false)
+catch JsonError error:
+    print(value="duplicate rejected")
+`
+},'json works\nunknown field rejected\ntype rejected\nduplicate rejected\n',{release,testMode:true}));
+test('LLVM calls a clock through its resolved capability and pointer ABI',{skip:!enabled},()=>runProgram({
+  'main.aug':`import Clock and SystemClock from time
+implement Clock with SystemClock
+resolve Clock to clock
+try:
+    now = clock.now()
+    print(value=now > 1700000000)
+catch TimeError error:
+    print(value="clock failed")
+`
+},'true\n'));
+test('LLVM crypto executes real GnuTLS hashes, RSA signatures and checked failures',{skip:!enabled},()=>runProgram({
+  'main.aug':`import Crypto and GnuTlsCrypto from crypto
+implement Crypto with GnuTlsCrypto
+resolve Crypto to crypto
+try:
+    data = "abc".bytes()
+    print(value=crypto.sha256(input=data).base64url())
+    private = crypto.generateRsa()
+    public = crypto.publicRsa(key=private)
+    signature = crypto.signRsa(key=private, input=data)
+    print(value=crypto.verifyRsa(publicKey=public, input=data, signature))
+    print(value=crypto.verifyRsa(publicKey=public, input="different".bytes(), signature))
+    parts = crypto.exportRsa(publicKey=public)
+    copied = crypto.importRsa(modulus=parts.get(index=0), exponent=parts.get(index=1))
+    print(value=crypto.verifyRsa(publicKey=copied, input=data, signature))
+    print(value=crypto.random(size=16).length())
+    print(value=crypto.passwordHash(password=data, salt="0123456789abcdef".bytes(), iterations=100000).length())
+    decoded = crypto.decodeBase64url(input="YWJj")
+    print(value=crypto.equal(left=data, right=decoded))
+catch CryptoError error:
+    print(value="crypto failed")
+catch IndexError error:
+    print(value="bad tuple")
+try:
+    crypto.random(size=-1)
+catch CryptoError error:
+    print(value="invalid input rejected")
+`
+},'ungWv48Bz-pBQUDeXa4iI7ADYaOWF3qctBD_YfIAFa0\ntrue\nfalse\ntrue\n16\n32\ntrue\ninvalid input rejected\n',{release:true}));
 test('LLVM matches optional values, literals and resolved record identities',{skip:!enabled},()=>runProgram({
   'data.aug':`record Point(int x, int y)
 record Label(string value)

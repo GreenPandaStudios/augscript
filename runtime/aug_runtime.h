@@ -151,8 +151,10 @@ enum { AUG_SCHEMA_INT, AUG_SCHEMA_C_INT, AUG_SCHEMA_FLOAT, AUG_SCHEMA_BOOL, AUG_
 struct AugSchema {
   int kind; bool nullable; bool optional; size_t count;
   const AugSchema *const *fields; const char *const *names; AugFunction make;
+  AugPointerMethod pointer_make;
 };
 AugValue aug_json_decode(AugValue value, const AugSchema *schema);
+AugValue aug_schema_make(const AugSchema *schema, AugValue *fields, int count);
 AugValue aug_json_stringify(AugValue value);
 AugValue aug_json_get(AugValue value, AugValue name);
 AugValue aug_json_require(AugValue value, AugValue name);
@@ -162,13 +164,14 @@ bool aug_json_boolean(AugValue value);
 AugValue aug_json_items(AugValue value);
 AugValue aug_json_wrap(AugValue value);
 AugValue _aug_json_parse(AugValue input);
+AugValue _aug_time_now(void);
 typedef enum {
   AUG_HTTP_POLICY_REQUIRE_LOGIN=1, AUG_HTTP_POLICY_REQUIRE_PERMISSION,
   AUG_HTTP_POLICY_LOG_REQUEST, AUG_HTTP_POLICY_RATE_LIMIT, AUG_HTTP_POLICY_TIMEOUT,
   AUG_HTTP_POLICY_CORS, AUG_HTTP_POLICY_COMPRESS
 } AugHttpPolicyKind;
 typedef struct {AugHttpPolicyKind kind;const char *permission;int64_t amount,seconds;bool credentials;const char *origins,*headers;} AugHttpPolicy;
-typedef struct { const char *method; const char *path; AugFunction handler; int stream; int status; const AugHttpPolicy *policies;size_t policy_count; } AugRoute;
+typedef struct { const char *method; const char *path; AugFunction handler; int stream; int status; const AugHttpPolicy *policies;size_t policy_count; AugPointerMethod pointer_handler; } AugRoute;
 void aug_http_policy(const AugHttpPolicy *policy, AugValue request, AugValue dependency, AugValue second);
 AugValue aug_http_finish(AugValue response);
 AugValue aug_http_bind(AugValue request, const char *source, const char *name, const AugSchema *schema);

@@ -10,7 +10,8 @@ import {compilerVersion} from './package-manager.ts';
 import {nativePath,nativeHostTarget} from './native-contracts.ts';
 import type {LLVMToolchain} from './compiler-packs.ts';
 
-export interface RuntimePack {format:1;version:string;target:string;minimumOS:string;layout:RuntimeLayout;files:Record<string,string>;libraries:string[];sourceSha256:string}
+export interface RuntimeComponent {libraries:string[];runtimeFiles:string[];metadata:string[]}
+export interface RuntimePack {format:1;version:string;target:string;minimumOS:string;layout:RuntimeLayout;files:Record<string,string>;libraries:string[];components:Record<string,RuntimeComponent>;sourceSha256:string}
 export interface NativeLinkInput {directory:string;libraries:string[];runtimeFiles:string[];artifactSha256?:string;metadata?:string[]}
 export function readRuntimePack(directory:string):RuntimePack {
   if(!existsSync(join(directory,'runtime.json')))throw new Error('LLVM_RUNTIME: A matching prebuilt August runtime is not available. Contributor builds can run node scripts/build-runtime-pack.mjs.');
@@ -24,6 +25,11 @@ export function readRuntimePack(directory:string):RuntimePack {
     if(actual!==expected)throw new Error('NATIVE_INTEGRITY: Runtime pack file changed: '+path);
   }
   for(const path of [...pack.libraries,'platform/libSystem.tbd'])if(!pack.files[nativePath(path)])throw new Error('LLVM_RUNTIME: Runtime manifest does not identify required file '+path);
+  if(!pack.components||typeof pack.components!=='object'||Array.isArray(pack.components))throw new Error('LLVM_RUNTIME: Missing component contracts');
+  for(const [name,component] of Object.entries(pack.components)){
+    if(!/^[a-z][a-z0-9-]*$/.test(name)||!component||!Array.isArray(component.libraries)||!component.libraries.length||!Array.isArray(component.runtimeFiles)||!Array.isArray(component.metadata))throw new Error('LLVM_RUNTIME: Invalid component '+name);
+    for(const path of [...component.libraries,...component.runtimeFiles,...component.metadata])if(typeof path!=='string'||!pack.files[nativePath(path)])throw new Error('LLVM_RUNTIME: Missing component file '+name+' '+path);
+  }
   return pack;
 }
 
@@ -45,6 +51,7 @@ export function compileLLVM(checked:CheckedProject,options:{output?:string;relea
   writeFileSync(source,module);writeFileSync(join(directory,name+'.aug-ir.json'),JSON.stringify(ir,null,2)+'\n');
   const run=(tool:string,args:string[])=>{const result=spawnSync(tool,args,{encoding:'utf8',cwd:root,env:{...process.env,SDKROOT:'/nonexistent',DEVELOPER_DIR:'/nonexistent'}});if(result.status!==0)throw new Error(`LLVM compilation failed with ${basename(tool)}.\n${result.stderr||result.error?.message||result.stdout}\nLLVM IR: ${source}`);return result;};
   const optimized=join(directory,name+'.optimized.ll');
+  run(opt,['-passes=verify','-disable-output',source]);
   if(options.release)run(opt,['-passes=default<O2>','-S',source,'-o',optimized]);
   run(llc,['-filetype=obj',options.release?'-O=2':'-O=0','-relocation-model=pic',options.release?optimized:source,'-o',object]);
   const libraries:string[]=[],deployed=new Map<string,string>();
@@ -59,6 +66,12 @@ export function compileLLVM(checked:CheckedProject,options:{output?:string;relea
       mkdirSync(dirname(destination),{recursive:true});copyFileSync(join(origin,path),destination);}
   };
   for(const library of pack.libraries)deploy(runtime,library,true);
+  for(const name of ir.components){
+    const component=pack.components[name];if(!component)throw new Error('LLVM_RUNTIME: Compiler pack is missing the '+name+' runtime component. Install a matching complete compiler pack.');
+    for(const path of component.libraries)deploy(runtime,path,true);
+    for(const path of component.runtimeFiles)deploy(runtime,path,false);
+    metadata(runtime,'runtime-'+pack.sourceSha256,component.metadata);
+  }
   metadata(runtime,'runtime-'+pack.sourceSha256,[...Object.keys(pack.files).filter(path=>path.startsWith('licenses/')),'runtime.json']);
   for(const input of options.native??[]){for(const library of input.libraries)deploy(input.directory,library,true);for(const file of input.runtimeFiles)if(!input.libraries.includes(file))deploy(input.directory,file,false);
     if(input.metadata?.length){if(!/^[0-9a-f]{64}$/.test(input.artifactSha256??''))throw new Error('NATIVE_INTEGRITY: Deployment metadata requires an artifact identity');metadata(input.directory,input.artifactSha256!,input.metadata);}}

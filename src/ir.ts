@@ -1,17 +1,34 @@
 import {createHash} from 'node:crypto';
-import {relative} from 'node:path';
+import {relative,resolve} from 'node:path';
 import {isStatement,fieldsOf,initializationOf,type Expr,type MethodDecl,type ClassDecl,type Stmt,type Span,type Param} from './ast.ts';
 import {typeName} from './ast.ts';
-import type {CheckedProject,CallPlan} from './checker.ts';
+import type {CheckedProject,CallPlan,InterceptorLayer} from './checker.ts';
 import type {Definition} from './project.ts';
 import type {Ty} from './types.ts';
 import type {NativeFunction} from './native-contracts.ts';
-import {errorNames} from './builtins.ts';
+import {errorNames,builtinProperties} from './builtins.ts';
+import {DataSchemas,schemaType,type DataSchema} from './schemas.ts';
+import {runtimeAdapters,adapterSymbol} from './runtime-adapters.ts';
+import {generateOpenApi,apiExplorer,apiExplorerScript} from './openapi.ts';
+import {actionSchema,actionTransport} from './actions.ts';
+import {httpPolicyNames,type HttpPolicyPlan} from './http-policies.ts';
+import type {Config} from './config.ts';
+import {interceptorChain,InterceptorInvocation} from './interceptors.ts';
+
+export interface IrHttpPolicy {kind:number;permission:string;amount:number;seconds:number;credentials:boolean;origins:string;headers:string}
+export interface IrRoute {method:string;path:string;function:string;stream:number;status:number;policies:IrHttpPolicy[]}
 
 export type IrInstruction = {span:Span}&(
   {op:'literal';out:number;value:string|boolean|null;numeric?:{kind:'int'|'float';text:string}}|
   {op:'copy';out:number;input:number}|{op:'clear';slot:number}|
   {op:'runtime';out:number;operation:string;args:number[];text?:string;number?:number}|
+  {op:'decode';out:number;input:number;schema:string;format:'json'|'form'}|
+  {op:'adapter';out:number;name:string;args:number[]}|
+  {op:'html';out:number;tag:string;attributes:number[];children:number[]}|
+  {op:'http-bind';out:number;request:number;source:string;name:string;schema?:string}|
+  {op:'http-policy';policy:IrHttpPolicy;args:number[]}|
+  {op:'http-failure';out:number;errors:{type:string;status:number}[]}|
+  {op:'routes';out?:number;name:string;port?:number}|
   {op:'call';out:number;function:string;args:number[];receiver?:number}|
   {op:'method';out:number;receiver:number;name:string;args:number[]}|
   {op:'start';out:number;function:string;receiver?:number;args:number[];owned:boolean[]}|
@@ -33,7 +50,8 @@ export interface IrBlock {name:string;instructions:IrInstruction[];terminator:Ir
 export interface IrFunction {name:string;span:Span;slots:number;parameters:number[];receiver?:number;owned:number[];failedResult?:boolean;blocks:IrBlock[]}
 export interface AugustIR {
   format:1;sourceRevision:string;functions:IrFunction[];main:string;bindings:{function:string;shared:boolean}[];
-  scoped:boolean[];test:boolean;
+  scoped:boolean[];test:boolean;schemas:DataSchema[];components:string[];
+  routes:{name:string;items:IrRoute[]}[];web:Config['web'];
 }
 
 export class BackendUnsupported extends Error {
@@ -48,7 +66,10 @@ export function lowerToIR(checked:CheckedProject):AugustIR {
 }
 class Lowering {
   readonly checked:CheckedProject;readonly names=new Map<string,string>();readonly functions:IrFunction[]=[];
-  constructor(checked:CheckedProject){this.checked=checked;let i=0;for(const def of checked.project.definitions.values())this.names.set(def.id,'aug_fn_'+i++);}
+  readonly schemas:DataSchemas;
+  readonly components=new Set<string>();
+  readonly routes:{name:string;items:IrRoute[]}[]=[];
+  constructor(checked:CheckedProject){this.checked=checked;let i=0;for(const def of checked.project.definitions.values())this.names.set(def.id,'aug_fn_'+i++);this.schemas=new DataSchemas(checked.project,def=>this.name(def));}
   name(def:Definition){return this.names.get(def.id)!;}
   method(def:Definition,name:string){return this.name(def)+'_'+name;}
   binding(key:string){const i=this.checked.bindings.findIndex(b=>b.key===key);if(i<0)throw new Error('Missing checked binding '+key);return 'aug_resolve_'+i;}
@@ -60,26 +81,29 @@ class Lowering {
     for(const def of this.checked.project.definitions.values()){
       if(!active.has(def.file))continue;
       const node=def.node;
-      if(node.kind==='interceptor')throw new BackendUnsupported(node.span,'interceptors');
       if(node.kind==='function'){
-        if(node.endpoint)throw new BackendUnsupported(node.span,'HTTP endpoints');
-        if(node.annotations?.length)throw new BackendUnsupported(node.span,'interceptor layers');
         if(node.body)this.add(def,this.name(def),node,node.params,node.body);
+        else if(node.externC&&this.checked.interceptorPlans.get(node)?.length){
+          const body=new FunctionLowering(this,def.file,node.span);node.params.forEach((param,index)=>body.parameter(param,index));body.nativeBody(def);
+          this.functions.push(body.finish(interceptorChain(this.name(def),this.checked.interceptorPlans.get(node)??[]).body));this.layers(node,this.name(def),node.params,false);
+        }
+        if(node.endpoint){const body=new FunctionLowering(this,def.file,node.span);body.endpoint(def);this.functions.push(body.finish(this.name(def)+'_http'));this.components.add('http');}
       }
-      if(node.kind==='class'){
-        if(node.annotations?.length)throw new BackendUnsupported(node.span,'constructor interceptor layers');
-        const methods=[...node.methods];
+      if(node.kind==='class'||node.kind==='interceptor'){
+        const methods=node.methods.filter(method=>node.kind!=='interceptor'||method.name!=='around');
         for(const entry of this.checked.defaults.get(def.id)?.values()??[])if(!methods.some(m=>m.name===entry.method.name))methods.push(entry.method);
         for(const method of methods)if(method.body)this.add(def,this.method(def,method.name),method,method.params,method.body,true);
         const body=new FunctionLowering(this,def.file,node.span,def);
         node.fields.forEach((param,i)=>body.parameter(param,i));
-        body.instruction({op:'object',out:0,type:def.id,fields:fieldsOf(node).map(f=>f.name),owned:fieldsOf(node).map(f=>f.ownership==='own'),methods:methods.map(m=>({name:m.name,function:this.method(def,m.name)})),record:!!node.record});
+        body.instruction({op:'object',out:0,type:def.id,fields:fieldsOf(node).map(f=>f.name),owned:fieldsOf(node).map(f=>f.ownership==='own'),methods:methods.map(m=>({name:m.name,function:this.method(def,m.name)})),record:node.kind==='class'&&!!node.record});
         node.fields.forEach((param,i)=>{body.runtime('SET_FIELD',[0,body.parameters[i]],undefined,i);if(param.ownership==='own')body.instruction({op:'clear',slot:body.parameters[i]});});
         node.fields.forEach(param=>body.locals.delete(param.name));
         body.locals.set('self',0);
-        for(const stmt of initializationOf(node))body.statement(stmt);
-        if(node.record)body.runtime('FREEZE',[0]);
-        this.functions.push({...body.finish(this.name(def)),failedResult:true});
+        if(node.kind==='class')for(const stmt of initializationOf(node))body.statement(stmt);
+        if(node.kind==='class'&&node.record)body.runtime('FREEZE',[0]);
+        const chain=node.kind==='class'?interceptorChain(this.name(def),this.checked.interceptorPlans.get(node)??[]):{body:this.name(def)};
+        this.functions.push({...body.finish(chain.body),failedResult:true});
+        if(node.kind==='class')this.layers(node,this.name(def),node.fields,false);
       }
     }
     this.checked.bindings.forEach((binding,index)=>{
@@ -104,12 +128,45 @@ class Lowering {
       return [path.replaceAll('\\','/'),createHash('sha256').update(f.source).digest('hex')];
     }).sort((a,b)=>a[0]<b[0]?-1:a[0]>b[0]?1:0);
     const dependencies=scopes.map(s=>({name:s.name,version:s.version,digest:s.digest,native:s.native?.bindingsSha256})).sort((a,b)=>a.name.localeCompare(b.name,'en'));
-    return {format:1,sourceRevision:createHash('sha256').update(JSON.stringify({sources:hashes,configuration:project.config,dependencies})).digest('hex'),functions:this.functions,main:'aug_main_body',bindings:this.checked.bindings.map((b,i)=>({function:'aug_resolve_'+i,shared:b.lifetime==='shared'})),scoped:this.checked.bindings.map(b=>b.lifetime==='scoped'),test:!!this.checked.project.testMode};
+    const web=project.config.web,tls=Object.fromEntries(Object.entries(web.tls).map(([key,value])=>[key,value?resolve(project.root,value):''])) as Config['web']['tls'];
+    return {format:1,sourceRevision:createHash('sha256').update(JSON.stringify({sources:hashes,configuration:project.config,dependencies})).digest('hex'),functions:this.functions,main:'aug_main_body',bindings:this.checked.bindings.map((b,i)=>({function:'aug_resolve_'+i,shared:b.lifetime==='shared'})),scoped:this.checked.bindings.map(b=>b.lifetime==='scoped'),test:!!this.checked.project.testMode,schemas:this.schemas.nodes,components:[...this.components].sort(),routes:this.routes,web:{...web,tls}};
+  }
+  policy(plan:HttpPolicyPlan):IrHttpPolicy {
+    const options=plan.options;return {kind:httpPolicyNames.indexOf(plan.name)+1,permission:String(options.permission??''),amount:Number(options.requests??options.milliseconds??0),seconds:Number(options.seconds??0),credentials:!!options.credentials,origins:(options.origins as string[]??[]).join('\n'),headers:(options.headers as string[]??[]).map(header=>header.toLowerCase()).join(', ')};
+  }
+  routeTable(file:string,names:string[]){
+    this.components.add('http');const name='aug_routes_'+this.routes.length;
+    const items:IrRoute[]=names.map(name=>{const def=this.definition(file,name)!,fn=def.node as MethodDecl,endpoint=fn.endpoint!;
+      return {method:endpoint.method,path:endpoint.path,function:this.name(def)+'_http',stream:endpoint.streams?fn.returns.name==='ServerEvent'?1:fn.returns.name==='Bytes'?2:3:0,status:endpoint.status,policies:(this.checked.httpPolicies.get(fn)??[]).map(plan=>this.policy(plan))};
+    });
+    // Reserve its name before adding generated documentation handlers.
+    this.routes.push({name,items});
+    const config=this.checked.project.config.openapi;
+    const assets=config.enabled?[
+      {path:config.path,type:'application/json',content:JSON.stringify(generateOpenApi(this.checked).document)},
+      {path:config.docs,type:'text/html; charset=utf-8',content:apiExplorer(config.path,config.docs+'/client.js')},
+      {path:config.docs+'/client.js',type:'application/javascript; charset=utf-8',content:apiExplorerScript}
+    ]:[];
+    if(this.checked.actions.size)assets.push({path:'/__aug/actions.js',type:'application/javascript; charset=utf-8',content:actionTransport});
+    assets.forEach((asset,index)=>{const body=new FunctionLowering(this,file,this.checked.project.main!.items[0]?.span??{file,start:0,end:0,line:1,column:1});
+      const bytes=body.runtime('STRING_BYTES',[body.literal(asset.content)]),headers=body.runtime('HTTP_HEADERS',[]);
+      const typed=body.runtime('HTTP_HEADERS_WITH',[headers,body.literal('content-type'),body.literal(asset.type)]);
+      const result=body.runtime('HTTP_RESPONSE',[bytes,body.literal(null,{kind:'int',text:'200'}),typed]);body.instruction({op:'copy',out:0,input:result});
+      const fn=name+'_asset_'+index;this.functions.push(body.finish(fn));items.push({method:'GET',path:asset.path,function:fn,stream:0,status:200,policies:[]});
+    });return name;
   }
   add(def:Definition,name:string,method:MethodDecl,params:Param[],stmts:Stmt[],receiver=false){
     const body=new FunctionLowering(this,method.span.file,method.span,receiver?def:undefined);
     if(receiver){body.receiver=body.slot();body.locals.set('self',body.receiver);}
-    params.forEach((p,i)=>body.parameter(p,i));stmts.forEach(s=>body.statement(s));this.functions.push(body.finish(name));
+    params.forEach((p,i)=>body.parameter(p,i));stmts.forEach(s=>body.statement(s));this.functions.push(body.finish(interceptorChain(name,this.checked.interceptorPlans.get(method)??[]).body));this.layers(method,name,params,receiver);
+  }
+  layers(node:MethodDecl|ClassDecl,name:string,params:Param[],receiver:boolean){
+    for(const entry of interceptorChain(name,this.checked.interceptorPlans.get(node)??[]).entries){
+      const body=new FunctionLowering(this,entry.layer.definition.file,entry.layer.around.span,entry.layer.definition);
+      if(receiver){body.receiver=body.slot();body.locals.set('self',body.receiver);}
+      params.forEach((param,index)=>body.parameter(param,index));body.interceptor(entry.layer,params,entry.next);
+      entry.layer.around.body!.forEach(stmt=>body.statement(stmt));this.functions.push(body.finish(entry.name));
+    }
   }
 }
 
@@ -117,6 +174,7 @@ type InstructionInput = IrInstruction extends infer I ? I extends IrInstruction 
 class FunctionLowering {
   readonly generator:Lowering;readonly file:string;readonly span:Span;readonly owner?:Definition;
   readonly parameters:number[]=[];receiver?:number;readonly locals=new Map<string,number>();readonly owned=new Set<number>();
+  private continuation?:InterceptorInvocation;
   private slots=1;private sequence=0;private source:Span;private error='cleanup';private returning='cleanup';
   private blocks:{name:string;instructions:IrInstruction[];terminator?:IrTerminator}[]=[];
   private current:{name:string;instructions:IrInstruction[];terminator?:IrTerminator};
@@ -128,14 +186,15 @@ class FunctionLowering {
   instruction(value:InstructionInput){if(this.current.terminator)this.enter(this.block());this.current.instructions.push({...value,span:this.source} as IrInstruction);}
   parameter(param:Param,index:number){const slot=this.slot();this.parameters[index]=slot;this.locals.set(param.name,slot);if(param.ownership==='own')this.owned.add(slot);}
   checkError(){const errors=this.block(),next=this.block();this.terminate({op:'cancel',then:this.returning,otherwise:errors});this.enter(errors);this.terminate({op:'error',failed:this.error,success:next});this.enter(next);}
-  runtime(operation:string,args:number[],text?:string,number?:number){const out=this.slot();this.instruction({op:'runtime',out,operation,args,text,number});this.checkError();return out;}
+  runtime(operation:string,args:number[],text?:string,number?:number){if(operation.startsWith('HTTP_'))this.generator.components.add('http');const out=this.slot();this.instruction({op:'runtime',out,operation,args,text,number});this.checkError();return out;}
   call(name:string,args:number[],receiver?:number){const out=this.slot();this.instruction({op:'call',out,function:name,args,receiver});this.checkError();return out;}
   literal(value:string|boolean|null,numeric?:{kind:'int'|'float';text:string}){const out=this.slot();this.instruction({op:'literal',out,value,numeric});return out;}
   private fieldIndex(object:Expr,name:string){const node=this.generator.checked.expressionTypes.get(object)?.def?.node;
-    if(node?.kind==='class'){const i=fieldsOf(node).findIndex(f=>f.name===name);if(i>=0)return i;}
+    if(node?.kind==='class'||node?.kind==='interceptor'){const i=fieldsOf(node).findIndex(f=>f.name===name);if(i>=0)return i;}
+    const type=this.generator.checked.expressionTypes.get(object);if(type?.kind==='builtin'){const index=builtinProperties[type.name]?.findIndex(field=>field.name===name);if(index!==undefined&&index>=0)return index;}
     if(name==='code')return 0;if(name==='message')return 1;throw new BackendUnsupported(object.span,'field '+name);
   }
-  private field(name:string):number|undefined{const node=this.owner?.node;if(node?.kind!=='class')return;const i=fieldsOf(node).findIndex(f=>f.name===name);return i<0?undefined:i;}
+  private field(name:string):number|undefined{const node=this.owner?.node;if(node?.kind!=='class'&&node?.kind!=='interceptor')return;const i=fieldsOf(node).findIndex(f=>f.name===name);return i<0?undefined:i;}
   private arguments(expr:Extract<Expr,{kind:'call'}>,plan?:CallPlan){
     const source=expr.args.map(a=>this.expression(a));
     return plan?plan.sourceIndices.map((index,i)=>{if(index!==undefined)return source[index];const injected=plan.injectionSources?.[i];
@@ -146,6 +205,19 @@ class FunctionLowering {
   }
   expression(expr:Expr):number {
     this.source=expr.span;
+    if(expr.kind==='handle'){
+      const plan=this.generator.checked.actions.get(expr)!,endpoint=(plan.endpoint.node as MethodDecl).endpoint!;
+      const metadata={method:endpoint.method,path:endpoint.path,parameters:plan.parameters.map(({param,type,form})=>({name:param.source?.name??param.name,source:param.source?.kind,form,schema:actionSchema(this.generator.checked.project,type)}))};
+      const args=plan.parameters.map(parameter=>parameter.form||parameter.source===undefined?this.literal(null):this.expression((expr.call as Extract<Expr,{kind:'call'}>).args[parameter.source]));
+      return this.runtime('HTTP_ACTION',args,JSON.stringify(metadata));
+    }
+    if(expr.kind==='markupText')return this.literal(expr.text);
+    if(expr.kind==='markup'){
+      const component=this.generator.checked.markupCalls.get(expr);if(component)return this.expression(component);
+      this.generator.components.add('http');const names=expr.attributes.map(attribute=>this.literal(attribute.name));
+      const values=expr.attributes.map(attribute=>this.expression(attribute.value)),children=expr.children.map(child=>this.expression(child)),out=this.slot();
+      this.instruction({op:'html',out,tag:expr.tag,attributes:names.flatMap((name,index)=>[name,values[index]]),children});this.checkError();return out;
+    }
     if(expr.kind==='literal')return typeof expr.value==='number'?this.literal(null,{kind:expr.numericType??'int',text:expr.numericText??String(expr.value)}):this.literal(expr.value);
     if(expr.kind==='name'){
       const slot=this.locals.get(expr.name);if(slot!==undefined)return slot;
@@ -192,18 +264,25 @@ class FunctionLowering {
     }
     if(expr.kind!=='call')throw new BackendUnsupported(expr.span,expr.kind+' expressions');
     const receiver=expr.callee.kind==='member'?this.expression(expr.callee.object):undefined;
-    const args=this.arguments(expr,this.generator.checked.callPlans.get(expr));
+    const args=expr.callee.kind==='name'&&expr.callee.name==='next'?expr.args.map(arg=>this.expression(arg)):this.arguments(expr,this.generator.checked.callPlans.get(expr));
     return this.invoke(expr,receiver,args);
   }
-  private invoke(expr:Extract<Expr,{kind:'call'}>,receiver:number|undefined,args:number[]):number {
+  private invoke(expr:Extract<Expr,{kind:'call'}>,receiver:number|undefined,args:number[],unwrapped=false):number {
     this.source=expr.span;
     if(expr.callee.kind==='member'){
       const type=this.generator.checked.expressionTypes.get(expr.callee.object)!,name=expr.callee.name;
+      if(type.kind==='builtin'&&(type.name==='Json'&&name==='decode'||type.name==='HttpRequest'&&name==='form')){
+        const out=this.slot(),schema=this.generator.schemas.request(this.generator.checked.expressionTypes.get(expr)!);
+        if(name==='form')this.generator.components.add('http');this.instruction({op:'decode',out,input:receiver!,schema,format:name==='form'?'form':'json'});this.checkError();return out;
+      }
       const operations:Record<string,string>={
         'List.length':'LIST_LENGTH','List.get':'LIST_GET','List.at':'LIST_AT','List.append':'LIST_APPEND','Tuple.length':'TUPLE_LENGTH','Tuple.get':'TUPLE_GET',
         'Set.length':'SET_LENGTH','Set.add':'SET_ADD','Set.contains':'SET_CONTAINS','Map.length':'MAP_LENGTH','Map.get':'MAP_GET','Map.take':'MAP_TAKE','Map.contains':'MAP_CONTAINS','Map.set':'MAP_SET',
         'string.length':'STRING_LENGTH','string.bytes':'STRING_BYTES','string.split':'STRING_SPLIT','string.startsWith':'STRING_STARTS_WITH','string.isToken':'STRING_IS_TOKEN',
-        'Bytes.length':'BYTES_LENGTH','Bytes.text':'BYTES_TEXT','Bytes.base64url':'BYTES_BASE64URL'
+        'Bytes.length':'BYTES_LENGTH','Bytes.text':'BYTES_TEXT','Bytes.base64url':'BYTES_BASE64URL',
+        'Json.stringify':'JSON_STRINGIFY','Json.get':'JSON_GET','Json.require':'JSON_REQUIRE','Json.string':'JSON_STRING',
+        'Json.integer':'JSON_INTEGER','Json.boolean':'JSON_BOOLEAN','Json.items':'JSON_ITEMS',
+        'Headers.with':'HTTP_HEADERS_WITH','Headers.get':'HTTP_HEADERS_GET','Headers.all':'HTTP_HEADERS_ALL','HttpTestClient.request':'HTTP_CLIENT_REQUEST'
       };
       const operation=operations[type.name+'.'+name];if(operation)return this.runtime(operation,[receiver!,...args]);
       args=this.transferArguments(expr,args,false);
@@ -213,6 +292,20 @@ class FunctionLowering {
     }
     if(expr.callee.kind!=='name')throw new BackendUnsupported(expr.span,'indirect callable values');
     const name=expr.callee.name;
+    if(name==='next'){
+      const next=this.continuation!,plan=this.generator.checked.callPlans.get(expr)!;
+      const {args:forwarded,transfers}=next.forward(plan.sourceIndices,args);
+      const argumentsList=[...forwarded];
+      for(const {original,replacement} of transfers){
+        const temporary=this.slot();this.instruction({op:'copy',out:temporary,input:replacement});
+        argumentsList[this.parameters.indexOf(original)]=temporary;
+        if(replacement!==original)this.instruction({op:'drop',slot:original});
+        this.instruction({op:'clear',slot:original});
+        if(replacement!==original&&this.owned.has(replacement))this.instruction({op:'clear',slot:replacement});
+      }
+      const out=this.call(next.target,argumentsList,next.receiver);
+      if(plan.returnOwnership==='own')this.owned.add(out);return out;
+    }
     if(name==='assert'){this.instruction({op:'assert',input:args[0],expression:this.generator.checked.project.files.get(this.file)?.source.slice(expr.args[0].span.start,expr.args[0].span.end)??'assertion'});this.checkError();return this.literal(null);}
     if(name==='int')return args[0];
     if(errorNames.includes(name)){
@@ -221,11 +314,16 @@ class FunctionLowering {
     if(name==='Shared'){
       const result=this.runtime('SHARED',[args[0]]);if(this.owned.has(args[0]))this.instruction({op:'clear',slot:args[0]});return result;
     }
-    const builtins:Record<string,string>={print:'PRINT',arguments:'ARGUMENTS',c_int:'C_INT',read_file:'READ_FILE',write_file:'WRITE_FILE',base64url_decode:'BASE64URL_DECODE'};
+    if(name==='HttpTestClient'){
+      const endpoint=this.generator.checked.project.testEndpoint!,out=this.slot(),routes=this.generator.routeTable(endpoint.file,[endpoint.name]);
+      this.instruction({op:'routes',out,name:routes});this.checkError();return out;
+    }
+    const builtins:Record<string,string>={print:'PRINT',arguments:'ARGUMENTS',c_int:'C_INT',read_file:'READ_FILE',write_file:'WRITE_FILE',base64url_decode:'BASE64URL_DECODE',Json:'JSON_WRAP',Headers:'HTTP_HEADERS',HttpResponse:'HTTP_RESPONSE',ServerEvent:'HTTP_EVENT'};
     if(builtins[name])return this.runtime(builtins[name],args);
     if(['List','Tuple','Set','Map'].includes(name))return this.runtime(name.toUpperCase(),args);
     const def=this.generator.definition(this.file,name);if(!def)throw new BackendUnsupported(expr.span,'builtin '+name);
     if(def.node.kind==='function'&&def.node.externC){
+      if(!unwrapped&&this.generator.checked.interceptorPlans.get(def.node)?.length){const result=this.call(this.generator.name(def),this.transferArguments(expr,args,false));if(def.node.returnOwnership==='own')this.owned.add(result);return result;}
       const binding=this.generator.checked.native.functions.get(def.node),out=this.slot();
       if(binding){
         args=this.transferArguments(expr,args,true);
@@ -237,8 +335,22 @@ class FunctionLowering {
         const error=this.generator.checked.native.errors.get(def.node);
         this.instruction({op:'native',out,binding,args,resources,error:error?.id,errorFactory:error&&this.generator.name(error)});
       }else{
-        if(def.node.valueAbi)throw new BackendUnsupported(expr.span,'legacy AugValue native adapters');
-        this.instruction({op:'extern',out,name:def.node.name,types:def.node.params.map(p=>p.type.name),result:def.node.returns.name,args});
+        if(def.node.valueAbi){
+          // Compiler-owned adapters use the target pack's pointer thunks. Arbitrary
+          // aggregate C declarations remain unsupported, even on an LLVM host.
+          const adapters:Record<string,{types:string[];result:string;operation:string}>={
+            _aug_json_parse:{types:['string'],result:'Json',operation:'JSON_PARSE'},
+            _aug_time_now:{types:[],result:'int',operation:'TIME_NOW'}
+          };
+          const adapter=adapters[def.node.name];
+          const plain=(type:typeof def.node.returns)=>!type.nullable&&!type.optional&&!type.args.length;
+          if(adapter&&plain(def.node.returns)&&def.node.returns.name===adapter.result&&def.node.params.length===adapter.types.length&&def.node.params.every((param,i)=>plain(param.type)&&param.type.name===adapter.types[i]))this.instruction({op:'runtime',out,operation:adapter.operation,args});
+          else {
+            const entry=runtimeAdapters.find(entry=>entry.name===def.node.name);
+            if(!entry||def.node.typeParams.length||def.node.returnOwnership!=='managed'||typeName(def.node.returns)!==entry.returns||def.node.params.length!==entry.parameters.length||def.node.params.some((param,i)=>param.ownership!=='managed'||typeName(param.type)!==entry.parameters[i]))throw new BackendUnsupported(expr.span,'legacy AugValue native adapter '+def.node.name+' with this signature');
+            this.generator.components.add(entry.component);this.instruction({op:'adapter',out,name:adapterSymbol(entry),args});
+          }
+        }else this.instruction({op:'extern',out,name:def.node.name,types:def.node.params.map(p=>p.type.name),result:def.node.returns.name,args});
       }
       if(def.node.returnOwnership==='own')this.owned.add(out);
       this.checkError();return out;
@@ -259,10 +371,47 @@ class FunctionLowering {
       if(native)this.owned.add(temporary);
     });return transferred;
   }
+  interceptor(layer:InterceptorLayer,params:Param[],next:string){
+    this.continuation=new InterceptorInvocation(layer,params,[...this.parameters],next,this.receiver);
+    const dependencies=this.continuation.dependencies().map(slot=>slot??this.literal(null));
+    const self=this.call(this.generator.name(layer.definition),dependencies);this.locals.set('self',self);
+    for(const input of this.continuation.inputs()){
+      if(input.reuseOwnedSlot){this.locals.set(input.name,input.slot!);continue;}
+      const slot=this.slot();this.locals.set(input.name,slot);this.instruction({op:'copy',out:slot,input:input.slot??this.literal(null)});
+    }
+  }
+  nativeBody(def:Definition){
+    const call:Extract<Expr,{kind:'call'}>={kind:'call',callee:{kind:'name',name:def.name,span:def.node.span},args:[],argLabels:[],typeArgs:[],span:def.node.span};
+    const result=this.invoke(call,undefined,[...this.parameters],true);this.instruction({op:'copy',out:0,input:result});
+    if(this.owned.has(result))this.instruction({op:'clear',slot:result});
+  }
   private scoped(stmts:Stmt[],composition=false){const locals=new Map(this.locals),owned=new Set(this.owned);for(const stmt of stmts)this.statement(stmt);
     if(composition&&!this.current.terminator)this.instruction({op:'scope',action:'join'});
     if(!this.current.terminator)for(const slot of this.owned)if(!owned.has(slot))this.instruction({op:'drop',slot});
     this.locals.clear();for(const [name,slot] of locals)this.locals.set(name,slot);
+  }
+  endpoint(def:Definition){
+    const fn=def.node as MethodDecl,endpoint=fn.endpoint!,request=this.slot(),failed=this.block(),finished=this.block();
+    this.parameters.push(request);this.error=failed;this.returning=failed;
+    this.instruction({op:'scope',action:'enter'});
+    const args=fn.params.map(()=>this.slot());
+    fn.params.forEach((param,index)=>{if(!param.injected)return;
+      const type=schemaType(this.generator.checked.project,param.type,def.file);
+      const key=type.name+(type.args.length?'<'+type.args.map(arg=>arg.name).join(',')+'>':'');
+      const value=this.call(this.generator.binding(key),[]);this.instruction({op:'copy',out:args[index],input:value});
+    });
+    for(const policy of this.generator.checked.httpPolicies.get(fn)??[]){
+      this.instruction({op:'http-policy',policy:this.generator.policy(policy),args:[request,...[0,1].map(index=>policy.dependencies[index]===undefined?this.literal(null):args[policy.dependencies[index]])]});this.checkError();
+    }
+    fn.params.forEach((param,index)=>{if(param.injected)return;
+      const schema=param.source!.kind==='request'?undefined:this.generator.schemas.request(schemaType(this.generator.checked.project,param.type,def.file));
+      this.instruction({op:'http-bind',out:args[index],request,source:param.source!.kind,name:param.source!.name??param.name,schema});this.checkError();
+    });
+    const result=this.call(this.generator.name(def),args),response=this.runtime('HTTP_RESPONSE_STATUS',[result,this.literal(null,{kind:'int',text:String(endpoint.status)})]);
+    this.instruction({op:'copy',out:0,input:response});this.terminate({op:'jump',target:finished});
+    this.enter(failed);this.instruction({op:'http-failure',out:0,errors:endpoint.errors.map(error=>({type:this.generator.definition(def.file,error.type.name)?.id??error.type.name,status:error.status}))});this.terminate({op:'jump',target:finished});
+    this.enter(finished);this.error='cleanup';this.returning='cleanup';
+    const completed=this.runtime('HTTP_FINISH',[0]);this.instruction({op:'copy',out:0,input:completed});
   }
   private tryAlways(stmt:Extract<Stmt,{kind:'try'}>){
     const outerError=this.error,outerReturn=this.returning,owned=new Set(this.owned);
@@ -299,6 +448,8 @@ class FunctionLowering {
   }
   statement(stmt:Stmt):void {
     this.source=stmt.span;if(this.current.terminator)this.enter(this.block());
+    if(stmt.kind==='serve'){const port=this.expression(stmt.port),routes=this.generator.routeTable(this.file,stmt.names);this.instruction({op:'routes',name:routes,port});this.checkError();return;}
+    if(stmt.kind==='yield'){this.runtime('HTTP_YIELD',[this.expression(stmt.value)]);return;}
     if(stmt.kind==='expr'){const value=this.expression(stmt.expr);if(this.owned.has(value))this.instruction({op:'drop',slot:value});return;}
     if(stmt.kind==='assign'){
       const value=this.expression(stmt.value);this.source=stmt.span;
@@ -392,7 +543,7 @@ class FunctionLowering {
         if(!this.current.terminator)this.terminate({op:'jump',target:done});this.enter(next);
       });this.terminate({op:'jump',target:outer});this.enter(done);return;
     }
-    throw new BackendUnsupported(stmt.span,stmt.kind+' statements');
+    const unreachable:never=stmt;throw new Error('Unexpected August statement '+JSON.stringify(unreachable));
   }
   finish(name:string):IrFunction {
     if(!this.current.terminator)this.terminate({op:'jump',target:'cleanup'});

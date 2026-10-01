@@ -8,5 +8,5 @@ current-version: 1.0.0
 compatibility-version: 1.0.0
 exports:
   - archs: [ arm64 ]
-    symbols: [ _memcpy, _memmove, _memset, _bzero, ___stack_chk_fail, ___stack_chk_guard, dyld_stub_binder ]
+    symbols: [ _memcpy, _memmove, _memset, _bzero, _puts, _strlen, _abs, _labs, _getpid, ___stack_chk_fail, ___stack_chk_guard, dyld_stub_binder ]
 ...

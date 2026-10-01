@@ -4,6 +4,7 @@ import {mkdtempSync, writeFileSync, rmSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join, resolve} from 'node:path';
 import {spawnSync} from 'node:child_process';
+import {prepareLibraryFixtures} from './library-fixtures.mjs';
 
 test('same-file endpoint cases exercise routing, binding, errors, and streaming with fresh DI', () => {
   const root = mkdtempSync(join(tmpdir(), 'aug-endpoint-tests-'));
@@ -63,11 +64,24 @@ test endpoint broken client:
             catch HttpError error:
                 failed = true
             assert(condition=failed)
+
+endpoint POST "/form" as submit(Greeting input from form) returns Greeting:
+    return input
+test endpoint submit client:
+    when form_binding:
+        it constructs_record:
+            response = client.request(method="POST", path="/form", headers=Headers().with(name="content-type", value="application/x-www-form-urlencoded"), body="name=Ada".bytes())
+            assert(condition=response.status == 200)
+            assert(condition=response.body.text() == "{\\"name\\":\\"Ada\\"}")
+        it rejects_unknown_fields:
+            response = client.request(method="POST", path="/form", headers=Headers().with(name="content-type", value="application/x-www-form-urlencoded"), body="name=Ada&unknown=1".bytes())
+            assert(condition=response.status == 400)
 `);
+    prepareLibraryFixtures(root);
     const result = spawnSync(process.execPath, [resolve('bin/aug.mjs'), 'test', root, '--json'], {encoding:'utf8', timeout:30000});
     assert.equal(result.status, 0, result.stderr || result.stdout);
     const report = JSON.parse(result.stdout);
-    assert.equal(report.passed, 7);
+    assert.equal(report.passed, 9);
     assert.equal(report.failed, 0);
   } finally {rmSync(root, {recursive:true, force:true});}
 });

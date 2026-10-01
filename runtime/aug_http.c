@@ -28,6 +28,12 @@ struct AugHttpJob {
   bool test, transport_complete, timed_out; int64_t started,deadline;
 };
 static const AugRoute *served_routes;
+static AugValue route_call(const AugRoute *route,AugValue *args,int count) {
+  AugValue result=aug_null();
+  if(route->pointer_handler)route->pointer_handler(&result,NULL,args,count);
+  else result=route->handler(args,count);
+  return result;
+}
 static size_t served_count;
 static size_t body_limit = 1024 * 1024;
 static size_t response_limit = 4 * 1024 * 1024;
@@ -355,7 +361,7 @@ AugValue aug_httptestclient_request(AugValue client,AugValue method,AugValue tar
   AugHttpJob job={.session=&session,.test=true,.roots={session.roots[0],aug_null()}};
   aug_retain(&job.retained,job.roots,2);
   void *previous=aug_execution_current()->http_job;bool previous_cancelled=aug_cancelled;aug_execution_current()->http_job=&job;
-  session.roots[1]=session.route->handler(session.roots,1);aug_execution_current()->http_job=previous;aug_release(&job.retained);
+  session.roots[1]=route_call(session.route,session.roots,1);aug_execution_current()->http_job=previous;aug_release(&job.retained);
   if(job.timed_out)aug_cancelled=previous_cancelled;
   if(aug_has_error){aug_report_error();aug_take_error();session.roots[1]=aug_http_problem(500);}
   if(session.streaming&&aug_cint(aug_field(session.roots[1],1))>=400){aug_frame_leave(&frame);return request_error("HttpError");}
@@ -431,7 +437,7 @@ AugValue aug_http_bind(AugValue request, const char *source, const char *name, c
       bool known = false; for (size_t j = 0; j < schema->count; j++) if (!strcmp(aug_cstring(map.as.object->fields[i]), schema->names[j])) known = true;
       if (!known) request_error("HttpBadRequest");
     }
-    AugValue result = aug_has_error ? aug_null() : schema->make(fields, (int)schema->count);
+    AugValue result = aug_has_error ? aug_null() : aug_schema_make(schema,fields,(int)schema->count);
     aug_frame_leave(&field_frame); free(fields); aug_frame_leave(&frame); return result;
   }
   if (!strcmp(source, "body")) {
@@ -484,7 +490,7 @@ static void cleanup(AugHttpSession *session) {
   free(session->body); memset(session, 0, sizeof(*session));
 }
 static AugValue request_task(AugValue self, AugValue *args, int count) {
-  (void)self; (void)count; aug_execution_current()->http_job=(void *)(intptr_t)aug_cint(args[2]); size_t index = (size_t)aug_cint(args[1]); return served_routes[index].handler(args, 1);
+  (void)self; (void)count; aug_execution_current()->http_job=(void *)(intptr_t)aug_cint(args[2]); size_t index = (size_t)aug_cint(args[1]); return route_call(&served_routes[index],args,1);
 }
 AugValue aug_http_event(AugValue data, AugValue id, AugValue event, AugValue retry) {
   AugValue values[]={data,id,event,retry};

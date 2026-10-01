@@ -15,9 +15,12 @@ enum AugIrOperation {
   AUG_IR_BYTES_LENGTH, AUG_IR_BYTES_TEXT, AUG_IR_BYTES_BASE64URL,
   AUG_IR_BASE64URL_DECODE, AUG_IR_C_INT, AUG_IR_READ_FILE, AUG_IR_WRITE_FILE,
   AUG_IR_ARGUMENTS, AUG_IR_FREEZE, AUG_IR_ITER, AUG_IR_MAP_ITER, AUG_IR_IS_TYPE,
-  AUG_IR_SHARED, AUG_IR_SHARED_LOCK
+  AUG_IR_SHARED, AUG_IR_SHARED_LOCK, AUG_IR_JSON_WRAP, AUG_IR_JSON_PARSE,
+  AUG_IR_JSON_STRINGIFY, AUG_IR_JSON_GET, AUG_IR_JSON_REQUIRE, AUG_IR_JSON_STRING,
+  AUG_IR_JSON_INTEGER, AUG_IR_JSON_BOOLEAN, AUG_IR_JSON_ITEMS, AUG_IR_TIME_NOW
 };
 void aug_ir_operation(AugValue *out, int operation, AugValue *args, int count, const char *text, int64_t number);
+void aug_ir_json_decode(AugValue *out, const AugValue *value, const AugSchema *schema);
 void aug_ir_string(AugValue *out, const void *text, uint64_t count);
 void aug_ir_assert(const AugValue *condition, const char *expression, const char *file, int line);
 void aug_ir_drop(AugValue *value);

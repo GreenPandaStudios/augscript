@@ -1,13 +1,15 @@
-import type {AugustIR,IrFunction,IrInstruction,IrTerminator} from './ir.ts';
+import type {AugustIR,IrFunction,IrInstruction,IrTerminator,IrHttpPolicy} from './ir.ts';
 import type {NativeView} from './native-contracts.ts';
 
 export interface RuntimeLayout {
   abi:'compiler-private-runtime-v1';valueSize:16;valueAlignment:8;valuePayloadOffset:8;
-  frameSize:24;methodEntrySize:24;pointerSize:8;
+  frameSize:24;methodEntrySize:24;pointerSize:8;schemaSize:48;schemaPointerMakerOffset:40;
+  routeSize:56;routePointerHandlerOffset:48;policySize:56;httpErrorSize:16;
 }
-export const runtimeLayout:RuntimeLayout={abi:'compiler-private-runtime-v1',valueSize:16,valueAlignment:8,valuePayloadOffset:8,frameSize:24,methodEntrySize:24,pointerSize:8};
-const operations=['PRINT','BINARY','UNARY','FIELD','SET_FIELD','LIST','TUPLE','SET','MAP','MAP_SET','LIST_LENGTH','LIST_GET','LIST_AT','LIST_APPEND','TUPLE_LENGTH','TUPLE_GET','SET_LENGTH','SET_ADD','SET_CONTAINS','MAP_LENGTH','MAP_GET','MAP_TAKE','MAP_CONTAINS','STRING_LENGTH','STRING_BYTES','STRING_SPLIT','STRING_STARTS_WITH','STRING_IS_TOKEN','BYTES_LENGTH','BYTES_TEXT','BYTES_BASE64URL','BASE64URL_DECODE','C_INT','READ_FILE','WRITE_FILE','ARGUMENTS','FREEZE','ITER','MAP_ITER','IS_TYPE','SHARED','SHARED_LOCK'];
+export const runtimeLayout:RuntimeLayout={abi:'compiler-private-runtime-v1',valueSize:16,valueAlignment:8,valuePayloadOffset:8,frameSize:24,methodEntrySize:24,pointerSize:8,schemaSize:48,schemaPointerMakerOffset:40,routeSize:56,routePointerHandlerOffset:48,policySize:56,httpErrorSize:16};
+const operations=['PRINT','BINARY','UNARY','FIELD','SET_FIELD','LIST','TUPLE','SET','MAP','MAP_SET','LIST_LENGTH','LIST_GET','LIST_AT','LIST_APPEND','TUPLE_LENGTH','TUPLE_GET','SET_LENGTH','SET_ADD','SET_CONTAINS','MAP_LENGTH','MAP_GET','MAP_TAKE','MAP_CONTAINS','STRING_LENGTH','STRING_BYTES','STRING_SPLIT','STRING_STARTS_WITH','STRING_IS_TOKEN','BYTES_LENGTH','BYTES_TEXT','BYTES_BASE64URL','BASE64URL_DECODE','C_INT','READ_FILE','WRITE_FILE','ARGUMENTS','FREEZE','ITER','MAP_ITER','IS_TYPE','SHARED','SHARED_LOCK','JSON_WRAP','JSON_PARSE','JSON_STRINGIFY','JSON_GET','JSON_REQUIRE','JSON_STRING','JSON_INTEGER','JSON_BOOLEAN','JSON_ITEMS','TIME_NOW'];
 const symbol=(name:string)=>'@'+name;
+const httpOperations=['HTTP_HEADERS','HTTP_HEADERS_WITH','HTTP_HEADERS_GET','HTTP_HEADERS_ALL','HTTP_RESPONSE','HTTP_RESPONSE_STATUS','HTTP_FINISH','HTTP_EVENT','HTTP_YIELD','HTTP_CLIENT_REQUEST','HTTP_ACTION'];
 
 /** Emit LLVM directly from checked August execution IR. No application C is generated. */
 export function generateLLVM(ir:AugustIR,options:{triple?:string;layout?:RuntimeLayout}={}):string {
@@ -35,24 +37,47 @@ class ModuleEmitter {
     this.globals.push(`${name} = private constant [${Math.max(1,methods.length)} x %AugMethodEntry] [${methods.length?methods.map(m=>`%AugMethodEntry {ptr ${this.text(m.name)}, ptr null, ptr @${m.function}}`).join(', '):'%AugMethodEntry zeroinitializer'}]`);
     return {name,names,mask};
   }
+  policyValue(policy:IrHttpPolicy){return `{i32 ${policy.kind}, ptr ${this.text(policy.permission)}, i64 ${policy.amount}, i64 ${policy.seconds}, i8 ${policy.credentials?1:0}, ptr ${this.text(policy.origins)}, ptr ${this.text(policy.headers)}}`;}
+  policy(policy:IrHttpPolicy){const name='@aug_policy_'+this.sequence++;this.globals.push(`${name} = private constant %AugHttpPolicy ${this.policyValue(policy)}, align 8`);return name;}
   generate(){
     const bodies=this.ir.functions.map(fn=>new FunctionEmitter(this,fn).generate());
+    const kinds=['INT','C_INT','FLOAT','BOOL','STRING','LIST','MAP','SET','TUPLE','RECORD','JSON'];
+    for(const schema of this.ir.schemas){
+      const kind=kinds.indexOf(schema.kind);if(kind<0)throw new Error('Unknown IR schema kind '+schema.kind);
+      const fields='@'+schema.name+'_fields',names='@'+schema.name+'_names';
+      if(schema.fields.length)this.globals.push(`${fields} = private constant [${schema.fields.length} x ptr] [${schema.fields.map(field=>'ptr @'+field).join(', ')}]`);
+      if(schema.labels.length)this.globals.push(`${names} = private constant [${schema.labels.length} x ptr] [${schema.labels.map(name=>'ptr '+this.text(name)).join(', ')}]`);
+      this.globals.push(`@${schema.name} = private constant %AugSchema {i32 ${kind}, i8 ${schema.nullable?1:0}, i8 ${schema.optional?1:0}, i64 ${schema.fields.length}, ptr ${schema.fields.length?fields:'null'}, ptr ${schema.labels.length?names:'null'}, ptr null, ptr ${schema.maker?'@'+schema.maker:'null'}}, align 8`);
+    }
+    for(const table of this.ir.routes){
+      const routes=table.items.map((route,index)=>{
+        const policies='@'+table.name+'_policies_'+index;
+        if(route.policies.length)this.globals.push(`${policies} = private constant [${route.policies.length} x %AugHttpPolicy] [${route.policies.map(policy=>'%AugHttpPolicy '+this.policyValue(policy)).join(', ')}], align 8`);
+        return `%AugRoute {ptr ${this.text(route.method)}, ptr ${this.text(route.path)}, ptr null, i32 ${route.stream}, i32 ${route.status}, ptr ${route.policies.length?policies:'null'}, i64 ${route.policies.length}, ptr @${route.function}}`;
+      });
+      this.globals.push(`@${table.name} = private constant [${routes.length} x %AugRoute] [${routes.join(', ')}], align 8`);
+    }
     this.declare('aug_register_globals','void',['ptr','i64']);this.declare('aug_set_cli_args','void',['i32','ptr']);
     this.declare('aug_ir_exit_status','i32',['i1 zeroext']);this.declare('aug_shutdown','void',[]);
     const globalCount=this.ir.bindings.length;
+    const web=this.ir.web,configure=this.ir.components.includes('http')?[
+      `  call void @aug_http_configure(ptr ${this.text(web.host)}, ptr ${this.text(web.tls.certificate)}, ptr ${this.text(web.tls.private_key)}, ptr ${this.text(web.tls.ca)}, i64 ${web.body_limit}, i64 ${web.response_limit}, i1 zeroext ${web.http3?'true':'false'})`
+    ]:[];
+    if(configure.length)this.declare('aug_http_configure','void',['ptr','ptr','ptr','ptr','i64','i64','i1 zeroext']);
     const startup=this.ir.bindings.filter(b=>b.shared).flatMap((b,i)=>[
       `  call void @${b.function}(ptr %result, ptr null, ptr null, i32 0)`,
       `  %binding_error_${i} = call zeroext i1 @aug_ir_has_error()`,
       `  br i1 %binding_error_${i}, label %done, label %binding_ready_${i}`,
       `binding_ready_${i}:`]);
     const main=[`define i32 @main(i32 %argc, ptr %argv) {`,`entry:`,`  %result = alloca %AugValue, align 8`,`  store %AugValue zeroinitializer, ptr %result, align 8`,
-      `  call void @aug_register_globals(ptr @aug_globals, i64 ${globalCount})`,`  call void @aug_set_cli_args(i32 %argc, ptr %argv)`,...startup,
+      `  call void @aug_register_globals(ptr @aug_globals, i64 ${globalCount})`,`  call void @aug_set_cli_args(i32 %argc, ptr %argv)`,...configure,...startup,
       `  %startup_error = call zeroext i1 @aug_ir_has_error()`,`  br i1 %startup_error, label %done, label %run`,`run:`,
       `  call void @${this.ir.main}(ptr %result, ptr null, ptr null, i32 0)`,`  br label %done`,`done:`,
       `  %status = call i32 @aug_ir_exit_status(i1 zeroext ${this.ir.test?'true':'false'})`,`  call void @aug_shutdown()`,`  ret i32 %status`,`}`].join('\n');
     this.declare('aug_ir_has_error','zeroext i1',[]);
     return [`; August checked execution IR ${this.ir.format}; source revision ${this.ir.sourceRevision}`,`target triple = "${this.triple}"`,
-      `%AugValue = type {i32, i64}`,`%AugFrame = type {ptr, i64, ptr}`,`%AugMethodEntry = type {ptr, ptr, ptr}`,`%NativeError = type {i32, i32, [512 x i8]}`,
+      `%AugValue = type {i32, i64}`,`%AugFrame = type {ptr, i64, ptr}`,`%AugMethodEntry = type {ptr, ptr, ptr}`,`%AugSchema = type {i32, i8, i8, i64, ptr, ptr, ptr, ptr}`,`%NativeError = type {i32, i32, [512 x i8]}`,
+      `%AugRoute = type {ptr, ptr, ptr, i32, i32, ptr, i64, ptr}`,`%AugHttpPolicy = type {i32, ptr, i64, i64, i8, ptr, ptr}`,`%AugHttpError = type {ptr, i32}`,
       `@aug_globals = internal global [${Math.max(1,globalCount)} x %AugValue] zeroinitializer, align 8`,
       `@aug_scoped = private constant [${Math.max(1,globalCount)} x i8] [${globalCount?this.ir.scoped.map(scoped=>'i8 '+(scoped?1:0)).join(', '):'i8 0'}]`,...this.globals,...this.declarations.values(),...bodies,main,''].join('\n\n');
   }
@@ -92,8 +117,23 @@ class FunctionEmitter {
       case 'copy':this.store(i.out,this.load(i.input));return;
       case 'clear':this.clear(i.slot);return;
       case 'runtime':{
-        const op=operations.indexOf(i.operation)+1;if(!op)throw new Error('Unknown IR runtime operation '+i.operation);
-        this.call('aug_ir_operation','void',[{type:'ptr',value:this.ptr(i.out)},{type:'i32',value:String(op)},{type:'ptr',value:this.args(i.args)},{type:'i32',value:String(i.args.length)},{type:'ptr',value:i.text===undefined?'null':this.module.text(i.text)},{type:'i64',value:String(i.number??0)}]);return;
+        const http=i.operation.startsWith('HTTP_'),op=(http?httpOperations:operations).indexOf(i.operation)+1;if(!op)throw new Error('Unknown IR runtime operation '+i.operation);
+        this.call(http?'aug_ir_http_operation':'aug_ir_operation','void',[{type:'ptr',value:this.ptr(i.out)},{type:'i32',value:String(op)},{type:'ptr',value:this.args(i.args)},{type:'i32',value:String(i.args.length)},{type:'ptr',value:i.text===undefined?'null':this.module.text(i.text)},{type:'i64',value:String(i.number??0)}]);return;
+      }
+      case 'decode':this.call(i.format==='form'?'aug_ir_http_form':'aug_ir_json_decode','void',[{type:'ptr',value:this.ptr(i.out)},{type:'ptr',value:this.ptr(i.input)},{type:'ptr',value:'@'+i.schema}]);return;
+      case 'adapter':this.call(i.name,'void',[{type:'ptr',value:this.ptr(i.out)},{type:'ptr',value:this.args(i.args)},{type:'i32',value:String(i.args.length)}]);return;
+      case 'html':this.call('aug_ir_html','void',[{type:'ptr',value:this.ptr(i.out)},{type:'ptr',value:this.module.text(i.tag)},{type:'ptr',value:this.args(i.attributes)},{type:'i32',value:String(i.attributes.length/2)},{type:'ptr',value:this.args(i.children)},{type:'i32',value:String(i.children.length)}]);return;
+      case 'http-bind':this.call('aug_ir_http_bind','void',[{type:'ptr',value:this.ptr(i.out)},{type:'ptr',value:this.ptr(i.request)},{type:'ptr',value:this.module.text(i.source)},{type:'ptr',value:this.module.text(i.name)},{type:'ptr',value:i.schema?'@'+i.schema:'null'}]);return;
+      case 'http-policy':this.call('aug_ir_http_policy','void',[{type:'ptr',value:this.module.policy(i.policy)},{type:'ptr',value:this.args(i.args)}]);return;
+      case 'http-failure':{
+        const errors=this.allocate(`[${Math.max(1,i.errors.length)} x %AugHttpError]`);
+        this.line(`store [${Math.max(1,i.errors.length)} x %AugHttpError] [${i.errors.length?i.errors.map(error=>`%AugHttpError {ptr ${this.module.text(error.type)}, i32 ${error.status}}`).join(', '):'%AugHttpError zeroinitializer'}], ptr ${errors}, align 8`);
+        this.call('aug_ir_http_failure','void',[{type:'ptr',value:this.ptr(i.out)},{type:'ptr',value:errors},{type:'i32',value:String(i.errors.length)}]);return;
+      }
+      case 'routes':{
+        const count=this.module.ir.routes.find(table=>table.name===i.name)!.items.length;
+        if(i.port!==undefined)this.call('aug_ir_http_serve','void',[{type:'ptr',value:'@'+i.name},{type:'i32',value:String(count)},{type:'ptr',value:this.ptr(i.port)}]);
+        else this.call('aug_ir_http_test_client','void',[{type:'ptr',value:this.ptr(i.out!)},{type:'ptr',value:'@'+i.name},{type:'i32',value:String(count)}]);return;
       }
       case 'call':this.line(`call void @${i.function}(ptr ${this.ptr(i.out)}, ptr ${i.receiver===undefined?'null':this.ptr(i.receiver)}, ptr ${this.args(i.args)}, i32 ${i.args.length})`);return;
       case 'method':this.call('aug_ir_method','void',[{type:'ptr',value:this.ptr(i.out)},{type:'ptr',value:this.ptr(i.receiver)},{type:'ptr',value:this.module.text(i.name)},{type:'ptr',value:this.args(i.args)},{type:'i32',value:String(i.args.length)}]);return;

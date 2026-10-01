@@ -55,6 +55,22 @@ The [native example projects](examples/index.md#native-libraries-llvm-preview)
 include checked source, generated explanations and same-file tests. They require
 the development compiler until its matching npm release and compiler pack are public.
 
+The migration now includes JSON parsing and typed decoding, clocks, the existing
+GnuTLS crypto APIs, native HTTP handlers and their policies, form decoding,
+streams, server HTML/actions, and interceptor chains. Both backends use one
+concrete schema graph; JSON and forms invoke the appropriate checked constructor
+callback. LLVM verification runs before native object generation in development
+and optimized builds. The existing web and interceptor fixtures run against the
+LLVM path during migration.
+
+Crypto and HTTP are separate prebuilt runtime components. Programs link and
+deploy the components named by their checked IR. Their GnuTLS, Nettle and GMP
+libraries remain replaceable dynamic files, with source archives, August adapter
+sources, build recipes and notices in the deployment metadata. Maintainer builds
+target macOS 14 and reject binaries with a higher deployment requirement. The
+macOS 14 consumer gate must qualify this expanded pack before release; local
+execution on a newer Mac does not establish that platform requirement.
+
 ## Delivery order
 
 | Step | Work | Acceptance |

@@ -12,6 +12,8 @@
 - Release transferred owned task inputs when a sibling cancels the task before its first instruction. Verify immediate cleanup through both backends and with real LibTorch handle counters.
 - Reject inferred task results from functions that return `own`: the current `Task<T>` contract cannot transfer that ownership. Report the limitation before either backend can silently downgrade a native handle.
 - Give the consuming `Shared` builtin explicit capture ownership, preserve cancellation before catch handling, and release try-local owned values before `always` on every exit. Suspend pending errors/cancellation while local drop methods finish, then restore them.
+- Lower JSON schemas, clocks, crypto, HTTP handlers, policies, forms, streaming, HTML actions and interceptor chains through LLVM. Share concrete schemas and constructor callback dispatch between backends. Verify LLVM IR before object generation, and run the existing runtime fixtures against the LLVM backend.
+- Package macOS 14 crypto and HTTP runtime components with relocatable dynamic dependencies, redistribution notices and corresponding sources. Link and deploy only the components a checked program requires. Reject dependency binaries that require a newer macOS version.
 
 - Wait for npm's public registry to expose an accepted upload before publishing the next package. Visibility checks remain bounded; authorization, service, and integrity errors stop the deployment immediately.
 
