@@ -1,5 +1,6 @@
 import { cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
+import '../scripts/generate-snippets.mjs';
 
 const root = resolve(import.meta.dirname, '..');
 const target = join(import.meta.dirname, 'compiler');
@@ -18,4 +19,6 @@ cpSync(join(root, 'examples'), join(target, 'examples'), { recursive: true,
 cpSync(join(root, 'README.md'), join(target, 'README.md'));
 for (const file of ['LICENSE', 'THIRD_PARTY_NOTICES.md']) cpSync(join(root, file), join(target, file));
 const manifest = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
+for (const dependency of ['tar', 'chownr', 'yallist', 'minipass', 'minizlib', '@isaacs/fs-minipass'])
+  cpSync(join(root, 'node_modules', dependency), join(target, 'node_modules', dependency), { recursive: true });
 writeFileSync(join(target, 'package.json'), JSON.stringify({ ...manifest, private: false }, null, 2) + '\n');

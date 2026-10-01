@@ -30,7 +30,7 @@ pageClass: aug-example-page
 
 ```aug [Indentation]
 // aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
-import parse from august.json
+import parse from json
 import Payload from data
 int checksum = 0
 int index = 0
@@ -48,7 +48,7 @@ catch JsonError error:
 
 ```aug [Braces]
 // aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
-import parse from august.json
+import parse from json
 import Payload from data
 int checksum = 0
 int index = 0
@@ -77,13 +77,13 @@ catch JsonError error {
 
 ### Startup
 
-It sets `checksum` and `index` separately, each to `0`. While `index` is less than `5000`, it sets `document` to [`parse`](dependencies/august/0.19.0/json/contracts.md#symbol-parse) with `input` `"{\"id\":7,\"message\":\"hello\",\"values\":[1,2,3]}"`. It sets `payload` to `document.decode` for [`Payload`](data.md#symbol-Payload). It sets `encoded` to `stringify` on a `Json` with `value` from `payload`.
+It sets `checksum` and `index` separately, each to `0`. While `index` is less than `5000`, it sets `document` to [`parse`](dependencies/packages/%40git/url_2d3c37c690c0fa115be1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.md#symbol-parse) with `input` `"{\"id\":7,\"message\":\"hello\",\"values\":[1,2,3]}"`. It sets `payload` to `document.decode` for [`Payload`](data.md#symbol-Payload). It sets `encoded` to `stringify` on a `Json` with `value` from `payload`.
 
 It sets `checksum` to (`checksum` plus `payload.id`) plus the byte length of `encoded`. It increases `index` by `1`. After the loop, it prints `checksum`. If this work raises `JsonError`, it calls `exit` with `status` `1`.
 
 ### Dependencies
 
-It uses [`parse`](dependencies/august/0.19.0/json/contracts.md#symbol-parse) from `august.json`. It uses [`Payload`](data.md#symbol-Payload) (`id`) from `data`. These links explain the full dependency contracts.
+It uses [`parse`](dependencies/packages/%40git/url_2d3c37c690c0fa115be1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.md#symbol-parse) from `json`. It uses [`Payload`](data.md#symbol-Payload) (`id`) from `data`.
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).
 

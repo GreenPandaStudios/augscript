@@ -56,7 +56,7 @@ It sets `resource` of type [`Resource`](resource.md#symbol-Resource) to a [`Reso
 
 ### Dependencies
 
-It uses [`Resource`](resource.md#symbol-Resource) from `resource`. These links explain the full dependency contracts.
+It uses [`Resource`](resource.md#symbol-Resource) from `resource`.
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).
 

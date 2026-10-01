@@ -62,7 +62,7 @@ It prints [`load`](errors.md#symbol-load) with `fail` `true`. If this work raise
 
 ### Dependencies
 
-It uses [`load`](errors.md#symbol-load) from `errors`. These links explain the full dependency contracts.
+It uses [`load`](errors.md#symbol-load) from `errors`.
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).
 

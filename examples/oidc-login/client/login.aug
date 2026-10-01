@@ -3,10 +3,10 @@ import LoginTransaction and SessionClaims and SessionError from contracts
 import discover and responseJson and validateIdentity from protocol
 import TokenResponse and UserInfo from provider
 import settings and SigningKeys and KeyError and securityHeaders and withCookie from common
-import Crypto and RsaJwks and signJwt and JwtError from august.crypto
-import Clock from august.time
-import HttpClient and urlEncode from august.web
-import ExpiringStore and StoreFull from august.memory
+import Crypto and RsaJwks and signJwt and JwtError from crypto
+import Clock from time
+import HttpClient and urlEncode from web
+import ExpiringStore and StoreFull from memory
 
 /** Start a browser-bound, short-lived transaction. The PKCE verifier stays on the server. */
 endpoint GET "/login/start" as startLogin(resolve Crypto crypto, resolve Clock clock, resolve HttpClient client, resolve ExpiringStore<LoginTransaction> transactions) unless SessionError with status 502 and CryptoError with status 503 and TimeError with status 503 and StoreFull with status 503 and HttpError:

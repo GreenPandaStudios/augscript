@@ -1,5 +1,5 @@
 // aug-spec: "credentials.aug.md" explains this file. Read it before changes; refresh with aug spec.
-import Crypto from august.crypto
+import Crypto from crypto
 /** One development account with a PBKDF2-HMAC-SHA256 verifier. Production account storage is deliberately a separate capability. */
 verifyCredentials(string username, string password, resolve Crypto crypto) :
     if username.length() > 64 or password.length() > 256:

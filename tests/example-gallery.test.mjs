@@ -99,7 +99,7 @@ test('downloaded projects extract and check independently, including the neighbo
       const paths=readdirSync(join(temporary,folder),{recursive:true});
       assert.ok(paths.some(path=>path.endsWith('.aug.md')),example.path+': include compiled explanations');
       assert.ok(!paths.some(path=>path.split('/').some(part=>['.aug-build','.aug-packages','node_modules'].includes(part))),example.path+': no build or installed state');
-      if(example.path==='examples/packages/app')installPackages(directory,false,true);
+      installPackages(directory,false,false);
       const project=loadProject(directory), checked=checkProject(project), discovered=discoverTests(project);
       const cases=checkUnitTests(project,discovered.tests);
       const errors=[...checked.diagnostics,...discovered.diagnostics,...cases.flatMap(item=>item.checked.diagnostics)].filter(item=>item.severity!=='warning');

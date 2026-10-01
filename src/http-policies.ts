@@ -44,7 +44,7 @@ export function checkHttpPolicy(annotation: InterceptorAnnotation, fn: MethodDec
       const [type,operation]=spec.slice(11).split('.'),index=fn.params.findIndex(param=>param.name===entry.source);
       const param=fn.params[index];
       if(entry.value||!param?.injected||param.type.name!==type||param.type.nullable||param.type.optional)report(`${name}.${entry.name} maps an explicit resolve ${type} endpoint parameter`);
-      else if(!canonical(param,type))report(`${name}.${entry.name} requires the august.web ${type} capability`);
+      else if(!canonical(param,type))report(`${name}.${entry.name} requires a compatible ${type} capability from the web library`);
       else {dependencies[Object.keys(specs[name]).filter(key=>specs[name][key].startsWith('dependency:')).indexOf(entry.name)]=index;if(fn.uses?.length&&!fn.uses.some(effect=>effect.source===param.name&&effect.operation===operation))report(`Declare uses ${param.name}.${operation} for ${name}`);}
       continue;
     }

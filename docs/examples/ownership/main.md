@@ -58,7 +58,7 @@ It sets `counter` of type [`Counter`](counter.md#symbol-Counter) to a [`Counter`
 
 ### Dependencies
 
-It uses [`Counter`](counter.md#symbol-Counter) ([`increment`](counter.md#symbol-Counter.increment) and [`read`](counter.md#symbol-Counter.read)) from `counter`. These links explain the full dependency contracts.
+It uses [`Counter`](counter.md#symbol-Counter) ([`increment`](counter.md#symbol-Counter.increment) and [`read`](counter.md#symbol-Counter.read)) from `counter`.
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).
 

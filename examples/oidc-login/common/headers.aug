@@ -9,4 +9,4 @@ withCookie(Headers headers, string name, string value, string path, int maxAge, 
     for content in cookie(name, value, path, maxAge, secure).all(name="set-cookie"):
         result = result.with(name="set-cookie", value=content)
     return result
-import cookie from august.web
+import cookie from web

@@ -16,7 +16,7 @@ import { updateSpecHints } from './spec-hints.ts';
 import { runLanguageServer } from './lsp.ts';
 import { benchmark, compileNative, writeCoverage } from './native.ts';
 import {generateOpenApi} from './openapi.ts';
-import { initPackage, installPackages, preparePackage, packPackage, prepareRunPackages } from './package-manager.ts';
+import { addPackage, initPackage, installPackages, preparePackage, packPackage, prepareRunPackages } from './package-manager.ts';
 import { initProject } from './project-init.ts';
 import { prepareNativeDependencies } from '../scripts/native-setup.mjs';
 
@@ -57,7 +57,7 @@ function printDiagnostics(diagnostics: Diagnostic[], json: boolean, root: string
 function usage(): void {
   process.stdout.write(`AugScript compiler\n\n` +
     `Usage: aug <init|check|build|run|emit-c|test|openapi|format|migrate|spec|bench|explain|context|lsp|symbols|definition|complete|hover|fixes|semantic-tokens> [project directory] [options] [-- args]\n` +
-    `New application: aug init DIRECTORY\n` +
+    `New application: aug init DIRECTORY [--template hello|weather]\n` +
     `Run: aug run [project directory] [--offline] [-- args] — prepare dependencies, compile, and start\n` +
     `Tests: aug test [project directory] [GROUP_NAME] [--group GROUP_NAME] [--list] [--coverage] [--json] [--timeout milliseconds]\n` +
     `Format: aug format [project directory] [--file path] [--write]\n` +
@@ -66,7 +66,7 @@ function usage(): void {
     `Context: aug context [project directory] [--file path] [--name declaration] [--budget characters]\n` +
     `Benchmark: aug bench [project directory] [--iterations 10] [--warmup 2] [--json] [-- args]\n` +
     `Packages: aug package init DIRECTORY --name @owner/name; aug package pack DIRECTORY\n` +
-    `Dependencies: aug install [project directory] [--frozen] [--offline]\n` +
+    `Dependencies: aug add URL --as NAME [--project DIRECTORY]; aug install [project directory] [--frozen|--update] [--offline]\n` +
     `Entry point: main.aug at the project root.\n`);
 }
 
@@ -78,12 +78,28 @@ export async function main(argv: string[]): Promise<number> {
     return 0;
   }
   if (!command || command === '--help' || command === 'help') { usage(); return 0; }
-  if (command === 'init') {
-    if (argv.length !== 2 || !argv[1] || argv[1].startsWith('--')) {
-      process.stderr.write('Use aug init DIRECTORY\n'); return 2;
+  if (command === 'add') {
+    const aliasIndex = argv.indexOf('--as'), projectIndex = argv.indexOf('--project');
+    if (!argv[1] || argv[1].startsWith('--') || aliasIndex < 0 || !argv[aliasIndex + 1]) {
+      process.stderr.write('Use aug add URL --as NAME [--project DIRECTORY] [--offline]\n'); return 2;
+    }
+    for (let index = 2; index < argv.length; index++) {
+      if (['--as', '--project'].includes(argv[index])) { if (!argv[++index] || argv[index].startsWith('--')) return 2; }
+      else if (argv[index] !== '--offline') { process.stderr.write('Unknown add option: ' + argv[index] + '\n'); return 2; }
     }
     try {
-      const root = initProject(argv[1]);
+      const alias = argv[aliasIndex + 1], root = resolve(projectIndex < 0 ? process.cwd() : argv[projectIndex + 1]);
+      const lock = addPackage(root, argv[1], alias, argv.includes('--offline'));
+      process.stdout.write(`Added ${alias}; installed ${lock.packages.length} source package(s).\nImport public names with: import NAME from ${alias}\n`); return 0;
+    } catch (error) { process.stderr.write(failureMessage(error) + '\n'); return 1; }
+  }
+  if (command === 'init') {
+    const template = argv.length === 2 ? 'hello' : argv[2] === '--template' && argv.length === 4 ? argv[3] : undefined;
+    if (!argv[1] || argv[1].startsWith('--') || !['hello', 'weather'].includes(template ?? '')) {
+      process.stderr.write('Use aug init DIRECTORY [--template hello|weather]\n'); return 2;
+    }
+    try {
+      const root = initProject(argv[1], template as 'hello' | 'weather');
       process.stdout.write(`Created August application in ${root}\nNext: cd ${argv[1]}\n      aug run\n`);
       return 0;
     } catch (error) { process.stderr.write(failureMessage(error) + '\n'); return 1; }
@@ -93,13 +109,14 @@ export async function main(argv: string[]): Promise<number> {
       const root = resolve((command === 'install' ? argv[1] : argv[2]) && !(command === 'install' ? argv[1] : argv[2]).startsWith('--')
         ? (command === 'install' ? argv[1] : argv[2]) : process.cwd());
       if (command === 'install') {
-        const lock = installPackages(root, argv.includes('--frozen'), argv.includes('--offline'));
+        const lock = installPackages(root, argv.includes('--frozen'), argv.includes('--offline'), argv.includes('--update'));
         process.stdout.write(`Installed ${lock.packages.length} August package(s); aug.lock.json is current.\n`);
       } else if (argv[1] === 'init') {
-        const name = argv[argv.indexOf('--name') + 1];
-        if (!argv.includes('--name') || !name) throw new Error('Use aug package init DIRECTORY --name @owner/name');
-        initPackage(root, name); process.stdout.write(`Created August library ${name} in ${root}\n`);
+        const name = argv.includes('--name') ? argv[argv.indexOf('--name') + 1] : root.split(/[\\/]/).at(-1)!;
+        if (!name) throw new Error('Use aug package init DIRECTORY [--name @owner/name]');
+        initPackage(root, name, argv.includes('--name')); process.stdout.write(`Created August library ${name} in ${root}\n`);
       } else if (argv[1] === 'pack') {
+        prepareRunPackages(root);
         preparePackage(root);
         const project = loadProject(root), checked = checkProject(project);
         const tests = checkUnitTests(project, discoverTests(project).tests);

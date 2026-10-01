@@ -1,6 +1,6 @@
 # Ownership and task conformance
 
-August 0.19 checks ownership before compiling and joins every child before its `scope` ends. This page records the behavior exercised by the [language conformance suite](../tests/language-conformance.test.mjs). It is a candidate 1.0 contract; the [compatibility policy](compatibility.md) takes effect only with a 1.0 release.
+August 0.20 checks ownership before compiling and joins every child before its `scope` ends. This page records the behavior exercised by the [language conformance suite](../tests/language-conformance.test.mjs). It is a candidate 1.0 contract; the [compatibility policy](compatibility.md) takes effect only with a 1.0 release.
 
 ## What the compiler guarantees
 

@@ -8,21 +8,21 @@ Listen on `127.0.0.1`. Limit request bodies to 16384 bytes and buffered response
 
 ## Providers
 
-`Crypto` is provided by [`GnuTlsCrypto`](.aug-spec/august/0.19.0/crypto/contracts.aug.md#symbol-GnuTlsCrypto). The same instance is shared. `Clock` is provided by [`SystemClock`](.aug-spec/august/0.19.0/time/contracts.aug.md#symbol-SystemClock). The same instance is shared.
+`Crypto` is provided by [`GnuTlsCrypto`](.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-GnuTlsCrypto). The same instance is shared. `Clock` is provided by [`SystemClock`](.aug-spec/packages/%40git/url_c092cd151499c4e1d8a1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-SystemClock). The same instance is shared.
 
-`HttpClient` is provided by [`WebHttpClient`](.aug-spec/august/0.19.0/web/contracts.aug.md#symbol-WebHttpClient). The same instance is shared.
+`HttpClient` is provided by [`WebHttpClient`](.aug-spec/packages/%40git/url_897efafd565158fc4908/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-WebHttpClient). The same instance is shared.
 
 `SigningKeys` is provided by [`MemorySigningKeys`](common/keys.aug.md#symbol-MemorySigningKeys). The same instance is shared. Shared mutation is allowed.
 
-`ExpiringStore<LoginTransaction>` is provided by [`MemoryStore<LoginTransaction>`](.aug-spec/august/0.19.0/memory/store.aug.md#symbol-MemoryStore). The same instance is shared. Shared mutation is allowed.
+`ExpiringStore<LoginTransaction>` is provided by [`MemoryStore<LoginTransaction>`](.aug-spec/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-MemoryStore). The same instance is shared. Shared mutation is allowed.
 
-`ExpiringStore<AuthorizationRequest>` is provided by [`MemoryStore<AuthorizationRequest>`](.aug-spec/august/0.19.0/memory/store.aug.md#symbol-MemoryStore). The same instance is shared. Shared mutation is allowed.
+`ExpiringStore<AuthorizationRequest>` is provided by [`MemoryStore<AuthorizationRequest>`](.aug-spec/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-MemoryStore). The same instance is shared. Shared mutation is allowed.
 
-`ExpiringStore<AuthorizationCode>` is provided by [`MemoryStore<AuthorizationCode>`](.aug-spec/august/0.19.0/memory/store.aug.md#symbol-MemoryStore). The same instance is shared. Shared mutation is allowed.
+`ExpiringStore<AuthorizationCode>` is provided by [`MemoryStore<AuthorizationCode>`](.aug-spec/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-MemoryStore). The same instance is shared. Shared mutation is allowed.
 
-`ExpiringStore<SessionClaims>` is provided by [`MemoryStore<SessionClaims>`](.aug-spec/august/0.19.0/memory/store.aug.md#symbol-MemoryStore). The same instance is shared. Shared mutation is allowed.
+`ExpiringStore<SessionClaims>` is provided by [`MemoryStore<SessionClaims>`](.aug-spec/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-MemoryStore). The same instance is shared. Shared mutation is allowed.
 
-`ExpiringStore<AccessGrant>` is provided by [`MemoryStore<AccessGrant>`](.aug-spec/august/0.19.0/memory/store.aug.md#symbol-MemoryStore). The same instance is shared. Shared mutation is allowed.
+`ExpiringStore<AccessGrant>` is provided by [`MemoryStore<AccessGrant>`](.aug-spec/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-MemoryStore). The same instance is shared. Shared mutation is allowed.
 
 ## Startup
 
@@ -30,8 +30,8 @@ It tries to call [`initializeKeys`](common/keys.aug.md#symbol-initializeKeys) us
 
 ## Dependencies
 
-It uses [`GnuTlsCrypto`](.aug-spec/august/0.19.0/crypto/contracts.aug.md#symbol-GnuTlsCrypto) from `august.crypto`. It uses [`MemoryStore`](.aug-spec/august/0.19.0/memory/store.aug.md#symbol-MemoryStore) from `august.memory`. It uses [`SystemClock`](.aug-spec/august/0.19.0/time/contracts.aug.md#symbol-SystemClock) from `august.time`. It uses [`WebHttpClient`](.aug-spec/august/0.19.0/web/contracts.aug.md#symbol-WebHttpClient) from `august.web`.
+It uses [`MemoryStore`](.aug-spec/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-MemoryStore) from `memory`. It uses [`WebHttpClient`](.aug-spec/packages/%40git/url_897efafd565158fc4908/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-WebHttpClient) from `web`. It uses [`GnuTlsCrypto`](.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-GnuTlsCrypto) from `crypto`. It uses [`SystemClock`](.aug-spec/packages/%40git/url_c092cd151499c4e1d8a1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-SystemClock) from `time`.
 
-It uses [`home`](client/endpoints.aug.md#symbol-home), [`me`](client/endpoints.aug.md#symbol-me), [`loginCallback`](client/login.aug.md#symbol-loginCallback), [`startLogin`](client/login.aug.md#symbol-startLogin), and [`logout`](client/logout.aug.md#symbol-logout) from `client`. It uses [`KeyError`](common/keys.aug.md#symbol-KeyError), [`MemorySigningKeys`](common/keys.aug.md#symbol-MemorySigningKeys), and [`initializeKeys`](common/keys.aug.md#symbol-initializeKeys) from `common`. It uses [`authorize`](provider/authorization.aug.md#symbol-authorize), [`providerLogin`](provider/authorization.aug.md#symbol-providerLogin), [`discovery`](provider/discovery.aug.md#symbol-discovery), [`jwks`](provider/discovery.aug.md#symbol-jwks), [`token`](provider/token.aug.md#symbol-token), and [`userinfo`](provider/userinfo.aug.md#symbol-userinfo) from `provider`. These links explain the full dependency contracts.
+It uses [`home`](client/endpoints.aug.md#symbol-home), [`me`](client/endpoints.aug.md#symbol-me), [`loginCallback`](client/login.aug.md#symbol-loginCallback), [`startLogin`](client/login.aug.md#symbol-startLogin), and [`logout`](client/logout.aug.md#symbol-logout) from `client`. It uses [`KeyError`](common/keys.aug.md#symbol-KeyError), [`MemorySigningKeys`](common/keys.aug.md#symbol-MemorySigningKeys), and [`initializeKeys`](common/keys.aug.md#symbol-initializeKeys) from `common`. It uses [`authorize`](provider/authorization.aug.md#symbol-authorize), [`providerLogin`](provider/authorization.aug.md#symbol-providerLogin), [`discovery`](provider/discovery.aug.md#symbol-discovery), [`jwks`](provider/discovery.aug.md#symbol-jwks), [`token`](provider/token.aug.md#symbol-token), and [`userinfo`](provider/userinfo.aug.md#symbol-userinfo) from `provider`.
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).

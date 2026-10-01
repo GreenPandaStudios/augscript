@@ -4,7 +4,7 @@ import {tmpdir} from 'node:os';
 import {loadProject} from '../src/project.ts';
 import {checkProject} from '../src/checker.ts';
 import {loadConfig} from '../src/config.ts';
-import {installPackages} from '../src/package-manager.ts';
+import {installPackages, packageSpecifications} from '../src/package-manager.ts';
 import {formatFile} from '../src/formatter.ts';
 import {parse} from '../src/parser.ts';
 import {generateSpecs, updateSpecs} from '../src/spec.ts';
@@ -28,10 +28,10 @@ export const exampleDirectory=example=>'docs/examples/'+slug(example);
 export const exampleDownload=example=>'docs/public/downloads/'+slug(example)+'.zip';
 const npmAug='aug';
 const downloadFiles=directory=>readdirSync(directory,{withFileTypes:true}).flatMap(entry=>{
-  if(entry.name.startsWith('.')&&entry.name!=='.aug-spec'||['node_modules','dist','aug.lock.json'].includes(entry.name))return [];
+  if(entry.name.startsWith('.')&&entry.name!=='.aug-spec'||['node_modules','dist'].includes(entry.name))return [];
   const file=join(directory,entry.name);
   if(entry.isDirectory())return downloadFiles(file);
-  return /(?:\.aug(?:\.md)?|\.yaml|\.json|\.c|\.h)$/.test(entry.name)?[file]:[];
+  return /(?:\.aug(?:\.md)?|\.yaml|\.json|\.c|\.h|\.http)$/.test(entry.name)||['AGENTS.md','README.md'].includes(entry.name)?[file]:[];
 });
 
 function checkedProject(project) {
@@ -53,10 +53,10 @@ export function withExampleProject(example, action, overrides) {
     cpSync(origin,destination,{recursive:true,filter:path=>{
       if(path===origin)return true;
       const name=basename(path);
-      return !name.startsWith('.')&&!['node_modules','dist','aug.lock.json'].includes(name)&&!name.endsWith('.aug.md')&&!/\.(?:tgz|tar\.gz)$/.test(name);
+      return !name.startsWith('.')&&!['node_modules','dist'].includes(name)&&!name.endsWith('.aug.md')&&!/\.(?:tgz|tar\.gz)$/.test(name);
     }});
     const directory=packages?join(destination,basename(source)):destination;
-    if(Object.keys(loadConfig(directory).config.packages).length)installPackages(directory,false,true);
+    if(Object.keys(packageSpecifications(directory,loadConfig(directory).config.packages)).length)installPackages(directory,existsSync(join(directory,'aug.lock.json')),false);
     const project=loadProject(directory,overrides), checked=checkedProject(project);
     return action({project,checked,directory,source});
   } finally {rmSync(temporary,{recursive:true,force:true});}

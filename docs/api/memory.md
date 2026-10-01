@@ -6,11 +6,9 @@ editLink: false
 
 # august.memory
 
-Public declarations exported by this module. Import names explicitly from `august.memory`. Built-in wire/value types are described in [language constructs](../language-constructs.md).
+Install this source library with `aug add https://github.com/GreenPandaStudios/augscript/src/stdlib/memory --as memory`, then import its public names from `memory`.
 
-- [StoreFull](#api-StoreFull)
-- [ExpiringStore](#api-ExpiringStore)
-- [MemoryStore](#api-MemoryStore)
+The signatures below include checked results and failures, including those inferred from a body. See [packages](../packages.md) for revision pinning and [language constructs](../language-constructs.md) for built-in value types.
 
 ## StoreFull {#api-StoreFull}
 
@@ -35,30 +33,36 @@ A bounded, expiring capability for immutable values. Each generic DI binding has
 ### ExpiringStore.put
 
 ```text
-put(string key, T value, int expires, int now) uses ExpiringStore.put unless StoreFull
+put(string key, T value, int expires, int now) unless StoreFull
 ```
 
 Remove expired entries, then store at most 512 live entries. Time is supplied by the caller.
+
+Requires `ExpiringStore.put`.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/memory/store.aug#L10)
 
 ### ExpiringStore.take
 
 ```text
-take(string key, int now) returns optional T uses ExpiringStore.take
+take(string key, int now) returns optional T
 ```
 
 Atomically remove a value. Expired or absent entries return null.
+
+Requires `ExpiringStore.take`.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/memory/store.aug#L12)
 
 ### ExpiringStore.get
 
 ```text
-get(string key, int now) returns optional T uses ExpiringStore.get
+get(string key, int now) returns optional T
 ```
 
 Read a live value without consuming it.
+
+Requires `ExpiringStore.get`.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/memory/store.aug#L14)
 
@@ -75,12 +79,12 @@ A synchronized table with short critical sections and no I/O while locked.
 ### MemoryStore.put
 
 ```text
-put(string key, T value, int expires, int now)
+put(string key, T value, int expires, int now) unless StoreFull
 ```
 
 Remove expired entries, then store at most 512 live entries. Time is supplied by the caller.
 
-The compiler infers use of `ExpiringStore<T>.put`, `StoreFull` failures.
+Requires `ExpiringStore<T>.put`.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/memory/store.aug#L19)
 
@@ -92,7 +96,7 @@ take(string key, int now) returns optional T
 
 Atomically remove a value. Expired or absent entries return null.
 
-The compiler infers use of `ExpiringStore<T>.take`.
+Requires `ExpiringStore<T>.take`.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/memory/store.aug#L28)
 
@@ -104,6 +108,6 @@ get(string key, int now) returns optional T
 
 Read a live value without consuming it.
 
-The compiler infers use of `ExpiringStore<T>.get`.
+Requires `ExpiringStore<T>.get`.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/memory/store.aug#L37)

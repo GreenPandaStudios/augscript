@@ -210,6 +210,26 @@ test('formatting empty indentation bodies retains following declaration document
   } finally { rmSync(root, { recursive: true, force: true }); }
 });
 
+test('formatting long nested calls wraps source and remains stable in both block styles', () => {
+  for(const style of ['indent', 'braces']) {
+    const root=create({'main.aug':'', 'main.yaml':`block_style: ${style}\n`, 'data.aug': `record Forecast(string date, int temperatureC, int temperatureF, string summary)
+forecasts() {
+  return [Forecast(date="2026-01-01", temperatureC=0, temperatureF=32, summary="Below freezing temperatures"), Forecast(date="2026-01-02", temperatureC=10, temperatureF=50, summary="Cool"), Forecast(date="2026-01-03", temperatureC=20, temperatureF=68, summary="Mild")]
+}
+`});
+    try {
+      const formatted=command(root,'format',['--write']); assert.equal(formatted.status,0,formatted.stderr);
+      const file=join(root,'data.aug'),source=readFileSync(file,'utf8');
+      assert.match(source,/return \[\n\s+Forecast\(/);
+      assert.match(source,/Forecast\(\n\s+date=/);
+      assert.ok(source.split('\n').every(line=>line.length<=90),source);
+      const check=command(root,'check',['--json']); assert.equal(check.status,0,check.stdout||check.stderr);
+      const again=command(root,'format',['--json']); assert.equal(again.status,0,again.stderr);
+      assert.equal(JSON.parse(again.stdout).find(entry=>entry.file===file).text,source);
+    } finally {rmSync(root,{recursive:true,force:true});}
+  }
+});
+
 test('context describes rejection layers, generic contracts and stable public surfaces', () => {
   const root = create({ 'main.aug': '', 'values.aug': `Failure() implements Error {}
 interceptor Validate<T> {

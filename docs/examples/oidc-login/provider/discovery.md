@@ -51,12 +51,26 @@ pageClass: aug-example-page
 ```aug [Indentation]
 // aug-spec: "discovery.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import settings and SigningKeys and KeyError from common
-import Crypto and RsaJwks and rsaJwk from august.crypto
+import Crypto and RsaJwks and rsaJwk from crypto
 /** Discovery advertises exactly this provider's supported authorization-code profile. */
 record Discovery(string issuer, string authorization_endpoint, string token_endpoint, string userinfo_endpoint, string jwks_uri, List<string> response_types_supported, List<string> grant_types_supported, List<string> subject_types_supported, List<string> id_token_signing_alg_values_supported, List<string> token_endpoint_auth_methods_supported, List<string> scopes_supported, List<string> claims_supported, List<string> code_challenge_methods_supported)
 endpoint GET "/provider/.well-known/openid-configuration" as discovery():
     config = settings()
-    return Discovery(issuer=config.issuer, authorization_endpoint=config.issuer + "/authorize", token_endpoint=config.issuer + "/token", userinfo_endpoint=config.issuer + "/userinfo", jwks_uri=config.issuer + "/jwks", response_types_supported=["code"], grant_types_supported=["authorization_code"], subject_types_supported=["public"], id_token_signing_alg_values_supported=["RS256"], token_endpoint_auth_methods_supported=["none"], scopes_supported=["openid", "profile"], claims_supported=["iss", "sub", "aud", "exp", "iat", "nonce", "name"], code_challenge_methods_supported=["S256"])
+    return Discovery(
+        issuer=config.issuer,
+        authorization_endpoint=config.issuer + "/authorize",
+        token_endpoint=config.issuer + "/token",
+        userinfo_endpoint=config.issuer + "/userinfo",
+        jwks_uri=config.issuer + "/jwks",
+        response_types_supported=["code"],
+        grant_types_supported=["authorization_code"],
+        subject_types_supported=["public"],
+        id_token_signing_alg_values_supported=["RS256"],
+        token_endpoint_auth_methods_supported=["none"],
+        scopes_supported=["openid", "profile"],
+        claims_supported=["iss", "sub", "aud", "exp", "iat", "nonce", "name"],
+        code_challenge_methods_supported=["S256"]
+    )
 /** Only the provider's public signing key is published. Session keys never enter this JWKS. */
 endpoint GET "/provider/jwks" as jwks(resolve Crypto crypto, resolve SigningKeys keys):
     publicKey = crypto.publicRsa(key=keys.provider())
@@ -66,12 +80,26 @@ endpoint GET "/provider/jwks" as jwks(resolve Crypto crypto, resolve SigningKeys
 ```aug [Braces]
 // aug-spec: "discovery.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import settings and SigningKeys and KeyError from common
-import Crypto and RsaJwks and rsaJwk from august.crypto
+import Crypto and RsaJwks and rsaJwk from crypto
 /** Discovery advertises exactly this provider's supported authorization-code profile. */
 record Discovery(string issuer, string authorization_endpoint, string token_endpoint, string userinfo_endpoint, string jwks_uri, List<string> response_types_supported, List<string> grant_types_supported, List<string> subject_types_supported, List<string> id_token_signing_alg_values_supported, List<string> token_endpoint_auth_methods_supported, List<string> scopes_supported, List<string> claims_supported, List<string> code_challenge_methods_supported)
 endpoint GET "/provider/.well-known/openid-configuration" as discovery() {
     config = settings()
-    return Discovery(issuer=config.issuer, authorization_endpoint=config.issuer + "/authorize", token_endpoint=config.issuer + "/token", userinfo_endpoint=config.issuer + "/userinfo", jwks_uri=config.issuer + "/jwks", response_types_supported=["code"], grant_types_supported=["authorization_code"], subject_types_supported=["public"], id_token_signing_alg_values_supported=["RS256"], token_endpoint_auth_methods_supported=["none"], scopes_supported=["openid", "profile"], claims_supported=["iss", "sub", "aud", "exp", "iat", "nonce", "name"], code_challenge_methods_supported=["S256"])
+    return Discovery(
+        issuer=config.issuer,
+        authorization_endpoint=config.issuer + "/authorize",
+        token_endpoint=config.issuer + "/token",
+        userinfo_endpoint=config.issuer + "/userinfo",
+        jwks_uri=config.issuer + "/jwks",
+        response_types_supported=["code"],
+        grant_types_supported=["authorization_code"],
+        subject_types_supported=["public"],
+        id_token_signing_alg_values_supported=["RS256"],
+        token_endpoint_auth_methods_supported=["none"],
+        scopes_supported=["openid", "profile"],
+        claims_supported=["iss", "sub", "aud", "exp", "iat", "nonce", "name"],
+        code_challenge_methods_supported=["S256"]
+    )
 }
 /** Only the provider's public signing key is published. Session keys never enter this JWKS. */
 endpoint GET "/provider/jwks" as jwks(resolve Crypto crypto, resolve SigningKeys keys) {
@@ -100,13 +128,13 @@ Discovery advertises exactly this provider's supported authorization-code profil
 
 ### `jwks` · [source](discovery.md#code) {#symbol-jwks}
 
-`jwks` handles `GET /provider/jwks`. Only the provider's public signing key is published. Session keys never enter this JWKS. It gets `crypto` ([`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto)) and `keys` ([`SigningKeys`](../common/keys.md#symbol-SigningKeys)) from dependency injection.
+`jwks` handles `GET /provider/jwks`. Only the provider's public signing key is published. Session keys never enter this JWKS. It gets `crypto` ([`Crypto`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto)) and `keys` ([`SigningKeys`](../common/keys.md#symbol-SigningKeys)) from dependency injection.
 
-It can also raise `CryptoError` and `KeyError`. It sets `publicKey` to [`crypto.publicRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.publicRsa) with `key` from [`keys.provider`](../common/keys.md#symbol-SigningKeys.provider). It returns a [`RsaJwks`](../dependencies/august/0.19.0/crypto/jose.md#symbol-RsaJwks) with `keys` from a list containing [`rsaJwk`](../dependencies/august/0.19.0/crypto/jose.md#symbol-rsaJwk) with `publicKey` and `kid` `"provider-1"` using injected `crypto`.
+It can also raise `CryptoError` and `KeyError`. It sets `publicKey` to [`crypto.publicRsa`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto.publicRsa) with `key` from [`keys.provider`](../common/keys.md#symbol-SigningKeys.provider). It returns a [`RsaJwks`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.md#symbol-RsaJwks) with `keys` from a list containing [`rsaJwk`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.md#symbol-rsaJwk) with `publicKey` and `kid` `"provider-1"` using injected `crypto`.
 
 ### Dependencies
 
-It uses [`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto) ([`exportRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.exportRsa) and [`publicRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.publicRsa)), [`RsaJwks`](../dependencies/august/0.19.0/crypto/jose.md#symbol-RsaJwks), and [`rsaJwk`](../dependencies/august/0.19.0/crypto/jose.md#symbol-rsaJwk) from `august.crypto`. It uses [`KeyError`](../common/keys.md#symbol-KeyError), [`SigningKeys`](../common/keys.md#symbol-SigningKeys) ([`provider`](../common/keys.md#symbol-SigningKeys.provider)), and [`settings`](../common/settings.md#symbol-settings) from `common`. It uses [`Settings`](../common/settings.md#symbol-Settings) (`issuer`). These links explain the full dependency contracts.
+It uses [`Crypto`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto) ([`exportRsa`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto.exportRsa) and [`publicRsa`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto.publicRsa)), [`RsaJwks`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.md#symbol-RsaJwks), and [`rsaJwk`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.md#symbol-rsaJwk) from `crypto`. It uses [`KeyError`](../common/keys.md#symbol-KeyError), [`SigningKeys`](../common/keys.md#symbol-SigningKeys) ([`provider`](../common/keys.md#symbol-SigningKeys.provider)), and [`settings`](../common/settings.md#symbol-settings) from `common`. It uses [`Settings`](../common/settings.md#symbol-Settings) (`issuer`).
 
 ::::
 

@@ -82,19 +82,19 @@ The application's explicit startup operation.
 
 #### `Application.start` · [source](app.md#code) {#symbol-Application.start}
 
-Writes the fruit names through the selected console. It can call [`Console.write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
+Writes the fruit names through the selected console. It can call [`Console.write`](../dependencies/august/0.20.0/io/contracts.md#symbol-Console.write).
 
 ### `ApplicationImpl` · class · [source](app.md#code) {#symbol-ApplicationImpl}
 
-Construction stores dependencies; start performs the visible external work. It implements [`Application`](app.md#symbol-Application). The `console` dependency is injected as [`Console`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console) and stored read-only.
+Construction stores dependencies; start performs the visible external work. It implements [`Application`](app.md#symbol-Application). The `console` dependency is injected as [`Console`](../dependencies/august/0.20.0/io/contracts.md#symbol-Console) and stored read-only.
 
 #### `ApplicationImpl.start` · [source](app.md#code) {#symbol-ApplicationImpl.start}
 
-Writes the fruit names through the selected console. It sets `fruit` to a list containing a [`Fruit`](models.md#symbol-Fruit) with `code` `1` and `name` `"apple"`, a [`Fruit`](models.md#symbol-Fruit) with `name` `"pear"` and `code` `2`. For each `item` in a snapshot of `fruit`, it passes `item.name` to [`console.write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
+Writes the fruit names through the selected console. It sets `fruit` to a list containing a [`Fruit`](models.md#symbol-Fruit) with `code` `1` and `name` `"apple"`, a [`Fruit`](models.md#symbol-Fruit) with `name` `"pear"` and `code` `2`. For each `item` in a snapshot of `fruit`, it passes `item.name` to [`console.write`](../dependencies/august/0.20.0/io/contracts.md#symbol-Console.write).
 
 ### Dependencies
 
-It uses [`Console`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console) ([`write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write)) from `august.io`. It uses [`Fruit`](models.md#symbol-Fruit) (`name`) from `models`. These links explain the full dependency contracts.
+It uses [`Console`](../dependencies/august/0.20.0/io/contracts.md#symbol-Console) ([`write`](../dependencies/august/0.20.0/io/contracts.md#symbol-Console.write)) from `august.io`. It uses [`Fruit`](models.md#symbol-Fruit) (`name`) from `models`.
 
 ::::
 

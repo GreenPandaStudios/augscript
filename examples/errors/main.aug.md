@@ -8,6 +8,6 @@ It prints [`load`](errors.aug.md#symbol-load) with `fail` `true`. If this work r
 
 ## Dependencies
 
-It uses [`load`](errors.aug.md#symbol-load) from `errors`. These links explain the full dependency contracts.
+It uses [`load`](errors.aug.md#symbol-load) from `errors`.
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).

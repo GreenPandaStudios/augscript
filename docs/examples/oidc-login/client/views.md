@@ -92,7 +92,7 @@ It returns the server component [`Page`](../common/views.md#symbol-Page) with `t
 
 ### Dependencies
 
-It uses [`SessionClaims`](contracts.md#symbol-SessionClaims) (`csrf`, `name`, and `sub`) from `contracts`. It uses [`logout`](logout.md#symbol-logout) from `logout`. It uses [`Page`](../common/views.md#symbol-Page) from `common`. These links explain the full dependency contracts.
+It uses [`SessionClaims`](contracts.md#symbol-SessionClaims) (`csrf`, `name`, and `sub`) from `contracts`. It uses [`logout`](logout.md#symbol-logout) from `logout`. It uses [`Page`](../common/views.md#symbol-Page) from `common`.
 
 ::::
 

@@ -1,9 +1,10 @@
+import { prepareLibraryFixtures } from './library-fixtures.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {mkdtempSync, writeFileSync, readFileSync, rmSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join, resolve} from 'node:path';
-import {spawn, spawnSync} from 'node:child_process';
+import {spawn, spawnSync as fixtureSpawnSync} from 'node:child_process';
 import {createInterface} from 'node:readline';
 import {request as httpsRequest} from 'node:https';
 import {connect} from 'node:http2';
@@ -15,8 +16,8 @@ test('configured TLS verifies peers and serves HTTP/1.1, HTTP/2 and HTTP/3 throu
     const generated = spawnSync('openssl',['req','-x509','-newkey','rsa:2048','-nodes','-keyout',key,'-out',cert,'-days','1','-subj','/CN=localhost','-addext','subjectAltName=IP:127.0.0.1,DNS:localhost'],{encoding:'utf8'});
     assert.equal(generated.status,0,generated.stderr);
     writeFileSync(join(root,'main.yaml'),'web:\n  host: 127.0.0.1\n  http3: true\n  tls:\n    certificate: cert.pem\n    private_key: key.pem\n    ca: cert.pem\n');
-    writeFileSync(join(root,'main.aug'),'import answer and relay from endpoints\nimport HttpClient and WebHttpClient from august.web\nimplement HttpClient with WebHttpClient\nserve answer and relay on port 0\n');
-    writeFileSync(join(root,'endpoints.aug'),`import HttpClient from august.web
+    writeFileSync(join(root,'main.aug'),'import answer and relay from endpoints\nimport HttpClient and WebHttpClient from web\nimplement HttpClient with WebHttpClient\nserve answer and relay on port 0\n');
+    writeFileSync(join(root,'endpoints.aug'),`import HttpClient from web
 record Answer(string message)
 endpoint GET "/answer" as answer() returns Answer:
     return Answer(message="TLS verified")
@@ -54,3 +55,8 @@ endpoint GET "/relay" as relay(HttpRequest request from request, resolve HttpCli
     rmSync(root,{recursive:true,force:true});
   }
 });
+
+function spawnSync(command, args, options) {
+  if (args?.[0]?.endsWith("aug.mjs") && args[2]) prepareLibraryFixtures(args[2]);
+  return fixtureSpawnSync(command, args, options);
+}

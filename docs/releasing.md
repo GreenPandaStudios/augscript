@@ -5,7 +5,7 @@ All first-party packages and the extension use one compiler-compatible version. 
 ## Verify and create artifacts
 
 ```sh
-node scripts/version.mjs 0.19.0
+node scripts/version.mjs 0.20.0
 npm ci
 npm --prefix vscode ci
 node scripts/bootstrap-native.mjs
@@ -27,15 +27,15 @@ Update both changelogs and relevant guides, and commit regenerated docs. The fin
 After verification and committing, create and push the version tag:
 
 ```sh
-git tag v0.19.0
-git push origin main v0.19.0
+git tag v0.20.0
+git push origin main v0.20.0
 ```
 
 `release.yml` validates the tag against every manifest, runs compiler/native/docs/package gates, and uploads artifacts to a **draft prerelease**. Review the draft and publish it in GitHub Releases. `ci.yml` checks pushes and pull requests. Linux CI builds the pinned full native stack, runs the native suite, and executes core and crypto apps in the matching runtime image. macOS CI runs the same native suite with its private bootstrap.
 
 ## npm publication
 
-The intended scope is `@greenpandastudios`. Claim this npm identity or choose an owned scope consistently before the first registry release. Create the initial packages with the owner's authenticated npm account. GitHub tarballs work independently of registry setup.
+The packages use the `@greenpandastudios` npm scope. Verify ownership and each package's trusted publisher before a release. GitHub tarballs can also be installed directly.
 
 Configure a trusted publisher for each of the four npm packages:
 
@@ -68,4 +68,4 @@ Enable GitHub Pages with **GitHub Actions** as its publishing source. `docs.yml`
 
 ## Current limits
 
-August is experimental. Native web/crypto bootstrap supports macOS and Linux; other platforms are unverified. Registry and Marketplace identities require owner configuration. User-authored source packages are supported through npm transport; prebuilt native dependency releases and a stable external native adapter ABI remain future work. See [the gap ledger](web-library-gaps.md) and [performance assessment](performance.md).
+August is experimental. Native web/crypto bootstrap supports macOS and Linux; other platforms are unverified. Marketplace publication requires the publisher's identity configuration. User libraries can use public Git repositories, local folders, or npm archives. Prebuilt native dependency releases and a stable external native adapter ABI remain future work. See [the gap ledger](web-library-gaps.md) and [performance assessment](performance.md).

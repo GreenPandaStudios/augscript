@@ -14,6 +14,7 @@ import { builtinType as builtin, builtinTypes, builtinProperties, collectionOper
 import { orderGraph } from './di.ts';
 import { javadocBefore } from './javadoc.ts';
 import { callableDocumentation } from './documentation.ts';
+import { nativeHttpContracts } from './http-contracts.ts';
 import { jsonDataType } from './schemas.ts';
 import {htmlTags, htmlVoidTags, htmlAttribute, htmlUrlAttributes} from './html.ts';
 import {generateOpenApi} from './openapi.ts';
@@ -635,6 +636,21 @@ class Checker {
     return undefined;
   }
 
+  /** The native policy ABI accepts the published capability shape across source-package identities. */
+  private nativeWebCapability(type: Ty, name: string): boolean {
+    const canonical = nativeHttpContracts.get(name);
+    const shape = (value: unknown): unknown => {
+      if (Array.isArray(value)) return value.map(shape);
+      if (!value || typeof value !== 'object') return value;
+      return Object.fromEntries(Object.entries(value).filter(([key]) => !['span','nameSpan','headerEnd'].includes(key)).map(([key,child]) => [key,shape(child)]));
+    };
+    if (!canonical || !type.def || JSON.stringify(shape(type.def.node)) !== JSON.stringify(shape(canonical))) return false;
+    if (name === 'RequestLogger') return true;
+    const principal = this.project.scopes.get(type.def.file)?.get('Principal');
+    const expected = nativeHttpContracts.get('Principal');
+    return !!principal && !!expected && JSON.stringify(shape(principal.node)) === JSON.stringify(shape(expected));
+  }
+
   private planInterceptors(): void {
     const plan = (node: MethodDecl | ClassDecl, file: string, ownerTypes: Map<string, Ty>,
                   inputs: Param[], output: Ty, ownership: 'managed' | 'own') => {
@@ -650,7 +666,7 @@ class Checker {
             if(['Cors','Compress'].includes(annotation.name)&&policies.some(policy=>policy.name===annotation.name))
               this.report(annotation.span,`${annotation.name} may appear only once on an endpoint`,'HTTP');
             policies.push(checkHttpPolicy(annotation,node,this.diagnostics,(param,name)=>
-              this.resolveType(param.type,file,ownerTypes).id===`august/web/contracts.aug:${name}`));
+              this.nativeWebCapability(this.resolveType(param.type,file,ownerTypes), name)));
             this.httpPolicies.set(node,policies);
           }
           continue;

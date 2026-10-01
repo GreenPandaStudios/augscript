@@ -1,10 +1,11 @@
+import { prepareLibraryFixtures } from './library-fixtures.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { spawnSync } from 'node:child_process';
-import { loadProject } from '../src/project.ts';
+import { spawnSync as fixtureSpawnSync } from 'node:child_process';
+import { loadProject as fixtureLoadProject } from '../src/project.ts';
 import { checkProject, tyName } from '../src/checker.ts';
 import { SemanticWorkspace } from '../src/semantic.ts';
 import { generateSpecs } from '../src/spec.ts';
@@ -176,7 +177,7 @@ test('record validation infers checked failures; construction stays pure and mai
 });
 
 test('HTTP policies infer only their mapped capability operations; explicit limits still apply', () => {
-  const source = `import Authentication from august.web
+  const source = `import Authentication from web
 [RequireLogin(authentication=auth)]
 endpoint GET "/" as home(resolve Authentication auth) { return "ok" }
 `;
@@ -229,3 +230,10 @@ test('long inferred capability contracts collapse inline and remain complete in 
     for(const name of names) assert.ok(hint.tooltip.includes('Output.'+name));
   });
 });
+
+function spawnSync(command, args, options) {
+  if (args?.[0]?.endsWith("aug.mjs") && args[2]) prepareLibraryFixtures(args[2]);
+  return fixtureSpawnSync(command, args, options);
+}
+
+function loadProject(root, ...args) { prepareLibraryFixtures(root); return fixtureLoadProject(root, ...args); }

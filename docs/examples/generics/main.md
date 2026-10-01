@@ -74,7 +74,7 @@ It prints [`box.get`](types.md#symbol-Box.get).
 
 ### Dependencies
 
-It uses [`Box`](types.md#symbol-Box) ([`get`](types.md#symbol-Box.get)), [`Formatter`](types.md#symbol-Formatter) ([`format`](types.md#symbol-Formatter.format) and [`title`](types.md#symbol-Formatter.title)), and [`TextFormatter`](types.md#symbol-TextFormatter) from `types`. These links explain the full dependency contracts.
+It uses [`Box`](types.md#symbol-Box) ([`get`](types.md#symbol-Box.get)), [`Formatter`](types.md#symbol-Formatter) ([`format`](types.md#symbol-Formatter.format) and [`title`](types.md#symbol-Formatter.title)), and [`TextFormatter`](types.md#symbol-TextFormatter) from `types`.
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).
 

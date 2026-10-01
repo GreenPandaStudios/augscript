@@ -52,7 +52,7 @@ export function loadConfig(root: string): { config: Config; diagnostics: Diagnos
       if (seen.has(path)) {report(index + 1, `Duplicate configuration key ${path}`); continue;} seen.add(path);
       if (path.startsWith('packages.')) {
         if (!/^[a-z][a-z0-9_]*$/.test(entry[1]) || entry[1] === 'august' || !value)
-          report(index + 1, 'Packages map lowercase public aliases to local paths or npm:name@exact-version');
+          report(index + 1, 'Packages map lowercase public aliases to repository URLs, local paths, or npm:name@exact-version');
         else config.packages[entry[1]] = value;
         continue;
       }

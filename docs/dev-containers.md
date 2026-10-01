@@ -21,11 +21,11 @@ Save `.devcontainer/Dockerfile` with these contents. It installs the published C
 
 ```dockerfile
 FROM node:24-bookworm
-ARG AUG_VERSION=0.19.0
+ARG AUG_VERSION=0.20.0
 ENV AUG_NATIVE_HOME=/opt/augscript/.aug-native
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-       clang libclang-rt-14-dev make cmake m4 autoconf \
+       git clang libclang-rt-14-dev make cmake m4 autoconf \
        automake libtool python3 zlib1g-dev ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 RUN npm install --global --ignore-scripts --no-audit --no-fund \

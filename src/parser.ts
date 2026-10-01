@@ -369,7 +369,9 @@ class Parser {
     const names = everything ? [] : [this.expect('identifier').value];
     while (!everything && this.match('and')) names.push(this.expect('identifier').value);
     this.expect('from');
-    const from = [this.expect('identifier').value];
+    const from = [this.at('string') ? this.take().value : this.expect('identifier').value];
+    if (!/^(?:https:\/\/|git\+(?:https|file):\/\/)/.test(from[0]) && this.tokens[this.position - 1].kind === 'string')
+      throw new ParseFailure({ ...start, code:'IMPORT', message:'A quoted import source must be a public repository URL' });
     while (this.match('.')) from.push(this.expect('identifier').value);
     this.endStatement();
     return { kind: 'import', names, everything, from, span: this.span(start) };
@@ -453,6 +455,7 @@ class Parser {
     this.expect('implements');
     implemented.push(this.parseType());
     while (this.match(',')) implemented.push(this.parseType());
+    const headerEnd = this.current().span.start;
     this.openBlock(start);
     const methods: MethodDecl[] = [];
     const stateFields: NonNullable<ClassDecl['stateFields']> = [];
@@ -481,7 +484,7 @@ class Parser {
     }
     this.closeBrace();
     return { kind: 'class', name, typeParams, typeConstraints, typeVariance, fields, stateFields, constructorBody,
-      implements: implemented, methods, span: this.span(start) };
+      implements: implemented, methods, headerEnd, span: this.span(start) };
   }
 
   private parseInterface(): InterfaceDecl {
@@ -586,7 +589,7 @@ class Parser {
       const name = this.expect('identifier').value;
       typeParams.push(name);
       if (variance) typeVariance[name] = variance as 'in' | 'out';
-      if (this.match('implements')) {
+    if (this.match('implements')) {
         typeConstraints[name] = [this.parseType()];
         while (this.match('and')) typeConstraints[name].push(this.parseType());
       }

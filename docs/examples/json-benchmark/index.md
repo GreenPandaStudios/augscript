@@ -19,6 +19,7 @@ Open a file to read its source beside the explanation produced by `aug spec`. **
 - [`main.aug`](main.md)
 - [`data.aug`](data.md)
 
+- [`main.yaml`](main-yaml.md)
 
 ## Try this project
 

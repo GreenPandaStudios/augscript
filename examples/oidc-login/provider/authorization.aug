@@ -3,10 +3,10 @@ import AuthorizationRequest and AuthorizationCode and LoginForm and LoginError f
 import ProviderLogin and ProviderFailure from views
 import verifyCredentials from credentials
 import settings and securityHeaders and withCookie from common
-import Crypto from august.crypto
-import Clock from august.time
-import ExpiringStore and StoreFull from august.memory
-import urlEncode from august.web
+import Crypto from crypto
+import Clock from time
+import ExpiringStore and StoreFull from memory
+import urlEncode from web
 
 /** Validate the registered client before offering a login form. A malformed redirect is never followed. */
 endpoint GET "/provider/authorize" as authorize(string response_type from query, string client_id from query, string redirect_uri from query, string requestedScope from query "scope", string state from query, string nonce from query, string code_challenge from query, string code_challenge_method from query, resolve Crypto crypto, resolve Clock clock, resolve ExpiringStore<AuthorizationRequest> requests) unless LoginError with status 400 and CryptoError with status 503 and TimeError with status 503 and StoreFull with status 503 and HttpError:

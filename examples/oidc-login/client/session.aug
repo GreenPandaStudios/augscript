@@ -1,9 +1,9 @@
 // aug-spec: "session.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import SessionClaims and SessionError from contracts
 import settings and SigningKeys and KeyError from common
-import Crypto and verifyJwt and JwtError from august.crypto
-import Clock from august.time
-import ExpiringStore from august.memory
+import Crypto and verifyJwt and JwtError from crypto
+import Clock from time
+import ExpiringStore from memory
 
 /** An app session has its own key, issuer, audience and token type. A live registry entry is required so logout revokes a signed token immediately. */
 authenticate(optional string token, resolve Crypto crypto, resolve Clock clock, resolve SigningKeys keys, resolve ExpiringStore<SessionClaims> sessions) :

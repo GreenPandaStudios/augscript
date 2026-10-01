@@ -77,15 +77,19 @@ export async function runLanguageServer(root: string): Promise<number> {
       else if (message.method === 'textDocument/completion') result = view.complete(offset).map(item => ({ label: item.label,
         kind: ({ method: 2, function: 3, variable: 6, class: 7, interface: 8, property: 10, keyword: 14, snippet: 15, type: 25 } as Record<string, number>)[item.kind] ?? 6,
         detail: item.detail, documentation: { kind: 'markdown', value: item.documentation ?? '' }, insertText: item.insertText ?? item.label,
-        insertTextFormat: item.kind === 'snippet' ? 2 : 1 }));
+        insertTextFormat: item.insertText ? 2 : 1, sortText: item.sortText,
+        textEdit: item.replacement ? { range: {start:positionAt(view.source,item.replacement.start),end:positionAt(view.source,item.replacement.end)}, newText:item.insertText ?? item.label } : undefined,
+        additionalTextEdits: item.additionalEdits?.map(edit => ({range:{start:positionAt(view.source,edit.start),end:positionAt(view.source,edit.end)},newText:edit.text})) }));
       else if (message.method === 'textDocument/definition') { const target = view.definition(offset); result = target ? { uri: pathToFileURL(target.file).href,
         range: { start: { line: target.line - 1, character: target.column - 1 }, end: { line: target.line - 1, character: target.column } } } : null; }
       else if (message.method === 'textDocument/formatting') result = [{ range: { start: { line: 0, character: 0 }, end: positionAt(view.source, view.source.length) }, newText: view.format() }];
-      else if (message.method === 'textDocument/codeAction') result = view.fixes().map(fix => {
+      else if (message.method === 'textDocument/codeAction') result = view.fixes().filter(fix =>
+        !params.range || fix.issue.line - 1 >= params.range.start.line && fix.issue.line - 1 <= params.range.end.line).map(fix => {
         const changes: Record<string, { range: unknown; newText: string }[]> = {};
         for (const edit of fix.edits) { const source = workspace.document(edit.file).source, uri = pathToFileURL(edit.file).href;
           (changes[uri] ??= []).push({ range: { start: positionAt(source, edit.start), end: positionAt(source, edit.end) }, newText: edit.text }); }
-        return { title: fix.title, kind: 'quickfix', edit: { changes } };
+        return { title: fix.title, kind: 'quickfix', isPreferred: fix.preferred, diagnostics: [{ code:fix.issue.code, message:fix.issue.message,
+          range:{start:{line:fix.issue.line-1,character:fix.issue.column-1},end:{line:fix.issue.line-1,character:fix.issue.column}} }], edit: { changes } };
       });
       else if (message.method === 'textDocument/semanticTokens/full') {
         let line = 0, column = 0; const data: number[] = [];

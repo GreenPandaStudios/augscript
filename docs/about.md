@@ -8,7 +8,7 @@ August's two tenets are **simplicity** and **developer scalability**. A reader s
 
 Calls use labels, such as `total(price=7, quantity=3)`. You can read the role of each input at the call site. Files import the names they use, and folders expose their public surface through `export.aug`. An underscore keeps a name private to its scope.
 
-Interfaces state the operations that callers can use. Application startup selects their implementations, and `resolve` inputs show which dependencies construction or a call requires. Capability contracts describe I/O. `changes` describes mutation. `unless` names checked failures. Read access can share an object; mutation requires permission expressed in code.
+Interfaces state the operations that callers can use. Application startup selects their implementations, and `resolve` inputs show which dependencies construction or a call requires. Capability contracts describe I/O. The checker infers mutation and checked failures from executable bodies; editor hints and compiled specs display them. Bodyless contracts use `changes` and `unless` to state those limits. Read access can share an object; mutation requires permission expressed in code.
 
 Tests live with the declaration they describe. `aug spec` produces a neighboring Markdown explanation from checked code and links to the exact dependency surfaces. It includes comments when they are present. The explanation supports review; tests and compiler checks still have their own jobs.
 

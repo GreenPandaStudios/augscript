@@ -16,4 +16,4 @@ It returns the server component [`Page`](../common/views.aug.md#symbol-Page) wit
 
 ## Dependencies
 
-It uses [`SessionClaims`](contracts.aug.md#symbol-SessionClaims) (`csrf`, `name`, and `sub`) from `contracts`. It uses [`logout`](logout.aug.md#symbol-logout) from `logout`. It uses [`Page`](../common/views.aug.md#symbol-Page) from `common`. These links explain the full dependency contracts.
+It uses [`SessionClaims`](contracts.aug.md#symbol-SessionClaims) (`csrf`, `name`, and `sub`) from `contracts`. It uses [`logout`](logout.aug.md#symbol-logout) from `logout`. It uses [`Page`](../common/views.aug.md#symbol-Page) from `common`.

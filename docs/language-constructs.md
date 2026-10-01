@@ -474,7 +474,7 @@ Negotiate gzip from Accept-Encoding, respecting q=0. Buffered output and each bo
 ConversionError implements Error
 ```
 
-Checked failure when c_int(value=number) cannot fit the signed 32-bit C int range. Catch it or declare unless ConversionError.
+Checked failure when c_int(value=number) cannot fit the signed 32-bit C int range. Catch it or let it propagate.
 
 ## cookie
 
@@ -582,7 +582,7 @@ Boolean false. and and or evaluate the right side only when needed. Conditions r
 FileError
 ```
 
-Built in checked error from text file operations. Catch it or declare `unless FileError`.
+Checked failure from text file operations. Catch it or let it propagate.
 
 ## fixture
 
@@ -750,7 +750,7 @@ Marks a declaration as a class and lists the interfaces it satisfies. Every clas
 import Logger and ConsoleLogger from logging
 ```
 
-Bring public declarations into this file. Use `and` for several names, or `import everything from logging` for all public sibling declarations or folder exports. Imported dependencies are never re-exported implicitly. Names or modules starting with `_` stay private. A sibling module uses its filename without `.aug`; a folder exposes only names listed in `export.aug`.
+Bring public declarations into this file. Use `and` for several names, or `import everything from logging` for all public sibling declarations or folder exports. Imported dependencies are never re-exported implicitly. Names or modules starting with `_` stay private. A sibling module uses its filename without `.aug`; a folder exposes only names listed in `export.aug`. A quoted public repository URL declares a source dependency; `aug run` installs it and locks its commit. Use `aug add URL --as NAME` for a shorter import alias.
 
 ## in
 
@@ -774,7 +774,7 @@ Expand an explicitly imported composition into the application root. Duplicate b
 IndexError implements Error
 ```
 
-Checked failure for an invalid List.get position. Catch it, declare unless IndexError, or use List.at for a nullable lookup.
+Checked failure for an invalid List.get position. Catch it or let it propagate. List.at returns a value or null instead.
 
 ## initialize
 
@@ -782,7 +782,7 @@ Checked failure for an invalid List.get position. Catch it, declare unless Index
 initialize: ...
 ```
 
-Run constructor work once after header inputs and local fields are initialized, before returning the class or record. Put this block inside the declaration, before class methods. Construction stays pure. Records can validate inputs and raise declared unless errors, but cannot replace immutable fields.
+Run constructor work once after header inputs and local fields are initialized, before returning the class or record. Put this block inside the declaration, before class methods. Construction stays pure. Records can validate inputs and raise checked errors, but cannot replace immutable fields.
 
 ## input
 
@@ -830,7 +830,7 @@ Define a test case within a when group. Names may be identifiers or quoted descr
 Json
 ```
 
-Immutable JSON data. Parse with august.json, decode concrete records with decode<T>(), and stringify with lossless integer handling.
+Immutable JSON data. Import parse from the JSON source package, decode concrete records with decode<T>(), and stringify with lossless integer handling.
 
 ## List
 
@@ -970,7 +970,7 @@ Bind a required path placeholder by name. A label after the source can select a 
 print(value=any) returns void
 ```
 
-Composition and test output. Other callables receive Console and declare uses console.write.
+Write application startup or test output. Other callables receive a Console dependency and call console.write; their bodies infer that capability use.
 
 ## pure
 

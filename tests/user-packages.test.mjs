@@ -42,7 +42,7 @@ test('authors create and pack libraries; applications import verified source and
     assert.deepEqual(issues, []);
     const current=readFileSync(join(app,'main.aug'),'utf8');
     const target = definitionAt(project, join(app, 'main.aug'), current.indexOf('from') + 1);
-    assert.ok(target.file.endsWith('/math/src/export.aug'));
+    assert.ok(target.file.endsWith('/src/export.aug'));
     const hover = new SemanticWorkspace(app).document(join(app, 'main.aug')).hover(current.indexOf('add from'));
     assert.match(hover.documentation, /Add two integers/);
     const workspace = new SemanticWorkspace(app), unfinished = main + 'import ';
@@ -57,7 +57,7 @@ test('authors create and pack libraries; applications import verified source and
     writeFileSync(join(app, 'main.aug'), 'import _private from math\n');
     assert.match(run('check', app).stderr, /private/);
     writeFileSync(join(app, 'main.aug'), main);
-    writeFileSync(join(app, '.aug-packages/node_modules/math/src/arithmetic.aug'), 'add(int left, int right) returns int { return 0 }\n');
+    writeFileSync(join(project.packages.roots.get('math').sourceRoot, 'arithmetic.aug'), 'add(int left, int right) returns int { return 0 }\n');
     assert.match(run('check', app).stderr, /changed/);
     ok('install', app, '--frozen', '--offline');
     assert.equal(ok('run', app), '5\n');

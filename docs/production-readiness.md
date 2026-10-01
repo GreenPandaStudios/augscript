@@ -1,6 +1,6 @@
 # Production readiness and dependencies
 
-August 0.19 is experimental. The compiler, CLI, packages, standard declarations, and editor can be tried today; the project does not claim general production readiness. Use the [getting-started guide](getting-started.md) for a first application, [the roadmap](roadmap.md) for release gates, and [the compatibility page](compatibility.md) for the proposed 1.0 support contract.
+August 0.20 is experimental. The compiler, CLI, packages, standard declarations, and editor can be tried today; the project does not claim general production readiness. Use the [getting-started guide](getting-started.md) for a first application, [the roadmap](roadmap.md) for release gates, and [the compatibility page](compatibility.md) for the proposed 1.0 support contract.
 
 ## What is measured and verified
 
@@ -12,10 +12,11 @@ The same-app [OpenID Connect example](examples/oidc-login/index.md) proves integ
 
 ## Dependencies and licenses
 
-The npm CLI and three August library packages have **no npm production dependencies outside their matching August packages**. The VS Code extension's npm audit currently reports zero advisories. The wiki build uses VitePress and a pinned Vite override; run `npm audit` before each release. npm audit only covers npm packages and cannot certify native code or deployment configuration.
+The CLI uses its matching core August library and `tar` 7.5.22 for registry archive extraction. The extension bundles that parser and its JavaScript dependencies. The VS Code extension's npm audit currently reports zero advisories. The wiki build uses VitePress and a pinned Vite override; run `npm audit` before each release. npm audit only covers npm packages and cannot certify native code or deployment configuration.
 
 | Dependency | Role | License from upstream | Distribution consideration |
 | --- | --- | --- | --- |
+| tar, chownr, yallist, minipass, minizlib, @isaacs/fs-minipass | Archive extraction in the CLI and extension | ISC, MIT, or BlueOak-1.0.0, as recorded in each package | Preserve the bundled license files and review npm audit before release. |
 | minicoro | Portable task runtime source | Public domain or MIT No Attribution | Source is fetched with a checked SHA-256. |
 | yyjson | JSON source | MIT | Source is fetched with a checked SHA-256. |
 | libwebsockets | Native HTTP library | MIT core; bundled portions have their own notices | Static link in a full native build; preserve applicable notices. |

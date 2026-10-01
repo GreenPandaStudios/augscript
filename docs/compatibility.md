@@ -1,6 +1,6 @@
 # Compatibility and supported platforms
 
-August 0.19 is a preview. This page states the proposed 1.0 compatibility contract and the evidence still needed before it takes effect. The [roadmap](roadmap.md) tracks that release gate.
+August 0.20 is a preview. This page states the proposed 1.0 compatibility contract and the evidence still needed before it takes effect. The [roadmap](roadmap.md) tracks that release gate.
 
 The [ownership and task conformance page](language-conformance.md) records executable candidate behavior for moves, aliasing, cleanup, cancellation, and delayed errors.
 
@@ -10,7 +10,7 @@ The [ownership and task conformance page](language-conformance.md) records execu
 | --- | --- |
 | August source | Accepted syntax, import visibility, labeled calls, types, ownership, effects, checked errors, tasks, and same-file tests keep their documented meaning through 1.x. Minor releases can add syntax or APIs. |
 | CLI and project files | Documented `aug` commands, `main.yaml` keys, `aug-package.json`, and `aug.lock.json` retain compatible reading within 1.x. New fields have defaults; removing or changing a field requires a major release. |
-| First-party packages | CLI, standard, web, and crypto packages use one exact version. A release tests installed tarballs together; mixing versions is unsupported. User packages declare a compatible compiler range and retain their own public `export.aug` surface. |
+| First-party packages | CLI, standard, web, and crypto packages use one exact version. A release tests installed tarballs together; mixing versions is unsupported. Explicit user manifests currently require the exact compiler version and retain their own public `export.aug` surface. |
 | Generated specifications | `aug spec` remains deterministic for a given compiler and project. Text and layout can improve between versions; tools should link to source and declarations rather than parse Markdown prose. |
 | Native boundary | `extern C` uses documented C-width mappings and the target platform's C ABI. The generated C runtime and `AugValue` layout are compiler-private today. Before 1.0, the project must either publish and test a versioned adapter ABI or keep that runtime surface private and verify that public `extern C` adapters need no private structure. |
 
@@ -18,7 +18,7 @@ A change that makes valid 1.x source fail to compile, changes its observable beh
 
 ## Migration between versions
 
-Each release documents source, configuration, package, and native changes in the changelog. When spelling can be changed safely, `aug migrate PROJECT` performs or suggests the edit. For changes requiring a choice, the diagnostic explains the alternatives without rewriting behavior silently. Upgrade the four first-party packages and the extension together, then run:
+Each release documents source, configuration, package, and native changes in the changelog. When spelling can be changed safely, `aug migrate PROJECT` performs or suggests the edit. For changes requiring a choice, the diagnostic explains the alternatives without rewriting behavior silently. Upgrade the compiler and extension together; update source dependencies deliberately with `aug install --update`, then run:
 
 ```sh
 aug check PROJECT

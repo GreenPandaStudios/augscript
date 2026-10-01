@@ -1,9 +1,10 @@
+import { prepareLibraryFixtures } from './library-fixtures.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {mkdtempSync, writeFileSync, rmSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join, resolve} from 'node:path';
-import {spawn, spawnSync} from 'node:child_process';
+import {spawn, spawnSync as fixtureSpawnSync} from 'node:child_process';
 import {createInterface} from 'node:readline';
 import {request} from 'node:http';
 
@@ -92,11 +93,11 @@ test('an endpoint can await an HTTP request to its own August application', asyn
   const root = mkdtempSync(join(tmpdir(), 'aug-self-http-')); let server;
   try {
     writeFileSync(join(root, 'main.aug'), `import answer and relay from endpoints
-import HttpClient and WebHttpClient from august.web
+import HttpClient and WebHttpClient from web
 implement HttpClient with WebHttpClient
 serve answer and relay on port 0
 `);
-    writeFileSync(join(root, 'endpoints.aug'), `import HttpClient from august.web
+    writeFileSync(join(root, 'endpoints.aug'), `import HttpClient from web
 record Answer(string message)
 endpoint GET "/answer" as answer() returns Answer:
     return Answer(message="provider and client share this process")
@@ -125,3 +126,8 @@ endpoint GET "/relay" as relay(HttpRequest request from request, resolve HttpCli
     rmSync(root, {recursive:true, force:true});
   }
 });
+
+function spawnSync(command, args, options) {
+  if (args?.[0]?.endsWith("aug.mjs") && args[2]) prepareLibraryFixtures(args[2]);
+  return fixtureSpawnSync(command, args, options);
+}

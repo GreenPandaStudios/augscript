@@ -1,10 +1,11 @@
+import { prepareLibraryFixtures } from './library-fixtures.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, readFileSync, writeFileSync, rmSync, existsSync, statSync, symlinkSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
-import { spawnSync } from 'node:child_process';
-import { loadProject } from '../src/project.ts';
+import { spawnSync as fixtureSpawnSync } from 'node:child_process';
+import { loadProject as fixtureLoadProject } from '../src/project.ts';
 import { checkProject } from '../src/checker.ts';
 import { discoverTests, checkUnitTests, mergeTestAnalysis } from '../src/testing.ts';
 import { generateSpecs, updateSpecs } from '../src/spec.ts';
@@ -79,6 +80,23 @@ test('specs explain all local behavior and only the dependency surface used by w
   assert.doesNotMatch(service,/Author documentation|What it does|In this file|Shared language rules|\n\n\n/);
   assert.match(main,/Built-in operations follow.*language reference/);
   assert.doesNotMatch(service,/^\s*(?:-|\d+\.) /m,'generated behavior must be prose, without outline lists');
+}));
+
+test('literal record lists state fields once and retain every row in order', () => project({
+  'main.aug': '',
+  'data.aug': `record Forecast(string date, int temperature, string summary)
+forecasts() {
+  return [Forecast(date="Monday", temperature=1, summary="Cold"), Forecast(date="Tuesday", temperature=2, summary="Cool"), Forecast(date="Wednesday", temperature=3, summary="Mild")]
+}
+computed(int value) {
+  return [Forecast(date="Monday", temperature=1, summary="Cold"), Forecast(date="Tuesday", temperature=2, summary="Cool"), Forecast(date="Wednesday", temperature=value, summary="Mild")]
+}
+`,
+}, root => {
+  const state=checked(root); valid(state);
+  const spec=generateSpecs(state).find(output=>output.path===join(root,'data.aug.md')).text;
+  assert.match(spec,/a list of 3 .*Forecast.*records, with `\(date, temperature, summary\)` values of `\("Monday", 1, "Cold"\)`.*`\("Tuesday", 2, "Cool"\)`.*`\("Wednesday", 3, "Mild"\)`, in that order/);
+  assert.match(spec,/temperature.*`value`/,'computed inputs must keep their individual explanations');
 }));
 
 test('spec generation is byte deterministic across project locations and validates all offline links', () => {
@@ -248,7 +266,7 @@ describe(optional string text) returns string {
 first(List<optional int> values) returns optional int unless IndexError { return values.get(index=0) }
 `,
   'main.aug':`import Note and describe and first from values
-import parse from august.json
+import parse from json
 print(value=describe())
 print(value=describe(text=null))
 print(value=describe(text="present"))
@@ -474,3 +492,10 @@ test('Type? and missing are rejected; simple migration uses optional Type and nu
   const conflict=parse(file.path,'read(optional string? value) returns string { match value { when missing { return "missing" } when null { return "null" } when some text { return text } } }');
   assert.throws(()=>migrateFile(state,conflict.file),/Merge the old missing and null/);
 }));
+
+function spawnSync(command, args, options) {
+  if (args?.[0]?.endsWith("aug.mjs") && args[2]) prepareLibraryFixtures(args[2]);
+  return fixtureSpawnSync(command, args, options);
+}
+
+function loadProject(root, ...args) { prepareLibraryFixtures(root); return fixtureLoadProject(root, ...args); }

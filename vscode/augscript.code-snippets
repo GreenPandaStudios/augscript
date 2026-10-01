@@ -1,0 +1,320 @@
+{
+  "Immutable data with named fields": {
+    "prefix": "record",
+    "body": [
+      "record ${1:User}(${2:string name})"
+    ],
+    "description": "Immutable data with named fields"
+  },
+  "A public behavior contract": {
+    "prefix": "interface",
+    "body": [
+      "interface ${1:Greeter}:",
+      "    ${2:greet}(${3:string name}) returns ${4:string}"
+    ],
+    "description": "A public behavior contract"
+  },
+  "An explicit I/O contract": {
+    "prefix": "capability",
+    "body": [
+      "capability ${1:Logger}:",
+      "    ${2:log}(${3:string message}) uses ${1:Logger}.${2:log}"
+    ],
+    "description": "An explicit I/O contract"
+  },
+  "A class implementing an interface": {
+    "prefix": "implementation",
+    "body": [
+      "${1:SimpleGreeter}(${2:resolve Logger logger}) implements ${3:Greeter}:",
+      "    ${4:greet}(${5:string name}):",
+      "        $0"
+    ],
+    "description": "A class implementing an interface"
+  },
+  "A function or method with an inferred result": {
+    "prefix": "method",
+    "body": [
+      "${1:calculate}(${2:int value}):",
+      "    $0"
+    ],
+    "description": "A function or method with an inferred result"
+  },
+  "A generic identity function": {
+    "prefix": "generic",
+    "body": [
+      "${1:identity}<T>(T value):",
+      "    return value"
+    ],
+    "description": "A generic identity function"
+  },
+  "Initialize constructor fields or validate a record": {
+    "prefix": "initialize",
+    "body": [
+      "initialize:",
+      "    $0"
+    ],
+    "description": "Initialize constructor fields or validate a record"
+  },
+  "Import a public declaration": {
+    "prefix": "import",
+    "body": [
+      "import ${1:Name} from ${2:module}"
+    ],
+    "description": "Import a public declaration"
+  },
+  "Import directly from a public Git repository": {
+    "prefix": "importurl",
+    "body": [
+      "import ${1:Name} from \"https://github.com/${2:owner}/${3:library}\""
+    ],
+    "description": "Import directly from a public Git repository"
+  },
+  "Expose one declaration from a sibling file": {
+    "prefix": "export",
+    "body": [
+      "export ${1:Name} from ${2:file}"
+    ],
+    "description": "Expose one declaration from a sibling file"
+  },
+  "Expose a child module with its own export.aug": {
+    "prefix": "exportfolder",
+    "body": [
+      "export folder ${1:module}"
+    ],
+    "description": "Expose a child module with its own export.aug"
+  },
+  "Select a dependency provider in main.aug": {
+    "prefix": "implement",
+    "body": [
+      "implement ${1:Contract} with ${2:Provider}"
+    ],
+    "description": "Select a dependency provider in main.aug"
+  },
+  "Resolve a dependency explicitly": {
+    "prefix": "resolve",
+    "body": [
+      "resolve ${1:Contract} to ${2:service}"
+    ],
+    "description": "Resolve a dependency explicitly"
+  },
+  "Conditional code": {
+    "prefix": "if",
+    "body": [
+      "if ${1:condition}:",
+      "    $0"
+    ],
+    "description": "Conditional code"
+  },
+  "Two alternatives": {
+    "prefix": "ifelse",
+    "body": [
+      "if ${1:condition}:",
+      "    $2",
+      "else:",
+      "    $0"
+    ],
+    "description": "Two alternatives"
+  },
+  "Visit collection values": {
+    "prefix": "for",
+    "body": [
+      "for ${1:item} in ${2:items}:",
+      "    $0"
+    ],
+    "description": "Visit collection values"
+  },
+  "Repeat while a condition holds": {
+    "prefix": "while",
+    "body": [
+      "while ${1:condition}:",
+      "    $0"
+    ],
+    "description": "Repeat while a condition holds"
+  },
+  "Handle a value or null": {
+    "prefix": "matchoptional",
+    "body": [
+      "match ${1:value}:",
+      "    when some ${2:item}:",
+      "        $3",
+      "    when null:",
+      "        $0"
+    ],
+    "description": "Handle a value or null"
+  },
+  "Recover from a checked failure": {
+    "prefix": "try",
+    "body": [
+      "try:",
+      "    $1",
+      "catch ${2:FileError} ${3:error}:",
+      "    $0"
+    ],
+    "description": "Recover from a checked failure"
+  },
+  "Grant bounded mutable access": {
+    "prefix": "borrow",
+    "body": [
+      "borrow ${1:value}:",
+      "    $0"
+    ],
+    "description": "Grant bounded mutable access"
+  },
+  "Start and join a child computation": {
+    "prefix": "scope",
+    "body": [
+      "scope:",
+      "    ${1:pending} = start ${2:load}(${3:})",
+      "    wait for ${1:pending} as ${4:result}",
+      "    $0"
+    ],
+    "description": "Start and join a child computation"
+  },
+  "Join two computations": {
+    "prefix": "waitall",
+    "body": [
+      "wait for ${1:loadingUsers} and ${2:loadingOrders} as ${3:users} and ${4:orders}"
+    ],
+    "description": "Join two computations"
+  },
+  "Access shared mutable state inside a bounded lock": {
+    "prefix": "lock",
+    "body": [
+      "lock ${1:shared} as ${2:value}:",
+      "    $0"
+    ],
+    "description": "Access shared mutable state inside a bounded lock"
+  },
+  "Contain a native C call": {
+    "prefix": "unsafe",
+    "body": [
+      "unsafe:",
+      "    $0"
+    ],
+    "description": "Contain a native C call"
+  },
+  "Start a native HTTP listener": {
+    "prefix": "serve",
+    "body": [
+      "serve ${1:endpoint} on port ${2:8787}"
+    ],
+    "description": "Start a native HTTP listener"
+  },
+  "A typed GET endpoint": {
+    "prefix": "endpointget",
+    "body": [
+      "endpoint GET \"${1:/items}\" as ${2:handler}(${3:}):",
+      "    $0"
+    ],
+    "description": "A typed GET endpoint"
+  },
+  "A typed POST endpoint": {
+    "prefix": "endpointpost",
+    "body": [
+      "endpoint POST \"${1:/items}\" as ${2:handler}(${3:}):",
+      "    $0"
+    ],
+    "description": "A typed POST endpoint"
+  },
+  "A typed PATCH endpoint": {
+    "prefix": "endpointpatch",
+    "body": [
+      "endpoint PATCH \"${1:/items}\" as ${2:handler}(${3:}):",
+      "    $0"
+    ],
+    "description": "A typed PATCH endpoint"
+  },
+  "A typed DELETE endpoint": {
+    "prefix": "endpointdelete",
+    "body": [
+      "endpoint DELETE \"${1:/items}\" as ${2:handler}(${3:}):",
+      "    $0"
+    ],
+    "description": "A typed DELETE endpoint"
+  },
+  "An endpoint yielding server-sent events": {
+    "prefix": "stream",
+    "body": [
+      "endpoint GET \"${1:/events}\" as ${2:events}() streams ServerEvent<string>:",
+      "    yield ServerEvent(data=${3:\"hello\"})"
+    ],
+    "description": "An endpoint yielding server-sent events"
+  },
+  "An embeddable server-rendered HTML component": {
+    "prefix": "component",
+    "body": [
+      "${1:Heading}(string text) returns Html:",
+      "    return <h1>{text}</h1>"
+    ],
+    "description": "An embeddable server-rendered HTML component"
+  },
+  "A same-file function test": {
+    "prefix": "test",
+    "body": [
+      "test ${1:calculate}:",
+      "    when ${2:inputs}:",
+      "        it ${3:works}:",
+      "            assert(condition=${4:true})"
+    ],
+    "description": "A same-file function test"
+  },
+  "Fresh setup for each class test": {
+    "prefix": "testclass",
+    "body": [
+      "test ${1:Worker} ${2:worker}:",
+      "    when ${3:ready}:",
+      "        ${2:worker} = ${1:Worker}(${4:})",
+      "        it ${5:works}:",
+      "            assert(condition=${6:true})"
+    ],
+    "description": "Fresh setup for each class test"
+  },
+  "Exercise the real endpoint pipeline": {
+    "prefix": "testendpoint",
+    "body": [
+      "test endpoint ${1:handler} client:",
+      "    when requests:",
+      "        it succeeds:",
+      "            response = client.request(method=\"GET\", path=\"${2:/items}\")",
+      "            assert(condition=response.status == 200)"
+    ],
+    "description": "Exercise the real endpoint pipeline"
+  },
+  "A named test case": {
+    "prefix": "it",
+    "body": [
+      "it ${1:works}:",
+      "    assert(condition=${2:true})"
+    ],
+    "description": "A named test case"
+  },
+  "A reusable same-file test fixture": {
+    "prefix": "fixture",
+    "body": [
+      "fixture ${1:sample}():",
+      "    return ${2:42}"
+    ],
+    "description": "A reusable same-file test fixture"
+  },
+  "Wrap a call and preserve its result": {
+    "prefix": "interceptor",
+    "body": [
+      "interceptor ${1:Audit}<T>():",
+      "    around():",
+      "        result = next()",
+      "        $0",
+      "        return result"
+    ],
+    "description": "Wrap a call and preserve its result"
+  },
+  "Document intent and labeled inputs": {
+    "prefix": "javadoc",
+    "body": [
+      "/**",
+      " * ${1:Explain why this declaration exists.}",
+      " * @param ${2:name} ${3:What the input means.}",
+      " */"
+    ],
+    "description": "Document intent and labeled inputs"
+  }
+}

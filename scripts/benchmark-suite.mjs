@@ -6,6 +6,7 @@ import os from 'node:os';
 import { spawn, spawnSync } from 'node:child_process';
 import { createInterface } from 'node:readline';
 import {httpLoad, statistics as stats} from './http-load.mjs';
+import { prepareRunPackages } from '../src/package-manager.ts';
 import { loadProject } from '../src/project.ts';
 import { checkProject } from '../src/checker.ts';
 import { generateC } from '../src/codegen.ts';
@@ -54,7 +55,10 @@ function native(name, template, replace) {
   const directory = join(build, name); mkdirSync(directory, { recursive: true });
   cpSync(join(sources, template), directory, { recursive: true, filter: file => !file.includes('.aug-build') });
   if (replace) { const file = join(directory, 'main.aug'); writeFileSync(file, readFileSync(file, 'utf8').replaceAll(replace[0], replace[1])); }
-  writeFileSync(join(directory, 'main.yaml'), 'optimization: release\nweb:\n  host: "127.0.0.1"\n');
+  const configuration = join(directory,'main.yaml');
+  const before = existsSync(configuration) ? readFileSync(configuration,'utf8') : '';
+  writeFileSync(configuration, before + '\noptimization: release\nweb:\n  host: "127.0.0.1"\n');
+  prepareRunPackages(directory);
   const start = performance.now(), checked = checkProject(loadProject(directory));
   assert.deepEqual(checked.diagnostics.filter(issue => issue.severity !== 'warning'), []);
   const generated = generateC(checked), frontendMs = performance.now() - start;

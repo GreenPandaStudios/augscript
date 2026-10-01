@@ -58,7 +58,7 @@ It serves [`reply`](routes.md#symbol-reply) on port `0`.
 
 ### Dependencies
 
-It uses [`reply`](routes.md#symbol-reply) from `routes`. These links explain the full dependency contracts.
+It uses [`reply`](routes.md#symbol-reply) from `routes`.
 
 ::::
 

@@ -1,6 +1,6 @@
 {
   "name": "augscript",
-  "version": "0.19.0",
+  "version": "0.20.0",
   "description": "August language development monorepo",
   "license": "MIT",
   "repository": {
@@ -29,9 +29,10 @@
     "package:extension": "npm --prefix vscode run package"
   },
   "devDependencies": {
-    "@types/node": "24.19.0",
     "@types/markdown-it-container": "4.0.1",
+    "@types/node": "24.19.0",
     "markdown-it-container": "4.0.0",
+    "tar": "7.5.22",
     "typescript": "5.9.3",
     "vitepress": "1.6.4"
   },

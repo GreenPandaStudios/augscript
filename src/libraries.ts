@@ -20,7 +20,7 @@ export function standardLibraries(): StandardLibraries {
       throw new Error(`August ${name} must match compiler ${version}; reinstall the CLI and its pinned libraries.`);
     return join(dirname(file), manifest.source);
   };
-  return { root: load('stdlib'), modules: new Map([['web', load('web')], ['crypto', load('crypto')]]) };
+  return { root: load('stdlib'), modules: new Map() };
 }
 
 export function libraryChild(libraries: StandardLibraries, folder: string, name: string): string {

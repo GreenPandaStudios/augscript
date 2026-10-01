@@ -4,7 +4,7 @@
 
 ## Providers
 
-`Console` is provided by [`SystemConsole`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-SystemConsole). The same instance is shared. `Logger` is provided by [`ConsoleLogger`](logging.aug.md#symbol-ConsoleLogger). The same instance is shared.
+`Console` is provided by [`SystemConsole`](.aug-spec/august/0.20.0/io/contracts.aug.md#symbol-SystemConsole). The same instance is shared. `Logger` is provided by [`ConsoleLogger`](logging.aug.md#symbol-ConsoleLogger). The same instance is shared.
 
 ## Startup
 
@@ -14,8 +14,6 @@ It tries to call [`describe`](app.aug.md#symbol-describe) with `x` `-1` and `lab
 
 ## Dependencies
 
-It uses [`SystemConsole`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-SystemConsole) from `august.io`. It uses [`Greeter`](app.aug.md#symbol-Greeter) ([`greet`](app.aug.md#symbol-Greeter.greet)) and [`describe`](app.aug.md#symbol-describe) from `app`. It uses [`ValidationError`](interceptors.aug.md#symbol-ValidationError) from `interceptors`. It uses [`ConsoleLogger`](logging.aug.md#symbol-ConsoleLogger) from `logging`.
-
-These links explain the full dependency contracts.
+It uses [`SystemConsole`](.aug-spec/august/0.20.0/io/contracts.aug.md#symbol-SystemConsole) from `august.io`. It uses [`Greeter`](app.aug.md#symbol-Greeter) ([`greet`](app.aug.md#symbol-Greeter.greet)) and [`describe`](app.aug.md#symbol-describe) from `app`. It uses [`ValidationError`](interceptors.aug.md#symbol-ValidationError) from `interceptors`. It uses [`ConsoleLogger`](logging.aug.md#symbol-ConsoleLogger) from `logging`.
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).

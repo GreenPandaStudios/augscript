@@ -4,7 +4,7 @@
 
 ## Providers
 
-`Console` is provided by [`SystemConsole`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-SystemConsole). The same instance is shared.
+`Console` is provided by [`SystemConsole`](.aug-spec/august/0.20.0/io/contracts.aug.md#symbol-SystemConsole). The same instance is shared.
 
 `Application` is provided by [`ApplicationImpl`](domain/app.aug.md#symbol-ApplicationImpl). The same instance is shared. It requires bindings for `Console`. Include providers from [`Counters`](counters.aug.md#symbol-Counters).
 
@@ -20,6 +20,6 @@ It calls [`double`](domain/numbers.aug.md#symbol-double) with `amount` `-1`. If 
 
 ## Dependencies
 
-It uses [`SystemConsole`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-SystemConsole) from `august.io`. It uses [`Counter`](counters.aug.md#symbol-Counter) ([`increment`](counters.aug.md#symbol-Counter.increment) and [`value`](counters.aug.md#symbol-Counter.value)) and [`Counters`](counters.aug.md#symbol-Counters) from `counters`. It uses [`Application`](domain/app.aug.md#symbol-Application) ([`start`](domain/app.aug.md#symbol-Application.start)), [`ApplicationImpl`](domain/app.aug.md#symbol-ApplicationImpl), [`Fruit`](domain/models.aug.md#symbol-Fruit), [`RangeError`](domain/numbers.aug.md#symbol-RangeError), and [`double`](domain/numbers.aug.md#symbol-double) from `domain`. These links explain the full dependency contracts.
+It uses [`SystemConsole`](.aug-spec/august/0.20.0/io/contracts.aug.md#symbol-SystemConsole) from `august.io`. It uses [`Counter`](counters.aug.md#symbol-Counter) ([`increment`](counters.aug.md#symbol-Counter.increment) and [`value`](counters.aug.md#symbol-Counter.value)) and [`Counters`](counters.aug.md#symbol-Counters) from `counters`. It uses [`Application`](domain/app.aug.md#symbol-Application) ([`start`](domain/app.aug.md#symbol-Application.start)), [`ApplicationImpl`](domain/app.aug.md#symbol-ApplicationImpl), [`Fruit`](domain/models.aug.md#symbol-Fruit), [`RangeError`](domain/numbers.aug.md#symbol-RangeError), and [`double`](domain/numbers.aug.md#symbol-double) from `domain`.
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).

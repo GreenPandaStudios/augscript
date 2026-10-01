@@ -1,6 +1,6 @@
 # Grammar and line boundaries
 
-This is the compact accepted grammar for 0.19. `Name` is an identifier, and bracketed grammar groups below are optional. These text blocks describe syntax rather than executable snippets.
+This is the compact accepted grammar for 0.20. `Name` is an identifier, and bracketed grammar groups below are optional. These text blocks describe syntax rather than executable snippets.
 
 ## Blocks and declarations
 
@@ -53,7 +53,7 @@ Variance is accepted only on interfaces; mutable storage applies to class header
 ## Imports, bindings, and calls
 
 ```text
-Import      := "import" (Name {"and" Name} | "everything") "from" DottedPath End
+Import      := "import" (Name {"and" Name} | "everything") "from" (DottedPath | RepositoryUrl {"." Name}) End
 Export      := "export" Name "from" SiblingName End
              | "export" "folder" ChildName End
 Binding     := "implement" Key ["<" Types ">"] "with" Type
@@ -63,6 +63,8 @@ CallInput   := Label ("=" | "to") Expression | Name
 Assignment  := [["own" | "borrow"] Type] Target ("=" | "to") Expression End
 Resolve     := "resolve" Key ["<" Types ">"] "to" Name End
 ```
+
+A quoted public repository URL declares a source dependency. A URL can select a tag or commit with #REVISION. See [packages](packages.md) for aliases and commit locks.
 
 The formatter uses implement/with and resolve/to, and preserves wildcard imports. Assignment style remains a project preference. Repeated paths/errors can use and or comma; canonical error clauses use and. Collection constructor elements are positional because their order carries meaning. Assert also accepts its single bool positionally.
 
