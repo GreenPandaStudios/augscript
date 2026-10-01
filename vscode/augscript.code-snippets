@@ -1,4 +1,11 @@
 {
+  "Inherit an imported operation’s checked interface": {
+    "prefix": "forward",
+    "body": [
+      "forward ${1:dispatch} to ${2:importedOperation}"
+    ],
+    "description": "Inherit an imported operation’s checked interface"
+  },
   "Immutable data with named fields": {
     "prefix": "record",
     "body": [

@@ -34,6 +34,10 @@ Application(resolve Console console) implements Runnable:
 
 Run `npx @greenpandastudios/aug-cli@next run PROJECT`, or choose **AugScript: Run Project** in VS Code. Node.js 24+ and a C11 compiler are required; prepare [native dependencies](packages.md#npm-registry) before execution.
 
+## Forwarding
+
+Transparent operation aliases use `forward Name to ImportedFunction`. They inherit the full supported checked interface and delegate exactly once, unchanged. They belong in ordinary modules, follow the normal privacy/export rules, and currently support concrete managed standalone functions with checked errors and empty capability/mutation contracts. See [checked changes](checked-changes.md) for the development status, profile limits, and verification workflow.
+
 ## Blocks and statement boundaries
 
 Either spelling creates the same block:

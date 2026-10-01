@@ -19,6 +19,9 @@ import {generateOpenApi} from './openapi.ts';
 import { addPackage, initPackage, installPackages, preparePackage, packPackage, prepareRunPackages } from './package-manager.ts';
 import { initProject } from './project-init.ts';
 import { prepareNativeDependencies } from '../scripts/native-setup.mjs';
+import {runChangeCommand} from './change-cli.ts';
+import {checkedContext,sourceIdentity,projectRevision,semanticGraph} from './change-context.ts';
+import {atomicSourceWrite,withSourceWriter} from './source-transaction.ts';
 
 function failureMessage(error: unknown): string {
   const message = error instanceof Error ? error.message : String(error);
@@ -64,6 +67,8 @@ function usage(): void {
     `Specifications: aug spec [project directory] [--check] [--json]\n` +
     `Migration: aug migrate [project directory] [--file path] [--write]\n` +
     `Context: aug context [project directory] [--file path] [--name declaration] [--budget characters]\n` +
+    `Checked changes: aug change <plan|check|apply> PROJECT request-or-plan.json; aug change recover PROJECT\n` +
+    `Bounded checks: aug evidence <run|replay> PROJECT generator-or-record.json\n` +
     `Benchmark: aug bench [project directory] [--iterations 10] [--warmup 2] [--json] [-- args]\n` +
     `Packages: aug package init DIRECTORY --name @owner/name; aug package pack DIRECTORY\n` +
     `Dependencies: aug add URL --as NAME [--project DIRECTORY]; aug install [project directory] [--frozen|--update] [--offline]\n` +
@@ -78,6 +83,7 @@ export async function main(argv: string[]): Promise<number> {
     return 0;
   }
   if (!command || command === '--help' || command === 'help') { usage(); return 0; }
+  if(command==='change'||command==='evidence')return runChangeCommand(argv);
   if (command === 'add') {
     const aliasIndex = argv.indexOf('--as'), projectIndex = argv.indexOf('--project');
     if (!argv[1] || argv[1].startsWith('--') || aliasIndex < 0 || !argv[aliasIndex + 1]) {
@@ -213,7 +219,10 @@ export async function main(argv: string[]): Promise<number> {
         .filter(file => !file.builtin && !file.package);
       if (!files.length) throw new Error('No source files to format');
       const formatted = files.map(file => ({ file: file.path, text: (command==='migrate'?migrateFile:formatFile)(project, file) }));
-      if (options.includes('--write')) formatted.forEach(file => writeFileSync(file.file, file.text));
+      if (options.includes('--write')) {const revision=projectRevision(project).revision;withSourceWriter(root,permit=>{
+        if(projectRevision(loadProject(root,new Map(),undefined,permit)).revision!==revision)throw new Error('Source changed before formatting; retry.');
+        formatted.forEach(file=>atomicSourceWrite(file.file,file.text,statSync(file.file).mode&0o777));
+      });}
       else process.stdout.write(json ? JSON.stringify(formatted) + '\n' : formatted.map(file => file.text).join('\n'));
       return 0;
     }
@@ -279,7 +288,16 @@ export async function main(argv: string[]): Promise<number> {
     if (command === 'explain' || command === 'context') {
       if (budget !== undefined && (!Number.isInteger(budget) || budget < 512 || budget > 100000)) throw new Error('--budget must be an integer from 512 to 100000');
       const baseline = baselinePath ? JSON.parse(readFileSync(baselinePath, 'utf8')) : undefined;
-      const result = describe(checked, sourceFile ?? join(root, 'main.aug'), { name: symbolName, budget, context: command === 'context', baseline });
+      if(command==='context'){
+        if(baselinePath)throw new Error('Use aug change interfaces and aug change diff for revision-bearing public deltas.');
+        const path=resolve(root,sourceFile??'main.aug'),definition=symbolName?project.scopes.get(path)?.get(symbolName):undefined;
+        if(symbolName&&!definition)throw new Error(`No declaration named ${symbolName} in ${sourceFile??'main.aug'}`);
+        const roots=definition?[definition.id]:[...project.definitions.values()].filter(def=>def.file===path&&!def.name.startsWith('_')).map(def=>def.id);
+        if(!roots.length)roots.push('module:'+sourceIdentity(project,path));
+        const result=checkedContext(checked,roots,budget);
+        process.stdout.write(JSON.stringify(result,null,json?undefined:2)+'\n');return result.coverage.requiredContextComplete?0:1;
+      }
+      const result = describe(checked, sourceFile ?? join(root, 'main.aug'), { name: symbolName, budget, baseline });
       process.stdout.write(JSON.stringify(result, null, json ? undefined : 2) + '\n'); return 0;
     }
     if (command === 'definition') {
@@ -299,9 +317,10 @@ export async function main(argv: string[]): Promise<number> {
       return found ? 0 : 1;
     }
     if (command === 'symbols') {
-      const symbols = [...project.definitions.values()].map(def => ({ name: def.name,
+      const facts=new Map(semanticGraph(checked).symbols.map(fact=>[fact.id,fact]));
+      const symbols = [...project.definitions.values()].map(def => ({ id:def.id,name: def.name,
         file: def.file, line: def.node.span.line, column: def.node.span.column,
-        kind: def.node.kind }));
+        kind: facts.get(def.id)?.kind??def.node.kind,contract:facts.get(def.id)?.contract,forwarding:facts.get(def.id)?.forwarding }));
       process.stdout.write(JSON.stringify(symbols) + '\n');
       return checked.diagnostics.some(issue => issue.severity !== 'warning') ? 1 : 0;
     }

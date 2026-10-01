@@ -19,6 +19,7 @@ import { jsonDataType } from './schemas.ts';
 import {htmlTags, htmlVoidTags, htmlAttribute, htmlUrlAttributes} from './html.ts';
 import {generateOpenApi} from './openapi.ts';
 import {httpPolicyNames,httpPolicyOptions,checkHttpPolicy,type HttpPolicyPlan} from './http-policies.ts';
+import {checkForwardingProfiles} from './forwarding.ts';
 export { tyName, type Ty } from './types.ts';
 
 export interface BindingInfo {
@@ -50,6 +51,8 @@ export interface CheckedProject {
   interceptorPlans: Map<MethodDecl | ClassDecl, InterceptorLayer[]>;
   effectContracts: Map<MethodDecl, EffectContract>;
   callableContracts: Map<MethodDecl, CallableContract>;
+  parameterTypes: Map<Param, Ty>;
+  resolvedNames: WeakMap<Expr, {parameter?:Param; definition?:Definition}>;
   constructorContracts: Map<ClassDecl, CallableContract>;
   expressionOrigins: WeakMap<Expr, Origins>;
   scopes: Map<string, ScopeFact>;
@@ -100,6 +103,8 @@ interface NextContext {
 }
 
 export interface CallPlan {
+  /** Checked declaration identity. Built-ins have no source declaration. */
+  target?: { id: string; dispatch: 'direct' | 'interface' | 'constructor' };
   sourceIndices: (number | undefined)[];
   bindingKeys: (string | undefined)[];
   injectionSources?: (string | undefined)[];
@@ -107,7 +112,7 @@ export interface CallPlan {
   mutatesReceiver?: boolean;
 }
 
-type Local = { type: Ty; declaredType?: Ty; ownership: 'managed' | 'own' | 'borrow'; moved: boolean; origin?: string; definition?: Span };
+type Local = { type: Ty; declaredType?: Ty; ownership: 'managed' | 'own' | 'borrow'; moved: boolean; origin?: string; definition?: Span; parameter?:Param };
 interface Context {
   file: string;
   locals: Map<string, Local>;
@@ -143,6 +148,7 @@ const unresolved = (type: Ty): boolean => type.kind === 'error' || type.args.som
 export function checkProject(project: Project): CheckedProject {
   const checker = new Checker(project);
   const checked = checker.check();
+  checkForwardingProfiles(checked);
   if (project.config.openapi.enabled && !checked.diagnostics.some(issue => issue.severity !== 'warning'))
     checked.diagnostics.push(...generateOpenApi(checked).diagnostics);
   return checked;
@@ -158,6 +164,8 @@ class Checker {
   readonly interceptorPlans = new Map<MethodDecl | ClassDecl, InterceptorLayer[]>();
   readonly effectContracts = new Map<MethodDecl, EffectContract>();
   readonly callableContracts = new Map<MethodDecl, CallableContract>();
+  readonly parameterTypes = new Map<Param, Ty>();
+  readonly resolvedNames = new WeakMap<Expr, {parameter?:Param; definition?:Definition}>();
   readonly constructorContracts = new Map<ClassDecl, CallableContract>();
   private readonly initializers = new Map<ClassDecl, MethodDecl>();
   private readonly inferredChanges = new Map<MethodDecl, Set<string>>();
@@ -281,7 +289,7 @@ class Checker {
         this.report(def.node.span,'/__aug/actions.js is reserved for HTTP action transport','HTTP');
     return { project: this.project, diagnostics: this.diagnostics, bindings: this.bindings,
       expressionTypes: this.expressionTypes, defaults: this.defaults, callPlans: this.callPlans,
-      interceptorPlans: this.interceptorPlans, effectContracts: this.effectContracts, callableContracts: this.callableContracts, constructorContracts: this.constructorContracts,
+      interceptorPlans: this.interceptorPlans, effectContracts: this.effectContracts, callableContracts: this.callableContracts, parameterTypes: this.parameterTypes, resolvedNames:this.resolvedNames, constructorContracts: this.constructorContracts,
       expressionOrigins: this.expressionOrigins, scopes: this.scopes, markupCalls: this.markupCalls, actions:this.actions, httpPolicies:this.httpPolicies };
   }
 
@@ -425,7 +433,7 @@ class Checker {
       if (ref.args.length) this.report(ref.span, `${ref.name} does not take type arguments`);
       return { ...builtin(ref.name), nullable: ref.nullable, optional: ref.optional };
     }
-    const def = this.project.scopes.get(file)?.get(ref.name);
+    const def = ref.definitionId ? this.project.definitions.get(ref.definitionId) : this.project.scopes.get(file)?.get(ref.name);
     if (!def || def.node.kind === 'function' || def.node.kind === 'interceptor' || def.node.kind === 'composition') {
       if (def?.node.kind === 'interceptor') {
         this.report(ref.span, `${ref.name} is an interceptor; apply it with [${ref.name}]`, 'INTERCEPTOR');
@@ -515,7 +523,7 @@ class Checker {
       if (param.name === 'next') this.report(param.span, 'next is reserved for interceptor continuations', 'NEXT');
       if (param.injected && param.ownership !== 'managed') this.report(param.span,
         'A resolve parameter cannot also be own or borrow', 'DI');
-      this.resolveType(param.type, file, params);
+      this.parameterTypes.set(param, this.resolveType(param.type, file, params));
     }
     this.returnType(fn, file, params);
     if (fn.endpoint) {
@@ -1123,7 +1131,7 @@ class Checker {
       }
     }
     for (const param of fn.params) context.locals.set(param.name,
-      { type: { ...this.resolveType(param.type, file, params), readonly: param.ownership === 'managed' }, ownership: param.ownership, moved: false, definition: param.span });
+      { type: { ...this.resolveType(param.type, file, params), readonly: param.ownership === 'managed' }, ownership: param.ownership, moved: false, definition: param.span, parameter:param });
     context.locals.forEach(local => { local.declaredType ??= local.type; });
     for (const [name, local] of context.locals) {
       const field = owner && 'fields' in owner.node ? fieldsOf(owner.node).find(field => field.name === name) : undefined;
@@ -2083,11 +2091,13 @@ class Checker {
     } else if (expr.kind === 'name') {
       const local = context.locals.get(expr.name);
       if (local) {
+        if(local.parameter)this.resolvedNames.set(expr,{parameter:local.parameter});
         if (local.moved) this.report(expr.span, `Cannot use moved value ${expr.name}`, 'OWN');
         context.flow.read(expr.name, expr.span, (span, message) => this.report(span, message, 'BORROW'));
         type = local.type;
       } else {
         const def = this.project.scopes.get(context.file)?.get(expr.name);
+        if(def)this.resolvedNames.set(expr,{definition:def});
         if (def?.node.kind === 'class' || def?.node.kind === 'interface')
           type = { id: def.id, name: def.name, kind: def.node.kind, def, args: [], nullable: false };
         else if (def?.node.kind === 'function') type = builtin('void');
@@ -2600,6 +2610,7 @@ class Checker {
       if (def?.node.kind === 'class') {
         const cls = def.node;
         const plan = this.planCall(expr, cls.fields, cls.name);
+        plan.target = {id: `${def.id}::constructor`, dispatch: 'constructor'};
         const inferred = new Map<string, Ty>();
         for (let i = 0; i < cls.typeParams.length; i++) {
           if (expr.typeArgs[i]) inferred.set(cls.typeParams[i],
@@ -2704,6 +2715,10 @@ class Checker {
       this.requireUse(`C:${native?.id ?? fn.name}`, `C.${fn.name}`, expr.span, context);
     }
     const plan = this.planCall(expr, fn.params, fn.name);
+    const definition = expr.callee.kind === 'name' ? this.project.scopes.get(context.file)?.get(expr.callee.name) :
+      [...this.project.definitions.values()].find(def => 'methods' in def.node && def.node.methods.includes(fn!));
+    if (definition) plan.target = {id: definition.node.kind === 'function' ? definition.id : `${definition.id}::${fn.name}`,
+      dispatch: receiverType?.kind === 'interface' ? 'interface' : 'direct'};
     if (expr.typeArgs.length && expr.typeArgs.length !== fn.typeParams.length)
       this.report(expr.span, `${fn.name} expects ${fn.typeParams.length} type arguments`);
     const params = new Map(ownerParams);

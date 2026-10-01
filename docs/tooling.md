@@ -2,6 +2,8 @@
 
 Use this page to look up CLI commands, project configuration, native requirements, and editor behavior. If you need a running first project, follow [the book](learn/index.md). To use context reports during a change, follow [the module review guide](guides/change-a-module.md).
 
+The `change` and `evidence` commands and revision-bearing context below belong to the AUG-0001 development implementation. See [its guide](checked-changes.md) for availability, supported profiles, acceptance gates, and recovery limits.
+
 ## CLI
 
 Install `aug` once as shown in [Your first project](getting-started.md). Commands take a project folder, defaulting to the current directory. Editor commands also accept --file and --offset; use --help for the command inventory.
@@ -18,7 +20,13 @@ Install `aug` once as shown in [Your first project](getting-started.md). Command
 | `test PROJECT [--coverage] [--json]` | Isolated native tests and optional statement-line report. |
 | `bench PROJECT [--iterations N] [--warmup N] [--timeout MS] [--json] -- args...` | Release build with timed native executions. |
 | `explain PROJECT --file PATH [--name NAME]` | Checked contracts, dependencies, layers, origins, tests, and module surface. |
-| `context PROJECT --file PATH [--name NAME] [--budget N]` | Bounded JSON context, including related declarations and source snippets. |
+| `context PROJECT --file PATH [--name NAME] [--budget N]` | Revision-bearing contracts, dependencies, reverse callers, occurrences and explicit coverage/omissions. |
+| `change plan PROJECT request.json` | Candidate, exact edits, public delta and agent exchange; no source writes. |
+| `change check PROJECT plan.json` | Independent native verification without source writes. |
+| `change apply PROJECT plan.json` | Recheck, verify and journal the accepted transaction. |
+| `change recover PROJECT` | Recover an interrupted transaction while preserving external conflicts. |
+| `change interfaces PROJECT` / `change diff PROJECT baseline.json` | Resolved public interface snapshots and deltas, including inherited aliases. |
+| `evidence run PROJECT generator.json` / `evidence replay PROJECT evidence.json` | Experimental typed enumeration and concrete finite outcomes/replay. |
 | `lsp PROJECT` | Persistent language server over stdio. |
 | `package init DIRECTORY [--name @owner/name]` | Standalone source library with public exports, Javadoc and a same-file test. |
 | `package pack DIRECTORY` | Checked source archive ready for npm publishing or local installation. |

@@ -1,5 +1,7 @@
 # Built-in unit tests
 
+The AUG-0001 development compiler can enumerate bounded literal domains into existing parameterized rows and record concrete replay evidence. Setup and assertions remain independently authored. See [checked changes](checked-changes.md#enumerate-independent-test-inputs) for the experimental protocol, vector limits, exclusions and separate compiler/behavior gates.
+
 Keep a behavior test in the same file as the declaration it checks. A reader can inspect the contract, implementation, and cases together. August's CLI runs these tests as native programs; you do not need a test package, and test bodies are excluded from production executables.
 
 Use `test functionName` for a function or `test ClassName subject` for a class. This guide gives complete examples, then covers setup, filtering, and coverage. If testing is new to you in August, work through [State and tests](learn/state-and-tests.md) first. For HTTP, use [endpoint tests](web.md#endpoint-tests); they exercise routing and policies, while live sockets and TLS need separate transport tests.

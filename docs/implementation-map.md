@@ -1,5 +1,9 @@
 # Approved language changes — 0.15
 
+## AUG-0001 development implementation
+
+The development compiler implements revision-bearing whole-project context, resolved standalone rename/body-replacement plans, checked forwarding conversion, durable journal recovery, transparent `forward` declarations, and experimental enumerated typed-row evidence. Editor contracts, specs and public interface snapshots show inherited alias interfaces and targets. [The guide](checked-changes.md) records the supported profile and limits. Qualification remains pending: finite regressions and mutation checks do not establish comparative AI reliability, arbitrary-writer filesystem isolation, or formal business-behavior proof. Ownership, GC, task and security rules are unchanged.
+
 ## 0.19 additions
 
 Deterministic adjacent source specs, used dependency surfaces with offline links, optional comment requirements, source-package specs, and VS Code preview/generation are described in [compiled specifications](specifications.md). Boolean operators use only `and`, `or`, and `not`; construction uses `initialize` inside declarations. DI uses `implement … with …` and `resolve … to …`; migration is available through the CLI and editor.

@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased — AUG-0001
+
+- Add whole-project revision-bearing context with exact function/method/parameter identities, resolved occurrences, separate dependencies/reverse callers, and explicit incomplete graph/packet coverage. Include configuration, dependency and compiler-build identities.
+- Plan standalone managed function renames, body replacements, and verified forwarding conversions against exact revisions. Check isolated candidates, compare intended public interface deltas, and require independent native acceptance before source writes. Return candidate-paired repair diagnostics and tested agent syntax idioms.
+- Coordinate source writers and readers, journal checked commits, and recover interrupted processes without overwriting external conflicts. Record compiler, finite behavior, runtime, proof and engineer-review statuses separately.
+- Add contextual `forward Alias to ImportedFunction`, with inherited resolved labels/types/results/checked errors, native lowering, normal exports, formatter, hover/navigation/completion, specs and interface-diff support. Unsupported ownership/effect/generic/native/DI/layer profiles fail closed.
+- Add experimental bounded scalar-domain enumeration through existing typed test rows, explicit vector/exclusion/provenance records, native mutation detection and revision-checked replay. No comparative AI reliability claim or general proof is made.
+
 ## 0.20.0
 
 - Import libraries from public Git URLs, with optional aliases from `aug add`, exact commit locks, frozen and offline restores, and transitive Git/local/npm graphs. Package installation reads source without running hooks or lifecycle scripts.

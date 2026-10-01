@@ -4,6 +4,7 @@ import type { SourceFile } from './ast.ts';
 import { checkProject, type CheckedProject } from './checker.ts';
 import { loadProject } from './project.ts';
 import { checkUnitTests, discoverTests, mergeTestAnalysis } from './testing.ts';
+import {withSourceWriter,type SourcePermit} from './source-transaction.ts';
 
 const marker = '// aug-spec: ';
 export interface SpecHint { file: SourceFile; text: string; lineOffset: number }
@@ -18,10 +19,11 @@ export function specHint(file: SourceFile): SpecHint {
 }
 
 /** Prepare hints before native emission so debugger/source-map lines use the updated sources. */
-export function updateSpecHints(checked: CheckedProject): CheckedProject {
+export function updateSpecHints(checked: CheckedProject,permit?:SourcePermit): CheckedProject {
   const hints = [...checked.project.files.values()].filter(file=>!file.builtin&&!file.package).map(specHint)
     .filter(hint=>hint.text!==hint.file.source);
   if (!hints.length) return checked;
+  if(!permit)return withSourceWriter(checked.project.root,held=>updateSpecHints(checked,held));
   if (checked.diagnostics.some(issue=>issue.severity!=='warning')) throw new Error('Fix compiler errors before adding specification pointers');
   for (const {file} of hints) {
     const root=checked.project.root;
@@ -40,7 +42,7 @@ export function updateSpecHints(checked: CheckedProject): CheckedProject {
     try {writeFileSync(temporary,text,{flag:'wx',mode:lstatSync(file.path).mode});created=true;renameSync(temporary,file.path);}
     finally {if(created&&existsSync(temporary))rmSync(temporary);}
   }
-  const project=loadProject(checked.project.root), fresh=checkProject(project), discovery=discoverTests(project);
+  const project=loadProject(checked.project.root,new Map(),undefined,permit), fresh=checkProject(project), discovery=discoverTests(project);
   const tests=checkUnitTests(project,discovery.tests);
   fresh.diagnostics.push(...discovery.diagnostics,...tests.flatMap(test=>test.checked.diagnostics));
   mergeTestAnalysis(fresh,tests);
