@@ -25,6 +25,7 @@ jobs:
       - run: npm ci
       - run: npm audit --audit-level=moderate
       - run: npm run version:check
+      - run: node --test tests/release-publication.test.mjs
       - run: npm run check
       - run: npm run docs:check
       - name: Require documentation with behavior changes
@@ -34,6 +35,14 @@ jobs:
         run: node scripts/check-doc-change.mjs "$BASE_SHA"
       - run: npm run docs:build
       - run: npm run package:packages
+      - run: npm --prefix vscode ci --ignore-scripts
+      - run: npm --prefix vscode audit --audit-level=moderate
+      - run: npm run package:extension
+      - run: node scripts/release-artifacts.mjs
+      - name: Verify npm and Marketplace release artifacts without publishing
+        run: |
+          node scripts/publish-release.mjs dist/release --verify-only
+          node scripts/publish-extension.mjs dist/release --verify-only
       - run: node scripts/bootstrap-native.mjs --extract-only --only minicoro,yyjson
       - run: npm run test:packages
   native:
