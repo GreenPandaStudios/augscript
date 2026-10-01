@@ -5,11 +5,11 @@
 <a id="symbol-describe"></a>
 ## `describe` · [source](app.aug#L15)
 
-Prints a number and returns its label. It takes `x` as an integer (the numeric input, validated and incremented by the chain) and `label` as a string (Text forwarded through each layer unchanged). It gets `logger` ([`Logger`](logging.aug.md#symbol-Logger)) and `console` ([`Console`](.aug-spec/august/0.20.0/io/contracts.aug.md#symbol-Console)) from dependency injection. Failures can raise `ValidationError`.
+Prints a number and returns its label. It takes `x` as an integer (the numeric input, validated and incremented by the chain) and `label` as a string (Text forwarded through each layer unchanged). It gets `logger` ([`Logger`](logging.aug.md#symbol-Logger)) and `console` ([`Console`](.aug-spec/august/0.20.1/io/contracts.aug.md#symbol-Console)) from dependency injection. Failures can raise `ValidationError`.
 
 Layers run in the declared order. Call [`Audit.around`](interceptors.aug.md#symbol-Audit.around). Call [`Positive.around`](interceptors.aug.md#symbol-Positive.around). Map `x` to `y`. Call [`AddOne.around`](interceptors.aug.md#symbol-AddOne.around). Map `x` to `y`.
 
-It passes `x` to [`console.write`](.aug-spec/august/0.20.0/io/contracts.aug.md#symbol-Console.write). It returns `label`.
+It passes `x` to [`console.write`](.aug-spec/august/0.20.1/io/contracts.aug.md#symbol-Console.write). It returns `label`.
 
 <a id="symbol-IGreeter"></a>
 ## `IGreeter` · interface · [source](app.aug#L19)
@@ -17,7 +17,7 @@ It passes `x` to [`console.write`](.aug-spec/august/0.20.0/io/contracts.aug.md#s
 <a id="symbol-IGreeter.greet"></a>
 ### `IGreeter.greet` · [source](app.aug#L20)
 
-It gets `logger` ([`Logger`](logging.aug.md#symbol-Logger)) and `console` ([`Console`](.aug-spec/august/0.20.0/io/contracts.aug.md#symbol-Console)) from dependency injection. It returns `string`. It can call [`Console.write`](.aug-spec/august/0.20.0/io/contracts.aug.md#symbol-Console.write).
+It gets `logger` ([`Logger`](logging.aug.md#symbol-Logger)) and `console` ([`Console`](.aug-spec/august/0.20.1/io/contracts.aug.md#symbol-Console)) from dependency injection. It returns `string`. It can call [`Console.write`](.aug-spec/august/0.20.1/io/contracts.aug.md#symbol-Console.write).
 
 <a id="symbol-Greeter"></a>
 ## `Greeter` · class · [source](app.aug#L23)
@@ -27,10 +27,10 @@ Construction stores its inputs; startup is visible in the greet call. It impleme
 <a id="symbol-Greeter.greet"></a>
 ### `Greeter.greet` · [source](app.aug#L26)
 
-Method annotations wrap each method invocation separately. It gets `logger` ([`Logger`](logging.aug.md#symbol-Logger)) and `console` ([`Console`](.aug-spec/august/0.20.0/io/contracts.aug.md#symbol-Console)) from dependency injection. Layers run in the declared order. Call [`Audit.around`](interceptors.aug.md#symbol-Audit.around).
+Method annotations wrap each method invocation separately. It gets `logger` ([`Logger`](logging.aug.md#symbol-Logger)) and `console` ([`Console`](.aug-spec/august/0.20.1/io/contracts.aug.md#symbol-Console)) from dependency injection. Layers run in the declared order. Call [`Audit.around`](interceptors.aug.md#symbol-Audit.around).
 
 It returns the text `Hello, {name}!`.
 
 ## Dependencies
 
-It uses [`Console`](.aug-spec/august/0.20.0/io/contracts.aug.md#symbol-Console) ([`write`](.aug-spec/august/0.20.0/io/contracts.aug.md#symbol-Console.write)) from `august.io`. It uses [`AddOne`](interceptors.aug.md#symbol-AddOne) ([`around`](interceptors.aug.md#symbol-AddOne.around)), [`Audit`](interceptors.aug.md#symbol-Audit) ([`around`](interceptors.aug.md#symbol-Audit.around)), and [`Positive`](interceptors.aug.md#symbol-Positive) ([`around`](interceptors.aug.md#symbol-Positive.around)) from `interceptors`. It uses [`Logger`](logging.aug.md#symbol-Logger) from `logging`.
+It uses [`Console`](.aug-spec/august/0.20.1/io/contracts.aug.md#symbol-Console) ([`write`](.aug-spec/august/0.20.1/io/contracts.aug.md#symbol-Console.write)) from `august.io`. It uses [`AddOne`](interceptors.aug.md#symbol-AddOne) ([`around`](interceptors.aug.md#symbol-AddOne.around)), [`Audit`](interceptors.aug.md#symbol-Audit) ([`around`](interceptors.aug.md#symbol-Audit.around)), and [`Positive`](interceptors.aug.md#symbol-Positive) ([`around`](interceptors.aug.md#symbol-Positive.around)) from `interceptors`. It uses [`Logger`](logging.aug.md#symbol-Logger) from `logging`.

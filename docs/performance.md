@@ -2,7 +2,7 @@
 
 This page publishes measurements for specific August programs alongside C, Node, and Python versions. Read the graphs for a quick comparison, inspect each program below, and use the reproduction commands to measure work that resembles your application.
 
-The recorded suite used August 0.18.0 and native C output. The current compiler is 0.20.0; these graphs have not been remeasured for that release. A result for one workload and host does not establish a general speed advantage or production readiness. [Readiness](production-readiness.md) covers reliability and deployment evidence separately.
+The recorded suite used August 0.18.0 and native C output. The current compiler is 0.20.1; these graphs have not been remeasured for that release. A result for one workload and host does not establish a general speed advantage or production readiness. [Readiness](production-readiness.md) covers reliability and deployment evidence separately.
 
 ## Read the graphs
 

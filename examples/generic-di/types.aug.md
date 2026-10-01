@@ -30,7 +30,7 @@ It implements [`IProgram`](types.aug.md#symbol-IProgram). The `repository` depen
 <a id="symbol-Program.start"></a>
 ### `Program.start` · [source](types.aug#L12)
 
-It gets `console` ([`Console`](.aug-spec/august/0.20.0/io/contracts.aug.md#symbol-Console)) from dependency injection. It passes [`repository.get`](types.aug.md#symbol-Repository.get) to [`console.write`](.aug-spec/august/0.20.0/io/contracts.aug.md#symbol-Console.write).
+It gets `console` ([`Console`](.aug-spec/august/0.20.1/io/contracts.aug.md#symbol-Console)) from dependency injection. It passes [`repository.get`](types.aug.md#symbol-Repository.get) to [`console.write`](.aug-spec/august/0.20.1/io/contracts.aug.md#symbol-Console.write).
 
 <a id="symbol-IProgram"></a>
 ## `IProgram` · interface · [source](types.aug#L16)
@@ -38,8 +38,8 @@ It gets `console` ([`Console`](.aug-spec/august/0.20.0/io/contracts.aug.md#symbo
 <a id="symbol-IProgram.start"></a>
 ### `IProgram.start` · [source](types.aug#L17)
 
-It gets `console` ([`Console`](.aug-spec/august/0.20.0/io/contracts.aug.md#symbol-Console)) from dependency injection. It can call [`Console.write`](.aug-spec/august/0.20.0/io/contracts.aug.md#symbol-Console.write).
+It gets `console` ([`Console`](.aug-spec/august/0.20.1/io/contracts.aug.md#symbol-Console)) from dependency injection. It can call [`Console.write`](.aug-spec/august/0.20.1/io/contracts.aug.md#symbol-Console.write).
 
 ## Dependencies
 
-It uses [`Console`](.aug-spec/august/0.20.0/io/contracts.aug.md#symbol-Console) ([`write`](.aug-spec/august/0.20.0/io/contracts.aug.md#symbol-Console.write)) from `august.io`.
+It uses [`Console`](.aug-spec/august/0.20.1/io/contracts.aug.md#symbol-Console) ([`write`](.aug-spec/august/0.20.1/io/contracts.aug.md#symbol-Console.write)) from `august.io`.

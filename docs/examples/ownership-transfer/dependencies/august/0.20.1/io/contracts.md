@@ -1,7 +1,7 @@
 ---
-title: "august/0.20.0/io/contracts.aug · A small tested application"
+title: "august/0.20.1/io/contracts.aug · Move ownership"
 generated: true
-source: "examples/developer-workflow/.aug-spec/august/0.20.0/io/contracts.aug"
+source: "examples/ownership-transfer/.aug-spec/august/0.20.1/io/contracts.aug"
 editLink: false
 prev: false
 next: false
@@ -10,9 +10,9 @@ search: false
 pageClass: aug-example-page
 ---
 
-# `august/0.20.0/io/contracts.aug`
+# `august/0.20.1/io/contracts.aug`
 
-[A small tested application](../../../../index.md) · Dependency source and specification
+[Move ownership](../../../../index.md) · Dependency source and specification
 
 This is the exact dependency version used by this example.
 

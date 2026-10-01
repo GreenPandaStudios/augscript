@@ -1,7 +1,7 @@
 ---
-title: "august/0.20.0/io/contracts.aug · Function and constructor middleware"
+title: "august/0.20.1/io/contracts.aug · Labeled calls and injection"
 generated: true
-source: "examples/interceptors/.aug-spec/august/0.20.0/io/contracts.aug"
+source: "examples/new-syntax/.aug-spec/august/0.20.1/io/contracts.aug"
 editLink: false
 prev: false
 next: false
@@ -10,9 +10,9 @@ search: false
 pageClass: aug-example-page
 ---
 
-# `august/0.20.0/io/contracts.aug`
+# `august/0.20.1/io/contracts.aug`
 
-[Function and constructor middleware](../../../../index.md) · Dependency source and specification
+[Labeled calls and injection](../../../../index.md) · Dependency source and specification
 
 This is the exact dependency version used by this example.
 

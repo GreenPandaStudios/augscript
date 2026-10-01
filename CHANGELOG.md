@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.20.1
 
 - Publish the four npm packages and the VS Code extension when a reviewed GitHub release is published. Deploy the checked release archives with OIDC, verify their checksums and manifests, and resume partial runs only when existing published contents match. Extension publishing uses the locked VSCE 4.0.0 tool in a separate deployment job.
 
