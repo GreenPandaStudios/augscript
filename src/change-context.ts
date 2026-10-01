@@ -1,13 +1,13 @@
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
-import { join, relative, resolve, sep } from 'node:path';
+import { dirname, join, relative, resolve, sep } from 'node:path';
 import type { Expr, MethodDecl, Param, Span, TypeRef } from './ast.ts';
 import { initializationOf, typeName } from './ast.ts';
 import { checkProject, type CheckedProject } from './checker.ts';
 import { builtinFunctions, builtinTypes, collectionOperations } from './builtins.ts';
 import { loadProject, type Definition, type Project } from './project.ts';
 import { compilerVersion } from './package-manager.ts';
-import { libraryRelative } from './libraries.ts';
+import { libraryChild, libraryRelative } from './libraries.ts';
 import { checkUnitTests, discoverTests, mergeTestAnalysis, uniqueDiagnostics } from './testing.ts';
 import { tyName, type Ty } from './types.ts';
 import {finishSourceRead,type SourcePermit} from './source-transaction.ts';
@@ -245,7 +245,12 @@ export function semanticGraph(checked: CheckedProject): SemanticGraph {
           const token = beforeFrom.find(token=>token.value===def.name&&token.span.start<limit);
           if (token) occurrence(def.id,'import',token.span);
         }
-      } else if (item.kind === 'export' && !item.folder) {
+      } else if (item.kind === 'export' && item.folder) {
+        const child=join(source.builtin?libraryChild(project.libraries,dirname(file),item.name):join(dirname(file),item.name),'export.aug');
+        if(project.files.has(child)){
+          const target=`module:${sourceIdentity(project,child)}`;edge(module,target,'export',item.span);occurrence(target,'export',atName(item.span,item.name));
+        }
+      } else if (item.kind === 'export') {
         const def = project.scopes.get(resolve(file,'..',`${item.from}.aug`))?.get(item.name);
         if (def) {edge(module,def.id,'export',item.span);occurrence(def.id,'export',atName(item.span,item.name));}
       } else if (item.kind === 'test') {
@@ -295,7 +300,10 @@ export function interfaceSnapshot(graph: SemanticGraph): {id:string;shape:string
   return graph.symbols.filter(symbol=>symbol.public&&(!symbol.owner||graph.symbols.find(owner=>owner.id===symbol.owner)?.public)&&['function','forward','method','class','interface','interceptor','constructor'].includes(symbol.kind)).map(symbol=>{
     const contract = {...symbol.contract}; delete contract.provenance;
     if (Array.isArray(contract.inputs)) contract.inputs=contract.inputs.map(({id,...input}:any)=>input);
-    const exportedBy = graph.relationships.filter(edge=>edge.kind==='export'&&edge.to===symbol.id).map(edge=>edge.from).sort();
+    const exports=new Set<string>(),pending=[symbol.id];
+    while(pending.length){const target=pending.shift()!;for(const edge of graph.relationships.filter(edge=>edge.kind==='export'&&edge.to===target))
+      if(!exports.has(edge.from)){exports.add(edge.from);pending.push(edge.from);}}
+    const exportedBy=[...exports].sort();
     return {id:symbol.id,shape:digest(canonical({kind:symbol.kind==='forward'?'function':symbol.kind,contract,exportedBy})),contract,exportedBy};
   });
 }
@@ -327,7 +335,10 @@ export function checkedContext(checked: CheckedProject, roots: string[], budget 
   const facts:SymbolFact[]=[], occurrences:Occurrence[]=[], relationships:Relationship[]=[], omissions:{kind:string;identities:string[];reason:string}[]=[], snippets:{id:string;source:string}[]=[];
   const projectChecked=!checked.diagnostics.some(issue=>issue.severity!=='warning');
   const packet = () => ({...revision,query:{roots,ordering:ORDERING},checkedScope:{kind:'loaded-project',files:revision.sources.map(source=>source.file),externalConsumers:'not checked'},
-    status:{project:projectChecked?'checked':'rejected',graph:unresolved.length||missing.length?'partial':'complete within checked scope',mandatory:omissions.length?'incomplete':'complete',packet:omissions.length?'incomplete':'complete'},
+    status:{project:projectChecked?'checked':'rejected',graph:graph.boundaries.length||missing.length?'partial':'complete within checked scope',mandatory:omissions.length?'incomplete':'complete',packet:omissions.length?'incomplete':'complete'},
+    graphCoverage:{scope:'loaded-project',boundaries:graph.boundaries.length,requiredBoundaries:unresolved.length,
+      omittedBoundaries:{reason:'outside the query dependency and reverse caller closure',count:graph.boundaries.length-unresolved.length,
+        callers:[...new Set(graph.boundaries.filter(boundary=>!seen.has(boundary.caller)).map(boundary=>boundary.caller))].sort()}},
     dependencies:[...dependencies].sort(),reverseCallers:[...callers].sort(),facts,occurrences,relationships,unresolved,omissions,snippets,
     diagnostics:checked.diagnostics.map(issue=>({...issue,file:sourceIdentity(checked.project,issue.file),revision:revision.revision})),behavior:'source-derived descriptions describe the current program, not desired requirements',budget,
     budgetPolicy:'Semantic content target; required identity and omission metadata are retained even when larger than the target.'});

@@ -3,7 +3,7 @@ import {strict as assert} from 'node:assert';
 import {mkdtempSync,writeFileSync,mkdirSync,cpSync,rmSync} from 'node:fs';
 import {join} from 'node:path';
 import {tmpdir} from 'node:os';
-import {analyzeChangeProject,checkedContext,projectRevision,semanticGraph} from '../src/change-context.ts';
+import {analyzeChangeProject,checkedContext,projectRevision,semanticGraph,interfaceSnapshot} from '../src/change-context.ts';
 
 function fixture(t,files){const root=mkdtempSync(join(tmpdir(),'aug-context-'));t.after(()=>rmSync(root,{recursive:true,force:true}));
  for(const [name,source]of Object.entries(files)){mkdirSync(join(root,name,'..'),{recursive:true});writeFileSync(join(root,name),source);}return root;}
@@ -44,6 +44,9 @@ test('interface dispatch is a visible boundary even when the loaded program chec
  const checked=analyzeChangeProject(root);assert.deepEqual(checked.diagnostics,[]);
  const packet=checkedContext(checked,['worker.aug:use']);assert.equal(packet.status.project,'checked');assert.equal(packet.status.graph,'partial');
  assert.equal(packet.coverage.requiredContextComplete,false);assert(packet.unresolved.some(boundary=>boundary.kind==='interface-dispatch'));
+ writeFileSync(join(root,'pure.aug'),'identity(int value) returns int { return value }\n');
+ const unrelated=checkedContext(analyzeChangeProject(root),['pure.aug:identity']);assert.equal(unrelated.status.graph,'partial');
+ assert.equal(unrelated.coverage.requiredContextComplete,true);assert(unrelated.graphCoverage.omittedBoundaries.callers.includes('worker.aug:use'));
 });
 test('generic identities and explicit type occurrences remain stable when declaration offsets move',t=>{
  const root=fixture(t,{'main.aug':'pass\n','work.aug':'identity<T>(T value) returns T { return value }\n'}),first=semanticGraph(analyzeChangeProject(root));
@@ -58,4 +61,13 @@ test('opaque native implementations and unsupported function-value edges cannot 
  const packet=checkedContext(analyzeChangeProject(native),['work.aug:use']);assert.equal(packet.coverage.requiredContextComplete,false);assert(packet.unresolved.some(boundary=>boundary.kind==='native-call'));
  const value=fixture(t,{'main.aug':'import operation from work\nunused = operation\n','work.aug':'operation() {}\n'});
  const fact=checkedContext(analyzeChangeProject(value),['work.aug:operation']);assert(fact.unresolved.some(boundary=>boundary.kind==='function-value'));assert.equal(fact.coverage.requiredContextComplete,false);
+});
+
+test('folder exports retain resolved module edges and public visibility paths',t=>{
+ const root=fixture(t,{'main.aug':'pass\n','export.aug':'export folder billing\n','billing/export.aug':'export adjust from work\n','billing/work.aug':'adjust(int value) returns int { return value + 1 }\n'});
+ const checked=analyzeChangeProject(root);assert.deepEqual(checked.diagnostics,[]);const graph=semanticGraph(checked);
+ assert(graph.relationships.some(edge=>edge.kind==='export'&&edge.from==='module:export.aug'&&edge.to==='module:billing/export.aug'));
+ const shape=interfaceSnapshot(graph).find(fact=>fact.id==='billing/work.aug:adjust');assert.deepEqual(shape.exportedBy,['module:billing/export.aug','module:export.aug']);
+ writeFileSync(join(root,'export.aug'),'');const after=interfaceSnapshot(semanticGraph(analyzeChangeProject(root))).find(fact=>fact.id===shape.id);
+ assert.notEqual(after.shape,shape.shape);assert.deepEqual(after.exportedBy,['module:billing/export.aug']);
 });

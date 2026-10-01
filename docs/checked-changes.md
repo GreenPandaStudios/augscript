@@ -58,6 +58,8 @@ The packet includes its revision, compiler version/build identity, source invent
 
 Read `coverage.requiredContextComplete` before using a packet. A checked project, complete graph within its scope, and complete delivered context are separate statuses. `omissions`, `unresolved`, and `optionalOmissions` identify absent facts. Root contracts and required dependency/caller facts take priority over optional snippets. `--budget` targets semantic content size; required revision/omission metadata is retained even when larger, with `budgetExceeded` reporting that condition. Incomplete mandatory context returns nonzero.
 
+`status.graph` describes the loaded project's graph. `graphCoverage` counts its boundaries and identifies omitted callers outside the query closure. An unrelated unresolved operation can leave that graph partial while the required context for a supported standalone edit is complete. A boundary inside the edit's dependency or reverse caller closure blocks the plan.
+
 ## Plan and verify a rename
 
 Save this JSON template as `request.json`, replacing `BASE_REVISION` with the exact revision from the packet:
@@ -100,7 +102,7 @@ Application rederives the plan, rejects tampering and stale source/configuration
 
 The plan's `exchange` presents ordered requirements, actual source, complete checked context, independent acceptance source, read-only compiled spec, versioned tested syntax idioms, and permitted operations together. A rejection returns the exact candidate with revision-bearing diagnostics and available fixes. Keep that candidate with its diagnostics; an older restored file is not a coherent repair request for a newer rejection.
 
-For a body replacement, use `{"kind":"replace-body","symbol":"billing.aug:adjust","source":"..."}`. The source unit contains imports and exactly one implementation, with the original header preserved. It is parsed as August source, not a Markdown layout. State `unchanged` or an exact list of expected before/after public interface hashes. `aug change interfaces . > interfaces.json` captures a baseline; `aug change diff . interfaces.json` reports changes, including inherited aliases with unchanged source.
+For a body replacement, use `{"kind":"replace-body","symbol":"billing.aug:adjust","source":"..."}`. The source unit contains imports and exactly one implementation, with the original header preserved. It is parsed as August source, not a Markdown layout. State `unchanged` or an exact list of expected before/after public interface hashes. `aug change interfaces . > interfaces.json` captures a baseline; `aug change diff . interfaces.json` reports changes, including inherited aliases with unchanged source and visibility through folder exports.
 
 A conversion uses `{"kind":"forward","symbol":"wrapper.aug:dispatch"}`. The wrapper must be one direct return of an imported target with every labeled parameter unchanged, in declaration order, and an identical resolved interface. Added behavior, catches, effects, layers, or embedded body comments prevent mechanical conversion. Existing wrappers remain valid.
 

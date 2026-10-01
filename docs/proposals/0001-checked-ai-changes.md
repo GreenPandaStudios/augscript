@@ -5,7 +5,7 @@
 | Status | Experimental development implementation; qualification and publication pending |
 | Scope | Language declaration, compiler context, source edits, verification evidence |
 | Motivation | Reliable engineering with coding AI across shared modular code |
-| Evidence | Local pilot experiments and compiler prototypes; see the [experiment report](https://github.com/GreenPandaStudios/augscript/blob/a1a9769e77e3dfd32bf91b3f6534a9b3de4ac7ac/experiments/agent-amendment/RESULTS.md) |
+| Evidence | Local pilot experiments and compiler prototypes; historical reports are not published with this implementation |
 | Compatibility | Additive syntax; current function, export, ownership, and runtime rules remain authoritative |
 
 The development compiler implements sections 4–6 through revision-bearing context, checked plans, forwarding and experimental enumerated test rows. The matched comparative evaluation in section 9 has not been run. Recovery coordinates cooperating August writers and preserves external conflicts; arbitrary editor writes are not filesystem-isolated. Interrupted acquisition metadata fails closed for inspection.
@@ -343,9 +343,11 @@ on that evidence, and broader claims should follow additional results.
 
 ## 10. Evidence and open decisions
 
-See the [local experiment report](https://github.com/GreenPandaStudios/augscript/blob/a1a9769e77e3dfd32bf91b3f6534a9b3de4ac7ac/experiments/agent-amendment/RESULTS.md),
-[recorded plan](https://github.com/GreenPandaStudios/augscript/blob/a1a9769e77e3dfd32bf91b3f6534a9b3de4ac7ac/experiments/agent-amendment/PLAN.md), and
-[primary-source research](https://github.com/GreenPandaStudios/augscript/blob/a1a9769e77e3dfd32bf91b3f6534a9b3de4ac7ac/experiments/agent-amendment/RESEARCH.md).
+The local investigation recorded an experiment report (`experiments/agent-amendment/RESULTS.md`),
+plan (`experiments/agent-amendment/PLAN.md`), and primary-source research (`experiments/agent-amendment/RESEARCH.md`).
+Those historical reports and their underlying trial artifacts are not published with this implementation.
+The pilot claims above are recorded author reports, not an independently reproduced comparative evaluation.
+The implemented development profile has separate compiler, native equivalence, transaction recovery and bounded mutation regressions; see [checked changes](../checked-changes.md).
 
 Open decisions before implementation: `forward` versus renamed reexports; exact public
 alias identity/versioning; conservative interface-dispatch graph coverage; transaction
