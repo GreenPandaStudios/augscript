@@ -144,7 +144,7 @@ JSON bodies decode into concrete immutable records. `optional T` allows a value 
 
 An ordinary return becomes the documented status and a JSON, Html, or Bytes representation. `HttpResponse<T>` selects status and immutable `Headers` explicitly. `Headers.with` appends a value, preserving repeated headers such as Set-Cookie; singular wire inputs reject duplicates. The `redirect` and `cookie` helpers validate header values. Cookie callers explicitly choose Secure and lifetime settings.
 
-Response status literals must range from 200 to 599; constructing a response with a dynamic status requires handling or declaring `HttpError`. Complex form fields use the same JSON schemas as body inputs: malformed JSON text returns 400 and a schema mismatch returns 422.
+Response status literals must range from 200 to 599. Constructing a response with a dynamic status can fail with `HttpError`; catch that failure or let it propagate through the inferred contract. Complex form fields use the same JSON schemas as body inputs: malformed JSON text returns 400 and a schema mismatch returns 422.
 
 `unless ErrorType with status CODE` declares an error response. Unexpected failures produce 500 with server-side error reporting. Default failures use [RFC 9457 Problem Details](https://www.rfc-editor.org/rfc/rfc9457.html). OAuth endpoints in the proof return their protocol's JSON errors explicitly. HEAD suppresses the body; 204 and 304 suppress body and Content-Length. See the [gap ledger](web-library-gaps.md) for unimplemented HTTP behavior; this is not a claim of full protocol conformance.
 
