@@ -1,6 +1,6 @@
 # Compatibility and supported platforms
 
-August is a preview. This page states the proposed 1.0 compatibility contract and the evidence still needed before it takes effect. The pending 0.21.0 release adds the qualified LLVM/native package profile; the [roadmap](roadmap.md) tracks its release gate.
+August is a preview. This page states the proposed 1.0 compatibility contract and the evidence still needed before it takes effect. The published 0.21.0 preview includes the qualified LLVM/native package profile; the [roadmap](roadmap.md) tracks the remaining 1.0 gates.
 
 The [ownership and task conformance page](language-conformance.md) records executable candidate behavior for moves, aliasing, cleanup, cancellation, and delayed errors.
 
@@ -33,10 +33,10 @@ Rebuild native executables and private dependencies for the target platform afte
 | Target | Preview evidence | 1.0 support decision |
 | --- | --- | --- |
 | macOS 14+ ARM64 | Installed CLI and real public native libraries pass on macOS 14 with Xcode and Command Line Tools removed. | Candidate; every release must repeat language, debugger, sanitizer, performance and consumer gates. |
-| GNU/Linux ARM64, glibc 2.36+ | Debian 12 CI runs LLVM language/runtime regressions and public imports in a consumer image without compilers, Git or headers. | Candidate; qualify each compiler candidate and deployment bundle. Physical DGX testing remains pending. |
+| GNU/Linux ARM64, glibc 2.36+ | Debian 12 CI runs LLVM language/runtime regressions and public imports in a consumer image without compilers, Git or headers. A [physical DGX Spark](dgx-spark.md) passed parity, safety gyms, benchmarks and real library imports. | Candidate; qualify each compiler candidate and deployment bundle. |
 | GNU/Linux x86-64, glibc 2.36+ | The same Debian 12 CI and clean-consumer profile passes on native x86-64 runners. | Candidate; qualify each compiler candidate and deployment bundle. |
 | Windows and other targets | No full native verification. | Outside the proposed 1.0 support matrix. |
 
-The pending 0.21.0 consumer workflow requires Node.js 24+ and a supported host. August downloads its pinned compiler/runtime and package artifacts; consumers do not install Clang, LLVM or an SDK. Explicit C reference builds and binding authoring require their [maintainer tools](tooling.md). Musl, Windows and cross compilation are outside this profile. The current runtime schedules tasks on one OS thread. HTTP and OIDC library conformance is tracked separately in the [web and crypto gap ledger](web-library-gaps.md); those application concerns are not language 1.0 gates.
+The 0.21.0 consumer workflow requires Node.js 24+ and a supported host. August downloads its pinned compiler/runtime and package artifacts; consumers do not install Clang, LLVM or an SDK. Explicit C reference builds and binding authoring require their [maintainer tools](tooling.md). Musl, Windows and cross compilation are outside this profile. The current runtime schedules tasks on one OS thread. HTTP and OIDC library conformance is tracked separately in the [web and crypto gap ledger](web-library-gaps.md); those application concerns are not language 1.0 gates.
 
 The 1.0 support matrix becomes a commitment only after each candidate target has green CI, installed-package and native integration tests, dependency/license review, and a documented update path. See [production readiness](production-readiness.md) for present limits.

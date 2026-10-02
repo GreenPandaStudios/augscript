@@ -10,13 +10,14 @@ The [DGX Spark results](dgx-spark.md) record a second physical ARM64 host, inclu
 
 ## Read the graphs
 
-Execution and memory bars use **lower is better**. HTTP throughput uses **higher is better**. Read the workload name and units before comparing: a 20,000-entry map and a two-million-step CPU loop do different amounts of work. The execution panels have separate linear scales; compare implementations within a panel. Tables provide exact values and remain readable on a phone.
+Execution and memory bars use **lower is better**. HTTP throughput uses **higher is better**. Read the workload name and units before comparing: a 20,000-entry map and a two-million-step CPU loop do different amounts of work. The execution panels have separate linear scales; compare implementations within a panel. Toggle implementations to compare them without changing the measurements. Select “Show observed ranges” to see the recorded minimum and maximum; these are not confidence intervals. Expand the chart’s values for a selectable data table. Charts adapt to a phone and use the wiki’s light or dark theme.
 
 All results below were recorded on October 2, 2026 (UTC): Apple M5, macOS Darwin 25.6.0, ARM64, LLVM 23.1.2 for August, Apple Clang 21 for the C reference, Node 24.18.0, and CPython 3.12.14. August and C use `-O2` without LTO. [Raw samples, checksums, build timings and environment](benchmark-results.json) include the LLVM tool and runtime identities.
 
 ## Execution time
 
-![Median execution time for August, C, Node and Python across five workloads. Shorter bars are faster; each panel has its own linear scale.](./assets/benchmarks/execution.svg)
+::: benchmark-chart execution
+:::
 
 [benchmark-execution-start]: #
 
@@ -156,7 +157,8 @@ packages:
 
 ## HTTP throughput
 
-![Measured August and Node HTTP throughput at 1, 16 and 64 concurrent keep-alive clients. Higher is faster.](./assets/benchmarks/http.svg)
+::: benchmark-chart http
+:::
 
 [benchmark-http-start]: #
 
@@ -302,7 +304,8 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1
 
 ## Memory
 
-![Peak process memory in MiB for 20,000 and 200,000 collection entries, including runtime and interpreter overhead.](./assets/benchmarks/memory.svg)
+::: benchmark-chart memory
+:::
 
 [benchmark-memory-start]: #
 
@@ -320,9 +323,13 @@ These are medians of three separate peak-RSS measurements through `/usr/bin/time
 
 ## Before and after
 
-The earlier September 29 measurements and current LLVM measurements use the same August programs on this host. Versions and backends differ; the earlier HTTP run used three rounds and the current run uses five. The current suite also isolates each load client in a fresh process. This is a historical comparison of observed performance, not a controlled estimate of one compiler change. Shorter bars are faster for execution time; taller points are faster for HTTP. [Earlier measurement summaries](benchmark-baseline.json) preserve the baseline.
+The earlier September 29 measurements and current LLVM measurements use the same August programs on this host. Versions and backends differ; the earlier HTTP run used three rounds and the current run uses five. The current suite also isolates each load client in a fresh process. This is a historical comparison of observed performance, not a controlled estimate of one compiler change. Shorter bars are faster for execution time; longer bars are faster for HTTP. [Earlier measurement summaries](benchmark-baseline.json) preserve the baseline.
 
-![August execution time and HTTP throughput before and after the performance update, using the same workloads.](./assets/benchmarks/improvements.svg)
+::: benchmark-chart improvements-execution
+:::
+
+::: benchmark-chart improvements-http
+:::
 
 [benchmark-improvements-start]: #
 
@@ -518,10 +525,10 @@ else:
 | --- | --- |
 | Application-specific profiling | These small workloads do not predict a complete application's performance. |
 | Long-running memory/lifecycle tests | Peak RSS of a short process does not prove a stable server heap. |
-| Tasks that capture injected mutable state; cleanup of owned shared values | These ownership and resource-lifetime cases still have gaps. Check the gap ledger before relying on them. |
+| Wider ownership and cancellation coverage | Existing tests cover injected task captures, cleanup of owned shared values and cancellation. Wider conformance and repeated stress testing remain 1.0 gates. |
 | Multicore workers, bounded channels and broadcasts | Tasks currently run on one OS thread; these features are not available yet. |
 | Independent HTTP conformance and adverse-client tests | Existing socket regressions do not cover the entire HTTP specification. |
-| Other native platform builds | The native bootstrap and full suite are verified on macOS ARM and Linux ARM. Linux x86-64 runs in CI; Windows and other platforms remain unverified. |
+| Other native platform builds | The LLVM suite passes on macOS ARM64 and GNU/Linux x86-64/ARM64, including a physical DGX Spark run. Windows, musl and cross compilation remain unsupported. |
 | Identity-provider hardening and durable storage | The OIDC demo is a development proof; persistence, key rotation, federation and certification remain. |
 | Stable package/native ABI and operational tooling | Source packages work, but compiler compatibility is exact and rich debugging remains limited. |
 

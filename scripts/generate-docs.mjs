@@ -14,10 +14,12 @@ import { collectionOperations } from '../src/builtins.ts';
 import { generateSpecs } from '../src/spec.ts';
 import { specHint } from '../src/spec-hints.ts';
 import { buildExamplePages, examples } from './example-docs.mjs';
+import { benchmarkChartData } from './benchmark-chart-data.mjs';
 
 const root = resolve(import.meta.dirname, '..');
 const check = process.argv.includes('--check');
 const outputs = new Map();
+outputs.set('docs/.vitepress/theme/benchmark-data.json', benchmarkChartData(root));
 // Analyze the pending source pointers too, so one generation pass has correct API/source links.
 const entry=join(root,'examples/approved-design');
 const initial=checkProject(loadProject(entry));

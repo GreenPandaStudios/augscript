@@ -1,0 +1,1025 @@
+{
+  "execution": {
+    "title": "Execution time",
+    "unit": "ms",
+    "direction": "lower",
+    "groups": [
+      {
+        "name": "Startup",
+        "source": "/examples/startup-benchmark/main",
+        "values": [
+          {
+            "name": "August",
+            "value": 1.4278330000000778,
+            "minimum": 1.2947079999999005,
+            "maximum": 1.5982910000000174,
+            "samples": 60
+          },
+          {
+            "name": "C",
+            "value": 1.1909999999999172,
+            "minimum": 1.1239579999999023,
+            "maximum": 1.41274999999996,
+            "samples": 60
+          },
+          {
+            "name": "Node",
+            "value": 19.305624999999964,
+            "minimum": 18.324334000000363,
+            "maximum": 22.2268339999996,
+            "samples": 60
+          },
+          {
+            "name": "Python",
+            "value": 16.183354500000064,
+            "minimum": 15.291625000000067,
+            "maximum": 16.68220799999972,
+            "samples": 60
+          }
+        ]
+      },
+      {
+        "name": "Integer loop · 2 million steps",
+        "source": "/examples/cpu-benchmark/main",
+        "values": [
+          {
+            "name": "August",
+            "value": 7.741792000000714,
+            "minimum": 7.436875000003056,
+            "maximum": 10.472915999999714,
+            "samples": 60
+          },
+          {
+            "name": "C",
+            "value": 8.379271000000244,
+            "minimum": 8.151250000000118,
+            "maximum": 9.21691699999974,
+            "samples": 60
+          },
+          {
+            "name": "Node",
+            "value": 30.638708500001485,
+            "minimum": 29.273457999999664,
+            "maximum": 48.49562499999956,
+            "samples": 60
+          },
+          {
+            "name": "Python",
+            "value": 252.61797900000056,
+            "minimum": 241.0333329999994,
+            "maximum": 288.7924579999999,
+            "samples": 60
+          }
+        ]
+      },
+      {
+        "name": "Map + Set · 20,000 entries",
+        "source": "/examples/collections-benchmark/main",
+        "values": [
+          {
+            "name": "August",
+            "value": 2.7107505000000174,
+            "minimum": 2.5523749999999836,
+            "maximum": 3.022416000000021,
+            "samples": 60
+          },
+          {
+            "name": "C",
+            "value": 1.6438545000000886,
+            "minimum": 1.5044169999999895,
+            "maximum": 1.9041670000001432,
+            "samples": 60
+          },
+          {
+            "name": "Node",
+            "value": 22.582312499999944,
+            "minimum": 21.603958000000148,
+            "maximum": 24.767541000000165,
+            "samples": 60
+          },
+          {
+            "name": "Python",
+            "value": 18.814354499999922,
+            "minimum": 17.82037500000024,
+            "maximum": 39.00870799999984,
+            "samples": 60
+          }
+        ]
+      },
+      {
+        "name": "Map + Set · 200,000 entries",
+        "source": "/examples/collections-benchmark/main",
+        "values": [
+          {
+            "name": "August",
+            "value": 16.806416999999897,
+            "minimum": 16.028374999999983,
+            "maximum": 18.910959000000275,
+            "samples": 60
+          },
+          {
+            "name": "C",
+            "value": 6.307812000000013,
+            "minimum": 5.98754099999951,
+            "maximum": 7.578624999999647,
+            "samples": 60
+          },
+          {
+            "name": "Node",
+            "value": 37.95827149999991,
+            "minimum": 36.77754200000004,
+            "maximum": 42.43929200000002,
+            "samples": 60
+          },
+          {
+            "name": "Python",
+            "value": 40.35889600000041,
+            "minimum": 38.744792000000416,
+            "maximum": 43.87170900000001,
+            "samples": 60
+          }
+        ]
+      },
+      {
+        "name": "JSON · 5,000 records",
+        "source": "/examples/json-benchmark/main",
+        "values": [
+          {
+            "name": "August",
+            "value": 7.2253749999999854,
+            "minimum": 6.991582999999991,
+            "maximum": 7.9400839999998425,
+            "samples": 60
+          },
+          {
+            "name": "C",
+            "value": 1.9422079999999369,
+            "minimum": 1.7740420000000086,
+            "maximum": 2.349125000000072,
+            "samples": 60
+          },
+          {
+            "name": "Node",
+            "value": 21.161936999999966,
+            "minimum": 19.901417000000038,
+            "maximum": 25.43724999999995,
+            "samples": 60
+          },
+          {
+            "name": "Python",
+            "value": 31.83577049999974,
+            "minimum": 31.017916999999898,
+            "maximum": 35.61195799999996,
+            "samples": 60
+          }
+        ]
+      }
+    ]
+  },
+  "http": {
+    "title": "HTTP throughput",
+    "unit": "requests/s",
+    "direction": "higher",
+    "groups": [
+      {
+        "name": "1 concurrent clients",
+        "source": "/examples/http-benchmark/routes",
+        "values": [
+          {
+            "name": "August",
+            "value": 21046.033492371473,
+            "minimum": 20967.492523778445,
+            "maximum": 21173.155151126084,
+            "samples": 5
+          },
+          {
+            "name": "Node",
+            "value": 23679.3765436112,
+            "minimum": 23553.27450152462,
+            "maximum": 23887.309191936427,
+            "samples": 5
+          }
+        ]
+      },
+      {
+        "name": "16 concurrent clients",
+        "source": "/examples/http-benchmark/routes",
+        "values": [
+          {
+            "name": "August",
+            "value": 58707.75426695297,
+            "minimum": 54454.49059610154,
+            "maximum": 59069.10051050469,
+            "samples": 5
+          },
+          {
+            "name": "Node",
+            "value": 55556.50680641099,
+            "minimum": 55290.162774239216,
+            "maximum": 56685.99523057641,
+            "samples": 5
+          }
+        ]
+      },
+      {
+        "name": "64 concurrent clients",
+        "source": "/examples/http-benchmark/routes",
+        "values": [
+          {
+            "name": "August",
+            "value": 54436.28505016304,
+            "minimum": 52649.52135003903,
+            "maximum": 55187.38396093695,
+            "samples": 5
+          },
+          {
+            "name": "Node",
+            "value": 51730.24745163869,
+            "minimum": 49344.41844508968,
+            "maximum": 52343.64263010306,
+            "samples": 5
+          }
+        ]
+      }
+    ]
+  },
+  "memory": {
+    "title": "Peak process memory",
+    "unit": "MiB",
+    "direction": "lower",
+    "groups": [
+      {
+        "name": "Map + Set · 20,000 entries",
+        "values": [
+          {
+            "name": "August",
+            "value": 4.6875,
+            "minimum": 4.6875,
+            "maximum": 4.6875,
+            "samples": 3
+          },
+          {
+            "name": "C",
+            "value": 4.359375,
+            "minimum": 4.359375,
+            "maximum": 4.359375,
+            "samples": 3
+          },
+          {
+            "name": "Node",
+            "value": 56.921875,
+            "minimum": 56.921875,
+            "maximum": 57.03125,
+            "samples": 3
+          },
+          {
+            "name": "Python",
+            "value": 13.234375,
+            "minimum": 13.203125,
+            "maximum": 13.234375,
+            "samples": 3
+          }
+        ]
+      },
+      {
+        "name": "Map + Set · 200,000 entries",
+        "values": [
+          {
+            "name": "August",
+            "value": 36.828125,
+            "minimum": 36.828125,
+            "maximum": 36.84375,
+            "samples": 3
+          },
+          {
+            "name": "C",
+            "value": 25.390625,
+            "minimum": 25.390625,
+            "maximum": 25.390625,
+            "samples": 3
+          },
+          {
+            "name": "Node",
+            "value": 91.109375,
+            "minimum": 91.09375,
+            "maximum": 91.171875,
+            "samples": 3
+          },
+          {
+            "name": "Python",
+            "value": 55.265625,
+            "minimum": 55.25,
+            "maximum": 55.28125,
+            "samples": 3
+          }
+        ]
+      }
+    ]
+  },
+  "improvements-execution": {
+    "title": "Earlier and current execution time",
+    "unit": "ms",
+    "direction": "lower",
+    "groups": [
+      {
+        "name": "Integer loop · 2 million steps",
+        "values": [
+          {
+            "name": "Before",
+            "value": 36.64545799999905,
+            "minimum": 34.890041999999994,
+            "maximum": 38.63004099999944,
+            "samples": 15
+          },
+          {
+            "name": "Current",
+            "value": 7.741792000000714,
+            "minimum": 7.436875000003056,
+            "maximum": 10.472915999999714,
+            "samples": 60
+          }
+        ]
+      },
+      {
+        "name": "Map + Set · 20,000 entries",
+        "values": [
+          {
+            "name": "Before",
+            "value": 4.675290999999561,
+            "minimum": 4.506165999999212,
+            "maximum": 4.973541000001205,
+            "samples": 15
+          },
+          {
+            "name": "Current",
+            "value": 2.7107505000000174,
+            "minimum": 2.5523749999999836,
+            "maximum": 3.022416000000021,
+            "samples": 60
+          }
+        ]
+      },
+      {
+        "name": "Map + Set · 200,000 entries",
+        "values": [
+          {
+            "name": "Before",
+            "value": 47.89533299999857,
+            "minimum": 46.50266699999884,
+            "maximum": 49.582125000000815,
+            "samples": 15
+          },
+          {
+            "name": "Current",
+            "value": 16.806416999999897,
+            "minimum": 16.028374999999983,
+            "maximum": 18.910959000000275,
+            "samples": 60
+          }
+        ]
+      }
+    ]
+  },
+  "improvements-http": {
+    "title": "Earlier and current HTTP throughput",
+    "unit": "requests/s",
+    "direction": "higher",
+    "groups": [
+      {
+        "name": "1 concurrent clients",
+        "values": [
+          {
+            "name": "Before",
+            "value": 25273.34704412399,
+            "minimum": 22146.362760221313,
+            "maximum": 25365.34016506469,
+            "samples": 3
+          },
+          {
+            "name": "Current",
+            "value": 21046.033492371473,
+            "minimum": 20967.492523778445,
+            "maximum": 21173.155151126084,
+            "samples": 5
+          }
+        ]
+      },
+      {
+        "name": "16 concurrent clients",
+        "values": [
+          {
+            "name": "Before",
+            "value": 62719.35388428363,
+            "minimum": 62595.81776559567,
+            "maximum": 62918.14375922489,
+            "samples": 3
+          },
+          {
+            "name": "Current",
+            "value": 58707.75426695297,
+            "minimum": 54454.49059610154,
+            "maximum": 59069.10051050469,
+            "samples": 5
+          }
+        ]
+      },
+      {
+        "name": "64 concurrent clients",
+        "values": [
+          {
+            "name": "Before",
+            "value": 30692.852785567866,
+            "minimum": 28209.36141763359,
+            "maximum": 30805.984678642988,
+            "samples": 3
+          },
+          {
+            "name": "Current",
+            "value": 54436.28505016304,
+            "minimum": 52649.52135003903,
+            "maximum": 55187.38396093695,
+            "samples": 5
+          }
+        ]
+      }
+    ]
+  },
+  "kernels": {
+    "title": "Eight August and C programs",
+    "unit": "ms",
+    "direction": "lower",
+    "groups": [
+      {
+        "name": "Floating-point loop",
+        "source": "/examples/float-benchmark/main",
+        "values": [
+          {
+            "name": "August",
+            "value": 2.294208000000026,
+            "minimum": 2.204582999999957,
+            "maximum": 2.972582999999986,
+            "samples": 30
+          },
+          {
+            "name": "C",
+            "value": 1.6919165000000476,
+            "minimum": 1.5488750000000664,
+            "maximum": 2.2490000000000236,
+            "samples": 30
+          }
+        ]
+      },
+      {
+        "name": "Labeled calls",
+        "source": "/examples/calls-benchmark/main",
+        "values": [
+          {
+            "name": "August",
+            "value": 2.3432295000000067,
+            "minimum": 2.2189580000000433,
+            "maximum": 3.7533750000000055,
+            "samples": 30
+          },
+          {
+            "name": "C",
+            "value": 1.7674370000000295,
+            "minimum": 1.6892499999999586,
+            "maximum": 2.8429579999999532,
+            "samples": 30
+          }
+        ]
+      },
+      {
+        "name": "List traversal",
+        "source": "/examples/list-benchmark/main",
+        "values": [
+          {
+            "name": "August",
+            "value": 1.9915000000000305,
+            "minimum": 1.891958000000045,
+            "maximum": 2.9894590000000107,
+            "samples": 30
+          },
+          {
+            "name": "C",
+            "value": 1.1986454999999978,
+            "minimum": 1.0963750000000232,
+            "maximum": 1.8112089999999625,
+            "samples": 30
+          }
+        ]
+      },
+      {
+        "name": "String processing",
+        "source": "/examples/strings-benchmark/main",
+        "values": [
+          {
+            "name": "August",
+            "value": 9.297500000000014,
+            "minimum": 8.499250000000018,
+            "maximum": 9.96666700000003,
+            "samples": 30
+          },
+          {
+            "name": "C",
+            "value": 2.673020500000007,
+            "minimum": 2.501292000000035,
+            "maximum": 3.477540999999974,
+            "samples": 30
+          }
+        ]
+      },
+      {
+        "name": "Map deletion and refill",
+        "source": "/examples/map-churn-benchmark/main",
+        "values": [
+          {
+            "name": "August",
+            "value": 4.776396000000005,
+            "minimum": 4.609166000000073,
+            "maximum": 5.438249999999982,
+            "samples": 30
+          },
+          {
+            "name": "C",
+            "value": 4.179042000000038,
+            "minimum": 4.018291999999974,
+            "maximum": 5.098416000000043,
+            "samples": 30
+          }
+        ]
+      },
+      {
+        "name": "Checked failures",
+        "source": "/examples/errors-benchmark/main",
+        "values": [
+          {
+            "name": "August",
+            "value": 1.3661044999999774,
+            "minimum": 1.2448329999999714,
+            "maximum": 2.0002920000000017,
+            "samples": 30
+          },
+          {
+            "name": "C",
+            "value": 1.130145999999968,
+            "minimum": 0.9782079999999951,
+            "maximum": 1.914416000000017,
+            "samples": 30
+          }
+        ]
+      },
+      {
+        "name": "Record allocation",
+        "source": "/examples/records-benchmark/main",
+        "values": [
+          {
+            "name": "August",
+            "value": 9.395854500000041,
+            "minimum": 8.54704199999992,
+            "maximum": 10.367916999999977,
+            "samples": 30
+          },
+          {
+            "name": "C",
+            "value": 2.014874999999961,
+            "minimum": 1.896833000000015,
+            "maximum": 2.2819999999999254,
+            "samples": 30
+          }
+        ]
+      },
+      {
+        "name": "Task scheduling",
+        "source": "/examples/tasks-benchmark/main",
+        "values": [
+          {
+            "name": "August",
+            "value": 3.8920004999999946,
+            "minimum": 3.6829999999999927,
+            "maximum": 5.1057500000000005,
+            "samples": 30
+          },
+          {
+            "name": "C",
+            "value": 1.1889585000000125,
+            "minimum": 1.0687920000000304,
+            "maximum": 1.675375000000031,
+            "samples": 30
+          }
+        ]
+      }
+    ]
+  },
+  "dgx-execution": {
+    "title": "DGX Spark execution time",
+    "unit": "ms",
+    "direction": "lower",
+    "groups": [
+      {
+        "name": "Startup",
+        "source": "/examples/startup-benchmark/main",
+        "values": [
+          {
+            "name": "August",
+            "value": 1.327674999999914,
+            "minimum": 0.9394739999999047,
+            "maximum": 2.187748000000056,
+            "samples": 60
+          },
+          {
+            "name": "C",
+            "value": 0.9209535000000528,
+            "minimum": 0.7139529999999468,
+            "maximum": 3.458438000000001,
+            "samples": 60
+          },
+          {
+            "name": "Node",
+            "value": 19.29564849999997,
+            "minimum": 15.717866000000186,
+            "maximum": 25.402858999999808,
+            "samples": 60
+          },
+          {
+            "name": "Python",
+            "value": 7.4259329999999295,
+            "minimum": 6.5446190000000115,
+            "maximum": 10.023824999999988,
+            "samples": 60
+          }
+        ]
+      },
+      {
+        "name": "Integer loop · 2 million steps",
+        "source": "/examples/cpu-benchmark/main",
+        "values": [
+          {
+            "name": "August",
+            "value": 7.774660999999924,
+            "minimum": 7.445035999999163,
+            "maximum": 8.18631699999969,
+            "samples": 60
+          },
+          {
+            "name": "C",
+            "value": 7.50594000000001,
+            "minimum": 7.140092000001459,
+            "maximum": 8.270142000000305,
+            "samples": 60
+          },
+          {
+            "name": "Node",
+            "value": 36.76398900000015,
+            "minimum": 32.78746300000057,
+            "maximum": 40.12776299999996,
+            "samples": 60
+          },
+          {
+            "name": "Python",
+            "value": 220.76078000000052,
+            "minimum": 212.98963600000002,
+            "maximum": 241.88357499999984,
+            "samples": 60
+          }
+        ]
+      },
+      {
+        "name": "Map + Set · 20,000 entries",
+        "source": "/examples/collections-benchmark/main",
+        "values": [
+          {
+            "name": "August",
+            "value": 4.236127500000009,
+            "minimum": 3.357829000000038,
+            "maximum": 5.736457999999857,
+            "samples": 60
+          },
+          {
+            "name": "C",
+            "value": 3.698878000000036,
+            "minimum": 2.3788520000000517,
+            "maximum": 5.207208999999921,
+            "samples": 60
+          },
+          {
+            "name": "Node",
+            "value": 28.03481499999998,
+            "minimum": 21.532644000000346,
+            "maximum": 34.932124000000044,
+            "samples": 60
+          },
+          {
+            "name": "Python",
+            "value": 12.6796535,
+            "minimum": 10.18051299999999,
+            "maximum": 14.785097000000007,
+            "samples": 60
+          }
+        ]
+      },
+      {
+        "name": "Map + Set · 200,000 entries",
+        "source": "/examples/collections-benchmark/main",
+        "values": [
+          {
+            "name": "August",
+            "value": 63.48367599999983,
+            "minimum": 46.05505399999993,
+            "maximum": 73.4633559999993,
+            "samples": 60
+          },
+          {
+            "name": "C",
+            "value": 22.472662000000128,
+            "minimum": 17.67329400000017,
+            "maximum": 27.56807900000058,
+            "samples": 60
+          },
+          {
+            "name": "Node",
+            "value": 82.60206849999986,
+            "minimum": 63.909740000000056,
+            "maximum": 96.83858200000032,
+            "samples": 60
+          },
+          {
+            "name": "Python",
+            "value": 50.69951850000052,
+            "minimum": 43.21362599999884,
+            "maximum": 59.74336500000027,
+            "samples": 60
+          }
+        ]
+      },
+      {
+        "name": "JSON · 5,000 records",
+        "source": "/examples/json-benchmark/main",
+        "values": [
+          {
+            "name": "August",
+            "value": 7.194443999999976,
+            "minimum": 6.741835999999921,
+            "maximum": 8.53518299999996,
+            "samples": 60
+          },
+          {
+            "name": "C",
+            "value": 1.6020749999999566,
+            "minimum": 1.2705779999996594,
+            "maximum": 2.0505319999997482,
+            "samples": 60
+          },
+          {
+            "name": "Node",
+            "value": 22.65165449999995,
+            "minimum": 18.608656000000337,
+            "maximum": 27.15803100000005,
+            "samples": 60
+          },
+          {
+            "name": "Python",
+            "value": 22.292917999999986,
+            "minimum": 20.409539000000223,
+            "maximum": 24.643723000000136,
+            "samples": 60
+          }
+        ]
+      }
+    ]
+  },
+  "dgx-kernels": {
+    "title": "DGX Spark application kernels",
+    "unit": "ms",
+    "direction": "lower",
+    "groups": [
+      {
+        "name": "Floating-point loop",
+        "source": "/examples/float-benchmark/main",
+        "values": [
+          {
+            "name": "August",
+            "value": 2.150907000000018,
+            "minimum": 1.8675549999999959,
+            "maximum": 2.593619999999987,
+            "samples": 30
+          },
+          {
+            "name": "C",
+            "value": 1.5652270000000073,
+            "minimum": 1.300419000000005,
+            "maximum": 2.2989479999999958,
+            "samples": 30
+          }
+        ]
+      },
+      {
+        "name": "Labeled calls",
+        "source": "/examples/calls-benchmark/main",
+        "values": [
+          {
+            "name": "August",
+            "value": 2.5041805000000004,
+            "minimum": 2.211650999999989,
+            "maximum": 3.2767099999999942,
+            "samples": 30
+          },
+          {
+            "name": "C",
+            "value": 1.5777784999999938,
+            "minimum": 1.4032019999999932,
+            "maximum": 2.030355,
+            "samples": 30
+          }
+        ]
+      },
+      {
+        "name": "List traversal",
+        "source": "/examples/list-benchmark/main",
+        "values": [
+          {
+            "name": "August",
+            "value": 3.6167824999999993,
+            "minimum": 2.6409480000000087,
+            "maximum": 4.530104000000009,
+            "samples": 30
+          },
+          {
+            "name": "C",
+            "value": 1.963930999999988,
+            "minimum": 1.3514749999999935,
+            "maximum": 2.5558920000000285,
+            "samples": 30
+          }
+        ]
+      },
+      {
+        "name": "String processing",
+        "source": "/examples/strings-benchmark/main",
+        "values": [
+          {
+            "name": "August",
+            "value": 8.28590299999999,
+            "minimum": 7.739710000000002,
+            "maximum": 8.793264000000022,
+            "samples": 30
+          },
+          {
+            "name": "C",
+            "value": 2.071643999999992,
+            "minimum": 1.7056510000000173,
+            "maximum": 2.5991089999999986,
+            "samples": 30
+          }
+        ]
+      },
+      {
+        "name": "Map deletion and refill",
+        "source": "/examples/map-churn-benchmark/main",
+        "values": [
+          {
+            "name": "August",
+            "value": 5.306481499999975,
+            "minimum": 4.96295299999997,
+            "maximum": 5.924841999999984,
+            "samples": 30
+          },
+          {
+            "name": "C",
+            "value": 4.474839000000003,
+            "minimum": 4.130631000000051,
+            "maximum": 5.382776999999976,
+            "samples": 30
+          }
+        ]
+      },
+      {
+        "name": "Checked failures",
+        "source": "/examples/errors-benchmark/main",
+        "values": [
+          {
+            "name": "August",
+            "value": 1.0375934999999998,
+            "minimum": 0.9299369999999954,
+            "maximum": 1.2351060000000018,
+            "samples": 30
+          },
+          {
+            "name": "C",
+            "value": 0.7238730000000011,
+            "minimum": 0.6407849999999939,
+            "maximum": 1.0390100000000047,
+            "samples": 30
+          }
+        ]
+      },
+      {
+        "name": "Record allocation",
+        "source": "/examples/records-benchmark/main",
+        "values": [
+          {
+            "name": "August",
+            "value": 22.59886350000005,
+            "minimum": 18.58663999999999,
+            "maximum": 26.145741999999927,
+            "samples": 30
+          },
+          {
+            "name": "C",
+            "value": 3.087013499999955,
+            "minimum": 2.2766280000000734,
+            "maximum": 3.9332709999999906,
+            "samples": 30
+          }
+        ]
+      },
+      {
+        "name": "Task scheduling",
+        "source": "/examples/tasks-benchmark/main",
+        "values": [
+          {
+            "name": "August",
+            "value": 8.233054000000024,
+            "minimum": 6.172027000000014,
+            "maximum": 9.181072000000029,
+            "samples": 30
+          },
+          {
+            "name": "C",
+            "value": 1.3026820000000043,
+            "minimum": 0.9027379999999994,
+            "maximum": 2.089268000000004,
+            "samples": 30
+          }
+        ]
+      }
+    ]
+  },
+  "dgx-http": {
+    "title": "DGX Spark HTTP throughput",
+    "unit": "requests/s",
+    "direction": "higher",
+    "groups": [
+      {
+        "name": "1 concurrent clients",
+        "source": "/examples/http-benchmark/routes",
+        "values": [
+          {
+            "name": "August",
+            "value": 18441.17228053694,
+            "minimum": 16748.089850206023,
+            "maximum": 20600.434180518907,
+            "samples": 5
+          },
+          {
+            "name": "Node",
+            "value": 17271.043339721273,
+            "minimum": 16492.10820133113,
+            "maximum": 18409.66055921759,
+            "samples": 5
+          }
+        ]
+      },
+      {
+        "name": "16 concurrent clients",
+        "source": "/examples/http-benchmark/routes",
+        "values": [
+          {
+            "name": "August",
+            "value": 37863.5125330839,
+            "minimum": 37438.66124618747,
+            "maximum": 39761.70112708597,
+            "samples": 5
+          },
+          {
+            "name": "Node",
+            "value": 34749.250865225076,
+            "minimum": 31874.442643495942,
+            "maximum": 38036.511460355265,
+            "samples": 5
+          }
+        ]
+      },
+      {
+        "name": "64 concurrent clients",
+        "source": "/examples/http-benchmark/routes",
+        "values": [
+          {
+            "name": "August",
+            "value": 35395.482396711646,
+            "minimum": 33698.09544699776,
+            "maximum": 36969.14197549431,
+            "samples": 5
+          },
+          {
+            "name": "Node",
+            "value": 31814.52306126289,
+            "minimum": 31213.87812970787,
+            "maximum": 34998.31395622517,
+            "samples": 5
+          }
+        ]
+      }
+    ]
+  }
+}
