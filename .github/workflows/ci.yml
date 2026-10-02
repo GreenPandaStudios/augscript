@@ -71,13 +71,21 @@ jobs:
       - run: npm --prefix vscode audit --audit-level=moderate
       - run: node scripts/bootstrap-native.mjs
       - run: node scripts/prepare-llvm-tools.mjs
+      - run: node scripts/prepare-llvm-maintainer.mjs
       - run: node scripts/build-runtime-pack.mjs
       - run: npm run check
       - run: npm test
       - name: Existing language, runtime and real applications through LLVM
+        env:
+          AUG_REQUIRE_DWARF: '1'
+          AUG_REQUIRE_DEBUGGER: '1'
         run: node scripts/check-llvm-parity.mjs
       - run: npm run test:setup-cold
       - run: npm run test:sanitizers
+      - name: Instrument LLVM programs and the core runtime
+        env:
+          AUG_SANITIZER_CC: ${{ github.workspace }}/.aug-build/llvm-maintainer/bin/clang
+        run: node scripts/sanitize-core.mjs --backend llvm
       - run: node scripts/build-llvm-pack.mjs
       - run: npm run package:packages
       - run: npm run package:extension

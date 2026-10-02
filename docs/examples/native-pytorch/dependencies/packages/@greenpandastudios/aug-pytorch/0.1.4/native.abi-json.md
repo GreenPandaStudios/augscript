@@ -1,7 +1,7 @@
 ---
 title: "Native binding contract · CPU tensors with PyTorch"
 generated: true
-source: "examples/native-pytorch/.aug-spec/packages/@greenpandastudios/aug-pytorch/0.1.3/native.abi.json"
+source: "examples/native-pytorch/.aug-spec/packages/@greenpandastudios/aug-pytorch/0.1.4/native.abi.json"
 editLink: false
 prev: false
 next: false

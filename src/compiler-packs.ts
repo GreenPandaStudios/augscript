@@ -33,16 +33,17 @@ export async function prepareLLVMCompiler(offline=false,project?:{root:string;fr
     const lockFile=project?join(project.root,'aug.lock.json'):undefined,initial=lockFile&&existsSync(lockFile)?readFileSync(lockFile,'utf8'):undefined;
     const lock:PackageLock=initial?JSON.parse(initial):{format:1,compiler:compilerVersion(),specifications:{},roots:{},packages:[],npm:{}};
     if(lock.compiler!==compilerVersion())throw new Error('LLVM_LOCK: Project lock belongs to another compiler. Run aug install.');
-    if(project?.frozen&&(!lock.native?.compiler||lock.native.compiler.artifactSha256!==pack.archive.sha256))throw new Error('LLVM_LOCK: Frozen build has no matching compiler artifact. Run aug build --backend llvm online once.');
+    const previous=lock.native?.compilers?.[host];
+    if(project?.frozen&&(!previous||previous.artifactSha256!==pack.archive.sha256))throw new Error('LLVM_LOCK: Frozen build has no matching compiler artifact for '+host+'. Run aug build --backend llvm online once on this host.');
     const directory=await ensureVerifiedArchive(pack.archive,{offline,executables:platform.tools.map(tool=>'bin/'+tool)});
     const identity=JSON.parse(readFileSync(join(directory,'compiler-pack.json'),'utf8'));
     if(identity.format!==1||identity.compiler!==manifest.compiler||identity.llvm!==manifest.llvm||identity.host!==host||identity.target!==target.triple)throw new Error('LLVM_TOOLS: Verified archive has a different compiler/host/target identity');
     const runtime=readRuntimePack(join(directory,'runtime'));
     if(identity.runtime!==runtime.sourceSha256)throw new Error('LLVM_TOOLS: Compiler pack runtime identity differs from its runtime manifest');
     const selection:LLVMCompilerLock={version:manifest.compiler,llvm:manifest.llvm,host,target:target.triple,artifactSha256:pack.archive.sha256,runtimeSha256:runtime.sourceSha256};
-    if(project?.frozen&&JSON.stringify(lock.native?.compiler)!==JSON.stringify(selection))throw new Error('LLVM_LOCK: Frozen compiler/runtime identity changed');
+    if(project?.frozen&&JSON.stringify(previous)!==JSON.stringify(selection))throw new Error('LLVM_LOCK: Frozen compiler/runtime identity changed for '+host);
     if(lockFile&&!project?.frozen){
-      lock.native??={format:1,targets:{}};lock.native.compiler=selection;
+      lock.native??={format:1,targets:{}};lock.native.compilers??={};lock.native.compilers[host]=selection;
       if((existsSync(lockFile)?readFileSync(lockFile,'utf8'):undefined)!==initial)throw new Error('LLVM_LOCK: Source lock changed during compiler installation; retry');
       writeFileSync(lockFile+'.llvm.tmp',JSON.stringify(lock,null,2)+'\n');renameSync(lockFile+'.llvm.tmp',lockFile);
     }

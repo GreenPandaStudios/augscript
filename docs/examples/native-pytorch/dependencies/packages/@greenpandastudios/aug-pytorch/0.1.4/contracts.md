@@ -1,7 +1,7 @@
 ---
-title: "packages/@greenpandastudios/aug-pytorch/0.1.3/contracts.aug · CPU tensors with PyTorch"
+title: "packages/@greenpandastudios/aug-pytorch/0.1.4/contracts.aug · CPU tensors with PyTorch"
 generated: true
-source: "examples/native-pytorch/.aug-spec/packages/@greenpandastudios/aug-pytorch/0.1.3/contracts.aug"
+source: "examples/native-pytorch/.aug-spec/packages/@greenpandastudios/aug-pytorch/0.1.4/contracts.aug"
 editLink: false
 prev: false
 next: false
@@ -10,7 +10,7 @@ search: false
 pageClass: aug-example-page
 ---
 
-# `packages/@greenpandastudios/aug-pytorch/0.1.3/contracts.aug`
+# `packages/@greenpandastudios/aug-pytorch/0.1.4/contracts.aug`
 
 [CPU tensors with PyTorch](../../../../../index.md) · Dependency source and specification
 

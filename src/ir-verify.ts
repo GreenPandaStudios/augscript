@@ -1,4 +1,5 @@
 import type {AugustIR,IrFunction,IrInstruction,IrTerminator} from './ir.ts';
+import {isIRScalar} from './ir-types.ts';
 import type {Span} from './ast.ts';
 import {runtimeOperations,httpOperations,schemaKinds,runtimeArities} from './runtime-abi.ts';
 import {runtimeAdapters,adapterSymbol} from './runtime-adapters.ts';
@@ -45,7 +46,7 @@ export function verifyIR(ir:AugustIR):void {
   if(routes.size&&!components.has('http'))fail('HTTP routes require their runtime component');
   for(const fn of ir.functions){
     const at=fn.span,slot=(value:number)=>{if(!Number.isSafeInteger(value)||value<0||value>=fn.slots)fail('Slot outside the registered root frame: '+value,at);};
-    if(!Number.isSafeInteger(fn.slots)||fn.slots<1||fn.values.length!==fn.slots||fn.values.some(value=>value.storage!=='rooted-value'||!value.type.id||!value.type.name))fail('Invalid typed root frame',at);
+    if(!Number.isSafeInteger(fn.slots)||fn.slots<1||fn.values.length!==fn.slots||fn.values.some(value=>!value.type.id||!value.type.name||value.storage!=='rooted-value'&&(value.storage!=='scalar-value'||!isIRScalar(value.type))))fail('Invalid typed root frame',at);
     for(const value of [...fn.parameters,...fn.owned,...fn.constructorResults,...fn.variables.map(variable=>variable.slot)])slot(value);
     if(fn.receiver!==undefined)slot(fn.receiver);
     if(new Set(fn.parameters).size!==fn.parameters.length||fn.parameters.includes(0)||fn.receiver===0||fn.receiver!==undefined&&fn.parameters.includes(fn.receiver))fail('Overlapping result/parameter/receiver cells',at);

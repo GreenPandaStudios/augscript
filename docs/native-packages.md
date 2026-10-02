@@ -1,5 +1,11 @@
 # Native libraries as August packages
 
+Native locks keep a compiler selection for each host under `native.compilers`.
+A project can record macOS ARM64 and both GNU/Linux hosts without one build
+replacing another host's compiler or runtime pin. A frozen build requires the
+entry for its current host. Run `aug build --backend llvm` once on each new host
+before using `--frozen` there; cross-compilation is not supported.
+
 The LLVM preview lets an August package wrap a C ABI without exposing native
 pointers to application code. A package supplies August declarations, a checked
 binding descriptor, and prebuilt libraries. The compiler checks their labels,
@@ -13,7 +19,8 @@ ordinary projects retain the C backend during migration.
 Linux x86-64 and ARM64 support is being qualified on Debian 12 and Ubuntu,
 with glibc 2.36 or later. Both architectures pass LLVM regression and installed
 CLI checks with measured library candidates. Their library artifacts are public;
-clean public-download consumer checks and compiler publication remain release gates.
+clean public-download consumer checks have passed independently on both architectures.
+Compiler publication remains a release gate.
 Musl and cross compilation are unsupported. A package declares its libc floor
 and C++ ABI in addition to its OS and architecture; August rejects an incompatible
 host before compiling the application.
@@ -24,16 +31,17 @@ The [PyTorch](https://github.com/GreenPandaStudios/aug-pytorch),
 [SQLite](https://github.com/GreenPandaStudios/aug-sqlite),
 [zlib](https://github.com/GreenPandaStudios/aug-zlib), and
 [BLAKE3](https://github.com/GreenPandaStudios/aug-blake3) repositories publish
-`v0.1.3` source and native preview archives for all three platforms. Their imports have passed using the
-packaged CLI, public downloads, and fresh caches on macOS ARM64. The matching
-compiler release is still pending. The macOS 14 ARM64 consumer gate passed in CI;
+source and native preview archives for all three platforms: PyTorch `v0.1.4` and
+the other three packages `v0.1.3`. Their imports have passed using the packaged CLI,
+public downloads, and fresh caches on macOS ARM64 and both GNU/Linux architectures.
+The matching compiler release is still pending. The consumer gates passed in CI;
 subsequent compiler revisions must pass it again before publication.
 
 After the matching compiler preview is published, use the normal
 package commands. This example adds CPU LibTorch under a short name:
 
 ```sh
-aug add https://github.com/GreenPandaStudios/aug-pytorch#v0.1.3 --as pytorch
+aug add https://github.com/GreenPandaStudios/aug-pytorch#v0.1.4 --as pytorch
 aug run
 ```
 
@@ -68,6 +76,46 @@ Read the complete projects with their compiled explanations:
 [Rust BLAKE3](examples/native-blake3/index.md). Each includes a same-file test and
 a downloadable project. Native dependency pages link to the exact binding
 descriptor, so ownership and native boundaries stay visible beside the code.
+
+## Check and generate bindings
+
+Binding maintainers can use the preview's `aug bind header` command. Supply a
+reviewed `native.abi.json` ownership contract and the adapter's C header. The
+command uses your explicitly selected Clang; it does not install a toolchain or
+run a package recipe.
+
+```sh
+aug bind header native/include/aug_zlib.h \
+  --contract native.abi.json \
+  --target aarch64-apple-darwin \
+  --clang /path/to/pinned/clang \
+  --output .aug-build/checked-bindings
+```
+
+For GNU/Linux, select `x86_64-unknown-linux-gnu` or
+`aarch64-unknown-linux-gnu` in the corresponding maintainer environment. Extra
+Clang include, macro and sysroot flags follow `--`. Consumers still need no
+Clang. Keep the maintainer compiler version pinned in your build recipe.
+
+The command checks physical function types, fixed-width integers, byte booleans,
+buffer lengths, output pointers, release signatures and the ABI error record's
+size, alignment and field offsets. It rejects unsigned results declared as
+August signed integers. Resource input pointers must match their release
+function, and mutable loans cannot use const pointers. It writes generated
+`src` declarations, the descriptor and `header-check.json` only after every
+check passes. Existing output directories are preserved.
+
+Review the generated imports and declarations, then copy them into the package
+beside its handwritten error types and safe API. The command does not invent an
+error class or public wrapper. Include the checked report in native build
+provenance and repeat the check whenever headers, compiler flags or descriptors
+change. The report records compiler, target, header digests and signatures.
+
+Ownership, allocator pairing, retention and thread behavior remain promises
+made by the binding author. A matching header cannot establish those promises;
+independent adapter tests must check them. C++ and Rust packages provide C
+adapter headers for this command. Templates, callbacks, variadic calls and
+aggregate values are outside the initial binding profile.
 
 ## Installation and deployment
 

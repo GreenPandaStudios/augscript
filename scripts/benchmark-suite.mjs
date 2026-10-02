@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict';
-import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import os from 'node:os';
 import { spawn, spawnSync } from 'node:child_process';
@@ -11,6 +11,8 @@ import { loadProject } from '../src/project.ts';
 import { checkProject } from '../src/checker.ts';
 import { generateC } from '../src/codegen.ts';
 import { compileNative } from '../src/native.ts';
+import {compileLLVM} from '../src/llvm-native.ts';
+import {prepareLLVMCompiler} from '../src/compiler-packs.ts';
 import { nativeHome } from './native-home.mjs';
 import {createHash} from 'node:crypto';
 
@@ -18,6 +20,9 @@ const root = resolve(import.meta.dirname, '..'), sources = join(root, 'benchmark
 mkdirSync(build, { recursive: true });
 const option = (name, fallback) => { const index = process.argv.indexOf(name); return index < 0 ? fallback : Number(process.argv[index + 1]); };
 const stringOption = name => { const index = process.argv.indexOf(name); return index < 0 ? undefined : process.argv[index + 1]; };
+const backend=stringOption('--backend')??'c';assert.ok(['c','llvm'].includes(backend),'--backend must be c or llvm');
+const compareC=process.argv.includes('--compare-c-backend');assert.ok(!compareC||backend==='llvm','--compare-c-backend requires --backend llvm');
+const llvmToolchain=backend==='llvm'?await prepareLLVMCompiler():undefined;
 const only = stringOption('--only')?.split(',');
 if (only) for (const name of only) assert.ok(['startup', 'cpu', 'collections-20k', 'collections-200k', 'json', 'http'].includes(name), `Unknown workload: ${name}`);
 const iterations = option('--iterations', 15), warmup = option('--warmup', 3), rounds = option('--http-rounds', 3), requests = option('--http-requests', 5000);
@@ -40,6 +45,9 @@ for (const folder of ['src', 'runtime', 'benchmarks', 'scripts'])
   for (const file of readdirSync(join(root, folder), {recursive:true}).filter(file => /\.(ts|mjs|c|h|aug)$/.test(file)).sort())
     digest.update(folder + '/' + file + '\0').update(readFileSync(join(root, folder, file)));
 const report = { recordedAt: new Date().toISOString(), version: JSON.parse(readFileSync(join(root, 'package.json'))).version,
+  backend,
+  referenceBackend:compareC?'c':undefined,
+  llvm:llvmToolchain?{version:'23.1.2',archiveSha256:llvmToolchain.archiveSha256,developmentOverride:llvmToolchain.developmentOverride,runtime:JSON.parse(readFileSync(join(llvmToolchain.runtime,'runtime.json'))).sourceSha256,tools:Object.fromEntries(['llc','opt','lld'].map(tool=>[tool,createHash('sha256').update(readFileSync(join(llvmToolchain.tools,'bin',tool))).digest('hex')]))}:undefined,
   sourceSha256:digest.digest('hex'),
   environment: { platform: process.platform, release: os.release(), architecture: process.arch, cpu: os.cpus()[0]?.model,
     logicalCpus: os.cpus().length, node: process.version, python: run(python, ['--version']).stdout.trim(),
@@ -51,8 +59,8 @@ const report = { recordedAt: new Date().toISOString(), version: JSON.parse(readF
     http: 'Same-host HTTP/1.1 loopback, keep-alive, closed-loop concurrency, JSON validated on every response; no TLS/auth/logging',
     httpRounds: rounds, requestsPerRound: requests, client: 'Node http.Agent', referenceCompileMs }, batch: [], http: [] };
 
-function native(name, template, replace) {
-  const directory = join(build, name); mkdirSync(directory, { recursive: true });
+function native(name, template, replace,selectedBackend=backend) {
+  const directory = join(build, name); rmSync(directory,{recursive:true,force:true});mkdirSync(directory, { recursive: true });
   cpSync(join(sources, template), directory, { recursive: true, filter: file => !file.includes('.aug-build') });
   if (replace) { const file = join(directory, 'main.aug'); writeFileSync(file, readFileSync(file, 'utf8').replaceAll(replace[0], replace[1])); }
   const configuration = join(directory,'main.yaml');
@@ -61,9 +69,9 @@ function native(name, template, replace) {
   prepareRunPackages(directory);
   const start = performance.now(), checked = checkProject(loadProject(directory));
   assert.deepEqual(checked.diagnostics.filter(issue => issue.severity !== 'warning'), []);
-  const generated = generateC(checked), frontendMs = performance.now() - start;
-  const result = compileNative(directory, generated, { release: true, checked });
-  assert.equal(result.status, 0, result.error);
+  const frontendMs = performance.now() - start;
+  const result = selectedBackend==='llvm'?compileLLVM(checked,{release:true,toolchain:llvmToolchain}):compileNative(directory,generateC(checked),{release:true,checked});
+  if(selectedBackend==='c')assert.equal(result.status,0,result.error);
   return { binary: result.output, frontendMs, buildMs: performance.now() - start };
 }
 const cases = [
@@ -79,8 +87,10 @@ for (const item of cases.filter(item => !only || only.includes(item.name))) {
   if (workload === 'collections') item.expected = (item.count * (item.count - 1) / 2 * 3) + '\ntrue\n';
   if (workload === 'json') item.expected = item.count * (7 + '{"id":7,"message":"hello","values":[1,2,3]}'.length) + '\n';
   const compiled = native(item.name, item.template ?? item.name, item.replace);
+  const reference=compareC?native(item.name+'-c-reference',item.template??item.name,item.replace,'c'):undefined;
   const variants = [
     { name: 'August', command: compiled.binary, args: [] },
+    ...(reference?[{name:'August (C backend)',command:reference.binary,args:[]}]:[]),
     { name: 'C', command: cBinary, args: [workload, String(item.count)] },
     { name: 'Node', command: process.execPath, args: [join(sources, 'reference.mjs'), workload, String(item.count)] },
     { name: 'Python', command: python, args: [join(sources, 'reference.py'), workload, String(item.count)] },
@@ -132,8 +142,10 @@ async function stopServer(child) {
 }
 if (!process.argv.includes('--skip-http') && (!only || only.includes('http'))) {
   const compiled = native('http', 'http');
+  const reference=compareC?native('http-c-reference','http',undefined,'c'):undefined;
   for (const concurrency of [1, 16, 64]) {
     const variants = [{ name: 'August', command: compiled.binary, args: [] },
+      ...(reference?[{name:'August (C backend)',command:reference.binary,args:[]}]:[]),
       { name: 'Node', command: process.execPath, args: [join(sources, 'reference.mjs'), 'http', '0'] }];
     const results = variants.map(variant => ({ implementation: variant.name, rounds: [] }));
     for (let round = 0; round < rounds; round++) for (let i = 0; i < variants.length; i++) {

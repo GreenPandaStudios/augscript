@@ -1,18 +1,18 @@
 {
   "format": 1,
   "files": [
-    ".aug-spec/packages/@greenpandastudios/aug-pytorch/0.1.3/api.aug",
-    ".aug-spec/packages/@greenpandastudios/aug-pytorch/0.1.3/api.aug.md",
-    ".aug-spec/packages/@greenpandastudios/aug-pytorch/0.1.3/bindings.aug",
-    ".aug-spec/packages/@greenpandastudios/aug-pytorch/0.1.3/bindings.aug.md",
-    ".aug-spec/packages/@greenpandastudios/aug-pytorch/0.1.3/contracts.aug",
-    ".aug-spec/packages/@greenpandastudios/aug-pytorch/0.1.3/contracts.aug.md",
-    ".aug-spec/packages/@greenpandastudios/aug-pytorch/0.1.3/native.abi.json",
+    ".aug-spec/packages/@greenpandastudios/aug-pytorch/0.1.4/api.aug",
+    ".aug-spec/packages/@greenpandastudios/aug-pytorch/0.1.4/api.aug.md",
+    ".aug-spec/packages/@greenpandastudios/aug-pytorch/0.1.4/bindings.aug",
+    ".aug-spec/packages/@greenpandastudios/aug-pytorch/0.1.4/bindings.aug.md",
+    ".aug-spec/packages/@greenpandastudios/aug-pytorch/0.1.4/contracts.aug",
+    ".aug-spec/packages/@greenpandastudios/aug-pytorch/0.1.4/contracts.aug.md",
+    ".aug-spec/packages/@greenpandastudios/aug-pytorch/0.1.4/native.abi.json",
     "main.aug.md",
     "tensors.aug.md"
   ],
   "nativeDescriptors": {
-    ".aug-spec/packages/@greenpandastudios/aug-pytorch/0.1.3/native.abi.json": "f07b8cab89ad7cfe368edcd9daf87ecc810adb6a2eed1f446d7b71fb664e91f5"
+    ".aug-spec/packages/@greenpandastudios/aug-pytorch/0.1.4/native.abi.json": "f07b8cab89ad7cfe368edcd9daf87ecc810adb6a2eed1f446d7b71fb664e91f5"
   },
-  "digest": "79f21462bbb478fe28222a3430d96c465bee5ba4767809eab1d0cb9d433b1683"
+  "digest": "ce21763c52d4bd78af38c7a85b8dd29521c82ae9b8a112aab03c9cbe8e27e3e7"
 }

@@ -41,18 +41,22 @@ jobs:
           npm ci
           node scripts/bootstrap-native.mjs
           node scripts/prepare-llvm-tools.mjs
+          node scripts/prepare-llvm-maintainer.mjs
           node scripts/build-runtime-pack.mjs
-          AUG_LLVM_HOME="$PWD/.aug-build/llvm-tools" node scripts/check-llvm-parity.mjs
+          AUG_LLVM_HOME="$PWD/.aug-build/llvm-tools" AUG_REQUIRE_DWARF=1 AUG_REQUIRE_DEBUGGER=1 node scripts/check-llvm-parity.mjs
+          AUG_LLVM_HOME="$PWD/.aug-build/llvm-tools" AUG_SANITIZER_CC="$PWD/.aug-build/llvm-maintainer/bin/clang" node scripts/sanitize-core.mjs --backend llvm
           node scripts/build-llvm-pack.mjs
       - name: Build and verify Linux compiler pack on Debian 12
         if: runner.os == 'Linux'
         run: |
           docker build -f docker/Dockerfile.native-maintainer -t aug-llvm-maintainer .
-          docker run -d --name producer aug-llvm-maintainer sleep infinity
+          docker run -d --cap-add SYS_PTRACE --name producer aug-llvm-maintainer sleep infinity
           docker exec producer node scripts/bootstrap-native.mjs
           docker exec producer node scripts/prepare-llvm-tools.mjs
+          docker exec producer node scripts/prepare-llvm-maintainer.mjs
           docker exec producer node scripts/build-runtime-pack.mjs
-          docker exec -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools producer node scripts/check-llvm-parity.mjs
+          docker exec -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools -e AUG_REQUIRE_DWARF=1 -e AUG_REQUIRE_DEBUGGER=1 -e AUG_DWARF_TOOL=/work/.aug-build/llvm-maintainer/bin/llvm-dwarfdump producer node scripts/check-llvm-parity.mjs
+          docker exec -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools -e AUG_SANITIZER_CC=/work/.aug-build/llvm-maintainer/bin/clang producer node scripts/sanitize-core.mjs --backend llvm
           docker exec producer node scripts/build-llvm-pack.mjs
           mkdir -p .aug-build
           docker cp "producer:/work/.aug-build/aug-llvm-${{ matrix.artifact }}.tar.gz" .aug-build/
@@ -90,6 +94,7 @@ jobs:
       - run: node scripts/version.mjs --check --tag "$GITHUB_REF_NAME"
       - run: node scripts/bootstrap-native.mjs
       - run: node scripts/prepare-llvm-tools.mjs
+      - run: node scripts/prepare-llvm-maintainer.mjs
       - run: node scripts/build-runtime-pack.mjs
       - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
@@ -100,7 +105,14 @@ jobs:
       - run: npm run check
       - run: npm test
       - name: LLVM language, runtime and real application parity
+        env:
+          AUG_REQUIRE_DWARF: '1'
+          AUG_REQUIRE_DEBUGGER: '1'
         run: node scripts/check-llvm-parity.mjs
+      - name: LLVM address and runtime undefined-behavior sanitizer gate
+        env:
+          AUG_SANITIZER_CC: ${{ github.workspace }}/.aug-build/llvm-maintainer/bin/clang
+        run: node scripts/sanitize-core.mjs --backend llvm
       - run: npm run docs:check
       - run: npm run docs:build
       - run: npm run package:packages
@@ -167,7 +179,7 @@ jobs:
         run: |
           docker build -f docker/Dockerfile.native-consumer -t aug-llvm-consumer .
           docker run -d --name consumer aug-llvm-consumer sleep infinity
-          docker exec consumer sh -c '! command -v clang; ! command -v gcc; ! command -v git; test ! -d /usr/include'
+          docker exec consumer sh -c '! command -v clang; ! command -v gcc; ! command -v git; test ! -d /usr/include; test ! -d /usr/local/include'
           docker exec consumer node -e 'for(const name of ["scripts","native","dist","examples",".aug-build"])require("node:fs").mkdirSync("/consumer/"+name,{recursive:true})'
           docker cp scripts/qualify-native-consumers.mjs consumer:/consumer/scripts/
           docker cp scripts/native-qualification-pins.mjs consumer:/consumer/scripts/

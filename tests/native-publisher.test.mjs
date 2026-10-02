@@ -32,9 +32,9 @@ test('publisher finds draft releases, preserves immutable source and rejects con
 const file=process.env.AUG_TEST_RELEASE_STATE,state=JSON.parse(readFileSync(file)),args=process.argv.slice(2);state.events.push(args);
 const option=name=>args[args.indexOf(name)+1];const reply=value=>console.log(JSON.stringify(value));
 if(args[0]==='api'&&args[1].includes('/actions/runs/'))reply({conclusion:'success',status:'completed',head_sha:'${revision}',path:'.github/workflows/candidate.yml',repository:{full_name:'${repository}'}});
-else if(args[0]==='api'&&args[1].includes('/releases?'))reply(state.release?[state.release]:[]);
+else if(args[0]==='api'&&args[1].includes('/releases?')){if(state.hidden>0){state.hidden--;reply([]);}else reply(state.release?[state.release]:[]);}
 else if(args[0]==='api')throw Error('Draft lookup must use the authenticated release collection');
-else if(args[1]==='create')state.release={tag_name:'v0.1.3',draft:true,assets:[]};
+else if(args[1]==='create'){state.release={tag_name:'v0.1.3',draft:true,assets:[]};state.hidden=1;}
 else if(args[1]==='upload')for(const path of args.slice(3,args.indexOf('--repo'))){const name=basename(path);copyFileSync(path,join(process.env.AUG_TEST_REMOTE,name));state.release.assets.push({name});}
 else if(args[1]==='download')copyFileSync(join(process.env.AUG_TEST_REMOTE,option('--pattern')),join(option('--dir'),option('--pattern')));
 else if(args[1]==='edit')state.release.draft=false;

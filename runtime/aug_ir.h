@@ -20,6 +20,18 @@ enum AugIrOperation {
   AUG_IR_JSON_INTEGER, AUG_IR_JSON_BOOLEAN, AUG_IR_JSON_ITEMS, AUG_IR_TIME_NOW, AUG_IR_EXIT, AUG_IR_TEST_CASE
 };
 void aug_ir_operation(AugValue *out, int operation, AugValue *args, int count, const char *text, int64_t number);
+/* Specialized services keep managed inputs in the caller's rooted cells. */
+void aug_ir_map_set(const AugValue *map,const AugValue *key,const AugValue *value);
+void aug_ir_set_add(const AugValue *set,const AugValue *value);
+uint8_t aug_ir_set_contains(const AugValue *set,const AugValue *value);
+uint8_t aug_ir_map_contains(const AugValue *map,const AugValue *key);
+int64_t aug_ir_list_length(const AugValue *list);
+int64_t aug_ir_set_length(const AugValue *set);
+int64_t aug_ir_map_length(const AugValue *map);
+void aug_ir_list_get(AugValue *out,const AugValue *list,const AugValue *index);
+void aug_ir_list_at(AugValue *out,const AugValue *list,const AugValue *index);
+void aug_ir_map_get(AugValue *out,const AugValue *map,const AugValue *key);
+void aug_ir_map_take(AugValue *out,const AugValue *map,const AugValue *key);
 void aug_ir_json_decode(AugValue *out, const AugValue *value, const AugSchema *schema);
 void aug_ir_string(AugValue *out, const void *text, uint64_t count);
 void aug_ir_assert(const AugValue *condition, const char *expression, const char *file, int line);
@@ -33,6 +45,8 @@ void aug_ir_restore_error_state(const AugValue *error,const AugValue *cancelled)
 void aug_ir_task_wait(AugValue *out, AugValue *tasks, int count);
 bool aug_ir_has_error(void);
 bool aug_ir_cancelled(void);
+/* 0 = running, 1 = cancelled, 2 = checked error; cancellation wins. */
+uint8_t aug_ir_state(void);
 bool aug_ir_is_null(const AugValue *value);
 bool aug_ir_truthy(const AugValue *value);
 int64_t aug_ir_integer(const AugValue *value);

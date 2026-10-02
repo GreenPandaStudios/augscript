@@ -183,6 +183,7 @@ for (const operation of builtinFunctions) if (!['int', 'c_int'].includes(operati
   (operation.errors?.length ? ` unless ${operation.errors.join(' and ')}` : ''), operation.documentation);
 
 export const diagnosticHelp: Record<string, string> = {
+  NATIVE_HEADER: 'The native maintainer header does not match its reviewed ownership descriptor. Check fixed-width types, pointer constness, outputs, release signatures and the error record layout. aug bind header uses an explicitly selected Clang only; package consumers do not need Clang. Header checks do not prove allocator pairing, retention or thread promises.',
   NATIVE_ABI: 'Keep the August declarations and native.abi.json in the same package. Parameter labels, types, resource ownership, checked errors and effects must match. Different packages cannot supply the same physical native symbol.',
   NATIVE_INTEGRITY: 'The source or native archive differs from its pinned digest. Reinstall the exact package version or ask its maintainer to publish a new version. Installation never runs package build scripts.',
   NATIVE_TARGET: 'This native package has no compatible prebuilt artifact for your OS, architecture, libc version or C++ runtime. The LLVM preview targets macOS 14+ ARM64 and Debian/Ubuntu GNU/Linux x86-64 or ARM64 with glibc 2.36+. Linux artifacts must declare their glibc floor. Musl and cross compilation are unsupported. Use one of the listed targets; missing artifacts do not trigger a source build.',

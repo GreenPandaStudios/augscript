@@ -12,7 +12,7 @@ import type {NativeLinkInput} from './llvm-native.ts';
 export interface VerifiedArchive {url:string;sha256:string;maximumDownloadBytes:number;maximumUnpackedBytes:number;fileManifest:string}
 export interface NativePackageLock {sourcePackage:string;sourceDigest:string;sourceCommit?:string;contractSha256:string;artifact:NativeArtifact}
 export interface LLVMCompilerLock {version:string;llvm:string;host:string;target:string;artifactSha256:string;runtimeSha256:string}
-export interface NativeLock {format:1;compiler?:LLVMCompilerLock;targets:Record<string,{target:NativeTarget;packages:NativePackageLock[]}>}
+export interface NativeLock {format:1;compilers?:Record<string,LLVMCompilerLock>;targets:Record<string,{target:NativeTarget;packages:NativePackageLock[]}>}
 const sha=(bytes:Buffer)=>createHash('sha256').update(bytes).digest('hex');
 const files=(directory:string,prefix=''):string[]=>readdirSync(join(directory,prefix),{withFileTypes:true}).flatMap(entry=>{
   const name=prefix?prefix+'/'+entry.name:entry.name;

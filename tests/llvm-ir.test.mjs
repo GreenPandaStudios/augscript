@@ -23,16 +23,18 @@ test('checked IR carries typed root cells, public labels, source locations and z
   assert.equal(fn.variables.find(variable=>variable.name==='left').argument,1);
   assert.equal(fn.variables.find(variable=>variable.name==='left').type.name,'bool');
   assert.equal(fn.variables.find(variable=>variable.name==='answer').type.name,'int');
-  assert.equal(fn.values.length,fn.slots);assert.ok(fn.values.every(value=>value.storage==='rooted-value'));
+  assert.equal(fn.values.length,fn.slots);assert.ok(fn.values.every(value=>['rooted-value','scalar-value'].includes(value.storage)));
+  assert.equal(fn.values[fn.variables.find(variable=>variable.name==='answer').slot].storage,'scalar-value');
   assert.ok(ir.coverage.some(point=>point.file.endsWith('/math.aug')&&point.line===5));
   const llvm=generateLLVM(ir);
   assert.match(llvm,/DICompileUnit\(language: 32768/);assert.match(llvm,/DILocalVariable\(name: "answer"/);
-  assert.match(llvm,/#dbg_declare\(ptr %roots/);assert.match(llvm,/call void @aug_coverage_register/);
+  assert.match(llvm,/#dbg_declare\(ptr %slot_/);assert.match(llvm,/call void @aug_coverage_register/);
 }));
 test('IR verification rejects malformed slots, cleanup edges, callbacks and private ABI operations before LLVM emission',()=>fixture(original=>{
   const mutations=[
     ir=>{ir.functions[0].blocks[0].instructions.push({op:'copy',out:0,input:999,span:ir.functions[0].span});},
     ir=>{ir.functions[0].values[0].storage='unrooted';},
+    ir=>{ir.functions[0].values[0].storage='scalar-value';},
     ir=>{ir.functions[0].blocks[0].terminator={op:'jump',target:'missing'};},
     ir=>{ir.functions[0].blocks[0].terminator={op:'return'};},
     ir=>{ir.functions[0].blocks[0].instructions.push({op:'call',out:0,function:ir.main,args:[0],span:ir.functions[0].span});},

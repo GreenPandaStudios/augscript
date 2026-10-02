@@ -67,6 +67,17 @@ void aug_ir_operation(AugValue *out,int op,AugValue *a,int count,const char *tex
   }
 }
 void aug_ir_json_decode(AugValue *out,const AugValue *value,const AugSchema *schema){*out=aug_json_decode(*value,schema);}
+void aug_ir_map_set(const AugValue *map,const AugValue *key,const AugValue *value){aug_map_set(*map,*key,*value);}
+void aug_ir_set_add(const AugValue *set,const AugValue *value){aug_set_add(*set,*value);}
+uint8_t aug_ir_set_contains(const AugValue *set,const AugValue *value){return aug_set_contains(*set,*value)?1:0;}
+uint8_t aug_ir_map_contains(const AugValue *map,const AugValue *key){return aug_map_contains(*map,*key)?1:0;}
+int64_t aug_ir_list_length(const AugValue *list){return (int64_t)aug_list_length(*list);}
+int64_t aug_ir_set_length(const AugValue *set){return (int64_t)aug_set_length(*set);}
+int64_t aug_ir_map_length(const AugValue *map){return (int64_t)aug_map_length(*map);}
+void aug_ir_list_get(AugValue *out,const AugValue *list,const AugValue *index){*out=aug_list_get(*list,aug_cint(*index));}
+void aug_ir_list_at(AugValue *out,const AugValue *list,const AugValue *index){*out=aug_list_at(*list,aug_cint(*index));}
+void aug_ir_map_get(AugValue *out,const AugValue *map,const AugValue *key){*out=aug_map_get(*map,*key);}
+void aug_ir_map_take(AugValue *out,const AugValue *map,const AugValue *key){*out=aug_map_take(*map,*key);}
 void aug_ir_string(AugValue *out,const void *text,uint64_t count){*out=aug_string_n(text,(size_t)count);}
 void aug_ir_assert(const AugValue *condition,const char *expression,const char *file,int line){aug_assert(*condition,expression,file,line);}
 void aug_ir_drop(AugValue *value){aug_drop(*value);*value=aug_null();}
@@ -83,6 +94,10 @@ void aug_ir_restore_error_state(const AugValue *error,const AugValue *cancelled)
 bool aug_ir_has_error(void){return aug_has_error;}
 void aug_ir_task_wait(AugValue *out,AugValue *tasks,int count){*out=aug_task_wait(tasks,count);}
 bool aug_ir_cancelled(void){return aug_cancelled;}
+uint8_t aug_ir_state(void){
+  AugExecution *execution=aug_execution_current();
+  return execution->cancelled?1:execution->has_error?2:0;
+}
 bool aug_ir_is_null(const AugValue *value){return value->tag==AUG_NULL;}
 bool aug_ir_truthy(const AugValue *value){return aug_truthy(*value);}
 int64_t aug_ir_integer(const AugValue *value){return aug_cint(*value);}

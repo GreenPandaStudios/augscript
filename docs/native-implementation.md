@@ -92,6 +92,11 @@ LLVM emission. The frontend remains responsible for source typing and ownership;
 this verifier does not prove foreign code safe. Contributors can inspect it with
 `aug emit-ir`.
 
+Concrete nonnullable scalar cells stay outside the GC root frame; managed values
+retain their registered roots. LLVM preserves integer wrapping and the runtime's
+mixed numeric dispatch. Collection services use pointer arguments across the
+private runtime boundary, avoiding target-specific C aggregate calling rules.
+
 LLVM output includes DWARF source lines and variables in both development and
 optimized builds. The compiler pack contains `dsymutil`, which writes an adjacent
 dSYM without an SDK. `.augmap.json` identifies the IR, object, executable, debug
@@ -102,6 +107,8 @@ rich views are future work. LLVM tests also collect statement-line coverage,
 including zero counts for unexecuted statements. Setup assertions do not count
 toward a test case's required assertions. Same-file tests honor the configured
 development or release optimization mode.
+An actual LLDB check stops at an August source line, reads a parameter and local
+in their tagged representation, then continues to a successful process exit.
 
 Configured executable and OpenAPI output paths work with LLVM. Local
 `libraries` and `library_paths` settings require the C reference backend; LLVM
@@ -129,6 +136,43 @@ architecture. Their semantics must not be implied by the initial resource ABI.
 
 ## Evidence
 
+Maintainers can check C adapter headers with `aug bind header`. It emits reviewed
+declaration fragments and a physical ABI report; it keeps ownership and allocator
+promises explicitly author-declared. Independent malformed-header fixtures check
+integer signedness, byte booleans, buffer lengths, mutable pointers, releases,
+callbacks and error layout. The audit found an unsigned cleanup-counter mismatch
+in LibTorch's `v0.1.3` adapter. Its corrected signed exports passed native clients
+on all three targets and are published as
+[`v0.1.4`](https://github.com/GreenPandaStudios/aug-pytorch/releases/tag/v0.1.4);
+the three other real package headers passed.
+
+Compiler locks now retain independent selections for each host. Installed-CLI
+qualification checks that recording another host preserves the current pin and
+that a frozen build with its current entry removed fails without editing the lock.
+
+The LLVM migration benchmark accepts `--backend llvm` and `--backend c` with the
+same checked programs and independent output checks. Scalar lowering retains
+wrapping int64 arithmetic, IEEE comparisons and checked runtime division. Tests
+include the signed minimum divided by minus one, NaN, optional values and mixed
+integer/float comparisons. Performance qualification is still in progress.
+The frozen migration limits live in `native/llvm-performance-gates.json`: each
+batch median may rise by at most 20% or 0.5ms against the same August program on
+the C backend; HTTP throughput may fall by at most 20%. Qualification requires
+15 rotating samples after three warmups and five HTTP rounds at each declared
+concurrency. These limits apply to migration, not a general speed claim.
+
+The maintainer sanitizer harness accepts `--backend llvm`. LLVM's ASan pass
+instruments the actual emitted program before object generation. The harness
+adds `sanitize_address` to each generated function, checks the inserted memory
+probes, and requires a deliberate stack overflow to fail. Clang builds
+the same core runtime sources with ASan and UBSan, then links that LLVM object.
+This is a maintainer test, and does not introduce a consumer toolchain
+requirement. It checks collections, allocation pressure and owned task inputs.
+UBSan covers the C runtime; it does not reconstruct source-level arithmetic
+checks from LLVM IR or establish that an upstream binary is safe. Leak checking
+is disabled for the coroutine harness; independent resource counters provide
+the separate native cleanup evidence.
+
 GNU/Linux lowering now supports x86-64 and ARM64 on Debian/Ubuntu with glibc
 2.36 or later. An independently authored process-entry object calls the public
 libc initialization entry. LLD links against the host's runtime libc and loader;
@@ -155,8 +199,12 @@ The local clean Debian 12 ARM64 consumer check also passed against all four publ
 development headers, including the Node headers normally present in the base
 image. URL imports, named aliases, same-file tests, frozen/offline runs, relocated
 deployments, real-resource cleanup, tasks, JSON, crypto and HTTP forms passed.
-This supplies ARM64 consumer evidence; the corresponding x86-64 clean job must
-pass independently.
+Both clean GNU/Linux jobs passed independently on commit `c21cd88` in
+[run 36956350591](https://github.com/GreenPandaStudios/augscript/actions/runs/36956350591).
+The matching macOS 14 gate passed in
+[run 36956350544](https://github.com/GreenPandaStudios/augscript/actions/runs/36956350544).
+These gates used the then-current `v0.1.3` public libraries; later compiler and
+library changes must pass them again.
 
 The ARM64 LibTorch CPU archive contains OpenBLAS 0.3.34 and Arm Compute 53.2.0
 alongside LibTorch 2.14.1. The build checks reported binary versions and retains

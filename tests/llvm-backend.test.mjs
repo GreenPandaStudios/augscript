@@ -28,8 +28,63 @@ function runProgram(files, expected, {traceDrops=false,checkStderr,release=false
 }
 
 const enabled=!!process.env.AUG_LLVM_HOME&&(process.platform==='darwin'&&process.arch==='arm64'||process.platform==='linux'&&['x64','arm64'].includes(process.arch));
-const dwarfTool='/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/llvm-dwarfdump';
-for(const release of [false,true])test('LLVM produces source DWARF and a matching dSYM '+(release?'optimized':'development'),{skip:!enabled||!existsSync(dwarfTool)},()=>{
+for(const release of [false,true])test('LLVM scalar lowering preserves wrapping, mixed comparisons, NaN and checked division '+(release?'optimized':'development'),{skip:!enabled},()=>runProgram({
+  'main.aug':`int largest = 9223372036854775807
+int smallest = -9223372036854775808
+print(value=largest + 1)
+print(value=-smallest)
+print(value=largest * 2)
+print(value=smallest / -1)
+print(value=smallest < largest)
+print(value=9007199254740993 == 9007199254740992.0)
+optional int maybe = 2
+print(value=maybe == 2)
+bool found = {1, 2}.contains(value=2)
+print(value=found == true)
+print(value=not found)
+float widenedLeft = 7
+float widenedRight = 2
+try:
+    print(value=widenedLeft / widenedRight)
+catch ArithmeticError failure:
+    print(value="unexpected divide")
+float huge = 10000000000.0
+huge = huge * huge
+huge = huge * huge
+huge = huge * huge
+huge = huge * huge
+float infinite = huge * huge
+float nan = infinite - infinite
+print(value=nan == nan)
+print(value=nan != nan)
+print(value=nan < 0.0)
+try:
+    int zero = 0
+    print(value=largest / zero)
+catch ArithmeticError failure:
+    print(value="division checked")
+`
+},'-9223372036854775808\n-9223372036854775808\n-2\n-9223372036854775808\ntrue\ntrue\ntrue\ntrue\nfalse\n3\nfalse\ntrue\nfalse\ndivision checked\n',{release}));
+const dwarfTool=process.env.AUG_DWARF_TOOL??(process.platform==='darwin'?'/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/llvm-dwarfdump':['/usr/bin/llvm-dwarfdump-14','/usr/bin/llvm-dwarfdump'].find(existsSync));
+if(enabled&&process.env.AUG_REQUIRE_DWARF==='1')assert.ok(dwarfTool&&existsSync(dwarfTool),'Maintainer qualification requires a DWARF inspection tool.');
+const debuggerTool=process.env.AUG_DEBUGGER_TOOL??(process.platform==='darwin'?['/Applications/Xcode.app/Contents/Developer/usr/bin/lldb','/Library/Developer/CommandLineTools/usr/bin/lldb'].find(existsSync):['/usr/bin/lldb-14','/usr/bin/lldb'].find(existsSync));
+if(enabled&&process.env.AUG_REQUIRE_DEBUGGER==='1')assert.ok(debuggerTool&&existsSync(debuggerTool),'Maintainer qualification requires a source debugger.');
+test('LLVM source breakpoint stops at an August line and exposes tagged parameter and local values',{skip:!enabled||!debuggerTool},()=>{
+  const root=realpathSync(mkdtempSync(join(tmpdir(),'aug-llvm-breakpoint-')));
+  try{
+    writeFileSync(join(root,'main.aug'),'import choose from math\nprint(value=choose(left=true))\n');
+    writeFileSync(join(root,'math.aug'),'choose(bool left) returns int:\n    int answer = 7\n    if left:\n        return answer\n    return 9\n');
+    const checked=checkProject(loadProject(root));assert.deepEqual(checked.diagnostics,[]);
+    const compiled=compileLLVM(checked);
+    const result=spawnSync(debuggerTool,['--batch','-o','breakpoint set --file math.aug --line 4','-o','settings set target.disable-aslr false','-o','run','-o','frame variable left answer','-o','continue',compiled.output],{encoding:'utf8',timeout:30000});
+    assert.equal(result.status,0,result.stderr||result.stdout||result.error?.message);
+    assert.match(result.stdout,/stop reason = breakpoint/);assert.match(result.stdout,/math\.aug:4/);
+    assert.match(result.stdout,/\(bool\) left = \{[\s\S]*?tag = 3[\s\S]*?integer = 1/);
+    assert.match(result.stdout,/\(int\) answer = \{[\s\S]*?tag = 1[\s\S]*?integer = 7/);
+    assert.match(result.stdout,/exited with status = 0/);
+  }finally{rmSync(root,{recursive:true,force:true});}
+});
+for(const release of [false,true])test('LLVM produces source DWARF and a matching debug artifact '+(release?'optimized':'development'),{skip:!enabled||!dwarfTool||!existsSync(dwarfTool)},()=>{
   const root=realpathSync(mkdtempSync(join(tmpdir(),'aug-llvm-debug-')));
   try {
     writeFileSync(join(root,'main.aug'),'import choose from math\nprint(value=choose(left=true))\n');
@@ -47,7 +102,7 @@ for(const release of [false,true])test('LLVM produces source DWARF and a matchin
     const run=spawnSync(compiled.output,[],{encoding:'utf8'});assert.equal(run.status,0,run.stderr);assert.equal(run.stdout,'7\n');
   } finally {rmSync(root,{recursive:true,force:true});}
 });
-test('LLVM debug scopes separate sibling locals and retain loop and catch bindings',{skip:!enabled||!existsSync(dwarfTool)},()=>{
+test('LLVM debug scopes separate sibling locals and retain loop and catch bindings',{skip:!enabled||!dwarfTool||!existsSync(dwarfTool)},()=>{
   const root=realpathSync(mkdtempSync(join(tmpdir(),'aug-llvm-scopes-')));
   try {
     writeFileSync(join(root,'main.aug'),'import choose and summarize from math\nprint(value=choose(left=true))\nprint(value=choose(left=false))\nprint(value=summarize())\n');

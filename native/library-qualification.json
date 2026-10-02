@@ -3,9 +3,9 @@
   "targets": {
     "darwin-arm64": {
       "pytorch": {
-        "version": "0.1.3",
-        "commit": "2106550b830245efa6f00f72ccccd2195a6bdd93",
-        "sha256": "0f49185229acf9b9898841a497d6df57aa0a1627d15ac0d5ab6b762ae4fe4827"
+        "version": "0.1.4",
+        "commit": "345c975b74a892ba1e0534503917e937dace6b87",
+        "sha256": "a130f4a67b574456e5eb0538dc099cb99e5356fdb47ebd4926da6f9b65ccb1e1"
       },
       "sqlite": {
         "version": "0.1.3",
@@ -25,9 +25,9 @@
     },
     "linux-x64": {
       "pytorch": {
-        "version": "0.1.3",
-        "commit": "2106550b830245efa6f00f72ccccd2195a6bdd93",
-        "sha256": "16450b30076c558c21d436c5cd746f5de3f21aa36ffd2d07787320afc2781b04"
+        "version": "0.1.4",
+        "commit": "345c975b74a892ba1e0534503917e937dace6b87",
+        "sha256": "e39d75858c158af03bae161d54b3a267b4fcf3dc4568be6467df72e472793f7b"
       },
       "sqlite": {
         "version": "0.1.3",
@@ -47,9 +47,9 @@
     },
     "linux-arm64": {
       "pytorch": {
-        "version": "0.1.3",
-        "commit": "2106550b830245efa6f00f72ccccd2195a6bdd93",
-        "sha256": "905578afedf709682ee8657367e62405c92ff919890f415bf11d0932cb03a8f5"
+        "version": "0.1.4",
+        "commit": "345c975b74a892ba1e0534503917e937dace6b87",
+        "sha256": "8eb7c5e30635949228548208bda1ac0a7c42801d2299a90ea4d4c2064e700573"
       },
       "sqlite": {
         "version": "0.1.3",

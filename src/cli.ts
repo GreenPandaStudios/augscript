@@ -11,6 +11,7 @@ import {IRVerificationError} from './ir-verify.ts';
 import {compileLLVM} from './llvm-native.ts';
 import {prepareNativePackages} from './native-artifacts.ts';
 import {prepareLLVMCompiler} from './compiler-packs.ts';
+import {bindNativeHeader} from './native-bindings.ts';
 import { diagnosticHelp } from './help.ts';
 import { loadProject } from './project.ts';
 import { definitionAt } from './navigation.ts';
@@ -74,6 +75,7 @@ function usage(): void {
     `Benchmark: aug bench [project directory] [--iterations 10] [--warmup 2] [--json] [-- args]\n` +
     `Packages: aug package init DIRECTORY --name @owner/name; aug package pack DIRECTORY\n` +
     `Dependencies: aug add URL --as NAME [--project DIRECTORY]; aug install [project directory] [--frozen|--update] [--offline]\n` +
+    `Native maintainers: aug bind header HEADER --contract native.abi.json --target TRIPLE --output DIRECTORY --clang PATH [-- CLANG_FLAGS]\n` +
     `Entry point: main.aug at the project root.\n`);
 }
 
@@ -85,6 +87,17 @@ export async function main(argv: string[]): Promise<number> {
     return 0;
   }
   if (!command || command === '--help' || command === 'help') { usage(); return 0; }
+  if(command==='bind'){
+    const boundary=argv.indexOf('--'),arguments_=boundary<0?argv:argv.slice(0,boundary),values:Record<string,string>={};
+    if(arguments_[1]!=='header'||!arguments_[2]||arguments_[2].startsWith('--')){process.stderr.write('Use aug bind header HEADER --contract FILE --target TRIPLE --output DIRECTORY --clang PATH\n');return 2;}
+    for(let index=3;index<arguments_.length;index++){
+      const flag=arguments_[index];if(!['--contract','--target','--output','--clang'].includes(flag)||values[flag]!==undefined||!arguments_[index+1]||arguments_[index+1].startsWith('--')){process.stderr.write('Invalid or duplicate native binding option: '+flag+'\n');return 2;}
+      values[flag]=arguments_[++index];
+    }
+    if(['--contract','--target','--output','--clang'].some(flag=>!values[flag])){process.stderr.write('Native header validation requires --contract, --target, --output and --clang. No tool is installed automatically.\n');return 2;}
+    try{bindNativeHeader({header:arguments_[2],contract:values['--contract'],target:values['--target'],output:values['--output'],clang:values['--clang'],flags:boundary<0?[]:argv.slice(boundary+1)});process.stdout.write('Checked native declarations written to '+resolve(values['--output'])+'\n');return 0;}
+    catch(error){process.stderr.write(failureMessage(error)+'\n');return 1;}
+  }
   if (command === 'add') {
     const aliasIndex = argv.indexOf('--as'), projectIndex = argv.indexOf('--project');
     if (!argv[1] || argv[1].startsWith('--') || aliasIndex < 0 || !argv[aliasIndex + 1]) {

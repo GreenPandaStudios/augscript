@@ -145,7 +145,24 @@ for(const fixture of cases){
   if(!candidateRoot)assert.equal(lock.git[0].commit,fixture.commit);
   const native=Object.values(lock.native.targets)[0].packages[0];
   assert.equal(native.sourceCommit,fixture.commit);assert.equal(native.artifact.sha256,fixture.sha256);
-  assert.equal(lock.native.compiler.artifactSha256,compilerPack.archive.sha256);
+  const host=process.platform+'-'+process.arch;
+  assert.equal(lock.native.compilers[host].artifactSha256,compilerPack.archive.sha256);
+  if(fixture.name==='zlib'){
+    // One checkout records independent compilers for each qualified host.
+    const otherHost=host==='linux-x64'?'linux-arm64':'linux-x64';
+    const other={...lock.native.compilers[host],host:otherHost,target:otherHost==='linux-arm64'?'aarch64-unknown-linux-gnu':'x86_64-unknown-linux-gnu',artifactSha256:'1'.repeat(64)};
+    lock.native.compilers[otherHost]=other;
+    writeFileSync(join(project,'aug.lock.json'),JSON.stringify(lock,null,2)+'\n');
+    assert.equal(aug('run',project),fixture.expected);
+    assert.deepEqual(JSON.parse(readFileSync(join(project,'aug.lock.json'))).native.compilers[otherHost],other);
+    const rejected=JSON.parse(readFileSync(join(project,'aug.lock.json')));
+    delete rejected.native.compilers[host];
+    writeFileSync(join(project,'aug.lock.json'),JSON.stringify(rejected,null,2)+'\n');
+    const failed=spawnSync(process.execPath,[cli,'run',project,'--offline','--frozen'],{env,encoding:'utf8',timeout:30000});
+    assert.notEqual(failed.status,0);assert.match(failed.stderr,/LLVM_LOCK.*matching compiler artifact/);
+    assert.equal(JSON.parse(readFileSync(join(project,'aug.lock.json'))).native.compilers[host],undefined);
+    writeFileSync(join(project,'aug.lock.json'),JSON.stringify(lock,null,2)+'\n');
+  }
   aug('spec',project);aug('spec',project);aug('spec',project,'--check');
   const saved=readFileSync(join(project,'aug.lock.json'),'utf8');
   assert.equal(aug('run',project,'--offline','--frozen'),fixture.expected);

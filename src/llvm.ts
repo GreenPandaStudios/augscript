@@ -92,7 +92,22 @@ class ModuleEmitter {
 class FunctionEmitter {
   readonly module:ModuleEmitter;readonly fn:IrFunction;private sequence=0;private lines:string[]=[];private allocations:string[]=[];
   private debugLocation?:string;
-  constructor(module:ModuleEmitter,fn:IrFunction){this.module=module;this.fn=fn;}
+  private pairedStates=new Map<string,string>();
+  private errorStates=new Map<string,string>();
+  constructor(module:ModuleEmitter,fn:IrFunction){
+    this.module=module;this.fn=fn;
+    const incoming=new Map<string,number>(),blocks=new Map(fn.blocks.map(block=>[block.name,block]));
+    for(const block of fn.blocks){const t=block.terminator;
+      const targets=t.op==='jump'?[t.target]:t.op==='return'?[]:t.op==='error'?[t.failed,t.success]:[t.then,t.otherwise];
+      for(const target of targets)incoming.set(target,(incoming.get(target)??0)+1);
+    }
+    for(const block of fn.blocks){const t=block.terminator;if(t.op!=='cancel')continue;
+      const next=blocks.get(t.otherwise);
+      if(next&&incoming.get(next.name)===1&&!next.instructions.length&&next.terminator.op==='error'){
+        const state=this.temp('state');this.pairedStates.set(block.name,state);this.errorStates.set(next.name,state);
+      }
+    }
+  }
   private temp(prefix='value'){return '%'+prefix+'_'+this.sequence++;}
   private label(prefix='native'){return prefix+'_'+this.sequence++;}
   private line(value:string){this.lines.push('  '+value+(this.debugLocation?', !dbg '+this.debugLocation:''));}
@@ -115,6 +130,50 @@ class FunctionEmitter {
   private floats(bits:string){const value=this.temp();this.line(`${value} = bitcast double ${bits} to i64`);return value;}
   private directType(type:string){return type==='int'?'i64':type==='c_int'?'i32':type==='float'?'double':type==='bool'?'i1':type==='string'?'ptr':'void';}
   private nativeType(view:NativeView){return view.kind==='i64'?'i64':view.kind==='i32'?'i32':view.kind==='f64'?'double':view.kind==='bool'?'i8':view.kind==='void'?'void':'ptr';}
+  private scalarKind(slot:number):string|undefined {
+    const type=this.fn.values[slot].type;
+    return this.fn.values[slot].storage==='scalar-value'&&['int','float','bool'].includes(type.name)?type.name:undefined;
+  }
+  private payload(slot:number){const value=this.temp();this.line(`${value} = extractvalue %AugValue ${this.load(slot)}, 1`);return value;}
+  private scalarBoolean(slot:number){const byte=this.temp(),condition=this.temp();this.line(`${byte} = trunc i64 ${this.payload(slot)} to i8`);this.line(`${condition} = icmp ne i8 ${byte}, 0`);return condition;}
+  private boxBoolean(out:number,condition:string){const payload=this.temp();this.line(`${payload} = zext i1 ${condition} to i64`);this.boxed(out,3,payload);}
+  /** Preserve wrapping integer operations; float tags remain runtime-dispatched. */
+  private scalarOperation(i:Extract<IrInstruction,{op:'runtime'}>):boolean {
+    const [left,right]=i.args,kind=this.scalarKind(left),operator=i.text;
+    if(i.operation==='UNARY'){
+      if(operator==='!'&&kind==='bool'){const result=this.temp();this.line(`${result} = xor i1 ${this.scalarBoolean(left)}, true`);this.boxBoolean(i.out,result);return true;}
+      if(operator==='-'&&kind==='int'){
+        const result=this.temp(),value=this.payload(left);
+        this.line(`${result} = sub i64 0, ${value}`);this.boxed(i.out,1,result);return true;
+      }return false;
+    }
+    if(i.operation!=='BINARY')return false;
+    const other=this.scalarKind(right),comparisons:Record<string,string>={'==':'eq','!=':'ne','<':'slt','>':'sgt','<=':'sle','>=':'sge'};
+    if(kind==='bool'&&other==='bool'&&(operator==='=='||operator==='!=')){
+      const a=this.scalarBoolean(left),b=this.scalarBoolean(right),result=this.temp();this.line(`${result} = icmp ${comparisons[operator]} i1 ${a}, ${b}`);this.boxBoolean(i.out,result);return true;
+    }
+    // A float-typed position may still contain an INT tag after widening.
+    // Retain runtime dispatch for floats until lowering proves the real tag.
+    if(kind!=='int'||other!=='int')return false;
+    const comparison=operator&&comparisons[operator],arithmetic:Record<string,string>={'+':'add','-':'sub','*':'mul'};
+    if(operator==='/'){
+      const a=this.payload(left),b=this.payload(right),zero=this.temp(),failed=this.label('division_zero'),success=this.label('division_value'),done=this.label('division_done');
+      this.line(`${zero} = icmp eq i64 ${b}, 0`);this.line(`br i1 ${zero}, label %${failed}, label %${success}`);this.lines.push(failed+':');
+      this.call('aug_ir_operation','void',[{type:'ptr',value:this.ptr(i.out)},{type:'i32',value:String(operations.indexOf('BINARY')+1)},{type:'ptr',value:this.args(i.args)},{type:'i32',value:'2'},{type:'ptr',value:this.module.text('/')},{type:'i64',value:'0'}]);
+      this.line(`br label %${done}`);this.lines.push(success+':');
+      const minimum=this.temp(),negativeOne=this.temp(),overflow=this.temp(),safeDivisor=this.temp(),result=this.temp();
+      this.line(`${minimum} = icmp eq i64 ${a}, -9223372036854775808`);this.line(`${negativeOne} = icmp eq i64 ${b}, -1`);this.line(`${overflow} = and i1 ${minimum}, ${negativeOne}`);
+      this.line(`${safeDivisor} = select i1 ${overflow}, i64 1, i64 ${b}`);this.line(`${result} = sdiv i64 ${a}, ${safeDivisor}`);this.boxed(i.out,1,result);
+      this.line(`br label %${done}`);this.lines.push(done+':');return true;
+    }
+    if(!comparison&&!arithmetic[operator??''])return false;
+    const a=this.payload(left),b=this.payload(right),result=this.temp();
+    if(comparison){
+      this.line(`${result} = icmp ${comparison} i64 ${a}, ${b}`);this.boxBoolean(i.out,result);
+    }else{
+      this.line(`${result} = ${arithmetic[operator!]} i64 ${a}, ${b}`);this.boxed(i.out,1,result);
+    }return true;
+  }
   private instruction(i:IrInstruction){
     switch(i.op){
       case 'literal':{
@@ -127,6 +186,17 @@ class FunctionEmitter {
       case 'cover':this.call('aug_cover','void',[{type:'ptr',value:this.module.text(i.file)},{type:'i64',value:String(i.line)}]);return;
       case 'debug-variable':this.lines.push(this.variable(this.fn.variables[i.variable]));return;
       case 'runtime':{
+        if((i.operation==='BINARY'||i.operation==='UNARY')&&this.scalarOperation(i))return;
+        const services:Record<string,'void'|'i8'|'i64'|'value'>={MAP_SET:'void',SET_ADD:'void',SET_CONTAINS:'i8',MAP_CONTAINS:'i8',LIST_LENGTH:'i64',SET_LENGTH:'i64',MAP_LENGTH:'i64',LIST_GET:'value',LIST_AT:'value',MAP_GET:'value',MAP_TAKE:'value'};
+        const result=services[i.operation];
+        if(result){
+          const args=i.args.map(slot=>({type:'ptr',value:this.ptr(slot)}));
+          const value=this.call('aug_ir_'+i.operation.toLowerCase(),result==='value'?'void':result,result==='value'?[{type:'ptr',value:this.ptr(i.out)},...args]:args);
+          if(result==='void')this.clear(i.out);
+          else if(result==='i64')this.boxed(i.out,1,value);
+          else if(result==='i8'){const payload=this.temp();this.line(`${payload} = zext i8 ${value} to i64`);this.boxed(i.out,3,payload);}
+          return;
+        }
         const http=i.operation.startsWith('HTTP_'),catalog:readonly string[]=http?httpOperations:operations,op=catalog.indexOf(i.operation)+1;if(!op)throw new Error('Unknown IR runtime operation '+i.operation);
         this.call(http?'aug_ir_http_operation':'aug_ir_operation','void',[{type:'ptr',value:this.ptr(i.out)},{type:'i32',value:String(op)},{type:'ptr',value:this.args(i.args)},{type:'i32',value:String(i.args.length)},{type:'ptr',value:i.text===undefined?'null':this.module.text(i.text)},{type:'i64',value:String(i.number??0)}]);return;
       }
@@ -269,7 +339,7 @@ class FunctionEmitter {
       this.call(fn.result.release??i.resources[fn.result.resource!].release,'void',args);this.line(`br label %${after}`);this.lines.push(after+':');
     }
   }
-  private terminator(t:IrTerminator){
+  private terminator(t:IrTerminator,blockName:string){
     if(t.op==='jump'){this.line('br label %'+t.target);return;}
     if(t.op==='return'){
       this.call('aug_lock_restore','void',[{type:'i64',value:'%lock_base'}]);
@@ -281,21 +351,29 @@ class FunctionEmitter {
       this.line(`store %AugValue ${this.load(0)}, ptr %out, align 8`);this.call('aug_frame_leave','void',[{type:'ptr',value:'%frame'}]);this.line('ret void');return;
     }
     let condition:string,yes:string,no:string;
-    if(t.op==='error'){condition=this.call('aug_ir_has_error','zeroext i1',[]);yes=t.failed;no=t.success;}
-    else if(t.op==='cancel'){condition=this.call('aug_ir_cancelled','zeroext i1',[]);yes=t.then;no=t.otherwise;}
+    if(t.op==='error'){
+      const state=this.errorStates.get(blockName);
+      if(state){condition=this.temp();this.line(`${condition} = icmp eq i8 ${state}, 2`);}else condition=this.call('aug_ir_has_error','zeroext i1',[]);
+      yes=t.failed;no=t.success;
+    }
+    else if(t.op==='cancel'){
+      const paired=this.pairedStates.get(blockName);
+      if(paired){this.module.declare('aug_ir_state','zeroext i8',[]);this.line(`${paired} = call zeroext i8 @aug_ir_state()`);condition=this.temp();this.line(`${condition} = icmp eq i8 ${paired}, 1`);}else condition=this.call('aug_ir_cancelled','zeroext i1',[]);
+      yes=t.then;no=t.otherwise;
+    }
     else if(t.op==='error-type'){condition=this.call('aug_error_is','zeroext i1',[{type:'ptr',value:this.module.text(t.type)}]);yes=t.then;no=t.otherwise;}
     else if(t.op==='null'){condition=this.call('aug_ir_is_null','zeroext i1',[{type:'ptr',value:this.ptr(t.input)}]);yes=t.then;no=t.otherwise;}
-    else{condition=this.call('aug_ir_truthy','zeroext i1',[{type:'ptr',value:this.ptr(t.condition)}]);yes=t.then;no=t.otherwise;}
+    else{condition=this.scalarKind(t.condition)==='bool'?this.scalarBoolean(t.condition):this.call('aug_ir_truthy','zeroext i1',[{type:'ptr',value:this.ptr(t.condition)}]);yes=t.then;no=t.otherwise;}
     this.line(`br i1 ${condition}, label %${yes}, label %${no}`);
   }
   generate(){
     const subprogram=this.module.debug.function(this.fn);
-    for(const block of this.fn.blocks){this.lines.push(block.name+':');for(const instruction of block.instructions){this.debugLocation=this.module.debug.location(this.fn,instruction.span,instruction.debugScope);this.instruction(instruction);}this.terminator(block.terminator);}
+    for(const block of this.fn.blocks){this.lines.push(block.name+':');for(const instruction of block.instructions){this.debugLocation=this.module.debug.location(this.fn,instruction.span,instruction.debugScope);this.instruction(instruction);}this.terminator(block.terminator,block.name);}
     const variables=this.fn.variables.filter(variable=>variable.argument).map(variable=>this.variable(variable));
     const prologue=[`define internal void @${this.fn.name}(ptr %out, ptr %self, ptr %args, i32 %count) !dbg ${subprogram} {`,`entry:`,
       `  %roots = alloca [${this.fn.slots} x %AugValue], align 8`,`  %frame = alloca %AugFrame, align 8`,...this.allocations,
       `  store [${this.fn.slots} x %AugValue] zeroinitializer, ptr %roots, align 8`,
-      ...Array.from({length:this.fn.slots},(_,i)=>`  %slot_${i} = getelementptr [${this.fn.slots} x %AugValue], ptr %roots, i64 0, i64 ${i}`),
+      ...this.fn.values.flatMap((value,i)=>value.storage==='scalar-value'?[`  %slot_${i} = alloca %AugValue, align 8`,`  store %AugValue zeroinitializer, ptr %slot_${i}, align 8`]:[`  %slot_${i} = getelementptr [${this.fn.slots} x %AugValue], ptr %roots, i64 0, i64 ${i}`]),
       ...this.fn.parameters.flatMap((slot,i)=>[`  %parameter_ptr_${i} = getelementptr %AugValue, ptr %args, i64 ${i}`,`  %parameter_${i} = load %AugValue, ptr %parameter_ptr_${i}, align 8`,`  store %AugValue %parameter_${i}, ptr %slot_${slot}, align 8`]),
       ...(this.fn.receiver===undefined?[]:[`  %receiver = load %AugValue, ptr %self, align 8`,`  store %AugValue %receiver, ptr %slot_${this.fn.receiver}, align 8`]),
       ...variables,
@@ -305,6 +383,7 @@ class FunctionEmitter {
     this.module.declare('aug_ir_frame_enter','void',['ptr','ptr','i64']);return [...prologue,...this.lines,'}'].join('\n');
   }
   private variable(variable:IrFunction['variables'][number]){
+    if(this.fn.values[variable.slot].storage==='scalar-value')return `  #dbg_declare(ptr %slot_${variable.slot}, ${this.module.debug.variable(this.fn,variable)}, !DIExpression(), ${this.module.debug.location(this.fn,variable.span,variable.scope)})`;
     return `  #dbg_declare(ptr %roots, ${this.module.debug.variable(this.fn,variable)}, !DIExpression(DW_OP_plus_uconst, ${variable.slot*runtimeLayout.valueSize}), ${this.module.debug.location(this.fn,variable.span,variable.scope)})`;
   }
 }

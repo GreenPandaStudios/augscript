@@ -1,0 +1,18 @@
+{
+  "format": 1,
+  "purpose": "LLVM migration qualification against the same August programs on the C reference backend; not a general language speed claim",
+  "baselineImplementation": "August (C backend)",
+  "minimumSamples": 15,
+  "minimumWarmup": 3,
+  "minimumHttpRounds": 5,
+  "maximumBatchMedianRatio": {
+    "startup": 1.2,
+    "cpu": 1.2,
+    "collections-20k": 1.2,
+    "collections-200k": 1.2,
+    "json": 1.2
+  },
+  "batchAbsoluteAllowanceMs": 0.5,
+  "minimumHttpThroughputRatio": 0.8,
+  "httpConcurrency": [1, 16, 64]
+}

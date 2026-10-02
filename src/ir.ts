@@ -15,6 +15,7 @@ import {httpPolicyNames,type HttpPolicyPlan} from './http-policies.ts';
 import type {Config} from './config.ts';
 import {interceptorChain,InterceptorInvocation} from './interceptors.ts';
 import {verifyIR} from './ir-verify.ts';
+import {isIRScalar} from './ir-types.ts';
 
 export interface IrHttpPolicy {kind:number;permission:string;amount:number;seconds:number;credentials:boolean;origins:string;headers:string}
 export interface IrRoute {method:string;path:string;function:string;stream:number;status:number;policies:IrHttpPolicy[]}
@@ -51,7 +52,7 @@ export type IrTerminator = {op:'jump';target:string}|{op:'branch';condition:numb
   {op:'null';input:number;then:string;otherwise:string}|{op:'return'};
 export interface IrBlock {name:string;instructions:IrInstruction[];terminator:IrTerminator}
 export interface IrType {id:string;name:string;args:IrType[];nullable:boolean;optional:boolean}
-export interface IrValue {storage:'rooted-value';type:IrType;span:Span}
+export interface IrValue {storage:'rooted-value'|'scalar-value';type:IrType;span:Span}
 export interface IrVariable {name:string;slot:number;span:Span;type:IrType;argument?:number;scope?:string}
 export interface IrLexicalScope {name:string;parent?:string;span:Span}
 export interface IrFunction {name:string;sourceName:string;span:Span;slots:number;values:IrValue[];variables:IrVariable[];scopes:IrLexicalScope[];parameters:number[];receiver?:number;owned:number[];constructorResults:number[];failedResult?:boolean;blocks:IrBlock[]}
@@ -62,6 +63,7 @@ export interface AugustIR {
   coverage:{file:string;line:number}[];
 }
 const dynamicType:IrType={id:'compiler:dynamic',name:'Data',args:[],nullable:true,optional:false};
+const scalarType=(name:string):IrType=>({id:'builtin:'+name,name,args:[],nullable:false,optional:false});
 const irType=(type:Ty):IrType=>({id:type.id,name:type.name,args:type.args.map(irType),nullable:type.nullable,optional:!!type.optional});
 
 export class BackendUnsupported extends Error {
@@ -211,9 +213,18 @@ class FunctionLowering {
   }
   parameter(param:Param,index:number){const type=irType(schemaType(this.generator.checked.project,param.type,this.file)),slot=this.slot(type);this.parameters[index]=slot;this.locals.set(param.name,slot);this.variables.push({name:param.name,slot,span:param.span,type,argument:index+1});if(param.ownership==='own')this.owned.add(slot);}
   checkError(){const errors=this.block(),next=this.block();this.terminate({op:'cancel',then:this.returning,otherwise:errors});this.enter(errors);this.terminate({op:'error',failed:this.error,success:next});this.enter(next);}
-  runtime(operation:string,args:number[],text?:string,number?:number){if(operation.startsWith('HTTP_'))this.generator.components.add('http');const out=this.slot();this.instruction({op:'runtime',out,operation,args,text,number});this.checkError();return out;}
+  runtime(operation:string,args:number[],text?:string,number?:number,check=true){
+    if(operation.startsWith('HTTP_'))this.generator.components.add('http');
+    const comparisons=['==','!=','<','>','<=','>='],integers=args.length===2&&args.every(slot=>isIRScalar(this.values[slot].type)&&this.values[slot].type.name==='int');
+    const binary=operation==='BINARY'&&integers&&(comparisons.includes(text!)||['+','-','*','/'].includes(text!));
+    const integerResult=['LIST_LENGTH','TUPLE_LENGTH','SET_LENGTH','MAP_LENGTH','STRING_LENGTH','BYTES_LENGTH','JSON_INTEGER'].includes(operation);
+    const booleanResult=['SET_CONTAINS','MAP_CONTAINS','STRING_STARTS_WITH','STRING_IS_TOKEN','IS_TYPE','JSON_BOOLEAN'].includes(operation);
+    const out=this.slot(integerResult?scalarType('int'):booleanResult?scalarType('bool'):binary?scalarType(comparisons.includes(text!)?'bool':'int'):dynamicType);
+    this.instruction({op:'runtime',out,operation,args,text,number});
+    if(check&&!(binary&&text!=='/'))this.checkError();return out;
+  }
   call(name:string,args:number[],receiver?:number){const out=this.slot();this.instruction({op:'call',out,function:name,args,receiver});this.checkError();return out;}
-  literal(value:string|boolean|null,numeric?:{kind:'int'|'float';text:string}){const out=this.slot();this.instruction({op:'literal',out,value,numeric});return out;}
+  literal(value:string|boolean|null,numeric?:{kind:'int'|'float';text:string}){const out=this.slot(numeric?scalarType(numeric.kind):typeof value==='boolean'?scalarType('bool'):dynamicType);this.instruction({op:'literal',out,value,numeric});return out;}
   private fieldIndex(object:Expr,name:string){const node=this.generator.checked.expressionTypes.get(object)?.def?.node;
     if(node?.kind==='class'||node?.kind==='interceptor'){const i=fieldsOf(node).findIndex(f=>f.name===name);if(i>=0)return i;}
     const type=this.generator.checked.expressionTypes.get(object);if(type?.kind==='builtin'){const index=builtinProperties[type.name]?.findIndex(field=>field.name===name);if(index!==undefined&&index>=0)return index;}
@@ -257,7 +268,11 @@ class FunctionLowering {
     }
     if(expr.kind==='resolve')return this.call(this.generator.binding(expr.name+(expr.typeArgs.length?'<'+expr.typeArgs.map(typeName).join(',')+'>':'')),[]);
     if(expr.kind==='member')return this.runtime('FIELD',[this.expression(expr.object)],undefined,this.fieldIndex(expr.object,expr.name));
-    if(expr.kind==='unary')return this.runtime('UNARY',[this.expression(expr.value)],expr.op);
+    if(expr.kind==='unary'){
+      const input=this.expression(expr.value),type=this.values[input].type;
+      const pure=isIRScalar(type)&&(type.name==='int'&&expr.op==='-'||type.name==='bool'&&expr.op==='!');
+      return this.runtime('UNARY',[input],expr.op,undefined,!pure);
+    }
     if(expr.kind==='binary'){
       const left=this.expression(expr.left);
       if(expr.op==='&&'||expr.op==='||'){
@@ -265,7 +280,9 @@ class FunctionLowering {
         this.terminate({op:'branch',condition:left,then:expr.op==='&&'?evaluate:after,otherwise:expr.op==='&&'?after:evaluate});this.enter(evaluate);
         const right=this.expression(expr.right);this.instruction({op:'copy',out,input:right});this.terminate({op:'jump',target:after});this.enter(after);return out;
       }
-      return this.runtime('BINARY',[left,this.expression(expr.right)],expr.op);
+      const right=this.expression(expr.right),a=this.values[left].type,b=this.values[right].type;
+      const pure=isIRScalar(a)&&isIRScalar(b)&&(a.name==='int'&&b.name==='int'&&['+','-','*','==','!=','<','>','<=','>='].includes(expr.op)||a.name==='bool'&&b.name==='bool'&&['==','!='].includes(expr.op));
+      return this.runtime('BINARY',[left,right],expr.op,undefined,!pure);
     }
     if(expr.kind==='collection'){
       const values=expr.items.map(item=>this.expression(item)),kind=this.generator.checked.expressionTypes.get(expr)?.name??expr.collection;
@@ -315,7 +332,10 @@ class FunctionLowering {
         'Json.integer':'JSON_INTEGER','Json.boolean':'JSON_BOOLEAN','Json.items':'JSON_ITEMS',
         'Headers.with':'HTTP_HEADERS_WITH','Headers.get':'HTTP_HEADERS_GET','Headers.all':'HTTP_HEADERS_ALL','HttpTestClient.request':'HTTP_CLIENT_REQUEST'
       };
-      const operation=operations[type.name+'.'+name];if(operation)return this.runtime(operation,[receiver!,...args]);
+      const operation=operations[type.name+'.'+name];if(operation){
+        const noFailure=['LIST_LENGTH','LIST_AT','LIST_APPEND','TUPLE_LENGTH','SET_LENGTH','SET_ADD','SET_CONTAINS','MAP_LENGTH','MAP_SET','MAP_GET','MAP_TAKE','MAP_CONTAINS','STRING_LENGTH','STRING_BYTES','STRING_SPLIT','STRING_STARTS_WITH','STRING_IS_TOKEN','BYTES_LENGTH','BYTES_BASE64URL'].includes(operation);
+        return this.runtime(operation,[receiver!,...args],undefined,undefined,!noFailure);
+      }
       args=this.transferArguments(expr,args,false);
       const out=this.slot();this.instruction({op:'method',out,receiver:receiver!,name,args});
       if(this.generator.checked.callPlans.get(expr)?.returnOwnership==='own')this.owned.add(out);
@@ -561,13 +581,16 @@ class FunctionLowering {
     }
     if(stmt.kind==='for'){
       const iterable=this.expression(stmt.iterable),map=this.generator.checked.expressionTypes.get(stmt.iterable)?.name==='Map'&&stmt.names.length===2;
-      const values=this.runtime(map?'MAP_ITER':'ITER',[iterable]),index=this.slot(),one=this.literal(null,{kind:'int',text:'1'});this.instruction({op:'copy',out:index,input:this.literal(null,{kind:'int',text:'0'})});
+      const values=this.runtime(map?'MAP_ITER':'ITER',[iterable]),index=this.slot(scalarType('int')),one=this.literal(null,{kind:'int',text:'1'});this.instruction({op:'copy',out:index,input:this.literal(null,{kind:'int',text:'0'})});
       const length=this.runtime('LIST_LENGTH',[values]),test=this.block(),body=this.block(),done=this.block();this.terminate({op:'jump',target:test});this.enter(test);
       this.instruction({op:'checkpoint'});this.checkError();
       const condition=this.runtime('BINARY',[index,length],'<');this.terminate({op:'branch',condition,then:body,otherwise:done});this.enter(body);
       this.scoped(stmt.body,false,()=>{
-        if(map){stmt.names.forEach((name,i)=>{this.local(name,this.runtime('LIST_GET',[values,index]),stmt.span,this.values[iterable].type.args[i]??dynamicType);this.instruction({op:'copy',out:index,input:this.runtime('BINARY',[index,one],'+')});});}
-        else{const item=this.runtime('LIST_GET',[values,index]);stmt.names.forEach((name,i)=>this.local(name,stmt.names.length===1?item:this.runtime('TUPLE_GET',[item,this.literal(null,{kind:'int',text:String(i)})]),stmt.span,(stmt.names.length===1?this.values[iterable].type.args[0]:this.values[iterable].type.args[0]?.args[i])??dynamicType));this.instruction({op:'copy',out:index,input:this.runtime('BINARY',[index,one],'+')});}
+        // The private snapshot cannot be changed by source code. Its length
+        // guards this index; map snapshots contain an even number of cells.
+        // Source List.get still retains its checked bounds behavior.
+        if(map){stmt.names.forEach((name,i)=>{this.local(name,this.runtime('LIST_AT',[values,index],undefined,undefined,false),stmt.span,this.values[iterable].type.args[i]??dynamicType);this.instruction({op:'copy',out:index,input:this.runtime('BINARY',[index,one],'+')});});}
+        else{const item=this.runtime('LIST_AT',[values,index],undefined,undefined,false);stmt.names.forEach((name,i)=>this.local(name,stmt.names.length===1?item:this.runtime('TUPLE_GET',[item,this.literal(null,{kind:'int',text:String(i)})]),stmt.span,(stmt.names.length===1?this.values[iterable].type.args[0]:this.values[iterable].type.args[0]?.args[i])??dynamicType));this.instruction({op:'copy',out:index,input:this.runtime('BINARY',[index,one],'+')});}
       },stmt.span);
       if(!this.current.terminator)this.terminate({op:'jump',target:test});this.enter(done);return;
     }
@@ -587,6 +610,7 @@ class FunctionLowering {
     const unreachable:never=stmt;throw new Error('Unexpected August statement '+JSON.stringify(unreachable));
   }
   finish(name:string):IrFunction {
+    for(const value of this.values)if(isIRScalar(value.type))value.storage='scalar-value';
     if(!this.current.terminator)this.terminate({op:'jump',target:'cleanup'});
     this.enter('cleanup');this.terminate({op:'return'});
     return {name,sourceName:this.sourceName??this.owner?.name??(name==='aug_main_body'?'main':name),span:this.span,slots:this.slots,values:this.values,variables:this.variables,scopes:this.scopes,parameters:this.parameters,receiver:this.receiver,owned:[...this.owned],constructorResults:[...this.constructorResults],blocks:this.blocks as IrBlock[]};
