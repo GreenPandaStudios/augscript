@@ -14,7 +14,7 @@ Import a Rust implementation through an ordinary August package and verify a pub
 
 Open a file to read its source beside the explanation produced by `aug spec`. **Indentation** and **Braces** display the same checked program; your choice carries across file pages.
 
-This project requires the August `0.21.0` LLVM preview on macOS 14+ with Apple Silicon, or Debian/Ubuntu GNU/Linux x64 or ARM64 with glibc 2.36+. The library archives are public; the matching compiler release is still being qualified.
+This project runs with August `0.21.0` on macOS 14+ with Apple Silicon, or GNU/Linux x64 or ARM64 with glibc 2.36+. The CLI obtains the verified compiler and library artifacts automatically.
 
 ## Project files
 

@@ -3,66 +3,35 @@ layout: home
 hero:
   name: August
   text: The world runs on language
-  tagline: A programming language for understanding and changing code together—with teammates and coding agents.
+  tagline: Code that reads like pseudocode. A human-readable spec compiled from it. Native performance you can measure against C.
   actions:
     - theme: brand
-      text: Learn August
-      link: /learn/
+      text: Get started
+      link: /getting-started
     - theme: alt
-      text: Read a real project
-      link: /examples/hello/
+      text: Explore the language
+      link: /learn/
+features:
+  - title: Read it like pseudocode
+    details: Named inputs, ordinary words, and small public modules make the work visible where you read it.
+  - title: Compile a human-readable spec
+    details: Turn checked source into linked prose. Review the behavior before a change and the explanation after it.
+  - title: Run at native speed
+    details: Build a native executable. Compare real August and C programs below, then measure the work your application does.
 ---
 
-## Understand the change before you make it
+<!--@include: ./.vitepress/home-example.md-->
 
-A new teammate opens a module. A coding agent receives a change request. Both need to know what the module does, which dependencies it uses, and what a change could affect.
+## Build code other people can understand
 
-August puts that information close to the code. Calls name their inputs. Modules expose a deliberate public surface. Interfaces describe behavior and effects. Tests live beside the declarations they check. The compiler can turn each source file into a linked, readable specification.
+August is designed for developers working with teammates and coding agents. Calls name their inputs. Modules export only their chosen public surface. Dependencies appear in declaration headers; state changes and possible failures are checked. Tests live beside the code they describe.
 
-Here is a complete application. Save these two files in the same folder:
+You write the implementation. The compiler infers what it can, and the editor shows those facts without adding boilerplate to your source. The compiled spec gives a reader another way into the same program: what it accepts, what it does, what it changes, and where its dependencies are explained.
 
-**main.aug**
+Start with [your first project](getting-started.md), then follow [the August book](learn/index.md). Use the [task guides](guides/index.md) for packages, HTTP, tests, and deployment, and the [language reference](reference.md) when you need an exact rule. The [project gallery](examples/index.md) puts code and its actual compiled spec side by side.
 
-```aug project=wiki-home file=main.aug
-import total from prices
+## Try the public preview
 
-print(value=total(price=7, quantity=3))
-```
+August 0.21.0 is available now. You need Node.js 24 and macOS 14+ on Apple Silicon or GNU/Linux x86-64/ARM64 with glibc 2.36+. August obtains its native compiler and libraries automatically; you do not install LLVM or Clang.
 
-**prices.aug**
-
-```aug project=wiki-home file=prices.aug
-total(int price, int quantity) returns int:
-    if quantity > 0:
-        return price * quantity
-    return 0
-
-test total:
-    when quantities:
-        it calculates_a_total:
-            assert(total(price=7, quantity=3) == 21)
-        it treats_zero_as_empty:
-            assert(total(price=7, quantity=0) == 0)
-```
-
-`aug run .` prints `21`. `aug test .` runs the two cases. `aug spec .` generates an explanation of `total`:
-
-> It takes `price` and `quantity` as integers. It returns `price` times `quantity` if `quantity` is positive, or `0` otherwise.
-
-The explanation is generated from checked code, offline and deterministically. It links to the dependencies the file uses. Comments can supply the intent that code alone cannot express. [See code and its actual compiled specification](examples/hello/app/greeter.md), or follow [a review of an unfamiliar module](guides/change-a-module.md).
-
-## Learn it, then look things up
-
-The [August book](learn/index.md) assumes you already program in another language. It starts with installation and a running application, then introduces values, errors, modules, dependencies, and mutable state. Each chapter gives you a program to run and something to change.
-
-For a specific task, use the [guides](guides/index.md). For a syntax rule or API, use the [language reference](reference.md) and [library reference](api/io.md). The [project gallery](examples/index.md) shows complete applications with code and specifications side by side; you can switch between indentation and braces.
-
-## Native programs, measured openly
-
-August checks source and builds a native executable. August 0.21.0 lowers checked execution IR through LLVM and downloads its compiler/runtime pack. The [performance page](performance.md) publishes programs, graphs, raw samples, environment and reproduction commands. Its results describe those workloads on that host. Measure your own application's work before making a performance decision.
-
-## A public preview
-
-August is experimental and has not reached 1.0. Syntax and package compatibility can change. Tasks currently run cooperatively on one OS thread. HTTP and crypto libraries have working examples and documented operational gaps; the login example is a development demonstration.
-
-Read [what August is designed for](about.md), [production readiness](production-readiness.md), and the [roadmap to 1.0](roadmap.md) before choosing it for a deployment. Installation options are maintained on the [packages page](packages.md). Source and issues are on [GitHub](https://github.com/GreenPandaStudios/augscript); the language repository is MIT licensed, and native dependencies have [their own terms](production-readiness.md#dependencies-and-licenses).
+The language is experimental, with no stable 1.0 compatibility promise yet. Tasks run cooperatively on one OS thread. Read [supported platforms](compatibility.md), [production readiness](production-readiness.md), and the [roadmap to 1.0](roadmap.md) before choosing it for a deployment. Source and issues are on [GitHub](https://github.com/GreenPandaStudios/augscript).

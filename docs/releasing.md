@@ -46,9 +46,7 @@ Native producer jobs use the job's short-lived, read-only GitHub token for publi
 
 `ci.yml` checks pushes and pull requests. Linux CI builds the pinned full native stack, runs the native suite, and executes core and crypto apps in the matching runtime image. macOS CI runs the same native suite with its private bootstrap.
 
-The automatic publishers are included starting with `v0.20.1`. Existing tags keep their original workflows; the `v0.20.0` draft does not contain these scripts.
-
-The manually published Marketplace `0.19.0` contains files that differ from the VSIX attached to the `v0.19.0` GitHub release. It is not a matching deployment of that archive. Use a new version for the first automated extension release; do not bypass the content comparison to skip an older mismatch.
+A release tag retains its original workflows. A retry must preserve the reviewed source and compare the exact release archives with any existing publication. If a published extension differs from the reviewed VSIX, publish a new version rather than bypassing the comparison.
 
 ## npm publication
 
@@ -82,7 +80,7 @@ Use npm CLI 11.5.1+ and GitHub-hosted runners. The workflow grants `id-token: wr
 
 The job downloads the four reviewed tarballs, `packages.json` and `SHA256SUMS`. It checks every archive's SHA-256 and SHA-512 integrity, exact version and complete manifest against the tagged source before publishing anything. It checks all existing registry versions, then publishes standard library, web, crypto and CLI in that order with public access and the `next` dist tag. Lifecycle scripts are disabled. No rebuild or dependency installation runs in the npm deployment job.
 
-Retries skip a version only when its registry integrity matches the release archive. A registry failure or a different published archive stops deployment. Each new publication is checked against the registry before proceeding. npm may accept an upload several minutes before its public metadata becomes available. The publisher on main checks visibility at five-second intervals for about five minutes per package; it retries only missing-version responses and uploads each archive once. If that wait expires, let npm finish processing before retrying the same release. The `v0.20.1` publisher checks visibility immediately and may need a retry after each accepted upload; the bounded wait applies to future tags.
+Retries skip a version only when its registry integrity matches the release archive. A registry failure or a different published archive stops deployment. Each new publication is checked against the registry before proceeding. npm may accept an upload several minutes before its public metadata becomes available. The publisher on main checks visibility at five-second intervals for about five minutes per package; it retries only missing-version responses and uploads each archive once. If that wait expires, let npm finish processing before retrying the same release.
 
 The CLI is published last because its dependencies use exact matching versions. An interrupted run can leave some libraries published; retry the same release to finish. Retries leave already-published versions and their dist tags alone. This pipeline publishes preview packages to `next`; promoting a release to `latest` remains a separate maintainer decision.
 

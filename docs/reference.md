@@ -32,7 +32,7 @@ Application(resolve Console console) implements Runnable:
         console.write(value="Hello, AugScript!")
 ```
 
-Run `npx @greenpandastudios/aug-cli@next run PROJECT`, or choose **AugScript: Run Project** in VS Code. Node.js 24+ and a C11 compiler are required; prepare [native dependencies](packages.md#npm-registry) before execution.
+Run `aug run PROJECT`, or choose **AugScript: Run Project** in VS Code. You need Node.js 24+ and a [supported host](compatibility.md). The CLI obtains its LLVM compiler/runtime pack and package artifacts automatically.
 
 ## Blocks and statement boundaries
 
@@ -297,7 +297,7 @@ If `start` runs inside a loop, a wait for one result may leave children from ear
 
 For a collection of tasks, `wait for tasks` joins the whole list. Waiting for one task selected with a dynamic index cannot prove which sibling tasks remain active, so their captures stay pinned until the scope joins them.
 
-The analysis intentionally rejects some programs when it cannot prove separate origins or freshness. This prototype is conservative; it is not a formal ownership proof. Threading semantics remain deferred.
+The analysis intentionally rejects some programs when it cannot prove separate origins or freshness. This analysis is conservative; it is not a formal ownership proof. Tasks run cooperatively on one OS thread; multicore execution is unsupported.
 
 ## Null, matching, and checked failures
 

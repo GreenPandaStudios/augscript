@@ -99,7 +99,7 @@ export function buildExamplePages(overrides) {
     let overview=frontmatter(example.title,example.path)+`# ${example.title}\n\n${example.description}\n\n`+
       'Open a file to read its source beside the explanation produced by `aug spec`. **Indentation** and **Braces** display the same checked program; your choice carries across file pages.\n\n';
     const native=example.group==='Native libraries (LLVM preview)';
-    if(native)overview+='This project requires the August `0.21.0` LLVM preview on macOS 14+ with Apple Silicon, or Debian/Ubuntu GNU/Linux x64 or ARM64 with glibc 2.36+. The library archives are public; the matching compiler release is still being qualified.\n\n';
+    if(native)overview+='This project runs with August `0.21.0` on macOS 14+ with Apple Silicon, or GNU/Linux x64 or ARM64 with glibc 2.36+. The CLI obtains the verified compiler and library artifacts automatically.\n\n';
     if(example.walkthrough?.length) {
       overview+='## Follow the program\n\n';
       for(const step of example.walkthrough) {
@@ -130,7 +130,7 @@ export function buildExamplePages(overrides) {
       ' [Install August](../../getting-started.md) once, then run these commands. Native libraries are prepared automatically when needed:\n\n'+fence(commands,'sh')+'\n';
     const archiveFiles=new Map(downloadFiles(downloadRoot).map(file=>[slug(example)+'/'+slash(relative(downloadRoot,file)),readFileSync(file)]));
     archiveFiles.set(slug(example)+'/LICENSE',readFileSync(join(root,'LICENSE')));
-    const installation=native?'This native LLVM preview requires the development August 0.21.0 compiler on macOS 14+ ARM64. The matching npm compiler release and compiler pack are not public yet. See https://greenpandastudios.github.io/augscript/native-packages for availability. The published 0.20.1 CLI cannot run this project.':'Install August as described at https://greenpandastudios.github.io/augscript/getting-started. Native commands prepare required libraries automatically.';
+    const installation=native?'Install the published August 0.21.0 CLI on macOS 14+ ARM64 or GNU/Linux x64/ARM64 with glibc 2.36+. It obtains the verified LLVM compiler and native library artifacts automatically. See https://greenpandastudios.github.io/augscript/native-packages.':'Install August as described at https://greenpandastudios.github.io/augscript/getting-started. Native commands prepare required libraries automatically.';
     archiveFiles.set(slug(example)+'/README.md',`# ${example.title}\n\n${example.description}\n\n${installation}\n\nFrom the folder containing this extracted project:\n\n${fence(commands,'sh')}\nRead the source beside its compiled specification at https://greenpandastudios.github.io/augscript/examples/${slug(example)}/.\n`);
     add(exampleDownload(example),projectArchive(archiveFiles));
     if(example.path==='examples/oidc-login')overview+='Open `http://127.0.0.1:8787` and sign in with **ada** / **august-demo**. This development example keeps accounts, signing keys, and sessions in process memory. See [web and crypto](../../web.md) and [the remaining library gaps](../../web-library-gaps.md).\n\n';
@@ -166,7 +166,7 @@ export function buildExamplePages(overrides) {
     }
   },overrides);
   let index=frontmatter('Example projects','examples and benchmarks')+'# Example projects\n\n'+
-    'Read a complete program, follow its dependencies, and compare the source with its compiled explanation. Every file has highlighted **Indentation** and **Braces** views and the actual output of `aug spec`. Dependency links open the exact version used by the project. Download a project to try it; native examples require the LLVM preview described on their pages.\n\n'+
+    'Read a complete program, follow its dependencies, and compare the source with its compiled explanation. Every file has highlighted **Indentation** and **Braces** views and the actual output of `aug spec`. Dependency links open the exact version used by the project. Download a project to try it; native examples use the published LLVM toolchain on their listed supported platforms.\n\n'+
     'Start with [Hello world with dependencies](hello/index.md) to trace a greeting through two folder boundaries. Then [review a change to the tested calculator](../guides/change-a-module.md). For a larger application, the [OpenID Connect example](oidc-login/index.md) combines pages, provider and client endpoints, and a session JWT. It is a development demonstration with documented limits.\n\n'+
     'If you are learning the language for the first time, use [the book](../learn/index.md). The gallery is for exploring whole projects and looking at the code behind a specific feature or measurement.\n\n';
   for(const group of new Set(examples.map(example=>example.group))) {

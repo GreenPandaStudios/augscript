@@ -200,19 +200,65 @@
     "description": "One executable hosts a login page, an OpenID Connect provider and client, session JWTs, and logout. Accounts, keys, and sessions are held in memory for this development demonstration."
   },
   {
+    "path": "benchmarks/greetings",
+    "title": "A million greetings",
+    "group": "Measured programs",
+    "description": "Print one million identical UTF-8 greetings, with the same per-line flush as the C reference. The homepage shows its source and actual compiled spec."
+  },
+  {
     "path": "benchmarks/startup",
     "title": "Startup benchmark",
     "group": "Measured programs",
     "description": "The small program used to measure process startup."
   },
-  {"path":"benchmarks/float","title":"Floating-point benchmark","group":"Measured programs","description":"Accumulate exact binary fractions and check the final value."},
-  {"path":"benchmarks/calls","title":"Function-call benchmark","group":"Measured programs","description":"Call a labeled function repeatedly with a dependent integer result."},
-  {"path":"benchmarks/list","title":"List traversal benchmark","group":"Measured programs","description":"Grow a list and sum its snapshot values."},
-  {"path":"benchmarks/strings","title":"String processing benchmark","group":"Measured programs","description":"Split text into parts and sum their byte lengths."},
-  {"path":"benchmarks/map-churn","title":"Map deletion benchmark","group":"Measured programs","description":"Delete, replace and reinsert entries, then check values and insertion order."},
-  {"path":"benchmarks/errors","title":"Checked-error benchmark","group":"Measured programs","description":"Interleave successful calls and caught checked failures."},
-  {"path":"benchmarks/records","title":"Record allocation benchmark","group":"Measured programs","description":"Retain immutable records and sum their fields."},
-  {"path":"benchmarks/tasks","title":"Task scheduling benchmark","group":"Measured programs","description":"Start and join two tasks in each bounded scope."},
+  {
+    "path": "benchmarks/float",
+    "title": "Floating-point benchmark",
+    "group": "Measured programs",
+    "description": "Accumulate exact binary fractions and check the final value."
+  },
+  {
+    "path": "benchmarks/calls",
+    "title": "Function-call benchmark",
+    "group": "Measured programs",
+    "description": "Call a labeled function repeatedly with a dependent integer result."
+  },
+  {
+    "path": "benchmarks/list",
+    "title": "List traversal benchmark",
+    "group": "Measured programs",
+    "description": "Grow a list and sum its snapshot values."
+  },
+  {
+    "path": "benchmarks/strings",
+    "title": "String processing benchmark",
+    "group": "Measured programs",
+    "description": "Split text into parts and sum their byte lengths."
+  },
+  {
+    "path": "benchmarks/map-churn",
+    "title": "Map deletion benchmark",
+    "group": "Measured programs",
+    "description": "Delete, replace and reinsert entries, then check values and insertion order."
+  },
+  {
+    "path": "benchmarks/errors",
+    "title": "Checked-error benchmark",
+    "group": "Measured programs",
+    "description": "Interleave successful calls and caught checked failures."
+  },
+  {
+    "path": "benchmarks/records",
+    "title": "Record allocation benchmark",
+    "group": "Measured programs",
+    "description": "Retain immutable records and sum their fields."
+  },
+  {
+    "path": "benchmarks/tasks",
+    "title": "Task scheduling benchmark",
+    "group": "Measured programs",
+    "description": "Start and join two tasks in each bounded scope."
+  },
   {
     "path": "benchmarks/cpu",
     "title": "CPU benchmark",

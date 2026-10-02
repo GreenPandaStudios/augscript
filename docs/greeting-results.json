@@ -1,0 +1,118 @@
+{
+  "format": 1,
+  "status": "passed",
+  "recordedAt": "2026-10-02T15:22:29.121Z",
+  "compiler": "0.21.0",
+  "sourceSha256": "ef2fe3e29956406bd4044550c0af46fbed708f3316e66b3872accde50fecfa71",
+  "platform": "darwin",
+  "architecture": "arm64",
+  "os": "25.6.0",
+  "cpu": "Apple M5",
+  "node": "v24.18.0",
+  "llvm": "23.1.2",
+  "compilerPack": {
+    "archiveSha256": "9bece355945f9747325a8a8111c6feb8b9d7d5658893f7c0896c3d45afc3c97f",
+    "runtimeSha256": "edf80f211263439449b01e3c2655955ca2e9b4e66c5c49baf4f131329d77e6a1"
+  },
+  "cCompiler": "Apple clang version 21.0.0 (clang-2100.3.34.2)",
+  "methodology": {
+    "iterations": 30,
+    "warmup": 3,
+    "optimization": "O2 without LTO",
+    "includesProcessStartup": true,
+    "output": "Regular temporary file; each print flushes stdout in both programs; complete output verified outside timing",
+    "ordering": "Alternate implementation order each round",
+    "scope": "Printing throughput including file I/O, not string concatenation or general CPU performance"
+  },
+  "expected": {
+    "lines": 1000000,
+    "bytes": 20000000,
+    "sha256": "8c65f377a02f217299e93b74fc3a3d7cfcef8cc668b3cc4b72078ba2604ae410"
+  },
+  "sources": {
+    "august": "// aug-spec: \"main.aug.md\" explains this file. Read it before changes; refresh with aug spec.\ngreetings = 0\nwhile greetings < 1000000:\n    print(value=\"Hello, August! 👋\")\n    greetings = greetings + 1\n",
+    "c": "#include <stdint.h>\n#include <stdio.h>\n\nint main(void) {\n    for (int64_t greetings = 0; greetings < 1000000; ++greetings) {\n        fputs(\"Hello, August! 👋\\n\", stdout);\n        fflush(stdout);\n    }\n    return 0;\n}\n"
+  },
+  "results": [
+    {
+      "implementation": "August",
+      "milliseconds": {
+        "samples": [
+          1042.4577910000007,
+          1019.8819999999996,
+          1083.6656669999993,
+          1024.5635409999995,
+          1032.7932910000018,
+          1017.4573750000018,
+          1019.9887080000008,
+          1021.8758330000019,
+          1023.5462499999994,
+          1020.8834999999999,
+          1034.2492499999971,
+          1028.688041999998,
+          1026.7719580000012,
+          1034.0227090000044,
+          1022.9940839999981,
+          1021.8339580000029,
+          1017.5272499999992,
+          1021.4380830000009,
+          1025.4020840000012,
+          1027.4267499999987,
+          1022.213125000002,
+          1023.5045419999951,
+          1021.8933749999997,
+          1024.53125,
+          1037.4982089999976,
+          1031.5383750000037,
+          1017.3310829999973,
+          1019.9494579999955,
+          1024.2701249999955,
+          1027.6727919999976
+        ],
+        "minimum": 1017.3310829999973,
+        "median": 1023.9081874999974,
+        "p95": 1042.4577910000007
+      }
+    },
+    {
+      "implementation": "C",
+      "milliseconds": {
+        "samples": [
+          964.3633330000002,
+          962.9649579999987,
+          967.6720420000001,
+          965.4434590000001,
+          989.5239169999986,
+          972.4939159999994,
+          966.6326670000017,
+          964.0513339999998,
+          967.0349170000009,
+          965.713667,
+          972.9984169999989,
+          984.5462919999991,
+          975.5063750000008,
+          977.8004999999976,
+          973.3022500000006,
+          995.6869579999984,
+          974.6581670000014,
+          1052.6973329999964,
+          981.9643330000035,
+          966.461083000002,
+          970.7117499999949,
+          973.8892080000005,
+          973.5597080000007,
+          985.8735000000015,
+          978.1559169999964,
+          970.7349590000013,
+          966.3138749999998,
+          965.177874999994,
+          969.3225410000014,
+          963.8519169999927
+        ],
+        "minimum": 962.9649579999987,
+        "median": 971.6144375000003,
+        "p95": 995.6869579999984
+      }
+    }
+  ]
+}

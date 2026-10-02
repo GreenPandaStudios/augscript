@@ -3,7 +3,7 @@ generatedBy: scripts/render-qualification.mjs
 ---
 # Extended performance and safety results
 
-These results cover the August 0.21.0 candidate on **Apple M5**, darwin 25.6.0 arm64, recorded 2026-10-02. August uses LLVM 23.1.2. Every measured result matched its required output. They do not establish a general C-speed or production-safety guarantee.
+These results cover the August 0.21.0 preview on **Apple M5**, darwin 25.6.0 arm64, recorded 2026-10-02. August uses LLVM 23.1.2. Every measured result matched its required output. They do not establish a general C-speed or production-safety guarantee.
 
 ## Eight more C comparisons
 

@@ -16,14 +16,6 @@ left - right
 
 Subtract numbers. Unary `-` negates a number.
 
-## ->
-
-```text
-->
-```
-
-This token is reserved for future syntax and is not currently valid AugScript.
-
 ## ,
 
 ```text
@@ -48,14 +40,6 @@ if condition: ... or {1: "apples"}
 
 After a block header, introduce a body indented with tabs or spaces. Dedenting ends that body. Each block may independently use braces or indentation. In a map literal, separate a key from its value; collection and parenthesis continuation indentation has no block meaning.
 
-## !
-
-```text
-Use not
-```
-
-Symbolic boolean negation is rejected. The migration fix preserves grouping when replacing ! with not.
-
 ## !=
 
 ```text
@@ -63,14 +47,6 @@ left != right
 ```
 
 Compare values for inequality; the result is `bool`.
-
-## ?
-
-```text
-optional Type
-```
-
-Type? is rejected. Use optional Type for a value or null; omitted optional inputs and fields also become null. The migration fix upgrades the spelling.
 
 ## .
 
@@ -224,14 +200,6 @@ left / right
 
 Divide numbers. Integer division truncates toward zero. A potentially zero divisor raises checked ArithmeticError; a literal nonzero divisor needs no error clause. MIN/-1 wraps to MIN.
 
-## &&
-
-```text
-Use and
-```
-
-Symbolic boolean operators are rejected. Replace && with and; the right side is skipped when the left side is false.
-
 ## +
 
 ```text
@@ -272,14 +240,6 @@ left == right
 
 Compare values for equality; the result is `bool`.
 
-## =>
-
-```text
-Use initialize
-```
-
-The arrow constructor spelling is rejected. Put initialize { ... } or its indented form inside the class or record. The editor migration fix moves the body and preserves behavior.
-
 ## >
 
 ```text
@@ -295,14 +255,6 @@ left >= right
 ```
 
 Compare compatible numbers; the result is `bool`.
-
-## ||
-
-```text
-Use or
-```
-
-Symbolic boolean operators are rejected. Replace || with or; the right side is skipped when the left side is true.
 
 ## always
 
@@ -359,14 +311,6 @@ assert(condition=bool) returns void
 ```
 
 Assert a bool in a test case or its setup. Catching an assertion failure cannot make the case pass; every case must execute an assertion.
-
-## bind
-
-```text
-Use implement Interface with Implementation
-```
-
-This old binding spelling is rejected. Use implement Interface with Implementation. The editor migration fix or aug migrate --write upgrades old source without changing its binding contract.
 
 ## body
 
@@ -443,14 +387,6 @@ increment() changes self
 ```
 
 Describe observable mutation of self or a borrowed input. Bodies infer changes when omitted; callers still need mutable access. Bodyless interface contracts declare permitted mutation. Local variables and fresh local objects do not change caller-owned state. An explicit clause limits the body.
-
-## class
-
-```text
-No class keyword
-```
-
-Class declarations start with their name and must include `implements`: `Worker() implements IWorker { ... }`. Members starting with `_` are private to the class; other members are public. A private header field still accepts its labeled constructor argument. Remove the old `class` prefix.
 
 ## composition
 
@@ -647,14 +583,6 @@ import Name from module;
 ```
 
 Names the source of an import or export. Dotted paths cross folders; each crossed folder must expose the next one with `export folder child;`. A module starting with `_` is private.
-
-## function
-
-```text
-No function keyword
-```
-
-Functions and methods start with their name: greet(string name) { ... }. Remove the old function prefix. Parameters use Type name order and callers use labels. Bodies infer omitted returns, changes, uses and unless clauses; declarations without a body keep explicit contracts.
 
 ## handle
 
@@ -871,14 +799,6 @@ match value: when ...
 ```
 
 Choose a checked case. Cover true and false for bool, null and some for nullable values, or add else. Concrete class cases narrow the named value. Duplicate and unreachable cases are rejected.
-
-## missing
-
-```text
-null
-```
-
-The missing keyword is rejected. Use null. An omitted optional value and an explicit null have the same language value; there is no separate missing state.
 
 ## mutable
 
@@ -1180,14 +1100,6 @@ throw error;
 
 Raise a value whose class implements `Error`. An executable body infers uncaught errors; main must handle them with a matching catch.
 
-## throws
-
-```text
-Use unless
-```
-
-This old error-contract spelling is rejected. Replace `throws FileError` with `unless FileError`. Javadoc `@throws` remains supported.
-
 ## Timeout
 
 ```text
@@ -1467,3 +1379,7 @@ Read a statically checked constant position. Prefer tuple destructuring when rea
 ### Tuple.length
 
 Read the number of elements.
+
+## Unsupported spellings
+
+Use `and`, `or`, `not`, `unless`, `optional T`, `null`, `implement … with …`, and `initialize`. Declarations start with their name, without a class or function prefix. Symbolic booleans, arrow constructors, and `T?` are rejected. [Diagnostics](diagnostics.md) explains fixes and migration.

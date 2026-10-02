@@ -1,6 +1,6 @@
 # Ownership and task conformance
 
-August 0.20 checks ownership before compiling and joins every child before its `scope` ends. This page records the behavior exercised by the [language conformance suite](../tests/language-conformance.test.mjs). It is a candidate 1.0 contract; the [compatibility policy](compatibility.md) takes effect only with a 1.0 release.
+August 0.21 checks ownership before compiling and joins every child before its `scope` ends. This page records the behavior exercised by the [language conformance suite](../tests/language-conformance.test.mjs). It is a candidate 1.0 contract; the [compatibility policy](compatibility.md) takes effect only with a 1.0 release.
 
 ## What the compiler guarantees
 
@@ -33,4 +33,4 @@ The checker rejects owned task results, including inferred `Task<T>` results,
 until the public task type has an owned-result transfer contract. Both backends
 exercise these cases in the concurrency suite.
 
-Run the focused suite with `node --test tests/language-conformance.test.mjs`. The full repository test command also runs existing [concurrency](../tests/concurrency.test.mjs), ownership, errors, formatter, and generated-spec tests. This suite is growing through adversarial review; a green run does not establish complete ownership safety. The [roadmap](roadmap.md) keeps the language semantics gate open until that review and native CI finish.
+Run the focused suite with `node --test tests/language-conformance.test.mjs`. The full repository test command also runs existing [concurrency](../tests/concurrency.test.mjs), ownership, errors, formatter, and generated-spec tests. This suite is growing through adversarial review; a green run does not establish complete ownership safety. The [roadmap](roadmap.md) keeps the language semantics gate open until independent review and the full conformance evidence justify closure.

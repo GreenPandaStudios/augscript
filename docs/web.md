@@ -2,7 +2,7 @@
 
 Build a service by declaring its routes in August and serving them from `main.aug`. The declarations describe how HTTP inputs become typed values and how results become responses. Your application selects authentication, authorization, and logging capabilities explicitly. The optional web and crypto packages provide adapters for native transport and cryptographic operations.
 
-This guide builds a service with JSON, a server-rendered page, a form action, and an event stream. Learn [modules and dependencies](learn/modules-and-dependencies.md) first if `implement` and `resolve` are unfamiliar. Full web and crypto runs need the [native bootstrap](tooling.md#native-standard-libraries). The service uses demonstration authentication; [the gap ledger](web-library-gaps.md) describes what remains before a production service claim.
+This guide builds a service with JSON, a server-rendered page, a form action, and an event stream. Learn [modules and dependencies](learn/modules-and-dependencies.md) first if `implement` and `resolve` are unfamiliar. On supported hosts, the CLI [obtains native components automatically](tooling.md#native-standard-libraries). The service uses demonstration authentication; [the gap ledger](web-library-gaps.md) describes what remains before a production service claim.
 
 ## A complete service
 

@@ -48,16 +48,11 @@ Save `.devcontainer/devcontainer.json` beside it:
   "forwardPorts": [8080],
   "portsAttributes": {
     "8080": { "label": "August HTTP" }
-  },
-  "customizations": {
-    "vscode": {
-      "extensions": ["augscript.augscript@prerelease"]
-    }
   }
 }
 ```
 
-The editor installs the August preview extension inside the container. Its bundled compiler and terminal CLI use the same artifact cache. Terminal commands run as the image's `node` user. On Linux, the Dev Container tooling adjusts that user's ID to match your local files. The [non-root user guide](https://code.visualstudio.com/remote/advancedcontainers/add-nonroot-user) explains this behavior.
+After opening the container, download the matching 0.21.0 VSIX from [GitHub Releases](https://github.com/GreenPandaStudios/augscript/releases/tag/v0.21.0). Run **Extensions: Install from VSIX…** in that VS Code window and install it in the container. Check the extension version against the CLI; Marketplace availability can lag a release. The bundled compiler and terminal CLI use the same artifact cache. Terminal commands run as the image's `node` user. On Linux, the Dev Container tooling adjusts that user's ID to match your local files. The [non-root user guide](https://code.visualstudio.com/remote/advancedcontainers/add-nonroot-user) explains this behavior.
 
 ## Open and run it
 

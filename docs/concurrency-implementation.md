@@ -1,18 +1,9 @@
-# Structured execution implementation
+# Structured execution architecture
 
-This is an implementation work note, not a delivery claim.
+August tasks run cooperatively on one OS thread. `start` creates a child in the current scope, and `wait for` observes results in the written order. A scope joins its children before releasing dependencies. There are no multicore workers, channels, or broadcasts in the supported language.
 
-The confirmed model uses lexical scopes, ordered waits, cooperative cancellation, guaranteed cleanup, shared read references, exclusive mutation, bounded multicore workers and nonblocking I/O. An unhandled child failure cancels its siblings; a request failure leaves other requests running.
+The checker tracks captured references, ownership, mutation permissions, delayed checked errors, and possible siblings. The parent cannot mutate or move an object while a child may still use it. Waiting for one dynamically selected task does not release unrelated captures. See [ownership and task conformance](language-conformance.md) for executable cases.
 
-The same-app OIDC flow requires an outbound request to suspend its execution while the native HTTP event loop continues accepting provider requests. Running that request synchronously inside an HTTP callback would deadlock.
+The native runtime owns scheduling, task state, deadlines, cancellation, and joins. A child failure escaping its scope cancels siblings; `always` cleanup still runs. Native calls are synchronous until they return, so cancellation cannot interrupt arbitrary foreign work. Shared-state locks permit a short exclusive operation and forbid waits, starts, nested locks, and I/O inside the block.
 
-Implementation seams:
-
-- Each execution owns its root-frame chain, error state and scope stack. The collector traces all suspended executions and native retained roots.
-- Scoped DI caches belong to scope instances. Shared bindings remain process values; fresh bindings remain uncached.
-- Managed request values cross the transport seam through retained GC roots. Native buffers have explicit transport ownership.
-- A task captures read references and moves owned arguments. Mutable argument loans stay active until join. Collection waits preserve input order.
-- Native I/O starts on the event loop and resumes a suspended execution on completion or cancellation. No worker waits on a blocking socket.
-- Multicore execution requires collector safepoints and synchronization of explicit Shared values. A single event loop alone must not be presented as the completed multicore requirement.
-
-Verification must include two requests in the same process that call each other, bounded fan-out, sibling cancellation, cleanup on errors and disconnects, lock restrictions and mutation alias rejection.
+HTTP requests each receive a dependency/task scope. Disconnects and deadlines cancel that scope, join children, and release owned values. [HTTP architecture](web-implementation-plan.md) explains transport boundaries; the [web guide](web.md) describes application use. Multicore execution requires a separate memory, ownership, and scheduling design before it can be added.

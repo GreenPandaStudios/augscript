@@ -4,7 +4,7 @@ Software gets harder to change when its behavior depends on knowledge scattered 
 
 August's two tenets are **simplicity** and **developer scalability**. A reader should be able to understand a module from its source and a few nearby, linked contracts. The language makes dependencies and behavior visible so a team can review a change without first learning every implementation detail in the application.
 
-## What that means in code
+## Code that reads like pseudocode
 
 Calls use labels, such as `total(price=7, quantity=3)`. You can read the role of each input at the call site. Files import the names they use, and folders expose their public surface through `export.aug`. An underscore keeps a name private to its scope.
 
@@ -22,6 +22,6 @@ The project does not yet have evidence that August makes every team or coding ag
 
 ## Where it stands
 
-The compiler is written in TypeScript. It emits C11 and uses a native managed runtime. The repository also contains the CLI, VS Code extension, standard library, web and crypto libraries, tests, and this documentation. [Packages](packages.md) explains how to install a matching set and create your own source libraries.
+August compiles to a native executable through LLVM and uses a managed runtime. You can measure its execution against C with the [published programs and results](performance.md). The repository also contains the CLI, VS Code extension, standard library, web and crypto libraries, tests, and this documentation. [Packages](packages.md) explains how to install a matching set and create your own source libraries.
 
 August is a public preview. It has cooperative tasks, explicit ownership operations, checked errors, HTTP endpoints, and source packages, but no stable 1.0 compatibility promise. Read the [readiness review](production-readiness.md), [library gaps](web-library-gaps.md), and [1.0 roadmap](roadmap.md) for the limits that matter to your project.

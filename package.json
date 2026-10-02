@@ -30,7 +30,8 @@
     "package:packages": "node scripts/pack-packages.mjs",
     "test:packages": "node scripts/test-packages.mjs",
     "version:check": "node scripts/version.mjs --check",
-    "package:extension": "npm --prefix vscode run package"
+    "package:extension": "npm --prefix vscode run package",
+    "bench:greetings": "node scripts/benchmark-greetings.mjs"
   },
   "devDependencies": {
     "@types/markdown-it-container": "4.0.1",

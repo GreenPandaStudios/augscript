@@ -47,3 +47,5 @@ An example involving security or deployment states its applicable limits nearby.
 Follow [documentation maintenance](maintaining-docs.md) for generation and executable checks. Read the rendered page as a newcomer: can you find the first action, follow dependencies, understand the result, and locate the full contract? Check a narrow screen for long code and tables, and a wider screen for code/spec comparisons. Review copied source as well as visual wrapping.
 
 Research notes cite primary sources near the claims they support and distinguish findings from recommendations. Link research from contributor pages when it explains an editorial decision; users should not need to read the research to use August.
+
+Describe current behavior. Keep obsolete benchmark comparisons, delivery histories, local machine paths, and template origins out of reader guides. The homepage presents readable code, its actual compiled spec, and scoped native performance evidence.

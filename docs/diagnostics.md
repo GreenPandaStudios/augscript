@@ -98,7 +98,7 @@ Next exists only inside around. `next()` forwards original inputs; `next(y=value
 | DOC | @param labels, value-return tags, and error tags must match the effective signature. Unknown tags are errors. Missing public docs become warnings only when enabled. |
 | CONFIG | main.yaml uses the supported keys and simple YAML lists. Unknown/duplicate keys and invalid values fail during check. |
 | FFI | Use supported boundary types, matching C widths, labeled inputs, unsafe, and an inferred or declared C.function effect. |
-| NATIVE | A C compiler error mapped to its .aug file and line. Fix the boundary declaration or linker configuration; inspect emit-c for generated details. |
+| NATIVE | A native build or link failure mapped to source or an artifact requirement. Check the named boundary or artifact; use emit-llvm for compiler diagnostics, or emit-c for an explicit C reference build. |
 
 See [testing](testing.md) and [native tooling](tooling.md) for executable examples and exact limits.
 

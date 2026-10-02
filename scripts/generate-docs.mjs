@@ -15,11 +15,15 @@ import { generateSpecs } from '../src/spec.ts';
 import { specHint } from '../src/spec-hints.ts';
 import { buildExamplePages, examples } from './example-docs.mjs';
 import { benchmarkChartData } from './benchmark-chart-data.mjs';
+import { homepageExample } from './homepage-docs.mjs';
+import { nativePackageExamples } from './native-package-docs.mjs';
 
 const root = resolve(import.meta.dirname, '..');
 const check = process.argv.includes('--check');
 const outputs = new Map();
 outputs.set('docs/.vitepress/theme/benchmark-data.json', benchmarkChartData(root));
+outputs.set('docs/.vitepress/home-example.md', homepageExample(root));
+outputs.set('docs/native-package-examples.md', nativePackageExamples(root));
 // Analyze the pending source pointers too, so one generation pass has correct API/source links.
 const entry=join(root,'examples/approved-design');
 const initial=checkProject(loadProject(entry));
@@ -84,12 +88,16 @@ for (const module of ['io', 'json', 'memory', 'time', 'web', 'crypto']) {
   outputs.set(`docs/api/${module}.md`, sections.join('\n\n') + '\n');
 }
 const constructs = [generated('src/help.ts and src/builtins.ts') + '# Language constructs\n\nThis reference uses the same help as VS Code hover and completion. See [the guide](reference.md) for complete, compiler-checked examples.'];
-for (const [name, help] of Object.entries(languageHelp).sort(([a], [b]) => a.localeCompare(b)))
+const unsupported = new Set(['class','function','bind','throws','missing','&&','||','!','=>','->','?']);
+for (const [name, help] of Object.entries(languageHelp).sort(([a], [b]) => a.localeCompare(b))) {
+  if (unsupported.has(name)) continue;
   constructs.push(`## ${name}\n\n${fence(help.detail)}\n\n${reference(help.documentation)}`);
+}
 for (const [type, operations] of Object.entries(collectionOperations)) {
   constructs.push(`## ${type} operations`);
   for (const operation of operations) constructs.push(`### ${type}.${operation.name}\n\n${operation.documentation}`);
 }
+constructs.push('## Unsupported spellings\n\nUse `and`, `or`, `not`, `unless`, `optional T`, `null`, `implement … with …`, and `initialize`. Declarations start with their name, without a class or function prefix. Symbolic booleans, arrow constructors, and `T?` are rejected. [Diagnostics](diagnostics.md) explains fixes and migration.');
 outputs.set('docs/language-constructs.md', constructs.join('\n\n') + '\n');
 for (const [path, text] of buildExamplePages(sourceOverrides)) outputs.set(path, text);
 const stale = [];

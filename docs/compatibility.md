@@ -2,7 +2,7 @@
 
 August is a preview. This page states the proposed 1.0 compatibility contract and the evidence still needed before it takes effect. The published 0.21.0 preview includes the qualified LLVM/native package profile; the [roadmap](roadmap.md) tracks the remaining 1.0 gates.
 
-The [ownership and task conformance page](language-conformance.md) records executable candidate behavior for moves, aliasing, cleanup, cancellation, and delayed errors.
+The [ownership and task conformance page](language-conformance.md) records checked preview behavior for moves, aliasing, cleanup, cancellation, and delayed errors.
 
 ## What a 1.0 release will keep stable
 

@@ -7,7 +7,6 @@ import sys
 
 ROOT = Path(__file__).resolve().parent.parent
 data = json.loads((ROOT / 'docs/benchmark-results.json').read_text())
-baseline = json.loads((ROOT / 'docs/benchmark-baseline.json').read_text())
 for section in ['batch', 'http']:
     for workload in data[section]:
         workload['results'] = [item for item in workload['results'] if item['implementation'] != 'August (C backend)']
@@ -15,8 +14,6 @@ check = '--check' in sys.argv
 outputs = {}
 labels = {'startup': 'Startup', 'cpu': 'CPU · 2 million iterations', 'collections-20k': 'Map + Set · 20,000 entries',
           'collections-200k': 'Map + Set · 200,000 entries', 'json': 'JSON · 5,000 round trips'}
-keys = ['cpu', 'collections-20k', 'collections-200k']
-concurrency = [item['concurrency'] for item in data['http']]
 
 def result(report, section, key, implementation='August'):
     field = 'name' if section == 'batch' else 'concurrency'
@@ -35,22 +32,10 @@ for workload in data['http']:
     latency = [f"{statistics.median(run['latencyMs']['p95'] for run in item['rounds']):.2f} ms" for item in results]
     http_rows.append('| ' + str(workload['concurrency']) + ' | ' + ' | '.join(rates + latency) + ' |')
 page = (ROOT / 'docs/performance.md').read_text()
-improvement_rows = ['| August workload | Before | Current | Current relative to before |', '| --- | ---: | ---: | ---: |']
-for key in keys:
-    before = result(baseline, 'batch', key)['milliseconds']['median']
-    current = result(data, 'batch', key)['milliseconds']['median']
-    improvement_rows.append(f'| {labels[key]} | {before:.2f} ms | {current:.2f} ms | {before / current:.2f}× faster |')
-for key in concurrency:
-    before = result(baseline, 'http', key)['requestsPerSecond']['median']
-    current = result(data, 'http', key)['requestsPerSecond']['median']
-    improvement_rows.append(f'| HTTP · {key} clients | {before:,.0f} req/sec | {current:,.0f} req/sec | {current / before:.2f}× throughput |')
-before = result(baseline, 'batch', 'collections-200k')['peakRssBytes']['median'] / 1048576
-current = result(data, 'batch', 'collections-200k')['peakRssBytes']['median'] / 1048576
-improvement_rows.append(f'| Map + Set · 200k peak memory | {before:.1f} MiB | {current:.1f} MiB | {100 * (1-current/before):.0f}% less |')
 cpu = result(data, 'batch', 'cpu')['milliseconds']['median']
 c = result(data, 'batch', 'cpu', 'C')['milliseconds']['median']
 summary = [f'The CPU program takes **{cpu:.2f} ms** in August and **{c:.2f} ms** in C on this host. The large-collection program takes **{result(data, "batch", "collections-200k")["milliseconds"]["median"]:.2f} ms** in August. These are measurements of the shown programs, not guarantees for other applications. JSON batch time includes interpreter startup for Node and Python; it does not establish a universal JSON-throughput advantage.']
-blocks = [('execution', batch_rows), ('http', http_rows), ('memory', memory_rows), ('improvements', improvement_rows), ('summary', summary)]
+blocks = [('execution', batch_rows), ('http', http_rows), ('memory', memory_rows), ('summary', summary)]
 projects = {
     'startup': [('benchmarks/startup/main.aug', 'main.aug')],
     'cpu': [('benchmarks/cpu/main.aug', 'main.aug')],

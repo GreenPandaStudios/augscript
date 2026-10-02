@@ -27,7 +27,7 @@ const lines=[
   'generatedBy: scripts/render-qualification.mjs',
   '---',
   '# Extended performance and safety results','',
-  'These results cover the August '+benchmark.compiler+' candidate on **'+benchmark.cpu+'**, '+benchmark.platform+' '+benchmark.os+' '+benchmark.architecture+', recorded '+benchmark.recordedAt.slice(0,10)+'. August uses LLVM '+benchmark.llvm+'. Every measured result matched its required output. They do not establish a general C-speed or production-safety guarantee.','',
+  'These results cover the August '+benchmark.compiler+' preview on **'+benchmark.cpu+'**, '+benchmark.platform+' '+benchmark.os+' '+benchmark.architecture+', recorded '+benchmark.recordedAt.slice(0,10)+'. August uses LLVM '+benchmark.llvm+'. Every measured result matched its required output. They do not establish a general C-speed or production-safety guarantee.','',
   '## Eight more C comparisons','',
   '::: benchmark-chart kernels',':::','',
   'Each value is the median of '+benchmark.methodology.iterations+' fresh executable processes after '+benchmark.methodology.warmup+' warmups. Order rotates within a separate measurement process. Timings include startup and exclude compilation. Both implementations use O2 without LTO or fast-math. [Raw samples, build times and code sizes](kernel-results.json) also include the same August programs compiled through the C migration backend.','',

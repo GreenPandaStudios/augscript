@@ -63,8 +63,7 @@ the callee. Replacing an owned field releases its previous value immediately.
 
 SQLite, zlib, and Rust BLAKE3 use the same package path. The
 [package examples](native-package-examples.md) show their operations; the
-[implementation record](native-implementation.md) separates verified behavior
-from release and platform work still in progress.
+[support summary](native-implementation.md) describes the qualified platforms and current limits.
 
 Read the complete projects with their compiled explanations:
 [PyTorch](examples/native-pytorch/index.md),
@@ -164,7 +163,7 @@ Binding maintainers build and test native artifacts with the recorded toolchain.
 Consumers receive those verified artifacts. Callback registration, retained
 loans, foreign threads, native struct layout, GPU tensors, and exporting August
 libraries have not been qualified. See the
-[architecture and backlog](native-interop-llvm-plan.md).
+[native compilation design](native-interop-llvm-plan.md).
 
 Linux maintainers build on Debian 12 so newer hosts do not raise the artifact's
 glibc requirement. The compiler checks the declared minimum; maintainer builds
