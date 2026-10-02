@@ -30,6 +30,7 @@ jobs:
       - run: node --test tests/release-publication.test.mjs
       - run: npm run check
       - run: npm run docs:check
+      - run: npm run qualification:render -- --check
       - name: Require documentation with behavior changes
         if: github.event_name == 'pull_request'
         env:
@@ -89,14 +90,23 @@ jobs:
       - run: node scripts/build-llvm-pack.mjs
       - name: Qualify LLVM performance against the C reference
         run: |
-          node scripts/benchmark-suite.mjs --backend llvm --compare-c-backend --iterations 15 --warmup 3 --http-rounds 5 --http-requests 5000 --output .aug-build/llvm-migration-performance.json
+          node scripts/benchmark-suite.mjs --backend llvm --compare-c-backend --iterations 60 --warmup 3 --http-rounds 5 --http-requests 5000 --output .aug-build/llvm-migration-performance.json
           node scripts/check-llvm-performance.mjs .aug-build/llvm-migration-performance.json
+      - name: Qualify generated safety gyms and expanded C comparisons
+        env:
+          AUG_SANITIZER_CC: ${{ github.workspace }}/.aug-build/llvm-maintainer/bin/clang
+        run: |
+          node scripts/run-gyms.mjs --profile full --vectors 256
+          node scripts/benchmark-kernels.mjs --iterations 30
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: always()
         with:
           name: llvm-macos-performance
           include-hidden-files: true
-          path: .aug-build/llvm-migration-performance.json
+          path: |
+            .aug-build/llvm-migration-performance.json
+            .aug-build/kernels/results.json
+            .aug-build/gyms/results.json
           if-no-files-found: error
       - run: npm run package:packages
       - run: npm run package:extension

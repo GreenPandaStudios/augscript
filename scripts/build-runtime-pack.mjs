@@ -36,7 +36,7 @@ const staticCore='lib/libaug_runtime.a';
   const objects=[];
   mkdirSync(join(output,'core-objects'),{recursive:true});
   for(const source of [...sources.map(f=>join(root,'runtime',f)),join(yyjson,'src/yyjson.c')]){
-    const object=join(output,'core-objects',source.split('/').at(-1)+'.o');run(['-fno-common','-c',source,'-o',object]);objects.push(object);
+    const object=join(output,'core-objects',source.split('/').at(-1)+'.o');run(['-fno-common','-ffunction-sections','-fdata-sections','-c',source,'-o',object]);objects.push(object);
   }
   const ar=process.env.AUG_AR??(mac?'/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ar':'ar');
   const archived=spawnSync(ar,[mac?'rcs':'rcsD',join(output,staticCore),...objects],{encoding:'utf8',env:{...process.env,ZERO_AR_DATE:'1'}});

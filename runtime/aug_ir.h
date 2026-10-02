@@ -21,6 +21,21 @@ enum AugIrOperation {
 };
 void aug_ir_operation(AugValue *out, int operation, AugValue *args, int count, const char *text, int64_t number);
 /* Specialized services keep managed inputs in the caller's rooted cells. */
+void aug_ir_print(const AugValue *value);
+void aug_ir_binary(AugValue *out,const char *operation,const AugValue *left,const AugValue *right);
+void aug_ir_unary(AugValue *out,const char *operation,const AugValue *value);
+void aug_ir_list_new(AugValue *out,AugValue *items,int count);
+void aug_ir_tuple_new(AugValue *out,AugValue *items,int count);
+void aug_ir_set_new(AugValue *out,AugValue *items,int count);
+void aug_ir_map(AugValue *out);
+void aug_ir_iter(AugValue *out,const AugValue *value);
+void aug_ir_map_iter(AugValue *out,const AugValue *value);
+void aug_ir_list_append(const AugValue *list,const AugValue *value);
+int64_t aug_ir_tuple_length(const AugValue *tuple);
+void aug_ir_tuple_get(AugValue *out,const AugValue *tuple,const AugValue *index);
+int64_t aug_ir_string_length(const AugValue *value);
+void aug_ir_string_bytes(AugValue *out,const AugValue *value);
+void aug_ir_string_split(AugValue *out,const AugValue *value,const AugValue *separator);
 void aug_ir_map_set(const AugValue *map,const AugValue *key,const AugValue *value);
 void aug_ir_set_add(const AugValue *set,const AugValue *value);
 uint8_t aug_ir_set_contains(const AugValue *set,const AugValue *value);

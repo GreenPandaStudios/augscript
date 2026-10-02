@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict';
-import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import os from 'node:os';
 import { spawn, spawnSync } from 'node:child_process';
@@ -15,8 +15,10 @@ import {compileLLVM} from '../src/llvm-native.ts';
 import {prepareLLVMCompiler} from '../src/compiler-packs.ts';
 import { nativeHome } from './native-home.mjs';
 import {createHash} from 'node:crypto';
+import {qualificationIdentity} from './qualification-identity.mjs';
 
 const root = resolve(import.meta.dirname, '..'), sources = join(root, 'benchmarks'), build = join(root, '.aug-build/benchmarks');
+const identity=qualificationIdentity(root);
 mkdirSync(build, { recursive: true });
 const option = (name, fallback) => { const index = process.argv.indexOf(name); return index < 0 ? fallback : Number(process.argv[index + 1]); };
 const stringOption = name => { const index = process.argv.indexOf(name); return index < 0 ? undefined : process.argv[index + 1]; };
@@ -40,20 +42,16 @@ const cArgs = ['-O2', '-std=c11', '-I' + yyjson, join(sources, 'reference.c'), j
 const sdk = '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk';
 if (process.platform === 'darwin' && existsSync(sdk) && !process.env.SDKROOT) cArgs.unshift('-isysroot', sdk);
 const compileStart = performance.now(); run(cc, cArgs); const referenceCompileMs = performance.now() - compileStart;
-const digest = createHash('sha256');
-for (const folder of ['src', 'runtime', 'benchmarks', 'scripts'])
-  for (const file of readdirSync(join(root, folder), {recursive:true}).filter(file => /\.(ts|mjs|c|h|aug)$/.test(file)).sort())
-    digest.update(folder + '/' + file + '\0').update(readFileSync(join(root, folder, file)));
 const report = { recordedAt: new Date().toISOString(), version: JSON.parse(readFileSync(join(root, 'package.json'))).version,
   backend,
   referenceBackend:compareC?'c':undefined,
   llvm:llvmToolchain?{version:'23.1.2',archiveSha256:llvmToolchain.archiveSha256,developmentOverride:llvmToolchain.developmentOverride,runtime:JSON.parse(readFileSync(join(llvmToolchain.runtime,'runtime.json'))).sourceSha256,tools:Object.fromEntries(['llc','opt','lld'].map(tool=>[tool,createHash('sha256').update(readFileSync(join(llvmToolchain.tools,'bin',tool))).digest('hex')]))}:undefined,
-  sourceSha256:digest.digest('hex'),
+  sourceSha256:identity.sourceSha256,
   environment: { platform: process.platform, release: os.release(), architecture: process.arch, cpu: os.cpus()[0]?.model,
     logicalCpus: os.cpus().length, node: process.version, python: run(python, ['--version']).stdout.trim(),
     compiler: run(cc, ['--version']).stdout.split('\n')[0] },
   methodology: { optimization: '-O2, no LTO', iterations, warmup, includesProcessStartup: true,
-    ordering: 'Rotate implementations each round; new process per sample; verify every checksum',
+    ordering: 'Rotate implementations each round in a fresh measurement process; new executable process per sample; verify every checksum',
     memory: 'Three separate peak-RSS measurements using /usr/bin/time; bytes, includes interpreter/runtime',
     cBaseline: 'Specialized int64 open-addressed hash tables; yyjson parse/type probe/write without August record binding',
     http: 'Same-host HTTP/1.1 loopback, keep-alive, closed-loop concurrency, JSON validated on every response; no TLS/auth/logging',
@@ -95,13 +93,8 @@ for (const item of cases.filter(item => !only || only.includes(item.name))) {
     { name: 'Node', command: process.execPath, args: [join(sources, 'reference.mjs'), workload, String(item.count)] },
     { name: 'Python', command: python, args: [join(sources, 'reference.py'), workload, String(item.count)] },
   ];
-  const samples = variants.map(() => []);
-  for (let round = -warmup; round < iterations; round++) for (let i = 0; i < variants.length; i++) {
-    const index = (i + round + warmup) % variants.length, variant = variants[index], start = performance.now();
-    const result = run(variant.command, variant.args);
-    const elapsed = performance.now() - start; assert.equal(result.stdout, item.expected, `${item.name}/${variant.name}`);
-    if (round >= 0) samples[index].push(elapsed);
-  }
+  const measured=JSON.parse(run(process.execPath,[join(root,'scripts/batch-load.mjs')],
+    {input:JSON.stringify({variants,iterations,warmup,expected:item.expected})}).stdout);
   const results = variants.map((variant, index) => {
     const memory = [];
     for (let i = 0; i < 3; i++) {
@@ -110,7 +103,7 @@ for (const item of cases.filter(item => !only || only.includes(item.name))) {
       const rss = process.platform === 'darwin' ? /([\d]+)\s+maximum resident set size/.exec(result.stderr) : /Maximum resident set size \(kbytes\):\s*(\d+)/.exec(result.stderr);
       assert.ok(rss, result.stderr); memory.push(Number(rss[1]) * (process.platform === 'darwin' ? 1 : 1024));
     }
-    return { implementation: variant.name, milliseconds: stats(samples[index]), peakRssBytes: stats(memory) };
+    return { implementation: variant.name, milliseconds: measured[index].milliseconds, peakRssBytes: stats(memory) };
   });
   report.batch.push({ name: item.name, count: item.count, expectedOutput: item.expected, frontendMs: compiled.frontendMs,
     buildMs: compiled.buildMs, results });
@@ -171,5 +164,6 @@ if (!process.argv.includes('--skip-http') && (!only || only.includes('http'))) {
 }
 const output = stringOption('--output') ? resolve(stringOption('--output')) : only ? join(build, 'results-focused.json') :
   process.argv.includes('--skip-http') ? join(build, 'results-core.json') : join(root, 'docs/benchmark-results.json');
+assert.equal(qualificationIdentity(root).sourceSha256,identity.sourceSha256,'Compiler or benchmark inputs changed during measurement; rerun against one revision');
 writeFileSync(output, JSON.stringify(report, null, 2) + '\n');
 process.stdout.write('Raw results: ' + output + '\n');

@@ -47,3 +47,15 @@
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
+.aug-benchmark-chart p:last-child {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .aug-benchmark-chart p:first-child {
+    display: none;
+  }
+  .aug-benchmark-chart p:last-child {
+    display: block;
+  }
+}

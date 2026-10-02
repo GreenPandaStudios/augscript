@@ -12,6 +12,8 @@ The same-app [OpenID Connect example](examples/oidc-login/index.md) proves integ
 
 ## Dependencies and licenses
 
+The [safety gyms](safety-gyms.md) now collect generated LLVM cases, rejected contracts, behavioral mutations and the larger runtime circuits in one replayable report. [Recorded qualification](qualification-results.md) shows the actual execution counts and skipped checks. The expanded performance suite measures eight further programs against C. These checks strengthen the release evidence without establishing universal safety or speed.
+
 The CLI uses its matching core August library and `tar` 7.5.22 for registry archive extraction. The extension bundles that parser and its JavaScript dependencies. The VS Code extension's npm audit currently reports zero advisories. The wiki build uses VitePress and a pinned Vite override; run `npm audit` before each release. npm audit only covers npm packages and cannot certify native code or deployment configuration.
 
 | Dependency | Role | License from upstream | Distribution consideration |

@@ -80,6 +80,14 @@ If you are learning the language for the first time, use [the book](../learn/ind
 | Project | What it demonstrates |
 | --- | --- |
 | [Startup benchmark](startup-benchmark/index.md) | The small program used to measure process startup. |
+| [Floating-point benchmark](float-benchmark/index.md) | Accumulate exact binary fractions and check the final value. |
+| [Function-call benchmark](calls-benchmark/index.md) | Call a labeled function repeatedly with a dependent integer result. |
+| [List traversal benchmark](list-benchmark/index.md) | Grow a list and sum its snapshot values. |
+| [String processing benchmark](strings-benchmark/index.md) | Split text into parts and sum their byte lengths. |
+| [Map deletion benchmark](map-churn-benchmark/index.md) | Delete, replace and reinsert entries, then check values and insertion order. |
+| [Checked-error benchmark](errors-benchmark/index.md) | Interleave successful calls and caught checked failures. |
+| [Record allocation benchmark](records-benchmark/index.md) | Retain immutable records and sum their fields. |
+| [Task scheduling benchmark](tasks-benchmark/index.md) | Start and join two tasks in each bounded scope. |
 | [CPU benchmark](cpu-benchmark/index.md) | Two million dependent integer steps with a checked result. |
 | [Map and Set benchmark](collections-benchmark/index.md) | Insert, find, and iterate over 20,000 collection entries. |
 | [JSON benchmark](json-benchmark/index.md) | Parse, decode, and serialize a typed record 5,000 times. |

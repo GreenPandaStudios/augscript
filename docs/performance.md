@@ -4,6 +4,8 @@ This page publishes measurements for specific August programs alongside C, Node,
 
 The recorded suite uses the August 0.21.0 candidate and LLVM 23.1.2 native output. A result for one workload and host does not establish a general speed advantage or production readiness. [Readiness](production-readiness.md) covers reliability and deployment evidence separately.
 
+The [extended qualification](qualification-results.md) adds eight C comparisons for numeric, collection and application work. The [safety gyms](safety-gyms.md) exercise results, rejected operations, cleanup and memory checks separately. Each measured program has a downloadable project and a code/spec view in the [gallery](examples/index.md#measured-programs).
+
 ## Read the graphs
 
 Execution and memory bars use **lower is better**. HTTP throughput uses **higher is better**. Read the workload name and units before comparing: a 20,000-entry map and a two-million-step CPU loop do different amounts of work. The execution panels have separate linear scales; compare implementations within a panel. Tables provide exact values and remain readable on a phone.
@@ -18,15 +20,15 @@ All results below were recorded on October 2, 2026 (UTC): Apple M5, macOS Darwin
 
 | Workload | August | C | Node | Python |
 | --- | ---: | ---: | ---: | ---: |
-| Startup | 1.39 ms | 1.15 ms | 19.08 ms | 8.46 ms |
-| CPU · 2 million iterations | 7.60 ms | 8.04 ms | 30.30 ms | 193.28 ms |
-| Map + Set · 20,000 entries | 2.62 ms | 1.58 ms | 22.99 ms | 10.43 ms |
-| Map + Set · 200,000 entries | 15.97 ms | 6.07 ms | 37.82 ms | 26.05 ms |
-| JSON · 5,000 round trips | 7.11 ms | 1.94 ms | 20.91 ms | 19.24 ms |
+| Startup | 1.43 ms | 1.19 ms | 19.31 ms | 16.18 ms |
+| CPU · 2 million iterations | 7.74 ms | 8.38 ms | 30.64 ms | 252.62 ms |
+| Map + Set · 20,000 entries | 2.71 ms | 1.64 ms | 22.58 ms | 18.81 ms |
+| Map + Set · 200,000 entries | 16.81 ms | 6.31 ms | 37.96 ms | 40.36 ms |
+| JSON · 5,000 round trips | 7.23 ms | 1.94 ms | 21.16 ms | 31.84 ms |
 
 [benchmark-execution-end]: #
 
-Times include a fresh process's startup and exclude compilation: 3 warmups and 15 measured runs for each implementation, with the execution order rotated. Every run must produce the expected checksum. Node and Python start a new interpreter each time; these are batch timings, not warmed server-loop or steady-state JIT timings. The startup row helps make that cost visible; subtracting medians would not establish a new measured result.
+Times include a fresh process's startup and exclude compilation: 3 warmups and 60 measured runs for each implementation, with the execution order rotated. The measurement client runs outside the compiler process, and every executable must produce the expected checksum. Node and Python start a new interpreter each time; these are batch timings, not warmed server-loop or steady-state JIT timings. The startup row helps make that cost visible; subtracting medians would not establish a new measured result.
 
 The programs below are the actual benchmark sources. The suite checks their printed results against the C, Node and Python references on every run.
 
@@ -34,7 +36,7 @@ The C reference is tailored to these inputs: it preallocates integer tables and 
 
 [benchmark-summary-start]: #
 
-The CPU program takes **7.60 ms** in August and **8.04 ms** in C on this host. The large-collection program takes **15.97 ms** in August. These are measurements of the shown programs, not guarantees for other applications. JSON batch time includes interpreter startup for Node and Python; it does not establish a universal JSON-throughput advantage.
+The CPU program takes **7.74 ms** in August and **8.38 ms** in C on this host. The large-collection program takes **16.81 ms** in August. These are measurements of the shown programs, not guarantees for other applications. JSON batch time includes interpreter startup for Node and Python; it does not establish a universal JSON-throughput advantage.
 
 [benchmark-summary-end]: #
 
@@ -158,9 +160,9 @@ packages:
 
 | Clients | August req/sec | Node req/sec | August p95 latency | Node p95 latency |
 | ---: | ---: | ---: | ---: | ---: |
-| 1 | 21,350 | 23,851 | 0.06 ms | 0.05 ms |
-| 16 | 59,374 | 57,228 | 0.46 ms | 0.48 ms |
-| 64 | 53,777 | 55,299 | 2.14 ms | 1.97 ms |
+| 1 | 21,046 | 23,679 | 0.06 ms | 0.05 ms |
+| 16 | 58,708 | 55,557 | 0.46 ms | 0.49 ms |
+| 64 | 54,436 | 51,730 | 2.08 ms | 1.94 ms |
 
 [benchmark-http-end]: #
 
@@ -304,11 +306,11 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1
 
 | Workload | August | C | Node | Python |
 | --- | ---: | ---: | ---: | ---: |
-| Startup | 1.3 MiB | 1.3 MiB | 46.0 MiB | 15.2 MiB |
-| CPU · 2 million iterations | 1.3 MiB | 1.3 MiB | 52.2 MiB | 15.1 MiB |
-| Map + Set · 20,000 entries | 4.5 MiB | 4.4 MiB | 56.9 MiB | 20.2 MiB |
-| Map + Set · 200,000 entries | 34.2 MiB | 25.4 MiB | 91.1 MiB | 62.0 MiB |
-| JSON · 5,000 round trips | 1.8 MiB | 1.5 MiB | 47.4 MiB | 16.3 MiB |
+| Startup | 1.3 MiB | 1.3 MiB | 46.0 MiB | 8.4 MiB |
+| CPU · 2 million iterations | 1.3 MiB | 1.3 MiB | 52.2 MiB | 8.4 MiB |
+| Map + Set · 20,000 entries | 4.7 MiB | 4.4 MiB | 56.9 MiB | 13.2 MiB |
+| Map + Set · 200,000 entries | 36.8 MiB | 25.4 MiB | 91.1 MiB | 55.3 MiB |
+| JSON · 5,000 round trips | 1.8 MiB | 1.5 MiB | 47.4 MiB | 9.7 MiB |
 
 [benchmark-memory-end]: #
 
@@ -324,13 +326,13 @@ The earlier September 29 measurements and current LLVM measurements use the same
 
 | August workload | Before | Current | Current relative to before |
 | --- | ---: | ---: | ---: |
-| CPU · 2 million iterations | 36.65 ms | 7.60 ms | 4.82× faster |
-| Map + Set · 20,000 entries | 4.68 ms | 2.62 ms | 1.78× faster |
-| Map + Set · 200,000 entries | 47.90 ms | 15.97 ms | 3.00× faster |
-| HTTP · 1 clients | 25,273 req/sec | 21,350 req/sec | 0.84× throughput |
-| HTTP · 16 clients | 62,719 req/sec | 59,374 req/sec | 0.95× throughput |
-| HTTP · 64 clients | 30,693 req/sec | 53,777 req/sec | 1.75× throughput |
-| Map + Set · 200k peak memory | 61.9 MiB | 34.2 MiB | 45% less |
+| CPU · 2 million iterations | 36.65 ms | 7.74 ms | 4.73× faster |
+| Map + Set · 20,000 entries | 4.68 ms | 2.71 ms | 1.72× faster |
+| Map + Set · 200,000 entries | 47.90 ms | 16.81 ms | 2.85× faster |
+| HTTP · 1 clients | 25,273 req/sec | 21,046 req/sec | 0.83× throughput |
+| HTTP · 16 clients | 62,719 req/sec | 58,708 req/sec | 0.94× throughput |
+| HTTP · 64 clients | 30,693 req/sec | 54,436 req/sec | 1.77× throughput |
+| Map + Set · 200k peak memory | 61.9 MiB | 36.8 MiB | 40% less |
 
 [benchmark-improvements-end]: #
 

@@ -147,7 +147,41 @@ class FunctionEmitter {
   private payload(slot:number){const value=this.temp();this.line(`${value} = extractvalue %AugValue ${this.load(slot)}, 1`);return value;}
   private scalarBoolean(slot:number){const byte=this.temp(),condition=this.temp();this.line(`${byte} = trunc i64 ${this.payload(slot)} to i8`);this.line(`${condition} = icmp ne i8 ${byte}, 0`);return condition;}
   private boxBoolean(out:number,condition:string){const payload=this.temp();this.line(`${payload} = zext i1 ${condition} to i64`);this.boxed(out,3,payload);}
-  /** Preserve wrapping integer operations; float tags remain runtime-dispatched. */
+  /** A widened float slot can still contain an integer. Preserve that case,
+   * including integer division and wraparound, before emitting strict FP IR. */
+  private floatingOperation(i:Extract<IrInstruction,{op:'runtime'}>,left:number,right:number):boolean {
+    const operator=i.text,arithmetic:Record<string,string>={'+':'fadd','-':'fsub','*':'fmul','/':'fdiv'},
+      comparisons:Record<string,string>={'==':'oeq','!=':'une','<':'olt','>':'ogt','<=':'ole','>=':'oge'};
+    if(!operator||(!arithmetic[operator]&&!comparisons[operator]))return false;
+    const number=(slot:number)=>{
+      const stored=this.load(slot),tag=this.temp(),payload=this.temp(),integer=this.temp(),converted=this.temp(),bits=this.temp(),value=this.temp();
+      this.line(`${tag} = extractvalue %AugValue ${stored}, 0`);
+      this.line(`${payload} = extractvalue %AugValue ${stored}, 1`);
+      this.line(`${integer} = icmp eq i32 ${tag}, 1`);
+      this.line(`${converted} = sitofp i64 ${payload} to double`);
+      this.line(`${bits} = bitcast i64 ${payload} to double`);
+      this.line(`${value} = select i1 ${integer}, double ${converted}, double ${bits}`);
+      return {integer,value};
+    };
+    const a=number(left),b=number(right),both=this.temp(),fallback=this.label('number_runtime'),native=this.label('number_native'),done=this.label('number_done');
+    this.line(`${both} = and i1 ${a.integer}, ${b.integer}`);
+    let slow=both;
+    if(operator==='/'){
+      const zero=this.temp();slow=this.temp();this.line(`${zero} = fcmp oeq double ${b.value}, 0.0`);
+      this.line(`${slow} = or i1 ${both}, ${zero}`);
+    }
+    this.line(`br i1 ${slow}, label %${fallback}, label %${native}`);this.lines.push(fallback+':');
+    this.call('aug_ir_binary','void',[{type:'ptr',value:this.ptr(i.out)},{type:'ptr',value:this.module.text(operator)},...i.args.map(slot=>({type:'ptr',value:this.ptr(slot)}))]);
+    this.line(`br label %${done}`);this.lines.push(native+':');const result=this.temp();
+    if(comparisons[operator]){
+      this.line(`${result} = fcmp ${comparisons[operator]} double ${a.value}, ${b.value}`);this.boxBoolean(i.out,result);
+    }else{
+      this.line(`${result} = ${arithmetic[operator]} double ${a.value}, ${b.value}`);const payload=this.temp();
+      this.line(`${payload} = bitcast double ${result} to i64`);this.boxed(i.out,2,payload);
+    }
+    this.line(`br label %${done}`);this.lines.push(done+':');return true;
+  }
+  /** Preserve wrapping integer operations and the actual widened numeric tags. */
   private scalarOperation(i:Extract<IrInstruction,{op:'runtime'}>):boolean {
     const [left,right]=i.args,kind=this.scalarKind(left),operator=i.text;
     if(i.operation==='UNARY'){
@@ -162,14 +196,14 @@ class FunctionEmitter {
     if(kind==='bool'&&other==='bool'&&(operator==='=='||operator==='!=')){
       const a=this.scalarBoolean(left),b=this.scalarBoolean(right),result=this.temp();this.line(`${result} = icmp ${comparisons[operator]} i1 ${a}, ${b}`);this.boxBoolean(i.out,result);return true;
     }
-    // A float-typed position may still contain an INT tag after widening.
-    // Retain runtime dispatch for floats until lowering proves the real tag.
+    if(['int','float'].includes(kind??'')&&['int','float'].includes(other??'')&&(kind==='float'||other==='float'))
+      return this.floatingOperation(i,left,right);
     if(kind!=='int'||other!=='int')return false;
     const comparison=operator&&comparisons[operator],arithmetic:Record<string,string>={'+':'add','-':'sub','*':'mul'};
     if(operator==='/'){
       const a=this.payload(left),b=this.payload(right),zero=this.temp(),failed=this.label('division_zero'),success=this.label('division_value'),done=this.label('division_done');
       this.line(`${zero} = icmp eq i64 ${b}, 0`);this.line(`br i1 ${zero}, label %${failed}, label %${success}`);this.lines.push(failed+':');
-      this.call('aug_ir_operation','void',[{type:'ptr',value:this.ptr(i.out)},{type:'i32',value:String(operations.indexOf('BINARY')+1)},{type:'ptr',value:this.args(i.args)},{type:'i32',value:'2'},{type:'ptr',value:this.module.text('/')},{type:'i64',value:'0'}]);
+      this.call('aug_ir_binary','void',[{type:'ptr',value:this.ptr(i.out)},{type:'ptr',value:this.module.text('/')},...i.args.map(slot=>({type:'ptr',value:this.ptr(slot)}))]);
       this.line(`br label %${done}`);this.lines.push(success+':');
       const minimum=this.temp(),negativeOne=this.temp(),overflow=this.temp(),safeDivisor=this.temp(),result=this.temp();
       this.line(`${minimum} = icmp eq i64 ${a}, -9223372036854775808`);this.line(`${negativeOne} = icmp eq i64 ${b}, -1`);this.line(`${overflow} = and i1 ${minimum}, ${negativeOne}`);
@@ -197,7 +231,13 @@ class FunctionEmitter {
       case 'debug-variable':this.lines.push(this.variable(this.fn.variables[i.variable]));return;
       case 'runtime':{
         if((i.operation==='BINARY'||i.operation==='UNARY')&&this.scalarOperation(i))return;
-        const services:Record<string,'void'|'i8'|'i64'|'value'>={MAP_SET:'void',SET_ADD:'void',SET_CONTAINS:'i8',MAP_CONTAINS:'i8',LIST_LENGTH:'i64',SET_LENGTH:'i64',MAP_LENGTH:'i64',LIST_GET:'value',LIST_AT:'value',MAP_GET:'value',MAP_TAKE:'value'};
+        if(i.operation==='BINARY'||i.operation==='UNARY'){
+          this.call('aug_ir_'+i.operation.toLowerCase(),'void',[{type:'ptr',value:this.ptr(i.out)},{type:'ptr',value:this.module.text(i.text!)},...i.args.map(slot=>({type:'ptr',value:this.ptr(slot)}))]);return;
+        }
+        if(['LIST','TUPLE','SET'].includes(i.operation)){
+          this.call('aug_ir_'+i.operation.toLowerCase()+'_new','void',[{type:'ptr',value:this.ptr(i.out)},{type:'ptr',value:this.args(i.args)},{type:'i32',value:String(i.args.length)}]);return;
+        }
+        const services:Record<string,'void'|'i8'|'i64'|'value'>={PRINT:'void',MAP:'value',ITER:'value',MAP_ITER:'value',LIST_APPEND:'void',TUPLE_LENGTH:'i64',TUPLE_GET:'value',STRING_LENGTH:'i64',STRING_BYTES:'value',STRING_SPLIT:'value',MAP_SET:'void',SET_ADD:'void',SET_CONTAINS:'i8',MAP_CONTAINS:'i8',LIST_LENGTH:'i64',SET_LENGTH:'i64',MAP_LENGTH:'i64',LIST_GET:'value',LIST_AT:'value',MAP_GET:'value',MAP_TAKE:'value'};
         const result=services[i.operation];
         if(result){
           const args=i.args.map(slot=>({type:'ptr',value:this.ptr(slot)}));

@@ -28,6 +28,10 @@ static size_t next_collection = 1024;
 static bool collecting = false;
 static AugValue cli_args = {0};
 static bool equal(AugValue left, AugValue right);
+/* Map-only metadata keeps ordinary object allocation sizes unchanged. The
+   first member permits the existing heap, roots and GC to use AugObject. */
+typedef struct { AugObject object; size_t *field_buckets; } AugMapObject;
+static size_t *map_field_buckets(AugObject *object) { return ((AugMapObject *)object)->field_buckets; }
 bool aug_test_failed = false;
 size_t aug_test_assertions = 0;
 
@@ -54,7 +58,7 @@ static AugObject *allocate(int kind, const char *type_name, size_t field_count,
                            const unsigned char *owned_fields,
                            const AugMethodEntry *methods, size_t method_count) {
   if (!collecting && object_count >= next_collection) aug_collect();
-  AugObject *object = calloc(1, sizeof(AugObject));
+  AugObject *object = calloc(1, kind == AUG_MAP_KIND ? sizeof(AugMapObject) : sizeof(AugObject));
   if (!object) fail("out of memory");
   object->kind = kind;
   object->type_name = type_name;
@@ -209,6 +213,18 @@ static size_t bucket_for(AugObject *object, AugValue key) { return bucket_for_ha
 
 static bool grow_table(AugObject *object, size_t stride) {
   size_t entries = object->field_count / stride;
+  if (object->field_count + stride > object->capacity) {
+    size_t capacity = object->capacity ? object->capacity * 2 : 8;
+    AugValue *fields = realloc(object->fields, capacity * sizeof(AugValue));
+    if (!fields) fail("out of memory");
+    object->fields = fields;
+    if (stride == 2) {
+      size_t *positions = realloc(map_field_buckets(object), (capacity / 2) * sizeof(size_t));
+      if (!positions) fail("out of memory");
+      ((AugMapObject *)object)->field_buckets = positions;
+    }
+    object->capacity = capacity;
+  }
   bool rehashed = !object->bucket_count || (entries + 1) * 10 > object->bucket_count * 7;
   if (rehashed) {
     size_t count = object->bucket_count ? object->bucket_count * 2 : 8;
@@ -217,15 +233,11 @@ static bool grow_table(AugObject *object, size_t stride) {
     free(object->buckets);
     object->buckets = buckets;
     object->bucket_count = count;
-    for (size_t i = 0; i < object->field_count; i += stride)
-      object->buckets[bucket_for(object, object->fields[i])] = i + 1;
-  }
-  if (object->field_count + stride > object->capacity) {
-    size_t capacity = object->capacity ? object->capacity * 2 : 8;
-    AugValue *fields = realloc(object->fields, capacity * sizeof(AugValue));
-    if (!fields) fail("out of memory");
-    object->fields = fields;
-    object->capacity = capacity;
+    for (size_t i = 0; i < object->field_count; i += stride) {
+      size_t bucket = bucket_for(object, object->fields[i]);
+      object->buckets[bucket] = i + 1;
+      if (stride == 2) map_field_buckets(object)[i / 2] = bucket;
+    }
   }
   return rehashed;
 }
@@ -251,6 +263,7 @@ void aug_map_set(AugValue map, AugValue key, AugValue value) {
     if (field) { object->fields[field] = value; return; }
   }
   if (grow_table(object, 2)) bucket = bucket_for_hash(object, key, hash);
+  map_field_buckets(object)[object->field_count / 2] = bucket;
   object->buckets[bucket] = object->field_count + 1;
   object->fields[object->field_count++] = key;
   object->fields[object->field_count++] = value;
@@ -264,12 +277,29 @@ AugValue aug_map_get(AugValue map, AugValue key) {
 }
 AugValue aug_map_take(AugValue map, AugValue key) {
   AugObject *object = expect_map(map); if (object->frozen) fail("cannot mutate a frozen Map");
-  if (!object->bucket_count) return aug_null(); size_t field = object->buckets[bucket_for(object, key)];
+  if (!object->bucket_count) return aug_null();
+  size_t bucket = bucket_for(object, key), field = object->buckets[bucket];
   if (!field) return aug_null(); AugValue result = object->fields[field]; size_t first = field - 1;
   memmove(object->fields + first, object->fields + first + 2, (object->field_count - first - 2) * sizeof(AugValue));
   object->field_count -= 2; object->fields[object->field_count] = aug_null(); object->fields[object->field_count + 1] = aug_null();
-  memset(object->buckets, 0, object->bucket_count * sizeof(size_t));
-  for (size_t i = 0; i < object->field_count; i += 2) object->buckets[bucket_for(object, object->fields[i])] = i + 1;
+  object->buckets[bucket] = 0;
+  /* Ordered fields remain dense. Adjust only moved entry offsets, then repair
+     the probe chain after the removed bucket. Neither step rehashes the map. */
+  size_t *positions = map_field_buckets(object);
+  for (size_t i = first / 2 + 1; i <= object->field_count / 2; i++)
+    object->buckets[positions[i]] -= 2;
+  memmove(positions + first / 2, positions + first / 2 + 1,
+          (object->field_count - first) / 2 * sizeof(size_t));
+  size_t mask = object->bucket_count - 1, hole = bucket;
+  for (size_t next = (hole + 1) & mask; object->buckets[next]; next = (next + 1) & mask) {
+    size_t home = (size_t)hash_value(object->fields[object->buckets[next] - 1]) & mask;
+    if (((next - home) & mask) >= ((next - hole) & mask)) {
+      object->buckets[hole] = object->buckets[next];
+      positions[(object->buckets[hole] - 1) / 2] = hole;
+      hole = next;
+    }
+  }
+  object->buckets[hole] = 0;
   return result;
 }
 
@@ -743,6 +773,7 @@ void aug_collect(void) {
       free(object->text);
       free(object->fields);
       free(object->buckets);
+      if (object->kind == AUG_MAP_KIND) free(map_field_buckets(object));
       free(object);
       object_count--;
     }

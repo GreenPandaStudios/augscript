@@ -14,7 +14,7 @@ export default defineConfig({
   cleanUrls: true,
   lastUpdated: true,
   buildEnd(site) {
-    for (const file of ['benchmark-results.json', 'benchmark-baseline.json', 'benchmarks.json'])
+    for (const file of ['benchmark-results.json', 'benchmark-baseline.json', 'benchmarks.json', 'kernel-results.json', 'gym-results.json'])
       copyFileSync(resolve(root, 'docs', file), resolve(site.outDir, file));
   },
   sitemap: { hostname: 'https://GreenPandaStudios.github.io/augscript/' },
@@ -22,7 +22,7 @@ export default defineConfig({
     languages: [{ ...grammar, name: 'aug', aliases: ['augscript'] }],
     config(md) {
       md.set({ html: false });
-      for (const name of ['example-compare', 'example-code', 'example-spec'])
+      for (const name of ['example-compare', 'example-code', 'example-spec', 'benchmark-chart'])
         md.use(container, name, { render: (tokens, index) => `<${tokens[index].nesting === 1 ? 'div' : '/div'}${tokens[index].nesting === 1 ? ` class="aug-${name}"` : ''}>\n` });
       const render = md.renderer.rules.link_open;
       md.renderer.rules.link_open = (tokens, index, options, env, self) => {
@@ -74,6 +74,7 @@ export default defineConfig({
       { text: 'About August', collapsed: true, items: [
         { text: 'Why August exists', link: '/about' }, { text: 'Example projects', link: '/examples/' },
         { text: 'Performance', link: '/performance' }, { text: 'Production readiness', link: '/production-readiness' },
+        { text: 'Safety gyms', link: '/safety-gyms' },
         { text: 'Roadmap to 1.0', link: '/roadmap' }, { text: 'Compatibility', link: '/compatibility' },
         { text: 'Library gaps', link: '/web-library-gaps' }
       ]},

@@ -46,8 +46,10 @@ jobs:
           AUG_LLVM_HOME="$PWD/.aug-build/llvm-tools" AUG_REQUIRE_DWARF=1 AUG_REQUIRE_DEBUGGER=1 node scripts/check-llvm-parity.mjs
           AUG_LLVM_HOME="$PWD/.aug-build/llvm-tools" AUG_SANITIZER_CC="$PWD/.aug-build/llvm-maintainer/bin/clang" node scripts/sanitize-core.mjs --backend llvm
           node scripts/build-llvm-pack.mjs
-          AUG_LLVM_HOME="$PWD/.aug-build/llvm-tools" node scripts/benchmark-suite.mjs --backend llvm --compare-c-backend --iterations 15 --warmup 3 --http-rounds 5 --http-requests 5000 --output .aug-build/llvm-migration-performance.json
+          AUG_LLVM_HOME="$PWD/.aug-build/llvm-tools" node scripts/benchmark-suite.mjs --backend llvm --compare-c-backend --iterations 60 --warmup 3 --http-rounds 5 --http-requests 5000 --output .aug-build/llvm-migration-performance.json
           node scripts/check-llvm-performance.mjs .aug-build/llvm-migration-performance.json
+          AUG_LLVM_HOME="$PWD/.aug-build/llvm-tools" AUG_SANITIZER_CC="$PWD/.aug-build/llvm-maintainer/bin/clang" node scripts/run-gyms.mjs --profile full --vectors 256
+          AUG_LLVM_HOME="$PWD/.aug-build/llvm-tools" node scripts/benchmark-kernels.mjs --iterations 30
       - name: Build and verify Linux compiler pack on Debian 12
         if: runner.os == 'Linux'
         run: |
@@ -60,12 +62,17 @@ jobs:
           docker exec -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools -e AUG_REQUIRE_DWARF=1 -e AUG_REQUIRE_DEBUGGER=1 -e AUG_DWARF_TOOL=/work/.aug-build/llvm-maintainer/bin/llvm-dwarfdump producer node scripts/check-llvm-parity.mjs
           docker exec -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools -e AUG_SANITIZER_CC=/work/.aug-build/llvm-maintainer/bin/clang producer node scripts/sanitize-core.mjs --backend llvm
           docker exec producer node scripts/build-llvm-pack.mjs
-          docker exec -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools producer node scripts/benchmark-suite.mjs --backend llvm --compare-c-backend --iterations 15 --warmup 3 --http-rounds 5 --http-requests 5000 --output /work/.aug-build/llvm-migration-performance.json
+          docker exec -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools producer node scripts/benchmark-suite.mjs --backend llvm --compare-c-backend --iterations 60 --warmup 3 --http-rounds 5 --http-requests 5000 --output /work/.aug-build/llvm-migration-performance.json
           docker exec producer node scripts/check-llvm-performance.mjs .aug-build/llvm-migration-performance.json
+          docker exec -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools -e AUG_SANITIZER_CC=/work/.aug-build/llvm-maintainer/bin/clang producer node scripts/run-gyms.mjs --profile full --vectors 256
+          docker exec -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools producer node scripts/benchmark-kernels.mjs --iterations 30
           mkdir -p .aug-build
           docker cp "producer:/work/.aug-build/aug-llvm-${{ matrix.artifact }}.tar.gz" .aug-build/
           docker cp "producer:/work/.aug-build/compiler-pack-${{ matrix.host }}.json" .aug-build/
           docker cp producer:/work/.aug-build/llvm-migration-performance.json .aug-build/
+          mkdir -p .aug-build/kernels .aug-build/gyms
+          docker cp producer:/work/.aug-build/kernels/results.json .aug-build/kernels/
+          docker cp producer:/work/.aug-build/gyms/results.json .aug-build/gyms/
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: compiler-pack-${{ matrix.host }}
@@ -74,6 +81,8 @@ jobs:
             .aug-build/aug-llvm-${{ matrix.artifact }}.tar.gz
             .aug-build/compiler-pack-${{ matrix.host }}.json
             .aug-build/llvm-migration-performance.json
+            .aug-build/kernels/results.json
+            .aug-build/gyms/results.json
           if-no-files-found: error
   release:
     needs: compiler-packs

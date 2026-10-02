@@ -67,6 +67,21 @@ void aug_ir_operation(AugValue *out,int op,AugValue *a,int count,const char *tex
   }
 }
 void aug_ir_json_decode(AugValue *out,const AugValue *value,const AugSchema *schema){*out=aug_json_decode(*value,schema);}
+void aug_ir_print(const AugValue *value){aug_print(*value);}
+void aug_ir_binary(AugValue *out,const char *operation,const AugValue *left,const AugValue *right){*out=aug_binary(operation,*left,*right);}
+void aug_ir_unary(AugValue *out,const char *operation,const AugValue *value){*out=aug_unary(operation,*value);}
+void aug_ir_list_new(AugValue *out,AugValue *items,int count){*out=aug_list_new(items,(size_t)count);}
+void aug_ir_tuple_new(AugValue *out,AugValue *items,int count){*out=aug_tuple_new(items,(size_t)count);}
+void aug_ir_set_new(AugValue *out,AugValue *items,int count){*out=aug_set_new(items,(size_t)count);}
+void aug_ir_map(AugValue *out){*out=aug_map_new();}
+void aug_ir_iter(AugValue *out,const AugValue *value){*out=aug_iter_snapshot(*value);}
+void aug_ir_map_iter(AugValue *out,const AugValue *value){*out=aug_map_entries_snapshot(*value);}
+void aug_ir_list_append(const AugValue *list,const AugValue *value){aug_list_append(*list,*value);}
+int64_t aug_ir_tuple_length(const AugValue *tuple){return aug_tuple_length(*tuple);}
+void aug_ir_tuple_get(AugValue *out,const AugValue *tuple,const AugValue *index){*out=aug_tuple_get(*tuple,aug_cint(*index));}
+int64_t aug_ir_string_length(const AugValue *value){return aug_string_length(*value);}
+void aug_ir_string_bytes(AugValue *out,const AugValue *value){*out=aug_string_bytes(*value);}
+void aug_ir_string_split(AugValue *out,const AugValue *value,const AugValue *separator){*out=aug_string_split(*value,*separator);}
 void aug_ir_map_set(const AugValue *map,const AugValue *key,const AugValue *value){aug_map_set(*map,*key,*value);}
 void aug_ir_set_add(const AugValue *set,const AugValue *value){aug_set_add(*set,*value);}
 uint8_t aug_ir_set_contains(const AugValue *set,const AugValue *value){return aug_set_contains(*set,*value)?1:0;}

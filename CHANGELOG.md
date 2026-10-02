@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Add reproducible safety gyms with generated integer/floating arithmetic, collection, bounds, control-flow, ownership and task cases; independent expected results; rejected contracts; valid behavioral mutants; replayable sources and structured reports. CI qualifies all three LLVM hosts and retains the evidence.
+- Expand C comparisons to floating-point loops, labeled calls, lists, strings, map deletion, checked failures, records and tasks. Publish source/spec examples, raw samples and scoped charts. Use fresh measurement processes and more samples for the unchanged migration limits.
+- Emit strict native floating arithmetic while preserving actual integer tags in widened float slots, wrapping integer operations, signed-zero errors and IEEE comparisons. Avoid retaining unrelated runtime services in core-only executables.
+- Preserve ordered map deletion without rebuilding every surviving key's hash-table entry. Check wrapped collision chains, missing keys, reinsertion order and complete removal.
+
 - Select LLVM for ordinary builds, runs and same-file tests on the qualified macOS ARM64 and GNU/Linux x86-64/ARM64 hosts. Obtain verified compiler/runtime artifacts automatically; keep C available as an explicit migration reference. Container deployments copy the executable with its neighboring libraries and notices.
 - Use the C-compatible DWARF type reader for tagged August storage so supported LLDB versions can display locals. Source files, locations and producer remain August; native debugger expressions do not evaluate August syntax.
 - Bind GNU runtime internal function calls directly while retaining shared data symbols and external allocator hooks. Recheck startup, collection and HTTP measurements against the frozen migration limits.
