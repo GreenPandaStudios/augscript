@@ -78,12 +78,12 @@ libraries remain replaceable dynamic files, with source archives, August adapter
 sources, build recipes and notices in the deployment metadata. Maintainer builds
 target macOS 14 and reject binaries with a higher deployment requirement. The
 macOS 14 consumer gate passed for the expanded pack in
-[CI run 36938094736](https://github.com/GreenPandaStudios/augscript/actions/runs/36938094736),
-on commit `e72a8a2`. Later compiler candidates must pass that gate again.
-That run disabled compiler, SDK and Git paths. The next qualification also
-removes Xcode and Command Line Tools from the disposable GitHub-hosted consumer
-runner before installation, so an installed SDK cannot satisfy an accidental
-toolchain dependency. This removal is confined to that CI job.
+[CI run 36942469546](https://github.com/GreenPandaStudios/augscript/actions/runs/36942469546),
+on commit `253bb1b`. That runner physically removed Xcode and Command Line Tools
+before installing the CLI. All four public library downloads, frozen/offline
+runs, relocated deployments, real-resource cleanup checks, task calls and
+JSON/crypto/HTTP checks passed. Later compiler candidates must pass that gate
+again. Tool removal is confined to the disposable GitHub-hosted job.
 
 Execution IR now records checked source types, parameter labels, rooted cells and
 source locations. A structural verifier checks frame bounds, control-flow targets,
@@ -128,6 +128,33 @@ profiles and GPU support follow the qualified first profile as specified in the
 architecture. Their semantics must not be implied by the initial resource ABI.
 
 ## Evidence
+
+GNU/Linux lowering now supports x86-64 and ARM64 on Debian/Ubuntu with glibc
+2.36 or later. An independently authored process-entry object calls the public
+libc initialization entry. LLD links against the host's runtime libc and loader;
+application compilation requires no CRT development objects, headers or native
+compiler. ELF libraries load relative to the executable. LLVM's own C++/ICU/XZ
+dependencies stay in its tool directory and are not application dependencies.
+
+Local Debian 12 ARM64 qualification passed 247 LLVM regression cases; three
+macOS DWARF inspection cases were skipped. Two native ABI boundary cases also
+passed. An installed CLI ran CPU LibTorch, SQLite, zlib and Rust BLAKE3 using
+verified local candidates, including their same-file tests, frozen/offline locks,
+relocation, owned-resource cleanup and task calls. The independent native clients
+ran 1,000 cleanup cycles per library. These checks use local native archives and
+do not qualify public Linux downloads or x86-64 execution. The per-architecture
+candidate workflows and release consumer gates provide those remaining checks.
+
+The ARM64 LibTorch CPU archive contains OpenBLAS 0.3.34 and Arm Compute 53.2.0
+alongside LibTorch 2.14.1. The build checks reported binary versions and retains
+their exact source archives and license files. It rejects CUDA, NVPL and Python
+libraries from the deployment closure. The GCC runtime dependencies are pinned
+Debian packages with corresponding sources, patches and license texts. Consumers
+never execute these maintainer recipes. The upstream binary's exhaustive static
+component inventory remains a documented limit.
+
+Physical DGX Spark qualification awaits a reachable machine. Container results
+are ARM64 evidence; they do not establish that August has run on DGX hardware.
 
 The metadata suite exercises package loading and target selection. The
 [research note](research/native-interop-llvm.md) records a macOS ARM64 linker

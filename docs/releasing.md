@@ -44,8 +44,11 @@ The manually published Marketplace `0.19.0` contains files that differ from the 
 ## npm publication
 
 The LLVM preview release builds official pinned LLVM tools and the August runtime
-before packaging. It records the exact compiler archive hash in the CLI and
-bundled editor compiler, and includes that archive in the GitHub release.
+on macOS ARM64, Linux x86-64 and Linux ARM64 before packaging. Linux producers
+use the pinned Debian 12 maintainer image. `scripts/merge-compiler-packs.mjs`
+rejects missing, duplicate, stale or modified platform inputs, then records all
+exact compiler archive hashes in the CLI and bundled editor compiler. The GitHub
+release includes every selected archive.
 Runtime compilation remains a maintainer operation. Application installation
 downloads the reviewed pack and does not build LLVM or invoke Clang. CI runs the
 LLVM execution tests with its prepared toolchain; unsupported platforms retain
@@ -112,7 +115,29 @@ release URLs, then runs LLVM programs through URL imports and named aliases.
 Git, native compilers, and SDK paths are unavailable to those CLI processes.
 Frozen offline runs must preserve the locks and produce the same results.
 
-The CI consumer job repeats this check on macOS 14 ARM64. A local result on a
+The release consumer jobs repeat this check on macOS 14 ARM64 and each Linux
+architecture. The macOS runner removes Xcode and Command Line Tools. Linux uses
+the pinned Node/Debian slim image with no compiler, Git or development headers.
+A draft is created only after all consumer jobs pass. A local result on a
 newer OS does not qualify the minimum OS. After release publication, omit
 `--local-compiler` to verify the compiler download too. Keep the resulting JSON
 report with release evidence; never commit artifact caches or generated binaries.
+
+Before library artifacts are public, contributors can pass
+`--candidate-libraries DIRECTORY --local-compiler` to the qualification script.
+`DIRECTORY` contains the four `aug-*` repository folders and their measured native
+archives. This mode installs the same CLI archives and checks each native file
+through the installed verifier, but reports local transport and does not claim
+repository URL/download acceptance. Public release gates omit this option.
+On a small test VM, `--discard-builds` removes verified deployment copies after
+their checks while keeping the source, locks, compiler outputs and JSON evidence.
+
+Each library candidate records the build commit and a complete input fingerprint:
+August source, the ABI descriptor, headers, native code, dependency locks and
+build recipes. Before adding release artifact pins, run
+`node native/verify-candidate.mjs PATH_TO_CANDIDATE_JSON` in the library repository.
+Run it again after updating the manifest. Only artifact metadata may change;
+changed binding or build inputs require a new candidate. Publish the exact tested
+archives without rebuilding them. `native/library-qualification.json` records
+the reviewed package tag, source commit and archive hash for each consumer host.
+A platform without reviewed pins fails qualification before any library download.

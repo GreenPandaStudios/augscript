@@ -7,7 +7,7 @@ import {release} from 'node:os';
 export const nativeProfile = 'aug-native-abi-1' as const;
 export interface NativeTarget {
   triple: string; os: 'macos'|'linux'|'windows'; arch: 'arm64'|'x64';
-  minimumOS?: string; cpuBaseline: string; libc: string;
+  minimumOS?: string; minimumLibc?: string; cpuBaseline: string; libc: string;
   cxxRuntime?: string; cxxABI?: string; features?: string[];
 }
 export interface NativeArtifact {
@@ -88,14 +88,16 @@ export function validateNativeManifest(value:unknown):NativeManifest {
     fields(artifact,['id','target','url','sha256','maximumDownloadBytes','maximumUnpackedBytes','link','runtime','components','fileManifest','provenance','notices'],'artifact');
     string(artifact.id,'artifact.id');if(ids.has(artifact.id))fail('Duplicate artifact id '+artifact.id);ids.add(artifact.id);
     const target=object(artifact.target,'artifact.target');
-    fields(target,['triple','os','arch','minimumOS','cpuBaseline','libc','cxxRuntime','cxxABI','features'],'artifact.target');
+    fields(target,['triple','os','arch','minimumOS','minimumLibc','cpuBaseline','libc','cxxRuntime','cxxABI','features'],'artifact.target');
     const expected=nativeTarget(string(target.triple,'target.triple'));
     if(expected.os!==target.os||expected.arch!==target.arch||expected.libc!==target.libc)fail('Target triple does not match its OS, architecture, or libc');
     string(target.cpuBaseline,'target.cpuBaseline');
     if(target.os==='macos'&&(!/^\d+\.\d+(?:\.\d+)?$/.test(target.minimumOS??'')))fail('macOS artifacts declare minimumOS');
+    if(target.os==='linux'&&target.libc==='glibc'&&!/^\d+\.\d+(?:\.\d+)?$/.test(target.minimumLibc??''))fail('GNU/Linux artifacts declare minimumLibc');
+    if(target.minimumLibc!==undefined&&(target.os!=='linux'||target.libc!=='glibc'))fail('minimumLibc belongs to GNU/Linux artifacts');
     for(const key of ['cxxRuntime','cxxABI'])if(target[key]!==undefined)string(target[key],key);
     if(target.features!==undefined)strings(target.features,'target.features');
-    const selection=JSON.stringify([target.triple,target.minimumOS??'',target.features??[]]);
+    const selection=JSON.stringify([target.triple,target.minimumOS??'',target.minimumLibc??'',target.features??[]]);
     if(selections.has(selection))fail('Ambiguous artifact selection for '+target.triple);selections.add(selection);
     https(artifact.url,'artifact.url');hash(artifact.sha256,'artifact.sha256');
     positive(artifact.maximumDownloadBytes,'maximumDownloadBytes');positive(artifact.maximumUnpackedBytes,'maximumUnpackedBytes');
@@ -191,7 +193,13 @@ export function nativeTarget(triple?:string,minimumOS?:string):NativeTarget {
 export function nativeHostTarget():NativeTarget {
   // Darwin 23/24 are macOS 14/15. Apple's 2025 numbering change maps Darwin 25 to macOS 26.
   const darwin=Number(release().split('.')[0]),macos=darwin>=25?darwin+1:darwin-9;
-  return nativeTarget(undefined,process.platform==='darwin'?`${macos}.0`:undefined);
+  const target=nativeTarget(undefined,process.platform==='darwin'?`${macos}.0`:undefined);
+  if(process.platform==='linux'){
+    const header=(process.report.getReport() as {header?:{glibcVersionRuntime?:string}})?.header;
+    if(header?.glibcVersionRuntime)target.minimumLibc=header.glibcVersionRuntime;
+    else {target.libc='musl';target.triple=target.triple.replace(/-gnu$/,'-musl');}
+  }
+  return target;
 }
 const versionAtLeast=(actual:string,required:string):boolean=>{
   const a=actual.split('.').map(Number),b=required.split('.').map(Number);
@@ -200,11 +208,15 @@ const versionAtLeast=(actual:string,required:string):boolean=>{
 
 export function selectNativeArtifact(artifacts:NativeArtifact[],target:NativeTarget):NativeArtifact {
   const matching=artifacts.filter(a=>a.target.triple===target.triple&&a.target.libc===target.libc&&
-    a.target.cpuBaseline===target.cpuBaseline&&(!a.target.cxxRuntime||a.target.os==='macos'&&a.target.cxxRuntime==='system-libc++'&&a.target.cxxABI==='apple-libc++')&&
+    a.target.cpuBaseline===target.cpuBaseline&&(!a.target.cxxRuntime||
+      a.target.os==='macos'&&a.target.cxxRuntime==='system-libc++'&&a.target.cxxABI==='apple-libc++'||
+      a.target.os==='linux'&&a.target.cxxRuntime==='bundled-libstdc++'&&a.target.cxxABI==='itanium-cxx11')&&
+    (!a.target.minimumLibc||!!target.minimumLibc&&versionAtLeast(target.minimumLibc,a.target.minimumLibc))&&
     (!a.target.minimumOS||!!target.minimumOS&&versionAtLeast(target.minimumOS,a.target.minimumOS)));
   if(matching.length!==1){
-    const floors=artifacts.filter(a=>a.target.triple===target.triple).map(a=>a.target.minimumOS).filter(Boolean);
-    throw new Error('NATIVE_TARGET: '+(matching.length?'Ambiguous prebuilt artifacts':floors.length?`This package requires macOS ${floors.join(' or ')}+; requested ${target.minimumOS}.`:'No compatible prebuilt artifact for '+target.triple)+` Supported artifacts: ${artifacts.map(a=>a.id+' ('+a.target.triple+')').join(', ')}. No source build was started.`);
+    const floors=artifacts.filter(a=>a.target.triple===target.triple).map(a=>a.target.minimumOS??a.target.minimumLibc).filter(Boolean);
+    const runtime=target.os==='linux'?'glibc':'macOS',actual=target.os==='linux'?target.minimumLibc:target.minimumOS;
+    throw new Error('NATIVE_TARGET: '+(matching.length?'Ambiguous prebuilt artifacts':floors.length?`This package requires ${runtime} ${floors.join(' or ')}+ and its declared C++ ABI; requested ${actual??'unknown'}.`:'No compatible prebuilt artifact for '+target.triple)+` Supported artifacts: ${artifacts.map(a=>a.id+' ('+a.target.triple+')').join(', ')}. No source build was started.`);
   }
   return matching[0];
 }

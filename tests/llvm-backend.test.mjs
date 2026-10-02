@@ -27,7 +27,7 @@ function runProgram(files, expected, {traceDrops=false,checkStderr,release=false
   } finally {rmSync(root,{recursive:true,force:true});}
 }
 
-const enabled=process.platform==='darwin'&&process.arch==='arm64'&&!!process.env.AUG_LLVM_HOME;
+const enabled=!!process.env.AUG_LLVM_HOME&&(process.platform==='darwin'&&process.arch==='arm64'||process.platform==='linux'&&['x64','arm64'].includes(process.arch));
 const dwarfTool='/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/llvm-dwarfdump';
 for(const release of [false,true])test('LLVM produces source DWARF and a matching dSYM '+(release?'optimized':'development'),{skip:!enabled||!existsSync(dwarfTool)},()=>{
   const root=realpathSync(mkdtempSync(join(tmpdir(),'aug-llvm-debug-')));

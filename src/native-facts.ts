@@ -55,7 +55,7 @@ export function nativeDependencies(checked:CheckedProject,method:MethodDecl):Nat
 
 export function nativeDescription(fact:NativeFunctionFact|NativeResourceFact,contractLink?:string):string {
   const quote=(text:string)=>'`'+text+'`';
-  const targets=fact.supportedTargets.map(target=>target.os+' '+target.arch+(target.minimumOS?' '+target.minimumOS+'+':'')).join(', ');
+  const targets=fact.supportedTargets.map(target=>target.os+' '+target.arch+(target.minimumOS?' '+target.minimumOS+'+':'')+(target.minimumLibc?' glibc '+target.minimumLibc+'+':'')+(target.cxxABI?' '+target.cxxABI:'')).join(', ');
   const origin=`Native implementation: ${quote(fact.provider)}, ${quote(fact.upstream.version)}. Supported targets: ${targets}. Binding contract: ${contractLink??quote(fact.descriptor)} (SHA-256 ${quote(fact.descriptorSha256)}).`;
   if(fact.kind==='resource')return `${origin} An owned value releases its opaque handle through ${quote(fact.contract.release)} when its scope ends, including error and return paths.`;
   const contract=fact.contract;

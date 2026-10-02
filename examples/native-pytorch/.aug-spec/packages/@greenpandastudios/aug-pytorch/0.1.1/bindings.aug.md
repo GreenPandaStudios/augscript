@@ -5,4 +5,4 @@
 <a id="symbol-Tensor"></a>
 ## `Tensor` · native resource · [source](bindings.aug#L3)
 
-Native implementation: `@greenpandastudios/aug-pytorch@0.1.1`, `2.14.1`. Supported targets: macos arm64 14.0+. Binding contract: [`native.abi.json`](native.abi.json) (SHA-256 `f07b8cab89ad7cfe368edcd9daf87ecc810adb6a2eed1f446d7b71fb664e91f5`). An owned value releases its opaque handle through `aug_torch_tensor_release_v1` when its scope ends, including error and return paths.
+Native implementation: `@greenpandastudios/aug-pytorch@0.1.1`, `2.14.1`. Supported targets: macos arm64 14.0+ apple-libc++. Binding contract: [`native.abi.json`](native.abi.json) (SHA-256 `f07b8cab89ad7cfe368edcd9daf87ecc810adb6a2eed1f446d7b71fb664e91f5`). An owned value releases its opaque handle through `aug_torch_tensor_release_v1` when its scope ends, including error and return paths.

@@ -8,7 +8,65 @@ concurrency:
   group: release-${{ github.ref }}
   cancel-in-progress: false
 jobs:
+  compiler-packs:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15
+            host: darwin-arm64
+            artifact: macos-arm64
+          - runner: ubuntu-24.04
+            host: linux-x64
+            artifact: linux-x64
+          - runner: ubuntu-24.04-arm
+            host: linux-arm64
+            artifact: linux-arm64
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 60
+    env:
+      MACOSX_DEPLOYMENT_TARGET: '14.0'
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        if: runner.os == 'macOS'
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Build and verify macOS compiler pack
+        if: runner.os == 'macOS'
+        run: |
+          npm ci
+          node scripts/bootstrap-native.mjs
+          node scripts/prepare-llvm-tools.mjs
+          node scripts/build-runtime-pack.mjs
+          AUG_LLVM_HOME="$PWD/.aug-build/llvm-tools" node scripts/check-llvm-parity.mjs
+          node scripts/build-llvm-pack.mjs
+      - name: Build and verify Linux compiler pack on Debian 12
+        if: runner.os == 'Linux'
+        run: |
+          docker build -f docker/Dockerfile.native-maintainer -t aug-llvm-maintainer .
+          docker run -d --name producer aug-llvm-maintainer sleep infinity
+          docker exec producer node scripts/bootstrap-native.mjs
+          docker exec producer node scripts/prepare-llvm-tools.mjs
+          docker exec producer node scripts/build-runtime-pack.mjs
+          docker exec -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools producer node scripts/check-llvm-parity.mjs
+          docker exec producer node scripts/build-llvm-pack.mjs
+          mkdir -p .aug-build
+          docker cp "producer:/work/.aug-build/aug-llvm-${{ matrix.artifact }}.tar.gz" .aug-build/
+          docker cp "producer:/work/.aug-build/compiler-pack-${{ matrix.host }}.json" .aug-build/
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: compiler-pack-${{ matrix.host }}
+          include-hidden-files: true
+          path: |
+            .aug-build/aug-llvm-${{ matrix.artifact }}.tar.gz
+            .aug-build/compiler-pack-${{ matrix.host }}.json
+          if-no-files-found: error
   release:
+    needs: compiler-packs
     runs-on: macos-15
     timeout-minutes: 60
     env:
@@ -33,8 +91,12 @@ jobs:
       - run: node scripts/bootstrap-native.mjs
       - run: node scripts/prepare-llvm-tools.mjs
       - run: node scripts/build-runtime-pack.mjs
-      - name: Build compiler pack and pin the exact archive in release packages
-        run: node scripts/build-llvm-pack.mjs
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          pattern: compiler-pack-*
+          path: .aug-build/release-packs
+      - name: Pin every qualified platform before packing npm and VSIX
+        run: node scripts/merge-compiler-packs.mjs .aug-build/release-packs
       - run: npm run check
       - run: npm test
       - name: LLVM language, runtime and real application parity
@@ -51,7 +113,90 @@ jobs:
         run: |
           node scripts/publish-release.mjs dist/release --verify-only
           node scripts/publish-extension.mjs dist/release --verify-only
-      - name: Upload draft prerelease
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: reviewed-release
+          path: dist/release/*
+          if-no-files-found: error
+  consumers:
+    needs: release
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-14
+            host: darwin-arm64
+            artifact: macos-arm64
+          - runner: ubuntu-24.04
+            host: linux-x64
+            artifact: linux-x64
+          - runner: ubuntu-24.04-arm
+            host: linux-arm64
+            artifact: linux-arm64
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    env:
+      AUG_GITHUB_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        if: runner.os == 'macOS'
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          name: reviewed-release
+          path: dist/release
+      - name: Select the exact release compiler archive
+        run: |
+          mkdir -p .aug-build
+          cp "dist/release/aug-llvm-${{ matrix.artifact }}.tar.gz" .aug-build/
+      - name: Qualify macOS 14 with developer tools physically absent
+        if: runner.os == 'macOS'
+        run: |
+          test "$GITHUB_ACTIONS" = true
+          test "$RUNNER_ENVIRONMENT" = github-hosted
+          sudo rm -rf /Applications/Xcode*.app /Library/Developer/CommandLineTools
+          ! xcrun --show-sdk-path
+          node scripts/qualify-native-consumers.mjs --local-compiler
+      - name: Qualify Linux in a clean runtime image
+        if: runner.os == 'Linux'
+        run: |
+          docker build -f docker/Dockerfile.native-consumer -t aug-llvm-consumer .
+          docker run -d --name consumer aug-llvm-consumer sleep infinity
+          docker exec consumer sh -c '! command -v clang; ! command -v gcc; ! command -v git; test ! -d /usr/include'
+          docker exec consumer node -e 'for(const name of ["scripts","native","dist","examples",".aug-build"])require("node:fs").mkdirSync("/consumer/"+name,{recursive:true})'
+          docker cp scripts/qualify-native-consumers.mjs consumer:/consumer/scripts/
+          docker cp scripts/native-qualification-pins.mjs consumer:/consumer/scripts/
+          docker cp native/library-qualification.json consumer:/consumer/native/
+          docker cp dist/release consumer:/consumer/dist/
+          docker cp examples/. consumer:/consumer/examples/
+          docker cp ".aug-build/aug-llvm-${{ matrix.artifact }}.tar.gz" consumer:/consumer/.aug-build/
+          docker exec -e AUG_GITHUB_TOKEN consumer node scripts/qualify-native-consumers.mjs --local-compiler
+          docker cp consumer:/consumer/.aug-build/native-consumer-qualification.json .aug-build/
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: release-consumer-${{ matrix.host }}
+          include-hidden-files: true
+          path: .aug-build/native-consumer-qualification.json
+          if-no-files-found: error
+  draft:
+    needs: [release, consumers]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          name: reviewed-release
+          path: dist/release
+      - name: Upload draft prerelease after all consumer gates
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh release create "$GITHUB_REF_NAME" dist/release/* --draft --prerelease --verify-tag --title "August $GITHUB_REF_NAME" --notes-file CHANGELOG.md

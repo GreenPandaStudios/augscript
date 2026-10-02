@@ -67,6 +67,17 @@ test('selects only a compatible prebuilt target and reports the OS requirement',
   assert.throws(()=>selectNativeArtifact([artifact],nativeTarget('x86_64-unknown-linux-gnu')),/No compatible prebuilt artifact/);
 });
 
+test('GNU native artifacts require the declared libc floor and a supported C++ ABI',()=>fixture((root,manifest,save)=>{
+  const linux={...structuredClone(artifact),id:'linux-x64',target:{...nativeTarget('x86_64-unknown-linux-gnu'),minimumLibc:'2.36',cxxRuntime:'bundled-libstdc++',cxxABI:'itanium-cxx11'}};
+  manifest.native.artifacts=[linux];save();readPackage(root);
+  const host={...nativeTarget('x86_64-unknown-linux-gnu'),minimumLibc:'2.36'};
+  assert.equal(selectNativeArtifact([linux],host).id,'linux-x64');
+  assert.throws(()=>selectNativeArtifact([linux],{...host,minimumLibc:'2.35'}),/requires glibc 2.36/);
+  assert.throws(()=>selectNativeArtifact([linux],nativeTarget('x86_64-unknown-linux-musl')),/No compatible prebuilt/);
+  assert.throws(()=>selectNativeArtifact([{...linux,target:{...linux.target,cxxABI:'rust-abi'}}],host),/declared C\+\+ ABI/);
+  delete linux.target.minimumLibc;save();assert.throws(()=>readPackage(root),/declare minimumLibc/);
+}));
+
 test('rejects ambiguous artifacts, traversal, unbounded downloads, and executable install recipes',()=>fixture((root,manifest,save)=>{
   const check=(mutate,pattern)=>{const original=structuredClone(manifest.native); mutate();save();assert.throws(()=>readPackage(root),pattern);manifest.native=original;};
   check(()=>manifest.native.artifacts.push(structuredClone(artifact)),/duplicate|ambiguous/i);

@@ -1,0 +1,11 @@
+{
+  "format": 1,
+  "targets": {
+    "darwin-arm64": {
+      "pytorch": {"version":"0.1.1","commit":"d4d137a9ad03a5c234d2c6e143321e62051be7a4","sha256":"653ec32caa109930ede229ffa5e483018b5e41bea8e95d8115aee3c6df1c7f80"},
+      "sqlite": {"version":"0.1.2","commit":"9065377d9adf991be89952adaea5217688169b9e","sha256":"c79b70da65fefd610d9741d8f989d2909dacbb4a34238eb1a20de9494c422e03"},
+      "zlib": {"version":"0.1.1","commit":"e503658a401f354926f1c064c8cd9c879f4f856a","sha256":"95a3bd643d09d98605bc25eccc7f53b06fc8e79f305db67012995111110e5389"},
+      "blake3": {"version":"0.1.1","commit":"4b741b97e04f7f507d9b7a8c3a4b05dde92978ce","sha256":"0b754540be9cc091e8ccd0d64fae9960f6ac72b89b84bfaaa016eb36237e07a4"}
+    }
+  }
+}

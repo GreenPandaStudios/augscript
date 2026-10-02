@@ -8,21 +8,27 @@ import {verifyLLVMCompilerPins} from './release-publication.mjs';
 const root = resolve(import.meta.dirname, '..');
 const version = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).version;
 const output = join(root, 'dist/release');
-const compilerPack=join(root,'.aug-build/aug-llvm-macos-arm64.tar.gz');
-if(process.env.AUG_RELEASE_NATIVE_REQUIRED==='1'&&!existsSync(compilerPack))throw new Error('Missing LLVM compiler pack; prepare the pinned tools and runtime before release packaging.');
-if(existsSync(compilerPack)){
-  const manifest=JSON.parse(readFileSync(join(root,'native/compiler-packs.json'),'utf8'));
-  const pack=manifest.packs.find(pack=>pack.host==='darwin-arm64');
-  if(manifest.compiler!==version||!pack||createHash('sha256').update(readFileSync(compilerPack)).digest('hex')!==pack.archive.sha256)throw new Error('LLVM release asset differs from the compiler-owned artifact pin');
-  copyFileSync(compilerPack,join(output,'aug-llvm-macos-arm64.tar.gz'));
+const manifest=JSON.parse(readFileSync(join(root,'native/compiler-packs.json'),'utf8'));
+let compilerPacks=0;
+for(const pack of manifest.packs){
+  const filename=new URL(pack.archive.url).pathname.split('/').at(-1);
+  if(!/^aug-llvm-(macos-arm64|linux-x64|linux-arm64)\.tar\.gz$/.test(filename))throw new Error('Invalid compiler release asset name');
+  const compilerPack=join(root,'.aug-build',filename);
+  if(!existsSync(compilerPack)){
+    if(process.env.AUG_RELEASE_NATIVE_REQUIRED==='1')throw new Error('Missing LLVM compiler pack: '+filename);
+    continue;
+  }
+  if(manifest.compiler!==version||createHash('sha256').update(readFileSync(compilerPack)).digest('hex')!==pack.archive.sha256)throw new Error('LLVM release asset differs from the compiler-owned artifact pin: '+filename);
+  copyFileSync(compilerPack,join(output,filename));compilerPacks++;
 }
+if(process.env.AUG_RELEASE_NATIVE_REQUIRED==='1'&&!compilerPacks)throw new Error('Missing compiler packs');
 for (const path of ['dist/release/packages.json', `vscode/augscript-${version}.vsix`, 'docs/.vitepress/dist/index.html'])
   if (!existsSync(join(root, path))) throw new Error(`Missing ${path}; build all packages, extension and docs first.`);
 copyFileSync(join(root, `vscode/augscript-${version}.vsix`), join(output, `augscript-${version}.vsix`));
 // Publishing a pack with one pin and a CLI/editor with another would make
 // every cold LLVM installation fail. Check the shipped manifests, not just
 // the contributor checkout used to assemble this release.
-if(existsSync(compilerPack)){
+if(compilerPacks){
   const expected=readFileSync(join(root,'native/compiler-packs.json'),'utf8');
   verifyLLVMCompilerPins(output,expected);
 }

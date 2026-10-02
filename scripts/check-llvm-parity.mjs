@@ -2,9 +2,10 @@
 // Migration gate: run the existing source/runtime expectations through LLVM.
 import {spawnSync} from 'node:child_process';
 import {resolve} from 'node:path';
+import {llvmPlatform} from '../src/llvm-platform.ts';
 const root=resolve(import.meta.dirname,'..');
-if(process.platform!=='darwin'||process.arch!=='arm64'||!process.env.AUG_LLVM_HOME)
-  throw new Error('LLVM parity requires the qualified macOS ARM64 maintainer tool pack in AUG_LLVM_HOME');
+llvmPlatform();
+if(!process.env.AUG_LLVM_HOME)throw new Error('LLVM parity requires a matching maintainer tool pack in AUG_LLVM_HOME');
 const suites=[
   'llvm-ir','llvm-backend','approved-design','compiler','language-conformance','language-evolution',
   'robustness','runtime-optimization','oidc-login','documentation','concurrency','interceptors',

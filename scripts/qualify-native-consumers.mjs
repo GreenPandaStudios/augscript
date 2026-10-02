@@ -4,14 +4,20 @@
    transport; library downloads always use their public release URLs. */
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
-import {cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync} from 'node:fs';
+import {cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync} from 'node:fs';
 import {join, resolve} from 'node:path';
 import {release as osRelease} from 'node:os';
 import {spawnSync} from 'node:child_process';
 import {pathToFileURL} from 'node:url';
+import {nativeQualificationPins} from './native-qualification-pins.mjs';
 
 const root=resolve(import.meta.dirname,'..');
 const localCompiler=process.argv.includes('--local-compiler');
+const discardBuilds=process.argv.includes('--discard-builds');
+const retireDeployment=project=>{if(discardBuilds)for(const path of ['lib','share'])rmSync(join(project,'.aug-build',path),{recursive:true,force:true});};
+const candidateArgument=process.argv.indexOf('--candidate-libraries');
+const candidateRoot=candidateArgument<0?undefined:resolve(process.argv[candidateArgument+1]??'');
+assert.ok(!candidateRoot||localCompiler,'Local library candidates require --local-compiler; they are not public-download qualification.');
 const release=join(root,'dist/release');
 const packages=JSON.parse(readFileSync(join(release,'packages.json')));
 const cliPackage=packages.find(p=>p.directory==='cli');
@@ -38,6 +44,8 @@ for(const key of ['AUG_GIT','AUG_LLVM_HOME','AUG_RUNTIME_PACK','AUG_NATIVE_HOME'
 const aug=(...args)=>run(process.execPath,[cli,...args],{env});
 assert.equal(aug('--version').trim(),cliPackage.version);
 const tools=JSON.parse(readFileSync(join(cliRoot,'native/compiler-packs.json')));
+const compilerPack=tools.packs.find(pack=>pack.host===process.platform+'-'+process.arch);
+assert.ok(compilerPack,'No compiler pack exists for this qualification host.');
 if(localCompiler){
   // Populate the fresh cache using the installed verifier. No compiler override
   // is available to the child CLI, which must validate the pinned archive.
@@ -46,8 +54,8 @@ if(localCompiler){
   const originalHome=process.env.AUG_LLVM_HOME,originalRuntime=process.env.AUG_RUNTIME_PACK;
   process.env.AUG_NATIVE_ARTIFACT_CACHE=env.AUG_NATIVE_ARTIFACT_CACHE;
   delete process.env.AUG_LLVM_HOME;delete process.env.AUG_RUNTIME_PACK;
-  globalThis.fetch=async(input,options)=>String(input)===tools.packs[0].archive.url
-    ?new Response(readFileSync(join(root,'.aug-build/aug-llvm-macos-arm64.tar.gz'))):originalFetch(input,options);
+  globalThis.fetch=async(input,options)=>String(input)===compilerPack.archive.url
+    ?new Response(readFileSync(join(root,'.aug-build',new URL(compilerPack.archive.url).pathname.split('/').at(-1)))):originalFetch(input,options);
   try{await installed.prepareLLVMCompiler();}
   finally{
     globalThis.fetch=originalFetch;
@@ -57,7 +65,7 @@ if(localCompiler){
   }
 }
 const cases=[
-  {name:'pytorch',commit:'d4d137a9ad03a5c234d2c6e143321e62051be7a4',sha256:'653ec32caa109930ede229ffa5e483018b5e41bea8e95d8115aee3c6df1c7f80',expected:'5\n7\n9\n21\n',source:`import Tensor and TensorError and tensor and add and sum and values from REPOSITORY
+  {name:'pytorch',expected:'5\n7\n9\n21\n',source:`import Tensor and TensorError and tensor and add and sum and values from REPOSITORY
 try:
     own Tensor left = tensor(values=[1.0, 2.0, 3.0])
     own Tensor right = tensor(values=[4.0, 5.0, 6.0])
@@ -69,7 +77,7 @@ try:
 catch TensorError error:
     print(value=error.message)
 `},
-  {name:'sqlite',version:'0.1.2',commit:'9065377d9adf991be89952adaea5217688169b9e',sha256:'c79b70da65fefd610d9741d8f989d2909dacbb4a34238eb1a20de9494c422e03',expected:'August\n',source:`import Database and SqliteError and openMemory and execute and queryScalar from REPOSITORY
+  {name:'sqlite',expected:'August\n',source:`import Database and SqliteError and openMemory and execute and queryScalar from REPOSITORY
 try:
     own Database database = openMemory()
     borrow database:
@@ -79,7 +87,7 @@ try:
 catch SqliteError error:
     print(value=error.message)
 `},
-  {name:'zlib',commit:'e503658a401f354926f1c064c8cd9c879f4f856a',sha256:'95a3bd643d09d98605bc25eccc7f53b06fc8e79f305db67012995111110e5389',expected:'The world runs on language\n',source:`import CompressionError and compress and decompress from REPOSITORY
+  {name:'zlib',expected:'The world runs on language\n',source:`import CompressionError and compress and decompress from REPOSITORY
 try:
     Bytes input = "The world runs on language".bytes()
     Bytes compressed = compress(input)
@@ -90,7 +98,7 @@ catch CompressionError error:
 catch ConversionError error:
     print(value="Invalid UTF-8")
 `},
-  {name:'blake3',commit:'4b741b97e04f7f507d9b7a8c3a4b05dde92978ce',sha256:'0b754540be9cc091e8ccd0d64fae9960f6ac72b89b84bfaaa016eb36237e07a4',expected:'6437b3ac38465133ffb63b75273a8db548c558465d79db03fd359c6cd5bd9d85\n',source:`import HashError and hash from REPOSITORY
+  {name:'blake3',expected:'6437b3ac38465133ffb63b75273a8db548c558465d79db03fd359c6cd5bd9d85\n',source:`import HashError and hash from REPOSITORY
 try:
     Bytes input = "abc".bytes()
     print(value=hash(input))
@@ -98,17 +106,46 @@ catch HashError error:
     print(value=error.message)
 `}
 ];
+if(!candidateRoot){
+  const pins=nativeQualificationPins(join(root,'native/library-qualification.json'),process.platform+'-'+process.arch);
+  for(const fixture of cases)Object.assign(fixture,pins[fixture.name]);
+}
+if(candidateRoot){
+  const installed=await import(pathToFileURL(join(cliRoot,'src/native-artifacts.js')));
+  const originalFetch=globalThis.fetch;
+  for(const fixture of cases){
+    fixture.sourceDirectory=join(candidateRoot,'aug-'+fixture.name);
+    const manifest=JSON.parse(readFileSync(join(fixture.sourceDirectory,'aug-package.json')));
+    const artifact=manifest.native.artifacts.find(artifact=>artifact.target.os===(process.platform==='darwin'?'macos':process.platform)&&artifact.target.arch===process.arch);
+    assert.ok(artifact,'No library candidate exists for '+fixture.name+' on this host.');
+    fixture.sha256=artifact.sha256;fixture.commit=undefined;
+    const candidate=process.platform==='darwin'?join(fixture.sourceDirectory,'.aug-build/native/native-macos-arm64.tar.gz'):join(fixture.sourceDirectory,'.aug-build/native-linux-'+process.arch,'native-linux-'+process.arch+'.tar.gz');
+    globalThis.fetch=async(input,options)=>String(input)===artifact.url?new Response(readFileSync(candidate)):originalFetch(input,options);
+    try{await installed.ensureVerifiedArchive(artifact,{cache:env.AUG_NATIVE_ARTIFACT_CACHE});}finally{globalThis.fetch=originalFetch;}
+  }
+}
+const prepareCandidateProject=project=>{
+  if(!candidateRoot)return;
+  const used=new Set();
+  const visit=directory=>{for(const entry of readdirSync(directory,{withFileTypes:true})){
+    const path=join(directory,entry.name);if(entry.isDirectory()&&!entry.name.startsWith('.'))visit(path);
+    else if(entry.name.endsWith('.aug'))writeFileSync(path,readFileSync(path,'utf8').replace(/"https:\/\/github.com\/GreenPandaStudios\/aug-(pytorch|sqlite|zlib|blake3)#v[^"\n]+"/g,(_,name)=>{used.add(name);return name;}));
+  }};visit(project);
+  writeFileSync(join(project,'main.yaml'),'packages:\n'+cases.filter(fixture=>used.has(fixture.name)).map(fixture=>'  '+fixture.name+': '+JSON.stringify(fixture.sourceDirectory)).join('\n')+'\n');
+};
+const pytorchRepository=candidateRoot?'pytorch':JSON.stringify('https://github.com/GreenPandaStudios/aug-pytorch#v'+cases.find(fixture=>fixture.name==='pytorch').version);
 const outcomes=[];
 for(const fixture of cases){
   const project=join(directory,fixture.name);mkdirSync(project);
   const repository=`https://github.com/GreenPandaStudios/aug-${fixture.name}#v${fixture.version??'0.1.1'}`;
   writeFileSync(join(project,'main.aug'),fixture.source.replace('REPOSITORY',JSON.stringify(repository)));
+  prepareCandidateProject(project);
   assert.equal(aug('run',project),fixture.expected);
   const lock=JSON.parse(readFileSync(join(project,'aug.lock.json')));
-  assert.equal(lock.git[0].commit,fixture.commit);
+  if(!candidateRoot)assert.equal(lock.git[0].commit,fixture.commit);
   const native=Object.values(lock.native.targets)[0].packages[0];
   assert.equal(native.sourceCommit,fixture.commit);assert.equal(native.artifact.sha256,fixture.sha256);
-  assert.equal(lock.native.compiler.artifactSha256,tools.packs[0].archive.sha256);
+  assert.equal(lock.native.compiler.artifactSha256,compilerPack.archive.sha256);
   aug('spec',project);aug('spec',project);aug('spec',project,'--check');
   const saved=readFileSync(join(project,'aug.lock.json'),'utf8');
   assert.equal(aug('run',project,'--offline','--frozen'),fixture.expected);
@@ -127,16 +164,22 @@ for(const fixture of cases){
   // The same public package also works through the existing named alias flow.
   const aliasProject=join(directory,fixture.name+'-alias');mkdirSync(aliasProject);
   writeFileSync(join(aliasProject,'main.aug'),fixture.source.replace('REPOSITORY',fixture.name));
-  aug('add',repository,'--as',fixture.name,'--project',aliasProject);
+  aug('add',fixture.sourceDirectory??repository,'--as',fixture.name,'--project',aliasProject);
   assert.equal(aug('run',aliasProject),fixture.expected);
-  outcomes.push({package:fixture.name,repository,commit:fixture.commit,artifactSha256:fixture.sha256,
-    stdout:fixture.expected,urlImport:true,namedAlias:true,frozenOffline:true,relocatedBundle:true,repeatedSpec:true,backend:'llvm'});
-  console.log(`${fixture.name}: public download, URL import, named alias, LLVM execution, frozen/offline pass`);
+  outcomes.push({package:fixture.name,repository:candidateRoot?fixture.sourceDirectory:repository,commit:fixture.commit,artifactSha256:fixture.sha256,
+    stdout:fixture.expected,urlImport:!candidateRoot,namedAlias:true,frozenOffline:true,relocatedBundle:true,repeatedSpec:true,backend:'llvm'});
+  console.log(`${fixture.name}: ${candidateRoot?'verified local candidate':'public download, URL import'}, named alias, LLVM execution, frozen/offline pass`);
+  retireDeployment(project);retireDeployment(aliasProject);
+  if(discardBuilds)rmSync(relocated,{recursive:true,force:true});
 }
 const gallery=[];
 for(const fixture of cases){
   const project=join(directory,'gallery-'+fixture.name);
   cpSync(join(root,'examples/native-'+fixture.name),project,{recursive:true,filter:path=>!path.split('/').some(part=>['.aug-build','.aug-packages','node_modules'].includes(part))});
+  if(!candidateRoot)for(const name of readdirSync(project).filter(name=>name.endsWith('.aug'))){
+    const path=join(project,name);writeFileSync(path,readFileSync(path,'utf8').replace(/^(import [^\n]+ from )"https:\/\/github.com\/GreenPandaStudios\/aug-(pytorch|sqlite|zlib|blake3)#v[^"\n]+"/gm,(_,prefix,library)=>prefix+JSON.stringify('https://github.com/GreenPandaStudios/aug-'+library+'#v'+cases.find(fixture=>fixture.name===library).version)));
+  }
+  prepareCandidateProject(project);
   aug('install',project);aug('check',project);aug('spec',project);aug('spec',project,'--check');
   const expected=fixture.name==='pytorch'?'21\n':fixture.expected;
   assert.equal(aug('run',project),expected);
@@ -144,11 +187,12 @@ for(const fixture of cases){
   assert.equal(result.failed,0);assert.equal(result.passed,1);
   gallery.push({package:fixture.name,run:true,test:true,spec:true,backend:'llvm'});
   console.log(`${fixture.name}: complete wiki project runs and its independent same-file case passes`);
+  retireDeployment(project);
 }
 // Independent ownership cases use the real adapter's test counters. These
 // unsafe probes are qualification instrumentation, not a proposed public API.
 const cleanup=join(directory,'pytorch-cleanup');mkdirSync(cleanup);
-writeFileSync(join(cleanup,'operations.aug'),`import Tensor and TensorError and tensor and sum from "https://github.com/GreenPandaStudios/aug-pytorch#v0.1.1"
+writeFileSync(join(cleanup,'operations.aug'),`import Tensor and TensorError and tensor and sum from ${pytorchRepository}
 extern C aug_probe_live_tensors_v1() returns int
 extern C aug_probe_live_buffers_v1() returns int
 interface _Container:
@@ -224,20 +268,23 @@ test verify:
                 assert(aug_probe_live_tensors_v1() == before)
 `);
 writeFileSync(join(cleanup,'main.aug'),'');
+prepareCandidateProject(cleanup);
+if(candidateRoot)writeFileSync(join(cleanup,'main.yaml'),'packages:\n  pytorch: '+JSON.stringify(join(candidateRoot,'aug-pytorch'))+'\n');
 aug('install',cleanup);
 for(const args of [[],['--offline','--frozen']]){
   const result=JSON.parse(aug('test',cleanup,'--json',...args));
   assert.equal(result.failed,0);assert.equal(result.passed,4);
 }
 console.log('pytorch: real counters prove failed-constructor and early-return cleanup');
+retireDeployment(cleanup);
 const taskProject=join(directory,'pytorch-tasks');mkdirSync(taskProject);
-writeFileSync(join(taskProject,'operations.aug'),`import Tensor and TensorError and tensor and sum from "https://github.com/GreenPandaStudios/aug-pytorch#v0.1.1"
+writeFileSync(join(taskProject,'operations.aug'),`import Tensor and TensorError and tensor and sum from ${pytorchRepository}
 calculate(float first) returns float unless TensorError:
     own Tensor value = tensor(values=[first, 2.0])
     return sum(tensor=value)
 `);
 writeFileSync(join(taskProject,'main.aug'),`import calculate from operations
-import TensorError from "https://github.com/GreenPandaStudios/aug-pytorch#v0.1.1"
+import TensorError from ${pytorchRepository}
 try:
     scope:
         first = start calculate(first=1.0)
@@ -248,9 +295,12 @@ try:
 catch TensorError error:
     print(value=error.message)
 `);
+prepareCandidateProject(taskProject);
+if(candidateRoot)writeFileSync(join(taskProject,'main.yaml'),'packages:\n  pytorch: '+JSON.stringify(join(candidateRoot,'aug-pytorch'))+'\n');
 assert.equal(aug('run',taskProject),'3\n5\n');
 assert.equal(aug('run',taskProject,'--offline','--frozen'),'3\n5\n');
 console.log('pytorch: LLVM tasks call the real library and preserve grouped wait order');
+retireDeployment(taskProject);
 const standard=join(directory,'standard-runtime');mkdirSync(standard);
 writeFileSync(join(standard,'main.yaml'),'backend: llvm\n');
 writeFileSync(join(standard,'main.aug'),`import Crypto and GnuTlsCrypto from "https://github.com/GreenPandaStudios/augscript/src/stdlib/crypto#v0.20.1"
@@ -295,8 +345,8 @@ assert.ok(existsSync(notices),'Runtime components must retain redistribution met
 console.log('JSON, clock, crypto and HTTP form callbacks pass without a native toolchain');
 const report={format:1,compiler:cliPackage.version,host:process.platform+'-'+process.arch,
   installation:'npm-archive-in-node_modules',nativeToolsOnPath:false,sourceCache:'fresh',artifactCache:'fresh',
-  libraryTransport:'public-release-assets',compilerTransport:localCompiler?'local-release-asset':'public-release-asset',
-  osRelease:osRelease(),minimumOSQualification:process.platform==='darwin'&&Number(osRelease().split('.')[0])===23,
+  libraryTransport:candidateRoot?'local-candidates':'public-release-assets',compilerTransport:localCompiler?'local-release-asset':'public-release-asset',
+  osRelease:osRelease(),discardedDeploymentCopies:discardBuilds,minimumOSQualification:process.platform==='darwin'&&Number(osRelease().split('.')[0])===23,
   realResourceCounters:{failedConstructor:true,earlyReturn:true,cancelledBeforeEntry:true,liveBuffers:0},nativeTasks:true,standardRuntime:{json:true,clock:true,crypto:true,httpForms:true,relocation:true},directory,outcomes,gallery};
 writeFileSync(join(root,'.aug-build/native-consumer-qualification.json'),JSON.stringify(report,null,2)+'\n');
 console.log('Consumer qualification report: '+join(root,'.aug-build/native-consumer-qualification.json'));

@@ -9,8 +9,10 @@ import {installPackages,compilerVersion} from '../src/package-manager.ts';
 import {checkProject} from '../src/checker.ts';
 import {loadProject} from '../src/project.ts';
 import {compileLLVM} from '../src/llvm-native.ts';
+import {nativeHostTarget} from '../src/native-contracts.ts';
 
-const enabled=process.platform==='darwin'&&process.arch==='arm64'&&!!process.env.AUG_LLVM_HOME;
+const mac=process.platform==='darwin';
+const enabled=!!process.env.AUG_LLVM_HOME&&(mac&&process.arch==='arm64'||process.platform==='linux'&&['x64','arm64'].includes(process.arch));
 function run(source){
   const root=realpathSync(mkdtempSync(join(tmpdir(),'aug-native-boundary-')));
   try{
@@ -21,7 +23,8 @@ function run(source){
     ]};
     const bytes=JSON.stringify(descriptor);writeFileSync(join(library,'native.abi.json'),bytes);
     // This local ABI test supplies its compiled adapter directly, never downloads it.
-    const artifact={id:'macos-arm64',target:{triple:'aarch64-apple-darwin',os:'macos',arch:'arm64',minimumOS:'14.0',cpuBaseline:'armv8-a',libc:'libSystem'},url:'https://example.invalid/boundary.tar.gz',sha256:'b'.repeat(64),maximumDownloadBytes:1,maximumUnpackedBytes:1,link:{kind:'dynamic',libraries:['libboundary.dylib']},runtime:{files:['libboundary.dylib'],relocation:'loader-relative'},components:[],fileManifest:'files.json',provenance:'provenance.json',notices:'THIRD_PARTY_NOTICES.md'};
+    const filename=mac?'libboundary.dylib':'libboundary.so';
+    const artifact={id:process.platform+'-'+process.arch,target:nativeHostTarget(),url:'https://example.invalid/boundary.tar.gz',sha256:'b'.repeat(64),maximumDownloadBytes:1,maximumUnpackedBytes:1,link:{kind:'dynamic',libraries:[filename]},runtime:{files:[filename],relocation:'loader-relative'},components:[],fileManifest:'files.json',provenance:'provenance.json',notices:'THIRD_PARTY_NOTICES.md'};
     writeFileSync(join(library,'aug-package.json'),JSON.stringify({format:2,name:'@test/native-boundary',version:'1.0.0',compiler:compilerVersion(),source:'src',dependencies:{},native:{profile:'aug-native-abi-1',bindings:'native.abi.json',bindingsSha256:createHash('sha256').update(bytes).digest('hex'),upstream:{repository:'https://github.com/example/boundary',version:'1.0.0',sourceRevision:'a'.repeat(40)},artifacts:[artifact]}}));
     writeFileSync(join(library,'src/contracts.aug'),'Failure(int code, string message) implements Error:\n    explain() returns string:\n        return message\n');
     writeFileSync(join(library,'src/api.aug'),'import Failure from contracts\nextern C _bounded(int value) returns int\nextern C _fail() returns int unless Failure\nbounded(int value) returns int:\n    unsafe:\n        return _bounded(value)\nfail() returns int:\n    unsafe:\n        return _fail()\n');
@@ -30,9 +33,11 @@ function run(source){
     installPackages(app,false,true);
     const checked=checkProject(loadProject(app));assert.deepEqual(checked.diagnostics.filter(d=>d.severity!=='warning'),[]);
     const adapter=join(root,'adapter.c');writeFileSync(adapter,'#include <stdint.h>\n#include <string.h>\ntypedef struct { int32_t code; uint32_t length; char message[512]; } Error;\nint64_t boundary_bounded_v1(int64_t value){return value+1;}\nint32_t boundary_fail_v1(int64_t *out,Error *error){*out=0;error->code=37;error->length=6;memcpy(error->message,"failed",6);return 1;}\n');
-    const native=spawnSync('/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang',['-isysroot',process.env.AUG_TEST_MACOS_SDK??'/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk','-dynamiclib','-mmacosx-version-min=14.0','-Wl,-install_name,@rpath/libboundary.dylib',adapter,'-o',join(root,'libboundary.dylib')],{encoding:'utf8'});
+    const cc=mac?'/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang':'clang';
+    const flags=mac?['-isysroot',process.env.AUG_TEST_MACOS_SDK??'/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk','-dynamiclib','-mmacosx-version-min=14.0','-Wl,-install_name,@rpath/'+filename]:['-shared','-fPIC','-Wl,-soname,'+filename];
+    const native=spawnSync(cc,[...flags,adapter,'-o',join(root,filename)],{encoding:'utf8'});
     assert.equal(native.status,0,native.stderr);
-    const compiled=compileLLVM(checked,{release:true,native:[{directory:root,libraries:['libboundary.dylib'],runtimeFiles:[]}]});
+    const compiled=compileLLVM(checked,{release:true,native:[{directory:root,libraries:[filename],runtimeFiles:[]}]});
     return spawnSync(compiled.output,[],{encoding:'utf8',env:{...process.env,PATH:'/nonexistent',SDKROOT:'/nonexistent',DEVELOPER_DIR:'/nonexistent'}});
   }finally{rmSync(root,{recursive:true,force:true});}
 }

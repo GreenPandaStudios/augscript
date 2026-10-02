@@ -1,0 +1,66 @@
+name: LLVM GNU/Linux qualification
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: llvm-linux-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  native:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-24.04
+            host: linux-x64
+          - runner: ubuntu-24.04-arm
+            host: linux-arm64
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - name: Create explicit Debian 12 maintainer toolchain
+        run: |
+          docker build -f docker/Dockerfile.native-maintainer -t aug-llvm-maintainer .
+          docker run -d --name qualification aug-llvm-maintainer sleep infinity
+      - name: Build and inspect the runtime and compiler pack
+        run: |
+          docker exec qualification node scripts/bootstrap-native.mjs
+          docker exec qualification node scripts/prepare-llvm-tools.mjs
+          docker exec qualification node scripts/build-runtime-pack.mjs
+          docker exec qualification node scripts/build-llvm-pack.mjs
+      - name: Check LLVM language, web, ownership and ABI parity
+        run: |
+          docker exec qualification npm run check
+          docker exec -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools qualification node scripts/check-llvm-parity.mjs
+          docker exec -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools qualification node --test tests/llvm-native-boundaries.test.mjs
+      - name: Build real native libraries from separate repositories
+        run: |
+          for library in pytorch sqlite zlib blake3; do
+            git clone --depth 1 "https://github.com/GreenPandaStudios/aug-$library" "$RUNNER_TEMP/aug-$library"
+            docker cp "$RUNNER_TEMP/aug-$library" "qualification:/work/aug-$library"
+            docker exec qualification node "/work/aug-$library/native/build.mjs"
+          done
+      - name: Qualify installed CLI against the exact local candidates
+        run: |
+          docker exec qualification npm run package:packages
+          docker exec qualification node scripts/qualify-native-consumers.mjs --local-compiler --candidate-libraries /work
+      - name: Collect measured candidates and qualification evidence
+        if: always()
+        run: |
+          mkdir -p .aug-build/linux-evidence
+          docker cp qualification:/work/.aug-build/native-consumer-qualification.json .aug-build/linux-evidence/qualification.json || true
+          docker cp "qualification:/work/.aug-build/compiler-pack-${{ matrix.host }}.json" .aug-build/linux-evidence/ || true
+          docker cp "qualification:/work/.aug-build/aug-llvm-${{ matrix.host }}.tar.gz" .aug-build/linux-evidence/ || true
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: llvm-${{ matrix.host }}-candidate
+          include-hidden-files: true
+          path: .aug-build/linux-evidence
+          if-no-files-found: error

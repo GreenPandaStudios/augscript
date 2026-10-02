@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Add GNU/Linux x86-64 and ARM64 LLVM candidates with an explicit glibc 2.36 floor, ELF process entry, SDK-free linking, relocatable runtimes, and checked libc/C++ requirements. Musl and cross compilation remain unsupported.
+- Handle native archive write failures through the CLI and discard rejected extraction state; verify large archives across bounded reader chunks.
+- Build compiler packs for each target and merge their exact pins before npm/VSIX packaging. Require minimum-platform consumer checks before creating the release draft; local library qualification records its transport separately from public imports.
+
 - HTTP action captures evaluate labeled arguments once in the order written, on both compiler backends.
 - Constructor interception releases a fresh completed result when an outer layer fails or returns a different result, including its transferred native resources.
 - Runtime pack builds verify every operation, schema and policy identifier against the compiled headers; consumers reject mismatched identifier contracts.

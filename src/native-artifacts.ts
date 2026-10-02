@@ -1,8 +1,8 @@
 import {createHash} from 'node:crypto';
-import {chmodSync,existsSync,lstatSync,mkdirSync,mkdtempSync,readFileSync,readdirSync,renameSync,rmSync,writeFileSync} from 'node:fs';
+import {chmodSync,closeSync,existsSync,lstatSync,mkdirSync,mkdtempSync,openSync,readFileSync,readSync,readdirSync,renameSync,rmSync,writeFileSync} from 'node:fs';
 import {homedir} from 'node:os';
 import {join,resolve} from 'node:path';
-import {x as extractArchive} from 'tar';
+import {UnpackSync} from 'tar';
 import {withPackageLockAsync} from './package-locking.ts';
 import {nativePath,nativeHostTarget,selectNativeArtifact,type NativeArtifact,type NativeTarget} from './native-contracts.ts';
 import {compilerVersion,readPackage,sourcePaths,projectPackages,type PackageLock} from './package-manager.ts';
@@ -64,7 +64,7 @@ export async function ensureVerifiedArchive(archive:VerifiedArchive,options:{off
     const stage=mkdtempSync(join(cache,'.install-')),transport=join(stage,'download.tar.gz'),output=join(stage,'files');mkdirSync(output);
     try{
       writeFileSync(transport,await downloadVerified(archive));const seen=new Set<string>();let unpacked=0;
-      extractArchive({file:transport,cwd:output,sync:true,strict:true,preserveOwner:false,filter:(path,entry)=>{
+      const extractor=new UnpackSync({cwd:output,strict:true,preserveOwner:false,filter:(path,entry)=>{
         const name=path.replace(/\/$/,'');nativePath(name);
         if(!('type' in entry))throw new Error('NATIVE_INTEGRITY: Expected an archive entry');
         if(!['File','Directory'].includes(entry.type))throw new Error('NATIVE_INTEGRITY: Archive links and special files are forbidden');
@@ -72,6 +72,22 @@ export async function ensureVerifiedArchive(archive:VerifiedArchive,options:{off
         unpacked+=entry.size;if(seen.size>20000||unpacked>archive.maximumUnpackedBytes)throw new Error('NATIVE_INTEGRITY: Archive exceeds its unpacked size or file limit');
         return true;
       }});
+      // tar's synchronous file convenience API has no error listener. A disk
+      // write failure can otherwise become an uncaught stream event instead of
+      // the CLI's actionable error and rejected-install cleanup.
+      let extractionError:Error|undefined;
+      extractor.on('error',(error:Error)=>{extractionError??=error;});
+      const input=openSync(transport,'r');
+      try{
+        let length:number;
+        do{
+          const buffer=Buffer.allocUnsafe(16*1024*1024);
+          length=readSync(input,buffer,0,buffer.length,null);
+          if(length)extractor.write(buffer.subarray(0,length));
+          if(extractionError)throw extractionError;
+        }while(length);
+        extractor.end();if(extractionError)throw extractionError;
+      }finally{closeSync(input);}
       verifyArtifactFiles(output,archive);
       for(const executable of options.executables??[]){nativePath(executable);if(!lstatSync(join(output,executable)).isFile())throw new Error('NATIVE_INTEGRITY: Missing verified executable '+executable);chmodSync(join(output,executable),0o755);}
       renameSync(output,destination);return destination;

@@ -10,6 +10,13 @@ This is development work for `0.21.0`, not a capability of the published
 macOS 14 or later on Apple Silicon. Native packages select LLVM automatically;
 ordinary projects retain the C backend during migration.
 
+Linux x86-64 and ARM64 support is being qualified on Debian 12 and Ubuntu,
+with glibc 2.36 or later. Local ARM64 candidates pass installed-CLI checks;
+public Linux artifacts and x86-64 execution still require their release gates.
+Musl and cross compilation are unsupported. A package declares its libc floor
+and C++ ABI in addition to its OS and architecture; August rejects an incompatible
+host before compiling the application.
+
 ## Import a library
 
 The [PyTorch](https://github.com/GreenPandaStudios/aug-pytorch),
@@ -69,6 +76,10 @@ SHA-256 checked. Extraction rejects links, traversal, duplicate paths, and
 unexpected files. Cached files are checked again before use. Package installation
 does not execute native recipes or npm lifecycle scripts.
 
+A failed download or extraction leaves no accepted artifact cache. Disk-full
+errors include the CLI's space-recovery guidance; they do not leave a partially
+installed library selected by a lockfile.
+
 Consumers need Node 24 and a supported OS, but do not install LLVM or Clang for
 this profile. August downloads its own pinned LLVM tools and runtime. A missing
 or incompatible artifact produces a diagnostic; it never starts a source build.
@@ -108,3 +119,11 @@ Consumers receive those verified artifacts. Callback registration, retained
 loans, foreign threads, native struct layout, GPU tensors, and exporting August
 libraries have not been qualified. See the
 [architecture and backlog](native-interop-llvm-plan.md).
+
+Linux maintainers build on Debian 12 so newer hosts do not raise the artifact's
+glibc requirement. The compiler checks the declared minimum; maintainer builds
+inspect each binary's actual symbol-version requirements and dependency closure.
+C++ adapters keep their qualified C++ runtime with the artifact. Source builds
+use Clang, platform headers and Linux relocation tools explicitly, while Rust
+adapters also use their pinned Rust/Cargo toolchain. Consumer installation has
+no automatic source-build fallback.
