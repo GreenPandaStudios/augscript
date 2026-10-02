@@ -1,0 +1,18 @@
+{
+  "format": 1,
+  "files": [
+    ".aug-spec/packages/@greenpandastudios/aug-gpu/0.1.0/api.aug",
+    ".aug-spec/packages/@greenpandastudios/aug-gpu/0.1.0/api.aug.md",
+    ".aug-spec/packages/@greenpandastudios/aug-gpu/0.1.0/bindings.aug",
+    ".aug-spec/packages/@greenpandastudios/aug-gpu/0.1.0/bindings.aug.md",
+    ".aug-spec/packages/@greenpandastudios/aug-gpu/0.1.0/contracts.aug",
+    ".aug-spec/packages/@greenpandastudios/aug-gpu/0.1.0/contracts.aug.md",
+    ".aug-spec/packages/@greenpandastudios/aug-gpu/0.1.0/native.abi.json",
+    "compute.aug.md",
+    "main.aug.md"
+  ],
+  "nativeDescriptors": {
+    ".aug-spec/packages/@greenpandastudios/aug-gpu/0.1.0/native.abi.json": "d95e237d8be07df8fd20132ca0f5a45a125fd65b7ba93669e69c0a38db63d60c"
+  },
+  "digest": "9c7506419e801d3c0a01b99257f11efdf42805ed3194a922a59f7c9f96859758"
+}

@@ -29,7 +29,7 @@ export interface NativeView {kind:NativeKind; resource?:string; ownership?:'read
 export interface NativeFunction {
   module:string; name:string; symbol:string; params:({name:string}&NativeView)[];
   result:NativeView; error?:string; callingConvention:'C'; status:'i32'|'direct';
-  uses:string[]; changes:string[]; thread:'caller'; retainsInputs:false;
+  uses:string[]; changes:string[]; thread:'caller'; retainsInputs:false; workerSafe?:boolean;
 }
 export interface NativeResource {module:string; name:string; release:string}
 export interface NativeDescriptor {
@@ -155,13 +155,14 @@ export function validateNativeDescriptor(value:unknown):NativeDescriptor {
   }
   const resources=new Set(ids);ids.clear();
   for(const entry of array(descriptor.functions,'functions')){
-    const fn=object(entry,'function');fields(fn,['module','name','symbol','params','result','error','callingConvention','status','uses','changes','thread','retainsInputs'],'function');
+    const fn=object(entry,'function');fields(fn,['module','name','symbol','params','result','error','callingConvention','status','uses','changes','thread','retainsInputs','workerSafe'],'function');
     if(!moduleName.test(fn.module??''))fail('Function module must be a source-relative module path');symbol(fn.name,'function.name');symbol(fn.symbol,'function.symbol');
     const id=fn.module+'.'+fn.name;if(ids.has(id))fail('Duplicate native function '+id);ids.add(id);
     const names=new Set<string>();
     for(const p of array(fn.params,'function.params')){view(p,false);if(p.kind==='resource'&&!resources.has(p.resource))fail('Unknown resource identity '+p.resource);symbol(p.name,'parameter.name');if(names.has(p.name))fail('Duplicate parameter '+p.name);names.add(p.name);}
     const result=view(fn.result,true);
     if(result.kind==='resource'&&!resources.has(result.resource!))fail('Unknown result resource identity '+result.resource);
+    if(fn.workerSafe !== undefined && typeof fn.workerSafe !== 'boolean')fail('workerSafe must be a boolean');
     if(fn.callingConvention!=='C'||!['i32','direct'].includes(fn.status)||fn.thread!=='caller'||fn.retainsInputs!==false)fail('Only C calls on the caller thread with call-duration loans are supported');
     if(fn.error!==undefined){string(fn.error,'function.error');const dot=fn.error.lastIndexOf('.');if(!moduleName.test(fn.error.slice(0,dot))||!identifier.test(fn.error.slice(dot+1)))fail('Native checked errors require a module-qualified declaration identity');}
     if(fn.status==='i32'&&!fn.error)fail('Status-returning native calls require a checked error type');

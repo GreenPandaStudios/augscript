@@ -516,7 +516,7 @@ class BodyEmitter {
       this.line(`AugValue ${array}[] = {${args.map(arg => this.slot(arg)).join(', ') || 'aug_scalar_null()'}};`);
       const captures=this.label('task_owned');
       this.line(`const unsigned char ${captures}[] = {${args.map((_,i)=>this.generator.callPlan(call)?.ownerships?.[i]==='own'?'1':'0').join(', ')||'0'}};`);
-      this.line(`${this.slot(slot)} = aug_task_start_owned(${name}, ${receiver === undefined ? 'aug_scalar_null()' : this.slot(receiver)}, ${array}, ${args.length}, ${captures});`);
+      this.line(`${this.slot(slot)} = ${expr.worker ? 'aug_task_start_worker' : 'aug_task_start_owned'}(${name}, ${receiver === undefined ? 'aug_scalar_null()' : this.slot(receiver)}, ${array}, ${args.length}, ${captures});`);
       this.clearMovedArgs(call, (this.generator.callPlan(call)?.ownerships ?? []).map(ownership => ({ownership:ownership ?? 'managed'})));
       this.line(`if (aug_has_error) goto ${this.errorTarget};`); return slot;
     }

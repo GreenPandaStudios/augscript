@@ -31,7 +31,7 @@ pageClass: aug-example-page
 ```aug [Indentation]
 // aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import hashText from hashing
-import HashError from "https://github.com/GreenPandaStudios/aug-blake3#v0.1.3"
+import HashError from "https://github.com/GreenPandaStudios/aug-blake3#v0.1.4"
 try:
     print(value=hashText(value="abc"))
 catch HashError error:
@@ -41,7 +41,7 @@ catch HashError error:
 ```aug [Braces]
 // aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import hashText from hashing
-import HashError from "https://github.com/GreenPandaStudios/aug-blake3#v0.1.3"
+import HashError from "https://github.com/GreenPandaStudios/aug-blake3#v0.1.4"
 try {
     print(value=hashText(value="abc"))
 }
@@ -60,11 +60,11 @@ catch HashError error {
 
 ### Startup
 
-It prints [`hashText`](hashing.md#symbol-hashText) with `value` `"abc"`. If this work raises [`HashError`](dependencies/packages/%40greenpandastudios/aug-blake3/0.1.3/contracts.md#symbol-HashError) as `error`, it prints `error.message`.
+It prints [`hashText`](hashing.md#symbol-hashText) with `value` `"abc"`. If this work raises [`HashError`](dependencies/packages/%40greenpandastudios/aug-blake3/0.1.4/contracts.md#symbol-HashError) as `error`, it prints `error.message`.
 
 ### Dependencies
 
-It uses [`HashError`](dependencies/packages/%40greenpandastudios/aug-blake3/0.1.3/contracts.md#symbol-HashError) (`message`) from `https://github.com/GreenPandaStudios/aug-blake3#v0.1.3`. It uses [`hashText`](hashing.md#symbol-hashText) from `hashing`.
+It uses [`HashError`](dependencies/packages/%40greenpandastudios/aug-blake3/0.1.4/contracts.md#symbol-HashError) (`message`) from `https://github.com/GreenPandaStudios/aug-blake3#v0.1.4`. It uses [`hashText`](hashing.md#symbol-hashText) from `hashing`.
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).
 

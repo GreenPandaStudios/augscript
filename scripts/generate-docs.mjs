@@ -16,6 +16,7 @@ import { specHint } from '../src/spec-hints.ts';
 import { buildExamplePages, examples } from './example-docs.mjs';
 import { benchmarkChartData } from './benchmark-chart-data.mjs';
 import { homepageExample } from './homepage-docs.mjs';
+import {conformancePage} from './conformance-ledger.mjs';
 import { nativePackageExamples } from './native-package-docs.mjs';
 
 const root = resolve(import.meta.dirname, '..');
@@ -24,6 +25,7 @@ const outputs = new Map();
 outputs.set('docs/.vitepress/theme/benchmark-data.json', benchmarkChartData(root));
 outputs.set('docs/.vitepress/home-example.md', homepageExample(root));
 outputs.set('docs/native-package-examples.md', nativePackageExamples(root));
+outputs.set('docs/conformance-rules.md',conformancePage(root));
 // Analyze the pending source pointers too, so one generation pass has correct API/source links.
 const entry=join(root,'examples/approved-design');
 const initial=checkProject(loadProject(entry));

@@ -76,6 +76,12 @@ jobs:
       - run: node scripts/build-runtime-pack.mjs
       - run: npm run check
       - run: npm test
+      - name: Independent language conformance in both LLVM modes and block styles
+        run: npm run test:conformance
+      - name: Check isolated workers under native race and memory instrumentation
+        run: |
+          AUG_WORKER_SANITIZER=thread node --test tests/worker-runtime.test.mjs
+          AUG_WORKER_SANITIZER=address,undefined node --test tests/worker-runtime.test.mjs
       - name: Existing language, runtime and real applications through LLVM
         env:
           AUG_REQUIRE_DWARF: '1'
@@ -104,6 +110,7 @@ jobs:
           name: llvm-macos-performance
           include-hidden-files: true
           path: |
+            .aug-build/language-conformance.json
             .aug-build/llvm-migration-performance.json
             .aug-build/kernels/results.json
             .aug-build/gyms/results.json
@@ -153,12 +160,16 @@ jobs:
           test -z "$(command -v clang || true)" || ! clang --version
           ! xcrun --show-sdk-path
       - name: Qualify installed CLI and public library downloads with native tools unavailable
-        run: node scripts/qualify-native-consumers.mjs --local-compiler
+        run: |
+          node scripts/qualify-native-consumers.mjs --local-compiler
+          node scripts/qualify-workers.mjs --local-compiler
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: native-consumer-macos14-evidence
           include-hidden-files: true
-          path: .aug-build/native-consumer-qualification.json
+          path: |
+            .aug-build/native-consumer-qualification.json
+            .aug-build/worker-consumer-qualification.json
           if-no-files-found: error
   docker-native:
     runs-on: ubuntu-24.04

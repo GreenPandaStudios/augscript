@@ -35,7 +35,7 @@ export type IrInstruction = {span:Span;debugScope?:string}&(
   {op:'routes';out?:number;name:string;port?:number}|
   {op:'call';out:number;function:string;args:number[];receiver?:number}|
   {op:'method';out:number;receiver:number;name:string;args:number[]}|
-  {op:'start';out:number;function:string;receiver?:number;args:number[];owned:boolean[]}|
+  {op:'start';out:number;function:string;receiver?:number;args:number[];owned:boolean[];worker?:boolean}|
   {op:'wait';out:number;tasks:number[]}|{op:'checkpoint'}|
   {op:'native';out:number;binding:NativeFunction;args:number[];resources:Record<string,{id:string;release:string}>;error?:string;errorFactory?:string}|
   {op:'extern';out:number;name:string;types:string[];result:string;args:number[]}|
@@ -306,7 +306,7 @@ class FunctionLowering {
       if(thunk.owned.has(result))thunk.instruction({op:'clear',slot:result});
       const name='aug_task_thunk_'+this.generator.functions.length;
       this.generator.functions.push(thunk.finish(name));
-      const out=this.slot();this.instruction({op:'start',out,function:name,receiver,args,owned:args.map((_,i)=>this.generator.checked.callPlans.get(call)?.ownerships?.[i]==='own')});
+      const out=this.slot();this.instruction({op:'start',out,function:name,receiver,args,worker:expr.worker,owned:args.map((_,i)=>this.generator.checked.callPlans.get(call)?.ownerships?.[i]==='own')});
       this.generator.checked.callPlans.get(call)?.ownerships?.forEach((mode,i)=>{if(mode==='own')this.instruction({op:'clear',slot:args[i]});});
       this.checkError();return out;
     }

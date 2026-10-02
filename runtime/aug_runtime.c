@@ -7,33 +7,53 @@
 #include <stdlib.h>
 #include <string.h>
 
-static AugObject *heap = NULL;
-static AugExecution default_execution;
-static AugExecution *executions = &default_execution;
-static AugExecution *current_execution = &default_execution;
+struct AugRuntimeContext {
+  AugObject *heap_store; AugExecution default_execution_store;
+  AugExecution *executions_store, *current_execution_store;
+  AugRetained *retained_store; AugValue *globals_store; size_t global_count_store;
+  size_t object_count_store, next_collection_store; bool collecting_store;
+  AugValue cli_args_store;
+};
+static _Thread_local AugRuntimeContext default_runtime;
+static _Thread_local AugRuntimeContext *active_runtime;
+static AugRuntimeContext *runtime(void) {
+  if (!active_runtime) active_runtime = &default_runtime;
+  if (!active_runtime->executions_store) {
+    active_runtime->executions_store = active_runtime->current_execution_store = &active_runtime->default_execution_store;
+    active_runtime->next_collection_store = 1024;
+  }
+  return active_runtime;
+}
+AugRuntimeContext *aug_runtime_new(void) { return calloc(1, sizeof(AugRuntimeContext)); }
+AugRuntimeContext *aug_runtime_switch(AugRuntimeContext *next) {
+  AugRuntimeContext *previous = runtime(); active_runtime = next; runtime(); return previous;
+}
+#define heap (runtime()->heap_store)
+#define executions (runtime()->executions_store)
+#define current_execution (runtime()->current_execution_store)
+#define retained (runtime()->retained_store)
+#define globals (runtime()->globals_store)
+#define global_count (runtime()->global_count_store)
+#define object_count (runtime()->object_count_store)
+#define next_collection (runtime()->next_collection_store)
+#define collecting (runtime()->collecting_store)
+#define cli_args (runtime()->cli_args_store)
 #define frames (current_execution->root_frames)
 #define scopes (current_execution->scope_stack)
 #define scope_count (current_execution->scope_depth)
-AugScopeJoin aug_scope_join_hook = NULL;
-void (*aug_task_checkpoint_hook)(void);
+_Thread_local AugScopeJoin aug_scope_join_hook;
+_Thread_local void (*aug_task_checkpoint_hook)(void);
 AugExecution *aug_execution_current(void) { return current_execution; }
 AugExecution *aug_execution_switch(AugExecution *execution) { AugExecution *previous = current_execution; current_execution = execution; return previous; }
 void aug_execution_init(AugExecution *execution) { memset(execution, 0, sizeof(*execution)); execution->next = executions; executions = execution; }
 void aug_execution_dispose(AugExecution *execution) { AugExecution **cursor = &executions; while (*cursor && *cursor != execution) cursor = &(*cursor)->next; if (*cursor) *cursor = execution->next; }
-static AugRetained *retained = NULL;
-static AugValue *globals = NULL;
-static size_t global_count = 0;
-static size_t object_count = 0;
-static size_t next_collection = 1024;
-static bool collecting = false;
-static AugValue cli_args = {0};
 static bool equal(AugValue left, AugValue right);
 /* Map-only metadata keeps ordinary object allocation sizes unchanged. The
    first member permits the existing heap, roots and GC to use AugObject. */
 typedef struct { AugObject object; size_t *field_buckets; } AugMapObject;
 static size_t *map_field_buckets(AugObject *object) { return ((AugMapObject *)object)->field_buckets; }
-bool aug_test_failed = false;
-size_t aug_test_assertions = 0;
+_Thread_local bool aug_test_failed = false;
+_Thread_local size_t aug_test_assertions = 0;
 
 static void fail(const char *message) {
   fprintf(stderr, "AugScript runtime error: %s\n", message);
@@ -482,16 +502,21 @@ AugValue aug_to_c_int(AugValue value) {
 
 typedef struct AugCoverage { const char *file; size_t line, count; struct AugCoverage *next; } AugCoverage;
 static AugCoverage *coverage = NULL;
+static pthread_mutex_t coverage_mutex = PTHREAD_MUTEX_INITIALIZER;
 void aug_coverage_register(const char *file, size_t line) {
+  pthread_mutex_lock(&coverage_mutex);
   for (AugCoverage *point = coverage; point; point = point->next)
-    if (point->line == line && !strcmp(point->file, file)) return;
+    if (point->line == line && !strcmp(point->file, file)) { pthread_mutex_unlock(&coverage_mutex); return; }
   AugCoverage *point = malloc(sizeof(*point));
   if (!point) fail("out of memory");
   *point = (AugCoverage){ file, line, 0, coverage }; coverage = point;
+  pthread_mutex_unlock(&coverage_mutex);
 }
 void aug_cover(const char *file, size_t line) {
+  pthread_mutex_lock(&coverage_mutex);
   for (AugCoverage *point = coverage; point; point = point->next)
-    if (point->line == line && !strcmp(point->file, file)) { point->count++; return; }
+    if (point->line == line && !strcmp(point->file, file)) { point->count++; break; }
+  pthread_mutex_unlock(&coverage_mutex);
 }
 static void write_coverage(void) {
   const char *path = getenv("AUG_COVERAGE_FILE");
@@ -652,7 +677,7 @@ void aug_binding_set(size_t index, AugValue value) {
 
 size_t aug_scope_depth(void) { return scope_count; }
 typedef struct AugHeldLock {struct AugHeldLock *previous; pthread_mutex_t *mutex; AugValue value;} AugHeldLock;
-void (*aug_mutex_wait_hook)(void);
+_Thread_local void (*aug_mutex_wait_hook)(void);
 static void destroy_mutex(void *native) {pthread_mutex_destroy(native); free(native);}
 static const unsigned char shared_owned_field[] = {1};
 AugValue aug_shared_new(AugValue value) {
@@ -846,7 +871,7 @@ void aug_report_error(void) {
   else fprintf(stderr, "Uncaught error\n");
 }
 void aug_shutdown(void) {
-  write_coverage();
+  if (runtime() == &default_runtime) write_coverage();
   aug_scope_restore(0);
   globals = NULL;
   global_count = 0;
@@ -855,4 +880,113 @@ void aug_shutdown(void) {
   aug_error = aug_null();
   aug_has_error = false;
   aug_collect();
+}
+
+void aug_runtime_delete(AugRuntimeContext *context) {
+  if (runtime() != context || context == &default_runtime) fail("invalid worker heap disposal");
+  aug_shutdown();
+  while (heap) aug_collect();
+  free(context); active_runtime = NULL;
+}
+
+/* An in-process message owns all of its data. Only immutable compiler metadata
+   (method tables/type names) is shared; no managed pointer crosses a heap. */
+typedef struct { AugObject metadata; AugValue *fields; char *text; } AugTransferObject;
+struct AugTransfer { AugValue *roots; size_t count, size, capacity; AugTransferObject *objects; };
+typedef struct { AugObject *source; size_t index; } TransferIndex;
+typedef struct { AugTransfer *message; TransferIndex *index; size_t capacity, used; } TransferBuilder;
+static size_t transfer_hash(AugObject *object) { return ((uintptr_t)object >> 4) * UINT64_C(11400714819323198485); }
+static void transfer_index_grow(TransferBuilder *builder) {
+  size_t size = builder->capacity ? builder->capacity * 2 : 64;
+  TransferIndex *index = calloc(size, sizeof(*index)); if (!index) fail("out of memory");
+  for (size_t i = 0; i < builder->capacity; i++) if (builder->index[i].source) {
+    size_t slot = transfer_hash(builder->index[i].source) & (size - 1);
+    while (index[slot].source) slot = (slot + 1) & (size - 1);
+    index[slot] = builder->index[i];
+  }
+  free(builder->index); builder->index = index; builder->capacity = size;
+}
+static AugValue transfer_value(TransferBuilder *builder, AugValue value) {
+  if (value.tag != AUG_STRING && value.tag != AUG_OBJECT) return value;
+  AugObject *object = value.as.object;
+  if (!object || object->dropped || object->native || object->finalize ||
+      !(object->kind == AUG_STRING || object->kind == AUG_OBJECT ||
+        object->kind == AUG_RECORD_KIND || object->kind == AUG_LIST_KIND ||
+        object->kind == AUG_MAP_KIND || object->kind == AUG_SET_KIND ||
+        object->kind == AUG_TUPLE_KIND || object->kind == AUG_BYTES_KIND || object->kind == AUG_JSON_KIND))
+    fail("uncopyable worker value; compiler/native boundary contract violated");
+  if ((builder->used + 1) * 2 >= builder->capacity) transfer_index_grow(builder);
+  size_t slot = transfer_hash(object) & (builder->capacity - 1);
+  while (builder->index[slot].source && builder->index[slot].source != object) slot = (slot + 1) & (builder->capacity - 1);
+  size_t index;
+  if (builder->index[slot].source) index = builder->index[slot].index;
+  else {
+    AugTransfer *message = builder->message; index = message->size++;
+    if (message->size > message->capacity) {
+      message->capacity = message->capacity ? message->capacity * 2 : 32;
+      message->objects = realloc(message->objects, message->capacity * sizeof(*message->objects));
+      if (!message->objects) fail("out of memory");
+    }
+    builder->index[slot] = (TransferIndex){object, index}; builder->used++;
+    AugTransferObject *copy = &message->objects[index]; memset(copy, 0, sizeof(*copy)); copy->metadata = *object;
+    /* fields is the source only while capture walks this graph on its owner. */
+    copy->metadata.next = NULL; copy->metadata.buckets = NULL;
+    copy->fields = object->field_count ? calloc(object->field_count, sizeof(AugValue)) : NULL;
+    if (object->field_count && !copy->fields) fail("out of memory");
+    if (object->text) { copy->text = malloc(object->text_length + 1); if (!copy->text) fail("out of memory"); memcpy(copy->text, object->text, object->text_length + 1); }
+  }
+  value.as.integer = (int64_t)index; return value;
+}
+AugTransfer *aug_transfer_capture(AugValue *values, size_t count) {
+  AugTransfer *message = calloc(1, sizeof(*message)); if (!message) fail("out of memory");
+  message->count = count; message->roots = count ? calloc(count, sizeof(AugValue)) : NULL;
+  if (count && !message->roots) fail("out of memory");
+  TransferBuilder builder = {.message = message};
+  for (size_t i = 0; i < count; i++) message->roots[i] = transfer_value(&builder, values[i]);
+  for (size_t i = 0; i < message->size; i++) {
+    AugObject source = message->objects[i].metadata;
+    AugValue *fields = message->objects[i].fields;
+    for (size_t j = 0; j < source.field_count; j++) fields[j] = transfer_value(&builder, source.fields[j]);
+    message->objects[i].metadata.fields = NULL; message->objects[i].metadata.text = NULL;
+  }
+  free(builder.index); return message;
+}
+static AugValue transfer_resolved(AugValue encoded, AugValue *objects) {
+  if (encoded.tag == AUG_STRING || encoded.tag == AUG_OBJECT) encoded.as.object = objects[encoded.as.integer].as.object;
+  return encoded;
+}
+void aug_transfer_restore(AugTransfer *message, AugValue *values, size_t count) {
+  if (!message || message->count != count) fail("invalid worker message");
+  AugValue *roots = calloc(message->size ? message->size : 1, sizeof(AugValue)); if (!roots) fail("out of memory");
+  AugFrame frame; aug_frame_enter(&frame, roots, message->size);
+  for (size_t i = 0; i < message->size; i++) {
+    AugTransferObject *copy = &message->objects[i]; AugObject *metadata = &copy->metadata;
+    AugObject *object = allocate(metadata->kind, metadata->type_name, metadata->field_count, metadata->owned_fields, metadata->methods, metadata->method_count);
+    object->field_names = metadata->field_names; object->frozen = metadata->frozen;
+    if (copy->text) { object->text = malloc(metadata->text_length + 1); if (!object->text) fail("out of memory"); memcpy(object->text, copy->text, metadata->text_length + 1); object->text_length = metadata->text_length; }
+    roots[i] = (AugValue){.tag = metadata->kind == AUG_STRING ? AUG_STRING : AUG_OBJECT, .as.object = object};
+  }
+  for (size_t i = 0; i < message->size; i++) {
+    AugTransferObject *copy = &message->objects[i]; AugObject *object = roots[i].as.object;
+    for (size_t j = 0; j < object->field_count; j++) object->fields[j] = transfer_resolved(copy->fields[j], roots);
+  }
+  for (size_t i = 0; i < message->size; i++) {
+    AugObject *object = roots[i].as.object;
+    if (object->kind != AUG_MAP_KIND && object->kind != AUG_SET_KIND) continue;
+    size_t stride = object->kind == AUG_MAP_KIND ? 2 : 1, entries = object->field_count / stride;
+    object->bucket_count = 8; while (object->bucket_count < entries * 2) object->bucket_count *= 2;
+    object->buckets = calloc(object->bucket_count, sizeof(size_t)); if (!object->buckets) fail("out of memory");
+    if (stride == 2 && entries) { ((AugMapObject *)object)->field_buckets = calloc(entries, sizeof(size_t)); if (!map_field_buckets(object)) fail("out of memory"); }
+    for (size_t j = 0; j < object->field_count; j += stride) {
+      size_t bucket = bucket_for(object, object->fields[j]); object->buckets[bucket] = j + 1;
+      if (stride == 2) map_field_buckets(object)[j / 2] = bucket;
+    }
+  }
+  for (size_t i = 0; i < count; i++) values[i] = transfer_resolved(message->roots[i], roots);
+  aug_frame_leave(&frame); free(roots);
+}
+void aug_transfer_delete(AugTransfer *message) {
+  if (!message) return;
+  for (size_t i = 0; i < message->size; i++) { free(message->objects[i].fields); free(message->objects[i].text); }
+  free(message->objects); free(message->roots); free(message);
 }

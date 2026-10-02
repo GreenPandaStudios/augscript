@@ -93,3 +93,9 @@ For step-by-step lessons, start with [the book](../learn/index.md).
 | [Map and Set benchmark](collections-benchmark/index.md) | Insert, find, and iterate over 20,000 collection entries. |
 | [JSON benchmark](json-benchmark/index.md) | Parse, decode, and serialize a typed record 5,000 times. |
 | [HTTP benchmark](http-benchmark/index.md) | Serve the typed JSON endpoint used in the throughput measurements. |
+
+## Native libraries
+
+| Project | What it demonstrates |
+| --- | --- |
+| [GPU workers](native-gpu/index.md) | Create Metal buffers inside isolated workers, add vectors on the GPU, and return copied results. |

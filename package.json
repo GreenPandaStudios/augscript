@@ -1,6 +1,6 @@
 {
   "name": "augscript",
-  "version": "0.21.0",
+  "version": "0.22.0",
   "description": "August language development monorepo",
   "license": "MIT",
   "repository": {
@@ -31,7 +31,8 @@
     "test:packages": "node scripts/test-packages.mjs",
     "version:check": "node scripts/version.mjs --check",
     "package:extension": "npm --prefix vscode run package",
-    "bench:greetings": "node scripts/benchmark-greetings.mjs"
+    "bench:greetings": "node scripts/benchmark-greetings.mjs",
+    "test:conformance": "node scripts/check-language-conformance.mjs"
   },
   "devDependencies": {
     "@types/markdown-it-container": "4.0.1",

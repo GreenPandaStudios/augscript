@@ -76,5 +76,8 @@
   "web-guide": {
     "buildOnly": true,
     "tests": 3
+  },
+  "worker-guide": {
+    "stdout": "10\n5\n"
   }
 }

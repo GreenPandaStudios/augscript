@@ -849,8 +849,9 @@ class Parser {
     }
     if (this.at('start') && this.current(1).kind !== '(' && this.match('start')) {
       const start = this.tokens[this.position - 1].span;
+      const worker = this.current().value === 'worker' && ['identifier', 'start', 'wait'].includes(this.current(1).kind) && !!this.take();
       const call = this.parseUnary();
-      return {kind: 'start', call, span: this.span(start)};
+      return {kind: 'start', call, worker: worker || undefined, span: this.span(start)};
     }
     if (this.at('wait') && this.current(1).kind === 'for' && this.match('wait')) {
       const start = this.tokens[this.position - 1].span; this.expect('for');

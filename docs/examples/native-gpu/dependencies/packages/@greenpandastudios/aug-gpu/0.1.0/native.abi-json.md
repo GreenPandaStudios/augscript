@@ -1,0 +1,156 @@
+---
+title: "Native binding contract · GPU workers"
+generated: true
+source: "examples/native-gpu/.aug-spec/packages/@greenpandastudios/aug-gpu/0.1.0/native.abi.json"
+editLink: false
+prev: false
+next: false
+outline: [2, 3]
+search: false
+---
+
+# Native binding contract
+
+[GPU workers](../../../../../index.md)
+
+This dependency’s descriptor names native symbols, ownership rules, errors, and ABI types. The compiler checks August declarations against it. Native code must honor the declared rules.
+
+```json
+{
+  "format": 1,
+  "profile": "aug-native-abi-1",
+  "resources": [
+    {
+      "module": "bindings",
+      "name": "Device",
+      "release": "aug_gpu_device_release_v1"
+    },
+    {
+      "module": "bindings",
+      "name": "Buffer",
+      "release": "aug_gpu_buffer_release_v1"
+    }
+  ],
+  "functions": [
+    {
+      "module": "api",
+      "name": "_open",
+      "symbol": "aug_gpu_open_v1",
+      "params": [],
+      "result": {
+        "kind": "resource",
+        "resource": "bindings.Device"
+      },
+      "error": "contracts.GpuError",
+      "callingConvention": "C",
+      "status": "i32",
+      "uses": [],
+      "changes": [],
+      "thread": "caller",
+      "retainsInputs": false,
+      "workerSafe": true
+    },
+    {
+      "module": "api",
+      "name": "_upload",
+      "symbol": "aug_gpu_upload_v1",
+      "params": [
+        {
+          "name": "device",
+          "ownership": "read",
+          "kind": "resource",
+          "resource": "bindings.Device"
+        },
+        {
+          "name": "values",
+          "kind": "f64-list"
+        }
+      ],
+      "result": {
+        "kind": "resource",
+        "resource": "bindings.Buffer"
+      },
+      "error": "contracts.GpuError",
+      "callingConvention": "C",
+      "status": "i32",
+      "uses": [],
+      "changes": [],
+      "thread": "caller",
+      "retainsInputs": false,
+      "workerSafe": true
+    },
+    {
+      "module": "api",
+      "name": "_add",
+      "symbol": "aug_gpu_add_v1",
+      "params": [
+        {
+          "name": "left",
+          "ownership": "read",
+          "kind": "resource",
+          "resource": "bindings.Buffer"
+        },
+        {
+          "name": "right",
+          "ownership": "read",
+          "kind": "resource",
+          "resource": "bindings.Buffer"
+        }
+      ],
+      "result": {
+        "kind": "resource",
+        "resource": "bindings.Buffer"
+      },
+      "error": "contracts.GpuError",
+      "callingConvention": "C",
+      "status": "i32",
+      "uses": [],
+      "changes": [],
+      "thread": "caller",
+      "retainsInputs": false,
+      "workerSafe": true
+    },
+    {
+      "module": "api",
+      "name": "_download",
+      "symbol": "aug_gpu_download_v1",
+      "params": [
+        {
+          "name": "buffer",
+          "ownership": "read",
+          "kind": "resource",
+          "resource": "bindings.Buffer"
+        }
+      ],
+      "result": {
+        "kind": "f64-list",
+        "release": "aug_gpu_values_release_v1"
+      },
+      "error": "contracts.GpuError",
+      "callingConvention": "C",
+      "status": "i32",
+      "uses": [],
+      "changes": [],
+      "thread": "caller",
+      "retainsInputs": false,
+      "workerSafe": true
+    },
+    {
+      "module": "api",
+      "name": "_live",
+      "symbol": "aug_gpu_live_resources_v1",
+      "params": [],
+      "result": {
+        "kind": "i64"
+      },
+      "callingConvention": "C",
+      "status": "direct",
+      "uses": [],
+      "changes": [],
+      "thread": "caller",
+      "retainsInputs": false,
+      "workerSafe": true
+    }
+  ]
+}
+```

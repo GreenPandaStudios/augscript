@@ -158,7 +158,7 @@ export type Expr =
       typeArgs: TypeRef[]; span: Span }
   | { kind: 'binary'; op: string; left: Expr; right: Expr; span: Span }
   | { kind: 'unary'; op: string; value: Expr; span: Span }
-  | { kind: 'start'; call: Expr; span: Span }
+  | { kind: 'start'; call: Expr; worker?: boolean; span: Span }
   | { kind: 'wait'; tasks: Expr[]; span: Span }
   | { kind: 'resolve'; name: string; typeArgs: TypeRef[]; span: Span };
 

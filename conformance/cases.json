@@ -1,0 +1,215 @@
+{
+  "format": 1,
+  "oracle": "Handwritten expected outputs and diagnostics; never derived from compiled specs or implementation output.",
+  "cases": [
+    {
+      "id": "values",
+      "files": {
+        "math.aug": "identity<T>(T value) returns T:\n    return value\nlabel(int left, int right) returns int:\n    return left * 10 + right\n",
+        "main.aug": "import identity and label from math\nint number to 4\nnumber = number + 3\nprint(value=label(right=2, left=number))\nprint(value=identity(value=\"pear\"))\nprint(value=not false and true or false)\nprint(value=9223372036854775807 + 1)\ntry:\n    print(value=1 / 0)\ncatch ArithmeticError error:\n    print(value=\"division checked\")\n"
+      },
+      "stdout": "72\npear\ntrue\n-9223372036854775808\ndivision checked\n"
+    },
+    {
+      "id": "collections",
+      "files": {
+        "main.aug": "List<int> empty = []\nvalues = [3, 8]\nfor value in values:\n    borrow values:\n        values.append(value=99)\nprint(value=values.length())\n(intValue, word) = (5, \"lime\")\nprint(value=intValue)\nprint(value=word)\nlookup = {7: \"fig\", 4: \"date\"}\nfor (key, value) in lookup:\n    print(value)\nunique = {9, 9, 4}\nprint(value=unique.length())\nmatch lookup.get(key=8):\n    when null:\n        print(value=\"absent\")\n    when some value:\n        print(value)\ntry:\n    empty.get(index=0)\ncatch IndexError error:\n    print(value=\"index checked\")\n"
+      },
+      "stdout": "4\n5\nlime\nfig\ndate\n2\nabsent\nindex checked\n"
+    },
+    {
+      "id": "records",
+      "files": {
+        "data.aug": "record Location(int row, int column)\nrecord Envelope<T implements Data>(T data)\npositive(optional int number) returns int:\n    if number == null:\n        return 0\n    return number\n",
+        "main.aug": "import Location and Envelope and positive from data\nlocation = Location(column=4, row=6)\nEnvelope<Location> wrapped = Envelope(data=location)\nprint(value=wrapped.data.row)\nprint(value=location == Location(row=6, column=4))\nprint(value={location, Location(row=6, column=4)}.length())\nprint(value=positive(number=null))\nprint(value=positive(number=12))\n"
+      },
+      "stdout": "6\ntrue\n1\n0\n12\n"
+    },
+    {
+      "id": "interfaces",
+      "files": {
+        "app.aug": "interface Named:\n    name() returns string\ninterface Scored:\n    score() returns int:\n        return 23\ninterface Entry extends Named, Scored:\n    pass\nItem(string title) implements Entry:\n    name() returns string:\n        return title\ninterface Source<out T>:\n    get() returns T\nBox<T>(T value) implements Source<T>:\n    get() returns T:\n        return value\nnameOf<T implements Named>(T value) returns string:\n    return value.name()\n",
+        "main.aug": "import Item and Box and Source and Named and nameOf from app\nitem = Item(title=\"orchard\")\nSource<Named> source = Box(value=item)\nprint(value=nameOf(value=source.get()))\nprint(value=item.score())\n"
+      },
+      "stdout": "orchard\n23\n"
+    },
+    {
+      "id": "dependency-scopes",
+      "files": {
+        "counter.aug": "interface Counter:\n    next() returns int changes self\nCount() implements Counter:\n    mutable int _value = 10\n    next() returns int:\n        _value = _value + 1\n        return _value\n",
+        "main.aug": "import Counter and Count from counter\nimplement Counter with Count scoped mutable\nscope:\n    resolve Counter to first\n    resolve Counter to second\n    print(value=first == second)\n    borrow first:\n        print(value=first.next())\n    scope:\n        resolve Counter to inner\n        borrow inner:\n            print(value=inner.next())\n    borrow first:\n        print(value=first.next())\n"
+      },
+      "stdout": "true\n11\n11\n12\n"
+    },
+    {
+      "id": "capabilities",
+      "files": {
+        "app.aug": "import Console from august.io\nreport(resolve Console output, string text):\n    output.write(value=text)\n",
+        "main.aug": "import report from app\nimport Console and SystemConsole from august.io\nimplement Console with SystemConsole\nreport(text=\"explicit dependency\")\n"
+      },
+      "stdout": "explicit dependency\n"
+    },
+    {
+      "id": "checked-cleanup",
+      "files": {
+        "app.aug": "Problem(string message) implements Error:\n    explain() returns string:\n        return message\ninterface Disposable:\n    drop()\nResource() implements Disposable:\n    drop():\n        pass\nanswer(bool fail) returns int:\n    own Resource resource = Resource()\n    try:\n        if fail:\n            throw Problem(message=\"expected failure\")\n        return 37\n    always:\n        int cleaned = 1\n",
+        "main.aug": "import answer and Problem from app\ntry:\n    print(value=answer(fail=false))\n    answer(fail=true)\ncatch Problem error:\n    print(value=error.explain())\n"
+      },
+      "stdout": "37\nexpected failure\n"
+    },
+    {
+      "id": "interceptors",
+      "files": {
+        "app.aug": "interceptor Offset():\n    around(int value) returns int:\n        return next(value=value + 4) + 1\n[Offset]\ntriple(int value) returns int:\n    return value * 3\n",
+        "main.aug": "import triple from app\nprint(value=triple(value=2))\n"
+      },
+      "stdout": "19\n"
+    },
+    {
+      "id": "workers",
+      "files": {
+        "app.aug": "total(List<int> values) returns int:\n    int result = 0\n    for value in values:\n        result = result + value\n    return result\n",
+        "main.aug": "import total from app\nvalues = [4, 6]\nscope:\n    first = start worker total(values)\n    second = start total(values=[2, 3])\n    borrow values:\n        values.append(value=8)\n    wait for first and second to copied and cooperative\n    print(value=copied)\n    print(value=cooperative)\nprint(value=values.length())\n"
+      },
+      "stdout": "10\n5\n3\n"
+    },
+    {
+      "id": "symbolic-logic",
+      "files": {
+        "main.aug": "print(value=true && false)\n"
+      },
+      "diagnostic": "SYNTAX"
+    },
+    {
+      "id": "private-import",
+      "files": {
+        "secret.aug": "_answer() returns int:\n    return 1\n",
+        "main.aug": "import _answer from secret\n"
+      },
+      "diagnostic": "PRIVATE"
+    },
+    {
+      "id": "unexported-folder",
+      "files": {
+        "hidden/item.aug": "answer() returns int:\n    return 1\n",
+        "main.aug": "import answer from hidden.item\n"
+      },
+      "diagnostic": "IMPORT"
+    },
+    {
+      "id": "unlabeled-call",
+      "files": {
+        "app.aug": "twice(int value) returns int:\n    return value * 2\n",
+        "main.aug": "import twice from app\ntwice(3)\n"
+      },
+      "diagnostic": "CALL"
+    },
+    {
+      "id": "unhandled-error",
+      "files": {
+        "app.aug": "fail() unless FileError:\n    throw FileError()\n",
+        "main.aug": "import fail from app\nfail()\n"
+      },
+      "diagnostic": "THROWS"
+    },
+    {
+      "id": "mixed-list",
+      "files": {
+        "main.aug": "values = [1, \"wrong\"]\n"
+      },
+      "diagnostic": "COLLECTION"
+    },
+    {
+      "id": "move-use",
+      "files": {
+        "app.aug": "interface Disposable:\n    drop()\nObject() implements Disposable:\n    drop():\n        pass\nuse(own Object value):\n    pass\n",
+        "main.aug": "import Object and use from app\nown Object value = Object()\nuse(value)\nuse(value)\n"
+      },
+      "diagnostic": "OWN"
+    },
+    {
+      "id": "alias-read",
+      "files": {
+        "main.aug": "values = [1]\nalias = values\nborrow values:\n    print(value=alias.length())\n"
+      },
+      "diagnostic": "BORROW"
+    },
+    {
+      "id": "readonly-write",
+      "files": {
+        "main.aug": "values = [1]\nvalues.append(value=2)\n"
+      },
+      "diagnostic": "BORROW"
+    },
+    {
+      "id": "non-error",
+      "files": {
+        "app.aug": "interface Named:\n    name() returns string\nProblem() implements Named:\n    name() returns string:\n        return \"problem\"\nfail() unless Problem:\n    throw Problem()\n",
+        "main.aug": ""
+      },
+      "diagnostic": "TYPE"
+    },
+    {
+      "id": "worker-shared",
+      "files": {
+        "app.aug": "read(Shared<List<int>> value) returns int:\n    return 1\n",
+        "main.aug": "import read from app\nvalue = Shared(value=[1])\nscope:\n    pending = start worker read(value)\n"
+      },
+      "diagnostic": "WORKER"
+    },
+    {
+      "id": "start-without-scope",
+      "files": {
+        "app.aug": "read() returns int:\n    return 1\n",
+        "main.aug": "import read from app\npending = start read()\n"
+      },
+      "diagnostic": "CONCURRENCY"
+    },
+    {
+      "id": "generic-mismatch",
+      "files": {
+        "app.aug": "same<T>(T left, T right) returns T:\n    return left\n",
+        "main.aug": "import same from app\nsame(left=1, right=\"wrong\")\n"
+      },
+      "diagnostic": "TYPE"
+    },
+    {
+      "id": "old-prefix",
+      "files": {
+        "app.aug": "function read() returns int:\n    return 1\n",
+        "main.aug": ""
+      },
+      "diagnostic": "PARSE"
+    },
+    {
+      "id": "text",
+      "files": {
+        "main.aug": "print(value=\"\ud83d\udc4b\".length())\nprint(value=\"caf\u00e9\".bytes().length())\n"
+      },
+      "stdout": "4\n5\n"
+    },
+    {
+      "id": "nul-text",
+      "files": {
+        "main.aug": "print(value=\"\\0\")\n"
+      },
+      "diagnostic": "TEXT"
+    }
+  ],
+  "mutations": [
+    {
+      "id": "swapped-label-calculation",
+      "case": "values",
+      "file": "math.aug",
+      "before": "return left * 10 + right",
+      "after": "return right * 10 + left"
+    },
+    {
+      "id": "wrong-record-field",
+      "case": "records",
+      "file": "main.aug",
+      "before": "print(value=wrapped.data.row)",
+      "after": "print(value=wrapped.data.column)"
+    }
+  ]
+}

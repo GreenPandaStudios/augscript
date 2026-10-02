@@ -1,6 +1,6 @@
-# Ownership and task conformance
+# Language conformance
 
-August 0.21 checks ownership before compiling and joins every child before its `scope` ends. The [conformance suite](../tests/language-conformance.test.mjs) exercises the rules below. The [compatibility policy](compatibility.md) becomes a commitment at 1.0.
+August checks its language contracts before native compilation. A [rule ledger](conformance-rules.md) connects every production in the documented grammar to named regression tests and independent acceptance programs. The compiler, runtime, formatter, native bindings, and deterministic specification generator have separate checks. The [conformance suite](../tests/language-conformance.test.mjs) exercises the rules below. The [compatibility policy](compatibility.md) becomes a commitment at 1.0.
 
 ## Compiler checks {#what-the-compiler-guarantees}
 
@@ -25,7 +25,7 @@ The compiler tracks object origins through aliases and fields. It can reject cod
 | Child failure | An unhandled child failure cancels siblings. Their `always` cleanup finishes before the error leaves the scope. An error already in flight from the parent remains primary if child cleanup also fails. | `CANCEL-1`, `ERROR-2` |
 | Syntax choice | Brace blocks and indented blocks run the same ownership and task behavior. | `SYNTAX-1` |
 
-Tasks currently run cooperatively on one OS thread. A long loop reaches cancellation at compiler-inserted checkpoints. `Shared<T>` is the explicit path for synchronized mutable state. The runtime does not yet promise parallel CPU execution.
+Cooperative tasks share their current heap. The next preview adds [worker tasks](workers.md), which run on OS threads with separate heaps and copied inputs/results. A runtime barrier test requires two distinct threads to overlap, then checks collection pressure, copied maps/lists, unchanged parent values, and release on the creating thread. It runs in both optimization modes under ThreadSanitizer and the address/undefined-behavior sanitizers.
 
 Scheduling an owned input transfers its cleanup responsibility immediately. If
 a sibling cancels the child before entry, the scheduler releases that input.
@@ -34,3 +34,11 @@ until the public task type has an owned-result transfer contract. Both backends
 exercise these cases in the concurrency suite.
 
 Run the focused suite with `node --test tests/language-conformance.test.mjs`. The full repository test command also runs existing [concurrency](../tests/concurrency.test.mjs), ownership, errors, formatter, and generated-spec tests. Additional adversarial cases and independent review are still needed before 1.0. See the [roadmap](roadmap.md).
+
+## Independent acceptance and platform gates
+
+The corpus in `conformance/cases.json` contains handwritten programs, expected output, and rejected-program diagnostic codes. Those expectations are independent of generated specifications and compiler output. The runner formats valid programs into both block styles and compiles them through LLVM in debug and release modes. Invalid fixtures are checked once in their written style and must fail before native execution. Two valid behavior changes must compile and produce a result that the independent oracle rejects. A missing rule, regression name, reference page, or grammar production makes ledger validation fail.
+
+Contributor qualification runs `npm run test:conformance` with a prepared LLVM tool/runtime pack. macOS ARM64 and GNU/Linux x64/ARM64 CI run the same corpus, existing language regressions, and worker runtime sanitizer checks. The result records compiler/runtime identities, target, source digest, modes, concrete outcomes, and omissions. GPU execution has a separate real-hardware gate; a headless CI runner cannot establish GPU correctness.
+
+The ledger is an inventory of tested contracts, not a proof that every possible program is safe. Runtime reliability, package upgrades, and the remaining release gates stay on the [1.0 roadmap](roadmap.md).

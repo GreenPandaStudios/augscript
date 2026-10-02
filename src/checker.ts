@@ -20,6 +20,7 @@ import {htmlTags, htmlVoidTags, htmlAttribute, htmlUrlAttributes} from './html.t
 import {generateOpenApi} from './openapi.ts';
 import {httpPolicyNames,httpPolicyOptions,checkHttpPolicy,type HttpPolicyPlan} from './http-policies.ts';
 import {nativeDeclarations, type NativeDeclarations} from './native-declarations.ts';
+import {checkWorkers} from './workers.ts';
 import type {NativeFunction,NativeView} from './native-contracts.ts';
 export { tyName, type Ty } from './types.ts';
 
@@ -149,6 +150,7 @@ const unresolved = (type: Ty): boolean => type.kind === 'error' || type.args.som
 export function checkProject(project: Project): CheckedProject {
   const checker = new Checker(project);
   const checked = checker.check();
+  if (!checked.diagnostics.some(d => d.severity !== 'warning')) checked.diagnostics.push(...checkWorkers(checked));
   if (project.config.openapi.enabled && !checked.diagnostics.some(issue => issue.severity !== 'warning'))
     checked.diagnostics.push(...generateOpenApi(checked).diagnostics);
   return checked;
@@ -2099,7 +2101,7 @@ class Checker {
           'A task cannot return an owned value. Return immutable data, or create and release the owned resource inside the task.', 'CONCURRENCY');
         context.flow.registerTask(task, scope, errors);
         const captureOrigins = (origins: Origins, actual: Ty, exclusive: boolean, span: Span) => {
-          if (!this.isReference(actual)) return;
+          if (expr.worker || !this.isReference(actual)) return;
           const shareable = actual.frozen || actual.name === 'Shared' ||
             actual.def?.node.kind === 'class' && actual.def.node.record ||
             ['Bytes', 'Json', 'Html', 'Headers', 'RsaPublicKey', 'RsaPrivateKey'].includes(actual.name);

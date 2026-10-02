@@ -44,6 +44,11 @@ jobs:
           docker exec -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools -e AUG_REQUIRE_DWARF=1 -e AUG_REQUIRE_DEBUGGER=1 -e AUG_DWARF_TOOL=/work/.aug-build/llvm-maintainer/bin/llvm-dwarfdump qualification node scripts/check-llvm-parity.mjs
           docker exec -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools qualification node --test tests/llvm-native-boundaries.test.mjs
           docker exec -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools -e AUG_SANITIZER_CC=/work/.aug-build/llvm-maintainer/bin/clang qualification node scripts/sanitize-core.mjs --backend llvm
+      - name: Check independent language contracts and worker races
+        run: |
+          docker exec -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools qualification npm run test:conformance
+          docker exec -e AUG_WORKER_SANITIZER=thread -e AUG_SANITIZER_CC=/work/.aug-build/llvm-maintainer/bin/clang qualification node --test tests/worker-runtime.test.mjs
+          docker exec -e AUG_WORKER_SANITIZER=address,undefined -e AUG_SANITIZER_CC=/work/.aug-build/llvm-maintainer/bin/clang qualification node --test tests/worker-runtime.test.mjs
       - name: Build real native libraries from separate repositories
         run: |
           for library in pytorch sqlite zlib blake3; do
@@ -71,7 +76,7 @@ jobs:
           mkdir -p .aug-build/public-consumer/{dist,examples,native,scripts,.aug-build}
           docker cp qualification:/work/dist/release .aug-build/public-consumer/dist/release
           docker cp "qualification:/work/.aug-build/aug-llvm-${{ matrix.host }}.tar.gz" .aug-build/public-consumer/.aug-build/
-          cp scripts/qualify-native-consumers.mjs scripts/native-qualification-pins.mjs .aug-build/public-consumer/scripts/
+          cp scripts/qualify-native-consumers.mjs scripts/qualify-workers.mjs scripts/native-qualification-pins.mjs .aug-build/public-consumer/scripts/
           cp native/library-qualification.json .aug-build/public-consumer/native/
           for library in pytorch sqlite zlib blake3; do
             mkdir -p ".aug-build/public-consumer/examples/native-$library"
@@ -80,12 +85,15 @@ jobs:
           docker cp .aug-build/public-consumer/. public-consumer:/consumer/
           docker exec public-consumer sh -c 'for tool in clang gcc git; do if command -v "$tool"; then exit 1; fi; done; test ! -d /usr/include; test ! -d /usr/local/include'
           docker exec -e AUG_GITHUB_TOKEN public-consumer node scripts/qualify-native-consumers.mjs --local-compiler --discard-builds
+          docker exec -e AUG_GITHUB_TOKEN public-consumer node scripts/qualify-workers.mjs --local-compiler
       - name: Collect measured candidates and qualification evidence
         if: always()
         run: |
           mkdir -p .aug-build/linux-evidence
           docker cp qualification:/work/.aug-build/native-consumer-qualification.json .aug-build/linux-evidence/qualification.json || true
           docker cp public-consumer:/consumer/.aug-build/native-consumer-qualification.json .aug-build/linux-evidence/public-clean-qualification.json || true
+          docker cp public-consumer:/consumer/.aug-build/worker-consumer-qualification.json .aug-build/linux-evidence/ || true
+          docker cp qualification:/work/.aug-build/language-conformance.json .aug-build/linux-evidence/ || true
           docker cp qualification:/work/.aug-build/llvm-migration-performance.json .aug-build/linux-evidence/ || true
           docker cp qualification:/work/.aug-build/kernels/results.json .aug-build/linux-evidence/kernels.json || true
           docker cp qualification:/work/.aug-build/gyms/results.json .aug-build/linux-evidence/gyms.json || true

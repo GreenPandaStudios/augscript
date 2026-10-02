@@ -16,7 +16,7 @@ the other three packages `v0.1.3`. Use [August 0.21.0](https://github.com/GreenP
 Use the normal package commands. This example adds CPU LibTorch under a short name:
 
 ```sh
-aug add https://github.com/GreenPandaStudios/aug-pytorch#v0.1.4 --as pytorch
+aug add https://github.com/GreenPandaStudios/aug-pytorch#v0.1.5 --as pytorch
 aug run
 ```
 
@@ -138,3 +138,9 @@ C++ adapters keep their qualified C++ runtime with the artifact. Source builds
 use Clang, platform headers and Linux relocation tools explicitly, while Rust
 adapters also use their pinned Rust/Cargo toolchain. Consumer installation has
 no automatic source-build fallback.
+
+## Native calls in workers
+
+The next preview supports isolated workers. A descriptor function opts in with `workerSafe: true`; omission means it may run on the main/cooperative heap only. This declaration covers independent instances, call-duration inputs, release operations, and library bookkeeping. It does not allow a native handle or retained August memory to cross worker heaps. Construct resources inside the worker and return copied data.
+
+Audit library global state, thread affinity, panic/exception boundaries, and cleanup before opting in. A GPU package can submit device work from the worker while keeping devices and buffers local. Its native operation must finish using each input before returning or releasing that input. The compiler validates the declaration and ownership contract, while native hardware and sanitizer tests validate the implementation.

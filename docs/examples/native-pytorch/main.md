@@ -31,7 +31,7 @@ pageClass: aug-example-page
 ```aug [Indentation]
 // aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import calculate from tensors
-import TensorError from "https://github.com/GreenPandaStudios/aug-pytorch#v0.1.4"
+import TensorError from "https://github.com/GreenPandaStudios/aug-pytorch#v0.1.5"
 try:
     print(value=calculate())
 catch TensorError error:
@@ -41,7 +41,7 @@ catch TensorError error:
 ```aug [Braces]
 // aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import calculate from tensors
-import TensorError from "https://github.com/GreenPandaStudios/aug-pytorch#v0.1.4"
+import TensorError from "https://github.com/GreenPandaStudios/aug-pytorch#v0.1.5"
 try {
     print(value=calculate())
 }
@@ -60,11 +60,11 @@ catch TensorError error {
 
 ### Startup
 
-It prints [`calculate`](tensors.md#symbol-calculate). If this work raises [`TensorError`](dependencies/packages/%40greenpandastudios/aug-pytorch/0.1.4/contracts.md#symbol-TensorError) as `error`, it prints `error.message`.
+It prints [`calculate`](tensors.md#symbol-calculate). If this work raises [`TensorError`](dependencies/packages/%40greenpandastudios/aug-pytorch/0.1.5/contracts.md#symbol-TensorError) as `error`, it prints `error.message`.
 
 ### Dependencies
 
-It uses [`TensorError`](dependencies/packages/%40greenpandastudios/aug-pytorch/0.1.4/contracts.md#symbol-TensorError) (`message`) from `https://github.com/GreenPandaStudios/aug-pytorch#v0.1.4`. It uses [`calculate`](tensors.md#symbol-calculate) from `tensors`.
+It uses [`TensorError`](dependencies/packages/%40greenpandastudios/aug-pytorch/0.1.5/contracts.md#symbol-TensorError) (`message`) from `https://github.com/GreenPandaStudios/aug-pytorch#v0.1.5`. It uses [`calculate`](tensors.md#symbol-calculate) from `tensors`.
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).
 

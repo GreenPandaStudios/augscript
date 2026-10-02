@@ -136,7 +136,7 @@ class Printer {
     else if (expr.kind === 'name') value = expr.name;
     else if (expr.kind === 'handle') value = `handle ${this.expression(expr.call, 8)}`;
     else if (expr.kind === 'formInput') value = 'input from form';
-    else if (expr.kind === 'start') value = `start ${this.expression(expr.call, 8)}`;
+    else if (expr.kind === 'start') value = `start ${expr.worker ? 'worker ' : ''}${this.expression(expr.call, 8)}`;
     else if (expr.kind === 'wait') value = `wait for ${expr.tasks.map(task => this.expression(task, 8)).join(' and ')}`;
     else if (expr.kind === 'resolve') value = `resolve ${expr.name}` + (expr.typeArgs.length ? '<' + expr.typeArgs.map(typeName).join(', ') + '>' : '');
     else if (expr.kind === 'member') value = `${this.expression(expr.object, 8)}.${expr.name}`;

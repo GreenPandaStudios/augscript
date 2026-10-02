@@ -20,7 +20,7 @@ LibTorch creates two float64 tensors, adds them, and sums the result to 21. The 
 
 ```text
 import calculate from tensors
-import TensorError from "https://github.com/GreenPandaStudios/aug-pytorch#v0.1.4"
+import TensorError from "https://github.com/GreenPandaStudios/aug-pytorch#v0.1.5"
 
 try:
     print(value=calculate())
@@ -31,7 +31,7 @@ catch TensorError error:
 **tensors.aug**
 
 ```text
-import Tensor and TensorError and tensor and add and sum and values from "https://github.com/GreenPandaStudios/aug-pytorch#v0.1.4"
+import Tensor and TensorError and tensor and add and sum and values from "https://github.com/GreenPandaStudios/aug-pytorch#v0.1.5"
 
 /** Add two CPU tensors using LibTorch and return the sum of their elements. */
 calculate() returns float unless TensorError:
@@ -71,7 +71,7 @@ SQLite opens an in-memory database, creates a table, inserts a bound parameter, 
 
 ```text
 import storedName from database
-import SqliteError from "https://github.com/GreenPandaStudios/aug-sqlite#v0.1.3"
+import SqliteError from "https://github.com/GreenPandaStudios/aug-sqlite#v0.1.4"
 
 try:
     print(value=storedName())
@@ -82,7 +82,7 @@ catch SqliteError error:
 **database.aug**
 
 ```text
-import Database and SqliteError and openMemory and execute and queryScalar from "https://github.com/GreenPandaStudios/aug-sqlite#v0.1.3"
+import Database and SqliteError and openMemory and execute and queryScalar from "https://github.com/GreenPandaStudios/aug-sqlite#v0.1.4"
 
 /** Store a bound value in an in-memory SQLite database and read it back. */
 storedName() returns string unless SqliteError:
@@ -114,7 +114,7 @@ zlib compresses a UTF-8 buffer and decompresses it with a 4,096-byte output limi
 
 ```text
 import roundTrip from compression
-import CompressionError from "https://github.com/GreenPandaStudios/aug-zlib#v0.1.3"
+import CompressionError from "https://github.com/GreenPandaStudios/aug-zlib#v0.1.4"
 
 try:
     print(value=roundTrip().text())
@@ -127,7 +127,7 @@ catch ConversionError error:
 **compression.aug**
 
 ```text
-import CompressionError and compress and decompress from "https://github.com/GreenPandaStudios/aug-zlib#v0.1.3"
+import CompressionError and compress and decompress from "https://github.com/GreenPandaStudios/aug-zlib#v0.1.4"
 
 /** Compress text with zlib, then restore its bytes within a fixed output limit. */
 roundTrip() returns Bytes unless CompressionError:
@@ -159,7 +159,7 @@ The Rust BLAKE3 crate hashes abc. Its result must match the published 64-charact
 
 ```text
 import hashText from hashing
-import HashError from "https://github.com/GreenPandaStudios/aug-blake3#v0.1.3"
+import HashError from "https://github.com/GreenPandaStudios/aug-blake3#v0.1.4"
 
 try:
     print(value=hashText(value="abc"))
@@ -170,7 +170,7 @@ catch HashError error:
 **hashing.aug**
 
 ```text
-import HashError and hash from "https://github.com/GreenPandaStudios/aug-blake3#v0.1.3"
+import HashError and hash from "https://github.com/GreenPandaStudios/aug-blake3#v0.1.4"
 
 /** Hash UTF-8 text with the real Rust BLAKE3 implementation. */
 hashText(string value) returns string unless HashError:

@@ -67,11 +67,11 @@ Writes application messages to standard output. It implements [`Logger`](logger.
 
 #### `ConsoleLogger.log` · [source](console.md#code) {#symbol-ConsoleLogger.log}
 
-It takes `message` as a string (Text to write). It gets `console` ([`Console`](../dependencies/august/0.21.0/io/contracts.md#symbol-Console)) from dependency injection. It passes `message` to [`console.write`](../dependencies/august/0.21.0/io/contracts.md#symbol-Console.write).
+It takes `message` as a string (Text to write). It gets `console` ([`Console`](../dependencies/august/0.22.0/io/contracts.md#symbol-Console)) from dependency injection. It passes `message` to [`console.write`](../dependencies/august/0.22.0/io/contracts.md#symbol-Console.write).
 
 ### Dependencies
 
-It uses [`Console`](../dependencies/august/0.21.0/io/contracts.md#symbol-Console) ([`write`](../dependencies/august/0.21.0/io/contracts.md#symbol-Console.write)) from `august.io`. It uses [`Logger`](logger.md#symbol-Logger) from `logger`.
+It uses [`Console`](../dependencies/august/0.22.0/io/contracts.md#symbol-Console) ([`write`](../dependencies/august/0.22.0/io/contracts.md#symbol-Console.write)) from `august.io`. It uses [`Logger`](logger.md#symbol-Logger) from `logger`.
 
 ::::
 

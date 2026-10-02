@@ -68,6 +68,7 @@ export default defineConfig({
         { text: 'Compiled specifications', link: '/specifications' },
         { text: 'Packages and installation', link: '/packages' },
         { text: 'Native library packages', link: '/native-packages' },
+        { text: 'Multicore workers', link: '/workers' },
         { text: 'Docker deployment', link: '/docker' },
         { text: 'VS Code Dev Containers', link: '/dev-containers' },
         { text: 'Diagnostics', link: '/diagnostics' }

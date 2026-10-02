@@ -1,29 +1,29 @@
 {
   "format": 1,
-  "compiler": "0.21.0",
+  "compiler": "0.22.0",
   "specifications": {
-    "url_d228d2263a1adea428cd": "https://github.com/GreenPandaStudios/aug-zlib#v0.1.3"
+    "url_ebbff0f5997617dcd368": "https://github.com/GreenPandaStudios/aug-zlib#v0.1.4"
   },
   "roots": {
-    "url_d228d2263a1adea428cd": "packages/url_d228d2263a1adea428cd"
+    "url_ebbff0f5997617dcd368": "packages/url_ebbff0f5997617dcd368"
   },
   "npm": {},
   "git": [
     {
-      "request": "https://github.com/GreenPandaStudios/aug-zlib#v0.1.3",
+      "request": "https://github.com/GreenPandaStudios/aug-zlib#v0.1.4",
       "repository": "https://github.com/GreenPandaStudios/aug-zlib.git",
-      "revision": "v0.1.3",
+      "revision": "v0.1.4",
       "folder": "",
-      "commit": "827a8dde5d0d013d00fff6a2a19036b299d0085f"
+      "commit": "a294fe19d02efcf8db6ba695e11bf6129ad734cf"
     }
   ],
   "packages": [
     {
-      "path": "packages/url_d228d2263a1adea428cd",
+      "path": "packages/url_ebbff0f5997617dcd368",
       "name": "@greenpandastudios/aug-zlib",
-      "version": "0.1.3",
+      "version": "0.1.4",
       "source": "src",
-      "digest": "655984ba9c26061fb89b2dbc9764a114926c1b5e1bce1fb1ff0b4f0283aab74b",
+      "digest": "056609a24c9e8ea9b41a8a919ed9b1221a9c6025532ce439fe189326e5084625",
       "dependencies": {},
       "native": {
         "profile": "aug-native-abi-1",
@@ -184,9 +184,9 @@
         },
         "packages": [
           {
-            "sourcePackage": "@greenpandastudios/aug-zlib@0.1.3",
-            "sourceDigest": "655984ba9c26061fb89b2dbc9764a114926c1b5e1bce1fb1ff0b4f0283aab74b",
-            "sourceCommit": "827a8dde5d0d013d00fff6a2a19036b299d0085f",
+            "sourcePackage": "@greenpandastudios/aug-zlib@0.1.4",
+            "sourceDigest": "056609a24c9e8ea9b41a8a919ed9b1221a9c6025532ce439fe189326e5084625",
+            "sourceCommit": "a294fe19d02efcf8db6ba695e11bf6129ad734cf",
             "contractSha256": "c3d4b36eadcccd13caff71597ed77a8e7307f0cfe3d13660a8e9127efe942b3d",
             "artifact": {
               "id": "macos-arm64",

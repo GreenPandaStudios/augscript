@@ -1,29 +1,29 @@
 {
   "format": 1,
-  "compiler": "0.21.0",
+  "compiler": "0.22.0",
   "specifications": {
-    "url_ec6f73485e9c2d30be64": "https://github.com/GreenPandaStudios/aug-sqlite#v0.1.3"
+    "url_3c4383d3e9749457dc8d": "https://github.com/GreenPandaStudios/aug-sqlite#v0.1.4"
   },
   "roots": {
-    "url_ec6f73485e9c2d30be64": "packages/url_ec6f73485e9c2d30be64"
+    "url_3c4383d3e9749457dc8d": "packages/url_3c4383d3e9749457dc8d"
   },
   "npm": {},
   "git": [
     {
-      "request": "https://github.com/GreenPandaStudios/aug-sqlite#v0.1.3",
+      "request": "https://github.com/GreenPandaStudios/aug-sqlite#v0.1.4",
       "repository": "https://github.com/GreenPandaStudios/aug-sqlite.git",
-      "revision": "v0.1.3",
+      "revision": "v0.1.4",
       "folder": "",
-      "commit": "54371656e3f8d47d020b974f97267a9017b5e552"
+      "commit": "d148c7b879d868feedc53d1750e290b72460c0ad"
     }
   ],
   "packages": [
     {
-      "path": "packages/url_ec6f73485e9c2d30be64",
+      "path": "packages/url_3c4383d3e9749457dc8d",
       "name": "@greenpandastudios/aug-sqlite",
-      "version": "0.1.3",
+      "version": "0.1.4",
       "source": "src",
-      "digest": "50bc12ee1c63d26c745aaa50ce065f893a1e23fb3c4027608ac90a5f81e8561d",
+      "digest": "b920845add66eef77d734994d0ef8b6f04f5a43e3ce030d1480a589de075ab28",
       "dependencies": {},
       "native": {
         "profile": "aug-native-abi-1",
@@ -184,9 +184,9 @@
         },
         "packages": [
           {
-            "sourcePackage": "@greenpandastudios/aug-sqlite@0.1.3",
-            "sourceDigest": "50bc12ee1c63d26c745aaa50ce065f893a1e23fb3c4027608ac90a5f81e8561d",
-            "sourceCommit": "54371656e3f8d47d020b974f97267a9017b5e552",
+            "sourcePackage": "@greenpandastudios/aug-sqlite@0.1.4",
+            "sourceDigest": "b920845add66eef77d734994d0ef8b6f04f5a43e3ce030d1480a589de075ab28",
+            "sourceCommit": "d148c7b879d868feedc53d1750e290b72460c0ad",
             "contractSha256": "3c75c2925c85f1b83db06ee00fa04f1d2d37c9fd6edca0d074ce89b4647ffffb",
             "artifact": {
               "id": "macos-arm64",

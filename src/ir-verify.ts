@@ -78,7 +78,7 @@ function verifyInstruction(i:IrInstruction,ir:AugustIR,fn:IrFunction,entry:(name
   switch(i.op){
     case 'call':entry(i.function,i.args.length,i.receiver!==undefined,i.span);return;
     case 'method':if(!identifier.test(i.name))error('Invalid method identity');return;
-    case 'start':entry(i.function,i.args.length,i.receiver!==undefined,i.span);if(i.owned.length!==i.args.length)error('Task capture ownership mask has a different length');return;
+    case 'start':if(i.worker&&(i.receiver!==undefined||i.owned.some(Boolean)))error('Worker entry must have copied inputs and no receiver');entry(i.function,i.args.length,i.receiver!==undefined,i.span);if(i.owned.length!==i.args.length)error('Task capture ownership mask has a different length');return;
     case 'runtime':{
       if(!(runtimeOperations as readonly string[]).includes(i.operation)&&!(httpOperations as readonly string[]).includes(i.operation))error('Unknown runtime operation '+i.operation);
       const arity=runtimeArities[i.operation as keyof typeof runtimeArities];

@@ -1,29 +1,29 @@
 {
   "format": 1,
-  "compiler": "0.21.0",
+  "compiler": "0.22.0",
   "specifications": {
-    "url_0e8c1689393af3a98565": "https://github.com/GreenPandaStudios/aug-blake3#v0.1.3"
+    "url_d0cd094daa842b3ed7ca": "https://github.com/GreenPandaStudios/aug-blake3#v0.1.4"
   },
   "roots": {
-    "url_0e8c1689393af3a98565": "packages/url_0e8c1689393af3a98565"
+    "url_d0cd094daa842b3ed7ca": "packages/url_d0cd094daa842b3ed7ca"
   },
   "npm": {},
   "git": [
     {
-      "request": "https://github.com/GreenPandaStudios/aug-blake3#v0.1.3",
+      "request": "https://github.com/GreenPandaStudios/aug-blake3#v0.1.4",
       "repository": "https://github.com/GreenPandaStudios/aug-blake3.git",
-      "revision": "v0.1.3",
+      "revision": "v0.1.4",
       "folder": "",
-      "commit": "e4ef39bdc89892e7b0644f5fa03ca4dc8b8042ae"
+      "commit": "a624b46069d2b9b73fa7d779e88051c8f8e84080"
     }
   ],
   "packages": [
     {
-      "path": "packages/url_0e8c1689393af3a98565",
+      "path": "packages/url_d0cd094daa842b3ed7ca",
       "name": "@greenpandastudios/aug-blake3",
-      "version": "0.1.3",
+      "version": "0.1.4",
       "source": "src",
-      "digest": "762d5c61efd539981a9cb9d8a1b838b7f0cf26b50373f334c163d6ab4fe6ef14",
+      "digest": "5f570469157637e6b1e0e2ca68f0e858537d7b2f3776d2c11468f1cf755bf415",
       "dependencies": {},
       "native": {
         "profile": "aug-native-abi-1",
@@ -201,9 +201,9 @@
         },
         "packages": [
           {
-            "sourcePackage": "@greenpandastudios/aug-blake3@0.1.3",
-            "sourceDigest": "762d5c61efd539981a9cb9d8a1b838b7f0cf26b50373f334c163d6ab4fe6ef14",
-            "sourceCommit": "e4ef39bdc89892e7b0644f5fa03ca4dc8b8042ae",
+            "sourcePackage": "@greenpandastudios/aug-blake3@0.1.4",
+            "sourceDigest": "5f570469157637e6b1e0e2ca68f0e858537d7b2f3776d2c11468f1cf755bf415",
+            "sourceCommit": "a624b46069d2b9b73fa7d779e88051c8f8e84080",
             "contractSha256": "3bf8dea97cde70a03021bf77ea08314d6d37fe7b4935ff16030b2ab929c21279",
             "artifact": {
               "id": "macos-arm64",

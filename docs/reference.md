@@ -300,9 +300,11 @@ Nullable locals narrow after null checks, short-circuit conditions, match patter
 
 An error satisfies Error. A body infers escaping errors. A bodyless signature or explicit bound names specific errors with `returns T unless FileError and DomainError`. It can throw any value satisfying its declaration; declaring Error accepts any Error implementation. Calls must catch or propagate all effective errors, including interceptor layers; executable callers infer propagation when unless is omitted.
 
+`start worker` schedules a standalone function on an OS thread with a private heap and copied data. Its inputs cannot be injected or owned/borrowed references, and its result and errors must be copied data. Construct services and native resources inside the worker; [worker boundaries](workers.md) explain the supported types and native contracts.
+
 `start` evaluates its receiver and arguments immediately; their errors belong to the scheduling statement. The scheduled operation's errors belong to a `wait for` or its owning scope's implicit join. Unobserved sibling failures can reach any wait in that group. Grouped waits observe every selected child, including cancellation cleanup, and rethrow the first failure. A helper awaiting a `Task<T>` parameter declares or handles `Error`, since that public type does not specify a narrower error contract yet.
 
-A task can take an owned input. Scheduling transfers cleanup responsibility to
+A cooperative task can take an owned input. Scheduling transfers cleanup responsibility to
 the child, including when cancellation occurs before its function runs. A task
 cannot return an `own` value: `Task<T>` has no owned-result transfer contract.
 Create and release resources inside the task, then return immutable data.

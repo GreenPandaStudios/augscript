@@ -1058,7 +1058,7 @@ Match the present case of a nullable value and introduce a read-only non-null na
 task = start loadUsers()
 ```
 
-Start a child task in a scope. Receiver and arguments evaluate immediately. Scheduled errors are checked at waits and implicit scope joins; an unhandled child error cancels siblings. A captured object cannot be mutated or moved by the parent while the child uses it. When start runs inside a loop, waiting for one result does not release captures from other iterations; the enclosing scope joins them all.
+Start a child Task in a scope. Receiver and arguments evaluate immediately. Cooperative tasks capture references; wait before mutating or moving captured objects. Use start worker calculate(values) to copy data to an isolated heap and run on an OS thread. Both forms use the same waits, checked errors, sibling cancellation, and scope joins.
 
 ## streams
 
@@ -1203,6 +1203,14 @@ implement key with Class;
 ```
 
 Separates a binding key from its implementing class. The class must satisfy an interface key.
+
+## worker
+
+```text
+task = start worker calculate(values)
+```
+
+Run a standalone function on a worker with its own heap. Inputs and results are copied scalars, records, bytes, JSON, or collections of copied data. Construct dependencies and native resources inside the worker. Parent bindings, Shared values, behavior objects, tasks, own/borrow inputs, and native handles cannot cross the boundary. Native calls require an explicit workerSafe package contract. GPU operations belong in a native package; its handles stay on this worker.
 
 ## write_file
 

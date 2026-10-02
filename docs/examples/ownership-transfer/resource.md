@@ -87,11 +87,11 @@ It returns ownership of [`Resource`](resource.md#symbol-Resource). It creates [`
 
 ### `consume` · [source](resource.md#code) {#symbol-consume}
 
-It takes `value` as [`Resource`](resource.md#symbol-Resource) with ownership transferred. It gets `console` ([`Console`](dependencies/august/0.21.0/io/contracts.md#symbol-Console)) from dependency injection. It passes `"consumed"` to [`console.write`](dependencies/august/0.21.0/io/contracts.md#symbol-Console.write).
+It takes `value` as [`Resource`](resource.md#symbol-Resource) with ownership transferred. It gets `console` ([`Console`](dependencies/august/0.22.0/io/contracts.md#symbol-Console)) from dependency injection. It passes `"consumed"` to [`console.write`](dependencies/august/0.22.0/io/contracts.md#symbol-Console.write).
 
 ### Dependencies
 
-It uses [`Console`](dependencies/august/0.21.0/io/contracts.md#symbol-Console) ([`write`](dependencies/august/0.21.0/io/contracts.md#symbol-Console.write)) from `august.io`.
+It uses [`Console`](dependencies/august/0.22.0/io/contracts.md#symbol-Console) ([`write`](dependencies/august/0.22.0/io/contracts.md#symbol-Console.write)) from `august.io`.
 
 ::::
 

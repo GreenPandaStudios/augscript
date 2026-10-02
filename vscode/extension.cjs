@@ -399,7 +399,7 @@ async function signatureHelp(context, document, position) {
 }
 
 const semanticTypes = ['class', 'interface', 'function', 'method', 'property',
-  'variable', 'parameter', 'typeParameter', 'type', 'decorator'];
+  'variable', 'parameter', 'typeParameter', 'type', 'decorator', 'keyword'];
 const semanticLegend = new vscode.SemanticTokensLegend(semanticTypes, ['declaration']);
 
 async function semanticTokens(context, document) {
