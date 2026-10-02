@@ -5,15 +5,20 @@ All first-party packages and the extension use one compiler-compatible version. 
 ## Verify and create artifacts
 
 ```sh
-node scripts/version.mjs 0.20.1
+node scripts/version.mjs 0.21.0
 npm ci
 npm --prefix vscode ci
 node scripts/bootstrap-native.mjs
+node scripts/prepare-llvm-tools.mjs
+node scripts/prepare-llvm-maintainer.mjs
+node scripts/build-runtime-pack.mjs
+export AUG_LLVM_HOME="$PWD/.aug-build/llvm-tools"
 npm run version:check
 npm run check
 npm test
 npm run docs:check
 npm run docs:build
+node scripts/merge-compiler-packs.mjs .aug-build/release-packs
 npm run package:packages
 npm run test:packages -- --native
 npm run package:extension
@@ -22,15 +27,15 @@ node scripts/publish-release.mjs dist/release --verify-only
 node scripts/publish-extension.mjs dist/release --verify-only
 ```
 
-Update both changelogs and relevant guides, and commit regenerated docs. The final artifact step combines four installable npm tarballs, a VSIX, offline documentation, package metadata and SHA-256 checksums under `dist/release`. It excludes native caches, private credentials and application build output.
+The merge step requires the exact qualified producer archives and manifests for all three hosts under `.aug-build/release-packs`; `release.yml` obtains them before packaging. Update both changelogs and relevant guides, and commit regenerated docs. The final artifact step combines four installable npm tarballs, a VSIX, compiler packs, offline documentation, package metadata and SHA-256 checksums under `dist/release`. It excludes native caches, private credentials and application build output.
 
 ## GitHub release
 
 After verification and committing, create and push the version tag:
 
 ```sh
-git tag v0.20.1
-git push origin main v0.20.1
+git tag v0.21.0
+git push origin main v0.21.0
 ```
 
 `release.yml` validates the tag against every manifest, runs compiler/native/docs/package gates, and uploads artifacts to a **draft prerelease**. Review the draft and publish it in GitHub Releases. Publishing starts **Publish npm packages** and **Publish VS Code extension** automatically. Each workflow deploys the archives attached to that release. Changing an asset after review invalidates its checksum.
@@ -53,6 +58,11 @@ Runtime compilation remains a maintainer operation. Application installation
 downloads the reviewed pack and does not build LLVM or invoke Clang. CI runs the
 LLVM execution tests with its prepared toolchain; unsupported platforms retain
 explicit preview diagnostics. See [native packages](native-packages.md).
+Producer jobs require source breakpoint/variable inspection, actual LLVM ASan
+instrumentation with a failing negative control, runtime UBSan, and the frozen
+paired C/LLVM performance limits. Consumer jobs exercise an ordinary default
+LLVM starter and all four public native repositories without native tools,
+including frozen/offline locks, cleanup and relocated deployment bundles.
 
 The packages use the `@greenpandastudios` npm scope. Verify ownership and each package's trusted publisher before a release. GitHub tarballs can also be installed directly.
 
@@ -103,7 +113,7 @@ Enable GitHub Pages with **GitHub Actions** as its publishing source. `docs.yml`
 
 ## Current limits
 
-August is experimental. Native web/crypto bootstrap supports macOS and Linux; other platforms are unverified. npm and Marketplace deployment require owner-configured trust. The first `v0.20.1` Marketplace attempt failed during the VSCE 4.0.0 OIDC token exchange with an API-version error; automated Marketplace publication remains unverified, and the checked VSIX is available from GitHub Releases. User libraries can use public Git repositories, local folders, or npm archives. Prebuilt native dependency releases and a stable external native adapter ABI remain future work. See [the gap ledger](web-library-gaps.md) and [performance assessment](performance.md).
+August is experimental. The LLVM/native candidate targets macOS 14+ ARM64 and GNU/Linux x86-64/ARM64 with glibc 2.36+; other platforms are unverified. npm and Marketplace deployment require owner-configured trust. The first `v0.20.1` Marketplace attempt failed during the VSCE 4.0.0 OIDC token exchange with an API-version error. The publisher now pins VSCE 4.0.1-1, whose [upstream fix](https://github.com/microsoft/vscode-vsce/blob/main/src/oidc.ts) supplies the API version and federated authorization scheme. Automated Marketplace publication remains unverified until a real release passes; the checked VSIX is available from GitHub Releases. User libraries use ordinary public Git repositories, local folders, or npm archives. The four native library repositories publish prebuilt artifacts; the 0.21.0 compiler release remains pending. Stabilizing the external adapter ABI is a 1.0 gate. See [the gap ledger](web-library-gaps.md) and [performance assessment](performance.md).
 ## Native preview qualification
 
 Before publishing a compiler with native package support, build its LLVM pack

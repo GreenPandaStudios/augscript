@@ -20,7 +20,7 @@ const root = resolve(import.meta.dirname, '..'), sources = join(root, 'benchmark
 mkdirSync(build, { recursive: true });
 const option = (name, fallback) => { const index = process.argv.indexOf(name); return index < 0 ? fallback : Number(process.argv[index + 1]); };
 const stringOption = name => { const index = process.argv.indexOf(name); return index < 0 ? undefined : process.argv[index + 1]; };
-const backend=stringOption('--backend')??'c';assert.ok(['c','llvm'].includes(backend),'--backend must be c or llvm');
+const backend=stringOption('--backend')??'llvm';assert.ok(['c','llvm'].includes(backend),'--backend must be c or llvm');
 const compareC=process.argv.includes('--compare-c-backend');assert.ok(!compareC||backend==='llvm','--compare-c-backend requires --backend llvm');
 const llvmToolchain=backend==='llvm'?await prepareLLVMCompiler():undefined;
 const only = stringOption('--only')?.split(',');

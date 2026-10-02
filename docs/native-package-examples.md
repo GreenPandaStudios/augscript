@@ -2,7 +2,7 @@
 
 This page records design examples from the [LLVM/native architecture plan](native-interop-llvm-plan.md). The four package repositories now exist and their real native adapters pass local LLVM qualification. Read [native packages](native-packages.md) for the implemented profile. The examples below include future binding-generation and library-output commands; these remain proposals. Placeholder digests and sizes are illustrative.
 
-The implemented packages use LibTorch **2.14.1**, SQLite **3.53.4**, zlib **1.3.2**, and Rust `blake3` **1.8.7**, with LLVM **23.1.2**. Their public native archives have passed installed-CLI checks locally and on a macOS 14 ARM64 CI runner. Compiler publication and broader LLVM parity are still pending; the [implementation record](native-implementation.md) tracks those limits. Complete source/spec examples are available for [PyTorch](examples/native-pytorch/index.md), [SQLite](examples/native-sqlite/index.md), [zlib](examples/native-zlib/index.md), and [BLAKE3](examples/native-blake3/index.md).
+The implemented packages use LibTorch **2.14.1**, SQLite **3.53.4**, zlib **1.3.2**, and Rust `blake3` **1.8.7**, with LLVM **23.1.2**. Their public native archives have passed installed-CLI checks locally, on macOS 14 ARM64, and in clean Debian 12 x86-64/ARM64 consumers. Full supported-language parity is implemented; the updated default-backend gates and compiler publication remain pending. The [implementation record](native-implementation.md) tracks those limits. Complete source/spec examples are available for [PyTorch](examples/native-pytorch/index.md), [SQLite](examples/native-sqlite/index.md), [zlib](examples/native-zlib/index.md), and [BLAKE3](examples/native-blake3/index.md).
 
 ## Shared repository and artifact convention
 

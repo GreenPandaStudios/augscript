@@ -28,7 +28,9 @@ const run=(args)=>{const result=spawnSync(cc,[...flags,...args],{encoding:'utf8'
 mkdirSync(join(output,'lib'),{recursive:true});mkdirSync(join(output,'platform'),{recursive:true});mkdirSync(join(output,'licenses'),{recursive:true});
 const libraryName=mac?'lib/libaug_runtime.1.dylib':'lib/libaug_runtime.so.1',library=join(output,libraryName);
 const sources=['aug_runtime.c','aug_values.c','aug_tasks.c','aug_json.c','aug_time.c','aug_ir.c'];
-run([...(mac?['-dynamiclib','-Wl,-install_name,@rpath/libaug_runtime.1.dylib']:['-shared','-Wl,-soname,libaug_runtime.so.1','-Wl,-rpath,$ORIGIN','-pthread']),...sources.map(f=>join(root,'runtime',f)),join(yyjson,'src/yyjson.c'),...(!mac?['-lm']:[]),'-o',library]);
+// Private runtime functions use their own definitions, as in the C reference.
+// Keep data symbols preemptible: application/native callbacks share runtime state.
+run([...(mac?['-dynamiclib','-Wl,-install_name,@rpath/libaug_runtime.1.dylib']:['-shared','-Wl,-Bsymbolic-functions','-Wl,-soname,libaug_runtime.so.1','-Wl,-rpath,$ORIGIN','-pthread']),...sources.map(f=>join(root,'runtime',f)),join(yyjson,'src/yyjson.c'),...(!mac?['-lm']:[]),'-o',library]);
 const probe=join(output,'layout.c'),binary=join(output,'layout');
 const measurements={valueSize:'sizeof(AugValue)',valueAlignment:'_Alignof(AugValue)',valuePayloadOffset:'offsetof(AugValue,as)',frameSize:'sizeof(AugFrame)',methodEntrySize:'sizeof(AugMethodEntry)',pointerSize:'sizeof(void*)',schemaSize:'sizeof(AugSchema)',schemaPointerMakerOffset:'offsetof(AugSchema,pointer_make)',routeSize:'sizeof(AugRoute)',routePointerHandlerOffset:'offsetof(AugRoute,pointer_handler)',policySize:'sizeof(AugHttpPolicy)',httpErrorSize:'sizeof(AugIrHttpError)',executionErrorOffset:'offsetof(AugExecution,has_error)',executionCancelledOffset:'offsetof(AugExecution,cancelled)',executionFiberOffset:'offsetof(AugExecution,fiber)',booleanSize:'sizeof(bool)'};
 const probeFormat='{"abi":"compiler-private-runtime-v1",'+Object.keys(measurements).map(key=>'"'+key+'":%zu').join(',')+'}\n';

@@ -84,6 +84,7 @@ jobs:
           docker cp "qualification:/work/.aug-build/compiler-pack-${{ matrix.host }}.json" .aug-build/linux-evidence/ || true
           docker cp "qualification:/work/.aug-build/aug-llvm-${{ matrix.host }}.tar.gz" .aug-build/linux-evidence/ || true
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        if: always()
         with:
           name: llvm-${{ matrix.host }}-candidate
           include-hidden-files: true

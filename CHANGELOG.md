@@ -4,6 +4,8 @@
 
 - Select LLVM for ordinary builds, runs and same-file tests on the qualified macOS ARM64 and GNU/Linux x86-64/ARM64 hosts. Obtain verified compiler/runtime artifacts automatically; keep C available as an explicit migration reference. Container deployments copy the executable with its neighboring libraries and notices.
 - Use the C-compatible DWARF type reader for tagged August storage so supported LLDB versions can display locals. Source files, locations and producer remain August; native debugger expressions do not evaluate August syntax.
+- Bind GNU runtime internal function calls directly while retaining shared data symbols and external allocator hooks. Recheck startup, collection and HTTP measurements against the frozen migration limits.
+- Update the locked VSCE publisher to 4.0.1-1 for its upstream Marketplace OIDC API-version and federated-token fixes. Publication still requires a verified release and the configured trusted policy.
 - Add GNU/Linux x86-64 and ARM64 LLVM candidates with an explicit glibc 2.36 floor, ELF process entry, SDK-free linking, relocatable runtimes, and checked libc/C++ requirements. Musl and cross compilation remain unsupported.
 - Handle native archive write failures through the CLI and discard rejected extraction state; verify large archives across bounded reader chunks.
 - Build compiler packs for each target and merge their exact pins before npm/VSIX packaging. Require minimum-platform consumer checks before creating the release draft; local library qualification records its transport separately from public imports.
@@ -12,7 +14,7 @@
 - Constructor interception releases a fresh completed result when an outer layer fails or returns a different result, including its transferred native resources.
 - Runtime pack builds verify every operation, schema and policy identifier against the compiled headers; consumers reject mismatched identifier contracts.
 
-- Add the macOS ARM64 LLVM preview, checked execution IR, pinned compiler/runtime packs, and SDK-free linking. Native ABI packages select LLVM automatically; other applications keep the C backend during migration. Unsupported LLVM constructs produce a source diagnostic without fallback.
+- Add checked execution IR, pinned compiler/runtime packs and SDK-free linking. Unsupported LLVM constructs produce a source diagnostic without fallback.
 - Add format 2 native packages, opaque owned resources, descriptor-checked labels/types/errors/effects, bounded verified artifacts, target and compiler locks, and deployment notices. Consumers do not run package build scripts. Public GitHub source imports use verified HTTPS snapshots without requiring Git.
 - Exercise real CPU LibTorch, SQLite, zlib, and Rust BLAKE3 adapters. Fix owned-field transfer/replacement cleanup, preserve native error methods, reject ambiguous native symbols and lock metadata changes, and reject direct scalar contract violations. Public release and clean-machine qualification are in progress.
 - Allow a class constructor to declare checked failures with `unless ErrorType` before `implements`. Failed construction releases the partial object and transferred owned fields in both backends. Frozen execution rejects changed source dependencies before changing the accepted snapshot or lockfile. Native hover, context and specs describe the provider, targets, ownership and release contract and distinguish foreign-code promises from compiler checks.

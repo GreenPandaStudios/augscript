@@ -151,7 +151,7 @@ The 1.0.0 fields are prototype link requirements, not a measurement of the actua
 
 The direct program's entire IR was:
 
-```llvm
+```text
 target triple = "arm64-apple-macosx14.0.0"
 @message = private unnamed_addr constant [27 x i8] c"August LLVM SDK-free probe\00"
 declare i32 @puts(ptr)

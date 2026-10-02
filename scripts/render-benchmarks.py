@@ -124,7 +124,7 @@ axes[1].set_ylim(0, max(result(report, 'http', key)['requestsPerSecond']['median
 axes[1].set_xlabel('Concurrent keep-alive clients'); axes[1].set_ylabel('Thousands of requests/sec · higher is faster')
 axes[1].set_title('August HTTP · same JSON endpoint', loc='left', fontweight='bold')
 axes[1].grid(True, color='#e8edf1'); axes[1].legend(frameon=False)
-save(fig, 'improvements', 'August performance before and after', 'The same CPU, Map/Set, and HTTP programs on the same host and benchmark settings. Lower execution time and higher throughput are faster.')
+save(fig, 'improvements', 'Earlier and current August performance', 'Historical measurements of the same CPU, Map/Set and HTTP programs on this host. Compiler versions and backends differ; current HTTP measurements use five rounds instead of three. Lower execution time and higher throughput are faster.')
 
 batch_rows = ['| Workload | August | C | Node | Python |', '| --- | ---: | ---: | ---: | ---: |']
 memory_rows = ['| Workload | August | C | Node | Python |', '| --- | ---: | ---: | ---: | ---: |']
@@ -165,6 +165,9 @@ for name, files in projects.items():
     source = []
     for path, filename in files:
         source.extend([f'**{filename}**', '', f'```aug project=benchmark-{name} file={filename}', (ROOT / path).read_text().rstrip(), '```', ''])
+    configuration = ROOT / f'benchmarks/{name}/main.yaml'
+    if configuration.exists():
+        source.extend(['**main.yaml**', '', f'```yaml project=benchmark-{name} file=main.yaml', configuration.read_text().rstrip(), '```', ''])
     blocks.append(('source-' + name, source))
 for name, path, language in [('load', 'scripts/http-load.mjs', 'js'), ('c', 'benchmarks/reference.c', 'c'),
                               ('node', 'benchmarks/reference.mjs', 'js'), ('python', 'benchmarks/reference.py', 'python')]:

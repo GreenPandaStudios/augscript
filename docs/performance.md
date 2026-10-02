@@ -2,13 +2,13 @@
 
 This page publishes measurements for specific August programs alongside C, Node, and Python versions. Read the graphs for a quick comparison, inspect each program below, and use the reproduction commands to measure work that resembles your application.
 
-The recorded suite used August 0.18.0 and native C output. The current compiler is 0.20.1; these graphs have not been remeasured for that release. A result for one workload and host does not establish a general speed advantage or production readiness. [Readiness](production-readiness.md) covers reliability and deployment evidence separately.
+The recorded suite uses the August 0.21.0 candidate and LLVM 23.1.2 native output. A result for one workload and host does not establish a general speed advantage or production readiness. [Readiness](production-readiness.md) covers reliability and deployment evidence separately.
 
 ## Read the graphs
 
 Execution and memory bars use **lower is better**. HTTP throughput uses **higher is better**. Read the workload name and units before comparing: a 20,000-entry map and a two-million-step CPU loop do different amounts of work. The execution panels have separate linear scales; compare implementations within a panel. Tables provide exact values and remain readable on a phone.
 
-All results below were recorded on September 29, 2026: Apple M5, macOS Darwin 25.6.0, ARM64, Apple Clang 21, Node 24.18.0, CPython 3.12.14. August and C use `-O2` without LTO. [Raw samples, checksums, build timings and environment](benchmark-results.json) are committed with this page.
+All results below were recorded on October 2, 2026 (UTC): Apple M5, macOS Darwin 25.6.0, ARM64, LLVM 23.1.2 for August, Apple Clang 21 for the C reference, Node 24.18.0, and CPython 3.12.14. August and C use `-O2` without LTO. [Raw samples, checksums, build timings and environment](benchmark-results.json) include the LLVM tool and runtime identities.
 
 ## Execution time
 
@@ -18,11 +18,11 @@ All results below were recorded on September 29, 2026: Apple M5, macOS Darwin 25
 
 | Workload | August | C | Node | Python |
 | --- | ---: | ---: | ---: | ---: |
-| Startup | 1.46 ms | 1.29 ms | 19.07 ms | 8.42 ms |
-| CPU · 2 million iterations | 7.24 ms | 8.17 ms | 30.22 ms | 194.98 ms |
-| Map + Set · 20,000 entries | 2.54 ms | 1.65 ms | 22.31 ms | 10.36 ms |
-| Map + Set · 200,000 entries | 15.10 ms | 6.38 ms | 38.33 ms | 26.44 ms |
-| JSON · 5,000 round trips | 6.92 ms | 2.01 ms | 20.84 ms | 19.20 ms |
+| Startup | 1.51 ms | 1.24 ms | 18.93 ms | 8.36 ms |
+| CPU · 2 million iterations | 7.69 ms | 8.19 ms | 30.07 ms | 192.77 ms |
+| Map + Set · 20,000 entries | 2.77 ms | 1.64 ms | 22.14 ms | 10.33 ms |
+| Map + Set · 200,000 entries | 16.01 ms | 6.07 ms | 37.47 ms | 25.61 ms |
+| JSON · 5,000 round trips | 7.34 ms | 1.91 ms | 21.29 ms | 19.08 ms |
 
 [benchmark-execution-end]: #
 
@@ -34,7 +34,7 @@ The C reference is tailored to these inputs: it preallocates integer tables and 
 
 [benchmark-summary-start]: #
 
-The CPU program takes **7.24 ms** in August and **8.17 ms** in C on this host. The large-collection program takes **15.10 ms** in August. These are measurements of the shown programs, not guarantees for other applications. JSON batch time includes interpreter startup for Node and Python; it does not establish a universal JSON-throughput advantage.
+The CPU program takes **7.69 ms** in August and **8.19 ms** in C on this host. The large-collection program takes **16.01 ms** in August. These are measurements of the shown programs, not guarantees for other applications. JSON batch time includes interpreter startup for Node and Python; it does not establish a universal JSON-throughput advantage.
 
 [benchmark-summary-end]: #
 
@@ -47,6 +47,7 @@ Save this as `main.aug`. Its result is `7`; the measurement includes starting an
 **main.aug**
 
 ```aug project=benchmark-startup file=main.aug
+// aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 print(value=7)
 ```
 
@@ -62,6 +63,7 @@ This loop performs two million dependent integer steps. Its result must be `8196
 **main.aug**
 
 ```aug project=benchmark-cpu file=main.aug
+// aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 // A loop-carried dependency prevents removal of the computation.
 int state = 123
 int index = 0
@@ -84,6 +86,7 @@ This creates a Map and Set, inserts 20,000 values, checks membership, and sums v
 **main.aug**
 
 ```aug project=benchmark-collections file=main.aug
+// aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 own Map<int, int> values = {}
 own Set<int> unique = {}
 int index = 0
@@ -111,13 +114,15 @@ These two files belong in one folder. The program parses JSON, reads a typed rec
 **data.aug**
 
 ```aug project=benchmark-json file=data.aug
+// aug-spec: "data.aug.md" explains this file. Read it before changes; refresh with aug spec.
 record Payload(int id, string message, List<int> values)
 ```
 
 **main.aug**
 
 ```aug project=benchmark-json file=main.aug
-import parse from "https://github.com/GreenPandaStudios/augscript/src/stdlib/json#v0.19.0"
+// aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
+import parse from json
 import Payload from data
 int checksum = 0
 int index = 0
@@ -133,6 +138,15 @@ catch JsonError error:
     exit(status=1)
 ```
 
+**main.yaml**
+
+```yaml project=benchmark-json file=main.yaml
+
+
+packages:
+  json: "https://github.com/GreenPandaStudios/augscript/src/stdlib/json#v0.19.0"
+```
+
 
 [benchmark-source-json-end]: #
 
@@ -144,13 +158,13 @@ catch JsonError error:
 
 | Clients | August req/sec | Node req/sec | August p95 latency | Node p95 latency |
 | ---: | ---: | ---: | ---: | ---: |
-| 1 | 23,526 | 25,580 | 0.05 ms | 0.04 ms |
-| 16 | 73,370 | 69,166 | 0.37 ms | 0.40 ms |
-| 64 | 65,365 | 69,260 | 1.74 ms | 1.32 ms |
+| 1 | 23,899 | 26,274 | 0.05 ms | 0.04 ms |
+| 16 | 73,314 | 67,892 | 0.37 ms | 0.41 ms |
+| 64 | 67,098 | 69,415 | 1.68 ms | 1.22 ms |
 
 [benchmark-http-end]: #
 
-A real August `GET /bench` endpoint returns a newly constructed typed JSON record. The Node reference constructs and serializes the same response. Both run on loopback with HTTP/1.1 keep-alive, 1,000 warmup requests and three fresh-server rounds of 5,000 measured requests per concurrency level. Every response must have status 200, JSON content type, and the exact expected data. The measured runs had zero errors. p95 is the median of the three per-round p95 latencies; graph error bars show observed throughput min/max, not confidence intervals.
+A real August `GET /bench` endpoint returns a newly constructed typed JSON record. The Node reference constructs and serializes the same response. Both run on loopback with HTTP/1.1 keep-alive, 1,000 warmup requests and five fresh-server rounds of 5,000 measured requests per concurrency level. Every response must have status 200, JSON content type, and the exact expected data. The measured runs had zero errors. p95 is the median of the five per-round p95 latencies; graph error bars show observed throughput min/max, not confidence intervals.
 
 The Node load generator runs on the same machine and consumes CPU. This closed-loop test has no TLS, authentication, logging, database, outbound network calls or slow clients. Its numbers are endpoint microbenchmark throughput, not a supported production capacity or service-level guarantee. HTTP/2, HTTP/3 and streaming are not benchmarked here.
 
@@ -165,14 +179,16 @@ Place these files in one folder. Every request constructs a `Reply` and returns 
 **routes.aug**
 
 ```aug project=benchmark-http file=routes.aug
+// aug-spec: "routes.aug.md" explains this file. Read it before changes; refresh with aug spec.
 record Reply(int id, string message)
-endpoint GET "/bench" as reply() returns Reply:
+endpoint GET "/bench" as reply() :
     return Reply(id=7, message="hello")
 ```
 
 **main.aug**
 
 ```aug project=benchmark-http file=main.aug
+// aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import reply from routes
 serve reply on port 0
 ```
@@ -287,11 +303,11 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1
 
 | Workload | August | C | Node | Python |
 | --- | ---: | ---: | ---: | ---: |
-| Startup | 1.3 MiB | 1.4 MiB | 46.0 MiB | 15.1 MiB |
-| CPU · 2 million iterations | 1.3 MiB | 1.4 MiB | 52.2 MiB | 15.1 MiB |
-| Map + Set · 20,000 entries | 4.5 MiB | 4.4 MiB | 57.0 MiB | 20.2 MiB |
-| Map + Set · 200,000 entries | 34.2 MiB | 25.4 MiB | 91.1 MiB | 62.1 MiB |
-| JSON · 5,000 round trips | 1.8 MiB | 1.5 MiB | 47.4 MiB | 16.2 MiB |
+| Startup | 1.4 MiB | 1.3 MiB | 46.0 MiB | 15.1 MiB |
+| CPU · 2 million iterations | 1.4 MiB | 1.3 MiB | 52.1 MiB | 15.1 MiB |
+| Map + Set · 20,000 entries | 4.6 MiB | 4.4 MiB | 57.0 MiB | 20.1 MiB |
+| Map + Set · 200,000 entries | 34.3 MiB | 25.4 MiB | 91.1 MiB | 62.1 MiB |
+| JSON · 5,000 round trips | 1.9 MiB | 1.5 MiB | 47.4 MiB | 16.3 MiB |
 
 [benchmark-memory-end]: #
 
@@ -299,7 +315,7 @@ These are medians of three separate peak-RSS measurements through `/usr/bin/time
 
 ## Before and after
 
-The same August programs and measurement settings were run on this machine before and after the performance work. Shorter bars are faster for execution time; taller points are faster for HTTP. This compares observed application performance. [Earlier measurement summaries](benchmark-baseline.json) preserve the baseline.
+The earlier September 29 measurements and current LLVM measurements use the same August programs on this host. Versions and backends differ; the earlier HTTP run used three rounds and the current run uses five. This is a historical comparison of observed performance, not a controlled estimate of one compiler change. Shorter bars are faster for execution time; taller points are faster for HTTP. [Earlier measurement summaries](benchmark-baseline.json) preserve the baseline.
 
 ![August execution time and HTTP throughput before and after the performance update, using the same workloads.](./assets/benchmarks/improvements.svg)
 
@@ -307,13 +323,13 @@ The same August programs and measurement settings were run on this machine befor
 
 | August workload | Before | Current | Current relative to before |
 | --- | ---: | ---: | ---: |
-| CPU · 2 million iterations | 36.65 ms | 7.24 ms | 5.06× faster |
-| Map + Set · 20,000 entries | 4.68 ms | 2.54 ms | 1.84× faster |
-| Map + Set · 200,000 entries | 47.90 ms | 15.10 ms | 3.17× faster |
-| HTTP · 1 clients | 25,273 req/sec | 23,526 req/sec | 0.93× throughput |
-| HTTP · 16 clients | 62,719 req/sec | 73,370 req/sec | 1.17× throughput |
-| HTTP · 64 clients | 30,693 req/sec | 65,365 req/sec | 2.13× throughput |
-| Map + Set · 200k peak memory | 61.9 MiB | 34.2 MiB | 45% less |
+| CPU · 2 million iterations | 36.65 ms | 7.69 ms | 4.77× faster |
+| Map + Set · 20,000 entries | 4.68 ms | 2.77 ms | 1.69× faster |
+| Map + Set · 200,000 entries | 47.90 ms | 16.01 ms | 2.99× faster |
+| HTTP · 1 clients | 25,273 req/sec | 23,899 req/sec | 0.95× throughput |
+| HTTP · 16 clients | 62,719 req/sec | 73,314 req/sec | 1.17× throughput |
+| HTTP · 64 clients | 30,693 req/sec | 67,098 req/sec | 2.19× throughput |
+| Map + Set · 200k peak memory | 61.9 MiB | 34.3 MiB | 45% less |
 
 [benchmark-improvements-end]: #
 
