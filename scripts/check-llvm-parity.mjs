@@ -9,7 +9,7 @@ if(!process.env.AUG_LLVM_HOME)throw new Error('LLVM parity requires a matching m
 const suites=[
   'llvm-ir','llvm-backend','llvm-execution','approved-design','compiler','language-conformance','language-evolution',
   'robustness','runtime-optimization','oidc-login','documentation','concurrency','interceptors',
-  'web-foundation','web-actions','web-http','web-testing','web-policies','web-streams','web-tls',
+  'web-foundation','web-actions','web-http','web-testing','web-policies','http-head-runtime','web-streams','web-tls',
 ];
 const result=spawnSync(process.execPath,['--test','--test-concurrency=2',...suites.map(name=>'tests/'+name+'.test.mjs')],
   {cwd:root,stdio:'inherit',env:{...process.env,AUG_TEST_BACKEND:'llvm'}});

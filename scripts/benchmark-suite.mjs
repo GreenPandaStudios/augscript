@@ -5,7 +5,7 @@ import { join, resolve } from 'node:path';
 import os from 'node:os';
 import { spawn, spawnSync } from 'node:child_process';
 import { createInterface } from 'node:readline';
-import {httpLoad, statistics as stats} from './http-load.mjs';
+import {statistics as stats} from './http-load.mjs';
 import { prepareRunPackages } from '../src/package-manager.ts';
 import { loadProject } from '../src/project.ts';
 import { checkProject } from '../src/checker.ts';
@@ -57,7 +57,7 @@ const report = { recordedAt: new Date().toISOString(), version: JSON.parse(readF
     memory: 'Three separate peak-RSS measurements using /usr/bin/time; bytes, includes interpreter/runtime',
     cBaseline: 'Specialized int64 open-addressed hash tables; yyjson parse/type probe/write without August record binding',
     http: 'Same-host HTTP/1.1 loopback, keep-alive, closed-loop concurrency, JSON validated on every response; no TLS/auth/logging',
-    httpRounds: rounds, requestsPerRound: requests, client: 'Node http.Agent', referenceCompileMs }, batch: [], http: [] };
+    httpRounds: rounds, requestsPerRound: requests, client: 'Node http.Agent in a fresh client process per round', referenceCompileMs }, batch: [], http: [] };
 
 function native(name, template, replace,selectedBackend=backend) {
   const directory = join(build, name); rmSync(directory,{recursive:true,force:true});mkdirSync(directory, { recursive: true });
@@ -152,9 +152,14 @@ if (!process.argv.includes('--skip-http') && (!only || only.includes('http'))) {
       const index = (round + i) % variants.length, variant = variants[index];
       const { child, port } = await startServer(variant.command, variant.args);
       try {
-        await httpLoad(port, concurrency, 1000);
-        const measured = await httpLoad(port, concurrency, requests);
-        measured.requestsPerSecond = requests * 1000 / measured.elapsedMs;
+        // Exclude compiler allocations and prior sample arrays from the client
+        // heap. Each implementation gets the same fresh client and warmup.
+        const client=run(process.execPath,[join(root,'scripts/http-load.mjs'),
+          '--url',`http://127.0.0.1:${port}/bench`,'--concurrency',String(concurrency),
+          '--warmup','1000','--requests',String(requests),'--rounds','1','--raw-samples'],{maxBuffer:32*1024*1024});
+        const measured=JSON.parse(client.stdout).rounds[0];
+        assert.equal(measured.requests,requests);assert.equal(measured.errors,0);
+        assert.equal(measured.latencyMs.samples.length,requests);
         // Keep the raw data in the JSON artifact without flooding terminal output.
         results[index].rounds.push(measured);
       } finally { await stopServer(child); }

@@ -20,6 +20,7 @@ void aug_ir_http_bind(AugValue *out,const AugValue *request,const char *source,c
 void aug_ir_http_form(AugValue *out,const AugValue *request,const AugSchema *schema){*out=aug_httprequest_form(*request,schema);}
 void aug_ir_http_policy(const AugHttpPolicy *policy,AugValue *args){aug_http_policy(policy,args[0],args[1],args[2]);}
 void aug_ir_http_failure(AugValue *out,const AugIrHttpError *errors,int count){
+  if(aug_http_head_response(out))return;
   int status=aug_http_error_status();
   for(int i=0;i<count;i++)if(aug_error_is(errors[i].type))status=errors[i].status;
   if(status==500)aug_report_error();aug_take_error();*out=aug_http_problem(status);

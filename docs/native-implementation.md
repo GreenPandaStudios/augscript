@@ -120,6 +120,16 @@ strings that were not rooted while another argument was allocated. Header
 construction now roots those values before allocating its name; the check
 also verifies disconnect logging and that the server remains alive.
 
+Streaming HEAD stops its producer after establishing the response. LLVM now
+preserves that response when its cancellation path has no pending error; real
+cleanup errors retain the normal failure path. Socket checks cover an endless
+compressed stream, its empty HEAD body and successful log, and a cleanup failure
+that still returns and logs 500. A deterministic runtime check inspects headers
+before transport and rejects duplicate CORS policies. The preserved response
+receives policies once; fresh error responses still receive them. Intentional
+producer cancellation does not end the transport wait or request logging early.
+The controlled wait also checks that a deadline returns and logs 504.
+
 LLVM output includes DWARF source lines and variables in both development and
 optimized builds. The compiler pack contains `dsymutil`, which writes an adjacent
 dSYM without an SDK. `.augmap.json` identifies the IR, object, executable, debug

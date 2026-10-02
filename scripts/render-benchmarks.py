@@ -12,6 +12,11 @@ import matplotlib.pyplot as plt
 ROOT = Path(__file__).resolve().parent.parent
 data = json.loads((ROOT / 'docs/benchmark-results.json').read_text())
 baseline = json.loads((ROOT / 'docs/benchmark-baseline.json').read_text())
+# Keep the same-source migration reference in the raw report. The application
+# charts compare August with independently written C, Node and Python programs.
+for section in ['batch', 'http']:
+    for workload in data[section]:
+        workload['results'] = [item for item in workload['results'] if item['implementation'] != 'August (C backend)']
 check = '--check' in sys.argv
 outputs = {}
 colors = {'August': '#087e8b', 'C': '#6c7789', 'Node': '#587f25', 'Python': '#9265b8'}

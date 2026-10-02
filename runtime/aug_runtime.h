@@ -174,6 +174,7 @@ typedef struct {AugHttpPolicyKind kind;const char *permission;int64_t amount,sec
 typedef struct { const char *method; const char *path; AugFunction handler; int stream; int status; const AugHttpPolicy *policies;size_t policy_count; AugPointerMethod pointer_handler; } AugRoute;
 void aug_http_policy(const AugHttpPolicy *policy, AugValue request, AugValue dependency, AugValue second);
 AugValue aug_http_finish(AugValue response);
+bool aug_http_head_response(AugValue *response);
 AugValue aug_http_bind(AugValue request, const char *source, const char *name, const AugSchema *schema);
 AugValue aug_httprequest_form(AugValue request, const AugSchema *schema);
 AugValue aug_http_response(AugValue body, int status);

@@ -18,11 +18,11 @@ All results below were recorded on October 2, 2026 (UTC): Apple M5, macOS Darwin
 
 | Workload | August | C | Node | Python |
 | --- | ---: | ---: | ---: | ---: |
-| Startup | 1.51 ms | 1.24 ms | 18.93 ms | 8.36 ms |
-| CPU · 2 million iterations | 7.69 ms | 8.19 ms | 30.07 ms | 192.77 ms |
-| Map + Set · 20,000 entries | 2.77 ms | 1.64 ms | 22.14 ms | 10.33 ms |
-| Map + Set · 200,000 entries | 16.01 ms | 6.07 ms | 37.47 ms | 25.61 ms |
-| JSON · 5,000 round trips | 7.34 ms | 1.91 ms | 21.29 ms | 19.08 ms |
+| Startup | 1.93 ms | 1.49 ms | 22.68 ms | 10.01 ms |
+| CPU · 2 million iterations | 9.14 ms | 9.61 ms | 35.99 ms | 231.19 ms |
+| Map + Set · 20,000 entries | 3.35 ms | 2.07 ms | 26.30 ms | 12.16 ms |
+| Map + Set · 200,000 entries | 21.91 ms | 7.50 ms | 45.77 ms | 31.23 ms |
+| JSON · 5,000 round trips | 8.71 ms | 2.45 ms | 25.81 ms | 23.32 ms |
 
 [benchmark-execution-end]: #
 
@@ -34,7 +34,7 @@ The C reference is tailored to these inputs: it preallocates integer tables and 
 
 [benchmark-summary-start]: #
 
-The CPU program takes **7.69 ms** in August and **8.19 ms** in C on this host. The large-collection program takes **16.01 ms** in August. These are measurements of the shown programs, not guarantees for other applications. JSON batch time includes interpreter startup for Node and Python; it does not establish a universal JSON-throughput advantage.
+The CPU program takes **9.14 ms** in August and **9.61 ms** in C on this host. The large-collection program takes **21.91 ms** in August. These are measurements of the shown programs, not guarantees for other applications. JSON batch time includes interpreter startup for Node and Python; it does not establish a universal JSON-throughput advantage.
 
 [benchmark-summary-end]: #
 
@@ -158,9 +158,9 @@ packages:
 
 | Clients | August req/sec | Node req/sec | August p95 latency | Node p95 latency |
 | ---: | ---: | ---: | ---: | ---: |
-| 1 | 23,899 | 26,274 | 0.05 ms | 0.04 ms |
-| 16 | 73,314 | 67,892 | 0.37 ms | 0.41 ms |
-| 64 | 67,098 | 69,415 | 1.68 ms | 1.22 ms |
+| 1 | 21,148 | 23,652 | 0.06 ms | 0.05 ms |
+| 16 | 55,543 | 54,766 | 0.49 ms | 0.50 ms |
+| 64 | 52,798 | 52,645 | 2.14 ms | 1.99 ms |
 
 [benchmark-http-end]: #
 
@@ -283,7 +283,8 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1
     for (let i = 0; i < rounds; i++) {
       await httpLoad(url, concurrency, warmup, expected);
       const result = await httpLoad(url, concurrency, requests, expected);
-      delete result.latencyMs.samples; results.push(result);
+      if(!process.argv.includes('--raw-samples'))delete result.latencyMs.samples;
+      results.push(result);
     }
     const measured = statistics(results.map(result => result.requestsPerSecond));
     console.log(JSON.stringify({url, concurrency, warmup, rounds:results, requestsPerSecond:measured}, null, 2));
@@ -303,11 +304,11 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1
 
 | Workload | August | C | Node | Python |
 | --- | ---: | ---: | ---: | ---: |
-| Startup | 1.4 MiB | 1.3 MiB | 46.0 MiB | 15.1 MiB |
-| CPU · 2 million iterations | 1.4 MiB | 1.3 MiB | 52.1 MiB | 15.1 MiB |
-| Map + Set · 20,000 entries | 4.6 MiB | 4.4 MiB | 57.0 MiB | 20.1 MiB |
-| Map + Set · 200,000 entries | 34.3 MiB | 25.4 MiB | 91.1 MiB | 62.1 MiB |
-| JSON · 5,000 round trips | 1.9 MiB | 1.5 MiB | 47.4 MiB | 16.3 MiB |
+| Startup | 1.4 MiB | 1.3 MiB | 46.1 MiB | 15.0 MiB |
+| CPU · 2 million iterations | 1.4 MiB | 1.3 MiB | 52.2 MiB | 15.0 MiB |
+| Map + Set · 20,000 entries | 4.6 MiB | 4.4 MiB | 57.0 MiB | 20.2 MiB |
+| Map + Set · 200,000 entries | 34.3 MiB | 25.4 MiB | 91.2 MiB | 62.0 MiB |
+| JSON · 5,000 round trips | 1.9 MiB | 1.5 MiB | 47.4 MiB | 16.2 MiB |
 
 [benchmark-memory-end]: #
 
@@ -315,7 +316,7 @@ These are medians of three separate peak-RSS measurements through `/usr/bin/time
 
 ## Before and after
 
-The earlier September 29 measurements and current LLVM measurements use the same August programs on this host. Versions and backends differ; the earlier HTTP run used three rounds and the current run uses five. This is a historical comparison of observed performance, not a controlled estimate of one compiler change. Shorter bars are faster for execution time; taller points are faster for HTTP. [Earlier measurement summaries](benchmark-baseline.json) preserve the baseline.
+The earlier September 29 measurements and current LLVM measurements use the same August programs on this host. Versions and backends differ; the earlier HTTP run used three rounds and the current run uses five. The current suite also isolates each load client in a fresh process. This is a historical comparison of observed performance, not a controlled estimate of one compiler change. Shorter bars are faster for execution time; taller points are faster for HTTP. [Earlier measurement summaries](benchmark-baseline.json) preserve the baseline.
 
 ![August execution time and HTTP throughput before and after the performance update, using the same workloads.](./assets/benchmarks/improvements.svg)
 
@@ -323,12 +324,12 @@ The earlier September 29 measurements and current LLVM measurements use the same
 
 | August workload | Before | Current | Current relative to before |
 | --- | ---: | ---: | ---: |
-| CPU · 2 million iterations | 36.65 ms | 7.69 ms | 4.77× faster |
-| Map + Set · 20,000 entries | 4.68 ms | 2.77 ms | 1.69× faster |
-| Map + Set · 200,000 entries | 47.90 ms | 16.01 ms | 2.99× faster |
-| HTTP · 1 clients | 25,273 req/sec | 23,899 req/sec | 0.95× throughput |
-| HTTP · 16 clients | 62,719 req/sec | 73,314 req/sec | 1.17× throughput |
-| HTTP · 64 clients | 30,693 req/sec | 67,098 req/sec | 2.19× throughput |
+| CPU · 2 million iterations | 36.65 ms | 9.14 ms | 4.01× faster |
+| Map + Set · 20,000 entries | 4.68 ms | 3.35 ms | 1.40× faster |
+| Map + Set · 200,000 entries | 47.90 ms | 21.91 ms | 2.19× faster |
+| HTTP · 1 clients | 25,273 req/sec | 21,148 req/sec | 0.84× throughput |
+| HTTP · 16 clients | 62,719 req/sec | 55,543 req/sec | 0.89× throughput |
+| HTTP · 64 clients | 30,693 req/sec | 52,798 req/sec | 1.72× throughput |
 | Map + Set · 200k peak memory | 61.9 MiB | 34.3 MiB | 45% less |
 
 [benchmark-improvements-end]: #

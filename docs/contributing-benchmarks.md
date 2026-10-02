@@ -13,6 +13,8 @@ AUG_LLVM_HOME="$PWD/.aug-build/llvm-tools" npm run bench:compare -- --http-round
 
 The suite defaults to LLVM. `--backend c` selects the migration reference, and `--backend llvm --compare-c-backend` measures both backends on the same August programs. Set `AUG_BENCH_PYTHON=/path/to/python3` or `CC=/path/to/clang` to select the reference interpreter/compiler. `AUG_NATIVE_HOME` selects the native dependency cache. The raw result file records versions, LLVM tool/runtime identities and a source fingerprint. Compilation timings are included separately from executable run time. On macOS, prepare native dependencies for the advertised macOS 14 deployment floor before building the runtime pack.
 
+Each HTTP round starts a fresh server and a separate Node load client. The client warms up with 1,000 requests, then measures the selected request count and validates every response. Compiler allocations and earlier latency arrays do not share its heap. The result retains each measured latency; failed migration CI also uploads the raw report. Keep the frozen acceptance limits when investigating a regression.
+
 For a smaller core/JSON-only C reference run, extract its source dependencies and omit HTTP. This does not require an LLVM runtime pack:
 
 ```sh

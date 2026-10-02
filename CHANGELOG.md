@@ -7,6 +7,8 @@
 - Bind GNU runtime internal function calls directly while retaining shared data symbols and external allocator hooks. Recheck startup, collection and HTTP measurements against the frozen migration limits.
 - Link core-only GNU/Linux programs with the verified runtime archive; retain one shared core for crypto and HTTP components. Preserve task hooks without exporting August function symbols.
 - Keep temporary HTTP header values alive across managed collection. Exercise compressed streaming under collection pressure before checking disconnect cleanup and request logging.
+- Preserve a streaming HEAD response when LLVM stops its producer. Apply CORS headers once, await transport before logging, report an intervening deadline as 504, and keep real cleanup failures on the error path.
+- Run HTTP comparison rounds with a fresh load-client process and retain raw measurements from failed CI qualification. Keep the existing migration thresholds and verify every response.
 - Update the locked VSCE publisher to 4.0.1-1 for its upstream Marketplace OIDC API-version and federated-token fixes. Publication still requires a verified release and the configured trusted policy.
 - Add GNU/Linux x86-64 and ARM64 LLVM candidates with an explicit glibc 2.36 floor, ELF process entry, SDK-free linking, relocatable runtimes, and checked libc/C++ requirements. Musl and cross compilation remain unsupported.
 - Handle native archive write failures through the CLI and discard rejected extraction state; verify large archives across bounded reader chunks.

@@ -25,7 +25,7 @@ struct AugHttpJob {
   struct lws *wsi; AugHttpSession *session; AugValue task;
   /* Request and loggers outlive transport session cleanup on a disconnect. */
   AugValue roots[2]; AugRetained retained;
-  bool test, transport_complete, timed_out; int64_t started,deadline;
+  bool test, transport_complete, timed_out, head_complete; int64_t started,deadline;
 };
 static const AugRoute *served_routes;
 static AugValue route_call(const AugRoute *route,AugValue *args,int count) {
@@ -536,10 +536,17 @@ void aug_http_yield(AugValue value) {
   }
   session->roots[1]=policy_response(session,aug_http_response(aug_null(),session->route->status));session->roots[3]=encoded;session->streaming=true;session->stream_pending=true;session->sent=0;
   lws_callback_on_writable(job->wsi);
-  if(session->head){session->stream_pending=false;aug_cancelled=true;goto finished;}
+  if(session->head){session->stream_pending=false;job->head_complete=true;aug_cancelled=true;goto finished;}
   while(job->session&&job->session->stream_pending&&!aug_cancelled)aug_task_suspend();
 finished:
   aug_frame_leave(&frame);
+}
+bool aug_http_head_response(AugValue *response) {
+  AugHttpJob *job=aug_execution_current()->http_job;
+  if(!aug_cancelled||aug_has_error||!job||!job->head_complete||job->timed_out||!job->session)return false;
+  /* The first yield already established this response. Cancellation stops the
+     producer and its children; it is not an error or a client disconnect. */
+  *response=job->session->roots[1];return response->tag==AUG_OBJECT;
 }
 AugValue aug_http_finish(AugValue response) {
   AugHttpJob *job=aug_execution_current()->http_job;if(!job)return response;
@@ -547,7 +554,8 @@ AugValue aug_http_finish(AugValue response) {
   if(job->timed_out)roots[0]=aug_http_problem(504);
   else if(job->test&&job->deadline&&monotonic_ms()>=job->deadline)roots[0]=aug_http_problem(504);
   if(session) {
-    roots[0]=policy_response(session,roots[0]);
+    bool prepared_head=job->head_complete&&roots[0].tag==AUG_OBJECT&&session->roots[1].tag==AUG_OBJECT&&roots[0].as.object==session->roots[1].as.object;
+    if(!prepared_head)roots[0]=policy_response(session,roots[0]);
     bool stream_success=session->route->stream&&aug_cint(aug_field(roots[0],1))<400;
     if(job->test&&stream_success&&!session->streaming) {
       session->roots[2]=aug_bytes("",0,AUG_BYTES_KIND);
@@ -562,10 +570,12 @@ AugValue aug_http_finish(AugValue response) {
         else session->streaming=false;
         lws_callback_on_writable(job->wsi);
       }
-      while(job->session&&!job->transport_complete&&!aug_cancelled)aug_task_suspend();
+      while(job->session&&!job->transport_complete&&(!aug_cancelled||(job->head_complete&&!job->timed_out)))aug_task_suspend();
     }
   }
-  int status=aug_cancelled&&!job->timed_out?499:(int)aug_cint(aug_field(roots[0],1));
+  /* A deadline may have fired while finish was suspended on transport. */
+  if(job->timed_out)roots[0]=aug_http_problem(504);
+  int status=aug_cancelled&&!job->timed_out&&(!job->head_complete||!job->transport_complete)?499:(int)aug_cint(aug_field(roots[0],1));
   bool cancelled=aug_cancelled;aug_cancelled=false;aug_execution_current()->http_job=NULL;
   if(roots[1].tag==AUG_OBJECT)for(size_t i=roots[1].as.object->field_count;i>0;i--){
     AugValue arguments[]={aug_field(roots[2],0),aug_field(roots[2],1),aug_int(status),aug_int(monotonic_ms()-job->started)};

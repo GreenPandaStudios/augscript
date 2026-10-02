@@ -29,13 +29,13 @@ test('HTTP policies guard decoding, bound requests, handle CORS, compress output
   const root=mkdtempSync(join(tmpdir(),'aug-policies-'));let server;
   try {
     writeFileSync(join(root,'main.yaml'),'openapi:\n  enabled: true\n');
-    writeFileSync(join(root,'main.aug'),`import secured and permitted and limited and zipped and slow and slowChild and events and endless and encoded and empty from endpoints
+    writeFileSync(join(root,'main.aug'),`import secured and permitted and limited and zipped and slow and slowChild and events and endless and failedHead and encoded and empty from endpoints
 import Authentication and Authorization and RequestLogger and WebRequestLogger from web
 import DemoAuthentication and DemoAuthorization from auth
 implement Authentication with DemoAuthentication
 implement Authorization with DemoAuthorization
 implement RequestLogger with WebRequestLogger scoped
-serve secured and permitted and limited and zipped and slow and slowChild and events and endless and encoded and empty on port 0
+serve secured and permitted and limited and zipped and slow and slowChild and events and endless and failedHead and encoded and empty on port 0
 `);
     writeFileSync(join(root,'auth.aug'),`import Authentication and Authorization and Principal from web
 DemoAuthentication() implements Authentication:
@@ -89,10 +89,17 @@ endpoint GET "/events" as events() streams ServerEvent<string> unless HttpError:
     while true:
         pass
 [LogRequest(logger=logger)]
+[Cors(origins=["https://example.test"], credentials=true)]
 [Compress]
 endpoint GET "/endless" as endless(resolve RequestLogger logger) streams Bytes uses logger.complete unless HttpError:
     while true:
         yield "pending".bytes()
+[LogRequest(logger=logger)]
+endpoint GET "/failed-head" as failedHead(resolve RequestLogger logger) streams Bytes uses logger.complete unless HttpError:
+    try:
+        yield "pending".bytes()
+    always:
+        throw HttpError()
 [Compress]
 endpoint GET "/encoded" as encoded() returns HttpResponse<Bytes> unless HttpError:
     return HttpResponse(body="already encoded".bytes(), headers=Headers().with(name="content-encoding", value="identity"))
@@ -121,6 +128,12 @@ endpoint GET "/empty" as empty() returns HttpResponse<string>:
     assert.equal((await request('/slow-child')).status,504);
     assert.equal((await request('/empty')).status,204, 'request group finished after cancelling its child');
     const started=Date.now();response=await request('/events');assert.equal(response.status,200);assert.equal(await response.text(),'data: "started"\n\n');assert.ok(Date.now()-started<2000);
+    response=await request('/endless',{method:'HEAD',headers:{origin:'https://example.test'}});
+    assert.equal(response.status,200,'HEAD completes without consuming an endless stream');
+    assert.equal(response.headers.get('access-control-allow-origin'),'https://example.test','HEAD applies CORS once');
+    assert.equal(response.headers.get('access-control-allow-credentials'),'true','HEAD applies credential policy once');
+    assert.equal(response.headers.get('content-encoding'),'gzip');assert.equal(await response.text(),'');
+    assert.equal((await request('/failed-head',{method:'HEAD'})).status,500,'HEAD must preserve a real cleanup failure');
     await new Promise((resolve,reject)=>{
       // Multiple compressed chunks cross the managed allocation/collection threshold.
       let bytes=0,complete=false;
@@ -133,6 +146,8 @@ endpoint GET "/empty" as empty() returns HttpResponse<string>:
     });
     await new Promise((resolve,reject)=>{if(errors.includes('"status":499'))return resolve();const timer=setTimeout(()=>reject(new Error('Disconnected stream was not logged: '+errors)),3000);const listener=()=>{if(errors.includes('"status":499')){clearTimeout(timer);server.stderr.off('data',listener);resolve();}};server.stderr.on('data',listener);});
     const logs=errors.split('\n').filter(line=>line.startsWith('{')).map(line=>JSON.parse(line));assert.deepEqual(logs.filter(log=>log.path==='/secured').map(log=>log.status),[401,400,200]);assert.ok(logs.every(log=>log.milliseconds>=0));
+    assert.deepEqual(logs.filter(log=>log.method==='HEAD'&&log.path==='/endless').map(log=>log.status),[200]);
+    assert.deepEqual(logs.filter(log=>log.method==='HEAD'&&log.path==='/failed-head').map(log=>log.status),[500]);
     assert.equal(server.exitCode,null,errors);
   } finally {if(server&&server.exitCode===null&&server.signalCode===null){server.kill();await new Promise(resolve=>{const timer=setTimeout(()=>server.kill('SIGKILL'),1000);server.once('exit',()=>{clearTimeout(timer);resolve();});});}rmSync(root,{recursive:true,force:true});}
 });

@@ -21,6 +21,8 @@ jobs:
             host: linux-arm64
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 90
+    env:
+      AUG_GITHUB_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
@@ -57,7 +59,7 @@ jobs:
       - name: Qualify installed CLI against the exact local candidates
         run: |
           docker exec qualification npm run package:packages
-          docker exec qualification node scripts/qualify-native-consumers.mjs --local-compiler --candidate-libraries /work
+          docker exec -e AUG_GITHUB_TOKEN qualification node scripts/qualify-native-consumers.mjs --local-compiler --candidate-libraries /work
       - name: Qualify public repository imports without development tools
         run: |
           docker build -f docker/Dockerfile.native-consumer -t aug-llvm-consumer .
@@ -73,7 +75,7 @@ jobs:
           done
           docker cp .aug-build/public-consumer/. public-consumer:/consumer/
           docker exec public-consumer sh -c 'for tool in clang gcc git; do if command -v "$tool"; then exit 1; fi; done; test ! -d /usr/include; test ! -d /usr/local/include'
-          docker exec public-consumer node scripts/qualify-native-consumers.mjs --local-compiler --discard-builds
+          docker exec -e AUG_GITHUB_TOKEN public-consumer node scripts/qualify-native-consumers.mjs --local-compiler --discard-builds
       - name: Collect measured candidates and qualification evidence
         if: always()
         run: |
