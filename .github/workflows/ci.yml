@@ -153,12 +153,14 @@ jobs:
   docker-native:
     runs-on: ubuntu-24.04
     timeout-minutes: 30
+    env:
+      AUG_GITHUB_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           persist-credentials: false
       - run: docker build -f docker/Dockerfile.build -t augscript/build:local .
-      - run: docker run --rm --entrypoint sh augscript/build:local -lc 'cd /opt/augscript && npm test'
+      - run: docker run --rm -e AUG_GITHUB_TOKEN --entrypoint sh augscript/build:local -lc 'cd /opt/augscript && npm test'
       - run: docker run --rm --entrypoint sh augscript/build:local -lc 'cd /opt/augscript && npm run test:sanitizers'
       - run: docker build -f docker/Dockerfile.run -t augscript/run:local .
       - run: docker build -f docker/Dockerfile.smoke -t augscript/smoke:local .

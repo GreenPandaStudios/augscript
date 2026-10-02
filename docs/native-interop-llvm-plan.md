@@ -1,6 +1,6 @@
 # Native packages and LLVM compilation
 
-**Status: implementation proposal, not a shipping feature.** This document plans the work; it does not create the library repositories or implement a backend. The implementation assessment uses August **0.20.1**, commit `d31ccca155e54618f162d595c84a707fa881bd60`, inspected on October 1, 2026. Repository links below identify the inspected code. [Package examples](native-package-examples.md) specify the proposed repositories, interfaces, programs, and publishing workflow. [Upstream research](research/native-interop-llvm.md) records external evidence and qualification limits.
+**Status: accepted architecture, with implementation tracked separately.** This document records the design and the assessment of August **0.20.1**, commit `d31ccca155e54618f162d595c84a707fa881bd60`, inspected on October 1, 2026. Its repository links identify that starting implementation. The four native package repositories and the LLVM backend now exist; the [implementation record](native-implementation.md) identifies the implemented profile, qualification results and remaining release gates. Future profiles and commands below remain proposals. [Package examples](native-package-examples.md) describe the repositories, interfaces, programs and publishing workflow. [Upstream research](research/native-interop-llvm.md) records external evidence and qualification limits.
 
 ## First milestone: four real repositories, four working LLVM programs
 
@@ -8,9 +8,9 @@ The first deliverable is an August preview that imports and runs **real LibTorch
 
 Use **macOS ARM64, macOS 14 or newer**, as the first target. The inspected development machine is Darwin ARM64, the current native CI uses `macos-15`, and the compatibility guide records native execution on macOS ARM64. The minimum OS version remains a qualification target until every selected native binary's deployment requirement has been inspected and tested on macOS 14. Recent PyTorch releases raised their macOS deployment target to 14; an archive listing alone does not verify every binary in a newer release. [Current platform evidence](compatibility.md#platform-evidence), [CI](../.github/workflows/ci.yml), [PyTorch release notes](https://github.com/pytorch/pytorch/releases/tag/v2.12.0).
 
-Recommended repository names follow the existing organization and `aug-` package naming convention. These repositories do not exist as a result of this plan:
+The selected repository names follow the existing organization and `aug-` package naming convention. All four repositories now publish real native library artifacts:
 
-| Proposed repository | Initial public surface | What its real implementation validates |
+| Repository | Initial public surface | What its real implementation validates |
 | --- | --- | --- |
 | `GreenPandaStudios/aug-pytorch` | CPU float64 tensors, addition, sum, copying values | A substantial C++ dependency, opaque objects, C++ exception containment, transitive dylibs, deterministic destruction |
 | `GreenPandaStudios/aug-sqlite` | Open a database, parameterized execution, query one text value | Direct C header bindings, native handles, statement lifetimes, state changes, checked native errors, filesystem access |

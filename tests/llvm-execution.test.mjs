@@ -45,7 +45,14 @@ unsafe:
 `);
     const checked=checkProject(loadProject(root));assert.deepEqual(checked.diagnostics.filter(d=>d.severity!=='warning'),[]);
     const compiled=compileLLVM(checked,{release,native:[{directory:root,libraries:[filename],runtimeFiles:[]}]});
-    if(!mac){
+    if(mac){
+      const inspector='/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/dyld_info';
+      const dynamic=spawnSync(inspector,['-dependents','-exports',compiled.output],{encoding:'utf8'});
+      assert.equal(dynamic.status,0,dynamic.stderr);
+      assert.doesNotMatch(dynamic.stdout,/libaug_runtime/,'core-only programs must contain one statically linked runtime');
+      const exports=[...dynamic.stdout.matchAll(/\b(_aug_\w+)\b/g)].map(match=>match[1]).sort();
+      assert.deepEqual(exports,['_aug_execution_current','_aug_task_checkpoint_hook'],'export only the private hook boundary');
+    }else{
       const dynamic=spawnSync('readelf',['--dynamic','--dyn-syms','--wide',compiled.output],{encoding:'utf8'});
       assert.equal(dynamic.status,0,dynamic.stderr);
       assert.doesNotMatch(dynamic.stdout,/Shared library: \[libaug_runtime/,'core-only programs must contain one statically linked runtime');

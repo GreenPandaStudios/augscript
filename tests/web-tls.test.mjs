@@ -37,11 +37,14 @@ endpoint GET "/relay" as relay(HttpRequest request from request, resolve HttpCli
     const request=(path,options={})=>new Promise((resolve,reject)=>{const req=httpsRequest(base+path,options,response=>{let body='';response.setEncoding('utf8');response.on('data',chunk=>body+=chunk);response.on('end',()=>resolve({status:response.statusCode,body,headers:response.headers}));});req.on('error',reject);req.end();});
     await assert.rejects(request('/answer'),/self.signed|certificate/i);
     let result=await request('/answer',{ca}); assert.equal(result.status,200);assert.deepEqual(JSON.parse(result.body),{message:'TLS verified'});
+    result=await request('/answer',{ca,method:'HEAD'});assert.equal(result.status,200);assert.equal(result.body,'');
     result=await request('/relay',{ca});assert.equal(result.status,200,result.body+errors);assert.deepEqual(JSON.parse(result.body),{message:'TLS verified'});
     const session=connect(base,{ca});session.on('error',()=>{});
     try {
       result=await new Promise((resolve,reject)=>{const req=session.request({':path':'/answer'});let body='',status;req.on('response',headers=>status=headers[':status']);req.setEncoding('utf8');req.on('data',chunk=>body+=chunk);req.on('end',()=>resolve({body,status}));req.on('error',reject);req.end();});
       assert.equal(session.socket.alpnProtocol,'h2');assert.equal(result.status,200);assert.deepEqual(JSON.parse(result.body),{message:'TLS verified'});
+      result=await new Promise((resolve,reject)=>{const req=session.request({':method':'HEAD',':path':'/answer'});let body='',status;const timer=setTimeout(()=>{req.close();reject(Error('HTTP/2 HEAD did not end its stream'));},5000);req.on('response',headers=>status=headers[':status']);req.setEncoding('utf8');req.on('data',chunk=>body+=chunk);req.on('end',()=>{clearTimeout(timer);resolve({body,status});});req.on('error',error=>{clearTimeout(timer);reject(error);});req.end();});
+      assert.equal(result.status,200);assert.equal(result.body,'');
     } finally {session.destroy();}
     const prefix=resolve(process.env.AUG_NATIVE_HOME??'.aug-native','prefix'), probe=join(root,'http3-probe');
     const args=['-std=c11','-I'+join(prefix,'include'),resolve('tests/native/http3-client.c'),join(prefix,'lib/libwebsockets.a'),'-L'+join(prefix,'lib'),'-Wl,-rpath,'+join(prefix,'lib'),'-lgnutls','-lnettle','-lhogweed','-lgmp','-lz','-pthread','-o',probe];

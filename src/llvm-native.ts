@@ -80,7 +80,7 @@ export function compileLLVM(checked:CheckedProject,options:{output?:string;relea
     for(const path of paths){nativePath(path);const destination=join(dirname(output),'share','august-native',namespace,path);
       mkdirSync(dirname(destination),{recursive:true});copyFileSync(join(origin,path),destination);}
   };
-  const staticCore=!!platform.entry&&!ir.components.length&&pack.staticCore!==undefined;
+  const staticCore=!ir.components.length&&pack.staticCore!==undefined;
   if(staticCore)libraries.push(join(runtime,pack.staticCore!));
   else for(const library of pack.libraries)deploy(runtime,library,true);
   for(const name of ir.components){
@@ -100,7 +100,7 @@ export function compileLLVM(checked:CheckedProject,options:{output?:string;relea
     const coreExports=staticCore?['--export-dynamic-symbol=aug_execution_current','--export-dynamic-symbol=aug_task_checkpoint_hook']:[];
     run(lld,['-flavor','gnu','-pie','-z','now','-z','noexecstack','--hash-style=gnu','--eh-frame-hdr',...coreExports,'--dynamic-linker',platform.loader!,'-e','_start','-rpath','$ORIGIN/lib',join(runtime,'platform/start.o'),object,...libraries,libc,...(staticCore?[math]:[]),'-o',output]);
   }
-  else run(lld,['-flavor','darwin','-arch','arm64','-platform_version','macos','14.0','14.0','-Z','-fixup_chains','-adhoc_codesign','-e','_main','-rpath','@executable_path/lib',object,...libraries,join(runtime,'platform/libSystem.tbd'),'-o',output]);
+  else run(lld,['-flavor','darwin',...(staticCore?['-exported_symbol','_aug_execution_current','-exported_symbol','_aug_task_checkpoint_hook']:[]),'-arch','arm64','-platform_version','macos','14.0','14.0','-Z','-fixup_chains','-adhoc_codesign','-e','_main','-rpath','@executable_path/lib',object,...libraries,join(runtime,'platform/libSystem.tbd'),'-o',output]);
   const debugInfo=platform.entry?output:output+'.dSYM';
   if(!platform.entry)run(dsymutil,[output,'-o',debugInfo]);
   const hash=(file:string)=>createHash('sha256').update(readFileSync(file)).digest('hex');

@@ -31,14 +31,15 @@ const sources=['aug_runtime.c','aug_values.c','aug_tasks.c','aug_json.c','aug_ti
 // Private runtime functions use their own definitions, as in the C reference.
 // Keep data symbols preemptible: application/native callbacks share runtime state.
 run([...(mac?['-dynamiclib','-Wl,-install_name,@rpath/libaug_runtime.1.dylib']:['-shared','-Wl,-Bsymbolic-functions','-Wl,-soname,libaug_runtime.so.1','-Wl,-rpath,$ORIGIN','-pthread']),...sources.map(f=>join(root,'runtime',f)),join(yyjson,'src/yyjson.c'),...(!mac?['-lm']:[]),'-o',library]);
-let staticCore;
-if(!mac){
-  staticCore='lib/libaug_runtime.a';const objects=[];
+const staticCore='lib/libaug_runtime.a';
+{
+  const objects=[];
   mkdirSync(join(output,'core-objects'),{recursive:true});
   for(const source of [...sources.map(f=>join(root,'runtime',f)),join(yyjson,'src/yyjson.c')]){
-    const object=join(output,'core-objects',source.split('/').at(-1)+'.o');run(['-c',source,'-o',object]);objects.push(object);
+    const object=join(output,'core-objects',source.split('/').at(-1)+'.o');run(['-fno-common','-c',source,'-o',object]);objects.push(object);
   }
-  const archived=spawnSync(process.env.AUG_AR??'ar',['rcsD',join(output,staticCore),...objects],{encoding:'utf8'});
+  const ar=process.env.AUG_AR??(mac?'/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ar':'ar');
+  const archived=spawnSync(ar,[mac?'rcs':'rcsD',join(output,staticCore),...objects],{encoding:'utf8',env:{...process.env,ZERO_AR_DATE:'1'}});
   if(archived.status!==0)throw new Error(archived.stderr||archived.error?.message||'Core runtime archive build failed');
 }
 const probe=join(output,'layout.c'),binary=join(output,'layout');

@@ -107,7 +107,7 @@ Runtime packs measure private execution flag and fiber offsets on each target.
 LLVM functions retain their current execution pointer across suspension, as
 the C reference does, and observe both task fibers and checkpoint hooks.
 
-GNU/Linux packs include a verified core archive as well as the shared runtime.
+All three host packs include a verified core archive as well as the shared runtime.
 Programs that need no dynamic runtime component link that archive directly;
 crypto and HTTP programs use one shared core with their components. Both paths
 retain the same task, root and ownership behavior. Only the existing private
@@ -129,6 +129,10 @@ before transport and rejects duplicate CORS policies. The preserved response
 receives policies once; fresh error responses still receive them. Intentional
 producer cancellation does not end the transport wait or request logging early.
 The controlled wait also checks that a deadline returns and logs 504.
+HEAD transport completes with its headers, rather than waiting for an empty-body
+write. The request job retains its prepared response after session cleanup.
+A deterministic completion check and live HTTP/1.1 and HTTP/2 requests cover
+the connection-reuse race found by ARM64 CI.
 
 LLVM output includes DWARF source lines and variables in both development and
 optimized builds. The compiler pack contains `dsymutil`, which writes an adjacent

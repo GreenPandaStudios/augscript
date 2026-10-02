@@ -5,9 +5,10 @@
 - Select LLVM for ordinary builds, runs and same-file tests on the qualified macOS ARM64 and GNU/Linux x86-64/ARM64 hosts. Obtain verified compiler/runtime artifacts automatically; keep C available as an explicit migration reference. Container deployments copy the executable with its neighboring libraries and notices.
 - Use the C-compatible DWARF type reader for tagged August storage so supported LLDB versions can display locals. Source files, locations and producer remain August; native debugger expressions do not evaluate August syntax.
 - Bind GNU runtime internal function calls directly while retaining shared data symbols and external allocator hooks. Recheck startup, collection and HTTP measurements against the frozen migration limits.
-- Link core-only GNU/Linux programs with the verified runtime archive; retain one shared core for crypto and HTTP components. Preserve task hooks without exporting August function symbols.
+- Link core-only programs on all three hosts with the verified runtime archive; retain one shared core for crypto and HTTP components. Preserve task hooks without exporting August function symbols.
 - Keep temporary HTTP header values alive across managed collection. Exercise compressed streaming under collection pressure before checking disconnect cleanup and request logging.
 - Preserve a streaming HEAD response when LLVM stops its producer. Apply CORS headers once, await transport before logging, report an intervening deadline as 504, and keep real cleanup failures on the error path.
+- Complete HEAD transport with its headers and retain the prepared response after session cleanup. Verify HTTP/1.1 connection reuse and HTTP/2 stream completion instead of scheduling an empty-body write.
 - Run HTTP comparison rounds with a fresh load-client process and retain raw measurements from failed CI qualification. Keep the existing migration thresholds and verify every response.
 - Update the locked VSCE publisher to 4.0.1-1 for its upstream Marketplace OIDC API-version and federated-token fixes. Publication still requires a verified release and the configured trusted policy.
 - Add GNU/Linux x86-64 and ARM64 LLVM candidates with an explicit glibc 2.36 floor, ELF process entry, SDK-free linking, relocatable runtimes, and checked libc/C++ requirements. Musl and cross compilation remain unsupported.

@@ -23,8 +23,8 @@ typedef struct {
 } AugHttpSession;
 struct AugHttpJob {
   struct lws *wsi; AugHttpSession *session; AugValue task;
-  /* Request and loggers outlive transport session cleanup on a disconnect. */
-  AugValue roots[2]; AugRetained retained;
+  /* Request, loggers and the prepared HEAD response outlive transport cleanup. */
+  AugValue roots[3]; AugRetained retained;
   bool test, transport_complete, timed_out, head_complete; int64_t started,deadline;
 };
 static const AugRoute *served_routes;
@@ -367,7 +367,7 @@ AugValue aug_httptestclient_request(AugValue client,AugValue method,AugValue tar
   if(aug_field(session.roots[0],3).as.object->text_length>body_limit){session.roots[1]=aug_http_problem(413);goto serialize;}
   aug_freeze(session.roots[0]);
   AugHttpJob job={.session=&session,.test=true,.roots={session.roots[0],aug_null()}};
-  aug_retain(&job.retained,job.roots,2);
+  aug_retain(&job.retained,job.roots,3);
   void *previous=aug_execution_current()->http_job;bool previous_cancelled=aug_cancelled;aug_execution_current()->http_job=&job;
   session.roots[1]=route_call(session.route,session.roots,1);aug_execution_current()->http_job=previous;aug_release(&job.retained);
   if(job.timed_out)aug_cancelled=previous_cancelled;
@@ -536,17 +536,17 @@ void aug_http_yield(AugValue value) {
   }
   session->roots[1]=policy_response(session,aug_http_response(aug_null(),session->route->status));session->roots[3]=encoded;session->streaming=true;session->stream_pending=true;session->sent=0;
   lws_callback_on_writable(job->wsi);
-  if(session->head){session->stream_pending=false;job->head_complete=true;aug_cancelled=true;goto finished;}
+  if(session->head){session->stream_pending=false;job->roots[2]=session->roots[1];job->head_complete=true;aug_cancelled=true;goto finished;}
   while(job->session&&job->session->stream_pending&&!aug_cancelled)aug_task_suspend();
 finished:
   aug_frame_leave(&frame);
 }
 bool aug_http_head_response(AugValue *response) {
   AugHttpJob *job=aug_execution_current()->http_job;
-  if(!aug_cancelled||aug_has_error||!job||!job->head_complete||job->timed_out||!job->session)return false;
+  if(!aug_cancelled||aug_has_error||!job||!job->head_complete||job->timed_out||(!job->session&&!job->transport_complete))return false;
   /* The first yield already established this response. Cancellation stops the
      producer and its children; it is not an error or a client disconnect. */
-  *response=job->session->roots[1];return response->tag==AUG_OBJECT;
+  *response=job->roots[2];return response->tag==AUG_OBJECT;
 }
 AugValue aug_http_finish(AugValue response) {
   AugHttpJob *job=aug_execution_current()->http_job;if(!job)return response;
@@ -606,7 +606,7 @@ static void dispatch(struct lws *wsi, AugHttpSession *session) {
   if (!session->route) {session->roots[1] = aug_http_problem(404); lws_callback_on_writable(wsi); return;}
   AugHttpJob *job = calloc(1, sizeof(*job)); if (!job) return;
   job->wsi = wsi; job->session = session; session->job = job;job->started=monotonic_ms();
-  job->roots[0]=session->roots[0];aug_retain(&job->retained,job->roots,2);
+  job->roots[0]=session->roots[0];aug_retain(&job->retained,job->roots,3);
   AugValue arguments[3] = {session->roots[0], aug_int(session->route - served_routes),aug_int((int64_t)(intptr_t)job)};
   job->task = aug_task_spawn(request_task, aug_null(), arguments, 3, request_complete, job);
 }
@@ -684,8 +684,11 @@ static int callback_http(struct lws *wsi, enum lws_callback_reasons reason, void
           snprintf(name, sizeof(name), "%s:", label.as.object->text);
           if (lws_add_http_header_by_name(wsi, (unsigned char *)name, (unsigned char *)value.as.object->text, (int)value.as.object->text_length, &next, end)) return -1;
         }
-        if (lws_finalize_write_http_header(wsi, start, &next, end)) return -1;
-        session->headers_sent = true; lws_callback_on_writable(wsi); return 0;
+        enum lws_write_protocol flags=LWS_WRITE_HTTP_HEADERS|(session->head?LWS_WRITE_H2_STREAM_END:0);
+        if (lws_finalize_write_http_header_flags(wsi, start, &next, end, flags)) return -1;
+        session->headers_sent = true;
+        if(session->head){if(session->job)session->job->transport_complete=true;cleanup(session);return lws_http_transaction_completed(wsi)?-1:0;}
+        lws_callback_on_writable(wsi); return 0;
       }
       if(session->streaming&&!session->stream_pending&&!session->stream_done)return 0;
       AugValue encoded = session->streaming&&session->stream_pending?session->roots[3]:session->roots[2]; size_t remaining = session->head ? 0 : encoded.as.object->text_length - session->sent;
