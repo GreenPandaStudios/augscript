@@ -1,6 +1,6 @@
 // aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import roundTrip from compression
-import CompressionError from "https://github.com/GreenPandaStudios/aug-zlib#v0.1.1"
+import CompressionError from "https://github.com/GreenPandaStudios/aug-zlib#v0.1.3"
 
 try:
     print(value=roundTrip().text())

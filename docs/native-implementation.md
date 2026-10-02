@@ -19,7 +19,7 @@ Native failures use their resolved August constructors and method tables.
 
 All four real adapters have been built and tested locally. Ten August cases
 pass through the installed tool pack with native compilers, Git and SDK paths
-unavailable to the test processes. Their `v0.1.1` sources and native archives (SQLite `v0.1.2`) are
+unavailable to the test processes. Their `v0.1.3` sources and native archives are
 published in separate public repositories. A second check installs the npm CLI
 archives into a fresh `node_modules`, downloads each library from GitHub, and
 runs its program through LLVM using both URL imports and named package aliases.
@@ -136,14 +136,27 @@ application compilation requires no CRT development objects, headers or native
 compiler. ELF libraries load relative to the executable. LLVM's own C++/ICU/XZ
 dependencies stay in its tool directory and are not application dependencies.
 
-Local Debian 12 ARM64 qualification passed 247 LLVM regression cases; three
+Debian 12 x86-64 and ARM64 qualification passed in
+[CI run 36953864621](https://github.com/GreenPandaStudios/augscript/actions/runs/36953864621)
+on commit `c2cab3d`. Each architecture passed 247 LLVM regression cases; three
 macOS DWARF inspection cases were skipped. Two native ABI boundary cases also
 passed. An installed CLI ran CPU LibTorch, SQLite, zlib and Rust BLAKE3 using
 verified local candidates, including their same-file tests, frozen/offline locks,
 relocation, owned-resource cleanup and task calls. The independent native clients
 ran 1,000 cleanup cycles per library. These checks use local native archives and
-do not qualify public Linux downloads or x86-64 execution. The per-architecture
-candidate workflows and release consumer gates provide those remaining checks.
+do not qualify public Linux downloads. All four libraries now publish checksum-pinned
+`v0.1.3` archives for macOS ARM64, GNU/Linux x86-64 and GNU/Linux ARM64. The
+per-architecture workflows also run public repository imports in a separate
+Debian 12 consumer container without compilers, Git or development headers.
+Only the unpublished compiler pack is supplied locally for that check.
+
+The local clean Debian 12 ARM64 consumer check also passed against all four public
+`v0.1.3` repository tags and release archives. It ran without Clang, GCC, Git or
+development headers, including the Node headers normally present in the base
+image. URL imports, named aliases, same-file tests, frozen/offline runs, relocated
+deployments, real-resource cleanup, tasks, JSON, crypto and HTTP forms passed.
+This supplies ARM64 consumer evidence; the corresponding x86-64 clean job must
+pass independently.
 
 The ARM64 LibTorch CPU archive contains OpenBLAS 0.3.34 and Arm Compute 53.2.0
 alongside LibTorch 2.14.1. The build checks reported binary versions and retains

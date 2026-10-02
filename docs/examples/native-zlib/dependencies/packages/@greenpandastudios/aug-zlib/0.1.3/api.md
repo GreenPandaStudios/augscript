@@ -1,7 +1,7 @@
 ---
-title: "packages/@greenpandastudios/aug-zlib/0.1.1/api.aug · Compression with zlib"
+title: "packages/@greenpandastudios/aug-zlib/0.1.3/api.aug · Compression with zlib"
 generated: true
-source: "examples/native-zlib/.aug-spec/packages/@greenpandastudios/aug-zlib/0.1.1/api.aug"
+source: "examples/native-zlib/.aug-spec/packages/@greenpandastudios/aug-zlib/0.1.3/api.aug"
 editLink: false
 prev: false
 next: false
@@ -10,7 +10,7 @@ search: false
 pageClass: aug-example-page
 ---
 
-# `packages/@greenpandastudios/aug-zlib/0.1.1/api.aug`
+# `packages/@greenpandastudios/aug-zlib/0.1.3/api.aug`
 
 [Compression with zlib](../../../../../index.md) · Dependency source and specification
 
@@ -118,13 +118,13 @@ Within an unsafe block, it returns [`_decompress`](api.md#symbol-_decompress) wi
 
 It is private to its defining scope. It takes `input` as `Bytes`. It returns `Bytes`. Failures can raise [`CompressionError`](contracts.md#symbol-CompressionError).
 
-Native implementation: `@greenpandastudios/aug-zlib@0.1.1`, `1.3.2`. Supported targets: macos arm64 14.0+. Binding contract: [`native.abi.json`](native.abi-json.md) (SHA-256 `c3d4b36eadcccd13caff71597ed77a8e7307f0cfe3d13660a8e9127efe942b3d`). It calls `aug_zlib_compress_v1` through the C ABI on the caller thread; a blocking native call blocks that thread. August copies the returned buffer, then calls `aug_zlib_release_v1` to release it. The compiler checks the provider, descriptor digest, signature and ownership at August call sites. The native author promises not to retain inputs, enter August from foreign threads, or unwind across the C boundary; internal native workers may run. The compiler does not prove those promises.
+Native implementation: `@greenpandastudios/aug-zlib@0.1.3`, `1.3.2`. Supported targets: linux arm64 glibc 2.36+, linux x64 glibc 2.36+, macos arm64 14.0+. Binding contract: [`native.abi.json`](native.abi-json.md) (SHA-256 `c3d4b36eadcccd13caff71597ed77a8e7307f0cfe3d13660a8e9127efe942b3d`). It calls `aug_zlib_compress_v1` through the C ABI on the caller thread; a blocking native call blocks that thread. August copies the returned buffer, then calls `aug_zlib_release_v1` to release it. The compiler checks the provider, descriptor digest, signature and ownership at August call sites. The native author promises not to retain inputs, enter August from foreign threads, or unwind across the C boundary; internal native workers may run. The compiler does not prove those promises.
 
 ### `_decompress` · [source](api.md#code) {#symbol-_decompress}
 
 It is private to its defining scope. It takes `input` as `Bytes` and `maximumOutput` as an integer. It returns `Bytes`. Failures can raise [`CompressionError`](contracts.md#symbol-CompressionError).
 
-Native implementation: `@greenpandastudios/aug-zlib@0.1.1`, `1.3.2`. Supported targets: macos arm64 14.0+. Binding contract: [`native.abi.json`](native.abi-json.md) (SHA-256 `c3d4b36eadcccd13caff71597ed77a8e7307f0cfe3d13660a8e9127efe942b3d`). It calls `aug_zlib_decompress_v1` through the C ABI on the caller thread; a blocking native call blocks that thread. August copies the returned buffer, then calls `aug_zlib_release_v1` to release it. The compiler checks the provider, descriptor digest, signature and ownership at August call sites. The native author promises not to retain inputs, enter August from foreign threads, or unwind across the C boundary; internal native workers may run. The compiler does not prove those promises.
+Native implementation: `@greenpandastudios/aug-zlib@0.1.3`, `1.3.2`. Supported targets: linux arm64 glibc 2.36+, linux x64 glibc 2.36+, macos arm64 14.0+. Binding contract: [`native.abi.json`](native.abi-json.md) (SHA-256 `c3d4b36eadcccd13caff71597ed77a8e7307f0cfe3d13660a8e9127efe942b3d`). It calls `aug_zlib_decompress_v1` through the C ABI on the caller thread; a blocking native call blocks that thread. August copies the returned buffer, then calls `aug_zlib_release_v1` to release it. The compiler checks the provider, descriptor digest, signature and ownership at August call sites. The native author promises not to retain inputs, enter August from foreign threads, or unwind across the C boundary; internal native workers may run. The compiler does not prove those promises.
 
 ### `test compress` · [source](api.md#code) {#symbol-test-20-compress}
 

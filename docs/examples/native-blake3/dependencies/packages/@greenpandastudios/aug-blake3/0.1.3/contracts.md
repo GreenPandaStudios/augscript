@@ -1,7 +1,7 @@
 ---
-title: "packages/@greenpandastudios/aug-blake3/0.1.1/contracts.aug · Hashing with Rust BLAKE3"
+title: "packages/@greenpandastudios/aug-blake3/0.1.3/contracts.aug · Hashing with Rust BLAKE3"
 generated: true
-source: "examples/native-blake3/.aug-spec/packages/@greenpandastudios/aug-blake3/0.1.1/contracts.aug"
+source: "examples/native-blake3/.aug-spec/packages/@greenpandastudios/aug-blake3/0.1.3/contracts.aug"
 editLink: false
 prev: false
 next: false
@@ -10,7 +10,7 @@ search: false
 pageClass: aug-example-page
 ---
 
-# `packages/@greenpandastudios/aug-blake3/0.1.1/contracts.aug`
+# `packages/@greenpandastudios/aug-blake3/0.1.3/contracts.aug`
 
 [Hashing with Rust BLAKE3](../../../../../index.md) · Dependency source and specification
 

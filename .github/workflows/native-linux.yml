@@ -20,7 +20,7 @@ jobs:
           - runner: ubuntu-24.04-arm
             host: linux-arm64
     runs-on: ${{ matrix.runner }}
-    timeout-minutes: 60
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
@@ -51,11 +51,28 @@ jobs:
         run: |
           docker exec qualification npm run package:packages
           docker exec qualification node scripts/qualify-native-consumers.mjs --local-compiler --candidate-libraries /work
+      - name: Qualify public repository imports without development tools
+        run: |
+          docker build -f docker/Dockerfile.native-consumer -t aug-llvm-consumer .
+          docker run -d --name public-consumer aug-llvm-consumer sleep infinity
+          mkdir -p .aug-build/public-consumer/{dist,examples,native,scripts,.aug-build}
+          docker cp qualification:/work/dist/release .aug-build/public-consumer/dist/release
+          docker cp "qualification:/work/.aug-build/aug-llvm-${{ matrix.host }}.tar.gz" .aug-build/public-consumer/.aug-build/
+          cp scripts/qualify-native-consumers.mjs scripts/native-qualification-pins.mjs .aug-build/public-consumer/scripts/
+          cp native/library-qualification.json .aug-build/public-consumer/native/
+          for library in pytorch sqlite zlib blake3; do
+            mkdir -p ".aug-build/public-consumer/examples/native-$library"
+            cp "examples/native-$library/"*.aug ".aug-build/public-consumer/examples/native-$library/"
+          done
+          docker cp .aug-build/public-consumer/. public-consumer:/consumer/
+          docker exec public-consumer sh -c 'for tool in clang gcc git; do if command -v "$tool"; then exit 1; fi; done; test ! -d /usr/include; test ! -d /usr/local/include'
+          docker exec public-consumer node scripts/qualify-native-consumers.mjs --local-compiler --discard-builds
       - name: Collect measured candidates and qualification evidence
         if: always()
         run: |
           mkdir -p .aug-build/linux-evidence
           docker cp qualification:/work/.aug-build/native-consumer-qualification.json .aug-build/linux-evidence/qualification.json || true
+          docker cp public-consumer:/consumer/.aug-build/native-consumer-qualification.json .aug-build/linux-evidence/public-clean-qualification.json || true
           docker cp "qualification:/work/.aug-build/compiler-pack-${{ matrix.host }}.json" .aug-build/linux-evidence/ || true
           docker cp "qualification:/work/.aug-build/aug-llvm-${{ matrix.host }}.tar.gz" .aug-build/linux-evidence/ || true
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7

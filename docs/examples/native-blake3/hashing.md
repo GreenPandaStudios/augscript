@@ -30,7 +30,7 @@ pageClass: aug-example-page
 
 ```aug [Indentation]
 // aug-spec: "hashing.aug.md" explains this file. Read it before changes; refresh with aug spec.
-import HashError and hash from "https://github.com/GreenPandaStudios/aug-blake3#v0.1.1"
+import HashError and hash from "https://github.com/GreenPandaStudios/aug-blake3#v0.1.3"
 /** Hash UTF-8 text with the real Rust BLAKE3 implementation. */
 hashText(string value) returns string unless HashError:
     return hash(input=value.bytes())
@@ -44,7 +44,7 @@ test hashText:
 
 ```aug [Braces]
 // aug-spec: "hashing.aug.md" explains this file. Read it before changes; refresh with aug spec.
-import HashError and hash from "https://github.com/GreenPandaStudios/aug-blake3#v0.1.1"
+import HashError and hash from "https://github.com/GreenPandaStudios/aug-blake3#v0.1.3"
 /** Hash UTF-8 text with the real Rust BLAKE3 implementation. */
 hashText(string value) returns string unless HashError {
     return hash(input=value.bytes())
@@ -70,7 +70,7 @@ test hashText {
 
 ### `hashText` · [source](hashing.md#code) {#symbol-hashText}
 
-Hash UTF-8 text with the real Rust BLAKE3 implementation. It takes `value` as a string. Failures can raise [`HashError`](dependencies/packages/%40greenpandastudios/aug-blake3/0.1.1/contracts.md#symbol-HashError). It returns [`hash`](dependencies/packages/%40greenpandastudios/aug-blake3/0.1.1/api.md#symbol-hash) with `input` from the UTF-8 bytes of `value`.
+Hash UTF-8 text with the real Rust BLAKE3 implementation. It takes `value` as a string. Failures can raise [`HashError`](dependencies/packages/%40greenpandastudios/aug-blake3/0.1.3/contracts.md#symbol-HashError). It returns [`hash`](dependencies/packages/%40greenpandastudios/aug-blake3/0.1.3/api.md#symbol-hash) with `input` from the UTF-8 bytes of `value`.
 
 ### `test hashText` · [source](hashing.md#code) {#symbol-test-20-hashText}
 
@@ -84,7 +84,7 @@ The test requires [`hashText`](hashing.md#symbol-hashText) with `value` `"abc"` 
 
 ### Dependencies
 
-It uses [`hash`](dependencies/packages/%40greenpandastudios/aug-blake3/0.1.1/api.md#symbol-hash) and [`HashError`](dependencies/packages/%40greenpandastudios/aug-blake3/0.1.1/contracts.md#symbol-HashError) from `https://github.com/GreenPandaStudios/aug-blake3#v0.1.1`.
+It uses [`hash`](dependencies/packages/%40greenpandastudios/aug-blake3/0.1.3/api.md#symbol-hash) and [`HashError`](dependencies/packages/%40greenpandastudios/aug-blake3/0.1.3/contracts.md#symbol-HashError) from `https://github.com/GreenPandaStudios/aug-blake3#v0.1.3`.
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).
 

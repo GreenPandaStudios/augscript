@@ -1,7 +1,7 @@
 ---
 title: "Native binding contract · Hashing with Rust BLAKE3"
 generated: true
-source: "examples/native-blake3/.aug-spec/packages/@greenpandastudios/aug-blake3/0.1.1/native.abi.json"
+source: "examples/native-blake3/.aug-spec/packages/@greenpandastudios/aug-blake3/0.1.3/native.abi.json"
 editLink: false
 prev: false
 next: false

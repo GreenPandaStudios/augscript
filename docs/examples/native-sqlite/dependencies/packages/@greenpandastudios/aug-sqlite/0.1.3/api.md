@@ -1,7 +1,7 @@
 ---
-title: "packages/@greenpandastudios/aug-sqlite/0.1.2/api.aug · A database with SQLite"
+title: "packages/@greenpandastudios/aug-sqlite/0.1.3/api.aug · A database with SQLite"
 generated: true
-source: "examples/native-sqlite/.aug-spec/packages/@greenpandastudios/aug-sqlite/0.1.2/api.aug"
+source: "examples/native-sqlite/.aug-spec/packages/@greenpandastudios/aug-sqlite/0.1.3/api.aug"
 editLink: false
 prev: false
 next: false
@@ -10,7 +10,7 @@ search: false
 pageClass: aug-example-page
 ---
 
-# `packages/@greenpandastudios/aug-sqlite/0.1.2/api.aug`
+# `packages/@greenpandastudios/aug-sqlite/0.1.3/api.aug`
 
 [A database with SQLite](../../../../../index.md) · Dependency source and specification
 
@@ -239,7 +239,7 @@ Failures can raise [`SqliteError`](contracts.md#symbol-SqliteError). Within an u
 
 It is private to its defining scope. It takes `path` as a string. It returns ownership of [`Database`](bindings.md#symbol-Database). Failures can raise [`SqliteError`](contracts.md#symbol-SqliteError).
 
-Native implementation: `@greenpandastudios/aug-sqlite@0.1.2`, `3.53.4`. Supported targets: macos arm64 14.0+. Binding contract: [`native.abi.json`](native.abi-json.md) (SHA-256 `3c75c2925c85f1b83db06ee00fa04f1d2d37c9fd6edca0d074ce89b4647ffffb`). It calls `aug_sqlite_open_v1` through the C ABI on the caller thread; a blocking native call blocks that thread. The caller owns the returned handle. The compiler checks the provider, descriptor digest, signature and ownership at August call sites. The native author promises not to retain inputs, enter August from foreign threads, or unwind across the C boundary; internal native workers may run. The compiler does not prove those promises.
+Native implementation: `@greenpandastudios/aug-sqlite@0.1.3`, `3.53.4`. Supported targets: linux arm64 glibc 2.36+, linux x64 glibc 2.36+, macos arm64 14.0+. Binding contract: [`native.abi.json`](native.abi-json.md) (SHA-256 `3c75c2925c85f1b83db06ee00fa04f1d2d37c9fd6edca0d074ce89b4647ffffb`). It calls `aug_sqlite_open_v1` through the C ABI on the caller thread; a blocking native call blocks that thread. The caller owns the returned handle. The compiler checks the provider, descriptor digest, signature and ownership at August call sites. The native author promises not to retain inputs, enter August from foreign threads, or unwind across the C boundary; internal native workers may run. The compiler does not prove those promises.
 
 ### `_execute` · [source](api.md#code) {#symbol-_execute}
 
@@ -247,13 +247,13 @@ It is private to its defining scope. It takes `database` as [`Database`](binding
 
 It returns `int`. It may change `database`. Failures can raise [`SqliteError`](contracts.md#symbol-SqliteError).
 
-Native implementation: `@greenpandastudios/aug-sqlite@0.1.2`, `3.53.4`. Supported targets: macos arm64 14.0+. Binding contract: [`native.abi.json`](native.abi-json.md) (SHA-256 `3c75c2925c85f1b83db06ee00fa04f1d2d37c9fd6edca0d074ce89b4647ffffb`). It calls `aug_sqlite_execute_v1` through the C ABI on the caller thread; a blocking native call blocks that thread. `database` lends mutable access for this call. The compiler checks the provider, descriptor digest, signature and ownership at August call sites. The native author promises not to retain inputs, enter August from foreign threads, or unwind across the C boundary; internal native workers may run. The compiler does not prove those promises.
+Native implementation: `@greenpandastudios/aug-sqlite@0.1.3`, `3.53.4`. Supported targets: linux arm64 glibc 2.36+, linux x64 glibc 2.36+, macos arm64 14.0+. Binding contract: [`native.abi.json`](native.abi-json.md) (SHA-256 `3c75c2925c85f1b83db06ee00fa04f1d2d37c9fd6edca0d074ce89b4647ffffb`). It calls `aug_sqlite_execute_v1` through the C ABI on the caller thread; a blocking native call blocks that thread. `database` lends mutable access for this call. The compiler checks the provider, descriptor digest, signature and ownership at August call sites. The native author promises not to retain inputs, enter August from foreign threads, or unwind across the C boundary; internal native workers may run. The compiler does not prove those promises.
 
 ### `_queryScalar` · [source](api.md#code) {#symbol-_queryScalar}
 
 It is private to its defining scope. It takes `database` as [`Database`](bindings.md#symbol-Database), `sql` as a string, and `parameters` as `List<string>`. It returns `string`. Failures can raise [`SqliteError`](contracts.md#symbol-SqliteError).
 
-Native implementation: `@greenpandastudios/aug-sqlite@0.1.2`, `3.53.4`. Supported targets: macos arm64 14.0+. Binding contract: [`native.abi.json`](native.abi-json.md) (SHA-256 `3c75c2925c85f1b83db06ee00fa04f1d2d37c9fd6edca0d074ce89b4647ffffb`). It calls `aug_sqlite_scalar_v1` through the C ABI on the caller thread; a blocking native call blocks that thread. `database` lends read access for this call. August copies the returned buffer, then calls `aug_sqlite_text_release_v1` to release it. The compiler checks the provider, descriptor digest, signature and ownership at August call sites. The native author promises not to retain inputs, enter August from foreign threads, or unwind across the C boundary; internal native workers may run. The compiler does not prove those promises.
+Native implementation: `@greenpandastudios/aug-sqlite@0.1.3`, `3.53.4`. Supported targets: linux arm64 glibc 2.36+, linux x64 glibc 2.36+, macos arm64 14.0+. Binding contract: [`native.abi.json`](native.abi-json.md) (SHA-256 `3c75c2925c85f1b83db06ee00fa04f1d2d37c9fd6edca0d074ce89b4647ffffb`). It calls `aug_sqlite_scalar_v1` through the C ABI on the caller thread; a blocking native call blocks that thread. `database` lends read access for this call. August copies the returned buffer, then calls `aug_sqlite_text_release_v1` to release it. The compiler checks the provider, descriptor digest, signature and ownership at August call sites. The native author promises not to retain inputs, enter August from foreign threads, or unwind across the C boundary; internal native workers may run. The compiler does not prove those promises.
 
 ### `test openMemory` · [source](api.md#code) {#symbol-test-20-openMemory}
 

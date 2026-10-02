@@ -11,8 +11,9 @@ macOS 14 or later on Apple Silicon. Native packages select LLVM automatically;
 ordinary projects retain the C backend during migration.
 
 Linux x86-64 and ARM64 support is being qualified on Debian 12 and Ubuntu,
-with glibc 2.36 or later. Local ARM64 candidates pass installed-CLI checks;
-public Linux artifacts and x86-64 execution still require their release gates.
+with glibc 2.36 or later. Both architectures pass LLVM regression and installed
+CLI checks with measured library candidates. Their library artifacts are public;
+clean public-download consumer checks and compiler publication remain release gates.
 Musl and cross compilation are unsupported. A package declares its libc floor
 and C++ ABI in addition to its OS and architecture; August rejects an incompatible
 host before compiling the application.
@@ -23,7 +24,7 @@ The [PyTorch](https://github.com/GreenPandaStudios/aug-pytorch),
 [SQLite](https://github.com/GreenPandaStudios/aug-sqlite),
 [zlib](https://github.com/GreenPandaStudios/aug-zlib), and
 [BLAKE3](https://github.com/GreenPandaStudios/aug-blake3) repositories publish
-`v0.1.1` source and native preview archives (SQLite uses `v0.1.2`). Their imports have passed using the
+`v0.1.3` source and native preview archives for all three platforms. Their imports have passed using the
 packaged CLI, public downloads, and fresh caches on macOS ARM64. The matching
 compiler release is still pending. The macOS 14 ARM64 consumer gate passed in CI;
 subsequent compiler revisions must pass it again before publication.
@@ -32,7 +33,7 @@ After the matching compiler preview is published, use the normal
 package commands. This example adds CPU LibTorch under a short name:
 
 ```sh
-aug add https://github.com/GreenPandaStudios/aug-pytorch#v0.1.1 --as pytorch
+aug add https://github.com/GreenPandaStudios/aug-pytorch#v0.1.3 --as pytorch
 aug run
 ```
 

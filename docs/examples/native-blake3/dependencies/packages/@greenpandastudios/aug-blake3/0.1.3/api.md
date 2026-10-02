@@ -1,7 +1,7 @@
 ---
-title: "packages/@greenpandastudios/aug-blake3/0.1.1/api.aug · Hashing with Rust BLAKE3"
+title: "packages/@greenpandastudios/aug-blake3/0.1.3/api.aug · Hashing with Rust BLAKE3"
 generated: true
-source: "examples/native-blake3/.aug-spec/packages/@greenpandastudios/aug-blake3/0.1.1/api.aug"
+source: "examples/native-blake3/.aug-spec/packages/@greenpandastudios/aug-blake3/0.1.3/api.aug"
 editLink: false
 prev: false
 next: false
@@ -10,7 +10,7 @@ search: false
 pageClass: aug-example-page
 ---
 
-# `packages/@greenpandastudios/aug-blake3/0.1.1/api.aug`
+# `packages/@greenpandastudios/aug-blake3/0.1.3/api.aug`
 
 [Hashing with Rust BLAKE3](../../../../../index.md) · Dependency source and specification
 
@@ -81,7 +81,7 @@ Within an unsafe block, it returns [`_hash`](api.md#symbol-_hash) with `input`. 
 
 It is private to its defining scope. It takes `input` as `Bytes`. It returns `string`. Failures can raise [`HashError`](contracts.md#symbol-HashError).
 
-Native implementation: `@greenpandastudios/aug-blake3@0.1.1`, `1.8.7`. Supported targets: macos arm64 14.0+. Binding contract: [`native.abi.json`](native.abi-json.md) (SHA-256 `3bf8dea97cde70a03021bf77ea08314d6d37fe7b4935ff16030b2ab929c21279`). It calls `aug_blake3_hash_v1` through the C ABI on the caller thread; a blocking native call blocks that thread. August copies the returned buffer, then calls `aug_blake3_text_release_v1` to release it. The compiler checks the provider, descriptor digest, signature and ownership at August call sites. The native author promises not to retain inputs, enter August from foreign threads, or unwind across the C boundary; internal native workers may run. The compiler does not prove those promises.
+Native implementation: `@greenpandastudios/aug-blake3@0.1.3`, `1.8.7`. Supported targets: linux arm64 glibc 2.36+, linux x64 glibc 2.36+, macos arm64 14.0+. Binding contract: [`native.abi.json`](native.abi-json.md) (SHA-256 `3bf8dea97cde70a03021bf77ea08314d6d37fe7b4935ff16030b2ab929c21279`). It calls `aug_blake3_hash_v1` through the C ABI on the caller thread; a blocking native call blocks that thread. August copies the returned buffer, then calls `aug_blake3_text_release_v1` to release it. The compiler checks the provider, descriptor digest, signature and ownership at August call sites. The native author promises not to retain inputs, enter August from foreign threads, or unwind across the C boundary; internal native workers may run. The compiler does not prove those promises.
 
 ### `test hash` · [source](api.md#code) {#symbol-test-20-hash}
 

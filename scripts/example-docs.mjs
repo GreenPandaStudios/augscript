@@ -99,7 +99,7 @@ export function buildExamplePages(overrides) {
     let overview=frontmatter(example.title,example.path)+`# ${example.title}\n\n${example.description}\n\n`+
       'Open a file to read its source beside the explanation produced by `aug spec`. **Indentation** and **Braces** display the same checked program; your choice carries across file pages.\n\n';
     const native=example.group==='Native libraries (LLVM preview)';
-    if(native)overview+='This project requires the August `0.21.0` LLVM preview on macOS 14+ with Apple Silicon. The library archive is public; the matching compiler release is still being qualified.\n\n';
+    if(native)overview+='This project requires the August `0.21.0` LLVM preview on macOS 14+ with Apple Silicon, or Debian/Ubuntu GNU/Linux x64 or ARM64 with glibc 2.36+. The library archives are public; the matching compiler release is still being qualified.\n\n';
     if(example.walkthrough?.length) {
       overview+='## Follow the program\n\n';
       for(const step of example.walkthrough) {

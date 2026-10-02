@@ -346,7 +346,9 @@ console.log('JSON, clock, crypto and HTTP form callbacks pass without a native t
 const report={format:1,compiler:cliPackage.version,host:process.platform+'-'+process.arch,
   installation:'npm-archive-in-node_modules',nativeToolsOnPath:false,sourceCache:'fresh',artifactCache:'fresh',
   libraryTransport:candidateRoot?'local-candidates':'public-release-assets',compilerTransport:localCompiler?'local-release-asset':'public-release-asset',
-  osRelease:osRelease(),discardedDeploymentCopies:discardBuilds,minimumOSQualification:process.platform==='darwin'&&Number(osRelease().split('.')[0])===23,
+  osRelease:osRelease(),glibcVersion:process.platform==='linux'?process.report.getReport().header.glibcVersionRuntime:undefined,
+  discardedDeploymentCopies:discardBuilds,minimumOSQualification:process.platform==='darwin'&&Number(osRelease().split('.')[0])===23,
+  minimumLibcQualification:process.platform==='linux'&&process.report.getReport().header.glibcVersionRuntime==='2.36',
   realResourceCounters:{failedConstructor:true,earlyReturn:true,cancelledBeforeEntry:true,liveBuffers:0},nativeTasks:true,standardRuntime:{json:true,clock:true,crypto:true,httpForms:true,relocation:true},directory,outcomes,gallery};
 writeFileSync(join(root,'.aug-build/native-consumer-qualification.json'),JSON.stringify(report,null,2)+'\n');
 console.log('Consumer qualification report: '+join(root,'.aug-build/native-consumer-qualification.json'));

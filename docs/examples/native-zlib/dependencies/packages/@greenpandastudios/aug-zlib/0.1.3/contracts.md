@@ -1,7 +1,7 @@
 ---
-title: "packages/@greenpandastudios/aug-zlib/0.1.1/contracts.aug · Compression with zlib"
+title: "packages/@greenpandastudios/aug-zlib/0.1.3/contracts.aug · Compression with zlib"
 generated: true
-source: "examples/native-zlib/.aug-spec/packages/@greenpandastudios/aug-zlib/0.1.1/contracts.aug"
+source: "examples/native-zlib/.aug-spec/packages/@greenpandastudios/aug-zlib/0.1.3/contracts.aug"
 editLink: false
 prev: false
 next: false
@@ -10,7 +10,7 @@ search: false
 pageClass: aug-example-page
 ---
 
-# `packages/@greenpandastudios/aug-zlib/0.1.1/contracts.aug`
+# `packages/@greenpandastudios/aug-zlib/0.1.3/contracts.aug`
 
 [Compression with zlib](../../../../../index.md) · Dependency source and specification
 

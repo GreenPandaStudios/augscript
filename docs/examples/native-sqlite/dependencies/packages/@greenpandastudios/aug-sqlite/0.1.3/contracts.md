@@ -1,7 +1,7 @@
 ---
-title: "packages/@greenpandastudios/aug-sqlite/0.1.2/contracts.aug · A database with SQLite"
+title: "packages/@greenpandastudios/aug-sqlite/0.1.3/contracts.aug · A database with SQLite"
 generated: true
-source: "examples/native-sqlite/.aug-spec/packages/@greenpandastudios/aug-sqlite/0.1.2/contracts.aug"
+source: "examples/native-sqlite/.aug-spec/packages/@greenpandastudios/aug-sqlite/0.1.3/contracts.aug"
 editLink: false
 prev: false
 next: false
@@ -10,7 +10,7 @@ search: false
 pageClass: aug-example-page
 ---
 
-# `packages/@greenpandastudios/aug-sqlite/0.1.2/contracts.aug`
+# `packages/@greenpandastudios/aug-sqlite/0.1.3/contracts.aug`
 
 [A database with SQLite](../../../../../index.md) · Dependency source and specification
 
