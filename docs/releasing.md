@@ -5,15 +5,20 @@ All first-party packages and the extension use one compiler-compatible version. 
 ## Verify and create artifacts
 
 ```sh
-node scripts/version.mjs 0.20.1
+node scripts/version.mjs 0.21.0
 npm ci
 npm --prefix vscode ci
 node scripts/bootstrap-native.mjs
+node scripts/prepare-llvm-tools.mjs
+node scripts/prepare-llvm-maintainer.mjs
+node scripts/build-runtime-pack.mjs
+export AUG_LLVM_HOME="$PWD/.aug-build/llvm-tools"
 npm run version:check
 npm run check
 npm test
 npm run docs:check
 npm run docs:build
+node scripts/merge-compiler-packs.mjs .aug-build/release-packs
 npm run package:packages
 npm run test:packages -- --native
 npm run package:extension
@@ -22,15 +27,15 @@ node scripts/publish-release.mjs dist/release --verify-only
 node scripts/publish-extension.mjs dist/release --verify-only
 ```
 
-Update both changelogs and relevant guides, and commit regenerated docs. The final artifact step combines four installable npm tarballs, a VSIX, offline documentation, package metadata and SHA-256 checksums under `dist/release`. It excludes native caches, private credentials and application build output.
+The merge step requires the exact qualified producer archives and manifests for all three hosts under `.aug-build/release-packs`; `release.yml` obtains them before packaging. Update both changelogs and relevant guides, and commit regenerated docs. The final artifact step combines four installable npm tarballs, a VSIX, compiler packs, offline documentation, package metadata and SHA-256 checksums under `dist/release`. It excludes native caches, private credentials and application build output.
 
 ## GitHub release
 
 After verification and committing, create and push the version tag:
 
 ```sh
-git tag v0.20.1
-git push origin main v0.20.1
+git tag v0.21.0
+git push origin main v0.21.0
 ```
 
 `release.yml` validates the tag against every manifest, runs compiler/native/docs/package gates, and uploads artifacts to a **draft prerelease**. Review the draft and publish it in GitHub Releases. Publishing starts **Publish npm packages** and **Publish VS Code extension** automatically. Each workflow deploys the archives attached to that release. Changing an asset after review invalidates its checksum.
@@ -42,6 +47,22 @@ The automatic publishers are included starting with `v0.20.1`. Existing tags kee
 The manually published Marketplace `0.19.0` contains files that differ from the VSIX attached to the `v0.19.0` GitHub release. It is not a matching deployment of that archive. Use a new version for the first automated extension release; do not bypass the content comparison to skip an older mismatch.
 
 ## npm publication
+
+The LLVM preview release builds official pinned LLVM tools and the August runtime
+on macOS ARM64, Linux x86-64 and Linux ARM64 before packaging. Linux producers
+use the pinned Debian 12 maintainer image. `scripts/merge-compiler-packs.mjs`
+rejects missing, duplicate, stale or modified platform inputs, then records all
+exact compiler archive hashes in the CLI and bundled editor compiler. The GitHub
+release includes every selected archive.
+Runtime compilation remains a maintainer operation. Application installation
+downloads the reviewed pack and does not build LLVM or invoke Clang. CI runs the
+LLVM execution tests with its prepared toolchain; unsupported platforms retain
+explicit preview diagnostics. See [native packages](native-packages.md).
+Producer jobs require source breakpoint/variable inspection, actual LLVM ASan
+instrumentation with a failing negative control, runtime UBSan, and the frozen
+paired C/LLVM performance limits. Consumer jobs exercise an ordinary default
+LLVM starter and all four public native repositories without native tools,
+including frozen/offline locks, cleanup and relocated deployment bundles.
 
 The packages use the `@greenpandastudios` npm scope. Verify ownership and each package's trusted publisher before a release. GitHub tarballs can also be installed directly.
 
@@ -92,4 +113,56 @@ Enable GitHub Pages with **GitHub Actions** as its publishing source. `docs.yml`
 
 ## Current limits
 
-August is experimental. Native web/crypto bootstrap supports macOS and Linux; other platforms are unverified. npm and Marketplace deployment require owner-configured trust. The first `v0.20.1` Marketplace attempt failed during the VSCE 4.0.0 OIDC token exchange with an API-version error; automated Marketplace publication remains unverified, and the checked VSIX is available from GitHub Releases. User libraries can use public Git repositories, local folders, or npm archives. Prebuilt native dependency releases and a stable external native adapter ABI remain future work. See [the gap ledger](web-library-gaps.md) and [performance assessment](performance.md).
+August is experimental. The LLVM/native candidate targets macOS 14+ ARM64 and GNU/Linux x86-64/ARM64 with glibc 2.36+; other platforms are unverified. npm and Marketplace deployment require owner-configured trust. The first `v0.20.1` Marketplace attempt failed during the VSCE 4.0.0 OIDC token exchange with an API-version error. The publisher now pins VSCE 4.0.1-1, whose [upstream fix](https://github.com/microsoft/vscode-vsce/blob/main/src/oidc.ts) supplies the API version and federated authorization scheme. Automated Marketplace publication remains unverified until a real release passes; the checked VSIX is available from GitHub Releases. User libraries use ordinary public Git repositories, local folders, or npm archives. The four native library repositories publish prebuilt artifacts; the 0.21.0 compiler release remains pending. Stabilizing the external adapter ABI is a 1.0 gate. See [the gap ledger](web-library-gaps.md) and [performance assessment](performance.md).
+## Native preview qualification
+
+Before publishing a compiler with native package support, build its LLVM pack
+before the npm archives and extension. `scripts/release-artifacts.mjs` checks
+that both shipped manifests pin that exact compiler archive. The release job
+runs `scripts/qualify-native-consumers.mjs --local-compiler`: it installs the npm
+archives, fetches the four native libraries from their public repositories and
+release URLs, then runs LLVM programs through URL imports and named aliases.
+Git, native compilers, and SDK paths are unavailable to those CLI processes.
+Frozen offline runs must preserve the locks and produce the same results.
+
+The release consumer jobs repeat this check on macOS 14 ARM64 and each Linux
+architecture. The macOS runner removes Xcode and Command Line Tools. Linux uses
+the pinned Node/Debian slim image with no compiler, Git or development headers.
+A draft is created only after all consumer jobs pass. A local result on a
+newer OS does not qualify the minimum OS. After release publication, omit
+`--local-compiler` to verify the compiler download too. Keep the resulting JSON
+report with release evidence; never commit artifact caches or generated binaries.
+
+Before library artifacts are public, contributors can pass
+`--candidate-libraries DIRECTORY --local-compiler` to the qualification script.
+`DIRECTORY` contains the four `aug-*` repository folders and their measured native
+archives. This mode installs the same CLI archives and checks each native file
+through the installed verifier, but reports local transport and does not claim
+repository URL/download acceptance. Public release gates omit this option.
+On a small test VM, `--discard-builds` removes verified deployment copies after
+their checks while keeping the source, locks, compiler outputs and JSON evidence.
+
+Each library candidate records the build commit and a complete input fingerprint:
+August source, the ABI descriptor, headers, native code, dependency locks and
+build recipes. Before adding release artifact pins, run
+`node native/verify-candidate.mjs PATH_TO_CANDIDATE_JSON` in the library repository.
+Run it again after updating the manifest. Only artifact metadata may change;
+changed binding or build inputs require a new candidate. Publish the exact tested
+archives without rebuilding them. `native/library-qualification.json` records
+the reviewed package tag, source commit and archive hash for each consumer host.
+A platform without reviewed pins fails qualification before any library download.
+
+The four library repositories keep a `release-candidates.json` record for the
+reviewed build run and source commit. Their tag workflow uses the shared release
+template under `native/templates` and the canonical assembly/publication scripts
+under `scripts`. It downloads that successful run, checks all three platform
+archives against the tagged manifest and source identity, then verifies the
+uploaded bytes before publishing. Retries accept an existing file only when its
+bytes match; they do not overwrite release assets. Keep the scripts in those
+repositories aligned when this maintainer protocol changes.
+
+To retry a library release after a publishing-tool correction, run its workflow
+on main and enter the existing version tag. The job checks out that immutable tag
+for source and manifest verification and uses the current maintainer publisher.
+It validates the tagged commit again before creating or changing a release.
+Partial uploads remain draft until the complete archive set passes byte checks.

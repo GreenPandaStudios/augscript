@@ -1,5 +1,11 @@
 # Changelog
 
+## LLVM native preview
+
+- Use the compiler-owned LLVM pack for ordinary run/build/test commands on qualified hosts. Native compilers and SDKs remain maintainer tools. Preserve source diagnostics and the same default as the CLI.
+- Highlight and complete opaque native resource declarations. Hover and navigation retain resource and package identities; descriptor mismatches include repair guidance.
+- Bundle native package and LLVM compiler metadata with the compiler. The matching CLI prepares verified native artifacts and compiler packs; unsupported LLVM constructs remain explicit diagnostics.
+
 ## 0.20.1
 
 - Publish the reviewed release VSIX from GitHub Actions using Marketplace trusted publishing. Verify the bundled compiler, artwork, manifest and checksum before uploading; retries check the existing extension contents.

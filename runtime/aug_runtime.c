@@ -28,6 +28,10 @@ static size_t next_collection = 1024;
 static bool collecting = false;
 static AugValue cli_args = {0};
 static bool equal(AugValue left, AugValue right);
+/* Map-only metadata keeps ordinary object allocation sizes unchanged. The
+   first member permits the existing heap, roots and GC to use AugObject. */
+typedef struct { AugObject object; size_t *field_buckets; } AugMapObject;
+static size_t *map_field_buckets(AugObject *object) { return ((AugMapObject *)object)->field_buckets; }
 bool aug_test_failed = false;
 size_t aug_test_assertions = 0;
 
@@ -54,7 +58,7 @@ static AugObject *allocate(int kind, const char *type_name, size_t field_count,
                            const unsigned char *owned_fields,
                            const AugMethodEntry *methods, size_t method_count) {
   if (!collecting && object_count >= next_collection) aug_collect();
-  AugObject *object = calloc(1, sizeof(AugObject));
+  AugObject *object = calloc(1, kind == AUG_MAP_KIND ? sizeof(AugMapObject) : sizeof(AugObject));
   if (!object) fail("out of memory");
   object->kind = kind;
   object->type_name = type_name;
@@ -79,7 +83,7 @@ AugValue aug_string_n(const void *value, size_t length) {
   AugObject *object = allocate(AUG_STRING, "string", 0, NULL, NULL, 0);
   object->text = malloc(length + 1);
   if (!object->text) fail("out of memory");
-  memcpy(object->text, value, length);
+  if (length) memcpy(object->text, value, length);
   object->text[length] = 0;
   object->text_length = length;
   return (AugValue){ .tag = AUG_STRING, .as.object = object };
@@ -209,6 +213,18 @@ static size_t bucket_for(AugObject *object, AugValue key) { return bucket_for_ha
 
 static bool grow_table(AugObject *object, size_t stride) {
   size_t entries = object->field_count / stride;
+  if (object->field_count + stride > object->capacity) {
+    size_t capacity = object->capacity ? object->capacity * 2 : 8;
+    AugValue *fields = realloc(object->fields, capacity * sizeof(AugValue));
+    if (!fields) fail("out of memory");
+    object->fields = fields;
+    if (stride == 2) {
+      size_t *positions = realloc(map_field_buckets(object), (capacity / 2) * sizeof(size_t));
+      if (!positions) fail("out of memory");
+      ((AugMapObject *)object)->field_buckets = positions;
+    }
+    object->capacity = capacity;
+  }
   bool rehashed = !object->bucket_count || (entries + 1) * 10 > object->bucket_count * 7;
   if (rehashed) {
     size_t count = object->bucket_count ? object->bucket_count * 2 : 8;
@@ -217,15 +233,11 @@ static bool grow_table(AugObject *object, size_t stride) {
     free(object->buckets);
     object->buckets = buckets;
     object->bucket_count = count;
-    for (size_t i = 0; i < object->field_count; i += stride)
-      object->buckets[bucket_for(object, object->fields[i])] = i + 1;
-  }
-  if (object->field_count + stride > object->capacity) {
-    size_t capacity = object->capacity ? object->capacity * 2 : 8;
-    AugValue *fields = realloc(object->fields, capacity * sizeof(AugValue));
-    if (!fields) fail("out of memory");
-    object->fields = fields;
-    object->capacity = capacity;
+    for (size_t i = 0; i < object->field_count; i += stride) {
+      size_t bucket = bucket_for(object, object->fields[i]);
+      object->buckets[bucket] = i + 1;
+      if (stride == 2) map_field_buckets(object)[i / 2] = bucket;
+    }
   }
   return rehashed;
 }
@@ -251,6 +263,7 @@ void aug_map_set(AugValue map, AugValue key, AugValue value) {
     if (field) { object->fields[field] = value; return; }
   }
   if (grow_table(object, 2)) bucket = bucket_for_hash(object, key, hash);
+  map_field_buckets(object)[object->field_count / 2] = bucket;
   object->buckets[bucket] = object->field_count + 1;
   object->fields[object->field_count++] = key;
   object->fields[object->field_count++] = value;
@@ -264,12 +277,29 @@ AugValue aug_map_get(AugValue map, AugValue key) {
 }
 AugValue aug_map_take(AugValue map, AugValue key) {
   AugObject *object = expect_map(map); if (object->frozen) fail("cannot mutate a frozen Map");
-  if (!object->bucket_count) return aug_null(); size_t field = object->buckets[bucket_for(object, key)];
+  if (!object->bucket_count) return aug_null();
+  size_t bucket = bucket_for(object, key), field = object->buckets[bucket];
   if (!field) return aug_null(); AugValue result = object->fields[field]; size_t first = field - 1;
   memmove(object->fields + first, object->fields + first + 2, (object->field_count - first - 2) * sizeof(AugValue));
   object->field_count -= 2; object->fields[object->field_count] = aug_null(); object->fields[object->field_count + 1] = aug_null();
-  memset(object->buckets, 0, object->bucket_count * sizeof(size_t));
-  for (size_t i = 0; i < object->field_count; i += 2) object->buckets[bucket_for(object, object->fields[i])] = i + 1;
+  object->buckets[bucket] = 0;
+  /* Ordered fields remain dense. Adjust only moved entry offsets, then repair
+     the probe chain after the removed bucket. Neither step rehashes the map. */
+  size_t *positions = map_field_buckets(object);
+  for (size_t i = first / 2 + 1; i <= object->field_count / 2; i++)
+    object->buckets[positions[i]] -= 2;
+  memmove(positions + first / 2, positions + first / 2 + 1,
+          (object->field_count - first) / 2 * sizeof(size_t));
+  size_t mask = object->bucket_count - 1, hole = bucket;
+  for (size_t next = (hole + 1) & mask; object->buckets[next]; next = (next + 1) & mask) {
+    size_t home = (size_t)hash_value(object->fields[object->buckets[next] - 1]) & mask;
+    if (((next - home) & mask) >= ((next - hole) & mask)) {
+      object->buckets[hole] = object->buckets[next];
+      positions[(object->buckets[hole] - 1) / 2] = hole;
+      hole = next;
+    }
+  }
+  object->buckets[hole] = 0;
   return result;
 }
 
@@ -409,6 +439,10 @@ void aug_set_field(AugValue object, size_t index, AugValue value) {
     fail("invalid field assignment");
   if (object.as.object->dropped) fail("use of dropped object");
   if (object.as.object->frozen) fail("cannot assign a frozen field");
+  AugValue previous = object.as.object->fields[index];
+  if (object.as.object->owned_fields && object.as.object->owned_fields[index] &&
+      !(previous.tag == AUG_OBJECT && value.tag == AUG_OBJECT && previous.as.object == value.as.object))
+    aug_drop(previous);
   object.as.object->fields[index] = value;
 }
 
@@ -417,7 +451,10 @@ AugValue aug_call_method(AugValue object, const char *name, AugValue *args, int 
   if (object.as.object->dropped) fail("use of dropped object");
   for (size_t i = 0; i < object.as.object->method_count; i++) {
     const AugMethodEntry *entry = &object.as.object->methods[i];
-    if (strcmp(entry->name, name) == 0) return entry->function(object, args, count);
+    if (strcmp(entry->name, name) == 0) {
+      if(entry->pointer_function){AugValue result=aug_null();entry->pointer_function(&result,&object,args,count);return result;}
+      return entry->function(object, args, count);
+    }
   }
   fprintf(stderr, "AugScript runtime error: %s has no method %s\n",
           object.as.object->type_name, name);
@@ -736,6 +773,7 @@ void aug_collect(void) {
       free(object->text);
       free(object->fields);
       free(object->buckets);
+      if (object->kind == AUG_MAP_KIND) free(map_field_buckets(object));
       free(object);
       object_count--;
     }
@@ -748,20 +786,48 @@ void aug_drop(AugValue value) {
   if (value.tag != AUG_OBJECT && value.tag != AUG_STRING) return;
   AugObject *object = value.as.object;
   if (!object || object->dropped) return;
+  AugValue roots[2] = {value, aug_error}; AugFrame frame; aug_frame_enter(&frame, roots, 2);
+  bool failed = aug_has_error, cancelled = aug_cancelled;
+  aug_error = aug_null(); aug_has_error = false; aug_cancelled = false;
   if (object->kind == AUG_OBJECT) {
     if (getenv("AUG_TRACE_DROPS")) fprintf(stderr, "drop: %s\n", object->type_name);
     for (size_t i = 0; i < object->method_count; i++)
       if (strcmp(object->methods[i].name, "drop") == 0) {
-        object->methods[i].function(value, NULL, 0);
+        if(object->methods[i].pointer_function){AugValue ignored=aug_null();object->methods[i].pointer_function(&ignored,&value,NULL,0);}
+        else object->methods[i].function(value, NULL, 0);
         break;
       }
   }
   object->dropped = true;
+  if(object->kind==AUG_NATIVE_RESOURCE_KIND&&object->finalize){
+    void *native=object->native;void(*release)(void *)=object->finalize;
+    object->native=NULL;object->finalize=NULL;
+    if(native)release(native);
+  }
   for (size_t i = 0; i < object->field_count; i++)
     if (object->owned_fields && object->owned_fields[i]) aug_drop(object->fields[i]);
+  if (failed) aug_throw(roots[1]); aug_cancelled = aug_cancelled || cancelled;
+  aug_frame_leave(&frame);
 }
 
 void aug_throw(AugValue value) { aug_error = value; aug_has_error = true; }
+void aug_constructor_result_cleanup(AugValue value, AugValue result) {
+  if (value.tag != AUG_OBJECT || !value.as.object || value.as.object->dropped) return;
+  if (aug_has_error || aug_cancelled || result.tag != AUG_OBJECT || result.as.object != value.as.object)
+    aug_drop(value);
+}
+void aug_drop_partial(AugValue value) {
+  if(value.tag!=AUG_OBJECT||!value.as.object||value.as.object->dropped)return;
+  AugValue roots[2]={value,aug_error};AugFrame frame;aug_frame_enter(&frame,roots,2);
+  bool pending=aug_has_error,cancelled=aug_cancelled;
+  aug_error=aug_null();aug_has_error=false;aug_cancelled=false;
+  AugObject *object=value.as.object;object->dropped=true;
+  for(size_t i=0;i<object->field_count;i++)
+    if(object->owned_fields&&object->owned_fields[i])aug_drop(object->fields[i]);
+  /* A constructor's checked failure remains primary during implicit cleanup. */
+  if(pending)aug_throw(roots[1]);aug_cancelled=aug_cancelled||cancelled;
+  aug_frame_leave(&frame);
+}
 AugValue aug_take_error(void) {
   AugValue value = aug_error;
   aug_error = aug_null();

@@ -23,11 +23,17 @@ typedef struct {
 } AugHttpSession;
 struct AugHttpJob {
   struct lws *wsi; AugHttpSession *session; AugValue task;
-  /* Request and loggers outlive transport session cleanup on a disconnect. */
-  AugValue roots[2]; AugRetained retained;
-  bool test, transport_complete, timed_out; int64_t started,deadline;
+  /* Request, loggers and the prepared HEAD response outlive transport cleanup. */
+  AugValue roots[3]; AugRetained retained;
+  bool test, transport_complete, timed_out, head_complete; int64_t started,deadline;
 };
 static const AugRoute *served_routes;
+static AugValue route_call(const AugRoute *route,AugValue *args,int count) {
+  AugValue result=aug_null();
+  if(route->pointer_handler)route->pointer_handler(&result,NULL,args,count);
+  else result=route->handler(args,count);
+  return result;
+}
 static size_t served_count;
 static size_t body_limit = 1024 * 1024;
 static size_t response_limit = 4 * 1024 * 1024;
@@ -92,6 +98,14 @@ AugValue aug_headers_with(AugValue headers, AugValue name, AugValue value) {
   AugValue entries = aug_field(headers, 0); for (size_t i = 0; i < entries.as.object->field_count; i++) aug_list_append(aug_field(result, 0), entries.as.object->fields[i]);
   header_add(result, name.as.object->text, name.as.object->text_length, value.as.object->text, value.as.object->text_length);
   aug_freeze(result); aug_release(&retained); aug_frame_leave(&frame); return result;
+}
+static AugValue headers_with_name(AugValue headers, const char *name, AugValue value) {
+  /* Root the value before allocating the name: either allocation can collect. */
+  AugValue roots[3] = {headers, value, aug_null()};
+  AugFrame frame; aug_frame_enter(&frame, roots, 3);
+  roots[2] = aug_string(name);
+  AugValue result = aug_headers_with(roots[0], roots[2], roots[1]);
+  aug_frame_leave(&frame); return result;
 }
 AugValue aug_headers_get(AugValue headers, AugValue name) {AugValue value = header_get(headers, aug_cstring(name), false); return value.tag == AUG_NULL ? aug_null() : value;}
 AugValue aug_headers_all(AugValue headers, AugValue name) {
@@ -165,7 +179,7 @@ static const AugRoute *select_route(AugValue request, const AugRoute *routes, si
       for(size_t layer=0;layer<routes[i].policy_count;layer++)if(routes[i].policies[layer].kind==AUG_HTTP_POLICY_CORS){
         AugValue headers=aug_headers_new();AugFrame frame;aug_frame_enter(&frame,&headers,1);
         if(cors_apply(&routes[i].policies[layer],request,&headers,true)) {
-          headers=aug_headers_with(headers,aug_string("access-control-allow-methods"),requested);
+          headers=headers_with_name(headers,"access-control-allow-methods",requested);
           *failure=aug_http_response_full(aug_null(),aug_int(204),headers);
         }else {int status=aug_has_error?aug_http_error_status():403;if(aug_has_error)aug_take_error();*failure=aug_http_problem(status);}
         aug_frame_leave(&frame);return NULL;
@@ -255,9 +269,9 @@ static bool cors_apply(const AugHttpPolicy *policy,AugValue request,AugValue *he
   AugValue origin=header_get(aug_field(request,2),"origin",true);if(aug_has_error)return false;if(origin.tag==AUG_NULL)return !preflight;
   const char *name=aug_cstring(origin);bool wildcard=listed(policy->origins,"*");
   if(!wildcard&&!listed(policy->origins,name)){request_error("HttpForbidden");return false;}
-  *headers=aug_headers_with(*headers,aug_string("access-control-allow-origin"),wildcard?aug_string("*"):origin);
-  *headers=aug_headers_with(*headers,aug_string("vary"),aug_string("Origin"));
-  if(policy->credentials)*headers=aug_headers_with(*headers,aug_string("access-control-allow-credentials"),aug_string("true"));
+  *headers=headers_with_name(*headers,"access-control-allow-origin",wildcard?aug_string("*"):origin);
+  *headers=headers_with_name(*headers,"vary",aug_string("Origin"));
+  if(policy->credentials)*headers=headers_with_name(*headers,"access-control-allow-credentials",aug_string("true"));
   if(preflight) {
     AugValue asked=header_get(aug_field(request,2),"access-control-request-headers",true);if(aug_has_error)return false;
     if(asked.tag==AUG_STRING){char *copy=strdup(aug_cstring(asked));if(!copy)abort();char *save=NULL;
@@ -265,7 +279,7 @@ static bool cors_apply(const AugHttpPolicy *policy,AugValue request,AugValue *he
         bool found=false;const char *allowed=policy->headers;while(*allowed){const char *end=strchr(allowed,',');if(!end)end=allowed+strlen(allowed);if((size_t)(end-allowed)==size&&!strncasecmp(allowed,part,size))found=true;allowed=*end?end+1:end;while(*allowed==' ')allowed++;}
         if(!size||!found){free(copy);request_error("HttpForbidden");return false;}}
       free(copy);}
-    *headers=aug_headers_with(*headers,aug_string("access-control-allow-headers"),aug_string(policy->headers));
+    *headers=headers_with_name(*headers,"access-control-allow-headers",aug_string(policy->headers));
   }
   return !aug_has_error;
 }
@@ -317,7 +331,7 @@ static AugValue policy_response(AugHttpSession *session,AugValue response) {
   if(session->roots[4].tag==AUG_NULL&&!session->compress)return response;
   AugValue roots[2]={response,aug_field(response,2)};AugFrame frame;aug_frame_enter(&frame,roots,2);
   if(session->roots[4].tag==AUG_OBJECT){AugValue entries=aug_field(session->roots[4],0);for(size_t i=0;i<entries.as.object->field_count;i++){AugValue pair=entries.as.object->fields[i];roots[1]=aug_headers_with(roots[1],aug_field(pair,0),aug_field(pair,1));}}
-  if(session->compress){roots[1]=aug_headers_with(roots[1],aug_string("content-encoding"),aug_string("gzip"));roots[1]=aug_headers_with(roots[1],aug_string("vary"),aug_string("Accept-Encoding"));}
+  if(session->compress){roots[1]=headers_with_name(roots[1],"content-encoding",aug_string("gzip"));roots[1]=headers_with_name(roots[1],"vary",aug_string("Accept-Encoding"));}
   AugValue result=aug_http_response_full(aug_field(roots[0],0),aug_field(roots[0],1),roots[1]);aug_frame_leave(&frame);return result;
 }
 AugValue _aug_http_log(AugValue method,AugValue path,AugValue status,AugValue milliseconds) {
@@ -353,9 +367,9 @@ AugValue aug_httptestclient_request(AugValue client,AugValue method,AugValue tar
   if(aug_field(session.roots[0],3).as.object->text_length>body_limit){session.roots[1]=aug_http_problem(413);goto serialize;}
   aug_freeze(session.roots[0]);
   AugHttpJob job={.session=&session,.test=true,.roots={session.roots[0],aug_null()}};
-  aug_retain(&job.retained,job.roots,2);
+  aug_retain(&job.retained,job.roots,3);
   void *previous=aug_execution_current()->http_job;bool previous_cancelled=aug_cancelled;aug_execution_current()->http_job=&job;
-  session.roots[1]=session.route->handler(session.roots,1);aug_execution_current()->http_job=previous;aug_release(&job.retained);
+  session.roots[1]=route_call(session.route,session.roots,1);aug_execution_current()->http_job=previous;aug_release(&job.retained);
   if(job.timed_out)aug_cancelled=previous_cancelled;
   if(aug_has_error){aug_report_error();aug_take_error();session.roots[1]=aug_http_problem(500);}
   if(session.streaming&&aug_cint(aug_field(session.roots[1],1))>=400){aug_frame_leave(&frame);return request_error("HttpError");}
@@ -369,7 +383,7 @@ serialize:;
   if(session.compress&&!session.streaming)session.roots[2]=gzip_bytes(session.roots[2]);
   if(aug_has_error||session.roots[2].as.object->text_length>response_limit){if(aug_has_error)aug_take_error();session.roots[1]=aug_http_problem(500);status=500;session.roots[2]=aug_json_stringify(aug_field(session.roots[1],0));}
   session.roots[3]=aug_field(session.roots[1],2);
-  if(header_get(session.roots[3],"content-type",false).tag==AUG_NULL)session.roots[3]=aug_headers_with(session.roots[3],aug_string("content-type"),aug_string(type));
+  if(header_get(session.roots[3],"content-type",false).tag==AUG_NULL)session.roots[3]=headers_with_name(session.roots[3],"content-type",aug_string(type));
   if(!strcmp(aug_cstring(method),"HEAD")||status==204||status==304)session.roots[2]=aug_bytes("",0,AUG_BYTES_KIND);
   session.roots[1]=aug_http_response_full(session.roots[2],aug_int(status),session.roots[3]);
   AugValue result=session.roots[1];aug_frame_leave(&frame);return result;
@@ -431,7 +445,7 @@ AugValue aug_http_bind(AugValue request, const char *source, const char *name, c
       bool known = false; for (size_t j = 0; j < schema->count; j++) if (!strcmp(aug_cstring(map.as.object->fields[i]), schema->names[j])) known = true;
       if (!known) request_error("HttpBadRequest");
     }
-    AugValue result = aug_has_error ? aug_null() : schema->make(fields, (int)schema->count);
+    AugValue result = aug_has_error ? aug_null() : aug_schema_make(schema,fields,(int)schema->count);
     aug_frame_leave(&field_frame); free(fields); aug_frame_leave(&frame); return result;
   }
   if (!strcmp(source, "body")) {
@@ -484,7 +498,7 @@ static void cleanup(AugHttpSession *session) {
   free(session->body); memset(session, 0, sizeof(*session));
 }
 static AugValue request_task(AugValue self, AugValue *args, int count) {
-  (void)self; (void)count; aug_execution_current()->http_job=(void *)(intptr_t)aug_cint(args[2]); size_t index = (size_t)aug_cint(args[1]); return served_routes[index].handler(args, 1);
+  (void)self; (void)count; aug_execution_current()->http_job=(void *)(intptr_t)aug_cint(args[2]); size_t index = (size_t)aug_cint(args[1]); return route_call(&served_routes[index],args,1);
 }
 AugValue aug_http_event(AugValue data, AugValue id, AugValue event, AugValue retry) {
   AugValue values[]={data,id,event,retry};
@@ -522,10 +536,17 @@ void aug_http_yield(AugValue value) {
   }
   session->roots[1]=policy_response(session,aug_http_response(aug_null(),session->route->status));session->roots[3]=encoded;session->streaming=true;session->stream_pending=true;session->sent=0;
   lws_callback_on_writable(job->wsi);
-  if(session->head){session->stream_pending=false;aug_cancelled=true;goto finished;}
+  if(session->head){session->stream_pending=false;job->roots[2]=session->roots[1];job->head_complete=true;aug_cancelled=true;goto finished;}
   while(job->session&&job->session->stream_pending&&!aug_cancelled)aug_task_suspend();
 finished:
   aug_frame_leave(&frame);
+}
+bool aug_http_head_response(AugValue *response) {
+  AugHttpJob *job=aug_execution_current()->http_job;
+  if(!aug_cancelled||aug_has_error||!job||!job->head_complete||job->timed_out||(!job->session&&!job->transport_complete))return false;
+  /* The first yield already established this response. Cancellation stops the
+     producer and its children; it is not an error or a client disconnect. */
+  *response=job->roots[2];return response->tag==AUG_OBJECT;
 }
 AugValue aug_http_finish(AugValue response) {
   AugHttpJob *job=aug_execution_current()->http_job;if(!job)return response;
@@ -533,7 +554,8 @@ AugValue aug_http_finish(AugValue response) {
   if(job->timed_out)roots[0]=aug_http_problem(504);
   else if(job->test&&job->deadline&&monotonic_ms()>=job->deadline)roots[0]=aug_http_problem(504);
   if(session) {
-    roots[0]=policy_response(session,roots[0]);
+    bool prepared_head=job->head_complete&&roots[0].tag==AUG_OBJECT&&session->roots[1].tag==AUG_OBJECT&&roots[0].as.object==session->roots[1].as.object;
+    if(!prepared_head)roots[0]=policy_response(session,roots[0]);
     bool stream_success=session->route->stream&&aug_cint(aug_field(roots[0],1))<400;
     if(job->test&&stream_success&&!session->streaming) {
       session->roots[2]=aug_bytes("",0,AUG_BYTES_KIND);
@@ -548,10 +570,12 @@ AugValue aug_http_finish(AugValue response) {
         else session->streaming=false;
         lws_callback_on_writable(job->wsi);
       }
-      while(job->session&&!job->transport_complete&&!aug_cancelled)aug_task_suspend();
+      while(job->session&&!job->transport_complete&&(!aug_cancelled||(job->head_complete&&!job->timed_out)))aug_task_suspend();
     }
   }
-  int status=aug_cancelled&&!job->timed_out?499:(int)aug_cint(aug_field(roots[0],1));
+  /* A deadline may have fired while finish was suspended on transport. */
+  if(job->timed_out)roots[0]=aug_http_problem(504);
+  int status=aug_cancelled&&!job->timed_out&&(!job->head_complete||!job->transport_complete)?499:(int)aug_cint(aug_field(roots[0],1));
   bool cancelled=aug_cancelled;aug_cancelled=false;aug_execution_current()->http_job=NULL;
   if(roots[1].tag==AUG_OBJECT)for(size_t i=roots[1].as.object->field_count;i>0;i--){
     AugValue arguments[]={aug_field(roots[2],0),aug_field(roots[2],1),aug_int(status),aug_int(monotonic_ms()-job->started)};
@@ -582,7 +606,7 @@ static void dispatch(struct lws *wsi, AugHttpSession *session) {
   if (!session->route) {session->roots[1] = aug_http_problem(404); lws_callback_on_writable(wsi); return;}
   AugHttpJob *job = calloc(1, sizeof(*job)); if (!job) return;
   job->wsi = wsi; job->session = session; session->job = job;job->started=monotonic_ms();
-  job->roots[0]=session->roots[0];aug_retain(&job->retained,job->roots,2);
+  job->roots[0]=session->roots[0];aug_retain(&job->retained,job->roots,3);
   AugValue arguments[3] = {session->roots[0], aug_int(session->route - served_routes),aug_int((int64_t)(intptr_t)job)};
   job->task = aug_task_spawn(request_task, aug_null(), arguments, 3, request_complete, job);
 }
@@ -660,8 +684,11 @@ static int callback_http(struct lws *wsi, enum lws_callback_reasons reason, void
           snprintf(name, sizeof(name), "%s:", label.as.object->text);
           if (lws_add_http_header_by_name(wsi, (unsigned char *)name, (unsigned char *)value.as.object->text, (int)value.as.object->text_length, &next, end)) return -1;
         }
-        if (lws_finalize_write_http_header(wsi, start, &next, end)) return -1;
-        session->headers_sent = true; lws_callback_on_writable(wsi); return 0;
+        enum lws_write_protocol flags=LWS_WRITE_HTTP_HEADERS|(session->head?LWS_WRITE_H2_STREAM_END:0);
+        if (lws_finalize_write_http_header_flags(wsi, start, &next, end, flags)) return -1;
+        session->headers_sent = true;
+        if(session->head){if(session->job)session->job->transport_complete=true;cleanup(session);return lws_http_transaction_completed(wsi)?-1:0;}
+        lws_callback_on_writable(wsi); return 0;
       }
       if(session->streaming&&!session->stream_pending&&!session->stream_done)return 0;
       AugValue encoded = session->streaming&&session->stream_pending?session->roots[3]:session->roots[2]; size_t remaining = session->head ? 0 : encoded.as.object->text_length - session->sent;

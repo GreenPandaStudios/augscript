@@ -13,7 +13,7 @@ cd hello-august
 aug run
 ```
 
-You need Node.js 24 or later, npm, and a C11 compiler. Repository packages also need Git. macOS and Linux are the tested platforms. [Docker](docker.md) and [Dev Containers](dev-containers.md) provide a Linux toolchain when you prefer to work in a container.
+The pending 0.21.0 release needs Node.js 24 or later and npm on macOS 14+ ARM64 or GNU/Linux x64/ARM64 with glibc 2.36+. August downloads a verified LLVM/runtime pack; native package consumers do not install a compiler or SDK. GitHub repository imports use the CLI's HTTPS transport without Git. Other Git servers require a local Git client. [Docker](docker.md) and [Dev Containers](dev-containers.md) provide a Linux workspace. The published 0.20.1 CLI still requires a C11 compiler.
 
 `aug run` finds `main.aug`, installs source dependencies declared by imports or `main.yaml`, checks the code, prepares the native libraries it needs, and compiles and starts the executable. Later runs reuse those dependencies. `aug check` and `aug spec` read the installed snapshot without fetching packages. Use `aug install` before those commands in a fresh project.
 
@@ -127,4 +127,4 @@ Install [AugScript](https://marketplace.visualstudio.com/items?itemName=augscrip
 
 The CLI tarball requires its matching core stdlib package. npm normally obtains it automatically. For an archive installation, install the matching CLI and stdlib tarballs together; optional web and crypto packages are regular source libraries.
 
-Native dependencies use `~/.cache/augscript/native/VERSION/PLATFORM-ARCH`. `AUG_NATIVE_HOME` selects another cache. `aug-native` can prepare a cache in advance; `aug run` prepares what the application needs. The [release process](releasing.md) documents toolchain publishing for contributors.
+Verified LLVM packs and native artifacts use `~/.cache/augscript/native-artifacts`, keyed by their archive hashes. `AUG_NATIVE_ARTIFACT_CACHE` selects another cache. Source, compiler, runtime, and platform selections remain in `aug.lock.json`. The C migration reference uses the older `AUG_NATIVE_HOME` source-build cache. The [native package guide](native-packages.md) covers ownership, platform requirements, and publishing; [release process](releasing.md) covers the compiler distribution.

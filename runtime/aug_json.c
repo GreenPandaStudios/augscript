@@ -116,6 +116,11 @@ AugValue aug_json_items(AugValue value) {
   for (size_t i = 0; i < value.as.object->field_count; i++) aug_list_append(roots[1], aug_json_wrap(value.as.object->fields[i]));
   AugValue result = roots[1]; aug_frame_leave(&frame); return result;
 }
+AugValue aug_schema_make(const AugSchema *schema, AugValue *fields, int count) {
+  if(schema->pointer_make){AugValue result=aug_null();schema->pointer_make(&result,NULL,fields,count);return result;}
+  if(schema->make)return schema->make(fields,count);
+  return invalid();
+}
 static AugValue decode(AugValue value, const AugSchema *schema, size_t depth) {
   if (depth > 64) return invalid();
   if (value.tag == AUG_NULL && schema->nullable) return value;
@@ -152,7 +157,7 @@ static AugValue decode(AugValue value, const AugSchema *schema, size_t depth) {
   }
   AugValue result = aug_null();
   if (!aug_has_error) {
-    if (schema->kind == AUG_SCHEMA_RECORD) result = schema->make(items, (int)count);
+    if (schema->kind == AUG_SCHEMA_RECORD) result = aug_schema_make(schema,items,(int)count);
     else if (schema->kind == AUG_SCHEMA_TUPLE) result = aug_tuple_new(items, count);
     else if (schema->kind == AUG_SCHEMA_SET) result = aug_set_new(items, count);
     else if (schema->kind == AUG_SCHEMA_MAP) { result = aug_map_new(); items[count] = result; for (size_t i = 0; i < count; i += 2) aug_map_set(result, items[i], items[i + 1]); }

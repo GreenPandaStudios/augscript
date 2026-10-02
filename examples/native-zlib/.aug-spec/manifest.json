@@ -1,0 +1,16 @@
+{
+  "format": 1,
+  "files": [
+    ".aug-spec/packages/@greenpandastudios/aug-zlib/0.1.3/api.aug",
+    ".aug-spec/packages/@greenpandastudios/aug-zlib/0.1.3/api.aug.md",
+    ".aug-spec/packages/@greenpandastudios/aug-zlib/0.1.3/contracts.aug",
+    ".aug-spec/packages/@greenpandastudios/aug-zlib/0.1.3/contracts.aug.md",
+    ".aug-spec/packages/@greenpandastudios/aug-zlib/0.1.3/native.abi.json",
+    "compression.aug.md",
+    "main.aug.md"
+  ],
+  "nativeDescriptors": {
+    ".aug-spec/packages/@greenpandastudios/aug-zlib/0.1.3/native.abi.json": "c3d4b36eadcccd13caff71597ed77a8e7307f0cfe3d13660a8e9127efe942b3d"
+  },
+  "digest": "a90d4a0301197541db015da06486ffdd12ae464e0c68675cb40e838dabaec03a"
+}

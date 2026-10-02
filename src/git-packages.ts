@@ -3,6 +3,7 @@ import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
+import {fileURLToPath} from 'node:url';
 import { withPackageLock } from './package-locking.ts';
 
 export interface GitSource { request: string; repository: string; revision: string; folder: string; commit: string }
@@ -54,6 +55,12 @@ export function materializeGit(request: string, destination: string, offline: bo
   const reference = gitReference(request);
   if (locked && (locked.repository !== reference.repository || locked.folder !== reference.folder || locked.revision !== reference.revision ||
       !/^[a-f0-9]{40,64}$/.test(locked.commit))) throw new Error('Git package lock has an invalid repository, folder, or commit.');
+  if(new URL(reference.repository).hostname==='github.com'&&!process.env.AUG_GIT){
+    const transport=new URL(import.meta.url.endsWith('.ts')?'./git-http.ts':'./git-http.js',import.meta.url);
+    const result=spawnSync(process.execPath,[fileURLToPath(transport),'--materialize',JSON.stringify({request,destination,offline,locked})],{encoding:'utf8',timeout:180000,maxBuffer:4*1024*1024});
+    if(result.status!==0)throw new Error(result.stderr.trim()||result.error?.message||'GitHub source installation failed');
+    return JSON.parse(result.stdout);
+  }
   const cache = resolve(process.env.AUG_PACKAGE_CACHE ?? join(homedir(), '.cache', 'augscript', 'packages'));
   const repository = join(cache, sourceAlias(reference.repository));
   mkdirSync(cache, { recursive: true });
@@ -77,7 +84,7 @@ export function materializeGit(request: string, destination: string, offline: bo
     const match = /^(\d+) blob ([a-f0-9]+)\t([\s\S]+)$/.exec(entry);
     if (!match || !match[3].startsWith(prefix)) continue;
     const file = match[3].slice(prefix.length);
-    if (!file.endsWith('.aug') && !['aug-package.json', 'package.json', 'main.yaml', 'README.md', 'LICENSE'].includes(file)) continue;
+    if (!file.endsWith('.aug') && !['aug-package.json', 'package.json', 'main.yaml', 'README.md', 'LICENSE','native.abi.json','THIRD_PARTY_NOTICES.md'].includes(file)) continue;
     if (!['100644', '100755'].includes(match[1]) || file.includes('\\') || file.split('/').some(part => !part || part === '..' || part.startsWith('.')))
       throw new Error(`Git package source must be regular files inside its folder: ${file}`);
     const contents = git(['--git-dir', repository, 'cat-file', 'blob', match[2]]);

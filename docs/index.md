@@ -59,7 +59,7 @@ For a specific task, use the [guides](guides/index.md). For a syntax rule or API
 
 ## Native programs, measured openly
 
-August checks source, generates C11, and invokes a C compiler to build a native executable. The [performance page](performance.md) publishes the programs, graphs, raw samples, environment, and reproduction commands. Its results describe those workloads on that host. Measure your own application's work before making a performance decision.
+August checks source and builds a native executable. The pending 0.21.0 release lowers checked execution IR through LLVM and downloads its compiler/runtime pack; the published 0.20.1 release uses C compilation. The [performance page](performance.md) publishes programs, graphs, raw samples, environment and reproduction commands. Its results describe those workloads on that host. Measure your own application's work before making a performance decision.
 
 ## A public preview
 

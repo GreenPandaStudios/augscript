@@ -782,7 +782,7 @@ Checked failure for an invalid List.get position. Catch it or let it propagate. 
 initialize: ...
 ```
 
-Run constructor work once after header inputs and local fields are initialized, before returning the class or record. Put this block inside the declaration, before class methods. Construction stays pure. Records can validate inputs and raise checked errors, but cannot replace immutable fields.
+Run constructor work once after header inputs and local fields are initialized, before returning the class or record. Put this block inside the declaration, before class methods. Construction stays pure. Classes declare checked constructor failures with unless before implements; failed construction releases transferred owned fields. Records can infer validation failures but cannot replace immutable fields.
 
 ## input
 
@@ -1043,6 +1043,14 @@ resolve Logger logger; resolve app to program
 ```
 
 Declare a dependency in a class or callable header. Callers omit its argument and forward the matching header dependency. Only main and test setup retrieve bindings directly with resolve app to program. Assignment-form resolve is rejected. Scoped dependencies require a scope block.
+
+## resource
+
+```text
+extern C resource Tensor
+```
+
+Declare an opaque native object with a descriptor-checked release operation. Store acquired objects in own bindings; their scope releases them exactly once. Resource declarations belong to native packages, outside main.aug.
 
 ## return
 

@@ -195,7 +195,11 @@ class Parser {
       return { kind: 'composition', name, typeParams: [], bindings, span: this.span(start) };
     }
     if (this.at('extern')) {
-      this.take(); this.expect('C');
+      const start=this.take().span; this.expect('C');
+      if(this.current().value==='resource'){
+        this.take();const name=this.expect('identifier').value;this.endStatement();
+        return {kind:'resource',name,typeParams:[],span:this.span(start)};
+      }
       return this.parseFunction(true);
     }
     if (this.looksLikeBareClass()) return this.parseClass();
@@ -351,6 +355,9 @@ class Parser {
       this.take();
       this.parseTypeParams();
       if (this.at('(')) this.parseParams(true);
+      if(this.match('unless')){
+        this.parseType();while(this.match('and')||this.match(','))this.parseType();
+      }
       if (this.match('=>')) {
         return true;
       }
@@ -448,6 +455,9 @@ class Parser {
     const name = this.expect('identifier').value;
     const { typeParams, typeConstraints, typeVariance } = this.parseTypeParams();
     const fields = this.at('(') ? this.parseParams(true) : [];
+    const validationErrors:TypeRef[]=[];
+    const validationDeclared=!!this.match('unless');
+    if(validationDeclared){validationErrors.push(this.parseType());while(this.match('and')||this.match(','))validationErrors.push(this.parseType());}
     let constructorBody = this.match('=>') ? this.parseBlock(start) : undefined;
     const implemented: TypeRef[] = [];
     if (!this.at('implements')) throw new ParseFailure({ ...start, code: 'PARSE',
@@ -484,7 +494,7 @@ class Parser {
     }
     this.closeBrace();
     return { kind: 'class', name, typeParams, typeConstraints, typeVariance, fields, stateFields, constructorBody,
-      implements: implemented, methods, headerEnd, span: this.span(start) };
+      validationErrors,validationDeclared,implements: implemented, methods, headerEnd, span: this.span(start) };
   }
 
   private parseInterface(): InterfaceDecl {

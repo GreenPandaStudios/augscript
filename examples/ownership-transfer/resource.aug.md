@@ -23,8 +23,8 @@ It returns ownership of [`Resource`](resource.aug.md#symbol-Resource). It sets `
 <a id="symbol-consume"></a>
 ## `consume` · [source](resource.aug#L15)
 
-It takes `value` as [`Resource`](resource.aug.md#symbol-Resource) with ownership transferred. It gets `console` ([`Console`](.aug-spec/august/0.20.1/io/contracts.aug.md#symbol-Console)) from dependency injection. It passes `"consumed"` to [`console.write`](.aug-spec/august/0.20.1/io/contracts.aug.md#symbol-Console.write).
+It takes `value` as [`Resource`](resource.aug.md#symbol-Resource) with ownership transferred. It gets `console` ([`Console`](.aug-spec/august/0.21.0/io/contracts.aug.md#symbol-Console)) from dependency injection. It passes `"consumed"` to [`console.write`](.aug-spec/august/0.21.0/io/contracts.aug.md#symbol-Console.write).
 
 ## Dependencies
 
-It uses [`Console`](.aug-spec/august/0.20.1/io/contracts.aug.md#symbol-Console) ([`write`](.aug-spec/august/0.20.1/io/contracts.aug.md#symbol-Console.write)) from `august.io`.
+It uses [`Console`](.aug-spec/august/0.21.0/io/contracts.aug.md#symbol-Console) ([`write`](.aug-spec/august/0.21.0/io/contracts.aug.md#symbol-Console.write)) from `august.io`.

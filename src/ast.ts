@@ -40,6 +40,11 @@ export interface GenericHeader {
   typeVariance?: Record<string, 'in' | 'out'>;
 }
 
+/** An opaque foreign object. Only a descriptor-checked native call can acquire it. */
+export interface ResourceDecl extends GenericHeader {
+  kind: 'resource'; name: string; typeParams: []; span: Span;
+}
+
 export interface InterceptorAnnotation {
   name: string;
   typeArgs: TypeRef[];
@@ -185,9 +190,9 @@ export interface TestDecl {
   endpointSuite?: boolean;
 }
 
-export type TopLevel = ImportDecl | ExportDecl | BindDecl | CompositionDecl | IncludeDecl | ClassDecl | InterfaceDecl | InterceptorDecl | MethodDecl | TestDecl | Stmt;
+export type TopLevel = ImportDecl | ExportDecl | BindDecl | CompositionDecl | IncludeDecl | ClassDecl | InterfaceDecl | InterceptorDecl | ResourceDecl | MethodDecl | TestDecl | Stmt;
 export function isStatement(item: TopLevel): item is Stmt {
-  return !['import', 'export', 'bind', 'composition', 'include', 'class', 'interface', 'interceptor', 'function', 'test'].includes(item.kind);
+  return !['import', 'export', 'bind', 'composition', 'include', 'class', 'interface', 'interceptor', 'resource', 'function', 'test'].includes(item.kind);
 }
 
 export interface SourceFile {

@@ -2,6 +2,43 @@
 
 ## Unreleased
 
+- Build and qualify LLVM on a physical DGX Spark: 266 parity cases, full safety gyms, frozen performance gates and four real public native-library imports. Publish the host, workload sources, raw results and remaining performance gaps in the wiki.
+
+- Add reproducible safety gyms with generated integer/floating arithmetic, collection, bounds, control-flow, ownership and task cases; independent expected results; rejected contracts; valid behavioral mutants; replayable sources and structured reports. CI qualifies all three LLVM hosts and retains the evidence.
+- Expand C comparisons to floating-point loops, labeled calls, lists, strings, map deletion, checked failures, records and tasks. Publish source/spec examples, raw samples and scoped charts. Use fresh measurement processes and more samples for the unchanged migration limits.
+- Emit strict native floating arithmetic while preserving actual integer tags in widened float slots, wrapping integer operations, signed-zero errors and IEEE comparisons. Avoid retaining unrelated runtime services in core-only executables.
+- Preserve ordered map deletion without rebuilding every surviving key's hash-table entry. Check wrapped collision chains, missing keys, reinsertion order and complete removal.
+
+- Select LLVM for ordinary builds, runs and same-file tests on the qualified macOS ARM64 and GNU/Linux x86-64/ARM64 hosts. Obtain verified compiler/runtime artifacts automatically; keep C available as an explicit migration reference. Container deployments copy the executable with its neighboring libraries and notices.
+- Use the C-compatible DWARF type reader for tagged August storage so supported LLDB versions can display locals. Source files, locations and producer remain August; native debugger expressions do not evaluate August syntax.
+- Bind GNU runtime internal function calls directly while retaining shared data symbols and external allocator hooks. Recheck startup, collection and HTTP measurements against the frozen migration limits.
+- Link core-only programs on all three hosts with the verified runtime archive; retain one shared core for crypto and HTTP components. Preserve task hooks without exporting August function symbols.
+- Keep temporary HTTP header values alive across managed collection. Exercise compressed streaming under collection pressure before checking disconnect cleanup and request logging.
+- Preserve a streaming HEAD response when LLVM stops its producer. Apply CORS headers once, await transport before logging, report an intervening deadline as 504, and keep real cleanup failures on the error path.
+- Complete HEAD transport with its headers and retain the prepared response after session cleanup. Verify HTTP/1.1 connection reuse and HTTP/2 stream completion instead of scheduling an empty-body write.
+- Run HTTP comparison rounds with a fresh load-client process and retain raw measurements from failed CI qualification. Keep the existing migration thresholds and verify every response.
+- Update the locked VSCE publisher to 4.0.1-1 for its upstream Marketplace OIDC API-version and federated-token fixes. Publication still requires a verified release and the configured trusted policy.
+- Add GNU/Linux x86-64 and ARM64 LLVM candidates with an explicit glibc 2.36 floor, ELF process entry, SDK-free linking, relocatable runtimes, and checked libc/C++ requirements. Musl and cross compilation remain unsupported.
+- Handle native archive write failures through the CLI and discard rejected extraction state; verify large archives across bounded reader chunks.
+- Build compiler packs for each target and merge their exact pins before npm/VSIX packaging. Require minimum-platform consumer checks before creating the release draft; local library qualification records its transport separately from public imports.
+
+- HTTP action captures evaluate labeled arguments once in the order written, on both compiler backends.
+- Constructor interception releases a fresh completed result when an outer layer fails or returns a different result, including its transferred native resources.
+- Runtime pack builds verify every operation, schema and policy identifier against the compiled headers; consumers reject mismatched identifier contracts.
+
+- Add checked execution IR, pinned compiler/runtime packs and SDK-free linking. Unsupported LLVM constructs produce a source diagnostic without fallback.
+- Add format 2 native packages, opaque owned resources, descriptor-checked labels/types/errors/effects, bounded verified artifacts, target and compiler locks, and deployment notices. Consumers do not run package build scripts. Public GitHub source imports use verified HTTPS snapshots without requiring Git.
+- Exercise real CPU LibTorch, SQLite, zlib, and Rust BLAKE3 adapters. Fix owned-field transfer/replacement cleanup, preserve native error methods, reject ambiguous native symbols and lock metadata changes, and reject direct scalar contract violations. Public release and clean-machine qualification are in progress.
+- Allow a class constructor to declare checked failures with `unless ErrorType` before `implements`. Failed construction releases the partial object and transferred owned fields in both backends. Frozen execution rejects changed source dependencies before changing the accepted snapshot or lockfile. Native hover, context and specs describe the provider, targets, ownership and release contract and distinguish foreign-code promises from compiler checks.
+- Add complete LibTorch, SQLite, zlib and BLAKE3 example projects with same-file tests and linked native contracts in the wiki. Track generated native descriptors so repeated spec generation, drift checks and dependency removal preserve user edits.
+- Lower optional/record matches, scoped dependency resolution, `Shared` locks and `always` cleanup through LLVM. Check scope and lock restoration on returns and failures, and release only initialized owned fields after failed construction.
+- Use the existing cooperative task scheduler from LLVM through a pointer-call entry. Capture written arguments and injected dependencies when scheduling; preserve grouped/collection wait order, sibling cancellation and cleanup before scope exit. Run the concurrency conformance fixtures with both backends in CI.
+- Release transferred owned task inputs when a sibling cancels the task before its first instruction. Verify immediate cleanup through both backends and with real LibTorch handle counters.
+- Reject inferred task results from functions that return `own`: the current `Task<T>` contract cannot transfer that ownership. Report the limitation before either backend can silently downgrade a native handle.
+- Give the consuming `Shared` builtin explicit capture ownership, preserve cancellation before catch handling, and release try-local owned values before `always` on every exit. Suspend pending errors/cancellation while local drop methods finish, then restore them.
+- Lower JSON schemas, clocks, crypto, HTTP handlers, policies, forms, streaming, HTML actions and interceptor chains through LLVM. Share concrete schemas and constructor callback dispatch between backends. Verify LLVM IR before object generation, and run the existing runtime fixtures against the LLVM backend.
+- Package macOS 14 crypto and HTTP runtime components with relocatable dynamic dependencies, redistribution notices and corresponding sources. Link and deploy only the components a checked program requires. Reject dependency binaries that require a newer macOS version.
+
 - Wait for npm's public registry to expose an accepted upload before publishing the next package. Visibility checks remain bounded; authorization, service, and integrity errors stop the deployment immediately.
 
 ## 0.20.1

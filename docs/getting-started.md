@@ -11,9 +11,9 @@ next:
 
 Build a greeting application, run its test, and read its generated explanation. You will see how an August project starts and how a small module keeps its contract, implementation, and test together.
 
-You need Node.js 24 or later and npm. To run native programs, you also need a C11 compiler on macOS or Linux. On macOS, install Xcode Command Line Tools for Clang; on Linux, install a C toolchain.
+You need Node.js 24 or later and npm on macOS 14+ with Apple Silicon, or GNU/Linux x64/ARM64 with glibc 2.36+. August downloads its own LLVM compiler and prebuilt runtime. You do not install Clang, LLVM, or an SDK.
 
-You can run the compiler and native libraries in [a VS Code Dev Container](dev-containers.md) instead of installing a host C toolchain. The [Docker guide](docker.md) covers container builds and deployment.
+You can run the compiler and native libraries in [a VS Code Dev Container](dev-containers.md). The [Docker guide](docker.md) covers container builds and deployment. This chapter targets the pending 0.21.0 release; the published 0.20.1 CLI still requires a C11 compiler.
 
 ## Create and run the starter
 
@@ -32,7 +32,7 @@ aug run
 Hello, August!
 ```
 
-Keep the terminal in `hello-august` for the rest of this chapter. When you later use JSON, tasks, crypto, or HTTP, the first run downloads verified native sources and builds the required libraries in a reusable cache. Setup progress goes to the terminal's error stream so it does not become application output. August reports a missing system tool with an installation step; it does not install system software for you. [Packages and installation](packages.md) covers version pinning, offline runs, and the optional `npx` workflow.
+Keep the terminal in `hello-august` for the rest of this chapter. The first run downloads the compiler pack; later runs reuse it. JSON, tasks, crypto, and HTTP use its prebuilt runtime components. Native packages can download additional libraries with matching platform requirements and checksums. Setup progress goes to the terminal's error stream so it does not become application output. [Packages and installation](packages.md) covers version pinning, offline runs, and the optional `npx` workflow.
 
 ## Read the startup file
 

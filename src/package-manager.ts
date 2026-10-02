@@ -9,19 +9,24 @@ import { parse } from './parser.ts';
 import { isGitSource, materializeGit, sourceAlias, type GitSource } from './git-packages.ts';
 import { agentInstructions } from './project-init.ts';
 import { withPackageLock } from './package-locking.ts';
+import {validateNativeManifest, readNativeDescriptor, type NativeManifest} from './native-contracts.ts';
+import type {NativeLock} from './native-artifacts.ts';
 
 export interface PackageManifest {
-  format: 1; name: string; version: string; compiler: string; source: string;
+  format: 1|2; name: string; version: string; compiler: string; source: string;
   dependencies?: Record<string, string>;
+  native?: NativeManifest;
 }
 export interface InstalledPackage {
   path: string; name: string; version: string; source: string; digest: string;
   dependencies: Record<string, string>;
+  native?:NativeManifest;
 }
 export interface PackageLock {
   format: 1; compiler: string; specifications: Record<string, string>;
   roots: Record<string, string>; packages: InstalledPackage[]; npm: unknown;
   git?: GitSource[];
+  native?:NativeLock;
 }
 export interface PackageScope extends InstalledPackage { directory: string; sourceRoot: string; specifications: Record<string, string> }
 export interface ProjectPackages {
@@ -91,9 +96,14 @@ export function readPackage(directory: string): { manifest: PackageManifest; sou
     format: 1 as const, name: 'aug-' + sourceAlias(realpathSync(directory)), version: '0.0.0', compiler: compilerVersion(),
     source: existsSync(join(directory, 'export.aug')) ? '.' : 'src', dependencies: {}
   };
-  if (manifest.format !== 1 || !npmName.test(manifest.name ?? '') || !version.test(manifest.version ?? '') ||
+  if (![1,2].includes(manifest.format) || !npmName.test(manifest.name ?? '') || !version.test(manifest.version ?? '') ||
       manifest.compiler !== compilerVersion())
     throw new Error(`Invalid August package or compiler mismatch in ${directory}; expected compiler ${compilerVersion()}`);
+  if(manifest.format===1&&manifest.native!==undefined)throw new Error('Native packages require manifest format 2');
+  if(manifest.format===2){
+    manifest.native=validateNativeManifest(manifest.native);
+    readNativeDescriptor(directory,manifest.native);
+  }
   if (typeof manifest.source !== 'string' || !manifest.source || isAbsolute(manifest.source)) throw new Error('Package source must be a relative folder');
   const sourceRoot = realpathSync(resolve(directory, manifest.source));
   if (!inside(realpathSync(directory), sourceRoot)) throw new Error('Package source cannot escape its package directory');
@@ -135,7 +145,7 @@ function normalizeSpecifier(spec: string, root: string, requirePath = true): str
 
 function packageDigest(directory: string, sourceRoot: string): string {
   const hash = createHash('sha256');
-  for (const file of [join(directory, 'aug-package.json'), join(directory, 'package.json'), ...sourcePaths(sourceRoot)].filter(existsSync).sort()) {
+  for (const file of [join(directory, 'aug-package.json'), join(directory, 'package.json'), join(directory,'native.abi.json'), join(directory,'THIRD_PARTY_NOTICES.md'), ...sourcePaths(sourceRoot)].filter(existsSync).sort()) {
     hash.update(relative(directory, file).replaceAll('\\', '/')); hash.update('\0');
     hash.update(readFileSync(file)); hash.update('\0');
   }
@@ -159,9 +169,11 @@ export function projectPackages(root: string, specifications: Record<string, str
       const { manifest, sourceRoot } = readPackage(directory);
       if (manifest.name !== entry.name || manifest.version !== entry.version || manifest.source !== entry.source ||
           packageDigest(directory, sourceRoot) !== entry.digest) throw new Error(`Installed ${entry.name} changed; run aug install`);
+      if (JSON.stringify(entry.native) !== JSON.stringify(manifest.native))
+        throw new Error(`NATIVE_LOCK: Native metadata for ${entry.name} differs from its verified source manifest; run aug install`);
       if (result.scopes.has(entry.path)) throw new Error('Duplicate package lock path');
       manifests.set(entry.path, manifest);
-      result.scopes.set(entry.path, { ...entry, directory, sourceRoot, specifications: manifest.dependencies ?? {} });
+      result.scopes.set(entry.path, { ...entry, native:manifest.native, directory, sourceRoot, specifications: manifest.dependencies ?? {} });
     }
     verifyIdentities(lock.packages);
     for (const scope of result.scopes.values()) {
@@ -204,12 +216,11 @@ function npm(args: string[], cwd: string): string {
 }
 
 /** Running an application prepares its declared packages; checking remains read-only. */
-export function prepareRunPackages(root: string, offline = false): void {
+export function prepareRunPackages(root: string, offline = false, frozen = false): void {
   const loaded = loadConfig(root);
   if (loaded.diagnostics.length) return; // The checker renders the configuration's source diagnostics.
   const library = isLibrary(root) ? readPackage(root) : undefined;
   const specifications = packageSpecifications(library?.sourceRoot ?? root, library?.manifest.dependencies ?? loaded.config.packages);
-  if (!Object.keys(specifications).length) return;
   const lockPath = join(root, 'aug.lock.json');
   let lock: PackageLock | undefined;
   if (existsSync(lockPath)) {
@@ -220,6 +231,8 @@ export function prepareRunPackages(root: string, offline = false): void {
   }
   const matching = lock?.compiler === compilerVersion() && sameSpecifications(lock.specifications, specifications);
   if (!matching) {
+    if (!lock && !Object.keys(specifications).length) return;
+    if (frozen) throw new Error('PACKAGE_LOCK: Frozen run requires a matching aug.lock.json for the current imports, configuration and compiler. Run aug install before retrying.');
     process.stderr.write('Installing August packages declared by imports and main.yaml…\n');
     installPackages(root, false, offline); return;
   }
@@ -255,7 +268,7 @@ function installLocked(root: string, frozen: boolean, offline: boolean, update: 
 
 const isLibrary = (root: string): boolean => existsSync(join(root, 'aug-package.json')) ||
   !existsSync(join(root, 'main.aug')) && (existsSync(join(root, 'export.aug')) || existsSync(join(root, 'src/export.aug')));
-const selectedSource = (file: string): boolean => file.endsWith('.aug') || ['aug-package.json', 'package.json', 'main.yaml', 'README.md', 'LICENSE'].includes(file);
+const selectedSource = (file: string): boolean => file.endsWith('.aug') || ['aug-package.json', 'package.json', 'main.yaml', 'README.md', 'LICENSE','native.abi.json','THIRD_PARTY_NOTICES.md'].includes(file);
 function copySource(origin: string, destination: string): void {
   let bytes = 0, count = 0;
   const copy = (folder: string) => {
@@ -343,7 +356,7 @@ function installSourceGraph(root: string, specifications: Record<string, string>
     writeJson(join(directory, 'package.json'), { name: manifest.name, version: manifest.version, private: true, dependencies });
     const { sourceRoot } = readPackage(directory);
     const entry: InstalledPackage = { path, name: manifest.name, version: manifest.version, source: manifest.source,
-      digest: packageDigest(directory, sourceRoot), dependencies: {} };
+      digest: packageDigest(directory, sourceRoot), dependencies: {}, ...(manifest.native?{native:manifest.native}:{}) };
     packages.set(path, entry);
     for (const [alias, request] of Object.entries(dependencies)) {
       entry.dependencies[alias] = visit(request, origin);
@@ -357,6 +370,7 @@ function installSourceGraph(root: string, specifications: Record<string, string>
     const lock: PackageLock = { format: 1, compiler: compilerVersion(), specifications, roots, npm: registry,
       git: [...gitSources.values()].sort((a, b) => a.request.localeCompare(b.request)),
       packages: [...packages.values()].sort((a, b) => a.path.localeCompare(b.path)) };
+    if(previous?.native&&JSON.stringify(lock.packages)===JSON.stringify(previous.packages))lock.native=previous.native;
     if (frozen && JSON.stringify(lock.packages) !== JSON.stringify(previous?.packages))
       throw new Error('Frozen package contents changed; use aug install --update to choose new revisions.');
     rmSync(join(stage, 'transport'), { recursive: true, force: true });
@@ -392,6 +406,7 @@ export function preparePackage(root: string): void {
   transport.name = manifest.name; transport.version = manifest.version;
   transport.dependencies = manifest.dependencies ?? {};
   transport.files = [...new Set([...(Array.isArray(transport.files)?transport.files:['README.md','LICENSE']),manifest.source,'.aug-spec','aug-package.json'])];
+  if(manifest.native)transport.files.push('native.abi.json','THIRD_PARTY_NOTICES.md');
   writeJson(join(root, 'package.json'), transport);
   readPackage(root);
 }

@@ -4,36 +4,30 @@ Compile an August application in a Linux build container, then deploy its execut
 
 ## Prepare the toolchain images
 
-Build two local images from the published npm CLI. The **build** image contains Node.js 24, the August compiler, Clang and its sanitizer runtime, and the pinned native task, JSON, web, and crypto dependencies. The **run** image is a small Debian userland with matching native shared libraries and CA certificates. It runs a compiled August executable as an unprivileged user. These are local image recipes; August does not currently publish registry tags for them.
+Build two local images. The build image contains Node.js 24 and the August CLI; `aug build` downloads its verified LLVM/runtime pack and package artifacts. The run image supplies Debian's runtime and CA certificates. It runs the executable and its neighboring libraries as an unprivileged user. These are local recipes; August does not publish registry tags for them. They target the pending 0.21.0 release.
 
-Save this as `Dockerfile.build` in an empty working folder. It installs the published toolchain, then prepares its native dependencies. Pin `AUG_VERSION` to the version used by your application:
+Save this as `Dockerfile.build` in an empty working folder. Pin `AUG_VERSION` to the version used by your application:
 
 ```dockerfile
 FROM node:24-bookworm
-ARG AUG_VERSION=0.20.1
-ENV AUG_NATIVE_HOME=/opt/augscript/.aug-native
+ARG AUG_VERSION=0.21.0
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-       git clang libclang-rt-14-dev make cmake m4 autoconf \
-       automake libtool python3 zlib1g-dev ca-certificates \
+    && apt-get install -y --no-install-recommends ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 RUN npm install --global --ignore-scripts --no-audit --no-fund \
-       @greenpandastudios/aug-cli@${AUG_VERSION} \
-    && aug-native
+       @greenpandastudios/aug-cli@${AUG_VERSION}
 WORKDIR /workspace
 ENTRYPOINT ["aug"]
 CMD ["--help"]
 ```
 
-Save this as `Dockerfile.run` beside it. Keeping the same native library path preserves the executable's runtime search path:
+Save this as `Dockerfile.run` beside it. Each application supplies its own `lib` and `share` directories beside the executable:
 
 ```dockerfile
-FROM augscript/build:local AS native
 FROM debian:bookworm-slim
 RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates zlib1g \
     && rm -rf /var/lib/apt/lists/*
-COPY --from=native /opt/augscript/.aug-native/prefix/lib /opt/augscript/.aug-native/prefix/lib
 RUN groupadd --system august \
     && useradd --system --gid august --home-dir /app august
 WORKDIR /app
@@ -48,7 +42,7 @@ docker build -f Dockerfile.build -t augscript/build:local .
 docker build -f Dockerfile.run -t augscript/run:local .
 ```
 
-The first build downloads and compiles native dependencies; later builds can reuse Docker's cached layers. Keep these local images on the same Docker engine that builds your application.
+The first application build downloads the compiler and required artifacts; later builds reuse their verified cache. Keep these local images on the same Docker engine that builds your application.
 
 ## Compile an existing project
 
@@ -59,11 +53,15 @@ Keep the project in a directory shared with your Docker engine. If Docker report
 ```sh
 docker run --rm \
   --user "$(id -u):$(id -g)" \
+  --env AUG_NATIVE_ARTIFACT_CACHE=/workspace/.aug-build/artifact-cache \
+  --env AUG_PACKAGE_CACHE=/workspace/.aug-build/source-cache \
   --mount type=bind,source="$PWD/my-app",target=/workspace \
   augscript/build:local install .
 
 docker run --rm \
   --user "$(id -u):$(id -g)" \
+  --env AUG_NATIVE_ARTIFACT_CACHE=/workspace/.aug-build/artifact-cache \
+  --env AUG_PACKAGE_CACHE=/workspace/.aug-build/source-cache \
   --mount type=bind,source="$PWD/my-app",target=/workspace \
   augscript/build:local build . --out /workspace/.aug-build/program
 ```
@@ -76,7 +74,7 @@ docker run --rm \
   augscript/run:local
 ```
 
-The two images use the same Debian distribution and native library paths. A Linux executable built here runs inside the runtime container, including when your host is macOS or Windows.
+The cache path is inside the writable project mount so it belongs to your host user. The images use the same Debian distribution. The executable loads libraries from its neighboring `lib` directory; keep `share` for dependency notices and source provenance. A Linux executable built here runs inside the runtime container, including when your host is macOS or Windows.
 
 ## Deploy an HTTP application
 
@@ -129,10 +127,11 @@ Save this `Dockerfile` in `my-api`. Docker's [multi-stage build](https://docs.do
 ```dockerfile
 FROM augscript/build:local AS build
 COPY . /workspace
-RUN aug test /workspace \
-    && aug build /workspace --out /tmp/program
+RUN aug install /workspace \
+    && aug test /workspace \
+    && aug build /workspace --out /tmp/deploy/program
 FROM augscript/run:local
-COPY --from=build --chown=august:august /tmp/program /app/program
+COPY --from=build --chown=august:august /tmp/deploy/ /app/
 ```
 
 Save `.dockerignore` in the same folder:

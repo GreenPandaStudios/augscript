@@ -1,0 +1,6 @@
+# No compiler, Git, LLVM installation, SDK or development headers.
+FROM node:24-bookworm-slim@sha256:0e0ff40c39bc087845bfb27465a0df4ea419520094bc35842ff83dd8cbe6f9b6
+RUN test -z "$(ls -A /usr/include)" && rmdir /usr/include
+RUN rm -rf /usr/local/include
+WORKDIR /consumer
+CMD ["node", "scripts/qualify-native-consumers.mjs", "--local-compiler"]

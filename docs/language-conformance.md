@@ -27,4 +27,10 @@ The compiler tracks object origins through aliases and fields. It can reject cod
 
 Tasks currently run cooperatively on one OS thread. A long loop reaches cancellation at compiler-inserted checkpoints. `Shared<T>` is the explicit path for synchronized mutable state. The runtime does not yet promise parallel CPU execution.
 
+Scheduling an owned input transfers its cleanup responsibility immediately. If
+a sibling cancels the child before entry, the scheduler releases that input.
+The checker rejects owned task results, including inferred `Task<T>` results,
+until the public task type has an owned-result transfer contract. Both backends
+exercise these cases in the concurrency suite.
+
 Run the focused suite with `node --test tests/language-conformance.test.mjs`. The full repository test command also runs existing [concurrency](../tests/concurrency.test.mjs), ownership, errors, formatter, and generated-spec tests. This suite is growing through adversarial review; a green run does not establish complete ownership safety. The [roadmap](roadmap.md) keeps the language semantics gate open until that review and native CI finish.

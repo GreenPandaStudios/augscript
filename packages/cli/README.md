@@ -9,7 +9,7 @@ cd my-app
 aug run
 ```
 
-The starter includes an interface, implementation, same-file test, and AGENTS.md. `aug run` installs source dependencies, checks the project, prepares required native libraries, compiles it, and starts it. A C11 compiler remains a prerequisite; setup errors explain missing tools.
+The starter includes an interface, implementation, same-file test, and AGENTS.md. `aug run` installs source dependencies, checks the project, prepares its verified LLVM/runtime pack, compiles it, and starts it. Supported hosts are macOS 14+ ARM64 and GNU/Linux x64/ARM64 with glibc 2.36+. Consumers need no separate native compiler, LLVM installation, or SDK. `--backend c` retains the migration reference for contributor comparisons.
 
 Use `aug init weather --template weather` for the simulated weather API, or `aug package init arithmetic` for a library. Add public Git sources with `aug add URL --as NAME`, or import a quoted URL directly. Optional JSON, web, and crypto libraries use this package system; core I/O remains under `august.io`.
 

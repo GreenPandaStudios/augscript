@@ -3,7 +3,7 @@
   "displayName": "AugScript",
   "description": "Language support for AugScript",
   "icon": "media/augscript.png",
-  "version": "0.20.1",
+  "version": "0.21.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/GreenPandaStudios/augscript.git",
@@ -42,7 +42,7 @@
     "artwork": "node scripts/render-artwork.mjs"
   },
   "devDependencies": {
-    "@vscode/vsce": "4.0.0",
+    "@vscode/vsce": "4.0.1-1",
     "sharp": "0.35.4"
   },
   "contributes": {

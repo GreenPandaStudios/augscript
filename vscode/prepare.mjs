@@ -6,7 +6,7 @@ const root = resolve(import.meta.dirname, '..');
 const target = join(import.meta.dirname, 'compiler');
 rmSync(target, { recursive: true, force: true });
 mkdirSync(target, { recursive: true });
-for (const directory of ['bin', 'src', 'runtime', 'docs']) {
+for (const directory of ['bin', 'src', 'runtime', 'docs', 'native']) {
   const from = join(root, directory);
   cpSync(from, join(target, directory), { recursive: true,
     filter: source => !relative(from, source).split(/[\\/]/).some(part => part.startsWith('.') && part!=='.aug-spec') });

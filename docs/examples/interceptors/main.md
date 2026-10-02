@@ -88,7 +88,7 @@ catch ValidationError error {
 
 ### Providers
 
-`Console` is provided by [`SystemConsole`](dependencies/august/0.20.1/io/contracts.md#symbol-SystemConsole). The same instance is shared. `Logger` is provided by [`ConsoleLogger`](logging.md#symbol-ConsoleLogger). The same instance is shared.
+`Console` is provided by [`SystemConsole`](dependencies/august/0.21.0/io/contracts.md#symbol-SystemConsole). The same instance is shared. `Logger` is provided by [`ConsoleLogger`](logging.md#symbol-ConsoleLogger). The same instance is shared.
 
 ### Startup
 
@@ -98,7 +98,7 @@ It tries to call [`describe`](app.md#symbol-describe) with `x` `-1` and `label` 
 
 ### Dependencies
 
-It uses [`SystemConsole`](dependencies/august/0.20.1/io/contracts.md#symbol-SystemConsole) from `august.io`. It uses [`Greeter`](app.md#symbol-Greeter) ([`greet`](app.md#symbol-Greeter.greet)) and [`describe`](app.md#symbol-describe) from `app`. It uses [`ValidationError`](interceptors.md#symbol-ValidationError) from `interceptors`. It uses [`ConsoleLogger`](logging.md#symbol-ConsoleLogger) from `logging`.
+It uses [`SystemConsole`](dependencies/august/0.21.0/io/contracts.md#symbol-SystemConsole) from `august.io`. It uses [`Greeter`](app.md#symbol-Greeter) ([`greet`](app.md#symbol-Greeter.greet)) and [`describe`](app.md#symbol-describe) from `app`. It uses [`ValidationError`](interceptors.md#symbol-ValidationError) from `interceptors`. It uses [`ConsoleLogger`](logging.md#symbol-ConsoleLogger) from `logging`.
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).
 

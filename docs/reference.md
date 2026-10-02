@@ -116,6 +116,19 @@ Constraints name interfaces. Multiple constraints use `and`. Only interfaces dec
 
 A class starts with its name and ends its header with `implements Interface`. There is no `class` or `function` prefix and no class inheritance. Interfaces can extend several interfaces and supply default methods; conflicting inherited defaults require an explicit override. Interfaces have methods and no fields.
 
+An initializer can reject construction with a checked error. Declare that error
+before `implements`, as in `Session(own Handle handle) unless SessionError
+implements ActiveSession`. Callers catch or propagate the error. If construction
+fails after ownership transfers, August releases the partial object and its owned
+fields before the error reaches the caller. `drop` runs only on a successfully
+constructed object. Partial cleanup releases
+initialized owned fields and keeps the constructor error; it does not run `drop`
+against fields that might not have been initialized. Class constructors require a written
+`unless` contract; record validation can infer its failures.
+Fallible class constructors currently require explicit construction. They cannot
+be DI binding targets; startup and injected-construction failure handling need a
+separate contract before that form is supported.
+
 Header inputs become fields. Fields are read-only after initialization unless marked `mutable`. Public names grant access; names starting with `_` keep storage private. Separate a public constructor label from private storage with `int initial to _count`. The shorthand `int _count` exposes the input label `count`.
 
 ```aug project=state-guide file=main.aug
@@ -295,6 +308,17 @@ Nullable locals narrow after null checks, short-circuit conditions, match patter
 An error satisfies Error. A body infers escaping errors. A bodyless signature or explicit bound names specific errors with `returns T unless FileError and DomainError`. It can throw any value satisfying its declaration; declaring Error accepts any Error implementation. Calls must catch or propagate all effective errors, including interceptor layers; executable callers infer propagation when unless is omitted.
 
 `start` evaluates its receiver and arguments immediately; their errors belong to the scheduling statement. The scheduled operation's errors belong to a `wait for` or its owning scope's implicit join. Unobserved sibling failures can reach any wait in that group. Grouped waits observe every selected child, including cancellation cleanup, and rethrow the first failure. A helper awaiting a `Task<T>` parameter declares or handles `Error`, since that public type does not specify a narrower error contract yet.
+
+A task can take an owned input. Scheduling transfers cleanup responsibility to
+the child, including when cancellation occurs before its function runs. A task
+cannot return an `own` value: `Task<T>` has no owned-result transfer contract.
+Create and release resources inside the task, then return immutable data.
+
+Owned locals in a `try` or `catch` body are released when that body exits, before
+its `always` block runs. This order applies to normal execution, returns and
+errors. Values owned by the enclosing function remain live until that function
+exits. Cleanup suspends pending errors and cancellation while a `drop` method
+runs, then restores them.
 
 An error already leaving the parent remains the reported error if cancelling a child causes its cleanup to fail. `always` cleanup still runs for that child. A `return` from a scope joins its children before the caller receives the result.
 

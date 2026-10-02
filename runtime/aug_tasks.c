@@ -7,10 +7,11 @@
 
 /* C stack suspension preserves ordinary August calls and their precise GC frames. */
 struct AugTask {
-  mco_coro *coroutine; AugExecution execution; AugMethod function;
+  mco_coro *coroutine; AugExecution execution; AugMethod function; AugPointerMethod pointer_function;
   AugValue value; AugRetained retained; bool retained_active, queued, complete, observed;
   size_t base_depth; struct AugTask *ready_next, *sibling; AugScope *owner;
   AugTaskCompletion completion; void *completion_data; unsigned ticks;
+  unsigned char *owned_inputs;
 };
 static AugTask *ready_first, *ready_last;
 void (*aug_scheduler_io)(bool wait);
@@ -32,7 +33,7 @@ void aug_task_wake(AugTask *task) {
 static void destroy_task(void *native) {
   AugTask *task = native;
   if (!task->complete) fatal("collected an unfinished task");
-  mco_destroy(task->coroutine); free(task);
+  mco_destroy(task->coroutine); free(task->owned_inputs); free(task);
 }
 void aug_task_release(AugValue value) {
   AugTask *task = task_of(value);
@@ -52,8 +53,22 @@ static void run_task(mco_coro *coroutine) {
   AugTask *task = mco_get_user_data(coroutine);
   AugValue arguments = aug_field(task->value, 1);
   if (!aug_cancelled) {
-    AugValue result = task->function(aug_field(task->value, 0), arguments.as.object->fields, (int)arguments.as.object->field_count);
-    aug_set_field(task->value, 2, result);
+    AugValue roots[2] = {aug_field(task->value, 0), aug_null()};
+    AugFrame frame; aug_frame_enter(&frame, roots, 2);
+    if (task->pointer_function) task->pointer_function(&roots[1], &roots[0], arguments.as.object->fields, (int)arguments.as.object->field_count);
+    else roots[1] = task->function(roots[0], arguments.as.object->fields, (int)arguments.as.object->field_count);
+    aug_set_field(task->value, 2, roots[1]);
+    aug_frame_leave(&frame);
+  } else if (task->owned_inputs) {
+    /* Ownership crossed at start, even if a sibling cancels this child before
+       entry. No callee ran to release these captures. Cleanup must run with
+       cancellation suspended, just as an always block does. */
+    AugValue pending = aug_error; AugFrame frame; aug_frame_enter(&frame, &pending, 1);
+    bool failed = aug_has_error; aug_error = aug_null(); aug_has_error = false; aug_cancelled = false;
+    for (size_t i = 0; i < arguments.as.object->field_count; i++) if (task->owned_inputs[i]) {
+      aug_drop(aug_field(arguments, i)); aug_set_field(arguments, i, aug_null());
+    }
+    if (failed) aug_throw(pending); aug_cancelled = true; aug_frame_leave(&frame);
   }
   aug_scope_restore(task->base_depth);
   if (aug_has_error) { aug_set_field(task->value, 3, aug_take_error()); cancel_group(task); }
@@ -110,14 +125,15 @@ static void join_scope(AugScope *scope) {
   if (!aug_has_error && first_error.tag != AUG_NULL) aug_throw(first_error);
   aug_frame_leave(&frame);
 }
-AugValue aug_task_spawn(AugMethod function, AugValue receiver, AugValue *args, int count, AugTaskCompletion completion, void *data) {
+static AugValue spawn_task(AugMethod function, AugPointerMethod pointer_function, AugValue receiver, AugValue *args, int count, const unsigned char *owned, AugTaskCompletion completion, void *data) {
   aug_scope_join_hook = join_scope;
   AugValue roots[3] = {receiver, aug_null(), aug_null()}; AugFrame frame; aug_frame_enter(&frame, roots, 3);
   roots[1] = aug_list_new(args, (size_t)count);
   roots[2] = aug_new_object("Task", 4, NULL, NULL, 0); roots[2].as.object->kind = AUG_TASK_KIND;
   aug_set_field(roots[2], 0, receiver); aug_set_field(roots[2], 1, roots[1]);
   AugTask *task = calloc(1, sizeof(*task)); if (!task) fatal("out of memory");
-  task->function = function; task->value = roots[2]; task->completion = completion; task->completion_data = data;
+  task->function = function; task->pointer_function = pointer_function; task->value = roots[2]; task->completion = completion; task->completion_data = data;
+  if (owned && count) { task->owned_inputs = malloc((size_t)count); if (!task->owned_inputs) fatal("out of memory"); memcpy(task->owned_inputs, owned, (size_t)count); }
   aug_execution_init(&task->execution); task->execution.fiber = task;
   AugExecution *parent = aug_execution_current();
   task->execution.scope_stack = parent->scope_stack; task->execution.scope_depth = parent->scope_depth; task->base_depth = parent->scope_depth;
@@ -128,10 +144,25 @@ AugValue aug_task_spawn(AugMethod function, AugValue receiver, AugValue *args, i
   if (mco_create(&task->coroutine, &description) != MCO_SUCCESS) fatal("cannot allocate coroutine stack");
   aug_task_wake(task); AugValue result = roots[2]; aug_frame_leave(&frame); return result;
 }
+AugValue aug_task_spawn(AugMethod function, AugValue receiver, AugValue *args, int count, AugTaskCompletion completion, void *data) {
+  return spawn_task(function, NULL, receiver, args, count, NULL, completion, data);
+}
+void aug_task_spawn_pointer(AugValue *out, AugPointerMethod function, const AugValue *receiver, AugValue *args, int count, AugTaskCompletion completion, void *data) {
+  *out = spawn_task(NULL, function, receiver ? *receiver : aug_null(), args, count, NULL, completion, data);
+}
+void aug_task_start_pointer(AugValue *out, AugPointerMethod function, const AugValue *receiver, AugValue *args, int count, const unsigned char *owned) {
+  AugScope *scope = aug_execution_current()->scope_stack;
+  if (!scope) { *out = aug_error_named("ConcurrencyError"); return; }
+  *out = spawn_task(NULL, function, receiver ? *receiver : aug_null(), args, count, owned, NULL, NULL);
+  AugTask *task = task_of(*out); task->owner = scope; task->sibling = scope->tasks; scope->tasks = task;
+}
 AugValue aug_task_start(AugMethod function, AugValue receiver, AugValue *args, int count) {
+  return aug_task_start_owned(function, receiver, args, count, NULL);
+}
+AugValue aug_task_start_owned(AugMethod function, AugValue receiver, AugValue *args, int count, const unsigned char *owned) {
   AugScope *scope = aug_execution_current()->scope_stack;
   if (!scope) return aug_error_named("ConcurrencyError");
-  AugValue value = aug_task_spawn(function, receiver, args, count, NULL, NULL); AugTask *task = task_of(value);
+  AugValue value = spawn_task(function, NULL, receiver, args, count, owned, NULL, NULL); AugTask *task = task_of(value);
   task->owner = scope; task->sibling = scope->tasks; scope->tasks = task; return value;
 }
 static AugValue wait_one(AugValue value) {

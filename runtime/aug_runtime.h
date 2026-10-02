@@ -9,9 +9,10 @@
 typedef struct AugObject AugObject;
 typedef struct AugValue AugValue;
 typedef AugValue (*AugMethod)(AugValue self, AugValue *args, int count);
+typedef void (*AugPointerMethod)(AugValue *out, const AugValue *self, AugValue *args, int count);
 
 enum { AUG_NULL, AUG_INT, AUG_FLOAT, AUG_BOOL, AUG_STRING, AUG_OBJECT };
-enum { AUG_LIST_KIND = 6, AUG_MAP_KIND, AUG_SET_KIND, AUG_TUPLE_KIND, AUG_RECORD_KIND, AUG_BYTES_KIND, AUG_PRIVATE_KEY_KIND, AUG_PUBLIC_KEY_KIND, AUG_JSON_KIND, AUG_HTTP_REQUEST_KIND, AUG_HTTP_RESPONSE_KIND, AUG_HEADERS_KIND, AUG_HTML_KIND, AUG_TASK_KIND, AUG_HTTP_ACTION_KIND };
+enum { AUG_LIST_KIND = 6, AUG_MAP_KIND, AUG_SET_KIND, AUG_TUPLE_KIND, AUG_RECORD_KIND, AUG_BYTES_KIND, AUG_PRIVATE_KEY_KIND, AUG_PUBLIC_KEY_KIND, AUG_JSON_KIND, AUG_HTTP_REQUEST_KIND, AUG_HTTP_RESPONSE_KIND, AUG_HEADERS_KIND, AUG_HTML_KIND, AUG_TASK_KIND, AUG_HTTP_ACTION_KIND, AUG_NATIVE_RESOURCE_KIND };
 
 struct AugValue {
   int tag;
@@ -21,6 +22,7 @@ struct AugValue {
 typedef struct {
   const char *name;
   AugMethod function;
+  AugPointerMethod pointer_function;
 } AugMethodEntry;
 
 struct AugObject {
@@ -85,7 +87,11 @@ extern void (*aug_mutex_wait_hook)(void);
 typedef struct AugTask AugTask;
 typedef void (*AugTaskCompletion)(AugValue task, void *data);
 AugValue aug_task_start(AugMethod function, AugValue receiver, AugValue *args, int count);
+AugValue aug_task_start_owned(AugMethod function, AugValue receiver, AugValue *args, int count, const unsigned char *owned);
 AugValue aug_task_spawn(AugMethod function, AugValue receiver, AugValue *args, int count, AugTaskCompletion completion, void *data);
+/* Compiler-private entry points; native package callbacks have a separate ABI. */
+void aug_task_start_pointer(AugValue *out, AugPointerMethod function, const AugValue *receiver, AugValue *args, int count, const unsigned char *owned);
+void aug_task_spawn_pointer(AugValue *out, AugPointerMethod function, const AugValue *receiver, AugValue *args, int count, AugTaskCompletion completion, void *data);
 AugValue aug_task_wait(AugValue *tasks, int count);
 AugTask *aug_task_current(void);
 bool aug_task_finished(AugValue task);
@@ -134,6 +140,7 @@ bool aug_string_starts_with(AugValue value, AugValue prefix);
 bool aug_string_is_token(AugValue value, int64_t minimum, int64_t maximum);
 int64_t aug_bytes_length(AugValue value);
 AugValue aug_bytes_text(AugValue value);
+bool aug_valid_utf8(const void *text, size_t size);
 AugValue aug_bytes_base64url(AugValue value);
 AugValue aug_base64url_decode(AugValue value);
 
@@ -144,8 +151,10 @@ enum { AUG_SCHEMA_INT, AUG_SCHEMA_C_INT, AUG_SCHEMA_FLOAT, AUG_SCHEMA_BOOL, AUG_
 struct AugSchema {
   int kind; bool nullable; bool optional; size_t count;
   const AugSchema *const *fields; const char *const *names; AugFunction make;
+  AugPointerMethod pointer_make;
 };
 AugValue aug_json_decode(AugValue value, const AugSchema *schema);
+AugValue aug_schema_make(const AugSchema *schema, AugValue *fields, int count);
 AugValue aug_json_stringify(AugValue value);
 AugValue aug_json_get(AugValue value, AugValue name);
 AugValue aug_json_require(AugValue value, AugValue name);
@@ -155,15 +164,17 @@ bool aug_json_boolean(AugValue value);
 AugValue aug_json_items(AugValue value);
 AugValue aug_json_wrap(AugValue value);
 AugValue _aug_json_parse(AugValue input);
+AugValue _aug_time_now(void);
 typedef enum {
   AUG_HTTP_POLICY_REQUIRE_LOGIN=1, AUG_HTTP_POLICY_REQUIRE_PERMISSION,
   AUG_HTTP_POLICY_LOG_REQUEST, AUG_HTTP_POLICY_RATE_LIMIT, AUG_HTTP_POLICY_TIMEOUT,
   AUG_HTTP_POLICY_CORS, AUG_HTTP_POLICY_COMPRESS
 } AugHttpPolicyKind;
 typedef struct {AugHttpPolicyKind kind;const char *permission;int64_t amount,seconds;bool credentials;const char *origins,*headers;} AugHttpPolicy;
-typedef struct { const char *method; const char *path; AugFunction handler; int stream; int status; const AugHttpPolicy *policies;size_t policy_count; } AugRoute;
+typedef struct { const char *method; const char *path; AugFunction handler; int stream; int status; const AugHttpPolicy *policies;size_t policy_count; AugPointerMethod pointer_handler; } AugRoute;
 void aug_http_policy(const AugHttpPolicy *policy, AugValue request, AugValue dependency, AugValue second);
 AugValue aug_http_finish(AugValue response);
+bool aug_http_head_response(AugValue *response);
 AugValue aug_http_bind(AugValue request, const char *source, const char *name, const AugSchema *schema);
 AugValue aug_httprequest_form(AugValue request, const AugSchema *schema);
 AugValue aug_http_response(AugValue body, int status);
@@ -236,6 +247,9 @@ void aug_scope_restore(size_t depth);
 void aug_collect(void);
 void aug_freeze(AugValue value);
 void aug_drop(AugValue value);
+/* Failed construction releases initialized ownership without invoking drop. */
+void aug_drop_partial(AugValue value);
+void aug_constructor_result_cleanup(AugValue value, AugValue result);
 void aug_throw(AugValue value);
 AugValue aug_take_error(void);
 bool aug_error_is(const char *name);

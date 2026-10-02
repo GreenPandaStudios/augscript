@@ -1,8 +1,8 @@
 {
   "format": 1,
   "name": "@greenpandastudios/aug-crypto",
-  "version": "0.20.1",
-  "compiler": "0.20.1",
+  "version": "0.21.0",
+  "compiler": "0.21.0",
   "source": "august/crypto",
   "modules": [
     "crypto"

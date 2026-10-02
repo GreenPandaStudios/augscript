@@ -11,7 +11,7 @@ export interface NavigationTarget {
   file: string;
   line: number;
   column: number;
-  kind: 'class' | 'interface' | 'function' | 'composition' | 'interceptor' | 'method' | 'parameter' | 'module';
+  kind: 'class' | 'interface' | 'function' | 'composition' | 'interceptor' | 'resource' | 'method' | 'parameter' | 'module';
 }
 
 function definitionTarget(def: Definition): NavigationTarget {

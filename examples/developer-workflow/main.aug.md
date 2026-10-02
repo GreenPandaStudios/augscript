@@ -4,7 +4,7 @@
 
 ## Providers
 
-`Console` is provided by [`SystemConsole`](.aug-spec/august/0.20.1/io/contracts.aug.md#symbol-SystemConsole). The same instance is shared. `Logger` is provided by [`ConsoleLogger`](logging/console.aug.md#symbol-ConsoleLogger). The same instance is shared.
+`Console` is provided by [`SystemConsole`](.aug-spec/august/0.21.0/io/contracts.aug.md#symbol-SystemConsole). The same instance is shared. `Logger` is provided by [`ConsoleLogger`](logging/console.aug.md#symbol-ConsoleLogger). The same instance is shared.
 
 ## Startup
 
@@ -16,6 +16,6 @@ It prints the value under `2` in `fruit`. It prints [`load`](calculator.aug.md#s
 
 ## Dependencies
 
-It uses [`SystemConsole`](.aug-spec/august/0.20.1/io/contracts.aug.md#symbol-SystemConsole) from `august.io`. It uses [`Calculator`](calculator.aug.md#symbol-Calculator) ([`add`](calculator.aug.md#symbol-Calculator.add)) and [`load`](calculator.aug.md#symbol-load) from `calculator`. It uses [`ConsoleLogger`](logging/console.aug.md#symbol-ConsoleLogger) from `logging`.
+It uses [`SystemConsole`](.aug-spec/august/0.21.0/io/contracts.aug.md#symbol-SystemConsole) from `august.io`. It uses [`Calculator`](calculator.aug.md#symbol-Calculator) ([`add`](calculator.aug.md#symbol-Calculator.add)) and [`load`](calculator.aug.md#symbol-load) from `calculator`. It uses [`ConsoleLogger`](logging/console.aug.md#symbol-ConsoleLogger) from `logging`.
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).

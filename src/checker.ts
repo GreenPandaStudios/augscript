@@ -19,6 +19,8 @@ import { jsonDataType } from './schemas.ts';
 import {htmlTags, htmlVoidTags, htmlAttribute, htmlUrlAttributes} from './html.ts';
 import {generateOpenApi} from './openapi.ts';
 import {httpPolicyNames,httpPolicyOptions,checkHttpPolicy,type HttpPolicyPlan} from './http-policies.ts';
+import {nativeDeclarations, type NativeDeclarations} from './native-declarations.ts';
+import type {NativeFunction,NativeView} from './native-contracts.ts';
 export { tyName, type Ty } from './types.ts';
 
 export interface BindingInfo {
@@ -56,6 +58,7 @@ export interface CheckedProject {
   markupCalls: WeakMap<Expr, Extract<Expr, {kind:'call'}>>;
   actions: Map<Expr, ActionPlan>;
   httpPolicies: Map<MethodDecl,HttpPolicyPlan[]>;
+  native:NativeDeclarations;
 }
 
 export interface CallableContract {
@@ -77,6 +80,8 @@ export interface ScopeFact {
 }
 
 export interface InterceptorLayer {
+  /** The constructor entry reached by next returns a fresh, unescaped object. */
+  constructorResultFresh?: boolean;
   annotation: InterceptorAnnotation;
   definition: Definition;
   around: MethodDecl;
@@ -100,6 +105,7 @@ interface NextContext {
 }
 
 export interface CallPlan {
+  returnOwnership?: 'managed' | 'own';
   sourceIndices: (number | undefined)[];
   bindingKeys: (string | undefined)[];
   injectionSources?: (string | undefined)[];
@@ -167,6 +173,7 @@ class Checker {
   readonly markupCalls = new WeakMap<Expr, Extract<Expr, {kind:'call'}>>();
   readonly actions = new Map<Expr, ActionPlan>();
   readonly httpPolicies = new Map<MethodDecl,HttpPolicyPlan[]>();
+  readonly native:NativeDeclarations;
   private readonly bindingByKey = new Map<string, BindingInfo>();
   private readonly constructorFreshness = new Map<ClassDecl, boolean>();
   private readonly constraintStack = new Set<string>();
@@ -174,7 +181,7 @@ class Checker {
   private inferring = false;
   private inferenceChanged = false;
   private readonly changingInference = new Set<MethodDecl>();
-  constructor(project: Project) { this.project = project; this.diagnostics = [...project.diagnostics]; }
+  constructor(project: Project) { this.project = project; this.native=nativeDeclarations(project); this.diagnostics = [...project.diagnostics,...this.native.diagnostics]; }
 
   check(): CheckedProject {
     // Make inherited default bodies visible to forward calls during inference.
@@ -279,10 +286,14 @@ class Checker {
     if(this.actions.size)for(const def of this.project.definitions.values())
       if(served.has(def.id)&&def.node.kind==='function'&&def.node.endpoint?.path==='/__aug/actions.js')
         this.report(def.node.span,'/__aug/actions.js is reserved for HTTP action transport','HTTP');
+    for (const [node, layers] of this.interceptorPlans) if (node.kind === 'class') {
+      for (const [index, layer] of layers.entries()) layer.constructorResultFresh =
+        layers.slice(index + 1).every(inner => this.layerReturnsFresh(inner));
+    }
     return { project: this.project, diagnostics: this.diagnostics, bindings: this.bindings,
       expressionTypes: this.expressionTypes, defaults: this.defaults, callPlans: this.callPlans,
       interceptorPlans: this.interceptorPlans, effectContracts: this.effectContracts, callableContracts: this.callableContracts, constructorContracts: this.constructorContracts,
-      expressionOrigins: this.expressionOrigins, scopes: this.scopes, markupCalls: this.markupCalls, actions:this.actions, httpPolicies:this.httpPolicies };
+      expressionOrigins: this.expressionOrigins, scopes: this.scopes, markupCalls: this.markupCalls, actions:this.actions, httpPolicies:this.httpPolicies, native:this.native };
   }
 
   private isStatement(item: { kind: string }): item is Stmt {
@@ -419,6 +430,8 @@ class Checker {
         const args = ref.args.map(arg => this.resolveType(arg, file, params, validateConstraints));
         if (ref.name !== 'Task' && args.some(arg => arg.id === 'builtin:void')) this.report(ref.span,
           'Collections cannot contain void', 'COLLECTION');
+        const containsResource=(type:Ty):boolean=>type.kind==='resource'||type.args.some(containsResource);
+        if(args.some(containsResource))this.report(ref.span,'Native resources require individual own bindings; managed collections cannot retain them','OWN');
         return { ...builtin(ref.name), args,
           nullable: ref.nullable, optional: ref.optional };
       }
@@ -518,6 +531,8 @@ class Checker {
       this.resolveType(param.type, file, params);
     }
     this.returnType(fn, file, params);
+    if(this.returnType(fn,file,params).kind==='resource'&&fn.returnOwnership!=='own')
+      this.report(fn.span,'A native resource return must declare returns own','OWN');
     if (fn.endpoint) {
       const endpoint = fn.endpoint;
       if (!/^[A-Z]+$/.test(endpoint.method)) this.report(fn.span, 'Endpoint methods use uppercase HTTP method names', 'HTTP');
@@ -555,6 +570,9 @@ class Checker {
         `Thrown type ${typeName(thrown)} must implement Error`);
     }
     if (fn.externC) {
+      const native=this.native.functions.get(fn);
+      if(native)this.checkNativeSignature(fn,file,native);
+      else {
       if (fn.nativePure && (fn.uses?.length || fn.changes?.length)) this.report(fn.span, 'A pure native declaration cannot declare effects', 'FFI');
       if (fn.params.some(param => param.injected)) this.report(fn.span,
         'extern C declarations cannot use resolve parameters', 'FFI');
@@ -566,9 +584,38 @@ class Checker {
         if (!['int', 'c_int', 'float', 'bool', 'string', 'void'].includes(type.name) || type.args.length || type.nullable)
           this.report(type.span, `Type ${typeName(type)} is not supported at the C FFI boundary`, 'FFI');
       }
+      }
     }
     if (fn.name === 'drop' && (fn.params.length || fn.throws.length || fn.returns.name !== 'void' || fn.uses?.length))
       this.report(fn.span, 'drop must take no inputs, return void, and perform only local cleanup; external effects require an explicit method', 'EFFECT');
+  }
+
+  private checkNativeSignature(fn:MethodDecl,file:string,binding:NativeFunction):void {
+    const check=(type:Ty,view:NativeView,span:Span)=>{
+      const name=view.kind==='i64'?'int':view.kind==='i32'?'c_int':view.kind==='f64'?'float':view.kind==='utf8'?'string':view.kind==='bytes'?'Bytes':view.kind;
+      const valid=view.kind==='resource'?type.kind==='resource'&&this.native.resources.get(type.def!.node as import('./ast.ts').ResourceDecl)?.module+'.'+type.name===view.resource&&this.native.providers.get(type.def!.node as import('./ast.ts').ResourceDecl)===this.native.providers.get(fn):
+        view.kind==='f64-list'||view.kind==='utf8-list'?type.name==='List'&&type.args.length===1&&type.args[0].name===(view.kind==='f64-list'?'float':'string'):type.name===name;
+      if(!valid||type.nullable||type.optional)this.report(span,`Native contract expects ${view.resource??view.kind}, got ${tyName(type)}`,'NATIVE_ABI');
+    };
+    if(fn.body||fn.typeParams.length||fn.params.some(p=>p.injected)||fn.annotations?.length)this.report(fn.span,'Native ABI declarations have concrete inputs, no body, no resolve parameters, and no interceptors','NATIVE_ABI');
+    if(fn.params.length!==binding.params.length)this.report(fn.span,'Native parameter count differs from the binding descriptor','NATIVE_ABI');
+    fn.params.forEach((p,i)=>{const view=binding.params[i];if(!view)return;
+      if(p.name!==view.name)this.report(p.span,'Native parameter label differs from the binding descriptor: '+view.name,'NATIVE_ABI');
+      check(this.resolveType(p.type,file),view,p.span);
+      const ownership=view.kind==='resource'?view.ownership==='consume'?'own':view.ownership==='borrow'?'borrow':'managed':'managed';
+      if(p.ownership!==ownership)this.report(p.span,'Native parameter ownership differs from its binding descriptor','NATIVE_ABI');
+    });
+    check(this.returnType(fn,file),binding.result,fn.returns.span);
+    if((binding.result.kind==='resource')!==(fn.returnOwnership==='own'))this.report(fn.span,'Native result ownership differs from its binding descriptor','NATIVE_ABI');
+    const errors=fn.throws.map(t=>this.resolveType(t,file));
+    if(errors.length!==(binding.error?1:0)||binding.error&&errors[0]?.def?.id!==this.native.errors.get(fn)?.id)this.report(fn.span,'Native checked errors differ from the binding descriptor','NATIVE_ABI');
+    if(binding.error){
+      const error=errors[0]?.def?.node;
+      if(error?.kind!=='class'||error.typeParams.length||error.fields.length!==2||error.fields[0].name!=='code'||error.fields[0].type.name!=='int'||error.fields[1].name!=='message'||error.fields[1].type.name!=='string'||error.fields.some(p=>p.injected||p.ownership!=='managed'||p.type.nullable||p.type.optional||p.type.args.length)||initializationOf(error).length||error.annotations?.length)
+        this.report(fn.span,'Native status errors require an Error class with int code and string message inputs and no constructor work','NATIVE_ABI');
+    }
+    const uses=(fn.uses??[]).map(u=>u.source+'.'+u.operation).sort(),changes=[...(fn.changes??[])].sort();
+    if(JSON.stringify(uses)!==JSON.stringify([...binding.uses].sort())||JSON.stringify(changes)!==JSON.stringify([...binding.changes].sort()))this.report(fn.span,'Native effects or mutation differ from the binding descriptor','NATIVE_ABI');
   }
 
   private checkInterceptorShape(def: Definition): void {
@@ -826,12 +873,18 @@ class Checker {
     if (!cls.record && cls.implements.length === 0) this.report(cls.span,
       `${cls.name} must implement at least one interface`, 'INTERFACE');
     const params = this.paramsFor(cls.typeParams, cls, def.file);
+    for(const error of cls.validationErrors??[]){
+      const type=this.resolveType(error,def.file,params);
+      if(!this.implementsError(type))this.report(error.span,`Thrown type ${typeName(error)} must implement Error`);
+    }
     this.checkVariance(cls, def.file);
     const names = new Set<string>();
     for (const field of fieldsOf(cls)) {
       if (names.has(field.name)) this.report(field.span, `Duplicate field ${field.name}`);
       names.add(field.name);
       this.resolveType(field.type, def.file, params);
+      if(this.resolveType(field.type,def.file,params).kind==='resource'&&field.ownership!=='own')
+        this.report(field.span,'Native resource fields require own ownership','OWN');
       if (cls.record && (field.mutable || field.injected || field.ownership !== 'managed'))
         this.report(field.span, 'Record fields are immutable data; dependencies and ownership belong in behavioral classes', 'RECORD');
       if (cls.record && !this.immutableData(this.resolveType(field.type, def.file, params)))
@@ -1034,6 +1087,8 @@ class Checker {
         continue;
       }
       const interfaceDef = this.project.scopes.get(item.span.file)?.get(item.key);
+      if(target.node.validationErrors?.length)this.report(item.span,
+        `${target.name} has a checked constructor failure; construct it explicitly and catch or propagate the error instead of binding it`, 'DI');
       let exposedType = targetType;
       if (interfaceDef?.node.kind === 'interface') {
         exposedType = this.resolveType({ name: item.key, args: item.keyTypeArgs,
@@ -1519,6 +1574,7 @@ class Checker {
       const expected = stmt.declaredType ? this.resolveType(stmt.declaredType, context.file, context.types) :
         stmt.target.kind === 'name' ? context.locals.get(stmt.target.name)?.declaredType ?? context.locals.get(stmt.target.name)?.type : undefined;
       const value = this.checkExpression(stmt.value, context, expected);
+      if(value.kind==='resource'&&stmt.target.kind==='name'&&stmt.ownership!=='own'&&context.locals.get(stmt.target.name)?.origin!=='field')this.report(stmt.span,'Native resources must be held by own bindings','OWN');
       const source = stmt.value.kind === 'name' ? context.locals.get(stmt.value.name) : undefined;
       const origins = this.placesOf(stmt.value, context);
       const ownedSource = this.ownershipOf(stmt.value, context) === 'own';
@@ -1547,9 +1603,9 @@ class Checker {
             moved: false, origin: stmt.value.kind === 'name' ? stmt.value.name : undefined, definition: stmt.target.span });
           context.flow.declare(stmt.target.name, origins, !!value.readonly, { source: sourceName(stmt.value) });
         } else if (existing) {
-          if (existing.ownership === 'own') this.report(stmt.target.span,
+          if (existing.ownership === 'own' && existing.origin !== 'field') this.report(stmt.target.span,
             `Reassigning owned value ${stmt.target.name} is not supported; use a new scope`, 'OWN');
-          if (source?.ownership === 'own') this.report(stmt.value.span,
+          if (source?.ownership === 'own' && !(existing.origin === 'field' && existing.ownership === 'own')) this.report(stmt.value.span,
             'Cannot copy an owned value into a managed variable', 'OWN');
           if (existing.origin === 'field' && existing.ownership !== 'own' &&
               !context.initializing && !context.borrowed.has('self') && context.locals.get('self')?.ownership !== 'borrow')
@@ -1574,6 +1630,10 @@ class Checker {
           context.flow.rebind(stmt.target.name, origins, !!value.readonly, stmt.span,
             (span, message) => this.report(span, message, 'BORROW'), sourceName(stmt.value));
           existing.moved = false;
+          if(existing.origin==='field'&&existing.ownership==='own'){
+            if(source?.ownership==='own'&&stmt.value.kind==='name')this.moveOwnedLocal(stmt.value.name,stmt.value.span,context);
+            else if(!['own','fresh'].includes(this.ownershipOf(stmt.value,context)))this.report(stmt.value.span,'An owned field requires a new object or another owned value','OWN');
+          }
         } else {
           if (source?.ownership === 'own') this.report(stmt.value.span,
             'Cannot copy an owned value into a managed variable', 'OWN');
@@ -1598,6 +1658,7 @@ class Checker {
         const node = object.def?.node;
         const fieldName = stmt.target.name;
         const field = node?.kind === 'class' || node?.kind === 'interceptor' ? fieldsOf(node).find(item => item.name === fieldName) : undefined;
+        if(value.kind==='resource'&&field?.ownership!=='own')this.report(stmt.span,'Native resources must be held by own fields','OWN');
         if (!(context.initializing && root === 'self') && !field?.mutable)
           this.report(stmt.target.span, `Field ${fieldName} is read-only; declare mutable storage`, 'MUTABILITY');
         if (object.readonly && !(context.initializing && root === 'self'))
@@ -1910,18 +1971,20 @@ class Checker {
     if (cached !== undefined) return cached;
     if (visiting.has(node)) return false;
     visiting.add(node);
-    const result = (this.interceptorPlans.get(node) ?? []).every(layer => {
-      const interceptor = layer.definition.node as InterceptorDecl;
-      return returnsFresh(layer.around.body ?? [], new Set(interceptor.fields.map(field => field.name)), expr => {
-        if (expr.kind !== 'call' || expr.callee.kind !== 'name') return false;
-        if (expr.callee.name === 'next') return true;
-        const def = this.project.scopes.get(layer.definition.file)?.get(expr.callee.name);
-        return def?.node.kind === 'class' && this.constructorIsFresh(def.node, visiting);
-      });
-    });
+    const result = (this.interceptorPlans.get(node) ?? []).every(layer => this.layerReturnsFresh(layer, visiting));
     visiting.delete(node);
     this.constructorFreshness.set(node, result);
     return result;
+  }
+
+  private layerReturnsFresh(layer: InterceptorLayer, visiting = new Set<ClassDecl>()): boolean {
+    const interceptor = layer.definition.node as InterceptorDecl;
+    return returnsFresh(layer.around.body ?? [], new Set(interceptor.fields.map(field => field.name)), expr => {
+      if (expr.kind !== 'call' || expr.callee.kind !== 'name') return false;
+      if (expr.callee.name === 'next') return true;
+      const def = this.project.scopes.get(layer.definition.file)?.get(expr.callee.name);
+      return def?.node.kind === 'class' && this.constructorIsFresh(def.node, visiting);
+    });
   }
 
   private checkAllowedError(type: Ty, span: Span, context: Context): void {
@@ -2032,6 +2095,8 @@ class Checker {
       type = {...builtin('Task'), args: [result]};
       if (expr.call.kind === 'call' && context.scope) {
         const plan = this.callPlans.get(expr.call), task = [...allocationOrigin(expr.span)][0], scope = `tasks:${context.scope.file}:${context.scope.start}`;
+        if (plan?.returnOwnership === 'own') this.report(expr.call.span,
+          'A task cannot return an owned value. Return immutable data, or create and release the owned resource inside the task.', 'CONCURRENCY');
         context.flow.registerTask(task, scope, errors);
         const captureOrigins = (origins: Origins, actual: Ty, exclusive: boolean, span: Span) => {
           if (!this.isReference(actual)) return;
@@ -2156,6 +2221,8 @@ class Checker {
       else this.report(expr.span, `Operator ${expr.op} does not accept ${tyName(left)} and ${tyName(right)}`);
     } else if (expr.kind === 'call') {
       type = this.checkCall(expr, context);
+      const plan=this.callPlans.get(expr);
+      if(plan)plan.returnOwnership=this.ownershipOf(expr,context)==='own'?'own':'managed';
     }
     this.expressionTypes.set(expr, type);
     this.expressionOrigins.set(expr, this.placesOf(expr, context));
@@ -2437,6 +2504,7 @@ class Checker {
     }
     if (expr.callee.kind === 'name' && expr.callee.name === 'Shared') {
       const plan = this.planCall(expr, ['value'], 'Shared'), index = plan.sourceIndices[0];
+      plan.ownerships = ['own'];
       const result = index === undefined ? errorTy : argTypes[index];
       if (index !== undefined && !['fresh', 'own'].includes(this.ownershipOf(expr.args[index], context))) this.report(expr.args[index].span, 'Shared takes a fresh value or an owned value; existing mutable aliases cannot survive the transfer', 'OWN');
       if (expr.typeArgs.length > 1 || expr.typeArgs[0] && !this.assignable(result, this.resolveType(expr.typeArgs[0], context.file, context.types))) this.report(expr.span, 'Shared type argument must match its value', 'TYPE');
@@ -2699,7 +2767,7 @@ class Checker {
     }
     if (fn.externC && !context.unsafe) this.report(expr.span,
       `Call to extern C function ${fn.name} requires unsafe { ... }`, 'FFI');
-    if (fn.externC && !fn.nativePure && !(fn.valueAbi && fn.uses?.length)) {
+    if (fn.externC && !fn.nativePure && !this.native.functions.has(fn) && !(fn.valueAbi && fn.uses?.length)) {
       const native = this.project.scopes.get(fnFile)?.get(fn.name);
       this.requireUse(`C:${native?.id ?? fn.name}`, `C.${fn.name}`, expr.span, context);
     }
@@ -2824,7 +2892,7 @@ class Checker {
         else this.report(argument.span, 'Owned field requires an owned argument', 'OWN');
       } else if (!['own', 'fresh'].includes(this.ownershipOf(argument, context))) this.report(argument.span,
         'Owned field requires a new object or owned argument', 'OWN');
-    } else if (this.ownershipOf(argument, context) === 'own' && param.ownership !== 'borrow')
+    } else if (this.ownershipOf(argument, context) === 'own' && param.ownership !== 'borrow' && this.expressionTypes.get(argument)?.kind!=='resource')
       this.report(argument.span, 'Cannot copy an owned value into managed storage', 'OWN');
     if (param.ownership === 'borrow') {
       if (context.flow.hasTaskCapture(this.placesOf(argument, context)))

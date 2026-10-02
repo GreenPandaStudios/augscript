@@ -1,6 +1,6 @@
 {
   "format": 1,
-  "compiler": "0.20.1",
+  "compiler": "0.21.0",
   "specifications": {
     "url_ac5ce553f84fc815ffc3": "https://github.com/GreenPandaStudios/augscript/src/stdlib/json#v0.19.0"
   },
@@ -23,7 +23,7 @@
       "name": "@git/url_2d3c37c690c0fa115be1",
       "version": "0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301",
       "source": ".",
-      "digest": "fa30fce8a20017921a6a568b901785de6df6f2a276762cfbea2ed8cdc9eee360",
+      "digest": "f310aec368b5b5a309edd951791a13bfa4a8d8ac651f387c88adbfb40996220a",
       "dependencies": {}
     }
   ]

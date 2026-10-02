@@ -48,18 +48,32 @@
         {
           "match": "\\b(endpoint)\\s+(GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS|CONNECT|TRACE)\\s+(\"[^\"]*\")\\s+(as)\\s+([A-Za-z_][A-Za-z0-9_]*)",
           "captures": {
-            "1": {"name": "keyword.declaration.augscript"},
-            "2": {"name": "constant.language.http-method.augscript"},
-            "3": {"name": "string.quoted.double.route.augscript"},
-            "4": {"name": "keyword.declaration.augscript"},
-            "5": {"name": "entity.name.function.endpoint.augscript"}
+            "1": {
+              "name": "keyword.declaration.augscript"
+            },
+            "2": {
+              "name": "constant.language.http-method.augscript"
+            },
+            "3": {
+              "name": "string.quoted.double.route.augscript"
+            },
+            "4": {
+              "name": "keyword.declaration.augscript"
+            },
+            "5": {
+              "name": "entity.name.function.endpoint.augscript"
+            }
           }
         },
         {
           "match": "\\b(from)\\s+(path|query|header|body|cookie|form|request)\\b",
           "captures": {
-            "1": {"name": "keyword.declaration.augscript"},
-            "2": {"name": "support.type.http-source.augscript"}
+            "1": {
+              "name": "keyword.declaration.augscript"
+            },
+            "2": {
+              "name": "support.type.http-source.augscript"
+            }
           }
         }
       ]
@@ -69,14 +83,24 @@
         {
           "match": "(?<![A-Za-z0-9_])(<)(/?)([A-Za-z][A-Za-z0-9]*)(?=\\s|/?>)",
           "captures": {
-            "1": {"name": "punctuation.definition.tag.begin.augscript"},
-            "2": {"name": "punctuation.definition.tag.begin.augscript"},
-            "3": {"name": "entity.name.tag.augscript"}
+            "1": {
+              "name": "punctuation.definition.tag.begin.augscript"
+            },
+            "2": {
+              "name": "punctuation.definition.tag.begin.augscript"
+            },
+            "3": {
+              "name": "entity.name.tag.augscript"
+            }
           }
         },
         {
           "match": "\\b([A-Za-z][A-Za-z0-9-]*)(?=\\s*=\\s*(?:\\{|[\"']))",
-          "captures": {"1": {"name": "entity.other.attribute-name.augscript"}}
+          "captures": {
+            "1": {
+              "name": "entity.other.attribute-name.augscript"
+            }
+          }
         }
       ]
     },
@@ -210,6 +234,23 @@
     },
     "declarations": {
       "patterns": [
+        {
+          "match": "\\b(extern)\\s+(C)\\s+(resource)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+          "captures": {
+            "1": {
+              "name": "keyword.declaration.augscript"
+            },
+            "2": {
+              "name": "keyword.declaration.augscript"
+            },
+            "3": {
+              "name": "keyword.declaration.augscript"
+            },
+            "4": {
+              "name": "entity.name.type.augscript"
+            }
+          }
+        },
         {
           "match": "\\b(interface|capability|record|composition)\\s+([A-Za-z_][A-Za-z0-9_]*)\\b",
           "captures": {
@@ -374,10 +415,18 @@
         {
           "match": "\\b(test)\\s+(endpoint)\\s+([A-Za-z_][A-Za-z0-9_]*)\\s+([A-Za-z_][A-Za-z0-9_]*)",
           "captures": {
-            "1": {"name": "keyword.declaration.augscript"},
-            "2": {"name": "keyword.declaration.augscript"},
-            "3": {"name": "entity.name.function.endpoint.augscript"},
-            "4": {"name": "variable.other.augscript"}
+            "1": {
+              "name": "keyword.declaration.augscript"
+            },
+            "2": {
+              "name": "keyword.declaration.augscript"
+            },
+            "3": {
+              "name": "entity.name.function.endpoint.augscript"
+            },
+            "4": {
+              "name": "variable.other.augscript"
+            }
           }
         },
         {
