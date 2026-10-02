@@ -18,7 +18,7 @@ It continues without an operation.
 <a id="symbol-make"></a>
 ## `make` · [source](resource.aug#L11)
 
-It returns ownership of [`Resource`](resource.aug.md#symbol-Resource). It sets `value` of type [`Resource`](resource.aug.md#symbol-Resource) to a [`Resource`](resource.aug.md#symbol-Resource). `value` of type [`Resource`](resource.aug.md#symbol-Resource) owns this value. It returns `value`.
+It returns ownership of [`Resource`](resource.aug.md#symbol-Resource). It creates [`Resource`](resource.aug.md#symbol-Resource) and stores the result in owned `value` ([`Resource`](resource.aug.md#symbol-Resource)). It returns `value`.
 
 <a id="symbol-consume"></a>
 ## `consume` · [source](resource.aug#L15)

@@ -12,15 +12,15 @@ outline: [2, 3]
 
 A calculator logs each addition. Its nearby tests replace the logger and verify both labeled inputs and fresh setup.
 
-Open a file to read its source beside the explanation produced by `aug spec`. **Indentation** and **Braces** display the same checked program; your choice carries across file pages.
+Open a file to read the code beside its compiled explanation. Choose **Indentation** or **Braces** to change the code view. The choice carries across files.
 
 ## Follow the program
 
 Read [`main.aug`](main.md). Startup supplies providers, uses collections, invokes the calculator, and catches a simulated load failure.
 
-Read [`calculator.aug`](calculator.md). Read the arithmetic contract, the injected logger, and the same-file cases together. The private silent adapter keeps tests independent of output.
+Read [`calculator.aug`](calculator.md). The calculator receives a logger and adds two inputs. Its tests supply a private silent logger.
 
-Read [`logging/logger.aug`](logging/logger.md). This is the contract used by both the production logger and the test adapter.
+Read [`logging/logger.aug`](logging/logger.md). The production logger and test adapter implement this interface.
 
 ## Project files
 
@@ -33,7 +33,7 @@ Read [`logging/logger.aug`](logging/logger.md). This is the contract used by bot
 
 ## Try this project
 
-[Download this project](/downloads/developer-workflow.zip), then extract the archive in an empty working folder. It contains the checked source, configuration, and generated specs. [Install August](../../getting-started.md) once, then run these commands. Native libraries are prepared automatically when needed:
+[Download this project](/downloads/developer-workflow.zip), then extract the archive in an empty working folder. It contains source, configuration, and compiled specs. [Install August](../../getting-started.md) once, then run these commands. Native libraries are prepared automatically when needed:
 
 ```sh
 cd developer-workflow

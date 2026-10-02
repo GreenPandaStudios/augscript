@@ -93,11 +93,11 @@ export function buildExamplePages(overrides) {
       docs.set(output.path,page);
       add(page,frontmatter('Native binding contract · '+example.title,example.path+'/'+name,true)+
         '# Native binding contract\n\n'+`[${example.title}](${url(relative(dirname(page),home))})\n\n`+
-        'This is the exact descriptor checked for this dependency. It records native symbols, ownership, errors, and ABI boundaries. The compiler checks August declarations against it; foreign implementations remain the native author’s responsibility.\n\n'+fence(output.text,'json'));
+        'This dependency’s descriptor names native symbols, ownership rules, errors, and ABI types. The compiler checks August declarations against it. Native code must honor the declared rules.\n\n'+fence(output.text,'json'));
     }
     const nav=files.map(file=>`- [${code(slash(relative(directory,file.path)))}](${url(relative(dirname(home),sources.get(file.path)))})`).join('\n');
     let overview=frontmatter(example.title,example.path)+`# ${example.title}\n\n${example.description}\n\n`+
-      'Open a file to read its source beside the explanation produced by `aug spec`. **Indentation** and **Braces** display the same checked program; your choice carries across file pages.\n\n';
+      'Open a file to read the code beside its compiled explanation. Choose **Indentation** or **Braces** to change the code view. The choice carries across files.\n\n';
     const native=example.group==='Native libraries (LLVM preview)';
     if(native)overview+='This project runs with August `0.21.0` on macOS 14+ with Apple Silicon, or GNU/Linux x64 or ARM64 with glibc 2.36+. The CLI obtains the verified compiler and library artifacts automatically.\n\n';
     if(example.walkthrough?.length) {
@@ -125,7 +125,7 @@ export function buildExamplePages(overrides) {
     if(project.library)commands+=`${npmAug} test .\n${npmAug} pack .\n`;
     else commands+=(files.some(file=>file.items.some(item=>item.kind==='test'))?`${npmAug} test .\n`:'')+`${npmAug} run .\n`;
     overview+='\n## Try this project\n\n'+
-      `[Download this project](/downloads/${slug(example)}.zip), then extract the archive in an empty working folder. It contains the checked source, configuration, and generated specs.`+
+      `[Download this project](/downloads/${slug(example)}.zip), then extract the archive in an empty working folder. It contains source, configuration, and compiled specs.`+
       (packagePair?' Both the application and its neighboring arithmetic library are included.':'')+
       ' [Install August](../../getting-started.md) once, then run these commands. Native libraries are prepared automatically when needed:\n\n'+fence(commands,'sh')+'\n';
     const archiveFiles=new Map(downloadFiles(downloadRoot).map(file=>[slug(example)+'/'+slash(relative(downloadRoot,file)),readFileSync(file)]));
@@ -166,9 +166,9 @@ export function buildExamplePages(overrides) {
     }
   },overrides);
   let index=frontmatter('Example projects','examples and benchmarks')+'# Example projects\n\n'+
-    'Read a complete program, follow its dependencies, and compare the source with its compiled explanation. Every file has highlighted **Indentation** and **Braces** views and the actual output of `aug spec`. Dependency links open the exact version used by the project. Download a project to try it; native examples use the published LLVM toolchain on their listed supported platforms.\n\n'+
+    'Explore complete programs with code and compiled explanations side by side. Choose **Indentation** or **Braces** for the code view, follow links to dependencies, or download a project to run it. Native examples list their supported platforms.\n\n'+
     'Start with [Hello world with dependencies](hello/index.md) to trace a greeting through two folder boundaries. Then [review a change to the tested calculator](../guides/change-a-module.md). For a larger application, the [OpenID Connect example](oidc-login/index.md) combines pages, provider and client endpoints, and a session JWT. It is a development demonstration with documented limits.\n\n'+
-    'If you are learning the language for the first time, use [the book](../learn/index.md). The gallery is for exploring whole projects and looking at the code behind a specific feature or measurement.\n\n';
+    'For step-by-step lessons, start with [the book](../learn/index.md).\n\n';
   for(const group of new Set(examples.map(example=>example.group))) {
     index+='## '+group+'\n\n| Project | What it demonstrates |\n| --- | --- |\n';
     for(const example of examples.filter(example=>example.group===group))index+=`| [${example.title}](${url(relative('docs/examples',join(exampleDirectory(example),'index.md')))}) | ${example.description.replaceAll('|','\\|')} |\n`;

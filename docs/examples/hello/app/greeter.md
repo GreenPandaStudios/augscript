@@ -91,7 +91,7 @@ interface IGreeter {
 
 ### `Greeter` · class · [source](greeter.md#code) {#symbol-Greeter}
 
-Welcomes a user through the configured logger. It implements [`IGreeter`](greeter.md#symbol-IGreeter). The `logger` dependency is injected as [`Logger`](../logging/logger.md#symbol-Logger) and stored read-only (The application logger, injected when resolved).
+Welcomes a user through the configured logger. It implements [`IGreeter`](greeter.md#symbol-IGreeter). The `logger` dependency is injected as [`Logger`](../logging/logger.md#symbol-Logger) and stored read-only (the application logger, injected when resolved).
 
 #### `Greeter.greet` · [source](greeter.md#code) {#symbol-Greeter.greet}
 

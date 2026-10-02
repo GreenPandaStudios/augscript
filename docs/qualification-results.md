@@ -3,7 +3,7 @@ generatedBy: scripts/render-qualification.mjs
 ---
 # Extended performance and safety results
 
-These results cover the August 0.21.0 preview on **Apple M5**, darwin 25.6.0 arm64, recorded 2026-10-02. August uses LLVM 23.1.2. Every measured result matched its required output. They do not establish a general C-speed or production-safety guarantee.
+These results cover the August 0.21.0 preview on **Apple M5**, darwin 25.6.0 arm64, recorded 2026-10-02. August uses LLVM 23.1.2. Every measured program produced its expected result. These measurements apply to this host and workload.
 
 ## Eight more C comparisons
 
@@ -23,7 +23,7 @@ Each value is the median of 30 fresh executable processes after 3 warmups. Order
 | [Record allocation](examples/records-benchmark/main.md) | 50,000 | 9.40 ms | 2.01 ms | 4.66 |
 | [Task scheduling](examples/tasks-benchmark/main.md) | 2,000 | 3.89 ms | 1.19 ms | 3.27 |
 
-Ratios above 1 mean August took longer. The C references use concrete values and explicit cleanup. Their ordered map uses linear searches and their task case makes sequential calls; it does not pay for a scheduler. The string reference copies each part, while August also creates managed strings and a list. Records retain individually allocated values in both programs, with different layouts and lifetime tracking. These are visible differences, not interchangeable implementations. [Read the C references](https://github.com/GreenPandaStudios/augscript/blob/main/benchmarks/kernels.c) before drawing conclusions.
+Ratios above 1 mean August took longer. The C references use concrete values and explicit cleanup. Their ordered map uses linear searches and their task case makes sequential calls; it does not pay for a scheduler. The string reference copies each part, while August also creates managed strings and a list. Records retain individually allocated values in both programs, with different layouts and lifetime tracking. The timings include these differences in the work performed. [Read the C references](https://github.com/GreenPandaStudios/augscript/blob/main/benchmarks/kernels.c) before drawing conclusions.
 
 The float program checks its exact accumulated binary-fraction result. The call loop carries each result into the next call. Lists and records retain data and read it afterward. Map deletion checks reinsertion order as well as values. Error cases verify both the sum and number of failures; task cases verify the joined sum. Their [downloadable projects](examples/index.md#measured-programs) show code beside compiled specs in either indentation or braces style.
 
@@ -41,7 +41,7 @@ Seed **877966**, generator version **1**, 256 generated vectors per exercise plu
 | cleanup | 512 | Passed; both behavioral mutations detected |
 | tasks | 512 | Passed; both behavioral mutations detected |
 
-The suite executed **3612 generated/edge-case checks**, rejected **8 forbidden contracts**, and detected **14 valid behavioral mutants**. Each mutant compiled and ran safely; its wrong result or cleanup count differed from the independent oracle.
+The suite executed **3612 generated/edge-case checks**, rejected **8 forbidden contracts**, and detected **14 valid behavioral mutants**. Each deliberately faulty program compiled and finished, but produced a wrong result or cleanup count compared with the independent oracle.
 
 | Additional circuit | Executed tests | Skipped tests | Result |
 | --- | ---: | ---: | --- |
@@ -58,4 +58,4 @@ The [safety gym guide](safety-gyms.md) explains each gate and its limits. [Contr
 
 ## Source identity
 
-Both reports use source SHA-256 `23c9155410c0af115173e99c583e86374df5b83e22d9ce82aeabeb19405384a0`. This fingerprints compiler, runtime, native platform inputs, package contracts, configuration, dependencies, test fixtures, generators and measured programs. Recorded evidence remains tied to that snapshot; a later change requires a new run.
+Both reports use source SHA-256 `23c9155410c0af115173e99c583e86374df5b83e22d9ce82aeabeb19405384a0`. This fingerprints compiler, runtime, native platform inputs, package contracts, configuration, dependencies, test fixtures, generators and measured programs. These results describe that snapshot. Rerun the suite to measure changed code.

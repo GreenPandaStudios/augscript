@@ -42,7 +42,7 @@ capability FileReader:
 capability FileWriter:
     /** Write text. @param path File path. @param content Text. @throws FileError Writing failed. */
     write(string path, string content) uses FileWriter.write unless FileError
-/** Native files. Operations are explicit; construction opens no files. */
+/** Native filesystem adapter. Construction opens no files. */
 LocalFiles() implements FileReader, FileWriter:
     read(string path):
         return read_file(path=path)
@@ -80,7 +80,7 @@ capability FileWriter {
     /** Write text. @param path File path. @param content Text. @throws FileError Writing failed. */
     write(string path, string content) uses FileWriter.write unless FileError
 }
-/** Native files. Operations are explicit; construction opens no files. */
+/** Native filesystem adapter. Construction opens no files. */
 LocalFiles() implements FileReader, FileWriter {
     read(string path) {
         return read_file(path=path)
@@ -145,7 +145,7 @@ Write text. It takes `path` as a string (File path) and `content` as a string (T
 
 ### `LocalFiles` · class · [source](contracts.md#code) {#symbol-LocalFiles}
 
-Native files. Operations are explicit; construction opens no files. It implements [`FileReader`](contracts.md#symbol-FileReader) and [`FileWriter`](contracts.md#symbol-FileWriter).
+Native filesystem adapter. Construction opens no files. It implements [`FileReader`](contracts.md#symbol-FileReader) and [`FileWriter`](contracts.md#symbol-FileWriter).
 
 #### `LocalFiles.read` · [source](contracts.md#code) {#symbol-LocalFiles.read}
 

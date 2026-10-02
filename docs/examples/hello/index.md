@@ -10,9 +10,9 @@ outline: [2, 3]
 
 # Hello world with dependencies
 
-The application prints a greeting through an injected logger. Its entry point selects the providers, and each folder exposes a small public surface.
+Print a greeting through an injected logger. Startup selects the providers, and export files choose what each folder makes public.
 
-Open a file to read its source beside the explanation produced by `aug spec`. **Indentation** and **Braces** display the same checked program; your choice carries across file pages.
+Open a file to read the code beside its compiled explanation. Choose **Indentation** or **Braces** to change the code view. The choice carries across files.
 
 ## Follow the program
 
@@ -20,9 +20,9 @@ Read [`main.aug`](main.md). Startup binds the console, logger, and application, 
 
 Read [`app/greeter.aug`](app/greeter.md). The greeter receives its logger in the header and delegates the greeting to it. The interface states the console effect.
 
-Read [`logging/export.aug`](logging/export.md). This is the logging folder's public surface. Callers can import the exported contract and provider.
+Read [`logging/export.aug`](logging/export.md). The logging folder exports Logger and ConsoleLogger for callers.
 
-Read [`logging/logger.aug`](logging/logger.md). The contract describes the log operation and its output capability; the console provider implements it.
+Read [`logging/logger.aug`](logging/logger.md). Logger requires a log method. ConsoleLogger writes the message through its injected console.
 
 ## Project files
 
@@ -36,7 +36,7 @@ Read [`logging/logger.aug`](logging/logger.md). The contract describes the log o
 
 ## Try this project
 
-[Download this project](/downloads/hello.zip), then extract the archive in an empty working folder. It contains the checked source, configuration, and generated specs. [Install August](../../getting-started.md) once, then run these commands. Native libraries are prepared automatically when needed:
+[Download this project](/downloads/hello.zip), then extract the archive in an empty working folder. It contains source, configuration, and compiled specs. [Install August](../../getting-started.md) once, then run these commands. Native libraries are prepared automatically when needed:
 
 ```sh
 cd hello

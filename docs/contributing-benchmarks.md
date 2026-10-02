@@ -14,7 +14,7 @@ AUG_LLVM_HOME="$PWD/.aug-build/llvm-tools" npm run bench:compare -- --http-round
 
 The suite defaults to LLVM. `--backend c` selects the migration reference, and `--backend llvm --compare-c-backend` measures both backends on the same August programs. Set `AUG_BENCH_PYTHON=/path/to/python3` or `CC=/path/to/clang` to select the reference interpreter/compiler. `AUG_NATIVE_HOME` selects the native dependency cache. The raw result file records versions, LLVM tool/runtime identities and a source fingerprint. Compilation timings are included separately from executable run time. On macOS, prepare native dependencies for the advertised macOS 14 deployment floor before building the runtime pack.
 
-Batch and HTTP clients each run in fresh processes. Their heaps do not retain compiler allocations or earlier workloads. Batch order rotates each round; every executable result is checked. Each HTTP round starts a fresh server, warms its client with 1,000 requests, then validates every measured response. CI records 60 batch samples and five HTTP rounds; the frozen migration thresholds remain unchanged. Failed qualification retains its raw report.
+Batch and HTTP clients each run in fresh processes. Their heaps do not retain compiler allocations or earlier workloads. Batch order rotates each round; every executable result is checked. Each HTTP round starts a fresh server, warms its client with 1,000 requests, then validates every measured response. CI records 60 batch samples and five HTTP rounds; the migration thresholds stay fixed. Failed qualification retains its raw report.
 
 For a smaller core/JSON-only C reference run, extract its source dependencies and omit HTTP. This does not require an LLVM runtime pack:
 
@@ -72,7 +72,7 @@ After both complete reports pass, render the wiki table and HTML charts, inspect
 
 Keep the failing report, source identity and binary/tool identities before repeating a measurement. Compare the actual samples, reference results and host information. A slower result is still a result; a passing repeat does not establish a compiler fix. Keep the same workload, sample count and acceptance limits. If an independent full repeat also fails, investigate the implementation or measurement setup before another qualification attempt.
 
-Shared CI hosts can produce inconsistent timings even with identical binaries. Preserve [qualified](ci-linux-arm64-qualified.json.gz), [rejected](ci-linux-arm64-rejected.json.gz), and [independent repeat](ci-linux-arm64-repeat.json.gz) reports separately. Their samples and identities are qualification provenance, not a reader-facing claim that a compiler change improved performance.
+Shared CI hosts can produce inconsistent timings even with identical binaries. Preserve [qualified](ci-linux-arm64-qualified.json.gz), [rejected](ci-linux-arm64-rejected.json.gz), and [independent repeat](ci-linux-arm64-repeat.json.gz) reports separately. Keep their samples and binary identities attached to the pass or failure they recorded.
 
 ## Measure the homepage program
 

@@ -13,7 +13,7 @@ search: false
 
 [Hashing with Rust BLAKE3](../../../../../index.md)
 
-This is the exact descriptor checked for this dependency. It records native symbols, ownership, errors, and ABI boundaries. The compiler checks August declarations against it; foreign implementations remain the native author’s responsibility.
+This dependency’s descriptor names native symbols, ownership rules, errors, and ABI types. The compiler checks August declarations against it. Native code must honor the declared rules.
 
 ```json
 {

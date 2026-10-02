@@ -21,12 +21,12 @@ Compiler and native libraries are published through release archives. Installed-
 | [zlib](https://github.com/GreenPandaStudios/aug-zlib) | zlib | Compress and decompress a binary buffer, verify a round trip. |
 | [BLAKE3](https://github.com/GreenPandaStudios/aug-blake3) | Rust BLAKE3 crate | Hash a buffer and compare a known digest. |
 
-Each is an ordinary repository dependency with August exports, reviewed native contracts, target archives, provenance, and tests. Read [the examples](native-package-examples.md) or [the package guide](native-packages.md) to use them. CPU tensor operations are deliberately narrow; GPU and broader PyTorch APIs are not supported.
+Install these repository packages with `aug add`, then import their exported August declarations. Read [the examples](native-package-examples.md) or [the package guide](native-packages.md) to use them. The PyTorch package covers a small set of CPU tensor operations; GPU and broader PyTorch APIs are not supported.
 
 ## Validation and limits
 
-LLVM parity tests cover checked language behavior in both optimization modes. Debugger tests check source breakpoints and runtime representation. Sanitizer circuits, [safety gyms](safety-gyms.md), [performance reports](performance.md), and clean native consumers supply separate finite evidence. A successful library call does not prove arbitrary foreign code safe.
+LLVM parity tests cover checked language behavior in both optimization modes. Debugger tests check source breakpoints and runtime representation. [Safety gyms](safety-gyms.md), sanitizer tests, installed-package tests, and [performance reports](performance.md) record results separately. A successful library call does not prove arbitrary foreign code safe.
 
-Native ABI version 1 supports fixed-width values, copied buffers, and opaque owned resources. Callbacks, retained foreign memory, native aggregates, exported August libraries, and foreign-thread entry are unqualified. Tasks are cooperative on one OS thread. Windows, musl, and cross compilation are outside the support matrix.
+Native ABI version 1 supports fixed-width values, copied buffers, and opaque owned resources. Callbacks, retained foreign memory, native aggregates, exported August libraries, and foreign-thread entry are not supported by this ABI. Tasks are cooperative on one OS thread. Windows, musl, and cross compilation are outside the support matrix.
 
 Native packages retain their upstream license obligations. In particular, the LibTorch facade is qualified but a complete upstream dependency SBOM remains open; review the redistributed archive rather than treating a wrapper license as the whole inventory. See [production readiness](production-readiness.md#dependencies-and-licenses) and [native compilation design](native-interop-llvm-plan.md).

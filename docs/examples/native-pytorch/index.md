@@ -10,9 +10,9 @@ outline: [2, 3]
 
 # CPU tensors with PyTorch
 
-Import real LibTorch from its public August package, add CPU tensors, and verify the elements and sum. Owned tensors are released when their scope ends.
+Add two CPU tensors with LibTorch and check the elements and sum. Owned tensors are released at scope exit.
 
-Open a file to read its source beside the explanation produced by `aug spec`. **Indentation** and **Braces** display the same checked program; your choice carries across file pages.
+Open a file to read the code beside its compiled explanation. Choose **Indentation** or **Braces** to change the code view. The choice carries across files.
 
 This project runs with August `0.21.0` on macOS 14+ with Apple Silicon, or GNU/Linux x64 or ARM64 with glibc 2.36+. The CLI obtains the verified compiler and library artifacts automatically.
 
@@ -24,7 +24,7 @@ This project runs with August `0.21.0` on macOS 14+ with Apple Silicon, or GNU/L
 
 ## Try this project
 
-[Download this project](/downloads/native-pytorch.zip), then extract the archive in an empty working folder. It contains the checked source, configuration, and generated specs. [Install August](../../getting-started.md) once, then run these commands. Native libraries are prepared automatically when needed:
+[Download this project](/downloads/native-pytorch.zip), then extract the archive in an empty working folder. It contains source, configuration, and compiled specs. [Install August](../../getting-started.md) once, then run these commands. Native libraries are prepared automatically when needed:
 
 ```sh
 cd native-pytorch

@@ -3,13 +3,13 @@
     "path": "examples/native-pytorch",
     "title": "CPU tensors with PyTorch",
     "group": "Native libraries (LLVM preview)",
-    "description": "Import real LibTorch from its public August package, add CPU tensors, and verify the elements and sum. Owned tensors are released when their scope ends."
+    "description": "Add two CPU tensors with LibTorch and check the elements and sum. Owned tensors are released at scope exit."
   },
   {
     "path": "examples/native-sqlite",
     "title": "A database with SQLite",
     "group": "Native libraries (LLVM preview)",
-    "description": "Create an in-memory database, insert a labeled bound value, and query it through the real SQLite implementation. Mutation requires a borrow; scope exit closes the database."
+    "description": "Create an in-memory SQLite database, insert a bound value, and query it. Borrow the database for updates; scope exit closes it."
   },
   {
     "path": "examples/native-zlib",
@@ -21,13 +21,13 @@
     "path": "examples/native-blake3",
     "title": "Hashing with Rust BLAKE3",
     "group": "Native libraries (LLVM preview)",
-    "description": "Import a Rust implementation through an ordinary August package and verify a published BLAKE3 hash vector."
+    "description": "Hash a buffer with the Rust BLAKE3 crate and compare a known digest."
   },
   {
     "path": "examples/hello",
     "title": "Hello world with dependencies",
     "group": "Start here",
-    "description": "The application prints a greeting through an injected logger. Its entry point selects the providers, and each folder exposes a small public surface.",
+    "description": "Print a greeting through an injected logger. Startup selects the providers, and export files choose what each folder makes public.",
     "walkthrough": [
       {
         "file": "main.aug",
@@ -39,11 +39,11 @@
       },
       {
         "file": "logging/export.aug",
-        "explanation": "This is the logging folder's public surface. Callers can import the exported contract and provider."
+        "explanation": "The logging folder exports Logger and ConsoleLogger for callers."
       },
       {
         "file": "logging/logger.aug",
-        "explanation": "The contract describes the log operation and its output capability; the console provider implements it."
+        "explanation": "Logger requires a log method. ConsoleLogger writes the message through its injected console."
       }
     ]
   },
@@ -67,7 +67,7 @@
     "path": "examples/new-syntax",
     "title": "Labeled calls and injection",
     "group": "Start here",
-    "description": "Constructor injection, named inputs, ordinary functions, and same-file tests."
+    "description": "Construct an object with an injected dependency, call functions with labeled inputs, and run same-file tests."
   },
   {
     "path": "examples/developer-workflow",
@@ -81,11 +81,11 @@
       },
       {
         "file": "calculator.aug",
-        "explanation": "Read the arithmetic contract, the injected logger, and the same-file cases together. The private silent adapter keeps tests independent of output."
+        "explanation": "The calculator receives a logger and adds two inputs. Its tests supply a private silent logger."
       },
       {
         "file": "logging/logger.aug",
-        "explanation": "This is the contract used by both the production logger and the test adapter."
+        "explanation": "The production logger and test adapter implement this interface."
       }
     ]
   },
@@ -103,7 +103,7 @@
   },
   {
     "path": "examples/generics",
-    "title": "Generic contracts",
+    "title": "Generic types and functions",
     "group": "Values and errors",
     "description": "Write reusable records, interfaces, classes, and functions with type parameters."
   },
@@ -147,7 +147,7 @@
     "path": "examples/approved-design",
     "title": "Modules and composition",
     "group": "Modules and packages",
-    "description": "Startup combines narrow domain exports with a scoped counter provider. Records and validation keep data and checked failures visible.",
+    "description": "Supply a scoped counter and call a doubling function that rejects negative inputs.",
     "walkthrough": [
       {
         "file": "main.aug",
@@ -155,7 +155,7 @@
       },
       {
         "file": "domain/export.aug",
-        "explanation": "The export file gives callers the folder's deliberate public API."
+        "explanation": "The export file chooses the declarations callers can import."
       },
       {
         "file": "domain/numbers.aug",
@@ -173,7 +173,7 @@
     "path": "examples/packages/math",
     "title": "Create a package",
     "group": "Modules and packages",
-    "description": "Publish a small arithmetic library through export.aug and test its public surface."
+    "description": "Export an arithmetic function from a library and test it."
   },
   {
     "path": "examples/packages/app",
@@ -203,13 +203,13 @@
     "path": "benchmarks/greetings",
     "title": "A million greetings",
     "group": "Measured programs",
-    "description": "Print one million identical UTF-8 greetings, with the same per-line flush as the C reference. The homepage shows its source and actual compiled spec."
+    "description": "Print one million UTF-8 greetings and flush each line, matching the C reference."
   },
   {
     "path": "benchmarks/startup",
     "title": "Startup benchmark",
     "group": "Measured programs",
-    "description": "The small program used to measure process startup."
+    "description": "Print one integer and exit to measure process startup."
   },
   {
     "path": "benchmarks/float",

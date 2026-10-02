@@ -27,7 +27,7 @@ const lines=[
   'generatedBy: scripts/render-qualification.mjs',
   '---',
   '# Extended performance and safety results','',
-  'These results cover the August '+benchmark.compiler+' preview on **'+benchmark.cpu+'**, '+benchmark.platform+' '+benchmark.os+' '+benchmark.architecture+', recorded '+benchmark.recordedAt.slice(0,10)+'. August uses LLVM '+benchmark.llvm+'. Every measured result matched its required output. They do not establish a general C-speed or production-safety guarantee.','',
+  'These results cover the August '+benchmark.compiler+' preview on **'+benchmark.cpu+'**, '+benchmark.platform+' '+benchmark.os+' '+benchmark.architecture+', recorded '+benchmark.recordedAt.slice(0,10)+'. August uses LLVM '+benchmark.llvm+'. Every measured program produced its expected result. These measurements apply to this host and workload.','',
   '## Eight more C comparisons','',
   '::: benchmark-chart kernels',':::','',
   'Each value is the median of '+benchmark.methodology.iterations+' fresh executable processes after '+benchmark.methodology.warmup+' warmups. Order rotates within a separate measurement process. Timings include startup and exclude compilation. Both implementations use O2 without LTO or fast-math. [Raw samples, build times and code sizes](kernel-results.json) also include the same August programs compiled through the C migration backend.','',
@@ -39,7 +39,7 @@ for(const item of benchmark.kernels){
   lines.push('| ['+titles[item.name]+'](examples/'+item.name+'-benchmark/main.md) | '+item.count.toLocaleString('en-US')+' | '+a.toFixed(2)+' ms | '+c.toFixed(2)+' ms | '+(a/c).toFixed(2)+' |');
 }
 lines.push('',
-  'Ratios above 1 mean August took longer. The C references use concrete values and explicit cleanup. Their ordered map uses linear searches and their task case makes sequential calls; it does not pay for a scheduler. The string reference copies each part, while August also creates managed strings and a list. Records retain individually allocated values in both programs, with different layouts and lifetime tracking. These are visible differences, not interchangeable implementations. [Read the C references](https://github.com/GreenPandaStudios/augscript/blob/main/benchmarks/kernels.c) before drawing conclusions.',
+  'Ratios above 1 mean August took longer. The C references use concrete values and explicit cleanup. Their ordered map uses linear searches and their task case makes sequential calls; it does not pay for a scheduler. The string reference copies each part, while August also creates managed strings and a list. Records retain individually allocated values in both programs, with different layouts and lifetime tracking. The timings include these differences in the work performed. [Read the C references](https://github.com/GreenPandaStudios/augscript/blob/main/benchmarks/kernels.c) before drawing conclusions.',
   '',
   'The float program checks its exact accumulated binary-fraction result. The call loop carries each result into the next call. Lists and records retain data and read it afterward. Map deletion checks reinsertion order as well as values. Error cases verify both the sum and number of failures; task cases verify the joined sum. Their [downloadable projects](examples/index.md#measured-programs) show code beside compiled specs in either indentation or braces style.',
   '',
@@ -51,7 +51,7 @@ lines.push('',
 );
 for(const fixture of gyms.fixtures)lines.push('| '+fixture.id+' | '+gyms.cases.filter(item=>item.id===fixture.id).reduce((sum,item)=>sum+item.vectors,0)+' | Passed; both behavioral mutations detected |');
 lines.push('',
-  'The suite executed **'+gyms.cases.reduce((sum,item)=>sum+item.vectors,0)+' generated/edge-case checks**, rejected **'+gyms.contracts.length+' forbidden contracts**, and detected **'+gyms.mutations.length+' valid behavioral mutants**. Each mutant compiled and ran safely; its wrong result or cleanup count differed from the independent oracle.',
+  'The suite executed **'+gyms.cases.reduce((sum,item)=>sum+item.vectors,0)+' generated/edge-case checks**, rejected **'+gyms.contracts.length+' forbidden contracts**, and detected **'+gyms.mutations.length+' valid behavioral mutants**. Each deliberately faulty program compiled and finished, but produced a wrong result or cleanup count compared with the independent oracle.',
   '',
   '| Additional circuit | Executed tests | Skipped tests | Result |',
   '| --- | ---: | ---: | --- |',
@@ -63,7 +63,7 @@ lines.push('',
   'The [safety gym guide](safety-gyms.md) explains each gate and its limits. [Contributor commands](contributing-benchmarks.md) reproduce these reports or explore another seed. New-platform CI reports remain separate until that target completes qualification.',
   '',
   '## Source identity','',
-  'Both reports use source SHA-256 `'+benchmark.sourceSha256+'`. This fingerprints compiler, runtime, native platform inputs, package contracts, configuration, dependencies, test fixtures, generators and measured programs. Recorded evidence remains tied to that snapshot; a later change requires a new run.',
+  'Both reports use source SHA-256 `'+benchmark.sourceSha256+'`. This fingerprints compiler, runtime, native platform inputs, package contracts, configuration, dependencies, test fixtures, generators and measured programs. These results describe that snapshot. Rerun the suite to measure changed code.',
   '',
 );
 publish('docs/qualification-results.md',lines.join('\n'));

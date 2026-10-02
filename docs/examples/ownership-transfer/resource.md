@@ -83,7 +83,7 @@ It continues without an operation.
 
 ### `make` · [source](resource.md#code) {#symbol-make}
 
-It returns ownership of [`Resource`](resource.md#symbol-Resource). It sets `value` of type [`Resource`](resource.md#symbol-Resource) to a [`Resource`](resource.md#symbol-Resource). `value` of type [`Resource`](resource.md#symbol-Resource) owns this value. It returns `value`.
+It returns ownership of [`Resource`](resource.md#symbol-Resource). It creates [`Resource`](resource.md#symbol-Resource) and stores the result in owned `value` ([`Resource`](resource.md#symbol-Resource)). It returns `value`.
 
 ### `consume` · [source](resource.md#code) {#symbol-consume}
 

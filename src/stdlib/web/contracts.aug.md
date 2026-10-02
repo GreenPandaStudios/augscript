@@ -5,7 +5,7 @@
 <a id="symbol-Principal"></a>
 ## `Principal` · immutable record · [source](contracts.aug#L3)
 
-Immutable identity returned by an explicitly injected authentication adapter. It takes `subject` as a string, kept read-only and `permissions` as `List<string>`, kept read-only.
+Immutable identity returned by the authentication adapter. It takes `subject` as a string, kept read-only and `permissions` as `List<string>`, kept read-only.
 
 <a id="symbol-Authentication"></a>
 ## `Authentication` · capability interface · [source](contracts.aug#L6)
@@ -50,12 +50,12 @@ It takes `method` and `path` as strings and `status` and `milliseconds` as integ
 <a id="symbol-HttpClient"></a>
 ## `HttpClient` · capability interface · [source](contracts.aug#L25)
 
-An explicit outbound network capability. TLS verifies the peer and redirects are returned to the caller.
+Make outbound HTTP requests. TLS verifies the peer; callers handle redirects.
 
 <a id="symbol-HttpClient.request"></a>
 ### `HttpClient.request` · [source](contracts.aug#L27)
 
-Perform an HTTP request with bounded bytes. Inside a task, waiting suspends the task's C stack. It takes `method` and `url` as strings, `headers` as `optional Headers`, and `body` as `optional Bytes`. Omitted optional inputs are null.
+Perform an HTTP request with bounded bytes. Waiting for a response suspends the calling task. It takes `method` and `url` as strings, `headers` as `optional Headers`, and `body` as `optional Bytes`. Omitted optional inputs are null.
 
 It returns `HttpResponse<Bytes>`. It can call [`HttpClient.request`](contracts.aug.md#symbol-HttpClient.request). Failures can raise `HttpError`.
 
@@ -67,7 +67,7 @@ Native libwebsockets transport. No socket is opened by construction. It implemen
 <a id="symbol-WebHttpClient.request"></a>
 ### `WebHttpClient.request` · [source](contracts.aug#L33)
 
-Perform an HTTP request with bounded bytes. Inside a task, waiting suspends the task's C stack. It takes `method` and `url` as strings, `headers` as `optional Headers`, and `body` as `optional Bytes`. Omitted optional inputs are null.
+Perform an HTTP request with bounded bytes. Waiting for a response suspends the calling task. It takes `method` and `url` as strings, `headers` as `optional Headers`, and `body` as `optional Bytes`. Omitted optional inputs are null.
 
 Failures can raise `HttpError`. Within an unsafe block, it returns [`_aug_http_request`](contracts.aug.md#symbol-_aug_http_request) with `method`, `url`, `headers`, and `body`. Native operations must satisfy their declared C contracts.
 

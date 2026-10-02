@@ -4,7 +4,7 @@ August lowers a checked program through language-specific execution IR into LLVM
 
 ## Pipeline and runtime
 
-The frontend owns source syntax, type checking, interfaces, dependency injection, checked errors, ownership, and effects. August execution IR makes evaluation order, control flow, managed root cells, cleanup, and source locations explicit. LLVM lowering preserves those operations rather than treating generated C as its input.
+The frontend owns source syntax, type checking, interfaces, dependency injection, checked errors, ownership, and effects. August execution IR makes evaluation order, control flow, managed root cells, cleanup, and source locations explicit. LLVM lowering preserves those operations directly.
 
 LLVM verifies and optimizes the IR, emits host objects, and links them with selected prebuilt runtime components and native package artifacts. Debug and release modes use `-O0` and `-O2`; both retain source debug information. macOS bundles include a dSYM, and Linux executables contain DWARF. See [tooling](tooling.md#source-locations-and-debugging) for current debugger limits.
 
@@ -12,13 +12,13 @@ The managed runtime remains responsible for tagged values, allocation, collectio
 
 ## Public native boundary
 
-The stable baseline is `aug-native-abi-1` over the target C ABI. LLVM use does not make August, Rust, or C++ object layouts compatible. Descriptors name fixed-width scalars, pointer-and-length inputs, copied buffers, checked status errors, and opaque resources with leaf release functions. Public application code imports safe August wrappers. Extern calls stay inside `unsafe`.
+The current package ABI is `aug-native-abi-1` over the target C ABI. LLVM use does not make August, Rust, or C++ object layouts compatible. Descriptors name fixed-width scalars, pointer-and-length inputs, copied buffers, checked status errors, and opaque resources with leaf release functions. Public application code imports safe August wrappers. Extern calls stay inside `unsafe`.
 
-The compiler checks labels, types, declared ownership, available artifacts, and descriptor consistency. Header checking additionally validates physical widths, pointer directions, buffer lengths, release signatures, and error-record layout. Allocator pairing, input retention, thread behavior, and exception containment remain promises of the native author that require independent tests.
+The compiler checks labels, types, declared ownership, available artifacts, and descriptor consistency. Header checking additionally validates physical widths, pointer directions, buffer lengths, release signatures, and error-record layout. Allocator pairing, input retention, thread behavior, and exception containment must be honored by native code and checked with independent adapter tests.
 
 C packages can provide a narrow adapter around an existing library. C++ packages expose an `extern "C"` facade, hide classes and templates behind opaque handles, and catch exceptions inside that facade. Rust packages export C-compatible functions, release owned resources explicitly, and contain unwinding panics; aborting panics cannot become checked errors. LibTorch uses CPU tensor handles and a packaged C++ runtime; it does not expose the upstream C++ ABI to August source.
 
-Callbacks, retained loans, foreign-thread entry, general native struct values, GPU tensors, and exported August libraries are outside the qualified profile. These need separate lifetime and runtime-entry contracts before support can be claimed.
+Callbacks, retained loans, foreign-thread entry, general native struct values, GPU tensors, and exported August libraries are unsupported by the current ABI. Adding them requires defined lifetimes and rules for entering the August runtime.
 
 ## Packages, artifacts, and deployment
 

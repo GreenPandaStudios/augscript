@@ -1,6 +1,6 @@
 # Native builds and developer tooling
 
-Use this page to look up CLI commands, project configuration, native requirements, and editor behavior. If you need a running first project, follow [the book](learn/index.md). To use context reports during a change, follow [the module review guide](guides/change-a-module.md).
+The CLI checks, builds, tests, and explains August projects. Commands and configuration are listed below. Start with [the book](learn/index.md) for a first project, or [the module review guide](guides/change-a-module.md) to use context reports during a change.
 
 ## CLI
 
@@ -74,7 +74,7 @@ module_dependencies:
   - "app: contracts, shared"
 ```
 
-| Key | Contract |
+| Key | Meaning |
 | --- | --- |
 | output | Executable name under .aug-build, or an absolute output path. |
 | optimization | debug (-O0) or release (-O2); both retain debug information. |
@@ -90,7 +90,7 @@ module_dependencies:
 | module_dependencies | Allowed folder edges; same-folder imports and standard capabilities are allowed. |
 | libraries / library_paths | C reference linker names and project-relative search directories; LLVM requires native package metadata. |
 
-An owner without a rule is unrestricted. . names the project root; folder names use slash paths. * matches any folder, and domain/* matches that folder and descendants. Rules use the first matching owner. Import cycles are always rejected independently of the policy.
+An owner without a rule is unrestricted. `.` names the project root; folder names use slash paths. `*` matches any folder, and `domain/*` matches that folder and descendants. Rules use the first matching owner. Import cycles are always rejected independently of the policy.
 
 Unknown/duplicate keys, invalid values, and unsupported list shapes fail during check. VS Code provides key help and completion. Architecture warnings count public surface and dependency fan-out; there is no file-length rule.
 
@@ -105,7 +105,7 @@ Unknown/duplicate keys, invalid values, and unsupported list shapes fail during 
 
 ## C boundary
 
-The programmer can expose a C declaration through the language, then wrap it in an ordinary callable with a visible effect contract:
+Declare a C function, then call it inside an unsafe wrapper:
 
 ```aug project=ffi-guide file=main.aug
 import announce from native
@@ -132,7 +132,7 @@ announce(string message):
 
 C calls require unsafe, and executable callers infer uses C.function. Ordinary scalar extern declarations have no generics, resolve parameters, ownership transfer, nullable boundary types, or checked error clause. For libc functions taking C int, explicitly narrow with c_int; do not declare their boundary as int64_t.
 
-Standard adapters use `extern C value` for the managed AugValue ABI. Each C argument and result must actually be AugValue; headers expose the declared capability effect and checked failures. `pure` asserts a trusted native implementation has no observable effects. These declarations are unsafe contracts, not automatic C bindings. Crypto, HTTP, JSON and time adapters demonstrate this narrow boundary in src/stdlib and runtime.
+Standard adapters use `extern C value` for the managed AugValue ABI. Each C argument and result must actually be AugValue; headers expose the declared capability effect and checked failures. `pure` asserts a trusted native implementation has no observable effects. These declarations are unsafe contracts, not automatic C bindings. The crypto, HTTP, JSON, and time adapters use this boundary in `src/stdlib` and `runtime`.
 
 The extern declaration must match the real native ABI. For owned opaque handles and binary buffers, use [native package descriptors](native-packages.md); binding maintainers can check a reviewed descriptor against a C header with `aug bind header`. Ordinary scalar extern declarations do not expose pointers, callbacks or arbitrary structs.
 
@@ -152,7 +152,7 @@ run
 bt
 ```
 
-Source breakpoints work. Variables currently show tagged runtime storage; rich collection views, August expression evaluation, and ownership-aware debugging remain unfinished.
+Source breakpoints work. Variables show tagged runtime storage. Ownership-aware debugging is not yet available.
 
 AUG_TRACE_DROPS=1 enables runtime cleanup tracing to stderr for lifecycle verification; it is developer instrumentation, not a language I/O capability.
 
@@ -162,15 +162,17 @@ AUG_TRACE_DROPS=1 enables runtime cleanup tracing to stderr for lifecycle verifi
 
 See [performance and benchmark graphs](performance.md) for current comparisons with C, Node and Python, peak memory, HTTP throughput, raw results, and reproduction commands. Contributor commands live in [benchmark maintenance](contributing-benchmarks.md).
 
-Benchmark the compiled executable with a representative workload. Source readability and native compilation do not determine the time spent in allocation, I/O, or your dependencies.
+Benchmark the compiled executable with a workload representative of your application.
 
 ## Context for developers and LLMs
 
-Explain emits checked callable inputs, results, mutation, capabilities, effective errors, interceptor order/dependencies/short-circuit signals, source locations, tests, and binding lifetimes. Endpoint contracts also include route, status, streaming, wire input sources, policy options and explicit policy dependencies. Context adds reachable related declarations and source snippets within a character budget (512–100000, default 12000).
+`aug explain` reports a declaration's inputs, result, state changes, I/O, checked errors, dependencies, tests, and source locations. It also reports interceptor order and binding lifetimes. For endpoints, it includes routes, statuses, streaming, input sources, and policy settings.
 
-Output labels completeness as checked or partial and marks truncation explicitly. A partial or truncated result cannot establish whole-application correctness. Provenance uses stable declaration IDs and absolute source locations.
+`aug context` adds related declarations and source snippets. Its character budget ranges from 512 to 100000, with a default of 12000.
 
-Save a report, then compare architecture with --baseline previous.json. Reports include file dependency edges, public signature hashes, and member counts; changes describe added/removed dependencies and public interface growth. Both reports must cover the modules being compared.
+The report says which declarations were checked and whether context was omitted or truncated. Check those limits before relying on caller or dependency coverage. Declarations have stable IDs and absolute source locations.
+
+Save a report and compare a later one with `--baseline previous.json`. The comparison shows changed dependencies, public signatures, and member counts. Both reports must cover the modules being compared.
 
 ## Persistent editor checks and reproducibility
 
@@ -186,7 +188,7 @@ are bundled and work offline. Run
 | --- | --- |
 | `.aug` | Blue source file. |
 | `main.aug` | Amber startup file. |
-| `export.aug` | Purple public module surface. |
+| `export.aug` | Purple export file. |
 | `main.yaml` | Teal project configuration. |
 
 Default light/dark language icons also work with compatible icon themes. The

@@ -4,7 +4,7 @@ Compile an August application in a Linux build container, then deploy its execut
 
 ## Prepare the toolchain images
 
-Build two local images. The build image contains Node.js 24 and the August CLI; `aug build` downloads its verified LLVM/runtime pack and package artifacts. The run image supplies Debian's runtime and CA certificates. It runs the executable and its neighboring libraries as an unprivileged user. These are local recipes; August does not publish registry tags for them. They use the published 0.21.0 preview.
+Build two local images using August 0.21.0. The build image contains Node.js 24 and the CLI; `aug build` downloads the compiler and library artifacts. The run image contains Debian's runtime and CA certificates and runs your executable as an unprivileged user. August does not publish registry images for these recipes.
 
 Save this as `Dockerfile.build` in an empty working folder. Pin `AUG_VERSION` to the version used by your application:
 
@@ -46,7 +46,7 @@ The first application build downloads the compiler and required artifacts; later
 
 ## Compile an existing project
 
-Create your application with the [npx starter](getting-started.md) or download a [complete project](examples/index.md), then compile it for Linux. The mount is writable because `aug build` writes `.aug-build` and generated specifications into the project. Run the commands below from the parent of `my-app`.
+Create your application with [the starter](getting-started.md) or download a [complete project](examples/index.md), then compile it for Linux. The mount is writable because `aug build` writes `.aug-build` and generated specifications into the project. Run the commands below from the parent of `my-app`.
 
 Keep the project in a directory shared with your Docker engine. If Docker reports that the bind source path does not exist, check the engine's file-sharing settings. A remote engine cannot mount a folder that exists only on your client machine; see [bind mount constraints](https://docs.docker.com/engine/storage/bind-mounts/#considerations-and-constraints).
 
@@ -162,7 +162,7 @@ docker run --detach --name my-api --init \
 curl --fail http://127.0.0.1:8080/health
 ```
 
-The test passes, and the HTTP request returns `{"status":"ok"}`. The published port is available on the Docker host's loopback address. Change the mapping deliberately if clients must connect directly from other hosts; omitting `127.0.0.1` publishes on all host interfaces. See [Docker's port publishing guide](https://docs.docker.com/engine/network/port-publishing/).
+The test passes, and the HTTP request returns `{"status":"ok"}`. The published port is available on the Docker host's loopback address. Change the mapping if clients must connect directly from other hosts; omitting `127.0.0.1` publishes on all host interfaces. See [Docker's port publishing guide](https://docs.docker.com/engine/network/port-publishing/).
 
 Inspect output and stop this deployment with:
 
@@ -193,4 +193,4 @@ docker run --detach --name my-api --init \
 
 Place a TLS reverse proxy on that server in front of `127.0.0.1:8080`, or configure the application's [native TLS](web.md#openapi-configuration). For native TLS, use stable absolute container paths for the certificate and private key in `main.yaml`, then mount those files at the same paths when starting the container. Build for the server's CPU architecture: an ARM64 image does not become an x86-64 executable when pushed. These recipes build for the Docker engine's default platform; run the build on the target architecture or use a separately verified cross-platform build setup.
 
-Pin the CLI version and retain the application image digest for each deployment. The base tags and Debian package versions can change; use reviewed base-image digests and controlled dependency updates when reproducing a release. Redistributed native libraries also have [license and notice obligations](production-readiness.md#dependencies-and-licenses). August remains experimental; use the [readiness review](production-readiness.md) when assessing a trial deployment.
+Pin the CLI version and retain the application image digest for each deployment. The base tags and Debian package versions can change; use reviewed base-image digests and controlled dependency updates when reproducing a release. Redistributed native libraries also have [license and notice obligations](production-readiness.md#dependencies-and-licenses). Check [production readiness](production-readiness.md) before a trial deployment.

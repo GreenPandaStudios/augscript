@@ -499,3 +499,27 @@ function spawnSync(command, args, options) {
 }
 
 function loadProject(root, ...args) { prepareLibraryFixtures(root); return fixtureLoadProject(root, ...args); }
+
+
+test('owned bindings explain their types and ordered calls once, including nested cleanup', () => project({
+  'main.aug': 'import exercise from resources\nexercise()\n',
+  'resources.aug': `interface Resource {}
+  Item() implements Resource {}
+  acquire() returns own Item { return Item() }
+  exercise() {
+    own Item first = acquire()
+    scope {
+      own Item second = acquire()
+    }
+  }
+  `,
+}, root => {
+  const state=checked(root); valid(state);
+  const text=generateSpecs(state).find(output=>output.path===join(root,'resources.aug.md')).text;
+  const body=text.slice(text.indexOf('## `exercise`'));
+  assert.match(body,/calls .*acquire.* and stores the result in owned `first` \(.*Item.*\)/);
+  assert.match(body,/calls .*acquire.* and stores the result in owned `second` \(.*Item.*\)/);
+  assert.ok(body.indexOf('owned `first`')<body.indexOf('owned `second`'));
+  assert.equal((body.match(/stores /g)??[]).length,2);
+  assert.doesNotMatch(body,/owns this value/);
+}));

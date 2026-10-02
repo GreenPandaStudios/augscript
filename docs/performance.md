@@ -1,8 +1,8 @@
 # Performance and benchmarks
 
-This page publishes measurements for specific August programs alongside C, Node, and Python versions. Read the graphs for a quick comparison, inspect each program below, and use the reproduction commands to measure work that resembles your application.
+Compare August programs with C, Node, and Python versions doing the same tasks. Read the graphs, inspect the source, or download a program to measure work that resembles your application.
 
-The recorded suite uses the August 0.21.0 candidate and LLVM 23.1.2 native output. A result for one workload and host does not establish a general speed advantage or production readiness. [Readiness](production-readiness.md) covers reliability and deployment evidence separately.
+The suite measures August 0.21.0 with LLVM 23.1.2. Results apply to the shown workloads and host. For reliability and deployment limits, see [production readiness](production-readiness.md).
 
 The [extended qualification](qualification-results.md) adds eight C comparisons for numeric, collection and application work. The [safety gyms](safety-gyms.md) exercise results, rejected operations, cleanup and memory checks separately. Each measured program has a downloadable project and a code/spec view in the [gallery](examples/index.md#measured-programs).
 
@@ -10,7 +10,7 @@ The [DGX Spark results](dgx-spark.md) record a second physical ARM64 host, inclu
 
 ## Read the graphs
 
-Execution and memory bars use **lower is better**. HTTP throughput uses **higher is better**. Read the workload name and units before comparing: a 20,000-entry map and a two-million-step CPU loop do different amounts of work. The execution panels have separate linear scales; compare implementations within a panel. Toggle implementations to compare them without changing the measurements. Select “Show observed ranges” to see the recorded minimum and maximum; these are not confidence intervals. Expand the chart’s values for a selectable data table. Charts adapt to a phone and use the wiki’s light or dark theme.
+Execution and memory bars use **lower is better**. HTTP throughput uses **higher is better**. Read the workload name and units before comparing: a 20,000-entry map and a two-million-step CPU loop do different amounts of work. The execution panels have separate linear scales; compare implementations within a panel. Toggle implementations to compare them without changing the measurements. Select “Show observed ranges” to see the recorded minimum and maximum; these are not confidence intervals. Expand the chart’s values for a selectable data table.
 
 All results below were recorded on October 2, 2026 (UTC): Apple M5, macOS Darwin 25.6.0, ARM64, LLVM 23.1.2 for August, Apple Clang 21 for the C reference, Node 24.18.0, and CPython 3.12.14. August and C use `-O2` without LTO. [Raw samples, checksums, build timings and environment](benchmark-results.json) include the LLVM tool and runtime identities.
 
@@ -31,7 +31,7 @@ All results below were recorded on October 2, 2026 (UTC): Apple M5, macOS Darwin
 
 [benchmark-execution-end]: #
 
-Times include a fresh process's startup and exclude compilation: 3 warmups and 60 measured runs for each implementation, with the execution order rotated. The measurement client runs outside the compiler process, and every executable must produce the expected checksum. Node and Python start a new interpreter each time; these are batch timings, not warmed server-loop or steady-state JIT timings. The startup row helps make that cost visible; subtracting medians would not establish a new measured result.
+Times include a fresh process's startup and exclude compilation: 3 warmups and 60 measured runs for each implementation, with the execution order rotated. The measurement client runs outside the compiler process, and every executable must produce the expected checksum. Node and Python start a new interpreter each time. These batch timings do not measure a warmed JIT. The startup row shows the cost of starting each process.
 
 The programs below are the actual benchmark sources. The suite checks their printed results against the C, Node and Python references on every run.
 
@@ -39,7 +39,7 @@ The C reference is tailored to these inputs: it preallocates integer tables and 
 
 [benchmark-summary-start]: #
 
-The CPU program takes **7.74 ms** in August and **8.38 ms** in C on this host. The large-collection program takes **16.81 ms** in August. These are measurements of the shown programs, not guarantees for other applications. JSON batch time includes interpreter startup for Node and Python; it does not establish a universal JSON-throughput advantage.
+The CPU program takes **7.74 ms** in August and **8.38 ms** in C on this host. The large-collection program takes **16.81 ms** in August. The JSON timings include interpreter startup for Node and Python. Compare these results within their workloads.
 
 [benchmark-summary-end]: #
 
@@ -172,9 +172,9 @@ packages:
 
 A real August `GET /bench` endpoint returns a newly constructed typed JSON record. The Node reference constructs and serializes the same response. Both run on loopback with HTTP/1.1 keep-alive, 1,000 warmup requests and five fresh-server rounds of 5,000 measured requests per concurrency level. Every response must have status 200, JSON content type, and the exact expected data. The measured runs had zero errors. p95 is the median of the five per-round p95 latencies; graph error bars show observed throughput min/max, not confidence intervals.
 
-The Node load generator runs on the same machine and consumes CPU. This closed-loop test has no TLS, authentication, logging, database, outbound network calls or slow clients. Its numbers are endpoint microbenchmark throughput, not a supported production capacity or service-level guarantee. HTTP/2, HTTP/3 and streaming are not benchmarked here.
+The Node load generator runs on the same machine and consumes CPU. This closed-loop test has no TLS, authentication, logging, database, outbound network calls or slow clients. Use it to compare this endpoint, not to size a production service. HTTP/2, HTTP/3 and streaming are not benchmarked here.
 
-Use the table to compare throughput and latency at the concurrency you expect. These results measure one process on one OS thread; they do not establish multicore scaling.
+Use the table to compare throughput and latency at the concurrency you expect. Each server uses one process on one OS thread.
 
 ### HTTP program
 
@@ -208,7 +208,7 @@ Start the app in one terminal:
 aug run path/to/http-example
 ```
 
-Save the load generator below as `http-load.mjs`. In another terminal, replace `PORT` with the printed port. This is the **same load generator** the comparison suite uses:
+Save the load generator below as `http-load.mjs`. In another terminal, replace `PORT` with the printed port. The comparison suite uses this load generator:
 
 ```sh
 node http-load.mjs --url http://127.0.0.1:PORT/bench \
@@ -495,17 +495,6 @@ else:
 
 ## Production assessment
 
-**Experimental; appropriate for prototypes and controlled pilots. General production readiness is not established.** The measured native path is viable enough to continue developing and profiling. These microbenchmarks do not cover the correctness, operational behavior and portability needed for a production language/runtime.
+Measure your complete application under its expected load, including slow clients and failure cases. Short benchmarks do not establish heap stability, protocol conformance, or service capacity.
 
-| Remaining evidence or feature | Why it matters |
-| --- | --- |
-| Application-specific profiling | These small workloads do not predict a complete application's performance. |
-| Long-running memory/lifecycle tests | Peak RSS of a short process does not prove a stable server heap. |
-| Wider ownership and cancellation coverage | Existing tests cover injected task captures, cleanup of owned shared values and cancellation. Wider conformance and repeated stress testing remain 1.0 gates. |
-| Multicore workers, bounded channels and broadcasts | Tasks currently run on one OS thread; these features are not available yet. |
-| Independent HTTP conformance and adverse-client tests | Existing socket regressions do not cover the entire HTTP specification. |
-| Other native platform builds | The LLVM suite passes on macOS ARM64 and GNU/Linux x86-64/ARM64, including a physical DGX Spark run. Windows, musl and cross compilation remain unsupported. |
-| Identity-provider hardening and durable storage | The OIDC demo is a development proof; persistence, key rotation, federation and certification remain. |
-| Stable package/native ABI and operational tooling | Source packages work, but compiler compatibility is exact and rich debugging remains limited. |
-
-See [the library/runtime gap ledger](web-library-gaps.md) for current support and limitations.
+August remains experimental. See [production readiness](production-readiness.md) for deployment requirements, [the roadmap](roadmap.md) for 1.0 work, and [web and crypto limits](web-library-gaps.md) for service-specific gaps.

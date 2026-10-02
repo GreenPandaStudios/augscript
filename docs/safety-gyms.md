@@ -1,6 +1,6 @@
 # Safety gyms
 
-A gym is a repeatable exercise for the compiler and runtime. It generates programs, checks their results against an independently written oracle, and saves enough information to replay a failure. The [performance suite](performance.md) measures how quickly a correct program runs. These gyms check whether the program behaves correctly in the first place.
+A gym is a repeatable exercise for the compiler and runtime. It generates programs, checks their results against an independently written oracle, and saves enough information to replay a failure. [The performance suite](performance.md) measures execution time; gyms check results, rejected operations, and cleanup.
 
 The current suite exercises LLVM output in development and optimized builds. It also checks operations the compiler must reject, stresses allocation and cleanup, and runs native memory instrumentation. The [recorded qualification](qualification-results.md) lists the actual host, source fingerprint, cases, mutations and skipped checks. Passing these exercises is finite evidence for the paths tested; it is not a proof that every August program or native library is safe.
 
@@ -22,9 +22,9 @@ The larger qualification also runs the existing ownership and cancellation cases
 
 ## Why the suite breaks its own programs
 
-A test that accepts every program is useless. Each generated exercise therefore has a deliberately faulty version that remains valid August and runs to completion. The suite reverses a comparison, substitutes lookup for removal, changes an arithmetic operation, alters an index, removes resource construction, or changes a task result. Each fault must change the independently expected behavior.
+Each exercise has a deliberately faulty version that still compiles and runs to completion. The suite must detect its wrong result. The suite reverses a comparison, substitutes lookup for removal, changes an arithmetic operation, alters an index, removes resource construction, or changes a task result. Each fault must change the independently expected behavior.
 
-A surviving fault fails qualification. A mutant that cannot compile, crashes or times out also fails this bounded exercise: it cannot stand in for a successfully detected wrong result. Reports retain the original and faulty source units, expected output, actual output and cleanup counts. These mutations cover selected faults; they do not measure detection of every possible compiler or application defect.
+If a fault goes undetected, the suite fails. A mutant that cannot compile, crashes or times out also fails this bounded exercise: it cannot stand in for a successfully detected wrong result. Reports retain the original and faulty source units, expected output, actual output and cleanup counts. These mutations cover selected faults; they do not measure detection of every possible compiler or application defect.
 
 The compiler rejection cases are a separate gate. They attempt a second ownership move, an alias read during a mutable borrow, an unhandled error, an unlabeled input, a native call without unsafe, a task outside its required scope, a record write and a private export. Each must fail for the relevant contract, rather than an unrelated parse error.
 
@@ -32,7 +32,7 @@ The compiler rejection cases are a separate gate. They attempt a second ownershi
 
 The sanitizer circuit instruments the actual August LLVM IR with AddressSanitizer and compiles the core C runtime with AddressSanitizer and UBSan. It runs retained text under collection pressure, Map/Set growth and deletion, task joining, and owned Shared transfer. An intentionally out-of-bounds LLVM store must be detected as a negative control.
 
-AddressSanitizer checks instrumented memory accesses; UBSan checks selected undefined operations in the runtime C. Neither replaces ownership checking or a behavior oracle. Prebuilt third-party library internals are not covered by these core sanitizer runs. Leak detection is disabled in this shared gate; explicit native allocation counters and owned-drop cases provide separate cleanup evidence. This is not a coverage-guided fuzzer or a universal race, leak or protocol proof. The [research note](research/qualification-methods.md) explains the choice of checks.
+AddressSanitizer checks instrumented memory accesses; UBSan checks selected undefined operations in the runtime C. Neither replaces ownership checking or a behavior oracle. Prebuilt third-party library internals are not covered by these core sanitizer runs. Leak detection is disabled in this shared gate; explicit native allocation counters and owned-drop cases provide separate cleanup evidence. The suite does not use coverage-guided fuzzing or prove the absence of races, leaks, or protocol errors. The [research note](research/qualification-methods.md) explains the choice of checks.
 
 ## Use the evidence for your project
 

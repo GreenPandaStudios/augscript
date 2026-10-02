@@ -4,8 +4,8 @@
 
 ## Startup
 
-It sets `iterations` to `100000`. It sets `values` of type `List<int>` to a list with no items. `values` of type `List<int>` owns this value. It sets `index` to `0`.
+It sets `iterations` to `100000`. It stores a list with no items in owned `values` (`List<int>`). It sets `index` to `0`. While `index` is less than `iterations`, it appends `index` times `3` to `values`; then it increases `index` by `1`.
 
-While `index` is less than `iterations`, it appends `index` times `3` to `values`; then it increases `index` by `1`. After the loop, it sets `checksum` to `0`. For each `value` in a snapshot of `values`, it increases `checksum` by `value`. After the loop, it prints `checksum`.
+After the loop, it sets `checksum` to `0`. For each `value` in a snapshot of `values`, it increases `checksum` by `value`. After the loop, it prints `checksum`.
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).

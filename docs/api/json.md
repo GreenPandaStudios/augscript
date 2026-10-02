@@ -8,7 +8,7 @@ editLink: false
 
 Install this source library with `aug add https://github.com/GreenPandaStudios/augscript/src/stdlib/json --as json`, then import its public names from `json`.
 
-The signatures below include checked results and failures, including those inferred from a body. See [packages](../packages.md) for revision pinning and [language constructs](../language-constructs.md) for built-in value types.
+Signatures show result types and checked errors. See [packages](../packages.md) to pin a release and [language constructs](../language-constructs.md) for built-in types.
 
 ## parse {#api-parse}
 

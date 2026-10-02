@@ -34,7 +34,7 @@ for workload in data['http']:
 page = (ROOT / 'docs/performance.md').read_text()
 cpu = result(data, 'batch', 'cpu')['milliseconds']['median']
 c = result(data, 'batch', 'cpu', 'C')['milliseconds']['median']
-summary = [f'The CPU program takes **{cpu:.2f} ms** in August and **{c:.2f} ms** in C on this host. The large-collection program takes **{result(data, "batch", "collections-200k")["milliseconds"]["median"]:.2f} ms** in August. These are measurements of the shown programs, not guarantees for other applications. JSON batch time includes interpreter startup for Node and Python; it does not establish a universal JSON-throughput advantage.']
+summary = [f'The CPU program takes **{cpu:.2f} ms** in August and **{c:.2f} ms** in C on this host. The large-collection program takes **{result(data, "batch", "collections-200k")["milliseconds"]["median"]:.2f} ms** in August. The JSON timings include interpreter startup for Node and Python. Compare these results within their workloads.']
 blocks = [('execution', batch_rows), ('http', http_rows), ('memory', memory_rows), ('summary', summary)]
 projects = {
     'startup': [('benchmarks/startup/main.aug', 'main.aug')],

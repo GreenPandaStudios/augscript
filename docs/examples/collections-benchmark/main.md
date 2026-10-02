@@ -74,11 +74,9 @@ print(value=values.length() == unique.length())
 
 ### Startup
 
-It sets `values` of type `Map<int,int>` to a context-typed empty collection with no items. `values` of type `Map<int,int>` owns this value. It sets `unique` of type `Set<int>` to a context-typed empty collection with no items. `unique` of type `Set<int>` owns this value.
+It stores a context-typed empty collection with no items in owned `values` (`Map<int,int>`). It stores a context-typed empty collection with no items in owned `unique` (`Set<int>`). It sets `index` to `0`. While `index` is less than `20000`, it stores `index` times `3` in `values` under `index`; then it adds `index` to `unique`; then it increases `index` by `1`.
 
-It sets `index` to `0`. While `index` is less than `20000`, it stores `index` times `3` in `values` under `index`; then it adds `index` to `unique`; then it increases `index` by `1`. After the loop, it sets `checksum` to `0`. For each `key` and `value` in a snapshot of `values`, if whether `unique` contains `key` returns true, it increases `checksum` by `value`.
-
-After the loop, it prints `checksum`. It prints the number of elements in `values` equals the number of elements in `unique`.
+After the loop, it sets `checksum` to `0`. For each `key` and `value` in a snapshot of `values`, if whether `unique` contains `key` returns true, it increases `checksum` by `value`. After the loop, it prints `checksum`. It prints the number of elements in `values` equals the number of elements in `unique`.
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).
 
