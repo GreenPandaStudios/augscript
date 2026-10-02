@@ -2,9 +2,11 @@ import DefaultTheme from 'vitepress/theme';
 import {inBrowser, onContentUpdated, type Theme} from 'vitepress';
 import {onBeforeUnmount, onMounted} from 'vue';
 import './style.css';
+import BenchmarkChart from './BenchmarkChart.vue';
 
 export default {
   extends: DefaultTheme,
+  enhanceApp({app}) { app.component('BenchmarkChart', BenchmarkChart); },
   setup() {
     if (!inBrowser) return;
     const key = 'august-example-block-style';

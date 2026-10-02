@@ -9,8 +9,8 @@
       "minimumOS": "14.0",
       "archive": {
         "url": "https://github.com/GreenPandaStudios/augscript/releases/download/v0.21.0/aug-llvm-macos-arm64.tar.gz",
-        "sha256": "2f8ca801e1ec1b84c40650eec99e5e03fa6a8f18d8cc72074a48a51485155521",
-        "maximumDownloadBytes": 217020799,
+        "sha256": "9bece355945f9747325a8a8111c6feb8b9d7d5658893f7c0896c3d45afc3c97f",
+        "maximumDownloadBytes": 217020773,
         "maximumUnpackedBytes": 578904183,
         "fileManifest": "files.json"
       }
@@ -21,8 +21,8 @@
       "minimumLibc": "2.36",
       "archive": {
         "url": "https://github.com/GreenPandaStudios/augscript/releases/download/v0.21.0/aug-llvm-linux-arm64.tar.gz",
-        "sha256": "23e98e9b486a81950bd22ec0251442aedf3a9b57d7b74eec4f3334738985f2db",
-        "maximumDownloadBytes": 441560004,
+        "sha256": "8598fb964cab17fe7a8df76ac331e62ac8081211049f97434792275432d0460d",
+        "maximumDownloadBytes": 441560029,
         "maximumUnpackedBytes": 876536211,
         "fileManifest": "files.json"
       }
@@ -33,9 +33,9 @@
       "minimumLibc": "2.36",
       "archive": {
         "url": "https://github.com/GreenPandaStudios/augscript/releases/download/v0.21.0/aug-llvm-linux-x64.tar.gz",
-        "sha256": "c11e3e3885617e552153f55957fbf07765fdca49ef20a1d73e56454a1d1994e6",
-        "maximumDownloadBytes": 448570563,
-        "maximumUnpackedBytes": 910223950,
+        "sha256": "c14f8dc9a69ca3fd05f1c2331e818ab7193011ee96076a7fb6b61b05d6580cbe",
+        "maximumDownloadBytes": 448569595,
+        "maximumUnpackedBytes": 910219790,
         "fileManifest": "files.json"
       }
     }

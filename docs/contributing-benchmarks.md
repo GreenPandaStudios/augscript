@@ -7,6 +7,7 @@ npm ci
 export MACOSX_DEPLOYMENT_TARGET=14.0
 node scripts/bootstrap-native.mjs
 node scripts/prepare-llvm-tools.mjs
+node scripts/prepare-llvm-maintainer.mjs
 node scripts/build-runtime-pack.mjs
 AUG_LLVM_HOME="$PWD/.aug-build/llvm-tools" npm run bench:compare -- --http-rounds 5
 ```
@@ -29,17 +30,17 @@ AUG_LLVM_HOME="$PWD/.aug-build/llvm-tools" npm run bench:compare -- --only cpu,c
 AUG_LLVM_HOME="$PWD/.aug-build/llvm-tools" npm run bench:compare -- --only http --http-requests 10000
 ```
 
-Focused runs write `.aug-build/benchmarks/results-focused.json`. Use `--output PATH` to keep separate reports. Render graphs, tables and the exact source examples from the full result file using Python 3.12+:
+Focused runs write `.aug-build/benchmarks/results-focused.json`. Use `--output PATH` to keep separate reports. Refresh the tables and exact source examples with Python 3, then generate the compact data used by the HTML charts:
 
 ```sh
-python3 -m venv .aug-build/benchmark-plotting
-.aug-build/benchmark-plotting/bin/python -m pip install -r benchmarks/plot-requirements.txt
-.aug-build/benchmark-plotting/bin/python scripts/render-benchmarks.py
-.aug-build/benchmark-plotting/bin/python scripts/render-benchmarks.py --check
+python3 scripts/render-benchmarks.py
+python3 scripts/render-benchmarks.py --check
+npm run docs:generate
+npm run docs:check
 npm run docs:build
 ```
 
-The plot environment is isolated and ignored; published documentation includes the rendered graphs and needs no Python installation. Review this page's environment, interpretations and limitations when replacing measurements. Short exploratory runs can use `--iterations 3 --warmup 1 --http-rounds 1 --http-requests 1000`; they have less statistical coverage.
+The site renders charts as HTML and CSS, using a small generated summary rather than loading the raw reports into each page. Readers can choose implementations, show observed ranges and open the data table. No plotting library or image export is needed. Review this page's environment, interpretations and limitations when replacing measurements. Short exploratory runs can use `--iterations 3 --warmup 1 --http-rounds 1 --http-requests 1000`; they have less statistical coverage.
 
 ## Run the extended C comparisons
 
@@ -63,6 +64,14 @@ npm run qualification:render
 
 `npm run test:gyms` runs generated cases, rejected contracts and behavioral mutants. The full profile adds source-mutation, ownership/concurrency, native/package, HTTP and sanitizer circuits. Seeds are unsigned 32-bit integers; vector counts must be 1 through 4,096. Empty or invalid domains fail. A full report includes circuit totals and skips instead of silently treating a skipped test as executed.
 
-The ignored replay folder contains each complete original and faulty project with its expected output. Use the CLI version matching the report to replay a selected project with `aug run PATH --backend llvm`. The LLVM candidate's public compiler release remains pending. Reports embed the same source units, so a CI artifact remains reviewable after its temporary folder disappears. Preserve the seed, generator version, compiler source fingerprint and failure report when adding a regression. Do not change the oracle to agree with an incorrect implementation.
+The ignored replay folder contains each complete original and faulty project with its expected output. Use the CLI version matching the report to replay a selected project with `aug run PATH --backend llvm`. Reports embed the same source units, so a CI artifact remains reviewable after its temporary folder disappears. Preserve the seed, generator version, compiler source fingerprint and failure report when adding a regression. Do not change the oracle to agree with an incorrect implementation.
 
-After both complete reports pass, render the wiki table and vector chart, inspect the programs and limits, and run `npm run docs:check` and `npm run docs:build`. The renderer's `--check` mode rejects stale published evidence. Do not replace a failed report with a partial or smaller passing run.
+After both complete reports pass, render the wiki table and HTML charts, inspect the programs and limits, and run `npm run docs:check` and `npm run docs:build`. The renderer's `--check` mode rejects stale published evidence. Do not replace a failed report with a partial or smaller passing run.
+
+## Investigate a failed performance gate
+
+Keep the failing report, source identity and binary/tool identities before repeating a measurement. Compare the actual samples, reference results and host information. A slower result is still a result; a passing repeat does not establish a compiler fix. Keep the same workload, sample count and acceptance limits. If an independent full repeat also fails, investigate the implementation or measurement setup before another qualification attempt.
+
+An ARM64 CI run on October 2 exceeded the collection migration limit: LLVM took 116.80 ms and the C backend 95.43 ms, a ratio of 1.224 against the 1.20 limit. The earlier qualification measured 65.60 ms and 56.61 ms. The runtime and LLVM tools had identical hashes, and no compiler, runtime or workload source changed between them. Both backends were slower in the rejected run. The recorded CPU model is unknown, so these observations do not identify the cause or establish equal hardware conditions. The complete [passing report](ci-linux-arm64-qualified.json.gz) and [rejected report](ci-linux-arm64-rejected.json.gz) preserve the sources, samples, versions and identities as compressed JSON. The [failed job](https://github.com/GreenPandaStudios/augscript/actions/runs/37001179941) remains part of the qualification history.
+
+One [independent full repeat](https://github.com/GreenPandaStudios/augscript/actions/runs/37003411477) on the same source head passed every gate on both Linux architectures. ARM64 measured 70.63 ms through LLVM and 61.47 ms through C, a ratio of 1.149. It used the same sample counts, runtime/tool hashes and acceptance limits. Its [complete report](ci-linux-arm64-repeat.json.gz) remains separate from the earlier measurements. The reports' overall fingerprints differ because they also include freshly prepared compiler-archive metadata; the Git revision and individual runtime/tool hashes identify the unchanged implementation. This qualifies that run; the discrepancy still limits any claim about consistent performance across shared CI hosts.

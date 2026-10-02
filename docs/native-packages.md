@@ -11,17 +11,14 @@ pointers to application code. A package supplies August declarations, a checked
 binding descriptor, and prebuilt libraries. The compiler checks their labels,
 types, errors, and ownership before generating LLVM IR and a native executable.
 
-This is development work for `0.21.0`, not a capability of the published
-`0.20.1` CLI. Public release installation is being qualified. The first target is
-macOS 14 or later on Apple Silicon. LLVM is the default for ordinary projects
+This profile ships in August `0.21.0`. It supports macOS 14 or later on Apple
+Silicon and GNU/Linux x86-64/ARM64 with glibc 2.36 or later. LLVM is the default for ordinary projects
 and native packages. The C migration reference requires `--backend c` or
 `backend: c` in `main.yaml`; native ABI packages require LLVM.
 
-Linux x86-64 and ARM64 support is being qualified on Debian 12 and Ubuntu,
-with glibc 2.36 or later. Both architectures pass LLVM regression and installed
-CLI checks with measured library candidates. Their library artifacts are public;
-clean public-download consumer checks have passed independently on both architectures.
-Compiler publication remains a release gate.
+Both Linux architectures passed LLVM regression and clean installed-CLI checks
+on Debian 12; physical ARM64 qualification also passed on DGX Spark. Compiler,
+runtime and library artifacts are public.
 Musl and cross compilation are unsupported. A package declares its libc floor
 and C++ ABI in addition to its OS and architecture; August rejects an incompatible
 host before compiling the application.
@@ -35,18 +32,17 @@ The [PyTorch](https://github.com/GreenPandaStudios/aug-pytorch),
 source and native preview archives for all three platforms: PyTorch `v0.1.4` and
 the other three packages `v0.1.3`. Their imports have passed using the packaged CLI,
 public downloads, and fresh caches on macOS ARM64 and both GNU/Linux architectures.
-The matching compiler release is still pending. The consumer gates passed in CI;
-subsequent compiler revisions must pass it again before publication.
+The matching compiler is [August 0.21.0](https://github.com/GreenPandaStudios/augscript/releases/tag/v0.21.0).
+Subsequent compiler revisions must pass those consumer gates again before publication.
 
-After the matching compiler preview is published, use the normal
-package commands. This example adds CPU LibTorch under a short name:
+Use the normal package commands. This example adds CPU LibTorch under a short name:
 
 ```sh
 aug add https://github.com/GreenPandaStudios/aug-pytorch#v0.1.4 --as pytorch
 aug run
 ```
 
-The following program is an example for that preview:
+Save this program in `main.aug`:
 
 ```text
 import Tensor and TensorError and tensor and add and sum from pytorch

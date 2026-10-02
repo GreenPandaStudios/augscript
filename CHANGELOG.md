@@ -2,7 +2,11 @@
 
 ## Unreleased
 
+- Render the performance wiki with selectable HTML/CSS charts, theme-aware colors, implementation filters, observed ranges and accessible data tables. Generate compact summaries from the unchanged raw measurements.
+
 - Authenticate public package reads in native release producers with their scoped job token. Retry release preparation against an existing tag and reviewed commit without moving the tag, changing its source, or skipping qualification gates.
+
+## 0.21.0
 
 - Build and qualify LLVM on a physical DGX Spark: 266 parity cases, full safety gyms, frozen performance gates and four real public native-library imports. Publish the host, workload sources, raw results and remaining performance gaps in the wiki.
 
@@ -30,7 +34,7 @@
 
 - Add checked execution IR, pinned compiler/runtime packs and SDK-free linking. Unsupported LLVM constructs produce a source diagnostic without fallback.
 - Add format 2 native packages, opaque owned resources, descriptor-checked labels/types/errors/effects, bounded verified artifacts, target and compiler locks, and deployment notices. Consumers do not run package build scripts. Public GitHub source imports use verified HTTPS snapshots without requiring Git.
-- Exercise real CPU LibTorch, SQLite, zlib, and Rust BLAKE3 adapters. Fix owned-field transfer/replacement cleanup, preserve native error methods, reject ambiguous native symbols and lock metadata changes, and reject direct scalar contract violations. Public release and clean-machine qualification are in progress.
+- Exercise real CPU LibTorch, SQLite, zlib, and Rust BLAKE3 adapters. Fix owned-field transfer/replacement cleanup, preserve native error methods, reject ambiguous native symbols and lock metadata changes, and reject direct scalar contract violations. Public release and clean-machine qualification passed.
 - Allow a class constructor to declare checked failures with `unless ErrorType` before `implements`. Failed construction releases the partial object and transferred owned fields in both backends. Frozen execution rejects changed source dependencies before changing the accepted snapshot or lockfile. Native hover, context and specs describe the provider, targets, ownership and release contract and distinguish foreign-code promises from compiler checks.
 - Add complete LibTorch, SQLite, zlib and BLAKE3 example projects with same-file tests and linked native contracts in the wiki. Track generated native descriptors so repeated spec generation, drift checks and dependency removal preserve user edits.
 - Lower optional/record matches, scoped dependency resolution, `Shared` locks and `always` cleanup through LLVM. Check scope and lock restoration on returns and failures, and release only initialized owned fields after failed construction.

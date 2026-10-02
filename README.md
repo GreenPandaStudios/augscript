@@ -19,7 +19,7 @@ aug run
 
 Requires Node.js 24+ and npm on macOS 14+ ARM64 or GNU/Linux x64/ARM64 with glibc 2.36+. `aug run` downloads its verified LLVM/runtime pack, prepares declared packages, compiles the project, and starts it. Consumers do not install Clang, LLVM, or an SDK. The starter refuses to overwrite a nonempty directory. [Your first project](https://greenpandastudios.github.io/augscript/getting-started) walks through running, testing, and explaining it. See [the August book](docs/learn/index.md), [downloadable example projects](docs/examples/index.md) with code beside compiled specs, and [native packages](docs/native-packages.md).
 
-These instructions target the pending 0.21.0 release. The published 0.20.1 CLI uses the C backend and requires a C11 compiler. See [implementation status](docs/native-implementation.md) for exact qualification evidence.
+August 0.21.0 is available through npm's `next` tag and [GitHub Releases](https://github.com/GreenPandaStudios/augscript/releases/tag/v0.21.0). See [implementation status](docs/native-implementation.md) for qualification evidence.
 
 ## The language
 
@@ -69,7 +69,7 @@ npm run docs:build
 npm run package:packages
 npm run test:packages
 npm run package:extension
-code --install-extension vscode/augscript-0.20.1.vsix --force
+code --install-extension vscode/augscript-0.21.0.vsix --force
 ```
 
 Development dependency versions are pinned in both manifests and lockfiles. The extension bundles the same compiler, runtime, guides and native bootstrap. Native commands prepare required libraries automatically; contributors can prewarm all dependencies with `node scripts/bootstrap-native.mjs`. Set `augscript.nativeHome` to this repository's `.aug-native` directory to share it with the bundled compiler.

@@ -1,6 +1,6 @@
 # Production readiness and dependencies
 
-August 0.20 is experimental. The compiler, CLI, packages, standard declarations, and editor can be tried today; the project does not claim general production readiness. Use the [getting-started guide](getting-started.md) for a first application, [the roadmap](roadmap.md) for release gates, and [the compatibility page](compatibility.md) for the proposed 1.0 support contract.
+August 0.21 is experimental. The compiler, CLI, packages, standard declarations, and editor can be tried today; the project does not claim general production readiness. Use the [getting-started guide](getting-started.md) for a first application, [the roadmap](roadmap.md) for release gates, and [the compatibility page](compatibility.md) for the proposed 1.0 support contract.
 
 ## What is measured and verified
 
@@ -10,9 +10,9 @@ The [robustness tests](../tests/robustness.test.mjs) mutate 5,000 source files t
 
 The same-app [OpenID Connect example](examples/oidc-login/index.md) proves integration paths; it stores accounts, signing keys, and sessions in memory. It is a development demonstration, not a production identity service.
 
-## Dependencies and licenses
-
 The [safety gyms](safety-gyms.md) now collect generated LLVM cases, rejected contracts, behavioral mutations and the larger runtime circuits in one replayable report. [Recorded qualification](qualification-results.md) shows the actual execution counts and skipped checks. The expanded performance suite measures eight further programs against C. These checks strengthen the release evidence without establishing universal safety or speed.
+
+## Dependencies and licenses
 
 The CLI uses its matching core August library and `tar` 7.5.22 for registry archive extraction. The extension bundles that parser and its JavaScript dependencies. The VS Code extension's npm audit currently reports zero advisories. The wiki build uses VitePress and a pinned Vite override; run `npm audit` before each release. npm audit only covers npm packages and cannot certify native code or deployment configuration.
 
@@ -33,18 +33,18 @@ The exact versions, archive URLs, and SHA-256 values are in [`native-dependencie
 
 ## Release gates still open
 
-The [LLVM/native candidate](native-implementation.md) supports real repository
+The [LLVM/native preview](native-implementation.md) supports real repository
 imports of CPU LibTorch, SQLite, zlib and Rust BLAKE3 on macOS ARM64 and
 GNU/Linux x86-64/ARM64 with glibc 2.36+. Installed CLI checks cover public
 downloads, exact locks, offline reuse, relocated bundles and finite ownership
 cases without native tools or development headers. Language parity, DWARF and
-core sanitizers are implemented. The 0.21.0 candidate selects LLVM by default;
-its updated platform gates and public compiler release remain pending.
+core sanitizers are implemented. The published 0.21.0 preview uses LLVM by default and passed its platform and
+clean-consumer gates.
 
 - **Platform support:** the full pinned web/crypto bootstrap passes on macOS ARM and Linux ARM. [Docker build/run bases](docker.md) run core, web, and crypto programs on Linux. Linux x86-64 runs in CI; other platforms remain unverified.
 - **Concurrency and ownership:** tasks use one OS thread. The [conformance suite](language-conformance.md) exercises injected captures, mutation after a child starts inside `borrow`, owned `Shared<T>` cleanup, branch joins, cancellation, and the public `Task<T>` error contract. A 1.0 support claim still depends on the platform, distribution, and compatibility gates.
 - **Security and reliability:** HTTP and OIDC need broad protocol conformance, durable credentials and keys, rotation, long-running load tests, and deployment guidance. The [gap ledger](web-library-gaps.md) records the precise work.
-- **Package and ABI stability:** the [matching 0.19.0 npm packages](packages.md#npm-registry) are published and their core starter workflow is verified. Reproducible releases, compatibility policy, and native adapter ABI still need stable release gates.
+- **Package and ABI stability:** the [matching 0.21.0 npm packages](packages.md#npm-registry) and LLVM/runtime archives are published and their installed consumer workflow is verified. Reproducible releases, compatibility policy, and native adapter ABI still need stable release gates.
 - **Operational behavior:** failure handling, cancellation, instrumentation, platform builds, and resource ceilings need repeated CI and field testing.
 
 For a trial deployment, pin the compiler and native lock, run the project's tests and `aug spec --check`, review its native artifact and deployment inputs, and validate the executable under your own load and failure conditions. Track the [gap ledger](web-library-gaps.md) before promising production service levels.

@@ -1,24 +1,32 @@
 # Native packages and LLVM implementation
 
-The [accepted architecture](native-interop-llvm-plan.md) is being implemented on
-`codex/native-llvm`. The first delivery requires real repository imports of CPU
-LibTorch, SQLite, zlib, and Rust BLAKE3, compiled through LLVM on macOS ARM64.
-Passing a linker probe or metadata test does not complete that delivery.
+The [accepted architecture](native-interop-llvm-plan.md) ships as an experimental
+profile in August 0.21.0. Its first milestone is complete: August programs import
+CPU LibTorch, SQLite, zlib and Rust BLAKE3 from separate public repositories and
+run their real implementations through LLVM on all three supported hosts.
 
-The 0.21.0 candidate now selects LLVM for ordinary `build`, `run`, `test` and
-`bench` commands. C remains an explicit migration reference. Its updated
-language, debugger, sanitizer, performance and clean-consumer gates must pass
-on all three hosts before the compiler release is published. The published
-0.20.1 CLI still uses C. CPU LibTorch `v0.1.4` and the other three libraries'
-`v0.1.3` releases are already public.
+August 0.21.0 selects LLVM for ordinary `build`, `run`, `test` and `bench`
+commands. C remains an explicit migration reference. Its language, debugger,
+sanitizer, performance and clean-consumer gates passed on macOS ARM64 and
+GNU/Linux x86-64/ARM64 in the [release run](https://github.com/GreenPandaStudios/augscript/actions/runs/37005997823).
+The compiler is public through npm's `next` tag and GitHub Releases. CPU LibTorch
+`v0.1.4` and the other three libraries' `v0.1.3` releases are public too.
+
+Fresh installed-CLI checks on [macOS ARM64](release-macos-public-consumers.json)
+and the [physical DGX Spark](release-dgx-public-consumers.json) passed after
+publication using public compiler and library downloads. Both started with empty
+source and artifact caches and no native developer tools on the test processes'
+search path. They ran all four complete example projects and their tests, then
+checked frozen/offline execution, relocation and resource cleanup. Only temporary
+directory paths are omitted from those reports.
 
 The package manifest now has a checked format 2 for native dependencies. It pins
 the binding descriptor, upstream identity, target requirements, archive hash and
 size limits, link inputs, deployment files, and component versions. Source
 installation validates those facts without running native build scripts. This
-is development branch behavior; the published CLI does not support it yet.
+is part of the published preview.
 
-The branch emits LLVM IR from checked execution IR, runs LLVM 23.1.2's optimizer
+The backend emits LLVM IR from checked execution IR, runs LLVM 23.1.2's optimizer
 and object generator, and links with LLD using an independently authored platform
 import stub. Consumers install a pinned compiler pack. Opaque resources have
 deterministic release, call-duration loans, and checked package/provider identities.
@@ -34,11 +42,11 @@ All four programs produce the expected results, then run with unchanged frozen
 locks offline. Each executable also runs after relocation with its deployment libraries and
 notices. Real LibTorch adapter counters verify that a failed class constructor
 releases its transferred handle and that an owned function input is released
-before an early return reaches its caller. The check supplies only the unpublished
-compiler archive locally; it uses real public transport for every library. The
+before an early return reaches its caller. Prepublication checks supplied the
+compiler archive locally and used real public transport for every library. The
 macOS 14 ARM64 consumer gate passed in CI on commit `298c0a6`, including frozen,
-offline and relocated execution. Compiler release publication remains outstanding;
-each subsequent compiler change must pass that same gate before publication.
+offline and relocated execution. The final release passed the same gate;
+each subsequent compiler change must pass it again before publication.
 The independent native clients run
 1,000 cleanup cycles per library. SQLite also checks persistent storage and
 rejects SQL attachment/VACUUM INTO before they can expand filesystem authority.
@@ -59,8 +67,8 @@ loans before dropping their resources. A task cancelled before entry releases
 its transferred owned inputs even though its function never runs. Native regressions check normal execution,
 early returns, caught and pending errors, and errors raised during cleanup.
 The [native example projects](examples/index.md#native-libraries-llvm-preview)
-include checked source, generated explanations and same-file tests. They require
-the development compiler until its matching npm release and compiler pack are public.
+include checked source, generated explanations and same-file tests. They run with
+the published 0.21.0 CLI and compiler pack.
 
 The migration now includes JSON parsing and typed decoding, clocks, the existing
 GnuTLS crypto APIs, native HTTP handlers and their policies, form decoding,
@@ -269,7 +277,7 @@ counters. These are CPU checks; GPU support remains deferred.
 The metadata suite exercises package loading and target selection. The
 [research note](research/native-interop-llvm.md) records a macOS ARM64 linker
 probe with independent platform stubs and no SDK inputs. Neither is a fresh
-machine installation test. Release qualification will record the exact LLVM
+machine installation test. Release qualification records the exact LLVM
 version, runtime build inputs, package tags, native artifacts and test results.
 Run `node scripts/qualify-native-consumers.mjs --local-compiler` after packaging
 to repeat the prepublication consumer check. Omit `--local-compiler` after the

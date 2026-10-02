@@ -7,6 +7,7 @@ const repo = 'https://github.com/GreenPandaStudios/augscript';
 const root = resolve(import.meta.dirname, '../..');
 const version = JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf8')).version;
 const grammar = JSON.parse(readFileSync(resolve(root, 'vscode/syntaxes/augscript.tmLanguage.json'), 'utf8'));
+const chartNames = new Set(Object.keys(JSON.parse(readFileSync(resolve(root, 'docs/.vitepress/theme/benchmark-data.json'), 'utf8'))));
 export default defineConfig({
   title: 'August',
   description: 'A language for readable modules, explicit dependencies, and developers working with LLMs.',
@@ -14,7 +15,7 @@ export default defineConfig({
   cleanUrls: true,
   lastUpdated: true,
   buildEnd(site) {
-    for (const file of ['benchmark-results.json', 'benchmark-baseline.json', 'benchmarks.json', 'kernel-results.json', 'gym-results.json', 'dgx-performance.json', 'dgx-kernels.json', 'dgx-gyms.json', 'dgx-consumers.json'])
+    for (const file of ['benchmark-results.json', 'benchmark-baseline.json', 'benchmarks.json', 'kernel-results.json', 'gym-results.json', 'dgx-performance.json', 'dgx-kernels.json', 'dgx-gyms.json', 'dgx-consumers.json', 'release-macos-public-consumers.json', 'release-dgx-public-consumers.json', 'ci-linux-arm64-qualified.json.gz', 'ci-linux-arm64-rejected.json.gz', 'ci-linux-arm64-repeat.json.gz'])
       copyFileSync(resolve(root, 'docs', file), resolve(site.outDir, file));
   },
   sitemap: { hostname: 'https://GreenPandaStudios.github.io/augscript/' },
@@ -22,8 +23,14 @@ export default defineConfig({
     languages: [{ ...grammar, name: 'aug', aliases: ['augscript'] }],
     config(md) {
       md.set({ html: false });
-      for (const name of ['example-compare', 'example-code', 'example-spec', 'benchmark-chart'])
+      for (const name of ['example-compare', 'example-code', 'example-spec'])
         md.use(container, name, { render: (tokens, index) => `<${tokens[index].nesting === 1 ? 'div' : '/div'}${tokens[index].nesting === 1 ? ` class="aug-${name}"` : ''}>\n` });
+      md.use(container, 'benchmark-chart', {render: (tokens, index) => {
+        if (tokens[index].nesting !== 1) return '';
+        const chart = tokens[index].info.trim().split(/\s+/)[1];
+        if (!chartNames.has(chart)) throw new Error(`Unknown benchmark chart: ${chart}`);
+        return `<BenchmarkChart chart="${chart}" />\n`;
+      }});
       const render = md.renderer.rules.link_open;
       md.renderer.rules.link_open = (tokens, index, options, env, self) => {
         const token = tokens[index];

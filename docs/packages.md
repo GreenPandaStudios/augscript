@@ -13,7 +13,7 @@ cd hello-august
 aug run
 ```
 
-The pending 0.21.0 release needs Node.js 24 or later and npm on macOS 14+ ARM64 or GNU/Linux x64/ARM64 with glibc 2.36+. August downloads a verified LLVM/runtime pack; native package consumers do not install a compiler or SDK. GitHub repository imports use the CLI's HTTPS transport without Git. Other Git servers require a local Git client. [Docker](docker.md) and [Dev Containers](dev-containers.md) provide a Linux workspace. The published 0.20.1 CLI still requires a C11 compiler.
+August 0.21.0 needs Node.js 24 or later and npm on macOS 14+ ARM64 or GNU/Linux x64/ARM64 with glibc 2.36+. August downloads a verified LLVM/runtime pack; native package consumers do not install a compiler or SDK. GitHub repository imports use the CLI's HTTPS transport without Git. Other Git servers require a local Git client. [Docker](docker.md) and [Dev Containers](dev-containers.md) provide a Linux workspace.
 
 `aug run` finds `main.aug`, installs source dependencies declared by imports or `main.yaml`, checks the code, prepares the native libraries it needs, and compiles and starts the executable. Later runs reuse those dependencies. `aug check` and `aug spec` read the installed snapshot without fetching packages. Use `aug install` before those commands in a fresh project.
 
@@ -27,7 +27,7 @@ npx @greenpandastudios/aug-cli@next run
 
 Both starters include `AGENTS.md`, which tells coding agents to read neighboring compiled specs, keep tests beside declarations, and check their changes. For a service, [start the weather API](weather-api.md) with `init weather --template weather`.
 
-August is a preview. Pin an exact CLI release for a repeatable toolchain. The source-package and weather workflows on this page require the ecosystem release; 0.19.0 predates them. [GitHub releases](https://github.com/GreenPandaStudios/augscript/releases) list the available compiler and extension versions.
+August is a preview. Pin an exact CLI release for a repeatable toolchain. The source-package and weather workflows on this page are available in 0.21.0. [GitHub releases](https://github.com/GreenPandaStudios/augscript/releases) list the available compiler and extension versions.
 
 ## Use a package
 

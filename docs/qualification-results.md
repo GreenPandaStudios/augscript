@@ -7,12 +7,7 @@ These results cover the August 0.21.0 candidate on **Apple M5**, darwin 25.6.0 a
 
 ## Eight more C comparisons
 
-::: benchmark-chart
-
-![Median August and C execution times for eight programs. Each panel has its own scale; lower is better.](assets/benchmarks/kernels.svg)
-
-![Median August and C execution times, arranged vertically for smaller screens. Lower is better.](assets/benchmarks/kernels-mobile.svg)
-
+::: benchmark-chart kernels
 :::
 
 Each value is the median of 30 fresh executable processes after 3 warmups. Order rotates within a separate measurement process. Timings include startup and exclude compilation. Both implementations use O2 without LTO or fast-math. [Raw samples, build times and code sizes](kernel-results.json) also include the same August programs compiled through the C migration backend.

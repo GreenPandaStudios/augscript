@@ -1,6 +1,6 @@
 # Develop in a VS Code Dev Container
 
-Run the August compiler and tests inside a Linux container while editing your local project in VS Code. The project folder stays on your machine; the CLI downloads its verified compiler/runtime pack into the container's cache. No native toolchain is required on the host or in this development image. These instructions target the pending 0.21.0 release.
+Run the August compiler and tests inside a Linux container while editing your local project in VS Code. The project folder stays on your machine; the CLI downloads its verified compiler/runtime pack into the container's cache. No native toolchain is required on the host or in this development image. These instructions use the published 0.21.0 preview.
 
 You need Docker with a running Linux engine, VS Code, and Microsoft's [Dev Containers extension](https://code.visualstudio.com/docs/devcontainers/containers). Creating a new project also needs Node.js 24 and npm on the host. You can instead open an existing project or a [downloaded example](examples/index.md).
 
