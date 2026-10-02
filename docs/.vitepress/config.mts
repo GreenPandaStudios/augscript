@@ -15,7 +15,7 @@ export default defineConfig({
   cleanUrls: true,
   lastUpdated: true,
   buildEnd(site) {
-    for (const file of ['benchmark-results.json', 'greeting-results.json', 'kernel-results.json', 'gym-results.json', 'dgx-performance.json', 'dgx-kernels.json', 'dgx-gyms.json', 'dgx-consumers.json', 'release-macos-public-consumers.json', 'release-dgx-public-consumers.json', 'ci-linux-arm64-qualified.json.gz', 'ci-linux-arm64-rejected.json.gz', 'ci-linux-arm64-repeat.json.gz'])
+    for (const file of ['benchmark-results.json', 'benchmark-baseline.json', 'benchmarks.json', 'greeting-results.json', 'kernel-results.json', 'gym-results.json', 'dgx-performance.json', 'dgx-kernels.json', 'dgx-gyms.json', 'dgx-consumers.json', 'release-macos-public-consumers.json', 'release-dgx-public-consumers.json', 'ci-linux-arm64-qualified.json.gz', 'ci-linux-arm64-rejected.json.gz', 'ci-linux-arm64-repeat.json.gz'])
       copyFileSync(resolve(root, 'docs', file), resolve(site.outDir, file));
   },
   sitemap: { hostname: 'https://GreenPandaStudios.github.io/augscript/' },

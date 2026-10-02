@@ -1,8 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
-import {readFileSync} from 'node:fs';
-import {resolve} from 'node:path';
+import {readFileSync,mkdirSync,mkdtempSync,writeFileSync,rmSync} from 'node:fs';
+import {tmpdir} from 'node:os';
+import {resolve,join} from 'node:path';
+import {captureQualificationInputs} from '../scripts/qualification-identity.mjs';
 import {homepageExample} from '../scripts/homepage-docs.mjs';
 import {nativePackageExamples} from '../scripts/native-package-docs.mjs';
 import {loadProject} from '../src/project.ts';
@@ -31,4 +33,24 @@ test('native package guide uses real canonical projects and current distribution
     assert.ok(page.includes(source));
   }
   assert.doesNotMatch(page,/proposed|not published|pending release/i);
+});
+
+test('benchmark snapshots reject source changes during preparation or compilation',()=>{
+  const root=mkdtempSync(join(tmpdir(),'aug-measurement-inputs-'));
+  try {
+    for(const folder of ['src','runtime','benchmarks','gyms','scripts','native','tests','.github'])mkdirSync(join(root,folder));
+    writeFileSync(join(root,'package.json'),JSON.stringify({version:'0.21.0'}));
+    for(const file of ['package-lock.json','tsconfig.json'])writeFileSync(join(root,file),'{}');
+    writeFileSync(join(root,'benchmarks/program.aug'),'print(value=1)\n');
+    writeFileSync(join(root,'benchmarks/reference.c'),'int main(void) { return 0; }\n');
+    const snapshot=captureQualificationInputs(root,{august:'benchmarks/program.aug',c:'benchmarks/reference.c'});
+    snapshot.verify();
+    writeFileSync(join(root,'benchmarks/program.aug'),'print(value=2)\n');
+    assert.equal(snapshot.sources.august,'print(value=1)\n');
+    assert.throws(snapshot.verify,/Sources changed during preparation, compilation, or measurement/);
+    writeFileSync(join(root,'benchmarks/program.aug'),snapshot.sources.august);
+    snapshot.verify();
+    writeFileSync(join(root,'benchmarks/reference.c'),'int main(void) { return 1; }\n');
+    assert.throws(snapshot.verify,/Sources changed/);
+  } finally {rmSync(root,{recursive:true,force:true});}
 });

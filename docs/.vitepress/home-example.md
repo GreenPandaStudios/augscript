@@ -73,7 +73,7 @@ int main(void) {
 ::: benchmark-chart greetings
 :::
 
-On Apple M5, August takes **1025.57 ms** and C takes **971.35 ms** (median of 30 runs after 3 warmups). Both use release optimization and write to a regular file; every run's complete output is checked. This measures printing and file I/O, including process startup. It does not measure string concatenation.
+On Apple M5, August takes **1023.91 ms** and C takes **971.61 ms** (median of 30 runs after 3 warmups). Both use release optimization and write to a regular file; every run's complete output is checked. This measures printing and file I/O, including process startup. It does not measure string concatenation.
 
 August runs close to C in this example. The [full performance section](performance.md) compares integer loops, collections, JSON, application kernels, and HTTP, including workloads where August has more overhead. Use those programs as starting points, then measure your own application.
 
