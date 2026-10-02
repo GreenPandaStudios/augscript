@@ -194,9 +194,12 @@ The LLVM migration benchmark accepts `--backend llvm` and `--backend c` with the
 same checked programs and independent output checks. Scalar lowering retains
 wrapping int64 arithmetic, IEEE comparisons and checked runtime division. Tests
 include the signed minimum divided by minus one, NaN, optional values and mixed
-integer/float comparisons. Performance qualification is still in progress.
-The current local Mac candidate passes the frozen limits; both GNU/Linux CI
-producer jobs now run the same paired workloads and preserve their raw reports.
+integer/float comparisons. All three platform jobs passed the frozen performance
+limits on commit `e3c072b` in [macOS CI](https://github.com/GreenPandaStudios/augscript/actions/runs/36992865486)
+and [GNU/Linux CI](https://github.com/GreenPandaStudios/augscript/actions/runs/36992865479).
+They also passed the full safety gyms, expanded kernels and clean public-library
+consumer checks. The [recorded measurements](qualification-results.md) and
+[physical DGX Spark results](dgx-spark.md) retain the workloads and limits.
 The frozen migration limits live in `native/llvm-performance-gates.json`: each
 batch median may rise by at most 20% or 0.5ms against the same August program on
 the C backend; HTTP throughput may fall by at most 20%. Qualification requires
@@ -256,8 +259,12 @@ Debian packages with corresponding sources, patches and license texts. Consumers
 never execute these maintainer recipes. The upstream binary's exhaustive static
 component inventory remains a documented limit.
 
-Physical DGX Spark qualification awaits a reachable machine. Container results
-are ARM64 evidence; they do not establish that August has run on DGX hardware.
+Physical [DGX Spark qualification](dgx-spark.md) passed on October 2, 2026, using
+the same commit. The compiler and runtime built on the actual ARM64 machine,
+all 266 LLVM parity cases passed without skips, and the full gyms and frozen
+performance gates passed. An installed CLI exercised all four public native
+repositories, including offline locks, relocated deployments and real cleanup
+counters. These are CPU checks; GPU support remains deferred.
 
 The metadata suite exercises package loading and target selection. The
 [research note](research/native-interop-llvm.md) records a macOS ARM64 linker

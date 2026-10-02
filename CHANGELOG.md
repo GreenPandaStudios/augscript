@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Build and qualify LLVM on a physical DGX Spark: 266 parity cases, full safety gyms, frozen performance gates and four real public native-library imports. Publish the host, workload sources, raw results and remaining performance gaps in the wiki.
+
 - Add reproducible safety gyms with generated integer/floating arithmetic, collection, bounds, control-flow, ownership and task cases; independent expected results; rejected contracts; valid behavioral mutants; replayable sources and structured reports. CI qualifies all three LLVM hosts and retains the evidence.
 - Expand C comparisons to floating-point loops, labeled calls, lists, strings, map deletion, checked failures, records and tasks. Publish source/spec examples, raw samples and scoped charts. Use fresh measurement processes and more samples for the unchanged migration limits.
 - Emit strict native floating arithmetic while preserving actual integer tags in widened float slots, wrapping integer operations, signed-zero errors and IEEE comparisons. Avoid retaining unrelated runtime services in core-only executables.

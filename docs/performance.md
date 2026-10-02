@@ -6,6 +6,8 @@ The recorded suite uses the August 0.21.0 candidate and LLVM 23.1.2 native outpu
 
 The [extended qualification](qualification-results.md) adds eight C comparisons for numeric, collection and application work. The [safety gyms](safety-gyms.md) exercise results, rejected operations, cleanup and memory checks separately. Each measured program has a downloadable project and a code/spec view in the [gallery](examples/index.md#measured-programs).
 
+The [DGX Spark results](dgx-spark.md) record a second physical ARM64 host, including all benchmark programs, safety gyms and real public native imports. Read each host's measurements separately.
+
 ## Read the graphs
 
 Execution and memory bars use **lower is better**. HTTP throughput uses **higher is better**. Read the workload name and units before comparing: a 20,000-entry map and a two-million-step CPU loop do different amounts of work. The execution panels have separate linear scales; compare implementations within a panel. Tables provide exact values and remain readable on a phone.

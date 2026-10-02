@@ -1,0 +1,122 @@
+{
+  "format": 1,
+  "compiler": "0.21.0",
+  "host": "linux-arm64",
+  "ordinaryStarter": {
+    "backend": "llvm",
+    "developmentToolchain": false,
+    "sameFileTests": 1,
+    "frozenOffline": true,
+    "generatedC": false
+  },
+  "installation": "npm-archive-in-node_modules",
+  "nativeToolsOnPath": false,
+  "sourceCache": "fresh",
+  "artifactCache": "fresh",
+  "libraryTransport": "public-release-assets",
+  "compilerTransport": "local-release-asset",
+  "osRelease": "6.17.0-1021-nvidia",
+  "glibcVersion": "2.36",
+  "discardedDeploymentCopies": true,
+  "minimumOSQualification": false,
+  "minimumLibcQualification": true,
+  "realResourceCounters": {
+    "failedConstructor": true,
+    "earlyReturn": true,
+    "cancelledBeforeEntry": true,
+    "liveBuffers": 0
+  },
+  "nativeTasks": true,
+  "standardRuntime": {
+    "json": true,
+    "clock": true,
+    "crypto": true,
+    "httpForms": true,
+    "relocation": true
+  },
+  "directory": "/work/.aug-build/native-consumers-asTCa4",
+  "outcomes": [
+    {
+      "package": "pytorch",
+      "repository": "https://github.com/GreenPandaStudios/aug-pytorch#v0.1.4",
+      "commit": "345c975b74a892ba1e0534503917e937dace6b87",
+      "artifactSha256": "8eb7c5e30635949228548208bda1ac0a7c42801d2299a90ea4d4c2064e700573",
+      "stdout": "5\n7\n9\n21\n",
+      "urlImport": true,
+      "namedAlias": true,
+      "frozenOffline": true,
+      "relocatedBundle": true,
+      "repeatedSpec": true,
+      "backend": "llvm"
+    },
+    {
+      "package": "sqlite",
+      "repository": "https://github.com/GreenPandaStudios/aug-sqlite#v0.1.3",
+      "commit": "54371656e3f8d47d020b974f97267a9017b5e552",
+      "artifactSha256": "480c6dfb5a257fc7047a28dd2eb6f2e60bbcb90ae4e301083a180744dadea8f2",
+      "stdout": "August\n",
+      "urlImport": true,
+      "namedAlias": true,
+      "frozenOffline": true,
+      "relocatedBundle": true,
+      "repeatedSpec": true,
+      "backend": "llvm"
+    },
+    {
+      "package": "zlib",
+      "repository": "https://github.com/GreenPandaStudios/aug-zlib#v0.1.3",
+      "commit": "827a8dde5d0d013d00fff6a2a19036b299d0085f",
+      "artifactSha256": "6da832fa341a1fba96643244da2bb63957107d2b1413743c363fca002e500c66",
+      "stdout": "The world runs on language\n",
+      "urlImport": true,
+      "namedAlias": true,
+      "frozenOffline": true,
+      "relocatedBundle": true,
+      "repeatedSpec": true,
+      "backend": "llvm"
+    },
+    {
+      "package": "blake3",
+      "repository": "https://github.com/GreenPandaStudios/aug-blake3#v0.1.3",
+      "commit": "e4ef39bdc89892e7b0644f5fa03ca4dc8b8042ae",
+      "artifactSha256": "69e4de7c1928254c2fb285b0ecd557c4dd1346e9207d0b7ef56e00957caae748",
+      "stdout": "6437b3ac38465133ffb63b75273a8db548c558465d79db03fd359c6cd5bd9d85\n",
+      "urlImport": true,
+      "namedAlias": true,
+      "frozenOffline": true,
+      "relocatedBundle": true,
+      "repeatedSpec": true,
+      "backend": "llvm"
+    }
+  ],
+  "gallery": [
+    {
+      "package": "pytorch",
+      "run": true,
+      "test": true,
+      "spec": true,
+      "backend": "llvm"
+    },
+    {
+      "package": "sqlite",
+      "run": true,
+      "test": true,
+      "spec": true,
+      "backend": "llvm"
+    },
+    {
+      "package": "zlib",
+      "run": true,
+      "test": true,
+      "spec": true,
+      "backend": "llvm"
+    },
+    {
+      "package": "blake3",
+      "run": true,
+      "test": true,
+      "spec": true,
+      "backend": "llvm"
+    }
+  ]
+}

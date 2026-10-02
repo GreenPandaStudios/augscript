@@ -14,7 +14,7 @@ export default defineConfig({
   cleanUrls: true,
   lastUpdated: true,
   buildEnd(site) {
-    for (const file of ['benchmark-results.json', 'benchmark-baseline.json', 'benchmarks.json', 'kernel-results.json', 'gym-results.json'])
+    for (const file of ['benchmark-results.json', 'benchmark-baseline.json', 'benchmarks.json', 'kernel-results.json', 'gym-results.json', 'dgx-performance.json', 'dgx-kernels.json', 'dgx-gyms.json', 'dgx-consumers.json'])
       copyFileSync(resolve(root, 'docs', file), resolve(site.outDir, file));
   },
   sitemap: { hostname: 'https://GreenPandaStudios.github.io/augscript/' },
@@ -75,6 +75,7 @@ export default defineConfig({
         { text: 'Why August exists', link: '/about' }, { text: 'Example projects', link: '/examples/' },
         { text: 'Performance', link: '/performance' }, { text: 'Production readiness', link: '/production-readiness' },
         { text: 'Safety gyms', link: '/safety-gyms' },
+        { text: 'DGX Spark results', link: '/dgx-spark' },
         { text: 'Roadmap to 1.0', link: '/roadmap' }, { text: 'Compatibility', link: '/compatibility' },
         { text: 'Library gaps', link: '/web-library-gaps' }
       ]},
