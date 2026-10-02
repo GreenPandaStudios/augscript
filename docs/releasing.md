@@ -150,3 +150,9 @@ archives against the tagged manifest and source identity, then verifies the
 uploaded bytes before publishing. Retries accept an existing file only when its
 bytes match; they do not overwrite release assets. Keep the scripts in those
 repositories aligned when this maintainer protocol changes.
+
+To retry a library release after a publishing-tool correction, run its workflow
+on main and enter the existing version tag. The job checks out that immutable tag
+for source and manifest verification and uses the current maintainer publisher.
+It validates the tagged commit again before creating or changing a release.
+Partial uploads remain draft until the complete archive set passes byte checks.
