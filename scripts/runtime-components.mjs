@@ -26,7 +26,8 @@ export function buildRuntimeComponents({root,output,nativeRoot,compile,linuxRunt
     if(!mac){
       const file=join(output,path);
       for(const match of run('readelf',['-d',file]).matchAll(/Shared library: \[([^\]]+)\]/g)){
-        if(![...names,'libaug_runtime.so.1','libz.so.1','libc.so.6','libm.so.6','libdl.so.2','libpthread.so.0','librt.so.1','libgcc_s.so.1'].includes(match[1]))throw new Error('Unpackaged runtime dependency '+match[1]);
+        const loader=process.arch==='x64'?'ld-linux-x86-64.so.2':'ld-linux-aarch64.so.1';
+        if(![...names,'libaug_runtime.so.1','libz.so.1','libc.so.6','libm.so.6','libdl.so.2','libpthread.so.0','librt.so.1','libgcc_s.so.1',loader].includes(match[1]))throw new Error('Unpackaged runtime dependency '+match[1]);
       }
       for(const match of run('readelf',['--version-info',file]).matchAll(/\bGLIBC_(\d+)\.(\d+)\b/g))if(Number(match[1])>2||Number(match[1])===2&&Number(match[2])>36)throw new Error('Runtime requires a newer glibc than 2.36');
       run('patchelf',['--set-rpath','$ORIGIN',file]);return;

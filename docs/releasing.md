@@ -141,3 +141,12 @@ changed binding or build inputs require a new candidate. Publish the exact teste
 archives without rebuilding them. `native/library-qualification.json` records
 the reviewed package tag, source commit and archive hash for each consumer host.
 A platform without reviewed pins fails qualification before any library download.
+
+The four library repositories keep a `release-candidates.json` record for the
+reviewed build run and source commit. Their tag workflow uses the shared release
+template under `native/templates` and the canonical assembly/publication scripts
+under `scripts`. It downloads that successful run, checks all three platform
+archives against the tagged manifest and source identity, then verifies the
+uploaded bytes before publishing. Retries accept an existing file only when its
+bytes match; they do not overwrite release assets. Keep the scripts in those
+repositories aligned when this maintainer protocol changes.

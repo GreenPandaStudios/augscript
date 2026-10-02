@@ -65,7 +65,7 @@ function usage(): void {
     `Usage: aug <init|check|build|run|emit-c|emit-llvm|emit-ir|test|openapi|format|migrate|spec|bench|explain|context|lsp|symbols|definition|complete|hover|fixes|semantic-tokens> [project directory] [options] [-- args]\n` +
     `New application: aug init DIRECTORY [--template hello|weather]\n` +
     `Run: aug run [project directory] [--offline] [-- args] — prepare dependencies, compile, and start\n` +
-    `Backend: --backend llvm selects direct LLVM compilation on macOS ARM64; --backend c selects the migration reference. Unsupported LLVM features produce an error.\n` +
+    `Backend: --backend llvm selects direct LLVM compilation on macOS ARM64 or GNU/Linux x64/ARM64; --backend c selects the migration reference. Unsupported targets and features produce an error.\n` +
     `Tests: aug test [project directory] [GROUP_NAME] [--group GROUP_NAME] [--list] [--coverage] [--json] [--timeout milliseconds]\n` +
     `Format: aug format [project directory] [--file path] [--write]\n` +
     `Specifications: aug spec [project directory] [--check] [--json]\n` +
