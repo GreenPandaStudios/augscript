@@ -43,6 +43,7 @@ try:
             print(value)
 catch GpuError error:
     print(value=error.explain())
+    exit(status=1)
 ```
 
 ```aug [Braces]
@@ -64,6 +65,7 @@ try {
 }
 catch GpuError error {
     print(value=error.explain())
+    exit(status=1)
 }
 ```
 
@@ -79,7 +81,7 @@ catch GpuError error {
 
 Within a task and ownership scope, it sets `first` to a worker task running [`calculate`](compute.md#symbol-calculate) with `left` from a list containing `1.0`, `2.0`, `3.0` and `right` from a list containing `4.0`, `5.0`, `6.0` with copies of its inputs on a separate heap. It sets `second` to a worker task running [`calculate`](compute.md#symbol-calculate) with `left` from a list containing `10.0`, `20.0` and `right` from a list containing `1.0`, `2.0` with copies of its inputs on a separate heap. It splits the result of waiting for `first` and `second` in input order; propagate failures into `firstResult` and `secondResult` in order. For each `value` in a snapshot of `firstResult`, it prints `value`.
 
-After the loop, for each `value` in a snapshot of `secondResult`, it prints `value`. On leaving this scope, join its child tasks and release its local values. If this work raises [`GpuError`](dependencies/packages/%40greenpandastudios/aug-gpu/0.1.0/contracts.md#symbol-GpuError) as `error`, it prints [`error.explain`](dependencies/packages/%40greenpandastudios/aug-gpu/0.1.0/contracts.md#symbol-GpuError.explain).
+After the loop, for each `value` in a snapshot of `secondResult`, it prints `value`. On leaving this scope, join its child tasks and release its local values. If this work raises [`GpuError`](dependencies/packages/%40greenpandastudios/aug-gpu/0.1.0/contracts.md#symbol-GpuError) as `error`, it prints [`error.explain`](dependencies/packages/%40greenpandastudios/aug-gpu/0.1.0/contracts.md#symbol-GpuError.explain); then it calls `exit` with `status` `1`.
 
 ### Dependencies
 

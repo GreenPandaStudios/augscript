@@ -13,3 +13,4 @@ try:
             print(value)
 catch GpuError error:
     print(value=error.explain())
+    exit(status=1)

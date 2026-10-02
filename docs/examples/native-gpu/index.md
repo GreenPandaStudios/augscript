@@ -10,7 +10,7 @@ outline: [2, 3]
 
 # GPU workers
 
-Create Metal buffers inside isolated workers, add vectors on the GPU, and return copied results.
+Create Metal buffers inside isolated workers, add vectors on the GPU, and return copied results. Requires the August 0.22 preview, Apple Silicon, and macOS 14 or later with an available Metal GPU.
 
 Open a file to read the code beside its compiled explanation. Choose **Indentation** or **Braces** to change the code view. The choice carries across files.
 
@@ -19,6 +19,7 @@ Open a file to read the code beside its compiled explanation. Choose **Indentati
 - [`main.aug`](main.md)
 - [`compute.aug`](compute.md)
 
+- [`main.yaml`](main-yaml.md)
 
 ## Try this project
 
