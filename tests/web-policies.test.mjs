@@ -121,7 +121,16 @@ endpoint GET "/empty" as empty() returns HttpResponse<string>:
     assert.equal((await request('/slow-child')).status,504);
     assert.equal((await request('/empty')).status,204, 'request group finished after cancelling its child');
     const started=Date.now();response=await request('/events');assert.equal(response.status,200);assert.equal(await response.text(),'data: "started"\n\n');assert.ok(Date.now()-started<2000);
-    await new Promise((resolve,reject)=>{const call=get(`http://127.0.0.1:${port}/endless`,{headers:{'accept-encoding':'gzip'}},incoming=>{incoming.once('data',()=>{incoming.destroy();call.destroy();resolve();});});call.on('error',error=>{if(error.code!=='ECONNRESET')reject(error);});});
+    await new Promise((resolve,reject)=>{
+      // Multiple compressed chunks cross the managed allocation/collection threshold.
+      let bytes=0,complete=false;
+      const finish=error=>{if(complete)return;complete=true;clearTimeout(timer);server.off('exit',stopped);call.destroy();error?reject(error):resolve();};
+      const stopped=()=>finish(new Error(errors||'server exited during stream'));
+      const timer=setTimeout(()=>finish(new Error(`Stream stopped after ${bytes} bytes: ${errors}`)),5000);
+      server.once('exit',stopped);
+      const call=get(`http://127.0.0.1:${port}/endless`,{headers:{'accept-encoding':'gzip'}},incoming=>{incoming.on('data',chunk=>{bytes+=chunk.length;if(bytes>=65536){incoming.destroy();finish();}});});
+      call.on('error',error=>{if(error.code!=='ECONNRESET')finish(error);});
+    });
     await new Promise((resolve,reject)=>{if(errors.includes('"status":499'))return resolve();const timer=setTimeout(()=>reject(new Error('Disconnected stream was not logged: '+errors)),3000);const listener=()=>{if(errors.includes('"status":499')){clearTimeout(timer);server.stderr.off('data',listener);resolve();}};server.stderr.on('data',listener);});
     const logs=errors.split('\n').filter(line=>line.startsWith('{')).map(line=>JSON.parse(line));assert.deepEqual(logs.filter(log=>log.path==='/secured').map(log=>log.status),[401,400,200]);assert.ok(logs.every(log=>log.milliseconds>=0));
     assert.equal(server.exitCode,null,errors);

@@ -14,7 +14,7 @@ import {generateOpenApi} from './openapi.ts';
 import {llvmPlatform,systemLibc} from './llvm-platform.ts';
 
 export interface RuntimeComponent {libraries:string[];runtimeFiles:string[];metadata:string[]}
-export interface RuntimePack {format:1;version:string;target:string;minimumOS?:string;minimumLibc?:string;layout:RuntimeLayout;identifierSha256:string;files:Record<string,string>;libraries:string[];components:Record<string,RuntimeComponent>;sourceSha256:string}
+export interface RuntimePack {format:1;version:string;target:string;minimumOS?:string;minimumLibc?:string;layout:RuntimeLayout;identifierSha256:string;files:Record<string,string>;libraries:string[];staticCore?:string;components:Record<string,RuntimeComponent>;sourceSha256:string}
 export interface NativeLinkInput {directory:string;libraries:string[];runtimeFiles:string[];artifactSha256?:string;metadata?:string[]}
 export function readRuntimePack(directory:string):RuntimePack {
   if(!existsSync(join(directory,'runtime.json')))throw new Error('LLVM_RUNTIME: A matching prebuilt August runtime is not available. Contributor builds can run node scripts/build-runtime-pack.mjs.');
@@ -30,6 +30,7 @@ export function readRuntimePack(directory:string):RuntimePack {
     if(actual!==expected)throw new Error('NATIVE_INTEGRITY: Runtime pack file changed: '+path);
   }
   for(const path of [...pack.libraries,platform.entry?'platform/start.o':'platform/libSystem.tbd'])if(!pack.files[nativePath(path)])throw new Error('LLVM_RUNTIME: Runtime manifest does not identify required file '+path);
+  if(pack.staticCore!==undefined&&(typeof pack.staticCore!=='string'||!pack.staticCore.endsWith('.a')||!pack.files[nativePath(pack.staticCore)]))throw new Error('LLVM_RUNTIME: Runtime manifest does not identify its core archive');
   if(!pack.components||typeof pack.components!=='object'||Array.isArray(pack.components))throw new Error('LLVM_RUNTIME: Missing component contracts');
   for(const [name,component] of Object.entries(pack.components)){
     if(!/^[a-z][a-z0-9-]*$/.test(name)||!component||!Array.isArray(component.libraries)||!component.libraries.length||!Array.isArray(component.runtimeFiles)||!Array.isArray(component.metadata))throw new Error('LLVM_RUNTIME: Invalid component '+name);
@@ -79,7 +80,9 @@ export function compileLLVM(checked:CheckedProject,options:{output?:string;relea
     for(const path of paths){nativePath(path);const destination=join(dirname(output),'share','august-native',namespace,path);
       mkdirSync(dirname(destination),{recursive:true});copyFileSync(join(origin,path),destination);}
   };
-  for(const library of pack.libraries)deploy(runtime,library,true);
+  const staticCore=!!platform.entry&&!ir.components.length&&pack.staticCore!==undefined;
+  if(staticCore)libraries.push(join(runtime,pack.staticCore!));
+  else for(const library of pack.libraries)deploy(runtime,library,true);
   for(const name of ir.components){
     const component=pack.components[name];if(!component)throw new Error('LLVM_RUNTIME: Compiler pack is missing the '+name+' runtime component. Install a matching complete compiler pack.');
     for(const path of component.libraries)deploy(runtime,path,true);
@@ -89,7 +92,14 @@ export function compileLLVM(checked:CheckedProject,options:{output?:string;relea
   metadata(runtime,'runtime-'+pack.sourceSha256,[...Object.keys(pack.files).filter(path=>path.startsWith('licenses/')),'runtime.json']);
   for(const input of options.native??[]){for(const library of input.libraries)deploy(input.directory,library,true);for(const file of input.runtimeFiles)if(!input.libraries.includes(file))deploy(input.directory,file,false);
     if(input.metadata?.length){if(!/^[0-9a-f]{64}$/.test(input.artifactSha256??''))throw new Error('NATIVE_INTEGRITY: Deployment metadata requires an artifact identity');metadata(input.directory,input.artifactSha256!,input.metadata);}}
-  if(platform.entry)run(lld,['-flavor','gnu','-pie','-z','now','-z','noexecstack','--hash-style=gnu','--eh-frame-hdr','--dynamic-linker',platform.loader!,'-e','_start','-rpath','$ORIGIN/lib',join(runtime,'platform/start.o'),object,...libraries,systemLibc(platform),'-o',output]);
+  if(platform.entry){
+    const libc=systemLibc(platform),math=join(dirname(libc),'libm.so.6');
+    if(staticCore&&!existsSync(math))throw new Error('LLVM_RUNTIME: The qualified GNU/Linux math runtime is absent. Install the operating system libc runtime; no development headers or compiler are required.');
+    // Only the existing private checkpoint-hook boundary needs dynamic lookup.
+    // August function exports and native runtime entry remain separate profiles.
+    const coreExports=staticCore?['--export-dynamic-symbol=aug_execution_current','--export-dynamic-symbol=aug_task_checkpoint_hook']:[];
+    run(lld,['-flavor','gnu','-pie','-z','now','-z','noexecstack','--hash-style=gnu','--eh-frame-hdr',...coreExports,'--dynamic-linker',platform.loader!,'-e','_start','-rpath','$ORIGIN/lib',join(runtime,'platform/start.o'),object,...libraries,libc,...(staticCore?[math]:[]),'-o',output]);
+  }
   else run(lld,['-flavor','darwin','-arch','arm64','-platform_version','macos','14.0','14.0','-Z','-fixup_chains','-adhoc_codesign','-e','_main','-rpath','@executable_path/lib',object,...libraries,join(runtime,'platform/libSystem.tbd'),'-o',output]);
   const debugInfo=platform.entry?output:output+'.dSYM';
   if(!platform.entry)run(dsymutil,[output,'-o',debugInfo]);

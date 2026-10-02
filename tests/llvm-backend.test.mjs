@@ -95,8 +95,8 @@ for(const release of [false,true])test('LLVM produces source DWARF and a matchin
     const map=JSON.parse(readFileSync(compiled.output+'.augmap.json','utf8'));
     assert.equal(map.mode,release?'release':'development');assert.match(map.debugInfoSha256,/^[0-9a-f]{64}$/);
     assert.equal(map.symbols.find(symbol=>symbol.sourceName==='choose').location.file,join(root,'math.aug'));
-    const dwarf=spawnSync(dwarfTool,['--debug-info','--debug-line',map.debugInfo],{encoding:'utf8'});
-    assert.equal(dwarf.status,0,dwarf.stderr);assert.match(dwarf.stdout,/DW_AT_name\s+\("choose"\)/);
+    const dwarf=spawnSync(dwarfTool,['--debug-info','--debug-line',map.debugInfo],{encoding:'utf8',maxBuffer:32*1024*1024});
+    assert.equal(dwarf.status,0,dwarf.stderr||dwarf.error?.message);assert.match(dwarf.stdout,/DW_AT_name\s+\("choose"\)/);
     assert.match(dwarf.stdout,/DW_AT_name\s+\("left"\)/);assert.match(dwarf.stdout,/DW_AT_name\s+\("answer"\)/);
     assert.match(dwarf.stdout,/math\.aug/);assert.match(dwarf.stdout,/DW_AT_byte_size\s+\(0x10\)/);
     const run=spawnSync(compiled.output,[],{encoding:'utf8'});assert.equal(run.status,0,run.stderr);assert.equal(run.stdout,'7\n');
@@ -129,7 +129,7 @@ summarize() returns int:
     const ir=JSON.parse(readFileSync(join(root,'.aug-build/program.aug-ir.json'),'utf8'));
     const choose=ir.functions.find(fn=>fn.sourceName==='choose'),answers=choose.variables.filter(variable=>variable.name==='answer');
     assert.equal(answers.length,2);assert.notEqual(answers[0].scope,answers[1].scope);
-    const dwarf=spawnSync(dwarfTool,['--debug-info',map.debugInfo],{encoding:'utf8'});assert.equal(dwarf.status,0,dwarf.stderr);
+    const dwarf=spawnSync(dwarfTool,['--debug-info',map.debugInfo],{encoding:'utf8',maxBuffer:32*1024*1024});assert.equal(dwarf.status,0,dwarf.stderr||dwarf.error?.message);
     assert.equal([...dwarf.stdout.matchAll(/DW_AT_name\s+\("answer"\)/g)].length,2);
     assert.match(dwarf.stdout,/DW_TAG_lexical_block/);assert.match(dwarf.stdout,/DW_AT_name\s+\("item"\)/);
     assert.match(dwarf.stdout,/DW_AT_name\s+\("failure"\)/);

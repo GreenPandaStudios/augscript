@@ -45,6 +45,13 @@ unsafe:
 `);
     const checked=checkProject(loadProject(root));assert.deepEqual(checked.diagnostics.filter(d=>d.severity!=='warning'),[]);
     const compiled=compileLLVM(checked,{release,native:[{directory:root,libraries:[filename],runtimeFiles:[]}]});
+    if(!mac){
+      const dynamic=spawnSync('readelf',['--dynamic','--dyn-syms','--wide',compiled.output],{encoding:'utf8'});
+      assert.equal(dynamic.status,0,dynamic.stderr);
+      assert.doesNotMatch(dynamic.stdout,/Shared library: \[libaug_runtime/,'core-only programs must contain one statically linked runtime');
+      const exports=[...dynamic.stdout.matchAll(/\bGLOBAL\s+DEFAULT\s+\d+\s+(aug_\w+)/g)].map(match=>match[1]).sort();
+      assert.deepEqual(exports,['aug_execution_current','aug_task_checkpoint_hook'],'export only the private hook boundary');
+    }
     const result=spawnSync(compiled.output,[],{encoding:'utf8',timeout:10000});
     assert.equal(result.status,0,result.stderr||result.error?.message);
     assert.equal(result.stdout,cancel?'cancelled by hook\n':'5\n');

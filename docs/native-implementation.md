@@ -107,6 +107,19 @@ Runtime packs measure private execution flag and fiber offsets on each target.
 LLVM functions retain their current execution pointer across suspension, as
 the C reference does, and observe both task fibers and checkpoint hooks.
 
+GNU/Linux packs include a verified core archive as well as the shared runtime.
+Programs that need no dynamic runtime component link that archive directly;
+crypto and HTTP programs use one shared core with their components. Both paths
+retain the same task, root and ownership behavior. Only the existing private
+checkpoint-hook boundary is exported by core-only executables. The archive is
+a maintainer-built input; application compilation does not invoke a C compiler.
+
+The compressed-stream disconnect regression now receives enough chunks to
+trigger managed collection before disconnecting. It exposed temporary header
+strings that were not rooted while another argument was allocated. Header
+construction now roots those values before allocating its name; the check
+also verifies disconnect logging and that the server remains alive.
+
 LLVM output includes DWARF source lines and variables in both development and
 optimized builds. The compiler pack contains `dsymutil`, which writes an adjacent
 dSYM without an SDK. `.augmap.json` identifies the IR, object, executable, debug

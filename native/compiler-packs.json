@@ -9,9 +9,9 @@
       "minimumOS": "14.0",
       "archive": {
         "url": "https://github.com/GreenPandaStudios/augscript/releases/download/v0.21.0/aug-llvm-macos-arm64.tar.gz",
-        "sha256": "66282a0fc39bfc15476c6c88c154a2106601726320b69a89d715b5093809d8e8",
-        "maximumDownloadBytes": 216526280,
-        "maximumUnpackedBytes": 577257356,
+        "sha256": "6f7784e5cb520a3cc9bcf25a90217eff29b1ba15b85420e101ae0435af97e5e4",
+        "maximumDownloadBytes": 216526851,
+        "maximumUnpackedBytes": 577258648,
         "fileManifest": "files.json"
       }
     },

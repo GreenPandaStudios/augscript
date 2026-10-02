@@ -99,6 +99,14 @@ AugValue aug_headers_with(AugValue headers, AugValue name, AugValue value) {
   header_add(result, name.as.object->text, name.as.object->text_length, value.as.object->text, value.as.object->text_length);
   aug_freeze(result); aug_release(&retained); aug_frame_leave(&frame); return result;
 }
+static AugValue headers_with_name(AugValue headers, const char *name, AugValue value) {
+  /* Root the value before allocating the name: either allocation can collect. */
+  AugValue roots[3] = {headers, value, aug_null()};
+  AugFrame frame; aug_frame_enter(&frame, roots, 3);
+  roots[2] = aug_string(name);
+  AugValue result = aug_headers_with(roots[0], roots[2], roots[1]);
+  aug_frame_leave(&frame); return result;
+}
 AugValue aug_headers_get(AugValue headers, AugValue name) {AugValue value = header_get(headers, aug_cstring(name), false); return value.tag == AUG_NULL ? aug_null() : value;}
 AugValue aug_headers_all(AugValue headers, AugValue name) {
   AugValue result = aug_list_new(NULL, 0); AugFrame frame; aug_frame_enter(&frame, &result, 1); AugValue entries = aug_field(headers, 0);
@@ -171,7 +179,7 @@ static const AugRoute *select_route(AugValue request, const AugRoute *routes, si
       for(size_t layer=0;layer<routes[i].policy_count;layer++)if(routes[i].policies[layer].kind==AUG_HTTP_POLICY_CORS){
         AugValue headers=aug_headers_new();AugFrame frame;aug_frame_enter(&frame,&headers,1);
         if(cors_apply(&routes[i].policies[layer],request,&headers,true)) {
-          headers=aug_headers_with(headers,aug_string("access-control-allow-methods"),requested);
+          headers=headers_with_name(headers,"access-control-allow-methods",requested);
           *failure=aug_http_response_full(aug_null(),aug_int(204),headers);
         }else {int status=aug_has_error?aug_http_error_status():403;if(aug_has_error)aug_take_error();*failure=aug_http_problem(status);}
         aug_frame_leave(&frame);return NULL;
@@ -261,9 +269,9 @@ static bool cors_apply(const AugHttpPolicy *policy,AugValue request,AugValue *he
   AugValue origin=header_get(aug_field(request,2),"origin",true);if(aug_has_error)return false;if(origin.tag==AUG_NULL)return !preflight;
   const char *name=aug_cstring(origin);bool wildcard=listed(policy->origins,"*");
   if(!wildcard&&!listed(policy->origins,name)){request_error("HttpForbidden");return false;}
-  *headers=aug_headers_with(*headers,aug_string("access-control-allow-origin"),wildcard?aug_string("*"):origin);
-  *headers=aug_headers_with(*headers,aug_string("vary"),aug_string("Origin"));
-  if(policy->credentials)*headers=aug_headers_with(*headers,aug_string("access-control-allow-credentials"),aug_string("true"));
+  *headers=headers_with_name(*headers,"access-control-allow-origin",wildcard?aug_string("*"):origin);
+  *headers=headers_with_name(*headers,"vary",aug_string("Origin"));
+  if(policy->credentials)*headers=headers_with_name(*headers,"access-control-allow-credentials",aug_string("true"));
   if(preflight) {
     AugValue asked=header_get(aug_field(request,2),"access-control-request-headers",true);if(aug_has_error)return false;
     if(asked.tag==AUG_STRING){char *copy=strdup(aug_cstring(asked));if(!copy)abort();char *save=NULL;
@@ -271,7 +279,7 @@ static bool cors_apply(const AugHttpPolicy *policy,AugValue request,AugValue *he
         bool found=false;const char *allowed=policy->headers;while(*allowed){const char *end=strchr(allowed,',');if(!end)end=allowed+strlen(allowed);if((size_t)(end-allowed)==size&&!strncasecmp(allowed,part,size))found=true;allowed=*end?end+1:end;while(*allowed==' ')allowed++;}
         if(!size||!found){free(copy);request_error("HttpForbidden");return false;}}
       free(copy);}
-    *headers=aug_headers_with(*headers,aug_string("access-control-allow-headers"),aug_string(policy->headers));
+    *headers=headers_with_name(*headers,"access-control-allow-headers",aug_string(policy->headers));
   }
   return !aug_has_error;
 }
@@ -323,7 +331,7 @@ static AugValue policy_response(AugHttpSession *session,AugValue response) {
   if(session->roots[4].tag==AUG_NULL&&!session->compress)return response;
   AugValue roots[2]={response,aug_field(response,2)};AugFrame frame;aug_frame_enter(&frame,roots,2);
   if(session->roots[4].tag==AUG_OBJECT){AugValue entries=aug_field(session->roots[4],0);for(size_t i=0;i<entries.as.object->field_count;i++){AugValue pair=entries.as.object->fields[i];roots[1]=aug_headers_with(roots[1],aug_field(pair,0),aug_field(pair,1));}}
-  if(session->compress){roots[1]=aug_headers_with(roots[1],aug_string("content-encoding"),aug_string("gzip"));roots[1]=aug_headers_with(roots[1],aug_string("vary"),aug_string("Accept-Encoding"));}
+  if(session->compress){roots[1]=headers_with_name(roots[1],"content-encoding",aug_string("gzip"));roots[1]=headers_with_name(roots[1],"vary",aug_string("Accept-Encoding"));}
   AugValue result=aug_http_response_full(aug_field(roots[0],0),aug_field(roots[0],1),roots[1]);aug_frame_leave(&frame);return result;
 }
 AugValue _aug_http_log(AugValue method,AugValue path,AugValue status,AugValue milliseconds) {
@@ -375,7 +383,7 @@ serialize:;
   if(session.compress&&!session.streaming)session.roots[2]=gzip_bytes(session.roots[2]);
   if(aug_has_error||session.roots[2].as.object->text_length>response_limit){if(aug_has_error)aug_take_error();session.roots[1]=aug_http_problem(500);status=500;session.roots[2]=aug_json_stringify(aug_field(session.roots[1],0));}
   session.roots[3]=aug_field(session.roots[1],2);
-  if(header_get(session.roots[3],"content-type",false).tag==AUG_NULL)session.roots[3]=aug_headers_with(session.roots[3],aug_string("content-type"),aug_string(type));
+  if(header_get(session.roots[3],"content-type",false).tag==AUG_NULL)session.roots[3]=headers_with_name(session.roots[3],"content-type",aug_string(type));
   if(!strcmp(aug_cstring(method),"HEAD")||status==204||status==304)session.roots[2]=aug_bytes("",0,AUG_BYTES_KIND);
   session.roots[1]=aug_http_response_full(session.roots[2],aug_int(status),session.roots[3]);
   AugValue result=session.roots[1];aug_frame_leave(&frame);return result;
