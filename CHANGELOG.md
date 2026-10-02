@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Select LLVM for ordinary builds, runs and same-file tests on the qualified macOS ARM64 and GNU/Linux x86-64/ARM64 hosts. Obtain verified compiler/runtime artifacts automatically; keep C available as an explicit migration reference. Container deployments copy the executable with its neighboring libraries and notices.
+- Use the C-compatible DWARF type reader for tagged August storage so supported LLDB versions can display locals. Source files, locations and producer remain August; native debugger expressions do not evaluate August syntax.
 - Add GNU/Linux x86-64 and ARM64 LLVM candidates with an explicit glibc 2.36 floor, ELF process entry, SDK-free linking, relocatable runtimes, and checked libc/C++ requirements. Musl and cross compilation remain unsupported.
 - Handle native archive write failures through the CLI and discard rejected extraction state; verify large archives across bounded reader chunks.
 - Build compiler packs for each target and merge their exact pins before npm/VSIX packaging. Require minimum-platform consumer checks before creating the release draft; local library qualification records its transport separately from public imports.

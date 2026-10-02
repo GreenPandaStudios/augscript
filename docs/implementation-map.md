@@ -1,5 +1,11 @@
 # Approved language changes — 0.15
 
+## 0.21 additions (pending release)
+
+Checked execution IR lowers directly through LLVM 23.1.2. Compiler packs contain the optimizer, object generator, linker and prebuilt runtime; application consumers need no native toolchain on macOS 14+ ARM64 or GNU/Linux x86-64/ARM64 with glibc 2.36+. Normal builds select LLVM; `--backend c` remains an explicit migration reference. Platform qualification and publication are tracked in [native implementation](native-implementation.md).
+
+Separate public PyTorch, SQLite, zlib and Rust BLAKE3 repositories use ordinary imports, format 2 manifests, reviewed ownership descriptors, checksummed platform artifacts and per-host locks. Binding maintainers check physical declarations using `aug bind header` with explicit Clang. Applications keep the executable, `lib` and `share` deployment directories together. Callbacks, exported August libraries, borrowed native views, GPU and cross compilation remain deferred.
+
 ## 0.19 additions
 
 Deterministic adjacent source specs, used dependency surfaces with offline links, optional comment requirements, source-package specs, and VS Code preview/generation are described in [compiled specifications](specifications.md). Boolean operators use only `and`, `or`, and `not`; construction uses `initialize` inside declarations. DI uses `implement … with …` and `resolve … to …`; migration is available through the CLI and editor.

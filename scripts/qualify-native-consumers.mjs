@@ -64,6 +64,20 @@ if(localCompiler){
     }
   }
 }
+// No native package or backend setting can trigger this selection: ordinary
+// August applications must use the installed LLVM pack as their default.
+const starter=join(directory,'default-starter');
+aug('init',starter);
+assert.equal(aug('run',starter),'Hello, August!\n');
+assert.equal(JSON.parse(aug('test',starter,'--json')).passed,1);
+const defaultMap=JSON.parse(readFileSync(join(starter,'.aug-build/default-starter.augmap.json')));
+assert.equal(defaultMap.backend,'llvm');assert.equal(defaultMap.developmentToolchain,false);
+assert.ok(!existsSync(join(starter,'.aug-build/program.c')));
+const starterLock=readFileSync(join(starter,'aug.lock.json'),'utf8');
+assert.equal(aug('run',starter,'--offline','--frozen'),'Hello, August!\n');
+assert.equal(readFileSync(join(starter,'aug.lock.json'),'utf8'),starterLock);
+console.log('ordinary starter: default LLVM, same-file test and frozen/offline pass without native tools');
+retireDeployment(starter);
 const cases=[
   {name:'pytorch',expected:'5\n7\n9\n21\n',source:`import Tensor and TensorError and tensor and add and sum and values from REPOSITORY
 try:
@@ -361,6 +375,7 @@ const notices=join(relocatedStandard,'share/august-native');
 assert.ok(existsSync(notices),'Runtime components must retain redistribution metadata.');
 console.log('JSON, clock, crypto and HTTP form callbacks pass without a native toolchain');
 const report={format:1,compiler:cliPackage.version,host:process.platform+'-'+process.arch,
+  ordinaryStarter:{backend:defaultMap.backend,developmentToolchain:defaultMap.developmentToolchain,sameFileTests:1,frozenOffline:true,generatedC:false},
   installation:'npm-archive-in-node_modules',nativeToolsOnPath:false,sourceCache:'fresh',artifactCache:'fresh',
   libraryTransport:candidateRoot?'local-candidates':'public-release-assets',compilerTransport:localCompiler?'local-release-asset':'public-release-asset',
   osRelease:osRelease(),glibcVersion:process.platform==='linux'?process.report.getReport().header.glibcVersionRuntime:undefined,

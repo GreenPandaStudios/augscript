@@ -87,6 +87,16 @@ jobs:
           AUG_SANITIZER_CC: ${{ github.workspace }}/.aug-build/llvm-maintainer/bin/clang
         run: node scripts/sanitize-core.mjs --backend llvm
       - run: node scripts/build-llvm-pack.mjs
+      - name: Qualify LLVM performance against the C reference
+        run: |
+          node scripts/benchmark-suite.mjs --backend llvm --compare-c-backend --iterations 15 --warmup 3 --http-rounds 5 --http-requests 5000 --output .aug-build/llvm-migration-performance.json
+          node scripts/check-llvm-performance.mjs .aug-build/llvm-migration-performance.json
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: llvm-macos-performance
+          include-hidden-files: true
+          path: .aug-build/llvm-migration-performance.json
+          if-no-files-found: error
       - run: npm run package:packages
       - run: npm run package:extension
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7

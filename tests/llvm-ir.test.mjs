@@ -27,7 +27,7 @@ test('checked IR carries typed root cells, public labels, source locations and z
   assert.equal(fn.values[fn.variables.find(variable=>variable.name==='answer').slot].storage,'scalar-value');
   assert.ok(ir.coverage.some(point=>point.file.endsWith('/math.aug')&&point.line===5));
   const llvm=generateLLVM(ir);
-  assert.match(llvm,/DICompileUnit\(language: 32768/);assert.match(llvm,/DILocalVariable\(name: "answer"/);
+  assert.match(llvm,/DICompileUnit\(language: DW_LANG_C99/);assert.match(llvm,/producer: "August LLVM"/);assert.match(llvm,/DILocalVariable\(name: "answer"/);
   assert.match(llvm,/#dbg_declare\(ptr %slot_/);assert.match(llvm,/call void @aug_coverage_register/);
 }));
 test('IR verification rejects malformed slots, cleanup edges, callbacks and private ABI operations before LLVM emission',()=>fixture(original=>{

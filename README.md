@@ -4,7 +4,7 @@
 
 AugScript is an experimental, statically checked language for developers working with LLMs. Its tenets are **simplicity** and **developer scalability**: a module should explain its dependencies, state changes, errors, and public behavior in the code itself.
 
-The TypeScript compiler emits C11 and builds a native executable. This repository includes the compiler, managed runtime, CLI, standard capabilities, examples, tests, documentation, Docker image recipes, and VS Code extension. Public exports, labeled inputs, checked errors, same-file tests, and generated specifications keep behavior close to the code that implements it.
+The TypeScript compiler lowers checked August through LLVM to a native executable. This repository includes the compiler, managed runtime, CLI, standard capabilities, examples, tests, documentation, Docker image recipes, and VS Code extension. Public exports, labeled inputs, checked errors, same-file tests, and generated specifications keep behavior close to the code that implements it.
 
 ## Start a project
 
@@ -17,7 +17,9 @@ cd hello-august
 aug run
 ```
 
-Requires Node.js 24+ and npm; running native programs also needs a C11 compiler on macOS or Linux. `aug run` prepares declared packages and the native dependencies the program uses, compiles it, and starts it. The starter refuses to overwrite a nonempty directory. [Your first project](https://greenpandastudios.github.io/augscript/getting-started) walks through running, testing, and explaining it. See [the August book](docs/learn/index.md), [downloadable example projects](docs/examples/index.md) with code beside compiled specs, and [packages](docs/packages.md) for toolchain details.
+Requires Node.js 24+ and npm on macOS 14+ ARM64 or GNU/Linux x64/ARM64 with glibc 2.36+. `aug run` downloads its verified LLVM/runtime pack, prepares declared packages, compiles the project, and starts it. Consumers do not install Clang, LLVM, or an SDK. The starter refuses to overwrite a nonempty directory. [Your first project](https://greenpandastudios.github.io/augscript/getting-started) walks through running, testing, and explaining it. See [the August book](docs/learn/index.md), [downloadable example projects](docs/examples/index.md) with code beside compiled specs, and [native packages](docs/native-packages.md).
+
+These instructions target the pending 0.21.0 release. The published 0.20.1 CLI uses the C backend and requires a C11 compiler. See [implementation status](docs/native-implementation.md) for exact qualification evidence.
 
 ## The language
 

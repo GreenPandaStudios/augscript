@@ -7,7 +7,7 @@ const root=resolve(import.meta.dirname,'..');
 llvmPlatform();
 if(!process.env.AUG_LLVM_HOME)throw new Error('LLVM parity requires a matching maintainer tool pack in AUG_LLVM_HOME');
 const suites=[
-  'llvm-ir','llvm-backend','approved-design','compiler','language-conformance','language-evolution',
+  'llvm-ir','llvm-backend','llvm-execution','approved-design','compiler','language-conformance','language-evolution',
   'robustness','runtime-optimization','oidc-login','documentation','concurrency','interceptors',
   'web-foundation','web-actions','web-http','web-testing','web-policies','web-streams','web-tls',
 ];

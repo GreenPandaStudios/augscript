@@ -5,6 +5,13 @@ The [accepted architecture](native-interop-llvm-plan.md) is being implemented on
 LibTorch, SQLite, zlib, and Rust BLAKE3, compiled through LLVM on macOS ARM64.
 Passing a linker probe or metadata test does not complete that delivery.
 
+The 0.21.0 candidate now selects LLVM for ordinary `build`, `run`, `test` and
+`bench` commands. C remains an explicit migration reference. Its updated
+language, debugger, sanitizer, performance and clean-consumer gates must pass
+on all three hosts before the compiler release is published. The published
+0.20.1 CLI still uses C. CPU LibTorch `v0.1.4` and the other three libraries'
+`v0.1.3` releases are already public.
+
 The package manifest now has a checked format 2 for native dependencies. It pins
 the binding descriptor, upstream identity, target requirements, archive hash and
 size limits, link inputs, deployment files, and component versions. Source
@@ -19,7 +26,7 @@ Native failures use their resolved August constructors and method tables.
 
 All four real adapters have been built and tested locally. Ten August cases
 pass through the installed tool pack with native compilers, Git and SDK paths
-unavailable to the test processes. Their `v0.1.3` sources and native archives are
+unavailable to the test processes. Their versioned sources and native archives are
 published in separate public repositories. A second check installs the npm CLI
 archives into a fresh `node_modules`, downloads each library from GitHub, and
 runs its program through LLVM using both URL imports and named package aliases.
@@ -96,6 +103,9 @@ Concrete nonnullable scalar cells stay outside the GC root frame; managed values
 retain their registered roots. LLVM preserves integer wrapping and the runtime's
 mixed numeric dispatch. Collection services use pointer arguments across the
 private runtime boundary, avoiding target-specific C aggregate calling rules.
+Runtime packs measure private execution flag and fiber offsets on each target.
+LLVM functions retain their current execution pointer across suspension, as
+the C reference does, and observe both task fibers and checkpoint hooks.
 
 LLVM output includes DWARF source lines and variables in both development and
 optimized builds. The compiler pack contains `dsymutil`, which writes an adjacent
@@ -103,7 +113,10 @@ dSYM without an SDK. `.augmap.json` identifies the IR, object, executable, debug
 file and selected native artifacts. Tests inspect the actual DWARF for source
 functions, sibling lexical scopes, parameters, loop bindings and catch variables.
 Local variable declarations appear at their source position. Debugger values use the real tagged representation;
-rich views are future work. LLVM tests also collect statement-line coverage,
+LLDB uses its C-compatible type reader for that representation while the source
+and producer identify August. This fixes missing variables in LLDB versions
+that cannot read an unregistered vendor language. Rich views and August
+expression evaluation are future work. LLVM tests also collect statement-line coverage,
 including zero counts for unexecuted statements. Setup assertions do not count
 toward a test case's required assertions. Same-file tests honor the configured
 development or release optimization mode.
@@ -155,6 +168,8 @@ same checked programs and independent output checks. Scalar lowering retains
 wrapping int64 arithmetic, IEEE comparisons and checked runtime division. Tests
 include the signed minimum divided by minus one, NaN, optional values and mixed
 integer/float comparisons. Performance qualification is still in progress.
+The current local Mac candidate passes the frozen limits; both GNU/Linux CI
+producer jobs now run the same paired workloads and preserve their raw reports.
 The frozen migration limits live in `native/llvm-performance-gates.json`: each
 batch median may rise by at most 20% or 0.5ms against the same August program on
 the C backend; HTTP throughput may fall by at most 20%. Qualification requires
@@ -188,8 +203,8 @@ passed. An installed CLI ran CPU LibTorch, SQLite, zlib and Rust BLAKE3 using
 verified local candidates, including their same-file tests, frozen/offline locks,
 relocation, owned-resource cleanup and task calls. The independent native clients
 ran 1,000 cleanup cycles per library. These checks use local native archives and
-do not qualify public Linux downloads. All four libraries now publish checksum-pinned
-`v0.1.3` archives for macOS ARM64, GNU/Linux x86-64 and GNU/Linux ARM64. The
+do not qualify public Linux downloads. All four libraries publish checksum-pinned
+archives for macOS ARM64, GNU/Linux x86-64 and GNU/Linux ARM64. The
 per-architecture workflows also run public repository imports in a separate
 Debian 12 consumer container without compilers, Git or development headers.
 Only the unpublished compiler pack is supplied locally for that check.

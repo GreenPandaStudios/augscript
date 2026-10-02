@@ -50,6 +50,10 @@ jobs:
             docker exec qualification node bin/aug.mjs bind header "/work/aug-$library/native/include/$(case "$library" in pytorch) echo aug_torch.h;; *) echo "aug_$library.h";; esac)" --contract "/work/aug-$library/native.abi.json" --target "$(case '${{ matrix.host }}' in linux-x64) echo x86_64-unknown-linux-gnu;; *) echo aarch64-unknown-linux-gnu;; esac)" --clang clang --output "/work/.aug-build/header-check-$library"
             docker exec qualification node "/work/aug-$library/native/build.mjs"
           done
+      - name: Qualify LLVM performance against the C reference
+        run: |
+          docker exec -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools qualification node scripts/benchmark-suite.mjs --backend llvm --compare-c-backend --iterations 15 --warmup 3 --http-rounds 5 --http-requests 5000 --output /work/.aug-build/llvm-migration-performance.json
+          docker exec qualification node scripts/check-llvm-performance.mjs .aug-build/llvm-migration-performance.json
       - name: Qualify installed CLI against the exact local candidates
         run: |
           docker exec qualification npm run package:packages
@@ -76,6 +80,7 @@ jobs:
           mkdir -p .aug-build/linux-evidence
           docker cp qualification:/work/.aug-build/native-consumer-qualification.json .aug-build/linux-evidence/qualification.json || true
           docker cp public-consumer:/consumer/.aug-build/native-consumer-qualification.json .aug-build/linux-evidence/public-clean-qualification.json || true
+          docker cp qualification:/work/.aug-build/llvm-migration-performance.json .aug-build/linux-evidence/ || true
           docker cp "qualification:/work/.aug-build/compiler-pack-${{ matrix.host }}.json" .aug-build/linux-evidence/ || true
           docker cp "qualification:/work/.aug-build/aug-llvm-${{ matrix.host }}.tar.gz" .aug-build/linux-evidence/ || true
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7

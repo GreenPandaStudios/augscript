@@ -13,8 +13,9 @@ types, errors, and ownership before generating LLVM IR and a native executable.
 
 This is development work for `0.21.0`, not a capability of the published
 `0.20.1` CLI. Public release installation is being qualified. The first target is
-macOS 14 or later on Apple Silicon. Native packages select LLVM automatically;
-ordinary projects retain the C backend during migration.
+macOS 14 or later on Apple Silicon. LLVM is the default for ordinary projects
+and native packages. The C migration reference requires `--backend c` or
+`backend: c` in `main.yaml`; native ABI packages require LLVM.
 
 Linux x86-64 and ARM64 support is being qualified on Debian 12 and Ubuntu,
 with glibc 2.36 or later. Both architectures pass LLVM regression and installed

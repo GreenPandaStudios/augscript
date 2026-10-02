@@ -31,14 +31,13 @@ The exact versions, archive URLs, and SHA-256 values are in [`native-dependencie
 
 ## Release gates still open
 
-The [LLVM/native preview](native-implementation.md) supports real repository
-imports of CPU LibTorch, SQLite, zlib and Rust BLAKE3 on macOS ARM64. Installed
-CLI checks cover public downloads, exact locks, offline reuse, relocated bundles
-and finite ownership cases without native tools on PATH. The compiler pack is
-still awaiting publication. The macOS 14 ARM64 CI consumer gate passed on commit
-`298c0a6`; later compiler changes must pass it again. Full language
-parity, debug information, Linux packs and switching the default backend remain
-open; ordinary applications still use C during migration.
+The [LLVM/native candidate](native-implementation.md) supports real repository
+imports of CPU LibTorch, SQLite, zlib and Rust BLAKE3 on macOS ARM64 and
+GNU/Linux x86-64/ARM64 with glibc 2.36+. Installed CLI checks cover public
+downloads, exact locks, offline reuse, relocated bundles and finite ownership
+cases without native tools or development headers. Language parity, DWARF and
+core sanitizers are implemented. The 0.21.0 candidate selects LLVM by default;
+its updated platform gates and public compiler release remain pending.
 
 - **Platform support:** the full pinned web/crypto bootstrap passes on macOS ARM and Linux ARM. [Docker build/run bases](docker.md) run core, web, and crypto programs on Linux. Linux x86-64 runs in CI; other platforms remain unverified.
 - **Concurrency and ownership:** tasks use one OS thread. The [conformance suite](language-conformance.md) exercises injected captures, mutation after a child starts inside `borrow`, owned `Shared<T>` cleanup, branch joins, cancellation, and the public `Task<T>` error contract. A 1.0 support claim still depends on the platform, distribution, and compatibility gates.
@@ -46,4 +45,4 @@ open; ordinary applications still use C during migration.
 - **Package and ABI stability:** the [matching 0.19.0 npm packages](packages.md#npm-registry) are published and their core starter workflow is verified. Reproducible releases, compatibility policy, and native adapter ABI still need stable release gates.
 - **Operational behavior:** failure handling, cancellation, instrumentation, platform builds, and resource ceilings need repeated CI and field testing.
 
-For a trial deployment, pin the compiler and native lock, run the project's tests and `aug spec --check`, review the generated C/native linker inputs, and validate the executable under your own load and failure conditions. Track the [gap ledger](web-library-gaps.md) before promising production service levels.
+For a trial deployment, pin the compiler and native lock, run the project's tests and `aug spec --check`, review its native artifact and deployment inputs, and validate the executable under your own load and failure conditions. Track the [gap ledger](web-library-gaps.md) before promising production service levels.

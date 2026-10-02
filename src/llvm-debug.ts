@@ -23,8 +23,11 @@ export class DebugMetadata {
   constructor(ir:AugustIR,optimized:boolean){
     this.optimized=optimized;
     const source=ir.functions.find(fn=>fn.name===ir.main)!;
-    // 0x8000 is a vendor language code; August source is not labeled as C.
-    this.unit=this.node(`distinct !DICompileUnit(language: 32768, file: ${this.file(source.span.file)}, producer: "August LLVM", isOptimized: ${optimized}, runtimeVersion: 0, emissionKind: FullDebug)`);
+    // Use LLDB's C type reader for the concrete tagged C-compatible storage.
+    // An unregistered vendor language prevents older LLDBs from finding locals.
+    // Source paths, names and producer still identify the August program; this
+    // does not enable August expression evaluation in the debugger.
+    this.unit=this.node(`distinct !DICompileUnit(language: DW_LANG_C99, file: ${this.file(source.span.file)}, producer: "August LLVM", isOptimized: ${optimized}, runtimeVersion: 0, emissionKind: FullDebug)`);
     this.subroutine=this.node(`!DISubroutineType(types: ${this.node('!{}')})`);
     const tag=this.node('!DIBasicType(name: "tag", size: 32, encoding: DW_ATE_unsigned)');
     const integer=this.node('!DIBasicType(name: "int64", size: 64, encoding: DW_ATE_signed)');

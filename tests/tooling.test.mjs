@@ -106,7 +106,7 @@ test('persistent LSP handles split UTF-8 frames, local edits, definitions and ca
   } finally { child.kill(); rmSync(root, { recursive: true, force: true }); }
 });
 
-test('coverage records executed and unexecuted lines; native builds write source metadata', () => {
+test('coverage records executed and unexecuted lines; C reference builds write source metadata', () => {
   const root = create({ 'main.aug': '', 'math.aug': `choose(bool left) returns int:
     if left:
         return 1
@@ -122,7 +122,7 @@ test choose:
     assert.ok(coverage.covered > 0 && coverage.covered < coverage.executable, result.stdout);
     assert.ok(coverage.files[0].lines.some(line => line.line === 4 && line.count === 0));
     assert.ok(existsSync(join(root, '.aug-build', 'coverage', 'lcov.info')));
-    const build = command(root, 'build', ['--json']); assert.equal(build.status, 0, build.stderr);
+    const build = command(root, 'build', ['--json','--backend','c']); assert.equal(build.status, 0, build.stderr);
     const output = JSON.parse(build.stdout); assert.ok(existsSync(output.sourceMap));
     assert.match(readFileSync(join(root, '.aug-build', 'program.c'), 'utf8'), /#line 3 ".*math\.aug"/);
   } finally { rmSync(root, { recursive: true, force: true }); }
@@ -144,10 +144,10 @@ catch ConversionError error:
   } finally { rmSync(root, { recursive: true, force: true }); }
 });
 
-test('native diagnostics point back to a foreign declaration and architecture snapshots show public changes', () => {
+test('C reference diagnostics point back to a foreign declaration and architecture snapshots show public changes', () => {
   const root = create({ 'main.aug': '', 'foreign.aug': 'extern C stdin() returns int\n', 'math.aug': 'value() returns int { return 1 }\n' });
   try {
-    const native = command(root, 'build', ['--json']); assert.equal(native.status, 1, native.stdout);
+    const native = command(root, 'build', ['--json','--backend','c']); assert.equal(native.status, 1, native.stdout);
     assert.match(readFileSync(join(root,'foreign.aug'),'utf8'),/^\/\/ aug-spec:/);
     assert.ok(JSON.parse(native.stdout).some(issue => issue.code === 'NATIVE' && issue.file.endsWith('/foreign.aug') && issue.line === 2), native.stderr || native.stdout);
     const baseline = command(root, 'explain', ['--file', join(root, 'math.aug'), '--json']); assert.equal(baseline.status, 0);

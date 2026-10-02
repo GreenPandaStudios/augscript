@@ -4,7 +4,7 @@ Start with the diagnostic's file, line, and message. The code identifies the rul
 
 Terminal diagnostics include the source line, a pointer to the location, and a `help:` explanation. `aug check --json` preserves structured diagnostics for tooling. Fix the first dependency or configuration error before investigating follow-on name errors.
 
-If `aug run` cannot prepare or start a program, its message identifies the failed stage. A missing C compiler includes the host installation command and the `CC` override. A failed download identifies the library and URL; retry after checking the connection. A failed native build links its log. An offline cache miss explains how to prepare it online. Changed installed source packages require an explicit `aug install` so a run does not hide unexpected edits. A program stopped by a signal reports that signal after its own runtime output.
+If `aug run` cannot prepare or start a program, its message identifies the failed stage. A missing or incompatible artifact names the required platform and version. A failed download identifies the library and URL; retry after checking the connection. An offline cache miss explains how to prepare it online. C reference builds report missing host tools separately. Changed installed source packages require an explicit `aug install` so a run does not hide unexpected edits. A program stopped by a signal reports that signal after its own runtime output.
 
 When a fix changes a dependency, effect, error, or mutable input, review the caller's contract too. A suggested edit can satisfy a language rule without deciding the right recovery or design for your application. [The book](learn/index.md) includes deliberate mistakes you can check and repair yourself.
 

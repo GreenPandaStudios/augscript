@@ -1,6 +1,6 @@
 # Develop in a VS Code Dev Container
 
-Run the August compiler, tests, and native dependencies inside a Linux container while editing your local project in VS Code. This keeps the C toolchain off your host. The project folder stays on your machine; the compiler and prepared dependencies live in the container image.
+Run the August compiler and tests inside a Linux container while editing your local project in VS Code. The project folder stays on your machine; the CLI downloads its verified compiler/runtime pack into the container's cache. No native toolchain is required on the host or in this development image. These instructions target the pending 0.21.0 release.
 
 You need Docker with a running Linux engine, VS Code, and Microsoft's [Dev Containers extension](https://code.visualstudio.com/docs/devcontainers/containers). Creating a new project also needs Node.js 24 and npm on the host. You can instead open an existing project or a [downloaded example](examples/index.md).
 
@@ -17,20 +17,16 @@ cd hello-august
 mkdir .devcontainer
 ```
 
-Save `.devcontainer/Dockerfile` with these contents. It installs the published CLI and prepares all native libraries, including web and crypto. No host C compiler is required.
+Save `.devcontainer/Dockerfile` with these contents. It installs the CLI; the first run obtains the matching compiler/runtime pack and package artifacts.
 
 ```dockerfile
 FROM node:24-bookworm
-ARG AUG_VERSION=0.20.1
-ENV AUG_NATIVE_HOME=/opt/augscript/.aug-native
+ARG AUG_VERSION=0.21.0
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-       git clang libclang-rt-14-dev make cmake m4 autoconf \
-       automake libtool python3 zlib1g-dev ca-certificates \
+    && apt-get install -y --no-install-recommends ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 RUN npm install --global --ignore-scripts --no-audit --no-fund \
-       @greenpandastudios/aug-cli@${AUG_VERSION} \
-    && aug-native
+       @greenpandastudios/aug-cli@${AUG_VERSION}
 WORKDIR /workspace
 USER node
 CMD ["sleep", "infinity"]
@@ -55,20 +51,17 @@ Save `.devcontainer/devcontainer.json` beside it:
   },
   "customizations": {
     "vscode": {
-      "extensions": ["augscript.augscript"],
-      "settings": {
-        "augscript.nativeHome": "/opt/augscript/.aug-native"
-      }
+      "extensions": ["augscript.augscript@prerelease"]
     }
   }
 }
 ```
 
-The editor installs the August extension inside the container and points it at the prepared native cache. Terminal commands run as the image's `node` user. On Linux, the Dev Container tooling adjusts that user's ID to match your local files. The [non-root user guide](https://code.visualstudio.com/remote/advancedcontainers/add-nonroot-user) explains this behavior.
+The editor installs the August preview extension inside the container. Its bundled compiler and terminal CLI use the same artifact cache. Terminal commands run as the image's `node` user. On Linux, the Dev Container tooling adjusts that user's ID to match your local files. The [non-root user guide](https://code.visualstudio.com/remote/advancedcontainers/add-nonroot-user) explains this behavior.
 
 ## Open and run it
 
-Open `hello-august` in VS Code. From the Command Palette, choose **Dev Containers: Reopen in Container**. The first build downloads and compiles the native libraries and can take several minutes. Later opens reuse the built image. When the container is ready, the configured creation command checks your project.
+Open `hello-august` in VS Code. From the Command Palette, choose **Dev Containers: Reopen in Container**. The first image build installs the CLI; the first `aug run` downloads its compiler pack. Later opens and runs reuse these inputs. When the container is ready, the configured creation command checks your project.
 
 Open a terminal **in that VS Code window** and run:
 

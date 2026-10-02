@@ -8,8 +8,9 @@ export interface RuntimeLayout {
   abi:'compiler-private-runtime-v1';valueSize:16;valueAlignment:8;valuePayloadOffset:8;
   frameSize:24;methodEntrySize:24;pointerSize:8;schemaSize:48;schemaPointerMakerOffset:40;
   routeSize:56;routePointerHandlerOffset:48;policySize:56;httpErrorSize:16;
+  executionErrorOffset:40;executionCancelledOffset:41;executionFiberOffset:48;booleanSize:1;
 }
-export const runtimeLayout:RuntimeLayout={abi:'compiler-private-runtime-v1',valueSize:16,valueAlignment:8,valuePayloadOffset:8,frameSize:24,methodEntrySize:24,pointerSize:8,schemaSize:48,schemaPointerMakerOffset:40,routeSize:56,routePointerHandlerOffset:48,policySize:56,httpErrorSize:16};
+export const runtimeLayout:RuntimeLayout={abi:'compiler-private-runtime-v1',valueSize:16,valueAlignment:8,valuePayloadOffset:8,frameSize:24,methodEntrySize:24,pointerSize:8,schemaSize:48,schemaPointerMakerOffset:40,routeSize:56,routePointerHandlerOffset:48,policySize:56,httpErrorSize:16,executionErrorOffset:40,executionCancelledOffset:41,executionFiberOffset:48,booleanSize:1};
 const symbol=(name:string)=>'@'+name;
 
 /** Emit LLVM directly from checked August execution IR. No application C is generated. */
@@ -86,6 +87,7 @@ class ModuleEmitter {
       `%AugValue = type {i32, i64}`,`%AugFrame = type {ptr, i64, ptr}`,`%AugMethodEntry = type {ptr, ptr, ptr}`,`%AugSchema = type {i32, i8, i8, i64, ptr, ptr, ptr, ptr}`,`%NativeError = type {i32, i32, [512 x i8]}`,
       `%AugRoute = type {ptr, ptr, ptr, i32, i32, ptr, i64, ptr}`,`%AugHttpPolicy = type {i32, ptr, i64, i64, i8, ptr, ptr}`,`%AugHttpError = type {ptr, i32}`,
       `@aug_globals = internal global [${Math.max(1,globalCount)} x %AugValue] zeroinitializer, align 8`,
+      `@aug_task_checkpoint_hook = external global ptr, align 8`,
       `@aug_scoped = private constant [${Math.max(1,globalCount)} x i8] [${globalCount?this.ir.scoped.map(scoped=>'i8 '+(scoped?1:0)).join(', '):'i8 0'}]`,...this.globals,...this.declarations.values(),...bodies,main,this.debug.generate(),''].join('\n\n');
   }
 }
@@ -113,6 +115,14 @@ class FunctionEmitter {
   private line(value:string){this.lines.push('  '+value+(this.debugLocation?', !dbg '+this.debugLocation:''));}
   private allocate(type:string){const name=this.temp('storage');this.allocations.push(`  ${name} = alloca ${type}, align 8`);return name;}
   private ptr(slot:number){return '%slot_'+slot;}
+  /** The maintainer pack measures these private offsets on the target. A
+   * function keeps its own execution pointer across cooperative suspension,
+   * matching the existing C backend; another fiber cannot dispose its frame. */
+  private executionFlag(offset:number){
+    const value=this.temp(),condition=this.temp();
+    this.line(`${value} = load i8, ptr ${offset===runtimeLayout.executionErrorOffset?'%execution_error':'%execution_cancelled'}, align 1`);
+    this.line(`${condition} = icmp ne i8 ${value}, 0`);return condition;
+  }
   private load(slot:number){const name=this.temp();this.line(`${name} = load %AugValue, ptr ${this.ptr(slot)}, align 8`);return name;}
   private store(slot:number,value:string){this.line(`store %AugValue ${value}, ptr ${this.ptr(slot)}, align 8`);}
   private clear(slot:number){this.store(slot,'zeroinitializer');}
@@ -223,7 +233,12 @@ class FunctionEmitter {
         this.call('aug_task_start_pointer','void',[{type:'ptr',value:this.ptr(i.out)},{type:'ptr',value:'@'+i.function},{type:'ptr',value:i.receiver===undefined?'null':this.ptr(i.receiver)},{type:'ptr',value:this.args(i.args)},{type:'i32',value:String(i.args.length)},{type:'ptr',value:mask}]);return;
       }
       case 'wait':this.call('aug_ir_task_wait','void',[{type:'ptr',value:this.ptr(i.out)},{type:'ptr',value:this.args(i.tasks)},{type:'i32',value:String(i.tasks.length)}]);return;
-      case 'checkpoint':this.call('aug_task_checkpoint','void',[]);return;
+      case 'checkpoint':{
+        const fiber=this.temp(),hook=this.temp(),active=this.temp(),observed=this.temp(),needed=this.temp(),run=this.label('checkpoint'),done=this.label('checkpoint_done');
+        this.line(`${fiber} = load ptr, ptr %execution_fiber, align 8`);this.line(`${hook} = load ptr, ptr @aug_task_checkpoint_hook, align 8`);
+        this.line(`${active} = icmp ne ptr ${fiber}, null`);this.line(`${observed} = icmp ne ptr ${hook}, null`);this.line(`${needed} = or i1 ${active}, ${observed}`);
+        this.line(`br i1 ${needed}, label %${run}, label %${done}`);this.lines.push(run+':');this.call('aug_task_checkpoint','void',[]);this.line(`br label %${done}`);this.lines.push(done+':');return;
+      }
       case 'drop':this.call('aug_ir_drop','void',[{type:'ptr',value:this.ptr(i.slot)}]);return;
       case 'throw':this.call('aug_ir_throw','void',[{type:'ptr',value:this.ptr(i.input)}]);return;
       case 'take-error':this.call('aug_ir_take_error','void',[{type:'ptr',value:this.ptr(i.out)}]);return;
@@ -353,12 +368,12 @@ class FunctionEmitter {
     let condition:string,yes:string,no:string;
     if(t.op==='error'){
       const state=this.errorStates.get(blockName);
-      if(state){condition=this.temp();this.line(`${condition} = icmp eq i8 ${state}, 2`);}else condition=this.call('aug_ir_has_error','zeroext i1',[]);
+      if(state){condition=this.temp();this.line(`${condition} = icmp eq i8 ${state}, 2`);}else condition=this.executionFlag(runtimeLayout.executionErrorOffset);
       yes=t.failed;no=t.success;
     }
     else if(t.op==='cancel'){
       const paired=this.pairedStates.get(blockName);
-      if(paired){this.module.declare('aug_ir_state','zeroext i8',[]);this.line(`${paired} = call zeroext i8 @aug_ir_state()`);condition=this.temp();this.line(`${condition} = icmp eq i8 ${paired}, 1`);}else condition=this.call('aug_ir_cancelled','zeroext i1',[]);
+      if(paired){const cancelled=this.executionFlag(runtimeLayout.executionCancelledOffset),failed=this.executionFlag(runtimeLayout.executionErrorOffset),error=this.temp();this.line(`${error} = select i1 ${failed}, i8 2, i8 0`);this.line(`${paired} = select i1 ${cancelled}, i8 1, i8 ${error}`);condition=cancelled;}else condition=this.executionFlag(runtimeLayout.executionCancelledOffset);
       yes=t.then;no=t.otherwise;
     }
     else if(t.op==='error-type'){condition=this.call('aug_error_is','zeroext i1',[{type:'ptr',value:this.module.text(t.type)}]);yes=t.then;no=t.otherwise;}
@@ -378,6 +393,11 @@ class FunctionEmitter {
       ...(this.fn.receiver===undefined?[]:[`  %receiver = load %AugValue, ptr %self, align 8`,`  store %AugValue %receiver, ptr %slot_${this.fn.receiver}, align 8`]),
       ...variables,
       `  call void @aug_ir_frame_enter(ptr %frame, ptr %roots, i64 ${this.fn.slots})`,`  %scope_base = call i64 @aug_scope_depth()`,`  %lock_base = call i64 @aug_lock_depth()`,`  br label %entry_body`];
+    prologue.splice(-1,0,`  %execution = call ptr @aug_execution_current()`,
+      `  %execution_error = getelementptr i8, ptr %execution, i64 ${runtimeLayout.executionErrorOffset}`,
+      `  %execution_cancelled = getelementptr i8, ptr %execution, i64 ${runtimeLayout.executionCancelledOffset}`,
+      `  %execution_fiber = getelementptr i8, ptr %execution, i64 ${runtimeLayout.executionFiberOffset}`);
+    this.module.declare('aug_execution_current','ptr',[]);
     this.module.declare('aug_scope_depth','i64',[]);
     this.module.declare('aug_lock_depth','i64',[]);
     this.module.declare('aug_ir_frame_enter','void',['ptr','ptr','i64']);return [...prologue,...this.lines,'}'].join('\n');

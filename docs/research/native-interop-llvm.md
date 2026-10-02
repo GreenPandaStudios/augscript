@@ -1,5 +1,9 @@
 # Native interoperability and an LLVM backend
 
+## Debugger compatibility during implementation
+
+Platform qualification found that LLDB 14 and the macOS runner's LLDB can stop at August source lines but cannot import variables when a compile unit uses an unregistered vendor language code. The implemented metadata uses `DW_LANG_C99` for the real tagged C-compatible storage, with August filenames, symbols and compiler producer. Actual breakpoint tests inspect a parameter and a local, then resume execution. This compatibility choice enables the existing C type reader; it does not provide August expression evaluation or collection formatters. LLVM defines the compile-unit language field, and LLDB documents the additional language/type/runtime plugins needed for a distinct language. [LLVM metadata](https://llvm.org/docs/LangRef.html#dicompileunit), [LLDB language support](https://lldb.llvm.org/resources/addinglanguagesupport.html).
+
 Research checked October 1, 2026. This note supports August implementation work. It does not describe shipping native package support or an implemented LLVM backend. Upstream evidence, recommendations, and the limited local AOT experiment below are distinct. Selected LLVM binaries and SDK-input-free linkage were measured; a fresh macOS 14 consumer machine and the full August/native dependency closure remain unqualified.
 
 The recommended first target is Apple Silicon, macOS 14 or later. Ordinary August consumers receive prebuilt compiler tools, runtime, and native adapters. Maintainers build those artifacts with C, C++, Rust, CMake, and an appropriately licensed Apple SDK. Consumer compilation must produce a native executable without invoking a system compiler or requiring Xcode, Command Line Tools, or a separately installed LLVM.

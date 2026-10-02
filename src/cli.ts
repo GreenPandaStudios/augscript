@@ -66,7 +66,7 @@ function usage(): void {
     `Usage: aug <init|check|build|run|emit-c|emit-llvm|emit-ir|test|openapi|format|migrate|spec|bench|explain|context|lsp|symbols|definition|complete|hover|fixes|semantic-tokens> [project directory] [options] [-- args]\n` +
     `New application: aug init DIRECTORY [--template hello|weather]\n` +
     `Run: aug run [project directory] [--offline] [-- args] — prepare dependencies, compile, and start\n` +
-    `Backend: --backend llvm selects direct LLVM compilation on macOS ARM64 or GNU/Linux x64/ARM64; --backend c selects the migration reference. Unsupported targets and features produce an error.\n` +
+    `Backend: LLVM is the default on macOS 14+ ARM64 and GNU/Linux x64/ARM64 with glibc 2.36+. August installs its compiler pack; no separate native toolchain is needed. --backend c selects the migration reference.\n` +
     `Tests: aug test [project directory] [GROUP_NAME] [--group GROUP_NAME] [--list] [--coverage] [--json] [--timeout milliseconds]\n` +
     `Format: aug format [project directory] [--file path] [--write]\n` +
     `Specifications: aug spec [project directory] [--check] [--json]\n` +
@@ -172,7 +172,7 @@ export async function main(argv: string[]): Promise<number> {
     }
   }
   const json = options.includes('--json');
-  const backendIndex=options.indexOf('--backend');let backend=backendIndex<0?'c':options[backendIndex+1];
+  const backendIndex=options.indexOf('--backend');let backend=backendIndex<0?'llvm':options[backendIndex+1];
   if(!['c','llvm'].includes(backend)){process.stderr.write('--backend must be c or llvm\n');return 2;}
   const outIndex = options.indexOf('--out');
   const outputOption = outIndex >= 0 ? options[outIndex + 1] : undefined;
@@ -231,7 +231,7 @@ export async function main(argv: string[]): Promise<number> {
       throw new Error(`Project directory does not exist: ${root}\nUse aug init DIRECTORY to create a project, or run aug run from the folder containing main.aug.`);
     if (command === 'run') prepareRunPackages(root, options.includes('--offline'), options.includes('--frozen'));
     const project = loadProject(root, overrides);
-    if(backendIndex<0)backend=project.config.backend??(project.library?.native||[...project.packages.scopes.values()].some(p=>p.native)?'llvm':'c');
+    if(backendIndex<0)backend=project.config.backend??'llvm';
     if (project.library && ['build', 'run', 'bench', 'openapi'].includes(command))
       throw new Error('This is an August library; use check, test, or package pack. Import its exports from an application with main.aug to run it.');
     if (command === 'format' || command === 'migrate') {
