@@ -5,13 +5,13 @@ import {join} from 'node:path';
 export function nativePackageExamples(root) {
   const entries=[
     ['pytorch','v0.1.4','CPU tensors','tensors.aug','LibTorch creates two float64 tensors, adds them, and sums the result to 21. The test also checks each result element. Each owned handle releases its native tensor at scope exit, including failures. GPU support and wider PyTorch APIs are deferred.'],
-    ['sqlite','v0.1.3','A SQLite database','database.aug','SQLite opens an in-memory database, creates a table, inserts a bound parameter, and queries it. The result is August. Mutation occurs within borrow; the owned database closes when the operation ends.'],
-    ['zlib','v0.1.3','A compression round trip','compression.aug','zlib compresses a UTF-8 buffer and decompresses it with a 4,096-byte output limit. The test checks the restored text and byte length. Copied buffers use the adapter’s paired release operation.'],
-    ['blake3','v0.1.3','A Rust hash function','hashing.aug','The Rust BLAKE3 crate hashes abc. Its result must match the published 64-character digest checked by the test. The Rust facade copies its output and contains unwinding panics before returning through the C ABI.']
+    ['sqlite','v0.1.3','A SQLite database','database.aug','SQLite opens an in-memory database, creates a table, inserts a bound parameter, and queries it. The query returns August. Updates happen inside a borrow, and the owned database closes when the operation ends.'],
+    ['zlib','v0.1.3','A compression round trip','compression.aug','zlib compresses a UTF-8 buffer and decompresses it with a 4,096-byte output limit. The test checks the restored text and byte length. The adapter releases the native buffers after copying them.'],
+    ['blake3','v0.1.3','A Rust hash function','hashing.aug','The Rust BLAKE3 crate hashes abc. Its result must match the published 64-character digest checked by the test. The Rust adapter copies the output and catches unwinding panics before returning through the C ABI.']
   ];
   const lines=['---','generated: true','source: examples/native-*','editLink: false','---','','# Use native library packages','',
-    'These complete programs call real LibTorch, SQLite, zlib, and Rust BLAKE3 implementations. They use ordinary repository imports and the published August 0.21.0 toolchain. Install the [CLI](getting-started.md) on a [supported host](compatibility.md); no native compiler or SDK is required.','',
-    'For each program, save its two files in one folder. `aug run` installs and locks the source/native dependencies, compiles through LLVM, and runs it. `aug test` checks the nearby case. The source below is generated from the same canonical projects as the downloadable gallery.'];
+    'Use LibTorch, SQLite, zlib, and Rust BLAKE3 through ordinary repository imports. Install the [August 0.21.0 CLI](getting-started.md) on a [supported host](compatibility.md). It downloads the required native libraries; no separate compiler or SDK is needed.','',
+    'Save each program’s two files in one folder. Run `aug run` to install its dependencies, compile it, and execute it. Run `aug test` to check the same-file test, or download the complete project from its link below.'];
   for(const [name,version,title,helper,description] of entries) {
     const directory='examples/native-'+name;
     lines.push('',`## ${title}`,'',description,'',
@@ -33,6 +33,6 @@ export function nativePackageExamples(root) {
     '| Checksum or descriptor mismatch | Restore the published artifact/descriptor pair. Do not suppress verification. |',
     '| Missing frozen compiler selection | Build once online on this host, review the new lock entry, then use frozen mode. |',
     '| Moved executable cannot load a library | Move its adjacent lib and share directories with it. |','',
-    'A native descriptor describes a contract; it does not prove the foreign implementation obeys it. Review the package’s tests, provenance, platform qualification, and license notices before deployment.');
+    'Before deployment, review the package’s tests, supported platforms, build provenance, and license notices. The descriptor cannot establish that the native code honors its ownership rules.');
   return lines.join('\n')+'\n';
 }

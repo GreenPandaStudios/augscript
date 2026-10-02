@@ -9,7 +9,7 @@ next:
 
 # Values and functions
 
-In the first project, an interface and its implementation produced a greeting. A calculation that needs no dependency can be an ordinary function. This chapter calculates an order total.
+An ordinary function can calculate a value without an interface or injected dependency. This example calculates an order total.
 
 Create a new folder with these two files. Continue using the published CLI from the first chapter.
 
@@ -47,7 +47,7 @@ Run `aug check .`, then `aug run .`. The output is:
 
 Every call input has a label. `total(price, quantity)` is shorthand for `total(price=price, quantity=quantity)`: the local names match the labels. The second call supplies a different quantity. Labels let you reorder inputs without making the reader guess which argument is which.
 
-The declaration begins with the function's name; it needs no `function` keyword. The compiler infers an integer result from its return expressions. VS Code shows `returns int` beside the header as a hint; it is absent from saved source. You can write a return type to require a particular result. This function reads its inputs and calculates a value. It has no dependency or mutable state.
+A function declaration starts with its name. The compiler infers the integer result from the returns. VS Code shows `returns int` as a hint beside the header. Write the return type yourself when you want the compiler to enforce it.
 
 ## Read the decision
 
@@ -59,4 +59,4 @@ Boolean conditions use `and`, `or`, and `not`. For example, `price > 0 and quant
 
 Change the first quantity to `4`. Run the program and check that the first result is `28`. Then change the second call's `quantity` label to `amount` and run `aug check .`. That call should fail checking because `total` has no input named `amount`. Restore the label before continuing.
 
-Run `aug spec .` and read `prices.aug.md`. It should explain the two return paths. The generated text describes the code; your comment explains why a nonpositive quantity produces zero. [The next chapter](data-and-errors.md) makes an invalid input an explicit failure instead.
+Run `aug spec .` and read `prices.aug.md`. It should explain the two return paths. The spec explains both return paths and includes the comment about nonpositive quantities. [The next chapter](data-and-errors.md) makes an invalid input an explicit failure instead.

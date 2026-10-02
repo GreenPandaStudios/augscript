@@ -49,7 +49,7 @@ const effects = node => {
   const changes = contract?.changes ?? [], uses = [...(contract?.uses.values() ?? [])];
   const sentences = [];
   if (changes.length) sentences.push('May change ' + changes.map(name => '`' + name + '`').join(' and ') + '.');
-  if (uses.length) sentences.push('Requires ' + uses.map(effect => '`' + effect.source + '.' + effect.operation + '`').join(' and ') + '.');
+  if (uses.length) sentences.push('Uses ' + uses.map(effect => '`' + effect.source + '.' + effect.operation + '`').join(' and ') + '.');
   return sentences.length ? '\n\n' + sentences.join(' ') : '';
 };
 const fence = text => `\`\`\`text\n${text}\n\`\`\``;
@@ -72,7 +72,7 @@ for (const module of ['io', 'json', 'memory', 'time', 'web', 'crypto']) {
   const sections = [generated(`src/stdlib/${module}`) + `# august.${module}\n\n` +
     (module === 'io' ? 'Console and file capabilities supplied with the compiler. Import names from `august.io`.' :
       'Install this source library with `aug add https://github.com/GreenPandaStudios/augscript/src/stdlib/' + module + ' --as ' + module + '`, then import its public names from `' + module + '`.') +
-    '\n\nThe signatures below include checked results and failures, including those inferred from a body. See [packages](../packages.md) for revision pinning and [language constructs](../language-constructs.md) for built-in value types.'];
+    '\n\nSignatures show result types and checked errors. See [packages](../packages.md) to pin a release and [language constructs](../language-constructs.md) for built-in types.'];
   for (const item of exports) {
     const def = project.scopes.get(join(folder, `${item.from}.aug`)).get(item.name);
     const node = def.node;
@@ -85,9 +85,9 @@ for (const module of ['io', 'json', 'memory', 'time', 'web', 'crypto']) {
       sections.push(`### ${item.name}.${method.name}\n\n${fence(signature(method))}\n\n${help?.markdown ?? ''}${effects(method)}\n\n${link(method)}`);
     }
   }
-  outputs.set(`docs/api/${module}.md`, sections.join('\n\n') + '\n');
+  outputs.set(`docs/api/${module}.md`, sections.join('\n\n').replace(/\n{3,}/g, '\n\n') + '\n');
 }
-const constructs = [generated('src/help.ts and src/builtins.ts') + '# Language constructs\n\nThis reference uses the same help as VS Code hover and completion. See [the guide](reference.md) for complete, compiler-checked examples.'];
+const constructs = [generated('src/help.ts and src/builtins.ts') + '# Language constructs\n\nSyntax and built-in operations. For complete programs, read [the language reference](reference.md). These descriptions also appear in VS Code help.'];
 const unsupported = new Set(['class','function','bind','throws','missing','&&','||','!','=>','->','?']);
 for (const [name, help] of Object.entries(languageHelp).sort(([a], [b]) => a.localeCompare(b))) {
   if (unsupported.has(name)) continue;

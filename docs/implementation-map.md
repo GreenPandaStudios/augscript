@@ -8,7 +8,7 @@ The compiler checks one August project, then uses the same resolved program for 
 
 [`ir.ts`](../src/ir.ts) lowers checked code into August execution IR. Its explicit operations, source locations, and root cells form the boundary between language semantics and code generation. [`llvm.ts`](../src/llvm.ts) lowers that representation to LLVM IR. [`llvm-native.ts`](../src/llvm-native.ts) verifies, optimizes, emits objects, links, and prepares executable bundles. LLVM 23.1.2 is pinned; [`compiler-packs.ts`](../src/compiler-packs.ts) selects and verifies the host compiler/runtime pack.
 
-The explicit C backend remains a migration reference for contributor comparisons. It is not the default compilation path, and native ABI packages require LLVM. Backend parity tests compare observable behavior; a matching result for one case does not establish complete equivalence.
+The explicit C backend remains a migration reference for contributor comparisons. It is not the default compilation path, and native ABI packages require LLVM. Backend parity tests compare results, checked failures, and cleanup.
 
 ## Runtime and native packages
 
@@ -24,4 +24,4 @@ The explicit C backend remains a migration reference for contributor comparisons
 
 ## Verification boundaries
 
-Language/runtime regressions, LLVM parity, native consumers, package tarball tests, documentation examples, and safety gyms cover different contracts. The [release process](releasing.md) names the required gates. Keep a failing native case as an ordinary regression, and preserve concrete evidence for rejected candidates. Do not equate successful type checking, finite runtime tests, and proof of arbitrary program behavior.
+Language/runtime tests, backend comparisons, installed-package tests, documentation examples, and safety gyms check different parts of the implementation. The [release process](releasing.md) names the required gates. Keep a failing native case as an ordinary regression, and preserve concrete evidence for rejected candidates. Report type checking and executed tests separately; neither proves arbitrary program behavior.

@@ -1,12 +1,12 @@
 # Wiki editorial design research
 
-Editorial basis: Scope: public language documentation architecture and prose; this note does not establish August's implementation capabilities or comparative performance.
+This note covers the structure and prose of public language documentation. It does not assess August's implementation or performance.
 
 ## Primary source observations
 
-The Rust book introduces the language's purpose, identifies its readers, states that readers should already know another programming language, and explains a sequential learning path. Its chapters alternate concepts with small projects; its introduction also explains how deliberately failing examples are labeled. These are useful mechanisms for setting expectations before the reader encounters unfamiliar rules. [Rust book introduction](https://doc.rust-lang.org/book/ch00-00-introduction.html)
+The Rust book introduces the language's purpose, identifies its readers, states that readers should already know another programming language, and explains a sequential learning path. Its chapters alternate concepts with small projects; its introduction also explains how deliberately failing examples are labeled. These choices tell readers what to expect before introducing unfamiliar rules. [Rust book introduction](https://doc.rust-lang.org/book/ch00-00-introduction.html)
 
-The C About page opens with a small program, explains the language's history and common uses, and links to learning resources and the standards committee. Its compact presentation connects a concrete language sample to purpose and provenance. This observation concerns the page's editorial structure, not independent verification of its historical or adoption claims. [C About](https://www.c-language.org/about)
+The C About page opens with a small program, explains the language's history and common uses, and links to learning resources and the standards committee. It connects a short language sample to the language's purpose and history. This observation concerns the page's editorial structure, not independent verification of its historical or adoption claims. [C About](https://www.c-language.org/about)
 
 Diátaxis distinguishes tutorials, task-oriented how-to guides, technical reference, and explanation according to the reader's needs. It recommends organizing documentation around these different needs. [Diátaxis](https://diataxis.fr/)
 
@@ -22,9 +22,9 @@ Write the Docs recommends explaining the problem a project solves, showing a com
 
 ## Application to August
 
-The following recommendations are editorial synthesis, not claims made by the sources. The audience supplied for this work is senior engineers and large teams changing unfamiliar modular code with coding agents, with a quick entrance for hobbyists. Agent experiments are still underway: the wiki should present inspectable language mechanisms and examples without claiming that superiority has been proved.
+The recommendations below are our application of those sources. The audience supplied for this work is senior engineers and large teams changing unfamiliar modular code with coding agents, with a quick entrance for hobbyists. Agent experiments are still underway: the wiki should present inspectable language mechanisms and examples without claiming that superiority has been proved.
 
-The audit issues to resolve are mixed navigation, dense reference serving as the first lesson, unsupported metrics or broad claims, and a missing progression for learners. These are local editorial concerns, not external research findings.
+The wiki separates lessons, task guides, reference, design explanation, and contributor work. This structure addresses the earlier problems of dense reference pages used as introductions and no clear learning sequence.
 
 ### Give each reading mode a clear entrance
 
@@ -58,7 +58,7 @@ Use short connected paragraphs, concrete titles, and code identifiers when they 
 
 ### Verify the published contract
 
-The local verification recommendation is to execute runnable examples with the documented compiler and CLI, check intended failures, and compare output with the prose. Validate package installation paths as documented, preserve executable-fence metadata, regenerate API and construct pages, and run documentation drift and site checks. Recheck readiness statements against code, tests, and the approved scope. Generated reference and handwritten explanations should agree on terminology and behavior.
+Run examples with the documented compiler and CLI, check intended failures, and compare output with the prose. Validate package installation paths as documented, preserve executable-fence metadata, regenerate API and construct pages, and run documentation drift and site checks. Recheck readiness statements against code, tests, and the approved scope. Generated reference and handwritten explanations should agree on terminology and behavior.
 
 Success means a newcomer can reach a working program and understand why it behaves as shown; a returning engineer can locate an exact contract; and a contributor can find implementation instructions without interrupting either journey.
 

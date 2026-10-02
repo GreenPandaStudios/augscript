@@ -5,7 +5,7 @@
 <a id="symbol-Greeter"></a>
 ## `Greeter` · class · [source](greeter.aug#L8)
 
-Welcomes a user through the configured logger. It implements [`IGreeter`](greeter.aug.md#symbol-IGreeter). The `logger` dependency is injected as [`Logger`](../logging/logger.aug.md#symbol-Logger) and stored read-only (The application logger, injected when resolved).
+Welcomes a user through the configured logger. It implements [`IGreeter`](greeter.aug.md#symbol-IGreeter). The `logger` dependency is injected as [`Logger`](../logging/logger.aug.md#symbol-Logger) and stored read-only (the application logger, injected when resolved).
 
 <a id="symbol-Greeter.greet"></a>
 ### `Greeter.greet` · [source](greeter.aug#L13)

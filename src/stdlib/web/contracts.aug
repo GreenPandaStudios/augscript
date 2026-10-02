@@ -1,5 +1,5 @@
 // aug-spec: "contracts.aug.md" explains this file. Read it before changes; refresh with aug spec.
-/** Immutable identity returned by an explicitly injected authentication adapter. */
+/** Immutable identity returned by the authentication adapter. */
 record Principal(string subject, List<string> permissions)
 
 /** Verify the request's credentials. null means unauthenticated; adapter failures raise HttpError. */
@@ -21,9 +21,9 @@ WebRequestLogger() implements RequestLogger:
         unsafe:
             _aug_http_log(method, path, status, milliseconds)
 
-/** An explicit outbound network capability. TLS verifies the peer and redirects are returned to the caller. */
+/** Make outbound HTTP requests. TLS verifies the peer; callers handle redirects. */
 capability HttpClient:
-    /** Perform an HTTP request with bounded bytes. Inside a task, waiting suspends the task's C stack. */
+    /** Perform an HTTP request with bounded bytes. Waiting for a response suspends the calling task. */
     request(string method, string url, optional Headers headers, optional Bytes body) returns HttpResponse<Bytes> uses HttpClient.request unless HttpError
 
 extern C value _aug_http_request(string method, string url, optional Headers headers, optional Bytes body) returns HttpResponse<Bytes> uses HttpClient.request unless HttpError

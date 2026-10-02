@@ -12,7 +12,7 @@ outline: [2, 3]
 
 Delete, replace and reinsert entries, then check values and insertion order.
 
-Open a file to read its source beside the explanation produced by `aug spec`. **Indentation** and **Braces** display the same checked program; your choice carries across file pages.
+Open a file to read the code beside its compiled explanation. Choose **Indentation** or **Braces** to change the code view. The choice carries across files.
 
 ## Project files
 
@@ -21,7 +21,7 @@ Open a file to read its source beside the explanation produced by `aug spec`. **
 
 ## Try this project
 
-[Download this project](/downloads/map-churn-benchmark.zip), then extract the archive in an empty working folder. It contains the checked source, configuration, and generated specs. [Install August](../../getting-started.md) once, then run these commands. Native libraries are prepared automatically when needed:
+[Download this project](/downloads/map-churn-benchmark.zip), then extract the archive in an empty working folder. It contains source, configuration, and compiled specs. [Install August](../../getting-started.md) once, then run these commands. Native libraries are prepared automatically when needed:
 
 ```sh
 cd map-churn-benchmark

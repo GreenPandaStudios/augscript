@@ -1,27 +1,8 @@
 # Native libraries as August packages
 
-Native locks keep a compiler selection for each host under `native.compilers`.
-A project can record macOS ARM64 and both GNU/Linux hosts without one build
-replacing another host's compiler or runtime pin. A frozen build requires the
-entry for its current host. Run `aug build --backend llvm` once on each new host
-before using `--frozen` there; cross-compilation is not supported.
+Import a native library like any other August package. The package supplies August bindings and prebuilt libraries for supported hosts. Your application uses typed functions and owned resources; the bindings handle native pointers.
 
-The LLVM preview lets an August package wrap a C ABI without exposing native
-pointers to application code. A package supplies August declarations, a checked
-binding descriptor, and prebuilt libraries. The compiler checks their labels,
-types, errors, and ownership before generating LLVM IR and a native executable.
-
-This profile ships in August `0.21.0`. It supports macOS 14 or later on Apple
-Silicon and GNU/Linux x86-64/ARM64 with glibc 2.36 or later. LLVM is the default for ordinary projects
-and native packages. The C migration reference requires `--backend c` or
-`backend: c` in `main.yaml`; native ABI packages require LLVM.
-
-Both Linux architectures passed LLVM regression and clean installed-CLI checks
-on Debian 12; physical ARM64 qualification also passed on DGX Spark. Compiler,
-runtime and library artifacts are public.
-Musl and cross compilation are unsupported. A package declares its libc floor
-and C++ ABI in addition to its OS and architecture; August rejects an incompatible
-host before compiling the application.
+August 0.21.0 supports macOS 14+ on Apple Silicon and GNU/Linux x86-64/ARM64 with glibc 2.36+. It downloads the LLVM tools and libraries it needs, so consumers need Node 24 but no separate native compiler or SDK. Native packages require the LLVM backend. Musl and cross-compilation are unsupported; incompatible hosts are rejected before compilation.
 
 ## Import a library
 
@@ -30,10 +11,7 @@ The [PyTorch](https://github.com/GreenPandaStudios/aug-pytorch),
 [zlib](https://github.com/GreenPandaStudios/aug-zlib), and
 [BLAKE3](https://github.com/GreenPandaStudios/aug-blake3) repositories publish
 source and native preview archives for all three platforms: PyTorch `v0.1.4` and
-the other three packages `v0.1.3`. Their imports have passed using the packaged CLI,
-public downloads, and fresh caches on macOS ARM64 and both GNU/Linux architectures.
-The matching compiler is [August 0.21.0](https://github.com/GreenPandaStudios/augscript/releases/tag/v0.21.0).
-Subsequent compiler revisions must pass those consumer gates again before publication.
+the other three packages `v0.1.3`. Use [August 0.21.0](https://github.com/GreenPandaStudios/augscript/releases/tag/v0.21.0) with these releases.
 
 Use the normal package commands. This example adds CPU LibTorch under a short name:
 
@@ -90,8 +68,7 @@ aug bind header native/include/aug_zlib.h \
 
 For GNU/Linux, select `x86_64-unknown-linux-gnu` or
 `aarch64-unknown-linux-gnu` in the corresponding maintainer environment. Extra
-Clang include, macro and sysroot flags follow `--`. Consumers still need no
-Clang. Keep the maintainer compiler version pinned in your build recipe.
+Clang include, macro and sysroot flags follow `--`. Pin the Clang version in the package's build recipe.
 
 The command checks physical function types, fixed-width integers, byte booleans,
 buffer lengths, output pointers, release signatures and the ABI error record's
@@ -107,13 +84,13 @@ error class or public wrapper. Include the checked report in native build
 provenance and repeat the check whenever headers, compiler flags or descriptors
 change. The report records compiler, target, header digests and signatures.
 
-Ownership, allocator pairing, retention and thread behavior remain promises
-made by the binding author. A matching header cannot establish those promises;
-independent adapter tests must check them. C++ and Rust packages provide C
+The header check cannot verify ownership, allocator pairing, pointer retention, or thread behavior. Test those in the native adapter. C++ and Rust packages provide C
 adapter headers for this command. Templates, callbacks, variadic calls and
 aggregate values are outside the initial binding profile.
 
 ## Installation and deployment
+
+The lockfile keeps a compiler and runtime selection for each host under `native.compilers`. Building on Linux preserves an existing macOS selection. Run `aug build --backend llvm` once on each new host before using `--frozen` there. A frozen build requires a recorded selection for that host.
 
 `aug.lock.json` records the source revision, binding digest, selected native
 archive, compiler pack, and runtime identity. Archive downloads are bounded and
@@ -125,9 +102,7 @@ A failed download or extraction leaves no accepted artifact cache. Disk-full
 errors include the CLI's space-recovery guidance; they do not leave a partially
 installed library selected by a lockfile.
 
-Consumers need Node 24 and a supported OS, but do not install LLVM or Clang for
-this profile. August downloads its own pinned LLVM tools and runtime. A missing
-or incompatible artifact produces a diagnostic; it never starts a source build.
+A missing or incompatible artifact produces an error. Installation never falls back to a source build.
 Use `aug run --offline --frozen` after an online installation to require the
 recorded artifacts without downloading replacements.
 
@@ -142,25 +117,16 @@ the selected packages' notices, provenance, and file manifests.
 
 ## Author a binding
 
-Declare an opaque resource with `extern C resource Handle` in an ordinary module.
-Hover, `aug context` and the compiled specification show the native provider,
-supported targets, loan duration and release operation. The compiler checks the
-binding signature and ownership at August call sites. Input retention, thread
-behavior and exception containment are promises made by the native author; these
-tools do not prove the foreign implementation follows them. Context identifies
-native dependencies reached through resolved standalone calls and does not claim
-complete member-dispatch coverage.
-Its `native.abi.json` entry names a leaf release function. Extern declarations
-and descriptor entries must agree; application code imports safe August wrappers
-through `export.aug`. Calls to extern functions remain inside `unsafe`.
+Declare an opaque resource with `extern C resource Handle` and name its release function in `native.abi.json`. The declaration and descriptor must agree. Keep extern calls inside `unsafe`, and export safe August wrappers through `export.aug`.
+
+The checker validates binding signatures and ownership at August call sites. Hover and compiled specs explain the provider, supported targets, loan duration, and cleanup. The native implementation must honor its declared retention, thread, and exception rules. `aug context` finds native dependencies through resolved standalone calls; member-dispatch coverage remains incomplete.
 
 The initial ABI uses fixed-width scalars, pointer-and-length inputs, copied
 buffers, opaque handles, and checked status errors. C++ wrappers catch exceptions
 and Rust exports contain panics before returning through C. Sharing LLVM does
 not make C++, Rust, and August layouts compatible.
 
-Binding maintainers build and test native artifacts with the recorded toolchain.
-Consumers receive those verified artifacts. Callback registration, retained
+Build and test each artifact with the toolchain recorded in its provenance. Callback registration, retained
 loans, foreign threads, native struct layout, GPU tensors, and exporting August
 libraries have not been qualified. See the
 [native compilation design](native-interop-llvm-plan.md).

@@ -36,7 +36,7 @@ import weatherForecast from forecasts
 serve weatherForecast on port 8787
 ```
 
-`forecasts.aug` declares the immutable `WeatherForecast` record, the endpoint, and its tests. The endpoint has no inputs and returns a list of records. August infers that result from its body, serializes it as JSON, and describes the same shape in OpenAPI. You do not need a controller class or a library dependency for this service.
+`forecasts.aug` declares the immutable `WeatherForecast` record, the endpoint, and its tests. The endpoint has no inputs and returns a list of records. August infers that result from its body, serializes it as JSON, and describes the same shape in OpenAPI. The endpoint declaration is enough to serve this response.
 
 A record construction names each field, for example:
 
@@ -60,6 +60,6 @@ aug test
 aug spec
 ```
 
-Open `forecasts.aug.md` to read the actual compiled explanation. The starter's `AGENTS.md` asks coding agents to read that explanation before changing the code.
+Open `forecasts.aug.md` to read the compiled explanation. The starter's `AGENTS.md` asks coding agents to read that explanation before changing the code.
 
 [Browse the complete weather project](examples/weather-api/index.md) to see the source beside its generated spec, switch between indentation and braces, or download the files. Continue with the [web guide](web.md) to accept typed inputs, return errors, render HTML, or stream a response.

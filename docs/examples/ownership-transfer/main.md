@@ -68,9 +68,7 @@ print(value="end of main")
 
 ### Startup
 
-It gets `first` of type [`Resource`](resource.md#symbol-Resource) from [`make`](resource.md#symbol-make). `first` of type [`Resource`](resource.md#symbol-Resource) owns this value. It calls [`consume`](resource.md#symbol-consume) with `value` from `first` using injected `Console` for `console`. It gets `second` of type [`Resource`](resource.md#symbol-Resource) from [`make`](resource.md#symbol-make).
-
-`second` of type [`Resource`](resource.md#symbol-Resource) owns this value. It prints `"end of main"`.
+It calls [`make`](resource.md#symbol-make) and stores the result in owned `first` ([`Resource`](resource.md#symbol-Resource)). It calls [`consume`](resource.md#symbol-consume) with `value` from `first` using injected `Console` for `console`. It calls [`make`](resource.md#symbol-make) and stores the result in owned `second` ([`Resource`](resource.md#symbol-Resource)). It prints `"end of main"`.
 
 ### Dependencies
 

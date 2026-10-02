@@ -14,7 +14,7 @@ C++ packages keep templates and classes private to a rebuilt facade. LibTorch’
 
 August’s execution IR preserves source evaluation order, integer wrapping, checked failures, root cells, and ownership cleanup. LLVM attributes such as overflow flags, inbounds, alignment, and alias promises must follow established language contracts. An optimization is valid only when it preserves observable August behavior; compiler acceptance of the IR is not a language-equivalence proof. [LLVM language reference](https://llvm.org/docs/LangRef.html).
 
-LLVM tools are distributed as pinned host packs rather than a Node binding to LLVM’s C++ implementation. Consumers receive the tools and runtime components needed for compilation and linking; maintainers use a larger build environment. LLVM documents component selection and notice obligations for its distribution. [Building an LLVM distribution](https://llvm.org/docs/BuildingADistribution.html), [LLVM developer policy](https://llvm.org/docs/DeveloperPolicy.html).
+LLVM tools are distributed as pinned host packs and invoked by the TypeScript compiler. Consumers receive the tools and runtime components needed for compilation and linking; maintainers use a larger build environment. LLVM documents component selection and notice obligations for its distribution. [Building an LLVM distribution](https://llvm.org/docs/BuildingADistribution.html), [LLVM developer policy](https://llvm.org/docs/DeveloperPolicy.html).
 
 ## Host linkage and debugging
 
@@ -26,4 +26,4 @@ Debug metadata uses the C-compatible type reader for the runtime’s tagged stor
 
 ## Evidence boundary
 
-Published 0.21.0 consumers and real public library imports are qualified on macOS ARM64 and GNU/Linux x86-64/ARM64. Their tests cover locks, offline execution, relocation, results, failures, and finite resource cleanup. The [release process](../releasing.md) requires these gates again for later releases. Upstream documentation supports design decisions; it does not substitute for those executable checks or establish universal native safety.
+Published 0.21.0 consumers and real public library imports are qualified on macOS ARM64 and GNU/Linux x86-64/ARM64. Their tests cover locks, offline execution, relocation, results, failures, and finite resource cleanup. The [release process](../releasing.md) requires these gates again for later releases. Use upstream documentation to inform the design, and executable checks to validate each release.

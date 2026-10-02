@@ -1,12 +1,12 @@
 # HTTP, server pages, and crypto
 
-Build a service by declaring its routes in August and serving them from `main.aug`. The declarations describe how HTTP inputs become typed values and how results become responses. Your application selects authentication, authorization, and logging capabilities explicitly. The optional web and crypto packages provide adapters for native transport and cryptographic operations.
+Build a service by declaring its routes in August and serving them from `main.aug`. The declarations describe how HTTP inputs become typed values and how results become responses. Supply authentication, authorization, and logging through injected dependencies. Add the optional web and crypto packages when you need their adapters.
 
-This guide builds a service with JSON, a server-rendered page, a form action, and an event stream. Learn [modules and dependencies](learn/modules-and-dependencies.md) first if `implement` and `resolve` are unfamiliar. On supported hosts, the CLI [obtains native components automatically](tooling.md#native-standard-libraries). The service uses demonstration authentication; [the gap ledger](web-library-gaps.md) describes what remains before a production service claim.
+This guide builds a service with JSON, a server-rendered page, a form action, and an event stream. Learn [modules and dependencies](learn/modules-and-dependencies.md) first if `implement` and `resolve` are unfamiliar. On supported hosts, the CLI [obtains native components automatically](tooling.md#native-standard-libraries). The example authentication is for demonstration. Read [the HTTP and crypto limits](web-library-gaps.md) before adapting it for production.
 
 ## A complete service
 
-Copy the following files into one folder and run `aug install`. `aug check .` checks the contracts and `aug test .` runs the three endpoint cases. `aug run .` starts the server on port 8080. The documentation gate builds the service and runs its tests; it does not leave a server running.
+Copy the following files into one folder and run `aug install`. `aug check .` checks the source and `aug test .` runs the three endpoint cases. `aug run .` starts the server on port 8080.
 
 Read `main.aug` first. It supplies the authentication and request-logging implementations, then serves the four named endpoints. Read `api.aug` for the JSON route and stream, `actions.aug` for the POST, and the page/view files for HTML.
 
@@ -136,7 +136,7 @@ Use POST, PUT, PATCH, or DELETE for a write action. `handle remove(id=user.id)` 
 
 Captured values and form inputs preserve signed 64-bit integers, including identifiers beyond JavaScript's safe integer range. A form field containing a record, collection, or `Json` uses JSON text; for example, `[1,2]`, `{"id":7}`, or `"Ada"` for a string-valued `Json`. Ordinary string fields contain plain text. The transport encodes fields according to their declared types.
 
-## Wire contracts and responses
+## Request inputs and responses {#wire-contracts-and-responses}
 
 Every ordinary endpoint input states its source: `from path`, `from query`, `from header`, `from cookie`, `from body`, `from form`, or `from request`. A source can specify a wire name. `resolve` inputs come from the application's explicit DI composition. Only endpoints selected by `serve` are reachable over HTTP.
 
@@ -146,7 +146,7 @@ An ordinary return becomes the documented status and a JSON, Html, or Bytes repr
 
 Response status literals must range from 200 to 599. Constructing a response with a dynamic status can fail with `HttpError`; catch that failure or let it propagate through the inferred contract. Complex form fields use the same JSON schemas as body inputs: malformed JSON text returns 400 and a schema mismatch returns 422.
 
-`unless ErrorType with status CODE` declares an error response. Unexpected failures produce 500 with server-side error reporting. Default failures use [RFC 9457 Problem Details](https://www.rfc-editor.org/rfc/rfc9457.html). OAuth endpoints in the proof return their protocol's JSON errors explicitly. HEAD suppresses the body; 204 and 304 suppress body and Content-Length. See the [gap ledger](web-library-gaps.md) for unimplemented HTTP behavior; this is not a claim of full protocol conformance.
+`unless ErrorType with status CODE` declares an error response. Unexpected failures produce 500 with server-side error reporting. Default failures use [RFC 9457 Problem Details](https://www.rfc-editor.org/rfc/rfc9457.html). The login example returns OAuth errors in the JSON format required by that protocol. HEAD suppresses the body; 204 and 304 suppress body and Content-Length. See [HTTP limits](web-library-gaps.md) for unsupported behavior.
 
 ## Policies and interceptors
 
@@ -178,11 +178,11 @@ Declare an owned resource directly in its task's `scope` block to keep it alive 
 
 Scheduling checks receiver and argument errors immediately. A scheduled callee's errors are checked at waits and implicit joins. A wait can observe an unhandled sibling failure; grouped and collection waits finish observing every selected child before rethrowing the first error. Catch around the entire scope when handling failures from children that are not explicitly observed.
 
-Scheduling currently uses cooperative coroutines on one OS thread. Outbound HttpClient I/O suspends the coroutine, so the same executable can call its own endpoints. Multicore workers, bounded channels/broadcasts, and inbound request streams remain gaps. The [gap ledger](web-library-gaps.md) records delivery status.
+Tasks run cooperatively on one OS thread. Outbound `HttpClient` calls suspend their task, so a service can call its own endpoints. Multicore workers, channels, broadcasts, and inbound request streams are not yet supported.
 
 ## OpenAPI configuration
 
-Add to main.yaml:
+Add this to `main.yaml`:
 
 ```yaml
 web:
@@ -199,9 +199,9 @@ openapi:
   output: .aug-build/openapi.json
 ```
 
-`web.tls` accepts certificate, private_key and optional outbound ca paths relative to the project. HTTP/3 requires TLS. Native HttpClient verifies peers and returns redirects for explicit handling. The private bootstrap enables libwebsockets HTTP/1.1, HTTP/2 and HTTP/3 on tested macOS ARM and Linux ARM hosts.
+`web.tls` accepts certificate, private_key and optional outbound ca paths relative to the project. HTTP/3 requires TLS. Native HttpClient verifies peers and returns redirects for explicit handling. The native transport enables HTTP/1.1, HTTP/2, and HTTP/3 through libwebsockets.
 
-OpenAPI 3.2.1 includes selected endpoints, input sources, concrete record schemas, explicit response variants and Javadoc. Streams have item schemas. Unsupported contracts fail compilation when generation is enabled. `/docs` is the generated API explorer. [OpenAPI 3.2.1](https://spec.openapis.org/oas/v3.2.1.html) is the contract reference.
+The generated OpenAPI 3.2.1 document describes the endpoints selected by `serve`, their input sources, record schemas, response variants, and Javadoc. Streams have item schemas. Unsupported contracts fail compilation when generation is enabled. `/docs` is the generated API explorer. [OpenAPI 3.2.1](https://spec.openapis.org/oas/v3.2.1.html) defines the document format.
 
 ## Endpoint tests
 
@@ -209,9 +209,9 @@ OpenAPI 3.2.1 includes selected endpoints, input sources, concrete record schema
 
 This tests the application pipeline; socket parsing, TLS negotiation and transport disconnects need separate live-transport tests. Run `aug test FOLDER requests` to select the example's group. The [testing guide](testing.md) describes rows, filtering and coverage.
 
-## Crypto and the login proof
+## Login with OpenID Connect {#crypto-and-the-login-proof}
 
-Crypto is an injected capability with GnuTlsCrypto as its native adapter. It provides OS-backed randomness, SHA-256, constant-time content comparison, strict base64url, opaque RSA keys, RS256 signing/verification, RSA JWK import/export, and PBKDF2-HMAC-SHA256 password derivation. Private RSA material is scrubbed on reclamation; general secret-buffer lifecycle and key rotation APIs remain gaps.
+Inject `Crypto` and bind it to `GnuTlsCrypto` for native cryptographic operations. It provides OS-backed randomness, SHA-256, constant-time content comparison, strict base64url, opaque RSA keys, RS256 signing/verification, RSA JWK import/export, and PBKDF2-HMAC-SHA256 password derivation. Private RSA material is scrubbed on reclamation; general secret-buffer lifecycle and key rotation APIs remain gaps.
 
 `signJwt` requires an explicit key id and token type. `verifyJwt` accepts the configured RS256/key-id/type profile, rejects unsupported JOSE fields, verifies the signature before exposing claims, and follows no token-provided URL. The consuming protocol still validates issuer, audience, times, nonce and token purpose. The implementation follows the fixed-algorithm approach described in [JWT best current practices](https://www.rfc-editor.org/rfc/rfc8725.html).
 
@@ -230,4 +230,4 @@ In another terminal, run the signed-claim tests from the same project folder:
 aug test --group signed_identity_claims
 ```
 
-The first run prepares the native HTTP and crypto libraries automatically; later runs reuse them. [Install August](getting-started.md) first if `aug` is not available. Open http://127.0.0.1:8787 and sign in as **ada** with **august-demo**. `/me` returns the protected identity; `/docs` exposes endpoint contracts. The [gap ledger](web-library-gaps.md) distinguishes this verified development profile from broader provider, library and runtime support.
+The first run prepares the native HTTP and crypto libraries automatically; later runs reuse them. [Install August](getting-started.md) first if `aug` is not available. Open http://127.0.0.1:8787 and sign in as **ada** with **august-demo**. `/me` returns the protected identity; `/docs` exposes endpoint contracts. The demo keeps accounts, sessions, and keys in memory. Read [the login limits](web-library-gaps.md) before extending it.

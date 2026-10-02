@@ -4,7 +4,7 @@
 :::: example-code
 ### This is August
 
-Print a greeting one million times. Choose the block style you prefer; both programs mean the same thing.
+This program prints a greeting one million times. Indentation and braces are two ways to write the same loop.
 
 ::: code-group
 
@@ -34,7 +34,7 @@ while greetings < 1000000 {
 
 It sets `greetings` to `0`. While `greetings` is less than `1000000`, it prints `"Hello, August! 👋"`; then it increases `greetings` by `1`.
 
-Specs sit beside each source file as `.aug.md`. Read one to review an unfamiliar module, follow its dependency links, or give a coding agent checked context before an edit. Regenerate it when the code changes.
+The spec is saved beside the source as `main.aug.md`. Read it to understand the loop, or give it to a coding agent before an edit. Larger modules include links to the dependencies they use.
 
 [Explore a complete project with its specs](examples/hello/index.md) · [Use compiled specifications](specifications.md)
 ::::
@@ -73,8 +73,8 @@ int main(void) {
 ::: benchmark-chart greetings
 :::
 
-On Apple M5, August takes **1023.91 ms** and C takes **971.61 ms** (median of 30 runs after 3 warmups). Both use release optimization and write to a regular file; every run's complete output is checked. This measures printing and file I/O, including process startup. It does not measure string concatenation.
+On Apple M5, August takes **1023.91 ms** and C takes **971.61 ms** (median of 30 runs after 3 warmups). Both programs use release optimization, write to a file, and flush each line. Every run must produce the same 20 MB output. The times include process startup and file I/O.
 
-August runs close to C in this example. The [full performance section](performance.md) compares integer loops, collections, JSON, application kernels, and HTTP, including workloads where August has more overhead. Use those programs as starting points, then measure your own application.
+The [performance reports](performance.md) compare more programs: integer loops, collections, JSON, and HTTP. Results vary by workload; use the sources to build a comparison for your own application.
 
 [Read the source and spec](examples/greetings-benchmark/main.md) · [Inspect every sample and the environment](greeting-results.json)

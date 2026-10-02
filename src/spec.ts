@@ -133,7 +133,7 @@ class SpecWriter {
       const param=params[0];this.locals.set(param.name,param.type);
       return 'The '+code(param.name)+' dependency is injected as '+this.type(param.type,file)+' and stored '+(param.mutable?'mutably':'read-only')+
         (param.name.startsWith('_')?' and privately':'')+(param.ownership==='own'?' with ownership transferred':param.ownership==='borrow'?' with permission to mutate it':'')+
-        (descriptions.has(param.name)?' ('+descriptions.get(param.name)!.replace(/[.!?]$/,'')+')':'')+'.';
+        (descriptions.has(param.name)?' ('+descriptions.get(param.name)!.replace(/[.!?]$/,'').replace(/^The /,'the ')+')':'')+'.';
     }
     const describe=(group:Param[])=>{
       const param=group[0];
@@ -549,6 +549,15 @@ class SpecWriter {
         }
         if(stmt.declaredType)this.type(stmt.declaredType);
         const target=this.expression(stmt.target)+(stmt.declaredType&&!['int','float','string','bool'].includes(stmt.declaredType.name)?' of type '+this.type(stmt.declaredType):'');
+        if(stmt.ownership==='own') {
+          const owned=this.expression(stmt.target)+(stmt.declaredType?' ('+this.type(stmt.declaredType)+')':'');
+          if(stmt.value.kind==='call') {
+            const invocation=this.call(stmt.value);
+            if(invocation.startsWith('call ')||invocation.startsWith('construct '))
+              return [step('It '+invocation.replace(/^call /,'calls ').replace(/^construct /,'creates ')+' and stores the result in owned '+owned+'.')];
+          }
+          return [action('store',this.expression(stmt.value)+' in owned '+owned)];
+        }
         const headers=this.headerFields(stmt.value);
         const arithmetic=stmt.value.kind==='binary'&&['+','-'].includes(stmt.value.op)&&stmt.value.left.kind==='name'&&stmt.target.kind==='name'&&stmt.target.name===stmt.value.left.name&&['int','float','c_int'].includes(this.checked.expressionTypes.get(stmt.value)?.name??'');
         const headerLead=headers?`set ${target} from ${this.expression(headers.base)} by adding these header fields in order`:undefined;
@@ -556,7 +565,7 @@ class SpecWriter {
         const explanation=headers?sequence('It '+headerLead!.replace(/^set /,'sets '),headers.fields,headerLead):
           getter?step('It gets '+target+' from '+this.expression(stmt.value)+'.'):
           this.joinedText(target,stmt.value)??(arithmetic&&stmt.value.kind==='binary'?action(stmt.value.op==='+'?'increase':'decrease',`${target} by ${this.expression(stmt.value.right)}`):action('set',`${target} to ${this.expression(stmt.value)}`));
-        return stmt.ownership==='own'?[explanation,step(`${target} owns this value.`)]:[explanation];
+        return [explanation];
       }
       case 'destructure':return [action('split',`${this.expression(stmt.value)} into ${coordinate(stmt.names.map(code))} in order`)];
       case 'expr': {

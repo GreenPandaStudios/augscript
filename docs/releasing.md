@@ -1,6 +1,6 @@
 # Releasing August
 
-All first-party packages and the extension use one compiler-compatible version. npm manifests live in `packages`; canonical code remains in `src` and `runtime`.
+Release the first-party packages and extension with the same version. npm manifests live in `packages`; canonical code remains in `src` and `runtime`.
 
 ## Verify and create artifacts
 
@@ -40,7 +40,9 @@ git push origin main v0.21.0
 
 `release.yml` validates the tag against every manifest, runs compiler/native/docs/package gates, and uploads artifacts to a **draft prerelease**. Review the draft and publish it in GitHub Releases. Publishing starts **Publish npm packages** and **Publish VS Code extension** automatically. Each workflow deploys the archives attached to that release. Changing an asset after review invalidates its checksum.
 
-If release preparation fails, **Prepare release** also accepts a manual retry on `main`. Supply the existing version tag and its reviewed full commit SHA. The controller rejects a moved tag or mismatched package, compiler, dependency or root lock version before starting producers. Every build checks out that same commit and repeats the full language, sanitizer, performance, gym and consumer gates; it does not move the tag or reuse unqualified binaries. The draft job checks the source again before uploading and reads its changelog from the release commit. This lets a corrected pipeline retry an older source tag without rewriting that release's identity or describing later changes as part of that release.
+If release preparation fails, **Prepare release** also accepts a manual retry on `main`. Supply the existing version tag and its reviewed full commit SHA. The controller rejects a moved tag or mismatched package, compiler, dependency or root lock version before starting producers. Every build checks out that same commit and repeats the full language, sanitizer, performance, gym and consumer gates; it does not move the tag or reuse unqualified binaries.
+
+The draft job checks the source again before uploading and reads its changelog from the release commit. The retry uses the existing release source and the corrected pipeline.
 
 Native producer jobs use the job's short-lived, read-only GitHub token for public package reads, including tests inside the Linux maintainer container. An unauthenticated shared runner can exhaust GitHub's API quota during the documentation and application suites; a 403 still fails the gate rather than being treated as a successful test.
 
@@ -56,10 +58,8 @@ use the pinned Debian 12 maintainer image. `scripts/merge-compiler-packs.mjs`
 rejects missing, duplicate, stale or modified platform inputs, then records all
 exact compiler archive hashes in the CLI and bundled editor compiler. The GitHub
 release includes every selected archive.
-Runtime compilation remains a maintainer operation. Application installation
-downloads the reviewed pack and does not build LLVM or invoke Clang. CI runs the
-LLVM execution tests with its prepared toolchain; unsupported platforms retain
-explicit preview diagnostics. See [native packages](native-packages.md).
+Maintainers build the runtime. Consumers download it with the reviewed LLVM pack. CI runs the
+LLVM execution tests with its prepared toolchain; unsupported platforms produce an error. See [native packages](native-packages.md).
 Producer jobs require source breakpoint/variable inspection, actual LLVM ASan
 instrumentation with a failing negative control, runtime UBSan, and the frozen
 paired C/LLVM performance limits. Consumer jobs exercise an ordinary default
@@ -78,19 +78,25 @@ Configure a trusted publisher for each of the four npm packages:
 
 Use npm CLI 11.5.1+ and GitHub-hosted runners. The workflow grants `id-token: write` for OIDC and needs no stored npm publishing token. Match package repository URLs to this repository. See [npm's trusted publisher instructions](https://docs.npmjs.com/trusted-publishers/).
 
-The job downloads the four reviewed tarballs, `packages.json` and `SHA256SUMS`. It checks every archive's SHA-256 and SHA-512 integrity, exact version and complete manifest against the tagged source before publishing anything. It checks all existing registry versions, then publishes standard library, web, crypto and CLI in that order with public access and the `next` dist tag. Lifecycle scripts are disabled. No rebuild or dependency installation runs in the npm deployment job.
+The job downloads the four reviewed tarballs, `packages.json` and `SHA256SUMS`. It checks every archive's SHA-256 and SHA-512 integrity, exact version and complete manifest against the tagged source before publishing anything.
 
-Retries skip a version only when its registry integrity matches the release archive. A registry failure or a different published archive stops deployment. Each new publication is checked against the registry before proceeding. npm may accept an upload several minutes before its public metadata becomes available. The publisher on main checks visibility at five-second intervals for about five minutes per package; it retries only missing-version responses and uploads each archive once. If that wait expires, let npm finish processing before retrying the same release.
+It checks all existing registry versions, then publishes standard library, web, crypto and CLI in that order with public access and the `next` dist tag. Lifecycle scripts are disabled. No rebuild or dependency installation runs in the npm deployment job.
+
+Retries skip a version only when its registry integrity matches the release archive. A registry failure or a different published archive stops deployment. Each new publication is checked against the registry before proceeding.
+
+npm may accept an upload several minutes before its public metadata becomes available. The publisher on main checks visibility at five-second intervals for about five minutes per package; it retries only missing-version responses and uploads each archive once. If that wait expires, let npm finish processing before retrying the same release.
 
 The CLI is published last because its dependencies use exact matching versions. An interrupted run can leave some libraries published; retry the same release to finish. Retries leave already-published versions and their dist tags alone. This pipeline publishes preview packages to `next`; promoting a release to `latest` remains a separate maintainer decision.
 
 ## VS Code Marketplace
 
-The extension identity is `augscript.augscript`. The workflow uses locked VSCE 4.0.1-1 with `vsce publish --oidc`, requesting a short-lived credential without a stored PAT. [VSCE documents the repository/workflow trust configuration](https://github.com/microsoft/vscode-vsce#trusted-publishing), but the actual Marketplace service rejected the 0.21.0 exchange with “Trusted Publishing is not supported.” Automatic deployment remains blocked until Marketplace supports and enables that policy for the publisher. Adding a workflow does not grant access or make the service available. The reviewed VSIX is on GitHub Releases for direct installation or owner upload through the publisher's Update action.
+The extension identity is `augscript.augscript`. The workflow uses locked VSCE 4.0.1-1 with `vsce publish --oidc`, requesting a short-lived credential without a stored PAT. [VSCE documents the repository/workflow trust configuration](https://github.com/microsoft/vscode-vsce#trusted-publishing), but the actual Marketplace service rejected the 0.21.0 exchange with “Trusted Publishing is not supported.” Automatic deployment remains blocked until Marketplace supports and enables that policy for the publisher. The reviewed VSIX is on GitHub Releases for direct installation or owner upload through the publisher's Update action.
 
 The preparation job downloads the reviewed VSIX, verifies its checksum, complete manifest, logo and bundled compiler, and installs the locked publishing tool with lifecycle scripts disabled. It passes these files to a separate `marketplace` job with OIDC permission. That job rechecks the VSIX and publishes it with `--packagePath`, so publication does not build another extension or run `vscode:prepublish`.
 
-For retries, the publisher downloads an existing Marketplace version and compares all files under `extension/` with the reviewed VSIX. Marketplace signature metadata outside that directory may differ. A changed, missing or additional extension file stops the retry. After uploading, the job downloads and verifies the published version, allowing roughly a minute for indexing. If confirmation still fails after an upload, wait for the version to become available and retry. VSIX files remain available from GitHub for direct installation.
+For retries, the publisher downloads an existing Marketplace version and compares all files under `extension/` with the reviewed VSIX. Marketplace signature metadata outside that directory may differ. A changed, missing or additional extension file stops the retry.
+
+After uploading, the job downloads and verifies the published version, allowing roughly a minute for indexing. If confirmation still fails after an upload, wait for the version to become available and retry. VSIX files remain available from GitHub for direct installation.
 
 The packaging script supplies the repository's `vscode` directory as the HTTPS
 base for README images. Verify those URLs are public before Marketplace
@@ -103,7 +109,9 @@ locally and do not depend on that image host. To update artwork, run
 
 Configure GitHub environments named `npm` and `marketplace`. Allow only tags matching `v*`; use required reviewers if your release process needs another approval. Keep the npm environment name identical to each package's trusted publisher configuration, and the Marketplace policy aligned with its workflow and environment. See [GitHub's environment protection guide](https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment). Restrict who can create or move release tags through repository rules.
 
-Both workflows also accept a manual retry. Open the appropriate workflow in Actions, select the release tag as the workflow ref, and enter the same tag in the `tag` input. A branch ref, mismatched version, draft release or tag moved since the run began is rejected before publication. The tag must contain these publishing workflows and scripts. Re-running the failed job on its original run also retains the exact tagged source. npm and Marketplace have separate concurrency groups and deployment environments, so a failure at one destination can be retried independently.
+Both workflows also accept a manual retry. Open the appropriate workflow in Actions, select the release tag as the workflow ref, and enter the same tag in the `tag` input.
+
+A branch ref, mismatched version, draft release or tag moved since the run began is rejected before publication. The tag must contain these publishing workflows and scripts. Re-running the failed job on its original run also retains the exact tagged source. npm and Marketplace have separate concurrency groups and deployment environments, so a failure at one destination can be retried independently.
 
 Release creation uses the repository's `GITHUB_TOKEN` to create a draft. A maintainer must publish that draft through GitHub Releases or their own authorized GitHub CLI session. Events produced only by `GITHUB_TOKEN` do not start another workflow; do not replace this review step with a token-authenticated automatic publish unless you also add an explicit deployment handoff. See [GitHub's workflow trigger rules](https://docs.github.com/en/actions/how-tos/writing-workflows/choosing-when-your-workflow-runs/triggering-a-workflow#triggering-a-workflow-from-a-workflow).
 
@@ -111,11 +119,12 @@ If npm reports an authentication failure, check all four package connections, th
 
 ## Documentation deployment
 
-Enable GitHub Pages with **GitHub Actions** as its publishing source. `docs.yml` checks generated pages, builds the same Markdown and deploys through the `github-pages` environment after successful CI on main. Private repositories need an eligible GitHub plan for Pages. Docs remain readable in the repo and offline artifact when Pages is unavailable. See [GitHub's workflow requirements](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages).
+Enable GitHub Pages with **GitHub Actions** as its publishing source. `docs.yml` checks generated pages, builds the same Markdown and deploys through the `github-pages` environment after successful CI on main. Docs remain readable in the repo and offline artifact when Pages is unavailable. See [GitHub's workflow requirements](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages).
 
 ## Current limits
 
 August is experimental. The published 0.21.0 LLVM/native preview supports macOS 14+ ARM64 and GNU/Linux x86-64/ARM64 with glibc 2.36+; other platforms are unsupported. [Release qualification](https://github.com/GreenPandaStudios/augscript/actions/runs/37005997823) passed before GitHub publication, and [npm deployment](https://github.com/GreenPandaStudios/augscript/actions/runs/37010447529) verified all four packages. Marketplace OIDC remains blocked by its service, as described above; the checked VSIX is available from GitHub Releases. User libraries use ordinary public Git repositories, local folders, or npm archives. The four native library repositories publish prebuilt artifacts. Stabilizing the external adapter ABI is a 1.0 gate. See [the gap ledger](web-library-gaps.md) and [performance assessment](performance.md).
+
 ## Native preview qualification
 
 Before publishing a compiler with native package support, build its LLVM pack

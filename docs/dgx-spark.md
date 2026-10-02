@@ -25,7 +25,7 @@ These medians use 60 samples after three warmups. [The full report](dgx-performa
 | Map and Set | 200,000 entries | 63.48 ms | 22.47 ms | 2.83 |
 | JSON | 5,000 records | 7.19 ms | 1.60 ms | 4.49 |
 
-The larger collection case and JSON still have substantial overhead. The JSON C reference parses and writes data without constructing August records. A passing migration gate means LLVM stayed within the frozen limits against the same August program compiled through C; it does not mean every program matches a specialized C implementation.
+The larger collection case and JSON still have substantial overhead. The JSON C reference parses and writes data without constructing August records. The migration check compares LLVM with the same August program compiled through C. The standalone C references perform different work, as described below.
 
 ## Eight application kernels
 
@@ -45,7 +45,7 @@ These medians use 30 samples after three warmups. Each linked project shows the 
 | [Record allocation](examples/records-benchmark/main.md) | 50,000 | 22.60 ms | 3.09 ms | 7.32 |
 | [Task scheduling](examples/tasks-benchmark/main.md) | 2,000 | 8.23 ms | 1.30 ms | 6.32 |
 
-The [C references](https://github.com/GreenPandaStudios/augscript/blob/e3c072be276e9801d348690435c08c4b146fd352/benchmarks/kernels.c) use concrete representations and explicit cleanup. The ordered map uses linear search. The task reference calls functions sequentially; it does not implement August's scheduler or cancellation rules. Managed strings, records and tasks remain useful targets for further optimization. The benchmark checks their behavior rather than removing that behavior to improve a number.
+The [C references](https://github.com/GreenPandaStudios/augscript/blob/e3c072be276e9801d348690435c08c4b146fd352/benchmarks/kernels.c) use concrete representations and explicit cleanup. The ordered map uses linear search. The task reference calls functions sequentially; it does not implement August's scheduler or cancellation rules. August also performs managed allocation and task scheduling. Those costs are included in the measurements.
 
 ## HTTP throughput
 
@@ -64,7 +64,7 @@ Each median covers five fresh server runs with 5,000 validated requests per run,
 
 All **266 LLVM parity tests** passed with no skips, including source breakpoints and debugger variable inspection. The full [safety gym report](dgx-gyms.json) passed 3,612 generated and edge-case checks in development and optimized builds, rejected eight forbidden contracts, and detected all 14 valid behavioral mutations. All six additional circuits passed with no skipped tests: source mutations, ownership/concurrency, native boundaries, package integrity, HTTP boundaries and sanitizers.
 
-The [installed-CLI report](dgx-consumers.json) records public URL imports and named aliases for CPU LibTorch `v0.1.4`, SQLite `v0.1.3`, zlib `v0.1.3`, and Rust BLAKE3 `v0.1.3`. The real libraries produced the expected tensor sum, database query, compression round trip and hash. Frozen/offline restores, relocated deployments, same-file tests, resource cleanup counters, tasks, JSON, clocks, crypto and HTTP forms passed too. That prepublication check supplied the compiler archive locally.
+The [installed-CLI report](dgx-consumers.json) records public URL imports and named aliases for CPU LibTorch `v0.1.4`, SQLite `v0.1.3`, zlib `v0.1.3`, and Rust BLAKE3 `v0.1.3`. The real libraries produced the expected tensor sum, database query, compression round trip and hash. Frozen/offline restores, relocated deployments, same-file tests, resource cleanup counters, tasks, JSON, clocks, crypto and HTTP forms passed too. This check used a locally supplied compiler archive before publication.
 
 After 0.21.0 was published, a [fresh installed-CLI check](release-dgx-public-consumers.json) repeated all those operations with the public compiler and library downloads. Its source and artifact caches started empty, and no native developer tools were on the test processes' search path. The report omits only its temporary directory path. The separate clean-container CI checks remove compilers, Git and development headers from the consumer filesystem.
 

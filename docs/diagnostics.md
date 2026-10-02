@@ -46,13 +46,13 @@ Both braces and indentation are accepted. The formatter uses main.yaml preferenc
 
 ### EFFECT
 
-Bodies infer `changes self` for state transitions and `changes input` for borrowed inputs. Bodyless interfaces declare permitted changes. Receive I/O capabilities through dependency headers. Executable bodies infer capability operations, mutations, and escaping checked errors. Bodyless interfaces declare their allowed effects with `uses dependency.operation`; explicit clauses remain checked bounds. Calls and interceptor layers must fit the effective contract.
+Executable bodies infer state changes, capability calls, and escaping checked errors. Bodyless interfaces state permitted changes and I/O with `changes` and `uses dependency.operation`. An explicit clause limits what the implementation and its interceptors may do. Receive I/O capabilities through `resolve` inputs in the declaration header.
 
-Public fields and managed inputs grant reading. Mark local storage mutable when it needs initialization-independent changes. Constructors are pure; move startup effects into a named method. drop performs only local cleanup and cannot acquire effects/errors through interceptors.
+Public fields and managed inputs grant reading. Mark local storage `mutable` when it needs writes after initialization. Constructors are pure; move startup effects into a named method. `drop` performs only local cleanup; interceptors cannot add effects or errors to it.
 
 ### DI
 
-Bindings belong in main, imported compositions, or test setup. Targets have only resolve header inputs and satisfy their key. The compiler rejects missing edges, duplicate keys, cycles, unsafe scoped retention, and effectful bound construction.
+Put bindings in `main.aug`, an imported composition, or test setup. A provider must implement its key and have only `resolve` constructor inputs. The checker rejects missing bindings, duplicate keys, cycles, scoped references retained too long, and I/O during bound construction.
 
 Stateful objects default to fresh. Shared state requires `shared mutable`; scoped state requires `scoped mutable`. Resolve scoped dependencies inside scope; keep their references there.
 
@@ -72,7 +72,7 @@ A child task keeps its captured objects available until `wait for` or its scope 
 
 A checked error reaches main without a compatible catch, or exceeds an explicit unless bound. Bodies infer escaping errors when unless is omitted. The language uses `unless`; THROWS is the diagnostic identifier retained for tooling.
 
-**Propagate with unless** adds the specific error to the enclosing contract. At composition statements, **Catch and report the failure** creates a visible recovery template. Choose domain recovery deliberately; no fix silently discards an error.
+**Propagate with unless** adds the specific error to the enclosing contract. At composition statements, **Catch and report the failure** creates a visible recovery template. Fill in the recovery template with the handling your application needs.
 
 Errors must implement Error. List.get can raise IndexError, dynamic division ArithmeticError, file operations FileError, and c_int conversion ConversionError. Annotated callable errors include every layer's unless clause. Bound constructors must handle their layer errors internally.
 
@@ -104,4 +104,4 @@ See [testing](testing.md) and [native tooling](tooling.md) for executable exampl
 
 ## INFERENCE: add a type anchor
 
-The compiler cannot infer a result when recursive calls have no concrete return evidence, or when generic contracts keep expanding. State a finite `returns T`, `uses`, or `unless` contract at that boundary. Empty collections also need a contextual item type. This does not require repeating contracts on ordinary bodies.
+The compiler cannot infer a result when recursive calls have no concrete return evidence, or when generic contracts keep expanding. State a finite `returns T`, `uses`, or `unless` contract at that boundary. Empty collections also need a contextual item type. Other executable bodies continue to infer these clauses.

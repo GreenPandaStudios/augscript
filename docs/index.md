@@ -13,20 +13,20 @@ hero:
       link: /learn/
 features:
   - title: Read it like pseudocode
-    details: Named inputs, ordinary words, and small public modules make the work visible where you read it.
+    details: Calls name their inputs. Imports and declaration headers show which dependencies the code uses.
   - title: Compile a human-readable spec
-    details: Turn checked source into linked prose. Review the behavior before a change and the explanation after it.
+    details: Run aug spec to explain a module in sentences and link to its dependencies. Review the explanation with the code.
   - title: Run at native speed
-    details: Build a native executable. Compare real August and C programs below, then measure the work your application does.
+    details: Compile to a native executable. The programs below compare August with C doing the same work.
 ---
 
 <!--@include: ./.vitepress/home-example.md-->
 
 ## Build code other people can understand
 
-August is designed for developers working with teammates and coding agents. Calls name their inputs. Modules export only their chosen public surface. Dependencies appear in declaration headers; state changes and possible failures are checked. Tests live beside the code they describe.
+Start an unfamiliar project at `main.aug`: its imports, dependency bindings, and startup code show how the application is assembled. Read a module's compiled spec to follow its behavior and open the linked dependencies when you need them. Tests stay beside the implementation, so you can check the change in the same file.
 
-You write the implementation. The compiler infers what it can, and the editor shows those facts without adding boilerplate to your source. The compiled spec gives a reader another way into the same program: what it accepts, what it does, what it changes, and where its dependencies are explained.
+August infers return types, possible failures, and state changes from executable code. The editor shows those facts as hints. You write them explicitly where an interface needs to constrain its implementations.
 
 Start with [your first project](getting-started.md), then follow [the August book](learn/index.md). Use the [task guides](guides/index.md) for packages, HTTP, tests, and deployment, and the [language reference](reference.md) when you need an exact rule. The [project gallery](examples/index.md) puts code and its actual compiled spec side by side.
 

@@ -10,15 +10,15 @@ These choices make everyday code resemble pseudocode without removing exact rule
 
 ## Keep context close
 
-Each file imports what it uses. `export.aug` defines a folder's public surface, and a leading underscore makes a name private to its scope. A dependency header shows injected capabilities; startup chooses their providers explicitly. Narrow exports and bounded module dependencies limit what a reader must follow.
+Each file imports what it uses. `export.aug` chooses a folder's public declarations, and a leading underscore makes a name private to its scope. A dependency header shows injected capabilities; startup chooses their providers explicitly. Narrow exports and bounded module dependencies limit what a reader must follow.
 
-Tests sit beside their declarations. Comments supply intent that cannot be recovered from execution alone. `aug spec` explains the checked program and links to the dependency surfaces, rather than expanding every imported implementation into one document.
+Tests sit beside their declarations. Comments supply intent that cannot be recovered from execution alone. `aug spec` explains the program and links to the dependencies it uses. Open those links when you need the full dependency explanation.
 
 ## Infer facts, retain decisions
 
-Executable bodies infer return types, capability operations, state changes, and escaping errors. Editor hints, hover, and compiled specs show those contracts. Interfaces without bodies state their promises explicitly. Ownership transfer, mutable permission, dependency selection, and recovery behavior remain deliberate source decisions.
+Executable bodies infer return types, capability operations, state changes, and escaping errors. Editor hints, hover, and compiled specs show those contracts. Interfaces without bodies state their promises explicitly. The author still chooses ownership transfer, mutable access, dependency providers, and error recovery.
 
-Inference should reduce repetition without hiding a changed public promise. Before accepting a change, review its source, its effective contract, its generated explanation, and independent tests. A specification describes the current implementation; it is not an acceptance oracle derived independently from requirements.
+Inference should reduce repetition without hiding a changed public promise. Before accepting a change, review its source, its effective contract, its generated explanation, and independent tests. The spec describes the current implementation. Write acceptance tests from the requirements so they can catch behavior that the source and spec both explain incorrectly.
 
 ## Bound state and effects
 

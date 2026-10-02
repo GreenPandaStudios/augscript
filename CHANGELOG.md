@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Rewrite wiki introductions, lessons, package and service guides, reference explanations, and generated help in direct developer prose. Explain owned assignments in one sentence in compiled specs. Keep platform, ownership, and protocol limits explicit, and document paragraph review in the wiki maintenance skill.
+
 - Render the performance wiki with selectable HTML/CSS charts, theme-aware colors, implementation filters, observed ranges and accessible data tables. Generate compact summaries from the unchanged raw measurements.
 
 - Authenticate public package reads in native release producers with their scoped job token. Retry release preparation against an existing tag and reviewed commit without moving the tag, changing its source, or skipping qualification gates.

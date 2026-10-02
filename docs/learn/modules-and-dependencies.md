@@ -9,7 +9,7 @@ next:
 
 # Modules and dependencies
 
-An import should lead a reader to a small public contract. This project moves the greeting into its own folder and selects its implementation in the application entry point.
+Move the greeting into its own folder, export the names the application needs, and choose the implementation in `main.aug`.
 
 Create a `greeting` folder beside `main.aug`:
 
@@ -56,18 +56,18 @@ Run `aug check .` and `aug run .`. The output is `Hello, August!`.
 
 `export.aug` is the folder's public boundary. A file outside `greeting` can import the names listed there. It cannot reach other declarations in that folder merely by knowing their paths. Within a folder, sibling files also need explicit imports. A folder without `export.aug` exposes no names across its boundary.
 
-Try removing the export line for `FriendlyGreeter`. The import in `main.aug` should fail. Restore it after running `aug check .`. This is a boundary check; a private name beginning with `_` cannot be exported at all.
+Try removing the export line for `FriendlyGreeter`. The import in `main.aug` should fail. Restore it after running `aug check .`. Names beginning with `_` are private and cannot be exported.
 
 ## Select behavior at startup
 
-The interface describes the operation available to the caller. `FriendlyGreeter` implements that contract. `implement Greeter with FriendlyGreeter` selects the provider, and `resolve Greeter to greeter` obtains it for startup work.
+`Greeter` declares the greeting operation. `FriendlyGreeter` implements it. `implement Greeter with FriendlyGreeter` selects the provider, and `resolve Greeter to greeter` obtains it for startup work.
 
 Elsewhere in an application, injected dependencies appear as `resolve` inputs in a class or function header. For example, `Worker(resolve Logger logger)` receives the configured logger without a caller supplying that argument. An ordinary `Logger logger` input must be passed by label. See [a complete constructor-injection example](../examples/new-syntax/index.md).
 
-Reading the entry point tells you the application's dependency choices. Reading a callable's header tells you its required dependencies. The compiler checks the binding graph before execution; a missing or cyclic dependency fails checking.
+`main.aug` shows which providers the application chooses. A class or function header shows which ones it needs. The compiler checks the binding graph before execution; a missing or cyclic dependency fails checking.
 
 ## Follow a dependency
 
-Run `aug spec .` and read `main.aug.md`. Follow its links to the greeting's explanation, then read `greeting/export.aug.md` to see the public surface. In VS Code, Ctrl-click `from` or the module path to open the source or export file. This is the workflow you can use in a larger unfamiliar project too.
+Run `aug spec .` and read `main.aug.md`. Follow its links to the greeting's explanation, then read `greeting/export.aug.md` to see the public surface. In VS Code, Ctrl-click `from` or the module path to open the source or export file. Use these links to trace dependencies in a larger project.
 
-Keep exports narrow as a folder grows. Add an implementation to the public surface when its caller needs to compose it. Keep helpers private and explain design intent beside the declaration. [The next chapter](state-and-tests.md) adds state and tests while preserving that local view.
+Keep exports narrow as a folder grows. Export implementations that callers need to construct or bind. Keep helpers private. [The next chapter](state-and-tests.md) adds a mutable counter and its tests.

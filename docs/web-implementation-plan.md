@@ -8,4 +8,4 @@ The native transport uses libwebsockets with the pinned TLS and compression stac
 
 Tasks are cooperative on one OS thread. Streaming sends bounded encoded items under backpressure. Disconnects and deadlines cancel the request scope, but synchronous native operations finish before cancellation is observed. The runtime does not provide multicore workers, inbound streaming bodies, WebSockets, or connection hijacking.
 
-Same-file endpoint tests exercise the checked HTTP pipeline without a listening socket. Native socket tests cover HTTP/1.1, TLS, HTTP/2, HTTP/3, streaming, and disconnect paths separately. Those tests establish the exercised paths, not complete HTTP conformance. The [gap ledger](web-library-gaps.md) states remaining protocol, deployment, and identity-service work.
+Same-file endpoint tests exercise the checked HTTP pipeline without a listening socket. Native socket tests cover HTTP/1.1, TLS, HTTP/2, HTTP/3, streaming, and disconnect paths separately. Broader HTTP conformance testing remains open. The [gap ledger](web-library-gaps.md) states remaining protocol, deployment, and identity-service work.

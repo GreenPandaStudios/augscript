@@ -1,5 +1,5 @@
 ---
-title: "types.aug · Generic contracts"
+title: "types.aug · Generic types and functions"
 generated: true
 source: "examples/generics/types.aug"
 editLink: false
@@ -11,7 +11,7 @@ pageClass: aug-example-page
 
 # `types.aug`
 
-[Generic contracts](index.md) · Source and specification
+[Generic types and functions](index.md) · Source and specification
 
 ::: details Files in this project
 

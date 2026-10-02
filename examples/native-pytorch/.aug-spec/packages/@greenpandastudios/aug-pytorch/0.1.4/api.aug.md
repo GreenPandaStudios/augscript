@@ -111,29 +111,25 @@ Tests [`tensor`](api.aug.md#symbol-tensor). Each case gets fresh setup and depen
 
 #### `adds_real_tensors` · [source](api.aug#L43)
 
-It sets `left` of type [`Tensor`](bindings.aug.md#symbol-Tensor) to [`tensor`](api.aug.md#symbol-tensor) with `values` from a list containing `1.0`, `2.0`, `3.0`. `left` of type [`Tensor`](bindings.aug.md#symbol-Tensor) owns this value. It sets `right` of type [`Tensor`](bindings.aug.md#symbol-Tensor) to [`tensor`](api.aug.md#symbol-tensor) with `values` from a list containing `4.0`, `5.0`, `6.0`. `right` of type [`Tensor`](bindings.aug.md#symbol-Tensor) owns this value.
+It calls [`tensor`](api.aug.md#symbol-tensor) with `values` from a list containing `1.0`, `2.0`, `3.0` and stores the result in owned `left` ([`Tensor`](bindings.aug.md#symbol-Tensor)). It calls [`tensor`](api.aug.md#symbol-tensor) with `values` from a list containing `4.0`, `5.0`, `6.0` and stores the result in owned `right` ([`Tensor`](bindings.aug.md#symbol-Tensor)). It calls [`add`](api.aug.md#symbol-add) with `left` and `right` and stores the result in owned `result` ([`Tensor`](bindings.aug.md#symbol-Tensor)). The test requires [`sum`](api.aug.md#symbol-sum) with `tensor` from `result` equals `21.0`.
 
-It sets `result` of type [`Tensor`](bindings.aug.md#symbol-Tensor) to [`add`](api.aug.md#symbol-add) with `left` and `right`. `result` of type [`Tensor`](bindings.aug.md#symbol-Tensor) owns this value. The test requires [`sum`](api.aug.md#symbol-sum) with `tensor` from `result` equals `21.0`. It sets `output` of type `List<float>` to [`values`](api.aug.md#symbol-values) with `tensor` from `result`.
-
-The test requires `output.length` equals `3`.
+It sets `output` of type `List<float>` to [`values`](api.aug.md#symbol-values) with `tensor` from `result`. The test requires `output.length` equals `3`.
 
 ### `ownership`
 
 #### `transfers_into_a_field_and_releases_the_old_tensor` · [source](api.aug#L52)
 
-It sets `before` to `0`. Within an unsafe block, it gets `before` from [`_liveTensors`](api.aug.md#symbol-_liveTensors). Native operations must satisfy their declared C contracts. Within a task and ownership scope, it sets `initial` of type [`Tensor`](bindings.aug.md#symbol-Tensor) to [`tensor`](api.aug.md#symbol-tensor) with `values` from a list containing `1.0`.
+It sets `before` to `0`. Within an unsafe block, it gets `before` from [`_liveTensors`](api.aug.md#symbol-_liveTensors). Native operations must satisfy their declared C contracts. Within a task and ownership scope, it calls [`tensor`](api.aug.md#symbol-tensor) with `values` from a list containing `1.0` and stores the result in owned `initial` ([`Tensor`](bindings.aug.md#symbol-Tensor)).
 
-`initial` of type [`Tensor`](bindings.aug.md#symbol-Tensor) owns this value. It sets `holder` of type [`_TensorHolder`](api.aug.md#symbol-_TensorHolder) to a [`_TensorHolder`](api.aug.md#symbol-_TensorHolder) with `item` from `initial`. `holder` of type [`_TensorHolder`](api.aug.md#symbol-_TensorHolder) owns this value. It sets `replacement` of type [`Tensor`](bindings.aug.md#symbol-Tensor) to [`tensor`](api.aug.md#symbol-tensor) with `values` from a list containing `7.0`.
+It creates [`_TensorHolder`](api.aug.md#symbol-_TensorHolder) with `item` from `initial` and stores the result in owned `holder` ([`_TensorHolder`](api.aug.md#symbol-_TensorHolder)). It calls [`tensor`](api.aug.md#symbol-tensor) with `values` from a list containing `7.0` and stores the result in owned `replacement` ([`Tensor`](bindings.aug.md#symbol-Tensor)). With temporary permission to change `holder`, it calls [`_replace`](api.aug.md#symbol-_replace) with `holder` and `replacement`. The test requires [`holder.total`](api.aug.md#symbol-_TensorHolder.total) equals `7.0`.
 
-`replacement` of type [`Tensor`](bindings.aug.md#symbol-Tensor) owns this value. With temporary permission to change `holder`, it calls [`_replace`](api.aug.md#symbol-_replace) with `holder` and `replacement`. The test requires [`holder.total`](api.aug.md#symbol-_TensorHolder.total) equals `7.0`. Within an unsafe block, the test requires [`_liveTensors`](api.aug.md#symbol-_liveTensors) equals (`before` plus `1`).
+Within an unsafe block, the test requires [`_liveTensors`](api.aug.md#symbol-_liveTensors) equals (`before` plus `1`). Native operations must satisfy their declared C contracts. On leaving this scope, join its child tasks and release its local values. Within an unsafe block, the test requires [`_liveTensors`](api.aug.md#symbol-_liveTensors) equals `before`.
 
-Native operations must satisfy their declared C contracts. On leaving this scope, join its child tasks and release its local values. Within an unsafe block, the test requires [`_liveTensors`](api.aug.md#symbol-_liveTensors) equals `before`. Native operations must satisfy their declared C contracts.
+Native operations must satisfy their declared C contracts.
 
 #### `preserves_native_error_methods` · [source](api.aug#L67)
 
-It sets `caught` to `false`. It sets `left` of type [`Tensor`](bindings.aug.md#symbol-Tensor) to [`tensor`](api.aug.md#symbol-tensor) with `values` from a list containing `1.0`, `2.0`. `left` of type [`Tensor`](bindings.aug.md#symbol-Tensor) owns this value. It sets `right` of type [`Tensor`](bindings.aug.md#symbol-Tensor) to [`tensor`](api.aug.md#symbol-tensor) with `values` from a list containing `1.0`, `2.0`, `3.0`.
-
-`right` of type [`Tensor`](bindings.aug.md#symbol-Tensor) owns this value.
+It sets `caught` to `false`. It calls [`tensor`](api.aug.md#symbol-tensor) with `values` from a list containing `1.0`, `2.0` and stores the result in owned `left` ([`Tensor`](bindings.aug.md#symbol-Tensor)). It calls [`tensor`](api.aug.md#symbol-tensor) with `values` from a list containing `1.0`, `2.0`, `3.0` and stores the result in owned `right` ([`Tensor`](bindings.aug.md#symbol-Tensor)).
 
 It tries to call [`add`](api.aug.md#symbol-add) with `left` and `right`. If this work raises [`TensorError`](contracts.aug.md#symbol-TensorError) as `error`, it sets `caught` to `length` on `error.explain` is positive. The test requires `caught` is true.
 
@@ -141,17 +137,15 @@ It tries to call [`add`](api.aug.md#symbol-add) with `left` and `right`. If this
 
 It sets `before` to `0`. Within an unsafe block, it gets `before` from [`_liveTensors`](api.aug.md#symbol-_liveTensors). Native operations must satisfy their declared C contracts. It sets `caught` to `false`.
 
-It sets `value` of type [`Tensor`](bindings.aug.md#symbol-Tensor) to [`tensor`](api.aug.md#symbol-tensor) with `values` from a list containing `1.0`. `value` of type [`Tensor`](bindings.aug.md#symbol-Tensor) owns this value. It calls [`_consumeAndFail`](api.aug.md#symbol-_consumeAndFail) with `value`. If this work raises [`TensorError`](contracts.aug.md#symbol-TensorError) as `error`, it sets `caught` to `error.code` equals `99`.
+It calls [`tensor`](api.aug.md#symbol-tensor) with `values` from a list containing `1.0` and stores the result in owned `value` ([`Tensor`](bindings.aug.md#symbol-Tensor)). It calls [`_consumeAndFail`](api.aug.md#symbol-_consumeAndFail) with `value`. If this work raises [`TensorError`](contracts.aug.md#symbol-TensorError) as `error`, it sets `caught` to `error.code` equals `99`. The test requires `caught` is true.
 
-The test requires `caught` is true. Within an unsafe block, the test requires [`_liveTensors`](api.aug.md#symbol-_liveTensors) equals `before`; then the test requires [`_liveBuffers`](api.aug.md#symbol-_liveBuffers) equals `0`. Native operations must satisfy their declared C contracts.
+Within an unsafe block, the test requires [`_liveTensors`](api.aug.md#symbol-_liveTensors) equals `before`; then the test requires [`_liveBuffers`](api.aug.md#symbol-_liveBuffers) equals `0`. Native operations must satisfy their declared C contracts.
 
 #### `releases_scoped_and_unused_results` · [source](api.aug#L90)
 
-It sets `before` to `0`. Within an unsafe block, it gets `before` from [`_liveTensors`](api.aug.md#symbol-_liveTensors). Native operations must satisfy their declared C contracts. Within a task and ownership scope, it sets `value` of type [`Tensor`](bindings.aug.md#symbol-Tensor) to [`tensor`](api.aug.md#symbol-tensor) with `values` from a list containing `2.0`.
+It sets `before` to `0`. Within an unsafe block, it gets `before` from [`_liveTensors`](api.aug.md#symbol-_liveTensors). Native operations must satisfy their declared C contracts. Within a task and ownership scope, it calls [`tensor`](api.aug.md#symbol-tensor) with `values` from a list containing `2.0` and stores the result in owned `value` ([`Tensor`](bindings.aug.md#symbol-Tensor)); then it sets `output` of type `List<float>` to [`values`](api.aug.md#symbol-values) with `tensor` from `value`; then the test requires `output.get` with `index` `0` equals `2.0`.
 
-`value` of type [`Tensor`](bindings.aug.md#symbol-Tensor) owns this value. It sets `output` of type `List<float>` to [`values`](api.aug.md#symbol-values) with `tensor` from `value`. The test requires `output.get` with `index` `0` equals `2.0`. On leaving this scope, join its child tasks and release its local values.
-
-It calls [`tensor`](api.aug.md#symbol-tensor) with `values` from a list containing `3.0`. Within an unsafe block, the test requires [`_liveTensors`](api.aug.md#symbol-_liveTensors) equals `before`; then the test requires [`_liveBuffers`](api.aug.md#symbol-_liveBuffers) equals `0`. Native operations must satisfy their declared C contracts.
+On leaving this scope, join its child tasks and release its local values. It calls [`tensor`](api.aug.md#symbol-tensor) with `values` from a list containing `3.0`. Within an unsafe block, the test requires [`_liveTensors`](api.aug.md#symbol-_liveTensors) equals `before`; then the test requires [`_liveBuffers`](api.aug.md#symbol-_liveBuffers) equals `0`. Native operations must satisfy their declared C contracts.
 
 ## Dependencies
 

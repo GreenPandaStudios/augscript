@@ -1,8 +1,8 @@
 # Ownership and task conformance
 
-August 0.21 checks ownership before compiling and joins every child before its `scope` ends. This page records the behavior exercised by the [language conformance suite](../tests/language-conformance.test.mjs). It is a candidate 1.0 contract; the [compatibility policy](compatibility.md) takes effect only with a 1.0 release.
+August 0.21 checks ownership before compiling and joins every child before its `scope` ends. The [conformance suite](../tests/language-conformance.test.mjs) exercises the rules below. The [compatibility policy](compatibility.md) becomes a commitment at 1.0.
 
-## What the compiler guarantees
+## Compiler checks {#what-the-compiler-guarantees}
 
 | Rule | Developer-visible behavior | Conformance case |
 | --- | --- | --- |
@@ -15,7 +15,7 @@ August 0.21 checks ownership before compiling and joins every child before its `
 
 The compiler tracks object origins through aliases and fields. It can reject code when it cannot prove that two references are separate. [The language guide](reference.md#ownership-and-read-access) explains `own`, `borrow`, `freeze`, and `Shared<T>`.
 
-## What native execution guarantees
+## Runtime behavior {#what-native-execution-guarantees}
 
 | Rule | Developer-visible behavior | Conformance case |
 | --- | --- | --- |
@@ -33,4 +33,4 @@ The checker rejects owned task results, including inferred `Task<T>` results,
 until the public task type has an owned-result transfer contract. Both backends
 exercise these cases in the concurrency suite.
 
-Run the focused suite with `node --test tests/language-conformance.test.mjs`. The full repository test command also runs existing [concurrency](../tests/concurrency.test.mjs), ownership, errors, formatter, and generated-spec tests. This suite is growing through adversarial review; a green run does not establish complete ownership safety. The [roadmap](roadmap.md) keeps the language semantics gate open until independent review and the full conformance evidence justify closure.
+Run the focused suite with `node --test tests/language-conformance.test.mjs`. The full repository test command also runs existing [concurrency](../tests/concurrency.test.mjs), ownership, errors, formatter, and generated-spec tests. Additional adversarial cases and independent review are still needed before 1.0. See the [roadmap](roadmap.md).

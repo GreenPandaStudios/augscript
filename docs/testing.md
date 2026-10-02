@@ -1,8 +1,8 @@
 # Built-in unit tests
 
-Keep a behavior test in the same file as the declaration it checks. A reader can inspect the contract, implementation, and cases together. August's CLI runs these tests as native programs; you do not need a test package, and test bodies are excluded from production executables.
+Write tests beside the declaration they check. `aug test` compiles and runs them as native programs. Test bodies are excluded from production executables.
 
-Use `test functionName` for a function or `test ClassName subject` for a class. This guide gives complete examples, then covers setup, filtering, and coverage. If testing is new to you in August, work through [State and tests](learn/state-and-tests.md) first. For HTTP, use [endpoint tests](web.md#endpoint-tests); they exercise routing and policies, while live sockets and TLS need separate transport tests.
+Use `test functionName` for a function or `test ClassName subject` for a class. If testing is new to you in August, work through [State and tests](learn/state-and-tests.md) first. For HTTP, use [endpoint tests](web.md#endpoint-tests); they exercise routing and policies, while live sockets and TLS need separate transport tests.
 
 ## A complete function suite
 
@@ -47,7 +47,7 @@ test add:
             assert(add(left=seven(), right=0) == 7)
 ```
 
-Each tuple row becomes a separately listed and executed case. The checker verifies its arity and types, and the row variables belong to that case. `fixture seven` is a reusable checked function. Import fixtures explicitly and declare their dependencies and effects, as you would for other functions. They remain callable outside tests and create no implicit setup scope.
+Each tuple row becomes a separately listed and executed case. The checker verifies its arity and types, and the row variables belong to that case. `fixture seven` is a function that several cases can call. Import it like any other function. Fixtures remain callable outside tests and do not create a setup scope.
 
 ## A complete class suite
 
@@ -92,7 +92,7 @@ The subject header names a local class and its test variable. It does not constr
 
 Group/case names are identifiers or quoted strings. A suite's groups are unique; a group's cases are unique. Within a group, place bindings or included compositions first, setup statements second, and cases last. Nested groups are not supported.
 
-Every case gets its own setup, bindings, native process, managed heap, and assertion state. Production main bindings and startup never run. Setup variables are visible only to that case. All bindings use ordinary graph, lifetime, and purity checks.
+Every case gets its own setup, bindings, native process, managed heap, and assertion state. Production main bindings and startup never run. Setup variables belong to that case. Dependency bindings follow the same graph, lifetime, and purity rules as application bindings.
 
 Resolve expressions belong in setup. Test bodies and helpers receive visible dependencies through setup variables or headers. A test can explicitly replace a capability with a private adapter. See [the runnable calculator tests](../examples/developer-workflow/calculator.aug).
 
@@ -123,7 +123,7 @@ Selection is exact and case sensitive. Quote names containing spaces. Unknown se
 
 Test LLVM IR and binaries live under `.aug-build/tests/`. Coverage writes `.aug-build/coverage/coverage.json` and `lcov.info`, retaining zero-count executable lines in the compiled test closure. It reports statement lines, not branch coverage. Production startup is omitted, so the result is not whole-application startup coverage. Filtering reports only selected tests and their reachable declarations.
 
-`aug check` checks production and test bodies. `aug test` checks selected tests and their reachable declarations; it does not execute or type-check production startup. A test project still has a root main.aug.
+`aug check` checks production and test bodies. `aug test` checks selected tests and their reachable declarations; it does not execute or type-check production startup. A test project still needs a root `main.aug`.
 
 ## VS Code
 
@@ -131,4 +131,4 @@ Test Explorer groups cases by project, declaration, and when group. Parameterize
 
 Choose **Native tests** to run or **Native coverage** to see merged statement-line coverage when the installed VS Code supports its coverage API. **AugScript: Test Project** runs the project CLI in a task terminal.
 
-The adapter uses the [VS Code Testing API](https://code.visualstudio.com/api/extension-guides/testing). `try`/`always` performs explicit cleanup; snapshots and nested groups are not part of this version. Each selected case currently compiles a separate native binary.
+Use `try`/`always` for cleanup. Snapshots and nested groups are unsupported. Each selected case compiles a separate native binary.

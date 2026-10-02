@@ -8,9 +8,9 @@ The repository checks compiler types, native execution, language examples, gener
 
 The [robustness tests](../tests/robustness.test.mjs) mutate 5,000 source files through the parser and 1,000 through project checking, then compare generated native integer, Map, and Set programs in debug and release modes with independent JavaScript oracles. CI also runs [core native stress programs](../scripts/sanitize-core.mjs) for collections, task joining, and owned `Shared<T>` transfer with AddressSanitizer and UBSan on macOS and Linux. Run them locally with `npm run test:sanitizers`. This catches specific crashes, wrong results, and memory errors in the exercised paths; it does not prove the compiler, HTTP/crypto libraries, or all programs safe. Leak detection is disabled for this gate because the macOS AddressSanitizer runtime does not support it.
 
-The same-app [OpenID Connect example](examples/oidc-login/index.md) proves integration paths; it stores accounts, signing keys, and sessions in memory. It is a development demonstration, not a production identity service.
+The [OpenID Connect example](examples/oidc-login/index.md) exercises a provider and client in one application. It stores accounts, signing keys, and sessions in memory. It is a development demonstration, not a production identity service.
 
-The [safety gyms](safety-gyms.md) now collect generated LLVM cases, rejected contracts, behavioral mutations and the larger runtime circuits in one replayable report. [Recorded qualification](qualification-results.md) shows the actual execution counts and skipped checks. The expanded performance suite measures eight further programs against C. These checks strengthen the release evidence without establishing universal safety or speed.
+The [safety gyms](safety-gyms.md) generate LLVM cases, check rejected operations, and test whether deliberately faulty programs are detected. [The results](qualification-results.md) record what ran and what was skipped. They also include eight more C performance comparisons.
 
 ## Dependencies and licenses
 
@@ -29,22 +29,14 @@ The CLI uses its matching core August library and `tar` 7.5.22 for registry arch
 | zlib | Host compression library | zlib | Include applicable notice when redistributing it. |
 | CMake, pkgconf | Native build tools | See upstream license files | Build tools are not included in the current source/npm/VSIX release artifacts. |
 
-The exact versions, archive URLs, and SHA-256 values are in [`native-dependencies.lock.json`](../scripts/native-dependencies.lock.json). See [native dependency notices](../THIRD_PARTY_NOTICES.md) and the upstream [GMP copying terms](https://gmplib.org/manual/Copying), [GnuTLS security advisories](https://gnutls.org/security-new.html), [libwebsockets security policy](https://github.com/warmcat/libwebsockets/security), [libtasn1 terms](https://www.gnu.org/software/libtasn1/), and [libunistring terms](https://www.gnu.org/software/libunistring/manual/html_node/Licenses.html). A redistributor of a compiled app must review its actual linked libraries, notices, source obligations, and target environment. The repository's audit is a starting inventory, not legal advice or a vulnerability certification. The pinned libwebsockets commit is not automatically updated when upstream fixes arrive; review upstream's security notes before shipping it.
+The exact versions, archive URLs, and SHA-256 values are in [`native-dependencies.lock.json`](../scripts/native-dependencies.lock.json). See [native dependency notices](../THIRD_PARTY_NOTICES.md) and the upstream [GMP copying terms](https://gmplib.org/manual/Copying), [GnuTLS security advisories](https://gnutls.org/security-new.html), [libwebsockets security policy](https://github.com/warmcat/libwebsockets/security), [libtasn1 terms](https://www.gnu.org/software/libtasn1/), and [libunistring terms](https://www.gnu.org/software/libunistring/manual/html_node/Licenses.html). A redistributor of a compiled app must review its actual linked libraries, notices, source obligations, and target environment. This inventory does not replace a review of the libraries in your deployed bundle. The pinned libwebsockets commit is not automatically updated when upstream fixes arrive; review upstream's security notes before shipping it.
 
 ## Release gates still open
 
-The [LLVM/native preview](native-implementation.md) supports real repository
-imports of CPU LibTorch, SQLite, zlib and Rust BLAKE3 on macOS ARM64 and
-GNU/Linux x86-64/ARM64 with glibc 2.36+. Installed CLI checks cover public
-downloads, exact locks, offline reuse, relocated bundles and finite ownership
-cases without native tools or development headers. Language parity, DWARF and
-core sanitizers are implemented. The published 0.21.0 preview uses LLVM by default and passed its platform and
-clean-consumer gates.
+The LLVM compiler, runtime, and public native packages work on macOS ARM64 and GNU/Linux x86-64/ARM64. Installed-package tests cover public downloads, locked and offline builds, relocated executables, and resource cleanup without native development tools. Windows, musl, and cross-compilation remain unsupported.
 
-- **Platform support:** the LLVM runtime, web/crypto components, and real native packages are qualified on macOS ARM64 and GNU/Linux x86-64/ARM64. [Docker recipes](docker.md) package Linux applications. Windows, musl, and cross compilation remain unsupported.
-- **Concurrency and ownership:** tasks use one OS thread. The [conformance suite](language-conformance.md) exercises injected captures, mutation after a child starts inside `borrow`, owned `Shared<T>` cleanup, branch joins, cancellation, and the public `Task<T>` error contract. A 1.0 support claim still depends on the platform, distribution, and compatibility gates.
-- **Security and reliability:** HTTP and OIDC need broad protocol conformance, durable credentials and keys, rotation, long-running load tests, and deployment guidance. The [gap ledger](web-library-gaps.md) records the precise work.
-- **Package and ABI stability:** the [matching 0.21.0 npm packages](packages.md#npm-registry) and LLVM/runtime archives are published and their installed consumer workflow is verified. Reproducible releases, compatibility policy, and native adapter ABI still need stable release gates.
-- **Operational behavior:** failure handling, cancellation, instrumentation, platform builds, and resource ceilings need repeated CI and field testing.
+Before 1.0, the project needs broader language conformance tests, repeated runtime stress tests, stable ABI and package formats, and repeatable releases. Tasks still run on one OS thread. The [roadmap](roadmap.md) gives the order and acceptance criteria.
+
+HTTP and identity services need additional protocol testing, durable credentials and keys, rotation, and long-running load tests. Those requirements are listed in [web and crypto limits](web-library-gaps.md).
 
 For a trial deployment, pin the compiler and native lock, run the project's tests and `aug spec --check`, review its native artifact and deployment inputs, and validate the executable under your own load and failure conditions. Track the [gap ledger](web-library-gaps.md) before promising production service levels.
