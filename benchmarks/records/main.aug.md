@@ -4,9 +4,9 @@
 
 ## Startup
 
-It sets `iterations` to `50000`. It sets `values` of type `List<Item>` to a list with no items. `values` of type `List<Item>` owns this value. It sets `index` to `0`.
+It sets `iterations` to `50000`. It stores a list with no items in owned `values` (`List<Item>`). It sets `index` to `0`. While `index` is less than `iterations`, it appends an [`Item`](data.aug.md#symbol-Item) with `id` from `index` and `name` `"August"` to `values`; then it increases `index` by `1`.
 
-While `index` is less than `iterations`, it appends an [`Item`](data.aug.md#symbol-Item) with `id` from `index` and `name` `"August"` to `values`; then it increases `index` by `1`. After the loop, it sets `checksum` to `0`. For each `item` in a snapshot of `values`, it increases `checksum` by `item.id`. After the loop, it prints `checksum`.
+After the loop, it sets `checksum` to `0`. For each `item` in a snapshot of `values`, it increases `checksum` by `item.id`. After the loop, it prints `checksum`.
 
 ## Dependencies
 
