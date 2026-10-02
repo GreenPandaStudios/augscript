@@ -2,13 +2,44 @@ name: Prepare release
 on:
   push:
     tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing version tag to build; tags are never moved
+        type: string
+        required: true
+      commit:
+        description: Reviewed full commit SHA for that tag
+        type: string
+        required: true
 permissions:
   contents: read
 concurrency:
-  group: release-${{ github.ref }}
+  group: release-${{ inputs.tag || github.ref_name }}
   cancel-in-progress: false
 jobs:
+  source:
+    runs-on: ubuntu-24.04
+    outputs:
+      tag: ${{ steps.source.outputs.tag }}
+      sha: ${{ steps.source.outputs.sha }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - id: source
+        name: Verify the existing tag and reviewed source
+        env:
+          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+          RELEASE_COMMIT: ${{ inputs.commit || github.sha }}
+        run: node scripts/release-source.mjs "$RELEASE_TAG" "$RELEASE_COMMIT" >> "$GITHUB_OUTPUT"
   compiler-packs:
+    needs: source
     strategy:
       fail-fast: false
       matrix:
@@ -26,9 +57,11 @@ jobs:
     timeout-minutes: 60
     env:
       MACOSX_DEPLOYMENT_TARGET: '14.0'
+      AUG_GITHUB_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
+          ref: ${{ needs.source.outputs.sha }}
           persist-credentials: false
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         if: runner.os == 'macOS'
@@ -59,12 +92,12 @@ jobs:
           docker exec producer node scripts/prepare-llvm-tools.mjs
           docker exec producer node scripts/prepare-llvm-maintainer.mjs
           docker exec producer node scripts/build-runtime-pack.mjs
-          docker exec -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools -e AUG_REQUIRE_DWARF=1 -e AUG_REQUIRE_DEBUGGER=1 -e AUG_DWARF_TOOL=/work/.aug-build/llvm-maintainer/bin/llvm-dwarfdump producer node scripts/check-llvm-parity.mjs
+          docker exec -e AUG_GITHUB_TOKEN -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools -e AUG_REQUIRE_DWARF=1 -e AUG_REQUIRE_DEBUGGER=1 -e AUG_DWARF_TOOL=/work/.aug-build/llvm-maintainer/bin/llvm-dwarfdump producer node scripts/check-llvm-parity.mjs
           docker exec -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools -e AUG_SANITIZER_CC=/work/.aug-build/llvm-maintainer/bin/clang producer node scripts/sanitize-core.mjs --backend llvm
           docker exec producer node scripts/build-llvm-pack.mjs
           docker exec -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools producer node scripts/benchmark-suite.mjs --backend llvm --compare-c-backend --iterations 60 --warmup 3 --http-rounds 5 --http-requests 5000 --output /work/.aug-build/llvm-migration-performance.json
           docker exec producer node scripts/check-llvm-performance.mjs .aug-build/llvm-migration-performance.json
-          docker exec -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools -e AUG_SANITIZER_CC=/work/.aug-build/llvm-maintainer/bin/clang producer node scripts/run-gyms.mjs --profile full --vectors 256
+          docker exec -e AUG_GITHUB_TOKEN -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools -e AUG_SANITIZER_CC=/work/.aug-build/llvm-maintainer/bin/clang producer node scripts/run-gyms.mjs --profile full --vectors 256
           docker exec -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools producer node scripts/benchmark-kernels.mjs --iterations 30
           mkdir -p .aug-build
           docker cp "producer:/work/.aug-build/aug-llvm-${{ matrix.artifact }}.tar.gz" .aug-build/
@@ -85,7 +118,7 @@ jobs:
             .aug-build/gyms/results.json
           if-no-files-found: error
   release:
-    needs: compiler-packs
+    needs: [source, compiler-packs]
     runs-on: macos-15
     timeout-minutes: 60
     env:
@@ -93,11 +126,13 @@ jobs:
       AUG_RELEASE_NATIVE_REQUIRED: '1'
       AUG_GITHUB_TOKEN: ${{ github.token }}
       MACOSX_DEPLOYMENT_TARGET: '14.0'
+      RELEASE_TAG: ${{ needs.source.outputs.tag }}
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
+          ref: ${{ needs.source.outputs.sha }}
           fetch-depth: 0
           persist-credentials: false
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
@@ -106,7 +141,7 @@ jobs:
           package-manager-cache: false
       - run: npm ci
       - run: npm --prefix vscode ci
-      - run: node scripts/version.mjs --check --tag "$GITHUB_REF_NAME"
+      - run: node scripts/version.mjs --check --tag "$RELEASE_TAG"
       - run: node scripts/bootstrap-native.mjs
       - run: node scripts/prepare-llvm-tools.mjs
       - run: node scripts/prepare-llvm-maintainer.mjs
@@ -146,7 +181,7 @@ jobs:
           path: dist/release/*
           if-no-files-found: error
   consumers:
-    needs: release
+    needs: [source, release]
     strategy:
       fail-fast: false
       matrix:
@@ -167,6 +202,7 @@ jobs:
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
+          ref: ${{ needs.source.outputs.sha }}
           persist-credentials: false
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         if: runner.os == 'macOS'
@@ -211,13 +247,14 @@ jobs:
           path: .aug-build/native-consumer-qualification.json
           if-no-files-found: error
   draft:
-    needs: [release, consumers]
+    needs: [source, release, consumers]
     runs-on: ubuntu-24.04
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
+          fetch-depth: 0
           persist-credentials: false
       - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
@@ -226,4 +263,10 @@ jobs:
       - name: Upload draft prerelease after all consumer gates
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" dist/release/* --draft --prerelease --verify-tag --title "August $GITHUB_REF_NAME" --notes-file CHANGELOG.md
+          RELEASE_TAG: ${{ needs.source.outputs.tag }}
+          RELEASE_COMMIT: ${{ needs.source.outputs.sha }}
+        run: |
+          node scripts/release-source.mjs "$RELEASE_TAG" "$RELEASE_COMMIT"
+          mkdir -p .aug-build
+          git show "$RELEASE_COMMIT:CHANGELOG.md" > .aug-build/release-notes.md
+          gh release create "$RELEASE_TAG" dist/release/* --draft --prerelease --verify-tag --title "August $RELEASE_TAG" --notes-file .aug-build/release-notes.md

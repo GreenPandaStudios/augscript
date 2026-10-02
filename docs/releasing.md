@@ -40,6 +40,10 @@ git push origin main v0.21.0
 
 `release.yml` validates the tag against every manifest, runs compiler/native/docs/package gates, and uploads artifacts to a **draft prerelease**. Review the draft and publish it in GitHub Releases. Publishing starts **Publish npm packages** and **Publish VS Code extension** automatically. Each workflow deploys the archives attached to that release. Changing an asset after review invalidates its checksum.
 
+If release preparation fails, **Prepare release** also accepts a manual retry on `main`. Supply the existing version tag and its reviewed full commit SHA. The controller rejects a moved tag or mismatched package, compiler, dependency or root lock version before starting producers. Every build checks out that same commit and repeats the full language, sanitizer, performance, gym and consumer gates; it does not move the tag or reuse unqualified binaries. The draft job checks the source again before uploading and reads its changelog from the release commit. This lets a corrected pipeline retry an older source tag without rewriting that release's identity or describing later changes as part of that release.
+
+Native producer jobs use the job's short-lived, read-only GitHub token for public package reads, including tests inside the Linux maintainer container. An unauthenticated shared runner can exhaust GitHub's API quota during the documentation and application suites; a 403 still fails the gate rather than being treated as a successful test.
+
 `ci.yml` checks pushes and pull requests. Linux CI builds the pinned full native stack, runs the native suite, and executes core and crypto apps in the matching runtime image. macOS CI runs the same native suite with its private bootstrap.
 
 The automatic publishers are included starting with `v0.20.1`. Existing tags keep their original workflows; the `v0.20.0` draft does not contain these scripts.
