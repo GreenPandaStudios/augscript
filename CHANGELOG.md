@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Authenticate public package reads in native release producers with their scoped job token. Retry release preparation against an existing tag and reviewed commit without moving the tag, changing its source, or skipping qualification gates.
+
 - Build and qualify LLVM on a physical DGX Spark: 266 parity cases, full safety gyms, frozen performance gates and four real public native-library imports. Publish the host, workload sources, raw results and remaining performance gaps in the wiki.
 
 - Add reproducible safety gyms with generated integer/floating arithmetic, collection, bounds, control-flow, ownership and task cases; independent expected results; rejected contracts; valid behavioral mutants; replayable sources and structured reports. CI qualifies all three LLVM hosts and retains the evidence.
