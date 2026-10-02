@@ -10,7 +10,7 @@ test('chart ranges retain observed extremes and convert units without inventing 
     assert.throws(()=>chartValue('August',measurement));
 });
 
-test('published charts separate hosts, historical runs and native C references',()=>{
+test('published charts separate hosts and retain native C reference measurements',()=>{
   const charts=JSON.parse(benchmarkChartData(new URL('..',import.meta.url).pathname));
   const mac=JSON.parse(readFileSync(new URL('../docs/benchmark-results.json',import.meta.url)));
   const dgx=JSON.parse(readFileSync(new URL('../docs/dgx-performance.json',import.meta.url)));
@@ -19,7 +19,8 @@ test('published charts separate hosts, historical runs and native C references',
   assert.equal(cpu(charts.execution).values.find(row=>row.name==='August').value,median(mac));
   assert.equal(cpu(charts['dgx-execution']).values.find(row=>row.name==='August').value,median(dgx));
   assert.deepEqual(charts.kernels.groups[0].values.map(row=>row.name),['August','C']);
-  assert.deepEqual(charts['improvements-execution'].groups[0].values.map(row=>row.name),['Before','Current']);
+  assert.deepEqual(charts.greetings.groups[0].values.map(row=>row.name),['August','C']);
+  assert.ok(!Object.keys(charts).some(name=>name.startsWith('improvements-')));
   assert.equal(charts.http.unit,'requests/s');assert.equal(charts.http.direction,'higher');
   assert.equal(charts.memory.unit,'MiB');assert.equal(charts.memory.direction,'lower');
 });

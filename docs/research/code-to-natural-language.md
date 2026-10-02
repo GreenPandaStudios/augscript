@@ -1,6 +1,6 @@
 # Research: deterministic prose from source code
 
-Research date: 2026-09-29. This note supports August's compiled specifications: connected prose describing local implementation behavior, with references to the dependency surfaces that the implementation actually uses. It records research evidence and proposed engineering choices; it is not an implementation status report.
+Research date: 2026-09-29. This note supports August's compiled specifications: connected prose describing local implementation behavior, with references to the dependency surfaces that the implementation actually uses. It records the research basis for the generator’s design and evaluation criteria. Current usage is described in [compiled specifications](../specifications.md).
 
 ## Findings that matter for August
 
@@ -88,9 +88,9 @@ Pengyu Nie, Jiyang Zhang, Junyi Jessy Li, Ray Mooney, and Milos Gligoric. *Impac
 
 The authors compare mixed-project, cross-project, and time-segmented evaluation of learned code summarizers. Different splits can lead to conflicting conclusions, and the paper maps evaluation methods to intended use cases. This is chiefly relevant if August later adds learned lexical or summary components. Its broader lesson motivates representative acceptance examples and revisions of real programs. A deterministic rule generator has no training leakage in the same sense, so the paper's machine-learning results should not be presented as direct evidence of August's quality.
 
-## Proposed engineering choices for August
+## Design criteria for August
 
-These are recommendations derived from the requirements and the literature, not findings that the papers prove or claims that the current generator implements them.
+These criteria are derived from the requirements and literature. The current compiler uses a behavior tree and deterministic sentence/paragraph planning in `src/spec-tree.ts`, with resolved contracts and dependencies in `src/spec.ts`. That implementation must be evaluated against the criteria; the papers do not establish its coverage or readability.
 
 1. Extract an immutable behavior representation from resolved compiler structures. Each fact should retain its construct identity, lexical scope, source location, guard, ordering relation, and involved symbols. Represent bindings, calculations, calls, returns, mutation, loops, pattern alternatives, cleanup, capabilities, and checked errors explicitly.
 2. Plan documents by module and declaration, and explain each body in its actual control structure. A declaration overview can precede its detailed behavior; branches and repeated actions should remain recognizable in paragraphs. Paragraph breaks are useful boundaries for changes in scope or topic.

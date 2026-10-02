@@ -1,112 +1,27 @@
-# Approved language changes — 0.15
+# Compiler architecture
 
-## 0.21 additions (pending release)
+The compiler checks one August project, then uses the same resolved program for native code, editor tools, tests, and compiled specifications. This page maps those responsibilities to their canonical source modules. It is intended for compiler contributors; application developers can start with [the book](learn/index.md).
 
-Checked execution IR lowers directly through LLVM 23.1.2. Compiler packs contain the optimizer, object generator, linker and prebuilt runtime; application consumers need no native toolchain on macOS 14+ ARM64 or GNU/Linux x86-64/ARM64 with glibc 2.36+. Normal builds select LLVM; `--backend c` remains an explicit migration reference. Platform qualification and publication are tracked in [native implementation](native-implementation.md).
+## From source to an executable
 
-Separate public PyTorch, SQLite, zlib and Rust BLAKE3 repositories use ordinary imports, format 2 manifests, reviewed ownership descriptors, checksummed platform artifacts and per-host locks. Binding maintainers check physical declarations using `aug bind header` with explicit Clang. Applications keep the executable, `lib` and `share` deployment directories together. Callbacks, exported August libraries, borrowed native views, GPU and cross compilation remain deferred.
+[`project.ts`](../src/project.ts) loads `main.aug`, configuration, modules, and installed packages. [`lexer.ts`](../src/lexer.ts) and [`parser.ts`](../src/parser.ts) produce the source AST for both indentation and braces. [`checker.ts`](../src/checker.ts) resolves declarations and checks types, labels, visibility, dependencies, effects, checked errors, and ownership. [`contracts.ts`](../src/contracts.ts) exposes effective callable contracts, including inferred results and failures.
 
-## 0.19 additions
+[`ir.ts`](../src/ir.ts) lowers checked code into August execution IR. Its explicit operations, source locations, and root cells form the boundary between language semantics and code generation. [`llvm.ts`](../src/llvm.ts) lowers that representation to LLVM IR. [`llvm-native.ts`](../src/llvm-native.ts) verifies, optimizes, emits objects, links, and prepares executable bundles. LLVM 23.1.2 is pinned; [`compiler-packs.ts`](../src/compiler-packs.ts) selects and verifies the host compiler/runtime pack.
 
-Deterministic adjacent source specs, used dependency surfaces with offline links, optional comment requirements, source-package specs, and VS Code preview/generation are described in [compiled specifications](specifications.md). Boolean operators use only `and`, `or`, and `not`; construction uses `initialize` inside declarations. DI uses `implement … with …` and `resolve … to …`; migration is available through the CLI and editor.
+The explicit C backend remains a migration reference for contributor comparisons. It is not the default compilation path, and native ABI packages require LLVM. Backend parity tests compare observable behavior; a matching result for one case does not establish complete equivalence.
 
-## 0.18 additions
+## Runtime and native packages
 
-- User-authored source packages, public export boundaries, exact npm aliases/local snapshots, transitive dependency scopes and frozen locks are implemented. See [the author/consumer guide](packages.md).
-- Class implementations and private helpers infer capability effects while interface/public function contracts, mutation and checked errors remain explicit. Hover, explain and generated API docs expose inference.
-- [Performance graphs](performance.md) compare verified C/Node/Python workloads, memory and real HTTP throughput. Scaling and lifecycle gaps remain recorded; the measurements do not establish general production readiness.
-- Native scalar lowering retains wrapping integers and checked division, with scalar-only temporaries outside GC roots. Map/Set insertions reuse probes, destructured Map iteration copies fields without per-entry tuple allocation, and HTTP service drains bounded ready batches with coalesced I/O notifications. Behavioral regressions cover generic/default methods, GC, collection mutation and the existing HTTP pipeline.
+[`runtime`](../runtime) supplies managed values, allocation, collections, task scopes, cleanup, checked failure transport, and selected I/O adapters. Native packages expose a reviewed C ABI through [`native-contracts.ts`](../src/native-contracts.ts), [`native-artifacts.ts`](../src/native-artifacts.ts), and the package manager. The runtime's tagged value layout is compiler-private; a public native package uses fixed-width values, copied buffers, or owned opaque resources.
 
-The original 0.15 map below records the earlier audit delivery.
+[`package-manager.ts`](../src/package-manager.ts) resolves source dependencies, caches revisions, and maintains locks. Compiler and library downloads have separate identities. Consumer installation verifies prebuilt artifacts and executes no package build scripts. See [native compilation design](native-interop-llvm-plan.md) for the boundary and deployment contract.
 
-The September 28 audit recommendations and optional indentation blocks are approved. This map records the delivered implementation, accepted spelling, evidence, and practical limits.
+## Reader and editor tools
 
-## Syntax
+[`spec.ts`](../src/spec.ts) compiles checked source into adjacent Markdown. [`semantic.ts`](../src/semantic.ts), [`documentation.ts`](../src/documentation.ts), and [`help.ts`](../src/help.ts) supply checked contracts and language help. [`formatter.ts`](../src/formatter.ts) reparses its output before returning an edit. The language server and VS Code extension use these compiler facts for hover, navigation, completion, fixes, and inferred hints.
 
-- [x] Colon-led blocks with tabs or spaces, interchangeable with braces; ambiguous indentation rejected and literal braces retained.
-- [x] Canonical formatter, named-import expansion, declaration diagnostics, and [compact grammar](grammar.md).
-- [x] Immutable records and public constructor labels distinct from private storage.
-- [x] Snapshot iteration, tuple destructuring, and checked matching.
+[`scripts/generate-docs.mjs`](../scripts/generate-docs.mjs) builds the API, construct, and example pages from canonical sources. Handwritten guides explain use; generated pages report the program that is actually checked. Change their generators instead of editing generated prose.
 
-Accepted forms: `if ready:`, `record Point(int x, int y)`, `Counter(mutable int initial to _count) implements Count`, `for (key, value) in map`, and `match value: when null: ... when some item: ...`. Class initialization uses an internal `initialize` block. The formatter verifies parsed structure and preserves declaration documentation and wildcard imports.
+## Verification boundaries
 
-## Compiler contracts
-
-- [x] Generic invariance, conflict-aware concrete inference, constraints, and checked interface variance.
-- [x] Null narrowing and ownership flow across aliases, nested references, injected call results, branches, and loop re-entry.
-- [x] Pure defaults, changes/uses contracts, interface/interceptor checks, and read-only public/reference access.
-- [x] Header dependencies, pure construction, complete DI graphs, explicit lifetimes/scopes, and shared mutation choices.
-- [x] Recoverable index/arithmetic/conversion failures, specific error contracts, and recovery/propagation fixes.
-
-Accepted forms: `read<T implements Named>(T value)`, `interface Producer<out T>`, `increment() changes self`, `save(resolve FileWriter files) uses files.write unless FileError`, `implement Counter with CounterImpl scoped mutable`, and `scope:`.
-
-Stateful DI defaults to fresh; stateless adapters default to shared. Shared state needs shared mutable. Scope requirements propagate through factories; scoped references cannot escape and shared objects cannot retain them. Local cleanup cannot add effects/errors through layers. Calls forward declared dependencies rather than looking up global services.
-
-## Modules and context
-
-- [x] Import cycles, allowed folder edges, strict sibling surfaces, and optional module/public/wildcard/error lints.
-- [x] Immutable semantic documents and shared built-in/type/inference contracts.
-- [x] Deep seams for dependency ordering, ownership flow, effects, continuation analysis, and interceptor lowering.
-- [x] Explain/context output with provenance, effects, layers, tests, lifetimes, bounded source context, and architecture deltas.
-- [x] Documentation-tag validation, optional public docs warnings, and compiler-checked executable guides.
-- [x] Persistent incremental LSP and local checking while main composition is unfinished.
-
-`main.yaml` configures module_dependencies, strict_modules, lint, and formatter preferences. Explain/context accepts --file, --name, --budget, and --baseline. The VS Code commands display current-file contracts/context beside the source.
-
-### Compiler navigation
-
-| Module | Owned decision |
-| --- | --- |
-| [types.ts](../src/types.ts), [inference.ts](../src/inference.ts) | Type identities and consistent generic unification. |
-| [builtins.ts](../src/builtins.ts) | Built-in labels, types, mutability, errors, docs, and native operation names. |
-| [ownership.ts](../src/ownership.ts), [freshness.ts](../src/freshness.ts) | Object origins, loans, escape, joins, and conservative freshness. |
-| [effects.ts](../src/effects.ts) | Declared mutation/capability contract resolution. |
-| [di.ts](../src/di.ts), [policies.ts](../src/policies.ts) | Graph ordering/cycle paths and module/documentation policy. |
-| [continuation.ts](../src/continuation.ts), [interceptors.ts](../src/interceptors.ts) | At-most-once next analysis, written layer order, input/dependency mapping, and ownership-transfer layout. |
-| [semantic.ts](../src/semantic.ts), [documentation.ts](../src/documentation.ts) | Checked scopes/contracts/provenance and inherited callable documentation. |
-| [lsp.ts](../src/lsp.ts) | Versioned document transport and cached import-closure checks. |
-| [formatter.ts](../src/formatter.ts) | Canonical syntax, comment ownership, and parsed-program equivalence. |
-| [native.ts](../src/native.ts), [config.ts](../src/config.ts) | Native compiler invocation, mapped diagnostics, coverage, timing, and config validation. |
-
-The checker coordinates these modules and still owns core type/body checking. Editor locals come from checked scopes rather than a second syntax-based inference implementation.
-
-## Testing and native runtime
-
-- [x] Same-file function/class suites, independently executed parameter rows, explicit fixtures/compositions, and native coverage.
-- [x] Numeric widths/wrapping, Unicode/NUL behavior, FFI widths, and checked conversion.
-- [x] Check-time config validation, source-mapped native diagnostics, pinned package manifests/lockfiles.
-- [x] Native benchmark workload/report, source metadata, and LLDB adapter/terminal integration.
-
-Accepted forms: `test add:`, `it adds for (left, right, expected) in [(1, 2, 3)]:`, `fixture seven() returns int:`, and `include TestServices` in setup. Coverage is statement-line coverage of the compiled test closure.
-
-The C boundary uses int64_t for int and checked 32-bit C int for c_int. Text is UTF-8 without NUL. [Benchmark measurements](benchmarks.json) include startup and identify the environment.
-
-## Audit coverage
-
-| Findings | Delivered solution |
-| --- | --- |
-| 1, 5, 6, 7, 9 | Pure defaults; declared mutation/capabilities; explicit adapters; pure construction; effective layer contracts. |
-| 2, 3, 4 | Stateful fresh defaults; explicit shared/scoped choices; header DI; complete construction graph and dependency fixes. |
-| 8, 16, 17, 20 | Read-only storage; immutable records; iteration/destructuring/match; public labels/private storage. |
-| 10, 11, 12, 13, 14, 15 | Ownership/null flow; invariance/variance/constraints/inference; checked runtime failures and specific recovery/propagation. |
-| 18, 19, 21, 22, 23 | Named-import expansion; public/module policy; architecture deltas; canonical syntax and precise grammar diagnostics. |
-| 24, 26 | Function/row suites, imported fixtures/compositions, coverage, checked docs, and executable guides. |
-| 25, 27, 28, 29 | Resolved semantics and provenance; shared registries; deep compiler seams; bounded context and cached persistent LSP. |
-| 30 | Defined numeric/text/ABI behavior; config/native diagnostics; benchmark evidence; source maps/debug launch; pinned dependencies. |
-
-## Verification
-
-- [x] All 16 bundled projects migrated, checked, formatted idempotently, and run natively; their six built-in cases pass.
-- [x] Eleven complete guide projects compile/run, with six documented test cases and unchanged native behavior after formatting.
-- [x] Regressions cover successful and rejected contracts, versioned LSP caching, concrete quick-fix edits, zero-count coverage, source diagnostics, and cleanup paths.
-- [x] Final TypeScript/compiler gate: type checking and all 156 regression tests pass.
-
-The VS Code release is 0.15.0. Its package includes the compiler, runtime, source examples, and these guides; build artifacts are excluded. Use the repository packaging/install commands in README.md.
-
-### Current limits
-
-Ownership and short-circuit descriptions are conservative analyses rather than formal proofs. The LSP caches parsed modules and checked import closures, not individual expressions. Coverage counts statement lines, not branches; startup is excluded from tests.
-
-LLDB resolves AugScript source breakpoints. Its launch smoke test stalled on this host and was stopped; interactive stepping/call stacks remain unverified here. The VS Code DAP path requires lldb-dap, which is not installed on this machine. Native tagged-value variable views need further debugger work.
-
-Benchmarks establish only the measured workload on this host; no universal speed or Python/Rust comparison is claimed. Threads, binary/pointer-heavy FFI, and a package resolver remain deferred as agreed. Clock/random/network capabilities can follow the same explicit-capability contract when those APIs are added.
+Language/runtime regressions, LLVM parity, native consumers, package tarball tests, documentation examples, and safety gyms cover different contracts. The [release process](releasing.md) names the required gates. Keep a failing native case as an ordinary regression, and preserve concrete evidence for rejected candidates. Do not equate successful type checking, finite runtime tests, and proof of arbitrary program behavior.

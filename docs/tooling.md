@@ -98,7 +98,7 @@ Unknown/duplicate keys, invalid values, and unsupported list shapes fail during 
 
 - int is a signed 64-bit integer. Literals are checked exactly. +, -, multiplication, and negation wrap in two's-complement arithmetic. The minimum divided by -1 also wraps to the minimum. Integer comparison preserves values beyond floating-point precision.
 - Division by a potentially zero operand raises checked ArithmeticError. A known nonzero integer literal divisor does not need that clause.
-- float uses C double. Literals must be finite. Mixed int/float arithmetic widens to double and can lose integer precision. Runtime floating-point results follow native double behavior.
+- float uses IEEE 754 binary64. Literals must be finite. Mixed int/float arithmetic widens to double and can lose integer precision. Runtime floating-point results follow native double behavior.
 - c_int is signed 32-bit and maps to the platform C int, whose width is checked during compilation. c_int(value=wide) raises ConversionError outside its range; int(value=narrow) widens without loss.
 - Source strings are Unicode text, emitted as UTF-8. NUL and unpaired surrogates are compile errors. File text rejects embedded NUL and malformed/overlong UTF-8 as FileError. Binary files need a future byte API.
 - Immutable tuples and records have structural equality/hashing. Behavioral classes and mutable collection objects have identity equality. Map/Set preserve insertion order for iteration.
@@ -152,7 +152,7 @@ run
 bt
 ```
 
-Debug information resolves source breakpoints. Variables currently display the C runtime's tagged representation; rich AugScript variable views, expression evaluation, and ownership-aware debugging are future work. Configure an LLDB DAP adapter to use the debug launch path. Native variables still use the runtime’s tagged representation; richer August views remain on the roadmap.
+Source breakpoints work. Variables currently show tagged runtime storage; rich collection views, August expression evaluation, and ownership-aware debugging remain unfinished.
 
 AUG_TRACE_DROPS=1 enables runtime cleanup tracing to stderr for lifecycle verification; it is developer instrumentation, not a language I/O capability.
 
@@ -160,9 +160,9 @@ AUG_TRACE_DROPS=1 enables runtime cleanup tracing to stderr for lifecycle verifi
 
 `aug bench` uses the selected backend's release mode, runs warmups, then reports every sample, median, minimum, and p95 in milliseconds. Measurements include process startup and exclude compilation. The timeout bounds each native run.
 
-See [performance and benchmark graphs](performance.md) for measured comparisons with C, Node and Python, peak memory, HTTP throughput, raw results, and reproducible commands. `npm run bench:compare` measures the fixed workloads under `benchmarks/`. The earlier [single-workload baseline](benchmarks.json) is preserved as historical evidence.
+See [performance and benchmark graphs](performance.md) for current comparisons with C, Node and Python, peak memory, HTTP throughput, raw results, and reproduction commands. Contributor commands live in [benchmark maintenance](contributing-benchmarks.md).
 
-The runtime uses tagged values, dynamic member lookup, a managed heap, and runtime collection adapters. Speed claims require workload comparisons and profiling; translating to C alone does not establish them.
+Benchmark the compiled executable with a representative workload. Source readability and native compilation do not determine the time spent in allocation, I/O, or your dependencies.
 
 ## Context for developers and LLMs
 
@@ -180,8 +180,7 @@ The VS Code extension includes an August logo and a file icon theme. Run
 **AugScript: Open Welcome** for the illustrated overview and guides; its images
 are bundled and work offline. Run
 **AugScript: Enable File Icons** to select it for the current workspace, or use
-**Preferences: File Icon Theme → AugScript Icons**. The repository already sets
-`workbench.iconTheme` to `augscript-icons` in its workspace settings.
+**Preferences: File Icon Theme → AugScript Icons**.
 
 | File | Icon meaning |
 | --- | --- |
@@ -193,8 +192,7 @@ are bundled and work offline. Run
 Default light/dark language icons also work with compatible icon themes. The
 August theme provides the special startup and export marks. After installing an
 updated VSIX, use **Developer: Reload Window** if the editor still displays the
-previous version. Editable vector artwork and its rendering instructions live
-in `vscode/media`.
+previous version.
 
 ### Language server
 

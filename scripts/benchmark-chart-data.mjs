@@ -16,7 +16,7 @@ export function chartValue(name,measurement,divisor=1){
   return {name,value:measurement.median/divisor,minimum:minimum/divisor,maximum:maximum/divisor,samples:measurement.samples.length};
 }
 
-export function buildBenchmarkCharts({current,baseline,kernels,dgx,dgxKernels}){
+export function buildBenchmarkCharts({current,greetings,kernels,dgx,dgxKernels}){
   assert.equal(kernels.status,'passed');assert.equal(dgxKernels.status,'passed');
   const batch=(report,names)=>report.batch.filter(item=>!names||names.includes(item.name)).map(item=>({
     name:batchTitles[item.name],source:sourceFor(item.name),values:item.results.filter(row=>['August','C','Node','Python'].includes(row.implementation)).map(row=>chartValue(row.implementation,row.milliseconds))
@@ -28,20 +28,11 @@ export function buildBenchmarkCharts({current,baseline,kernels,dgx,dgxKernels}){
     for(const group of groups)assert.equal(new Set(group.values.map(row=>row.name)).size,group.values.length,'Duplicate implementation');
     return {title,unit,direction,groups};
   };
-  const historical=(section,names,field)=>names.map(name=>({
-    name:section==='batch'?batchTitles[name]:name+' concurrent clients',
-    values:[['Before',baseline],['Current',current]].map(([label,report])=>{
-      const workload=report[section].find(item=>section==='batch'?item.name===name:item.concurrency===name);
-      assert.ok(workload,'Missing historical workload');
-      return chartValue(label,workload.results.find(row=>row.implementation==='August')[field]);
-    })
-  }));
   return {
+    greetings:chart('One million greetings','ms','lower',[{name:'Printing to a file',source:'/examples/greetings-benchmark/main',values:greetings.results.map(row=>chartValue(row.implementation,row.milliseconds))}]),
     execution:chart('Execution time','ms','lower',batch(current)),
     http:chart('HTTP throughput','requests/s','higher',http(current)),
     memory:chart('Peak process memory','MiB','lower',current.batch.filter(item=>['collections-20k','collections-200k'].includes(item.name)).map(item=>({name:batchTitles[item.name],values:item.results.filter(row=>['August','C','Node','Python'].includes(row.implementation)).map(row=>chartValue(row.implementation,row.peakRssBytes,1048576))}))),
-    'improvements-execution':chart('Earlier and current execution time','ms','lower',historical('batch',['cpu','collections-20k','collections-200k'],'milliseconds')),
-    'improvements-http':chart('Earlier and current HTTP throughput','requests/s','higher',historical('http',current.http.map(item=>item.concurrency),'requestsPerSecond')),
     kernels:chart('Eight August and C programs','ms','lower',kernelGroups(kernels)),
     'dgx-execution':chart('DGX Spark execution time','ms','lower',batch(dgx)),
     'dgx-kernels':chart('DGX Spark application kernels','ms','lower',kernelGroups(dgxKernels)),
@@ -51,5 +42,5 @@ export function buildBenchmarkCharts({current,baseline,kernels,dgx,dgxKernels}){
 
 export function benchmarkChartData(root){
   const read=name=>JSON.parse(readFileSync(join(root,'docs',name+'.json'),'utf8'));
-  return JSON.stringify(buildBenchmarkCharts({current:read('benchmark-results'),baseline:read('benchmark-baseline'),kernels:read('kernel-results'),dgx:read('dgx-performance'),dgxKernels:read('dgx-kernels')}),null,2)+'\n';
+  return JSON.stringify(buildBenchmarkCharts({current:read('benchmark-results'),greetings:read('greeting-results'),kernels:read('kernel-results'),dgx:read('dgx-performance'),dgxKernels:read('dgx-kernels')}),null,2)+'\n';
 }

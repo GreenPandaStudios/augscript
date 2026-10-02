@@ -14,7 +14,7 @@ The [safety gyms](safety-gyms.md) now collect generated LLVM cases, rejected con
 
 ## Dependencies and licenses
 
-The CLI uses its matching core August library and `tar` 7.5.22 for registry archive extraction. The extension bundles that parser and its JavaScript dependencies. The VS Code extension's npm audit currently reports zero advisories. The wiki build uses VitePress and a pinned Vite override; run `npm audit` before each release. npm audit only covers npm packages and cannot certify native code or deployment configuration.
+The CLI uses its matching core August library and `tar` 7.5.22 for registry archive extraction. The extension bundles that parser and its JavaScript dependencies. Audit the exact extension dependencies for the version you deploy. The wiki build uses VitePress and a pinned Vite override; run `npm audit` before each release. npm audit only covers npm packages and cannot certify native code or deployment configuration.
 
 | Dependency | Role | License from upstream | Distribution consideration |
 | --- | --- | --- | --- |
@@ -41,7 +41,7 @@ cases without native tools or development headers. Language parity, DWARF and
 core sanitizers are implemented. The published 0.21.0 preview uses LLVM by default and passed its platform and
 clean-consumer gates.
 
-- **Platform support:** the full pinned web/crypto bootstrap passes on macOS ARM and Linux ARM. [Docker build/run bases](docker.md) run core, web, and crypto programs on Linux. Linux x86-64 runs in CI; other platforms remain unverified.
+- **Platform support:** the LLVM runtime, web/crypto components, and real native packages are qualified on macOS ARM64 and GNU/Linux x86-64/ARM64. [Docker recipes](docker.md) package Linux applications. Windows, musl, and cross compilation remain unsupported.
 - **Concurrency and ownership:** tasks use one OS thread. The [conformance suite](language-conformance.md) exercises injected captures, mutation after a child starts inside `borrow`, owned `Shared<T>` cleanup, branch joins, cancellation, and the public `Task<T>` error contract. A 1.0 support claim still depends on the platform, distribution, and compatibility gates.
 - **Security and reliability:** HTTP and OIDC need broad protocol conformance, durable credentials and keys, rotation, long-running load tests, and deployment guidance. The [gap ledger](web-library-gaps.md) records the precise work.
 - **Package and ABI stability:** the [matching 0.21.0 npm packages](packages.md#npm-registry) and LLVM/runtime archives are published and their installed consumer workflow is verified. Reproducible releases, compatibility policy, and native adapter ABI still need stable release gates.

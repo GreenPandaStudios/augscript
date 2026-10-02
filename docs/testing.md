@@ -121,7 +121,7 @@ Use `npx @greenpandastudios/aug-cli@next` in place of `aug` below, or use an ins
 
 Selection is exact and case sensitive. Quote names containing spaces. Unknown selections fail. The default timeout is ten seconds per native case; compilation is outside that timeout.
 
-Test C and binaries live under `.aug-build/tests/`. Coverage writes `.aug-build/coverage/coverage.json` and `lcov.info`, retaining zero-count executable lines in the compiled test closure. It reports statement lines, not branch coverage. Production startup is omitted, so the result is not whole-application startup coverage. Filtering reports only selected tests and their reachable declarations.
+Test LLVM IR and binaries live under `.aug-build/tests/`. Coverage writes `.aug-build/coverage/coverage.json` and `lcov.info`, retaining zero-count executable lines in the compiled test closure. It reports statement lines, not branch coverage. Production startup is omitted, so the result is not whole-application startup coverage. Filtering reports only selected tests and their reachable declarations.
 
 `aug check` checks production and test bodies. `aug test` checks selected tests and their reachable declarations; it does not execute or type-check production startup. A test project still has a root main.aug.
 

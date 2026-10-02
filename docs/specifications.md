@@ -26,7 +26,7 @@ Generation also adds one managed comment at the top of each project source file:
 // aug-spec: "orders.aug.md" explains this file. Read it before changes; refresh with aug spec.
 ```
 
-This points readers and coding agents to the explanation before they edit the code. The compiler keeps the pointer current after a rename and preserves handwritten comments. It does not edit installed dependencies. Native builds add the pointer after checking and before C emission, so source maps use the correct lines. `aug spec --check` reports missing or outdated pointers without adding them.
+This points readers and coding agents to the explanation before they edit the code. The compiler keeps the pointer current after a rename and preserves handwritten comments. It does not edit installed dependencies. Native builds add the pointer after checking and before native lowering, so source maps use the correct lines. `aug spec --check` reports missing or outdated pointers without adding them.
 
 ## What the document explains
 

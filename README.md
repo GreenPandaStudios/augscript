@@ -4,7 +4,7 @@
 
 AugScript is an experimental, statically checked language for developers working with LLMs. Its tenets are **simplicity** and **developer scalability**: a module should explain its dependencies, state changes, errors, and public behavior in the code itself.
 
-The TypeScript compiler lowers checked August through LLVM to a native executable. This repository includes the compiler, managed runtime, CLI, standard capabilities, examples, tests, documentation, Docker image recipes, and VS Code extension. Public exports, labeled inputs, checked errors, same-file tests, and generated specifications keep behavior close to the code that implements it.
+August reads like pseudocode, compiles a human-readable specification, and runs as a native executable. The [homepage](https://greenpandastudios.github.io/augscript/) shows the same program as source and compiled prose beside a measured C comparison. The TypeScript compiler lowers checked August through LLVM. This repository includes the compiler, managed runtime, CLI, standard capabilities, examples, tests, documentation, Docker image recipes, and VS Code extension. Public exports, labeled inputs, checked errors, same-file tests, and generated specifications keep behavior close to the code that implements it.
 
 ## Start a project
 
@@ -46,7 +46,7 @@ Counter(mutable int initial to _count) implements Count:
 
 Braces and colon-led indentation are both supported. Indentation can use tabs or spaces; ambiguous mixing is rejected. Semicolons are optional. Constructor and function inputs use labels, so their order does not matter. Classes implement interfaces; immutable records need no marker interface.
 
-Interface contracts describe capability effects with `uses`; implementations and private helpers can infer those effects. Mutations declare `changes`. I/O receives a capability through the header. Managed inputs grant reading; mutation needs exclusive access. Dependency bindings and startup live in `main.aug`; helper bodies cannot look up hidden services.
+Interface contracts describe capability effects with `uses`; implementations and private helpers can infer those effects. Executable bodies infer mutation; bodyless interfaces state the permitted `changes`. I/O receives a capability through the header. Managed inputs grant reading; mutation needs exclusive access. Dependency bindings and startup live in `main.aug`; helper bodies cannot look up hidden services.
 
 ## Guides
 

@@ -6,11 +6,19 @@
     "stdout": "Hello, August!\n",
     "tests": 1
   },
-  "wiki-home": {"stdout": "21\n", "tests": 2},
-  "book-functions": {"stdout": "21\n0\n"},
-  "book-data": {"stdout": "21\nQuantity must be positive\nNo name for this identifier\n"},
-  "book-modules": {"stdout": "Hello, August!\n"},
-  "book-state": {"stdout": "4\n", "tests": 2},
+  "book-functions": {
+    "stdout": "21\n0\n"
+  },
+  "book-data": {
+    "stdout": "21\nQuantity must be positive\nNo name for this identifier\n"
+  },
+  "book-modules": {
+    "stdout": "Hello, August!\n"
+  },
+  "book-state": {
+    "stdout": "4\n",
+    "tests": 2
+  },
   "quickstart": {
     "stdout": "Hello, AugScript!\n"
   },
@@ -43,13 +51,28 @@
   "ffi-guide": {
     "stdout": "Hello from C\n"
   },
-  "spec-guide": {"stdout":"21\n"},
-  "benchmark-startup": {"stdout":"7\n"},
-  "benchmark-cpu": {"stdout":"819677333\n"},
-  "benchmark-collections": {"stdout":"599970000\ntrue\n"},
-  "benchmark-json": {"stdout":"250000\n"},
-  "benchmark-http": {"buildOnly":true},
-  "docker-http": {"buildOnly":true, "tests":1},
+  "spec-guide": {
+    "stdout": "21\n"
+  },
+  "benchmark-startup": {
+    "stdout": "7\n"
+  },
+  "benchmark-cpu": {
+    "stdout": "819677333\n"
+  },
+  "benchmark-collections": {
+    "stdout": "599970000\ntrue\n"
+  },
+  "benchmark-json": {
+    "stdout": "250000\n"
+  },
+  "benchmark-http": {
+    "buildOnly": true
+  },
+  "docker-http": {
+    "buildOnly": true,
+    "tests": 1
+  },
   "web-guide": {
     "buildOnly": true,
     "tests": 3

@@ -1,4 +1,31 @@
 {
+  "greetings": {
+    "title": "One million greetings",
+    "unit": "ms",
+    "direction": "lower",
+    "groups": [
+      {
+        "name": "Printing to a file",
+        "source": "/examples/greetings-benchmark/main",
+        "values": [
+          {
+            "name": "August",
+            "value": 1025.572062500003,
+            "minimum": 1016.3993339999997,
+            "maximum": 1081.460500000001,
+            "samples": 30
+          },
+          {
+            "name": "C",
+            "value": 971.3519579999993,
+            "minimum": 964.195832999998,
+            "maximum": 1041.4235420000005,
+            "samples": 30
+          }
+        ]
+      }
+    ]
+  },
   "execution": {
     "title": "Execution time",
     "unit": "ms",
@@ -311,134 +338,6 @@
             "minimum": 55.25,
             "maximum": 55.28125,
             "samples": 3
-          }
-        ]
-      }
-    ]
-  },
-  "improvements-execution": {
-    "title": "Earlier and current execution time",
-    "unit": "ms",
-    "direction": "lower",
-    "groups": [
-      {
-        "name": "Integer loop · 2 million steps",
-        "values": [
-          {
-            "name": "Before",
-            "value": 36.64545799999905,
-            "minimum": 34.890041999999994,
-            "maximum": 38.63004099999944,
-            "samples": 15
-          },
-          {
-            "name": "Current",
-            "value": 7.741792000000714,
-            "minimum": 7.436875000003056,
-            "maximum": 10.472915999999714,
-            "samples": 60
-          }
-        ]
-      },
-      {
-        "name": "Map + Set · 20,000 entries",
-        "values": [
-          {
-            "name": "Before",
-            "value": 4.675290999999561,
-            "minimum": 4.506165999999212,
-            "maximum": 4.973541000001205,
-            "samples": 15
-          },
-          {
-            "name": "Current",
-            "value": 2.7107505000000174,
-            "minimum": 2.5523749999999836,
-            "maximum": 3.022416000000021,
-            "samples": 60
-          }
-        ]
-      },
-      {
-        "name": "Map + Set · 200,000 entries",
-        "values": [
-          {
-            "name": "Before",
-            "value": 47.89533299999857,
-            "minimum": 46.50266699999884,
-            "maximum": 49.582125000000815,
-            "samples": 15
-          },
-          {
-            "name": "Current",
-            "value": 16.806416999999897,
-            "minimum": 16.028374999999983,
-            "maximum": 18.910959000000275,
-            "samples": 60
-          }
-        ]
-      }
-    ]
-  },
-  "improvements-http": {
-    "title": "Earlier and current HTTP throughput",
-    "unit": "requests/s",
-    "direction": "higher",
-    "groups": [
-      {
-        "name": "1 concurrent clients",
-        "values": [
-          {
-            "name": "Before",
-            "value": 25273.34704412399,
-            "minimum": 22146.362760221313,
-            "maximum": 25365.34016506469,
-            "samples": 3
-          },
-          {
-            "name": "Current",
-            "value": 21046.033492371473,
-            "minimum": 20967.492523778445,
-            "maximum": 21173.155151126084,
-            "samples": 5
-          }
-        ]
-      },
-      {
-        "name": "16 concurrent clients",
-        "values": [
-          {
-            "name": "Before",
-            "value": 62719.35388428363,
-            "minimum": 62595.81776559567,
-            "maximum": 62918.14375922489,
-            "samples": 3
-          },
-          {
-            "name": "Current",
-            "value": 58707.75426695297,
-            "minimum": 54454.49059610154,
-            "maximum": 59069.10051050469,
-            "samples": 5
-          }
-        ]
-      },
-      {
-        "name": "64 concurrent clients",
-        "values": [
-          {
-            "name": "Before",
-            "value": 30692.852785567866,
-            "minimum": 28209.36141763359,
-            "maximum": 30805.984678642988,
-            "samples": 3
-          },
-          {
-            "name": "Current",
-            "value": 54436.28505016304,
-            "minimum": 52649.52135003903,
-            "maximum": 55187.38396093695,
-            "samples": 5
           }
         ]
       }

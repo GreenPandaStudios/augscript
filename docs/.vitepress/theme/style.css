@@ -13,7 +13,7 @@
   overflow-wrap: anywhere;
 }
 .VPHome .vp-doc {
-  max-width: 760px;
+  max-width: 1100px;
   margin: 0 auto;
   padding: 0 24px 48px;
 }
@@ -47,3 +47,17 @@
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
+
+.VPHome .aug-example-compare {
+  display: grid;
+  gap: 2rem;
+  align-items: start;
+}
+.VPHome .aug-example-code,
+.VPHome .aug-example-spec { min-width: 0; }
+@media (min-width: 900px) {
+  .VPHome .aug-example-compare {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+.VPHome .vp-doc > p { max-width: 760px; }

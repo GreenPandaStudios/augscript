@@ -205,7 +205,7 @@ serve reply on port 0
 Start the app in one terminal:
 
 ```sh
-npx @greenpandastudios/aug-cli@next run path/to/http-example
+aug run path/to/http-example
 ```
 
 Save the load generator below as `http-load.mjs`. In another terminal, replace `PORT` with the printed port. This is the **same load generator** the comparison suite uses:
@@ -321,30 +321,6 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1
 
 These are medians of three separate peak-RSS measurements through `/usr/bin/time`, in MiB, including the process runtime/interpreter. They are not allocation counts or retained heap after a GC. Long-running heap stability and leak behavior need separate soak tests.
 
-## Before and after
-
-The earlier September 29 measurements and current LLVM measurements use the same August programs on this host. Versions and backends differ; the earlier HTTP run used three rounds and the current run uses five. The current suite also isolates each load client in a fresh process. This is a historical comparison of observed performance, not a controlled estimate of one compiler change. Shorter bars are faster for execution time; longer bars are faster for HTTP. [Earlier measurement summaries](benchmark-baseline.json) preserve the baseline.
-
-::: benchmark-chart improvements-execution
-:::
-
-::: benchmark-chart improvements-http
-:::
-
-[benchmark-improvements-start]: #
-
-| August workload | Before | Current | Current relative to before |
-| --- | ---: | ---: | ---: |
-| CPU · 2 million iterations | 36.65 ms | 7.74 ms | 4.73× faster |
-| Map + Set · 20,000 entries | 4.68 ms | 2.71 ms | 1.72× faster |
-| Map + Set · 200,000 entries | 47.90 ms | 16.81 ms | 2.85× faster |
-| HTTP · 1 clients | 25,273 req/sec | 21,046 req/sec | 0.83× throughput |
-| HTTP · 16 clients | 62,719 req/sec | 58,708 req/sec | 0.94× throughput |
-| HTTP · 64 clients | 30,693 req/sec | 54,436 req/sec | 1.77× throughput |
-| Map + Set · 200k peak memory | 61.9 MiB | 36.8 MiB | 40% less |
-
-[benchmark-improvements-end]: #
-
 ## Benchmark your own project
 
 1. Choose a representative finite workload in `main.aug`. Give it a deterministic result so you can check correctness.
@@ -352,9 +328,9 @@ The earlier September 29 measurements and current LLVM measurements use the same
 3. Measure a release executable repeatedly. Compilation is excluded; process startup is included.
 
 ```sh
-npx @greenpandastudios/aug-cli@next check path/to/project
-npx @greenpandastudios/aug-cli@next run path/to/project
-npx @greenpandastudios/aug-cli@next bench path/to/project --iterations 20 --warmup 3 --json > benchmark.json
+aug check path/to/project
+aug run path/to/project
+aug bench path/to/project --iterations 20 --warmup 3 --json > benchmark.json
 ```
 
 `aug bench` compiles with release optimization even when the project's normal setting is debug. Do not benchmark `aug run`: that command includes compiler work. Server programs run indefinitely, so use an HTTP load generator against a built server instead of `aug bench`. Record errors and latency as well as throughput. The comparison suite validates checksums; `aug bench` itself checks exit status, so verify your program's result first.

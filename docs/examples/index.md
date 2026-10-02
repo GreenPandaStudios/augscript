@@ -10,7 +10,7 @@ outline: [2, 3]
 
 # Example projects
 
-Read a complete program, follow its dependencies, and compare the source with its compiled explanation. Every file has highlighted **Indentation** and **Braces** views and the actual output of `aug spec`. Dependency links open the exact version used by the project. Download a project to try it; native examples require the LLVM preview described on their pages.
+Read a complete program, follow its dependencies, and compare the source with its compiled explanation. Every file has highlighted **Indentation** and **Braces** views and the actual output of `aug spec`. Dependency links open the exact version used by the project. Download a project to try it; native examples use the published LLVM toolchain on their listed supported platforms.
 
 Start with [Hello world with dependencies](hello/index.md) to trace a greeting through two folder boundaries. Then [review a change to the tested calculator](../guides/change-a-module.md). For a larger application, the [OpenID Connect example](oidc-login/index.md) combines pages, provider and client endpoints, and a session JWT. It is a development demonstration with documented limits.
 
@@ -79,6 +79,7 @@ If you are learning the language for the first time, use [the book](../learn/ind
 
 | Project | What it demonstrates |
 | --- | --- |
+| [A million greetings](greetings-benchmark/index.md) | Print one million identical UTF-8 greetings, with the same per-line flush as the C reference. The homepage shows its source and actual compiled spec. |
 | [Startup benchmark](startup-benchmark/index.md) | The small program used to measure process startup. |
 | [Floating-point benchmark](float-benchmark/index.md) | Accumulate exact binary fractions and check the final value. |
 | [Function-call benchmark](calls-benchmark/index.md) | Call a labeled function repeatedly with a dependent integer result. |

@@ -10,12 +10,12 @@ const grammar = JSON.parse(readFileSync(resolve(root, 'vscode/syntaxes/augscript
 const chartNames = new Set(Object.keys(JSON.parse(readFileSync(resolve(root, 'docs/.vitepress/theme/benchmark-data.json'), 'utf8'))));
 export default defineConfig({
   title: 'August',
-  description: 'A language for readable modules, explicit dependencies, and developers working with LLMs.',
+  description: 'Code that reads like pseudocode, a compiled human-readable spec, and measured native performance.',
   base: process.env.AUG_DOCS_BASE ?? '/augscript/',
   cleanUrls: true,
   lastUpdated: true,
   buildEnd(site) {
-    for (const file of ['benchmark-results.json', 'benchmark-baseline.json', 'benchmarks.json', 'kernel-results.json', 'gym-results.json', 'dgx-performance.json', 'dgx-kernels.json', 'dgx-gyms.json', 'dgx-consumers.json', 'release-macos-public-consumers.json', 'release-dgx-public-consumers.json', 'ci-linux-arm64-qualified.json.gz', 'ci-linux-arm64-rejected.json.gz', 'ci-linux-arm64-repeat.json.gz'])
+    for (const file of ['benchmark-results.json', 'greeting-results.json', 'kernel-results.json', 'gym-results.json', 'dgx-performance.json', 'dgx-kernels.json', 'dgx-gyms.json', 'dgx-consumers.json', 'release-macos-public-consumers.json', 'release-dgx-public-consumers.json', 'ci-linux-arm64-qualified.json.gz', 'ci-linux-arm64-rejected.json.gz', 'ci-linux-arm64-repeat.json.gz'])
       copyFileSync(resolve(root, 'docs', file), resolve(site.outDir, file));
   },
   sitemap: { hostname: 'https://GreenPandaStudios.github.io/augscript/' },
@@ -67,7 +67,7 @@ export default defineConfig({
         { text: 'Tests', link: '/testing' }, { text: 'Web applications', link: '/web' },
         { text: 'Compiled specifications', link: '/specifications' },
         { text: 'Packages and installation', link: '/packages' },
-        { text: 'Native packages and LLVM preview', link: '/native-packages' },
+        { text: 'Native library packages', link: '/native-packages' },
         { text: 'Docker deployment', link: '/docker' },
         { text: 'VS Code Dev Containers', link: '/dev-containers' },
         { text: 'Diagnostics', link: '/diagnostics' }
@@ -92,7 +92,7 @@ export default defineConfig({
         { text: 'Documentation maintenance', link: '/maintaining-docs' }, { text: 'Writing guide', link: '/writing-docs' },
         { text: 'Editorial research', link: '/research/wiki-editorial-design' },
         { text: 'Ownership and task conformance', link: '/language-conformance' },
-        { text: 'Implementation map', link: '/implementation-map' }, { text: 'Design audit', link: '/language-design-audit' }
+        { text: 'Compiler architecture', link: '/implementation-map' }, { text: 'Design principles', link: '/language-design-audit' }
       ]}
     ],
     editLink: { pattern: `${repo}/edit/main/docs/:path`, text: 'Edit this page on GitHub' },
