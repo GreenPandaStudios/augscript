@@ -2,6 +2,10 @@
 layout: home
 hero:
   name: August
+  image:
+    light: /brand/august-mark.svg
+    dark: /brand/august-mark-dark.svg
+    alt: August
   text: The world runs on language
   tagline: Code that reads like pseudocode. A human-readable spec compiled from it. Native performance you can measure against C.
   actions:

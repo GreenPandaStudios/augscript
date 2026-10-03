@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { packageOrder, repositoryRoot, releaseChecksums, validateReleaseRequest, verifyNpmRelease,
-  verifyExtensionRelease, vsixEntries, extensionMatches, verifyLLVMCompilerPins } from '../scripts/release-publication.mjs';
+  verifyExtensionRelease, vsixEntries, extensionMatches, verifyLLVMCompilerPins, validateExtensionReleaseRequest, verifyBundledCompiler } from '../scripts/release-publication.mjs';
 import { registryMatches, publishPackages } from '../scripts/publish-release.mjs';
 import { publishedExtensionMatches, publishExtension } from '../scripts/publish-extension.mjs';
 import { projectArchive } from '../scripts/doc-downloads.mjs';
@@ -47,6 +47,8 @@ function vsixFixture(t, transform = entries => entries) {
     ['extension.vsixmanifest', Buffer.from('<PackageManifest/>')],
     [`extension/${manifest.icon}`, Buffer.from('logo')],
     ['extension/compiler/bin/aug.mjs', Buffer.from('compiler')],
+    ['extension/compiler/package.json', Buffer.from(JSON.stringify({version: manifest.augustCompilerVersion}))],
+    ['extension/compiler/native/compiler-packs.json', readFileSync(join(repositoryRoot, 'native/compiler-packs.json'))],
     ['extension/README.md', Buffer.from('Extension help')],
     ['[Content_Types].xml', Buffer.from('<Types/>')],
   ]));
@@ -90,7 +92,7 @@ test('downloads resolve annotated tags and select reviewed archives for each des
     };
     downloadRelease({ kind, directory: fixture(t), tag, ref: `refs/tags/${tag}`, repository: 'GreenPandaStudios/augscript', sha }, run);
     const download = calls.at(-1); assert.equal(download[1], 'download');
-    assert(download.includes('SHA256SUMS')); assert(download.includes(kind === 'npm' ? 'packages.json' : `augscript-${tag.slice(1)}.vsix`));
+    assert(download.includes('SHA256SUMS')); assert(download.includes(kind === 'npm' ? 'packages.json' : `augscript-${read(join(repositoryRoot, 'vscode/package.json')).version}.vsix`));
   }
 });
 
@@ -105,7 +107,7 @@ test('LLVM release pin checks reject stale consumer archives even when build sta
   const cli=packages.find(pkg=>pkg.directory==='cli');
   const pack=()=>assert.equal(spawnSync('tar',['-czf',join(root,cli.filename),'-C',join(root,'cli'),'package']).status,0);
   pack();
-  const version=JSON.parse(expected).compiler;
+  const version=read(join(repositoryRoot,'vscode/package.json')).version;
   const editor=pin=>writeFileSync(join(root,`augscript-${version}.vsix`),projectArchive(new Map([
     ['extension/compiler/native/compiler-packs.json',Buffer.from(pin)]
   ])));
@@ -229,7 +231,9 @@ test('VSIX verification checks complete identity, artwork and bundled compiler',
   const fixture = vsixFixture(t); assert.equal(verifyExtensionRelease(fixture.root).publisher, 'augscript');
   for (const transform of [
     entries => { entries.delete('extension/compiler/bin/aug.mjs'); return entries; },
-    entries => { entries.delete('extension/media/augscript.png'); return entries; },
+    entries => { entries.delete('extension/' + read(join(repositoryRoot, 'vscode/package.json')).icon); return entries; },
+    entries => { entries.set('extension/compiler/package.json', Buffer.from('{"version":"0.0.1"}')); return entries; },
+    entries => { entries.set('extension/compiler/native/compiler-packs.json', Buffer.from('{"compiler":"0.0.1"}')); return entries; },
     entries => { const manifest = JSON.parse(entries.get('extension/package.json')); manifest.publisher = 'other'; entries.set('extension/package.json', Buffer.from(JSON.stringify(manifest))); return entries; },
   ]) assert.throws(() => verifyExtensionRelease(vsixFixture(t, transform).root));
   writeFileSync(fixture.file, 'tampered'); assert.throws(() => verifyExtensionRelease(fixture.root), /checksum/);
@@ -268,4 +272,36 @@ test('extension publishing delegates the verified VSIX with OIDC and rechecks pu
   assert.equal(await publishExtension(extension, { matches: async () => ++probes >= 4, run: () => ({ status: 0 }),
     pause: async () => { pauses++; } }), 'published and verified');
   assert.equal(pauses, 2);
+});
+
+test('editor-only download accepts its frozen extension tag and npm rejects it', t => {
+  const version = read(join(repositoryRoot, 'vscode/package.json')).version, tag = 'extension-v' + version, sha = 'a'.repeat(40);
+  assert.equal(validateExtensionReleaseRequest(tag, 'refs/tags/' + tag), version);
+  for (const [input, ref] of [[tag, 'refs/heads/main'], ['extension-v0.0.1', 'refs/tags/extension-v0.0.1'], ['--delete', 'refs/tags/--delete']])
+    assert.throws(() => validateExtensionReleaseRequest(input, ref));
+  const calls = [], run = (_, args) => {
+    calls.push(args);
+    return args[0] === 'api' ? result(0, { object: { type: 'commit', sha } }) : result(0, { tagName: tag, isDraft: false });
+  };
+  const request = { kind: 'extension', directory: fixture(t), tag, ref: 'refs/tags/' + tag, repository: 'GreenPandaStudios/augscript', sha };
+  downloadRelease(request, run);
+  assert(calls.at(-1).includes('augscript-' + version + '.vsix'));
+  assert.throws(() => downloadRelease({ ...request, kind: 'npm' }, run));
+  const count = calls.length;
+  assert.throws(() => downloadRelease({ ...request, sha: 'b'.repeat(40) }, run), /moved/);
+  assert(!calls.slice(count).some(args => args[1] === 'download'));
+});
+
+test('bundled compiler comparison rejects changed and additional files', t => {
+  const directory = fixture(t), staged = join(directory, 'package'); mkdirSync(staged);
+  writeFileSync(join(staged, 'compiler.js'), 'independent compiler fixture');
+  const archive = join(directory, 'compiler.tgz');
+  assert.equal(spawnSync('tar', ['-czf', archive, '-C', directory, 'package']).status, 0);
+  const entries = new Map([['extension/compiler/compiler.js', Buffer.from('independent compiler fixture')]]);
+  verifyBundledCompiler(entries, archive);
+  entries.set('extension/compiler/compiler.js', Buffer.from('changed compiler'));
+  assert.throws(() => verifyBundledCompiler(entries, archive), /differs/);
+  entries.set('extension/compiler/compiler.js', Buffer.from('independent compiler fixture'));
+  entries.set('extension/compiler/extra.js', Buffer.from('unreviewed'));
+  assert.throws(() => verifyBundledCompiler(entries, archive), /differs/);
 });

@@ -1,8 +1,10 @@
 # Changelog
 
-## Unreleased
+## 0.23.1 — burgundy artwork
 
-Replace the framed A logo with an open-circle mark. Explorer icons use simple strokes, muted colors and light/dark variants, with distinct startup, export and configuration symbols. Refresh the banner, bundled welcome page and icon legend. Correct the README’s LLVM, installation and worker descriptions.
+Bundle the unchanged public August 0.23.0 compiler. Editor-only patches now use a separate checked release path.
+
+Replace the framed A logo with an open-circle mark. Explorer icons use simple strokes, burgundy accents, muted neutrals and light/dark variants, with distinct startup, export and configuration symbols. Refresh the banner, bundled welcome page and icon legend. Correct the README’s LLVM, installation and worker descriptions.
 
 ## 0.23.0 — native ingestion preview
 

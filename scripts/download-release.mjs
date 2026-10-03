@@ -4,11 +4,11 @@ import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
-import { validateReleaseRequest } from './release-publication.mjs';
+import { validateReleaseRequest, validateExtensionReleaseRequest } from './release-publication.mjs';
 
 export function downloadRelease({ kind, directory, tag, ref, repository, sha }, runner = spawnSync) {
   assert.ok(['npm', 'extension'].includes(kind), 'Choose npm or extension artifacts');
-  const version = validateReleaseRequest(tag, ref), repo = 'GreenPandaStudios/augscript';
+  const version = (kind === 'extension' ? validateExtensionReleaseRequest : validateReleaseRequest)(tag, ref), repo = 'GreenPandaStudios/augscript';
   assert.equal(repository, repo, 'Publishing is restricted to the canonical repository');
   const run = args => {
     const result = runner('gh', args, { encoding: 'utf8' });

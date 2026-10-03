@@ -1,6 +1,6 @@
 # Releasing August
 
-Release the first-party packages and extension with the same version. npm manifests live in `packages`; canonical code remains in `src` and `runtime`.
+Release the compiler and first-party npm packages together. Full compiler releases also update the extension; editor-only patches can retain the released compiler. npm manifests live in `packages`; canonical code remains in `src` and `runtime`.
 
 ## Verify and create artifacts
 
@@ -89,6 +89,14 @@ npm may accept an upload several minutes before its public metadata becomes avai
 
 The CLI is published last because its dependencies use exact matching versions. An interrupted run can leave some libraries published; retry the same release to finish. Retries leave already-published versions and their dist tags alone. This pipeline publishes preview packages to `next`; promoting a release to `latest` remains a separate maintainer decision.
 
+## Editor-only patches
+
+Use `node scripts/version.mjs --extension 0.23.1` to change the extension version while retaining the compiler version in `augustCompilerVersion`. Update its changelog, run the contributor checks, and commit the change. Create an `extension-v0.23.1` tag at that reviewed commit and push it. **Prepare extension patch** rejects changes to compiler, runtime, CLI manifest, or bootstrap inputs compared with the retained compiler tag.
+
+The workflow downloads the published compiler's reviewed npm archives and verifies their checksums and manifests. It bundles that exact CLI archive, its matching public standard-library archive, and locked JavaScript dependencies. It compares every compiler file in the VSIX with those verified inputs. It checks editor regressions, documentation, and installed npm packages, then creates a draft containing the VSIX, checksums, and `extension-release.json`. The report records both versions, both source commits, and the compiler and VSIX hashes. It builds no native compiler or library artifacts.
+
+Review and publish this draft. **Publish VS Code extension** accepts both full compiler tags and extension tags. **Publish npm packages** ignores extension releases. A manual preparation retry takes the existing extension tag and reviewed full SHA; a publication retry must select that extension tag as its workflow ref. Existing published versions remain immutable.
+
 ## VS Code Marketplace
 
 The extension identity is `augscript.augscript`. The workflow uses locked VSCE 4.0.1-1 with `vsce publish --oidc`, requesting a short-lived credential without a stored PAT. [VSCE documents the repository/workflow trust configuration](https://github.com/microsoft/vscode-vsce#trusted-publishing), but the actual Marketplace service rejected the 0.21.0 and 0.23.0 exchanges with “Trusted Publishing is not supported.” The owner published the verified 0.23.0 VSIX through the publisher's Update action; its public contents match the retained GitHub release archive. Automatic uploads remain blocked until Marketplace supports and enables that policy for the publisher. The workflow can verify an already published matching version, and GitHub Releases also provides direct installation.
@@ -108,7 +116,7 @@ locally and do not depend on that image host. To update artwork, run
 
 ## Deployment protection and retries
 
-Configure GitHub environments named `npm` and `marketplace`. Allow only tags matching `v*`; use required reviewers if your release process needs another approval. Keep the npm environment name identical to each package's trusted publisher configuration, and the Marketplace policy aligned with its workflow and environment. See [GitHub's environment protection guide](https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment). Restrict who can create or move release tags through repository rules.
+Configure GitHub environments named `npm` and `marketplace`. Allow tags matching `v*` in the npm environment and both `v*` and `extension-v*` in the marketplace environment; use required reviewers if your release process needs another approval. Keep the npm environment name identical to each package's trusted publisher configuration, and the Marketplace policy aligned with its workflow and environment. See [GitHub's environment protection guide](https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment). Restrict who can create or move release tags through repository rules.
 
 Both workflows also accept a manual retry. Open the appropriate workflow in Actions, select the release tag as the workflow ref, and enter the same tag in the `tag` input.
 

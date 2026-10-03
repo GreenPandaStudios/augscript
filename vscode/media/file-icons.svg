@@ -1,92 +1,92 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1000" height="368" viewBox="0 0 1000 368">
-  <g font-family="Arial, Helvetica, sans-serif"><rect y="0" width="1000" height="184" fill="#202923"/>
+  <g font-family="Arial, Helvetica, sans-serif"><rect y="0" width="1000" height="184" fill="#201B1D"/>
 <g transform="translate(36 32)">
       <g transform="translate(0 2) scale(2.5)">
-  <g fill="none" stroke="#A1B6A8" color="#A1B6A8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11.5 3.25a5.5 5.5 0 1 0 1.95 4"/></g>
+  <g fill="none" stroke="#D19AAF" color="#D19AAF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11.5 3.25a5.5 5.5 0 1 0 1.95 4"/></g>
 </g>
-      <text x="0" y="76" fill="#EBEFEA" font-size="19">source.aug</text>
-      <text x="0" y="102" fill="#ADB9B0" font-size="14">Source</text>
+      <text x="0" y="76" fill="#EEE6E1" font-size="19">source.aug</text>
+      <text x="0" y="102" fill="#BEB0B3" font-size="14">Source</text>
       <g transform="translate(0 119)">
-  <g fill="none" stroke="#A1B6A8" color="#A1B6A8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11.5 3.25a5.5 5.5 0 1 0 1.95 4"/></g>
+  <g fill="none" stroke="#D19AAF" color="#D19AAF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11.5 3.25a5.5 5.5 0 1 0 1.95 4"/></g>
 </g>
-      <text x="25" y="132" fill="#ADB9B0" font-size="12">16 px</text>
+      <text x="25" y="132" fill="#BEB0B3" font-size="12">16 px</text>
     </g>
 <g transform="translate(282 32)">
       <g transform="translate(0 2) scale(2.5)">
-  <g fill="none" stroke="#C2AF91" color="#C2AF91" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 3 7 5-7 5Z"/></g>
+  <g fill="none" stroke="#D19AAF" color="#D19AAF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 3 7 5-7 5Z"/></g>
 </g>
-      <text x="0" y="76" fill="#EBEFEA" font-size="19">main.aug</text>
-      <text x="0" y="102" fill="#ADB9B0" font-size="14">Startup</text>
+      <text x="0" y="76" fill="#EEE6E1" font-size="19">main.aug</text>
+      <text x="0" y="102" fill="#BEB0B3" font-size="14">Startup</text>
       <g transform="translate(0 119)">
-  <g fill="none" stroke="#C2AF91" color="#C2AF91" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 3 7 5-7 5Z"/></g>
+  <g fill="none" stroke="#D19AAF" color="#D19AAF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 3 7 5-7 5Z"/></g>
 </g>
-      <text x="25" y="132" fill="#ADB9B0" font-size="12">16 px</text>
+      <text x="25" y="132" fill="#BEB0B3" font-size="12">16 px</text>
     </g>
 <g transform="translate(528 32)">
       <g transform="translate(0 2) scale(2.5)">
-  <g fill="none" stroke="#A7B7B8" color="#A7B7B8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6M7 3h6v6M6 10l7-7"/></g>
+  <g fill="none" stroke="#D19AAF" color="#D19AAF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6M7 3h6v6M6 10l7-7"/></g>
 </g>
-      <text x="0" y="76" fill="#EBEFEA" font-size="19">export.aug</text>
-      <text x="0" y="102" fill="#ADB9B0" font-size="14">Exports</text>
+      <text x="0" y="76" fill="#EEE6E1" font-size="19">export.aug</text>
+      <text x="0" y="102" fill="#BEB0B3" font-size="14">Exports</text>
       <g transform="translate(0 119)">
-  <g fill="none" stroke="#A7B7B8" color="#A7B7B8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6M7 3h6v6M6 10l7-7"/></g>
+  <g fill="none" stroke="#D19AAF" color="#D19AAF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6M7 3h6v6M6 10l7-7"/></g>
 </g>
-      <text x="25" y="132" fill="#ADB9B0" font-size="12">16 px</text>
+      <text x="25" y="132" fill="#BEB0B3" font-size="12">16 px</text>
     </g>
 <g transform="translate(774 32)">
       <g transform="translate(0 2) scale(2.5)">
-  <g fill="none" stroke="#B4B0A3" color="#B4B0A3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h3m3 0h4M3 11h6m3 0h1"/><circle cx="7.5" cy="5" r="1.5"/><circle cx="10.5" cy="11" r="1.5"/></g>
+  <g fill="none" stroke="#D19AAF" color="#D19AAF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h3m3 0h4M3 11h6m3 0h1"/><circle cx="7.5" cy="5" r="1.5"/><circle cx="10.5" cy="11" r="1.5"/></g>
 </g>
-      <text x="0" y="76" fill="#EBEFEA" font-size="19">main.yaml</text>
-      <text x="0" y="102" fill="#ADB9B0" font-size="14">Configuration</text>
+      <text x="0" y="76" fill="#EEE6E1" font-size="19">main.yaml</text>
+      <text x="0" y="102" fill="#BEB0B3" font-size="14">Configuration</text>
       <g transform="translate(0 119)">
-  <g fill="none" stroke="#B4B0A3" color="#B4B0A3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h3m3 0h4M3 11h6m3 0h1"/><circle cx="7.5" cy="5" r="1.5"/><circle cx="10.5" cy="11" r="1.5"/></g>
+  <g fill="none" stroke="#D19AAF" color="#D19AAF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h3m3 0h4M3 11h6m3 0h1"/><circle cx="7.5" cy="5" r="1.5"/><circle cx="10.5" cy="11" r="1.5"/></g>
 </g>
-      <text x="25" y="132" fill="#ADB9B0" font-size="12">16 px</text>
+      <text x="25" y="132" fill="#BEB0B3" font-size="12">16 px</text>
     </g>
-<rect y="184" width="1000" height="184" fill="#F5F4EF"/>
+<rect y="184" width="1000" height="184" fill="#FAF8F5"/>
 <g transform="translate(36 216)">
       <g transform="translate(0 2) scale(2.5)">
-  <g fill="none" stroke="#506D5B" color="#506D5B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11.5 3.25a5.5 5.5 0 1 0 1.95 4"/></g>
+  <g fill="none" stroke="#812E47" color="#812E47" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11.5 3.25a5.5 5.5 0 1 0 1.95 4"/></g>
 </g>
-      <text x="0" y="76" fill="#293E34" font-size="19">source.aug</text>
-      <text x="0" y="102" fill="#67746C" font-size="14">Source</text>
+      <text x="0" y="76" fill="#522337" font-size="19">source.aug</text>
+      <text x="0" y="102" fill="#76626B" font-size="14">Source</text>
       <g transform="translate(0 119)">
-  <g fill="none" stroke="#506D5B" color="#506D5B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11.5 3.25a5.5 5.5 0 1 0 1.95 4"/></g>
+  <g fill="none" stroke="#812E47" color="#812E47" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11.5 3.25a5.5 5.5 0 1 0 1.95 4"/></g>
 </g>
-      <text x="25" y="132" fill="#67746C" font-size="12">16 px</text>
+      <text x="25" y="132" fill="#76626B" font-size="12">16 px</text>
     </g>
 <g transform="translate(282 216)">
       <g transform="translate(0 2) scale(2.5)">
-  <g fill="none" stroke="#826C49" color="#826C49" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 3 7 5-7 5Z"/></g>
+  <g fill="none" stroke="#812E47" color="#812E47" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 3 7 5-7 5Z"/></g>
 </g>
-      <text x="0" y="76" fill="#293E34" font-size="19">main.aug</text>
-      <text x="0" y="102" fill="#67746C" font-size="14">Startup</text>
+      <text x="0" y="76" fill="#522337" font-size="19">main.aug</text>
+      <text x="0" y="102" fill="#76626B" font-size="14">Startup</text>
       <g transform="translate(0 119)">
-  <g fill="none" stroke="#826C49" color="#826C49" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 3 7 5-7 5Z"/></g>
+  <g fill="none" stroke="#812E47" color="#812E47" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 3 7 5-7 5Z"/></g>
 </g>
-      <text x="25" y="132" fill="#67746C" font-size="12">16 px</text>
+      <text x="25" y="132" fill="#76626B" font-size="12">16 px</text>
     </g>
 <g transform="translate(528 216)">
       <g transform="translate(0 2) scale(2.5)">
-  <g fill="none" stroke="#536F73" color="#536F73" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6M7 3h6v6M6 10l7-7"/></g>
+  <g fill="none" stroke="#812E47" color="#812E47" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6M7 3h6v6M6 10l7-7"/></g>
 </g>
-      <text x="0" y="76" fill="#293E34" font-size="19">export.aug</text>
-      <text x="0" y="102" fill="#67746C" font-size="14">Exports</text>
+      <text x="0" y="76" fill="#522337" font-size="19">export.aug</text>
+      <text x="0" y="102" fill="#76626B" font-size="14">Exports</text>
       <g transform="translate(0 119)">
-  <g fill="none" stroke="#536F73" color="#536F73" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6M7 3h6v6M6 10l7-7"/></g>
+  <g fill="none" stroke="#812E47" color="#812E47" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6M7 3h6v6M6 10l7-7"/></g>
 </g>
-      <text x="25" y="132" fill="#67746C" font-size="12">16 px</text>
+      <text x="25" y="132" fill="#76626B" font-size="12">16 px</text>
     </g>
 <g transform="translate(774 216)">
       <g transform="translate(0 2) scale(2.5)">
-  <g fill="none" stroke="#706A5B" color="#706A5B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h3m3 0h4M3 11h6m3 0h1"/><circle cx="7.5" cy="5" r="1.5"/><circle cx="10.5" cy="11" r="1.5"/></g>
+  <g fill="none" stroke="#812E47" color="#812E47" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h3m3 0h4M3 11h6m3 0h1"/><circle cx="7.5" cy="5" r="1.5"/><circle cx="10.5" cy="11" r="1.5"/></g>
 </g>
-      <text x="0" y="76" fill="#293E34" font-size="19">main.yaml</text>
-      <text x="0" y="102" fill="#67746C" font-size="14">Configuration</text>
+      <text x="0" y="76" fill="#522337" font-size="19">main.yaml</text>
+      <text x="0" y="102" fill="#76626B" font-size="14">Configuration</text>
       <g transform="translate(0 119)">
-  <g fill="none" stroke="#706A5B" color="#706A5B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h3m3 0h4M3 11h6m3 0h1"/><circle cx="7.5" cy="5" r="1.5"/><circle cx="10.5" cy="11" r="1.5"/></g>
+  <g fill="none" stroke="#812E47" color="#812E47" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h3m3 0h4M3 11h6m3 0h1"/><circle cx="7.5" cy="5" r="1.5"/><circle cx="10.5" cy="11" r="1.5"/></g>
 </g>
-      <text x="25" y="132" fill="#67746C" font-size="12">16 px</text>
+      <text x="25" y="132" fill="#76626B" font-size="12">16 px</text>
     </g></g>
 </svg>
