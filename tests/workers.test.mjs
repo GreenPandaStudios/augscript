@@ -6,6 +6,7 @@ import {join,resolve} from 'node:path';
 import {spawnSync} from './compiler-process.mjs';
 import {loadProject} from '../src/project.ts';
 import {checkProject} from '../src/checker.ts';
+import {discoverTests,checkUnitTests} from '../src/testing.ts';
 const cli=resolve('bin/aug.mjs');
 // Worker admission is a checked immediate failure. Every runtime fixture catches
 // unexpected failures outside its own case-specific catch and makes them visible.
@@ -170,3 +171,52 @@ catch Failure error:
         print(value=row.value)
 `
 },root=>clean(run(root),'4\n9\ntrue\n2\n4\n9\n')));
+
+for(const backend of ['c','llvm'])test(`same-file tests check active workers without checking inactive application startup (${backend})`,()=>fixture({
+ 'main.yaml':`backend: ${backend}\noptimization: release\n`,
+ 'operations.aug':`size(List<int> values) returns int:
+    return values.length()
+test size:
+    when local:
+        it returns_a_count:
+            assert(size(values=[1, 2, 3]) == 3)
+        it runs_its_own_worker:
+            scope:
+                job = start worker size(values=[4, 5])
+                assert(wait for job == 2)
+`,
+ 'main.aug':`import size from operations
+scope:
+    job = start worker size(values=[1, 2, 3])
+    print(value=wait for job)
+print(value="application-only")
+`
+},root=>{
+ const project=loadProject(root),units=discoverTests(project);
+ assert.equal(units.tests.length,2);
+ for(const entry of checkUnitTests(project,units.tests))assert.deepEqual(entry.checked.diagnostics,[]);
+ const result=spawnSync(process.execPath,[cli,'test',root],{encoding:'utf8',timeout:20000});
+ assert.equal(result.status,0,result.stderr);assert.match(result.stdout,/2 passed, 0 failed/);assert.doesNotMatch(result.stdout,/application-only/);
+}));
+
+test('same-file test workers still reject behavior objects crossing heaps',()=>fixture({
+ 'operations.aug':`interface Counter:
+    value() returns int
+CounterValue() implements Counter:
+    value() returns int:
+        return 7
+read(Counter value) returns int:
+    return value.value()
+test read:
+    when invalid:
+        it rejects_a_behavior_input:
+            scope:
+                job = start worker read(value=CounterValue())
+                assert(wait for job == 7)
+`,
+ 'main.aug':'print(value="startup")\n'
+},root=>{
+ const project=loadProject(root),units=discoverTests(project);
+ const diagnostics=checkUnitTests(project,units.tests).flatMap(entry=>entry.checked.diagnostics);
+ assert.ok(diagnostics.some(issue=>issue.code==='WORKER'&&issue.message.includes('worker input must be copied data')),JSON.stringify(diagnostics));
+}));

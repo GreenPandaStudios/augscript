@@ -12,6 +12,7 @@ export function checkWorkers(checked:CheckedProject):Diagnostic[] {
   const issue=(span:Span,message:string)=>diagnostics.push({...span,code:'WORKER',message});
   function visit(value:unknown,fn:(value:any)=>void) {
     if(!value||typeof value!=='object')return;
+    if((value as {kind?:string}).kind==='test')return;
     if(Array.isArray(value)){for(const item of value)visit(item,fn);return;}
     fn(value);
     for(const [key,item] of Object.entries(value))if(key!=='span'&&key!=='source')visit(item,fn);
@@ -40,8 +41,12 @@ export function checkWorkers(checked:CheckedProject):Diagnostic[] {
     const type=call.callee.kind==='member'?checked.expressionTypes.get(call.callee.object):undefined;
     return type?.def;
   }
-  const starts:Extract<Expr,{kind:'start'}>[]=[];
-  for(const file of project.files.values())visit(file.items,node=>{if(node.kind==='start'&&node.worker)starts.push(node);});
+  const starts=new Set<Extract<Expr,{kind:'start'}>>();
+  const collect=(node:any)=>{if(node.kind==='start'&&node.worker)starts.add(node);};
+  // A test has a synthesized entry point and only its reachable declarations.
+  // Check that program, rather than unrelated original startup/test bodies.
+  visit(project.main?.items,collect);
+  for(const definition of project.definitions.values())visit(definition.node,collect);
   for(const start of starts){
     const call=start.call;if(call.kind!=='call')continue;
     if(call.callee.kind!=='name')issue(start.span,'Start a worker with a standalone function. Construct behavior objects and native resources inside that function.');

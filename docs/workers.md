@@ -58,3 +58,5 @@ GPU operations belong to a native package. An August worker creates a device and
 NVIDIA support needs a CUDA artifact and qualification on an available GPU host. It is not provided by the Metal artifact. Worker execution does not make an arbitrary August function a GPU kernel.
 
 [Language conformance](language-conformance.md) describes the worker and task checks. [Native packages](native-packages.md) explains ownership declarations, supported targets, artifact installation, and package author responsibilities.
+
+Same-file tests can start and join workers with the same copied-data rules. Each case checks its own setup, body and reachable declarations. It does not execute or check inactive calls from the application composition root.
