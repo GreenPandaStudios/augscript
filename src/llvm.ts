@@ -67,9 +67,9 @@ class ModuleEmitter {
     const coverage=this.ir.coverage.map(point=>`  call void @aug_coverage_register(ptr ${this.text(point.file)}, i64 ${point.line})`);
     if(coverage.length)this.declare('aug_coverage_register','void',['ptr','i64']);
     const web=this.ir.web,configure=this.ir.components.includes('http')?[
-      `  call void @aug_http_configure(ptr ${this.text(web.host)}, ptr ${this.text(web.tls.certificate)}, ptr ${this.text(web.tls.private_key)}, ptr ${this.text(web.tls.ca)}, i64 ${web.body_limit}, i64 ${web.response_limit}, i1 zeroext ${web.http3?'true':'false'})`
+      `  call void @aug_http_configure(ptr ${this.text(web.host)}, ptr ${this.text(web.tls.certificate)}, ptr ${this.text(web.tls.private_key)}, ptr ${this.text(web.tls.ca)}, i64 ${web.body_limit}, i64 ${web.response_limit}, i1 zeroext ${web.http3?'true':'false'}, i64 ${web.headers_timeout}, i64 ${web.request_timeout}, i64 ${web.drain_timeout}, i64 ${web.max_requests})`
     ]:[];
-    if(configure.length)this.declare('aug_http_configure','void',['ptr','ptr','ptr','ptr','i64','i64','i1 zeroext']);
+    if(configure.length)this.declare('aug_http_configure','void',['ptr','ptr','ptr','ptr','i64','i64','i1 zeroext','i64','i64','i64','i64']);
     const startup=this.ir.bindings.filter(b=>b.shared).flatMap((b,i)=>[
       `  call void @${b.function}(ptr %result, ptr null, ptr null, i32 0)`,
       `  %binding_error_${i} = call zeroext i1 @aug_ir_has_error()`,

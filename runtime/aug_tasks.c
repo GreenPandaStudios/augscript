@@ -242,6 +242,16 @@ static pthread_mutex_t pool_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t pool_condition = PTHREAD_COND_INITIALIZER;
 static pthread_once_t pool_once = PTHREAD_ONCE_INIT;
 static AugWorkerJob *pool_first, *pool_last;
+static size_t pool_pending, pool_input_bytes, pending_limit = 1024, input_limit = 16777216, total_input_limit = 67108864;
+static size_t worker_limit(const char *name, size_t fallback, size_t maximum) {
+  const char *value = getenv(name); if (!value) return fallback;
+  char *end; errno = 0; unsigned long long count = strtoull(value, &end, 10);
+  if (errno || end == value || *end || value[0] == '-' || count < 1 || count > maximum) fatal("invalid worker admission limit");
+  return (size_t)count;
+}
+static uint8_t native_worker_cancelled(void) {
+  return (uint8_t)(current_worker && atomic_load_explicit(&current_worker->cancel, memory_order_relaxed));
+}
 static void worker_checkpoint(void) { if (current_worker && atomic_load_explicit(&current_worker->cancel, memory_order_relaxed)) aug_cancelled = true; }
 static void execute_worker(AugWorkerJob *job) {
   AugRuntimeContext *context = aug_runtime_new(); if (!context) fatal("cannot allocate worker heap");
@@ -251,8 +261,9 @@ static void execute_worker(AugWorkerJob *job) {
   AugScopeJoin saved_join = aug_scope_join_hook;
   void (*saved_checkpoint)(void) = aug_task_checkpoint_hook, (*saved_mutex)(void) = aug_mutex_wait_hook;
   void (*saved_io)(bool) = aug_scheduler_io; void (*saved_notify)(void) = aug_scheduler_notify;
+  uint8_t (*saved_native_cancel)(void) = aug_native_cancel_probe;
   bool saved_failed = aug_test_failed; size_t saved_assertions = aug_test_assertions;
-  ready_first = ready_last = pending_workers = NULL; current_worker = job;
+  ready_first = ready_last = pending_workers = NULL; current_worker = job; aug_native_cancel_probe = native_worker_cancelled;
   aug_scope_join_hook = NULL; aug_task_checkpoint_hook = worker_checkpoint; aug_mutex_wait_hook = NULL;
   aug_scheduler_io = NULL; aug_scheduler_notify = NULL; aug_test_failed = false; aug_test_assertions = 0;
   AugValue *values = calloc((size_t)job->count + 3, sizeof(AugValue)); if (!values) fatal("out of memory");
@@ -271,7 +282,7 @@ static void execute_worker(AugWorkerJob *job) {
   aug_frame_leave(&frame); free(values);
   job->test_failed = aug_test_failed; job->assertions = aug_test_assertions;
   aug_runtime_delete(context); aug_runtime_switch(previous);
-  ready_first = saved_first; ready_last = saved_last; pending_workers = saved_pending; current_worker = saved_worker;
+  ready_first = saved_first; ready_last = saved_last; pending_workers = saved_pending; current_worker = saved_worker; aug_native_cancel_probe = saved_native_cancel;
   aug_scope_join_hook = saved_join; aug_task_checkpoint_hook = saved_checkpoint; aug_mutex_wait_hook = saved_mutex;
   aug_scheduler_io = saved_io; aug_scheduler_notify = saved_notify;
   aug_test_failed = saved_failed; aug_test_assertions = saved_assertions;
@@ -295,6 +306,9 @@ static void *pool_thread(void *unused) {
   return NULL;
 }
 static void init_pool(void) {
+  pending_limit = worker_limit("AUG_WORKER_PENDING", 1024, 65536);
+  input_limit = worker_limit("AUG_WORKER_INPUT_BYTES", 16777216, 67108864);
+  total_input_limit = worker_limit("AUG_WORKER_TOTAL_INPUT_BYTES", 67108864, 1073741824);
   long count = sysconf(_SC_NPROCESSORS_ONLN); if (count < 1) count = 1; if (count > 64) count = 64;
   const char *setting = getenv("AUG_WORKERS");
   if (setting) { char *end; errno = 0; long specified = strtol(setting, &end, 10); if (errno || *end || specified < 1 || specified > 64) fatal("AUG_WORKERS must be an integer from 1 to 64"); count = specified; }
@@ -326,6 +340,7 @@ static void poll_workers(void) {
     task->execution.cancelled = job->was_cancelled; task->complete = true;
     aug_test_failed |= job->test_failed; aug_test_assertions += job->assertions;
     if (job->failed) cancel_group(task);
+    pthread_mutex_lock(&pool_mutex); pool_pending--; pool_input_bytes -= aug_transfer_bytes(job->input); pthread_mutex_unlock(&pool_mutex);
     aug_transfer_delete(job->input); aug_transfer_delete(job->output); free(job); task->worker = NULL;
     aug_execution_dispose(&task->execution);
     aug_frame_leave(&frame);
@@ -336,6 +351,15 @@ static AugValue start_worker(AugMethod function, AugPointerMethod pointer_functi
   AugScope *scope = aug_execution_current()->scope_stack;
   if (!scope) return aug_error_named("ConcurrencyError");
   for (int i = 0; owned && i < count; i++) if (owned[i]) fatal("owned worker capture; compiler contract violated");
+  pthread_once(&pool_once, init_pool); poll_workers();
+  AugValue *inputs = malloc(((size_t)count + 1) * sizeof(AugValue)); if (!inputs) fatal("out of memory");
+  inputs[0] = receiver; if (count) memcpy(inputs + 1, args, (size_t)count * sizeof(AugValue));
+  pthread_mutex_lock(&pool_mutex);
+  size_t available = total_input_limit - pool_input_bytes;
+  AugTransfer *input = pool_pending < pending_limit ? aug_transfer_capture_bounded(inputs, (size_t)count + 1, available < input_limit ? available : input_limit) : NULL;
+  if (input) { pool_pending++; pool_input_bytes += aug_transfer_bytes(input); }
+  pthread_mutex_unlock(&pool_mutex); free(inputs);
+  if (!input) return aug_error_named("ConcurrencyError");
   aug_scope_join_hook = join_scope;
   AugValue value = aug_new_object("Task", 4, NULL, NULL, 0); value.as.object->kind = AUG_TASK_KIND;
   AugTask *task = calloc(1, sizeof(*task)); AugWorkerJob *job = calloc(1, sizeof(*job));
@@ -344,9 +368,7 @@ static AugValue start_worker(AugMethod function, AugPointerMethod pointer_functi
   aug_execution_init(&task->execution); task->execution.cancelled = aug_cancelled;
   task->retained_active = true; aug_retain(&task->retained, &task->value, 1);
   value.as.object->native = task; value.as.object->finalize = destroy_task;
-  AugValue *inputs = malloc(((size_t)count + 1) * sizeof(AugValue)); if (!inputs) fatal("out of memory");
-  inputs[0] = receiver; if (count) memcpy(inputs + 1, args, (size_t)count * sizeof(AugValue));
-  job->input = aug_transfer_capture(inputs, (size_t)count + 1); free(inputs);
+  job->input = input;
   job->function = function; job->pointer_function = pointer_function; job->count = count;
   atomic_init(&job->cancel, aug_cancelled); atomic_init(&job->complete, false);
   task->worker_next = pending_workers; pending_workers = task;

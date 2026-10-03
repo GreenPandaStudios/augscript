@@ -65,6 +65,7 @@ export default defineConfig({
         { text: 'Choose a guide', link: '/guides/' },
         { text: 'Weather API', link: '/weather-api' }, { text: 'VS Code', link: '/editor' },
         { text: 'Tests', link: '/testing' }, { text: 'Web applications', link: '/web' },
+        { text: 'Native service boundaries', link: '/native-service-boundaries' },
         { text: 'Compiled specifications', link: '/specifications' },
         { text: 'Packages and installation', link: '/packages' },
         { text: 'Native library packages', link: '/native-packages' },

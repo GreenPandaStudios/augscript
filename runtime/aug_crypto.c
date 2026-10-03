@@ -6,6 +6,7 @@
 #include <pthread.h>
 #include <stdlib.h>
 #include <limits.h>
+#include <string.h>
 
 static pthread_once_t initialization = PTHREAD_ONCE_INIT;
 static int initialization_status;
@@ -118,4 +119,16 @@ AugValue _aug_crypto_password_hash(AugValue password, AugValue salt, AugValue it
   gnutls_datum_t key = datum(password), input_salt = datum(salt); unsigned char output[32];
   int status = gnutls_pbkdf2(GNUTLS_MAC_SHA256, &key, &input_salt, (unsigned int)iterations.as.integer, output, sizeof(output));
   AugValue result = status < 0 ? failure() : aug_bytes(output, sizeof(output), AUG_BYTES_KIND); gnutls_memset(output, 0, sizeof(output)); return result;
+}
+
+AugValue _aug_crypto_verify_ed25519(AugValue publicKey,AugValue input,AugValue signature) {
+  if(!ready()||publicKey.tag!=AUG_STRING||publicKey.as.object->text_length>16384||
+     memchr(publicKey.as.object->text,0,publicKey.as.object->text_length)||!buffer(input,AUG_BYTES_KIND)||!buffer(signature,AUG_BYTES_KIND))return failure();
+  gnutls_pubkey_t key=NULL;gnutls_datum_t encoded=datum(publicKey),data=datum(input),sig=datum(signature);
+  int status=gnutls_pubkey_init(&key);
+  if(status>=0)status=gnutls_pubkey_import(key,&encoded,GNUTLS_X509_FMT_PEM);
+  if(status>=0&&gnutls_pubkey_get_pk_algorithm(key,NULL)!=GNUTLS_PK_EDDSA_ED25519)status=GNUTLS_E_INVALID_REQUEST;
+  if(status<0){if(key)gnutls_pubkey_deinit(key);return failure();}
+  status=sig.size==64?gnutls_pubkey_verify_data2(key,GNUTLS_SIGN_EDDSA_ED25519,0,&data,&sig):GNUTLS_E_PK_SIG_VERIFY_FAILED;
+  gnutls_pubkey_deinit(key);return aug_bool(status>=0);
 }

@@ -7,7 +7,10 @@ import {spawnSync} from './compiler-process.mjs';
 import {loadProject} from '../src/project.ts';
 import {checkProject} from '../src/checker.ts';
 const cli=resolve('bin/aug.mjs');
-function fixture(files,callback){const root=mkdtempSync(join(tmpdir(),'aug-workers-'));try{for(const [file,source] of Object.entries(files))writeFileSync(join(root,file),source);callback(root);}finally{rmSync(root,{recursive:true,force:true});}}
+// Worker admission is a checked immediate failure. Every runtime fixture catches
+// unexpected failures outside its own case-specific catch and makes them visible.
+function checkedMain(source){const lines=source.trimEnd().split('\n'),imports=lines.filter(line=>line.startsWith('import ')||line.startsWith('implement ')),body=lines.filter(line=>!line.startsWith('import ')&&!line.startsWith('implement '));return imports.join('\n')+'\ntry:\n'+body.map(line=>'    '+line).join('\n')+'\ncatch Error error:\n    print(value="unexpected-worker-error")\n';}
+function fixture(files,callback){const root=mkdtempSync(join(tmpdir(),'aug-workers-'));try{for(const [file,source] of Object.entries(files))writeFileSync(join(root,file),file==='main.aug'?checkedMain(source):source);callback(root);}finally{rmSync(root,{recursive:true,force:true});}}
 function run(root,extra={}){return spawnSync(process.execPath,[cli,'run',root],{encoding:'utf8',timeout:20000,...extra});}
 function clean(result,expected){assert.equal(result.status,0,result.stderr||result.error?.message);assert.equal(result.stdout,expected);}
 for(const optimization of ['debug','release'])test(`workers use Task waits with copied values and nested scopes (${optimization})`,()=>fixture({

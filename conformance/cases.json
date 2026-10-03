@@ -69,7 +69,7 @@
       "id": "workers",
       "files": {
         "app.aug": "total(List<int> values) returns int:\n    int result = 0\n    for value in values:\n        result = result + value\n    return result\n",
-        "main.aug": "import total from app\nvalues = [4, 6]\nscope:\n    first = start worker total(values)\n    second = start total(values=[2, 3])\n    borrow values:\n        values.append(value=8)\n    wait for first and second to copied and cooperative\n    print(value=copied)\n    print(value=cooperative)\nprint(value=values.length())\n"
+        "main.aug": "import total from app\nvalues = [4, 6]\ntry:\n    scope:\n        first = start worker total(values)\n        second = start total(values=[2, 3])\n        borrow values:\n            values.append(value=8)\n        wait for first and second to copied and cooperative\n        print(value=copied)\n        print(value=cooperative)\ncatch ConcurrencyError error:\n    print(value=\"Unexpected worker admission failure\")\nprint(value=values.length())\n"
       },
       "stdout": "10\n5\n3\n"
     },
@@ -153,7 +153,7 @@
       "id": "worker-shared",
       "files": {
         "app.aug": "read(Shared<List<int>> value) returns int:\n    return 1\n",
-        "main.aug": "import read from app\nvalue = Shared(value=[1])\nscope:\n    pending = start worker read(value)\n"
+        "main.aug": "import read from app\nvalue = Shared(value=[1])\ntry:\n    scope:\n        pending = start worker read(value)\ncatch ConcurrencyError error:\n    print(value=\"Unexpected worker admission failure\")\n"
       },
       "diagnostic": "WORKER"
     },
@@ -184,7 +184,7 @@
     {
       "id": "text",
       "files": {
-        "main.aug": "print(value=\"\ud83d\udc4b\".length())\nprint(value=\"caf\u00e9\".bytes().length())\n"
+        "main.aug": "print(value=\"👋\".length())\nprint(value=\"café\".bytes().length())\n"
       },
       "stdout": "4\n5\n"
     },

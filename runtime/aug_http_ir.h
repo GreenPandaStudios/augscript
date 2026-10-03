@@ -4,7 +4,7 @@
 enum AugIrHttpOperation {
   AUG_IR_HTTP_HEADERS=1,AUG_IR_HTTP_HEADERS_WITH,AUG_IR_HTTP_HEADERS_GET,AUG_IR_HTTP_HEADERS_ALL,
   AUG_IR_HTTP_RESPONSE,AUG_IR_HTTP_RESPONSE_STATUS,AUG_IR_HTTP_FINISH,AUG_IR_HTTP_EVENT,
-  AUG_IR_HTTP_YIELD,AUG_IR_HTTP_CLIENT_REQUEST,AUG_IR_HTTP_ACTION
+  AUG_IR_HTTP_YIELD,AUG_IR_HTTP_CLIENT_REQUEST,AUG_IR_HTTP_ACTION,AUG_IR_HTTP_BODY
 };
 typedef struct {const char *type; int status;} AugIrHttpError;
 void aug_ir_http_operation(AugValue *out,int op,AugValue *args,int count,const char *text,int64_t number);

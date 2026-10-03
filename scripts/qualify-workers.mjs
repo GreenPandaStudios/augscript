@@ -30,7 +30,7 @@ try{
  }
  const cpu=join(directory,'cpu');mkdirSync(cpu);
  writeFileSync(join(cpu,'math.aug'),'total(List<int> values):\n    int sum = 0\n    for value in values:\n        sum = sum + value\n    return sum\n');
- writeFileSync(join(cpu,'main.aug'),'import total from math\nscope:\n    first = start worker total(values=[4, 6])\n    second = start worker total(values=[2, 3])\n    wait for first and second as left and right\n    print(value=left)\n    print(value=right)\n');
+ writeFileSync(join(cpu,'main.aug'),'import total from math\ntry:\n    scope:\n        first = start worker total(values=[4, 6])\n        second = start worker total(values=[2, 3])\n        wait for first and second as left and right\n        print(value=left)\n        print(value=right)\ncatch ConcurrencyError error:\n    print(value="Unexpected worker admission failure")\n');
  const aug=(...args)=>run(process.execPath,[cli,...args],{env});
  for(const mode of ['debug','release']){
   writeFileSync(join(cpu,'main.yaml'),'optimization: '+mode+'\n');assert.equal(aug('run',cpu),'10\n5\n');report.outcomes.push({program:'cpu-workers',optimization:mode,passed:true});

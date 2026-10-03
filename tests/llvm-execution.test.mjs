@@ -101,13 +101,13 @@ unsafe:
       assert.equal(dynamic.status,0,dynamic.stderr);
       assert.doesNotMatch(dynamic.stdout,/libaug_runtime/,'core-only programs must contain one statically linked runtime');
       const exports=[...dynamic.stdout.matchAll(/\b(_aug_\w+)\b/g)].map(match=>match[1]).sort();
-      assert.deepEqual(exports,['_aug_execution_current','_aug_task_checkpoint_hook'],'export only the private hook boundary');
+      assert.deepEqual(exports,['_aug_execution_current','_aug_native_cancelled_v1','_aug_task_checkpoint_hook'],'export only hook entry and the read-only native cancellation probe');
     }else{
       const dynamic=spawnSync('readelf',['--dynamic','--dyn-syms','--wide',compiled.output],{encoding:'utf8'});
       assert.equal(dynamic.status,0,dynamic.stderr);
       assert.doesNotMatch(dynamic.stdout,/Shared library: \[libaug_runtime/,'core-only programs must contain one statically linked runtime');
       const exports=[...dynamic.stdout.matchAll(/\bGLOBAL\s+DEFAULT\s+\d+\s+(aug_\w+)/g)].map(match=>match[1]).sort();
-      assert.deepEqual(exports,['aug_execution_current','aug_task_checkpoint_hook'],'export only the private hook boundary');
+      assert.deepEqual(exports,['aug_execution_current','aug_native_cancelled_v1','aug_task_checkpoint_hook'],'export only hook entry and the read-only native cancellation probe');
     }
     const result=spawnSync(compiled.output,[],{encoding:'utf8',timeout:10000});
     assert.equal(result.status,0,result.stderr||result.error?.message);

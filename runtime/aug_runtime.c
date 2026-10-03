@@ -43,6 +43,8 @@ AugRuntimeContext *aug_runtime_switch(AugRuntimeContext *next) {
 #define scope_count (current_execution->scope_depth)
 _Thread_local AugScopeJoin aug_scope_join_hook;
 _Thread_local void (*aug_task_checkpoint_hook)(void);
+_Thread_local uint8_t (*aug_native_cancel_probe)(void);
+uint8_t aug_native_cancelled_v1(void) { return (uint8_t)(aug_cancelled || (aug_native_cancel_probe && aug_native_cancel_probe())); }
 AugExecution *aug_execution_current(void) { return current_execution; }
 AugExecution *aug_execution_switch(AugExecution *execution) { AugExecution *previous = current_execution; current_execution = execution; return previous; }
 void aug_execution_init(AugExecution *execution) { memset(execution, 0, sizeof(*execution)); execution->next = executions; executions = execution; }
@@ -892,18 +894,24 @@ void aug_runtime_delete(AugRuntimeContext *context) {
 /* An in-process message owns all of its data. Only immutable compiler metadata
    (method tables/type names) is shared; no managed pointer crosses a heap. */
 typedef struct { AugObject metadata; AugValue *fields; char *text; } AugTransferObject;
-struct AugTransfer { AugValue *roots; size_t count, size, capacity; AugTransferObject *objects; };
+struct AugTransfer { AugValue *roots; size_t count, size, capacity, bytes; AugTransferObject *objects; };
 typedef struct { AugObject *source; size_t index; } TransferIndex;
-typedef struct { AugTransfer *message; TransferIndex *index; size_t capacity, used; } TransferBuilder;
+typedef struct { AugTransfer *message; TransferIndex *index; size_t capacity, used, limit, bytes; bool limited; } TransferBuilder;
 static size_t transfer_hash(AugObject *object) { return ((uintptr_t)object >> 4) * UINT64_C(11400714819323198485); }
+static bool transfer_charge(TransferBuilder *builder, size_t bytes) {
+  if (bytes > builder->limit - builder->bytes) { builder->limited = true; return false; }
+  builder->bytes += bytes; return true;
+}
 static void transfer_index_grow(TransferBuilder *builder) {
   size_t size = builder->capacity ? builder->capacity * 2 : 64;
+  if (size > SIZE_MAX / sizeof(TransferIndex) || !transfer_charge(builder, size * sizeof(TransferIndex))) { builder->limited = true; return; }
   TransferIndex *index = calloc(size, sizeof(*index)); if (!index) fail("out of memory");
   for (size_t i = 0; i < builder->capacity; i++) if (builder->index[i].source) {
     size_t slot = transfer_hash(builder->index[i].source) & (size - 1);
     while (index[slot].source) slot = (slot + 1) & (size - 1);
     index[slot] = builder->index[i];
   }
+  builder->bytes -= builder->capacity * sizeof(TransferIndex);
   free(builder->index); builder->index = index; builder->capacity = size;
 }
 static AugValue transfer_value(TransferBuilder *builder, AugValue value) {
@@ -916,41 +924,57 @@ static AugValue transfer_value(TransferBuilder *builder, AugValue value) {
         object->kind == AUG_TUPLE_KIND || object->kind == AUG_BYTES_KIND || object->kind == AUG_JSON_KIND))
     fail("uncopyable worker value; compiler/native boundary contract violated");
   if ((builder->used + 1) * 2 >= builder->capacity) transfer_index_grow(builder);
+  if (builder->limited) return aug_null();
   size_t slot = transfer_hash(object) & (builder->capacity - 1);
   while (builder->index[slot].source && builder->index[slot].source != object) slot = (slot + 1) & (builder->capacity - 1);
   size_t index;
   if (builder->index[slot].source) index = builder->index[slot].index;
   else {
-    AugTransfer *message = builder->message; index = message->size++;
-    if (message->size > message->capacity) {
-      message->capacity = message->capacity ? message->capacity * 2 : 32;
+    AugTransfer *message = builder->message; index = message->size;
+    if (index == message->capacity) {
+      size_t capacity = message->capacity ? message->capacity * 2 : 32;
+      if (capacity > SIZE_MAX / sizeof(*message->objects) ||
+          !transfer_charge(builder, (capacity - message->capacity) * sizeof(*message->objects))) { builder->limited = true; return aug_null(); }
+      message->capacity = capacity;
       message->objects = realloc(message->objects, message->capacity * sizeof(*message->objects));
       if (!message->objects) fail("out of memory");
     }
+    message->size++;
     builder->index[slot] = (TransferIndex){object, index}; builder->used++;
     AugTransferObject *copy = &message->objects[index]; memset(copy, 0, sizeof(*copy)); copy->metadata = *object;
     /* fields is the source only while capture walks this graph on its owner. */
     copy->metadata.next = NULL; copy->metadata.buckets = NULL;
+    if (object->field_count > SIZE_MAX / sizeof(AugValue) ||
+        !transfer_charge(builder, object->field_count * sizeof(AugValue)) ||
+        (object->text && (object->text_length == SIZE_MAX || !transfer_charge(builder, object->text_length + 1)))) { builder->limited = true; return aug_null(); }
     copy->fields = object->field_count ? calloc(object->field_count, sizeof(AugValue)) : NULL;
     if (object->field_count && !copy->fields) fail("out of memory");
     if (object->text) { copy->text = malloc(object->text_length + 1); if (!copy->text) fail("out of memory"); memcpy(copy->text, object->text, object->text_length + 1); }
   }
   value.as.integer = (int64_t)index; return value;
 }
-AugTransfer *aug_transfer_capture(AugValue *values, size_t count) {
+AugTransfer *aug_transfer_capture_bounded(AugValue *values, size_t count, size_t maximum) {
+  if (count > (SIZE_MAX - sizeof(AugTransfer)) / sizeof(AugValue) ||
+      sizeof(AugTransfer) + count * sizeof(AugValue) > maximum) return NULL;
   AugTransfer *message = calloc(1, sizeof(*message)); if (!message) fail("out of memory");
   message->count = count; message->roots = count ? calloc(count, sizeof(AugValue)) : NULL;
   if (count && !message->roots) fail("out of memory");
-  TransferBuilder builder = {.message = message};
-  for (size_t i = 0; i < count; i++) message->roots[i] = transfer_value(&builder, values[i]);
-  for (size_t i = 0; i < message->size; i++) {
+  TransferBuilder builder = {.message = message, .limit = maximum, .bytes = sizeof(*message) + count * sizeof(AugValue)};
+  for (size_t i = 0; i < count && !builder.limited; i++) message->roots[i] = transfer_value(&builder, values[i]);
+  for (size_t i = 0; i < message->size && !builder.limited; i++) {
     AugObject source = message->objects[i].metadata;
     AugValue *fields = message->objects[i].fields;
-    for (size_t j = 0; j < source.field_count; j++) fields[j] = transfer_value(&builder, source.fields[j]);
+    for (size_t j = 0; j < source.field_count && !builder.limited; j++) fields[j] = transfer_value(&builder, source.fields[j]);
     message->objects[i].metadata.fields = NULL; message->objects[i].metadata.text = NULL;
   }
-  free(builder.index); return message;
+  free(builder.index);
+  if (builder.limited) { aug_transfer_delete(message); return NULL; }
+  message->bytes = builder.bytes - builder.capacity * sizeof(TransferIndex); return message;
 }
+AugTransfer *aug_transfer_capture(AugValue *values, size_t count) {
+  return aug_transfer_capture_bounded(values, count, SIZE_MAX);
+}
+size_t aug_transfer_bytes(AugTransfer *message) { return message ? message->bytes : 0; }
 static AugValue transfer_resolved(AugValue encoded, AugValue *objects) {
   if (encoded.tag == AUG_STRING || encoded.tag == AUG_OBJECT) encoded.as.object = objects[encoded.as.integer].as.object;
   return encoded;

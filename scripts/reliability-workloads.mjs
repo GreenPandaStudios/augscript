@@ -42,18 +42,23 @@ int iteration = 0
 int total = 0
 int failures = 0
 while iteration < ${rounds}:
-    scope:
-        first = start worker sum(values=[1, 2, 3])
-        second = start worker nested(values=[10, 20])
-        third = start worker sum(values=[4, 5])
-        wait for first and second and third as left and right and last
-        total = total + left + right + last
+    try:
+        scope:
+            first = start worker sum(values=[1, 2, 3])
+            second = start worker nested(values=[10, 20])
+            third = start worker sum(values=[4, 5])
+            wait for first and second and third as left and right and last
+            total = total + left + right + last
+    catch ConcurrencyError error:
+        print(value="Unexpected worker admission failure")
     try:
         scope:
             child = start worker fail()
             wait for child
     catch FileError error:
         failures = failures + 1
+    catch ConcurrencyError error:
+        print(value="Unexpected worker admission failure")
     iteration = iteration + 1
 print(value=total)
 print(value=failures)

@@ -1,5 +1,9 @@
 # Changelog
 
+## Native ingestion preview
+
+Hover and completion include lazy checked HTTP body reads, JSON field presence, checked byte slices, hexadecimal conversion, protocol text helpers, and float32 conversion. Worker help explains checked admission failures and copied-input limits.
+
 ## LLVM native preview
 
 - Use the compiler-owned LLVM pack for ordinary run/build/test commands on qualified hosts. Native compilers and SDKs remain maintainer tools. Preserve source diagnostics and the same default as the CLI.

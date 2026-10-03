@@ -71,6 +71,7 @@ export function compileNative(root: string, generated: string, options: { output
     if (!existsSync(join(yyjson, 'yyjson.c'))) throw new Error('JSON dependencies are missing. Run aug run to prepare them automatically, or use aug-native --extract-only --only yyjson to prewarm the cache.');
     args.push(jsonSource, join(yyjson, 'yyjson.c'), '-I' + yyjson);
   }
+  if (process.platform === 'linux') args.push('-lm');
   const sdk = '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk';
   if (process.platform === 'darwin' && existsSync(sdk) && !process.env.SDKROOT) args.unshift('-isysroot', sdk);
   const compile = spawnSync(cc, args, { encoding: 'utf8', cwd: root });

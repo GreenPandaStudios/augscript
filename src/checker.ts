@@ -1894,6 +1894,21 @@ class Checker {
     return !['builtin:int', 'builtin:c_int', 'builtin:float', 'builtin:bool', 'builtin:string', 'builtin:void', 'null', 'error'].includes(type.id);
   }
 
+  /** An ABI resource output is a newly owned wrapper. The adapter owns any
+   * native references it needs and cannot retain an August input wrapper. */
+  private independentNativeResource(fn: MethodDecl, seen = new Set<MethodDecl>()): boolean {
+    if (seen.has(fn) || (this.interceptorPlans.get(fn) ?? []).length) return false;
+    const contract = this.native.functions.get(fn);
+    if (contract) return contract.result.kind === 'resource';
+    if (!fn.body) return false;
+    seen.add(fn);
+    return returnsFresh(fn.body, new Set(), expr => {
+      if (expr.kind !== 'call' || expr.callee.kind !== 'name') return false;
+      const def = this.project.scopes.get(fn.span.file)?.get(expr.callee.name);
+      return def?.node.kind === 'function' && this.independentNativeResource(def.node, new Set(seen));
+    });
+  }
+
   private placesOf(expr: Expr, context: Context): Origins {
     if (!this.isReference(this.expressionTypes.get(expr) ?? errorTy)) return new Set();
     if (expr.kind === 'name') return context.flow.origins(expr.name);
@@ -1912,6 +1927,9 @@ class Checker {
     }
     if (expr.kind === 'call') {
       const def = expr.callee.kind === 'name' ? this.project.scopes.get(context.file)?.get(expr.callee.name) : undefined;
+      if (def?.node.kind === 'function' && this.independentNativeResource(def.node)) {
+        const origins = allocationOrigin(expr.span); context.flow.object(origins, []); return origins;
+      }
       if (def?.node.kind === 'class') {
         const plan = this.callPlans.get(expr);
         const fields = def.node.fields.map((field, index) => {
@@ -2089,6 +2107,7 @@ class Checker {
     } else if (expr.kind === 'formInput') {
       this.report(expr.span, 'input from form belongs inside a handle endpoint(...) action', 'HTTP');
     } else if (expr.kind === 'start') {
+      if (expr.worker) this.checkAllowedError(builtin('ConcurrencyError'), expr.span, context);
       if (context.locked) this.report(expr.span, 'Release the lock before starting a task', 'CONCURRENCY');
       if (!context.scope) this.report(expr.span, 'Start a task inside a scope block, which joins every child before leaving', 'CONCURRENCY');
       if (expr.call.kind !== 'call') this.report(expr.call.span, 'start requires a labeled function or method call', 'CONCURRENCY');
@@ -2239,7 +2258,10 @@ class Checker {
     if (receiver.nullable) this.report(span, `Cannot access ${name} on nullable ${tyName(receiver)}`);
     if (receiver.optional && !receiver.nullable) this.report(span, `Match null and some before accessing ${name} on ${tyName(receiver)}`);
     const property = receiver.kind === 'builtin' && builtinProperties[receiver.name]?.find(property => property.name === name);
-    if (property) return {...operationType(property.type, receiver), readonly: true};
+    if (property) {
+      for (const error of property.errors ?? []) this.checkAllowedError(builtin(error), span, context);
+      return {...operationType(property.type, receiver), readonly: true};
+    }
     const def = receiver.def;
     if (def?.node.kind === 'class' || def?.node.kind === 'interceptor') {
       const field = fieldsOf(def.node).find(param => param.name === name);

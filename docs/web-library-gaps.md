@@ -22,7 +22,7 @@ Typed components escape markup. Deferred `handle` actions submit POST, PATCH, PU
 
 SSE, `Bytes`, and `Html` streams pass socket tests. One pending item is limited to 64 KiB and sent under backpressure. Errors before output become responses; errors after headers terminate output. Disconnect tests check `always` cleanup, request logging, and server survival under managed collection pressure.
 
-Authentication runs before decoding. Permission checks, rate limits, exact-origin CORS and preflight, gzip, and streaming deadlines pass native socket tests. HTTP policies precede custom parameter interceptors. Inbound streams, request-reception deadlines, and broader compression negotiation remain open.
+Authentication runs before decoding. Permission checks, rate limits, exact-origin CORS and preflight, gzip, and streaming deadlines pass native socket tests. HTTP policies precede custom parameter interceptors. Header dispatch, lazy body reception, configurable absolute reception deadlines and bounded drain now have HTTP/1.1 socket regressions. HTTP/2 and HTTP/3 reception/backpressure qualification, inbound streams and broader compression negotiation remain open.
 
 Streaming HEAD preserves headers and status when stopping the producer. A cleanup failure before headers returns 500. HEAD completes at its headers on HTTP/1.1 and HTTP/2; the prepared response survives session cleanup. Tests also cover empty streams and endpoint-test failures after a yield.
 
@@ -42,7 +42,7 @@ Locally scheduled errors follow task aliases, collections, waits, exception path
 
 ## Cryptography
 
-The injectable GnuTLS adapter provides secure randomness, SHA-256/PKCE, RSA JWK import/export, fixed-algorithm and token-type JOSE handling, PBKDF2, and constant-time content comparison. The login example uses these operations, and Node independently verifies the provider's signature. General secret-buffer zeroization and key lifecycle APIs remain open.
+The injectable GnuTLS adapter provides secure randomness, SHA-256/PKCE, RSA JWK import/export, fixed-algorithm and token-type JOSE handling, Ed25519 verification and a trusted issuer/audience/type/time/subject identity verifier, PBKDF2, and constant-time content comparison. The login example uses these operations, and Node independently verifies the provider's signature. General secret-buffer zeroization and key lifecycle APIs remain open.
 
 ## OpenID Connect
 
@@ -53,3 +53,9 @@ Accounts, signing keys, and sessions live in memory. Persistent account manageme
 ## Scope boundaries
 
 Use the example to study the supported flow and build local experiments. Review the gaps above before extending it into an identity service. Core language conformance and runtime reliability are tracked in the [roadmap](roadmap.md); wider HTTP and identity-provider support are library work.
+
+## Native ingestion qualification
+
+The [service boundary guide](native-service-boundaries.md) records the current ingestion gap work. Strict JSON remains unchanged; `parseCompatible` provides a bounded legacy boundary parser. Binary/text operations have independent byte, BigInt, UTF-16 and float32 comparisons. PostgreSQL is an ordinary native package with worker-local pool and lease ownership; its disposable-database tests cover transactions, savepoints, bytea, SQLSTATE, timeouts, cancellation and cleanup.
+
+A published worker/runtime release and public Linux ARM64 cold installation remain release gates. The local socket, crypto and database checks do not qualify the production ingestion service. Its authorization order, retry conservation, lost-response behavior, database recovery, TLS deployment and load/failure tests must still run against the selected public artifacts. No production routes or databases were changed by this work.

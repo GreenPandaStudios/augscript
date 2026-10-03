@@ -14,3 +14,5 @@ try:
 catch GpuError error:
     print(value=error.explain())
     exit(status=1)
+catch ConcurrencyError error:
+    print(value="Worker capacity is exhausted")

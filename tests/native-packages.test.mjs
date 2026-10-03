@@ -162,3 +162,18 @@ test('opaque resources have checked acquisition, labeled loans, errors and owner
   assert.ok(rejected.some(d=>d.code==='OWN'&&/returns own/.test(d.message)),JSON.stringify(rejected));
   assert.ok(rejected.some(d=>d.code==='NATIVE_ABI'&&/ownership/.test(d.message)),JSON.stringify(rejected));
 }));
+
+
+test('fresh native resource results do not retain loans, while managed aliases still do',()=>fixture((root,manifest,save)=>{
+  const contract={...descriptor,resources:[{module:'bindings',name:'Handle',release:'example_release_v1'}],functions:[{
+    module:'api',name:'_copy',symbol:'example_copy_v1',params:[{name:'parent',kind:'resource',resource:'bindings.Handle',ownership:'borrow'}],result:{kind:'resource',resource:'bindings.Handle'},error:'contracts.Failure',callingConvention:'C',status:'i32',uses:[],changes:[],thread:'caller',retainsInputs:false
+  }]};
+  const bytes=JSON.stringify(contract);writeFileSync(join(root,'native.abi.json'),bytes);manifest.native.bindingsSha256=createHash('sha256').update(bytes).digest('hex');save();
+  writeFileSync(join(root,'src/bindings.aug'),'extern C resource Handle\n');
+  writeFileSync(join(root,'src/contracts.aug'),'Failure(int code, string message) implements Error:\n    pass\n');
+  const prefix='import Handle from bindings\nimport Failure from contracts\nextern C _copy(borrow Handle parent) returns own Handle unless Failure\n';
+  writeFileSync(join(root,'src/api.aug'),prefix+'copy(borrow Handle parent) returns own Handle:\n    unsafe:\n        own Handle result = _copy(parent)\n        return result\n');
+  let errors=checkProject(loadProject(root)).diagnostics.filter(d=>d.severity!=='warning');assert.deepEqual(errors,[]);
+  writeFileSync(join(root,'src/api.aug'),prefix+'copy(borrow Handle parent) returns Handle:\n    return parent\n');
+  errors=checkProject(loadProject(root)).diagnostics;assert.ok(errors.some(d=>d.code==='BORROW'&&/cannot escape/.test(d.message)),JSON.stringify(errors));
+}));

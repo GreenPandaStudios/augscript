@@ -317,7 +317,7 @@ class CGenerator {
   private httpConfiguration(): string {
     const config = this.checked.project.config.web, root = this.checked.project.root;
     const path = (value: string) => cString(value ? resolve(root,value) : '');
-    return `  aug_http_configure(${cString(config.host)}, ${path(config.tls.certificate)}, ${path(config.tls.private_key)}, ${path(config.tls.ca)}, ${config.body_limit}, ${config.response_limit}, ${config.http3 ? 'true' : 'false'});`;
+    return `  aug_http_configure(${cString(config.host)}, ${path(config.tls.certificate)}, ${path(config.tls.private_key)}, ${path(config.tls.ca)}, ${config.body_limit}, ${config.response_limit}, ${config.http3 ? 'true' : 'false'}, ${config.headers_timeout}, ${config.request_timeout}, ${config.drain_timeout}, ${config.max_requests});`;
   }
 
   private emitMainBody(): string {
@@ -574,7 +574,9 @@ class BodyEmitter {
     if (expr.kind === 'member') {
       const object = this.emitExpr(expr.object);
       const slot = this.newSlot();
-      this.line(`${this.slot(slot)} = aug_field(${this.slot(object)}, ${this.memberIndex(expr.object, expr.name)});`);
+      if (this.generator.expressionType(expr.object)?.id === 'builtin:HttpRequest' && expr.name === 'body') {
+        this.line(`${this.slot(slot)} = aug_http_body(${this.slot(object)});`); this.line(`if (aug_has_error) goto ${this.errorTarget};`);
+      } else this.line(`${this.slot(slot)} = aug_field(${this.slot(object)}, ${this.memberIndex(expr.object, expr.name)});`);
       return slot;
     }
     if (expr.kind === 'unary') {

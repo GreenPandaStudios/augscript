@@ -169,3 +169,44 @@ cookie(string name, string value, string path, int maxAge, bool secure) returns 
 Construct an HttpOnly, SameSite=Lax session cookie. Secure defaults are chosen explicitly at the call site. Values and paths reject delimiters and controls. maxAge=0 clears the cookie.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/web/contracts.aug#L56)
+
+## ServerControl {#api-ServerControl}
+
+```text
+capability ServerControl
+```
+
+Stop accepting requests, drain admitted exchanges up to the given milliseconds,
+then cancel remaining work. serve returns after request cleanup has joined.
+
+[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/web/contracts.aug#L62)
+
+### ServerControl.stop
+
+```text
+stop(int milliseconds) unless HttpError
+```
+
+Uses `ServerControl.stop`.
+
+[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/web/contracts.aug#L63)
+
+## WebServerControl {#api-WebServerControl}
+
+```text
+WebServerControl() implements ServerControl
+```
+
+Control the server on its event-loop thread. Owned services can be disposed after serve returns.
+
+[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/web/contracts.aug#L67)
+
+### WebServerControl.stop
+
+```text
+stop(int milliseconds) unless HttpError
+```
+
+Uses `ServerControl.stop`.
+
+[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/web/contracts.aug#L68)

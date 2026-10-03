@@ -20,12 +20,15 @@ total(List<int> values) returns int:
 ```aug project=worker-guide file=main.aug
 import total from totals
 
-scope:
-    first = start worker total(values=[4, 6])
-    second = start worker total(values=[2, 3])
-    wait for first and second as firstTotal and secondTotal
-    print(value=firstTotal)
-    print(value=secondTotal)
+try:
+    scope:
+        first = start worker total(values=[4, 6])
+        second = start worker total(values=[2, 3])
+        wait for first and second as firstTotal and secondTotal
+        print(value=firstTotal)
+        print(value=secondTotal)
+catch ConcurrencyError error:
+    print(value="Worker capacity is exhausted")
 ```
 
 The output is `10` and `5`, each on its own line. A list of worker tasks can also be passed to `wait for`; the result is a list in the same order. Every worker belongs to its starting scope. Leaving that scope joins its workers before releasing local resources, including when the function returns or raises an error.
@@ -44,9 +47,9 @@ A native package must declare `workerSafe: true` for the functions a worker reac
 
 Workers retain checked errors. Handle them at `wait for` or propagate them from the enclosing function. An unhandled child error cancels its siblings, and the scope waits for their cleanup. An error already leaving the parent remains primary.
 
-August loops and calls reach cancellation checkpoints. A synchronous native operation finishes before it can observe cancellation; its resources remain alive until that operation returns. A worker can start cooperative children or nested workers. Nested waits make progress even with a one-thread pool.
+August loops and calls reach cancellation checkpoints. A synchronous native operation keeps its resources until it returns. Adapters can inspect the read-only `aug_native_cancelled_v1` probe on the caller thread and implement a bounded cancellation protocol; August cannot interrupt arbitrary foreign code. A worker can start cooperative children or nested workers. Nested waits make progress even with a one-thread pool.
 
-The pool defaults to the machine's reported CPU count, up to 64 threads. Set `AUG_WORKERS` to an integer from 1 through 64 to choose a limit for a process. This limits running threads; queued tasks and their copied inputs still use memory. Divide a workload into substantial pieces so copying and scheduling do not dominate its work.
+The pool defaults to the machine's reported CPU count, up to 64 threads. Set `AUG_WORKERS` to an integer from 1 through 64 to choose a limit for a process. Admission is also bounded: `AUG_WORKER_PENDING` defaults to 1024 unfinished or uncollected jobs, `AUG_WORKER_INPUT_BYTES` defaults to 16 MiB per copied input graph, and `AUG_WORKER_TOTAL_INPUT_BYTES` defaults to 64 MiB across pending input graphs. Copy accounting includes transfer metadata and transient indexing; it is not just the payload size. Inputs are checked during capture before allocating beyond the bound. `start worker` raises checked `ConcurrencyError` immediately when a limit is reached, without creating a task or changing the inputs. Catch it to reject or defer work; the runtime does not choose a retry policy. Pending reservations are released when completions are collected. These limits do not bound the worker's own heap or output. Divide a workload into substantial pieces so copying and scheduling do not dominate its work.
 
 ## GPU operations
 

@@ -144,3 +144,9 @@ no automatic source-build fallback.
 The next preview supports isolated workers. A descriptor function opts in with `workerSafe: true`; omission means it may run on the main/cooperative heap only. This declaration covers independent instances, call-duration inputs, release operations, and library bookkeeping. It does not allow a native handle or retained August memory to cross worker heaps. Construct resources inside the worker and return copied data.
 
 Audit library global state, thread affinity, panic/exception boundaries, and cleanup before opting in. A GPU package can submit device work from the worker while keeping devices and buffers local. Its native operation must finish using each input before returning or releasing that input. The compiler validates the declaration and ownership contract, while native hardware and sanitizer tests validate the implementation.
+
+## Native cancellation and owned results
+
+During an original caller-thread native call, an adapter can read `uint8_t aug_native_cancelled_v1(void)`. It does not yield, allocate managed values or enter an August callback. It reports cancellation of the current task or worker. Poll it alongside an absolute native deadline; do not call it from a foreign thread or retain a callback into August. An adapter remains responsible for cancelling, draining or discarding its native operation safely.
+
+A successful owned resource output creates a new August wrapper. Its adapter owns every native reference needed by that handle, including references to independent internal storage. It must not retain an August input wrapper or call-duration buffer. The checker preserves this distinction through verified source wrappers: returning a newly owned native result does not make it a managed alias of the loaned input. This does not permit native handles to cross worker heaps.

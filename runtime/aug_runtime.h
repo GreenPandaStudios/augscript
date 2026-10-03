@@ -90,6 +90,8 @@ AugRuntimeContext *aug_runtime_switch(AugRuntimeContext *next);
 void aug_runtime_delete(AugRuntimeContext *context);
 typedef struct AugTransfer AugTransfer;
 AugTransfer *aug_transfer_capture(AugValue *values, size_t count);
+AugTransfer *aug_transfer_capture_bounded(AugValue *values, size_t count, size_t maximum);
+size_t aug_transfer_bytes(AugTransfer *transfer);
 void aug_transfer_restore(AugTransfer *transfer, AugValue *values, size_t count);
 void aug_transfer_delete(AugTransfer *transfer);
 typedef struct AugTask AugTask;
@@ -103,6 +105,10 @@ AugValue aug_task_spawn(AugMethod function, AugValue receiver, AugValue *args, i
 void aug_task_start_pointer(AugValue *out, AugPointerMethod function, const AugValue *receiver, AugValue *args, int count, const unsigned char *owned);
 void aug_task_spawn_pointer(AugValue *out, AugPointerMethod function, const AugValue *receiver, AugValue *args, int count, AugTaskCompletion completion, void *data);
 AugValue aug_task_wait(AugValue *tasks, int count);
+/* Public read-only cancellation probe; valid only during a native call on its
+   original caller thread. It neither yields nor enters managed August code. */
+uint8_t aug_native_cancelled_v1(void);
+extern _Thread_local uint8_t (*aug_native_cancel_probe)(void);
 AugTask *aug_task_current(void);
 bool aug_task_finished(AugValue task);
 void aug_task_cancel(AugValue task);
@@ -144,6 +150,15 @@ AugValue aug_string(const char *value);
 AugValue aug_string_n(const void *value, size_t length);
 AugValue aug_bytes(const void *value, size_t length, int kind);
 int64_t aug_string_length(AugValue value);
+AugValue aug_string_trim(AugValue value);
+int64_t aug_string_utf16_length(AugValue value);
+bool aug_string_is_decimal(AugValue value);
+int64_t aug_string_compare_decimal(AugValue value, AugValue other);
+AugValue aug_bytes_slice(AugValue value, int64_t start, int64_t end);
+AugValue aug_bytes_hex(AugValue value);
+bool aug_float_is_finite(AugValue value);
+AugValue aug_float_float32(AugValue value);
+bool aug_json_has(AugValue value, AugValue name);
 AugValue aug_string_bytes(AugValue value);
 AugValue aug_string_split(AugValue value, AugValue separator);
 bool aug_string_starts_with(AugValue value, AugValue prefix);
@@ -174,6 +189,7 @@ bool aug_json_boolean(AugValue value);
 AugValue aug_json_items(AugValue value);
 AugValue aug_json_wrap(AugValue value);
 AugValue _aug_json_parse(AugValue input);
+AugValue _aug_json_parse_compatible(AugValue input);
 AugValue _aug_time_now(void);
 typedef enum {
   AUG_HTTP_POLICY_REQUIRE_LOGIN=1, AUG_HTTP_POLICY_REQUIRE_PERMISSION,
@@ -184,6 +200,7 @@ typedef struct {AugHttpPolicyKind kind;const char *permission;int64_t amount,sec
 typedef struct { const char *method; const char *path; AugFunction handler; int stream; int status; const AugHttpPolicy *policies;size_t policy_count; AugPointerMethod pointer_handler; } AugRoute;
 void aug_http_policy(const AugHttpPolicy *policy, AugValue request, AugValue dependency, AugValue second);
 AugValue aug_http_finish(AugValue response);
+AugValue aug_http_body(AugValue request);
 bool aug_http_head_response(AugValue *response);
 AugValue aug_http_bind(AugValue request, const char *source, const char *name, const AugSchema *schema);
 AugValue aug_httprequest_form(AugValue request, const AugSchema *schema);
@@ -203,7 +220,7 @@ AugValue aug_html_transport(AugValue html);
 AugValue aug_http_problem(int status);
 int aug_http_error_status(void);
 void aug_http_serve(const AugRoute *routes, size_t count, int64_t port);
-void aug_http_configure(const char *host, const char *certificate, const char *private_key, const char *ca, size_t request_limit, size_t result_limit, bool http3);
+void aug_http_configure(const char *host, const char *certificate, const char *private_key, const char *ca, size_t request_limit, size_t result_limit, bool http3, int64_t headers_timeout, int64_t request_timeout, int64_t drain_timeout, size_t max_requests);
 AugValue aug_new_object(const char *name, size_t field_count,
                         const unsigned char *owned_fields,
                         const AugMethodEntry *methods, size_t method_count);

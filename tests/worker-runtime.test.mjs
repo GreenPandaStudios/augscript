@@ -19,3 +19,13 @@ for(const optimization of ['-O0','-O2'])test(`worker runtime overlaps OS threads
   assert.equal(run.status,0,run.stderr||run.error?.message);assert.equal(run.stdout,'parallel copies cleanup ok\n');
  }finally{rmSync(root,{recursive:true,force:true});}
 });
+
+for(const optimization of ['-O0','-O2'])test(`worker admission rejects before copy and releases reservations (${optimization})`,()=>{
+ const root=mkdtempSync(join(tmpdir(),'aug-worker-admission-'));
+ try{
+  const cc=process.env.AUG_SANITIZER_CC??(process.platform==='darwin'?'/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang':'clang');
+  const binary=join(root,'test'),flags=[...(process.platform==='darwin'?['-isysroot',process.env.AUG_TEST_MACOS_SDK??'/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk']:[]),optimization,'-g','-std=c11','-D_POSIX_C_SOURCE=200809L','-D_DARWIN_C_SOURCE','-D_DEFAULT_SOURCE','-pthread','-I'+runtime,'-I'+join(native,'sources/minicoro'),...(sanitizer?['-fsanitize='+sanitizer,'-fno-omit-frame-pointer']:[])];
+  const built=spawnSync(cc,[...flags,resolve('tests/native/worker-admission.c'),...['aug_runtime.c','aug_values.c','aug_tasks.c'].map(file=>join(runtime,file)),...(process.platform==='linux'?['-lm']:[]),'-o',binary],{encoding:'utf8'});assert.equal(built.status,0,built.stderr);
+  const result=spawnSync(binary,[],{encoding:'utf8',timeout:15000,env:{...process.env,AUG_WORKERS:'1',AUG_WORKER_PENDING:'1',ASAN_OPTIONS:'detect_leaks=0:halt_on_error=1',TSAN_OPTIONS:'halt_on_error=1'}});assert.equal(result.status,0,result.stderr);assert.equal(result.stdout,'bounded worker admission and copies passed\n');
+ }finally{rmSync(root,{recursive:true,force:true});}
+});

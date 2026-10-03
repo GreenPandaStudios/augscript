@@ -18,6 +18,8 @@ The native circuit repeats five lifecycles. Each cycle joins its children, remov
 
 Native resource finalizers must run on the thread that created the resource. After every completed cycle, the instrumented core and harness must have zero outstanding allocation blocks and bytes, with matching allocation and release counts. The probe moves allocations on every successful reallocation to exercise pointer changes. This allocator is test instrumentation, so its timings are not performance measurements.
 
+Worker admission regressions reject excess pending jobs and copied input budgets before returning a task, then check that joining releases the reservation. AddressSanitizer and UBSan also exercise these failures. HTTP service qualification separately checks header dispatch, reception deadlines and draining; native PostgreSQL tests check cancellation and rollback on a disposable server. See [service boundaries](native-service-boundaries.md) for the application contracts and remaining release gates.
+
 Separate August programs run through LLVM in development and optimized modes. They check copied collection results, grouped wait order, checked worker failures, nested cooperative work, and owned cleanup. Expected output and exact drop counts are authored independently of generated specs and compiler output. One program deliberately returns a wrong value while still compiling and exiting successfully; qualification must detect that result. A second control deliberately retains an allocation and must be rejected.
 
 A deterministic scheduler regression delivers a worker's completion between two scheduler polls. The wait must return its result when no coroutine remains ready. This tests a timing window that previously produced a false deadlock.
