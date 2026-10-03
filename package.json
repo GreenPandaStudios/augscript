@@ -37,7 +37,7 @@
   },
   "devDependencies": {
     "@types/markdown-it-container": "4.0.1",
-    "@types/node": "24.19.0",
+    "@types/node": "26.6.3",
     "markdown-it-container": "4.0.0",
     "tar": "7.5.22",
     "typescript": "5.9.3",
