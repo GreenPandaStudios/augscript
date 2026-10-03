@@ -27,7 +27,7 @@ Open a .aug file, then use the Command Palette:
 | --- | --- |
 | AugScript: Open Welcome | Open the illustrated local overview, icons, and bundled guides. |
 | AugScript: Enable File Icons | Select the August file icon theme for the current workspace. |
-| AugScript: Build Project | Compile the complete project to native C. |
+| AugScript: Build Project | Compile the complete project through LLVM to a native executable. |
 | AugScript: Generate Specifications | Compile adjacent Markdown explanations and offline dependency docs. |
 | AugScript: Open Compiled Specification | Generate and preview the current source file's specification. |
 | AugScript: Migrate Project Syntax | Convert rejected legacy spellings after sources are saved. |
@@ -57,7 +57,7 @@ Place /** Javadoc */ before a declaration. Parameter labels, return tags, and ef
 
 ![August source, startup, exports, and configuration file icons](media/file-icons.png)
 
-Run **AugScript: Enable File Icons**, or choose **Preferences: File Icon Theme → AugScript Icons**. `main.aug` has an amber startup icon, `export.aug` a purple public-surface icon, and `main.yaml` a teal configuration icon. Other `.aug` files and common source/folder types have their own icons. The August repository and login example enable this theme in their workspace settings.
+Run **AugScript: Enable File Icons**, or choose **Preferences: File Icon Theme → AugScript Icons**. Source files use August’s open-circle mark. `main.aug` has a play symbol, `export.aug` an outward arrow, and `main.yaml` a pair of sliders. Light and dark variants keep the thin strokes readable. Common source files and folders use the same line style.
 
 The extension also supplies light and dark default `.aug` language icons for themes that support language defaults. The bundled theme gives `main.aug` and `export.aug` their distinct marks.
 
@@ -65,11 +65,11 @@ The extension also supplies light and dark default `.aug` language icons for the
 
 ## Requirements and settings
 
-Node.js 24+ is required. Native commands additionally require a C11 compiler. Configure augscript.nodePath if Node is not on VS Code's PATH, or augscript.compilerPath for a custom CLI. The extension otherwise uses its bundled compiler.
+Node.js 24+ is required. Configure `augscript.nodePath` if Node is not on VS Code’s PATH, or `augscript.compilerPath` for a custom CLI. The extension otherwise uses its bundled compiler.
 
-Native commands automatically prepare the pinned libraries their programs use. The first web/crypto build can take several minutes; setup progress and missing-tool recovery steps appear in the terminal. Installed copies use a writable, versioned user cache by default. To share a cache, set `augscript.nativeHome` to the absolute directory containing `sources/` and `prefix/`, or set AUG_NATIVE_HOME. Native binaries are not bundled. Full setup supports macOS and Linux; JSON/tasks prepare only portable C sources. Use `--offline` after preparing dependencies when downloads are unavailable.
+Ordinary build, run and test commands download verified LLVM/runtime packs and native package artifacts on macOS 14+ ARM64 and GNU/Linux x86-64 or ARM64 with glibc 2.36+. No separate C compiler, LLVM installation or SDK is required on those hosts. The first build needs network access and a writable artifact cache. Use `--offline` after the required downloads are cached; unsupported platforms and missing artifacts produce diagnostics. C reference builds and native package authoring require maintainer tools. `augscript.nativeHome` configures that separate source-build cache.
 
-Use the guide commands to read the bundled documentation. Core I/O ships with the CLI; web, crypto, JSON, time, and memory are ordinary source packages. A library needs an export.aug file and can be imported from a public Git URL. Package navigation and Javadoc help work across these imports. Executable bodies show inferred contracts in hover and inline hints. August remains a preview with conservative ownership analysis and cooperative tasks on one OS thread. Multicore workers, channels, and inbound streaming remain documented gaps. See the wiki's performance graphs before choosing a production workload.
+Use the guide commands to read the bundled documentation. Core I/O ships with the CLI; web, crypto, JSON, time and memory are ordinary source packages. A library needs an `export.aug` file and can be imported from a public Git URL. Package navigation and Javadoc help follow those imports. Executable bodies show inferred contracts in hover and inline hints. Cooperative tasks share their scheduler; `start worker` runs copied values on multiple cores with a private heap per worker. Channels and inbound streaming remain unimplemented. August is a preview; consult the performance measurements and library limits for your workload.
 
 ## Inferred contract hints
 

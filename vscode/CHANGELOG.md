@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+Replace the framed A logo with an open-circle mark. Explorer icons use simple strokes, muted colors and light/dark variants, with distinct startup, export and configuration symbols. Refresh the banner, bundled welcome page and icon legend. Correct the README’s LLVM, installation and worker descriptions.
+
 ## 0.23.0 — native ingestion preview
 
 Hover and completion include lazy checked HTTP body reads, JSON field presence, checked byte slices, hexadecimal conversion, protocol text helpers, and float32 conversion. Worker help explains checked admission failures and copied-input limits.
