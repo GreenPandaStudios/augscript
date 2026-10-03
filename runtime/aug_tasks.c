@@ -92,6 +92,10 @@ static void run_task(mco_coro *coroutine) {
   task->complete = true;
 }
 bool aug_scheduler_step(void) {
+#ifdef AUG_TEST_SCHEDULER_STEP
+  extern void aug_test_before_scheduler_step(void);
+  aug_test_before_scheduler_step();
+#endif
   poll_workers();
   AugTask *task = ready_first;
   if (!task) return false;
@@ -124,6 +128,9 @@ static void await_task(AugTask *task) {
     if (aug_task_current()) { aug_task_wake(aug_task_current()); aug_task_suspend(); }
     else if (help_worker()) { /* Nested workers progress even with ready cooperative children. */ }
     else if (!aug_scheduler_step()) {
+      /* The step polls worker completions too. No ready coroutine can mean
+         this wait has completed, rather than a deadlock. */
+      if (task->complete) break;
       if (pending_workers) { if (!help_worker()) wait_worker_event(); }
       else if (!aug_scheduler_io) fatal("task deadlock: every child is suspended");
       if (aug_scheduler_io) aug_scheduler_io(pending_workers ? false : true);

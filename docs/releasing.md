@@ -16,6 +16,7 @@ export AUG_LLVM_HOME="$PWD/.aug-build/llvm-tools"
 npm run version:check
 npm run check
 npm test
+npm run test:reliability -- --profile soak
 npm run docs:check
 npm run docs:build
 node scripts/merge-compiler-packs.mjs .aug-build/release-packs
@@ -62,7 +63,7 @@ Maintainers build the runtime. Consumers download it with the reviewed LLVM pack
 LLVM execution tests with its prepared toolchain; unsupported platforms produce an error. See [native packages](native-packages.md).
 Producer jobs require source breakpoint/variable inspection, actual LLVM ASan
 instrumentation with a failing negative control, runtime UBSan, and the frozen
-paired C/LLVM performance limits. Consumer jobs exercise an ordinary default
+paired C/LLVM performance limits. Each producer also requires the [runtime reliability soak](runtime-reliability.md): a 30-minute optimized lifecycle circuit, exact core allocation and owned-resource balance, burst sanitizer circuits, and independent LLVM results. Consumer jobs exercise an ordinary default
 LLVM starter and all four public native repositories without native tools,
 including frozen/offline locks, cleanup and relocated deployment bundles.
 

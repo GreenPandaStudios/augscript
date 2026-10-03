@@ -8,6 +8,8 @@ The repository checks compiler types, native execution, language examples, gener
 
 The [robustness tests](../tests/robustness.test.mjs) mutate 5,000 source files through the parser and 1,000 through project checking, then compare generated native integer, Map, and Set programs in debug and release modes with independent JavaScript oracles. CI also runs [core native stress programs](../scripts/sanitize-core.mjs) for collections, task joining, and owned `Shared<T>` transfer with AddressSanitizer and UBSan on macOS and Linux. Run them locally with `npm run test:sanitizers`. This catches specific crashes, wrong results, and memory errors in the exercised paths; it does not prove the compiler, HTTP/crypto libraries, or all programs safe. Leak detection is disabled for this gate because the macOS AddressSanitizer runtime does not support it.
 
+The unreleased worker candidate adds [runtime reliability qualification](runtime-reliability.md). It repeats allocation, cancellation, nested waits, and owned cleanup with exact core allocation counts, resource counters, and resident-memory observations. Release candidates require a 30-minute circuit on each supported target; shorter pull-request runs catch regressions.
+
 The [OpenID Connect example](examples/oidc-login/index.md) exercises a provider and client in one application. It stores accounts, signing keys, and sessions in memory. It is a development demonstration, not a production identity service.
 
 The [safety gyms](safety-gyms.md) generate LLVM cases, check rejected operations, and test whether deliberately faulty programs are detected. [The results](qualification-results.md) record what ran and what was skipped. They also include eight more C performance comparisons.

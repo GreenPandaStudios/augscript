@@ -4,6 +4,12 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      reliability_profile:
+        description: Runtime lifecycle duration; soak runs for at least 30 minutes
+        type: choice
+        options: [soak, ci]
+        default: soak
 permissions:
   contents: read
 concurrency:
@@ -49,6 +55,12 @@ jobs:
           docker exec -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools qualification npm run test:conformance
           docker exec -e AUG_WORKER_SANITIZER=thread -e AUG_SANITIZER_CC=/work/.aug-build/llvm-maintainer/bin/clang qualification node --test tests/worker-runtime.test.mjs
           docker exec -e AUG_WORKER_SANITIZER=address,undefined -e AUG_SANITIZER_CC=/work/.aug-build/llvm-maintainer/bin/clang qualification node --test tests/worker-runtime.test.mjs
+      - name: Qualify repeated runtime lifecycles and sustained heap use
+        env:
+          RELIABILITY_PROFILE: ${{ inputs.reliability_profile || 'ci' }}
+        run: |
+          docker exec -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools -e AUG_SANITIZER_CC=/work/.aug-build/llvm-maintainer/bin/clang qualification node --test tests/runtime-reliability.test.mjs
+          docker exec -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools -e AUG_SANITIZER_CC=/work/.aug-build/llvm-maintainer/bin/clang qualification npm run test:reliability -- --profile "$RELIABILITY_PROFILE"
       - name: Build real native libraries from separate repositories
         run: |
           for library in pytorch sqlite zlib blake3; do
@@ -93,6 +105,7 @@ jobs:
           docker cp qualification:/work/.aug-build/native-consumer-qualification.json .aug-build/linux-evidence/qualification.json || true
           docker cp public-consumer:/consumer/.aug-build/native-consumer-qualification.json .aug-build/linux-evidence/public-clean-qualification.json || true
           docker cp public-consumer:/consumer/.aug-build/worker-consumer-qualification.json .aug-build/linux-evidence/ || true
+          docker cp qualification:/work/.aug-build/runtime-reliability .aug-build/linux-evidence/ || true
           docker cp qualification:/work/.aug-build/language-conformance.json .aug-build/linux-evidence/ || true
           docker cp qualification:/work/.aug-build/llvm-migration-performance.json .aug-build/linux-evidence/ || true
           docker cp qualification:/work/.aug-build/kernels/results.json .aug-build/linux-evidence/kernels.json || true

@@ -93,6 +93,7 @@ export default defineConfig({
         { text: 'Documentation maintenance', link: '/maintaining-docs' }, { text: 'Writing guide', link: '/writing-docs' },
         { text: 'Editorial research', link: '/research/wiki-editorial-design' },
         { text: 'Ownership and task conformance', link: '/language-conformance' },
+        { text: 'Runtime reliability', link: '/runtime-reliability' },
         { text: 'Compiler architecture', link: '/implementation-map' }, { text: 'Design principles', link: '/language-design-audit' }
       ]}
     ],

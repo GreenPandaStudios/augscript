@@ -4,6 +4,12 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
+    inputs:
+      reliability_profile:
+        description: Runtime lifecycle duration; soak runs for at least 30 minutes
+        type: choice
+        options: [soak, ci]
+        default: soak
 permissions:
   contents: read
 concurrency:
@@ -50,7 +56,7 @@ jobs:
       - run: npm run test:packages
   native:
     runs-on: macos-15
-    timeout-minutes: 60
+    timeout-minutes: 90
     env:
       AUG_LLVM_HOME: ${{ github.workspace }}/.aug-build/llvm-tools
       AUG_GITHUB_TOKEN: ${{ github.token }}
@@ -82,6 +88,11 @@ jobs:
         run: |
           AUG_WORKER_SANITIZER=thread node --test tests/worker-runtime.test.mjs
           AUG_WORKER_SANITIZER=address,undefined node --test tests/worker-runtime.test.mjs
+      - name: Qualify repeated runtime lifecycles and sustained heap use
+        env:
+          AUG_SANITIZER_CC: ${{ github.workspace }}/.aug-build/llvm-maintainer/bin/clang
+          RELIABILITY_PROFILE: ${{ inputs.reliability_profile || 'ci' }}
+        run: npm run test:reliability -- --profile "$RELIABILITY_PROFILE"
       - name: Existing language, runtime and real applications through LLVM
         env:
           AUG_REQUIRE_DWARF: '1'
@@ -110,6 +121,7 @@ jobs:
           name: llvm-macos-performance
           include-hidden-files: true
           path: |
+            .aug-build/runtime-reliability/
             .aug-build/language-conformance.json
             .aug-build/llvm-migration-performance.json
             .aug-build/kernels/results.json

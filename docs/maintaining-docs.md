@@ -12,6 +12,7 @@ For writing and navigation, use [the editorial guide](writing-docs.md). The repo
 | Public library signature or behavior | Javadoc beside its declaration in `src/stdlib`, the relevant guide and gap ledger |
 | Diagnostic or editor behavior | `src/help.ts`, diagnostics/tooling guide and VS Code changelog |
 | CLI, packages, configuration or supported platform | Tooling/packages/releasing guide, Docker and Dev Container recipes, and package metadata |
+| Runtime lifecycle or qualification behavior | `docs/runtime-reliability.md`, readiness, roadmap, release workflow and changelog |
 | Completed or deferred feature | Implementation map, gap ledger and changelog |
 
 Public comments should explain observable behavior, named inputs, errors, side effects, and limits. Keep dependencies explicit in examples. Record incomplete capabilities in the gap ledger; do not imply that an unimplemented proposal is usable.

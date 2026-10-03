@@ -12,6 +12,6 @@ A 1.0 release will make the documented language and package contracts stable. Th
 | 4 | Developer distribution | Repeat clean-machine npm and editor installation checks for every release. Provide a tested upgrade path, matched package versions, verified archives, and usable source diagnostics and debugging. |
 | 5 | Stable release policy | Publish the final support matrix, compatibility rules, and known limits. All release gates, documentation checks, dependency reviews, and independent reviews pass for the release candidate. |
 
-The [conformance suite](language-conformance.md), [safety gyms](safety-gyms.md), [performance reports](performance.md), and [release process](releasing.md) provide current evidence. Passing a finite suite does not establish that every program is correct or safe.
+The [conformance suite](language-conformance.md), [runtime reliability gate](runtime-reliability.md), [safety gyms](safety-gyms.md), [performance reports](performance.md), and [release process](releasing.md) provide current evidence. Passing a finite suite does not establish that every program is correct or safe.
 
 The next preview adds isolated multicore worker tasks and a separate Metal GPU package. Channels, CUDA artifacts, broader GPU APIs, Windows, musl, and cross compilation remain deferred. The worker and GPU qualification results must pass before they are included in a release. Broader HTTP conformance and identity-provider hardening are library work, tracked in the [gap ledger](web-library-gaps.md), rather than requirements for the core language's 1.0 release.

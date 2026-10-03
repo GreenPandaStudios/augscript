@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Fix a worker wait that could report a deadlock after a scheduler poll had already delivered its result. Force that completion window in a deterministic native regression.
+- Add runtime lifecycle qualification with repeated allocation, cancellation, nested waits, primary-error preservation and owned cleanup. Record exact instrumented allocation balances, resource finalizer threads, RSS samples, sanitizer results, independent LLVM outcomes and replay controls. Reject stale runtime packs and require a 30-minute circuit per release target.
+
 - Add `start worker` to the existing task framework. Worker jobs run on a bounded OS-thread pool with private heaps, copied data, checked call-graph boundaries, ordered waits, cancellation and joined cleanup. Native handles stay on their creating worker; native packages opt in with an explicit `workerSafe` contract. Nested worker/cooperative scopes progress even with one pool thread.
 - Add a language contract ledger, independent LLVM examples in debug/release and both block styles, valid behavioral mutations, source-bearing qualification reports, and three-platform CI gates. Run actual overlapping worker threads under race, address and undefined-behavior instrumentation. Finite checks remain distinct from a safety proof.
 - Introduce the separate `aug-gpu` package with a native C ABI and real Metal float32 vector operations. Device and buffer resources remain local to their creating worker; downloaded values return as copied data. Apple Silicon hardware is qualified; CUDA awaits an NVIDIA implementation and hardware qualification.
