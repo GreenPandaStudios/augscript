@@ -2,7 +2,7 @@
 
 ## Unreleased — native ingestion boundaries
 
-Qualification fingerprints exclude nested generated caches and reject symbolic links in canonical inputs, so clean checkouts and contributor workspaces identify the same compiler.
+Qualification fingerprints exclude nested generated caches and reject symbolic links in canonical files, source directories and root manifests, so clean checkouts and contributor workspaces identify the same compiler.
 
 HTTP dispatch now begins at headers. Body reads are checked and lazy; accepted reads drive 100 Continue. New web reception, admission and drain settings bound stalled senders and shutdown. ServerControl permits an application-selected network grace period, with cleanup joined before serve returns.
 

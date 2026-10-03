@@ -43,6 +43,14 @@ test('qualification ignores generated nested caches and rejects ambiguous canoni
     assert.notEqual(qualificationIdentity(root).sourceSha256,original);
     symlinkSync('/nonexistent/qualification-source',join(root,'src/stdlib/json/alias.aug'));
     assert.throws(()=>qualificationIdentity(root),/must not be symbolic links/);
+    rmSync(join(root,'src/stdlib/json/alias.aug'));
+    rmSync(join(root,'runtime'),{recursive:true});
+    symlinkSync(join(root,'native'),join(root,'runtime'));
+    assert.throws(()=>qualificationIdentity(root),/must not be symbolic links: runtime/);
+    rmSync(join(root,'runtime'));mkdirSync(join(root,'runtime'));
+    rmSync(join(root,'package-lock.json'));
+    symlinkSync(join(root,'tsconfig.json'),join(root,'package-lock.json'));
+    assert.throws(()=>qualificationIdentity(root),/must not be symbolic links: package-lock.json/);
   }finally{rmSync(root,{recursive:true,force:true});}
 });
 
