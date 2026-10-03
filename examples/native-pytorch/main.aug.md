@@ -4,10 +4,10 @@
 
 ## Startup
 
-It prints [`calculate`](tensors.aug.md#symbol-calculate). If this work raises [`TensorError`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.1.5/contracts.aug.md#symbol-TensorError) as `error`, it prints `error.message`.
+It prints [`calculate`](tensors.aug.md#symbol-calculate). If this work raises [`TensorError`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.1.6/contracts.aug.md#symbol-TensorError) as `error`, it prints `error.message`.
 
 ## Dependencies
 
-It uses [`TensorError`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.1.5/contracts.aug.md#symbol-TensorError) (`message`) from `https://github.com/GreenPandaStudios/aug-pytorch#v0.1.5`. It uses [`calculate`](tensors.aug.md#symbol-calculate) from `tensors`.
+It uses [`TensorError`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.1.6/contracts.aug.md#symbol-TensorError) (`message`) from `https://github.com/GreenPandaStudios/aug-pytorch#v0.1.6`. It uses [`calculate`](tensors.aug.md#symbol-calculate) from `tensors`.
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).

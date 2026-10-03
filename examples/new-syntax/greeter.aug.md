@@ -10,7 +10,7 @@ It implements [`IGreeter`](greeter.aug.md#symbol-IGreeter). It takes `x` as an i
 <a id="symbol-Greeter.greet"></a>
 ### `Greeter.greet` · [source](greeter.aug#L5)
 
-It takes `name` as a string. It gets `console` ([`Console`](.aug-spec/august/0.22.0/io/contracts.aug.md#symbol-Console)) from dependency injection. It passes the text `Hello, {name}!` to [`logger.log`](logger.aug.md#symbol-Logger.log), using injected `console`.
+It takes `name` as a string. It gets `console` ([`Console`](.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-Console)) from dependency injection. It passes the text `Hello, {name}!` to [`logger.log`](logger.aug.md#symbol-Logger.log), using injected `console`.
 
 <a id="symbol-IGreeter"></a>
 ## `IGreeter` · interface · [source](greeter.aug#L9)
@@ -18,8 +18,8 @@ It takes `name` as a string. It gets `console` ([`Console`](.aug-spec/august/0.2
 <a id="symbol-IGreeter.greet"></a>
 ### `IGreeter.greet` · [source](greeter.aug#L10)
 
-It takes `name` as a string. It gets `console` ([`Console`](.aug-spec/august/0.22.0/io/contracts.aug.md#symbol-Console)) from dependency injection. It can call [`Console.write`](.aug-spec/august/0.22.0/io/contracts.aug.md#symbol-Console.write).
+It takes `name` as a string. It gets `console` ([`Console`](.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-Console)) from dependency injection. It can call [`Console.write`](.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-Console.write).
 
 ## Dependencies
 
-It uses [`Console`](.aug-spec/august/0.22.0/io/contracts.aug.md#symbol-Console) ([`write`](.aug-spec/august/0.22.0/io/contracts.aug.md#symbol-Console.write)) from `august.io`. It uses [`Logger`](logger.aug.md#symbol-Logger) ([`log`](logger.aug.md#symbol-Logger.log)) from `logger`.
+It uses [`Console`](.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-Console) ([`write`](.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-Console.write)) from `august.io`. It uses [`Logger`](logger.aug.md#symbol-Logger) ([`log`](logger.aug.md#symbol-Logger.log)) from `logger`.

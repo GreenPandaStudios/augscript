@@ -31,7 +31,7 @@ pageClass: aug-example-page
 ```aug [Indentation]
 // aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import storedName from database
-import SqliteError from "https://github.com/GreenPandaStudios/aug-sqlite#v0.1.4"
+import SqliteError from "https://github.com/GreenPandaStudios/aug-sqlite#v0.1.5"
 try:
     print(value=storedName())
 catch SqliteError error:
@@ -41,7 +41,7 @@ catch SqliteError error:
 ```aug [Braces]
 // aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import storedName from database
-import SqliteError from "https://github.com/GreenPandaStudios/aug-sqlite#v0.1.4"
+import SqliteError from "https://github.com/GreenPandaStudios/aug-sqlite#v0.1.5"
 try {
     print(value=storedName())
 }
@@ -60,11 +60,11 @@ catch SqliteError error {
 
 ### Startup
 
-It prints [`storedName`](database.md#symbol-storedName). If this work raises [`SqliteError`](dependencies/packages/%40greenpandastudios/aug-sqlite/0.1.4/contracts.md#symbol-SqliteError) as `error`, it prints `error.message`.
+It prints [`storedName`](database.md#symbol-storedName). If this work raises [`SqliteError`](dependencies/packages/%40greenpandastudios/aug-sqlite/0.1.5/contracts.md#symbol-SqliteError) as `error`, it prints `error.message`.
 
 ### Dependencies
 
-It uses [`SqliteError`](dependencies/packages/%40greenpandastudios/aug-sqlite/0.1.4/contracts.md#symbol-SqliteError) (`message`) from `https://github.com/GreenPandaStudios/aug-sqlite#v0.1.4`. It uses [`storedName`](database.md#symbol-storedName) from `database`.
+It uses [`SqliteError`](dependencies/packages/%40greenpandastudios/aug-sqlite/0.1.5/contracts.md#symbol-SqliteError) (`message`) from `https://github.com/GreenPandaStudios/aug-sqlite#v0.1.5`. It uses [`storedName`](database.md#symbol-storedName) from `database`.
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).
 

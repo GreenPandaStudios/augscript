@@ -2,7 +2,7 @@
 
 Import a native library like any other August package. The package supplies August bindings and prebuilt libraries for supported hosts. Your application uses typed functions and owned resources; the bindings handle native pointers.
 
-August 0.21.0 supports macOS 14+ on Apple Silicon and GNU/Linux x86-64/ARM64 with glibc 2.36+. It downloads the LLVM tools and libraries it needs, so consumers need Node 24 but no separate native compiler or SDK. Native packages require the LLVM backend. Musl and cross-compilation are unsupported; incompatible hosts are rejected before compilation.
+August 0.23.0 supports macOS 14+ on Apple Silicon and GNU/Linux x86-64/ARM64 with glibc 2.36+. It downloads the LLVM tools and libraries it needs, so consumers need Node 24 but no separate native compiler or SDK. Native packages require the LLVM backend. Musl and cross-compilation are unsupported; incompatible hosts are rejected before compilation.
 
 ## Import a library
 
@@ -10,13 +10,13 @@ The [PyTorch](https://github.com/GreenPandaStudios/aug-pytorch),
 [SQLite](https://github.com/GreenPandaStudios/aug-sqlite),
 [zlib](https://github.com/GreenPandaStudios/aug-zlib), and
 [BLAKE3](https://github.com/GreenPandaStudios/aug-blake3) repositories publish
-source and native preview archives for all three platforms: PyTorch `v0.1.4` and
-the other three packages `v0.1.3`. Use [August 0.21.0](https://github.com/GreenPandaStudios/augscript/releases/tag/v0.21.0) with these releases.
+source and native preview archives for all three platforms: PyTorch `v0.1.6` and
+the other three packages `v0.1.5`. Use [August 0.23.0](https://github.com/GreenPandaStudios/augscript/releases/tag/v0.23.0) with these releases.
 
 Use the normal package commands. This example adds CPU LibTorch under a short name:
 
 ```sh
-aug add https://github.com/GreenPandaStudios/aug-pytorch#v0.1.5 --as pytorch
+aug add https://github.com/GreenPandaStudios/aug-pytorch#v0.1.6 --as pytorch
 aug run
 ```
 
@@ -141,7 +141,7 @@ no automatic source-build fallback.
 
 ## Native calls in workers
 
-The next preview supports isolated workers. A descriptor function opts in with `workerSafe: true`; omission means it may run on the main/cooperative heap only. This declaration covers independent instances, call-duration inputs, release operations, and library bookkeeping. It does not allow a native handle or retained August memory to cross worker heaps. Construct resources inside the worker and return copied data.
+August supports isolated workers. A descriptor function opts in with `workerSafe: true`; omission means it may run on the main/cooperative heap only. This declaration covers independent instances, call-duration inputs, release operations, and library bookkeeping. It does not allow a native handle or retained August memory to cross worker heaps. Construct resources inside the worker and return copied data.
 
 Audit library global state, thread affinity, panic/exception boundaries, and cleanup before opting in. A GPU package can submit device work from the worker while keeping devices and buffers local. Its native operation must finish using each input before returning or releasing that input. The compiler validates the declaration and ownership contract, while native hardware and sanitizer tests validate the implementation.
 

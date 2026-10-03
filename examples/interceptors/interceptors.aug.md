@@ -18,7 +18,7 @@ The `logger` dependency is injected as [`Logger`](logging.aug.md#symbol-Logger) 
 <a id="symbol-Audit.around"></a>
 ### `Audit.around` · [source](interceptors.aug#L15)
 
-Wrap a call without changing its result. It gets `console` ([`Console`](.aug-spec/august/0.22.0/io/contracts.aug.md#symbol-Console)) from dependency injection.
+Wrap a call without changing its result. It gets `console` ([`Console`](.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-Console)) from dependency injection.
 
 It passes `"before"` to [`logger.log`](logging.aug.md#symbol-Logger.log), using injected `console`. It sets `result` of type `T` to `next`. It passes `"after"` to [`logger.log`](logging.aug.md#symbol-Logger.log), using injected `console`. It returns `result`.
 
@@ -44,4 +44,4 @@ It takes `y` as an integer (the input to increment). It returns `next` with `y` 
 
 ## Dependencies
 
-It uses [`Console`](.aug-spec/august/0.22.0/io/contracts.aug.md#symbol-Console) ([`write`](.aug-spec/august/0.22.0/io/contracts.aug.md#symbol-Console.write)) from `august.io`. It uses [`Logger`](logging.aug.md#symbol-Logger) ([`log`](logging.aug.md#symbol-Logger.log)) from `logging`.
+It uses [`Console`](.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-Console) ([`write`](.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-Console.write)) from `august.io`. It uses [`Logger`](logging.aug.md#symbol-Logger) ([`log`](logging.aug.md#symbol-Logger.log)) from `logging`.

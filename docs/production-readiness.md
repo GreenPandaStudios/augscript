@@ -1,6 +1,6 @@
 # Production readiness and dependencies
 
-August 0.21 is experimental. The compiler, CLI, packages, standard declarations, and editor can be tried today; the project does not claim general production readiness. Use the [getting-started guide](getting-started.md) for a first application, [the roadmap](roadmap.md) for release gates, and [the compatibility page](compatibility.md) for the proposed 1.0 support contract.
+August 0.23.0 is experimental. The compiler, CLI, packages, standard declarations, and editor can be tried today; the project does not claim general production readiness. Use the [getting-started guide](getting-started.md) for a first application, [the roadmap](roadmap.md) for release gates, and [the compatibility page](compatibility.md) for the proposed 1.0 support contract.
 
 ## What is measured and verified
 
@@ -8,7 +8,7 @@ The repository checks compiler types, native execution, language examples, gener
 
 The [robustness tests](../tests/robustness.test.mjs) mutate 5,000 source files through the parser and 1,000 through project checking, then compare generated native integer, Map, and Set programs in debug and release modes with independent JavaScript oracles. CI also runs [core native stress programs](../scripts/sanitize-core.mjs) for collections, task joining, and owned `Shared<T>` transfer with AddressSanitizer and UBSan on macOS and Linux. Run them locally with `npm run test:sanitizers`. This catches specific crashes, wrong results, and memory errors in the exercised paths; it does not prove the compiler, HTTP/crypto libraries, or all programs safe. Leak detection is disabled for this gate because the macOS AddressSanitizer runtime does not support it.
 
-The unreleased worker candidate adds [runtime reliability qualification](runtime-reliability.md). It repeats allocation, cancellation, nested waits, and owned cleanup with exact core allocation counts, resource counters, and resident-memory observations. Release candidates require a 30-minute circuit on each supported target; shorter pull-request runs catch regressions.
+The preview includes [runtime reliability qualification](runtime-reliability.md). It repeats allocation, cancellation, nested waits, and owned cleanup with exact core allocation counts, resource counters, and resident-memory observations. Release candidates require a 30-minute circuit on each supported target; shorter pull-request runs catch regressions.
 
 The [OpenID Connect example](examples/oidc-login/index.md) exercises a provider and client in one application. It stores accounts, signing keys, and sessions in memory. It is a development demonstration, not a production identity service.
 
@@ -37,7 +37,7 @@ The exact versions, archive URLs, and SHA-256 values are in [`native-dependencie
 
 The LLVM compiler, runtime, and public native packages work on macOS ARM64 and GNU/Linux x86-64/ARM64. Installed-package tests cover public downloads, locked and offline builds, relocated executables, and resource cleanup without native development tools. Windows, musl, and cross-compilation remain unsupported.
 
-Before 1.0, the project needs broader language conformance tests, repeated runtime stress tests, stable ABI and package formats, and repeatable releases. The next preview adds isolated multicore workers; they need their own platform conformance and sanitizer gates. The [roadmap](roadmap.md) gives the order and acceptance criteria.
+Before 1.0, the project needs broader language conformance tests, repeated runtime stress tests, stable ABI and package formats, and repeatable releases. Isolated multicore workers have platform conformance and sanitizer gates that each release must repeat. The [roadmap](roadmap.md) gives the order and acceptance criteria.
 
 HTTP and identity services need additional protocol testing, durable credentials and keys, rotation, and long-running load tests. Those requirements are listed in [web and crypto limits](web-library-gaps.md).
 

@@ -6,7 +6,7 @@ next:
 
 # The August book
 
-This book teaches you to read, write, and change August programs. It assumes you have written code in another language. August builds a native executable when you run a program; August 0.21.0 downloads its own LLVM tools on [supported platforms](../getting-started.md).
+This book teaches you to read, write, and change August programs. It assumes you have written code in another language. August builds a native executable when you run a program; August 0.23.0 downloads its own LLVM tools on [supported platforms](../getting-started.md).
 
 Start with a working application. Then add one idea at a time: labeled inputs, data and failures, module boundaries, dependencies, and controlled mutation. Each chapter contains a complete small project. Save its files together, run the commands, and compare your result with the output shown.
 

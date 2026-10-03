@@ -32,6 +32,6 @@ Start with [your first project](getting-started.md), then follow [the August boo
 
 ## Try the public preview
 
-August 0.21.0 is available now. You need Node.js 24 and macOS 14+ on Apple Silicon or GNU/Linux x86-64/ARM64 with glibc 2.36+. August obtains its native compiler and libraries automatically; you do not install LLVM or Clang.
+August 0.23.0 is available now. You need Node.js 24 and macOS 14+ on Apple Silicon or GNU/Linux x86-64/ARM64 with glibc 2.36+. August obtains its native compiler and libraries automatically; you do not install LLVM or Clang.
 
-The language is experimental, with no stable 1.0 compatibility promise yet. Tasks run cooperatively on one OS thread. Read [supported platforms](compatibility.md), [production readiness](production-readiness.md), and the [roadmap to 1.0](roadmap.md) before choosing it for a deployment. Source and issues are on [GitHub](https://github.com/GreenPandaStudios/augscript).
+The language is experimental, with no stable 1.0 compatibility promise yet. Cooperative tasks share a heap; worker tasks can run on multiple cores with isolated heaps. Read [supported platforms](compatibility.md), [production readiness](production-readiness.md), and the [roadmap to 1.0](roadmap.md) before choosing it for a deployment. Source and issues are on [GitHub](https://github.com/GreenPandaStudios/augscript).

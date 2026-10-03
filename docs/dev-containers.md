@@ -1,6 +1,6 @@
 # Develop in a VS Code Dev Container
 
-Edit your project in VS Code and run the compiler and tests in a Linux container. Your files stay on your machine. The CLI downloads its compiler pack into the container, so no separate native toolchain is needed. These instructions use August 0.21.0.
+Edit your project in VS Code and run the compiler and tests in a Linux container. Your files stay on your machine. The CLI downloads its compiler pack into the container, so no separate native toolchain is needed. These instructions use August 0.23.0.
 
 You need Docker with a running Linux engine, VS Code, and Microsoft's [Dev Containers extension](https://code.visualstudio.com/docs/devcontainers/containers). Creating a new project also needs Node.js 24 and npm on the host. You can instead open an existing project or a [downloaded example](examples/index.md).
 
@@ -21,7 +21,7 @@ Save `.devcontainer/Dockerfile` with these contents. It installs the CLI; the fi
 
 ```dockerfile
 FROM node:24-bookworm
-ARG AUG_VERSION=0.21.0
+ARG AUG_VERSION=0.23.0
 RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates \
     && rm -rf /var/lib/apt/lists/*
@@ -57,7 +57,7 @@ Save `.devcontainer/devcontainer.json` beside it:
 
 Open `hello-august` in VS Code. From the Command Palette, choose **Dev Containers: Reopen in Container**. The first image build installs the CLI; the first `aug run` downloads its compiler pack. Later opens and runs reuse these inputs. When the container is ready, the configured creation command checks your project.
 
-After opening the container, download the matching 0.21.0 VSIX from [GitHub Releases](https://github.com/GreenPandaStudios/augscript/releases/tag/v0.21.0). Run **Extensions: Install from VSIX…** in that VS Code window and install it in the container. Check the extension version against the CLI; Marketplace availability can lag a release. The bundled compiler and terminal CLI use the same artifact cache. Terminal commands run as the image's `node` user. On Linux, the Dev Container tooling adjusts that user's ID to match your local files. The [non-root user guide](https://code.visualstudio.com/remote/advancedcontainers/add-nonroot-user) explains this behavior.
+After opening the container, download the matching 0.23.0 VSIX from [GitHub Releases](https://github.com/GreenPandaStudios/augscript/releases/tag/v0.23.0). Run **Extensions: Install from VSIX…** in that VS Code window and install it in the container. Check the extension version against the CLI; Marketplace availability can lag a release. The bundled compiler and terminal CLI use the same artifact cache. Terminal commands run as the image's `node` user. On Linux, the Dev Container tooling adjusts that user's ID to match your local files. The [non-root user guide](https://code.visualstudio.com/remote/advancedcontainers/add-nonroot-user) explains this behavior.
 
 Open a terminal **in that VS Code window** and run:
 

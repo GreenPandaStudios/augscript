@@ -1,8 +1,8 @@
 # GPU workers
 
-This example adds two pairs of vectors on a real Metal GPU. It requires the August 0.22 preview, Apple Silicon, macOS 14 or later, and an available Metal device. The 0.22 compiler release is being prepared; the published 0.21 CLI cannot run worker syntax.
+This example adds two pairs of vectors on a real Metal GPU. It requires the August 0.23.0 preview, Apple Silicon, macOS 14 or later, and an available Metal device.
 
-Once that preview is installed, run `aug run` in this folder. August obtains the source package and verified native adapter through the ordinary public repository import. You do not need Xcode or a separate native compiler.
+With that preview installed, run `aug run` in this folder. August obtains the source package and verified native adapter through the ordinary public repository import. You do not need Xcode or a separate native compiler.
 
 The output is `5`, `7`, `9`, `11`, and `22`, each on its own line. Each worker owns its device and buffers and returns copied values. A native failure prints its checked error and exits unsuccessfully. There is no CPU fallback.
 

@@ -1,6 +1,6 @@
 {
   "format": 1,
-  "compiler": "0.22.0",
+  "compiler": "0.23.0",
   "specifications": {
     "crypto": "https://github.com/GreenPandaStudios/augscript/src/stdlib/crypto#b14a0f9aa41f1ce58bd51133bcdc424033e40d40",
     "json": "https://github.com/GreenPandaStudios/augscript/src/stdlib/json#v0.19.0",
@@ -59,7 +59,7 @@
       "name": "@git/url_897efafd565158fc4908",
       "version": "0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301",
       "source": ".",
-      "digest": "bbd686187cc8f7f9f78975cbfe005c00683a8d37341b5078b57ceea7b3d033f6",
+      "digest": "86c015215680f22d48670c92c375f96bf7c8d146dfbd9ac501fb1542e8b50765",
       "dependencies": {}
     },
     {
@@ -67,7 +67,7 @@
       "name": "@git/url_2d3c37c690c0fa115be1",
       "version": "0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301",
       "source": ".",
-      "digest": "8f620d7fecec567d8143418aba5b540f7a6c5f871213881db40f51d0f3d07f9f",
+      "digest": "0d2c50d2290f3c63b1ae54ae5f00725b1d78493c2556027af93a7ce6cab6f846",
       "dependencies": {}
     },
     {
@@ -75,7 +75,7 @@
       "name": "@git/url_0eb7c89453c87681ed15",
       "version": "0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301",
       "source": ".",
-      "digest": "8c5ff2363ae21b1b9bca1537a6c5f87e46ba61bf5b4f2cb4fc3c5ae405af8a5e",
+      "digest": "a76e9fcbf97fee086a31b9d99a7afe6da42e01ecee1ad53bdbf5f404c94909ba",
       "dependencies": {}
     },
     {
@@ -83,7 +83,7 @@
       "name": "@git/url_9ef654c66d34ab8f5527",
       "version": "0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40",
       "source": ".",
-      "digest": "e923536edd52cdcf3cc8e70d84f43c1c173c55230e2612d6019e1733cde45d7c",
+      "digest": "d849fb1024917ac51e026213eaceff7d1fc2af1216ccda8199347faec8410d30",
       "dependencies": {
         "url_ac5ce553f84fc815ffc3": "packages/url_ac5ce553f84fc815ffc3"
       }
@@ -93,7 +93,7 @@
       "name": "@git/url_c092cd151499c4e1d8a1",
       "version": "0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301",
       "source": ".",
-      "digest": "4b5f7cf7fbb6b36ed65a691c16d4fcec48b32a5e3d42dd0967b9d1fcbf7f822b",
+      "digest": "75debbd2ef760f409217e0176691bc681f7464bb54b2ca78c9d8e9c1586ba492",
       "dependencies": {}
     }
   ]

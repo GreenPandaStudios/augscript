@@ -4,10 +4,10 @@
 
 ## Startup
 
-It prints [`hashText`](hashing.aug.md#symbol-hashText) with `value` `"abc"`. If this work raises [`HashError`](.aug-spec/packages/%40greenpandastudios/aug-blake3/0.1.4/contracts.aug.md#symbol-HashError) as `error`, it prints `error.message`.
+It prints [`hashText`](hashing.aug.md#symbol-hashText) with `value` `"abc"`. If this work raises [`HashError`](.aug-spec/packages/%40greenpandastudios/aug-blake3/0.1.5/contracts.aug.md#symbol-HashError) as `error`, it prints `error.message`.
 
 ## Dependencies
 
-It uses [`HashError`](.aug-spec/packages/%40greenpandastudios/aug-blake3/0.1.4/contracts.aug.md#symbol-HashError) (`message`) from `https://github.com/GreenPandaStudios/aug-blake3#v0.1.4`. It uses [`hashText`](hashing.aug.md#symbol-hashText) from `hashing`.
+It uses [`HashError`](.aug-spec/packages/%40greenpandastudios/aug-blake3/0.1.5/contracts.aug.md#symbol-HashError) (`message`) from `https://github.com/GreenPandaStudios/aug-blake3#v0.1.5`. It uses [`hashText`](hashing.aug.md#symbol-hashText) from `hashing`.
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).

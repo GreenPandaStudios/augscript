@@ -5,9 +5,9 @@
 <a id="symbol-storedName"></a>
 ## `storedName` · [source](database.aug#L5)
 
-Store a bound value in an in-memory SQLite database and read it back. Failures can raise [`SqliteError`](.aug-spec/packages/%40greenpandastudios/aug-sqlite/0.1.4/contracts.aug.md#symbol-SqliteError).
+Store a bound value in an in-memory SQLite database and read it back. Failures can raise [`SqliteError`](.aug-spec/packages/%40greenpandastudios/aug-sqlite/0.1.5/contracts.aug.md#symbol-SqliteError).
 
-It calls [`openMemory`](.aug-spec/packages/%40greenpandastudios/aug-sqlite/0.1.4/api.aug.md#symbol-openMemory) and stores the result in owned `database` ([`Database`](.aug-spec/packages/%40greenpandastudios/aug-sqlite/0.1.4/bindings.aug.md#symbol-Database)). With temporary permission to change `database`, it calls [`execute`](.aug-spec/packages/%40greenpandastudios/aug-sqlite/0.1.4/api.aug.md#symbol-execute) with `database`, `sql` `"CREATE TABLE users (name TEXT NOT NULL)"`, and `parameters` from a list with no items; then it calls [`execute`](.aug-spec/packages/%40greenpandastudios/aug-sqlite/0.1.4/api.aug.md#symbol-execute) with `database`, `sql` `"INSERT INTO users (name) VALUES (?)"`, and `parameters` from a list containing `"August"`. It returns [`queryScalar`](.aug-spec/packages/%40greenpandastudios/aug-sqlite/0.1.4/api.aug.md#symbol-queryScalar) with `database`, `sql` `"SELECT name FROM users"`, and `parameters` from a list with no items.
+It calls [`openMemory`](.aug-spec/packages/%40greenpandastudios/aug-sqlite/0.1.5/api.aug.md#symbol-openMemory) and stores the result in owned `database` ([`Database`](.aug-spec/packages/%40greenpandastudios/aug-sqlite/0.1.5/bindings.aug.md#symbol-Database)). With temporary permission to change `database`, it calls [`execute`](.aug-spec/packages/%40greenpandastudios/aug-sqlite/0.1.5/api.aug.md#symbol-execute) with `database`, `sql` `"CREATE TABLE users (name TEXT NOT NULL)"`, and `parameters` from a list with no items; then it calls [`execute`](.aug-spec/packages/%40greenpandastudios/aug-sqlite/0.1.5/api.aug.md#symbol-execute) with `database`, `sql` `"INSERT INTO users (name) VALUES (?)"`, and `parameters` from a list containing `"August"`. It returns [`queryScalar`](.aug-spec/packages/%40greenpandastudios/aug-sqlite/0.1.5/api.aug.md#symbol-queryScalar) with `database`, `sql` `"SELECT name FROM users"`, and `parameters` from a list with no items.
 
 <a id="symbol-test storedName"></a>
 ## `test storedName` · [source](database.aug#L12)
@@ -22,6 +22,6 @@ The test requires [`storedName`](database.aug.md#symbol-storedName) equals `"Aug
 
 ## Dependencies
 
-It uses [`execute`](.aug-spec/packages/%40greenpandastudios/aug-sqlite/0.1.4/api.aug.md#symbol-execute), [`openMemory`](.aug-spec/packages/%40greenpandastudios/aug-sqlite/0.1.4/api.aug.md#symbol-openMemory), [`queryScalar`](.aug-spec/packages/%40greenpandastudios/aug-sqlite/0.1.4/api.aug.md#symbol-queryScalar), [`Database`](.aug-spec/packages/%40greenpandastudios/aug-sqlite/0.1.4/bindings.aug.md#symbol-Database), and [`SqliteError`](.aug-spec/packages/%40greenpandastudios/aug-sqlite/0.1.4/contracts.aug.md#symbol-SqliteError) from `https://github.com/GreenPandaStudios/aug-sqlite#v0.1.4`.
+It uses [`execute`](.aug-spec/packages/%40greenpandastudios/aug-sqlite/0.1.5/api.aug.md#symbol-execute), [`openMemory`](.aug-spec/packages/%40greenpandastudios/aug-sqlite/0.1.5/api.aug.md#symbol-openMemory), [`queryScalar`](.aug-spec/packages/%40greenpandastudios/aug-sqlite/0.1.5/api.aug.md#symbol-queryScalar), [`Database`](.aug-spec/packages/%40greenpandastudios/aug-sqlite/0.1.5/bindings.aug.md#symbol-Database), and [`SqliteError`](.aug-spec/packages/%40greenpandastudios/aug-sqlite/0.1.5/contracts.aug.md#symbol-SqliteError) from `https://github.com/GreenPandaStudios/aug-sqlite#v0.1.5`.
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).

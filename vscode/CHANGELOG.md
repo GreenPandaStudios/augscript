@@ -1,6 +1,6 @@
 # Changelog
 
-## Native ingestion preview
+## 0.23.0 — native ingestion preview
 
 Hover and completion include lazy checked HTTP body reads, JSON field presence, checked byte slices, hexadecimal conversion, protocol text helpers, and float32 conversion. Worker help explains checked admission failures and copied-input limits.
 

@@ -1,6 +1,6 @@
 // aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import calculate from compute
-import GpuError from "https://github.com/GreenPandaStudios/aug-gpu#v0.1.0"
+import GpuError from "https://github.com/GreenPandaStudios/aug-gpu#v0.1.1"
 
 try:
     scope:

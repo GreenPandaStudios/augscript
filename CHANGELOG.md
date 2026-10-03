@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased — native ingestion boundaries
+## 0.23.0 — native ingestion boundaries
+
+Same-file worker tests check their active test program and reachable declarations, preserving input safety checks without rejecting inactive application startup calls.
 
 Qualification fingerprints exclude nested generated caches and reject symbolic links in canonical files, source directories and root manifests, so clean checkouts and contributor workspaces identify the same compiler.
 
@@ -10,7 +12,6 @@ Crypto adds Ed25519 verification and a configured JOSE identity verifier. JSON a
 
 PostgreSQL packaging and public Linux ARM64 release qualification are tracked in the service boundary guide; local passing tests do not establish production service readiness.
 
-## Unreleased
 
 - Fix a worker wait that could report a deadlock after a scheduler poll had already delivered its result. Force that completion window in a deterministic native regression.
 - Add runtime lifecycle qualification with repeated allocation, cancellation, nested waits, primary-error preservation and owned cleanup. Record exact instrumented allocation balances, resource finalizer threads, RSS samples, sanitizer results, independent LLVM outcomes and replay controls. Reject stale runtime packs and require a 30-minute circuit per release target.

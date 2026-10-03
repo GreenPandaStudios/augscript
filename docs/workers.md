@@ -2,7 +2,7 @@
 
 A worker runs a task on an OS thread with its own heap. Use it for CPU work or for a native operation that should run away from the request or main task. It uses the same `Task<T>`, `scope`, and `wait for` operations as other August tasks.
 
-Worker support is part of the next preview release. The published 0.21 CLI runs cooperative tasks; these examples require the 0.22 preview.
+These examples require August 0.23.0. Cooperative tasks use their current heap; `start worker` uses an isolated heap on an OS thread.
 
 ## Start work and read the results
 

@@ -2,7 +2,7 @@
 
 An application must release resources when work succeeds, fails, or is cancelled. The runtime qualification repeats those paths under allocation pressure, checks that nested tasks make progress, and measures memory after completed work. It complements [language conformance](language-conformance.md), which checks language rules, and [safety gyms](safety-gyms.md), which compare generated programs with independent expected results.
 
-This gate is part of the unreleased worker candidate. Passing a short run does not complete the 1.0 requirement. Release preparation requires a sustained run on macOS ARM64 and GNU/Linux x86-64 and ARM64, together with the existing compiler, native-package, and installed-consumer checks.
+This gate is part of the August 0.23.0 release profile. Passing a short run does not complete the 1.0 requirement. Release preparation requires a sustained run on macOS ARM64 and GNU/Linux x86-64 and ARM64, together with the existing compiler, native-package, and installed-consumer checks.
 
 ## What the tests check
 

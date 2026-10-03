@@ -13,7 +13,7 @@ Create a greeting application, run it, and check its test. Then read the explana
 
 You need Node.js 24 or later and npm on macOS 14+ with Apple Silicon, or GNU/Linux x64/ARM64 with glibc 2.36+. August downloads its own LLVM compiler and prebuilt runtime. You do not install Clang, LLVM, or an SDK.
 
-You can run the compiler and native libraries in [a VS Code Dev Container](dev-containers.md). The [Docker guide](docker.md) covers container builds and deployment. These instructions use the published August 0.21.0 preview.
+You can run the compiler and native libraries in [a VS Code Dev Container](dev-containers.md). The [Docker guide](docker.md) covers container builds and deployment. These instructions use the published August 0.23.0 preview.
 
 ## Create and run the starter
 

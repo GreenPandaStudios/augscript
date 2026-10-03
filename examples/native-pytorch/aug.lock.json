@@ -1,29 +1,29 @@
 {
   "format": 1,
-  "compiler": "0.22.0",
+  "compiler": "0.23.0",
   "specifications": {
-    "url_e1ad9f1fb99866e3e6d4": "https://github.com/GreenPandaStudios/aug-pytorch#v0.1.5"
+    "url_b05554aeae5c0d02f8f8": "https://github.com/GreenPandaStudios/aug-pytorch#v0.1.6"
   },
   "roots": {
-    "url_e1ad9f1fb99866e3e6d4": "packages/url_e1ad9f1fb99866e3e6d4"
+    "url_b05554aeae5c0d02f8f8": "packages/url_b05554aeae5c0d02f8f8"
   },
   "npm": {},
   "git": [
     {
-      "request": "https://github.com/GreenPandaStudios/aug-pytorch#v0.1.5",
+      "request": "https://github.com/GreenPandaStudios/aug-pytorch#v0.1.6",
       "repository": "https://github.com/GreenPandaStudios/aug-pytorch.git",
-      "revision": "v0.1.5",
+      "revision": "v0.1.6",
       "folder": "",
-      "commit": "1502eca5a72a1aa66e5f9797e502d0d21358c61a"
+      "commit": "f1b6fb1c8d0c964cdd5510d3e303fc35ec915f3a"
     }
   ],
   "packages": [
     {
-      "path": "packages/url_e1ad9f1fb99866e3e6d4",
+      "path": "packages/url_b05554aeae5c0d02f8f8",
       "name": "@greenpandastudios/aug-pytorch",
-      "version": "0.1.5",
+      "version": "0.1.6",
       "source": "src",
-      "digest": "4a2cd130d7590b67364c5f449fbda70c1e8066d46b0538d920a16a43c13f02b1",
+      "digest": "9b89d38b6b2fdc6560b944f27957a67a78aadc51f4a2e6da2829b536205bbd62",
       "dependencies": {},
       "native": {
         "profile": "aug-native-abi-1",
@@ -248,9 +248,9 @@
         },
         "packages": [
           {
-            "sourcePackage": "@greenpandastudios/aug-pytorch@0.1.5",
-            "sourceDigest": "4a2cd130d7590b67364c5f449fbda70c1e8066d46b0538d920a16a43c13f02b1",
-            "sourceCommit": "1502eca5a72a1aa66e5f9797e502d0d21358c61a",
+            "sourcePackage": "@greenpandastudios/aug-pytorch@0.1.6",
+            "sourceDigest": "9b89d38b6b2fdc6560b944f27957a67a78aadc51f4a2e6da2829b536205bbd62",
+            "sourceCommit": "f1b6fb1c8d0c964cdd5510d3e303fc35ec915f3a",
             "contractSha256": "f07b8cab89ad7cfe368edcd9daf87ecc810adb6a2eed1f446d7b71fb664e91f5",
             "artifact": {
               "id": "macos-arm64",

@@ -107,7 +107,8 @@ jobs:
       - run: node scripts/build-llvm-pack.mjs
       - name: Qualify the native PostgreSQL package and HTTP drain
         run: |
-          git clone --depth 1 https://github.com/GreenPandaStudios/aug-postgres "$RUNNER_TEMP/aug-postgres"
+          git clone --no-checkout https://github.com/GreenPandaStudios/aug-postgres "$RUNNER_TEMP/aug-postgres"
+          git -C "$RUNNER_TEMP/aug-postgres" checkout --detach 40b0a671f7c9066fe6b311d931020749949e3f60
           node bin/aug.mjs bind header "$RUNNER_TEMP/aug-postgres/native/include/aug_postgres.h" --contract "$RUNNER_TEMP/aug-postgres/native.abi.json" --target aarch64-apple-darwin --clang clang --output .aug-build/header-check-postgres
           node "$RUNNER_TEMP/aug-postgres/native/build.mjs"
           AUG_CLI="$PWD/bin/aug.mjs" AUG_RUNTIME_PACK="$PWD/.aug-native/llvm/runtime" AUG_NATIVE_HOME="$PWD/.aug-native" node "$RUNNER_TEMP/aug-postgres/native/ci-server.mjs"

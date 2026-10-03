@@ -98,4 +98,4 @@ For step-by-step lessons, start with [the book](../learn/index.md).
 
 | Project | What it demonstrates |
 | --- | --- |
-| [GPU workers](native-gpu/index.md) | Create Metal buffers inside isolated workers, add vectors on the GPU, and return copied results. Requires the August 0.22 preview, Apple Silicon, and macOS 14 or later with an available Metal GPU. |
+| [GPU workers](native-gpu/index.md) | Create Metal buffers inside isolated workers, add vectors on the GPU, and return copied results. Requires the August 0.23.0 preview, Apple Silicon, and macOS 14 or later with an available Metal GPU. |

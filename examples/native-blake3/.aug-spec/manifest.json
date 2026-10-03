@@ -1,16 +1,16 @@
 {
   "format": 1,
   "files": [
-    ".aug-spec/packages/@greenpandastudios/aug-blake3/0.1.4/api.aug",
-    ".aug-spec/packages/@greenpandastudios/aug-blake3/0.1.4/api.aug.md",
-    ".aug-spec/packages/@greenpandastudios/aug-blake3/0.1.4/contracts.aug",
-    ".aug-spec/packages/@greenpandastudios/aug-blake3/0.1.4/contracts.aug.md",
-    ".aug-spec/packages/@greenpandastudios/aug-blake3/0.1.4/native.abi.json",
+    ".aug-spec/packages/@greenpandastudios/aug-blake3/0.1.5/api.aug",
+    ".aug-spec/packages/@greenpandastudios/aug-blake3/0.1.5/api.aug.md",
+    ".aug-spec/packages/@greenpandastudios/aug-blake3/0.1.5/contracts.aug",
+    ".aug-spec/packages/@greenpandastudios/aug-blake3/0.1.5/contracts.aug.md",
+    ".aug-spec/packages/@greenpandastudios/aug-blake3/0.1.5/native.abi.json",
     "hashing.aug.md",
     "main.aug.md"
   ],
   "nativeDescriptors": {
-    ".aug-spec/packages/@greenpandastudios/aug-blake3/0.1.4/native.abi.json": "3bf8dea97cde70a03021bf77ea08314d6d37fe7b4935ff16030b2ab929c21279"
+    ".aug-spec/packages/@greenpandastudios/aug-blake3/0.1.5/native.abi.json": "3bf8dea97cde70a03021bf77ea08314d6d37fe7b4935ff16030b2ab929c21279"
   },
-  "digest": "3c1120a54633b3446e21d44d44a317dbae45bbcdaac193dbfb316a40a81d51fa"
+  "digest": "45f60850afc806c20ae8b26ae0eb3d2fb14f9ae6ca6e4ca5f0dc4541e97cd1ef"
 }

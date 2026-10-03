@@ -1,29 +1,29 @@
 {
   "format": 1,
-  "compiler": "0.22.0",
+  "compiler": "0.23.0",
   "specifications": {
-    "url_de8fbcc3c355b9cf871b": "https://github.com/GreenPandaStudios/aug-gpu#v0.1.0"
+    "url_39068e92fef803d998a8": "https://github.com/GreenPandaStudios/aug-gpu#v0.1.1"
   },
   "roots": {
-    "url_de8fbcc3c355b9cf871b": "packages/url_de8fbcc3c355b9cf871b"
+    "url_39068e92fef803d998a8": "packages/url_39068e92fef803d998a8"
   },
   "npm": {},
   "git": [
     {
-      "request": "https://github.com/GreenPandaStudios/aug-gpu#v0.1.0",
+      "request": "https://github.com/GreenPandaStudios/aug-gpu#v0.1.1",
       "repository": "https://github.com/GreenPandaStudios/aug-gpu.git",
-      "revision": "v0.1.0",
+      "revision": "v0.1.1",
       "folder": "",
-      "commit": "b082d645a624561577e92c3e33554483532be8e0"
+      "commit": "792efddf2d7debf68ceb8d4800a69299bc73b04e"
     }
   ],
   "packages": [
     {
-      "path": "packages/url_de8fbcc3c355b9cf871b",
+      "path": "packages/url_39068e92fef803d998a8",
       "name": "@greenpandastudios/aug-gpu",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "source": "src",
-      "digest": "892960a6497ff334643f9012ebebd3bed60561a9a52d66525a65fe62499523bb",
+      "digest": "b57cf11bcbd943cf85f78d2eab3d02d6a9c0269a2d9d423d9a871bd477921b1a",
       "dependencies": {},
       "native": {
         "profile": "aug-native-abi-1",
@@ -93,9 +93,9 @@
         },
         "packages": [
           {
-            "sourcePackage": "@greenpandastudios/aug-gpu@0.1.0",
-            "sourceDigest": "892960a6497ff334643f9012ebebd3bed60561a9a52d66525a65fe62499523bb",
-            "sourceCommit": "b082d645a624561577e92c3e33554483532be8e0",
+            "sourcePackage": "@greenpandastudios/aug-gpu@0.1.1",
+            "sourceDigest": "b57cf11bcbd943cf85f78d2eab3d02d6a9c0269a2d9d423d9a871bd477921b1a",
+            "sourceCommit": "792efddf2d7debf68ceb8d4800a69299bc73b04e",
             "contractSha256": "d95e237d8be07df8fd20132ca0f5a45a125fd65b7ba93669e69c0a38db63d60c",
             "artifact": {
               "id": "macos-arm64",

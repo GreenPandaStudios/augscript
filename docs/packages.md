@@ -13,7 +13,7 @@ cd hello-august
 aug run
 ```
 
-August 0.21.0 needs Node.js 24 or later and npm on macOS 14+ ARM64 or GNU/Linux x64/ARM64 with glibc 2.36+. August downloads a verified LLVM/runtime pack; native package consumers do not install a compiler or SDK. GitHub repository imports use the CLI's HTTPS transport without Git. Other Git servers require a local Git client. [Docker](docker.md) and [Dev Containers](dev-containers.md) provide a Linux workspace.
+August 0.23.0 needs Node.js 24 or later and npm on macOS 14+ ARM64 or GNU/Linux x64/ARM64 with glibc 2.36+. August downloads a verified LLVM/runtime pack; native package consumers do not install a compiler or SDK. GitHub repository imports use the CLI's HTTPS transport without Git. Other Git servers require a local Git client. [Docker](docker.md) and [Dev Containers](dev-containers.md) provide a Linux workspace.
 
 `aug run` finds `main.aug`, installs source dependencies declared by imports or `main.yaml`, checks the code, prepares the native libraries it needs, and compiles and starts the executable. Later runs reuse those dependencies. `aug check` and `aug spec` read the installed snapshot without fetching packages. Use `aug install` before those commands in a fresh project.
 
@@ -121,7 +121,7 @@ Consumers can use `aug add npm:@owner/arithmetic@0.1.0 --as arithmetic` or a loc
 
 ## VS Code
 
-Install the matching 0.21.0 `.vsix` from [GitHub Releases](https://github.com/GreenPandaStudios/augscript/releases/tag/v0.21.0) using **Extensions: Install from VSIX…** in VS Code. The [Marketplace listing](https://marketplace.visualstudio.com/items?itemName=augscript.augscript) can lag the compiler release; check its version before using it. The extension bundles a compiler and uses the project's installed source graph for completion, help, and navigation. [The editor guide](editor.md) covers completion, fixes, and inferred type hints.
+Install the matching 0.23.0 `.vsix` from [GitHub Releases](https://github.com/GreenPandaStudios/augscript/releases/tag/v0.23.0) using **Extensions: Install from VSIX…** in VS Code. The [Marketplace listing](https://marketplace.visualstudio.com/items?itemName=augscript.augscript) can lag the compiler release; check its version before using it. The extension bundles a compiler and uses the project's installed source graph for completion, help, and navigation. [The editor guide](editor.md) covers completion, fixes, and inferred type hints.
 
 ## Install release tarballs
 

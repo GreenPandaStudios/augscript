@@ -1,6 +1,6 @@
 # Compatibility and supported platforms
 
-August 0.21.0 is a preview. Its supported platforms are listed below. The proposed 1.0 policy explains which language rules, commands, and package formats will become stable; the [roadmap](roadmap.md) lists the work needed before that commitment.
+August 0.23.0 is a preview. Its supported platforms are listed below. The proposed 1.0 policy explains which language rules, commands, and package formats will become stable; the [roadmap](roadmap.md) lists the work needed before that commitment.
 
 The [ownership and task conformance page](language-conformance.md) records checked preview behavior for moves, aliasing, cleanup, cancellation, and delayed errors.
 
@@ -37,6 +37,6 @@ Rebuild native executables and private dependencies for the target platform afte
 | GNU/Linux x86-64, glibc 2.36+ | The same Debian 12 CI and clean-consumer profile passes on native x86-64 runners. | Candidate; qualify each compiler candidate and deployment bundle. |
 | Windows and other targets | No full native verification. | Outside the proposed 1.0 support matrix. |
 
-The 0.21.0 consumer workflow requires Node.js 24+ and a supported host. August downloads its pinned compiler/runtime and package artifacts; consumers do not install Clang, LLVM or an SDK. Explicit C reference builds and binding authoring require their [maintainer tools](tooling.md). Musl, Windows and cross compilation are outside this profile. The current runtime schedules tasks on one OS thread. HTTP and OIDC library conformance is tracked separately in the [web and crypto gap ledger](web-library-gaps.md); that library work is tracked separately from the core language's 1.0 requirements.
+The 0.23.0 consumer workflow requires Node.js 24+ and a supported host. August downloads its pinned compiler/runtime and package artifacts; consumers do not install Clang, LLVM or an SDK. Explicit C reference builds and binding authoring require their [maintainer tools](tooling.md). Musl, Windows and cross compilation are outside this profile. Cooperative tasks share their current thread and heap. Worker tasks run on OS threads with isolated heaps and copied inputs and results. HTTP and OIDC library conformance is tracked separately in the [web and crypto gap ledger](web-library-gaps.md); that library work is tracked separately from the core language's 1.0 requirements.
 
 The 1.0 support matrix becomes a commitment only after each candidate target has green CI, installed-package and native integration tests, dependency/license review, and a documented update path. See [production readiness](production-readiness.md) for present limits.

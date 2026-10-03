@@ -1,8 +1,8 @@
 {
   "format": 1,
   "files": [
-    ".aug-spec/august/0.22.0/io/contracts.aug",
-    ".aug-spec/august/0.22.0/io/contracts.aug.md",
+    ".aug-spec/august/0.23.0/io/contracts.aug",
+    ".aug-spec/august/0.23.0/io/contracts.aug.md",
     "counters.aug.md",
     "domain/app.aug.md",
     "domain/export.aug.md",
@@ -10,5 +10,5 @@
     "domain/numbers.aug.md",
     "main.aug.md"
   ],
-  "digest": "4e9dc541d188bc9240506166ab7f2863e89ab3ce788b676644e62adcbd44760b"
+  "digest": "8efd35d25c22d5ae1afcec45c528328208179e695a675e35693331749187db8a"
 }

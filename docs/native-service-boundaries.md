@@ -1,6 +1,6 @@
 # Native service boundaries
 
-This guide describes the ingestion support in the next preview. The changes are under qualification; installation through a retained public worker/compiler release is a separate gate. See [library limits](web-library-gaps.md) for remaining transport and deployment work.
+This guide describes the ingestion support in the 0.23.0 release candidate. The changes are under qualification; installation through a retained public worker/compiler release is a separate gate. See [library limits](web-library-gaps.md) for remaining transport and deployment work.
 
 ## Authenticate before reading the upload
 
@@ -18,7 +18,7 @@ Keep the original JSON text when a receipt hashes the client's bytes. Parsing an
 
 ## Keep PostgreSQL on its worker
 
-The separate [PostgreSQL package repository](https://github.com/GreenPandaStudios/aug-postgres) uses real libpq 18.6 with OpenSSL 3.5.9. Its source and artifact candidates have been qualified on macOS ARM64 and Debian 12 ARM64; public release installation remains pending. Create its pool, lease and results inside the worker that uses them. Return copied August data to the handler. A pool has at most 64 sessions and rejects a full lease request immediately. One lease stays on its creating OS thread, so BEGIN, SAVEPOINT, account-filtered SQL and advisory locks use the same connection. Text parameters use PostgreSQL placeholders and explicit casts; bytea parameters use `"\\x" + bytes.hex()`, and bytea results are copied into Bytes. Never concatenate user values into SQL.
+The separate [PostgreSQL package repository](https://github.com/GreenPandaStudios/aug-postgres) uses real libpq 18.6 with OpenSSL 3.5.9. Its source and artifact candidates have been qualified on macOS ARM64 and Debian 12 ARM64 and x86-64; public release installation remains pending. Create its pool, lease and results inside the worker that uses them. Return copied August data to the handler. A pool has at most 64 sessions and rejects a full lease request immediately. One lease stays on its creating OS thread, so BEGIN, SAVEPOINT, account-filtered SQL and advisory locks use the same connection. Text parameters use PostgreSQL placeholders and explicit casts; bytea parameters use `"\\x" + bytes.hex()`, and bytea results are copied into Bytes. Never concatenate user values into SQL.
 
 Query time, copied rows and copied result bytes are explicit call inputs. Cancellation and timeout initiate bounded libpq cancellation and discard the connection. Cancelling a query is not proof that the server completed it. An unfinished transaction is rolled back before pool reuse; cleanup failures discard it. Server errors retain SQLSTATE, while messages omit connection strings, parameters and server text. The result-copy budget does not cap libpq's internal wire buffer for a single large field. SQL NULL is checked separately from empty data.
 

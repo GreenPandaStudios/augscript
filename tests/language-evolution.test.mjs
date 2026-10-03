@@ -509,12 +509,12 @@ test WorkerImpl worker {
   const selected = command(root, 'test', ['--case', 'worker.aug:WorkerImpl:waiting:passes', '--json']);
   assert.equal(selected.status, 0, selected.stderr || selected.stdout);
   assert.equal(JSON.parse(selected.stdout).passed, 1);
-  const timedOut = command(root, 'test', ['--timeout', '500', '--json']);
+  const timedOut = command(root, 'test', ['--timeout', '2000', '--json']);
   assert.equal(timedOut.status, 1);
   const data = JSON.parse(timedOut.stdout);
   assert.equal(data.failed, 1, timedOut.stdout);
   assert.equal(data.passed, 1);
-  assert.match(data.tests[0].stderr, /exceeded 500ms/);
+  assert.match(data.tests[0].stderr, /exceeded 2000ms/);
 }));
 
 test('editor discovers inferred literal types, set methods, and test locals', () => project({

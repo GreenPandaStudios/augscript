@@ -25,7 +25,7 @@ The compiler tracks object origins through aliases and fields. It can reject cod
 | Child failure | An unhandled child failure cancels siblings. Their `always` cleanup finishes before the error leaves the scope. An error already in flight from the parent remains primary if child cleanup also fails. | `CANCEL-1`, `ERROR-2` |
 | Syntax choice | Brace blocks and indented blocks run the same ownership and task behavior. | `SYNTAX-1` |
 
-Cooperative tasks share their current heap. The next preview adds [worker tasks](workers.md), which run on OS threads with separate heaps and copied inputs/results. A runtime barrier test requires two distinct threads to overlap, then checks collection pressure, copied maps/lists, unchanged parent values, and release on the creating thread. It runs in both optimization modes under ThreadSanitizer and the address/undefined-behavior sanitizers.
+Cooperative tasks share their current heap. [Worker tasks](workers.md), which run on OS threads with separate heaps and copied inputs/results. A runtime barrier test requires two distinct threads to overlap, then checks collection pressure, copied maps/lists, unchanged parent values, and release on the creating thread. It runs in both optimization modes under ThreadSanitizer and the address/undefined-behavior sanitizers.
 
 Scheduling an owned input transfers its cleanup responsibility immediately. If
 a sibling cancels the child before entry, the scheduler releases that input.

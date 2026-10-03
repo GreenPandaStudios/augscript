@@ -34,7 +34,7 @@ Endpoint tests do not exercise socket parsing or TLS negotiation. Those need liv
 
 ## Task and resource lifetimes
 
-HTTP transport uses cooperative tasks. The next preview adds multicore worker tasks with private heaps and copied inputs/results; worker functions cannot access parent bindings or transport objects. Channels and broadcasts are not implemented. `ExpiringStore<T>` uses a bounded `Shared<Map<...>>` with atomic removal for authorization transactions and codes.
+HTTP transport uses cooperative tasks. August 0.23.0 includes multicore worker tasks with private heaps and copied inputs/results; worker functions cannot access parent bindings or transport objects. Channels and broadcasts are not implemented. `ExpiringStore<T>` uses a bounded `Shared<Map<...>>` with atomic removal for authorization transactions and codes.
 
 Tests cover scope joining, cancellation, inherited deadlines, lock progress, owned resource lifetime, and sibling/grouped cleanup errors. The compiler tracks task captures through injected dependencies as well as explicit arguments and receivers. Dropping an owned `Shared<T>` releases its transferred payload before later locals. Broader ownership and cancellation coverage remains on the language roadmap.
 

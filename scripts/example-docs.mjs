@@ -4,7 +4,7 @@ import {tmpdir} from 'node:os';
 import {loadProject} from '../src/project.ts';
 import {checkProject} from '../src/checker.ts';
 import {loadConfig} from '../src/config.ts';
-import {installPackages, packageSpecifications} from '../src/package-manager.ts';
+import {compilerVersion, installPackages, packageSpecifications} from '../src/package-manager.ts';
 import {formatFile} from '../src/formatter.ts';
 import {parse} from '../src/parser.ts';
 import {generateSpecs, updateSpecs} from '../src/spec.ts';
@@ -99,7 +99,7 @@ export function buildExamplePages(overrides) {
     let overview=frontmatter(example.title,example.path)+`# ${example.title}\n\n${example.description}\n\n`+
       'Open a file to read the code beside its compiled explanation. Choose **Indentation** or **Braces** to change the code view. The choice carries across files.\n\n';
     const native=example.group==='Native libraries (LLVM preview)';
-    if(native)overview+='This project runs with August `0.21.0` on macOS 14+ with Apple Silicon, or GNU/Linux x64 or ARM64 with glibc 2.36+. The CLI obtains the verified compiler and library artifacts automatically.\n\n';
+    if(native)overview+=`This project runs with August \`${compilerVersion()}\` on macOS 14+ with Apple Silicon, or GNU/Linux x64 or ARM64 with glibc 2.36+. The CLI obtains the verified compiler and library artifacts automatically.\n\n`;
     if(example.walkthrough?.length) {
       overview+='## Follow the program\n\n';
       for(const step of example.walkthrough) {
@@ -130,7 +130,7 @@ export function buildExamplePages(overrides) {
       ' [Install August](../../getting-started.md) once, then run these commands. Native libraries are prepared automatically when needed:\n\n'+fence(commands,'sh')+'\n';
     const archiveFiles=new Map(downloadFiles(downloadRoot).map(file=>[slug(example)+'/'+slash(relative(downloadRoot,file)),readFileSync(file)]));
     archiveFiles.set(slug(example)+'/LICENSE',readFileSync(join(root,'LICENSE')));
-    const installation=native?'Install the published August 0.21.0 CLI on macOS 14+ ARM64 or GNU/Linux x64/ARM64 with glibc 2.36+. It obtains the verified LLVM compiler and native library artifacts automatically. See https://greenpandastudios.github.io/augscript/native-packages.':'Install August as described at https://greenpandastudios.github.io/augscript/getting-started. Native commands prepare required libraries automatically.';
+    const installation=native?`Install the August ${compilerVersion()} CLI on macOS 14+ ARM64 or GNU/Linux x64/ARM64 with glibc 2.36+. It obtains the verified LLVM compiler and native library artifacts automatically. See https://greenpandastudios.github.io/augscript/native-packages.`:'Install August as described at https://greenpandastudios.github.io/augscript/getting-started. Native commands prepare required libraries automatically.';
     archiveFiles.set(slug(example)+'/README.md',`# ${example.title}\n\n${example.description}\n\n${installation}\n\nFrom the folder containing this extracted project:\n\n${fence(commands,'sh')}\nRead the source beside its compiled specification at https://greenpandastudios.github.io/augscript/examples/${slug(example)}/.\n`);
     add(exampleDownload(example),projectArchive(archiveFiles));
     if(example.path==='examples/oidc-login')overview+='Open `http://127.0.0.1:8787` and sign in with **ada** / **august-demo**. This development example keeps accounts, signing keys, and sessions in process memory. See [web and crypto](../../web.md) and [the remaining library gaps](../../web-library-gaps.md).\n\n';

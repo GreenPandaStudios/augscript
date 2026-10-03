@@ -5,9 +5,9 @@
 <a id="symbol-roundTrip"></a>
 ## `roundTrip` · [source](compression.aug#L5)
 
-Compress text with zlib, then restore its bytes within a fixed output limit. Failures can raise [`CompressionError`](.aug-spec/packages/%40greenpandastudios/aug-zlib/0.1.4/contracts.aug.md#symbol-CompressionError).
+Compress text with zlib, then restore its bytes within a fixed output limit. Failures can raise [`CompressionError`](.aug-spec/packages/%40greenpandastudios/aug-zlib/0.1.5/contracts.aug.md#symbol-CompressionError).
 
-It sets `input` of type `Bytes` to the UTF-8 bytes of `"The world runs on language"`. It sets `compressed` of type `Bytes` to [`compress`](.aug-spec/packages/%40greenpandastudios/aug-zlib/0.1.4/api.aug.md#symbol-compress) with `input`. It returns [`decompress`](.aug-spec/packages/%40greenpandastudios/aug-zlib/0.1.4/api.aug.md#symbol-decompress) with `input` from `compressed` and `maximumOutput` `4096`.
+It sets `input` of type `Bytes` to the UTF-8 bytes of `"The world runs on language"`. It sets `compressed` of type `Bytes` to [`compress`](.aug-spec/packages/%40greenpandastudios/aug-zlib/0.1.5/api.aug.md#symbol-compress) with `input`. It returns [`decompress`](.aug-spec/packages/%40greenpandastudios/aug-zlib/0.1.5/api.aug.md#symbol-decompress) with `input` from `compressed` and `maximumOutput` `4096`.
 
 <a id="symbol-test roundTrip"></a>
 ## `test roundTrip` · [source](compression.aug#L10)
@@ -22,6 +22,6 @@ It gets `restored` of type `Bytes` from [`roundTrip`](compression.aug.md#symbol-
 
 ## Dependencies
 
-It uses [`compress`](.aug-spec/packages/%40greenpandastudios/aug-zlib/0.1.4/api.aug.md#symbol-compress), [`decompress`](.aug-spec/packages/%40greenpandastudios/aug-zlib/0.1.4/api.aug.md#symbol-decompress), and [`CompressionError`](.aug-spec/packages/%40greenpandastudios/aug-zlib/0.1.4/contracts.aug.md#symbol-CompressionError) from `https://github.com/GreenPandaStudios/aug-zlib#v0.1.4`.
+It uses [`compress`](.aug-spec/packages/%40greenpandastudios/aug-zlib/0.1.5/api.aug.md#symbol-compress), [`decompress`](.aug-spec/packages/%40greenpandastudios/aug-zlib/0.1.5/api.aug.md#symbol-decompress), and [`CompressionError`](.aug-spec/packages/%40greenpandastudios/aug-zlib/0.1.5/contracts.aug.md#symbol-CompressionError) from `https://github.com/GreenPandaStudios/aug-zlib#v0.1.5`.
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).

@@ -5,7 +5,7 @@ Release the first-party packages and extension with the same version. npm manife
 ## Verify and create artifacts
 
 ```sh
-node scripts/version.mjs 0.21.0
+node scripts/version.mjs 0.23.0
 npm ci
 npm --prefix vscode ci
 node scripts/bootstrap-native.mjs
@@ -35,8 +35,8 @@ The merge step requires the exact qualified producer archives and manifests for 
 After verification and committing, create and push the version tag:
 
 ```sh
-git tag v0.21.0
-git push origin main v0.21.0
+git tag v0.23.0
+git push origin main v0.23.0
 ```
 
 `release.yml` validates the tag against every manifest, runs compiler/native/docs/package gates, and uploads artifacts to a **draft prerelease**. Review the draft and publish it in GitHub Releases. Publishing starts **Publish npm packages** and **Publish VS Code extension** automatically. Each workflow deploys the archives attached to that release. Changing an asset after review invalidates its checksum.
@@ -124,7 +124,7 @@ Enable GitHub Pages with **GitHub Actions** as its publishing source. `docs.yml`
 
 ## Current limits
 
-August is experimental. The published 0.21.0 LLVM/native preview supports macOS 14+ ARM64 and GNU/Linux x86-64/ARM64 with glibc 2.36+; other platforms are unsupported. [Release qualification](https://github.com/GreenPandaStudios/augscript/actions/runs/37005997823) passed before GitHub publication, and [npm deployment](https://github.com/GreenPandaStudios/augscript/actions/runs/37010447529) verified all four packages. Marketplace OIDC remains blocked by its service, as described above; the checked VSIX is available from GitHub Releases. User libraries use ordinary public Git repositories, local folders, or npm archives. The four native library repositories publish prebuilt artifacts. Stabilizing the external adapter ABI is a 1.0 gate. See [the gap ledger](web-library-gaps.md) and [performance assessment](performance.md).
+August is experimental. The 0.23.0 release candidate targets macOS 14+ ARM64 and GNU/Linux x86-64/ARM64 with glibc 2.36+; other platforms are unsupported. Publication requires the producer and clean-consumer gates described above. Marketplace OIDC remains blocked by its service, as described above; GitHub Releases provides the checked VSIX. User libraries use ordinary public Git repositories, local folders, or npm archives. Native library repositories publish prebuilt artifacts. Stabilizing the external adapter ABI is a 1.0 gate. See [the gap ledger](web-library-gaps.md) and [performance assessment](performance.md).
 
 ## Native preview qualification
 
