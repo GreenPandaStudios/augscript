@@ -6,10 +6,10 @@ export const coreSources=['aug_runtime.c','aug_values.c','aug_tasks.c','aug_json
 export function runtimeRecipeFiles(platform=process.platform,architecture=process.arch){
   return ['scripts/runtime-components.mjs','scripts/build-runtime-pack.mjs','scripts/runtime-pack-identity.mjs',
     'scripts/bootstrap-native.mjs','scripts/native-dependencies.lock.json','scripts/native-home.mjs',
-    'scripts/native-toolchain.mjs','scripts/native-setup.mjs','src/runtime-adapters.ts','src/runtime-abi.ts',
+    'scripts/native-toolchain.mjs','scripts/native-setup.mjs','scripts/prepare-linux-runtimes.mjs','src/runtime-adapters.ts','src/runtime-abi.ts',
     'src/http-policies.ts','src/llvm-platform.ts','src/native-contracts.ts',
     ...(platform==='darwin'?['native/platform/macos-arm64/libSystem.tbd']:
-      ['native/platform/linux-'+architecture+'/start.S','scripts/prepare-linux-runtimes.mjs','native/linux-runtimes.lock.json']),
+      ['native/platform/linux-'+architecture+'/start.S','native/linux-runtimes.lock.json']),
     'package.json','LICENSE'];
 }
 export function runtimeSourceIdentity(root,output,files){

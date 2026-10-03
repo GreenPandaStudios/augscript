@@ -73,6 +73,7 @@ test('runtime identity detects changed component headers, sources, locks, platfo
     const archived='sources/august/runtime/aug_http_ir.h';cpSync(join(root,'runtime/aug_http_ir.h'),join(output,archived));
     const before=runtimeSourceIdentity(directory,output,[archived]);
     assert.ok(runtimeRecipeFiles().includes('scripts/runtime-pack-identity.mjs'),'Rebuild recipe omits its helper');
+    for(const platform of ['darwin','linux'])assert.ok(runtimeRecipeFiles(platform,'arm64').includes('scripts/prepare-linux-runtimes.mjs'),'Static import omitted from '+platform+' recipe');
     const platform=runtimeRecipeFiles().find(file=>file.startsWith('native/platform/'));
     for(const path of ['runtime/aug_http_ir.h','runtime/aug_crypto.c','scripts/native-dependencies.lock.json',platform]){
       const file=join(directory,path),original=readFileSync(file);
