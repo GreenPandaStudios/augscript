@@ -13,7 +13,7 @@ const names=computed(()=>Array.from(new Set(data.value.groups.flatMap(group=>gro
 const selected=ref(names.value.slice());
 const ranges=ref(false);
 watch(()=>props.chart,()=>{selected.value=names.value.slice();ranges.value=false;});
-const colors: Record<string,string>={August:'var(--vp-c-brand-1)',C:'#8995a8',Node:'#329579',Python:'#a779cc',Before:'#8995a8',Current:'var(--vp-c-brand-1)'};
+const colors: Record<string,string>={August:'var(--vp-c-brand-1)',C:'var(--aug-series-c)',Node:'var(--aug-series-node)',Python:'var(--aug-series-python)',Before:'var(--aug-series-c)',Current:'var(--vp-c-brand-1)'};
 const visible=(group: Group)=>group.values.filter(row=>selected.value.includes(row.name));
 const maximum=(group: Group)=>Math.max(1e-12,...visible(group).map(row=>ranges.value?row.maximum:row.value));
 const percent=(value: number,group: Group)=>value/maximum(group)*100;
@@ -65,7 +65,7 @@ const format=(value: number)=>new Intl.NumberFormat('en-US',{maximumFractionDigi
 </template>
 
 <style scoped>
-.aug-chart { margin: 28px 0; padding: 22px; border: 1px solid var(--vp-c-divider); border-radius: 12px; background: var(--vp-c-bg-soft); }
+.aug-chart { margin: 28px 0; padding: 22px; border: 1px solid var(--vp-c-divider); border-radius: 5px; background: var(--vp-c-bg-soft); }
 .aug-chart figcaption h3 { margin: 0; font-size: 18px; }
 .aug-chart figcaption p,.aug-chart-note { margin: 8px 0 18px; color: var(--vp-c-text-2); font-size: 13px; line-height: 1.6; }
 .aug-chart-controls { display: flex; gap: 12px 20px; flex-wrap: wrap; align-items: center; margin-bottom: 20px; font-size: 13px; }
@@ -76,7 +76,7 @@ const format=(value: number)=>new Intl.NumberFormat('en-US',{maximumFractionDigi
 .aug-chart input:focus-visible,.aug-chart summary:focus-visible { outline: 2px solid var(--vp-c-brand-1); outline-offset: 3px; }
 .aug-chart-dot { width: 8px; height: 8px; border-radius: 50%; }
 .aug-chart-panels { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit,minmax(min(100%,270px),1fr)); }
-.aug-chart-panels section { min-width: 0; padding: 15px; border: 1px solid var(--vp-c-divider); border-radius: 8px; background: var(--vp-c-bg); }
+.aug-chart-panels section { min-width: 0; padding: 15px; border: 1px solid var(--vp-c-divider); border-radius: 4px; background: var(--vp-c-bg); }
 .aug-chart h4 { margin: 0 0 14px; font-size: 14px; line-height: 1.5; }
 .aug-chart h4 a { color: var(--vp-c-text-1); text-decoration: none; }
 .aug-chart h4 a:hover { color: var(--vp-c-brand-1); }

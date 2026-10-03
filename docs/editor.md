@@ -1,6 +1,6 @@
 # Write August in VS Code
 
-Install the matching [AugScript extension](packages.md#vs-code), open the project folder, and start in `main.aug`. The editor checks unsaved code with the same compiler as the CLI. Install source dependencies with `aug run` or `aug install` so their declarations and documentation are available locally.
+Install the [AugScript extension](packages.md#vs-code), open the project folder, and start in `main.aug`. The editor checks unsaved code with the same compiler as the CLI. Install source dependencies with `aug run` or `aug install` so their declarations and documentation are available locally.
 
 ## Complete a call
 
@@ -30,6 +30,6 @@ Review the edit before accepting it. A suggested name can be plausible without b
 
 ## Find the files and run tests
 
-Run **AugScript: Enable File Icons** for the August icon theme. Source files use an open circle; `main.aug` uses a play symbol, `export.aug` an outward arrow, and `main.yaml` sliders. Each has a light and dark variant. **AugScript: Open Welcome** opens the bundled guide and icon legend.
+Run **AugScript: Enable File Icons** for the August icon theme. Source files use a burgundy open circle; `main.aug` uses a play symbol, `export.aug` an outward arrow, and `main.yaml` sliders. Each has a light and dark variant. **AugScript: Open Welcome** opens the bundled guide and icon legend.
 
 Same-file cases appear in VS Code's Testing view. Use that view to run a case or group, or run `aug test` in the terminal. [Tests](testing.md) explains fixtures and endpoint tests. [CLI and configuration](tooling.md) describes language-server integration, native cache settings, and command-line tools.

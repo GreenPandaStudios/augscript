@@ -13,6 +13,7 @@ export default defineConfig({
   description: 'Code that reads like pseudocode, a compiled human-readable spec, and measured native performance.',
   base: process.env.AUG_DOCS_BASE ?? '/augscript/',
   cleanUrls: true,
+  head: [['link', {rel: 'icon', type: 'image/svg+xml', href: (process.env.AUG_DOCS_BASE ?? '/augscript/') + 'brand/favicon.svg'}]],
   lastUpdated: true,
   buildEnd(site) {
     for (const file of ['benchmark-results.json', 'benchmark-baseline.json', 'benchmarks.json', 'greeting-results.json', 'kernel-results.json', 'gym-results.json', 'dgx-performance.json', 'dgx-kernels.json', 'dgx-gyms.json', 'dgx-consumers.json', 'release-macos-public-consumers.json', 'release-dgx-public-consumers.json', 'ci-linux-arm64-qualified.json.gz', 'ci-linux-arm64-rejected.json.gz', 'ci-linux-arm64-repeat.json.gz'])
@@ -46,6 +47,7 @@ export default defineConfig({
     }
   },
   themeConfig: {
+    logo: {light: '/brand/august-mark.svg', dark: '/brand/august-mark-dark.svg', alt: 'August'},
     siteTitle: `August ${version}`,
     nav: [{ text: 'Learn', link: '/learn/' }, { text: 'Guides', link: '/guides/' },
       { text: 'Reference', link: '/reference' }, { text: 'Examples', link: '/examples/' },

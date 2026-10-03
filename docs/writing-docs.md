@@ -59,3 +59,9 @@ Follow [documentation maintenance](maintaining-docs.md) for generation and execu
 Research notes cite primary sources near the claims they support and distinguish findings from recommendations. Link research from contributor pages when it explains an editorial decision; users should not need to read the research to use August.
 
 Describe current behavior. Keep obsolete benchmark comparisons, delivery histories, local machine paths, and template origins out of reader guides. The homepage presents readable code, its actual compiled spec, and scoped native performance evidence.
+
+## Visual identity
+
+Use the open-circle mark, burgundy accents, warm off-white surfaces and charcoal dark mode. Keep typography quiet, borders thin and illustrations useful. Navigation, buttons, code tabs, examples and benchmark controls should belong to the same palette. Avoid decorative gradients, glows, shadows and card stacks. File roles are distinguished by shape, with consistent strokes that remain readable at 16 pixels. Preserve visible focus, readable contrast and functional controls in both themes and on narrow screens.
+
+The canonical mark is `vscode/media/augscript.svg`. `npm --prefix vscode run artwork` renders Marketplace PNGs and the actual light/dark file-icon legend. The same command derives wiki SVGs under `docs/public/brand`; regenerate them with the mark and inspect the homepage, a lesson, a code/spec comparison and the performance charts before publishing. Benchmark data and source examples retain their measured contents when their presentation changes.

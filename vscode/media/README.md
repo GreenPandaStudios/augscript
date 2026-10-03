@@ -3,7 +3,7 @@
 `augscript.svg` is the editable open-circle mark. It uses one stroke on a
 transparent background. `banner.svg` is the extension header; the renderer
 inserts that same mark. Keep shapes simple enough to read at 16 pixels, with
-muted colors and no gradients, shadows or badges. The file legend renders the
+burgundy marks and warm neutrals, with no gradients, shadows or badges. The file legend renders the
 actual light and dark SVGs in `../icons`, including startup, export and
 configuration marks.
 

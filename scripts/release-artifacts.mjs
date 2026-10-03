@@ -7,6 +7,7 @@ import {verifyLLVMCompilerPins} from './release-publication.mjs';
 
 const root = resolve(import.meta.dirname, '..');
 const version = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).version;
+const extensionVersion = JSON.parse(readFileSync(join(root, 'vscode/package.json'), 'utf8')).version;
 const output = join(root, 'dist/release');
 const manifest=JSON.parse(readFileSync(join(root,'native/compiler-packs.json'),'utf8'));
 let compilerPacks=0;
@@ -22,9 +23,9 @@ for(const pack of manifest.packs){
   copyFileSync(compilerPack,join(output,filename));compilerPacks++;
 }
 if(process.env.AUG_RELEASE_NATIVE_REQUIRED==='1'&&!compilerPacks)throw new Error('Missing compiler packs');
-for (const path of ['dist/release/packages.json', `vscode/augscript-${version}.vsix`, 'docs/.vitepress/dist/index.html'])
+for (const path of ['dist/release/packages.json', `vscode/augscript-${extensionVersion}.vsix`, 'docs/.vitepress/dist/index.html'])
   if (!existsSync(join(root, path))) throw new Error(`Missing ${path}; build all packages, extension and docs first.`);
-copyFileSync(join(root, `vscode/augscript-${version}.vsix`), join(output, `augscript-${version}.vsix`));
+copyFileSync(join(root, `vscode/augscript-${extensionVersion}.vsix`), join(output, `augscript-${extensionVersion}.vsix`));
 // Publishing a pack with one pin and a CLI/editor with another would make
 // every cold LLVM installation fail. Check the shipped manifests, not just
 // the contributor checkout used to assemble this release.

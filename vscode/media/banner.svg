@@ -1,9 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="320" viewBox="0 0 1200 320">
-  <rect width="1200" height="320" fill="#F5F4EF"/>
+  <rect width="1200" height="320" fill="#FAF8F5"/>
   <!-- The renderer inserts the canonical August mark. -->
   <g id="august-logo" transform="translate(50 45) scale(.45)"></g>
   <g font-family="Arial, Helvetica, sans-serif">
-    <text x="300" y="147" fill="#293E34" font-size="62" font-weight="400">August</text>
-    <text x="303" y="200" fill="#67746C" font-size="25">The world runs on language.</text>
+    <text x="300" y="147" fill="#522337" font-size="62" font-weight="400">August</text>
+    <text x="303" y="200" fill="#76626B" font-size="25">The world runs on language.</text>
   </g>
 </svg>

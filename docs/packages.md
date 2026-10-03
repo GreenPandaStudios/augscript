@@ -121,7 +121,7 @@ Consumers can use `aug add npm:@owner/arithmetic@0.1.0 --as arithmetic` or a loc
 
 ## VS Code
 
-Install AugScript 0.23.0 from the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=augscript.augscript), or install the matching `.vsix` from [GitHub Releases](https://github.com/GreenPandaStudios/augscript/releases/tag/v0.23.0) using **Extensions: Install from VSIX…** in VS Code. The extension bundles a compiler and uses the project's installed source graph for completion, help, and navigation. [The editor guide](editor.md) covers completion, fixes, and inferred type hints.
+Install AugScript from the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=augscript.augscript), or install a published `.vsix` from [GitHub Releases](https://github.com/GreenPandaStudios/augscript/releases) using **Extensions: Install from VSIX…** in VS Code. Editor-only patches can have a different version from the CLI; their release notes identify the bundled compiler. The extension bundles that compiler and uses the project's installed source graph for completion, help, and navigation. [The editor guide](editor.md) covers completion, fixes, and inferred type hints.
 
 ## Install release tarballs
 

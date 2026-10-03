@@ -57,7 +57,7 @@ Place /** Javadoc */ before a declaration. Parameter labels, return tags, and ef
 
 ![August source, startup, exports, and configuration file icons](media/file-icons.png)
 
-Run **AugScript: Enable File Icons**, or choose **Preferences: File Icon Theme → AugScript Icons**. Source files use August’s open-circle mark. `main.aug` has a play symbol, `export.aug` an outward arrow, and `main.yaml` a pair of sliders. Light and dark variants keep the thin strokes readable. Common source files and folders use the same line style.
+Run **AugScript: Enable File Icons**, or choose **Preferences: File Icon Theme → AugScript Icons**. Source files use August’s burgundy open-circle mark. `main.aug` has a play symbol, `export.aug` an outward arrow, and `main.yaml` a pair of sliders. Light and dark variants keep the thin strokes readable. Common source files and folders use the same line style.
 
 The extension also supplies light and dark default `.aug` language icons for themes that support language defaults. The bundled theme gives `main.aug` and `export.aug` their distinct marks.
 
