@@ -80,7 +80,11 @@ export async function observe(command,args,{env=process.env,timeoutMs=120000,log
     ({status,signal,error}=await new Promise(resolve=>{child.on('error',error=>resolve({status:null,signal:null,error:error.message}));child.on('close',(status,signal)=>resolve({status,signal}));}));
   }finally{clearInterval(timer);clearTimeout(timeout);}
   const result={status,signal,error,timedOut,overflow,samplingError,elapsedSeconds:(performance.now()-start)/1000,stdout,stderr,rss};
-  if(log){writeFileSync(log+'.stdout',stdout);writeFileSync(log+'.stderr',stderr);}
+  if(log){
+    writeFileSync(log+'.stdout',stdout);writeFileSync(log+'.stderr',stderr);
+    const {stdout:out,stderr:err,...observed}=result;
+    writeFileSync(log+'.observation.json',JSON.stringify({command,args,...observed},null,2)+'\n');
+  }
   return result;
 }
 export function rssSummary(samples,{required=false,budget=rssGrowthBudgetBytes}={}){

@@ -24,7 +24,7 @@ A deterministic scheduler regression delivers a worker's completion between two 
 
 ## Memory and sanitizer evidence
 
-Uninstrumented native runs sample resident memory every 250 milliseconds. The report discards the first fifth of samples, then compares the median of the first and last quarters of the remainder. Growth above 64 MiB fails this fixed workload. That budget is a regression threshold for these fixtures, not a memory allowance or service objective for an application.
+Native runs without sanitizers sample resident memory every 250 milliseconds. Allocation accounting remains enabled, so these measurements describe the probe allocator rather than the ordinary allocator. The report discards the first fifth of samples, then compares the median of the first and last quarters of the remainder. Growth above 64 MiB fails this fixed workload. That budget is a regression threshold for these fixtures, not a memory allowance or service objective for an application.
 
 AddressSanitizer with UBSan and ThreadSanitizer run separate circuits with one and four pool threads. Their resident memory is recorded without the growth limit because sanitizer quarantine, shadow memory, and history can grow while application allocations remain balanced. LeakSanitizer is disabled; allocation accounting and resource checks supply separate evidence.
 
@@ -43,7 +43,7 @@ npm run test:reliability -- --profile soak
 
 The `ci` profile requires at least 30 seconds for the optimized four-thread native circuit, 200 native cycles, and 200 rounds per August workload. The `soak` profile requires at least 30 minutes, 1,000 cycles, and 1,000 August rounds. Other native and sanitizer variants run burst circuits for at least one second; the sustained duration applies to the optimized four-thread circuit. All five native cases must run equally often. A run continues until both its duration and count requirements are met.
 
-Use `--seconds`, `--cycles`, and `--rounds` to choose bounded work, and `--output PATH` to keep independent runs. Zero-sized domains, invalid durations, duplicate flags, and unsupported options fail. The default report is `.aug-build/runtime-reliability/results.json`. Its neighboring directories retain source, expected output, compiler maps, programs, and stdout/stderr for replay. Passing and faulty LLVM programs have separate directories.
+Use `--seconds`, `--cycles`, and `--rounds` to choose bounded work, and `--output PATH` to keep independent runs. Zero-sized domains, invalid durations, duplicate flags, and unsupported options fail. The default report is `.aug-build/runtime-reliability/results.json`. Its neighboring directories retain source, expected output, compiler maps, programs, stdout/stderr, and raw observation records for replay. Failed circuits retain their measurements before acceptance checks run. Passing and faulty LLVM programs have separate directories.
 
 The report identifies the compiler source revision, actual LLVM executable, native compiler, minicoro input, and runtime pack. A stale runtime pack or a source change during qualification rejects the result. Reports start as running and become passed only after every check completes. A rejected invocation replaces any previous result with a failed report.
 

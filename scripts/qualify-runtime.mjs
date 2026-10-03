@@ -18,7 +18,7 @@ const sha=bytes=>createHash('sha256').update(bytes).digest('hex');
 export async function qualifyRuntime(args=process.argv.slice(2),root=resolve(import.meta.dirname,'..')){
   const supplied=args.indexOf('--output'),output=resolve(supplied>=0&&args[supplied+1]&&!args[supplied+1].startsWith('--')?args[supplied+1]:join(root,'.aug-build/runtime-reliability/results.json'));
   const directory=resolve(output,'..');mkdirSync(directory,{recursive:true});
-  const report={format:1,generatorVersion:1,recordedAt:new Date().toISOString(),status:'running',...qualificationIdentity(root),
+  const report={format:1,generatorVersion:1,recordedAt:new Date().toISOString(),status:'running',evidenceDirectory:directory,...qualificationIdentity(root),
     native:[],llvm:[],controls:[],omissions:[
       'Finite and duration-bounded workloads do not prove arbitrary programs or native libraries safe.',
       'Allocator accounting covers explicit allocations in the instrumented core/harness and minicoro malloc hooks; it excludes libc/pthreads, mmap stacks and third-party internals.',
@@ -53,16 +53,21 @@ export async function qualifyRuntime(args=process.argv.slice(2),root=resolve(imp
       report.nativeCompiler={command:built.compiler,version:built.compilerVersion};
       report.minicoroSha256=sha(readFileSync(built.dependency));save();
       const result=await observe(built.binary,[String(options.cycles),String(seconds)],{env:{...process.env,AUG_WORKERS:String(pool)},timeoutMs:(seconds+120)*1000,log:join(home,'run')});
-      completed(result);const evidence=nativeEvidence(result.stdout,{cycles:options.cycles,seconds});
-      report.native.push({optimization,pool,sanitizer:null,minimumSeconds:seconds,command:[built.binary,String(options.cycles),String(seconds)],elapsedSeconds:result.elapsedSeconds,
-        evidence,rss:result.rss,memory:rssSummary(result.rss,{required:true}),binarySha256:sha(readFileSync(built.binary)),flags:built.flags,passed:true});save();
+      const entry={optimization,pool,sanitizer:null,minimumSeconds:seconds,command:[built.binary,String(options.cycles),String(seconds)],elapsedSeconds:result.elapsedSeconds,
+        rss:result.rss,observation:join(home,'run.observation.json'),binarySha256:sha(readFileSync(built.binary)),flags:built.flags,passed:false};
+      report.native.push(entry);save();completed(result);
+      const evidence=nativeEvidence(result.stdout,{cycles:options.cycles,seconds});
+      entry.evidence=evidence;entry.memory=rssSummary(result.rss,{required:true});entry.passed=true;save();
       console.log('Native '+optimization+'/pool'+pool+': '+evidence.final.cycles+' balanced lifecycle cycles');
     }
     for(const sanitizer of ['address,undefined','thread'])for(const pool of [1,4]){
       const home=join(directory,'sanitized-'+sanitizer.replace(',','-')+'-pool'+pool),built=buildProbe(root,home,{optimization:'-O1',sanitizer});
       const result=await observe(built.binary,[String(options.cycles),'1'],{env:{...process.env,AUG_WORKERS:String(pool),ASAN_OPTIONS:'detect_leaks=0:halt_on_error=1:quarantine_size_mb=8:thread_local_quarantine_size_kb=256',UBSAN_OPTIONS:'halt_on_error=1',TSAN_OPTIONS:'halt_on_error=1'},log:join(home,'run')});
-      completed(result);const evidence=nativeEvidence(result.stdout,{cycles:options.cycles,seconds:1});
-      report.native.push({optimization:'-O1',pool,sanitizer,minimumSeconds:1,elapsedSeconds:result.elapsedSeconds,evidence,rss:result.rss,memory:rssSummary(result.rss,{required:true,budget:null}),command:[built.binary,String(options.cycles),'1'],binarySha256:sha(readFileSync(built.binary)),flags:built.flags,compiler:built.compiler,compilerVersion:built.compilerVersion,passed:true});save();
+      const entry={optimization:'-O1',pool,sanitizer,minimumSeconds:1,elapsedSeconds:result.elapsedSeconds,rss:result.rss,
+        observation:join(home,'run.observation.json'),command:[built.binary,String(options.cycles),'1'],binarySha256:sha(readFileSync(built.binary)),flags:built.flags,compiler:built.compiler,compilerVersion:built.compilerVersion,passed:false};
+      report.native.push(entry);save();completed(result);
+      const evidence=nativeEvidence(result.stdout,{cycles:options.cycles,seconds:1});
+      entry.evidence=evidence;entry.memory=rssSummary(result.rss,{required:true,budget:null});entry.passed=true;save();
       console.log(sanitizer+'/pool'+pool+': '+evidence.final.cycles+' balanced lifecycle cycles');
     }
     const leakHome=join(directory,'allocation-retention-control'),leak=buildProbe(root,leakHome,{control:'AUG_PROBE_LEAK_CONTROL'});
