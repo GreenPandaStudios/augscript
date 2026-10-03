@@ -4,7 +4,7 @@ import {generateGyms, negativeContracts} from '../gyms/corpus.mjs';
 import {measureBatch} from '../scripts/batch-load.mjs';
 import {kernels} from '../benchmarks/kernels.mjs';
 import {qualificationIdentity} from '../scripts/qualification-identity.mjs';
-import {mkdirSync,mkdtempSync,writeFileSync,rmSync} from 'node:fs';
+import {mkdirSync,mkdtempSync,writeFileSync,rmSync,symlinkSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 
@@ -22,6 +22,27 @@ test('qualification fingerprints native entry code, import stubs, configuration,
       assert.notEqual(qualificationIdentity(root).sourceSha256,original,path+': omitted effective input');
       writeFileSync(join(root,path),'base');assert.equal(qualificationIdentity(root).sourceSha256,original);
     }
+  }finally{rmSync(root,{recursive:true,force:true});}
+});
+
+test('qualification ignores generated nested caches and rejects ambiguous canonical symlinks',()=>{
+  const root=mkdtempSync(join(tmpdir(),'aug-qualification-caches-'));
+  try{
+    for(const folder of ['src','runtime','benchmarks','gyms','scripts','native','tests','.github'])mkdirSync(join(root,folder),{recursive:true});
+    for(const path of ['package-lock.json','tsconfig.json'])writeFileSync(join(root,path),'{}');
+    writeFileSync(join(root,'package.json'),'{"version":"0.22.0"}');
+    const original=qualificationIdentity(root).sourceSha256;
+    for(const folder of ['.aug-spec','.aug-packages','node_modules','target','dist']){
+      const cache=join(root,'src/stdlib/json',folder);mkdirSync(cache,{recursive:true});
+      writeFileSync(join(cache,'copied.aug'),'generated declaration');
+      assert.equal(qualificationIdentity(root).sourceSha256,original,'Cache altered canonical compiler identity: '+folder);
+    }
+    symlinkSync('/nonexistent/qualification-cache',join(root,'src/stdlib/json/.aug-native'));
+    assert.equal(qualificationIdentity(root).sourceSha256,original);
+    writeFileSync(join(root,'src/stdlib/json/contracts.aug'),'canonical declaration');
+    assert.notEqual(qualificationIdentity(root).sourceSha256,original);
+    symlinkSync('/nonexistent/qualification-source',join(root,'src/stdlib/json/alias.aug'));
+    assert.throws(()=>qualificationIdentity(root),/must not be symbolic links/);
   }finally{rmSync(root,{recursive:true,force:true});}
 });
 

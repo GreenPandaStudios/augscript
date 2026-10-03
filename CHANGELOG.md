@@ -2,6 +2,8 @@
 
 ## Unreleased — native ingestion boundaries
 
+Qualification fingerprints exclude nested generated caches and reject symbolic links in canonical inputs, so clean checkouts and contributor workspaces identify the same compiler.
+
 HTTP dispatch now begins at headers. Body reads are checked and lazy; accepted reads drive 100 Continue. New web reception, admission and drain settings bound stalled senders and shutdown. ServerControl permits an application-selected network grace period, with cleanup joined before serve returns.
 
 Crypto adds Ed25519 verification and a configured JOSE identity verifier. JSON adds separately named parseCompatible and presence checks. Bytes/text/float helpers support checked slices, hex, arbitrary unsigned decimal comparisons, UTF-16 wire limits, Unicode trimming and float32 validation. Worker admission bounds copied inputs and pending jobs and raises checked ConcurrencyError at start. Native adapters can read cancellation without entering August. Owned native results retain fresh wrapper identities through checked source wrappers.

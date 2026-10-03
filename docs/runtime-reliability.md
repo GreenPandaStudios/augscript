@@ -47,7 +47,7 @@ The `ci` profile requires at least 30 seconds for the optimized four-thread nati
 
 Use `--seconds`, `--cycles`, and `--rounds` to choose bounded work, and `--output PATH` to keep independent runs. Zero-sized domains, invalid durations, duplicate flags, and unsupported options fail. The default report is `.aug-build/runtime-reliability/results.json`. Its neighboring directories retain source, expected output, compiler maps, programs, stdout/stderr, and raw observation records for replay. Failed circuits retain their measurements before acceptance checks run. Passing and faulty LLVM programs have separate directories.
 
-The report identifies the compiler source revision, actual LLVM executable, native compiler, minicoro input, and runtime pack. A stale runtime pack or a source change during qualification rejects the result. Reports start as running and become passed only after every check completes. A rejected invocation replaces any previous result with a failed report.
+The compiler fingerprint includes canonical source, configuration, dependency pins and fixtures. Generated dependency/spec caches and build output do not change it; a symbolic link in canonical inputs is rejected. The report identifies the compiler source revision, actual LLVM executable, native compiler, minicoro input, and runtime pack. A stale runtime pack or a source change during qualification rejects the result. Reports start as running and become passed only after every check completes. A rejected invocation replaces any previous result with a failed report.
 
 ## CI and release candidates
 
