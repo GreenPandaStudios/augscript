@@ -4,10 +4,10 @@
 
 ## Startup
 
-It prints `text` on [`roundTrip`](compression.aug.md#symbol-roundTrip). If this work raises [`CompressionError`](.aug-spec/packages/%40greenpandastudios/aug-zlib/0.1.3/contracts.aug.md#symbol-CompressionError) as `error`, it prints `error.message`. If this work raises `ConversionError`, it prints `"Invalid UTF-8"`.
+It prints `text` on [`roundTrip`](compression.aug.md#symbol-roundTrip). If this work raises [`CompressionError`](.aug-spec/packages/%40greenpandastudios/aug-zlib/0.1.5/contracts.aug.md#symbol-CompressionError) as `error`, it prints `error.message`. If this work raises `ConversionError`, it prints `"Invalid UTF-8"`.
 
 ## Dependencies
 
-It uses [`CompressionError`](.aug-spec/packages/%40greenpandastudios/aug-zlib/0.1.3/contracts.aug.md#symbol-CompressionError) (`message`) from `https://github.com/GreenPandaStudios/aug-zlib#v0.1.3`. It uses [`roundTrip`](compression.aug.md#symbol-roundTrip) from `compression`.
+It uses [`CompressionError`](.aug-spec/packages/%40greenpandastudios/aug-zlib/0.1.5/contracts.aug.md#symbol-CompressionError) (`message`) from `https://github.com/GreenPandaStudios/aug-zlib#v0.1.5`. It uses [`roundTrip`](compression.aug.md#symbol-roundTrip) from `compression`.
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).

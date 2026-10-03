@@ -54,7 +54,7 @@ jobs:
             host: linux-arm64
             artifact: linux-arm64
     runs-on: ${{ matrix.runner }}
-    timeout-minutes: 60
+    timeout-minutes: 90
     env:
       MACOSX_DEPLOYMENT_TARGET: '14.0'
       AUG_GITHUB_TOKEN: ${{ github.token }}
@@ -76,6 +76,11 @@ jobs:
           node scripts/prepare-llvm-tools.mjs
           node scripts/prepare-llvm-maintainer.mjs
           node scripts/build-runtime-pack.mjs
+          AUG_LLVM_HOME="$PWD/.aug-build/llvm-tools" npm run test:conformance
+          AUG_WORKER_SANITIZER=thread node --test tests/worker-runtime.test.mjs
+          AUG_WORKER_SANITIZER=address,undefined node --test tests/worker-runtime.test.mjs
+          AUG_LLVM_HOME="$PWD/.aug-build/llvm-tools" AUG_SANITIZER_CC="$PWD/.aug-build/llvm-maintainer/bin/clang" node --test tests/runtime-reliability.test.mjs
+          AUG_LLVM_HOME="$PWD/.aug-build/llvm-tools" AUG_SANITIZER_CC="$PWD/.aug-build/llvm-maintainer/bin/clang" npm run test:reliability -- --profile soak
           AUG_LLVM_HOME="$PWD/.aug-build/llvm-tools" AUG_REQUIRE_DWARF=1 AUG_REQUIRE_DEBUGGER=1 node scripts/check-llvm-parity.mjs
           AUG_LLVM_HOME="$PWD/.aug-build/llvm-tools" AUG_SANITIZER_CC="$PWD/.aug-build/llvm-maintainer/bin/clang" node scripts/sanitize-core.mjs --backend llvm
           node scripts/build-llvm-pack.mjs
@@ -92,6 +97,11 @@ jobs:
           docker exec producer node scripts/prepare-llvm-tools.mjs
           docker exec producer node scripts/prepare-llvm-maintainer.mjs
           docker exec producer node scripts/build-runtime-pack.mjs
+          docker exec -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools producer npm run test:conformance
+          docker exec -e AUG_WORKER_SANITIZER=thread -e AUG_SANITIZER_CC=/work/.aug-build/llvm-maintainer/bin/clang producer node --test tests/worker-runtime.test.mjs
+          docker exec -e AUG_WORKER_SANITIZER=address,undefined -e AUG_SANITIZER_CC=/work/.aug-build/llvm-maintainer/bin/clang producer node --test tests/worker-runtime.test.mjs
+          docker exec -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools -e AUG_SANITIZER_CC=/work/.aug-build/llvm-maintainer/bin/clang producer node --test tests/runtime-reliability.test.mjs
+          docker exec -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools -e AUG_SANITIZER_CC=/work/.aug-build/llvm-maintainer/bin/clang producer npm run test:reliability -- --profile soak
           docker exec -e AUG_GITHUB_TOKEN -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools -e AUG_REQUIRE_DWARF=1 -e AUG_REQUIRE_DEBUGGER=1 -e AUG_DWARF_TOOL=/work/.aug-build/llvm-maintainer/bin/llvm-dwarfdump producer node scripts/check-llvm-parity.mjs
           docker exec -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools -e AUG_SANITIZER_CC=/work/.aug-build/llvm-maintainer/bin/clang producer node scripts/sanitize-core.mjs --backend llvm
           docker exec producer node scripts/build-llvm-pack.mjs
@@ -103,6 +113,8 @@ jobs:
           docker cp "producer:/work/.aug-build/aug-llvm-${{ matrix.artifact }}.tar.gz" .aug-build/
           docker cp "producer:/work/.aug-build/compiler-pack-${{ matrix.host }}.json" .aug-build/
           docker cp producer:/work/.aug-build/llvm-migration-performance.json .aug-build/
+          docker cp producer:/work/.aug-build/runtime-reliability .aug-build/
+          docker cp producer:/work/.aug-build/language-conformance.json .aug-build/
           mkdir -p .aug-build/kernels .aug-build/gyms
           docker cp producer:/work/.aug-build/kernels/results.json .aug-build/kernels/
           docker cp producer:/work/.aug-build/gyms/results.json .aug-build/gyms/
@@ -114,6 +126,8 @@ jobs:
             .aug-build/aug-llvm-${{ matrix.artifact }}.tar.gz
             .aug-build/compiler-pack-${{ matrix.host }}.json
             .aug-build/llvm-migration-performance.json
+            .aug-build/runtime-reliability/
+            .aug-build/language-conformance.json
             .aug-build/kernels/results.json
             .aug-build/gyms/results.json
           if-no-files-found: error

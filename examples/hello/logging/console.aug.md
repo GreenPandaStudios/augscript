@@ -10,8 +10,8 @@ It implements [`Logger`](logger.aug.md#symbol-Logger).
 <a id="symbol-ConsoleLogger.log"></a>
 ### `ConsoleLogger.log` · [source](console.aug#L5)
 
-Writes one message. It takes `message` as a string (Text to write). It gets `console` ([`Console`](../.aug-spec/august/0.21.0/io/contracts.aug.md#symbol-Console)) from dependency injection. It passes `message` to [`console.write`](../.aug-spec/august/0.21.0/io/contracts.aug.md#symbol-Console.write).
+Writes one message. It takes `message` as a string (Text to write). It gets `console` ([`Console`](../.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-Console)) from dependency injection. It passes `message` to [`console.write`](../.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-Console.write).
 
 ## Dependencies
 
-It uses [`Console`](../.aug-spec/august/0.21.0/io/contracts.aug.md#symbol-Console) ([`write`](../.aug-spec/august/0.21.0/io/contracts.aug.md#symbol-Console.write)) from `august.io`. It uses [`Logger`](logger.aug.md#symbol-Logger) from `logger`.
+It uses [`Console`](../.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-Console) ([`write`](../.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-Console.write)) from `august.io`. It uses [`Logger`](logger.aug.md#symbol-Logger) from `logger`.

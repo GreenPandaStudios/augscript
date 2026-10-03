@@ -75,7 +75,7 @@ void aug_execution_dispose(AugExecution *execution);
 #define aug_has_error (aug_execution_current()->has_error)
 #define aug_cancelled (aug_execution_current()->cancelled)
 typedef void (*AugScopeJoin)(AugScope *scope);
-extern AugScopeJoin aug_scope_join_hook;
+extern _Thread_local AugScopeJoin aug_scope_join_hook;
 AugValue aug_binding_get(size_t index);
 void aug_binding_set(size_t index, AugValue value);
 AugValue aug_shared_new(AugValue value);
@@ -83,9 +83,21 @@ AugValue aug_shared_lock(AugValue value);
 size_t aug_lock_depth(void);
 void aug_lock_leave(void);
 void aug_lock_restore(size_t depth);
-extern void (*aug_mutex_wait_hook)(void);
+extern _Thread_local void (*aug_mutex_wait_hook)(void);
+typedef struct AugRuntimeContext AugRuntimeContext;
+AugRuntimeContext *aug_runtime_new(void);
+AugRuntimeContext *aug_runtime_switch(AugRuntimeContext *next);
+void aug_runtime_delete(AugRuntimeContext *context);
+typedef struct AugTransfer AugTransfer;
+AugTransfer *aug_transfer_capture(AugValue *values, size_t count);
+AugTransfer *aug_transfer_capture_bounded(AugValue *values, size_t count, size_t maximum);
+size_t aug_transfer_bytes(AugTransfer *transfer);
+void aug_transfer_restore(AugTransfer *transfer, AugValue *values, size_t count);
+void aug_transfer_delete(AugTransfer *transfer);
 typedef struct AugTask AugTask;
 typedef void (*AugTaskCompletion)(AugValue task, void *data);
+AugValue aug_task_start_worker(AugMethod function, AugValue receiver, AugValue *args, int count, const unsigned char *owned);
+void aug_task_start_worker_pointer(AugValue *out, AugPointerMethod function, const AugValue *receiver, AugValue *args, int count, const unsigned char *owned);
 AugValue aug_task_start(AugMethod function, AugValue receiver, AugValue *args, int count);
 AugValue aug_task_start_owned(AugMethod function, AugValue receiver, AugValue *args, int count, const unsigned char *owned);
 AugValue aug_task_spawn(AugMethod function, AugValue receiver, AugValue *args, int count, AugTaskCompletion completion, void *data);
@@ -93,6 +105,10 @@ AugValue aug_task_spawn(AugMethod function, AugValue receiver, AugValue *args, i
 void aug_task_start_pointer(AugValue *out, AugPointerMethod function, const AugValue *receiver, AugValue *args, int count, const unsigned char *owned);
 void aug_task_spawn_pointer(AugValue *out, AugPointerMethod function, const AugValue *receiver, AugValue *args, int count, AugTaskCompletion completion, void *data);
 AugValue aug_task_wait(AugValue *tasks, int count);
+/* Public read-only cancellation probe; valid only during a native call on its
+   original caller thread. It neither yields nor enters managed August code. */
+uint8_t aug_native_cancelled_v1(void);
+extern _Thread_local uint8_t (*aug_native_cancel_probe)(void);
 AugTask *aug_task_current(void);
 bool aug_task_finished(AugValue task);
 void aug_task_cancel(AugValue task);
@@ -100,12 +116,12 @@ void aug_task_release(AugValue task);
 void aug_task_suspend(void);
 void aug_task_wake(AugTask *task);
 void aug_task_checkpoint(void);
-extern void (*aug_task_checkpoint_hook)(void);
+extern _Thread_local void (*aug_task_checkpoint_hook)(void);
 bool aug_scheduler_step(void);
-extern void (*aug_scheduler_io)(bool wait);
-extern void (*aug_scheduler_notify)(void);
-extern bool aug_test_failed;
-extern size_t aug_test_assertions;
+extern _Thread_local void (*aug_scheduler_io)(bool wait);
+extern _Thread_local void (*aug_scheduler_notify)(void);
+extern _Thread_local bool aug_test_failed;
+extern _Thread_local size_t aug_test_assertions;
 
 AugValue aug_null(void);
 AugValue aug_int(int64_t value);
@@ -134,6 +150,15 @@ AugValue aug_string(const char *value);
 AugValue aug_string_n(const void *value, size_t length);
 AugValue aug_bytes(const void *value, size_t length, int kind);
 int64_t aug_string_length(AugValue value);
+AugValue aug_string_trim(AugValue value);
+int64_t aug_string_utf16_length(AugValue value);
+bool aug_string_is_decimal(AugValue value);
+int64_t aug_string_compare_decimal(AugValue value, AugValue other);
+AugValue aug_bytes_slice(AugValue value, int64_t start, int64_t end);
+AugValue aug_bytes_hex(AugValue value);
+bool aug_float_is_finite(AugValue value);
+AugValue aug_float_float32(AugValue value);
+bool aug_json_has(AugValue value, AugValue name);
 AugValue aug_string_bytes(AugValue value);
 AugValue aug_string_split(AugValue value, AugValue separator);
 bool aug_string_starts_with(AugValue value, AugValue prefix);
@@ -164,6 +189,7 @@ bool aug_json_boolean(AugValue value);
 AugValue aug_json_items(AugValue value);
 AugValue aug_json_wrap(AugValue value);
 AugValue _aug_json_parse(AugValue input);
+AugValue _aug_json_parse_compatible(AugValue input);
 AugValue _aug_time_now(void);
 typedef enum {
   AUG_HTTP_POLICY_REQUIRE_LOGIN=1, AUG_HTTP_POLICY_REQUIRE_PERMISSION,
@@ -174,6 +200,7 @@ typedef struct {AugHttpPolicyKind kind;const char *permission;int64_t amount,sec
 typedef struct { const char *method; const char *path; AugFunction handler; int stream; int status; const AugHttpPolicy *policies;size_t policy_count; AugPointerMethod pointer_handler; } AugRoute;
 void aug_http_policy(const AugHttpPolicy *policy, AugValue request, AugValue dependency, AugValue second);
 AugValue aug_http_finish(AugValue response);
+AugValue aug_http_body(AugValue request);
 bool aug_http_head_response(AugValue *response);
 AugValue aug_http_bind(AugValue request, const char *source, const char *name, const AugSchema *schema);
 AugValue aug_httprequest_form(AugValue request, const AugSchema *schema);
@@ -193,7 +220,7 @@ AugValue aug_html_transport(AugValue html);
 AugValue aug_http_problem(int status);
 int aug_http_error_status(void);
 void aug_http_serve(const AugRoute *routes, size_t count, int64_t port);
-void aug_http_configure(const char *host, const char *certificate, const char *private_key, const char *ca, size_t request_limit, size_t result_limit, bool http3);
+void aug_http_configure(const char *host, const char *certificate, const char *private_key, const char *ca, size_t request_limit, size_t result_limit, bool http3, int64_t headers_timeout, int64_t request_timeout, int64_t drain_timeout, size_t max_requests);
 AugValue aug_new_object(const char *name, size_t field_count,
                         const unsigned char *owned_fields,
                         const AugMethodEntry *methods, size_t method_count);

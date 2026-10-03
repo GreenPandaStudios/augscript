@@ -346,7 +346,7 @@ borrow items { items.append(value=1) }
 Bytes
 ```
 
-Immutable length-aware binary data. text() validates UTF-8; base64url() emits canonical unpadded URL-safe base64.
+Immutable length-aware binary data. text() validates UTF-8; base64url() emits canonical unpadded URL-safe base64. slice(start, end) copies a checked half-open range and hex() returns lowercase hexadecimal.
 
 ## C
 
@@ -630,7 +630,7 @@ An immutable deferred HTTP call created with handle endpoint(...). Bind it to a 
 HttpRequest
 ```
 
-A request supplied through from request. Its method, path, headers and bounded body are explicit. form<T>() allows protocol-specific form errors.
+A request supplied through from request. Headers are available before upload reception. Reading body waits for the bounded upload and can raise HttpError; early rejection sends no 100 Continue. form<T>() allows protocol-specific form errors.
 
 ## HttpResponse
 
@@ -758,7 +758,7 @@ Define a test case within a when group. Names may be identifiers or quoted descr
 Json
 ```
 
-Immutable JSON data. Import parse from the JSON source package, decode concrete records with decode<T>(), and stringify with lossless integer handling.
+Immutable JSON data. Import parse from the JSON source package, decode concrete records with decode<T>(), and stringify with lossless integer handling. has(name) distinguishes a missing field from JSON null; parseCompatible is a separate legacy-boundary parser.
 
 ## List
 
@@ -1058,7 +1058,7 @@ Match the present case of a nullable value and introduce a read-only non-null na
 task = start loadUsers()
 ```
 
-Start a child task in a scope. Receiver and arguments evaluate immediately. Scheduled errors are checked at waits and implicit scope joins; an unhandled child error cancels siblings. A captured object cannot be mutated or moved by the parent while the child uses it. When start runs inside a loop, waiting for one result does not release captures from other iterations; the enclosing scope joins them all.
+Start a child Task in a scope. Receiver and arguments evaluate immediately. Cooperative tasks capture references; wait before mutating or moving captured objects. Use start worker calculate(values) to copy data to an isolated heap and run on an OS thread. Both forms use the same waits, sibling cancellation, and scope joins. Worker admission and copied-input limits can raise checked ConcurrencyError at start.
 
 ## streams
 
@@ -1204,6 +1204,14 @@ implement key with Class;
 
 Separates a binding key from its implementing class. The class must satisfy an interface key.
 
+## worker
+
+```text
+task = start worker calculate(values)
+```
+
+Run a standalone function on a worker with its own heap. Inputs and results are copied scalars, records, bytes, JSON, or collections of copied data. Construct dependencies and native resources inside the worker. Parent bindings, Shared values, behavior objects, tasks, own/borrow inputs, and native handles cannot cross the boundary. Native calls require an explicit workerSafe package contract. GPU operations belong in a native package; its handles stay on this worker.
+
 ## write_file
 
 ```text
@@ -1248,6 +1256,10 @@ Read every value of this header in wire order.
 
 ## Json operations
 
+### Json.has
+
+Test object-member presence. A present JSON null returns true; an absent member returns false.
+
 ### Json.stringify
 
 Serialize this JSON value with checked UTF-8 escaping and exact int64 values.
@@ -1280,7 +1292,33 @@ Read an immutable JSON array.
 
 Decode a checked record or data type: json.decode<Profile>(). Unknown fields, type mismatches, and validation errors are rejected.
 
+## float operations
+
+### float.isFinite
+
+Test whether this binary64 value is neither infinity nor NaN.
+
+### float.float32
+
+Round to IEEE 754 binary32 and return the rounded value as float. Reject nonfinite input or overflow.
+
 ## string operations
+
+### string.trim
+
+Remove ECMAScript whitespace and line terminators from both ends; preserve interior text.
+
+### string.utf16Length
+
+Count UTF-16 code units for JavaScript wire limits; supplementary characters count as two.
+
+### string.isDecimal
+
+Require a nonempty ASCII unsigned decimal string. Leading zeros are allowed.
+
+### string.compareDecimal
+
+Compare unsigned decimal strings without integer conversion. Leading zeros do not affect the result; return -1, 0, or 1.
 
 ### string.isToken
 
@@ -1307,6 +1345,14 @@ Test an exact prefix.
 ### Bytes.length
 
 Read the number of elements.
+
+### Bytes.slice
+
+Copy bytes in the half-open range [start, end). Require 0 <= start <= end <= length.
+
+### Bytes.hex
+
+Encode bytes as lowercase hexadecimal, including embedded zeros.
 
 ### Bytes.text
 

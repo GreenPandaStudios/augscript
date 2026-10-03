@@ -5,7 +5,7 @@ import {tmpdir} from 'node:os';
 import {join,resolve} from 'node:path';
 import {spawnSync} from 'node:child_process';
 import {bindNativeHeader} from '../src/native-bindings.ts';
-import {nativeHostTarget} from '../src/native-contracts.ts';
+import {nativeHostTarget,validateNativeDescriptor} from '../src/native-contracts.ts';
 
 const clang=process.env.AUG_BIND_CLANG??(process.platform==='darwin'?'/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang':'clang');
 const enabled=spawnSync(clang,['--version'],{encoding:'utf8'}).status===0;
@@ -61,3 +61,11 @@ test('packaged CLI exposes explicit native maintainer options and reports missin
   const invalid=spawnSync(process.execPath,[resolve('bin/aug.mjs'),'bind','header',options.header,'--contract',options.contract],{encoding:'utf8'});
   assert.equal(invalid.status,2);assert.match(invalid.stderr,/requires.*--target/);
 }));
+
+
+test('native worker permission is an explicit boolean promise and defaults to false',()=>{
+  assert.equal(validateNativeDescriptor(descriptor).functions[0].workerSafe??false,false);
+  const copy=structuredClone(descriptor);copy.functions[0].workerSafe=true;
+  assert.equal(validateNativeDescriptor(copy).functions[0].workerSafe,true);
+  for(const invalid of ['true',1,null]){copy.functions[0].workerSafe=invalid;assert.throws(()=>validateNativeDescriptor(copy),/workerSafe/);}
+});

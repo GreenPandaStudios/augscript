@@ -12,6 +12,7 @@ void aug_ir_http_operation(AugValue *out,int op,AugValue *a,int count,const char
     case AUG_IR_HTTP_EVENT:*out=aug_http_event(a[0],a[1],a[2],a[3]);break;
     case AUG_IR_HTTP_YIELD:aug_http_yield(a[0]);break;
     case AUG_IR_HTTP_CLIENT_REQUEST:*out=aug_httptestclient_request(a[0],a[1],a[2],a[3],a[4]);break;
+    case AUG_IR_HTTP_BODY:*out=aug_http_body(a[0]);break;
     case AUG_IR_HTTP_ACTION:*out=aug_http_action(text,a,(size_t)count);break;
     default:aug_error_named("NativeContractError");break;
   }

@@ -5,7 +5,7 @@ Release the first-party packages and extension with the same version. npm manife
 ## Verify and create artifacts
 
 ```sh
-node scripts/version.mjs 0.21.0
+node scripts/version.mjs 0.23.0
 npm ci
 npm --prefix vscode ci
 node scripts/bootstrap-native.mjs
@@ -16,6 +16,7 @@ export AUG_LLVM_HOME="$PWD/.aug-build/llvm-tools"
 npm run version:check
 npm run check
 npm test
+npm run test:reliability -- --profile soak
 npm run docs:check
 npm run docs:build
 node scripts/merge-compiler-packs.mjs .aug-build/release-packs
@@ -34,8 +35,8 @@ The merge step requires the exact qualified producer archives and manifests for 
 After verification and committing, create and push the version tag:
 
 ```sh
-git tag v0.21.0
-git push origin main v0.21.0
+git tag v0.23.0
+git push origin main v0.23.0
 ```
 
 `release.yml` validates the tag against every manifest, runs compiler/native/docs/package gates, and uploads artifacts to a **draft prerelease**. Review the draft and publish it in GitHub Releases. Publishing starts **Publish npm packages** and **Publish VS Code extension** automatically. Each workflow deploys the archives attached to that release. Changing an asset after review invalidates its checksum.
@@ -62,7 +63,7 @@ Maintainers build the runtime. Consumers download it with the reviewed LLVM pack
 LLVM execution tests with its prepared toolchain; unsupported platforms produce an error. See [native packages](native-packages.md).
 Producer jobs require source breakpoint/variable inspection, actual LLVM ASan
 instrumentation with a failing negative control, runtime UBSan, and the frozen
-paired C/LLVM performance limits. Consumer jobs exercise an ordinary default
+paired C/LLVM performance limits. Each producer also requires the [runtime reliability soak](runtime-reliability.md): a 30-minute optimized lifecycle circuit, exact core allocation and owned-resource balance, burst sanitizer circuits, and independent LLVM results. Consumer jobs exercise an ordinary default
 LLVM starter and all four public native repositories without native tools,
 including frozen/offline locks, cleanup and relocated deployment bundles.
 
@@ -90,7 +91,7 @@ The CLI is published last because its dependencies use exact matching versions. 
 
 ## VS Code Marketplace
 
-The extension identity is `augscript.augscript`. The workflow uses locked VSCE 4.0.1-1 with `vsce publish --oidc`, requesting a short-lived credential without a stored PAT. [VSCE documents the repository/workflow trust configuration](https://github.com/microsoft/vscode-vsce#trusted-publishing), but the actual Marketplace service rejected the 0.21.0 exchange with “Trusted Publishing is not supported.” Automatic deployment remains blocked until Marketplace supports and enables that policy for the publisher. The reviewed VSIX is on GitHub Releases for direct installation or owner upload through the publisher's Update action.
+The extension identity is `augscript.augscript`. The workflow uses locked VSCE 4.0.1-1 with `vsce publish --oidc`, requesting a short-lived credential without a stored PAT. [VSCE documents the repository/workflow trust configuration](https://github.com/microsoft/vscode-vsce#trusted-publishing), but the actual Marketplace service rejected the 0.21.0 and 0.23.0 exchanges with “Trusted Publishing is not supported.” The owner published the verified 0.23.0 VSIX through the publisher's Update action; its public contents match the retained GitHub release archive. Automatic uploads remain blocked until Marketplace supports and enables that policy for the publisher. The workflow can verify an already published matching version, and GitHub Releases also provides direct installation.
 
 The preparation job downloads the reviewed VSIX, verifies its checksum, complete manifest, logo and bundled compiler, and installs the locked publishing tool with lifecycle scripts disabled. It passes these files to a separate `marketplace` job with OIDC permission. That job rechecks the VSIX and publishes it with `--packagePath`, so publication does not build another extension or run `vscode:prepublish`.
 
@@ -123,7 +124,7 @@ Enable GitHub Pages with **GitHub Actions** as its publishing source. `docs.yml`
 
 ## Current limits
 
-August is experimental. The published 0.21.0 LLVM/native preview supports macOS 14+ ARM64 and GNU/Linux x86-64/ARM64 with glibc 2.36+; other platforms are unsupported. [Release qualification](https://github.com/GreenPandaStudios/augscript/actions/runs/37005997823) passed before GitHub publication, and [npm deployment](https://github.com/GreenPandaStudios/augscript/actions/runs/37010447529) verified all four packages. Marketplace OIDC remains blocked by its service, as described above; the checked VSIX is available from GitHub Releases. User libraries use ordinary public Git repositories, local folders, or npm archives. The four native library repositories publish prebuilt artifacts. Stabilizing the external adapter ABI is a 1.0 gate. See [the gap ledger](web-library-gaps.md) and [performance assessment](performance.md).
+August is experimental. The published 0.23.0 preview targets macOS 14+ ARM64 and GNU/Linux x86-64/ARM64 with glibc 2.36+; other platforms are unsupported. The 0.23.0 producer and clean-consumer jobs passed on all three hosts, followed by a public Linux ARM64 cold install. Future publication requires the same gates described above. The 0.23.0 extension is published in Marketplace and on GitHub Releases. Marketplace OIDC uploads remain blocked by its service, as described above. User libraries use ordinary public Git repositories, local folders, or npm archives. Native library repositories publish prebuilt artifacts. Stabilizing the external adapter ABI is a 1.0 gate. See [the gap ledger](web-library-gaps.md) and [performance assessment](performance.md).
 
 ## Native preview qualification
 

@@ -1,16 +1,3 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
-  <defs>
-    <linearGradient id="surface" x1="0" y1="0" x2="1" y2="1">
-      <stop stop-color="#173A52"/>
-      <stop offset="1" stop-color="#0C182B"/>
-    </linearGradient>
-    <linearGradient id="letter" x1="0" y1="0" x2="0" y2="1">
-      <stop stop-color="#FFD38C"/>
-      <stop offset="1" stop-color="#FFB45E"/>
-    </linearGradient>
-  </defs>
-  <rect x="8" y="8" width="496" height="496" rx="108" fill="url(#surface)"/>
-  <rect x="20" y="20" width="472" height="472" rx="98" fill="none" stroke="#54B9E8" stroke-opacity=".24" stroke-width="3"/>
-  <path d="M159 154h-13q-24 0-24 24v40q0 27-24 38q24 11 24 38v40q0 24 24 24h13M353 154h13q24 0 24 24v40q0 27 24 38q-24 11-24 38v40q0 24-24 24h-13" fill="none" stroke="#79D3F5" stroke-width="23" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M239 154h34l68 204h-44l-12-40h-58l-12 40h-44ZM239 279h34l-17-58Z" fill="url(#letter)" fill-rule="evenodd"/>
+  <path d="M342 150a138 138 0 1 0 50 82" fill="none" stroke="#6E8D79" stroke-width="32" stroke-linecap="round"/>
 </svg>

@@ -13,19 +13,25 @@
 
 /* The transport owns buffers; managed request and response values remain GC roots. */
 typedef struct AugHttpJob AugHttpJob;
+/* A waiter lives on its coroutine stack. It is unlinked before that frame
+   returns; transport cleanup wakes every waiter and clears the list while
+   the owning request task is still retained and joining its children. */
+typedef struct AugHttpBodyWaiter {AugTask *task;struct AugHttpBodyWaiter *next;} AugHttpBodyWaiter;
 typedef struct {
   AugValue roots[8]; AugRetained retained; bool rooted, submitted, headers_sent, head;
   char *body; size_t body_length, body_capacity, sent;
   const AugRoute *route;
   AugHttpJob *job;
   bool streaming, stream_pending, stream_done;
-  bool compress;
+  bool compress, body_ready, body_requested, continue_pending;
+  int reception_status; bool admitted;
+  int64_t receive_deadline; AugHttpBodyWaiter *body_waiters;
 } AugHttpSession;
 struct AugHttpJob {
   struct lws *wsi; AugHttpSession *session; AugValue task;
   /* Request, loggers and the prepared HEAD response outlive transport cleanup. */
   AugValue roots[3]; AugRetained retained;
-  bool test, transport_complete, timed_out, head_complete; int64_t started,deadline;
+  bool test, transport_complete, timed_out, head_complete, reception_timed_out; int64_t started,deadline;
 };
 static const AugRoute *served_routes;
 static AugValue route_call(const AugRoute *route,AugValue *args,int count) {
@@ -39,6 +45,22 @@ static size_t body_limit = 1024 * 1024;
 static size_t response_limit = 4 * 1024 * 1024;
 static const char *listen_host = "127.0.0.1", *tls_certificate = "", *tls_private_key = "", *tls_ca = "";
 static bool enable_http3;
+static int64_t headers_timeout=30000, request_timeout=120000, drain_timeout=10000;
+static size_t max_requests=256, active_requests, active_jobs;
+static int64_t drain_deadline;
+typedef struct AugHttpConnection {struct lws *wsi;int64_t started,headers_deadline;struct AugHttpConnection *next;} AugHttpConnection;
+static AugHttpConnection *connections;
+static size_t connection_count;
+static AugHttpConnection *connection(struct lws *wsi) {for(AugHttpConnection *p=connections;p;p=p->next)if(p->wsi==wsi)return p;return NULL;}
+static void remove_connection(struct lws *wsi) {AugHttpConnection **p=&connections;while(*p){if((*p)->wsi==wsi){AugHttpConnection *old=*p;*p=old->next;free(old);connection_count--;return;}p=&(*p)->next;}}
+static int64_t monotonic_ms(void);
+static void arm_timer(struct lws *wsi, AugHttpSession *session) {
+  AugHttpConnection *c=connection(wsi);int64_t deadline=c?c->headers_deadline:0;
+  if(session&&session->receive_deadline&&(!deadline||session->receive_deadline<deadline))deadline=session->receive_deadline;
+  if(session&&session->job&&session->job->deadline&&(!deadline||session->job->deadline<deadline))deadline=session->job->deadline;
+  int64_t now=monotonic_ms();
+  lws_set_timer_usecs(wsi,deadline?(lws_usec_t)(deadline>now?deadline-now:1)*1000:LWS_SET_TIMER_USEC_CANCEL);
+}
 static void check_deadline(void) {
   AugHttpJob *job=aug_execution_current()->http_job;if(!job||!job->deadline)return;
   struct timespec now;clock_gettime(CLOCK_MONOTONIC,&now);int64_t current=(int64_t)now.tv_sec*1000+now.tv_nsec/1000000;
@@ -47,15 +69,26 @@ static void check_deadline(void) {
 static volatile sig_atomic_t stopped;
 static struct lws_context *server_context;
 static bool io_wakeup_pending;
+static lws_sorted_usec_list_t drain_timer;
+static void wake_drain(lws_sorted_usec_list_t *timer) {(void)timer;if(server_context)lws_cancel_service(server_context);}
+static void schedule_drain(void) {int64_t now=monotonic_ms();lws_sul_schedule(server_context,0,&drain_timer,wake_drain,(lws_usec_t)(drain_deadline>now?drain_deadline-now:1)*1000);}
 static void service_io(bool wait);
 /* All scheduler callbacks run on this event-loop thread. Coalesce wakeups
    until the next service call instead of writing one pipe byte per task. */
 static void notify_io(void) {if(server_context)io_wakeup_pending=true;}
 static int callback_client(struct lws *wsi, enum lws_callback_reasons reason, void *user, void *in, size_t length);
 static void stop_server(int signal_number) { (void)signal_number; stopped = 1; }
-void aug_http_configure(const char *host, const char *certificate, const char *private_key, const char *ca, size_t request_limit, size_t result_limit, bool http3) {
+AugValue _aug_http_stop(AugValue milliseconds) {
+  int64_t amount=aug_cint(milliseconds);
+  if(amount<1||amount>3600000||!served_routes)return aug_error_named("HttpError");
+  int64_t deadline=monotonic_ms()+amount;
+  if(!drain_deadline||deadline<drain_deadline)drain_deadline=deadline;
+  stopped=1;if(server_context)schedule_drain();notify_io();return aug_null();
+}
+void aug_http_configure(const char *host, const char *certificate, const char *private_key, const char *ca, size_t request_limit, size_t result_limit, bool http3, int64_t header_ms, int64_t request_ms, int64_t drain_ms, size_t request_count) {
   listen_host = host; tls_certificate = certificate; tls_private_key = private_key; tls_ca = ca;
   body_limit = request_limit; response_limit = result_limit; enable_http3 = http3;
+  headers_timeout=header_ms;request_timeout=request_ms;drain_timeout=drain_ms;max_requests=request_count;
   aug_task_checkpoint_hook=check_deadline;
 }
 
@@ -321,7 +354,7 @@ void aug_http_policy(const AugHttpPolicy *policy,AugValue request,AugValue depen
     if(entry->used>= (size_t)policy->amount){request_error("HttpTooManyRequests");return;}entry->used++;
   } else if(policy->kind==AUG_HTTP_POLICY_TIMEOUT) {
     int64_t deadline=monotonic_ms()+policy->amount;if(!job->deadline||deadline<job->deadline)job->deadline=deadline;
-    if(!job->test&&job->wsi)lws_set_timer_usecs(job->wsi,(lws_usec_t)(job->deadline-monotonic_ms())*1000);
+    if(!job->test&&job->wsi)arm_timer(job->wsi,session);
   } else if(policy->kind==AUG_HTTP_POLICY_CORS)cors_apply(policy,request,&session->roots[4],false);
   else if(policy->kind==AUG_HTTP_POLICY_COMPRESS)session->compress=accepts_gzip(aug_field(request,2));
 }
@@ -427,6 +460,32 @@ AugValue _aug_http_cookie(AugValue name, AugValue value, AugValue path, AugValue
   header_add(roots[0], "set-cookie", 10, content, strlen(content)); free(content); aug_freeze(roots[0]);
   AugValue result = roots[0]; aug_frame_leave(&frame); return result;
 }
+/* Reading a body is the admission point. The same immutable request identity is
+   retained while its private receive buffer is filled; no user-visible field can
+   observe an incomplete buffer. Test-client requests already have their body. */
+AugValue aug_http_body(AugValue request) {
+  if (aug_field(request,3).tag != AUG_NULL) return aug_field(request,3);
+  AugHttpJob *job=aug_execution_current()->http_job;
+  if (!job || !job->session || job->roots[0].as.object != request.as.object) return request_error("HttpError");
+  AugHttpSession *session=job->session;
+  if (session->reception_status) return request_error(session->reception_status==413?"HttpBodyTooLarge":"HttpBadRequest");
+  if (!session->body_requested) {
+    session->body_requested=true;
+    AugValue expect=header_get(aug_field(request,2),"expect",true);
+    if (aug_has_error) return aug_null();
+    if (expect.tag==AUG_STRING && strcasecmp(aug_cstring(expect),"100-continue")) return request_error("HttpExpectationFailed");
+    session->continue_pending=expect.tag==AUG_STRING && !session->body_ready;
+    if(session->continue_pending)lws_callback_on_writable(job->wsi);
+    lws_rx_flow_control(job->wsi,1);
+  }
+  AugHttpBodyWaiter waiter={aug_task_current(),session->body_waiters};session->body_waiters=&waiter;
+  while (job->session && !session->body_ready && !aug_cancelled && !session->reception_status) aug_task_suspend();
+  if(job->session){AugHttpBodyWaiter **p=&session->body_waiters;while(*p&&*p!=&waiter)p=&(*p)->next;if(*p)*p=waiter.next;}
+  if(job->reception_timed_out)return request_error("HttpRequestTimeout");
+  if (!job->session || aug_cancelled) return request_error("HttpError");
+  if (session->reception_status) return request_error(session->reception_status==413?"HttpBodyTooLarge":"HttpBadRequest");
+  return aug_field(request,3);
+}
 AugValue aug_http_bind(AugValue request, const char *source, const char *name, const AugSchema *schema) {
   if (!strcmp(source, "request")) return request;
   if (!strcmp(source, "path") || !strcmp(source, "query")) return coerce(map_scalar(aug_field(request, !strcmp(source, "path") ? 4 : 5), name), schema);
@@ -436,6 +495,7 @@ AugValue aug_http_bind(AugValue request, const char *source, const char *name, c
     AugValue type = header_get(aug_field(request, 2), "content-type", true);
     if (aug_has_error) return aug_null();
     if (type.tag != AUG_STRING || strncasecmp(aug_cstring(type), "application/x-www-form-urlencoded", 33) || (type.as.object->text_length > 33 && type.as.object->text[33] != ';')) return request_error("HttpUnsupportedMedia");
+    aug_http_body(request); if (aug_has_error) return aug_null();
     AugValue map = form_map(aug_field(request, 3)); AugFrame frame; aug_frame_enter(&frame, &map, 1);
     if (aug_has_error) {aug_frame_leave(&frame); return aug_null();}
     if (schema->kind != AUG_SCHEMA_RECORD) {AugValue result = coerce(map_scalar(map, name), schema); aug_frame_leave(&frame); return result;}
@@ -453,6 +513,7 @@ AugValue aug_http_bind(AugValue request, const char *source, const char *name, c
     if (aug_has_error) return aug_null();
     if (type.tag != AUG_STRING || (strncasecmp(type.as.object->text, "application/json", 16) || (type.as.object->text_length > 16 && type.as.object->text[16] != ';'))) return request_error("HttpUnsupportedMedia");
     if (encoding.tag != AUG_NULL && strcasecmp(encoding.as.object->text, "identity")) return request_error("HttpUnsupportedMedia");
+    aug_http_body(request); if (aug_has_error) return aug_null();
     AugValue roots[2] = {aug_field(request, 3), aug_null()}; AugFrame frame; aug_frame_enter(&frame, roots, 2);
     roots[1] = aug_bytes_text(roots[0]);
     if (!aug_has_error) roots[1] = _aug_json_parse(roots[1]);
@@ -482,10 +543,10 @@ AugValue aug_http_response_full(AugValue body, AugValue status, AugValue headers
   return result;
 }
 int aug_http_error_status(void) {
-  return aug_error_is("HttpBadRequest") ? 400 : aug_error_is("HttpUnauthorized") ? 401 : aug_error_is("HttpForbidden") ? 403 : aug_error_is("HttpTooManyRequests") ? 429 : aug_error_is("HttpTimedOut") ? 504 : aug_error_is("HttpBodyTooLarge") ? 413 : aug_error_is("HttpUnsupportedMedia") ? 415 : aug_error_is("HttpValidationError") ? 422 : 500;
+  return aug_error_is("HttpBadRequest") ? 400 : aug_error_is("HttpUnauthorized") ? 401 : aug_error_is("HttpForbidden") ? 403 : aug_error_is("HttpTooManyRequests") ? 429 : aug_error_is("HttpTimedOut") ? 504 : aug_error_is("HttpRequestTimeout") ? 408 : aug_error_is("HttpExpectationFailed") ? 417 : aug_error_is("HttpBodyTooLarge") ? 413 : aug_error_is("HttpUnsupportedMedia") ? 415 : aug_error_is("HttpValidationError") ? 422 : 500;
 }
 AugValue aug_http_problem(int status) {
-  const char *title = status == 400 ? "Bad Request" : status == 404 ? "Not Found" : status == 405 ? "Method Not Allowed" : status == 413 ? "Content Too Large" : status == 415 ? "Unsupported Media Type" : status == 422 ? "Unprocessable Content" : status == 401 ? "Unauthorized" : status == 403 ? "Forbidden" : status == 429 ? "Too Many Requests" : status == 504 ? "Gateway Timeout" : "Internal Server Error";
+  const char *title = status == 400 ? "Bad Request" : status == 408 ? "Request Timeout" : status == 417 ? "Expectation Failed" : status == 503 ? "Service Unavailable" : status == 404 ? "Not Found" : status == 405 ? "Method Not Allowed" : status == 413 ? "Content Too Large" : status == 415 ? "Unsupported Media Type" : status == 422 ? "Unprocessable Content" : status == 401 ? "Unauthorized" : status == 403 ? "Forbidden" : status == 429 ? "Too Many Requests" : status == 504 ? "Gateway Timeout" : "Internal Server Error";
   char json[256]; snprintf(json, sizeof(json), "{\"type\":\"about:blank\",\"title\":\"%s\",\"status\":%d}", title, status);
   AugValue roots[2] = {0}; AugFrame frame; aug_frame_enter(&frame, roots, 2);
   roots[0] = aug_string(json); roots[0] = _aug_json_parse(roots[0]); roots[1] = aug_http_response(roots[0], status);
@@ -494,7 +555,9 @@ AugValue aug_http_problem(int status) {
 }
 static void cleanup(AugHttpSession *session) {
   if (session->job) {AugHttpJob *job=session->job;if(job->wsi)lws_set_timer_usecs(job->wsi,LWS_SET_TIMER_USEC_CANCEL);job->session = NULL; job->wsi = NULL;if(job->transport_complete)aug_task_wake(job->task.as.object->native);else aug_task_cancel(job->task);}
+  for(AugHttpBodyWaiter *p=session->body_waiters;p;p=p->next)aug_task_wake(p->task);
   if (session->rooted) aug_release(&session->retained);
+  if(session->admitted)active_requests--;
   free(session->body); memset(session, 0, sizeof(*session));
 }
 static AugValue request_task(AugValue self, AugValue *args, int count) {
@@ -551,7 +614,8 @@ bool aug_http_head_response(AugValue *response) {
 AugValue aug_http_finish(AugValue response) {
   AugHttpJob *job=aug_execution_current()->http_job;if(!job)return response;
   AugHttpSession *session=job->session;AugValue roots[3]={response,job->roots[1],job->roots[0]};AugFrame frame;aug_frame_enter(&frame,roots,3);
-  if(job->timed_out)roots[0]=aug_http_problem(504);
+  if(job->reception_timed_out)roots[0]=aug_http_problem(408);
+  else if(job->timed_out)roots[0]=aug_http_problem(504);
   else if(job->test&&job->deadline&&monotonic_ms()>=job->deadline)roots[0]=aug_http_problem(504);
   if(session) {
     bool prepared_head=job->head_complete&&roots[0].tag==AUG_OBJECT&&session->roots[1].tag==AUG_OBJECT&&roots[0].as.object==session->roots[1].as.object;
@@ -566,16 +630,18 @@ AugValue aug_http_finish(AugValue response) {
       if(session->headers_sent&&aug_cint(aug_field(roots[0],1))>=400)lws_set_timeout(job->wsi,PENDING_TIMEOUT_USER_OK,LWS_TO_KILL_ASYNC);
       else {
         session->roots[1]=roots[0];
+        if(job->wsi)lws_rx_flow_control(job->wsi,1);
         if(session->route->stream&&aug_cint(aug_field(roots[0],1))<400){if(session->compress&&!session->streaming){session->roots[3]=gzip_bytes(aug_bytes("",0,AUG_BYTES_KIND));session->stream_pending=true;}session->streaming=true;session->stream_done=true;}
         else session->streaming=false;
         lws_callback_on_writable(job->wsi);
       }
-      while(job->session&&!job->transport_complete&&(!aug_cancelled||(job->head_complete&&!job->timed_out)))aug_task_suspend();
+      while(job->session&&!job->transport_complete&&(!aug_cancelled||job->reception_timed_out||(job->head_complete&&!job->timed_out)))aug_task_suspend();
     }
   }
   /* A deadline may have fired while finish was suspended on transport. */
-  if(job->timed_out)roots[0]=aug_http_problem(504);
-  int status=aug_cancelled&&!job->timed_out&&(!job->head_complete||!job->transport_complete)?499:(int)aug_cint(aug_field(roots[0],1));
+  if(job->reception_timed_out)roots[0]=aug_http_problem(408);
+  else if(job->timed_out)roots[0]=aug_http_problem(504);
+  int status=job->reception_timed_out?408:aug_cancelled&&!job->timed_out&&(!job->head_complete||!job->transport_complete)?499:(int)aug_cint(aug_field(roots[0],1));
   bool cancelled=aug_cancelled;aug_cancelled=false;aug_execution_current()->http_job=NULL;
   if(roots[1].tag==AUG_OBJECT)for(size_t i=roots[1].as.object->field_count;i>0;i--){
     AugValue arguments[]={aug_field(roots[2],0),aug_field(roots[2],1),aug_int(status),aug_int(monotonic_ms()-job->started)};
@@ -590,22 +656,22 @@ static void request_complete(AugValue task, void *data) {
   if (job->session && job->wsi) {
     AugValue response = aug_field(task, 2), error = aug_field(task, 3);
     if (error.tag != AUG_NULL) {aug_throw(error); aug_report_error(); aug_take_error(); response = aug_http_problem(500);}
-    if(job->timed_out)response=aug_http_problem(504);
+    if(job->reception_timed_out)response=aug_http_problem(408);else if(job->timed_out)response=aug_http_problem(504);
     AugHttpSession *session=job->session;session->job=NULL;
     if(session->route->stream&&aug_cint(aug_field(response,1))<400) {session->roots[1]=response;session->streaming=true;session->stream_done=true;}
     else if(session->streaming&&session->headers_sent) {lws_set_timeout(job->wsi,PENDING_TIMEOUT_USER_OK,LWS_TO_KILL_ASYNC);}
     else {session->roots[1]=response;session->streaming=false;}
     lws_callback_on_writable(job->wsi);
   }
-  aug_task_release(task);aug_release(&job->retained);free(job);
+  aug_task_release(task);aug_release(&job->retained);free(job);active_jobs--;
 }
 static void dispatch(struct lws *wsi, AugHttpSession *session) {
   if (session->submitted) return; session->submitted = true;
-  aug_set_field(session->roots[0], 3, aug_bytes(session->body, session->body_length, AUG_BYTES_KIND));
+  if(session->body_ready)aug_set_field(session->roots[0], 3, aug_bytes(session->body, session->body_length, AUG_BYTES_KIND));
   aug_freeze(session->roots[0]);
   if (!session->route) {session->roots[1] = aug_http_problem(404); lws_callback_on_writable(wsi); return;}
   AugHttpJob *job = calloc(1, sizeof(*job)); if (!job) return;
-  job->wsi = wsi; job->session = session; session->job = job;job->started=monotonic_ms();
+  active_jobs++;job->wsi = wsi; job->session = session; session->job = job;job->started=monotonic_ms();
   job->roots[0]=session->roots[0];aug_retain(&job->retained,job->roots,3);
   AugValue arguments[3] = {session->roots[0], aug_int(session->route - served_routes),aug_int((int64_t)(intptr_t)job)};
   job->task = aug_task_spawn(request_task, aug_null(), arguments, 3, request_complete, job);
@@ -613,8 +679,16 @@ static void dispatch(struct lws *wsi, AugHttpSession *session) {
 static int callback_http(struct lws *wsi, enum lws_callback_reasons reason, void *user, void *in, size_t length) {
   AugHttpSession *session = user;
   switch (reason) {
+    case LWS_CALLBACK_FILTER_NETWORK_CONNECTION: return stopped || active_requests>=max_requests || active_jobs>=max_requests || connection_count>=max_requests*2;
+    case LWS_CALLBACK_SERVER_NEW_CLIENT_INSTANTIATED: {
+      AugHttpConnection *c=calloc(1,sizeof(*c));if(!c){lws_set_timeout(wsi,PENDING_TIMEOUT_USER_OK,LWS_TO_KILL_ASYNC);return 0;}
+      c->wsi=wsi;c->started=monotonic_ms();c->headers_deadline=c->started+headers_timeout;c->next=connections;connections=c;connection_count++;arm_timer(wsi,NULL);return 0;
+    }
+    case LWS_CALLBACK_WSI_DESTROY: remove_connection(wsi);return 0;
     case LWS_CALLBACK_HTTP: {
-      cleanup(session); aug_retain(&session->retained, session->roots, 8); session->rooted = true;
+      cleanup(session);
+      AugHttpConnection *c=connection(wsi);if(c)c->headers_deadline=0;
+      aug_retain(&session->retained, session->roots, 8); session->rooted = true;
       char *uri; int uri_size; int method = lws_http_get_uri_and_method(wsi, &uri, &uri_size);
       const char *methods[] = {"GET", "POST", "OPTIONS", "PUT", "PATCH", "DELETE", "CONNECT", "HEAD"};
       const char *verb = method >= 0 && method < 8 ? methods[method] : "UNKNOWN";
@@ -633,6 +707,9 @@ static int callback_http(struct lws *wsi, enum lws_callback_reasons reason, void
         map_add(aug_field(session->roots[0], 5), roots[0], roots[1]); aug_frame_leave(&frame);
       }
       free(fragment);
+      if(stopped||active_requests>=max_requests||active_jobs>=max_requests){session->roots[1]=aug_http_problem(503);lws_callback_on_writable(wsi);return 0;}
+      session->admitted=true;active_requests++;
+      session->receive_deadline=(c?c->started:monotonic_ms())+request_timeout;arm_timer(wsi,session);
       session->route=select_route(session->roots[0],served_routes,served_count,&session->roots[1]);
       if (!session->route) {
         session->submitted = true; lws_callback_on_writable(wsi); return 0;
@@ -643,24 +720,40 @@ static int callback_http(struct lws *wsi, enum lws_callback_reasons reason, void
       if (content_length.tag == AUG_STRING) {
         errno = 0; char *last; unsigned long long amount = strtoull(content_length.as.object->text, &last, 10);
         bool invalid = !content_length.as.object->text_length || content_length.as.object->text[0] < '0' || content_length.as.object->text[0] > '9' || *last;
-        if (invalid || errno || amount > body_limit) { session->roots[1] = aug_http_problem(invalid ? 400 : 413); session->submitted = true; lws_callback_on_writable(wsi); return 0; }
+        if (invalid || errno || amount > body_limit) session->reception_status=invalid?400:413;
         has_body = amount > 0;
       }
       if (header_get(aug_field(session->roots[0], 2), "transfer-encoding", false).tag == AUG_STRING) has_body = true;
-      if (!has_body) dispatch(wsi, session);
+      session->body_ready=!has_body;
+      if(!has_body){session->receive_deadline=0;arm_timer(wsi,session);}
+      if(has_body)lws_rx_flow_control(wsi,0);
+      dispatch(wsi, session);
       return 0;
     }
     case LWS_CALLBACK_HTTP_BODY:
-      if (session->submitted) return 0;
-      if (length > body_limit - session->body_length) { session->roots[1] = aug_http_problem(413); session->submitted = true; lws_callback_on_writable(wsi); return 0; }
+      if (session->roots[1].tag != AUG_NULL) return 0;
+      if (length > body_limit - session->body_length) { session->reception_status=413; for(AugHttpBodyWaiter *p=session->body_waiters;p;p=p->next)aug_task_wake(p->task); return 0; }
       if (session->body_length + length > session->body_capacity) {
         session->body_capacity = session->body_length + length;
         char *next = realloc(session->body, session->body_capacity); if (!next) return -1; session->body = next;
       }
       memcpy(session->body + session->body_length, in, length); session->body_length += length; return 0;
-    case LWS_CALLBACK_HTTP_BODY_COMPLETION: dispatch(wsi, session); return 0;
+    case LWS_CALLBACK_HTTP_BODY_COMPLETION:
+      if(session->roots[0].tag!=AUG_OBJECT)return 0;
+      session->body_ready=true;session->receive_deadline=0;arm_timer(wsi,session);
+      /* Transport-only initialization after the request has been frozen. */
+      session->roots[0].as.object->fields[3]=aug_bytes(session->body,session->body_length,AUG_BYTES_KIND);
+      aug_freeze(session->roots[0].as.object->fields[3]);
+      for(AugHttpBodyWaiter *p=session->body_waiters;p;p=p->next)aug_task_wake(p->task);
+      return 0;
     case LWS_CALLBACK_HTTP_WRITEABLE: {
       if (!session) return 0;
+      if (session->continue_pending && session->roots[1].tag == AUG_NULL) {
+        unsigned char interim[LWS_PRE+32];const char *text="HTTP/1.1 100 Continue\r\n\r\n";size_t size=strlen(text);
+        memcpy(interim+LWS_PRE,text,size);session->continue_pending=false;
+        if(lws_write(wsi,interim+LWS_PRE,size,LWS_WRITE_HTTP_HEADERS)!=(int)size)return -1;
+        return 0;
+      }
       if (session->roots[1].tag != AUG_OBJECT) return 0;
       AugValue response = session->roots[1], body = aug_field(response, 0), headers = aug_field(response, 2);
       if (!session->headers_sent) {
@@ -702,9 +795,24 @@ static int callback_http(struct lws *wsi, enum lws_callback_reasons reason, void
       lws_callback_on_writable(wsi); return 0;
     }
     case LWS_CALLBACK_HTTP_DROP_PROTOCOL:
-    case LWS_CALLBACK_CLOSED_HTTP: if (session) cleanup(session); return 0;
+    case LWS_CALLBACK_CLOSED_HTTP:
+      if(session)cleanup(session);
+      {AugHttpConnection *c=connection(wsi);if(c){c->started=monotonic_ms();c->headers_deadline=c->started+headers_timeout;arm_timer(wsi,NULL);}}
+      return 0;
     case LWS_CALLBACK_TIMER:
-      if(session&&session->job){AugHttpJob *job=session->job;job->timed_out=true;aug_task_cancel(job->task);if(session->headers_sent)lws_set_timeout(wsi,PENDING_TIMEOUT_USER_OK,LWS_TO_KILL_ASYNC);}return 0;
+      {
+        int64_t now=monotonic_ms();AugHttpConnection *c=connection(wsi);
+        if(c&&c->headers_deadline&&now>=c->headers_deadline){lws_return_http_status(wsi,408,NULL);return -1;}
+        if(session&&session->job){AugHttpJob *job=session->job;
+          if(session->receive_deadline&&now>=session->receive_deadline){job->reception_timed_out=true;session->receive_deadline=0;}
+          else if(job->deadline&&now>=job->deadline)job->timed_out=true;
+          else {arm_timer(wsi,session);return 0;}
+          lws_rx_flow_control(wsi,1);aug_task_cancel(job->task);
+          lws_cancel_service(server_context);
+          if(session->headers_sent)lws_set_timeout(wsi,PENDING_TIMEOUT_USER_OK,LWS_TO_KILL_ASYNC);
+        }
+        return 0;
+      }
     default: return 0;
   }
 }
@@ -786,7 +894,7 @@ static bool ensure_context(void) {
   if (server_context) {
     info.options = LWS_SERVER_OPTION_DO_SSL_GLOBAL_INIT; info.vhost_name = "august-client";
     info.client_ssl_ca_filepath = *tls_ca ? tls_ca : NULL;
-    if (!lws_create_vhost(server_context, &info)) {lws_context_destroy(server_context); server_context = NULL;}
+    if (!lws_create_vhost(server_context, &info)) {lws_sul_cancel(&drain_timer);lws_context_destroy(server_context); server_context = NULL;}
   }
   return server_context != NULL;
 }
@@ -818,13 +926,17 @@ AugValue _aug_http_request(AugValue method, AugValue url, AugValue headers, AugV
 }
 void aug_http_serve(const AugRoute *routes, size_t count, int64_t port) {
   if (port < 0 || port > 65535 || served_routes) { request_error("HttpError"); return; }
-  served_routes = routes; served_count = count; stopped = 0;
+  served_routes = routes; served_count = count; stopped = 0; drain_deadline=0;
   if (!ensure_context()) {request_error("HttpError"); return;}
   struct lws_context_creation_info info; memset(&info, 0, sizeof(info));
   info.port = (int)port; info.iface = listen_host; info.protocols = protocols; info.vhost_name = "august"; info.options = LWS_SERVER_OPTION_DO_SSL_GLOBAL_INIT;
   info.ssl_cert_filepath = *tls_certificate ? tls_certificate : NULL; info.ssl_private_key_filepath = *tls_private_key ? tls_private_key : NULL;
   info.alpn = "h2,http/1.1";
   info.max_http_header_data = 65535; info.max_http_header_pool = 64;
+  info.timeout_secs=(unsigned)((headers_timeout>request_timeout?headers_timeout:request_timeout)+999)/1000;
+  /* The library defaults its allocated-header idle timer to ten seconds.
+     Keep it above our configurable absolute deadline. */
+  info.timeout_secs_ah_idle=info.timeout_secs+1;
   struct lws_vhost *vhost = lws_create_vhost(server_context, &info);
   if (!vhost) { request_error("HttpError"); return; }
   if (enable_http3) {
@@ -834,7 +946,7 @@ void aug_http_serve(const AugRoute *routes, size_t count, int64_t port) {
     struct lws *udp = quic ? lws_create_adopt_udp(quic, listen_host, lws_get_vhost_listen_port(vhost), LWS_CAUDP_BIND, "august-http", NULL, NULL, NULL, NULL, "quic_listen") : NULL;
     if (getenv("AUG_HTTP_TRACE") && udp) fprintf(stderr, "August QUIC socket %d bound for %s:%d\n", lws_get_socket_fd(udp), listen_host, lws_get_vhost_listen_port(vhost));
     if (!quic || !udp) {
-      lws_context_destroy(server_context); server_context = NULL; request_error("HttpError"); return;
+      lws_sul_cancel(&drain_timer);lws_context_destroy(server_context); server_context = NULL; request_error("HttpError"); return;
     }
   }
   printf("August HTTP listening on port %d\n", lws_get_vhost_listen_port(vhost)); fflush(stdout);
@@ -850,7 +962,20 @@ void aug_http_serve(const AugRoute *routes, size_t count, int64_t port) {
     io_wakeup_pending=false;
     if (lws_service(server_context, 100) < 0) break;
   }
-  lws_context_destroy(server_context); server_context = NULL;
-  while (aug_scheduler_step()) {}
+  /* Deprecation closes listening sockets while established requests stay alive.
+     Reject new keep-alive requests too, then service admitted requests until the
+     transport deadline. Resource cleanup is joined before returning to main. */
+  if(!drain_deadline)drain_deadline=monotonic_ms()+drain_timeout;
+  lws_context_deprecate(server_context,NULL);schedule_drain();
+  while(active_requests&&monotonic_ms()<drain_deadline) {
+    bool progressed=false;
+    for(unsigned i=0;i<32&&aug_scheduler_step();i++)progressed=true;
+    if(progressed||io_wakeup_pending)lws_cancel_service(server_context);
+    io_wakeup_pending=false;lws_service(server_context,100);
+  }
+  lws_sul_cancel(&drain_timer);lws_context_destroy(server_context); server_context = NULL;
+  while(active_jobs){if(!aug_scheduler_step()){struct timespec pause={0,1000000};nanosleep(&pause,NULL);}}
+  while(connections){AugHttpConnection *next=connections->next;free(connections);connections=next;}
+  connection_count=0;served_routes=NULL;served_count=0;aug_scheduler_io=NULL;aug_scheduler_notify=NULL;
   sigaction(SIGTERM, &previous_term, NULL); sigaction(SIGINT, &previous_int, NULL);
 }

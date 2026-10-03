@@ -34,6 +34,8 @@ The sanitizer circuit instruments the actual August LLVM IR with AddressSanitize
 
 AddressSanitizer checks instrumented memory accesses; UBSan checks selected undefined operations in the runtime C. Neither replaces ownership checking or a behavior oracle. Prebuilt third-party library internals are not covered by these core sanitizer runs. Leak detection is disabled in this shared gate; explicit native allocation counters and owned-drop cases provide separate cleanup evidence. The suite does not use coverage-guided fuzzing or prove the absence of races, leaks, or protocol errors. The [research note](research/qualification-methods.md) explains the choice of checks.
 
+The [runtime reliability gate](runtime-reliability.md) separately repeats complete heap lifecycles, forces a worker-completion timing window, checks native finalizer thread ownership, and measures sustained resident memory. Its release profile runs for at least 30 minutes on each target.
+
 ## Use the evidence for your project
 
 Choose a [downloadable measured program](examples/index.md#measured-programs) that resembles your workload. Read its code and compiled spec, then run it with the published CLI. Add your application's expected results and failure cases as [same-file tests](testing.md). Use [project benchmarks](performance.md#benchmark-your-own-project) to measure that tested behavior under your own deployment conditions.

@@ -1,6 +1,6 @@
 # LLVM and native package support
 
-August 0.21.0 uses LLVM 23.1.2 by default. It compiles checked execution IR directly to a host executable and downloads a pinned compiler/runtime pack. Consumers need Node.js 24 and a supported OS; they do not install a native compiler or SDK.
+August 0.23.0 uses LLVM 23.1.2 by default. It compiles checked execution IR directly to a host executable and downloads a pinned compiler/runtime pack. Consumers need Node.js 24 and a supported OS; they do not install a native compiler or SDK.
 
 ## Supported hosts
 
@@ -27,6 +27,6 @@ Install these repository packages with `aug add`, then import their exported Aug
 
 LLVM parity tests cover checked language behavior in both optimization modes. Debugger tests check source breakpoints and runtime representation. [Safety gyms](safety-gyms.md), sanitizer tests, installed-package tests, and [performance reports](performance.md) record results separately. A successful library call does not prove arbitrary foreign code safe.
 
-Native ABI version 1 supports fixed-width values, copied buffers, and opaque owned resources. Callbacks, retained foreign memory, native aggregates, exported August libraries, and foreign-thread entry are not supported by this ABI. Tasks are cooperative on one OS thread. Windows, musl, and cross compilation are outside the support matrix.
+Native ABI version 1 supports fixed-width values, copied buffers, and opaque owned resources. Callbacks, retained foreign memory, native aggregates, exported August libraries, and foreign-thread entry are not supported by this ABI. Cooperative tasks share a heap; worker tasks run on OS threads with isolated heaps and copied values. Windows, musl, and cross compilation are outside the support matrix.
 
 Native packages retain their upstream license obligations. In particular, the LibTorch facade is qualified but a complete upstream dependency SBOM remains open; review the redistributed archive rather than treating a wrapper license as the whole inventory. See [production readiness](production-readiness.md#dependencies-and-licenses) and [native compilation design](native-interop-llvm-plan.md).

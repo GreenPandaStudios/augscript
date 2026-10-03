@@ -31,7 +31,7 @@ Warnings are nonblocking. Human diagnostics show the source line, a pointer, and
 
 ## Native standard libraries
 
-August 0.21.0 uses LLVM by default on macOS 14+ ARM64 and GNU/Linux x64/ARM64 with glibc 2.36+. `aug run` prepares source packages and the verified compiler/runtime pack, then builds and starts the application. `build`, `test`, and `bench` use the same backend; install source packages before running them in a fresh project. Consumers do not install Clang, LLVM, or an SDK.
+August 0.23.0 uses LLVM by default on macOS 14+ ARM64 and GNU/Linux x64/ARM64 with glibc 2.36+. `aug run` prepares source packages and the verified compiler/runtime pack, then builds and starts the application. `build`, `test`, and `bench` use the same backend; install source packages before running them in a fresh project. Consumers do not install Clang, LLVM, or an SDK.
 
 The first LLVM run downloads the host's tools and prebuilt runtime components. JSON, tasks, crypto, and HTTP select components from that pack. A native package can add its own platform archives. Each download has a SHA-256 pin and size bound; later projects share verified cache entries. Installation never runs package build scripts or silently falls back to a source build. Missing artifacts and unsupported platforms include the failed requirement and a recovery step.
 
@@ -78,7 +78,7 @@ module_dependencies:
 | --- | --- |
 | output | Executable name under .aug-build, or an absolute output path. |
 | optimization | debug (-O0) or release (-O2); both retain debug information. |
-| backend | llvm (default in 0.21.0) or the temporary c migration reference. |
+| backend | llvm (default in 0.23.0) or the temporary c migration reference. |
 | block_style | Formatter braces or indent. |
 | indentation | Formatter spaces (four) or tabs. |
 | assignment | Formatter equals or to; both remain accepted source forms. |

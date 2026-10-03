@@ -4,13 +4,13 @@ Compile an August application in a Linux build container, then deploy its execut
 
 ## Prepare the toolchain images
 
-Build two local images using August 0.21.0. The build image contains Node.js 24 and the CLI; `aug build` downloads the compiler and library artifacts. The run image contains Debian's runtime and CA certificates and runs your executable as an unprivileged user. August does not publish registry images for these recipes.
+Build two local images using August 0.23.0. The build image contains Node.js 24 and the CLI; `aug build` downloads the compiler and library artifacts. The run image contains Debian's runtime and CA certificates and runs your executable as an unprivileged user. August does not publish registry images for these recipes.
 
 Save this as `Dockerfile.build` in an empty working folder. Pin `AUG_VERSION` to the version used by your application:
 
 ```dockerfile
 FROM node:24-bookworm
-ARG AUG_VERSION=0.21.0
+ARG AUG_VERSION=0.23.0
 RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates \
     && rm -rf /var/lib/apt/lists/*

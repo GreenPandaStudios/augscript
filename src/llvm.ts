@@ -5,12 +5,12 @@ import {verifyIR} from './ir-verify.ts';
 import {DebugMetadata} from './llvm-debug.ts';
 
 export interface RuntimeLayout {
-  abi:'compiler-private-runtime-v1';valueSize:16;valueAlignment:8;valuePayloadOffset:8;
+  abi:'compiler-private-runtime-v2';valueSize:16;valueAlignment:8;valuePayloadOffset:8;
   frameSize:24;methodEntrySize:24;pointerSize:8;schemaSize:48;schemaPointerMakerOffset:40;
   routeSize:56;routePointerHandlerOffset:48;policySize:56;httpErrorSize:16;
   executionErrorOffset:40;executionCancelledOffset:41;executionFiberOffset:48;booleanSize:1;
 }
-export const runtimeLayout:RuntimeLayout={abi:'compiler-private-runtime-v1',valueSize:16,valueAlignment:8,valuePayloadOffset:8,frameSize:24,methodEntrySize:24,pointerSize:8,schemaSize:48,schemaPointerMakerOffset:40,routeSize:56,routePointerHandlerOffset:48,policySize:56,httpErrorSize:16,executionErrorOffset:40,executionCancelledOffset:41,executionFiberOffset:48,booleanSize:1};
+export const runtimeLayout:RuntimeLayout={abi:'compiler-private-runtime-v2',valueSize:16,valueAlignment:8,valuePayloadOffset:8,frameSize:24,methodEntrySize:24,pointerSize:8,schemaSize:48,schemaPointerMakerOffset:40,routeSize:56,routePointerHandlerOffset:48,policySize:56,httpErrorSize:16,executionErrorOffset:40,executionCancelledOffset:41,executionFiberOffset:48,booleanSize:1};
 const symbol=(name:string)=>'@'+name;
 
 /** Emit LLVM directly from checked August execution IR. No application C is generated. */
@@ -67,9 +67,9 @@ class ModuleEmitter {
     const coverage=this.ir.coverage.map(point=>`  call void @aug_coverage_register(ptr ${this.text(point.file)}, i64 ${point.line})`);
     if(coverage.length)this.declare('aug_coverage_register','void',['ptr','i64']);
     const web=this.ir.web,configure=this.ir.components.includes('http')?[
-      `  call void @aug_http_configure(ptr ${this.text(web.host)}, ptr ${this.text(web.tls.certificate)}, ptr ${this.text(web.tls.private_key)}, ptr ${this.text(web.tls.ca)}, i64 ${web.body_limit}, i64 ${web.response_limit}, i1 zeroext ${web.http3?'true':'false'})`
+      `  call void @aug_http_configure(ptr ${this.text(web.host)}, ptr ${this.text(web.tls.certificate)}, ptr ${this.text(web.tls.private_key)}, ptr ${this.text(web.tls.ca)}, i64 ${web.body_limit}, i64 ${web.response_limit}, i1 zeroext ${web.http3?'true':'false'}, i64 ${web.headers_timeout}, i64 ${web.request_timeout}, i64 ${web.drain_timeout}, i64 ${web.max_requests})`
     ]:[];
-    if(configure.length)this.declare('aug_http_configure','void',['ptr','ptr','ptr','ptr','i64','i64','i1 zeroext']);
+    if(configure.length)this.declare('aug_http_configure','void',['ptr','ptr','ptr','ptr','i64','i64','i1 zeroext','i64','i64','i64','i64']);
     const startup=this.ir.bindings.filter(b=>b.shared).flatMap((b,i)=>[
       `  call void @${b.function}(ptr %result, ptr null, ptr null, i32 0)`,
       `  %binding_error_${i} = call zeroext i1 @aug_ir_has_error()`,
@@ -87,7 +87,7 @@ class ModuleEmitter {
       `%AugValue = type {i32, i64}`,`%AugFrame = type {ptr, i64, ptr}`,`%AugMethodEntry = type {ptr, ptr, ptr}`,`%AugSchema = type {i32, i8, i8, i64, ptr, ptr, ptr, ptr}`,`%NativeError = type {i32, i32, [512 x i8]}`,
       `%AugRoute = type {ptr, ptr, ptr, i32, i32, ptr, i64, ptr}`,`%AugHttpPolicy = type {i32, ptr, i64, i64, i8, ptr, ptr}`,`%AugHttpError = type {ptr, i32}`,
       `@aug_globals = internal global [${Math.max(1,globalCount)} x %AugValue] zeroinitializer, align 8`,
-      `@aug_task_checkpoint_hook = external global ptr, align 8`,
+      `@aug_task_checkpoint_hook = external thread_local global ptr, align 8`,
       `@aug_scoped = private constant [${Math.max(1,globalCount)} x i8] [${globalCount?this.ir.scoped.map(scoped=>'i8 '+(scoped?1:0)).join(', '):'i8 0'}]`,...this.globals,...this.declarations.values(),...bodies,main,this.debug.generate(),''].join('\n\n');
   }
 }
@@ -270,7 +270,7 @@ class FunctionEmitter {
       case 'start':{
         const mask=this.allocate(`[${Math.max(1,i.owned.length)} x i8]`);
         this.line(`store [${Math.max(1,i.owned.length)} x i8] [${i.owned.length?i.owned.map(own=>'i8 '+(own?1:0)).join(', '):'i8 0'}], ptr ${mask}, align 1`);
-        this.call('aug_task_start_pointer','void',[{type:'ptr',value:this.ptr(i.out)},{type:'ptr',value:'@'+i.function},{type:'ptr',value:i.receiver===undefined?'null':this.ptr(i.receiver)},{type:'ptr',value:this.args(i.args)},{type:'i32',value:String(i.args.length)},{type:'ptr',value:mask}]);return;
+        this.call(i.worker?'aug_task_start_worker_pointer':'aug_task_start_pointer','void',[{type:'ptr',value:this.ptr(i.out)},{type:'ptr',value:'@'+i.function},{type:'ptr',value:i.receiver===undefined?'null':this.ptr(i.receiver)},{type:'ptr',value:this.args(i.args)},{type:'i32',value:String(i.args.length)},{type:'ptr',value:mask}]);return;
       }
       case 'wait':this.call('aug_ir_task_wait','void',[{type:'ptr',value:this.ptr(i.out)},{type:'ptr',value:this.args(i.tasks)},{type:'i32',value:String(i.tasks.length)}]);return;
       case 'checkpoint':{

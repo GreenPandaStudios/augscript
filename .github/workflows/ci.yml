@@ -4,6 +4,12 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
+    inputs:
+      reliability_profile:
+        description: Runtime lifecycle duration; soak runs for at least 30 minutes
+        type: choice
+        options: [soak, ci]
+        default: soak
 permissions:
   contents: read
 concurrency:
@@ -50,7 +56,7 @@ jobs:
       - run: npm run test:packages
   native:
     runs-on: macos-15
-    timeout-minutes: 60
+    timeout-minutes: 90
     env:
       AUG_LLVM_HOME: ${{ github.workspace }}/.aug-build/llvm-tools
       AUG_GITHUB_TOKEN: ${{ github.token }}
@@ -76,6 +82,17 @@ jobs:
       - run: node scripts/build-runtime-pack.mjs
       - run: npm run check
       - run: npm test
+      - name: Independent language conformance in both LLVM modes and block styles
+        run: npm run test:conformance
+      - name: Check isolated workers under native race and memory instrumentation
+        run: |
+          AUG_WORKER_SANITIZER=thread node --test tests/worker-runtime.test.mjs
+          AUG_WORKER_SANITIZER=address,undefined node --test tests/worker-runtime.test.mjs
+      - name: Qualify repeated runtime lifecycles and sustained heap use
+        env:
+          AUG_SANITIZER_CC: ${{ github.workspace }}/.aug-build/llvm-maintainer/bin/clang
+          RELIABILITY_PROFILE: ${{ inputs.reliability_profile || 'ci' }}
+        run: npm run test:reliability -- --profile "$RELIABILITY_PROFILE"
       - name: Existing language, runtime and real applications through LLVM
         env:
           AUG_REQUIRE_DWARF: '1'
@@ -88,6 +105,22 @@ jobs:
           AUG_SANITIZER_CC: ${{ github.workspace }}/.aug-build/llvm-maintainer/bin/clang
         run: node scripts/sanitize-core.mjs --backend llvm
       - run: node scripts/build-llvm-pack.mjs
+      - name: Qualify the native PostgreSQL package and HTTP drain
+        run: |
+          git clone --no-checkout https://github.com/GreenPandaStudios/aug-postgres "$RUNNER_TEMP/aug-postgres"
+          git -C "$RUNNER_TEMP/aug-postgres" checkout --detach 40b0a671f7c9066fe6b311d931020749949e3f60
+          node bin/aug.mjs bind header "$RUNNER_TEMP/aug-postgres/native/include/aug_postgres.h" --contract "$RUNNER_TEMP/aug-postgres/native.abi.json" --target aarch64-apple-darwin --clang clang --output .aug-build/header-check-postgres
+          node "$RUNNER_TEMP/aug-postgres/native/build.mjs"
+          AUG_CLI="$PWD/bin/aug.mjs" AUG_RUNTIME_PACK="$PWD/.aug-native/llvm/runtime" AUG_NATIVE_HOME="$PWD/.aug-native" node "$RUNNER_TEMP/aug-postgres/native/ci-server.mjs"
+      - name: Retain PostgreSQL artifact and qualification identities
+        if: always()
+        run: |
+          mkdir -p .aug-build/postgres-evidence
+          for file in candidate.json qualification.json; do
+            if test -f "$RUNNER_TEMP/aug-postgres/.aug-build/native/$file"; then
+              cp "$RUNNER_TEMP/aug-postgres/.aug-build/native/$file" .aug-build/postgres-evidence/
+            fi
+          done
       - name: Qualify LLVM performance against the C reference
         run: |
           node scripts/benchmark-suite.mjs --backend llvm --compare-c-backend --iterations 60 --warmup 3 --http-rounds 5 --http-requests 5000 --output .aug-build/llvm-migration-performance.json
@@ -104,6 +137,9 @@ jobs:
           name: llvm-macos-performance
           include-hidden-files: true
           path: |
+            .aug-build/runtime-reliability/
+            .aug-build/language-conformance.json
+            .aug-build/postgres-evidence/
             .aug-build/llvm-migration-performance.json
             .aug-build/kernels/results.json
             .aug-build/gyms/results.json
@@ -153,12 +189,16 @@ jobs:
           test -z "$(command -v clang || true)" || ! clang --version
           ! xcrun --show-sdk-path
       - name: Qualify installed CLI and public library downloads with native tools unavailable
-        run: node scripts/qualify-native-consumers.mjs --local-compiler
+        run: |
+          node scripts/qualify-native-consumers.mjs --local-compiler
+          node scripts/qualify-workers.mjs --local-compiler
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: native-consumer-macos14-evidence
           include-hidden-files: true
-          path: .aug-build/native-consumer-qualification.json
+          path: |
+            .aug-build/native-consumer-qualification.json
+            .aug-build/worker-consumer-qualification.json
           if-no-files-found: error
   docker-native:
     runs-on: ubuntu-24.04

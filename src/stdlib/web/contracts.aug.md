@@ -96,6 +96,27 @@ Construct an HttpOnly, SameSite=Lax session cookie. Secure defaults are chosen e
 
 It takes `name`, `value`, and `path` as strings, `maxAge` as an integer, and `secure` as a boolean. Failures can raise `HttpError`. Within an unsafe block, it returns [`_aug_http_cookie`](contracts.aug.md#symbol-_aug_http_cookie) with `name`, `value`, `path`, `maxAge`, and `secure`. Native operations must satisfy their declared C contracts.
 
+<a id="symbol-ServerControl"></a>
+## `ServerControl` · capability interface · [source](contracts.aug#L62)
+
+Stop accepting requests, drain admitted exchanges up to the given milliseconds,
+then cancel remaining work. serve returns after request cleanup has joined.
+
+<a id="symbol-ServerControl.stop"></a>
+### `ServerControl.stop` · [source](contracts.aug#L63)
+
+It takes `milliseconds` as an integer. It can call [`ServerControl.stop`](contracts.aug.md#symbol-ServerControl.stop). Failures can raise `HttpError`.
+
+<a id="symbol-WebServerControl"></a>
+## `WebServerControl` · class · [source](contracts.aug#L67)
+
+Control the server on its event-loop thread. Owned services can be disposed after serve returns. It implements [`ServerControl`](contracts.aug.md#symbol-ServerControl).
+
+<a id="symbol-WebServerControl.stop"></a>
+### `WebServerControl.stop` · [source](contracts.aug#L68)
+
+It takes `milliseconds` as an integer. Failures can raise `HttpError`. Within an unsafe block, it calls [`_aug_http_stop`](contracts.aug.md#symbol-_aug_http_stop) with `milliseconds`. Native operations must satisfy their declared C contracts.
+
 <a id="symbol-_aug_http_log"></a>
 ## `_aug_http_log` · [source](contracts.aug#L17)
 
@@ -119,6 +140,13 @@ Native C implementation; only its declared contract is visible here.
 ## `_aug_http_cookie` · [source](contracts.aug#L54)
 
 It is private to its defining scope. It takes `name`, `value`, and `path` as strings, `maxAge` as an integer, and `secure` as a boolean. It returns `Headers`. Failures can raise `HttpError`.
+
+Native C implementation; only its declared contract is visible here.
+
+<a id="symbol-_aug_http_stop"></a>
+## `_aug_http_stop` · [source](contracts.aug#L65)
+
+It is private to its defining scope. It takes `milliseconds` as an integer. It can call [`ServerControl.stop`](contracts.aug.md#symbol-ServerControl.stop). Failures can raise `HttpError`.
 
 Native C implementation; only its declared contract is visible here.
 

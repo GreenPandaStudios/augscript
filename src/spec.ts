@@ -341,7 +341,7 @@ class SpecWriter {
         return action.startsWith('construct ')?(/^[AEIOU]/i.test(name)?'an ':'a ')+action.slice('construct '.length):
           action.startsWith('call ')?action.slice('call '.length):action;
       }
-      case 'start':return `a child task running ${this.expression(expr.call)} with its inputs captured now`;
+      case 'start':return expr.worker ? `a worker task running ${this.expression(expr.call)} with copies of its inputs on a separate heap` : `a child task running ${this.expression(expr.call)} with its inputs captured now`;
       case 'wait':return `the result of waiting for ${expr.tasks.map(task=>this.expression(task)).join(' and ')}${expr.tasks.length>1?' in input order':''}; propagate failures`;
       case 'handle': {const plan=this.checked.actions.get(expr), endpoint=plan?.endpoint.node.kind==='function'?plan.endpoint.node.endpoint:undefined;
         const captures=expr.call.kind==='call'?expr.call.args.filter(value=>value.kind!=='formInput').map(value=>this.expression(value)):[];

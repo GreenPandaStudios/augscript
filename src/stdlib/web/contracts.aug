@@ -56,3 +56,15 @@ extern C value pure _aug_http_cookie(string name, string value, string path, int
 cookie(string name, string value, string path, int maxAge, bool secure) :
     unsafe:
         return _aug_http_cookie(name, value, path, maxAge, secure)
+
+/** Stop accepting requests, drain admitted exchanges up to the given milliseconds,
+ * then cancel remaining work. serve returns after request cleanup has joined. */
+capability ServerControl:
+    stop(int milliseconds) uses ServerControl.stop unless HttpError
+
+extern C value _aug_http_stop(int milliseconds) uses ServerControl.stop unless HttpError
+/** Control the server on its event-loop thread. Owned services can be disposed after serve returns. */
+WebServerControl() implements ServerControl:
+    stop(int milliseconds):
+        unsafe:
+            _aug_http_stop(milliseconds)

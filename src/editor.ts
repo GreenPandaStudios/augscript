@@ -39,7 +39,7 @@ export interface EditorToken {
   line: number;
   start: number;
   length: number;
-  type: 'class' | 'interface' | 'decorator' | 'function' | 'method' | 'property' |
+  type: 'keyword' | 'class' | 'interface' | 'decorator' | 'function' | 'method' | 'property' |
     'variable' | 'parameter' | 'typeParameter' | 'type';
   declaration: boolean;
 }
@@ -94,6 +94,8 @@ const keywords: EditorItem[] = [
     insertText:'endpoint ${1:GET} "${2:/users/{id}}" as ${3:getUser}(int id from path) returns ${4:User}:\n    $0'},
   {label:'endpoint test',kind:'snippet',detail:'Exercise the HTTP pipeline beside its declaration',documentation:languageHelp.test.documentation,
     insertText:'test endpoint ${1:getUser} client:\n    when requests:\n        it succeeds:\n            response = client.request(method="GET", path="${2:/users/1}")\n            assert(condition=response.status == 200)\n'},
+  {label:'worker scope',kind:'snippet',detail:'Isolated multicore computation',documentation:languageHelp.worker.documentation,
+    insertText:'scope:\n    task = start worker ${1:calculate}(${2:values})\n    wait for task as ${3:result}\n    $0'},
   {label:'task scope',kind:'snippet',detail:'Joined child computations',documentation:languageHelp.scope.documentation,
     insertText:'scope:\n    task = start ${1:load}()\n    wait for task as result\n    $0'},
 ];
@@ -565,7 +567,8 @@ export function hoverInfo(checked: CheckedProject, fileName: string,
           documentation: help.documentation, start, end: start + match[0].length };
     }
   }
-  const token = lex(file.path, file.source).tokens.find(entry =>
+  const hoverTokens = lex(file.path, file.source).tokens;
+  const token = hoverTokens.find(entry =>
     entry.kind !== 'eof' && entry.span.start <= offset && offset < entry.span.end);
   if (!token) return undefined;
   const { start, end } = token.span;
@@ -645,7 +648,8 @@ export function hoverInfo(checked: CheckedProject, fileName: string,
     const item = methodItem(checked, around, 'method');
     return { ...item, documentation: [item.documentation, languageHelp.around.documentation].filter(Boolean).join('\n\n'), start, end };
   }
-  const help = languageHelp[token.value];
+  const workerKeyword = token.value === 'worker' && hoverTokens[hoverTokens.indexOf(token) - 1]?.kind === 'start' && ['identifier', 'start', 'wait'].includes(hoverTokens[hoverTokens.indexOf(token) + 1]?.kind);
+  const help = token.value === 'worker' && !workerKeyword ? undefined : languageHelp[token.value];
   if (help) return { label: token.value,
     kind: help.category === 'type' ? 'type' : help.category === 'function' ? 'function' : 'keyword',
     detail: help.detail, documentation: help.documentation, start, end };
@@ -782,7 +786,8 @@ export function semanticTokens(checked: CheckedProject, fileName: string): Edito
     const previous = tokens[i - 1]?.kind;
     const next = tokens[i + 1]?.kind;
     let type: EditorToken['type'] | undefined;
-    if (previous === '.') type = next === '(' || next === '<' ? 'method' : 'property';
+    if (token.value === 'worker' && previous === 'start' && ['identifier', 'start', 'wait'].includes(next)) type = 'keyword';
+    else if (previous === '.') type = next === '(' || next === '<' ? 'method' : 'property';
     else if (previous === 'interface' || previous === 'capability') type = 'interface';
     else if (previous === 'record') type = 'class';
     else if (declarationNames.has(token.span.start)) type = declarationNames.get(token.span.start);

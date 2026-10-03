@@ -35,7 +35,7 @@ export type IrInstruction = {span:Span;debugScope?:string}&(
   {op:'routes';out?:number;name:string;port?:number}|
   {op:'call';out:number;function:string;args:number[];receiver?:number}|
   {op:'method';out:number;receiver:number;name:string;args:number[]}|
-  {op:'start';out:number;function:string;receiver?:number;args:number[];owned:boolean[]}|
+  {op:'start';out:number;function:string;receiver?:number;args:number[];owned:boolean[];worker?:boolean}|
   {op:'wait';out:number;tasks:number[]}|{op:'checkpoint'}|
   {op:'native';out:number;binding:NativeFunction;args:number[];resources:Record<string,{id:string;release:string}>;error?:string;errorFactory?:string}|
   {op:'extern';out:number;name:string;types:string[];result:string;args:number[]}|
@@ -267,7 +267,8 @@ class FunctionLowering {
       throw new BackendUnsupported(expr.span,'unresolved value '+expr.name);
     }
     if(expr.kind==='resolve')return this.call(this.generator.binding(expr.name+(expr.typeArgs.length?'<'+expr.typeArgs.map(typeName).join(',')+'>':'')),[]);
-    if(expr.kind==='member')return this.runtime('FIELD',[this.expression(expr.object)],undefined,this.fieldIndex(expr.object,expr.name));
+    if(expr.kind==='member')return this.generator.checked.expressionTypes.get(expr.object)?.id==='builtin:HttpRequest'&&expr.name==='body'
+      ?this.runtime('HTTP_BODY',[this.expression(expr.object)]):this.runtime('FIELD',[this.expression(expr.object)],undefined,this.fieldIndex(expr.object,expr.name));
     if(expr.kind==='unary'){
       const input=this.expression(expr.value),type=this.values[input].type;
       const pure=isIRScalar(type)&&(type.name==='int'&&expr.op==='-'||type.name==='bool'&&expr.op==='!');
@@ -306,7 +307,7 @@ class FunctionLowering {
       if(thunk.owned.has(result))thunk.instruction({op:'clear',slot:result});
       const name='aug_task_thunk_'+this.generator.functions.length;
       this.generator.functions.push(thunk.finish(name));
-      const out=this.slot();this.instruction({op:'start',out,function:name,receiver,args,owned:args.map((_,i)=>this.generator.checked.callPlans.get(call)?.ownerships?.[i]==='own')});
+      const out=this.slot();this.instruction({op:'start',out,function:name,receiver,args,worker:expr.worker,owned:args.map((_,i)=>this.generator.checked.callPlans.get(call)?.ownerships?.[i]==='own')});
       this.generator.checked.callPlans.get(call)?.ownerships?.forEach((mode,i)=>{if(mode==='own')this.instruction({op:'clear',slot:args[i]});});
       this.checkError();return out;
     }
@@ -327,6 +328,7 @@ class FunctionLowering {
         'List.length':'LIST_LENGTH','List.get':'LIST_GET','List.at':'LIST_AT','List.append':'LIST_APPEND','Tuple.length':'TUPLE_LENGTH','Tuple.get':'TUPLE_GET',
         'Set.length':'SET_LENGTH','Set.add':'SET_ADD','Set.contains':'SET_CONTAINS','Map.length':'MAP_LENGTH','Map.get':'MAP_GET','Map.take':'MAP_TAKE','Map.contains':'MAP_CONTAINS','Map.set':'MAP_SET',
         'string.length':'STRING_LENGTH','string.bytes':'STRING_BYTES','string.split':'STRING_SPLIT','string.startsWith':'STRING_STARTS_WITH','string.isToken':'STRING_IS_TOKEN',
+        'Bytes.slice':'BYTES_SLICE','Bytes.hex':'BYTES_HEX','float.isFinite':'FLOAT_IS_FINITE','float.float32':'FLOAT_FLOAT32','string.trim':'STRING_TRIM','string.utf16Length':'STRING_UTF16_LENGTH','string.isDecimal':'STRING_IS_DECIMAL','string.compareDecimal':'STRING_COMPARE_DECIMAL','Json.has':'JSON_HAS',
         'Bytes.length':'BYTES_LENGTH','Bytes.text':'BYTES_TEXT','Bytes.base64url':'BYTES_BASE64URL',
         'Json.stringify':'JSON_STRINGIFY','Json.get':'JSON_GET','Json.require':'JSON_REQUIRE','Json.string':'JSON_STRING',
         'Json.integer':'JSON_INTEGER','Json.boolean':'JSON_BOOLEAN','Json.items':'JSON_ITEMS',
@@ -391,6 +393,7 @@ class FunctionLowering {
           // Compiler-owned adapters use the target pack's pointer thunks. Arbitrary
           // aggregate C declarations remain unsupported, even on an LLVM host.
           const adapters:Record<string,{types:string[];result:string;operation:string}>={
+            _aug_json_parse_compatible:{types:['string'],result:'Json',operation:'JSON_PARSE_COMPATIBLE'},
             _aug_json_parse:{types:['string'],result:'Json',operation:'JSON_PARSE'},
             _aug_time_now:{types:[],result:'int',operation:'TIME_NOW'}
           };

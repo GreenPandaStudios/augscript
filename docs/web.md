@@ -188,6 +188,10 @@ Add this to `main.yaml`:
 web:
   host: 127.0.0.1
   body_limit: 1048576
+  headers_timeout: 30000
+  request_timeout: 120000
+  drain_timeout: 10000
+  max_requests: 256
   response_limit: 4194304
   http3: false
 openapi:
@@ -231,3 +235,13 @@ aug test --group signed_identity_claims
 ```
 
 The first run prepares the native HTTP and crypto libraries automatically; later runs reuse them. [Install August](getting-started.md) first if `aug` is not available. Open http://127.0.0.1:8787 and sign in as **ada** with **august-demo**. `/me` returns the protected identity; `/docs` exposes endpoint contracts. The demo keeps accounts, sessions, and keys in memory. Read [the login limits](web-library-gaps.md) before extending it.
+
+## Upload reception and shutdown
+
+The runtime dispatches an endpoint at its headers. Authentication, authorization and other header checks run before typed body decoding. A raw handler can return a rejection without waiting for upload bytes. Reading `request.body` or binding a body or form waits for reception and can raise `HttpError`. `100 Continue` is sent only when an accepted handler requests the body. Unsupported media types are rejected before that invitation.
+
+`headers_timeout` and `request_timeout` are absolute reception deadlines in milliseconds. The defaults are 30 seconds for headers and 120 seconds for the complete request. The request budget includes its header reception. The transport closes incomplete headers at their deadline and returns 408 for a stalled admitted upload. `max_requests` bounds admitted exchanges, including cleanup after a disconnected request; the default is 256. Incoming connections are capped at twice that limit while they receive headers. The body limit applies when a handler consumes the body, so an unauthenticated oversized upload can still receive 401. HTTP framing checks and libwebsockets' transport ceiling can reject malformed or very large messages earlier. Bytes already received by the transport are not a promise that the application has accepted an upload.
+
+SIGTERM and SIGINT close the listener, stop admission on existing connections and allow active exchanges to finish for `drain_timeout` milliseconds. An application can resolve `ServerControl`, bound to `WebServerControl`, and call `stop(milliseconds=10000)` on the server thread to select its grace period. After it expires, the transport closes remaining exchanges and cancels their work. `serve` returns after request tasks and their children finish cleanup, so owned main-scope services can then be disposed. Native calls must provide their own bounded completion or cancellation: the network grace period cannot interrupt arbitrary foreign code.
+
+See [native service boundaries](native-service-boundaries.md) for identity verification, legacy JSON, protocol helpers and worker-owned PostgreSQL connections.

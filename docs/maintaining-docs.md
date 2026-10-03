@@ -12,6 +12,7 @@ For writing and navigation, use [the editorial guide](writing-docs.md). The repo
 | Public library signature or behavior | Javadoc beside its declaration in `src/stdlib`, the relevant guide and gap ledger |
 | Diagnostic or editor behavior | `src/help.ts`, diagnostics/tooling guide and VS Code changelog |
 | CLI, packages, configuration or supported platform | Tooling/packages/releasing guide, Docker and Dev Container recipes, and package metadata |
+| Runtime lifecycle or qualification behavior | `docs/runtime-reliability.md`, readiness, roadmap, release workflow and changelog |
 | Completed or deferred feature | Implementation map, gap ledger and changelog |
 
 Public comments should explain observable behavior, named inputs, errors, side effects, and limits. Keep dependencies explicit in examples. Record incomplete capabilities in the gap ledger; do not imply that an unimplemented proposal is usable.
@@ -61,3 +62,5 @@ CI checks documentation on every push and pull request. Pull requests changing l
 `scripts/homepage-docs.mjs` generates the landing-page source and exact spec paragraph from `benchmarks/greetings`, and checks the matching report’s source and full sample count. `scripts/native-package-docs.mjs` generates the library example guide from the real native consumer projects. Update canonical programs and rerun their checks before changing their generated presentation.
 
 When auditing the whole wiki, review handwritten pages, generator inputs, library comments, and generated outputs. Replace completed proposals with descriptions of implemented behavior. Remove obsolete benchmark comparisons and local delivery history from reader pages. Verify published CLI/extension versions separately; a GitHub VSIX does not imply the same version is available in the Marketplace. Keep remaining platform, protocol, ownership, and redistribution limits explicit.
+
+A compiler version update also requires refreshing committed example and benchmark source locks with `aug install`. Native packages currently require an exact compiler version; publish matching source tags before changing their imports. Reusing an unchanged native archive is explicit in the package manifest and release notes. Run the complete example gallery after updating those locks.

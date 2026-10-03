@@ -30,6 +30,6 @@ Review the edit before accepting it. A suggested name can be plausible without b
 
 ## Find the files and run tests
 
-Run **AugScript: Enable File Icons** for the August icon theme. Source files have a blue mark; `main.aug` has an amber startup mark, and `export.aug` has a purple module mark. **AugScript: Open Welcome** opens the bundled illustrated guide.
+Run **AugScript: Enable File Icons** for the August icon theme. Source files use an open circle; `main.aug` uses a play symbol, `export.aug` an outward arrow, and `main.yaml` sliders. Each has a light and dark variant. **AugScript: Open Welcome** opens the bundled guide and icon legend.
 
 Same-file cases appear in VS Code's Testing view. Use that view to run a case or group, or run `aug test` in the terminal. [Tests](testing.md) explains fixtures and endpoint tests. [CLI and configuration](tooling.md) describes language-server integration, native cache settings, and command-line tools.

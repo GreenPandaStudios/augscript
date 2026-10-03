@@ -60,6 +60,12 @@ static void check_headers(AugValue response) {
   aug_frame_leave(&frame);
 }
 int main(void) {
+  max_requests=1;active_requests=0;active_jobs=1;
+  assert(callback_http(NULL,LWS_CALLBACK_FILTER_NETWORK_CONNECTION,NULL,NULL,0)==1);
+  active_jobs=0;
+  assert(callback_http(NULL,LWS_CALLBACK_FILTER_NETWORK_CONNECTION,NULL,NULL,0)==0);
+  max_requests=256;
+
   AugRoute route = {.stream=2, .status=200};
   AugHttpSession session = {.route=&route, .head=true, .streaming=true};
   AugHttpJob job = {.session=&session, .test=true, .head_complete=true};

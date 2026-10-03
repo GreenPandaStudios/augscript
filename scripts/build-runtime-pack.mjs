@@ -5,6 +5,7 @@ import {resolve,join} from 'node:path';
 import {spawnSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
 import {buildRuntimeComponents} from './runtime-components.mjs';
+import {coreSources,runtimeSourceIdentity} from './runtime-pack-identity.mjs';
 import {runtimeIdentifiers,runtimeIdentifierSha256} from '../src/runtime-abi.ts';
 import {llvmPlatform} from '../src/llvm-platform.ts';
 import {prepareLinuxRuntimes} from './prepare-linux-runtimes.mjs';
@@ -27,7 +28,7 @@ const flags=[...(mac?['-isysroot',sdk,'-mmacosx-version-min=14.0']:[]),'-std=c11
 const run=(args)=>{const result=spawnSync(cc,[...flags,...args],{encoding:'utf8'});if(result.status!==0)throw new Error(result.stderr||result.error?.message||'Runtime build failed');};
 mkdirSync(join(output,'lib'),{recursive:true});mkdirSync(join(output,'platform'),{recursive:true});mkdirSync(join(output,'licenses'),{recursive:true});
 const libraryName=mac?'lib/libaug_runtime.1.dylib':'lib/libaug_runtime.so.1',library=join(output,libraryName);
-const sources=['aug_runtime.c','aug_values.c','aug_tasks.c','aug_json.c','aug_time.c','aug_ir.c'];
+const sources=coreSources;
 // Private runtime functions use their own definitions, as in the C reference.
 // Keep data symbols preemptible: application/native callbacks share runtime state.
 run([...(mac?['-dynamiclib','-Wl,-install_name,@rpath/libaug_runtime.1.dylib']:['-shared','-Wl,-Bsymbolic-functions','-Wl,-soname,libaug_runtime.so.1','-Wl,-rpath,$ORIGIN','-pthread']),...sources.map(f=>join(root,'runtime',f)),join(yyjson,'src/yyjson.c'),...(!mac?['-lm']:[]),'-o',library]);
@@ -44,7 +45,7 @@ const staticCore='lib/libaug_runtime.a';
 }
 const probe=join(output,'layout.c'),binary=join(output,'layout');
 const measurements={valueSize:'sizeof(AugValue)',valueAlignment:'_Alignof(AugValue)',valuePayloadOffset:'offsetof(AugValue,as)',frameSize:'sizeof(AugFrame)',methodEntrySize:'sizeof(AugMethodEntry)',pointerSize:'sizeof(void*)',schemaSize:'sizeof(AugSchema)',schemaPointerMakerOffset:'offsetof(AugSchema,pointer_make)',routeSize:'sizeof(AugRoute)',routePointerHandlerOffset:'offsetof(AugRoute,pointer_handler)',policySize:'sizeof(AugHttpPolicy)',httpErrorSize:'sizeof(AugIrHttpError)',executionErrorOffset:'offsetof(AugExecution,has_error)',executionCancelledOffset:'offsetof(AugExecution,cancelled)',executionFiberOffset:'offsetof(AugExecution,fiber)',booleanSize:'sizeof(bool)'};
-const probeFormat='{"abi":"compiler-private-runtime-v1",'+Object.keys(measurements).map(key=>'"'+key+'":%zu').join(',')+'}\n';
+const probeFormat='{"abi":"compiler-private-runtime-v2",'+Object.keys(measurements).map(key=>'"'+key+'":%zu').join(',')+'}\n';
 writeFileSync(probe,'#include "aug_http_ir.h"\n#include <stdio.h>\n'+Object.entries(runtimeIdentifiers).map(([name,value])=>`_Static_assert(${name}==${value},"Runtime identifier ${name}");`).join('\n')+'\nint main(void){printf('+JSON.stringify(probeFormat)+','+Object.values(measurements).join(',')+');}\n');
 run([probe,'-o',binary]);const measurement=spawnSync(binary,[],{encoding:'utf8'});if(measurement.status!==0)throw new Error('Runtime layout probe failed');
 const layout=JSON.parse(measurement.stdout);
@@ -58,10 +59,5 @@ const files=[libraryName,...(mac?['platform/libSystem.tbd']:['platform/start.S',
 if(staticCore)files.push(staticCore);
 const extra=buildRuntimeComponents({root,output,nativeRoot:resolve(process.env.AUG_LLVM_NATIVE_HOME??join(root,'.aug-native')),compile:run,linuxRuntime});
 files.push(...extra.files);
-const sourceDigest=createHash('sha256');for(const f of ['aug_runtime.h','aug_ir.h',...sources])sourceDigest.update(f+'\0').update(readFileSync(join(root,'runtime',f)));
-for(const file of Object.keys(inputPins))sourceDigest.update('minicoro/'+file+'\0').update(readFileSync(join(minicoro,file)));
-for(const file of Object.keys(jsonPins))sourceDigest.update('yyjson/'+file+'\0').update(readFileSync(join(yyjson,file)));
-for(const file of ['scripts/runtime-components.mjs','scripts/build-runtime-pack.mjs','src/runtime-adapters.ts'])sourceDigest.update(file+'\0').update(readFileSync(join(root,file)));
-for(const file of extra.files.filter(file=>file.startsWith('sources/')||file.startsWith('licenses/')).sort())sourceDigest.update(file+'\0').update(readFileSync(join(output,file)));
-writeFileSync(join(output,'runtime.json'),JSON.stringify({format:1,version:JSON.parse(readFileSync(join(root,'package.json'))).version,target:platform.target,minimumOS:platform.minimumOS,minimumLibc:platform.minimumLibc,layout,identifierSha256:runtimeIdentifierSha256,files:Object.fromEntries(files.map(f=>[f,sha(join(output,f))])),libraries:[libraryName],staticCore,components:extra.components,sourceSha256:sourceDigest.digest('hex'),compiler:spawnSync(cc,['--version'],{encoding:'utf8'}).stdout.trim()},null,2)+'\n');
+writeFileSync(join(output,'runtime.json'),JSON.stringify({format:1,version:JSON.parse(readFileSync(join(root,'package.json'))).version,target:platform.target,minimumOS:platform.minimumOS,minimumLibc:platform.minimumLibc,layout,identifierSha256:runtimeIdentifierSha256,files:Object.fromEntries(files.map(f=>[f,sha(join(output,f))])),libraries:[libraryName],staticCore,components:extra.components,sourceSha256:runtimeSourceIdentity(root,output,files),compiler:spawnSync(cc,['--version'],{encoding:'utf8'}).stdout.trim()},null,2)+'\n');
 console.log('Built maintainer runtime pack: '+output);

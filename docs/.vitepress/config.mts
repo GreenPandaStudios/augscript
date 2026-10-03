@@ -65,9 +65,11 @@ export default defineConfig({
         { text: 'Choose a guide', link: '/guides/' },
         { text: 'Weather API', link: '/weather-api' }, { text: 'VS Code', link: '/editor' },
         { text: 'Tests', link: '/testing' }, { text: 'Web applications', link: '/web' },
+        { text: 'Native service boundaries', link: '/native-service-boundaries' },
         { text: 'Compiled specifications', link: '/specifications' },
         { text: 'Packages and installation', link: '/packages' },
         { text: 'Native library packages', link: '/native-packages' },
+        { text: 'Multicore workers', link: '/workers' },
         { text: 'Docker deployment', link: '/docker' },
         { text: 'VS Code Dev Containers', link: '/dev-containers' },
         { text: 'Diagnostics', link: '/diagnostics' }
@@ -92,6 +94,7 @@ export default defineConfig({
         { text: 'Documentation maintenance', link: '/maintaining-docs' }, { text: 'Writing guide', link: '/writing-docs' },
         { text: 'Editorial research', link: '/research/wiki-editorial-design' },
         { text: 'Ownership and task conformance', link: '/language-conformance' },
+        { text: 'Runtime reliability', link: '/runtime-reliability' },
         { text: 'Compiler architecture', link: '/implementation-map' }, { text: 'Design principles', link: '/language-design-audit' }
       ]}
     ],

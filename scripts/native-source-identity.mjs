@@ -14,7 +14,7 @@ export function nativeSourceIdentity(root){
     const path=join(directory,entry.name),name=prefix+'/'+entry.name;
     assert.ok(!entry.isSymbolicLink(),'Native build inputs must not be symbolic links: '+name);
     if(entry.isDirectory())walk(path,name);
-    else if(entry.isFile()&&(/\.(?:c|cc|cpp|h|hpp|rs|mjs|json|toml|aug)$/.test(entry.name)||['Cargo.lock','Dockerfile'].includes(entry.name)))files[name]=sha(readFileSync(path));
+    else if(entry.isFile()&&(/\.(?:c|cc|cpp|m|metal|h|hpp|rs|mjs|json|toml|aug)$/.test(entry.name)||['Cargo.lock','Dockerfile'].includes(entry.name)))files[name]=sha(readFileSync(path));
   }};
   walk(join(root,'native'),'native');walk(join(root,manifest.source),manifest.source);
   files['package-contract']=sha(Buffer.from(JSON.stringify({name:manifest.name,version:manifest.version,compiler:manifest.compiler,source:manifest.source,profile:manifest.native.profile,bindings:manifest.native.bindings,bindingsSha256:manifest.native.bindingsSha256,upstream:manifest.native.upstream})));

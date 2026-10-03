@@ -19,7 +19,7 @@ aug run
 
 Requires Node.js 24+ and npm on macOS 14+ ARM64 or GNU/Linux x64/ARM64 with glibc 2.36+. `aug run` downloads its verified LLVM/runtime pack, prepares declared packages, compiles the project, and starts it. Consumers do not install Clang, LLVM, or an SDK. The starter refuses to overwrite a nonempty directory. [Your first project](https://greenpandastudios.github.io/augscript/getting-started) walks through running, testing, and explaining it. See [the August book](docs/learn/index.md), [downloadable example projects](docs/examples/index.md) with code beside compiled specs, and [native packages](docs/native-packages.md).
 
-August 0.21.0 is available through npm's `next` tag and [GitHub Releases](https://github.com/GreenPandaStudios/augscript/releases/tag/v0.21.0). See [implementation status](docs/native-implementation.md) for qualification evidence.
+August 0.23.0 is available through npm's `next` tag and [GitHub Releases](https://github.com/GreenPandaStudios/augscript/releases/tag/v0.23.0). See [implementation status](docs/native-implementation.md) for qualification evidence.
 
 ## The language
 

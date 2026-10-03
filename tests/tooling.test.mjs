@@ -259,3 +259,21 @@ Box(int input to _storage) implements Value { read() returns int { return _stora
     assert.deepEqual(changed.changes, [], 'Private implementation renames are not public interface changes');
   } finally { rmSync(root, { recursive: true, force: true }); }
 });
+
+
+test('worker help, semantic color and completion distinguish the contextual keyword from user names',()=>{
+  const source='import calculate from math\ntry:\n    scope:\n        worker = start worker calculate(value=3)\n        print(value=wait for worker)\ncatch ConcurrencyError error:\n    print(value=0)\n';
+  const root=create({'main.aug':source,'math.aug':'calculate(int value) { return value * 2 }\n'});
+  try {
+    const view=new SemanticWorkspace(root).document(join(root,'main.aug'));
+    assert.deepEqual(view.diagnostics,[]);
+    const keyword=source.indexOf('worker calculate');
+    assert.match(view.hover(keyword).documentation,/heap|copied/);
+    assert.equal(view.tokens().find(token=>token.line===3&&token.start===source.split('\n')[3].indexOf('worker calculate'))?.type,'keyword');
+    assert.equal(view.tokens().find(token=>token.line===3&&token.start===8)?.type,'variable');
+    assert.doesNotMatch(view.hover(source.lastIndexOf('worker')).documentation,/private heap|OS thread/);
+    assert.ok(view.complete(0).some(item=>item.label==='worker scope'));
+    const extension=readFileSync(resolve('vscode/extension.cjs'),'utf8');
+    assert.match(extension,/const semanticTypes = \[[^\]]*'keyword'/);
+  } finally {rmSync(root,{recursive:true,force:true});}
+});

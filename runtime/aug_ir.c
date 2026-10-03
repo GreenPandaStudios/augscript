@@ -32,6 +32,15 @@ void aug_ir_operation(AugValue *out,int op,AugValue *a,int count,const char *tex
     case AUG_IR_MAP_GET: *out=aug_map_get(a[0],a[1]); break;
     case AUG_IR_MAP_TAKE: *out=aug_map_take(a[0],a[1]); break;
     case AUG_IR_MAP_CONTAINS: *out=aug_bool(aug_map_contains(a[0],a[1])); break;
+    case AUG_IR_STRING_TRIM:*out=aug_string_trim(a[0]);break;
+    case AUG_IR_STRING_UTF16_LENGTH:*out=aug_int(aug_string_utf16_length(a[0]));break;
+    case AUG_IR_STRING_IS_DECIMAL:*out=aug_bool(aug_string_is_decimal(a[0]));break;
+    case AUG_IR_STRING_COMPARE_DECIMAL:*out=aug_int(aug_string_compare_decimal(a[0],a[1]));break;
+    case AUG_IR_BYTES_SLICE:*out=aug_bytes_slice(a[0],aug_cint(a[1]),aug_cint(a[2]));break;
+    case AUG_IR_BYTES_HEX:*out=aug_bytes_hex(a[0]);break;
+    case AUG_IR_FLOAT_IS_FINITE:*out=aug_bool(aug_float_is_finite(a[0]));break;
+    case AUG_IR_FLOAT_FLOAT32:*out=aug_float_float32(a[0]);break;
+    case AUG_IR_JSON_HAS:*out=aug_bool(aug_json_has(a[0],a[1]));break;
     case AUG_IR_STRING_LENGTH: *out=aug_int(aug_string_length(a[0])); break;
     case AUG_IR_STRING_BYTES: *out=aug_string_bytes(a[0]); break;
     case AUG_IR_STRING_SPLIT: *out=aug_string_split(a[0],a[1]); break;
@@ -52,6 +61,7 @@ void aug_ir_operation(AugValue *out,int op,AugValue *a,int count,const char *tex
     case AUG_IR_SHARED: *out=aug_shared_new(a[0]); break;
     case AUG_IR_SHARED_LOCK: *out=aug_shared_lock(a[0]); break;
     case AUG_IR_JSON_WRAP: *out=aug_json_wrap(a[0]); break;
+    case AUG_IR_JSON_PARSE_COMPATIBLE:*out=_aug_json_parse_compatible(a[0]);break;
     case AUG_IR_JSON_PARSE: *out=_aug_json_parse(a[0]); break;
     case AUG_IR_JSON_STRINGIFY: *out=aug_json_stringify(a[0]); break;
     case AUG_IR_JSON_GET: *out=aug_json_get(a[0],a[1]); break;

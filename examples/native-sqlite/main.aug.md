@@ -4,10 +4,10 @@
 
 ## Startup
 
-It prints [`storedName`](database.aug.md#symbol-storedName). If this work raises [`SqliteError`](.aug-spec/packages/%40greenpandastudios/aug-sqlite/0.1.3/contracts.aug.md#symbol-SqliteError) as `error`, it prints `error.message`.
+It prints [`storedName`](database.aug.md#symbol-storedName). If this work raises [`SqliteError`](.aug-spec/packages/%40greenpandastudios/aug-sqlite/0.1.5/contracts.aug.md#symbol-SqliteError) as `error`, it prints `error.message`.
 
 ## Dependencies
 
-It uses [`SqliteError`](.aug-spec/packages/%40greenpandastudios/aug-sqlite/0.1.3/contracts.aug.md#symbol-SqliteError) (`message`) from `https://github.com/GreenPandaStudios/aug-sqlite#v0.1.3`. It uses [`storedName`](database.aug.md#symbol-storedName) from `database`.
+It uses [`SqliteError`](.aug-spec/packages/%40greenpandastudios/aug-sqlite/0.1.5/contracts.aug.md#symbol-SqliteError) (`message`) from `https://github.com/GreenPandaStudios/aug-sqlite#v0.1.5`. It uses [`storedName`](database.aug.md#symbol-storedName) from `database`.
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).

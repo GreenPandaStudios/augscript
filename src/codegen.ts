@@ -317,7 +317,7 @@ class CGenerator {
   private httpConfiguration(): string {
     const config = this.checked.project.config.web, root = this.checked.project.root;
     const path = (value: string) => cString(value ? resolve(root,value) : '');
-    return `  aug_http_configure(${cString(config.host)}, ${path(config.tls.certificate)}, ${path(config.tls.private_key)}, ${path(config.tls.ca)}, ${config.body_limit}, ${config.response_limit}, ${config.http3 ? 'true' : 'false'});`;
+    return `  aug_http_configure(${cString(config.host)}, ${path(config.tls.certificate)}, ${path(config.tls.private_key)}, ${path(config.tls.ca)}, ${config.body_limit}, ${config.response_limit}, ${config.http3 ? 'true' : 'false'}, ${config.headers_timeout}, ${config.request_timeout}, ${config.drain_timeout}, ${config.max_requests});`;
   }
 
   private emitMainBody(): string {
@@ -516,7 +516,7 @@ class BodyEmitter {
       this.line(`AugValue ${array}[] = {${args.map(arg => this.slot(arg)).join(', ') || 'aug_scalar_null()'}};`);
       const captures=this.label('task_owned');
       this.line(`const unsigned char ${captures}[] = {${args.map((_,i)=>this.generator.callPlan(call)?.ownerships?.[i]==='own'?'1':'0').join(', ')||'0'}};`);
-      this.line(`${this.slot(slot)} = aug_task_start_owned(${name}, ${receiver === undefined ? 'aug_scalar_null()' : this.slot(receiver)}, ${array}, ${args.length}, ${captures});`);
+      this.line(`${this.slot(slot)} = ${expr.worker ? 'aug_task_start_worker' : 'aug_task_start_owned'}(${name}, ${receiver === undefined ? 'aug_scalar_null()' : this.slot(receiver)}, ${array}, ${args.length}, ${captures});`);
       this.clearMovedArgs(call, (this.generator.callPlan(call)?.ownerships ?? []).map(ownership => ({ownership:ownership ?? 'managed'})));
       this.line(`if (aug_has_error) goto ${this.errorTarget};`); return slot;
     }
@@ -574,7 +574,9 @@ class BodyEmitter {
     if (expr.kind === 'member') {
       const object = this.emitExpr(expr.object);
       const slot = this.newSlot();
-      this.line(`${this.slot(slot)} = aug_field(${this.slot(object)}, ${this.memberIndex(expr.object, expr.name)});`);
+      if (this.generator.expressionType(expr.object)?.id === 'builtin:HttpRequest' && expr.name === 'body') {
+        this.line(`${this.slot(slot)} = aug_http_body(${this.slot(object)});`); this.line(`if (aug_has_error) goto ${this.errorTarget};`);
+      } else this.line(`${this.slot(slot)} = aug_field(${this.slot(object)}, ${this.memberIndex(expr.object, expr.name)});`);
       return slot;
     }
     if (expr.kind === 'unary') {

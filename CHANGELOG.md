@@ -1,6 +1,24 @@
 # Changelog
 
-## Unreleased
+## 0.23.0 — native ingestion boundaries
+
+Same-file worker tests check their active test program and reachable declarations, preserving input safety checks without rejecting inactive application startup calls.
+
+Qualification fingerprints exclude nested generated caches and reject symbolic links in canonical files, source directories and root manifests, so clean checkouts and contributor workspaces identify the same compiler.
+
+HTTP dispatch now begins at headers. Body reads are checked and lazy; accepted reads drive 100 Continue. New web reception, admission and drain settings bound stalled senders and shutdown. ServerControl permits an application-selected network grace period, with cleanup joined before serve returns.
+
+Crypto adds Ed25519 verification and a configured JOSE identity verifier. JSON adds separately named parseCompatible and presence checks. Bytes/text/float helpers support checked slices, hex, arbitrary unsigned decimal comparisons, UTF-16 wire limits, Unicode trimming and float32 validation. Worker admission bounds copied inputs and pending jobs and raises checked ConcurrencyError at start. Native adapters can read cancellation without entering August. Owned native results retain fresh wrapper identities through checked source wrappers.
+
+PostgreSQL packaging and public Linux ARM64 release qualification are tracked in the service boundary guide; local passing tests do not establish production service readiness.
+
+
+- Fix a worker wait that could report a deadlock after a scheduler poll had already delivered its result. Force that completion window in a deterministic native regression.
+- Add runtime lifecycle qualification with repeated allocation, cancellation, nested waits, primary-error preservation and owned cleanup. Record exact instrumented allocation balances, resource finalizer threads, RSS samples, sanitizer results, independent LLVM outcomes and replay controls. Reject stale runtime packs and require a 30-minute circuit per release target.
+
+- Add `start worker` to the existing task framework. Worker jobs run on a bounded OS-thread pool with private heaps, copied data, checked call-graph boundaries, ordered waits, cancellation and joined cleanup. Native handles stay on their creating worker; native packages opt in with an explicit `workerSafe` contract. Nested worker/cooperative scopes progress even with one pool thread.
+- Add a language contract ledger, independent LLVM examples in debug/release and both block styles, valid behavioral mutations, source-bearing qualification reports, and three-platform CI gates. Run actual overlapping worker threads under race, address and undefined-behavior instrumentation. Finite checks remain distinct from a safety proof.
+- Introduce the separate `aug-gpu` package with a native C ABI and real Metal float32 vector operations. Device and buffer resources remain local to their creating worker; downloaded values return as copied data. Apple Silicon hardware is qualified; CUDA awaits an NVIDIA implementation and hardware qualification.
 
 - Rewrite wiki introductions, lessons, package and service guides, reference explanations, and generated help in direct developer prose. Explain owned assignments in one sentence in compiled specs. Keep platform, ownership, and protocol limits explicit, and document paragraph review in the wiki maintenance skill.
 

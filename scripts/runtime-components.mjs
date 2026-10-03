@@ -3,6 +3,7 @@ import {copyFileSync,existsSync,mkdirSync,readFileSync,readdirSync,writeFileSync
 import {join,basename} from 'node:path';
 import {spawnSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
+import {runtimeRecipeFiles} from './runtime-pack-identity.mjs';
 import {runtimeAdapters,adapterSymbol} from '../src/runtime-adapters.ts';
 
 export function buildRuntimeComponents({root,output,nativeRoot,compile,linuxRuntime}) {
@@ -83,7 +84,7 @@ export function buildRuntimeComponents({root,output,nativeRoot,compile,linuxRunt
   // Include the exact adapter/runtime sources and build recipes beside upstream
   // archives, so redistribution does not depend on a moving website or branch.
   for(const file of readdirSync(join(root,'runtime')).filter(file=>/\.[ch]$/.test(file))){const path='sources/august/runtime/'+file;save(path,join(root,'runtime',file));metadata.push(path);}
-  for(const file of ['scripts/runtime-components.mjs','scripts/build-runtime-pack.mjs','scripts/bootstrap-native.mjs','scripts/native-dependencies.lock.json','scripts/native-home.mjs','scripts/native-toolchain.mjs','scripts/native-setup.mjs','src/runtime-adapters.ts','src/runtime-abi.ts','src/http-policies.ts','src/llvm-platform.ts','src/native-contracts.ts',...(mac?['native/platform/macos-arm64/libSystem.tbd']:['native/platform/linux-'+process.arch+'/start.S','scripts/prepare-linux-runtimes.mjs','native/linux-runtimes.lock.json']),'package.json','LICENSE']){
+  for(const file of runtimeRecipeFiles()){
     const path='sources/august/'+file;save(path,join(root,file));metadata.push(path);
   }
   const notice='licenses/native-runtime.txt';

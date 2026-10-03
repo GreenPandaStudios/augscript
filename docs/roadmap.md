@@ -1,6 +1,6 @@
 # Roadmap to 1.0
 
-August 0.21.0 provides a published CLI, LLVM native compilation, repository packages, editor support, same-file tests, and deterministic compiled specifications. The supported preview targets are macOS 14+ ARM64 and GNU/Linux x86-64/ARM64 with glibc 2.36+. Real LibTorch, SQLite, zlib, and Rust BLAKE3 packages work on all three targets.
+August 0.23.0 provides a published CLI, LLVM native compilation, repository packages, editor support, same-file tests, and deterministic compiled specifications. The supported preview targets are macOS 14+ ARM64 and GNU/Linux x86-64/ARM64 with glibc 2.36+. Real LibTorch, SQLite, zlib, and Rust BLAKE3 packages work on all three targets.
 
 A 1.0 release will make the documented language and package contracts stable. The table lists the remaining work in implementation order.
 
@@ -12,6 +12,6 @@ A 1.0 release will make the documented language and package contracts stable. Th
 | 4 | Developer distribution | Repeat clean-machine npm and editor installation checks for every release. Provide a tested upgrade path, matched package versions, verified archives, and usable source diagnostics and debugging. |
 | 5 | Stable release policy | Publish the final support matrix, compatibility rules, and known limits. All release gates, documentation checks, dependency reviews, and independent reviews pass for the release candidate. |
 
-The [conformance suite](language-conformance.md), [safety gyms](safety-gyms.md), [performance reports](performance.md), and [release process](releasing.md) provide current evidence. Passing a finite suite does not establish that every program is correct or safe.
+The [conformance suite](language-conformance.md), [runtime reliability gate](runtime-reliability.md), [safety gyms](safety-gyms.md), [performance reports](performance.md), and [release process](releasing.md) provide current evidence. Passing a finite suite does not establish that every program is correct or safe.
 
-Multicore workers, channels, GPU tensors, Windows, musl, and cross compilation are deferred features. Existing tasks and native packages do not provide them. Broader HTTP conformance and identity-provider hardening are library work, tracked in the [gap ledger](web-library-gaps.md), rather than requirements for the core language's 1.0 release.
+The preview includes isolated multicore worker tasks and a separate Metal GPU package. Channels, CUDA artifacts, broader GPU APIs, Windows, musl, and cross compilation remain deferred. Each release repeats worker and GPU qualification on their supported targets. Broader HTTP conformance and identity-provider hardening are library work, tracked in the [gap ledger](web-library-gaps.md), rather than requirements for the core language's 1.0 release.
