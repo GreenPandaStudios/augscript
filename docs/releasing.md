@@ -186,3 +186,21 @@ on main and enter the existing version tag. The job checks out that immutable ta
 for source and manifest verification and uses the current maintainer publisher.
 It validates the tagged commit again before creating or changing a release.
 Partial uploads remain draft until the complete archive set passes byte checks.
+
+## Container bases
+
+`containers.yml` publishes `ghcr.io/greenpandastudios/aug-build:VERSION` and `ghcr.io/greenpandastudios/aug-runtime:VERSION` after npm publication. It also runs on container-recipe changes to main and can be dispatched manually from main. The version must match the released CLI; preparation checks its public release and npm integrity before building. Pull requests test both architectures without publishing.
+
+The workflow builds on native Linux ARM64 and x86-64 runners. It checks offline compilation, tests/specs, non-root execution, complete deployment bundles, crypto, a real HTTP request and a public SQLite package with owned resource cleanup. Publication loads those exact tested images, uploads each architecture and creates the two architecture-selecting tags. It does not rebuild the compiler or run contributor toolchains. Qualification reports and tested-image archives remain workflow artifacts.
+
+On first publication, set both container packages to **Public** in their GitHub package settings, then retry the publication job. Its final step pulls both architectures without signing in. Their source label links them to this public repository. Subsequent publishing uses the scoped workflow token with packages write access; it does not need a personal token. Versioned tags select a compiler release. Retain the reported image digest for exact deployment identity when a base is rebuilt for runtime updates.
+
+For local verification:
+
+```sh
+docker build -f docker/Dockerfile.build -t augscript/build:local .
+docker build -f docker/Dockerfile.run -t augscript/run:local .
+npm run test:docker
+```
+
+These local names are contributor test inputs. Applications use the two published bases in the [Docker guide](docker.md).

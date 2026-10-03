@@ -1,92 +1,69 @@
 # Build and deploy with Docker
 
-Compile an August application in a Linux build container, then deploy its executable in a separate runtime image. You need Docker with a running Linux engine and a POSIX shell for these commands. The application does not need Node.js or a compiler in its deployed container. For editing and testing inside VS Code, use [a Dev Container](dev-containers.md).
+Use two August base images. The build image has the released CLI and its verified LLVM compiler/runtime already prepared. The runtime image runs your compiled application without Node.js or a compiler.
+
+| Image | Use |
+| --- | --- |
+| `ghcr.io/greenpandastudios/aug-build:0.23.0` | Build, run and test August projects; develop in a container. |
+| `ghcr.io/greenpandastudios/aug-runtime:0.23.0` | Deploy the compiled executable with its libraries and notices. |
+
+Both tags contain Linux ARM64 and x86-64 variants. Docker selects the variant for your engine. They work on Linux and Docker Desktop for Mac, including Apple Silicon and Intel Macs. Applications built in these containers are Linux executables. Use the [native CLI](getting-started.md) to build a macOS executable. See [Docker's platform guide](https://docs.docker.com/build/building/multi-platform/) for architecture selection and emulation.
 
 ## Prepare the toolchain images
 
-Build two local images using August 0.23.0. The build image contains Node.js 24 and the CLI; `aug build` downloads the compiler and library artifacts. The run image contains Debian's runtime and CA certificates and runs your executable as an unprivileged user. August does not publish registry images for these recipes.
-
-Save this as `Dockerfile.build` in an empty working folder. Pin `AUG_VERSION` to the version used by your application:
-
-```dockerfile
-FROM node:24-bookworm
-ARG AUG_VERSION=0.23.0
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
-RUN npm install --global --ignore-scripts --no-audit --no-fund \
-       @greenpandastudios/aug-cli@${AUG_VERSION}
-WORKDIR /workspace
-ENTRYPOINT ["aug"]
-CMD ["--help"]
-```
-
-Save this as `Dockerfile.run` beside it. Each application supplies its own `lib` and `share` directories beside the executable:
-
-```dockerfile
-FROM debian:bookworm-slim
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends ca-certificates zlib1g \
-    && rm -rf /var/lib/apt/lists/*
-RUN groupadd --system august \
-    && useradd --system --gid august --home-dir /app august
-WORKDIR /app
-USER august
-ENTRYPOINT ["/app/program"]
-```
-
-Build them in that order:
+Pull the bases; there are no toolchain Dockerfiles to create:
 
 ```sh
-docker build -f Dockerfile.build -t augscript/build:local .
-docker build -f Dockerfile.run -t augscript/run:local .
+docker pull ghcr.io/greenpandastudios/aug-build:0.23.0
+docker pull ghcr.io/greenpandastudios/aug-runtime:0.23.0
 ```
 
-The first application build downloads the compiler and required artifacts; later builds reuse their verified cache. Keep these local images on the same Docker engine that builds your application.
+The version is the bundled compiler version. The build image has Node.js 24, the CLI, its matching standard library and a prepared compiler cache. Application-specific source packages and native artifacts are installed during the application build. Source code and compiler development tools are not required on your host.
 
 ## Compile an existing project
 
-Create your application with [the starter](getting-started.md) or download a [complete project](examples/index.md), then compile it for Linux. The mount is writable because `aug build` writes `.aug-build` and generated specifications into the project. Run the commands below from the parent of `my-app`.
+Save this `Dockerfile` beside your project's `main.aug`:
 
-Keep the project in a directory shared with your Docker engine. If Docker reports that the bind source path does not exist, check the engine's file-sharing settings. A remote engine cannot mount a folder that exists only on your client machine; see [bind mount constraints](https://docs.docker.com/engine/storage/bind-mounts/#considerations-and-constraints).
+```dockerfile
+FROM ghcr.io/greenpandastudios/aug-build:0.23.0 AS build
+COPY --chown=node:node . .
+RUN aug install . \
+    && aug test . \
+    && aug build . --out /tmp/deploy/program
 
-```sh
-docker run --rm \
-  --user "$(id -u):$(id -g)" \
-  --env AUG_NATIVE_ARTIFACT_CACHE=/workspace/.aug-build/artifact-cache \
-  --env AUG_PACKAGE_CACHE=/workspace/.aug-build/source-cache \
-  --mount type=bind,source="$PWD/my-app",target=/workspace \
-  augscript/build:local install .
-
-docker run --rm \
-  --user "$(id -u):$(id -g)" \
-  --env AUG_NATIVE_ARTIFACT_CACHE=/workspace/.aug-build/artifact-cache \
-  --env AUG_PACKAGE_CACHE=/workspace/.aug-build/source-cache \
-  --mount type=bind,source="$PWD/my-app",target=/workspace \
-  augscript/build:local build . --out /workspace/.aug-build/program
+FROM ghcr.io/greenpandastudios/aug-runtime:0.23.0
+COPY --from=build --chown=august:august /tmp/deploy/ /app/
 ```
 
-Run that exact executable in the run image:
+Save `.dockerignore` beside it:
 
-```sh
-docker run --rm \
-  --mount type=bind,source="$PWD/my-app/.aug-build",target=/app,readonly \
-  augscript/run:local
+```text
+.git
+.aug-build
+.aug-native
+.aug-packages
+node_modules
+.devcontainer
+.env
+.env.*
+*.key
+*.pem
 ```
 
-The cache path is inside the writable project mount so it belongs to your host user. The images use the same Debian distribution. The executable loads libraries from its neighboring `lib` directory; keep `share` for dependency notices and source provenance. A Linux executable built here runs inside the runtime container, including when your host is macOS or Windows.
+Build and run it from that directory:
+
+```sh
+docker build -t my-app .
+docker run --rm my-app
+```
+
+The build installs project dependencies, runs same-file tests and compiles the program. The final image contains the deployment directory: `program`, `lib` and `share`. Copy the whole directory so shared libraries, licenses and source provenance stay with the executable. Both bases use Debian Bookworm and run their normal commands as unprivileged users.
+
+Commit `aug.lock.json` to retain exact package revisions. For a deployment with an established Linux lock, change the install step to `aug install . --frozen`. Native package locks must include the Linux target you deploy; a lock created only on macOS may need its first Linux install before it can be frozen. See [reproducible builds](packages.md#reproducible-builds).
 
 ## Deploy an HTTP application
 
-Start a project using Node.js 24 and npm on your host:
-
-```sh
-npm install --global @greenpandastudios/aug-cli@next
-aug init my-api
-cd my-api
-```
-
-Replace `main.aug` and add `endpoints.aug`. The starter's unused greeting module can remain. This service has one endpoint that returns a record as JSON.
+Use the [weather starter](weather-api.md) or a [downloaded web example](examples/index.md), then add the Dockerfile above. Here is a complete health service.
 
 **main.aug**
 
@@ -112,59 +89,24 @@ test endpoint health client:
             assert(condition=response.status == 200)
 ```
 
-Save `main.yaml` beside `main.aug`:
+**main.yaml**
 
-```yaml
+```yaml project=docker-http file=main.yaml
 optimization: release
 web:
   host: 0.0.0.0
 ```
 
-`web.host` must accept connections through the container's network interface. August's default, `127.0.0.1`, only accepts connections inside that container. The port comes from the `serve` statement; `main.yaml` selects the listening address and release compilation.
-
-Save this `Dockerfile` in `my-api`. Docker's [multi-stage build](https://docs.docker.com/build/building/multi-stage/) copies the compiled executable into the runtime image:
-
-```dockerfile
-FROM augscript/build:local AS build
-COPY . /workspace
-RUN aug install /workspace \
-    && aug test /workspace \
-    && aug build /workspace --out /tmp/deploy/program
-FROM augscript/run:local
-COPY --from=build --chown=august:august /tmp/deploy/ /app/
-```
-
-Save `.dockerignore` in the same folder:
-
-```text
-.git
-.aug-build
-.aug-native
-.aug-packages
-node_modules
-.devcontainer
-.env
-.env.*
-*.key
-*.pem
-```
-
-Keep credentials out of the build context. Mount runtime files at the paths your application uses. The compiler reads `main.yaml` while building; environment variables configure your application only when its code reads them. If your application imports source packages, commit its manifest and `aug.lock.json`, then add `RUN aug install /workspace --frozen` before the test/build step. [Frozen installs](packages.md#reproducible-builds) restore the locked dependency graph; include local package sources in the build context when the manifest references them.
-
-Build and start your application image. The build runs the endpoint test before compiling. Keep your terminal in `my-api`:
+`web.host` lets the service accept connections through the container interface. The `serve` statement selects the port. The default address, `127.0.0.1`, accepts connections only inside the container.
 
 ```sh
-docker build -t my-api:0.1.0 .
+docker build -t my-api .
 docker run --detach --name my-api --init \
-  --restart unless-stopped \
-  --publish 127.0.0.1:8080:8080 \
-  my-api:0.1.0
+  --publish 127.0.0.1:8080:8080 my-api
 curl --fail http://127.0.0.1:8080/health
 ```
 
-The test passes, and the HTTP request returns `{"status":"ok"}`. The published port is available on the Docker host's loopback address. Change the mapping if clients must connect directly from other hosts; omitting `127.0.0.1` publishes on all host interfaces. See [Docker's port publishing guide](https://docs.docker.com/engine/network/port-publishing/).
-
-Inspect output and stop this deployment with:
+The request returns `{"status":"ok"}`. The port is published on your host's loopback address. Change the mapping when clients need to connect directly from another host; see [port publishing](https://docs.docker.com/engine/network/port-publishing/).
 
 ```sh
 docker logs my-api
@@ -174,14 +116,14 @@ docker rm my-api
 
 ## Move the image to a server
 
-Tag and push the **application** image to your registry. Replace `registry.example.com/team` with your registry and namespace, and sign in using that registry's instructions:
+Push your application image to a registry your server can access:
 
 ```sh
-docker tag my-api:0.1.0 registry.example.com/team/my-api:0.1.0
+docker tag my-api registry.example.com/team/my-api:0.1.0
 docker push registry.example.com/team/my-api:0.1.0
 ```
 
-On a Linux Docker server with access to that registry, pull and run it:
+On the server:
 
 ```sh
 docker pull registry.example.com/team/my-api:0.1.0
@@ -191,6 +133,8 @@ docker run --detach --name my-api --init \
   registry.example.com/team/my-api:0.1.0
 ```
 
-Place a TLS reverse proxy on that server in front of `127.0.0.1:8080`, or configure the application's [native TLS](web.md#openapi-configuration). For native TLS, use stable absolute container paths for the certificate and private key in `main.yaml`, then mount those files at the same paths when starting the container. Build for the server's CPU architecture: an ARM64 image does not become an x86-64 executable when pushed. These recipes build for the Docker engine's default platform; run the build on the target architecture or use a separately verified cross-platform build setup.
+Build for the server's architecture. On an ARM64 Mac targeting an x86-64 Linux server, use `docker build --platform linux/amd64 -t my-api .`; Docker Desktop runs the build under emulation. Native ARM64 and x86-64 CI runners qualify the base images separately. August does not cross-compile a macOS binary inside these containers.
 
-Pin the CLI version and retain the application image digest for each deployment. The base tags and Debian package versions can change; use reviewed base-image digests and controlled dependency updates when reproducing a release. Redistributed native libraries also have [license and notice obligations](production-readiness.md#dependencies-and-licenses). Check [production readiness](production-readiness.md) before a trial deployment.
+For a release, retain the application image digest and pin reviewed base-image digests in its Dockerfile. Numbered base tags select the August compiler version; a rebuild can update Debian runtime packages. Use a TLS reverse proxy or [August's native TLS configuration](web.md#openapi-configuration), and mount application data or credentials at the paths its code expects. See [production readiness](production-readiness.md) for workload and dependency limits.
+
+For editing in the build image, use [a Dev Container](dev-containers.md).

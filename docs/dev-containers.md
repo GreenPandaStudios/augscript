@@ -1,50 +1,22 @@
 # Develop in a VS Code Dev Container
 
-Edit your project in VS Code and run the compiler and tests in a Linux container. Your files stay on your machine. The CLI downloads its compiler pack into the container, so no separate native toolchain is needed. These instructions use August 0.23.0.
+The August build image also serves as a development container. It includes the CLI, matching standard library and prepared LLVM compiler/runtime. You need Docker with a running Linux engine, VS Code and Microsoft's [Dev Containers extension](https://code.visualstudio.com/docs/devcontainers/containers).
 
-You need Docker with a running Linux engine, VS Code, and Microsoft's [Dev Containers extension](https://code.visualstudio.com/docs/devcontainers/containers). Creating a new project also needs Node.js 24 and npm on the host. You can instead open an existing project or a [downloaded example](examples/index.md).
-
-Keep your project in a writable folder shared with the Docker engine. If container creation reports that the bind source path does not exist, enable that folder in your engine's file-sharing settings. A remote Docker engine needs a separate workspace-sharing setup; [Docker's bind mount guide](https://docs.docker.com/engine/storage/bind-mounts/#considerations-and-constraints) explains the constraint.
-
-## Create the project and container files
-
-Start a project:
-
-```sh
-npm install --global @greenpandastudios/aug-cli@next
-aug init hello-august
-cd hello-august
-mkdir .devcontainer
-```
-
-Save `.devcontainer/Dockerfile` with these contents. It installs the CLI; the first run obtains the matching compiler/runtime pack and package artifacts.
-
-```dockerfile
-FROM node:24-bookworm
-ARG AUG_VERSION=0.23.0
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
-RUN npm install --global --ignore-scripts --no-audit --no-fund \
-       @greenpandastudios/aug-cli@${AUG_VERSION}
-WORKDIR /workspace
-USER node
-CMD ["sleep", "infinity"]
-```
-
-Save `.devcontainer/devcontainer.json` beside it:
+Open an existing August project, create one with [the CLI](getting-started.md), or download a [complete example](examples/index.md). Save one file, `.devcontainer/devcontainer.json`, in that project:
 
 ```json
 {
   "name": "August",
-  "build": {
-    "dockerfile": "Dockerfile",
-    "context": "."
-  },
+  "image": "ghcr.io/greenpandastudios/aug-build:0.23.0",
   "remoteUser": "node",
   "updateRemoteUserUID": true,
   "init": true,
-  "postCreateCommand": ["aug", "check", "."],
+  "postCreateCommand": "aug install . && aug check .",
+  "customizations": {
+    "vscode": {
+      "extensions": ["augscript.augscript"]
+    }
+  },
   "forwardPorts": [8080],
   "portsAttributes": {
     "8080": { "label": "August HTTP" }
@@ -52,33 +24,29 @@ Save `.devcontainer/devcontainer.json` beside it:
 }
 ```
 
-
 ## Open and run it
 
-Open `hello-august` in VS Code. From the Command Palette, choose **Dev Containers: Reopen in Container**. The first image build installs the CLI; the first `aug run` downloads its compiler pack. Later opens and runs reuse these inputs. When the container is ready, the configured creation command checks your project.
+Choose **Dev Containers: Reopen in Container** from VS Code's Command Palette. Docker pulls the correct ARM64 or x86-64 image. The creation command installs your project's dependencies and checks it; the compiler is already in the image. VS Code installs the August extension in the container.
 
-After opening the container, download the matching 0.23.0 VSIX from [GitHub Releases](https://github.com/GreenPandaStudios/augscript/releases/tag/v0.23.0). Run **Extensions: Install from VSIX…** in that VS Code window and install it in the container. Check the extension version against the CLI; Marketplace availability can lag a release. The bundled compiler and terminal CLI use the same artifact cache. Terminal commands run as the image's `node` user. On Linux, the Dev Container tooling adjusts that user's ID to match your local files. The [non-root user guide](https://code.visualstudio.com/remote/advancedcontainers/add-nonroot-user) explains this behavior.
-
-Open a terminal **in that VS Code window** and run:
+Use the terminal in that window:
 
 ```sh
-aug check .
-aug run .
-aug test .
-aug spec .
+aug run
+aug test
+aug spec
 aug spec . --check
 ```
 
-The starter prints `Hello, August!`, its test passes, and spec generation writes the neighboring explanations. You can use `aug` directly because the CLI is installed in the image. Follow [Your first project](getting-started.md) to understand and change the source.
+The starter prints `Hello, August!`, its test passes and spec generation writes the neighboring explanations. The image's `node` user owns its compiler cache. On Linux, Dev Containers adjusts that user's ID and home-directory ownership to match the local user. See [non-root containers](https://code.visualstudio.com/remote/advancedcontainers/add-nonroot-user).
 
-Edits, generated specs, and `.aug-build` remain in the mounted project folder. Native programs built here are Linux executables; run them inside the container. Rebuilding the container keeps your source files and rebuilds the environment. After changing the Dockerfile or CLI version, choose **Dev Containers: Rebuild Container**. Keep the toolchain and editor versions compatible with your project.
+Keep the project in a writable directory shared with your Docker engine. A remote engine cannot mount a directory that exists only on your client; see [bind mount constraints](https://docs.docker.com/engine/storage/bind-mounts/#considerations-and-constraints). Edits and generated specifications stay in the mounted project. Linux executables built there run inside the container.
+
+To update the environment, change the image tag and choose **Dev Containers: Rebuild Container**. Keep the editor's bundled compiler compatible with your project's CLI. Container rebuilding can discard downloads added after image creation; the base compiler remains prepared, and `aug install` restores project packages.
 
 ## Run an HTTP service
 
-Use the [small HTTP service](docker.md#deploy-an-http-application) or a downloaded [web project](examples/index.md). Run `aug run .` in the container terminal. For a service on port 8080, the configuration forwards that port to your host. Open VS Code's **Ports** view and follow its local address; VS Code may choose a different local port if 8080 is occupied.
+Run `aug run` for the [health service](docker.md#deploy-an-http-application). The configuration forwards port 8080; follow its address in VS Code's **Ports** view. Add other ports to `forwardPorts` as needed. The weather starter uses 8787 instead.
 
-Add other listening ports to `forwardPorts` when your application needs them. Editor forwarding and Docker's `--publish` are different mechanisms: VS Code can forward a service listening on the container's loopback address, while a deployed Docker service needs the listening address shown in [the Docker guide](docker.md#deploy-an-http-application). The [Dev Container configuration reference](https://containers.dev/implementors/json_reference/#general-devcontainerjson-properties) describes port forwarding and lifecycle commands.
+VS Code forwarding and Docker's deployed port mapping are separate. A deployed service needs `web.host: 0.0.0.0`, as shown in [the Docker guide](docker.md). See the [Dev Container reference](https://containers.dev/implementors/json_reference/#general-devcontainerjson-properties) for lifecycle and forwarding options.
 
-If the project imports source packages, run `aug install . --frozen` before checking it, and change `postCreateCommand` to `"aug install . --frozen && aug check ."`. Commit the manifest and lockfile. See [packages](packages.md#reproducible-builds) for the workflow.
-
-To package the application for a server, follow [Build and deploy with Docker](docker.md).
+When the project's Linux dependency graph is already locked, use `aug install . --frozen && aug check .` as the creation command. To deploy the application, use the same two-stage [Dockerfile](docker.md#compile-an-existing-project).
