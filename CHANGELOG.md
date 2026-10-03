@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+Provide two versioned, multi-architecture container bases: `aug-build` with the published CLI and prepared LLVM/runtime, and `aug-runtime` for complete native deployments. Use the build base directly in Dev Containers. Qualify offline builds, specs, tests, crypto and HTTP on native ARM64 and x86-64 runners before registry publication. Compiler contributor tests retain their separate source image.
+
 ## 0.23.0 — native ingestion boundaries
 
 Same-file worker tests check their active test program and reachable declarations, preserving input safety checks without rejecting inactive application startup calls.

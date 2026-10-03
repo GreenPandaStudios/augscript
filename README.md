@@ -4,7 +4,7 @@
 
 AugScript is an experimental, statically checked language for developers working with LLMs. Its tenets are **simplicity** and **developer scalability**: a module should explain its dependencies, state changes, errors, and public behavior in the code itself.
 
-August reads like pseudocode, compiles a human-readable specification, and runs as a native executable. The [homepage](https://greenpandastudios.github.io/augscript/) shows the same program as source and compiled prose beside a measured C comparison. The TypeScript compiler lowers checked August through LLVM. This repository includes the compiler, managed runtime, CLI, standard capabilities, examples, tests, documentation, Docker image recipes, and VS Code extension. Public exports, labeled inputs, checked errors, same-file tests, and generated specifications keep behavior close to the code that implements it.
+August reads like pseudocode, compiles a human-readable specification, and runs as a native executable. The [homepage](https://greenpandastudios.github.io/augscript/) shows the same program as source and compiled prose beside a measured C comparison. The TypeScript compiler lowers checked August through LLVM. This repository includes the compiler, managed runtime, CLI, standard capabilities, examples, tests, documentation, two Docker base images, and VS Code extension. Public exports, labeled inputs, checked errors, same-file tests, and generated specifications keep behavior close to the code that implements it.
 
 ## Start a project
 
@@ -52,7 +52,7 @@ Interface contracts describe capability effects with `uses`; implementations and
 
 Start with [the August book](docs/learn/index.md) for checked, runnable lessons. Use [task guides](docs/guides/index.md) to test a project, build a service, create a package, or [review an unfamiliar module](docs/guides/change-a-module.md). [Complete projects](docs/examples/index.md) show source and compiled specs together in indentation or braces style.
 
-[Deploy with Docker](docs/docker.md) or [develop in a VS Code Dev Container](docs/dev-containers.md) using the published CLI and prepared native libraries.
+[Deploy with Docker](docs/docker.md) or [develop in a VS Code Dev Container](docs/dev-containers.md) using `aug-build` for development/builds and `aug-runtime` for native deployments.
 
 Look up exact rules in the [language reference](docs/reference.md), [grammar](docs/grammar.md), and [CLI/editor reference](docs/tooling.md). Read [why August exists](docs/about.md), [performance evidence](docs/performance.md), [readiness](docs/production-readiness.md), and the [1.0 roadmap](docs/roadmap.md) when assessing it for a project. Contributors can use [the release process](docs/releasing.md) and [documentation maintenance](docs/maintaining-docs.md).
 

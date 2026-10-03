@@ -1,0 +1,135 @@
+name: August container images
+on:
+  push:
+    branches: [main]
+    paths: [docker/**, scripts/test-docker.mjs, scripts/container-release.mjs, .github/workflows/containers.yml]
+  pull_request:
+    paths: [docker/**, scripts/test-docker.mjs, scripts/container-release.mjs, .github/workflows/containers.yml]
+  workflow_run:
+    workflows: [Publish npm packages]
+    types: [completed]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: august-container-images-${{ github.event.pull_request.number || 'publication' }}
+  cancel-in-progress: false
+jobs:
+  source:
+    if: github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_repository.full_name == github.repository)
+    runs-on: ubuntu-24.04
+    outputs:
+      version: ${{ steps.source.outputs.version }}
+      available: ${{ steps.source.outputs.available }}
+      build: ${{ steps.source.outputs.build }}
+      runtime: ${{ steps.source.outputs.runtime }}
+      sha: ${{ steps.revision.outputs.sha }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - id: revision
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+      - id: source
+        env:
+          AUG_GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/container-release.mjs ${{ (github.event_name == 'pull_request' || github.event_name == 'push') && '--allow-unpublished' || '' }} >> "$GITHUB_OUTPUT"
+  build:
+    needs: source
+    if: needs.source.outputs.available == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-24.04
+            arch: amd64
+          - runner: ubuntu-24.04-arm
+            arch: arm64
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          ref: ${{ needs.source.outputs.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Build both bases on their native architecture
+        env:
+          ARCH: ${{ matrix.arch }}
+          SOURCE_SHA: ${{ needs.source.outputs.sha }}
+        run: |
+          docker build -f docker/Dockerfile.build --label "org.opencontainers.image.revision=$SOURCE_SHA" -t "augscript/build:$ARCH" .
+          docker build -f docker/Dockerfile.run --label "org.opencontainers.image.revision=$SOURCE_SHA" -t "augscript/run:$ARCH" .
+      - name: Exercise the released compiler and complete native deployments
+        env:
+          ARCH: ${{ matrix.arch }}
+          AUG_GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/test-docker.mjs --build-image "augscript/build:$ARCH" --runtime-image "augscript/run:$ARCH"
+      - name: Retain the tested images
+        if: github.event_name != 'pull_request'
+        env:
+          ARCH: ${{ matrix.arch }}
+        run: docker save "augscript/build:$ARCH" "augscript/run:$ARCH" | gzip > .aug-build/tested-images.tar.gz
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: august-containers-${{ matrix.arch }}
+          path: |
+            .aug-build/tested-images.tar.gz
+            .aug-build/docker-qualification.json
+          include-hidden-files: true
+          retention-days: 3
+          if-no-files-found: error
+  publish:
+    needs: [source, build]
+    if: needs.source.outputs.available == 'true' && github.repository == 'GreenPandaStudios/augscript' && github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || github.event_name == 'workflow_run')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      packages: write
+    env:
+      VERSION: ${{ needs.source.outputs.version }}
+      BUILD_IMAGE: ${{ needs.source.outputs.build }}
+      RUNTIME_IMAGE: ${{ needs.source.outputs.runtime }}
+    steps:
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          pattern: august-containers-*
+          path: tested-images
+      - name: Sign in to the repository's container registry
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: printf '%s' "$GH_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+      - name: Upload the exact images that passed qualification
+        run: |
+          for arch in amd64 arm64; do
+            docker load --input "tested-images/august-containers-$arch/tested-images.tar.gz"
+            docker tag "augscript/build:$arch" "$BUILD_IMAGE:$VERSION-$arch"
+            docker tag "augscript/run:$arch" "$RUNTIME_IMAGE:$VERSION-$arch"
+            docker push "$BUILD_IMAGE:$VERSION-$arch"
+            docker push "$RUNTIME_IMAGE:$VERSION-$arch"
+          done
+      - name: Publish the two architecture-selecting tags
+        run: |
+          docker buildx imagetools create -t "$BUILD_IMAGE:$VERSION" "$BUILD_IMAGE:$VERSION-amd64" "$BUILD_IMAGE:$VERSION-arm64"
+          docker buildx imagetools create -t "$RUNTIME_IMAGE:$VERSION" "$RUNTIME_IMAGE:$VERSION-amd64" "$RUNTIME_IMAGE:$VERSION-arm64"
+          docker buildx imagetools inspect "$BUILD_IMAGE:$VERSION"
+          docker buildx imagetools inspect "$RUNTIME_IMAGE:$VERSION"
+          printf '## August container images\n\n- `%s:%s`\n- `%s:%s`\n\nBoth passed native ARM64 and x86-64 qualification.\n' "$BUILD_IMAGE" "$VERSION" "$RUNTIME_IMAGE" "$VERSION" >> "$GITHUB_STEP_SUMMARY"
+      - name: Verify both bases can be pulled without signing in
+        env:
+          DOCKER_CONFIG: ${{ runner.temp }}/aug-anonymous-docker
+        run: |
+          mkdir -p "$DOCKER_CONFIG"
+          for image in "$BUILD_IMAGE" "$RUNTIME_IMAGE"; do
+            docker pull --platform linux/amd64 "$image:$VERSION"
+            docker pull --platform linux/arm64 "$image:$VERSION"
+          done

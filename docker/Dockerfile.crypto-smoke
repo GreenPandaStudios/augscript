@@ -1,7 +1,9 @@
 # syntax=docker/dockerfile:1
-FROM augscript/build:local AS build
-COPY docker/crypto-smoke /tmp/crypto-smoke
-RUN aug install /tmp/crypto-smoke && aug build /tmp/crypto-smoke --out /tmp/deploy/program
+ARG AUG_BUILD_IMAGE=augscript/build:local
+ARG AUG_RUNTIME_IMAGE=augscript/run:local
+FROM ${AUG_BUILD_IMAGE} AS build
+COPY --chown=node:node docker/crypto-smoke /tmp/crypto-smoke
+RUN --mount=type=secret,id=github_token,env=AUG_GITHUB_TOKEN aug install /tmp/crypto-smoke && aug build /tmp/crypto-smoke --out /tmp/deploy/program
 
-FROM augscript/run:local
+FROM ${AUG_RUNTIME_IMAGE}
 COPY --from=build --chown=august:august /tmp/deploy/ /app/

@@ -30,6 +30,11 @@ if (!extensionOnly) {
       write(path, data);
     }
   }
+  for (const path of ['docker/Dockerfile.build', 'docker/Dockerfile.run']) {
+    const contents = readFileSync(join(root, path), 'utf8');
+    if (check) assert.equal(/^ARG AUG_VERSION=(.+)$/m.exec(contents)?.[1], version, path);
+    else writeFileSync(join(root, path), contents.replace(/^ARG AUG_VERSION=.+$/m, 'ARG AUG_VERSION=' + version));
+  }
   const lock = read('package-lock.json');
   if (check) { assert.equal(lock.version, version); assert.equal(lock.packages[''].version, version); }
   else { lock.version = lock.packages[''].version = version; write('package-lock.json', lock); }

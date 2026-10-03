@@ -1,0 +1,11 @@
+# syntax=docker/dockerfile:1
+ARG AUG_BUILD_IMAGE=augscript/build:local
+ARG AUG_RUNTIME_IMAGE=augscript/run:local
+FROM ${AUG_BUILD_IMAGE} AS build
+COPY --chown=node:node examples/native-sqlite /tmp/native-sqlite
+RUN --mount=type=secret,id=github_token,env=AUG_GITHUB_TOKEN \
+    aug install /tmp/native-sqlite \
+    && aug test /tmp/native-sqlite \
+    && aug build /tmp/native-sqlite --out /tmp/deploy/program
+FROM ${AUG_RUNTIME_IMAGE}
+COPY --from=build --chown=august:august /tmp/deploy/ /app/
