@@ -93,5 +93,9 @@
   "boundary-tests": {
     "stdout": "-1\n",
     "tests": 5
+  },
+  "acceptance-review": {
+    "stdout": "8\n",
+    "tests": 3
   }
 }

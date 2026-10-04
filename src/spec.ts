@@ -30,7 +30,7 @@ const unreachable = (node: never): never => { throw new Error(`No specification 
 const plain = (text:string) => text.replace(/\[([^\]]+)\]\([^)]*\)/g,'$1').replaceAll('`','');
 
 export interface SpecOutput { path: string; text: string; source: string; kind?: 'source-hint'|'native-descriptor'; declarations?: {id:string;tree:SpecNode}[] }
-export interface SpecOptions { files?: SourceFile[]; manifest?: boolean; declarations?:boolean }
+export interface SpecOptions { files?: SourceFile[]; manifest?: boolean; declarations?:boolean; sourceHints?:boolean }
 
 /** Plan prose, managed source pointers, and versioned dependency copies without writes or execution. */
 export function generateSpecs(checked: CheckedProject, options: SpecOptions = {}): SpecOutput[] {
@@ -40,7 +40,7 @@ export function generateSpecs(checked: CheckedProject, options: SpecOptions = {}
   const outputRoot = project.library ? realpathSync(project.root) : project.root;
   const owned = options.files ?? [...project.files.values()].filter(file => !file.builtin && !file.package);
   const own = new Set(owned.map(file => file.path));
-  const hints=owned.map(specHint), offsets=new Map(hints.map(hint=>[hint.file.path,hint.lineOffset]));
+  const hints=options.sourceHints===false?[]:owned.map(specHint), offsets=new Map(hints.map(hint=>[hint.file.path,hint.lineOffset]));
   const docs = new Map<string,string>(), sources = new Map<string,string>();
   for (const file of project.files.values()) {
     if (own.has(file.path)) { docs.set(file.path, file.path + '.md'); sources.set(file.path, file.path); continue; }

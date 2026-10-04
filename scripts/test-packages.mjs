@@ -118,6 +118,12 @@ try {
   assert.ok(inputRows.rows.some(row=>row.inputs.left==='9223372036854775807'));
   const libraryTests = JSON.parse(aug('test', library, '--json'));
   assert.equal(libraryTests.passed, 1);
+  const caseIds=JSON.parse(aug('test',library,'--list','--json')).map(item=>item.id);
+  assert.deepEqual(caseIds,['src/arithmetic.aug:add:addition:adds_two_integers']);
+  writeFileSync(join(library,'requirements.json'),JSON.stringify({format:1,requirements:[{id:'sum',description:'Two plus three equals five.',tests:caseIds}]}));
+  const acceptance=JSON.parse(aug('verify',library,'--requirements','requirements.json','--backend','c','--json'));
+  assert.equal(acceptance.status,'passed');assert.equal(acceptance.compiler.status,'accepted');assert.equal(acceptance.behavior.passed,1);assert.equal(acceptance.generalProof,'not-established');
+  assert.equal(acceptance.review.sources[0].file,'src/arithmetic.aug');
   const authoredManifest=join(library,'aug-package.json');
   const authored=JSON.parse(readFileSync(authoredManifest,'utf8'));authored.compiler='~'+authored.compiler;writeFileSync(authoredManifest,JSON.stringify(authored));
   aug('check',library);

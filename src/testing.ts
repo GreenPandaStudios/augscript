@@ -1,4 +1,5 @@
 import { relative } from 'node:path';
+import {realpathSync} from 'node:fs';
 import type { Diagnostic, Expr, Stmt, TestCase, TestDecl, TestGroup, TopLevel } from './ast.ts';
 import { typeName } from './ast.ts';
 import { checkProject, type CheckedProject } from './checker.ts';
@@ -55,7 +56,7 @@ export function discoverTests(project: Project): { tests: UnitTest[]; diagnostic
           if (!test.name.trim()) report(test, 'A test case needs a nonempty name');
           if (cases.has(test.name)) report(test, `Duplicate test case ${test.name}`);
           cases.add(test.name);
-          const id = `${relative(project.root, file.path)}:${encodeURIComponent(suiteType)}:${encodeURIComponent(group.name)}:${encodeURIComponent(test.name)}`;
+          const id = `${relative(project.library?realpathSync(project.root):project.root, file.path).replaceAll('\\','/')}:${encodeURIComponent(suiteType)}:${encodeURIComponent(group.name)}:${encodeURIComponent(test.name)}`;
           if (test.rows) {
             if (!test.rows.length) report(test, 'Parameterized cases need at least one row');
             test.rows.forEach((row, rowIndex) => {

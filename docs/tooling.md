@@ -29,6 +29,7 @@ Install `aug` once as shown in [Your first project](getting-started.md). Command
 | `migrate PROJECT [--file PATH] [--write] [--json]` | Verified migration of rejected legacy syntax; preview by default. |
 | `spec PROJECT [--check] [--json]` | Adjacent prose specs with expandable checked interfaces, paragraph source links and offline dependencies; --check detects drift without writing. |
 | `test PROJECT --suggest-inputs FUNCTION --file FILE [--cases JSON_FILE] [--combinations] [--limit N] [--json]` | **Unreleased:** propose bounded, compiler-checked scalar input rows; assertions remain author decisions. See [test inputs](testing.md#suggest-boundary-inputs). |
+| `verify PROJECT --requirements FILE [--backend c\|llvm] [--timeout MS] [--offline] [--frozen] [--json]` | **Unreleased:** check current code/context and record concrete author-selected acceptance cases. See [requirements and results](testing.md#review-requirements-with-test-results). |
 | `test PROJECT [--coverage] [--json]` | Isolated native tests and optional statement-line report. |
 | `bench PROJECT [--iterations N] [--warmup N] [--timeout MS] [--json] -- args...` | Release build with timed native executions. |
 | `explain PROJECT --file PATH [--name NAME]` | Checked contracts, dependencies, layers, origins, tests, and module surface. |

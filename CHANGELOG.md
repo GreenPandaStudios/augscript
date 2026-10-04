@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+Record independent acceptance review with `aug verify --requirements FILE`: author requirements, exact selected source, checked dependency contracts, generated explanations and concrete native case results. Reject missing/empty selections and incomplete required context, pair results with the loaded-source revision, and report detected source/configuration/requirement changes as stale. Keep compiler acceptance, finite behavioral evidence and engineer review separate. Normalize source-library case ids through linked project roots.
+
 Suggest representative scalar test inputs with `aug test --suggest-inputs` and `itboundaries` completion. Reports retain exact int64 literals, source revisions, author cases and finite selection limits; assertions remain author-written. Fix one-column tuple destructuring so typed test rows bind their cell.
 
 Complete explicit compositions through ordinary exports and imports. Inspect application or selected same-file test wiring with `aug graph --composition`, including lifetimes, constructor dependencies, source revisions and Mermaid diagrams. Duplicate binding diagnostics link the conflicting selections; inspection does not execute or replace providers.

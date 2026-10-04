@@ -104,6 +104,66 @@ Every row must supply exactly the public labels. Only scalar literals and bounde
 
 JSON records the concrete rows, their origin, limit, ordering, generator version, compiler identity, source/configuration revision, author-file digest and replay digest. Keep the report with your review, then save accepted inputs and independently selected assertions as ordinary test rows. Rerunning the command against the same sources produces the same report. It provides finite input evidence; expected answers, behavioral checks and general proofs remain separate.
 
+## Review requirements with test results
+
+**Unreleased:** `aug verify` puts author-written requirements, checked code, its generated explanation and native test results in one report. Write the requirements before choosing implementation answers. August checks the mapping and runs the selected cases; it cannot determine whether your tests were written independently or cover the intended business behavior.
+
+Save this program as `math.aug`. The requirement is to double the input, including negative integers and zero. The three expected values are ordinary author-written test rows.
+
+```aug project=acceptance-review file=math.aug
+double(int value):
+    return value * 2
+
+test double:
+    when acceptance:
+        it examples for (value, expected) in [
+            (-3, -6), (0, 0), (7, 14)
+        ]:
+            assertEqual(actual=double(value), expected)
+```
+
+Save its entry in `main.aug`. `aug run` prints `8`; `aug test` runs three cases.
+
+```aug project=acceptance-review file=main.aug
+import double from math
+
+print(value=double(value=4))
+```
+
+Run `aug test --list --json` to discover exact case ids. Save their requirement mapping in a separate `requirements.json`:
+
+```json
+{
+  "format": 1,
+  "requirements": [{
+    "id": "twice",
+    "description": "Double the input, including negatives and zero.",
+    "tests": [
+      "math.aug:double:acceptance:examples:1",
+      "math.aug:double:acceptance:examples:2",
+      "math.aug:double:acceptance:examples:3"
+    ]
+  }]
+}
+```
+
+Run the review from this folder and preserve its JSON with the proposed change:
+
+```sh
+aug verify --requirements requirements.json
+aug verify --requirements requirements.json --json > verification.json
+```
+
+The human report names `twice` as passed and reports `3 passed, 0 failed`. The JSON also contains exact selected source, checked function and dependency contracts, generated specification text, test-group source, captured native output and the source/configuration revision. It records compiler acceptance, finite behavioral results and required engineer review separately. Descriptions and expected answers remain author-supplied; explanations are source-derived. A compiled `.aug.md` cannot be used as the requirements file.
+
+To check that the cases detect a mistake, change `return value * 2` to `return value`. Static checking still succeeds, but verification fails two cases. Restore the multiplication and rerun before accepting the change. Passing these cases establishes their results for this revision; it does not prove the function correct for every integer.
+
+Verification checks production and all same-file test bodies, then executes only mapped cases using the ordinary isolated native test runner. It prepares missing declared packages and the pinned LLVM compiler like `aug run`; `--offline` and `--frozen` keep their usual restrictions. `--backend c` selects the maintainer reference backend and requires its native tools. `--timeout MS` bounds each native case execution, from 1 to 3,600,000 milliseconds; compilation is outside that timeout. Test output and caches are written under the ordinary build/cache directories. Source files, requirements and adjacent specs are not edited.
+
+The format accepts up to 256 nonempty requirements and 256 selected cases, with at most 4096 requirement-to-case links. A requirement needs a unique id, description and distinct case ids. The requirements file and selected source review each have a 1 MiB limit. Missing cases, invalid metadata or omitted mandatory context reject verification before tests run. Native and interface-dispatch boundaries remain visible in the review; a finite test run does not resolve every possible caller. Optional context omitted for size is listed explicitly.
+
+The runner checks the expected source revision before native compilation and execution. After execution, August checks the source/configuration and requirement identities again and compares the runner's loaded-source revision. A detected change reports `stale`, retaining the concrete results for the earlier revision. A rejected final source or dependency-metadata check also invalidates the report, even when its source hash is unchanged. Incomplete or interrupted evidence fails verification. These checks do not lock editors, make a source transaction or reset external databases and services. Review the code, requirements and test results together, then rerun if any of them changes.
+
 ## A complete class suite
 
 In a separate folder, save these two files. `aug run .` prints `1`, and `aug test .` runs two cases. Notice that the second case sees the initial counter value even though the first case increments its own subject.
@@ -176,7 +236,8 @@ Use `npx @greenpandastudios/aug-cli@next` in place of `aug` below, or use an ins
 | `aug test PROJECT --group NAME` | Same explicit selection. |
 | `aug test PROJECT --list --json` | Discover IDs, subject, group, case, row, file, and line. |
 | `aug test PROJECT --case ID` | Select an exact ID; repeat for several. |
-| `aug test PROJECT --json` | Machine-readable pass/fail counts and captured output. |
+| `aug test PROJECT --json` | Machine-readable pass/fail counts, captured output and loaded-source revision. |
+| `aug test PROJECT --expected-revision SHA256` | **Unreleased:** reject a different loaded source/configuration before native execution. |
 | `aug test PROJECT --timeout 2000` | Limit each native execution to 2 seconds. |
 | `aug test PROJECT --coverage` | Merge executed statement lines across selected cases. |
 

@@ -1,3 +1,5 @@
+import {verifyAcceptance,verificationSummary} from './verification.ts';
+import {semanticGraph,semanticConfiguration} from './symbols.ts';
 import {suggestTestInputs,parseAuthorInputCases} from './test-inputs.ts';
 import {createHash} from 'node:crypto';
 import {compositionReport,compositionDiagram} from './composition.ts';
@@ -85,7 +87,7 @@ function printDiagnostics(diagnostics: Diagnostic[], json: boolean, root: string
 
 function usage(): void {
   process.stdout.write(`AugScript compiler\n\n` +
-    `Usage: aug <init|doctor|scratch|check|build|bundle|run|emit-c|emit-llvm|emit-ir|test|openapi|format|migrate|spec|bench|explain|context|lsp|symbols|definition|references|graph|complete|hover|fixes|semantic-tokens> [project directory] [options] [-- args]\n` +
+    `Usage: aug <init|doctor|scratch|check|build|bundle|run|emit-c|emit-llvm|emit-ir|test|verify|openapi|format|migrate|spec|bench|explain|context|lsp|symbols|definition|references|graph|complete|hover|fixes|semantic-tokens> [project directory] [options] [-- args]\n` +
     `Scratch: aug scratch FILE [--prepare] [--run] [--offline] [--backend c|llvm] [--json] [-- args] — check a temporary entry module; --run executes it\n` +
     `Find libraries: aug libraries [QUERY] [--json] — search the bundled task catalog without downloads\n` +
     `Inspect dependencies: aug dependencies [PROJECT] [--json]; aug update [PROJECT] --preview [--offline] [--json]\n` +
@@ -97,6 +99,7 @@ function usage(): void {
     `Deployment: aug bundle PROJECT --out DIRECTORY [--offline] [--frozen]; aug bundle verify DIRECTORY [--json]\n` +
     `Backend: LLVM is the default on macOS 14+ ARM64 and GNU/Linux x64/ARM64 with glibc 2.36+. August installs its compiler pack; no separate native toolchain is needed. --backend c selects the migration reference.\n` +
     `Tests: aug test [project directory] [GROUP_NAME] [--group GROUP_NAME] [--list] [--coverage] [--json] [--timeout milliseconds]\n` +
+    `Acceptance: aug verify [PROJECT] --requirements FILE [--backend c|llvm] [--timeout MS] [--offline] [--frozen] [--json] — check source and run author-selected cases\n` +
     `Test inputs: aug test [PROJECT] --suggest-inputs FUNCTION --file FILE [--cases JSON_FILE] [--combinations] [--limit N] [--json] — propose checked inputs; author supplies assertions\n` +
     `Format: aug format [project directory] [--file path] [--write]\n` +
     `Specifications: aug spec [project directory] [--check] [--json]\n` +
@@ -119,6 +122,28 @@ export async function main(argv: string[]): Promise<number> {
     if(paths.length!==1||args.some(arg=>arg.startsWith('-')&&arg!=='--json')){process.stderr.write('Use aug bundle verify DIRECTORY [--json]\n');return 2;}
     try {const report=verifyBundle(paths[0]);process.stdout.write(args.includes('--json')?JSON.stringify(report)+'\n':`Verified ${report.files} files for ${report.target}; executable ${report.executable}.\n${report.trust}\n`);return 0;}
     catch(error){process.stderr.write(failureMessage(error)+'\n');return 1;}
+  }
+  if(command==='verify') {
+    let path:string|undefined;const values=new Map<string,string>(),seen=new Set<string>();
+    for(let index=1;index<argv.length;index++) {
+      const arg=argv[index];
+      if(['--requirements','--backend','--timeout'].includes(arg)) {
+        if(seen.has(arg)||!argv[index+1]||argv[index+1].startsWith('-')){process.stderr.write(arg+' needs one value.\n');return 2;}
+        seen.add(arg);values.set(arg,argv[++index]);
+      }else if(['--json','--offline','--frozen'].includes(arg)) {
+        if(seen.has(arg)){process.stderr.write('Duplicate verification option: '+arg+'\n');return 2;}seen.add(arg);
+      }else if(arg.startsWith('-')||path!==undefined){process.stderr.write('Use aug verify [PROJECT] --requirements FILE [--backend c|llvm] [--timeout MS] [--offline] [--frozen] [--json]\n');return 2;}
+      else path=arg;
+    }
+    const backend=values.get('--backend'),timeout=values.has('--timeout')?Number(values.get('--timeout')):10000;
+    if(!values.has('--requirements')||backend!==undefined&&!['c','llvm'].includes(backend)||!Number.isInteger(timeout)||timeout<1||timeout>3600000) {
+      process.stderr.write('Verification requires --requirements; --backend is c or llvm; --timeout is 1–3600000 milliseconds per native case.\n');return 2;
+    }
+    try {
+      const report=await verifyAcceptance(path??process.cwd(),{requirements:values.get('--requirements')!,backend:backend as 'c'|'llvm'|undefined,
+        timeout,offline:seen.has('--offline'),frozen:seen.has('--frozen')});
+      process.stdout.write(seen.has('--json')?JSON.stringify(report)+'\n':verificationSummary(report));return report.status==='passed'?0:1;
+    }catch(error){process.stderr.write(failureMessage(error)+'\n');return 1;}
   }
   if(command==='test'&&argv.includes('--suggest-inputs')) {
     let path:string|undefined;const values=new Map<string,string>(),seen=new Set<string>();
@@ -433,7 +458,7 @@ export async function main(argv: string[]): Promise<number> {
   const options = separator >= 0 ? argv.slice(1, separator) : argv.slice(1);
   const programArgs = separator >= 0 ? argv.slice(separator + 1) : [];
   if (options.includes('--help')) { usage(); return 0; }
-  const valueOptions = new Set(['--backend','--out', '--stdin-file', '--file', '--name', '--offset', '--budget', '--baseline', '--group', '--case', '--timeout', '--iterations', '--warmup']);
+  const valueOptions = new Set(['--expected-revision','--backend','--out', '--stdin-file', '--file', '--name', '--offset', '--budget', '--baseline', '--group', '--case', '--timeout', '--iterations', '--warmup']);
   const booleanOptions = new Set(['--json', '--coverage', '--list', '--write', '--check', '--offline', '--frozen', '--require-complete', '--progress']);
   for (let index = 0; index < options.length; index++) {
     const option = options[index];
@@ -466,6 +491,10 @@ export async function main(argv: string[]): Promise<number> {
   const groupOption = groupIndex >= 0 ? options[groupIndex + 1] : undefined;
   const caseIndices = options.flatMap((option, index) => option === '--case' ? [index] : []);
   const caseNames = caseIndices.map(index => options[index + 1]);
+  const revisionIndex=options.indexOf('--expected-revision'),expectedRevision=revisionIndex<0?undefined:options[revisionIndex+1];
+  if(expectedRevision!==undefined&&(command!=='test'||!/^[a-f0-9]{64}$/.test(expectedRevision)||options.filter(arg=>arg==='--expected-revision').length!==1)) {
+    process.stderr.write('--expected-revision accepts one SHA-256 source revision for aug test.\n');return 2;
+  }
   const timeoutIndex = options.indexOf('--timeout');
   const timeout = timeoutIndex >= 0 ? Number(options[timeoutIndex + 1]) : 10000;
   const iterationsIndex = options.indexOf('--iterations'), warmupIndex = options.indexOf('--warmup');
@@ -482,6 +511,7 @@ export async function main(argv: string[]): Promise<number> {
     (baselineIndex < 0 || i !== baselineIndex + 1) &&
     (groupIndex < 0 || i !== groupIndex + 1) &&
     !caseIndices.some(index => i === index + 1) &&
+    (revisionIndex < 0 || i !== revisionIndex + 1) &&
     (timeoutIndex < 0 || i !== timeoutIndex + 1) &&
     (iterationsIndex < 0 || i !== iterationsIndex + 1) && (warmupIndex < 0 || i !== warmupIndex + 1));
   const firstIsDirectory = positionals[0] && existsSync(positionals[0]) && statSync(positionals[0]).isDirectory();
@@ -512,6 +542,7 @@ export async function main(argv: string[]): Promise<number> {
     if (!existsSync(root) || !statSync(root).isDirectory())
       throw new Error(`Project directory does not exist: ${root}\nUse aug init DIRECTORY to create a project, or run aug run from the folder containing main.aug.`);
     if (command === 'run'||command==='bundle') await prepareRunPackagesWithNative(root, options.includes('--offline'), options.includes('--frozen'),()=>progress.start('native artifacts'));
+    const configurationAtLoad=command==='test'?semanticConfiguration(root):undefined;
     const project = loadProject(root, overrides);
     if(buildCommand)progress.start('checking');
     if(backendIndex<0)backend=project.config.backend??'llvm';
@@ -546,6 +577,11 @@ export async function main(argv: string[]): Promise<number> {
           selected.map(unit => unit.id).join('\n') + '\n');
         return 0;
       }
+      const sourceRevision=semanticGraph(checks[0].checked,true,undefined,configurationAtLoad).revision;
+      if(expectedRevision!==undefined&&(sourceRevision!==expectedRevision||JSON.stringify(semanticConfiguration(root))!==JSON.stringify(configurationAtLoad))) {
+        const error='TEST_REVISION: Loaded source/configuration differs from the expected revision. Review and rerun; no native cases ran.';
+        process.stdout.write(json?JSON.stringify({sourceRevision,expectedRevision,passed:0,failed:0,tests:[],error})+'\n':error+'\n');return 1;
+      }
       const results: { id: string; group: string; name: string; passed: boolean; stdout: string; stderr: string }[] = [];
       const coverage = options.includes('--coverage'), reports: string[] = [];
       const nativeInputs=backend==='llvm'?await prepareNativePackages(root,{offline:options.includes('--offline'),frozen:options.includes('--frozen')}):undefined;
@@ -574,7 +610,7 @@ export async function main(argv: string[]): Promise<number> {
       const passed = results.filter(result => result.passed).length;
       const failed = results.length - passed;
       const report = coverage ? writeCoverage(root, reports) : undefined;
-      process.stdout.write(json ? JSON.stringify({ passed, failed, tests: results, coverage: report }) + '\n' :
+      process.stdout.write(json ? JSON.stringify({ passed, failed, tests: results, coverage: report, sourceRevision, execution:{backend,compilerPackSha256:toolchain?.archiveSha256,developmentOverride:toolchain?.developmentOverride??false} }) + '\n' :
         `${passed} passed, ${failed} failed\n` + (report ? `Coverage: ${report.covered}/${report.executable} statement lines (${report.percent.toFixed(1)}%); ${report.path}\n` : ''));
       return failed ? 1 : 0;
     }

@@ -59,6 +59,6 @@ A useful instruction is:
 
 > Read `calculator.aug.md` first and follow its linked contracts. Inspect the August source and tests before editing. Add a case that verifies addition with a negative operand. Run `aug check` and `aug test`, regenerate with `aug spec`, and review the source and spec diffs. Report the checks that passed and any limits.
 
-Ask the agent to read the spec, inspect the source, and run the checks. Review its patch before accepting it.
+Ask the agent to read the spec, inspect the source, and run the checks. Review its patch before accepting it. The unreleased [requirements review](../testing.md#review-requirements-with-test-results) can retain author requirements, exact selected source, its explanation and native test results together. Keep expected behavior in your requirements and tests; the generated explanation describes the proposed implementation.
 
 For a larger boundary example, explore [modules and composition](../examples/approved-design/index.md). For a different task, return to the [guides](index.md).
