@@ -2,8 +2,10 @@
 
 # `main.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=3cc2e44e3a0eae2f54e54195b5c52328a21e8b10812e2c73bde4c2587efddb73 -->
+
 ## Startup
 
-It sets `greetings` to `0`. While `greetings` is less than `1000000`, it prints `"Hello, August! 👋"`; then it increases `greetings` by `1`.
+It sets `greetings` to `0`. While `greetings` is less than `1000000`, it prints `"Hello, August! 👋"`; then it increases `greetings` by `1`. [source](main.aug#L2-L5)
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).

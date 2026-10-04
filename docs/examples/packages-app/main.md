@@ -49,7 +49,7 @@ print(value=add(left=20, right=22))
 
 ### Startup
 
-It prints [`add`](dependencies/packages/%40example/aug-math/0.1.0/arithmetic.md#symbol-add) with `left` `20` and `right` `22`.
+It prints [`add`](dependencies/packages/%40example/aug-math/0.1.0/arithmetic.md#symbol-add) with `left` `20` and `right` `22`. [source](main.md#code)
 
 ### Dependencies
 

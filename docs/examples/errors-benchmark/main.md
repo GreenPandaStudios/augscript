@@ -75,11 +75,11 @@ print(value=failures)
 
 ### Startup
 
-It sets `iterations` to `20000`. It sets `index`, `checksum`, and `failures` separately, each to `0`.
+It sets `iterations` to `20000`. It sets `index`, `checksum`, and `failures` separately, each to `0`. [source](main.md#code)
 
-While `index` is less than `iterations`, it tries to increase `checksum` by [`validate`](operations.md#symbol-validate) with `value` from `index`. If this work raises `FileError`, it increases `failures` by `1`. It increases `index` by `1`. After the loop, it prints `checksum`.
+While `index` is less than `iterations`, it tries to increase `checksum` by [`validate`](operations.md#symbol-validate) with `value` from `index`. If this work raises `FileError`, it increases `failures` by `1`. It increases `index` by `1`. After the loop, it prints `checksum`. [source](main.md#code)
 
-It prints `failures`.
+It prints `failures`. [source](main.md#code)
 
 ### Dependencies
 

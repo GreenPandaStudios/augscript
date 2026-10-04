@@ -58,7 +58,7 @@ catch FileError error {
 
 ### Startup
 
-It prints [`load`](errors.md#symbol-load) with `fail` `true`. If this work raises `FileError`, it prints `"caught FileError"`.
+It prints [`load`](errors.md#symbol-load) with `fail` `true`. If this work raises `FileError`, it prints `"caught FileError"`. [source](main.md#code)
 
 ### Dependencies
 

@@ -47,7 +47,7 @@ print(value=7)
 
 ### Startup
 
-It prints `7`.
+It prints `7`. [source](main.md#code)
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).
 

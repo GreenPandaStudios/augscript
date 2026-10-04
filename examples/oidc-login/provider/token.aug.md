@@ -2,6 +2,8 @@
 
 # `token.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=97072723ce3c3d273400e655d9b81fc95a25ef88f81ea0516d8950e250f51f7f -->
+
 Plain handler results default to HTTP 200 unless another status is declared. HttpResponse values choose their own status. Unhandled request failures return HTTP 500 and cancel the request tasks.
 
 <a id="symbol-token"></a>
@@ -9,22 +11,44 @@ Plain handler results default to HTTP 200 unless another status is declared. Htt
 
 `token` handles `POST /provider/token`. A real OAuth token endpoint. Exact client/redirect binding, S256 PKCE, expiry and one-use codes are enforced. Errors use OAuth JSON.
 
+It takes labeled inputs `http`. It gets `crypto` ([`Crypto`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto)), `clock` ([`Clock`](../.aug-spec/packages/%40git/url_c092cd151499c4e1d8a1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-Clock)), `keys` ([`SigningKeys`](../common/keys.aug.md#symbol-SigningKeys)), `codes` ([`ExpiringStore<AuthorizationCode>`](../.aug-spec/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore)), and `access` ([`ExpiringStore<AccessGrant>`](../.aug-spec/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore)) from dependency injection.
+
+It gets `config` from [`settings`](../common/settings.aug.md#symbol-settings). It sets `form` to `http.form` for [`TokenForm`](contracts.aug.md#symbol-TokenForm). If `form.grant_type` does not equal `"authorization_code"`, it returns [`_oauthError`](token.aug.md#symbol-_oauthError) with `code` `"unsupported_grant_type"` and `description` `"Only authorization_code is supported."`. If `form.client_id` does not equal `config.clientId`, it returns [`_oauthError`](token.aug.md#symbol-_oauthError) with `code` `"invalid_client"` and `description` `"The registered client is required."`. [source](token.aug#L13-L38)
+
+If `form.code` is not a URL-safe ASCII token with `43` to `43` characters or `form.code_verifier` is not a URL-safe ASCII token with `43` to `128` characters, it returns [`_oauthError`](token.aug.md#symbol-_oauthError) with `code` `"invalid_grant"` and `description` `"The authorization grant is invalid."`. It sets `now` to [`clock.now`](../.aug-spec/packages/%40git/url_c092cd151499c4e1d8a1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-Clock.now). It obtains [`codes.take`](../.aug-spec/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore.take) with `key` from `form.code` and `now`. If no value is found, it returns [`_oauthError`](token.aug.md#symbol-_oauthError) with `code` `"invalid_grant"` and `description` `"The authorization grant is invalid."`. [source](token.aug#L20-L36)
+
+The non-null result becomes `grant`. It sets `challenge` to the URL-safe base64 encoding of [`crypto.sha256`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.sha256) with `input` from the UTF-8 bytes of `form.code_verifier`. If `grant.clientId` does not equal `form.client_id` or `grant.redirectUri` does not equal `form.redirect_uri` or [`crypto.equal`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.equal) with `left` from the UTF-8 bytes of `challenge` and `right` from the UTF-8 bytes of `grant.challenge` returns false, it returns [`_oauthError`](token.aug.md#symbol-_oauthError) with `code` `"invalid_grant"` and `description` `"The authorization grant is invalid."`. It sets `claims` to an [`IdClaims`](contracts.aug.md#symbol-IdClaims) with `iss` from `config.issuer`, `sub` from `grant.subject`, `aud` from `grant.clientId`, `exp` from `now` plus `300`, `iat` from `now`, `grant.nonce`, and `grant.name`. [source](token.aug#L14-L38)
+
+It sets `idToken` to [`signJwt`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug.md#symbol-signJwt) with `key` from [`keys.provider`](../common/keys.aug.md#symbol-SigningKeys.provider), `claims` from a `Json` with `value` from `claims`, `kid` `"provider-1"`, and `tokenType` `"JWT"` using injected `crypto`. It sets `accessToken` to the URL-safe base64 encoding of [`crypto.random`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.random) with `size` `32`. It sets `value` to an [`AccessGrant`](contracts.aug.md#symbol-AccessGrant) with `grant.subject`, `grant.name`, and `expires` from `now` plus `300`. It calls [`access.put`](../.aug-spec/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore.put) with `key` from `accessToken`, `value`, `value.expires`, and `now`. [source](token.aug#L31-L34)
+
+It sets `body` to a [`TokenResponse`](contracts.aug.md#symbol-TokenResponse) with `token_type` `"Bearer"`, `access_token` from `accessToken`, `id_token` from `idToken`, `expires_in` `300`, and `scope` `"openid profile"`. It returns HTTP 200 with a `Json` with `value` from `body` and [`securityHeaders`](../common/headers.aug.md#symbol-securityHeaders) headers. If this work raises `HttpError`, it returns [`_oauthError`](token.aug.md#symbol-_oauthError) with `code` `"invalid_request"` and `description` `"Submit the required URL-encoded token fields once each."`. [source](token.aug#L35-L38)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+token(HttpRequest http, resolve Crypto crypto, resolve Clock clock, resolve SigningKeys keys, resolve ExpiringStore<AuthorizationCode> codes, resolve ExpiringStore<AccessGrant> access) returns HttpResponse<Json> unless CryptoError and HttpError and JwtError and KeyError and StoreFull and TimeError uses Clock.now, ExpiringStore<AuthorizationCode>.take, Crypto.sha256, Crypto.equal, SigningKeys.provider, Crypto.random, ExpiringStore<AccessGrant>.put, Crypto.signRsa
+```
+
 It takes `http` as `HttpRequest` from the HTTP request. It gets `crypto` ([`Crypto`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto)), `clock` ([`Clock`](../.aug-spec/packages/%40git/url_c092cd151499c4e1d8a1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-Clock)), `keys` ([`SigningKeys`](../common/keys.aug.md#symbol-SigningKeys)), `codes` ([`ExpiringStore<AuthorizationCode>`](../.aug-spec/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore)), and `access` ([`ExpiringStore<AccessGrant>`](../.aug-spec/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore)) from dependency injection. The handler responds with HTTP 503 for `CryptoError`, HTTP 503 for `TimeError`, and HTTP 503 for [`StoreFull`](../.aug-spec/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-StoreFull). It can also raise `HttpError`, `JwtError`, and `KeyError`.
 
-It gets `config` from [`settings`](../common/settings.aug.md#symbol-settings). It sets `form` to `http.form` for [`TokenForm`](contracts.aug.md#symbol-TokenForm). If `form.grant_type` does not equal `"authorization_code"`, it returns [`_oauthError`](token.aug.md#symbol-_oauthError) with `code` `"unsupported_grant_type"` and `description` `"Only authorization_code is supported."`. If `form.client_id` does not equal `config.clientId`, it returns [`_oauthError`](token.aug.md#symbol-_oauthError) with `code` `"invalid_client"` and `description` `"The registered client is required."`.
-
-If `form.code` is not a URL-safe ASCII token with `43` to `43` characters or `form.code_verifier` is not a URL-safe ASCII token with `43` to `128` characters, it returns [`_oauthError`](token.aug.md#symbol-_oauthError) with `code` `"invalid_grant"` and `description` `"The authorization grant is invalid."`. It sets `now` to [`clock.now`](../.aug-spec/packages/%40git/url_c092cd151499c4e1d8a1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-Clock.now). It obtains [`codes.take`](../.aug-spec/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore.take) with `key` from `form.code` and `now`. If no value is found, it returns [`_oauthError`](token.aug.md#symbol-_oauthError) with `code` `"invalid_grant"` and `description` `"The authorization grant is invalid."`.
-
-The non-null result becomes `grant`. It sets `challenge` to the URL-safe base64 encoding of [`crypto.sha256`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.sha256) with `input` from the UTF-8 bytes of `form.code_verifier`. If `grant.clientId` does not equal `form.client_id` or `grant.redirectUri` does not equal `form.redirect_uri` or [`crypto.equal`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.equal) with `left` from the UTF-8 bytes of `challenge` and `right` from the UTF-8 bytes of `grant.challenge` returns false, it returns [`_oauthError`](token.aug.md#symbol-_oauthError) with `code` `"invalid_grant"` and `description` `"The authorization grant is invalid."`. It sets `claims` to an [`IdClaims`](contracts.aug.md#symbol-IdClaims) with `iss` from `config.issuer`, `sub` from `grant.subject`, `aud` from `grant.clientId`, `exp` from `now` plus `300`, `iat` from `now`, `grant.nonce`, and `grant.name`.
-
-It sets `idToken` to [`signJwt`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug.md#symbol-signJwt) with `key` from [`keys.provider`](../common/keys.aug.md#symbol-SigningKeys.provider), `claims` from a `Json` with `value` from `claims`, `kid` `"provider-1"`, and `tokenType` `"JWT"` using injected `crypto`. It sets `accessToken` to the URL-safe base64 encoding of [`crypto.random`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.random) with `size` `32`. It sets `value` to an [`AccessGrant`](contracts.aug.md#symbol-AccessGrant) with `grant.subject`, `grant.name`, and `expires` from `now` plus `300`. It calls [`access.put`](../.aug-spec/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore.put) with `key` from `accessToken`, `value`, `value.expires`, and `now`.
-
-It sets `body` to a [`TokenResponse`](contracts.aug.md#symbol-TokenResponse) with `token_type` `"Bearer"`, `access_token` from `accessToken`, `id_token` from `idToken`, `expires_in` `300`, and `scope` `"openid profile"`. It returns HTTP 200 with a `Json` with `value` from `body` and [`securityHeaders`](../common/headers.aug.md#symbol-securityHeaders) headers. If this work raises `HttpError`, it returns [`_oauthError`](token.aug.md#symbol-_oauthError) with `code` `"invalid_request"` and `description` `"Submit the required URL-encoded token fields once each."`.
+</details>
 
 <a id="symbol-_oauthError"></a>
 ## `_oauthError` · [source](token.aug#L8)
 
-It is private to its defining scope. It takes `code` and `description` as strings. Failures can raise `HttpError`. It returns HTTP 400 with a `Json` with `value` from an [`OAuthError`](contracts.aug.md#symbol-OAuthError) with `error` from `code` and `error_description` from `description` and [`securityHeaders`](../common/headers.aug.md#symbol-securityHeaders) headers.
+It is private to its defining scope. It takes `code` and `description` as strings. It returns HTTP 400 with a `Json` with `value` from an [`OAuthError`](contracts.aug.md#symbol-OAuthError) with `error` from `code` and `error_description` from `description` and [`securityHeaders`](../common/headers.aug.md#symbol-securityHeaders) headers. [source](token.aug#L9)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+_oauthError(string code, string description) returns HttpResponse<Json> unless HttpError
+```
+
+It takes `code` and `description` as strings. Failures can raise `HttpError`.
+
+</details>
 
 ## Dependencies
 

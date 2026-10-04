@@ -74,9 +74,17 @@ test roundTrip {
 
 ### `roundTrip` · [source](compression.md#code) {#symbol-roundTrip}
 
-Compress text with zlib, then restore its bytes within a fixed output limit. Failures can raise [`CompressionError`](dependencies/packages/%40greenpandastudios/aug-zlib/0.1.5/contracts.md#symbol-CompressionError).
+Compress text with zlib, then restore its bytes within a fixed output limit. It sets `input` of type `Bytes` to the UTF-8 bytes of `"The world runs on language"`. It sets `compressed` of type `Bytes` to [`compress`](dependencies/packages/%40greenpandastudios/aug-zlib/0.1.5/api.md#symbol-compress) with `input`. It returns [`decompress`](dependencies/packages/%40greenpandastudios/aug-zlib/0.1.5/api.md#symbol-decompress) with `input` from `compressed` and `maximumOutput` `4096`. [source](compression.md#code)
 
-It sets `input` of type `Bytes` to the UTF-8 bytes of `"The world runs on language"`. It sets `compressed` of type `Bytes` to [`compress`](dependencies/packages/%40greenpandastudios/aug-zlib/0.1.5/api.md#symbol-compress) with `input`. It returns [`decompress`](dependencies/packages/%40greenpandastudios/aug-zlib/0.1.5/api.md#symbol-decompress) with `input` from `compressed` and `maximumOutput` `4096`.
+::: details Checked interface
+
+```text
+roundTrip() returns Bytes unless CompressionError
+```
+
+Failures can raise [`CompressionError`](dependencies/packages/%40greenpandastudios/aug-zlib/0.1.5/contracts.md#symbol-CompressionError).
+
+:::
 
 ### `test roundTrip` · [source](compression.md#code) {#symbol-test-20-roundTrip}
 
@@ -86,7 +94,7 @@ Tests [`roundTrip`](compression.md#symbol-roundTrip). Each case gets fresh setup
 
 ##### `preserves_the_original_bytes` · [source](compression.md#code)
 
-It gets `restored` of type `Bytes` from [`roundTrip`](compression.md#symbol-roundTrip). The test requires `restored.text` equals `"The world runs on language"`. The test requires the byte length of `restored` equals `26`.
+It gets `restored` of type `Bytes` from [`roundTrip`](compression.md#symbol-roundTrip). The test requires `restored.text` equals `"The world runs on language"`. The test requires the byte length of `restored` equals `26`. [source](compression.md#code)
 
 ### Dependencies
 

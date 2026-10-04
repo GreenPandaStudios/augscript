@@ -2,6 +2,8 @@
 
 # `main.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=39c6add561c9ee0a767fcad623d7487db05f58d5dddcef7f1e71a0b0d67a2a03 -->
+
 ## Providers
 
 `Console` is provided by [`SystemConsole`](.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-SystemConsole). The same instance is shared.
@@ -10,13 +12,13 @@
 
 ## Startup
 
-It sets `app` to the instance provided for `Application`. It calls [`app.start`](domain/app.aug.md#symbol-Application.start). It sets `names` to a map with `1` mapped to `"apple"`; `2` mapped to `"pear"`. If the value under `2` in `names` is null, it prints `"missing fruit"`.
+It sets `app` to the instance provided for `Application`. It calls [`app.start`](domain/app.aug.md#symbol-Application.start). It sets `names` to a map with `1` mapped to `"apple"`; `2` mapped to `"pear"`. If the value under `2` in `names` is null, it prints `"missing fruit"`. [source](main.aug#L8-L15)
 
-If the value under `2` in `names` is not null, using `name` for it prints `name`. It splits a tuple containing `3`, `"plum"` into `code` and `label` in order. It prints the number of elements in a set containing a [`Fruit`](domain/models.aug.md#symbol-Fruit) with `code` and `name` from `label`, a [`Fruit`](domain/models.aug.md#symbol-Fruit) with `name` from `label` and `code`. Within a task and ownership scope, it sets `counter` to the instance provided for `Counter`.
+If the value under `2` in `names` is not null, using `name` for it prints `name`. It splits a tuple containing `3`, `"plum"` into `code` and `label` in order. It prints the number of elements in a set containing a [`Fruit`](domain/models.aug.md#symbol-Fruit) with `code` and `name` from `label`, a [`Fruit`](domain/models.aug.md#symbol-Fruit) with `name` from `label` and `code`. Within a task and ownership scope, it sets `counter` to the instance provided for `Counter`. [source](main.aug#L15-L22)
 
-With temporary permission to change `counter`, it calls [`counter.increment`](counters.aug.md#symbol-Counter.increment). It prints [`counter.value`](counters.aug.md#symbol-Counter.value). On leaving this scope, join its child tasks and release its local values. It prints [`double`](domain/numbers.aug.md#symbol-double) with `amount` `7`.
+With temporary permission to change `counter`, it calls [`counter.increment`](counters.aug.md#symbol-Counter.increment). It prints [`counter.value`](counters.aug.md#symbol-Counter.value). On leaving this scope, join its child tasks and release its local values. It prints [`double`](domain/numbers.aug.md#symbol-double) with `amount` `7`. [source](main.aug#L18-L27)
 
-It calls [`double`](domain/numbers.aug.md#symbol-double) with `amount` `-1`. If this work raises [`RangeError`](domain/numbers.aug.md#symbol-RangeError), it prints `"negative amount rejected"`.
+It calls [`double`](domain/numbers.aug.md#symbol-double) with `amount` `-1`. If this work raises [`RangeError`](domain/numbers.aug.md#symbol-RangeError), it prints `"negative amount rejected"`. [source](main.aug#L25-L27)
 
 ## Dependencies
 

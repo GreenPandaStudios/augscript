@@ -2,15 +2,17 @@
 
 # `main.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=b2e6be529ca13450e699e3524f2a84ca4a3e4d6536482ca3bc08976ccab5ef7e -->
+
 ## Providers
 
 `Formatter` is provided by [`TextFormatter`](types.aug.md#symbol-TextFormatter). The same instance is shared.
 
 ## Startup
 
-It sets `formatter` to the instance provided for `Formatter`. It prints [`formatter.title`](types.aug.md#symbol-Formatter.title). It prints [`formatter.format`](types.aug.md#symbol-Formatter.format) for `int` with `value` `42`. It sets `box` to a [`Box`](types.aug.md#symbol-Box) for `string` with `value` `"inside a generic box"`.
+It sets `formatter` to the instance provided for `Formatter`. It prints [`formatter.title`](types.aug.md#symbol-Formatter.title). It prints [`formatter.format`](types.aug.md#symbol-Formatter.format) for `int` with `value` `42`. It sets `box` to a [`Box`](types.aug.md#symbol-Box) for `string` with `value` `"inside a generic box"`. [source](main.aug#L6-L9)
 
-It prints [`box.get`](types.aug.md#symbol-Box.get).
+It prints [`box.get`](types.aug.md#symbol-Box.get). [source](main.aug#L10)
 
 ## Dependencies
 

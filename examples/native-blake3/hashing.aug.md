@@ -2,10 +2,23 @@
 
 # `hashing.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=85e9e1e2429ec565e7cc5d8dcf1105cbd14b9605972454a0c8d89b45e32e6533 -->
+
 <a id="symbol-hashText"></a>
 ## `hashText` · [source](hashing.aug#L5)
 
-Hash UTF-8 text with the real Rust BLAKE3 implementation. It takes `value` as a string. Failures can raise [`HashError`](.aug-spec/packages/%40greenpandastudios/aug-blake3/0.1.5/contracts.aug.md#symbol-HashError). It returns [`hash`](.aug-spec/packages/%40greenpandastudios/aug-blake3/0.1.5/api.aug.md#symbol-hash) with `input` from the UTF-8 bytes of `value`.
+Hash UTF-8 text with the real Rust BLAKE3 implementation. It takes `value` as a string. It returns [`hash`](.aug-spec/packages/%40greenpandastudios/aug-blake3/0.1.5/api.aug.md#symbol-hash) with `input` from the UTF-8 bytes of `value`. [source](hashing.aug#L6)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+hashText(string value) returns string unless HashError
+```
+
+It takes `value` as a string. Failures can raise [`HashError`](.aug-spec/packages/%40greenpandastudios/aug-blake3/0.1.5/contracts.aug.md#symbol-HashError).
+
+</details>
 
 <a id="symbol-test hashText"></a>
 ## `test hashText` · [source](hashing.aug#L8)
@@ -16,7 +29,7 @@ Tests [`hashText`](hashing.aug.md#symbol-hashText). Each case gets fresh setup a
 
 #### `matches_the_published_abc_vector` · [source](hashing.aug#L10)
 
-The test requires [`hashText`](hashing.aug.md#symbol-hashText) with `value` `"abc"` equals `"6437b3ac38465133ffb63b75273a8db548c558465d79db03fd359c6cd5bd9d85"`.
+The test requires [`hashText`](hashing.aug.md#symbol-hashText) with `value` `"abc"` equals `"6437b3ac38465133ffb63b75273a8db548c558465d79db03fd359c6cd5bd9d85"`. [source](hashing.aug#L11)
 
 ## Dependencies
 

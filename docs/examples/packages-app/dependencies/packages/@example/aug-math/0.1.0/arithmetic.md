@@ -60,7 +60,17 @@ test add {
 
 ### `add` · [source](arithmetic.md#code) {#symbol-add}
 
-Add two integers. It takes `left` as an integer (First value) and `right` as an integer (Second value). It returns `int` — Their sum. It returns `left` plus `right`.
+Add two integers. It takes `left` and `right` as integers. It returns `left` plus `right`. [source](arithmetic.md#code)
+
+::: details Checked interface
+
+```text
+add(int left, int right) returns int
+```
+
+It takes `left` as an integer (First value) and `right` as an integer (Second value). It returns `int` — Their sum.
+
+:::
 
 ### `test add` · [source](arithmetic.md#code) {#symbol-test-20-add}
 
@@ -70,7 +80,7 @@ Tests [`add`](arithmetic.md#symbol-add). Each case gets fresh setup and dependen
 
 ##### `adds_two_integers` · [source](arithmetic.md#code)
 
-The test requires [`add`](arithmetic.md#symbol-add) with `left` `2` and `right` `3` equals `5`.
+The test requires [`add`](arithmetic.md#symbol-add) with `left` `2` and `right` `3` equals `5`. [source](arithmetic.md#code)
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).
 

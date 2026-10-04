@@ -2,14 +2,16 @@
 
 # `main.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=76e9eebde5befa845dc8d545e806f987ad48e722c0b9c9b64cf7eba2ad654cf7 -->
+
 ## Startup
 
-It sets `iterations` to `4000`. It stores a context-typed empty collection with no items in owned `entries` (`Map<int,int>`). It sets `index` to `0`. While `index` is less than `iterations`, it stores `index` times `3` in `entries` under `index`; then it increases `index` by `1`.
+It sets `iterations` to `4000`. It stores a context-typed empty collection with no items in owned `entries` (`Map<int,int>`). It sets `index` to `0`. While `index` is less than `iterations`, it stores `index` times `3` in `entries` under `index`; then it increases `index` by `1`. [source](main.aug#L2-L7)
 
-After the loop, it sets `index` to `0`. While `index` is less than `iterations`, it removes the key `index` from `entries`; then it increases `index` by `2`. After the loop, it sets `index` to `0`. While `index` is less than `iterations`, it stores `index` times `7` in `entries` under `index`; then it increases `index` by `1`.
+After the loop, it sets `index` to `0`. While `index` is less than `iterations`, it removes the key `index` from `entries`; then it increases `index` by `2`. After the loop, it sets `index` to `0`. While `index` is less than `iterations`, it stores `index` times `7` in `entries` under `index`; then it increases `index` by `1`. [source](main.aug#L8-L15)
 
-After the loop, it sets `checksum` to `0`. It sets `position` to `1`. For each `key` and `value` in a snapshot of `entries`, it sets `checksum` to (`checksum` plus (`key` times `position`)) plus `value`; then it increases `position` by `1`. After the loop, it prints `checksum`.
+After the loop, it sets `checksum` to `0`. It sets `position` to `1`. For each `key` and `value` in a snapshot of `entries`, it sets `checksum` to (`checksum` plus (`key` times `position`)) plus `value`; then it increases `position` by `1`. After the loop, it prints `checksum`. [source](main.aug#L16-L21)
 
-It prints the number of elements in `entries`.
+It prints the number of elements in `entries`. [source](main.aug#L22)
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).

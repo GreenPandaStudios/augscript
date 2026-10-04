@@ -1,3 +1,5 @@
+import { lex } from './lexer.ts';
+import { defaultText } from './parameters.ts';
 import { callableResult, callableErrors } from './contracts.ts';
 import { createHash } from 'node:crypto';
 import { existsSync, lstatSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
@@ -13,7 +15,7 @@ import { compilerVersion } from './package-manager.ts';
 import type { Definition } from './project.ts';
 import { tyName } from './types.ts';
 import type { HttpPolicyPlan } from './http-policies.ts';
-import { action, attempt, branch, choice, coordinate, flow, loop, paragraph, renderSpecTree, scope, section, sequence, step, type FlowNode, type SpecNode } from './spec-tree.ts';
+import { action, attempt, branch, choice, coordinate, details, flow, loop, paragraph, renderSpecTree, scope, section, sequence, step, type FlowNode, type SpecNode, type SourceRange } from './spec-tree.ts';
 import { specHint } from './spec-hints.ts';
 import {nativeFact,nativeDescription} from './native-facts.ts';
 
@@ -79,6 +81,8 @@ class SpecWriter {
   private builtins = new Map<string,BuiltinOperation>();
   private properties = new Map<string,{type:string;documentation:string}>();
   private locals = new Map<string,TypeRef>();
+  private evidence:Record<string,SourceRange>={};
+  private lexicalSources=new Map<string,ReturnType<typeof lex>['tokens']>();
   constructor(checked:CheckedProject, file:SourceFile, docs:Map<string,string>, sources:Map<string,string>, own:Set<string>, offsets:Map<string,number>, contracts:Map<string,string>, enqueue:(path:string)=>void) {
     this.checked=checked; this.file=file; this.docs=docs; this.sources=sources; this.own=own; this.offsets=offsets;this.contracts=contracts;this.enqueue=enqueue;
   }
@@ -127,7 +131,7 @@ class SpecWriter {
       (node.typeVariance?.[name]?` (${node.typeVariance[name] === 'out' ? 'produces values' : 'accepts values'})`:'')+
       (node.typeConstraints?.[name]?.length?` which must satisfy ${coordinate(node.typeConstraints[name].map(type=>this.type(type,file)))}`:'')))+'.':'';
   }
-  private inputs(params:Param[], fields=false, file=this.file.path, descriptions=new Map<string,string>()): string {
+  private inputs(params:Param[], fields=false, file=this.file.path, descriptions=new Map<string,string>(), concise=false): string {
     if(!params.length)return '';
     if(fields&&params.length===1&&params[0].injected) {
       const param=params[0];this.locals.set(param.name,param.type);
@@ -142,7 +146,7 @@ class SpecWriter {
       const simple:Record<string,string>={int:group.length===1?'an integer':'integers',float:group.length===1?'a number':'numbers',string:group.length===1?'a string':'strings',bool:group.length===1?'a boolean':'booleans'};
       let sentence=param.injected?coordinate(group.map(param=>code(param.name)))+' ('+type+')':name+' as '+(simple[param.type.name]&&!param.type.optional?simple[param.type.name]:type);
       if(param.source)sentence+=` from the HTTP ${param.source.kind}${param.source.name?' '+code(param.source.name):''}`;
-      if(param.defaultValue)sentence+=' (when omitted, '+this.expression(param.defaultValue)+')';
+      if(param.defaultValue&&!concise)sentence+=' (when omitted, '+this.expression(param.defaultValue)+')';
       if(param.ownership==='own')sentence+=' with ownership transferred';
       else if(param.ownership==='borrow')sentence+=' with permission to mutate it during the call';
       if(fields)sentence+=`, kept ${param.mutable?'mutable':'read-only'}${param.name.startsWith('_')?' and private':''}${param.label&&param.label!==param.name?' as '+code(param.name):''}`;
@@ -542,7 +546,15 @@ class SpecWriter {
   private statement(stmt:Stmt): FlowNode[] {
     const nodes=this.explainStatement(stmt);
     // Source identities survive sentence aggregation. Two identical calls are still two facts.
-    nodes[0].source=`${stmt.span.file}:${stmt.span.start}:${stmt.span.end}`;
+    const identity=`${stmt.span.file}:${stmt.span.start}:${stmt.span.end}`;
+    nodes[0].source=identity;
+    for(const node of nodes.slice(1))node.contextSource=identity;
+    const file=this.checked.project.files.get(stmt.span.file)!, offset=this.own.has(stmt.span.file)?this.offsets.get(stmt.span.file)??0:1;
+    let tokens=this.lexicalSources.get(file.path);
+    if(!tokens){tokens=lex(file.path,file.source).tokens;this.lexicalSources.set(file.path,tokens);}
+    const last=tokens.findLast(token=>token.kind!=='eof'&&token.span.start>=stmt.span.start&&token.span.end<=stmt.span.end);
+    this.evidence[identity]={path:url(relative(dirname(this.docs.get(this.file.path)!),this.sources.get(stmt.span.file)!)),
+      line:stmt.span.line+offset,endLine:(last?.endLine??stmt.span.line)+offset};
     return nodes;
   }
   private explainStatement(stmt:Stmt): FlowNode[] {
@@ -690,6 +702,20 @@ class SpecWriter {
       (binding.sharedMutation?'Shared mutation is allowed. ':'')+
       (info?.dependencies.length?'It requires bindings for '+coordinate(info.dependencies.map(code))+'. ':'')).trimEnd();
   }
+  private signature(method:MethodDecl):string {
+    const params=method.params.map(param=>(param.injected?'resolve ':'')+(param.ownership!=='managed'?param.ownership+' ':'')+
+      typeName(param.type)+' '+(param.label??param.name)+(param.defaultValue?' = '+defaultText(param.defaultValue):''));
+    const generic=method.typeParams.length?'<'+method.typeParams.join(', ')+'>':'';
+    let signature=method.name+generic+'('+params.join(', ')+') returns '+(method.returnOwnership==='own'?'own ':'')+tyName(callableResult(this.checked,method));
+    const errors=callableErrors(this.checked,method), effects=this.checked.effectContracts.get(method);
+    if(errors.length)signature+=' unless '+errors.join(' and ');
+    const uses=[...(effects?.uses.values()??method.uses??[])];
+    if(uses.length)signature+=' uses '+uses.map(effect=>effect.source+'.'+effect.operation).join(', ');
+    const changes=effects?.changes??method.changes??[];
+    if(changes.length)signature+=' changes '+changes.join(', ');
+    const fence='`'.repeat(Math.max(3,1+Math.max(0,...(signature.match(/`+/g)??[]).map(part=>part.length))));
+    return fence+'text\n'+signature+'\n'+fence;
+  }
   private callable(method:MethodDecl, owner?:Definition): SpecNode {
     this.locals=new Map(owner&&'fields' in owner.node?fieldsOf(owner.node as ClassDecl).map(field=>[field.name,field.type]):[]);
     const name=owner&&owner.node.kind!=='function'?`${owner.name}.${method.name}`:method.name;
@@ -699,9 +725,17 @@ class SpecWriter {
     if(method.name.startsWith('_'))children.push(paragraph('It is private to its defining scope.'));
     const notes=this.notes(documentation);
     if(notes)children.push(paragraph(notes));
-    children.push(...this.contract(method,documentation),...this.layers(method));
-    if(method.body)children.push(flow(this.statements(method.body)));
-    else if(method.externC){const native=nativeFact(this.checked,method);children.push(paragraph(native?this.nativeDescription(native):'Native C implementation; only its declared contract is visible here.'));}
+    const contract=this.contract(method,documentation);
+    if(method.body) {
+      const supplied=method.params.filter(param=>!param.injected);
+      const short=method.params.length>3 ? [supplied.length?'It takes labeled inputs '+coordinate(supplied.map(param=>code(param.label??param.name)))+'.':'',
+        this.inputs(method.params.filter(param=>param.injected||param.ownership!=='managed'),false,method.span.file,new Map(),true)].filter(Boolean).join(' ') :
+        this.inputs(method.params,false,method.span.file,new Map(),true);
+      if(short)children.push(paragraph(short));
+      children.push(...this.layers(method),flow(this.statements(method.body),this.evidence));
+      children.push(details('Checked interface',[paragraph(this.signature(method)),...contract]));
+    } else children.push(...contract,...this.layers(method));
+    if(!method.body&&method.externC){const native=nativeFact(this.checked,method);children.push(paragraph(native?this.nativeDescription(native):'Native C implementation; only its declared contract is visible here.'));}
     return this.heading(name,method.span,owner&&owner.node.kind!=='function'?3:2,children);
   }
   private exportLine(item:Extract<TopLevel,{kind:'export'}>): string {
@@ -734,7 +768,7 @@ class SpecWriter {
         if(errors?.length)children.push(paragraph('Construction can fail with '+errors.map(type=>{this.use(type.def);return type.def?this.link(type.def):code(tyName(type));}).join(', ')+'.'));
         else if(item.validationErrors?.length)children.push(paragraph('Construction can fail with '+item.validationErrors.map(type=>this.type(type)).join(', ')+'.'));
         if(item.stateFields?.length)children.push(...item.stateFields.map(field=>{this.locals.set(field.name,field.type);return paragraph(`The ${field.mutable?'mutable':'read-only'}${field.name.startsWith('_')?', private':''} field ${code(field.name)} has type ${this.type(field.type)} and starts as ${this.expression(field.initializer)}.`);}));
-        if(item.constructorBody)children.push(this.heading(item.name+'.initialize',item.span,3,[flow(this.statements(item.constructorBody))]));
+        if(item.constructorBody)children.push(this.heading(item.name+'.initialize',item.span,3,[flow(this.statements(item.constructorBody),this.evidence)]));
         if(!item.record) {
           const defaults=this.checked.defaults.get(def.id);
           const inherited=[...(defaults?.values()??[])].filter(info=>!item.methods.some(method=>method.name===info.method.name));
@@ -766,7 +800,7 @@ class SpecWriter {
       case 'bind':case 'include':return paragraph(this.providerLine(item));
       case 'export':return paragraph(this.exportLine(item));
       case 'import':return paragraph('');
-      default:return flow(this.statement(item));
+      default:return flow(this.statement(item),this.evidence);
     }
   }
   private tests(suite:TestDecl): SpecNode {
@@ -774,12 +808,12 @@ class SpecWriter {
       for(const group of suite.groups) {
       this.locals=new Map();const groupChildren:SpecNode[]=[];
       if(group.setup.length)groupChildren.push(paragraph('Setup for each case:'),flow(group.setup.flatMap(entry=>
-        entry.kind==='bind'||entry.kind==='include'?[step(this.providerLine(entry))]:this.statement(entry as Stmt))));
+        entry.kind==='bind'||entry.kind==='include'?[step(this.providerLine(entry))]:this.statement(entry as Stmt)),this.evidence));
       const setupLocals=new Map(this.locals);
       for(const test of group.cases) {
         this.locals=new Map(setupLocals);const caseChildren:SpecNode[]=[];
         if(test.parameters)caseChildren.push(paragraph('Run once for each row of '+test.rows!.map(row=>this.expression(row)).join('; ')+'. Bind row positions to '+test.parameters.map(code).join(', ')+'.'));
-        caseChildren.push(flow(this.statements(test.body)));
+        caseChildren.push(flow(this.statements(test.body),this.evidence));
         groupChildren.push(section(code(test.name),4,caseChildren,undefined,this.source(test.span)));
       }
       children.push(section(code(group.name),3,groupChildren));
@@ -825,7 +859,7 @@ class SpecWriter {
     // Build the checked explanation first; rendering decides all spacing.
     if(exports.length)children.push(section('Exports',2,exports.map(item=>paragraph(this.exportLine(item as Extract<TopLevel,{kind:'export'}>)))));
     if(providers.length)children.push(section('Providers',2,providers.map(item=>paragraph(this.providerLine(item as BindDecl|Extract<TopLevel,{kind:'include'}>)))));
-    if(startup.length)children.push(section('Startup',2,[flow(startup.flatMap(item=>this.statement(item as Stmt)))]));
+    if(startup.length)children.push(section('Startup',2,[flow(startup.flatMap(item=>this.statement(item as Stmt)),this.evidence)]));
     children.push(...declarations.sort((a,b)=>Number('name' in a&&a.name.startsWith('_'))-Number('name' in b&&b.name.startsWith('_'))).map(item=>this.declaration(item)));
     children.push(...this.file.items.filter(item=>item.kind==='test').map(item=>this.declaration(item)));
     if(!children.length)children.push(paragraph('This file declares no operations.'));
@@ -835,7 +869,10 @@ class SpecWriter {
     do {size=surfaceSize();surface=this.dependencySurface();} while(surfaceSize()!==size);
     if(surface)children.push(surface);
     const builtins=this.builtinSurface();if(builtins)children.push(builtins);
-    return generated+'\n\n'+renderSpecTree(section(code(basename(this.file.path)),1,children));
+    const text=renderSpecTree(section(code(basename(this.file.path)),1,children));
+    const source=this.own.has(this.file.path)?specHint(this.file).text:copied+this.file.source;
+    const revision=`<!-- August spec revision: schema=1 compiler=${compilerVersion()} source-sha256=${hash(source)} -->`;
+    return generated+'\n\n'+text.replace(/^(#[^\n]+)\n/,(_,heading)=>heading+'\n\n'+revision+'\n');
   }
   private builtinSurface(): SpecNode|undefined {
     if(!this.builtins.size&&!this.properties.size)return;

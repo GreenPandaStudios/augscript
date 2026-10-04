@@ -2,6 +2,8 @@
 
 # `native.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=a5f1dcb9ae6a3d6a3760fc7b955178b5ebc26b3fb1769c645ed8ea587405a115 -->
+
 <a id="symbol-puts"></a>
 ## `puts` · [source](native.aug#L2)
 
@@ -10,4 +12,13 @@ It takes `message` as a string. It returns `c_int`. Native C implementation; onl
 <a id="symbol-announce"></a>
 ## `announce` · [source](native.aug#L3)
 
-Within an unsafe block, it calls [`puts`](native.aug.md#symbol-puts) with `message` `"hello from C FFI"`. Native operations must satisfy their declared C contracts.
+Within an unsafe block, it calls [`puts`](native.aug.md#symbol-puts) with `message` `"hello from C FFI"`. Native operations must satisfy their declared C contracts. [source](native.aug#L4-L6)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+announce() returns void uses C.puts
+```
+
+</details>

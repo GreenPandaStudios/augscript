@@ -2,6 +2,8 @@
 
 # `main.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=360715f0540859101aeca9b26913834cd7765e51268168032f1af5ca3686366c -->
+
 ## HTTP configuration
 
 Listen on `127.0.0.1`. Limit request bodies to 16384 bytes and buffered responses to 1048576 bytes. Serve OpenAPI at `/openapi.json` and API docs at `/docs`.
@@ -26,7 +28,7 @@ Listen on `127.0.0.1`. Limit request bodies to 16384 bytes and buffered response
 
 ## Startup
 
-It tries to call [`initializeKeys`](common/keys.aug.md#symbol-initializeKeys) using injected `Crypto` for `crypto` and `SigningKeys` for `keys`. If this work raises `CryptoError`, it prints `"Cryptographic initialization failed"`; then it calls `exit` with `status` `1`. If this work raises [`KeyError`](common/keys.aug.md#symbol-KeyError), it prints `"Signing keys could not be initialized"`; then it calls `exit` with `status` `1`. It serves [`home`](client/endpoints.aug.md#symbol-home), [`me`](client/endpoints.aug.md#symbol-me), [`logout`](client/logout.aug.md#symbol-logout), [`startLogin`](client/login.aug.md#symbol-startLogin), [`loginCallback`](client/login.aug.md#symbol-loginCallback), [`discovery`](provider/discovery.aug.md#symbol-discovery), [`jwks`](provider/discovery.aug.md#symbol-jwks), [`authorize`](provider/authorization.aug.md#symbol-authorize), [`providerLogin`](provider/authorization.aug.md#symbol-providerLogin), [`token`](provider/token.aug.md#symbol-token), and [`userinfo`](provider/userinfo.aug.md#symbol-userinfo) on port `8787`.
+It tries to call [`initializeKeys`](common/keys.aug.md#symbol-initializeKeys) using injected `Crypto` for `crypto` and `SigningKeys` for `keys`. If this work raises `CryptoError`, it prints `"Cryptographic initialization failed"`; then it calls `exit` with `status` `1`. If this work raises [`KeyError`](common/keys.aug.md#symbol-KeyError), it prints `"Signing keys could not be initialized"`; then it calls `exit` with `status` `1`. It serves [`home`](client/endpoints.aug.md#symbol-home), [`me`](client/endpoints.aug.md#symbol-me), [`logout`](client/logout.aug.md#symbol-logout), [`startLogin`](client/login.aug.md#symbol-startLogin), [`loginCallback`](client/login.aug.md#symbol-loginCallback), [`discovery`](provider/discovery.aug.md#symbol-discovery), [`jwks`](provider/discovery.aug.md#symbol-jwks), [`authorize`](provider/authorization.aug.md#symbol-authorize), [`providerLogin`](provider/authorization.aug.md#symbol-providerLogin), [`token`](provider/token.aug.md#symbol-token), and [`userinfo`](provider/userinfo.aug.md#symbol-userinfo) on port `8787`. [source](main.aug#L20-L29)
 
 ## Dependencies
 

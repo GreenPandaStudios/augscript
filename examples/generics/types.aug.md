@@ -2,6 +2,8 @@
 
 # `types.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=8a9c469ea8de5f422f4315855b8e9be193228d9fb778b41d4b2b514a940d9f2b -->
+
 <a id="symbol-Formatter"></a>
 ## `Formatter` · interface · [source](types.aug#L2)
 
@@ -13,7 +15,16 @@ The type parameters are `T`. It takes `value` as `T`. It returns `string`.
 <a id="symbol-Formatter.title"></a>
 ### `Formatter.title` · [source](types.aug#L4)
 
-It returns `"formatted"`.
+It returns `"formatted"`. [source](types.aug#L5)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+title() returns string
+```
+
+</details>
 
 <a id="symbol-TextFormatter"></a>
 ## `TextFormatter` · class · [source](types.aug#L8)
@@ -23,7 +34,18 @@ It implements [`Formatter`](types.aug.md#symbol-Formatter). It inherits the defa
 <a id="symbol-TextFormatter.format"></a>
 ### `TextFormatter.format` · [source](types.aug#L9)
 
-The type parameters are `T`. It takes `value` as `T`. It returns `"generic method called"`.
+It takes `value` as `T`. It returns `"generic method called"`. [source](types.aug#L10)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+format<T>(T value) returns string
+```
+
+The type parameters are `T`. It takes `value` as `T`.
+
+</details>
 
 <a id="symbol-Box"></a>
 ## `Box` · class · [source](types.aug#L13)
@@ -33,7 +55,16 @@ It implements [`IBox<T>`](types.aug.md#symbol-IBox). The type parameters are `T`
 <a id="symbol-Box.get"></a>
 ### `Box.get` · [source](types.aug#L14)
 
-It returns `value`.
+It returns `value`. [source](types.aug#L15)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+get() returns T
+```
+
+</details>
 
 <a id="symbol-IBox"></a>
 ## `IBox` · interface · [source](types.aug#L18)

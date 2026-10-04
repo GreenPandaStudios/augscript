@@ -90,7 +90,15 @@ Construction stores dependencies; start performs the visible external work. It i
 
 #### `ApplicationImpl.start` · [source](app.md#code) {#symbol-ApplicationImpl.start}
 
-Writes the fruit names through the selected console. It sets `fruit` to a list containing a [`Fruit`](models.md#symbol-Fruit) with `code` `1` and `name` `"apple"`, a [`Fruit`](models.md#symbol-Fruit) with `name` `"pear"` and `code` `2`. For each `item` in a snapshot of `fruit`, it passes `item.name` to [`console.write`](../dependencies/august/0.23.0/io/contracts.md#symbol-Console.write).
+Writes the fruit names through the selected console. It sets `fruit` to a list containing a [`Fruit`](models.md#symbol-Fruit) with `code` `1` and `name` `"apple"`, a [`Fruit`](models.md#symbol-Fruit) with `name` `"pear"` and `code` `2`. For each `item` in a snapshot of `fruit`, it passes `item.name` to [`console.write`](../dependencies/august/0.23.0/io/contracts.md#symbol-Console.write). [source](app.md#code)
+
+::: details Checked interface
+
+```text
+start() returns void uses Console.write
+```
+
+:::
 
 ### Dependencies
 

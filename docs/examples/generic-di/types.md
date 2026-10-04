@@ -86,7 +86,15 @@ It implements [`Repository<int>`](types.md#symbol-Repository).
 
 #### `NumberRepository.get` · [source](types.md#code) {#symbol-NumberRepository.get}
 
-It returns `7`.
+It returns `7`. [source](types.md#code)
+
+::: details Checked interface
+
+```text
+get() returns int
+```
+
+:::
 
 ### `Program` · class · [source](types.md#code) {#symbol-Program}
 
@@ -94,7 +102,17 @@ It implements [`IProgram`](types.md#symbol-IProgram). The `repository` dependenc
 
 #### `Program.start` · [source](types.md#code) {#symbol-Program.start}
 
-It gets `console` ([`Console`](dependencies/august/0.23.0/io/contracts.md#symbol-Console)) from dependency injection. It passes [`repository.get`](types.md#symbol-Repository.get) to [`console.write`](dependencies/august/0.23.0/io/contracts.md#symbol-Console.write).
+It gets `console` ([`Console`](dependencies/august/0.23.0/io/contracts.md#symbol-Console)) from dependency injection. It passes [`repository.get`](types.md#symbol-Repository.get) to [`console.write`](dependencies/august/0.23.0/io/contracts.md#symbol-Console.write). [source](types.md#code)
+
+::: details Checked interface
+
+```text
+start(resolve Console console) returns void uses Console.write
+```
+
+It gets `console` ([`Console`](dependencies/august/0.23.0/io/contracts.md#symbol-Console)) from dependency injection.
+
+:::
 
 ### `IProgram` · interface · [source](types.md#code) {#symbol-IProgram}
 

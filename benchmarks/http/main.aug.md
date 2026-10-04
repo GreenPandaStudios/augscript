@@ -2,13 +2,15 @@
 
 # `main.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=665a0441498454e1dd788237663486dc6542338b8ce8069db1e5b6e19857f5c2 -->
+
 ## HTTP configuration
 
 Listen on `127.0.0.1`. Limit request bodies to 1048576 bytes and buffered responses to 4194304 bytes.
 
 ## Startup
 
-It serves [`reply`](routes.aug.md#symbol-reply) on port `0`.
+It serves [`reply`](routes.aug.md#symbol-reply) on port `0`. [source](main.aug#L3)
 
 ## Dependencies
 

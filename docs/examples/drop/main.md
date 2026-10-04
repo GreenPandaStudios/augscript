@@ -52,7 +52,7 @@ print(value="using resource")
 
 ### Startup
 
-It creates [`Resource`](resource.md#symbol-Resource) and stores the result in owned `resource` ([`Resource`](resource.md#symbol-Resource)). It prints `"using resource"`.
+It creates [`Resource`](resource.md#symbol-Resource) and stores the result in owned `resource` ([`Resource`](resource.md#symbol-Resource)). It prints `"using resource"`. [source](main.md#code)
 
 ### Dependencies
 

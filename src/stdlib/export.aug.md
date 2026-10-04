@@ -2,6 +2,8 @@
 
 # `export.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=c4edc56a191ca3a63c17e8c789a215ed5b1720b97ae8de3f1128d327b3280bb1 -->
+
 ## Exports
 
 Export the folder `io` from [`export.aug`](io/export.aug.md). Export the folder `collections` from [`export.aug`](collections/export.aug.md). Export the folder `math` from [`export.aug`](math/export.aug.md).

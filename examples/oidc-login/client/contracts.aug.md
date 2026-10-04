@@ -2,6 +2,8 @@
 
 # `contracts.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=232f68042248a1f8d8755fa80c07f69aca21256a5551416faa5346a6ccffe01a -->
+
 <a id="symbol-LoginTransaction"></a>
 ## `LoginTransaction` · immutable record · [source](contracts.aug#L3)
 

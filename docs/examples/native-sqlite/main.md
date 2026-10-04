@@ -60,7 +60,7 @@ catch SqliteError error {
 
 ### Startup
 
-It prints [`storedName`](database.md#symbol-storedName). If this work raises [`SqliteError`](dependencies/packages/%40greenpandastudios/aug-sqlite/0.1.5/contracts.md#symbol-SqliteError) as `error`, it prints `error.message`.
+It prints [`storedName`](database.md#symbol-storedName). If this work raises [`SqliteError`](dependencies/packages/%40greenpandastudios/aug-sqlite/0.1.5/contracts.md#symbol-SqliteError) as `error`, it prints `error.message`. [source](main.md#code)
 
 ### Dependencies
 

@@ -134,7 +134,15 @@ It implements [`State`](counters.md#symbol-State). It is private to this file.
 
 #### `_Initial.read` · [source](counters.md#code) {#symbol-_Initial.read}
 
-It returns `0`.
+It returns `0`. [source](counters.md#code)
+
+::: details Checked interface
+
+```text
+read() returns int
+```
+
+:::
 
 ### `_Updated` · class · [source](counters.md#code) {#symbol-_Updated}
 
@@ -142,7 +150,15 @@ It implements [`State`](counters.md#symbol-State). It is private to this file. I
 
 #### `_Updated.read` · [source](counters.md#code) {#symbol-_Updated.read}
 
-It returns `count`.
+It returns `count`. [source](counters.md#code)
+
+::: details Checked interface
+
+```text
+read() returns int
+```
+
+:::
 
 ### `_Counter` · class · [source](counters.md#code) {#symbol-_Counter}
 
@@ -150,11 +166,29 @@ It implements [`Counter`](counters.md#symbol-Counter). It is private to this fil
 
 #### `_Counter.increment` · [source](counters.md#code) {#symbol-_Counter.increment}
 
-It may change `self`. It sets `_state` to a [`_Updated`](counters.md#symbol-_Updated) with `count` from [`_state.read`](counters.md#symbol-State.read) plus `1`.
+It sets `_state` to a [`_Updated`](counters.md#symbol-_Updated) with `count` from [`_state.read`](counters.md#symbol-State.read) plus `1`. [source](counters.md#code)
+
+::: details Checked interface
+
+```text
+increment() returns void changes self
+```
+
+It may change `self`.
+
+:::
 
 #### `_Counter.value` · [source](counters.md#code) {#symbol-_Counter.value}
 
-It returns [`_state.read`](counters.md#symbol-State.read).
+It returns [`_state.read`](counters.md#symbol-State.read). [source](counters.md#code)
+
+::: details Checked interface
+
+```text
+value() returns int
+```
+
+:::
 
 ::::
 

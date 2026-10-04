@@ -82,11 +82,21 @@ test calculate {
 
 ### `calculate` · [source](compute.md#code) {#symbol-calculate}
 
-Add two lists on a GPU and return copied values. GPU resources stay local. It takes `left` and `right` as `List<float>`. Failures can raise `GpuError`.
+Add two lists on a GPU and return copied values. GPU resources stay local. It takes `left` and `right` as `List<float>`.
 
-It calls [`openDevice`](dependencies/packages/%40greenpandastudios/aug-gpu/0.1.1/api.md#symbol-openDevice) and stores the result in owned `device` ([`Device`](dependencies/packages/%40greenpandastudios/aug-gpu/0.1.1/bindings.md#symbol-Device)). It calls [`upload`](dependencies/packages/%40greenpandastudios/aug-gpu/0.1.1/api.md#symbol-upload) with `device` and `values` from `left` and stores the result in owned `first` ([`Buffer`](dependencies/packages/%40greenpandastudios/aug-gpu/0.1.1/bindings.md#symbol-Buffer)). It calls [`upload`](dependencies/packages/%40greenpandastudios/aug-gpu/0.1.1/api.md#symbol-upload) with `device` and `values` from `right` and stores the result in owned `second` ([`Buffer`](dependencies/packages/%40greenpandastudios/aug-gpu/0.1.1/bindings.md#symbol-Buffer)). It calls [`add`](dependencies/packages/%40greenpandastudios/aug-gpu/0.1.1/api.md#symbol-add) with `left` from `first` and `right` from `second` and stores the result in owned `result` ([`Buffer`](dependencies/packages/%40greenpandastudios/aug-gpu/0.1.1/bindings.md#symbol-Buffer)).
+It calls [`openDevice`](dependencies/packages/%40greenpandastudios/aug-gpu/0.1.1/api.md#symbol-openDevice) and stores the result in owned `device` ([`Device`](dependencies/packages/%40greenpandastudios/aug-gpu/0.1.1/bindings.md#symbol-Device)). It calls [`upload`](dependencies/packages/%40greenpandastudios/aug-gpu/0.1.1/api.md#symbol-upload) with `device` and `values` from `left` and stores the result in owned `first` ([`Buffer`](dependencies/packages/%40greenpandastudios/aug-gpu/0.1.1/bindings.md#symbol-Buffer)). It calls [`upload`](dependencies/packages/%40greenpandastudios/aug-gpu/0.1.1/api.md#symbol-upload) with `device` and `values` from `right` and stores the result in owned `second` ([`Buffer`](dependencies/packages/%40greenpandastudios/aug-gpu/0.1.1/bindings.md#symbol-Buffer)). It calls [`add`](dependencies/packages/%40greenpandastudios/aug-gpu/0.1.1/api.md#symbol-add) with `left` from `first` and `right` from `second` and stores the result in owned `result` ([`Buffer`](dependencies/packages/%40greenpandastudios/aug-gpu/0.1.1/bindings.md#symbol-Buffer)). [source](compute.md#code)
 
-It returns [`download`](dependencies/packages/%40greenpandastudios/aug-gpu/0.1.1/api.md#symbol-download) with `buffer` from `result`.
+It returns [`download`](dependencies/packages/%40greenpandastudios/aug-gpu/0.1.1/api.md#symbol-download) with `buffer` from `result`. [source](compute.md#code)
+
+::: details Checked interface
+
+```text
+calculate(List<float> left, List<float> right) returns List<float> unless GpuError
+```
+
+It takes `left` and `right` as `List<float>`. Failures can raise `GpuError`.
+
+:::
 
 ### `test calculate` · [source](compute.md#code) {#symbol-test-20-calculate}
 
@@ -96,9 +106,9 @@ Tests [`calculate`](compute.md#symbol-calculate). Each case gets fresh setup and
 
 ##### `copies_the_GPU_result` · [source](compute.md#code)
 
-It sets `result` of type `List<float>` to [`calculate`](compute.md#symbol-calculate) with `left` from a list containing `1.0`, `2.0`, `3.0` and `right` from a list containing `4.0`, `5.0`, `6.0`. The test requires the number of elements in `result` equals `3`. The test requires the item at index `0` in `result` equals `5.0`. The test requires the item at index `1` in `result` equals `7.0`.
+It sets `result` of type `List<float>` to [`calculate`](compute.md#symbol-calculate) with `left` from a list containing `1.0`, `2.0`, `3.0` and `right` from a list containing `4.0`, `5.0`, `6.0`. The test requires the number of elements in `result` equals `3`. The test requires the item at index `0` in `result` equals `5.0`. The test requires the item at index `1` in `result` equals `7.0`. [source](compute.md#code)
 
-The test requires the item at index `2` in `result` equals `9.0`.
+The test requires the item at index `2` in `result` equals `9.0`. [source](compute.md#code)
 
 ### Dependencies
 

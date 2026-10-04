@@ -2,6 +2,8 @@
 
 # `app.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=ad3f1f1ae9a6ecb4a61b0869b598cf29db2257a2ff7fe44da0928122fd11df7b -->
+
 <a id="symbol-Application"></a>
 ## `Application` · interface · [source](app.aug#L5)
 
@@ -20,7 +22,16 @@ Construction stores dependencies; start performs the visible external work. It i
 <a id="symbol-ApplicationImpl.start"></a>
 ### `ApplicationImpl.start` · [source](app.aug#L10)
 
-Writes the fruit names through the selected console. It sets `fruit` to a list containing a [`Fruit`](models.aug.md#symbol-Fruit) with `code` `1` and `name` `"apple"`, a [`Fruit`](models.aug.md#symbol-Fruit) with `name` `"pear"` and `code` `2`. For each `item` in a snapshot of `fruit`, it passes `item.name` to [`console.write`](../.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-Console.write).
+Writes the fruit names through the selected console. It sets `fruit` to a list containing a [`Fruit`](models.aug.md#symbol-Fruit) with `code` `1` and `name` `"apple"`, a [`Fruit`](models.aug.md#symbol-Fruit) with `name` `"pear"` and `code` `2`. For each `item` in a snapshot of `fruit`, it passes `item.name` to [`console.write`](../.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-Console.write). [source](app.aug#L11-L13)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+start() returns void uses Console.write
+```
+
+</details>
 
 ## Dependencies
 

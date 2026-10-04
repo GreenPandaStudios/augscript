@@ -119,17 +119,25 @@ Plain handler results default to HTTP 200 unless another status is declared. Htt
 
 ### `logout` · [source](logout.md#code) {#symbol-logout}
 
-`logout` handles `POST /logout`. POST logout checks the origin and session-bound CSRF value, then removes the live registry entry before clearing the cookie.
+`logout` handles `POST /logout`. POST logout checks the origin and session-bound CSRF value, then removes the live registry entry before clearing the cookie. It takes labeled inputs `input`, `token`, and `origin`. It gets `crypto` ([`Crypto`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto)), `clock` ([`Clock`](../dependencies/packages/%40git/url_c092cd151499c4e1d8a1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.md#symbol-Clock)), `keys` ([`SigningKeys`](../common/keys.md#symbol-SigningKeys)), and `sessions` ([`ExpiringStore<SessionClaims>`](../dependencies/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.md#symbol-ExpiringStore)) from dependency injection.
+
+It gets `config` from [`settings`](../common/settings.md#symbol-settings). It checks that `origin` equals `config.baseUrl`. It raises a [`SessionError`](contracts.md#symbol-SessionError) at the first failed check. It sets `session` to [`authenticate`](session.md#symbol-authenticate) with `token` using injected `crypto`, `clock`, `keys`, and `sessions`. [source](logout.md#code)
+
+It checks that [`crypto.equal`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto.equal) with `left` from the UTF-8 bytes of `input.csrf` and `right` from the UTF-8 bytes of `session.csrf` returns true. It raises a [`SessionError`](contracts.md#symbol-SessionError) at the first failed check. It calls [`sessions.take`](../dependencies/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.md#symbol-ExpiringStore.take) with `key` from `session.jti` and `now` from [`clock.now`](../dependencies/packages/%40git/url_c092cd151499c4e1d8a1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.md#symbol-Clock.now). It sets `headers` to [`withCookie`](../common/headers.md#symbol-withCookie) with `headers` from [`securityHeaders`](../common/headers.md#symbol-securityHeaders) with the header `"location"` set to `"/"`, `name` `"aug_session"`, `value` `""`, `path` `"/"`, `maxAge` `0`, and `secure` from `config.secureCookies`. [source](logout.md#code)
+
+It returns HTTP 303 with a paragraph containing `Signed out.` with escaped text and `headers` headers. [source](logout.md#code)
+
+::: details Checked interface
+
+```text
+logout(LogoutForm input, optional string token, optional string origin, resolve Crypto crypto, resolve Clock clock, resolve SigningKeys keys, resolve ExpiringStore<SessionClaims> sessions) returns HttpResponse<Html> unless CryptoError and HttpError and KeyError and SessionError and TimeError uses Crypto.equal, Clock.now, ExpiringStore<SessionClaims>.take, SigningKeys.session, Crypto.publicRsa, ExpiringStore<SessionClaims>.get, Crypto.decodeBase64url, Crypto.verifyRsa
+```
 
 It takes `input` as [`LogoutForm`](contracts.md#symbol-LogoutForm) from the HTTP form, `token` as `optional string` from the HTTP cookie `aug_session`, and `origin` as `optional string` from the HTTP header. It gets `crypto` ([`Crypto`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto)), `clock` ([`Clock`](../dependencies/packages/%40git/url_c092cd151499c4e1d8a1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.md#symbol-Clock)), `keys` ([`SigningKeys`](../common/keys.md#symbol-SigningKeys)), and `sessions` ([`ExpiringStore<SessionClaims>`](../dependencies/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.md#symbol-ExpiringStore)) from dependency injection. Omitted optional inputs are null. The handler responds with HTTP 403 for [`SessionError`](contracts.md#symbol-SessionError).
 
 It can also raise `CryptoError`, `HttpError`, `KeyError`, and `TimeError`.
 
-It gets `config` from [`settings`](../common/settings.md#symbol-settings). It checks that `origin` equals `config.baseUrl`. It raises a [`SessionError`](contracts.md#symbol-SessionError) at the first failed check. It sets `session` to [`authenticate`](session.md#symbol-authenticate) with `token` using injected `crypto`, `clock`, `keys`, and `sessions`.
-
-It checks that [`crypto.equal`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto.equal) with `left` from the UTF-8 bytes of `input.csrf` and `right` from the UTF-8 bytes of `session.csrf` returns true. It raises a [`SessionError`](contracts.md#symbol-SessionError) at the first failed check. It calls [`sessions.take`](../dependencies/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.md#symbol-ExpiringStore.take) with `key` from `session.jti` and `now` from [`clock.now`](../dependencies/packages/%40git/url_c092cd151499c4e1d8a1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.md#symbol-Clock.now). It sets `headers` to [`withCookie`](../common/headers.md#symbol-withCookie) with `headers` from [`securityHeaders`](../common/headers.md#symbol-securityHeaders) with the header `"location"` set to `"/"`, `name` `"aug_session"`, `value` `""`, `path` `"/"`, `maxAge` `0`, and `secure` from `config.secureCookies`.
-
-It returns HTTP 303 with a paragraph containing `Signed out.` with escaped text and `headers` headers.
+:::
 
 ### Dependencies
 

@@ -2,6 +2,8 @@
 
 # `main.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=ddde91efa0d29b18a0b0c7bba9ad47faad7e33bc5c0682eda35252a31e7d0753 -->
+
 ## Providers
 
 `Console` is provided by [`SystemConsole`](.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-SystemConsole). The same instance is shared. `Repository<int>` is provided by [`NumberRepository`](types.aug.md#symbol-NumberRepository). The same instance is shared.
@@ -10,7 +12,7 @@
 
 ## Startup
 
-It sets `program` to the instance provided for `app`. It calls [`program.start`](types.aug.md#symbol-Program.start) using injected `Console` for `console`.
+It sets `program` to the instance provided for `app`. It calls [`program.start`](types.aug.md#symbol-Program.start) using injected `Console` for `console`. [source](main.aug#L9-L10)
 
 ## Dependencies
 

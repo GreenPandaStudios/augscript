@@ -2,6 +2,8 @@
 
 # `resource.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=45f58fe60d054416801b9b64964a2a3c935b9b795e07c4fc9e4e5f002055dabc -->
+
 <a id="symbol-Resource"></a>
 ## `Resource` · class · [source](resource.aug#L3)
 
@@ -10,7 +12,16 @@ It implements [`IResource`](resource.aug.md#symbol-IResource).
 <a id="symbol-Resource.drop"></a>
 ### `Resource.drop` · [source](resource.aug#L4)
 
-It continues without an operation.
+It continues without an operation. [source](resource.aug#L5)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+drop() returns void
+```
+
+</details>
 
 <a id="symbol-IResource"></a>
 ## `IResource` · interface · [source](resource.aug#L8)
@@ -18,12 +29,34 @@ It continues without an operation.
 <a id="symbol-make"></a>
 ## `make` · [source](resource.aug#L11)
 
-It returns ownership of [`Resource`](resource.aug.md#symbol-Resource). It creates [`Resource`](resource.aug.md#symbol-Resource) and stores the result in owned `value` ([`Resource`](resource.aug.md#symbol-Resource)). It returns `value`.
+It creates [`Resource`](resource.aug.md#symbol-Resource) and stores the result in owned `value` ([`Resource`](resource.aug.md#symbol-Resource)). It returns `value`. [source](resource.aug#L12-L13)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+make() returns own Resource
+```
+
+It returns ownership of [`Resource`](resource.aug.md#symbol-Resource).
+
+</details>
 
 <a id="symbol-consume"></a>
 ## `consume` · [source](resource.aug#L15)
 
-It takes `value` as [`Resource`](resource.aug.md#symbol-Resource) with ownership transferred. It gets `console` ([`Console`](.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-Console)) from dependency injection. It passes `"consumed"` to [`console.write`](.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-Console.write).
+It takes `value` as [`Resource`](resource.aug.md#symbol-Resource) with ownership transferred. It gets `console` ([`Console`](.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-Console)) from dependency injection. It passes `"consumed"` to [`console.write`](.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-Console.write). [source](resource.aug#L16)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+consume(resolve Console console, own Resource value) returns void uses Console.write
+```
+
+It takes `value` as [`Resource`](resource.aug.md#symbol-Resource) with ownership transferred. It gets `console` ([`Console`](.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-Console)) from dependency injection.
+
+</details>
 
 ## Dependencies
 

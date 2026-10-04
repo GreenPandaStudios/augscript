@@ -127,13 +127,33 @@ A pure validation layer, shared by any compatible callable. The type parameters 
 
 #### `Positive.around` · [source](numbers.md#code) {#symbol-Positive.around}
 
-It takes `amount` as an integer. Failures can raise [`RangeError`](numbers.md#symbol-RangeError). If `amount` is negative, it raises a [`RangeError`](numbers.md#symbol-RangeError) with `value` from `amount`. It returns `next`.
+It takes `amount` as an integer. If `amount` is negative, it raises a [`RangeError`](numbers.md#symbol-RangeError) with `value` from `amount`. It returns `next`. [source](numbers.md#code)
+
+::: details Checked interface
+
+```text
+around(int amount) returns T unless RangeError
+```
+
+It takes `amount` as an integer. Failures can raise [`RangeError`](numbers.md#symbol-RangeError).
+
+:::
 
 ### `double` · [source](numbers.md#code) {#symbol-double}
 
-Double a nonnegative amount. It takes `amount` as an integer (Integer to double). It returns `int` — Twice the amount, with defined integer wrapping. Failures can raise [`RangeError`](numbers.md#symbol-RangeError) (A validation layer rejected a negative input).
+Double a nonnegative amount. It takes `amount` as an integer. Layers run in the declared order. Call [`Positive.around`](numbers.md#symbol-Positive.around).
 
-Layers run in the declared order. Call [`Positive.around`](numbers.md#symbol-Positive.around). It returns `amount` times `2`.
+It returns `amount` times `2`. [source](numbers.md#code)
+
+::: details Checked interface
+
+```text
+double(int amount) returns int unless RangeError
+```
+
+It takes `amount` as an integer (Integer to double). It returns `int` — Twice the amount, with defined integer wrapping. Failures can raise [`RangeError`](numbers.md#symbol-RangeError) (A validation layer rejected a negative input).
+
+:::
 
 ### `test double` · [source](numbers.md#code) {#symbol-test-20-double}
 
@@ -143,13 +163,13 @@ Tests [`double`](numbers.md#symbol-double). Each case gets fresh setup and depen
 
 ##### `doubles` · [source](numbers.md#code)
 
-Run once for each row of a tuple containing `0`, `0`; a tuple containing `3`, `6`; a tuple containing `7`, `14`. Bind row positions to `input`, `expected`. The test requires [`double`](numbers.md#symbol-double) with `amount` from `input` equals `expected`.
+Run once for each row of a tuple containing `0`, `0`; a tuple containing `3`, `6`; a tuple containing `7`, `14`. Bind row positions to `input`, `expected`. The test requires [`double`](numbers.md#symbol-double) with `amount` from `input` equals `expected`. [source](numbers.md#code)
 
 ##### `rejects_negative` · [source](numbers.md#code)
 
-It sets `rejected` to `false`.
+It sets `rejected` to `false`. [source](numbers.md#code)
 
-It tries to call [`double`](numbers.md#symbol-double) with `amount` `-1`. If this work raises [`RangeError`](numbers.md#symbol-RangeError) as `error`, it sets `rejected` to `error.value` equals `-1`. The test requires `rejected` is true.
+It tries to call [`double`](numbers.md#symbol-double) with `amount` `-1`. If this work raises [`RangeError`](numbers.md#symbol-RangeError) as `error`, it sets `rejected` to `error.value` equals `-1`. The test requires `rejected` is true. [source](numbers.md#code)
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).
 

@@ -2,6 +2,8 @@
 
 # `api.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=a1a4f3a2bb086ab83037ca8f702b2a3dcfed77ada7d8674fe16736701e7acaab -->
+
 <a id="symbol-NativeDatabaseStorage"></a>
 ## `NativeDatabaseStorage` · class · [source](api.aug#L9)
 
@@ -10,37 +12,86 @@ Open a serialized connection. Use :memory: for an in-memory database. It impleme
 <a id="symbol-NativeDatabaseStorage.open"></a>
 ### `NativeDatabaseStorage.open` · [source](api.aug#L10)
 
+It takes `path` as a string. Within an unsafe block, it returns [`_open`](api.aug.md#symbol-_open) with `path`. Native operations must satisfy their declared C contracts. [source](api.aug#L11-L12)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+open(string path) returns own Database unless SqliteError uses DatabaseStorage.open
+```
+
 It takes `path` as a string. It returns ownership of [`Database`](bindings.aug.md#symbol-Database). Failures can raise [`SqliteError`](contracts.aug.md#symbol-SqliteError).
 
-Within an unsafe block, it returns [`_open`](api.aug.md#symbol-_open) with `path`. Native operations must satisfy their declared C contracts.
+</details>
 
 <a id="symbol-open"></a>
 ## `open` · [source](api.aug#L13)
 
+It takes `path` as a string. It gets `storage` ([`DatabaseStorage`](contracts.aug.md#symbol-DatabaseStorage)) from dependency injection. It returns [`storage.open`](contracts.aug.md#symbol-DatabaseStorage.open) with `path`. [source](api.aug#L14)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+open(resolve DatabaseStorage storage, string path) returns own Database unless SqliteError uses DatabaseStorage.open
+```
+
 It takes `path` as a string. It gets `storage` ([`DatabaseStorage`](contracts.aug.md#symbol-DatabaseStorage)) from dependency injection. It returns ownership of [`Database`](bindings.aug.md#symbol-Database). Failures can raise [`SqliteError`](contracts.aug.md#symbol-SqliteError).
 
-It returns [`storage.open`](contracts.aug.md#symbol-DatabaseStorage.open) with `path`.
+</details>
 
 <a id="symbol-openMemory"></a>
 ## `openMemory` · [source](api.aug#L16)
 
-Open an in-memory database without filesystem permission. It returns ownership of [`Database`](bindings.aug.md#symbol-Database). Failures can raise [`SqliteError`](contracts.aug.md#symbol-SqliteError).
+Open an in-memory database without filesystem permission. Within an unsafe block, it returns [`_open`](api.aug.md#symbol-_open) with `path` `":memory:"`. Native operations must satisfy their declared C contracts. [source](api.aug#L17-L18)
 
-Within an unsafe block, it returns [`_open`](api.aug.md#symbol-_open) with `path` `":memory:"`. Native operations must satisfy their declared C contracts.
+<details>
+<summary>Checked interface</summary>
+
+```text
+openMemory() returns own Database unless SqliteError
+```
+
+It returns ownership of [`Database`](bindings.aug.md#symbol-Database). Failures can raise [`SqliteError`](contracts.aug.md#symbol-SqliteError).
+
+</details>
 
 <a id="symbol-execute"></a>
 ## `execute` · [source](api.aug#L20)
 
 Execute one parameterized statement. Return the number of changed rows. It takes `database` as [`Database`](bindings.aug.md#symbol-Database) with permission to mutate it during the call, `sql` as a string, and `parameters` as `List<string>`.
 
-It may change `database`. Failures can raise [`SqliteError`](contracts.aug.md#symbol-SqliteError). Within an unsafe block, it returns [`_execute`](api.aug.md#symbol-_execute) with `database`, `sql`, and `parameters`. Native operations must satisfy their declared C contracts.
+Within an unsafe block, it returns [`_execute`](api.aug.md#symbol-_execute) with `database`, `sql`, and `parameters`. Native operations must satisfy their declared C contracts. [source](api.aug#L21-L22)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+execute(borrow Database database, string sql, List<string> parameters) returns int unless SqliteError changes database
+```
+
+It takes `database` as [`Database`](bindings.aug.md#symbol-Database) with permission to mutate it during the call, `sql` as a string, and `parameters` as `List<string>`. It may change `database`. Failures can raise [`SqliteError`](contracts.aug.md#symbol-SqliteError).
+
+</details>
 
 <a id="symbol-queryScalar"></a>
 ## `queryScalar` · [source](api.aug#L24)
 
 Query one non-null text value with SELECT. Reject PRAGMAs, transactions, savepoints and writes before execution. Copy the result before finalization. It takes `database` as [`Database`](bindings.aug.md#symbol-Database), `sql` as a string, and `parameters` as `List<string>`.
 
-Failures can raise [`SqliteError`](contracts.aug.md#symbol-SqliteError). Within an unsafe block, it returns [`_queryScalar`](api.aug.md#symbol-_queryScalar) with `database`, `sql`, and `parameters`. Native operations must satisfy their declared C contracts.
+Within an unsafe block, it returns [`_queryScalar`](api.aug.md#symbol-_queryScalar) with `database`, `sql`, and `parameters`. Native operations must satisfy their declared C contracts. [source](api.aug#L25-L26)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+queryScalar(Database database, string sql, List<string> parameters) returns string unless SqliteError
+```
+
+It takes `database` as [`Database`](bindings.aug.md#symbol-Database), `sql` as a string, and `parameters` as `List<string>`. Failures can raise [`SqliteError`](contracts.aug.md#symbol-SqliteError).
+
+</details>
 
 <a id="symbol-_open"></a>
 ## `_open` · [source](api.aug#L5)
@@ -74,15 +125,15 @@ Tests [`openMemory`](api.aug.md#symbol-openMemory). Each case gets fresh setup a
 
 #### `binds_and_queries` · [source](api.aug#L30)
 
-It calls [`openMemory`](api.aug.md#symbol-openMemory) and stores the result in owned `database` ([`Database`](bindings.aug.md#symbol-Database)). With temporary permission to change `database`, it calls [`execute`](api.aug.md#symbol-execute) with `database`, `sql` `"CREATE TABLE users (name TEXT NOT NULL)"`, and `parameters` from a list with no items; then it calls [`execute`](api.aug.md#symbol-execute) with `database`, `sql` `"INSERT INTO users (name) VALUES (?)"`, and `parameters` from a list containing `"O'Reilly"`. The test requires [`queryScalar`](api.aug.md#symbol-queryScalar) with `database`, `sql` `"SELECT name FROM users"`, and `parameters` from a list with no items equals `"O'Reilly"`.
+It calls [`openMemory`](api.aug.md#symbol-openMemory) and stores the result in owned `database` ([`Database`](bindings.aug.md#symbol-Database)). With temporary permission to change `database`, it calls [`execute`](api.aug.md#symbol-execute) with `database`, `sql` `"CREATE TABLE users (name TEXT NOT NULL)"`, and `parameters` from a list with no items; then it calls [`execute`](api.aug.md#symbol-execute) with `database`, `sql` `"INSERT INTO users (name) VALUES (?)"`, and `parameters` from a list containing `"O'Reilly"`. The test requires [`queryScalar`](api.aug.md#symbol-queryScalar) with `database`, `sql` `"SELECT name FROM users"`, and `parameters` from a list with no items equals `"O'Reilly"`. [source](api.aug#L31-L35)
 
 #### `rejects_connection_and_transaction_control` · [source](api.aug#L36)
 
-It calls [`openMemory`](api.aug.md#symbol-openMemory) and stores the result in owned `database` ([`Database`](bindings.aug.md#symbol-Database)). For each `statement` in a snapshot of a list containing `"PRAGMA query_only=ON"`, `"BEGIN"`, `"COMMIT"`, `"ROLLBACK"`, `"SAVEPOINT hidden"`, it sets `rejected` to `false`.
+It calls [`openMemory`](api.aug.md#symbol-openMemory) and stores the result in owned `database` ([`Database`](bindings.aug.md#symbol-Database)). For each `statement` in a snapshot of a list containing `"PRAGMA query_only=ON"`, `"BEGIN"`, `"COMMIT"`, `"ROLLBACK"`, `"SAVEPOINT hidden"`, it sets `rejected` to `false`. [source](api.aug#L37-L44)
 
-It tries to call [`queryScalar`](api.aug.md#symbol-queryScalar) with `database`, `sql` from `statement`, and `parameters` from a list with no items. If this work raises [`SqliteError`](contracts.aug.md#symbol-SqliteError) as `error`, it sets `rejected` to `error.code` equals `23`. The test requires `rejected` is true. After the loop, with temporary permission to change `database`, it calls [`execute`](api.aug.md#symbol-execute) with `database`, `sql` `"CREATE TABLE rows (value TEXT)"`, and `parameters` from a list with no items; then it calls [`execute`](api.aug.md#symbol-execute) with `database`, `sql` `"INSERT INTO rows VALUES (?)"`, and `parameters` from a list containing `"unchanged"`.
+It tries to call [`queryScalar`](api.aug.md#symbol-queryScalar) with `database`, `sql` from `statement`, and `parameters` from a list with no items. If this work raises [`SqliteError`](contracts.aug.md#symbol-SqliteError) as `error`, it sets `rejected` to `error.code` equals `23`. The test requires `rejected` is true. After the loop, with temporary permission to change `database`, it calls [`execute`](api.aug.md#symbol-execute) with `database`, `sql` `"CREATE TABLE rows (value TEXT)"`, and `parameters` from a list with no items; then it calls [`execute`](api.aug.md#symbol-execute) with `database`, `sql` `"INSERT INTO rows VALUES (?)"`, and `parameters` from a list containing `"unchanged"`. [source](api.aug#L40-L47)
 
-The test requires [`queryScalar`](api.aug.md#symbol-queryScalar) with `database`, `sql` `"SELECT value FROM rows"`, and `parameters` from a list with no items equals `"unchanged"`.
+The test requires [`queryScalar`](api.aug.md#symbol-queryScalar) with `database`, `sql` `"SELECT value FROM rows"`, and `parameters` from a list with no items equals `"unchanged"`. [source](api.aug#L48)
 
 ## Dependencies
 

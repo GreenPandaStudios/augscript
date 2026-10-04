@@ -77,17 +77,45 @@ It implements [`IResource`](resource.md#symbol-IResource).
 
 #### `Resource.drop` · [source](resource.md#code) {#symbol-Resource.drop}
 
-It continues without an operation.
+It continues without an operation. [source](resource.md#code)
+
+::: details Checked interface
+
+```text
+drop() returns void
+```
+
+:::
 
 ### `IResource` · interface · [source](resource.md#code) {#symbol-IResource}
 
 ### `make` · [source](resource.md#code) {#symbol-make}
 
-It returns ownership of [`Resource`](resource.md#symbol-Resource). It creates [`Resource`](resource.md#symbol-Resource) and stores the result in owned `value` ([`Resource`](resource.md#symbol-Resource)). It returns `value`.
+It creates [`Resource`](resource.md#symbol-Resource) and stores the result in owned `value` ([`Resource`](resource.md#symbol-Resource)). It returns `value`. [source](resource.md#code)
+
+::: details Checked interface
+
+```text
+make() returns own Resource
+```
+
+It returns ownership of [`Resource`](resource.md#symbol-Resource).
+
+:::
 
 ### `consume` · [source](resource.md#code) {#symbol-consume}
 
-It takes `value` as [`Resource`](resource.md#symbol-Resource) with ownership transferred. It gets `console` ([`Console`](dependencies/august/0.23.0/io/contracts.md#symbol-Console)) from dependency injection. It passes `"consumed"` to [`console.write`](dependencies/august/0.23.0/io/contracts.md#symbol-Console.write).
+It takes `value` as [`Resource`](resource.md#symbol-Resource) with ownership transferred. It gets `console` ([`Console`](dependencies/august/0.23.0/io/contracts.md#symbol-Console)) from dependency injection. It passes `"consumed"` to [`console.write`](dependencies/august/0.23.0/io/contracts.md#symbol-Console.write). [source](resource.md#code)
+
+::: details Checked interface
+
+```text
+consume(resolve Console console, own Resource value) returns void uses Console.write
+```
+
+It takes `value` as [`Resource`](resource.md#symbol-Resource) with ownership transferred. It gets `console` ([`Console`](dependencies/august/0.23.0/io/contracts.md#symbol-Console)) from dependency injection.
+
+:::
 
 ### Dependencies
 

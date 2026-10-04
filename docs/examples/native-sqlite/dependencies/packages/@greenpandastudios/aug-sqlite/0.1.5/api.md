@@ -207,33 +207,77 @@ Open a serialized connection. Use :memory: for an in-memory database. It impleme
 
 #### `NativeDatabaseStorage.open` · [source](api.md#code) {#symbol-NativeDatabaseStorage.open}
 
+It takes `path` as a string. Within an unsafe block, it returns [`_open`](api.md#symbol-_open) with `path`. Native operations must satisfy their declared C contracts. [source](api.md#code)
+
+::: details Checked interface
+
+```text
+open(string path) returns own Database unless SqliteError uses DatabaseStorage.open
+```
+
 It takes `path` as a string. It returns ownership of [`Database`](bindings.md#symbol-Database). Failures can raise [`SqliteError`](contracts.md#symbol-SqliteError).
 
-Within an unsafe block, it returns [`_open`](api.md#symbol-_open) with `path`. Native operations must satisfy their declared C contracts.
+:::
 
 ### `open` · [source](api.md#code) {#symbol-open}
 
+It takes `path` as a string. It gets `storage` ([`DatabaseStorage`](contracts.md#symbol-DatabaseStorage)) from dependency injection. It returns [`storage.open`](contracts.md#symbol-DatabaseStorage.open) with `path`. [source](api.md#code)
+
+::: details Checked interface
+
+```text
+open(resolve DatabaseStorage storage, string path) returns own Database unless SqliteError uses DatabaseStorage.open
+```
+
 It takes `path` as a string. It gets `storage` ([`DatabaseStorage`](contracts.md#symbol-DatabaseStorage)) from dependency injection. It returns ownership of [`Database`](bindings.md#symbol-Database). Failures can raise [`SqliteError`](contracts.md#symbol-SqliteError).
 
-It returns [`storage.open`](contracts.md#symbol-DatabaseStorage.open) with `path`.
+:::
 
 ### `openMemory` · [source](api.md#code) {#symbol-openMemory}
 
-Open an in-memory database without filesystem permission. It returns ownership of [`Database`](bindings.md#symbol-Database). Failures can raise [`SqliteError`](contracts.md#symbol-SqliteError).
+Open an in-memory database without filesystem permission. Within an unsafe block, it returns [`_open`](api.md#symbol-_open) with `path` `":memory:"`. Native operations must satisfy their declared C contracts. [source](api.md#code)
 
-Within an unsafe block, it returns [`_open`](api.md#symbol-_open) with `path` `":memory:"`. Native operations must satisfy their declared C contracts.
+::: details Checked interface
+
+```text
+openMemory() returns own Database unless SqliteError
+```
+
+It returns ownership of [`Database`](bindings.md#symbol-Database). Failures can raise [`SqliteError`](contracts.md#symbol-SqliteError).
+
+:::
 
 ### `execute` · [source](api.md#code) {#symbol-execute}
 
 Execute one parameterized statement. Return the number of changed rows. It takes `database` as [`Database`](bindings.md#symbol-Database) with permission to mutate it during the call, `sql` as a string, and `parameters` as `List<string>`.
 
-It may change `database`. Failures can raise [`SqliteError`](contracts.md#symbol-SqliteError). Within an unsafe block, it returns [`_execute`](api.md#symbol-_execute) with `database`, `sql`, and `parameters`. Native operations must satisfy their declared C contracts.
+Within an unsafe block, it returns [`_execute`](api.md#symbol-_execute) with `database`, `sql`, and `parameters`. Native operations must satisfy their declared C contracts. [source](api.md#code)
+
+::: details Checked interface
+
+```text
+execute(borrow Database database, string sql, List<string> parameters) returns int unless SqliteError changes database
+```
+
+It takes `database` as [`Database`](bindings.md#symbol-Database) with permission to mutate it during the call, `sql` as a string, and `parameters` as `List<string>`. It may change `database`. Failures can raise [`SqliteError`](contracts.md#symbol-SqliteError).
+
+:::
 
 ### `queryScalar` · [source](api.md#code) {#symbol-queryScalar}
 
 Query one non-null text value with SELECT. Reject PRAGMAs, transactions, savepoints and writes before execution. Copy the result before finalization. It takes `database` as [`Database`](bindings.md#symbol-Database), `sql` as a string, and `parameters` as `List<string>`.
 
-Failures can raise [`SqliteError`](contracts.md#symbol-SqliteError). Within an unsafe block, it returns [`_queryScalar`](api.md#symbol-_queryScalar) with `database`, `sql`, and `parameters`. Native operations must satisfy their declared C contracts.
+Within an unsafe block, it returns [`_queryScalar`](api.md#symbol-_queryScalar) with `database`, `sql`, and `parameters`. Native operations must satisfy their declared C contracts. [source](api.md#code)
+
+::: details Checked interface
+
+```text
+queryScalar(Database database, string sql, List<string> parameters) returns string unless SqliteError
+```
+
+It takes `database` as [`Database`](bindings.md#symbol-Database), `sql` as a string, and `parameters` as `List<string>`. Failures can raise [`SqliteError`](contracts.md#symbol-SqliteError).
+
+:::
 
 ### `_open` · [source](api.md#code) {#symbol-_open}
 
@@ -263,15 +307,15 @@ Tests [`openMemory`](api.md#symbol-openMemory). Each case gets fresh setup and d
 
 ##### `binds_and_queries` · [source](api.md#code)
 
-It calls [`openMemory`](api.md#symbol-openMemory) and stores the result in owned `database` ([`Database`](bindings.md#symbol-Database)). With temporary permission to change `database`, it calls [`execute`](api.md#symbol-execute) with `database`, `sql` `"CREATE TABLE users (name TEXT NOT NULL)"`, and `parameters` from a list with no items; then it calls [`execute`](api.md#symbol-execute) with `database`, `sql` `"INSERT INTO users (name) VALUES (?)"`, and `parameters` from a list containing `"O'Reilly"`. The test requires [`queryScalar`](api.md#symbol-queryScalar) with `database`, `sql` `"SELECT name FROM users"`, and `parameters` from a list with no items equals `"O'Reilly"`.
+It calls [`openMemory`](api.md#symbol-openMemory) and stores the result in owned `database` ([`Database`](bindings.md#symbol-Database)). With temporary permission to change `database`, it calls [`execute`](api.md#symbol-execute) with `database`, `sql` `"CREATE TABLE users (name TEXT NOT NULL)"`, and `parameters` from a list with no items; then it calls [`execute`](api.md#symbol-execute) with `database`, `sql` `"INSERT INTO users (name) VALUES (?)"`, and `parameters` from a list containing `"O'Reilly"`. The test requires [`queryScalar`](api.md#symbol-queryScalar) with `database`, `sql` `"SELECT name FROM users"`, and `parameters` from a list with no items equals `"O'Reilly"`. [source](api.md#code)
 
 ##### `rejects_connection_and_transaction_control` · [source](api.md#code)
 
-It calls [`openMemory`](api.md#symbol-openMemory) and stores the result in owned `database` ([`Database`](bindings.md#symbol-Database)). For each `statement` in a snapshot of a list containing `"PRAGMA query_only=ON"`, `"BEGIN"`, `"COMMIT"`, `"ROLLBACK"`, `"SAVEPOINT hidden"`, it sets `rejected` to `false`.
+It calls [`openMemory`](api.md#symbol-openMemory) and stores the result in owned `database` ([`Database`](bindings.md#symbol-Database)). For each `statement` in a snapshot of a list containing `"PRAGMA query_only=ON"`, `"BEGIN"`, `"COMMIT"`, `"ROLLBACK"`, `"SAVEPOINT hidden"`, it sets `rejected` to `false`. [source](api.md#code)
 
-It tries to call [`queryScalar`](api.md#symbol-queryScalar) with `database`, `sql` from `statement`, and `parameters` from a list with no items. If this work raises [`SqliteError`](contracts.md#symbol-SqliteError) as `error`, it sets `rejected` to `error.code` equals `23`. The test requires `rejected` is true. After the loop, with temporary permission to change `database`, it calls [`execute`](api.md#symbol-execute) with `database`, `sql` `"CREATE TABLE rows (value TEXT)"`, and `parameters` from a list with no items; then it calls [`execute`](api.md#symbol-execute) with `database`, `sql` `"INSERT INTO rows VALUES (?)"`, and `parameters` from a list containing `"unchanged"`.
+It tries to call [`queryScalar`](api.md#symbol-queryScalar) with `database`, `sql` from `statement`, and `parameters` from a list with no items. If this work raises [`SqliteError`](contracts.md#symbol-SqliteError) as `error`, it sets `rejected` to `error.code` equals `23`. The test requires `rejected` is true. After the loop, with temporary permission to change `database`, it calls [`execute`](api.md#symbol-execute) with `database`, `sql` `"CREATE TABLE rows (value TEXT)"`, and `parameters` from a list with no items; then it calls [`execute`](api.md#symbol-execute) with `database`, `sql` `"INSERT INTO rows VALUES (?)"`, and `parameters` from a list containing `"unchanged"`. [source](api.md#code)
 
-The test requires [`queryScalar`](api.md#symbol-queryScalar) with `database`, `sql` `"SELECT value FROM rows"`, and `parameters` from a list with no items equals `"unchanged"`.
+The test requires [`queryScalar`](api.md#symbol-queryScalar) with `database`, `sql` `"SELECT value FROM rows"`, and `parameters` from a list with no items equals `"unchanged"`. [source](api.md#code)
 
 ### Dependencies
 

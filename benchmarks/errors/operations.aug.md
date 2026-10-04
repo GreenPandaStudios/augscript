@@ -2,9 +2,20 @@
 
 # `operations.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=1665588c91eb285e851e8447354a671c3f0611537395ed9ee0b357f67c0e2909 -->
+
 <a id="symbol-validate"></a>
 ## `validate` · [source](operations.aug#L2)
 
+It takes `value` as an integer. It checks that (`value` minus ((`value` divided by `16`) times `16`)) does not equal `0`. It raises a `FileError` at the first failed check. It returns `value`. [source](operations.aug#L3-L5)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+validate(int value) returns int unless FileError
+```
+
 It takes `value` as an integer. Failures can raise `FileError`.
 
-It checks that (`value` minus ((`value` divided by `16`) times `16`)) does not equal `0`. It raises a `FileError` at the first failed check. It returns `value`.
+</details>

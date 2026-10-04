@@ -100,11 +100,21 @@ Greeter(resolve Logger logger to _logger, string name) implements IGreeter {
 
 ### `describe` · [source](app.md#code) {#symbol-describe}
 
-Prints a number and returns its label. It takes `x` as an integer (the numeric input, validated and incremented by the chain) and `label` as a string (Text forwarded through each layer unchanged). It gets `logger` ([`Logger`](logging.md#symbol-Logger)) and `console` ([`Console`](dependencies/august/0.23.0/io/contracts.md#symbol-Console)) from dependency injection. Failures can raise `ValidationError`.
+Prints a number and returns its label. It takes labeled inputs `x` and `label`. It gets `logger` ([`Logger`](logging.md#symbol-Logger)) and `console` ([`Console`](dependencies/august/0.23.0/io/contracts.md#symbol-Console)) from dependency injection.
 
 Layers run in the declared order. Call [`Audit.around`](interceptors.md#symbol-Audit.around). Call [`Positive.around`](interceptors.md#symbol-Positive.around). Map `x` to `y`. Call [`AddOne.around`](interceptors.md#symbol-AddOne.around). Map `x` to `y`.
 
-It passes `x` to [`console.write`](dependencies/august/0.23.0/io/contracts.md#symbol-Console.write). It returns `label`.
+It passes `x` to [`console.write`](dependencies/august/0.23.0/io/contracts.md#symbol-Console.write). It returns `label`. [source](app.md#code)
+
+::: details Checked interface
+
+```text
+describe(resolve Logger logger, resolve Console console, int x, string label) returns string unless ValidationError uses Console.write
+```
+
+It takes `x` as an integer (the numeric input, validated and incremented by the chain) and `label` as a string (Text forwarded through each layer unchanged). It gets `logger` ([`Logger`](logging.md#symbol-Logger)) and `console` ([`Console`](dependencies/august/0.23.0/io/contracts.md#symbol-Console)) from dependency injection. Failures can raise `ValidationError`.
+
+:::
 
 ### `IGreeter` · interface · [source](app.md#code) {#symbol-IGreeter}
 
@@ -120,7 +130,17 @@ Construction stores its inputs; startup is visible in the greet call. It impleme
 
 Method annotations wrap each method invocation separately. It gets `logger` ([`Logger`](logging.md#symbol-Logger)) and `console` ([`Console`](dependencies/august/0.23.0/io/contracts.md#symbol-Console)) from dependency injection. Layers run in the declared order. Call [`Audit.around`](interceptors.md#symbol-Audit.around).
 
-It returns the text `Hello, {name}!`.
+It returns the text `Hello, {name}!`. [source](app.md#code)
+
+::: details Checked interface
+
+```text
+greet(resolve Logger logger, resolve Console console) returns string uses Console.write
+```
+
+It gets `logger` ([`Logger`](logging.md#symbol-Logger)) and `console` ([`Console`](dependencies/august/0.23.0/io/contracts.md#symbol-Console)) from dependency injection.
+
+:::
 
 ### Dependencies
 

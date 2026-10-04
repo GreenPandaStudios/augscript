@@ -2,6 +2,8 @@
 
 # `export.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=1135ea6ac3ef38565a418784322c7ecef0faaa624b6888775bda716ae61e8835 -->
+
 ## Exports
 
 Export the declaration `add` from [`arithmetic.aug`](arithmetic.aug.md#symbol-add).

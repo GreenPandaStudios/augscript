@@ -104,15 +104,31 @@ test compress {
 
 ### `compress` · [source](api.md#code) {#symbol-compress}
 
-Compress bytes with the standard zlib framing. It takes `input` as `Bytes`. Failures can raise [`CompressionError`](contracts.md#symbol-CompressionError).
+Compress bytes with the standard zlib framing. It takes `input` as `Bytes`. Within an unsafe block, it returns [`_compress`](api.md#symbol-_compress) with `input`. Native operations must satisfy their declared C contracts. [source](api.md#code)
 
-Within an unsafe block, it returns [`_compress`](api.md#symbol-_compress) with `input`. Native operations must satisfy their declared C contracts.
+::: details Checked interface
+
+```text
+compress(Bytes input) returns Bytes unless CompressionError
+```
+
+It takes `input` as `Bytes`. Failures can raise [`CompressionError`](contracts.md#symbol-CompressionError).
+
+:::
 
 ### `decompress` · [source](api.md#code) {#symbol-decompress}
 
-Decompress at most maximumOutput bytes (maximum 256 MiB). It takes `input` as `Bytes` and `maximumOutput` as an integer. Failures can raise [`CompressionError`](contracts.md#symbol-CompressionError).
+Decompress at most maximumOutput bytes (maximum 256 MiB). It takes `input` as `Bytes` and `maximumOutput` as an integer. Within an unsafe block, it returns [`_decompress`](api.md#symbol-_decompress) with `input` and `maximumOutput`. Native operations must satisfy their declared C contracts. [source](api.md#code)
 
-Within an unsafe block, it returns [`_decompress`](api.md#symbol-_decompress) with `input` and `maximumOutput`. Native operations must satisfy their declared C contracts.
+::: details Checked interface
+
+```text
+decompress(Bytes input, int maximumOutput) returns Bytes unless CompressionError
+```
+
+It takes `input` as `Bytes` and `maximumOutput` as an integer. Failures can raise [`CompressionError`](contracts.md#symbol-CompressionError).
+
+:::
 
 ### `_compress` · [source](api.md#code) {#symbol-_compress}
 
@@ -134,13 +150,13 @@ Tests [`compress`](api.md#symbol-compress). Each case gets fresh setup and depen
 
 ##### `preserves_bytes` · [source](api.md#code)
 
-It sets `input` of type `Bytes` to `bytes` on `"The world runs on language"`. It sets `packed` of type `Bytes` to [`compress`](api.md#symbol-compress) with `input`. It sets `restored` of type `Bytes` to [`decompress`](api.md#symbol-decompress) with `input` from `packed` and `maximumOutput` `4096`. The test requires `restored.text` equals `"The world runs on language"`.
+It sets `input` of type `Bytes` to `bytes` on `"The world runs on language"`. It sets `packed` of type `Bytes` to [`compress`](api.md#symbol-compress) with `input`. It sets `restored` of type `Bytes` to [`decompress`](api.md#symbol-decompress) with `input` from `packed` and `maximumOutput` `4096`. The test requires `restored.text` equals `"The world runs on language"`. [source](api.md#code)
 
 ##### `checks_output_limit` · [source](api.md#code)
 
-It sets `packed` of type `Bytes` to [`compress`](api.md#symbol-compress) with `input` from `bytes` on `"length limit"`. It sets `rejected` to `false`.
+It sets `packed` of type `Bytes` to [`compress`](api.md#symbol-compress) with `input` from `bytes` on `"length limit"`. It sets `rejected` to `false`. [source](api.md#code)
 
-It tries to call [`decompress`](api.md#symbol-decompress) with `input` from `packed` and `maximumOutput` `1`. If this work raises [`CompressionError`](contracts.md#symbol-CompressionError), it sets `rejected` to `true`. The test requires `rejected` is true.
+It tries to call [`decompress`](api.md#symbol-decompress) with `input` from `packed` and `maximumOutput` `1`. If this work raises [`CompressionError`](contracts.md#symbol-CompressionError), it sets `rejected` to `true`. The test requires `rejected` is true. [source](api.md#code)
 
 ### Dependencies
 

@@ -2,9 +2,11 @@
 
 # `main.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=d6b958a16433e4f3f849a53c2fb1ede62da59d9699d4ce61ddfe9971d3fefc9b -->
+
 ## Startup
 
-It prints [`load`](errors.aug.md#symbol-load) with `fail` `true`. If this work raises `FileError`, it prints `"caught FileError"`.
+It prints [`load`](errors.aug.md#symbol-load) with `fail` `true`. If this work raises `FileError`, it prints `"caught FileError"`. [source](main.aug#L3-L8)
 
 ## Dependencies
 

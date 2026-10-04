@@ -2,6 +2,8 @@
 
 # `contracts.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=c06a6d3e876ba4705eddfbb54169da96f73675b111c50ad0bbedbc0e1ad806ff -->
+
 <a id="symbol-Console"></a>
 ## `Console` · capability interface · [source](contracts.aug#L3)
 
@@ -20,7 +22,18 @@ The native standard-output adapter. Construction performs no output. It implemen
 <a id="symbol-SystemConsole.write"></a>
 ### `SystemConsole.write` · [source](contracts.aug#L9)
 
-Write one line of text. The type parameters are `T`. It takes `value` as `T` (Text to display). It prints `value`.
+Write one line of text. It takes `value` as `T`. It prints `value`. [source](contracts.aug#L10)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+write<T>(T value) returns void uses Console.write
+```
+
+The type parameters are `T`. It takes `value` as `T` (Text to display).
+
+</details>
 
 <a id="symbol-FileReader"></a>
 ## `FileReader` · capability interface · [source](contracts.aug#L13)
@@ -52,12 +65,34 @@ Native filesystem adapter. Construction opens no files. It implements [`FileRead
 <a id="symbol-LocalFiles.read"></a>
 ### `LocalFiles.read` · [source](contracts.aug#L24)
 
-Read text. It takes `path` as a string (File path). Failures can raise `FileError` (The file could not be read). It returns `read_file` with `path`.
+Read text. It takes `path` as a string. It returns `read_file` with `path`. [source](contracts.aug#L25)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+read(string path) returns string unless FileError uses FileReader.read
+```
+
+It takes `path` as a string (File path). Failures can raise `FileError` (The file could not be read).
+
+</details>
 
 <a id="symbol-LocalFiles.write"></a>
 ### `LocalFiles.write` · [source](contracts.aug#L26)
 
-Write text. It takes `path` as a string (File path) and `content` as a string (Text). Failures can raise `FileError` (Writing failed). It calls `write_file` with `path` and `content`.
+Write text. It takes `path` and `content` as strings. It calls `write_file` with `path` and `content`. [source](contracts.aug#L27)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+write(string path, string content) returns void unless FileError uses FileWriter.write
+```
+
+It takes `path` as a string (File path) and `content` as a string (Text). Failures can raise `FileError` (Writing failed).
+
+</details>
 
 <a id="symbol-Arguments"></a>
 ## `Arguments` · capability interface · [source](contracts.aug#L30)
@@ -77,6 +112,15 @@ Native command-line arguments. It implements [`Arguments`](contracts.aug.md#symb
 <a id="symbol-ProcessArguments.read"></a>
 ### `ProcessArguments.read` · [source](contracts.aug#L35)
 
-It returns `arguments`.
+It returns `arguments`. [source](contracts.aug#L36)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+read() returns List<string> uses Arguments.read
+```
+
+</details>
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).

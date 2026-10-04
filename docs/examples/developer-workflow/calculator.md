@@ -163,15 +163,35 @@ Uses the selected logger to describe each addition. It implements [`Arithmetic`]
 
 #### `Calculator.add` · [source](calculator.md#code) {#symbol-Calculator.add}
 
-Adds left and right, logging the operation. It takes `left` as an integer (First integer) and `right` as an integer (Second integer). It gets `console` ([`Console`](dependencies/august/0.23.0/io/contracts.md#symbol-Console)) from dependency injection. It returns `int` — Sum of the two integers.
+Adds left and right, logging the operation. It takes `left` and `right` as integers. It gets `console` ([`Console`](dependencies/august/0.23.0/io/contracts.md#symbol-Console)) from dependency injection.
 
-It passes `"adding integers"` to [`_logger.log`](logging/logger.md#symbol-Logger.log), using injected `console`. It returns `left` plus `right`.
+It passes `"adding integers"` to [`_logger.log`](logging/logger.md#symbol-Logger.log), using injected `console`. It returns `left` plus `right`. [source](calculator.md#code)
+
+::: details Checked interface
+
+```text
+add(resolve Console console, int left, int right) returns int uses Console.write
+```
+
+It takes `left` as an integer (First integer) and `right` as an integer (Second integer). It gets `console` ([`Console`](dependencies/august/0.23.0/io/contracts.md#symbol-Console)) from dependency injection. It returns `int` — Sum of the two integers.
+
+:::
 
 ### `load` · [source](calculator.md#code) {#symbol-load}
 
-Demonstrates a checked failure instead of a successful result. It takes `fail` as a boolean (Whether to simulate a failed load). Failures can raise `FileError` (when fail is true).
+Demonstrates a checked failure instead of a successful result. It takes `fail` as a boolean.
 
-It checks that `fail` is false. It raises a `FileError` at the first failed check. It returns `"loaded"`.
+It checks that `fail` is false. It raises a `FileError` at the first failed check. It returns `"loaded"`. [source](calculator.md#code)
+
+::: details Checked interface
+
+```text
+load(bool fail) returns string unless FileError
+```
+
+It takes `fail` as a boolean (Whether to simulate a failed load). Failures can raise `FileError` (when fail is true).
+
+:::
 
 ### `_SilentLogger` · class · [source](calculator.md#code) {#symbol-_SilentLogger}
 
@@ -179,7 +199,17 @@ Test adapter: keeps calculator tests independent of console output. It implement
 
 #### `_SilentLogger.log` · [source](calculator.md#code) {#symbol-_SilentLogger.log}
 
-It takes `message` as a string (Text to write). It gets `console` ([`Console`](dependencies/august/0.23.0/io/contracts.md#symbol-Console)) from dependency injection. It continues without an operation.
+It takes `message` as a string. It gets `console` ([`Console`](dependencies/august/0.23.0/io/contracts.md#symbol-Console)) from dependency injection. It continues without an operation. [source](calculator.md#code)
+
+::: details Checked interface
+
+```text
+log(resolve Console console, string message) returns void uses Console.write
+```
+
+It takes `message` as a string (Text to write). It gets `console` ([`Console`](dependencies/august/0.23.0/io/contracts.md#symbol-Console)) from dependency injection.
+
+:::
 
 ### `test Calculator calculator` · [source](calculator.md#code) {#symbol-test-20-Calculator-20-calculator}
 
@@ -189,15 +219,15 @@ Tests [`Calculator`](calculator.md#symbol-Calculator). Each case gets fresh setu
 
 Setup for each case: `Console` is provided by [`SystemConsole`](dependencies/august/0.23.0/io/contracts.md#symbol-SystemConsole). Stateless instances are reused; stateful instances are created for each resolve. `Logger` is provided by [`_SilentLogger`](calculator.md#symbol-_SilentLogger). Stateless instances are reused; stateful instances are created for each resolve.
 
-It sets `calculator` to a [`Calculator`](calculator.md#symbol-Calculator) using injected `Logger` for `_logger`. It sets `values` of type `List<int>` to a list containing `1`, `2`.
+It sets `calculator` to a [`Calculator`](calculator.md#symbol-Calculator) using injected `Logger` for `_logger`. It sets `values` of type `List<int>` to a list containing `1`, `2`. [source](calculator.md#code)
 
 ##### `adds labeled inputs` · [source](calculator.md#code)
 
-The test requires [`calculator.add`](calculator.md#symbol-Calculator.add) with `right` `2` and `left` `1` using injected `Console` for `console` equals `3`. With temporary permission to change `values`, it appends `3` to `values`. The test requires the number of elements in `values` equals `3`.
+The test requires [`calculator.add`](calculator.md#symbol-Calculator.add) with `right` `2` and `left` `1` using injected `Console` for `console` equals `3`. With temporary permission to change `values`, it appends `3` to `values`. The test requires the number of elements in `values` equals `3`. [source](calculator.md#code)
 
 ##### `starts with fresh setup` · [source](calculator.md#code)
 
-The test requires the number of elements in `values` equals `2`. The test requires [`calculator.add`](calculator.md#symbol-Calculator.add) with `left` from the item at index `0` in `values` and `right` from the item at index `1` in `values` using injected `Console` for `console` equals `3`.
+The test requires the number of elements in `values` equals `2`. The test requires [`calculator.add`](calculator.md#symbol-Calculator.add) with `left` from the item at index `0` in `values` and `right` from the item at index `1` in `values` using injected `Console` for `console` equals `3`. [source](calculator.md#code)
 
 ### Dependencies
 

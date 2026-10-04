@@ -145,7 +145,15 @@ The JSON shape returned by the forecast endpoint. Temperatures use whole degrees
 
 ### `weatherForecast` · [source](forecasts.md#code) {#symbol-weatherForecast}
 
-`weatherForecast` handles `GET /weatherforecast`. Return five simulated forecasts. Fixed data keeps the example and its tests reproducible. It returns a list of 5 [`WeatherForecast`](forecasts.md#symbol-WeatherForecast) records, with `(date, temperatureC, temperatureF, summary)` values of `("2026-01-01", 0, 32, "Freezing")`, `("2026-01-02", 10, 50, "Cool")`, `("2026-01-03", 20, 68, "Mild")`, `("2026-01-04", 30, 86, "Warm")`, and `("2026-01-05", 35, 95, "Hot")`, in that order.
+`weatherForecast` handles `GET /weatherforecast`. Return five simulated forecasts. Fixed data keeps the example and its tests reproducible. It returns a list of 5 [`WeatherForecast`](forecasts.md#symbol-WeatherForecast) records, with `(date, temperatureC, temperatureF, summary)` values of `("2026-01-01", 0, 32, "Freezing")`, `("2026-01-02", 10, 50, "Cool")`, `("2026-01-03", 20, 68, "Mild")`, `("2026-01-04", 30, 86, "Warm")`, and `("2026-01-05", 35, 95, "Hot")`, in that order. [source](forecasts.md#code)
+
+::: details Checked interface
+
+```text
+weatherForecast() returns List<WeatherForecast>
+```
+
+:::
 
 ### `test weatherForecast client` · [source](forecasts.md#code) {#symbol-test-20-weatherForecast-20-client}
 
@@ -155,11 +163,11 @@ Tests [`weatherForecast`](forecasts.md#symbol-weatherForecast). Each case gets f
 
 ##### `returns_json` · [source](forecasts.md#code)
 
-It sets `response` to `client.request` with `method` `"GET"` and `path` `"/weatherforecast"`. The test requires `response.status` equals `200`.
+It sets `response` to `client.request` with `method` `"GET"` and `path` `"/weatherforecast"`. The test requires `response.status` equals `200`. [source](forecasts.md#code)
 
 ##### `rejects_other_methods` · [source](forecasts.md#code)
 
-It sets `response` to `client.request` with `method` `"POST"` and `path` `"/weatherforecast"`. The test requires `response.status` equals `405`.
+It sets `response` to `client.request` with `method` `"POST"` and `path` `"/weatherforecast"`. The test requires `response.status` equals `405`. [source](forecasts.md#code)
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).
 

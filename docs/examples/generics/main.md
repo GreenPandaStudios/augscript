@@ -68,9 +68,9 @@ print(value=box.get())
 
 ### Startup
 
-It sets `formatter` to the instance provided for `Formatter`. It prints [`formatter.title`](types.md#symbol-Formatter.title). It prints [`formatter.format`](types.md#symbol-Formatter.format) for `int` with `value` `42`. It sets `box` to a [`Box`](types.md#symbol-Box) for `string` with `value` `"inside a generic box"`.
+It sets `formatter` to the instance provided for `Formatter`. It prints [`formatter.title`](types.md#symbol-Formatter.title). It prints [`formatter.format`](types.md#symbol-Formatter.format) for `int` with `value` `42`. It sets `box` to a [`Box`](types.md#symbol-Box) for `string` with `value` `"inside a generic box"`. [source](main.md#code)
 
-It prints [`box.get`](types.md#symbol-Box.get).
+It prints [`box.get`](types.md#symbol-Box.get). [source](main.md#code)
 
 ### Dependencies
 

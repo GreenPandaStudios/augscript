@@ -2,7 +2,20 @@
 
 # `math.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=3e3cfc7546dd58a334fcf03ae295d65a38851a9a37315d2193c4cc0196233604 -->
+
 <a id="symbol-increment"></a>
 ## `increment` · [source](math.aug#L2)
 
-It takes `value` as an integer. It returns `value` plus `1`.
+It takes `value` as an integer. It returns `value` plus `1`. [source](math.aug#L3)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+increment(int value) returns int
+```
+
+It takes `value` as an integer.
+
+</details>

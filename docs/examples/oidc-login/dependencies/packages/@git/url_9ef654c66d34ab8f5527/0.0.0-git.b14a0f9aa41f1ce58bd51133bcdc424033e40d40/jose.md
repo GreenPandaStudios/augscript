@@ -226,39 +226,77 @@ It takes `keys` as `List<RsaJwk>`, kept read-only.
 
 Export public parameters. Private key material never enters the JSON document. It takes `publicKey` as `RsaPublicKey` and `kid` as a string. It gets `crypto` ([`Crypto`](contracts.md#symbol-Crypto)) from dependency injection.
 
-Failures can raise `CryptoError`. It splits [`crypto.exportRsa`](contracts.md#symbol-Crypto.exportRsa) with `publicKey` into `modulus` and `exponent` in order. It returns a [`RsaJwk`](jose.md#symbol-RsaJwk) with `kty` `"RSA"`, `kid`, `alg` `"RS256"`, `use` `"sig"`, `n` from the URL-safe base64 encoding of `modulus`, and `e` from the URL-safe base64 encoding of `exponent`.
+It splits [`crypto.exportRsa`](contracts.md#symbol-Crypto.exportRsa) with `publicKey` into `modulus` and `exponent` in order. It returns a [`RsaJwk`](jose.md#symbol-RsaJwk) with `kty` `"RSA"`, `kid`, `alg` `"RS256"`, `use` `"sig"`, `n` from the URL-safe base64 encoding of `modulus`, and `e` from the URL-safe base64 encoding of `exponent`. [source](jose.md#code)
+
+::: details Checked interface
+
+```text
+rsaJwk(RsaPublicKey publicKey, string kid, resolve Crypto crypto) returns RsaJwk unless CryptoError uses Crypto.exportRsa
+```
+
+It takes `publicKey` as `RsaPublicKey` and `kid` as a string. It gets `crypto` ([`Crypto`](contracts.md#symbol-Crypto)) from dependency injection. Failures can raise `CryptoError`.
+
+:::
 
 ### `importJwk` · [source](jose.md#code) {#symbol-importJwk}
 
 Import only an RSA signing key for RS256. The transport caller selects the trusted JWKS URL. It takes `jwk` as [`RsaJwk`](jose.md#symbol-RsaJwk). It gets `crypto` ([`Crypto`](contracts.md#symbol-Crypto)) from dependency injection.
 
-Failures can raise [`JwtError`](jose.md#symbol-JwtError). It checks that `jwk.kty` equals `"RSA"` and `jwk.alg` equals `"RS256"` and `jwk.use` equals `"sig"`. It raises a [`JwtError`](jose.md#symbol-JwtError) at the first failed check.
+It checks that `jwk.kty` equals `"RSA"` and `jwk.alg` equals `"RS256"` and `jwk.use` equals `"sig"`. It raises a [`JwtError`](jose.md#symbol-JwtError) at the first failed check. [source](jose.md#code)
 
-It tries to set `modulus` to [`crypto.decodeBase64url`](contracts.md#symbol-Crypto.decodeBase64url) with `input` from `jwk.n`, then set `exponent` to [`crypto.decodeBase64url`](contracts.md#symbol-Crypto.decodeBase64url) with `input` from `jwk.e`, then return [`crypto.importRsa`](contracts.md#symbol-Crypto.importRsa) with `modulus` and `exponent`. If this work raises `CryptoError`, it raises a [`JwtError`](jose.md#symbol-JwtError).
+It tries to set `modulus` to [`crypto.decodeBase64url`](contracts.md#symbol-Crypto.decodeBase64url) with `input` from `jwk.n`, then set `exponent` to [`crypto.decodeBase64url`](contracts.md#symbol-Crypto.decodeBase64url) with `input` from `jwk.e`, then return [`crypto.importRsa`](contracts.md#symbol-Crypto.importRsa) with `modulus` and `exponent`. If this work raises `CryptoError`, it raises a [`JwtError`](jose.md#symbol-JwtError). [source](jose.md#code)
+
+::: details Checked interface
+
+```text
+importJwk(RsaJwk jwk, resolve Crypto crypto) returns RsaPublicKey unless JwtError uses Crypto.decodeBase64url, Crypto.importRsa
+```
+
+It takes `jwk` as [`RsaJwk`](jose.md#symbol-RsaJwk). It gets `crypto` ([`Crypto`](contracts.md#symbol-Crypto)) from dependency injection. Failures can raise [`JwtError`](jose.md#symbol-JwtError).
+
+:::
 
 ### `signJwt` · [source](jose.md#code) {#symbol-signJwt}
 
-Sign immutable JSON with an explicit key id and token type. Claims are validated by the protocol that consumes the token. It takes `key` as `RsaPrivateKey`, `claims` as `Json`, and `kid` and `tokenType` as strings. It gets `crypto` ([`Crypto`](contracts.md#symbol-Crypto)) from dependency injection.
+Sign immutable JSON with an explicit key id and token type. Claims are validated by the protocol that consumes the token. It takes labeled inputs `key`, `claims`, `kid`, and `tokenType`. It gets `crypto` ([`Crypto`](contracts.md#symbol-Crypto)) from dependency injection.
 
-Failures can raise [`JwtError`](jose.md#symbol-JwtError).
+It sets `header` to `stringify` on a `Json` with `value` from a [`JwtHeader`](jose.md#symbol-JwtHeader) with `alg` `"RS256"`, `kid`, and `typ` from `tokenType`. It sets `payload` to `claims.stringify`. It builds `signing` as the text `{the URL-safe base64 encoding of the UTF-8 bytes of header}.{the URL-safe base64 encoding of the UTF-8 bytes of payload}`. It sets `signature` to [`crypto.signRsa`](contracts.md#symbol-Crypto.signRsa) with `key` and `input` from the UTF-8 bytes of `signing`. [source](jose.md#code)
 
-It sets `header` to `stringify` on a `Json` with `value` from a [`JwtHeader`](jose.md#symbol-JwtHeader) with `alg` `"RS256"`, `kid`, and `typ` from `tokenType`. It sets `payload` to `claims.stringify`. It builds `signing` as the text `{the URL-safe base64 encoding of the UTF-8 bytes of header}.{the URL-safe base64 encoding of the UTF-8 bytes of payload}`. It sets `signature` to [`crypto.signRsa`](contracts.md#symbol-Crypto.signRsa) with `key` and `input` from the UTF-8 bytes of `signing`.
+It returns the text `{signing}.{the URL-safe base64 encoding of signature}`. If this work raises `CryptoError`, it raises a [`JwtError`](jose.md#symbol-JwtError). If this work raises `JsonError`, it raises a [`JwtError`](jose.md#symbol-JwtError). [source](jose.md#code)
 
-It returns the text `{signing}.{the URL-safe base64 encoding of signature}`. If this work raises `CryptoError`, it raises a [`JwtError`](jose.md#symbol-JwtError). If this work raises `JsonError`, it raises a [`JwtError`](jose.md#symbol-JwtError).
+::: details Checked interface
+
+```text
+signJwt(RsaPrivateKey key, Json claims, string kid, string tokenType, resolve Crypto crypto) returns string unless JwtError uses Crypto.signRsa
+```
+
+It takes `key` as `RsaPrivateKey`, `claims` as `Json`, and `kid` and `tokenType` as strings. It gets `crypto` ([`Crypto`](contracts.md#symbol-Crypto)) from dependency injection. Failures can raise [`JwtError`](jose.md#symbol-JwtError).
+
+:::
 
 ### `verifyJwt` · [source](jose.md#code) {#symbol-verifyJwt}
 
-Verify the signature and configured algorithm, key id, and type before exposing the JSON payload. Never follows token-supplied URLs. It takes `token` as a string, `publicKey` as `RsaPublicKey`, and `kid` and `tokenType` as strings. It gets `crypto` ([`Crypto`](contracts.md#symbol-Crypto)) from dependency injection.
+Verify the signature and configured algorithm, key id, and type before exposing the JSON payload. Never follows token-supplied URLs. It takes labeled inputs `token`, `publicKey`, `kid`, and `tokenType`. It gets `crypto` ([`Crypto`](contracts.md#symbol-Crypto)) from dependency injection.
 
-Failures can raise [`JwtError`](jose.md#symbol-JwtError). It checks that the byte length of `token` is at most `16384`. It raises a [`JwtError`](jose.md#symbol-JwtError) at the first failed check. It sets `parts` to `token.split` with `separator` `"."`.
+It checks that the byte length of `token` is at most `16384`. It raises a [`JwtError`](jose.md#symbol-JwtError) at the first failed check. It sets `parts` to `token.split` with `separator` `"."`. [source](jose.md#code)
 
-It checks that the number of elements in `parts` equals `3`. It raises a [`JwtError`](jose.md#symbol-JwtError) at the first failed check. It sets `first` to the item at index `0` in `parts`. It sets `second` to the item at index `1` in `parts`.
+It checks that the number of elements in `parts` equals `3`. It raises a [`JwtError`](jose.md#symbol-JwtError) at the first failed check. It sets `first` to the item at index `0` in `parts`. It sets `second` to the item at index `1` in `parts`. [source](jose.md#code)
 
-It sets `third` to the item at index `2` in `parts`. It sets `header` to `decode` on [`parse`](../../url_2d3c37c690c0fa115be1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.md#symbol-parse) with `input` from `text` on [`crypto.decodeBase64url`](contracts.md#symbol-Crypto.decodeBase64url) with `input` from `first` for [`JwtHeader`](jose.md#symbol-JwtHeader). It checks that `header.alg` equals `"RS256"` and `header.kid` equals `kid` and `header.typ` equals `tokenType`. It raises a [`JwtError`](jose.md#symbol-JwtError) at the first failed check.
+It sets `third` to the item at index `2` in `parts`. It sets `header` to `decode` on [`parse`](../../url_2d3c37c690c0fa115be1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.md#symbol-parse) with `input` from `text` on [`crypto.decodeBase64url`](contracts.md#symbol-Crypto.decodeBase64url) with `input` from `first` for [`JwtHeader`](jose.md#symbol-JwtHeader). It checks that `header.alg` equals `"RS256"` and `header.kid` equals `kid` and `header.typ` equals `tokenType`. It raises a [`JwtError`](jose.md#symbol-JwtError) at the first failed check. [source](jose.md#code)
 
-It sets `signature` to [`crypto.decodeBase64url`](contracts.md#symbol-Crypto.decodeBase64url) with `input` from `third`. It checks that [`crypto.verifyRsa`](contracts.md#symbol-Crypto.verifyRsa) with `publicKey`, `input` from the UTF-8 bytes of the text `{first}.{second}`, and `signature` returns true. It raises a [`JwtError`](jose.md#symbol-JwtError) at the first failed check. It returns [`parse`](../../url_2d3c37c690c0fa115be1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.md#symbol-parse) with `input` from `text` on [`crypto.decodeBase64url`](contracts.md#symbol-Crypto.decodeBase64url) with `input` from `second`.
+It sets `signature` to [`crypto.decodeBase64url`](contracts.md#symbol-Crypto.decodeBase64url) with `input` from `third`. It checks that [`crypto.verifyRsa`](contracts.md#symbol-Crypto.verifyRsa) with `publicKey`, `input` from the UTF-8 bytes of the text `{first}.{second}`, and `signature` returns true. It raises a [`JwtError`](jose.md#symbol-JwtError) at the first failed check. It returns [`parse`](../../url_2d3c37c690c0fa115be1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.md#symbol-parse) with `input` from `text` on [`crypto.decodeBase64url`](contracts.md#symbol-Crypto.decodeBase64url) with `input` from `second`. [source](jose.md#code)
 
-If this work raises `CryptoError`, it raises a [`JwtError`](jose.md#symbol-JwtError). If this work raises `ConversionError`, it raises a [`JwtError`](jose.md#symbol-JwtError). If this work raises `JsonError`, it raises a [`JwtError`](jose.md#symbol-JwtError). If this work raises `IndexError`, it raises a [`JwtError`](jose.md#symbol-JwtError).
+If this work raises `CryptoError`, it raises a [`JwtError`](jose.md#symbol-JwtError). If this work raises `ConversionError`, it raises a [`JwtError`](jose.md#symbol-JwtError). If this work raises `JsonError`, it raises a [`JwtError`](jose.md#symbol-JwtError). If this work raises `IndexError`, it raises a [`JwtError`](jose.md#symbol-JwtError). [source](jose.md#code)
+
+::: details Checked interface
+
+```text
+verifyJwt(string token, RsaPublicKey publicKey, string kid, string tokenType, resolve Crypto crypto) returns Json unless JwtError uses Crypto.decodeBase64url, Crypto.verifyRsa
+```
+
+It takes `token` as a string, `publicKey` as `RsaPublicKey`, and `kid` and `tokenType` as strings. It gets `crypto` ([`Crypto`](contracts.md#symbol-Crypto)) from dependency injection. Failures can raise [`JwtError`](jose.md#symbol-JwtError).
+
+:::
 
 ### Dependencies
 

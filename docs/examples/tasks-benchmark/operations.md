@@ -51,7 +51,17 @@ compute(int value) returns int {
 
 ### `compute` · [source](operations.md#code) {#symbol-compute}
 
-It takes `value` as an integer. It returns (`value` times `3`) plus `1`.
+It takes `value` as an integer. It returns (`value` times `3`) plus `1`. [source](operations.md#code)
+
+::: details Checked interface
+
+```text
+compute(int value) returns int
+```
+
+It takes `value` as an integer.
+
+:::
 
 ::::
 

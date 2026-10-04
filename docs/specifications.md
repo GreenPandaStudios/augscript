@@ -30,7 +30,7 @@ The comment points readers and coding agents to the explanation before an edit. 
 
 ## What the document explains
 
-Each declaration gets a short introduction and paragraphs explaining what it does. Private helpers and same-file tests are included. For endpoints, the explanation covers routes, request inputs, policies, and HTTP responses.
+Each declaration gets a short introduction and paragraphs explaining what it does. Implementations keep their complete signatures, defaults, checked errors and capability contracts in an expandable **Checked interface** section. Open it when you need the exact call contract. Bodyless interfaces keep their promises visible because the contract is their behavior. Private helpers and same-file tests are included. For endpoints, the explanation covers routes, request inputs, policies, and HTTP responses.
 
 For example, this complete program uses two source files:
 
@@ -64,7 +64,7 @@ The dependency section lists the types, operations, and fields this file uses. F
 
 `import everything` stays valid. The spec lists the names and operations actually used by the file. Adding an unused export does not expand that list. VS Code hover still shows all names available from the import.
 
-The compiler creates offline dependency documents from the installed source versions. Package paths include the package name and exact version; standard-library paths include the compiler version. Documents use relative links and include source links. Commit generated specs and `.aug-spec/` together when you want readers to follow those links without installing dependencies.
+The compiler creates offline dependency documents from the installed source versions. Package paths include the package name and exact version; standard-library paths include the compiler version. Documents use relative links and include source links. Each behavior paragraph links to the lines that contributed to it, after any managed source pointer. The wiki links these paragraphs to the code view; the adjacent Markdown retains exact source line ranges. Commit generated specs and `.aug-spec/` together when you want readers to follow those links without installing dependencies.
 
 ## Optional comments, checked when required
 
@@ -91,7 +91,7 @@ In VS Code, use **AugScript: Open Compiled Specification** to generate and previ
 
 ## Determinism and limits
 
-Generation is offline and deterministic for the same checked sources, configuration, installed dependencies, and compiler version. It adds no timestamps or machine paths. Explanations include inferred result types, mutations, dependencies, and escaping errors even when their clauses are absent from source. Descriptions of dependency calls come from their checked declarations and documentation, not guesses based on function names.
+Generation is offline and deterministic for the same checked sources, configuration, installed dependencies, and compiler version. It adds no timestamps or machine paths. A hidden revision comment records the compiler, spec schema and SHA-256 of the source bytes that the explanation describes, including its managed pointer. The digest identifies that source unit; `--check` also checks configuration and dependency changes through the regenerated documents. Explanations include inferred result types, mutations, dependencies, and escaping errors even when their clauses are absent from source. Descriptions of dependency calls come from their checked declarations and documentation, not guesses based on function names.
 
 The spec explains the implemented program. Compare that explanation with your requirements and test the behavior; compilation alone cannot establish that the program does what you intended. [Research and implementation notes](research/code-to-natural-language.md) explain the generation approach and its evaluation limits.
 

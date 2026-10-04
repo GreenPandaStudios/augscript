@@ -2,6 +2,8 @@
 
 # `export.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=33db4ebf25e18b9ef1f9f142a39cfd1f7774fe9b10458950d122a7b545f356f8 -->
+
 ## Exports
 
 Export the declaration `Settings` from [`settings.aug`](settings.aug.md#symbol-Settings). Export the declaration `settings` from [`settings.aug`](settings.aug.md#symbol-settings). Export the declaration `SigningKeys` from [`keys.aug`](keys.aug.md#symbol-SigningKeys). Export the declaration `MemorySigningKeys` from [`keys.aug`](keys.aug.md#symbol-MemorySigningKeys).

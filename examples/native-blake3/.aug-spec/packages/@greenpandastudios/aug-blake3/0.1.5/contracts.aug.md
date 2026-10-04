@@ -2,6 +2,8 @@
 
 # `contracts.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=e95ff369351da3479580fcec5f86da93f67c0f6b61c6638175e31b0c44d75989 -->
+
 <a id="symbol-HashError"></a>
 ## `HashError` · class · [source](contracts.aug#L3)
 

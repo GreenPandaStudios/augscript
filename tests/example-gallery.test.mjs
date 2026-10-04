@@ -120,3 +120,9 @@ test('downloaded projects extract and check independently, including the neighbo
     } finally {rmSync(temporary,{recursive:true,force:true});}
   }
 });
+
+test('wiki specifications use native expandable containers without visible revision internals',()=>{
+ const page=readFileSync(resolve('docs/examples/hello/app/greeter.md'),'utf8');
+ assert.match(page,/::: details Checked interface/);
+ assert.doesNotMatch(page,/<details>|<summary>|August spec revision:/);
+});

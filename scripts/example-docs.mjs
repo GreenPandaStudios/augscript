@@ -147,6 +147,11 @@ export function buildExamplePages(overrides) {
       const displayed=hinted?parse(file.path,hinted.text).file:file;
       const formats=['indent','braces'].map(style=>formatFile({...project,config:{...project.config,block_style:style,indentation:'spaces'}},displayed));
       let text=artifact.text.replace(/^<!--[^\n]*-->\n\n# [^\n]+\n\n/,'');
+      // Adjacent Markdown uses portable details. The wiki keeps HTML disabled
+      // and renders only these compiler-owned blocks as native containers.
+      text=text.replace(/^<!-- August spec revision: [^\n]*-->\n\n/gm,'');
+      text=text.replace(/^<details>\n<summary>Checked interface<\/summary>\n([\s\S]*?)\n<\/details>$/gm,
+        (_,body)=>'::: details Checked interface\n'+body+'\n:::');
       text=text.replace(/<a id="([^"]+)"><\/a>\n+(#{2,6} [^\n]+)/g,(_,id,heading)=>heading+' {#'+safeAnchor(id)+'}');
       // Promote source links to the readable code on the same wiki; keep exact declaration anchors.
       text=text.replace(/\]\(([^\n)]+)\)/g,(original,href)=>{

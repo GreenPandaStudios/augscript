@@ -60,7 +60,7 @@ catch TensorError error {
 
 ### Startup
 
-It prints [`calculate`](tensors.md#symbol-calculate). If this work raises [`TensorError`](dependencies/packages/%40greenpandastudios/aug-pytorch/0.1.6/contracts.md#symbol-TensorError) as `error`, it prints `error.message`.
+It prints [`calculate`](tensors.md#symbol-calculate). If this work raises [`TensorError`](dependencies/packages/%40greenpandastudios/aug-pytorch/0.1.6/contracts.md#symbol-TensorError) as `error`, it prints `error.message`. [source](main.md#code)
 
 ### Dependencies
 

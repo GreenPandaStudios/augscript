@@ -79,15 +79,39 @@ It implements [`ICounter`](counter.md#symbol-ICounter). It takes `value` as an i
 
 #### `Counter._label` · [source](counter.md#code) {#symbol-Counter._label}
 
-It is private to its defining scope. It returns [`_prefix`](counter.md#symbol-_prefix).
+It is private to its defining scope. It returns [`_prefix`](counter.md#symbol-_prefix). [source](counter.md#code)
+
+::: details Checked interface
+
+```text
+_label() returns string
+```
+
+:::
 
 #### `Counter.label` · [source](counter.md#code) {#symbol-Counter.label}
 
-It returns [`self._label`](counter.md#symbol-Counter._label).
+It returns [`self._label`](counter.md#symbol-Counter._label). [source](counter.md#code)
+
+::: details Checked interface
+
+```text
+label() returns string
+```
+
+:::
 
 ### `_prefix` · [source](counter.md#code) {#symbol-_prefix}
 
-It is private to its defining scope. It returns `"count"`.
+It is private to its defining scope. It returns `"count"`. [source](counter.md#code)
+
+::: details Checked interface
+
+```text
+_prefix() returns string
+```
+
+:::
 
 ::::
 

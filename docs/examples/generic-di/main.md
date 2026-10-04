@@ -70,7 +70,7 @@ program.start()
 
 ### Startup
 
-It sets `program` to the instance provided for `app`. It calls [`program.start`](types.md#symbol-Program.start) using injected `Console` for `console`.
+It sets `program` to the instance provided for `app`. It calls [`program.start`](types.md#symbol-Program.start) using injected `Console` for `console`. [source](main.md#code)
 
 ### Dependencies
 

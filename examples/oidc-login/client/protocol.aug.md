@@ -2,40 +2,75 @@
 
 # `protocol.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=31b37f9a03c11945b63c24e33dc690d6321ff58fa579d6950c569c773aae7edb -->
+
 <a id="symbol-responseJson"></a>
 ## `responseJson` · [source](protocol.aug#L10)
 
-Accept only a successful JSON response. Redirects remain explicit and are never followed by the transport. It takes `response` as `HttpResponse<Bytes>`. Failures can raise [`SessionError`](contracts.aug.md#symbol-SessionError).
+Accept only a successful JSON response. Redirects remain explicit and are never followed by the transport. It takes `response` as `HttpResponse<Bytes>`.
 
-It checks that `response.status` equals `200`. It raises a [`SessionError`](contracts.aug.md#symbol-SessionError) at the first failed check. It obtains `response.headers.get` with `name` `"content-type"`. If no value is found, it raises a [`SessionError`](contracts.aug.md#symbol-SessionError).
+It checks that `response.status` equals `200`. It raises a [`SessionError`](contracts.aug.md#symbol-SessionError) at the first failed check. It obtains `response.headers.get` with `name` `"content-type"`. If no value is found, it raises a [`SessionError`](contracts.aug.md#symbol-SessionError). [source](protocol.aug#L11-L18)
 
-The non-null result becomes `contentType`. It checks that `contentType.startsWith` with `prefix` `"application/json"` returns true. It raises a [`SessionError`](contracts.aug.md#symbol-SessionError) at the first failed check.
+The non-null result becomes `contentType`. It checks that `contentType.startsWith` with `prefix` `"application/json"` returns true. It raises a [`SessionError`](contracts.aug.md#symbol-SessionError) at the first failed check. [source](protocol.aug#L13-L18)
 
-It tries to return [`parse`](../.aug-spec/packages/%40git/url_2d3c37c690c0fa115be1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-parse) with `input` from `response.body.text`. If this work raises `ConversionError`, it raises a [`SessionError`](contracts.aug.md#symbol-SessionError). If this work raises `JsonError`, it raises a [`SessionError`](contracts.aug.md#symbol-SessionError).
+It tries to return [`parse`](../.aug-spec/packages/%40git/url_2d3c37c690c0fa115be1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-parse) with `input` from `response.body.text`. If this work raises `ConversionError`, it raises a [`SessionError`](contracts.aug.md#symbol-SessionError). If this work raises `JsonError`, it raises a [`SessionError`](contracts.aug.md#symbol-SessionError). [source](protocol.aug#L19-L24)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+responseJson(HttpResponse<Bytes> response) returns Json unless SessionError
+```
+
+It takes `response` as `HttpResponse<Bytes>`. Failures can raise [`SessionError`](contracts.aug.md#symbol-SessionError).
+
+</details>
 
 <a id="symbol-discover"></a>
 ## `discover` · [source](protocol.aug#L27)
 
-Discovery is fetched over HTTP. Every advertised URL is checked against the registered issuer before any credential is sent. It gets `client` ([`HttpClient`](../.aug-spec/packages/%40git/url_897efafd565158fc4908/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-HttpClient)) from dependency injection. Failures can raise `HttpError` and [`SessionError`](contracts.aug.md#symbol-SessionError).
+Discovery is fetched over HTTP. Every advertised URL is checked against the registered issuer before any credential is sent. It gets `client` ([`HttpClient`](../.aug-spec/packages/%40git/url_897efafd565158fc4908/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-HttpClient)) from dependency injection.
 
-It gets `config` from [`settings`](../common/settings.aug.md#symbol-settings). It sets `json` to [`responseJson`](protocol.aug.md#symbol-responseJson) with `response` from [`client.request`](../.aug-spec/packages/%40git/url_897efafd565158fc4908/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-HttpClient.request) with `method` `"GET"` and `url` from the text `{config.issuer}/.well-known/openid-configuration`. It sets `document` to `json.decode` for [`Discovery`](../provider/discovery.aug.md#symbol-Discovery).
+It gets `config` from [`settings`](../common/settings.aug.md#symbol-settings). It sets `json` to [`responseJson`](protocol.aug.md#symbol-responseJson) with `response` from [`client.request`](../.aug-spec/packages/%40git/url_897efafd565158fc4908/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-HttpClient.request) with `method` `"GET"` and `url` from the text `{config.issuer}/.well-known/openid-configuration`. It sets `document` to `json.decode` for [`Discovery`](../provider/discovery.aug.md#symbol-Discovery). [source](protocol.aug#L28-L36)
 
-It checks that `document.issuer` equals `config.issuer` and `document.authorization_endpoint` equals the text `{config.issuer}/authorize` and `document.token_endpoint` equals the text `{config.issuer}/token` and `document.jwks_uri` equals the text `{config.issuer}/jwks` and `document.userinfo_endpoint` equals the text `{config.issuer}/userinfo`. It raises a [`SessionError`](contracts.aug.md#symbol-SessionError) at the first failed check. It returns `document`. If this work raises `JsonError`, it raises a [`SessionError`](contracts.aug.md#symbol-SessionError).
+It checks that `document.issuer` equals `config.issuer` and `document.authorization_endpoint` equals the text `{config.issuer}/authorize` and `document.token_endpoint` equals the text `{config.issuer}/token` and `document.jwks_uri` equals the text `{config.issuer}/jwks` and `document.userinfo_endpoint` equals the text `{config.issuer}/userinfo`. It raises a [`SessionError`](contracts.aug.md#symbol-SessionError) at the first failed check. It returns `document`. If this work raises `JsonError`, it raises a [`SessionError`](contracts.aug.md#symbol-SessionError). [source](protocol.aug#L32-L36)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+discover(resolve HttpClient client) returns Discovery unless HttpError and SessionError uses HttpClient.request
+```
+
+It gets `client` ([`HttpClient`](../.aug-spec/packages/%40git/url_897efafd565158fc4908/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-HttpClient)) from dependency injection. Failures can raise `HttpError` and [`SessionError`](contracts.aug.md#symbol-SessionError).
+
+</details>
 
 <a id="symbol-validateIdentity"></a>
 ## `validateIdentity` · [source](protocol.aug#L39)
 
-Validate the signed ID token using a public key from this issuer's HTTP JWKS, then validate the registered claims and one-use nonce. It takes `token` and `nonce` as strings, `now` as an integer, and `jwks` as [`RsaJwks`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug.md#symbol-RsaJwks). It gets `crypto` ([`Crypto`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto)) from dependency injection. Failures can raise [`SessionError`](contracts.aug.md#symbol-SessionError).
+Validate the signed ID token using a public key from this issuer's HTTP JWKS, then validate the registered claims and one-use nonce. It takes labeled inputs `token`, `nonce`, `now`, and `jwks`. It gets `crypto` ([`Crypto`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto)) from dependency injection.
 
-It gets `config` from [`settings`](../common/settings.aug.md#symbol-settings). It checks that the number of elements in `jwks.keys` equals `1`. It raises a [`SessionError`](contracts.aug.md#symbol-SessionError) at the first failed check. It sets `jwk` to the item at index `0` in `jwks.keys`.
+It gets `config` from [`settings`](../common/settings.aug.md#symbol-settings). It checks that the number of elements in `jwks.keys` equals `1`. It raises a [`SessionError`](contracts.aug.md#symbol-SessionError) at the first failed check. It sets `jwk` to the item at index `0` in `jwks.keys`. [source](protocol.aug#L40-L63)
 
-It checks that `jwk.kid` equals `"provider-1"`. It raises a [`SessionError`](contracts.aug.md#symbol-SessionError) at the first failed check. It sets `publicKey` to [`importJwk`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug.md#symbol-importJwk) with `jwk` using injected `crypto`. It sets `claims` to `decode` on [`verifyJwt`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug.md#symbol-verifyJwt) with `token`, `publicKey`, `kid` `"provider-1"`, and `tokenType` `"JWT"` using injected `crypto` for [`IdClaims`](../provider/contracts.aug.md#symbol-IdClaims).
+It checks that `jwk.kid` equals `"provider-1"`. It raises a [`SessionError`](contracts.aug.md#symbol-SessionError) at the first failed check. It sets `publicKey` to [`importJwk`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug.md#symbol-importJwk) with `jwk` using injected `crypto`. It sets `claims` to `decode` on [`verifyJwt`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug.md#symbol-verifyJwt) with `token`, `publicKey`, `kid` `"provider-1"`, and `tokenType` `"JWT"` using injected `crypto` for [`IdClaims`](../provider/contracts.aug.md#symbol-IdClaims). [source](protocol.aug#L45-L48)
 
-It checks that `claims.iss` equals `config.issuer` and `claims.aud` equals `config.clientId` and the byte length of `claims.sub` does not equal `0` and the byte length of `claims.sub` is at most `255` and `claims.exp` is greater than `now` and `claims.iat` is at least (`now` minus `300`) and `claims.iat` is at most (`now` plus `30`) and `claims.exp` is greater than `claims.iat` and `claims.exp` is at most (`now` plus `330`). It raises a [`SessionError`](contracts.aug.md#symbol-SessionError) at the first failed check. It checks that [`crypto.equal`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.equal) with `left` from the UTF-8 bytes of `claims.nonce` and `right` from the UTF-8 bytes of `nonce` returns true. It raises a [`SessionError`](contracts.aug.md#symbol-SessionError) at the first failed check.
+It checks that `claims.iss` equals `config.issuer` and `claims.aud` equals `config.clientId` and the byte length of `claims.sub` does not equal `0` and the byte length of `claims.sub` is at most `255` and `claims.exp` is greater than `now` and `claims.iat` is at least (`now` minus `300`) and `claims.iat` is at most (`now` plus `30`) and `claims.exp` is greater than `claims.iat` and `claims.exp` is at most (`now` plus `330`). It raises a [`SessionError`](contracts.aug.md#symbol-SessionError) at the first failed check. It checks that [`crypto.equal`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.equal) with `left` from the UTF-8 bytes of `claims.nonce` and `right` from the UTF-8 bytes of `nonce` returns true. It raises a [`SessionError`](contracts.aug.md#symbol-SessionError) at the first failed check. [source](protocol.aug#L49-L54)
 
-It returns `claims`. If this work raises [`JwtError`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug.md#symbol-JwtError), it raises a [`SessionError`](contracts.aug.md#symbol-SessionError). If this work raises `JsonError`, it raises a [`SessionError`](contracts.aug.md#symbol-SessionError). If this work raises `IndexError`, it raises a [`SessionError`](contracts.aug.md#symbol-SessionError).
+It returns `claims`. If this work raises [`JwtError`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug.md#symbol-JwtError), it raises a [`SessionError`](contracts.aug.md#symbol-SessionError). If this work raises `JsonError`, it raises a [`SessionError`](contracts.aug.md#symbol-SessionError). If this work raises `IndexError`, it raises a [`SessionError`](contracts.aug.md#symbol-SessionError). [source](protocol.aug#L55-L61)
 
-If this work raises `CryptoError`, it raises a [`SessionError`](contracts.aug.md#symbol-SessionError).
+If this work raises `CryptoError`, it raises a [`SessionError`](contracts.aug.md#symbol-SessionError). [source](protocol.aug#L63)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+validateIdentity(string token, string nonce, int now, RsaJwks jwks, resolve Crypto crypto) returns IdClaims unless SessionError uses Crypto.equal, Crypto.decodeBase64url, Crypto.importRsa, Crypto.verifyRsa
+```
+
+It takes `token` and `nonce` as strings, `now` as an integer, and `jwks` as [`RsaJwks`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug.md#symbol-RsaJwks). It gets `crypto` ([`Crypto`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto)) from dependency injection. Failures can raise [`SessionError`](contracts.aug.md#symbol-SessionError).
+
+</details>
 
 <a id="symbol-test validateIdentity"></a>
 ## `test validateIdentity` · [source](protocol.aug#L65)
@@ -44,31 +79,31 @@ Tests [`validateIdentity`](protocol.aug.md#symbol-validateIdentity). Each case g
 
 ### `signed_identity_claims`
 
-Setup for each case: `Crypto` is provided by [`GnuTlsCrypto`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-GnuTlsCrypto). Stateless instances are reused; stateful instances are created for each resolve. It sets `crypto` to the instance provided for `Crypto`. It sets `key` to [`crypto.generateRsa`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.generateRsa).
+Setup for each case: `Crypto` is provided by [`GnuTlsCrypto`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-GnuTlsCrypto). Stateless instances are reused; stateful instances are created for each resolve. It sets `crypto` to the instance provided for `Crypto`. It sets `key` to [`crypto.generateRsa`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.generateRsa). [source](protocol.aug#L68-L69)
 
-It sets `publicKey` to [`crypto.publicRsa`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.publicRsa) with `key`. It sets `jwks` to a [`RsaJwks`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug.md#symbol-RsaJwks) with `keys` from a list containing [`rsaJwk`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug.md#symbol-rsaJwk) with `publicKey` and `kid` `"provider-1"` using injected `Crypto` for `crypto`. It gets `config` from [`settings`](../common/settings.aug.md#symbol-settings). It sets `now` to `1700000000`.
+It sets `publicKey` to [`crypto.publicRsa`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.publicRsa) with `key`. It sets `jwks` to a [`RsaJwks`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug.md#symbol-RsaJwks) with `keys` from a list containing [`rsaJwk`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug.md#symbol-rsaJwk) with `publicKey` and `kid` `"provider-1"` using injected `Crypto` for `crypto`. It gets `config` from [`settings`](../common/settings.aug.md#symbol-settings). It sets `now` to `1700000000`. [source](protocol.aug#L70-L73)
 
-It sets `expectedNonce` to `"nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn"`.
+It sets `expectedNonce` to `"nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn"`. [source](protocol.aug#L74)
 
 #### `accepts_valid_identity` · [source](protocol.aug#L76)
 
-It sets `claims` to an [`IdClaims`](../provider/contracts.aug.md#symbol-IdClaims) with `iss` from `config.issuer`, `sub` `"ada"`, `aud` from `config.clientId`, `exp` from `now` plus `300`, `iat` from `now`, `nonce` from `expectedNonce`, and `name` `"Ada"`. It sets `token` to [`signJwt`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug.md#symbol-signJwt) with `key`, `claims` from a `Json` with `value` from `claims`, `kid` `"provider-1"`, and `tokenType` `"JWT"` using injected `Crypto` for `crypto`. It sets `identity` to [`validateIdentity`](protocol.aug.md#symbol-validateIdentity) with `token`, `nonce` from `expectedNonce`, `now`, and `jwks` using injected `Crypto` for `crypto`. The test requires `identity.sub` equals `"ada"`.
+It sets `claims` to an [`IdClaims`](../provider/contracts.aug.md#symbol-IdClaims) with `iss` from `config.issuer`, `sub` `"ada"`, `aud` from `config.clientId`, `exp` from `now` plus `300`, `iat` from `now`, `nonce` from `expectedNonce`, and `name` `"Ada"`. It sets `token` to [`signJwt`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug.md#symbol-signJwt) with `key`, `claims` from a `Json` with `value` from `claims`, `kid` `"provider-1"`, and `tokenType` `"JWT"` using injected `Crypto` for `crypto`. It sets `identity` to [`validateIdentity`](protocol.aug.md#symbol-validateIdentity) with `token`, `nonce` from `expectedNonce`, `now`, and `jwks` using injected `Crypto` for `crypto`. The test requires `identity.sub` equals `"ada"`. [source](protocol.aug#L77-L80)
 
 #### `rejects_signed_invalid_claims` · [source](protocol.aug#L82)
 
 Run once for each row of a tuple containing `"https://wrong-issuer.invalid"`, `config.clientId`, `"ada"`, `now`, `now` plus `300`, `expectedNonce`; a tuple containing `config.issuer`, `"wrong-audience"`, `"ada"`, `now`, `now` plus `300`, `expectedNonce`; a tuple containing `config.issuer`, `config.clientId`, `""`, `now`, `now` plus `300`, `expectedNonce`; a tuple containing `config.issuer`, `config.clientId`, `"ada"`, `now` minus `400`, `now` plus `300`, `expectedNonce`; a tuple containing `config.issuer`, `config.clientId`, `"ada"`, `now` plus `100`, `now` plus `300`, `expectedNonce`; a tuple containing `config.issuer`, `config.clientId`, `"ada"`, `now`, `now`, `expectedNonce`; a tuple containing `config.issuer`, `config.clientId`, `"ada"`, `now`, `now` plus `600`, `expectedNonce`; a tuple containing `config.issuer`, `config.clientId`, `"ada"`, `now`, `now` plus `300`, `"wrong-nonce"`. Bind row positions to `issuer`, `audience`, `subject`, `issued`, `expires`, `nonce`.
 
-It sets `claims` to an [`IdClaims`](../provider/contracts.aug.md#symbol-IdClaims) with `iss` from `issuer`, `sub` from `subject`, `aud` from `audience`, `exp` from `expires`, `iat` from `issued`, `nonce`, and `name` `"Ada"`. It sets `token` to [`signJwt`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug.md#symbol-signJwt) with `key`, `claims` from a `Json` with `value` from `claims`, `kid` `"provider-1"`, and `tokenType` `"JWT"` using injected `Crypto` for `crypto`. It calls [`validateIdentity`](protocol.aug.md#symbol-validateIdentity) with `token`, `nonce` from `expectedNonce`, `now`, and `jwks` using injected `Crypto` for `crypto`. The test requires `false` is true.
+It sets `claims` to an [`IdClaims`](../provider/contracts.aug.md#symbol-IdClaims) with `iss` from `issuer`, `sub` from `subject`, `aud` from `audience`, `exp` from `expires`, `iat` from `issued`, `nonce`, and `name` `"Ada"`. It sets `token` to [`signJwt`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug.md#symbol-signJwt) with `key`, `claims` from a `Json` with `value` from `claims`, `kid` `"provider-1"`, and `tokenType` `"JWT"` using injected `Crypto` for `crypto`. It calls [`validateIdentity`](protocol.aug.md#symbol-validateIdentity) with `token`, `nonce` from `expectedNonce`, `now`, and `jwks` using injected `Crypto` for `crypto`. The test requires `false` is true. [source](protocol.aug#L92-L98)
 
-If this work raises [`SessionError`](contracts.aug.md#symbol-SessionError), it the test requires `true` is true.
+If this work raises [`SessionError`](contracts.aug.md#symbol-SessionError), it the test requires `true` is true. [source](protocol.aug#L98)
 
 #### `rejects_token_context` · [source](protocol.aug#L100)
 
 Run once for each row of a tuple containing `"wrong-key"`, `"JWT"`; a tuple containing `"provider-1"`, `"august-session+jwt"`. Bind row positions to `kid`, `tokenType`.
 
-It sets `claims` to an [`IdClaims`](../provider/contracts.aug.md#symbol-IdClaims) with `iss` from `config.issuer`, `sub` `"ada"`, `aud` from `config.clientId`, `exp` from `now` plus `300`, `iat` from `now`, `nonce` from `expectedNonce`, and `name` `"Ada"`. It sets `token` to [`signJwt`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug.md#symbol-signJwt) with `key`, `claims` from a `Json` with `value` from `claims`, `kid`, and `tokenType` using injected `Crypto` for `crypto`. It calls [`validateIdentity`](protocol.aug.md#symbol-validateIdentity) with `token`, `nonce` from `expectedNonce`, `now`, and `jwks` using injected `Crypto` for `crypto`. The test requires `false` is true.
+It sets `claims` to an [`IdClaims`](../provider/contracts.aug.md#symbol-IdClaims) with `iss` from `config.issuer`, `sub` `"ada"`, `aud` from `config.clientId`, `exp` from `now` plus `300`, `iat` from `now`, `nonce` from `expectedNonce`, and `name` `"Ada"`. It sets `token` to [`signJwt`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug.md#symbol-signJwt) with `key`, `claims` from a `Json` with `value` from `claims`, `kid`, and `tokenType` using injected `Crypto` for `crypto`. It calls [`validateIdentity`](protocol.aug.md#symbol-validateIdentity) with `token`, `nonce` from `expectedNonce`, `now`, and `jwks` using injected `Crypto` for `crypto`. The test requires `false` is true. [source](protocol.aug#L101-L107)
 
-If this work raises [`SessionError`](contracts.aug.md#symbol-SessionError), it the test requires `true` is true.
+If this work raises [`SessionError`](contracts.aug.md#symbol-SessionError), it the test requires `true` is true. [source](protocol.aug#L107)
 
 ## Dependencies
 

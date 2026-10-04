@@ -54,7 +54,7 @@ print(value=counter.read())
 
 ### Startup
 
-It creates [`Counter`](counter.md#symbol-Counter) with `value` `1` and stores the result in owned `counter` ([`Counter`](counter.md#symbol-Counter)). It calls [`counter.increment`](counter.md#symbol-Counter.increment). It prints [`counter.read`](counter.md#symbol-Counter.read).
+It creates [`Counter`](counter.md#symbol-Counter) with `value` `1` and stores the result in owned `counter` ([`Counter`](counter.md#symbol-Counter)). It calls [`counter.increment`](counter.md#symbol-Counter.increment). It prints [`counter.read`](counter.md#symbol-Counter.read). [source](main.md#code)
 
 ### Dependencies
 

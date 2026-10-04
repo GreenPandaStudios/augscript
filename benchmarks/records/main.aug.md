@@ -2,11 +2,13 @@
 
 # `main.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=48988beada70590f9cf4d72ae1a07f66d11dfbdc034e8942446be3e671ae3dc5 -->
+
 ## Startup
 
-It sets `iterations` to `50000`. It stores a list with no items in owned `values` (`List<Item>`). It sets `index` to `0`. While `index` is less than `iterations`, it appends an [`Item`](data.aug.md#symbol-Item) with `id` from `index` and `name` `"August"` to `values`; then it increases `index` by `1`.
+It sets `iterations` to `50000`. It stores a list with no items in owned `values` (`List<Item>`). It sets `index` to `0`. While `index` is less than `iterations`, it appends an [`Item`](data.aug.md#symbol-Item) with `id` from `index` and `name` `"August"` to `values`; then it increases `index` by `1`. [source](main.aug#L3-L8)
 
-After the loop, it sets `checksum` to `0`. For each `item` in a snapshot of `values`, it increases `checksum` by `item.id`. After the loop, it prints `checksum`.
+After the loop, it sets `checksum` to `0`. For each `item` in a snapshot of `values`, it increases `checksum` by `item.id`. After the loop, it prints `checksum`. [source](main.aug#L9-L12)
 
 ## Dependencies
 

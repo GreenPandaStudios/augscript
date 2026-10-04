@@ -16,7 +16,9 @@ test('homepage publishes the checked program’s actual spec and fully verified 
   const checked=checkProject(loadProject(resolve('benchmarks/greetings')));
   const spec=generateSpecs(checked,{manifest:false}).find(output=>output.path.endsWith('/main.aug.md')).text;
   const paragraph=spec.split('## Startup\n\n')[1].split('\n\nBuilt-in operations')[0];
-  assert.ok(page.includes(paragraph));
+  const prose=text=>text.replace(/ \[source\]\([^)]*\)/g,'');
+  assert.ok(prose(page).includes(prose(paragraph)));
+  assert.match(page,/\[source\]\(examples\/greetings-benchmark\/main\.md#code\)/);
   const report=JSON.parse(readFileSync('docs/greeting-results.json'));
   assert.equal(report.expected.lines,1000000);
   assert.equal(report.expected.bytes,20000000);

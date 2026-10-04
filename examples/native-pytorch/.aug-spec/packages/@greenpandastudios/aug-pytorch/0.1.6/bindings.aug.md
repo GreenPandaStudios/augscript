@@ -2,6 +2,8 @@
 
 # `bindings.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=00f6023cd25a133d82748ac01f326b6e2c81996897d1d7e8d2b3b0621b06e33e -->
+
 <a id="symbol-Tensor"></a>
 ## `Tensor` · native resource · [source](bindings.aug#L3)
 

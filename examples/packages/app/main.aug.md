@@ -2,9 +2,11 @@
 
 # `main.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=9bacf9d9c0e9f0ce80660323de7f938f8b767590fbbd78d3a2cfa0be94508a7e -->
+
 ## Startup
 
-It prints [`add`](.aug-spec/packages/%40example/aug-math/0.1.0/arithmetic.aug.md#symbol-add) with `left` `20` and `right` `22`.
+It prints [`add`](.aug-spec/packages/%40example/aug-math/0.1.0/arithmetic.aug.md#symbol-add) with `left` `20` and `right` `22`. [source](main.aug#L3)
 
 ## Dependencies
 

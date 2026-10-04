@@ -73,9 +73,17 @@ test hash {
 
 ### `hash` · [source](api.md#code) {#symbol-hash}
 
-Return a lowercase 64-character BLAKE3 digest, computed by the Rust crate. It takes `input` as `Bytes`. Failures can raise [`HashError`](contracts.md#symbol-HashError).
+Return a lowercase 64-character BLAKE3 digest, computed by the Rust crate. It takes `input` as `Bytes`. Within an unsafe block, it returns [`_hash`](api.md#symbol-_hash) with `input`. Native operations must satisfy their declared C contracts. [source](api.md#code)
 
-Within an unsafe block, it returns [`_hash`](api.md#symbol-_hash) with `input`. Native operations must satisfy their declared C contracts.
+::: details Checked interface
+
+```text
+hash(Bytes input) returns string unless HashError
+```
+
+It takes `input` as `Bytes`. Failures can raise [`HashError`](contracts.md#symbol-HashError).
+
+:::
 
 ### `_hash` · [source](api.md#code) {#symbol-_hash}
 
@@ -91,7 +99,7 @@ Tests [`hash`](api.md#symbol-hash). Each case gets fresh setup and dependencies.
 
 ##### `hashes_abc` · [source](api.md#code)
 
-It sets `input` of type `Bytes` to `bytes` on `"abc"`. The test requires [`hash`](api.md#symbol-hash) with `input` equals `"6437b3ac38465133ffb63b75273a8db548c558465d79db03fd359c6cd5bd9d85"`.
+It sets `input` of type `Bytes` to `bytes` on `"abc"`. The test requires [`hash`](api.md#symbol-hash) with `input` equals `"6437b3ac38465133ffb63b75273a8db548c558465d79db03fd359c6cd5bd9d85"`. [source](api.md#code)
 
 ### Dependencies
 

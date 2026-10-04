@@ -73,11 +73,29 @@ It implements [`ICounter`](counter.md#symbol-ICounter). It takes `value` as an i
 
 #### `Counter.increment` · [source](counter.md#code) {#symbol-Counter.increment}
 
-It may change `self`. With temporary permission to change `self`, it increases `value` by `1`.
+With temporary permission to change `self`, it increases `value` by `1`. [source](counter.md#code)
+
+::: details Checked interface
+
+```text
+increment() returns void changes self
+```
+
+It may change `self`.
+
+:::
 
 #### `Counter.read` · [source](counter.md#code) {#symbol-Counter.read}
 
-It returns `value`.
+It returns `value`. [source](counter.md#code)
+
+::: details Checked interface
+
+```text
+read() returns int
+```
+
+:::
 
 ### `ICounter` · interface · [source](counter.md#code) {#symbol-ICounter}
 

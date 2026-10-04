@@ -263,27 +263,59 @@ test tensor {
 
 ### `tensor` · [source](api.md#code) {#symbol-tensor}
 
-Copy a list of float64 values into a CPU tensor. It takes `values` as `List<float>`. It returns ownership of [`Tensor`](bindings.md#symbol-Tensor). Failures can raise [`TensorError`](contracts.md#symbol-TensorError).
+Copy a list of float64 values into a CPU tensor. It takes `values` as `List<float>`. Within an unsafe block, it returns [`_tensor`](api.md#symbol-_tensor) with `values`. Native operations must satisfy their declared C contracts. [source](api.md#code)
 
-Within an unsafe block, it returns [`_tensor`](api.md#symbol-_tensor) with `values`. Native operations must satisfy their declared C contracts.
+::: details Checked interface
+
+```text
+tensor(List<float> values) returns own Tensor unless TensorError
+```
+
+It takes `values` as `List<float>`. It returns ownership of [`Tensor`](bindings.md#symbol-Tensor). Failures can raise [`TensorError`](contracts.md#symbol-TensorError).
+
+:::
 
 ### `add` · [source](api.md#code) {#symbol-add}
 
-Add tensors without changing either input. It takes `left` and `right` as [`Tensor`](bindings.md#symbol-Tensor). It returns ownership of [`Tensor`](bindings.md#symbol-Tensor). Failures can raise [`TensorError`](contracts.md#symbol-TensorError).
+Add tensors without changing either input. It takes `left` and `right` as [`Tensor`](bindings.md#symbol-Tensor). Within an unsafe block, it returns [`_add`](api.md#symbol-_add) with `left` and `right`. Native operations must satisfy their declared C contracts. [source](api.md#code)
 
-Within an unsafe block, it returns [`_add`](api.md#symbol-_add) with `left` and `right`. Native operations must satisfy their declared C contracts.
+::: details Checked interface
+
+```text
+add(Tensor left, Tensor right) returns own Tensor unless TensorError
+```
+
+It takes `left` and `right` as [`Tensor`](bindings.md#symbol-Tensor). It returns ownership of [`Tensor`](bindings.md#symbol-Tensor). Failures can raise [`TensorError`](contracts.md#symbol-TensorError).
+
+:::
 
 ### `sum` · [source](api.md#code) {#symbol-sum}
 
-Sum every element. It takes `tensor` as [`Tensor`](bindings.md#symbol-Tensor). Failures can raise [`TensorError`](contracts.md#symbol-TensorError).
+Sum every element. It takes `tensor` as [`Tensor`](bindings.md#symbol-Tensor). Within an unsafe block, it returns [`_sum`](api.md#symbol-_sum) with `tensor`. Native operations must satisfy their declared C contracts. [source](api.md#code)
 
-Within an unsafe block, it returns [`_sum`](api.md#symbol-_sum) with `tensor`. Native operations must satisfy their declared C contracts.
+::: details Checked interface
+
+```text
+sum(Tensor tensor) returns float unless TensorError
+```
+
+It takes `tensor` as [`Tensor`](bindings.md#symbol-Tensor). Failures can raise [`TensorError`](contracts.md#symbol-TensorError).
+
+:::
 
 ### `values` · [source](api.md#code) {#symbol-values}
 
-Copy tensor values into an August list. It takes `tensor` as [`Tensor`](bindings.md#symbol-Tensor). Failures can raise [`TensorError`](contracts.md#symbol-TensorError).
+Copy tensor values into an August list. It takes `tensor` as [`Tensor`](bindings.md#symbol-Tensor). Within an unsafe block, it returns [`_values`](api.md#symbol-_values) with `tensor`. Native operations must satisfy their declared C contracts. [source](api.md#code)
 
-Within an unsafe block, it returns [`_values`](api.md#symbol-_values) with `tensor`. Native operations must satisfy their declared C contracts.
+::: details Checked interface
+
+```text
+values(Tensor tensor) returns List<float> unless TensorError
+```
+
+It takes `tensor` as [`Tensor`](bindings.md#symbol-Tensor). Failures can raise [`TensorError`](contracts.md#symbol-TensorError).
+
+:::
 
 ### `_tensor` · [source](api.md#code) {#symbol-_tensor}
 
@@ -323,7 +355,17 @@ Native implementation: `@greenpandastudios/aug-pytorch@0.1.6`, `2.14.1`. Support
 
 ### `_consumeAndFail` · [source](api.md#code) {#symbol-_consumeAndFail}
 
-It is private to its defining scope. It takes `value` as [`Tensor`](bindings.md#symbol-Tensor) with ownership transferred. Failures can raise [`TensorError`](contracts.md#symbol-TensorError). It raises a [`TensorError`](contracts.md#symbol-TensorError) with `code` `99` and `message` `"expected cleanup test"`.
+It is private to its defining scope. It takes `value` as [`Tensor`](bindings.md#symbol-Tensor) with ownership transferred. It raises a [`TensorError`](contracts.md#symbol-TensorError) with `code` `99` and `message` `"expected cleanup test"`. [source](api.md#code)
+
+::: details Checked interface
+
+```text
+_consumeAndFail(own Tensor value) returns void unless TensorError
+```
+
+It takes `value` as [`Tensor`](bindings.md#symbol-Tensor) with ownership transferred. Failures can raise [`TensorError`](contracts.md#symbol-TensorError).
+
+:::
 
 ### `_TensorContainer` · interface · [source](api.md#code) {#symbol-_TensorContainer}
 
@@ -339,11 +381,31 @@ It implements [`_TensorContainer`](api.md#symbol-_TensorContainer). It is privat
 
 #### `_TensorHolder.total` · [source](api.md#code) {#symbol-_TensorHolder.total}
 
-Failures can raise [`TensorError`](contracts.md#symbol-TensorError). It returns [`sum`](api.md#symbol-sum) with `tensor` from `item`.
+It returns [`sum`](api.md#symbol-sum) with `tensor` from `item`. [source](api.md#code)
+
+::: details Checked interface
+
+```text
+total() returns float unless TensorError
+```
+
+Failures can raise [`TensorError`](contracts.md#symbol-TensorError).
+
+:::
 
 ### `_replace` · [source](api.md#code) {#symbol-_replace}
 
-It is private to its defining scope. It takes `holder` as [`_TensorHolder`](api.md#symbol-_TensorHolder) with permission to mutate it during the call and `replacement` as [`Tensor`](bindings.md#symbol-Tensor) with ownership transferred. It may change `holder`. It sets `holder.item` to `replacement`.
+It is private to its defining scope. It takes `holder` as [`_TensorHolder`](api.md#symbol-_TensorHolder) with permission to mutate it during the call and `replacement` as [`Tensor`](bindings.md#symbol-Tensor) with ownership transferred. It sets `holder.item` to `replacement`. [source](api.md#code)
+
+::: details Checked interface
+
+```text
+_replace(borrow _TensorHolder holder, own Tensor replacement) returns void changes holder
+```
+
+It takes `holder` as [`_TensorHolder`](api.md#symbol-_TensorHolder) with permission to mutate it during the call and `replacement` as [`Tensor`](bindings.md#symbol-Tensor) with ownership transferred. It may change `holder`.
+
+:::
 
 ### `test tensor` · [source](api.md#code) {#symbol-test-20-tensor}
 
@@ -353,41 +415,41 @@ Tests [`tensor`](api.md#symbol-tensor). Each case gets fresh setup and dependenc
 
 ##### `adds_real_tensors` · [source](api.md#code)
 
-It calls [`tensor`](api.md#symbol-tensor) with `values` from a list containing `1.0`, `2.0`, `3.0` and stores the result in owned `left` ([`Tensor`](bindings.md#symbol-Tensor)). It calls [`tensor`](api.md#symbol-tensor) with `values` from a list containing `4.0`, `5.0`, `6.0` and stores the result in owned `right` ([`Tensor`](bindings.md#symbol-Tensor)). It calls [`add`](api.md#symbol-add) with `left` and `right` and stores the result in owned `result` ([`Tensor`](bindings.md#symbol-Tensor)). The test requires [`sum`](api.md#symbol-sum) with `tensor` from `result` equals `21.0`.
+It calls [`tensor`](api.md#symbol-tensor) with `values` from a list containing `1.0`, `2.0`, `3.0` and stores the result in owned `left` ([`Tensor`](bindings.md#symbol-Tensor)). It calls [`tensor`](api.md#symbol-tensor) with `values` from a list containing `4.0`, `5.0`, `6.0` and stores the result in owned `right` ([`Tensor`](bindings.md#symbol-Tensor)). It calls [`add`](api.md#symbol-add) with `left` and `right` and stores the result in owned `result` ([`Tensor`](bindings.md#symbol-Tensor)). The test requires [`sum`](api.md#symbol-sum) with `tensor` from `result` equals `21.0`. [source](api.md#code)
 
-It sets `output` of type `List<float>` to [`values`](api.md#symbol-values) with `tensor` from `result`. The test requires `output.length` equals `3`.
+It sets `output` of type `List<float>` to [`values`](api.md#symbol-values) with `tensor` from `result`. The test requires `output.length` equals `3`. [source](api.md#code)
 
 #### `ownership`
 
 ##### `transfers_into_a_field_and_releases_the_old_tensor` · [source](api.md#code)
 
-It sets `before` to `0`. Within an unsafe block, it gets `before` from [`_liveTensors`](api.md#symbol-_liveTensors). Native operations must satisfy their declared C contracts. Within a task and ownership scope, it calls [`tensor`](api.md#symbol-tensor) with `values` from a list containing `1.0` and stores the result in owned `initial` ([`Tensor`](bindings.md#symbol-Tensor)).
+It sets `before` to `0`. Within an unsafe block, it gets `before` from [`_liveTensors`](api.md#symbol-_liveTensors). Native operations must satisfy their declared C contracts. Within a task and ownership scope, it calls [`tensor`](api.md#symbol-tensor) with `values` from a list containing `1.0` and stores the result in owned `initial` ([`Tensor`](bindings.md#symbol-Tensor)). [source](api.md#code)
 
-It creates [`_TensorHolder`](api.md#symbol-_TensorHolder) with `item` from `initial` and stores the result in owned `holder` ([`_TensorHolder`](api.md#symbol-_TensorHolder)). It calls [`tensor`](api.md#symbol-tensor) with `values` from a list containing `7.0` and stores the result in owned `replacement` ([`Tensor`](bindings.md#symbol-Tensor)). With temporary permission to change `holder`, it calls [`_replace`](api.md#symbol-_replace) with `holder` and `replacement`. The test requires [`holder.total`](api.md#symbol-_TensorHolder.total) equals `7.0`.
+It creates [`_TensorHolder`](api.md#symbol-_TensorHolder) with `item` from `initial` and stores the result in owned `holder` ([`_TensorHolder`](api.md#symbol-_TensorHolder)). It calls [`tensor`](api.md#symbol-tensor) with `values` from a list containing `7.0` and stores the result in owned `replacement` ([`Tensor`](bindings.md#symbol-Tensor)). With temporary permission to change `holder`, it calls [`_replace`](api.md#symbol-_replace) with `holder` and `replacement`. The test requires [`holder.total`](api.md#symbol-_TensorHolder.total) equals `7.0`. [source](api.md#code)
 
-Within an unsafe block, the test requires [`_liveTensors`](api.md#symbol-_liveTensors) equals (`before` plus `1`). Native operations must satisfy their declared C contracts. On leaving this scope, join its child tasks and release its local values. Within an unsafe block, the test requires [`_liveTensors`](api.md#symbol-_liveTensors) equals `before`.
+Within an unsafe block, the test requires [`_liveTensors`](api.md#symbol-_liveTensors) equals (`before` plus `1`). Native operations must satisfy their declared C contracts. On leaving this scope, join its child tasks and release its local values. Within an unsafe block, the test requires [`_liveTensors`](api.md#symbol-_liveTensors) equals `before`. [source](api.md#code)
 
-Native operations must satisfy their declared C contracts.
+Native operations must satisfy their declared C contracts. [source](api.md#code)
 
 ##### `preserves_native_error_methods` · [source](api.md#code)
 
-It sets `caught` to `false`. It calls [`tensor`](api.md#symbol-tensor) with `values` from a list containing `1.0`, `2.0` and stores the result in owned `left` ([`Tensor`](bindings.md#symbol-Tensor)). It calls [`tensor`](api.md#symbol-tensor) with `values` from a list containing `1.0`, `2.0`, `3.0` and stores the result in owned `right` ([`Tensor`](bindings.md#symbol-Tensor)).
+It sets `caught` to `false`. It calls [`tensor`](api.md#symbol-tensor) with `values` from a list containing `1.0`, `2.0` and stores the result in owned `left` ([`Tensor`](bindings.md#symbol-Tensor)). It calls [`tensor`](api.md#symbol-tensor) with `values` from a list containing `1.0`, `2.0`, `3.0` and stores the result in owned `right` ([`Tensor`](bindings.md#symbol-Tensor)). [source](api.md#code)
 
-It tries to call [`add`](api.md#symbol-add) with `left` and `right`. If this work raises [`TensorError`](contracts.md#symbol-TensorError) as `error`, it sets `caught` to `length` on `error.explain` is positive. The test requires `caught` is true.
+It tries to call [`add`](api.md#symbol-add) with `left` and `right`. If this work raises [`TensorError`](contracts.md#symbol-TensorError) as `error`, it sets `caught` to `length` on `error.explain` is positive. The test requires `caught` is true. [source](api.md#code)
 
 ##### `releases_a_transferred_tensor_when_the_callee_fails` · [source](api.md#code)
 
-It sets `before` to `0`. Within an unsafe block, it gets `before` from [`_liveTensors`](api.md#symbol-_liveTensors). Native operations must satisfy their declared C contracts. It sets `caught` to `false`.
+It sets `before` to `0`. Within an unsafe block, it gets `before` from [`_liveTensors`](api.md#symbol-_liveTensors). Native operations must satisfy their declared C contracts. It sets `caught` to `false`. [source](api.md#code)
 
-It calls [`tensor`](api.md#symbol-tensor) with `values` from a list containing `1.0` and stores the result in owned `value` ([`Tensor`](bindings.md#symbol-Tensor)). It calls [`_consumeAndFail`](api.md#symbol-_consumeAndFail) with `value`. If this work raises [`TensorError`](contracts.md#symbol-TensorError) as `error`, it sets `caught` to `error.code` equals `99`. The test requires `caught` is true.
+It calls [`tensor`](api.md#symbol-tensor) with `values` from a list containing `1.0` and stores the result in owned `value` ([`Tensor`](bindings.md#symbol-Tensor)). It calls [`_consumeAndFail`](api.md#symbol-_consumeAndFail) with `value`. If this work raises [`TensorError`](contracts.md#symbol-TensorError) as `error`, it sets `caught` to `error.code` equals `99`. The test requires `caught` is true. [source](api.md#code)
 
-Within an unsafe block, the test requires [`_liveTensors`](api.md#symbol-_liveTensors) equals `before`; then the test requires [`_liveBuffers`](api.md#symbol-_liveBuffers) equals `0`. Native operations must satisfy their declared C contracts.
+Within an unsafe block, the test requires [`_liveTensors`](api.md#symbol-_liveTensors) equals `before`; then the test requires [`_liveBuffers`](api.md#symbol-_liveBuffers) equals `0`. Native operations must satisfy their declared C contracts. [source](api.md#code)
 
 ##### `releases_scoped_and_unused_results` · [source](api.md#code)
 
-It sets `before` to `0`. Within an unsafe block, it gets `before` from [`_liveTensors`](api.md#symbol-_liveTensors). Native operations must satisfy their declared C contracts. Within a task and ownership scope, it calls [`tensor`](api.md#symbol-tensor) with `values` from a list containing `2.0` and stores the result in owned `value` ([`Tensor`](bindings.md#symbol-Tensor)); then it sets `output` of type `List<float>` to [`values`](api.md#symbol-values) with `tensor` from `value`; then the test requires `output.get` with `index` `0` equals `2.0`.
+It sets `before` to `0`. Within an unsafe block, it gets `before` from [`_liveTensors`](api.md#symbol-_liveTensors). Native operations must satisfy their declared C contracts. Within a task and ownership scope, it calls [`tensor`](api.md#symbol-tensor) with `values` from a list containing `2.0` and stores the result in owned `value` ([`Tensor`](bindings.md#symbol-Tensor)); then it sets `output` of type `List<float>` to [`values`](api.md#symbol-values) with `tensor` from `value`; then the test requires `output.get` with `index` `0` equals `2.0`. [source](api.md#code)
 
-On leaving this scope, join its child tasks and release its local values. It calls [`tensor`](api.md#symbol-tensor) with `values` from a list containing `3.0`. Within an unsafe block, the test requires [`_liveTensors`](api.md#symbol-_liveTensors) equals `before`; then the test requires [`_liveBuffers`](api.md#symbol-_liveBuffers) equals `0`. Native operations must satisfy their declared C contracts.
+On leaving this scope, join its child tasks and release its local values. It calls [`tensor`](api.md#symbol-tensor) with `values` from a list containing `3.0`. Within an unsafe block, the test requires [`_liveTensors`](api.md#symbol-_liveTensors) equals `before`; then the test requires [`_liveBuffers`](api.md#symbol-_liveBuffers) equals `0`. Native operations must satisfy their declared C contracts. [source](api.md#code)
 
 ### Dependencies
 

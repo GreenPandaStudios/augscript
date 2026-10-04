@@ -2,6 +2,8 @@
 
 # `types.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=2255867f79972d6ce55b4ef0f9f17fb6b0afaaafaabd3d160bf311b2a51a670b -->
+
 <a id="symbol-Repository"></a>
 ## `Repository` · interface · [source](types.aug#L3)
 
@@ -20,7 +22,16 @@ It implements [`Repository<int>`](types.aug.md#symbol-Repository).
 <a id="symbol-NumberRepository.get"></a>
 ### `NumberRepository.get` · [source](types.aug#L7)
 
-It returns `7`.
+It returns `7`. [source](types.aug#L8)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+get() returns int
+```
+
+</details>
 
 <a id="symbol-Program"></a>
 ## `Program` · class · [source](types.aug#L11)
@@ -30,7 +41,18 @@ It implements [`IProgram`](types.aug.md#symbol-IProgram). The `repository` depen
 <a id="symbol-Program.start"></a>
 ### `Program.start` · [source](types.aug#L12)
 
-It gets `console` ([`Console`](.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-Console)) from dependency injection. It passes [`repository.get`](types.aug.md#symbol-Repository.get) to [`console.write`](.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-Console.write).
+It gets `console` ([`Console`](.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-Console)) from dependency injection. It passes [`repository.get`](types.aug.md#symbol-Repository.get) to [`console.write`](.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-Console.write). [source](types.aug#L13)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+start(resolve Console console) returns void uses Console.write
+```
+
+It gets `console` ([`Console`](.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-Console)) from dependency injection.
+
+</details>
 
 <a id="symbol-IProgram"></a>
 ## `IProgram` · interface · [source](types.aug#L16)

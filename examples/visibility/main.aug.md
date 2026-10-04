@@ -2,9 +2,11 @@
 
 # `main.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=3868041bc6d3d0f6bc81bd0e185552ae4a4d17554a24256e926e1d0f81c8c3c8 -->
+
 ## Startup
 
-It sets `counter` to a [`Counter`](counter.aug.md#symbol-Counter) with `value` `1`. It prints [`counter.label`](counter.aug.md#symbol-Counter.label). With temporary permission to change `counter`, it sets `counter.value` to `2`. It prints `counter.value`.
+It sets `counter` to a [`Counter`](counter.aug.md#symbol-Counter) with `value` `1`. It prints [`counter.label`](counter.aug.md#symbol-Counter.label). With temporary permission to change `counter`, it sets `counter.value` to `2`. It prints `counter.value`. [source](main.aug#L3-L8)
 
 ## Dependencies
 

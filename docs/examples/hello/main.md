@@ -74,7 +74,7 @@ greeter.greet(name="AugScript")
 
 ### Startup
 
-It sets `greeter` to the instance provided for `app`. It passes `"AugScript"` to [`greeter.greet`](app/greeter.md#symbol-Greeter.greet), using injected `Console`.
+It sets `greeter` to the instance provided for `app`. It passes `"AugScript"` to [`greeter.greet`](app/greeter.md#symbol-Greeter.greet), using injected `Console`. [source](main.md#code)
 
 ### Dependencies
 

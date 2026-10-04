@@ -2,22 +2,33 @@
 
 # `session.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=b63d266966b9ff541a637a2affd3f58819887a9205b825ea0a63432f6bb1445b -->
+
 <a id="symbol-authenticate"></a>
 ## `authenticate` · [source](session.aug#L9)
 
-An app session has its own key, issuer, audience and token type. A live registry entry is required so logout revokes a signed token immediately.
+An app session has its own key, issuer, audience and token type. A live registry entry is required so logout revokes a signed token immediately. It takes labeled inputs `token`. It gets `crypto` ([`Crypto`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto)), `clock` ([`Clock`](../.aug-spec/packages/%40git/url_c092cd151499c4e1d8a1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-Clock)), `keys` ([`SigningKeys`](../common/keys.aug.md#symbol-SigningKeys)), and `sessions` ([`ExpiringStore<SessionClaims>`](../.aug-spec/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore)) from dependency injection.
+
+If `token` is null, it raises a [`SessionError`](contracts.aug.md#symbol-SessionError). The non-null `token` becomes `value`. It sets `publicKey` to [`crypto.publicRsa`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.publicRsa) with `key` from [`keys.session`](../common/keys.aug.md#symbol-SigningKeys.session). It sets `claims` to `decode` on [`verifyJwt`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug.md#symbol-verifyJwt) with `token` from `value`, `publicKey`, `kid` `"session-1"`, and `tokenType` `"august-session+jwt"` using injected `crypto` for [`SessionClaims`](contracts.aug.md#symbol-SessionClaims). [source](session.aug#L10-L35)
+
+It gets `config` from [`settings`](../common/settings.aug.md#symbol-settings). It sets `now` to [`clock.now`](../.aug-spec/packages/%40git/url_c092cd151499c4e1d8a1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-Clock.now). It checks that `claims.iss` equals the text `{config.baseUrl}/app` and `claims.aud` equals `"august-app"` and the byte length of `claims.sub` does not equal `0` and `claims.exp` is greater than `now` and `claims.iat` is at most (`now` plus `30`) and `claims.iat` is at least (`now` minus `config.sessionSeconds`) and `claims.exp` is greater than `claims.iat` and `claims.exp` is at most ((`now` plus `config.sessionSeconds`) plus `30`). It raises a [`SessionError`](contracts.aug.md#symbol-SessionError) at the first failed check. [source](session.aug#L17-L20)
+
+It checks that `claims.jti` is a URL-safe ASCII token with `43` to `43` characters and `claims.csrf` is a URL-safe ASCII token with `43` to `43` characters. It raises a [`SessionError`](contracts.aug.md#symbol-SessionError) at the first failed check. It obtains [`sessions.get`](../.aug-spec/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore.get) with `key` from `claims.jti` and `now`. If no value is found, it raises a [`SessionError`](contracts.aug.md#symbol-SessionError). [source](session.aug#L21-L29)
+
+The non-null result becomes `saved`. It checks that `saved.sub` equals `claims.sub` and `saved.exp` equals `claims.exp` and [`crypto.equal`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.equal) with `left` from the UTF-8 bytes of `saved.csrf` and `right` from the UTF-8 bytes of `claims.csrf` returns true. It raises a [`SessionError`](contracts.aug.md#symbol-SessionError) at the first failed check. It returns `claims`. [source](session.aug#L10-L35)
+
+If this work raises `CryptoError`, it raises a [`SessionError`](contracts.aug.md#symbol-SessionError). If this work raises [`JwtError`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug.md#symbol-JwtError), it raises a [`SessionError`](contracts.aug.md#symbol-SessionError). If this work raises `JsonError`, it raises a [`SessionError`](contracts.aug.md#symbol-SessionError). [source](session.aug#L31-L35)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+authenticate(optional string token, resolve Crypto crypto, resolve Clock clock, resolve SigningKeys keys, resolve ExpiringStore<SessionClaims> sessions) returns SessionClaims unless KeyError and SessionError and TimeError uses SigningKeys.session, Crypto.publicRsa, Clock.now, ExpiringStore<SessionClaims>.get, Crypto.equal, Crypto.decodeBase64url, Crypto.verifyRsa
+```
 
 It takes `token` as `optional string`. It gets `crypto` ([`Crypto`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto)), `clock` ([`Clock`](../.aug-spec/packages/%40git/url_c092cd151499c4e1d8a1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-Clock)), `keys` ([`SigningKeys`](../common/keys.aug.md#symbol-SigningKeys)), and `sessions` ([`ExpiringStore<SessionClaims>`](../.aug-spec/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore)) from dependency injection. Omitted optional inputs are null. Failures can raise [`KeyError`](../common/keys.aug.md#symbol-KeyError), [`SessionError`](contracts.aug.md#symbol-SessionError), and `TimeError`.
 
-If `token` is null, it raises a [`SessionError`](contracts.aug.md#symbol-SessionError). The non-null `token` becomes `value`. It sets `publicKey` to [`crypto.publicRsa`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.publicRsa) with `key` from [`keys.session`](../common/keys.aug.md#symbol-SigningKeys.session). It sets `claims` to `decode` on [`verifyJwt`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug.md#symbol-verifyJwt) with `token` from `value`, `publicKey`, `kid` `"session-1"`, and `tokenType` `"august-session+jwt"` using injected `crypto` for [`SessionClaims`](contracts.aug.md#symbol-SessionClaims).
-
-It gets `config` from [`settings`](../common/settings.aug.md#symbol-settings). It sets `now` to [`clock.now`](../.aug-spec/packages/%40git/url_c092cd151499c4e1d8a1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-Clock.now). It checks that `claims.iss` equals the text `{config.baseUrl}/app` and `claims.aud` equals `"august-app"` and the byte length of `claims.sub` does not equal `0` and `claims.exp` is greater than `now` and `claims.iat` is at most (`now` plus `30`) and `claims.iat` is at least (`now` minus `config.sessionSeconds`) and `claims.exp` is greater than `claims.iat` and `claims.exp` is at most ((`now` plus `config.sessionSeconds`) plus `30`). It raises a [`SessionError`](contracts.aug.md#symbol-SessionError) at the first failed check.
-
-It checks that `claims.jti` is a URL-safe ASCII token with `43` to `43` characters and `claims.csrf` is a URL-safe ASCII token with `43` to `43` characters. It raises a [`SessionError`](contracts.aug.md#symbol-SessionError) at the first failed check. It obtains [`sessions.get`](../.aug-spec/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore.get) with `key` from `claims.jti` and `now`. If no value is found, it raises a [`SessionError`](contracts.aug.md#symbol-SessionError).
-
-The non-null result becomes `saved`. It checks that `saved.sub` equals `claims.sub` and `saved.exp` equals `claims.exp` and [`crypto.equal`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.equal) with `left` from the UTF-8 bytes of `saved.csrf` and `right` from the UTF-8 bytes of `claims.csrf` returns true. It raises a [`SessionError`](contracts.aug.md#symbol-SessionError) at the first failed check. It returns `claims`.
-
-If this work raises `CryptoError`, it raises a [`SessionError`](contracts.aug.md#symbol-SessionError). If this work raises [`JwtError`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug.md#symbol-JwtError), it raises a [`SessionError`](contracts.aug.md#symbol-SessionError). If this work raises `JsonError`, it raises a [`SessionError`](contracts.aug.md#symbol-SessionError).
+</details>
 
 ## Dependencies
 

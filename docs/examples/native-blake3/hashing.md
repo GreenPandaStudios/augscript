@@ -70,7 +70,17 @@ test hashText {
 
 ### `hashText` · [source](hashing.md#code) {#symbol-hashText}
 
-Hash UTF-8 text with the real Rust BLAKE3 implementation. It takes `value` as a string. Failures can raise [`HashError`](dependencies/packages/%40greenpandastudios/aug-blake3/0.1.5/contracts.md#symbol-HashError). It returns [`hash`](dependencies/packages/%40greenpandastudios/aug-blake3/0.1.5/api.md#symbol-hash) with `input` from the UTF-8 bytes of `value`.
+Hash UTF-8 text with the real Rust BLAKE3 implementation. It takes `value` as a string. It returns [`hash`](dependencies/packages/%40greenpandastudios/aug-blake3/0.1.5/api.md#symbol-hash) with `input` from the UTF-8 bytes of `value`. [source](hashing.md#code)
+
+::: details Checked interface
+
+```text
+hashText(string value) returns string unless HashError
+```
+
+It takes `value` as a string. Failures can raise [`HashError`](dependencies/packages/%40greenpandastudios/aug-blake3/0.1.5/contracts.md#symbol-HashError).
+
+:::
 
 ### `test hashText` · [source](hashing.md#code) {#symbol-test-20-hashText}
 
@@ -80,7 +90,7 @@ Tests [`hashText`](hashing.md#symbol-hashText). Each case gets fresh setup and d
 
 ##### `matches_the_published_abc_vector` · [source](hashing.md#code)
 
-The test requires [`hashText`](hashing.md#symbol-hashText) with `value` `"abc"` equals `"6437b3ac38465133ffb63b75273a8db548c558465d79db03fd359c6cd5bd9d85"`.
+The test requires [`hashText`](hashing.md#symbol-hashText) with `value` `"abc"` equals `"6437b3ac38465133ffb63b75273a8db548c558465d79db03fd359c6cd5bd9d85"`. [source](hashing.md#code)
 
 ### Dependencies
 

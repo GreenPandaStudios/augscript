@@ -2,12 +2,25 @@
 
 # `tensors.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=5514e9f965acdc98ded3afa25d075e0f3f5639d34d079bfb761591e0e9e4ce8e -->
+
 <a id="symbol-calculate"></a>
 ## `calculate` · [source](tensors.aug#L5)
 
-Add two CPU tensors using LibTorch and return the sum of their elements. Failures can raise [`TensorError`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.1.6/contracts.aug.md#symbol-TensorError).
+Add two CPU tensors using LibTorch and return the sum of their elements.
 
-It calls [`tensor`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.1.6/api.aug.md#symbol-tensor) with `values` from a list containing `1.0`, `2.0`, `3.0` and stores the result in owned `left` ([`Tensor`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.1.6/bindings.aug.md#symbol-Tensor)). It calls [`tensor`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.1.6/api.aug.md#symbol-tensor) with `values` from a list containing `4.0`, `5.0`, `6.0` and stores the result in owned `right` ([`Tensor`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.1.6/bindings.aug.md#symbol-Tensor)). It calls [`add`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.1.6/api.aug.md#symbol-add) with `left` and `right` and stores the result in owned `result` ([`Tensor`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.1.6/bindings.aug.md#symbol-Tensor)). It returns [`sum`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.1.6/api.aug.md#symbol-sum) with `tensor` from `result`.
+It calls [`tensor`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.1.6/api.aug.md#symbol-tensor) with `values` from a list containing `1.0`, `2.0`, `3.0` and stores the result in owned `left` ([`Tensor`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.1.6/bindings.aug.md#symbol-Tensor)). It calls [`tensor`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.1.6/api.aug.md#symbol-tensor) with `values` from a list containing `4.0`, `5.0`, `6.0` and stores the result in owned `right` ([`Tensor`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.1.6/bindings.aug.md#symbol-Tensor)). It calls [`add`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.1.6/api.aug.md#symbol-add) with `left` and `right` and stores the result in owned `result` ([`Tensor`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.1.6/bindings.aug.md#symbol-Tensor)). It returns [`sum`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.1.6/api.aug.md#symbol-sum) with `tensor` from `result`. [source](tensors.aug#L6-L9)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+calculate() returns float unless TensorError
+```
+
+Failures can raise [`TensorError`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.1.6/contracts.aug.md#symbol-TensorError).
+
+</details>
 
 <a id="symbol-test calculate"></a>
 ## `test calculate` · [source](tensors.aug#L11)
@@ -18,11 +31,11 @@ Tests [`calculate`](tensors.aug.md#symbol-calculate). Each case gets fresh setup
 
 #### `adds_and_reads_real_tensors` · [source](tensors.aug#L13)
 
-It calls [`tensor`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.1.6/api.aug.md#symbol-tensor) with `values` from a list containing `1.0`, `2.0`, `3.0` and stores the result in owned `left` ([`Tensor`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.1.6/bindings.aug.md#symbol-Tensor)). It calls [`tensor`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.1.6/api.aug.md#symbol-tensor) with `values` from a list containing `4.0`, `5.0`, `6.0` and stores the result in owned `right` ([`Tensor`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.1.6/bindings.aug.md#symbol-Tensor)). It calls [`add`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.1.6/api.aug.md#symbol-add) with `left` and `right` and stores the result in owned `result` ([`Tensor`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.1.6/bindings.aug.md#symbol-Tensor)). It sets `output` of type `List<float>` to [`values`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.1.6/api.aug.md#symbol-values) with `tensor` from `result`.
+It calls [`tensor`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.1.6/api.aug.md#symbol-tensor) with `values` from a list containing `1.0`, `2.0`, `3.0` and stores the result in owned `left` ([`Tensor`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.1.6/bindings.aug.md#symbol-Tensor)). It calls [`tensor`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.1.6/api.aug.md#symbol-tensor) with `values` from a list containing `4.0`, `5.0`, `6.0` and stores the result in owned `right` ([`Tensor`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.1.6/bindings.aug.md#symbol-Tensor)). It calls [`add`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.1.6/api.aug.md#symbol-add) with `left` and `right` and stores the result in owned `result` ([`Tensor`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.1.6/bindings.aug.md#symbol-Tensor)). It sets `output` of type `List<float>` to [`values`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.1.6/api.aug.md#symbol-values) with `tensor` from `result`. [source](tensors.aug#L14-L17)
 
-The test requires the number of elements in `output` equals `3`. The test requires the item at index `0` in `output` equals `5.0`. The test requires the item at index `1` in `output` equals `7.0`. The test requires the item at index `2` in `output` equals `9.0`.
+The test requires the number of elements in `output` equals `3`. The test requires the item at index `0` in `output` equals `5.0`. The test requires the item at index `1` in `output` equals `7.0`. The test requires the item at index `2` in `output` equals `9.0`. [source](tensors.aug#L18-L21)
 
-The test requires [`sum`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.1.6/api.aug.md#symbol-sum) with `tensor` from `result` equals `21.0`. The test requires [`calculate`](tensors.aug.md#symbol-calculate) equals `21.0`.
+The test requires [`sum`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.1.6/api.aug.md#symbol-sum) with `tensor` from `result` equals `21.0`. The test requires [`calculate`](tensors.aug.md#symbol-calculate) equals `21.0`. [source](tensors.aug#L22-L23)
 
 ## Dependencies
 

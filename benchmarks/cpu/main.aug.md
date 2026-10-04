@@ -2,8 +2,10 @@
 
 # `main.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=1e720bbb0b3268f61447987e389b430632f23d17367b89f6d0c16624f16224d3 -->
+
 ## Startup
 
-It sets `state` to `123`. It sets `index` to `0`. While `index` is less than `2000000`, it sets `product` to `state` times `48271`; then it sets `state` to `product` minus ((`product` divided by `2147483647`) times `2147483647`); then it increases `index` by `1`. After the loop, it prints `state`.
+It sets `state` to `123`. It sets `index` to `0`. While `index` is less than `2000000`, it sets `product` to `state` times `48271`; then it sets `state` to `product` minus ((`product` divided by `2147483647`) times `2147483647`); then it increases `index` by `1`. After the loop, it prints `state`. [source](main.aug#L3-L9)
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).

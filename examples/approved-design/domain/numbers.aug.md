@@ -2,6 +2,8 @@
 
 # `numbers.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=93f7c8abc92db79d8170a0aa19913f0c9d113cb33dd6b93f00dd0cac8d45a96b -->
+
 <a id="symbol-RangeError"></a>
 ## `RangeError` · class · [source](numbers.aug#L3)
 
@@ -15,14 +17,36 @@ A pure validation layer, shared by any compatible callable. The type parameters 
 <a id="symbol-Positive.around"></a>
 ### `Positive.around` · [source](numbers.aug#L7)
 
-It takes `amount` as an integer. Failures can raise [`RangeError`](numbers.aug.md#symbol-RangeError). If `amount` is negative, it raises a [`RangeError`](numbers.aug.md#symbol-RangeError) with `value` from `amount`. It returns `next`.
+It takes `amount` as an integer. If `amount` is negative, it raises a [`RangeError`](numbers.aug.md#symbol-RangeError) with `value` from `amount`. It returns `next`. [source](numbers.aug#L8-L10)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+around(int amount) returns T unless RangeError
+```
+
+It takes `amount` as an integer. Failures can raise [`RangeError`](numbers.aug.md#symbol-RangeError).
+
+</details>
 
 <a id="symbol-double"></a>
 ## `double` · [source](numbers.aug#L18)
 
-Double a nonnegative amount. It takes `amount` as an integer (Integer to double). It returns `int` — Twice the amount, with defined integer wrapping. Failures can raise [`RangeError`](numbers.aug.md#symbol-RangeError) (A validation layer rejected a negative input).
+Double a nonnegative amount. It takes `amount` as an integer. Layers run in the declared order. Call [`Positive.around`](numbers.aug.md#symbol-Positive.around).
 
-Layers run in the declared order. Call [`Positive.around`](numbers.aug.md#symbol-Positive.around). It returns `amount` times `2`.
+It returns `amount` times `2`. [source](numbers.aug#L19)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+double(int amount) returns int unless RangeError
+```
+
+It takes `amount` as an integer (Integer to double). It returns `int` — Twice the amount, with defined integer wrapping. Failures can raise [`RangeError`](numbers.aug.md#symbol-RangeError) (A validation layer rejected a negative input).
+
+</details>
 
 <a id="symbol-test double"></a>
 ## `test double` · [source](numbers.aug#L20)
@@ -33,12 +57,12 @@ Tests [`double`](numbers.aug.md#symbol-double). Each case gets fresh setup and d
 
 #### `doubles` · [source](numbers.aug#L22)
 
-Run once for each row of a tuple containing `0`, `0`; a tuple containing `3`, `6`; a tuple containing `7`, `14`. Bind row positions to `input`, `expected`. The test requires [`double`](numbers.aug.md#symbol-double) with `amount` from `input` equals `expected`.
+Run once for each row of a tuple containing `0`, `0`; a tuple containing `3`, `6`; a tuple containing `7`, `14`. Bind row positions to `input`, `expected`. The test requires [`double`](numbers.aug.md#symbol-double) with `amount` from `input` equals `expected`. [source](numbers.aug#L23)
 
 #### `rejects_negative` · [source](numbers.aug#L24)
 
-It sets `rejected` to `false`.
+It sets `rejected` to `false`. [source](numbers.aug#L25)
 
-It tries to call [`double`](numbers.aug.md#symbol-double) with `amount` `-1`. If this work raises [`RangeError`](numbers.aug.md#symbol-RangeError) as `error`, it sets `rejected` to `error.value` equals `-1`. The test requires `rejected` is true.
+It tries to call [`double`](numbers.aug.md#symbol-double) with `amount` `-1`. If this work raises [`RangeError`](numbers.aug.md#symbol-RangeError) as `error`, it sets `rejected` to `error.value` equals `-1`. The test requires `rejected` is true. [source](numbers.aug#L26-L30)
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).

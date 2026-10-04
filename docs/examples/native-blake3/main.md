@@ -60,7 +60,7 @@ catch HashError error {
 
 ### Startup
 
-It prints [`hashText`](hashing.md#symbol-hashText) with `value` `"abc"`. If this work raises [`HashError`](dependencies/packages/%40greenpandastudios/aug-blake3/0.1.5/contracts.md#symbol-HashError) as `error`, it prints `error.message`.
+It prints [`hashText`](hashing.md#symbol-hashText) with `value` `"abc"`. If this work raises [`HashError`](dependencies/packages/%40greenpandastudios/aug-blake3/0.1.5/contracts.md#symbol-HashError) as `error`, it prints `error.message`. [source](main.md#code)
 
 ### Dependencies
 

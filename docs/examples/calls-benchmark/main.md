@@ -63,9 +63,9 @@ print(value=state)
 
 ### Startup
 
-It sets `iterations` to `200000`. It sets `state` to `123`. It sets `index` to `0`. While `index` is less than `iterations`, it sets `state` to [`step`](operations.md#symbol-step) with `value` from `state`; then it increases `index` by `1`.
+It sets `iterations` to `200000`. It sets `state` to `123`. It sets `index` to `0`. While `index` is less than `iterations`, it sets `state` to [`step`](operations.md#symbol-step) with `value` from `state`; then it increases `index` by `1`. [source](main.md#code)
 
-After the loop, it prints `state`.
+After the loop, it prints `state`. [source](main.md#code)
 
 ### Dependencies
 

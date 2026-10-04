@@ -165,27 +165,63 @@ test openDevice {
 
 ### `openDevice` · [source](api.md#code) {#symbol-openDevice}
 
-Open a Metal GPU on the current worker. No device means GpuError. It returns ownership of [`Device`](bindings.md#symbol-Device). Failures can raise [`GpuError`](contracts.md#symbol-GpuError).
+Open a Metal GPU on the current worker. No device means GpuError. Within an unsafe block, it returns [`_open`](api.md#symbol-_open). Native operations must satisfy their declared C contracts. [source](api.md#code)
 
-Within an unsafe block, it returns [`_open`](api.md#symbol-_open). Native operations must satisfy their declared C contracts.
+::: details Checked interface
+
+```text
+openDevice() returns own Device unless GpuError
+```
+
+It returns ownership of [`Device`](bindings.md#symbol-Device). Failures can raise [`GpuError`](contracts.md#symbol-GpuError).
+
+:::
 
 ### `upload` · [source](api.md#code) {#symbol-upload}
 
 Copy finite numbers to an owned float32 GPU buffer. Values round to float32. It takes `device` as [`Device`](bindings.md#symbol-Device) and `values` as `List<float>`.
 
-It returns ownership of [`Buffer`](bindings.md#symbol-Buffer). Failures can raise [`GpuError`](contracts.md#symbol-GpuError). Within an unsafe block, it returns [`_upload`](api.md#symbol-_upload) with `device` and `values`. Native operations must satisfy their declared C contracts.
+Within an unsafe block, it returns [`_upload`](api.md#symbol-_upload) with `device` and `values`. Native operations must satisfy their declared C contracts. [source](api.md#code)
+
+::: details Checked interface
+
+```text
+upload(Device device, List<float> values) returns own Buffer unless GpuError
+```
+
+It takes `device` as [`Device`](bindings.md#symbol-Device) and `values` as `List<float>`. It returns ownership of [`Buffer`](bindings.md#symbol-Buffer). Failures can raise [`GpuError`](contracts.md#symbol-GpuError).
+
+:::
 
 ### `add` · [source](api.md#code) {#symbol-add}
 
 Add equally sized buffers on the GPU. Wait for device completion before returning. It takes `left` and `right` as [`Buffer`](bindings.md#symbol-Buffer).
 
-It returns ownership of [`Buffer`](bindings.md#symbol-Buffer). Failures can raise [`GpuError`](contracts.md#symbol-GpuError). Within an unsafe block, it returns [`_add`](api.md#symbol-_add) with `left` and `right`. Native operations must satisfy their declared C contracts.
+Within an unsafe block, it returns [`_add`](api.md#symbol-_add) with `left` and `right`. Native operations must satisfy their declared C contracts. [source](api.md#code)
+
+::: details Checked interface
+
+```text
+add(Buffer left, Buffer right) returns own Buffer unless GpuError
+```
+
+It takes `left` and `right` as [`Buffer`](bindings.md#symbol-Buffer). It returns ownership of [`Buffer`](bindings.md#symbol-Buffer). Failures can raise [`GpuError`](contracts.md#symbol-GpuError).
+
+:::
 
 ### `download` · [source](api.md#code) {#symbol-download}
 
-Copy float32 GPU values into an August list of floats. It takes `buffer` as [`Buffer`](bindings.md#symbol-Buffer). Failures can raise [`GpuError`](contracts.md#symbol-GpuError).
+Copy float32 GPU values into an August list of floats. It takes `buffer` as [`Buffer`](bindings.md#symbol-Buffer). Within an unsafe block, it returns [`_download`](api.md#symbol-_download) with `buffer`. Native operations must satisfy their declared C contracts. [source](api.md#code)
 
-Within an unsafe block, it returns [`_download`](api.md#symbol-_download) with `buffer`. Native operations must satisfy their declared C contracts.
+::: details Checked interface
+
+```text
+download(Buffer buffer) returns List<float> unless GpuError
+```
+
+It takes `buffer` as [`Buffer`](bindings.md#symbol-Buffer). Failures can raise [`GpuError`](contracts.md#symbol-GpuError).
+
+:::
 
 ### `_open` · [source](api.md#code) {#symbol-_open}
 
@@ -225,21 +261,21 @@ Tests [`openDevice`](api.md#symbol-openDevice). Each case gets fresh setup and d
 
 ##### `adds_on_the_gpu_and_releases_every_resource` · [source](api.md#code)
 
-It sets `before` to `0`. Within an unsafe block, it gets `before` from [`_live`](api.md#symbol-_live). Native operations must satisfy their declared C contracts. Within a task and ownership scope, it calls [`openDevice`](api.md#symbol-openDevice) and stores the result in owned `device` ([`Device`](bindings.md#symbol-Device)).
+It sets `before` to `0`. Within an unsafe block, it gets `before` from [`_live`](api.md#symbol-_live). Native operations must satisfy their declared C contracts. Within a task and ownership scope, it calls [`openDevice`](api.md#symbol-openDevice) and stores the result in owned `device` ([`Device`](bindings.md#symbol-Device)). [source](api.md#code)
 
-It calls [`upload`](api.md#symbol-upload) with `device` and `values` from a list containing `1.0`, `2.0`, `3.0` and stores the result in owned `left` ([`Buffer`](bindings.md#symbol-Buffer)). It calls [`upload`](api.md#symbol-upload) with `device` and `values` from a list containing `4.0`, `5.0`, `6.0` and stores the result in owned `right` ([`Buffer`](bindings.md#symbol-Buffer)). It calls [`add`](api.md#symbol-add) with `left` and `right` and stores the result in owned `result` ([`Buffer`](bindings.md#symbol-Buffer)). It sets `output` to [`download`](api.md#symbol-download) with `buffer` from `result`.
+It calls [`upload`](api.md#symbol-upload) with `device` and `values` from a list containing `1.0`, `2.0`, `3.0` and stores the result in owned `left` ([`Buffer`](bindings.md#symbol-Buffer)). It calls [`upload`](api.md#symbol-upload) with `device` and `values` from a list containing `4.0`, `5.0`, `6.0` and stores the result in owned `right` ([`Buffer`](bindings.md#symbol-Buffer)). It calls [`add`](api.md#symbol-add) with `left` and `right` and stores the result in owned `result` ([`Buffer`](bindings.md#symbol-Buffer)). It sets `output` to [`download`](api.md#symbol-download) with `buffer` from `result`. [source](api.md#code)
 
-The test requires `output.get` with `index` `0` equals `5.0`. The test requires `output.get` with `index` `1` equals `7.0`. The test requires `output.get` with `index` `2` equals `9.0`. On leaving this scope, join its child tasks and release its local values.
+The test requires `output.get` with `index` `0` equals `5.0`. The test requires `output.get` with `index` `1` equals `7.0`. The test requires `output.get` with `index` `2` equals `9.0`. On leaving this scope, join its child tasks and release its local values. [source](api.md#code)
 
-Within an unsafe block, the test requires [`_live`](api.md#symbol-_live) equals `before`. Native operations must satisfy their declared C contracts.
+Within an unsafe block, the test requires [`_live`](api.md#symbol-_live) equals `before`. Native operations must satisfy their declared C contracts. [source](api.md#code)
 
 ##### `cleans_up_when_an_operation_fails` · [source](api.md#code)
 
-Within a task and ownership scope, it calls [`openDevice`](api.md#symbol-openDevice) and stores the result in owned `device` ([`Device`](bindings.md#symbol-Device)). It calls [`upload`](api.md#symbol-upload) with `device` and `values` from a list containing `1.0` and stores the result in owned `left` ([`Buffer`](bindings.md#symbol-Buffer)). It calls [`upload`](api.md#symbol-upload) with `device` and `values` from a list containing `2.0`, `3.0` and stores the result in owned `right` ([`Buffer`](bindings.md#symbol-Buffer)). It calls [`add`](api.md#symbol-add) with `left` and `right` and stores the result in owned `result` ([`Buffer`](bindings.md#symbol-Buffer)).
+Within a task and ownership scope, it calls [`openDevice`](api.md#symbol-openDevice) and stores the result in owned `device` ([`Device`](bindings.md#symbol-Device)). It calls [`upload`](api.md#symbol-upload) with `device` and `values` from a list containing `1.0` and stores the result in owned `left` ([`Buffer`](bindings.md#symbol-Buffer)). It calls [`upload`](api.md#symbol-upload) with `device` and `values` from a list containing `2.0`, `3.0` and stores the result in owned `right` ([`Buffer`](bindings.md#symbol-Buffer)). It calls [`add`](api.md#symbol-add) with `left` and `right` and stores the result in owned `result` ([`Buffer`](bindings.md#symbol-Buffer)). [source](api.md#code)
 
-The test requires `false` is true. On leaving this scope, join its child tasks and release its local values. If this work raises [`GpuError`](contracts.md#symbol-GpuError) as `error`, it the test requires `error.code` equals `2`. Within an unsafe block, the test requires [`_live`](api.md#symbol-_live) equals `0`.
+The test requires `false` is true. On leaving this scope, join its child tasks and release its local values. If this work raises [`GpuError`](contracts.md#symbol-GpuError) as `error`, it the test requires `error.code` equals `2`. Within an unsafe block, the test requires [`_live`](api.md#symbol-_live) equals `0`. [source](api.md#code)
 
-Native operations must satisfy their declared C contracts.
+Native operations must satisfy their declared C contracts. [source](api.md#code)
 
 ### Dependencies
 

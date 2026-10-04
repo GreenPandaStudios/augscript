@@ -2,6 +2,8 @@
 
 # `export.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=bb2a43b0559fa7aa420722bd3efceec446df4b10dd4a9d2fe13a709966372122 -->
+
 ## Exports
 
 Export the declaration `Principal` from [`contracts.aug`](contracts.aug.md#symbol-Principal). Export the declaration `Authentication` from [`contracts.aug`](contracts.aug.md#symbol-Authentication). Export the declaration `Authorization` from [`contracts.aug`](contracts.aug.md#symbol-Authorization). Export the declaration `RequestLogger` from [`contracts.aug`](contracts.aug.md#symbol-RequestLogger).

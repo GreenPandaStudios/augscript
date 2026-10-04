@@ -53,7 +53,17 @@ step(int value) returns int {
 
 ### `step` · [source](operations.md#code) {#symbol-step}
 
-It takes `value` as an integer. It sets `product` to (`value` times `48271`) plus `1`. It returns `product` minus ((`product` divided by `2147483647`) times `2147483647`).
+It takes `value` as an integer. It sets `product` to (`value` times `48271`) plus `1`. It returns `product` minus ((`product` divided by `2147483647`) times `2147483647`). [source](operations.md#code)
+
+::: details Checked interface
+
+```text
+step(int value) returns int
+```
+
+It takes `value` as an integer.
+
+:::
 
 ::::
 

@@ -2,6 +2,8 @@
 
 # `interceptors.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=90b7ddd1bd8859c5280f6f7b74c20510432c539b262a591467fcd6b382ec3739 -->
+
 <a id="symbol-ValidationError"></a>
 ## `ValidationError` · class · [source](interceptors.aug#L5)
 
@@ -20,7 +22,18 @@ The `logger` dependency is injected as [`Logger`](logging.aug.md#symbol-Logger) 
 
 Wrap a call without changing its result. It gets `console` ([`Console`](.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-Console)) from dependency injection.
 
-It passes `"before"` to [`logger.log`](logging.aug.md#symbol-Logger.log), using injected `console`. It sets `result` of type `T` to `next`. It passes `"after"` to [`logger.log`](logging.aug.md#symbol-Logger.log), using injected `console`. It returns `result`.
+It passes `"before"` to [`logger.log`](logging.aug.md#symbol-Logger.log), using injected `console`. It sets `result` of type `T` to `next`. It passes `"after"` to [`logger.log`](logging.aug.md#symbol-Logger.log), using injected `console`. It returns `result`. [source](interceptors.aug#L16-L19)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+around(resolve Console console) returns T uses Console.write
+```
+
+It gets `console` ([`Console`](.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-Console)) from dependency injection.
+
+</details>
 
 <a id="symbol-Positive"></a>
 ## `Positive` · interceptor · [source](interceptors.aug#L23)
@@ -30,7 +43,18 @@ Rejects negative numbers before the target executes. The type parameters are `T`
 <a id="symbol-Positive.around"></a>
 ### `Positive.around` · [source](interceptors.aug#L28)
 
-It takes `y` as an integer (the target argument selected by a mapping such as y=x). Failures can raise [`ValidationError`](interceptors.aug.md#symbol-ValidationError) (when the selected value is negative). If `y` is negative, it raises a [`ValidationError`](interceptors.aug.md#symbol-ValidationError) with `message` `"value must be nonnegative"`. It returns `next`.
+It takes `y` as an integer. If `y` is negative, it raises a [`ValidationError`](interceptors.aug.md#symbol-ValidationError) with `message` `"value must be nonnegative"`. It returns `next`. [source](interceptors.aug#L29-L32)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+around(int y) returns T unless ValidationError
+```
+
+It takes `y` as an integer (the target argument selected by a mapping such as y=x). Failures can raise [`ValidationError`](interceptors.aug.md#symbol-ValidationError) (when the selected value is negative).
+
+</details>
 
 <a id="symbol-AddOne"></a>
 ## `AddOne` · interceptor · [source](interceptors.aug#L36)
@@ -40,7 +64,18 @@ Adds one to the selected input before forwarding the call. The type parameters a
 <a id="symbol-AddOne.around"></a>
 ### `AddOne.around` · [source](interceptors.aug#L38)
 
-It takes `y` as an integer (the input to increment). It returns `next` with `y` from `y` plus `1`.
+It takes `y` as an integer. It returns `next` with `y` from `y` plus `1`. [source](interceptors.aug#L39)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+around(int y) returns T
+```
+
+It takes `y` as an integer (the input to increment).
+
+</details>
 
 ## Dependencies
 

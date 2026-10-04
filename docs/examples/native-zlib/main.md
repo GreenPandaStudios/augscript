@@ -65,7 +65,7 @@ catch ConversionError error {
 
 ### Startup
 
-It prints `text` on [`roundTrip`](compression.md#symbol-roundTrip). If this work raises [`CompressionError`](dependencies/packages/%40greenpandastudios/aug-zlib/0.1.5/contracts.md#symbol-CompressionError) as `error`, it prints `error.message`. If this work raises `ConversionError`, it prints `"Invalid UTF-8"`.
+It prints `text` on [`roundTrip`](compression.md#symbol-roundTrip). If this work raises [`CompressionError`](dependencies/packages/%40greenpandastudios/aug-zlib/0.1.5/contracts.md#symbol-CompressionError) as `error`, it prints `error.message`. If this work raises `ConversionError`, it prints `"Invalid UTF-8"`. [source](main.md#code)
 
 ### Dependencies
 

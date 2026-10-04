@@ -92,9 +92,9 @@ catch ValidationError error {
 
 ### Startup
 
-It prints [`describe`](app.md#symbol-describe) with `label` `"value"` and `x` `6` using injected `Logger` for `logger` and `Console` for `console`. If this work raises [`ValidationError`](interceptors.md#symbol-ValidationError), it prints `"rejected"`. It sets `greeter` to a [`Greeter`](app.md#symbol-Greeter) with `name` `"AugScript"` using injected `Logger` for `_logger`. It prints [`greeter.greet`](app.md#symbol-Greeter.greet) using injected `Logger` for `logger` and `Console` for `console`.
+It prints [`describe`](app.md#symbol-describe) with `label` `"value"` and `x` `6` using injected `Logger` for `logger` and `Console` for `console`. If this work raises [`ValidationError`](interceptors.md#symbol-ValidationError), it prints `"rejected"`. It sets `greeter` to a [`Greeter`](app.md#symbol-Greeter) with `name` `"AugScript"` using injected `Logger` for `_logger`. It prints [`greeter.greet`](app.md#symbol-Greeter.greet) using injected `Logger` for `logger` and `Console` for `console`. [source](main.md#code)
 
-It tries to call [`describe`](app.md#symbol-describe) with `x` `-1` and `label` `"invalid"` using injected `Logger` for `logger` and `Console` for `console`. If this work raises [`ValidationError`](interceptors.md#symbol-ValidationError), it prints `"rejected"`.
+It tries to call [`describe`](app.md#symbol-describe) with `x` `-1` and `label` `"invalid"` using injected `Logger` for `logger` and `Console` for `console`. If this work raises [`ValidationError`](interceptors.md#symbol-ValidationError), it prints `"rejected"`. [source](main.md#code)
 
 ### Dependencies
 

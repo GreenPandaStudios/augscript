@@ -2,8 +2,10 @@
 
 # `main.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=9aa3c6c12346c051d701e94d06655577e9d301a0ed81cd93ff423deb799f1116 -->
+
 ## Startup
 
-It prints `7`.
+It prints `7`. [source](main.aug#L2)
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).

@@ -133,7 +133,17 @@ The `logger` dependency is injected as [`Logger`](logging.md#symbol-Logger) and 
 
 Wrap a call without changing its result. It gets `console` ([`Console`](dependencies/august/0.23.0/io/contracts.md#symbol-Console)) from dependency injection.
 
-It passes `"before"` to [`logger.log`](logging.md#symbol-Logger.log), using injected `console`. It sets `result` of type `T` to `next`. It passes `"after"` to [`logger.log`](logging.md#symbol-Logger.log), using injected `console`. It returns `result`.
+It passes `"before"` to [`logger.log`](logging.md#symbol-Logger.log), using injected `console`. It sets `result` of type `T` to `next`. It passes `"after"` to [`logger.log`](logging.md#symbol-Logger.log), using injected `console`. It returns `result`. [source](interceptors.md#code)
+
+::: details Checked interface
+
+```text
+around(resolve Console console) returns T uses Console.write
+```
+
+It gets `console` ([`Console`](dependencies/august/0.23.0/io/contracts.md#symbol-Console)) from dependency injection.
+
+:::
 
 ### `Positive` · interceptor · [source](interceptors.md#code) {#symbol-Positive}
 
@@ -141,7 +151,17 @@ Rejects negative numbers before the target executes. The type parameters are `T`
 
 #### `Positive.around` · [source](interceptors.md#code) {#symbol-Positive.around}
 
-It takes `y` as an integer (the target argument selected by a mapping such as y=x). Failures can raise [`ValidationError`](interceptors.md#symbol-ValidationError) (when the selected value is negative). If `y` is negative, it raises a [`ValidationError`](interceptors.md#symbol-ValidationError) with `message` `"value must be nonnegative"`. It returns `next`.
+It takes `y` as an integer. If `y` is negative, it raises a [`ValidationError`](interceptors.md#symbol-ValidationError) with `message` `"value must be nonnegative"`. It returns `next`. [source](interceptors.md#code)
+
+::: details Checked interface
+
+```text
+around(int y) returns T unless ValidationError
+```
+
+It takes `y` as an integer (the target argument selected by a mapping such as y=x). Failures can raise [`ValidationError`](interceptors.md#symbol-ValidationError) (when the selected value is negative).
+
+:::
 
 ### `AddOne` · interceptor · [source](interceptors.md#code) {#symbol-AddOne}
 
@@ -149,7 +169,17 @@ Adds one to the selected input before forwarding the call. The type parameters a
 
 #### `AddOne.around` · [source](interceptors.md#code) {#symbol-AddOne.around}
 
-It takes `y` as an integer (the input to increment). It returns `next` with `y` from `y` plus `1`.
+It takes `y` as an integer. It returns `next` with `y` from `y` plus `1`. [source](interceptors.md#code)
+
+::: details Checked interface
+
+```text
+around(int y) returns T
+```
+
+It takes `y` as an integer (the input to increment).
+
+:::
 
 ### Dependencies
 

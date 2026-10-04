@@ -93,7 +93,15 @@ Explicit loopback development settings. The provider accepts one registered clie
 
 ### `settings` · [source](settings.md#code) {#symbol-settings}
 
-It returns a [`Settings`](settings.md#symbol-Settings) with `baseUrl` `"http://127.0.0.1:8787"`, `issuer` `"http://127.0.0.1:8787/provider"`, `clientId` `"august-login-app"`, `callback` `"http://127.0.0.1:8787/login/callback"`, `sessionSeconds` `900`, and `secureCookies` `false`.
+It returns a [`Settings`](settings.md#symbol-Settings) with `baseUrl` `"http://127.0.0.1:8787"`, `issuer` `"http://127.0.0.1:8787/provider"`, `clientId` `"august-login-app"`, `callback` `"http://127.0.0.1:8787/login/callback"`, `sessionSeconds` `900`, and `secureCookies` `false`. [source](settings.md#code)
+
+::: details Checked interface
+
+```text
+settings() returns Settings
+```
+
+:::
 
 ::::
 

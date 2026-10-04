@@ -91,9 +91,17 @@ test storedName {
 
 ### `storedName` · [source](database.md#code) {#symbol-storedName}
 
-Store a bound value in an in-memory SQLite database and read it back. Failures can raise [`SqliteError`](dependencies/packages/%40greenpandastudios/aug-sqlite/0.1.5/contracts.md#symbol-SqliteError).
+Store a bound value in an in-memory SQLite database and read it back. It calls [`openMemory`](dependencies/packages/%40greenpandastudios/aug-sqlite/0.1.5/api.md#symbol-openMemory) and stores the result in owned `database` ([`Database`](dependencies/packages/%40greenpandastudios/aug-sqlite/0.1.5/bindings.md#symbol-Database)). With temporary permission to change `database`, it calls [`execute`](dependencies/packages/%40greenpandastudios/aug-sqlite/0.1.5/api.md#symbol-execute) with `database`, `sql` `"CREATE TABLE users (name TEXT NOT NULL)"`, and `parameters` from a list with no items; then it calls [`execute`](dependencies/packages/%40greenpandastudios/aug-sqlite/0.1.5/api.md#symbol-execute) with `database`, `sql` `"INSERT INTO users (name) VALUES (?)"`, and `parameters` from a list containing `"August"`. It returns [`queryScalar`](dependencies/packages/%40greenpandastudios/aug-sqlite/0.1.5/api.md#symbol-queryScalar) with `database`, `sql` `"SELECT name FROM users"`, and `parameters` from a list with no items. [source](database.md#code)
 
-It calls [`openMemory`](dependencies/packages/%40greenpandastudios/aug-sqlite/0.1.5/api.md#symbol-openMemory) and stores the result in owned `database` ([`Database`](dependencies/packages/%40greenpandastudios/aug-sqlite/0.1.5/bindings.md#symbol-Database)). With temporary permission to change `database`, it calls [`execute`](dependencies/packages/%40greenpandastudios/aug-sqlite/0.1.5/api.md#symbol-execute) with `database`, `sql` `"CREATE TABLE users (name TEXT NOT NULL)"`, and `parameters` from a list with no items; then it calls [`execute`](dependencies/packages/%40greenpandastudios/aug-sqlite/0.1.5/api.md#symbol-execute) with `database`, `sql` `"INSERT INTO users (name) VALUES (?)"`, and `parameters` from a list containing `"August"`. It returns [`queryScalar`](dependencies/packages/%40greenpandastudios/aug-sqlite/0.1.5/api.md#symbol-queryScalar) with `database`, `sql` `"SELECT name FROM users"`, and `parameters` from a list with no items.
+::: details Checked interface
+
+```text
+storedName() returns string unless SqliteError
+```
+
+Failures can raise [`SqliteError`](dependencies/packages/%40greenpandastudios/aug-sqlite/0.1.5/contracts.md#symbol-SqliteError).
+
+:::
 
 ### `test storedName` · [source](database.md#code) {#symbol-test-20-storedName}
 
@@ -103,7 +111,7 @@ Tests [`storedName`](database.md#symbol-storedName). Each case gets fresh setup 
 
 ##### `inserts_and_queries_bound_data` · [source](database.md#code)
 
-The test requires [`storedName`](database.md#symbol-storedName) equals `"August"`.
+The test requires [`storedName`](database.md#symbol-storedName) equals `"August"`. [source](database.md#code)
 
 ### Dependencies
 

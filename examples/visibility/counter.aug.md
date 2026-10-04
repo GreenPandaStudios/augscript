@@ -2,6 +2,8 @@
 
 # `counter.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=8386fcf592200db3810985eabf0eac01482846623eb470ea599f3abb099f1a63 -->
+
 <a id="symbol-ICounter"></a>
 ## `ICounter` · interface · [source](counter.aug#L2)
 
@@ -18,14 +20,41 @@ It implements [`ICounter`](counter.aug.md#symbol-ICounter). It takes `value` as 
 <a id="symbol-Counter._label"></a>
 ### `Counter._label` · [source](counter.aug#L6)
 
-It is private to its defining scope. It returns [`_prefix`](counter.aug.md#symbol-_prefix).
+It is private to its defining scope. It returns [`_prefix`](counter.aug.md#symbol-_prefix). [source](counter.aug#L7)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+_label() returns string
+```
+
+</details>
 
 <a id="symbol-Counter.label"></a>
 ### `Counter.label` · [source](counter.aug#L9)
 
-It returns [`self._label`](counter.aug.md#symbol-Counter._label).
+It returns [`self._label`](counter.aug.md#symbol-Counter._label). [source](counter.aug#L10)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+label() returns string
+```
+
+</details>
 
 <a id="symbol-_prefix"></a>
 ## `_prefix` · [source](counter.aug#L13)
 
-It is private to its defining scope. It returns `"count"`.
+It is private to its defining scope. It returns `"count"`. [source](counter.aug#L14)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+_prefix() returns string
+```
+
+</details>

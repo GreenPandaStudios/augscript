@@ -56,7 +56,15 @@ It implements `Error`. It takes `code` as an integer, kept read-only and `messag
 
 #### `TensorError.explain` · [source](contracts.md#code) {#symbol-TensorError.explain}
 
-Explain the native failure without losing its original message. It returns `message`.
+Explain the native failure without losing its original message. It returns `message`. [source](contracts.md#code)
+
+::: details Checked interface
+
+```text
+explain() returns string
+```
+
+:::
 
 ::::
 

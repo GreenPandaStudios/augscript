@@ -63,7 +63,15 @@ It implements [`IResource`](resource.md#symbol-IResource).
 
 #### `Resource.drop` · [source](resource.md#code) {#symbol-Resource.drop}
 
-It continues without an operation.
+It continues without an operation. [source](resource.md#code)
+
+::: details Checked interface
+
+```text
+drop() returns void
+```
+
+:::
 
 ### `IResource` · interface · [source](resource.md#code) {#symbol-IResource}
 

@@ -54,7 +54,17 @@ increment(int value) {
 
 ### `increment` · [source](math.md#code) {#symbol-increment}
 
-It takes `value` as an integer. It returns `value` plus `1`.
+It takes `value` as an integer. It returns `value` plus `1`. [source](math.md#code)
+
+::: details Checked interface
+
+```text
+increment(int value) returns int
+```
+
+It takes `value` as an integer.
+
+:::
 
 ::::
 

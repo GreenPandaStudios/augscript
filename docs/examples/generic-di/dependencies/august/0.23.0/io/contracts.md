@@ -123,7 +123,17 @@ The native standard-output adapter. Construction performs no output. It implemen
 
 #### `SystemConsole.write` · [source](contracts.md#code) {#symbol-SystemConsole.write}
 
-Write one line of text. The type parameters are `T`. It takes `value` as `T` (Text to display). It prints `value`.
+Write one line of text. It takes `value` as `T`. It prints `value`. [source](contracts.md#code)
+
+::: details Checked interface
+
+```text
+write<T>(T value) returns void uses Console.write
+```
+
+The type parameters are `T`. It takes `value` as `T` (Text to display).
+
+:::
 
 ### `FileReader` · capability interface · [source](contracts.md#code) {#symbol-FileReader}
 
@@ -149,11 +159,31 @@ Native filesystem adapter. Construction opens no files. It implements [`FileRead
 
 #### `LocalFiles.read` · [source](contracts.md#code) {#symbol-LocalFiles.read}
 
-Read text. It takes `path` as a string (File path). Failures can raise `FileError` (The file could not be read). It returns `read_file` with `path`.
+Read text. It takes `path` as a string. It returns `read_file` with `path`. [source](contracts.md#code)
+
+::: details Checked interface
+
+```text
+read(string path) returns string unless FileError uses FileReader.read
+```
+
+It takes `path` as a string (File path). Failures can raise `FileError` (The file could not be read).
+
+:::
 
 #### `LocalFiles.write` · [source](contracts.md#code) {#symbol-LocalFiles.write}
 
-Write text. It takes `path` as a string (File path) and `content` as a string (Text). Failures can raise `FileError` (Writing failed). It calls `write_file` with `path` and `content`.
+Write text. It takes `path` and `content` as strings. It calls `write_file` with `path` and `content`. [source](contracts.md#code)
+
+::: details Checked interface
+
+```text
+write(string path, string content) returns void unless FileError uses FileWriter.write
+```
+
+It takes `path` as a string (File path) and `content` as a string (Text). Failures can raise `FileError` (Writing failed).
+
+:::
 
 ### `Arguments` · capability interface · [source](contracts.md#code) {#symbol-Arguments}
 
@@ -169,7 +199,15 @@ Native command-line arguments. It implements [`Arguments`](contracts.md#symbol-A
 
 #### `ProcessArguments.read` · [source](contracts.md#code) {#symbol-ProcessArguments.read}
 
-It returns `arguments`.
+It returns `arguments`. [source](contracts.md#code)
+
+::: details Checked interface
+
+```text
+read() returns List<string> uses Arguments.read
+```
+
+:::
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).
 

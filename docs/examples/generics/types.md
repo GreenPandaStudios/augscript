@@ -83,7 +83,15 @@ The type parameters are `T`. It takes `value` as `T`. It returns `string`.
 
 #### `Formatter.title` · [source](types.md#code) {#symbol-Formatter.title}
 
-It returns `"formatted"`.
+It returns `"formatted"`. [source](types.md#code)
+
+::: details Checked interface
+
+```text
+title() returns string
+```
+
+:::
 
 ### `TextFormatter` · class · [source](types.md#code) {#symbol-TextFormatter}
 
@@ -91,7 +99,17 @@ It implements [`Formatter`](types.md#symbol-Formatter). It inherits the default 
 
 #### `TextFormatter.format` · [source](types.md#code) {#symbol-TextFormatter.format}
 
-The type parameters are `T`. It takes `value` as `T`. It returns `"generic method called"`.
+It takes `value` as `T`. It returns `"generic method called"`. [source](types.md#code)
+
+::: details Checked interface
+
+```text
+format<T>(T value) returns string
+```
+
+The type parameters are `T`. It takes `value` as `T`.
+
+:::
 
 ### `Box` · class · [source](types.md#code) {#symbol-Box}
 
@@ -99,7 +117,15 @@ It implements [`IBox<T>`](types.md#symbol-IBox). The type parameters are `T`. It
 
 #### `Box.get` · [source](types.md#code) {#symbol-Box.get}
 
-It returns `value`.
+It returns `value`. [source](types.md#code)
+
+::: details Checked interface
+
+```text
+get() returns T
+```
+
+:::
 
 ### `IBox` · interface · [source](types.md#code) {#symbol-IBox}
 

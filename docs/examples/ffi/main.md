@@ -50,7 +50,7 @@ announce()
 
 ### Startup
 
-It calls [`announce`](native.md#symbol-announce).
+It calls [`announce`](native.md#symbol-announce). [source](main.md#code)
 
 ### Dependencies
 

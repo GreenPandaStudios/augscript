@@ -2,6 +2,8 @@
 
 # `store.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=8ea0da937460407020c3b3988c5bb39a90dd284be88f11f55c51d90e8eaad01f -->
+
 <a id="symbol-StoreFull"></a>
 ## `StoreFull` · class · [source](store.aug#L3)
 
@@ -39,29 +41,62 @@ A synchronized table with short critical sections and no I/O while locked. It im
 <a id="symbol-MemoryStore.put"></a>
 ### `MemoryStore.put` · [source](store.aug#L19)
 
-Remove expired entries, then store at most 512 live entries. Time is supplied by the caller. It takes `key` as a string, `value` as `T`, and `expires` and `now` as integers. Failures can raise [`StoreFull`](store.aug.md#symbol-StoreFull).
+Remove expired entries, then store at most 512 live entries. Time is supplied by the caller. It takes labeled inputs `key`, `value`, `expires`, and `now`.
 
-It sets `entry` to a [`_Entry`](store.aug.md#symbol-_Entry) for `T` with `value` and `expires`. While holding the lock on `_entries` as mutable `entries`, for each `name` and `saved` in a snapshot of `entries`, if `saved.expires` is at most `now`, it removes the key `name` from `entries`. After the loop, it checks that the number of elements in `entries` is less than `512` or whether `entries` contains the key `key` returns true. It raises a [`StoreFull`](store.aug.md#symbol-StoreFull) at the first failed check.
+It sets `entry` to a [`_Entry`](store.aug.md#symbol-_Entry) for `T` with `value` and `expires`. While holding the lock on `_entries` as mutable `entries`, for each `name` and `saved` in a snapshot of `entries`, if `saved.expires` is at most `now`, it removes the key `name` from `entries`. After the loop, it checks that the number of elements in `entries` is less than `512` or whether `entries` contains the key `key` returns true. It raises a [`StoreFull`](store.aug.md#symbol-StoreFull) at the first failed check. [source](store.aug#L20-L27)
 
-It stores `entry` in `entries` under `key`. Release this lock when the block exits, including on return or failure.
+It stores `entry` in `entries` under `key`. Release this lock when the block exits, including on return or failure. [source](store.aug#L21-L27)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+put(string key, T value, int expires, int now) returns void unless StoreFull uses ExpiringStore<T>.put
+```
+
+It takes `key` as a string, `value` as `T`, and `expires` and `now` as integers. Failures can raise [`StoreFull`](store.aug.md#symbol-StoreFull).
+
+</details>
 
 <a id="symbol-MemoryStore.take"></a>
 ### `MemoryStore.take` · [source](store.aug#L28)
 
 Atomically remove a value. Expired or absent entries return null. It takes `key` as a string and `now` as an integer.
 
-While holding the lock on `_entries` as mutable `entries`, it obtains `entries.take` with `key`. If no value is found, it returns null. The non-null result becomes `saved`. It returns null if `saved.expires` is at most `now`, or `saved.value` otherwise.
+While holding the lock on `_entries` as mutable `entries`, it obtains `entries.take` with `key`. If no value is found, it returns null. The non-null result becomes `saved`. It returns null if `saved.expires` is at most `now`, or `saved.value` otherwise. [source](store.aug#L29-L36)
 
-Release this lock when the block exits, including on return or failure.
+Release this lock when the block exits, including on return or failure. [source](store.aug#L29-L36)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+take(string key, int now) returns optional T uses ExpiringStore<T>.take
+```
+
+It takes `key` as a string and `now` as an integer.
+
+</details>
 
 <a id="symbol-MemoryStore.get"></a>
 ### `MemoryStore.get` · [source](store.aug#L37)
 
 Read a live value without consuming it. It takes `key` as a string and `now` as an integer.
 
-While holding the lock on `_entries` as mutable `entries`, it obtains the value under `key` in `entries`. If no value is found, it returns null. The non-null result becomes `saved`. It returns null if `saved.expires` is at most `now`, or `saved.value` otherwise.
+While holding the lock on `_entries` as mutable `entries`, it obtains the value under `key` in `entries`. If no value is found, it returns null. The non-null result becomes `saved`. It returns null if `saved.expires` is at most `now`, or `saved.value` otherwise. [source](store.aug#L38-L45)
 
-Release this lock when the block exits, including on return or failure.
+Release this lock when the block exits, including on return or failure. [source](store.aug#L38-L45)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+get(string key, int now) returns optional T uses ExpiringStore<T>.get
+```
+
+It takes `key` as a string and `now` as an integer.
+
+</details>
 
 <a id="symbol-_Entry"></a>
 ## `_Entry` · immutable record · [source](store.aug#L5)

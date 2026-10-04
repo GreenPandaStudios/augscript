@@ -67,7 +67,17 @@ Writes application messages to standard output. It implements [`Logger`](logger.
 
 #### `ConsoleLogger.log` · [source](console.md#code) {#symbol-ConsoleLogger.log}
 
-It takes `message` as a string (Text to write). It gets `console` ([`Console`](../dependencies/august/0.23.0/io/contracts.md#symbol-Console)) from dependency injection. It passes `message` to [`console.write`](../dependencies/august/0.23.0/io/contracts.md#symbol-Console.write).
+It takes `message` as a string. It gets `console` ([`Console`](../dependencies/august/0.23.0/io/contracts.md#symbol-Console)) from dependency injection. It passes `message` to [`console.write`](../dependencies/august/0.23.0/io/contracts.md#symbol-Console.write). [source](console.md#code)
+
+::: details Checked interface
+
+```text
+log(resolve Console console, string message) returns void uses Console.write
+```
+
+It takes `message` as a string (Text to write). It gets `console` ([`Console`](../dependencies/august/0.23.0/io/contracts.md#symbol-Console)) from dependency injection.
+
+:::
 
 ### Dependencies
 

@@ -2,14 +2,27 @@
 
 # `app.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=963457a355f2bea9e0e756ea0392806e845a54e6abe4095921ee83ecc2060f7c -->
+
 <a id="symbol-describe"></a>
 ## `describe` · [source](app.aug#L15)
 
-Prints a number and returns its label. It takes `x` as an integer (the numeric input, validated and incremented by the chain) and `label` as a string (Text forwarded through each layer unchanged). It gets `logger` ([`Logger`](logging.aug.md#symbol-Logger)) and `console` ([`Console`](.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-Console)) from dependency injection. Failures can raise `ValidationError`.
+Prints a number and returns its label. It takes labeled inputs `x` and `label`. It gets `logger` ([`Logger`](logging.aug.md#symbol-Logger)) and `console` ([`Console`](.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-Console)) from dependency injection.
 
 Layers run in the declared order. Call [`Audit.around`](interceptors.aug.md#symbol-Audit.around). Call [`Positive.around`](interceptors.aug.md#symbol-Positive.around). Map `x` to `y`. Call [`AddOne.around`](interceptors.aug.md#symbol-AddOne.around). Map `x` to `y`.
 
-It passes `x` to [`console.write`](.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-Console.write). It returns `label`.
+It passes `x` to [`console.write`](.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-Console.write). It returns `label`. [source](app.aug#L16-L17)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+describe(resolve Logger logger, resolve Console console, int x, string label) returns string unless ValidationError uses Console.write
+```
+
+It takes `x` as an integer (the numeric input, validated and incremented by the chain) and `label` as a string (Text forwarded through each layer unchanged). It gets `logger` ([`Logger`](logging.aug.md#symbol-Logger)) and `console` ([`Console`](.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-Console)) from dependency injection. Failures can raise `ValidationError`.
+
+</details>
 
 <a id="symbol-IGreeter"></a>
 ## `IGreeter` · interface · [source](app.aug#L19)
@@ -29,7 +42,18 @@ Construction stores its inputs; startup is visible in the greet call. It impleme
 
 Method annotations wrap each method invocation separately. It gets `logger` ([`Logger`](logging.aug.md#symbol-Logger)) and `console` ([`Console`](.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-Console)) from dependency injection. Layers run in the declared order. Call [`Audit.around`](interceptors.aug.md#symbol-Audit.around).
 
-It returns the text `Hello, {name}!`.
+It returns the text `Hello, {name}!`. [source](app.aug#L27)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+greet(resolve Logger logger, resolve Console console) returns string uses Console.write
+```
+
+It gets `logger` ([`Logger`](logging.aug.md#symbol-Logger)) and `console` ([`Console`](.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-Console)) from dependency injection.
+
+</details>
 
 ## Dependencies
 

@@ -175,31 +175,67 @@ It implements [`SigningKeys`](keys.md#symbol-SigningKeys). The read-only, privat
 
 #### `MemorySigningKeys.configure` · [source](keys.md#code) {#symbol-MemorySigningKeys.configure}
 
+It takes `provider` and `session` as `RsaPrivateKey`.
+
+While holding the lock on `_keys` as mutable `keys`, it checks that the number of elements in `keys` equals `0`. It raises a [`KeyError`](keys.md#symbol-KeyError) at the first failed check. It stores `provider` in `keys` under `"provider"`. It stores `session` in `keys` under `"session"`. [source](keys.md#code)
+
+Release this lock when the block exits, including on return or failure. [source](keys.md#code)
+
+::: details Checked interface
+
+```text
+configure(RsaPrivateKey provider, RsaPrivateKey session) returns void unless KeyError uses SigningKeys.configure
+```
+
 It takes `provider` and `session` as `RsaPrivateKey`. Failures can raise [`KeyError`](keys.md#symbol-KeyError).
 
-While holding the lock on `_keys` as mutable `keys`, it checks that the number of elements in `keys` equals `0`. It raises a [`KeyError`](keys.md#symbol-KeyError) at the first failed check. It stores `provider` in `keys` under `"provider"`. It stores `session` in `keys` under `"session"`.
-
-Release this lock when the block exits, including on return or failure.
+:::
 
 #### `MemorySigningKeys.provider` · [source](keys.md#code) {#symbol-MemorySigningKeys.provider}
 
+While holding the lock on `_keys` as mutable `keys`, it obtains the value under `"provider"` in `keys`. If no value is found, it raises a [`KeyError`](keys.md#symbol-KeyError). The non-null result becomes `key`. It returns `key`. [source](keys.md#code)
+
+Release this lock when the block exits, including on return or failure. [source](keys.md#code)
+
+::: details Checked interface
+
+```text
+provider() returns RsaPrivateKey unless KeyError uses SigningKeys.provider
+```
+
 Failures can raise [`KeyError`](keys.md#symbol-KeyError).
 
-While holding the lock on `_keys` as mutable `keys`, it obtains the value under `"provider"` in `keys`. If no value is found, it raises a [`KeyError`](keys.md#symbol-KeyError). The non-null result becomes `key`. It returns `key`.
-
-Release this lock when the block exits, including on return or failure.
+:::
 
 #### `MemorySigningKeys.session` · [source](keys.md#code) {#symbol-MemorySigningKeys.session}
 
+While holding the lock on `_keys` as mutable `keys`, it obtains the value under `"session"` in `keys`. If no value is found, it raises a [`KeyError`](keys.md#symbol-KeyError). The non-null result becomes `key`. It returns `key`. [source](keys.md#code)
+
+Release this lock when the block exits, including on return or failure. [source](keys.md#code)
+
+::: details Checked interface
+
+```text
+session() returns RsaPrivateKey unless KeyError uses SigningKeys.session
+```
+
 Failures can raise [`KeyError`](keys.md#symbol-KeyError).
 
-While holding the lock on `_keys` as mutable `keys`, it obtains the value under `"session"` in `keys`. If no value is found, it raises a [`KeyError`](keys.md#symbol-KeyError). The non-null result becomes `key`. It returns `key`.
-
-Release this lock when the block exits, including on return or failure.
+:::
 
 ### `initializeKeys` · [source](keys.md#code) {#symbol-initializeKeys}
 
-It gets `crypto` ([`Crypto`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto)) and `keys` ([`SigningKeys`](keys.md#symbol-SigningKeys)) from dependency injection. Failures can raise `CryptoError` and [`KeyError`](keys.md#symbol-KeyError). It sets `provider` and `session` separately, each to [`crypto.generateRsa`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto.generateRsa). It calls [`keys.configure`](keys.md#symbol-SigningKeys.configure) with `provider` and `session`.
+It gets `crypto` ([`Crypto`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto)) and `keys` ([`SigningKeys`](keys.md#symbol-SigningKeys)) from dependency injection. It sets `provider` and `session` separately, each to [`crypto.generateRsa`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto.generateRsa). It calls [`keys.configure`](keys.md#symbol-SigningKeys.configure) with `provider` and `session`. [source](keys.md#code)
+
+::: details Checked interface
+
+```text
+initializeKeys(resolve Crypto crypto, resolve SigningKeys keys) returns void unless CryptoError and KeyError uses Crypto.generateRsa, SigningKeys.configure
+```
+
+It gets `crypto` ([`Crypto`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto)) and `keys` ([`SigningKeys`](keys.md#symbol-SigningKeys)) from dependency injection. Failures can raise `CryptoError` and [`KeyError`](keys.md#symbol-KeyError).
+
+:::
 
 ### Dependencies
 

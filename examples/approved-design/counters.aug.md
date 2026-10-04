@@ -2,6 +2,8 @@
 
 # `counters.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=ae7c6f6e8cb980505a38f0d1e57ba5f8a9d14a2f124c6040735378cb13a28731 -->
+
 <a id="symbol-State"></a>
 ## `State` · interface · [source](counters.aug#L3)
 
@@ -42,7 +44,16 @@ It implements [`State`](counters.aug.md#symbol-State). It is private to this fil
 <a id="symbol-_Initial.read"></a>
 ### `_Initial.read` · [source](counters.aug#L6)
 
-It returns `0`.
+It returns `0`. [source](counters.aug#L7)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+read() returns int
+```
+
+</details>
 
 <a id="symbol-_Updated"></a>
 ## `_Updated` · class · [source](counters.aug#L8)
@@ -52,7 +63,16 @@ It implements [`State`](counters.aug.md#symbol-State). It is private to this fil
 <a id="symbol-_Updated.read"></a>
 ### `_Updated.read` · [source](counters.aug#L9)
 
-It returns `count`.
+It returns `count`. [source](counters.aug#L10)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+read() returns int
+```
+
+</details>
 
 <a id="symbol-_Counter"></a>
 ## `_Counter` · class · [source](counters.aug#L15)
@@ -62,9 +82,29 @@ It implements [`Counter`](counters.aug.md#symbol-Counter). It is private to this
 <a id="symbol-_Counter.increment"></a>
 ### `_Counter.increment` · [source](counters.aug#L16)
 
-It may change `self`. It sets `_state` to a [`_Updated`](counters.aug.md#symbol-_Updated) with `count` from [`_state.read`](counters.aug.md#symbol-State.read) plus `1`.
+It sets `_state` to a [`_Updated`](counters.aug.md#symbol-_Updated) with `count` from [`_state.read`](counters.aug.md#symbol-State.read) plus `1`. [source](counters.aug#L17)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+increment() returns void changes self
+```
+
+It may change `self`.
+
+</details>
 
 <a id="symbol-_Counter.value"></a>
 ### `_Counter.value` · [source](counters.aug#L18)
 
-It returns [`_state.read`](counters.aug.md#symbol-State.read).
+It returns [`_state.read`](counters.aug.md#symbol-State.read). [source](counters.aug#L19)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+value() returns int
+```
+
+</details>

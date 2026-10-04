@@ -264,7 +264,7 @@ async function showContext(context, includeSource) {
 
 const yamlHelp = {
   backend: 'LLVM is the default on qualified hosts. August downloads its verified compiler/runtime pack. Choose c only for the temporary C reference workflow; checked native ABI packages require LLVM.',
-  spec: 'Deterministic specifications are generated beside source files during successful builds. aug spec regenerates them; aug spec --check checks for drift.',
+  spec: 'Deterministic prose specifications are generated beside source files during successful builds. Expand Checked interface for complete contracts; paragraph source links navigate to the code. aug spec regenerates them; aug spec --check checks for drift.',
   'spec.require_comments': 'Require Javadoc on none (default), public declarations, or all declarations. Existing interface documentation can be inherited. Missing required comments are compiler errors.',
   assignment: 'Canonical assignments: `equals` or `to`. Both forms are accepted by the language.',
   block_style: 'Formatter block style: `braces` or `indent`. A colon starts an indented block.',

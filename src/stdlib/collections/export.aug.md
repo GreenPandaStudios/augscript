@@ -2,6 +2,8 @@
 
 # `export.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=34d0b1798dd1c9868b6496824487f2d288a391f02553c3affc0e733759738770 -->
+
 ## Exports
 
 Export the declaration `range` from [`ranges.aug`](ranges.aug.md#symbol-range). Export the declaration `RangeError` from [`ranges.aug`](ranges.aug.md#symbol-RangeError).

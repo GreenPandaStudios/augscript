@@ -59,7 +59,15 @@ It takes `id` as an integer, kept read-only and `message` as a string, kept read
 
 ### `reply` · [source](routes.md#code) {#symbol-reply}
 
-`reply` handles `GET /bench`. It returns a [`Reply`](routes.md#symbol-Reply) with `id` `7` and `message` `"hello"`.
+`reply` handles `GET /bench`. It returns a [`Reply`](routes.md#symbol-Reply) with `id` `7` and `message` `"hello"`. [source](routes.md#code)
+
+::: details Checked interface
+
+```text
+reply() returns Reply
+```
+
+:::
 
 ::::
 

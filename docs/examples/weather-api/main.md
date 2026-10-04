@@ -54,7 +54,7 @@ Listen on `127.0.0.1`. Limit request bodies to 1048576 bytes and buffered respon
 
 ### Startup
 
-It serves [`weatherForecast`](forecasts.md#symbol-weatherForecast) on port `8787`.
+It serves [`weatherForecast`](forecasts.md#symbol-weatherForecast) on port `8787`. [source](main.md#code)
 
 ### Dependencies
 

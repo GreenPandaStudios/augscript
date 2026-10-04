@@ -56,9 +56,17 @@ load(bool fail) {
 
 ### `load` · [source](errors.md#code) {#symbol-load}
 
+It takes `fail` as a boolean. It checks that `fail` is false. It raises a `FileError` at the first failed check. It returns `"loaded"`. [source](errors.md#code)
+
+::: details Checked interface
+
+```text
+load(bool fail) returns string unless FileError
+```
+
 It takes `fail` as a boolean. Failures can raise `FileError`.
 
-It checks that `fail` is false. It raises a `FileError` at the first failed check. It returns `"loaded"`.
+:::
 
 ::::
 

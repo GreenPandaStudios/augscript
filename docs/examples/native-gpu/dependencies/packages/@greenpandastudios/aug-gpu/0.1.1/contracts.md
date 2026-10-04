@@ -54,7 +54,15 @@ It implements `Error`. It takes `code` as an integer, kept read-only and `messag
 
 #### `GpuError.explain` · [source](contracts.md#code) {#symbol-GpuError.explain}
 
-It returns `message`.
+It returns `message`. [source](contracts.md#code)
+
+::: details Checked interface
+
+```text
+explain() returns string
+```
+
+:::
 
 ::::
 

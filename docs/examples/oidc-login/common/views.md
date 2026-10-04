@@ -75,7 +75,17 @@ Page(string title, List<Html> children) {
 
 Small server components keep each page's behavior and dependencies visible. It takes `title` as a string and `children` as `List<Html>`.
 
-It returns the HTML element `html` with `lang` = `"en"` containing the HTML element `head` containing the HTML element `meta` with `charset` = `"utf-8"` with escaped text, the HTML element `meta` with `name` = `"viewport"`, `content` = `"width=device-width, initial-scale=1"` with escaped text, the HTML element `title` containing `title`, ` — August` with escaped text with escaped text, the HTML element `body` with `style` = `"margin:0;background:#f3f5f9;color:#17233a;font:17px system-ui,sans-serif;line-height:1.6"` containing the HTML element `main` with `style` = `"max-width:640px;margin:48px auto;padding:28px;background:white;border-radius:20px;box-shadow:0 12px 48px #17233a12"` containing the HTML element `nav` containing a link with `href` = `"/"`, `style` = `"color:#4852d7;font-weight:750;text-decoration:none"` containing `August · OpenID Connect` with escaped text with escaped text, a heading containing `title` with escaped text, `children` with escaped text with escaped text with escaped text.
+It returns the HTML element `html` with `lang` = `"en"` containing the HTML element `head` containing the HTML element `meta` with `charset` = `"utf-8"` with escaped text, the HTML element `meta` with `name` = `"viewport"`, `content` = `"width=device-width, initial-scale=1"` with escaped text, the HTML element `title` containing `title`, ` — August` with escaped text with escaped text, the HTML element `body` with `style` = `"margin:0;background:#f3f5f9;color:#17233a;font:17px system-ui,sans-serif;line-height:1.6"` containing the HTML element `main` with `style` = `"max-width:640px;margin:48px auto;padding:28px;background:white;border-radius:20px;box-shadow:0 12px 48px #17233a12"` containing the HTML element `nav` containing a link with `href` = `"/"`, `style` = `"color:#4852d7;font-weight:750;text-decoration:none"` containing `August · OpenID Connect` with escaped text with escaped text, a heading containing `title` with escaped text, `children` with escaped text with escaped text with escaped text. [source](views.md#code)
+
+::: details Checked interface
+
+```text
+Page(string title, List<Html> children) returns Html
+```
+
+It takes `title` as a string and `children` as `List<Html>`.
+
+:::
 
 ::::
 

@@ -90,9 +90,19 @@ test calculate {
 
 ### `calculate` · [source](tensors.md#code) {#symbol-calculate}
 
-Add two CPU tensors using LibTorch and return the sum of their elements. Failures can raise [`TensorError`](dependencies/packages/%40greenpandastudios/aug-pytorch/0.1.6/contracts.md#symbol-TensorError).
+Add two CPU tensors using LibTorch and return the sum of their elements.
 
-It calls [`tensor`](dependencies/packages/%40greenpandastudios/aug-pytorch/0.1.6/api.md#symbol-tensor) with `values` from a list containing `1.0`, `2.0`, `3.0` and stores the result in owned `left` ([`Tensor`](dependencies/packages/%40greenpandastudios/aug-pytorch/0.1.6/bindings.md#symbol-Tensor)). It calls [`tensor`](dependencies/packages/%40greenpandastudios/aug-pytorch/0.1.6/api.md#symbol-tensor) with `values` from a list containing `4.0`, `5.0`, `6.0` and stores the result in owned `right` ([`Tensor`](dependencies/packages/%40greenpandastudios/aug-pytorch/0.1.6/bindings.md#symbol-Tensor)). It calls [`add`](dependencies/packages/%40greenpandastudios/aug-pytorch/0.1.6/api.md#symbol-add) with `left` and `right` and stores the result in owned `result` ([`Tensor`](dependencies/packages/%40greenpandastudios/aug-pytorch/0.1.6/bindings.md#symbol-Tensor)). It returns [`sum`](dependencies/packages/%40greenpandastudios/aug-pytorch/0.1.6/api.md#symbol-sum) with `tensor` from `result`.
+It calls [`tensor`](dependencies/packages/%40greenpandastudios/aug-pytorch/0.1.6/api.md#symbol-tensor) with `values` from a list containing `1.0`, `2.0`, `3.0` and stores the result in owned `left` ([`Tensor`](dependencies/packages/%40greenpandastudios/aug-pytorch/0.1.6/bindings.md#symbol-Tensor)). It calls [`tensor`](dependencies/packages/%40greenpandastudios/aug-pytorch/0.1.6/api.md#symbol-tensor) with `values` from a list containing `4.0`, `5.0`, `6.0` and stores the result in owned `right` ([`Tensor`](dependencies/packages/%40greenpandastudios/aug-pytorch/0.1.6/bindings.md#symbol-Tensor)). It calls [`add`](dependencies/packages/%40greenpandastudios/aug-pytorch/0.1.6/api.md#symbol-add) with `left` and `right` and stores the result in owned `result` ([`Tensor`](dependencies/packages/%40greenpandastudios/aug-pytorch/0.1.6/bindings.md#symbol-Tensor)). It returns [`sum`](dependencies/packages/%40greenpandastudios/aug-pytorch/0.1.6/api.md#symbol-sum) with `tensor` from `result`. [source](tensors.md#code)
+
+::: details Checked interface
+
+```text
+calculate() returns float unless TensorError
+```
+
+Failures can raise [`TensorError`](dependencies/packages/%40greenpandastudios/aug-pytorch/0.1.6/contracts.md#symbol-TensorError).
+
+:::
 
 ### `test calculate` · [source](tensors.md#code) {#symbol-test-20-calculate}
 
@@ -102,11 +112,11 @@ Tests [`calculate`](tensors.md#symbol-calculate). Each case gets fresh setup and
 
 ##### `adds_and_reads_real_tensors` · [source](tensors.md#code)
 
-It calls [`tensor`](dependencies/packages/%40greenpandastudios/aug-pytorch/0.1.6/api.md#symbol-tensor) with `values` from a list containing `1.0`, `2.0`, `3.0` and stores the result in owned `left` ([`Tensor`](dependencies/packages/%40greenpandastudios/aug-pytorch/0.1.6/bindings.md#symbol-Tensor)). It calls [`tensor`](dependencies/packages/%40greenpandastudios/aug-pytorch/0.1.6/api.md#symbol-tensor) with `values` from a list containing `4.0`, `5.0`, `6.0` and stores the result in owned `right` ([`Tensor`](dependencies/packages/%40greenpandastudios/aug-pytorch/0.1.6/bindings.md#symbol-Tensor)). It calls [`add`](dependencies/packages/%40greenpandastudios/aug-pytorch/0.1.6/api.md#symbol-add) with `left` and `right` and stores the result in owned `result` ([`Tensor`](dependencies/packages/%40greenpandastudios/aug-pytorch/0.1.6/bindings.md#symbol-Tensor)). It sets `output` of type `List<float>` to [`values`](dependencies/packages/%40greenpandastudios/aug-pytorch/0.1.6/api.md#symbol-values) with `tensor` from `result`.
+It calls [`tensor`](dependencies/packages/%40greenpandastudios/aug-pytorch/0.1.6/api.md#symbol-tensor) with `values` from a list containing `1.0`, `2.0`, `3.0` and stores the result in owned `left` ([`Tensor`](dependencies/packages/%40greenpandastudios/aug-pytorch/0.1.6/bindings.md#symbol-Tensor)). It calls [`tensor`](dependencies/packages/%40greenpandastudios/aug-pytorch/0.1.6/api.md#symbol-tensor) with `values` from a list containing `4.0`, `5.0`, `6.0` and stores the result in owned `right` ([`Tensor`](dependencies/packages/%40greenpandastudios/aug-pytorch/0.1.6/bindings.md#symbol-Tensor)). It calls [`add`](dependencies/packages/%40greenpandastudios/aug-pytorch/0.1.6/api.md#symbol-add) with `left` and `right` and stores the result in owned `result` ([`Tensor`](dependencies/packages/%40greenpandastudios/aug-pytorch/0.1.6/bindings.md#symbol-Tensor)). It sets `output` of type `List<float>` to [`values`](dependencies/packages/%40greenpandastudios/aug-pytorch/0.1.6/api.md#symbol-values) with `tensor` from `result`. [source](tensors.md#code)
 
-The test requires the number of elements in `output` equals `3`. The test requires the item at index `0` in `output` equals `5.0`. The test requires the item at index `1` in `output` equals `7.0`. The test requires the item at index `2` in `output` equals `9.0`.
+The test requires the number of elements in `output` equals `3`. The test requires the item at index `0` in `output` equals `5.0`. The test requires the item at index `1` in `output` equals `7.0`. The test requires the item at index `2` in `output` equals `9.0`. [source](tensors.md#code)
 
-The test requires [`sum`](dependencies/packages/%40greenpandastudios/aug-pytorch/0.1.6/api.md#symbol-sum) with `tensor` from `result` equals `21.0`. The test requires [`calculate`](tensors.md#symbol-calculate) equals `21.0`.
+The test requires [`sum`](dependencies/packages/%40greenpandastudios/aug-pytorch/0.1.6/api.md#symbol-sum) with `tensor` from `result` equals `21.0`. The test requires [`calculate`](tensors.md#symbol-calculate) equals `21.0`. [source](tensors.md#code)
 
 ### Dependencies
 

@@ -172,27 +172,57 @@ A synchronized table with short critical sections and no I/O while locked. It im
 
 #### `MemoryStore.put` · [source](store.md#code) {#symbol-MemoryStore.put}
 
-Remove expired entries, then store at most 512 live entries. Time is supplied by the caller. It takes `key` as a string, `value` as `T`, and `expires` and `now` as integers. Failures can raise [`StoreFull`](store.md#symbol-StoreFull).
+Remove expired entries, then store at most 512 live entries. Time is supplied by the caller. It takes labeled inputs `key`, `value`, `expires`, and `now`.
 
-It sets `entry` to a [`_Entry`](store.md#symbol-_Entry) for `T` with `value` and `expires`. While holding the lock on `_entries` as mutable `entries`, for each `name` and `saved` in a snapshot of `entries`, if `saved.expires` is at most `now`, it removes the key `name` from `entries`. After the loop, it checks that the number of elements in `entries` is less than `512` or whether `entries` contains the key `key` returns true. It raises a [`StoreFull`](store.md#symbol-StoreFull) at the first failed check.
+It sets `entry` to a [`_Entry`](store.md#symbol-_Entry) for `T` with `value` and `expires`. While holding the lock on `_entries` as mutable `entries`, for each `name` and `saved` in a snapshot of `entries`, if `saved.expires` is at most `now`, it removes the key `name` from `entries`. After the loop, it checks that the number of elements in `entries` is less than `512` or whether `entries` contains the key `key` returns true. It raises a [`StoreFull`](store.md#symbol-StoreFull) at the first failed check. [source](store.md#code)
 
-It stores `entry` in `entries` under `key`. Release this lock when the block exits, including on return or failure.
+It stores `entry` in `entries` under `key`. Release this lock when the block exits, including on return or failure. [source](store.md#code)
+
+::: details Checked interface
+
+```text
+put(string key, T value, int expires, int now) returns void unless StoreFull uses ExpiringStore<T>.put
+```
+
+It takes `key` as a string, `value` as `T`, and `expires` and `now` as integers. Failures can raise [`StoreFull`](store.md#symbol-StoreFull).
+
+:::
 
 #### `MemoryStore.take` · [source](store.md#code) {#symbol-MemoryStore.take}
 
 Atomically remove a value. Expired or absent entries return null. It takes `key` as a string and `now` as an integer.
 
-While holding the lock on `_entries` as mutable `entries`, it obtains `entries.take` with `key`. If no value is found, it returns null. The non-null result becomes `saved`. It returns null if `saved.expires` is at most `now`, or `saved.value` otherwise.
+While holding the lock on `_entries` as mutable `entries`, it obtains `entries.take` with `key`. If no value is found, it returns null. The non-null result becomes `saved`. It returns null if `saved.expires` is at most `now`, or `saved.value` otherwise. [source](store.md#code)
 
-Release this lock when the block exits, including on return or failure.
+Release this lock when the block exits, including on return or failure. [source](store.md#code)
+
+::: details Checked interface
+
+```text
+take(string key, int now) returns optional T uses ExpiringStore<T>.take
+```
+
+It takes `key` as a string and `now` as an integer.
+
+:::
 
 #### `MemoryStore.get` · [source](store.md#code) {#symbol-MemoryStore.get}
 
 Read a live value without consuming it. It takes `key` as a string and `now` as an integer.
 
-While holding the lock on `_entries` as mutable `entries`, it obtains the value under `key` in `entries`. If no value is found, it returns null. The non-null result becomes `saved`. It returns null if `saved.expires` is at most `now`, or `saved.value` otherwise.
+While holding the lock on `_entries` as mutable `entries`, it obtains the value under `key` in `entries`. If no value is found, it returns null. The non-null result becomes `saved`. It returns null if `saved.expires` is at most `now`, or `saved.value` otherwise. [source](store.md#code)
 
-Release this lock when the block exits, including on return or failure.
+Release this lock when the block exits, including on return or failure. [source](store.md#code)
+
+::: details Checked interface
+
+```text
+get(string key, int now) returns optional T uses ExpiringStore<T>.get
+```
+
+It takes `key` as a string and `now` as an integer.
+
+:::
 
 ### `_Entry` · immutable record · [source](store.md#code) {#symbol-_Entry}
 

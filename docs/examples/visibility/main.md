@@ -59,7 +59,7 @@ print(value=counter.value)
 
 ### Startup
 
-It sets `counter` to a [`Counter`](counter.md#symbol-Counter) with `value` `1`. It prints [`counter.label`](counter.md#symbol-Counter.label). With temporary permission to change `counter`, it sets `counter.value` to `2`. It prints `counter.value`.
+It sets `counter` to a [`Counter`](counter.md#symbol-Counter) with `value` `1`. It prints [`counter.label`](counter.md#symbol-Counter.label). With temporary permission to change `counter`, it sets `counter.value` to `2`. It prints `counter.value`. [source](main.md#code)
 
 ### Dependencies
 
