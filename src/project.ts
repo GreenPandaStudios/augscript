@@ -2,16 +2,17 @@ import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { basename, dirname, join, relative, resolve } from 'node:path';
 import type {
   ClassDecl, CompositionDecl, Diagnostic, ExportDecl, ImportDecl, InterfaceDecl, InterceptorDecl, MethodDecl,
-  SourceFile, TopLevel,
+  SourceFile, TopLevel, ResourceDecl,
 } from './ast.ts';
 import { parse } from './parser.ts';
 import { loadConfig, type Config } from './config.ts';
 import { projectPolicies } from './policies.ts';
 import { builtinFunctions, builtinTypes } from './builtins.ts';
 import { libraryChild, libraryRelative, standardLibraries, type StandardLibraries } from './libraries.ts';
-import { projectPackages, readPackage, sourcePaths, type ProjectPackages, type PackageManifest } from './package-manager.ts';
+import { packageSpecifications, projectPackages, readPackage, sourcePaths, type ProjectPackages, type PackageManifest } from './package-manager.ts';
+import { isGitSource, sourceAlias } from './git-packages.ts';
 
-export type DefinitionNode = ClassDecl | InterfaceDecl | InterceptorDecl | MethodDecl | CompositionDecl;
+export type DefinitionNode = ClassDecl | InterfaceDecl | InterceptorDecl | MethodDecl | CompositionDecl | ResourceDecl;
 export interface Definition {
   id: string;
   name: string;
@@ -68,11 +69,11 @@ export function loadProject(projectRoot: string, overrides: Map<string, string> 
   const { config, diagnostics } = loadConfig(root);
   let library: PackageManifest | undefined;
   let sourceRoot = root;
-  if (existsSync(join(root, 'aug-package.json'))) {
+  if (existsSync(join(root, 'aug-package.json')) || !existsSync(join(root,'main.aug')) && (existsSync(join(root,'export.aug')) || existsSync(join(root,'src/export.aug')))) {
     try { const loaded = readPackage(root); library = loaded.manifest; sourceRoot = loaded.sourceRoot; }
     catch (error) { diagnostics.push(diagnostic(join(root, 'aug-package.json'), 1, 1, (error as Error).message, 'PACKAGE')); }
   }
-  const packages = projectPackages(root, library?.dependencies ?? config.packages, sourceRoot);
+  const packages = projectPackages(root, packageSpecifications(sourceRoot, library?.dependencies ?? config.packages, overrides), sourceRoot);
   diagnostics.push(...packages.diagnostics);
   const read = (path: string) => {
     const source = overrides.get(path) ?? readFileSync(path, 'utf8');
@@ -80,7 +81,7 @@ export function loadProject(projectRoot: string, overrides: Map<string, string> 
     if (cached?.file.source === source) return cached;
     const parsed = parse(path, source); cache?.set(path, parsed); return parsed;
   };
-  for (const path of new Set([...sourceFiles(sourceRoot), ...overrides.keys()].filter(path => path.endsWith('.aug')))) {
+  for (const path of new Set([...sourceFiles(sourceRoot), ...[...overrides.keys()].filter(path => path.startsWith(sourceRoot + '/') || path.startsWith(sourceRoot + '\\'))].filter(path => path.endsWith('.aug')))) {
     const parsed = read(path);
     files.set(path, parsed.file);
     diagnostics.push(...parsed.diagnostics);
@@ -93,7 +94,7 @@ export function loadProject(projectRoot: string, overrides: Map<string, string> 
   }
   const libraries = standardLibraries();
   const stdlibRoot = libraries.root;
-  const libraryFiles = new Set([stdlibRoot, ...libraries.modules.values()].flatMap(sourceFiles));
+  const libraryFiles = new Set([join(stdlibRoot, 'export.aug'), ...sourceFiles(join(stdlibRoot,'io'))]);
   for (const path of libraryFiles) {
     const parsed = read(path);
     parsed.file.builtin = true;
@@ -116,7 +117,7 @@ export function loadProject(projectRoot: string, overrides: Map<string, string> 
         diagnostics.push(diagnostic(file.path, item.span.line, item.span.column,
           'export declarations belong in export.aug', 'EXPORT'));
       }
-      if (file === main && ['class', 'interface', 'function', 'interceptor', 'test', 'composition'].includes(item.kind)) {
+      if (file === main && ['class', 'interface', 'function', 'interceptor', 'test', 'composition', 'resource'].includes(item.kind)) {
         diagnostics.push(diagnostic(file.path, item.span.line, item.span.column,
           'Define classes, interfaces, functions, and interceptors outside main.aug', 'MAIN'));
       }
@@ -125,7 +126,7 @@ export function loadProject(projectRoot: string, overrides: Map<string, string> 
         diagnostics.push(diagnostic(file.path, item.span.line, item.span.column,
           'Executable statements and bindings belong in main.aug', 'MAIN'));
       }
-      if (item.kind === 'class' || item.kind === 'interface' || item.kind === 'function' || item.kind === 'interceptor' || item.kind === 'composition') {
+      if (item.kind === 'class' || item.kind === 'interface' || item.kind === 'function' || item.kind === 'interceptor' || item.kind === 'composition' || item.kind === 'resource') {
         if (item.name in builtinTypes || builtinFunctions.some(operation => operation.name === item.name) || item.name === 'next') {
           diagnostics.push(diagnostic(file.path, item.span.line, item.span.column,
             `${item.name} is a reserved built-in name`, 'NAME'));
@@ -247,7 +248,7 @@ export function loadProject(projectRoot: string, overrides: Map<string, string> 
       }
       return result;
     };
-    const privateModule = item.from.find(isPrivateName);
+    const privateModule = item.from.slice(isGitSource(item.from[0]) ? 1 : 0).find(isPrivateName);
     if (privateModule) {
       diagnostics.push(diagnostic(importer, item.span.line, item.span.column,
         `Cannot import from private module ${privateModule}`, 'PRIVATE'));
@@ -267,7 +268,8 @@ export function loadProject(projectRoot: string, overrides: Map<string, string> 
     }
     const owner = files.get(importer)?.package;
     const ownerScope = owner ? packages.scopes.get(owner) : undefined;
-    const dependency = ownerScope ? packages.scopes.get(ownerScope.dependencies[item.from[0]]) : packages.roots.get(item.from[0]);
+    const alias = isGitSource(item.from[0]) ? sourceAlias(item.from[0]) : item.from[0];
+    const dependency = ownerScope ? packages.scopes.get(ownerScope.dependencies[alias]) : packages.roots.get(alias);
     if (dependency) {
       let folder = dependency.sourceRoot;
       for (const child of item.from.slice(1)) {

@@ -1,7 +1,11 @@
-# august.web
+# August web library
 
-`@greenpandastudios/aug-web` contains HTTP client, authentication, authorization, request logging and response helpers. Endpoints, wire binding, policies, OpenAPI, streaming and server components are checked language features; their runtime ships with the matching CLI.
+This package contains the source exported by `august/web/export.aug`. Import it as a regular August source package, or add the canonical repository folder:
 
-The CLI installs the exact matching version. Run `aug-native` explicitly before native web builds. Current native support is macOS. HTTP conformance and runtime gaps are documented in the included guide and gap ledger.
+```sh
+aug add \
+  https://github.com/GreenPandaStudios/augscript/src/stdlib/web \
+  --as web
+```
 
-See [the web guide](https://GreenPandaStudios.github.io/augscript/web) and [installation](https://github.com/GreenPandaStudios/augscript/blob/main/docs/packages.md).
+Then import public names from `web`. [The API reference](https://greenpandastudios.github.io/augscript/api/web) describes the operations. `aug run` prepares their required native libraries. The [web guide](https://greenpandastudios.github.io/augscript/web) and [gap ledger](https://greenpandastudios.github.io/augscript/web-library-gaps) describe current behavior and deployment limits.

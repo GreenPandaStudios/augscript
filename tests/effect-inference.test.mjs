@@ -40,11 +40,11 @@ test('implementations and forward private helpers infer capabilities; hover and 
   });
 });
 
-test('inference still enforces pure interfaces and public function contracts', () => {
+test('public functions infer uses while implementations still respect pure interfaces', () => {
   project(declarations.replace('log(string message) uses Console.write', 'log(string message)') +
     'emit(Console console, string message) { _emit(console, message) }\n', ({ issues }) => {
     assert.ok(issues.some(issue => issue.message.includes('signature') || issue.message.includes('compatible')), JSON.stringify(issues));
-    assert.ok(issues.some(issue => issue.code === 'EFFECT' && issue.message.includes('emit is pure')), JSON.stringify(issues));
+    assert.ok(!issues.some(issue => issue.code === 'EFFECT' && issue.message.includes('emit is pure')), JSON.stringify(issues));
   });
 });
 
@@ -66,8 +66,13 @@ test('explicit uses is an upper bound; constructors and lock regions retain thei
   project(`import Console from august.io
 capability Reader { read() returns int uses Reader.read }
 interface Value { read() returns int }
-Bad(Console console) => { _write(console) } implements Value {
-    read() returns int { return 1 }
+Bad(Console console) implements Value {
+    initialize {
+        _write(console)
+    }
+    read() returns int {
+        return 1
+    }
 }
 _write(Console console) { console.write(value="hidden") }
 _limited(Console console, Reader reader) uses reader.read { _write(console) }

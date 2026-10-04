@@ -10,7 +10,7 @@ test('OpenAPI uses served endpoints, Javadoc, typed schemas and exact response v
   try {
     writeFileSync(join(root, 'main.yaml'), 'openapi:\n  enabled: true\n  title: Fruit API\n  version: 1.0.0\nweb:\n  host: 127.0.0.1\n');
     writeFileSync(join(root, 'main.aug'), 'import getFruit from fruit\nserve getFruit on port 0\n');
-    writeFileSync(join(root, 'fruit.aug'), `record Fruit(int id, string name, optional string label, string? color)
+    writeFileSync(join(root, 'fruit.aug'), `record Fruit(int id, string name, optional string label, optional string color)
 /** Read a fruit by id.
  * @param id The stable fruit identifier.
  */
@@ -28,7 +28,7 @@ endpoint GET "/private" as unserved() returns string:
     assert.match(operation.description, /Read a fruit/); assert.match(operation.parameters[0].description, /stable fruit/);
     assert.equal(operation.parameters[0].required, true); assert.ok(operation.responses['200']); assert.ok(operation.responses['400']);
     const schema = Object.values(document.components.schemas).find(schema => schema.properties?.name);
-    assert.deepEqual(schema.required, ['id', 'name', 'color']); assert.deepEqual(schema.properties.color.type, ['string', 'null']);
+    assert.deepEqual(schema.required, ['id', 'name']); assert.deepEqual(schema.properties.color.type, ['string', 'null']);
     writeFileSync(join(root, 'fruit.aug'), 'endpoint GET "/fruit/{id}" as getFruit(int id from path) returns Json:\n    return Json(value={"x":"y"})\n');
     result = spawnSync(process.execPath, [cli, 'openapi', root], {encoding:'utf8'});
     assert.equal(result.status, 0, result.stderr);

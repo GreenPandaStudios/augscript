@@ -1,14 +1,15 @@
+// aug-spec: "types.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Console from august.io
 interface Repository<T> {
     get() returns T
 }
 NumberRepository() implements Repository<int> {
-    get() returns int {
+    get() {
         return 7
     }
 }
 Program(resolve Repository<int> repository) implements IProgram {
-    start(resolve Console console) uses Console.write {
+    start(resolve Console console) {
         console.write(value=repository.get())
     }
 }

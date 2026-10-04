@@ -1,3 +1,4 @@
+// aug-spec: "export.aug.md" explains this file. Read it before changes; refresh with aug spec.
 export Principal from contracts
 export Authentication from contracts
 export Authorization from contracts
@@ -8,3 +9,5 @@ export WebHttpClient from contracts
 export redirect from contracts
 export urlEncode from contracts
 export cookie from contracts
+export ServerControl from contracts
+export WebServerControl from contracts

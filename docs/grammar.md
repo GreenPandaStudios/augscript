@@ -1,6 +1,6 @@
 # Grammar and line boundaries
 
-This is the compact accepted grammar for 0.16. `Name` is an identifier, `Type` may include generic arguments and ?, and bracketed grammar groups below are optional. These text blocks describe syntax rather than executable snippets.
+Grammar for August 0.21. `Name` is an identifier; bracketed groups are optional. The blocks below describe syntax and are not executable programs.
 
 ## Blocks and declarations
 
@@ -13,10 +13,12 @@ Function    := [Tags] ["fixture"] Name [Generics] "(" Parameters ")"
                ["uses" Paths] ["unless" Types] (Block | End)
 
 Class       := [Tags] Name [Generics] ["(" Fields ")"]
-               ["=>" Block] "implements" Type {"," Type} Block
+               ["unless" Types] "implements" Type {"," Type} ClassBlock
+ClassBlock  := BlockOfFieldsAndMethodsWithOptionalInitialize
+Initialize  := "initialize" Block
 
 Record      := "record" Name [Generics] "(" Fields ")"
-               ["unless" Types] ["=>" Block]
+               ["unless" Types] [BlockOfInitialize]
 
 Interface   := ("interface" | "capability") Name [Generics]
                ["extends" Type {"," Type}] Block
@@ -24,19 +26,19 @@ Interface   := ("interface" | "capability") Name [Generics]
 Interceptor := "interceptor" Name [Generics] ["(" ResolveFields ")"] Block
 Composition := "composition" Name BlockOfBindings
 Endpoint    := [Tags] "endpoint" HttpMethod String "as" Name "(" Parameters ")"
-               ("returns" Type | "streams" Type) ["uses" Paths]
+               ["returns" Type | "streams" Type] ["uses" Paths]
                ["unless" Type ["with status" Integer] {"and" Type ["with status" Integer]}]
                ["with status" Integer] Block
 ```
 
-An interface/class/interceptor block contains method declarations. A record ends after its header or validation block and has no behavior body. A function's absent returns clause means void. Its body is required for calls, except extern C. There is no class or function prefix.
+An interface/class/interceptor block contains method declarations. A record ends after its header or validation block and has no behavior body. An executable body infers an absent returns clause; no returned value means void. A bodyless signature defaults to void. Omitted changes, uses, and unless clauses are inferred from executable bodies; explicit clauses remain checked bounds. A callable needs a body unless declared `extern C`. There is no class or function prefix.
 
-A constructor-shaped header followed by => requires implements after its constructor body. Nested function declarations are not supported. A root `counter()` statement is a call, not a declaration.
+The implements clause identifies a class. Its initialize block appears inside the class before methods, and runs after field initialization. Records can contain one initialize block for validation. Nested function declarations are not supported. A root `counter()` statement is a call, not a declaration.
 
 ```text
 Generics    := "<" Generic {"," Generic} ">"
 Generic     := ["in" | "out"] Name ["implements" Type {"and" Type}]
-Type        := ["optional"] Name ["<" Types ">"] ["?"]
+Type        := ["optional"] Name ["<" Types ">"]
 Parameter   := ["resolve"] ["mutable"] ["own" | "borrow"] Type Label ["to" Storage]
                ["from" WireSource [String]]
 Types       := Type {("and" | ",") Type}
@@ -51,20 +53,20 @@ Variance is accepted only on interfaces; mutable storage applies to class header
 ## Imports, bindings, and calls
 
 ```text
-Import      := "import" (Name {"and" Name} | "everything") "from" DottedPath End
+Import      := "import" (Name {"and" Name} | "everything") "from" (DottedPath | RepositoryUrl {"." Name}) End
 Export      := "export" Name "from" SiblingName End
              | "export" "folder" ChildName End
 Binding     := "implement" Key ["<" Types ">"] "with" Type
                ["shared" | "fresh" | "scoped"] ["mutable"] End
-             | "bind" Key ["<" Types ">"] "to" Type
-               ["shared" | "fresh" | "scoped"] ["mutable"] End
 Include     := "include" Name End
 CallInput   := Label ("=" | "to") Expression | Name
 Assignment  := [["own" | "borrow"] Type] Target ("=" | "to") Expression End
-Resolve     := "resolve" Key ["<" Types ">"] ["to" Name] End
+Resolve     := "resolve" Key ["<" Types ">"] "to" Name End
 ```
 
-The formatter uses implement/with, resolve/to, and named imports. Assignment style remains a project preference. Repeated paths/errors can use and or comma; canonical error clauses use and. Collection constructor elements are positional because their order carries meaning. Assert also accepts its single bool positionally.
+A quoted public repository URL declares a source dependency. A URL can select a tag or commit with `#REVISION`. See [packages](packages.md) for aliases and commit locks.
+
+The formatter uses implement/with and resolve/to, and preserves wildcard imports. Assignment style remains a project preference. Repeated paths/errors can use and or comma; canonical error clauses use and. Collection constructor elements are positional because their order carries meaning. Assert also accepts its single bool positionally.
 
 ## Control flow and tests
 
@@ -85,7 +87,7 @@ Statement   := Assignment | Expression End | "pass" End
              | "serve" Name {"and" Name} "on port" Expression End
 
 Pattern     := Name | "(" Name {"," Name} [","] ")"
-MatchCase   := "when" ("missing" | "null" | "some" Name | "true" | "false" | Type Name) Block
+MatchCase   := "when" ("null" | "some" Name | "true" | "false" | Type Name) Block
              | "else" Block
 
 Test        := "test" LocalFunction BlockOfGroups
@@ -97,6 +99,8 @@ TestName    := Identifier | String
 ```
 
 Setup bindings precede setup statements, which precede cases. Empty bodies use pass. Includes are composition/setup operations; declarations and setup ordering are checked beyond parsing.
+
+Optional values have two cases: null and some. Omitted inputs become null. Type? and missing are obsolete spellings; use optional Type and null. Old matches with separate missing and null branches require one merged null branch.
 
 ## Expressions and ambiguity
 
@@ -111,13 +115,14 @@ Setup bindings precede setup statements, which precede cases. Empty bodies use p
 | `[Validator] header...` | Interceptor annotation on a declaration. |
 | `receiver.member(label=value)` | Labeled method call. |
 | `receiver.member(value)` | Same-name label shorthand when value is a name. |
-| `start load(input=value)` | A scope-owned task. |
+| `start load(input=value)` | A cooperative scope-owned task. |
+| `start worker calculate(values)` | A scope-owned worker with copied data on an isolated heap. |
 | `wait for first and second` | Ordered task results. |
 | `wait for tasks` | Ordered collection of results. |
 | `handle save(input from form)` | A checked deferred HTTP form action. |
 | `<Panel title={name}>...</Panel>` | Checked server component producing Html. |
 
-Operators from high to low precedence: member/call, unary !/-, multiplication/division, addition/subtraction, ordered comparisons, equality, &&, ||. Binary operators associate left. No assignment expression or implicit truthiness is supported. Exponentiation, remainder, and implicit casts are absent.
+Operators from high to low precedence: member/call, unary minus, multiplication/division, addition/subtraction, ordered comparisons, equality, not, and, or. Thus `not count == 0` means `not (count == 0)`. Boolean operations short-circuit from left to right. Only the word spellings are accepted; `&&`, `||`, and unary `!` are syntax errors. `!=` remains accepted. Binary operators associate left. No assignment expression or implicit truthiness is supported. Exponentiation, remainder, and implicit casts are absent.
 
 Function contract clauses may appear in any order, once each; the formatter writes returns, changes, uses, then unless. Storage aliases apply to class/record/interceptor fields rather than ordinary function parameters.
 
@@ -132,3 +137,5 @@ Function contract clauses may appear in any order, once each; the formatter writ
 - Return expressions begin on the return line; use parentheses to continue one.
 
 The parser owns these rules. The formatter reparses and compares program structure before offering an edit, preserving comments while choosing the project's block and assignment styles.
+
+`start worker name(...)` uses the existing task operations with copied data and an isolated heap. `worker` is contextual here; a function named `worker` can still be called normally. See [workers](workers.md) for checked boundary types and native package requirements.

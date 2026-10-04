@@ -37,7 +37,7 @@ export async function runLanguageServer(root: string): Promise<number> {
     if (message.id !== undefined && cancelled.delete(message.id)) { send({ jsonrpc: '2.0', id: message.id, error: { code: -32800, message: 'Request cancelled' } }); return; }
     if (message.method === 'initialize') result = { capabilities: {
       textDocumentSync: { openClose: true, change: 1 }, hoverProvider: true, completionProvider: { triggerCharacters: ['.', '(', '=', ' '] },
-      definitionProvider: true, documentFormattingProvider: true, codeActionProvider: true,
+      definitionProvider: true, documentFormattingProvider: true, codeActionProvider: true, inlayHintProvider: true,
       semanticTokensProvider: { legend: { tokenTypes, tokenModifiers: ['declaration'] }, full: true },
     }, serverInfo: { name: 'AugScript', version: compilerVersion() } };
     else if (message.method === 'shutdown') shutdown = true;
@@ -61,24 +61,35 @@ export async function runLanguageServer(root: string): Promise<number> {
       const view = document(uri), offset = params.offset ?? 0;
       result = params.command === 'hover' ? view.hover(offset) ?? null : params.command === 'complete' ? view.complete(offset) :
         params.command === 'fixes' ? view.fixes() : params.command === 'semantic-tokens' ? view.tokens() :
+          params.command === 'inlay-hints' ? view.inlayHints(params.options?.start, params.options?.end) :
           params.command === 'format' ? view.format() : params.command === 'definition' ? view.definition(offset) ?? null : params.command === 'diagnostics' ? view.diagnostics.map(issue => ({ ...issue, help: diagnosticHelp[issue.code] })) : view.describe(params.options);
     } else if (message.method.startsWith('textDocument/')) {
       const view = document(params.textDocument.uri);
       const offset = params.position ? offsetAt(view.source, params.position) : 0;
       if (message.method === 'textDocument/hover') {
         const hover = view.hover(offset); result = hover ? { contents: { kind: 'markdown', value: `\`\`\`augscript\n${hover.detail}\n\`\`\`\n\n${hover.documentation ?? ''}` } } : null;
-      } else if (message.method === 'textDocument/completion') result = view.complete(offset).map(item => ({ label: item.label,
+      } else if (message.method === 'textDocument/inlayHint') result = view.inlayHints(
+        params.range ? offsetAt(view.source, params.range.start) : undefined,
+        params.range ? offsetAt(view.source, params.range.end) : undefined).map(hint => ({
+          position: positionAt(view.source, hint.offset), label: hint.label, kind: 1,
+          paddingLeft: true, tooltip: {kind: 'markdown', value: hint.tooltip},
+        }));
+      else if (message.method === 'textDocument/completion') result = view.complete(offset).map(item => ({ label: item.label,
         kind: ({ method: 2, function: 3, variable: 6, class: 7, interface: 8, property: 10, keyword: 14, snippet: 15, type: 25 } as Record<string, number>)[item.kind] ?? 6,
         detail: item.detail, documentation: { kind: 'markdown', value: item.documentation ?? '' }, insertText: item.insertText ?? item.label,
-        insertTextFormat: item.kind === 'snippet' ? 2 : 1 }));
+        insertTextFormat: item.insertText ? 2 : 1, sortText: item.sortText,
+        textEdit: item.replacement ? { range: {start:positionAt(view.source,item.replacement.start),end:positionAt(view.source,item.replacement.end)}, newText:item.insertText ?? item.label } : undefined,
+        additionalTextEdits: item.additionalEdits?.map(edit => ({range:{start:positionAt(view.source,edit.start),end:positionAt(view.source,edit.end)},newText:edit.text})) }));
       else if (message.method === 'textDocument/definition') { const target = view.definition(offset); result = target ? { uri: pathToFileURL(target.file).href,
         range: { start: { line: target.line - 1, character: target.column - 1 }, end: { line: target.line - 1, character: target.column } } } : null; }
       else if (message.method === 'textDocument/formatting') result = [{ range: { start: { line: 0, character: 0 }, end: positionAt(view.source, view.source.length) }, newText: view.format() }];
-      else if (message.method === 'textDocument/codeAction') result = view.fixes().map(fix => {
+      else if (message.method === 'textDocument/codeAction') result = view.fixes().filter(fix =>
+        !params.range || fix.issue.line - 1 >= params.range.start.line && fix.issue.line - 1 <= params.range.end.line).map(fix => {
         const changes: Record<string, { range: unknown; newText: string }[]> = {};
         for (const edit of fix.edits) { const source = workspace.document(edit.file).source, uri = pathToFileURL(edit.file).href;
           (changes[uri] ??= []).push({ range: { start: positionAt(source, edit.start), end: positionAt(source, edit.end) }, newText: edit.text }); }
-        return { title: fix.title, kind: 'quickfix', edit: { changes } };
+        return { title: fix.title, kind: 'quickfix', isPreferred: fix.preferred, diagnostics: [{ code:fix.issue.code, message:fix.issue.message,
+          range:{start:{line:fix.issue.line-1,character:fix.issue.column-1},end:{line:fix.issue.line-1,character:fix.issue.column}} }], edit: { changes } };
       });
       else if (message.method === 'textDocument/semanticTokens/full') {
         let line = 0, column = 0; const data: number[] = [];

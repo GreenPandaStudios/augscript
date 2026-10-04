@@ -5,7 +5,7 @@ import { sameType, tyName, type Ty } from './types.ts';
 export function inferType(ref: TypeRef, actual: Ty, names: readonly string[], types: Map<string, Ty>,
   conflict: (message: string) => void, view: (name: string, actual: Ty) => Ty | undefined = (_, actual) => actual): void {
   if (names.includes(ref.name) && !ref.args.length) {
-    const candidate = ref.nullable ? { ...actual, nullable: false } : actual;
+    const candidate = ref.nullable ? { ...actual, nullable: false, optional:false } : actual;
     const previous = types.get(ref.name);
     if (!previous) types.set(ref.name, candidate);
     else if (!sameType(previous, candidate))

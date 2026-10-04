@@ -3,6 +3,7 @@ import type { Diagnostic, Span, Stmt } from './ast.ts';
 import type { Project } from './project.ts';
 import { orderGraph } from './di.ts';
 import { javadocBefore } from './javadoc.ts';
+import { callableDocumentation } from './documentation.ts';
 
 export function projectPolicies(project: Project): Diagnostic[] {
   const diagnostics: Diagnostic[] = [];
@@ -62,17 +63,22 @@ export function projectPolicies(project: Project): Diagnostic[] {
     const declarations = [def.node, ...('methods' in def.node ? def.node.methods : [])];
     for (const node of declarations) {
       const doc = javadocBefore(source, 'annotations' in node && node.annotations?.length ? node.annotations[0].span.start : node.span.start);
-      if (!project.files.get(def.file)?.package && !node.name.startsWith('_') && enabled('public_docs') && !doc) report(node.span, `Document public ${node.name}'s contract with Javadoc`, 'DOC', true);
+      const effectiveDoc = node.kind === 'function' ? callableDocumentation(project, node, def) : doc;
+      const own = !project.files.get(def.file)?.package;
+      const publicNode = !def.name.startsWith('_') && !node.name.startsWith('_');
+      const required = own && (project.config.spec.require_comments === 'all' || project.config.spec.require_comments === 'public' && publicNode);
+      if (required && !effectiveDoc) report(node.span, `Document ${node.name} with Javadoc; main.yaml spec.require_comments is ${project.config.spec.require_comments}`, 'DOC');
+      else if (own && publicNode && enabled('public_docs') && !effectiveDoc) report(node.span, `Document public ${node.name}'s contract with Javadoc`, 'DOC', true);
       if (doc) {
         const params = 'params' in node ? node.params : 'fields' in node ? node.fields : [];
         for (const label of doc.parameters.keys()) if (!params.some(param => (param.label ?? param.name) === label))
           report(node.span, `@param ${label} does not name a public input of ${node.name}`, 'DOC');
         for (const tag of doc.tags ?? []) {
-          if (['return', 'returns'].includes(tag.name) && !('returns' in node && node.returns.name !== 'void'))
+          if (node.kind !== 'function' && ['return', 'returns'].includes(tag.name))
             report(node.span, `@${tag.name} requires a value-returning callable`, 'DOC');
-          if (['throws', 'exception'].includes(tag.name)) {
+          if (node.kind !== 'function' && !(node.kind === 'class' && node.record && node.validationDeclared === false) && ['throws', 'exception'].includes(tag.name)) {
             const name = tag.value.split(/\s/)[0];
-            const errors = 'throws' in node ? node.throws : 'validationErrors' in node ? node.validationErrors ?? [] : [];
+            const errors = node.kind === 'class' ? node.validationErrors ?? [] : [];
             if (!('annotations' in node && node.annotations?.length) && !errors.some(error => error.name === name)) report(node.span, `@${tag.name} ${name} is absent from ${node.name}'s unless contract`, 'DOC');
           }
           if (!['param', 'return', 'returns', 'throws', 'exception', 'deprecated', 'see'].includes(tag.name))

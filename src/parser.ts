@@ -195,7 +195,11 @@ class Parser {
       return { kind: 'composition', name, typeParams: [], bindings, span: this.span(start) };
     }
     if (this.at('extern')) {
-      this.take(); this.expect('C');
+      const start=this.take().span; this.expect('C');
+      if(this.current().value==='resource'){
+        this.take();const name=this.expect('identifier').value;this.endStatement();
+        return {kind:'resource',name,typeParams:[],span:this.span(start)};
+      }
       return this.parseFunction(true);
     }
     if (this.looksLikeBareClass()) return this.parseClass();
@@ -351,6 +355,9 @@ class Parser {
       this.take();
       this.parseTypeParams();
       if (this.at('(')) this.parseParams(true);
+      if(this.match('unless')){
+        this.parseType();while(this.match('and')||this.match(','))this.parseType();
+      }
       if (this.match('=>')) {
         return true;
       }
@@ -369,7 +376,9 @@ class Parser {
     const names = everything ? [] : [this.expect('identifier').value];
     while (!everything && this.match('and')) names.push(this.expect('identifier').value);
     this.expect('from');
-    const from = [this.expect('identifier').value];
+    const from = [this.at('string') ? this.take().value : this.expect('identifier').value];
+    if (!/^(?:https:\/\/|git\+(?:https|file):\/\/)/.test(from[0]) && this.tokens[this.position - 1].kind === 'string')
+      throw new ParseFailure({ ...start, code:'IMPORT', message:'A quoted import source must be a public repository URL' });
     while (this.match('.')) from.push(this.expect('identifier').value);
     this.endStatement();
     return { kind: 'import', names, everything, from, span: this.span(start) };
@@ -398,6 +407,8 @@ class Parser {
   private parseBind(): BindDecl {
     const keyword = this.take();
     const start = keyword.span;
+    if (keyword.kind === 'bind') this.diagnostics.push({...start, code: 'SYNTAX',
+      message: 'Use implement Key with Implementation instead of bind Key to Implementation'});
     const key = this.expect('identifier').value;
     const keyTypeArgs = this.at('<') ? this.parseCallTypeArgs() : [];
     this.expect(keyword.kind === 'implement' ? 'with' : 'to');
@@ -414,14 +425,29 @@ class Parser {
     const header = this.parseTypeParams();
     const fields = this.parseParams(true);
     const validationErrors: TypeRef[] = [];
-    if (this.match('unless')) {
+    const validationDeclared = !!this.match('unless');
+    if (validationDeclared) {
       validationErrors.push(this.parseType());
       while (this.match('and') || this.match(',')) validationErrors.push(this.parseType());
     }
-    const constructorBody = this.match('=>') ? this.parseBlock(start) : undefined;
-    if (!constructorBody) this.endStatement();
+    const headerEnd = this.current().span.start;
+    let constructorBody = this.match('=>') ? this.parseBlock(start) : undefined;
+    let hasBody = !!constructorBody;
+    if (!constructorBody && (this.at('{') || this.at(':'))) {
+      hasBody = true;
+      this.openBlock(start);
+      while (!this.at('}') && !this.at('eof')) {
+        this.checkBlockIndentation();
+        if (this.emptyBody()) continue;
+        const initializer = this.expect('initialize');
+        if (constructorBody) throw new ParseFailure({...initializer.span, code: 'PARSE', message: 'A record has at most one initialize block'});
+        constructorBody = this.parseBlock(initializer.span);
+      }
+      this.closeBrace();
+    }
+    if (!hasBody) this.endStatement();
     return { kind: 'class', record: true, name, ...header, fields, constructorBody,
-      validationErrors, implements: [], methods: [], span: this.span(start) };
+      validationErrors, validationDeclared, headerEnd, implements: [], methods: [], span: this.span(start) };
   }
 
   private parseClass(): ClassDecl {
@@ -429,19 +455,30 @@ class Parser {
     const name = this.expect('identifier').value;
     const { typeParams, typeConstraints, typeVariance } = this.parseTypeParams();
     const fields = this.at('(') ? this.parseParams(true) : [];
-    const constructorBody = this.match('=>') ? this.parseBlock(start) : undefined;
+    const validationErrors:TypeRef[]=[];
+    const validationDeclared=!!this.match('unless');
+    if(validationDeclared){validationErrors.push(this.parseType());while(this.match('and')||this.match(','))validationErrors.push(this.parseType());}
+    let constructorBody = this.match('=>') ? this.parseBlock(start) : undefined;
     const implemented: TypeRef[] = [];
     if (!this.at('implements')) throw new ParseFailure({ ...start, code: 'PARSE',
       message: `${name} has a constructor body; add implements Interface after that body to declare a class` });
     this.expect('implements');
     implemented.push(this.parseType());
     while (this.match(',')) implemented.push(this.parseType());
+    const headerEnd = this.current().span.start;
     this.openBlock(start);
     const methods: MethodDecl[] = [];
     const stateFields: NonNullable<ClassDecl['stateFields']> = [];
     while (!this.at('}') && !this.at('eof')) {
       this.checkBlockIndentation();
       if (this.emptyBody()) continue;
+      if (this.match('initialize')) {
+        const initializer = this.tokens[this.position - 1];
+        if (constructorBody) throw new ParseFailure({...initializer.span, code: 'PARSE', message: 'A class has at most one initialize block'});
+        if (methods.length) throw new ParseFailure({...initializer.span, code: 'PARSE', message: 'Put initialize before the class methods'});
+        constructorBody = this.parseBlock(initializer.span);
+        continue;
+      }
       if (this.at('function') || this.at('class')) this.rejectDeclarationKeyword();
       if (this.at('mutable') || !this.looksLikeBareFunction() && !this.at('[')) {
         const fieldStart = this.current().span;
@@ -457,7 +494,7 @@ class Parser {
     }
     this.closeBrace();
     return { kind: 'class', name, typeParams, typeConstraints, typeVariance, fields, stateFields, constructorBody,
-      implements: implemented, methods, span: this.span(start) };
+      validationErrors,validationDeclared,implements: implemented, methods, headerEnd, span: this.span(start) };
   }
 
   private parseInterface(): InterfaceDecl {
@@ -540,13 +577,16 @@ class Parser {
         } while (this.match(',') || this.match('and'));
       }
     }
+    const headerEnd = this.current().span.start;
     const body = this.at('{') || this.at(':') ? this.parseBlock(start) : (this.endStatement(), undefined);
     if (externC && body) {
       throw new ParseFailure({ file: start.file, line: start.line, column: start.column,
         message: 'extern C functions cannot have a body', code: 'PARSE' });
     }
     return { kind: 'function', name, typeParams, typeConstraints, typeVariance, params, returns, returnOwnership,
-      throws, changes, uses, body, externC, valueAbi, nativePure, endpoint, annotations, span: this.span(start) };
+      throws, changes, uses, body, externC, valueAbi, nativePure, endpoint, annotations,
+      declared: { returns: clauses.has('returns') || clauses.has('streams'), errors: clauses.has('unless'),
+        changes: clauses.has('changes'), uses: clauses.has('uses') }, headerEnd, span: this.span(start) };
   }
 
   private parseTypeParams(): GenericHeader {
@@ -559,7 +599,7 @@ class Parser {
       const name = this.expect('identifier').value;
       typeParams.push(name);
       if (variance) typeVariance[name] = variance as 'in' | 'out';
-      if (this.match('implements')) {
+    if (this.match('implements')) {
         typeConstraints[name] = [this.parseType()];
         while (this.match('and')) typeConstraints[name].push(this.parseType());
       }
@@ -604,8 +644,10 @@ class Parser {
       while (this.match(',')) args.push(this.parseType());
       this.expect('>');
     }
-    const nullable = !!this.match('?');
-    return { name, args, nullable, optional, span: this.span(start) };
+    const legacy = this.match('?');
+    if(legacy)this.diagnostics.push({...legacy.span,code:'SYNTAX',message:'Use optional Type instead of Type?; omitted values are null'});
+    const nullable = !!optional || !!legacy;
+    return { name, args, nullable, optional:nullable || undefined, span: this.span(start) };
   }
 
   private parseBlock(header: Span): Stmt[] {
@@ -687,7 +729,7 @@ class Parser {
         if (this.match('else')) pattern = 'else';
         else {
           this.expect('when');
-          if (this.match('missing')) pattern = 'missing';
+          if (this.match('missing')) pattern = 'null';
           else if (this.match('null')) pattern = 'null';
           else if (this.match('some')) { pattern = 'some'; name = this.expect('identifier').value; }
           else if (this.at('identifier')) { pattern = 'type'; type = this.parseType(); name = this.expect('identifier').value; }
@@ -699,20 +741,14 @@ class Parser {
       return { kind: 'match', value, cases, span: this.span(start) };
     }
     if (this.match('if')) {
-      const parenthesized = !!this.match('(');
-      if (parenthesized) this.expressionDepth++;
       const test = this.parseExpression();
-      if (parenthesized) { this.expect(')'); this.expressionDepth--; }
       const then = this.parseBlock(start);
       const elseToken = this.match('else');
       const otherwise = elseToken ? (this.at('if') ? [this.parseStatement()] : this.parseBlock(elseToken.span)) : [];
       return { kind: 'if', test, then, otherwise, span: this.span(start) };
     }
     if (this.match('while')) {
-      const parenthesized = !!this.match('(');
-      if (parenthesized) this.expressionDepth++;
       const test = this.parseExpression();
-      if (parenthesized) { this.expect(')'); this.expressionDepth--; }
       return { kind: 'while', test, body: this.parseBlock(start), span: this.span(start) };
     }
     if (this.match('try')) {
@@ -740,7 +776,7 @@ class Parser {
     }
     if (this.at('resolve')) {
       const saved = this.position;
-      const value = this.parseUnary();
+      const value = this.parseUnary(true);
       if (value.kind === 'resolve' && this.match('to')) {
         const name = this.expect('identifier');
         this.endStatement();
@@ -751,7 +787,7 @@ class Parser {
     }
     const ownership = this.match('own') ? 'own' : 'managed';
     const saved = this.position;
-    if (this.at('identifier')) {
+    if (this.at('identifier') || this.at('optional')) {
       try {
         const declaredType = this.parseType();
         if (this.at('identifier') && ['=', 'to'].includes(this.current(1).kind)) {
@@ -791,25 +827,31 @@ class Parser {
 
   private parseExpression(min = 0): Expr {
     let left = this.parseUnary();
-    const precedence: Record<string, number> = { '||': 1, '&&': 2, '==': 3, '!=': 3,
+    const precedence: Record<string, number> = { 'or': 1, 'and': 2, '||': 1, '&&': 2, '==': 3, '!=': 3,
       '<': 4, '>': 4, '<=': 4, '>=': 4, '+': 5, '-': 5, '*': 6, '/': 6 };
     while ((this.expressionDepth > 0 || !this.lineBreak()) && (precedence[this.current().kind] ?? 0) > min) {
       const op = this.take().kind;
       const right = this.parseExpression(precedence[op]);
-      left = { kind: 'binary', op, left, right, span: this.span(left.span, right.span) };
+      left = { kind: 'binary', op: op === 'and' ? '&&' : op === 'or' ? '||' : op, left, right, span: this.span(left.span, right.span) };
     }
     return left;
   }
 
-  private parseUnary(): Expr {
+  private parseUnary(allowResolve = false): Expr {
+    if (this.match('not')) {
+      const start = this.tokens[this.position - 1].span;
+      const value = this.parseExpression(2);
+      return {kind: 'unary', op: '!', value, span: this.span(start, value.span)};
+    }
     if (this.match('handle')) {
       const start = this.tokens[this.position - 1].span;
       return {kind:'handle', call:this.parseUnary(), span:this.span(start)};
     }
     if (this.at('start') && this.current(1).kind !== '(' && this.match('start')) {
       const start = this.tokens[this.position - 1].span;
+      const worker = this.current().value === 'worker' && ['identifier', 'start', 'wait'].includes(this.current(1).kind) && !!this.take();
       const call = this.parseUnary();
-      return {kind: 'start', call, span: this.span(start)};
+      return {kind: 'start', call, worker: worker || undefined, span: this.span(start)};
     }
     if (this.at('wait') && this.current(1).kind === 'for' && this.match('wait')) {
       const start = this.tokens[this.position - 1].span; this.expect('for');
@@ -827,6 +869,7 @@ class Parser {
     }
     if (this.match('resolve')) {
       const start = this.tokens[this.position - 1].span;
+      if (!allowResolve) this.diagnostics.push({...start, code: 'SYNTAX', message: 'Use resolve Key to name as a statement instead of an assignment or expression'});
       const name = this.expect('identifier');
       const typeArgs = this.at('<') ? this.parseCallTypeArgs() : [];
       return { kind: 'resolve', name: name.value, typeArgs, span: this.span(start) };
@@ -906,7 +949,7 @@ class Parser {
     if (this.match('true')) return { kind: 'literal', value: true, span: token.span };
     if (this.match('false')) return { kind: 'literal', value: false, span: token.span };
     if (this.match('null')) return { kind: 'literal', value: null, span: token.span };
-    if (this.match('missing')) return { kind: 'literal', value: null, missing: true, span: token.span };
+    if (this.match('missing')) return { kind: 'literal', value: null, span: token.span };
     if (this.match('identifier')) return { kind: 'name', name: token.value, span: token.span };
     if (this.at('[') || this.at('{') || this.at('(')) {
       const opening = this.take();

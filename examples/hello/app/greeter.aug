@@ -1,3 +1,4 @@
+// aug-spec: "greeter.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Console from august.io
 import Logger from logging
 /**
@@ -9,7 +10,7 @@ Greeter(resolve Logger logger) implements IGreeter {
     * Prints a personalized greeting.
     * @param name The user to welcome.
     */
-    greet(resolve Console console, string name) uses Console.write {
+    greet(resolve Console console, string name) {
         logger.log(message="Hello, " + name + "!")
     }
 }

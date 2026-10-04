@@ -1,5 +1,41 @@
 # Changelog
 
+## 0.23.1 — burgundy artwork
+
+Bundle the unchanged public August 0.23.0 compiler. Editor-only patches now use a separate checked release path.
+
+Replace the framed A logo with an open-circle mark. Explorer icons use simple strokes, burgundy accents, muted neutrals and light/dark variants, with distinct startup, export and configuration symbols. Refresh the banner, bundled welcome page and icon legend. Correct the README’s LLVM, installation and worker descriptions.
+
+## 0.23.0 — native ingestion preview
+
+Hover and completion include lazy checked HTTP body reads, JSON field presence, checked byte slices, hexadecimal conversion, protocol text helpers, and float32 conversion. Worker help explains checked admission failures and copied-input limits.
+
+## LLVM native preview
+
+- Use the compiler-owned LLVM pack for ordinary run/build/test commands on qualified hosts. Native compilers and SDKs remain maintainer tools. Preserve source diagnostics and the same default as the CLI.
+- Highlight and complete opaque native resource declarations. Hover and navigation retain resource and package identities; descriptor mismatches include repair guidance.
+- Bundle native package and LLVM compiler metadata with the compiler. The matching CLI prepares verified native artifacts and compiler packs; unsupported LLVM constructs remain explicit diagnostics.
+
+## 0.20.1
+
+- Publish the reviewed release VSIX from GitHub Actions using Marketplace trusted publishing. Verify the bundled compiler, artwork, manifest and checksum before uploading; retries check the existing extension contents.
+
+## 0.20.0
+
+Completion inserts labeled arguments and public imports. New templates cover declarations, tests, HTTP methods, streams, tasks, and locks. Fixes correct nearby names and input labels, scaffold interface methods, and install missing source packages. The bundled compiler uses regular Git/local/npm packages for optional libraries. Updated guides cover the editor and weather starter.
+
+- Show inferred return, mutation, capability, and checked-error contracts as inline hints, enabled by default. Toggle augscript.inferredContractHints; formatting never inserts inferred clauses. Hover and signature help use the inferred contracts too.
+
+- Bundled native commands prepare only required pinned dependencies and reuse their cache. Missing tools and setup failures include recovery steps; terminal source diagnostics show the code and help.
+
+## 0.19.0
+
+- Deterministic compiled specifications, project generation, and current-file Markdown preview.
+- Word-only boolean operators and initialize blocks in coloring, snippets, hover, and migration fixes.
+- Value-or-null optional types; updated signatures, migration fixes and hover explain that omission becomes null.
+- Project syntax migration command and spec comment-policy help for main.yaml.
+- Matching compiler, libraries, API guides, and offline source specs.
+
 ## 0.18.0
 
 - Inferred implementation/helper capabilities in hover and checked explain output.

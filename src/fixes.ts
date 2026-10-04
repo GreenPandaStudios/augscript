@@ -1,10 +1,12 @@
 import { resolve } from 'node:path';
-import type { Diagnostic, MethodDecl, SourceFile, Stmt } from './ast.ts';
+import { typeName, type Diagnostic, type Expr, type MethodDecl, type SourceFile, type Stmt, type TypeRef } from './ast.ts';
 import type { CheckedProject } from './checker.ts';
-import { importItems } from './editor.ts';
+import { completions, hoverInfo, importItems } from './editor.ts';
+import { importSource } from './git-packages.ts';
 import { languageHelp } from './help.ts';
 import { lex } from './lexer.ts';
 import { tyName } from './types.ts';
+import { migrateFile } from './formatter.ts';
 
 export interface TextFixEdit {
   file: string;
@@ -17,6 +19,7 @@ export interface EditorFix {
   title: string;
   issue: Pick<Diagnostic, 'code' | 'line' | 'column' | 'message'>;
   edits: TextFixEdit[];
+  preferred?: boolean;
 }
 
 function offsetAt(source: string, line: number, column: number): number {
@@ -77,6 +80,17 @@ function containingStatement(file: SourceFile, offset: number): Stmt | undefined
   return result.at(-1);
 }
 
+function callsIn(file: SourceFile): Extract<Expr,{kind:'call'}>[] {
+  const result: Extract<Expr,{kind:'call'}>[] = [];
+  const visit = (value: unknown): void => {
+    if (!value || typeof value !== 'object') return;
+    if (Array.isArray(value)) { value.forEach(visit); return; }
+    if ('kind' in value && value.kind === 'call') result.push(value as Extract<Expr,{kind:'call'}>);
+    for (const [key, child] of Object.entries(value)) if (key !== 'span') visit(child);
+  };
+  visit(file.items); return result;
+}
+
 function wrappedStatement(file: SourceFile, issue: Diagnostic,
                           opener: string, closer = '}'): TextFixEdit | undefined {
   const stmt = containingStatement(file, offsetAt(file.source, issue.line, issue.column));
@@ -96,11 +110,19 @@ export function suggestedFixes(checked: CheckedProject, fileName: string): Edito
   const file = checked.project.files.get(resolve(fileName));
   if (!file) return [];
   const fixes: EditorFix[] = [];
+  const syntaxIssue = checked.diagnostics.find(issue => issue.file === file.path && issue.code === 'SYNTAX');
+  if (syntaxIssue) {
+    try {
+      const text = migrateFile(checked.project, file);
+      if (text !== file.source) fixes.push({title:'Upgrade this file to the current August syntax', issue:syntaxIssue,
+        edits:[{file:file.path, start:0, end:file.source.length, text}]});
+    } catch { /* Offer a migration only when the whole file can be parsed safely. */ }
+  }
   for (const item of file.items) if (item.kind === 'import' && item.everything) {
     const names = checked.project.imports.get(item)?.map(def => def.name) ?? [];
     if (names.length) fixes.push({ title: 'Expand to named imports', issue: { code: 'IMPORT', line: item.span.line, column: item.span.column,
       message: 'Make imported dependencies explicit' }, edits: [{ file: file.path, start: item.span.start, end: item.span.end,
-        text: `import ${names.join(' and ')} from ${item.from.join('.')}` }] });
+        text: `import ${names.join(' and ')} from ${importSource(item.from)}` }] });
   }
   for (const issue of checked.diagnostics.filter(issue => issue.file === file.path)) {
     const add = (title: string, edit: TextFixEdit | undefined) => {
@@ -109,6 +131,36 @@ export function suggestedFixes(checked: CheckedProject, fileName: string): Edito
     const unknown = /^(?:Unknown name|Unknown type|Unknown interceptor) ([A-Za-z_][A-Za-z0-9_]*)$/.exec(issue.message);
     const mistyped = /^Expected ([A-Za-z_]+), found "([A-Za-z_]+)"$/.exec(issue.message);
     const redundant = /^Remove (class|function|fuction); declarations start with their name$/.exec(issue.message);
+    const missing = /^([A-Za-z_][A-Za-z0-9_]*) must implement ([A-Za-z_][A-Za-z0-9_]*)$/.exec(issue.message);
+    if (issue.code === 'INTERFACE' && missing) {
+      const owner = file.items.find(item => item.kind === 'class' && item.name === missing[1]);
+      if (owner?.kind === 'class') {
+        const seen = new Set<string>();
+        const substitute = (ref: TypeRef, types: Map<string, TypeRef>): TypeRef => types.get(ref.name) ?? { ...ref, args: ref.args.map(arg => substitute(arg, types)) };
+        const find = (ref: TypeRef, source: string): { method: MethodDecl; types: Map<string, TypeRef> } | undefined => {
+          const def = checked.project.scopes.get(source)?.get(ref.name);
+          if (!def || def.node.kind !== 'interface' || seen.has(def.id)) return;
+          seen.add(def.id);
+          const types = new Map(def.node.typeParams.map((name, index) => [name, ref.args[index]]).filter((entry): entry is [string, TypeRef] => !!entry[1]));
+          const method = def.node.methods.find(method => method.name === missing[2]);
+          if (method) return { method, types };
+          for (const parent of def.node.extends) { const found = find(substitute(parent, types), def.file); if (found) return found; }
+        };
+        const contract = owner.implements.map(ref => find(ref, file.path)).find(Boolean);
+        if (contract) {
+          const params = contract.method.params.map(param => `${param.injected ? 'resolve ' : ''}${param.ownership === 'managed' ? '' : param.ownership + ' '}${typeName(substitute(param.type, contract.types))} ${param.name}`);
+          const generic = contract.method.typeParams.length ? '<' + contract.method.typeParams.join(', ') + '>' : '';
+          const header = `${missing[2]}${generic}(${params.join(', ')}) returns ${contract.method.returnOwnership === 'own' ? 'own ' : ''}${typeName(substitute(contract.method.returns, contract.types))}` +
+            (contract.method.throws.length ? ' unless ' + contract.method.throws.map(ref => typeName(substitute(ref, contract.types))).join(', ') : '');
+          const unit = checked.project.config.indentation === 'tabs' ? '\t' : '    ';
+          const start = owner.headerEnd ?? owner.span.start;
+          const braces = file.source[start] === '{' || file.source.slice(owner.span.start, start + 1).trimEnd().endsWith('{');
+          const insertion = braces ? file.source.lastIndexOf('}', owner.span.end - 1) : owner.span.end;
+          if (insertion >= owner.span.start) add(`Implement ${missing[2]} in ${owner.name}`, { file: file.path, start: insertion, end: insertion,
+            text: braces ? `\n${unit}${header} {\n${unit}${unit}// TODO: implement ${missing[2]}\n${unit}}\n` : `\n${unit}${header}:\n${unit}${unit}// TODO: implement ${missing[2]}\n${unit}${unit}pass\n` });
+        }
+      }
+    }
     if (issue.code === 'PARSE' && redundant) {
       const start = offsetAt(file.source, issue.line, issue.column);
       if (file.source.slice(start, start + redundant[1].length) === redundant[1])
@@ -132,6 +184,34 @@ export function suggestedFixes(checked: CheckedProject, fileName: string): Edito
         add(`Import ${unknown[1]} from ${item.detail.split(' from ')[1]}`,
           { file: file.path, start: 0, end: 0, text: `${declaration}\n` });
       }
+      const start = offsetAt(file.source, issue.line, issue.column);
+      const candidates = completions(checked, file.path, start + unknown[1].length).filter(item =>
+        !item.additionalEdits && ['variable', 'parameter', 'property', 'function', 'class', 'interface', 'type'].includes(item.kind) &&
+        item.label !== unknown[1] && distance(item.label, unknown[1]) <= Math.min(2, Math.floor(unknown[1].length / 3)));
+      for (const candidate of candidates.slice(0, 3)) fixes.push({title:`Replace ${unknown[1]} with ${candidate.label}`, issue,
+        preferred:candidates.length === 1, edits:[{file:file.path,start,end:start + unknown[1].length,text:candidate.label}]});
+    }
+    const badMember = / has no (?:member|method) ([A-Za-z_][A-Za-z0-9_]*)$/.exec(issue.message);
+    if (badMember) {
+      const start = offsetAt(file.source, issue.line, issue.column), tokens = lex(file.path, file.source).tokens;
+      const member = tokens.find(token => token.value === badMember[1] && token.span.start >= start && token.span.line === issue.line);
+      if (member) {
+        const candidates = completions(checked,file.path,member.span.end).filter(item => item.label !== member.value && distance(item.label,member.value) <= 2);
+        for (const candidate of candidates.slice(0,3)) fixes.push({title:`Replace ${member.value} with ${candidate.label}`,issue,
+          preferred:candidates.length===1,edits:[{file:file.path,start:member.span.start,end:member.span.end,text:candidate.label}]});
+      }
+    }
+    const badLabel = / has no parameter ([A-Za-z_][A-Za-z0-9_]*)$/.exec(issue.message);
+    if (issue.code === 'CALL' && badLabel) {
+      const start = offsetAt(file.source, issue.line, issue.column);
+      const calls = callsIn(file).filter(call => call.span.start <= start && start < call.span.end)
+        .sort((a,b) => a.span.end-a.span.start-(b.span.end-b.span.start));
+      const call = calls[0], entry = call && hoverInfo(checked,file.path,call.callee.span.end-1);
+      const tokens = call && lex(file.path,file.source).tokens.filter(token => call.span.start < token.span.start && token.span.end <= start);
+      const label = tokens?.findLast(token => token.value === badLabel[1]);
+      const candidates = entry?.parameters?.map(parameter => parameter.split('=')[0]).filter(name => !call.argLabels.includes(name) && distance(name,badLabel[1]) <= 2) ?? [];
+      if (label) for (const name of candidates) fixes.push({title:`Use argument label ${name}`,issue,preferred:candidates.length===1,
+        edits:[{file:file.path,start:label.span.start,end:label.span.end,text:name}]});
     }
     if (issue.code === 'INTERCEPTOR' && /constructor parameter .* must be marked resolve/.test(issue.message)) {
       const start = offsetAt(file.source, issue.line, issue.column);

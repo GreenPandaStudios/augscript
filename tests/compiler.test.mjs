@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import { spawnSync } from 'node:child_process';
+import { spawnSync } from './compiler-process.mjs';
 import { languageHelp } from '../src/help.ts';
 import { reservedKeywords } from '../src/lexer.ts';
 
@@ -58,6 +58,27 @@ function withProject(files, callback) {
   try { callback(root); } finally { rmSync(root, { recursive: true, force: true }); }
 }
 
+test('an implicit owned field assignment transfers its replacement', () => withProject({
+  'holder.aug': `interface Item { value() returns int }
+Resource(int number) implements Item { value() returns int { return number } }
+interface Container { replace(own Resource replacement) changes self; value() returns int }
+Holder(mutable own Resource item) implements Container {
+    replace(own Resource replacement) { item = replacement }
+    value() returns int { return item.value() }
+}
+`,
+  'main.aug': `import Resource and Holder from holder
+own Resource initial = Resource(number=1)
+own Holder holder = Holder(item=initial)
+own Resource replacement = Resource(number=7)
+borrow holder { holder.replace(replacement) }
+print(value=holder.value())
+`
+}, root => {
+  const checked=check(root);assert.equal(checked.status,0,JSON.stringify(checked.issues));
+  const result=run(root);assert.equal(result.status,0,result.stderr);assert.equal(result.stdout,'7\n');
+}));
+
 function completionItems(root, file, source, offset = source.length) {
   const path = join(root, file);
   const result = spawnSync(process.execPath, [cli, 'complete', root, '--file', path,
@@ -81,9 +102,9 @@ implement Console with SystemConsole
 import Logger from logging;
 import ConsoleLogger from logging;
 import Greeter from app;
-bind Logger to ConsoleLogger;
-bind app to Greeter;
-greeter = resolve app;
+implement Logger with ConsoleLogger;
+implement app with Greeter;
+resolve app to greeter;
 greeter.greet(name="AugScript");
 `,
   'logging/export.aug': 'export Logger from logger;\nexport ConsoleLogger from console;\n',
@@ -131,9 +152,9 @@ announce(resolve Console console)  uses Console.write { console.write(value="don
   assert.match(method?.detail ?? '', /returns void/);
 }));
 
-test('a function without a return type cannot return a value', () => withProject({
+test('an explicitly void function cannot return a value', () => withProject({
   'main.aug': 'import value from helper;\nvalue();\n',
-  'helper.aug': 'value() { return 7; }\n',
+  'helper.aug': 'value() returns void { return 7; }\n',
 }, root => {
   const result = check(root);
   assert.notEqual(result.status, 0);
@@ -234,8 +255,13 @@ interface Logger { log(resolve Console console, string message) uses Console.wri
 SilentLogger() implements Logger { log(resolve Console console, string message)  uses Console.write {} }
 ConsoleLogger() implements Logger { log(resolve Console console, string message)  uses Console.write { console.write(value=message); } }
 interface IGreeter { greet(resolve Console console) uses Console.write ; }
-Greeter(Logger logger) => { logger = ConsoleLogger(); } implements IGreeter {
-  greet(resolve Console console)  uses Console.write { logger.log(message="ready"); }
+Greeter(Logger logger) implements IGreeter {
+    initialize {
+        logger = ConsoleLogger()
+    }
+    greet(resolve Console console) uses Console.write {
+        logger.log(message="ready")
+    }
 }
 `,
 }, root => {
@@ -422,11 +448,11 @@ test('ownership examples run and drop resources', () => {
   const drop = run(join(repository, 'examples', 'drop'), true);
   assert.equal(drop.status, 0, drop.stderr);
   assert.equal(drop.stdout, 'using resource\n');
-  assert.equal(drop.stderr.match(/drop: Resource\n/g)?.length, 1);
+  assert.equal(drop.stderr.match(/drop: (?:[^\n]+:)?Resource\n/g)?.length, 1);
   const transfer = run(join(repository, 'examples', 'ownership-transfer'), true);
   assert.equal(transfer.status, 0, transfer.stderr);
   assert.equal(transfer.stdout, 'consumed\nend of main\n');
-  assert.equal(transfer.stderr.match(/drop: Resource\n/g)?.length, 2);
+  assert.equal(transfer.stderr.match(/drop: (?:[^\n]+:)?Resource\n/g)?.length, 2);
 });
 
 test('checked exception is caught at runtime', () => {
@@ -434,6 +460,26 @@ test('checked exception is caught at runtime', () => {
   assert.equal(result.status, 0, result.stderr);
   assert.equal(result.stdout, 'caught FileError\n');
 });
+
+test('checked constructor failure releases transferred fields and retains its declared error', () => withProject({
+  'operations.aug': `interface Item:\n    pass\nResource() implements Item:\n    pass\nFailure(int code, string message) implements Error:\n    pass\nHolder(own Resource value) unless Failure implements Item:\n    initialize:\n        throw Failure(code=9, message="rejected")\n`,
+  'main.aug': `import Resource and Holder and Failure from operations\ntry:\n    own Resource value = Resource()\n    Holder(value)\ncatch Failure error:\n    print(value=error.code)\nprint(value="done")\n`
+}, root => {
+  const result=run(root,true);assert.equal(result.status,0,result.stderr);assert.equal(result.stdout,'9\ndone\n');
+  assert.equal(result.stderr.match(/drop: (?:[^\n]+:)?Resource\n/g)?.length,1);
+  assert.doesNotMatch(result.stderr,/drop: (?:[^\n]+:)?Holder\n/);
+  const file=join(root,'main.aug'),source=readFileSync(file,'utf8');
+  writeFileSync(file,source.slice(0,source.indexOf('try:'))+'own Resource value = Resource()\nHolder(value)\n');
+  assert.ok(check(root).issues.some(issue=>issue.code==='THROWS'&&/Unhandled Failure/.test(issue.message)));
+}));
+
+test('partial constructor cleanup skips the completed-object drop method',()=>withProject({
+  'operations.aug':`interface Item:\n    pass\nResource() implements Item:\n    pass\nFailure() implements Error:\n    pass\nfail() returns int unless Failure:\n    throw Failure()\nBroken(own Resource item) unless Failure implements Item:\n    int first = fail()\n    int second = 4\n    drop():\n        int value = second + 1\n`,
+  'main.aug':`import Resource and Broken and Failure from operations\ntry:\n    own Resource item = Resource()\n    Broken(item)\ncatch Failure error:\n    print(value="constructor error")\n`
+},root=>{
+  const result=run(root,true);assert.equal(result.status,0,result.stderr);assert.equal(result.stdout,'constructor error\n');
+  assert.equal(result.stderr.match(/drop: (?:[^\n]+:)?Resource\n/g)?.length,1);assert.doesNotMatch(result.stderr,/drop: (?:[^\n]+:)?Broken\n/);
+}));
 
 test('C FFI call inside unsafe block runs', () => {
   const result = run(join(repository, 'examples', 'ffi'));
@@ -451,8 +497,8 @@ test('logical operators skip the unneeded operand', () => withProject({
   'main.aug': `import Console and SystemConsole from august.io
 implement Console with SystemConsole
 import probe from helper;
-print(value=false && probe());
-print(value=true || probe());
+print(value=false and probe());
+print(value=true or probe());
 `,
   'helper.aug': `import Console from august.io
 probe(resolve Console console) returns bool  uses Console.write { console.write(value="called"); return true; }
@@ -995,7 +1041,7 @@ test('underscore interface methods stay within their interface', () => withProje
 }));
 
 test('duplicate binding and dependency cycle are rejected', () => withProject({
-  'main.aug': 'import A from types;\nimport B from types;\nbind a to A;\nbind a to B;\nbind b to B;\n',
+  'main.aug': "import A from types;\nimport B from types;\nimplement a with A;\nimplement a with B;\nimplement b with B;\n",
   'types.aug': 'interface AugMarker_A {} A(resolve B b) implements AugMarker_A {}\ninterface AugMarker_B {} B(resolve A a) implements AugMarker_B {}\n',
 }, root => {
   const result = check(root);
@@ -1003,7 +1049,7 @@ test('duplicate binding and dependency cycle are rejected', () => withProject({
 }));
 
 test('dependency cycle is rejected without a duplicate binding', () => withProject({
-  'main.aug': 'import A from types;\nimport B from types;\nimport AImpl from types;\nimport BImpl from types;\nbind A to AImpl;\nbind B to BImpl;\n',
+  'main.aug': "import A from types;\nimport B from types;\nimport AImpl from types;\nimport BImpl from types;\nimplement A with AImpl;\nimplement B with BImpl;\n",
   'types.aug': 'interface A {}\ninterface B {}\nAImpl(resolve B b) implements A {}\nBImpl(resolve A a) implements B {}\n',
 }, root => {
   const result = check(root);
@@ -1019,7 +1065,7 @@ test('moving an owned value inside a branch invalidates later reads', () => with
 }));
 
 test('non-boolean logical operands are rejected', () => withProject({
-  'main.aug': 'print(value=1 && 2);\n',
+  'main.aug': "print(value=1 and 2);\n",
 }, root => {
   const result = check(root);
   assert.ok(result.issues.some(issue => /requires bool operands/.test(issue.message)));

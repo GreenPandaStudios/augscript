@@ -1,20 +1,21 @@
+// aug-spec: "counters.aug.md" explains this file. Read it before changes; refresh with aug spec.
 /** Reading state has no mutation effect. */
 interface State:
 	read() returns int
 _Initial() implements State:
-	read() returns int:
+	read() :
 		return 0
 _Updated(int count) implements State:
-	read() returns int:
+	read() :
 		return count
 /** A mutable counter with an explicit transition contract. */
 interface Counter:
 	increment() changes self
 	value() returns int
 _Counter(resolve mutable State initial to _state) implements Counter:
-	increment() changes self:
+	increment() :
 		_state to _Updated(count=_state.read() + 1)
-	value() returns int:
+	value() :
 		return _state.read()
 /** The complete counter composition; its mutable state belongs to each scope. */
 composition Counters:

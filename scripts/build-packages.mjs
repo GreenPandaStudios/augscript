@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-import { chmodSync, cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { join, relative, resolve } from 'node:path';
+import { chmodSync, cpSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { dirname, join, relative, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 
 const root = resolve(import.meta.dirname, '..');
@@ -16,7 +16,15 @@ rmSync(output, { recursive: true, force: true });
 const copy = (source, destination) => {
   const from = join(root, source);
   cpSync(from, destination, { recursive: true,
-    filter: file => !relative(from, file).split(/[\\/]/).some(part => part.startsWith('.') || part === 'node_modules') });
+    filter: file => !relative(from, file).split(/[\\/]/).some(part => part.startsWith('.') && part!=='.aug-spec' || part === 'node_modules') });
+};
+const libraryTargets = new Map(['io','json','memory','time','web','crypto'].map(module =>
+  [module, join(output,['web','crypto'].includes(module)?module:'stdlib','august',module)]));
+const publishedRoots = new Map(['stdlib','web','crypto','cli'].map(name=>[
+  join(output,name),join(output,JSON.parse(readFileSync(join(root,'packages',name,'package.json'),'utf8')).name.split('/').at(-1))]));
+const publishedPath = file => {
+  for(const [staged,published] of publishedRoots)if(file===staged||file.startsWith(staged+'/'))return join(published,relative(staged,file));
+  return file;
 };
 for (const name of ['stdlib', 'web', 'crypto', 'cli']) {
   const target = join(output, name);
@@ -29,12 +37,13 @@ for (const name of ['stdlib', 'web', 'crypto', 'cli']) {
     writeFileSync(join(target, 'bin/aug.mjs'), readFileSync(join(root, 'bin/aug.mjs'), 'utf8').replace('../src/cli.ts', '../src/cli.js'));
     chmodSync(join(target, 'bin/aug.mjs'), 0o755);
     for (const directory of ['runtime', 'docs', 'examples']) copy(directory, join(target, directory));
+    copy('native/compiler-packs.json',join(target,'native/compiler-packs.json'));
     mkdirSync(join(target, 'scripts'));
-    for (const file of ['bootstrap-native.mjs', 'native-home.mjs', 'native-dependencies.lock.json']) copy(`scripts/${file}`, join(target, 'scripts', file));
+    for (const file of ['bootstrap-native.mjs', 'native-home.mjs', 'native-setup.mjs', 'native-toolchain.mjs', 'native-dependencies.lock.json']) copy(`scripts/${file}`, join(target, 'scripts', file));
     chmodSync(join(target, 'scripts/bootstrap-native.mjs'), 0o755);
   } else {
     copy(`packages/${name}/aug-package.json`, join(target, 'aug-package.json'));
-    const modules = name === 'stdlib' ? ['io', 'json', 'memory', 'time'] : [name];
+    const modules = name === 'stdlib' ? ['io'] : [name];
     for (const module of modules) {
       copy(`src/stdlib/${module}`, join(target, 'august', module));
       copy(`docs/api/${module}.md`, join(target, 'docs', `${module}.md`));
@@ -45,3 +54,25 @@ for (const name of ['stdlib', 'web', 'crypto', 'cli']) {
   if (name !== 'stdlib') copy('THIRD_PARTY_NOTICES.md', join(target, 'THIRD_PARTY_NOTICES.md'));
   process.stdout.write(`Prepared ${name}\n`);
 }
+// Preserve offline source/spec navigation when one source tree is split into npm packages.
+const rewriteSpecs = (folder, originalFolder) => {
+  for(const entry of readdirSync(folder,{withFileTypes:true})) {
+    const file=join(folder,entry.name),original=join(originalFolder,entry.name);
+    if(entry.isDirectory())rewriteSpecs(file,original);
+    else if(entry.name.endsWith('.aug.md')) {
+      const text=readFileSync(file,'utf8').replace(/\]\(([^)]+)\)/g,(match,href)=>{
+        if(/^[a-z]+:/i.test(href))return match;
+        const [path,anchor]=href.split('#'),target=resolve(dirname(original),decodeURIComponent(path));
+        const libraryPath=relative(join(root,'src/stdlib'),target).split(/[\\/]/);
+        const destination=libraryPath.length===1&&libraryPath[0].startsWith('export.aug')?join(output,'stdlib','august',libraryPath[0]):
+          libraryTargets.has(libraryPath[0])?join(libraryTargets.get(libraryPath[0]),...libraryPath.slice(1)):undefined;
+        if(!destination)return match;
+        const link=relative(dirname(publishedPath(file)),publishedPath(destination)).split(/[\\/]/).map(encodeURIComponent).join('/');
+        return `](${link}${anchor?'#'+anchor:''})`;
+      });
+      writeFileSync(file,text);
+    }
+  }
+};
+for(const module of ['web','crypto'])rewriteSpecs(libraryTargets.get(module),join(root,'src/stdlib',module));
+rewriteSpecs(join(output,'stdlib','august'),join(root,'src/stdlib'));
