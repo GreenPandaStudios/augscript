@@ -13,7 +13,7 @@ cd hello-august
 aug run
 ```
 
-You need Node.js 24 or later, npm, and a C11 compiler. Repository packages also need Git. macOS and Linux are the tested platforms. [Docker](docker.md) and [Dev Containers](dev-containers.md) provide a Linux toolchain when you prefer to work in a container.
+August 0.23.0 needs Node.js 24 or later and npm on macOS 14+ ARM64 or GNU/Linux x64/ARM64 with glibc 2.36+. August downloads a verified LLVM/runtime pack; native package consumers do not install a compiler or SDK. GitHub repository imports use the CLI's HTTPS transport without Git. Other Git servers require a local Git client. [Docker](docker.md) and [Dev Containers](dev-containers.md) provide a Linux workspace.
 
 `aug run` finds `main.aug`, installs source dependencies declared by imports or `main.yaml`, checks the code, prepares the native libraries it needs, and compiles and starts the executable. Later runs reuse those dependencies. `aug check` and `aug spec` read the installed snapshot without fetching packages. Use `aug install` before those commands in a fresh project.
 
@@ -25,9 +25,9 @@ cd another-app
 npx @greenpandastudios/aug-cli@next run
 ```
 
-Both starters include `AGENTS.md`, which tells coding agents to read neighboring compiled specs, keep tests beside declarations, and check their changes. For a service, [start the weather API](weather-api.md) with `init weather --template weather`.
+The starters include `AGENTS.md` with instructions for coding agents: read the neighboring specs, keep tests beside the code, and check changes. For a service, [start the weather API](weather-api.md) with `init weather --template weather`.
 
-August is a preview. Pin an exact CLI release for a repeatable toolchain. The source-package and weather workflows on this page require the ecosystem release; 0.19.0 predates them. [GitHub releases](https://github.com/GreenPandaStudios/augscript/releases) list the available compiler and extension versions.
+Pin an exact CLI release for repeatable builds. [GitHub releases](https://github.com/GreenPandaStudios/augscript/releases) list compiler and extension versions.
 
 ## Use a package
 
@@ -37,13 +37,13 @@ Give a public repository a short name:
 aug add https://github.com/GreenPandaStudios/augscript/src/stdlib/json --as json
 ```
 
-This installs the source and writes its URL under the `json` alias in the `packages` block of `main.yaml`. A source fragment using the alias is:
+This installs the source and adds a `json` alias to `main.yaml`. Import through that alias:
 
 ```text
 import parse from json
 ```
 
-You can also put the repository URL directly in an import. This fragment declares its own dependency:
+Or import the repository URL directly:
 
 ```text
 import parse from "https://github.com/GreenPandaStudios/augscript/src/stdlib/json"
@@ -79,11 +79,11 @@ aug test
 aug spec
 ```
 
-The starter exports `add` from `src/arithmetic.aug`, keeps its test in that file, and includes agent instructions. Edit `src/export.aug` to choose the public surface. A library needs no `main.aug` and does not start an application when imported.
+The starter exports `add` from `src/arithmetic.aug`, keeps its test in that file, and includes agent instructions. Edit `src/export.aug` to choose which declarations others can import. A library needs no `main.aug` and does not start an application when imported.
 
 For a library you write by hand, `export.aug` in the root or a `src` folder is enough. `aug-package.json` is optional; use it when you want to name a package, state its version and compiler, choose another source folder, or declare dependency aliases. npm metadata is only needed for npm distribution.
 
-Put the source in your own Git repository and publish a release tag. Other projects can then import your repository URL with `#v0.1.0`. Commit the source, export file, tests, comments, and dependency lock. Choose a license and include its notice. Run your checks before publishing a tag; a Git commit fixes the source contents, not their quality or permission to redistribute them.
+Commit the source, export file, tests, comments, and dependency lock to your Git repository. Include a license, run `aug check` and `aug test`, then publish a release tag. Other projects can import your repository URL with `#v0.1.0`.
 
 ## Dependencies between libraries
 
@@ -111,7 +111,7 @@ aug build
 
 A frozen install restores the recorded revisions and rejects changed source contents. `aug install --update` deliberately selects current revisions again. A normal install preserves a matching lock. `aug run --offline` and `aug install --frozen --offline` use previously cached sources and native dependencies; an uncached input produces an error explaining how to prepare it online.
 
-Git packages are read as source blobs without a checkout or hooks. Registry archives are checked and extracted without lifecycle scripts. These precautions protect installation; review a library before running an application that uses it, especially native adapters and unsafe operations.
+Installation reads Git source blobs without running hooks and extracts registry archives without running lifecycle scripts. Application code can still call native adapters and unsafe operations; review those before running a dependency.
 
 ## npm archives and releases
 
@@ -121,10 +121,10 @@ Consumers can use `aug add npm:@owner/arithmetic@0.1.0 --as arithmetic` or a loc
 
 ## VS Code
 
-Install [AugScript](https://marketplace.visualstudio.com/items?itemName=augscript.augscript), or install the matching `.vsix` from [GitHub releases](https://github.com/GreenPandaStudios/augscript/releases). The extension bundles a compiler and uses the project's installed source graph for completion, help, and navigation. [Editor guide](editor.md) explains call completion, fixes, and contract hints.
+Install AugScript from the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=augscript.augscript), or install a published `.vsix` from [GitHub Releases](https://github.com/GreenPandaStudios/augscript/releases) using **Extensions: Install from VSIX…** in VS Code. Editor-only patches can have a different version from the CLI; their release notes identify the bundled compiler. The extension bundles that compiler and uses the project's installed source graph for completion, help, and navigation. [The editor guide](editor.md) covers completion, fixes, and inferred type hints.
 
 ## Install release tarballs
 
 The CLI tarball requires its matching core stdlib package. npm normally obtains it automatically. For an archive installation, install the matching CLI and stdlib tarballs together; optional web and crypto packages are regular source libraries.
 
-Native dependencies use `~/.cache/augscript/native/VERSION/PLATFORM-ARCH`. `AUG_NATIVE_HOME` selects another cache. `aug-native` can prepare a cache in advance; `aug run` prepares what the application needs. The [release process](releasing.md) documents toolchain publishing for contributors.
+Verified LLVM packs and native artifacts use `~/.cache/augscript/native-artifacts`, keyed by their archive hashes. `AUG_NATIVE_ARTIFACT_CACHE` selects another cache. Source, compiler, runtime, and platform selections remain in `aug.lock.json`. The C migration reference uses the older `AUG_NATIVE_HOME` source-build cache. The [native package guide](native-packages.md) covers ownership, platform requirements, and publishing; [release process](releasing.md) covers the compiler distribution.

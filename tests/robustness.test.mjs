@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import { spawnSync } from 'node:child_process';
+import { spawnSync } from './compiler-process.mjs';
 import { parse } from '../src/parser.ts';
 import { loadProject } from '../src/project.ts';
 import { checkProject } from '../src/checker.ts';

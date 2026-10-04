@@ -91,6 +91,8 @@ async function setup() {
 
     const sdk = '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk';
     const mac = process.platform === 'darwin';
+    const minimumOS = mac ? process.env.MACOSX_DEPLOYMENT_TARGET : undefined;
+    if (minimumOS && !/^\d+\.\d+(?:\.\d+)?$/.test(minimumOS)) throw new Error('MACOSX_DEPLOYMENT_TARGET must be an OS version such as 14.0.');
     const sysroot = mac && existsSync(sdk) ? ' -isysroot ' + sdk : '';
     const environment = { ...process.env, ...(mac && existsSync(sdk) && !process.env.SDKROOT ? { SDKROOT: sdk } : {}), CC: cc, CC_FOR_BUILD: cc, CXX: process.env.CXX ?? cc.replace(/clang$/, 'clang++').replace(/gcc$/, 'g++').replace(/^cc$/, 'c++'),
       CFLAGS: `-O2 -fPIC${sysroot}`,
@@ -140,6 +142,7 @@ async function setup() {
       run(cmake, ['-S', join(sources, 'libwebsockets'), '-B', build,
         '-DCMAKE_BUILD_TYPE=Release', '-DCMAKE_INSTALL_PREFIX=' + prefix, '-DCMAKE_INSTALL_LIBDIR=lib', '-DCMAKE_PREFIX_PATH=' + prefix,
         '-DCMAKE_C_COMPILER=' + cc, ...(mac && existsSync(sdk) && !process.env.SDKROOT ? ['-DCMAKE_OSX_SYSROOT=' + sdk] : []),
+        ...(minimumOS ? ['-DCMAKE_OSX_DEPLOYMENT_TARGET=' + minimumOS] : []),
         '-DLWS_GNUTLS_LIBRARIES=' + join(prefix, 'lib', mac ? 'libgnutls.dylib' : 'libgnutls.so'),
         '-DLWS_GNUTLS_INCLUDE_DIRS=' + join(prefix, 'include'),
         '-DLWS_WITH_GNUTLS=ON', '-DLWS_WITH_HTTP2=ON', '-DLWS_WITH_HTTP3=ON',
@@ -153,7 +156,7 @@ async function setup() {
       writeFileSync(webMarker, webChecksum + '\n');
     }
     }
-    writeFileSync(join(prefix, 'aug-native-manifest.json'), JSON.stringify({ platform: process.platform, architecture: process.arch,
+    writeFileSync(join(prefix, 'aug-native-manifest.json'), JSON.stringify({ platform: process.platform, architecture: process.arch, ...(minimumOS ? {minimumOS} : {}),
       dependencies: lock.dependencies.filter(dependency => dependencyReady(directory, dependency)).map(({name, version, revision, sha256}) => ({name, version, revision, sha256})) }, null, 2) + '\n');
     process.stdout.write(`Native dependencies ready at ${prefix}\n`);
   } finally { release(); }

@@ -71,11 +71,11 @@ Writes messages to an application log.
 
 #### `Logger.log` · [source](logger.md#code) {#symbol-Logger.log}
 
-Writes one message. It takes `message` as a string (Text to write). It gets `console` ([`Console`](../dependencies/august/0.20.0/io/contracts.md#symbol-Console)) from dependency injection. It can call [`Console.write`](../dependencies/august/0.20.0/io/contracts.md#symbol-Console.write).
+Writes one message. It takes `message` as a string (Text to write). It gets `console` ([`Console`](../dependencies/august/0.23.0/io/contracts.md#symbol-Console)) from dependency injection. It can call [`Console.write`](../dependencies/august/0.23.0/io/contracts.md#symbol-Console.write).
 
 ### Dependencies
 
-It uses [`Console`](../dependencies/august/0.20.0/io/contracts.md#symbol-Console) ([`write`](../dependencies/august/0.20.0/io/contracts.md#symbol-Console.write)) from `august.io`.
+It uses [`Console`](../dependencies/august/0.23.0/io/contracts.md#symbol-Console) ([`write`](../dependencies/august/0.23.0/io/contracts.md#symbol-Console.write)) from `august.io`.
 
 ::::
 

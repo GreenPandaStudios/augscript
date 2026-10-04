@@ -1,0 +1,349 @@
+{
+  "format": 1,
+  "started": "2026-10-03T16:14:34.271Z",
+  "compiler": "0.23.0",
+  "host": "linux-arm64",
+  "compilerTransport": "public-release",
+  "packageTransport": "public-repository-and-release",
+  "installation": "public-npm",
+  "sourceCache": "initially-empty",
+  "artifactCache": "initially-empty",
+  "checks": [
+    {
+      "name": "public npm installation without development tools",
+      "passed": true
+    },
+    {
+      "name": "public LLVM/runtime download and ordinary starter",
+      "passed": true
+    },
+    {
+      "name": "public PostgreSQL imports, workers, bytea, SQLSTATE, transactions, bounds, cancellation, load, zero native resources, offline lock and relocation",
+      "passed": true
+    },
+    {
+      "name": "public Ed25519, compatible JSON and protocol helpers",
+      "passed": true
+    },
+    {
+      "name": "public native header authentication, Expect reception, body limit and absolute request timeout",
+      "passed": true
+    },
+    {
+      "name": "public HTTP drain cancels and joins a database-confirmed active native worker",
+      "passed": true
+    }
+  ],
+  "passed": true,
+  "runnerSha256": "f6506c81a77e3ddd9c7bb993b16d6edb1453d99a576794f376445d5457fa24de",
+  "node": "v24.21.0",
+  "glibc": "2.36",
+  "packages": {
+    "cli": "0.23.0",
+    "stdlib": "0.23.0"
+  },
+  "npmIntegrity": {
+    "cli": "sha512-Si5NnAZeMp37ZQwpkk0ewo7bynL7PQcae0eklEi0mtbZ6hczYIj+4DJk0f6bJYUQRYwk3tj5QAZJ88eVdb48rQ==",
+    "stdlib": "sha512-aLhw+QE8reF1/veaBrXcaPCCnk/i+mXKKpmfYQ81tkGJBidC2r8jSdIl36vtEh/WCoKk/LeK8rB89Wqcxsii0Q=="
+  },
+  "runtimeSourceSha256": "05249add358c3891e1d724eaf78da2a524a0f6f42be741141f604630875af584",
+  "compilerPack": {
+    "version": "0.23.0",
+    "llvm": "23.1.2",
+    "host": "linux-arm64",
+    "target": "aarch64-unknown-linux-gnu",
+    "artifactSha256": "a53c7b1d236683a320c8a70998d0d67b55ce3a228c0088ff9ab0d684a1e9aac6",
+    "runtimeSha256": "05249add358c3891e1d724eaf78da2a524a0f6f42be741141f604630875af584"
+  },
+  "databaseLock": {
+    "format": 1,
+    "compiler": "0.23.0",
+    "specifications": {
+      "postgres": "https://github.com/GreenPandaStudios/aug-postgres#v0.1.0"
+    },
+    "roots": {
+      "postgres": "packages/url_aabf9a45efc7ff6b6f4c"
+    },
+    "npm": {},
+    "git": [
+      {
+        "request": "https://github.com/GreenPandaStudios/aug-postgres#v0.1.0",
+        "repository": "https://github.com/GreenPandaStudios/aug-postgres.git",
+        "revision": "v0.1.0",
+        "folder": "",
+        "commit": "302f953b881522342e29a08584ece5b5b4459c61"
+      }
+    ],
+    "packages": [
+      {
+        "path": "packages/url_aabf9a45efc7ff6b6f4c",
+        "name": "@greenpandastudios/aug-postgres",
+        "version": "0.1.0",
+        "source": "src",
+        "digest": "3415a534de780449844e47a3b0fc584bb1bf9d4707a2e650a6cef681a6d8a2b4",
+        "dependencies": {},
+        "native": {
+          "profile": "aug-native-abi-1",
+          "bindings": "native.abi.json",
+          "bindingsSha256": "1d8514d82ea59da8a178a720f859de9478e3099c7bb8485979f40278582bf3ea",
+          "upstream": {
+            "repository": "https://github.com/postgres/postgres",
+            "version": "18.6",
+            "sourceRevision": "555610c24d53e4316da5b7d3fc25c279d96856d5e0e23ee308c328c5fa881d9f"
+          },
+          "artifacts": [
+            {
+              "id": "linux-arm64",
+              "target": {
+                "triple": "aarch64-unknown-linux-gnu",
+                "os": "linux",
+                "arch": "arm64",
+                "minimumLibc": "2.36",
+                "libc": "glibc",
+                "cpuBaseline": "armv8-a"
+              },
+              "url": "https://github.com/GreenPandaStudios/aug-postgres/releases/download/v0.1.0/native-linux-arm64.tar.gz",
+              "sha256": "ec1041eaf9121149d405aa5ab3c1e1dacbd5962c2b86b6ca1a2231d249397242",
+              "maximumDownloadBytes": 2849855,
+              "maximumUnpackedBytes": 6580635,
+              "link": {
+                "kind": "dynamic",
+                "libraries": [
+                  "lib/libaug_postgres.so.1"
+                ]
+              },
+              "runtime": {
+                "files": [
+                  "lib/libaug_postgres.so.1"
+                ],
+                "closureManifest": "runtime-files.json",
+                "relocation": "loader-relative"
+              },
+              "components": [
+                {
+                  "id": "https://github.com/postgres/postgres",
+                  "version": "18.6",
+                  "compatibilityKey": "aug-postgres-libpq",
+                  "linkage": "static",
+                  "required": true
+                },
+                {
+                  "id": "https://github.com/openssl/openssl",
+                  "version": "3.5.9",
+                  "compatibilityKey": "aug-postgres-tls",
+                  "linkage": "static",
+                  "required": true
+                }
+              ],
+              "fileManifest": "files.json",
+              "provenance": "provenance.json",
+              "notices": "THIRD_PARTY_NOTICES.md"
+            },
+            {
+              "id": "linux-x64",
+              "target": {
+                "triple": "x86_64-unknown-linux-gnu",
+                "os": "linux",
+                "arch": "x64",
+                "minimumLibc": "2.36",
+                "libc": "glibc",
+                "cpuBaseline": "x86-64"
+              },
+              "url": "https://github.com/GreenPandaStudios/aug-postgres/releases/download/v0.1.0/native-linux-x64.tar.gz",
+              "sha256": "3a97a995b712620c0427b33cec51d091008273d713e3712133c6b69d127ba879",
+              "maximumDownloadBytes": 2602409,
+              "maximumUnpackedBytes": 7189515,
+              "link": {
+                "kind": "dynamic",
+                "libraries": [
+                  "lib/libaug_postgres.so.1"
+                ]
+              },
+              "runtime": {
+                "files": [
+                  "lib/libaug_postgres.so.1"
+                ],
+                "closureManifest": "runtime-files.json",
+                "relocation": "loader-relative"
+              },
+              "components": [
+                {
+                  "id": "https://github.com/postgres/postgres",
+                  "version": "18.6",
+                  "compatibilityKey": "aug-postgres-libpq",
+                  "linkage": "static",
+                  "required": true
+                },
+                {
+                  "id": "https://github.com/openssl/openssl",
+                  "version": "3.5.9",
+                  "compatibilityKey": "aug-postgres-tls",
+                  "linkage": "static",
+                  "required": true
+                }
+              ],
+              "fileManifest": "files.json",
+              "provenance": "provenance.json",
+              "notices": "THIRD_PARTY_NOTICES.md"
+            },
+            {
+              "id": "macos-arm64",
+              "target": {
+                "triple": "aarch64-apple-darwin",
+                "os": "macos",
+                "arch": "arm64",
+                "minimumOS": "14.0",
+                "libc": "libSystem",
+                "cpuBaseline": "armv8-a"
+              },
+              "url": "https://github.com/GreenPandaStudios/aug-postgres/releases/download/v0.1.0/native-macos-arm64.tar.gz",
+              "sha256": "bc3738c7630385a59f61124e83906e3579c459cdd57b400eacfcd418e13f71c5",
+              "maximumDownloadBytes": 2512014,
+              "maximumUnpackedBytes": 5310874,
+              "link": {
+                "kind": "dynamic",
+                "libraries": [
+                  "lib/libaug_postgres.1.dylib"
+                ]
+              },
+              "runtime": {
+                "files": [
+                  "lib/libaug_postgres.1.dylib"
+                ],
+                "closureManifest": "runtime-files.json",
+                "relocation": "loader-relative"
+              },
+              "components": [
+                {
+                  "id": "https://github.com/postgres/postgres",
+                  "version": "18.6",
+                  "compatibilityKey": "aug-postgres-libpq",
+                  "linkage": "static",
+                  "required": true
+                },
+                {
+                  "id": "https://github.com/openssl/openssl",
+                  "version": "3.5.9",
+                  "compatibilityKey": "aug-postgres-tls",
+                  "linkage": "static",
+                  "required": true
+                }
+              ],
+              "fileManifest": "files.json",
+              "provenance": "provenance.json",
+              "notices": "THIRD_PARTY_NOTICES.md"
+            }
+          ],
+          "sourceBuild": {
+            "recipe": "native/build.json",
+            "inputs": "native/sources.lock.json",
+            "tools": [
+              "Node 24",
+              "Clang, Make, Perl, Bison and Flex",
+              "macOS Apple SDK or pinned Debian 12 maintainer image"
+            ],
+            "automatic": false
+          }
+        }
+      }
+    ],
+    "native": {
+      "format": 1,
+      "targets": {
+        "aarch64-unknown-linux-gnu/glibc": {
+          "target": {
+            "triple": "aarch64-unknown-linux-gnu",
+            "os": "linux",
+            "arch": "arm64",
+            "cpuBaseline": "armv8-a",
+            "libc": "glibc",
+            "minimumLibc": "2.36"
+          },
+          "packages": [
+            {
+              "sourcePackage": "@greenpandastudios/aug-postgres@0.1.0",
+              "sourceDigest": "3415a534de780449844e47a3b0fc584bb1bf9d4707a2e650a6cef681a6d8a2b4",
+              "sourceCommit": "302f953b881522342e29a08584ece5b5b4459c61",
+              "contractSha256": "1d8514d82ea59da8a178a720f859de9478e3099c7bb8485979f40278582bf3ea",
+              "artifact": {
+                "id": "linux-arm64",
+                "target": {
+                  "triple": "aarch64-unknown-linux-gnu",
+                  "os": "linux",
+                  "arch": "arm64",
+                  "minimumLibc": "2.36",
+                  "libc": "glibc",
+                  "cpuBaseline": "armv8-a"
+                },
+                "url": "https://github.com/GreenPandaStudios/aug-postgres/releases/download/v0.1.0/native-linux-arm64.tar.gz",
+                "sha256": "ec1041eaf9121149d405aa5ab3c1e1dacbd5962c2b86b6ca1a2231d249397242",
+                "maximumDownloadBytes": 2849855,
+                "maximumUnpackedBytes": 6580635,
+                "link": {
+                  "kind": "dynamic",
+                  "libraries": [
+                    "lib/libaug_postgres.so.1"
+                  ]
+                },
+                "runtime": {
+                  "files": [
+                    "lib/libaug_postgres.so.1"
+                  ],
+                  "closureManifest": "runtime-files.json",
+                  "relocation": "loader-relative"
+                },
+                "components": [
+                  {
+                    "id": "https://github.com/postgres/postgres",
+                    "version": "18.6",
+                    "compatibilityKey": "aug-postgres-libpq",
+                    "linkage": "static",
+                    "required": true
+                  },
+                  {
+                    "id": "https://github.com/openssl/openssl",
+                    "version": "3.5.9",
+                    "compatibilityKey": "aug-postgres-tls",
+                    "linkage": "static",
+                    "required": true
+                  }
+                ],
+                "fileManifest": "files.json",
+                "provenance": "provenance.json",
+                "notices": "THIRD_PARTY_NOTICES.md"
+              }
+            }
+          ]
+        }
+      },
+      "compilers": {
+        "linux-arm64": {
+          "version": "0.23.0",
+          "llvm": "23.1.2",
+          "host": "linux-arm64",
+          "target": "aarch64-unknown-linux-gnu",
+          "artifactSha256": "a53c7b1d236683a320c8a70998d0d67b55ce3a228c0088ff9ab0d684a1e9aac6",
+          "runtimeSha256": "05249add358c3891e1d724eaf78da2a524a0f6f42be741141f604630875af584"
+        }
+      }
+    }
+  },
+  "sources": {
+    "tests/cancellation.aug": "4ca3386096da8bf225da5f2bca4e2dd14f2d058950a07c259817df439028f265",
+    "tests/main.aug": "be1483ff0e9735ae787b3f7c9a383cc49005212d01f219be3f6f37d642aee1f1",
+    "tests/main.yaml": "ccd83ffeab46e241ea9be24a9d4c7c30f5fd35d9592c8d425c006681fcbb82ab",
+    "tests/operations.aug": "545881b71155d3ab773d2b2a766a2d22026a1e2220559e7a9e66d03059b302a0",
+    "tests/recovery.aug": "440b1130032eb829dfa301f9d756253787dd07a636884e7c6cf710205182716d",
+    "tests/resources.aug": "9ebe0f4fd77936c829f0d2cf00a834d17e49c8e5b23b9266dce40c5343ac60c2",
+    "http-tests/main.aug": "9b796e7ff8ab981760f63b988df632dbabe9d9afbf776a14ef8440599c188f46",
+    "http-tests/main.yaml": "53eb15b71596ed625492ef76b5b3cc71cd1aa9212173e6f873e61431daaccc22",
+    "http-tests/routes.aug": "07239a209286f711f9a8abed129b3ccdb98730e5334668ab10eb2e3587c15180",
+    "http-tests/work.aug": "c097f5d4553930d6628b1d98cf7ac374b4be3f19ec415e26d7badf8bbd0ded15",
+    "values/main.aug": "e7956afe10df30830fd6b308bb73ca899a2ef5c5e3bd75400f0d910816dd0af0",
+    "values/main.yaml": "d9c32d1135eb282c367b9330ca2aadbaa1ad6c14904710acef7d7c30de0290f7",
+    "headers/main.aug": "78d3c75e0c419efd2f5686c4123d4617c2b6867d6bbc385d5ddd81f9af885bd6",
+    "headers/main.yaml": "7c24ab17e9eeef917d957eb7f99fc788e10ad81e922fb7579c3081ec6945b9d2",
+    "headers/routes.aug": "855c0c794ff66db58b54819d7037801ea8e6a4b3e9f888eaad12790ad8f86dc3"
+  },
+  "finished": "2026-10-03T16:15:46.613Z"
+}

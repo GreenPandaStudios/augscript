@@ -100,17 +100,17 @@ Greeter(resolve Logger logger to _logger, string name) implements IGreeter {
 
 ### `describe` · [source](app.md#code) {#symbol-describe}
 
-Prints a number and returns its label. It takes `x` as an integer (the numeric input, validated and incremented by the chain) and `label` as a string (Text forwarded through each layer unchanged). It gets `logger` ([`Logger`](logging.md#symbol-Logger)) and `console` ([`Console`](dependencies/august/0.20.0/io/contracts.md#symbol-Console)) from dependency injection. Failures can raise `ValidationError`.
+Prints a number and returns its label. It takes `x` as an integer (the numeric input, validated and incremented by the chain) and `label` as a string (Text forwarded through each layer unchanged). It gets `logger` ([`Logger`](logging.md#symbol-Logger)) and `console` ([`Console`](dependencies/august/0.23.0/io/contracts.md#symbol-Console)) from dependency injection. Failures can raise `ValidationError`.
 
 Layers run in the declared order. Call [`Audit.around`](interceptors.md#symbol-Audit.around). Call [`Positive.around`](interceptors.md#symbol-Positive.around). Map `x` to `y`. Call [`AddOne.around`](interceptors.md#symbol-AddOne.around). Map `x` to `y`.
 
-It passes `x` to [`console.write`](dependencies/august/0.20.0/io/contracts.md#symbol-Console.write). It returns `label`.
+It passes `x` to [`console.write`](dependencies/august/0.23.0/io/contracts.md#symbol-Console.write). It returns `label`.
 
 ### `IGreeter` · interface · [source](app.md#code) {#symbol-IGreeter}
 
 #### `IGreeter.greet` · [source](app.md#code) {#symbol-IGreeter.greet}
 
-It gets `logger` ([`Logger`](logging.md#symbol-Logger)) and `console` ([`Console`](dependencies/august/0.20.0/io/contracts.md#symbol-Console)) from dependency injection. It returns `string`. It can call [`Console.write`](dependencies/august/0.20.0/io/contracts.md#symbol-Console.write).
+It gets `logger` ([`Logger`](logging.md#symbol-Logger)) and `console` ([`Console`](dependencies/august/0.23.0/io/contracts.md#symbol-Console)) from dependency injection. It returns `string`. It can call [`Console.write`](dependencies/august/0.23.0/io/contracts.md#symbol-Console.write).
 
 ### `Greeter` · class · [source](app.md#code) {#symbol-Greeter}
 
@@ -118,13 +118,13 @@ Construction stores its inputs; startup is visible in the greet call. It impleme
 
 #### `Greeter.greet` · [source](app.md#code) {#symbol-Greeter.greet}
 
-Method annotations wrap each method invocation separately. It gets `logger` ([`Logger`](logging.md#symbol-Logger)) and `console` ([`Console`](dependencies/august/0.20.0/io/contracts.md#symbol-Console)) from dependency injection. Layers run in the declared order. Call [`Audit.around`](interceptors.md#symbol-Audit.around).
+Method annotations wrap each method invocation separately. It gets `logger` ([`Logger`](logging.md#symbol-Logger)) and `console` ([`Console`](dependencies/august/0.23.0/io/contracts.md#symbol-Console)) from dependency injection. Layers run in the declared order. Call [`Audit.around`](interceptors.md#symbol-Audit.around).
 
 It returns the text `Hello, {name}!`.
 
 ### Dependencies
 
-It uses [`Console`](dependencies/august/0.20.0/io/contracts.md#symbol-Console) ([`write`](dependencies/august/0.20.0/io/contracts.md#symbol-Console.write)) from `august.io`. It uses [`AddOne`](interceptors.md#symbol-AddOne) ([`around`](interceptors.md#symbol-AddOne.around)), [`Audit`](interceptors.md#symbol-Audit) ([`around`](interceptors.md#symbol-Audit.around)), and [`Positive`](interceptors.md#symbol-Positive) ([`around`](interceptors.md#symbol-Positive.around)) from `interceptors`. It uses [`Logger`](logging.md#symbol-Logger) from `logging`.
+It uses [`Console`](dependencies/august/0.23.0/io/contracts.md#symbol-Console) ([`write`](dependencies/august/0.23.0/io/contracts.md#symbol-Console.write)) from `august.io`. It uses [`AddOne`](interceptors.md#symbol-AddOne) ([`around`](interceptors.md#symbol-AddOne.around)), [`Audit`](interceptors.md#symbol-Audit) ([`around`](interceptors.md#symbol-Audit.around)), and [`Positive`](interceptors.md#symbol-Positive) ([`around`](interceptors.md#symbol-Positive.around)) from `interceptors`. It uses [`Logger`](logging.md#symbol-Logger) from `logging`.
 
 ::::
 

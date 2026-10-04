@@ -8,7 +8,7 @@ editLink: false
 
 Console and file capabilities supplied with the compiler. Import names from `august.io`.
 
-The signatures below include checked results and failures, including those inferred from a body. See [packages](../packages.md) for revision pinning and [language constructs](../language-constructs.md) for built-in value types.
+Signatures show result types and checked errors. See [packages](../packages.md) to pin a release and [language constructs](../language-constructs.md) for built-in types.
 
 ## Console {#api-Console}
 
@@ -31,7 +31,7 @@ Write one line of text.
 **Parameters**
 - `value`: Text to display.
 
-Requires `Console.write`.
+Uses `Console.write`.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/io/contracts.aug#L5)
 
@@ -56,7 +56,7 @@ Write one line of text.
 **Parameters**
 - `value`: Text to display.
 
-Requires `Console.write`.
+Uses `Console.write`.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/io/contracts.aug#L9)
 
@@ -84,7 +84,7 @@ Read text.
 **Throws**
 - `FileError`: The file could not be read.
 
-Requires `FileReader.read`.
+Uses `FileReader.read`.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/io/contracts.aug#L15)
 
@@ -113,7 +113,7 @@ Write text.
 **Throws**
 - `FileError`: Writing failed.
 
-Requires `FileWriter.write`.
+Uses `FileWriter.write`.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/io/contracts.aug#L20)
 
@@ -123,7 +123,7 @@ Requires `FileWriter.write`.
 LocalFiles() implements FileReader, FileWriter
 ```
 
-Native files. Operations are explicit; construction opens no files.
+Native filesystem adapter. Construction opens no files.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/io/contracts.aug#L23)
 
@@ -141,7 +141,7 @@ Read text.
 **Throws**
 - `FileError`: The file could not be read.
 
-Requires `FileReader.read`.
+Uses `FileReader.read`.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/io/contracts.aug#L24)
 
@@ -160,7 +160,7 @@ Write text.
 **Throws**
 - `FileError`: Writing failed.
 
-Requires `FileWriter.write`.
+Uses `FileWriter.write`.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/io/contracts.aug#L26)
 
@@ -180,9 +180,7 @@ Read command-line input through an explicit dependency.
 read() returns List<string>
 ```
 
-
-
-Requires `Arguments.read`.
+Uses `Arguments.read`.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/io/contracts.aug#L31)
 
@@ -202,8 +200,6 @@ Native command-line arguments.
 read() returns List<string>
 ```
 
-
-
-Requires `Arguments.read`.
+Uses `Arguments.read`.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/io/contracts.aug#L35)

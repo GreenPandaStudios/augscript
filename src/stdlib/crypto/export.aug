@@ -8,3 +8,6 @@ export rsaJwk from jose
 export importJwk from jose
 export signJwt from jose
 export verifyJwt from jose
+export verifyIdentityToken from jose
+export IdentityVerifier from jose
+export Ed25519IdentityVerifier from jose

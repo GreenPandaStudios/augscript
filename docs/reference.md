@@ -2,7 +2,7 @@
 
 Use this page to look up the implemented language rules. It covers syntax, types, visibility, effects, dependency injection, ownership, and checked failures. For a first introduction, read [the August book](learn/index.md). For the reasons behind the design, read [why August exists](about.md).
 
-The reference is maintained with the compiler in this repository. August is experimental; [compatibility](compatibility.md) describes its version policy. Examples marked with a project and filename form complete applications and are checked by the documentation tests. Short `text` blocks illustrate syntax and are not standalone projects.
+August is experimental; [compatibility](compatibility.md) describes its version policy. Examples marked with a project and filename are complete, tested applications. Short `text` blocks are syntax fragments.
 
 ## A complete project
 
@@ -32,7 +32,7 @@ Application(resolve Console console) implements Runnable:
         console.write(value="Hello, AugScript!")
 ```
 
-Run `npx @greenpandastudios/aug-cli@next run PROJECT`, or choose **AugScript: Run Project** in VS Code. Node.js 24+ and a C11 compiler are required; prepare [native dependencies](packages.md#npm-registry) before execution.
+Run `aug run PROJECT`, or choose **AugScript: Run Project** in VS Code. You need Node.js 24+ and a [supported host](compatibility.md). The CLI obtains its LLVM compiler/runtime pack and package artifacts automatically.
 
 ## Blocks and statement boundaries
 
@@ -59,7 +59,7 @@ Use `and`, `or`, and `not` for booleans. They short-circuit. Comparisons bind be
 
 `import Name from sibling` imports only that sibling's own public declaration. Imports are explicit even within a folder. Names beginning with `_` are private to their declaring file, class, or interface, and cannot be imported or exported.
 
-A folder's public surface is defined by its special `export.aug`:
+A folder's `export.aug` names the declarations other folders can import:
 
 ```text
 export Logger from logger
@@ -71,7 +71,7 @@ Cross-folder access requires the export entry. A dotted path also requires each 
 
 `import Logger and ConsoleLogger from logging` combines imports. `import everything from logging` imports visible declarations and rejects collisions; it never exposes a module's internal imports. The formatter preserves it. Hover shows available names, **Expand to named imports** offers an explicit list, and the [compiled spec](specifications.md) explains dependencies actually used.
 
-Import cycles are errors. Optional module dependency policies and public-surface warnings are configured in `main.yaml`. `strict_modules: true` also requires sibling imports to appear in the local export file. Ctrl-click `from` or a path segment to open its source file or export file, including `august.io`.
+Import cycles are errors. Configure allowed module dependencies and export-count warnings in `main.yaml`. `strict_modules: true` also requires sibling imports to appear in the local export file. Ctrl-click `from` or a path segment to open its source file or export file, including `august.io`.
 
 Project dependencies use aliases in `main.yaml`: `packages: math: "npm:@owner/aug-math@1.2.3"` as a nested YAML block. Run `aug install`, then write `import add from math`. A library exposes only its source folder's `export.aug`; internal modules and undeclared transitive dependencies are inaccessible. See [creating and using packages](packages.md#author-a-package).
 
@@ -115,6 +115,12 @@ Constraints name interfaces. Multiple constraints use `and`. Only interfaces dec
 ## Classes, records, and local state
 
 A class starts with its name and ends its header with `implements Interface`. There is no `class` or `function` prefix and no class inheritance. Interfaces can extend several interfaces and supply default methods; conflicting inherited defaults require an explicit override. Interfaces have methods and no fields.
+
+An initializer can reject construction with a checked error. Write the error before `implements`: `Session(own Handle handle) unless SessionError implements ActiveSession`. Callers must catch or propagate it. Class constructors require a written `unless` clause; record validation can infer failures.
+
+If construction fails after ownership transfers, August releases the partially constructed object and its initialized owned fields, then propagates the constructor error. It does not call `drop` on a partial object. `drop` runs only after successful construction.
+
+Construct fallible classes explicitly. They cannot be DI binding targets because injected-construction failure handling is not yet supported.
 
 Header inputs become fields. Fields are read-only after initialization unless marked `mutable`. Public names grant access; names starting with `_` keep storage private. Separate a public constructor label from private storage with `int initial to _count`. The shorthand `int _count` exposes the input label `count`.
 
@@ -220,7 +226,7 @@ A caller's contract must include the effects of its calls and interceptor layers
 
 ### Short implementation headers
 
-Executable functions, methods, interface defaults, and interceptors infer omitted `returns`, `changes`, `uses`, and `unless` clauses. You write the work once. Return expressions determine the result; calls and writes determine capabilities and observable mutations; failures that escape catches determine checked errors. Record validation also infers escaping failures.
+Executable functions, methods, interface defaults, and interceptors infer omitted `returns`, `changes`, `uses`, and `unless` clauses. Return expressions determine the result; calls and writes determine capabilities and observable mutations; failures that escape catches determine checked errors. Record validation also infers escaping failures.
 
 ```text
 import Console and FileReader from august.io
@@ -236,7 +242,7 @@ load(resolve FileReader files, string path):
     return files.read(path)
 ```
 
-The editor shows `uses Console.write` beside `log` and `returns string uses FileReader.read unless FileError` beside `load` as non-editable hints. These clauses are absent from saved code. Hover, `aug explain`, generated API docs, and `aug spec` use the same checked contracts. Formatting keeps concise source; it preserves annotations you wrote deliberately.
+The editor shows `uses Console.write` beside `log` and `returns string uses FileReader.read unless FileError` beside `load` as non-editable hints. These clauses are absent from saved code. Hover, `aug explain`, generated API docs, and `aug spec` use the same checked contracts. Formatting preserves any clauses you wrote explicitly.
 
 Bodyless interfaces and foreign declarations describe contracts the compiler cannot inspect. A written clause remains a checked assertion: `returns void` rejects a returned value, and an explicit `uses` or `unless` limits the body. Implementations must satisfy their interface. An interface with no effects remains pure. Inference follows calls and generic substitutions independently of declaration order. Recursive results without an anchor, empty collections without a contextual type, and expanding generic contracts need an explicit type or finite contract.
 
@@ -284,7 +290,7 @@ If `start` runs inside a loop, a wait for one result may leave children from ear
 
 For a collection of tasks, `wait for tasks` joins the whole list. Waiting for one task selected with a dynamic index cannot prove which sibling tasks remain active, so their captures stay pinned until the scope joins them.
 
-The analysis intentionally rejects some programs when it cannot prove separate origins or freshness. This prototype is conservative; it is not a formal ownership proof. Threading semantics remain deferred.
+When the checker cannot establish separate origins or freshness, it rejects the access. These conservative checks are not a formal ownership proof. Tasks run cooperatively on one OS thread; multicore execution is unsupported.
 
 ## Null, matching, and checked failures
 
@@ -294,7 +300,20 @@ Nullable locals narrow after null checks, short-circuit conditions, match patter
 
 An error satisfies Error. A body infers escaping errors. A bodyless signature or explicit bound names specific errors with `returns T unless FileError and DomainError`. It can throw any value satisfying its declaration; declaring Error accepts any Error implementation. Calls must catch or propagate all effective errors, including interceptor layers; executable callers infer propagation when unless is omitted.
 
+`start worker` schedules a standalone function on an OS thread with a private heap and copied data. Its inputs cannot be injected or owned/borrowed references, and its result and errors must be copied data. Construct services and native resources inside the worker; [worker boundaries](workers.md) explain the supported types and native contracts.
+
 `start` evaluates its receiver and arguments immediately; their errors belong to the scheduling statement. The scheduled operation's errors belong to a `wait for` or its owning scope's implicit join. Unobserved sibling failures can reach any wait in that group. Grouped waits observe every selected child, including cancellation cleanup, and rethrow the first failure. A helper awaiting a `Task<T>` parameter declares or handles `Error`, since that public type does not specify a narrower error contract yet.
+
+A cooperative task can take an owned input. Scheduling transfers cleanup responsibility to
+the child, including when cancellation occurs before its function runs. A task
+cannot return an `own` value: `Task<T>` has no owned-result transfer contract.
+Create and release resources inside the task, then return immutable data.
+
+Owned locals in a `try` or `catch` body are released when that body exits, before
+its `always` block runs. This order applies to normal execution, returns and
+errors. Values owned by the enclosing function remain live until that function
+exits. Cleanup suspends pending errors and cancellation while a `drop` method
+runs, then restores them.
 
 An error already leaving the parent remains the reported error if cancelling a child causes its cleanup to fail. `always` cleanup still runs for that child. A `return` from a scope joins its children before the caller receives the result.
 

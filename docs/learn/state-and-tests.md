@@ -9,7 +9,7 @@ next:
 
 # State and tests
 
-Some objects need to change. A counter is a small example: callers can read its value, and one operation advances it. This project makes that change visible both in the contract and at the call site.
+This counter has two operations: read its value and increment it. The interface permits the increment to change state; a borrow block permits the call.
 
 Create a new folder and save these two files in it:
 
@@ -58,14 +58,14 @@ test Counter counter:
 
 `borrow counter` grants mutable access for that block. The following call to `value()` only reads, so it needs no borrow. Read access shares a reference; it does not require copying the counter. Try moving `counter.increment()` outside the borrow block. `aug check .` should reject the mutation without permission. Restore the borrow before running again.
 
-This lesson uses a managed object. August also has ownership transfer and scoped cleanup. Learn those when your program needs them from [the ownership reference](../reference.md#ownership-and-read-access) and [complete lifetime examples](../examples/ownership-transfer/index.md).
+For ownership transfer and scoped cleanup, see [the ownership reference](../reference.md#ownership-and-read-access) and [complete lifetime examples](../examples/ownership-transfer/index.md).
 
 ## Keep the behavior test nearby
 
 `test Counter counter` identifies the class and the subject variable. The setup inside `when incrementing` constructs the subject. Each `it` case gets fresh setup; the second case still sees `3` even though the first case incremented its own counter.
 
-Tests follow normal privacy rules. They verify behavior through `increment` and `value`, rather than reaching into `_count`. A case must execute an assertion. Test bodies are checked with the program, but are excluded from production executables.
+Tests follow normal privacy rules. They use `increment` and `value`; `_count` remains private. A case must execute an assertion. Test bodies are checked with the program, but are excluded from production executables.
 
-Change the first expected result to `5`, run `aug test .`, and inspect the failure's file and line. Restore `4`, rerun the tests, and generate the spec. You now have three views of the same behavior: the contract, executable cases, and a readable explanation.
+Change the first expected result to `5`, run `aug test .`, and inspect the failure's file and line. Restore `4`, rerun the tests, and generate the spec. Compare the updated explanation with the passing cases.
 
 Use [the testing guide](../testing.md) when you need rows, fixtures, test adapters, filtering, or coverage. Continue with [a guided module change](../guides/change-a-module.md) to apply these tools in a larger project.

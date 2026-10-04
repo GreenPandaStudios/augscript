@@ -1,8 +1,11 @@
 # Extension artwork
 
-`augscript.svg` is the editable August logo. `banner.svg` is the extension header;
-the renderer inserts that same logo. The file legend uses the actual SVGs in
-`../icons`, including the special startup and export marks.
+`augscript.svg` is the editable open-circle mark. It uses one stroke on a
+transparent background. `banner.svg` is the extension header; the renderer
+inserts that same mark. Keep shapes simple enough to read at 16 pixels, with
+burgundy marks and warm neutrals, with no gradients, shadows or badges. The file legend renders the
+actual light and dark SVGs in `../icons`, including startup, export and
+configuration marks.
 
 After editing the vector sources, render and commit the PNGs:
 

@@ -1,6 +1,6 @@
 {
   "name": "@greenpandastudios/aug-web",
-  "version": "0.20.0",
+  "version": "0.23.0",
   "description": "August HTTP capabilities and helpers for native first-party endpoints",
   "license": "MIT",
   "files": [
@@ -14,7 +14,7 @@
     "./aug-package.json": "./aug-package.json"
   },
   "dependencies": {
-    "@greenpandastudios/aug-stdlib": "0.20.0"
+    "@greenpandastudios/aug-stdlib": "0.23.0"
   },
   "publishConfig": {
     "access": "public",

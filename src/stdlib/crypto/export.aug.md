@@ -8,4 +8,4 @@ Export the declaration `Crypto` from [`contracts.aug`](contracts.aug.md#symbol-C
 
 Export the declaration `RsaJwks` from [`jose.aug`](jose.aug.md#symbol-RsaJwks). Export the declaration `rsaJwk` from [`jose.aug`](jose.aug.md#symbol-rsaJwk). Export the declaration `importJwk` from [`jose.aug`](jose.aug.md#symbol-importJwk). Export the declaration `signJwt` from [`jose.aug`](jose.aug.md#symbol-signJwt).
 
-Export the declaration `verifyJwt` from [`jose.aug`](jose.aug.md#symbol-verifyJwt).
+Export the declaration `verifyJwt` from [`jose.aug`](jose.aug.md#symbol-verifyJwt). Export the declaration `verifyIdentityToken` from [`jose.aug`](jose.aug.md#symbol-verifyIdentityToken). Export the declaration `IdentityVerifier` from [`jose.aug`](jose.aug.md#symbol-IdentityVerifier). Export the declaration `Ed25519IdentityVerifier` from [`jose.aug`](jose.aug.md#symbol-Ed25519IdentityVerifier).
