@@ -28,7 +28,7 @@ pageClass: aug-example-page
 
 ::: code-group
 
-```aug [Indentation]
+```aug [Indentation] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiaW5kZW50Iiwic291cmNlU2hhMjU2IjoiYjJlNmJlNTI5Y2ExMzQ1MGU2OTllMzUyNGYyYTg0Y2E0YTNlNGQ2NTM2NDgyY2EzYmMwODk3NmNjYWI1ZWY3ZSIsImZvcm1hdHRlZFNoYTI1NiI6ImNkYjM4OWMyMTM1N2VjNWJkN2FmM2VkYTVlZmQ3NGIxYTMwMWE3ODBmMDBkYWNmYjZlNjE1MmUwYjE5YTM0MjUiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDYtTDkiLCJmaXJzdCI6NiwibGFzdCI6OSwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0xIl19LHsiaWQiOiJzb3VyY2UtTDEwIiwiZmlyc3QiOjEwLCJsYXN0IjoxMCwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0yIl19XX0
 // aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Formatter from types
 import TextFormatter from types
@@ -41,7 +41,7 @@ box = Box<string>(value="inside a generic box")
 print(value=box.get())
 ```
 
-```aug [Braces]
+```aug [Braces] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiYnJhY2VzIiwic291cmNlU2hhMjU2IjoiYjJlNmJlNTI5Y2ExMzQ1MGU2OTllMzUyNGYyYTg0Y2E0YTNlNGQ2NTM2NDgyY2EzYmMwODk3NmNjYWI1ZWY3ZSIsImZvcm1hdHRlZFNoYTI1NiI6ImNkYjM4OWMyMTM1N2VjNWJkN2FmM2VkYTVlZmQ3NGIxYTMwMWE3ODBmMDBkYWNmYjZlNjE1MmUwYjE5YTM0MjUiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDYtTDkiLCJmaXJzdCI6NiwibGFzdCI6OSwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0xIl19LHsiaWQiOiJzb3VyY2UtTDEwIiwiZmlyc3QiOjEwLCJsYXN0IjoxMCwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0yIl19XX0
 // aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Formatter from types
 import TextFormatter from types
@@ -68,9 +68,13 @@ print(value=box.get())
 
 ### Startup
 
-It sets `formatter` to the instance provided for `Formatter`. It prints [`formatter.title`](types.md#symbol-Formatter.title). It prints [`formatter.format`](types.md#symbol-Formatter.format) for `int` with `value` `42`. It sets `box` to a [`Box`](types.md#symbol-Box) for `string` with `value` `"inside a generic box"`. [source](main.md#code)
+::: spec-paragraph specification-paragraph-1
+It sets `formatter` to the instance provided for `Formatter`. It prints [`formatter.title`](types.md#symbol-Formatter.title). It prints [`formatter.format`](types.md#symbol-Formatter.format) for `int` with `value` `42`. It sets `box` to a [`Box`](types.md#symbol-Box) for `string` with `value` `"inside a generic box"`. [source](main.md#source-L6-L9)
+:::
 
-It prints [`box.get`](types.md#symbol-Box.get). [source](main.md#code)
+::: spec-paragraph specification-paragraph-2
+It prints [`box.get`](types.md#symbol-Box.get). [source](main.md#source-L10)
+:::
 
 ### Dependencies
 

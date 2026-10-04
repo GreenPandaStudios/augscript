@@ -1,3 +1,4 @@
+import {sourceNavigationTransformer} from './source-navigation.mjs';
 import { defineConfig } from 'vitepress';
 import { copyFileSync, readFileSync } from 'node:fs';
 import { dirname, relative, resolve } from 'node:path';
@@ -21,6 +22,7 @@ export default defineConfig({
   },
   sitemap: { hostname: 'https://GreenPandaStudios.github.io/augscript/' },
   markdown: {
+    codeTransformers: [sourceNavigationTransformer],
     languages: [{ ...grammar, name: 'aug', aliases: ['augscript'] }],
     config(md) {
       md.set({ html: false });
@@ -32,6 +34,10 @@ export default defineConfig({
         if (!chartNames.has(chart)) throw new Error(`Unknown benchmark chart: ${chart}`);
         return `<BenchmarkChart chart="${chart}" />\n`;
       }});
+      md.use(container,'spec-paragraph',{
+        validate: info=>/^spec-paragraph specification-paragraph-[1-9][0-9]*$/.test(info.trim()),
+        render:(tokens,index)=>tokens[index].nesting===1?`<div class="aug-spec-paragraph" id="${tokens[index].info.trim().split(/\s+/)[1]}">\n`:'</div>\n'
+      });
       const render = md.renderer.rules.link_open;
       md.renderer.rules.link_open = (tokens, index, options, env, self) => {
         const token = tokens[index];

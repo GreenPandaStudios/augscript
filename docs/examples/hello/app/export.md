@@ -32,12 +32,12 @@ pageClass: aug-example-page
 
 ::: code-group
 
-```aug [Indentation]
+```aug [Indentation] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiaW5kZW50Iiwic291cmNlU2hhMjU2IjoiYTZmZGZlMDcyYTY1NjI1Y2I0NzUxOTQwMDYzZTFmMzMwNGU4ZDgzMjRmYjIyZTg0ODA3NmVmNmQ3OWRhN2Y2NyIsImZvcm1hdHRlZFNoYTI1NiI6ImUzZTBmM2MzM2Y1ZTU3MTMzOWNkZWI0NzgyOGU4NmUxODk5YzkzMTIyYmE3Y2UxOWI0M2VmOTE5NjJlMDk1NzMiLCJsaW5rcyI6W119
 // aug-spec: "export.aug.md" explains this file. Read it before changes; refresh with aug spec.
 export Greeter from greeter
 ```
 
-```aug [Braces]
+```aug [Braces] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiYnJhY2VzIiwic291cmNlU2hhMjU2IjoiYTZmZGZlMDcyYTY1NjI1Y2I0NzUxOTQwMDYzZTFmMzMwNGU4ZDgzMjRmYjIyZTg0ODA3NmVmNmQ3OWRhN2Y2NyIsImZvcm1hdHRlZFNoYTI1NiI6ImUzZTBmM2MzM2Y1ZTU3MTMzOWNkZWI0NzgyOGU4NmUxODk5YzkzMTIyYmE3Y2UxOWI0M2VmOTE5NjJlMDk1NzMiLCJsaW5rcyI6W119
 // aug-spec: "export.aug.md" explains this file. Read it before changes; refresh with aug spec.
 export Greeter from greeter
 ```

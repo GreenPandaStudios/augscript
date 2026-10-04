@@ -28,7 +28,7 @@ pageClass: aug-example-page
 
 ::: code-group
 
-```aug [Indentation]
+```aug [Indentation] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiaW5kZW50Iiwic291cmNlU2hhMjU2IjoiZTE4OGEyYTdjNjA5MGU5NmM3OGE0ZTQwYjc3NzFjOWM1ZjQxMTJhMzk1ZjlmODQxZDY1NGRkNTRlZGJhOWFhMiIsImZvcm1hdHRlZFNoYTI1NiI6IjU5YjkwODEyMjc4ODc2ZmIzMmMzYjM3MGVmZTgxNWJhNmM5OGY2NThiYmUwNWMxNjg2ZWE3MmZhZjljZjQyOWYiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDMtTDUiLCJmaXJzdCI6MywibGFzdCI6NSwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0xIl19XX0
 // aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Counter from counter
 own Counter counter = Counter(value=1)
@@ -36,7 +36,7 @@ counter.increment()
 print(value=counter.read())
 ```
 
-```aug [Braces]
+```aug [Braces] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiYnJhY2VzIiwic291cmNlU2hhMjU2IjoiZTE4OGEyYTdjNjA5MGU5NmM3OGE0ZTQwYjc3NzFjOWM1ZjQxMTJhMzk1ZjlmODQxZDY1NGRkNTRlZGJhOWFhMiIsImZvcm1hdHRlZFNoYTI1NiI6IjU5YjkwODEyMjc4ODc2ZmIzMmMzYjM3MGVmZTgxNWJhNmM5OGY2NThiYmUwNWMxNjg2ZWE3MmZhZjljZjQyOWYiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDMtTDUiLCJmaXJzdCI6MywibGFzdCI6NSwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0xIl19XX0
 // aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Counter from counter
 own Counter counter = Counter(value=1)
@@ -54,7 +54,9 @@ print(value=counter.read())
 
 ### Startup
 
-It creates [`Counter`](counter.md#symbol-Counter) with `value` `1` and stores the result in owned `counter` ([`Counter`](counter.md#symbol-Counter)). It calls [`counter.increment`](counter.md#symbol-Counter.increment). It prints [`counter.read`](counter.md#symbol-Counter.read). [source](main.md#code)
+::: spec-paragraph specification-paragraph-1
+It creates [`Counter`](counter.md#symbol-Counter) with `value` `1` and stores the result in owned `counter` ([`Counter`](counter.md#symbol-Counter)). It calls [`counter.increment`](counter.md#symbol-Counter.increment). It prints [`counter.read`](counter.md#symbol-Counter.read). [source](main.md#source-L3-L5)
+:::
 
 ### Dependencies
 

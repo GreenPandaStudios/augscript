@@ -67,7 +67,7 @@ test('wiki dependency links stay inside the generated gallery and resolve source
       if(target.startsWith('docs/examples/')&&fragment) {
         const body=outputs.get(target);
         const anchor=decodeURIComponent(fragment);
-        assert.ok(body.includes('{#'+anchor+'}')||body.includes('<a id="'+anchor+'"></a>'),path+': missing anchor '+href);
+        assert.ok(body.includes('{#'+anchor+'}')||body.includes('<a id="'+anchor+'"></a>')||body.includes('::: spec-paragraph '+anchor)||[...body.matchAll(/aug-source=([A-Za-z0-9_-]+)/g)].some(match=>JSON.parse(Buffer.from(match[1],'base64url').toString()).links.some(link=>link.id===anchor)),path+': missing anchor '+href);
       }
       if(path.includes('/dependencies/'))assert.ok(!href.includes('github.com'),path+': dependency must be readable in the wiki');
     }
@@ -125,4 +125,17 @@ test('wiki specifications use native expandable containers without visible revis
  const page=readFileSync(resolve('docs/examples/hello/app/greeter.md'),'utf8');
  assert.match(page,/::: details Checked interface/);
  assert.doesNotMatch(page,/<details>|<summary>|August spec revision:/);
+});
+
+
+test('every generated source link has revision-matched ranges and explanation backlinks in both styles',()=>{
+ const outputs=pages();
+ for(const [path,text] of outputs){
+  if(!path.startsWith('docs/examples/')||!path.endsWith('.md')||typeof text!=='string'||!text.includes('aug-source='))continue;
+  const views=[...text.matchAll(/```aug \[(Indentation|Braces)\] aug-source=([A-Za-z0-9_-]+)\n([\s\S]*?)\n```/g)];assert.equal(views.length,2,path);
+  for(const [,style,encoded,source] of views){const data=JSON.parse(Buffer.from(encoded,'base64url').toString());assert.equal(data.style,style==='Braces'?'braces':'indent');assert.equal(data.sourceSha256.length,64);assert.equal(data.formattedSha256.length,64);
+   for(const link of data.links){assert.ok(link.first>=1&&link.last>=link.first&&link.last<=source.split('\n').length,path);for(const backlink of link.backlinks){const [file,anchor]=backlink.split('#'),target=file?relative(root,resolve(root,dirname(path),decodeURIComponent(file))):path,body=outputs.get(target);assert.ok(body?.includes('::: spec-paragraph '+anchor)||body?.includes('{#'+anchor+'}'),path+': missing prose backlink '+backlink);}}
+  }
+  assert.ok(!withoutFences(text).includes('#code)'),path+': source links retain line identities');
+ }
 });

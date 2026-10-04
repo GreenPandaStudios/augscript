@@ -48,7 +48,7 @@ pageClass: aug-example-page
 
 ::: code-group
 
-```aug [Indentation]
+```aug [Indentation] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiaW5kZW50Iiwic291cmNlU2hhMjU2IjoiNWU5NDkwNDE1ZDM5NmJlMzEwMDQ1OTE4N2M5ZGFjYzkxNzViZjAxYTlmYzBmNTQ3ODljNjQ4YWQ5MDg1ZDU3MiIsImZvcm1hdHRlZFNoYTI1NiI6Ijk5ZThlNjliOTJjYmQ3MzBkM2NlMTdlOTk0YWE4NDczZGNhMTY1NWUwMmEwYTZkZDc2YmM1MDk0ZGRiZTg5YzciLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDYiLCJmaXJzdCI6NSwibGFzdCI6NSwiYmFja2xpbmtzIjpbIiNzeW1ib2wtRGlzY292ZXJ5Il19LHsiaWQiOiJzb3VyY2UtTDciLCJmaXJzdCI6NiwibGFzdCI6MjIsImJhY2tsaW5rcyI6WyIjc3ltYm9sLWRpc2NvdmVyeSJdfSx7ImlkIjoic291cmNlLUw4LUw5IiwiZmlyc3QiOjcsImxhc3QiOjIyLCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTEiXX0seyJpZCI6InNvdXJjZS1MMTIiLCJmaXJzdCI6MjQsImxhc3QiOjI2LCJiYWNrbGlua3MiOlsiI3N5bWJvbC1qd2tzIl19LHsiaWQiOiJzb3VyY2UtTDEzLUwxNCIsImZpcnN0IjoyNSwibGFzdCI6MjYsImJhY2tsaW5rcyI6WyIjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMiJdfV19
 // aug-spec: "discovery.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import settings and SigningKeys and KeyError from common
 import Crypto and RsaJwks and rsaJwk from crypto
@@ -77,7 +77,7 @@ endpoint GET "/provider/jwks" as jwks(resolve Crypto crypto, resolve SigningKeys
     return RsaJwks(keys=[rsaJwk(publicKey=publicKey, kid="provider-1")])
 ```
 
-```aug [Braces]
+```aug [Braces] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiYnJhY2VzIiwic291cmNlU2hhMjU2IjoiNWU5NDkwNDE1ZDM5NmJlMzEwMDQ1OTE4N2M5ZGFjYzkxNzViZjAxYTlmYzBmNTQ3ODljNjQ4YWQ5MDg1ZDU3MiIsImZvcm1hdHRlZFNoYTI1NiI6IjFkNTc5Njc5OTc0MjFmNGNlNjRkNDFlMWRjZjE2MzNiZDlkNTU5N2U4MzU5NDA3Y2E3YjliZGJkNzMyYWUwZGQiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDYiLCJmaXJzdCI6NSwibGFzdCI6NSwiYmFja2xpbmtzIjpbIiNzeW1ib2wtRGlzY292ZXJ5Il19LHsiaWQiOiJzb3VyY2UtTDciLCJmaXJzdCI6NiwibGFzdCI6MjMsImJhY2tsaW5rcyI6WyIjc3ltYm9sLWRpc2NvdmVyeSJdfSx7ImlkIjoic291cmNlLUw4LUw5IiwiZmlyc3QiOjcsImxhc3QiOjIyLCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTEiXX0seyJpZCI6InNvdXJjZS1MMTIiLCJmaXJzdCI6MjUsImxhc3QiOjI4LCJiYWNrbGlua3MiOlsiI3N5bWJvbC1qd2tzIl19LHsiaWQiOiJzb3VyY2UtTDEzLUwxNCIsImZpcnN0IjoyNiwibGFzdCI6MjcsImJhY2tsaW5rcyI6WyIjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMiJdfV19
 // aug-spec: "discovery.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import settings and SigningKeys and KeyError from common
 import Crypto and RsaJwks and rsaJwk from crypto
@@ -118,13 +118,15 @@ endpoint GET "/provider/jwks" as jwks(resolve Crypto crypto, resolve SigningKeys
 
 Plain handler results default to HTTP 200 unless another status is declared. HttpResponse values choose their own status. Unhandled request failures return HTTP 500 and cancel the request tasks.
 
-### `Discovery` · immutable record · [source](discovery.md#code) {#symbol-Discovery}
+### `Discovery` · immutable record · [source](discovery.md#source-L6) {#symbol-Discovery}
 
 Discovery advertises exactly this provider's supported authorization-code profile. It takes `issuer`, `authorization_endpoint`, `token_endpoint`, `userinfo_endpoint`, and `jwks_uri` as strings, kept read-only and `response_types_supported`, `grant_types_supported`, `subject_types_supported`, `id_token_signing_alg_values_supported`, `token_endpoint_auth_methods_supported`, `scopes_supported`, `claims_supported`, and `code_challenge_methods_supported` as `List<string>`, kept read-only.
 
-### `discovery` · [source](discovery.md#code) {#symbol-discovery}
+### `discovery` · [source](discovery.md#source-L7) {#symbol-discovery}
 
-`discovery` handles `GET /provider/.well-known/openid-configuration`. It gets `config` from [`settings`](../common/settings.md#symbol-settings). It returns a [`Discovery`](discovery.md#symbol-Discovery) with `config.issuer`, `authorization_endpoint` from the text `{config.issuer}/authorize`, `token_endpoint` from the text `{config.issuer}/token`, `userinfo_endpoint` from the text `{config.issuer}/userinfo`, `jwks_uri` from the text `{config.issuer}/jwks`, `response_types_supported` from a list containing `"code"`, `grant_types_supported` from a list containing `"authorization_code"`, `subject_types_supported` from a list containing `"public"`, `id_token_signing_alg_values_supported` from a list containing `"RS256"`, `token_endpoint_auth_methods_supported` from a list containing `"none"`, `scopes_supported` from a list containing `"openid"`, `"profile"`, `claims_supported` from a list containing `"iss"`, `"sub"`, `"aud"`, `"exp"`, `"iat"`, `"nonce"`, `"name"`, and `code_challenge_methods_supported` from a list containing `"S256"`. [source](discovery.md#code)
+::: spec-paragraph specification-paragraph-1
+`discovery` handles `GET /provider/.well-known/openid-configuration`. It gets `config` from [`settings`](../common/settings.md#symbol-settings). It returns a [`Discovery`](discovery.md#symbol-Discovery) with `config.issuer`, `authorization_endpoint` from the text `{config.issuer}/authorize`, `token_endpoint` from the text `{config.issuer}/token`, `userinfo_endpoint` from the text `{config.issuer}/userinfo`, `jwks_uri` from the text `{config.issuer}/jwks`, `response_types_supported` from a list containing `"code"`, `grant_types_supported` from a list containing `"authorization_code"`, `subject_types_supported` from a list containing `"public"`, `id_token_signing_alg_values_supported` from a list containing `"RS256"`, `token_endpoint_auth_methods_supported` from a list containing `"none"`, `scopes_supported` from a list containing `"openid"`, `"profile"`, `claims_supported` from a list containing `"iss"`, `"sub"`, `"aud"`, `"exp"`, `"iat"`, `"nonce"`, `"name"`, and `code_challenge_methods_supported` from a list containing `"S256"`. [source](discovery.md#source-L8-L9)
+:::
 
 ::: details Checked interface
 
@@ -134,11 +136,13 @@ discovery() returns Discovery
 
 :::
 
-### `jwks` · [source](discovery.md#code) {#symbol-jwks}
+### `jwks` · [source](discovery.md#source-L12) {#symbol-jwks}
 
 `jwks` handles `GET /provider/jwks`. Only the provider's public signing key is published. Session keys never enter this JWKS. It gets `crypto` ([`Crypto`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto)) and `keys` ([`SigningKeys`](../common/keys.md#symbol-SigningKeys)) from dependency injection.
 
-It sets `publicKey` to [`crypto.publicRsa`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto.publicRsa) with `key` from [`keys.provider`](../common/keys.md#symbol-SigningKeys.provider). It returns a [`RsaJwks`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.md#symbol-RsaJwks) with `keys` from a list containing [`rsaJwk`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.md#symbol-rsaJwk) with `publicKey` and `kid` `"provider-1"` using injected `crypto`. [source](discovery.md#code)
+::: spec-paragraph specification-paragraph-2
+It sets `publicKey` to [`crypto.publicRsa`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto.publicRsa) with `key` from [`keys.provider`](../common/keys.md#symbol-SigningKeys.provider). It returns a [`RsaJwks`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.md#symbol-RsaJwks) with `keys` from a list containing [`rsaJwk`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.md#symbol-rsaJwk) with `publicKey` and `kid` `"provider-1"` using injected `crypto`. [source](discovery.md#source-L13-L14)
+:::
 
 ::: details Checked interface
 

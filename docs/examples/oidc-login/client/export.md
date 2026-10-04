@@ -48,7 +48,7 @@ pageClass: aug-example-page
 
 ::: code-group
 
-```aug [Indentation]
+```aug [Indentation] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiaW5kZW50Iiwic291cmNlU2hhMjU2IjoiZThjMTlmM2ExYWFkMGU0ZWQwYzlmZWUxNDA5YzYyY2E3YTUyMmFiNzNjZTFlMmNhYTc4NjFkMTE0ZGUzZGVlYyIsImZvcm1hdHRlZFNoYTI1NiI6ImM1YzNkM2VmMzNiNzU5YmQzMTUxYzQyOTNhOGQxNjdlZjYwMzY1MzRkMmNjZDhlODM0YjNiYjdlODE0OWNlOTAiLCJsaW5rcyI6W119
 // aug-spec: "export.aug.md" explains this file. Read it before changes; refresh with aug spec.
 export LoginTransaction from contracts
 export SessionClaims from contracts
@@ -59,7 +59,7 @@ export startLogin from login
 export loginCallback from login
 ```
 
-```aug [Braces]
+```aug [Braces] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiYnJhY2VzIiwic291cmNlU2hhMjU2IjoiZThjMTlmM2ExYWFkMGU0ZWQwYzlmZWUxNDA5YzYyY2E3YTUyMmFiNzNjZTFlMmNhYTc4NjFkMTE0ZGUzZGVlYyIsImZvcm1hdHRlZFNoYTI1NiI6ImM1YzNkM2VmMzNiNzU5YmQzMTUxYzQyOTNhOGQxNjdlZjYwMzY1MzRkMmNjZDhlODM0YjNiYjdlODE0OWNlOTAiLCJsaW5rcyI6W119
 // aug-spec: "export.aug.md" explains this file. Read it before changes; refresh with aug spec.
 export LoginTransaction from contracts
 export SessionClaims from contracts

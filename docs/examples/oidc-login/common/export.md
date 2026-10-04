@@ -48,7 +48,7 @@ pageClass: aug-example-page
 
 ::: code-group
 
-```aug [Indentation]
+```aug [Indentation] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiaW5kZW50Iiwic291cmNlU2hhMjU2IjoiMzNkYjRlYmYyNWUxOGI5ZWYxZjlmMTQyYTM5Y2ZkMWY3Nzc0ZmU5YjEwNDU4OTUwZDEyMmE3YjU0NWYzNTZmOCIsImZvcm1hdHRlZFNoYTI1NiI6IjJlZTk0YmE1ZjY3MGEzZTg2MzYzOGFlNjg1M2RkZDk3MjNiYmEzZmU2NWJjZmU2MWZhYTJmZjQxYjc3NjgwNjMiLCJsaW5rcyI6W119
 // aug-spec: "export.aug.md" explains this file. Read it before changes; refresh with aug spec.
 export Settings from settings
 export settings from settings
@@ -61,7 +61,7 @@ export securityHeaders from headers
 export withCookie from headers
 ```
 
-```aug [Braces]
+```aug [Braces] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiYnJhY2VzIiwic291cmNlU2hhMjU2IjoiMzNkYjRlYmYyNWUxOGI5ZWYxZjlmMTQyYTM5Y2ZkMWY3Nzc0ZmU5YjEwNDU4OTUwZDEyMmE3YjU0NWYzNTZmOCIsImZvcm1hdHRlZFNoYTI1NiI6IjJlZTk0YmE1ZjY3MGEzZTg2MzYzOGFlNjg1M2RkZDk3MjNiYmEzZmU2NWJjZmU2MWZhYTJmZjQxYjc3NjgwNjMiLCJsaW5rcyI6W119
 // aug-spec: "export.aug.md" explains this file. Read it before changes; refresh with aug spec.
 export Settings from settings
 export settings from settings

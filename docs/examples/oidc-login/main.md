@@ -48,7 +48,7 @@ pageClass: aug-example-page
 
 ::: code-group
 
-```aug [Indentation]
+```aug [Indentation] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiaW5kZW50Iiwic291cmNlU2hhMjU2IjoiMzYwNzE1ZjA1NDA4NTkxMDFhZWNhOWIyNjkxMzgzNGNkNzc2NWU1MTI2ODE2ODAzMmYxYWY1Y2EzNjg2MzY2YyIsImZvcm1hdHRlZFNoYTI1NiI6IjEzMTQ1OWE0NzhjOGNlNDAwNGFiMGFjYjg5ZGRlNzg3MzQ1MDhiMmQ2M2ZhZTVmYmU3MjlkZjMyOTg1MTQ1NzQiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDIwLUwyOSIsImZpcnN0IjoxOCwibGFzdCI6MjYsImJhY2tsaW5rcyI6WyIjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMSJdfV19
 // aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Crypto and GnuTlsCrypto from crypto
 import Clock and SystemClock from time
@@ -77,7 +77,7 @@ catch KeyError error:
 serve home and me and logout and startLogin and loginCallback and discovery and jwks and authorize and providerLogin and token and userinfo on port 8787
 ```
 
-```aug [Braces]
+```aug [Braces] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiYnJhY2VzIiwic291cmNlU2hhMjU2IjoiMzYwNzE1ZjA1NDA4NTkxMDFhZWNhOWIyNjkxMzgzNGNkNzc2NWU1MTI2ODE2ODAzMmYxYWY1Y2EzNjg2MzY2YyIsImZvcm1hdHRlZFNoYTI1NiI6IjZlMTU4YzE0NDMwOGVhMDM2ODdiMTJiMjRkMDBjNjM0ZDZhMTE0MWJmM2MzMGVkNDE4ZWE3NDUwMjA3Yzc4ZDciLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDIwLUwyOSIsImZpcnN0IjoxOCwibGFzdCI6MjksImJhY2tsaW5rcyI6WyIjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMSJdfV19
 // aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Crypto and GnuTlsCrypto from crypto
 import Clock and SystemClock from time
@@ -141,7 +141,9 @@ Listen on `127.0.0.1`. Limit request bodies to 16384 bytes and buffered response
 
 ### Startup
 
-It tries to call [`initializeKeys`](common/keys.md#symbol-initializeKeys) using injected `Crypto` for `crypto` and `SigningKeys` for `keys`. If this work raises `CryptoError`, it prints `"Cryptographic initialization failed"`; then it calls `exit` with `status` `1`. If this work raises [`KeyError`](common/keys.md#symbol-KeyError), it prints `"Signing keys could not be initialized"`; then it calls `exit` with `status` `1`. It serves [`home`](client/endpoints.md#symbol-home), [`me`](client/endpoints.md#symbol-me), [`logout`](client/logout.md#symbol-logout), [`startLogin`](client/login.md#symbol-startLogin), [`loginCallback`](client/login.md#symbol-loginCallback), [`discovery`](provider/discovery.md#symbol-discovery), [`jwks`](provider/discovery.md#symbol-jwks), [`authorize`](provider/authorization.md#symbol-authorize), [`providerLogin`](provider/authorization.md#symbol-providerLogin), [`token`](provider/token.md#symbol-token), and [`userinfo`](provider/userinfo.md#symbol-userinfo) on port `8787`. [source](main.md#code)
+::: spec-paragraph specification-paragraph-1
+It tries to call [`initializeKeys`](common/keys.md#symbol-initializeKeys) using injected `Crypto` for `crypto` and `SigningKeys` for `keys`. If this work raises `CryptoError`, it prints `"Cryptographic initialization failed"`; then it calls `exit` with `status` `1`. If this work raises [`KeyError`](common/keys.md#symbol-KeyError), it prints `"Signing keys could not be initialized"`; then it calls `exit` with `status` `1`. It serves [`home`](client/endpoints.md#symbol-home), [`me`](client/endpoints.md#symbol-me), [`logout`](client/logout.md#symbol-logout), [`startLogin`](client/login.md#symbol-startLogin), [`loginCallback`](client/login.md#symbol-loginCallback), [`discovery`](provider/discovery.md#symbol-discovery), [`jwks`](provider/discovery.md#symbol-jwks), [`authorize`](provider/authorization.md#symbol-authorize), [`providerLogin`](provider/authorization.md#symbol-providerLogin), [`token`](provider/token.md#symbol-token), and [`userinfo`](provider/userinfo.md#symbol-userinfo) on port `8787`. [source](main.md#source-L20-L29)
+:::
 
 ### Dependencies
 

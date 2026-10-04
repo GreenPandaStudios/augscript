@@ -48,7 +48,7 @@ pageClass: aug-example-page
 
 ::: code-group
 
-```aug [Indentation]
+```aug [Indentation] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiaW5kZW50Iiwic291cmNlU2hhMjU2IjoiYjQwOGFhNDNkYzVjMzdkYmY5OTAxOWQ0ZDUzMTkzMmQ0YzU1MWUzMGI1MzA1ZTJjMTIzNTQ0NzE5NWZiZWY3MCIsImZvcm1hdHRlZFNoYTI1NiI6IjAxNzkwZjMyMTVlMTM2ZjAyZDc1M2JhNmI2MjQxOTk1ZTlmZWM4ZWU5NGIyNWFjZmEzM2Q5M2NkMTQ5MzVjZDMiLCJsaW5rcyI6W119
 // aug-spec: "export.aug.md" explains this file. Read it before changes; refresh with aug spec.
 export AuthorizationRequest from contracts
 export AuthorizationCode from contracts
@@ -65,7 +65,7 @@ export token from token
 export userinfo from userinfo
 ```
 
-```aug [Braces]
+```aug [Braces] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiYnJhY2VzIiwic291cmNlU2hhMjU2IjoiYjQwOGFhNDNkYzVjMzdkYmY5OTAxOWQ0ZDUzMTkzMmQ0YzU1MWUzMGI1MzA1ZTJjMTIzNTQ0NzE5NWZiZWY3MCIsImZvcm1hdHRlZFNoYTI1NiI6IjAxNzkwZjMyMTVlMTM2ZjAyZDc1M2JhNmI2MjQxOTk1ZTlmZWM4ZWU5NGIyNWFjZmEzM2Q5M2NkMTQ5MzVjZDMiLCJsaW5rcyI6W119
 // aug-spec: "export.aug.md" explains this file. Read it before changes; refresh with aug spec.
 export AuthorizationRequest from contracts
 export AuthorizationCode from contracts

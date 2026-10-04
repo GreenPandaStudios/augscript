@@ -48,7 +48,7 @@ pageClass: aug-example-page
 
 ::: code-group
 
-```aug [Indentation]
+```aug [Indentation] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiaW5kZW50Iiwic291cmNlU2hhMjU2IjoiZmI2MTc5MTk4NjAzOTU5NmI5NzFiYzAwM2RhZTU4Y2ZjMDBjYTFmY2E4ZTQ1YjQ2YmIwNDE3MGQwYWVjNzIwOCIsImZvcm1hdHRlZFNoYTI1NiI6ImI0NThkMjg3N2EyYmVkMjIyNjRiNzRhYmQwYWE3ZjBiM2ExZGUxYjZkOGEyNzRmOGY1Mzg2OGI1OWQyY2UzM2IiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDQiLCJmaXJzdCI6NCwibGFzdCI6NSwiYmFja2xpbmtzIjpbIiNzeW1ib2wtUHJvdmlkZXJMb2dpbiJdfSx7ImlkIjoic291cmNlLUw1LUwxNiIsImZpcnN0Ijo1LCJsYXN0Ijo1LCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTEiXX0seyJpZCI6InNvdXJjZS1MMTgiLCJmaXJzdCI6NiwibGFzdCI6NywiYmFja2xpbmtzIjpbIiNzeW1ib2wtUHJvdmlkZXJGYWlsdXJlIl19LHsiaWQiOiJzb3VyY2UtTDE5IiwiZmlyc3QiOjcsImxhc3QiOjcsImJhY2tsaW5rcyI6WyIjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMiJdfV19
 // aug-spec: "views.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Page from common
 /** A server form with a checked HTTP action. The browser submits to the provider endpoint. */
@@ -58,7 +58,7 @@ ProviderFailure(string message):
     return <Page title={"Sign-in could not continue"}><p>{message}</p><a href={"/login/start"}>Start a new sign-in</a></Page>
 ```
 
-```aug [Braces]
+```aug [Braces] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiYnJhY2VzIiwic291cmNlU2hhMjU2IjoiZmI2MTc5MTk4NjAzOTU5NmI5NzFiYzAwM2RhZTU4Y2ZjMDBjYTFmY2E4ZTQ1YjQ2YmIwNDE3MGQwYWVjNzIwOCIsImZvcm1hdHRlZFNoYTI1NiI6Ijk3MzExZTA0YjhjODBhM2UwZGE5NWM1ZGFhMDMwYTg3ZTk4MWEzNjMzMWVjZGI3MWZhZjY5Y2ZjNzg2YWM0ZmMiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDQiLCJmaXJzdCI6NCwibGFzdCI6NiwiYmFja2xpbmtzIjpbIiNzeW1ib2wtUHJvdmlkZXJMb2dpbiJdfSx7ImlkIjoic291cmNlLUw1LUwxNiIsImZpcnN0Ijo1LCJsYXN0Ijo1LCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTEiXX0seyJpZCI6InNvdXJjZS1MMTgiLCJmaXJzdCI6NywibGFzdCI6OSwiYmFja2xpbmtzIjpbIiNzeW1ib2wtUHJvdmlkZXJGYWlsdXJlIl19LHsiaWQiOiJzb3VyY2UtTDE5IiwiZmlyc3QiOjgsImxhc3QiOjgsImJhY2tsaW5rcyI6WyIjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMiJdfV19
 // aug-spec: "views.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Page from common
 /** A server form with a checked HTTP action. The browser submits to the provider endpoint. */
@@ -78,11 +78,13 @@ ProviderFailure(string message) {
 
 ## Compiled specification {#specification}
 
-### `ProviderLogin` · [source](views.md#code) {#symbol-ProviderLogin}
+### `ProviderLogin` · [source](views.md#source-L4) {#symbol-ProviderLogin}
 
 A server form with a checked HTTP action. The browser submits to the provider endpoint. It takes labeled inputs `requestId`, `csrf`, `message`, and `submit`.
 
-It returns the server component [`Page`](../common/views.md#symbol-Page) with `title` = `"Sign in with the August provider"` containing a paragraph containing `message` with escaped text, a paragraph with `style` = `"background:#f3f5f9;padding:12px;border-radius:8px"` containing `Demo account: `, the HTML element `strong` containing `ada` with escaped text, ` · password `, the HTML element `strong` containing `august-demo` with escaped text with escaped text, the HTML element `form` with `method` = `"post"`, `action` = `"/provider/login"`, `onSubmit` = `submit` containing the HTML element `input` with `type` = `"hidden"`, `name` = `"request_id"`, `value` = `requestId` with escaped text, the HTML element `input` with `type` = `"hidden"`, `name` = `"csrf"`, `value` = `csrf` with escaped text, a paragraph containing the HTML element `label` with `for` = `"username"` containing `Username` with escaped text, the HTML element `br` with escaped text, the HTML element `input` with `id` = `"username"`, `name` = `"username"`, `autocomplete` = `"username"`, `value` = `"ada"`, `maxlength` = `"64"`, `required` = `true`, `style` = `"padding:10px;width:90%"` with escaped text with escaped text, a paragraph containing the HTML element `label` with `for` = `"password"` containing `Password` with escaped text, the HTML element `br` with escaped text, the HTML element `input` with `id` = `"password"`, `type` = `"password"`, `name` = `"password"`, `autocomplete` = `"current-password"`, `maxlength` = `"256"`, `required` = `true`, `style` = `"padding:10px;width:90%"` with escaped text with escaped text, a button with `type` = `"submit"`, `style` = `"padding:12px 20px;border:0;border-radius:9px;background:#4852d7;color:white;font:inherit"` containing `Sign in and return to the app` with escaped text with escaped text, a paragraph with `style` = `"font-size:14px;color:#677189"` containing `The provider and app run in the same executable. Authorization codes still travel through the OpenID Connect protocol.` with escaped text with escaped text. [source](views.md#code)
+::: spec-paragraph specification-paragraph-1
+It returns the server component [`Page`](../common/views.md#symbol-Page) with `title` = `"Sign in with the August provider"` containing a paragraph containing `message` with escaped text, a paragraph with `style` = `"background:#f3f5f9;padding:12px;border-radius:8px"` containing `Demo account: `, the HTML element `strong` containing `ada` with escaped text, ` · password `, the HTML element `strong` containing `august-demo` with escaped text with escaped text, the HTML element `form` with `method` = `"post"`, `action` = `"/provider/login"`, `onSubmit` = `submit` containing the HTML element `input` with `type` = `"hidden"`, `name` = `"request_id"`, `value` = `requestId` with escaped text, the HTML element `input` with `type` = `"hidden"`, `name` = `"csrf"`, `value` = `csrf` with escaped text, a paragraph containing the HTML element `label` with `for` = `"username"` containing `Username` with escaped text, the HTML element `br` with escaped text, the HTML element `input` with `id` = `"username"`, `name` = `"username"`, `autocomplete` = `"username"`, `value` = `"ada"`, `maxlength` = `"64"`, `required` = `true`, `style` = `"padding:10px;width:90%"` with escaped text with escaped text, a paragraph containing the HTML element `label` with `for` = `"password"` containing `Password` with escaped text, the HTML element `br` with escaped text, the HTML element `input` with `id` = `"password"`, `type` = `"password"`, `name` = `"password"`, `autocomplete` = `"current-password"`, `maxlength` = `"256"`, `required` = `true`, `style` = `"padding:10px;width:90%"` with escaped text with escaped text, a button with `type` = `"submit"`, `style` = `"padding:12px 20px;border:0;border-radius:9px;background:#4852d7;color:white;font:inherit"` containing `Sign in and return to the app` with escaped text with escaped text, a paragraph with `style` = `"font-size:14px;color:#677189"` containing `The provider and app run in the same executable. Authorization codes still travel through the OpenID Connect protocol.` with escaped text with escaped text. [source](views.md#source-L5-L16)
+:::
 
 ::: details Checked interface
 
@@ -94,9 +96,11 @@ It takes `requestId`, `csrf`, and `message` as strings and `submit` as `HttpActi
 
 :::
 
-### `ProviderFailure` · [source](views.md#code) {#symbol-ProviderFailure}
+### `ProviderFailure` · [source](views.md#source-L18) {#symbol-ProviderFailure}
 
-It takes `message` as a string. It returns the server component [`Page`](../common/views.md#symbol-Page) with `title` = `"Sign-in could not continue"` containing a paragraph containing `message` with escaped text, a link with `href` = `"/login/start"` containing `Start a new sign-in` with escaped text with escaped text. [source](views.md#code)
+::: spec-paragraph specification-paragraph-2
+It takes `message` as a string. It returns the server component [`Page`](../common/views.md#symbol-Page) with `title` = `"Sign-in could not continue"` containing a paragraph containing `message` with escaped text, a link with `href` = `"/login/start"` containing `Start a new sign-in` with escaped text with escaped text. [source](views.md#source-L19)
+:::
 
 ::: details Checked interface
 

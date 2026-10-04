@@ -31,7 +31,7 @@ pageClass: aug-example-page
 
 ::: code-group
 
-```aug [Indentation]
+```aug [Indentation] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiaW5kZW50Iiwic291cmNlU2hhMjU2IjoiZWQ4YjY2ZWIzZTJlOTc3MzY3OWEzMDZkOWRkODIwN2NhZWY4MmZiNTFmNGU3YjFiMjI3NGZlYzJkZDNmOWUzNiIsImZvcm1hdHRlZFNoYTI1NiI6IjMzYmRiZTM5NzkyYTg0YmQwYTBlMTlmYmYzZTc0MTAyZGU5ODUwZWE0OTFlYmM3NDU2ZTMxYTljOTNmZDExNDkiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDQiLCJmaXJzdCI6NCwibGFzdCI6NiwiYmFja2xpbmtzIjpbIiNzeW1ib2wtR3JlZXRlciJdfSx7ImlkIjoic291cmNlLUw1IiwiZmlyc3QiOjUsImxhc3QiOjYsImJhY2tsaW5rcyI6WyIjc3ltYm9sLUdyZWV0ZXIuZ3JlZXQiXX0seyJpZCI6InNvdXJjZS1MNiIsImZpcnN0Ijo2LCJsYXN0Ijo2LCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTEiXX0seyJpZCI6InNvdXJjZS1MOSIsImZpcnN0Ijo3LCJsYXN0Ijo4LCJiYWNrbGlua3MiOlsiI3N5bWJvbC1JR3JlZXRlciJdfSx7ImlkIjoic291cmNlLUwxMCIsImZpcnN0Ijo4LCJsYXN0Ijo4LCJiYWNrbGlua3MiOlsiI3N5bWJvbC1JR3JlZXRlci5ncmVldCJdfV19
 // aug-spec: "greeter.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Console from august.io
 import Logger from logger
@@ -42,7 +42,7 @@ interface IGreeter:
     greet(resolve Console console, string name) uses Console.write
 ```
 
-```aug [Braces]
+```aug [Braces] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiYnJhY2VzIiwic291cmNlU2hhMjU2IjoiZWQ4YjY2ZWIzZTJlOTc3MzY3OWEzMDZkOWRkODIwN2NhZWY4MmZiNTFmNGU3YjFiMjI3NGZlYzJkZDNmOWUzNiIsImZvcm1hdHRlZFNoYTI1NiI6ImJiNjFkMGZjNTNkMTQ2YWQwM2YzYzdmYzRiMzY3OTFmYjNkNTIwYzdhMDZiZTM1ZWViM2Q2NGFkMjM3Y2UyODMiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDQiLCJmaXJzdCI6NCwibGFzdCI6OCwiYmFja2xpbmtzIjpbIiNzeW1ib2wtR3JlZXRlciJdfSx7ImlkIjoic291cmNlLUw1IiwiZmlyc3QiOjUsImxhc3QiOjcsImJhY2tsaW5rcyI6WyIjc3ltYm9sLUdyZWV0ZXIuZ3JlZXQiXX0seyJpZCI6InNvdXJjZS1MNiIsImZpcnN0Ijo2LCJsYXN0Ijo2LCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTEiXX0seyJpZCI6InNvdXJjZS1MOSIsImZpcnN0Ijo5LCJsYXN0IjoxMSwiYmFja2xpbmtzIjpbIiNzeW1ib2wtSUdyZWV0ZXIiXX0seyJpZCI6InNvdXJjZS1MMTAiLCJmaXJzdCI6MTAsImxhc3QiOjEwLCJiYWNrbGlua3MiOlsiI3N5bWJvbC1JR3JlZXRlci5ncmVldCJdfV19
 // aug-spec: "greeter.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Console from august.io
 import Logger from logger
@@ -64,13 +64,15 @@ interface IGreeter {
 
 ## Compiled specification {#specification}
 
-### `Greeter` · class · [source](greeter.md#code) {#symbol-Greeter}
+### `Greeter` · class · [source](greeter.md#source-L4) {#symbol-Greeter}
 
 It implements [`IGreeter`](greeter.md#symbol-IGreeter). It takes `x` as an integer, kept read-only. It gets `logger` ([`Logger`](logger.md#symbol-Logger)), kept read-only from dependency injection.
 
-#### `Greeter.greet` · [source](greeter.md#code) {#symbol-Greeter.greet}
+#### `Greeter.greet` · [source](greeter.md#source-L5) {#symbol-Greeter.greet}
 
-It takes `name` as a string. It gets `console` ([`Console`](dependencies/august/0.23.0/io/contracts.md#symbol-Console)) from dependency injection. It passes the text `Hello, {name}!` to [`logger.log`](logger.md#symbol-Logger.log), using injected `console`. [source](greeter.md#code)
+::: spec-paragraph specification-paragraph-1
+It takes `name` as a string. It gets `console` ([`Console`](dependencies/august/0.23.0/io/contracts.md#symbol-Console)) from dependency injection. It passes the text `Hello, {name}!` to [`logger.log`](logger.md#symbol-Logger.log), using injected `console`. [source](greeter.md#source-L6)
+:::
 
 ::: details Checked interface
 
@@ -82,9 +84,9 @@ It takes `name` as a string. It gets `console` ([`Console`](dependencies/august/
 
 :::
 
-### `IGreeter` · interface · [source](greeter.md#code) {#symbol-IGreeter}
+### `IGreeter` · interface · [source](greeter.md#source-L9) {#symbol-IGreeter}
 
-#### `IGreeter.greet` · [source](greeter.md#code) {#symbol-IGreeter.greet}
+#### `IGreeter.greet` · [source](greeter.md#source-L10) {#symbol-IGreeter.greet}
 
 It takes `name` as a string. It gets `console` ([`Console`](dependencies/august/0.23.0/io/contracts.md#symbol-Console)) from dependency injection. It can call [`Console.write`](dependencies/august/0.23.0/io/contracts.md#symbol-Console.write).
 

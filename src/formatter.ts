@@ -7,18 +7,27 @@ import type { Config } from './config.ts';
 
 export type SourceStyle = Pick<Config, 'block_style' | 'indentation' | 'assignment'>;
 type FormattingProject = {config: SourceStyle};
+export interface FormattedSourceMapping {
+  role:string;source:{start:number;end:number;line:number;endLine:number};formatted:{line:number;endLine:number};
+}
+
 
 /** Canonical syntax comes from the parsed program; comments stay with their lexical owner. */
 export function formatFile(project: FormattingProject, file: SourceFile): string {
-  return printFile(project, file, false);
+  return printFile(project, file, false).text;
 }
 
 /** Upgrade rejected legacy spellings without accepting them during compilation. */
 export function migrateFile(project: FormattingProject, file: SourceFile): string {
-  return printFile(project, file, true);
+  return printFile(project, file, true).text;
 }
 
-function printFile(project: FormattingProject, file: SourceFile, migrate: boolean): string {
+/** Format the checked syntax and retain declaration/statement positions in the displayed source. */
+export function formatFileWithSourceMap(project:FormattingProject,file:SourceFile):{text:string;mappings:FormattedSourceMapping[]} {
+  return printFile(project,file,false,true);
+}
+
+function printFile(project: FormattingProject, file: SourceFile, migrate: boolean, mappings=false): {text:string;mappings:FormattedSourceMapping[]} {
   const parsed = parse(file.path, file.source);
   if (parsed.diagnostics.some(issue => !migrate || issue.code !== 'SYNTAX')) throw new Error('Fix syntax errors before formatting this file');
   if(migrate) {
@@ -32,7 +41,7 @@ function printFile(project: FormattingProject, file: SourceFile, migrate: boolea
     };
     inspect(parsed.file.items);
   }
-  const printer = new Printer(project, file);
+  const printer = new Printer(project, file, mappings);
   const result = printer.print();
   const verified = parse(file.path, result);
   if (verified.diagnostics.length) {
@@ -48,9 +57,20 @@ function printFile(project: FormattingProject, file: SourceFile, migrate: boolea
   };
   if (JSON.stringify(shape(parsed.file.items)) !== JSON.stringify(shape(verified.file.items)))
     throw new Error('Formatter would change the parsed program; the file has been left unchanged');
-  return result;
+  return {text:result,mappings:printer.mappings};
 }
 class Printer {
+  readonly mappings:FormattedSourceMapping[]=[];
+  private mapped=false;
+  private sourceTokens:ReturnType<typeof lex>['tokens']=[];
+  private remember(span:Span,role:string,line:number) {
+    if(!this.mapped)return;
+    let low=0,high=this.sourceTokens.length;
+    while(low<high){const middle=(low+high)>>>1;if(this.sourceTokens[middle].span.end<=span.end)low=middle+1;else high=middle;}
+    const last=this.sourceTokens[low-1];
+    const endLine=last&&last.span.start>=span.start?last.endLine:span.line;
+    this.mappings.push({role,source:{start:span.start,end:span.end,line:span.line,endLine},formatted:{line,endLine:this.lines.length}});
+  }
   private comments: ReturnType<typeof lex>['tokens'];
   private lines: string[] = [];
   private level = 0;
@@ -58,9 +78,12 @@ class Printer {
   private indent: boolean;
   private assign: string;
   private file: SourceFile;
-  constructor(project: FormattingProject, file: SourceFile) {
+  constructor(project: FormattingProject, file: SourceFile, mappings=false) {
+    this.mapped=mappings;
     this.file = file;
-    this.comments = lex(file.path, file.source, true).tokens.filter(token => token.kind === 'comment');
+    const tokens=lex(file.path,file.source,true).tokens;
+    this.comments = tokens.filter(token => token.kind === 'comment');
+    if(mappings)this.sourceTokens=tokens.filter(token=>token.kind!=='comment'&&token.kind!=='eof');
     this.step = project.config.indentation === 'tabs' ? '\t' : '    ';
     this.indent = project.config.block_style === 'indent';
     this.assign = project.config.assignment === 'to' ? 'to' : '=';
@@ -98,6 +121,12 @@ class Printer {
     if (empty) this.line('pass');
     this.level--; if (!this.indent) this.line('}');
   }
+  private mappedBlock(header:string,body:()=>void,span:Span,role:string) {
+    this.before(span.start);
+    const line=this.lines.length+1;
+    this.block(header,body,span);
+    this.remember(span,role,line);
+  }
   private generics(node: GenericHeader) {
     return node.typeParams.length ? '<' + node.typeParams.map(name =>
       `${node.typeVariance?.[name] ? node.typeVariance[name] + ' ' : ''}${name}` +
@@ -118,6 +147,7 @@ class Printer {
   }
   private method(method: MethodDecl) {
     this.before(method.annotations?.[0]?.span.start ?? method.span.start); this.annotations(method.annotations);
+    const line=this.lines.length+1;
     const header = `${method.endpoint ? `endpoint ${method.endpoint.method} ${JSON.stringify(method.endpoint.path)} as ` : ''}${method.fixture ? 'fixture ' : ''}${method.externC ? 'extern C ' + (method.valueAbi ? 'value ' : '') + (method.nativePure ? 'pure ' : '') : ''}${method.name}${this.generics(method)}` +
       `(${method.params.map(param => this.param(param)).join(', ')})` +
       (method.returns.name !== 'void' || method.declared?.returns ? ` ${method.endpoint?.streams ? 'streams' : 'returns'} ${method.returnOwnership === 'own' ? 'own ' : ''}${typeName(method.returns)}` : '') +
@@ -127,6 +157,7 @@ class Printer {
       (method.throws.length ? ` unless ${method.throws.map(type => typeName(type) + (method.endpoint?.errors.find(error => typeName(error.type) === typeName(type)) ? ' with status ' + method.endpoint.errors.find(error => typeName(error.type) === typeName(type))!.status : '')).join(' and ')}` : '');
     if (method.body) this.block(header, () => method.body!.forEach(stmt => this.statement(stmt)), method.span);
     else { this.line(header); this.before(method.span.end); }
+    this.remember(method.span,'function',line);
   }
   private expression(expr: Expr, precedence = 0): string {
     const comment = this.inline(expr.span.start);
@@ -175,6 +206,7 @@ class Printer {
   }
   private statement(stmt: Stmt) {
     this.before(stmt.span.start);
+    const line=this.lines.length+1;
     if (stmt.kind === 'serve') this.line(`serve ${stmt.names.join(' and ')} on port ${this.expression(stmt.port)}`);
     else if (stmt.kind === 'lock') this.block(`lock ${this.expression(stmt.value)} as ${stmt.name}`, () => stmt.body.forEach(child => this.statement(child)), stmt.span);
     else if (stmt.kind === 'freeze') this.line(`freeze ${this.expression(stmt.value)} as ${stmt.name}`);
@@ -196,16 +228,18 @@ class Printer {
     else if (stmt.kind === 'match') this.block('match ' + this.expression(stmt.value), () => stmt.cases.forEach(clause => {
       const pattern = clause.pattern === 'else' ? 'else' : 'when ' + (clause.pattern === 'some' ? 'some ' + clause.name :
         clause.pattern === 'literal' ? this.expression(clause.literal!) : clause.pattern === 'type' ? typeName(clause.type!) + ' ' + clause.name : clause.pattern);
-      this.block(pattern, () => clause.body.forEach(child => this.statement(child)), clause.span);
+      this.mappedBlock(pattern, () => clause.body.forEach(child => this.statement(child)), clause.span,'match-case');
     }), stmt.span);
     else if (stmt.kind === 'try') {
       this.block('try', () => stmt.body.forEach(child => this.statement(child)));
-      stmt.catches.forEach(clause => this.block(`catch ${typeName(clause.type)} ${clause.name}`, () => clause.body.forEach(child => this.statement(child)), clause.span));
+      stmt.catches.forEach(clause => this.mappedBlock(`catch ${typeName(clause.type)} ${clause.name}`, () => clause.body.forEach(child => this.statement(child)), clause.span,'catch'));
       if (stmt.always) this.block('always', () => stmt.always!.forEach(child => this.statement(child)), stmt.span);
     } else this.block(stmt.kind + (stmt.kind === 'borrow' ? ' ' + stmt.name : ''), () => stmt.body.forEach(child => this.statement(child)), stmt.span);
+    this.remember(stmt.span,stmt.kind,line);
   }
   private item(item: TopLevel) {
     this.before('annotations' in item ? item.annotations?.[0]?.span.start ?? item.span.start : item.span.start);
+    const line=this.lines.length+1;
     if (item.kind === 'import') {
       this.line(`import ${item.everything ? 'everything' : item.names.join(' and ')} from ${importSource(item.from)}`);
     } else if (item.kind === 'export') this.line('export ' + (item.folder ? 'folder ' + item.name : `${item.name} from ${item.from}`));
@@ -235,12 +269,13 @@ class Printer {
     else if (item.kind === 'interceptor') this.block(`interceptor ${item.name}${this.generics(item)}(${item.fields.map(field => this.param(field, true)).join(', ')})`,
       () => item.methods.forEach(method => this.method(method)), item.span);
     else if (item.kind === 'test') this.block(`test ${item.endpointSuite ? 'endpoint ' : ''}${typeName(item.type)}${item.functionSuite ? '' : ' ' + item.name}`, () => item.groups.forEach(group =>
-      this.block('when ' + JSON.stringify(group.name), () => {
+      this.mappedBlock('when ' + JSON.stringify(group.name), () => {
         group.setup.forEach(entry => this.item(entry));
-        group.cases.forEach(test => this.block('it ' + JSON.stringify(test.name) + (test.parameters ? ` for (${test.parameters.join(', ')}) in [` +
-          test.rows!.map(row => this.expression(row)).join(', ') + ']' : ''), () => test.body.forEach(stmt => this.statement(stmt)), test.span));
-      }, group.span)), item.span);
+        group.cases.forEach(test => this.mappedBlock('it ' + JSON.stringify(test.name) + (test.parameters ? ` for (${test.parameters.join(', ')}) in [` +
+          test.rows!.map(row => this.expression(row)).join(', ') + ']' : ''), () => test.body.forEach(stmt => this.statement(stmt)), test.span,'test-case'));
+      }, group.span,'test-group')), item.span);
     else this.statement(item);
+    if(['import','export','include','bind','composition','resource','class','interface','interceptor','test'].includes(item.kind))this.remember(item.span,item.kind,line);
   }
   print(): string {
     for (const item of this.file.items) this.item(item);

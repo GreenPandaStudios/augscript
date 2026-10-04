@@ -28,7 +28,7 @@ pageClass: aug-example-page
 
 ::: code-group
 
-```aug [Indentation]
+```aug [Indentation] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiaW5kZW50Iiwic291cmNlU2hhMjU2IjoiNGFlMjAyZDQwNjEyNTgxNmE2OGM5MDdkZjllNTc4OTIyYjg4ZWNhYTZmNGJhZDE4MzExZTc1NDQ0NzY1ZTNiNyIsImZvcm1hdHRlZFNoYTI1NiI6ImQwZmJjMTBkNDQxNmZkYjI1ZjQ3MzQ4ZjM2M2E2Y2Q2YjdhMzI1ZjNlZTg0N2E4MTllZmQzOTc0ZWUxMWFjNTgiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDUtTDgiLCJmaXJzdCI6NCwibGFzdCI6NywiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0xIl19XX0
 // aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import calculate from tensors
 import TensorError from "https://github.com/GreenPandaStudios/aug-pytorch#v0.1.6"
@@ -38,7 +38,7 @@ catch TensorError error:
     print(value=error.message)
 ```
 
-```aug [Braces]
+```aug [Braces] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiYnJhY2VzIiwic291cmNlU2hhMjU2IjoiNGFlMjAyZDQwNjEyNTgxNmE2OGM5MDdkZjllNTc4OTIyYjg4ZWNhYTZmNGJhZDE4MzExZTc1NDQ0NzY1ZTNiNyIsImZvcm1hdHRlZFNoYTI1NiI6ImI5MDMzYmVlYTc1ZjU5ZTQ2Y2NiMjNhYzY5NjZhM2ZlODM4YzhjNDkyYmQyMTMzZTBhODliZmJhYjk1ZGYwY2IiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDUtTDgiLCJmaXJzdCI6NCwibGFzdCI6OSwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0xIl19XX0
 // aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import calculate from tensors
 import TensorError from "https://github.com/GreenPandaStudios/aug-pytorch#v0.1.6"
@@ -60,7 +60,9 @@ catch TensorError error {
 
 ### Startup
 
-It prints [`calculate`](tensors.md#symbol-calculate). If this work raises [`TensorError`](dependencies/packages/%40greenpandastudios/aug-pytorch/0.1.6/contracts.md#symbol-TensorError) as `error`, it prints `error.message`. [source](main.md#code)
+::: spec-paragraph specification-paragraph-1
+It prints [`calculate`](tensors.md#symbol-calculate). If this work raises [`TensorError`](dependencies/packages/%40greenpandastudios/aug-pytorch/0.1.6/contracts.md#symbol-TensorError) as `error`, it prints `error.message`. [source](main.md#source-L5-L8)
+:::
 
 ### Dependencies
 

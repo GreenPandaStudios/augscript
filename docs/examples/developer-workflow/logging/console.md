@@ -31,7 +31,7 @@ pageClass: aug-example-page
 
 ::: code-group
 
-```aug [Indentation]
+```aug [Indentation] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiaW5kZW50Iiwic291cmNlU2hhMjU2IjoiMDMzOGQwZTE4NzYxNDM1YmM2NDUwMzMyNjJiMjVhMjY5NDNkOWVjZjIxZDM4MTQwYTQyOWIzNDU1NzY1MzYzMSIsImZvcm1hdHRlZFNoYTI1NiI6IjI4NTllNDQ0ZWMyNjQzZWE4NDkxZjIyN2ViYTZlNmVkZDc5YmIxYzgxMjA0ZmUyYzg4YjMwOTU0NGZhNTkxOWEiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDUiLCJmaXJzdCI6NSwibGFzdCI6NywiYmFja2xpbmtzIjpbIiNzeW1ib2wtQ29uc29sZUxvZ2dlciJdfSx7ImlkIjoic291cmNlLUw2IiwiZmlyc3QiOjYsImxhc3QiOjcsImJhY2tsaW5rcyI6WyIjc3ltYm9sLUNvbnNvbGVMb2dnZXIubG9nIl19LHsiaWQiOiJzb3VyY2UtTDciLCJmaXJzdCI6NywibGFzdCI6NywiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0xIl19XX0
 // aug-spec: "console.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Console from august.io
 import Logger from logger
@@ -41,7 +41,7 @@ ConsoleLogger() implements Logger:
         console.write(value=message)
 ```
 
-```aug [Braces]
+```aug [Braces] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiYnJhY2VzIiwic291cmNlU2hhMjU2IjoiMDMzOGQwZTE4NzYxNDM1YmM2NDUwMzMyNjJiMjVhMjY5NDNkOWVjZjIxZDM4MTQwYTQyOWIzNDU1NzY1MzYzMSIsImZvcm1hdHRlZFNoYTI1NiI6IjMxNjhiOGIxNTA5M2ViNGE3NWIwMzExYjMzOWM0ODAzODIwMDRmNzI3NDdjMWIxYzU5YzcyYmEzMmIyOTQ0Y2EiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDUiLCJmaXJzdCI6NSwibGFzdCI6OSwiYmFja2xpbmtzIjpbIiNzeW1ib2wtQ29uc29sZUxvZ2dlciJdfSx7ImlkIjoic291cmNlLUw2IiwiZmlyc3QiOjYsImxhc3QiOjgsImJhY2tsaW5rcyI6WyIjc3ltYm9sLUNvbnNvbGVMb2dnZXIubG9nIl19LHsiaWQiOiJzb3VyY2UtTDciLCJmaXJzdCI6NywibGFzdCI6NywiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0xIl19XX0
 // aug-spec: "console.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Console from august.io
 import Logger from logger
@@ -61,13 +61,15 @@ ConsoleLogger() implements Logger {
 
 ## Compiled specification {#specification}
 
-### `ConsoleLogger` · class · [source](console.md#code) {#symbol-ConsoleLogger}
+### `ConsoleLogger` · class · [source](console.md#source-L5) {#symbol-ConsoleLogger}
 
 Writes application messages to standard output. It implements [`Logger`](logger.md#symbol-Logger).
 
-#### `ConsoleLogger.log` · [source](console.md#code) {#symbol-ConsoleLogger.log}
+#### `ConsoleLogger.log` · [source](console.md#source-L6) {#symbol-ConsoleLogger.log}
 
-It takes `message` as a string. It gets `console` ([`Console`](../dependencies/august/0.23.0/io/contracts.md#symbol-Console)) from dependency injection. It passes `message` to [`console.write`](../dependencies/august/0.23.0/io/contracts.md#symbol-Console.write). [source](console.md#code)
+::: spec-paragraph specification-paragraph-1
+It takes `message` as a string. It gets `console` ([`Console`](../dependencies/august/0.23.0/io/contracts.md#symbol-Console)) from dependency injection. It passes `message` to [`console.write`](../dependencies/august/0.23.0/io/contracts.md#symbol-Console.write). [source](console.md#source-L7)
+:::
 
 ::: details Checked interface
 

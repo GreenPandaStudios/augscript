@@ -28,7 +28,7 @@ pageClass: aug-example-page
 
 ::: code-group
 
-```aug [Indentation]
+```aug [Indentation] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiaW5kZW50Iiwic291cmNlU2hhMjU2IjoiYTU4OGZlYjQ4NjU3MmJmNmYxOTgyNWIyMjA3ZmVjZDliNDk0MTdhOGFhMDI0ZWUyYzc5OGE4MWE5MjJhYjc4NSIsImZvcm1hdHRlZFNoYTI1NiI6ImI4OTY5NDgwOWMwOWU2OWU2NTdiZDQ1NjFlYmU0MWFmNzVkY2RmNWQ5YmNiOGYwNmY1NjE2ZmQ5ZjI2ZTBlYzMiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDMtTDgiLCJmaXJzdCI6MywibGFzdCI6OCwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0xIl19LHsiaWQiOiJzb3VyY2UtTDkiLCJmaXJzdCI6OSwibGFzdCI6OSwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0yIl19XX0
 // aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import step from operations
 int iterations = 200000
@@ -40,7 +40,7 @@ while index < iterations:
 print(value=state)
 ```
 
-```aug [Braces]
+```aug [Braces] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiYnJhY2VzIiwic291cmNlU2hhMjU2IjoiYTU4OGZlYjQ4NjU3MmJmNmYxOTgyNWIyMjA3ZmVjZDliNDk0MTdhOGFhMDI0ZWUyYzc5OGE4MWE5MjJhYjc4NSIsImZvcm1hdHRlZFNoYTI1NiI6IjQxZDM5YTc3MDA0ZDE5ZDIwZGFlZWI5YTI2MDdhMmE0ODk2OWQ5ZTgzMDI2MzUyZTg5YWUzMjIwYWI3OWVlZWYiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDMtTDgiLCJmaXJzdCI6MywibGFzdCI6OSwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0xIl19LHsiaWQiOiJzb3VyY2UtTDkiLCJmaXJzdCI6MTAsImxhc3QiOjEwLCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTIiXX1dfQ
 // aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import step from operations
 int iterations = 200000
@@ -63,9 +63,13 @@ print(value=state)
 
 ### Startup
 
-It sets `iterations` to `200000`. It sets `state` to `123`. It sets `index` to `0`. While `index` is less than `iterations`, it sets `state` to [`step`](operations.md#symbol-step) with `value` from `state`; then it increases `index` by `1`. [source](main.md#code)
+::: spec-paragraph specification-paragraph-1
+It sets `iterations` to `200000`. It sets `state` to `123`. It sets `index` to `0`. While `index` is less than `iterations`, it sets `state` to [`step`](operations.md#symbol-step) with `value` from `state`; then it increases `index` by `1`. [source](main.md#source-L3-L8)
+:::
 
-After the loop, it prints `state`. [source](main.md#code)
+::: spec-paragraph specification-paragraph-2
+After the loop, it prints `state`. [source](main.md#source-L9)
+:::
 
 ### Dependencies
 

@@ -27,7 +27,7 @@ pageClass: aug-example-page
 
 ::: code-group
 
-```aug [Indentation]
+```aug [Indentation] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiaW5kZW50Iiwic291cmNlU2hhMjU2IjoiNzZlOWVlYmRlNWJlZmE4NDVkYzhkNTQ1ZTgwNmY5ODdhZDQ4ZTcyMmMwYjljOWI2NGNmN2ViYTJhZDY1NGNmNyIsImZvcm1hdHRlZFNoYTI1NiI6ImRlZDEyOWZlMDRkYWYwODY0MzY5Y2VkMzgyMjQxMTRjYjQyNmNjYmM3MDU0NjNmYzNkMThiMDgyZDgyYzk4MjUiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDItTDciLCJmaXJzdCI6MiwibGFzdCI6NywiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0xIl19LHsiaWQiOiJzb3VyY2UtTDgtTDE1IiwiZmlyc3QiOjgsImxhc3QiOjE1LCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTIiXX0seyJpZCI6InNvdXJjZS1MMTYtTDIxIiwiZmlyc3QiOjE2LCJsYXN0IjoyMSwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0zIl19LHsiaWQiOiJzb3VyY2UtTDIyIiwiZmlyc3QiOjIyLCJsYXN0IjoyMiwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC00Il19XX0
 // aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 int iterations = 4000
 own Map<int,int> entries = {}
@@ -52,7 +52,7 @@ print(value=checksum)
 print(value=entries.length())
 ```
 
-```aug [Braces]
+```aug [Braces] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiYnJhY2VzIiwic291cmNlU2hhMjU2IjoiNzZlOWVlYmRlNWJlZmE4NDVkYzhkNTQ1ZTgwNmY5ODdhZDQ4ZTcyMmMwYjljOWI2NGNmN2ViYTJhZDY1NGNmNyIsImZvcm1hdHRlZFNoYTI1NiI6IjU2ODU5Nzg0NDBjNmI2OTYwYzNjNDY0NTYxYmMzMzQ1NDQzYjM5NzFjNmQ2M2Y2M2I1YzQ4OThjODMxNTQ2MWEiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDItTDciLCJmaXJzdCI6MiwibGFzdCI6OCwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0xIl19LHsiaWQiOiJzb3VyY2UtTDgtTDE1IiwiZmlyc3QiOjksImxhc3QiOjE4LCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTIiXX0seyJpZCI6InNvdXJjZS1MMTYtTDIxIiwiZmlyc3QiOjE5LCJsYXN0IjoyNSwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0zIl19LHsiaWQiOiJzb3VyY2UtTDIyIiwiZmlyc3QiOjI2LCJsYXN0IjoyNiwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC00Il19XX0
 // aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 int iterations = 4000
 own Map<int,int> entries = {}
@@ -91,13 +91,21 @@ print(value=entries.length())
 
 ### Startup
 
-It sets `iterations` to `4000`. It stores a context-typed empty collection with no items in owned `entries` (`Map<int,int>`). It sets `index` to `0`. While `index` is less than `iterations`, it stores `index` times `3` in `entries` under `index`; then it increases `index` by `1`. [source](main.md#code)
+::: spec-paragraph specification-paragraph-1
+It sets `iterations` to `4000`. It stores a context-typed empty collection with no items in owned `entries` (`Map<int,int>`). It sets `index` to `0`. While `index` is less than `iterations`, it stores `index` times `3` in `entries` under `index`; then it increases `index` by `1`. [source](main.md#source-L2-L7)
+:::
 
-After the loop, it sets `index` to `0`. While `index` is less than `iterations`, it removes the key `index` from `entries`; then it increases `index` by `2`. After the loop, it sets `index` to `0`. While `index` is less than `iterations`, it stores `index` times `7` in `entries` under `index`; then it increases `index` by `1`. [source](main.md#code)
+::: spec-paragraph specification-paragraph-2
+After the loop, it sets `index` to `0`. While `index` is less than `iterations`, it removes the key `index` from `entries`; then it increases `index` by `2`. After the loop, it sets `index` to `0`. While `index` is less than `iterations`, it stores `index` times `7` in `entries` under `index`; then it increases `index` by `1`. [source](main.md#source-L8-L15)
+:::
 
-After the loop, it sets `checksum` to `0`. It sets `position` to `1`. For each `key` and `value` in a snapshot of `entries`, it sets `checksum` to (`checksum` plus (`key` times `position`)) plus `value`; then it increases `position` by `1`. After the loop, it prints `checksum`. [source](main.md#code)
+::: spec-paragraph specification-paragraph-3
+After the loop, it sets `checksum` to `0`. It sets `position` to `1`. For each `key` and `value` in a snapshot of `entries`, it sets `checksum` to (`checksum` plus (`key` times `position`)) plus `value`; then it increases `position` by `1`. After the loop, it prints `checksum`. [source](main.md#source-L16-L21)
+:::
 
-It prints the number of elements in `entries`. [source](main.md#code)
+::: spec-paragraph specification-paragraph-4
+It prints the number of elements in `entries`. [source](main.md#source-L22)
+:::
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).
 

@@ -28,7 +28,7 @@ pageClass: aug-example-page
 
 ::: code-group
 
-```aug [Indentation]
+```aug [Indentation] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiaW5kZW50Iiwic291cmNlU2hhMjU2IjoiZGRkZTkxZWZhMGQyOWIxOGEwYjBjN2JiYTlhZDQ3ZmFhZDdlMzNiYzVjMDY4MmVkYTM1MjUyYTMxZTdkMDc1MyIsImZvcm1hdHRlZFNoYTI1NiI6IjJiZjJkOTM4ODhjN2YxMmM1ZGUxZjQ5YTc0NTE4YjY0YWRlNmM1MzVlYzhiMTA0YzM5M2Y1M2JjNTJmZGFlMWIiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDktTDEwIiwiZmlyc3QiOjksImxhc3QiOjEwLCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTEiXX1dfQ
 // aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Console and SystemConsole from august.io
 implement Console with SystemConsole
@@ -41,7 +41,7 @@ resolve app to program
 program.start()
 ```
 
-```aug [Braces]
+```aug [Braces] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiYnJhY2VzIiwic291cmNlU2hhMjU2IjoiZGRkZTkxZWZhMGQyOWIxOGEwYjBjN2JiYTlhZDQ3ZmFhZDdlMzNiYzVjMDY4MmVkYTM1MjUyYTMxZTdkMDc1MyIsImZvcm1hdHRlZFNoYTI1NiI6IjJiZjJkOTM4ODhjN2YxMmM1ZGUxZjQ5YTc0NTE4YjY0YWRlNmM1MzVlYzhiMTA0YzM5M2Y1M2JjNTJmZGFlMWIiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDktTDEwIiwiZmlyc3QiOjksImxhc3QiOjEwLCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTEiXX1dfQ
 // aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Console and SystemConsole from august.io
 implement Console with SystemConsole
@@ -70,7 +70,9 @@ program.start()
 
 ### Startup
 
-It sets `program` to the instance provided for `app`. It calls [`program.start`](types.md#symbol-Program.start) using injected `Console` for `console`. [source](main.md#code)
+::: spec-paragraph specification-paragraph-1
+It sets `program` to the instance provided for `app`. It calls [`program.start`](types.md#symbol-Program.start) using injected `Console` for `console`. [source](main.md#source-L9-L10)
+:::
 
 ### Dependencies
 

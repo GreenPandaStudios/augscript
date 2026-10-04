@@ -28,7 +28,7 @@ pageClass: aug-example-page
 
 ::: code-group
 
-```aug [Indentation]
+```aug [Indentation] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiaW5kZW50Iiwic291cmNlU2hhMjU2IjoiNjRiMGRlNzFkOGYyYTFmMWM2YTVlNGY2YTYwOTU4NTAwZTg1Y2Y2MzgyMGVhMWExYjZkYmMxN2JkYzJmNDRmYSIsImZvcm1hdHRlZFNoYTI1NiI6IjQ1YmVmNDViYzhiNDgwZWFhNGRkMjgzODhkY2E1OTg2MTliNDQ1OTE1MGQ2ZGQ5YjlhYTkwMDNkYzliOTM3NDAiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDMtTDYiLCJmaXJzdCI6MywibGFzdCI6NiwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0xIl19LHsiaWQiOiJzb3VyY2UtTDctTDEzIiwiZmlyc3QiOjcsImxhc3QiOjEzLCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTIiXX0seyJpZCI6InNvdXJjZS1MMTQiLCJmaXJzdCI6MTQsImxhc3QiOjE0LCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTMiXX1dfQ
 // aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import validate from operations
 int iterations = 20000
@@ -45,7 +45,7 @@ print(value=checksum)
 print(value=failures)
 ```
 
-```aug [Braces]
+```aug [Braces] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiYnJhY2VzIiwic291cmNlU2hhMjU2IjoiNjRiMGRlNzFkOGYyYTFmMWM2YTVlNGY2YTYwOTU4NTAwZTg1Y2Y2MzgyMGVhMWExYjZkYmMxN2JkYzJmNDRmYSIsImZvcm1hdHRlZFNoYTI1NiI6IjdhNWZjMTY3MThhMTA0YWI3NTY4YmYxOTlmYTE3NzNlMzRmMjUxYzMxOWY0NzllYzYzZmFmNDE1MzY4MDRkNmMiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDMtTDYiLCJmaXJzdCI6MywibGFzdCI6NiwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0xIl19LHsiaWQiOiJzb3VyY2UtTDctTDEzIiwiZmlyc3QiOjcsImxhc3QiOjE2LCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTIiXX0seyJpZCI6InNvdXJjZS1MMTQiLCJmaXJzdCI6MTcsImxhc3QiOjE3LCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTMiXX1dfQ
 // aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import validate from operations
 int iterations = 20000
@@ -75,11 +75,17 @@ print(value=failures)
 
 ### Startup
 
-It sets `iterations` to `20000`. It sets `index`, `checksum`, and `failures` separately, each to `0`. [source](main.md#code)
+::: spec-paragraph specification-paragraph-1
+It sets `iterations` to `20000`. It sets `index`, `checksum`, and `failures` separately, each to `0`. [source](main.md#source-L3-L6)
+:::
 
-While `index` is less than `iterations`, it tries to increase `checksum` by [`validate`](operations.md#symbol-validate) with `value` from `index`. If this work raises `FileError`, it increases `failures` by `1`. It increases `index` by `1`. After the loop, it prints `checksum`. [source](main.md#code)
+::: spec-paragraph specification-paragraph-2
+While `index` is less than `iterations`, it tries to increase `checksum` by [`validate`](operations.md#symbol-validate) with `value` from `index`. If this work raises `FileError`, it increases `failures` by `1`. It increases `index` by `1`. After the loop, it prints `checksum`. [source](main.md#source-L7-L13)
+:::
 
-It prints `failures`. [source](main.md#code)
+::: spec-paragraph specification-paragraph-3
+It prints `failures`. [source](main.md#source-L14)
+:::
 
 ### Dependencies
 

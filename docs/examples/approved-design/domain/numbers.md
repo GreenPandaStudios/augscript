@@ -32,7 +32,7 @@ pageClass: aug-example-page
 
 ::: code-group
 
-```aug [Indentation]
+```aug [Indentation] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiaW5kZW50Iiwic291cmNlU2hhMjU2IjoiOTNmN2M4YWJjOTJkYjc5ZDgxNzBhMGFhMTk5MTNmMGM5ZDExM2NiMzNkZDZiOTNmMDBkZDBjYWM4ZDQ1YTk2YiIsImZvcm1hdHRlZFNoYTI1NiI6IjU4ZDgxNTFhYWNmZTUwNWZkNzVlMGQ2ZGVkZjQ0NjkxMmRkM2VlZTI4YWZmYjZlYTFlMjA4OTgwZGVjNTBlZGEiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDMiLCJmaXJzdCI6MywibGFzdCI6NCwiYmFja2xpbmtzIjpbIiNzeW1ib2wtUmFuZ2VFcnJvciJdfSx7ImlkIjoic291cmNlLUw2IiwiZmlyc3QiOjYsImxhc3QiOjEwLCJiYWNrbGlua3MiOlsiI3N5bWJvbC1Qb3NpdGl2ZSJdfSx7ImlkIjoic291cmNlLUw3IiwiZmlyc3QiOjcsImxhc3QiOjEwLCJiYWNrbGlua3MiOlsiI3N5bWJvbC1Qb3NpdGl2ZS5hcm91bmQiXX0seyJpZCI6InNvdXJjZS1MOC1MMTAiLCJmaXJzdCI6OCwibGFzdCI6MTAsImJhY2tsaW5rcyI6WyIjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMSJdfSx7ImlkIjoic291cmNlLUwxOCIsImZpcnN0IjoxOCwibGFzdCI6MTksImJhY2tsaW5rcyI6WyIjc3ltYm9sLWRvdWJsZSJdfSx7ImlkIjoic291cmNlLUwxOSIsImZpcnN0IjoxOSwibGFzdCI6MTksImJhY2tsaW5rcyI6WyIjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMiJdfSx7ImlkIjoic291cmNlLUwyMCIsImZpcnN0IjoyMCwibGFzdCI6MzAsImJhY2tsaW5rcyI6WyIjc3ltYm9sLXRlc3QtMjAtZG91YmxlIl19LHsiaWQiOiJzb3VyY2UtTDIyIiwiZmlyc3QiOjIyLCJsYXN0IjoyMywiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0zIl19LHsiaWQiOiJzb3VyY2UtTDIzIiwiZmlyc3QiOjIzLCJsYXN0IjoyMywiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC00Il19LHsiaWQiOiJzb3VyY2UtTDI0IiwiZmlyc3QiOjI0LCJsYXN0IjozMCwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC01Il19LHsiaWQiOiJzb3VyY2UtTDI1IiwiZmlyc3QiOjI1LCJsYXN0IjoyNSwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC02Il19LHsiaWQiOiJzb3VyY2UtTDI2LUwzMCIsImZpcnN0IjoyNiwibGFzdCI6MzAsImJhY2tsaW5rcyI6WyIjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtNyJdfV19
 // aug-spec: "numbers.aug.md" explains this file. Read it before changes; refresh with aug spec.
 /** Raised when an input is outside the operation's domain. */
 RangeError(int value) implements Error:
@@ -65,7 +65,7 @@ test double:
             assert(rejected)
 ```
 
-```aug [Braces]
+```aug [Braces] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiYnJhY2VzIiwic291cmNlU2hhMjU2IjoiOTNmN2M4YWJjOTJkYjc5ZDgxNzBhMGFhMTk5MTNmMGM5ZDExM2NiMzNkZDZiOTNmMDBkZDBjYWM4ZDQ1YTk2YiIsImZvcm1hdHRlZFNoYTI1NiI6IjNhNjhmNWNiMmU4YWRlMmVmZjEwMzk2OTNkODdjNjM4YTNkMWM1ZjVmNjQwODkxZjhlNTk4NjM5YzRiOTgyNWIiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDMiLCJmaXJzdCI6MywibGFzdCI6NSwiYmFja2xpbmtzIjpbIiNzeW1ib2wtUmFuZ2VFcnJvciJdfSx7ImlkIjoic291cmNlLUw2IiwiZmlyc3QiOjcsImxhc3QiOjE0LCJiYWNrbGlua3MiOlsiI3N5bWJvbC1Qb3NpdGl2ZSJdfSx7ImlkIjoic291cmNlLUw3IiwiZmlyc3QiOjgsImxhc3QiOjEzLCJiYWNrbGlua3MiOlsiI3N5bWJvbC1Qb3NpdGl2ZS5hcm91bmQiXX0seyJpZCI6InNvdXJjZS1MOC1MMTAiLCJmaXJzdCI6OSwibGFzdCI6MTIsImJhY2tsaW5rcyI6WyIjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMSJdfSx7ImlkIjoic291cmNlLUwxOCIsImZpcnN0IjoyMiwibGFzdCI6MjQsImJhY2tsaW5rcyI6WyIjc3ltYm9sLWRvdWJsZSJdfSx7ImlkIjoic291cmNlLUwxOSIsImZpcnN0IjoyMywibGFzdCI6MjMsImJhY2tsaW5rcyI6WyIjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMiJdfSx7ImlkIjoic291cmNlLUwyMCIsImZpcnN0IjoyNSwibGFzdCI6NDEsImJhY2tsaW5rcyI6WyIjc3ltYm9sLXRlc3QtMjAtZG91YmxlIl19LHsiaWQiOiJzb3VyY2UtTDIyIiwiZmlyc3QiOjI3LCJsYXN0IjoyOSwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0zIl19LHsiaWQiOiJzb3VyY2UtTDIzIiwiZmlyc3QiOjI4LCJsYXN0IjoyOCwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC00Il19LHsiaWQiOiJzb3VyY2UtTDI0IiwiZmlyc3QiOjMwLCJsYXN0IjozOSwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC01Il19LHsiaWQiOiJzb3VyY2UtTDI1IiwiZmlyc3QiOjMxLCJsYXN0IjozMSwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC02Il19LHsiaWQiOiJzb3VyY2UtTDI2LUwzMCIsImZpcnN0IjozMiwibGFzdCI6MzgsImJhY2tsaW5rcyI6WyIjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtNyJdfV19
 // aug-spec: "numbers.aug.md" explains this file. Read it before changes; refresh with aug spec.
 /** Raised when an input is outside the operation's domain. */
 RangeError(int value) implements Error {
@@ -117,17 +117,19 @@ test double {
 
 ## Compiled specification {#specification}
 
-### `RangeError` · class · [source](numbers.md#code) {#symbol-RangeError}
+### `RangeError` · class · [source](numbers.md#source-L3) {#symbol-RangeError}
 
 Raised when an input is outside the operation's domain. It implements `Error`. It takes `value` as an integer, kept read-only.
 
-### `Positive` · interceptor · [source](numbers.md#code) {#symbol-Positive}
+### `Positive` · interceptor · [source](numbers.md#source-L6) {#symbol-Positive}
 
 A pure validation layer, shared by any compatible callable. The type parameters are `T`. Creates one interceptor per invocation. Its around operation may delegate once or finish early.
 
-#### `Positive.around` · [source](numbers.md#code) {#symbol-Positive.around}
+#### `Positive.around` · [source](numbers.md#source-L7) {#symbol-Positive.around}
 
-It takes `amount` as an integer. If `amount` is negative, it raises a [`RangeError`](numbers.md#symbol-RangeError) with `value` from `amount`. It returns `next`. [source](numbers.md#code)
+::: spec-paragraph specification-paragraph-1
+It takes `amount` as an integer. If `amount` is negative, it raises a [`RangeError`](numbers.md#symbol-RangeError) with `value` from `amount`. It returns `next`. [source](numbers.md#source-L8-L10)
+:::
 
 ::: details Checked interface
 
@@ -139,11 +141,13 @@ It takes `amount` as an integer. Failures can raise [`RangeError`](numbers.md#sy
 
 :::
 
-### `double` · [source](numbers.md#code) {#symbol-double}
+### `double` · [source](numbers.md#source-L18) {#symbol-double}
 
 Double a nonnegative amount. It takes `amount` as an integer. Layers run in the declared order. Call [`Positive.around`](numbers.md#symbol-Positive.around).
 
-It returns `amount` times `2`. [source](numbers.md#code)
+::: spec-paragraph specification-paragraph-2
+It returns `amount` times `2`. [source](numbers.md#source-L19)
+:::
 
 ::: details Checked interface
 
@@ -155,21 +159,31 @@ It takes `amount` as an integer (Integer to double). It returns `int` — Twice 
 
 :::
 
-### `test double` · [source](numbers.md#code) {#symbol-test-20-double}
+### `test double` · [source](numbers.md#source-L20) {#symbol-test-20-double}
 
 Tests [`double`](numbers.md#symbol-double). Each case gets fresh setup and dependencies.
 
 #### `positive`
 
-##### `doubles` · [source](numbers.md#code)
+::: spec-paragraph specification-paragraph-3
+##### `doubles` · [source](numbers.md#source-L22)
+:::
 
-Run once for each row of a tuple containing `0`, `0`; a tuple containing `3`, `6`; a tuple containing `7`, `14`. Bind row positions to `input`, `expected`. The test requires [`double`](numbers.md#symbol-double) with `amount` from `input` equals `expected`. [source](numbers.md#code)
+::: spec-paragraph specification-paragraph-4
+Run once for each row of a tuple containing `0`, `0`; a tuple containing `3`, `6`; a tuple containing `7`, `14`. Bind row positions to `input`, `expected`. The test requires [`double`](numbers.md#symbol-double) with `amount` from `input` equals `expected`. [source](numbers.md#source-L23)
+:::
 
-##### `rejects_negative` · [source](numbers.md#code)
+::: spec-paragraph specification-paragraph-5
+##### `rejects_negative` · [source](numbers.md#source-L24)
+:::
 
-It sets `rejected` to `false`. [source](numbers.md#code)
+::: spec-paragraph specification-paragraph-6
+It sets `rejected` to `false`. [source](numbers.md#source-L25)
+:::
 
-It tries to call [`double`](numbers.md#symbol-double) with `amount` `-1`. If this work raises [`RangeError`](numbers.md#symbol-RangeError) as `error`, it sets `rejected` to `error.value` equals `-1`. The test requires `rejected` is true. [source](numbers.md#code)
+::: spec-paragraph specification-paragraph-7
+It tries to call [`double`](numbers.md#symbol-double) with `amount` `-1`. If this work raises [`RangeError`](numbers.md#symbol-RangeError) as `error`, it sets `rejected` to `error.value` equals `-1`. The test requires `rejected` is true. [source](numbers.md#source-L26-L30)
+:::
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).
 

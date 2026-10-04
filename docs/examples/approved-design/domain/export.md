@@ -32,7 +32,7 @@ pageClass: aug-example-page
 
 ::: code-group
 
-```aug [Indentation]
+```aug [Indentation] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiaW5kZW50Iiwic291cmNlU2hhMjU2IjoiMDhjZTU1ZWM2MzViM2QxZmRhMTE5NjdiZGZjNGY3YWFhNjA1ZDgxYmQ0ZGQxZDY1NTBkZWI4MWIzOGFkODU1MyIsImZvcm1hdHRlZFNoYTI1NiI6ImYyMDI3MzJmM2E5ZTZmYzI0NmZmOWUwYWVhZDYyYWMyOTM0MDM5Nzc1ODJlMGJhOThkZTNlYTUwYThmYmUwZWEiLCJsaW5rcyI6W119
 // aug-spec: "export.aug.md" explains this file. Read it before changes; refresh with aug spec.
 export Application from app
 export ApplicationImpl from app
@@ -41,7 +41,7 @@ export double from numbers
 export RangeError from numbers
 ```
 
-```aug [Braces]
+```aug [Braces] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiYnJhY2VzIiwic291cmNlU2hhMjU2IjoiMDhjZTU1ZWM2MzViM2QxZmRhMTE5NjdiZGZjNGY3YWFhNjA1ZDgxYmQ0ZGQxZDY1NTBkZWI4MWIzOGFkODU1MyIsImZvcm1hdHRlZFNoYTI1NiI6ImYyMDI3MzJmM2E5ZTZmYzI0NmZmOWUwYWVhZDYyYWMyOTM0MDM5Nzc1ODJlMGJhOThkZTNlYTUwYThmYmUwZWEiLCJsaW5rcyI6W119
 // aug-spec: "export.aug.md" explains this file. Read it before changes; refresh with aug spec.
 export Application from app
 export ApplicationImpl from app

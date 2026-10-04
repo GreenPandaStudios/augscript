@@ -31,7 +31,7 @@ pageClass: aug-example-page
 
 ::: code-group
 
-```aug [Indentation]
+```aug [Indentation] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiaW5kZW50Iiwic291cmNlU2hhMjU2IjoiNDdiOWQ5NGI3ZTk0ZWQ3ZDQyNjUzOGIxMDkxNjFjMjQzYzRkYzkyYzdkN2Y4YTI5MDdlOTk1ZmQxZDk0NWM1NyIsImZvcm1hdHRlZFNoYTI1NiI6Ijc1ZjFjMmE3ZThmZDcwMjA3MDExODMxZGJlZDljN2IzNDQxNDQ5Y2Y5NWRjZTZiZGY0ODFkOTJkNWFkNTc3NDkiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDktTDEyIiwiZmlyc3QiOjksImxhc3QiOjEyLCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTEiXX0seyJpZCI6InNvdXJjZS1MMTMiLCJmaXJzdCI6MTMsImxhc3QiOjEzLCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTIiXX1dfQ
 // aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Console and SystemConsole from august.io
 implement Console with SystemConsole
@@ -47,7 +47,7 @@ count = increment(value=count)
 print(value=count)
 ```
 
-```aug [Braces]
+```aug [Braces] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiYnJhY2VzIiwic291cmNlU2hhMjU2IjoiNDdiOWQ5NGI3ZTk0ZWQ3ZDQyNjUzOGIxMDkxNjFjMjQzYzRkYzkyYzdkN2Y4YTI5MDdlOTk1ZmQxZDk0NWM1NyIsImZvcm1hdHRlZFNoYTI1NiI6Ijc1ZjFjMmE3ZThmZDcwMjA3MDExODMxZGJlZDljN2IzNDQxNDQ5Y2Y5NWRjZTZiZGY0ODFkOTJkNWFkNTc3NDkiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDktTDEyIiwiZmlyc3QiOjksImxhc3QiOjEyLCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTEiXX0seyJpZCI6InNvdXJjZS1MMTMiLCJmaXJzdCI6MTMsImxhc3QiOjEzLCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTIiXX1dfQ
 // aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Console and SystemConsole from august.io
 implement Console with SystemConsole
@@ -77,9 +77,13 @@ print(value=count)
 
 ### Startup
 
-It sets `greeter` to a [`Greeter`](greeter.md#symbol-Greeter) with `x` `4` using injected `Logger` for `logger`. It passes `"AugScript"` to [`greeter.greet`](greeter.md#symbol-Greeter.greet), using injected `Console`. It sets `count` to `7`. It sets `count` to [`increment`](math.md#symbol-increment) with `value` from `count`. [source](main.md#code)
+::: spec-paragraph specification-paragraph-1
+It sets `greeter` to a [`Greeter`](greeter.md#symbol-Greeter) with `x` `4` using injected `Logger` for `logger`. It passes `"AugScript"` to [`greeter.greet`](greeter.md#symbol-Greeter.greet), using injected `Console`. It sets `count` to `7`. It sets `count` to [`increment`](math.md#symbol-increment) with `value` from `count`. [source](main.md#source-L9-L12)
+:::
 
-It prints `count`. [source](main.md#code)
+::: spec-paragraph specification-paragraph-2
+It prints `count`. [source](main.md#source-L13)
+:::
 
 ### Dependencies
 

@@ -28,7 +28,7 @@ pageClass: aug-example-page
 
 ::: code-group
 
-```aug [Indentation]
+```aug [Indentation] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiaW5kZW50Iiwic291cmNlU2hhMjU2IjoiZjY3ZGI0NjdhYTZmZjdjMzhlYzc2YTIyOThjYmMzNTZmYTcyZjMyYTVjNjJmN2E1ZGJjOTZkM2VhMWVlY2Y0ZSIsImZvcm1hdHRlZFNoYTI1NiI6ImYxNmFlZDBiZTgwZjUzODMzNzljZmI4N2JlNzFlODQzZWM5ZjhkMjE5NjE2ODM5MDBlNzEwNzA2ZDNmYzEwYTAiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDUiLCJmaXJzdCI6NCwibGFzdCI6MTcsImJhY2tsaW5rcyI6WyIjc3ltYm9sLXN0b3JlZE5hbWUiXX0seyJpZCI6InNvdXJjZS1MNi1MMTAiLCJmaXJzdCI6NSwibGFzdCI6MTcsImJhY2tsaW5rcyI6WyIjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMSJdfSx7ImlkIjoic291cmNlLUwxMiIsImZpcnN0IjoxOCwibGFzdCI6MjEsImJhY2tsaW5rcyI6WyIjc3ltYm9sLXRlc3QtMjAtc3RvcmVkTmFtZSJdfSx7ImlkIjoic291cmNlLUwxNCIsImZpcnN0IjoyMCwibGFzdCI6MjEsImJhY2tsaW5rcyI6WyIjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMiJdfSx7ImlkIjoic291cmNlLUwxNSIsImZpcnN0IjoyMSwibGFzdCI6MjEsImJhY2tsaW5rcyI6WyIjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMyJdfV19
 // aug-spec: "database.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Database and SqliteError and openMemory and execute and queryScalar from "https://github.com/GreenPandaStudios/aug-sqlite#v0.1.5"
 /** Store a bound value in an in-memory SQLite database and read it back. */
@@ -52,7 +52,7 @@ test storedName:
             assert(storedName() == "August")
 ```
 
-```aug [Braces]
+```aug [Braces] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiYnJhY2VzIiwic291cmNlU2hhMjU2IjoiZjY3ZGI0NjdhYTZmZjdjMzhlYzc2YTIyOThjYmMzNTZmYTcyZjMyYTVjNjJmN2E1ZGJjOTZkM2VhMWVlY2Y0ZSIsImZvcm1hdHRlZFNoYTI1NiI6IjU0ZDhhOTYzYWRlMjkxODhmZDA3MDgzZGFmYTdiNjIwODM4OTY1OGVjMTQ5MjlmNWNlOTJkN2ExZjBlNDdjYzEiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDUiLCJmaXJzdCI6NCwibGFzdCI6MTksImJhY2tsaW5rcyI6WyIjc3ltYm9sLXN0b3JlZE5hbWUiXX0seyJpZCI6InNvdXJjZS1MNi1MMTAiLCJmaXJzdCI6NSwibGFzdCI6MTgsImJhY2tsaW5rcyI6WyIjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMSJdfSx7ImlkIjoic291cmNlLUwxMiIsImZpcnN0IjoyMCwibGFzdCI6MjYsImJhY2tsaW5rcyI6WyIjc3ltYm9sLXRlc3QtMjAtc3RvcmVkTmFtZSJdfSx7ImlkIjoic291cmNlLUwxNCIsImZpcnN0IjoyMiwibGFzdCI6MjQsImJhY2tsaW5rcyI6WyIjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMiJdfSx7ImlkIjoic291cmNlLUwxNSIsImZpcnN0IjoyMywibGFzdCI6MjMsImJhY2tsaW5rcyI6WyIjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMyJdfV19
 // aug-spec: "database.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Database and SqliteError and openMemory and execute and queryScalar from "https://github.com/GreenPandaStudios/aug-sqlite#v0.1.5"
 /** Store a bound value in an in-memory SQLite database and read it back. */
@@ -89,9 +89,11 @@ test storedName {
 
 ## Compiled specification {#specification}
 
-### `storedName` · [source](database.md#code) {#symbol-storedName}
+### `storedName` · [source](database.md#source-L5) {#symbol-storedName}
 
-Store a bound value in an in-memory SQLite database and read it back. It calls [`openMemory`](dependencies/packages/%40greenpandastudios/aug-sqlite/0.1.5/api.md#symbol-openMemory) and stores the result in owned `database` ([`Database`](dependencies/packages/%40greenpandastudios/aug-sqlite/0.1.5/bindings.md#symbol-Database)). With temporary permission to change `database`, it calls [`execute`](dependencies/packages/%40greenpandastudios/aug-sqlite/0.1.5/api.md#symbol-execute) with `database`, `sql` `"CREATE TABLE users (name TEXT NOT NULL)"`, and `parameters` from a list with no items; then it calls [`execute`](dependencies/packages/%40greenpandastudios/aug-sqlite/0.1.5/api.md#symbol-execute) with `database`, `sql` `"INSERT INTO users (name) VALUES (?)"`, and `parameters` from a list containing `"August"`. It returns [`queryScalar`](dependencies/packages/%40greenpandastudios/aug-sqlite/0.1.5/api.md#symbol-queryScalar) with `database`, `sql` `"SELECT name FROM users"`, and `parameters` from a list with no items. [source](database.md#code)
+::: spec-paragraph specification-paragraph-1
+Store a bound value in an in-memory SQLite database and read it back. It calls [`openMemory`](dependencies/packages/%40greenpandastudios/aug-sqlite/0.1.5/api.md#symbol-openMemory) and stores the result in owned `database` ([`Database`](dependencies/packages/%40greenpandastudios/aug-sqlite/0.1.5/bindings.md#symbol-Database)). With temporary permission to change `database`, it calls [`execute`](dependencies/packages/%40greenpandastudios/aug-sqlite/0.1.5/api.md#symbol-execute) with `database`, `sql` `"CREATE TABLE users (name TEXT NOT NULL)"`, and `parameters` from a list with no items; then it calls [`execute`](dependencies/packages/%40greenpandastudios/aug-sqlite/0.1.5/api.md#symbol-execute) with `database`, `sql` `"INSERT INTO users (name) VALUES (?)"`, and `parameters` from a list containing `"August"`. It returns [`queryScalar`](dependencies/packages/%40greenpandastudios/aug-sqlite/0.1.5/api.md#symbol-queryScalar) with `database`, `sql` `"SELECT name FROM users"`, and `parameters` from a list with no items. [source](database.md#source-L6-L10)
+:::
 
 ::: details Checked interface
 
@@ -103,15 +105,19 @@ Failures can raise [`SqliteError`](dependencies/packages/%40greenpandastudios/au
 
 :::
 
-### `test storedName` · [source](database.md#code) {#symbol-test-20-storedName}
+### `test storedName` · [source](database.md#source-L12) {#symbol-test-20-storedName}
 
 Tests [`storedName`](database.md#symbol-storedName). Each case gets fresh setup and dependencies.
 
 #### `database`
 
-##### `inserts_and_queries_bound_data` · [source](database.md#code)
+::: spec-paragraph specification-paragraph-2
+##### `inserts_and_queries_bound_data` · [source](database.md#source-L14)
+:::
 
-The test requires [`storedName`](database.md#symbol-storedName) equals `"August"`. [source](database.md#code)
+::: spec-paragraph specification-paragraph-3
+The test requires [`storedName`](database.md#symbol-storedName) equals `"August"`. [source](database.md#source-L15)
+:::
 
 ### Dependencies
 

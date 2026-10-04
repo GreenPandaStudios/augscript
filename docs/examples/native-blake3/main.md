@@ -28,7 +28,7 @@ pageClass: aug-example-page
 
 ::: code-group
 
-```aug [Indentation]
+```aug [Indentation] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiaW5kZW50Iiwic291cmNlU2hhMjU2IjoiMThlZDMxMzVjNjM1OGYzMDMyZDVmYTE4YjUyZmVmMGRkMjIxYjViNDQxMDJiOWYxMzMwM2NhODRhYWIxOWEzMiIsImZvcm1hdHRlZFNoYTI1NiI6ImI0ZjQzODBkMzgwNWExODgzZjVmYWQ2NzBhMmMyYTBlYTE5MTA0NmIyYTY1YzQxOThhNGZlMmFmMDEzNzNkMzAiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDUtTDgiLCJmaXJzdCI6NCwibGFzdCI6NywiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0xIl19XX0
 // aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import hashText from hashing
 import HashError from "https://github.com/GreenPandaStudios/aug-blake3#v0.1.5"
@@ -38,7 +38,7 @@ catch HashError error:
     print(value=error.message)
 ```
 
-```aug [Braces]
+```aug [Braces] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiYnJhY2VzIiwic291cmNlU2hhMjU2IjoiMThlZDMxMzVjNjM1OGYzMDMyZDVmYTE4YjUyZmVmMGRkMjIxYjViNDQxMDJiOWYxMzMwM2NhODRhYWIxOWEzMiIsImZvcm1hdHRlZFNoYTI1NiI6IjE1NjEwZGQ5YzNiMzE4ZTJkOWNiNDE0ODNmZmJjMmEwZWE5ZjQ0ZjExNDkzNjY0YzM3MjExZTMyOTE5MzdhYTUiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDUtTDgiLCJmaXJzdCI6NCwibGFzdCI6OSwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0xIl19XX0
 // aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import hashText from hashing
 import HashError from "https://github.com/GreenPandaStudios/aug-blake3#v0.1.5"
@@ -60,7 +60,9 @@ catch HashError error {
 
 ### Startup
 
-It prints [`hashText`](hashing.md#symbol-hashText) with `value` `"abc"`. If this work raises [`HashError`](dependencies/packages/%40greenpandastudios/aug-blake3/0.1.5/contracts.md#symbol-HashError) as `error`, it prints `error.message`. [source](main.md#code)
+::: spec-paragraph specification-paragraph-1
+It prints [`hashText`](hashing.md#symbol-hashText) with `value` `"abc"`. If this work raises [`HashError`](dependencies/packages/%40greenpandastudios/aug-blake3/0.1.5/contracts.md#symbol-HashError) as `error`, it prints `error.message`. [source](main.md#source-L5-L8)
+:::
 
 ### Dependencies
 

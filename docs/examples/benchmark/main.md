@@ -27,7 +27,7 @@ pageClass: aug-example-page
 
 ::: code-group
 
-```aug [Indentation]
+```aug [Indentation] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiaW5kZW50Iiwic291cmNlU2hhMjU2IjoiMWM4NDMwNzE1MDZjNThlOWFmYjY2NjViNzQyZGNlMWI3YjJhYTIzOGM0NzBmOTE5YjYzNjAxNTg4M2IwNmQ2MiIsImZvcm1hdHRlZFNoYTI1NiI6ImM0OGZkMTgyZjc0NTA3NmUxYzY3NzEzNmMwNTY2MjhjOTI5ZWVkOTQ4NDVjYWYyZjMwNjU2MTIzZjI3MzExYjUiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDMtTDEwIiwiZmlyc3QiOjMsImxhc3QiOjksImJhY2tsaW5rcyI6WyIjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMSJdfSx7ImlkIjoic291cmNlLUwxMS1MMTgiLCJmaXJzdCI6MTAsImxhc3QiOjE1LCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTIiXX1dfQ
 // aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 // A deterministic native workload: arithmetic and 20,000 hash entries.
 own Map<int,int> values = {}
@@ -45,7 +45,7 @@ print(value=checksum)
 print(value=values.length() == unique.length())
 ```
 
-```aug [Braces]
+```aug [Braces] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiYnJhY2VzIiwic291cmNlU2hhMjU2IjoiMWM4NDMwNzE1MDZjNThlOWFmYjY2NjViNzQyZGNlMWI3YjJhYTIzOGM0NzBmOTE5YjYzNjAxNTg4M2IwNmQ2MiIsImZvcm1hdHRlZFNoYTI1NiI6IjM4Nzc5NjEzMmQ0NzAxNGEyM2JjOWJiYmJiZjE1Mzc3NGZkNTI3ODViMzIxNDVmYjNkYmRkMDQyNGExMDAwYTQiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDMtTDEwIiwiZmlyc3QiOjMsImxhc3QiOjEwLCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTEiXX0seyJpZCI6InNvdXJjZS1MMTEtTDE4IiwiZmlyc3QiOjExLCJsYXN0IjoxOCwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0yIl19XX0
 // aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 // A deterministic native workload: arithmetic and 20,000 hash entries.
 own Map<int,int> values = {}
@@ -76,9 +76,13 @@ print(value=values.length() == unique.length())
 
 ### Startup
 
-It stores a context-typed empty collection with no items in owned `values` (`Map<int,int>`). It stores a context-typed empty collection with no items in owned `unique` (`Set<int>`). It sets `index` to `0`. While `index` is less than `20000`, it stores `index` times `3` in `values` under `index`; then it adds `index` to `unique`; then it increases `index` by `1`. [source](main.md#code)
+::: spec-paragraph specification-paragraph-1
+It stores a context-typed empty collection with no items in owned `values` (`Map<int,int>`). It stores a context-typed empty collection with no items in owned `unique` (`Set<int>`). It sets `index` to `0`. While `index` is less than `20000`, it stores `index` times `3` in `values` under `index`; then it adds `index` to `unique`; then it increases `index` by `1`. [source](main.md#source-L3-L10)
+:::
 
-After the loop, it sets `checksum` to `0`. For each `key` and `value` in a snapshot of `values`, if whether `unique` contains `key` returns true, it increases `checksum` by `value`. After the loop, it prints `checksum`. It prints the number of elements in `values` equals the number of elements in `unique`. [source](main.md#code)
+::: spec-paragraph specification-paragraph-2
+After the loop, it sets `checksum` to `0`. For each `key` and `value` in a snapshot of `values`, if whether `unique` contains `key` returns true, it increases `checksum` by `value`. After the loop, it prints `checksum`. It prints the number of elements in `values` equals the number of elements in `unique`. [source](main.md#source-L11-L18)
+:::
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).
 

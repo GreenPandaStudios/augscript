@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+Follow compiled-spec paragraphs to their highlighted statements in either formatted wiki code style, and return through accessible code-line links. Retain source revisions and original line ranges; validate content-matched navigation metadata and keep copied code unchanged.
+
 Add read-only `aug cache` size, identity and offline-readiness reports, plus previewed `aug cache prune --write` for verified idle test compilation. Coordinate compiler cache reads/writes with pruning; retain active, unknown, damaged, accepted-source and shared native entries.
 
 Reuse verified LLVM compilation for unchanged core-runtime test programs while running each case in a fresh process. Add `aug test --rebuild` and per-case JSON compilation status. Keep source, dependencies, configuration, compiler/runtime, target, tool and build-mode identities; damaged or unavailable private caches fall back to compilation. Runtime-component/native-call tests and unsealed contributor tools remain uncached; qualified LLVM tools use a fixed compilation environment. Pin complete compiler member manifests and verify declared member identities during release assembly, retaining existing archive URLs and checksums.
