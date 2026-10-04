@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Add contextual forwarding declarations, inherited contracts and checked-change tooling to the development compiler.
+Add **AugScript: Check Setup** and the **August** output channel. Explain missing Node/compiler paths, offer settings and output actions, and recover after configuration changes. Test installed VSIX features and preview upgrades in real VS Code hosts. A retained 0.23.0 compiler reports that doctor is unavailable.
 
 ## 0.23.1 — burgundy artwork
 

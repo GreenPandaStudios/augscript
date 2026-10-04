@@ -108,7 +108,7 @@ A conversion uses `{"kind":"forward","symbol":"wrapper.aug:dispatch"}`. The wrap
 
 ## Recover an interrupted writer
 
-Application uses an exclusive cooperating writer and durable journal under `.aug-changes`. Readers reject active or interrupted transactions. Package installation, formatting, spec generation, and managed source hints coordinate with that writer.
+Application uses an exclusive cooperating writer and durable journal under `.aug-changes`. Readers reject active or interrupted transactions. Package installation, formatting, spec generation, and managed source hints coordinate with that writer. Installs and dependency additions hold the permit through asynchronous native artifact verification and lockfile publication.
 
 ```sh
 aug change recover .

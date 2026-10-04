@@ -48,8 +48,7 @@ export function checkedSourcePath(root:string,name:string):string {
   return path;
 }
 
-/** Only one cooperating source writer may hold this permit; stale journals require recovery. */
-export function withSourceWriter<T>(root:string,action:(permit:SourcePermit)=>T,recovery=false):T {
+function sourceWriter(root:string,recovery:boolean):{permit:SourcePermit;release:()=>void} {
   const folder=directory(root);if(existsSync(folder)&&(!lstatSync(folder).isDirectory()||lstatSync(folder).isSymbolicLink()))throw new SourceBusy('Invalid .aug-changes directory');
   mkdirSync(folder,{recursive:true,mode:0o700});
   // Serialize stale-owner removal as well as acquisition. Two recoverers cannot delete
@@ -66,12 +65,22 @@ export function withSourceWriter<T>(root:string,action:(permit:SourcePermit)=>T,
     try{writeFileSync(fd,JSON.stringify({pid:process.pid,token:permit.token}));fsyncSync(fd);}finally{closeSync(fd);}
     syncDirectory(folder);
   }finally{closeSync(gateFd);rmSync(gate);syncDirectory(folder);}
-  try{return action(permit);}finally{
+  return {permit,release:()=>{
     // An unfinished journal remains visible even after a caught process error.
     atomicSourceWrite(epochFile(root),randomUUID());
     if(owner(root)?.token===permit.token)rmSync(lockFile(root));
     syncDirectory(folder);
-  }
+  }};
+}
+/** Only one cooperating source writer may hold this permit; stale journals require recovery. */
+export function withSourceWriter<T>(root:string,action:(permit:SourcePermit)=>T,recovery=false):T {
+  const held=sourceWriter(root,recovery);
+  try{return action(held.permit);}finally{held.release();}
+}
+/** Keep readers and other writers excluded until asynchronous verification and publication finish. */
+export async function withSourceWriterAsync<T>(root:string,action:(permit:SourcePermit)=>Promise<T>):Promise<T> {
+  const held=sourceWriter(root,false);
+  try{return await action(held.permit);}finally{held.release();}
 }
 export interface JournalEntry {file:string;before:string;after:string;mode:number}
 export interface SourceJournal {

@@ -15,6 +15,7 @@
   "scripts": {
     "check": "tsc --noEmit",
     "test": "node --test --test-concurrency=2 tests/*.test.mjs",
+    "test:compatibility": "node --test tests/package-compatibility.test.mjs tests/user-packages.test.mjs tests/native-packages.test.mjs tests/native-artifacts.test.mjs tests/native-bindings.test.mjs",
     "test:setup-cold": "AUG_TEST_COLD_NATIVE=1 node --test tests/native-setup-cold.test.mjs",
     "test:docker": "node scripts/test-docker.mjs",
     "test:sanitizers": "node scripts/sanitize-core.mjs",
@@ -35,11 +36,14 @@
     "package:extension": "npm --prefix vscode run package",
     "bench:greetings": "node scripts/benchmark-greetings.mjs",
     "test:conformance": "node scripts/check-language-conformance.mjs",
-    "test:reliability": "node scripts/qualify-runtime.mjs"
+    "test:reliability": "node scripts/qualify-runtime.mjs",
+    "test:editor": "node scripts/qualify-editor.mjs",
+    "test:upgrade": "node scripts/qualify-cli-upgrade.mjs"
   },
   "devDependencies": {
     "@types/markdown-it-container": "4.0.1",
     "@types/node": "26.6.3",
+    "@vscode/test-electron": "3.1.0",
     "markdown-it-container": "4.0.0",
     "tar": "7.5.22",
     "typescript": "7.0.2",

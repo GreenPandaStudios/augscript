@@ -72,6 +72,7 @@ export default defineConfig({
         { text: 'Checked changes', link: '/checked-changes' },
         { text: 'Packages and installation', link: '/packages' },
         { text: 'Native library packages', link: '/native-packages' },
+        { text: 'Package compatibility', link: '/package-compatibility' },
         { text: 'Multicore workers', link: '/workers' },
         { text: 'Docker deployment', link: '/docker' },
         { text: 'VS Code Dev Containers', link: '/dev-containers' },
@@ -80,6 +81,7 @@ export default defineConfig({
       { text: 'Language and tools', collapsed: true, items: [
         { text: 'Language reference', link: '/reference' }, { text: 'Grammar', link: '/grammar' },
         { text: 'Constructs and built-ins', link: '/language-constructs' },
+        { text: 'Native ABI', link: '/native-abi' },
         { text: 'CLI, configuration, and editor', link: '/tooling' }
       ]},
       { text: 'Library reference', collapsed: true, items: ['io', 'json', 'memory', 'time', 'web', 'crypto'].map(module => ({ text: `august.${module}`, link: `/api/${module}` })) },

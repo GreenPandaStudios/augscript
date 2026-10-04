@@ -239,6 +239,7 @@ jobs:
           sudo rm -rf /Applications/Xcode*.app /Library/Developer/CommandLineTools
           ! xcrun --show-sdk-path
           node scripts/qualify-native-consumers.mjs --local-compiler
+          node scripts/qualify-cli-upgrade.mjs --local-compiler
       - name: Qualify Linux in a clean runtime image
         if: runner.os == 'Linux'
         run: |
@@ -248,20 +249,32 @@ jobs:
           docker exec consumer node -e 'for(const name of ["scripts","native","dist","examples",".aug-build"])require("node:fs").mkdirSync("/consumer/"+name,{recursive:true})'
           docker cp scripts/qualify-native-consumers.mjs consumer:/consumer/scripts/
           docker cp scripts/native-qualification-pins.mjs consumer:/consumer/scripts/
+          for file in qualify-cli-upgrade.mjs distribution-baseline.mjs distribution-inputs.json; do docker cp "scripts/$file" consumer:/consumer/scripts/; done
           docker cp native/library-qualification.json consumer:/consumer/native/
           docker cp dist/release consumer:/consumer/dist/
           docker cp examples/. consumer:/consumer/examples/
           docker cp ".aug-build/aug-llvm-${{ matrix.artifact }}.tar.gz" consumer:/consumer/.aug-build/
           docker exec -e AUG_GITHUB_TOKEN consumer node scripts/qualify-native-consumers.mjs --local-compiler
+          docker exec -e AUG_GITHUB_TOKEN consumer node scripts/qualify-cli-upgrade.mjs --local-compiler
           docker cp consumer:/consumer/.aug-build/native-consumer-qualification.json .aug-build/
+          docker cp "consumer:/consumer/.aug-build/cli-upgrade-qualification-${{ matrix.host }}.json" .aug-build/
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: release-consumer-${{ matrix.host }}
           include-hidden-files: true
-          path: .aug-build/native-consumer-qualification.json
+          path: |
+            .aug-build/native-consumer-qualification.json
+            .aug-build/cli-upgrade-qualification-*.json
           if-no-files-found: error
+  editors:
+    needs: [source, release]
+    uses: ./.github/workflows/editor-qualification.yml
+    with:
+      source-ref: ${{ needs.source.outputs.sha }}
+      artifact: reviewed-release
+      retained-compiler: false
   draft:
-    needs: [source, release, consumers]
+    needs: [source, release, consumers, editors]
     runs-on: ubuntu-24.04
     permissions:
       contents: write

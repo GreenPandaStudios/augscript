@@ -7,6 +7,7 @@ import {spawnSync} from 'node:child_process';
 import {analyzeChangeProject,projectRevision} from '../src/change-context.ts';
 import {withSourceWriter,beginSourceRead,finishSourceRead} from '../src/source-transaction.ts';
 import {suggestedFixes} from '../src/fixes.ts';
+import {installPackagesWithNative} from '../src/package-manager.ts';
 const cli=new URL('../bin/aug.mjs',import.meta.url).pathname;
 function fixture(t){const root=mkdtempSync(join(tmpdir(),'aug-change-cli-'));t.after(()=>rmSync(root,{recursive:true,force:true}));
  writeFileSync(join(root,'main.aug'),'import dispatch from gateway\nprint(value=dispatch(value=3))\n');
@@ -43,4 +44,23 @@ test('binding and assignment-as-condition mistakes have parser diagnostics and d
   const fix=suggestedFixes(checked,file).find(fix=>fix.issue.code===code);assert(fix);let candidate=source;for(const edit of fix.edits)candidate=candidate.slice(0,edit.start)+edit.text+candidate.slice(edit.end);assert.equal(candidate,after);
   writeFileSync(file,candidate);assert.deepEqual(analyzeChangeProject(root).diagnostics,[]);
  }
+});
+test('package installation respects an independent checked source writer',t=>{
+ const root=fixture(t);
+ withSourceWriter(root,()=>{
+  const installed=run(root,'install','--offline');
+  assert.equal(installed.status,1,installed.stdout+installed.stderr);
+  assert.match(installed.stderr,/checked source change is in progress/);
+ });
+ assert.equal(run(root,'install','--offline').status,0);
+});
+test('native package verification holds the source permit across asynchronous work',async t=>{
+ const root=fixture(t),start=beginSourceRead(root);
+ const pending=installPackagesWithNative(root,false,true);
+ assert.throws(()=>beginSourceRead(root),error=>error.code==='CHANGE_BUSY');
+ assert.throws(()=>withSourceWriter(root,()=>{}),error=>error.code==='CHANGE_BUSY');
+ const reader=run(root,'check');assert.equal(reader.status,1);assert.match(reader.stderr,/checked source change is in progress/);
+ await pending;
+ assert.throws(()=>finishSourceRead(root,start),error=>error.code==='CHANGE_BUSY');
+ assert.equal(run(root,'check').status,0);
 });

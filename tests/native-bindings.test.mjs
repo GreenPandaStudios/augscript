@@ -9,9 +9,10 @@ import {nativeHostTarget,validateNativeDescriptor} from '../src/native-contracts
 
 const clang=process.env.AUG_BIND_CLANG??(process.platform==='darwin'?'/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang':'clang');
 const enabled=spawnSync(clang,['--version'],{encoding:'utf8'}).status===0;
-const header=`#include <stdint.h>
+if(process.env.AUG_REQUIRE_NATIVE_HEADER==='1'&&!enabled)throw new Error('The compatibility gate requires its selected maintainer Clang.');
+const abiHeader=resolve(import.meta.dirname,'../native/aug-native-abi-1.h');
+const header=`#include "${abiHeader}"
 typedef struct Handle Handle;
-typedef struct {int32_t code; uint32_t message_length; unsigned char message[512];} aug_native_error_v1;
 void release(Handle *);
 int32_t make(int64_t, Handle **, aug_native_error_v1 *);
 int32_t read(const Handle *, double *, aug_native_error_v1 *);
@@ -53,7 +54,7 @@ test('native header drift rejects signedness, byte bool, pointer, buffer length,
     source=>source.replace('typedef struct Handle Handle;','typedef struct Body {int value;} Handle;'),
     source=>source.replace('typedef struct Handle Handle;','typedef uint64_t Handle;'),
   ];
-  for(const mutate of mutations)fixture((root,options)=>{writeFileSync(options.header,mutate(header));assert.throws(()=>bindNativeHeader(options),/NATIVE_HEADER/);assert.equal(existsSync(options.output),false);});
+  for(const mutate of mutations)fixture((root,options)=>{writeFileSync(options.header,mutate(header.replace(`#include "${abiHeader}"`,readFileSync(abiHeader,'utf8'))));assert.throws(()=>bindNativeHeader(options),/NATIVE_HEADER/);assert.equal(existsSync(options.output),false);});
 });
 test('packaged CLI exposes explicit native maintainer options and reports missing declarations',{skip:!enabled},()=>fixture((root,options)=>{
   const result=spawnSync(process.execPath,[resolve('bin/aug.mjs'),'bind','header',options.header,'--contract',options.contract,'--target',options.target,'--output',options.output,'--clang',clang],{encoding:'utf8',timeout:60000});

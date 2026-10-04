@@ -208,6 +208,10 @@
       {
         "command": "augscript.installPackages",
         "title": "AugScript: Install Source Packages"
+      },
+      {
+        "command": "augscript.doctor",
+        "title": "AugScript: Check Setup"
       }
     ],
     "configuration": {

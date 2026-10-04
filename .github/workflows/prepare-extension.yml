@@ -91,8 +91,15 @@ jobs:
           name: reviewed-extension
           path: dist/extension-release/*
           if-no-files-found: error
-  draft:
+  editors:
     needs: [source, build]
+    uses: ./.github/workflows/editor-qualification.yml
+    with:
+      source-ref: ${{ needs.source.outputs.sha }}
+      artifact: reviewed-extension
+      retained-compiler: true
+  draft:
+    needs: [source, build, editors]
     runs-on: ubuntu-24.04
     permissions:
       contents: write
