@@ -14,7 +14,7 @@ Work proceeds through source/tool identities, everyday data and syntax, collecti
 | A06 | Pure parameter defaults | Implemented literal-data profile | Typed literal/fresh collection defaults, explicit-null distinction, interface equality, hover/spec facts; both-backend tests |
 | A07 | Ranges as an ordinary library | Implemented bounded allocation profile; qualification ongoing | august.collections.range uses ordinary checked source, exclusive list construction, half-open ascending/descending ranges, checked limits and overflow-safe stopping; both-backend edge tests |
 | A08 | Basic loop control | Implemented; qualification ongoing | Cleanup-aware nearest-loop break/continue; task-join, borrow/lock exit, checked cleanup failure and ownership reentry tests on both backends |
-| A09 | Remainder and checked arithmetic helpers | Partial | Signed remainder, checked zero, MIN%-1 safety pass both backends. Checked arithmetic and decimals pending |
+| A09 | Remainder and checked arithmetic helpers | Partial | Signed remainder plus ordinary checked int64 helpers pass independent BigInt boundary grids on both backends. Exact Decimal records, parsing, formatting, scale changes and arithmetic reject hidden loss/overflow; explicit rounded and wider decimal profiles pending |
 | A10 | Expression forms for decisions | Pending | — |
 | A11 | One formatter preference per project | Partial | Borrow fixes honor block style and tabs. Remaining generators and static snippets pending |
 | A12 | Small reusable functions and closures | Pending | — |
@@ -27,7 +27,7 @@ Work proceeds through source/tool identities, everyday data and syntax, collecti
 | B07 | Short error declarations | Implemented | Contextual short Error declarations; checked error propagation and formatting tests |
 | B08 | Error conversion and context | Pending | — |
 | B09 | Text operations with clear units | Partial | endsWith, replace, List<string>.join, codePointLength and strict numeric parsing pass both backends. Grapheme operations pending |
-| B10 | Domain value libraries | Pending | — |
+| B10 | Domain value libraries | Partial | Exact bounded Decimal record and numerical comparison implemented in august.math; dates, durations, URLs, identifiers, paths and bounded text pending |
 | C01 | Explain ownership through the actual value | Implemented editor explanation; qualification ongoing | Program-point alias/origin, borrow, task-capture and move snapshots with source links; editor-polish regressions |
 | C02 | Infer mechanically required owned locals | Implemented; broader qualification pending | New locals inherit only checked own call results. Both backends verify one cleanup per result and reject owned alias copies; hints/spec retain provenance |
 | C03 | Offer the smallest legal borrow | Implemented supported-statement profile | Borrow edit checked against whole candidate project, with alias/task/frozen restrictions and formatter preferences; editor-polish tests |
@@ -102,3 +102,5 @@ Checkpoint 2583495 passed the installed C package gates and documentation checks
 
 
 The next checkpoint ran 554 full-suite cases: 552 passed, one cold-download case skipped, and the new documentation range example failed because it omitted its error import. That example was repaired; the 13-case documentation/bundle/package rerun passed, followed by 572 generated-file drift checks, the site build and installed C package gates. Independent Standards review found three documentation omissions, all repaired; Spec review found cold native failures attributed to source resolution, repaired with an installer phase callback and rollback regression. The range API was visually checked at desktop and 390-pixel widths. These results do not qualify cold default-LLVM installation or the installed editor for this unreleased compiler.
+
+The math checkpoint passed eight independent native tests on C and LLVM: 196 integer boundary pairs per operation, 900 decimal comparison pairs, fixed-scale formatting, invalid parsing, exact division/rescaling and intermediate limits. The 18-case documentation/package-compatibility run passed, followed by generated-document drift, the site build and installed C package consumers. Spec review found no concrete defect; Standards review found missing math navigation and a stale root stdlib export spec. Both were repaired in the generator/navigation sources. The API was inspected at desktop and phone widths. These checks do not qualify a clean default-LLVM installation for this unreleased runtime.

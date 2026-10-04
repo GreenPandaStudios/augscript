@@ -294,7 +294,7 @@ Composition arguments. Other callables receive the Arguments capability.
 ArithmeticError implements Error
 ```
 
-Checked failure for division by zero. int arithmetic otherwise wraps in the signed 64-bit range.
+Checked failure for division or remainder by zero and for explicitly checked mathematical operations. Ordinary int arithmetic otherwise wraps in the signed 64-bit range. The unreleased august.math library rejects integer overflow and inexact decimal operations explicitly.
 
 ## around
 

@@ -82,5 +82,8 @@
   },
   "bounded-ranges": {
     "stdout": "1\n2\n3\n"
+  },
+  "checked-math": {
+    "stdout": "0.30\n"
   }
 }

@@ -441,3 +441,28 @@ try:
 catch RangeError error:
     print(value=error.message)
 ```
+
+
+## Checked mathematics (unreleased)
+
+Import `checkedAdd`, `checkedSubtract`, `checkedMultiply`, `checkedDivide`, `checkedNegate`, `checkedAbs`, or `checkedSum` from `august.math` when an integer calculation must stay within int64. These ordinary August functions raise `ArithmeticError` on overflow; division also rejects zero. `checkedSum` visits a list in order and rejects an overflowing intermediate sum. Ordinary operators keep their wrapping behavior.
+
+`Decimal(coefficient=1250, scale=2)` represents exactly 12.50. Its signed int64 coefficient and scale from 0 to 18 are immutable record fields. Use `parseDecimal(text="12.50")` and `formatDecimal(value=amount)` for invariant ASCII text. Parsing accepts an optional minus, integer digits, and an optional dot with fractional digits; it rejects whitespace, plus, exponent notation, non-ASCII digits, text over 64 bytes, and an unrepresentable coefficient with `ConversionError`. Formatting preserves trailing zeroes. Negative zero loses its sign.
+
+`addDecimals` and `subtractDecimals` use the greater operand scale. `multiplyDecimals` adds scales. `divideDecimals` requires the output scale explicitly. `rescaleDecimal` adds or removes fractional zeroes exactly. Each coefficient calculation and intermediate alignment must fit int64; excess scale raises `ConversionError`, while overflow, zero division or a discarded nonzero digit raises `ArithmeticError`. There is no implicit rounding or arbitrary-precision fallback. A mathematically representable result can still fail if an intermediate coefficient exceeds int64.
+
+Use `compareDecimals(left, right)` for numerical ordering: it returns -1, 0, or 1 without aligning integer coefficients. Record equality includes scale, so 1.0 and 1.00 are distinct records but compare numerically equal. These functions do not choose currency, precision or rounding policy for an application.
+
+```aug project=checked-math file=main.aug
+import parseDecimal and addDecimals and formatDecimal from august.math
+
+try:
+    price = parseDecimal(text="0.10")
+    tax = parseDecimal(text="0.20")
+    total = addDecimals(left=price, right=tax)
+    print(value=formatDecimal(value=total))
+catch ArithmeticError error:
+    print(value="The exact calculation exceeds its limits")
+catch ConversionError error:
+    print(value="Invalid decimal input")
+```

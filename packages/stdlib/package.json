@@ -1,7 +1,7 @@
 {
   "name": "@greenpandastudios/aug-stdlib",
   "version": "0.23.0",
-  "description": "August core modules: explicit I/O and bounded integer ranges",
+  "description": "August core modules: explicit I/O, bounded ranges and checked mathematics",
   "license": "MIT",
   "files": [
     "august",

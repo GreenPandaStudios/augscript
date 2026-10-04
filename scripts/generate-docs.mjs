@@ -35,6 +35,12 @@ let checked = checkProject(loadProject(entry,sourceOverrides));
 const errors = checked.diagnostics.filter(issue => issue.severity !== 'warning');
 if (errors.length) throw new Error('Cannot generate API docs from an invalid project: ' + JSON.stringify(errors));
 let project = checked.project;
+// The core root export is a source unit too. Check its adjacent spec with the
+// same core modules, so folder links point to their canonical neighbors.
+const coreFiles=[...project.files.values()].filter(file=>file.builtin);
+const rootExport=join(root,'src/stdlib/export.aug');
+for(const output of generateSpecs(checked,{manifest:false,files:coreFiles}))
+  if(output.source===rootExport)outputs.set(relative(root,output.path),output.text);
 const header = source => source.slice(0, source.indexOf('\n') < 0 ? source.length : source.indexOf('\n')).trim().replace(/[:{]\s*$/, '').trimEnd();
 const signature = node => {
   if (node.kind !== 'function' && node.kind !== 'method') return header(project.files.get(node.span.file).source.slice(node.span.start));
@@ -63,7 +69,7 @@ const link = node => {
   const path = relative(root, node.span.file).split(/[/\\]/).join('/');
   return `[Source](https://github.com/GreenPandaStudios/augscript/blob/main/${path}#L${node.span.line})`;
 };
-for (const module of ['io', 'collections', 'json', 'memory', 'time', 'web', 'crypto']) {
+for (const module of ['io', 'collections', 'math', 'json', 'memory', 'time', 'web', 'crypto']) {
   const folder = join(root, 'src/stdlib', module);
   prepareRunPackages(folder);
   const before = loadProject(folder);
@@ -75,7 +81,7 @@ for (const module of ['io', 'collections', 'json', 'memory', 'time', 'web', 'cry
   for (const output of generateSpecs(checked, { manifest: false,files:owned })) outputs.set(relative(root, output.path), output.text);
   const exports = project.files.get(join(folder, 'export.aug')).items.filter(item => item.kind === 'export' && !item.folder);
   const sections = [generated(`src/stdlib/${module}`) + `# august.${module}\n\n` +
-    (['io','collections'].includes(module) ? (module==='collections'?'**Unreleased:** ':'')+'Supplied with the compiler. Import public names from `august.' + module + '`.' :
+    (['io','collections','math'].includes(module) ? (module!=='io'?'**Unreleased:** ':'')+'Supplied with the compiler. Import public names from `august.' + module + '`.' :
       'Install this source library with `aug add https://github.com/GreenPandaStudios/augscript/src/stdlib/' + module + ' --as ' + module + '`, then import its public names from `' + module + '`.') +
     '\n\nSignatures show result types and checked errors. See [packages](../packages.md) to pin a release and [language constructs](../language-constructs.md) for built-in types.'];
   for (const item of exports) {

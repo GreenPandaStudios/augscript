@@ -83,7 +83,7 @@ export default defineConfig({
         { text: 'Native ABI', link: '/native-abi' },
         { text: 'CLI, configuration, and editor', link: '/tooling' }
       ]},
-      { text: 'Library reference', collapsed: true, items: ['io', 'collections', 'json', 'memory', 'time', 'web', 'crypto'].map(module => ({ text: `august.${module}`, link: `/api/${module}` })) },
+      { text: 'Library reference', collapsed: true, items: ['io', 'collections', 'math', 'json', 'memory', 'time', 'web', 'crypto'].map(module => ({ text: `august.${module}`, link: `/api/${module}` })) },
       { text: 'About August', collapsed: true, items: [
         { text: 'Why August exists', link: '/about' }, { text: 'Example projects', link: '/examples/' },
         { text: 'Performance', link: '/performance' }, { text: 'Production readiness', link: '/production-readiness' },
