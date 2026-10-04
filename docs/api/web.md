@@ -36,6 +36,8 @@ Verify the request's credentials. null means unauthenticated; adapter failures r
 authenticate(HttpRequest request) returns optional Principal unless HttpError
 ```
 
+Uses `Authentication.authenticate`.
+
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/web/contracts.aug#L7)
 
 ## Authorization {#api-Authorization}
@@ -53,6 +55,8 @@ Decide whether a verified identity has one named permission.
 ```text
 authorize(Principal identity, string permission) returns bool unless HttpError
 ```
+
+Uses `Authorization.authorize`.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/web/contracts.aug#L11)
 

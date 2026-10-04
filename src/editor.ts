@@ -20,6 +20,7 @@ import { importSource, isGitSource, sourceAlias } from './git-packages.ts';
 import { snippetBody, snippetCatalog } from './snippets.ts';
 import {nativeFact,nativeDependencies,nativeDescription} from './native-facts.ts';
 import {pathToFileURL} from 'node:url';
+import {schemaType} from './schemas.ts';
 import {immutableType} from './types.ts';
 
 export interface EditorItem {
@@ -141,8 +142,8 @@ function interceptorDescription(checked: CheckedProject, node: MethodDecl | Clas
   const layerText=layers.length ? `Interceptor chain: ${layers.map(layer => `\`${layer.annotation.name}\``).join(' → ')}. ` +
     'Calls enter in that order; results unwind in reverse.\n\n' + layers.map((layer, index) => {
       const fields = layer.definition.node.kind === 'interceptor' ? layer.definition.node.fields : [];
-      const dependencies = [...new Set([...fields, ...layer.around.params].filter(param => param.injected).map(param => typeName(param.type)))];
-      const effects = checked.effectContracts.get(layer.around);
+      const dependencies = [...new Set([...fields, ...layer.around.params].filter(param => param.injected).map(param => tyName(schemaType(checked.project,param.type,layer.definition.file,layer.types))))];
+      const effects = layer.effects;
       const uses = [...(effects?.uses.values() ?? [])].map(use => `${use.source}.${use.operation}`);
       const behavior = interceptorBehavior(layer.around.body ?? []);
       return `Layer ${index + 1} ${layer.definition.name}: dependencies ${dependencies.join(', ') || 'none'}; ` +

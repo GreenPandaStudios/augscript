@@ -29,8 +29,8 @@ const compare = (left:string, right:string) => left < right ? -1 : left > right 
 const unreachable = (node: never): never => { throw new Error(`No specification renderer for ${(node as {kind?:string}).kind}`); };
 const plain = (text:string) => text.replace(/\[([^\]]+)\]\([^)]*\)/g,'$1').replaceAll('`','');
 
-export interface SpecOutput { path: string; text: string; source: string; kind?: 'source-hint'|'native-descriptor' }
-export interface SpecOptions { files?: SourceFile[]; manifest?: boolean }
+export interface SpecOutput { path: string; text: string; source: string; kind?: 'source-hint'|'native-descriptor'; declarations?: {id:string;tree:SpecNode}[] }
+export interface SpecOptions { files?: SourceFile[]; manifest?: boolean; declarations?:boolean }
 
 /** Plan prose, managed source pointers, and versioned dependency copies without writes or execution. */
 export function generateSpecs(checked: CheckedProject, options: SpecOptions = {}): SpecOutput[] {
@@ -62,13 +62,15 @@ export function generateSpecs(checked: CheckedProject, options: SpecOptions = {}
       const dependency = project.files.get(path);
       if (dependency && !seen.has(path)) queue.push(dependency);
     });
-    outputs.push({path:docs.get(file.path)!, text:writer.render(), source:file.path});
+    const text=writer.render();
+    outputs.push({path:docs.get(file.path)!,text,source:file.path,...(options.declarations?{declarations:[...writer.declarationTrees].map(([id,tree])=>({id,tree}))}:{})});
     if (!own.has(file.path)) outputs.push({path:sources.get(file.path)!, text:copied + file.source, source:file.path});
   }
   return outputs.sort((a,b) => compare(a.path,b.path));
 }
 
 class SpecWriter {
+  readonly declarationTrees=new Map<string,SpecNode>();
   private checked: CheckedProject;
   private file: SourceFile;
   private docs: Map<string,string>;
@@ -860,7 +862,7 @@ class SpecWriter {
     if(exports.length)children.push(section('Exports',2,exports.map(item=>paragraph(this.exportLine(item as Extract<TopLevel,{kind:'export'}>)))));
     if(providers.length)children.push(section('Providers',2,providers.map(item=>paragraph(this.providerLine(item as BindDecl|Extract<TopLevel,{kind:'include'}>)))));
     if(startup.length)children.push(section('Startup',2,[flow(startup.flatMap(item=>this.statement(item as Stmt)),this.evidence)]));
-    children.push(...declarations.sort((a,b)=>Number('name' in a&&a.name.startsWith('_'))-Number('name' in b&&b.name.startsWith('_'))).map(item=>this.declaration(item)));
+    children.push(...declarations.sort((a,b)=>Number('name' in a&&a.name.startsWith('_'))-Number('name' in b&&b.name.startsWith('_'))).map(item=>{const tree=this.declaration(item),def='name' in item?this.definition(item.name):undefined;if(def)this.declarationTrees.set(def.id,tree);return tree;}));
     children.push(...this.file.items.filter(item=>item.kind==='test').map(item=>this.declaration(item)));
     if(!children.length)children.push(paragraph('This file declares no operations.'));
     // Links may add inherited operation owners. Walk until the surface is closed.

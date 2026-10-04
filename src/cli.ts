@@ -157,9 +157,16 @@ export async function main(argv: string[]): Promise<number> {
       if(args.includes('--json'))process.stdout.write(JSON.stringify(report)+'\n');
       else {
         process.stdout.write(`Public contracts: ${report.before} -> ${report.after}\n`);
-        for(const change of report.changes)process.stdout.write(`${change.name}:\n${JSON.stringify({before:change.before,after:change.after},null,2)}\n`);
+        for(const change of report.changes){
+          process.stdout.write(change.name+':\n');
+          const value=(item:unknown)=>{const text=JSON.stringify(item);return text.length<=160?text:text.slice(0,160)+'…';};
+          for(const difference of change.differences.slice(0,12))process.stdout.write('  '+difference.path+': '+value(difference.before)+' -> '+value(difference.after)+'\n');
+          if(change.differences.length>12)process.stdout.write('  '+(change.differences.length-12)+' further contract changes; use --json for the complete review.\n');
+        }
         if(JSON.stringify(report.native.before)!==JSON.stringify(report.native.after))process.stdout.write('Native requirements changed; inspect --json for the complete target and artifact delta.\n');
         if(!report.changes.length)process.stdout.write('No public declaration changes.\n');
+        for(const change of report.specChanges)process.stdout.write('Explanation: '+change.name+'\nBefore:\n'+(change.before??'(not exported)\n')+'After:\n'+(change.after??'(not exported)\n'));
+        process.stdout.write('Both revisions check. Independent behavioral checks were not run.\n');
       }
       return 0;
     }catch(error){process.stderr.write(failureMessage(error)+'\n');return 1;}

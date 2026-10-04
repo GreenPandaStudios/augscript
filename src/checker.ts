@@ -101,6 +101,8 @@ export interface InterceptorLayer {
   types: Map<string, Ty>;
   inputTypes: Ty[];
   outputType: Ty;
+  /** Resolved for this application, rather than the shared around declaration. */
+  effects?: EffectContract;
   errors: Ty[];
   constructorInputIndices: number[];
   argumentInjectionIndices: (number | undefined)[];
@@ -308,6 +310,23 @@ class Checker {
       for (const [index, layer] of layers.entries()) layer.constructorResultFresh =
         layers.slice(index + 1).every(inner => this.layerReturnsFresh(inner));
     }
+    // Call checking specializes these caches. Public facts need declaration
+    // parameters and each interceptor application needs its own bound contract.
+    const declarationEffects = new Map<MethodDecl, EffectContract>();
+    this.inferring = true; // These already-checked names must not duplicate diagnostics.
+    for (const def of this.project.definitions.values()) {
+      const methods = def.node.kind === 'function' ? [def.node] : 'methods' in def.node ? def.node.methods : [];
+      const ownerTypes = this.paramsFor(def.node.typeParams, def.node, def.file);
+      for (const method of methods) {
+        const types = new Map([...ownerTypes, ...this.paramsFor(method.typeParams, method, def.file)]);
+        declarationEffects.set(method, this.effectiveContract(method, def.file, def, types));
+      }
+    }
+    for (const layers of this.interceptorPlans.values()) for (const layer of layers)
+      layer.effects = this.contractFor(layer.around, layer.definition.file, layer.definition, layer.types);
+    this.inferring = false;
+    this.effectContracts.clear();
+    for (const [method, contract] of declarationEffects) this.effectContracts.set(method, contract);
     return { project: this.project, diagnostics: this.diagnostics, bindings: this.bindings,
       expressionTypes: this.expressionTypes, resolvedNames:this.resolvedNames, resolvedCalls:this.resolvedCalls, resolvedTypes:this.resolvedTypes, defaults: this.defaults, interfaceMembers:this.interfaceMembers, callPlans: this.callPlans,
       interceptorPlans: this.interceptorPlans, effectContracts: this.effectContracts, callableContracts: this.callableContracts, constructorContracts: this.constructorContracts,

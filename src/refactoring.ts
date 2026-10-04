@@ -6,6 +6,7 @@ import {checkUnitTests,discoverTests,mergeTestAnalysis,uniqueDiagnostics} from '
 import {semanticGraph,occurrencesAt,semanticSourcePath,type SemanticGraph} from './symbols.ts';
 import {reservedKeywords} from './lexer.ts';
 import {contractFacts} from './contract-facts.ts';
+import {publicContract} from './public-contracts.ts';
 
 export interface CheckedSourceEdit {file:string; start:number; end:number; text:string}
 export interface InterfaceDelta {id:string; before:string|null; after:string|null}
@@ -19,13 +20,9 @@ export function checkedProjectWithTests(root:string,overrides:Map<string,string>
   mergeTestAnalysis(checked,tests);return checked;
 }
 function publicShapes(checked:CheckedProject) {
-  const normalize=(value:unknown):unknown=>{
-    if(Array.isArray(value))return value.map(normalize);
-    if(!value||typeof value!=='object')return value;
-    return Object.fromEntries(Object.entries(value).filter(([key])=>!['location','documentation','calls','tests'].includes(key)).map(([key,child])=>[key,normalize(child)]));
-  };
-  return new Map(contractFacts(checked).filter(fact=>fact.public).map(fact=>[fact.id,
-    createHash('sha256').update(JSON.stringify(normalize(fact))).digest('hex')]));
+  const facts=contractFacts(checked),all=new Map(facts.map(fact=>[fact.id,fact]));
+  return new Map(facts.filter(fact=>fact.public).map(fact=>[fact.id,
+    createHash('sha256').update(JSON.stringify(publicContract(checked,fact,all))).digest('hex')]));
 }
 export function interfaceDelta(before:CheckedProject,after:CheckedProject):InterfaceDelta[] {
   const left=publicShapes(before),right=publicShapes(after);

@@ -12,7 +12,7 @@ Install `aug` once as shown in [Your first project](getting-started.md). Command
 | `libraries [QUERY] [--json]` | **Unreleased:** search curated task/import/platform/ownership/license/test metadata offline. |
 | `dependencies PROJECT [--json]` | **Unreleased:** explain verified installed source and locked native dependencies without downloads. |
 | `package check DIRECTORY [--json]` | **Unreleased:** static package publishing readiness; behavioral tests remain explicit. |
-| `package diff BEFORE AFTER [--json]` | **Unreleased:** compare checked exported interfaces of local revisions. |
+| `package diff BEFORE AFTER [--json]` | **Unreleased:** compare resolved public contracts, changed spec prose and native metadata of local revisions. |
 | `check PROJECT [--json]` | Production, tests, module policy, documentation, and configuration diagnostics. |
 | `bundle PROJECT --out DIRECTORY [--offline] [--frozen] [--json]` | **Unreleased:** release executable, runtime libraries, notices and verification manifest. |
 | `bundle verify DIRECTORY [--json]` | **Unreleased:** verify bundle files without executing the application. |
@@ -226,6 +226,8 @@ One server runs per project. Parsed modules and checked import closures are cach
 Compiler and extension development dependencies use exact versions and lockfiles. LLVM source maps record the compiler/runtime identities, target, source revision, native artifacts, executable, and debug files. Source packages use public repository URLs, local folders, or npm archives, with revisions and integrity in `aug.lock.json`; [the package guide](packages.md) covers creation, installation, public imports and frozen builds.
 
 ## Inferred contract hints
+
+**Unreleased:** generic interceptor chains show each application’s resolved dependencies and effects. A second use with different types does not replace the first application’s contract.
 
 VS Code shows inferred results, mutations, capability operations, and escaping checked errors beside executable headers. Long capability/error lists collapse to counts; their tooltip shows the full contract. These hints use the checked project, including unsaved edits and imported declarations. They are display text; formatting and saving do not add them to source. Hover, signature help, `aug explain`, and compiled specs share the same contracts. Bodyless interfaces and foreign declarations keep explicit contracts.
 

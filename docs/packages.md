@@ -144,10 +144,19 @@ Verified LLVM packs and native artifacts use `~/.cache/augscript/native-artifact
 
 Before publishing a source library, run `aug package check DIRECTORY`. It checks production declarations and same-file tests, narrow exports, Javadoc, compiler requirements and a license file. For a native library it also validates descriptor metadata, declared targets and third-party notices. Add `--json` for CI. A passing report is static readiness: run `aug test` for behavioral evidence and qualify native artifacts and cleanup on each target before publishing. August does not choose your package's license.
 
-Use `aug package diff BEFORE AFTER` to compare two local package revisions that already have their dependencies installed. The report follows each `export.aug` boundary and includes labels, result types, defaults, checked errors, effects, ownership and native requirements. Private implementation-only changes are omitted. `--json` retains both sides of each changed contract. This command does not fetch releases or decide whether a public change is acceptable to consumers.
+Use `aug package diff BEFORE AFTER` to compare two local package revisions that already have their dependencies installed. The report follows each `export.aug` boundary and includes labels, result types, defaults, checked errors, effects, ownership and native requirements. The contract comparison omits private storage and bodies. Changed explanations are reported separately and can describe those implementation details within an exported declaration. `--json` retains both sides of each changed contract. This command does not fetch releases or decide whether a public change is acceptable to consumers.
 
 ## Find a package by task (unreleased)
 
 Use `aug libraries sql`, `aug libraries compression` or `aug libraries crypto` to search the curated [library catalog](library-catalog.md). Each result includes its import, installation command, platform requirements, license notes, ownership and test links. Add `--json` for native artifact metadata and exact source identities. Search works offline and changes no project or cache.
 
 The catalog is a list of known packages. You can import any public repository that satisfies August’s package conventions. `aug add` still resolves the repository and records its selected commit; native installation still verifies its descriptor, artifact checksums and supported host.
+
+
+## Review a package change (unreleased)
+
+Run `aug package diff BEFORE AFTER` with two local package folders. Both revisions must check, including same-file test bodies. The report follows `export.aug`, expands inherited methods and compares labeled inputs, defaults, results, checked errors, capabilities, mutation, ownership, generic constraints and native requirements. It retains resolved type and capability identities, so two repositories exporting a type named `User` remain different types. Private storage names, source positions and the package’s own version number do not create contract changes by themselves.
+
+Changed explanations appear beside the contract differences. They come from the same deterministic spec trees as `aug spec`; the report does not write generated files. It compares explanations of exported declarations, so an unexported standalone helper body is not shown merely because it changed. An exported class’s explanation includes its private fields and method bodies; edits there can change the explanation without changing its public contract. An unchanged explanation is not proof that behavior is unchanged. Use `--json` for complete contracts, exact value differences, source locations, source/configuration/dependency revisions and the native metadata from both manifests. The text view limits long contract values and points to JSON when more changes remain.
+
+The compiler checks these revisions; it does not run their tests. Run independent behavioral checks before accepting the package update. See [testing](testing.md) for test selection and [package compatibility](package-compatibility.md) for version requirements.

@@ -98,3 +98,8 @@ The spec explains the implemented program. Compare that explanation with your re
 ASD-STE100 guides the wording. The output is best effort Simplified Technical English, without a claim of formal compliance. Native C boundaries are explained through their declared contracts and author documentation; the compiler does not infer a foreign implementation's internals. Shared numeric, ownership, and task rules link to the language reference.
 
 The writer refuses to replace a handwritten neighboring `.aug.md` file. Rename that file before generation. Files marked as generated belong to the compiler; edit their August source or Javadoc and regenerate.
+
+
+## Review an exported explanation (unreleased)
+
+`aug package diff BEFORE AFTER` compares two checked local package revisions. It shows changes to their exported contracts and to the corresponding spec paragraphs without generating files. Source positions and interface disclosures are kept separate from the prose comparison. JSON includes source locations and revision identities; behavioral acceptance still requires independent tests. See [package reviews](packages.md#review-a-package-change-unreleased).

@@ -47,7 +47,7 @@ export function contractFacts(checked: CheckedProject): ContractFact[] {
       errors: constructor ? [...new Set([...(checked.constructorContracts.get(constructor)?.errors.map(tyName) ?? constructor.validationErrors?.map(typeName) ?? []),
         ...layers.flatMap(layer => layer.errors.map(tyName))])].sort() : callableErrors(checked, method),
       interceptors: layers.map((layer, order) => {
-        const effects = checked.effectContracts.get(layer.around);
+        const effects = layer.effects;
         return { name: layer.definition.name, order: order + 1, location: layer.definition.node.span,
           dependencies: [...new Set([...(layer.definition.node.kind === 'interceptor' ? layer.definition.node.fields : []), ...layer.around.params].filter(param => param.injected).map(param => typeName(param.type)))],
           changes: [...(effects?.changes ?? layer.around.changes ?? [])],
