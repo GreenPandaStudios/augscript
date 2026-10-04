@@ -22,7 +22,7 @@ export interface SemanticGraph {
 }
 
 let compilerSha256:string|undefined;
-function compilerIdentity() {
+export function compilerIdentity() {
   if(!compilerSha256) {
     const folder=fileURLToPath(new URL('.',import.meta.url)),hash=createHash('sha256');
     for(const entry of readdirSync(folder,{withFileTypes:true}).filter(entry=>entry.isFile()&&/\.(ts|js|mjs)$/.test(entry.name)).sort((a,b)=>compare(a.name,b.name)))

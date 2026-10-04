@@ -118,6 +118,16 @@ try {
   assert.ok(inputRows.rows.some(row=>row.inputs.left==='9223372036854775807'));
   const libraryTests = JSON.parse(aug('test', library, '--json'));
   assert.equal(libraryTests.passed, 1);
+  assert.equal(libraryTests.tests[0].compilation.cache,'disabled');
+  assert.equal(JSON.parse(aug('test',library,'--rebuild','--json')).passed,1);
+  assert.match(readFileSync(join(cliRoot,'src/test-compilation-cache.js'),'utf8'),/reuseTestCompilation/);
+  if(process.env.AUG_LLVM_HOME&&process.env.AUG_RUNTIME_PACK){
+    const cachedTests=(...options)=>JSON.parse(run(process.execPath,[cli,'test',library,'--backend','llvm','--json',...options],
+      {env:{...process.env,AUG_COMPILATION_CACHE:join(directory,'compilation-cache')}}));
+    const first=cachedTests(),second=cachedTests(),refresh=cachedTests('--rebuild');
+    assert.equal(first.passed,1);assert.equal(second.passed,1);assert.equal(refresh.passed,1);
+    assert.equal(first.tests[0].compilation.cache,'miss');assert.equal(second.tests[0].compilation.cache,'hit');assert.equal(refresh.tests[0].compilation.cache,'refresh');
+  }
   const caseIds=JSON.parse(aug('test',library,'--list','--json')).map(item=>item.id);
   assert.deepEqual(caseIds,['src/arithmetic.aug:add:addition:adds_two_integers']);
   writeFileSync(join(library,'requirements.json'),JSON.stringify({format:1,requirements:[{id:'sum',description:'Two plus three equals five.',tests:caseIds}]}));

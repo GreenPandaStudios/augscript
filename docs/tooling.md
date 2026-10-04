@@ -30,7 +30,7 @@ Install `aug` once as shown in [Your first project](getting-started.md). Command
 | `spec PROJECT [--check] [--json]` | Adjacent prose specs with expandable checked interfaces, paragraph source links and offline dependencies; --check detects drift without writing. |
 | `test PROJECT --suggest-inputs FUNCTION --file FILE [--cases JSON_FILE] [--combinations] [--limit N] [--json]` | **Unreleased:** propose bounded, compiler-checked scalar input rows; assertions remain author decisions. See [test inputs](testing.md#suggest-boundary-inputs). |
 | `verify PROJECT --requirements FILE [--backend c\|llvm] [--timeout MS] [--offline] [--frozen] [--json]` | **Unreleased:** check current code/context and record concrete author-selected acceptance cases. See [requirements and results](testing.md#review-requirements-with-test-results). |
-| `test PROJECT [--coverage] [--json]` | Isolated native tests and optional statement-line report. |
+| `test PROJECT [--coverage] [--json]` | Isolated native tests and optional statement-line report; the unreleased core-runtime cache reuses compilation. Add `--rebuild` to compile selected cases again. |
 | `bench PROJECT [--iterations N] [--warmup N] [--timeout MS] [--json] -- args...` | Release build with timed native executions. |
 | `explain PROJECT --file PATH [--name NAME]` | Checked contracts, dependencies, layers, origins, tests, and module surface. |
 | `context PROJECT --file PATH [--name NAME] [--budget N] [--require-complete]` | Bounded JSON context, including related declarations and source snippets. |
@@ -56,7 +56,7 @@ Set `AUG_NATIVE_ARTIFACT_CACHE` to a writable directory when the default cache i
 
 August 0.23.0 uses LLVM by default on macOS 14+ ARM64 and GNU/Linux x64/ARM64 with glibc 2.36+. `aug run` prepares source packages and the verified compiler/runtime pack, then builds and starts the application. `build`, `test`, and `bench` use the same backend; install source packages before running them in a fresh project. Consumers do not install Clang, LLVM, or an SDK.
 
-The first LLVM run downloads the host's tools and prebuilt runtime components. JSON, tasks, crypto, and HTTP select components from that pack. A native package can add its own platform archives. Each download has a SHA-256 pin and size bound; later projects share verified cache entries. Installation never runs package build scripts or silently falls back to a source build. Missing artifacts and unsupported platforms include the failed requirement and a recovery step.
+The first LLVM run downloads the host's tools and prebuilt runtime components. JSON, tasks, crypto, and HTTP select components from that pack. A native package can add its own platform archives. Each download has a SHA-256 pin and size bound; later projects share verified cache entries. The unreleased compiler also pins its complete extracted tool-pack file manifest, so a regenerated local manifest cannot authorize changed compiler members. Installation never runs package build scripts or silently falls back to a source build. Missing artifacts and unsupported platforms include the failed requirement and a recovery step.
 
 For an offline run, prepare the project once with network access, then use:
 

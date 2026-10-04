@@ -98,7 +98,7 @@ function usage(): void {
     `Run: aug run [project directory] [--offline] [--progress] [-- args] — prepare dependencies, compile, and start\n` +
     `Deployment: aug bundle PROJECT --out DIRECTORY [--offline] [--frozen]; aug bundle verify DIRECTORY [--json]\n` +
     `Backend: LLVM is the default on macOS 14+ ARM64 and GNU/Linux x64/ARM64 with glibc 2.36+. August installs its compiler pack; no separate native toolchain is needed. --backend c selects the migration reference.\n` +
-    `Tests: aug test [project directory] [GROUP_NAME] [--group GROUP_NAME] [--list] [--coverage] [--json] [--timeout milliseconds]\n` +
+    `Tests: aug test [project directory] [GROUP_NAME] [--group GROUP_NAME] [--list] [--coverage] [--rebuild] [--json] [--timeout milliseconds]\n` +
     `Acceptance: aug verify [PROJECT] --requirements FILE [--backend c|llvm] [--timeout MS] [--offline] [--frozen] [--json] — check source and run author-selected cases\n` +
     `Test inputs: aug test [PROJECT] --suggest-inputs FUNCTION --file FILE [--cases JSON_FILE] [--combinations] [--limit N] [--json] — propose checked inputs; author supplies assertions\n` +
     `Format: aug format [project directory] [--file path] [--write]\n` +
@@ -459,7 +459,7 @@ export async function main(argv: string[]): Promise<number> {
   const programArgs = separator >= 0 ? argv.slice(separator + 1) : [];
   if (options.includes('--help')) { usage(); return 0; }
   const valueOptions = new Set(['--expected-revision','--backend','--out', '--stdin-file', '--file', '--name', '--offset', '--budget', '--baseline', '--group', '--case', '--timeout', '--iterations', '--warmup']);
-  const booleanOptions = new Set(['--json', '--coverage', '--list', '--write', '--check', '--offline', '--frozen', '--require-complete', '--progress']);
+  const booleanOptions = new Set(['--json', '--coverage', '--list', '--write', '--check', '--offline', '--frozen', '--require-complete', '--progress','--rebuild']);
   for (let index = 0; index < options.length; index++) {
     const option = options[index];
     if (valueOptions.has(option)) {
@@ -470,6 +470,9 @@ export async function main(argv: string[]): Promise<number> {
     }
   }
   if(options.includes('--require-complete')&&command!=='context')throw new Error('--require-complete is only valid for aug context');
+  if(options.includes('--rebuild')&&(command!=='test'||options.filter(arg=>arg==='--rebuild').length!==1)) {
+    process.stderr.write('--rebuild is valid once for aug test.\n');return 2;
+  }
   const json = options.includes('--json');
   const backendIndex=options.indexOf('--backend');let backend=backendIndex<0?'llvm':options[backendIndex+1];
   if(!['c','llvm'].includes(backend)){process.stderr.write('--backend must be c or llvm\n');return 2;}
@@ -588,7 +591,7 @@ export async function main(argv: string[]): Promise<number> {
       const toolchain=backend==='llvm'?await prepareLLVMCompiler(options.includes('--offline'),{root,frozen:options.includes('--frozen')}):undefined;
       for (const [index, { unit, checked: testChecked }] of checks.entries()) {
         let native;
-        if(backend==='llvm')native=compileLLVM(testChecked,{testIndex:index,coverage,native:nativeInputs,toolchain});
+        if(backend==='llvm')native=compileLLVM(testChecked,{testIndex:index,coverage,native:nativeInputs,toolchain,rebuild:options.includes('--rebuild')});
         else{const generated = generateC(testChecked, { coverage });
           await prepareNativeDependencies(generated, { offline: options.includes('--offline') });
           native = compileNative(root, generated, { testIndex: index, checked: testChecked });}
@@ -598,6 +601,7 @@ export async function main(argv: string[]): Promise<number> {
           killSignal: 'SIGKILL', env: { ...process.env, AUG_COVERAGE_FILE: coverage ? report : '' } }) : undefined;
         const result = { id: unit.id, group: unit.group.name, name: unit.test.name,
           passed: native.status === 0 && run?.status === 0,
+          compilation:'compilation' in native?native.compilation:{cache:'disabled',reason:'The C reference backend compiles every case'},
           stdout: run?.stdout ?? '', stderr: native.error || (run?.error && 'code' in run.error && run.error.code === 'ETIMEDOUT' ?
             `Test exceeded ${timeout}ms\n${run.stderr ?? ''}` : run?.error?.message || run?.stderr || '') };
         results.push(result);

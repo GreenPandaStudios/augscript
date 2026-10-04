@@ -111,3 +111,14 @@ test('frozen restore accepts equivalent duplicate native selections from legacy 
     assert.equal(readFileSync(lockPath,'utf8'),conflicting);
   }finally{globalThis.fetch=originalFetch;if(previousCache===undefined)delete process.env.AUG_NATIVE_ARTIFACT_CACHE;else process.env.AUG_NATIVE_ARTIFACT_CACHE=previousCache;rmSync(root,{recursive:true,force:true});}
 });
+
+
+test('a compiler-owned member-manifest pin rejects a regenerated self-manifest after offline restoration',()=>fixture(async f=>{
+  const directory=await ensureVerifiedArchive(f.metadata,{cache:f.cache});
+  const pinned={...f.metadata,fileManifestSha256:hash(readFileSync(join(directory,'files.json')))};
+  assert.equal(await ensureVerifiedArchive(pinned,{cache:f.cache,offline:true}),directory);
+  writeFileSync(join(directory,'library.dylib'),'different bytes');
+  writeFileSync(join(directory,'files.json'),JSON.stringify({format:1,files:{'library.dylib':hash(Buffer.from('different bytes'))}}));
+  await assert.rejects(ensureVerifiedArchive(pinned,{cache:f.cache,offline:true}),/file manifest differs from its compiler-owned identity/);
+  assert.equal(f.requests(),1,'Rejected offline cache bytes must not be fetched or accepted again');
+}));

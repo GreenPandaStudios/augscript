@@ -240,8 +240,19 @@ Use `npx @greenpandastudios/aug-cli@next` in place of `aug` below, or use an ins
 | `aug test PROJECT --expected-revision SHA256` | **Unreleased:** reject a different loaded source/configuration before native execution. |
 | `aug test PROJECT --timeout 2000` | Limit each native execution to 2 seconds. |
 | `aug test PROJECT --coverage` | Merge executed statement lines across selected cases. |
+| `aug test PROJECT --rebuild` | **Unreleased:** compile selected cases again, bypassing compilation reuse. |
 
 Selection is exact and case sensitive. Quote names containing spaces. Unknown selections fail. The default timeout is ten seconds per native case; compilation is outside that timeout.
+
+### Reuse test compilation
+
+**Unreleased:** LLVM tests that use the core runtime can reuse unchanged compiled programs. Each case still starts a new native process, runs its setup and assertions, and gets its own managed heap. A cached program never supplies a previous test result. Tests that use task, JSON, HTTP or other runtime components, or native calls and package artifacts, currently compile on each invocation. The C reference backend also compiles every case. Reuse requires a verified compiler tool pack; custom contributor tools and scripts compile normally. Qualified LLVM tools use a fixed compilation environment. Native test processes retain their ordinary environment.
+
+Use `aug test --case ID` to run a selected case, or `aug test --rebuild` to compile the selected cases again. JSON case results include `compilation.cache`: `hit`, `miss`, `refresh` or `disabled`. A disabled cache does not skip the test. Damaged entries are recompiled.
+
+Source, dependency, configuration, compiler, runtime, platform and build-mode changes invalidate reuse. Coverage uses a distinct compilation and is collected afresh on every run. Changes to source positions and test selection can also require recompilation. This is reuse of complete test programs; application builds and individual modules are not cached by this feature.
+
+The default cache is `~/.cache/augscript/compilation-v1`. To relocate it, set `AUG_COMPILATION_CACHE` to a directory you own outside the project. Keep it private and out of source control: it contains executable compiler output. Project-local binaries do not supply trusted cache entries. Unavailable or unsafe cache directories fall back to ordinary compilation. Stop active tests before deleting the directory to reclaim space.
 
 Test LLVM IR and binaries live under `.aug-build/tests/`. Coverage writes `.aug-build/coverage/coverage.json` and `lcov.info`, retaining zero-count executable lines in the compiled test closure. It reports statement lines, not branch coverage. Production startup is omitted, so the result is not whole-application startup coverage. Filtering reports only selected tests and their reachable declarations.
 
@@ -253,6 +264,6 @@ Test Explorer groups cases by project, declaration, and when group. Parameterize
 
 Choose **Native tests** to run or **Native coverage** to see merged statement-line coverage when the installed VS Code supports its coverage API. **AugScript: Test Project** runs the project CLI in a task terminal.
 
-Use `try`/`always` for cleanup. Snapshots and nested groups are unsupported. Each selected case compiles a separate native binary.
+Use `try`/`always` for cleanup. Snapshots and nested groups are unsupported. Each selected case runs a separate native binary. The unreleased core-runtime compilation cache can reuse that binary while every execution remains isolated.
 
 The unreleased `aug graph --composition --case TEST_ID --json` checks and describes a selected case’s providers without executing it. Use an id from `aug test --list --json`. The [service wiring guide](guides/reuse-services.md) compares application and test compositions; application startup and test execution remain separate checks.

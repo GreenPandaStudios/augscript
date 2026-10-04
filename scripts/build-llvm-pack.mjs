@@ -45,7 +45,7 @@ writeFileSync(join(directory,'compiler-pack.json'),JSON.stringify({format:1,comp
 const files={};let unpacked=0;const walk=(folder,prefix='')=>{for(const entry of readdirSync(folder,{withFileTypes:true})){const path=prefix+entry.name;if(entry.isDirectory())walk(join(folder,entry.name),path+'/');else{files[path]=sha(join(folder,entry.name));unpacked+=readFileSync(join(folder,entry.name)).length;}}};walk(directory);
 writeFileSync(join(directory,'files.json'),JSON.stringify({format:1,files},null,2)+'\n');unpacked+=readFileSync(join(directory,'files.json')).length;
 createArchive({file:output,cwd:directory,gzip:true,sync:true,portable:true},readdirSync(directory).sort());
-const archive={url:`https://github.com/GreenPandaStudios/augscript/releases/download/v${version}/${filename}`,sha256:sha(output),maximumDownloadBytes:readFileSync(output).length,maximumUnpackedBytes:unpacked,fileManifest:'files.json'};
+const archive={url:`https://github.com/GreenPandaStudios/augscript/releases/download/v${version}/${filename}`,sha256:sha(output),maximumDownloadBytes:readFileSync(output).length,maximumUnpackedBytes:unpacked,fileManifest:'files.json',fileManifestSha256:sha(join(directory,'files.json'))};
 const pack={host:platform.host,target:platform.target,minimumOS:platform.minimumOS,minimumLibc:platform.minimumLibc,archive};
 const file=join(root,'native/compiler-packs.json'),previous=existsSync(file)?JSON.parse(readFileSync(file)):{packs:[]};
 const merged={format:1,compiler:version,llvm:inputs.llvm,packs:[...(previous.compiler===version?previous.packs.filter(entry=>entry.host!==platform.host):[]),pack].sort((a,b)=>a.host.localeCompare(b.host))};

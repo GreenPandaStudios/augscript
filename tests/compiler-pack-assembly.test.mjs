@@ -4,6 +4,7 @@ import {createHash} from 'node:crypto';
 import {existsSync,mkdirSync,mkdtempSync,readFileSync,rmSync,writeFileSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
+import {c as createArchive} from 'tar';
 import {mergeCompilerPacks,releaseHosts} from '../scripts/merge-compiler-packs.mjs';
 
 function fixture(t){
@@ -45,5 +46,25 @@ test('missing, stale, duplicated or modified platform inputs cannot replace acce
     assert.throws(()=>mergeCompilerPacks(input,root),undefined,failure);
     assert.equal(readFileSync(join(root,'native/compiler-packs.json'),'utf8'),'accepted pins');
     assert.ok(!existsSync(join(root,'.aug-build')),'Rejected input must not copy archives');
+  }
+});
+
+
+test('release assembly checks declared complete member identities against each actual archive',t=>{
+  for(const failure of [false,true]){
+    const {root,input}=fixture(t);
+    for(const host of releaseHosts){
+      const directory=join(input,host),file=join(directory,'compiler-pack-'+host+'.json'),manifest=JSON.parse(readFileSync(file,'utf8'));
+      const contents=Buffer.from(JSON.stringify({format:1,files:{}}));writeFileSync(join(directory,'files.json'),contents);
+      const archiveFile=join(directory,new URL(manifest.packs[0].archive.url).pathname.split('/').at(-1));
+      createArchive({file:archiveFile,cwd:directory,gzip:true,sync:true},['files.json']);const bytes=readFileSync(archiveFile);
+      Object.assign(manifest.packs[0].archive,{sha256:createHash('sha256').update(bytes).digest('hex'),maximumDownloadBytes:bytes.length,fileManifestSha256:failure&&host==='linux-arm64'?'f'.repeat(64):createHash('sha256').update(contents).digest('hex')});
+      writeFileSync(file,JSON.stringify(manifest));
+    }
+    if(failure){
+      mkdirSync(join(root,'native'));writeFileSync(join(root,'native/compiler-packs.json'),'accepted pins');
+      assert.throws(()=>mergeCompilerPacks(input,root),/member-manifest digest/);
+      assert.equal(readFileSync(join(root,'native/compiler-packs.json'),'utf8'),'accepted pins');assert.equal(existsSync(join(root,'.aug-build')),false);
+    }else{const merged=mergeCompilerPacks(input,root);assert.ok(merged.packs.every(pack=>pack.archive.fileManifestSha256));}
   }
 });

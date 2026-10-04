@@ -10,7 +10,7 @@ import {compilerVersion,readPackage,readPackageLock,sourcePaths,projectPackages,
 import {sourceAlias} from './git-packages.ts';
 import type {NativeLinkInput} from './llvm-native.ts';
 
-export interface VerifiedArchive {url:string;sha256:string;maximumDownloadBytes:number;maximumUnpackedBytes:number;fileManifest:string}
+export interface VerifiedArchive {url:string;sha256:string;maximumDownloadBytes:number;maximumUnpackedBytes:number;fileManifest:string;fileManifestSha256?:string}
 export interface NativePackageLock {sourcePackage:string;sourceDigest:string;sourceCommit?:string;contractSha256:string;artifact:NativeArtifact}
 export interface LLVMCompilerLock {version:string;llvm:string;host:string;target:string;artifactSha256:string;runtimeSha256:string}
 export interface NativeLock {format:1;compilers?:Record<string,LLVMCompilerLock>;targets:Record<string,{target:NativeTarget;packages:NativePackageLock[]}>}
@@ -23,7 +23,10 @@ const files=(directory:string,prefix=''):string[]=>readdirSync(join(directory,pr
 
 /** Verify the complete extracted file set. Hashes never authorize arbitrary install scripts. */
 export function verifyArtifactFiles(directory:string,archive:VerifiedArchive):Record<string,string> {
-  const path=nativePath(archive.fileManifest),manifest=JSON.parse(readFileSync(join(directory,path),'utf8'));
+  const path=nativePath(archive.fileManifest),manifestBytes=readFileSync(join(directory,path));
+  if(archive.fileManifestSha256!==undefined&&(!/^[0-9a-f]{64}$/.test(archive.fileManifestSha256)||sha(manifestBytes)!==archive.fileManifestSha256))
+    throw new Error('NATIVE_INTEGRITY: Artifact file manifest differs from its compiler-owned identity');
+  const manifest=JSON.parse(manifestBytes.toString('utf8'));
   if(manifest.format!==1||!manifest.files||Array.isArray(manifest.files)||typeof manifest.files!=='object')throw new Error('NATIVE_INTEGRITY: Invalid artifact file manifest');
   const expected=manifest.files as Record<string,string>,actual=files(directory).sort();
   if(JSON.stringify(actual)!==JSON.stringify([...Object.keys(expected),path].sort()))throw new Error('NATIVE_INTEGRITY: Artifact file set differs from its manifest');

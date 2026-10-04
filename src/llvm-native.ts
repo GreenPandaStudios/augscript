@@ -1,6 +1,7 @@
 import {copyFileSync,existsSync,lstatSync,mkdirSync,readFileSync,realpathSync,writeFileSync} from 'node:fs';
 import {basename,dirname,join,resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
+import {release as hostRelease,version as hostVersion} from 'node:os';
 import {spawnSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
 import {generateLLVM,runtimeLayout,type RuntimeLayout} from './llvm.ts';
@@ -12,6 +13,8 @@ import type {LLVMToolchain} from './compiler-packs.ts';
 import {runtimeIdentifierSha256} from './runtime-abi.ts';
 import {generateOpenApi} from './openapi.ts';
 import {llvmPlatform,systemLibc} from './llvm-platform.ts';
+import {compilerIdentity,semanticConfiguration} from './symbols.ts';
+import {compilationInputHash,reuseTestCompilation} from './test-compilation-cache.ts';
 
 export interface RuntimeComponent {libraries:string[];runtimeFiles:string[];metadata:string[]}
 export interface RuntimePack {format:1;version:string;target:string;minimumOS?:string;minimumLibc?:string;layout:RuntimeLayout;identifierSha256:string;files:Record<string,string>;libraries:string[];staticCore?:string;components:Record<string,RuntimeComponent>;sourceSha256:string}
@@ -40,7 +43,7 @@ export function readRuntimePack(directory:string):RuntimePack {
 }
 
 /** Link target objects with prebuilt runtimes. Application builds never invoke Clang. */
-export function compileLLVM(checked:CheckedProject,options:{output?:string;release?:boolean;coverage?:boolean;testIndex?:number;bundle?:string;native?:NativeLinkInput[];toolchain?:LLVMToolchain;onPhase?:(phase:string)=>void}={}) {
+export function compileLLVM(checked:CheckedProject,options:{output?:string;release?:boolean;coverage?:boolean;testIndex?:number;rebuild?:boolean;bundle?:string;native?:NativeLinkInput[];toolchain?:LLVMToolchain;onPhase?:(phase:string)=>void}={}) {
   const root=checked.project.root,target=nativeHostTarget();
   const config=checked.project.config;
   const release=options.release??config.optimization==='release';
@@ -65,12 +68,9 @@ export function compileLLVM(checked:CheckedProject,options:{output?:string;relea
     const target=resolve(root,config.openapi.output);mkdirSync(dirname(target),{recursive:true});
     writeFileSync(target,JSON.stringify(generateOpenApi(checked).document,null,2)+'\n');
   }
-  const run=(tool:string,args:string[])=>{const result=spawnSync(tool,args,{encoding:'utf8',cwd:root,env:{...process.env,SDKROOT:'/nonexistent',DEVELOPER_DIR:'/nonexistent'}});if(result.status!==0)throw new Error(`LLVM compilation failed with ${basename(tool)}.\n${result.stderr||result.error?.message||result.stdout}\nLLVM IR: ${source}`);return result;};
-  options.onPhase?.('object generation');
+  const compilerEnvironment=options.toolchain?.compilationIdentity?{PATH:'/nonexistent',LANG:'C',LC_ALL:'C',SDKROOT:'/nonexistent',DEVELOPER_DIR:'/nonexistent'}:{...process.env,SDKROOT:'/nonexistent',DEVELOPER_DIR:'/nonexistent'};
+  const run=(tool:string,args:string[])=>{const result=spawnSync(tool,args,{encoding:'utf8',cwd:root,env:compilerEnvironment});if(result.status!==0)throw new Error(`LLVM compilation failed with ${basename(tool)}.\n${result.stderr||result.error?.message||result.stdout}\nLLVM IR: ${source}`);return result;};
   const optimized=join(directory,name+'.optimized.ll');
-  run(opt,['-passes=verify','-disable-output',source]);
-  if(release)run(opt,['-passes=default<O2>','-S',source,'-o',optimized]);
-  run(llc,['-filetype=obj',release?'-O=2':'-O=0','-relocation-model=pic',release?optimized:source,'-o',object]);
   const libraries:string[]=[],deployed=new Map<string,string>();
   const deploy=(origin:string,path:string,link:boolean)=>{nativePath(path);const destination=join(deployment,basename(path));
     const digest=createHash('sha256').update(readFileSync(join(origin,path))).digest('hex');
@@ -100,19 +100,46 @@ export function compileLLVM(checked:CheckedProject,options:{output?:string;relea
   }).at(-1);
   for(const input of options.native??[])if(input.target&&input.target.triple!==pack.target)throw new Error('NATIVE_TARGET: Link input target differs from the compiler runtime.');
   const minimumOS=maximum([pack.minimumOS,...(options.native??[]).map(input=>input.target?.minimumOS)]),minimumLibc=maximum([pack.minimumLibc,...(options.native??[]).map(input=>input.target?.minimumLibc)]);
-  options.onPhase?.('linking');
+  let linkArgs:string[],systemInputs:string[]=[];
   if(platform.entry){
     const libc=systemLibc(platform),math=join(dirname(libc),'libm.so.6');
     if(staticCore&&!existsSync(math))throw new Error('LLVM_RUNTIME: The qualified GNU/Linux math runtime is absent. Install the operating system libc runtime; no development headers or compiler are required.');
     // Only the existing private checkpoint-hook boundary needs dynamic lookup.
     // August function exports and native runtime entry remain separate profiles.
     const coreExports=staticCore?['--gc-sections','--export-dynamic-symbol=aug_execution_current','--export-dynamic-symbol=aug_task_checkpoint_hook','--export-dynamic-symbol=aug_native_cancelled_v1']:[];
-    run(lld,['-flavor','gnu','-pie','-z','now','-z','noexecstack','--hash-style=gnu','--eh-frame-hdr',...coreExports,'--dynamic-linker',platform.loader!,'-e','_start','-rpath','$ORIGIN/lib',join(runtime,'platform/start.o'),object,...libraries,libc,...(staticCore?[math]:[]),'-o',output]);
+    systemInputs=[libc,...(staticCore?[math]:[]),platform.loader!,...['libpthread.so.0','libdl.so.2','librt.so.1'].map(name=>join(dirname(libc),name)).filter(existsSync)];
+    linkArgs=['-flavor','gnu','-pie','-z','now','-z','noexecstack','--hash-style=gnu','--eh-frame-hdr',...coreExports,'--dynamic-linker',platform.loader!,'-e','_start','-rpath','$ORIGIN/lib',join(runtime,'platform/start.o'),object,...libraries,libc,...(staticCore?[math]:[]),'-o',output];
   }
-  else run(lld,['-flavor','darwin',...(staticCore?['-dead_strip','-exported_symbol','_aug_execution_current','-exported_symbol','_aug_task_checkpoint_hook','-exported_symbol','_aug_native_cancelled_v1']:[]),'-arch','arm64','-platform_version','macos',minimumOS??'14.0',minimumOS??'14.0','-Z','-fixup_chains','-adhoc_codesign','-e','_main','-rpath','@executable_path/lib',object,...libraries,join(runtime,'platform/libSystem.tbd'),'-o',output]);
+  else linkArgs=['-flavor','darwin',...(staticCore?['-dead_strip','-exported_symbol','_aug_execution_current','-exported_symbol','_aug_task_checkpoint_hook','-exported_symbol','_aug_native_cancelled_v1']:[]),'-arch','arm64','-platform_version','macos',minimumOS??'14.0',minimumOS??'14.0','-Z','-fixup_chains','-adhoc_codesign','-e','_main','-rpath','@executable_path/lib',object,...libraries,join(runtime,'platform/libSystem.tbd'),'-o',output];
   const debugInfo=platform.entry?output:output+'.dSYM';
-  if(!platform.entry)run(dsymutil,[output,'-o',debugInfo]);
+  const commands={verify:['-passes=verify','-disable-output',source],
+    optimize:release?['-passes=default<O2>','-S',source,'-o',optimized]:[],
+    object:['-filetype=obj',release?'-O=2':'-O=0','-relocation-model=pic',release?optimized:source,'-o',object],
+    link:linkArgs,debug:platform.entry?[]:[output,'-o',debugInfo]};
+  const artifacts=[basename(output),name+'.o',...(release?[name+'.optimized.ll']:[]),...(!platform.entry?[basename(debugInfo)]:[])];
+  const required=[basename(output),name+'.o',...(release?[name+'.optimized.ll']:[]),...(!platform.entry?[basename(debugInfo)+'/Contents/Resources/DWARF/'+basename(output)]:[])];
+  const uncachedServices=ir.functions.some(fn=>fn.blocks.some(block=>block.instructions.some(instruction=>
+    instruction.op==='start'||instruction.op==='wait'||instruction.op==='native'||instruction.op==='extern'||instruction.op==='decode'||
+    instruction.op==='runtime'&&instruction.operation.startsWith('JSON_'))));
+  const compilation=reuseTestCompilation({project:root,directory,roots:artifacts,required,rebuild:options.rebuild,
+    disabledReason:options.testIndex===undefined||!checked.project.testMode||options.bundle?'Compilation reuse is limited to selected native tests':
+      ir.components.length||uncachedServices||(options.native?.length??0)>0?'Compilation reuse is not yet qualified for runtime components, tasks, JSON or native calls':
+      !options.toolchain?.compilationIdentity?'Compilation reuse requires a verified complete compiler tool pack; custom contributor tools compile normally':undefined,
+    inputs:()=>({compiler:compilerIdentity(),configuration:semanticConfiguration(root),
+      dependencies:[...checked.project.packages.scopes.values()].map(scope=>({id:scope.path,digest:scope.digest,configuration:semanticConfiguration(scope.directory)})).sort((a,b)=>a.id<b.id?-1:a.id>b.id?1:0),llvm:'23.1.2',platform,target,runtime:pack,
+      module:createHash('sha256').update(module).digest('hex'),ir:createHash('sha256').update(JSON.stringify(ir)).digest('hex'),
+      sourceRevision:ir.sourceRevision,commands,directory,output,coverage:!!options.coverage,release,
+      compilerArtifact:options.toolchain?.archiveSha256,toolPack:options.toolchain?.compilationIdentity,compilerEnvironment,
+      hostRuntime:{release:hostRelease(),version:hostVersion()},
+      system:systemInputs.map(file=>({file,sha256:compilationInputHash(file)}))})});
+  if(compilation.evidence.cache!=='hit'){
+    options.onPhase?.('object generation');run(opt,commands.verify);
+    if(release)run(opt,commands.optimize);
+    run(llc,commands.object);options.onPhase?.('linking');run(lld,commands.link);
+    if(!platform.entry)run(dsymutil,commands.debug);
+    compilation.save();
+  }
   const hash=(file:string)=>createHash('sha256').update(readFileSync(file)).digest('hex');
   writeFileSync(output+'.augmap.json',JSON.stringify({format:1,backend:'llvm',version:compilerVersion(),llvm:'23.1.2',mode:release?'release':'development',target:pack.target,minimumOS,minimumLibc,sourceRevision:ir.sourceRevision,llvmIR:source,llvmIRSha256:hash(source),optimizedIRSha256:release?hash(optimized):undefined,object,objectSha256:hash(object),executableSha256:hash(output),debugInfo,debugInfoSha256:hash(platform.entry?output:join(debugInfo,'Contents/Resources/DWARF',basename(output))),runtime:pack.sourceSha256,compilerArtifact:options.toolchain?.archiveSha256,developmentToolchain:options.toolchain?.developmentOverride??true,nativeArtifacts:options.native?.map(input=>input.artifactSha256),libraries:[...deployed].map(([file,sha256])=>({file:basename(file),sha256})),symbols:ir.functions.map(f=>({name:f.name,sourceName:f.sourceName,location:f.span}))},null,2)+'\n');
-  return {output,status:0,error:'',diagnostics:[]};
+  return {output,status:0,error:'',diagnostics:[],compilation:compilation.evidence};
 }
