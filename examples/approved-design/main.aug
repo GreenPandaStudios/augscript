@@ -1,3 +1,4 @@
+// aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Console and SystemConsole from august.io
 import Application and ApplicationImpl and Fruit and double and RangeError from domain
 import Counter and Counters from counters

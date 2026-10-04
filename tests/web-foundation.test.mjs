@@ -1,9 +1,10 @@
+import { prepareLibraryFixtures } from './library-fixtures.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, dirname, resolve } from 'node:path';
-import { spawnSync } from 'node:child_process';
+import { spawnSync as fixtureSpawnSync } from 'node:child_process';
 
 const cli = resolve('bin/aug.mjs');
 function withProject(files, action) {
@@ -119,9 +120,9 @@ print(value=counter.value())
 }));
 
 test('crypto capability hashes bytes and verifies native RSA signatures', () => withProject({
-  'main.aug': `import Crypto and GnuTlsCrypto from august.crypto
+  'main.aug': `import Crypto and GnuTlsCrypto from crypto
 implement Crypto with GnuTlsCrypto
-crypto = resolve Crypto
+resolve Crypto to crypto
 try:
     input = "abc".bytes()
     digest = crypto.sha256(input)
@@ -144,7 +145,7 @@ catch CryptoError error:
 test('typed JSON preserves integer precision, validates records, and escapes strings', () => withProject({
   'data.aug': `record Profile(string name, int id)
 `,
-  'main.aug': `import parse from august.json
+  'main.aug': `import parse from json
 import Profile from data
 try:
     json = parse(input="{\\\"name\\\":\\\"Ada <script>\\\",\\\"id\\\":9223372036854775807}")
@@ -161,18 +162,16 @@ catch JsonError error:
   assert.equal(result.stdout, 'Ada <script>\n9223372036854775807\n{"name":"Ada <script>","id":9223372036854775807}\n');
 }));
 
-test('optional JSON fields distinguish missing, null, and a value', () => withProject({
-  'data.aug': `record Patch(optional string? name)
+test('optional JSON fields unify omitted input and null, and preserve a present value', () => withProject({
+  'data.aug': `record Patch(optional string name)
 describe(Patch input) returns string:
     match input.name:
-        when missing:
-            return "missing"
         when null:
             return "null"
         when some value:
             return value
 `,
-  'main.aug': `import parse from august.json
+  'main.aug': `import parse from json
 import Patch and describe from data
 try:
     print(value=describe(input=parse(input="{}").decode<Patch>()))
@@ -184,7 +183,7 @@ catch JsonError error:
 }, root => {
   const result = spawnSync(process.execPath, [cli, 'run', root], { encoding: 'utf8' });
   assert.equal(result.status, 0, result.stderr);
-  assert.equal(result.stdout, 'missing\nnull\nAda\n');
+  assert.equal(result.stdout, 'null\nnull\nAda\n');
 }));
 
 test('freeze shares collection data with records and removes mutation rights from every alias', () => withProject({
@@ -207,3 +206,8 @@ print(value=inventory.items.length())
   assert.notEqual(result.status, 0);
   assert.match(result.stderr, /frozen|read-only/i);
 }));
+
+function spawnSync(command, args, options) {
+  if (args?.[0]?.endsWith("aug.mjs") && args[2]) prepareLibraryFixtures(args[2]);
+  return fixtureSpawnSync(command, args, options);
+}

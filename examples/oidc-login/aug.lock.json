@@ -1,0 +1,100 @@
+{
+  "format": 1,
+  "compiler": "0.23.0",
+  "specifications": {
+    "crypto": "https://github.com/GreenPandaStudios/augscript/src/stdlib/crypto#b14a0f9aa41f1ce58bd51133bcdc424033e40d40",
+    "json": "https://github.com/GreenPandaStudios/augscript/src/stdlib/json#v0.19.0",
+    "memory": "https://github.com/GreenPandaStudios/augscript/src/stdlib/memory#v0.19.0",
+    "time": "https://github.com/GreenPandaStudios/augscript/src/stdlib/time#v0.19.0",
+    "web": "https://github.com/GreenPandaStudios/augscript/src/stdlib/web#v0.19.0"
+  },
+  "roots": {
+    "crypto": "packages/url_c64a406ed867b506f314",
+    "json": "packages/url_ac5ce553f84fc815ffc3",
+    "memory": "packages/url_c0ae6b2968a0e749820c",
+    "time": "packages/url_d13f6c7bf776c8e5c665",
+    "web": "packages/url_3d8a4bc50002396b26a3"
+  },
+  "npm": {},
+  "git": [
+    {
+      "request": "https://github.com/GreenPandaStudios/augscript/src/stdlib/crypto#b14a0f9aa41f1ce58bd51133bcdc424033e40d40",
+      "repository": "https://github.com/GreenPandaStudios/augscript.git",
+      "revision": "b14a0f9aa41f1ce58bd51133bcdc424033e40d40",
+      "folder": "src/stdlib/crypto",
+      "commit": "b14a0f9aa41f1ce58bd51133bcdc424033e40d40"
+    },
+    {
+      "request": "https://github.com/GreenPandaStudios/augscript/src/stdlib/json#v0.19.0",
+      "repository": "https://github.com/GreenPandaStudios/augscript.git",
+      "revision": "v0.19.0",
+      "folder": "src/stdlib/json",
+      "commit": "a39fc582565d4fca40be4f75fa304d71adc69301"
+    },
+    {
+      "request": "https://github.com/GreenPandaStudios/augscript/src/stdlib/memory#v0.19.0",
+      "repository": "https://github.com/GreenPandaStudios/augscript.git",
+      "revision": "v0.19.0",
+      "folder": "src/stdlib/memory",
+      "commit": "a39fc582565d4fca40be4f75fa304d71adc69301"
+    },
+    {
+      "request": "https://github.com/GreenPandaStudios/augscript/src/stdlib/time#v0.19.0",
+      "repository": "https://github.com/GreenPandaStudios/augscript.git",
+      "revision": "v0.19.0",
+      "folder": "src/stdlib/time",
+      "commit": "a39fc582565d4fca40be4f75fa304d71adc69301"
+    },
+    {
+      "request": "https://github.com/GreenPandaStudios/augscript/src/stdlib/web#v0.19.0",
+      "repository": "https://github.com/GreenPandaStudios/augscript.git",
+      "revision": "v0.19.0",
+      "folder": "src/stdlib/web",
+      "commit": "a39fc582565d4fca40be4f75fa304d71adc69301"
+    }
+  ],
+  "packages": [
+    {
+      "path": "packages/url_3d8a4bc50002396b26a3",
+      "name": "@git/url_897efafd565158fc4908",
+      "version": "0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301",
+      "source": ".",
+      "digest": "86c015215680f22d48670c92c375f96bf7c8d146dfbd9ac501fb1542e8b50765",
+      "dependencies": {}
+    },
+    {
+      "path": "packages/url_ac5ce553f84fc815ffc3",
+      "name": "@git/url_2d3c37c690c0fa115be1",
+      "version": "0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301",
+      "source": ".",
+      "digest": "0d2c50d2290f3c63b1ae54ae5f00725b1d78493c2556027af93a7ce6cab6f846",
+      "dependencies": {}
+    },
+    {
+      "path": "packages/url_c0ae6b2968a0e749820c",
+      "name": "@git/url_0eb7c89453c87681ed15",
+      "version": "0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301",
+      "source": ".",
+      "digest": "a76e9fcbf97fee086a31b9d99a7afe6da42e01ecee1ad53bdbf5f404c94909ba",
+      "dependencies": {}
+    },
+    {
+      "path": "packages/url_c64a406ed867b506f314",
+      "name": "@git/url_9ef654c66d34ab8f5527",
+      "version": "0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40",
+      "source": ".",
+      "digest": "d849fb1024917ac51e026213eaceff7d1fc2af1216ccda8199347faec8410d30",
+      "dependencies": {
+        "url_ac5ce553f84fc815ffc3": "packages/url_ac5ce553f84fc815ffc3"
+      }
+    },
+    {
+      "path": "packages/url_d13f6c7bf776c8e5c665",
+      "name": "@git/url_c092cd151499c4e1d8a1",
+      "version": "0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301",
+      "source": ".",
+      "digest": "75debbd2ef760f409217e0176691bc681f7464bb54b2ca78c9d8e9c1586ba492",
+      "dependencies": {}
+    }
+  ]
+}

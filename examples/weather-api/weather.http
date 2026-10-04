@@ -1,0 +1,5 @@
+### Five simulated forecasts
+GET http://127.0.0.1:8787/weatherforecast
+
+### Generated OpenAPI document
+GET http://127.0.0.1:8787/openapi.json

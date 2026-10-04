@@ -1,0 +1,10 @@
+{
+  "format": 1,
+  "files": [
+    ".aug-spec/packages/@git/url_2d3c37c690c0fa115be1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug",
+    ".aug-spec/packages/@git/url_2d3c37c690c0fa115be1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md",
+    "data.aug.md",
+    "main.aug.md"
+  ],
+  "digest": "795ef887732657393f8b69fbf60b125584397fd2ac6f2f0587eeb1aebdf7d3ee"
+}

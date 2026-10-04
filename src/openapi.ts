@@ -1,3 +1,4 @@
+import { callableResult } from './contracts.ts';
 import {createHash} from 'node:crypto';
 import type {Diagnostic, Expr, MethodDecl, Span, Stmt} from './ast.ts';
 import type {CheckedProject} from './checker.ts';
@@ -61,7 +62,7 @@ export function generateOpenApi(checked: CheckedProject) {
       if (node.kind !== 'return') return;
       const expr = node.value as Expr | undefined;
       if (!expr) {result.push({status:fn.endpoint?.status ?? 200, type:primitive('void')}); return;}
-      const type = checked.expressionTypes.get(expr) ?? schemaType(project, fn.returns, fn.span.file);
+      const type = checked.expressionTypes.get(expr) ?? callableResult(checked, fn);
       if (expr.kind === 'call' && expr.callee.kind === 'name' && type.name === 'HttpResponse') {
         if (expr.callee.name !== 'HttpResponse') {
           const def = project.scopes.get(fn.span.file)?.get(expr.callee.name);
@@ -90,7 +91,7 @@ export function generateOpenApi(checked: CheckedProject) {
       }
       result.push({status:fn.endpoint?.status ?? 200, type});
     });
-    if (!result.length && fn.returns.name !== 'HttpResponse') result.push({status:fn.endpoint?.status ?? 200, type:schemaType(project,fn.returns,fn.span.file)});
+    if (!result.length && callableResult(checked, fn).name !== 'HttpResponse') result.push({status:fn.endpoint?.status ?? 200, type:callableResult(checked, fn)});
     return result;
   };
   const served = new Map<string,Definition>();
@@ -108,7 +109,7 @@ export function generateOpenApi(checked: CheckedProject) {
       else if (JSON.stringify(current.schema) !== JSON.stringify(value)) current.schema = {oneOf:[current.schema,value]};
     };
     if(endpoint.streams) {
-      const item=schemaType(project,fn.returns,fn.span.file),sse=item.name==='ServerEvent';
+      const item=callableResult(checked, fn),sse=item.name==='ServerEvent';
       const itemSchema=sse?{type:'object',required:['data'],properties:{data:{type:'string',contentMediaType:'application/json',contentSchema:schema(item.args[0],fn.span)},id:{type:'string'},event:{type:'string'},retry:{type:'integer',minimum:0}}}:schema(item,fn.span);
       responses[endpoint.status]={description:'Streaming response',content:{[sse?'text/event-stream':item.name==='Html'?'text/html':'application/octet-stream']:{itemSchema}}};
     }

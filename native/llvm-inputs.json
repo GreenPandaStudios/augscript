@@ -1,0 +1,22 @@
+{
+  "format": 1,
+  "llvm": "23.1.2",
+  "revision": "85ac560262434c9ccfc0c183ec22d4138ed647fb",
+  "hosts": {
+    "darwin-arm64": {
+      "prefix": "LLVM-23.1.2-macOS-ARM64",
+      "archive": {"url":"https://github.com/llvm/llvm-project/releases/download/llvmorg-23.1.2/LLVM-23.1.2-macOS-ARM64.tar.zst","sha256":"3da0e91b5dfe3a5ec795ad2be79b3f5e6f28c8b23edcd3847fad7742b25e0507","bytes":873761429},
+      "tools": {"llc":"7a9ff3ffea3ed5f3e4c2e6603b5792446702cfcb46d978e80bc6cd1678f192eb","lld":"87de299f2482f07991579207d3673694f5e152cfcd41e9c8c7c864fc91d1398e","opt":"c171130f261590f9fa30f015d8a2bb161216eadae13c0d9b114c93685bc64a09","dsymutil":"f715be35dd492c435f8a064cac7ca9c69f11e00139bcb2c3aca586e1036240cc"}
+    },
+    "linux-x64": {
+      "prefix":"LLVM-23.1.2-Linux-X64",
+      "archive":{"url":"https://github.com/llvm/llvm-project/releases/download/llvmorg-23.1.2/LLVM-23.1.2-Linux-X64.tar.zst","sha256":"6382de1c1a210ce5a5cc49d18bc8444d137742e7cbf9b19f4ae602bb1ab52534","bytes":1183587483},
+      "tools":{"llc":"513af9e223d908e7ca37c56a7234a2762422aeaf57245cef0f31f2b168bb7f86","opt":"24a5038dfff9ce1eb4e91c891d609715de404b877e205ad7b85d77c4384b0bec","lld":"f6982be190cee2ed9498441a74a40198cd159b936e378f07cef4553490badd0e"}
+    },
+    "linux-arm64": {
+      "prefix":"LLVM-23.1.2-Linux-ARM64",
+      "archive":{"url":"https://github.com/llvm/llvm-project/releases/download/llvmorg-23.1.2/LLVM-23.1.2-Linux-ARM64.tar.zst","sha256":"143308c82f8e21707be7fdc135d5e0ddd9a46a377ca9f38befc716fd842cb59b","bytes":1095389618},
+      "tools":{"llc":"d2956ba1cb2c03a77f60fc6b0cef8bb34a07095215c6ef00c18c7a7495613873","opt":"77a10b54869773d10bc07a45a2ff52ea9986769bcde31146427565dcf876a903","lld":"c87ba66961dc3fe8fa93f89301536550eed2a3b357dcafc2285e287023655362"}
+    }
+  }
+}

@@ -23,6 +23,7 @@ export interface EffectContract {
   changes: readonly string[];
   uses: ReadonlyMap<string, CapabilityEffect>;
   inferred?: boolean;
+  inferredChanges?: boolean;
 }
 
 /** Resolves surface effect names once; callers compare capability identities. */

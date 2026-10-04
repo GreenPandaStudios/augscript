@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {mkdtempSync, writeFileSync, rmSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join, resolve} from 'node:path';
-import {spawnSync} from 'node:child_process';
+import {spawnSync} from './compiler-process.mjs';
 
 const cli = resolve('bin/aug.mjs');
 function run(source, expected, files = {}) {
@@ -37,8 +37,8 @@ print(value=3 / 2.0)
 print(value=1 == 1.0)
 print(value=2.0 < 3)
 try:
-    print(value=false && 1 / 0 == 0)
-    print(value=true || 1 / 0 == 0)
+    print(value=false and 1 / 0 == 0)
+    print(value=true or 1 / 0 == 0)
     print(value=3.0 / -0.0)
 catch ArithmeticError error:
     print(value="checked")
@@ -72,10 +72,39 @@ print(value=unique.contains(value=2999))
 print(value=unique.contains(value=-1))
 `, 'apple\npear\nplum\n3\nchanged\nchanged\n3000\ntrue\nfalse\n'));
 
+test('Map deletion repairs wrapped probe chains and retains reinsertion order', () => {
+  // Concentrate integer keys at the final bucket of a 64-bucket table so
+  // deletion exercises probe chains that wrap through bucket zero.
+  const keys = [];
+  for (let candidate = 1; keys.length < 40; candidate++) {
+    const bytes = Buffer.alloc(8); bytes.writeDoubleLE(candidate);
+    let hash = bytes.readBigUInt64LE();
+    hash ^= hash >> 33n; hash = BigInt.asUintN(64, hash * 0xff51afd7ed558ccdn);
+    hash ^= hash >> 33n; hash = BigInt.asUintN(64, hash * 0xc4ceb9fe1a85ec53n);
+    hash ^= hash >> 33n;
+    if ((hash & 63n) === 63n) keys.push(candidate);
+  }
+  const state = new Map(keys.map(key => [key, key * 3]));
+  const removed = keys.filter((_, index) => index % 3 === 0);
+  const operations = removed.map(key => `print(value=entries.take(key=${key}))`);
+  const expected = removed.map(key => { const value = state.get(key); state.delete(key); return String(value); });
+  for (const key of keys) {
+    operations.push(`print(value=entries.contains(key=${key}))`, `print(value=entries.get(key=${key}))`);
+    expected.push(String(state.has(key)), String(state.get(key) ?? 'null'));
+  }
+  for (const key of removed) { operations.push(`entries.set(key=${key}, value=${key * 7})`); state.set(key, key * 7); }
+  operations.push('for (key, value) in entries:', '    print(value=key)', '    print(value=value)');
+  expected.push(...[...state].flatMap(([key, value]) => [String(key), String(value)]));
+  for (const key of keys) { operations.push(`entries.take(key=${key})`); state.delete(key); }
+  operations.push('print(value=entries.length())', 'print(value=entries.take(key=-1))');
+  expected.push('0', 'null');
+  run(`own Map<int, int> entries = {${keys.map(key => `${key}: ${key * 3}`).join(', ')}}\n${operations.join('\n')}\n`, expected.join('\n') + '\n');
+});
+
 test('broad Data locals remain rooted when a primitive is replaced with a reference', () => run(`
 Data stored = 7
 stored = "retained"
-int? maybe = null
+optional int maybe = null
 maybe = 9
 int allocation = 0
 while allocation < 2500:

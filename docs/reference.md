@@ -1,6 +1,8 @@
-# AugScript language guide
+# Language reference
 
-Version 0.18. The language aims for code that communicates behavior, dependencies, and effects to a developer seeing a module for the first time.
+Use this page to look up the implemented language rules. It covers syntax, types, visibility, effects, dependency injection, ownership, and checked failures. For a first introduction, read [the August book](learn/index.md). For the reasons behind the design, read [why August exists](about.md).
+
+August is experimental; [compatibility](compatibility.md) describes its version policy. Examples marked with a project and filename are complete, tested applications. Short `text` blocks are syntax fragments.
 
 ## A complete project
 
@@ -30,7 +32,7 @@ Application(resolve Console console) implements Runnable:
         console.write(value="Hello, AugScript!")
 ```
 
-Run `node bin/aug.mjs run PROJECT`, or choose **AugScript: Run Project** in VS Code. Node.js 24+ and a C11 compiler are required.
+Run `aug run PROJECT`, or choose **AugScript: Run Project** in VS Code. You need Node.js 24+ and a [supported host](compatibility.md). The CLI obtains its LLVM compiler/runtime pack and package artifacts automatically.
 
 ## Blocks and statement boundaries
 
@@ -51,11 +53,13 @@ Parentheses and collection literals allow continuation across lines; their inden
 
 A newline, a closing block brace, EOF, or an optional semicolon terminates a statement. Separate two statements on one line with a semicolon. An unfinished operator continues an expression; a leading operator or call parenthesis on a new line does not attach to the previous statement. Start a return value on the same line as `return`. See [the grammar](grammar.md).
 
+Use `and`, `or`, and `not` for booleans. They short-circuit. Comparisons bind before `not`: `not count == 0` means `not (count == 0)`. The symbolic boolean operators are rejected; `!=` still compares for inequality.
+
 ## Imports and visibility
 
 `import Name from sibling` imports only that sibling's own public declaration. Imports are explicit even within a folder. Names beginning with `_` are private to their declaring file, class, or interface, and cannot be imported or exported.
 
-A folder's public surface is defined by its special `export.aug`:
+A folder's `export.aug` names the declarations other folders can import:
 
 ```text
 export Logger from logger
@@ -65,15 +69,15 @@ export folder nested
 
 Cross-folder access requires the export entry. A dotted path also requires each crossed child folder to be exposed by its parent. A folder with no export file exposes nothing across its boundary. `export.aug` accepts only exports. Private modules and folders cannot be exported.
 
-`import Logger and ConsoleLogger from logging` combines imports. `import everything from logging` imports visible declarations and rejects collisions; it never exposes a module's internal imports. The formatter and **Expand to named imports** action make this list explicit.
+`import Logger and ConsoleLogger from logging` combines imports. `import everything from logging` imports visible declarations and rejects collisions; it never exposes a module's internal imports. The formatter preserves it. Hover shows available names, **Expand to named imports** offers an explicit list, and the [compiled spec](specifications.md) explains dependencies actually used.
 
-Import cycles are errors. Optional module dependency policies and public-surface warnings are configured in `main.yaml`. `strict_modules: true` also requires sibling imports to appear in the local export file. Ctrl-click `from` or a path segment to open its source file or export file, including `august.io`.
+Import cycles are errors. Configure allowed module dependencies and export-count warnings in `main.yaml`. `strict_modules: true` also requires sibling imports to appear in the local export file. Ctrl-click `from` or a path segment to open its source file or export file, including `august.io`.
 
 Project dependencies use aliases in `main.yaml`: `packages: math: "npm:@owner/aug-math@1.2.3"` as a nested YAML block. Run `aug install`, then write `import add from math`. A library exposes only its source folder's `export.aug`; internal modules and undeclared transitive dependencies are inaccessible. See [creating and using packages](packages.md#author-a-package).
 
 ## Types, labels, and generics
 
-Built-in types include `int`, `c_int`, `float`, `bool`, `string`, `void`, `Error`, runtime error classes, `List<T>`, `Set<T>`, `Map<K,V>`, `Tuple<T1,...>`, Bytes, Json, Html, Task<T>, Shared<T>, HttpRequest, HttpResponse<T>, ServerEvent<T>, and opaque RSA key types. A trailing `?` allows null; `optional T` allows omission. `optional T?` has missing/null/value states.
+Built-in types include `int`, `c_int`, `float`, `bool`, `string`, `void`, `Error`, runtime error classes, `List<T>`, `Set<T>`, `Map<K,V>`, `Tuple<T1,...>`, Bytes, Json, Html, Task<T>, Shared<T>, HttpRequest, HttpResponse<T>, ServerEvent<T>, and opaque RSA key types. `optional T` allows a value of T or null. Omitted optional inputs and fields become null; there is no separate missing state. `Type?`, `optional Type?`, and the old missing keyword are rejected.
 
 Write `Type name = expression`, `Type name to expression`, or an inferred assignment. Every ordinary input in a call has its public label: `add(right=2, left=1)`. Each label is supplied once. Inputs marked `resolve` are supplied through composition and cannot be passed explicitly.
 
@@ -112,6 +116,12 @@ Constraints name interfaces. Multiple constraints use `and`. Only interfaces dec
 
 A class starts with its name and ends its header with `implements Interface`. There is no `class` or `function` prefix and no class inheritance. Interfaces can extend several interfaces and supply default methods; conflicting inherited defaults require an explicit override. Interfaces have methods and no fields.
 
+An initializer can reject construction with a checked error. Write the error before `implements`: `Session(own Handle handle) unless SessionError implements ActiveSession`. Callers must catch or propagate it. Class constructors require a written `unless` clause; record validation can infer failures.
+
+If construction fails after ownership transfers, August releases the partially constructed object and its initialized owned fields, then propagates the constructor error. It does not call `drop` on a partial object. `drop` runs only after successful construction.
+
+Construct fallible classes explicitly. They cannot be DI binding targets because injected-construction failure handling is not yet supported.
+
 Header inputs become fields. Fields are read-only after initialization unless marked `mutable`. Public names grant access; names starting with `_` keep storage private. Separate a public constructor label from private storage with `int initial to _count`. The shorthand `int _count` exposes the input label `count`.
 
 ```aug project=state-guide file=main.aug
@@ -128,16 +138,16 @@ interface Count:
     increment() changes self
     value() returns int
 
-Counter(mutable int initial to _count) =>:
-    _count = _count + 1
-implements Count:
+Counter(mutable int initial to _count) implements Count:
+    initialize:
+        _count = _count + 1
     increment() changes self:
         _count = _count + 1
     value() returns int:
         return _count
 ```
 
-The optional `=>` constructor body runs after header initialization and must be pure. It may establish local fields. Put external startup work in a named method and call it from main.
+The optional `initialize` block runs after header and local field initialization and must be pure. It may establish local fields. Put it before methods. Put external startup work in a named method and call it from main.
 
 An immutable record is data and needs no marker interface:
 
@@ -165,7 +175,7 @@ match fruit.get(key=7):
 record Point(int x, int y)
 ```
 
-Record fields contain primitives, tuples, and immutable records. They cannot store mutable collections, capabilities, or ownership inputs. Records compare and hash by type and field values. Validation can use `record Positive(int value) unless DomainError => { ... }`; it may reject an input, and cannot replace immutable fields. Behavioral classes compare by identity.
+Record fields contain primitives, tuples, and immutable records. They cannot store mutable collections, capabilities, or ownership inputs. Records compare and hash by type and field values. Validation uses `record Positive(int value) unless DomainError { initialize { ... } }`; it may reject an input, and cannot replace immutable fields. Behavioral classes compare by identity.
 
 ## Collections and iteration
 
@@ -180,9 +190,9 @@ Empty literals require context: `List<int> values = []`, `Set<int> values = {}`,
 
 | Type | Reading | Mutation |
 | --- | --- | --- |
-| List | `length()`, `get(index=...)` unless IndexError, `at(index=...)` returns T? | `append(value=...)` |
+| List | `length()`, `get(index=...)` unless IndexError, `at(index=...)` returns `optional T` | `append(value=...)` |
 | Set | `length()`, `contains(value=...)` | `add(value=...)` |
-| Map | `length()`, `contains(key=...)`, `get(key=...)` returns V? | `set(key=..., value=...)` |
+| Map | `length()`, `contains(key=...)`, `get(key=...)` returns `optional V` | `set(key=..., value=...)` |
 | Tuple | `length()`, `get(index=constant)` with compile-time bounds | None |
 
 Managed mutations need a borrow; owned collections mutate directly. Collections cannot store borrowed or owned references by copying them. Reference results grant reading.
@@ -191,9 +201,9 @@ Tuple destructuring introduces new local names and checks arity. `for item in va
 
 ## Functions, effects, and capabilities
 
-A bare header without `implements` declares a function. Omitting `returns` means void. Non-void bodies must return or throw on every path. A bodyless top-level declaration cannot be called unless it is an extern declaration.
+A bare header without `implements` declares a function. A body infers its result from return expressions or an implemented interface. A body with no returned value has a void result; a bodyless signature needs `returns T` for a non-void result. Non-void bodies must return or throw on every path. A bodyless top-level declaration cannot be called unless it is an extern declaration.
 
-Public standalone functions and interface contracts are pure unless they declare capabilities. State transitions declare `changes self` or `changes input`; mutable reference inputs require `borrow` or `own`. A helper cannot mutate a managed input, an alias, or nested objects reachable through it.
+Bodies infer capability use and state transitions. Bodyless interfaces declare permitted `uses` and `changes`; mutable reference inputs require `borrow` or `own`. A helper cannot mutate a managed input, an alias, or nested objects reachable through it.
 
 I/O uses capability interfaces and checked `uses dependency.operation` contracts. Capability types have interface behavior and permit explicit adapter substitution. The standard `august.io` folder provides Console/SystemConsole, FileReader/FileWriter/LocalFiles, and Arguments/ProcessArguments.
 
@@ -208,7 +218,7 @@ announce(message="Dependencies are visible")
 ```aug project=capabilities-guide file=messages.aug
 import Console from august.io
 
-announce(resolve Console console, string message) uses console.write:
+announce(resolve Console console, string message):
     console.write(value=message)
 ```
 
@@ -216,25 +226,29 @@ A caller's contract must include the effects of its calls and interceptor layers
 
 ### Short implementation headers
 
-Class methods and private `_helpers` infer `uses` when it is omitted. Interfaces, public standalone functions, interface default methods, and interceptor `around` methods retain explicit effect contracts. An explicit `uses` clause is an upper bound, including on implementations. `changes` and `unless` are still explicit.
+Executable functions, methods, interface defaults, and interceptors infer omitted `returns`, `changes`, `uses`, and `unless` clauses. Return expressions determine the result; calls and writes determine capabilities and observable mutations; failures that escape catches determine checked errors. Record validation also infers escaping failures.
 
 ```text
-import Console from august.io
+import Console and FileReader from august.io
 
 interface Logger:
     log(string message) uses Console.write
 
 ConsoleLogger(resolve Console console) implements Logger:
     log(string message):
-        _write(console, message)
+        console.write(value=message)
 
-_write(Console console, string message):
-    console.write(value=message)
+load(resolve FileReader files, string path):
+    return files.read(path)
 ```
 
-Both bodies infer `Console.write`; the interface states it once. Inference follows calls, generic substitutions and interceptor layers to a fixed point, so declaration order does not matter. Hover and `aug explain` show inferred capabilities; generated library API pages include them. Calling an inferred helper from a pure public function is a compile error. A pure interface cannot acquire hidden I/O through its implementation.
+The editor shows `uses Console.write` beside `log` and `returns string uses FileReader.read unless FileError` beside `load` as non-editable hints. These clauses are absent from saved code. Hover, `aug explain`, generated API docs, and `aug spec` use the same checked contracts. Formatting preserves any clauses you wrote explicitly.
 
-Capability implementations inherit their operation contract even when a test adapter does no I/O. This includes shared-state capabilities such as `ExpiringStore<T>`. Constructors and `drop()` remain pure; inference does not permit I/O while holding a lock. Type-changing recursive generic effect inference that cannot converge requires an explicit finite `uses` clause.
+Bodyless interfaces and foreign declarations describe contracts the compiler cannot inspect. A written clause remains a checked assertion: `returns void` rejects a returned value, and an explicit `uses` or `unless` limits the body. Implementations must satisfy their interface. An interface with no effects remains pure. Inference follows calls and generic substitutions independently of declaration order. Recursive results without an anchor, empty collections without a contextual type, and expanding generic contracts need an explicit type or finite contract.
+
+`borrow`, `own`, `resolve`, `mutable`, HTTP input sources and error-status mappings express permissions or choices. They stay in source. Inferred mutation cannot grant access to a managed input. Constructors and `drop()` keep their purity rules, and inferred I/O remains forbidden under a lock. A fresh local `Shared` value needs no artificial external-effect clause; retained external shared state still requires its capability or mutation contract. A forwarding interceptor can inherit each target's result; an interceptor that needs a fixed result contract can state it.
+
+Capability implementations inherit their operation contract even when a test adapter does no I/O. This includes shared-state capabilities such as `ExpiringStore<T>`. An unhandled error in main still fails checking; inferred propagation through a helper does not handle that failure.
 
 Outside main and test setup, every injected dependency is declared in the callable/class header. Calls forward the one compatible header dependency; multiple candidates require a clearer header. Constructor and interceptor dependencies are checked the same way. Body-level `resolve` is rejected with a fix to lift it into the header.
 
@@ -242,7 +256,7 @@ Raw `print`, `arguments`, `read_file`, and `write_file` are available to main/te
 
 ## Dependency injection and lifetimes
 
-Bind once per key before startup: `implement Logger with ConsoleLogger`. A named key such as `app` selects a class without a type key. `resolve app to program` retrieves it explicitly. The older `bind Logger to ConsoleLogger` and assignment-form resolve are accepted; formatting uses implement/with and resolve/to.
+Provide one implementation per key before startup: `implement Logger with ConsoleLogger`. A named key such as `app` selects a class without a type key. `resolve app to program` retrieves it explicitly. Legacy `bind` and assignment-form resolve are rejected; use `aug migrate` or the editor migration fix.
 
 A bound class must have only `resolve` header inputs. Duplicate bindings, missing dependencies, cycles, incompatible keys, and effectful bound construction are errors. Diagnostics show the dependency path. Declaration order does not determine initialization order.
 
@@ -266,7 +280,17 @@ Default objects are managed and reclaimed by the runtime. Ordinary reads require
 
 Owned values are dropped on normal or error exits. An optional `drop()` method takes no inputs, returns void, and performs only local cleanup. Cleanup layers cannot add effects or errors. External shutdown work belongs in an explicit effect-declared method. Managed objects are collected at runtime safe points; process roots survive to shutdown.
 
-The analysis intentionally rejects some programs when it cannot prove separate origins or freshness. This prototype is conservative; it is not a formal ownership proof. Threading semantics remain deferred.
+`Shared(value=...)` takes a fresh or owned value. The wrapper owns that payload, so dropping an owned `Shared<T>` also runs the payload's `drop()` before later local cleanup. A `resolve` dependency counts as a call input for alias checks: it cannot refer to an object also passed as an exclusive input. A scheduled task captures dependencies supplied through `resolve` as well as written call arguments. Wait for a task before mutably borrowing an object it reads through either path.
+
+A child borrowing an owned `Shared<T>` pins the wrapper until the child finishes. The parent cannot transfer it to another owner, put it in another `Shared<T>`, or return it while the child uses it. A child can still read a `Shared<T>` concurrently through its own reference. Use `lock` to access the payload.
+
+If a child starts while a `borrow` block is already open, the parent cannot mutate the captured object until it waits. The rule also applies to a borrowed function call or a direct field assignment. See the [executable conformance rules](language-conformance.md).
+
+If `start` runs inside a loop, a wait for one result may leave children from earlier iterations running. Their captures remain pinned until the enclosing `scope` joins them. To release captures on each iteration, put a `scope` inside the loop and finish its children there.
+
+For a collection of tasks, `wait for tasks` joins the whole list. Waiting for one task selected with a dynamic index cannot prove which sibling tasks remain active, so their captures stay pinned until the scope joins them.
+
+When the checker cannot establish separate origins or freshness, it rejects the access. These conservative checks are not a formal ownership proof. Tasks run cooperatively on one OS thread; multicore execution is unsupported.
 
 ## Null, matching, and checked failures
 
@@ -274,9 +298,24 @@ Nullable locals narrow after null checks, short-circuit conditions, match patter
 
 `match value` uses `when null`, `when some name`, `when true`, `when false`, or `when Type name`. Nullable and bool matches must cover every case. Open class/interface domains require `else`. Duplicate/unreachable cases and incompatible patterns are errors.
 
-An error satisfies Error. A callable declares specific errors with `returns T unless FileError and DomainError`. It can throw any value satisfying its declaration; declaring Error accepts any Error implementation. Calls must catch or propagate all effective errors, including interceptor layers.
+An error satisfies Error. A body infers escaping errors. A bodyless signature or explicit bound names specific errors with `returns T unless FileError and DomainError`. It can throw any value satisfying its declaration; declaring Error accepts any Error implementation. Calls must catch or propagate all effective errors, including interceptor layers; executable callers infer propagation when unless is omitted.
+
+`start worker` schedules a standalone function on an OS thread with a private heap and copied data. Its inputs cannot be injected or owned/borrowed references, and its result and errors must be copied data. Construct services and native resources inside the worker; [worker boundaries](workers.md) explain the supported types and native contracts.
 
 `start` evaluates its receiver and arguments immediately; their errors belong to the scheduling statement. The scheduled operation's errors belong to a `wait for` or its owning scope's implicit join. Unobserved sibling failures can reach any wait in that group. Grouped waits observe every selected child, including cancellation cleanup, and rethrow the first failure. A helper awaiting a `Task<T>` parameter declares or handles `Error`, since that public type does not specify a narrower error contract yet.
+
+A cooperative task can take an owned input. Scheduling transfers cleanup responsibility to
+the child, including when cancellation occurs before its function runs. A task
+cannot return an `own` value: `Task<T>` has no owned-result transfer contract.
+Create and release resources inside the task, then return immutable data.
+
+Owned locals in a `try` or `catch` body are released when that body exits, before
+its `always` block runs. This order applies to normal execution, returns and
+errors. Values owned by the enclosing function remain live until that function
+exits. Cleanup suspends pending errors and cancellation while a `drop` method
+runs, then restores them.
+
+An error already leaving the parent remains the reported error if cancelling a child causes its cleanup to fail. `always` cleanup still runs for that child. A `return` from a scope joins its children before the caller receives the result.
 
 ```aug project=errors-guide file=main.aug
 import load from files
@@ -298,7 +337,7 @@ import FileReader from august.io
  * @return UTF-8 text.
  * @throws FileError Reading failed or the text is invalid.
  */
-load(resolve FileReader files, string path) returns string uses files.read unless FileError:
+load(resolve FileReader files, string path):
     return files.read(path=path)
 ```
 
@@ -337,6 +376,8 @@ See [the complete validation and testing example](../examples/approved-design/do
 ## Documentation, tests, and tooling
 
 Javadoc immediately before a declaration feeds hover, completion, and signature help. Supported tags include `@param`, `@return`, `@throws`/`@exception`, `@see`, and `@deprecated`; `{@code ...}` and `{@link ...}` format inline help. Parameter labels, return tags, and effective error tags are checked; mismatches are DOC errors. Implementations can inherit interface method documentation.
+
+`aug spec` compiles each file's complete behavior into an adjacent Markdown explanation. Comments are optional unless `main.yaml` sets `spec.require_comments` to `public` or `all`. See [compiled specifications](specifications.md).
 
 Enable the public_docs lint for missing public descriptions. Keep behavior examples in [same-file class or function suites](testing.md). [Explain/context](tooling.md#context-for-developers-and-llms) gathers contracts and provenance with a bounded output budget. The persistent editor server checks local modules while an application root is unfinished; complete composition remains a build gate.
 

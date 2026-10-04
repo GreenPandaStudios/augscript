@@ -12,7 +12,7 @@ import { definitionAt } from '../src/navigation.ts';
 import { SemanticWorkspace } from '../src/semantic.ts';
 const root = resolve(import.meta.dirname, '..'), cli = join(root, 'bin/aug.mjs');
 const run = (...args) => spawnSync(process.execPath, [cli, ...args], { encoding: 'utf8', timeout: 30000,
-  env: { ...process.env, AUG_NATIVE_HOME: join(root, '.aug-native') } });
+  env: { ...process.env, AUG_NATIVE_HOME: process.env.AUG_NATIVE_HOME??join(root, '.aug-native') } });
 const ok = (...args) => { const result = run(...args); assert.equal(result.status, 0, result.stderr + result.stdout); return result.stdout; };
 const setJson = (path, data) => writeFileSync(path, JSON.stringify(data, null, 2));
 
@@ -40,9 +40,10 @@ test('authors create and pack libraries; applications import verified source and
     assert.ok(!existsSync(join(app, '.aug-packages/node_modules/math/INSTALL_RAN')));
     const project = loadProject(app), issues = checkProject(project).diagnostics.filter(issue => issue.severity !== 'warning');
     assert.deepEqual(issues, []);
-    const target = definitionAt(project, join(app, 'main.aug'), main.indexOf('from') + 1);
-    assert.ok(target.file.endsWith('/math/src/export.aug'));
-    const hover = new SemanticWorkspace(app).document(join(app, 'main.aug')).hover(main.indexOf('add from'));
+    const current=readFileSync(join(app,'main.aug'),'utf8');
+    const target = definitionAt(project, join(app, 'main.aug'), current.indexOf('from') + 1);
+    assert.ok(target.file.endsWith('/src/export.aug'));
+    const hover = new SemanticWorkspace(app).document(join(app, 'main.aug')).hover(current.indexOf('add from'));
     assert.match(hover.documentation, /Add two integers/);
     const workspace = new SemanticWorkspace(app), unfinished = main + 'import ';
     const suggestions = workspace.document(join(app, 'main.aug'), { text: unfinished, version: 1 }).complete(unfinished.length);
@@ -56,7 +57,7 @@ test('authors create and pack libraries; applications import verified source and
     writeFileSync(join(app, 'main.aug'), 'import _private from math\n');
     assert.match(run('check', app).stderr, /private/);
     writeFileSync(join(app, 'main.aug'), main);
-    writeFileSync(join(app, '.aug-packages/node_modules/math/src/arithmetic.aug'), 'add(int left, int right) returns int { return 0 }\n');
+    writeFileSync(join(project.packages.roots.get('math').sourceRoot, 'arithmetic.aug'), 'add(int left, int right) returns int { return 0 }\n');
     assert.match(run('check', app).stderr, /changed/);
     ok('install', app, '--frozen', '--offline');
     assert.equal(ok('run', app), '5\n');

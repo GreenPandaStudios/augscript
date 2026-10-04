@@ -1,76 +1,92 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="344" viewBox="0 0 1200 344">
-  <rect width="1200" height="344" rx="24" fill="#0C182B"/>
-  <g font-family="Arial, Helvetica, sans-serif">
-    <text x="40" y="57" fill="#F2F7FC" font-size="26" font-weight="700">Know a file's role at a glance</text>
-    <g transform="translate(36 98)">
-    <rect width="264" height="208" rx="16" fill="#132A40" stroke="#26435B"/>
-    <g transform="translate(100 20) scale(4)">
-  <path d="M3 1.5h6.3L13 5.2v8.9c0 .8-.5 1.4-1.3 1.4H4.3c-.8 0-1.3-.6-1.3-1.4V2.9c0-.8.5-1.4 1.3-1.4Z" fill="#163349" stroke="#54B9E8" stroke-width="1.1"/>
-  <path d="M9.3 1.7V5h3.3" fill="none" stroke="#54B9E8" stroke-width="1"/>
-  <path d="m6.5 6.3-1.4 1.1 1.4 1.1m3-2.2 1.4 1.1-1.4 1.1" fill="none" stroke="#BFEFFF" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2"/>
-  <path d="m8 10.1 1.5 2.6h-3L8 10.1Z" fill="#FFB45E"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="368" viewBox="0 0 1000 368">
+  <g font-family="Arial, Helvetica, sans-serif"><rect y="0" width="1000" height="184" fill="#201B1D"/>
+<g transform="translate(36 32)">
+      <g transform="translate(0 2) scale(2.5)">
+  <g fill="none" stroke="#D19AAF" color="#D19AAF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11.5 3.25a5.5 5.5 0 1 0 1.95 4"/></g>
 </g>
-    <text x="132" y="116" text-anchor="middle" fill="#79D3F5" font-size="22" font-weight="700">module.aug</text>
-    <text x="132" y="151" text-anchor="middle" fill="#B7CBDC" font-size="16">August source</text>
-    <g transform="translate(64 175)">
-  <path d="M3 1.5h6.3L13 5.2v8.9c0 .8-.5 1.4-1.3 1.4H4.3c-.8 0-1.3-.6-1.3-1.4V2.9c0-.8.5-1.4 1.3-1.4Z" fill="#163349" stroke="#54B9E8" stroke-width="1.1"/>
-  <path d="M9.3 1.7V5h3.3" fill="none" stroke="#54B9E8" stroke-width="1"/>
-  <path d="m6.5 6.3-1.4 1.1 1.4 1.1m3-2.2 1.4 1.1-1.4 1.1" fill="none" stroke="#BFEFFF" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2"/>
-  <path d="m8 10.1 1.5 2.6h-3L8 10.1Z" fill="#FFB45E"/>
+      <text x="0" y="76" fill="#EEE6E1" font-size="19">source.aug</text>
+      <text x="0" y="102" fill="#BEB0B3" font-size="14">Source</text>
+      <g transform="translate(0 119)">
+  <g fill="none" stroke="#D19AAF" color="#D19AAF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11.5 3.25a5.5 5.5 0 1 0 1.95 4"/></g>
 </g>
-    <text x="87" y="188" fill="#B7CBDC" font-size="13">Actual 16px size</text>
-  </g>
-<g transform="translate(324 98)">
-    <rect width="264" height="208" rx="16" fill="#132A40" stroke="#26435B"/>
-    <g transform="translate(100 20) scale(4)">
-  <path d="M3 1.5h6.3L13 5.2v8.9c0 .8-.5 1.4-1.3 1.4H4.3c-.8 0-1.3-.6-1.3-1.4V2.9c0-.8.5-1.4 1.3-1.4Z" fill="#163349" stroke="#F8B64F" stroke-width="1.1"/>
-  <path d="M9.3 1.7V5h3.3" fill="none" stroke="#F8B64F" stroke-width="1"/>
-  <circle cx="8" cy="9.9" r="3.5" fill="#F8B64F"/>
-  <path d="m7 7.7 3 2.2-3 2.2V7.7Z" fill="#193348"/>
+      <text x="25" y="132" fill="#BEB0B3" font-size="12">16 px</text>
+    </g>
+<g transform="translate(282 32)">
+      <g transform="translate(0 2) scale(2.5)">
+  <g fill="none" stroke="#D19AAF" color="#D19AAF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 3 7 5-7 5Z"/></g>
 </g>
-    <text x="132" y="116" text-anchor="middle" fill="#F8B64F" font-size="22" font-weight="700">main.aug</text>
-    <text x="132" y="151" text-anchor="middle" fill="#B7CBDC" font-size="16">Application startup</text>
-    <g transform="translate(64 175)">
-  <path d="M3 1.5h6.3L13 5.2v8.9c0 .8-.5 1.4-1.3 1.4H4.3c-.8 0-1.3-.6-1.3-1.4V2.9c0-.8.5-1.4 1.3-1.4Z" fill="#163349" stroke="#F8B64F" stroke-width="1.1"/>
-  <path d="M9.3 1.7V5h3.3" fill="none" stroke="#F8B64F" stroke-width="1"/>
-  <circle cx="8" cy="9.9" r="3.5" fill="#F8B64F"/>
-  <path d="m7 7.7 3 2.2-3 2.2V7.7Z" fill="#193348"/>
+      <text x="0" y="76" fill="#EEE6E1" font-size="19">main.aug</text>
+      <text x="0" y="102" fill="#BEB0B3" font-size="14">Startup</text>
+      <g transform="translate(0 119)">
+  <g fill="none" stroke="#D19AAF" color="#D19AAF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 3 7 5-7 5Z"/></g>
 </g>
-    <text x="87" y="188" fill="#B7CBDC" font-size="13">Actual 16px size</text>
-  </g>
-<g transform="translate(612 98)">
-    <rect width="264" height="208" rx="16" fill="#132A40" stroke="#26435B"/>
-    <g transform="translate(100 20) scale(4)">
-  <path d="M3 1.5h6.3L13 5.2v8.9c0 .8-.5 1.4-1.3 1.4H4.3c-.8 0-1.3-.6-1.3-1.4V2.9c0-.8.5-1.4 1.3-1.4Z" fill="#302344" stroke="#B58CEB" stroke-width="1.1"/>
-  <path d="M9.3 1.7V5h3.3" fill="none" stroke="#B58CEB" stroke-width="1"/>
-  <path d="M5 11.8h2.1m-2.1-3h3.1m-.2 2.6 3-3m-2.8 0h2.8v2.8" fill="none" stroke="#E7D5FF" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.4"/>
+      <text x="25" y="132" fill="#BEB0B3" font-size="12">16 px</text>
+    </g>
+<g transform="translate(528 32)">
+      <g transform="translate(0 2) scale(2.5)">
+  <g fill="none" stroke="#D19AAF" color="#D19AAF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6M7 3h6v6M6 10l7-7"/></g>
 </g>
-    <text x="132" y="116" text-anchor="middle" fill="#B58CEB" font-size="22" font-weight="700">export.aug</text>
-    <text x="132" y="151" text-anchor="middle" fill="#B7CBDC" font-size="16">Public module surface</text>
-    <g transform="translate(64 175)">
-  <path d="M3 1.5h6.3L13 5.2v8.9c0 .8-.5 1.4-1.3 1.4H4.3c-.8 0-1.3-.6-1.3-1.4V2.9c0-.8.5-1.4 1.3-1.4Z" fill="#302344" stroke="#B58CEB" stroke-width="1.1"/>
-  <path d="M9.3 1.7V5h3.3" fill="none" stroke="#B58CEB" stroke-width="1"/>
-  <path d="M5 11.8h2.1m-2.1-3h3.1m-.2 2.6 3-3m-2.8 0h2.8v2.8" fill="none" stroke="#E7D5FF" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.4"/>
+      <text x="0" y="76" fill="#EEE6E1" font-size="19">export.aug</text>
+      <text x="0" y="102" fill="#BEB0B3" font-size="14">Exports</text>
+      <g transform="translate(0 119)">
+  <g fill="none" stroke="#D19AAF" color="#D19AAF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6M7 3h6v6M6 10l7-7"/></g>
 </g>
-    <text x="87" y="188" fill="#B7CBDC" font-size="13">Actual 16px size</text>
-  </g>
-<g transform="translate(900 98)">
-    <rect width="264" height="208" rx="16" fill="#132A40" stroke="#26435B"/>
-    <g transform="translate(100 20) scale(4)">
-  <path d="M3 1.5h6.3L13 5.2v8.9c0 .8-.5 1.4-1.3 1.4H4.3c-.8 0-1.3-.6-1.3-1.4V2.9c0-.8.5-1.4 1.3-1.4Z" fill="#153D42" stroke="#48C7C5" stroke-width="1.1"/>
-  <path d="M9.3 1.7V5h3.3" fill="none" stroke="#48C7C5" stroke-width="1"/>
-  <path d="M5.2 7h5.6M5.2 9.6h5.6m-5.6 2.6h5.6" stroke="#B7F3EF" stroke-linecap="round" stroke-width="1"/>
-  <circle cx="7.2" cy="7" r="1" fill="#48C7C5"/><circle cx="9.5" cy="9.6" r="1" fill="#48C7C5"/><circle cx="6.6" cy="12.2" r="1" fill="#48C7C5"/>
+      <text x="25" y="132" fill="#BEB0B3" font-size="12">16 px</text>
+    </g>
+<g transform="translate(774 32)">
+      <g transform="translate(0 2) scale(2.5)">
+  <g fill="none" stroke="#D19AAF" color="#D19AAF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h3m3 0h4M3 11h6m3 0h1"/><circle cx="7.5" cy="5" r="1.5"/><circle cx="10.5" cy="11" r="1.5"/></g>
 </g>
-    <text x="132" y="116" text-anchor="middle" fill="#48C7C5" font-size="22" font-weight="700">main.yaml</text>
-    <text x="132" y="151" text-anchor="middle" fill="#B7CBDC" font-size="16">Project configuration</text>
-    <g transform="translate(64 175)">
-  <path d="M3 1.5h6.3L13 5.2v8.9c0 .8-.5 1.4-1.3 1.4H4.3c-.8 0-1.3-.6-1.3-1.4V2.9c0-.8.5-1.4 1.3-1.4Z" fill="#153D42" stroke="#48C7C5" stroke-width="1.1"/>
-  <path d="M9.3 1.7V5h3.3" fill="none" stroke="#48C7C5" stroke-width="1"/>
-  <path d="M5.2 7h5.6M5.2 9.6h5.6m-5.6 2.6h5.6" stroke="#B7F3EF" stroke-linecap="round" stroke-width="1"/>
-  <circle cx="7.2" cy="7" r="1" fill="#48C7C5"/><circle cx="9.5" cy="9.6" r="1" fill="#48C7C5"/><circle cx="6.6" cy="12.2" r="1" fill="#48C7C5"/>
+      <text x="0" y="76" fill="#EEE6E1" font-size="19">main.yaml</text>
+      <text x="0" y="102" fill="#BEB0B3" font-size="14">Configuration</text>
+      <g transform="translate(0 119)">
+  <g fill="none" stroke="#D19AAF" color="#D19AAF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h3m3 0h4M3 11h6m3 0h1"/><circle cx="7.5" cy="5" r="1.5"/><circle cx="10.5" cy="11" r="1.5"/></g>
 </g>
-    <text x="87" y="188" fill="#B7CBDC" font-size="13">Actual 16px size</text>
-  </g>
-  </g>
+      <text x="25" y="132" fill="#BEB0B3" font-size="12">16 px</text>
+    </g>
+<rect y="184" width="1000" height="184" fill="#FAF8F5"/>
+<g transform="translate(36 216)">
+      <g transform="translate(0 2) scale(2.5)">
+  <g fill="none" stroke="#812E47" color="#812E47" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11.5 3.25a5.5 5.5 0 1 0 1.95 4"/></g>
+</g>
+      <text x="0" y="76" fill="#522337" font-size="19">source.aug</text>
+      <text x="0" y="102" fill="#76626B" font-size="14">Source</text>
+      <g transform="translate(0 119)">
+  <g fill="none" stroke="#812E47" color="#812E47" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11.5 3.25a5.5 5.5 0 1 0 1.95 4"/></g>
+</g>
+      <text x="25" y="132" fill="#76626B" font-size="12">16 px</text>
+    </g>
+<g transform="translate(282 216)">
+      <g transform="translate(0 2) scale(2.5)">
+  <g fill="none" stroke="#812E47" color="#812E47" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 3 7 5-7 5Z"/></g>
+</g>
+      <text x="0" y="76" fill="#522337" font-size="19">main.aug</text>
+      <text x="0" y="102" fill="#76626B" font-size="14">Startup</text>
+      <g transform="translate(0 119)">
+  <g fill="none" stroke="#812E47" color="#812E47" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 3 7 5-7 5Z"/></g>
+</g>
+      <text x="25" y="132" fill="#76626B" font-size="12">16 px</text>
+    </g>
+<g transform="translate(528 216)">
+      <g transform="translate(0 2) scale(2.5)">
+  <g fill="none" stroke="#812E47" color="#812E47" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6M7 3h6v6M6 10l7-7"/></g>
+</g>
+      <text x="0" y="76" fill="#522337" font-size="19">export.aug</text>
+      <text x="0" y="102" fill="#76626B" font-size="14">Exports</text>
+      <g transform="translate(0 119)">
+  <g fill="none" stroke="#812E47" color="#812E47" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6M7 3h6v6M6 10l7-7"/></g>
+</g>
+      <text x="25" y="132" fill="#76626B" font-size="12">16 px</text>
+    </g>
+<g transform="translate(774 216)">
+      <g transform="translate(0 2) scale(2.5)">
+  <g fill="none" stroke="#812E47" color="#812E47" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h3m3 0h4M3 11h6m3 0h1"/><circle cx="7.5" cy="5" r="1.5"/><circle cx="10.5" cy="11" r="1.5"/></g>
+</g>
+      <text x="0" y="76" fill="#522337" font-size="19">main.yaml</text>
+      <text x="0" y="102" fill="#76626B" font-size="14">Configuration</text>
+      <g transform="translate(0 119)">
+  <g fill="none" stroke="#812E47" color="#812E47" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h3m3 0h4M3 11h6m3 0h1"/><circle cx="7.5" cy="5" r="1.5"/><circle cx="10.5" cy="11" r="1.5"/></g>
+</g>
+      <text x="25" y="132" fill="#76626B" font-size="12">16 px</text>
+    </g></g>
 </svg>

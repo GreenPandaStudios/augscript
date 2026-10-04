@@ -162,6 +162,11 @@ async function complete(context, document, position) {
       item.detail = entry.detail;
       if (entry.documentation) item.documentation = new vscode.MarkdownString(entry.documentation);
       if (entry.insertText) item.insertText = new vscode.SnippetString(entry.insertText);
+      if (entry.replacement) item.range = new vscode.Range(document.positionAt(entry.replacement.start), document.positionAt(entry.replacement.end));
+      item.sortText = entry.sortText;
+      if (entry.additionalEdits) item.additionalTextEdits = entry.additionalEdits.map(edit =>
+        vscode.TextEdit.replace(new vscode.Range(document.positionAt(edit.start), document.positionAt(edit.end)), edit.text));
+      if (['function', 'method', 'class'].includes(entry.kind)) item.command = { command: 'editor.action.triggerParameterHints', title: 'Show labeled inputs' };
       return item;
     });
   } catch { return []; }
@@ -192,16 +197,23 @@ async function codeActions(context, document, actionContext) {
       if (!diagnostic && fix.title !== 'Expand to named imports') continue;
       const action = new vscode.CodeAction(fix.title, diagnostic ? vscode.CodeActionKind.QuickFix : vscode.CodeActionKind.RefactorRewrite);
       action.diagnostics = diagnostic ? [diagnostic] : [];
+      action.isPreferred = !!fix.preferred;
       action.edit = new vscode.WorkspaceEdit();
       for (const edit of fix.edits) {
-        if (path.resolve(edit.file) !== document.uri.fsPath) continue;
-        action.edit.replace(document.uri,
-          new vscode.Range(document.positionAt(edit.start), document.positionAt(edit.end)), edit.text);
+        const target = path.resolve(edit.file) === document.uri.fsPath ? document : await vscode.workspace.openTextDocument(edit.file);
+        action.edit.replace(target.uri,
+          new vscode.Range(target.positionAt(edit.start), target.positionAt(edit.end)), edit.text);
       }
       actions.push(action);
     }
     for (const issue of actionContext.diagnostics) {
       if (issue.source !== 'AugScript') continue;
+      if (issue.code === 'PACKAGE') {
+        const install = new vscode.CodeAction('Install project source packages', vscode.CodeActionKind.QuickFix);
+        install.diagnostics = [issue];
+        install.command = {title:install.title,command:'augscript.installPackages'};
+        actions.push(install);
+      }
       const action = new vscode.CodeAction(`Explain ${issue.code} error`, vscode.CodeActionKind.QuickFix);
       action.diagnostics = [issue];
       action.command = { title: action.title, command: 'augscript.explainDiagnostic',
@@ -229,22 +241,29 @@ async function showContext(context, includeSource) {
 }
 
 const yamlHelp = {
+  backend: 'LLVM is the default on qualified hosts. August downloads its verified compiler/runtime pack. Choose c only for the temporary C reference workflow; checked native ABI packages require LLVM.',
+  spec: 'Deterministic specifications are generated beside source files during successful builds. aug spec regenerates them; aug spec --check checks for drift.',
+  'spec.require_comments': 'Require Javadoc on none (default), public declarations, or all declarations. Existing interface documentation can be inherited. Missing required comments are compiler errors.',
   assignment: 'Canonical assignments: `equals` or `to`. Both forms are accepted by the language.',
   block_style: 'Formatter block style: `braces` or `indent`. A colon starts an indented block.',
   indentation: 'Formatter indentation: `spaces` (four) or `tabs`. Mixed prefixes are compiler errors.',
   lint: 'List optional warnings: wildcard_imports, public_helpers, public_docs, broad_errors, discarded_errors, architecture.',
   strict_modules: 'When true, sibling imports must be listed in the folder export.aug.',
   module_dependencies: 'List allowed module edges, for example "domain: contracts, shared". Import cycles are always rejected.',
-  packages: 'Map import aliases to a local library folder, .tgz archive, or npm:name@exact-version. Run aug install and commit aug.lock.json.',
+  packages: 'Map import aliases to a public repository URL, local folder, archive, or exact npm version. Run aug install and commit aug.lock.json.',
   max_public_symbols: 'Positive public-surface threshold used by the public_helpers warning. Default 12.',
   max_dependencies: 'Positive import fan-out threshold used by the architecture warning. Default 8.',
   output: 'Name of the executable built under `.aug-build`. An absolute path is also accepted.',
   optimization: 'Choose `debug` for `-O0` (the default) or `release` for `-O2`.',
-  libraries: 'YAML list of libraries passed to the C linker with `-l`, for example `m`.',
-  library_paths: 'YAML list of linker search paths relative to the project root.',
+  libraries: 'C reference backend only: libraries passed to its linker with -l. LLVM native dependencies belong in package manifests.',
+  library_paths: 'C reference backend only: linker search paths relative to the project root. LLVM uses locked package artifacts.',
   web: 'Native HTTP transport configuration. Defaults to the loopback interface with bounded bodies and responses.',
   'web.host': 'Listening interface. Default `127.0.0.1`; choose an explicit address to expose a service.',
   'web.body_limit': 'Maximum buffered request body, from 1 to 67108864 bytes. Default 1048576. Excess returns 413.',
+  'web.headers_timeout': 'Absolute header reception deadline in milliseconds, 1 through 3600000. Default 30000.',
+  'web.request_timeout': 'Absolute request reception deadline in milliseconds from connection/request start. Default 120000. Stalled uploads return 408.',
+  'web.drain_timeout': 'Network grace period after SIGTERM or SIGINT, in milliseconds. Default 10000. Request cleanup joins before serve returns.',
+  'web.max_requests': 'Maximum admitted exchanges, from 1 through 65536. Default 256. New exchanges over capacity are rejected.',
   'web.response_limit': 'Maximum buffered response or endpoint-test stream collection. Default 4194304 bytes.',
   'web.http3': 'Enable HTTP/3 over QUIC. Default false. Requires a TLS certificate and private key.',
   'web.tls': 'TLS certificate configuration. Paths are relative to the project root.',
@@ -303,6 +322,7 @@ function yamlHover(document, position) {
 function yamlCompletions(document, position) {
   if (!projectRoot(document.uri.fsPath)) return [];
   const prefix = document.lineAt(position.line).text.slice(0, position.character);
+  if(/^\s*require_comments:\s*\w*$/.test(prefix))return ['none','public','all'].map(value=>new vscode.CompletionItem(value,vscode.CompletionItemKind.Value));
   if (/^\s*optimization:\s*\w*$/.test(prefix)) return ['debug', 'release'].map(value => {
     const item = new vscode.CompletionItem(value, vscode.CompletionItemKind.Value);
     item.documentation = new vscode.MarkdownString(value === 'debug' ?
@@ -315,7 +335,7 @@ function yamlCompletions(document, position) {
     const key=path.split('.').at(-1);
     const item = new vscode.CompletionItem(key, vscode.CompletionItemKind.Property);
     item.insertText = new vscode.SnippetString(
-      ['libraries', 'library_paths', 'lint', 'module_dependencies'].includes(key) ? `${key}:\n  - $0` : ['web','web.tls','openapi'].includes(path) ? `${key}:\n  $0` : `${key}: $0`);
+      ['libraries', 'library_paths', 'lint', 'module_dependencies'].includes(key) ? `${key}:\n  - $0` : ['web','web.tls','openapi','spec'].includes(path) ? `${key}:\n  $0` : `${key}: $0`);
     item.documentation = new vscode.MarkdownString(help);
     return item;
   });
@@ -383,7 +403,7 @@ async function signatureHelp(context, document, position) {
 }
 
 const semanticTypes = ['class', 'interface', 'function', 'method', 'property',
-  'variable', 'parameter', 'typeParameter', 'type', 'decorator'];
+  'variable', 'parameter', 'typeParameter', 'type', 'decorator', 'keyword'];
 const semanticLegend = new vscode.SemanticTokensLegend(semanticTypes, ['declaration']);
 
 async function semanticTokens(context, document) {
@@ -397,6 +417,21 @@ async function semanticTokens(context, document) {
     }
   } catch { /* Grammar highlighting still works if the compiler is unavailable. */ }
   return builder.build();
+}
+
+async function inlayHints(context, document, range, token) {
+  if (!vscode.workspace.getConfiguration('augscript', document.uri).get('inferredContractHints', true)) return [];
+  try {
+    const hints = await editorData(context, document, 'inlay-hints', 0,
+      {start: document.offsetAt(range.start), end: document.offsetAt(range.end)});
+    if (token.isCancellationRequested) return [];
+    return hints.map(item => {
+      const hint = new vscode.InlayHint(document.positionAt(item.offset), item.label, vscode.InlayHintKind.Type);
+      hint.paddingLeft = true;
+      hint.tooltip = new vscode.MarkdownString(item.tooltip);
+      return hint;
+    });
+  } catch { return []; }
 }
 
 async function executeProject(context, command) {
@@ -438,6 +473,15 @@ function activate(context) {
   context.subscriptions.push(vscode.languages.registerHoverProvider('augscript', {
     provideHover: (document, position) => hover(context, document, position),
   }));
+  const hintChanges = new vscode.EventEmitter();
+  context.subscriptions.push(hintChanges,
+    vscode.workspace.onDidChangeConfiguration(event => {
+      if (event.affectsConfiguration('augscript.inferredContractHints')) hintChanges.fire();
+    }),
+    vscode.languages.registerInlayHintsProvider('augscript', {
+      onDidChangeInlayHints: hintChanges.event,
+      provideInlayHints: (document, range, token) => inlayHints(context, document, range, token),
+    }));
   context.subscriptions.push(vscode.languages.registerCodeActionsProvider('augscript', {
     provideCodeActions: (document, range, actionContext) =>
       codeActions(context, document, actionContext),
@@ -447,7 +491,7 @@ function activate(context) {
       await editorData(context, document, 'format'))],
   }));
   const watcher = vscode.workspace.createFileSystemWatcher('**/{*.aug,main.yaml,aug.lock.json,aug-package.json}');
-  const changed = () => { for (const connection of servers.values()) connection.changed(); };
+  const changed = () => { for (const connection of servers.values()) connection.changed(); hintChanges.fire(); };
   context.subscriptions.push(watcher, watcher.onDidCreate(changed), watcher.onDidChange(changed), watcher.onDidDelete(changed));
   context.subscriptions.push(vscode.languages.registerHoverProvider(yamlSelector, {
     provideHover: yamlHover,
@@ -462,6 +506,32 @@ function activate(context) {
     provideDocumentSemanticTokens: document => semanticTokens(context, document),
   }, semanticLegend));
   context.subscriptions.push(vscode.commands.registerCommand('augscript.build', () => executeProject(context, 'build')));
+  context.subscriptions.push(vscode.commands.registerCommand('augscript.spec', () => executeProject(context, 'spec')));
+  context.subscriptions.push(vscode.commands.registerCommand('augscript.openSpec', async () => {
+    const editor=vscode.window.activeTextEditor;
+    if(!editor||editor.document.languageId!=='augscript')return;
+    const root=projectRoot(editor.document.uri.fsPath);
+    if(!root)return;
+    if(editor.document.isDirty){vscode.window.showInformationMessage('Save the source file before generating its specification.');return;}
+    try {
+      const result=await runCompiler(context,['spec',root]);
+      if(result.code!==0)throw new Error(result.stderr||result.stdout||'Specification generation failed.');
+      await vscode.commands.executeCommand('markdown.showPreview',vscode.Uri.file(editor.document.uri.fsPath+'.md'));
+    }catch(error){vscode.window.showErrorMessage(error.message);}
+  }));
+  context.subscriptions.push(vscode.commands.registerCommand('augscript.migrate', async () => {
+    const document=vscode.window.activeTextEditor?.document;
+    if(!document||document.languageId!=='augscript')return;
+    const root=projectRoot(document.uri.fsPath);
+    const dirty=vscode.workspace.textDocuments.find(doc=>doc.languageId==='augscript'&&projectRoot(doc.uri.fsPath)===root&&doc.isDirty);
+    if(dirty){vscode.window.showInformationMessage('Save the project sources before migrating their syntax.');return;}
+    try {
+      const result=await runCompiler(context,['migrate',root,'--write']);
+      if(result.code!==0)throw new Error(result.stderr||result.stdout||'Syntax migration failed.');
+      vscode.window.showInformationMessage(result.stdout.trim()||'Project syntax is current.');
+    }catch(error){vscode.window.showErrorMessage(error.message);}
+  }));
+  context.subscriptions.push(vscode.commands.registerCommand('augscript.installPackages', () => executeProject(context, 'install')));
   context.subscriptions.push(vscode.commands.registerCommand('augscript.run', () => executeProject(context, 'run')));
   context.subscriptions.push(vscode.commands.registerCommand('augscript.test', () => executeProject(context, 'test')));
   context.subscriptions.push(vscode.commands.registerCommand('augscript.explain', () => showContext(context, false)));

@@ -20,7 +20,7 @@ function format(lines: string[]): string {
 export function javadocBefore(source: string, offset: number): Javadoc | undefined {
   let before = source.slice(0, offset);
   // Extern C declarations start their recorded span at the name after the prefix.
-  before = before.replace(/\bextern\s+C\s*$/, '');
+  before = before.replace(/\b(?:extern\s+C(?:\s+value)?(?:\s+pure)?|fixture)\s*$/, '');
   const end = before.lastIndexOf('*/');
   if (end < 0 || before.slice(end + 2).trim()) return undefined;
   const start = before.lastIndexOf('/**', end);

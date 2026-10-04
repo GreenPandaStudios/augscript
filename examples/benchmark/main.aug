@@ -1,3 +1,4 @@
+// aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 // A deterministic native workload: arithmetic and 20,000 hash entries.
 own Map<int,int> values = {}
 own Set<int> unique = {}

@@ -1,3 +1,4 @@
+// aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 // A loop-carried dependency prevents removal of the computation.
 int state = 123
 int index = 0

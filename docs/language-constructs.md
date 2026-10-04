@@ -6,7 +6,7 @@ editLink: false
 
 # Language constructs
 
-This reference uses the same help as VS Code hover and completion. See [the guide](reference.md) for complete, compiler-checked examples.
+Syntax and built-in operations. For complete programs, read [the language reference](reference.md). These descriptions also appear in VS Code help.
 
 ## -
 
@@ -15,14 +15,6 @@ left - right
 ```
 
 Subtract numbers. Unary `-` negates a number.
-
-## ->
-
-```text
-->
-```
-
-This token is reserved for future syntax and is not currently valid AugScript.
 
 ## ,
 
@@ -48,14 +40,6 @@ if condition: ... or {1: "apples"}
 
 After a block header, introduce a body indented with tabs or spaces. Dedenting ends that body. Each block may independently use braces or indentation. In a map literal, separate a key from its value; collection and parenthesis continuation indentation has no block meaning.
 
-## !
-
-```text
-!value
-```
-
-Negate a `bool` value.
-
 ## !=
 
 ```text
@@ -63,14 +47,6 @@ left != right
 ```
 
 Compare values for inequality; the result is `bool`.
-
-## ?
-
-```text
-Type?
-```
-
-Mark a type as nullable. `Map.get` returns a nullable value.
 
 ## .
 
@@ -102,7 +78,7 @@ End a tuple, grouped expression, argument list, parameter list, or class header.
 [1, 2] or [Validator(y=x)]
 ```
 
-Start a list literal, or an interceptor annotation immediately before a callable declaration. Lists infer one element type. Interceptor mappings connect processor labels to target labels; stacked annotations enter in written order.
+Start a list literal, or an interceptor annotation immediately before a callable declaration. Lists infer one element type. Interceptor mappings connect around inputs to target labels; stacked annotations enter in written order.
 
 ## ]
 
@@ -224,14 +200,6 @@ left / right
 
 Divide numbers. Integer division truncates toward zero. A potentially zero divisor raises checked ArithmeticError; a literal nonzero divisor needs no error clause. MIN/-1 wraps to MIN.
 
-## &&
-
-```text
-left && right
-```
-
-Logical AND. Both operands must be `bool`; the right side is skipped when the left side is false.
-
 ## +
 
 ```text
@@ -272,14 +240,6 @@ left == right
 
 Compare values for equality; the result is `bool`.
 
-## =>
-
-```text
-Name(Type field) => { ... } implements Interface { ... }
-```
-
-Start an optional constructor body. Header fields are initialized before the block runs, so assigning a field name updates that field. An ordinary header field still requires a labeled constructor argument; only `resolve` fields come from DI.
-
 ## >
 
 ```text
@@ -296,14 +256,6 @@ left >= right
 
 Compare compatible numbers; the result is `bool`.
 
-## ||
-
-```text
-left || right
-```
-
-Logical OR. Both operands must be `bool`; the right side is skipped when the left side is true.
-
 ## always
 
 ```text
@@ -315,10 +267,10 @@ Run cleanup on success, checked errors, returns and cancellation. Cancellation b
 ## and
 
 ```text
-import Logger and ConsoleLogger from logging
+left and right
 ```
 
-Join explicitly named imports. Also separates checked error types: `load() returns string unless FileError and ValidationError`. It is not a boolean operator; use `&&` for conditions.
+Logical AND on bool values. Skip the right operand when the left operand is false. Also join named imports, checked errors, contracts, and grouped task waits. Comparisons and not bind before and; and binds before or.
 
 ## arguments
 
@@ -342,7 +294,7 @@ Checked failure for division by zero. int arithmetic otherwise wraps in the sign
 around(Type input) returns Type { return next(); }
 ```
 
-The required entry point of an interceptor. Its parameters select target arguments, and its result must fit the target return type. Omit `returns` for void. It may validate, override mapped arguments, inspect the result, throw a checked error, or return early. Declare generic parameters on the interceptor header. Helper methods can be declared alongside around.
+The required entry point of an interceptor. Its parameters select target arguments, and its result must fit the target return type. A forwarding body can omit returns and inherit the target result. It may validate, override mapped arguments, inspect the result, throw a checked error, or return early. Declare generic parameters on the interceptor header. Helper methods can be declared alongside around.
 
 ## as
 
@@ -359,14 +311,6 @@ assert(condition=bool) returns void
 ```
 
 Assert a bool in a test case or its setup. Catching an assertion failure cannot make the case pass; every case must execute an assertion.
-
-## bind
-
-```text
-bind Interface to Implementation
-```
-
-Legacy spelling for implement Interface with Implementation. The formatter emits implement with. Lifetimes, shared mutation choices, dependency ordering and provenance checks are identical for both spellings.
 
 ## body
 
@@ -390,7 +334,7 @@ Boolean type used by conditions and logical operators.
 borrow value { ... }
 ```
 
-Take exclusive mutable access for the duration of this block. Ordinary reads need no borrow. Managed List, Set, and Map mutations require one.
+Take exclusive mutable access for the duration of this block. Ordinary reads need no borrow. Managed List, Set, and Map mutations require one. If a child task reads the value, wait for it before mutating the value again.
 
 ```text
 borrow items { items.append(value=1) }
@@ -402,7 +346,7 @@ borrow items { items.append(value=1) }
 Bytes
 ```
 
-Immutable length-aware binary data. text() validates UTF-8; base64url() emits canonical unpadded URL-safe base64.
+Immutable length-aware binary data. text() validates UTF-8; base64url() emits canonical unpadded URL-safe base64. slice(start, end) copies a checked half-open range and hex() returns lowercase hexadecimal.
 
 ## C
 
@@ -426,7 +370,7 @@ Signed 32-bit C int. Convert explicitly with c_int(value=number), which raises C
 capability Console { write(string value) uses Console.write }
 ```
 
-Declare an interface for an external effect. Import the standard Console, FileReader, FileWriter and Arguments contracts from august.io, select adapters in main, and receive them through resolve parameters. Operations remain visible in uses clauses and can be replaced in tests.
+Declare an interface for I/O or other external effects. Import Console, FileReader, FileWriter, or Arguments from august.io, choose a provider in main, and receive it through resolve inputs. Tests can supply another provider.
 
 ## catch
 
@@ -442,15 +386,7 @@ Handle a thrown error from the preceding `try` block. The caught value is availa
 increment() changes self
 ```
 
-Declare observable mutation of self or a borrowed input. Callers must provide mutable access. Ordinary functions and methods are pure by default; changing a local variable or a fresh local object does not change caller-owned state.
-
-## class
-
-```text
-No class keyword
-```
-
-Class declarations start with their name and must include `implements`: `Worker() implements IWorker { ... }`. Members starting with `_` are private to the class; other members are public. A private header field still accepts its labeled constructor argument. Remove the old `class` prefix.
+State which caller-visible values an operation may change. Bodies infer changes when omitted, but callers still need mutable access. Bodyless interfaces state permitted changes. Writes to local variables and fresh local objects do not change caller-owned state. An explicit clause limits the body.
 
 ## composition
 
@@ -458,7 +394,7 @@ Class declarations start with their name and must include `implements`: `Worker(
 composition Services: implement Logger with Adapter
 ```
 
-Group static bindings behind an explicitly imported module declaration. Include the composition in main before executable statements; its own file must import every referenced contract and implementation.
+Collect dependency bindings in a named composition. Import and include it in main before startup statements. The composition’s file must import every interface and provider it uses.
 
 ## Compress
 
@@ -474,7 +410,7 @@ Negotiate gzip from Accept-Encoding, respecting q=0. Buffered output and each bo
 ConversionError implements Error
 ```
 
-Checked failure when c_int(value=number) cannot fit the signed 32-bit C int range. Catch it or declare unless ConversionError.
+Checked failure when c_int(value=number) cannot fit the signed 32-bit C int range. Catch it or let it propagate.
 
 ## cookie
 
@@ -566,7 +502,7 @@ Inherit methods from one or more interfaces. Class inheritance is not supported.
 extern C name(Type arg) returns Type
 ```
 
-Declare a C function. Calls require unsafe and external callables declare uses C.name. int maps to int64_t, c_int to signed 32-bit int, float to double, bool to C bool, and string to a temporary UTF-8 const char pointer. Foreign code must respect the declared ABI and cannot retain managed pointers.
+Declare a C function. Calls require unsafe and executable callers infer uses C.name. int maps to int64_t, c_int to signed 32-bit int, float to double, bool to C bool, and string to a temporary UTF-8 const char pointer. Foreign code must respect the declared ABI and cannot retain managed pointers.
 
 ## false
 
@@ -574,7 +510,7 @@ Declare a C function. Calls require unsafe and external callables declare uses C
 false
 ```
 
-Boolean false. `&&` and `||` evaluate the right side only when needed.
+Boolean false. and and or evaluate the right side only when needed. Conditions require bool values.
 
 ## FileError
 
@@ -582,7 +518,7 @@ Boolean false. `&&` and `||` evaluate the right side only when needed.
 FileError
 ```
 
-Built in checked error from text file operations. Catch it or declare `unless FileError`.
+Checked failure from text file operations. Catch it or let it propagate.
 
 ## fixture
 
@@ -590,7 +526,7 @@ Built in checked error from text file operations. Catch it or declare `unless Fi
 fixture example() returns Data: ...
 ```
 
-Declare reusable test data through an ordinary checked function. Other files must import the fixture explicitly. Its dependencies and capabilities follow the same header contract rules as other functions.
+Declare a function that prepares reusable test data. Import it from other files like any other function. Dependencies and capability calls follow ordinary function rules.
 
 ## float
 
@@ -648,14 +584,6 @@ import Name from module;
 
 Names the source of an import or export. Dotted paths cross folders; each crossed folder must expose the next one with `export folder child;`. A module starting with `_` is private.
 
-## function
-
-```text
-No function keyword
-```
-
-Functions and methods start with their name: `greet(string name) { ... }` or `greet(string name) returns string;`. Remove the old `function` prefix. Parameters use `Type name` order and callers use labels. Omit `returns` for a `void` result.
-
 ## handle
 
 ```text
@@ -702,7 +630,7 @@ An immutable deferred HTTP call created with handle endpoint(...). Bind it to a 
 HttpRequest
 ```
 
-A request supplied through from request. Its method, path, headers and bounded body are explicit. form<T>() allows protocol-specific form errors.
+A request supplied through from request. Headers are available before upload reception. Reading body waits for the bounded upload and can raise HttpError; early rejection sends no 100 Continue. form<T>() allows protocol-specific form errors.
 
 ## HttpResponse
 
@@ -742,7 +670,7 @@ Register an implementation in main or test setup. Stateless bindings are shared 
 Name() implements Interface { ... }
 ```
 
-Marks a declaration as a class and lists the interfaces it satisfies. Every class needs at least one interface. Method signatures must match. Multiple default implementations of the same method require an override. Add an optional constructor block before this clause: `Name(Type value) => { value = other; } implements Interface { ... }`.
+Marks a declaration as a class and lists the interfaces it satisfies. Every class needs at least one interface. Method signatures must match. Conflicting default implementations require an override. Put constructor work in an initialize block inside the class.
 
 ## import
 
@@ -750,7 +678,7 @@ Marks a declaration as a class and lists the interfaces it satisfies. Every clas
 import Logger and ConsoleLogger from logging
 ```
 
-Bring public declarations into this file. Use `and` for several names, or `import everything from logging` for all public sibling declarations or folder exports. Imported dependencies are never re-exported implicitly. Names or modules starting with `_` stay private. A sibling module uses its filename without `.aug`; a folder exposes only names listed in `export.aug`.
+Bring public declarations into this file. Use `and` for several names, or `import everything from logging` for all public sibling declarations or folder exports. Imported dependencies are never re-exported implicitly. Names or modules starting with `_` stay private. A sibling module uses its filename without `.aug`; a folder exposes only names listed in `export.aug`. A quoted public repository URL declares a source dependency; `aug run` installs it and locks its commit. Use `aug add URL --as NAME` for a shorter import alias.
 
 ## in
 
@@ -774,7 +702,15 @@ Expand an explicitly imported composition into the application root. Duplicate b
 IndexError implements Error
 ```
 
-Checked failure for an invalid List.get position. Catch it, declare unless IndexError, or use List.at for a nullable lookup.
+Checked failure for an invalid List.get position. Catch it or let it propagate. List.at returns a value or null instead.
+
+## initialize
+
+```text
+initialize: ...
+```
+
+Run constructor work once after header inputs and local fields are initialized, before returning the class or record. Put this block inside the declaration, before class methods. Construction stays pure. Classes declare checked constructor failures with unless before implements; failed construction releases transferred owned fields. Records can infer validation failures but cannot replace immutable fields.
 
 ## input
 
@@ -822,7 +758,7 @@ Define a test case within a when group. Names may be identifiers or quoted descr
 Json
 ```
 
-Immutable JSON data. Parse with august.json, decode concrete records with decode<T>(), and stringify with lossless integer handling.
+Immutable JSON data. Import parse from the JSON source package, decode concrete records with decode<T>(), and stringify with lossless integer handling. has(name) distinguishes a missing field from JSON null; parseCompatible is a separate legacy-boundary parser.
 
 ## List
 
@@ -846,7 +782,7 @@ Grant exclusive mutation of Shared<T> for a short block. Waiting, starting tasks
 [LogRequest(logger=logger)]
 ```
 
-Map a resolve RequestLogger parameter and declare uses logger.complete. Observe the final status and monotonic duration after output finishes, or status 499 on disconnect. Layers complete in reverse written order.
+Map a resolve RequestLogger parameter and infer its complete operation. Observe the final status and monotonic duration after output finishes, or status 499 on disconnect. Layers complete in reverse written order.
 
 ## Map
 
@@ -854,7 +790,7 @@ Map a resolve RequestLogger parameter and declare uses logger.complete. Observe 
 Map<K,V>
 ```
 
-Hash map: `{1: "apples", 2: "pears"}` infers Map<int, string>. A typed declaration supplies empty types: `Map<int, string> fruit = {}`. Duplicate keys keep the last value. `set(key=..., value=...)` requires mutable access; `get(key=...)` returns V?; `contains(key=...)` and `length()` read. Primitive keys and tuples compare by value; other objects use identity.
+Hash map: `{1: "apples", 2: "pears"}` infers Map<int, string>. A typed declaration supplies empty types: `Map<int, string> fruit = {}`. Duplicate keys keep the last value. `set(key=..., value=...)` requires mutable access; `get(key=...)` returns optional V; `contains(key=...)` and `length()` read. Primitive keys and tuples compare by value; other objects use identity.
 
 ## match
 
@@ -864,21 +800,13 @@ match value: when ...
 
 Choose a checked case. Cover true and false for bool, null and some for nullable values, or add else. Concrete class cases narrow the named value. Duplicate and unreachable cases are rejected.
 
-## missing
-
-```text
-when missing: ...
-```
-
-The omitted state of an optional value. It is distinct from null; JSON omits missing fields and serializes null fields.
-
 ## mutable
 
 ```text
 Counter(mutable int initial to _count)
 ```
 
-Declare mutable class storage. Header fields are otherwise read-only after construction. An explicit public argument label can initialize private storage with Type label to _field. Mutating methods declare changes self and callers provide mutable access.
+Declare mutable class storage. Header fields are otherwise read-only after construction. An explicit public argument label can initialize private storage with Type label to _field. Bodies infer changes self; callers provide mutable access.
 
 ## next
 
@@ -888,13 +816,21 @@ next(mappedLabel=value) returns TargetResult
 
 Continue to the next interceptor layer or the original function/constructor. Available only inside an interceptor around body. `next()` forwards original arguments unchanged; optional labeled overrides use the interceptor parameter names and map back to the target. Unselected arguments are forwarded automatically. The compiler requires at most one next call on each execution path. Target errors propagate through the chain; additional errors declared by around become checked errors of the tagged callable.
 
+## not
+
+```text
+not count == 0
+```
+
+Negate a bool expression. Comparisons bind before not, so not count == 0 means not (count == 0). not binds before and and or. Use parentheses to negate only one comparison operand. Symbolic ! is rejected; != remains inequality.
+
 ## null
 
 ```text
 null
 ```
 
-The absent value. Nullable types end in ?. Narrow local values with if value != null, an early return guard, or match null/some before calling members. Fields remain conservative because another alias may change their value.
+The absent value of optional Type. Omitted optional inputs also become null. Narrow local values with if value != null, an early return guard, or match null/some before calling members. The checker narrows mutable fields conservatively because another alias may change them.
 
 ## optional
 
@@ -902,7 +838,15 @@ The absent value. Nullable types end in ?. Narrow local values with if value != 
 optional T value
 ```
 
-A value may be omitted. Match missing or some before reading it. optional T? also allows null, and requires all three cases.
+Allow a value of T or null. Omitted optional inputs and fields become null. Match null and some, or check != null, before reading the value. This is the only optional type spelling; Type? is rejected.
+
+## or
+
+```text
+left or right
+```
+
+Logical OR on bool values. Skip the right operand when the left operand is true. This is the lowest-precedence boolean operator. Symbolic || is rejected.
 
 ## out
 
@@ -946,7 +890,7 @@ Bind a required path placeholder by name. A label after the source can select a 
 print(value=any) returns void
 ```
 
-Composition and test output. Other callables receive Console and declare uses console.write.
+Write application startup or test output. Other callables receive a Console dependency and call console.write; their bodies infer that capability use.
 
 ## pure
 
@@ -962,7 +906,7 @@ A trusted native value adapter promises no effects or mutation. The foreign call
 optional string search from query
 ```
 
-Bind one query parameter. Missing optional input stays missing; repeated scalar parameters are rejected.
+Bind one query parameter. Omitted optional input becomes null; repeated scalar parameters are rejected.
 
 ## RateLimit
 
@@ -986,7 +930,7 @@ Root-only UTF-8 text input. Other callables receive FileReader. Invalid Unicode 
 record Point(int x, int y)
 ```
 
-Declare deeply immutable data with labeled construction and structural equality/hashing. Records contain primitives, tuples and other records. Optional unless errors and a => validation body establish the data contract.
+Declare deeply immutable data with labeled construction and structural equality/hashing. Records contain primitives, tuples and other records. An initialize block validates inputs; its escaping errors are inferred; an explicit unless ErrorType limits permitted failures.
 
 ## request
 
@@ -1002,7 +946,7 @@ Receive the immutable raw request when a protocol requires its own binding and e
 [RequireLogin(authentication=auth)]
 ```
 
-Verify credentials before typed body decoding. Map auth to an explicit resolve Authentication parameter and declare uses auth.authenticate. null produces 401; the adapter validates the credential. HTTP policies precede custom parameter interceptors.
+Verify credentials before typed body decoding. Map auth to an explicit resolve Authentication parameter and infer its authenticate operation. null produces 401; the adapter validates the credential. HTTP policies precede custom parameter interceptors.
 
 ## RequirePermission
 
@@ -1010,15 +954,23 @@ Verify credentials before typed body decoding. Map auth to an explicit resolve A
 [RequirePermission(authentication=auth, authorization=permissions, permission="users.read")]
 ```
 
-Authenticate the request and authorize one literal permission before decoding. Both dependencies are explicit resolve parameters; declare their authenticate and authorize effects. Missing credentials produce 401 and a denied permission produces 403.
+Authenticate the request and authorize one literal permission before decoding. Receive both dependencies through resolve inputs. The handler infers their authenticate and authorize operations. Missing credentials produce 401 and a denied permission produces 403.
 
 ## resolve
 
 ```text
-resolve Logger logger
+resolve Logger logger; resolve app to program
 ```
 
-Declare a dependency in a class or callable header. Callers omit its argument and forward the matching header dependency. Only main and test setup retrieve bindings directly: resolve app to program or program = resolve app. Lifetime follows the selected binding; scoped dependencies require a scope block.
+Declare a dependency in a class or callable header. Callers omit its argument and forward the matching header dependency. Only main and test setup retrieve bindings directly with resolve app to program. Assignment-form resolve is rejected. Scoped dependencies require a scope block.
+
+## resource
+
+```text
+extern C resource Tensor
+```
+
+Declare an opaque native resource and its release operation. The descriptor must match the declaration. Store acquired resources in own bindings; scope exit releases them once. Declare resources in native packages, outside main.aug.
 
 ## return
 
@@ -1034,7 +986,7 @@ Finish the current function or method and give its result to the caller. A `void
 name() returns Type
 ```
 
-Specify a function or method return type. Without this clause, the result is `void`; the body may end without `return` or use `return;`. Returning a value requires a declared return type. `returns own Type` transfers ownership to the caller.
+Bodies infer their result from return expressions or their implemented interface when this clause is omitted. No returned value means void. Bodyless signatures still need non-void result types. Explicit result types are checked assertions; returns own Type explicitly transfers ownership. Recursive or ambiguous results may require a type anchor.
 
 ## scope
 
@@ -1090,7 +1042,7 @@ Cache one stateless binding for the process. Sharing stateful instances requires
 Shared<T>
 ```
 
-Synchronized mutable state. Construction takes a fresh or owned value. Read and mutate the value only through lock shared as state.
+Synchronized mutable state. Construction takes a fresh or owned value. Read and mutate the value only through lock shared as state. A child borrowing an owned Shared<T> pins the wrapper until it finishes; the parent cannot move it into another owner while the child uses it.
 
 ## some
 
@@ -1106,7 +1058,7 @@ Match the present case of a nullable value and introduce a read-only non-null na
 task = start loadUsers()
 ```
 
-Start a child task in a scope. Receiver and arguments evaluate immediately. Scheduled errors are checked at waits and implicit scope joins; an unhandled child error cancels siblings. Arguments follow their ownership and mutation contracts.
+Start a child Task in a scope. Receiver and arguments evaluate immediately. Cooperative tasks capture references; wait before mutating or moving captured objects. Use start worker calculate(values) to copy data to an isolated heap and run on an OS thread. Both forms use the same waits, sibling cancellation, and scope joins. Worker admission and copied-input limits can raise checked ConcurrencyError at start.
 
 ## streams
 
@@ -1146,15 +1098,7 @@ Declare tests beside the class, function, or endpoint. Class suites initialize t
 throw error;
 ```
 
-Raise a value whose class implements `Error`. The enclosing function must declare the error or the call must be handled by a matching `catch`.
-
-## throws
-
-```text
-Use unless
-```
-
-This old error-contract spelling is rejected. Replace `throws FileError` with `unless FileError`. Javadoc `@throws` remains supported.
+Raise a value whose class implements `Error`. An executable body infers uncaught errors; main must handle them with a matching catch.
 
 ## Timeout
 
@@ -1199,10 +1143,10 @@ Fixed immutable positions: `(1, 2)` infers Tuple<int, int>, `(1, "apple")` infer
 ## unless
 
 ```text
-load(bool fail) returns string unless FileError
+load(bool fail) unless FileError
 ```
 
-Declare checked failures a function may raise instead of returning its result. Callers must catch the failures or declare them with unless too. Separate several types with `and` or commas; `unless Error` accepts any error type. The statement that raises an error remains `throw`.
+State which checked errors may escape a call. Bodies and record validation infer uncaught errors when unless is omitted. Catch blocks handle errors; main must handle any that reach it. Bodyless interfaces state permitted errors explicitly. An explicit unless clause limits the body; unless Error permits any error type.
 
 ## unsafe
 
@@ -1215,10 +1159,10 @@ Permit calls to declared `extern C` functions within this block. The compiler do
 ## uses
 
 ```text
-save(resolve FileWriter files, string path) uses files.write unless FileError
+save(resolve FileWriter files, string path)
 ```
 
-Declare the external capability operations this callable may use. Interfaces, public standalone functions, default methods and interceptor around methods keep explicit contracts. Class implementations and private helpers infer uses when omitted; hover, explain and API docs show the result. An explicit uses clause remains an upper bound. Effects are checked through calls and interceptor layers; implementations cannot exceed their interface contract. changes and unless remain explicit, and construction stays pure.
+State which capability operations a callable may use. Executable bodies infer these operations when uses is omitted; the editor displays them as hints. Bodyless interfaces and extern declarations state them explicitly. An implementation cannot exceed its written uses clause or interface. Construction and cleanup remain pure.
 
 ## void
 
@@ -1234,7 +1178,7 @@ No return value. A function can omit `returns void`.
 wait for usersTask and ordersTask as users and orders
 ```
 
-Wait for scoped tasks without changing result order. A List<Task<T>> produces List<T>. A wait may encounter an unhandled sibling failure. Grouped waits observe all selected children before rethrowing the first failure. Waiting for I/O suspends a task.
+Wait for scoped tasks without changing result order. A List<Task<T>> produces List<T> and joins every child in the list. Waiting for one dynamically selected task leaves possible siblings captured until their scope joins them. A wait may encounter an unhandled sibling failure. Grouped waits observe all selected children before rethrowing the first failure. Waiting for I/O suspends a task.
 
 ## when
 
@@ -1259,6 +1203,14 @@ implement key with Class;
 ```
 
 Separates a binding key from its implementing class. The class must satisfy an interface key.
+
+## worker
+
+```text
+task = start worker calculate(values)
+```
+
+Run a standalone function on a worker with its own heap. Inputs and results are copied scalars, records, bytes, JSON, or collections of copied data. Construct dependencies and native resources inside the worker. Parent bindings, Shared values, behavior objects, tasks, own/borrow inputs, and native handles cannot cross the boundary. Native calls require an explicit workerSafe package contract. GPU operations belong in a native package; its handles stay on this worker.
 
 ## write_file
 
@@ -1304,13 +1256,17 @@ Read every value of this header in wire order.
 
 ## Json operations
 
+### Json.has
+
+Test object-member presence. A present JSON null returns true; an absent member returns false.
+
 ### Json.stringify
 
 Serialize this JSON value with checked UTF-8 escaping and exact int64 values.
 
 ### Json.get
 
-Read an object member. Missing is distinct from a JSON null value.
+Read an object member. An absent member or JSON null returns null.
 
 ### Json.require
 
@@ -1336,7 +1292,33 @@ Read an immutable JSON array.
 
 Decode a checked record or data type: json.decode<Profile>(). Unknown fields, type mismatches, and validation errors are rejected.
 
+## float operations
+
+### float.isFinite
+
+Test whether this binary64 value is neither infinity nor NaN.
+
+### float.float32
+
+Round to IEEE 754 binary32 and return the rounded value as float. Reject nonfinite input or overflow.
+
 ## string operations
+
+### string.trim
+
+Remove ECMAScript whitespace and line terminators from both ends; preserve interior text.
+
+### string.utf16Length
+
+Count UTF-16 code units for JavaScript wire limits; supplementary characters count as two.
+
+### string.isDecimal
+
+Require a nonempty ASCII unsigned decimal string. Leading zeros are allowed.
+
+### string.compareDecimal
+
+Compare unsigned decimal strings without integer conversion. Leading zeros do not affect the result; return -1, 0, or 1.
 
 ### string.isToken
 
@@ -1363,6 +1345,14 @@ Test an exact prefix.
 ### Bytes.length
 
 Read the number of elements.
+
+### Bytes.slice
+
+Copy bytes in the half-open range [start, end). Require 0 <= start <= end <= length.
+
+### Bytes.hex
+
+Encode bytes as lowercase hexadecimal, including embedded zeros.
 
 ### Bytes.text
 
@@ -1408,7 +1398,7 @@ Read the number of elements.
 
 ### Map.take
 
-Remove and return an entry under exclusive access. A missing key returns null.
+Remove and return an entry under exclusive access. An absent key returns null.
 
 ### Map.set
 
@@ -1416,7 +1406,7 @@ Insert or replace an entry with exclusive mutable access.
 
 ### Map.get
 
-Read a value by key; null means the key is absent.
+Read a value by key; an absent key returns null. contains distinguishes an absent key from a stored null.
 
 ### Map.contains
 
@@ -1435,3 +1425,7 @@ Read a statically checked constant position. Prefer tuple destructuring when rea
 ### Tuple.length
 
 Read the number of elements.
+
+## Unsupported spellings
+
+Use `and`, `or`, `not`, `unless`, `optional T`, `null`, `implement … with …`, and `initialize`. Declarations start with their name, without a class or function prefix. Symbolic booleans, arrow constructors, and `T?` are rejected. [Diagnostics](diagnostics.md) explains fixes and migration.

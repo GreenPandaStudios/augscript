@@ -4,13 +4,14 @@ import type { ClassDecl, MethodDecl, Param, SourceFile } from './ast.ts';
 import { lex, type Token } from './lexer.ts';
 import type { Definition, Project } from './project.ts';
 import { libraryChild } from './libraries.ts';
+import { isGitSource, sourceAlias } from './git-packages.ts';
 
 export interface NavigationTarget {
   name: string;
   file: string;
   line: number;
   column: number;
-  kind: 'class' | 'interface' | 'function' | 'composition' | 'interceptor' | 'method' | 'parameter' | 'module';
+  kind: 'class' | 'interface' | 'function' | 'composition' | 'interceptor' | 'resource' | 'method' | 'parameter' | 'module';
 }
 
 function definitionTarget(def: Definition): NavigationTarget {
@@ -50,7 +51,8 @@ function importPathTarget(project: Project, importer: SourceFile, from: string[]
     return exportTarget(project, folder, name, segment < from.length - 1 ? from[segment + 1] : undefined);
   }
   const owner = importer.package ? project.packages.scopes.get(importer.package) : undefined;
-  const dependency = owner ? project.packages.scopes.get(owner.dependencies[from[0]]) : project.packages.roots.get(from[0]);
+  const alias = isGitSource(from[0]) ? sourceAlias(from[0]) : from[0];
+  const dependency = owner ? project.packages.scopes.get(owner.dependencies[alias]) : project.packages.roots.get(alias);
   if (dependency) {
     const folder = join(dependency.sourceRoot, ...from.slice(1, segment + 1));
     return exportTarget(project, folder, name, segment < from.length - 1 ? from[segment + 1] : undefined);
@@ -131,7 +133,7 @@ export function definitionAt(project: Project, fileName: string,
       entry.span.end <= item.span.end);
     const fromIndex = declarationTokens.findIndex(entry => entry.kind === 'from');
     const sourceTokens = declarationTokens.slice(fromIndex + 1)
-      .filter(entry => entry.kind === 'identifier');
+      .filter(entry => entry.kind === 'identifier' || entry.kind === 'string');
     const segments = item.kind === 'import' ? item.from : [item.from!];
     const selected = token.kind === 'from' ? segments.length - 1 :
       sourceTokens.findIndex((entry: Token) => entry === token);
