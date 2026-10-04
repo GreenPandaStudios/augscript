@@ -105,7 +105,7 @@ export async function runLanguageServer(root: string): Promise<number> {
   let buffer = Buffer.alloc(0);
   await new Promise<void>(resolve => {
     process.stdin.on('data', chunk => {
-      buffer = Buffer.concat([buffer, chunk]);
+      buffer = Buffer.concat([buffer, typeof chunk === 'string' ? Buffer.from(chunk) : chunk]);
       while (true) {
         const headerEnd = buffer.indexOf('\r\n\r\n'); if (headerEnd < 0) break;
         const length = Number(/Content-Length:\s*(\d+)/i.exec(buffer.subarray(0, headerEnd).toString())?.[1]);
