@@ -71,7 +71,7 @@ Work proceeds through source/tool identities, everyday data and syntax, collecti
 | F09 | Move declarations and update imports | Pending | — |
 | F10 | Completion that teaches the correct operation | Partial | Compatible shorthand, optional/default omission, moved-value and readonly-method filtering; remaining expected-type/catch/borrow ranking pending |
 | F11 | Hints with controllable detail | Implemented protocol/UI; installed gate pending | Compact/full hints, complete tooltips and per-file expansion command; semantic and LSP regressions |
-| F12 | Quick experiments without a full project | Pending | — |
+| F12 | Quick experiments without a full project | Implemented standalone entry profile; qualification ongoing | aug scratch checks an isolated normal main module by default; explicit preparation and native execution, original-source diagnostics, argument/exit forwarding and cleanup. Eight regressions pass, including real tagged Git and public native zlib/LLVM consumers; installed CLI checks and desktop/phone guide inspection pass. Neighbor modules and persistent aliases require a normal project |
 | G01 | Assertions that show both values | Implemented bounded value and path profile | assertEqual retains equality, input order and sticky failures; bounded UTF-8 values and first record/tuple difference paths, with private storage and traversal limits explicit. Seven both-backend regressions pass; seven generated failing C cases pass ASan and UBSan |
 | G02 | More useful generated typed test rows | Pending | — |
 | G03 | Bounded property checks and replay | Pending | — |

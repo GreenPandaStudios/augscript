@@ -62,6 +62,11 @@ try {
   const catalog=JSON.parse(aug('libraries','compression','--json'));
   assert.equal(catalog.entries[0].id,'zlib');
   assert.match(catalog.entries[0].source.request,/aug-zlib#v0.1.5/);
+  const scratchFile=join(directory,'scratch.aug');writeFileSync(scratchFile,'print(value=42)\n');
+  const scratchReport=JSON.parse(aug('scratch',scratchFile,'--json'));
+  assert.equal(scratchReport.checked,true);assert.equal(scratchReport.executed,false);assert.equal(scratchReport.prepared,false);
+  assert.equal(aug('scratch',scratchFile,'--run','--backend','c','--offline'),'42\n');
+  assert.equal(readFileSync(scratchFile,'utf8'),'print(value=42)\n');
   const styled=join(directory,'styled');
   aug('init',styled,'--block-style','braces','--indentation','tabs','--assignment','to');
   assert.match(readFileSync(join(styled,'greeting.aug'),'utf8'),/greet\(string name\) \{\n\treturn/);

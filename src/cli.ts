@@ -1,3 +1,4 @@
+import {withScratch} from './scratch.ts';
 import {buildBundle,verifyBundle} from './bundle.ts';
 import {BuildProgress} from './progress.ts';
 import {libraryCatalog} from './library-catalog.ts';
@@ -5,7 +6,7 @@ import {hasRequiredContext} from './context.ts';
 import {dependencyUpdatePreview} from './package-updates.ts';
 import {dependencyReport,packageReadiness,packageInterfaceDiff} from './package-inspection.ts';
 import { existsSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
-import { join, relative, resolve } from 'node:path';
+import { dirname, join, relative, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import type { Diagnostic } from './ast.ts';
 import { typeName } from './ast.ts';
@@ -73,7 +74,8 @@ function printDiagnostics(diagnostics: Diagnostic[], json: boolean, root: string
 
 function usage(): void {
   process.stdout.write(`AugScript compiler\n\n` +
-    `Usage: aug <init|doctor|check|build|bundle|run|emit-c|emit-llvm|emit-ir|test|openapi|format|migrate|spec|bench|explain|context|lsp|symbols|definition|references|graph|complete|hover|fixes|semantic-tokens> [project directory] [options] [-- args]\n` +
+    `Usage: aug <init|doctor|scratch|check|build|bundle|run|emit-c|emit-llvm|emit-ir|test|openapi|format|migrate|spec|bench|explain|context|lsp|symbols|definition|references|graph|complete|hover|fixes|semantic-tokens> [project directory] [options] [-- args]\n` +
+    `Scratch: aug scratch FILE [--prepare] [--run] [--offline] [--backend c|llvm] [--json] [-- args] — check a temporary entry module; --run executes it\n` +
     `Find libraries: aug libraries [QUERY] [--json] — search the bundled task catalog without downloads\n` +
     `Inspect dependencies: aug dependencies [PROJECT] [--json]; aug update [PROJECT] --preview [--offline] [--json]\n` +
     `Package maintainers: aug package workflow [DIRECTORY] [--write] [--json]; aug package release [DIRECTORY] --tag vVERSION [--json]\n` +
@@ -104,6 +106,31 @@ export async function main(argv: string[]): Promise<number> {
     if(paths.length!==1||args.some(arg=>arg.startsWith('-')&&arg!=='--json')){process.stderr.write('Use aug bundle verify DIRECTORY [--json]\n');return 2;}
     try {const report=verifyBundle(paths[0]);process.stdout.write(args.includes('--json')?JSON.stringify(report)+'\n':`Verified ${report.files} files for ${report.target}; executable ${report.executable}.\n${report.trust}\n`);return 0;}
     catch(error){process.stderr.write(failureMessage(error)+'\n');return 1;}
+  }
+  if(command==='scratch') {
+    if(argv.length===2&&argv[1]==='--help'){usage();return 0;}
+    const boundary=argv.indexOf('--'),args=argv.slice(1,boundary<0?undefined:boundary),programArgs=boundary<0?[]:argv.slice(boundary+1);
+    let file:string|undefined,backend:string|undefined;const seen=new Set<string>();
+    for(let index=0;index<args.length;index++) {
+      const value=args[index];
+      if(value==='--backend') {
+        if(seen.has(value)||!['c','llvm'].includes(args[index+1])){process.stderr.write('--backend needs c or llvm exactly once.\n');return 2;}
+        seen.add(value);backend=args[++index];
+      }else if(['--run','--prepare','--offline','--json'].includes(value)) {
+        if(seen.has(value)){process.stderr.write('Duplicate scratch option: '+value+'\n');return 2;}seen.add(value);
+      }else if(value.startsWith('-')||file){process.stderr.write('Use aug scratch FILE [--prepare] [--run] [--offline] [--backend c|llvm] [--json] [-- args]\n');return 2;}
+      else file=value;
+    }
+    if(!file||seen.has('--run')&&seen.has('--json')||!seen.has('--run')&&programArgs.length){process.stderr.write('Scratch needs one file. --json is check-only; program arguments require --run.\n');return 2;}
+    try {
+      return await withScratch(file,{prepare:seen.has('--prepare')||seen.has('--run'),offline:seen.has('--offline')},async(root,report)=>{
+        if(seen.has('--json'))process.stdout.write(JSON.stringify({...report,diagnostics:report.diagnostics.map(issue=>({...issue,help:diagnosticHelp[issue.code]}))})+'\n');
+        else {printDiagnostics(report.diagnostics,false,dirname(report.source.file));if(report.recovery)process.stderr.write(report.recovery+'\n');}
+        if(!report.checked)return 1;
+        if(!seen.has('--run')) {if(!seen.has('--json'))process.stdout.write('Scratch check passed: '+report.source.file+'\n');return 0;}
+        return main(['run',root,...(backend?['--backend',backend]:[]),...(seen.has('--offline')?['--offline']:[]),'--',...programArgs]);
+      });
+    }catch(error){process.stderr.write(failureMessage(error)+'\n');return 1;}
   }
   if(command==='libraries') {
     const args=argv.slice(1);

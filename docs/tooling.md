@@ -16,6 +16,7 @@ Install `aug` once as shown in [Your first project](getting-started.md). Command
 | `package release [DIRECTORY] --tag vVERSION [--json]` | **Unreleased:** verify the tag, tracked source/specs, public contracts, dependency lock and cached native host artifacts without publication. |
 | `package check DIRECTORY [--json]` | **Unreleased:** static package publishing readiness; behavioral tests remain explicit. |
 | `package diff BEFORE AFTER [--json]` | **Unreleased:** compare resolved public contracts, changed spec prose and native metadata of local revisions. |
+| `scratch FILE [--prepare] [--run] [--offline] [--json]` | **Unreleased:** check an isolated temporary entry module; execution requires --run. See [Try a snippet](guides/try-a-snippet.md). |
 | `check PROJECT [--json]` | Production, tests, module policy, documentation, and configuration diagnostics. |
 | `bundle PROJECT --out DIRECTORY [--offline] [--frozen] [--json]` | **Unreleased:** release executable, runtime libraries, notices and verification manifest. |
 | `bundle verify DIRECTORY [--json]` | **Unreleased:** verify bundle files without executing the application. |

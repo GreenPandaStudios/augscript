@@ -87,3 +87,7 @@ A catalog update is a metadata review, separate from artifact or behavior qualif
 ## Library maintainer templates
 
 `src/package-publishing.ts` owns repository-root consumer CI and read-only tagged release reports. Keep templates pinned to a compiler release containing every invoked command; the current 0.23.0 candidate template is explicitly staged. Reuse reviewed action pins, test exclusive creation and nested-directory rejection, and retain exact tag/source/configuration/lock/spec evidence. A native report must agree with frozen host selection and verify cached bytes without downloading. Run package-publishing regressions and installed CLI checks; qualify the generated test-copy steps through LLVM. Hosted consumer CI and native artifact-production qualification remain separate.
+
+## Scratch entry fragments
+
+`src/scratch.ts` owns temporary project creation, original-source check diagnostics and cleanup. Execution stays in the ordinary CLI path and requires `--run`; preparation requires `--prepare` or `--run`. `tests/scratch.test.mjs` extracts the guide fragments, verifies C/LLVM execution and real tagged source imports, and exercises the public native zlib guide when `AUG_TEST_PUBLIC_SCRATCH=1`. Keep the guide explicitly unreleased until the containing compiler is published. Verify the packaged command through `npm run test:packages`, and inspect guide navigation at desktop and phone widths.

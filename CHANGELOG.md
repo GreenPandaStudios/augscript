@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+Add `aug scratch FILE` to check an isolated temporary entry module without downloads or execution. `--prepare` resolves ordinary dependencies; `--run` executes through the normal compiler. Keep source locations, preserve the original file, and remove temporary project output after failures and exits.
+
 Equality assertion failures identify the first public record field or tuple position that differs. Private differences stop at the public parent; fixed traversal and path limits report when a path is unavailable. Equality, input order and caught-test failure behavior stay the same.
 
 - Generated specifications and package release reports use repository-relative paths when a project is opened through a filesystem alias, including macOS `/var`. Local dependency locks retain their source identities.

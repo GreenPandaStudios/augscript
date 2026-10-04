@@ -65,6 +65,7 @@ export default defineConfig({
       ]},
       { text: 'Task guides', collapsed: false, items: [
         { text: 'Choose a guide', link: '/guides/' },
+        { text: 'Try a snippet', link: '/guides/try-a-snippet' },
         { text: 'Weather API', link: '/weather-api' }, { text: 'VS Code', link: '/editor' },
         { text: 'Tests', link: '/testing' }, { text: 'Web applications', link: '/web' },
         { text: 'Native service boundaries', link: '/native-service-boundaries' },
