@@ -29,8 +29,11 @@ exports.run=async()=>{
   const edit=new vscode.WorkspaceEdit();edit.replace(main,new vscode.Range(position(0),position(source.length)),source.replace('name="August"','naem="August"'));assert.equal(await vscode.workspace.applyEdit(edit),true);
   const errors=await eventually(()=>vscode.languages.getDiagnostics(main).filter(issue=>issue.severity===vscode.DiagnosticSeverity.Error).length&&vscode.languages.getDiagnostics(main),'a source diagnostic');
   assert.ok(errors.some(issue=>issue.source==='AugScript'&&issue.range.start.line===4));
-  const fixes=await vscode.commands.executeCommand('vscode.executeCodeActionProvider',main,new vscode.Range(document.positionAt(0),document.positionAt(document.getText().length)),vscode.CodeActionKind.QuickFix.value);
-  const fix=fixes.find(action=>action.edit&&/name/.test(action.title));assert.ok(fix,'No labeled-input repair was offered');assert.equal(await vscode.workspace.applyEdit(fix.edit),true);
+  const fix=await eventually(async()=>{
+    const fixes=await vscode.commands.executeCommand('vscode.executeCodeActionProvider',main,new vscode.Range(document.positionAt(0),document.positionAt(document.getText().length)),vscode.CodeActionKind.QuickFix.value);
+    return fixes.find(action=>action.edit&&/name/.test(action.title));
+  },'a labeled-input repair after diagnostic publication');
+  assert.equal(await vscode.workspace.applyEdit(fix.edit),true);
   assert.ok(document.getText().includes('name="August"'));await document.save();
   await eventually(()=>vscode.languages.getDiagnostics(main).every(issue=>issue.severity!==vscode.DiagnosticSeverity.Error),'cleared source diagnostics');
   const configuration=vscode.workspace.getConfiguration('augscript'),configured=configuration.get('nodePath'),compiler=path.join(extension.extensionPath,'compiler/bin/aug.mjs');
