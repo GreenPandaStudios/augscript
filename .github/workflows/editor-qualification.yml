@@ -1,0 +1,73 @@
+name: Editor distribution qualification
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      source-ref:
+        type: string
+        default: ''
+      artifact:
+        type: string
+        default: ''
+      retained-compiler:
+        type: boolean
+        default: false
+permissions:
+  contents: read
+jobs:
+  installed-editor:
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [macos-14, ubuntu-24.04, ubuntu-24.04-arm]
+        editor: ['1.90.0', '1.139.1']
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    env:
+      AUG_GITHUB_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          ref: ${{ inputs.source-ref || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - run: npm ci --ignore-scripts
+      - name: Build the candidate VSIX for branch qualification
+        if: inputs.artifact == ''
+        run: |
+          npm --prefix vscode ci --ignore-scripts
+          npm run package:extension
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        if: inputs.artifact != ''
+        with:
+          name: ${{ inputs.artifact }}
+          path: .aug-build/reviewed-editor
+      - name: Select the exact reviewed VSIX
+        if: inputs.artifact != ''
+        run: |
+          node --input-type=module -e 'import {copyFileSync,readdirSync} from "node:fs"; import assert from "node:assert/strict"; const files=readdirSync(".aug-build/reviewed-editor").filter(name=>name.endsWith(".vsix")); assert.equal(files.length,1); copyFileSync(".aug-build/reviewed-editor/"+files[0],"vscode/"+files[0]);'
+      - name: Test clean installation and preview upgrade in VS Code
+        env:
+          EDITOR_VERSION: ${{ matrix.editor }}
+          RETAINED_COMPILER: ${{ inputs.retained-compiler }}
+        run: |
+          args=(--editor "$EDITOR_VERSION")
+          if test "$RETAINED_COMPILER" = true; then args+=(--retained-compiler); fi
+          if test "$RUNNER_OS" = Linux; then
+            xvfb-run -a node scripts/qualify-editor.mjs "${args[@]}"
+          else
+            node scripts/qualify-editor.mjs "${args[@]}"
+          fi
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        if: always()
+        with:
+          name: editor-${{ matrix.runner }}-${{ matrix.editor }}-${{ inputs.artifact || 'branch' }}
+          include-hidden-files: true
+          path: .aug-build/editor-qualification-*.json
+          if-no-files-found: error

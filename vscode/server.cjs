@@ -1,8 +1,10 @@
 const { spawn } = require('node:child_process');
+const {setupError,validateInvocation}=require('./process.cjs');
 
 /** One stdio LSP process per project; editor requests share checked revisions. */
 class Server {
   constructor(command, report, onClose) {
+    validateInvocation(command);
     this.child = spawn(command.command, command.args, { env:command.env, stdio: ['pipe', 'pipe', 'pipe'] });
     this.pending = new Map(); this.documents = new Map(); this.sequence = 0; this.buffer = Buffer.alloc(0);
     this.child.stdout.on('data', chunk => {
@@ -24,16 +26,19 @@ class Server {
     let errors = '';
     this.child.stderr.on('data', chunk => { errors = (errors + chunk).slice(-4000); });
     const failed = error => {
-      for (const pending of this.pending.values()) { clearTimeout(pending.timer); pending.reject(error); } this.pending.clear(); onClose();
+      if(this.failure)return;this.failure=setupError(error,command);
+      for (const pending of this.pending.values()) { clearTimeout(pending.timer); pending.reject(this.failure); } this.pending.clear(); onClose();
     };
     this.child.on('error', failed);
-    this.child.on('exit', code => failed(new Error(`AugScript language server exited (${code}): ${errors}`)));
+    this.child.stdin.on('error',failed);
+    this.child.on('close', code => failed(new Error(`AugScript language server exited (${code}): ${errors}`)));
     this.ready = this.request('initialize', { processId: global.process.pid, capabilities: {}, workspaceFolders: [] });
     this.ready.then(() => this.notify('initialized', {})).catch(() => {});
   }
-  send(message) { const data = Buffer.from(JSON.stringify(message)); this.child.stdin.write(`Content-Length: ${data.length}\r\n\r\n`); this.child.stdin.write(data); }
+  send(message) { if(this.failure)return;const data = Buffer.from(JSON.stringify(message)); this.child.stdin.write(`Content-Length: ${data.length}\r\n\r\n`); this.child.stdin.write(data); }
   notify(method, params) { this.send({ jsonrpc: '2.0', method, params }); }
   request(method, params) {
+    if(this.failure)return Promise.reject(this.failure);
     const id = ++this.sequence;
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => { this.pending.delete(id); this.notify('$/cancelRequest', { id }); reject(new Error('AugScript language request timed out')); }, 15000);

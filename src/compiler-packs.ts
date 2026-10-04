@@ -23,13 +23,7 @@ export async function prepareLLVMCompiler(offline=false,project?:{root:string;fr
     if(project?.frozen)throw new Error('LLVM_LOCK: A frozen build requires the pinned compiler pack. Remove contributor toolchain overrides.');
     return {tools,runtime,developmentOverride:true};
   }
-  const file=join(compilerRoot,'native/compiler-packs.json');
-  if(!existsSync(file))throw new Error('LLVM_TOOLS: This compiler has no published LLVM tool manifest. Install the matching LLVM preview release.');
-  const manifest=JSON.parse(readFileSync(file,'utf8')) as {format:1;compiler:string;llvm:string;packs:{host:string;target:string;minimumOS?:string;minimumLibc?:string;archive:VerifiedArchive}[]};
-  if(manifest.format!==1||manifest.compiler!==compilerVersion()||manifest.llvm!=='23.1.2'||!Array.isArray(manifest.packs))throw new Error('LLVM_TOOLS: Invalid compiler-owned LLVM manifest');
-  const host=process.platform+'-'+process.arch,target=nativeHostTarget(),pack=manifest.packs.find(p=>p.host===host&&p.target===target.triple);
-  if(!pack)throw new Error('NATIVE_TARGET: No compiler pack is published for '+platform.host+'. Available compiler packs: '+manifest.packs.map(p=>p.host).join(', '));
-  if(pack.minimumOS!==platform.minimumOS||pack.minimumLibc!==platform.minimumLibc)throw new Error('LLVM_TOOLS: Compiler manifest has a different platform baseline');
+  const {manifest,pack,host,target}=compilerPackSelection(platform);
   const prepare=async():Promise<LLVMToolchain>=>{
     const lockFile=project?join(project.root,'aug.lock.json'):undefined,initial=lockFile&&existsSync(lockFile)?readFileSync(lockFile,'utf8'):undefined;
     const lock:PackageLock=initial?readPackageLock(lockFile!):{format:1,compiler:compilerVersion(),specifications:{},roots:{},packages:[],npm:{}};
@@ -51,4 +45,16 @@ export async function prepareLLVMCompiler(offline=false,project?:{root:string;fr
     return {tools:directory,runtime:join(directory,'runtime'),archiveSha256:pack.archive.sha256,developmentOverride:false};
   };
   return project?withPackageLockAsync(join(project.root,'.aug-install.lock'),prepare):prepare();
+}
+
+/** Read the installed compiler's qualified host selection without preparing a cache. */
+export function compilerPackSelection(platform=llvmPlatform()){
+  const file=join(resolve(fileURLToPath(new URL('..',import.meta.url))),'native/compiler-packs.json');
+  if(!existsSync(file))throw new Error('LLVM_TOOLS: This compiler has no published LLVM tool manifest. Install the matching LLVM preview release.');
+  const manifest=JSON.parse(readFileSync(file,'utf8')) as {format:1;compiler:string;llvm:string;packs:{host:string;target:string;minimumOS?:string;minimumLibc?:string;archive:VerifiedArchive}[]};
+  if(manifest.format!==1||manifest.compiler!==compilerVersion()||manifest.llvm!=='23.1.2'||!Array.isArray(manifest.packs))throw new Error('LLVM_TOOLS: Invalid compiler-owned LLVM manifest');
+  const host=process.platform+'-'+process.arch,target=nativeHostTarget(),pack=manifest.packs.find(p=>p.host===host&&p.target===target.triple);
+  if(!pack)throw new Error('NATIVE_TARGET: No compiler pack is published for '+platform.host+'. Available compiler packs: '+manifest.packs.map(p=>p.host).join(', '));
+  if(pack.minimumOS!==platform.minimumOS||pack.minimumLibc!==platform.minimumLibc)throw new Error('LLVM_TOOLS: Compiler manifest has a different platform baseline');
+  return {manifest,pack,host,target};
 }
