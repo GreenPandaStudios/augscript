@@ -43,7 +43,7 @@ export function contextPacket(checked:CheckedProject,fileName:string,options:{na
     return facts.has(id)?id:undefined;
   };
   const addDependency=(id:string|undefined)=>{if(id&&!required.has(id)){required.add(id);queue.push(id);}};
-  const typeFacts=new Map<string,ResolvedTypeFact>(),constructs=new Set<string>();
+  const typeFacts=new Map<string,ResolvedTypeFact>(),constructs=new Set<string>(),effectBoundaries:SemanticGraph['boundaries']=[];
   const location=(span:Span):Span=>({...span,file:semanticSourcePath(checked,span.file)});
   const type=(value:Ty|undefined):void=>{
     if(!value||value.kind==='error')return;
@@ -58,9 +58,15 @@ export function contextPacket(checked:CheckedProject,fileName:string,options:{na
     type(checked.resolvedTypes.get(value as TypeRef));type(checked.expressionTypes.get(value as Expr));
     const method=value as import('./ast.ts').MethodDecl;
     if(method.kind)constructs.add(method.kind);
-    if('ownership' in value&&value.ownership==='own')constructs.add('own');
+    if('ownership' in value&&value.ownership==='own'||'returnOwnership' in value&&value.returnOwnership==='own'||checked.inferredOwned.has(value as import('./ast.ts').Stmt))constructs.add('own');
     if(method.kind==='function') {
       const contract=checked.callableContracts.get(method);type(contract?.result);contract?.errors.forEach(type);
+      for(const [key,effect] of checked.effectContracts.get(method)?.uses ?? []) {
+        type(effect.capability);
+        if(key.startsWith('C:')) {
+          addDependency(key.slice(2));effectBoundaries.push({kind:'native-code',target:key.slice(2),location:location(effect.span)});
+        }
+      }
       for(const layer of checked.interceptorPlans.get(method)??[]){addDependency(layer.definition.id);layer.errors.forEach(type);}
     }
     if(method.kind as string==='class') {
@@ -88,7 +94,7 @@ export function contextPacket(checked:CheckedProject,fileName:string,options:{na
   const boundaryRelevant=(span:Span)=>queue.some(id=>{
     const fact=facts.get(id)!;return semanticSourcePath(checked,fact.location.file)===span.file&&fact.location.start<=span.start&&span.end<=fact.location.end;
   })||!roots.length&&span.file===semanticSourcePath(checked,file.path);
-  const boundaries=graph.boundaries.filter(boundary=>boundaryRelevant(boundary.location));
+  const boundaries=[...graph.boundaries.filter(boundary=>boundaryRelevant(boundary.location)),...effectBoundaries];
   const callers=graph.relationships.filter(edge=>edge.kind==='call'&&rootSet.has(declaration(edge.to)??''));
   const full:ContextPacket={schema:2,compiler:graph.compiler,revision:graph.revision,budget,truncated:false,
     query:{file:semanticSourcePath(checked,file.path),name:options.name,roots},

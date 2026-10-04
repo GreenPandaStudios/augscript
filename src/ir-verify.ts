@@ -107,6 +107,7 @@ function verifyInstruction(i:IrInstruction,ir:AugustIR,fn:IrFunction,entry:(name
     case 'error-state':slot(i.error);slot(i.cancelled);if(i.error===i.cancelled)error('Overlapping error/cancellation cells');return;
     case 'scope':case 'lock':if(i.depth!==undefined)slot(i.depth);return;
     case 'wait':i.tasks.forEach(slot);if(!i.tasks.length)error('Empty task wait');return;
+    case 'assert-equal':slot(i.actual);slot(i.expected);return;
     case 'assert':slot(i.input);return;
     case 'cover':if(!ir.coverage.some(point=>point.file===i.file&&point.line===i.line))error('Unregistered statement coverage point');return;
     case 'debug-variable':if(!Number.isSafeInteger(i.variable)||i.variable<0||i.variable>=fn.variables.length)error('Unresolved debug variable');return;

@@ -102,6 +102,10 @@ Process isolation does not reset files, databases, sockets, or other external re
 
 `assert(condition)` and `assert(condition=condition)` require a bool. A failed assertion reports file, line, and source condition. Catching its error cannot make the case pass. Setup may assert its invariants, but every case body must also execute an assertion. A body that executes none fails.
 
+Use `assertEqual(actual=add(left=2, right=3), expected=5)` when the failure needs both values. Inputs are evaluated once in the order written. It uses ordinary `==` rules: compatible numbers compare numerically, records and tuples compare their contents, and other objects compare by identity. Two different lists with the same items therefore fail this assertion.
+
+Failures show bounded scalar, record, and tuple values. Private record fields and native payloads are omitted; long text and nested values are shortened. File and line identify the assertion without printing its source literals. Use a boolean assertion when comparing a specific collection item or application property.
+
 An uncaught checked error, a native crash, a nonzero exit, or a timeout fails the case. Assertions are test operations, not production contracts.
 
 ## CLI and coverage

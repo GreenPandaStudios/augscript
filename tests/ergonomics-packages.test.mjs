@@ -75,3 +75,23 @@ test('package interface diffs use exports and report required input changes rath
     assert.equal(delta[0].after.callables[0].inputs.at(-1).label,'adjustment');
   }finally{rmSync(root,{recursive:true,force:true});}
 });
+
+
+test('public package diffs ignore private storage names and include inherited defaults',()=>{
+  const root=mkdtempSync(join(tmpdir(),'aug-package-inheritance-'));
+  try {
+    const before=join(root,'before'),after=join(root,'after');
+    for(const directory of [before,after]) {
+      mkdirSync(directory);writeFileSync(join(directory,'aug-package.json'),JSON.stringify({format:1,name:'@example/counter',version:'1.0.0',compiler:'0.23.0',source:'.'}));
+      writeFileSync(join(directory,'export.aug'),'export Counter from counter\n');
+      writeFileSync(join(directory,'counter.aug'),'interface View { read(int input) returns int { return input } }\nCounter(int value to _value) implements View { }\n');
+    }
+    const diff=()=>spawnSync(process.execPath,[cli,'package','diff',before,after,'--json'],{encoding:'utf8'});
+    writeFileSync(join(after,'counter.aug'),'interface View { read(int input) returns int { return input } }\nCounter(int value to _count) implements View { }\n');
+    const renamed=diff();assert.equal(renamed.status,0,renamed.stderr);assert.deepEqual(JSON.parse(renamed.stdout).changes,[]);
+    writeFileSync(join(after,'counter.aug'),'interface View { read(int input, int adjustment) returns int { return input + adjustment } }\nCounter(int value to _count) implements View { }\n');
+    const changed=diff();assert.equal(changed.status,0,changed.stderr);const changes=JSON.parse(changed.stdout).changes;
+    assert.equal(changes.length,1);assert.equal(changes[0].name,'Counter');
+    assert.ok(changes[0].after.callables.find(method=>method.name==='read').inputs.some(input=>input.label==='adjustment'));
+  }finally{rmSync(root,{recursive:true,force:true});}
+});

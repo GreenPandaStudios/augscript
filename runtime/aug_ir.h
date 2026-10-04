@@ -50,6 +50,7 @@ void aug_ir_map_get(AugValue *out,const AugValue *map,const AugValue *key);
 void aug_ir_map_take(AugValue *out,const AugValue *map,const AugValue *key);
 void aug_ir_json_decode(AugValue *out, const AugValue *value, const AugSchema *schema);
 void aug_ir_string(AugValue *out, const void *text, uint64_t count);
+void aug_ir_assert_equal(const AugValue *actual, const AugValue *expected, const char *expression, const char *file, int line);
 void aug_ir_assert(const AugValue *condition, const char *expression, const char *file, int line);
 void aug_ir_drop(AugValue *value);
 void aug_ir_failed_result(AugValue *value);

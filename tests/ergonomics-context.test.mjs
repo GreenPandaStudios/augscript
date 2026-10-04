@@ -62,3 +62,31 @@ test('context identifies dynamic dispatch boundaries instead of inventing an imp
   assert.ok(packet.contracts.some(contract=>contract.name==='Reader'));
   assert.equal(packet.evidence.behavior,'not-run');
 }));
+
+
+test('declared capability promises supply their resolved dependency contracts even without a call',()=>fixture({
+  'main.aug':'', 'work.aug':'import Console from august.io\nnoop() uses Console.write { pass }\n'
+},root=>{
+  const view=new SemanticWorkspace(root).document(join(root,'work.aug'),undefined,true);assert.deepEqual(view.diagnostics,[]);
+  const packet=view.describe({name:'noop',context:true,budget:100000});
+  assert.ok(packet.contracts.some(contract=>contract.name==='Console'));
+  assert.ok(packet.types.some(type=>type.name==='Console'&&type.definition.file.startsWith('august/')));
+}));
+
+test('owned idioms follow checked inference rather than only written qualifiers',()=>fixture({
+  'main.aug':'', 'work.aug':'make() returns own List<int> { return [1] }\nuse() { values = make(); return values.length() }\n'
+},root=>{
+  const packet=new SemanticWorkspace(root).document(join(root,'work.aug'),undefined,true).describe({name:'use',context:true,budget:100000});
+  assert.ok(packet.idioms.some(idiom=>idiom.id==='owned-results'));
+}));
+
+
+test('native capability promises retain the boundary even without an invocation',()=>fixture({
+  'main.aug':'', 'work.aug':'extern C puts(string text) returns int\nnoop() uses C.puts { pass }\n'
+},root=>{
+  const view=new SemanticWorkspace(root).document(join(root,'work.aug'),undefined,true);assert.deepEqual(view.diagnostics,[]);
+  const packet=view.describe({name:'noop',context:true,budget:100000});
+  assert.ok(packet.contracts.some(contract=>contract.name==='puts'));
+  assert.equal(packet.coverage.graph,'bounded');
+  assert.ok(packet.boundaries.some(boundary=>boundary.kind==='native-code'));
+}));

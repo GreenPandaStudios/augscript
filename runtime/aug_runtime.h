@@ -260,6 +260,7 @@ AugValue aug_call_method(AugValue object, const char *name, AugValue *args, int 
 /* Invariant scalar text for interpolation; no locale or structured-object serialization. */
 AugValue aug_text(AugValue value);
 void aug_print(AugValue value);
+void aug_assert_equal(AugValue actual, AugValue expected, const char *expression, const char *file, int line);
 void aug_assert(AugValue condition, const char *expression, const char *file, int line);
 AugValue aug_binary(const char *op, AugValue left, AugValue right);
 AugValue aug_unary(const char *op, AugValue value);

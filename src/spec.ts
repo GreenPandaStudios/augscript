@@ -581,6 +581,7 @@ class SpecWriter {
           const call=this.call(stmt.expr);
           if(stmt.expr.callee.kind==='name'&&!this.definition(stmt.expr.callee.name)) {
             if(stmt.expr.callee.name==='print')return [step('It prints '+this.expression(stmt.expr.args[0])+'.')];
+            if(stmt.expr.callee.name==='assertEqual') { const call=stmt.expr; const actual=this.argument(call,'actual')!, expected=this.argument(call,'expected')!; return [step('The test requires '+this.expression(actual)+' to equal '+this.expression(expected)+'.')]; }
             if(stmt.expr.callee.name==='assert')return [step('The test requires '+this.condition(stmt.expr.args[0])+'.')];
           }
           if(stmt.expr.callee.kind==='member') {

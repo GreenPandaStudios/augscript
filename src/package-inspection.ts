@@ -1,7 +1,8 @@
 import {createHash} from 'node:crypto';
 import {existsSync,readFileSync} from 'node:fs';
 import {join,relative,resolve} from 'node:path';
-import type {CheckedProject} from './checker.ts';
+import type {CheckedProject,Ty} from './checker.ts';
+import {tyName} from './types.ts';
 import {loadProject} from './project.ts';
 import {readPackage,readPackageLock,compilerVersion} from './package-manager.ts';
 import {sourceAlias} from './git-packages.ts';
@@ -94,7 +95,24 @@ export function packageInterfaceDiff(beforeDirectory:string,afterDirectory:strin
     if(!value||typeof value!=='object')return value;
     return Object.fromEntries(Object.entries(value).filter(([key])=>!['id','location','documentation','calls','tests','inferredEffects'].includes(key)).map(([key,child])=>[key,normalize(child)]));
   };
-  const left=new Map(packageSurface(before).map(item=>[item.name,normalize(item.fact)])),right=new Map(packageSurface(after).map(item=>[item.name,normalize(item.fact)]));
+  const surface=(checked:CheckedProject)=>{
+    const facts=new Map(contractFacts(checked).map(fact=>[fact.id,fact]));
+    return new Map(packageSurface(checked).map(item=>{
+      const inherited=[...(checked.defaults.get(item.fact.id)?.values()??[])].filter(entry=>!entry.method.name.startsWith('_')).map(entry=>{
+        const original=facts.get(entry.from)?.callables.find(method=>method.name===entry.method.name);
+        if(!original)throw new Error('PACKAGE_DIFF: Missing inherited method contract '+entry.method.name);
+        const substitute=(type:Ty):Ty=>type.kind==='param'&&entry.params.has(type.name)?{...entry.params.get(type.name)!,nullable:type.nullable||entry.params.get(type.name)!.nullable}: {...type,args:type.args.map(substitute)};
+        const contract=checked.callableContracts.get(entry.method);
+        return {...original,inputs:original.inputs.map((input,index)=>({...input,type:tyName(substitute(checked.resolvedTypes.get(entry.method.params[index].type)!))})),
+          result:(entry.method.returnOwnership==='own'?'own ':'')+tyName(substitute(contract?.result??checked.resolvedTypes.get(entry.method.returns)!)),
+          errors:contract?.errors.map(error=>tyName(substitute(error)))??original.errors};
+      });
+      const projection={...item.fact,fields:item.fact.fields.filter(field=>!field.storage.startsWith('_')).map(({storage,...field})=>({...field,name:storage})),
+        callables:[...item.fact.callables,...inherited].map(method=>({...method,inputs:method.inputs.map(({name,...input})=>input)}))};
+      return [item.name,normalize(projection)];
+    }));
+  };
+  const left=surface(before),right=surface(after);
   const changes=[...new Set([...left.keys(),...right.keys()])].sort(compare).flatMap(name=>JSON.stringify(left.get(name))===JSON.stringify(right.get(name))?[]:[{name,before:left.get(name)??null,after:right.get(name)??null}]);
   return {format:1,before:readPackage(beforeRoot).manifest.version,after:readPackage(afterRoot).manifest.version,changes,
     native:{before:readPackage(beforeRoot).manifest.native??null,after:readPackage(afterRoot).manifest.native??null},evidence:'checked-public-contracts'};

@@ -734,6 +734,10 @@ class BodyEmitter {
       this.line(`${this.slot(slot)} = aug_scalar_null();`);
       return slot;
     }
+    if(expr.callee.kind==='name'&&expr.callee.name==='assertEqual') {
+      this.line(`aug_assert_equal(${this.slot(args[0])}, ${this.slot(args[1])}, ${cString("assertEqual(actual, expected)")}, ${cString(expr.span.file)}, ${expr.span.line});`);
+      this.line(`${this.slot(slot)} = aug_scalar_null();`);this.line(`if (aug_has_error) goto ${this.errorTarget};`);return slot;
+    }
     if (expr.callee.kind === 'name' && expr.callee.name === 'assert') {
       this.line(`aug_assert(${this.slot(args[0])}, ${cString(this.generator.expressionSource(expr.args[0]))}, ${cString(expr.span.file)}, ${expr.span.line});`);
       this.line(`${this.slot(slot)} = aug_scalar_null();`);

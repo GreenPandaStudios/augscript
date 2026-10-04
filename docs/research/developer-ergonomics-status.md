@@ -66,13 +66,13 @@ Work proceeds through source/tool identities, everyday data and syntax, collecti
 | F04 | Incremental native builds | Pending | — |
 | F05 | Fast selected test execution | Pending | — |
 | F06 | Return useful errors near the source | Pending | — |
-| F07 | Make fixes explain their behavior | Partial | Fix consequences in preview metadata, versioned LSP changes, conservative checked borrow. Recovery-policy scaffolding pending |
+| F07 | Make fixes explain their behavior | Partial | Fix consequences in preview metadata, versioned LSP changes, conservative checked borrow. Recovery scaffolds retain the checked failure until the author chooses policy; broader fix qualification pending |
 | F08 | References and semantic rename | Partial | Compiler-resolved references, imports/exports, public labels, reverse callers and candidate-checked managed-function rename; semantic-reference and LSP tests. Member/type profiles pending |
 | F09 | Move declarations and update imports | Pending | — |
 | F10 | Completion that teaches the correct operation | Partial | Compatible shorthand, optional/default omission, moved-value and readonly-method filtering; remaining expected-type/catch/borrow ranking pending |
 | F11 | Hints with controllable detail | Implemented protocol/UI; installed gate pending | Compact/full hints, complete tooltips and per-file expansion command; semantic and LSP regressions |
 | F12 | Quick experiments without a full project | Pending | — |
-| G01 | Assertions that show both values | Pending | — |
+| G01 | Assertions that show both values | Implemented bounded value profile | assertEqual retains equality, input order and sticky failures; bounded UTF-8, record privacy, tuple and identity output; both-backend tests. Dedicated field-path diffs pending |
 | G02 | More useful generated typed test rows | Pending | — |
 | G03 | Bounded property checks and replay | Pending | — |
 | G04 | Golden and HTTP contract tests | Pending | — |
@@ -97,3 +97,5 @@ The 48-test language/package/inference/design run passed before the subsequent r
 ## Checkpoint review
 
 Commit 157f3b2 passed 508 of 509 full-suite cases (one cold-download qualification skipped), 25 independent conformance examples in 55 checks, and six C/runtime sanitizer pressure cases. The Standards review identified four contract/UI issues; the Spec review identified two P1 correctness issues. Repairs add binding-preserving rename collision checks, reachable loop-exit freshness, lexical grant unwinding, ordinary-module restrictions, same-file candidate checking for borrow fixes, and precise editor-plan wording. Targeted repairs passed before the subsequent ownership/package additions. Qualification must be rerun for the final candidate.
+
+Checkpoint 2583495 passed the installed C package gates and documentation checks. The full suite passed 522 cases with one obsolete hover-wording assertion, repaired in the 81-case targeted rerun, and one cold-download skip. Review repairs include effective capability context, inferred ownership idiom selection, and inherited public package contracts. Equality assertions and those repairs passed both native backends; final qualification remains outstanding.

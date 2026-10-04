@@ -660,6 +660,68 @@ void aug_print(AugValue value) {
   fflush(stdout);
 }
 
+/* Failure output is bounded and never reads private record storage or native
+   payloads. Equality retains the ordinary August == contract. */
+static void assertion_text(const char *text, size_t length, size_t *remaining) {
+  size_t count = length < *remaining ? length : *remaining;
+  /* Preserve the UTF-8 boundary when a long value is truncated. */
+  if (count < length) while (count && ((unsigned char)text[count] & 0xc0) == 0x80) count--;
+  fwrite(text, 1, count, stderr); *remaining -= count;
+}
+static void assertion_literal(const char *text, size_t *remaining) {
+  assertion_text(text, strlen(text), remaining);
+}
+static void assertion_string(const char *text, size_t length, size_t *remaining) {
+  assertion_literal("\"", remaining);
+  size_t limit = length < 256 ? length : 256;
+  if(limit < length) while(limit && ((unsigned char)text[limit] & 0xc0) == 0x80) limit--;
+  for(size_t i=0;i<limit && *remaining;i++) {
+    unsigned char value=(unsigned char)text[i];
+    if(value=='"'||value=='\\'){assertion_literal("\\",remaining);assertion_text(text+i,1,remaining);}
+    else if(value<32 || value==127){char escape[7];snprintf(escape,sizeof(escape),"\\u%04x",value);assertion_literal(escape,remaining);}
+    else {
+      size_t bytes=value<128?1:value<224?2:value<240?3:4;
+      if(bytes>*remaining)break;
+      assertion_text(text+i,bytes,remaining);i+=bytes-1;
+    }
+  }
+  if(limit<length)assertion_literal("...",remaining);
+  assertion_literal("\"",remaining);
+}
+static void assertion_value(AugValue value, unsigned depth, size_t *remaining) {
+  if(!*remaining)return;
+  if(value.tag==AUG_STRING){assertion_string(value.as.object->text,value.as.object->text_length,remaining);return;}
+  if(value.tag!=AUG_OBJECT){AugValue text=aug_text(value);assertion_text(text.as.object->text,text.as.object->text_length,remaining);return;}
+  AugObject *object=value.as.object;
+  if(depth>=4){assertion_literal("...",remaining);return;}
+  if(object->kind!=AUG_RECORD_KIND&&object->kind!=AUG_TUPLE_KIND){
+    assertion_literal("<",remaining);assertion_literal(object->type_name,remaining);assertion_literal("; identity equality>",remaining);return;
+  }
+  bool record=object->kind==AUG_RECORD_KIND,hidden=false;size_t shown=0;
+  if(record)assertion_literal(object->type_name,remaining);
+  assertion_literal("(",remaining);
+  for(size_t i=0;i<object->field_count;i++) {
+    const char *name=record&&object->field_names?object->field_names[i]:NULL;
+    if(name&&name[0]=='_'){hidden=true;continue;}
+    if(shown==8||!*remaining){assertion_literal(", ...",remaining);break;}
+    if(shown++)assertion_literal(", ",remaining);
+    if(name){assertion_literal(name,remaining);assertion_literal("=",remaining);}
+    assertion_value(object->fields[i],depth+1,remaining);
+  }
+  assertion_literal(")",remaining);
+  if(hidden)assertion_literal(" (private fields omitted)",remaining);
+}
+void aug_assert_equal(AugValue actual, AugValue expected, const char *expression, const char *file, int line) {
+  aug_test_assertions++;
+  if(equal(actual,expected))return;
+  aug_test_failed=true;
+  fprintf(stderr,"%s:%d: assertion failed: %s\n  actual: ",file,line,expression);
+  size_t remaining=1200;assertion_value(actual,0,&remaining);if(!remaining)fputs("...",stderr);
+  fputs("\n  expected: ",stderr);remaining=1200;assertion_value(expected,0,&remaining);if(!remaining)fputs("...",stderr);
+  fputs("\n",stderr);
+  aug_throw(aug_new_object("AssertionError",0,NULL,NULL,0));
+}
+
 void aug_assert(AugValue condition, const char *expression, const char *file, int line) {
   aug_test_assertions++;
   if (aug_truthy(condition)) return;

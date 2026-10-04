@@ -111,6 +111,7 @@ void aug_ir_list_at(AugValue *out,const AugValue *list,const AugValue *index){*o
 void aug_ir_map_get(AugValue *out,const AugValue *map,const AugValue *key){*out=aug_map_get(*map,*key);}
 void aug_ir_map_take(AugValue *out,const AugValue *map,const AugValue *key){*out=aug_map_take(*map,*key);}
 void aug_ir_string(AugValue *out,const void *text,uint64_t count){*out=aug_string_n(text,(size_t)count);}
+void aug_ir_assert_equal(const AugValue *actual,const AugValue *expected,const char *expression,const char *file,int line){aug_assert_equal(*actual,*expected,expression,file,line);}
 void aug_ir_assert(const AugValue *condition,const char *expression,const char *file,int line){aug_assert(*condition,expression,file,line);}
 void aug_ir_drop(AugValue *value){aug_drop(*value);*value=aug_null();}
 void aug_ir_failed_result(AugValue *value){if(aug_has_error){aug_drop_partial(*value);*value=aug_null();}}

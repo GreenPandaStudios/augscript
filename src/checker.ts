@@ -2340,7 +2340,7 @@ class Checker {
           type = { id: def.id, name: def.name, kind: def.node.kind, def, args: [], nullable: false };
         else if (def?.node.kind === 'function') type = builtin('void');
         else if (errorNames.includes(expr.name)) type = builtin(expr.name);
-        else if (['print', 'arguments', 'List', 'Map', 'Set', 'Tuple', 'assert', 'read_file', 'write_file', 'c_int', 'int'].includes(expr.name)) type = builtin('void');
+        else if (['print', 'arguments', 'List', 'Map', 'Set', 'Tuple', 'assert', 'assertEqual', 'read_file', 'write_file', 'c_int', 'int'].includes(expr.name)) type = builtin('void');
         else if (expr.name === 'next') this.report(expr.span,
           'next is only callable inside an interceptor around body', 'NEXT');
         else if (def?.node.kind === 'interceptor') this.report(expr.span,
@@ -2763,6 +2763,17 @@ class Checker {
     if (expr.callee.kind === 'name' && expr.callee.name === 'print') {
       this.intrinsicEffect('print', expr.span, context);
       this.planCall(expr, ['value'], 'print');
+      return builtin('void');
+    }
+    if(expr.callee.kind==='name'&&expr.callee.name==='assertEqual') {
+      if(!this.project.testMode)this.report(expr.span,'assertEqual belongs inside a test case or its setup','TEST');
+      const plan=this.planCall(expr,['actual','expected'],'assertEqual'),actual=plan.sourceIndices[0],expected=plan.sourceIndices[1];
+      if(expr.typeArgs.length)this.report(expr.span,'assertEqual infers its input types; omit type arguments','TEST');
+      if(actual!==undefined&&expected!==undefined) {
+        const left=argTypes[actual],right=argTypes[expected],numeric=(type:Ty)=>['builtin:int','builtin:c_int','builtin:float'].includes(type.id);
+        if(!(numeric(left)&&numeric(right))&&!this.assignable(left,right)&&!this.assignable(right,left))
+          this.report(expr.span,`assertEqual cannot compare actual ${tyName(left)} with expected ${tyName(right)}`,'TEST');
+      }
       return builtin('void');
     }
     if (expr.callee.kind === 'name' && expr.callee.name === 'assert') {

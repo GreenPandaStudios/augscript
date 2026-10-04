@@ -273,8 +273,12 @@ export function suggestedFixes(checked: CheckedProject, fileName: string): Edito
       const end = callable && headerClose(callable);
       if (callable && end !== undefined) add(`Propagate ${thrown[1]} with unless`, { file: file.path, start: end, end,
         text: `${callable.throws.length ? 'and' : 'unless'} ${thrown[1]} ` });
-      if (!callable) add(`Catch ${thrown[1]} and report the failure`, wrappedStatement(file, issue,
-        'try', `} catch ${thrown[1]} error {\n    print(value=error)\n}`));
+      if (!callable) {
+        const edit = wrappedStatement(file, issue, 'try',
+          `} catch ${thrown[1]} error {\n    // Choose recovery here. Until then, preserve the failure.\n    throw error\n}`, checked.project.config);
+        if (edit) fixes.push({title:`Scaffold recovery for ${thrown[1]}`,issue,edits:[edit],
+          description:'This template rethrows the error. It remains incomplete until you choose a recovery policy; it does not log, discard the failure, or continue startup.'});
+      }
     }
     const policyEffect=/^Declare uses ([\w]+\.[\w]+) for /.exec(issue.message);
     if(issue.code==='HTTP'&&policyEffect&&callable) {

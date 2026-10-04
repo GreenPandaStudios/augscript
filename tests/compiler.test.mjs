@@ -847,10 +847,6 @@ test('quick fixes wrap mutable access, C calls, and checked errors', () => {
         'native.aug': 'extern C puts(string text) returns int;\n' },
       title: 'Wrap statement in unsafe block',
     },
-    {
-      files: { 'main.aug': 'print(value=read_file(path="note.txt"));\n' },
-      title: 'Catch FileError and report the failure',
-    },
   ];
   for (const { files, title } of cases) withProject(files, root => {
     const file = join(root, 'main.aug');

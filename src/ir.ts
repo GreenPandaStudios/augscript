@@ -40,7 +40,7 @@ export type IrInstruction = {span:Span;debugScope?:string}&(
   {op:'native';out:number;binding:NativeFunction;args:number[];resources:Record<string,{id:string;release:string}>;error?:string;errorFactory?:string}|
   {op:'extern';out:number;name:string;types:string[];result:string;args:number[]}|
   {op:'object';out:number;type:string;fields:string[];owned:boolean[];methods:{name:string;function:string}[];record:boolean}|
-  {op:'assert';input:number;expression:string}|{op:'throw';input:number}|{op:'take-error';out:number}|
+  {op:'assert';input:number;expression:string}|{op:'assert-equal';actual:number;expected:number;expression:string}|{op:'throw';input:number}|{op:'take-error';out:number}|
   {op:'drop';slot:number}|{op:'binding-get';out:number;index:number}|{op:'binding-set';input:number;index:number}|
   {op:'scope-depth';out:number}|{op:'scope';action:'enter'|'leave'|'join'|'restore';depth?:number}|
   {op:'lock-depth';out:number}|{op:'lock';action:'leave'|'restore';depth?:number}|
@@ -382,6 +382,7 @@ class FunctionLowering {
       if(this.constructionNext)this.constructorResults.add(out);
       if(plan.returnOwnership==='own')this.owned.add(out);return out;
     }
+    if(name==='assertEqual'){this.instruction({op:'assert-equal',actual:args[0],expected:args[1],expression:'assertEqual(actual, expected)'});this.checkError();return this.literal(null);}
     if(name==='assert'){this.instruction({op:'assert',input:args[0],expression:this.generator.checked.project.files.get(this.file)?.source.slice(expr.args[0].span.start,expr.args[0].span.end)??'assertion'});this.checkError();return this.literal(null);}
     if(name==='int')return args[0];
     if(errorNames.includes(name)){

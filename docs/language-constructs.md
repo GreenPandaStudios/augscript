@@ -320,6 +320,14 @@ assert(condition=bool) returns void
 
 Assert a bool in a test case or its setup. Catching an assertion failure cannot make the case pass; every case must execute an assertion.
 
+## assertEqual
+
+```text
+assertEqual(actual=any, expected=any) returns void
+```
+
+Compare actual and expected using August equality in a test. Evaluate each input once in written order. Failures show bounded scalar, record and tuple values; private storage and native contents are omitted. Other objects retain identity equality. Catching the failure cannot make the case pass.
+
 ## body
 
 ```text

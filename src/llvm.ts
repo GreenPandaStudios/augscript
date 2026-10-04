@@ -282,6 +282,7 @@ class FunctionEmitter {
       case 'drop':this.call('aug_ir_drop','void',[{type:'ptr',value:this.ptr(i.slot)}]);return;
       case 'throw':this.call('aug_ir_throw','void',[{type:'ptr',value:this.ptr(i.input)}]);return;
       case 'take-error':this.call('aug_ir_take_error','void',[{type:'ptr',value:this.ptr(i.out)}]);return;
+      case 'assert-equal':this.call('aug_ir_assert_equal','void',[{type:'ptr',value:this.ptr(i.actual)},{type:'ptr',value:this.ptr(i.expected)},{type:'ptr',value:this.module.text(i.expression)},{type:'ptr',value:this.module.text(i.span.file)},{type:'i32',value:String(i.span.line)}]);return;
       case 'assert':this.call('aug_ir_assert','void',[{type:'ptr',value:this.ptr(i.input)},{type:'ptr',value:this.module.text(i.expression)},{type:'ptr',value:this.module.text(i.span.file)},{type:'i32',value:String(i.span.line)}]);return;
       case 'object':{
         const table=this.module.table(this.fn.name,i.fields,i.owned,i.methods);
