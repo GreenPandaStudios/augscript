@@ -1,6 +1,6 @@
 import {createHash} from 'node:crypto';
 import {relative,resolve} from 'node:path';
-import {isStatement,fieldsOf,initializationOf,type Expr,type MethodDecl,type ClassDecl,type Stmt,type Span,type Param} from './ast.ts';
+import {isStatement,fieldsOf,initializationOf,type Expr,type MethodDecl,type ClassDecl,type MatchPattern,type Stmt,type Span,type Param} from './ast.ts';
 import {typeName} from './ast.ts';
 import type {CheckedProject,CallPlan,InterceptorLayer} from './checker.ts';
 import type {Definition} from './project.ts';
@@ -246,8 +246,31 @@ class FunctionLowering {
     if(result>=firstNewSlot&&type)this.values[result].type=irType(type);
     return result;
   }
+  private matchBranch(clause:MatchPattern,value:number,literal:number|undefined,body:string,next:string):void {
+    if(clause.pattern==='else')this.terminate({op:'jump',target:body});
+    else if(clause.pattern==='null'||clause.pattern==='some')this.terminate({op:'null',input:value,then:clause.pattern==='null'?body:next,otherwise:clause.pattern==='null'?next:body});
+    else{
+      const condition=clause.pattern==='type'?this.runtime('IS_TYPE',[value],this.generator.definition(this.file,clause.type!.name)?.id??clause.type!.name):this.runtime('BINARY',[value,literal!],'==');
+      this.terminate({op:'branch',condition,then:body,otherwise:next});
+    }
+  }
   private expressionValue(expr:Expr):number {
     this.source=expr.span;
+    if(expr.kind==='matchValue'){
+      const value=this.expression(expr.value),out=this.slot(),done=this.block();
+      const literals=expr.cases.map(clause=>clause.literal?this.expression(clause.literal):undefined);
+      for(const [index,clause] of expr.cases.entries()){
+        const body=this.block(),next=this.block();
+        this.matchBranch(clause,value,literals[index],body,next);
+        this.enter(body);const locals=new Map(this.locals),parent=this.debugScope;
+        this.debugScope='scope_'+this.scopes.length;this.scopes.push({name:this.debugScope,parent,span:clause.span});
+        if(clause.name)this.local(clause.name,value,clause.span);
+        const result=this.expression(clause.result);this.instruction({op:'copy',out,input:result});
+        this.locals.clear();for(const [name,slot] of locals)this.locals.set(name,slot);this.debugScope=parent;
+        this.terminate({op:'jump',target:done});this.enter(next);
+      }
+      this.terminate({op:'jump',target:done});this.enter(done);return out;
+    }
     if(expr.kind==='recordCopy'){
       const base=this.expression(expr.base),def=this.generator.checked.expressionTypes.get(expr.base)!.def!,node=def.node as ClassDecl;
       const replacements=new Map(expr.fields.map(field=>[field.name,this.expression(field.value)]));
@@ -612,12 +635,7 @@ class FunctionLowering {
       const literals=stmt.cases.map(clause=>clause.literal?this.expression(clause.literal):undefined);
       for(const [index,clause] of stmt.cases.entries()){
         const body=this.block(),next=this.block();
-        if(clause.pattern==='else')this.terminate({op:'jump',target:body});
-        else if(clause.pattern==='null'||clause.pattern==='some')this.terminate({op:'null',input:value,then:clause.pattern==='null'?body:next,otherwise:clause.pattern==='null'?next:body});
-        else{
-          const condition=clause.pattern==='type'?this.runtime('IS_TYPE',[value],this.generator.definition(this.file,clause.type!.name)?.id??clause.type!.name):this.runtime('BINARY',[value,literals[index]!],'==');
-          this.terminate({op:'branch',condition,then:body,otherwise:next});
-        }
+        this.matchBranch(clause,value,literals[index],body,next);
         this.enter(body);this.scoped(clause.body,false,()=>{if(clause.name)this.local(clause.name,value,clause.span);},clause.span);
         if(!this.current.terminator)this.terminate({op:'jump',target:done});this.enter(next);
       }

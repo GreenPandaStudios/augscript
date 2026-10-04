@@ -949,7 +949,7 @@ test('explicit mutable fields are public and require a caller borrow', () => wit
 }));
 
 test('underscore fields and methods are visible only inside their class', () => withProject({
-  'main.aug': 'import Box from types;\nbox = Box(_value=2);\nprint(value=box.read());\n' +
+  'main.aug': 'import Box from types;\nbox = Box(value=2);\nprint(value=box.read());\n' +
     'print(value=box._value);\nbox._hidden();\n',
   'types.aug': 'interface Readable { read() returns int; }\n' +
     'Box(int _value) implements Readable {\n' +

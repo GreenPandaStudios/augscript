@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+Complete `matchvalue` with project formatting preferences. Narrow optional/type case names in match-expression hover and completion, color those names as variables, and describe result, completeness and ownership rules in keyword help.
+
 Complete `itboundaries` inside a same-file function test group to insert representative scalar input rows and an assertion placeholder. Templates honor project formatting; expected answers remain an author decision.
 
 Complete explicit compositions through ordinary exports and imports. Inspect application or selected same-file test wiring with `aug graph --composition`, including lifetimes, constructor dependencies, source revisions and Mermaid diagrams. Duplicate binding diagnostics link the conflicting selections; inspection does not execute or replace providers.

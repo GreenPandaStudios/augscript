@@ -1,6 +1,6 @@
 import type {
   BindDecl, ClassDecl, Diagnostic, ExportDecl, Expr, GenericHeader, ImportDecl, IncludeDecl, InterfaceDecl,
-  InterceptorAnnotation, InterceptorDecl, MethodDecl, Param, SourceFile, Span, Stmt, TestDecl, TestGroup, TopLevel, TypeRef,
+  InterceptorAnnotation, InterceptorDecl, MatchPattern, MethodDecl, Param, SourceFile, Span, Stmt, TestDecl, TestGroup, TopLevel, TypeRef,
 } from './ast.ts';
 import { syntheticType } from './ast.ts';
 import { lex, type Token } from './lexer.ts';
@@ -749,19 +749,9 @@ class Parser {
       const cases: Extract<Stmt, { kind: 'match' }>['cases'] = [];
       while (!this.at('}') && !this.at('eof')) {
         this.checkBlockIndentation();
-        const caseStart = this.current().span;
-        let pattern: (typeof cases)[number]['pattern'];
-        let literal: Expr | undefined, type: TypeRef | undefined, name: string | undefined;
-        if (this.match('else')) pattern = 'else';
-        else {
-          this.expect('when');
-          if (this.match('missing')) pattern = 'null';
-          else if (this.match('null')) pattern = 'null';
-          else if (this.match('some')) { pattern = 'some'; name = this.expect('identifier').value; }
-          else if (this.at('identifier')) { pattern = 'type'; type = this.parseType(); name = this.expect('identifier').value; }
-          else { pattern = 'literal'; literal = this.parsePrimary(); }
-        }
-        cases.push({ pattern, literal, type, name, body: this.parseBlock(caseStart), span: this.span(caseStart) });
+        const clause=this.parseMatchPattern();
+        const body=this.parseBlock(clause.span);
+        cases.push({...clause,body,span:this.span(clause.span)});
       }
       this.closeBrace();
       return { kind: 'match', value, cases, span: this.span(start) };
@@ -843,6 +833,34 @@ class Parser {
     return { kind: 'expr', expr: target, span: this.span(start) };
   }
 
+  private parseMatchPattern():MatchPattern {
+    const start=this.current().span;
+    let pattern:MatchPattern['pattern'],literal:Expr|undefined,type:TypeRef|undefined,name:string|undefined;
+    if(this.match('else'))pattern='else';
+    else {
+      this.expect('when');
+      if(this.match('missing')||this.match('null'))pattern='null';
+      else if(this.match('some')){pattern='some';name=this.expect('identifier').value;}
+      else if(this.at('identifier')){pattern='type';type=this.parseType();name=this.expect('identifier').value;}
+      else {pattern='literal';literal=this.parseUnary();if(literal.kind!=='literal')throw new ParseFailure({...literal.span,code:'MATCH',message:'A match pattern needs a scalar literal, null, some name, or Type name'});}
+    }
+    return {pattern,literal,type,name,span:this.span(start)};
+  }
+
+  private parseMatchValue(start:Span):Expr {
+    const value=this.parseExpression();this.openBlock(start);
+    const cases:Extract<Expr,{kind:'matchValue'}>['cases']=[];
+    while(!this.at('}')&&!this.at('eof')){
+      this.checkBlockIndentation();const clause=this.parseMatchPattern();this.openBlock(clause.span);this.checkBlockIndentation();
+      if(['}','return','throw','if','for','while','pass','own','break','continue','scope','try','unsafe','borrow','lock'].includes(this.current().kind))
+        throw new ParseFailure({...this.current().span,code:'MATCH',message:'Each match expression case needs one result expression; use a statement match for operations'});
+      const result=this.parseExpression();this.endStatement();
+      if(!this.at('}'))throw new ParseFailure({...this.current().span,code:'MATCH',message:'Each match expression case needs one result expression; use a statement match for operations'});
+      this.closeBrace();cases.push({...clause,result,span:this.span(clause.span)});
+    }
+    this.closeBrace();return {kind:'matchValue',value,cases,span:this.span(start)};
+  }
+
   private patternNames(): string[] {
     if (!this.match('(')) return [this.expect('identifier').value];
     const names = [this.expect('identifier').value];
@@ -889,7 +907,7 @@ class Parser {
       const token = this.take();
       const value = this.parseUnary();
       if (token.kind === '-' && value.kind === 'literal' && typeof value.value === 'number')
-        return { ...value, value: -value.value, numericText: value.numericText ? `-${value.numericText}` : undefined,
+        return { ...value, value: -value.value, numericText: value.numericText ? value.numericText.startsWith('-') ? value.numericText.slice(1) : `-${value.numericText}` : undefined,
           span: this.span(token.span, value.span) };
       return { kind: 'unary', op: token.kind, value, span: this.span(token.span, value.span) };
     }
@@ -987,6 +1005,7 @@ class Parser {
     if (token.value === 'input' && this.current(1).kind === 'from' && this.current(2).value === 'form') {
       this.take(); this.take(); this.take(); return {kind:'formInput', span:this.span(token.span)};
     }
+    if(this.match('match'))return this.parseMatchValue(token.span);
     if (this.match('interpolation_start')) {
       const parts: Extract<Expr, {kind:'interpolation'}>['parts'] = [];
       this.expressionDepth++;

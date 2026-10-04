@@ -97,5 +97,8 @@
   "acceptance-review": {
     "stdout": "8\n",
     "tests": 3
+  },
+  "match-values-guide": {
+    "stdout": "Guest\n7\n"
   }
 }

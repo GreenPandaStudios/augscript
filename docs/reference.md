@@ -306,6 +306,29 @@ Nullable locals narrow after null checks, short-circuit conditions, match patter
 
 `match value` uses `when null`, `when some name`, `when true`, `when false`, or `when Type name`. Nullable and bool matches must cover every case. Open class/interface domains require `else`. Duplicate/unreachable cases and incompatible patterns are errors.
 
+**Unreleased:** A match can also produce a value. Put one result expression in each case. The input is evaluated once; only the selected result is evaluated. Results have compatible types, with null making the result optional. An explicit input or return contract can provide a common interface for results from different implementations. Checked errors, capability calls and possible ownership moves inside the selected expression follow their ordinary rules. Choosing a result does not grant mutable access or transfer ownership; use a statement match to return or move an owned value or native resource.
+
+This program chooses a display name and a number without declaring mutable temporary values:
+
+```aug project=match-values-guide file=main.aug
+optional string name = null
+label = match name:
+    when null:
+        "Guest"
+    when some person:
+        $"Hello, {person}!"
+print(value=label)
+
+score = match true:
+    when true:
+        7
+    when false:
+        0
+print(value=score)
+```
+
+It prints `Guest` and `7` on separate lines. The same case blocks can use braces. Each expression case contains a value rather than a `return` statement; statement matches continue to accept ordinary operations and early returns.
+
 **Unreleased:** `error InvalidQuantity(int value)` declares a data-only Error implementation without an empty body. Its fields, labels, checked propagation and cleanup follow ordinary classes. It cannot contain injected, owned or mutable storage; use a full Error implementation for custom behavior.
 
 An error satisfies Error. A body infers escaping errors. A bodyless signature or explicit bound names specific errors with `returns T unless FileError and DomainError`. It can throw any value satisfying its declaration; declaring Error accepts any Error implementation. Calls must catch or propagate all effective errors, including interceptor layers; executable callers infer propagation when unless is omitted.

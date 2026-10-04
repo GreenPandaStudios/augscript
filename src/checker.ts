@@ -1,6 +1,6 @@
 import type {
   BindDecl, ClassDecl, Diagnostic, Expr, GenericHeader, InterfaceDecl, InterceptorAnnotation, InterceptorDecl, MethodDecl, Param, Span,
-  Stmt, TypeRef,
+  Stmt, TypeRef, MatchPattern,
 } from './ast.ts';
 import { fieldsOf, initializationOf, syntheticType, typeName } from './ast.ts';
 import { isPrivateName, type Definition, type Project } from './project.ts';
@@ -10,7 +10,7 @@ import { returnsFresh } from './freshness.ts';
 import { inferType } from './inference.ts';
 import { sameType, tyName, immutableType, type Ty } from './types.ts';
 import { capabilityKey, coversChange, effectContract, type CapabilityEffect, type EffectContract } from './effects.ts';
-import { allocationOrigin, OwnershipFlow, sourceName, unionOrigins, type Origins } from './ownership.ts';
+import { allocationOrigin, overlap, OwnershipFlow, sourceName, unionOrigins, type Origins } from './ownership.ts';
 import { builtinType as builtin, builtinTypes, builtinProperties, collectionOperations, errorNames, operationType } from './builtins.ts';
 import { orderGraph } from './di.ts';
 import { javadocBefore } from './javadoc.ts';
@@ -1557,6 +1557,37 @@ class Checker {
     }
   }
 
+  private matchBranches<T extends MatchPattern>(expression:Expr,value:Ty,cases:T[],context:Context,span:Span):{clause:T;inside:Context}[] {
+    const seen=new Set<string>(),numbers:Extract<Expr,{kind:'literal'}>[]=[];
+    const branches=cases.map(clause=>{
+      const inside=this.cloneContext(context),literal=clause.literal;
+      const key=clause.pattern==='literal'&&literal?.kind==='literal'?
+        typeof literal.value==='number'&&literal.numericType!=='float'?'int:'+BigInt(literal.numericText??String(literal.value)).toString():JSON.stringify(literal.value):
+        clause.pattern==='type'?typeName(clause.type!):clause.pattern;
+      const repeatedNumber=literal?.kind==='literal'&&typeof literal.value==='number'&&numbers.some(previous=>previous.numericType!=='float'&&literal.numericType!=='float'?
+        BigInt(previous.numericText??String(previous.value))===BigInt(literal.numericText??String(literal.value)):previous.value===literal.value);
+      if(literal?.kind==='literal'&&typeof literal.value==='number')numbers.push(literal);
+      if(seen.has(key)||repeatedNumber||seen.has('else')||seen.has('some')&&clause.pattern!=='null')this.report(clause.span,'Unreachable or repeated match case','MATCH');
+      seen.add(key);let narrowed=value;
+      if(clause.pattern==='null'||clause.pattern==='some'){
+        if(!value.nullable&&!value.optional)this.report(clause.span,'null/some patterns require a nullable or optional value','MATCH');
+        narrowed=clause.pattern==='some'?{...value,nullable:false,optional:false}:nullTy;
+      }else if(clause.pattern==='literal'){
+        const actual=this.checkExpression(clause.literal!,context);if(!this.assignable(actual,value))this.report(clause.span,'Match literal has an incompatible type','MATCH');
+      }else if(clause.pattern==='type'){
+        narrowed=this.resolveType(clause.type!,context.file,context.types);
+        if(narrowed.kind!=='class'||narrowed.args.length||!this.assignable(narrowed,{...value,nullable:true}))this.report(clause.span,'Type patterns require a concrete non-generic class compatible with the matched value','MATCH');
+      }
+      if(expression.kind==='name'&&clause.pattern==='some'){const local=inside.locals.get(expression.name);if(local)local.type=narrowed;}
+      if(clause.name)this.patternLocals([clause.name],narrowed,this.placesOf(expression,context),inside,clause.span,sourceName(expression));
+      return {clause,inside};
+    });
+    const exhaustive=seen.has('else')||(value.nullable||value.optional)&&seen.has('null')&&seen.has('some')||
+      !value.nullable&&!value.optional&&value.id==='builtin:bool'&&seen.has('true')&&seen.has('false');
+    if(!exhaustive)this.report(span,'Match is incomplete; cover both booleans, null and some, or add else','MATCH');
+    return branches;
+  }
+
   private checkStatement(stmt: Stmt, context: Context): void {
     if (stmt.kind === 'break' || stmt.kind === 'continue') {
       if (!context.loop) this.report(stmt.span, `${stmt.kind} requires an enclosing for or while loop`, 'LOOP');
@@ -1664,41 +1695,12 @@ class Checker {
       return;
     }
     if (stmt.kind === 'match') {
-      const value = this.checkExpression(stmt.value, context);
-      const seen = new Set<string>();
-      const branches: Context[] = [];
-      for (const clause of stmt.cases) {
-        const inside = this.cloneContext(context);
-        const key = clause.pattern === 'literal' ? JSON.stringify(clause.literal?.kind === 'literal' ? clause.literal.value : '?') :
-          clause.pattern === 'type' ? typeName(clause.type!) : clause.pattern;
-        if (seen.has(key) || seen.has('else') || seen.has('some') && clause.pattern !== 'null')
-          this.report(clause.span, 'Unreachable or repeated match case', 'MATCH');
-        seen.add(key);
-        let narrowed = value;
-        if (clause.pattern === 'null' || clause.pattern === 'some') {
-          if (clause.pattern === 'null' ? !value.nullable : !value.nullable && !value.optional) this.report(clause.span, 'null/some patterns require a nullable or optional value', 'MATCH');
-          narrowed = clause.pattern === 'some' ? { ...value, nullable: false, optional: false } : nullTy;
-        } else if (clause.pattern === 'literal') {
-          const actual = this.checkExpression(clause.literal!, context);
-          if (!this.assignable(actual, value)) this.report(clause.span, 'Match literal has an incompatible type', 'MATCH');
-        } else if (clause.pattern === 'type') {
-          narrowed = this.resolveType(clause.type!, context.file, context.types);
-          if (narrowed.kind !== 'class' || narrowed.args.length || !this.assignable(narrowed, { ...value, nullable: true }))
-            this.report(clause.span, 'Type patterns require a concrete non-generic class compatible with the matched value', 'MATCH');
-        }
-        if (stmt.value.kind === 'name' && clause.pattern === 'some') {
-          const local = inside.locals.get(stmt.value.name);
-          if (local) local.type = narrowed;
-        }
-        if (clause.name) this.patternLocals([clause.name], narrowed, this.placesOf(stmt.value, context), inside, clause.span, sourceName(stmt.value));
-        this.checkStatements(clause.body, inside, clause.span);
-        if (canFallThrough(clause.body)) branches.push(inside);
+      const value=this.checkExpression(stmt.value,context),branches:Context[]=[];
+      for(const {clause,inside} of this.matchBranches(stmt.value,value,stmt.cases,context,stmt.span)){
+        this.checkStatements(clause.body,inside,clause.span);
+        if(canFallThrough(clause.body))branches.push(inside);
       }
-      const exhaustive = seen.has('else') || (value.nullable || value.optional) && seen.has('null') && seen.has('some') ||
-        !value.nullable && !value.optional && value.id === 'builtin:bool' && seen.has('true') && seen.has('false');
-      if (!exhaustive) this.report(stmt.span, 'Match is incomplete; cover both booleans, null and some, or add else', 'MATCH');
-      this.mergeMoved(context, branches);
-      return;
+      this.mergeMoved(context,branches);return;
     }
     if (stmt.kind === 'assign') {
       if(stmt.target.kind==='name'&&!stmt.declaredType) {
@@ -2062,6 +2064,7 @@ class Checker {
   private placesOf(expr: Expr, context: Context): Origins {
     if (!this.isReference(this.expressionTypes.get(expr) ?? errorTy)) return new Set();
     if (expr.kind === 'name') return context.flow.origins(expr.name);
+    if(expr.kind==='matchValue')return unionOrigins(...expr.cases.map(clause=>this.expressionOrigins.get(clause.result)??new Set<string>()));
     if (expr.kind === 'binary' && expr.op === 'otherwise')
       return new Set([...this.placesOf(expr.left, context), ...this.placesOf(expr.right, context)]);
     if (expr.kind === 'start') {
@@ -2231,7 +2234,23 @@ class Checker {
 
   private checkExpression(expr: Expr, context: Context, expected?: Ty): Ty {
     let type = errorTy;
-    if (expr.kind === 'recordCopy') {
+    if(expr.kind==='matchValue'){
+      const input=this.checkExpression(expr.value,context),names=new Set(context.locals.keys());
+      const branches=this.matchBranches(expr.value,input,expr.cases,context,expr.span),types:Ty[]=[];
+      for(const {clause,inside} of branches){
+        this.captureScope(clause.result.span,inside);
+        const actual=this.checkExpression(clause.result,inside,expected);types.push(actual);
+        if(actual.id==='builtin:void')this.report(clause.result.span,'A match expression needs a value in every case; this expression returns void','MATCH');
+        const resultOrigins=this.placesOf(clause.result,inside);
+        const ownedAlias=this.isReference(actual)&&[...inside.locals].some(([name,local])=>local.ownership==='own'&&overlap(resultOrigins,inside.flow.reachable(inside.flow.origins(name))));
+        if(actual.kind==='resource'||this.ownershipOf(clause.result,inside)==='own'||ownedAlias)this.report(clause.result.span,'A match expression does not transfer ownership; use a statement match for owned values','OWN');
+        inside.flow.forgetLocals(names);for(const name of inside.locals.keys())if(!names.has(name))inside.locals.delete(name);
+      }
+      type=expected&&expected.kind!=='error'&&types.every(actual=>this.assignable(actual,expected))?expected:this.inferredReturn(types);
+      for(const [index,actual] of types.entries())if(actual.kind!=='error'&&!this.assignable(actual,type))this.report(expr.cases[index].result.span,`Match result cases need compatible values, got ${tyName(type)} and ${tyName(actual)}`,'MATCH');
+      type={...type,readonly:types.some(actual=>actual.readonly),frozen:types.filter(actual=>actual.kind!=='null').every(actual=>actual.frozen)};
+      this.mergeMoved(context,branches.map(branch=>branch.inside));
+    }else if (expr.kind === 'recordCopy') {
       const base = this.checkExpression(expr.base, context), node = base.def?.node;
       if (node?.kind !== 'class' || !node.record || base.nullable || base.optional) {
         this.report(expr.span, 'with creates a new non-null record; narrow optional values before updating them', 'RECORD');

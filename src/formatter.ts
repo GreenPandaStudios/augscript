@@ -1,4 +1,4 @@
-import type { ClassDecl, Expr, GenericHeader, InterceptorAnnotation, MethodDecl, Param, SourceFile, Span, Stmt, TopLevel } from './ast.ts';
+import type { ClassDecl, MatchPattern, Expr, GenericHeader, InterceptorAnnotation, MethodDecl, Param, SourceFile, Span, Stmt, TopLevel } from './ast.ts';
 import { typeName } from './ast.ts';
 import { lex } from './lexer.ts';
 import { parse } from './parser.ts';
@@ -103,9 +103,10 @@ class Printer {
       for (const line of comment.split(/\r?\n/)) this.line(line.trimStart());
     }
   }
-  private inline(offset: number): string {
+  private inline(offset: number, parentColumn?:number): string {
     const comments: string[] = [];
     while (this.comments[0]?.span.start < offset) {
+      if(parentColumn!==undefined&&this.comments[0].span.column<=parentColumn)break;
       let comment = this.comments.shift()!.value;
       if (comment.startsWith('//') || comment.startsWith('#')) comment = `/* ${comment.replace(/^(\/\/|#)\s*/, '').replaceAll('*/', '* /')} */`;
       comments.push(comment);
@@ -159,10 +160,27 @@ class Printer {
     else { this.line(header); this.before(method.span.end); }
     this.remember(method.span,'function',line);
   }
+  private matchPattern(clause:MatchPattern):string {
+    return clause.pattern === 'else' ? 'else' : 'when ' + (clause.pattern === 'type' ? typeName(clause.type!) + ' ' + clause.name :
+      clause.pattern === 'some' ? 'some ' + clause.name : clause.pattern === 'null' ? 'null' : this.expression(clause.literal!));
+  }
   private expression(expr: Expr, precedence = 0): string {
     const comment = this.inline(expr.span.start);
     let value: string;
-    if (expr.kind === 'recordCopy') value = this.expression(expr.base, 8) + ' with ' +
+    if (expr.kind === 'matchValue') {
+      const input = this.expression(expr.value,1), lineEnd = this.file.source.indexOf('\n',expr.value.span.end);
+      const headerComment = this.inline(Math.min(lineEnd<0?this.file.source.length:lineEnd,expr.cases[0]?.span.start??expr.span.end));
+      const block = this.indent ? ':' : ' {', close = this.indent ? '' : '\n' + this.step + '}';
+      const cases = expr.cases.map(clause => {
+        const head = this.inline(clause.span.start) + this.matchPattern(clause);
+        const text = this.expression(clause.result), trailing = this.inline(clause.span.end, this.file.source[clause.span.end - 1] === '}' ? undefined : clause.span.column);
+        const result = (text + (trailing ? ' ' + trailing.trimEnd() : '')).replaceAll('\n', '\n' + this.step.repeat(2));
+        return this.step + head + block + '\n' + this.step.repeat(2) + result + close;
+      });
+      value = 'match ' + input + (headerComment ? ' ' + headerComment.trimEnd() : '') + block + '\n' + cases.join('\n') + (this.indent ? '' : '\n}');
+      if (precedence) value = '(' + value + ')';
+    }
+    else if (expr.kind === 'recordCopy') value = this.expression(expr.base, 8) + ' with ' +
       this.delimited('(', expr.fields.map(field => field.name + '=' + this.expression(field.value)), ')');
     else if (expr.kind === 'interpolation') value = '$"' + expr.parts.map(part =>
       'text' in part
@@ -225,9 +243,8 @@ class Printer {
     } else if (stmt.kind === 'while') this.block('while ' + this.expression(stmt.test), () => stmt.body.forEach(child => this.statement(child)), stmt.span);
     else if (stmt.kind === 'for') this.block(`for ${stmt.names.length === 1 ? stmt.names[0] : '(' + stmt.names.join(', ') + ')'} in ${this.expression(stmt.iterable)}`,
       () => stmt.body.forEach(child => this.statement(child)), stmt.span);
-    else if (stmt.kind === 'match') this.block('match ' + this.expression(stmt.value), () => stmt.cases.forEach(clause => {
-      const pattern = clause.pattern === 'else' ? 'else' : 'when ' + (clause.pattern === 'some' ? 'some ' + clause.name :
-        clause.pattern === 'literal' ? this.expression(clause.literal!) : clause.pattern === 'type' ? typeName(clause.type!) + ' ' + clause.name : clause.pattern);
+    else if (stmt.kind === 'match') this.block('match ' + this.expression(stmt.value,1), () => stmt.cases.forEach(clause => {
+      const pattern = this.matchPattern(clause);
       this.mappedBlock(pattern, () => clause.body.forEach(child => this.statement(child)), clause.span,'match-case');
     }), stmt.span);
     else if (stmt.kind === 'try') {

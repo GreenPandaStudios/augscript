@@ -37,6 +37,13 @@ try {
   };
   assert.match(readFileSync(join(cliRoot,'native/aug-native-abi-1.h'),'utf8'),/aug_native_error_v1/);
   assert.equal(aug('--version').trim(), packages.find(pkg => pkg.directory === 'cli').version);
+  const choices=join(directory,'match-values');mkdirSync(choices);
+  writeFileSync(join(choices,'main.aug'),'import greet from values\nprint(value=greet(name="Ada"))\n');
+  writeFileSync(join(choices,'values.aug'),'greet(optional string name):\n    return match name:\n        when null:\n            "Guest"\n        when some person:\n            $"Hello, {person}!"\n');
+  assert.equal(aug('run',choices),'Hello, Ada!\n');
+  aug('spec',choices);assert.match(readFileSync(join(choices,'values.aug.md'),'utf8'),/choice based on `name`/);
+  if(process.env.AUG_LLVM_HOME&&process.env.AUG_RUNTIME_PACK)
+    assert.equal(run(process.execPath,[cli,'run',choices,'--backend','llvm']),'Hello, Ada!\n');
   const verifySpecs = folder => {
     for(const entry of readdirSync(folder,{withFileTypes:true})) {
       const file=join(folder,entry.name);

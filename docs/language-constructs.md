@@ -846,7 +846,7 @@ Hash map: `{1: "apples", 2: "pears"}` infers Map<int, string>. A typed declarati
 match value: when ...
 ```
 
-Choose a checked case. Cover true and false for bool, null and some for nullable values, or add else. Concrete class cases narrow the named value. Duplicate and unreachable cases are rejected.
+Choose a checked case. Cover true and false for bool, null and some for optional values, or add else. Concrete class cases narrow the named value. A match expression has exactly one result expression per case, evaluates its input once and evaluates only the selected result. Results need compatible types and preserve errors, read-only access and borrows; owned/native resources need a statement match. Duplicate and unreachable cases are rejected.
 
 ## mutable
 

@@ -3,7 +3,7 @@ import { defaultText } from './parameters.ts';
 import { callableResult, callableErrors } from './contracts.ts';
 import { dirname, join, relative, resolve, sep } from 'node:path';
 import type { ClassDecl, Expr, InterceptorDecl, MethodDecl, Param, SourceFile, Span, Stmt, TopLevel, TypeRef } from './ast.ts';
-import { fieldsOf, typeName } from './ast.ts';
+import { expressionChildren, fieldsOf, typeName } from './ast.ts';
 import type { CheckedProject, Ty } from './checker.ts';
 import { tyName } from './checker.ts';
 import { lex } from './lexer.ts';
@@ -874,8 +874,18 @@ export function semanticTokens(checked: CheckedProject, fileName: string): Edito
     const name = tokens[first];
     if (name?.kind === 'identifier') declarationNames.set(name.span.start, type);
   }
+  function visitExpression(expr:Expr):void {
+    if(expr.kind==='matchValue')for(const clause of expr.cases)if(clause.name)variables.add(clause.name);
+    expressionChildren(expr).forEach(visitExpression);
+  }
   function visitStatements(statements: Stmt[]): void {
     for (const stmt of statements) {
+      if('value' in stmt&&stmt.value)visitExpression(stmt.value);
+      if('expr' in stmt)visitExpression(stmt.expr);
+      if('test' in stmt)visitExpression(stmt.test);
+      if('iterable' in stmt)visitExpression(stmt.iterable);
+      if('target' in stmt)visitExpression(stmt.target);
+      if('port' in stmt)visitExpression(stmt.port);
       if (stmt.kind === 'assign' && stmt.target.kind === 'name') variables.add(stmt.target.name);
       if (stmt.kind === 'destructure' || stmt.kind === 'for') stmt.names.forEach(name => variables.add(name));
       if (stmt.kind === 'if') { visitStatements(stmt.then); visitStatements(stmt.otherwise); }
@@ -898,7 +908,7 @@ export function semanticTokens(checked: CheckedProject, fileName: string): Edito
       if (item.kind === 'interceptor') declarationNames.set(item.nameSpan.start, 'decorator');
       item.typeParams.forEach(name => typeParameters.add(name));
       if (item.kind === 'class' || item.kind === 'interceptor') fieldsOf(item).forEach(field => fields.add(field.name));
-      if (item.kind === 'class') visitStatements(item.constructorBody ?? []);
+      if (item.kind === 'class') { visitStatements(item.constructorBody ?? []); item.stateFields?.forEach(field=>visitExpression(field.initializer)); }
       for (const method of item.methods) {
         markFunction(method, 'method');
         method.typeParams.forEach(name => typeParameters.add(name));
@@ -916,7 +926,7 @@ export function semanticTokens(checked: CheckedProject, fileName: string): Edito
         visitStatements(group.setup.filter((entry): entry is Stmt => entry.kind !== 'bind' && entry.kind !== 'include'));
         group.cases.forEach(test => visitStatements(test.body));
       }
-    } else if (['expr', 'assign', 'destructure', 'return', 'throw', 'if', 'while', 'for', 'scope', 'match', 'try', 'unsafe', 'borrow', 'lock', 'freeze', 'yield'].includes(item.kind))
+    } else if (['expr', 'assign', 'destructure', 'return', 'throw', 'if', 'while', 'for', 'scope', 'match', 'try', 'unsafe', 'borrow', 'lock', 'freeze', 'yield', 'serve'].includes(item.kind))
       visitStatements([item as Stmt]);
   }
   const result: EditorToken[] = [];

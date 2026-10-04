@@ -161,7 +161,13 @@ export interface CompositionDecl extends GenericHeader {
 }
 export interface IncludeDecl { kind: 'include'; name: string; span: Span }
 
+export interface MatchPattern {
+  pattern:'null'|'some'|'literal'|'type'|'else';
+  literal?:Expr;type?:TypeRef;name?:string;span:Span;
+}
+
 export type Expr =
+  | {kind:'matchValue';value:Expr;cases:(MatchPattern & {result:Expr})[];span:Span}
   | {kind: 'recordCopy'; base: Expr; fields: {name: string; value: Expr; span: Span}[]; span: Span}
   | {kind: 'interpolation'; parts: ({text: string; span: Span} | {value: Expr; span: Span})[]; span: Span}
   | {kind: 'handle'; call: Expr; span: Span}
@@ -196,8 +202,7 @@ export type Stmt =
   | { kind: 'while'; test: Expr; body: Stmt[]; span: Span }
   | { kind: 'for'; names: string[]; iterable: Expr; body: Stmt[]; span: Span }
   | { kind: 'destructure'; names: string[]; value: Expr; span: Span }
-  | { kind: 'match'; value: Expr; cases: { pattern: 'null' | 'some' | 'literal' | 'type' | 'else';
-      literal?: Expr; type?: TypeRef; name?: string; body: Stmt[]; span: Span }[]; span: Span }
+  | { kind: 'match'; value: Expr; cases: (MatchPattern & {body:Stmt[]})[]; span: Span }
   | { kind: 'try'; body: Stmt[]; catches: { type: TypeRef; name: string; body: Stmt[]; span: Span }[]; always?: Stmt[]; span: Span }
   | { kind: 'unsafe'; body: Stmt[]; span: Span }
   | { kind: 'borrow'; name: string; body: Stmt[]; span: Span }
@@ -247,6 +252,7 @@ export function initializationOf(node: ClassDecl): Stmt[] {
 /** Direct expression children, shared by conservative analyses as syntax grows. */
 export function expressionChildren(expr: Expr): Expr[] {
   switch (expr.kind) {
+    case 'matchValue': return [expr.value,...expr.cases.flatMap(clause=>[...(clause.literal?[clause.literal]:[]),clause.result])];
     case 'recordCopy': return [expr.base, ...expr.fields.map(field => field.value)];
     case 'interpolation': return expr.parts.flatMap(part => 'value' in part ? [part.value] : []);
     case 'markup': return [...expr.attributes.map(attribute => attribute.value), ...expr.children];

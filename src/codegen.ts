@@ -1,4 +1,4 @@
-import type { ClassDecl, Expr, InterceptorDecl, MethodDecl, Param, Stmt } from './ast.ts';
+import type { ClassDecl, Expr, InterceptorDecl, MatchPattern, MethodDecl, Param, Stmt } from './ast.ts';
 import { fieldsOf, initializationOf, isStatement, typeName } from './ast.ts';
 import type { BindingInfo, CheckedProject, InterceptorLayer } from './checker.ts';
 import type { Definition } from './project.ts';
@@ -195,7 +195,7 @@ class CGenerator {
       `  AugValue roots[${cls.fields.length + 1}] = {0};`,
       `  AugFrame frame; aug_frame_enter(&frame, roots, ${cls.fields.length + 1});`,
       ...cls.fields.map((_, index) => `  roots[${index}] = args[${index}];`),
-      `  roots[${cls.fields.length}] = aug_new_object(${cString(cls.kind === 'class' && cls.record ? def.id : cls.name)}, ${fieldsOf(cls).length}, ${ownTableName}, ${tableName}, ${methods.length});`,
+      `  roots[${cls.fields.length}] = aug_new_object(${cString(def.id)}, ${fieldsOf(cls).length}, ${ownTableName}, ${tableName}, ${methods.length});`,
       ...cls.fields.map((_, index) => `  aug_set_field(roots[${cls.fields.length}], ${index}, roots[${index}]);`),
       ...(cls.kind === 'class' && cls.record ? [`  roots[${cls.fields.length}].as.object->kind = AUG_RECORD_KIND;`] : []),
       `  AugValue value = roots[${cls.fields.length}];`,
@@ -276,7 +276,7 @@ class CGenerator {
       `  roots[${count}] = aug_http_response(roots[${count}], ${endpoint.status}); goto finished;`,
       'failed:',
       `  { int status = aug_http_error_status();`,
-      ...endpoint.errors.map(error => `    if (aug_error_is(${cString(error.type.name)})) status = ${error.status};`),
+      ...endpoint.errors.map(error => `    if (aug_error_is(${cString(this.definition(def.file,error.type.name)?.id??error.type.name)})) status = ${error.status};`),
       '    if (status == 500) aug_report_error(); aug_take_error();',
       `    roots[${count}] = aug_http_problem(status); }`,
       'finished:',
@@ -482,7 +482,27 @@ class BodyEmitter {
     return slot;
   }
 
+  private matchCondition(clause:MatchPattern,value:number,literal:number|undefined):string {
+    const type = clause.type ? this.generator.definition(this.file, clause.type.name) : undefined;
+    return clause.pattern === 'else' ? '1' : clause.pattern === 'null' ? `${this.slot(value)}.tag == AUG_NULL` :
+      clause.pattern === 'some' ? `${this.slot(value)}.tag != AUG_NULL` : clause.pattern === 'type' ?
+        `${this.slot(value)}.tag == AUG_OBJECT && !strcmp(${this.slot(value)}.as.object->type_name, ${cString(type?.id ?? clause.type!.name)})` :
+        `aug_truthy(aug_binary("==", ${this.slot(value)}, ${this.slot(literal!)}))`;
+  }
+
   private emitValueExpr(expr: Expr): number {
+    if (expr.kind === 'matchValue') {
+      const value = this.emitExpr(expr.value), slot = this.newSlot();
+      const literals = expr.cases.map(clause => clause.literal ? this.emitExpr(clause.literal) : undefined);
+      for (const [index, clause] of expr.cases.entries()) {
+        const condition = this.matchCondition(clause,value,literals[index]);
+        this.line(`${index ? 'else ' : ''}if (${condition}) {`);
+        const names = new Map(this.locals);if (clause.name) this.locals.set(clause.name, value);
+        const result = this.emitExpr(clause.result);this.line(`${this.slot(slot)} = ${this.slot(result)};`);
+        this.locals = names;this.line('}');
+      }
+      return slot;
+    }
     if (expr.kind === 'recordCopy') {
       const base = this.emitExpr(expr.base), def = this.generator.expressionType(expr.base)!.def!;
       const node = def.node as ClassDecl;
@@ -905,12 +925,7 @@ class BodyEmitter {
       const value = this.emitExpr(stmt.value);
       const literals = stmt.cases.map(clause => clause.literal ? this.emitExpr(clause.literal) : undefined);
       for (const [index, clause] of stmt.cases.entries()) {
-        const literal = literals[index];
-        const type = clause.type ? this.generator.definition(this.file, clause.type.name) : undefined;
-        const condition = clause.pattern === 'else' ? '1' : clause.pattern === 'null' ? `${this.slot(value)}.tag == AUG_NULL` :
-          clause.pattern === 'some' ? `${this.slot(value)}.tag != AUG_NULL` : clause.pattern === 'type' ?
-            `${this.slot(value)}.tag == AUG_OBJECT && !strcmp(${this.slot(value)}.as.object->type_name, ${cString(type?.node.kind === 'class' && type.node.record ? type.id : clause.type!.name)})` :
-            `aug_truthy(aug_binary("==", ${this.slot(value)}, ${this.slot(literal!)}))`;
+        const condition = this.matchCondition(clause,value,literals[index]);
         this.line(`${index ? 'else ' : ''}if (${condition}) {`);
         const names = new Map(this.locals);
         if (clause.name) this.locals.set(clause.name, value);
@@ -1028,7 +1043,7 @@ class BodyEmitter {
       for (const slot of this.owned) if (!ownedBefore.has(slot))
         this.line(`if (${this.slot(slot)}.tag != AUG_NULL) { aug_drop(${this.slot(slot)}); ${this.slot(slot)} = aug_scalar_null(); }`);
       for (const clause of stmt.catches) {
-        this.line(`if (aug_error_is(${cString(clause.type.name)})) {`);
+        this.line(`if (aug_error_is(${cString(this.generator.definition(this.file,clause.type.name)?.id??clause.type.name)})) {`);
         const slot = this.newSlot();
         const prior = this.locals.get(clause.name);
         this.locals.set(clause.name, slot);
@@ -1080,7 +1095,7 @@ class BodyEmitter {
       this.line(`aug_drop(${this.slot(slot)}); ${this.slot(slot)} = aug_scalar_null();`);
     this.errorTarget = failed;
     for (const clause of stmt.catches) {
-      this.line(`if (aug_error_is(${cString(clause.type.name)})) {`);
+      this.line(`if (aug_error_is(${cString(this.generator.definition(this.file,clause.type.name)?.id??clause.type.name)})) {`);
       const names = new Map(this.locals), slot = this.newSlot(); this.locals.set(clause.name, slot);
       this.line(`${this.slot(slot)} = aug_take_error();`); this.emitScoped(clause.body); this.locals = names;
       this.line(`goto ${cleanup};`); this.line('}');

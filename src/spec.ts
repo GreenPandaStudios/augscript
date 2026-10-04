@@ -290,6 +290,18 @@ class SpecWriter {
         const object=this.expression(expr.object), path=this.memberPath(expr);
         return path?code(path):`${code(name)} of ${object}`;
       }
+      case 'matchValue': {
+        const input=this.expression(expr.value),parts=expr.cases.map(clause=>{
+          const names=new Map(this.locals);
+          if(clause.name)this.locals.set(clause.name,clause.type??{name:this.checked.expressionTypes.get(expr.value)?.name??'value',args:[],nullable:false,span:clause.span});
+          const result=this.expression(clause.result,true);this.locals=names;
+          const condition=clause.pattern==='else'?'otherwise':clause.pattern==='null'?'when it is null':
+            clause.pattern==='some'?'when it has a value, called '+code(clause.name!):
+            clause.pattern==='type'?'when it is '+this.type(clause.type!)+', called '+code(clause.name!):'when it equals '+this.expression(clause.literal!);
+          return result+' '+condition;
+        });
+        return 'a choice based on '+input+': '+parts.join('; ');
+      }
       case 'recordCopy': return 'a new ' + this.expression(expr.base) + ' with ' + coordinate(expr.fields.map(field => code(field.name) + ' set to ' + this.expression(field.value))) + ', checked by the record’s validation';
       case 'interpolation': return 'the text ' + code(expr.parts.map(part => 'text' in part
         ? part.text.replaceAll('{', '{{').replaceAll('}', '}}') : '{' + plain(this.expression(part.value)) + '}').join(''));

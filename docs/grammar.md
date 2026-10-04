@@ -90,7 +90,7 @@ Statement   := Assignment | Expression End | "pass" End
              | "serve" Name {"and" Name} "on port" Expression End
 
 Pattern     := Name | "(" Name {"," Name} [","] ")"
-MatchCase   := "when" ("null" | "some" Name | "true" | "false" | Type Name) Block
+MatchCase   := "when" ("null" | "some" Name | ScalarLiteral | Type Name) Block
              | "else" Block
 
 Test        := "test" LocalFunction BlockOfGroups
@@ -102,6 +102,8 @@ TestName    := Identifier | String
 ```
 
 Setup bindings precede setup statements, which precede cases. Empty bodies use pass. Includes are composition/setup operations; declarations and setup ordering are checked beyond parsing.
+
+Unreleased expression matches reuse the case patterns above. An expression case block contains exactly one expression, not statements. Signed numeric, text and bool literals are scalar patterns. Result types must be compatible; null makes the result optional. Owned and native-resource results require statement matches.
 
 Optional values have two cases: null and some. Omitted inputs become null. Type? and missing are obsolete spellings; use optional Type and null. Old matches with separate missing and null branches require one merged null branch.
 
@@ -117,6 +119,7 @@ Optional values have two cases: null and some. Omitted inputs become null. Type?
 | `{}` | Empty Set or Map determined by context. |
 | `[Validator] header...` | Interceptor annotation on a declaration. |
 | `receiver[index]` | Unreleased: checked List/Tuple read or optional Map lookup. |
+| `match value { when true { a } when false { b } }` | Unreleased: exhaustive value-producing match; each case has one result expression. |
 | `value otherwise fallback` | Unreleased: lazy null fallback. |
 | `receiver.member(label=value)` | Labeled method call. |
 | `receiver.member(value)` | Same-name label shorthand when value is a name. |

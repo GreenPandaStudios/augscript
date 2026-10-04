@@ -18,6 +18,7 @@ export const snippetCatalog = [
   {prefix:'ifelse',description:'Two alternatives',body:'if ${1:condition}:\n    $2\nelse:\n    $0'},
   {prefix:'for',description:'Visit collection values',body:'for ${1:item} in ${2:items}:\n    $0'},
   {prefix:'while',description:'Repeat while a condition holds',body:'while ${1:condition}:\n    $0'},
+  {prefix:'matchvalue',description:'Choose a value with exhaustive cases',body:'${1:result} = match ${2:condition}:\n    when true:\n        ${3:1}\n    when false:\n        ${4:0}'},
   {prefix:'matchoptional',description:'Handle a value or null',body:'match ${1:value}:\n    when some ${2:item}:\n        $3\n    when null:\n        $0'},
   {prefix:'try',description:'Recover from a checked failure',body:'try:\n    $1\ncatch ${2:FileError} ${3:error}:\n    $0'},
   {prefix:'borrow',description:'Grant bounded mutable access',body:'borrow ${1:value}:\n    $0'},
