@@ -1,6 +1,8 @@
+import {loadProject} from './project.ts';
+import type {Config} from './config.ts';
 import { resolve } from 'node:path';
 import { typeName, type Diagnostic, type Expr, type MethodDecl, type SourceFile, type Stmt, type TypeRef } from './ast.ts';
-import type { CheckedProject } from './checker.ts';
+import {checkProject, type CheckedProject} from './checker.ts';
 import { completions, hoverInfo, importItems } from './editor.ts';
 import { importSource } from './git-packages.ts';
 import { languageHelp } from './help.ts';
@@ -20,6 +22,8 @@ export interface EditorFix {
   issue: Pick<Diagnostic, 'code' | 'line' | 'column' | 'message'>;
   edits: TextFixEdit[];
   preferred?: boolean;
+  /** Observable consequence shown with the proposed edit. */
+  description?: string;
 }
 
 function offsetAt(source: string, line: number, column: number): number {
@@ -92,7 +96,7 @@ function callsIn(file: SourceFile): Extract<Expr,{kind:'call'}>[] {
 }
 
 function wrappedStatement(file: SourceFile, issue: Diagnostic,
-                          opener: string, closer = '}'): TextFixEdit | undefined {
+                          opener: string, closer = '}', config?: Config): TextFixEdit | undefined {
   const stmt = containingStatement(file, offsetAt(file.source, issue.line, issue.column));
   // A declaration moved into a new block would become invisible afterward.
   if (!stmt || (stmt.kind !== 'expr' && !(stmt.kind === 'assign' && !stmt.declaredType)))
@@ -100,10 +104,14 @@ function wrappedStatement(file: SourceFile, issue: Diagnostic,
   const lineStart = file.source.lastIndexOf('\n', stmt.span.start - 1) + 1;
   const before = file.source.slice(lineStart, stmt.span.start);
   const indent = /^[ \t]*$/.test(before) ? before : '';
+  const step = config?.indentation === 'tabs' ? '\t' : '    ';
   const body = file.source.slice(stmt.span.start, stmt.span.end)
-    .replace(/\n/g, `\n${indent}    `);
+    .replace(/\n/g, `\n${indent}${step}`);
+  const indented = config?.block_style === 'indent';
+  const ending = indented ? closer.replace(/^} catch (.+?) \{/, 'catch $1:').replace(/\n}$/, '') : closer;
   return { file: file.path, start: stmt.span.start, end: stmt.span.end,
-    text: `${opener} {\n${indent}    ${body}\n${indent}${closer}` };
+    text: `${opener}${indented ? ':' : ' {'}\n${indent}${step}${body}` +
+      (indented && ending === '}' ? '' : `\n${indent}${ending.replace(/    /g, step)}`) };
 }
 
 export function suggestedFixes(checked: CheckedProject, fileName: string): EditorFix[] {
@@ -235,7 +243,7 @@ export function suggestedFixes(checked: CheckedProject, fileName: string): Edito
       }
     }
     if (issue.code === 'FFI' && /requires unsafe \{ \.\.\. \}/.test(issue.message))
-      add('Wrap statement in unsafe block', wrappedStatement(file, issue, 'unsafe'));
+      add('Wrap statement in unsafe block', wrappedStatement(file, issue, 'unsafe', '}', checked.project.config));
     if (issue.code === 'PARSE' && issue.message === 'Use unless instead of throws in error contracts') {
       const start = offsetAt(file.source, issue.line, issue.column);
       add('Replace throws with unless', { file: file.path, start, end: start + 'throws'.length, text: 'unless' });
@@ -243,7 +251,15 @@ export function suggestedFixes(checked: CheckedProject, fileName: string): Edito
     const borrow = /requires borrow ([A-Za-z_][A-Za-z0-9_]*)/.exec(issue.message);
     if (issue.code === 'BORROW' && borrow) {
       const name = borrow[1];
-      add(`Wrap statement in borrow ${name} block`, wrappedStatement(file, issue, `borrow ${name}`));
+      const edit = wrappedStatement(file, issue, `borrow ${name}`, '}', checked.project.config);
+      if (edit) {
+        const overrides = new Map([...checked.project.files].filter(([,source]) => !source.builtin && !source.package).map(([path,source]) => [path,source.source]));
+        overrides.set(file.path, file.source.slice(0,edit.start) + edit.text + file.source.slice(edit.end));
+        const candidate = checkProject(loadProject(checked.project.root, overrides));
+        if (!candidate.diagnostics.some(diagnostic => diagnostic.severity !== 'warning')) fixes.push({
+          title:`Wrap statement in borrow ${name} block`, issue, edits:[edit],
+          description:`Grant exclusive mutable access to ${name} for this statement, then release the borrow. The compiler checked aliases, task captures, and the resulting project.`});
+      }
     }
     const thrown = /^Unhandled ([A-Za-z_][A-Za-z0-9_]*); catch it or declare unless/.exec(issue.message);
     const offset = offsetAt(file.source, issue.line, issue.column);
@@ -288,5 +304,10 @@ export function suggestedFixes(checked: CheckedProject, fileName: string): Edito
       }
     }
   }
-  return fixes;
+  return fixes.map(fix => ({...fix, description:fix.description ??
+    (fix.title.startsWith('Catch ') ? 'Report this startup failure and continue. Review the application’s recovery policy before accepting the handler.' :
+      fix.title.startsWith('Propagate ') ? 'Keep this failure checked and make it visible to callers; their catch or propagation obligations may change.' :
+      fix.title.includes('unsafe') ? 'Permit this native call inside an explicit unsafe boundary. The package’s native ownership and error contracts still apply.' :
+      fix.title.startsWith('Import ') ? 'Add an explicit module dependency; existing export and privacy rules still apply.' :
+      'Apply the shown source edit, then check the resulting program.')}));
 }

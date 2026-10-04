@@ -25,7 +25,7 @@ Install `aug` once as shown in [Your first project](getting-started.md). Command
 | `lsp PROJECT` | Persistent language server over stdio. |
 | `package init DIRECTORY [--name @owner/name]` | Standalone source library with public exports, Javadoc and a same-file test. |
 | `package pack DIRECTORY` | Checked source archive ready for npm publishing or local installation. |
-| `add URL --as NAME [--project DIRECTORY]` | Installs a repository or archive under a short import alias. |
+| `add URL [--as NAME] [--project DIRECTORY]` | Installs a repository or archive under a short import alias. |
 | `install PROJECT [--frozen|--update] [--offline]` | Explicit dependency snapshot and aug.lock.json. |
 
 Warnings are nonblocking. Human diagnostics show the source line, a pointer, and help. Machine diagnostics carry severity, code, file, line, column, message, and help. check/build fail on errors; invalid options and missing option values return status 2. Test failure returns nonzero and includes the case output. Put runtime arguments after `--`, for example `aug run -- --port 8080`.
@@ -218,3 +218,9 @@ Compiler and extension development dependencies use exact versions and lockfiles
 VS Code shows inferred results, mutations, capability operations, and escaping checked errors beside executable headers. Long capability/error lists collapse to counts; their tooltip shows the full contract. These hints use the checked project, including unsaved edits and imported declarations. They are display text; formatting and saving do not add them to source. Hover, signature help, `aug explain`, and compiled specs share the same contracts. Bodyless interfaces and foreign declarations keep explicit contracts.
 
 Hints are enabled by default. Disable `augscript.inferredContractHints` to hide them, or use VS Code’s `editor.inlayHints.enabled` setting. The language server supports `textDocument/inlayHint` with range filtering for other editors.
+
+## Resolved project references (unreleased)
+
+`aug graph PROJECT --file PATH` returns a revision-bearing graph with reproducible project/package paths, source and configuration digests, compiler identity, resolved symbols and occurrences, forward dependencies, and reverse callers. Coverage distinguishes checking the project, enumerating its source callers, runtime dispatch boundaries, and callers outside the project. `aug references PROJECT --file PATH --offset N` returns the selected symbol's occurrences with that revision and coverage. Offsets and editor columns use UTF-16 code units.
+
+The language server uses the same graph for Find References and checks rename candidates before returning edits. Standard LSP clients can request versioned `documentChanges`; clients that support change annotations also receive the fix's consequence in its preview. The initial rename profile is described in [the editor guide](editor.md#find-references-and-rename-unreleased). These read-only plans do not yet provide a durable command-line source transaction.

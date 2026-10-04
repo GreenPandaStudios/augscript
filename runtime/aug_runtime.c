@@ -1,6 +1,7 @@
 #include "aug_runtime.h"
 #include <pthread.h>
 #include <errno.h>
+#include <locale.h>
 
 #include <stdio.h>
 #include <limits.h>
@@ -596,7 +597,7 @@ AugValue aug_binary(const char *op, AugValue left, AugValue right) {
   if (!strcmp(op, ">")) return aug_bool(a > b);
   if (!strcmp(op, "<=")) return aug_bool(a <= b);
   if (!strcmp(op, ">=")) return aug_bool(a >= b);
-  if (!strcmp(op, "/") && b == 0) return checked_error("ArithmeticError");
+  if ((!strcmp(op, "/") || !strcmp(op, "%")) && b == 0) return checked_error("ArithmeticError");
   if (left.tag == AUG_INT && right.tag == AUG_INT) {
     int64_t x = left.as.integer, y = right.as.integer;
     if (!strcmp(op, "<")) return aug_bool(x < y);
@@ -607,6 +608,7 @@ AugValue aug_binary(const char *op, AugValue left, AugValue right) {
     if (!strcmp(op, "-")) return aug_int(signed_bits((uint64_t)x - (uint64_t)y));
     if (!strcmp(op, "*")) return aug_int(signed_bits((uint64_t)x * (uint64_t)y));
     if (!strcmp(op, "/")) return aug_int(x == INT64_MIN && y == -1 ? INT64_MIN : x / y);
+    if (!strcmp(op, "%")) return aug_int(x == INT64_MIN && y == -1 ? 0 : x % y);
   }
   if (!strcmp(op, "+")) return aug_float(a + b);
   if (!strcmp(op, "-")) return aug_float(a - b);
@@ -622,6 +624,25 @@ AugValue aug_unary(const char *op, AugValue value) {
   if (!strcmp(op, "-") && value.tag == AUG_FLOAT) return aug_float(-value.as.floating);
   fail("invalid unary operand");
   return aug_null();
+}
+
+AugValue aug_text(AugValue value) {
+  char text[64];
+  switch (value.tag) {
+    case AUG_STRING: return value;
+    case AUG_NULL: return aug_string("null");
+    case AUG_BOOL: return aug_string(value.as.boolean ? "true" : "false");
+    case AUG_INT: snprintf(text, sizeof(text), "%lld", (long long)value.as.integer); break;
+    case AUG_FLOAT: {
+      locale_t invariant = newlocale(LC_NUMERIC_MASK, "C", (locale_t)0);
+      if (!invariant) fail("cannot create invariant numeric locale");
+      locale_t previous = uselocale(invariant);
+      snprintf(text, sizeof(text), "%.17g", value.as.floating);
+      uselocale(previous); freelocale(invariant); break;
+    }
+    default: fail("interpolation requires a scalar value");
+  }
+  return aug_string(text);
 }
 
 void aug_print(AugValue value) {

@@ -142,6 +142,7 @@ class SpecWriter {
       const simple:Record<string,string>={int:group.length===1?'an integer':'integers',float:group.length===1?'a number':'numbers',string:group.length===1?'a string':'strings',bool:group.length===1?'a boolean':'booleans'};
       let sentence=param.injected?coordinate(group.map(param=>code(param.name)))+' ('+type+')':name+' as '+(simple[param.type.name]&&!param.type.optional?simple[param.type.name]:type);
       if(param.source)sentence+=` from the HTTP ${param.source.kind}${param.source.name?' '+code(param.source.name):''}`;
+      if(param.defaultValue)sentence+=' (when omitted, '+this.expression(param.defaultValue)+')';
       if(param.ownership==='own')sentence+=' with ownership transferred';
       else if(param.ownership==='borrow')sentence+=' with permission to mutate it during the call';
       if(fields)sentence+=`, kept ${param.mutable?'mutable':'read-only'}${param.name.startsWith('_')?' and private':''}${param.label&&param.label!==param.name?' as '+code(param.name):''}`;
@@ -160,7 +161,7 @@ class SpecWriter {
       (typedQueries.length?' It parses '+coordinate(typedQueries.map(param=>code(param.name)+' as '+this.type(param.type,file)))+'.':''):
       supplied.length?'It takes '+coordinate(supplied)+'.':'';
     return [suppliedText,injected.length?'It gets '+coordinate(injected)+' from dependency injection.':'',
-      params.some(param=>param.type.optional)?'Omitted optional inputs are null.':''].filter(Boolean).join(' ');
+      params.some(param=>param.type.optional&&!param.defaultValue)?(params.some(param=>param.defaultValue)?'Omitted optional inputs without defaults are null.':'Omitted optional inputs are null.'):''].filter(Boolean).join(' ');
   }
   private parameterGroups(params:Param[], fields=false, descriptions=new Map<string,string>()): Param[][] {
     const groups:Param[][]=[];
@@ -168,7 +169,7 @@ class SpecWriter {
     const alias=(value:Param)=>fields&&value.label&&value.label!==value.name;
     for(const param of params) {
       const previous=groups.at(-1)?.[0];
-      if(previous&&key(previous)===key(param)&&!descriptions.has(param.name)&&!descriptions.has(previous.name)&&!alias(param)&&!alias(previous))groups.at(-1)!.push(param);
+      if(previous&&key(previous)===key(param)&&!descriptions.has(param.name)&&!descriptions.has(previous.name)&&!alias(param)&&!alias(previous)&&!param.defaultValue&&!previous.defaultValue)groups.at(-1)!.push(param);
       else groups.push([param]);
     }
     return groups;
@@ -281,6 +282,9 @@ class SpecWriter {
         const object=this.expression(expr.object), path=this.memberPath(expr);
         return path?code(path):`${code(name)} of ${object}`;
       }
+      case 'recordCopy': return 'a new ' + this.expression(expr.base) + ' with ' + coordinate(expr.fields.map(field => code(field.name) + ' set to ' + this.expression(field.value))) + ', checked by the record’s validation';
+      case 'interpolation': return 'the text ' + code(expr.parts.map(part => 'text' in part
+        ? part.text.replaceAll('{', '{{').replaceAll('}', '}}') : '{' + plain(this.expression(part.value)) + '}').join(''));
       case 'unary': {
         if(expr.op==='!'&&expr.value.kind==='binary'&&(expr.value.op==='=='||expr.value.op==='!='))
           return `${this.expression(expr.value.left,true)} ${expr.value.op==='=='?'does not equal':'equals'} ${this.expression(expr.value.right,true)}`;
@@ -288,7 +292,8 @@ class SpecWriter {
         return `${expr.op==='!'?'not':'the negative of'} (${this.expression(expr.value)})`;
       }
       case 'binary': {
-        const words:Record<string,string>={'+':'plus','-':'minus','*':'times','/':'divided by','==':'equals','!=':'does not equal','<':'is less than','>':'is greater than','<=':'is at most','>=':'is at least','&&':'and','||':'or'};
+        if (expr.op === 'otherwise') return `${this.expression(expr.left)}, or ${this.expression(expr.right)} when it is null`;
+        const words:Record<string,string>={'+':'plus','-':'minus','*':'times','/':'divided by','%':'remainder after division by','==':'equals','!=':'does not equal','<':'is less than','>':'is greater than','<=':'is at most','>=':'is at least','&&':'and','||':'or'};
         if(!words[expr.op])throw new Error(`No specification renderer for operator ${expr.op}`);
         if(expr.right.kind==='literal'&&expr.right.value===null&&['==','!='].includes(expr.op))
           return this.expression(expr.left)+(expr.op==='=='?' is null':' is not null');
@@ -326,6 +331,8 @@ class SpecWriter {
       }
       case 'resolve':return `the instance provided for ${code(expr.name)}${expr.typeArgs.length?' with type arguments '+expr.typeArgs.map(type=>this.type(type)).join(', '):''}`;
       case 'call': {
+        if (expr.indexed && expr.callee.kind === 'member')
+          return `the value at ${this.expression(expr.args[0])} in ${this.expression(expr.callee.object)}`;
         const action=this.call(expr);
         const known=this.knownValue(expr);if(known)return known;
         if(expr.callee.kind==='member') {
@@ -613,6 +620,8 @@ class SpecWriter {
         }
         return [action('return',this.expression(stmt.value))];
       }
+      case 'break':return [action('leave','the nearest loop after cleanup')];
+      case 'continue':return [action('continue','with the next iteration of the nearest loop after cleanup')];
       case 'throw':return [action('fail','with '+this.expression(stmt.value))];
       case 'yield':return [action('send',this.expression(stmt.value)+' as the next stream item')];
       case 'if': {

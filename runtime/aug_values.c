@@ -3,6 +3,8 @@
 #include <string.h>
 #include <math.h>
 #include <limits.h>
+#include <errno.h>
+#include <locale.h>
 
 int64_t aug_string_length(AugValue value) { return (int64_t)value.as.object->text_length; }
 AugValue aug_string_bytes(AugValue value) { return aug_bytes(value.as.object->text, value.as.object->text_length, AUG_BYTES_KIND); }
@@ -128,4 +130,79 @@ AugValue aug_string_trim(AugValue value) {
   while(begin<end&&trim_space(text_codepoint(p+begin,&width)))begin+=width;
   while(end>begin){size_t last=end-1;while(last>begin&&(p[last]&0xc0)==0x80)last--;if(!trim_space(text_codepoint(p+last,&width)))break;end=last;}
   return aug_string_n((const char *)p+begin,end-begin);
+}
+
+
+bool aug_string_ends_with(AugValue value, AugValue suffix) {
+  size_t size = value.as.object->text_length, count = suffix.as.object->text_length;
+  return count <= size && !memcmp(value.as.object->text + size - count, suffix.as.object->text, count);
+}
+AugValue aug_string_replace(AugValue value, AugValue search, AugValue replacement) {
+  size_t size = value.as.object->text_length, step = search.as.object->text_length, add = replacement.as.object->text_length;
+  if (!step) return aug_error_named("ConversionError");
+  size_t matches = 0;
+  for (size_t i = 0; i <= size && step <= size - i;) {
+    if (!memcmp(value.as.object->text + i, search.as.object->text, step)) {matches++; i += step;} else i++;
+  }
+  size_t length = size - matches * step;
+  if (matches && add > (SIZE_MAX - length - 1) / matches) abort();
+  length += matches * add;
+  char *output = malloc(length + 1); if (!output) abort();
+  size_t position = 0, i = 0;
+  while (i < size) {
+    if (step <= size - i && !memcmp(value.as.object->text + i, search.as.object->text, step)) {
+      memcpy(output + position, replacement.as.object->text, add); position += add; i += step;
+    } else output[position++] = value.as.object->text[i++];
+  }
+  AugValue result = aug_string_n(output, length); free(output); return result;
+}
+AugValue aug_list_join(AugValue list, AugValue separator) {
+  size_t count = list.as.object->field_count, step = separator.as.object->text_length, length = 0;
+  if (count > 1) {if (step > (SIZE_MAX - 1) / (count - 1)) abort(); length = step * (count - 1);}
+  for (size_t i = 0; i < count; i++) {
+    size_t size = list.as.object->fields[i].as.object->text_length;
+    if (size > SIZE_MAX - length - 1) abort(); length += size;
+  }
+  char *output = malloc(length + 1); if (!output) abort(); size_t position = 0;
+  for (size_t i = 0; i < count; i++) {
+    if (i) {memcpy(output + position, separator.as.object->text, step); position += step;}
+    AugObject *item = list.as.object->fields[i].as.object;
+    memcpy(output + position, item->text, item->text_length); position += item->text_length;
+  }
+  AugValue result = aug_string_n(output, length); free(output); return result;
+}
+int64_t aug_string_code_point_length(AugValue value) {
+  const unsigned char *p = (const unsigned char *)value.as.object->text; size_t size = value.as.object->text_length;
+  if (!aug_valid_utf8(p, size)) {aug_error_named("ConversionError"); return 0;}
+  int64_t count = 0;
+  for (size_t i = 0; i < size; i++) if ((p[i] & 0xc0) != 0x80) count++;
+  return count;
+}
+int64_t aug_string_parse_integer(AugValue value) {
+  const char *text = value.as.object->text; size_t size = value.as.object->text_length, begin = size && text[0] == '-' ? 1 : 0;
+  if (begin == size) {aug_error_named("ConversionError"); return 0;}
+  uint64_t number = 0, limit = begin ? UINT64_C(9223372036854775808) : INT64_MAX;
+  for (size_t i = begin; i < size; i++) {
+    if (text[i] < '0' || text[i] > '9') {aug_error_named("ConversionError"); return 0;}
+    unsigned digit = (unsigned)(text[i] - '0');
+    if (number > (limit - digit) / 10) {aug_error_named("ConversionError"); return 0;}
+    number = number * 10 + digit;
+  }
+  return (begin ? number == UINT64_C(9223372036854775808) ? INT64_MIN : -(int64_t)number : (int64_t)number);
+}
+AugValue aug_string_parse_float(AugValue value) {
+  const char *text = value.as.object->text; size_t size = value.as.object->text_length, i = size && text[0] == '-' ? 1 : 0, digits = i;
+  while (i < size && text[i] >= '0' && text[i] <= '9') i++;
+  if (i == digits) return aug_error_named("ConversionError");
+  if (i < size && text[i] == '.') {digits = ++i; while (i < size && text[i] >= '0' && text[i] <= '9') i++; if (i == digits) return aug_error_named("ConversionError");}
+  if (i < size && (text[i] == 'e' || text[i] == 'E')) {
+    i++; if (i < size && (text[i] == '+' || text[i] == '-')) i++;
+    digits = i; while (i < size && text[i] >= '0' && text[i] <= '9') i++; if (i == digits) return aug_error_named("ConversionError");
+  }
+  if (i != size) return aug_error_named("ConversionError");
+  locale_t invariant = newlocale(LC_NUMERIC_MASK, "C", (locale_t)0); if (!invariant) abort();
+  locale_t previous = uselocale(invariant); errno = 0; char *end;
+  double parsed = strtod(text, &end); int failed = errno == ERANGE || end != text + size || !isfinite(parsed);
+  uselocale(previous); freelocale(invariant);
+  return failed ? aug_error_named("ConversionError") : aug_float(parsed);
 }

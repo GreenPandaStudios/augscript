@@ -147,6 +147,12 @@ export function mergeTestAnalysis(checked: CheckedProject, tests: { checked: Che
       const expr = value as Expr;
       const type = entry.checked.expressionTypes.get(expr);
       if (type) checked.expressionTypes.set(expr, type);
+      const name=entry.checked.resolvedNames.get(expr);
+      if(name)checked.resolvedNames.set(expr,name);
+      const call=entry.checked.resolvedCalls.get(expr);
+      if(call)checked.resolvedCalls.set(expr,call);
+      const reference=entry.checked.resolvedTypes.get(value as import('./ast.ts').TypeRef);
+      if(reference)checked.resolvedTypes.set(value as import('./ast.ts').TypeRef,reference);
       const plan = entry.checked.callPlans.get(expr);
       if (plan) checked.callPlans.set(expr, plan);
       for (const [key, child] of Object.entries(value)) if (key !== 'span') visit(child);

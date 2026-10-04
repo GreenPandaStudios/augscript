@@ -12,6 +12,31 @@ if(backend==='llvm')assert.ok(process.env.AUG_LLVM_HOME,'LLVM sanitizer qualific
 
 const fixtures = [
   {
+    name:'owned loop exits and task joins',
+    files:{
+      'main.aug':`import read from values
+count = 0
+for item in [1, 2, 3, 4]:
+    scope:
+        own List<int> values = [item]
+        task = start read(values=[item])
+        try:
+            count = count + 1
+            if item == 2:
+                continue
+            if item == 4:
+                break
+        always:
+            own List<string> cleanup = ["done"]
+print(value=count)
+`,
+      'values.aug':`read(List<int> values):
+    return values.length()
+`
+    },
+    expected:'4\n'
+  },
+  {
     name:'managed text under collection pressure',
     files:{'main.aug':`List<string> retained = ["keep"]
 int index = 0
@@ -47,6 +72,27 @@ print(value=entries.length())
 print(value=unique.length())
 ` },
     expected: '2500\n5000\n',
+  },
+  {
+    name:'interpolation and bounded text conversions',
+    files:{'main.aug':`try:
+    text = ""
+    index = 0
+    while index < 200:
+        text = text + $"{index % 7}é"
+        index = index + 1
+    print(value=text.codePointLength())
+    print(value=text.replace(search="é", replacement="🌍").codePointLength())
+    print(value=["", "ab", ""].join(separator=":"))
+    print(value="-9223372036854775808".parseInteger())
+    print(value="1.25e2".parseFloat())
+catch ConversionError error:
+    print(value="unexpected conversion")
+try:
+    print(value="1e309".parseFloat())
+catch ConversionError error:
+    print(value="overflow")
+`},expected:'400\n400\n:ab:\n-9223372036854775808\n125\noverflow\n'
   },
   {
     name: 'task start/wait',

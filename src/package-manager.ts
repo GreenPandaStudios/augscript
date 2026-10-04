@@ -157,6 +157,25 @@ export function readPackage(directory: string): { manifest: PackageManifest; sou
   return { manifest, sourceRoot };
 }
 
+/** Derive an import spelling without changing the source identity in the lock. */
+export function suggestedPackageAlias(root: string, request: string): string {
+  let name: string;
+  if (isGitSource(request)) {
+    const source = gitReference(request);
+    name = source.folder ? basename(source.folder) : basename(new URL(source.repository).pathname).replace(/\.git$/, '');
+  } else if (request.startsWith('npm:')) {
+    normalizeSpecifier(request, root);
+    name = /^npm:((?:@[^/]+\/)?[^@]+)@/.exec(request)![1];
+  } else {
+    const path = normalizeSpecifier(request, root).slice(5);
+    name = lstatSync(path).isDirectory() && existsSync(join(path, 'aug-package.json'))
+      ? readPackage(path).manifest.name : basename(path).replace(/\.tgz$/, '');
+  }
+  const alias = name.split('/').at(-1)!.toLowerCase().replace(/^(?:august|aug)[-_]/, '').replace(/[^a-z0-9_]+/g, '_');
+  if (!packageAlias(alias)) throw new Error(`Cannot derive an import alias for ${request}; choose one with --as NAME`);
+  return alias;
+}
+
 function assertAlias(root: string, alias: string): void {
   if (!packageAlias(alias)) throw new Error(`Package alias ${alias} must be lowercase and cannot be august or private`);
   if (existsSync(join(root, alias)) || existsSync(join(root, alias + '.aug'))) throw new Error(`Package alias ${alias} conflicts with a local module`);
@@ -559,10 +578,12 @@ function recoverAddConfiguration(root:string,force=false):void {
 }
 
 /** Give a source package a short import name and install its verified dependency graph. */
-function addConfiguration(root: string, request: string, alias: string): void {
+function addConfiguration(root: string, request: string, alias: string, derived = false): void {
   recoverAddConfiguration(root);
   const loaded = loadConfig(root);
   if (loaded.diagnostics.length) throw new Error(loaded.diagnostics.map(issue => issue.message).join('\n'));
+  if (derived && loaded.config.packages[alias] && loaded.config.packages[alias] !== request)
+    throw new Error(`Package alias ${alias} already names ${loaded.config.packages[alias]}; choose a different alias with --as NAME`);
   assertAlias(isLibrary(root) ? readPackage(root).sourceRoot : root, alias); normalizeSpecifier(request, root);
   const path = join(root, 'main.yaml'), existed = existsSync(path), before = existed ? readFileSync(path, 'utf8') : '';
   const dependencies = { ...loaded.config.packages, [alias]: request };
@@ -595,10 +616,10 @@ export function addPackage(root: string, request: string, alias: string, offline
 }
 
 /** An artifact failure restores the prior dependency aliases as well as leaving its lock unchanged. */
-export async function addPackageWithNative(root:string,request:string,alias:string,offline=false):Promise<PackageLock> {
+export async function addPackageWithNative(root:string,request:string,alias:string|undefined,offline=false):Promise<PackageLock> {
   return withPackageLockAsync(join(root,'.aug-install.lock'),async()=>{
     try {
-      addConfiguration(root,request,alias);
+      addConfiguration(root,request,alias ?? suggestedPackageAlias(root,request),alias === undefined);
       const candidate=planInstallation(root,false,offline,false);
       try{
         const {resolveNativePackages}=await import('./native-artifacts.ts');

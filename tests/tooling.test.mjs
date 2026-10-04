@@ -87,7 +87,7 @@ test('persistent LSP handles split UTF-8 frames, local edits, definitions and ca
     child.stdin.write(packet.subarray(0, 13)); child.stdin.write(packet.subarray(13));
   });
   try {
-    const capabilities = (await request('initialize', { capabilities: {} })).capabilities;
+    const capabilities = (await request('initialize', { capabilities: {workspace:{workspaceEdit:{documentChanges:true,changeAnnotationSupport:{groupsOnLabel:true}}}} })).capabilities;
     assert.equal(capabilities.textDocumentSync.change, 1);
     assert.equal(capabilities.inlayHintProvider, true);
     const uri = pathToFileURL(join(root, 'worker.aug')).href;
@@ -102,6 +102,23 @@ test('persistent LSP handles split UTF-8 frames, local edits, definitions and ca
     await request('textDocument/hover', { textDocument: { uri }, position: { line: 2, character: 1 } });
     const after = await request('aug/stats', {}); assert.equal(after.analyses, before.analyses); assert.ok(after.cacheHits > before.cacheHits);
     const stale = await request('aug/editor', { uri, text: 'invalid edit', version: 1, command: 'diagnostics' }); assert.deepEqual(stale, []);
+    await request('aug/editor',{uri:pathToFileURL(join(root,'main.aug')).href,text:'',version:1,command:'diagnostics'});
+    const renameSource='import value from math\nread(int amount):\n    return value() + amount\n';
+    await request('aug/editor',{uri,text:renameSource,version:5,command:'diagnostics'});
+    const prepare=await request('textDocument/prepareRename',{textDocument:{uri},position:{line:1,character:9}});
+    assert.equal(prepare.placeholder,'amount');
+    const renamed=await request('textDocument/rename',{textDocument:{uri},position:{line:1,character:9},newName:'count'});
+    assert.equal(renamed.documentChanges[0].textDocument.version,5);
+    assert.equal(renamed.documentChanges[0].edits.length,2);
+    const broken='run():\n    items = [1]\n    items.append(value=2)\n';
+    await request('aug/editor',{uri,text:broken,version:6,command:'diagnostics'});
+    const actions=await request('textDocument/codeAction',{textDocument:{uri}});
+    const borrow=actions.find(action=>/borrow items block/.test(action.title));
+    assert.ok(borrow,JSON.stringify(actions));
+    assert.equal(borrow.edit.documentChanges[0].textDocument.version,6);
+    assert.match(borrow.edit.changeAnnotations.consequence.description,/exclusive|mutable/);
+    assert.equal(borrow.edit.documentChanges[0].edits[0].annotationId,'consequence');
+    assert.doesNotMatch(borrow.title,/permission|candidate/);
     await request('shutdown', {});
   } finally { child.kill(); rmSync(root, { recursive: true, force: true }); }
 });

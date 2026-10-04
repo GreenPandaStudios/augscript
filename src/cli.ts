@@ -24,7 +24,7 @@ import { updateSpecHints } from './spec-hints.ts';
 import { runLanguageServer } from './lsp.ts';
 import { benchmark, compileNative, writeCoverage } from './native.ts';
 import {generateOpenApi} from './openapi.ts';
-import { addPackageWithNative, initPackage, installPackagesWithNative, preparePackage, packPackage, prepareRunPackagesWithNative } from './package-manager.ts';
+import { addPackageWithNative, initPackage, installPackagesWithNative, preparePackage, packPackage, prepareRunPackagesWithNative, suggestedPackageAlias } from './package-manager.ts';
 import { initProject } from './project-init.ts';
 import { prepareNativeDependencies } from '../scripts/native-setup.mjs';
 
@@ -64,7 +64,7 @@ function printDiagnostics(diagnostics: Diagnostic[], json: boolean, root: string
 
 function usage(): void {
   process.stdout.write(`AugScript compiler\n\n` +
-    `Usage: aug <init|doctor|check|build|run|emit-c|emit-llvm|emit-ir|test|openapi|format|migrate|spec|bench|explain|context|lsp|symbols|definition|complete|hover|fixes|semantic-tokens> [project directory] [options] [-- args]\n` +
+    `Usage: aug <init|doctor|check|build|run|emit-c|emit-llvm|emit-ir|test|openapi|format|migrate|spec|bench|explain|context|lsp|symbols|definition|references|graph|complete|hover|fixes|semantic-tokens> [project directory] [options] [-- args]\n` +
     `New application: aug init DIRECTORY [--template hello|weather]\n` +
     `Diagnose setup: aug doctor [project directory] [--json] — check without downloading or writing files\n` +
     `Run: aug run [project directory] [--offline] [-- args] — prepare dependencies, compile, and start\n` +
@@ -74,9 +74,10 @@ function usage(): void {
     `Specifications: aug spec [project directory] [--check] [--json]\n` +
     `Migration: aug migrate [project directory] [--file path] [--write]\n` +
     `Context: aug context [project directory] [--file path] [--name declaration] [--budget characters]\n` +
+    `References: aug references [project directory] --file path --offset character; aug graph [project directory] --file path\n` +
     `Benchmark: aug bench [project directory] [--iterations 10] [--warmup 2] [--json] [-- args]\n` +
     `Packages: aug package init DIRECTORY --name @owner/name; aug package pack DIRECTORY\n` +
-    `Dependencies: aug add URL --as NAME [--project DIRECTORY]; aug install [project directory] [--frozen|--update] [--offline]\n` +
+    `Dependencies: aug add URL [--as NAME] [--project DIRECTORY]; aug install [project directory] [--frozen|--update] [--offline]\n` +
     `Native maintainers: aug bind header HEADER --contract native.abi.json --target TRIPLE --output DIRECTORY --clang PATH [-- CLANG_FLAGS]\n` +
     `Entry point: main.aug at the project root.\n`);
 }
@@ -114,16 +115,18 @@ export async function main(argv: string[]): Promise<number> {
   }
   if (command === 'add') {
     const aliasIndex = argv.indexOf('--as'), projectIndex = argv.indexOf('--project');
-    if (!argv[1] || argv[1].startsWith('--') || aliasIndex < 0 || !argv[aliasIndex + 1]) {
-      process.stderr.write('Use aug add URL --as NAME [--project DIRECTORY] [--offline]\n'); return 2;
+    if (!argv[1] || argv[1].startsWith('--') || aliasIndex >= 0 && !argv[aliasIndex + 1]) {
+      process.stderr.write('Use aug add URL [--as NAME] [--project DIRECTORY] [--offline]\n'); return 2;
     }
     for (let index = 2; index < argv.length; index++) {
       if (['--as', '--project'].includes(argv[index])) { if (!argv[++index] || argv[index].startsWith('--')) return 2; }
       else if (argv[index] !== '--offline') { process.stderr.write('Unknown add option: ' + argv[index] + '\n'); return 2; }
     }
     try {
-      const alias = argv[aliasIndex + 1], root = resolve(projectIndex < 0 ? process.cwd() : argv[projectIndex + 1]);
-      const lock = await addPackageWithNative(root, argv[1], alias, argv.includes('--offline'));
+      const root = resolve(projectIndex < 0 ? process.cwd() : argv[projectIndex + 1]);
+      const explicitAlias = aliasIndex < 0 ? undefined : argv[aliasIndex + 1];
+      const lock = await addPackageWithNative(root, argv[1], explicitAlias, argv.includes('--offline'));
+      const alias = explicitAlias ?? suggestedPackageAlias(root, argv[1]);
       process.stdout.write(`Added ${alias}; installed ${lock.packages.length} source package(s).\nImport public names with: import NAME from ${alias}\n`); return 0;
     } catch (error) { process.stderr.write(failureMessage(error) + '\n'); return 1; }
   }
@@ -165,7 +168,7 @@ export async function main(argv: string[]): Promise<number> {
   }
   if (command === 'lsp') return runLanguageServer(resolve(argv[1] ?? process.cwd()));
   if (!['check', 'build', 'run', 'emit-c', 'emit-llvm', 'emit-ir', 'test', 'openapi', 'format', 'migrate', 'spec', 'bench', 'explain', 'context', 'symbols', 'definition',
-    'complete', 'hover', 'fixes', 'semantic-tokens'].includes(command)) {
+    'complete', 'hover', 'fixes', 'semantic-tokens', 'references', 'graph'].includes(command)) {
     process.stderr.write(`Unknown command ${command}\n`); usage(); return 2;
   }
   const separator = argv.indexOf('--');
@@ -228,15 +231,15 @@ export async function main(argv: string[]): Promise<number> {
   const root = resolve(projectArg ?? process.cwd());
   try {
     const overrides = stdinFile ? new Map([[resolve(stdinFile), readFileSync(0, 'utf8')]]) : undefined;
-    if (['complete', 'hover', 'fixes', 'semantic-tokens'].includes(command)) {
+    if (['complete', 'hover', 'fixes', 'semantic-tokens', 'references', 'graph'].includes(command)) {
       if (!sourceFile) throw new Error(`${command} requires --file`);
       const workspace = new SemanticWorkspace(root);
-      const document = workspace.document(sourceFile, overrides?.has(resolve(sourceFile)) ? { text: overrides.get(resolve(sourceFile))!, version: 1 } : undefined);
+      const document = workspace.document(sourceFile, overrides?.has(resolve(sourceFile)) ? { text: overrides.get(resolve(sourceFile))!, version: 1 } : undefined,['references','graph'].includes(command));
       const offset = Number(offsetText);
-      if (['complete', 'hover'].includes(command) && (offsetText === undefined || !Number.isInteger(offset) || offset < 0))
+      if (['complete', 'hover', 'references'].includes(command) && (offsetText === undefined || !Number.isInteger(offset) || offset < 0))
         throw new Error(`${command} requires a nonnegative --offset`);
       const result = command === 'complete' ? document.complete(offset) : command === 'hover' ? document.hover(offset) ?? null :
-        command === 'fixes' ? document.fixes() : document.tokens();
+        command === 'references' ? {revision:document.graph().revision,coverage:document.graph().coverage,occurrences:document.references(offset)} : command === 'graph' ? document.graph() : command === 'fixes' ? document.fixes() : document.tokens();
       process.stdout.write(JSON.stringify(result) + '\n'); return 0;
     }
     if (!existsSync(root) || !statSync(root).isDirectory())

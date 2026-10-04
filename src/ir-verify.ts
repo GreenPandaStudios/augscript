@@ -83,7 +83,7 @@ function verifyInstruction(i:IrInstruction,ir:AugustIR,fn:IrFunction,entry:(name
       if(!(runtimeOperations as readonly string[]).includes(i.operation)&&!(httpOperations as readonly string[]).includes(i.operation))error('Unknown runtime operation '+i.operation);
       const arity=runtimeArities[i.operation as keyof typeof runtimeArities];
       if(arity!=='variadic'&&i.args.length!==arity)error('Runtime argument count differs for '+i.operation);
-      if(i.operation==='BINARY'&&!['+','-','*','/','==','!=','<','>','<=','>='].includes(i.text??''))error('Invalid binary operator');
+      if(i.operation==='BINARY'&&!['+','-','*','/','%','==','!=','<','>','<=','>='].includes(i.text??''))error('Invalid binary operator');
       if(i.operation==='UNARY'&&!['!','-'].includes(i.text??''))error('Invalid unary operator');
       if(i.operation==='IS_TYPE'&&(typeof i.text!=='string'||!i.text||i.text.includes('\0')))error('Missing nominal type identity');
       if(i.operation==='HTTP_ACTION'){try{const action=JSON.parse(i.text!);if(!action||typeof action!=='object')throw new Error();}catch{error('Missing action metadata');}}

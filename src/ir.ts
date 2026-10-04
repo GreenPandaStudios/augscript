@@ -189,6 +189,7 @@ class Lowering {
 }
 
 type InstructionInput = IrInstruction extends infer I ? I extends IrInstruction ? Omit<I,'span'> : never : never;
+interface LoopExit {target:string; owned:Set<number>; depth:number; locks:number}
 class FunctionLowering {
   readonly generator:Lowering;readonly file:string;readonly span:Span;readonly owner?:Definition;
   readonly parameters:number[]=[];receiver?:number;readonly locals=new Map<string,number>();readonly owned=new Set<number>();
@@ -197,6 +198,7 @@ class FunctionLowering {
   sourceName?:string;
   private continuation?:InterceptorInvocation;
   private constructionNext=false;private readonly constructorResults=new Set<number>();
+  private loop?: {breaking:LoopExit; continuing:LoopExit};
   private slots=1;private sequence=0;private source:Span;private error='cleanup';private returning='cleanup';
   private blocks:{name:string;instructions:IrInstruction[];terminator?:IrTerminator}[]=[];
   private current:{name:string;instructions:IrInstruction[];terminator?:IrTerminator};
@@ -233,7 +235,7 @@ class FunctionLowering {
   private field(name:string):number|undefined{const node=this.owner?.node;if(node?.kind!=='class'&&node?.kind!=='interceptor')return;const i=fieldsOf(node).findIndex(f=>f.name===name);return i<0?undefined:i;}
   private arguments(expr:Extract<Expr,{kind:'call'}>,plan?:CallPlan){
     const source=expr.args.map(a=>this.expression(a));
-    return plan?plan.sourceIndices.map((index,i)=>{if(index!==undefined)return source[index];const injected=plan.injectionSources?.[i];
+    return plan?plan.sourceIndices.map((index,i)=>{if(index!==undefined)return source[index];if(plan.defaults?.[i])return this.expression(plan.defaults[i]!);const injected=plan.injectionSources?.[i];
       if(injected?.startsWith('self.'))return this.runtime('FIELD',[this.locals.get('self')!],undefined,this.field(injected.slice(5))!);
       if(injected){const slot=this.locals.get(injected);if(slot!==undefined)return slot;}
       return plan.bindingKeys[i]?this.call(this.generator.binding(plan.bindingKeys[i]!),[]):this.literal(null);
@@ -246,6 +248,17 @@ class FunctionLowering {
   }
   private expressionValue(expr:Expr):number {
     this.source=expr.span;
+    if(expr.kind==='recordCopy'){
+      const base=this.expression(expr.base),def=this.generator.checked.expressionTypes.get(expr.base)!.def!,node=def.node as ClassDecl;
+      const replacements=new Map(expr.fields.map(field=>[field.name,this.expression(field.value)]));
+      const args=node.fields.map((field,index)=>replacements.get(field.label??field.name)??this.runtime('FIELD',[base],undefined,index));
+      return this.call(this.generator.name(def),args);
+    }
+    if(expr.kind==='interpolation'){
+      let result=this.literal('');
+      for(const part of expr.parts)result=this.runtime('BINARY',[result,this.runtime('TEXT',[this.expression('text' in part ? {kind:'literal',value:part.text,span:part.span} : part.value)])],'+');
+      return result;
+    }
     if(expr.kind==='handle'){
       const plan=this.generator.checked.actions.get(expr)!,endpoint=(plan.endpoint.node as MethodDecl).endpoint!;
       const metadata={method:endpoint.method,path:endpoint.path,parameters:plan.parameters.map(({param,type,form})=>({name:param.source?.name??param.name,source:param.source?.kind,form,schema:actionSchema(this.generator.checked.project,type)}))};
@@ -276,6 +289,12 @@ class FunctionLowering {
     }
     if(expr.kind==='binary'){
       const left=this.expression(expr.left);
+      if(expr.op==='otherwise'){
+        const out=this.slot(),fallback=this.block(),after=this.block();this.instruction({op:'copy',out,input:left});
+        this.terminate({op:'null',input:left,then:fallback,otherwise:after});this.enter(fallback);
+        const right=this.expression(expr.right);this.instruction({op:'copy',out,input:right});
+        this.terminate({op:'jump',target:after});this.enter(after);return out;
+      }
       if(expr.op==='&&'||expr.op==='||'){
         const out=this.slot();this.instruction({op:'copy',out,input:left});const evaluate=this.block(),after=this.block();
         this.terminate({op:'branch',condition:left,then:expr.op==='&&'?evaluate:after,otherwise:expr.op==='&&'?after:evaluate});this.enter(evaluate);
@@ -287,8 +306,10 @@ class FunctionLowering {
     }
     if(expr.kind==='collection'){
       const values=expr.items.map(item=>this.expression(item)),kind=this.generator.checked.expressionTypes.get(expr)?.name??expr.collection;
-      if(kind==='Map'){const out=this.runtime('MAP',[]);for(let i=0;i<values.length;i+=2)this.runtime('MAP_SET',[out,values[i],values[i+1]]);return out;}
-      return this.runtime(kind.toUpperCase(),values);
+      const out=kind==='Map'?this.runtime('MAP',[]):this.runtime(kind.toUpperCase(),values);
+      if(kind==='Map')for(let i=0;i<values.length;i+=2)this.runtime('MAP_SET',[out,values[i],values[i+1]]);
+      if(this.generator.checked.expressionTypes.get(expr)?.immutable)this.runtime('FREEZE',[out]);
+      return out;
     }
     if(expr.kind==='wait'){
       const tasks=expr.tasks.map(task=>this.expression(task)),out=this.slot();this.instruction({op:'wait',out,tasks});this.checkError();return out;
@@ -327,6 +348,7 @@ class FunctionLowering {
       const operations:Record<string,string>={
         'List.length':'LIST_LENGTH','List.get':'LIST_GET','List.at':'LIST_AT','List.append':'LIST_APPEND','Tuple.length':'TUPLE_LENGTH','Tuple.get':'TUPLE_GET',
         'Set.length':'SET_LENGTH','Set.add':'SET_ADD','Set.contains':'SET_CONTAINS','Map.length':'MAP_LENGTH','Map.get':'MAP_GET','Map.take':'MAP_TAKE','Map.contains':'MAP_CONTAINS','Map.set':'MAP_SET',
+        'List.join':'LIST_JOIN','string.endsWith':'STRING_ENDS_WITH','string.replace':'STRING_REPLACE','string.codePointLength':'STRING_CODE_POINT_LENGTH','string.parseInteger':'STRING_PARSE_INTEGER','string.parseFloat':'STRING_PARSE_FLOAT',
         'string.length':'STRING_LENGTH','string.bytes':'STRING_BYTES','string.split':'STRING_SPLIT','string.startsWith':'STRING_STARTS_WITH','string.isToken':'STRING_IS_TOKEN',
         'Bytes.slice':'BYTES_SLICE','Bytes.hex':'BYTES_HEX','float.isFinite':'FLOAT_IS_FINITE','float.float32':'FLOAT_FLOAT32','string.trim':'STRING_TRIM','string.utf16Length':'STRING_UTF16_LENGTH','string.isDecimal':'STRING_IS_DECIMAL','string.compareDecimal':'STRING_COMPARE_DECIMAL','Json.has':'JSON_HAS',
         'Bytes.length':'BYTES_LENGTH','Bytes.text':'BYTES_TEXT','Bytes.base64url':'BYTES_BASE64URL',
@@ -474,12 +496,27 @@ class FunctionLowering {
     this.enter(finished);this.error='cleanup';this.returning='cleanup';
     const completed=this.runtime('HTTP_FINISH',[0]);this.instruction({op:'copy',out:0,input:completed});
   }
+  private loopTargets(breaking:string, continuing:string): {breaking:LoopExit; continuing:LoopExit} {
+    const depth=this.slot(), locks=this.slot(), owned=new Set(this.owned);
+    this.instruction({op:'scope-depth',out:depth});this.instruction({op:'lock-depth',out:locks});
+    return {breaking:{target:breaking,owned,depth,locks}, continuing:{target:continuing,owned,depth,locks}};
+  }
+  private loopExit(target:LoopExit):void {
+    this.instruction({op:'lock',action:'restore',depth:target.locks});
+    this.instruction({op:'scope',action:'join',depth:target.depth});
+    for(const slot of this.owned)if(!target.owned.has(slot))this.instruction({op:'drop',slot});
+    this.instruction({op:'scope',action:'restore',depth:target.depth});this.checkError();
+    this.terminate({op:'jump',target:target.target});
+  }
   private tryAlways(stmt:Extract<Stmt,{kind:'try'}>){
-    const outerError=this.error,outerReturn=this.returning,owned=new Set(this.owned);
+    const outerError=this.error,outerReturn=this.returning,outerLoop=this.loop,owned=new Set(this.owned);
     const caught=this.block(),failed=this.block(),returned=this.block(),cleanup=this.block(),finalized=this.block(),done=this.block();
     const depth=this.slot(),locks=this.slot(),pending=this.slot(),cancelled=this.slot(),returning=this.slot(),failure=this.slot();
     this.instruction({op:'scope-depth',out:depth});this.instruction({op:'lock-depth',out:locks});
     this.instruction({op:'copy',out:returning,input:this.literal(false)});this.instruction({op:'copy',out:failure,input:this.literal(false)});
+    const breaking=this.block(),continuing=this.block(),jumpReason=this.slot();
+    this.instruction({op:'copy',out:jumpReason,input:this.literal(null,{kind:'int',text:'0'})});
+    if(outerLoop)this.loop={breaking:{target:breaking,owned,depth,locks},continuing:{target:continuing,owned,depth,locks}};
     this.error=caught;this.returning=returned;this.scoped(stmt.body);
     if(!this.current.terminator)this.terminate({op:'jump',target:cleanup});
     this.enter(caught);this.instruction({op:'lock',action:'restore',depth:locks});this.instruction({op:'scope',action:'join',depth});
@@ -494,10 +531,14 @@ class FunctionLowering {
     }
     this.terminate({op:'jump',target:failed});this.enter(failed);this.instruction({op:'copy',out:failure,input:this.literal(true)});this.terminate({op:'jump',target:cleanup});
     this.enter(returned);this.instruction({op:'copy',out:returning,input:this.literal(true)});this.terminate({op:'jump',target:cleanup});
+    if(outerLoop){
+      this.enter(breaking);this.instruction({op:'copy',out:jumpReason,input:this.literal(null,{kind:'int',text:'1'})});this.terminate({op:'jump',target:cleanup});
+      this.enter(continuing);this.instruction({op:'copy',out:jumpReason,input:this.literal(null,{kind:'int',text:'2'})});this.terminate({op:'jump',target:cleanup});
+    }
     this.enter(cleanup);this.instruction({op:'lock',action:'restore',depth:locks});this.instruction({op:'scope',action:'join',depth});
     for(const slot of this.owned)if(!owned.has(slot))this.instruction({op:'drop',slot});
     this.instruction({op:'scope',action:'restore',depth});this.instruction({op:'error-state',action:'save',error:pending,cancelled});
-    this.error=finalized;this.returning=finalized;this.scoped(stmt.always!);
+    this.loop=undefined;this.error=finalized;this.returning=finalized;this.scoped(stmt.always!);
     if(!this.current.terminator)this.terminate({op:'jump',target:finalized});
     this.enter(finalized);this.instruction({op:'error-state',action:'restore',error:pending,cancelled});
     const returnedCheck=this.block(),errorCheck=this.block(),failedCheck=this.block();
@@ -505,7 +546,16 @@ class FunctionLowering {
     this.terminate({op:'branch',condition:returning,then:outerReturn,otherwise:errorCheck});this.enter(errorCheck);
     this.terminate({op:'error',failed:outerError,success:failedCheck});this.enter(failedCheck);
     this.terminate({op:'branch',condition:failure,then:outerError,otherwise:done});this.enter(done);
-    this.error=outerError;this.returning=outerReturn;
+    this.error=outerError;this.returning=outerReturn;this.loop=outerLoop;
+    if(outerLoop){
+      const breakBranch=this.block(),continueTest=this.block(),continueBranch=this.block(),after=this.block();
+      const isBreak=this.runtime('BINARY',[jumpReason,this.literal(null,{kind:'int',text:'1'})],'==');
+      this.terminate({op:'branch',condition:isBreak,then:breakBranch,otherwise:continueTest});
+      this.enter(breakBranch);this.loopExit(outerLoop.breaking);this.enter(continueTest);
+      const isContinue=this.runtime('BINARY',[jumpReason,this.literal(null,{kind:'int',text:'2'})],'==');
+      this.terminate({op:'branch',condition:isContinue,then:continueBranch,otherwise:after});
+      this.enter(continueBranch);this.loopExit(outerLoop.continuing);this.enter(after);
+    }
   }
   statement(stmt:Stmt):void {
     this.source=stmt.span;if(this.current.terminator)this.enter(this.block());
@@ -572,11 +622,12 @@ class FunctionLowering {
       }
       this.terminate({op:'jump',target:done});this.enter(done);return;
     }
+    if(stmt.kind==='break'||stmt.kind==='continue'){this.loopExit(this.loop![stmt.kind==='break'?'breaking':'continuing']);return;}
     if(stmt.kind==='while'){
-      const test=this.block(),body=this.block(),done=this.block();this.terminate({op:'jump',target:test});this.enter(test);
+      const test=this.block(),body=this.block(),done=this.block(),outerLoop=this.loop;this.loop=this.loopTargets(done,test);this.terminate({op:'jump',target:test});this.enter(test);
       this.instruction({op:'checkpoint'});this.checkError();
       const condition=this.expression(stmt.test);this.terminate({op:'branch',condition,then:body,otherwise:done});this.enter(body);this.scoped(stmt.body);
-      if(!this.current.terminator)this.terminate({op:'jump',target:test});this.enter(done);return;
+      if(!this.current.terminator)this.terminate({op:'jump',target:test});this.enter(done);this.loop=outerLoop;return;
     }
     if(stmt.kind==='freeze'){const value=this.expression(stmt.value),out=this.runtime('FREEZE',[value]);this.local(stmt.name,out,stmt.span);if(this.owned.has(value))this.instruction({op:'clear',slot:value});return;}
     if(stmt.kind==='destructure'){
@@ -585,7 +636,7 @@ class FunctionLowering {
     if(stmt.kind==='for'){
       const iterable=this.expression(stmt.iterable),map=this.generator.checked.expressionTypes.get(stmt.iterable)?.name==='Map'&&stmt.names.length===2;
       const values=this.runtime(map?'MAP_ITER':'ITER',[iterable]),index=this.slot(scalarType('int')),one=this.literal(null,{kind:'int',text:'1'});this.instruction({op:'copy',out:index,input:this.literal(null,{kind:'int',text:'0'})});
-      const length=this.runtime('LIST_LENGTH',[values]),test=this.block(),body=this.block(),done=this.block();this.terminate({op:'jump',target:test});this.enter(test);
+      const length=this.runtime('LIST_LENGTH',[values]),test=this.block(),body=this.block(),done=this.block(),outerLoop=this.loop;this.loop=this.loopTargets(done,test);this.terminate({op:'jump',target:test});this.enter(test);
       this.instruction({op:'checkpoint'});this.checkError();
       const condition=this.runtime('BINARY',[index,length],'<');this.terminate({op:'branch',condition,then:body,otherwise:done});this.enter(body);
       this.scoped(stmt.body,false,()=>{
@@ -595,7 +646,7 @@ class FunctionLowering {
         if(map){stmt.names.forEach((name,i)=>{this.local(name,this.runtime('LIST_AT',[values,index],undefined,undefined,false),stmt.span,this.values[iterable].type.args[i]??dynamicType);this.instruction({op:'copy',out:index,input:this.runtime('BINARY',[index,one],'+')});});}
         else{const item=this.runtime('LIST_AT',[values,index],undefined,undefined,false);stmt.names.forEach((name,i)=>this.local(name,stmt.names.length===1?item:this.runtime('TUPLE_GET',[item,this.literal(null,{kind:'int',text:String(i)})]),stmt.span,(stmt.names.length===1?this.values[iterable].type.args[0]:this.values[iterable].type.args[0]?.args[i])??dynamicType));this.instruction({op:'copy',out:index,input:this.runtime('BINARY',[index,one],'+')});}
       },stmt.span);
-      if(!this.current.terminator)this.terminate({op:'jump',target:test});this.enter(done);return;
+      if(!this.current.terminator)this.terminate({op:'jump',target:test});this.enter(done);this.loop=outerLoop;return;
     }
     if(stmt.kind==='try'){
       if(stmt.always){this.tryAlways(stmt);return;}

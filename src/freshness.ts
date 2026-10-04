@@ -1,3 +1,4 @@
+import {expressionChildren} from './ast.ts';
 import type { Expr, Stmt } from './ast.ts';
 
 /** Conservative proof that successful returns preserve constructor freshness. */
@@ -6,7 +7,8 @@ export function returnsFresh(body: Stmt[], fields: Set<string>, freshCall: (expr
   const fresh = (expr: Expr, locals: Map<string, boolean>): boolean => expr.kind === 'name' ?
     locals.get(expr.name) === true : freshCall(expr);
   const escape = (expr: Expr, locals: Map<string, boolean>): void => {
-    if (expr.kind === 'start') {escape(expr.call, locals);}
+    if (expr.kind === 'recordCopy' || expr.kind === 'interpolation') expressionChildren(expr).forEach(child => escape(child, locals));
+    else if (expr.kind === 'start') {escape(expr.call, locals);}
     else if (expr.kind === 'wait') expr.tasks.forEach(task => escape(task, locals));
     else if (expr.kind === 'handle' && expr.call.kind === 'call') expr.call.args.forEach(child => escape(child,locals));
     else if (expr.kind === 'markup') [...expr.attributes.map(attribute => attribute.value), ...expr.children].forEach(child => escape(child, locals));
@@ -24,6 +26,7 @@ export function returnsFresh(body: Stmt[], fields: Set<string>, freshCall: (expr
   };
   const walk = (statements: Stmt[], locals: Map<string, boolean>): boolean => {
     for (const stmt of statements) {
+      if (stmt.kind === 'break' || stmt.kind === 'continue') return false;
       if (stmt.kind === 'return') {
         if (stmt.value) escape(stmt.value, locals);
         if (!stmt.value || !fresh(stmt.value, locals)) valid = false;

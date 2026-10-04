@@ -200,6 +200,14 @@ left / right
 
 Divide numbers. Integer division truncates toward zero. A potentially zero divisor raises checked ArithmeticError; a literal nonzero divisor needs no error clause. MIN/-1 wraps to MIN.
 
+## %
+
+```text
+left % right
+```
+
+Read the integer remainder after division toward zero. The result has the dividend’s sign. Zero raises checked ArithmeticError; MIN % -1 is zero without overflow.
+
 ## +
 
 ```text
@@ -340,6 +348,14 @@ Take exclusive mutable access for the duration of this block. Ordinary reads nee
 borrow items { items.append(value=1) }
 ```
 
+## break
+
+```text
+break
+```
+
+Leave the nearest for or while loop. Run intervening always blocks, join child scopes, release locks and borrows, and drop owned locals before leaving. A cleanup failure propagates instead of completing the jump.
+
 ## Bytes
 
 ```text
@@ -404,6 +420,14 @@ Collect dependency bindings in a named composition. Import and include it in mai
 
 Negotiate gzip from Accept-Encoding, respecting q=0. Buffered output and each bounded stream item are compressed with standard gzip members. Adds Content-Encoding and Vary; backpressure remains active.
 
+## continue
+
+```text
+continue
+```
+
+Start the next iteration of the nearest for or while loop after cleanup. for advances its snapshot; while checks its condition again. An owned input moved in one iteration cannot be reused in the next.
+
 ## ConversionError
 
 ```text
@@ -451,6 +475,14 @@ endpoint GET "/users/{id}" as getUser(int id from path) returns User
 ```
 
 Declare a typed HTTP route. Inputs name their wire source; dependencies use resolve. Main explicitly selects which endpoints to serve.
+
+## error
+
+```text
+error InvalidQuantity(int value)
+```
+
+Declare a checked error with read-only named data. This is shorthand for an ordinary Error implementation with no methods. Use the full implementation form for custom behavior. error remains a contextual word; an existing function named error can still be called.
 
 ## Error
 
@@ -656,6 +688,14 @@ if condition: ...
 
 Run a block when its condition is bool. Use braces or a trailing colon and an indented body. Tabs or spaces are accepted; mixed indentation prefixes are rejected.
 
+## immutable
+
+```text
+record Invoice(immutable List<Line> items)
+```
+
+Declare a deeply frozen collection of data. Literal inputs are frozen once at construction. Freeze existing mutable aliases explicitly before passing them; this qualifier never copies a collection or grants mutation.
+
 ## implement
 
 ```text
@@ -847,6 +887,14 @@ left or right
 ```
 
 Logical OR on bool values. Skip the right operand when the left operand is true. This is the lowest-precedence boolean operator. Symbolic || is rejected.
+
+## otherwise
+
+```text
+value otherwise fallback
+```
+
+Use the fallback only when the value is null. False, zero and empty text remain values. Both operands need compatible types. Checked errors still escape; choose owned values with an explicit match.
 
 ## out
 
@@ -1304,6 +1352,26 @@ Round to IEEE 754 binary32 and return the rounded value as float. Reject nonfini
 
 ## string operations
 
+### string.endsWith
+
+Test an exact UTF-8 suffix, including embedded NUL. An empty suffix matches.
+
+### string.replace
+
+Return new text with every nonoverlapping exact search replaced, left to right. Reject an empty search. This is not regular-expression replacement.
+
+### string.codePointLength
+
+Count Unicode scalar values in valid UTF-8. Combining marks count separately; this is not grapheme count.
+
+### string.parseInteger
+
+Parse strict signed decimal int64. Permit an optional leading minus and decimal digits; reject whitespace, plus, trailing text, and overflow.
+
+### string.parseFloat
+
+Parse invariant finite binary64 decimal text, with optional minus, fraction, and decimal exponent. Reject whitespace, nonfinite values, malformed text, overflow, and underflow.
+
 ### string.trim
 
 Remove ECMAScript whitespace and line terminators from both ends; preserve interior text.
@@ -1363,6 +1431,10 @@ Decode UTF-8 strictly. Invalid input raises ConversionError; embedded NUL is pre
 Encode immutable bytes as unpadded RFC 4648 URL-safe base64.
 
 ## List operations
+
+### List.join
+
+Join List<string> in list order with exact separators. Empty lists produce empty text. Preserve empty elements and embedded NUL.
 
 ### List.append
 

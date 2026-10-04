@@ -1,3 +1,6 @@
+import {planRename} from './refactoring.ts';
+import {semanticGraph,semanticSourcePath,semanticConfiguration,occurrencesAt,type SemanticGraph} from './symbols.ts';
+import { defaultText } from './parameters.ts';
 import { createHash } from 'node:crypto';
 import { basename, resolve } from 'node:path';
 import type { ClassDecl, Diagnostic, GenericHeader, ImportDecl, MethodDecl, Param, Span } from './ast.ts';
@@ -16,91 +19,8 @@ import { interceptorBehavior } from './interceptors.ts';
 import { callableResult, callableErrors } from './contracts.ts';
 import {nativeFact,nativeDependencies,type NativeFunctionFact,type NativeResourceFact} from './native-facts.ts';
 
-const genericFacts = (header: GenericHeader) => header.typeParams.map(name => ({ name,
-  variance: header.typeVariance?.[name] ?? 'invariant', constraints: (header.typeConstraints?.[name] ?? []).map(typeName) }));
-
-export interface CallableFact {
-  native?:NativeFunctionFact; nativeDependencies:NativeFunctionFact[]; nativeCoverage:'resolved-standalone-calls';
-  name: string; location: Span; inputs: { label: string; name: string; type: string; ownership: string; injected: boolean; source?:Param['source'] }[];
-  result: string; genericParameters: ReturnType<typeof genericFacts>; changes: string[]; capabilities: string[]; inferredEffects: boolean; errors: string[];
-  http?: {method:string; path:string; status:number; streaming:boolean; errors:{type:string;status:number}[]};
-  policies: {name:string; order:number; options:Record<string,string|number|boolean|string[]>; dependencies:string[]}[];
-  interceptors: { name: string; order: number; location: Span; dependencies: string[]; changes: string[]; capabilities: string[];
-    errors: string[]; delegates: boolean; mayShortCircuit: boolean }[];
-}
-export interface ContractFact {
-  native?:NativeResourceFact;
-  id: string; name: string; kind: string; location: Span; public: boolean; documentation?: string;
-  typeParameters: string[]; genericParameters: ReturnType<typeof genericFacts>; interfaces: string[];
-  fields: { label: string; storage: string; type: string; mutable: boolean; injected: boolean; ownership: string }[];
-  callables: CallableFact[]; calls: { target: string; location: Span }[]; tests: { group: string; name: string; location: Span }[];
-}
-export function contractFacts(checked: CheckedProject): ContractFact[] {
-  const { project } = checked;
-  const callable = (method: MethodDecl, constructor?: ClassDecl): CallableFact => {
-    const contract = checked.effectContracts.get(method);
-    const layers = checked.interceptorPlans.get(constructor ?? method) ?? [];
-    const native=nativeFact(checked,method);
-    return { name: method.name, location: method.span, genericParameters: genericFacts(method),
-      native:native?.kind==='function'?native:undefined,nativeDependencies:nativeDependencies(checked,method),nativeCoverage:'resolved-standalone-calls',
-      inputs: method.params.map(param => ({ label: param.label ?? param.name, name: param.name,
-        type: typeName(param.type), ownership: param.ownership, injected: param.injected, source:param.source })),
-      http:method.endpoint?{method:method.endpoint.method,path:method.endpoint.path,status:method.endpoint.status,
-        streaming:!!method.endpoint.streams,errors:method.endpoint.errors.map(error=>({type:typeName(error.type),status:error.status}))}:undefined,
-      policies:(checked.httpPolicies.get(method)??[]).map((policy,index)=>({name:policy.name,order:index+1,options:policy.options,
-        dependencies:policy.dependencies.map(index=>method.params[index]?.label??method.params[index]?.name??'')})),
-      result: `${method.returnOwnership === 'own' ? 'own ' : ''}${tyName(callableResult(checked, method))}`,
-      changes: [...(contract?.changes ?? method.changes ?? [])],
-      capabilities: [...(contract?.uses.values() ?? [])].map(effect => `${effect.source}.${effect.operation}`).concat(method.externC&&!native ? [`C.${method.name}`] : []),
-      inferredEffects: !!contract?.inferred,
-      errors: constructor ? [...new Set([...(checked.constructorContracts.get(constructor)?.errors.map(tyName) ?? constructor.validationErrors?.map(typeName) ?? []),
-        ...layers.flatMap(layer => layer.errors.map(tyName))])].sort() : callableErrors(checked, method),
-      interceptors: layers.map((layer, order) => {
-        const effects = checked.effectContracts.get(layer.around);
-        return { name: layer.definition.name, order: order + 1, location: layer.definition.node.span,
-          dependencies: [...new Set([...(layer.definition.node.kind === 'interceptor' ? layer.definition.node.fields : []), ...layer.around.params].filter(param => param.injected).map(param => typeName(param.type)))],
-          changes: [...(effects?.changes ?? layer.around.changes ?? [])],
-          capabilities: [...(effects?.uses.values() ?? [])].map(effect => `${effect.source}.${effect.operation}`), errors: layer.errors.map(tyName),
-          ...interceptorBehavior(layer.around.body ?? []) };
-      }) };
-  };
-  return [...project.definitions.values()].map(def => {
-    const node = def.node, file = project.files.get(def.file)!;
-    const methods = node.kind === 'function' ? [node] : 'methods' in node ? node.methods : [];
-    const calls: ContractFact['calls'] = [];
-    const visit = (value: unknown) => {
-      if (!value || typeof value !== 'object') return;
-      if (Array.isArray(value)) { value.forEach(visit); return; }
-      const call = value as { kind?: string; callee?: { kind?: string; name?: string; object?: import('./ast.ts').Expr }; span?: Span };
-      if (call.kind === 'call' && call.callee?.kind === 'name' && call.span) {
-        const target = project.scopes.get(call.span.file)?.get(call.callee.name!);
-        if (target) calls.push({ target: target.id, location: call.span });
-      }
-      if (call.kind === 'call' && call.callee?.kind === 'member' && call.callee.object && call.span) {
-        const target = checked.expressionTypes.get(call.callee.object)?.def;
-        if (target) calls.push({ target: target.id, location: call.span });
-      }
-      for (const [key, child] of Object.entries(value)) if (!['span', 'nameSpan', 'sourceSpan'].includes(key)) visit(child);
-    };
-    visit(node);
-    const native=node.kind==='resource'?nativeFact(checked,node):undefined;
-    return { id: def.id, name: def.name, kind: node.kind === 'class' && node.record ? 'record' :
-      node.kind === 'interface' && node.capability ? 'capability' : node.kind,
-      native:native?.kind==='resource'?native:undefined,
-      location: node.span, public: !node.name.startsWith('_'), typeParameters: node.typeParams, genericParameters: genericFacts(node),
-      documentation: javadocBefore(file.source, 'annotations' in node ? node.annotations?.[0]?.span.start ?? node.span.start : node.span.start)?.markdown,
-      interfaces: node.kind === 'class' ? node.implements.map(typeName) : node.kind === 'interface' ? node.extends.map(typeName) : [],
-      fields: 'fields' in node ? fieldsOf(node).map(field => ({ label: field.label ?? field.name, storage: field.name, type: typeName(field.type),
-        mutable: !!field.mutable, injected: field.injected, ownership: field.ownership })) : [],
-      callables: [...(node.kind === 'class' ? [callable({ kind: 'function', name: node.name, typeParams: node.typeParams,
-        typeConstraints: node.typeConstraints, typeVariance: node.typeVariance, params: node.fields,
-        returns: syntheticType(node.name, node.span), returnOwnership: 'managed',
-        throws: node.validationErrors ?? [], changes: [], uses: [], body: node.constructorBody, externC: false, span: node.span }, node)] : []),
-        ...methods.filter(method => node.kind==='function'||!method.name.startsWith('_')).map(method => callable(method))], calls,
-      tests: file.items.flatMap(item => item.kind === 'test' && item.type.name === def.name ? item.groups.flatMap(group =>
-        group.cases.map(test => ({ group: group.name, name: test.name, location: test.span }))) : []) };
-  });
-}
+export {contractFacts,type CallableFact,type ContractFact} from './contract-facts.ts';
+import {contractFacts,type ContractFact} from './contract-facts.ts';
 
 export interface ModuleFact { file: string; dependencies: string[]; public: { name: string; shape: string }[]; members: number }
 export function describe(checked: CheckedProject, fileName: string, options: { name?: string; budget?: number; context?: boolean; baseline?: { architecture?: ModuleFact[] } } = {}) {
@@ -169,11 +89,21 @@ export class SemanticDocument {
   readonly source: string;
   private checked: CheckedProject;
   readonly path: string;
-  constructor(checked: CheckedProject, path: string, revision: string) {
-    this.checked = checked; this.path = path;
+  private graphValue?:SemanticGraph;
+  private wholeProject:boolean;
+  private checkedFiles:ReadonlySet<string>;
+  private configuration:ReturnType<typeof semanticConfiguration>;
+  constructor(checked: CheckedProject, path: string, revision: string, wholeProject=false, checkedFiles=new Set(checked.project.files.keys()), configuration=semanticConfiguration(checked.project.root)) {
+    this.checked = checked; this.path = path; this.wholeProject=wholeProject; this.checkedFiles=checkedFiles; this.configuration=configuration;
     this.revision = revision; this.diagnostics = Object.freeze(checked.diagnostics.map(issue => Object.freeze({ ...issue })));
     this.source = checked.project.files.get(path)?.source ?? '';
   }
+  graph() { return structuredClone(this.graphValue??=semanticGraph(this.checked,this.wholeProject,this.checkedFiles,this.configuration)); }
+  references(offset:number,includeDeclaration=true) {
+    return structuredClone(occurrencesAt(this.graphValue??=semanticGraph(this.checked,this.wholeProject,this.checkedFiles,this.configuration),semanticSourcePath(this.checked,this.path),offset,includeDeclaration));
+  }
+  rename(offset:number,name:string) {return planRename(this.checked,this.graph(),this.path,offset,name);}
+  referenceTarget(file:string) {return [...this.checked.project.files.keys()].find(path=>semanticSourcePath(this.checked,path)===file);}
   hover(offset: number) { return hoverInfo(this.checked, this.path, offset); }
   complete(offset: number) { return completions(this.checked, this.path, offset); }
   tokens() { return semanticTokens(this.checked, this.path); }
@@ -236,8 +166,8 @@ export class SemanticWorkspace {
   readonly stats = { analyses: 0, cacheHits: 0 };
   readonly root: string;
   constructor(root: string) { this.root = root; }
-  close(path: string): void { this.overrides.delete(resolve(path)); this.versions.delete(resolve(path)); this.documents.delete(resolve(path)); }
-  document(fileName: string, edit?: { text: string; version: number }): SemanticDocument {
+  close(path: string): void { this.overrides.delete(resolve(path)); this.versions.delete(resolve(path)); this.documents.delete(resolve(path)+':project'); this.documents.delete(resolve(path)+':closure'); }
+  document(fileName: string, edit?: { text: string; version: number }, wholeProject=false): SemanticDocument {
     const path = resolve(fileName);
     if (edit && edit.version >= (this.versions.get(path) ?? -1)) { this.overrides.set(path, edit.text); this.versions.set(path, edit.version); }
     const project = loadProject(this.root, this.overrides, this.parsed);
@@ -248,11 +178,13 @@ export class SemanticWorkspace {
         for (const def of project.imports.get(item) ?? []) include(def.file);
     };
     include(path);
-    const root = basename(path) === 'main.aug';
+    const root = wholeProject || basename(path) === 'main.aug';
+    const cachePath=path+(root?':project':':closure');
     const relevant = root ? [...project.files.keys()] : [...closure];
-    const key = createHash('sha256').update(JSON.stringify([project.config, relevant.map(file => [file, project.files.get(file)?.source]),
+    const configuration=semanticConfiguration(this.root);
+    const key = createHash('sha256').update(JSON.stringify([project.config, configuration, root, relevant.map(file => [file, project.files.get(file)?.source]),
       project.diagnostics.filter(issue => relevant.includes(issue.file) || issue.code === 'PACKAGE')])).digest('hex');
-    const cached = this.documents.get(path);
+    const cached = this.documents.get(cachePath);
     if (cached?.key === key) { this.stats.cacheHits++; return cached.view; }
     const local: Project = root ? project : { ...project, main: undefined,
       definitions: new Map([...project.definitions].filter(([, def]) => closure.has(def.file))),
@@ -262,8 +194,8 @@ export class SemanticWorkspace {
     const tests = checkUnitTests(local, discovered.tests.filter(unit => root || closure.has(unit.file)));
     checked.diagnostics = uniqueDiagnostics([...checked.diagnostics, ...discovered.diagnostics, ...tests.flatMap(test => test.checked.diagnostics)]);
     mergeTestAnalysis(checked, tests);
-    const view = new SemanticDocument(checked, path, key);
-    this.documents.set(path, { key, view }); this.stats.analyses++;
+    const view = new SemanticDocument(checked, path, key, root, new Set(relevant),configuration);
+    this.documents.set(cachePath, { key, view }); this.stats.analyses++;
     return view;
   }
   invalidate(): void { this.documents.clear(); }

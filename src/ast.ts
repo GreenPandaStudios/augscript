@@ -20,6 +20,7 @@ export interface TypeRef {
   args: TypeRef[];
   nullable: boolean;
   optional?: boolean;
+  immutable?: boolean;
   span: Span;
 }
 
@@ -28,7 +29,11 @@ export interface Param {
   type: TypeRef;
   ownership: 'managed' | 'own' | 'borrow';
   injected: boolean;
+  /** Pure literal data evaluated afresh when the caller omits this input. */
+  defaultValue?: Expr;
   label?: string;
+  nameSpan?: Span;
+  labelSpan?: Span;
   mutable?: boolean;
   span: Span;
   source?: {kind: 'path' | 'query' | 'header' | 'body' | 'cookie' | 'form' | 'request'; name?: string};
@@ -79,6 +84,7 @@ export interface MethodDecl extends GenericHeader {
 export interface ClassDecl extends GenericHeader {
   kind: 'class';
   record?: boolean;
+  errorShorthand?: boolean;
   validationErrors?: TypeRef[];
   validationDeclared?: boolean;
   headerEnd?: number;
@@ -145,6 +151,8 @@ export interface CompositionDecl extends GenericHeader {
 export interface IncludeDecl { kind: 'include'; name: string; span: Span }
 
 export type Expr =
+  | {kind: 'recordCopy'; base: Expr; fields: {name: string; value: Expr; span: Span}[]; span: Span}
+  | {kind: 'interpolation'; parts: ({text: string; span: Span} | {value: Expr; span: Span})[]; span: Span}
   | {kind: 'handle'; call: Expr; span: Span}
   | {kind: 'formInput'; span: Span}
   | {kind: 'markup'; tag: string; attributes: {name: string; value: Expr; span: Span}[]; children: Expr[]; span: Span}
@@ -155,7 +163,7 @@ export type Expr =
   | { kind: 'name'; name: string; span: Span }
   | { kind: 'member'; object: Expr; name: string; span: Span }
   | { kind: 'call'; callee: Expr; args: Expr[]; argLabels: (string | undefined)[];
-      typeArgs: TypeRef[]; span: Span }
+      typeArgs: TypeRef[]; indexed?: boolean; argLabelSpans?: (Span | undefined)[]; span: Span }
   | { kind: 'binary'; op: string; left: Expr; right: Expr; span: Span }
   | { kind: 'unary'; op: string; value: Expr; span: Span }
   | { kind: 'start'; call: Expr; worker?: boolean; span: Span }
@@ -169,6 +177,8 @@ export type Stmt =
   | { kind: 'freeze'; value: Expr; name: string; span: Span }
   | { kind: 'expr'; expr: Expr; span: Span }
   | { kind: 'assign'; target: Expr; value: Expr; declaredType?: TypeRef; ownership: 'managed' | 'own'; span: Span }
+  | { kind: 'break'; span: Span }
+  | { kind: 'continue'; span: Span }
   | { kind: 'return'; value?: Expr; span: Span }
   | { kind: 'throw'; value: Expr; span: Span }
   | { kind: 'if'; test: Expr; then: Stmt[]; otherwise: Stmt[]; span: Span }
@@ -204,7 +214,7 @@ export interface SourceFile {
 }
 
 export function typeName(type: TypeRef): string {
-  return (type.optional || type.nullable ? 'optional ' : '') + type.name + (type.args.length ? `<${type.args.map(typeName).join(',')}>` : '');
+  return (type.optional || type.nullable ? 'optional ' : '') + (type.immutable ? 'immutable ' : '') + type.name + (type.args.length ? `<${type.args.map(typeName).join(',')}>` : '');
 }
 
 export function syntheticType(name: string, span: Span): TypeRef {
@@ -221,4 +231,21 @@ export function initializationOf(node: ClassDecl): Stmt[] {
     target: { kind: 'name' as const, name: field.name, span: field.span }, value: field.initializer,
     ownership: field.ownership === 'own' ? 'own' as const : 'managed' as const, span: field.span })),
     ...(node.constructorBody ?? [])];
+}
+
+/** Direct expression children, shared by conservative analyses as syntax grows. */
+export function expressionChildren(expr: Expr): Expr[] {
+  switch (expr.kind) {
+    case 'recordCopy': return [expr.base, ...expr.fields.map(field => field.value)];
+    case 'interpolation': return expr.parts.flatMap(part => 'value' in part ? [part.value] : []);
+    case 'markup': return [...expr.attributes.map(attribute => attribute.value), ...expr.children];
+    case 'collection': return expr.items;
+    case 'call': return [expr.callee, ...expr.args];
+    case 'binary': return [expr.left, expr.right];
+    case 'unary': return [expr.value];
+    case 'member': return [expr.object];
+    case 'handle': case 'start': return [expr.call];
+    case 'wait': return expr.tasks;
+    default: return [];
+  }
 }

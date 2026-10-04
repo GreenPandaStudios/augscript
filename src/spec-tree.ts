@@ -1,6 +1,6 @@
 /** Behavioral relations remain explicit until sentence planning. No stage ranks or drops steps. */
 type Evidence = { source?: string };
-export type ActionVerb = 'set' | 'store' | 'split' | 'call' | 'construct' | 'evaluate' | 'return' | 'fail' | 'send' | 'freeze' | 'serve' | 'increase' | 'decrease' | 'continue';
+export type ActionVerb = 'set' | 'store' | 'split' | 'call' | 'construct' | 'evaluate' | 'return' | 'fail' | 'send' | 'freeze' | 'serve' | 'increase' | 'decrease' | 'continue' | 'leave';
 export type FlowNode = Evidence & (
   | { kind: 'step'; text: string }
   | { kind: 'action'; verb: ActionVerb; object: string }
@@ -131,7 +131,7 @@ export function planFlow(nodes: FlowNode[]): ProsePlan {
     switch (node.kind) {
       case 'step': result = [sentence(node.text)]; break;
       case 'action': {
-        const verbs:Record<ActionVerb,string>={set:'sets',store:'stores',split:'splits',call:'calls',construct:'creates',evaluate:'evaluates',return:'returns',fail:'raises',send:'sends',freeze:'freezes',serve:'serves',increase:'increases',decrease:'decreases',continue:'continues'};
+        const verbs:Record<ActionVerb,string>={set:'sets',store:'stores',split:'splits',call:'calls',construct:'creates',evaluate:'evaluates',return:'returns',fail:'raises',send:'sends',freeze:'freezes',serve:'serves',increase:'increases',decrease:'decreases',continue:'continues',leave:'leaves'};
         const object=node.object?' '+node.object:'';
         const realized=node.verb==='fail'?`It raises ${node.object.replace(/^with /,'')}.`:`It ${verbs[node.verb]}${object}.`;
         result = [{...sentence(realized),infinitive:node.verb==='fail'?'raise '+node.object.replace(/^with /,''):node.verb+object}]; break;

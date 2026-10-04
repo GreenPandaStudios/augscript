@@ -13,7 +13,7 @@ Create a greeting application, run it, and check its test. Then read the explana
 
 You need Node.js 24 or later and npm on macOS 14+ with Apple Silicon, or GNU/Linux x64/ARM64 with glibc 2.36+. August downloads its own LLVM compiler and prebuilt runtime. You do not install Clang, LLVM, or an SDK.
 
-You can run the compiler and native libraries in [a VS Code Dev Container](dev-containers.md). The [Docker guide](docker.md) covers container builds and deployment. These instructions use the published August 0.23.0 preview.
+You can run the compiler and native libraries in [a VS Code Dev Container](dev-containers.md). The [Docker guide](docker.md) covers container builds and deployment. The smaller starter below is in the unreleased compiler. With published August 0.23.0, replace its two source files with the versions shown here; they also work with that release.
 
 ## Create and run the starter
 
@@ -36,17 +36,15 @@ Keep the terminal in `hello-august` for the rest of this chapter. The first run 
 
 ## Read the startup file
 
-The starter's `main.aug` contains its imports, dependency choice, and startup work:
+The starter's `main.aug` imports a function and prints its result:
 
 ```aug project=getting-started file=main.aug
-import Greeter and SimpleGreeter from greeting
+import greet from greeting
 
-implement Greeter with SimpleGreeter
-resolve Greeter to greeter
-print(value=greeter.greet(name="August"))
+print(value=greet(name="August"))
 ```
 
-`main.aug` is the application entry point. It imports two public declarations from the sibling file `greeting.aug`. `implement` selects the provider for `Greeter`, and `resolve` obtains it as `greeter`. The last line asks for a greeting and prints the result.
+`main.aug` is the application entry point. Its import names the public declaration in the sibling file `greeting.aug`. The last line asks for a greeting and prints the result.
 
 The call labels its input `name`. You can read what the string is for without opening the declaration. Labels also let you reorder inputs when a call has several of them.
 
@@ -55,26 +53,19 @@ The call labels its input `name`. You can read what the string is for without op
 Open `greeting.aug`. These are the important declarations:
 
 ```aug project=getting-started file=greeting.aug
-/** Build a greeting for a named person. */
-interface Greeter:
-    /** Return a greeting for the named person. */
-    greet(string name) returns string
+/** Return a greeting for the named person. */
+greet(string name):
+    return "Hello, " + name + "!"
 
-/** A plain-language greeting. */
-SimpleGreeter() implements Greeter:
-    greet(string name):
-        return "Hello, " + name + "!"
-
-test SimpleGreeter greeter:
+test greet:
     when greetings:
-        greeter = SimpleGreeter()
         it greets_a_person:
-            assert(greeter.greet(name="August") == "Hello, August!")
+            assert(greet(name="August") == "Hello, August!")
 ```
 
-`Greeter` requires a method that accepts a string named `name` and returns a string. `SimpleGreeter` provides that method. It joins the name with `Hello, ` and `!`. Its constructor takes no inputs.
+`greet` accepts a string named `name`. It joins that name with `Hello, ` and `!`. The compiler infers its string result, and the editor shows that result beside the header.
 
-The test constructs a greeter and checks its returned string. The comments also appear in editor help.
+The test calls the same function and checks its returned string. The comment also appears in editor help. The later [modules chapter](learn/modules-and-dependencies.md) introduces interfaces and dependency injection for replaceable behavior.
 
 ## Change the greeting
 
@@ -86,7 +77,7 @@ aug run .
 aug test .
 ```
 
-The application should print `Hello, Ada!`. The existing test should still pass: it constructs its own subject and checks the greeting for August. Application startup does not run during the test.
+The application should print `Hello, Ada!`. The existing test should still pass: it calls the function with its own input and checks the greeting for August. Application startup does not run during the test.
 
 Now deliberately change the call's label from `name` to `person`. `check` should fail because `greet` has no input named `person`. Restore `name` and check again. The checker catches the wrong label before the program runs.
 
@@ -97,7 +88,7 @@ aug spec .
 aug spec . --check
 ```
 
-Open `main.aug.md` and `greeting.aug.md`. They describe the bindings, call, greeting behavior, and test. Their dependency links lead to the used declarations. The compiler generates this text offline. The same source produces the same explanation.
+Open `main.aug.md` and `greeting.aug.md`. They describe the import, call, greeting behavior, and test. Their dependency links lead to the used declarations. The compiler generates this text offline. The same source produces the same explanation.
 
 After an edit, regenerate before committing the explanation. `--check` reports stale files and does not write them. [Compiled specifications](specifications.md) explains the full workflow and its limits.
 

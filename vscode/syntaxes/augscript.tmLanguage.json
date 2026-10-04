@@ -390,7 +390,7 @@
       "patterns": [
         {
           "name": "keyword.control.augscript",
-          "match": "\\b(?:if|else|while|for|match|some|in|try|catch|always|throw|return|yield|unless|test|when|it|pass|start|worker|wait|handle|initialize)\\b"
+          "match": "\\b(?:if|else|while|break|continue|for|match|some|in|try|catch|always|throw|return|yield|unless|test|when|it|pass|start|worker|wait|handle|initialize)\\b"
         },
         {
           "name": "keyword.declaration.augscript",

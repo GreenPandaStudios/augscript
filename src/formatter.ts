@@ -40,7 +40,7 @@ function printFile(project: Project, file: SourceFile, migrate: boolean): string
     if (Array.isArray(value)) return value.filter(item => !(item?.kind === 'expr' && item.expr.kind === 'literal' && item.expr.value === null)).map(shape);
     if (!value || typeof value !== 'object') return value;
     const node = value as Record<string, unknown>;
-    return Object.fromEntries(Object.entries(node).filter(([key, value]) => !['span', 'nameSpan', 'sourceSpan', 'headerEnd'].includes(key) && value !== undefined)
+    return Object.fromEntries(Object.entries(node).filter(([key, value]) => !['span', 'nameSpan', 'labelSpan', 'argLabelSpans', 'sourceSpan', 'headerEnd'].includes(key) && value !== undefined)
       .sort(([a], [b]) => a.localeCompare(b)).map(([key, value]) => [key, shape(value)]));
   };
   if (JSON.stringify(shape(parsed.file.items)) !== JSON.stringify(shape(verified.file.items)))
@@ -105,7 +105,7 @@ class Printer {
     const label = field ? param.label ?? param.name : param.name;
     return this.inline(param.span.start) + `${param.injected ? 'resolve ' : ''}${param.mutable ? 'mutable ' : ''}` +
       `${param.ownership === 'managed' ? '' : param.ownership + ' '}${typeName(param.type)} ${label}` +
-      (label !== param.name ? ` to ${param.name}` : '') + (param.source ? ` from ${param.source.kind}${param.source.name ? ' ' + JSON.stringify(param.source.name) : ''}` : '') + this.inline(param.span.end);
+      (label !== param.name ? ` to ${param.name}` : '') + (param.source ? ` from ${param.source.kind}${param.source.name ? ' ' + JSON.stringify(param.source.name) : ''}` : '') + (param.defaultValue ? ` ${this.assign} ${this.expression(param.defaultValue)}` : '') + this.inline(param.span.end);
   }
   private annotations(tags: InterceptorAnnotation[] = []) {
     for (const tag of tags) {
@@ -129,7 +129,13 @@ class Printer {
   private expression(expr: Expr, precedence = 0): string {
     const comment = this.inline(expr.span.start);
     let value: string;
-    if (expr.kind === 'markupText') value = expr.text;
+    if (expr.kind === 'recordCopy') value = this.expression(expr.base, 8) + ' with ' +
+      this.delimited('(', expr.fields.map(field => field.name + '=' + this.expression(field.value)), ')');
+    else if (expr.kind === 'interpolation') value = '$"' + expr.parts.map(part =>
+      'text' in part
+        ? JSON.stringify(part.text).slice(1, -1).replaceAll('{', '{{').replaceAll('}', '}}')
+        : '{' + this.expression(part.value) + '}').join('') + '"';
+    else if (expr.kind === 'markupText') value = expr.text;
     else if (expr.kind === 'markup') value = '<' + expr.tag + expr.attributes.map(attribute => ' ' + attribute.name + '={' + this.expression(attribute.value) + '}').join('') +
       (expr.children.length || !expr.tag ? '>' + expr.children.map(child => child.kind === 'markup' || child.kind === 'markupText' ? this.expression(child) : '{' + this.expression(child) + '}').join('') + '</' + expr.tag + '>' : ' />');
     else if (expr.kind === 'literal') value = expr.numericText ?? JSON.stringify(expr.value);
@@ -140,6 +146,8 @@ class Printer {
     else if (expr.kind === 'wait') value = `wait for ${expr.tasks.map(task => this.expression(task, 8)).join(' and ')}`;
     else if (expr.kind === 'resolve') value = `resolve ${expr.name}` + (expr.typeArgs.length ? '<' + expr.typeArgs.map(typeName).join(', ') + '>' : '');
     else if (expr.kind === 'member') value = `${this.expression(expr.object, 8)}.${expr.name}`;
+    else if (expr.kind === 'call' && expr.indexed && expr.callee.kind === 'member')
+      value = `${this.expression(expr.callee.object, 8)}[${this.expression(expr.args[0])}]`;
     else if (expr.kind === 'call') {
       const open = this.expression(expr.callee, 8) + (expr.typeArgs.length ? '<' + expr.typeArgs.map(typeName).join(', ') + '>' : '') + '(';
       const values = expr.args.map((arg, index) => (expr.argLabels[index] ? expr.argLabels[index] + '=' : '') + this.expression(arg));
@@ -157,7 +165,7 @@ class Printer {
       if (power < precedence) value = '(' + value + ')';
     }
     else {
-      const powers: Record<string, number> = { '||': 1, '&&': 2, '==': 3, '!=': 3, '<': 4, '>': 4, '<=': 4, '>=': 4, '+': 5, '-': 5, '*': 6, '/': 6 };
+      const powers: Record<string, number> = { 'otherwise': 0.5, '||': 1, '&&': 2, '==': 3, '!=': 3, '<': 4, '>': 4, '<=': 4, '>=': 4, '+': 5, '-': 5, '*': 6, '/': 6, '%': 6 };
       const power = powers[expr.op]; value = `${this.expression(expr.left, power)} ${expr.op === '&&' ? 'and' : expr.op === '||' ? 'or' : expr.op} ${this.expression(expr.right, power + 1)}`;
       if (power < precedence) value = '(' + value + ')';
     }
@@ -175,6 +183,7 @@ class Printer {
       `${stmt.declaredType ? typeName(stmt.declaredType) + ' ' : ''}${this.expression(stmt.target)} ${this.assign} ${this.expression(stmt.value)}`);
     else if (stmt.kind === 'destructure') this.line(`(${stmt.names.join(', ')}) ${this.assign} ${this.expression(stmt.value)}`);
     else if (stmt.kind === 'return') this.line('return' + (stmt.value ? ' ' + this.expression(stmt.value) : ''));
+    else if (stmt.kind === 'break' || stmt.kind === 'continue') this.line(stmt.kind);
     else if (stmt.kind === 'throw') this.line('throw ' + this.expression(stmt.value));
     else if (stmt.kind === 'if') {
       this.block('if ' + this.expression(stmt.test), () => stmt.then.forEach(child => this.statement(child)));
@@ -206,9 +215,10 @@ class Printer {
     else if (item.kind === 'function') this.method(item);
     else if (item.kind === 'class') {
       this.annotations(item.annotations);
-      const header = `${item.record ? 'record ' : ''}${item.name}${this.generics(item)}(${item.fields.map(field => this.param(field, true)).join(', ')})`;
+      const header = `${item.record ? 'record ' : item.errorShorthand ? 'error ' : ''}${item.name}${this.generics(item)}(${item.fields.map(field => this.param(field, true)).join(', ')})`;
       const errors = item.validationErrors?.length ? ` unless ${item.validationErrors.map(typeName).join(' and ')}` : '';
-      if (item.record) {
+      if (item.errorShorthand) this.line(header);
+      else if (item.record) {
         if (item.constructorBody) this.block(header + errors, () => this.initializer(item), item.span);
         else this.line(header + errors);
       } else {

@@ -53,6 +53,11 @@ export const collectionOperations: Record<string, BuiltinOperation[]> = {
     {name:'float32', parameters:[], returns:'float', errors:['ConversionError'], documentation:'Round to IEEE 754 binary32 and return the rounded value as float. Reject nonfinite input or overflow.',native:'float32'},
   ],
   string: [
+    {name:'endsWith',parameters:[{label:'suffix',type:'string'}],returns:'bool',documentation:'Test an exact UTF-8 suffix, including embedded NUL. An empty suffix matches.',native:'ends_with'},
+    {name:'replace',parameters:[{label:'search',type:'string'},{label:'replacement',type:'string'}],returns:'string',errors:['ConversionError'],documentation:'Return new text with every nonoverlapping exact search replaced, left to right. Reject an empty search. This is not regular-expression replacement.',native:'replace'},
+    {name:'codePointLength',parameters:[],returns:'int',errors:['ConversionError'],documentation:'Count Unicode scalar values in valid UTF-8. Combining marks count separately; this is not grapheme count.',native:'code_point_length'},
+    {name:'parseInteger',parameters:[],returns:'int',errors:['ConversionError'],documentation:'Parse strict signed decimal int64. Permit an optional leading minus and decimal digits; reject whitespace, plus, trailing text, and overflow.',native:'parse_integer'},
+    {name:'parseFloat',parameters:[],returns:'float',errors:['ConversionError'],documentation:'Parse invariant finite binary64 decimal text, with optional minus, fraction, and decimal exponent. Reject whitespace, nonfinite values, malformed text, overflow, and underflow.',native:'parse_float'},
     {name:'trim',parameters:[],returns:'string',documentation:'Remove ECMAScript whitespace and line terminators from both ends; preserve interior text.',native:'trim'},
     {name:'utf16Length',parameters:[],returns:'int',documentation:'Count UTF-16 code units for JavaScript wire limits; supplementary characters count as two.',native:'utf16_length'},
     {name:'isDecimal',parameters:[],returns:'bool',documentation:'Require a nonempty ASCII unsigned decimal string. Leading zeros are allowed.',native:'is_decimal'},
@@ -70,6 +75,7 @@ export const collectionOperations: Record<string, BuiltinOperation[]> = {
     { name: 'base64url', parameters: [], returns: 'string', documentation: 'Encode immutable bytes as unpadded RFC 4648 URL-safe base64.', native: 'base64url' },
   ],
   List: [
+    {name:'join',parameters:[{label:'separator',type:'string'}],returns:'string',documentation:'Join List<string> in list order with exact separators. Empty lists produce empty text. Preserve empty elements and embedded NUL.',native:'join'},
     { name: 'append', parameters: [{ label: 'value', type: 'T' }], returns: 'void', changes: true,
       documentation: 'Append an element with exclusive mutable access. Read-only and owned aliases cannot be stored here.', native: 'append' },
     { name: 'get', parameters: [{ label: 'index', type: 'int' }], returns: 'T', errors: ['IndexError'],

@@ -1552,6 +1552,142 @@
           "test": "two next labels cannot override one target argument"
         }
       ]
+    },
+    {
+      "id": "SHORT_ERRORS",
+      "summary": "Short error declarations retain resolved Error identity and checked caller obligations.",
+      "reference": "reference.md#errors",
+      "productions": [
+        "Error"
+      ],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/ergonomics-language.test.mjs",
+          "test": "short error declarations remain checked errors with named data"
+        }
+      ]
+    },
+    {
+      "id": "INDEXING",
+      "summary": "List indexing is checked; Map indexing is optional; Tuple positions are constant.",
+      "reference": "reference.md",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/ergonomics-language.test.mjs",
+          "test": "indexing preserves checked list reads, optional map lookup, and constant tuple reads"
+        }
+      ]
+    },
+    {
+      "id": "NULL_FALLBACK",
+      "summary": "Otherwise evaluates only for null and preserves falsy values.",
+      "reference": "reference.md",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/ergonomics-language.test.mjs",
+          "test": "otherwise evaluates only for null and preserves false, zero and empty text"
+        }
+      ]
+    },
+    {
+      "id": "LITERAL_DEFAULTS",
+      "summary": "Omitted literal defaults are typed and freshly evaluated; explicit null is a value.",
+      "reference": "reference.md",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/ergonomics-language.test.mjs",
+          "test": "literal parameter defaults are typed, labeled, and freshly constructed per call"
+        }
+      ]
+    },
+    {
+      "id": "INTERPOLATION",
+      "summary": "Scalar interpolation evaluates in source order and preserves Unicode text rules.",
+      "reference": "reference.md",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/ergonomics-language.test.mjs",
+          "test": "interpolation and record updates evaluate each input once in source order"
+        }
+      ]
+    },
+    {
+      "id": "REMAINDER",
+      "summary": "Integer remainder checks zero and defines the signed-minimum edge.",
+      "reference": "reference.md",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/ergonomics-language.test.mjs",
+          "test": "integer remainder has signed operands, checked zero, and defined minimum overflow"
+        }
+      ]
+    },
+    {
+      "id": "TEXT_HELPERS",
+      "summary": "Text helpers keep Unicode units explicit and parse bounded numbers strictly.",
+      "reference": "reference.md",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/ergonomics-language.test.mjs",
+          "test": "text helpers preserve Unicode and use checked strict parsing"
+        }
+      ]
+    },
+    {
+      "id": "IMMUTABLE_COLLECTIONS",
+      "summary": "Immutable collection contracts prohibit mutable aliases and preserve deep data access.",
+      "reference": "reference.md",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/ergonomics-language.test.mjs",
+          "test": "immutable collection contracts make deep record data explicit without accepting mutable aliases"
+        }
+      ]
+    },
+    {
+      "id": "RECORD_COPY",
+      "summary": "Record copies preserve type and rerun checked construction validation.",
+      "reference": "reference.md",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/ergonomics-language.test.mjs",
+          "test": "record updates retain identity and unchanged data and rerun checked validation"
+        }
+      ]
+    },
+    {
+      "id": "LOOP_CONTROL",
+      "summary": "Nearest-loop exits run cleanup, join scopes and preserve move/error flow on reentry.",
+      "reference": "reference.md#collections-and-iteration",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/ergonomics-language.test.mjs",
+          "test": "loop exits join child tasks, release borrows and locks, and propagate cleanup failures"
+        },
+        {
+          "file": "tests/ergonomics-language.test.mjs",
+          "test": "unreachable waits cannot erase a checked task failure on a loop exit"
+        }
+      ]
     }
   ]
 }

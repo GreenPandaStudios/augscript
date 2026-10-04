@@ -1,6 +1,6 @@
 # Grammar and line boundaries
 
-Grammar for August 0.21. `Name` is an identifier; bracketed groups are optional. The blocks below describe syntax and are not executable programs.
+Grammar for the current August preview; additions marked unreleased are not in 0.23.0. `Name` is an identifier; bracketed groups are optional. The blocks below describe syntax and are not executable programs.
 
 ## Blocks and declarations
 
@@ -16,6 +16,8 @@ Class       := [Tags] Name [Generics] ["(" Fields ")"]
                ["unless" Types] "implements" Type {"," Type} ClassBlock
 ClassBlock  := BlockOfFieldsAndMethodsWithOptionalInitialize
 Initialize  := "initialize" Block
+
+Error       := "error" Name [Generics] "(" ReadOnlyFields ")" End  // unreleased
 
 Record      := "record" Name [Generics] "(" Fields ")"
                ["unless" Types] [BlockOfInitialize]
@@ -74,6 +76,7 @@ The formatter uses implement/with and resolve/to, and preserves wildcard imports
 Statement   := Assignment | Expression End | "pass" End
              | "return" [Expression] End | "throw" Expression End
              | "if" Expression Block ["else" (Block | If)]
+             | ("break" | "continue") End
              | "while" Expression Block
              | "for" Pattern "in" Expression Block
              | Pattern ("=" | "to") Expression End
@@ -113,6 +116,8 @@ Optional values have two cases: null and some. Omitted inputs become null. Type?
 | `{key: value}` | Map literal. |
 | `{}` | Empty Set or Map determined by context. |
 | `[Validator] header...` | Interceptor annotation on a declaration. |
+| `receiver[index]` | Unreleased: checked List/Tuple read or optional Map lookup. |
+| `value otherwise fallback` | Unreleased: lazy null fallback. |
 | `receiver.member(label=value)` | Labeled method call. |
 | `receiver.member(value)` | Same-name label shorthand when value is a name. |
 | `start load(input=value)` | A cooperative scope-owned task. |
@@ -122,7 +127,7 @@ Optional values have two cases: null and some. Omitted inputs become null. Type?
 | `handle save(input from form)` | A checked deferred HTTP form action. |
 | `<Panel title={name}>...</Panel>` | Checked server component producing Html. |
 
-Operators from high to low precedence: member/call, unary minus, multiplication/division, addition/subtraction, ordered comparisons, equality, not, and, or. Thus `not count == 0` means `not (count == 0)`. Boolean operations short-circuit from left to right. Only the word spellings are accepted; `&&`, `||`, and unary `!` are syntax errors. `!=` remains accepted. Binary operators associate left. No assignment expression or implicit truthiness is supported. Exponentiation, remainder, and implicit casts are absent.
+Operators from high to low precedence: member/call, unary minus, multiplication/division/remainder (remainder is unreleased), addition/subtraction, ordered comparisons, equality, not, and, or, otherwise (unreleased). Thus `not count == 0` means `not (count == 0)`. Boolean operations short-circuit from left to right. Only the word spellings are accepted; `&&`, `||`, and unary `!` are syntax errors. `!=` remains accepted. Binary operators associate left. No assignment expression or implicit truthiness is supported. Exponentiation and implicit casts are absent.
 
 Function contract clauses may appear in any order, once each; the formatter writes returns, changes, uses, then unless. Storage aliases apply to class/record/interceptor fields rather than ordinary function parameters.
 
@@ -139,3 +144,11 @@ Function contract clauses may appear in any order, once each; the formatter writ
 The parser owns these rules. The formatter reparses and compares program structure before offering an edit, preserving comments while choosing the project's block and assignment styles.
 
 `start worker name(...)` uses the existing task operations with copied data and an isolated heap. `worker` is contextual here; a function named `worker` can still be called normally. See [workers](workers.md) for checked boundary types and native package requirements.
+
+Pure literal defaults are unreleased: an ordinary managed parameter can end with `= LiteralData` or `to LiteralData`. `LiteralData` is a scalar, negative numeric literal, or nested collection literal. The field storage alias, when present, comes before the default. Omission selects the default; explicit null does not.
+
+Interpolated text is unreleased: `$"Text {Expression}"` permits scalar expressions between braces. Doubling an opening or closing brace inserts it literally; quoted strings inside an expression retain their ordinary syntax. An unterminated expression or unescaped closing brace is a diagnostic.
+
+The unreleased `immutable` qualifier follows `optional`, when present, and precedes a collection type: `optional immutable List<int>`. It promises deep freezing; the underlying collection representation and element identities remain the same.
+
+The unreleased record-copy postfix form is `Expression with (Name=Expression, ...)`. Replacements also accept `to` or same-name shorthand. It applies only to a narrowed, concrete record value.

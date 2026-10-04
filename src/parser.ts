@@ -180,6 +180,7 @@ class Parser {
     if (this.at('test')) return this.parseTest();
     if (this.match('fixture')) return { ...this.parseFunction(false), fixture: true };
     if (this.at('record')) return this.parseRecord();
+    if (this.current().value === 'error' && this.current(1).kind === 'identifier') return this.parseError();
     if (this.at('include')) return this.parseInclude();
     if (this.match('composition')) {
       const start = this.tokens[this.position - 1].span;
@@ -517,6 +518,15 @@ class Parser {
     return { kind: 'interface', name, capability: keyword.kind === 'capability', typeParams, typeConstraints, typeVariance, extends: parents, methods, span: this.span(start) };
   }
 
+  private parseError(): ClassDecl {
+    const start = this.take().span, name = this.expect('identifier').value;
+    const generics = this.parseTypeParams(), fields = this.parseParams(true);
+    if (fields.some(field => field.injected || field.mutable || field.ownership !== 'managed'))
+      throw new ParseFailure({...start, code:'TYPE', message:'An error declaration contains read-only data; use a full Error implementation for other behavior'});
+    this.endStatement();
+    return {kind:'class', errorShorthand:true, name, ...generics, fields, methods:[], implements:[syntheticType('Error', start)], span:this.span(start)};
+  }
+
   private parseEndpoint(): MethodDecl {
     const start = this.expect('endpoint').span;
     const method = this.expect('identifier').value;
@@ -617,17 +627,21 @@ class Parser {
       const mutable = !!this.match('mutable');
       const ownership = this.match('own') ? 'own' : this.match('borrow') ? 'borrow' : 'managed';
       const type = this.parseType();
-      const label = /^[A-Za-z_]\w*$/.test(this.current().value) ? this.take().value : this.expect('identifier').value;
-      const name = fields && this.match('to') ? this.expect('identifier').value : label;
+      const labelToken = /^[A-Za-z_]\w*$/.test(this.current().value) ? this.take() : this.expect('identifier');
+      const label = labelToken.value;
+      const nameToken = fields && this.at('to') && this.current(1).kind === 'identifier'
+        ? (this.take(), this.expect('identifier')) : labelToken;
+      const name = nameToken.value;
       let source: Param['source'];
       if (endpoint && this.match('from')) {
         const kind = this.expect('identifier').value as NonNullable<Param['source']>['kind'];
         if (!['path', 'query', 'header', 'body', 'cookie', 'form', 'request'].includes(kind)) this.expect('path, query, header, body, cookie, form, or request');
         source = {kind, name: this.at('string') ? this.take().value : undefined};
       }
+      const defaultValue = this.match('=') || this.match('to') ? this.parseExpression() : undefined;
       if (mutable && !fields) throw new ParseFailure({ ...start, code: 'MUTABILITY',
         message: 'mutable declares class storage; use borrow for a mutable function input' });
-      params.push({ name, label: fields ? label.replace(/^_/, '') : label, mutable, type, ownership, injected, source, span: this.span(start) });
+      params.push({ name, nameSpan:nameToken.span, labelSpan:labelToken.span, label: fields ? label.replace(/^_/, '') : label, mutable, type, ownership, injected, source, defaultValue, span: this.span(start) });
       if (!this.match(',')) break;
     }
     this.expect(')');
@@ -637,6 +651,7 @@ class Parser {
   private parseType(): TypeRef {
     const start = this.current().span;
     const optional = this.match('optional') ? true : undefined;
+    const immutable = this.match('immutable') ? true : undefined;
     const name = this.expect('identifier').value;
     const args: TypeRef[] = [];
     if (this.match('<')) {
@@ -647,7 +662,7 @@ class Parser {
     const legacy = this.match('?');
     if(legacy)this.diagnostics.push({...legacy.span,code:'SYNTAX',message:'Use optional Type instead of Type?; omitted values are null'});
     const nullable = !!optional || !!legacy;
-    return { name, args, nullable, optional:nullable || undefined, span: this.span(start) };
+    return { name, args, nullable, immutable, optional:nullable || undefined, span: this.span(start) };
   }
 
   private parseBlock(header: Span): Stmt[] {
@@ -702,6 +717,10 @@ class Parser {
         message: 'A nested declaration needs a class header with implements Interface; functions cannot contain declarations' });
     }
     if (this.emptyBody()) return { kind: 'expr', expr: { kind: 'literal', value: null, span: start }, span: this.span(start) };
+    if (this.at('break') || this.at('continue')) {
+      const kind = this.take().kind as 'break' | 'continue'; this.endStatement();
+      return {kind, span:this.span(start)};
+    }
     if (this.match('return')) {
       const value = this.at(';') || this.at('}') || this.at('eof') || this.lineBreak() ? undefined : this.parseExpression();
       this.endStatement();
@@ -787,7 +806,7 @@ class Parser {
     }
     const ownership = this.match('own') ? 'own' : 'managed';
     const saved = this.position;
-    if (this.at('identifier') || this.at('optional')) {
+    if (this.at('identifier') || this.at('optional') || this.at('immutable')) {
       try {
         const declaredType = this.parseType();
         if (this.at('identifier') && ['=', 'to'].includes(this.current(1).kind)) {
@@ -827,8 +846,8 @@ class Parser {
 
   private parseExpression(min = 0): Expr {
     let left = this.parseUnary();
-    const precedence: Record<string, number> = { 'or': 1, 'and': 2, '||': 1, '&&': 2, '==': 3, '!=': 3,
-      '<': 4, '>': 4, '<=': 4, '>=': 4, '+': 5, '-': 5, '*': 6, '/': 6 };
+    const precedence: Record<string, number> = { 'otherwise': 0.5, 'or': 1, 'and': 2, '||': 1, '&&': 2, '==': 3, '!=': 3,
+      '<': 4, '>': 4, '<=': 4, '>=': 4, '+': 5, '-': 5, '*': 6, '/': 6, '%': 6 };
     while ((this.expressionDepth > 0 || !this.lineBreak()) && (precedence[this.current().kind] ?? 0) > min) {
       const op = this.take().kind;
       const right = this.parseExpression(precedence[op]);
@@ -877,6 +896,27 @@ class Parser {
     let expr = this.parsePrimary();
     while (true) {
       if (this.expressionDepth === 0 && this.lineBreak()) break;
+      if (this.match('with')) {
+        this.expect('('); this.expressionDepth++;
+        const fields: Extract<Expr, {kind:'recordCopy'}>['fields'] = [];
+        while (!this.at(')') && !this.at('eof')) {
+          const field = this.expect('identifier');
+          const value = this.match('=') || this.match('to') ? this.parseExpression() : {kind:'name' as const, name:field.value, span:field.span};
+          fields.push({name:field.value, value, span:this.span(field.span)});
+          if (!this.match(',')) break;
+        }
+        this.expect(')'); this.expressionDepth--;
+        expr = {kind:'recordCopy', base:expr, fields, span:this.span(expr.span)}; continue;
+      }
+      if (this.match('[')) {
+        const bracket = this.tokens[this.position - 1].span;
+        this.expressionDepth++;
+        const index = this.parseExpression();
+        this.expect(']'); this.expressionDepth--;
+        expr = {kind: 'call', callee: {kind: 'member', object: expr, name: 'get', span: this.span(expr.span, bracket)},
+          args: [index], argLabels: [undefined], typeArgs: [], indexed: true, span: this.span(expr.span)};
+        continue;
+      }
       if (this.match('.')) {
         const name = /^[A-Za-z_]\w*$/.test(this.current().value) ? this.take() : this.expect('identifier');
         expr = { kind: 'member', object: expr, name: name.value, span: this.span(expr.span, name.span) };
@@ -887,13 +927,14 @@ class Parser {
         this.expressionDepth++;
         const args: Expr[] = [];
         const argLabels: (string | undefined)[] = [];
+        const argLabelSpans: (Span | undefined)[] = [];
         const argument = () => {
-          let label: string | undefined;
+          let label: string | undefined, labelSpan:Span | undefined;
           if (/^[A-Za-z_]\w*$/.test(this.current().value) && ['=', 'to'].includes(this.current(1).kind)) {
-            label = this.take().value;
+            const token=this.take(); label=token.value; labelSpan=token.span;
             this.take();
           }
-          argLabels.push(label);
+          argLabels.push(label); argLabelSpans.push(labelSpan);
           args.push(this.parseExpression());
         };
         if (!this.at(')')) {
@@ -902,7 +943,7 @@ class Parser {
         }
         const end = this.expect(')').span;
         this.expressionDepth--;
-        expr = { kind: 'call', callee: expr, args, argLabels, typeArgs,
+        expr = { kind: 'call', callee: expr, args, argLabels, argLabelSpans, typeArgs,
           span: this.span(expr.span, end) };
         continue;
       }
@@ -938,6 +979,16 @@ class Parser {
     const token = this.current();
     if (token.value === 'input' && this.current(1).kind === 'from' && this.current(2).value === 'form') {
       this.take(); this.take(); this.take(); return {kind:'formInput', span:this.span(token.span)};
+    }
+    if (this.match('interpolation_start')) {
+      const parts: Extract<Expr, {kind:'interpolation'}>['parts'] = [];
+      this.expressionDepth++;
+      while (!this.at('interpolation_end') && !this.at('eof')) {
+        if (this.at('interpolation_text')) {const text = this.take(); parts.push({text:text.value, span:text.span});}
+        else {const start=this.expect('{').span, value=this.parseExpression(); this.expect('}'); parts.push({value,span:this.span(start)});}
+      }
+      this.expect('interpolation_end'); this.expressionDepth--;
+      return {kind:'interpolation', parts, span:this.span(token.span)};
     }
     if (this.at('jsx_open')) return this.parseMarkup();
     if (['start', 'wait', 'missing'].includes(token.kind) && this.current(1).kind === '(') {

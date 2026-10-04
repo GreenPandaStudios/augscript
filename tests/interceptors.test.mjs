@@ -379,7 +379,7 @@ test('tag completion suggests interceptors and both sides of argument mappings',
   assert.equal(items(source.indexOf('y=x')).find(item => item.label === 'y')?.insertText, 'y=');
   assert.ok(items(source.indexOf('y=x') + 2).some(item => item.label === 'x'));
   const nextItems = items(source.indexOf('next(') + 5);
-  assert.equal(nextItems.find(item => item.label === 'y')?.insertText, 'y=');
+  assert.equal(nextItems.find(item => item.label === 'y')?.insertText, 'y');
   const partial = 'interceptor Adjust<T>() { around(int y) returns T { next(';
   const unfinished = JSON.parse(command(root, 'complete', 'app.aug', partial, partial.length).stdout);
   assert.ok(unfinished.some(item => item.label === 'y'), JSON.stringify(unfinished));

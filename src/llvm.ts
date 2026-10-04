@@ -200,14 +200,14 @@ class FunctionEmitter {
       return this.floatingOperation(i,left,right);
     if(kind!=='int'||other!=='int')return false;
     const comparison=operator&&comparisons[operator],arithmetic:Record<string,string>={'+':'add','-':'sub','*':'mul'};
-    if(operator==='/'){
+    if(operator==='/'||operator==='%'){
       const a=this.payload(left),b=this.payload(right),zero=this.temp(),failed=this.label('division_zero'),success=this.label('division_value'),done=this.label('division_done');
       this.line(`${zero} = icmp eq i64 ${b}, 0`);this.line(`br i1 ${zero}, label %${failed}, label %${success}`);this.lines.push(failed+':');
-      this.call('aug_ir_binary','void',[{type:'ptr',value:this.ptr(i.out)},{type:'ptr',value:this.module.text('/')},...i.args.map(slot=>({type:'ptr',value:this.ptr(slot)}))]);
+      this.call('aug_ir_binary','void',[{type:'ptr',value:this.ptr(i.out)},{type:'ptr',value:this.module.text(operator)},...i.args.map(slot=>({type:'ptr',value:this.ptr(slot)}))]);
       this.line(`br label %${done}`);this.lines.push(success+':');
       const minimum=this.temp(),negativeOne=this.temp(),overflow=this.temp(),safeDivisor=this.temp(),result=this.temp();
       this.line(`${minimum} = icmp eq i64 ${a}, -9223372036854775808`);this.line(`${negativeOne} = icmp eq i64 ${b}, -1`);this.line(`${overflow} = and i1 ${minimum}, ${negativeOne}`);
-      this.line(`${safeDivisor} = select i1 ${overflow}, i64 1, i64 ${b}`);this.line(`${result} = sdiv i64 ${a}, ${safeDivisor}`);this.boxed(i.out,1,result);
+      this.line(`${safeDivisor} = select i1 ${overflow}, i64 1, i64 ${b}`);this.line(`${result} = ${operator==='%'?'srem':'sdiv'} i64 ${a}, ${safeDivisor}`);this.boxed(i.out,1,result);
       this.line(`br label %${done}`);this.lines.push(done+':');return true;
     }
     if(!comparison&&!arithmetic[operator??''])return false;

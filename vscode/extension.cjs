@@ -1,3 +1,4 @@
+const {createHash} = require('node:crypto');
 const vscode = require('vscode');
 const fs = require('node:fs');
 const path = require('node:path');
@@ -149,7 +150,9 @@ async function editorData(context, document, command, offset, options) {
   if (document.uri.scheme !== 'file') return [];
   const root = projectRoot(document.uri.fsPath);
   if (!root) return [];
-  return server(context, root).query(document, command, offset, options);
+  const connection=server(context,root);
+  for(const open of vscode.workspace.textDocuments)if(open.languageId==='augscript'&&projectRoot(open.uri.fsPath)===root)connection.sync(open);
+  return connection.query(document, command, offset, options);
 }
 
 const completionKinds = {
@@ -212,11 +215,16 @@ async function codeActions(context, document, actionContext) {
       action.diagnostics = diagnostic ? [diagnostic] : [];
       action.isPreferred = !!fix.preferred;
       action.edit = new vscode.WorkspaceEdit();
+      const changes = new Map();
       for (const edit of fix.edits) {
         const target = path.resolve(edit.file) === document.uri.fsPath ? document : await vscode.workspace.openTextDocument(edit.file);
-        action.edit.replace(target.uri,
-          new vscode.Range(target.positionAt(edit.start), target.positionAt(edit.end)), edit.text);
+        const entries = changes.get(target.uri.toString()) ?? {uri:target.uri, edits:[]};
+        entries.edits.push([vscode.TextEdit.replace(
+          new vscode.Range(target.positionAt(edit.start), target.positionAt(edit.end)), edit.text),
+          {label:fix.title, description:fix.description}]);
+        changes.set(target.uri.toString(), entries);
       }
+      for (const entry of changes.values()) action.edit.set(entry.uri, entry.edits);
       actions.push(action);
     }
     for (const issue of actionContext.diagnostics) {
@@ -480,6 +488,31 @@ function activate(context) {
   }));
   context.subscriptions.push(vscode.languages.registerDefinitionProvider('augscript', {
     provideDefinition: (document, position) => definition(context, document, position),
+  }));
+  context.subscriptions.push(vscode.languages.registerRenameProvider('augscript', {
+    async provideRenameEdits(document,position,newName) {
+      const version=document.version;
+      const plan=await editorData(context,document,'rename',document.offsetAt(position),{name:newName});
+      if(document.version!==version)throw new Error('The source changed while rename was checked. Retry.');
+      const result=new vscode.WorkspaceEdit();
+      for(const edit of plan.edits) {
+        const target=edit.file===document.uri.fsPath?document:await vscode.workspace.openTextDocument(edit.file);
+        result.replace(target.uri,new vscode.Range(target.positionAt(edit.start),target.positionAt(edit.end)),edit.text);
+      }
+      for(const source of plan.sources) {
+        const open=vscode.workspace.textDocuments.find(document=>document.uri.fsPath===source.file);
+        const text=open?open.getText():fs.readFileSync(source.file,'utf8');
+        if(createHash('sha256').update(text).digest('hex')!==source.sha256)throw new Error('A project source changed while rename was checked. Retry.');
+      }
+      return result;
+    },
+  }));
+  context.subscriptions.push(vscode.languages.registerReferenceProvider('augscript', {
+    async provideReferences(document,position,options) {
+      const found=await editorData(context,document,'references',document.offsetAt(position),{includeDeclaration:options.includeDeclaration});
+      return found.filter(item=>item.file).map(item=>new vscode.Location(vscode.Uri.file(item.file),
+        new vscode.Range(item.line-1,item.column-1,item.line-1,item.column-1+item.end-item.start)));
+    },
   }));
   context.subscriptions.push(vscode.languages.registerCompletionItemProvider('augscript', {
     provideCompletionItems: (document, position) => complete(context, document, position),

@@ -10,12 +10,12 @@ export interface Token {
 export const reservedKeywords = [
   'import', 'from', 'export', 'folder', 'bind', 'implement', 'with', 'to', 'class', 'interface',
   'implements', 'extends', 'function', 'returns', 'throws', 'unless', 'return',
-  'throw', 'if', 'else', 'while', 'try', 'catch', 'unsafe', 'extern', 'C',
+  'throw', 'if', 'else', 'while', 'break', 'continue', 'try', 'catch', 'unsafe', 'extern', 'C',
   'resolve', 'own', 'borrow', 'true', 'false', 'null', 'interceptor',
   'and', 'or', 'not', 'initialize', 'everything', 'test', 'when', 'it', 'pass', 'in', 'out', 'changes', 'uses', 'mutable', 'capability',
   'record', 'for', 'match', 'some', 'shared', 'fresh', 'scoped', 'scope', 'composition', 'include', 'fixture',
   'pure',
-  'optional', 'missing',
+  'optional', 'immutable', 'missing', 'otherwise',
   'freeze', 'as',
   'endpoint', 'serve', 'streams', 'yield', 'handle',
   'start', 'wait',
@@ -42,11 +42,34 @@ export function lex(file: string, source: string, comments = false): { tokens: T
     tokens.push({ kind, value, span: spanAt(start, startLine, startColumn), endLine: line });
   const error = (message: string, startLine: number, startColumn: number) =>
     diagnostics.push({ file, line: startLine, column: startColumn, message, code: 'LEX' });
-  const markup: {mode: 'tag' | 'text' | 'expression'; resume?: 'tag' | 'text'; braces: number; depth: number; closing: boolean}[] = [];
+  const markup: {mode: 'tag' | 'text' | 'expression' | 'interpolation' | 'interpolationExpression'; quote?: string; resume?: 'tag' | 'text'; braces: number; depth: number; closing: boolean}[] = [];
 
   while (index < source.length) {
     const char = peek();
     const mode = markup.at(-1);
+    if (mode?.mode === 'interpolation') {
+      const start = index, startLine = line, startColumn = column;
+      if (char === mode.quote) {advance(); emit('interpolation_end', char, start, startLine, startColumn); markup.pop(); continue;}
+      if (char === '{' && peek(1) !== '{') {
+        advance(); emit('{', '{', start, startLine, startColumn); mode.mode = 'interpolationExpression'; mode.braces = 1; continue;
+      }
+      let value = '';
+      while (peek() && peek() !== mode.quote) {
+        if (peek() === '{' && peek(1) !== '{') break;
+        if (peek() === '{' && peek(1) === '{' || peek() === '}' && peek(1) === '}') {value += advance(); advance();}
+        else if (peek() === '}') {error('Escape a literal closing brace as }} in interpolation', line, column); value += advance();}
+        else if (peek() === '\\') {
+          advance(); const escape = advance();
+          value += ({ n: '\n', r: '\r', t: '\t', '0': '\0', '\\': '\\', '"': '"', "'": "'" } as Record<string, string>)[escape] ?? escape;
+        } else value += advance();
+      }
+      emit('interpolation_text', value, start, startLine, startColumn); continue;
+    }
+    if (char === '$' && (peek(1) === '"' || peek(1) === "'")) {
+      const start = index, startLine = line, startColumn = column; advance(); const quote = advance();
+      markup.push({mode:'interpolation', quote, braces:0, depth:0, closing:false});
+      emit('interpolation_start', '$' + quote, start, startLine, startColumn); continue;
+    }
     if (mode?.mode === 'text' && char !== '<' && char !== '{') {
       const start = index, startLine = line, startColumn = column;
       while (peek() && peek() !== '<' && peek() !== '{') advance();
@@ -71,10 +94,14 @@ export function lex(file: string, source: string, comments = false): { tokens: T
         let value = ''; while (/[A-Za-z0-9_:-]/.test(peek())) value += advance(); emit('jsx_name', value, start, startLine, startColumn); continue;
       }
     }
-    if (mode && mode.mode !== 'expression' && char === '{') {mode.resume = mode.mode; mode.mode = 'expression'; mode.braces = 0;}
+    if (mode && (mode.mode === 'tag' || mode.mode === 'text') && char === '{') {mode.resume = mode.mode; mode.mode = 'expression'; mode.braces = 0;}
     if (char === '<' && (/[A-Za-z_]/.test(peek(1)) || peek(1) === '>') &&
         (!tokens.length || ['return', '=', 'to', '(', ',', '[', '{', ':', 'yield'].includes(tokens.at(-1)!.kind))) {
       advance(); markup.push({mode:'tag', braces:0, depth:1, closing:false}); emit('jsx_open', '<', start, startLine, startColumn); continue;
+    }
+    if (mode?.mode === 'interpolationExpression') {
+      if (char === '{') mode.braces++;
+      if (char === '}' && --mode.braces === 0) mode.mode = 'interpolation';
     }
     if (mode?.mode === 'expression') {
       if (char === '{') mode.braces++;
@@ -133,7 +160,7 @@ export function lex(file: string, source: string, comments = false): { tokens: T
           : `Use ${two === '&&' ? 'and' : 'or'} instead of ${two}; boolean operators use words`});
       advance(); advance(); emit(two, two, start, startLine, startColumn); continue;
     }
-    if ('{}();,.:<>?=+-*/![]'.includes(char)) {
+    if ('{}();,.:<>?=+-*/%![]'.includes(char)) {
       if (char === '!') diagnostics.push({file, line: startLine, column: startColumn, code: 'SYNTAX',
         message: 'Use not instead of !; boolean operators use words'});
       advance(); emit(char, char, start, startLine, startColumn); continue;
@@ -141,6 +168,7 @@ export function lex(file: string, source: string, comments = false): { tokens: T
     advance();
     error(`Unexpected character ${JSON.stringify(char)}`, startLine, startColumn);
   }
+  if (markup.some(mode => mode.mode === 'interpolation' || mode.mode === 'interpolationExpression')) error('Unterminated interpolated string or expression', line, column);
   tokens.push({ kind: 'eof', value: '', span: { file, start: index, end: index, line, column }, endLine: line });
   return { tokens, diagnostics };
 }

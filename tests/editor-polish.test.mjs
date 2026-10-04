@@ -74,3 +74,31 @@ test('stream and control-flow templates parse in both block styles', () => {
     assert.deepEqual(parse('example.aug', source + '\n').diagnostics, [], prefix + ': ' + source);
   }
 });
+
+test('call completion uses compatible same-name locals and omits default inputs',()=>fixture({
+  'main.aug':'import greet from greeting\nname = "Ada"\nprint(value=gree)\n',
+  'greeting.aug':'greet(string name, string suffix = "!"):\n    return name + suffix\n'
+},(root,checked)=>{
+  const file=join(root,'main.aug'),source=readFileSync(file,'utf8');
+  const choice=completions(checked(),file,source.indexOf('gree)')+4).find(item=>item.label==='greet');
+  assert.equal(choice.insertText,'greet(name)$0');
+  writeFileSync(file,apply(source,[{...choice.replacement,text:expand(choice.insertText)}]));
+  assert.deepEqual(checked().diagnostics,[]);
+  writeFileSync(file,'import greet from greeting\nname = 7\nprint(value=gree)\n');
+  const incompatible=completions(checked(),file,readFileSync(file,'utf8').indexOf('gree)')+4).find(item=>item.label==='greet');
+  assert.doesNotMatch(incompatible.insertText,/greet\(name\)/);
+}));
+
+test('borrow fixes are checked before being offered and honor the project block style',()=>{
+  for(const style of ['braces','indent'])fixture({
+    'main.aug':'items = [1]\nitems.append(value=2)\n',
+    'main.yaml':`block_style: ${style}\nindentation: tabs\n`
+  },(root,checked)=>{
+    const file=join(root,'main.aug'),source=readFileSync(file,'utf8'),fix=suggestedFixes(checked(),file).find(fix=>/borrow items block/.test(fix.title));
+    assert.ok(fix);assert.match(fix.description,/exclusive|mutable/i);
+    assert.match(fix.edits[0].text,style==='indent'?/^borrow items:\n\t/:/^borrow items \{\n\t/);
+    writeFileSync(file,apply(source,fix.edits));assert.deepEqual(checked().diagnostics,[]);
+    writeFileSync(file,'immutable List<int> items = [1]\nitems.append(value=2)\n');
+    assert.ok(!suggestedFixes(checked(),file).some(fix=>/borrow items block/.test(fix.title)));
+  });
+});

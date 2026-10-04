@@ -16,9 +16,9 @@ exports.run=async()=>{
   const document=await vscode.workspace.openTextDocument(main);assert.equal(document.languageId,'augscript');await vscode.window.showTextDocument(document);
   const source=document.getText(),position=offset=>document.positionAt(offset);
   const completions=await eventually(async()=>{
-    const result=await vscode.commands.executeCommand('vscode.executeCompletionItemProvider',main,position(source.indexOf('greeter.greet')+'greeter.gree'.length));
+    const result=await vscode.commands.executeCommand('vscode.executeCompletionItemProvider',main,position(source.indexOf('greet(name')+'gree'.length));
     return result?.items.find(item=>item.label==='greet');
-  },'a labeled method completion');assert.match(completions.insertText.value,/name=/);
+  },'a labeled function completion');assert.match(completions.insertText.value,/name=/);
   const definition=await vscode.commands.executeCommand('vscode.executeDefinitionProvider',main,position(source.indexOf('from')+1));
   assert.ok(definition.some(item=>(item.uri??item.targetUri).fsPath===greeting.fsPath),'Import navigation did not reach greeting.aug');
   const declaration=await vscode.workspace.openTextDocument(greeting),signature=declaration.getText().indexOf('greet(string');
@@ -28,7 +28,7 @@ exports.run=async()=>{
   assert.ok(hints.some(hint=>JSON.stringify(hint.label).includes('returns string')),'Inferred contract hints are missing');
   const edit=new vscode.WorkspaceEdit();edit.replace(main,new vscode.Range(position(0),position(source.length)),source.replace('name="August"','naem="August"'));assert.equal(await vscode.workspace.applyEdit(edit),true);
   const errors=await eventually(()=>vscode.languages.getDiagnostics(main).filter(issue=>issue.severity===vscode.DiagnosticSeverity.Error).length&&vscode.languages.getDiagnostics(main),'a source diagnostic');
-  assert.ok(errors.some(issue=>issue.source==='AugScript'&&issue.range.start.line===4));
+  assert.ok(errors.some(issue=>issue.source==='AugScript'&&issue.range.start.line===source.slice(0,source.indexOf('print(')).split('\n').length-1));
   const fix=await eventually(async()=>{
     const fixes=await vscode.commands.executeCommand('vscode.executeCodeActionProvider',main,new vscode.Range(document.positionAt(0),document.positionAt(document.getText().length)),vscode.CodeActionKind.QuickFix.value);
     return fixes.find(action=>action.edit&&/name/.test(action.title));
@@ -55,7 +55,7 @@ exports.run=async()=>{
     await configuration.update('compilerPath',priorCompiler,vscode.ConfigurationTarget.Global);
     assert.equal((await vscode.commands.executeCommand('augscript.doctor')).ready,true);
     await eventually(async()=>{
-      const result=await vscode.commands.executeCommand('vscode.executeCompletionItemProvider',main,position(source.indexOf('greeter.greet')+'greeter.gree'.length));
+      const result=await vscode.commands.executeCommand('vscode.executeCompletionItemProvider',main,position(source.indexOf('greet(name')+'gree'.length));
       return result?.items.some(item=>item.label==='greet');
     },'language-server completion after repairing setup');
   }

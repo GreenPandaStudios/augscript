@@ -1,3 +1,4 @@
+import { defaultText } from './parameters.ts';
 import { callableResult, callableErrors } from './contracts.ts';
 import { dirname, join, relative, resolve, sep } from 'node:path';
 import type { ClassDecl, Expr, InterceptorDecl, MethodDecl, Param, SourceFile, Stmt, TypeRef } from './ast.ts';
@@ -19,6 +20,7 @@ import { importSource, isGitSource, sourceAlias } from './git-packages.ts';
 import { snippetBody, snippetCatalog } from './snippets.ts';
 import {nativeFact,nativeDependencies,nativeDescription} from './native-facts.ts';
 import {pathToFileURL} from 'node:url';
+import {immutableType} from './types.ts';
 
 export interface EditorItem {
   label: string;
@@ -28,6 +30,8 @@ export interface EditorItem {
   documentation?: string;
   signature?: string;
   parameters?: string[];
+  optionalParameters?: string[];
+  parameterOwnerships?: Record<string, string>;
   parameterDocumentation?: (string | undefined)[];
   insertText?: string;
   replacement?: { start: number; end: number };
@@ -50,7 +54,7 @@ export interface EditorHover extends EditorItem {
 }
 
 type LocalInfo = { type?: Ty; typeText: string; kind: 'variable' | 'parameter' | 'property';
-  documentation?: string };
+  documentation?: string; moved?: boolean; ownership?: string };
 
 const builtins: EditorItem[] = [
   ...builtinFunctions.map(operation => {
@@ -103,7 +107,8 @@ const keywords: EditorItem[] = [
 function parameterText(param: Param): string {
   return `${param.injected ? 'resolve ' : param.ownership === 'managed' ? '' : `${param.ownership} `}` +
     `${typeName(param.type)} ${param.label ?? param.name}${param.label && param.label !== param.name ? ` to ${param.name}` : ''}` +
-    (param.source ? ` from ${param.source.kind}${param.source.name ? ' ' + JSON.stringify(param.source.name) : ''}` : '');
+    (param.source ? ` from ${param.source.kind}${param.source.name ? ' ' + JSON.stringify(param.source.name) : ''}` : '') +
+    (param.defaultValue ? ' = ' + defaultText(param.defaultValue) : '');
 }
 
 function signature(method: MethodDecl, callSite = false, additionalErrors: string[] = [], checked?: CheckedProject): string {
@@ -190,6 +195,8 @@ function methodItem(checked: CheckedProject, method: MethodDecl,
       .filter(Boolean).join('\n\n'),
     parameters: method.params.filter(param => !param.injected)
       .map(param => `${param.label ?? param.name}=${typeName(param.type)}`),
+    optionalParameters: method.params.filter(param => !param.injected && (param.defaultValue || param.type.optional)).map(param => param.label ?? param.name),
+    parameterOwnerships: Object.fromEntries(method.params.map(param => [param.label ?? param.name, param.ownership])),
     parameterDocumentation: method.params.filter(param => !param.injected)
       .map(param => doc?.parameters.get(param.label ?? param.name)) };
 }
@@ -236,6 +243,8 @@ function definitionItem(checked: CheckedProject, def: Definition): EditorItem {
       (errors.length ? ` unless ${errors.join(' and ')}` : '') +
       (node.implements.length?` implements ${node.implements.map(typeName).join(', ')}`:''),
     signature: callSignature + (errors.length ? ` unless ${errors.join(', ')}` : ''), parameters: explicit.map(field => `${field.label ?? field.name}=${typeName(field.type)}`),
+    optionalParameters: explicit.filter(field => field.defaultValue || field.type.optional).map(field => field.label ?? field.name),
+    parameterOwnerships: Object.fromEntries(explicit.map(field => [field.label ?? field.name, field.ownership])),
     documentation: [doc?.markdown,
       node.fields.some(field => field.injected) ? `Injected from bindings: ${node.fields.filter(field => field.injected).map(parameterText).join(', ')}.` : '',
       interceptorDescription(checked, node),
@@ -245,9 +254,10 @@ function definitionItem(checked: CheckedProject, def: Definition): EditorItem {
 
 function typeFromRef(checked: CheckedProject, file: string, ref: TypeRef): Ty {
   const def = checked.project.scopes.get(file)?.get(ref.name);
-  return { id: def?.id ?? `builtin:${ref.name}`, name: ref.name,
+  const type: Ty = { id: def?.id ?? `builtin:${ref.name}`, name: ref.name,
     kind: def?.node.kind === 'class' || def?.node.kind === 'interface' || def?.node.kind === 'interceptor' || def?.node.kind==='resource' ? def.node.kind : 'builtin',
-    args: ref.args.map(arg => typeFromRef(checked, file, arg)), nullable: ref.nullable, def };
+    args: ref.args.map(arg => typeFromRef(checked, file, arg)), nullable: ref.nullable, optional:ref.optional, def };
+  return ref.immutable ? immutableType(type) : type;
 }
 
 function collectLocals(checked: CheckedProject, file: SourceFile, offset: number): Map<string, LocalInfo> {
@@ -255,14 +265,14 @@ function collectLocals(checked: CheckedProject, file: SourceFile, offset: number
     scope.span.start <= offset && offset <= scope.span.end).sort((left, right) =>
       left.span.end - left.span.start - (right.span.end - right.span.start) || right.span.start - left.span.start)[0];
   return new Map(scope?.locals.map(local => [local.name, { type: local.type, typeText: tyName(local.type),
-    kind: local.kind, documentation: [local.documentation, local.moved ? 'This owned value has moved.' : '',
+    kind: local.kind, moved:local.moved, ownership:local.ownership, documentation: [local.documentation, local.moved ? 'This owned value has moved.' : '',
       local.type.readonly ? 'Read-only access.' : ''].filter(Boolean).join('\n\n') }]) ?? []);
 }
 
 function memberItems(checked: CheckedProject, file: string, receiver: Ty | undefined,
                      insideClass: boolean, seen = new Set<string>()): EditorItem[] {
   if (!receiver) return [];
-  if (collectionOperations[receiver.name] && receiver.id.startsWith('builtin:')) return collectionOperations[receiver.name].map(operation => {
+  if (collectionOperations[receiver.name] && receiver.id.startsWith('builtin:')) return collectionOperations[receiver.name].filter(operation => !operation.changes || !receiver.readonly).map(operation => {
     const parameters = operation.parameters.map(param => `${param.label}=${tyName(operationType(param.type, receiver))}`);
     const signature = `${operation.name}(${parameters.join(', ')})`;
     return { label: operation.name, kind: 'method' as const, parameters, signature,
@@ -299,6 +309,13 @@ function memberItems(checked: CheckedProject, file: string, receiver: Ty | undef
     return methods;
   }
   return [];
+}
+
+function compatibleLocal(local: LocalInfo | undefined, expected: string, ownership?: string): boolean {
+  if (!local || local.moved || ownership === 'own' && local.ownership !== 'own' || ownership !== 'own' && local.ownership === 'own') return false;
+  const normalize = (type: string) => type.replace(/\s+/g, '');
+  return expected === 'any' || normalize(local.typeText) === normalize(expected) ||
+    expected.startsWith('optional ') && normalize(local.typeText) === normalize(expected.slice(9));
 }
 
 function unique(items: EditorItem[]): EditorItem[] {
@@ -397,6 +414,8 @@ export function importItems(checked: CheckedProject, file: SourceFile): EditorIt
         detail: `import ${item.name} from ${from}`, insertText: `${item.name} from ${from}`,
         signature: exported && definitionItem(checked, exported).signature,
         parameters: exported && definitionItem(checked, exported).parameters,
+        optionalParameters: exported && definitionItem(checked, exported).optionalParameters,
+        parameterOwnerships: exported && definitionItem(checked, exported).parameterOwnerships,
         documentation: exported && definitionItem(checked, exported).documentation });
     }
   }
@@ -470,11 +489,14 @@ function rawCompletions(checked: CheckedProject, fileName: string, offset: numbe
     if (entry?.parameters?.length) {
       const used = new Set([...call[2].matchAll(/\b([A-Za-z_][A-Za-z0-9_]*)\s*(?:=|to\b)/g)]
         .map(match => match[1]));
+      call[2].split(',').map(part => part.trim()).filter(part => /^[A-Za-z_]\w*$/.test(part)).forEach(name => used.add(name));
       const labels = entry.parameters.map((parameter, index) => ({ parameter, index,
         name: parameter.split('=')[0] })).filter(item => !used.has(item.name));
       if (labels.length) return labels.map(({ parameter, index, name }) => ({
         label: name, kind: 'snippet' as const, detail: `argument ${parameter}`,
-        insertText: `${name}=`, documentation: entry.parameterDocumentation?.[index] }));
+        insertText: compatibleLocal(locals.get(name), parameter.slice(name.length + 1), entry.parameterOwnerships?.[name]) ? name : `${name}=`,
+        sortText: compatibleLocal(locals.get(name), parameter.slice(name.length + 1), entry.parameterOwnerships?.[name]) ? '0-' + name : '1-' + name,
+        documentation: entry.parameterDocumentation?.[index] }));
     }
   }
   const member = /\b([A-Za-z_][A-Za-z0-9_]*)\s*\.\s*[A-Za-z_0-9]*(?:<[^()]*>)?$/.exec(prefix);
@@ -493,7 +515,7 @@ function rawCompletions(checked: CheckedProject, fileName: string, offset: numbe
     documentation: binding.exposedType.def && definitionItem(checked, binding.exposedType.def).documentation }));
   const definitions = [...(checked.project.scopes.get(file.path)?.values() ?? [])]
     .map(def => definitionItem(checked, def));
-  const localItems: EditorItem[] = [...locals].map(([label, local]) => ({
+  const localItems: EditorItem[] = [...locals].filter(([,local]) => !local.moved).map(([label, local]) => ({
     label, kind: local.kind, detail: `${local.typeText} ${label}`,
     documentation: local.documentation }));
   const inTest = file.items.some(item => item.kind === 'test' && item.span.start <= offset && offset <= item.span.end);
@@ -527,15 +549,19 @@ export function completions(checked: CheckedProject, fileName: string, offset: n
   const start = token ? offset - token[0].length : offset;
   const end = offset + (/^[A-Za-z0-9_]*/.exec(file.source.slice(offset))?.[0].length ?? 0);
   const escape = (text: string) => text.replace(/[\\$}]/g, '\\$&');
-  const argument = (parameter: string, index: number) => {
+  const locals = collectLocals(checked, file, offset);
+  let placeholder = 0;
+  const argument = (parameter: string, item: EditorItem) => {
     const [name, type] = parameter.split('=');
+    if (compatibleLocal(locals.get(name), type, item.parameterOwnerships?.[name])) return name;
     const value = type === 'string' ? '""' : type === 'bool' ? 'false' : ['int', 'float', 'c_int'].includes(type) ? '0' : name;
-    return `${name}=\${${index + 1}:${escape(value)}}`;
+    return `${name}=\${${++placeholder}:${escape(value)}}`;
   };
   return rawCompletions(checked, fileName, offset).map(item => {
     const callable = !typeContext && ['function', 'method', 'class'].includes(item.kind) && item.signature &&
       !/^\s*\(/.test(file.source.slice(offset));
-    let insertText = callable ? `${item.label}(${(item.parameters ?? []).map(argument).join(', ')})$0` : item.insertText;
+    placeholder = 0;
+    let insertText = callable ? `${item.label}(${(item.parameters ?? []).filter(parameter => !item.optionalParameters?.includes(parameter.split('=')[0])).map(parameter => argument(parameter, item)).join(', ')})$0` : item.insertText;
     const template = snippetCatalog.find(snippet => item.label === snippet.prefix + ' template');
     if (template) insertText = snippetBody(template.body, checked.project.config.block_style, checked.project.config.indentation === 'tabs');
     if (item.kind === 'snippet' && insertText && checked.project.config.block_style === 'indent' && insertText.includes('{\n'))

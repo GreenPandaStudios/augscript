@@ -41,3 +41,17 @@ Review the edit before accepting it. A suggested name can be plausible without b
 Run **AugScript: Enable File Icons** for the August icon theme. Source files use a burgundy open circle; `main.aug` uses a play symbol, `export.aug` an outward arrow, and `main.yaml` sliders. Each has a light and dark variant. **AugScript: Open Welcome** opens the bundled guide and icon legend.
 
 Same-file cases appear in VS Code's Testing view. **AugScript: Refresh Tests** rebuilds the tree; command clients receive the discovered items and any discovery errors. Use that view to run a case or group, or run `aug test` in the terminal. [Tests](testing.md) explains fixtures and endpoint tests. [CLI and configuration](tooling.md) describes language-server integration, native cache settings, and command-line tools.
+
+## Local-aware calls (unreleased)
+
+Call completion uses shorthand when a visible, unmoved local has the input's exact name and a compatible type. It omits defaulted and optional inputs from the initial call; they remain available in label completion and signature help. It never supplies a moved value or silently transfers an owned local to a managed input. Other values remain editable tab stops. Read-only collection views do not suggest mutating methods.
+
+## Borrow fixes and edit consequences (unreleased)
+
+The borrow action wraps the smallest supported statement and checks the candidate project before offering it. Aliases, active tasks, immutable values, and other remaining compiler errors can prevent the action. It honors the project's block style and indentation. Each proposed fix explains its consequence: a borrow grants temporary mutation, propagation changes caller obligations, and a catch must reflect an application recovery decision. Review the preview and check after applying an edit.
+
+## Find references and rename (unreleased)
+
+**Find All References** follows resolved declarations, imports, exports, calls, input labels, and local variables. Comments, string contents, and unrelated declarations with the same spelling are excluded. The project graph lists reverse callers separately from dependencies. Interface calls identify the contract and report a runtime dispatch boundary; callers outside the checked project remain outside its coverage.
+
+**Rename Symbol** first checks the complete candidate project and reports the public interface delta. Its initial profile supports managed standalone functions and local inputs or variables. It rejects collisions, read-only package sources, and unsupported native, injected, generic, effectful, endpoint, interceptor, and member contracts. Renaming a label or local expands shorthand when necessary: `send(message)` can become `send(text=message)` or `send(message=text)`. It never replaces comments or strings. Project source fingerprints and open-document versions detect a stale preview. Compilation does not replace the application's behavioral tests.
