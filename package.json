@@ -35,11 +35,14 @@
     "package:extension": "npm --prefix vscode run package",
     "bench:greetings": "node scripts/benchmark-greetings.mjs",
     "test:conformance": "node scripts/check-language-conformance.mjs",
-    "test:reliability": "node scripts/qualify-runtime.mjs"
+    "test:reliability": "node scripts/qualify-runtime.mjs",
+    "test:editor": "node scripts/qualify-editor.mjs",
+    "test:upgrade": "node scripts/qualify-cli-upgrade.mjs"
   },
   "devDependencies": {
     "@types/markdown-it-container": "4.0.1",
     "@types/node": "24.19.0",
+    "@vscode/test-electron": "3.1.0",
     "markdown-it-container": "4.0.0",
     "tar": "7.5.22",
     "typescript": "5.9.3",

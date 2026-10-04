@@ -22,6 +22,12 @@ The explicit C backend remains a migration reference for contributor comparisons
 
 [`scripts/generate-docs.mjs`](../scripts/generate-docs.mjs) builds the API, construct, and example pages from canonical sources. Handwritten guides explain use; generated pages report the program that is actually checked. Change their generators instead of editing generated prose.
 
+## Installed distribution
+
+[`distribution.ts`](../src/distribution.ts) provides read-only setup checks using the same compiler-pack selector and extracted-file verifier as native builds. The CLI exposes its versioned report through `doctor`; the extension's setup command displays it without changing the project.
+
+[`qualify-editor.mjs`](../scripts/qualify-editor.mjs) installs a VSIX in isolated profiles and runs [`tests/editor-host`](../tests/editor-host) in a real extension host. [`qualify-cli-upgrade.mjs`](../scripts/qualify-cli-upgrade.mjs) replaces a public installed compiler with the candidate npm archives and verifies an existing project through LLVM. Both use checksum-pinned public baselines from `scripts/distribution-inputs.json` and record candidate identities. Release preparation gates the exact reviewed archives rather than rebuilding them in the consumer jobs.
+
 ## Verification boundaries
 
 Language/runtime tests, backend comparisons, installed-package tests, documentation examples, and safety gyms check different parts of the implementation. The [release process](releasing.md) names the required gates. Keep a failing native case as an ordinary regression, and preserve concrete evidence for rejected candidates. Report type checking and executed tests separately; neither proves arbitrary program behavior.

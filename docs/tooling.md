@@ -8,6 +8,7 @@ Install `aug` once as shown in [Your first project](getting-started.md). Command
 
 | Command | Output |
 | --- | --- |
+| `doctor [PROJECT] [--json]` | Setup report without downloads or writes; unreleased. |
 | `check PROJECT [--json]` | Production, tests, module policy, documentation, and configuration diagnostics. |
 | `build PROJECT [--out NAME] [--json]` | Native path; JSON contains output and sourceMap. |
 | `run [PROJECT] [--offline] -- args...` | Prepares declared packages and required native libraries, checks, compiles, and runs; program stdout is preserved. |
@@ -28,6 +29,14 @@ Install `aug` once as shown in [Your first project](getting-started.md). Command
 | `install PROJECT [--frozen|--update] [--offline]` | Explicit dependency snapshot and aug.lock.json. |
 
 Warnings are nonblocking. Human diagnostics show the source line, a pointer, and help. Machine diagnostics carry severity, code, file, line, column, message, and help. check/build fail on errors; invalid options and missing option values return status 2. Test failure returns nonzero and includes the case output. Put runtime arguments after `--`, for example `aug run -- --port 8080`.
+
+## Check an installation
+
+The unreleased CLI adds `aug doctor`. It reports the compiler version, Node version, host target, writable project/cache paths, cached compiler/runtime integrity, and source or installed-package errors. Add `--json` for a versioned report. Exit status 1 means a check failed; status 0 can still include warnings.
+
+Doctor does not download dependencies, create caches, or edit source and locks. An uncached compiler pack is a warning: the first `aug run` still needs network access. Missing project packages require `aug install`. A passing setup report does not test application behavior or guarantee that a future download will succeed.
+
+Set `AUG_NATIVE_ARTIFACT_CACHE` to a writable directory when the default cache is unsuitable. When a verified cache is damaged, stop active builds before removing that entry and running online again. Contributor LLVM/runtime overrides are reported separately; unset them to check the ordinary installation. The published 0.23.0 CLI has no doctor command.
 
 ## Native standard libraries
 
@@ -186,7 +195,7 @@ are bundled and work offline. Run
 
 | File | Icon meaning |
 | --- | --- |
-| `.aug` | Blue source file. |
+| `.aug` | Burgundy open circle. |
 | `main.aug` | Amber startup file. |
 | `export.aug` | Purple export file. |
 | `main.yaml` | Teal project configuration. |
