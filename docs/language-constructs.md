@@ -1146,7 +1146,7 @@ A child computation owned by a scope. wait for reads its result; the scope joins
 test Calculator subject: ... or test add: ... or test endpoint getUser client: ...
 ```
 
-Declare tests beside the class, function, or endpoint. Class suites initialize their subject; function suites omit a subject. Endpoint suites receive a native pipeline client. Parameterized it cases use for (inputs) in tuple rows. Tests are omitted from production executables; aug test selects groups/cases and --coverage records statement lines.
+Declare tests beside the class, function, or endpoint. Class suites initialize their subject; function suites omit a subject. Endpoint suites receive a native pipeline client. Parameterized it cases use for (inputs) in tuple rows. The unreleased --suggest-inputs command and itboundaries completion propose bounded scalar rows; authors supply assertions. A one-column tuple row binds its cell. Tests are omitted from production executables; aug test selects groups/cases and --coverage records statement lines.
 
 ## throw
 

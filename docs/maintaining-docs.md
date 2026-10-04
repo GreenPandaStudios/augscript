@@ -95,3 +95,5 @@ A catalog update is a metadata review, separate from artifact or behavior qualif
 Call diagnostic contracts are maintained in `src/ast.ts`, `src/checker.ts`, CLI rendering and LSP publication. Keep the tooling and editor guides aligned with structured expected/actual and related-location fields; verify imported and unsaved declaration locations through `tests/diagnostic-context.test.mjs`.
 
 Composition inspection lives in `src/composition.ts` and consumes existing checker bindings. Keep `docs/guides/reuse-services.md`, its executable source expectations and editor/tooling/test guides aligned; test imported include completion, rejected graphs and actual application/test providers on both backends.
+
+`src/test-inputs.ts` owns finite scalar domains, author-literal validation and input-case templates. Keep generated suggestions separate from expected results and never silently truncate a domain. Check one-column patterns, signed boundaries, optional nulls, name collisions, all source preferences and independently selected mutations through both backends.

@@ -47,7 +47,62 @@ test add:
             assert(add(left=seven(), right=0) == 7)
 ```
 
-Each tuple row becomes a separately listed and executed case. The checker verifies its arity and types, and the row variables belong to that case. `fixture seven` is a function that several cases can call. Import it like any other function. Fixtures remain callable outside tests and do not create a setup scope.
+Each tuple row becomes a separately listed and executed case. The checker verifies its arity and types, and the row variables belong to that case. A one-column row uses a one-cell tuple such as `(7,)`; its name receives the cell, including when that cell is itself a tuple. `fixture seven` is a function that several cases can call. Import it like any other function. Fixtures remain callable outside tests and do not create a setup scope.
+
+## Suggest boundary inputs
+
+**Unreleased:** the compiler containing `--suggest-inputs` can propose rows from a function's checked input types. It does not run the function or choose its expected results. Start from a project that passes `aug check`, then request a same-file function:
+
+```sh
+aug test --suggest-inputs sign --file numbers.aug
+aug test --suggest-inputs sign --file numbers.aug --json > inputs.json
+```
+
+The source fragment is an `it boundaries` case to put inside a new, empty test group. Replace `__author_property` with an assertion based on your requirements. The placeholder is deliberately unresolved. In the unreleased editor, complete `itboundaries` inside a function test group for the same rows and an editable assertion. It follows the project's block, indentation and assignment preferences.
+
+For example, the requirement for `sign` is to return −1 for negative integers, 0 for zero and 1 for positive integers. Save this independently chosen set of answers in `numbers.aug`:
+
+```aug project=boundary-tests file=numbers.aug
+sign(int value):
+    if value < 0:
+        return -1
+    if value > 0:
+        return 1
+    return 0
+
+test sign:
+    when boundaries:
+        it signed for (value, expected) in [
+            (0, 0),
+            (-1, -1),
+            (1, 1),
+            (-9223372036854775808, -1),
+            (9223372036854775807, 1)
+        ]:
+            assert(condition=sign(value) == expected)
+```
+
+Save the entry in `main.aug`. `aug run` prints `-1`; `aug test` runs five ordinary cases.
+
+```aug project=boundary-tests file=main.aug
+import sign from numbers
+
+print(value=sign(value=-4))
+```
+
+The version 1 generator proposes zero, −1, 1 and the endpoints for `int` and `c_int`; both boolean values; finite float examples including negative zero and a fraction; and short strings including empty text, accented text, an emoji and escaped characters. Optional inputs also get `null`. `c_int` rows use the existing checked conversion. These are representative inputs, not every possible value or every valid domain constraint. Owned, borrowed, resolved, generic, native, intercepted, endpoint and non-scalar input contracts need ordinary author-written cases.
+
+By default, the first row uses each domain's first value, then each additional row changes one input. `--combinations` enumerates the Cartesian product of those finite domains. Both modes reject a selection above `--limit`, which defaults to 64 and has a maximum of 4096. They never silently truncate or discard inputs. Each delivered row is checked as an ordinary labeled call without execution.
+
+Add application-specific inputs with `--cases cases.json`. This data file uses August source literals as JSON strings so that an int64 value keeps its exact spelling:
+
+```json
+{"format":1,"rows":[{"value":"42"},{"value":"-7"}]}
+```
+
+Every row must supply exactly the public labels. Only scalar literals and bounded `c_int(value=INTEGER)` conversions are accepted; function calls cannot enter through this data file. An empty or invalid author domain fails. Author rows follow the generated rows and count toward the limit; defaults are shown in the report, but this profile supplies every input explicitly. Test omitted defaults separately.
+
+JSON records the concrete rows, their origin, limit, ordering, generator version, compiler identity, source/configuration revision, author-file digest and replay digest. Keep the report with your review, then save accepted inputs and independently selected assertions as ordinary test rows. Rerunning the command against the same sources produces the same report. It provides finite input evidence; expected answers, behavioral checks and general proofs remain separate.
 
 ## A complete class suite
 

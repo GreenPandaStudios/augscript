@@ -1482,14 +1482,14 @@ class Checker {
     return !mutableChildren(type);
   }
 
-  private patternLocals(names: string[], type: Ty, origins: Origins, context: Context, span: Span, source?: string): void {
-    const types = names.length === 1 ? [type] : type.id === 'builtin:Tuple' ? type.args : [];
+  private patternLocals(names: string[], type: Ty, origins: Origins, context: Context, span: Span, source?: string, tuplePattern = false): void {
+    const types = names.length === 1 && !tuplePattern ? [type] : type.id === 'builtin:Tuple' ? type.args : [];
     if (types.length !== names.length) this.report(span, `Pattern needs a Tuple with ${names.length} positions`, 'PATTERN');
     for (const [index, name] of names.entries()) {
       if (context.locals.has(name)) this.report(span, `Pattern variable ${name} already exists`, 'PATTERN');
       const item = { ...(types[index] ?? errorTy), readonly: true };
       context.locals.set(name, { type: item, declaredType: item, ownership: 'managed', moved: false, definition: span });
-      context.flow.declare(name, names.length === 1 ? origins : context.flow.field(origins, String(index)), true, {source});
+      context.flow.declare(name, names.length === 1 && !tuplePattern ? origins : context.flow.field(origins, String(index)), true, {source});
     }
   }
 
@@ -1637,7 +1637,7 @@ class Checker {
       const type = this.checkExpression(stmt.value, context);
       if (type.id !== 'builtin:Tuple' || type.args.length !== stmt.names.length)
         this.report(stmt.span, `Destructuring needs a Tuple with ${stmt.names.length} positions`, 'PATTERN');
-      this.patternLocals(stmt.names, type, this.placesOf(stmt.value, context), context, stmt.span);
+      this.patternLocals(stmt.names, type, this.placesOf(stmt.value, context), context, stmt.span, undefined, true);
       return;
     }
     if (stmt.kind === 'for') {

@@ -77,3 +77,5 @@ Missing-method and missing-interceptor actions insert their scaffold, then forma
 ## Reuse a composition (unreleased)
 
 Complete `include` in main or same-file test setup to see visible compositions. A completion can add an ordinary import from a sibling module or exported folder/package. It retains Javadoc, inserts a composition name without call parentheses, and hides names already included in that setup. Other providers are registered only by their source bindings. Inspect the selected wiring with the [composition graph](guides/reuse-services.md#inspect-the-selected-providers).
+
+In a same-file function test group, the unreleased `itboundaries` completion proposes representative scalar input rows with an unresolved assertion. Replace that placeholder with a property or independently selected expected result. See [boundary inputs](testing.md#suggest-boundary-inputs) for supported types and limits.

@@ -201,7 +201,7 @@ Managed mutations need a borrow; owned collections mutate directly. Collections 
 
 **Unreleased loop control.** `break` leaves the nearest loop; `continue` starts its next iteration. Both run intervening `always` cleanup, join child scopes, release locks and borrows, and drop owned locals. A cleanup error propagates instead of completing the jump. Neither accepts a label. Jumps require an enclosing `for` or `while`; an `always` block cannot jump out of its cleanup.
 
-Tuple destructuring introduces new local names and checks arity. `for item in values` snapshots List, Set, and homogeneous Tuple elements. `for (key, value) in map` snapshots entries in insertion order. Modifying the original collection does not extend the current iteration. Reference elements remain read-only.
+Tuple destructuring introduces new local names and checks arity. A one-name tuple pattern binds the tuple’s cell; use `(value,)` for a one-cell tuple. A single loop item or wait result still receives its whole value. `for item in values` snapshots List, Set, and homogeneous Tuple elements. `for (key, value) in map` snapshots entries in insertion order. Modifying the original collection does not extend the current iteration. Reference elements remain read-only.
 
 ## Functions, effects, and capabilities
 

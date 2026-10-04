@@ -1,3 +1,5 @@
+import {suggestTestInputs,parseAuthorInputCases} from './test-inputs.ts';
+import {createHash} from 'node:crypto';
 import {compositionReport,compositionDiagram} from './composition.ts';
 import {withScratch} from './scratch.ts';
 import {buildBundle,verifyBundle} from './bundle.ts';
@@ -6,7 +8,7 @@ import {libraryCatalog} from './library-catalog.ts';
 import {hasRequiredContext} from './context.ts';
 import {dependencyUpdatePreview} from './package-updates.ts';
 import {dependencyReport,packageReadiness,packageInterfaceDiff} from './package-inspection.ts';
-import { existsSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, realpathSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import type { Diagnostic } from './ast.ts';
@@ -95,6 +97,7 @@ function usage(): void {
     `Deployment: aug bundle PROJECT --out DIRECTORY [--offline] [--frozen]; aug bundle verify DIRECTORY [--json]\n` +
     `Backend: LLVM is the default on macOS 14+ ARM64 and GNU/Linux x64/ARM64 with glibc 2.36+. August installs its compiler pack; no separate native toolchain is needed. --backend c selects the migration reference.\n` +
     `Tests: aug test [project directory] [GROUP_NAME] [--group GROUP_NAME] [--list] [--coverage] [--json] [--timeout milliseconds]\n` +
+    `Test inputs: aug test [PROJECT] --suggest-inputs FUNCTION --file FILE [--cases JSON_FILE] [--combinations] [--limit N] [--json] — propose checked inputs; author supplies assertions\n` +
     `Format: aug format [project directory] [--file path] [--write]\n` +
     `Specifications: aug spec [project directory] [--check] [--json]\n` +
     `Migration: aug migrate [project directory] [--file path] [--write]\n` +
@@ -116,6 +119,35 @@ export async function main(argv: string[]): Promise<number> {
     if(paths.length!==1||args.some(arg=>arg.startsWith('-')&&arg!=='--json')){process.stderr.write('Use aug bundle verify DIRECTORY [--json]\n');return 2;}
     try {const report=verifyBundle(paths[0]);process.stdout.write(args.includes('--json')?JSON.stringify(report)+'\n':`Verified ${report.files} files for ${report.target}; executable ${report.executable}.\n${report.trust}\n`);return 0;}
     catch(error){process.stderr.write(failureMessage(error)+'\n');return 1;}
+  }
+  if(command==='test'&&argv.includes('--suggest-inputs')) {
+    let path:string|undefined;const values=new Map<string,string>(),seen=new Set<string>();
+    for(let index=1;index<argv.length;index++) {
+      const arg=argv[index];
+      if(['--suggest-inputs','--file','--cases','--limit'].includes(arg)) {
+        if(seen.has(arg)||!argv[index+1]||argv[index+1].startsWith('-')){process.stderr.write(arg+' needs one value.\n');return 2;}
+        seen.add(arg);values.set(arg,argv[++index]);
+      }else if(['--json','--combinations'].includes(arg)) {
+        if(seen.has(arg)){process.stderr.write('Duplicate input option: '+arg+'\n');return 2;}seen.add(arg);
+      }else if(arg.startsWith('-')||path){process.stderr.write('Use aug test [PROJECT] --suggest-inputs FUNCTION --file FILE [--cases JSON_FILE] [--combinations] [--limit N] [--json]\n');return 2;}
+      else path=arg;
+    }
+    const limit=values.has('--limit')?Number(values.get('--limit')):64;
+    if(!values.has('--file')||!Number.isInteger(limit)||limit<1||limit>4096){process.stderr.write('Input suggestions require --file; --limit must be an integer from 1 to 4096.\n');return 2;}
+    const root=resolve(path??process.cwd());
+    try {
+      const project=loadProject(root),requested=resolve(root,values.get('--file')!),file=project.library?realpathSync(requested):requested,name=values.get('--suggest-inputs')!;
+      const definition=project.scopes.get(file)?.get(name);
+      if(!definition||definition.file!==file||project.files.get(file)?.builtin||project.files.get(file)?.package)throw new Error('TEST_INPUTS: Name an ordinary function declared in the selected project file.');
+      const casesPath=values.has('--cases')?resolve(root,values.get('--cases')!):undefined;
+      if(casesPath&&statSync(casesPath).size>1024*1024)throw new Error('TEST_INPUTS: Author cases exceed the 1 MiB limit.');
+      const author=casesPath?readFileSync(casesPath,'utf8'):undefined;
+      const report=suggestTestInputs(checkProject(project),definition,{limit,combinations:seen.has('--combinations'),
+        ...(author!==undefined?{authorCases:parseAuthorInputCases(author),authorDigest:createHash('sha256').update(author).digest('hex')}:{})});
+      if(seen.has('--json'))process.stdout.write(JSON.stringify(report)+'\n');
+      else process.stdout.write(report.scaffold+'\n'+report.rows.length+' checked input rows; no tests ran. Replace '+report.assertionPlaceholder+' with an independent assertion inside a new, empty same-file test group.\n');
+      return 0;
+    }catch(error){process.stderr.write(failureMessage(error)+'\n');return 1;}
   }
   if(command==='graph'&&argv.includes('--composition')) {
     let path:string|undefined,caseId:string|undefined;const seen=new Set<string>();

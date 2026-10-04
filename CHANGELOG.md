@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+Suggest representative scalar test inputs with `aug test --suggest-inputs` and `itboundaries` completion. Reports retain exact int64 literals, source revisions, author cases and finite selection limits; assertions remain author-written. Fix one-column tuple destructuring so typed test rows bind their cell.
+
 Complete explicit compositions through ordinary exports and imports. Inspect application or selected same-file test wiring with `aug graph --composition`, including lifetimes, constructor dependencies, source revisions and Mermaid diagrams. Duplicate binding diagnostics link the conflicting selections; inspection does not execute or replace providers.
 
 Call diagnostics name the public input, expected and actual types, and related declaration. Label failures list accepted inputs; duplicate arguments link to the first occurrence. Malformed labels are diagnosed before omitted inputs. CLI excerpts and VS Code Problems links use the same checked locations, including unsaved inherited generic declarations.

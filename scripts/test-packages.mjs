@@ -27,7 +27,7 @@ try {
   // Reference-backend bootstrap tests remain independent of release pack
   // publication. Cold/default LLVM is checked by qualify-native-consumers.mjs.
   const aug = (...args) => {
-    if(['run','build','test','bench'].includes(args[0])){
+    if(['run','build','test','bench'].includes(args[0])&&!args.includes('--suggest-inputs')){
       const separator=args.indexOf('--'),at=separator<0?args.length:separator;
       args=[...args.slice(0,at),'--backend','c',...args.slice(at)];
     }
@@ -113,6 +113,9 @@ try {
   const maintainerWorkflow=JSON.parse(aug('package','workflow',library,'--json'));
   assert.equal(maintainerWorkflow.backend,'llvm');assert.match(maintainerWorkflow.workflow,/aug package release/);
   assert.equal(maintainerWorkflow.publication,'not-run');
+  const inputRows=JSON.parse(aug('test',library,'--suggest-inputs','add','--file','src/arithmetic.aug','--json'));
+  assert.equal(inputRows.oracle,'author-required');assert.equal(inputRows.behavioralChecks,'not-run');assert.equal(inputRows.rows.length,9);
+  assert.ok(inputRows.rows.some(row=>row.inputs.left==='9223372036854775807'));
   const libraryTests = JSON.parse(aug('test', library, '--json'));
   assert.equal(libraryTests.passed, 1);
   const authoredManifest=join(library,'aug-package.json');

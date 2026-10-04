@@ -1,5 +1,5 @@
 import {createHash} from 'node:crypto';
-import {existsSync,readFileSync,readdirSync} from 'node:fs';
+import {existsSync,readFileSync,readdirSync,realpathSync} from 'node:fs';
 import {dirname,join,relative} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import type {Expr,MethodDecl,Param,Span,TypeRef} from './ast.ts';
@@ -39,7 +39,7 @@ export function semanticSourcePath(checked:CheckedProject,file:string):string {
   if(source?.builtin)return 'august/'+libraryRelative(project.libraries,file).replaceAll('\\','/');
   const scope=source?.package&&project.packages.scopes.get(source.package);
   if(scope)return `package/${scope.name}@${scope.version}/`+relative(scope.sourceRoot,file).replaceAll('\\','/');
-  return relative(project.root,file).replaceAll('\\','/');
+  return relative(project.library?realpathSync(project.root):project.root,file).replaceAll('\\','/');
 }
 
 /** The graph records compiler resolution. Dynamic dispatch is a boundary, not an invented implementation. */

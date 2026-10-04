@@ -1,3 +1,4 @@
+import {boundaryInputSnippet} from './test-inputs.ts';
 import { defaultText } from './parameters.ts';
 import { callableResult, callableErrors } from './contracts.ts';
 import { dirname, join, relative, resolve, sep } from 'node:path';
@@ -490,6 +491,37 @@ function includePosition(checked:CheckedProject,file:SourceFile,offset:number):{
   return {items,index};
 }
 
+/** Locate a case slot with a parser placeholder, excluding ordinary bodies and nested setup. */
+function boundaryCaseCompletion(checked:CheckedProject,file:SourceFile,offset:number):EditorItem|undefined {
+  const prefix=file.source.slice(0,offset),lineStart=prefix.lastIndexOf('\n')+1,line=prefix.slice(lineStart);
+  if(!/^[ \t]*it[A-Za-z_0-9]*$/.test(line))return;
+  const start=lineStart+(line.match(/^[ \t]*/)?.[0].length??0),end=offset+(file.source.slice(offset).match(/^[A-Za-z_0-9]*/)?.[0].length??0);
+  const parsed=parse(file.path,file.source.slice(0,start)+'it __AugustInputCompletion { assert(condition=true) }'+file.source.slice(end));
+  if(parsed.diagnostics.some(issue=>issue.line===prefix.split('\n').length))return;
+  for(const suite of parsed.file.items)if(suite.kind==='test'&&suite.functionSuite)for(const group of suite.groups)
+    if(group.cases.some(test=>test.span.start===start)){
+      const definition=checked.project.scopes.get(file.path)?.get(suite.type.name);
+      if(!definition||definition.file!==file.path)return;
+      try {
+        const locals=new Set<string>();
+        const setupNames=(value:unknown):void=>{
+          if(!value||typeof value!=='object')return;
+          if(Array.isArray(value)){value.forEach(setupNames);return;}
+          const node=value as Record<string,unknown>;
+          if(node.kind==='assign'&&(node.target as Expr)?.kind==='name')locals.add((node.target as Extract<Expr,{kind:'name'}>).name);
+          if(typeof node.name==='string'&&(node.kind==='lock'||node.kind==='freeze'||Array.isArray(node.body)&&(node.pattern!==undefined||node.kind===undefined&&node.type!==undefined)))locals.add(node.name);
+          if(Array.isArray(node.names))for(const name of node.names)if(typeof name==='string')locals.add(name);
+          for(const [key,child] of Object.entries(node))if(key!=='span')setupNames(child);
+        };
+        setupNames(group.setup);
+        if(locals.has(definition.name))return;
+        const template=boundaryInputSnippet(checked,definition,{locals,cases:group.cases.map(test=>test.name)});
+        return {label:'itboundaries',kind:'snippet',detail:template.rows+' representative scalar input rows',insertText:template.body,
+          documentation:'Version 1 scalar boundaries. Each row is an ordinary same-file test. Replace the assertion placeholder with a property or independently selected expected result. These inputs do not establish application requirements.'};
+      }catch{return;}
+    }
+}
+
 /** Auto-imports preserve the ordinary module/export path and do not register providers. */
 function autoImports(file:SourceFile,imports:EditorItem[],visible:Set<string>):EditorItem[] {
   const importsEnd = file.items.filter(item => item.kind === 'import').at(-1)?.span.end ?? 0;
@@ -506,6 +538,8 @@ function rawCompletions(checked: CheckedProject, fileName: string, offset: numbe
   if (!file) return [];
   const prefix = file.source.slice(0, offset);
   const line = prefix.slice(prefix.lastIndexOf('\n') + 1);
+  const boundaryCase=boundaryCaseCompletion(checked,file,offset);
+  if(boundaryCase)return [boundaryCase];
   const imports = importItems(checked, file);
   if (/^\s*import\s+[A-Za-z_0-9]*$/.test(line)) return imports;
   if (/^\s*include\s+[A-Za-z_0-9]*$/.test(line)) {

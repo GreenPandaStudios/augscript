@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+Complete `itboundaries` inside a same-file function test group to insert representative scalar input rows and an assertion placeholder. Templates honor project formatting; expected answers remain an author decision.
+
 Complete explicit compositions through ordinary exports and imports. Inspect application or selected same-file test wiring with `aug graph --composition`, including lifetimes, constructor dependencies, source revisions and Mermaid diagrams. Duplicate binding diagnostics link the conflicting selections; inspection does not execute or replace providers.
 
 Link call-input failures to their checked declarations in Problems, with substituted expected/actual types and accepted caller labels. Preserve related locations across unsaved dependency edits; diagnose malformed labels before omitted inputs.

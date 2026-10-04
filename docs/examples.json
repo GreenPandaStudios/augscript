@@ -89,5 +89,9 @@
   "reusable-services": {
     "stdout": "9\n",
     "tests": 1
+  },
+  "boundary-tests": {
+    "stdout": "-1\n",
+    "tests": 5
   }
 }
