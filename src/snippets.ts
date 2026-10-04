@@ -1,3 +1,4 @@
+import {lex} from './lexer.ts';
 /** Small starting points for ordinary August declarations and statements. */
 export const snippetCatalog = [
   {prefix:'record',description:'Immutable data with named fields',body:'record ${1:User}(${2:string name})'},
@@ -38,14 +39,32 @@ export const snippetCatalog = [
   {prefix:'javadoc',description:'Document intent and labeled inputs',body:'/**\n * ${1:Explain why this declaration exists.}\n * @param ${2:name} ${3:What the input means.}\n */'},
 ];
 
-export function snippetBody(body: string, style: 'braces' | 'indent', tabs = false): string {
+function lexicalTemplate(body: string): string {
+  return body.replace(/\$\{\d+(?::([^}]*))?\}|\$\d+/g, (token, value) => (value ?? '').padEnd(token.length));
+}
+
+/** Adapt the catalog's indented templates; parameter labels, strings and comments retain their spelling. */
+export function snippetBody(body: string, style: 'braces' | 'indent', tabs = false, assignment: 'equals' | 'to' = 'equals'): string {
+  if (assignment === 'to') {
+    // Expand tab stops only for lexical inspection, preserving original offsets.
+    const lexical = lexicalTemplate(body);
+    const edits = lex('snippet.aug', lexical).tokens.filter(token => {
+      if (token.kind !== '=') return false;
+      const start = lexical.lastIndexOf('\n', token.span.start - 1) + 1;
+      return /^\s*[A-Za-z_]\w*\s*$/.test(lexical.slice(start, token.span.start));
+    });
+    for (const token of edits.reverse()) body = body.slice(0, token.span.start) + 'to' + body.slice(token.span.end);
+  }
   if (style === 'braces') {
-    const result: string[] = []; let depth = 0;
+    const lexical = lexicalTemplate(body);
+    const colons = new Set(lex('snippet.aug',lexical).tokens.filter(token => token.kind === ':').map(token => token.span.start));
+    const result: string[] = []; let depth = 0, offset = 0;
     for (const line of body.split('\n')) {
       const level = Math.floor((/^ */.exec(line)?.[0].length ?? 0) / 4);
       while (depth > level) result.push('    '.repeat(--depth) + '}');
-      if (line.endsWith(':')) { result.push(line.slice(0,-1) + ' {'); depth = level + 1; }
+      if (line.endsWith(':') && colons.has(offset + line.length - 1)) { result.push(line.slice(0,-1) + ' {'); depth = level + 1; }
       else result.push(line);
+      offset += line.length + 1;
     }
     while (depth) result.push('    '.repeat(--depth) + '}');
     body = result.join('\n');

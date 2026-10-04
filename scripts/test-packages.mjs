@@ -59,6 +59,10 @@ try {
   aug('check', starter);
   assert.equal(JSON.parse(aug('test', starter, '--json')).passed, 1);
   assert.equal(aug('run', starter), 'Hello, August!\n');
+  const styled=join(directory,'styled');
+  aug('init',styled,'--block-style','braces','--indentation','tabs','--assignment','to');
+  assert.match(readFileSync(join(styled,'greeting.aug'),'utf8'),/greet\(string name\) \{\n\treturn/);
+  assert.equal(aug('run',styled),'Hello, August!\n');
   const ranges=join(directory,'ranges');mkdirSync(ranges);
   writeFileSync(join(ranges,'main.aug'),'import range and RangeError from august.collections\ntry { print(value=range(end=3, limit=3).length()) } catch RangeError error { exit(status=1) }\n');
   assert.equal(aug('run',ranges),'3\n');
@@ -92,7 +96,7 @@ try {
   assert.ok(existsSync(join(project,'main.aug.md')));
   assert.equal(aug('run', project), 'installed August works\n');
   const library = join(directory, 'my-math');
-  aug('package', 'init', library, '--name', '@example/aug-math');
+  aug('package', 'init', library, '--name', '@example/aug-math', '--assignment', 'to', '--indentation', 'tabs');
   aug('check', library);
   const libraryTests = JSON.parse(aug('test', library, '--json'));
   assert.equal(libraryTests.passed, 1);
@@ -100,6 +104,7 @@ try {
   const authored=JSON.parse(readFileSync(authoredManifest,'utf8'));authored.compiler='~'+authored.compiler;writeFileSync(authoredManifest,JSON.stringify(authored));
   aug('check',library);
   const archive = aug('package', 'pack', library).trim();
+  assert.equal(JSON.parse(readFileSync(join(library,'package.json'),'utf8')).files.includes('main.yaml'),true);
   const consumer = join(directory, 'my-app'); mkdirSync(consumer);
   writeFileSync(join(consumer, 'main.yaml'), `packages:\n  math: "${archive}"\n`);
   writeFileSync(join(consumer, 'main.aug'), 'import add from math\nprint(value=add(left=20, right=22))\n');

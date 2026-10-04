@@ -22,7 +22,7 @@ Public declarations from nearby modules and installed packages also appear in co
 
 Type `record`, `interface`, `implementation`, or `method` for a declaration template. `test`, `testclass`, and `testendpoint` supply same-file tests. `endpointget`, `endpointpost`, `endpointpatch`, and `endpointdelete` supply route templates. Other templates cover imports, exports, conditions, errors, borrows, tasks, locks, interceptors, and comments.
 
-The completion provider follows `block_style` and `indentation` in `main.yaml`. Templates are starting points: replace their names, values, and bodies before running the program. The extension also supplies VS Code snippets and enables Tab completion for August files.
+The completion provider follows `block_style` and `indentation` in `main.yaml`. Templates are starting points: replace their names, values, and bodies before running the program. Press Tab to move through their inputs.
 
 ## Read help and inferred types {#understand-a-contract}
 
@@ -65,3 +65,9 @@ Hover over a local to see its declaration, possible aliases, owned locals, activ
 Contract hints default to compact text, with the complete contract in their tooltip. Set `augscript.inferredContractHintDetail` to `full` to show every clause. **AugScript: Toggle Full Contracts for This File** temporarily expands the active file; repeat the command to restore its configured detail. The existing `augscript.inferredContractHints` setting still controls whether hints appear at all.
 
 Recovery actions offer a catch template that rethrows until you supply a policy. The preview explains that the edit is incomplete. Choose whether to recover, stop, or propagate; the editor does not silently log a failure and continue. Templates follow the project’s block style and indentation.
+
+## Project source preferences (unreleased)
+
+Formatting, starters and completion templates use `block_style`, `indentation` and `assignment` from `main.yaml`. Bindings follow `equals` or `to`; generated call labels use `=`. Templates come from the completion provider so that a fixed snippet cannot override the project choice.
+
+Missing-method and missing-interceptor actions insert their scaffold, then format the candidate file with those preferences. The formatter verifies that the parsed program is unchanged and retains comments with their source owners. Review the whole edit: a nonvoid method still needs your implementation and return value. Symbol rename changes resolved tokens without rewriting the surrounding layout.

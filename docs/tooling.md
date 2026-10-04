@@ -28,6 +28,7 @@ Install `aug` once as shown in [Your first project](getting-started.md). Command
 | `explain PROJECT --file PATH [--name NAME]` | Checked contracts, dependencies, layers, origins, tests, and module surface. |
 | `context PROJECT --file PATH [--name NAME] [--budget N] [--require-complete]` | Bounded JSON context, including related declarations and source snippets. |
 | `lsp PROJECT` | Persistent language server over stdio. |
+| `init DIRECTORY [--template hello\|weather]` | New application with agent instructions and same-file tests. |
 | `package init DIRECTORY [--name @owner/name]` | Standalone source library with public exports, Javadoc and a same-file test. |
 | `package pack DIRECTORY` | Checked source archive ready for npm publishing or local installation. |
 | `add URL [--as NAME] [--project DIRECTORY]` | Installs a repository or archive under a short import alias. |
@@ -94,8 +95,8 @@ module_dependencies:
 | optimization | debug (-O0) or release (-O2); both retain debug information. |
 | backend | llvm (default in 0.23.0) or the temporary c migration reference. |
 | compiler | **Unreleased:** optional exact project compiler pin. A mismatch fails checking in the CLI and editor, before dependency installation. |
-| block_style | Formatter braces or indent. |
-| indentation | Formatter spaces (four) or tabs. |
+| block_style | Braces or indent for formatting and generated source. |
+| indentation | Spaces (four) or tabs for formatting and generated source. |
 | assignment | Formatter equals or to; both remain accepted source forms. |
 | spec.require_comments | Require Javadoc on none (default), public declarations/methods, or all declarations/methods. Inherited method docs satisfy it. |
 | strict_modules | Require sibling declarations to be listed in the folder export file. |
@@ -263,3 +264,15 @@ The new directory contains `app`, its required `lib` files, third-party notices 
 Use `aug bundle verify deploy` before deployment or after transfer. It checks the complete file set, hashes, sizes and executable permission without loading native libraries or running code. Links, special files, malformed manifests and unexpected files fail verification. The manifest records the compiler, source revision, native artifact hashes and minimum operating-system/libc requirements. These hashes check the recorded bytes; they do not authenticate the publisher or test the application.
 
 A bundle destination must be new. Compilation and verification take place in a temporary sibling directory, and a completed directory is published by rename under an August writer lock. Failed builds leave no accepted output. Choose another destination for a subsequent build; review and replace an existing deployment yourself. This command does not promise coordination with external filesystem writers or survival of arbitrary storage failures.
+
+## Starter source preferences (unreleased)
+
+New applications and libraries record indentation, four spaces and equals in `main.yaml`. Select another style when creating them:
+
+```sh
+aug init greeting --block-style braces --indentation tabs --assignment to
+aug init forecasts --template weather --assignment to
+aug package init calculations --block-style indent --assignment to
+```
+
+The options configure `block_style`, `indentation` and `assignment`; edit those keys later and run `aug format --write` to reformat existing files. They change spelling and layout. Both block forms and both assignment forms retain the same behavior. Invalid, duplicate or missing option values fail before creating the project directory. Initialization writes source and configuration; `aug run` prepares application dependencies.

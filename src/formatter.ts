@@ -3,19 +3,22 @@ import { typeName } from './ast.ts';
 import { lex } from './lexer.ts';
 import { parse } from './parser.ts';
 import { importSource } from './git-packages.ts';
-import type { Project } from './project.ts';
+import type { Config } from './config.ts';
+
+export type SourceStyle = Pick<Config, 'block_style' | 'indentation' | 'assignment'>;
+type FormattingProject = {config: SourceStyle};
 
 /** Canonical syntax comes from the parsed program; comments stay with their lexical owner. */
-export function formatFile(project: Project, file: SourceFile): string {
+export function formatFile(project: FormattingProject, file: SourceFile): string {
   return printFile(project, file, false);
 }
 
 /** Upgrade rejected legacy spellings without accepting them during compilation. */
-export function migrateFile(project: Project, file: SourceFile): string {
+export function migrateFile(project: FormattingProject, file: SourceFile): string {
   return printFile(project, file, true);
 }
 
-function printFile(project: Project, file: SourceFile, migrate: boolean): string {
+function printFile(project: FormattingProject, file: SourceFile, migrate: boolean): string {
   const parsed = parse(file.path, file.source);
   if (parsed.diagnostics.some(issue => !migrate || issue.code !== 'SYNTAX')) throw new Error('Fix syntax errors before formatting this file');
   if(migrate) {
@@ -54,10 +57,9 @@ class Printer {
   private step: string;
   private indent: boolean;
   private assign: string;
-  private project: Project;
   private file: SourceFile;
-  constructor(project: Project, file: SourceFile) {
-    this.project = project; this.file = file;
+  constructor(project: FormattingProject, file: SourceFile) {
+    this.file = file;
     this.comments = lex(file.path, file.source, true).tokens.filter(token => token.kind === 'comment');
     this.step = project.config.indentation === 'tabs' ? '\t' : '    ';
     this.indent = project.config.block_style === 'indent';
@@ -223,7 +225,7 @@ class Printer {
         else this.line(header + errors);
       } else {
         this.block(header + errors + ' implements ' + item.implements.map(typeName).join(', '), () => {
-          for (const field of item.stateFields ?? []) { this.before(field.span.start); this.line(`${field.mutable ? 'mutable ' : ''}${typeName(field.type)} ${field.name} = ${this.expression(field.initializer)}`); }
+          for (const field of item.stateFields ?? []) { this.before(field.span.start); this.line(`${field.mutable ? 'mutable ' : ''}${typeName(field.type)} ${field.name} ${this.assign} ${this.expression(field.initializer)}`); }
           if (item.constructorBody) this.initializer(item);
           item.methods.forEach(method => this.method(method));
         }, item.span);

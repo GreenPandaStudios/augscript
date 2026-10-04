@@ -8,6 +8,8 @@ import { loadConfig } from './config.ts';
 import { parse } from './parser.ts';
 import { isGitSource, materializeGit, sourceAlias, gitReference, type GitSource } from './git-packages.ts';
 import { agentInstructions } from './project-init.ts';
+import {formatSource, sourceStyle, styleConfiguration} from './source-style.ts';
+import type {SourceStyle} from './formatter.ts';
 import { withPackageLock, withPackageLockAsync } from './package-locking.ts';
 import { acceptsCompiler } from './package-compatibility.ts';
 import {replacePackageText,installedText} from './package-storage.ts';
@@ -524,17 +526,22 @@ export async function installPackagesWithNative(root: string, frozen = false, of
   });
 }
 
-export function initPackage(directory: string, name: string, npmMetadata = false): void {
+/** Create a source library with explicit formatting preferences, public exports and same-file tests. */
+export function initPackage(directory: string, name: string, npmMetadata = false, preferences: Partial<SourceStyle> = {}): void {
+  const style = sourceStyle(preferences);
   if (!npmName.test(name)) throw new Error('Package name must be an npm name, for example @owner/aug-math');
   if (existsSync(directory) && readdirSync(directory).length) throw new Error('Package init requires a new or empty directory');
+  const arithmetic = formatSource(join(directory, 'src/arithmetic.aug'),
+    '/** Add two integers. @param left First value. @param right Second value. @return Their sum. */\nadd(int left, int right):\n    return left + right\n\ntest add:\n    when addition:\n        it adds_two_integers:\n            assert(add(left=2, right=3) == 5)\n', style);
   mkdirSync(join(directory, 'src'), { recursive: true });
   writeFileSync(join(directory, 'AGENTS.md'), agentInstructions);
+  writeFileSync(join(directory, 'main.yaml'), styleConfiguration(style));
   const manifest: PackageManifest = { format: 1, name, version: '0.1.0', compiler: compilerVersion(), source: 'src', dependencies: {} };
   writeJson(join(directory, 'aug-package.json'), manifest);
   if (npmMetadata) writeJson(join(directory, 'package.json'), { name, version: manifest.version, description: 'An August source library',
-    files: ['src', '.aug-spec', 'aug-package.json', 'README.md', 'LICENSE'], exports: { './aug-package.json': './aug-package.json' }, dependencies: {} });
+    files: ['src', '.aug-spec', 'aug-package.json', 'main.yaml', 'README.md', 'LICENSE'], exports: { './aug-package.json': './aug-package.json' }, dependencies: {} });
   writeFileSync(join(directory, 'src/export.aug'), 'export add from arithmetic\n');
-  writeFileSync(join(directory, 'src/arithmetic.aug'), '/** Add two integers. @param left First value. @param right Second value. @return Their sum. */\nadd(int left, int right) returns int {\n    return left + right\n}\n\ntest add {\n    when addition {\n        it adds_two_integers {\n            assert(add(left=2, right=3) == 5)\n        }\n    }\n}\n');
+  writeFileSync(join(directory, 'src/arithmetic.aug'), arithmetic);
   writeFileSync(join(directory, 'README.md'), `# ${name}\n\nAugust ${compilerVersion()} source library. Public exports live in src/export.aug.\n`);
   writeFileSync(join(directory, '.gitignore'), '.aug-build/\n.aug-packages/\n.aug-install-*/\n.aug-lock-*/\n.aug-write-*/\n.aug-add.json*\n*.aug.tmp\nnode_modules/\n*.tgz\n');
 }
@@ -546,6 +553,7 @@ export function preparePackage(root: string): void {
   transport.name = manifest.name; transport.version = manifest.version;
   transport.dependencies = manifest.dependencies ?? {};
   transport.files = [...new Set([...(Array.isArray(transport.files)?transport.files:['README.md','LICENSE']),manifest.source,'.aug-spec','aug-package.json'])];
+  if(existsSync(join(root,'main.yaml')))transport.files.push('main.yaml');
   if(manifest.native)transport.files.push('native.abi.json','THIRD_PARTY_NOTICES.md');
   writeJson(join(root, 'package.json'), transport);
   readPackage(root);

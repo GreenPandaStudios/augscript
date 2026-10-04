@@ -46,12 +46,6 @@
     "sharp": "0.35.4"
   },
   "contributes": {
-    "snippets": [
-      {
-        "language": "augscript",
-        "path": "./augscript.code-snippets"
-      }
-    ],
     "configurationDefaults": {
       "[augscript]": {
         "editor.tabCompletion": "on",

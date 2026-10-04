@@ -79,21 +79,21 @@ const keywords: EditorItem[] = [
       documentation: help.documentation })),
   { label: 'try/catch', kind: 'snippet', detail: 'Checked error handler',
     documentation: languageHelp.try.documentation,
-    insertText: 'try {\n    $1\n} catch ${2:Error} ${3:error} {\n    $0\n}' },
+    insertText: 'try:\n    $1\ncatch ${2:Error} ${3:error}:\n    $0' },
   { label: 'borrow block', kind: 'snippet', detail: 'Mutable borrow',
     documentation: languageHelp.borrow.documentation,
-    insertText: 'borrow ${1:value} {\n    $0\n}' },
+    insertText: 'borrow ${1:value}:\n    $0' },
   { label: 'interceptor declaration', kind: 'snippet', detail: 'Generic interceptor wrapping any result type',
     documentation: languageHelp.interceptor.documentation,
-    insertText: 'interceptor ${1:Audit}<T>() {\n    around() {\n        result = next()\n        $0\n        return result\n    }\n}' },
+    insertText: 'interceptor ${1:Audit}<T>():\n    around():\n        result = next()\n        $0\n        return result' },
   { label: 'test suite', kind: 'snippet', detail: 'Same-file class tests with fresh setup per case',
     documentation: languageHelp.test.documentation,
-    insertText: 'test ${1:Worker} ${2:worker} {\n    when ${3:ready} {\n        ${2:worker} = ${1:Worker}()\n        it ${4:works} {\n            assert(${5:true})\n        }\n    }\n}' },
+    insertText: 'test ${1:Worker} ${2:worker}:\n    when ${3:ready}:\n        ${2:worker} = ${1:Worker}()\n        it ${4:works}:\n            assert(${5:true})' },
   { label: 'test group', kind: 'snippet', detail: 'Group setup and cases',
     documentation: languageHelp.when.documentation,
-    insertText: 'when ${1:group} {\n    $0\n    it ${2:works} {\n        assert(${3:true})\n    }\n}' },
+    insertText: 'when ${1:group}:\n    $0\n    it ${2:works}:\n        assert(${3:true})' },
   { label: 'test case', kind: 'snippet', detail: 'Named test case', documentation: languageHelp.it.documentation,
-    insertText: 'it ${1:works} {\n    assert(${2:true})\n}' },
+    insertText: 'it ${1:works}:\n    assert(${2:true})' },
   {label:'endpoint declaration',kind:'snippet',detail:'Named HTTP endpoint with typed input',documentation:languageHelp.endpoint.documentation,
     insertText:'endpoint ${1:GET} "${2:/users/{id}}" as ${3:getUser}(int id from path) returns ${4:User}:\n    $0'},
   {label:'endpoint test',kind:'snippet',detail:'Exercise the HTTP pipeline beside its declaration',documentation:languageHelp.test.documentation,
@@ -609,10 +609,8 @@ export function completions(checked: CheckedProject, fileName: string, offset: n
       !/^\s*\(/.test(file.source.slice(offset));
     placeholder = 0;
     let insertText = callable ? `${item.label}(${(item.parameters ?? []).filter(parameter => !item.optionalParameters?.includes(parameter.split('=')[0])).map(parameter => argument(parameter, item)).join(', ')})$0` : item.insertText;
-    const template = snippetCatalog.find(snippet => item.label === snippet.prefix + ' template');
-    if (template) insertText = snippetBody(template.body, checked.project.config.block_style, checked.project.config.indentation === 'tabs');
-    if (item.kind === 'snippet' && insertText && checked.project.config.block_style === 'indent' && insertText.includes('{\n'))
-      insertText = insertText.replace(/^(\s*)\} catch /gm, '$1catch ').replace(/ \{\n/g, ':\n').replace(/^[ \t]*\}\n?/gm, '').trimEnd();
+    if (item.kind === 'snippet' && insertText) insertText = snippetBody(insertText,
+      checked.project.config.block_style, checked.project.config.indentation === 'tabs', checked.project.config.assignment);
     let additionalEdits = item.additionalEdits;
     if (additionalEdits?.some(edit => edit.start >= start && edit.start <= end)) {
       insertText = additionalEdits.map(edit => escape(edit.text)).join('') + (insertText ?? item.label);

@@ -1170,7 +1170,7 @@ Bound the request and its streaming producer with a monotonic deadline. Before o
 destination to value
 ```
 
-Alternative to = in assignments, typed declarations, labeled call arguments and interceptor mappings. Type publicLabel to _storage separates a public constructor input from private storage. resolve app to program retrieves a binding using its declared lifetime. Configure assignment in main.yaml for consistent formatting.
+Alternative to = in assignments, typed declarations, labeled call arguments and interceptor mappings. Type publicLabel to _storage separates a public constructor input from private storage. resolve app to program retrieves a binding using its declared lifetime. Configure assignment in main.yaml for consistent formatting and editor templates. Call labels retain = in generated code.
 
 ## true
 

@@ -1,4 +1,5 @@
 import {checkedProjectWithTests} from './refactoring.ts';
+import {defaultText} from './parameters.ts';
 import type {Config} from './config.ts';
 import { resolve } from 'node:path';
 import { typeName, type Diagnostic, type Expr, type MethodDecl, type SourceFile, type Stmt, type TypeRef } from './ast.ts';
@@ -7,8 +8,9 @@ import { completions, hoverInfo, importItems } from './editor.ts';
 import { importSource } from './git-packages.ts';
 import { languageHelp } from './help.ts';
 import { lex } from './lexer.ts';
+import {parse} from './parser.ts';
 import { tyName } from './types.ts';
-import { migrateFile } from './formatter.ts';
+import { formatFile, migrateFile } from './formatter.ts';
 
 export interface TextFixEdit {
   file: string;
@@ -24,6 +26,13 @@ export interface EditorFix {
   preferred?: boolean;
   /** Observable consequence shown with the proposed edit. */
   description?: string;
+}
+
+/** Preserve the candidate's parsed meaning while adapting its complete file to project style. */
+function formattedInsertion(checked: CheckedProject, file: SourceFile, insertion: TextFixEdit): TextFixEdit | undefined {
+  const source = file.source.slice(0,insertion.start) + insertion.text + file.source.slice(insertion.end);
+  try { return {file:file.path,start:0,end:file.source.length,text:formatFile(checked.project,parse(file.path,source).file)}; }
+  catch { return undefined; }
 }
 
 function offsetAt(source: string, line: number, column: number): number {
@@ -156,7 +165,7 @@ export function suggestedFixes(checked: CheckedProject, fileName: string): Edito
         };
         const contract = owner.implements.map(ref => find(ref, file.path)).find(Boolean);
         if (contract) {
-          const params = contract.method.params.map(param => `${param.injected ? 'resolve ' : ''}${param.ownership === 'managed' ? '' : param.ownership + ' '}${typeName(substitute(param.type, contract.types))} ${param.name}`);
+          const params = contract.method.params.map(param => `${param.injected ? 'resolve ' : ''}${param.ownership === 'managed' ? '' : param.ownership + ' '}${typeName(substitute(param.type, contract.types))} ${param.name}` + (param.defaultValue ? ' = ' + defaultText(param.defaultValue) : ''));
           const generic = contract.method.typeParams.length ? '<' + contract.method.typeParams.join(', ') + '>' : '';
           const header = `${missing[2]}${generic}(${params.join(', ')}) returns ${contract.method.returnOwnership === 'own' ? 'own ' : ''}${typeName(substitute(contract.method.returns, contract.types))}` +
             (contract.method.throws.length ? ' unless ' + contract.method.throws.map(ref => typeName(substitute(ref, contract.types))).join(', ') : '');
@@ -164,8 +173,8 @@ export function suggestedFixes(checked: CheckedProject, fileName: string): Edito
           const start = owner.headerEnd ?? owner.span.start;
           const braces = file.source[start] === '{' || file.source.slice(owner.span.start, start + 1).trimEnd().endsWith('{');
           const insertion = braces ? file.source.lastIndexOf('}', owner.span.end - 1) : owner.span.end;
-          if (insertion >= owner.span.start) add(`Implement ${missing[2]} in ${owner.name}`, { file: file.path, start: insertion, end: insertion,
-            text: braces ? `\n${unit}${header} {\n${unit}${unit}// TODO: implement ${missing[2]}\n${unit}}\n` : `\n${unit}${header}:\n${unit}${unit}// TODO: implement ${missing[2]}\n${unit}${unit}pass\n` });
+          if (insertion >= owner.span.start) add(`Implement ${missing[2]} in ${owner.name}`, formattedInsertion(checked,file,{ file: file.path, start: insertion, end: insertion,
+            text: braces ? `\n${unit}${header} {\n${unit}${unit}// TODO: implement ${missing[2]}\n${unit}}\n` : `\n${unit}${header}:\n${unit}${unit}// TODO: implement ${missing[2]}\n${unit}${unit}pass\n` }));
         }
       }
     }
@@ -233,11 +242,13 @@ export function suggestedFixes(checked: CheckedProject, fileName: string): Edito
         if (process) add('Rename process to around', { file: file.path, start: process.span.start,
           end: process.span.start + process.name.length, text: 'around' });
         else {
-          const end = file.source.lastIndexOf('}', node.span.end - 1);
-          if (end >= start) {
-            const type = node.typeParams[0];
-            add('Add an around implementation', { file: file.path, start: end, end,
-              text: `\n    around()${type ? ` returns ${type}` : ''} {\n        ${type ? 'return ' : ''}next();\n    }\n` });
+          const block = lex(file.path,file.source).tokens.find(token => token.span.start >= node.span.start &&
+            token.span.start < node.span.end && ['{',':'].includes(token.kind));
+          const braces = block?.kind === '{', end = braces ? file.source.lastIndexOf('}',node.span.end-1) : node.span.end;
+          if (block && end >= start) {
+            const call = node.typeParams[0] ? 'return next()' : 'next()';
+            const insertion = {file:file.path,start:end,end,text:braces ? `\n    around() {\n        ${call}\n    }\n` : `\n    around():\n        ${call}\n`};
+            add('Add an around implementation',formattedInsertion(checked,file,insertion));
           }
         }
       }
