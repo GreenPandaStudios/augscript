@@ -1,6 +1,6 @@
 # Write August in VS Code
 
-Install the matching [AugScript extension](packages.md#vs-code), open the project folder, and start in `main.aug`. The editor reads the same checked contracts as the CLI, including unsaved changes. Install source dependencies with `aug run` or `aug install` so their declarations and documentation are available locally.
+Install the [AugScript extension](packages.md#vs-code), open the project folder, and start in `main.aug`. The editor checks unsaved code with the same compiler as the CLI. Install source dependencies with `aug run` or `aug install` so their declarations and documentation are available locally.
 
 ## Complete a call
 
@@ -16,20 +16,20 @@ Type `record`, `interface`, `implementation`, or `method` for a declaration temp
 
 The completion provider follows `block_style` and `indentation` in `main.yaml`. Templates are starting points: replace their names, values, and bodies before running the program. The extension also supplies VS Code snippets and enables Tab completion for August files.
 
-## Understand a contract
+## Read help and inferred types {#understand-a-contract}
 
 Hover over a declaration, a call, a keyword, or a built-in operation. Help includes Javadoc when it is present. Ctrl-click, or Cmd-click on macOS, opens the declaration. In an import, clicking `from` opens the sibling file or the package's `export.aug`.
 
-Contract hints show inferred return types, mutation, capabilities, and checked errors beside executable headers. They are display text; saving or formatting does not add them to the source. A tooltip expands long contracts. Set `augscript.inferredContractHints` to false to hide them. Bodyless interfaces and foreign declarations still state their contracts in code.
+Hints beside a function or method show its inferred result, state changes, I/O, and possible errors. They stay out of saved source. Hover over a long hint to expand it. Set `augscript.inferredContractHints` to false to hide them. Bodyless interfaces and foreign declarations still state their contracts in code.
 
 ## Fix a diagnostic
 
-Place the cursor on an error and open the lightbulb with Ctrl+. or Cmd+.. The editor offers fixes it can derive from the checked code: importing a visible declaration, correcting a nearby name or input label, expanding a wildcard import, adding a required method, or containing a mutable or native operation.
+Place the cursor on an error and open the lightbulb with Ctrl+. or Cmd+.. Available fixes include: importing a visible declaration, correcting a nearby name or input label, expanding a wildcard import, adding a required method, or containing a mutable or native operation.
 
 Review the edit before accepting it. A suggested name can be plausible without being the name you intended. After a change, run `aug check`, your tests, and `aug spec` to refresh the neighboring explanation.
 
 ## Find the files and run tests
 
-Run **AugScript: Enable File Icons** for the August icon theme. Source files have a blue mark; `main.aug` has an amber startup mark, and `export.aug` has a purple module mark. **AugScript: Open Welcome** opens the bundled illustrated guide.
+Run **AugScript: Enable File Icons** for the August icon theme. Source files use a burgundy open circle; `main.aug` uses a play symbol, `export.aug` an outward arrow, and `main.yaml` sliders. Each has a light and dark variant. **AugScript: Open Welcome** opens the bundled guide and icon legend.
 
 Same-file cases appear in VS Code's Testing view. Use that view to run a case or group, or run `aug test` in the terminal. [Tests](testing.md) explains fixtures and endpoint tests. [CLI and configuration](tooling.md) describes language-server integration, native cache settings, and command-line tools.

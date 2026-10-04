@@ -8,7 +8,7 @@ editLink: false
 
 Install this source library with `aug add https://github.com/GreenPandaStudios/augscript/src/stdlib/memory --as memory`, then import its public names from `memory`.
 
-The signatures below include checked results and failures, including those inferred from a body. See [packages](../packages.md) for revision pinning and [language constructs](../language-constructs.md) for built-in value types.
+Signatures show result types and checked errors. See [packages](../packages.md) to pin a release and [language constructs](../language-constructs.md) for built-in types.
 
 ## StoreFull {#api-StoreFull}
 
@@ -38,7 +38,7 @@ put(string key, T value, int expires, int now) unless StoreFull
 
 Remove expired entries, then store at most 512 live entries. Time is supplied by the caller.
 
-Requires `ExpiringStore.put`.
+Uses `ExpiringStore.put`.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/memory/store.aug#L10)
 
@@ -50,7 +50,7 @@ take(string key, int now) returns optional T
 
 Atomically remove a value. Expired or absent entries return null.
 
-Requires `ExpiringStore.take`.
+Uses `ExpiringStore.take`.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/memory/store.aug#L12)
 
@@ -62,7 +62,7 @@ get(string key, int now) returns optional T
 
 Read a live value without consuming it.
 
-Requires `ExpiringStore.get`.
+Uses `ExpiringStore.get`.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/memory/store.aug#L14)
 
@@ -84,7 +84,7 @@ put(string key, T value, int expires, int now) unless StoreFull
 
 Remove expired entries, then store at most 512 live entries. Time is supplied by the caller.
 
-Requires `ExpiringStore<T>.put`.
+Uses `ExpiringStore<T>.put`.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/memory/store.aug#L19)
 
@@ -96,7 +96,7 @@ take(string key, int now) returns optional T
 
 Atomically remove a value. Expired or absent entries return null.
 
-Requires `ExpiringStore<T>.take`.
+Uses `ExpiringStore<T>.take`.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/memory/store.aug#L28)
 
@@ -108,6 +108,6 @@ get(string key, int now) returns optional T
 
 Read a live value without consuming it.
 
-Requires `ExpiringStore<T>.get`.
+Uses `ExpiringStore<T>.get`.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/memory/store.aug#L37)

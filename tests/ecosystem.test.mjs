@@ -124,6 +124,55 @@ test('Git source symlinks are rejected and a failed install preserves the previo
   assert.equal(readFileSync(join(app,'aug.lock.json'),'utf8'),before); checked(app);
 }));
 
+test('frozen runs reject changed imports, dependency configuration and compiler without accepted writes', () => fixture(root => {
+  const library=join(root,'library'),app=join(root,'app');initPackage(library,'library');mkdirSync(app);
+  const configuration='packages:\n  library: "../library"\n';
+  const source='import add from library\nprint(value=add(left=2,right=3))\n';
+  writeFileSync(join(app,'main.yaml'),configuration);writeFileSync(join(app,'main.aug'),source);
+  installPackages(app,false,true);
+  const lockPath=join(app,'aug.lock.json'),before=readFileSync(lockPath,'utf8');
+  const installed=JSON.parse(before).packages[0];
+  const declaration=join(app,'.aug-packages',installed.path,'src/arithmetic.aug');
+  const snapshot=readFileSync(declaration,'utf8');
+  for(const mutate of [
+    ()=>writeFileSync(join(app,'main.aug'),source+'import add from "https://github.com/example/new-package#v1"\n'),
+    ()=>writeFileSync(join(app,'main.yaml'),'packages:\n  renamed: "../library"\n'),
+    ()=>{writeFileSync(join(app,'main.yaml'),'');writeFileSync(join(app,'main.aug'),'');},
+    ()=>writeFileSync(lockPath,JSON.stringify({...JSON.parse(before),compiler:'0.0.0'}))
+  ]){
+    writeFileSync(join(app,'main.yaml'),configuration);writeFileSync(join(app,'main.aug'),source);writeFileSync(lockPath,before);
+    mutate();const plannedLock=readFileSync(lockPath,'utf8');
+    assert.throws(()=>prepareRunPackages(app,true,true),/PACKAGE_LOCK.*Frozen run/);
+    assert.equal(readFileSync(lockPath,'utf8'),plannedLock);
+    assert.equal(readFileSync(declaration,'utf8'),snapshot);
+  }
+  writeFileSync(join(app,'main.yaml'),configuration);writeFileSync(join(app,'main.aug'),source);rmSync(lockPath);
+  assert.throws(()=>prepareRunPackages(app,true,true),/PACKAGE_LOCK.*Frozen run/);
+  assert.equal(existsSync(lockPath),false);assert.equal(readFileSync(declaration,'utf8'),snapshot);
+}));
+
+test('removing the last dependency prunes its snapshot and native selections on an ordinary run', () => fixture(root => {
+  const library=join(root,'library'),app=join(root,'app');initPackage(library,'library');mkdirSync(app);
+  writeFileSync(join(app,'main.yaml'),'packages:\n  library: "../library"\n');writeFileSync(join(app,'main.aug'),'');
+  installPackages(app,false,true);
+  const lockPath=join(app,'aug.lock.json'),before=JSON.parse(readFileSync(lockPath));
+  before.native={targets:{stale:{packages:[{id:'removed'}]}}};writeFileSync(lockPath,JSON.stringify(before));
+  writeFileSync(join(app,'main.yaml'),'');prepareRunPackages(app,true);
+  const after=JSON.parse(readFileSync(lockPath));assert.deepEqual(after.packages,[]);assert.deepEqual(after.specifications,{});
+  assert.equal(after.native,undefined);assert.equal(existsSync(join(app,'.aug-packages',before.packages[0].path)),false);
+}));
+
+test('a frozen compiler-pack rejection preserves source hints and generated specifications',()=>fixture(root=>{
+  const app=join(root,'app');mkdirSync(app);const source='print(value="unchanged")\n';
+  writeFileSync(join(app,'main.aug'),source);writeFileSync(join(app,'main.aug.md'),'existing specification\n');installPackages(app,false,true);
+  const lock=readFileSync(join(app,'aug.lock.json'),'utf8');
+  const result=spawnSync(process.execPath,[resolve(import.meta.dirname,'../bin/aug.mjs'),'run',app,'--backend','llvm','--frozen'],
+    {encoding:'utf8',env:{...process.env,AUG_LLVM_HOME:'',AUG_RUNTIME_PACK:'',AUG_NATIVE_ARTIFACT_CACHE:join(root,'native-cache')}});
+  assert.notEqual(result.status,0);assert.match(result.stderr,/LLVM_LOCK|NATIVE_LOCK|NATIVE_TARGET/);
+  assert.equal(readFileSync(join(app,'main.aug'),'utf8'),source);
+  assert.equal(readFileSync(join(app,'main.aug.md'),'utf8'),'existing specification\n');assert.equal(readFileSync(join(app,'aug.lock.json'),'utf8'),lock);
+}));
+
 test('the weather starter serves typed JSON, OpenAPI, and method rejection over a native socket', {timeout:30000}, async () => {
   const root = mkdtempSync(join(tmpdir(),'aug-weather-socket-')); let server;
   try {

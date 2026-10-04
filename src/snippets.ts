@@ -25,6 +25,7 @@ export const snippetCatalog = [
   {prefix:'waitall',description:'Join two computations',body:'wait for ${1:loadingUsers} and ${2:loadingOrders} as ${3:users} and ${4:orders}'},
   {prefix:'lock',description:'Access shared mutable state inside a bounded lock',body:'lock ${1:shared} as ${2:value}:\n    $0'},
   {prefix:'unsafe',description:'Contain a native C call',body:'unsafe:\n    $0'},
+  {prefix:'resource',description:'An opaque native package resource with checked cleanup',body:'extern C resource ${1:Handle}'},
   {prefix:'serve',description:'Start a native HTTP listener',body:'serve ${1:endpoint} on port ${2:8787}'},
   ...['GET','POST','PATCH','DELETE'].map(method => ({prefix:'endpoint'+method.toLowerCase(),description:`A typed ${method} endpoint`,body:`endpoint ${method} "\${1:/items}" as \${2:handler}(\${3:}):\n    $0`})),
   {prefix:'stream',description:'An endpoint yielding server-sent events',body:'endpoint GET "${1:/events}" as ${2:events}() streams ServerEvent<string>:\n    yield ServerEvent(data=${3:"hello"})'},

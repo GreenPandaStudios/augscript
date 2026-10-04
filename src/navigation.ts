@@ -11,7 +11,7 @@ export interface NavigationTarget {
   file: string;
   line: number;
   column: number;
-  kind: 'class' | 'interface' | 'function' | 'forward' | 'composition' | 'interceptor' | 'method' | 'parameter' | 'module';
+  kind: 'class' | 'interface' | 'function' | 'forward' | 'composition' | 'interceptor' | 'resource' | 'method' | 'parameter' | 'module';
   implementation?:Omit<NavigationTarget,'implementation'>;
 }
 

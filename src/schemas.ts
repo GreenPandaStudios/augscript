@@ -22,11 +22,15 @@ export function jsonDataType(project: Project, type: Ty, seen = new Set<string>(
   return node.fields.every(field => jsonDataType(project, schemaType(project, field.type, type.def!.file, params), seen));
 }
 
-/** One shared native schema per concrete type, used by HTTP and explicit JSON decoding. */
-export class NativeSchemas {
+export interface DataSchema {
+  name: string; kind: string; nullable: boolean; optional: boolean;
+  fields: string[]; labels: string[]; maker?: string;
+}
+
+/** Backend-neutral, resolved schema graph shared by HTTP and JSON decoding. */
+export class DataSchemas {
   private names = new Map<string, string>();
-  private output: string[] = [];
-  private forwards: string[] = [];
+  readonly nodes: DataSchema[] = [];
   private project: Project;
   private constructorName: (definition: Definition) => string;
   constructor(project: Project, constructorName: (definition: Definition) => string) {
@@ -36,19 +40,31 @@ export class NativeSchemas {
     const key = JSON.stringify(this.identity(type));
     const previous = this.names.get(key); if (previous) return previous;
     const name = 'aug_schema_' + this.names.size;
-    this.names.set(key, name); this.forwards.push(`static const AugSchema ${name};`);
-    let kind = 'AUG_SCHEMA_' + type.name.toUpperCase(), fields: string[] = [], labels: string[] = [], maker = 'NULL';
+    this.names.set(key, name);
+    const schema: DataSchema = {name, kind: type.name.toUpperCase(), nullable: type.nullable,
+      optional: !!type.optional, fields: [], labels: []};
+    this.nodes.push(schema);
     if (type.def?.node.kind === 'class' && type.def.node.record) {
-      kind = 'AUG_SCHEMA_RECORD';
+      schema.kind = 'RECORD';
       const node = type.def.node, params = new Map(node.typeParams.map((param, i) => [param, type.args[i]]));
-      fields = node.fields.map(field => '&' + this.request(schemaType(this.project, field.type, type.def!.file, params)));
-      labels = node.fields.map(field => JSON.stringify(field.name)); maker = this.constructorName(type.def);
-    } else fields = type.args.map(arg => '&' + this.request(arg));
-    if (fields.length) this.output.push(`static const AugSchema *const ${name}_fields[] = {${fields.join(', ')}};`);
-    if (labels.length) this.output.push(`static const char *const ${name}_names[] = {${labels.join(', ')}};`);
-    this.output.push(`static const AugSchema ${name} = {${kind}, ${type.nullable ? 'true' : 'false'}, ${type.optional ? 'true' : 'false'}, ${fields.length}, ${fields.length ? name + '_fields' : 'NULL'}, ${labels.length ? name + '_names' : 'NULL'}, ${maker}};`);
+      schema.fields = node.fields.map(field => this.request(schemaType(this.project, field.type, type.def!.file, params)));
+      schema.labels = node.fields.map(field => field.name); schema.maker = this.constructorName(type.def);
+    } else schema.fields = type.args.map(arg => this.request(arg));
     return name;
   }
   private identity(type: Ty): unknown { return [type.id, type.nullable, !!type.optional, type.args.map(arg => this.identity(arg))]; }
-  declarations(): string { return [...this.forwards, ...this.output].join('\n'); }
+}
+
+/** C representation of the same checked concrete schema graph. */
+export class NativeSchemas extends DataSchemas {
+  declarations(): string {
+    return [...this.nodes.map(schema => `static const AugSchema ${schema.name};`), ...this.nodes.flatMap(schema => {
+      const {name, fields, labels} = schema;
+      return [
+        ...(fields.length ? [`static const AugSchema *const ${name}_fields[] = {${fields.map(field => '&' + field).join(', ')}};`] : []),
+        ...(labels.length ? [`static const char *const ${name}_names[] = {${labels.map(label => JSON.stringify(label)).join(', ')}};`] : []),
+        `static const AugSchema ${name} = {AUG_SCHEMA_${schema.kind}, ${schema.nullable ? 'true' : 'false'}, ${schema.optional ? 'true' : 'false'}, ${fields.length}, ${fields.length ? name + '_fields' : 'NULL'}, ${labels.length ? name + '_names' : 'NULL'}, ${schema.maker ?? 'NULL'}, NULL};`
+      ];
+    })].join('\n');
+  }
 }

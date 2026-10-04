@@ -1,0 +1,21 @@
+#!/usr/bin/env node
+// Migration gate: run the existing source/runtime expectations through LLVM.
+import {spawnSync} from 'node:child_process';
+import {resolve} from 'node:path';
+import {conformanceLedger} from './conformance-ledger.mjs';
+import {llvmPlatform} from '../src/llvm-platform.ts';
+const root=resolve(import.meta.dirname,'..');
+llvmPlatform();
+if(!process.env.AUG_LLVM_HOME)throw new Error('LLVM parity requires a matching maintainer tool pack in AUG_LLVM_HOME');
+const suites=[
+  'llvm-ir','llvm-backend','llvm-execution','approved-design','compiler','language-conformance','language-evolution',
+  'workers','worker-runtime','forwarding','conformance-ledger','inferred-contracts','effect-inference','spec','tooling',
+  'robustness','runtime-optimization','oidc-login','documentation','concurrency','interceptors',
+  'web-foundation','web-actions','web-http','web-testing','web-policies','http-head-runtime','web-streams','web-tls',
+];
+const evidence=conformanceLedger(root).manifest.rules.flatMap(rule=>rule.regressions.map(item=>item.file));
+const files=[...new Set([...suites.map(name=>'tests/'+name+'.test.mjs'),...evidence])];
+const result=spawnSync(process.execPath,['--test','--test-concurrency=2',...files],
+  {cwd:root,stdio:'inherit',env:{...process.env,AUG_TEST_BACKEND:'llvm'}});
+if(result.error)throw result.error;
+process.exitCode=result.status??1;

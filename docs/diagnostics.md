@@ -4,7 +4,7 @@ Start with the diagnostic's file, line, and message. The code identifies the rul
 
 Terminal diagnostics include the source line, a pointer to the location, and a `help:` explanation. `aug check --json` preserves structured diagnostics for tooling. Fix the first dependency or configuration error before investigating follow-on name errors.
 
-If `aug run` cannot prepare or start a program, its message identifies the failed stage. A missing C compiler includes the host installation command and the `CC` override. A failed download identifies the library and URL; retry after checking the connection. A failed native build links its log. An offline cache miss explains how to prepare it online. Changed installed source packages require an explicit `aug install` so a run does not hide unexpected edits. A program stopped by a signal reports that signal after its own runtime output.
+If `aug run` cannot prepare or start a program, its message identifies the failed stage. A missing or incompatible artifact names the required platform and version. A failed download identifies the library and URL; retry after checking the connection. An offline cache miss explains how to prepare it online. C reference builds report missing host tools separately. Changed installed source packages require an explicit `aug install` so a run does not hide unexpected edits. A program stopped by a signal reports that signal after its own runtime output.
 
 When a fix changes a dependency, effect, error, or mutable input, review the caller's contract too. A suggested edit can satisfy a language rule without deciding the right recovery or design for your application. [The book](learn/index.md) includes deliberate mistakes you can check and repair yourself.
 
@@ -46,13 +46,13 @@ Both braces and indentation are accepted. The formatter uses main.yaml preferenc
 
 ### EFFECT
 
-Bodies infer `changes self` for state transitions and `changes input` for borrowed inputs. Bodyless interfaces declare permitted changes. Receive I/O capabilities through dependency headers. Executable bodies infer capability operations, mutations, and escaping checked errors. Bodyless interfaces declare their allowed effects with `uses dependency.operation`; explicit clauses remain checked bounds. Calls and interceptor layers must fit the effective contract.
+Executable bodies infer state changes, capability calls, and escaping checked errors. Bodyless interfaces state permitted changes and I/O with `changes` and `uses dependency.operation`. An explicit clause limits what the implementation and its interceptors may do. Receive I/O capabilities through `resolve` inputs in the declaration header.
 
-Public fields and managed inputs grant reading. Mark local storage mutable when it needs initialization-independent changes. Constructors are pure; move startup effects into a named method. drop performs only local cleanup and cannot acquire effects/errors through interceptors.
+Public fields and managed inputs grant reading. Mark local storage `mutable` when it needs writes after initialization. Constructors are pure; move startup effects into a named method. `drop` performs only local cleanup; interceptors cannot add effects or errors to it.
 
 ### DI
 
-Bindings belong in main, imported compositions, or test setup. Targets have only resolve header inputs and satisfy their key. The compiler rejects missing edges, duplicate keys, cycles, unsafe scoped retention, and effectful bound construction.
+Put bindings in `main.aug`, an imported composition, or test setup. A provider must implement its key and have only `resolve` constructor inputs. The checker rejects missing bindings, duplicate keys, cycles, scoped references retained too long, and I/O during bound construction.
 
 Stateful objects default to fresh. Shared state requires `shared mutable`; scoped state requires `scoped mutable`. Resolve scoped dependencies inside scope; keep their references there.
 
@@ -72,7 +72,7 @@ A child task keeps its captured objects available until `wait for` or its scope 
 
 A checked error reaches main without a compatible catch, or exceeds an explicit unless bound. Bodies infer escaping errors when unless is omitted. The language uses `unless`; THROWS is the diagnostic identifier retained for tooling.
 
-**Propagate with unless** adds the specific error to the enclosing contract. At composition statements, **Catch and report the failure** creates a visible recovery template. Choose domain recovery deliberately; no fix silently discards an error.
+**Propagate with unless** adds the specific error to the enclosing contract. At composition statements, **Catch and report the failure** creates a visible recovery template. Fill in the recovery template with the handling your application needs.
 
 Errors must implement Error. List.get can raise IndexError, dynamic division ArithmeticError, file operations FileError, and c_int conversion ConversionError. Annotated callable errors include every layer's unless clause. Bound constructors must handle their layer errors internally.
 
@@ -98,7 +98,7 @@ Next exists only inside around. `next()` forwards original inputs; `next(y=value
 | DOC | @param labels, value-return tags, and error tags must match the effective signature. Unknown tags are errors. Missing public docs become warnings only when enabled. |
 | CONFIG | main.yaml uses the supported keys and simple YAML lists. Unknown/duplicate keys and invalid values fail during check. |
 | FFI | Use supported boundary types, matching C widths, labeled inputs, unsafe, and an inferred or declared C.function effect. |
-| NATIVE | A C compiler error mapped to its .aug file and line. Fix the boundary declaration or linker configuration; inspect emit-c for generated details. |
+| NATIVE | A native build or link failure mapped to source or an artifact requirement. Check the named boundary or artifact; use emit-llvm for compiler diagnostics, or emit-c for an explicit C reference build. |
 
 See [testing](testing.md) and [native tooling](tooling.md) for executable examples and exact limits.
 
@@ -110,4 +110,4 @@ Change protocol reports include the exact source/candidate revision. `CHANGE_STA
 
 ## INFERENCE: add a type anchor
 
-The compiler cannot infer a result when recursive calls have no concrete return evidence, or when generic contracts keep expanding. State a finite `returns T`, `uses`, or `unless` contract at that boundary. Empty collections also need a contextual item type. This does not require repeating contracts on ordinary bodies.
+The compiler cannot infer a result when recursive calls have no concrete return evidence, or when generic contracts keep expanding. State a finite `returns T`, `uses`, or `unless` contract at that boundary. Empty collections also need a contextual item type. Other executable bodies continue to infer these clauses.

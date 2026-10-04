@@ -1,0 +1,1576 @@
+{
+  "format": 1,
+  "rules": [
+    {
+      "id": "BLOCKS",
+      "summary": "Braces and indentation preserve statements; ambiguous indentation is rejected.",
+      "reference": "grammar.md#blocks-and-declarations",
+      "productions": [
+        "Block"
+      ],
+      "cases": [
+        "values",
+        "old-prefix"
+      ],
+      "regressions": [
+        {
+          "file": "tests/approved-design.test.mjs",
+          "test": "ambiguous indentation, missing bodies and accidental nesting are rejected"
+        }
+      ]
+    },
+    {
+      "id": "FUNCTIONS",
+      "summary": "Bare functions use labels and inferred body contracts; bodyless functions require native declarations.",
+      "reference": "reference.md#types-labels-and-generics",
+      "productions": [
+        "Function"
+      ],
+      "cases": [
+        "values",
+        "unlabeled-call"
+      ],
+      "regressions": [
+        {
+          "file": "tests/compiler.test.mjs",
+          "test": "calling a bodyless top-level function is a compile error"
+        }
+      ]
+    },
+    {
+      "id": "FORWARD",
+      "summary": "Contextual forwarding aliases inherit resolved imported target contracts; unsupported profiles and cycles fail closed.",
+      "reference": "grammar.md#blocks-and-declarations",
+      "productions": [
+        "Forward"
+      ],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/forwarding.test.mjs",
+          "test": "inferred results/errors and omitted optional inputs retain target identities despite same-spelled local types"
+        },
+        {
+          "file": "tests/forwarding.test.mjs",
+          "test": "unsupported profiles, private targets, local targets, bodies, annotations and cycles fail closed"
+        }
+      ]
+    },
+    {
+      "id": "CLASSES",
+      "summary": "Classes implement interfaces. Fields initialize before initialize and methods.",
+      "reference": "reference.md#classes-records-and-local-state",
+      "productions": [
+        "Class",
+        "ClassBlock",
+        "Initialize"
+      ],
+      "cases": [
+        "interfaces"
+      ],
+      "regressions": [
+        {
+          "file": "tests/spec.test.mjs",
+          "test": "initialize establishes local class state and record validation with checked errors"
+        }
+      ]
+    },
+    {
+      "id": "RECORDS",
+      "summary": "Records contain immutable data and can validate construction with checked errors.",
+      "reference": "reference.md#classes-records-and-local-state",
+      "productions": [
+        "Record"
+      ],
+      "cases": [
+        "records"
+      ],
+      "regressions": [
+        {
+          "file": "tests/inferred-contracts.test.mjs",
+          "test": "record validation infers checked failures; construction stays pure and main handles them"
+        }
+      ]
+    },
+    {
+      "id": "INTERFACES",
+      "summary": "Interfaces inherit contracts and defaults; conflicting defaults require an implementation.",
+      "reference": "reference.md#classes-records-and-local-state",
+      "productions": [
+        "Interface"
+      ],
+      "cases": [
+        "interfaces"
+      ],
+      "regressions": [
+        {
+          "file": "tests/compiler.test.mjs",
+          "test": "multiple interface inheritance uses both defaults"
+        }
+      ]
+    },
+    {
+      "id": "INTERCEPTORS",
+      "summary": "Layers wrap calls in order, map labeled inputs, and delegate at most once per path.",
+      "reference": "reference.md#interceptors",
+      "productions": [
+        "Interceptor",
+        "Tags",
+        "Mapping"
+      ],
+      "cases": [
+        "interceptors"
+      ],
+      "regressions": [
+        {
+          "file": "tests/interceptors.test.mjs",
+          "test": "mutually exclusive next calls are allowed, repeated and catch retry paths are rejected"
+        }
+      ]
+    },
+    {
+      "id": "GENERICS",
+      "summary": "Concrete arguments satisfy constraints; only interfaces declare checked variance.",
+      "reference": "reference.md#types-labels-and-generics",
+      "productions": [
+        "Generics",
+        "Generic",
+        "Type",
+        "Types"
+      ],
+      "cases": [
+        "interfaces",
+        "generic-mismatch"
+      ],
+      "regressions": [
+        {
+          "file": "tests/approved-design.test.mjs",
+          "test": "invariant aliases, conflicting inference, invalid variance and unmet constraints fail early"
+        }
+      ]
+    },
+    {
+      "id": "LABELS",
+      "summary": "Ordinary inputs need labels; same-name shorthand selects the matching parameter.",
+      "reference": "grammar.md#imports-bindings-and-calls",
+      "productions": [
+        "Parameter",
+        "CallInput"
+      ],
+      "cases": [
+        "values",
+        "unlabeled-call"
+      ],
+      "regressions": [
+        {
+          "file": "tests/compiler.test.mjs",
+          "test": "positional, duplicate, and injected arguments are rejected"
+        }
+      ]
+    },
+    {
+      "id": "IMPORTS",
+      "summary": "Imports are explicit, private names cannot cross files, and folder boundaries require exports.",
+      "reference": "reference.md#imports-and-visibility",
+      "productions": [
+        "Import",
+        "Export"
+      ],
+      "cases": [
+        "private-import",
+        "unexported-folder"
+      ],
+      "regressions": [
+        {
+          "file": "tests/compiler.test.mjs",
+          "test": "every crossed folder boundary must export its child"
+        }
+      ]
+    },
+    {
+      "id": "PACKAGES",
+      "summary": "Repository imports resolve exact source identities and integrity-checked native artifacts.",
+      "reference": "native-packages.md",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/native-packages.test.mjs",
+          "test": "a changed native selection cannot bypass the verified source manifest"
+        }
+      ]
+    },
+    {
+      "id": "DI",
+      "summary": "Bindings resolve in dependency order, and scoped values cache and cannot escape.",
+      "reference": "reference.md#dependency-injection-and-lifetimes",
+      "productions": [
+        "Composition",
+        "Binding",
+        "Include",
+        "Resolve"
+      ],
+      "cases": [
+        "dependency-scopes",
+        "capabilities"
+      ],
+      "regressions": [
+        {
+          "file": "tests/approved-design.test.mjs",
+          "test": "scoped DI caches within a scope, restores nested scopes, and rejects escape"
+        }
+      ]
+    },
+    {
+      "id": "EFFECTS",
+      "summary": "Inferred effects remain bounded by public interfaces; constructors stay pure and locks exclude I/O.",
+      "reference": "reference.md#functions-effects-and-capabilities",
+      "productions": [
+        "Paths"
+      ],
+      "cases": [
+        "capabilities"
+      ],
+      "regressions": [
+        {
+          "file": "tests/effect-inference.test.mjs",
+          "test": "explicit uses is an upper bound; constructors and lock regions retain their checks"
+        }
+      ]
+    },
+    {
+      "id": "ASSIGNMENT",
+      "summary": "Equals and to assign values with the same checked types and ownership rules.",
+      "reference": "grammar.md#imports-bindings-and-calls",
+      "productions": [
+        "Assignment"
+      ],
+      "cases": [
+        "values"
+      ],
+      "regressions": [
+        {
+          "file": "tests/compiler.test.mjs",
+          "test": "to works for typed generics, owned declarations, and member mutation"
+        }
+      ]
+    },
+    {
+      "id": "FLOW",
+      "summary": "Conditions are bool, logical words short circuit, and loops and returns retain checked flow.",
+      "reference": "grammar.md#control-flow-and-tests",
+      "productions": [
+        "Statement"
+      ],
+      "cases": [
+        "values",
+        "symbolic-logic"
+      ],
+      "regressions": [
+        {
+          "file": "tests/compiler.test.mjs",
+          "test": "logical operators skip the unneeded operand"
+        }
+      ]
+    },
+    {
+      "id": "MATCH",
+      "summary": "Optional values contain a value or null; checked patterns narrow values and require coverage.",
+      "reference": "reference.md#null-matching-and-checked-failures",
+      "productions": [
+        "Pattern",
+        "MatchCase"
+      ],
+      "cases": [
+        "records",
+        "collections"
+      ],
+      "regressions": [
+        {
+          "file": "tests/approved-design.test.mjs",
+          "test": "empty inputs infer from sibling labels and invalid records/matches/numbers are rejected"
+        }
+      ]
+    },
+    {
+      "id": "ERRORS",
+      "summary": "Thrown values implement Error and callers catch or propagate all effective failures.",
+      "reference": "reference.md#null-matching-and-checked-failures",
+      "productions": [],
+      "cases": [
+        "checked-cleanup",
+        "unhandled-error",
+        "non-error"
+      ],
+      "regressions": [
+        {
+          "file": "tests/inferred-contracts.test.mjs",
+          "test": "explicit contracts remain assertions; unhandled inferred errors are checked in main"
+        }
+      ]
+    },
+    {
+      "id": "OWNERSHIP",
+      "summary": "Owned moves invalidate the source and release exactly once; borrows exclude aliases.",
+      "reference": "reference.md#ownership-and-read-access",
+      "productions": [],
+      "cases": [
+        "checked-cleanup",
+        "move-use",
+        "alias-read",
+        "readonly-write"
+      ],
+      "regressions": [
+        {
+          "file": "tests/language-conformance.test.mjs",
+          "test": "OWN-1: moving an owned value invalidates its old name and drops it once"
+        }
+      ]
+    },
+    {
+      "id": "CLEANUP",
+      "summary": "Scope exits join children before cleanup; always runs on returns, errors and cancellation.",
+      "reference": "language-conformance.md#what-native-execution-guarantees",
+      "productions": [],
+      "cases": [
+        "checked-cleanup"
+      ],
+      "regressions": [
+        {
+          "file": "tests/concurrency.test.mjs",
+          "test": "try locals drop before always on normal, return and failure exits"
+        }
+      ]
+    },
+    {
+      "id": "TASKS",
+      "summary": "Task captures, scope joins, deferred errors and ordered waits preserve resource lifetimes.",
+      "reference": "reference.md#null-matching-and-checked-failures",
+      "productions": [],
+      "cases": [
+        "workers",
+        "start-without-scope"
+      ],
+      "regressions": [
+        {
+          "file": "tests/language-conformance.test.mjs",
+          "test": "TASK-18: waiting for a dynamic collection element does not release sibling captures"
+        }
+      ]
+    },
+    {
+      "id": "WORKERS",
+      "summary": "Workers run on OS threads with private heaps and copied data; native handles stay local.",
+      "reference": "workers.md",
+      "productions": [],
+      "cases": [
+        "workers",
+        "worker-shared"
+      ],
+      "regressions": [
+        {
+          "file": "tests/workers.test.mjs",
+          "test": "worker errors cancel and join siblings and release local resources"
+        },
+        {
+          "file": "tests/workers.test.mjs",
+          "test": "copied records, nested maps, sets and errors survive collection in either heap"
+        },
+        {
+          "file": "tests/native-bindings.test.mjs",
+          "test": "native worker permission is an explicit boolean promise and defaults to false"
+        },
+        {
+          "file": "tests/tooling.test.mjs",
+          "test": "worker help, semantic color and completion distinguish the contextual keyword from user names"
+        }
+      ]
+    },
+    {
+      "id": "COLLECTIONS",
+      "summary": "List, tuple, set and map literals infer types; iteration snapshots preserve insertion order.",
+      "reference": "reference.md#collections-and-iteration",
+      "productions": [],
+      "cases": [
+        "collections",
+        "mixed-list"
+      ],
+      "regressions": [
+        {
+          "file": "tests/language-evolution.test.mjs",
+          "test": "hash maps and sets resize, preserve values, and compare tuple keys by value"
+        }
+      ]
+    },
+    {
+      "id": "NUMBERS",
+      "summary": "Integer arithmetic wraps at 64 bits, division is checked and C narrowing rejects overflow.",
+      "reference": "reference.md#null-matching-and-checked-failures",
+      "productions": [],
+      "cases": [
+        "values"
+      ],
+      "regressions": [
+        {
+          "file": "tests/approved-design.test.mjs",
+          "test": "recoverable list and arithmetic errors, optional lookup, and exact wrapping integers"
+        }
+      ]
+    },
+    {
+      "id": "TEXT",
+      "summary": "Text is valid UTF-8 without NUL; bytes retain lengths and text conversion is checked.",
+      "reference": "native-packages.md",
+      "productions": [],
+      "cases": [
+        "text",
+        "nul-text"
+      ],
+      "regressions": [
+        {
+          "file": "tests/tooling.test.mjs",
+          "test": "FFI widths, narrowing errors and native benchmark reports are explicit"
+        }
+      ]
+    },
+    {
+      "id": "TESTS",
+      "summary": "Same-file groups rebuild setup for each case and check typed rows independently.",
+      "reference": "testing.md",
+      "productions": [
+        "Test",
+        "Group",
+        "Case",
+        "TestName"
+      ],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/approved-design.test.mjs",
+          "test": "same-file function suites use explicit imported fixtures and independent parameter rows"
+        }
+      ]
+    },
+    {
+      "id": "HTTP",
+      "summary": "Endpoint wire types, statuses and policy options are checked before native dispatch.",
+      "reference": "web.md",
+      "productions": [
+        "Endpoint",
+        "PolicyOption"
+      ],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/web-testing.test.mjs",
+          "test": "same-file endpoint cases exercise routing, binding, errors, and streaming with fresh DI"
+        }
+      ]
+    },
+    {
+      "id": "HTML",
+      "summary": "Components escape text and attributes and check deferred HTTP actions.",
+      "reference": "web.md",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/web-foundation.test.mjs",
+          "test": "server components embed checked HTML and escape interpolated text and attributes"
+        }
+      ]
+    },
+    {
+      "id": "NATIVE",
+      "summary": "Native declarations require descriptor-checked ownership, unsafe calls and supported platforms.",
+      "reference": "native-packages.md",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/native-packages.test.mjs",
+          "test": "opaque resources have checked acquisition, labeled loans, errors and ownership"
+        }
+      ]
+    },
+    {
+      "id": "SPECS",
+      "summary": "Specifications are deterministic and describe checked public contracts and linked dependencies.",
+      "reference": "specifications.md",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/spec.test.mjs",
+          "test": "spec generation is byte deterministic across project locations and validates all offline links"
+        }
+      ]
+    },
+    {
+      "id": "OWN-2",
+      "summary": "A local owned value is dropped once when its scope throws.",
+      "reference": "reference.md#ownership-and-read-access",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/language-conformance.test.mjs",
+          "test": "OWN-2: a local owned value is dropped once when its scope throws"
+        }
+      ]
+    },
+    {
+      "id": "SHARED-1",
+      "summary": "An owned Shared wrapper drops its transferred payload once.",
+      "reference": "reference.md#ownership-and-read-access",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/language-conformance.test.mjs",
+          "test": "SHARED-1: an owned Shared wrapper drops its transferred payload once"
+        }
+      ]
+    },
+    {
+      "id": "BORROW-1",
+      "summary": "A mutable loan excludes alias reads until its block exits.",
+      "reference": "reference.md#ownership-and-read-access",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/language-conformance.test.mjs",
+          "test": "BORROW-1: a mutable loan excludes alias reads until its block exits"
+        }
+      ]
+    },
+    {
+      "id": "TASK-1",
+      "summary": "A task read loan pins an alias until wait releases it.",
+      "reference": "reference.md#null-matching-and-checked-failures",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/language-conformance.test.mjs",
+          "test": "TASK-1: a task read loan pins an alias until wait releases it"
+        }
+      ]
+    },
+    {
+      "id": "TASK-2",
+      "summary": "Starting a child inside a borrow suspends the parent mutation right.",
+      "reference": "reference.md#null-matching-and-checked-failures",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/language-conformance.test.mjs",
+          "test": "TASK-2: starting a child inside a borrow suspends the parent mutation right"
+        }
+      ]
+    },
+    {
+      "id": "TASK-3",
+      "summary": "A task reading self blocks a direct field write until wait.",
+      "reference": "reference.md#null-matching-and-checked-failures",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/language-conformance.test.mjs",
+          "test": "TASK-3: a task reading self blocks a direct field write until wait"
+        }
+      ]
+    },
+    {
+      "id": "TASK-4",
+      "summary": "Every branch must wait before the parent regains mutation rights.",
+      "reference": "reference.md#null-matching-and-checked-failures",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/language-conformance.test.mjs",
+          "test": "TASK-4: every branch must wait before the parent regains mutation rights"
+        }
+      ]
+    },
+    {
+      "id": "TASK-5",
+      "summary": "An inner scope join releases its capture before an outer mutation.",
+      "reference": "reference.md#null-matching-and-checked-failures",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/language-conformance.test.mjs",
+          "test": "TASK-5: an inner scope join releases its capture before an outer mutation"
+        }
+      ]
+    },
+    {
+      "id": "TASK-6",
+      "summary": "Collection pressure cannot reclaim a resource captured by a child.",
+      "reference": "reference.md#null-matching-and-checked-failures",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/language-conformance.test.mjs",
+          "test": "TASK-6: collection pressure cannot reclaim a resource captured by a child"
+        }
+      ]
+    },
+    {
+      "id": "TASK-7",
+      "summary": "Waiting for the last loop child does not release earlier captures.",
+      "reference": "reference.md#null-matching-and-checked-failures",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/language-conformance.test.mjs",
+          "test": "TASK-7: waiting for the last loop child does not release earlier captures"
+        }
+      ]
+    },
+    {
+      "id": "TASK-8",
+      "summary": "An owned Shared wrapper cannot move while a child borrows it.",
+      "reference": "reference.md#null-matching-and-checked-failures",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/language-conformance.test.mjs",
+          "test": "TASK-8: an owned Shared wrapper cannot move while a child borrows it"
+        }
+      ]
+    },
+    {
+      "id": "TASK-9",
+      "summary": "Moving an owned Shared wrapper into its child transfers cleanup.",
+      "reference": "reference.md#null-matching-and-checked-failures",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/language-conformance.test.mjs",
+          "test": "TASK-9: moving an owned Shared wrapper into its child transfers cleanup"
+        }
+      ]
+    },
+    {
+      "id": "TASK-10",
+      "summary": "A child capture pins mutable nested fields through aliases.",
+      "reference": "reference.md#null-matching-and-checked-failures",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/language-conformance.test.mjs",
+          "test": "TASK-10: a child capture pins mutable nested fields through aliases"
+        }
+      ]
+    },
+    {
+      "id": "TASK-11",
+      "summary": "Shared construction cannot transfer a child-borrowed wrapper.",
+      "reference": "reference.md#null-matching-and-checked-failures",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/language-conformance.test.mjs",
+          "test": "TASK-11: Shared construction cannot transfer a child-borrowed wrapper"
+        }
+      ]
+    },
+    {
+      "id": "TASK-12",
+      "summary": "Owned rebinding cannot transfer a child-borrowed wrapper.",
+      "reference": "reference.md#null-matching-and-checked-failures",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/language-conformance.test.mjs",
+          "test": "TASK-12: owned rebinding cannot transfer a child-borrowed wrapper"
+        }
+      ]
+    },
+    {
+      "id": "TASK-13",
+      "summary": "An owned return cannot outrun a child borrowing its value.",
+      "reference": "reference.md#null-matching-and-checked-failures",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/language-conformance.test.mjs",
+          "test": "TASK-13: an owned return cannot outrun a child borrowing its value"
+        }
+      ]
+    },
+    {
+      "id": "TASK-14",
+      "summary": "Freeze waits for a child with mutable access.",
+      "reference": "reference.md#null-matching-and-checked-failures",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/language-conformance.test.mjs",
+          "test": "TASK-14: freeze waits for a child with mutable access"
+        }
+      ]
+    },
+    {
+      "id": "TASK-15",
+      "summary": "Waiting for one loop iteration does not release earlier children.",
+      "reference": "reference.md#null-matching-and-checked-failures",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/language-conformance.test.mjs",
+          "test": "TASK-15: waiting for one loop iteration does not release earlier children"
+        }
+      ]
+    },
+    {
+      "id": "TASK-16",
+      "summary": "A scope inside each loop iteration joins its own child.",
+      "reference": "reference.md#null-matching-and-checked-failures",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/language-conformance.test.mjs",
+          "test": "TASK-16: a scope inside each loop iteration joins its own child"
+        }
+      ]
+    },
+    {
+      "id": "TASK-17",
+      "summary": "Throwing an owned error cannot outrun a child borrowing it.",
+      "reference": "reference.md#null-matching-and-checked-failures",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/language-conformance.test.mjs",
+          "test": "TASK-17: throwing an owned error cannot outrun a child borrowing it"
+        }
+      ]
+    },
+    {
+      "id": "TASK-19",
+      "summary": "Waiting for a task that references another task does not join both.",
+      "reference": "reference.md#null-matching-and-checked-failures",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/language-conformance.test.mjs",
+          "test": "TASK-19: waiting for a task that references another task does not join both"
+        }
+      ]
+    },
+    {
+      "id": "ERROR-1",
+      "summary": "Starting defers a checked error until wait or implicit join.",
+      "reference": "reference.md#null-matching-and-checked-failures",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/language-conformance.test.mjs",
+          "test": "ERROR-1: starting defers a checked error until wait or implicit join"
+        }
+      ]
+    },
+    {
+      "id": "ERROR-2",
+      "summary": "A parent error stays primary while cancelled child cleanup fails.",
+      "reference": "reference.md#null-matching-and-checked-failures",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/language-conformance.test.mjs",
+          "test": "ERROR-2: a parent error stays primary while cancelled child cleanup fails"
+        }
+      ]
+    },
+    {
+      "id": "ERROR-3",
+      "summary": "A public Task<T> parameter exposes Error at a helper wait.",
+      "reference": "reference.md#null-matching-and-checked-failures",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/language-conformance.test.mjs",
+          "test": "ERROR-3: a public Task<T> parameter exposes Error at a helper wait"
+        }
+      ]
+    },
+    {
+      "id": "CLEANUP-1",
+      "summary": "Always executes before a returned result is observed.",
+      "reference": "language-conformance.md#what-native-execution-guarantees",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/language-conformance.test.mjs",
+          "test": "CLEANUP-1: always executes before a returned result is observed"
+        }
+      ]
+    },
+    {
+      "id": "CLEANUP-2",
+      "summary": "Returning from a scope joins its child before the caller resumes.",
+      "reference": "language-conformance.md#what-native-execution-guarantees",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/language-conformance.test.mjs",
+          "test": "CLEANUP-2: returning from a scope joins its child before the caller resumes"
+        }
+      ]
+    },
+    {
+      "id": "SYNTAX-1",
+      "summary": "Braces and indentation preserve ownership and join behavior.",
+      "reference": "reference.md#ownership-and-read-access",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/language-conformance.test.mjs",
+          "test": "SYNTAX-1: braces and indentation preserve ownership and join behavior"
+        }
+      ]
+    },
+    {
+      "id": "CANCEL-1",
+      "summary": "An unhandled child error cancels siblings and runs always cleanup.",
+      "reference": "language-conformance.md#what-native-execution-guarantees",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/language-conformance.test.mjs",
+          "test": "CANCEL-1: an unhandled child error cancels siblings and runs always cleanup"
+        }
+      ]
+    },
+    {
+      "id": "CANCEL-2",
+      "summary": "An inner scope failure cancels outer siblings and joins cleanup.",
+      "reference": "language-conformance.md#what-native-execution-guarantees",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/language-conformance.test.mjs",
+          "test": "CANCEL-2: an inner scope failure cancels outer siblings and joins cleanup"
+        }
+      ]
+    },
+    {
+      "id": "FUNCTIONS-1",
+      "summary": "Records, destructuring, snapshot iteration and checked matching run natively.",
+      "reference": "reference.md#types-labels-and-generics",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/approved-design.test.mjs",
+          "test": "records, destructuring, snapshot iteration and checked matching run natively"
+        }
+      ]
+    },
+    {
+      "id": "FUNCTIONS-2",
+      "summary": "Stateful DI is fresh by default, scopes cache locally, and compositions are imported explicitly.",
+      "reference": "reference.md#types-labels-and-generics",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/approved-design.test.mjs",
+          "test": "stateful DI is fresh by default, scopes cache locally, and compositions are imported explicitly"
+        }
+      ]
+    },
+    {
+      "id": "FUNCTIONS-3",
+      "summary": "Formatting preserves comments and uses the configured canonical syntax.",
+      "reference": "reference.md#types-labels-and-generics",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/approved-design.test.mjs",
+          "test": "formatting preserves comments and uses the configured canonical syntax"
+        }
+      ]
+    },
+    {
+      "id": "FUNCTIONS-4",
+      "summary": "Ownership rejects alias overlap, escaping loans, and moves on loop re-entry.",
+      "reference": "reference.md#types-labels-and-generics",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/approved-design.test.mjs",
+          "test": "ownership rejects alias overlap, escaping loans, and moves on loop re-entry"
+        }
+      ]
+    },
+    {
+      "id": "FUNCTIONS-5",
+      "summary": "Colon blocks accept tabs, spaces, nesting, braced children and multiline collections.",
+      "reference": "reference.md#types-labels-and-generics",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/approved-design.test.mjs",
+          "test": "colon blocks accept tabs, spaces, nesting, braced children and multiline collections"
+        }
+      ]
+    },
+    {
+      "id": "FUNCTIONS-6",
+      "summary": "Indented declarations, constructor bodies, interceptors and same-file tests compile.",
+      "reference": "reference.md#types-labels-and-generics",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/approved-design.test.mjs",
+          "test": "indented declarations, constructor bodies, interceptors and same-file tests compile"
+        }
+      ]
+    },
+    {
+      "id": "FUNCTIONS-7",
+      "summary": "Generic constraints permit interface methods and explicit checked variance permits producers.",
+      "reference": "reference.md#types-labels-and-generics",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/approved-design.test.mjs",
+          "test": "generic constraints permit interface methods and explicit checked variance permits producers"
+        }
+      ]
+    },
+    {
+      "id": "FUNCTIONS-8",
+      "summary": "Non-null branches, short-circuit conditions and early return guards narrow local values.",
+      "reference": "reference.md#types-labels-and-generics",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/approved-design.test.mjs",
+          "test": "non-null branches, short-circuit conditions and early return guards narrow local values"
+        }
+      ]
+    },
+    {
+      "id": "FUNCTIONS-9",
+      "summary": "Explicit capabilities and header DI forward dependencies through class and function calls.",
+      "reference": "reference.md#types-labels-and-generics",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/approved-design.test.mjs",
+          "test": "explicit capabilities and header DI forward dependencies through class and function calls"
+        }
+      ]
+    },
+    {
+      "id": "FUNCTIONS-10",
+      "summary": "Declared mutation and private storage use public constructor labels and caller borrow.",
+      "reference": "reference.md#types-labels-and-generics",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/approved-design.test.mjs",
+          "test": "declared mutation and private storage use public constructor labels and caller borrow"
+        }
+      ]
+    },
+    {
+      "id": "FUNCTIONS-11",
+      "summary": "Pure bodies, read-only aliases, ambient I/O and hidden service lookups are rejected.",
+      "reference": "reference.md#types-labels-and-generics",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/approved-design.test.mjs",
+          "test": "pure bodies, read-only aliases, ambient I/O and hidden service lookups are rejected"
+        }
+      ]
+    },
+    {
+      "id": "FUNCTIONS-12",
+      "summary": "Injected return references retain scope origins and transitive shared captures fail.",
+      "reference": "reference.md#types-labels-and-generics",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/approved-design.test.mjs",
+          "test": "injected return references retain scope origins and transitive shared captures fail"
+        }
+      ]
+    },
+    {
+      "id": "FUNCTIONS-13",
+      "summary": "Cleanup annotations cannot add recoverable errors.",
+      "reference": "reference.md#types-labels-and-generics",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/approved-design.test.mjs",
+          "test": "cleanup annotations cannot add recoverable errors"
+        }
+      ]
+    },
+    {
+      "id": "FUNCTIONS-14",
+      "summary": "Test setup includes explicitly imported compositions with private adapters.",
+      "reference": "reference.md#types-labels-and-generics",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/approved-design.test.mjs",
+          "test": "test setup includes explicitly imported compositions with private adapters"
+        }
+      ]
+    },
+    {
+      "id": "FUNCTIONS-15",
+      "summary": "Public bodies infer forward generic results, capabilities and escaping errors; specs and hints agree.",
+      "reference": "reference.md#types-labels-and-generics",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/inferred-contracts.test.mjs",
+          "test": "public bodies infer forward generic results, capabilities and escaping errors; specs and hints agree"
+        }
+      ]
+    },
+    {
+      "id": "FUNCTIONS-16",
+      "summary": "Mutation inference follows aliases and calls while managed access and pure interfaces stay checked.",
+      "reference": "reference.md#types-labels-and-generics",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/inferred-contracts.test.mjs",
+          "test": "mutation inference follows aliases and calls while managed access and pure interfaces stay checked"
+        }
+      ]
+    },
+    {
+      "id": "FUNCTIONS-17",
+      "summary": "Recursive results need an anchor and inferred results still require all paths to return.",
+      "reference": "reference.md#types-labels-and-generics",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/inferred-contracts.test.mjs",
+          "test": "recursive results need an anchor and inferred results still require all paths to return"
+        }
+      ]
+    },
+    {
+      "id": "FUNCTIONS-18",
+      "summary": "Cached editor revisions infer afresh without mutating parsed source or old views.",
+      "reference": "reference.md#types-labels-and-generics",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/inferred-contracts.test.mjs",
+          "test": "cached editor revisions infer afresh without mutating parsed source or old views"
+        }
+      ]
+    },
+    {
+      "id": "FUNCTIONS-19",
+      "summary": "Inferred endpoint results generate a typed OpenAPI response.",
+      "reference": "reference.md#types-labels-and-generics",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/inferred-contracts.test.mjs",
+          "test": "inferred endpoint results generate a typed OpenAPI response"
+        }
+      ]
+    },
+    {
+      "id": "FUNCTIONS-20",
+      "summary": "Concise contracts compile to native C, preserve mutation, checked errors and generic values.",
+      "reference": "reference.md#types-labels-and-generics",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/inferred-contracts.test.mjs",
+          "test": "concise contracts compile to native C, preserve mutation, checked errors and generic values"
+        }
+      ]
+    },
+    {
+      "id": "FUNCTIONS-21",
+      "summary": "A forwarding interceptor infers the target result independently for each application.",
+      "reference": "reference.md#types-labels-and-generics",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/inferred-contracts.test.mjs",
+          "test": "a forwarding interceptor infers the target result independently for each application"
+        }
+      ]
+    },
+    {
+      "id": "FUNCTIONS-22",
+      "summary": "Javadoc checks inferred results and errors, and generic method contracts supply result context.",
+      "reference": "reference.md#types-labels-and-generics",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/inferred-contracts.test.mjs",
+          "test": "Javadoc checks inferred results and errors, and generic method contracts supply result context"
+        }
+      ]
+    },
+    {
+      "id": "FUNCTIONS-23",
+      "summary": "HTTP policies infer only their mapped capability operations; explicit limits still apply.",
+      "reference": "reference.md#types-labels-and-generics",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/inferred-contracts.test.mjs",
+          "test": "HTTP policies infer only their mapped capability operations; explicit limits still apply"
+        }
+      ]
+    },
+    {
+      "id": "FUNCTIONS-24",
+      "summary": "Inherited default bodies and nested interceptor errors participate in the inference fixed point.",
+      "reference": "reference.md#types-labels-and-generics",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/inferred-contracts.test.mjs",
+          "test": "inherited default bodies and nested interceptor errors participate in the inference fixed point"
+        }
+      ]
+    },
+    {
+      "id": "FUNCTIONS-25",
+      "summary": "Empty result literals need an anchor; other returns can supply their item type.",
+      "reference": "reference.md#types-labels-and-generics",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/inferred-contracts.test.mjs",
+          "test": "empty result literals need an anchor; other returns can supply their item type"
+        }
+      ]
+    },
+    {
+      "id": "FUNCTIONS-26",
+      "summary": "Pure local synchronized storage needs no artificial effect clause.",
+      "reference": "reference.md#types-labels-and-generics",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/inferred-contracts.test.mjs",
+          "test": "pure local synchronized storage needs no artificial effect clause"
+        }
+      ]
+    },
+    {
+      "id": "FUNCTIONS-27",
+      "summary": "Long inferred capability contracts collapse inline and remain complete in tooltips.",
+      "reference": "reference.md#types-labels-and-generics",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/inferred-contracts.test.mjs",
+          "test": "long inferred capability contracts collapse inline and remain complete in tooltips"
+        }
+      ]
+    },
+    {
+      "id": "INTERCEPTORS-1",
+      "summary": "Constructor interceptor failure releases the completed object and its owned fields before catch.",
+      "reference": "reference.md#interceptors",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/interceptors.test.mjs",
+          "test": "constructor interceptor failure releases the completed object and its owned fields before catch"
+        }
+      ]
+    },
+    {
+      "id": "INTERCEPTORS-2",
+      "summary": "Interceptor layers enter in order, map subsets, override inputs, and unwind results.",
+      "reference": "reference.md#interceptors",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/interceptors.test.mjs",
+          "test": "interceptor layers enter in order, map subsets, override inputs, and unwind results"
+        }
+      ]
+    },
+    {
+      "id": "INTERCEPTORS-3",
+      "summary": "Next without overrides preserves original arguments even after parameter reassignment.",
+      "reference": "reference.md#interceptors",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/interceptors.test.mjs",
+          "test": "next without overrides preserves original arguments even after parameter reassignment"
+        }
+      ]
+    },
+    {
+      "id": "INTERCEPTORS-4",
+      "summary": "Generic interceptors wrap constructors, methods, void calls, and default interface dispatch.",
+      "reference": "reference.md#interceptors",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/interceptors.test.mjs",
+          "test": "generic interceptors wrap constructors, methods, void calls, and default interface dispatch"
+        }
+      ]
+    },
+    {
+      "id": "INTERCEPTORS-5",
+      "summary": "Constructor interceptor dependencies participate in eager DI ordering.",
+      "reference": "reference.md#interceptors",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/interceptors.test.mjs",
+          "test": "constructor interceptor dependencies participate in eager DI ordering"
+        }
+      ]
+    },
+    {
+      "id": "INTERCEPTORS-6",
+      "summary": "A fresh interceptor instance is created for each invocation.",
+      "reference": "reference.md#interceptors",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/interceptors.test.mjs",
+          "test": "a fresh interceptor instance is created for each invocation"
+        }
+      ]
+    },
+    {
+      "id": "INTERCEPTORS-7",
+      "summary": "A processor can short circuit without calling its target.",
+      "reference": "reference.md#interceptors",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/interceptors.test.mjs",
+          "test": "a processor can short circuit without calling its target"
+        }
+      ]
+    },
+    {
+      "id": "INTERCEPTORS-8",
+      "summary": "Interceptor errors are checked on functions and constructor calls.",
+      "reference": "reference.md#interceptors",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/interceptors.test.mjs",
+          "test": "interceptor errors are checked on functions and constructor calls"
+        }
+      ]
+    },
+    {
+      "id": "INTERCEPTORS-9",
+      "summary": "Next errors can be handled by an interceptor.",
+      "reference": "reference.md#interceptors",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/interceptors.test.mjs",
+          "test": "next errors can be handled by an interceptor"
+        }
+      ]
+    },
+    {
+      "id": "INTERCEPTORS-10",
+      "summary": "Incompatible labels, mappings, results, and next overrides fail before C compilation.",
+      "reference": "reference.md#interceptors",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/interceptors.test.mjs",
+          "test": "incompatible labels, mappings, results, and next overrides fail before C compilation"
+        }
+      ]
+    },
+    {
+      "id": "INTERCEPTORS-11",
+      "summary": "Owned inputs are forwarded once or dropped on short circuit.",
+      "reference": "reference.md#interceptors",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/interceptors.test.mjs",
+          "test": "owned inputs are forwarded once or dropped on short circuit"
+        }
+      ]
+    },
+    {
+      "id": "INTERCEPTORS-12",
+      "summary": "Using a moved interceptor input after next is a compile error.",
+      "reference": "reference.md#interceptors",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/interceptors.test.mjs",
+          "test": "using a moved interceptor input after next is a compile error"
+        }
+      ]
+    },
+    {
+      "id": "INTERCEPTORS-13",
+      "summary": "Interceptor errors must respect implemented interface contracts.",
+      "reference": "reference.md#interceptors",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/interceptors.test.mjs",
+          "test": "interceptor errors must respect implemented interface contracts"
+        }
+      ]
+    },
+    {
+      "id": "INTERCEPTORS-14",
+      "summary": "Interceptors import and export normally, and private interceptors stay file scoped.",
+      "reference": "reference.md#interceptors",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/interceptors.test.mjs",
+          "test": "interceptors import and export normally, and private interceptors stay file scoped"
+        }
+      ]
+    },
+    {
+      "id": "INTERCEPTORS-15",
+      "summary": "Annotated native functions retain the unsafe requirement and wrap the native call.",
+      "reference": "reference.md#interceptors",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/interceptors.test.mjs",
+          "test": "annotated native functions retain the unsafe requirement and wrap the native call"
+        }
+      ]
+    },
+    {
+      "id": "INTERCEPTORS-16",
+      "summary": "Generic inferred and explicit interceptor inputs work with nested collection types.",
+      "reference": "reference.md#interceptors",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/interceptors.test.mjs",
+          "test": "generic inferred and explicit interceptor inputs work with nested collection types"
+        }
+      ]
+    },
+    {
+      "id": "INTERCEPTORS-17",
+      "summary": "Owned return contracts survive an interceptor chain.",
+      "reference": "reference.md#interceptors",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/interceptors.test.mjs",
+          "test": "owned return contracts survive an interceptor chain"
+        }
+      ]
+    },
+    {
+      "id": "INTERCEPTORS-18",
+      "summary": "Interceptor constructor DI cycles are rejected.",
+      "reference": "reference.md#interceptors",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/interceptors.test.mjs",
+          "test": "interceptor constructor DI cycles are rejected"
+        }
+      ]
+    },
+    {
+      "id": "INTERCEPTORS-19",
+      "summary": "Generic interceptor inputs infer interface arguments from concrete classes.",
+      "reference": "reference.md#interceptors",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/interceptors.test.mjs",
+          "test": "generic interceptor inputs infer interface arguments from concrete classes"
+        }
+      ]
+    },
+    {
+      "id": "INTERCEPTORS-20",
+      "summary": "Transparent constructor interception preserves a fresh result for ownership.",
+      "reference": "reference.md#interceptors",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/interceptors.test.mjs",
+          "test": "transparent constructor interception preserves a fresh result for ownership"
+        }
+      ]
+    },
+    {
+      "id": "INTERCEPTORS-21",
+      "summary": "Constructor interception returning an existing input cannot claim fresh ownership.",
+      "reference": "reference.md#interceptors",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/interceptors.test.mjs",
+          "test": "constructor interception returning an existing input cannot claim fresh ownership"
+        }
+      ]
+    },
+    {
+      "id": "INTERCEPTORS-22",
+      "summary": "Nonvoid around bodies must return or throw on every path.",
+      "reference": "reference.md#interceptors",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/interceptors.test.mjs",
+          "test": "nonvoid around bodies must return or throw on every path"
+        }
+      ]
+    },
+    {
+      "id": "INTERCEPTORS-23",
+      "summary": "Constructor and interceptor roots survive repeated garbage collection.",
+      "reference": "reference.md#interceptors",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/interceptors.test.mjs",
+          "test": "constructor and interceptor roots survive repeated garbage collection"
+        }
+      ]
+    },
+    {
+      "id": "INTERCEPTORS-24",
+      "summary": "Around resolve parameters use DI and are omitted from argument mappings.",
+      "reference": "reference.md#interceptors",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/interceptors.test.mjs",
+          "test": "around resolve parameters use DI and are omitted from argument mappings"
+        }
+      ]
+    },
+    {
+      "id": "INTERCEPTORS-25",
+      "summary": "Private interceptor declarations cannot be imported or exported.",
+      "reference": "reference.md#interceptors",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/interceptors.test.mjs",
+          "test": "private interceptor declarations cannot be imported or exported"
+        }
+      ]
+    },
+    {
+      "id": "INTERCEPTORS-26",
+      "summary": "Two next labels cannot override one target argument.",
+      "reference": "reference.md#interceptors",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/interceptors.test.mjs",
+          "test": "two next labels cannot override one target argument"
+        }
+      ]
+    }
+  ]
+}

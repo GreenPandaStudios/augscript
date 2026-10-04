@@ -4,7 +4,7 @@
 
 ## Startup
 
-It sets `resource` of type [`Resource`](resource.aug.md#symbol-Resource) to a [`Resource`](resource.aug.md#symbol-Resource). `resource` of type [`Resource`](resource.aug.md#symbol-Resource) owns this value. It prints `"using resource"`.
+It creates [`Resource`](resource.aug.md#symbol-Resource) and stores the result in owned `resource` ([`Resource`](resource.aug.md#symbol-Resource)). It prints `"using resource"`.
 
 ## Dependencies
 

@@ -2,8 +2,8 @@
   "name": "augscript",
   "displayName": "AugScript",
   "description": "Language support for AugScript",
-  "icon": "media/augscript.png",
-  "version": "0.20.0",
+  "icon": "media/august-mark.png",
+  "version": "0.23.1",
   "repository": {
     "type": "git",
     "url": "https://github.com/GreenPandaStudios/augscript.git",
@@ -42,7 +42,7 @@
     "artwork": "node scripts/render-artwork.mjs"
   },
   "devDependencies": {
-    "@vscode/vsce": "3.9.2",
+    "@vscode/vsce": "4.0.1-1",
     "sharp": "0.35.4"
   },
   "contributes": {
@@ -240,5 +240,6 @@
         }
       }
     }
-  }
+  },
+  "augustCompilerVersion": "0.23.0"
 }

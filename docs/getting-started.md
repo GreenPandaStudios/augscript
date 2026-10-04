@@ -9,11 +9,11 @@ next:
 
 # Your first project
 
-Build a greeting application, run its test, and read its generated explanation. You will see how an August project starts and how a small module keeps its contract, implementation, and test together.
+Create a greeting application, run it, and check its test. Then read the explanation generated from the same code.
 
-You need Node.js 24 or later and npm. To run native programs, you also need a C11 compiler on macOS or Linux. On macOS, install Xcode Command Line Tools for Clang; on Linux, install a C toolchain.
+You need Node.js 24 or later and npm on macOS 14+ with Apple Silicon, or GNU/Linux x64/ARM64 with glibc 2.36+. August downloads its own LLVM compiler and prebuilt runtime. You do not install Clang, LLVM, or an SDK.
 
-You can run the compiler and native libraries in [a VS Code Dev Container](dev-containers.md) instead of installing a host C toolchain. The [Docker guide](docker.md) covers container builds and deployment.
+You can run the compiler and native libraries in [a VS Code Dev Container](dev-containers.md). The [Docker guide](docker.md) covers container builds and deployment. These instructions use the published August 0.23.0 preview.
 
 ## Create and run the starter
 
@@ -26,13 +26,13 @@ cd hello-august
 aug run
 ```
 
-`init` creates a starter, including `AGENTS.md`, and refuses to replace a nonempty destination. npm supplies the CLI and its core I/O library. `aug run` defaults to the current folder: it checks the project, prepares its dependencies, compiles it, and starts it. The starter needs no additional native libraries. It prints:
+`init` creates a starter, including `AGENTS.md`, and refuses to replace a nonempty destination. npm supplies the CLI and its core I/O library. `aug run` defaults to the current folder: it checks the project, prepares its dependencies, compiles it, and starts it. It prints:
 
 ```text
 Hello, August!
 ```
 
-Keep the terminal in `hello-august` for the rest of this chapter. When you later use JSON, tasks, crypto, or HTTP, the first run downloads verified native sources and builds the required libraries in a reusable cache. Setup progress goes to the terminal's error stream so it does not become application output. August reports a missing system tool with an installation step; it does not install system software for you. [Packages and installation](packages.md) covers version pinning, offline runs, and the optional `npx` workflow.
+Keep the terminal in `hello-august` for the rest of this chapter. The first run downloads the compiler; later runs reuse it. August also downloads libraries when a project needs them. [Packages and installation](packages.md) explains version pinning, offline use, and the optional `npx` workflow.
 
 ## Read the startup file
 
@@ -72,9 +72,9 @@ test SimpleGreeter greeter:
             assert(greeter.greet(name="August") == "Hello, August!")
 ```
 
-The interface is the caller's contract: give `greet` a string named `name`, and receive a string. `SimpleGreeter` implements that contract. Its constructor has no inputs. The method builds a string and returns it.
+`Greeter` requires a method that accepts a string named `name` and returns a string. `SimpleGreeter` provides that method. It joins the name with `Hello, ` and `!`. Its constructor takes no inputs.
 
-The test lives beside the class. Its group constructs a greeter, and its case checks an exact result. The comments explain intent and supply editor help. The code describes what happens when the operation runs.
+The test constructs a greeter and checks its returned string. The comments also appear in editor help.
 
 ## Change the greeting
 
@@ -88,7 +88,7 @@ aug test .
 
 The application should print `Hello, Ada!`. The existing test should still pass: it constructs its own subject and checks the greeting for August. Application startup does not run during the test.
 
-Now deliberately change the call's label from `name` to `person`. `check` should fail because `greet` has no input named `person`. Restore `name` and check again. The checker verifies the contract; the test verifies a behavior you chose to exercise.
+Now deliberately change the call's label from `name` to `person`. `check` should fail because `greet` has no input named `person`. Restore `name` and check again. The checker catches the wrong label before the program runs.
 
 ## Read the generated explanation
 
@@ -97,12 +97,12 @@ aug spec .
 aug spec . --check
 ```
 
-Open `main.aug.md` and `greeting.aug.md`. They describe the bindings, call, greeting behavior, and test. Their dependency links lead to the used declarations. Generation is deterministic and offline; it does not ask a model to summarize your application.
+Open `main.aug.md` and `greeting.aug.md`. They describe the bindings, call, greeting behavior, and test. Their dependency links lead to the used declarations. The compiler generates this text offline. The same source produces the same explanation.
 
 After an edit, regenerate before committing the explanation. `--check` reports stale files and does not write them. [Compiled specifications](specifications.md) explains the full workflow and its limits.
 
 ## Continue with a calculation
 
-You have created, checked, run, tested, and explained an August application. In [Values and functions](learn/values-and-functions.md), you will write a calculation without an injected dependency and learn how labeled shorthand and conditions read.
+Continue with [Values and functions](learn/values-and-functions.md) to write a calculation and use labeled shorthand and conditions.
 
 For a service, try [the weather API starter](weather-api.md). You can also [browse complete projects](examples/index.md) with code and actual compiled specs beside each other. The gallery's Indentation and Braces controls display the same checked program in either block style.

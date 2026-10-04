@@ -17,7 +17,7 @@ outline: [2, 3]
   "format": 1,
   "name": "@example/aug-math",
   "version": "0.1.0",
-  "compiler": "0.20.0",
+  "compiler": "0.23.0",
   "source": "src",
   "dependencies": {}
 }

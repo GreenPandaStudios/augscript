@@ -1,27 +1,61 @@
-# Web and crypto library gaps
+# Web and crypto library limits
 
-This ledger records gaps discovered while implementing the confirmed web design and the same-application OpenID Connect proof. Status must reflect executable evidence.
+August provides typed endpoints, server-rendered pages, streams, and native HTTP and cryptographic adapters. This page records the limits that matter when building a service. The OpenID Connect example is a development application, not a production identity provider.
 
-| Gap | Why the proof needs it | Status |
-| --- | --- | --- |
-| Native HTTP/TLS transport | Provider and client must exchange real HTTP requests in one app without blocking each other. | HTTP/1.1, TLS peer verification, HTTP/2 and an HTTP/3-only QUIC client pass socket tests. Same-process outbound requests suspend the request task. Independent implementations and broader protocol conformance remain to be exercised. |
-| Typed requests, responses, headers, cookies, redirects and forms | Login, authorization, token exchange, session issuance and logout need explicit protocol control. | The native login flow verifies typed JSON and form input, duplicate-preserving headers, browser cookies and redirects. Multipart forms, inbound streaming and broader HTTP conformance remain. |
-| JSON decoding and length-aware binary/text values | JWKS, tokens, request records, and valid JSON need safe lossless serialization. | Strict parsing, int64 record decoding, value-or-null optional fields and shared frozen collections pass native tests. Omitted optional fields become null. More HTTP input coverage remains. |
-| Cryptographic capabilities | Secure randomness, SHA-256/PKCE, signatures, verification, key handling and constant-time comparison. | Injectable GnuTLS adapter, RSA JWK export/import, fixed-algorithm/type JOSE and PBKDF2 run in the proof. Node independently verifies the provider signature. General secret-buffer zeroization and key lifecycle APIs remain. |
-| Protocol-specific error bodies | OAuth token errors require OAuth JSON rather than the default RFC 9457 body. | Token grant and form failures return OAuth JSON; transport-level limits still use HTTP Problem Details. The response contract is visible in generated OpenAPI. |
-| OpenID Connect protocol support | Discovery, exact client/redirect checks, PKCE, nonce/state, one-use codes, and ID-token validation. | Same-application authorization-code flow passes. Wrong PKCE, replay, tampered JWTs, provider-token/session substitution, protected access and logout revocation pass. Broader provider profiles, account persistence, federation, key rotation and certification remain. |
-| Scoped concurrent state | Authorization transactions and codes need bounded lifetimes and synchronized access. | Bounded ExpiringStore<T> uses Shared<Map<...>> with atomic removal. Scope joining, cancellation, cleanup and task capture loans pass native/compiler tests. Scheduling remains on one OS thread; bounded multicore workers, channels and broadcasts remain. |
-| Server markup and typed HTTP actions | Login forms and protected pages must be authored in August. | Typed components, escaped markup and deferred handle actions pass compiler/socket tests. POST/PATCH/PUT/DELETE forms use generated same-origin event transport. Provider sign-in and app logout pass browser interaction testing with typed actions. Ordinary no-referrer HTML form POST sends a null Origin in this browser; the proof uses actions while preserving strict Origin and CSRF checks. |
-| Same-file endpoint tests and OpenAPI | Public behavior and contracts must remain discoverable and verifiable. | Strict OpenAPI 3.2.1 generation, the served API explorer, and same-file endpoint pipeline tests pass. The test client exercises native routing, binding, DI, serialization, and bounded streaming collection. Editor help and context preserve route, wire source, policy options and endpoint cases. Test transport parsing is not a substitute for socket tests. |
-| Streaming and interceptor policies | Streams need backpressure, cancellation and whole-request policy lifetime. | Yielded SSE, Bytes and Html pass socket tests with a single bounded 64 KiB pending item and transport backpressure. Errors before output map to responses; errors after headers terminate output. TCP disconnect runs always cleanup and request logging. Authentication before decode, permission checks, rate limits, exact-origin CORS/preflight, gzip and streaming deadlines pass native socket tests. Policies currently precede custom parameter interceptors. Inbound streams, request-reception deadlines and broader compression negotiation remain. |
-| Native dependency tooling | Full web/crypto builds need a private native stack on each host platform. | Pinned private bootstrap and native tests pass on macOS ARM and Linux ARM. Linux x86-64 runs in Docker CI. The build and runtime images include matching native libraries; other platforms remain unverified. |
-| Public task error contracts | Task helpers should show their delayed failures in context. | Locally scheduled errors follow task aliases, collections, waits, exception paths and implicit joins. A helper accepting Task<T> must handle or declare Error; a public type spelling for a narrower delayed-error contract remains. |
-| Injected captures and owned shared payloads | Concurrent helpers must preserve dependency loans and resource lifetime. | The compiler tracks task reads through injected dependencies as well as written arguments and receivers. A native regression verifies that dropping an owned `Shared<T>` drops its transferred payload before later locals. Broader ownership and cancellation conformance work remains in the language roadmap. |
+## HTTP transport
 
-Release review regressions cover duplicate scalar query/header/cookie/form inputs without process failure, inherited child deadlines, lock progress, owned resource lifetime, sibling and grouped cleanup errors, bounded response statuses, int64 action captures, complex and Json-valued forms, empty streams, and post-yield endpoint-test failures.
+Socket tests cover HTTP/1.1, TLS peer verification, HTTP/2, and an HTTP/3-only QUIC client. Outbound requests suspend their task, so a service can call its own endpoints. Independent protocol testing and broader HTTP conformance remain open.
+
+Compiler/runtime packs include the HTTP and crypto libraries for macOS ARM64 and GNU/Linux x86-64/ARM64 with glibc 2.36+. The CLI downloads them automatically. Windows, musl, and cross-compilation are unsupported.
+
+## Requests and responses
+
+The login example uses typed JSON and form inputs, repeated headers, cookies, redirects, and explicit OAuth error bodies. Strict parsing preserves signed 64-bit values. Optional fields contain a value or null; omitted fields become null. Frozen collections can be shared for reading.
+
+Tests cover duplicate scalar query, header, cookie, and form inputs without process failure, bounded response statuses, large integer action captures, and complex or `Json`-valued forms. Multipart forms, inbound request streams, and wider input/protocol coverage remain open. Transport limits return HTTP Problem Details even when an endpoint uses OAuth errors.
+
+## Pages and actions
+
+Typed components escape markup. Deferred `handle` actions submit POST, PATCH, PUT, and DELETE requests through generated same-origin browser transport. Browser tests exercise provider sign-in and application logout while preserving the example's Origin and CSRF checks. August does not compile application code for the browser in this version.
+
+## Streams and policies
+
+SSE, `Bytes`, and `Html` streams pass socket tests. One pending item is limited to 64 KiB and sent under backpressure. Errors before output become responses; errors after headers terminate output. Disconnect tests check `always` cleanup, request logging, and server survival under managed collection pressure.
+
+Authentication runs before decoding. Permission checks, rate limits, exact-origin CORS and preflight, gzip, and streaming deadlines pass native socket tests. HTTP policies precede custom parameter interceptors. Header dispatch, lazy body reception, configurable absolute reception deadlines and bounded drain now have HTTP/1.1 socket regressions. HTTP/2 and HTTP/3 reception/backpressure qualification, inbound streams and broader compression negotiation remain open.
+
+Streaming HEAD preserves headers and status when stopping the producer. A cleanup failure before headers returns 500. HEAD completes at its headers on HTTP/1.1 and HTTP/2; the prepared response survives session cleanup. Tests also cover empty streams and endpoint-test failures after a yield.
+
+## Tests and OpenAPI
+
+OpenAPI 3.2.1 generation and the served API explorer describe selected routes, input sources, schemas, response variants, and policies. Same-file endpoint tests exercise native routing, dependency injection, decoding, serialization, and bounded stream collection. Each case starts with fresh process state.
+
+Endpoint tests do not exercise socket parsing or TLS negotiation. Those need live transport tests. Editor help and context reports include route details, wire sources, policy options, and test cases.
+
+## Task and resource lifetimes
+
+HTTP transport uses cooperative tasks. August 0.23.0 includes multicore worker tasks with private heaps and copied inputs/results; worker functions cannot access parent bindings or transport objects. Channels and broadcasts are not implemented. `ExpiringStore<T>` uses a bounded `Shared<Map<...>>` with atomic removal for authorization transactions and codes.
+
+Tests cover scope joining, cancellation, inherited deadlines, lock progress, owned resource lifetime, and sibling/grouped cleanup errors. The compiler tracks task captures through injected dependencies as well as explicit arguments and receivers. Dropping an owned `Shared<T>` releases its transferred payload before later locals. Broader ownership and cancellation coverage remains on the language roadmap.
+
+Locally scheduled errors follow task aliases, collections, waits, exception paths, and implicit joins. A helper receiving `Task<T>` must handle or declare `Error`. A public type for a narrower delayed-error set is not yet available.
+
+## Cryptography
+
+The injectable GnuTLS adapter provides secure randomness, SHA-256/PKCE, RSA JWK import/export, fixed-algorithm and token-type JOSE handling, Ed25519 verification and a trusted issuer/audience/type/time/subject identity verifier, PBKDF2, and constant-time content comparison. The login example uses these operations, and Node independently verifies the provider's signature. General secret-buffer zeroization and key lifecycle APIs remain open.
+
+## OpenID Connect
+
+The same application hosts the provider and relying party. Tests cover exact client and redirect checks, S256 PKCE, state and nonce, one-use codes, ID-token validation, protected access, and logout revocation. They reject wrong PKCE, replayed codes, tampered JWTs, and substitution of provider tokens for application sessions.
+
+Accounts, signing keys, and sessions live in memory. Persistent account management, broader provider profiles, federation, key rotation, distributed revocation, and certification are not implemented. The example still performs the protocol checks required by its supported authorization-code flow.
 
 ## Scope boundaries
 
-The proof is a development identity provider in the same application as its relying party. Identity-provider certification, persistent account management, federation, key rotation, and distributed session revocation require explicit follow-up work unless delivered and verified here. The provider must still implement the protocol checks used by its declared flow.
+Use the example to study the supported flow and build local experiments. Review the gaps above before extending it into an identity service. Core language conformance and runtime reliability are tracked in the [roadmap](roadmap.md); wider HTTP and identity-provider support are library work.
 
-Multicore worker and channel/broadcast patches were rejected by automatic approval review because their execution, ownership and wakeup changes affect the runtime broadly. Those patches were not applied. Explicit approval requests remain pending; scheduling remains on one OS thread.
+## Native ingestion qualification
+
+The [service boundary guide](native-service-boundaries.md) records the current ingestion gap work. Strict JSON remains unchanged; `parseCompatible` provides a bounded legacy boundary parser. Binary/text operations have independent byte, BigInt, UTF-16 and float32 comparisons. PostgreSQL is an ordinary native package with worker-local pool and lease ownership; its disposable-database tests cover transactions, savepoints, bytea, SQLSTATE, timeouts, cancellation and cleanup.
+
+The [0.23.0 worker/runtime release](https://github.com/GreenPandaStudios/augscript/releases/tag/v0.23.0) and [public Linux ARM64 cold-install check](./public/qualification/0.23.0/native-ingestion-linux-arm64.json) passed their release gates. These socket, crypto and database checks do not qualify the production ingestion service. Its authorization order, retry conservation, lost-response behavior, database recovery, TLS deployment and load/failure tests must still run against the selected public artifacts. No production routes or databases were changed by this work.

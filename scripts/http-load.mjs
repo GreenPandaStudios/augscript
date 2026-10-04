@@ -63,7 +63,8 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1
     for (let i = 0; i < rounds; i++) {
       await httpLoad(url, concurrency, warmup, expected);
       const result = await httpLoad(url, concurrency, requests, expected);
-      delete result.latencyMs.samples; results.push(result);
+      if(!process.argv.includes('--raw-samples'))delete result.latencyMs.samples;
+      results.push(result);
     }
     const measured = statistics(results.map(result => result.requestsPerSecond));
     console.log(JSON.stringify({url, concurrency, warmup, rounds:results, requestsPerSecond:measured}, null, 2));

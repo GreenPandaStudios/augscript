@@ -18,6 +18,7 @@ import {builtinTypes} from './builtins.ts';
 import { libraryChild, libraryRelative } from './libraries.ts';
 import { importSource, isGitSource, sourceAlias } from './git-packages.ts';
 import { snippetBody, snippetCatalog } from './snippets.ts';
+import {nativeFact,nativeDependencies,nativeDescription} from './native-facts.ts';
 
 export interface EditorItem {
   label: string;
@@ -93,6 +94,8 @@ const keywords: EditorItem[] = [
     insertText:'endpoint ${1:GET} "${2:/users/{id}}" as ${3:getUser}(int id from path) returns ${4:User}:\n    $0'},
   {label:'endpoint test',kind:'snippet',detail:'Exercise the HTTP pipeline beside its declaration',documentation:languageHelp.test.documentation,
     insertText:'test endpoint ${1:getUser} client:\n    when requests:\n        it succeeds:\n            response = client.request(method="GET", path="${2:/users/1}")\n            assert(condition=response.status == 200)\n'},
+  {label:'worker scope',kind:'snippet',detail:'Isolated multicore computation',documentation:languageHelp.worker.documentation,
+    insertText:'scope:\n    task = start worker ${1:calculate}(${2:values})\n    wait for task as ${3:result}\n    $0'},
   {label:'task scope',kind:'snippet',detail:'Joined child computations',documentation:languageHelp.scope.documentation,
     insertText:'scope:\n    task = start ${1:load}()\n    wait for task as result\n    $0'},
 ];
@@ -179,10 +182,12 @@ function methodItem(checked: CheckedProject, method: MethodDecl,
   const contract = checked.effectContracts.get(method);
   const effects = contract ? `${contract.inferred ? 'Inferred capabilities; effective' : 'Effective'} contract: changes ${contract.changes.join(', ') || 'nothing'}; capabilities ` +
     `${[...contract.uses.values()].map(effect => `${effect.source}.${effect.operation}`).join(', ') || 'none'}.` : '';
+  const native=nativeDependencies(checked,method).map(fact=>nativeDescription(fact,
+    '[`native.abi.json`]('+pathToFileURL(checked.native.providerDescriptors.get(fact.provider)!).href+')')).join('\n\n');
   return { label: method.name, kind, detail: label, signature: signature(method, true, errors, checked),
     documentation: [doc?.markdown, isPrivateName(method.name) ? 'Private to its declaring type.' : '',
       method.forward ? `Inherited interface. Immediate target: ${forwardLink(method.forward.targetId)}. Final implementation: ${forwardLink(method.forward.implementationId)}. This declaration forwards each call once, unchanged.` : '',
-      injectionHelp, effects, interceptorDescription(checked, method), 'Call arguments require labels; their order does not matter.']
+      injectionHelp, effects, native, interceptorDescription(checked, method), 'Call arguments require labels; their order does not matter.']
       .filter(Boolean).join('\n\n'),
     parameters: method.params.filter(param => !param.injected)
       .map(param => `${param.label ?? param.name}=${typeName(param.type)}`),
@@ -193,6 +198,11 @@ function methodItem(checked: CheckedProject, method: MethodDecl,
 
 function definitionItem(checked: CheckedProject, def: Definition): EditorItem {
   const node = def.node;
+  if(node.kind==='resource'){
+    const native=nativeFact(checked,node);
+    return {label:def.name,kind:'type',detail:'extern C resource '+def.name,
+      documentation:native?nativeDescription(native,'[`native.abi.json`]('+pathToFileURL(checked.native.providerDescriptors.get(native.provider)!).href+')'):'Opaque native resource. Its package must declare a release identity.'};
+  }
   if (node.kind === 'function') return methodItem(checked, node, 'function');
   if (node.kind === 'interface') return { label: def.name, kind: 'interface',
     detail: `interface ${def.name}${node.typeParams.length ? `<${node.typeParams.join(', ')}>` : ''}`,
@@ -222,10 +232,11 @@ function definitionItem(checked: CheckedProject, def: Definition): EditorItem {
   const explicit = node.fields.filter(field => !field.injected);
   const callSignature = `${def.name}${node.typeParams.length ? `<${node.typeParams.join(', ')}>` : ''}` +
     `(${explicit.map(field => `${field.label ?? field.name}=${typeName(field.type)}`).join(', ')})`;
-  const errors = [...new Set((checked.interceptorPlans.get(node) ?? []).flatMap(layer => layer.errors.map(tyName)))];
+  const errors = [...new Set([...(checked.constructorContracts.get(node)?.errors.map(tyName)??node.validationErrors?.map(typeName)??[]),
+    ...(checked.interceptorPlans.get(node) ?? []).flatMap(layer => layer.errors.map(tyName))])];
   return { label: def.name, kind: 'class', detail: `${node.record?'record ':''}${label}` +
-      (node.implements.length?` implements ${node.implements.map(typeName).join(' and ')}`:'') +
-      (errors.length ? ` unless ${errors.join(', ')}` : ''),
+      (errors.length ? ` unless ${errors.join(' and ')}` : '') +
+      (node.implements.length?` implements ${node.implements.map(typeName).join(', ')}`:''),
     signature: callSignature + (errors.length ? ` unless ${errors.join(', ')}` : ''), parameters: explicit.map(field => `${field.label ?? field.name}=${typeName(field.type)}`),
     documentation: [doc?.markdown,
       node.fields.some(field => field.injected) ? `Injected from bindings: ${node.fields.filter(field => field.injected).map(parameterText).join(', ')}.` : '',
@@ -237,7 +248,7 @@ function definitionItem(checked: CheckedProject, def: Definition): EditorItem {
 function typeFromRef(checked: CheckedProject, file: string, ref: TypeRef): Ty {
   const def = ref.definitionId?checked.project.definitions.get(ref.definitionId):checked.project.scopes.get(file)?.get(ref.name);
   return { id: def?.id ?? `builtin:${ref.name}`, name: ref.name,
-    kind: def?.node.kind === 'class' || def?.node.kind === 'interface' || def?.node.kind === 'interceptor' ? def.node.kind : 'builtin',
+    kind: def?.node.kind === 'class' || def?.node.kind === 'interface' || def?.node.kind === 'interceptor' || def?.node.kind==='resource' ? def.node.kind : 'builtin',
     args: ref.args.map(arg => typeFromRef(checked, file, arg)), nullable: ref.nullable, def };
 }
 
@@ -561,7 +572,8 @@ export function hoverInfo(checked: CheckedProject, fileName: string,
           documentation: help.documentation, start, end: start + match[0].length };
     }
   }
-  const token = lex(file.path, file.source).tokens.find(entry =>
+  const hoverTokens = lex(file.path, file.source).tokens;
+  const token = hoverTokens.find(entry =>
     entry.kind !== 'eof' && entry.span.start <= offset && offset < entry.span.end);
   if (!token) return undefined;
   const { start, end } = token.span;
@@ -641,7 +653,9 @@ export function hoverInfo(checked: CheckedProject, fileName: string,
     const item = methodItem(checked, around, 'method');
     return { ...item, documentation: [item.documentation, languageHelp.around.documentation].filter(Boolean).join('\n\n'), start, end };
   }
-  const help = token.value==='forward'&&!file.items.some(item=>item.kind==='function'&&item.forward&&item.span.start===start)?undefined:languageHelp[token.value];
+  const workerKeyword = token.value === 'worker' && hoverTokens[hoverTokens.indexOf(token) - 1]?.kind === 'start' && ['identifier', 'start', 'wait'].includes(hoverTokens[hoverTokens.indexOf(token) + 1]?.kind);
+  const forwardKeyword = token.value === 'forward' && file.items.some(item => item.kind === 'function' && item.forward && item.span.start === start);
+  const help = (token.value === 'worker' && !workerKeyword) || (token.value === 'forward' && !forwardKeyword) ? undefined : languageHelp[token.value];
   if (help) return { label: token.value,
     kind: help.category === 'type' ? 'type' : help.category === 'function' ? 'function' : 'keyword',
     detail: help.detail, documentation: help.documentation, start, end };
@@ -779,6 +793,7 @@ export function semanticTokens(checked: CheckedProject, fileName: string): Edito
     const next = tokens[i + 1]?.kind;
     let type: EditorToken['type'] | undefined;
     if(token.value==='forward'&&file.items.some(item=>item.kind==='function'&&item.forward&&item.span.start===token.span.start))type='keyword';
+    if (token.value === 'worker' && previous === 'start' && ['identifier', 'start', 'wait'].includes(next)) type = 'keyword';
     else if (previous === '.') type = next === '(' || next === '<' ? 'method' : 'property';
     else if (previous === 'interface' || previous === 'capability') type = 'interface';
     else if (previous === 'record') type = 'class';
@@ -794,7 +809,7 @@ export function semanticTokens(checked: CheckedProject, fileName: string): Edito
     else if (['int', 'c_int', 'float', 'bool', 'string', 'void'].includes(token.value)) type = 'type';
     else {
       const def = scope?.get(token.value);
-      if (def) type = def.node.kind === 'interceptor' ? 'decorator' : def.node.kind === 'composition' ? 'function' : def.node.kind;
+      if (def) type = def.node.kind === 'resource' ? 'type' : def.node.kind === 'interceptor' ? 'decorator' : def.node.kind === 'composition' ? 'function' : def.node.kind;
     }
     if (type) result.push({ line: token.span.line - 1, start: token.span.column - 1,
       length: token.span.end - token.span.start, type,

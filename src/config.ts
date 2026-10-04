@@ -3,20 +3,21 @@ import { join } from 'node:path';
 import type { Diagnostic } from './ast.ts';
 
 export interface Config {
+  backend?: 'c' | 'llvm';
   output?: string; optimization: 'debug' | 'release'; libraries: string[]; library_paths: string[];
   assignment: 'equals' | 'to'; block_style: 'braces' | 'indent'; indentation: 'spaces' | 'tabs';
   lint: string[]; strict_modules: boolean; max_public_symbols: number; max_dependencies: number;
   module_dependencies: string[];
   packages: Record<string, string>;
   spec: {require_comments: 'none' | 'public' | 'all'};
-  web: {host: string; body_limit: number; response_limit: number; tls: {certificate: string; private_key: string; ca: string}; http3: boolean};
+  web: {host: string; body_limit: number; response_limit: number; headers_timeout: number; request_timeout: number; drain_timeout: number; max_requests: number; tls: {certificate: string; private_key: string; ca: string}; http3: boolean};
   openapi: {enabled: boolean; title: string; version: string; path: string; docs: string; output: string};
 }
 export const lintRules = ['wildcard_imports', 'public_helpers', 'public_docs', 'broad_errors', 'discarded_errors', 'architecture'];
 export function loadConfig(root: string): { config: Config; diagnostics: Diagnostic[] } {
   const config: Config = { optimization: 'debug', libraries: [], library_paths: [], assignment: 'equals', block_style: 'braces',
     indentation: 'spaces', lint: [], strict_modules: false, max_public_symbols: 12, max_dependencies: 8, module_dependencies: [], packages: {}, spec: {require_comments:'none'},
-    web:{host:'127.0.0.1', body_limit:1048576, response_limit:4194304, tls:{certificate:'', private_key:'', ca:''}, http3:false},
+    web:{host:'127.0.0.1', body_limit:1048576, response_limit:4194304, headers_timeout:30000, request_timeout:120000, drain_timeout:10000, max_requests:256, tls:{certificate:'', private_key:'', ca:''}, http3:false},
     openapi:{enabled:false, title:'August API', version:'0.1.0', path:'/openapi.json', docs:'/docs', output:'.aug-build/openapi.json'} };
   const file = join(root, 'main.yaml');
   const diagnostics: Diagnostic[] = [];
@@ -61,12 +62,16 @@ export function loadConfig(root: string): { config: Config; diagnostics: Diagnos
         else config.spec.require_comments = value as Config['spec']['require_comments'];
         continue;
       }
-      const known = ['web.host', 'web.body_limit', 'web.response_limit', 'web.http3', 'web.tls.certificate', 'web.tls.private_key', 'web.tls.ca',
+      const known = ['web.host', 'web.body_limit', 'web.response_limit', 'web.http3', 'web.headers_timeout', 'web.request_timeout', 'web.drain_timeout', 'web.max_requests', 'web.tls.certificate', 'web.tls.private_key', 'web.tls.ca',
         'openapi.enabled', 'openapi.title', 'openapi.version', 'openapi.path', 'openapi.docs', 'openapi.output'];
       if (!known.includes(path)) {report(index + 1, `Unknown configuration key ${path}`); continue;}
       if (path === 'web.http3' || path === 'openapi.enabled') {
         if (!['true','false'].includes(value)) report(index + 1, `${path} must be true or false`);
         else if (path === 'web.http3') config.web.http3 = value === 'true'; else config.openapi.enabled = value === 'true';
+      } else if (['web.headers_timeout','web.request_timeout','web.drain_timeout','web.max_requests'].includes(path)) {
+        const maximum=path==='web.max_requests'?65536:3600000;
+        if(!/^[1-9]\d*$/.test(value)||Number(value)>maximum)report(index+1, `${path} must be from 1 to ${maximum}`);
+        else Object.assign(config.web,{[entry[1]]:Number(value)});
       } else if (path === 'web.body_limit' || path === 'web.response_limit') {
         if (!/^[1-9]\d*$/.test(value) || Number(value) > 67108864) report(index + 1, `${path} must be from 1 to 67108864 bytes`);
         else config.web[path.endsWith('body_limit') ? 'body_limit' : 'response_limit'] = Number(value);
@@ -80,7 +85,7 @@ export function loadConfig(root: string): { config: Config; diagnostics: Diagnos
       }
       continue;
     }
-    if (!entry || !(entry[1] in config || entry[1] === 'output')) { report(index + 1, `Unsupported configuration line ${JSON.stringify(raw)}`); continue; }
+    if (!entry || !(entry[1] in config || ['output','backend'].includes(entry[1]))) { report(index + 1, `Unsupported configuration line ${JSON.stringify(raw)}`); continue; }
     const key = entry[1] as keyof Config;
     const value = (entry[2] ?? '').replace(/^(['"])(.*)\1$/, '$2');
     if (seen.has(key)) { report(index + 1, `Duplicate configuration key ${key}`); continue; }
@@ -95,7 +100,7 @@ export function loadConfig(root: string): { config: Config; diagnostics: Diagnos
       if (!/^[1-9]\d*$/.test(value)) report(index + 1, `${key} must be a positive integer`);
       else config[key] = Number(value);
     } else {
-      const choices: Partial<Record<keyof Config, string[]>> = { optimization: ['debug', 'release'], assignment: ['equals', 'to'],
+      const choices: Partial<Record<keyof Config, string[]>> = { backend: ['c','llvm'], optimization: ['debug', 'release'], assignment: ['equals', 'to'],
         block_style: ['braces', 'indent'], indentation: ['spaces', 'tabs'] };
       if (!value || choices[key] && !choices[key]!.includes(value)) report(index + 1, `${key} needs ${choices[key]?.join(' or ') ?? 'a value'}`);
       else Object.assign(config, { [key]: value });

@@ -2,7 +2,7 @@ import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { basename, dirname, join, relative, resolve } from 'node:path';
 import type {
   ClassDecl, CompositionDecl, Diagnostic, ExportDecl, ImportDecl, InterfaceDecl, InterceptorDecl, MethodDecl,
-  SourceFile, TopLevel,
+  SourceFile, TopLevel, ResourceDecl,
 } from './ast.ts';
 import { parse } from './parser.ts';
 import { loadConfig, type Config } from './config.ts';
@@ -14,7 +14,7 @@ import { isGitSource, sourceAlias } from './git-packages.ts';
 import {beginSourceRead,finishSourceRead,type SourcePermit} from './source-transaction.ts';
 import {expandForwarding} from './forwarding.ts';
 
-export type DefinitionNode = ClassDecl | InterfaceDecl | InterceptorDecl | MethodDecl | CompositionDecl;
+export type DefinitionNode = ClassDecl | InterfaceDecl | InterceptorDecl | MethodDecl | CompositionDecl | ResourceDecl;
 export interface Definition {
   id: string;
   name: string;
@@ -121,7 +121,7 @@ export function loadProject(projectRoot: string, overrides: Map<string, string> 
         diagnostics.push(diagnostic(file.path, item.span.line, item.span.column,
           'export declarations belong in export.aug', 'EXPORT'));
       }
-      if (file === main && ['class', 'interface', 'function', 'interceptor', 'test', 'composition'].includes(item.kind)) {
+      if (file === main && ['class', 'interface', 'function', 'interceptor', 'test', 'composition', 'resource'].includes(item.kind)) {
         diagnostics.push(diagnostic(file.path, item.span.line, item.span.column,
           'Define classes, interfaces, functions, and interceptors outside main.aug', 'MAIN'));
       }
@@ -130,7 +130,7 @@ export function loadProject(projectRoot: string, overrides: Map<string, string> 
         diagnostics.push(diagnostic(file.path, item.span.line, item.span.column,
           'Executable statements and bindings belong in main.aug', 'MAIN'));
       }
-      if (item.kind === 'class' || item.kind === 'interface' || item.kind === 'function' || item.kind === 'interceptor' || item.kind === 'composition') {
+      if (item.kind === 'class' || item.kind === 'interface' || item.kind === 'function' || item.kind === 'interceptor' || item.kind === 'composition' || item.kind === 'resource') {
         if (item.name in builtinTypes || builtinFunctions.some(operation => operation.name === item.name) || item.name === 'next') {
           diagnostics.push(diagnostic(file.path, item.span.line, item.span.column,
             `${item.name} is a reserved built-in name`, 'NAME'));

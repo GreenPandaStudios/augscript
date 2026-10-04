@@ -26,4 +26,4 @@ For the experimental revision-bearing edit protocol and native evidence gates, s
 | Measure execution time or HTTP throughput | [Performance](../performance.md) |
 | Assess a trial deployment | [Production readiness](../production-readiness.md) |
 
-For exact syntax and contracts, consult the [language reference](../reference.md) and library API pages. [Complete projects](../examples/index.md) show the files, formatted source, and compiled specs together.
+For exact rules, consult the [language reference](../reference.md) and library API pages. [Complete projects](../examples/index.md) show the files, formatted source, and compiled specs together.

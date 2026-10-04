@@ -73,7 +73,7 @@ export function resolvedType(project: Project, type: Ty): ResolvedType {
   let id=stableId(project,type.id);
   if(type.kind==='param')for(const definition of project.definitions.values()){
     const node=definition.node,headers=node.kind==='function'?[{node,id:definition.id}]:[{node,id:definition.id},...('methods' in node?node.methods.map(method=>({node:method,id:`${definition.id}::${method.name}`})):[])];
-    const header=headers.find(header=>type.id===`param:${definition.file}:${header.node.span.start}:${type.name}`&&header.node.typeParams.includes(type.name));
+    const header=headers.find(header=>type.id===`param:${definition.file}:${header.node.span.start}:${type.name}`&&header.node.typeParams.some(name=>name===type.name));
     if(header){id=`${header.id}::generic:${type.name}`;break;}
   }
   return {id, name: tyName(type), arguments: type.args.map(arg => resolvedType(project, arg)), optional: !!type.nullable || !!type.optional};
@@ -81,7 +81,7 @@ export function resolvedType(project: Project, type: Ty): ResolvedType {
 function referenceType(project: Project, ref: TypeRef, owner: Definition): ResolvedType {
   const def = ref.definitionId?project.definitions.get(ref.definitionId):project.scopes.get(ref.span.file)?.get(ref.name);
   const method='methods' in owner.node?owner.node.methods.find(method=>method.span.start<=ref.span.start&&ref.span.end<=method.span.end&&method.typeParams.includes(ref.name)):undefined;
-  const generic=method?`${owner.id}::${method.name}::generic:${ref.name}`:owner.node.typeParams.includes(ref.name)?`${owner.id}::generic:${ref.name}`:undefined;
+  const generic=method?`${owner.id}::${method.name}::generic:${ref.name}`:owner.node.typeParams.some(name=>name===ref.name)?`${owner.id}::generic:${ref.name}`:undefined;
   return {id: def?.id ?? generic ?? (ref.name in builtinTypes?`builtin:${ref.name}`:`unresolved:${ref.name}`),
     name: typeName(ref), arguments: ref.args.map(arg => referenceType(project, arg, owner)), optional: !!ref.nullable || !!ref.optional};
 }

@@ -200,6 +200,13 @@
     ],
     "description": "Contain a native C call"
   },
+  "An opaque native package resource with checked cleanup": {
+    "prefix": "resource",
+    "body": [
+      "extern C resource ${1:Handle}"
+    ],
+    "description": "An opaque native package resource with checked cleanup"
+  },
   "Start a native HTTP listener": {
     "prefix": "serve",
     "body": [

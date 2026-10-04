@@ -7,6 +7,7 @@ import {spawnSync} from 'node:child_process';
 import {analyzeChangeProject,checkedContext,semanticGraph,projectRevision} from '../src/change-context.ts';
 import {generateC} from '../src/codegen.ts';
 import {compileNative} from '../src/native.ts';
+import {compileLLVM} from '../src/llvm-native.ts';
 import {generateSpecs} from '../src/spec.ts';
 import {formatFile} from '../src/formatter.ts';
 import {hoverInfo} from '../src/editor.ts';
@@ -40,13 +41,14 @@ make() returns Item { return Item(value=7) }
 // Same-name imported aliases are intentionally forbidden by existing module collision rules.
 files['gateway.aug']='import dispatch from bridge\nforward deliver to dispatch\n';
 files['main.aug']=files['main.aug'].replaceAll('dispatch','deliver');
-test('forward chains preserve resolved types, labeled arguments and checked failures in native code',t=>{
+for(const backend of ['c','llvm'])test('forward chains preserve resolved types, labeled arguments and checked failures ('+backend+')',
+ {skip:backend==='llvm'&&!process.env.AUG_LLVM_HOME},t=>{
  const root=fixture(t,files),checked=analyzeChangeProject(root);assert.deepEqual(checked.diagnostics,[]);
  const alias=checked.project.scopes.get(join(root,'gateway.aug')).get('deliver');assert.equal(alias.node.forward.implementationId,'billing/operations.aug:apply');
  const packet=checkedContext(checked,[alias.id]);assert.equal(packet.coverage.requiredContextComplete,true,JSON.stringify({unresolved:packet.unresolved,omissions:packet.omissions}));
  const fact=packet.facts.find(fact=>fact.id===alias.id);assert.equal(fact.contract.inputs[0].type.id,'billing/operations.aug:Item');
  assert.equal(fact.contract.errors[0].id,'billing/operations.aug:Failure');assert.equal(fact.contract.provenance.inputs,'inherited');
- const output=compileNative(root,generateC(checked),{checked});assert.equal(output.status,0,output.error);
+ const output=backend==='llvm'?compileLLVM(checked):compileNative(root,generateC(checked),{checked});assert.equal(output.status,0,output.error);
  const run=spawnSync(output.output,[],{encoding:'utf8'});assert.equal(run.status,0,run.stderr);assert.equal(run.stdout,'7\nfailed\n');
  const file=checked.project.files.get(join(root,'gateway.aug'));assert.match(formatFile(checked.project,file),/forward deliver to dispatch/);
  const hover=hoverInfo(checked,file.path,file.source.indexOf('deliver'));assert.match(hover.detail,/Item item/);assert.match(hover.documentation,/Inherited interface/);
