@@ -2,6 +2,7 @@ import {buildBundle,verifyBundle} from './bundle.ts';
 import {BuildProgress} from './progress.ts';
 import {libraryCatalog} from './library-catalog.ts';
 import {hasRequiredContext} from './context.ts';
+import {dependencyUpdatePreview} from './package-updates.ts';
 import {dependencyReport,packageReadiness,packageInterfaceDiff} from './package-inspection.ts';
 import { existsSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
@@ -73,7 +74,7 @@ function usage(): void {
   process.stdout.write(`AugScript compiler\n\n` +
     `Usage: aug <init|doctor|check|build|bundle|run|emit-c|emit-llvm|emit-ir|test|openapi|format|migrate|spec|bench|explain|context|lsp|symbols|definition|references|graph|complete|hover|fixes|semantic-tokens> [project directory] [options] [-- args]\n` +
     `Find libraries: aug libraries [QUERY] [--json] — search the bundled task catalog without downloads\n` +
-    `Inspect dependencies: aug dependencies [PROJECT] [--json]\n` +
+    `Inspect dependencies: aug dependencies [PROJECT] [--json]; aug update [PROJECT] --preview [--offline] [--json]\n` +
     `Package readiness/diff: aug package check DIRECTORY [--json]; aug package diff BEFORE AFTER [--json]\n` +
     `New application: aug init DIRECTORY [--template hello|weather] [--block-style indent|braces] [--indentation spaces|tabs] [--assignment equals|to]\n` +
     `Diagnose setup: aug doctor [project directory] [--json] — check without downloading or writing files\n` +
@@ -121,6 +122,30 @@ export async function main(argv: string[]): Promise<number> {
         }
       }
       return 0;
+    }catch(error){process.stderr.write(failureMessage(error)+'\n');return 1;}
+  }
+  if(command==='update') {
+    const args=argv.slice(1),paths=args.filter(arg=>!arg.startsWith('-'));
+    if(!args.includes('--preview')||paths.length>1||args.some(arg=>arg.startsWith('-')&&!['--preview','--offline','--json'].includes(arg))){process.stderr.write('Use aug update [PROJECT] --preview [--offline] [--json]. Accept an update separately with aug install --update.\n');return 2;}
+    try{
+      const report=dependencyUpdatePreview(paths[0]??process.cwd(),args.includes('--offline'));
+      if(args.includes('--json'))process.stdout.write(JSON.stringify(report)+'\n');
+      else {
+        for(const item of report.packages){
+          process.stdout.write((item.before?.name??item.after?.name)+': '+(item.before?.version??'(new)')+' -> '+(item.after?.version??'(removed)')+'\n');
+          if(item.before?.source||item.after?.source)process.stdout.write('  commit '+(item.before?.source?.commit??'(none)')+' -> '+(item.after?.source?.commit??'(none)')+'\n');
+          if(item.contracts.status==='checked'&&'changes' in item.contracts){
+            for(const change of item.contracts.changes)process.stdout.write('  public '+change.name+': '+change.differences.map(value=>value.path).join(', ')+'\n');
+            for(const change of item.contracts.specChanges)process.stdout.write('  explanation changed: '+change.name+'\n');
+          }else process.stdout.write('  Public contract checking failed; inspect --json.\n');
+        }
+        for(const issue of report.application.after.diagnostics)process.stdout.write(`${issue.file}:${issue.line}:${issue.column}: ${issue.message}\n`);
+        if('error' in report.native)process.stdout.write(report.native.error+'\n');
+        for(const artifact of report.native.artifacts)process.stdout.write('  native '+artifact.id+': '+artifact.status+(artifact.error?' '+artifact.error:'')+'\n');
+        if(report.native.downloadMaximumBytes!==null)process.stdout.write('Missing native downloads: at most '+report.native.downloadMaximumBytes+' bytes (declared bounds, not measured sizes).\n');
+        process.stdout.write('No update was accepted. No native artifacts or package scripts ran. Independent behavioral checks were not run. Use --json for complete contracts, explanations and target/artifact changes.\n');
+      }
+      return report.ready?0:1;
     }catch(error){process.stderr.write(failureMessage(error)+'\n');return 1;}
   }
   if(command==='dependencies') {

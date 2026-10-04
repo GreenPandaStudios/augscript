@@ -108,17 +108,22 @@ function publicExplanations(checked:CheckedProject) {
 export function packageInterfaceDiff(beforeDirectory:string,afterDirectory:string) {
   const beforeRoot=resolve(beforeDirectory),afterRoot=resolve(afterDirectory);
   const before=checkedProjectWithTests(beforeRoot,new Map()),after=checkedProjectWithTests(afterRoot,new Map());
-  const errors=[...before.diagnostics,...after.diagnostics].filter(issue=>issue.severity!=='warning');
+  return compareCheckedPackageInterfaces(before,after);
+}
+
+/** Reuse the same checked public review for staged dependencies, including additions and removals. */
+export function compareCheckedPackageInterfaces(before?:CheckedProject,after?:CheckedProject) {
+  const errors=[...(before?.diagnostics??[]),...(after?.diagnostics??[])].filter(issue=>issue.severity!=='warning');
   if(errors.length)throw new Error('PACKAGE_DIFF: Both package revisions must check. '+errors.map(issue=>issue.message).join('; '));
   const surface=(checked:CheckedProject)=>{
     const facts=new Map(contractFacts(checked).map(fact=>[fact.id,fact]));
     return new Map(packageSurface(checked).map(item=>[item.name,publicContract(checked,item.fact,facts)]));
   };
-  const left=surface(before),right=surface(after);
+  const left=before?surface(before):new Map(),right=after?surface(after):new Map();
   const changes=[...new Set([...left.keys(),...right.keys()])].sort(compare).flatMap(name=>JSON.stringify(left.get(name))===JSON.stringify(right.get(name))?[]:[{name,before:left.get(name)??null,after:right.get(name)??null,differences:contractDifferences(left.get(name),right.get(name))}]);
-  const leftProse=publicExplanations(before),rightProse=publicExplanations(after);
+  const leftProse=before?publicExplanations(before):new Map(),rightProse=after?publicExplanations(after):new Map();
   const specChanges=[...new Set([...leftProse.keys(),...rightProse.keys()])].sort(compare).flatMap(name=>leftProse.get(name)?.text===rightProse.get(name)?.text?[]:
     [{name,before:leftProse.get(name)?.text??null,after:rightProse.get(name)?.text??null,source:{before:leftProse.get(name)?.source??null,after:rightProse.get(name)?.source??null}}]);
-  return {format:1,revisions:{before:semanticGraph(before,true).revision,after:semanticGraph(after,true).revision},specChanges,before:readPackage(beforeRoot).manifest.version,after:readPackage(afterRoot).manifest.version,changes,
-    native:{before:readPackage(beforeRoot).manifest.native??null,after:readPackage(afterRoot).manifest.native??null},evidence:'checked-public-contracts',behavioralEvidence:'not-run'};
+  return {format:1,revisions:{before:before?semanticGraph(before,true).revision:null,after:after?semanticGraph(after,true).revision:null},specChanges,before:before?.project.library?.version??null,after:after?.project.library?.version??null,changes,
+    native:{before:before?.project.library?.native??null,after:after?.project.library?.native??null},evidence:'checked-public-contracts',behavioralEvidence:'not-run'};
 }

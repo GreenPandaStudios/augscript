@@ -113,6 +113,12 @@ try {
   writeFileSync(join(consumer, 'main.aug'), 'import add from math\nprint(value=add(left=20, right=22))\n');
   assert.equal(aug('run', consumer, '--offline'), '42\n');
   aug('install', consumer, '--frozen', '--offline');
+  const acceptedConsumer=readFileSync(join(consumer,'aug.lock.json'),'utf8');
+  const preview=JSON.parse(aug('update',consumer,'--preview','--offline','--json'));
+  assert.equal(preview.ready,true);assert.equal(preview.acceptedWrites,false);assert.equal(preview.behavioralEvidence,'not-run');
+  assert.deepEqual(preview.packages[0].contracts.changes,[]);
+  assert.equal(readFileSync(join(consumer,'aug.lock.json'),'utf8'),acceptedConsumer);
+
   const globalPrefix = join(directory, 'global');
   run('npm', ['install', '--global', '--prefix', globalPrefix, '--offline', '--ignore-scripts', '--no-audit', '--no-fund',
     ...packages.map(pkg => join(artifacts, pkg.filename))]);

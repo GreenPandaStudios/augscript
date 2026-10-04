@@ -10,6 +10,7 @@ Install `aug` once as shown in [Your first project](getting-started.md). Command
 | --- | --- |
 | `doctor [PROJECT] [--json]` | Setup report without downloads or writes; unreleased. |
 | `libraries [QUERY] [--json]` | **Unreleased:** search curated task/import/platform/ownership/license/test metadata offline. |
+| `update PROJECT --preview [--offline] [--json]` | **Unreleased:** check proposed dependency contracts, callers and native selections without accepting the update. |
 | `dependencies PROJECT [--json]` | **Unreleased:** explain verified installed source and locked native dependencies without downloads. |
 | `package check DIRECTORY [--json]` | **Unreleased:** static package publishing readiness; behavioral tests remain explicit. |
 | `package diff BEFORE AFTER [--json]` | **Unreleased:** compare resolved public contracts, changed spec prose and native metadata of local revisions. |

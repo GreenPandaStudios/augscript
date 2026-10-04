@@ -328,9 +328,10 @@ export function installPackages(root: string, frozen = false, offline = false, u
     try { return publishSourceGraph(root, candidate); } finally { rmSync(candidate.stage, {recursive:true,force:true}); }
   });
 }
-function planInstallation(root: string, frozen: boolean, offline: boolean, update: boolean): SourceCandidate {
+function planInstallation(root: string, frozen: boolean, offline: boolean, update: boolean, recover = true): SourceCandidate {
   if (frozen && update) throw new Error('--frozen and --update cannot be used together.');
-  recoverAddConfiguration(root);
+  if (recover) recoverAddConfiguration(root);
+  else if (existsSync(join(root,'.aug-add.json'))) throw new Error('UPDATE_PENDING: A pending aug add transaction needs recovery. Run aug install before previewing updates.');
   const loaded = loadConfig(root);
   if (loaded.diagnostics.length) throw new Error(loaded.diagnostics.map(issue => issue.message).join('\n'));
   const library = isLibrary(root) ? readPackage(root) : undefined;
@@ -344,6 +345,30 @@ function planInstallation(root: string, frozen: boolean, offline: boolean, updat
   const candidate=stageSourceGraph(root, specifications, frozen, offline, previous, update);
   candidate.baseLock=baseLock;
   return candidate;
+}
+
+/** Resolve an isolated update graph. No candidate becomes an accepted snapshot or lock. */
+export function withPackageUpdatePreview<T>(directory:string, offline:boolean,
+  inspect:(candidate:{lock:PackageLock;cache:string;previous:PackageLock})=>T):T {
+  const root=resolve(directory);
+  return withPackageLock(join(root,'.aug-install.lock'),()=>{
+    if(existsSync(join(root,'.aug-add.json')))throw new Error('UPDATE_PENDING: A pending aug add transaction needs recovery. Run aug install before previewing updates.');
+    if(!existsSync(join(root,'aug.lock.json')))throw new Error('UPDATE_LOCK: Preview needs an accepted aug.lock.json. Run aug install or aug run first.');
+    const previous=readPackageLock(join(root,'aug.lock.json')),self=isLibrary(root)?readPackage(root):undefined,sourceRoot=self?.sourceRoot??root;
+    const metadata=['main.yaml','aug-package.json','package.json','native.abi.json','aug.lock.json'];
+    const inputs=[...metadata.map(file=>join(root,file)),...(self?.manifest.native?[join(root,self.manifest.native.bindings)]:[]),
+      ...previous.packages.flatMap(entry=>[...metadata.map(file=>join(root,'.aug-packages',entry.path,file)),...(entry.native?[join(root,'.aug-packages',entry.path,entry.native.bindings)]:[])])];
+    const revision=()=>createHash('sha256').update(JSON.stringify([...new Set([...sourcePaths(root),...inputs])]
+      .sort().map(file=>[relative(root,file),installedText(file)??null]))).digest('hex');
+    const verifyAccepted=()=>projectPackages(root,previous.specifications,sourceRoot).diagnostics;
+    const baseIssues=verifyAccepted();if(baseIssues.length)throw new Error('UPDATE_BASE: The accepted dependency snapshot does not verify. '+baseIssues.map(issue=>issue.message).join('; '));
+    const base=revision(),candidate=planInstallation(root,false,offline,true,false);
+    try {
+      const report=inspect({lock:candidate.lock,cache:candidate.stage,previous:candidate.previous!});
+      if(base!==revision()||verifyAccepted().length)throw new Error('UPDATE_STALE: Source, configuration or the accepted lock changed during preview. No update was accepted; retry the preview.');
+      return report;
+    }finally{rmSync(candidate.stage,{recursive:true,force:true});}
+  });
 }
 
 const isLibrary = (root: string): boolean => existsSync(join(root, 'aug-package.json')) ||

@@ -117,6 +117,23 @@ A frozen install restores the recorded revisions and rejects changed source cont
 
 Installation reads Git source blobs without running hooks and extracts registry archives without running lifecycle scripts. Application code can still call native adapters and unsafe operations; review those before running a dependency.
 
+## Preview a dependency update (unreleased)
+
+Run `aug update --preview` before accepting new dependency revisions. It resolves the requested repositories into a temporary source graph, compares their public contracts and explanations, and checks your current application and same-file test bodies against the proposed dependencies. The accepted lock and installed source snapshots stay in place. Normal source transport caches may change; no native artifacts are downloaded and no dependency code or tests run.
+
+```sh
+aug update --preview
+aug update --preview --json
+```
+
+The review shows old and proposed commits, labeled input changes, checked errors, ownership, effects and native requirements. A required argument appears as a caller diagnostic; the preview supplies no business value. Each package is checked independently, so its interface changes remain visible when the application needs repairs. The application’s “before” result uses your current source with the accepted dependencies, rather than retrieving historical application code. The “after” result uses that same source with the proposed dependencies.
+
+Native selections include the current host, artifact hashes, runtime requirements and cache integrity. Download figures are declared upper bounds for missing archives, counted once per hash, rather than measured archive sizes. An unsupported proposed target or damaged cached artifact rejects readiness. A missing archive is reported without fetching it. Compiler acceptance, artifact selection and behavioral results remain separate; a successful preview does not prove that the program runs correctly.
+
+You can change a dependency tag or alias declaration before previewing it. Source, configuration, accepted-lock and installed-source checks reject a preview if those inputs change during analysis. `--offline` can inspect changed local folders; choosing a fresh repository revision requires online resolution. An unresolved `aug add` transaction must be recovered with `aug install` first.
+
+Run independent tests before accepting an update. `aug install --update` resolves the requests again; it does not apply a saved preview transaction. For a moving branch, pin the reviewed commit in the package declaration or repeat the review after installation. [Package compatibility](package-compatibility.md) explains exact commit locks and compiler requirements.
+
 ## npm archives and releases
 
 For npm distribution, use `aug package init arithmetic --name @owner/arithmetic`, then `aug package pack`. Packing checks the library and its test bodies, generates specs, synchronizes npm metadata, and prints the archive path. Run `aug test` yourself before publishing the archive with npm.

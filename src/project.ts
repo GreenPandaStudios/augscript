@@ -9,7 +9,7 @@ import { loadConfig, type Config } from './config.ts';
 import { projectPolicies } from './policies.ts';
 import { builtinFunctions, builtinTypes } from './builtins.ts';
 import { libraryChild, libraryRelative, standardLibraries, type StandardLibraries } from './libraries.ts';
-import { packageSpecifications, projectPackages, readPackage, sourcePaths, type ProjectPackages, type PackageManifest } from './package-manager.ts';
+import { packageSpecifications, projectPackages, readPackage, sourcePaths, type ProjectPackages, type PackageManifest, type PackageLock } from './package-manager.ts';
 import { isGitSource, sourceAlias } from './git-packages.ts';
 
 export type DefinitionNode = ClassDecl | InterfaceDecl | InterceptorDecl | MethodDecl | CompositionDecl | ResourceDecl;
@@ -60,7 +60,7 @@ function sourceFiles(root: string): string[] {
 }
 
 export function loadProject(projectRoot: string, overrides: Map<string, string> = new Map(),
-  cache?: Map<string, ReturnType<typeof parse>>): Project {
+  cache?: Map<string, ReturnType<typeof parse>>, packageCandidate?:{lock:PackageLock;cache:string;specifications?:Record<string,string>}): Project {
   const root = resolve(projectRoot);
   const files = new Map<string, SourceFile>();
   const definitions = new Map<string, Definition>();
@@ -73,7 +73,7 @@ export function loadProject(projectRoot: string, overrides: Map<string, string> 
     try { const loaded = readPackage(root); library = loaded.manifest; sourceRoot = loaded.sourceRoot; }
     catch (error) { diagnostics.push(diagnostic(join(root, 'aug-package.json'), 1, 1, (error as Error).message, 'PACKAGE')); }
   }
-  const packages = projectPackages(root, packageSpecifications(sourceRoot, library?.dependencies ?? config.packages, overrides), sourceRoot);
+  const packages = projectPackages(root, packageCandidate?.specifications??packageSpecifications(sourceRoot, library?.dependencies ?? config.packages, overrides), sourceRoot, packageCandidate);
   diagnostics.push(...packages.diagnostics);
   const read = (path: string) => {
     const source = overrides.get(path) ?? readFileSync(path, 'utf8');
