@@ -556,7 +556,7 @@ class SpecWriter {
         }
         if(stmt.declaredType)this.type(stmt.declaredType);
         const target=this.expression(stmt.target)+(stmt.declaredType&&!['int','float','string','bool'].includes(stmt.declaredType.name)?' of type '+this.type(stmt.declaredType):'');
-        if(stmt.ownership==='own') {
+        if(stmt.ownership==='own'||this.checked.inferredOwned.has(stmt)) {
           const owned=this.expression(stmt.target)+(stmt.declaredType?' ('+this.type(stmt.declaredType)+')':'');
           if(stmt.value.kind==='call') {
             const invocation=this.call(stmt.value);

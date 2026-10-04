@@ -119,6 +119,16 @@ test('persistent LSP handles split UTF-8 frames, local edits, definitions and ca
     assert.match(borrow.edit.changeAnnotations.consequence.description,/exclusive|mutable/);
     assert.equal(borrow.edit.documentChanges[0].edits[0].annotationId,'consequence');
     assert.doesNotMatch(borrow.title,/permission|candidate/);
+    const failures=Array.from({length:12},(_,i)=>'Issue'+i);
+    const verbose=failures.map(name=>`error ${name}()`).join('\n')+'\nread(int index) { '+failures.map((name,i)=>`if index == ${i} { throw ${name}() }`).join(' ')+' return 1 }\n';
+    await request('aug/editor',{uri,text:verbose,version:7,command:'diagnostics'});
+    const compactHints=await request('aug/editor',{uri,command:'inlay-hints'});
+    assert.ok(compactHints.some(hint=>hint.label.includes('12 errors')));
+    const expandedHints=await request('aug/editor',{uri,command:'inlay-hints',options:{detail:'full'}});
+    assert.ok(expandedHints.some(hint=>failures.every(name=>hint.label.includes(name))));
+    await request('workspace/didChangeConfiguration',{settings:{augscript:{inferredContractHintDetail:'full'}}});
+    const fullHints=await request('textDocument/inlayHint',{textDocument:{uri}});
+    assert.ok(fullHints.some(hint=>failures.every(name=>hint.label.includes(name))));
     await request('shutdown', {});
   } finally { child.kill(); rmSync(root, { recursive: true, force: true }); }
 });

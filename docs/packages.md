@@ -136,3 +136,12 @@ Verified LLVM packs and native artifacts use `~/.cache/augscript/native-artifact
 ## Automatic aliases (unreleased)
 
 `aug add URL` derives a short import alias from a repository or package name. For example, an `aug-sqlite` repository becomes `sqlite`; `--as database` selects a different spelling. A local package uses its manifest name. The lock still records the complete repository identity and exact revision. If the derived name is already assigned to another package, August stops and asks for `--as NAME` before changing configuration. It never replaces a different dependency merely because their names match.
+
+
+## Inspect a dependency or prepare a library (unreleased)
+
+`aug dependencies PROJECT` explains the installed graph. It shows each alias, package identity, source digest, locked Git commit, importing file and public names. Transitive aliases remain in their owner's scope. Native selections include the target, artifact identity and checksum. `--json` gives the complete structured report. This command verifies installed source bytes without fetching, updating a lock, or running package code; locked native metadata does not claim that an artifact is already cached.
+
+Before publishing a source library, run `aug package check DIRECTORY`. It checks production declarations and same-file tests, narrow exports, Javadoc, compiler requirements and a license file. For a native library it also validates descriptor metadata, declared targets and third-party notices. Add `--json` for CI. A passing report is static readiness: run `aug test` for behavioral evidence and qualify native artifacts and cleanup on each target before publishing. August does not choose your package's license.
+
+Use `aug package diff BEFORE AFTER` to compare two local package revisions that already have their dependencies installed. The report follows each `export.aug` boundary and includes labels, result types, defaults, checked errors, effects, ownership and native requirements. Private implementation-only changes are omitted. `--json` retains both sides of each changed contract. This command does not fetch releases or decide whether a public change is acceptable to consumers.

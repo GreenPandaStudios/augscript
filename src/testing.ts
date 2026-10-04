@@ -144,6 +144,7 @@ export function mergeTestAnalysis(checked: CheckedProject, tests: { checked: Che
     const visit = (value: unknown): void => {
       if (!value || typeof value !== 'object') return;
       if (Array.isArray(value)) { value.forEach(visit); return; }
+      if(entry.checked.inferredOwned.has(value as import('./ast.ts').Stmt))checked.inferredOwned.add(value as import('./ast.ts').Stmt);
       const expr = value as Expr;
       const type = entry.checked.expressionTypes.get(expr);
       if (type) checked.expressionTypes.set(expr, type);

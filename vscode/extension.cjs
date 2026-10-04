@@ -12,6 +12,7 @@ const timers = new Map();
 const lastFiles = new Map();
 const servers = new Map();
 const setupFailures=new Set();
+let focusedContracts;
 const output=vscode.window.createOutputChannel('August');
 function reportSetupFailure(error){
   output.appendLine(error.message);
@@ -444,7 +445,8 @@ async function inlayHints(context, document, range, token) {
   if (!vscode.workspace.getConfiguration('augscript', document.uri).get('inferredContractHints', true)) return [];
   try {
     const hints = await editorData(context, document, 'inlay-hints', 0,
-      {start: document.offsetAt(range.start), end: document.offsetAt(range.end)});
+      {start: document.offsetAt(range.start), end: document.offsetAt(range.end),
+        detail:focusedContracts===document.uri.toString()?'full':vscode.workspace.getConfiguration('augscript',document.uri).get('inferredContractHintDetail','compact')});
     if (token.isCancellationRequested) return [];
     return hints.map(item => {
       const hint = new vscode.InlayHint(document.positionAt(item.offset), item.label, vscode.InlayHintKind.Type);
@@ -521,9 +523,14 @@ function activate(context) {
     provideHover: (document, position) => hover(context, document, position),
   }));
   const hintChanges = new vscode.EventEmitter();
+  context.subscriptions.push(vscode.commands.registerCommand('augscript.focusContracts',()=>{
+    const document=vscode.window.activeTextEditor?.document;
+    if(document?.languageId!=='augscript')return;
+    const uri=document.uri.toString();focusedContracts=focusedContracts===uri?undefined:uri;hintChanges.fire();
+  }));
   context.subscriptions.push(hintChanges,
     vscode.workspace.onDidChangeConfiguration(event => {
-      if (event.affectsConfiguration('augscript.inferredContractHints')) hintChanges.fire();
+      if (event.affectsConfiguration('augscript.inferredContractHints')||event.affectsConfiguration('augscript.inferredContractHintDetail')) hintChanges.fire();
     }),
     vscode.languages.registerInlayHintsProvider('augscript', {
       onDidChangeInlayHints: hintChanges.event,

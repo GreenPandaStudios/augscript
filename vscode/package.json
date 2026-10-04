@@ -212,6 +212,10 @@
       {
         "command": "augscript.doctor",
         "title": "AugScript: Check Setup"
+      },
+      {
+        "command": "augscript.focusContracts",
+        "title": "AugScript: Toggle Full Contracts for This File"
       }
     ],
     "configuration": {
@@ -241,6 +245,15 @@
           "type": "string",
           "default": "",
           "description": "Optional absolute native cache directory containing sources/ and prefix/. Native commands prepare required dependencies automatically; use this setting to share a cache with the CLI."
+        },
+        "augscript.inferredContractHintDetail": {
+          "type": "string",
+          "enum": [
+            "compact",
+            "full"
+          ],
+          "default": "compact",
+          "description": "Keep inferred hints short or show every effective clause. Hover always shows the complete contract; Toggle Full Contracts changes detail for the active file without editing source."
         }
       }
     }

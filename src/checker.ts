@@ -61,6 +61,7 @@ export interface CheckedProject {
   callableContracts: Map<MethodDecl, CallableContract>;
   constructorContracts: Map<ClassDecl, CallableContract>;
   expressionOrigins: WeakMap<Expr, Origins>;
+  inferredOwned: WeakSet<Stmt>;
   scopes: Map<string, ScopeFact>;
   markupCalls: WeakMap<Expr, Extract<Expr, {kind:'call'}>>;
   actions: Map<Expr, ActionPlan>;
@@ -83,7 +84,7 @@ export interface ActionPlan {
 export interface ScopeFact {
   span: Span;
   locals: { name: string; type: Ty; kind: 'parameter' | 'property' | 'variable'; ownership: string;
-    moved: boolean; definition?: Span; documentation?: string }[];
+    moved: boolean; definition?: Span; documentation?: string; ownershipFacts?: { origins: Span[]; owners: {name:string;span?:Span}[]; aliases:{name:string;span?:Span}[]; borrows:{name:string;span:Span}[]; captures:{span:Span;exclusive:boolean}[]; moves:Span[] } }[];
 }
 
 export interface InterceptorLayer {
@@ -121,7 +122,7 @@ export interface CallPlan {
   mutatesReceiver?: boolean;
 }
 
-type Local = { type: Ty; declaredType?: Ty; ownership: 'managed' | 'own' | 'borrow'; moved: boolean; origin?: string; definition?: Span };
+type Local = { type: Ty; declaredType?: Ty; ownership: 'managed' | 'own' | 'borrow'; moved: boolean; origin?: string; definition?: Span; moveSites?: Span[] };
 interface Context {
   file: string;
   locals: Map<string, Local>;
@@ -182,6 +183,7 @@ class Checker {
   private readonly inferredChanges = new Map<MethodDecl, Set<string>>();
   private readonly contextualResults = new Set<MethodDecl>();
   readonly expressionOrigins = new WeakMap<Expr, Origins>();
+  readonly inferredOwned = new WeakSet<Stmt>();
   readonly scopes = new Map<string, ScopeFact>();
   readonly markupCalls = new WeakMap<Expr, Extract<Expr, {kind:'call'}>>();
   readonly actions = new Map<Expr, ActionPlan>();
@@ -306,7 +308,7 @@ class Checker {
     return { project: this.project, diagnostics: this.diagnostics, bindings: this.bindings,
       expressionTypes: this.expressionTypes, resolvedNames:this.resolvedNames, resolvedCalls:this.resolvedCalls, resolvedTypes:this.resolvedTypes, defaults: this.defaults, callPlans: this.callPlans,
       interceptorPlans: this.interceptorPlans, effectContracts: this.effectContracts, callableContracts: this.callableContracts, constructorContracts: this.constructorContracts,
-      expressionOrigins: this.expressionOrigins, scopes: this.scopes, markupCalls: this.markupCalls, actions:this.actions, httpPolicies:this.httpPolicies, native:this.native };
+      expressionOrigins: this.expressionOrigins, inferredOwned:this.inferredOwned, scopes: this.scopes, markupCalls: this.markupCalls, actions:this.actions, httpPolicies:this.httpPolicies, native:this.native };
   }
 
   private isStatement(item: { kind: string }): item is Stmt {
@@ -465,7 +467,7 @@ class Checker {
         this.report(ref.span, `${ref.name} is an interceptor; apply it with [${ref.name}]`, 'INTERCEPTOR');
         return errorTy;
       }
-      this.report(ref.span, `Unknown type ${ref.name}`);
+      this.report(ref.span,ref.name==='let'?'Unknown type let. Inferred bindings use name = value or name to value; remove let unless it names an imported type.':`Unknown type ${ref.name}`,ref.name==='let'?'BINDING':'TYPE');
       return errorTy;
     }
     const expected = def.node.typeParams.length;
@@ -1276,7 +1278,11 @@ class Checker {
   private mergeMoved(target: Context, branches: Context[]): void {
     target.flow.join(branches.map(branch => branch.flow));
     for (const [name, local] of target.locals) {
-      if (branches.some(branch => branch.locals.get(name)?.moved)) local.moved = true;
+      if (branches.some(branch => branch.locals.get(name)?.moved)) {
+        local.moved = true;
+        local.moveSites=[...(local.moveSites ?? []),...branches.flatMap(branch=>branch.locals.get(name)?.moveSites ?? [])]
+          .filter((site,index,sites)=>sites.findIndex(other=>other.file===site.file&&other.start===site.start)===index);
+      }
       if (branches.some(branch => branch.locals.get(name)?.type.nullable))
         local.type = local.declaredType ?? { ...local.type, nullable: true };
     }
@@ -1462,7 +1468,17 @@ class Checker {
     this.scopes.set(`${span.file}:${span.start}:${span.end}`, { span, locals: [...context.locals].map(([name, local]) => {
       const param = parameters.find(param => param.name === name);
       const field = local.origin === 'field' ? fields.find(field => field.name === name) : undefined;
+      const trace=context.flow.describe(name);
+      const references=(names:string[])=>names.map(name=>({name,span:context.locals.get(name)?.definition}));
+      const origins=trace.origins.flatMap(origin=>{
+        const match=/^new:(.*):(\d+)$/.exec(origin),file=match&&this.project.files.get(match[1]);
+        if(!file||!match)return [];
+        const start=Number(match[2]),before=file.source.slice(0,start).split('\n');
+        return [{file:file.path,start,end:start,line:before.length,column:before.at(-1)!.length+1}];
+      });
       return { name, type: local.type, moved: local.moved, ownership: local.ownership, definition: local.definition,
+        ownershipFacts:{origins,owners:references([name,...trace.aliases].filter(other=>context.locals.get(other)?.ownership==='own')),
+          aliases:references(trace.aliases),borrows:trace.borrows,captures:trace.captures,moves:local.moveSites ?? []},
         kind: field ? 'property' : param || name === 'self' ? 'parameter' : 'variable',
         documentation: doc?.parameters.get(param?.label ?? name) ?? fieldDoc?.parameters.get(field?.label ?? name) };
     }) });
@@ -1470,6 +1486,7 @@ class Checker {
 
   private checkStatements(body: Stmt[], context: Context, fallback?: Span, joinsTasks = false): void {
     const names = new Set(context.locals.keys());
+    const breakStart = context.loop?.breaks.length ?? 0, continueStart = context.loop?.continues.length ?? 0;
     const previous = context.region;
     const region = (body as Stmt[] & { span?: Span }).span ?? fallback ?? previous;
     if (region) { context.region = region; this.captureScope({ ...region, end: body[0]?.span.start ?? region.end }, context); }
@@ -1489,7 +1506,21 @@ class Checker {
     if (!joinsTasks) for (const [name, local] of context.locals) if (!names.has(name) && local.ownership === 'own' && !local.moved &&
         context.flow.hasTaskCapture(context.flow.origins(name)))
       this.report(local.definition ?? fallback!, `Owned ${name} is still borrowed by a task; wait before leaving this block or declare it directly in the task's scope block`, 'CONCURRENCY');
+    for (const exit of [...(context.loop?.breaks.slice(breakStart) ?? []), ...(context.loop?.continues.slice(continueStart) ?? [])]) {
+      for (const name of exit.locals.keys()) if (!names.has(name)) exit.locals.delete(name);
+      exit.flow.forgetLocals(names);
+    }
+    for(const name of context.locals.keys())if(!names.has(name))context.locals.delete(name);
+    context.flow.forgetLocals(names);
     context.region = previous;
+  }
+
+  private unwindLoopExits(context:Context,breakStart:number,continueStart:number):void {
+    for(const exit of [...(context.loop?.breaks.slice(breakStart)??[]),...(context.loop?.continues.slice(continueStart)??[])]) {
+      exit.flow.restoreLexical(context.flow);exit.borrowed=new Set(context.borrowed);
+      exit.locked=context.locked;exit.scope=context.scope;exit.region=context.region;
+      exit.unsafe=context.unsafe;exit.loopDepth=context.loopDepth;
+    }
   }
 
   private checkStatement(stmt: Stmt, context: Context): void {
@@ -1499,6 +1530,7 @@ class Checker {
       return;
     }
     if (stmt.kind === 'lock') {
+      const breakStart=context.loop?.breaks.length??0,continueStart=context.loop?.continues.length??0;
       if (context.locked) this.report(stmt.span, 'Nested locks require a single combined shared value to avoid lock-order deadlocks', 'CONCURRENCY');
       const type = this.checkExpression(stmt.value, context);
       if (type.id !== 'builtin:Shared') this.report(stmt.value.span, 'lock requires Shared<T>', 'CONCURRENCY');
@@ -1508,7 +1540,8 @@ class Checker {
       const origins = allocationOrigin(stmt.span); inside.flow.region(origins);
       inside.locals.set(stmt.name, {type: {...(type.args[0] ?? errorTy), readonly: false}, ownership: 'borrow', moved: false, definition: stmt.span});
       inside.flow.declare(stmt.name, origins, false); inside.flow.borrow(stmt.name, stmt.span, (span, message) => this.report(span, message, 'BORROW'), true);
-      inside.borrowed.add(stmt.name); this.checkStatements(stmt.body, inside, stmt.span); this.mergeMoved(context, [inside]); return;
+      inside.borrowed.add(stmt.name); this.checkStatements(stmt.body, inside, stmt.span);
+      this.unwindLoopExits(context,breakStart,continueStart); this.mergeMoved(context, [inside]); return;
     }
     if (stmt.kind === 'serve') {
       if (context.callable || context.file !== this.project.main?.path) this.report(stmt.span, 'Select served endpoints in main.aug', 'HTTP');
@@ -1562,6 +1595,7 @@ class Checker {
         const errors = exit.flow.pendingTaskErrors(scope); exit.flow.joinTasks(scope);
         for (const error of errors) this.checkAllowedError(error, stmt.span, {...context, flow:exit.flow});
       }
+      this.unwindLoopExits(context,breakStart,continueStart);
       this.mergeMoved(context, [inside]);
       return;
     }
@@ -1642,11 +1676,15 @@ class Checker {
       const expected = stmt.declaredType ? this.resolveType(stmt.declaredType, context.file, context.types) :
         stmt.target.kind === 'name' ? context.locals.get(stmt.target.name)?.declaredType ?? context.locals.get(stmt.target.name)?.type : undefined;
       const value = this.checkExpression(stmt.value, context, expected);
-      if(value.kind==='resource'&&stmt.target.kind==='name'&&stmt.ownership!=='own'&&context.locals.get(stmt.target.name)?.origin!=='field')this.report(stmt.span,'Native resources must be held by own bindings','OWN');
+      const ownership = stmt.ownership === 'own' || stmt.target.kind === 'name' && !context.locals.has(stmt.target.name) &&
+        stmt.value.kind === 'call' && this.ownershipOf(stmt.value,context) === 'own' ? 'own' : 'managed';
+      if (ownership === 'own' && stmt.ownership !== 'own') this.inferredOwned.add(stmt);
+
+      if(value.kind==='resource'&&stmt.target.kind==='name'&&ownership!=='own'&&context.locals.get(stmt.target.name)?.origin!=='field')this.report(stmt.span,'Native resources must be held by own bindings','OWN');
       const source = stmt.value.kind === 'name' ? context.locals.get(stmt.value.name) : undefined;
       const origins = this.placesOf(stmt.value, context);
       const ownedSource = this.ownershipOf(stmt.value, context) === 'own';
-      if (ownedSource && stmt.ownership !== 'own' && stmt.target.kind === 'name' && !context.locals.has(stmt.target.name))
+      if (ownedSource && ownership !== 'own' && stmt.target.kind === 'name' && !context.locals.has(stmt.target.name))
         this.report(stmt.value.span, 'An owned object cannot be copied into a managed variable', 'OWN');
       if (stmt.target.kind === 'name') {
         const existing = context.locals.get(stmt.target.name);
@@ -1655,7 +1693,7 @@ class Checker {
           const target = expected!;
           if (!this.assignable(value, target)) this.report(stmt.value.span,
             `Cannot assign ${tyName(value)} to ${tyName(target)}`);
-          if (stmt.ownership === 'own') {
+          if (ownership === 'own') {
             if (stmt.value.kind === 'member') this.report(stmt.value.span, 'Moving an owned field requires an explicit take operation', 'OWN');
             if (!['own', 'fresh'].includes(this.ownershipOf(stmt.value, context)))
               this.report(stmt.value.span,
@@ -1667,7 +1705,7 @@ class Checker {
             }
           } else if (source?.ownership === 'own') this.report(stmt.value.span,
             `Copying owned value ${stmt.value.kind === 'name' ? stmt.value.name : ''} is forbidden`, 'OWN');
-          context.locals.set(stmt.target.name, { type: { ...target, readonly: value.readonly, frozen: value.frozen }, declaredType: target, ownership: stmt.ownership,
+          context.locals.set(stmt.target.name, { type: { ...target, readonly: value.readonly, frozen: value.frozen }, declaredType: target, ownership,
             moved: false, origin: stmt.value.kind === 'name' ? stmt.value.name : undefined, definition: stmt.target.span });
           context.flow.declare(stmt.target.name, origins, !!value.readonly, { source: sourceName(stmt.value) });
         } else if (existing) {
@@ -1697,7 +1735,7 @@ class Checker {
           if (existing.origin !== 'field') existing.type = { ...declared, nullable: value.nullable, optional: value.optional, readonly: value.readonly, frozen: value.frozen };
           context.flow.rebind(stmt.target.name, origins, !!value.readonly, stmt.span,
             (span, message) => this.report(span, message, 'BORROW'), sourceName(stmt.value));
-          existing.moved = false;
+          existing.moved = false; existing.moveSites = undefined;
           if(existing.origin==='field'&&existing.ownership==='own'){
             if(source?.ownership==='own'&&stmt.value.kind==='name')this.moveOwnedLocal(stmt.value.name,stmt.value.span,context);
             else if(!['own','fresh'].includes(this.ownershipOf(stmt.value,context)))this.report(stmt.value.span,'An owned field requires a new object or another owned value','OWN');
@@ -1706,7 +1744,7 @@ class Checker {
           if (source?.ownership === 'own') this.report(stmt.value.span,
             'Cannot copy an owned value into a managed variable', 'OWN');
           context.locals.set(stmt.target.name,
-            { type: value, declaredType: value, ownership: 'managed', moved: false,
+            { type: value, declaredType: value, ownership, moved: false,
               origin: stmt.value.kind === 'name' ? stmt.value.name : undefined, definition: stmt.target.span });
           context.flow.declare(stmt.target.name, origins, !!value.readonly, { source: sourceName(stmt.value) });
         }
@@ -1878,6 +1916,7 @@ class Checker {
       return;
     }
     if (stmt.kind === 'borrow') {
+      const breakStart=context.loop?.breaks.length??0,continueStart=context.loop?.continues.length??0;
       const local = context.locals.get(stmt.name);
       if (!local) this.report(stmt.span, `Cannot borrow unknown variable ${stmt.name}`, 'BORROW');
       if (local?.type.readonly) this.report(stmt.span, `Cannot borrow read-only ${stmt.name} for mutation`, 'MUTABILITY');
@@ -1885,6 +1924,7 @@ class Checker {
       inside.flow.borrow(stmt.name, stmt.span, (span, message) => this.report(span, message, 'BORROW'));
       inside.borrowed.add(stmt.name);
       this.checkStatements(stmt.body, inside, stmt.span);
+      this.unwindLoopExits(context,breakStart,continueStart);
       this.mergeMoved(context, [inside]);
     }
   }
@@ -3092,7 +3132,7 @@ class Checker {
     const local = context.locals.get(name);
     if (local?.ownership !== 'own') return;
     context.flow.assertMove(name, span, (at, message) => this.report(at, message, 'BORROW'));
-    local.moved = true;
+    local.moved = true; local.moveSites=[span];
   }
 
   private bindingKey(name: string, args: TypeRef[]): string {

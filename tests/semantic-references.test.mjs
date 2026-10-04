@@ -114,3 +114,12 @@ test('rename rejects collisions and unsupported profiles before offering edits',
   assert.ok(plan.publicDelta.some(delta=>delta.id==='math.aug:double'&&delta.after===null));
   assert.ok(plan.publicDelta.some(delta=>delta.id==='math.aug:twice'&&delta.before===null));
 }));
+
+
+test('rename rejects shadow capture even when the candidate still compiles',()=>fixture({
+  'main.aug':'import calculate from math\nprint(value=calculate(quantity=4))\n',
+  'math.aug':'calculate(int quantity):\n    amount = 7\n    return quantity + amount\n'
+},root=>{
+  const workspace=new SemanticWorkspace(root),view=workspace.document(join(root,'math.aug'),undefined,true);
+  assert.throws(()=>view.rename(view.source.indexOf('quantity'),'amount'),/collision|binding|identity/);
+}));

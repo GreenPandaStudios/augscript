@@ -568,14 +568,14 @@ class FunctionLowering {
     if(stmt.kind==='expr'){const value=this.expression(stmt.expr);if(this.owned.has(value))this.instruction({op:'drop',slot:value});return;}
     if(stmt.kind==='assign'){
       const value=this.expression(stmt.value);this.source=stmt.span;
-      let targetOwns=stmt.ownership==='own';
+      let targetOwns=(stmt.ownership==='own'||this.generator.checked.inferredOwned.has(stmt));
       if(stmt.target.kind==='name'){
         const field=this.field(stmt.target.name);
         if(!this.locals.has(stmt.target.name)&&field!==undefined){
           targetOwns ||= this.owner?.node.kind==='class'&&fieldsOf(this.owner.node)[field].ownership==='own';
           this.runtime('SET_FIELD',[this.locals.get('self')!,value],undefined,field);
         }
-        else{let out=this.locals.get(stmt.target.name);if(out===undefined){const type=stmt.declaredType?irType(schemaType(this.generator.checked.project,stmt.declaredType,this.file)):this.values[value].type;out=this.slot(type);this.local(stmt.target.name,out,stmt.span,type);}this.instruction({op:'copy',out,input:value});if(stmt.ownership==='own')this.owned.add(out);}
+        else{let out=this.locals.get(stmt.target.name);if(out===undefined){const type=stmt.declaredType?irType(schemaType(this.generator.checked.project,stmt.declaredType,this.file)):this.values[value].type;out=this.slot(type);this.local(stmt.target.name,out,stmt.span,type);}this.instruction({op:'copy',out,input:value});if((stmt.ownership==='own'||this.generator.checked.inferredOwned.has(stmt)))this.owned.add(out);}
       }else if(stmt.target.kind==='member'){
         const fieldName=stmt.target.name;
         const node=this.generator.checked.expressionTypes.get(stmt.target.object)?.def?.node;

@@ -682,6 +682,13 @@ class Parser {
     return Object.assign(body, { span: this.span(header) });
   }
 
+  private parseCondition():Expr {
+    const test=this.parseExpression();
+    if(this.at('=')||this.at('to'))throw new ParseFailure({...this.current().span,code:'CONDITION',
+      message:'A condition compares values with ==. Assignment with = or to is a separate statement.'});
+    return test;
+  }
+
   private parseStatement(): Stmt {
     const start = this.current().span;
     if(this.match('yield')) {const value=this.parseExpression();this.endStatement();return {kind:'yield',value,span:this.span(start)};}
@@ -760,14 +767,14 @@ class Parser {
       return { kind: 'match', value, cases, span: this.span(start) };
     }
     if (this.match('if')) {
-      const test = this.parseExpression();
+      const test = this.parseCondition();
       const then = this.parseBlock(start);
       const elseToken = this.match('else');
       const otherwise = elseToken ? (this.at('if') ? [this.parseStatement()] : this.parseBlock(elseToken.span)) : [];
       return { kind: 'if', test, then, otherwise, span: this.span(start) };
     }
     if (this.match('while')) {
-      const test = this.parseExpression();
+      const test = this.parseCondition();
       return { kind: 'while', test, body: this.parseBlock(start), span: this.span(start) };
     }
     if (this.match('try')) {

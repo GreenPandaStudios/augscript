@@ -665,7 +665,7 @@ test('editor suggests ordinary argument labels and describes injected fields', (
   assert.deepEqual(completionItems(root, 'main.aug', second).map(item => item.label), ['x']);
   const symbol = completionItems(root, 'main.aug', 'import Greeter from service;\nGreeter')
     .find(item => item.label === 'Greeter');
-  assert.match(symbol.documentation, /Injected from bindings: resolve Logger logger/);
+  assert.match(symbol.documentation, /Injected inputs: resolve Logger logger/);
   assert.equal(symbol.signature, 'Greeter(x=int, y=int)');
 }));
 

@@ -121,7 +121,7 @@ export function loadProject(projectRoot: string, overrides: Map<string, string> 
         diagnostics.push(diagnostic(file.path, item.span.line, item.span.column,
           'Define classes, interfaces, functions, and interceptors outside main.aug', 'MAIN'));
       }
-      if (file !== main && ['bind', 'include', 'expr', 'assign', 'return', 'throw', 'if', 'while', 'for', 'destructure', 'match', 'scope', 'freeze', 'serve', 'lock',
+      if (file !== main && ['bind', 'include', 'expr', 'assign', 'return', 'throw', 'break', 'continue', 'if', 'while', 'for', 'destructure', 'match', 'scope', 'freeze', 'serve', 'lock',
         'try', 'unsafe', 'borrow'].includes(item.kind)) {
         diagnostics.push(diagnostic(file.path, item.span.line, item.span.column,
           'Executable statements and bindings belong in main.aug', 'MAIN'));

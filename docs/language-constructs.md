@@ -910,7 +910,7 @@ Declare a covariant interface type parameter. It may occur only in checked outpu
 own Type name to expression;
 ```
 
-Give a value exclusive ownership and deterministic cleanup at scope exit. Owned values cannot be copied; they can move into `own` parameters, fields, or returns. `=` is also accepted.
+Give a value exclusive ownership and deterministic cleanup at scope exit. A new local initialized by a checked own call result inherits ownership. Owned values cannot be copied; they can move into `own` parameters, fields, or returns. `=` is also accepted.
 
 ```text
 own Resource resource to Resource();

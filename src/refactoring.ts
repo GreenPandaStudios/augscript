@@ -61,7 +61,7 @@ export function planRename(checked:CheckedProject,graph:SemanticGraph,file:strin
       checked.project.files.get(path)!.source.slice(reference.start,reference.end)+'='+name;
     edits.push({file:path,start:reference.start,end:reference.end,text});
   }
-  edits.sort((a,b)=>a.file.localeCompare(b.file)||a.start-b.start);
+  edits.sort((a,b)=>(a.file<b.file?-1:a.file>b.file?1:0)||a.start-b.start);
   const overrides=new Map([...checked.project.files.values()].filter(source=>!source.builtin&&!source.package).map(source=>[source.path,source.source]));
   for(const path of new Set(edits.map(edit=>edit.file))) {
     let source=overrides.get(path)!;
@@ -70,11 +70,37 @@ export function planRename(checked:CheckedProject,graph:SemanticGraph,file:strin
   }
   const candidate=checkedProjectWithTests(checked.project.root,overrides),errors=candidate.diagnostics.filter(issue=>issue.severity!=='warning');
   if(errors.length)throw new RefactoringError('The renamed candidate does not check. No source was written.',errors);
-  const after=semanticGraph(candidate,true),newDeclaration=edits.find(edit=>referenceIsDeclaration(graph,symbol.id,semanticSourcePath(checked,edit.file),edit.start));
-  if(!newDeclaration||!after.symbols.some(item=>item.name===name&&item.location.file===semanticSourcePath(candidate,newDeclaration.file)&&item.location.start===newDeclaration.start))
-    throw new RefactoringError('The rename did not preserve a resolved declaration identity.');
+  const after=semanticGraph(candidate,true);
+  verifyRenameBindings(graph,after,edits.map(edit=>({...edit,file:semanticSourcePath(checked,edit.file)})),symbol.id,name);
   return {format:1,operation:'rename',revision:graph.revision,symbol:symbol.id,name,scope:[...new Set(edits.map(edit=>semanticSourcePath(checked,edit.file)))],
     sources:[...checked.project.files.values()].filter(source=>!source.builtin&&!source.package).map(source=>({file:source.path,sha256:createHash('sha256').update(source.source).digest('hex')})),
     edits,publicDelta:interfaceDelta(checked,candidate),checked:true,behavioralEvidence:'not-run'};
 }
-function referenceIsDeclaration(graph:SemanticGraph,id:string,file:string,start:number){return graph.occurrences.some(item=>item.symbol===id&&item.file===file&&item.start===start&&item.role==='declaration');}
+/** A compiling candidate can still capture a name. Preserve declaration and
+ * occurrence bindings across the source-coordinate changes, including expanded
+ * shorthand labels, before calling a rename mechanical. */
+function verifyRenameBindings(before:SemanticGraph,after:SemanticGraph,edits:CheckedSourceEdit[],renamed:string,name:string) {
+  const translated=(file:string,start:number,end:number)=>{
+    let shift=0;
+    for(const edit of edits.filter(edit=>edit.file===file).sort((a,b)=>a.start-b.start)) {
+      if(edit.end<=start)shift+=edit.text.length-(edit.end-edit.start);
+      else if(edit.start<=start&&end<=edit.end)return {start:edit.start+shift,end:edit.start+shift+edit.text.length};
+    }
+    return {start:start+shift,end:end+shift};
+  };
+  const identities=new Map<string,string>();
+  for(const symbol of before.symbols) {
+    const position=translated(symbol.location.file,symbol.location.start,symbol.location.end),expected=symbol.id===renamed?name:symbol.name;
+    const matches=after.symbols.filter(item=>item.kind===symbol.kind&&item.name===expected&&item.location.file===symbol.location.file&&
+      position.start<=item.location.start&&item.location.end<=position.end);
+    if(matches.length!==1)throw new RefactoringError(`Rename collision: declaration ${symbol.name} would lose its binding identity. No source was written.`);
+    identities.set(symbol.id,matches[0].id);
+  }
+  const role=(value:string)=>value==='shorthand-label'?'argument-label':value;
+  for(const occurrence of before.occurrences) {
+    const position=translated(occurrence.file,occurrence.start,occurrence.end),identity=identities.get(occurrence.symbol);
+    if(!after.occurrences.some(item=>item.file===occurrence.file&&item.symbol===identity&&role(item.role)===role(occurrence.role)&&
+      position.start<=item.start&&item.end<=position.end))
+      throw new RefactoringError('Rename collision: a resolved occurrence would change its binding. No source was written.');
+  }
+}

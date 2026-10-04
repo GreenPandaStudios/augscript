@@ -1,7 +1,7 @@
 import { defaultText } from './parameters.ts';
 import { callableResult, callableErrors } from './contracts.ts';
 import { dirname, join, relative, resolve, sep } from 'node:path';
-import type { ClassDecl, Expr, InterceptorDecl, MethodDecl, Param, SourceFile, Stmt, TypeRef } from './ast.ts';
+import type { ClassDecl, Expr, InterceptorDecl, MethodDecl, Param, SourceFile, Span, Stmt, TypeRef } from './ast.ts';
 import { fieldsOf, typeName } from './ast.ts';
 import type { CheckedProject, Ty } from './checker.ts';
 import { tyName } from './checker.ts';
@@ -183,7 +183,7 @@ function methodItem(checked: CheckedProject, method: MethodDecl,
   const label = signature(method, false, errors, checked);
   const injected = method.params.filter(param => param.injected);
   const doc = methodDocumentation(checked, method, owner);
-  const injectionHelp = injected.length ? `Injected from bindings: ${injected.map(parameterText).join(', ')}.` : '';
+  const injectionHelp = injected.length ? `Injected inputs: ${injected.map(parameterText).join(', ')}.` : '';
   const contract = checked.effectContracts.get(method);
   const effects = contract ? `${contract.inferred ? 'Inferred capabilities; effective' : 'Effective'} contract: changes ${contract.changes.join(', ') || 'nothing'}; capabilities ` +
     `${[...contract.uses.values()].map(effect => `${effect.source}.${effect.operation}`).join(', ') || 'none'}.` : '';
@@ -246,7 +246,7 @@ function definitionItem(checked: CheckedProject, def: Definition): EditorItem {
     optionalParameters: explicit.filter(field => field.defaultValue || field.type.optional).map(field => field.label ?? field.name),
     parameterOwnerships: Object.fromEntries(explicit.map(field => [field.label ?? field.name, field.ownership])),
     documentation: [doc?.markdown,
-      node.fields.some(field => field.injected) ? `Injected from bindings: ${node.fields.filter(field => field.injected).map(parameterText).join(', ')}.` : '',
+      node.fields.some(field => field.injected) ? `Injected inputs: ${node.fields.filter(field => field.injected).map(parameterText).join(', ')}.` : '',
       interceptorDescription(checked, node),
       'Constructor arguments require labels; their order does not matter.'].filter(Boolean).join('\n\n'),
     parameterDocumentation: explicit.map(field => doc?.parameters.get(field.label ?? field.name)) };
@@ -260,13 +260,60 @@ function typeFromRef(checked: CheckedProject, file: string, ref: TypeRef): Ty {
   return ref.immutable ? immutableType(type) : type;
 }
 
+function sourceLink(span:Span,label:string):string {
+  return `[${label.replace(/[\[\]\\]/g,'\\$&')}](${pathToFileURL(span.file).href}#L${span.line})`;
+}
+
+function ownershipDescription(local: import('./checker.ts').ScopeFact['locals'][number]):string {
+  const facts=local.ownershipFacts;if(!facts)return '';
+  const named=(entries:{name:string;span?:Span}[])=>entries.map(entry=>entry.span?sourceLink(entry.span,entry.name):'`'+entry.name+'`').join(', ');
+  return [local.definition?`Declared at ${sourceLink(local.definition,local.name)}; ${local.ownership==='own'?'owned by this local, with block cleanup unless transferred':local.ownership==='borrow'?'borrowed access':'managed access'}.`:'',
+    facts.origins.length?`Value originates at ${facts.origins.map(span=>sourceLink(span,'construction')).join(', ')}.`:'',
+    facts.owners.length?`Possible owned locals: ${named(facts.owners)}.`:'',
+    facts.aliases.length?`Possible aliases at this point: ${named(facts.aliases)}.`:'',
+    facts.borrows.length?`Active exclusive borrow: ${facts.borrows.map(borrow=>sourceLink(borrow.span,borrow.name)).join(', ')}.`:'',
+    facts.captures.length?`Active task capture: ${facts.captures.map(capture=>sourceLink(capture.span,capture.exclusive?'mutable access':'read access')).join(', ')}. Wait before conflicting access.`:'',
+    facts.moves.length?`This value may have moved at ${facts.moves.map(span=>sourceLink(span,'transfer')).join(', ')}.`:''].filter(Boolean).join('\n\n');
+}
+
+/** Explain the checked injection plan for this call, rather than guessing from a type name. */
+function injectionDescription(checked:CheckedProject,file:SourceFile,start:number,end:number):string {
+  let call:Extract<Expr,{kind:'call'}>|undefined;
+  const visit=(value:unknown):void=>{
+    if(!value||typeof value!=='object')return;
+    if(Array.isArray(value)){value.forEach(visit);return;}
+    const expr=value as Expr;
+    if(expr.kind==='call'&&expr.callee.span.start<=start&&end<=expr.callee.span.end&&
+      (expr.callee.kind==='name'||expr.callee.kind==='member')&&expr.callee.name===file.source.slice(start,end)&&
+      (!call||expr.span.end-expr.span.start<call.span.end-call.span.start))call=expr;
+    for(const [key,child] of Object.entries(value))if(key!=='span')visit(child);
+  };
+  visit(file.items);if(!call)return '';
+  const selected:Extract<Expr,{kind:'call'}>=call,resolved=checked.resolvedCalls.get(selected),plan=checked.callPlans.get(selected);
+  if(!resolved?.params.some(param=>param.injected))return '';
+  const rejected=checked.diagnostics.filter(issue=>issue.code==='DI'&&issue.file===file.path&&issue.line===selected.span.line&&issue.column===selected.span.column);
+  if(rejected.length)return 'Injection is unresolved: '+rejected.map(issue=>issue.message).join('; ')+'.';
+  return '**Dependencies for this call**\n\n'+resolved.params.flatMap((param,index)=>{
+    if(!param.injected)return [];
+    const source=plan?.injectionSources?.[index],key=plan?.bindingKeys[index],binding=checked.bindings.find(binding=>binding.key===key);
+    if(source) {
+      const owner=file.items.find(node=>node.span.start<=start&&end<=node.span.end);
+      const method=owner?.kind==='function'?owner:owner&&'methods' in owner?owner.methods.find(method=>method.span.start<=start&&end<=method.span.end):undefined;
+      const header=source.startsWith('self.')&&owner&&(owner.kind==='class'||owner.kind==='interceptor')?fieldsOf(owner).find(field=>field.name===source.slice(5)):method?.params.find(input=>input.name===source);
+      return [`Input \`${param.name}\` is supplied by ${header?sourceLink(header.span,source):'`'+source+'`'} in the enclosing header. Its provider is selected by that caller's composition.`];
+    }
+    if(binding)return [`Input \`${param.name}\` is supplied by ${sourceLink(binding.target.node.span,binding.target.name)} through ${sourceLink(binding.declaration.span,'implement '+binding.key)}: ${binding.lifetime} lifetime${binding.stateful?', mutable state':''}${binding.requiresScope?', requires a scope':''}.`];
+    return [`Input \`${param.name}\` has no checked provider in this analysis scope. Check the project composition.`];
+  }).join('\n\n');
+}
+
 function collectLocals(checked: CheckedProject, file: SourceFile, offset: number): Map<string, LocalInfo> {
   const scope = [...checked.scopes.values()].filter(scope => scope.span.file === file.path &&
     scope.span.start <= offset && offset <= scope.span.end).sort((left, right) =>
       left.span.end - left.span.start - (right.span.end - right.span.start) || right.span.start - left.span.start)[0];
   return new Map(scope?.locals.map(local => [local.name, { type: local.type, typeText: tyName(local.type),
     kind: local.kind, moved:local.moved, ownership:local.ownership, documentation: [local.documentation, local.moved ? 'This owned value has moved.' : '',
-      local.type.readonly ? 'Read-only access.' : ''].filter(Boolean).join('\n\n') }]) ?? []);
+      local.type.readonly ? 'Read-only access.' : '', ownershipDescription(local)].filter(Boolean).join('\n\n') }]) ?? []);
 }
 
 function memberItems(checked: CheckedProject, file: string, receiver: Ty | undefined,
@@ -742,6 +789,8 @@ export function hoverInfo(checked: CheckedProject, fileName: string,
       item = { label: token.value, kind: 'type', detail: `type parameter ${token.value}`,
         documentation: 'A generic type placeholder supplied by the caller. It is checked before C generation.' };
   }
+  const injection=injectionDescription(checked,file,start,end);
+  if(item&&injection)item={...item,documentation:[item.documentation,injection].filter(Boolean).join('\n\n')};
   return item ? { ...item, start, end } : undefined;
 }
 

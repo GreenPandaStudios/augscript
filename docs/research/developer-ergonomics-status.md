@@ -28,10 +28,10 @@ Work proceeds through source/tool identities, everyday data and syntax, collecti
 | B08 | Error conversion and context | Pending | — |
 | B09 | Text operations with clear units | Partial | endsWith, replace, List<string>.join, codePointLength and strict numeric parsing pass both backends. Grapheme operations pending |
 | B10 | Domain value libraries | Pending | — |
-| C01 | Explain ownership through the actual value | Pending | — |
-| C02 | Infer mechanically required owned locals | Pending | — |
+| C01 | Explain ownership through the actual value | Implemented editor explanation; qualification ongoing | Program-point alias/origin, borrow, task-capture and move snapshots with source links; editor-polish regressions |
+| C02 | Infer mechanically required owned locals | Implemented; broader qualification pending | New locals inherit only checked own call results. Both backends verify one cleanup per result and reject owned alias copies; hints/spec retain provenance |
 | C03 | Offer the smallest legal borrow | Implemented supported-statement profile | Borrow edit checked against whole candidate project, with alias/task/frozen restrictions and formatter preferences; editor-polish tests |
-| C04 | Explain injected dependencies at the call | Pending | — |
+| C04 | Explain injected dependencies at the call | Implemented; qualification ongoing | Checked call-plan providers/lifetimes and header forwarding; missing/ambiguous dependencies remain explicit; hover regressions |
 | C05 | Scaffold a capability at the right seam | Pending | — |
 | C06 | Reuse explicit compositions | Pending | — |
 | C07 | Structured scope and timeout libraries | Pending | — |
@@ -39,11 +39,11 @@ Work proceeds through source/tool identities, everyday data and syntax, collecti
 | D01 | Derive a useful package alias | Implemented | Derived Git/npm/local aliases and collision rollback; offline actual consumer test |
 | D02 | Turn a long URL import into an alias | Pending | — |
 | D03 | Discover libraries by task | Pending | — |
-| D04 | Show why a dependency exists | Pending | — |
+| D04 | Show why a dependency exists | Implemented initial report; qualification ongoing | Read-only aug dependencies lists installed identities, imports, transitive aliases, source revisions and locked native selections |
 | D05 | Preview dependency updates | Pending | — |
 | D06 | Pin the project's compiler choice | Pending | — |
-| D07 | Make authoring a checked local path | Pending | — |
-| D08 | Compare package public interfaces | Pending | — |
+| D07 | Make authoring a checked local path | Implemented static readiness; qualification ongoing | aug package check checks production/tests, exports, Javadoc, compiler requirement, license and native metadata; clearly reports behavioral/artifact qualification as not run |
+| D08 | Compare package public interfaces | Partial | Checked local aug package diff follows export boundaries and returns both contracts; resolved type identities and remote release selection still pending |
 | D09 | Local multi-package workspaces | Pending | — |
 | D10 | Deliberate vendoring and air-gapped export | Pending | — |
 | D11 | Explain and manage caches | Pending | — |
@@ -70,7 +70,7 @@ Work proceeds through source/tool identities, everyday data and syntax, collecti
 | F08 | References and semantic rename | Partial | Compiler-resolved references, imports/exports, public labels, reverse callers and candidate-checked managed-function rename; semantic-reference and LSP tests. Member/type profiles pending |
 | F09 | Move declarations and update imports | Pending | — |
 | F10 | Completion that teaches the correct operation | Partial | Compatible shorthand, optional/default omission, moved-value and readonly-method filtering; remaining expected-type/catch/borrow ranking pending |
-| F11 | Hints with controllable detail | Pending | — |
+| F11 | Hints with controllable detail | Implemented protocol/UI; installed gate pending | Compact/full hints, complete tooltips and per-file expansion command; semantic and LSP regressions |
 | F12 | Quick experiments without a full project | Pending | — |
 | G01 | Assertions that show both values | Pending | — |
 | G02 | More useful generated typed test rows | Pending | — |
@@ -82,9 +82,9 @@ Work proceeds through source/tool identities, everyday data and syntax, collecti
 | H01 | A short prose default with expandable detail | Pending | — |
 | H02 | Navigate between prose and source | Pending | — |
 | H03 | Review the effective public change | Pending | — |
-| H04 | Prioritize complete required context | Pending | — |
+| H04 | Prioritize complete required context | Implemented initial packet; qualification ongoing | Schema 2 root implementation/contracts before optional imports, resolved identities, revision/digests, reverse callers, explicit boundaries and budget omissions; --require-complete gate and context/native regressions |
 | H05 | Revision-checked mechanical edits | Partial | Read-only rename plan carries compiler/source/configuration revisions, edit scope and public deltas. Durable source transactions and additional operations pending |
-| H06 | Small checked examples for unfamiliar agents | Pending | — |
+| H06 | Small checked examples for unfamiliar agents | Implemented initial catalog; qualification ongoing | Independent source-unit idioms with compiler identity/digest and both-backend output regressions; focused binding/comparison diagnostics |
 | H07 | Keep independent acceptance evidence | Pending | — |
 
 ## Verification boundary
@@ -92,3 +92,8 @@ Work proceeds through source/tool identities, everyday data and syntax, collecti
 The language cases run through the public CLI against both LLVM and the C reference. The candidate runtime is rebuilt from canonical sources because its private operation identifiers differ from the published 0.23.0 pack. These changes remain unreleased. No public native artifact, npm package, or Marketplace update has been published by this work.
 
 The 48-test language/package/inference/design run passed before the subsequent record-copy and semantic-query additions. Those additions have passed targeted tests and type checking. The expanded 204-test regression run passed 202 cases; its two failures were repaired and passed targeted reruns (HTTP contract metadata and optional-input prose). C/runtime ASan and UBSan passed five pressure cases, including interpolation, replacement, joining, parsing and remainder. LLVM ASan remains unqualified on this Mac because the installed Apple runtimes do not export LLVM 23’s version-check symbol. Generated documentation drift and site checks passed, as did installed CLI/source-library package checks using the C backend. Installed default-LLVM/VSIX and broader qualification remain outstanding. A passing mechanical rename check is compiler evidence; its plan explicitly reports that independent behavioral checks have not run.
+
+
+## Checkpoint review
+
+Commit 157f3b2 passed 508 of 509 full-suite cases (one cold-download qualification skipped), 25 independent conformance examples in 55 checks, and six C/runtime sanitizer pressure cases. The Standards review identified four contract/UI issues; the Spec review identified two P1 correctness issues. Repairs add binding-preserving rename collision checks, reachable loop-exit freshness, lexical grant unwinding, ordinary-module restrictions, same-file candidate checking for borrow fixes, and precise editor-plan wording. Targeted repairs passed before the subsequent ownership/package additions. Qualification must be rerun for the final candidate.

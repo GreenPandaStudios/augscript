@@ -7,7 +7,7 @@ export const overlap = (left: Origins, right: Origins): boolean => [...left].som
 export const allocationOrigin = (span: Span): Origins => new Set([`new:${span.file}:${span.start}`]);
 
 interface Place { origins: Origins; readonly: boolean; parent?: string; grant?: string; external?: string }
-interface Loan { origins: Origins; implicit: boolean; outerNames: Set<string> }
+interface Loan { origins: Origins; implicit: boolean; outerNames: Set<string>; span: Span }
 interface HeapField { origins: Origins; mutable: boolean }
 
 /** Stable object origins survive rebinding; loans and branch joins stay private. */
@@ -18,7 +18,7 @@ export class OwnershipFlow {
   private heap = new Map<string, Map<string, HeapField>>();
   private regions: { origins: Origins; outerNames: Set<string> }[] = [];
   private frozenOrigins = new Set<string>();
-  private taskLoans = new Map<string, {origins: Origins; exclusive: boolean; scope: string; repeated: boolean}>();
+  private taskLoans = new Map<string, {origins: Origins; exclusive: boolean; scope: string; repeated: boolean; sites: Span[]}>();
   private tasks = new Map<string, {scope: string; errors: Ty[]; observed: boolean}>();
 
   clone(): OwnershipFlow {
@@ -32,6 +32,28 @@ export class OwnershipFlow {
     copy.taskLoans = new Map(this.taskLoans);
     copy.tasks = new Map(this.tasks);
     return copy;
+  }
+
+  /** End only lexical grants. Heap identities, freezes, moves and outstanding
+   * task captures remain facts of the exit path. */
+  restoreLexical(parent:OwnershipFlow):void {
+    this.loans = new Map(parent.loans); this.borrowedInputs = new Set(parent.borrowedInputs);
+    this.regions = [...parent.regions];
+  }
+
+  /** Remove lexical names without erasing heap writes or pending child loans. */
+  forgetLocals(names:ReadonlySet<string>):void {
+    for(const name of this.places.keys())if(!names.has(name))this.places.delete(name);
+  }
+
+  /** A read-only snapshot of possible relationships at this program point.
+   * Branch joins are conservative: shared origins indicate possible aliasing. */
+  describe(name:string) {
+    const place=this.places.get(name),origins=this.reachable(place?.origins ?? new Set());
+    return {origins:[...origins].sort(),
+      aliases:[...this.places].filter(([other,value])=>other!==name&&overlap(origins,this.reachable(value.origins))).map(([other])=>other).sort(),
+      borrows:[...this.loans].filter(([,loan])=>overlap(origins,loan.origins)).map(([name,loan])=>({name,span:{...loan.span}})),
+      captures:[...this.taskLoans.values()].filter(loan=>overlap(origins,loan.origins)).flatMap(loan=>loan.sites.map(span=>({span:{...span},exclusive:loan.exclusive}))) };
   }
 
   origins(name: string): Origins { return this.places.get(name)?.origins ?? new Set(); }
@@ -52,7 +74,8 @@ export class OwnershipFlow {
       report(span, 'Task captures overlap an active task with mutable access');
     const previous = this.taskLoans.get(task);
     this.taskLoans.set(task, {scope, origins:unionOrigins(previous?.origins ?? new Set(), reachable),
-      exclusive:exclusive || !!previous?.exclusive, repeated:repeated || !!previous?.repeated});
+      exclusive:exclusive || !!previous?.exclusive, repeated:repeated || !!previous?.repeated,
+      sites:[...(previous?.sites ?? []),span].filter((site,index,sites)=>sites.findIndex(other=>other.file===site.file&&other.start===site.start)===index)});
   }
   waitTasks(origins: Origins, all: boolean): void {
     const reachable = this.reachable(origins);
@@ -156,7 +179,7 @@ export class OwnershipFlow {
     for (const [other, loan] of this.loans) if (overlap(loan.origins, reachable) &&
       !(loan.implicit && (other === name || place.parent === other || place.grant === other)))
       report(span, `${name} aliases active exclusive borrow ${other}`);
-    this.loans.set(name, { origins: reachable, implicit, outerNames: new Set(this.places.keys()) });
+    this.loans.set(name, { origins: reachable, implicit, outerNames: new Set(this.places.keys()), span });
   }
 
   activeGrant(name: string): string | undefined {

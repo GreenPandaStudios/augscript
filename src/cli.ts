@@ -1,3 +1,5 @@
+import {hasRequiredContext} from './context.ts';
+import {dependencyReport,packageReadiness,packageInterfaceDiff} from './package-inspection.ts';
 import { existsSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
@@ -65,6 +67,8 @@ function printDiagnostics(diagnostics: Diagnostic[], json: boolean, root: string
 function usage(): void {
   process.stdout.write(`AugScript compiler\n\n` +
     `Usage: aug <init|doctor|check|build|run|emit-c|emit-llvm|emit-ir|test|openapi|format|migrate|spec|bench|explain|context|lsp|symbols|definition|references|graph|complete|hover|fixes|semantic-tokens> [project directory] [options] [-- args]\n` +
+    `Inspect dependencies: aug dependencies [PROJECT] [--json]\n` +
+    `Package readiness/diff: aug package check DIRECTORY [--json]; aug package diff BEFORE AFTER [--json]\n` +
     `New application: aug init DIRECTORY [--template hello|weather]\n` +
     `Diagnose setup: aug doctor [project directory] [--json] — check without downloading or writing files\n` +
     `Run: aug run [project directory] [--offline] [-- args] — prepare dependencies, compile, and start\n` +
@@ -73,7 +77,7 @@ function usage(): void {
     `Format: aug format [project directory] [--file path] [--write]\n` +
     `Specifications: aug spec [project directory] [--check] [--json]\n` +
     `Migration: aug migrate [project directory] [--file path] [--write]\n` +
-    `Context: aug context [project directory] [--file path] [--name declaration] [--budget characters]\n` +
+    `Context: aug context [project directory] [--file path] [--name declaration] [--budget characters] [--require-complete]\n` +
     `References: aug references [project directory] --file path --offset character; aug graph [project directory] --file path\n` +
     `Benchmark: aug bench [project directory] [--iterations 10] [--warmup 2] [--json] [-- args]\n` +
     `Packages: aug package init DIRECTORY --name @owner/name; aug package pack DIRECTORY\n` +
@@ -85,6 +89,47 @@ function usage(): void {
 export async function main(argv: string[]): Promise<number> {
   if(argv[0]==='pack')return main(['package','pack',...argv.slice(1)]);
   const command = argv[0];
+  if(command==='dependencies') {
+    const args=argv.slice(1),paths=args.filter(arg=>!arg.startsWith('-'));
+    if(paths.length>1||args.some(arg=>arg.startsWith('-')&&arg!=='--json')){process.stderr.write('Use aug dependencies [PROJECT] [--json]\n');return 2;}
+    try {
+      const report=dependencyReport(paths[0]??process.cwd());
+      if(args.includes('--json'))process.stdout.write(JSON.stringify(report)+'\n');
+      else {
+        process.stdout.write(`August ${report.compiler}; dependency revision ${report.revision??'none'}\n`);
+        for(const [alias,id] of Object.entries(report.roots))process.stdout.write(`${alias}: ${id}\n`);
+        for(const item of report.packages) {
+          process.stdout.write(`${item.id} [${item.digest}]${item.source?' commit '+item.source.commit:''}\n`);
+          for(const [alias,id] of Object.entries(item.dependencies))process.stdout.write(`  ${alias}: ${id}\n`);
+          for(const artifact of item.native)process.stdout.write(`  native ${artifact.target}: ${artifact.artifact.id} [${artifact.artifact.sha256}]\n`);
+          for(const usage of report.imports.filter(usage=>usage.package===item.id))process.stdout.write(`  imported by ${usage.owner} ${usage.file}:${usage.line}: ${usage.names.join(', ')}\n`);
+        }
+        process.stdout.write('Installed source bytes verified. Native selections come from the lock; no artifacts were downloaded or executed.\n');
+      }
+      return 0;
+    }catch(error){process.stderr.write(failureMessage(error)+'\n');return 1;}
+  }
+  if(command==='package'&&(argv[1]==='check'||argv[1]==='diff')) {
+    const operation=argv[1],args=argv.slice(2),paths=args.filter(arg=>!arg.startsWith('-'));
+    if(args.some(arg=>arg.startsWith('-')&&arg!=='--json')||paths.length>(operation==='diff'?2:1)||operation==='diff'&&paths.length!==2){process.stderr.write('Use aug package check [DIRECTORY] [--json] or aug package diff BEFORE AFTER [--json]\n');return 2;}
+    try {
+      if(operation==='check') {
+        const report=packageReadiness(paths[0]??process.cwd());
+        if(args.includes('--json'))process.stdout.write(JSON.stringify(report)+'\n');
+        else for(const check of report.checks)process.stdout.write(`${check.status}: ${check.message}\n${check.recovery?'  '+check.recovery+'\n':''}`);
+        return report.ready?0:1;
+      }
+      const report=packageInterfaceDiff(paths[0],paths[1]);
+      if(args.includes('--json'))process.stdout.write(JSON.stringify(report)+'\n');
+      else {
+        process.stdout.write(`Public contracts: ${report.before} -> ${report.after}\n`);
+        for(const change of report.changes)process.stdout.write(`${change.name}:\n${JSON.stringify({before:change.before,after:change.after},null,2)}\n`);
+        if(JSON.stringify(report.native.before)!==JSON.stringify(report.native.after))process.stdout.write('Native requirements changed; inspect --json for the complete target and artifact delta.\n');
+        if(!report.changes.length)process.stdout.write('No public declaration changes.\n');
+      }
+      return 0;
+    }catch(error){process.stderr.write(failureMessage(error)+'\n');return 1;}
+  }
   if(command==='doctor'){
     const arguments_=argv.slice(1),paths=arguments_.filter(arg=>!arg.startsWith('-'));
     if(paths.length>1||arguments_.some(arg=>arg.startsWith('-')&&arg!=='--json')){process.stderr.write('Use aug doctor [project directory] [--json]\n');return 2;}
@@ -176,7 +221,7 @@ export async function main(argv: string[]): Promise<number> {
   const programArgs = separator >= 0 ? argv.slice(separator + 1) : [];
   if (options.includes('--help')) { usage(); return 0; }
   const valueOptions = new Set(['--backend','--out', '--stdin-file', '--file', '--name', '--offset', '--budget', '--baseline', '--group', '--case', '--timeout', '--iterations', '--warmup']);
-  const booleanOptions = new Set(['--json', '--coverage', '--list', '--write', '--check', '--offline', '--frozen']);
+  const booleanOptions = new Set(['--json', '--coverage', '--list', '--write', '--check', '--offline', '--frozen', '--require-complete']);
   for (let index = 0; index < options.length; index++) {
     const option = options[index];
     if (valueOptions.has(option)) {
@@ -186,6 +231,7 @@ export async function main(argv: string[]): Promise<number> {
       process.stderr.write(`Unknown option ${option}. See aug ${command} --help. To pass an option to your program, put it after --.\n`); return 2;
     }
   }
+  if(options.includes('--require-complete')&&command!=='context')throw new Error('--require-complete is only valid for aug context');
   const json = options.includes('--json');
   const backendIndex=options.indexOf('--backend');let backend=backendIndex<0?'llvm':options[backendIndex+1];
   if(!['c','llvm'].includes(backend)){process.stderr.write('--backend must be c or llvm\n');return 2;}
@@ -323,9 +369,11 @@ export async function main(argv: string[]): Promise<number> {
     }
     if (command === 'explain' || command === 'context') {
       if (budget !== undefined && (!Number.isInteger(budget) || budget < 512 || budget > 100000)) throw new Error('--budget must be an integer from 512 to 100000');
+      if(command==='context'&&baselinePath)throw new Error('--baseline compares aug explain reports; context packets are revision-bearing snapshots.');
       const baseline = baselinePath ? JSON.parse(readFileSync(baselinePath, 'utf8')) : undefined;
       const result = describe(checked, sourceFile ?? join(root, 'main.aug'), { name: symbolName, budget, context: command === 'context', baseline });
-      process.stdout.write(JSON.stringify(result, null, json ? undefined : 2) + '\n'); return 0;
+      process.stdout.write(JSON.stringify(result, null, command==='context'||json ? undefined : 2) + '\n');
+      return command==='context'&&options.includes('--require-complete')&&('schema' in result&&!hasRequiredContext(result))?1:0;
     }
     if (command === 'definition') {
       if (!sourceFile || (!symbolName && offsetText === undefined))

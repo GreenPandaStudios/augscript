@@ -31,12 +31,14 @@ export async function runLanguageServer(root: string): Promise<number> {
   const schedule = () => { if (publishTimer) clearTimeout(publishTimer); publishTimer = setTimeout(() => { try { publish(); } catch (error) { process.stderr.write(String(error) + '\n'); } }, 75); };
   let shutdown = false;
   let versionedEdits = false, annotatedEdits = false;
+  let hintDetail:'compact'|'full'='compact';
   const handle = (message: { id?: number | string; method: string; params?: any }) => {
     const params = message.params ?? {};
     let result: unknown = null;
     if (message.method === '$/cancelRequest') { cancelled.add(params.id); return; }
     if (message.id !== undefined && cancelled.delete(message.id)) { send({ jsonrpc: '2.0', id: message.id, error: { code: -32800, message: 'Request cancelled' } }); return; }
     if (message.method === 'initialize') {
+      hintDetail=params.initializationOptions?.inferredContractHintDetail==='full'?'full':'compact';
       versionedEdits = !!params.capabilities?.workspace?.workspaceEdit?.documentChanges;
       annotatedEdits = versionedEdits && !!params.capabilities?.workspace?.workspaceEdit?.changeAnnotationSupport;
       result = { capabilities: {
@@ -56,6 +58,7 @@ export async function runLanguageServer(root: string): Promise<number> {
     } else if (message.method === 'textDocument/didClose') { open.delete(params.textDocument.uri); workspace.close(fileURLToPath(params.textDocument.uri));
       send({ jsonrpc: '2.0', method: 'textDocument/publishDiagnostics', params: { uri: params.textDocument.uri, diagnostics: [] } }); }
     else if (message.method === 'workspace/didChangeWatchedFiles') schedule();
+    else if (message.method === 'workspace/didChangeConfiguration') hintDetail=params.settings?.augscript?.inferredContractHintDetail==='full'?'full':'compact';
     else if (message.method === 'aug/stats') result = { ...workspace.stats };
     else if (message.method === 'aug/editor') {
       const uri = params.uri;
@@ -66,7 +69,7 @@ export async function runLanguageServer(root: string): Promise<number> {
       const view = document(uri,['references','graph','rename'].includes(params.command)), offset = params.offset ?? 0;
       result = params.command === 'hover' ? view.hover(offset) ?? null : params.command === 'complete' ? view.complete(offset) :
         params.command === 'rename' ? view.rename(offset,params.options?.name) : params.command === 'references' ? view.references(offset,params.options?.includeDeclaration!==false).map(item=>({...item,file:view.referenceTarget(item.file)})) : params.command === 'graph' ? view.graph() : params.command === 'fixes' ? view.fixes() : params.command === 'semantic-tokens' ? view.tokens() :
-          params.command === 'inlay-hints' ? view.inlayHints(params.options?.start, params.options?.end) :
+          params.command === 'inlay-hints' ? view.inlayHints(params.options?.start, params.options?.end,params.options) :
           params.command === 'format' ? view.format() : params.command === 'definition' ? view.definition(offset) ?? null : params.command === 'diagnostics' ? view.diagnostics.map(issue => ({ ...issue, help: diagnosticHelp[issue.code] })) : view.describe(params.options);
     } else if (message.method.startsWith('textDocument/')) {
       const view = document(params.textDocument.uri,['textDocument/references','textDocument/rename','textDocument/prepareRename'].includes(message.method));
@@ -75,7 +78,7 @@ export async function runLanguageServer(root: string): Promise<number> {
         const hover = view.hover(offset); result = hover ? { contents: { kind: 'markdown', value: `\`\`\`augscript\n${hover.detail}\n\`\`\`\n\n${hover.documentation ?? ''}` } } : null;
       } else if (message.method === 'textDocument/inlayHint') result = view.inlayHints(
         params.range ? offsetAt(view.source, params.range.start) : undefined,
-        params.range ? offsetAt(view.source, params.range.end) : undefined).map(hint => ({
+        params.range ? offsetAt(view.source, params.range.end) : undefined,{detail:hintDetail}).map(hint => ({
           position: positionAt(view.source, hint.offset), label: hint.label, kind: 1,
           paddingLeft: true, tooltip: {kind: 'markdown', value: hint.tooltip},
         }));

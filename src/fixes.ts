@@ -1,8 +1,8 @@
-import {loadProject} from './project.ts';
+import {checkedProjectWithTests} from './refactoring.ts';
 import type {Config} from './config.ts';
 import { resolve } from 'node:path';
 import { typeName, type Diagnostic, type Expr, type MethodDecl, type SourceFile, type Stmt, type TypeRef } from './ast.ts';
-import {checkProject, type CheckedProject} from './checker.ts';
+import {type CheckedProject} from './checker.ts';
 import { completions, hoverInfo, importItems } from './editor.ts';
 import { importSource } from './git-packages.ts';
 import { languageHelp } from './help.ts';
@@ -255,7 +255,7 @@ export function suggestedFixes(checked: CheckedProject, fileName: string): Edito
       if (edit) {
         const overrides = new Map([...checked.project.files].filter(([,source]) => !source.builtin && !source.package).map(([path,source]) => [path,source.source]));
         overrides.set(file.path, file.source.slice(0,edit.start) + edit.text + file.source.slice(edit.end));
-        const candidate = checkProject(loadProject(checked.project.root, overrides));
+        const candidate = checkedProjectWithTests(checked.project.root, overrides);
         if (!candidate.diagnostics.some(diagnostic => diagnostic.severity !== 'warning')) fixes.push({
           title:`Wrap statement in borrow ${name} block`, issue, edits:[edit],
           description:`Grant exclusive mutable access to ${name} for this statement, then release the borrow. The compiler checked aliases, task captures, and the resulting project.`});

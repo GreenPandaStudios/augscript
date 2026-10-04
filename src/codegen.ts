@@ -357,6 +357,7 @@ class CGenerator {
     return this.checked.project.files.get(expr.span.file)?.source.slice(expr.span.start, expr.span.end) ?? 'condition';
   }
   callPlan(expr: Expr) { return this.checked.callPlans.get(expr); }
+  ownsBinding(stmt:Stmt):boolean {return stmt.kind==='assign'&&(stmt.ownership==='own'||this.checked.inferredOwned.has(stmt));}
   cName(def: Definition): string { return this.name(def); }
   cConstructor(def: Definition): string { return this.constructorName(def); }
   cMethod(def: Definition, method: string): string { return this.methodName(def, method); }
@@ -929,13 +930,13 @@ class BodyEmitter {
           this.line(`${this.slot(target)} = ${this.slot(value)};`);
           if (this.isScalar(this.generator.expressionType(stmt.value)) && (!stmt.declaredType || ['int', 'c_int', 'float', 'bool'].includes(stmt.declaredType.name)))
             this.scalarSlots.add(target);
-          if (stmt.ownership === 'own') this.owned.add(target);
+          if (this.generator.ownsBinding(stmt)) this.owned.add(target);
         }
       } else if (stmt.target.kind === 'member') {
         const object = this.emitExpr(stmt.target.object);
         this.line(`aug_set_field(${this.slot(object)}, ${this.memberIndex(stmt.target.object, stmt.target.name)}, ${this.slot(value)});`);
       }
-      let targetOwns = stmt.ownership === 'own';
+      let targetOwns = this.generator.ownsBinding(stmt);
       if(stmt.target.kind==='name'&&!this.locals.has(stmt.target.name))targetOwns ||= this.ownedClassFields.has(stmt.target.name);
       if (stmt.target.kind === 'member') {
         const memberName = stmt.target.name;

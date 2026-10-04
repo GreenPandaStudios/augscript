@@ -449,3 +449,79 @@ print(value="after")
     assert.equal(result.status,0,result.stderr);assert.equal(result.stdout,'joined failure\nafter\n');
   }
 }));
+
+
+test('breaking out of a constant loop cannot make an aliased constructor result owned',()=>project({
+  'main.aug':`import build from objects
+own Resource result = build()
+`,
+  'objects.aug':`interface Disposable:
+    drop()
+Resource() implements Disposable:
+    drop():
+        pass
+interceptor Alias(Resource existing):
+    around() returns Resource:
+        while true:
+            break
+        return existing
+[Alias] build() returns Resource:
+    return Resource()
+`
+},root=>{
+  const result=command(root,'check');assert.notEqual(result.status,0);assert.match(result.stderr,/own|fresh|alias/i);
+}));
+
+
+test('cleanup after a loop jump sees released lexical borrows and hidden inner locals',()=>project({
+  'main.aug':`items = [1]
+for item in [1]:
+    try:
+        borrow items:
+            local = 7
+            break
+    always:
+        borrow items:
+            items.append(value=2)
+print(value=items.length())
+`
+},root=>{
+  for(const backend of ['llvm','c']) {
+    const result=command(root,'run',['--backend',backend]);
+    assert.equal(result.status,0,result.stderr);assert.equal(result.stdout,'2\n');
+  }
+}));
+
+test('loop jumps cannot be silently ignored as ordinary module declarations',()=>project({
+  'main.aug':'', 'ignored.aug':'break\ncontinue\n'
+},root=>{
+  const result=command(root,'check');assert.notEqual(result.status,0);assert.match(result.stderr,/belong in main/);
+}));
+
+
+test('owned result contracts infer local ownership without inferring alias transfers',()=>project({
+  'main.aug':`import make and consume from objects
+for item in [1, 2]:
+    resource = make()
+    consume(value=resource)
+print(value="done")
+`,
+  'objects.aug':`interface Disposable:
+    drop()
+Resource() implements Disposable:
+    drop():
+        pass
+make() returns own Resource:
+    return Resource()
+consume(own Resource value):
+    pass
+`
+},root=>{
+  for(const backend of ['llvm','c']) {
+    const result=spawnSync(process.execPath,[cli,'run',root,'--backend',backend],{encoding:'utf8',timeout:60000,env:{...process.env,AUG_TRACE_DROPS:'1'}});
+    assert.equal(result.status,0,result.stderr);assert.equal(result.stdout,'done\n');
+    assert.equal(result.stderr.split('\n').filter(line=>/^drop: .*Resource$/.test(line)).length,2);
+  }
+  writeFileSync(join(root,'main.aug'),'import make from objects\nresource = make()\nalias = resource\n');
+  const rejected=command(root,'check');assert.notEqual(rejected.status,0);assert.match(rejected.stderr,/owned|copy/i);
+}));

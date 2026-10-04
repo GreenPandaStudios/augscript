@@ -278,6 +278,8 @@ See [the scoped composition example](../examples/approved-design/counters.aug).
 
 ## Ownership and read access
 
+**Unreleased:** a new local initialized by a call with an `own` result inherits ownership. For example, `connection = open(path)` has deterministic cleanup when `open` returns an owned connection. Editor hints and the spec show that lifetime. Copies or transfers from an existing owned local still require an explicit `own` destination; a fresh managed result does not imply ownership.
+
 Default objects are managed and reclaimed by the runtime. Ordinary reads require no borrow. An `own` value has exclusive lifetime control; passing it to an own input, field, or return moves it. Using a moved value or copying it into managed storage is rejected.
 
 `borrow value { ... }` or its colon form grants exclusive mutable access. A `borrow Type input` grants it for the call. The compiler tracks aliases, nested references, binding identities, call inputs/results, branch joins, escaping loans, and loop re-entry. Ordinary managed inputs and public reference reads are deep read-only views.

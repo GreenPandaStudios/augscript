@@ -9,6 +9,9 @@ Install `aug` once as shown in [Your first project](getting-started.md). Command
 | Command | Output |
 | --- | --- |
 | `doctor [PROJECT] [--json]` | Setup report without downloads or writes; unreleased. |
+| `dependencies PROJECT [--json]` | **Unreleased:** explain verified installed source and locked native dependencies without downloads. |
+| `package check DIRECTORY [--json]` | **Unreleased:** static package publishing readiness; behavioral tests remain explicit. |
+| `package diff BEFORE AFTER [--json]` | **Unreleased:** compare checked exported interfaces of local revisions. |
 | `check PROJECT [--json]` | Production, tests, module policy, documentation, and configuration diagnostics. |
 | `build PROJECT [--out NAME] [--json]` | Native path; JSON contains output and sourceMap. |
 | `run [PROJECT] [--offline] -- args...` | Prepares declared packages and required native libraries, checks, compiles, and runs; program stdout is preserved. |
@@ -21,7 +24,7 @@ Install `aug` once as shown in [Your first project](getting-started.md). Command
 | `test PROJECT [--coverage] [--json]` | Isolated native tests and optional statement-line report. |
 | `bench PROJECT [--iterations N] [--warmup N] [--timeout MS] [--json] -- args...` | Release build with timed native executions. |
 | `explain PROJECT --file PATH [--name NAME]` | Checked contracts, dependencies, layers, origins, tests, and module surface. |
-| `context PROJECT --file PATH [--name NAME] [--budget N]` | Bounded JSON context, including related declarations and source snippets. |
+| `context PROJECT --file PATH [--name NAME] [--budget N] [--require-complete]` | Bounded JSON context, including related declarations and source snippets. |
 | `lsp PROJECT` | Persistent language server over stdio. |
 | `package init DIRECTORY [--name @owner/name]` | Standalone source library with public exports, Javadoc and a same-file test. |
 | `package pack DIRECTORY` | Checked source archive ready for npm publishing or local installation. |
@@ -179,9 +182,13 @@ Benchmark the compiled executable with a workload representative of your applica
 
 `aug context` adds related declarations and source snippets. Its character budget ranges from 512 to 100000, with a default of 12000.
 
-The report says which declarations were checked and whether context was omitted or truncated. Check those limits before relying on caller or dependency coverage. Declarations have stable IDs and absolute source locations.
+The unreleased context packet gives the selected contract and actual implementation priority over import summaries. Resolved type identities, required dependency contracts, reverse callers, source digests, configuration digests, and the compiler identity follow. Locations use project-relative or package-relative paths. `aug explain` retains its declaration report and absolute navigation locations.
 
-Save a report and compare a later one with `--baseline previous.json`. The comparison shows changed dependencies, public signatures, and member counts. Both reports must cover the modules being compared.
+Context coverage has separate fields for project checking, graph boundaries, delivered facts, and reverse callers. A checked import closure cannot claim all project callers. Interface dispatch and native code remain explicit boundaries. A short budget reports omitted sections and identities; if even the inventory cannot fit, the packet reports that omission and marks required context incomplete. Increase the budget before making a change from it.
+
+Use `--require-complete` in an agent integration to return exit status 1 when required facts, project coverage, reverse callers, or dispatch coverage are incomplete. Receiving a complete packet establishes compiler context. It does not establish that a requested behavior is correct: the packet describes the starting code, says that requirements have not been supplied, and reports behavioral evidence as not run.
+
+Save an `aug explain` report and compare a later one with `--baseline previous.json`. The comparison shows changed dependencies, public signatures, and member counts. Both reports must cover the modules being compared.
 
 ## Persistent editor checks and reproducibility
 
@@ -224,3 +231,13 @@ Hints are enabled by default. Disable `augscript.inferredContractHints` to hide 
 `aug graph PROJECT --file PATH` returns a revision-bearing graph with reproducible project/package paths, source and configuration digests, compiler identity, resolved symbols and occurrences, forward dependencies, and reverse callers. Coverage distinguishes checking the project, enumerating its source callers, runtime dispatch boundaries, and callers outside the project. `aug references PROJECT --file PATH --offset N` returns the selected symbol's occurrences with that revision and coverage. Offsets and editor columns use UTF-16 code units.
 
 The language server uses the same graph for Find References and checks rename candidates before returning edits. Standard LSP clients can request versioned `documentChanges`; clients that support change annotations also receive the fix's consequence in its preview. The initial rename profile is described in [the editor guide](editor.md#find-references-and-rename-unreleased). These read-only plans do not yet provide a durable command-line source transaction.
+
+### Inferred-hint detail (unreleased)
+
+LSP clients can select `inferredContractHintDetail: "full"` in initialization options or under `settings.augscript` in `workspace/didChangeConfiguration`. The default is `"compact"`. The `aug/editor` `inlay-hints` request also accepts `options.detail`. Both views return the same complete tooltip and never insert inferred clauses into source.
+
+### Checked syntax examples (unreleased)
+
+Context packets can include small independent examples for the constructs in the selected code. Each example includes complete source units, a source digest, and its compiler regression fixture. The catalog covers inferred bindings, field comparisons, labeled calls, checked errors, owned results, borrows, and joined tasks. These examples are not declarations in your project and do not prescribe business values or recovery policy. Budget omissions still apply.
+
+An unknown type named `let` now explains the binding forms. A direct assignment after an `if` or `while` condition explains the difference between `=` and `==`. The diagnostic asks the author to choose the intended operation; it does not rewrite behavior automatically. An actual imported type or function named `let` remains valid.
