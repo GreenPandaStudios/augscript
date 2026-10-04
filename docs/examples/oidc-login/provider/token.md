@@ -49,88 +49,196 @@ pageClass: aug-example-page
 ::: code-group
 
 ```aug [Indentation]
+// aug-spec: "token.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import AuthorizationCode and AccessGrant and TokenForm and TokenResponse and OAuthError and IdClaims from contracts
 import settings and SigningKeys and KeyError and securityHeaders from common
-import Crypto and signJwt and JwtError from august.crypto
-import Clock from august.time
-import ExpiringStore and StoreFull from august.memory
-_oauthError(string code, string description) returns HttpResponse<Json> unless HttpError:
-    return HttpResponse(body=Json(value=OAuthError(error=code, error_description=description)), status=400, headers=securityHeaders())
+import Crypto and signJwt and JwtError from crypto
+import Clock from time
+import ExpiringStore and StoreFull from memory
+_oauthError(string code, string description):
+    return HttpResponse(
+        body=Json(value=OAuthError(error=code, error_description=description)),
+        status=400,
+        headers=securityHeaders()
+    )
 /** A real OAuth token endpoint. Exact client/redirect binding, S256 PKCE, expiry and one-use codes are enforced. Errors use OAuth JSON. */
-endpoint POST "/provider/token" as token(HttpRequest http from request, resolve Crypto crypto, resolve Clock clock, resolve SigningKeys keys, resolve ExpiringStore<AuthorizationCode> codes, resolve ExpiringStore<AccessGrant> access) returns HttpResponse<Json> uses crypto.sha256 and crypto.equal and crypto.random and crypto.signRsa and clock.now and keys.provider and codes.take and access.put unless CryptoError with status 503 and TimeError with status 503 and KeyError and JwtError and StoreFull with status 503 and HttpError:
+endpoint POST "/provider/token" as token(HttpRequest http from request, resolve Crypto crypto, resolve Clock clock, resolve SigningKeys keys, resolve ExpiringStore<AuthorizationCode> codes, resolve ExpiringStore<AccessGrant> access) unless CryptoError with status 503 and TimeError with status 503 and KeyError and JwtError and StoreFull with status 503 and HttpError:
     config = settings()
     try:
         form = http.form<TokenForm>()
         if form.grant_type != "authorization_code":
-            return _oauthError(code="unsupported_grant_type", description="Only authorization_code is supported.")
+            return _oauthError(
+                code="unsupported_grant_type",
+                description="Only authorization_code is supported."
+            )
         if form.client_id != config.clientId:
-            return _oauthError(code="invalid_client", description="The registered client is required.")
+            return _oauthError(
+                code="invalid_client",
+                description="The registered client is required."
+            )
         if not form.code.isToken(min=43, max=43) or not form.code_verifier.isToken(min=43, max=128):
-            return _oauthError(code="invalid_grant", description="The authorization grant is invalid.")
+            return _oauthError(
+                code="invalid_grant",
+                description="The authorization grant is invalid."
+            )
         now = clock.now()
         match codes.take(key=form.code, now=now):
             when null:
-                return _oauthError(code="invalid_grant", description="The authorization grant is invalid.")
+                return _oauthError(
+                    code="invalid_grant",
+                    description="The authorization grant is invalid."
+                )
             when some grant:
                 challenge = crypto.sha256(input=form.code_verifier.bytes()).base64url()
-                if grant.clientId != form.client_id or grant.redirectUri != form.redirect_uri or not crypto.equal(left=challenge.bytes(), right=grant.challenge.bytes()):
-                    return _oauthError(code="invalid_grant", description="The authorization grant is invalid.")
-                claims = IdClaims(iss=config.issuer, sub=grant.subject, aud=grant.clientId, exp=now + 300, iat=now, nonce=grant.nonce, name=grant.name)
-                idToken = signJwt(key=keys.provider(), claims=Json(value=claims), kid="provider-1", tokenType="JWT")
+                if grant.clientId != form.client_id or grant.redirectUri != form.redirect_uri or not crypto.equal(
+                    left=challenge.bytes(),
+                    right=grant.challenge.bytes()
+                ):
+                    return _oauthError(
+                        code="invalid_grant",
+                        description="The authorization grant is invalid."
+                    )
+                claims = IdClaims(
+                    iss=config.issuer,
+                    sub=grant.subject,
+                    aud=grant.clientId,
+                    exp=now + 300,
+                    iat=now,
+                    nonce=grant.nonce,
+                    name=grant.name
+                )
+                idToken = signJwt(
+                    key=keys.provider(),
+                    claims=Json(value=claims),
+                    kid="provider-1",
+                    tokenType="JWT"
+                )
                 accessToken = crypto.random(size=32).base64url()
-                value = AccessGrant(subject=grant.subject, name=grant.name, expires=now + 300)
-                access.put(key=accessToken, value=value, expires=value.expires, now=now)
-                body = TokenResponse(token_type="Bearer", access_token=accessToken, id_token=idToken, expires_in=300, scope="openid profile")
+                value = AccessGrant(
+                    subject=grant.subject,
+                    name=grant.name,
+                    expires=now + 300
+                )
+                access.put(
+                    key=accessToken,
+                    value=value,
+                    expires=value.expires,
+                    now=now
+                )
+                body = TokenResponse(
+                    token_type="Bearer",
+                    access_token=accessToken,
+                    id_token=idToken,
+                    expires_in=300,
+                    scope="openid profile"
+                )
                 return HttpResponse(body=Json(value=body), headers=securityHeaders())
     catch HttpError error:
-        return _oauthError(code="invalid_request", description="Submit the required URL-encoded token fields once each.")
+        return _oauthError(
+            code="invalid_request",
+            description="Submit the required URL-encoded token fields once each."
+        )
 ```
 
 ```aug [Braces]
+// aug-spec: "token.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import AuthorizationCode and AccessGrant and TokenForm and TokenResponse and OAuthError and IdClaims from contracts
 import settings and SigningKeys and KeyError and securityHeaders from common
-import Crypto and signJwt and JwtError from august.crypto
-import Clock from august.time
-import ExpiringStore and StoreFull from august.memory
-_oauthError(string code, string description) returns HttpResponse<Json> unless HttpError {
-    return HttpResponse(body=Json(value=OAuthError(error=code, error_description=description)), status=400, headers=securityHeaders())
+import Crypto and signJwt and JwtError from crypto
+import Clock from time
+import ExpiringStore and StoreFull from memory
+_oauthError(string code, string description) {
+    return HttpResponse(
+        body=Json(value=OAuthError(error=code, error_description=description)),
+        status=400,
+        headers=securityHeaders()
+    )
 }
 /** A real OAuth token endpoint. Exact client/redirect binding, S256 PKCE, expiry and one-use codes are enforced. Errors use OAuth JSON. */
-endpoint POST "/provider/token" as token(HttpRequest http from request, resolve Crypto crypto, resolve Clock clock, resolve SigningKeys keys, resolve ExpiringStore<AuthorizationCode> codes, resolve ExpiringStore<AccessGrant> access) returns HttpResponse<Json> uses crypto.sha256 and crypto.equal and crypto.random and crypto.signRsa and clock.now and keys.provider and codes.take and access.put unless CryptoError with status 503 and TimeError with status 503 and KeyError and JwtError and StoreFull with status 503 and HttpError {
+endpoint POST "/provider/token" as token(HttpRequest http from request, resolve Crypto crypto, resolve Clock clock, resolve SigningKeys keys, resolve ExpiringStore<AuthorizationCode> codes, resolve ExpiringStore<AccessGrant> access) unless CryptoError with status 503 and TimeError with status 503 and KeyError and JwtError and StoreFull with status 503 and HttpError {
     config = settings()
     try {
         form = http.form<TokenForm>()
         if form.grant_type != "authorization_code" {
-            return _oauthError(code="unsupported_grant_type", description="Only authorization_code is supported.")
+            return _oauthError(
+                code="unsupported_grant_type",
+                description="Only authorization_code is supported."
+            )
         }
         if form.client_id != config.clientId {
-            return _oauthError(code="invalid_client", description="The registered client is required.")
+            return _oauthError(
+                code="invalid_client",
+                description="The registered client is required."
+            )
         }
         if not form.code.isToken(min=43, max=43) or not form.code_verifier.isToken(min=43, max=128) {
-            return _oauthError(code="invalid_grant", description="The authorization grant is invalid.")
+            return _oauthError(
+                code="invalid_grant",
+                description="The authorization grant is invalid."
+            )
         }
         now = clock.now()
         match codes.take(key=form.code, now=now) {
             when null {
-                return _oauthError(code="invalid_grant", description="The authorization grant is invalid.")
+                return _oauthError(
+                    code="invalid_grant",
+                    description="The authorization grant is invalid."
+                )
             }
             when some grant {
                 challenge = crypto.sha256(input=form.code_verifier.bytes()).base64url()
-                if grant.clientId != form.client_id or grant.redirectUri != form.redirect_uri or not crypto.equal(left=challenge.bytes(), right=grant.challenge.bytes()) {
-                    return _oauthError(code="invalid_grant", description="The authorization grant is invalid.")
+                if grant.clientId != form.client_id or grant.redirectUri != form.redirect_uri or not crypto.equal(
+                    left=challenge.bytes(),
+                    right=grant.challenge.bytes()
+                ) {
+                    return _oauthError(
+                        code="invalid_grant",
+                        description="The authorization grant is invalid."
+                    )
                 }
-                claims = IdClaims(iss=config.issuer, sub=grant.subject, aud=grant.clientId, exp=now + 300, iat=now, nonce=grant.nonce, name=grant.name)
-                idToken = signJwt(key=keys.provider(), claims=Json(value=claims), kid="provider-1", tokenType="JWT")
+                claims = IdClaims(
+                    iss=config.issuer,
+                    sub=grant.subject,
+                    aud=grant.clientId,
+                    exp=now + 300,
+                    iat=now,
+                    nonce=grant.nonce,
+                    name=grant.name
+                )
+                idToken = signJwt(
+                    key=keys.provider(),
+                    claims=Json(value=claims),
+                    kid="provider-1",
+                    tokenType="JWT"
+                )
                 accessToken = crypto.random(size=32).base64url()
-                value = AccessGrant(subject=grant.subject, name=grant.name, expires=now + 300)
-                access.put(key=accessToken, value=value, expires=value.expires, now=now)
-                body = TokenResponse(token_type="Bearer", access_token=accessToken, id_token=idToken, expires_in=300, scope="openid profile")
+                value = AccessGrant(
+                    subject=grant.subject,
+                    name=grant.name,
+                    expires=now + 300
+                )
+                access.put(
+                    key=accessToken,
+                    value=value,
+                    expires=value.expires,
+                    now=now
+                )
+                body = TokenResponse(
+                    token_type="Bearer",
+                    access_token=accessToken,
+                    id_token=idToken,
+                    expires_in=300,
+                    scope="openid profile"
+                )
                 return HttpResponse(body=Json(value=body), headers=securityHeaders())
             }
         }
     }
     catch HttpError error {
-        return _oauthError(code="invalid_request", description="Submit the required URL-encoded token fields once each.")
+        return _oauthError(
+            code="invalid_request",
+            description="Submit the required URL-encoded token fields once each."
+        )
     }
 }
 ```
@@ -143,83 +251,35 @@ endpoint POST "/provider/token" as token(HttpRequest http from request, resolve 
 
 ## Compiled specification {#specification}
 
-<a id="symbol-token"></a>
-### `token` · [source](token.md#code)
+Plain handler results default to HTTP 200 unless another status is declared. HttpResponse values choose their own status. Unhandled request failures return HTTP 500 and cancel the request tasks.
 
-A real OAuth token endpoint. Exact client/redirect binding, S256 PKCE, expiry and one-use codes are enforced. Errors use OAuth JSON.
+### `token` · [source](token.md#code) {#symbol-token}
 
-**Inputs:** Take `http` (`HttpRequest`) from HTTP request. Resolve [`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto) as `crypto`. Resolve [`Clock`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock) as `clock`. Resolve [`SigningKeys`](../common/keys.md#symbol-SigningKeys) as `keys`. Resolve [`ExpiringStore<AuthorizationCode>`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore) as `codes`. Resolve [`ExpiringStore<AccessGrant>`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore) as `access`.
+`token` handles `POST /provider/token`. A real OAuth token endpoint. Exact client/redirect binding, S256 PKCE, expiry and one-use codes are enforced. Errors use OAuth JSON.
 
-Returns `HttpResponse<Json>`. Uses [`crypto.sha256`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.sha256), [`crypto.equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal), [`crypto.random`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.random), [`crypto.signRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.signRsa), [`clock.now`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now), [`keys.provider`](../common/keys.md#symbol-SigningKeys.provider), [`codes.take`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.take), [`access.put`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.put). Can fail with `CryptoError`, `TimeError`, `KeyError`, `JwtError`, `StoreFull`, `HttpError`.
+It takes `http` as `HttpRequest` from the HTTP request. It gets `crypto` ([`Crypto`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto)), `clock` ([`Clock`](../dependencies/packages/%40git/url_c092cd151499c4e1d8a1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.md#symbol-Clock)), `keys` ([`SigningKeys`](../common/keys.md#symbol-SigningKeys)), `codes` ([`ExpiringStore<AuthorizationCode>`](../dependencies/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.md#symbol-ExpiringStore)), and `access` ([`ExpiringStore<AccessGrant>`](../dependencies/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.md#symbol-ExpiringStore)) from dependency injection. The handler responds with HTTP 503 for `CryptoError`, HTTP 503 for `TimeError`, and HTTP 503 for [`StoreFull`](../dependencies/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.md#symbol-StoreFull). It can also raise `HttpError`, `JwtError`, and `KeyError`.
 
-HTTP route: `POST` `/provider/token`. Use status 200 when the handler returns a body; a returned HttpResponse can set its own status. An unhandled request failure returns status 500 and cancels its request tasks.
+It gets `config` from [`settings`](../common/settings.md#symbol-settings). It sets `form` to `http.form` for [`TokenForm`](contracts.md#symbol-TokenForm). If `form.grant_type` does not equal `"authorization_code"`, it returns [`_oauthError`](token.md#symbol-_oauthError) with `code` `"unsupported_grant_type"` and `description` `"Only authorization_code is supported."`. If `form.client_id` does not equal `config.clientId`, it returns [`_oauthError`](token.md#symbol-_oauthError) with `code` `"invalid_client"` and `description` `"The registered client is required."`.
 
-Declared HTTP failures: `CryptoError` returns status 503; `TimeError` returns status 503; [`StoreFull`](../dependencies/august/0.19.0/memory/store.md#symbol-StoreFull) returns status 503.
+If `form.code` is not a URL-safe ASCII token with `43` to `43` characters or `form.code_verifier` is not a URL-safe ASCII token with `43` to `128` characters, it returns [`_oauthError`](token.md#symbol-_oauthError) with `code` `"invalid_grant"` and `description` `"The authorization grant is invalid."`. It sets `now` to [`clock.now`](../dependencies/packages/%40git/url_c092cd151499c4e1d8a1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.md#symbol-Clock.now). It obtains [`codes.take`](../dependencies/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.md#symbol-ExpiringStore.take) with `key` from `form.code` and `now`. If no value is found, it returns [`_oauthError`](token.md#symbol-_oauthError) with `code` `"invalid_grant"` and `description` `"The authorization grant is invalid."`.
 
-- Set `config` to the result of [`settings`](../common/settings.md#symbol-settings).
-- Try:
-  - Set `form` to the result of `form` on `http` with type arguments [`TokenForm`](contracts.md#symbol-TokenForm).
-  - If `grant_type` of `form` does not equal `"authorization_code"`:
-    - Return the result of [`_oauthError`](token.md#symbol-_oauthError) with `code` as `"unsupported_grant_type"`, `description` as `"Only authorization_code is supported."`.
-  - If `client_id` of `form` does not equal `clientId` of `config`:
-    - Return the result of [`_oauthError`](token.md#symbol-_oauthError) with `code` as `"invalid_client"`, `description` as `"The registered client is required."`.
-  - If not (the result of `isToken` on `code` of `form` with `min` as `43`, `max` as `43`) or not (the result of `isToken` on `code_verifier` of `form` with `min` as `43`, `max` as `128`):
-    - Return the result of [`_oauthError`](token.md#symbol-_oauthError) with `code` as `"invalid_grant"`, `description` as `"The authorization grant is invalid."`.
-  - Set `now` to the result of [`Clock.now`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now) on `clock`.
-  - Match the result of [`ExpiringStore.take`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.take) on `codes` with `key` as `code` of `form`, `now`:
-    - A null value, including omitted optional input:
-      - Return the result of [`_oauthError`](token.md#symbol-_oauthError) with `code` as `"invalid_grant"`, `description` as `"The authorization grant is invalid."`.
-    - A present, non-null value, named `grant`:
-      - Set `challenge` to the result of `base64url` on the result of [`Crypto.sha256`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.sha256) on `crypto` with `input` as the result of `bytes` on `code_verifier` of `form`.
-      - If ((`clientId` of `grant` does not equal `client_id` of `form`) or (`redirectUri` of `grant` does not equal `redirect_uri` of `form`)) or not (the result of [`Crypto.equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal) on `crypto` with `left` as the result of `bytes` on `challenge`, `right` as the result of `bytes` on `challenge` of `grant`):
-        - Return the result of [`_oauthError`](token.md#symbol-_oauthError) with `code` as `"invalid_grant"`, `description` as `"The authorization grant is invalid."`.
-      - Set `claims` to a new [`IdClaims`](contracts.md#symbol-IdClaims) with `iss` as `issuer` of `config`, `sub` as `subject` of `grant`, `aud` as `clientId` of `grant`, `exp` as `now` plus `300`, `iat` as `now`, `nonce` as `nonce` of `grant`, `name` as `name` of `grant`.
-      - Set `idToken` to the result of [`signJwt`](../dependencies/august/0.19.0/crypto/jose.md#symbol-signJwt) with `key` as the result of [`SigningKeys.provider`](../common/keys.md#symbol-SigningKeys.provider) on `keys`, `claims` as a new `Json` with `value` as `claims`, `kid` as `"provider-1"`, `tokenType` as `"JWT"` using `crypto`.
-      - Set `accessToken` to the result of `base64url` on the result of [`Crypto.random`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.random) on `crypto` with `size` as `32`.
-      - Set `value` to a new [`AccessGrant`](contracts.md#symbol-AccessGrant) with `subject` as `subject` of `grant`, `name` as `name` of `grant`, `expires` as `now` plus `300`.
-      - Call [`ExpiringStore.put`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.put) on `access` with `key` as `accessToken`, `value`, `expires` as `expires` of `value`, `now`.
-      - Set `body` to a new [`TokenResponse`](contracts.md#symbol-TokenResponse) with `token_type` as `"Bearer"`, `access_token` as `accessToken`, `id_token` as `idToken`, `expires_in` as `300`, `scope` as `"openid profile"`.
-      - Return a new `HttpResponse` with `body` as a new `Json` with `value` as `body`, `headers` as the result of [`securityHeaders`](../common/headers.md#symbol-securityHeaders).
-- Catch `HttpError` as `error`:
-  - Return the result of [`_oauthError`](token.md#symbol-_oauthError) with `code` as `"invalid_request"`, `description` as `"Submit the required URL-encoded token fields once each."`.
+The non-null result becomes `grant`. It sets `challenge` to the URL-safe base64 encoding of [`crypto.sha256`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto.sha256) with `input` from the UTF-8 bytes of `form.code_verifier`. If `grant.clientId` does not equal `form.client_id` or `grant.redirectUri` does not equal `form.redirect_uri` or [`crypto.equal`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto.equal) with `left` from the UTF-8 bytes of `challenge` and `right` from the UTF-8 bytes of `grant.challenge` returns false, it returns [`_oauthError`](token.md#symbol-_oauthError) with `code` `"invalid_grant"` and `description` `"The authorization grant is invalid."`. It sets `claims` to an [`IdClaims`](contracts.md#symbol-IdClaims) with `iss` from `config.issuer`, `sub` from `grant.subject`, `aud` from `grant.clientId`, `exp` from `now` plus `300`, `iat` from `now`, `grant.nonce`, and `grant.name`.
 
-<a id="symbol-_oauthError"></a>
-### `_oauthError` · [source](token.md#code)
+It sets `idToken` to [`signJwt`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.md#symbol-signJwt) with `key` from [`keys.provider`](../common/keys.md#symbol-SigningKeys.provider), `claims` from a `Json` with `value` from `claims`, `kid` `"provider-1"`, and `tokenType` `"JWT"` using injected `crypto`. It sets `accessToken` to the URL-safe base64 encoding of [`crypto.random`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto.random) with `size` `32`. It sets `value` to an [`AccessGrant`](contracts.md#symbol-AccessGrant) with `grant.subject`, `grant.name`, and `expires` from `now` plus `300`. It calls [`access.put`](../dependencies/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.md#symbol-ExpiringStore.put) with `key` from `accessToken`, `value`, `value.expires`, and `now`.
 
-Private to its defining scope.
+It sets `body` to a [`TokenResponse`](contracts.md#symbol-TokenResponse) with `token_type` `"Bearer"`, `access_token` from `accessToken`, `id_token` from `idToken`, `expires_in` `300`, and `scope` `"openid profile"`. It returns HTTP 200 with a `Json` with `value` from `body` and [`securityHeaders`](../common/headers.md#symbol-securityHeaders) headers. If this work raises `HttpError`, it returns [`_oauthError`](token.md#symbol-_oauthError) with `code` `"invalid_request"` and `description` `"Submit the required URL-encoded token fields once each."`.
 
-**Inputs:** Take `code` (`string`). Take `description` (`string`).
+### `_oauthError` · [source](token.md#code) {#symbol-_oauthError}
 
-Returns `HttpResponse<Json>`. Can fail with `HttpError`.
-
-- Return a new `HttpResponse` with `body` as a new `Json` with `value` as a new [`OAuthError`](contracts.md#symbol-OAuthError) with `error` as `code`, `error_description` as `description`, `status` as `400`, `headers` as the result of [`securityHeaders`](../common/headers.md#symbol-securityHeaders).
+It is private to its defining scope. It takes `code` and `description` as strings. Failures can raise `HttpError`. It returns HTTP 400 with a `Json` with `value` from an [`OAuthError`](contracts.md#symbol-OAuthError) with `error` from `code` and `error_description` from `description` and [`securityHeaders`](../common/headers.md#symbol-securityHeaders) headers.
 
 ### Dependencies
 
-- [`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto) from `august.crypto`: [`equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal) (`left`: `Bytes`, `right`: `Bytes`) → `bool`; [`random`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.random) (`size`: `int`) → `Bytes`; can fail with `CryptoError`; [`sha256`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.sha256) (`input`: `Bytes`) → `Bytes`; can fail with `CryptoError`; [`signRsa`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.signRsa) (`key`: `RsaPrivateKey`, `input`: `Bytes`) → `Bytes`; can fail with `CryptoError`.
-- [`JwtError`](../dependencies/august/0.19.0/crypto/jose.md#symbol-JwtError) from `august.crypto`.
-- [`signJwt`](../dependencies/august/0.19.0/crypto/jose.md#symbol-signJwt) (`key`: `RsaPrivateKey`, `claims`: `Json`, `kid`: `string`, `tokenType`: `string`) → `string`; can fail with `JwtError` from `august.crypto`.
-- [`ExpiringStore`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore) from `august.memory`: [`put`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.put) (`key`: `string`, `value`: `T`, `expires`: `int`, `now`: `int`) → `void`; can fail with `StoreFull`; [`take`](../dependencies/august/0.19.0/memory/store.md#symbol-ExpiringStore.take) (`key`: `string`, `now`: `int`) → `optional T`.
-- [`StoreFull`](../dependencies/august/0.19.0/memory/store.md#symbol-StoreFull) from `august.memory`.
-- [`Clock`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock) from `august.time`: [`now`](../dependencies/august/0.19.0/time/contracts.md#symbol-Clock.now) (no caller inputs) → `int`; can fail with `TimeError`.
-- [`securityHeaders`](../common/headers.md#symbol-securityHeaders) (no caller inputs) → `Headers`; can fail with `HttpError` from `common`.
-- [`KeyError`](../common/keys.md#symbol-KeyError) from `common`.
-- [`SigningKeys`](../common/keys.md#symbol-SigningKeys) from `common`: [`provider`](../common/keys.md#symbol-SigningKeys.provider) (no caller inputs) → `RsaPrivateKey`; can fail with `KeyError`.
-- [`Settings`](../common/settings.md#symbol-Settings): read `clientId` (`string`); read `issuer` (`string`).
-- [`settings`](../common/settings.md#symbol-settings) (no caller inputs) → [`Settings`](../common/settings.md#symbol-Settings) from `common`.
-- [`AccessGrant`](contracts.md#symbol-AccessGrant) from `contracts`: construct with `subject`: `string`, `name`: `string`, `expires`: `int`; read `expires` (`int`).
-- [`AuthorizationCode`](contracts.md#symbol-AuthorizationCode) from `contracts`: read `challenge` (`string`); read `clientId` (`string`); read `name` (`string`); read `nonce` (`string`); read `redirectUri` (`string`); read `subject` (`string`).
-- [`IdClaims`](contracts.md#symbol-IdClaims) from `contracts`: construct with `iss`: `string`, `sub`: `string`, `aud`: `string`, `exp`: `int`, `iat`: `int`, `nonce`: `string`, `name`: `string`.
-- [`OAuthError`](contracts.md#symbol-OAuthError) from `contracts`: construct with `error`: `string`, `error_description`: `string`.
-- [`TokenForm`](contracts.md#symbol-TokenForm) from `contracts`: read `client_id` (`string`); read `code` (`string`); read `code_verifier` (`string`); read `grant_type` (`string`); read `redirect_uri` (`string`).
-- [`TokenResponse`](contracts.md#symbol-TokenResponse) from `contracts`: construct with `token_type`: `string`, `access_token`: `string`, `id_token`: `string`, `expires_in`: `int`, `scope`: `string`.
+It uses [`ExpiringStore`](../dependencies/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.md#symbol-ExpiringStore) ([`put`](../dependencies/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.md#symbol-ExpiringStore.put) and [`take`](../dependencies/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.md#symbol-ExpiringStore.take)) and [`StoreFull`](../dependencies/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.md#symbol-StoreFull) from `memory`. It uses [`Crypto`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto) ([`equal`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto.equal), [`random`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto.random), [`sha256`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto.sha256), and [`signRsa`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto.signRsa)), [`JwtError`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.md#symbol-JwtError), and [`signJwt`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.md#symbol-signJwt) from `crypto`. It uses [`Clock`](../dependencies/packages/%40git/url_c092cd151499c4e1d8a1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.md#symbol-Clock) ([`now`](../dependencies/packages/%40git/url_c092cd151499c4e1d8a1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.md#symbol-Clock.now)) from `time`. It uses [`securityHeaders`](../common/headers.md#symbol-securityHeaders), [`KeyError`](../common/keys.md#symbol-KeyError), [`SigningKeys`](../common/keys.md#symbol-SigningKeys) ([`provider`](../common/keys.md#symbol-SigningKeys.provider)), and [`settings`](../common/settings.md#symbol-settings) from `common`.
 
-### Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
+It uses [`Settings`](../common/settings.md#symbol-Settings) (`clientId` and `issuer`). It uses [`AccessGrant`](contracts.md#symbol-AccessGrant) (`expires`), [`AuthorizationCode`](contracts.md#symbol-AuthorizationCode) (`challenge`, `clientId`, `name`, `nonce`, `redirectUri`, and `subject`), [`IdClaims`](contracts.md#symbol-IdClaims), [`OAuthError`](contracts.md#symbol-OAuthError), [`TokenForm`](contracts.md#symbol-TokenForm) (`client_id`, `code`, `code_verifier`, `grant_type`, and `redirect_uri`), and [`TokenResponse`](contracts.md#symbol-TokenResponse) from `contracts`.
 
-- `Bytes.base64url`: Encode immutable bytes as unpadded RFC 4648 URL-safe base64.
-- `HttpRequest.form`: Decode a form record inside a handler so protocol-specific error responses can be returned.
-- `string.bytes`: Encode this string as immutable UTF-8 bytes.
-- `string.isToken`: Require an ASCII RFC 3986 unreserved token with a bounded length.
+Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).
 
 ::::
 

@@ -18,11 +18,11 @@ export const builtinTypes = {
 export const errorNames = Object.keys(builtinTypes).filter(name => 'error' in builtinTypes[name as keyof typeof builtinTypes]);
 export const builtinType = (name: string): Ty => ({ id: `builtin:${name}`, name,
   kind: name === 'Error' || name === 'Data' ? 'interface' : errorNames.includes(name) ? 'class' : 'builtin', args: [], nullable: false });
-export const builtinProperties: Record<string, {name: string; type: string; documentation: string}[]> = {
+export const builtinProperties: Record<string, {name: string; type: string; documentation: string; errors?: string[]}[]> = {
   HttpResponse: [{name: 'body', type: 'T', documentation: 'The typed response body.'},
     {name: 'status', type: 'int', documentation: 'HTTP response status.'}, {name: 'headers', type: 'Headers', documentation: 'Immutable response headers. Duplicate Set-Cookie values are preserved.'}],
   HttpRequest: [{name: 'method', type: 'string', documentation: 'The HTTP method.'}, {name: 'path', type: 'string', documentation: 'Decoded request path.'},
-    {name: 'headers', type: 'Headers', documentation: 'Immutable request headers.'}, {name: 'body', type: 'Bytes', documentation: 'Bounded buffered request bytes.'}],
+    {name: 'headers', type: 'Headers', documentation: 'Immutable request headers.'}, {name: 'body', type: 'Bytes', errors: ['HttpError'], documentation: 'Receive bounded request bytes when first read. Headers and authentication can reject the request before reception or 100 Continue. Reception failures raise HttpError.'}],
 };
 export interface BuiltinOperation {
   name: string; parameters: { label: string; type: string }[]; returns: string; changes?: boolean;
@@ -38,6 +38,7 @@ export const collectionOperations: Record<string, BuiltinOperation[]> = {
     {name: 'all', parameters: [{label: 'name', type: 'string'}], returns: 'List<string>', documentation: 'Read every value of this header in wire order.', native: 'all'},
   ],
   Json: [
+    {name:'has',parameters:[{label:'name',type:'string'}],returns:'bool',documentation:'Test object-member presence. A present JSON null returns true; an absent member returns false.',native:'has'},
     {name: 'stringify', parameters: [], returns: 'string', errors: ['JsonError'], documentation: 'Serialize this JSON value with checked UTF-8 escaping and exact int64 values.', native: 'stringify'},
     {name: 'get', parameters: [{label: 'name', type: 'string'}], returns: 'optional Json', documentation: 'Read an object member. An absent member or JSON null returns null.', native: 'get'},
     {name: 'require', parameters: [{label: 'name', type: 'string'}], returns: 'Json', errors: ['JsonError'], documentation: 'Read a required object member or raise JsonError.', native: 'require'},
@@ -47,7 +48,15 @@ export const collectionOperations: Record<string, BuiltinOperation[]> = {
     {name: 'items', parameters: [], returns: 'List<Json>', errors: ['JsonError'], documentation: 'Read an immutable JSON array.', native: 'items'},
     {name: 'decode', parameters: [], returns: 'decoded', errors: ['JsonError'], documentation: 'Decode a checked record or data type: json.decode<Profile>(). Unknown fields, type mismatches, and validation errors are rejected.', native: 'decode'},
   ],
+  float: [
+    {name:'isFinite', parameters:[], returns:'bool', documentation:'Test whether this binary64 value is neither infinity nor NaN.',native:'is_finite'},
+    {name:'float32', parameters:[], returns:'float', errors:['ConversionError'], documentation:'Round to IEEE 754 binary32 and return the rounded value as float. Reject nonfinite input or overflow.',native:'float32'},
+  ],
   string: [
+    {name:'trim',parameters:[],returns:'string',documentation:'Remove ECMAScript whitespace and line terminators from both ends; preserve interior text.',native:'trim'},
+    {name:'utf16Length',parameters:[],returns:'int',documentation:'Count UTF-16 code units for JavaScript wire limits; supplementary characters count as two.',native:'utf16_length'},
+    {name:'isDecimal',parameters:[],returns:'bool',documentation:'Require a nonempty ASCII unsigned decimal string. Leading zeros are allowed.',native:'is_decimal'},
+    {name:'compareDecimal',parameters:[{label:'other',type:'string'}],returns:'int',errors:['ConversionError'],documentation:'Compare unsigned decimal strings without integer conversion. Leading zeros do not affect the result; return -1, 0, or 1.',native:'compare_decimal'},
     {name:'isToken', parameters:[{label:'min', type:'int'},{label:'max', type:'int'}], returns:'bool', documentation:'Require an ASCII RFC 3986 unreserved token with a bounded length.', native:'is_token'},
     { ...length, documentation: 'Read the number of UTF-8 bytes. Unicode text is preserved losslessly.' },
     { name: 'bytes', parameters: [], returns: 'Bytes', documentation: 'Encode this string as immutable UTF-8 bytes.', native: 'bytes' },
@@ -55,6 +64,8 @@ export const collectionOperations: Record<string, BuiltinOperation[]> = {
     { name: 'startsWith', parameters: [{label: 'prefix', type: 'string'}], returns: 'bool', documentation: 'Test an exact prefix.', native: 'starts_with' },
   ],
   Bytes: [length,
+    {name:'slice',parameters:[{label:'start',type:'int'},{label:'end',type:'int'}],returns:'Bytes',errors:['IndexError'],documentation:'Copy bytes in the half-open range [start, end). Require 0 <= start <= end <= length.',native:'slice'},
+    {name:'hex',parameters:[],returns:'string',documentation:'Encode bytes as lowercase hexadecimal, including embedded zeros.',native:'hex'},
     { name: 'text', parameters: [], returns: 'string', errors: ['ConversionError'], documentation: 'Decode UTF-8 strictly. Invalid input raises ConversionError; embedded NUL is preserved.', native: 'text' },
     { name: 'base64url', parameters: [], returns: 'string', documentation: 'Encode immutable bytes as unpadded RFC 4648 URL-safe base64.', native: 'base64url' },
   ],
@@ -91,7 +102,7 @@ export const builtinFunctions: BuiltinOperation[] = [
   {name:'exit', parameters:[{label:'status', type:'int'}], returns:'void', documentation:'Exit from main with a status from 0 to 255 after cancellation and cleanup.', native:'exit'},
   { name: 'c_int', parameters: [{ label: 'value', type: 'int' }], returns: 'c_int', errors: ['ConversionError'], documentation: 'Checked conversion to a signed 32-bit C int. Overflow raises ConversionError. AugScript int maps to int64_t at the C boundary.', native: 'to_c_int' },
   { name: 'int', parameters: [{ label: 'value', type: 'c_int' }], returns: 'int', documentation: 'Widen a C int to the signed 64-bit AugScript integer without loss.', native: 'to_int' },
-  { name: 'print', parameters: [{ label: 'value', type: 'any' }], returns: 'void', documentation: 'Composition and test output. Other callables receive Console and declare uses console.write.', native: 'print' },
+  { name: 'print', parameters: [{ label: 'value', type: 'any' }], returns: 'void', documentation: 'Write application startup or test output. Other callables receive a Console dependency and call console.write; their bodies infer that capability use.', native: 'print' },
   { name: 'assert', parameters: [{ label: 'condition', type: 'bool' }], returns: 'void', documentation: 'Assert a bool in a test case or its setup. Catching an assertion failure cannot make the case pass; every case must execute an assertion.', native: 'assert' },
   { name: 'arguments', parameters: [], returns: 'List<string>', documentation: 'Composition arguments. Other callables receive the Arguments capability.', native: 'arguments' },
   { name: 'read_file', parameters: [{ label: 'path', type: 'string' }], returns: 'string', errors: ['FileError'], documentation: 'Root-only UTF-8 text input. Other callables receive FileReader. Invalid Unicode and NUL raise FileError.', native: 'read_file' },

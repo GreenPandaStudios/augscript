@@ -5,6 +5,7 @@ import { cpSync, mkdtempSync, readFileSync, rmSync, statSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { basename, join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
+import { prepareLibraryFixtures } from '../tests/library-fixtures.mjs';
 
 const root = resolve(import.meta.dirname, '..');
 const fixtureRoot = join(root, 'tests', 'fixtures', 'safety');
@@ -44,7 +45,8 @@ for (const fixture of cases.filter(item => selected.size === 0 || selected.has(i
       recursive: true,
       filter: path => statSync(path).isDirectory() || path.endsWith('.aug') || path.endsWith('main.yaml'),
     });
-    const build = run(process.execPath, [join(root, 'bin', 'aug.mjs'), fixture.test ? 'test' : 'build', project,
+    prepareLibraryFixtures(project);
+    const build = run(process.execPath, [join(root, 'bin', 'aug.mjs'), fixture.test ? 'test' : 'build', project, '--backend', 'c',
       ...(fixture.test ? ['--json'] : [])], `${fixture.name} build`);
     if (fixture.test) {
       const report = JSON.parse(build.stdout);

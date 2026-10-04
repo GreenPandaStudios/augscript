@@ -6,6 +6,34 @@ import { join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 
 const cli = resolve(import.meta.dirname, '../bin/aug.mjs');
+test('constructor interceptor failure releases the completed object and its owned fields before catch', () => runs({
+  'main.aug': `import Resource and Box from app
+try:
+    own Resource value = Resource()
+    own Box box = Box(value)
+catch FileError error:
+    print(value="caught")
+`,
+  'app.aug': `interface Disposable:
+    drop()
+Resource() implements Disposable:
+    drop():
+        pass
+interface Marker:
+    pass
+interceptor Reject<T>():
+    around() returns T unless FileError:
+        T completed = next()
+        throw FileError()
+interceptor Delegate<T>():
+    around() returns T:
+        return next()
+[Delegate]
+[Reject]
+Box(own Resource value) unless FileError implements Marker:
+    pass
+`
+}, 'caught\n', 1));
 function withProject(files, callback) {
   const root = mkdtempSync(join(tmpdir(), 'augscript-interceptors-'));
   try {
@@ -18,6 +46,7 @@ function withProject(files, callback) {
   } finally { rmSync(root, { recursive: true, force: true }); }
 }
 function command(root, name, file, source, offset, traceDrops = false) {
+  if(process.env.AUG_TEST_BACKEND==='llvm')writeFileSync(join(root,'main.yaml'),'backend: llvm\n');
   const args = [cli, name, root];
   if (name === 'check') args.push('--json');
   if (file) args.push('--file', join(root, file), '--stdin-file', join(root, file));
@@ -32,7 +61,7 @@ function runs(files, output, drops) {
     const result = command(root, 'run', undefined, undefined, undefined, drops !== undefined);
     assert.equal(result.status, 0, result.stderr);
     assert.equal(result.stdout, output);
-    if (drops !== undefined) assert.equal(result.stderr.match(/drop: Resource\n/g)?.length ?? 0, drops);
+    if (drops !== undefined) assert.equal(result.stderr.match(/drop: (?:[^\n]*[:/])?Resource\n/g)?.length ?? 0, drops);
   });
 }
 function issues(files) {

@@ -3,36 +3,25 @@
 # `app.aug`
 
 <a id="symbol-Application"></a>
-## `Application` · interface · [source](app.aug#L4)
+## `Application` · interface · [source](app.aug#L5)
 
 The application's explicit startup operation.
 
 <a id="symbol-Application.start"></a>
-### `Application.start` · [source](app.aug#L6)
+### `Application.start` · [source](app.aug#L7)
 
-Writes the fruit names through the selected console.
-
-Uses [`Console.write`](../.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write).
+Writes the fruit names through the selected console. It can call [`Console.write`](../.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-Console.write).
 
 <a id="symbol-ApplicationImpl"></a>
-## `ApplicationImpl` · class · [source](app.aug#L8)
+## `ApplicationImpl` · class · [source](app.aug#L9)
 
-Construction stores dependencies; start performs the visible external work. Implements [`Application`](app.aug.md#symbol-Application).
-
-**Inputs:** Resolve [`Console`](../.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console) as `console`; store read-only.
+Construction stores dependencies; start performs the visible external work. It implements [`Application`](app.aug.md#symbol-Application). The `console` dependency is injected as [`Console`](../.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-Console) and stored read-only.
 
 <a id="symbol-ApplicationImpl.start"></a>
-### `ApplicationImpl.start` · [source](app.aug#L9)
+### `ApplicationImpl.start` · [source](app.aug#L10)
 
-Writes the fruit names through the selected console.
-
-Uses [`console.write`](../.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write).
-
-- Set `fruit` to a list containing a new [`Fruit`](models.aug.md#symbol-Fruit) with `code` as `1`, `name` as `"apple"`, a new [`Fruit`](models.aug.md#symbol-Fruit) with `name` as `"pear"`, `code` as `2`.
-- For each `item` in a snapshot of `fruit`:
-  - Call [`Console.write`](../.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write) on `console` with `value` as `name` of `item`.
+Writes the fruit names through the selected console. It sets `fruit` to a list containing a [`Fruit`](models.aug.md#symbol-Fruit) with `code` `1` and `name` `"apple"`, a [`Fruit`](models.aug.md#symbol-Fruit) with `name` `"pear"` and `code` `2`. For each `item` in a snapshot of `fruit`, it passes `item.name` to [`console.write`](../.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-Console.write).
 
 ## Dependencies
 
-- [`Console`](../.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console) from `august.io`: [`write`](../.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write)<`T`> (`value`: `T`) → `void`.
-- [`Fruit`](models.aug.md#symbol-Fruit) from `models`: construct with `code`: `int`, `name`: `string`; read `name` (`string`).
+It uses [`Console`](../.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-Console) ([`write`](../.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-Console.write)) from `august.io`. It uses [`Fruit`](models.aug.md#symbol-Fruit) (`name`) from `models`.

@@ -33,6 +33,7 @@ pageClass: aug-example-page
 ::: code-group
 
 ```aug [Indentation]
+// aug-spec: "greeter.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Console from august.io
 import Logger from logging
 /**
@@ -44,7 +45,7 @@ Greeter(resolve Logger logger) implements IGreeter:
     * Prints a personalized greeting.
     * @param name The user to welcome.
     */
-    greet(resolve Console console, string name) uses Console.write:
+    greet(resolve Console console, string name):
         logger.log(message="Hello, " + name + "!")
 interface IGreeter:
     /**
@@ -55,6 +56,7 @@ interface IGreeter:
 ```
 
 ```aug [Braces]
+// aug-spec: "greeter.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Console from august.io
 import Logger from logging
 /**
@@ -66,7 +68,7 @@ Greeter(resolve Logger logger) implements IGreeter {
     * Prints a personalized greeting.
     * @param name The user to welcome.
     */
-    greet(resolve Console console, string name) uses Console.write {
+    greet(resolve Console console, string name) {
         logger.log(message="Hello, " + name + "!")
     }
 }
@@ -87,40 +89,23 @@ interface IGreeter {
 
 ## Compiled specification {#specification}
 
-<a id="symbol-Greeter"></a>
-### `Greeter` · class · [source](greeter.md#code)
+### `Greeter` · class · [source](greeter.md#code) {#symbol-Greeter}
 
-Welcomes a user through the configured logger. Implements [`IGreeter`](greeter.md#symbol-IGreeter).
+Welcomes a user through the configured logger. It implements [`IGreeter`](greeter.md#symbol-IGreeter). The `logger` dependency is injected as [`Logger`](../logging/logger.md#symbol-Logger) and stored read-only (the application logger, injected when resolved).
 
-**Inputs:** Resolve [`Logger`](../logging/logger.md#symbol-Logger) as `logger`; store read-only — The application logger, injected when resolved.
+#### `Greeter.greet` · [source](greeter.md#code) {#symbol-Greeter.greet}
 
-<a id="symbol-Greeter.greet"></a>
-#### `Greeter.greet` · [source](greeter.md#code)
+Prints a personalized greeting. It takes `name` as a string (the user to welcome). It gets `console` ([`Console`](../dependencies/august/0.23.0/io/contracts.md#symbol-Console)) from dependency injection. It passes the text `Hello, {name}!` to [`logger.log`](../logging/logger.md#symbol-Logger.log), using injected `console`.
 
-Prints a personalized greeting.
+### `IGreeter` · interface · [source](greeter.md#code) {#symbol-IGreeter}
 
-**Inputs:** Resolve [`Console`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console) as `console`. Take `name` (`string`) — The user to welcome.
+#### `IGreeter.greet` · [source](greeter.md#code) {#symbol-IGreeter.greet}
 
-Uses [`Console.write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
-
-- Call [`Logger.log`](../logging/logger.md#symbol-Logger.log) on `logger` with `message` as text that joins `"Hello, "`, `name` and `"!"` using `console`.
-
-<a id="symbol-IGreeter"></a>
-### `IGreeter` · interface · [source](greeter.md#code)
-
-<a id="symbol-IGreeter.greet"></a>
-#### `IGreeter.greet` · [source](greeter.md#code)
-
-Prints a personalized greeting.
-
-**Inputs:** Resolve [`Console`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console) as `console`. Take `name` (`string`) — The user to welcome.
-
-Uses [`Console.write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
+Prints a personalized greeting. It takes `name` as a string (the user to welcome). It gets `console` ([`Console`](../dependencies/august/0.23.0/io/contracts.md#symbol-Console)) from dependency injection. It can call [`Console.write`](../dependencies/august/0.23.0/io/contracts.md#symbol-Console.write).
 
 ### Dependencies
 
-- [`Console`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console) from `august.io`: [`write`](../dependencies/august/0.19.0/io/contracts.md#symbol-Console.write)<`T`> (`value`: `T`) → `void`.
-- [`Logger`](../logging/logger.md#symbol-Logger) from `logging`: [`log`](../logging/logger.md#symbol-Logger.log) (`message`: `string`) → `void`.
+It uses [`Console`](../dependencies/august/0.23.0/io/contracts.md#symbol-Console) ([`write`](../dependencies/august/0.23.0/io/contracts.md#symbol-Console.write)) from `august.io`. It uses [`Logger`](../logging/logger.md#symbol-Logger) ([`log`](../logging/logger.md#symbol-Logger.log)) from `logging`.
 
 ::::
 

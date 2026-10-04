@@ -3,58 +3,26 @@
 # `session.aug`
 
 <a id="symbol-authenticate"></a>
-## `authenticate` · [source](session.aug#L8)
+## `authenticate` · [source](session.aug#L9)
 
 An app session has its own key, issuer, audience and token type. A live registry entry is required so logout revokes a signed token immediately.
 
-**Inputs:** Take `token` (`optional string`); omitted means null. Resolve [`Crypto`](../.aug-spec/august/0.19.0/crypto/contracts.aug.md#symbol-Crypto) as `crypto`. Resolve [`Clock`](../.aug-spec/august/0.19.0/time/contracts.aug.md#symbol-Clock) as `clock`. Resolve [`SigningKeys`](../common/keys.aug.md#symbol-SigningKeys) as `keys`. Resolve [`ExpiringStore<SessionClaims>`](../.aug-spec/august/0.19.0/memory/store.aug.md#symbol-ExpiringStore) as `sessions`.
+It takes `token` as `optional string`. It gets `crypto` ([`Crypto`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto)), `clock` ([`Clock`](../.aug-spec/packages/%40git/url_c092cd151499c4e1d8a1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-Clock)), `keys` ([`SigningKeys`](../common/keys.aug.md#symbol-SigningKeys)), and `sessions` ([`ExpiringStore<SessionClaims>`](../.aug-spec/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore)) from dependency injection. Omitted optional inputs are null. Failures can raise [`KeyError`](../common/keys.aug.md#symbol-KeyError), [`SessionError`](contracts.aug.md#symbol-SessionError), and `TimeError`.
 
-Returns [`SessionClaims`](contracts.aug.md#symbol-SessionClaims). Uses [`crypto.publicRsa`](../.aug-spec/august/0.19.0/crypto/contracts.aug.md#symbol-Crypto.publicRsa), [`crypto.decodeBase64url`](../.aug-spec/august/0.19.0/crypto/contracts.aug.md#symbol-Crypto.decodeBase64url), [`crypto.verifyRsa`](../.aug-spec/august/0.19.0/crypto/contracts.aug.md#symbol-Crypto.verifyRsa), [`crypto.equal`](../.aug-spec/august/0.19.0/crypto/contracts.aug.md#symbol-Crypto.equal), [`clock.now`](../.aug-spec/august/0.19.0/time/contracts.aug.md#symbol-Clock.now), [`keys.session`](../common/keys.aug.md#symbol-SigningKeys.session), [`sessions.get`](../.aug-spec/august/0.19.0/memory/store.aug.md#symbol-ExpiringStore.get). Can fail with `SessionError`, `KeyError`, `TimeError`.
+If `token` is null, it raises a [`SessionError`](contracts.aug.md#symbol-SessionError). The non-null `token` becomes `value`. It sets `publicKey` to [`crypto.publicRsa`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.publicRsa) with `key` from [`keys.session`](../common/keys.aug.md#symbol-SigningKeys.session). It sets `claims` to `decode` on [`verifyJwt`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug.md#symbol-verifyJwt) with `token` from `value`, `publicKey`, `kid` `"session-1"`, and `tokenType` `"august-session+jwt"` using injected `crypto` for [`SessionClaims`](contracts.aug.md#symbol-SessionClaims).
 
-- Match `token`:
-  - A null value, including omitted optional input:
-    - Fail with a new [`SessionError`](contracts.aug.md#symbol-SessionError).
-  - A present, non-null value, named `value`:
-    - Try:
-      - Set `publicKey` to the result of [`Crypto.publicRsa`](../.aug-spec/august/0.19.0/crypto/contracts.aug.md#symbol-Crypto.publicRsa) on `crypto` with `key` as the result of [`SigningKeys.session`](../common/keys.aug.md#symbol-SigningKeys.session) on `keys`.
-      - Set `claims` to the result of `decode` on the result of [`verifyJwt`](../.aug-spec/august/0.19.0/crypto/jose.aug.md#symbol-verifyJwt) with `token` as `value`, `publicKey`, `kid` as `"session-1"`, `tokenType` as `"august-session+jwt"` using `crypto` with type arguments [`SessionClaims`](contracts.aug.md#symbol-SessionClaims).
-      - Set `config` to the result of [`settings`](../common/settings.aug.md#symbol-settings).
-      - Set `now` to the result of [`Clock.now`](../.aug-spec/august/0.19.0/time/contracts.aug.md#symbol-Clock.now) on `clock`.
-      - If (((((((`iss` of `claims` does not equal (`baseUrl` of `config` plus `"/app"`)) or (`aud` of `claims` does not equal `"august-app"`)) or (the result of `length` on `sub` of `claims` equals `0`)) or (`exp` of `claims` is at most `now`)) or (`iat` of `claims` is greater than (`now` plus `30`))) or (`iat` of `claims` is less than (`now` minus `sessionSeconds` of `config`))) or (`exp` of `claims` is at most `iat` of `claims`)) or (`exp` of `claims` is greater than ((`now` plus `sessionSeconds` of `config`) plus `30`)):
-        - Fail with a new [`SessionError`](contracts.aug.md#symbol-SessionError).
-      - If not (the result of `isToken` on `jti` of `claims` with `min` as `43`, `max` as `43`) or not (the result of `isToken` on `csrf` of `claims` with `min` as `43`, `max` as `43`):
-        - Fail with a new [`SessionError`](contracts.aug.md#symbol-SessionError).
-      - Match the result of [`ExpiringStore.get`](../.aug-spec/august/0.19.0/memory/store.aug.md#symbol-ExpiringStore.get) on `sessions` with `key` as `jti` of `claims`, `now`:
-        - A null value, including omitted optional input:
-          - Fail with a new [`SessionError`](contracts.aug.md#symbol-SessionError).
-        - A present, non-null value, named `saved`:
-          - If ((`sub` of `saved` does not equal `sub` of `claims`) or (`exp` of `saved` does not equal `exp` of `claims`)) or not (the result of [`Crypto.equal`](../.aug-spec/august/0.19.0/crypto/contracts.aug.md#symbol-Crypto.equal) on `crypto` with `left` as the result of `bytes` on `csrf` of `saved`, `right` as the result of `bytes` on `csrf` of `claims`):
-            - Fail with a new [`SessionError`](contracts.aug.md#symbol-SessionError).
-          - Return `claims`.
-    - Catch `CryptoError` as `error`:
-      - Fail with a new [`SessionError`](contracts.aug.md#symbol-SessionError).
-    - Catch [`JwtError`](../.aug-spec/august/0.19.0/crypto/jose.aug.md#symbol-JwtError) as `error`:
-      - Fail with a new [`SessionError`](contracts.aug.md#symbol-SessionError).
-    - Catch `JsonError` as `error`:
-      - Fail with a new [`SessionError`](contracts.aug.md#symbol-SessionError).
+It gets `config` from [`settings`](../common/settings.aug.md#symbol-settings). It sets `now` to [`clock.now`](../.aug-spec/packages/%40git/url_c092cd151499c4e1d8a1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-Clock.now). It checks that `claims.iss` equals the text `{config.baseUrl}/app` and `claims.aud` equals `"august-app"` and the byte length of `claims.sub` does not equal `0` and `claims.exp` is greater than `now` and `claims.iat` is at most (`now` plus `30`) and `claims.iat` is at least (`now` minus `config.sessionSeconds`) and `claims.exp` is greater than `claims.iat` and `claims.exp` is at most ((`now` plus `config.sessionSeconds`) plus `30`). It raises a [`SessionError`](contracts.aug.md#symbol-SessionError) at the first failed check.
+
+It checks that `claims.jti` is a URL-safe ASCII token with `43` to `43` characters and `claims.csrf` is a URL-safe ASCII token with `43` to `43` characters. It raises a [`SessionError`](contracts.aug.md#symbol-SessionError) at the first failed check. It obtains [`sessions.get`](../.aug-spec/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore.get) with `key` from `claims.jti` and `now`. If no value is found, it raises a [`SessionError`](contracts.aug.md#symbol-SessionError).
+
+The non-null result becomes `saved`. It checks that `saved.sub` equals `claims.sub` and `saved.exp` equals `claims.exp` and [`crypto.equal`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.equal) with `left` from the UTF-8 bytes of `saved.csrf` and `right` from the UTF-8 bytes of `claims.csrf` returns true. It raises a [`SessionError`](contracts.aug.md#symbol-SessionError) at the first failed check. It returns `claims`.
+
+If this work raises `CryptoError`, it raises a [`SessionError`](contracts.aug.md#symbol-SessionError). If this work raises [`JwtError`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug.md#symbol-JwtError), it raises a [`SessionError`](contracts.aug.md#symbol-SessionError). If this work raises `JsonError`, it raises a [`SessionError`](contracts.aug.md#symbol-SessionError).
 
 ## Dependencies
 
-- [`Crypto`](../.aug-spec/august/0.19.0/crypto/contracts.aug.md#symbol-Crypto) from `august.crypto`: [`decodeBase64url`](../.aug-spec/august/0.19.0/crypto/contracts.aug.md#symbol-Crypto.decodeBase64url) (`input`: `string`) → `Bytes`; can fail with `CryptoError`; [`equal`](../.aug-spec/august/0.19.0/crypto/contracts.aug.md#symbol-Crypto.equal) (`left`: `Bytes`, `right`: `Bytes`) → `bool`; [`publicRsa`](../.aug-spec/august/0.19.0/crypto/contracts.aug.md#symbol-Crypto.publicRsa) (`key`: `RsaPrivateKey`) → `RsaPublicKey`; can fail with `CryptoError`; [`verifyRsa`](../.aug-spec/august/0.19.0/crypto/contracts.aug.md#symbol-Crypto.verifyRsa) (`publicKey`: `RsaPublicKey`, `input`: `Bytes`, `signature`: `Bytes`) → `bool`; can fail with `CryptoError`.
-- [`JwtError`](../.aug-spec/august/0.19.0/crypto/jose.aug.md#symbol-JwtError) from `august.crypto`.
-- [`verifyJwt`](../.aug-spec/august/0.19.0/crypto/jose.aug.md#symbol-verifyJwt) (`token`: `string`, `publicKey`: `RsaPublicKey`, `kid`: `string`, `tokenType`: `string`) → `Json`; can fail with `JwtError` from `august.crypto`.
-- [`ExpiringStore`](../.aug-spec/august/0.19.0/memory/store.aug.md#symbol-ExpiringStore) from `august.memory`: [`get`](../.aug-spec/august/0.19.0/memory/store.aug.md#symbol-ExpiringStore.get) (`key`: `string`, `now`: `int`) → `optional T`.
-- [`Clock`](../.aug-spec/august/0.19.0/time/contracts.aug.md#symbol-Clock) from `august.time`: [`now`](../.aug-spec/august/0.19.0/time/contracts.aug.md#symbol-Clock.now) (no caller inputs) → `int`; can fail with `TimeError`.
-- [`SessionClaims`](contracts.aug.md#symbol-SessionClaims) from `contracts`: read `aud` (`string`); read `csrf` (`string`); read `exp` (`int`); read `iat` (`int`); read `iss` (`string`); read `jti` (`string`); read `sub` (`string`).
-- [`SessionError`](contracts.aug.md#symbol-SessionError) from `contracts`: construct with no caller inputs.
-- [`KeyError`](../common/keys.aug.md#symbol-KeyError) from `common`.
-- [`SigningKeys`](../common/keys.aug.md#symbol-SigningKeys) from `common`: [`session`](../common/keys.aug.md#symbol-SigningKeys.session) (no caller inputs) → `RsaPrivateKey`; can fail with `KeyError`.
-- [`Settings`](../common/settings.aug.md#symbol-Settings): read `baseUrl` (`string`); read `sessionSeconds` (`int`).
-- [`settings`](../common/settings.aug.md#symbol-settings) (no caller inputs) → [`Settings`](../common/settings.aug.md#symbol-Settings) from `common`.
+It uses [`ExpiringStore`](../.aug-spec/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore) ([`get`](../.aug-spec/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore.get)) from `memory`. It uses [`Crypto`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto) ([`decodeBase64url`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.decodeBase64url), [`equal`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.equal), [`publicRsa`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.publicRsa), and [`verifyRsa`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.verifyRsa)), [`JwtError`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug.md#symbol-JwtError), and [`verifyJwt`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug.md#symbol-verifyJwt) from `crypto`. It uses [`Clock`](../.aug-spec/packages/%40git/url_c092cd151499c4e1d8a1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-Clock) ([`now`](../.aug-spec/packages/%40git/url_c092cd151499c4e1d8a1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-Clock.now)) from `time`. It uses [`SessionClaims`](contracts.aug.md#symbol-SessionClaims) (`aud`, `csrf`, `exp`, `iat`, `iss`, `jti`, and `sub`) and [`SessionError`](contracts.aug.md#symbol-SessionError) from `contracts`.
 
-## Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
+It uses [`KeyError`](../common/keys.aug.md#symbol-KeyError), [`SigningKeys`](../common/keys.aug.md#symbol-SigningKeys) ([`session`](../common/keys.aug.md#symbol-SigningKeys.session)), and [`settings`](../common/settings.aug.md#symbol-settings) from `common`. It uses [`Settings`](../common/settings.aug.md#symbol-Settings) (`baseUrl` and `sessionSeconds`).
 
-- `Json.decode`: Decode a checked record or data type: json.decode<Profile>(). Unknown fields, type mismatches, and validation errors are rejected.
-- `string.bytes`: Encode this string as immutable UTF-8 bytes.
-- `string.isToken`: Require an ASCII RFC 3986 unreserved token with a bounded length.
-- `string.length`: Read the number of UTF-8 bytes. Unicode text is preserved losslessly.
+Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).

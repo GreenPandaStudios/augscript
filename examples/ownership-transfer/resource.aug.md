@@ -3,36 +3,28 @@
 # `resource.aug`
 
 <a id="symbol-Resource"></a>
-## `Resource` · class · [source](resource.aug#L2)
+## `Resource` · class · [source](resource.aug#L3)
 
-Implements [`IResource`](resource.aug.md#symbol-IResource).
+It implements [`IResource`](resource.aug.md#symbol-IResource).
 
 <a id="symbol-Resource.drop"></a>
-### `Resource.drop` · [source](resource.aug#L3)
+### `Resource.drop` · [source](resource.aug#L4)
 
-- Continue.
+It continues without an operation.
 
 <a id="symbol-IResource"></a>
-## `IResource` · interface · [source](resource.aug#L7)
+## `IResource` · interface · [source](resource.aug#L8)
 
 <a id="symbol-make"></a>
-## `make` · [source](resource.aug#L10)
+## `make` · [source](resource.aug#L11)
 
-Returns ownership of [`Resource`](resource.aug.md#symbol-Resource).
-
-- Set `value` of type [`Resource`](resource.aug.md#symbol-Resource) to a new [`Resource`](resource.aug.md#symbol-Resource).
-- `value` of type [`Resource`](resource.aug.md#symbol-Resource) owns this value.
-- Return `value`.
+It returns ownership of [`Resource`](resource.aug.md#symbol-Resource). It creates [`Resource`](resource.aug.md#symbol-Resource) and stores the result in owned `value` ([`Resource`](resource.aug.md#symbol-Resource)). It returns `value`.
 
 <a id="symbol-consume"></a>
-## `consume` · [source](resource.aug#L14)
+## `consume` · [source](resource.aug#L15)
 
-**Inputs:** Resolve [`Console`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console) as `console`. Take `value` ([`Resource`](resource.aug.md#symbol-Resource)); take ownership.
-
-Uses [`Console.write`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write).
-
-- Call [`Console.write`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write) on `console` with `value` as `"consumed"`.
+It takes `value` as [`Resource`](resource.aug.md#symbol-Resource) with ownership transferred. It gets `console` ([`Console`](.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-Console)) from dependency injection. It passes `"consumed"` to [`console.write`](.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-Console.write).
 
 ## Dependencies
 
-- [`Console`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console) from `august.io`: [`write`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write)<`T`> (`value`: `T`) → `void`.
+It uses [`Console`](.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-Console) ([`write`](.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-Console.write)) from `august.io`.

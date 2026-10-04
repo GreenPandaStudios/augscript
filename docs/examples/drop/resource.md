@@ -29,6 +29,7 @@ pageClass: aug-example-page
 ::: code-group
 
 ```aug [Indentation]
+// aug-spec: "resource.aug.md" explains this file. Read it before changes; refresh with aug spec.
 Resource() implements IResource:
     drop():
         pass
@@ -37,6 +38,7 @@ interface IResource:
 ```
 
 ```aug [Braces]
+// aug-spec: "resource.aug.md" explains this file. Read it before changes; refresh with aug spec.
 Resource() implements IResource {
     drop() {
         pass
@@ -55,18 +57,15 @@ interface IResource {
 
 ## Compiled specification {#specification}
 
-<a id="symbol-Resource"></a>
-### `Resource` · class · [source](resource.md#code)
+### `Resource` · class · [source](resource.md#code) {#symbol-Resource}
 
-Implements [`IResource`](resource.md#symbol-IResource).
+It implements [`IResource`](resource.md#symbol-IResource).
 
-<a id="symbol-Resource.drop"></a>
-#### `Resource.drop` · [source](resource.md#code)
+#### `Resource.drop` · [source](resource.md#code) {#symbol-Resource.drop}
 
-- Continue.
+It continues without an operation.
 
-<a id="symbol-IResource"></a>
-### `IResource` · interface · [source](resource.md#code)
+### `IResource` · interface · [source](resource.md#code) {#symbol-IResource}
 
 ::::
 

@@ -3,32 +3,23 @@
 # `greeter.aug`
 
 <a id="symbol-Greeter"></a>
-## `Greeter` · class · [source](greeter.aug#L3)
+## `Greeter` · class · [source](greeter.aug#L4)
 
-Implements [`IGreeter`](greeter.aug.md#symbol-IGreeter).
-
-**Inputs:** Resolve [`Logger`](logger.aug.md#symbol-Logger) as `logger`; store read-only. Take `x` (`int`); store read-only.
+It implements [`IGreeter`](greeter.aug.md#symbol-IGreeter). It takes `x` as an integer, kept read-only. It gets `logger` ([`Logger`](logger.aug.md#symbol-Logger)), kept read-only from dependency injection.
 
 <a id="symbol-Greeter.greet"></a>
-### `Greeter.greet` · [source](greeter.aug#L4)
+### `Greeter.greet` · [source](greeter.aug#L5)
 
-**Inputs:** Resolve [`Console`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console) as `console`. Take `name` (`string`).
-
-Uses [`Console.write`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write).
-
-- Call [`Logger.log`](logger.aug.md#symbol-Logger.log) on `logger` with `message` as text that joins `"Hello, "`, `name` and `"!"` using `console`.
+It takes `name` as a string. It gets `console` ([`Console`](.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-Console)) from dependency injection. It passes the text `Hello, {name}!` to [`logger.log`](logger.aug.md#symbol-Logger.log), using injected `console`.
 
 <a id="symbol-IGreeter"></a>
-## `IGreeter` · interface · [source](greeter.aug#L8)
+## `IGreeter` · interface · [source](greeter.aug#L9)
 
 <a id="symbol-IGreeter.greet"></a>
-### `IGreeter.greet` · [source](greeter.aug#L9)
+### `IGreeter.greet` · [source](greeter.aug#L10)
 
-**Inputs:** Resolve [`Console`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console) as `console`. Take `name` (`string`).
-
-Uses [`Console.write`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write).
+It takes `name` as a string. It gets `console` ([`Console`](.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-Console)) from dependency injection. It can call [`Console.write`](.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-Console.write).
 
 ## Dependencies
 
-- [`Console`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console) from `august.io`: [`write`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-Console.write)<`T`> (`value`: `T`) → `void`.
-- [`Logger`](logger.aug.md#symbol-Logger) from `logger`: [`log`](logger.aug.md#symbol-Logger.log) (`message`: `string`) → `void`.
+It uses [`Console`](.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-Console) ([`write`](.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-Console.write)) from `august.io`. It uses [`Logger`](logger.aug.md#symbol-Logger) ([`log`](logger.aug.md#symbol-Logger.log)) from `logger`.

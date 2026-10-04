@@ -32,12 +32,14 @@ pageClass: aug-example-page
 ::: code-group
 
 ```aug [Indentation]
-increment(int value) returns int:
+// aug-spec: "math.aug.md" explains this file. Read it before changes; refresh with aug spec.
+increment(int value):
     return value + 1
 ```
 
 ```aug [Braces]
-increment(int value) returns int {
+// aug-spec: "math.aug.md" explains this file. Read it before changes; refresh with aug spec.
+increment(int value) {
     return value + 1
 }
 ```
@@ -50,14 +52,9 @@ increment(int value) returns int {
 
 ## Compiled specification {#specification}
 
-<a id="symbol-increment"></a>
-### `increment` · [source](math.md#code)
+### `increment` · [source](math.md#code) {#symbol-increment}
 
-**Inputs:** Take `value` (`int`).
-
-Returns `int`.
-
-- Return `value` plus `1`.
+It takes `value` as an integer. It returns `value` plus `1`.
 
 ::::
 

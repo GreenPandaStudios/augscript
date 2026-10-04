@@ -29,7 +29,8 @@ pageClass: aug-example-page
 ::: code-group
 
 ```aug [Indentation]
-import parse from august.json
+// aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
+import parse from json
 import Payload from data
 int checksum = 0
 int index = 0
@@ -46,7 +47,8 @@ catch JsonError error:
 ```
 
 ```aug [Braces]
-import parse from august.json
+// aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
+import parse from json
 import Payload from data
 int checksum = 0
 int index = 0
@@ -75,31 +77,15 @@ catch JsonError error {
 
 ### Startup
 
-- Set `checksum` of type `int` to `0`.
-- Set `index` of type `int` to `0`.
-- Try:
-  - While `index` is less than `5000`:
-    - Set `document` to the result of [`parse`](dependencies/august/0.19.0/json/contracts.md#symbol-parse) with `input` as `"{\"id\":7,\"message\":\"hello\",\"values\":[1,2,3]}"`.
-    - Set `payload` to the result of `decode` on `document` with type arguments [`Payload`](data.md#symbol-Payload).
-    - Set `encoded` to the result of `stringify` on a new `Json` with `value` as `payload`.
-    - Set `checksum` to (`checksum` plus `id` of `payload`) plus the result of `length` on `encoded`.
-    - Set `index` to `index` plus `1`.
-  - Call `print` with `value` as `checksum`.
-- Catch `JsonError` as `error`:
-  - Call `exit` with `status` as `1`.
+It sets `checksum` and `index` separately, each to `0`. While `index` is less than `5000`, it sets `document` to [`parse`](dependencies/packages/%40git/url_2d3c37c690c0fa115be1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.md#symbol-parse) with `input` `"{\"id\":7,\"message\":\"hello\",\"values\":[1,2,3]}"`. It sets `payload` to `document.decode` for [`Payload`](data.md#symbol-Payload). It sets `encoded` to `stringify` on a `Json` with `value` from `payload`.
+
+It sets `checksum` to (`checksum` plus `payload.id`) plus the byte length of `encoded`. It increases `index` by `1`. After the loop, it prints `checksum`. If this work raises `JsonError`, it calls `exit` with `status` `1`.
 
 ### Dependencies
 
-- [`parse`](dependencies/august/0.19.0/json/contracts.md#symbol-parse) (`input`: `string`) → `Json`; can fail with `JsonError` from `august.json`.
-- [`Payload`](data.md#symbol-Payload) from `data`: read `id` (`int`).
+It uses [`parse`](dependencies/packages/%40git/url_2d3c37c690c0fa115be1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.md#symbol-parse) from `json`. It uses [`Payload`](data.md#symbol-Payload) (`id`) from `data`.
 
-### Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
-
-- `Json.decode`: Decode a checked record or data type: json.decode<Profile>(). Unknown fields, type mismatches, and validation errors are rejected.
-- `Json.stringify`: Serialize this JSON value with checked UTF-8 escaping and exact int64 values.
-- `exit`: Exit from main with a status from 0 to 255 after cancellation and cleanup.
-- `print`: Composition and test output. Other callables receive Console and declare uses console.write.
-- `string.length`: Read the number of UTF-8 bytes. Unicode text is preserved losslessly.
+Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).
 
 ::::
 

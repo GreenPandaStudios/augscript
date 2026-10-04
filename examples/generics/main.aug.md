@@ -4,22 +4,16 @@
 
 ## Providers
 
-- Provide [`TextFormatter`](types.aug.md#symbol-TextFormatter) for `Formatter`. Share one instance.
+`Formatter` is provided by [`TextFormatter`](types.aug.md#symbol-TextFormatter). The same instance is shared.
 
 ## Startup
 
-- Set `formatter` to the instance provided for `Formatter`.
-- Call `print` with `value` as the result of [`Formatter.title`](types.aug.md#symbol-Formatter.title) on `formatter`.
-- Call `print` with `value` as the result of [`Formatter.format`](types.aug.md#symbol-Formatter.format) on `formatter` with type arguments `int` with `value` as `42`.
-- Set `box` to a new [`Box`](types.aug.md#symbol-Box) with type arguments `string` with `value` as `"inside a generic box"`.
-- Call `print` with `value` as the result of [`Box.get`](types.aug.md#symbol-Box.get) on `box`.
+It sets `formatter` to the instance provided for `Formatter`. It prints [`formatter.title`](types.aug.md#symbol-Formatter.title). It prints [`formatter.format`](types.aug.md#symbol-Formatter.format) for `int` with `value` `42`. It sets `box` to a [`Box`](types.aug.md#symbol-Box) for `string` with `value` `"inside a generic box"`.
+
+It prints [`box.get`](types.aug.md#symbol-Box.get).
 
 ## Dependencies
 
-- [`Box`](types.aug.md#symbol-Box) from `types`: construct with `value`: `T`; [`get`](types.aug.md#symbol-Box.get) (no caller inputs) → `T`.
-- [`Formatter`](types.aug.md#symbol-Formatter) from `types`: [`format`](types.aug.md#symbol-Formatter.format)<`T`> (`value`: `T`) → `string`; [`title`](types.aug.md#symbol-Formatter.title) (no caller inputs) → `string`.
-- [`TextFormatter`](types.aug.md#symbol-TextFormatter) from `types`.
+It uses [`Box`](types.aug.md#symbol-Box) ([`get`](types.aug.md#symbol-Box.get)), [`Formatter`](types.aug.md#symbol-Formatter) ([`format`](types.aug.md#symbol-Formatter.format) and [`title`](types.aug.md#symbol-Formatter.title)), and [`TextFormatter`](types.aug.md#symbol-TextFormatter) from `types`.
 
-## Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
-
-- `print`: Composition and test output. Other callables receive Console and declare uses console.write.
+Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).

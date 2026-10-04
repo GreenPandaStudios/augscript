@@ -6,15 +6,9 @@ editLink: false
 
 # august.io
 
-Public declarations exported by this module. Import names explicitly from `august.io`. Built-in wire/value types are described in [language constructs](../language-constructs.md).
+Console and file capabilities supplied with the compiler. Import names from `august.io`.
 
-- [Console](#api-Console)
-- [SystemConsole](#api-SystemConsole)
-- [FileReader](#api-FileReader)
-- [FileWriter](#api-FileWriter)
-- [LocalFiles](#api-LocalFiles)
-- [Arguments](#api-Arguments)
-- [ProcessArguments](#api-ProcessArguments)
+Signatures show result types and checked errors. See [packages](../packages.md) to pin a release and [language constructs](../language-constructs.md) for built-in types.
 
 ## Console {#api-Console}
 
@@ -24,12 +18,12 @@ capability Console
 
 Permission to write to a console, provided by an explicitly selected adapter.
 
-[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/io/contracts.aug#L2)
+[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/io/contracts.aug#L3)
 
 ### Console.write
 
 ```text
-write<T>(T value) uses Console.write
+write<T>(T value)
 ```
 
 Write one line of text.
@@ -37,7 +31,9 @@ Write one line of text.
 **Parameters**
 - `value`: Text to display.
 
-[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/io/contracts.aug#L4)
+Uses `Console.write`.
+
+[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/io/contracts.aug#L5)
 
 ## SystemConsole {#api-SystemConsole}
 
@@ -47,7 +43,7 @@ SystemConsole() implements Console
 
 The native standard-output adapter. Construction performs no output.
 
-[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/io/contracts.aug#L7)
+[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/io/contracts.aug#L8)
 
 ### SystemConsole.write
 
@@ -60,9 +56,9 @@ Write one line of text.
 **Parameters**
 - `value`: Text to display.
 
-Inferred capabilities: `Console.write`.
+Uses `Console.write`.
 
-[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/io/contracts.aug#L8)
+[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/io/contracts.aug#L9)
 
 ## FileReader {#api-FileReader}
 
@@ -72,12 +68,12 @@ capability FileReader
 
 Read UTF-8 text through an explicitly selected filesystem adapter.
 
-[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/io/contracts.aug#L12)
+[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/io/contracts.aug#L13)
 
 ### FileReader.read
 
 ```text
-read(string path) returns string uses FileReader.read unless FileError
+read(string path) returns string unless FileError
 ```
 
 Read text.
@@ -88,7 +84,9 @@ Read text.
 **Throws**
 - `FileError`: The file could not be read.
 
-[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/io/contracts.aug#L14)
+Uses `FileReader.read`.
+
+[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/io/contracts.aug#L15)
 
 ## FileWriter {#api-FileWriter}
 
@@ -98,12 +96,12 @@ capability FileWriter
 
 Write UTF-8 text through an explicitly selected filesystem adapter.
 
-[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/io/contracts.aug#L17)
+[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/io/contracts.aug#L18)
 
 ### FileWriter.write
 
 ```text
-write(string path, string content) uses FileWriter.write unless FileError
+write(string path, string content) unless FileError
 ```
 
 Write text.
@@ -115,7 +113,9 @@ Write text.
 **Throws**
 - `FileError`: Writing failed.
 
-[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/io/contracts.aug#L19)
+Uses `FileWriter.write`.
+
+[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/io/contracts.aug#L20)
 
 ## LocalFiles {#api-LocalFiles}
 
@@ -123,9 +123,9 @@ Write text.
 LocalFiles() implements FileReader, FileWriter
 ```
 
-Native files. Operations are explicit; construction opens no files.
+Native filesystem adapter. Construction opens no files.
 
-[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/io/contracts.aug#L22)
+[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/io/contracts.aug#L23)
 
 ### LocalFiles.read
 
@@ -141,9 +141,9 @@ Read text.
 **Throws**
 - `FileError`: The file could not be read.
 
-Inferred capabilities: `FileReader.read`.
+Uses `FileReader.read`.
 
-[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/io/contracts.aug#L23)
+[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/io/contracts.aug#L24)
 
 ### LocalFiles.write
 
@@ -160,9 +160,9 @@ Write text.
 **Throws**
 - `FileError`: Writing failed.
 
-Inferred capabilities: `FileWriter.write`.
+Uses `FileWriter.write`.
 
-[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/io/contracts.aug#L25)
+[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/io/contracts.aug#L26)
 
 ## Arguments {#api-Arguments}
 
@@ -172,17 +172,17 @@ capability Arguments
 
 Read command-line input through an explicit dependency.
 
-[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/io/contracts.aug#L29)
+[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/io/contracts.aug#L30)
 
 ### Arguments.read
 
 ```text
-read() returns List<string> uses Arguments.read
+read() returns List<string>
 ```
 
-The signature declares inputs, result, effects and checked errors.
+Uses `Arguments.read`.
 
-[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/io/contracts.aug#L30)
+[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/io/contracts.aug#L31)
 
 ## ProcessArguments {#api-ProcessArguments}
 
@@ -192,7 +192,7 @@ ProcessArguments() implements Arguments
 
 Native command-line arguments.
 
-[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/io/contracts.aug#L33)
+[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/io/contracts.aug#L34)
 
 ### ProcessArguments.read
 
@@ -200,8 +200,6 @@ Native command-line arguments.
 read() returns List<string>
 ```
 
-The signature declares inputs, result, effects and checked errors.
+Uses `Arguments.read`.
 
-Inferred capabilities: `Arguments.read`.
-
-[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/io/contracts.aug#L34)
+[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/io/contracts.aug#L35)

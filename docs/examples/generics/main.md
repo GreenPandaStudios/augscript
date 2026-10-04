@@ -1,5 +1,5 @@
 ---
-title: "main.aug · Generic contracts"
+title: "main.aug · Generic types and functions"
 generated: true
 source: "examples/generics/main.aug"
 editLink: false
@@ -11,7 +11,7 @@ pageClass: aug-example-page
 
 # `main.aug`
 
-[Generic contracts](index.md) · Source and specification
+[Generic types and functions](index.md) · Source and specification
 
 ::: details Files in this project
 
@@ -29,6 +29,7 @@ pageClass: aug-example-page
 ::: code-group
 
 ```aug [Indentation]
+// aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Formatter from types
 import TextFormatter from types
 import Box from types
@@ -41,6 +42,7 @@ print(value=box.get())
 ```
 
 ```aug [Braces]
+// aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Formatter from types
 import TextFormatter from types
 import Box from types
@@ -62,25 +64,19 @@ print(value=box.get())
 
 ### Providers
 
-- Provide [`TextFormatter`](types.md#symbol-TextFormatter) for `Formatter`. Share one instance.
+`Formatter` is provided by [`TextFormatter`](types.md#symbol-TextFormatter). The same instance is shared.
 
 ### Startup
 
-- Set `formatter` to the instance provided for `Formatter`.
-- Call `print` with `value` as the result of [`Formatter.title`](types.md#symbol-Formatter.title) on `formatter`.
-- Call `print` with `value` as the result of [`Formatter.format`](types.md#symbol-Formatter.format) on `formatter` with type arguments `int` with `value` as `42`.
-- Set `box` to a new [`Box`](types.md#symbol-Box) with type arguments `string` with `value` as `"inside a generic box"`.
-- Call `print` with `value` as the result of [`Box.get`](types.md#symbol-Box.get) on `box`.
+It sets `formatter` to the instance provided for `Formatter`. It prints [`formatter.title`](types.md#symbol-Formatter.title). It prints [`formatter.format`](types.md#symbol-Formatter.format) for `int` with `value` `42`. It sets `box` to a [`Box`](types.md#symbol-Box) for `string` with `value` `"inside a generic box"`.
+
+It prints [`box.get`](types.md#symbol-Box.get).
 
 ### Dependencies
 
-- [`Box`](types.md#symbol-Box) from `types`: construct with `value`: `T`; [`get`](types.md#symbol-Box.get) (no caller inputs) → `T`.
-- [`Formatter`](types.md#symbol-Formatter) from `types`: [`format`](types.md#symbol-Formatter.format)<`T`> (`value`: `T`) → `string`; [`title`](types.md#symbol-Formatter.title) (no caller inputs) → `string`.
-- [`TextFormatter`](types.md#symbol-TextFormatter) from `types`.
+It uses [`Box`](types.md#symbol-Box) ([`get`](types.md#symbol-Box.get)), [`Formatter`](types.md#symbol-Formatter) ([`format`](types.md#symbol-Formatter.format) and [`title`](types.md#symbol-Formatter.title)), and [`TextFormatter`](types.md#symbol-TextFormatter) from `types`.
 
-### Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
-
-- `print`: Composition and test output. Other callables receive Console and declare uses console.write.
+Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).
 
 ::::
 

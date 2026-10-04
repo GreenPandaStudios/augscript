@@ -1,14 +1,15 @@
+// aug-spec: "authorization.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import AuthorizationRequest and AuthorizationCode and LoginForm and LoginError from contracts
 import ProviderLogin and ProviderFailure from views
 import verifyCredentials from credentials
 import settings and securityHeaders and withCookie from common
-import Crypto from august.crypto
-import Clock from august.time
-import ExpiringStore and StoreFull from august.memory
-import urlEncode from august.web
+import Crypto from crypto
+import Clock from time
+import ExpiringStore and StoreFull from memory
+import urlEncode from web
 
 /** Validate the registered client before offering a login form. A malformed redirect is never followed. */
-endpoint GET "/provider/authorize" as authorize(string response_type from query, string client_id from query, string redirect_uri from query, string requestedScope from query "scope", string state from query, string nonce from query, string code_challenge from query, string code_challenge_method from query, resolve Crypto crypto, resolve Clock clock, resolve ExpiringStore<AuthorizationRequest> requests) returns HttpResponse<Html> uses crypto.random and crypto.decodeBase64url and clock.now and requests.put unless LoginError with status 400 and CryptoError with status 503 and TimeError with status 503 and StoreFull with status 503 and HttpError:
+endpoint GET "/provider/authorize" as authorize(string response_type from query, string client_id from query, string redirect_uri from query, string requestedScope from query "scope", string state from query, string nonce from query, string code_challenge from query, string code_challenge_method from query, resolve Crypto crypto, resolve Clock clock, resolve ExpiringStore<AuthorizationRequest> requests) unless LoginError with status 400 and CryptoError with status 503 and TimeError with status 503 and StoreFull with status 503 and HttpError:
     config = settings()
     if client_id != config.clientId or redirect_uri != config.callback or response_type != "code" or code_challenge_method != "S256":
         throw LoginError()
@@ -31,7 +32,7 @@ endpoint GET "/provider/authorize" as authorize(string response_type from query,
     return HttpResponse(body=ProviderLogin(requestId, csrf, message="Authorize the registered August login app.", submit=handle providerLogin(input from form)), headers=headers)
 
 /** The browser binding and CSRF token are checked before credentials. Each form request is consumed once. */
-endpoint POST "/provider/login" as providerLogin(LoginForm form from form, optional string browser from cookie "aug_authorize", optional string origin from header "origin", resolve Crypto crypto, resolve Clock clock, resolve ExpiringStore<AuthorizationRequest> requests, resolve ExpiringStore<AuthorizationCode> codes) returns HttpResponse<Html> uses crypto.equal and crypto.random and crypto.passwordHash and crypto.decodeBase64url and clock.now and requests.take and codes.put unless CryptoError with status 503 and TimeError with status 503 and StoreFull with status 503 and HttpError:
+endpoint POST "/provider/login" as providerLogin(LoginForm form from form, optional string browser from cookie "aug_authorize", optional string origin from header "origin", resolve Crypto crypto, resolve Clock clock, resolve ExpiringStore<AuthorizationRequest> requests, resolve ExpiringStore<AuthorizationCode> codes) unless CryptoError with status 503 and TimeError with status 503 and StoreFull with status 503 and HttpError:
     config = settings()
     try:
         if origin != config.baseUrl:

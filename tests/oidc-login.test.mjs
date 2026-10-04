@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import {cpSync, mkdtempSync, readFileSync, writeFileSync, rmSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join, resolve} from 'node:path';
-import {spawn, spawnSync} from 'node:child_process';
+import {spawn} from 'node:child_process';
+import {spawnSync} from './compiler-process.mjs';
 import {createInterface} from 'node:readline';
 import {createServer} from 'node:net';
 import {createHash, createPublicKey, verify} from 'node:crypto';
@@ -31,12 +32,15 @@ test('one August app acts as an OIDC provider and client, validates tokens and r
   const root = mkdtempSync(join(tmpdir(), 'aug-oidc-'));
   let server;
   try {
-    cpSync(resolve('examples/oidc-login'), root, {recursive:true, filter:path => !path.includes('.aug-build')});
+    cpSync(resolve('examples/oidc-login'), root, {recursive:true, filter:path =>
+      !path.includes('.aug-build') && !path.includes('.aug-packages') && !path.includes('.aug-install-')});
     const port = await freePort(); const base = `http://127.0.0.1:${port}`;
     for (const file of ['main.aug', 'common/settings.aug']) {
       const path = join(root, file);
       writeFileSync(path, readFileSync(path, 'utf8').replaceAll('8787', String(port)));
     }
+    const installed = spawnSync(process.execPath, [cli, 'install', root, '--frozen'], {encoding:'utf8', timeout:60000});
+    assert.equal(installed.status, 0, installed.stderr);
     const built = spawnSync(process.execPath, [cli, 'build', root], {encoding:'utf8', timeout:60000});
     assert.equal(built.status, 0, built.stderr);
     server = spawn(join(root, '.aug-build', root.split('/').at(-1)), [], {stdio:['ignore','pipe','pipe']});

@@ -28,6 +28,7 @@ pageClass: aug-example-page
 ::: code-group
 
 ```aug [Indentation]
+// aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 try:
     args = arguments()
     print(value=args.length())
@@ -42,6 +43,7 @@ catch IndexError error:
 ```
 
 ```aug [Braces]
+// aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 try {
     args = arguments()
     print(value=args.length())
@@ -69,26 +71,11 @@ catch IndexError error {
 
 ### Startup
 
-- Try:
-  - Set `args` to the result of `arguments`.
-  - Call `print` with `value` as the result of `length` on `args`.
-  - If the result of `length` on `args` is greater than `0`:
-    - Call `print` with `value` as the result of `get` on `args` with `index` as `0`.
-  - Set `numbers` to a list of `int` containing `1`, `2`.
-  - Mutably borrow `numbers` for this block:
-    - Call `append` on `numbers` with `value` as `3`.
-  - Call `print` with `value` as the result of `get` on `numbers` with `index` as `2`.
-- Catch `IndexError` as `error`:
-  - Call `print` with `value` as `"unexpected index failure"`.
+It sets `args` to `arguments`. It prints the number of elements in `args`. If the number of elements in `args` is positive, it prints the item at index `0` in `args`. It sets `numbers` to a list of `int` containing `1`, `2`.
 
-### Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
+With temporary permission to change `numbers`, it appends `3` to `numbers`. It prints the item at index `2` in `numbers`. If this work raises `IndexError`, it prints `"unexpected index failure"`.
 
-- `List<int>.append`: Append an element with exclusive mutable access. Read-only and owned aliases cannot be stored here.
-- `List<int>.get`: Read a zero-based position. An invalid index raises checked IndexError. Reference results grant reading.
-- `List<string>.get`: Read a zero-based position. An invalid index raises checked IndexError. Reference results grant reading.
-- `List<string>.length`: Read the number of elements.
-- `arguments`: Composition arguments. Other callables receive the Arguments capability.
-- `print`: Composition and test output. Other callables receive Console and declare uses console.write.
+Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).
 
 ::::
 

@@ -4,12 +4,8 @@
 
 ## Exports
 
-- Export the declaration `Settings` from [`settings.aug`](settings.aug.md#symbol-Settings).
-- Export the declaration `settings` from [`settings.aug`](settings.aug.md#symbol-settings).
-- Export the declaration `SigningKeys` from [`keys.aug`](keys.aug.md#symbol-SigningKeys).
-- Export the declaration `MemorySigningKeys` from [`keys.aug`](keys.aug.md#symbol-MemorySigningKeys).
-- Export the declaration `initializeKeys` from [`keys.aug`](keys.aug.md#symbol-initializeKeys).
-- Export the declaration `KeyError` from [`keys.aug`](keys.aug.md#symbol-KeyError).
-- Export the declaration `Page` from [`views.aug`](views.aug.md#symbol-Page).
-- Export the declaration `securityHeaders` from [`headers.aug`](headers.aug.md#symbol-securityHeaders).
-- Export the declaration `withCookie` from [`headers.aug`](headers.aug.md#symbol-withCookie).
+Export the declaration `Settings` from [`settings.aug`](settings.aug.md#symbol-Settings). Export the declaration `settings` from [`settings.aug`](settings.aug.md#symbol-settings). Export the declaration `SigningKeys` from [`keys.aug`](keys.aug.md#symbol-SigningKeys). Export the declaration `MemorySigningKeys` from [`keys.aug`](keys.aug.md#symbol-MemorySigningKeys).
+
+Export the declaration `initializeKeys` from [`keys.aug`](keys.aug.md#symbol-initializeKeys). Export the declaration `KeyError` from [`keys.aug`](keys.aug.md#symbol-KeyError). Export the declaration `Page` from [`views.aug`](views.aug.md#symbol-Page). Export the declaration `securityHeaders` from [`headers.aug`](headers.aug.md#symbol-securityHeaders).
+
+Export the declaration `withCookie` from [`headers.aug`](headers.aug.md#symbol-withCookie).

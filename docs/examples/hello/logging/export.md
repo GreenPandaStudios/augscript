@@ -33,11 +33,13 @@ pageClass: aug-example-page
 ::: code-group
 
 ```aug [Indentation]
+// aug-spec: "export.aug.md" explains this file. Read it before changes; refresh with aug spec.
 export Logger from logger
 export ConsoleLogger from console
 ```
 
 ```aug [Braces]
+// aug-spec: "export.aug.md" explains this file. Read it before changes; refresh with aug spec.
 export Logger from logger
 export ConsoleLogger from console
 ```
@@ -52,8 +54,7 @@ export ConsoleLogger from console
 
 ### Exports
 
-- Export the declaration `Logger` from [`logger.aug`](logger.md#symbol-Logger).
-- Export the declaration `ConsoleLogger` from [`console.aug`](console.md#symbol-ConsoleLogger).
+Export the declaration `Logger` from [`logger.aug`](logger.md#symbol-Logger). Export the declaration `ConsoleLogger` from [`console.aug`](console.md#symbol-ConsoleLogger).
 
 ::::
 

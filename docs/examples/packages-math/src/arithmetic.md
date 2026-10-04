@@ -29,8 +29,9 @@ pageClass: aug-example-page
 ::: code-group
 
 ```aug [Indentation]
+// aug-spec: "arithmetic.aug.md" explains this file. Read it before changes; refresh with aug spec.
 /** Add two integers. @param left First value. @param right Second value. @return Their sum. */
-add(int left, int right) returns int:
+add(int left, int right):
     return left + right
 test add:
     when "addition":
@@ -39,8 +40,9 @@ test add:
 ```
 
 ```aug [Braces]
+// aug-spec: "arithmetic.aug.md" explains this file. Read it before changes; refresh with aug spec.
 /** Add two integers. @param left First value. @param right Second value. @return Their sum. */
-add(int left, int right) returns int {
+add(int left, int right) {
     return left + right
 }
 test add {
@@ -60,19 +62,11 @@ test add {
 
 ## Compiled specification {#specification}
 
-<a id="symbol-add"></a>
-### `add` · [source](arithmetic.md#code)
+### `add` · [source](arithmetic.md#code) {#symbol-add}
 
-Add two integers.
+Add two integers. It takes `left` as an integer (First value) and `right` as an integer (Second value). It returns `int` — Their sum. It returns `left` plus `right`.
 
-**Inputs:** Take `left` (`int`) — First value. Take `right` (`int`) — Second value.
-
-Returns `int` — Their sum.
-
-- Return `left` plus `right`.
-
-<a id="symbol-test add"></a>
-### `test add` · [source](arithmetic.md#code)
+### `test add` · [source](arithmetic.md#code) {#symbol-test-20-add}
 
 Tests [`add`](arithmetic.md#symbol-add). Each case gets fresh setup and dependencies.
 
@@ -80,11 +74,9 @@ Tests [`add`](arithmetic.md#symbol-add). Each case gets fresh setup and dependen
 
 ##### `adds_two_integers` · [source](arithmetic.md#code)
 
-- Call `assert` with the result of [`add`](arithmetic.md#symbol-add) with `left` as `2`, `right` as `3` equals `5`.
+The test requires [`add`](arithmetic.md#symbol-add) with `left` `2` and `right` `3` equals `5`.
 
-### Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
-
-- `assert`: Assert a bool in a test case or its setup. Catching an assertion failure cannot make the case pass; every case must execute an assertion.
+Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).
 
 ::::
 

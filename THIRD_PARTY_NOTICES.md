@@ -16,3 +16,7 @@ August's compiler/runtime code is MIT licensed. Native dependencies are download
 | zlib | Host system library; [zlib](https://zlib.net/zlib_license.html) |
 
 Applications built using web/crypto link native libraries from the selected dependency prefix. Redistributors of compiled applications must preserve the notices and satisfy the licenses of the libraries they include. The release process currently distributes compiler/library source packages and VSIX rather than prebuilt native dependency bundles.
+
+## JavaScript archive dependencies
+
+The CLI depends on `tar` 7.5.22; the VS Code bundle includes it and its runtime dependencies (`chownr`, `yallist`, `minipass`, `minizlib`, and `@isaacs/fs-minipass`). Their package license files are retained in the extension. Exact versions and license declarations are recorded in `package-lock.json`. See the upstream [node-tar source](https://github.com/isaacs/node-tar) for archive behavior and security reports. Native library terms above are separate from these JavaScript packages.

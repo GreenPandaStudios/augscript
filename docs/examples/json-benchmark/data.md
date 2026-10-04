@@ -29,10 +29,12 @@ pageClass: aug-example-page
 ::: code-group
 
 ```aug [Indentation]
+// aug-spec: "data.aug.md" explains this file. Read it before changes; refresh with aug spec.
 record Payload(int id, string message, List<int> values)
 ```
 
 ```aug [Braces]
+// aug-spec: "data.aug.md" explains this file. Read it before changes; refresh with aug spec.
 record Payload(int id, string message, List<int> values)
 ```
 
@@ -44,10 +46,9 @@ record Payload(int id, string message, List<int> values)
 
 ## Compiled specification {#specification}
 
-<a id="symbol-Payload"></a>
-### `Payload` · immutable record · [source](data.md#code)
+### `Payload` · immutable record · [source](data.md#code) {#symbol-Payload}
 
-**Inputs:** Take `id` (`int`); store read-only. Take `message` (`string`); store read-only. Take `values` (`List<int>`); store read-only.
+It takes `id` as an integer, kept read-only, `message` as a string, kept read-only, and `values` as `List<int>`, kept read-only.
 
 ::::
 

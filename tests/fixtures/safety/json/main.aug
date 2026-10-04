@@ -1,5 +1,5 @@
 import Person from data
-import parse from august.json
+import parse from json
 
 try:
     person = parse(input="{\"name\":\"Ada\",\"age\":null}").decode<Person>()

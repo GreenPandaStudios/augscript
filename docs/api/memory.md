@@ -6,11 +6,9 @@ editLink: false
 
 # august.memory
 
-Public declarations exported by this module. Import names explicitly from `august.memory`. Built-in wire/value types are described in [language constructs](../language-constructs.md).
+Install this source library with `aug add https://github.com/GreenPandaStudios/augscript/src/stdlib/memory --as memory`, then import its public names from `memory`.
 
-- [StoreFull](#api-StoreFull)
-- [ExpiringStore](#api-ExpiringStore)
-- [MemoryStore](#api-MemoryStore)
+Signatures show result types and checked errors. See [packages](../packages.md) to pin a release and [language constructs](../language-constructs.md) for built-in types.
 
 ## StoreFull {#api-StoreFull}
 
@@ -20,7 +18,7 @@ StoreFull() implements Error
 
 The bounded store could not accept another live entry.
 
-[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/memory/store.aug#L2)
+[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/memory/store.aug#L3)
 
 ## ExpiringStore {#api-ExpiringStore}
 
@@ -30,37 +28,43 @@ capability ExpiringStore<T implements Data>
 
 A bounded, expiring capability for immutable values. Each generic DI binding has its own table.
 
-[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/memory/store.aug#L7)
+[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/memory/store.aug#L8)
 
 ### ExpiringStore.put
 
 ```text
-put(string key, T value, int expires, int now) uses ExpiringStore.put unless StoreFull
+put(string key, T value, int expires, int now) unless StoreFull
 ```
 
 Remove expired entries, then store at most 512 live entries. Time is supplied by the caller.
 
-[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/memory/store.aug#L9)
+Uses `ExpiringStore.put`.
+
+[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/memory/store.aug#L10)
 
 ### ExpiringStore.take
 
 ```text
-take(string key, int now) returns optional T uses ExpiringStore.take
+take(string key, int now) returns optional T
 ```
 
 Atomically remove a value. Expired or absent entries return null.
 
-[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/memory/store.aug#L11)
+Uses `ExpiringStore.take`.
+
+[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/memory/store.aug#L12)
 
 ### ExpiringStore.get
 
 ```text
-get(string key, int now) returns optional T uses ExpiringStore.get
+get(string key, int now) returns optional T
 ```
 
 Read a live value without consuming it.
 
-[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/memory/store.aug#L13)
+Uses `ExpiringStore.get`.
+
+[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/memory/store.aug#L14)
 
 ## MemoryStore {#api-MemoryStore}
 
@@ -70,7 +74,7 @@ MemoryStore<T implements Data>() implements ExpiringStore<T>
 
 A synchronized table with short critical sections and no I/O while locked.
 
-[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/memory/store.aug#L16)
+[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/memory/store.aug#L17)
 
 ### MemoryStore.put
 
@@ -80,9 +84,9 @@ put(string key, T value, int expires, int now) unless StoreFull
 
 Remove expired entries, then store at most 512 live entries. Time is supplied by the caller.
 
-Inferred capabilities: `ExpiringStore<T>.put`.
+Uses `ExpiringStore<T>.put`.
 
-[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/memory/store.aug#L18)
+[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/memory/store.aug#L19)
 
 ### MemoryStore.take
 
@@ -92,9 +96,9 @@ take(string key, int now) returns optional T
 
 Atomically remove a value. Expired or absent entries return null.
 
-Inferred capabilities: `ExpiringStore<T>.take`.
+Uses `ExpiringStore<T>.take`.
 
-[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/memory/store.aug#L27)
+[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/memory/store.aug#L28)
 
 ### MemoryStore.get
 
@@ -104,6 +108,6 @@ get(string key, int now) returns optional T
 
 Read a live value without consuming it.
 
-Inferred capabilities: `ExpiringStore<T>.get`.
+Uses `ExpiringStore<T>.get`.
 
-[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/memory/store.aug#L36)
+[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/memory/store.aug#L37)

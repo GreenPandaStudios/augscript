@@ -1,0 +1,5 @@
+block_style: indent
+openapi:
+  enabled: true
+  title: "Weather forecast API"
+  version: "0.1.0"

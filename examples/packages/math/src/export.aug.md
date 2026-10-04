@@ -4,4 +4,4 @@
 
 ## Exports
 
-- Export the declaration `add` from [`arithmetic.aug`](arithmetic.aug.md#symbol-add).
+Export the declaration `add` from [`arithmetic.aug`](arithmetic.aug.md#symbol-add).

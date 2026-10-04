@@ -1,20 +1,16 @@
 # August CLI
 
-`@greenpandastudios/aug-cli` installs `aug` and `aug-cli` (compiler, project starter, native builds, tests and language server) and `aug-native` (explicit native dependency bootstrap).
-
-Requires Node.js 24+ and a C11 compiler. The CLI installs matching standard, web and crypto packages. Source imports remain `august.io`, `august.web`, and `august.crypto`.
+Install the compiler with Node.js 24 or later and npm:
 
 ```sh
+npm install --global @greenpandastudios/aug-cli@next
 aug init my-app
-aug --version
-aug check path/to/project
-aug run path/to/project
-aug test path/to/project
-aug-native
+cd my-app
+aug run
 ```
 
-Once published, `npx @greenpandastudios/aug-cli@next init my-app` creates the same starter without a global CLI install. It refuses a nonempty directory. The starter includes `main.aug`, an interface and implementation with a same-file test, and a README.
+The starter includes an interface, implementation, same-file test, and AGENTS.md. `aug run` installs source dependencies, checks the project, prepares its verified LLVM/runtime pack, compiles it, and starts it. Supported hosts are macOS 14+ ARM64 and GNU/Linux x64/ARM64 with glibc 2.36+. Consumers need no separate native compiler, LLVM installation, or SDK. `--backend c` retains the migration reference for contributor comparisons.
 
-Early npm releases use `@next`. GitHub release tarballs can be installed together without registry publication. Web/crypto native builds currently target macOS; the full suite is verified on Apple silicon.
+Use `aug init weather --template weather` for the simulated weather API, or `aug package init arithmetic` for a library. Add public Git sources with `aug add URL --as NAME`, or import a quoted URL directly. Optional JSON, web, and crypto libraries use this package system; core I/O remains under `august.io`.
 
-See [installation](https://github.com/GreenPandaStudios/augscript/blob/main/docs/packages.md), [the language wiki](https://GreenPandaStudios.github.io/augscript/) and [the repository](https://github.com/GreenPandaStudios/augscript). Guides and examples are included in this package.
+The package supplies `aug`, `aug-cli`, and `aug-native`. Pin a release for reproducible builds and commit aug.lock.json. Read [the book](https://greenpandastudios.github.io/augscript/learn/), [packages](https://greenpandastudios.github.io/augscript/packages), and [the weather guide](https://greenpandastudios.github.io/augscript/weather-api). August is experimental; check [readiness](https://greenpandastudios.github.io/augscript/production-readiness) before deploying it.

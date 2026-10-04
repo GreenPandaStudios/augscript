@@ -2,50 +2,28 @@
 
 # `endpoints.aug`
 
+Plain handler results default to HTTP 200 unless another status is declared. HttpResponse values choose their own status. Unhandled request failures return HTTP 500 and cancel the request tasks.
+
 <a id="symbol-home"></a>
-## `home` · [source](endpoints.aug#L11)
+## `home` · [source](endpoints.aug#L12)
 
-The app renders a verified session or offers its OIDC login flow. No token claims are displayed before verification.
+`home` handles `GET /`. The app renders a verified session or offers its OIDC login flow. No token claims are displayed before verification.
 
-**Inputs:** Take `token` (`optional string`) from HTTP cookie `aug_session`; omitted means null. Resolve [`Crypto`](../.aug-spec/august/0.19.0/crypto/contracts.aug.md#symbol-Crypto) as `crypto`. Resolve [`Clock`](../.aug-spec/august/0.19.0/time/contracts.aug.md#symbol-Clock) as `clock`. Resolve [`SigningKeys`](../common/keys.aug.md#symbol-SigningKeys) as `keys`. Resolve [`ExpiringStore<SessionClaims>`](../.aug-spec/august/0.19.0/memory/store.aug.md#symbol-ExpiringStore) as `sessions`.
+It takes `token` as `optional string` from the HTTP cookie `aug_session`. It gets `crypto` ([`Crypto`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto)), `clock` ([`Clock`](../.aug-spec/packages/%40git/url_c092cd151499c4e1d8a1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-Clock)), `keys` ([`SigningKeys`](../common/keys.aug.md#symbol-SigningKeys)), and `sessions` ([`ExpiringStore<SessionClaims>`](../.aug-spec/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore)) from dependency injection. Omitted optional inputs are null. It can also raise `HttpError`, `KeyError`, and `TimeError`.
 
-Returns `HttpResponse<Html>`. Uses [`crypto.publicRsa`](../.aug-spec/august/0.19.0/crypto/contracts.aug.md#symbol-Crypto.publicRsa), [`crypto.decodeBase64url`](../.aug-spec/august/0.19.0/crypto/contracts.aug.md#symbol-Crypto.decodeBase64url), [`crypto.verifyRsa`](../.aug-spec/august/0.19.0/crypto/contracts.aug.md#symbol-Crypto.verifyRsa), [`crypto.equal`](../.aug-spec/august/0.19.0/crypto/contracts.aug.md#symbol-Crypto.equal), [`clock.now`](../.aug-spec/august/0.19.0/time/contracts.aug.md#symbol-Clock.now), [`keys.session`](../common/keys.aug.md#symbol-SigningKeys.session), [`sessions.get`](../.aug-spec/august/0.19.0/memory/store.aug.md#symbol-ExpiringStore.get). Can fail with `KeyError`, `TimeError`, `HttpError`.
-
-HTTP route: `GET` `/`. Use status 200 when the handler returns a body; a returned HttpResponse can set its own status. An unhandled request failure returns status 500 and cancels its request tasks.
-
-- Try:
-  - Set `session` to the result of [`authenticate`](session.aug.md#symbol-authenticate) with `token` using `crypto`, `clock`, `keys`, `sessions`.
-  - Return a new `HttpResponse` with `body` as the result of [`Welcome`](views.aug.md#symbol-Welcome) with `session`, `headers` as the result of [`securityHeaders`](../common/headers.aug.md#symbol-securityHeaders).
-- Catch [`SessionError`](contracts.aug.md#symbol-SessionError) as `error`:
-  - Return a new `HttpResponse` with `body` as the result of [`LoginPage`](views.aug.md#symbol-LoginPage), `headers` as the result of [`securityHeaders`](../common/headers.aug.md#symbol-securityHeaders).
+It tries to set `session` to [`authenticate`](session.aug.md#symbol-authenticate) with `token` using injected `crypto`, `clock`, `keys`, and `sessions`, then return HTTP 200 with [`Welcome`](views.aug.md#symbol-Welcome) with `session` and [`securityHeaders`](../common/headers.aug.md#symbol-securityHeaders) headers. If this work raises [`SessionError`](contracts.aug.md#symbol-SessionError), it returns HTTP 200 with [`LoginPage`](views.aug.md#symbol-LoginPage) and [`securityHeaders`](../common/headers.aug.md#symbol-securityHeaders) headers.
 
 <a id="symbol-me"></a>
-## `me` · [source](endpoints.aug#L19)
+## `me` · [source](endpoints.aug#L20)
 
-A protected JSON resource accepts only a live, verified application session.
+`me` handles `GET /me`. A protected JSON resource accepts only a live, verified application session.
 
-**Inputs:** Take `token` (`optional string`) from HTTP cookie `aug_session`; omitted means null. Resolve [`Crypto`](../.aug-spec/august/0.19.0/crypto/contracts.aug.md#symbol-Crypto) as `crypto`. Resolve [`Clock`](../.aug-spec/august/0.19.0/time/contracts.aug.md#symbol-Clock) as `clock`. Resolve [`SigningKeys`](../common/keys.aug.md#symbol-SigningKeys) as `keys`. Resolve [`ExpiringStore<SessionClaims>`](../.aug-spec/august/0.19.0/memory/store.aug.md#symbol-ExpiringStore) as `sessions`.
+It takes `token` as `optional string` from the HTTP cookie `aug_session`. It gets `crypto` ([`Crypto`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto)), `clock` ([`Clock`](../.aug-spec/packages/%40git/url_c092cd151499c4e1d8a1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-Clock)), `keys` ([`SigningKeys`](../common/keys.aug.md#symbol-SigningKeys)), and `sessions` ([`ExpiringStore<SessionClaims>`](../.aug-spec/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore)) from dependency injection. Omitted optional inputs are null. The handler responds with HTTP 401 for [`SessionError`](contracts.aug.md#symbol-SessionError).
 
-Returns `HttpResponse<UserInfo>`. Uses [`crypto.publicRsa`](../.aug-spec/august/0.19.0/crypto/contracts.aug.md#symbol-Crypto.publicRsa), [`crypto.decodeBase64url`](../.aug-spec/august/0.19.0/crypto/contracts.aug.md#symbol-Crypto.decodeBase64url), [`crypto.verifyRsa`](../.aug-spec/august/0.19.0/crypto/contracts.aug.md#symbol-Crypto.verifyRsa), [`crypto.equal`](../.aug-spec/august/0.19.0/crypto/contracts.aug.md#symbol-Crypto.equal), [`clock.now`](../.aug-spec/august/0.19.0/time/contracts.aug.md#symbol-Clock.now), [`keys.session`](../common/keys.aug.md#symbol-SigningKeys.session), [`sessions.get`](../.aug-spec/august/0.19.0/memory/store.aug.md#symbol-ExpiringStore.get). Can fail with `SessionError`, `KeyError`, `TimeError`, `HttpError`.
-
-HTTP route: `GET` `/me`. Use status 200 when the handler returns a body; a returned HttpResponse can set its own status. An unhandled request failure returns status 500 and cancels its request tasks.
-
-Declared HTTP failures: [`SessionError`](contracts.aug.md#symbol-SessionError) returns status 401.
-
-- Set `session` to the result of [`authenticate`](session.aug.md#symbol-authenticate) with `token` using `crypto`, `clock`, `keys`, `sessions`.
-- Return a new `HttpResponse` with `body` as a new [`UserInfo`](../provider/contracts.aug.md#symbol-UserInfo) with `sub` as `sub` of `session`, `name` as `name` of `session`, `headers` as the result of [`securityHeaders`](../common/headers.aug.md#symbol-securityHeaders).
+It can also raise `HttpError`, `KeyError`, and `TimeError`. It sets `session` to [`authenticate`](session.aug.md#symbol-authenticate) with `token` using injected `crypto`, `clock`, `keys`, and `sessions`. It returns HTTP 200 with an [`UserInfo`](../provider/contracts.aug.md#symbol-UserInfo) with `session.sub` and `session.name` and [`securityHeaders`](../common/headers.aug.md#symbol-securityHeaders) headers.
 
 ## Dependencies
 
-- [`Crypto`](../.aug-spec/august/0.19.0/crypto/contracts.aug.md#symbol-Crypto) from `august.crypto`: [`decodeBase64url`](../.aug-spec/august/0.19.0/crypto/contracts.aug.md#symbol-Crypto.decodeBase64url) (`input`: `string`) → `Bytes`; can fail with `CryptoError`; [`equal`](../.aug-spec/august/0.19.0/crypto/contracts.aug.md#symbol-Crypto.equal) (`left`: `Bytes`, `right`: `Bytes`) → `bool`; [`publicRsa`](../.aug-spec/august/0.19.0/crypto/contracts.aug.md#symbol-Crypto.publicRsa) (`key`: `RsaPrivateKey`) → `RsaPublicKey`; can fail with `CryptoError`; [`verifyRsa`](../.aug-spec/august/0.19.0/crypto/contracts.aug.md#symbol-Crypto.verifyRsa) (`publicKey`: `RsaPublicKey`, `input`: `Bytes`, `signature`: `Bytes`) → `bool`; can fail with `CryptoError`.
-- [`ExpiringStore`](../.aug-spec/august/0.19.0/memory/store.aug.md#symbol-ExpiringStore) from `august.memory`: [`get`](../.aug-spec/august/0.19.0/memory/store.aug.md#symbol-ExpiringStore.get) (`key`: `string`, `now`: `int`) → `optional T`.
-- [`Clock`](../.aug-spec/august/0.19.0/time/contracts.aug.md#symbol-Clock) from `august.time`: [`now`](../.aug-spec/august/0.19.0/time/contracts.aug.md#symbol-Clock.now) (no caller inputs) → `int`; can fail with `TimeError`.
-- [`SessionClaims`](contracts.aug.md#symbol-SessionClaims) from `contracts`: read `name` (`string`); read `sub` (`string`).
-- [`SessionError`](contracts.aug.md#symbol-SessionError) from `contracts`.
-- [`authenticate`](session.aug.md#symbol-authenticate) (`token`: `optional string`) → [`SessionClaims`](contracts.aug.md#symbol-SessionClaims); can fail with `SessionError`, `KeyError`, `TimeError` from `session`.
-- [`LoginPage`](views.aug.md#symbol-LoginPage) (no caller inputs) → `Html` from `views`.
-- [`Welcome`](views.aug.md#symbol-Welcome) (`session`: [`SessionClaims`](contracts.aug.md#symbol-SessionClaims)) → `Html`; can fail with `HttpError` from `views`.
-- [`securityHeaders`](../common/headers.aug.md#symbol-securityHeaders) (no caller inputs) → `Headers`; can fail with `HttpError` from `common`.
-- [`KeyError`](../common/keys.aug.md#symbol-KeyError) from `common`.
-- [`SigningKeys`](../common/keys.aug.md#symbol-SigningKeys) from `common`: [`session`](../common/keys.aug.md#symbol-SigningKeys.session) (no caller inputs) → `RsaPrivateKey`; can fail with `KeyError`.
-- [`UserInfo`](../provider/contracts.aug.md#symbol-UserInfo) from `provider`: construct with `sub`: `string`, `name`: `string`.
+It uses [`ExpiringStore`](../.aug-spec/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore) ([`get`](../.aug-spec/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore.get)) from `memory`. It uses [`Crypto`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto) ([`decodeBase64url`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.decodeBase64url), [`equal`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.equal), [`publicRsa`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.publicRsa), and [`verifyRsa`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.verifyRsa)) from `crypto`. It uses [`Clock`](../.aug-spec/packages/%40git/url_c092cd151499c4e1d8a1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-Clock) ([`now`](../.aug-spec/packages/%40git/url_c092cd151499c4e1d8a1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-Clock.now)) from `time`. It uses [`SessionClaims`](contracts.aug.md#symbol-SessionClaims) (`name` and `sub`) and [`SessionError`](contracts.aug.md#symbol-SessionError) from `contracts`.
+
+It uses [`authenticate`](session.aug.md#symbol-authenticate) from `session`. It uses [`LoginPage`](views.aug.md#symbol-LoginPage) and [`Welcome`](views.aug.md#symbol-Welcome) from `views`. It uses [`securityHeaders`](../common/headers.aug.md#symbol-securityHeaders), [`KeyError`](../common/keys.aug.md#symbol-KeyError), and [`SigningKeys`](../common/keys.aug.md#symbol-SigningKeys) ([`session`](../common/keys.aug.md#symbol-SigningKeys.session)) from `common`. It uses [`UserInfo`](../provider/contracts.aug.md#symbol-UserInfo) from `provider`.

@@ -10,9 +10,17 @@ outline: [2, 3]
 
 # Modules and composition
 
-Combine domain modules, generic values, explicit capabilities, and scoped providers.
+Supply a scoped counter and call a doubling function that rejects negative inputs.
 
-Read a file below to see its highlighted source and the Markdown produced by `aug spec`. Choose **Indentation** or **Braces** above the code. Both views describe the same checked program; your choice is kept when you open another file.
+Open a file to read the code beside its compiled explanation. Choose **Indentation** or **Braces** to change the code view. The choice carries across files.
+
+## Follow the program
+
+Read [`main.aug`](main.md). Follow the domain imports, provider choices, explicit scope, and checked failure before opening the implementation files.
+
+Read [`domain/export.aug`](domain/export.md). The export file chooses the declarations callers can import.
+
+Read [`domain/numbers.aug`](domain/numbers.md). The validation interceptor rejects a negative input. Tests cover successful doubling and recovery from that failure.
 
 ## Project files
 
@@ -27,13 +35,14 @@ Read a file below to see its highlighted source and the Markdown produced by `au
 
 ## Try this project
 
-From a repository checkout with August installed:
+[Download this project](/downloads/approved-design.zip), then extract the archive in an empty working folder. It contains source, configuration, and compiled specs. [Install August](../../getting-started.md) once, then run these commands. Native libraries are prepared automatically when needed:
 
 ```sh
-aug check examples/approved-design
-aug spec examples/approved-design
-aug test examples/approved-design
-aug run examples/approved-design
+cd approved-design
+aug check .
+aug spec .
+aug test .
+aug run .
 ```
 
 [Browse all examples](../index.md)

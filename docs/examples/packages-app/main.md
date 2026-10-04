@@ -28,11 +28,13 @@ pageClass: aug-example-page
 ::: code-group
 
 ```aug [Indentation]
+// aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import add from math
 print(value=add(left=20, right=22))
 ```
 
 ```aug [Braces]
+// aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import add from math
 print(value=add(left=20, right=22))
 ```
@@ -47,15 +49,13 @@ print(value=add(left=20, right=22))
 
 ### Startup
 
-- Call `print` with `value` as the result of [`add`](dependencies/packages/%40example/aug-math/0.1.0/arithmetic.md#symbol-add) with `left` as `20`, `right` as `22`.
+It prints [`add`](dependencies/packages/%40example/aug-math/0.1.0/arithmetic.md#symbol-add) with `left` `20` and `right` `22`.
 
 ### Dependencies
 
-- [`add`](dependencies/packages/%40example/aug-math/0.1.0/arithmetic.md#symbol-add) (`left`: `int`, `right`: `int`) → `int` from `math`.
+It uses [`add`](dependencies/packages/%40example/aug-math/0.1.0/arithmetic.md#symbol-add) from `math`.
 
-### Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
-
-- `print`: Composition and test output. Other callables receive Console and declare uses console.write.
+Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).
 
 ::::
 

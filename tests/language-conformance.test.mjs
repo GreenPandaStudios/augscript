@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import { spawnSync } from 'node:child_process';
+import { spawnSync } from './compiler-process.mjs';
 
 const cli = resolve('bin/aug.mjs');
 
@@ -48,7 +48,7 @@ print(value="done")
     const result = aug(root, 'run', { AUG_TRACE_DROPS: '1' });
     assert.equal(result.status, 0, result.stderr);
     assert.equal(result.stdout, 'done\n');
-    assert.equal((result.stderr.match(/drop: Resource/g) ?? []).length, 1, result.stderr);
+    assert.equal((result.stderr.match(/drop: (?:[^\n]+:)?Resource/g) ?? []).length, 1, result.stderr);
   });
   withProject({ 'operations.aug': resource, 'main.aug': `import Resource and consume from operations
 own Resource item = Resource()
@@ -77,7 +77,7 @@ catch FileError error:
     const result = aug(root, 'run', { AUG_TRACE_DROPS: '1' });
     assert.equal(result.status, 0, result.stderr);
     assert.equal(result.stdout, 'caught\n');
-    assert.equal((result.stderr.match(/drop: Resource/g) ?? []).length, 1, result.stderr);
+    assert.equal((result.stderr.match(/drop: (?:[^\n]+:)?Resource/g) ?? []).length, 1, result.stderr);
   });
 });
 
@@ -99,7 +99,7 @@ print(value="done")
     const result = aug(root, 'run', { AUG_TRACE_DROPS: '1' });
     assert.equal(result.status, 0, result.stderr);
     assert.equal(result.stdout, 'done\n');
-    assert.equal((result.stderr.match(/drop: Resource/g) ?? []).length, 1, result.stderr);
+    assert.equal((result.stderr.match(/drop: (?:[^\n]+:)?Resource/g) ?? []).length, 1, result.stderr);
     assert.equal((result.stderr.match(/drop: Shared/g) ?? []).length, 1, result.stderr);
   });
   withProject({
@@ -327,7 +327,7 @@ scope:
     const result = aug(root, 'run', { AUG_TRACE_DROPS: '1' });
     assert.equal(result.status, 0, result.stderr);
     assert.equal(result.stdout, '7\n');
-    assert.equal((result.stderr.match(/drop: Resource/g) ?? []).length, 1, result.stderr);
+    assert.equal((result.stderr.match(/drop: (?:[^\n]+:)?Resource/g) ?? []).length, 1, result.stderr);
   });
 });
 
@@ -743,8 +743,13 @@ catch Error error:
   });
   withProject({
     'operations.aug': operations.replace('observe(Task<int> pending) returns int unless Error:', 'observe(Task<int> pending) returns int:'),
-    'main.aug': ''
-  }, root => assert.ok(diagnosticCodes(root).includes('THROWS')));
+    'main.aug': 'import observe from operations\n'
+  }, root => {
+    const result = spawnSync(process.execPath, [cli, 'explain', root, '--file', join(root, 'operations.aug'), '--json'], {encoding:'utf8'});
+    assert.equal(result.status, 0, result.stderr);
+    const facts = JSON.parse(result.stdout).contracts;
+    assert.deepEqual(facts.find(fact => fact.name === 'observe').callables[0].errors, ['Error']);
+  });
 });
 
 test('CLEANUP-1: always executes before a returned result is observed', () => {

@@ -2,39 +2,285 @@ name: Prepare release
 on:
   push:
     tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing version tag to build; tags are never moved
+        type: string
+        required: true
+      commit:
+        description: Reviewed full commit SHA for that tag
+        type: string
+        required: true
 permissions:
   contents: read
 concurrency:
-  group: release-${{ github.ref }}
+  group: release-${{ inputs.tag || github.ref_name }}
   cancel-in-progress: false
 jobs:
-  release:
-    runs-on: macos-15
-    timeout-minutes: 60
-    permissions:
-      contents: write
+  source:
+    runs-on: ubuntu-24.04
+    outputs:
+      tag: ${{ steps.source.outputs.tag }}
+      sha: ${{ steps.source.outputs.sha }}
     steps:
-      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
           persist-credentials: false
-      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - id: source
+        name: Verify the existing tag and reviewed source
+        env:
+          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+          RELEASE_COMMIT: ${{ inputs.commit || github.sha }}
+        run: node scripts/release-source.mjs "$RELEASE_TAG" "$RELEASE_COMMIT" >> "$GITHUB_OUTPUT"
+  compiler-packs:
+    needs: source
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15
+            host: darwin-arm64
+            artifact: macos-arm64
+          - runner: ubuntu-24.04
+            host: linux-x64
+            artifact: linux-x64
+          - runner: ubuntu-24.04-arm
+            host: linux-arm64
+            artifact: linux-arm64
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 90
+    env:
+      MACOSX_DEPLOYMENT_TARGET: '14.0'
+      AUG_GITHUB_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.source.outputs.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        if: runner.os == 'macOS'
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Build and verify macOS compiler pack
+        if: runner.os == 'macOS'
+        run: |
+          npm ci
+          node scripts/bootstrap-native.mjs
+          node scripts/prepare-llvm-tools.mjs
+          node scripts/prepare-llvm-maintainer.mjs
+          node scripts/build-runtime-pack.mjs
+          AUG_LLVM_HOME="$PWD/.aug-build/llvm-tools" npm run test:conformance
+          AUG_WORKER_SANITIZER=thread node --test tests/worker-runtime.test.mjs
+          AUG_WORKER_SANITIZER=address,undefined node --test tests/worker-runtime.test.mjs
+          AUG_LLVM_HOME="$PWD/.aug-build/llvm-tools" AUG_SANITIZER_CC="$PWD/.aug-build/llvm-maintainer/bin/clang" node --test tests/runtime-reliability.test.mjs
+          AUG_LLVM_HOME="$PWD/.aug-build/llvm-tools" AUG_SANITIZER_CC="$PWD/.aug-build/llvm-maintainer/bin/clang" npm run test:reliability -- --profile soak
+          AUG_LLVM_HOME="$PWD/.aug-build/llvm-tools" AUG_REQUIRE_DWARF=1 AUG_REQUIRE_DEBUGGER=1 node scripts/check-llvm-parity.mjs
+          AUG_LLVM_HOME="$PWD/.aug-build/llvm-tools" AUG_SANITIZER_CC="$PWD/.aug-build/llvm-maintainer/bin/clang" node scripts/sanitize-core.mjs --backend llvm
+          node scripts/build-llvm-pack.mjs
+          AUG_LLVM_HOME="$PWD/.aug-build/llvm-tools" node scripts/benchmark-suite.mjs --backend llvm --compare-c-backend --iterations 60 --warmup 3 --http-rounds 5 --http-requests 5000 --output .aug-build/llvm-migration-performance.json
+          node scripts/check-llvm-performance.mjs .aug-build/llvm-migration-performance.json
+          AUG_LLVM_HOME="$PWD/.aug-build/llvm-tools" AUG_SANITIZER_CC="$PWD/.aug-build/llvm-maintainer/bin/clang" node scripts/run-gyms.mjs --profile full --vectors 256
+          AUG_LLVM_HOME="$PWD/.aug-build/llvm-tools" node scripts/benchmark-kernels.mjs --iterations 30
+      - name: Build and verify Linux compiler pack on Debian 12
+        if: runner.os == 'Linux'
+        run: |
+          docker build -f docker/Dockerfile.native-maintainer -t aug-llvm-maintainer .
+          docker run -d --cap-add SYS_PTRACE --name producer aug-llvm-maintainer sleep infinity
+          docker exec producer node scripts/bootstrap-native.mjs
+          docker exec producer node scripts/prepare-llvm-tools.mjs
+          docker exec producer node scripts/prepare-llvm-maintainer.mjs
+          docker exec producer node scripts/build-runtime-pack.mjs
+          docker exec -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools producer npm run test:conformance
+          docker exec -e AUG_WORKER_SANITIZER=thread -e AUG_SANITIZER_CC=/work/.aug-build/llvm-maintainer/bin/clang producer node --test tests/worker-runtime.test.mjs
+          docker exec -e AUG_WORKER_SANITIZER=address,undefined -e AUG_SANITIZER_CC=/work/.aug-build/llvm-maintainer/bin/clang producer node --test tests/worker-runtime.test.mjs
+          docker exec -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools -e AUG_SANITIZER_CC=/work/.aug-build/llvm-maintainer/bin/clang producer node --test tests/runtime-reliability.test.mjs
+          docker exec -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools -e AUG_SANITIZER_CC=/work/.aug-build/llvm-maintainer/bin/clang producer npm run test:reliability -- --profile soak
+          docker exec -e AUG_GITHUB_TOKEN -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools -e AUG_REQUIRE_DWARF=1 -e AUG_REQUIRE_DEBUGGER=1 -e AUG_DWARF_TOOL=/work/.aug-build/llvm-maintainer/bin/llvm-dwarfdump producer node scripts/check-llvm-parity.mjs
+          docker exec -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools -e AUG_SANITIZER_CC=/work/.aug-build/llvm-maintainer/bin/clang producer node scripts/sanitize-core.mjs --backend llvm
+          docker exec producer node scripts/build-llvm-pack.mjs
+          docker exec -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools producer node scripts/benchmark-suite.mjs --backend llvm --compare-c-backend --iterations 60 --warmup 3 --http-rounds 5 --http-requests 5000 --output /work/.aug-build/llvm-migration-performance.json
+          docker exec producer node scripts/check-llvm-performance.mjs .aug-build/llvm-migration-performance.json
+          docker exec -e AUG_GITHUB_TOKEN -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools -e AUG_SANITIZER_CC=/work/.aug-build/llvm-maintainer/bin/clang producer node scripts/run-gyms.mjs --profile full --vectors 256
+          docker exec -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools producer node scripts/benchmark-kernels.mjs --iterations 30
+          mkdir -p .aug-build
+          docker cp "producer:/work/.aug-build/aug-llvm-${{ matrix.artifact }}.tar.gz" .aug-build/
+          docker cp "producer:/work/.aug-build/compiler-pack-${{ matrix.host }}.json" .aug-build/
+          docker cp producer:/work/.aug-build/llvm-migration-performance.json .aug-build/
+          docker cp producer:/work/.aug-build/runtime-reliability .aug-build/
+          docker cp producer:/work/.aug-build/language-conformance.json .aug-build/
+          mkdir -p .aug-build/kernels .aug-build/gyms
+          docker cp producer:/work/.aug-build/kernels/results.json .aug-build/kernels/
+          docker cp producer:/work/.aug-build/gyms/results.json .aug-build/gyms/
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: compiler-pack-${{ matrix.host }}
+          include-hidden-files: true
+          path: |
+            .aug-build/aug-llvm-${{ matrix.artifact }}.tar.gz
+            .aug-build/compiler-pack-${{ matrix.host }}.json
+            .aug-build/llvm-migration-performance.json
+            .aug-build/runtime-reliability/
+            .aug-build/language-conformance.json
+            .aug-build/kernels/results.json
+            .aug-build/gyms/results.json
+          if-no-files-found: error
+  release:
+    needs: [source, compiler-packs]
+    runs-on: macos-15
+    timeout-minutes: 60
+    env:
+      AUG_LLVM_HOME: ${{ github.workspace }}/.aug-build/llvm-tools
+      AUG_RELEASE_NATIVE_REQUIRED: '1'
+      AUG_GITHUB_TOKEN: ${{ github.token }}
+      MACOSX_DEPLOYMENT_TARGET: '14.0'
+      RELEASE_TAG: ${{ needs.source.outputs.tag }}
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.source.outputs.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: '24'
           package-manager-cache: false
       - run: npm ci
       - run: npm --prefix vscode ci
-      - run: node scripts/version.mjs --check --tag "$GITHUB_REF_NAME"
+      - run: node scripts/version.mjs --check --tag "$RELEASE_TAG"
       - run: node scripts/bootstrap-native.mjs
+      - run: node scripts/prepare-llvm-tools.mjs
+      - run: node scripts/prepare-llvm-maintainer.mjs
+      - run: node scripts/build-runtime-pack.mjs
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          pattern: compiler-pack-*
+          path: .aug-build/release-packs
+      - name: Pin every qualified platform before packing npm and VSIX
+        run: node scripts/merge-compiler-packs.mjs .aug-build/release-packs
       - run: npm run check
       - run: npm test
+      - name: LLVM language, runtime and real application parity
+        env:
+          AUG_REQUIRE_DWARF: '1'
+          AUG_REQUIRE_DEBUGGER: '1'
+        run: node scripts/check-llvm-parity.mjs
+      - name: LLVM address and runtime undefined-behavior sanitizer gate
+        env:
+          AUG_SANITIZER_CC: ${{ github.workspace }}/.aug-build/llvm-maintainer/bin/clang
+        run: node scripts/sanitize-core.mjs --backend llvm
       - run: npm run docs:check
       - run: npm run docs:build
       - run: npm run package:packages
       - run: npm run test:packages -- --native
+      - name: Qualify cold public native imports from the installed CLI
+        run: node scripts/qualify-native-consumers.mjs --local-compiler
       - run: npm run package:extension
       - run: node scripts/release-artifacts.mjs
-      - name: Upload draft prerelease
+      - name: Verify the artifacts consumed by publishing workflows
+        run: |
+          node scripts/publish-release.mjs dist/release --verify-only
+          node scripts/publish-extension.mjs dist/release --verify-only
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: reviewed-release
+          path: dist/release/*
+          if-no-files-found: error
+  consumers:
+    needs: [source, release]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-14
+            host: darwin-arm64
+            artifact: macos-arm64
+          - runner: ubuntu-24.04
+            host: linux-x64
+            artifact: linux-x64
+          - runner: ubuntu-24.04-arm
+            host: linux-arm64
+            artifact: linux-arm64
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    env:
+      AUG_GITHUB_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.source.outputs.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        if: runner.os == 'macOS'
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          name: reviewed-release
+          path: dist/release
+      - name: Select the exact release compiler archive
+        run: |
+          mkdir -p .aug-build
+          cp "dist/release/aug-llvm-${{ matrix.artifact }}.tar.gz" .aug-build/
+      - name: Qualify macOS 14 with developer tools physically absent
+        if: runner.os == 'macOS'
+        run: |
+          test "$GITHUB_ACTIONS" = true
+          test "$RUNNER_ENVIRONMENT" = github-hosted
+          sudo rm -rf /Applications/Xcode*.app /Library/Developer/CommandLineTools
+          ! xcrun --show-sdk-path
+          node scripts/qualify-native-consumers.mjs --local-compiler
+      - name: Qualify Linux in a clean runtime image
+        if: runner.os == 'Linux'
+        run: |
+          docker build -f docker/Dockerfile.native-consumer -t aug-llvm-consumer .
+          docker run -d --name consumer aug-llvm-consumer sleep infinity
+          docker exec consumer sh -c '! command -v clang; ! command -v gcc; ! command -v git; test ! -d /usr/include; test ! -d /usr/local/include'
+          docker exec consumer node -e 'for(const name of ["scripts","native","dist","examples",".aug-build"])require("node:fs").mkdirSync("/consumer/"+name,{recursive:true})'
+          docker cp scripts/qualify-native-consumers.mjs consumer:/consumer/scripts/
+          docker cp scripts/native-qualification-pins.mjs consumer:/consumer/scripts/
+          docker cp native/library-qualification.json consumer:/consumer/native/
+          docker cp dist/release consumer:/consumer/dist/
+          docker cp examples/. consumer:/consumer/examples/
+          docker cp ".aug-build/aug-llvm-${{ matrix.artifact }}.tar.gz" consumer:/consumer/.aug-build/
+          docker exec -e AUG_GITHUB_TOKEN consumer node scripts/qualify-native-consumers.mjs --local-compiler
+          docker cp consumer:/consumer/.aug-build/native-consumer-qualification.json .aug-build/
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: release-consumer-${{ matrix.host }}
+          include-hidden-files: true
+          path: .aug-build/native-consumer-qualification.json
+          if-no-files-found: error
+  draft:
+    needs: [source, release, consumers]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          name: reviewed-release
+          path: dist/release
+      - name: Upload draft prerelease after all consumer gates
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" dist/release/* --draft --prerelease --verify-tag --title "August $GITHUB_REF_NAME" --notes-file CHANGELOG.md
+          RELEASE_TAG: ${{ needs.source.outputs.tag }}
+          RELEASE_COMMIT: ${{ needs.source.outputs.sha }}
+        run: |
+          node scripts/release-source.mjs "$RELEASE_TAG" "$RELEASE_COMMIT"
+          mkdir -p .aug-build
+          git show "$RELEASE_COMMIT:CHANGELOG.md" > .aug-build/release-notes.md
+          gh release create "$RELEASE_TAG" dist/release/* --draft --prerelease --verify-tag --title "August $RELEASE_TAG" --notes-file .aug-build/release-notes.md

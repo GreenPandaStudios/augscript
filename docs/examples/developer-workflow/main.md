@@ -32,6 +32,7 @@ pageClass: aug-example-page
 ::: code-group
 
 ```aug [Indentation]
+// aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Console and SystemConsole from august.io
 implement Console with SystemConsole
 import Logger and ConsoleLogger from logging
@@ -43,7 +44,9 @@ try:
     Set<int> unique = {1, 2, 1}
     Map<int,string> fruit = {1: "apples", 2: "pears"}
     calculator = Calculator()
-    print(value=calculator.add(right=numbers.get(index=1), left=numbers.get(index=0)))
+    print(
+        value=calculator.add(right=numbers.get(index=1), left=numbers.get(index=0))
+    )
     print(value=pair.get(index=1))
     print(value=unique.length())
     print(value=fruit.get(key=2))
@@ -56,6 +59,7 @@ catch IndexError error:
 ```
 
 ```aug [Braces]
+// aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Console and SystemConsole from august.io
 implement Console with SystemConsole
 import Logger and ConsoleLogger from logging
@@ -67,7 +71,9 @@ try {
     Set<int> unique = {1, 2, 1}
     Map<int,string> fruit = {1: "apples", 2: "pears"}
     calculator = Calculator()
-    print(value=calculator.add(right=numbers.get(index=1), left=numbers.get(index=0)))
+    print(
+        value=calculator.add(right=numbers.get(index=1), left=numbers.get(index=0))
+    )
     print(value=pair.get(index=1))
     print(value=unique.length())
     print(value=fruit.get(key=2))
@@ -93,42 +99,21 @@ catch IndexError error {
 
 ### Providers
 
-- Provide [`SystemConsole`](dependencies/august/0.19.0/io/contracts.md#symbol-SystemConsole) for `Console`. Share one instance.
-- Provide [`ConsoleLogger`](logging/console.md#symbol-ConsoleLogger) for `Logger`. Share one instance.
+`Console` is provided by [`SystemConsole`](dependencies/august/0.23.0/io/contracts.md#symbol-SystemConsole). The same instance is shared. `Logger` is provided by [`ConsoleLogger`](logging/console.md#symbol-ConsoleLogger). The same instance is shared.
 
 ### Startup
 
-- Try:
-  - Set `numbers` of type `List<int>` to a list containing `1`, `2`.
-  - Set `pair` of type `Tuple<int,string>` to a tuple containing `1`, `"apple"`.
-  - Set `unique` of type `Set<int>` to a set containing `1`, `2`, `1`.
-  - Set `fruit` of type `Map<int,string>` to a map with `1` mapped to `"apples"`; `2` mapped to `"pears"`.
-  - Set `calculator` to a new [`Calculator`](calculator.md#symbol-Calculator) using `Logger` for `_logger`.
-  - Call `print` with `value` as the result of [`Calculator.add`](calculator.md#symbol-Calculator.add) on `calculator` with `right` as the result of `get` on `numbers` with `index` as `1`, `left` as the result of `get` on `numbers` with `index` as `0` using `Console` for `console`.
-  - Call `print` with `value` as the result of `get` on `pair` with `index` as `1`.
-  - Call `print` with `value` as the result of `length` on `unique`.
-  - Call `print` with `value` as the result of `get` on `fruit` with `key` as `2`.
-  - Try:
-    - Call `print` with `value` as the result of [`load`](calculator.md#symbol-load) with `fail` as `true`.
-  - Catch `FileError` as `error`:
-    - Call `print` with `value` as `"load failed as expected"`.
-- Catch `IndexError` as `error`:
-  - Call `print` with `value` as `"unexpected index failure"`.
+It sets `numbers` of type `List<int>` to a list containing `1`, `2`. It sets `pair` of type `Tuple<int,string>` to a tuple containing `1`, `"apple"`. It sets `unique` of type `Set<int>` to a set containing `1`, `2`, `1`. It sets `fruit` of type `Map<int,string>` to a map with `1` mapped to `"apples"`; `2` mapped to `"pears"`.
+
+It sets `calculator` to a [`Calculator`](calculator.md#symbol-Calculator) using injected `Logger` for `_logger`. It prints [`calculator.add`](calculator.md#symbol-Calculator.add) with `right` from the item at index `1` in `numbers` and `left` from the item at index `0` in `numbers` using injected `Console` for `console`. It prints `pair.get` with `index` `1`. It prints the number of elements in `unique`.
+
+It prints the value under `2` in `fruit`. It prints [`load`](calculator.md#symbol-load) with `fail` `true`. If this work raises `FileError`, it prints `"load failed as expected"`. If this work raises `IndexError`, it prints `"unexpected index failure"`.
 
 ### Dependencies
 
-- [`SystemConsole`](dependencies/august/0.19.0/io/contracts.md#symbol-SystemConsole) from `august.io`.
-- [`Calculator`](calculator.md#symbol-Calculator) from `calculator`: construct with no caller inputs; [`add`](calculator.md#symbol-Calculator.add) (`left`: `int`, `right`: `int`) → `int`.
-- [`load`](calculator.md#symbol-load) (`fail`: `bool`) → `string`; can fail with `FileError` from `calculator`.
-- [`ConsoleLogger`](logging/console.md#symbol-ConsoleLogger) from `logging`.
+It uses [`SystemConsole`](dependencies/august/0.23.0/io/contracts.md#symbol-SystemConsole) from `august.io`. It uses [`Calculator`](calculator.md#symbol-Calculator) ([`add`](calculator.md#symbol-Calculator.add)) and [`load`](calculator.md#symbol-load) from `calculator`. It uses [`ConsoleLogger`](logging/console.md#symbol-ConsoleLogger) from `logging`.
 
-### Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
-
-- `List<int>.get`: Read a zero-based position. An invalid index raises checked IndexError. Reference results grant reading.
-- `Map<int, string>.get`: Read a value by key; an absent key returns null. contains distinguishes an absent key from a stored null.
-- `Set<int>.length`: Read the number of elements.
-- `Tuple<int, string>.get`: Read a statically checked constant position. Prefer tuple destructuring when reading several positions.
-- `print`: Composition and test output. Other callables receive Console and declare uses console.write.
+Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).
 
 ::::
 

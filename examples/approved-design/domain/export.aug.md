@@ -4,8 +4,6 @@
 
 ## Exports
 
-- Export the declaration `Application` from [`app.aug`](app.aug.md#symbol-Application).
-- Export the declaration `ApplicationImpl` from [`app.aug`](app.aug.md#symbol-ApplicationImpl).
-- Export the declaration `Fruit` from [`models.aug`](models.aug.md#symbol-Fruit).
-- Export the declaration `double` from [`numbers.aug`](numbers.aug.md#symbol-double).
-- Export the declaration `RangeError` from [`numbers.aug`](numbers.aug.md#symbol-RangeError).
+Export the declaration `Application` from [`app.aug`](app.aug.md#symbol-Application). Export the declaration `ApplicationImpl` from [`app.aug`](app.aug.md#symbol-ApplicationImpl). Export the declaration `Fruit` from [`models.aug`](models.aug.md#symbol-Fruit). Export the declaration `double` from [`numbers.aug`](numbers.aug.md#symbol-double).
+
+Export the declaration `RangeError` from [`numbers.aug`](numbers.aug.md#symbol-RangeError).

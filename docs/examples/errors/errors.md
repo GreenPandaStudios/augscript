@@ -29,14 +29,16 @@ pageClass: aug-example-page
 ::: code-group
 
 ```aug [Indentation]
-load(bool fail) returns string unless FileError:
+// aug-spec: "errors.aug.md" explains this file. Read it before changes; refresh with aug spec.
+load(bool fail):
     if fail:
         throw FileError()
     return "loaded"
 ```
 
 ```aug [Braces]
-load(bool fail) returns string unless FileError {
+// aug-spec: "errors.aug.md" explains this file. Read it before changes; refresh with aug spec.
+load(bool fail) {
     if fail {
         throw FileError()
     }
@@ -52,16 +54,11 @@ load(bool fail) returns string unless FileError {
 
 ## Compiled specification {#specification}
 
-<a id="symbol-load"></a>
-### `load` · [source](errors.md#code)
+### `load` · [source](errors.md#code) {#symbol-load}
 
-**Inputs:** Take `fail` (`bool`).
+It takes `fail` as a boolean. Failures can raise `FileError`.
 
-Returns `string`. Can fail with `FileError`.
-
-- If `fail` is true:
-  - Fail with a new `FileError`.
-- Return `"loaded"`.
+It checks that `fail` is false. It raises a `FileError` at the first failed check. It returns `"loaded"`.
 
 ::::
 

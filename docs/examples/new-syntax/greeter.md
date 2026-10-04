@@ -32,20 +32,22 @@ pageClass: aug-example-page
 ::: code-group
 
 ```aug [Indentation]
+// aug-spec: "greeter.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Console from august.io
 import Logger from logger
 Greeter(resolve Logger logger, int x) implements IGreeter:
-    greet(resolve Console console, string name) uses Console.write:
+    greet(resolve Console console, string name):
         logger.log(message="Hello, " + name + "!")
 interface IGreeter:
     greet(resolve Console console, string name) uses Console.write
 ```
 
 ```aug [Braces]
+// aug-spec: "greeter.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Console from august.io
 import Logger from logger
 Greeter(resolve Logger logger, int x) implements IGreeter {
-    greet(resolve Console console, string name) uses Console.write {
+    greet(resolve Console console, string name) {
         logger.log(message="Hello, " + name + "!")
     }
 }
@@ -62,36 +64,23 @@ interface IGreeter {
 
 ## Compiled specification {#specification}
 
-<a id="symbol-Greeter"></a>
-### `Greeter` · class · [source](greeter.md#code)
+### `Greeter` · class · [source](greeter.md#code) {#symbol-Greeter}
 
-Implements [`IGreeter`](greeter.md#symbol-IGreeter).
+It implements [`IGreeter`](greeter.md#symbol-IGreeter). It takes `x` as an integer, kept read-only. It gets `logger` ([`Logger`](logger.md#symbol-Logger)), kept read-only from dependency injection.
 
-**Inputs:** Resolve [`Logger`](logger.md#symbol-Logger) as `logger`; store read-only. Take `x` (`int`); store read-only.
+#### `Greeter.greet` · [source](greeter.md#code) {#symbol-Greeter.greet}
 
-<a id="symbol-Greeter.greet"></a>
-#### `Greeter.greet` · [source](greeter.md#code)
+It takes `name` as a string. It gets `console` ([`Console`](dependencies/august/0.23.0/io/contracts.md#symbol-Console)) from dependency injection. It passes the text `Hello, {name}!` to [`logger.log`](logger.md#symbol-Logger.log), using injected `console`.
 
-**Inputs:** Resolve [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console) as `console`. Take `name` (`string`).
+### `IGreeter` · interface · [source](greeter.md#code) {#symbol-IGreeter}
 
-Uses [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
+#### `IGreeter.greet` · [source](greeter.md#code) {#symbol-IGreeter.greet}
 
-- Call [`Logger.log`](logger.md#symbol-Logger.log) on `logger` with `message` as text that joins `"Hello, "`, `name` and `"!"` using `console`.
-
-<a id="symbol-IGreeter"></a>
-### `IGreeter` · interface · [source](greeter.md#code)
-
-<a id="symbol-IGreeter.greet"></a>
-#### `IGreeter.greet` · [source](greeter.md#code)
-
-**Inputs:** Resolve [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console) as `console`. Take `name` (`string`).
-
-Uses [`Console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
+It takes `name` as a string. It gets `console` ([`Console`](dependencies/august/0.23.0/io/contracts.md#symbol-Console)) from dependency injection. It can call [`Console.write`](dependencies/august/0.23.0/io/contracts.md#symbol-Console.write).
 
 ### Dependencies
 
-- [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console) from `august.io`: [`write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write)<`T`> (`value`: `T`) → `void`.
-- [`Logger`](logger.md#symbol-Logger) from `logger`: [`log`](logger.md#symbol-Logger.log) (`message`: `string`) → `void`.
+It uses [`Console`](dependencies/august/0.23.0/io/contracts.md#symbol-Console) ([`write`](dependencies/august/0.23.0/io/contracts.md#symbol-Console.write)) from `august.io`. It uses [`Logger`](logger.md#symbol-Logger) ([`log`](logger.md#symbol-Logger.log)) from `logger`.
 
 ::::
 

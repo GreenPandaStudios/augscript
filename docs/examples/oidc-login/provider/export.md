@@ -49,6 +49,7 @@ pageClass: aug-example-page
 ::: code-group
 
 ```aug [Indentation]
+// aug-spec: "export.aug.md" explains this file. Read it before changes; refresh with aug spec.
 export AuthorizationRequest from contracts
 export AuthorizationCode from contracts
 export AccessGrant from contracts
@@ -65,6 +66,7 @@ export userinfo from userinfo
 ```
 
 ```aug [Braces]
+// aug-spec: "export.aug.md" explains this file. Read it before changes; refresh with aug spec.
 export AuthorizationRequest from contracts
 export AuthorizationCode from contracts
 export AccessGrant from contracts
@@ -90,19 +92,13 @@ export userinfo from userinfo
 
 ### Exports
 
-- Export the declaration `AuthorizationRequest` from [`contracts.aug`](contracts.md#symbol-AuthorizationRequest).
-- Export the declaration `AuthorizationCode` from [`contracts.aug`](contracts.md#symbol-AuthorizationCode).
-- Export the declaration `AccessGrant` from [`contracts.aug`](contracts.md#symbol-AccessGrant).
-- Export the declaration `IdClaims` from [`contracts.aug`](contracts.md#symbol-IdClaims).
-- Export the declaration `TokenResponse` from [`contracts.aug`](contracts.md#symbol-TokenResponse).
-- Export the declaration `UserInfo` from [`contracts.aug`](contracts.md#symbol-UserInfo).
-- Export the declaration `Discovery` from [`discovery.aug`](discovery.md#symbol-Discovery).
-- Export the declaration `discovery` from [`discovery.aug`](discovery.md#symbol-discovery).
-- Export the declaration `jwks` from [`discovery.aug`](discovery.md#symbol-jwks).
-- Export the declaration `authorize` from [`authorization.aug`](authorization.md#symbol-authorize).
-- Export the declaration `providerLogin` from [`authorization.aug`](authorization.md#symbol-providerLogin).
-- Export the declaration `token` from [`token.aug`](token.md#symbol-token).
-- Export the declaration `userinfo` from [`userinfo.aug`](userinfo.md#symbol-userinfo).
+Export the declaration `AuthorizationRequest` from [`contracts.aug`](contracts.md#symbol-AuthorizationRequest). Export the declaration `AuthorizationCode` from [`contracts.aug`](contracts.md#symbol-AuthorizationCode). Export the declaration `AccessGrant` from [`contracts.aug`](contracts.md#symbol-AccessGrant). Export the declaration `IdClaims` from [`contracts.aug`](contracts.md#symbol-IdClaims).
+
+Export the declaration `TokenResponse` from [`contracts.aug`](contracts.md#symbol-TokenResponse). Export the declaration `UserInfo` from [`contracts.aug`](contracts.md#symbol-UserInfo). Export the declaration `Discovery` from [`discovery.aug`](discovery.md#symbol-Discovery). Export the declaration `discovery` from [`discovery.aug`](discovery.md#symbol-discovery).
+
+Export the declaration `jwks` from [`discovery.aug`](discovery.md#symbol-jwks). Export the declaration `authorize` from [`authorization.aug`](authorization.md#symbol-authorize). Export the declaration `providerLogin` from [`authorization.aug`](authorization.md#symbol-providerLogin). Export the declaration `token` from [`token.aug`](token.md#symbol-token).
+
+Export the declaration `userinfo` from [`userinfo.aug`](userinfo.md#symbol-userinfo).
 
 ::::
 

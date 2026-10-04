@@ -4,17 +4,14 @@
 
 ## Providers
 
-- Provide [`SystemConsole`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-SystemConsole) for `Console`. Share one instance.
-- Provide [`ConsoleLogger`](logging/console.aug.md#symbol-ConsoleLogger) for `Logger`. Share one instance.
-- Provide [`Greeter`](app/greeter.aug.md#symbol-Greeter) for `app`. Share one instance. Needs `Logger`.
+`Console` is provided by [`SystemConsole`](.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-SystemConsole). The same instance is shared. `Logger` is provided by [`ConsoleLogger`](logging/console.aug.md#symbol-ConsoleLogger). The same instance is shared.
+
+`app` is provided by [`Greeter`](app/greeter.aug.md#symbol-Greeter). The same instance is shared. It requires bindings for `Logger`.
 
 ## Startup
 
-- Set `greeter` to the instance provided for `app`.
-- Call [`Greeter.greet`](app/greeter.aug.md#symbol-Greeter.greet) on `greeter` with `name` as `"AugScript"` using `Console` for `console`.
+It sets `greeter` to the instance provided for `app`. It passes `"AugScript"` to [`greeter.greet`](app/greeter.aug.md#symbol-Greeter.greet), using injected `Console`.
 
 ## Dependencies
 
-- [`SystemConsole`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-SystemConsole) from `august.io`.
-- [`Greeter`](app/greeter.aug.md#symbol-Greeter) from `app`: [`greet`](app/greeter.aug.md#symbol-Greeter.greet) (`name`: `string`) → `void`.
-- [`ConsoleLogger`](logging/console.aug.md#symbol-ConsoleLogger) from `logging`.
+It uses [`SystemConsole`](.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-SystemConsole) from `august.io`. It uses [`Greeter`](app/greeter.aug.md#symbol-Greeter) ([`greet`](app/greeter.aug.md#symbol-Greeter.greet)) from `app`. It uses [`ConsoleLogger`](logging/console.aug.md#symbol-ConsoleLogger) from `logging`.

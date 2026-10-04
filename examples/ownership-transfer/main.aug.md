@@ -4,24 +4,14 @@
 
 ## Providers
 
-- Provide [`SystemConsole`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-SystemConsole) for `Console`. Share one instance.
+`Console` is provided by [`SystemConsole`](.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-SystemConsole). The same instance is shared.
 
 ## Startup
 
-- Set `first` of type [`Resource`](resource.aug.md#symbol-Resource) to the result of [`make`](resource.aug.md#symbol-make).
-- `first` of type [`Resource`](resource.aug.md#symbol-Resource) owns this value.
-- Call [`consume`](resource.aug.md#symbol-consume) with `value` as `first` using `Console` for `console`.
-- Set `second` of type [`Resource`](resource.aug.md#symbol-Resource) to the result of [`make`](resource.aug.md#symbol-make).
-- `second` of type [`Resource`](resource.aug.md#symbol-Resource) owns this value.
-- Call `print` with `value` as `"end of main"`.
+It calls [`make`](resource.aug.md#symbol-make) and stores the result in owned `first` ([`Resource`](resource.aug.md#symbol-Resource)). It calls [`consume`](resource.aug.md#symbol-consume) with `value` from `first` using injected `Console` for `console`. It calls [`make`](resource.aug.md#symbol-make) and stores the result in owned `second` ([`Resource`](resource.aug.md#symbol-Resource)). It prints `"end of main"`.
 
 ## Dependencies
 
-- [`SystemConsole`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-SystemConsole) from `august.io`.
-- [`Resource`](resource.aug.md#symbol-Resource) from `resource`.
-- [`consume`](resource.aug.md#symbol-consume) (`value`: [`Resource`](resource.aug.md#symbol-Resource)) → `void` from `resource`.
-- [`make`](resource.aug.md#symbol-make) (no caller inputs) → [`Resource`](resource.aug.md#symbol-Resource) from `resource`.
+It uses [`SystemConsole`](.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-SystemConsole) from `august.io`. It uses [`Resource`](resource.aug.md#symbol-Resource), [`consume`](resource.aug.md#symbol-consume), and [`make`](resource.aug.md#symbol-make) from `resource`.
 
-## Built-ins · [reference](https://greenpandastudios.github.io/augscript/language-constructs)
-
-- `print`: Composition and test output. Other callables receive Console and declare uses console.write.
+Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).

@@ -1,10 +1,11 @@
+// aug-spec: "userinfo.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import UserInfo and AccessGrant from contracts
 import securityHeaders from common
-import Clock from august.time
-import ExpiringStore from august.memory
+import Clock from time
+import ExpiringStore from memory
 
 /** The opaque access token is valid only at this provider. Missing, expired and malformed credentials receive the same response. */
-endpoint GET "/provider/userinfo" as userinfo(optional string authorization from header, resolve Clock clock, resolve ExpiringStore<AccessGrant> access) returns HttpResponse<Json> uses clock.now and access.get unless TimeError and HttpError:
+endpoint GET "/provider/userinfo" as userinfo(optional string authorization from header, resolve Clock clock, resolve ExpiringStore<AccessGrant> access) :
     match authorization:
         when null:
             pass

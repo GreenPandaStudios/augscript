@@ -3,36 +3,29 @@
 # `counter.aug`
 
 <a id="symbol-Counter"></a>
-## `Counter` · class · [source](counter.aug#L1)
+## `Counter` · class · [source](counter.aug#L2)
 
-Implements [`ICounter`](counter.aug.md#symbol-ICounter).
-
-**Inputs:** Take `value` (`int`); store mutably.
+It implements [`ICounter`](counter.aug.md#symbol-ICounter). It takes `value` as an integer, kept mutable.
 
 <a id="symbol-Counter.increment"></a>
-### `Counter.increment` · [source](counter.aug#L2)
+### `Counter.increment` · [source](counter.aug#L3)
 
-Changes `self`.
-
-- Mutably borrow `self` for this block:
-  - Set `value` to `value` plus `1`.
+It may change `self`. With temporary permission to change `self`, it increases `value` by `1`.
 
 <a id="symbol-Counter.read"></a>
-### `Counter.read` · [source](counter.aug#L7)
+### `Counter.read` · [source](counter.aug#L8)
 
-Returns `int`.
-
-- Return `value`.
+It returns `value`.
 
 <a id="symbol-ICounter"></a>
-## `ICounter` · interface · [source](counter.aug#L11)
+## `ICounter` · interface · [source](counter.aug#L12)
 
 <a id="symbol-ICounter.increment"></a>
-### `ICounter.increment` · [source](counter.aug#L12)
+### `ICounter.increment` · [source](counter.aug#L13)
 
-Changes `self`.
+It may change `self`.
 
 <a id="symbol-ICounter.read"></a>
-### `ICounter.read` · [source](counter.aug#L13)
+### `ICounter.read` · [source](counter.aug#L14)
 
-Returns `int`.
+It returns `int`.

@@ -1,30 +1,37 @@
 # Performance and benchmarks
 
-Use this page to measure an August application, read the comparison graphs, and inspect the exact August programs behind each result. The recorded results used August 0.18.0, which compiles to native code through C. The current compiler is 0.19.0; rerun the suite before comparing a new release. Always measure work that resembles your application.
+Compare August programs with C, Node, and Python versions doing the same tasks. Read the graphs, inspect the source, or download a program to measure work that resembles your application.
+
+The suite measures August 0.21.0 with LLVM 23.1.2. Results apply to the shown workloads and host. For reliability and deployment limits, see [production readiness](production-readiness.md).
+
+The [extended qualification](qualification-results.md) adds eight C comparisons for numeric, collection and application work. The [safety gyms](safety-gyms.md) exercise results, rejected operations, cleanup and memory checks separately. Each measured program has a downloadable project and a code/spec view in the [gallery](examples/index.md#measured-programs).
+
+The [DGX Spark results](dgx-spark.md) record a second physical ARM64 host, including all benchmark programs, safety gyms and real public native imports. Read each host's measurements separately.
 
 ## Read the graphs
 
-Execution and memory bars use **lower is better**. HTTP throughput uses **higher is better**. Read the workload name and units before comparing: a 20,000-entry map and a two-million-step CPU loop do different amounts of work. The execution panels have separate linear scales; compare implementations within a panel. Tables provide exact values and remain readable on a phone.
+Execution and memory bars use **lower is better**. HTTP throughput uses **higher is better**. Read the workload name and units before comparing: a 20,000-entry map and a two-million-step CPU loop do different amounts of work. The execution panels have separate linear scales; compare implementations within a panel. Toggle implementations to compare them without changing the measurements. Select “Show observed ranges” to see the recorded minimum and maximum; these are not confidence intervals. Expand the chart’s values for a selectable data table.
 
-All results below were recorded on September 29, 2026: Apple M5, macOS Darwin 25.6.0, ARM64, Apple Clang 21, Node 24.18.0, CPython 3.12.14. August and C use `-O2` without LTO. [Raw samples, checksums, build timings and environment](benchmark-results.json) are committed with this page.
+All results below were recorded on October 2, 2026 (UTC): Apple M5, macOS Darwin 25.6.0, ARM64, LLVM 23.1.2 for August, Apple Clang 21 for the C reference, Node 24.18.0, and CPython 3.12.14. August and C use `-O2` without LTO. [Raw samples, checksums, build timings and environment](benchmark-results.json) include the LLVM tool and runtime identities.
 
 ## Execution time
 
-![Median execution time for August, C, Node and Python across five workloads. Shorter bars are faster; each panel has its own linear scale.](./assets/benchmarks/execution.svg)
+::: benchmark-chart execution
+:::
 
 [benchmark-execution-start]: #
 
 | Workload | August | C | Node | Python |
 | --- | ---: | ---: | ---: | ---: |
-| Startup | 1.46 ms | 1.29 ms | 19.07 ms | 8.42 ms |
-| CPU · 2 million iterations | 7.24 ms | 8.17 ms | 30.22 ms | 194.98 ms |
-| Map + Set · 20,000 entries | 2.54 ms | 1.65 ms | 22.31 ms | 10.36 ms |
-| Map + Set · 200,000 entries | 15.10 ms | 6.38 ms | 38.33 ms | 26.44 ms |
-| JSON · 5,000 round trips | 6.92 ms | 2.01 ms | 20.84 ms | 19.20 ms |
+| Startup | 1.43 ms | 1.19 ms | 19.31 ms | 16.18 ms |
+| CPU · 2 million iterations | 7.74 ms | 8.38 ms | 30.64 ms | 252.62 ms |
+| Map + Set · 20,000 entries | 2.71 ms | 1.64 ms | 22.58 ms | 18.81 ms |
+| Map + Set · 200,000 entries | 16.81 ms | 6.31 ms | 37.96 ms | 40.36 ms |
+| JSON · 5,000 round trips | 7.23 ms | 1.94 ms | 21.16 ms | 31.84 ms |
 
 [benchmark-execution-end]: #
 
-Times include a fresh process's startup and exclude compilation: 3 warmups and 15 measured runs for each implementation, with the execution order rotated. Every run must produce the expected checksum. Node and Python start a new interpreter each time; these are batch timings, not warmed server-loop or steady-state JIT timings. The startup row helps make that cost visible; subtracting medians would not establish a new measured result.
+Times include a fresh process's startup and exclude compilation: 3 warmups and 60 measured runs for each implementation, with the execution order rotated. The measurement client runs outside the compiler process, and every executable must produce the expected checksum. Node and Python start a new interpreter each time. These batch timings do not measure a warmed JIT. The startup row shows the cost of starting each process.
 
 The programs below are the actual benchmark sources. The suite checks their printed results against the C, Node and Python references on every run.
 
@@ -32,7 +39,7 @@ The C reference is tailored to these inputs: it preallocates integer tables and 
 
 [benchmark-summary-start]: #
 
-The CPU program takes **7.24 ms** in August and **8.17 ms** in C on this host. The large-collection program takes **15.10 ms** in August. These are measurements of the shown programs, not guarantees for other applications. JSON batch time includes interpreter startup for Node and Python; it does not establish a universal JSON-throughput advantage.
+The CPU program takes **7.74 ms** in August and **8.38 ms** in C on this host. The large-collection program takes **16.81 ms** in August. The JSON timings include interpreter startup for Node and Python. Compare these results within their workloads.
 
 [benchmark-summary-end]: #
 
@@ -45,6 +52,7 @@ Save this as `main.aug`. Its result is `7`; the measurement includes starting an
 **main.aug**
 
 ```aug project=benchmark-startup file=main.aug
+// aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 print(value=7)
 ```
 
@@ -60,6 +68,7 @@ This loop performs two million dependent integer steps. Its result must be `8196
 **main.aug**
 
 ```aug project=benchmark-cpu file=main.aug
+// aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 // A loop-carried dependency prevents removal of the computation.
 int state = 123
 int index = 0
@@ -82,6 +91,7 @@ This creates a Map and Set, inserts 20,000 values, checks membership, and sums v
 **main.aug**
 
 ```aug project=benchmark-collections file=main.aug
+// aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 own Map<int, int> values = {}
 own Set<int> unique = {}
 int index = 0
@@ -109,13 +119,15 @@ These two files belong in one folder. The program parses JSON, reads a typed rec
 **data.aug**
 
 ```aug project=benchmark-json file=data.aug
+// aug-spec: "data.aug.md" explains this file. Read it before changes; refresh with aug spec.
 record Payload(int id, string message, List<int> values)
 ```
 
 **main.aug**
 
 ```aug project=benchmark-json file=main.aug
-import parse from august.json
+// aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
+import parse from json
 import Payload from data
 int checksum = 0
 int index = 0
@@ -131,28 +143,38 @@ catch JsonError error:
     exit(status=1)
 ```
 
+**main.yaml**
+
+```yaml project=benchmark-json file=main.yaml
+
+
+packages:
+  json: "https://github.com/GreenPandaStudios/augscript/src/stdlib/json#v0.19.0"
+```
+
 
 [benchmark-source-json-end]: #
 
 ## HTTP throughput
 
-![Measured August and Node HTTP throughput at 1, 16 and 64 concurrent keep-alive clients. Higher is faster.](./assets/benchmarks/http.svg)
+::: benchmark-chart http
+:::
 
 [benchmark-http-start]: #
 
 | Clients | August req/sec | Node req/sec | August p95 latency | Node p95 latency |
 | ---: | ---: | ---: | ---: | ---: |
-| 1 | 23,526 | 25,580 | 0.05 ms | 0.04 ms |
-| 16 | 73,370 | 69,166 | 0.37 ms | 0.40 ms |
-| 64 | 65,365 | 69,260 | 1.74 ms | 1.32 ms |
+| 1 | 21,046 | 23,679 | 0.06 ms | 0.05 ms |
+| 16 | 58,708 | 55,557 | 0.46 ms | 0.49 ms |
+| 64 | 54,436 | 51,730 | 2.08 ms | 1.94 ms |
 
 [benchmark-http-end]: #
 
-A real August `GET /bench` endpoint returns a newly constructed typed JSON record. The Node reference constructs and serializes the same response. Both run on loopback with HTTP/1.1 keep-alive, 1,000 warmup requests and three fresh-server rounds of 5,000 measured requests per concurrency level. Every response must have status 200, JSON content type, and the exact expected data. The measured runs had zero errors. p95 is the median of the three per-round p95 latencies; graph error bars show observed throughput min/max, not confidence intervals.
+A real August `GET /bench` endpoint returns a newly constructed typed JSON record. The Node reference constructs and serializes the same response. Both run on loopback with HTTP/1.1 keep-alive, 1,000 warmup requests and five fresh-server rounds of 5,000 measured requests per concurrency level. Every response must have status 200, JSON content type, and the exact expected data. The measured runs had zero errors. p95 is the median of the five per-round p95 latencies; graph error bars show observed throughput min/max, not confidence intervals.
 
-The Node load generator runs on the same machine and consumes CPU. This closed-loop test has no TLS, authentication, logging, database, outbound network calls or slow clients. Its numbers are endpoint microbenchmark throughput, not a supported production capacity or service-level guarantee. HTTP/2, HTTP/3 and streaming are not benchmarked here.
+The Node load generator runs on the same machine and consumes CPU. This closed-loop test has no TLS, authentication, logging, database, outbound network calls or slow clients. Use it to compare this endpoint, not to size a production service. HTTP/2, HTTP/3 and streaming are not benchmarked here.
 
-Use the table to compare throughput and latency at the concurrency you expect. These results measure one process on one OS thread; they do not establish multicore scaling.
+Use the table to compare throughput and latency at the concurrency you expect. Each server uses one process on one OS thread.
 
 ### HTTP program
 
@@ -163,14 +185,16 @@ Place these files in one folder. Every request constructs a `Reply` and returns 
 **routes.aug**
 
 ```aug project=benchmark-http file=routes.aug
+// aug-spec: "routes.aug.md" explains this file. Read it before changes; refresh with aug spec.
 record Reply(int id, string message)
-endpoint GET "/bench" as reply() returns Reply:
+endpoint GET "/bench" as reply() :
     return Reply(id=7, message="hello")
 ```
 
 **main.aug**
 
 ```aug project=benchmark-http file=main.aug
+// aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import reply from routes
 serve reply on port 0
 ```
@@ -184,7 +208,7 @@ Start the app in one terminal:
 aug run path/to/http-example
 ```
 
-Save the load generator below as `http-load.mjs`, or use `scripts/http-load.mjs` from a repository checkout. In another terminal, replace `PORT` with the printed port. This is the **same load generator** the comparison suite uses:
+Save the load generator below as `http-load.mjs`. In another terminal, replace `PORT` with the printed port. The comparison suite uses this load generator:
 
 ```sh
 node http-load.mjs --url http://127.0.0.1:PORT/bench \
@@ -265,7 +289,8 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1
     for (let i = 0; i < rounds; i++) {
       await httpLoad(url, concurrency, warmup, expected);
       const result = await httpLoad(url, concurrency, requests, expected);
-      delete result.latencyMs.samples; results.push(result);
+      if(!process.argv.includes('--raw-samples'))delete result.latencyMs.samples;
+      results.push(result);
     }
     const measured = statistics(results.map(result => result.requestsPerSecond));
     console.log(JSON.stringify({url, concurrency, warmup, rounds:results, requestsPerSecond:measured}, null, 2));
@@ -279,41 +304,22 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1
 
 ## Memory
 
-![Peak process memory in MiB for 20,000 and 200,000 collection entries, including runtime and interpreter overhead.](./assets/benchmarks/memory.svg)
+::: benchmark-chart memory
+:::
 
 [benchmark-memory-start]: #
 
 | Workload | August | C | Node | Python |
 | --- | ---: | ---: | ---: | ---: |
-| Startup | 1.3 MiB | 1.4 MiB | 46.0 MiB | 15.1 MiB |
-| CPU · 2 million iterations | 1.3 MiB | 1.4 MiB | 52.2 MiB | 15.1 MiB |
-| Map + Set · 20,000 entries | 4.5 MiB | 4.4 MiB | 57.0 MiB | 20.2 MiB |
-| Map + Set · 200,000 entries | 34.2 MiB | 25.4 MiB | 91.1 MiB | 62.1 MiB |
-| JSON · 5,000 round trips | 1.8 MiB | 1.5 MiB | 47.4 MiB | 16.2 MiB |
+| Startup | 1.3 MiB | 1.3 MiB | 46.0 MiB | 8.4 MiB |
+| CPU · 2 million iterations | 1.3 MiB | 1.3 MiB | 52.2 MiB | 8.4 MiB |
+| Map + Set · 20,000 entries | 4.7 MiB | 4.4 MiB | 56.9 MiB | 13.2 MiB |
+| Map + Set · 200,000 entries | 36.8 MiB | 25.4 MiB | 91.1 MiB | 55.3 MiB |
+| JSON · 5,000 round trips | 1.8 MiB | 1.5 MiB | 47.4 MiB | 9.7 MiB |
 
 [benchmark-memory-end]: #
 
 These are medians of three separate peak-RSS measurements through `/usr/bin/time`, in MiB, including the process runtime/interpreter. They are not allocation counts or retained heap after a GC. Long-running heap stability and leak behavior need separate soak tests.
-
-## Before and after
-
-The same August programs and measurement settings were run on this machine before and after the performance work. Shorter bars are faster for execution time; taller points are faster for HTTP. This compares observed application performance. [Earlier measurement summaries](benchmark-baseline.json) preserve the baseline.
-
-![August execution time and HTTP throughput before and after the performance update, using the same workloads.](./assets/benchmarks/improvements.svg)
-
-[benchmark-improvements-start]: #
-
-| August workload | Before | Current | Current relative to before |
-| --- | ---: | ---: | ---: |
-| CPU · 2 million iterations | 36.65 ms | 7.24 ms | 5.06× faster |
-| Map + Set · 20,000 entries | 4.68 ms | 2.54 ms | 1.84× faster |
-| Map + Set · 200,000 entries | 47.90 ms | 15.10 ms | 3.17× faster |
-| HTTP · 1 clients | 25,273 req/sec | 23,526 req/sec | 0.93× throughput |
-| HTTP · 16 clients | 62,719 req/sec | 73,370 req/sec | 1.17× throughput |
-| HTTP · 64 clients | 30,693 req/sec | 65,365 req/sec | 2.13× throughput |
-| Map + Set · 200k peak memory | 61.9 MiB | 34.2 MiB | 45% less |
-
-[benchmark-improvements-end]: #
 
 ## Benchmark your own project
 
@@ -329,43 +335,13 @@ aug bench path/to/project --iterations 20 --warmup 3 --json > benchmark.json
 
 `aug bench` compiles with release optimization even when the project's normal setting is debug. Do not benchmark `aug run`: that command includes compiler work. Server programs run indefinitely, so use an HTTP load generator against a built server instead of `aug bench`. Record errors and latency as well as throughput. The comparison suite validates checksums; `aug bench` itself checks exit status, so verify your program's result first.
 
-## Reproduce the comparison graphs
+## Reproduce the programs
 
-From a checkout, with Node 24+, Python and a C11 compiler:
+Download a [measured project](examples/index.md#measured-programs), extract it, and prepare [native dependencies](packages.md#npm-registry). Each download contains the code and configuration shown in the gallery. Run finite programs with the commands under [Benchmark your own project](#benchmark-your-own-project); use [the HTTP load generator](#http-program) for the server. The complete C, Node, and Python reference programs are below, so you can save and inspect the comparison code too.
 
-```sh
-npm ci
-node scripts/bootstrap-native.mjs
-npm run bench:compare
-```
+The 200,000-entry collection run changes `20000` to `200000` in the downloaded Map/Set program. Keep the matching input count in each reference implementation and verify the published checksum before comparing timings. Record the machine, compiler, toolchain version, input size, and flags with your results.
 
-Set `AUG_BENCH_PYTHON=/path/to/python3` or `CC=/path/to/clang` to select the reference interpreter/compiler. `AUG_NATIVE_HOME` selects the native dependency cache. The raw result file records versions and a source fingerprint. Compilation timings are included separately from executable run time.
-
-For core/JSON only, extract the smaller native source dependencies and omit HTTP:
-
-```sh
-node scripts/bootstrap-native.mjs --extract-only --only minicoro,yyjson
-npm run bench:compare -- --skip-http
-```
-
-The full suite writes `docs/benchmark-results.json`; a core-only run writes `.aug-build/benchmarks/results-core.json` and preserves the complete wiki measurements. Focus on selected workloads while trying your own changes:
-
-```sh
-npm run bench:compare -- --only cpu,collections-200k
-npm run bench:compare -- --only http --http-requests 10000
-```
-
-Focused runs write `.aug-build/benchmarks/results-focused.json`. Use `--output PATH` to keep separate reports. Render graphs, tables and the exact source examples from the full result file using Python 3.12+:
-
-```sh
-python3 -m venv .aug-build/benchmark-plotting
-.aug-build/benchmark-plotting/bin/python -m pip install -r benchmarks/plot-requirements.txt
-.aug-build/benchmark-plotting/bin/python scripts/render-benchmarks.py
-.aug-build/benchmark-plotting/bin/python scripts/render-benchmarks.py --check
-npm run docs:build
-```
-
-The plot environment is isolated and ignored; published documentation includes the rendered graphs and needs no Python installation. Review this page's environment, interpretations and limitations when replacing measurements. Short exploratory runs can use `--iterations 3 --warmup 1 --http-rounds 1 --http-requests 1000`; they have less statistical coverage.
+[Maintaining the comparison suite](contributing-benchmarks.md) describes the contributor workflow that produces the full graphs, raw samples, and checked source panels.
 
 ### Comparison implementation sources
 
@@ -519,17 +495,6 @@ else:
 
 ## Production assessment
 
-**Experimental; appropriate for prototypes and controlled pilots. General production readiness is not established.** The measured native path is viable enough to continue developing and profiling. These microbenchmarks do not cover the correctness, operational behavior and portability needed for a production language/runtime.
+Measure your complete application under its expected load, including slow clients and failure cases. Short benchmarks do not establish heap stability, protocol conformance, or service capacity.
 
-| Remaining evidence or feature | Why it matters |
-| --- | --- |
-| Application-specific profiling | These small workloads do not predict a complete application's performance. |
-| Long-running memory/lifecycle tests | Peak RSS of a short process does not prove a stable server heap. |
-| Tasks that capture injected mutable state; cleanup of owned shared values | These ownership and resource-lifetime cases still have gaps. Check the gap ledger before relying on them. |
-| Multicore workers, bounded channels and broadcasts | Tasks currently run on one OS thread; these features are not available yet. |
-| Independent HTTP conformance and adverse-client tests | Existing socket regressions do not cover the entire HTTP specification. |
-| Other native platform builds | The native bootstrap and full suite are verified on macOS ARM and Linux ARM. Linux x86-64 runs in CI; Windows and other platforms remain unverified. |
-| Identity-provider hardening and durable storage | The OIDC demo is a development proof; persistence, key rotation, federation and certification remain. |
-| Stable package/native ABI and operational tooling | Source packages work, but compiler compatibility is exact and rich debugging remains limited. |
-
-See [the library/runtime gap ledger](web-library-gaps.md) for current support and limitations.
+August remains experimental. See [production readiness](production-readiness.md) for deployment requirements, [the roadmap](roadmap.md) for 1.0 work, and [web and crypto limits](web-library-gaps.md) for service-specific gaps.

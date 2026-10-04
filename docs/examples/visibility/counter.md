@@ -29,30 +29,32 @@ pageClass: aug-example-page
 ::: code-group
 
 ```aug [Indentation]
+// aug-spec: "counter.aug.md" explains this file. Read it before changes; refresh with aug spec.
 interface ICounter:
     label() returns string
 Counter(mutable int value) implements ICounter:
-    _label() returns string:
+    _label():
         return _prefix()
-    label() returns string:
+    label():
         return self._label()
-_prefix() returns string:
+_prefix():
     return "count"
 ```
 
 ```aug [Braces]
+// aug-spec: "counter.aug.md" explains this file. Read it before changes; refresh with aug spec.
 interface ICounter {
     label() returns string
 }
 Counter(mutable int value) implements ICounter {
-    _label() returns string {
+    _label() {
         return _prefix()
     }
-    label() returns string {
+    label() {
         return self._label()
     }
 }
-_prefix() returns string {
+_prefix() {
     return "count"
 }
 ```
@@ -65,45 +67,27 @@ _prefix() returns string {
 
 ## Compiled specification {#specification}
 
-<a id="symbol-ICounter"></a>
-### `ICounter` · interface · [source](counter.md#code)
+### `ICounter` · interface · [source](counter.md#code) {#symbol-ICounter}
 
-<a id="symbol-ICounter.label"></a>
-#### `ICounter.label` · [source](counter.md#code)
+#### `ICounter.label` · [source](counter.md#code) {#symbol-ICounter.label}
 
-Returns `string`.
+It returns `string`.
 
-<a id="symbol-Counter"></a>
-### `Counter` · class · [source](counter.md#code)
+### `Counter` · class · [source](counter.md#code) {#symbol-Counter}
 
-Implements [`ICounter`](counter.md#symbol-ICounter).
+It implements [`ICounter`](counter.md#symbol-ICounter). It takes `value` as an integer, kept mutable.
 
-**Inputs:** Take `value` (`int`); store mutably.
+#### `Counter._label` · [source](counter.md#code) {#symbol-Counter._label}
 
-<a id="symbol-Counter._label"></a>
-#### `Counter._label` · [source](counter.md#code)
+It is private to its defining scope. It returns [`_prefix`](counter.md#symbol-_prefix).
 
-Private to its defining scope.
+#### `Counter.label` · [source](counter.md#code) {#symbol-Counter.label}
 
-Returns `string`.
+It returns [`self._label`](counter.md#symbol-Counter._label).
 
-- Return the result of [`_prefix`](counter.md#symbol-_prefix).
+### `_prefix` · [source](counter.md#code) {#symbol-_prefix}
 
-<a id="symbol-Counter.label"></a>
-#### `Counter.label` · [source](counter.md#code)
-
-Returns `string`.
-
-- Return the result of [`Counter._label`](counter.md#symbol-Counter._label) on `self`.
-
-<a id="symbol-_prefix"></a>
-### `_prefix` · [source](counter.md#code)
-
-Private to its defining scope.
-
-Returns `string`.
-
-- Return `"count"`.
+It is private to its defining scope. It returns `"count"`.
 
 ::::
 

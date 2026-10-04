@@ -2,6 +2,7 @@ import type { ClassDecl, Expr, GenericHeader, InterceptorAnnotation, MethodDecl,
 import { typeName } from './ast.ts';
 import { lex } from './lexer.ts';
 import { parse } from './parser.ts';
+import { importSource } from './git-packages.ts';
 import type { Project } from './project.ts';
 
 /** Canonical syntax comes from the parsed program; comments stay with their lexical owner. */
@@ -39,7 +40,7 @@ function printFile(project: Project, file: SourceFile, migrate: boolean): string
     if (Array.isArray(value)) return value.filter(item => !(item?.kind === 'expr' && item.expr.kind === 'literal' && item.expr.value === null)).map(shape);
     if (!value || typeof value !== 'object') return value;
     const node = value as Record<string, unknown>;
-    return Object.fromEntries(Object.entries(node).filter(([key, value]) => !['span', 'nameSpan', 'sourceSpan'].includes(key) && value !== undefined)
+    return Object.fromEntries(Object.entries(node).filter(([key, value]) => !['span', 'nameSpan', 'sourceSpan', 'headerEnd'].includes(key) && value !== undefined)
       .sort(([a], [b]) => a.localeCompare(b)).map(([key, value]) => [key, shape(value)]));
   };
   if (JSON.stringify(shape(parsed.file.items)) !== JSON.stringify(shape(verified.file.items)))
@@ -62,7 +63,14 @@ class Printer {
     this.indent = project.config.block_style === 'indent';
     this.assign = project.config.assignment === 'to' ? 'to' : '=';
   }
-  private line(text = '') { this.lines.push(text ? this.step.repeat(this.level) + text : ''); }
+  private line(text = '') {
+    this.lines.push(...text.split('\n').map(line => line ? this.step.repeat(this.level) + line : ''));
+  }
+  private delimited(open: string, values: string[], close: string, trailing = ''): string {
+    const flat = open + values.join(', ') + trailing + close;
+    if (!values.length || (!flat.includes('\n') && flat.length <= 80 - this.level * 4)) return flat;
+    return open + '\n' + values.map(value => this.step + value.replaceAll('\n', '\n' + this.step)).join(',\n') + trailing + '\n' + close;
+  }
   private before(offset: number, parentColumn?: number) {
     while (this.comments[0]?.span.start < offset) {
       if (parentColumn !== undefined && this.comments[0].span.column <= parentColumn) break;
@@ -110,7 +118,7 @@ class Printer {
     this.before(method.annotations?.[0]?.span.start ?? method.span.start); this.annotations(method.annotations);
     const header = `${method.endpoint ? `endpoint ${method.endpoint.method} ${JSON.stringify(method.endpoint.path)} as ` : ''}${method.fixture ? 'fixture ' : ''}${method.externC ? 'extern C ' + (method.valueAbi ? 'value ' : '') + (method.nativePure ? 'pure ' : '') : ''}${method.name}${this.generics(method)}` +
       `(${method.params.map(param => this.param(param)).join(', ')})` +
-      (method.returns.name !== 'void' ? ` ${method.endpoint?.streams ? 'streams' : 'returns'} ${method.returnOwnership === 'own' ? 'own ' : ''}${typeName(method.returns)}` : '') +
+      (method.returns.name !== 'void' || method.declared?.returns ? ` ${method.endpoint?.streams ? 'streams' : 'returns'} ${method.returnOwnership === 'own' ? 'own ' : ''}${typeName(method.returns)}` : '') +
       (method.endpoint && method.endpoint.status !== 200 ? ` with status ${method.endpoint.status}` : '') +
       (method.changes?.length ? ` changes ${method.changes.join(' and ')}` : '') +
       (method.uses?.length ? ` uses ${method.uses.map(use => `${use.source}.${use.operation}`).join(' and ')}` : '') +
@@ -128,18 +136,21 @@ class Printer {
     else if (expr.kind === 'name') value = expr.name;
     else if (expr.kind === 'handle') value = `handle ${this.expression(expr.call, 8)}`;
     else if (expr.kind === 'formInput') value = 'input from form';
-    else if (expr.kind === 'start') value = `start ${this.expression(expr.call, 8)}`;
+    else if (expr.kind === 'start') value = `start ${expr.worker ? 'worker ' : ''}${this.expression(expr.call, 8)}`;
     else if (expr.kind === 'wait') value = `wait for ${expr.tasks.map(task => this.expression(task, 8)).join(' and ')}`;
     else if (expr.kind === 'resolve') value = `resolve ${expr.name}` + (expr.typeArgs.length ? '<' + expr.typeArgs.map(typeName).join(', ') + '>' : '');
     else if (expr.kind === 'member') value = `${this.expression(expr.object, 8)}.${expr.name}`;
-    else if (expr.kind === 'call') value = this.expression(expr.callee, 8) + (expr.typeArgs.length ? '<' + expr.typeArgs.map(typeName).join(', ') + '>' : '') +
-      '(' + expr.args.map((arg, index) => (expr.argLabels[index] ? expr.argLabels[index] + '=' : '') + this.expression(arg)).join(', ') + this.inline(expr.span.end) + ')';
+    else if (expr.kind === 'call') {
+      const open = this.expression(expr.callee, 8) + (expr.typeArgs.length ? '<' + expr.typeArgs.map(typeName).join(', ') + '>' : '') + '(';
+      const values = expr.args.map((arg, index) => (expr.argLabels[index] ? expr.argLabels[index] + '=' : '') + this.expression(arg));
+      value = this.delimited(open, values, ')', this.inline(expr.span.end));
+    }
     else if (expr.kind === 'collection') {
       const open = expr.collection === 'List' ? '[' : expr.collection === 'Tuple' ? '(' : '{';
       const close = open === '[' ? ']' : open === '(' ? ')' : '}';
       const values = expr.collection === 'Map' ? expr.items.filter((_, index) => index % 2 === 0).map((item, index) =>
         `${this.expression(item)}: ${this.expression(expr.items[index * 2 + 1])}`) : expr.items.map(item => this.expression(item));
-      value = open + values.join(', ') + (expr.collection === 'Tuple' && values.length === 1 ? ',' : '') + this.inline(expr.span.end) + close;
+      value = this.delimited(open, values, close, (expr.collection === 'Tuple' && values.length === 1 ? ',' : '') + this.inline(expr.span.end));
     } else if (expr.kind === 'unary') {
       const power = expr.op === '!' ? 2.5 : 7;
       value = (expr.op === '!' ? 'not ' : expr.op) + this.expression(expr.value, power);
@@ -185,22 +196,23 @@ class Printer {
   private item(item: TopLevel) {
     this.before('annotations' in item ? item.annotations?.[0]?.span.start ?? item.span.start : item.span.start);
     if (item.kind === 'import') {
-      this.line(`import ${item.everything ? 'everything' : item.names.join(' and ')} from ${item.from.join('.')}`);
+      this.line(`import ${item.everything ? 'everything' : item.names.join(' and ')} from ${importSource(item.from)}`);
     } else if (item.kind === 'export') this.line('export ' + (item.folder ? 'folder ' + item.name : `${item.name} from ${item.from}`));
     else if (item.kind === 'include') this.line('include ' + item.name);
     else if (item.kind === 'bind') this.line(`implement ${item.key}${item.keyTypeArgs.length ? '<' + item.keyTypeArgs.map(typeName).join(', ') + '>' : ''} with ${typeName(item.target)}` +
       (item.lifetime ? ' ' + item.lifetime : '') + (item.sharedMutation ? ' mutable' : ''));
     else if (item.kind === 'composition') this.block('composition ' + item.name, () => item.bindings.forEach(binding => this.item(binding)), item.span);
+    else if (item.kind === 'resource') this.line('extern C resource '+item.name);
     else if (item.kind === 'function') this.method(item);
     else if (item.kind === 'class') {
       this.annotations(item.annotations);
       const header = `${item.record ? 'record ' : ''}${item.name}${this.generics(item)}(${item.fields.map(field => this.param(field, true)).join(', ')})`;
+      const errors = item.validationErrors?.length ? ` unless ${item.validationErrors.map(typeName).join(' and ')}` : '';
       if (item.record) {
-        const errors = item.validationErrors?.length ? ` unless ${item.validationErrors.map(typeName).join(' and ')}` : '';
         if (item.constructorBody) this.block(header + errors, () => this.initializer(item), item.span);
         else this.line(header + errors);
       } else {
-        this.block(header + ' implements ' + item.implements.map(typeName).join(', '), () => {
+        this.block(header + errors + ' implements ' + item.implements.map(typeName).join(', '), () => {
           for (const field of item.stateFields ?? []) { this.before(field.span.start); this.line(`${field.mutable ? 'mutable ' : ''}${typeName(field.type)} ${field.name} = ${this.expression(field.initializer)}`); }
           if (item.constructorBody) this.initializer(item);
           item.methods.forEach(method => this.method(method));

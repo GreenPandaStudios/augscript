@@ -3,64 +3,44 @@
 # `types.aug`
 
 <a id="symbol-Formatter"></a>
-## `Formatter` · interface · [source](types.aug#L1)
+## `Formatter` · interface · [source](types.aug#L2)
 
 <a id="symbol-Formatter.format"></a>
-### `Formatter.format` · [source](types.aug#L2)
+### `Formatter.format` · [source](types.aug#L3)
 
-Type parameters: `T`.
-
-**Inputs:** Take `value` (`T`).
-
-Returns `string`.
+The type parameters are `T`. It takes `value` as `T`. It returns `string`.
 
 <a id="symbol-Formatter.title"></a>
-### `Formatter.title` · [source](types.aug#L3)
+### `Formatter.title` · [source](types.aug#L4)
 
-Returns `string`.
-
-- Return `"formatted"`.
+It returns `"formatted"`.
 
 <a id="symbol-TextFormatter"></a>
-## `TextFormatter` · class · [source](types.aug#L7)
+## `TextFormatter` · class · [source](types.aug#L8)
 
-Implements [`Formatter`](types.aug.md#symbol-Formatter).
-
-Inherited defaults:
-
-- [`Formatter.title`](types.aug.md#symbol-Formatter.title).
+It implements [`Formatter`](types.aug.md#symbol-Formatter). It inherits the default implementations of [`Formatter.title`](types.aug.md#symbol-Formatter.title).
 
 <a id="symbol-TextFormatter.format"></a>
-### `TextFormatter.format` · [source](types.aug#L8)
+### `TextFormatter.format` · [source](types.aug#L9)
 
-Type parameters: `T`.
-
-**Inputs:** Take `value` (`T`).
-
-Returns `string`.
-
-- Return `"generic method called"`.
+The type parameters are `T`. It takes `value` as `T`. It returns `"generic method called"`.
 
 <a id="symbol-Box"></a>
-## `Box` · class · [source](types.aug#L12)
+## `Box` · class · [source](types.aug#L13)
 
-Implements [`IBox`](types.aug.md#symbol-IBox). Type parameters: `T`.
-
-**Inputs:** Take `value` (`T`); store read-only.
+It implements [`IBox<T>`](types.aug.md#symbol-IBox). The type parameters are `T`. It takes `value` as `T`, kept read-only.
 
 <a id="symbol-Box.get"></a>
-### `Box.get` · [source](types.aug#L13)
+### `Box.get` · [source](types.aug#L14)
 
-Returns `T`.
-
-- Return `value`.
+It returns `value`.
 
 <a id="symbol-IBox"></a>
-## `IBox` · interface · [source](types.aug#L17)
+## `IBox` · interface · [source](types.aug#L18)
 
-Type parameters: `T`.
+The type parameters are `T`.
 
 <a id="symbol-IBox.get"></a>
-### `IBox.get` · [source](types.aug#L18)
+### `IBox.get` · [source](types.aug#L19)
 
-Returns `T`.
+It returns `T`.

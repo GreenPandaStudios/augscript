@@ -1,14 +1,23 @@
 # syntax=docker/dockerfile:1
-FROM node:24-bookworm
+FROM node:24-bookworm-slim@sha256:0e0ff40c39bc087845bfb27465a0df4ea419520094bc35842ff83dd8cbe6f9b6
+ARG AUG_VERSION=0.23.0
+LABEL org.opencontainers.image.title="August build" \
+      org.opencontainers.image.source="https://github.com/GreenPandaStudios/augscript" \
+      org.opencontainers.image.version=${AUG_VERSION}
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends clang libclang-rt-14-dev make cmake m4 autoconf automake libtool python3 zlib1g-dev ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
-WORKDIR /opt/augscript
-COPY . .
-RUN npm ci --no-audit --no-fund \
-    && node scripts/bootstrap-native.mjs \
-    && chmod +x /opt/augscript/bin/aug.mjs \
-    && ln -s /opt/augscript/bin/aug.mjs /usr/local/bin/aug
+    && apt-get install -y --no-install-recommends ca-certificates \
+    && rm -rf /var/lib/apt/lists/* \
+    && npm install --global --ignore-scripts --no-audit --no-fund @greenpandastudios/aug-cli@${AUG_VERSION} \
+    && npm cache clean --force \
+    && mkdir /workspace \
+    && chown node:node /workspace
+ENV HOME=/home/node
+USER node
+# Prepare the published, checksum-verified compiler/runtime for this architecture.
+# This also proves the prepared image can compile again without network access.
+RUN aug init /tmp/august-image-check \
+    && aug run /tmp/august-image-check \
+    && aug test /tmp/august-image-check --offline \
+    && rm -rf /tmp/august-image-check
 WORKDIR /workspace
-ENTRYPOINT ["aug"]
-CMD ["--help"]
+CMD ["aug", "--help"]

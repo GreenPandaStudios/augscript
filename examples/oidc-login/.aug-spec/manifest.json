@@ -1,18 +1,18 @@
 {
   "format": 1,
   "files": [
-    ".aug-spec/august/0.19.0/crypto/contracts.aug",
-    ".aug-spec/august/0.19.0/crypto/contracts.aug.md",
-    ".aug-spec/august/0.19.0/crypto/jose.aug",
-    ".aug-spec/august/0.19.0/crypto/jose.aug.md",
-    ".aug-spec/august/0.19.0/json/contracts.aug",
-    ".aug-spec/august/0.19.0/json/contracts.aug.md",
-    ".aug-spec/august/0.19.0/memory/store.aug",
-    ".aug-spec/august/0.19.0/memory/store.aug.md",
-    ".aug-spec/august/0.19.0/time/contracts.aug",
-    ".aug-spec/august/0.19.0/time/contracts.aug.md",
-    ".aug-spec/august/0.19.0/web/contracts.aug",
-    ".aug-spec/august/0.19.0/web/contracts.aug.md",
+    ".aug-spec/packages/@git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug",
+    ".aug-spec/packages/@git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md",
+    ".aug-spec/packages/@git/url_2d3c37c690c0fa115be1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug",
+    ".aug-spec/packages/@git/url_2d3c37c690c0fa115be1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md",
+    ".aug-spec/packages/@git/url_897efafd565158fc4908/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug",
+    ".aug-spec/packages/@git/url_897efafd565158fc4908/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md",
+    ".aug-spec/packages/@git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug",
+    ".aug-spec/packages/@git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md",
+    ".aug-spec/packages/@git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug",
+    ".aug-spec/packages/@git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug.md",
+    ".aug-spec/packages/@git/url_c092cd151499c4e1d8a1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug",
+    ".aug-spec/packages/@git/url_c092cd151499c4e1d8a1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md",
     "client/contracts.aug.md",
     "client/endpoints.aug.md",
     "client/export.aug.md",
@@ -36,5 +36,5 @@
     "provider/userinfo.aug.md",
     "provider/views.aug.md"
   ],
-  "digest": "9a60d09f6883118af79b491b197235db2ad6e3a7b9d1ffd183c679b292b9618d"
+  "digest": "78cf80d2658be477f75de6700d0b2f997ddc6a912af4f3ca63462b6f927f8588"
 }

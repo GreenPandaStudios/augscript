@@ -8,9 +8,8 @@ Listen on `127.0.0.1`. Limit request bodies to 1048576 bytes and buffered respon
 
 ## Startup
 
-- Serve [`reply`](routes.aug.md#symbol-reply) on port `0`.
+It serves [`reply`](routes.aug.md#symbol-reply) on port `0`.
 
 ## Dependencies
 
-- [`Reply`](routes.aug.md#symbol-Reply).
-- [`reply`](routes.aug.md#symbol-reply) (no caller inputs) → [`Reply`](routes.aug.md#symbol-Reply) from `routes`.
+It uses [`reply`](routes.aug.md#symbol-reply) from `routes`.

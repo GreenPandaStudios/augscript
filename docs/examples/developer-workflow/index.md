@@ -10,9 +10,17 @@ outline: [2, 3]
 
 # A small tested application
 
-A calculator module with logging, fixtures, groups, and parameterized tests.
+A calculator logs each addition. Its nearby tests replace the logger and verify both labeled inputs and fresh setup.
 
-Read a file below to see its highlighted source and the Markdown produced by `aug spec`. Choose **Indentation** or **Braces** above the code. Both views describe the same checked program; your choice is kept when you open another file.
+Open a file to read the code beside its compiled explanation. Choose **Indentation** or **Braces** to change the code view. The choice carries across files.
+
+## Follow the program
+
+Read [`main.aug`](main.md). Startup supplies providers, uses collections, invokes the calculator, and catches a simulated load failure.
+
+Read [`calculator.aug`](calculator.md). The calculator receives a logger and adds two inputs. Its tests supply a private silent logger.
+
+Read [`logging/logger.aug`](logging/logger.md). The production logger and test adapter implement this interface.
 
 ## Project files
 
@@ -25,13 +33,14 @@ Read a file below to see its highlighted source and the Markdown produced by `au
 
 ## Try this project
 
-From a repository checkout with August installed:
+[Download this project](/downloads/developer-workflow.zip), then extract the archive in an empty working folder. It contains source, configuration, and compiled specs. [Install August](../../getting-started.md) once, then run these commands. Native libraries are prepared automatically when needed:
 
 ```sh
-aug check examples/developer-workflow
-aug spec examples/developer-workflow
-aug test examples/developer-workflow
-aug run examples/developer-workflow
+cd developer-workflow
+aug check .
+aug spec .
+aug test .
+aug run .
 ```
 
 [Browse all examples](../index.md)

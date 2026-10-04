@@ -4,5 +4,4 @@
 
 ## Exports
 
-- Export the declaration `Clock` from [`contracts.aug`](contracts.aug.md#symbol-Clock).
-- Export the declaration `SystemClock` from [`contracts.aug`](contracts.aug.md#symbol-SystemClock).
+Export the declaration `Clock` from [`contracts.aug`](contracts.aug.md#symbol-Clock). Export the declaration `SystemClock` from [`contracts.aug`](contracts.aug.md#symbol-SystemClock).

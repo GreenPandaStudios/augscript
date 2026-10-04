@@ -4,8 +4,8 @@
 
 ## Startup
 
-- Call [`announce`](native.aug.md#symbol-announce).
+It calls [`announce`](native.aug.md#symbol-announce).
 
 ## Dependencies
 
-- [`announce`](native.aug.md#symbol-announce) (no caller inputs) → `void` from `native`.
+It uses [`announce`](native.aug.md#symbol-announce) from `native`.

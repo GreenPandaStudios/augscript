@@ -3,18 +3,11 @@
 # `native.aug`
 
 <a id="symbol-puts"></a>
-## `puts` · [source](native.aug#L1)
+## `puts` · [source](native.aug#L2)
 
-**Inputs:** Take `message` (`string`).
-
-Returns `c_int`.
-
-Native C implementation; only its declared contract is visible here.
+It takes `message` as a string. It returns `c_int`. Native C implementation; only its declared contract is visible here.
 
 <a id="symbol-announce"></a>
-## `announce` · [source](native.aug#L2)
+## `announce` · [source](native.aug#L3)
 
-Uses `C.puts`.
-
-- Use native code with its declared contract:
-  - Call [`puts`](native.aug.md#symbol-puts) with `message` as `"hello from C FFI"`.
+Within an unsafe block, it calls [`puts`](native.aug.md#symbol-puts) with `message` `"hello from C FFI"`. Native operations must satisfy their declared C contracts.

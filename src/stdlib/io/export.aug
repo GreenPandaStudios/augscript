@@ -1,3 +1,4 @@
+// aug-spec: "export.aug.md" explains this file. Read it before changes; refresh with aug spec.
 export Console from contracts
 export SystemConsole from contracts
 export FileReader from contracts

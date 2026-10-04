@@ -1,5 +1,5 @@
 ---
-title: "Generic contracts"
+title: "Generic types and functions"
 generated: true
 source: "examples/generics"
 editLink: false
@@ -8,11 +8,11 @@ next: false
 outline: [2, 3]
 ---
 
-# Generic contracts
+# Generic types and functions
 
 Write reusable records, interfaces, classes, and functions with type parameters.
 
-Read a file below to see its highlighted source and the Markdown produced by `aug spec`. Choose **Indentation** or **Braces** above the code. Both views describe the same checked program; your choice is kept when you open another file.
+Open a file to read the code beside its compiled explanation. Choose **Indentation** or **Braces** to change the code view. The choice carries across files.
 
 ## Project files
 
@@ -22,12 +22,13 @@ Read a file below to see its highlighted source and the Markdown produced by `au
 
 ## Try this project
 
-From a repository checkout with August installed:
+[Download this project](/downloads/generics.zip), then extract the archive in an empty working folder. It contains source, configuration, and compiled specs. [Install August](../../getting-started.md) once, then run these commands. Native libraries are prepared automatically when needed:
 
 ```sh
-aug check examples/generics
-aug spec examples/generics
-aug run examples/generics
+cd generics
+aug check .
+aug spec .
+aug run .
 ```
 
 [Browse all examples](../index.md)

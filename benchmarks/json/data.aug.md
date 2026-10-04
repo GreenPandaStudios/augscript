@@ -3,6 +3,6 @@
 # `data.aug`
 
 <a id="symbol-Payload"></a>
-## `Payload` · immutable record · [source](data.aug#L1)
+## `Payload` · immutable record · [source](data.aug#L2)
 
-**Inputs:** Take `id` (`int`); store read-only. Take `message` (`string`); store read-only. Take `values` (`List<int>`); store read-only.
+It takes `id` as an integer, kept read-only, `message` as a string, kept read-only, and `values` as `List<int>`, kept read-only.

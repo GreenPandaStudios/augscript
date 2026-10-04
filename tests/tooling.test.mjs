@@ -87,10 +87,15 @@ test('persistent LSP handles split UTF-8 frames, local edits, definitions and ca
     child.stdin.write(packet.subarray(0, 13)); child.stdin.write(packet.subarray(13));
   });
   try {
-    assert.equal((await request('initialize', { capabilities: {} })).capabilities.textDocumentSync.change, 1);
+    const capabilities = (await request('initialize', { capabilities: {} })).capabilities;
+    assert.equal(capabilities.textDocumentSync.change, 1);
+    assert.equal(capabilities.inlayHintProvider, true);
     const uri = pathToFileURL(join(root, 'worker.aug')).href;
-    const source = 'import value from math\n/** Café 🍐. */\nread() returns int { return value() }\n';
+    const source = 'import value from math\n/** Café 🍐. */\nread() { return value() }\n';
     const issues = await request('aug/editor', { uri, text: source, version: 4, command: 'diagnostics' }); assert.deepEqual(issues, []);
+    const hints = await request('textDocument/inlayHint', {textDocument:{uri},range:{start:{line:2,character:0},end:{line:3,character:0}}});
+    assert.equal(hints[0].label, 'returns int');
+    assert.deepEqual(hints[0].position, {line:2,character:6});
     const target = await request('aug/editor', { uri, command: 'definition', offset: source.lastIndexOf('value()') });
     assert.equal(target.file, join(root, 'math.aug'));
     const before = await request('aug/stats', {});
@@ -101,7 +106,7 @@ test('persistent LSP handles split UTF-8 frames, local edits, definitions and ca
   } finally { child.kill(); rmSync(root, { recursive: true, force: true }); }
 });
 
-test('coverage records executed and unexecuted lines; native builds write source metadata', () => {
+test('coverage records executed and unexecuted lines; C reference builds write source metadata', () => {
   const root = create({ 'main.aug': '', 'math.aug': `choose(bool left) returns int:
     if left:
         return 1
@@ -117,7 +122,7 @@ test choose:
     assert.ok(coverage.covered > 0 && coverage.covered < coverage.executable, result.stdout);
     assert.ok(coverage.files[0].lines.some(line => line.line === 4 && line.count === 0));
     assert.ok(existsSync(join(root, '.aug-build', 'coverage', 'lcov.info')));
-    const build = command(root, 'build', ['--json']); assert.equal(build.status, 0, build.stderr);
+    const build = command(root, 'build', ['--json','--backend','c']); assert.equal(build.status, 0, build.stderr);
     const output = JSON.parse(build.stdout); assert.ok(existsSync(output.sourceMap));
     assert.match(readFileSync(join(root, '.aug-build', 'program.c'), 'utf8'), /#line 3 ".*math\.aug"/);
   } finally { rmSync(root, { recursive: true, force: true }); }
@@ -139,11 +144,12 @@ catch ConversionError error:
   } finally { rmSync(root, { recursive: true, force: true }); }
 });
 
-test('native diagnostics point back to a foreign declaration and architecture snapshots show public changes', () => {
+test('C reference diagnostics point back to a foreign declaration and architecture snapshots show public changes', () => {
   const root = create({ 'main.aug': '', 'foreign.aug': 'extern C stdin() returns int\n', 'math.aug': 'value() returns int { return 1 }\n' });
   try {
-    const native = command(root, 'build', ['--json']); assert.equal(native.status, 1, native.stdout);
-    assert.ok(JSON.parse(native.stdout).some(issue => issue.code === 'NATIVE' && issue.file.endsWith('/foreign.aug') && issue.line === 1), native.stderr || native.stdout);
+    const native = command(root, 'build', ['--json','--backend','c']); assert.equal(native.status, 1, native.stdout);
+    assert.match(readFileSync(join(root,'foreign.aug'),'utf8'),/^\/\/ aug-spec:/);
+    assert.ok(JSON.parse(native.stdout).some(issue => issue.code === 'NATIVE' && issue.file.endsWith('/foreign.aug') && issue.line === 2), native.stderr || native.stdout);
     const baseline = command(root, 'explain', ['--file', join(root, 'math.aug'), '--json']); assert.equal(baseline.status, 0);
     writeFileSync(join(root, 'before.json'), baseline.stdout);
     writeFileSync(join(root, 'math.aug'), 'value() returns int { return 1 }\nother() returns int { return 2 }\n');
@@ -156,8 +162,8 @@ test('dependency and checked-error fixes produce valid local and whole-project c
   const root = create({
     'store.aug': 'interface Store {}\nStoreImpl() implements Store {}\n',
     'service.aug': "import Store from store\nread() returns Store { resolve Store to service; return service }\n",
-    'math.aug': 'first() returns int { values = [1]; return values.get(index=0) }\n',
-    'main.aug': 'import Store and StoreImpl from store\nimport read from service\nimport first from math\nimplement Store with StoreImpl\nvalue = read()\ntry { print(value=first()) } catch IndexError error { print(value="failed") }\n',
+    'math.aug': 'first() returns int unless FileError { values = [1]; return values.get(index=0) }\n',
+    'main.aug': 'import Store and StoreImpl from store\nimport read from service\nimport first from math\nimplement Store with StoreImpl\nvalue = read()\ntry { print(value=first()) } catch Error error { print(value="failed") }\n',
   });
   try {
     const workspace = new SemanticWorkspace(root);
@@ -204,6 +210,26 @@ test('formatting empty indentation bodies retains following declaration document
   } finally { rmSync(root, { recursive: true, force: true }); }
 });
 
+test('formatting long nested calls wraps source and remains stable in both block styles', () => {
+  for(const style of ['indent', 'braces']) {
+    const root=create({'main.aug':'', 'main.yaml':`block_style: ${style}\n`, 'data.aug': `record Forecast(string date, int temperatureC, int temperatureF, string summary)
+forecasts() {
+  return [Forecast(date="2026-01-01", temperatureC=0, temperatureF=32, summary="Below freezing temperatures"), Forecast(date="2026-01-02", temperatureC=10, temperatureF=50, summary="Cool"), Forecast(date="2026-01-03", temperatureC=20, temperatureF=68, summary="Mild")]
+}
+`});
+    try {
+      const formatted=command(root,'format',['--write']); assert.equal(formatted.status,0,formatted.stderr);
+      const file=join(root,'data.aug'),source=readFileSync(file,'utf8');
+      assert.match(source,/return \[\n\s+Forecast\(/);
+      assert.match(source,/Forecast\(\n\s+date=/);
+      assert.ok(source.split('\n').every(line=>line.length<=90),source);
+      const check=command(root,'check',['--json']); assert.equal(check.status,0,check.stdout||check.stderr);
+      const again=command(root,'format',['--json']); assert.equal(again.status,0,again.stderr);
+      assert.equal(JSON.parse(again.stdout).find(entry=>entry.file===file).text,source);
+    } finally {rmSync(root,{recursive:true,force:true});}
+  }
+});
+
 test('context describes rejection layers, generic contracts and stable public surfaces', () => {
   const root = create({ 'main.aug': '', 'values.aug': `Failure() implements Error {}
 interceptor Validate<T> {
@@ -232,4 +258,22 @@ Box(int input to _storage) implements Value { read() returns int { return _stora
     const changed = new SemanticWorkspace(root).document(file).describe({ budget: 40000, baseline: initial });
     assert.deepEqual(changed.changes, [], 'Private implementation renames are not public interface changes');
   } finally { rmSync(root, { recursive: true, force: true }); }
+});
+
+
+test('worker help, semantic color and completion distinguish the contextual keyword from user names',()=>{
+  const source='import calculate from math\ntry:\n    scope:\n        worker = start worker calculate(value=3)\n        print(value=wait for worker)\ncatch ConcurrencyError error:\n    print(value=0)\n';
+  const root=create({'main.aug':source,'math.aug':'calculate(int value) { return value * 2 }\n'});
+  try {
+    const view=new SemanticWorkspace(root).document(join(root,'main.aug'));
+    assert.deepEqual(view.diagnostics,[]);
+    const keyword=source.indexOf('worker calculate');
+    assert.match(view.hover(keyword).documentation,/heap|copied/);
+    assert.equal(view.tokens().find(token=>token.line===3&&token.start===source.split('\n')[3].indexOf('worker calculate'))?.type,'keyword');
+    assert.equal(view.tokens().find(token=>token.line===3&&token.start===8)?.type,'variable');
+    assert.doesNotMatch(view.hover(source.lastIndexOf('worker')).documentation,/private heap|OS thread/);
+    assert.ok(view.complete(0).some(item=>item.label==='worker scope'));
+    const extension=readFileSync(resolve('vscode/extension.cjs'),'utf8');
+    assert.match(extension,/const semanticTypes = \[[^\]]*'keyword'/);
+  } finally {rmSync(root,{recursive:true,force:true});}
 });

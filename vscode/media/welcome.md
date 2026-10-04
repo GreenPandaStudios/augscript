@@ -2,9 +2,8 @@
 
 ![August — readable code, clear dependencies](banner.png)
 
-AugScript 0.19 includes the current compiler, language wiki, standard libraries,
-and editor tools. This page and its images are bundled with the extension and
-can be viewed offline.
+The extension includes the compiler, language wiki, standard libraries and
+editor tools. This page and its images are bundled and can be viewed offline.
 
 ## Recognize a file's role
 

@@ -1,11 +1,16 @@
 # syntax=docker/dockerfile:1
-FROM augscript/build:local AS native
-FROM debian:bookworm-slim
+FROM debian:bookworm-slim@sha256:3783cc01769c7b2b1b83a5c5ad96c815348e28ed7da68e2e3687004faa906251
+ARG AUG_VERSION=0.23.0
+LABEL org.opencontainers.image.title="August runtime" \
+      org.opencontainers.image.source="https://github.com/GreenPandaStudios/augscript" \
+      org.opencontainers.image.version=${AUG_VERSION}
 RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates zlib1g \
-    && rm -rf /var/lib/apt/lists/*
-COPY --from=native /opt/augscript/.aug-native/prefix/lib /opt/augscript/.aug-native/prefix/lib
-RUN groupadd --system august && useradd --system --gid august --home-dir /app august
+    && rm -rf /var/lib/apt/lists/* \
+    && groupadd --system august \
+    && useradd --system --gid august --home-dir /app august \
+    && mkdir /app \
+    && chown august:august /app
 WORKDIR /app
 USER august
 ENTRYPOINT ["/app/program"]

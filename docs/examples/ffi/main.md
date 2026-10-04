@@ -29,11 +29,13 @@ pageClass: aug-example-page
 ::: code-group
 
 ```aug [Indentation]
+// aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import announce from native
 announce()
 ```
 
 ```aug [Braces]
+// aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import announce from native
 announce()
 ```
@@ -48,11 +50,11 @@ announce()
 
 ### Startup
 
-- Call [`announce`](native.md#symbol-announce).
+It calls [`announce`](native.md#symbol-announce).
 
 ### Dependencies
 
-- [`announce`](native.md#symbol-announce) (no caller inputs) → `void` from `native`.
+It uses [`announce`](native.md#symbol-announce) from `native`.
 
 ::::
 

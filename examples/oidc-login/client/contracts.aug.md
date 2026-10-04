@@ -3,25 +3,21 @@
 # `contracts.aug`
 
 <a id="symbol-LoginTransaction"></a>
-## `LoginTransaction` · immutable record · [source](contracts.aug#L2)
+## `LoginTransaction` · immutable record · [source](contracts.aug#L3)
 
-Browser-bound client state, nonce and PKCE verifier, consumed by the callback.
-
-**Inputs:** Take `state` (`string`); store read-only. Take `nonce` (`string`); store read-only. Take `verifier` (`string`); store read-only. Take `expires` (`int`); store read-only.
+Browser-bound client state, nonce and PKCE verifier, consumed by the callback. It takes `state`, `nonce`, and `verifier` as strings, kept read-only and `expires` as an integer, kept read-only.
 
 <a id="symbol-SessionClaims"></a>
-## `SessionClaims` · immutable record · [source](contracts.aug#L4)
+## `SessionClaims` · immutable record · [source](contracts.aug#L5)
 
-Sessions require their own issuer, audience, key and JWT type, plus a live registry entry.
-
-**Inputs:** Take `iss` (`string`); store read-only. Take `sub` (`string`); store read-only. Take `aud` (`string`); store read-only. Take `exp` (`int`); store read-only. Take `iat` (`int`); store read-only. Take `jti` (`string`); store read-only. Take `csrf` (`string`); store read-only. Take `name` (`string`); store read-only.
+Sessions require their own issuer, audience, key and JWT type, plus a live registry entry. It takes `iss`, `sub`, and `aud` as strings, kept read-only, `exp` and `iat` as integers, kept read-only, and `jti`, `csrf`, and `name` as strings, kept read-only.
 
 <a id="symbol-LogoutForm"></a>
-## `LogoutForm` · immutable record · [source](contracts.aug#L5)
+## `LogoutForm` · immutable record · [source](contracts.aug#L6)
 
-**Inputs:** Take `csrf` (`string`); store read-only.
+It takes `csrf` as a string, kept read-only.
 
 <a id="symbol-SessionError"></a>
-## `SessionError` · class · [source](contracts.aug#L6)
+## `SessionError` · class · [source](contracts.aug#L7)
 
-Implements `Error`.
+It implements `Error`.

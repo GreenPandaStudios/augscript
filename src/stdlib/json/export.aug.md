@@ -4,4 +4,4 @@
 
 ## Exports
 
-- Export the declaration `parse` from [`contracts.aug`](contracts.aug.md#symbol-parse).
+Export the declaration `parse` from [`contracts.aug`](contracts.aug.md#symbol-parse). Export the declaration `parseCompatible` from [`contracts.aug`](contracts.aug.md#symbol-parseCompatible).

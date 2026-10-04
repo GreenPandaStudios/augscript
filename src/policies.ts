@@ -74,11 +74,11 @@ export function projectPolicies(project: Project): Diagnostic[] {
         for (const label of doc.parameters.keys()) if (!params.some(param => (param.label ?? param.name) === label))
           report(node.span, `@param ${label} does not name a public input of ${node.name}`, 'DOC');
         for (const tag of doc.tags ?? []) {
-          if (['return', 'returns'].includes(tag.name) && !('returns' in node && node.returns.name !== 'void'))
+          if (node.kind !== 'function' && ['return', 'returns'].includes(tag.name))
             report(node.span, `@${tag.name} requires a value-returning callable`, 'DOC');
-          if (['throws', 'exception'].includes(tag.name)) {
+          if (node.kind !== 'function' && !(node.kind === 'class' && node.record && node.validationDeclared === false) && ['throws', 'exception'].includes(tag.name)) {
             const name = tag.value.split(/\s/)[0];
-            const errors = 'throws' in node ? node.throws : 'validationErrors' in node ? node.validationErrors ?? [] : [];
+            const errors = node.kind === 'class' ? node.validationErrors ?? [] : [];
             if (!('annotations' in node && node.annotations?.length) && !errors.some(error => error.name === name)) report(node.span, `@${tag.name} ${name} is absent from ${node.name}'s unless contract`, 'DOC');
           }
           if (!['param', 'return', 'returns', 'throws', 'exception', 'deprecated', 'see'].includes(tag.name))

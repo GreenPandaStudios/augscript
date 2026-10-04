@@ -1,17 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="360" viewBox="0 0 1200 360">
-  <defs>
-    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
-      <stop stop-color="#0C182B"/>
-      <stop offset="1" stop-color="#173A52"/>
-    </linearGradient>
-  </defs>
-  <rect width="1200" height="360" rx="24" fill="url(#background)"/>
-  <!-- The renderer inserts the canonical August logo here. -->
-  <g id="august-logo" transform="translate(54 72) scale(.42)"></g>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="320" viewBox="0 0 1200 320">
+  <rect width="1200" height="320" fill="#FAF8F5"/>
+  <!-- The renderer inserts the canonical August mark. -->
+  <g id="august-logo" transform="translate(50 45) scale(.45)"></g>
   <g font-family="Arial, Helvetica, sans-serif">
-    <text x="308" y="126" fill="#79D3F5" font-size="19" font-weight="700" letter-spacing="3">AUGSCRIPT FOR VS CODE</text>
-    <text x="304" y="199" fill="#F2F7FC" font-size="66" font-weight="700">August</text>
-    <text x="308" y="247" fill="#B7CBDC" font-size="26">Readable code. Clear dependencies.</text>
-    <text x="308" y="296" fill="#FFD38C" font-size="18">Completion  ·  Hover help  ·  Navigation  ·  Tests  ·  File icons</text>
+    <text x="300" y="147" fill="#522337" font-size="62" font-weight="400">August</text>
+    <text x="303" y="200" fill="#76626B" font-size="25">The world runs on language.</text>
   </g>
 </svg>

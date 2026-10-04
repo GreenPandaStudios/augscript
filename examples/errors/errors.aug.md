@@ -3,12 +3,8 @@
 # `errors.aug`
 
 <a id="symbol-load"></a>
-## `load` · [source](errors.aug#L1)
+## `load` · [source](errors.aug#L2)
 
-**Inputs:** Take `fail` (`bool`).
+It takes `fail` as a boolean. Failures can raise `FileError`.
 
-Returns `string`. Can fail with `FileError`.
-
-- If `fail` is true:
-  - Fail with a new `FileError`.
-- Return `"loaded"`.
+It checks that `fail` is false. It raises a `FileError` at the first failed check. It returns `"loaded"`.
