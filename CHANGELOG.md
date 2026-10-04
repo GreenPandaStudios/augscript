@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Analyze generated C and copied runtime units for adversarial collection, error, task, ownership, JSON, crypto, and HTTP programs, then run them under AddressSanitizer and UBSan in macOS/Linux CI. Harden HTML buffer growth against size overflow and remove unused generated call arrays and execution-context lookups.
+- Check worker transfer field storage before copying it; malformed native storage fails explicitly. Keep the Linux Clang null-dereference checker enabled.
 
 Provide two versioned, multi-architecture container bases: `aug-build` with the published CLI and prepared LLVM/runtime, and `aug-runtime` for complete native deployments. Use the build base directly in Dev Containers. Qualify offline builds, specs, tests, crypto and HTTP on native ARM64 and x86-64 runners before registry publication. Compiler contributor tests retain their separate source image.
 
