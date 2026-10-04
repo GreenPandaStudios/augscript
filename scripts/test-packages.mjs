@@ -59,6 +59,9 @@ try {
   aug('check', starter);
   assert.equal(JSON.parse(aug('test', starter, '--json')).passed, 1);
   assert.equal(aug('run', starter), 'Hello, August!\n');
+  const catalog=JSON.parse(aug('libraries','compression','--json'));
+  assert.equal(catalog.entries[0].id,'zlib');
+  assert.match(catalog.entries[0].source.request,/aug-zlib#v0.1.5/);
   const styled=join(directory,'styled');
   aug('init',styled,'--block-style','braces','--indentation','tabs','--assignment','to');
   assert.match(readFileSync(join(styled,'greeting.aug'),'utf8'),/greet\(string name\) \{\n\treturn/);

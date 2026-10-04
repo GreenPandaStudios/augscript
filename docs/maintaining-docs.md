@@ -73,3 +73,9 @@ A compiler version update also requires refreshing committed example and benchma
 
 
 For package compatibility changes, run `npm run test:compatibility` and installed-package checks. Preserve source-lock format 1 and native profile `aug-native-abi-1` unless the change explicitly introduces a new format/profile with diagnostics and migration. Check compiler upgrades without refreshing repository commits, concurrent reader/writer behavior, process interruption before and after publication, and native failure rollback. The public adapter header is `native/aug-native-abi-1.h`; packaged CLI tests require it to ship. Linux maintainer qualification requires physical header checks to execute rather than skip. Power-loss behavior and automatic source-generation garbage collection are not qualified.
+
+## Curated library catalog
+
+`src/library-catalog.ts` owns task descriptions, safe import examples, ownership summaries, license notes and test links. `native/library-catalog.json` retains the tagged native manifests, exports, source commits and notice digests. The CLI and generated `docs/library-catalog.md` use those inputs.
+
+A catalog update is a metadata review, separate from artifact or behavior qualification. Run `node scripts/update-library-catalog.mjs` to refresh the explicitly selected public native tags; it reads metadata without building or installing packages. Review upstream notices, source identities, public exports, host constraints and existing qualification records, then run `npm run docs:generate`, catalog tests and installed-package gates. Preserve reusable native artifact pins when a source-only tag refers to an older artifact release. Adding a link to a catalog does not qualify its downloaded bytes.

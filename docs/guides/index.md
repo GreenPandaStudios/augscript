@@ -25,3 +25,5 @@ Choose a guide for the task you are doing. If you are learning August for the fi
 | Assess a trial deployment | [Production readiness](../production-readiness.md) |
 
 For exact rules, consult the [language reference](../reference.md) and library API pages. [Complete projects](../examples/index.md) show the files, formatted source, and compiled specs together.
+
+To choose a package by task, start with the [library catalog](../library-catalog.md). It includes ordinary repository imports, native host requirements, ownership and tests.

@@ -145,3 +145,9 @@ Verified LLVM packs and native artifacts use `~/.cache/augscript/native-artifact
 Before publishing a source library, run `aug package check DIRECTORY`. It checks production declarations and same-file tests, narrow exports, Javadoc, compiler requirements and a license file. For a native library it also validates descriptor metadata, declared targets and third-party notices. Add `--json` for CI. A passing report is static readiness: run `aug test` for behavioral evidence and qualify native artifacts and cleanup on each target before publishing. August does not choose your package's license.
 
 Use `aug package diff BEFORE AFTER` to compare two local package revisions that already have their dependencies installed. The report follows each `export.aug` boundary and includes labels, result types, defaults, checked errors, effects, ownership and native requirements. Private implementation-only changes are omitted. `--json` retains both sides of each changed contract. This command does not fetch releases or decide whether a public change is acceptable to consumers.
+
+## Find a package by task (unreleased)
+
+Use `aug libraries sql`, `aug libraries compression` or `aug libraries crypto` to search the curated [library catalog](library-catalog.md). Each result includes its import, installation command, platform requirements, license notes, ownership and test links. Add `--json` for native artifact metadata and exact source identities. Search works offline and changes no project or cache.
+
+The catalog is a list of known packages. You can import any public repository that satisfies August’s package conventions. `aug add` still resolves the repository and records its selected commit; native installation still verifies its descriptor, artifact checksums and supported host.

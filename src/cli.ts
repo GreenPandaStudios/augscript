@@ -1,5 +1,6 @@
 import {buildBundle,verifyBundle} from './bundle.ts';
 import {BuildProgress} from './progress.ts';
+import {libraryCatalog} from './library-catalog.ts';
 import {hasRequiredContext} from './context.ts';
 import {dependencyReport,packageReadiness,packageInterfaceDiff} from './package-inspection.ts';
 import { existsSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
@@ -71,6 +72,7 @@ function printDiagnostics(diagnostics: Diagnostic[], json: boolean, root: string
 function usage(): void {
   process.stdout.write(`AugScript compiler\n\n` +
     `Usage: aug <init|doctor|check|build|bundle|run|emit-c|emit-llvm|emit-ir|test|openapi|format|migrate|spec|bench|explain|context|lsp|symbols|definition|references|graph|complete|hover|fixes|semantic-tokens> [project directory] [options] [-- args]\n` +
+    `Find libraries: aug libraries [QUERY] [--json] — search the bundled task catalog without downloads\n` +
     `Inspect dependencies: aug dependencies [PROJECT] [--json]\n` +
     `Package readiness/diff: aug package check DIRECTORY [--json]; aug package diff BEFORE AFTER [--json]\n` +
     `New application: aug init DIRECTORY [--template hello|weather] [--block-style indent|braces] [--indentation spaces|tabs] [--assignment equals|to]\n` +
@@ -99,6 +101,27 @@ export async function main(argv: string[]): Promise<number> {
     if(paths.length!==1||args.some(arg=>arg.startsWith('-')&&arg!=='--json')){process.stderr.write('Use aug bundle verify DIRECTORY [--json]\n');return 2;}
     try {const report=verifyBundle(paths[0]);process.stdout.write(args.includes('--json')?JSON.stringify(report)+'\n':`Verified ${report.files} files for ${report.target}; executable ${report.executable}.\n${report.trust}\n`);return 0;}
     catch(error){process.stderr.write(failureMessage(error)+'\n');return 1;}
+  }
+  if(command==='libraries') {
+    const args=argv.slice(1);
+    if(args.some(arg=>arg.startsWith('-')&&arg!=='--json')){process.stderr.write('Use aug libraries [QUERY] [--json]\n');return 2;}
+    try {
+      const report=libraryCatalog(args.filter(arg=>arg!=='--json').join(' '));
+      if(args.includes('--json'))process.stdout.write(JSON.stringify(report)+'\n');
+      else {
+        process.stdout.write(`August ${report.compiler} library catalog; source metadata, no downloads.\n`);
+        if(!report.entries.length)process.stdout.write('No catalog entries match this task. Try sql, compression, json, crypto or tensors.\n');
+        for(const entry of report.entries) {
+          process.stdout.write(`\n${entry.title} (${entry.id}) — ${entry.summary}\n`);
+          process.stdout.write(entry.compilerRequirement ? `${entry.compilerCompatible ? 'Compiler requirement: ' : 'Incompatible compiler; requires '}${entry.compilerRequirement}\n` : `No declared compiler constraint; source reference tested with ${entry.testedCompiler}.\n`);
+          if(entry.install)process.stdout.write(entry.install+'\n');
+          process.stdout.write(entry.example+'\n'+entry.requirements+'\n'+entry.ownership+'\n');
+          for(const artifact of entry.artifacts)process.stdout.write(`Host: ${artifact.target.triple}; ${artifact.target.minimumOS ? 'OS '+artifact.target.minimumOS+'+' : artifact.target.libc+' '+artifact.target.minimumLibc+'+'}\n`);
+          process.stdout.write(`License: ${entry.license.summary}\n${entry.license.url}\nTests: ${entry.tests.summary}\n${entry.tests.url}\n`);
+        }
+      }
+      return 0;
+    }catch(error){process.stderr.write(failureMessage(error)+'\n');return 1;}
   }
   if(command==='dependencies') {
     const args=argv.slice(1),paths=args.filter(arg=>!arg.startsWith('-'));

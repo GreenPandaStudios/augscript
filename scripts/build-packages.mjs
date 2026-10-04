@@ -38,6 +38,7 @@ for (const name of ['stdlib', 'web', 'crypto', 'cli']) {
     chmodSync(join(target, 'bin/aug.mjs'), 0o755);
     for (const directory of ['runtime', 'docs', 'examples']) copy(directory, join(target, directory));
     copy('native/compiler-packs.json',join(target,'native/compiler-packs.json'));
+    copy('native/library-catalog.json',join(target,'native/library-catalog.json'));
     copy('native/aug-native-abi-1.h',join(target,'native/aug-native-abi-1.h'));
     mkdirSync(join(target, 'scripts'));
     for (const file of ['bootstrap-native.mjs', 'native-home.mjs', 'native-setup.mjs', 'native-toolchain.mjs', 'native-dependencies.lock.json']) copy(`scripts/${file}`, join(target, 'scripts', file));
