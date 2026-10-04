@@ -161,3 +161,35 @@ test('adding a package preserves private configuration permissions and protects 
   addPackage(app,'../library','library',true);assert.equal(statSync(configuration).mode&0o777,0o600);
   assert.equal(existsSync(join(app,'.aug-add.json')),false);
 }));
+
+test('a successor taking an empty released lock cannot turn a successful action into an error',async()=>{
+  const root=mkdtempSync(join(tmpdir(),'aug-lock-handoff-'));
+  const fs=(await import('node:fs')).default,{syncBuiltinESMExports}=await import('node:module');
+  const {withPackageLock}=await import('../src/package-locking.ts');
+  const original=fs.unlinkSync,path=join(root,'install.lock'),successor=join(root,'successor');mkdirSync(successor);
+  const owner='owner-11111111-1111-1111-1111-111111111111';writeFileSync(join(successor,owner),String(process.pid));
+  fs.unlinkSync=file=>{const result=original(file);if(String(file).startsWith(path+'/owner-'))fs.renameSync(successor,path);return result;};syncBuiltinESMExports();
+  try{
+    assert.equal(withPackageLock(path,()=>42),42);assert.equal(readFileSync(join(path,owner),'utf8'),String(process.pid));
+  }finally{fs.unlinkSync=original;syncBuiltinESMExports();rmSync(root,{recursive:true,force:true});}
+});
+
+
+test('a lock edit made while source is staged is rejected without overwriting that edit',async()=>{
+  const root=mkdtempSync(join(tmpdir(),'aug-lock-precondition-'));
+  const fs=(await import('node:fs')).default,{syncBuiltinESMExports}=await import('node:module');
+  const original=fs.readFileSync;
+  try{
+    const library=join(root,'library'),app=join(root,'app');initPackage(library,'library');mkdirSync(app);
+    writeFileSync(join(app,'main.yaml'),'packages:\n  library: "../library"\n');installPackages(app,false,true);
+    const lockPath=join(app,'aug.lock.json'),lock=JSON.parse(readFileSync(lockPath,'utf8'));
+    const edited=JSON.stringify({...lock,native:{format:1,targets:{}}});let changed=false;
+    fs.readFileSync=(path,...args)=>{
+      const result=original(path,...args);
+      if(String(path)===fs.realpathSync(join(library,'src/arithmetic.aug'))&&!changed){changed=true;writeFileSync(lockPath,edited);}
+      return result;
+    };syncBuiltinESMExports();
+    assert.throws(()=>installPackages(app,false,true),/PACKAGE_LOCK.*accepted lock changed/);
+    assert.equal(changed,true);assert.equal(readFileSync(lockPath,'utf8'),edited);
+  }finally{fs.readFileSync=original;syncBuiltinESMExports();rmSync(root,{recursive:true,force:true});}
+});

@@ -13,7 +13,13 @@ function acquire(path: string): (() => void) | undefined {
     renameSync(stage, path);
     return () => {
       // A competing recovery can never remove a new owner's unique file.
-      unlinkSync(join(path, owner)); rmdirSync(path);
+      try { unlinkSync(join(path, owner)); }
+      catch (error) { if (code(error)!=='ENOENT') throw error; }
+      try { rmdirSync(path); }
+      catch (error) {
+        // The successor can replace our empty directory before this cleanup.
+        if (!['ENOENT','ENOTEMPTY'].includes(code(error)??'')) throw error;
+      }
     };
   } catch (error) {
     if (!['EEXIST', 'ENOTEMPTY'].includes(code(error) ?? '')) throw error;

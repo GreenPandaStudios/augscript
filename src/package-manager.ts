@@ -59,7 +59,10 @@ const sameSpecifications = (left: Record<string, string>, right: Record<string, 
 
 /** Read format 1 without interpreting an unknown format as a current dependency graph. */
 export function readPackageLock(path: string): PackageLock {
-  const lock=json(path) as PackageLock;
+  return parsePackageLock(readFileSync(path,'utf8'));
+}
+function parsePackageLock(contents: string): PackageLock {
+  const lock=JSON.parse(contents) as PackageLock;
   const strings=(value:unknown):value is Record<string,string> =>
     !!value && typeof value==='object' && !Array.isArray(value) && Object.values(value).every(item=>typeof item==='string');
   const fail=():never=>{throw new Error('PACKAGE_LOCK: Unsupported or invalid aug.lock.json structure. Restore a supported lock or remove it and run aug install.');};
@@ -312,11 +315,12 @@ function planInstallation(root: string, frozen: boolean, offline: boolean, updat
   const specifications = packageSpecifications(library?.sourceRoot ?? root, library?.manifest.dependencies ?? loaded.config.packages);
   for (const alias of Object.keys(specifications)) assertAlias(library?.sourceRoot ?? root, alias);
   const lockPath = join(root, 'aug.lock.json');
-  const previous: PackageLock | undefined = existsSync(lockPath) ? readPackageLock(lockPath) : undefined;
+  const baseLock=installedText(lockPath);
+  const previous: PackageLock | undefined = baseLock===undefined ? undefined : parsePackageLock(baseLock);
   const same = !update && !!previous && sameSpecifications(previous.specifications, specifications);
   if (frozen && (!same || previous!.compiler !== compilerVersion())) throw new Error('Frozen installation requires a matching aug.lock.json');
   const candidate=stageSourceGraph(root, specifications, frozen, offline, previous, update);
-  candidate.baseLock=installedText(lockPath);
+  candidate.baseLock=baseLock;
   return candidate;
 }
 

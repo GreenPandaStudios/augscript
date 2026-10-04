@@ -131,7 +131,10 @@ export async function resolveNativePackages(root:string,lock:PackageLock,cache:s
     const native=lock.native??{format:1,targets:{}};
     if(native.format!==1)throw new Error('NATIVE_LOCK: Unsupported native lock schema');
     const previous=native.targets[key];
-    if(options.frozen&&(!previous||JSON.stringify(previous.packages)!==JSON.stringify(packages)))throw new Error('NATIVE_LOCK: Frozen install has no matching native target lock. Run aug install online to record this target.');
+    // Older locks repeated identical canonical identities. Compare complete selections,
+    // so conflicting digests or artifacts remain mismatches, and keep frozen bytes intact.
+    const selections=(entries:NativePackageLock[]):string=>JSON.stringify([...new Set(entries.map(entry=>JSON.stringify(entry)))].sort());
+    if(options.frozen&&(!previous||!Array.isArray(previous.packages)||previous.packages.length>10000||selections(previous.packages)!==selections(packages)))throw new Error('NATIVE_LOCK: Frozen install has no matching native target lock. Run aug install online to record this target.');
     const components=new Map<string,string>();
     for(const p of packages)for(const c of p.artifact.components)if(c.required){const identity=c.id+'@'+c.version;
       if(components.has(c.compatibilityKey)&&components.get(c.compatibilityKey)!==identity)throw new Error('NATIVE_CONFLICT: Incompatible native component '+c.compatibilityKey);components.set(c.compatibilityKey,identity);}

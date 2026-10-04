@@ -71,3 +71,43 @@ test('large native archives preserve file contents across bounded reader chunks'
   assert.deepEqual(readFileSync(join(directory,'library.so')),expected);
   assert.equal(await ensureVerifiedArchive(metadata,{cache:f.cache,offline:true}),directory);
 }));
+
+
+test('frozen restore accepts equivalent duplicate native selections from legacy locks',async()=>{
+  const {compilerVersion,installPackages,projectPackages}=await import('../src/package-manager.ts');
+  const {prepareNativePackages}=await import('../src/native-artifacts.ts');
+  const {nativeHostTarget}=await import('../src/native-contracts.ts');
+  const root=mkdtempSync(join(tmpdir(),'aug-legacy-native-')),originalFetch=globalThis.fetch,previousCache=process.env.AUG_NATIVE_ARTIFACT_CACHE;
+  try{
+    const payload=join(root,'payload');mkdirSync(payload);
+    for(const [path,bytes] of Object.entries({'library.bin':'verified test library','provenance.json':'{}','THIRD_PARTY_NOTICES.md':'Test fixture'}))writeFileSync(join(payload,path),bytes);
+    const files=Object.fromEntries(['library.bin','provenance.json','THIRD_PARTY_NOTICES.md'].map(path=>[path,hash(readFileSync(join(payload,path)))]));
+    writeFileSync(join(payload,'files.json'),JSON.stringify({format:1,files}));
+    const archive=join(root,'native.tar.gz');createArchive({file:archive,cwd:payload,gzip:true,sync:true},[...Object.keys(files),'files.json']);
+    const bytes=readFileSync(archive),target=nativeHostTarget();
+    const artifact={id:'test-host',target,url:'https://example.invalid/native.tar.gz',sha256:hash(bytes),maximumDownloadBytes:bytes.length,maximumUnpackedBytes:4096,
+      link:{kind:'dynamic',libraries:['library.bin']},runtime:{files:['library.bin'],relocation:'loader-relative'},components:[],fileManifest:'files.json',provenance:'provenance.json',notices:'THIRD_PARTY_NOTICES.md'};
+    const descriptor=JSON.stringify({format:1,profile:'aug-native-abi-1',resources:[],functions:[]});
+    const native={profile:'aug-native-abi-1',bindings:'native.abi.json',bindingsSha256:hash(descriptor),upstream:{repository:'https://example.invalid/upstream',version:'1.0.0',sourceRevision:'b'.repeat(40)},artifacts:[artifact]};
+    for(const name of ['first','second']){
+      const directory=join(root,name);mkdirSync(join(directory,'src'),{recursive:true});writeFileSync(join(directory,'src/export.aug'),'');writeFileSync(join(directory,'native.abi.json'),descriptor);
+      writeFileSync(join(directory,'aug-package.json'),JSON.stringify({format:2,name:'@example/duplicate',version:'1.0.0',compiler:compilerVersion(),source:'src',dependencies:{},native}));
+    }
+    const app=join(root,'app');mkdirSync(app);writeFileSync(join(app,'main.yaml'),'packages:\n  first: "../first"\n  second: "../second"\n');
+    const lock=installPackages(app,false,true),key=target.triple+'/'+(target.os==='macos'?'macos14':target.libc);
+    const selections=[...projectPackages(app,lock.specifications).scopes.values()].map(entry=>({sourcePackage:entry.name+'@'+entry.version,sourceDigest:entry.digest,contractSha256:entry.native.bindingsSha256,artifact:entry.native.artifacts[0]}));
+    assert.equal(selections.length,2);assert.deepEqual(selections[0],selections[1]);
+    const prefix=lock.packages[0].path.match(/^(snapshots\/[a-f0-9]{64}\/)/)[1];
+    for(const entry of lock.packages){const source=join(app,'.aug-packages',entry.path);entry.path=entry.path.slice(prefix.length);const destination=join(app,'.aug-packages',entry.path);mkdirSync(join(app,'.aug-packages','packages'),{recursive:true});fs.renameSync(source,destination);}
+    lock.roots=Object.fromEntries(Object.entries(lock.roots).map(([alias,path])=>[alias,path.slice(prefix.length)]));
+    lock.native={format:1,targets:{[key]:{target,packages:selections}}};
+    const lockPath=join(app,'aug.lock.json'),accepted=JSON.stringify(lock);writeFileSync(lockPath,accepted);
+    process.env.AUG_NATIVE_ARTIFACT_CACHE=join(root,'cache');globalThis.fetch=async()=>new Response(bytes);
+    const restored=installPackages(app,true,true);assert.deepEqual(restored.native,lock.native);
+    assert.equal((await prepareNativePackages(app,{frozen:true})).length,1);assert.equal(readFileSync(lockPath,'utf8'),accepted);
+    assert.equal((await prepareNativePackages(app,{frozen:true,offline:true})).length,1);
+    lock.native.targets[key].packages[1].sourceDigest='c'.repeat(64);const conflicting=JSON.stringify(lock);writeFileSync(lockPath,conflicting);
+    await assert.rejects(prepareNativePackages(app,{frozen:true,offline:true}),/NATIVE_LOCK.*no matching native target/);
+    assert.equal(readFileSync(lockPath,'utf8'),conflicting);
+  }finally{globalThis.fetch=originalFetch;if(previousCache===undefined)delete process.env.AUG_NATIVE_ARTIFACT_CACHE;else process.env.AUG_NATIVE_ARTIFACT_CACHE=previousCache;rmSync(root,{recursive:true,force:true});}
+});

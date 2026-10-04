@@ -57,11 +57,11 @@ Two copies of the same package name and version must have identical source and r
 
 ## Interrupted installs and readers
 
-The installer builds a complete source candidate and verifies its native artifacts before accepting the new lock. New source generations have separate directories. The lockfile changes with one rename after the generation is available, so a compiler that already read the old lock can finish reading its old source. Downloads and extraction failures leave that accepted revision unchanged.
+The installer builds a complete source candidate and verifies its native artifacts before accepting the new lock. New source generations have separate directories. The lockfile changes with one rename after the generation is available, so a compiler that already read the old lock can finish reading its old source. Downloads and extraction failures leave that accepted revision unchanged. If the accepted lock or dependency declarations change while a candidate is being prepared, publication stops and preserves that edit.
 
 The next install can recover a terminated writer. `aug add` also journals its configuration change: recovery restores the previous aliases if no new lock was published, or retains the aliases if publication completed. If you edited the journaled configuration or lock afterward, recovery stops and names the files to inspect. It does not overwrite those edits. Read-only checks never perform recovery; use `aug install` or `aug run` first.
 
-The process-interruption tests kill installers on both sides of publication. They do not qualify storage-device failure or sudden power loss. Older format-1 locks with fixed cache paths remain readable and can be restored with `--frozen`; run an ordinary install to move them to immutable generations. Do not run different CLI versions as concurrent writers in one project.
+The process-interruption tests kill installers on both sides of publication. They do not qualify storage-device failure or sudden power loss. Older format-1 locks with fixed cache paths remain readable and can be restored with `--frozen`, including repeated identical native selections; conflicting selections still fail. Run an ordinary install to move them to immutable generations. Do not run different CLI versions as concurrent writers in one project.
 
 Old generations and abandoned staging directories are retained. When no build or editor is using the project, removing `.aug-packages` and `.aug-install-*` reclaims them; `aug install --frozen` restores the active graph from its original sources or verified caches. Keep `aug.lock.json`. A local folder dependency still requires that folder, and offline restoration requires every requested input to have been cached.
 
