@@ -18,6 +18,7 @@
     "test:setup-cold": "AUG_TEST_COLD_NATIVE=1 node --test tests/native-setup-cold.test.mjs",
     "test:docker": "node scripts/test-docker.mjs",
     "test:sanitizers": "node scripts/sanitize-core.mjs",
+    "test:safety": "node scripts/audit-generated-c.mjs",
     "bench:compare": "node scripts/benchmark-suite.mjs",
     "bench:kernels": "node scripts/benchmark-kernels.mjs",
     "test:gyms": "node scripts/run-gyms.mjs",
