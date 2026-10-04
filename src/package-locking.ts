@@ -61,3 +61,9 @@ export async function withPackageLockAsync<T>(path: string, action: () => Promis
     await new Promise(resolve => setTimeout(resolve, 100));
   }
 }
+
+/** Attempt one exclusive operation. A current or recovered writer leaves this attempt unacquired. */
+export function tryPackageLock<T>(path:string,action:()=>T):{acquired:false}|{acquired:true;value:T} {
+  const release=acquire(path);if(!release)return {acquired:false};
+  try{return {acquired:true,value:action()};}finally{release();}
+}

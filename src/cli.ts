@@ -1,3 +1,5 @@
+import {pruneTestCompilations} from './test-compilation-cache.ts';
+import {inspectCaches} from './cache-management.ts';
 import {verifyAcceptance,verificationSummary} from './verification.ts';
 import {semanticGraph,semanticConfiguration} from './symbols.ts';
 import {suggestTestInputs,parseAuthorInputCases} from './test-inputs.ts';
@@ -87,13 +89,14 @@ function printDiagnostics(diagnostics: Diagnostic[], json: boolean, root: string
 
 function usage(): void {
   process.stdout.write(`AugScript compiler\n\n` +
-    `Usage: aug <init|doctor|scratch|check|build|bundle|run|emit-c|emit-llvm|emit-ir|test|verify|openapi|format|migrate|spec|bench|explain|context|lsp|symbols|definition|references|graph|complete|hover|fixes|semantic-tokens> [project directory] [options] [-- args]\n` +
+    `Usage: aug <init|doctor|cache|scratch|check|build|bundle|run|emit-c|emit-llvm|emit-ir|test|verify|openapi|format|migrate|spec|bench|explain|context|lsp|symbols|definition|references|graph|complete|hover|fixes|semantic-tokens> [project directory] [options] [-- args]\n` +
     `Scratch: aug scratch FILE [--prepare] [--run] [--offline] [--backend c|llvm] [--json] [-- args] — check a temporary entry module; --run executes it\n` +
     `Find libraries: aug libraries [QUERY] [--json] — search the bundled task catalog without downloads\n` +
     `Inspect dependencies: aug dependencies [PROJECT] [--json]; aug update [PROJECT] --preview [--offline] [--json]\n` +
     `Package maintainers: aug package workflow [DIRECTORY] [--write] [--json]; aug package release [DIRECTORY] --tag vVERSION [--json]\n` +
     `Package readiness/diff: aug package check DIRECTORY [--json]; aug package diff BEFORE AFTER [--json]\n` +
     `New application: aug init DIRECTORY [--template hello|weather] [--block-style indent|braces] [--indentation spaces|tabs] [--assignment equals|to]\n` +
+    `Caches: aug cache [PROJECT] [--json]; aug cache prune [PROJECT] [--write] [--json] — inspect caches or clear idle verified test output\n` +
     `Diagnose setup: aug doctor [project directory] [--json] — check without downloading or writing files\n` +
     `Run: aug run [project directory] [--offline] [--progress] [-- args] — prepare dependencies, compile, and start\n` +
     `Deployment: aug bundle PROJECT --out DIRECTORY [--offline] [--frozen]; aug bundle verify DIRECTORY [--json]\n` +
@@ -122,6 +125,35 @@ export async function main(argv: string[]): Promise<number> {
     if(paths.length!==1||args.some(arg=>arg.startsWith('-')&&arg!=='--json')){process.stderr.write('Use aug bundle verify DIRECTORY [--json]\n');return 2;}
     try {const report=verifyBundle(paths[0]);process.stdout.write(args.includes('--json')?JSON.stringify(report)+'\n':`Verified ${report.files} files for ${report.target}; executable ${report.executable}.\n${report.trust}\n`);return 0;}
     catch(error){process.stderr.write(failureMessage(error)+'\n');return 1;}
+  }
+  if(command==='cache') {
+    const pruning=argv[1]==='prune';let path:string|undefined;const seen=new Set<string>();
+    for(const arg of argv.slice(pruning?2:1)) {
+      if(['--json',...(pruning?['--write']:[])].includes(arg)&&!seen.has(arg))seen.add(arg);
+      else if(!arg.startsWith('-')&&!path)path=arg;
+      else {process.stderr.write('Use aug cache [PROJECT] [--json]; aug cache prune [PROJECT] [--write] [--json]\n');return 2;}
+    }
+    try {
+      if(pruning){
+        const report=pruneTestCompilations(resolve(path??process.cwd()),seen.has('--write'));
+        if(seen.has('--json'))process.stdout.write(JSON.stringify(report)+'\n');
+        else {for(const entry of report.entries)process.stdout.write(`${entry.identity}: ${entry.status}${entry.reason?' — '+entry.reason:''}\n`);process.stdout.write(`${report.bytes} bytes ${report.action==='preview'?'can be reclaimed; add --write to prune':'reclaimed'}.\n${report.retained}\n`);}
+        return 0;
+      }
+      const report=inspectCaches(path??process.cwd());
+      if(seen.has('--json'))process.stdout.write(JSON.stringify(report)+'\n');
+      else {
+        for(const cache of report.caches){process.stdout.write(`${cache.kind}: ${cache.bytes} bytes in ${cache.files} files${cache.complete?'':' (incomplete)'}; ${cache.directory}\n${cache.pruning}\n`);for(const issue of cache.issues)process.stdout.write('  '+issue+'\n');}
+        for(const omission of report.selections.omissions)process.stdout.write('Accepted lock selections unavailable: '+omission+'\n');
+        for(const source of report.selections.sources)process.stdout.write(`Locked source: ${source.identity} ${source.digest}\n`);
+        for(const entry of report.selections.repositories)process.stdout.write(`Locked repository: ${entry.request} ${entry.commit}\n`);
+        if(report.selections.compiler)process.stdout.write(`Selected compiler: ${report.selections.compiler.target} ${report.selections.compiler.identity}\n`);
+        for(const entry of report.selections.native)process.stdout.write(`Locked native: ${entry.kind} ${entry.target} ${entry.identity}\n`);
+        process.stdout.write(`Offline inputs: ${report.offlineReady?'ready':'not ready'}; frozen inputs: ${report.frozenReady?'ready':'not ready'}.\n${report.sizes}\n`);
+        for(const check of report.checks.filter(check=>check.status!=='ok'))process.stdout.write(`${check.id}: ${check.message}${check.recovery?' '+check.recovery:''}\n`);
+      }
+      return report.ready?0:1;
+    }catch(error){process.stderr.write(failureMessage(error)+'\n');return 1;}
   }
   if(command==='verify') {
     let path:string|undefined;const values=new Map<string,string>(),seen=new Set<string>();

@@ -150,6 +150,8 @@ The CLI tarball requires its matching core stdlib package. npm normally obtains 
 
 Verified LLVM packs and native artifacts use `~/.cache/augscript/native-artifacts`, keyed by their archive hashes. `AUG_NATIVE_ARTIFACT_CACHE` selects another cache. Source, compiler, runtime, and platform selections remain in `aug.lock.json`. The unreleased `aug doctor --json` reports source checks, selected native artifacts, verified cached bytes and separate offline/frozen readiness without preparing anything. The C migration reference uses the older `AUG_NATIVE_HOME` source-build cache. The [native package guide](native-packages.md) covers ownership, platform requirements, and publishing; [release process](releasing.md) covers the compiler distribution.
 
+The unreleased `aug cache --json` adds separate cache sizes and accepted source/native identities to the offline readiness report. `aug cache prune` previews reclaimable test compilation; `--write` clears verified idle entries. Source snapshots, repository transport and shared native artifacts are retained. See [cache management](tooling.md#inspect-and-clear-caches) for location settings and pruning limits.
+
 ## Automatic aliases (unreleased)
 
 `aug add URL` derives a short import alias from a repository or package name. For example, an `aug-sqlite` repository becomes `sqlite`; `--as database` selects a different spelling. A local package uses its manifest name. The lock still records the complete repository identity and exact revision. If the derived name is already assigned to another package, August stops and asks for `--as NAME` before changing configuration. It never replaces a different dependency merely because their names match.

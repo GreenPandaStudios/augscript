@@ -1,3 +1,4 @@
+import {withPackageLock,tryPackageLock} from './package-locking.ts';
 import {createHash,randomUUID} from 'node:crypto';
 import {existsSync,lstatSync,mkdirSync,readFileSync,readdirSync,realpathSync,renameSync,rmSync,statSync,writeFileSync} from 'node:fs';
 import {homedir} from 'node:os';
@@ -10,6 +11,7 @@ interface CacheRequest {
   project:string;directory:string;roots:string[];required:string[];
   inputs:()=>unknown;rebuild?:boolean;disabledReason?:string;
 }
+export const compilationCacheDirectory=()=>resolve(process.env.AUG_COMPILATION_CACHE??join(homedir(),'.cache/augscript/compilation-v1'));
 const digest=(value:string|Buffer)=>createHash('sha256').update(value).digest('hex');
 const maximumBytes=128*1024*1024,maximumFiles=4096;
 const metadataHashes=new Map<string,{stamp:string;sha256:string}>();
@@ -29,7 +31,7 @@ function within(root:string,path:string):boolean {
   const name=relative(root,path);return !name||!isAbsolute(name)&&name!=='..'&&!name.startsWith('..'+(process.platform==='win32'?'\\':'/'));
 }
 function cacheRoot(project:string):string {
-  const configured=resolve(process.env.AUG_COMPILATION_CACHE??join(homedir(),'.cache/augscript/compilation-v1'));
+  const configured=compilationCacheDirectory();
   if(within(realpathSync(project),configured))throw new Error('Compilation cache must be outside the project');
   mkdirSync(configured,{recursive:true,mode:0o700});privateDirectory(configured);
   const root=realpathSync(configured);
@@ -109,10 +111,61 @@ export function reuseTestCompilation(request:CacheRequest):{evidence:Compilation
   try{
     const root=cacheRoot(request.project),key=digest(JSON.stringify({format:1,inputs:request.inputs()})),entry=join(root,key);
     const evidence:CompilationEvidence={cache:request.rebuild?'refresh':'miss',key};
-    if(!request.rebuild&&existsSync(entry)){
+    if(!request.rebuild)withPackageLock(entry+'.lock',()=>{
+      if(!existsSync(entry))return;
       try{const files=readEntry(entry,key,request);restore(request.directory,files,request.required[0]);evidence.cache='hit';}
       catch{evidence.reason='Compilation cache entry was incomplete or changed; compiling again';}
-    }
-    return {evidence,save:()=>{if(evidence.cache==='hit')return;try{saveEntry(root,entry,key,request);}catch{evidence.reason='Compilation succeeded; the optional compilation cache could not be written';}}};
+    });
+    return {evidence,save:()=>{if(evidence.cache==='hit')return;try{withPackageLock(entry+'.lock',()=>saveEntry(root,entry,key,request));}catch{evidence.reason='Compilation succeeded; the optional compilation cache could not be written';}}};
   }catch{return {evidence:{cache:'disabled',reason:'Optional compilation cache is unavailable or unsafe; compiling normally'},save:()=>{}};}
+}
+
+export interface PrunedCompilation {identity:string;status:'would-remove'|'removed'|'retained';bytes:number;reason?:string}
+/** Clear only complete verified test-program entries. Source/native caches and busy entries stay intact. */
+export function pruneTestCompilations(project:string,write=false) {
+  const configured=compilationCacheDirectory(),entries:PrunedCompilation[]=[];
+  const report={format:1 as const,action:write?'written' as const:'preview' as const,directory:configured,entries,bytes:0,
+    retained:'Source snapshots, source transport and shared native/compiler artifacts are retained. Active compilation entries and unknown contents are retained.'};
+  if(!existsSync(configured))return report;
+  const root=cacheRoot(project);
+  const validate=(entry:string,key:string):number=>{
+    privateDirectory(entry);
+    if(readdirSync(entry).sort().join(',')!=='files,manifest.json')throw new Error('Entry contains unknown files');
+    const bytes=readRegular(entry,'manifest.json');if(bytes.length>1024*1024)throw new Error('Manifest is too large');
+    const manifest=JSON.parse(bytes.toString('utf8')) as Manifest;
+    if(!Array.isArray(manifest?.files)||manifest.files.length>maximumFiles)throw new Error('Entry has no recognized artifact list');
+    const names=manifest.files.map(item=>item?.path),programs=names.filter(path=>typeof path==='string'&&/^test-[0-9]+$/.test(path));
+    if(programs.length!==1)throw new Error('Entry is not a single test program');
+    const program=programs[0],request:CacheRequest={project,directory:entry,roots:[program,program+'.o',program+'.optimized.ll',program+'.dSYM'],required:[program,program+'.o'],inputs:()=>null};
+    const verified=readEntry(entry,key,request),actual:string[]=[];
+    const list=(folder:string,prefix='')=>{
+      privateDirectory(folder);
+      for(const name of readdirSync(folder).sort()){
+        const path=join(folder,name),relative=prefix+name,status=lstatSync(path);
+        if(status.isSymbolicLink())throw new Error('Linked cache path');
+        if(status.isDirectory())list(path,relative+'/');
+        else if(status.isFile())actual.push(relative);
+        else throw new Error('Special cache path');
+        if(actual.length>maximumFiles)throw new Error('Entry has too many files');
+      }
+    };
+    list(join(entry,'files'));
+    if(JSON.stringify(actual.sort())!==JSON.stringify([...verified.keys()].sort()))throw new Error('Entry contains unknown artifact files');
+    return bytes.length+[...verified.values()].reduce((sum,content)=>sum+content.length,0);
+  };
+  for(const identity of readdirSync(root).sort()){
+    const result:PrunedCompilation={identity,status:'retained',bytes:0},entry=join(root,identity);entries.push(result);
+    if(!/^[a-f0-9]{64}$/.test(identity)){result.reason='Unknown content or coordination directory';continue;}
+    if(existsSync(entry+'.lock')){result.reason='An active or unresolved compilation lock protects this entry';continue;}
+    try {
+      const operation=()=>{
+        result.bytes=validate(entry,identity);
+        if(write){rmSync(entry,{recursive:true});result.status='removed';}else result.status='would-remove';
+        report.bytes+=result.bytes;
+      };
+      if(write){const attempt=tryPackageLock(entry+'.lock',operation);if(!attempt.acquired)result.reason='An active compilation lock protects this entry';}
+      else operation();
+    }catch{result.reason='Unverified, damaged or unknown contents were retained';}
+  }
+  return report;
 }

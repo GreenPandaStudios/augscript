@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+Add read-only `aug cache` size, identity and offline-readiness reports, plus previewed `aug cache prune --write` for verified idle test compilation. Coordinate compiler cache reads/writes with pruning; retain active, unknown, damaged, accepted-source and shared native entries.
+
 Reuse verified LLVM compilation for unchanged core-runtime test programs while running each case in a fresh process. Add `aug test --rebuild` and per-case JSON compilation status. Keep source, dependencies, configuration, compiler/runtime, target, tool and build-mode identities; damaged or unavailable private caches fall back to compilation. Runtime-component/native-call tests and unsealed contributor tools remain uncached; qualified LLVM tools use a fixed compilation environment. Pin complete compiler member manifests and verify declared member identities during release assembly, retaining existing archive URLs and checksums.
 
 Record independent acceptance review with `aug verify --requirements FILE`: author requirements, exact selected source, checked dependency contracts, generated explanations and concrete native case results. Reject missing/empty selections and incomplete required context, pair results with the loaded-source revision, and report detected source/configuration/requirement changes as stale. Keep compiler acceptance, finite behavioral evidence and engineer review separate. Normalize source-library case ids through linked project roots.

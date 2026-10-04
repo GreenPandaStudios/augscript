@@ -51,6 +51,11 @@ try {
   };
   for(const name of ['stdlib','web','crypto'])verifySpecs(join(directory,`node_modules/@greenpandastudios/aug-${name}/august`));
   assert.match(aug('--help'), /Usage: aug/);
+  const cacheEnv={...process.env,AUG_PACKAGE_CACHE:join(directory,'source-cache'),AUG_NATIVE_ARTIFACT_CACHE:join(directory,'native-cache'),AUG_COMPILATION_CACHE:join(directory,'empty-compilation-cache')};
+  const emptyCacheProject=join(directory,'cache-project');mkdirSync(emptyCacheProject);writeFileSync(join(emptyCacheProject,'main.aug'),'print(value=42)\n');
+  const cacheReport=JSON.parse(run(process.execPath,[cli,'cache',emptyCacheProject,'--json'],{env:cacheEnv}));
+  assert.equal(cacheReport.execution,'not-run');assert.equal(cacheReport.caches.length,4);assert.equal(cacheReport.offlineReady,false);assert.ok(!existsSync(cacheEnv.AUG_COMPILATION_CACHE));
+  assert.equal(JSON.parse(run(process.execPath,[cli,'cache','prune',emptyCacheProject,'--write','--json'],{env:cacheEnv})).bytes,0);
   const starter = join(directory, 'starter');
   aug('init', starter);
   assert.ok(existsSync(join(starter,'AGENTS.md')));

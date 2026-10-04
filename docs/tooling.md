@@ -8,6 +8,8 @@ Install `aug` once as shown in [Your first project](getting-started.md). Command
 
 | Command | Output |
 | --- | --- |
+| `cache [PROJECT] [--json]` | **Unreleased:** inspect cache sizes, locked identities and offline/frozen input readiness without writes. |
+| `cache prune [PROJECT] [--write] [--json]` | **Unreleased:** preview or clear verified idle test compilation; shared native and source entries stay protected. |
 | `doctor [PROJECT] [--json]` | Setup report without downloads or writes; unreleased. |
 | `libraries [QUERY] [--json]` | **Unreleased:** search curated task/import/platform/ownership/license/test metadata offline. |
 | `update PROJECT --preview [--offline] [--json]` | **Unreleased:** check proposed dependency contracts, callers and native selections without accepting the update. |
@@ -51,6 +53,16 @@ The unreleased CLI adds `aug doctor`. It reports the compiler version, Node vers
 Doctor does not download dependencies, create caches, or edit source and locks. An uncached compiler pack is a warning: the first `aug run` still needs network access. Missing project packages require `aug install`. The JSON fields `offlineReady` and `frozenReady` describe LLVM inputs separately from `ready`, which means no setup error was found. Offline readiness requires checked source and verified cached compiler/native bytes. Frozen readiness also requires matching compiler/runtime and native locks for this host, with contributor overrides unset. A passing report does not run the application or guarantee that a future download will succeed.
 
 Set `AUG_NATIVE_ARTIFACT_CACHE` to a writable directory when the default cache is unsuitable. When a verified cache is damaged, stop active builds before removing that entry and running online again. Contributor LLVM/runtime overrides are reported separately; unset them to check the ordinary installation. The published 0.23.0 CLI has no doctor command.
+
+## Inspect and clear caches
+
+**Unreleased:** run `aug cache` in a project to see the repository source transport, shared native downloads, test compilation, and installed source snapshots separately. The report includes accepted package digests and repository commits, locked native targets and archive hashes, and the current host’s selected compiler pack. `--json` includes individual cache entries and the same verified offline/frozen input checks as `aug doctor`. Inspection creates no cache directories, downloads nothing, and runs no package or application code. An invalid lock still returns sizes and failed readiness, with accepted selections marked unavailable.
+
+Sizes count regular-file logical bytes, rather than disk allocation. Links and special files are not followed. A scan that reaches its file or nesting bound reports an incomplete lower bound. Presence and size do not establish integrity; the offline readiness checks verify the selected inputs separately.
+
+Preview reclaimable test output with `aug cache prune`. Add `--write` to remove the reported idle, verified test-program entries. Compilation and pruning use the same exclusive entry locks. Busy entries, unknown files, links, unsafe cache roots and damaged manifests are retained; invalid cache roots fail the command. A later `aug test` recompiles the cleared cases and still runs their setup and assertions.
+
+Pruning leaves repository transport, accepted installed sources, and all shared compiler/runtime/native archives intact. Other projects can depend on those entries, and August has no complete registry of their locks. The current command does not clear application build output or the C reference’s maintainer source-build cache. `AUG_PACKAGE_CACHE`, `AUG_NATIVE_ARTIFACT_CACHE` and `AUG_COMPILATION_CACHE` select the three shared locations; the installed source snapshots remain in the project’s `.aug-packages` directory.
 
 ## Native standard libraries
 
