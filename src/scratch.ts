@@ -16,7 +16,8 @@ export async function withScratch<T>(file:string,options:{prepare?:boolean;offli
     writeFileSync(main,source);
     if(options.prepare)await prepareRunPackagesWithNative(root,!!options.offline);
     const checked=checkProject(loadProject(root));
-    const diagnostics=uniqueDiagnostics(checked.diagnostics).map(issue=>({...issue,file:issue.file===main?path:issue.file}));
+    const diagnostics=uniqueDiagnostics(checked.diagnostics).map(issue=>({...issue,file:issue.file===main?path:issue.file,
+      ...(issue.related ? {related:issue.related.map(location=>({...location,file:location.file===main?path:location.file}))} : {})}));
     return await consume(root,scratchReport(path,bytes,diagnostics,!!options.prepare));
   }finally{rmSync(root,{recursive:true,force:true});}
 }

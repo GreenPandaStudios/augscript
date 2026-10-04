@@ -6,6 +6,14 @@ export interface Span {
   column: number;
 }
 
+/** A related checked source location, such as an input declaration or earlier argument. */
+export interface RelatedDiagnostic {
+  file: string;
+  line: number;
+  column: number;
+  message: string;
+}
+
 export interface Diagnostic {
   file: string;
   line: number;
@@ -13,6 +21,9 @@ export interface Diagnostic {
   message: string;
   code: string;
   severity?: 'error' | 'warning';
+  related?: readonly RelatedDiagnostic[];
+  expected?: string;
+  actual?: string;
 }
 
 export interface TypeRef {

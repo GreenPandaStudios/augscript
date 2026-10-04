@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+Call diagnostics name the public input, expected and actual types, and related declaration. Label failures list accepted inputs; duplicate arguments link to the first occurrence. Malformed labels are diagnosed before omitted inputs. CLI excerpts and VS Code Problems links use the same checked locations, including unsaved inherited generic declarations.
+
 Add `aug scratch FILE` to check an isolated temporary entry module without downloads or execution. `--prepare` resolves ordinary dependencies; `--run` executes through the normal compiler. Keep source locations, preserve the original file, and remove temporary project output after failures and exits.
 
 Equality assertion failures identify the first public record field or tuple position that differs. Private differences stop at the public parent; fixed traversal and path limits report when a path is unavailable. Equality, input order and caught-test failure behavior stay the same.

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+Link call-input failures to their checked declarations in Problems, with substituted expected/actual types and accepted caller labels. Preserve related locations across unsaved dependency edits; diagnose malformed labels before omitted inputs.
+
 Show each generic interceptor application’s resolved dependencies and effects in hover, independently of other uses.
 
 Completion templates follow the project's block style, indentation and assignment preference. Fixed snippet contributions have been replaced by the completion provider's templates. Missing-method and missing-interceptor actions format their candidate file with those preferences and retain comments; default input values remain in generated method scaffolds.

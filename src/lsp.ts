@@ -23,8 +23,11 @@ export async function runLanguageServer(root: string): Promise<number> {
       send({ jsonrpc: '2.0', method: 'textDocument/publishDiagnostics', params: { uri, version: edit.version,
         diagnostics: view.diagnostics.filter(issue => issue.file === fileURLToPath(uri)).map(issue => ({
           range: { start: { line: issue.line - 1, character: issue.column - 1 }, end: { line: issue.line - 1, character: issue.column } },
-          message: issue.message, severity: issue.severity === 'warning' ? 2 : 1, code: issue.code, source: 'AugScript',
-          data: { help: diagnosticHelp[issue.code] } })) } });
+          message: issue.message + (issue.code === 'CALL' && issue.expected ? `\nCaller input labels: ${issue.expected}.` : ''), severity: issue.severity === 'warning' ? 2 : 1, code: issue.code, source: 'AugScript',
+          ...(issue.related?.length ? {relatedInformation:issue.related.map(location=>({
+            location:{uri:pathToFileURL(location.file).href,range:{start:{line:location.line-1,character:location.column-1},end:{line:location.line-1,character:location.column}}},
+            message:location.message}))} : {}),
+          data: { help: diagnosticHelp[issue.code], expected:issue.expected, actual:issue.actual } })) } });
     }
   };
   let publishTimer: ReturnType<typeof setTimeout> | undefined;

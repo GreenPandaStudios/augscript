@@ -39,7 +39,7 @@ Install `aug` once as shown in [Your first project](getting-started.md). Command
 | `add URL [--as NAME] [--project DIRECTORY]` | Installs a repository or archive under a short import alias. |
 | `install PROJECT [--frozen|--update] [--offline]` | Explicit dependency snapshot and aug.lock.json. |
 
-Warnings are nonblocking. Human diagnostics show the source line, a pointer, and help. Machine diagnostics carry severity, code, file, line, column, message, and help. check/build fail on errors; invalid options and missing option values return status 2. Test failure returns nonzero and includes the case output. Put runtime arguments after `--`, for example `aug run -- --port 8080`.
+Warnings are nonblocking. Human diagnostics show the source line, a pointer, and help. Machine diagnostics carry severity, code, file, line, column, message, and help. The unreleased compiler adds `related` declaration locations and `expected`/`actual` input facts. Call-input type errors name the public input and its substituted type; label errors list the callable’s accepted caller labels. Human output shows an excerpt at each related location. Fix malformed labels first: omitted-input checks resume after those labels are valid. The compiler does not choose missing argument values. check/build fail on errors; invalid options and missing option values return status 2. Test failure returns nonzero and includes the case output. Put runtime arguments after `--`, for example `aug run -- --port 8080`.
 
 ## Check an installation
 

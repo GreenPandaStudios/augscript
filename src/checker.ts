@@ -117,6 +117,8 @@ interface NextContext {
 }
 
 export interface CallPlan {
+  /** Invalid labels prevent dependent inference and contract guesses until repaired. */
+  invalidLabels?: boolean;
   defaults?: (Expr | undefined)[];
   returnOwnership?: 'managed' | 'own';
   sourceIndices: (number | undefined)[];
@@ -337,9 +339,15 @@ class Checker {
     return ['expr', 'assign', 'return', 'throw', 'break', 'continue', 'if', 'while', 'for', 'destructure', 'match', 'try', 'unsafe', 'borrow', 'scope', 'freeze', 'serve', 'lock','yield'].includes(item.kind);
   }
 
-  private report(span: Span, message: string, code = 'TYPE'): void {
+  private report(span: Span, message: string, code = 'TYPE', details: Pick<Diagnostic, 'related' | 'expected' | 'actual'> = {}): void {
     if (this.inferring) return;
-    this.diagnostics.push({ file: span.file, line: span.line, column: span.column, message, code });
+    this.diagnostics.push({ file: span.file, line: span.line, column: span.column, message, code, ...details });
+  }
+
+  private inputDetails(param: Param, expected: Ty, actual: Ty): Pick<Diagnostic, 'related' | 'expected' | 'actual'> {
+    const span = param.labelSpan ?? param.nameSpan ?? param.span;
+    return { expected: tyName(expected), actual: tyName(actual),
+      related: [{file:span.file,line:span.line,column:span.column,message:`Input ${param.label ?? param.name} is declared here.`}] };
   }
 
   /** Infer body-derived contracts without changing the cached source AST. */
@@ -2454,6 +2462,7 @@ class Checker {
   }
 
   private memberType(receiver: Ty, name: string, span: Span, context: Context): Ty {
+    if (receiver.kind === 'error') return errorTy;
     if (receiver.kind === 'param') {
       const bound = receiver.bounds?.find(type => this.interfaceMethods(type, new Set()).has(name));
       if (bound) return this.memberType(bound, name, span, context);
@@ -2494,30 +2503,49 @@ class Checker {
   }
 
   private planCall(expr: Extract<Expr, { kind: 'call' }>, params: Param[] | string[],
-                   display: string): CallPlan {
+                   display: string, declaration?: Span): CallPlan {
     const names = params.map(param => typeof param === 'string' ? param : param.label ?? param.name);
     const injected = params.map(param => typeof param !== 'string' && param.injected);
+    const accepted = names.filter((_, index) => !injected[index]).join(', ') || '(none)';
+    const related = declaration ? [{file:declaration.file,line:declaration.line,column:declaration.column,
+      message:`Caller input labels: ${accepted}.`}] : undefined;
     const plan: CallPlan = { defaults: params.map(param => typeof param === 'string' ? undefined : param.defaultValue), sourceIndices: names.map(() => undefined),
       bindingKeys: names.map(() => undefined), ownerships:params.map(param => typeof param === 'string' ? undefined : param.ownership) };
+    let invalidLabel = false;
     for (let source = 0; source < expr.args.length; source++) {
       const argument = expr.args[source];
       const label = expr.indexed ? names[0] : expr.argLabels[source] ?? (argument.kind === 'name' ? argument.name : undefined);
+      const details = {related,expected:accepted,actual:label ?? '(unlabeled)'};
       if (!label) {
-        this.report(expr.args[source].span, `${display} arguments require labels`, 'CALL');
+        this.report(argument.span, `${display} arguments require labels`, 'CALL', details);
+        invalidLabel = true;
         continue;
       }
       const index = names.indexOf(label);
-      if (index < 0) this.report(expr.args[source].span,
-        `${display} has no parameter ${label}`, 'CALL');
-      else if (injected[index]) this.report(expr.args[source].span,
-        `${label} is resolved from DI and cannot be passed`, 'CALL');
-      else if (plan.sourceIndices[index] !== undefined) this.report(expr.args[source].span,
-        `Duplicate argument ${label}`, 'CALL');
-      else plan.sourceIndices[index] = source;
+      if (index < 0) {
+        this.report(argument.span, `${display} has no parameter ${label}`, 'CALL', details);
+        invalidLabel = true;
+      } else if (injected[index]) {
+        this.report(argument.span, `${label} is resolved from DI and cannot be passed`, 'CALL', details);
+        invalidLabel = true;
+      } else if (plan.sourceIndices[index] !== undefined) {
+        const first = expr.args[plan.sourceIndices[index]!].span;
+        this.report(argument.span, `Duplicate argument ${label}`, 'CALL', {
+          related:[{file:first.file,line:first.line,column:first.column,message:`Input ${label} was first passed here.`}]});
+        invalidLabel = true;
+      } else plan.sourceIndices[index] = source;
     }
-    for (let index = 0; index < names.length; index++) if (!injected[index] &&
-      !(typeof params[index] !== 'string' && ((params[index] as Param).type.optional || (params[index] as Param).defaultValue)) && plan.sourceIndices[index] === undefined) this.report(expr.span,
-      `Missing argument ${names[index]} for ${display}`, 'CALL');
+    // A malformed label must be repaired before the compiler can judge omitted inputs.
+    if (!invalidLabel) for (let index = 0; index < names.length; index++) {
+      const param = params[index];
+      if (injected[index] || typeof param !== 'string' && (param.type.optional || param.defaultValue) || plan.sourceIndices[index] !== undefined) continue;
+      const span = typeof param === 'string' ? undefined : param.labelSpan ?? param.nameSpan ?? param.span;
+      // Built-in operations may carry a synthetic parameter at the call location.
+      const location = span && !(span.file === expr.span.file && span.start === expr.span.start && span.end === expr.span.end) ?
+        [{file:span.file,line:span.line,column:span.column,message:`Required input ${names[index]} is declared here.`}] : undefined;
+      this.report(expr.span, `Missing argument ${names[index]} for ${display}`, 'CALL', {related:location});
+    }
+    if (invalidLabel) plan.invalidLabels = true;
     this.callPlans.set(expr, plan);
     return plan;
   }
@@ -2696,6 +2724,7 @@ class Checker {
   private checkCall(expr: Extract<Expr, { kind: 'call' }>, context: Context): Ty {
     const immediate = context.deferredErrors ? {...context, deferredErrors: undefined} : context;
     let receiverType = expr.callee.kind === 'member' ? this.checkExpression(expr.callee.object, immediate) : undefined;
+    if (receiverType?.kind === 'error') return errorTy;
     if (receiverType?.kind === 'param' && expr.callee.kind === 'member') {
       const name = expr.callee.name;
       receiverType = receiverType.bounds?.find(type => this.interfaceMethods(type, new Set()).has(name)) ?? receiverType;
@@ -2714,11 +2743,13 @@ class Checker {
     if (expr.callee.kind === 'name' && expr.callee.name === 'exit') {
       if (context.callable || context.file !== this.project.main?.path || context.locked) this.report(expr.span, 'exit belongs in main outside a lock', 'EFFECT');
       const plan = this.planCall(expr, ['status'], 'exit'), index = plan.sourceIndices[0];
+      if (plan.invalidLabels) return errorTy;
       if (index !== undefined && argTypes[index].name !== 'int') this.report(expr.span, 'exit status is an int', 'TYPE');
       return builtin('void');
     }
     if (expr.callee.kind === 'name' && expr.callee.name === 'Json') {
       const plan = this.planCall(expr, ['value'], 'Json'), index = plan.sourceIndices[0];
+      if (plan.invalidLabels) return errorTy;
       if (expr.typeArgs.length) this.report(expr.span, 'Json infers its data type', 'JSON');
       if (index !== undefined) {
         const value = argTypes[index];
@@ -2734,6 +2765,7 @@ class Checker {
     }
     if (expr.callee.kind === 'name' && expr.callee.name === 'Shared') {
       const plan = this.planCall(expr, ['value'], 'Shared'), index = plan.sourceIndices[0];
+      if (plan.invalidLabels) return errorTy;
       plan.ownerships = ['own'];
       const result = index === undefined ? errorTy : argTypes[index];
       if (index !== undefined && !['fresh', 'own'].includes(this.ownershipOf(expr.args[index], context))) this.report(expr.args[index].span, 'Shared takes a fresh value or an owned value; existing mutable aliases cannot survive the transfer', 'OWN');
@@ -2746,6 +2778,7 @@ class Checker {
     if(expr.callee.kind==='name'&&expr.callee.name==='ServerEvent') {
       const params:Param[]=['data','id','event','retry'].map((name,index)=>({name,type:{name:index===0?'T':index===3?'int':'string',args:[],nullable:false,optional:index>0,span:expr.span},injected:false,ownership:'managed',span:expr.span}));
       const plan=this.planCall(expr,params,'ServerEvent'), data=plan.sourceIndices[0], result=expr.typeArgs[0]?this.resolveType(expr.typeArgs[0],context.file,context.types):data===undefined?errorTy:argTypes[data];
+      if (plan.invalidLabels) return errorTy;
       if(expr.typeArgs.length>1||!jsonDataType(this.project,result))this.report(expr.span,'ServerEvent<T> needs JSON data','HTTP');
       if(data!==undefined&&!this.immutableInput(expr.args[data],argTypes[data]))this.report(expr.args[data].span,'Freeze collection data before creating a ServerEvent','HTTP');
       params.forEach((param,index)=>{const source=plan.sourceIndices[index];if(source!==undefined&&!this.assignable(argTypes[source],index===0?result:{...builtin(param.type.name),optional:true}))this.report(expr.args[source].span,`Invalid ${param.name} for ServerEvent`,'HTTP');});
@@ -2757,6 +2790,7 @@ class Checker {
         type: {name: index === 0 ? 'T' : index === 1 ? 'int' : 'Headers', args: [], nullable: false, optional: index > 0, span: expr.span},
         injected: false, ownership: 'managed', span: expr.span}));
       const plan = this.planCall(expr, params, name);
+      if (plan.invalidLabels) return errorTy;
       const body = plan.sourceIndices[0];
       const result = name === 'Headers' ? builtin(name) : {...builtin(name), args: [expr.typeArgs[0] ? this.resolveType(expr.typeArgs[0], context.file, context.types) : body === undefined ? errorTy : argTypes[body]]};
       if (name === 'Headers' && expr.typeArgs.length || name === 'HttpResponse' && expr.typeArgs.length > 1) this.report(expr.span, `${name} has invalid type arguments`, 'HTTP');
@@ -2775,6 +2809,7 @@ class Checker {
     if (expr.callee.kind === 'name' && ['c_int', 'int'].includes(expr.callee.name)) {
       const name = expr.callee.name;
       const plan = this.planCall(expr, ['value'], name);
+      if (plan.invalidLabels) return errorTy;
       const input = plan.sourceIndices[0];
       const expected = builtin(name === 'c_int' ? 'int' : 'c_int');
       if (expr.typeArgs.length || input !== undefined && !this.assignable(argTypes[input], expected))
@@ -2790,6 +2825,7 @@ class Checker {
     if(expr.callee.kind==='name'&&expr.callee.name==='assertEqual') {
       if(!this.project.testMode)this.report(expr.span,'assertEqual belongs inside a test case or its setup','TEST');
       const plan=this.planCall(expr,['actual','expected'],'assertEqual'),actual=plan.sourceIndices[0],expected=plan.sourceIndices[1];
+      if (plan.invalidLabels) return errorTy;
       if(expr.typeArgs.length)this.report(expr.span,'assertEqual infers its input types; omit type arguments','TEST');
       if(actual!==undefined&&expected!==undefined) {
         const left=argTypes[actual],right=argTypes[expected],numeric=(type:Ty)=>['builtin:int','builtin:c_int','builtin:float'].includes(type.id);
@@ -2815,6 +2851,7 @@ class Checker {
       this.intrinsicEffect(expr.callee.name as 'read_file' | 'write_file', expr.span, context);
       const names = expr.callee.name === 'read_file' ? ['path'] : ['path', 'content'];
       const plan = this.planCall(expr, names, expr.callee.name);
+      if (plan.invalidLabels) return errorTy;
       for (const index of plan.sourceIndices) if (index !== undefined &&
         argTypes[index].id !== 'builtin:string') this.report(expr.args[index].span,
         `${expr.callee.name} requires string arguments`);
@@ -2850,15 +2887,15 @@ class Checker {
       return { ...builtin(name), args: [element] };
     }
     if (expr.callee.kind === 'name' && expr.callee.name === 'Map') {
-      this.planCall(expr, [], 'Map');
+      if (this.planCall(expr, [], 'Map').invalidLabels) return errorTy;
       if (expr.typeArgs.length !== 2) this.report(expr.span,
         'Map constructor requires two type arguments, such as Map<string,int>()');
       if (argTypes.length) this.report(expr.span, 'Map constructor takes no values');
       return { ...builtin('Map'), args: expr.typeArgs.map(arg => this.resolveType(arg, context.file, context.types)) };
     }
     if (expr.callee.kind === 'name' && errorNames.includes(expr.callee.name)) {
-      this.planCall(expr, [], 'FileError');
-      if (argTypes.length || expr.typeArgs.length) this.report(expr.span, 'FileError constructor takes no arguments');
+      if (this.planCall(expr, [], expr.callee.name).invalidLabels) return errorTy;
+      if (argTypes.length || expr.typeArgs.length) this.report(expr.span, `${expr.callee.name} constructor takes no arguments`);
       return builtin(expr.callee.name);
     }
     if (expr.callee.kind === 'member' && receiverType?.id.startsWith('builtin:') && collectionOperations[receiverType.name]) {
@@ -2870,6 +2907,7 @@ class Checker {
       const decoding = receiver.name === 'Json' && operation.name === 'decode' || receiver.name === 'HttpRequest' && operation.name === 'form';
       if (expr.typeArgs.length && !decoding) this.report(expr.span, 'Collection methods inherit their receiver type arguments', 'GENERIC');
       const plan = this.planCall(expr, operation.parameters.map(param => ({name:param.label,type:{name:param.type.replace(/^optional /,''),args:[],nullable:false,optional:param.type.startsWith('optional '),span:expr.span},injected:false,ownership:'managed' as const,span:expr.span})), `${receiver.name}.${operation.name}`);
+      if (plan.invalidLabels) return errorTy;
       operation.parameters.forEach((param, index) => {
         const source = plan.sourceIndices[index];
         const expected = operationType(param.type, receiver);
@@ -2913,7 +2951,8 @@ class Checker {
         const cls = def.node;
         this.resolvedCalls.set(expr,{node:cls,params:cls.fields,dispatch:'direct'});
         this.resolvedNames.set(expr.callee,{name:def.name,definition:def.node.span,global:def.id});
-        const plan = this.planCall(expr, cls.fields, cls.name);
+        const plan = this.planCall(expr, cls.fields, cls.name, cls.span);
+        if (plan.invalidLabels) return errorTy;
         const inferred = new Map<string, Ty>();
         for (let i = 0; i < cls.typeParams.length; i++) {
           if (expr.typeArgs[i]) inferred.set(cls.typeParams[i],
@@ -2950,7 +2989,7 @@ class Checker {
           if (source === undefined) continue;
           const expected = this.resolveType(cls.fields[i].type, def.file, inferred);
           if (!this.assignable(argTypes[source], expected)) this.report(expr.args[source].span,
-            `Expected ${tyName(expected)}, got ${tyName(argTypes[source])}`);
+            `Expected ${tyName(expected)}, got ${tyName(argTypes[source])} for input ${cls.fields[i].label ?? cls.fields[i].name}`, 'TYPE', this.inputDetails(cls.fields[i], expected, argTypes[source]));
           if (this.isReference(argTypes[source])) {
             this.checkBorrowEscape(expr.args[source], context, false);
             if (cls.fields[i].mutable && argTypes[source].readonly)
@@ -3022,7 +3061,8 @@ class Checker {
       const native = this.project.scopes.get(fnFile)?.get(fn.name);
       this.requireUse(`C:${native?.id ?? fn.name}`, `C.${fn.name}`, expr.span, context);
     }
-    const plan = this.planCall(expr, fn.params, fn.name);
+    const plan = this.planCall(expr, fn.params, fn.name, fn.span);
+    if (plan.invalidLabels) return errorTy;
     if (expr.typeArgs.length && expr.typeArgs.length !== fn.typeParams.length)
       this.report(expr.span, `${fn.name} expects ${fn.typeParams.length} type arguments`);
     const params = new Map(ownerParams);
@@ -3037,7 +3077,7 @@ class Checker {
       this.inferCallType(param.type, argTypes[source], fn.typeParams.filter((_, index) => !expr.typeArgs[index]), params);
       const expected = this.resolveType(param.type, fnFile, params);
       if (!this.assignable(argTypes[source], expected)) this.report(argument.span,
-        `Expected ${tyName(expected)}, got ${tyName(argTypes[source])}`);
+        `Expected ${tyName(expected)}, got ${tyName(argTypes[source])} for input ${param.label ?? param.name}`, 'TYPE', this.inputDetails(param, expected, argTypes[source]));
       this.checkArgumentOwnership(argument, param, context);
       if (fn.typeConstraints?.[param.type.name]?.some(bound => bound.name === 'Data') && !this.immutableInput(argument, argTypes[source]))
         this.report(argument.span, 'Freeze collection values before passing them as immutable Data', 'FREEZE');

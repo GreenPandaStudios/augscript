@@ -236,7 +236,7 @@ export const diagnosticHelp: Record<string, string> = {
   NEXT: 'Use next only inside around, with optional labeled overrides. Each execution path may call it at most once; loops and catch paths can repeat a call.',
   LEX: 'Check quotes, comment terminators, and supported characters.',
   PARSE: 'Check braces, statement boundaries, declaration order, and Type name parameters. Semicolons are optional. Use unless for checked error contracts.',
-  CALL: 'Use a label for each ordinary argument, such as `Greeter(x=4)`. Omit parameters marked `resolve`.',
+  CALL: 'Use a label for each ordinary argument, such as `Greeter(x=4)`. Omit parameters marked `resolve`. Check the listed caller labels and related declaration; fix a malformed label before supplying omitted inputs.',
   PROJECT: 'Create `main.aug` at the project root; it is the entry point.',
   MAIN: 'Keep bindings and executable statements in `main.aug`; put declarations in other `.aug` files.',
   EXPORT: 'Only `export` statements belong in `export.aug`. Export declarations name a sibling file.',

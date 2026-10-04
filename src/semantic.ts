@@ -97,7 +97,8 @@ export class SemanticDocument {
   private configuration:ReturnType<typeof semanticConfiguration>;
   constructor(checked: CheckedProject, path: string, revision: string, wholeProject=false, checkedFiles=new Set(checked.project.files.keys()), configuration=semanticConfiguration(checked.project.root)) {
     this.checked = checked; this.path = path; this.wholeProject=wholeProject; this.checkedFiles=checkedFiles; this.configuration=configuration;
-    this.revision = revision; this.diagnostics = Object.freeze(checked.diagnostics.map(issue => Object.freeze({ ...issue })));
+    this.revision = revision; this.diagnostics = Object.freeze(checked.diagnostics.map(issue => Object.freeze({ ...issue,
+      ...(issue.related ? {related:Object.freeze(issue.related.map(location=>Object.freeze({...location})))} : {}) })));
     this.source = checked.project.files.get(path)?.source ?? '';
   }
   graph() { return structuredClone(this.graphValue??=semanticGraph(this.checked,this.wholeProject,this.checkedFiles,this.configuration)); }

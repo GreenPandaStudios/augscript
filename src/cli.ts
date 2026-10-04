@@ -54,20 +54,28 @@ function printDiagnostics(diagnostics: Diagnostic[], json: boolean, root: string
     return;
   }
   const sources = new Map<string, string[]>();
-  for (const issue of diagnostics) {
-    const file = relative(root, issue.file) || issue.file;
-    process.stderr.write(`${file}:${issue.line}:${issue.column}: ${issue.code}: ${issue.message}\n`);
+  const excerpt = (location: {file:string;line:number;column:number}) => {
     try {
-      if (!sources.has(issue.file)) sources.set(issue.file, readFileSync(issue.file, 'utf8').split(/\r?\n/));
-      const line = sources.get(issue.file)?.[issue.line - 1];
+      if (!sources.has(location.file)) sources.set(location.file, readFileSync(location.file, 'utf8').split(/\r?\n/));
+      const line = sources.get(location.file)?.[location.line - 1];
       if (line !== undefined) {
-        const column = Math.max(0, Math.min(line.length, issue.column - 1));
+        const column = Math.max(0, Math.min(line.length, location.column - 1));
         const start = Math.max(0, column - 70), end = Math.min(line.length, start + 150);
         const text = (start ? '…' : '') + line.slice(start, end).replace(/\t/g, '    ') + (end < line.length ? '…' : '');
         const padding = (start ? 1 : 0) + line.slice(start, column).replace(/\t/g, '    ').length;
-        process.stderr.write(`  ${issue.line} | ${text}\n  ${' '.repeat(String(issue.line).length)} | ${' '.repeat(padding)}^\n`);
+        process.stderr.write(`  ${location.line} | ${text}\n  ${' '.repeat(String(location.line).length)} | ${' '.repeat(padding)}^\n`);
       }
-    } catch { /* Source may have been removed; the location and help remain useful. */ }
+    } catch { /* A removed source still has its location and explanation. */ }
+  };
+  for (const issue of diagnostics) {
+    const file = relative(root, issue.file) || issue.file;
+    process.stderr.write(`${file}:${issue.line}:${issue.column}: ${issue.code}: ${issue.message}\n`);
+    excerpt(issue);
+    if (issue.code === 'CALL' && issue.expected && !issue.related?.length) process.stderr.write(`  caller input labels: ${issue.expected}\n`);
+    for (const location of issue.related ?? []) {
+      process.stderr.write(`  related: ${relative(root,location.file) || location.file}:${location.line}:${location.column}: ${location.message}\n`);
+      excerpt(location);
+    }
     if (diagnosticHelp[issue.code]) process.stderr.write(`  help: ${diagnosticHelp[issue.code]}\n`);
   }
 }

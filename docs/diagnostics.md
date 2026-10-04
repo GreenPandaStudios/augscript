@@ -8,6 +8,12 @@ If `aug run` cannot prepare or start a program, its message identifies the faile
 
 When a fix changes a dependency, effect, error, or mutable input, review the caller's contract too. A suggested edit can satisfy a language rule without deciding the right recovery or design for your application. [The book](learn/index.md) includes deliberate mistakes you can check and repair yourself.
 
+## Call inputs (unreleased)
+
+A call-input type error names the public input, its expected type and the value’s actual type. Related locations point to the imported function, constructor input or inherited method declaration; VS Code exposes those links in Problems. A duplicate input points to its first occurrence. JSON preserves these facts in `expected`, `actual` and `related`.
+
+For a misspelled or unlabeled input, check the listed caller labels first. The compiler postpones omitted-input and dependent inference errors until that mapping is valid. A spelling fix can correct a label; missing values and recovery decisions still belong to the application author.
+
 ## Syntax and data
 
 | Code | Meaning and remedy |

@@ -65,7 +65,7 @@ Work proceeds through source/tool identities, everyday data and syntax, collecti
 | F03 | Watch and rerun | Pending | — |
 | F04 | Incremental native builds | Pending | — |
 | F05 | Fast selected test execution | Pending | — |
-| F06 | Return useful errors near the source | Pending | — |
+| F06 | Return useful errors near the source | Implemented call-input profile; broader qualification pending | Expected/actual types and caller labels, exact imported constructor/inherited method declarations, duplicate locations, bounded CLI excerpts and LSP links for unsaved revisions. Malformed labels suppress speculative omitted-input errors; deterministic label repairs remain available. Other diagnostic families retain existing help |
 | F07 | Make fixes explain their behavior | Partial | Fix consequences in preview metadata, versioned LSP changes, conservative checked borrow. Recovery scaffolds retain the checked failure until the author chooses policy; broader fix qualification pending |
 | F08 | References and semantic rename | Partial | Compiler-resolved references, imports/exports, public labels, reverse callers and candidate-checked managed-function rename; semantic-reference and LSP tests. Member/type profiles pending |
 | F09 | Move declarations and update imports | Pending | — |

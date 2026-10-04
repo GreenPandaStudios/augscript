@@ -91,3 +91,5 @@ A catalog update is a metadata review, separate from artifact or behavior qualif
 ## Scratch entry fragments
 
 `src/scratch.ts` owns temporary project creation, original-source check diagnostics and cleanup. Execution stays in the ordinary CLI path and requires `--run`; preparation requires `--prepare` or `--run`. `tests/scratch.test.mjs` extracts the guide fragments, verifies C/LLVM execution and real tagged source imports, and exercises the public native zlib guide when `AUG_TEST_PUBLIC_SCRATCH=1`. Keep the guide explicitly unreleased until the containing compiler is published. Verify the packaged command through `npm run test:packages`, and inspect guide navigation at desktop and phone widths.
+
+Call diagnostic contracts are maintained in `src/ast.ts`, `src/checker.ts`, CLI rendering and LSP publication. Keep the tooling and editor guides aligned with structured expected/actual and related-location fields; verify imported and unsaved declaration locations through `tests/diagnostic-context.test.mjs`.

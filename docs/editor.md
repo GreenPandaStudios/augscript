@@ -34,6 +34,8 @@ Hints beside a function or method show its inferred result, state changes, I/O, 
 
 Place the cursor on an error and open the lightbulb with Ctrl+. or Cmd+.. Available fixes include: importing a visible declaration, correcting a nearby name or input label, expanding a wildcard import, adding a required method, or containing a mutable or native operation.
 
+The unreleased compiler links call errors to the input declaration in the Problems view. Imported constructors and inherited generic methods retain their original declaration locations and substituted types. A malformed input label shows the accepted labels before the compiler reports omitted inputs.
+
 Review the edit before accepting it. A suggested name can be plausible without being the name you intended. After a change, run `aug check`, your tests, and `aug spec` to refresh the neighboring explanation.
 
 ## Find the files and run tests
