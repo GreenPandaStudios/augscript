@@ -27,6 +27,10 @@ When a fix changes a dependency, effect, error, or mutable input, review the cal
 
 Both braces and indentation are accepted. The formatter uses main.yaml preferences and checks that its output parses to the same program before returning an edit.
 
+## Package installation
+
+`PACKAGE_COMPILER` names a library whose compiler requirement excludes the installed release, or explains an invalid requirement. Select a compatible compiler/package; a frozen lock cannot perform an upgrade. `PACKAGE_LOCK` reports an unsupported lock, changed dependency declarations, another active installer or an interrupted `aug add` that needs review. Use `aug install` to recover a terminated writer. If it names later edits to `main.yaml`, `aug.lock.json` or `.aug-add.json`, inspect those files before retrying. The [package compatibility guide](package-compatibility.md) distinguishes currently published and unreleased behavior.
+
 ## Modules and interfaces
 
 | Code | Meaning and remedy |

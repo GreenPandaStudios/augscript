@@ -23,7 +23,7 @@ import { updateSpecHints } from './spec-hints.ts';
 import { runLanguageServer } from './lsp.ts';
 import { benchmark, compileNative, writeCoverage } from './native.ts';
 import {generateOpenApi} from './openapi.ts';
-import { addPackage, initPackage, installPackages, preparePackage, packPackage, prepareRunPackages } from './package-manager.ts';
+import { addPackageWithNative, initPackage, installPackagesWithNative, preparePackage, packPackage, prepareRunPackagesWithNative } from './package-manager.ts';
 import { initProject } from './project-init.ts';
 import { prepareNativeDependencies } from '../scripts/native-setup.mjs';
 
@@ -109,8 +109,7 @@ export async function main(argv: string[]): Promise<number> {
     }
     try {
       const alias = argv[aliasIndex + 1], root = resolve(projectIndex < 0 ? process.cwd() : argv[projectIndex + 1]);
-      const lock = addPackage(root, argv[1], alias, argv.includes('--offline'));
-      await prepareNativePackages(root,{offline:argv.includes('--offline')});
+      const lock = await addPackageWithNative(root, argv[1], alias, argv.includes('--offline'));
       process.stdout.write(`Added ${alias}; installed ${lock.packages.length} source package(s).\nImport public names with: import NAME from ${alias}\n`); return 0;
     } catch (error) { process.stderr.write(failureMessage(error) + '\n'); return 1; }
   }
@@ -130,15 +129,14 @@ export async function main(argv: string[]): Promise<number> {
       const root = resolve((command === 'install' ? argv[1] : argv[2]) && !(command === 'install' ? argv[1] : argv[2]).startsWith('--')
         ? (command === 'install' ? argv[1] : argv[2]) : process.cwd());
       if (command === 'install') {
-        const lock = installPackages(root, argv.includes('--frozen'), argv.includes('--offline'), argv.includes('--update'));
-        await prepareNativePackages(root,{offline:argv.includes('--offline'),frozen:argv.includes('--frozen')});
+        const lock = await installPackagesWithNative(root, argv.includes('--frozen'), argv.includes('--offline'), argv.includes('--update'));
         process.stdout.write(`Installed ${lock.packages.length} August package(s); aug.lock.json is current.\n`);
       } else if (argv[1] === 'init') {
         const name = argv.includes('--name') ? argv[argv.indexOf('--name') + 1] : root.split(/[\\/]/).at(-1)!;
         if (!name) throw new Error('Use aug package init DIRECTORY [--name @owner/name]');
         initPackage(root, name, argv.includes('--name')); process.stdout.write(`Created August library ${name} in ${root}\n`);
       } else if (argv[1] === 'pack') {
-        prepareRunPackages(root);
+        await prepareRunPackagesWithNative(root);
         preparePackage(root);
         const project = loadProject(root), checked = checkProject(project);
         const tests = checkUnitTests(project, discoverTests(project).tests);
@@ -229,7 +227,7 @@ export async function main(argv: string[]): Promise<number> {
     }
     if (!existsSync(root) || !statSync(root).isDirectory())
       throw new Error(`Project directory does not exist: ${root}\nUse aug init DIRECTORY to create a project, or run aug run from the folder containing main.aug.`);
-    if (command === 'run') prepareRunPackages(root, options.includes('--offline'), options.includes('--frozen'));
+    if (command === 'run') await prepareRunPackagesWithNative(root, options.includes('--offline'), options.includes('--frozen'));
     const project = loadProject(root, overrides);
     if(backendIndex<0)backend=project.config.backend??'llvm';
     if (project.library && ['build', 'run', 'bench', 'openapi'].includes(command))

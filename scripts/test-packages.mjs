@@ -35,6 +35,7 @@ try {
       env:{...process.env,AUG_NATIVE_HOME:process.env.AUG_NATIVE_HOME??join(root,'.aug-native')}
     });
   };
+  assert.match(readFileSync(join(cliRoot,'native/aug-native-abi-1.h'),'utf8'),/aug_native_error_v1/);
   assert.equal(aug('--version').trim(), packages.find(pkg => pkg.directory === 'cli').version);
   const verifySpecs = folder => {
     for(const entry of readdirSync(folder,{withFileTypes:true})) {
@@ -90,6 +91,9 @@ try {
   aug('check', library);
   const libraryTests = JSON.parse(aug('test', library, '--json'));
   assert.equal(libraryTests.passed, 1);
+  const authoredManifest=join(library,'aug-package.json');
+  const authored=JSON.parse(readFileSync(authoredManifest,'utf8'));authored.compiler='~'+authored.compiler;writeFileSync(authoredManifest,JSON.stringify(authored));
+  aug('check',library);
   const archive = aug('package', 'pack', library).trim();
   const consumer = join(directory, 'my-app'); mkdirSync(consumer);
   writeFileSync(join(consumer, 'main.yaml'), `packages:\n  math: "${archive}"\n`);

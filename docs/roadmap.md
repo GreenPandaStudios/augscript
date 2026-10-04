@@ -8,7 +8,7 @@ A 1.0 release will make the documented language and package contracts stable. Th
 | --- | --- | --- |
 | 1 | Language conformance | Independent coverage of every documented construct, ownership transition, alias, checked failure, and task lifecycle. Adversarial cases and regressions pass in both optimization modes on every supported target. |
 | 2 | Runtime reliability | Repeated cleanup, cancellation, allocation-pressure, and long-running heap tests. Sanitizer results and generated safety cases are reproducible, with omissions reported. |
-| 3 | Native and package compatibility | Freeze the supported native ABI and manifest/lock formats. Exercise upgrades, dependency conflicts, offline installation, missing artifacts, relocation, and recovery from interrupted installs. |
+| 3 | Native and package compatibility | The [candidate contracts](package-compatibility.md), ABI header, bounded compiler requirements and upgrade/interruption tests are implemented in the unreleased compiler. Repeat compatibility, public import, offline, artifact and relocation gates on all candidate targets before the 1.0 freeze. |
 | 4 | Developer distribution | Repeat clean-machine npm and editor installation checks for every release. Provide a tested upgrade path, matched package versions, verified archives, and usable source diagnostics and debugging. |
 | 5 | Stable release policy | Publish the final support matrix, compatibility rules, and known limits. All release gates, documentation checks, dependency reviews, and independent reviews pass for the release candidate. |
 

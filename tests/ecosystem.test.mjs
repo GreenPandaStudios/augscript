@@ -151,15 +151,15 @@ test('frozen runs reject changed imports, dependency configuration and compiler 
   assert.equal(existsSync(lockPath),false);assert.equal(readFileSync(declaration,'utf8'),snapshot);
 }));
 
-test('removing the last dependency prunes its snapshot and native selections on an ordinary run', () => fixture(root => {
+test('removing the last dependency drops its active graph and native selections but preserves existing readers', () => fixture(root => {
   const library=join(root,'library'),app=join(root,'app');initPackage(library,'library');mkdirSync(app);
   writeFileSync(join(app,'main.yaml'),'packages:\n  library: "../library"\n');writeFileSync(join(app,'main.aug'),'');
   installPackages(app,false,true);
   const lockPath=join(app,'aug.lock.json'),before=JSON.parse(readFileSync(lockPath));
-  before.native={targets:{stale:{packages:[{id:'removed'}]}}};writeFileSync(lockPath,JSON.stringify(before));
+  before.native={format:1,targets:{stale:{packages:[{id:'removed'}]}}};writeFileSync(lockPath,JSON.stringify(before));
   writeFileSync(join(app,'main.yaml'),'');prepareRunPackages(app,true);
   const after=JSON.parse(readFileSync(lockPath));assert.deepEqual(after.packages,[]);assert.deepEqual(after.specifications,{});
-  assert.equal(after.native,undefined);assert.equal(existsSync(join(app,'.aug-packages',before.packages[0].path)),false);
+  assert.equal(after.native,undefined);assert.equal(existsSync(join(app,'.aug-packages',before.packages[0].path)),true);
 }));
 
 test('a frozen compiler-pack rejection preserves source hints and generated specifications',()=>fixture(root=>{

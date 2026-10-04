@@ -47,6 +47,7 @@ jobs:
       - name: Check LLVM language, web, ownership and ABI parity
         run: |
           docker exec qualification npm run check
+          docker exec -e AUG_BIND_CLANG=/work/.aug-build/llvm-maintainer/bin/clang -e AUG_REQUIRE_NATIVE_HEADER=1 qualification npm run test:compatibility
           docker exec -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools -e AUG_REQUIRE_DWARF=1 -e AUG_REQUIRE_DEBUGGER=1 -e AUG_DWARF_TOOL=/work/.aug-build/llvm-maintainer/bin/llvm-dwarfdump qualification node scripts/check-llvm-parity.mjs
           docker exec -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools qualification node --test tests/llvm-native-boundaries.test.mjs
           docker exec -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools -e AUG_SANITIZER_CC=/work/.aug-build/llvm-maintainer/bin/clang qualification node scripts/sanitize-core.mjs --backend llvm
