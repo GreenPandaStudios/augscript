@@ -3,6 +3,10 @@ node_modules/
 .aug-build/
 .aug-packages/
 .aug-install-*/
+.aug-lock-*/
+.aug-write-*/
+.aug-add.json*
+*.aug.tmp
 .aug-packages-old/
 *.vsix
 vscode/compiler/

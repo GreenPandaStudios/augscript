@@ -85,6 +85,10 @@ For a library you write by hand, `export.aug` in the root or a `src` folder is e
 
 Commit the source, export file, tests, comments, and dependency lock to your Git repository. Include a license, run `aug check` and `aug test`, then publish a release tag. Other projects can import your repository URL with `#v0.1.0`.
 
+## Compiler compatibility
+
+A manifest names the compiler that can check the library. Published 0.23.0 requires an exact version. **Unreleased:** the next compiler also accepts bounded requirements such as `~0.23.0` and `^1.0.0`; `aug package init` still starts with an exact version. Authors must test the releases they claim to support. See [package compatibility](package-compatibility.md) for the requirement grammar, lock format and upgrade procedure.
+
 ## Dependencies between libraries
 
 A library can import another repository URL directly. The installer follows those imports and installs the complete graph. Each library has its own aliases and export boundaries; its dependencies do not become imports in the application automatically.
@@ -109,7 +113,7 @@ aug test
 aug build
 ```
 
-A frozen install restores the recorded revisions and rejects changed source contents. `aug install --update` deliberately selects current revisions again. A normal install preserves a matching lock. `aug run --offline` and `aug install --frozen --offline` use previously cached sources and native dependencies; an uncached input produces an error explaining how to prepare it online.
+A frozen install restores the recorded revisions and rejects changed source contents. `aug install --update` deliberately selects current revisions again. A normal install preserves a matching lock. The unreleased compiler also preserves existing repository commits when the compiler changes or a dependency is added; `--update` is the explicit revision update. `aug run --offline` and `aug install --frozen --offline` use previously cached sources and native dependencies; an uncached input produces an error explaining how to prepare it online.
 
 Installation reads Git source blobs without running hooks and extracts registry archives without running lifecycle scripts. Application code can still call native adapters and unsafe operations; review those before running a dependency.
 

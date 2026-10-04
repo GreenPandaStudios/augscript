@@ -6,9 +6,11 @@ import { x as extractArchive } from 'tar';
 import type { Diagnostic } from './ast.ts';
 import { loadConfig } from './config.ts';
 import { parse } from './parser.ts';
-import { isGitSource, materializeGit, sourceAlias, type GitSource } from './git-packages.ts';
+import { isGitSource, materializeGit, sourceAlias, gitReference, type GitSource } from './git-packages.ts';
 import { agentInstructions } from './project-init.ts';
-import { withPackageLock } from './package-locking.ts';
+import { withPackageLock, withPackageLockAsync } from './package-locking.ts';
+import { acceptsCompiler } from './package-compatibility.ts';
+import {replacePackageText,installedText} from './package-storage.ts';
 import {validateNativeManifest, readNativeDescriptor, type NativeManifest} from './native-contracts.ts';
 import type {NativeLock} from './native-artifacts.ts';
 
@@ -55,6 +57,35 @@ const ordered = (values: Record<string, string>): Record<string, string> => Obje
 const sameSpecifications = (left: Record<string, string>, right: Record<string, string>): boolean =>
   JSON.stringify(ordered(left)) === JSON.stringify(ordered(right));
 
+/** Read format 1 without interpreting an unknown format as a current dependency graph. */
+export function readPackageLock(path: string): PackageLock {
+  const lock=json(path) as PackageLock;
+  const strings=(value:unknown):value is Record<string,string> =>
+    !!value && typeof value==='object' && !Array.isArray(value) && Object.values(value).every(item=>typeof item==='string');
+  const fail=():never=>{throw new Error('PACKAGE_LOCK: Unsupported or invalid aug.lock.json structure. Restore a supported lock or remove it and run aug install.');};
+  if (!lock || lock.format!==1 || typeof lock.compiler!=='string' || !version.test(lock.compiler) ||
+      !strings(lock.specifications) || !strings(lock.roots) || !Array.isArray(lock.packages) || lock.packages.length>1000) return fail();
+  for(const entry of lock.packages){
+    if (!entry || typeof entry.path!=='string' || !entry.path || isAbsolute(entry.path) || entry.path.includes('\\') ||
+        entry.path.split('/').some(part=>!part||part==='.'||part==='..') || typeof entry.name!=='string' || !npmName.test(entry.name) ||
+        typeof entry.version!=='string' || !version.test(entry.version) || typeof entry.source!=='string' ||
+        typeof entry.digest!=='string' || !/^[a-f0-9]{64}$/.test(entry.digest) || !strings(entry.dependencies)) return fail();
+  }
+  if(lock.git!==undefined){
+    if(!Array.isArray(lock.git))return fail();
+    const requests=new Set<string>();
+    for(const source of lock.git){
+      if(!source||typeof source.request!=='string'||typeof source.commit!=='string'||!/^[a-f0-9]{40,64}$/.test(source.commit)||requests.has(source.request))return fail();
+      const reference=gitReference(source.request);
+      if(reference.repository!==source.repository||reference.revision!==source.revision||reference.folder!==source.folder)return fail();
+      requests.add(source.request);
+    }
+  }
+  if (lock.native!==undefined && (!lock.native || lock.native.format!==1 || !lock.native.targets ||
+      typeof lock.native.targets!=='object' || Array.isArray(lock.native.targets))) return fail();
+  return lock;
+}
+
 function verifyReference(spec: string, target: InstalledPackage): void {
   if (spec.startsWith('npm:') && spec !== `npm:${target.name}@${target.version}`)
     throw new Error(`Package lock resolves ${spec} to incompatible ${target.name}@${target.version}`);
@@ -96,9 +127,10 @@ export function readPackage(directory: string): { manifest: PackageManifest; sou
     format: 1 as const, name: 'aug-' + sourceAlias(realpathSync(directory)), version: '0.0.0', compiler: compilerVersion(),
     source: existsSync(join(directory, 'export.aug')) ? '.' : 'src', dependencies: {}
   };
-  if (![1,2].includes(manifest.format) || !npmName.test(manifest.name ?? '') || !version.test(manifest.version ?? '') ||
-      manifest.compiler !== compilerVersion())
-    throw new Error(`Invalid August package or compiler mismatch in ${directory}; expected compiler ${compilerVersion()}`);
+  if (!manifest || ![1,2].includes(manifest.format) || typeof manifest.name !== 'string' || !npmName.test(manifest.name) || typeof manifest.version !== 'string' || !version.test(manifest.version))
+    throw new Error(`Invalid August package in ${directory}; check format, name and version`);
+  if (!acceptsCompiler(manifest.compiler, compilerVersion()))
+    throw new Error(`PACKAGE_COMPILER: compiler mismatch for ${manifest.name}: requires ${manifest.compiler}; installed compiler is ${compilerVersion()}. Install a supported compiler or select a compatible package release.`);
   if(manifest.format===1&&manifest.native!==undefined)throw new Error('Native packages require manifest format 2');
   if(manifest.format===2){
     manifest.native=validateNativeManifest(manifest.native);
@@ -153,14 +185,14 @@ function packageDigest(directory: string, sourceRoot: string): string {
 }
 
 /** Compilation reads only a verified installed snapshot. It never fetches dependencies. */
-export function projectPackages(root: string, specifications: Record<string, string>, sourceFolder = root): ProjectPackages {
+export function projectPackages(root: string, specifications: Record<string, string>, sourceFolder = root, candidate?: {lock: PackageLock; cache: string}): ProjectPackages {
   const result: ProjectPackages = { roots: new Map(), scopes: new Map(), diagnostics: [], specifications };
   if (!Object.keys(specifications).length) return result;
   try {
-    const lock = json(join(root, 'aug.lock.json')) as PackageLock;
+    const lock = candidate?.lock ?? readPackageLock(join(root, 'aug.lock.json'));
     if (lock.format !== 1 || lock.compiler !== compilerVersion() || !sameSpecifications(lock.specifications, specifications))
       throw new Error('Package lock does not match this project/compiler; run aug install');
-    const cache = realpathSync(join(root, '.aug-packages'));
+    const cache = realpathSync(candidate?.cache ?? join(root, '.aug-packages'));
     const manifests = new Map<string, PackageManifest>();
     for (const entry of lock.packages) {
       if (isAbsolute(entry.path)) throw new Error('Invalid absolute package lock path');
@@ -202,8 +234,10 @@ export function projectPackages(root: string, specifications: Record<string, str
       if (!result.scopes.has(path)) throw new Error('Package lock is missing a transitive dependency');
   } catch (error) {
     result.roots.clear(); result.scopes.clear();
-    result.diagnostics.push({ file: join(root, 'main.yaml'), line: 1, column: 1, code: 'PACKAGE',
-      message: `${(error as Error).message}. Install dependencies with aug install ${root}` });
+    const message=(error as Error).message;
+    const code=/^(PACKAGE_COMPILER|PACKAGE_LOCK):/.exec(message)?.[1]??'PACKAGE';
+    result.diagnostics.push({ file: join(root, 'main.yaml'), line: 1, column: 1, code,
+      message: `${message}. Install dependencies with aug install ${root}` });
   }
   return result;
 }
@@ -216,7 +250,9 @@ function npm(args: string[], cwd: string): string {
 }
 
 /** Running an application prepares its declared packages; checking remains read-only. */
-export function prepareRunPackages(root: string, offline = false, frozen = false): void {
+function runPackagePreparation(root: string, frozen: boolean): {frozen: boolean} | undefined {
+  // Recovery is performed by the installer under its writer lock.
+  if(existsSync(join(root,'.aug-add.json')))return {frozen};
   const loaded = loadConfig(root);
   if (loaded.diagnostics.length) return; // The checker renders the configuration's source diagnostics.
   const library = isLibrary(root) ? readPackage(root) : undefined;
@@ -224,8 +260,8 @@ export function prepareRunPackages(root: string, offline = false, frozen = false
   const lockPath = join(root, 'aug.lock.json');
   let lock: PackageLock | undefined;
   if (existsSync(lockPath)) {
-    try { lock = json(lockPath); }
-    catch { throw new Error('aug.lock.json is unreadable. Restore it from version control or run aug install to recreate it.'); }
+    try { lock = readPackageLock(lockPath); }
+    catch(error) { throw new Error('PACKAGE_LOCK: Cannot read aug.lock.json. '+(error as Error).message); }
     if (lock?.format !== 1 || !Array.isArray(lock.packages) || !lock.specifications || typeof lock.specifications !== 'object')
       throw new Error('aug.lock.json has an unsupported structure. Run aug install to recreate it.');
   }
@@ -234,7 +270,7 @@ export function prepareRunPackages(root: string, offline = false, frozen = false
     if (!lock && !Object.keys(specifications).length) return;
     if (frozen) throw new Error('PACKAGE_LOCK: Frozen run requires a matching aug.lock.json for the current imports, configuration and compiler. Run aug install before retrying.');
     process.stderr.write('Installing August packages declared by imports and main.yaml…\n');
-    installPackages(root, false, offline); return;
+    return {frozen:false};
   }
   const snapshot = resolve(root, '.aug-packages');
   const missing = lock!.packages.some(entry => {
@@ -244,26 +280,44 @@ export function prepareRunPackages(root: string, offline = false, frozen = false
   });
   if (missing) {
     process.stderr.write('Restoring August packages from aug.lock.json…\n');
-    installPackages(root, true, offline);
+    return {frozen:true};
   }
   // projectPackages checks contents and integrity before compilation. Changed installed sources are never silently replaced.
 }
 
-export function installPackages(root: string, frozen = false, offline = false, update = false): PackageLock {
-  return withPackageLock(join(root, '.aug-install.lock'), () => installLocked(root, frozen, offline, update));
+/** Running an application prepares sources; contributor tools can choose this synchronous path. */
+export function prepareRunPackages(root: string, offline = false, frozen = false): void {
+  const preparation=runPackagePreparation(root,frozen);
+  if(preparation)installPackages(root,preparation.frozen,offline);
 }
-function installLocked(root: string, frozen: boolean, offline: boolean, update: boolean): PackageLock {
+
+/** Ordinary CLI runs verify native packages before accepting any new source revision. */
+export async function prepareRunPackagesWithNative(root: string, offline = false, frozen = false): Promise<void> {
+  const preparation=runPackagePreparation(root,frozen);
+  if(preparation)await installPackagesWithNative(root,preparation.frozen,offline);
+}
+
+export function installPackages(root: string, frozen = false, offline = false, update = false): PackageLock {
+  return withPackageLock(join(root, '.aug-install.lock'), () => {
+    const candidate = planInstallation(root, frozen, offline, update);
+    try { return publishSourceGraph(root, candidate); } finally { rmSync(candidate.stage, {recursive:true,force:true}); }
+  });
+}
+function planInstallation(root: string, frozen: boolean, offline: boolean, update: boolean): SourceCandidate {
   if (frozen && update) throw new Error('--frozen and --update cannot be used together.');
+  recoverAddConfiguration(root);
   const loaded = loadConfig(root);
   if (loaded.diagnostics.length) throw new Error(loaded.diagnostics.map(issue => issue.message).join('\n'));
   const library = isLibrary(root) ? readPackage(root) : undefined;
   const specifications = packageSpecifications(library?.sourceRoot ?? root, library?.manifest.dependencies ?? loaded.config.packages);
   for (const alias of Object.keys(specifications)) assertAlias(library?.sourceRoot ?? root, alias);
   const lockPath = join(root, 'aug.lock.json');
-  const previous: PackageLock | undefined = existsSync(lockPath) ? json(lockPath) : undefined;
-  const same = !update && previous?.compiler === compilerVersion() && sameSpecifications(previous.specifications, specifications);
-  if (frozen && !same) throw new Error('Frozen installation requires a matching aug.lock.json');
-  return installSourceGraph(root, specifications, frozen, offline, same ? previous : undefined);
+  const previous: PackageLock | undefined = existsSync(lockPath) ? readPackageLock(lockPath) : undefined;
+  const same = !update && !!previous && sameSpecifications(previous.specifications, specifications);
+  if (frozen && (!same || previous!.compiler !== compilerVersion())) throw new Error('Frozen installation requires a matching aug.lock.json');
+  const candidate=stageSourceGraph(root, specifications, frozen, offline, previous, update);
+  candidate.baseLock=installedText(lockPath);
+  return candidate;
 }
 
 const isLibrary = (root: string): boolean => existsSync(join(root, 'aug-package.json')) ||
@@ -306,12 +360,16 @@ function unpackSource(archive: string, destination: string): void {
 }
 
 /** Git libraries use the same checked source graph as registry libraries. No remote program is executed. */
-function installSourceGraph(root: string, specifications: Record<string, string>, frozen: boolean, offline: boolean, previous?: PackageLock): PackageLock {
+interface SourceCandidate { stage: string; lock: PackageLock; previous?: PackageLock; frozen: boolean; baseLock?: string }
+const sourcePath = (path: string): string => path.replace(/^snapshots\/[a-f0-9]{64}\//, '');
+const sourceEntries = (lock: PackageLock): InstalledPackage[] => lock.packages.map(entry => ({...entry, path:sourcePath(entry.path), dependencies:Object.fromEntries(Object.entries(entry.dependencies).map(([alias,path])=>[alias,sourcePath(path)]))}));
+
+function stageSourceGraph(root: string, specifications: Record<string, string>, frozen: boolean, offline: boolean, previous?: PackageLock, update=false): SourceCandidate {
   const stage = realpathSync(mkdtempSync(join(root, '.aug-install-')));
   const packages = new Map<string, InstalledPackage>(), visited = new Map<string, string>();
   const gitSources = new Map<string, GitSource>();
   const registry: Record<string, unknown> = {};
-  const locked = new Map((previous?.git ?? []).map(source => [source.request, source]));
+  const locked = new Map((update?[]:previous?.git ?? []).map(source => [source.request, source]));
   const visit = (spec: string, owner: string): string => {
     const normalized = normalizeSpecifier(spec, owner);
     if (visited.has(normalized)) return visited.get(normalized)!;
@@ -337,7 +395,8 @@ function installSourceGraph(root: string, specifications: Record<string, string>
       const archive = join(transport, basename(packed.filename));
       const actual = 'sha512-' + createHash('sha512').update(readFileSync(archive)).digest('base64');
       if (actual !== packed.integrity) throw new Error('Package archive integrity mismatch.');
-      if (frozen && JSON.stringify((previous?.npm as Record<string, unknown>)?.[normalized]) !== JSON.stringify(registry[normalized]))
+      const expected=(previous?.npm as Record<string,unknown>)?.[normalized];
+      if ((frozen || expected!==undefined) && JSON.stringify(expected) !== JSON.stringify(registry[normalized]))
         throw new Error('Frozen package archive changed. Publish a new version instead of replacing an archive.');
       unpackSource(archive, directory);
     }
@@ -370,18 +429,74 @@ function installSourceGraph(root: string, specifications: Record<string, string>
     const lock: PackageLock = { format: 1, compiler: compilerVersion(), specifications, roots, npm: registry,
       git: [...gitSources.values()].sort((a, b) => a.request.localeCompare(b.request)),
       packages: [...packages.values()].sort((a, b) => a.path.localeCompare(b.path)) };
-    if(previous?.native&&JSON.stringify(lock.packages)===JSON.stringify(previous.packages))lock.native=previous.native;
-    if (frozen && JSON.stringify(lock.packages) !== JSON.stringify(previous?.packages))
+    const unchanged = previous && JSON.stringify(lock.packages) === JSON.stringify(sourceEntries(previous));
+    if (unchanged && previous.native) {
+      lock.native = structuredClone(previous.native);
+      if (previous.compiler !== lock.compiler) delete lock.native.compilers;
+    }
+    if (frozen && JSON.stringify(lock.git)!==JSON.stringify(previous?.git??[]))
+      throw new Error('Frozen repository revisions changed; restore the recorded Git lock.');
+    if (frozen && !unchanged)
       throw new Error('Frozen package contents changed; use aug install --update to choose new revisions.');
     rmSync(join(stage, 'transport'), { recursive: true, force: true });
-    const cache = join(root, '.aug-packages'), backup = join(root, '.aug-packages-old');
-    if (existsSync(backup)) throw new Error('Previous package install backup exists; inspect .aug-packages-old before installing.');
-    if (existsSync(cache)) renameSync(cache, backup);
-    try { renameSync(stage, cache); writeJson(join(root, 'aug.lock.json.tmp'), lock); renameSync(join(root, 'aug.lock.json.tmp'), join(root, 'aug.lock.json')); }
-    catch (error) { rmSync(cache, { recursive: true, force: true }); if (existsSync(backup)) renameSync(backup, cache); throw error; }
-    rmSync(backup, { recursive: true, force: true });
-    return lock;
-  } finally { rmSync(stage, { recursive: true, force: true }); }
+    return {stage, lock, previous, frozen};
+  } catch (error) { rmSync(stage, {recursive:true,force:true}); throw error; }
+}
+
+/** Publish complete source generations before changing the single accepted lockfile. */
+function publishSourceGraph(root: string, candidate: SourceCandidate): PackageLock {
+  const {stage, previous, frozen} = candidate, lock = candidate.lock;
+  const lockFile=join(root,'aug.lock.json');
+  if (installedText(lockFile)!==candidate.baseLock)
+    throw new Error('PACKAGE_LOCK: The accepted lock changed during installation; retry aug install.');
+  const configuration=loadConfig(root),library=isLibrary(root)?readPackage(root):undefined;
+  if(configuration.diagnostics.length || !sameSpecifications(lock.specifications,packageSpecifications(library?.sourceRoot??root,library?.manifest.dependencies??configuration.config.packages)))
+    throw new Error('PACKAGE_LOCK: Dependency declarations changed during installation; retry aug install.');
+  const cache = join(root, '.aug-packages'); mkdirSync(cache, {recursive:true});
+  const generation = createHash('sha256').update(JSON.stringify(lock.packages)).digest('hex');
+  const prefix = frozen && previous ? (previous.packages[0]?.path.match(/^(snapshots\/[a-f0-9]{64}\/)/)?.[1] ?? '') : `snapshots/${generation}/`;
+  const address = (path: string): string => prefix + path;
+  lock.packages = lock.packages.map(entry => ({...entry,path:address(entry.path),dependencies:Object.fromEntries(Object.entries(entry.dependencies).map(([alias,path])=>[alias,address(path)]))}));
+  lock.roots = Object.fromEntries(Object.entries(lock.roots).map(([alias,path])=>[alias,address(path)]));
+  if (prefix) {
+    const destination = join(cache, prefix); mkdirSync(dirname(destination), {recursive:true});
+    if (existsSync(destination)) {
+      const valid = projectPackages(root,lock.specifications,root,{lock,cache}).diagnostics.length === 0;
+      if (!valid) {
+        // Only an explicit install repairs tampered source; normal run diagnoses it.
+        const quarantine = mkdtempSync(join(cache,'.replaced-'));
+        renameSync(destination,join(quarantine,'source'));
+        renameSync(stage,destination);
+      }
+    } else renameSync(stage,destination);
+  } else {
+    // Restore a legacy format-1 lock without rewriting it. New installs use immutable generations.
+    for (const entry of lock.packages) {
+      const destination = join(cache,entry.path); mkdirSync(dirname(destination),{recursive:true});
+      if (existsSync(destination)) {
+        const quarantine=mkdtempSync(join(cache,'.replaced-'));renameSync(destination,join(quarantine,'source'));
+      }
+      renameSync(join(stage,entry.path),destination);
+    }
+  }
+  if (!frozen) {
+    const journalPath=join(root,'.aug-add.json');
+    if(existsSync(journalPath)){const journal=json(journalPath);journal.acceptedLock=digestText(JSON.stringify(lock,null,2)+'\n');replacePackageText(journalPath,JSON.stringify(journal,null,2)+'\n',0o600);}
+    replacePackageText(lockFile,JSON.stringify(lock,null,2)+'\n');
+  }
+  return frozen ? previous! : lock;
+}
+
+/** Consumers accept a new source lock only after all required native artifacts verify. */
+export async function installPackagesWithNative(root: string, frozen = false, offline = false, update = false): Promise<PackageLock> {
+  return withPackageLockAsync(join(root,'.aug-install.lock'),async()=>{
+    const candidate=planInstallation(root,frozen,offline,update);
+    try {
+      const {resolveNativePackages}=await import('./native-artifacts.ts');
+      await resolveNativePackages(root,candidate.lock,candidate.stage,{frozen,offline});
+      return publishSourceGraph(root,candidate);
+    } finally { rmSync(candidate.stage,{recursive:true,force:true}); }
+  });
 }
 
 export function initPackage(directory: string, name: string, npmMetadata = false): void {
@@ -396,7 +511,7 @@ export function initPackage(directory: string, name: string, npmMetadata = false
   writeFileSync(join(directory, 'src/export.aug'), 'export add from arithmetic\n');
   writeFileSync(join(directory, 'src/arithmetic.aug'), '/** Add two integers. @param left First value. @param right Second value. @return Their sum. */\nadd(int left, int right) returns int {\n    return left + right\n}\n\ntest add {\n    when addition {\n        it adds_two_integers {\n            assert(add(left=2, right=3) == 5)\n        }\n    }\n}\n');
   writeFileSync(join(directory, 'README.md'), `# ${name}\n\nAugust ${compilerVersion()} source library. Public exports live in src/export.aug.\n`);
-  writeFileSync(join(directory, '.gitignore'), '.aug-build/\n.aug-packages/\n.aug-install-*/\nnode_modules/\n*.tgz\n');
+  writeFileSync(join(directory, '.gitignore'), '.aug-build/\n.aug-packages/\n.aug-install-*/\n.aug-lock-*/\n.aug-write-*/\n.aug-add.json*\n*.aug.tmp\nnode_modules/\n*.tgz\n');
 }
 
 /** Synchronize transport metadata; August's manifest owns dependency aliases. */
@@ -418,8 +533,30 @@ export function packPackage(root: string): string {
   return join(destination, basename(result.filename));
 }
 
+const activeAdds=new Set<string>();
+const digestText=(text:string):string=>createHash('sha256').update(text).digest('hex');
+
+/** Recover an interrupted aug add only when its configuration and accepted revision still match. */
+function recoverAddConfiguration(root:string,force=false):void {
+  const path=join(root,'.aug-add.json');if(!existsSync(path))return;
+  const journal=json(path),configuration=join(root,'main.yaml'),lockPath=join(root,'aug.lock.json');
+  if(journal.format!==1||typeof journal.before!=='string'||typeof journal.after!=='string'||typeof journal.existed!=='boolean'||!Number.isSafeInteger(journal.pid))
+    throw new Error('PACKAGE_LOCK: Invalid interrupted aug add journal. Inspect .aug-add.json before installing.');
+  if(!force&&activeAdds.has(path))return;
+  const current=existsSync(configuration)?readFileSync(configuration,'utf8'):'';
+  const revision=existsSync(lockPath)?digestText(readFileSync(lockPath,'utf8')):null;
+  if(current!==journal.before&&current!==journal.after || revision!==journal.baseLock&&revision!==journal.acceptedLock)
+    throw new Error('PACKAGE_LOCK: Files changed after an interrupted aug add. Inspect main.yaml, aug.lock.json and .aug-add.json before installing.');
+  if(revision!==journal.acceptedLock){
+    if(journal.existed){replacePackageText(configuration,journal.before);}
+    else rmSync(configuration,{force:true});
+  }
+  rmSync(path,{force:true});
+}
+
 /** Give a source package a short import name and install its verified dependency graph. */
-export function addPackage(root: string, request: string, alias: string, offline = false): PackageLock {
+function addConfiguration(root: string, request: string, alias: string): void {
+  recoverAddConfiguration(root);
   const loaded = loadConfig(root);
   if (loaded.diagnostics.length) throw new Error(loaded.diagnostics.map(issue => issue.message).join('\n'));
   assertAlias(isLibrary(root) ? readPackage(root).sourceRoot : root, alias); normalizeSpecifier(request, root);
@@ -428,7 +565,43 @@ export function addPackage(root: string, request: string, alias: string, offline
   const block = 'packages:\n' + Object.entries(ordered(dependencies)).map(([name, value]) => '  ' + name + ': ' + JSON.stringify(value)).join('\n') + '\n';
   const expression = /^packages:[^\n]*(?:\n|$)(?:[ \t][^\n]*(?:\n|$)|\n)*/m;
   const after = expression.test(before) ? before.replace(expression, block) : before.trimEnd() + (before.trim() ? '\n\n' : '') + block;
-  writeFileSync(path, after);
-  try { return installPackages(root, false, offline); }
-  catch (error) { if (existed) writeFileSync(path, before); else rmSync(path, { force: true }); throw error; }
+  const journalPath=join(root,'.aug-add.json'),lockPath=join(root,'aug.lock.json');
+  replacePackageText(journalPath,JSON.stringify({format:1,pid:process.pid,existed,before,after,baseLock:existsSync(lockPath)?digestText(readFileSync(lockPath,'utf8')):null})+'\n',0o600);
+  activeAdds.add(journalPath);
+  replacePackageText(path,after);
+}
+
+function finishAdd(root:string):void {
+  const journalPath=join(root,'.aug-add.json');if(!activeAdds.delete(journalPath))return;
+  const lockPath=join(root,'aug.lock.json');
+  if(existsSync(journalPath)&&existsSync(lockPath)&&json(journalPath).acceptedLock===digestText(readFileSync(lockPath,'utf8')))
+    rmSync(journalPath,{force:true});
+}
+
+/** Give a source package a short import name and install its verified graph. */
+export function addPackage(root: string, request: string, alias: string, offline = false): PackageLock {
+  return withPackageLock(join(root,'.aug-install.lock'),()=>{
+    try {
+      addConfiguration(root,request,alias);
+      const candidate=planInstallation(root,false,offline,false);
+      try{return publishSourceGraph(root,candidate);}finally{rmSync(candidate.stage,{recursive:true,force:true});}
+    } catch(error){recoverAddConfiguration(root,true);throw error;}
+    finally{finishAdd(root);}
+  });
+}
+
+/** An artifact failure restores the prior dependency aliases as well as leaving its lock unchanged. */
+export async function addPackageWithNative(root:string,request:string,alias:string,offline=false):Promise<PackageLock> {
+  return withPackageLockAsync(join(root,'.aug-install.lock'),async()=>{
+    try {
+      addConfiguration(root,request,alias);
+      const candidate=planInstallation(root,false,offline,false);
+      try{
+        const {resolveNativePackages}=await import('./native-artifacts.ts');
+        await resolveNativePackages(root,candidate.lock,candidate.stage,{offline});
+        return publishSourceGraph(root,candidate);
+      }finally{rmSync(candidate.stage,{recursive:true,force:true});}
+    }catch(error){recoverAddConfiguration(root,true);throw error;}
+    finally{finishAdd(root);}
+  });
 }

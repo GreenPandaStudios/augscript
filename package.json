@@ -15,6 +15,7 @@
   "scripts": {
     "check": "tsc --noEmit",
     "test": "node --test --test-concurrency=2 tests/*.test.mjs",
+    "test:compatibility": "node --test tests/package-compatibility.test.mjs tests/user-packages.test.mjs tests/native-packages.test.mjs tests/native-artifacts.test.mjs tests/native-bindings.test.mjs",
     "test:setup-cold": "AUG_TEST_COLD_NATIVE=1 node --test tests/native-setup-cold.test.mjs",
     "test:docker": "node scripts/test-docker.mjs",
     "test:sanitizers": "node scripts/sanitize-core.mjs",

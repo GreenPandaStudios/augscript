@@ -4,8 +4,9 @@ import {homedir} from 'node:os';
 import {join,resolve} from 'node:path';
 import {UnpackSync} from 'tar';
 import {withPackageLockAsync} from './package-locking.ts';
+import {replacePackageText} from './package-storage.ts';
 import {nativePath,nativeHostTarget,selectNativeArtifact,type NativeArtifact,type NativeTarget} from './native-contracts.ts';
-import {compilerVersion,readPackage,sourcePaths,projectPackages,type PackageLock} from './package-manager.ts';
+import {compilerVersion,readPackage,readPackageLock,sourcePaths,projectPackages,type PackageLock} from './package-manager.ts';
 import {sourceAlias} from './git-packages.ts';
 import type {NativeLinkInput} from './llvm-native.ts';
 
@@ -101,19 +102,32 @@ export async function prepareNativePackages(root:string,options:{offline?:boolea
   if(!existsSync(lockFile)&&!self?.manifest.native)return [];
   return withPackageLockAsync(join(root,'.aug-install.lock'),async()=>{
     const initial=existsSync(lockFile)?readFileSync(lockFile,'utf8'):undefined;
-    const lock=initial?JSON.parse(initial) as PackageLock:{format:1 as const,compiler:compilerVersion(),specifications:{},roots:{},packages:[],npm:{}};
+    const lock=initial?readPackageLock(lockFile):{format:1 as const,compiler:compilerVersion(),specifications:{},roots:{},packages:[],npm:{}};
     if(lock.compiler!==compilerVersion())throw new Error('NATIVE_LOCK: Source lock compiler differs; run aug install');
+    const inputs=await resolveNativePackages(root,lock,join(root,'.aug-packages'),options);
+    if(lock.native&&!options.frozen){
+      if((existsSync(lockFile)?readFileSync(lockFile,'utf8'):undefined)!==initial)throw new Error('NATIVE_LOCK: Source lock changed during native installation; retry aug install');
+      replacePackageText(lockFile,JSON.stringify(lock,null,2)+'\n');
+    }
+    return inputs;
+  });
+}
+
+/** Validate an isolated source candidate before its installer publishes the accepted revision. */
+export async function resolveNativePackages(root:string,lock:PackageLock,cache:string,options:{offline?:boolean;frozen?:boolean;target?:NativeTarget}={}):Promise<NativeLinkInput[]> {
+    const self=existsSync(join(root,'aug-package.json'))?readPackage(root):undefined;
     const target=options.target??nativeHostTarget(),key=target.triple+'/'+(target.os==='macos'?'macos14':target.libc);
-    const verified=projectPackages(root,lock.specifications);
+    const verified=projectPackages(root,lock.specifications,self?.sourceRoot??root,{lock,cache});
     if(verified.diagnostics.length)throw new Error(verified.diagnostics.map(d=>d.message).join('\n'));
-    const packages=[...verified.scopes.values()].filter(entry=>entry.native).map(entry=>({sourcePackage:entry.name+'@'+entry.version,sourceDigest:entry.digest,
-      sourceCommit:lock.git?.find(g=>entry.path==='packages/'+sourceAlias(g.request))?.commit,
+    const packages=[...new Set(verified.scopes.values())].filter(entry=>entry.native).map(entry=>({sourcePackage:entry.name+'@'+entry.version,sourceDigest:entry.digest,
+      sourceCommit:lock.git?.find(g=>entry.path.endsWith('packages/'+sourceAlias(g.request)))?.commit,
       contractSha256:entry.native!.bindingsSha256,artifact:selectNativeArtifact(entry.native!.artifacts,target)}));
     if(self?.manifest.native){const digest=createHash('sha256');
       for(const file of ['aug-package.json','native.abi.json',...sourcePaths(self.sourceRoot).map(path=>path.slice(root.length+1))].sort())digest.update(file+'\0').update(readFileSync(join(root,file))).update('\0');
       packages.push({sourcePackage:self.manifest.name+'@'+self.manifest.version,sourceDigest:digest.digest('hex'),sourceCommit:undefined,contractSha256:self.manifest.native.bindingsSha256,artifact:selectNativeArtifact(self.manifest.native.artifacts,target)});
     }
     if(!packages.length)return [];
+
     const native=lock.native??{format:1,targets:{}};
     if(native.format!==1)throw new Error('NATIVE_LOCK: Unsupported native lock schema');
     const previous=native.targets[key];
@@ -128,9 +142,6 @@ export async function prepareNativePackages(root:string,options:{offline?:boolea
       inputs.push({directory,libraries:p.artifact.link.libraries,runtimeFiles:p.artifact.runtime.files,artifactSha256:p.artifact.sha256,
         metadata:[...Object.keys(supplied).filter(path=>!p.artifact.link.libraries.includes(path)&&!p.artifact.runtime.files.includes(path)),p.artifact.fileManifest]});
     }
-    if(packages.length&&!options.frozen){native.targets[key]={target,packages};lock.native=native;
-      if((existsSync(lockFile)?readFileSync(lockFile,'utf8'):undefined)!==initial)throw new Error('NATIVE_LOCK: Source lock changed during native installation; retry aug install');
-      writeFileSync(lockFile+'.native.tmp',JSON.stringify(lock,null,2)+'\n');renameSync(lockFile+'.native.tmp',lockFile);}
+    if(!options.frozen){native.targets[key]={target,packages};lock.native=native;}
     return inputs;
-  });
 }

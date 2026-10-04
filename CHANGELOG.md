@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+Package authors can declare bounded compiler requirements while first-party packages retain exact release versions. Preserve repository commits during compiler upgrades and dependency additions; use `--update` to advance them. Publish immutable source generations with one lockfile rename after native artifacts verify. Recover terminated writers and interrupted `aug add` configuration changes, reject conflicting package identities, and keep prior source generations available to readers. Ship the public ABI-1 adapter header and document native/package formats with upgrade and recovery qualification on the existing platform gates.
+
 Provide two versioned, multi-architecture container bases: `aug-build` with the published CLI and prepared LLVM/runtime, and `aug-runtime` for complete native deployments. Use the build base directly in Dev Containers. Qualify offline builds, specs, tests, crypto and HTTP on native ARM64 and x86-64 runners before registry publication. Compiler contributor tests retain their separate source image.
 
 ## 0.23.0 — native ingestion boundaries

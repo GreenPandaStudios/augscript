@@ -12,7 +12,7 @@ The explicit C backend remains a migration reference for contributor comparisons
 
 ## Runtime and native packages
 
-[`runtime`](../runtime) supplies managed values, allocation, collections, task scopes, cleanup, checked failure transport, and selected I/O adapters. Native packages expose a reviewed C ABI through [`native-contracts.ts`](../src/native-contracts.ts), [`native-artifacts.ts`](../src/native-artifacts.ts), and the package manager. The runtime's tagged value layout is compiler-private; a public native package uses fixed-width values, copied buffers, or owned opaque resources.
+[`runtime`](../runtime) supplies managed values, allocation, collections, task scopes, cleanup, checked failure transport, and selected I/O adapters. Native packages expose a reviewed C ABI through [`native-contracts.ts`](../src/native-contracts.ts), [`native-artifacts.ts`](../src/native-artifacts.ts), and the package manager. The [package compatibility contract](package-compatibility.md) and [native ABI reference](native-abi.md) record versioned public boundaries. The package manager stages immutable source generations and accepts consumer locks only after native verification; `package-locking.ts` serializes writers and recovers terminated owners. The runtime's tagged value layout is compiler-private; a public native package uses fixed-width values, copied buffers, or owned opaque resources.
 
 [`package-manager.ts`](../src/package-manager.ts) resolves source dependencies, caches revisions, and maintains locks. Compiler and library downloads have separate identities. Consumer installation verifies prebuilt artifacts and executes no package build scripts. See [native compilation design](native-interop-llvm-plan.md) for the boundary and deployment contract.
 
