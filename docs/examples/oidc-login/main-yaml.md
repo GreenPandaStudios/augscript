@@ -25,4 +25,11 @@ openapi:
   path: /openapi.json
   docs: /docs
   output: .aug-build/openapi.json
+
+packages:
+  crypto: "https://github.com/GreenPandaStudios/augscript/src/stdlib/crypto#b14a0f9aa41f1ce58bd51133bcdc424033e40d40"
+  json: "https://github.com/GreenPandaStudios/augscript/src/stdlib/json#v0.19.0"
+  memory: "https://github.com/GreenPandaStudios/augscript/src/stdlib/memory#v0.19.0"
+  time: "https://github.com/GreenPandaStudios/augscript/src/stdlib/time#v0.19.0"
+  web: "https://github.com/GreenPandaStudios/augscript/src/stdlib/web#v0.19.0"
 ```

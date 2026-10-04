@@ -4,16 +4,14 @@
 
 ## Providers
 
-`Console` is provided by [`SystemConsole`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-SystemConsole). The same instance is shared.
+`Console` is provided by [`SystemConsole`](.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-SystemConsole). The same instance is shared.
 
 ## Startup
 
-It gets `first` of type [`Resource`](resource.aug.md#symbol-Resource) from [`make`](resource.aug.md#symbol-make). `first` of type [`Resource`](resource.aug.md#symbol-Resource) owns this value. It calls [`consume`](resource.aug.md#symbol-consume) with `value` from `first` using injected `Console` for `console`. It gets `second` of type [`Resource`](resource.aug.md#symbol-Resource) from [`make`](resource.aug.md#symbol-make).
-
-`second` of type [`Resource`](resource.aug.md#symbol-Resource) owns this value. It prints `"end of main"`.
+It calls [`make`](resource.aug.md#symbol-make) and stores the result in owned `first` ([`Resource`](resource.aug.md#symbol-Resource)). It calls [`consume`](resource.aug.md#symbol-consume) with `value` from `first` using injected `Console` for `console`. It calls [`make`](resource.aug.md#symbol-make) and stores the result in owned `second` ([`Resource`](resource.aug.md#symbol-Resource)). It prints `"end of main"`.
 
 ## Dependencies
 
-It uses [`SystemConsole`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-SystemConsole) from `august.io`. It uses [`Resource`](resource.aug.md#symbol-Resource), [`consume`](resource.aug.md#symbol-consume), and [`make`](resource.aug.md#symbol-make) from `resource`. These links explain the full dependency contracts.
+It uses [`SystemConsole`](.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-SystemConsole) from `august.io`. It uses [`Resource`](resource.aug.md#symbol-Resource), [`consume`](resource.aug.md#symbol-consume), and [`make`](resource.aug.md#symbol-make) from `resource`.
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).

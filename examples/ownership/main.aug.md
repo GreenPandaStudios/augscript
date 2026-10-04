@@ -4,10 +4,10 @@
 
 ## Startup
 
-It sets `counter` of type [`Counter`](counter.aug.md#symbol-Counter) to a [`Counter`](counter.aug.md#symbol-Counter) with `value` `1`. `counter` of type [`Counter`](counter.aug.md#symbol-Counter) owns this value. It calls [`counter.increment`](counter.aug.md#symbol-Counter.increment). It prints [`counter.read`](counter.aug.md#symbol-Counter.read).
+It creates [`Counter`](counter.aug.md#symbol-Counter) with `value` `1` and stores the result in owned `counter` ([`Counter`](counter.aug.md#symbol-Counter)). It calls [`counter.increment`](counter.aug.md#symbol-Counter.increment). It prints [`counter.read`](counter.aug.md#symbol-Counter.read).
 
 ## Dependencies
 
-It uses [`Counter`](counter.aug.md#symbol-Counter) ([`increment`](counter.aug.md#symbol-Counter.increment) and [`read`](counter.aug.md#symbol-Counter.read)) from `counter`. These links explain the full dependency contracts.
+It uses [`Counter`](counter.aug.md#symbol-Counter) ([`increment`](counter.aug.md#symbol-Counter.increment) and [`read`](counter.aug.md#symbol-Counter.read)) from `counter`.
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).

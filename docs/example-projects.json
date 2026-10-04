@@ -1,26 +1,292 @@
 [
-  {"path":"examples/hello","title":"Hello world with dependencies","group":"Start here","description":"A greeter, a logger, narrow folder exports, and explicit application bindings."},
-  {"path":"examples/new-syntax","title":"Labeled calls and injection","group":"Start here","description":"Constructor injection, named inputs, ordinary functions, and same-file tests."},
-  {"path":"examples/developer-workflow","title":"A small tested application","group":"Start here","description":"A calculator module with logging, fixtures, groups, and parameterized tests."},
-  {"path":"examples/cli-args","title":"Command-line arguments","group":"Start here","description":"Read arguments, inspect collections, and return a process exit status."},
-  {"path":"examples/collections","title":"Lists, tuples, sets, and maps","group":"Values and errors","description":"Create typed collections and update them through checked mutable access."},
-  {"path":"examples/generics","title":"Generic contracts","group":"Values and errors","description":"Write reusable records, interfaces, classes, and functions with type parameters."},
-  {"path":"examples/generic-di","title":"Generic dependency injection","group":"Values and errors","description":"Bind a generic interface and resolve a class that uses it."},
-  {"path":"examples/errors","title":"Checked failures","group":"Values and errors","description":"Declare errors with unless, catch them, and run cleanup."},
-  {"path":"examples/ownership","title":"Read access and mutable borrows","group":"State and lifetime","description":"Share a reference for reading and grant explicit access for mutation."},
-  {"path":"examples/ownership-transfer","title":"Move ownership","group":"State and lifetime","description":"Transfer an owned resource between labeled calls."},
-  {"path":"examples/drop","title":"Resource cleanup","group":"State and lifetime","description":"Release an owned resource when its lifetime ends."},
-  {"path":"examples/visibility","title":"Private state and helpers","group":"State and lifetime","description":"Keep underscore-prefixed implementation details inside their scope."},
-  {"path":"examples/approved-design","title":"Modules and composition","group":"Modules and packages","description":"Combine domain modules, generic values, explicit capabilities, and scoped providers."},
-  {"path":"examples/interceptors","title":"Function and constructor middleware","group":"Modules and packages","description":"Layer interceptors, map inputs, and keep logging dependencies explicit."},
-  {"path":"examples/packages/math","title":"Create a package","group":"Modules and packages","description":"Publish a small arithmetic library through export.aug and test its public surface."},
-  {"path":"examples/packages/app","title":"Use a package","group":"Modules and packages","description":"Install the neighboring arithmetic package and import it through a local alias."},
-  {"path":"examples/ffi","title":"A native C boundary","group":"Native applications","description":"Declare a C operation and call it inside an unsafe block."},
-  {"path":"examples/benchmark","title":"A finite benchmark","group":"Native applications","description":"Measure a deterministic arithmetic workload with aug bench."},
-  {"path":"examples/oidc-login","title":"OpenID Connect login application","group":"Web applications","description":"A login page, provider, client, session JWT, and logout flow in one August project."},
-  {"path":"benchmarks/startup","title":"Startup benchmark","group":"Measured programs","description":"The small program used to measure process startup."},
-  {"path":"benchmarks/cpu","title":"CPU benchmark","group":"Measured programs","description":"Two million dependent integer steps with a checked result."},
-  {"path":"benchmarks/collections","title":"Map and Set benchmark","group":"Measured programs","description":"Insert, find, and iterate over 20,000 collection entries."},
-  {"path":"benchmarks/json","title":"JSON benchmark","group":"Measured programs","description":"Parse, decode, and serialize a typed record 5,000 times."},
-  {"path":"benchmarks/http","title":"HTTP benchmark","group":"Measured programs","description":"Serve the typed JSON endpoint used in the throughput measurements."}
+  {
+    "path": "examples/native-pytorch",
+    "title": "CPU tensors with PyTorch",
+    "group": "Native libraries (LLVM preview)",
+    "description": "Add two CPU tensors with LibTorch and check the elements and sum. Owned tensors are released at scope exit."
+  },
+  {
+    "path": "examples/native-sqlite",
+    "title": "A database with SQLite",
+    "group": "Native libraries (LLVM preview)",
+    "description": "Create an in-memory SQLite database, insert a bound value, and query it. Borrow the database for updates; scope exit closes it."
+  },
+  {
+    "path": "examples/native-zlib",
+    "title": "Compression with zlib",
+    "group": "Native libraries (LLVM preview)",
+    "description": "Compress a buffer with zlib and verify the restored bytes. A fixed output limit bounds decompression."
+  },
+  {
+    "path": "examples/native-blake3",
+    "title": "Hashing with Rust BLAKE3",
+    "group": "Native libraries (LLVM preview)",
+    "description": "Hash a buffer with the Rust BLAKE3 crate and compare a known digest."
+  },
+  {
+    "path": "examples/hello",
+    "title": "Hello world with dependencies",
+    "group": "Start here",
+    "description": "Print a greeting through an injected logger. Startup selects the providers, and export files choose what each folder makes public.",
+    "walkthrough": [
+      {
+        "file": "main.aug",
+        "explanation": "Startup binds the console, logger, and application, then resolves the greeter and calls it."
+      },
+      {
+        "file": "app/greeter.aug",
+        "explanation": "The greeter receives its logger in the header and delegates the greeting to it. The interface states the console effect."
+      },
+      {
+        "file": "logging/export.aug",
+        "explanation": "The logging folder exports Logger and ConsoleLogger for callers."
+      },
+      {
+        "file": "logging/logger.aug",
+        "explanation": "Logger requires a log method. ConsoleLogger writes the message through its injected console."
+      }
+    ]
+  },
+  {
+    "path": "examples/weather-api",
+    "title": "Weather API",
+    "group": "Web applications",
+    "description": "Serve five simulated forecasts as typed JSON. The record, endpoint, and tests share a file; main.aug starts the listener and main.yaml enables OpenAPI.",
+    "walkthrough": [
+      {
+        "file": "main.aug",
+        "explanation": "Import the forecast endpoint and serve it on port 8787."
+      },
+      {
+        "file": "forecasts.aug",
+        "explanation": "Read the response record, five fixed forecasts, and cases that exercise the endpoint pipeline."
+      }
+    ]
+  },
+  {
+    "path": "examples/new-syntax",
+    "title": "Labeled calls and injection",
+    "group": "Start here",
+    "description": "Construct an object with an injected dependency, call functions with labeled inputs, and run same-file tests."
+  },
+  {
+    "path": "examples/developer-workflow",
+    "title": "A small tested application",
+    "group": "Start here",
+    "description": "A calculator logs each addition. Its nearby tests replace the logger and verify both labeled inputs and fresh setup.",
+    "walkthrough": [
+      {
+        "file": "main.aug",
+        "explanation": "Startup supplies providers, uses collections, invokes the calculator, and catches a simulated load failure."
+      },
+      {
+        "file": "calculator.aug",
+        "explanation": "The calculator receives a logger and adds two inputs. Its tests supply a private silent logger."
+      },
+      {
+        "file": "logging/logger.aug",
+        "explanation": "The production logger and test adapter implement this interface."
+      }
+    ]
+  },
+  {
+    "path": "examples/cli-args",
+    "title": "Command-line arguments",
+    "group": "Start here",
+    "description": "Read arguments, inspect collections, and return a process exit status."
+  },
+  {
+    "path": "examples/collections",
+    "title": "Lists, tuples, sets, and maps",
+    "group": "Values and errors",
+    "description": "Create typed collections and update them through checked mutable access."
+  },
+  {
+    "path": "examples/generics",
+    "title": "Generic types and functions",
+    "group": "Values and errors",
+    "description": "Write reusable records, interfaces, classes, and functions with type parameters."
+  },
+  {
+    "path": "examples/generic-di",
+    "title": "Generic dependency injection",
+    "group": "Values and errors",
+    "description": "Bind a generic interface and resolve a class that uses it."
+  },
+  {
+    "path": "examples/errors",
+    "title": "Checked failures",
+    "group": "Values and errors",
+    "description": "Declare errors with unless, catch them, and run cleanup."
+  },
+  {
+    "path": "examples/ownership",
+    "title": "Read access and mutable borrows",
+    "group": "State and lifetime",
+    "description": "Share a reference for reading and grant explicit access for mutation."
+  },
+  {
+    "path": "examples/ownership-transfer",
+    "title": "Move ownership",
+    "group": "State and lifetime",
+    "description": "Transfer an owned resource between labeled calls."
+  },
+  {
+    "path": "examples/drop",
+    "title": "Resource cleanup",
+    "group": "State and lifetime",
+    "description": "Release an owned resource when its lifetime ends."
+  },
+  {
+    "path": "examples/visibility",
+    "title": "Private state and helpers",
+    "group": "State and lifetime",
+    "description": "Keep underscore-prefixed implementation details inside their scope."
+  },
+  {
+    "path": "examples/approved-design",
+    "title": "Modules and composition",
+    "group": "Modules and packages",
+    "description": "Supply a scoped counter and call a doubling function that rejects negative inputs.",
+    "walkthrough": [
+      {
+        "file": "main.aug",
+        "explanation": "Follow the domain imports, provider choices, explicit scope, and checked failure before opening the implementation files."
+      },
+      {
+        "file": "domain/export.aug",
+        "explanation": "The export file chooses the declarations callers can import."
+      },
+      {
+        "file": "domain/numbers.aug",
+        "explanation": "The validation interceptor rejects a negative input. Tests cover successful doubling and recovery from that failure."
+      }
+    ]
+  },
+  {
+    "path": "examples/interceptors",
+    "title": "Function and constructor middleware",
+    "group": "Modules and packages",
+    "description": "Layer interceptors, map inputs, and keep logging dependencies explicit."
+  },
+  {
+    "path": "examples/packages/math",
+    "title": "Create a package",
+    "group": "Modules and packages",
+    "description": "Export an arithmetic function from a library and test it."
+  },
+  {
+    "path": "examples/packages/app",
+    "title": "Use a package",
+    "group": "Modules and packages",
+    "description": "Install the neighboring arithmetic package and import it through a local alias."
+  },
+  {
+    "path": "examples/ffi",
+    "title": "A native C boundary",
+    "group": "Native applications",
+    "description": "Declare a C operation and call it inside an unsafe block."
+  },
+  {
+    "path": "examples/benchmark",
+    "title": "A finite benchmark",
+    "group": "Native applications",
+    "description": "Measure a deterministic arithmetic workload with aug bench."
+  },
+  {
+    "path": "examples/oidc-login",
+    "title": "OpenID Connect login application",
+    "group": "Web applications",
+    "description": "One executable hosts a login page, an OpenID Connect provider and client, session JWTs, and logout. Accounts, keys, and sessions are held in memory for this development demonstration."
+  },
+  {
+    "path": "benchmarks/greetings",
+    "title": "A million greetings",
+    "group": "Measured programs",
+    "description": "Print one million UTF-8 greetings and flush each line, matching the C reference."
+  },
+  {
+    "path": "benchmarks/startup",
+    "title": "Startup benchmark",
+    "group": "Measured programs",
+    "description": "Print one integer and exit to measure process startup."
+  },
+  {
+    "path": "benchmarks/float",
+    "title": "Floating-point benchmark",
+    "group": "Measured programs",
+    "description": "Accumulate exact binary fractions and check the final value."
+  },
+  {
+    "path": "benchmarks/calls",
+    "title": "Function-call benchmark",
+    "group": "Measured programs",
+    "description": "Call a labeled function repeatedly with a dependent integer result."
+  },
+  {
+    "path": "benchmarks/list",
+    "title": "List traversal benchmark",
+    "group": "Measured programs",
+    "description": "Grow a list and sum its snapshot values."
+  },
+  {
+    "path": "benchmarks/strings",
+    "title": "String processing benchmark",
+    "group": "Measured programs",
+    "description": "Split text into parts and sum their byte lengths."
+  },
+  {
+    "path": "benchmarks/map-churn",
+    "title": "Map deletion benchmark",
+    "group": "Measured programs",
+    "description": "Delete, replace and reinsert entries, then check values and insertion order."
+  },
+  {
+    "path": "benchmarks/errors",
+    "title": "Checked-error benchmark",
+    "group": "Measured programs",
+    "description": "Interleave successful calls and caught checked failures."
+  },
+  {
+    "path": "benchmarks/records",
+    "title": "Record allocation benchmark",
+    "group": "Measured programs",
+    "description": "Retain immutable records and sum their fields."
+  },
+  {
+    "path": "benchmarks/tasks",
+    "title": "Task scheduling benchmark",
+    "group": "Measured programs",
+    "description": "Start and join two tasks in each bounded scope."
+  },
+  {
+    "path": "benchmarks/cpu",
+    "title": "CPU benchmark",
+    "group": "Measured programs",
+    "description": "Two million dependent integer steps with a checked result."
+  },
+  {
+    "path": "benchmarks/collections",
+    "title": "Map and Set benchmark",
+    "group": "Measured programs",
+    "description": "Insert, find, and iterate over 20,000 collection entries."
+  },
+  {
+    "path": "benchmarks/json",
+    "title": "JSON benchmark",
+    "group": "Measured programs",
+    "description": "Parse, decode, and serialize a typed record 5,000 times."
+  },
+  {
+    "path": "benchmarks/http",
+    "title": "HTTP benchmark",
+    "group": "Measured programs",
+    "description": "Serve the typed JSON endpoint used in the throughput measurements."
+  },
+  {
+    "path": "examples/native-gpu",
+    "title": "GPU workers",
+    "group": "Native libraries",
+    "description": "Create Metal buffers inside isolated workers, add vectors on the GPU, and return copied results. Requires the August 0.23.0 preview, Apple Silicon, and macOS 14 or later with an available Metal GPU."
+  }
 ]

@@ -1,0 +1,3 @@
+packages:
+  postgres: "https://github.com/GreenPandaStudios/aug-postgres#v0.1.0"
+  web: "https://github.com/GreenPandaStudios/augscript/src/stdlib/web#v0.23.0"

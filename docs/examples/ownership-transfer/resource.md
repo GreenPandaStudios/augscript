@@ -39,7 +39,7 @@ interface IResource:
 make() returns own Resource:
     own Resource value = Resource()
     return value
-consume(resolve Console console, own Resource value) uses Console.write:
+consume(resolve Console console, own Resource value):
     console.write(value="consumed")
 ```
 
@@ -58,7 +58,7 @@ make() returns own Resource {
     own Resource value = Resource()
     return value
 }
-consume(resolve Console console, own Resource value) uses Console.write {
+consume(resolve Console console, own Resource value) {
     console.write(value="consumed")
 }
 ```
@@ -71,32 +71,27 @@ consume(resolve Console console, own Resource value) uses Console.write {
 
 ## Compiled specification {#specification}
 
-<a id="symbol-Resource"></a>
-### `Resource` · class · [source](resource.md#code)
+### `Resource` · class · [source](resource.md#code) {#symbol-Resource}
 
 It implements [`IResource`](resource.md#symbol-IResource).
 
-<a id="symbol-Resource.drop"></a>
-#### `Resource.drop` · [source](resource.md#code)
+#### `Resource.drop` · [source](resource.md#code) {#symbol-Resource.drop}
 
 It continues without an operation.
 
-<a id="symbol-IResource"></a>
-### `IResource` · interface · [source](resource.md#code)
+### `IResource` · interface · [source](resource.md#code) {#symbol-IResource}
 
-<a id="symbol-make"></a>
-### `make` · [source](resource.md#code)
+### `make` · [source](resource.md#code) {#symbol-make}
 
-It returns ownership of [`Resource`](resource.md#symbol-Resource). It sets `value` of type [`Resource`](resource.md#symbol-Resource) to a [`Resource`](resource.md#symbol-Resource). `value` of type [`Resource`](resource.md#symbol-Resource) owns this value. It returns `value`.
+It returns ownership of [`Resource`](resource.md#symbol-Resource). It creates [`Resource`](resource.md#symbol-Resource) and stores the result in owned `value` ([`Resource`](resource.md#symbol-Resource)). It returns `value`.
 
-<a id="symbol-consume"></a>
-### `consume` · [source](resource.md#code)
+### `consume` · [source](resource.md#code) {#symbol-consume}
 
-It takes `value` as [`Resource`](resource.md#symbol-Resource) with ownership transferred. It gets `console` ([`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console)) from dependency injection. It passes `"consumed"` to [`console.write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write).
+It takes `value` as [`Resource`](resource.md#symbol-Resource) with ownership transferred. It gets `console` ([`Console`](dependencies/august/0.23.0/io/contracts.md#symbol-Console)) from dependency injection. It passes `"consumed"` to [`console.write`](dependencies/august/0.23.0/io/contracts.md#symbol-Console.write).
 
 ### Dependencies
 
-It uses [`Console`](dependencies/august/0.19.0/io/contracts.md#symbol-Console) ([`write`](dependencies/august/0.19.0/io/contracts.md#symbol-Console.write)) from `august.io`. These links explain the full dependency contracts.
+It uses [`Console`](dependencies/august/0.23.0/io/contracts.md#symbol-Console) ([`write`](dependencies/august/0.23.0/io/contracts.md#symbol-Console.write)) from `august.io`.
 
 ::::
 

@@ -49,7 +49,9 @@ match names.get(key=2):
     when some name:
         print(value=name)
 (code, label) to (3, "plum")
-print(value={Fruit(code=code, name=label), Fruit(name=label, code=code)}.length())
+print(
+    value={Fruit(code=code, name=label), Fruit(name=label, code=code)}.length()
+)
 scope:
     resolve Counter to counter
     borrow counter:
@@ -82,7 +84,9 @@ match names.get(key=2) {
     }
 }
 (code, label) to (3, "plum")
-print(value={Fruit(code=code, name=label), Fruit(name=label, code=code)}.length())
+print(
+    value={Fruit(code=code, name=label), Fruit(name=label, code=code)}.length()
+)
 scope {
     resolve Counter to counter
     borrow counter {
@@ -109,7 +113,7 @@ catch RangeError error {
 
 ### Providers
 
-`Console` is provided by [`SystemConsole`](dependencies/august/0.19.0/io/contracts.md#symbol-SystemConsole). The same instance is shared.
+`Console` is provided by [`SystemConsole`](dependencies/august/0.23.0/io/contracts.md#symbol-SystemConsole). The same instance is shared.
 
 `Application` is provided by [`ApplicationImpl`](domain/app.md#symbol-ApplicationImpl). The same instance is shared. It requires bindings for `Console`. Include providers from [`Counters`](counters.md#symbol-Counters).
 
@@ -125,7 +129,7 @@ It calls [`double`](domain/numbers.md#symbol-double) with `amount` `-1`. If this
 
 ### Dependencies
 
-It uses [`SystemConsole`](dependencies/august/0.19.0/io/contracts.md#symbol-SystemConsole) from `august.io`. It uses [`Counter`](counters.md#symbol-Counter) ([`increment`](counters.md#symbol-Counter.increment) and [`value`](counters.md#symbol-Counter.value)) and [`Counters`](counters.md#symbol-Counters) from `counters`. It uses [`Application`](domain/app.md#symbol-Application) ([`start`](domain/app.md#symbol-Application.start)), [`ApplicationImpl`](domain/app.md#symbol-ApplicationImpl), [`Fruit`](domain/models.md#symbol-Fruit), [`RangeError`](domain/numbers.md#symbol-RangeError), and [`double`](domain/numbers.md#symbol-double) from `domain`. These links explain the full dependency contracts.
+It uses [`SystemConsole`](dependencies/august/0.23.0/io/contracts.md#symbol-SystemConsole) from `august.io`. It uses [`Counter`](counters.md#symbol-Counter) ([`increment`](counters.md#symbol-Counter.increment) and [`value`](counters.md#symbol-Counter.value)) and [`Counters`](counters.md#symbol-Counters) from `counters`. It uses [`Application`](domain/app.md#symbol-Application) ([`start`](domain/app.md#symbol-Application.start)), [`ApplicationImpl`](domain/app.md#symbol-ApplicationImpl), [`Fruit`](domain/models.md#symbol-Fruit), [`RangeError`](domain/numbers.md#symbol-RangeError), and [`double`](domain/numbers.md#symbol-double) from `domain`.
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).
 

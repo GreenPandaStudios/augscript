@@ -1,8 +1,8 @@
 // aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
-import Crypto and GnuTlsCrypto from august.crypto
-import Clock and SystemClock from august.time
-import HttpClient and WebHttpClient from august.web
-import ExpiringStore and MemoryStore from august.memory
+import Crypto and GnuTlsCrypto from crypto
+import Clock and SystemClock from time
+import HttpClient and WebHttpClient from web
+import ExpiringStore and MemoryStore from memory
 import LoginTransaction and SessionClaims and home and me and logout and startLogin and loginCallback from client
 import AuthorizationRequest and AuthorizationCode and AccessGrant and discovery and jwks and authorize and providerLogin and token and userinfo from provider
 import SigningKeys and MemorySigningKeys and initializeKeys and KeyError from common

@@ -40,6 +40,11 @@ export interface GenericHeader {
   typeVariance?: Record<string, 'in' | 'out'>;
 }
 
+/** An opaque foreign object. Only a descriptor-checked native call can acquire it. */
+export interface ResourceDecl extends GenericHeader {
+  kind: 'resource'; name: string; typeParams: []; span: Span;
+}
+
 export interface InterceptorAnnotation {
   name: string;
   typeArgs: TypeRef[];
@@ -64,6 +69,9 @@ export interface MethodDecl extends GenericHeader {
   annotations?: InterceptorAnnotation[];
   changes?: string[];
   uses?: { source: string; operation: string; span: Span }[];
+  /** Clauses written by the author; inferred contracts live in CheckedProject. */
+  declared?: { returns: boolean; errors: boolean; changes: boolean; uses: boolean };
+  headerEnd?: number;
   fixture?: boolean;
   span: Span;
 }
@@ -72,6 +80,8 @@ export interface ClassDecl extends GenericHeader {
   kind: 'class';
   record?: boolean;
   validationErrors?: TypeRef[];
+  validationDeclared?: boolean;
+  headerEnd?: number;
   name: string;
   typeParams: string[];
   fields: Param[];
@@ -148,7 +158,7 @@ export type Expr =
       typeArgs: TypeRef[]; span: Span }
   | { kind: 'binary'; op: string; left: Expr; right: Expr; span: Span }
   | { kind: 'unary'; op: string; value: Expr; span: Span }
-  | { kind: 'start'; call: Expr; span: Span }
+  | { kind: 'start'; call: Expr; worker?: boolean; span: Span }
   | { kind: 'wait'; tasks: Expr[]; span: Span }
   | { kind: 'resolve'; name: string; typeArgs: TypeRef[]; span: Span };
 
@@ -180,9 +190,9 @@ export interface TestDecl {
   endpointSuite?: boolean;
 }
 
-export type TopLevel = ImportDecl | ExportDecl | BindDecl | CompositionDecl | IncludeDecl | ClassDecl | InterfaceDecl | InterceptorDecl | MethodDecl | TestDecl | Stmt;
+export type TopLevel = ImportDecl | ExportDecl | BindDecl | CompositionDecl | IncludeDecl | ClassDecl | InterfaceDecl | InterceptorDecl | ResourceDecl | MethodDecl | TestDecl | Stmt;
 export function isStatement(item: TopLevel): item is Stmt {
-  return !['import', 'export', 'bind', 'composition', 'include', 'class', 'interface', 'interceptor', 'function', 'test'].includes(item.kind);
+  return !['import', 'export', 'bind', 'composition', 'include', 'class', 'interface', 'interceptor', 'resource', 'function', 'test'].includes(item.kind);
 }
 
 export interface SourceFile {

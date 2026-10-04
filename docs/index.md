@@ -2,45 +2,40 @@
 layout: home
 hero:
   name: August
+  image:
+    light: /brand/august-mark.svg
+    dark: /brand/august-mark-dark.svg
+    alt: August
   text: The world runs on language
-  tagline: A statically checked language for developers working with LLMs. Readable modules, clear dependencies, explicit effects, native C output.
+  tagline: Code that reads like pseudocode. A human-readable spec compiled from it. Native performance you can measure against C.
   actions:
     - theme: brand
-      text: Build your first project
+      text: Get started
       link: /getting-started
     - theme: alt
-      text: Install and try it
-      link: /packages
-    - theme: alt
-      text: Build a web service
-      link: /web
-    - theme: alt
-      text: Browse real projects
-      link: /examples/
-    - theme: alt
-      text: See performance graphs
-      link: /performance
+      text: Explore the language
+      link: /learn/
 features:
-  - title: Understand a module in context
-    details: Public exports, labeled inputs, same-file tests, and source comments tell a new reader what the code promises.
-  - title: See dependencies and side effects
-    details: Interface contracts, resolve parameters, and changes clauses keep behavior visible at the module boundary. Implementation effects are inferred and explained in hover and specs.
-  - title: Build native applications
-    details: The CLI checks August, emits C11, and invokes the C compiler. First-party HTTP endpoints use narrow native library adapters.
+  - title: Read it like pseudocode
+    details: Calls name their inputs. Imports and declaration headers show which dependencies the code uses.
+  - title: Compile a human-readable spec
+    details: Run aug spec to explain a module in sentences and link to its dependencies. Review the explanation with the code.
+  - title: Run at native speed
+    details: Compile to a native executable. The programs below compare August with C doing the same work.
 ---
 
-## Documentation for the code you run
+<!--@include: ./.vitepress/home-example.md-->
 
-These pages are versioned with the compiler. Guide projects are compiled and tested in CI. Library API pages and language construct help are generated from the same declarations and comments that supply editor hover. [Compiled specifications](specifications.md) explain each source file beside its code, including private behavior and links to offline dependency docs.
+## Build code other people can understand
 
-Start with [getting started](getting-started.md) to create a new project with one `npx` command. [Browse complete projects](examples/index.md) with a choice of indentation or braces and compiled specifications beside the code. The [same-app OpenID Connect example](examples/oidc-login/index.md) demonstrates a login page, provider, client, and separate session JWT.
+Start an unfamiliar project at `main.aug`: its imports, dependency bindings, and startup code show how the application is assembled. Read a module's compiled spec to follow its behavior and open the linked dependencies when you need them. Tests stay beside the implementation, so you can check the change in the same file.
 
-## Why August
+August infers return types, possible failures, and state changes from executable code. The editor shows those facts as hints. You write them explicitly where an interface needs to constrain its implementations.
 
-A developer opening an unfamiliar file should see what it provides, what it imports, which inputs each call takes, what it can change, and which errors it can raise. August puts tests beside declarations and generates a readable specification from checked code. Folder exports form a deliberate public boundary. These choices help people and code assistants work within small, explainable modules.
+Start with [your first project](getting-started.md), then follow [the August book](learn/index.md). Use the [task guides](guides/index.md) for packages, HTTP, tests, and deployment, and the [language reference](reference.md) when you need an exact rule. The [project gallery](examples/index.md) puts code and its actual compiled spec side by side.
 
-## Performance and readiness
+## Try the public preview
 
-August emits C11 and builds native executables. In the [published benchmark suite](performance.md), the CPU loop took 7.24 ms in August and 8.17 ms in C on the measured host; a 200,000-item Map/Set workload took 15.10 ms in August and 6.38 ms in C. The HTTP result depends on load; at 16 clients the measured August server handled 73,370 requests per second, while at other client counts the comparison changes. See the graphs, code, inputs, hardware, and reproduction commands before drawing conclusions.
+August 0.23.0 is available now. You need Node.js 24 and macOS 14+ on Apple Silicon or GNU/Linux x86-64/ARM64 with glibc 2.36+. August obtains its native compiler and libraries automatically; you do not install LLVM or Clang.
 
-August is experimental. [Production readiness](production-readiness.md) identifies platform, licensing, security, and reliability gates. The [roadmap to 1.0.0](roadmap.md) and [gap ledger](web-library-gaps.md) show the work still required. See [packages](packages.md) for installation and the [Docker images](docker.md) for Linux core, web, and crypto applications.
+The language is experimental, with no stable 1.0 compatibility promise yet. Cooperative tasks share a heap; worker tasks can run on multiple cores with isolated heaps. Read [supported platforms](compatibility.md), [production readiness](production-readiness.md), and the [roadmap to 1.0](roadmap.md) before choosing it for a deployment. Source and issues are on [GitHub](https://github.com/GreenPandaStudios/augscript).

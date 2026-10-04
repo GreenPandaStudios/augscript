@@ -1,0 +1,121 @@
+name: Prepare extension patch
+on:
+  push:
+    tags: ['extension-v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing extension-vVERSION tag
+        type: string
+        required: true
+      commit:
+        description: Reviewed full source commit SHA
+        type: string
+        required: true
+permissions:
+  contents: read
+concurrency:
+  group: extension-preparation
+  cancel-in-progress: false
+jobs:
+  source:
+    runs-on: ubuntu-24.04
+    outputs:
+      tag: ${{ steps.source.outputs.tag }}
+      sha: ${{ steps.source.outputs.sha }}
+      compilerTag: ${{ steps.source.outputs.compilerTag }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - id: source
+        env:
+          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+          RELEASE_COMMIT: ${{ inputs.commit || github.sha }}
+        run: node scripts/extension-release-source.mjs "$RELEASE_TAG" "$RELEASE_COMMIT" >> "$GITHUB_OUTPUT"
+  build:
+    needs: source
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      RELEASE_TAG: ${{ needs.source.outputs.tag }}
+      RELEASE_COMMIT: ${{ needs.source.outputs.sha }}
+      GH_TOKEN: ${{ github.token }}
+      AUG_GITHUB_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.source.outputs.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Install locked build dependencies
+        run: |
+          npm ci
+          npm --prefix vscode ci
+          npm audit
+          npm --prefix vscode audit
+      - name: Check source, editor and documentation
+        run: |
+          node scripts/bootstrap-native.mjs --extract-only --only minicoro,yyjson
+          npm run version:check
+          npm run check
+          node --test tests/release-source.test.mjs tests/extension-release-source.test.mjs tests/release-publication.test.mjs tests/editor-polish.test.mjs tests/documentation.test.mjs
+          npm run docs:check
+          npm run docs:build
+          npm run package:packages
+          npm run test:packages
+      - name: Obtain the unchanged public compiler
+        env:
+          COMPILER_TAG: ${{ needs.source.outputs.compilerTag }}
+        run: |
+          mkdir -p .aug-build/extension-compiler
+          gh release view "$COMPILER_TAG" --json isDraft --jq '.isDraft' | grep -qx false
+          gh release download "$COMPILER_TAG" --pattern '*.tgz' --pattern packages.json --pattern SHA256SUMS --dir .aug-build/extension-compiler
+          node scripts/extension-release-artifacts.mjs .aug-build/extension-compiler --compiler >> "$GITHUB_ENV"
+      - name: Package and verify the extension
+        run: |
+          npm run package:extension
+          node scripts/extension-release-artifacts.mjs .aug-build/extension-compiler
+          node vscode/compiler/bin/aug.mjs check examples/hello
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: reviewed-extension
+          path: dist/extension-release/*
+          if-no-files-found: error
+  draft:
+    needs: [source, build]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.source.outputs.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          name: reviewed-extension
+          path: dist/extension-release
+      - name: Create reviewed draft
+        env:
+          RELEASE_TAG: ${{ needs.source.outputs.tag }}
+          RELEASE_COMMIT: ${{ needs.source.outputs.sha }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          node scripts/extension-release-source.mjs "$RELEASE_TAG" "$RELEASE_COMMIT"
+          node scripts/publish-extension.mjs dist/extension-release --verify-only
+          gh release create "$RELEASE_TAG" dist/extension-release/* --draft --prerelease --verify-tag --title "August extension ${RELEASE_TAG#extension-v}" --notes-file vscode/CHANGELOG.md

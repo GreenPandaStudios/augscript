@@ -1,6 +1,6 @@
 {
   "name": "augscript",
-  "version": "0.19.0",
+  "version": "0.23.0",
   "description": "August language development monorepo",
   "license": "MIT",
   "repository": {
@@ -14,9 +14,15 @@
   },
   "scripts": {
     "check": "tsc --noEmit",
-    "test": "node --test tests/*.test.mjs",
+    "test": "node --test --test-concurrency=2 tests/*.test.mjs",
+    "test:setup-cold": "AUG_TEST_COLD_NATIVE=1 node --test tests/native-setup-cold.test.mjs",
+    "test:docker": "node scripts/test-docker.mjs",
     "test:sanitizers": "node scripts/sanitize-core.mjs",
     "bench:compare": "node scripts/benchmark-suite.mjs",
+    "bench:kernels": "node scripts/benchmark-kernels.mjs",
+    "test:gyms": "node scripts/run-gyms.mjs",
+    "test:gyms:full": "node scripts/run-gyms.mjs --profile full",
+    "qualification:render": "node scripts/render-qualification.mjs",
     "docs:generate": "node scripts/generate-docs.mjs",
     "docs:check": "node scripts/generate-docs.mjs --check",
     "docs:dev": "vitepress dev docs",
@@ -25,12 +31,16 @@
     "package:packages": "node scripts/pack-packages.mjs",
     "test:packages": "node scripts/test-packages.mjs",
     "version:check": "node scripts/version.mjs --check",
-    "package:extension": "npm --prefix vscode run package"
+    "package:extension": "npm --prefix vscode run package",
+    "bench:greetings": "node scripts/benchmark-greetings.mjs",
+    "test:conformance": "node scripts/check-language-conformance.mjs",
+    "test:reliability": "node scripts/qualify-runtime.mjs"
   },
   "devDependencies": {
-    "@types/node": "24.19.0",
     "@types/markdown-it-container": "4.0.1",
+    "@types/node": "24.19.0",
     "markdown-it-container": "4.0.0",
+    "tar": "7.5.22",
     "typescript": "5.9.3",
     "vitepress": "1.6.4"
   },

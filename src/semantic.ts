@@ -13,11 +13,14 @@ import { javadocBefore } from './javadoc.ts';
 import { checkUnitTests, discoverTests, mergeTestAnalysis, uniqueDiagnostics } from './testing.ts';
 import { formatFile } from './formatter.ts';
 import { interceptorBehavior } from './interceptors.ts';
+import { callableResult, callableErrors } from './contracts.ts';
+import {nativeFact,nativeDependencies,type NativeFunctionFact,type NativeResourceFact} from './native-facts.ts';
 
 const genericFacts = (header: GenericHeader) => header.typeParams.map(name => ({ name,
   variance: header.typeVariance?.[name] ?? 'invariant', constraints: (header.typeConstraints?.[name] ?? []).map(typeName) }));
 
 export interface CallableFact {
+  native?:NativeFunctionFact; nativeDependencies:NativeFunctionFact[]; nativeCoverage:'resolved-standalone-calls';
   name: string; location: Span; inputs: { label: string; name: string; type: string; ownership: string; injected: boolean; source?:Param['source'] }[];
   result: string; genericParameters: ReturnType<typeof genericFacts>; changes: string[]; capabilities: string[]; inferredEffects: boolean; errors: string[];
   http?: {method:string; path:string; status:number; streaming:boolean; errors:{type:string;status:number}[]};
@@ -26,6 +29,7 @@ export interface CallableFact {
     errors: string[]; delegates: boolean; mayShortCircuit: boolean }[];
 }
 export interface ContractFact {
+  native?:NativeResourceFact;
   id: string; name: string; kind: string; location: Span; public: boolean; documentation?: string;
   typeParameters: string[]; genericParameters: ReturnType<typeof genericFacts>; interfaces: string[];
   fields: { label: string; storage: string; type: string; mutable: boolean; injected: boolean; ownership: string }[];
@@ -36,18 +40,21 @@ export function contractFacts(checked: CheckedProject): ContractFact[] {
   const callable = (method: MethodDecl, constructor?: ClassDecl): CallableFact => {
     const contract = checked.effectContracts.get(method);
     const layers = checked.interceptorPlans.get(constructor ?? method) ?? [];
+    const native=nativeFact(checked,method);
     return { name: method.name, location: method.span, genericParameters: genericFacts(method),
+      native:native?.kind==='function'?native:undefined,nativeDependencies:nativeDependencies(checked,method),nativeCoverage:'resolved-standalone-calls',
       inputs: method.params.map(param => ({ label: param.label ?? param.name, name: param.name,
         type: typeName(param.type), ownership: param.ownership, injected: param.injected, source:param.source })),
       http:method.endpoint?{method:method.endpoint.method,path:method.endpoint.path,status:method.endpoint.status,
         streaming:!!method.endpoint.streams,errors:method.endpoint.errors.map(error=>({type:typeName(error.type),status:error.status}))}:undefined,
       policies:(checked.httpPolicies.get(method)??[]).map((policy,index)=>({name:policy.name,order:index+1,options:policy.options,
         dependencies:policy.dependencies.map(index=>method.params[index]?.label??method.params[index]?.name??'')})),
-      result: `${method.returnOwnership === 'own' ? 'own ' : ''}${typeName(method.returns)}`,
+      result: `${method.returnOwnership === 'own' ? 'own ' : ''}${tyName(callableResult(checked, method))}`,
       changes: [...(contract?.changes ?? method.changes ?? [])],
-      capabilities: [...(contract?.uses.values() ?? [])].map(effect => `${effect.source}.${effect.operation}`).concat(method.externC ? [`C.${method.name}`] : []),
+      capabilities: [...(contract?.uses.values() ?? [])].map(effect => `${effect.source}.${effect.operation}`).concat(method.externC&&!native ? [`C.${method.name}`] : []),
       inferredEffects: !!contract?.inferred,
-      errors: [...new Set([...method.throws.map(typeName), ...layers.flatMap(layer => layer.errors.map(tyName))])],
+      errors: constructor ? [...new Set([...(checked.constructorContracts.get(constructor)?.errors.map(tyName) ?? constructor.validationErrors?.map(typeName) ?? []),
+        ...layers.flatMap(layer => layer.errors.map(tyName))])].sort() : callableErrors(checked, method),
       interceptors: layers.map((layer, order) => {
         const effects = checked.effectContracts.get(layer.around);
         return { name: layer.definition.name, order: order + 1, location: layer.definition.node.span,
@@ -76,8 +83,10 @@ export function contractFacts(checked: CheckedProject): ContractFact[] {
       for (const [key, child] of Object.entries(value)) if (!['span', 'nameSpan', 'sourceSpan'].includes(key)) visit(child);
     };
     visit(node);
+    const native=node.kind==='resource'?nativeFact(checked,node):undefined;
     return { id: def.id, name: def.name, kind: node.kind === 'class' && node.record ? 'record' :
       node.kind === 'interface' && node.capability ? 'capability' : node.kind,
+      native:native?.kind==='resource'?native:undefined,
       location: node.span, public: !node.name.startsWith('_'), typeParameters: node.typeParams, genericParameters: genericFacts(node),
       documentation: javadocBefore(file.source, 'annotations' in node ? node.annotations?.[0]?.span.start ?? node.span.start : node.span.start)?.markdown,
       interfaces: node.kind === 'class' ? node.implements.map(typeName) : node.kind === 'interface' ? node.extends.map(typeName) : [],
@@ -87,7 +96,7 @@ export function contractFacts(checked: CheckedProject): ContractFact[] {
         typeConstraints: node.typeConstraints, typeVariance: node.typeVariance, params: node.fields,
         returns: syntheticType(node.name, node.span), returnOwnership: 'managed',
         throws: node.validationErrors ?? [], changes: [], uses: [], body: node.constructorBody, externC: false, span: node.span }, node)] : []),
-        ...methods.filter(method => !method.name.startsWith('_')).map(method => callable(method))], calls,
+        ...methods.filter(method => node.kind==='function'||!method.name.startsWith('_')).map(method => callable(method))], calls,
       tests: file.items.flatMap(item => item.kind === 'test' && item.type.name === def.name ? item.groups.flatMap(group =>
         group.cases.map(test => ({ group: group.name, name: test.name, location: test.span }))) : []) };
   });
@@ -132,7 +141,7 @@ export function describe(checked: CheckedProject, fileName: string, options: { n
     const module: ModuleFact = { file: source.path, dependencies: [...new Set(source.items.flatMap(item => item.kind === 'import' ?
       (checked.project.imports.get(item) ?? []).map(def => def.file) : []))].sort(),
       public: publicFacts.map(fact => ({ name: fact.name, shape: createHash('sha256').update(JSON.stringify({ kind: fact.kind,
-        generics: fact.genericParameters, fields: fact.fields.filter(field => !field.storage.startsWith('_')),
+        native:fact.native,generics: fact.genericParameters, fields: fact.fields.filter(field => !field.storage.startsWith('_')),
         interfaces: fact.interfaces, callables: fact.callables.map(({ location, interceptors, inputs, ...contract }) => ({ ...contract,
           inputs: inputs.map(({ name, ...input }) => input),
           interceptors: interceptors.map(({ location, ...layer }) => layer) })) })).digest('hex') })),
@@ -169,6 +178,39 @@ export class SemanticDocument {
   complete(offset: number) { return completions(this.checked, this.path, offset); }
   tokens() { return semanticTokens(this.checked, this.path); }
   fixes() { return suggestedFixes(this.checked, this.path); }
+  /** Non-editable declaration hints. Formatting never adds inferred source clauses. */
+  inlayHints(start = 0, end = this.source.length) {
+    const hints: { offset: number; label: string; tooltip: string }[] = [];
+    for (const [method, contract] of this.checked.callableContracts) {
+      if (method.span.file !== this.path || !method.body || method.headerEnd === undefined) continue;
+      let offset = method.headerEnd;
+      while (offset > method.span.start && /\s/.test(this.source[offset - 1])) offset--;
+      if (offset < start || offset > end) continue;
+      const clauses: string[] = [];
+      if (contract.inferredResult && contract.result.kind !== 'error' && contract.result.name !== 'void')
+        clauses.push(contract.result.name === '<target result>' ? 'returns the target result' : `returns ${tyName(contract.result)}`);
+      const effects = this.checked.effectContracts.get(method);
+      if (effects?.inferredChanges && effects.changes.length) clauses.push(`changes ${effects.changes.join(' and ')}`);
+      const uses = [...(effects?.uses.values() ?? [])].map(effect => `${effect.source}.${effect.operation}`).sort();
+      if (effects?.inferred && uses.length) clauses.push(`uses ${[...new Set(uses)].join(' and ')}`);
+      const errors = callableErrors(this.checked, method);
+      if (contract.inferredErrors && errors.length) clauses.push(`unless ${errors.join(' and ')}`);
+      const complete = clauses.join(' ');
+      const compact = complete.length > 120 ? clauses.map(clause =>
+        clause.startsWith('uses ') && clause.length > 50 ? `uses ${new Set(uses).size} operations` :
+        clause.startsWith('unless ') && clause.length > 50 ? `unless ${errors.length} errors` : clause).join(' ') : complete;
+      if (clauses.length) hints.push({offset, label: compact,
+        tooltip: `\`\`\`augscript\n${complete}\n\`\`\`\n\n` + 'Inferred from the body, implemented interface, and interceptor layers. These hints are not source text. The compiler still checks ownership, interface limits, and escaping errors. See the adjacent .aug.md spec for the full explanation.'});
+    }
+    for (const [record, contract] of this.checked.constructorContracts) {
+      if (record.span.file !== this.path || !contract.inferredErrors || !contract.errors.length || record.headerEnd === undefined) continue;
+      let offset = record.headerEnd;
+      while (offset > record.span.start && /\s/.test(this.source[offset - 1])) offset--;
+      if (offset >= start && offset <= end) hints.push({offset, label:'unless ' + contract.errors.map(tyName).sort().join(' and '),
+        tooltip:'Checked errors inferred from record validation. Callers must catch or propagate them. These hints are not saved source.'});
+    }
+    return hints.sort((left, right) => left.offset - right.offset);
+  }
   format() { return formatFile(this.checked.project, this.checked.project.files.get(this.path)!); }
   describe(options?: Parameters<typeof describe>[2]) { return describe(this.checked, this.path, options); }
   definition(offset: number) {

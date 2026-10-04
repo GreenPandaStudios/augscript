@@ -44,7 +44,9 @@ try:
     Set<int> unique = {1, 2, 1}
     Map<int,string> fruit = {1: "apples", 2: "pears"}
     calculator = Calculator()
-    print(value=calculator.add(right=numbers.get(index=1), left=numbers.get(index=0)))
+    print(
+        value=calculator.add(right=numbers.get(index=1), left=numbers.get(index=0))
+    )
     print(value=pair.get(index=1))
     print(value=unique.length())
     print(value=fruit.get(key=2))
@@ -69,7 +71,9 @@ try {
     Set<int> unique = {1, 2, 1}
     Map<int,string> fruit = {1: "apples", 2: "pears"}
     calculator = Calculator()
-    print(value=calculator.add(right=numbers.get(index=1), left=numbers.get(index=0)))
+    print(
+        value=calculator.add(right=numbers.get(index=1), left=numbers.get(index=0))
+    )
     print(value=pair.get(index=1))
     print(value=unique.length())
     print(value=fruit.get(key=2))
@@ -95,7 +99,7 @@ catch IndexError error {
 
 ### Providers
 
-`Console` is provided by [`SystemConsole`](dependencies/august/0.19.0/io/contracts.md#symbol-SystemConsole). The same instance is shared. `Logger` is provided by [`ConsoleLogger`](logging/console.md#symbol-ConsoleLogger). The same instance is shared.
+`Console` is provided by [`SystemConsole`](dependencies/august/0.23.0/io/contracts.md#symbol-SystemConsole). The same instance is shared. `Logger` is provided by [`ConsoleLogger`](logging/console.md#symbol-ConsoleLogger). The same instance is shared.
 
 ### Startup
 
@@ -107,7 +111,7 @@ It prints the value under `2` in `fruit`. It prints [`load`](calculator.md#symbo
 
 ### Dependencies
 
-It uses [`SystemConsole`](dependencies/august/0.19.0/io/contracts.md#symbol-SystemConsole) from `august.io`. It uses [`Calculator`](calculator.md#symbol-Calculator) ([`add`](calculator.md#symbol-Calculator.add)) and [`load`](calculator.md#symbol-load) from `calculator`. It uses [`ConsoleLogger`](logging/console.md#symbol-ConsoleLogger) from `logging`. These links explain the full dependency contracts.
+It uses [`SystemConsole`](dependencies/august/0.23.0/io/contracts.md#symbol-SystemConsole) from `august.io`. It uses [`Calculator`](calculator.md#symbol-Calculator) ([`add`](calculator.md#symbol-Calculator.add)) and [`load`](calculator.md#symbol-load) from `calculator`. It uses [`ConsoleLogger`](logging/console.md#symbol-ConsoleLogger) from `logging`.
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).
 

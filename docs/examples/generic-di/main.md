@@ -64,7 +64,7 @@ program.start()
 
 ### Providers
 
-`Console` is provided by [`SystemConsole`](dependencies/august/0.19.0/io/contracts.md#symbol-SystemConsole). The same instance is shared. `Repository<int>` is provided by [`NumberRepository`](types.md#symbol-NumberRepository). The same instance is shared.
+`Console` is provided by [`SystemConsole`](dependencies/august/0.23.0/io/contracts.md#symbol-SystemConsole). The same instance is shared. `Repository<int>` is provided by [`NumberRepository`](types.md#symbol-NumberRepository). The same instance is shared.
 
 `app` is provided by [`Program`](types.md#symbol-Program). The same instance is shared. It requires bindings for `Repository<int>`.
 
@@ -74,7 +74,7 @@ It sets `program` to the instance provided for `app`. It calls [`program.start`]
 
 ### Dependencies
 
-It uses [`SystemConsole`](dependencies/august/0.19.0/io/contracts.md#symbol-SystemConsole) from `august.io`. It uses [`NumberRepository`](types.md#symbol-NumberRepository) and [`Program`](types.md#symbol-Program) ([`start`](types.md#symbol-Program.start)) from `types`. These links explain the full dependency contracts.
+It uses [`SystemConsole`](dependencies/august/0.23.0/io/contracts.md#symbol-SystemConsole) from `august.io`. It uses [`NumberRepository`](types.md#symbol-NumberRepository) and [`Program`](types.md#symbol-Program) ([`start`](types.md#symbol-Program.start)) from `types`.
 
 ::::
 

@@ -116,6 +116,11 @@ AugValue aug_json_items(AugValue value) {
   for (size_t i = 0; i < value.as.object->field_count; i++) aug_list_append(roots[1], aug_json_wrap(value.as.object->fields[i]));
   AugValue result = roots[1]; aug_frame_leave(&frame); return result;
 }
+AugValue aug_schema_make(const AugSchema *schema, AugValue *fields, int count) {
+  if(schema->pointer_make){AugValue result=aug_null();schema->pointer_make(&result,NULL,fields,count);return result;}
+  if(schema->make)return schema->make(fields,count);
+  return invalid();
+}
 static AugValue decode(AugValue value, const AugSchema *schema, size_t depth) {
   if (depth > 64) return invalid();
   if (value.tag == AUG_NULL && schema->nullable) return value;
@@ -152,7 +157,7 @@ static AugValue decode(AugValue value, const AugSchema *schema, size_t depth) {
   }
   AugValue result = aug_null();
   if (!aug_has_error) {
-    if (schema->kind == AUG_SCHEMA_RECORD) result = schema->make(items, (int)count);
+    if (schema->kind == AUG_SCHEMA_RECORD) result = aug_schema_make(schema,items,(int)count);
     else if (schema->kind == AUG_SCHEMA_TUPLE) result = aug_tuple_new(items, count);
     else if (schema->kind == AUG_SCHEMA_SET) result = aug_set_new(items, count);
     else if (schema->kind == AUG_SCHEMA_MAP) { result = aug_map_new(); items[count] = result; for (size_t i = 0; i < count; i += 2) aug_map_set(result, items[i], items[i + 1]); }
@@ -162,4 +167,53 @@ static AugValue decode(AugValue value, const AugSchema *schema, size_t depth) {
 }
 AugValue aug_json_decode(AugValue value, const AugSchema *schema) {
   AugValue result = decode(unwrap(value), schema, 0); if (!aug_has_error) aug_freeze(result); return result;
+}
+
+bool aug_json_has(AugValue value,AugValue name) {
+  AugValue object=unwrap(value);return object.tag==AUG_OBJECT&&object.as.object->kind==AUG_MAP_KIND&&aug_map_contains(object,name);
+}
+
+/* Explicit compatibility reader. The traversal uses heap frames, not recursion,
+   so a sender cannot exhaust a coroutine's native stack with ignored fields. */
+static AugValue compatible_scalar(yyjson_val *value) {
+  if(yyjson_is_null(value))return aug_null();
+  if(yyjson_is_bool(value))return aug_bool(yyjson_get_bool(value));
+  if(yyjson_is_str(value))return aug_string_n(yyjson_get_str(value),yyjson_get_len(value));
+  double number;
+  if(yyjson_is_num(value))number=yyjson_get_num(value);
+  else if(yyjson_is_raw(value)) {
+    size_t size=yyjson_get_len(value);char *text=malloc(size+1);if(!text)abort();
+    memcpy(text,yyjson_get_raw(value),size);text[size]=0;char *end;number=strtod(text,&end);
+    bool valid=(size_t)(end-text)==size;free(text);if(!valid)return invalid();
+  }else return invalid();
+  if(isfinite(number)&&number>=-0x1p63&&number<0x1p63&&floor(number)==number)return aug_int((int64_t)number);
+  return aug_float(number);
+}
+AugValue _aug_json_parse_compatible(AugValue input) {
+  enum {LIMIT=4096};
+  yyjson_read_err error;yyjson_doc *doc=yyjson_read_opts(input.as.object->text,input.as.object->text_length,YYJSON_READ_BIGNUM_AS_RAW,NULL,&error);
+  if(!doc)return invalid();
+  typedef struct {yyjson_val *value,*key;bool initialized;yyjson_arr_iter array;yyjson_obj_iter object;} Walk;
+  Walk *walk=calloc(LIMIT+1,sizeof(*walk));AugValue *roots=calloc(LIMIT+2,sizeof(*roots));if(!walk||!roots)abort();
+  AugFrame frame;aug_frame_enter(&frame,roots,LIMIT+2);size_t depth=0;walk[0].value=yyjson_doc_get_root(doc);
+  while(!aug_has_error) {
+    Walk *at=&walk[depth];
+    if(!at->initialized){at->initialized=true;
+      if(yyjson_is_arr(at->value)){roots[depth]=aug_list_new(NULL,0);yyjson_arr_iter_init(at->value,&at->array);}
+      else if(yyjson_is_obj(at->value)){roots[depth]=aug_map_new();yyjson_obj_iter_init(at->value,&at->object);}
+      else roots[depth]=compatible_scalar(at->value);
+    }
+    if(aug_has_error)break;
+    yyjson_val *next=NULL;
+    if(yyjson_is_arr(at->value))next=yyjson_arr_iter_next(&at->array);
+    else if(yyjson_is_obj(at->value)){at->key=yyjson_obj_iter_next(&at->object);if(at->key)next=yyjson_obj_iter_get_val(at->key);}
+    if(next){if(depth==LIMIT){invalid();break;}depth++;walk[depth]=(Walk){.value=next};continue;}
+    if(!depth)break;
+    Walk *parent=&walk[depth-1];
+    if(yyjson_is_arr(parent->value))aug_list_append(roots[depth-1],roots[depth]);
+    else{roots[LIMIT+1]=aug_string_n(yyjson_get_str(parent->key),yyjson_get_len(parent->key));aug_map_set(roots[depth-1],roots[LIMIT+1],roots[depth]);roots[LIMIT+1]=aug_null();}
+    roots[depth]=aug_null();depth--;
+  }
+  AugValue result=aug_has_error?aug_null():aug_json_wrap(roots[0]);
+  aug_frame_leave(&frame);free(roots);free(walk);yyjson_doc_free(doc);return result;
 }

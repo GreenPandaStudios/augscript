@@ -2,12 +2,12 @@
 import SessionError from contracts
 import Discovery and IdClaims from provider
 import settings from common
-import HttpClient from august.web
-import parse from august.json
-import Crypto and GnuTlsCrypto and RsaJwks and rsaJwk and signJwt and importJwk and verifyJwt and JwtError from august.crypto
+import HttpClient from web
+import parse from json
+import Crypto and GnuTlsCrypto and RsaJwks and rsaJwk and signJwt and importJwk and verifyJwt and JwtError from crypto
 
 /** Accept only a successful JSON response. Redirects remain explicit and are never followed by the transport. */
-responseJson(HttpResponse<Bytes> response) returns Json unless SessionError:
+responseJson(HttpResponse<Bytes> response) :
     if response.status != 200:
         throw SessionError()
     match response.headers.get(name="content-type"):
@@ -24,7 +24,7 @@ responseJson(HttpResponse<Bytes> response) returns Json unless SessionError:
         throw SessionError()
 
 /** Discovery is fetched over HTTP. Every advertised URL is checked against the registered issuer before any credential is sent. */
-discover(resolve HttpClient client) returns Discovery uses client.request unless SessionError and HttpError:
+discover(resolve HttpClient client) :
     config = settings()
     json = responseJson(response=client.request(method="GET", url=config.issuer + "/.well-known/openid-configuration"))
     try:
@@ -36,7 +36,7 @@ discover(resolve HttpClient client) returns Discovery uses client.request unless
         throw SessionError()
 
 /** Validate the signed ID token using a public key from this issuer's HTTP JWKS, then validate the registered claims and one-use nonce. */
-validateIdentity(string token, string nonce, int now, RsaJwks jwks, resolve Crypto crypto) returns IdClaims uses crypto.decodeBase64url and crypto.importRsa and crypto.verifyRsa and crypto.equal unless SessionError:
+validateIdentity(string token, string nonce, int now, RsaJwks jwks, resolve Crypto crypto) :
     config = settings()
     if jwks.keys.length() != 1:
         throw SessionError()

@@ -12,10 +12,10 @@ Responses containing identity data are never cached or embedded by another site.
 
 Add a checked cookie without losing duplicate Set-Cookie response fields. It takes `headers` as `Headers`, `name`, `value`, and `path` as strings, `maxAge` as an integer, and `secure` as a boolean. Failures can raise `HttpError`.
 
-It sets `result` to `headers`. For each `content` in a snapshot of `all` on [`cookie`](../.aug-spec/august/0.19.0/web/contracts.aug.md#symbol-cookie) with `name`, `value`, `path`, `maxAge`, and `secure` with `name` `"set-cookie"`, it sets `result` to `result` with the header `"set-cookie"` set to `content`. After the loop, it returns `result`.
+It sets `result` to `headers`. For each `content` in a snapshot of `all` on [`cookie`](../.aug-spec/packages/%40git/url_897efafd565158fc4908/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-cookie) with `name`, `value`, `path`, `maxAge`, and `secure` with `name` `"set-cookie"`, it sets `result` to `result` with the header `"set-cookie"` set to `content`. After the loop, it returns `result`.
 
 ## Dependencies
 
-It uses [`cookie`](../.aug-spec/august/0.19.0/web/contracts.aug.md#symbol-cookie) from `august.web`. These links explain the full dependency contracts.
+It uses [`cookie`](../.aug-spec/packages/%40git/url_897efafd565158fc4908/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-cookie) from `web`.
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).

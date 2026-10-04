@@ -8,6 +8,6 @@ It prints [`add`](.aug-spec/packages/%40example/aug-math/0.1.0/arithmetic.aug.md
 
 ## Dependencies
 
-It uses [`add`](.aug-spec/packages/%40example/aug-math/0.1.0/arithmetic.aug.md#symbol-add) from `math`. These links explain the full dependency contracts.
+It uses [`add`](.aug-spec/packages/%40example/aug-math/0.1.0/arithmetic.aug.md#symbol-add) from `math`.
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).

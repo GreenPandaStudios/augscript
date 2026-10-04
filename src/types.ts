@@ -3,7 +3,7 @@ import type { Definition } from './project.ts';
 export interface Ty {
   id: string;
   name: string;
-  kind: 'builtin' | 'class' | 'interface' | 'interceptor' | 'param' | 'null' | 'error';
+  kind: 'builtin' | 'class' | 'interface' | 'interceptor' | 'resource' | 'param' | 'null' | 'error';
   args: Ty[];
   nullable: boolean;
   optional?: boolean;

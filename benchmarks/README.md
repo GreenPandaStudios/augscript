@@ -16,4 +16,8 @@ See [performance graphs, actual August examples, and commands](../docs/performan
 
 Use `--only cpu,collections-200k` or `--only http` for focused measurements. These write `.aug-build/benchmarks/results-focused.json` and preserve the full wiki report. `--output PATH` selects another output. The source SHA-256 in new reports identifies the compiler, runtime, benchmark, and script inputs.
 
+`npm run bench:kernels` compares eight further August projects through LLVM and the C migration backend with standalone C references: float, calls, list, strings, map-churn, errors, records and tasks. It defaults to 30 samples and three warmups. `--only` and `--output` select workloads and a report. Every result is checked against the independent oracle. The task reference uses sequential C calls; the ordered map uses linear search. These differences are recorded with the measurements.
+
+Batch and HTTP measurement clients run outside the compiler process. CI takes 60 batch samples for the original frozen migration gate and publishes failed evidence. The [safety gyms](../gyms/README.md) check generated behavior, forbidden contracts and deliberate faults separately from these timings.
+
 `node scripts/http-load.mjs --url http://127.0.0.1:PORT/bench --concurrency 64` runs the same response-validating HTTP load generator against a running server. It measures HTTP/1.1 without TLS; `--expected` accepts a JSON result for your own endpoint. CLI rounds reuse the running server; the comparison suite starts fresh servers for each round.

@@ -1,20 +1,20 @@
 # Research: deterministic prose from source code
 
-Research date: 2026-09-29. This note supports August's compiled specifications: connected prose describing local implementation behavior, with references to the dependency surfaces that the implementation actually uses. It records research evidence and proposed engineering choices; it is not an implementation status report.
+Reviewed September 29, 2026. August's spec generator explains local behavior in paragraphs and links to the dependencies used by the file. This note records the research behind that design and how to evaluate it. For usage, see [compiled specifications](../specifications.md).
 
 ## Findings that matter for August
 
-A practical approach is to generate text from explicit program facts through document planning, sentence planning, and realization. Classic NLG separates content determination, discourse planning, aggregation, lexicalization, reference generation, and realization [1]. McBurney and McMillan apply these ideas to code, including fixed message ordering and rules that combine related phrases [5]. This provides a stronger starting point than emitting an independent template for each syntax node.
+A practical approach is to generate text from explicit program facts through document planning, sentence planning, and realization. Classic NLG separates content determination, discourse planning, aggregation, lexicalization, reference generation, and realization [1]. McBurney and McMillan apply these ideas to code, including fixed message ordering and rules that combine related phrases [5]. August uses this separation to plan paragraphs before choosing sentences.
 
 Aggregation can reduce repeated subjects and predicates while retaining the facts being communicated. Dalianis and Hovy explicitly distinguish repackaging facts from dropping selected information, and restrict reordering to zones where ordering is free [8]. For program explanations, that restriction matters: execution order, branch scope, mutation, and error behavior cannot be treated as freely reorderable facts.
 
-Program names provide useful linguistic hints. They do not establish a function's semantics. SWUM represents action, theme, and argument relationships in names and signatures [3]. The parameter-comment work combines these clues with control flow and data dependencies and acknowledges limitations from uninformative names and abbreviations [4]. August should establish behavioral claims from its compiler representations before choosing wording.
+Program names can suggest wording, but behavior must come from the checked code. SWUM represents action, theme, and argument relationships in names and signatures [3]. The parameter-comment work combines these clues with control flow and data dependencies and acknowledges limitations from uninformative names and abbreviations [4]. August should establish behavioral claims from its compiler representations before choosing wording.
 
 Context can help explain how a function fits into its program. The context-summary research uses call relationships and output uses [5, 6]. Its relevance ranking deliberately selects a small subset of context, and its evaluations concern summaries. It does not demonstrate generation of a complete executable or behavioral specification.
 
 ## Primary literature reviewed
 
-Entries report what each source supports, followed by the limit relevant to this task. Sources are linked to the paper or its publisher/author copy. Full text was inspected where available; the two abstract-only entries are marked explicitly.
+Each entry describes the findings and their limits for August. Sources are linked to the paper or its publisher/author copy. Full text was inspected where available; the two abstract-only entries are marked explicitly.
 
 ### 1. Reiter and Dale, 1997: the generation pipeline
 
@@ -88,9 +88,9 @@ Pengyu Nie, Jiyang Zhang, Junyi Jessy Li, Ray Mooney, and Milos Gligoric. *Impac
 
 The authors compare mixed-project, cross-project, and time-segmented evaluation of learned code summarizers. Different splits can lead to conflicting conclusions, and the paper maps evaluation methods to intended use cases. This is chiefly relevant if August later adds learned lexical or summary components. Its broader lesson motivates representative acceptance examples and revisions of real programs. A deterministic rule generator has no training leakage in the same sense, so the paper's machine-learning results should not be presented as direct evidence of August's quality.
 
-## Proposed engineering choices for August
+## Design criteria for August
 
-These are recommendations derived from the requirements and the literature, not findings that the papers prove or claims that the current generator implements them.
+These criteria are derived from the requirements and literature. The current compiler uses a behavior tree and deterministic sentence/paragraph planning in `src/spec-tree.ts`, with resolved contracts and dependencies in `src/spec.ts`. That implementation must be evaluated against the criteria; the papers do not establish its coverage or readability.
 
 1. Extract an immutable behavior representation from resolved compiler structures. Each fact should retain its construct identity, lexical scope, source location, guard, ordering relation, and involved symbols. Represent bindings, calculations, calls, returns, mutation, loops, pattern alternatives, cleanup, capabilities, and checked errors explicitly.
 2. Plan documents by module and declaration, and explain each body in its actual control structure. A declaration overview can precede its detailed behavior; branches and repeated actions should remain recognizable in paragraphs. Paragraph breaks are useful boundaries for changes in scope or topic.

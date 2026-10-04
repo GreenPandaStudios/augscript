@@ -148,7 +148,7 @@ class CGenerator {
       `  aug_register_globals(aug_bindings, ${bindingCount});`,
       `  aug_set_cli_args(argc, argv);`,
       ...([...this.activeFiles].some(file => this.checked.project.files.get(file)?.items.some(item => item.kind === 'function' && !!item.endpoint) ||
-        [...this.checked.project.definitions.values()].some(def => def.file === file && def.id.startsWith('august/web/'))) ? [this.httpConfiguration()] : []),
+        this.checked.project.files.get(file)?.items.some(item => item.kind === 'function' && item.externC && item.name.startsWith('_aug_http_'))) ? [this.httpConfiguration()] : []),
       ...[...this.coverage.values()].map(point => `  aug_coverage_register(${cString(point.file)}, ${point.line});`),
       initializeBindings,
       `  AugValue result = aug_main_body(NULL, 0);`,
@@ -201,7 +201,8 @@ class CGenerator {
       `  AugValue value = roots[${cls.fields.length}];`,
       `  value.as.object->field_names = ${this.name(def)}_field_names;`,
       ...(cls.kind === 'class' && initializationOf(cls).length ? [`  ${this.initializerName(def)}(value, NULL, 0);`] : []),
-      ...(cls.kind === 'class' && cls.record ? ['  aug_freeze(value);'] : []),
+      `  if (aug_has_error) { aug_drop_partial(value); value = aug_scalar_null(); }`,
+      ...(cls.kind === 'class' && cls.record ? ['  if (!aug_has_error) aug_freeze(value);'] : []),
       `  aug_frame_leave(&frame);`,
       `  return value;`,
       `}`,
@@ -316,7 +317,7 @@ class CGenerator {
   private httpConfiguration(): string {
     const config = this.checked.project.config.web, root = this.checked.project.root;
     const path = (value: string) => cString(value ? resolve(root,value) : '');
-    return `  aug_http_configure(${cString(config.host)}, ${path(config.tls.certificate)}, ${path(config.tls.private_key)}, ${path(config.tls.ca)}, ${config.body_limit}, ${config.response_limit}, ${config.http3 ? 'true' : 'false'});`;
+    return `  aug_http_configure(${cString(config.host)}, ${path(config.tls.certificate)}, ${path(config.tls.private_key)}, ${path(config.tls.ca)}, ${config.body_limit}, ${config.response_limit}, ${config.http3 ? 'true' : 'false'}, ${config.headers_timeout}, ${config.request_timeout}, ${config.drain_timeout}, ${config.max_requests});`;
   }
 
   private emitMainBody(): string {
@@ -370,17 +371,23 @@ class BodyEmitter {
   private locals = new Map<string, number>();
   private readonly owned = new Set<number>();
   private readonly classFields = new Map<string, number>();
+  private readonly ownedClassFields = new Set<string>();
   private readonly scalarSlots = new Set<number>();
   private slots = 1;
   private labelCounter = 0;
   private errorTarget = 'aug_cleanup';
   private returnTarget = 'aug_cleanup';
   private continuation?: InterceptorInvocation;
+  private constructionNext = false;
+  private readonly constructorResults = new Set<number>();
   constructor(generator: CGenerator, file: string, def?: Definition, owner?: ClassDecl | InterceptorDecl) {
     this.generator = generator;
     this.file = file;
     this.def = def;
-    if (owner) fieldsOf(owner).forEach((field, index) => this.classFields.set(field.name, index));
+    if (owner) fieldsOf(owner).forEach((field, index) => {
+      this.classFields.set(field.name, index);
+      if(field.ownership==='own')this.ownedClassFields.add(field.name);
+    });
   }
 
   addParameter(name: string, index: number, owned = false): void {
@@ -391,6 +398,7 @@ class BodyEmitter {
   }
 
   initializeInterceptor(layer: InterceptorLayer, params: Param[], name: string, method: boolean): void {
+    this.constructionNext = layer.constructorResultFresh === true;
     const receiver = method ? this.newSlot() : undefined;
     if (receiver !== undefined) this.line(`${this.slot(receiver)} = self;`);
     const original = params.map((param, index) => {
@@ -442,6 +450,7 @@ class BodyEmitter {
     const slot = this.newSlot();
     this.line(`${this.slot(slot)} = ${next.target}(${next.receiver === undefined ? '' :
       `${this.slot(next.receiver)}, `}${array}, ${args.length});`);
+    if (this.constructionNext) this.constructorResults.add(slot);
     this.line(`if (aug_has_error) goto ${this.errorTarget};`);
     return slot;
   }
@@ -474,7 +483,8 @@ class BodyEmitter {
     if (expr.kind === 'handle' && expr.call.kind === 'call') {
       const plan = this.generator.actionPlan(expr)!, endpoint = (plan.endpoint.node as MethodDecl).endpoint!;
       const metadata = {method:endpoint.method,path:endpoint.path,parameters:plan.parameters.map(({param,type,form}) => ({name:param.source?.name ?? param.name,source:param.source?.kind,form,schema:this.generator.actionSchema(type)}))};
-      const args = plan.parameters.map(parameter => parameter.form || parameter.source === undefined ? undefined : this.emitExpr((expr.call as Extract<Expr,{kind:'call'}>).args[parameter.source]));
+      const values = expr.call.args.map(argument => argument.kind === 'formInput' ? undefined : this.emitExpr(argument));
+      const args = plan.parameters.map(parameter => parameter.form || parameter.source === undefined ? undefined : values[parameter.source]);
       const array = this.label('action_values'), slot = this.newSlot();
       this.line(`AugValue ${array}[] = {${args.map(arg => arg === undefined ? 'aug_null()' : this.slot(arg)).join(', ') || 'aug_scalar_null()'}};`);
       this.line(`${this.slot(slot)} = aug_http_action(${cString(JSON.stringify(metadata))}, ${array}, ${args.length});`);
@@ -504,7 +514,9 @@ class BodyEmitter {
       thunk.line(`${thunk.slot(0)} = ${thunk.slot(result)};`);
       const name = this.generator.taskThunk(thunk, args.length), array = this.label('task_args'), slot = this.newSlot();
       this.line(`AugValue ${array}[] = {${args.map(arg => this.slot(arg)).join(', ') || 'aug_scalar_null()'}};`);
-      this.line(`${this.slot(slot)} = aug_task_start(${name}, ${receiver === undefined ? 'aug_scalar_null()' : this.slot(receiver)}, ${array}, ${args.length});`);
+      const captures=this.label('task_owned');
+      this.line(`const unsigned char ${captures}[] = {${args.map((_,i)=>this.generator.callPlan(call)?.ownerships?.[i]==='own'?'1':'0').join(', ')||'0'}};`);
+      this.line(`${this.slot(slot)} = ${expr.worker ? 'aug_task_start_worker' : 'aug_task_start_owned'}(${name}, ${receiver === undefined ? 'aug_scalar_null()' : this.slot(receiver)}, ${array}, ${args.length}, ${captures});`);
       this.clearMovedArgs(call, (this.generator.callPlan(call)?.ownerships ?? []).map(ownership => ({ownership:ownership ?? 'managed'})));
       this.line(`if (aug_has_error) goto ${this.errorTarget};`); return slot;
     }
@@ -562,7 +574,9 @@ class BodyEmitter {
     if (expr.kind === 'member') {
       const object = this.emitExpr(expr.object);
       const slot = this.newSlot();
-      this.line(`${this.slot(slot)} = aug_field(${this.slot(object)}, ${this.memberIndex(expr.object, expr.name)});`);
+      if (this.generator.expressionType(expr.object)?.id === 'builtin:HttpRequest' && expr.name === 'body') {
+        this.line(`${this.slot(slot)} = aug_http_body(${this.slot(object)});`); this.line(`if (aug_has_error) goto ${this.errorTarget};`);
+      } else this.line(`${this.slot(slot)} = aug_field(${this.slot(object)}, ${this.memberIndex(expr.object, expr.name)});`);
       return slot;
     }
     if (expr.kind === 'unary') {
@@ -883,6 +897,7 @@ class BodyEmitter {
         this.line(`aug_set_field(${this.slot(object)}, ${this.memberIndex(stmt.target.object, stmt.target.name)}, ${this.slot(value)});`);
       }
       let targetOwns = stmt.ownership === 'own';
+      if(stmt.target.kind==='name'&&!this.locals.has(stmt.target.name))targetOwns ||= this.ownedClassFields.has(stmt.target.name);
       if (stmt.target.kind === 'member') {
         const memberName = stmt.target.name;
         const node = this.generator.expressionType(stmt.target.object)?.def?.node;
@@ -985,6 +1000,7 @@ class BodyEmitter {
 
   private emitTryAlways(stmt: Extract<Stmt, {kind: 'try'}>): void {
     const outerError = this.errorTarget, outerReturn = this.returnTarget;
+    const ownedBefore = new Set(this.owned);
     const caught = this.label('aug_final_catch'), failed = this.label('aug_final_error'), returned = this.label('aug_final_return');
     const cleanup = this.label('aug_always'), done = this.label('aug_always_done'), after = this.label('aug_always_after');
     const reason = this.label('aug_exit_reason'), depth = this.label('aug_final_depth'), cancellation = this.label('aug_final_cancel');
@@ -994,8 +1010,10 @@ class BodyEmitter {
     this.line(`size_t ${locks} = aug_lock_depth();`);
     this.errorTarget = caught; this.returnTarget = returned; this.emitScoped(stmt.body);
     this.line(`goto ${cleanup};`); this.line(`${caught}:;`);
-    this.line(`aug_scope_restore(${depth}); if (aug_cancelled) goto ${failed};`);
     this.line(`aug_lock_restore(${locks});`);
+    this.line(`aug_scope_restore(${depth}); if (aug_cancelled) goto ${failed};`);
+    for (const slot of this.owned) if (!ownedBefore.has(slot))
+      this.line(`aug_drop(${this.slot(slot)}); ${this.slot(slot)} = aug_scalar_null();`);
     this.errorTarget = failed;
     for (const clause of stmt.catches) {
       this.line(`if (aug_error_is(${cString(clause.type.name)})) {`);
@@ -1005,8 +1023,11 @@ class BodyEmitter {
     }
     this.line(`goto ${failed};`); this.line(`${returned}: ${reason} = 1; goto ${cleanup};`);
     this.line(`${failed}: ${reason} = 2;`); this.line(`${cleanup}:;`);
-    this.line(`aug_scope_restore(${depth}); ${this.slot(pending)} = aug_has_error ? aug_take_error() : aug_scalar_null();`);
     this.line(`aug_lock_restore(${locks});`);
+    this.line(`aug_scope_restore(${depth});`);
+    for (const slot of this.owned) if (!ownedBefore.has(slot))
+      this.line(`aug_drop(${this.slot(slot)}); ${this.slot(slot)} = aug_scalar_null();`);
+    this.line(`${this.slot(pending)} = aug_has_error ? aug_take_error() : aug_scalar_null();`);
     this.line(`${cancellation} = aug_cancelled; aug_cancelled = false;`);
     this.errorTarget = done; this.returnTarget = done; this.emitScoped(stmt.always!);
     this.line(`${done}:; aug_cancelled = ${cancellation};`);
@@ -1060,6 +1081,7 @@ class BodyEmitter {
       `  aug_lock_restore(aug_lock_base);`,
       `  aug_scope_join_to(aug_scope_base);`,
       ownedCleanup,
+      ...[...this.constructorResults].map(slot => `  aug_constructor_result_cleanup(${this.slot(slot)}, ${this.slot(0)});`),
       `  aug_scope_restore(aug_scope_base);`,
       `  AugValue result = ${this.slot(0)};`,
       `  aug_frame_leave(&frame);`,

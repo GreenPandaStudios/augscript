@@ -52,8 +52,7 @@ record Fruit(int code, string name)
 
 ## Compiled specification {#specification}
 
-<a id="symbol-Fruit"></a>
-### `Fruit` · immutable record · [source](models.md#code)
+### `Fruit` · immutable record · [source](models.md#code) {#symbol-Fruit}
 
 Immutable fruit data, with public construction labels and structural equality. It takes `code` as an integer, kept read-only and `name` as a string, kept read-only.
 

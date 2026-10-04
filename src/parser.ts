@@ -195,7 +195,11 @@ class Parser {
       return { kind: 'composition', name, typeParams: [], bindings, span: this.span(start) };
     }
     if (this.at('extern')) {
-      this.take(); this.expect('C');
+      const start=this.take().span; this.expect('C');
+      if(this.current().value==='resource'){
+        this.take();const name=this.expect('identifier').value;this.endStatement();
+        return {kind:'resource',name,typeParams:[],span:this.span(start)};
+      }
       return this.parseFunction(true);
     }
     if (this.looksLikeBareClass()) return this.parseClass();
@@ -351,6 +355,9 @@ class Parser {
       this.take();
       this.parseTypeParams();
       if (this.at('(')) this.parseParams(true);
+      if(this.match('unless')){
+        this.parseType();while(this.match('and')||this.match(','))this.parseType();
+      }
       if (this.match('=>')) {
         return true;
       }
@@ -369,7 +376,9 @@ class Parser {
     const names = everything ? [] : [this.expect('identifier').value];
     while (!everything && this.match('and')) names.push(this.expect('identifier').value);
     this.expect('from');
-    const from = [this.expect('identifier').value];
+    const from = [this.at('string') ? this.take().value : this.expect('identifier').value];
+    if (!/^(?:https:\/\/|git\+(?:https|file):\/\/)/.test(from[0]) && this.tokens[this.position - 1].kind === 'string')
+      throw new ParseFailure({ ...start, code:'IMPORT', message:'A quoted import source must be a public repository URL' });
     while (this.match('.')) from.push(this.expect('identifier').value);
     this.endStatement();
     return { kind: 'import', names, everything, from, span: this.span(start) };
@@ -416,10 +425,12 @@ class Parser {
     const header = this.parseTypeParams();
     const fields = this.parseParams(true);
     const validationErrors: TypeRef[] = [];
-    if (this.match('unless')) {
+    const validationDeclared = !!this.match('unless');
+    if (validationDeclared) {
       validationErrors.push(this.parseType());
       while (this.match('and') || this.match(',')) validationErrors.push(this.parseType());
     }
+    const headerEnd = this.current().span.start;
     let constructorBody = this.match('=>') ? this.parseBlock(start) : undefined;
     let hasBody = !!constructorBody;
     if (!constructorBody && (this.at('{') || this.at(':'))) {
@@ -436,7 +447,7 @@ class Parser {
     }
     if (!hasBody) this.endStatement();
     return { kind: 'class', record: true, name, ...header, fields, constructorBody,
-      validationErrors, implements: [], methods: [], span: this.span(start) };
+      validationErrors, validationDeclared, headerEnd, implements: [], methods: [], span: this.span(start) };
   }
 
   private parseClass(): ClassDecl {
@@ -444,6 +455,9 @@ class Parser {
     const name = this.expect('identifier').value;
     const { typeParams, typeConstraints, typeVariance } = this.parseTypeParams();
     const fields = this.at('(') ? this.parseParams(true) : [];
+    const validationErrors:TypeRef[]=[];
+    const validationDeclared=!!this.match('unless');
+    if(validationDeclared){validationErrors.push(this.parseType());while(this.match('and')||this.match(','))validationErrors.push(this.parseType());}
     let constructorBody = this.match('=>') ? this.parseBlock(start) : undefined;
     const implemented: TypeRef[] = [];
     if (!this.at('implements')) throw new ParseFailure({ ...start, code: 'PARSE',
@@ -451,6 +465,7 @@ class Parser {
     this.expect('implements');
     implemented.push(this.parseType());
     while (this.match(',')) implemented.push(this.parseType());
+    const headerEnd = this.current().span.start;
     this.openBlock(start);
     const methods: MethodDecl[] = [];
     const stateFields: NonNullable<ClassDecl['stateFields']> = [];
@@ -479,7 +494,7 @@ class Parser {
     }
     this.closeBrace();
     return { kind: 'class', name, typeParams, typeConstraints, typeVariance, fields, stateFields, constructorBody,
-      implements: implemented, methods, span: this.span(start) };
+      validationErrors,validationDeclared,implements: implemented, methods, headerEnd, span: this.span(start) };
   }
 
   private parseInterface(): InterfaceDecl {
@@ -562,13 +577,16 @@ class Parser {
         } while (this.match(',') || this.match('and'));
       }
     }
+    const headerEnd = this.current().span.start;
     const body = this.at('{') || this.at(':') ? this.parseBlock(start) : (this.endStatement(), undefined);
     if (externC && body) {
       throw new ParseFailure({ file: start.file, line: start.line, column: start.column,
         message: 'extern C functions cannot have a body', code: 'PARSE' });
     }
     return { kind: 'function', name, typeParams, typeConstraints, typeVariance, params, returns, returnOwnership,
-      throws, changes, uses, body, externC, valueAbi, nativePure, endpoint, annotations, span: this.span(start) };
+      throws, changes, uses, body, externC, valueAbi, nativePure, endpoint, annotations,
+      declared: { returns: clauses.has('returns') || clauses.has('streams'), errors: clauses.has('unless'),
+        changes: clauses.has('changes'), uses: clauses.has('uses') }, headerEnd, span: this.span(start) };
   }
 
   private parseTypeParams(): GenericHeader {
@@ -581,7 +599,7 @@ class Parser {
       const name = this.expect('identifier').value;
       typeParams.push(name);
       if (variance) typeVariance[name] = variance as 'in' | 'out';
-      if (this.match('implements')) {
+    if (this.match('implements')) {
         typeConstraints[name] = [this.parseType()];
         while (this.match('and')) typeConstraints[name].push(this.parseType());
       }
@@ -831,8 +849,9 @@ class Parser {
     }
     if (this.at('start') && this.current(1).kind !== '(' && this.match('start')) {
       const start = this.tokens[this.position - 1].span;
+      const worker = this.current().value === 'worker' && ['identifier', 'start', 'wait'].includes(this.current(1).kind) && !!this.take();
       const call = this.parseUnary();
-      return {kind: 'start', call, span: this.span(start)};
+      return {kind: 'start', call, worker: worker || undefined, span: this.span(start)};
     }
     if (this.at('wait') && this.current(1).kind === 'for' && this.match('wait')) {
       const start = this.tokens[this.position - 1].span; this.expect('for');

@@ -46,8 +46,7 @@ record Payload(int id, string message, List<int> values)
 
 ## Compiled specification {#specification}
 
-<a id="symbol-Payload"></a>
-### `Payload` · immutable record · [source](data.md#code)
+### `Payload` · immutable record · [source](data.md#code) {#symbol-Payload}
 
 It takes `id` as an integer, kept read-only, `message` as a string, kept read-only, and `values` as `List<int>`, kept read-only.
 

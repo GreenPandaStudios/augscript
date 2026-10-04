@@ -50,12 +50,16 @@ pageClass: aug-example-page
 
 ```aug [Indentation]
 // aug-spec: "credentials.aug.md" explains this file. Read it before changes; refresh with aug spec.
-import Crypto from august.crypto
+import Crypto from crypto
 /** One development account with a PBKDF2-HMAC-SHA256 verifier. Production account storage is deliberately a separate capability. */
-verifyCredentials(string username, string password, resolve Crypto crypto) returns bool uses crypto.passwordHash and crypto.decodeBase64url and crypto.equal unless CryptoError:
+verifyCredentials(string username, string password, resolve Crypto crypto):
     if username.length() > 64 or password.length() > 256:
         return false
-    actual = crypto.passwordHash(password=password.bytes(), salt="August demo salt v1".bytes(), iterations=600000)
+    actual = crypto.passwordHash(
+        password=password.bytes(),
+        salt="August demo salt v1".bytes(),
+        iterations=600000
+    )
     expected = crypto.decodeBase64url(input="s70USYF6WohPz2f7VLA9haS_ZgEtenviSf_HG0o7B_A")
     userMatches = crypto.equal(left=username.bytes(), right="ada".bytes())
     passwordMatches = crypto.equal(left=actual, right=expected)
@@ -64,13 +68,17 @@ verifyCredentials(string username, string password, resolve Crypto crypto) retur
 
 ```aug [Braces]
 // aug-spec: "credentials.aug.md" explains this file. Read it before changes; refresh with aug spec.
-import Crypto from august.crypto
+import Crypto from crypto
 /** One development account with a PBKDF2-HMAC-SHA256 verifier. Production account storage is deliberately a separate capability. */
-verifyCredentials(string username, string password, resolve Crypto crypto) returns bool uses crypto.passwordHash and crypto.decodeBase64url and crypto.equal unless CryptoError {
+verifyCredentials(string username, string password, resolve Crypto crypto) {
     if username.length() > 64 or password.length() > 256 {
         return false
     }
-    actual = crypto.passwordHash(password=password.bytes(), salt="August demo salt v1".bytes(), iterations=600000)
+    actual = crypto.passwordHash(
+        password=password.bytes(),
+        salt="August demo salt v1".bytes(),
+        iterations=600000
+    )
     expected = crypto.decodeBase64url(input="s70USYF6WohPz2f7VLA9haS_ZgEtenviSf_HG0o7B_A")
     userMatches = crypto.equal(left=username.bytes(), right="ada".bytes())
     passwordMatches = crypto.equal(left=actual, right=expected)
@@ -86,20 +94,19 @@ verifyCredentials(string username, string password, resolve Crypto crypto) retur
 
 ## Compiled specification {#specification}
 
-<a id="symbol-verifyCredentials"></a>
-### `verifyCredentials` · [source](credentials.md#code)
+### `verifyCredentials` · [source](credentials.md#code) {#symbol-verifyCredentials}
 
-One development account with a PBKDF2-HMAC-SHA256 verifier. Production account storage is deliberately a separate capability. It takes `username` and `password` as strings. It gets `crypto` ([`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto)) from dependency injection.
+One development account with a PBKDF2-HMAC-SHA256 verifier. Production account storage is deliberately a separate capability. It takes `username` and `password` as strings. It gets `crypto` ([`Crypto`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto)) from dependency injection.
 
 Failures can raise `CryptoError`.
 
-If the byte length of `username` is greater than `64` or the byte length of `password` is greater than `256`, it returns `false`. It sets `actual` to [`crypto.passwordHash`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.passwordHash) with `password` from the UTF-8 bytes of `password`, `salt` from the UTF-8 bytes of `"August demo salt v1"`, and `iterations` `600000`. It sets `expected` to `"s70USYF6WohPz2f7VLA9haS_ZgEtenviSf_HG0o7B_A"` decoded as URL-safe base64 by `crypto`. It sets `userMatches` to [`crypto.equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal) with `left` from the UTF-8 bytes of `username` and `right` from the UTF-8 bytes of `"ada"`.
+If the byte length of `username` is greater than `64` or the byte length of `password` is greater than `256`, it returns `false`. It sets `actual` to [`crypto.passwordHash`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto.passwordHash) with `password` from the UTF-8 bytes of `password`, `salt` from the UTF-8 bytes of `"August demo salt v1"`, and `iterations` `600000`. It sets `expected` to [`crypto.decodeBase64url`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto.decodeBase64url) with `input` `"s70USYF6WohPz2f7VLA9haS_ZgEtenviSf_HG0o7B_A"`. It sets `userMatches` to [`crypto.equal`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto.equal) with `left` from the UTF-8 bytes of `username` and `right` from the UTF-8 bytes of `"ada"`.
 
-It sets `passwordMatches` to [`crypto.equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal) with `left` from `actual` and `right` from `expected`. It returns `userMatches` and `passwordMatches`.
+It sets `passwordMatches` to [`crypto.equal`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto.equal) with `left` from `actual` and `right` from `expected`. It returns `userMatches` and `passwordMatches`.
 
 ### Dependencies
 
-It uses [`Crypto`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto) ([`decodeBase64url`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.decodeBase64url), [`equal`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.equal), and [`passwordHash`](../dependencies/august/0.19.0/crypto/contracts.md#symbol-Crypto.passwordHash)) from `august.crypto`. These links explain the full dependency contracts.
+It uses [`Crypto`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto) ([`decodeBase64url`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto.decodeBase64url), [`equal`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto.equal), and [`passwordHash`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto.passwordHash)) from `crypto`.
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).
 

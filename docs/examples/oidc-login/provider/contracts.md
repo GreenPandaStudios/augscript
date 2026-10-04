@@ -96,58 +96,47 @@ CodeError() implements Error {
 
 ## Compiled specification {#specification}
 
-<a id="symbol-AuthorizationRequest"></a>
-### `AuthorizationRequest` · immutable record · [source](contracts.md#code)
+### `AuthorizationRequest` · immutable record · [source](contracts.md#code) {#symbol-AuthorizationRequest}
 
 A provider request is bound to a browser cookie, a form CSRF token, and a registered client. It takes `clientId`, `redirectUri`, `state`, `nonce`, `challenge`, `browser`, and `csrf` as strings, kept read-only and `expires` as an integer, kept read-only.
 
-<a id="symbol-AuthorizationCode"></a>
-### `AuthorizationCode` · immutable record · [source](contracts.md#code)
+### `AuthorizationCode` · immutable record · [source](contracts.md#code) {#symbol-AuthorizationCode}
 
 Codes are short-lived, single-use and bound to a redirect URI and S256 challenge. It takes `clientId`, `redirectUri`, `challenge`, `nonce`, `subject`, and `name` as strings, kept read-only and `expires` as an integer, kept read-only.
 
-<a id="symbol-IdClaims"></a>
-### `IdClaims` · immutable record · [source](contracts.md#code)
+### `IdClaims` · immutable record · [source](contracts.md#code) {#symbol-IdClaims}
 
 It takes `iss`, `sub`, and `aud` as strings, kept read-only, `exp` and `iat` as integers, kept read-only, and `nonce` and `name` as strings, kept read-only.
 
-<a id="symbol-AccessGrant"></a>
-### `AccessGrant` · immutable record · [source](contracts.md#code)
+### `AccessGrant` · immutable record · [source](contracts.md#code) {#symbol-AccessGrant}
 
 It takes `subject` and `name` as strings, kept read-only and `expires` as an integer, kept read-only.
 
-<a id="symbol-TokenResponse"></a>
-### `TokenResponse` · immutable record · [source](contracts.md#code)
+### `TokenResponse` · immutable record · [source](contracts.md#code) {#symbol-TokenResponse}
 
 It takes `token_type`, `access_token`, and `id_token` as strings, kept read-only, `expires_in` as an integer, kept read-only, and `scope` as a string, kept read-only.
 
-<a id="symbol-OAuthError"></a>
-### `OAuthError` · immutable record · [source](contracts.md#code)
+### `OAuthError` · immutable record · [source](contracts.md#code) {#symbol-OAuthError}
 
 It takes `error` and `error_description` as strings, kept read-only.
 
-<a id="symbol-TokenForm"></a>
-### `TokenForm` · immutable record · [source](contracts.md#code)
+### `TokenForm` · immutable record · [source](contracts.md#code) {#symbol-TokenForm}
 
 It takes `grant_type`, `code`, `redirect_uri`, `client_id`, and `code_verifier` as strings, kept read-only.
 
-<a id="symbol-LoginForm"></a>
-### `LoginForm` · immutable record · [source](contracts.md#code)
+### `LoginForm` · immutable record · [source](contracts.md#code) {#symbol-LoginForm}
 
 It takes `request_id`, `csrf`, `username`, and `password` as strings, kept read-only.
 
-<a id="symbol-UserInfo"></a>
-### `UserInfo` · immutable record · [source](contracts.md#code)
+### `UserInfo` · immutable record · [source](contracts.md#code) {#symbol-UserInfo}
 
 It takes `sub` and `name` as strings, kept read-only.
 
-<a id="symbol-LoginError"></a>
-### `LoginError` · class · [source](contracts.md#code)
+### `LoginError` · class · [source](contracts.md#code) {#symbol-LoginError}
 
 It implements `Error`.
 
-<a id="symbol-CodeError"></a>
-### `CodeError` · class · [source](contracts.md#code)
+### `CodeError` · class · [source](contracts.md#code) {#symbol-CodeError}
 
 It implements `Error`.
 

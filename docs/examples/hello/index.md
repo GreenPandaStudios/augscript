@@ -10,9 +10,19 @@ outline: [2, 3]
 
 # Hello world with dependencies
 
-A greeter, a logger, narrow folder exports, and explicit application bindings.
+Print a greeting through an injected logger. Startup selects the providers, and export files choose what each folder makes public.
 
-Read a file below to see its highlighted source and the Markdown produced by `aug spec`. Choose **Indentation** or **Braces** above the code. Both views describe the same checked program; your choice is kept when you open another file.
+Open a file to read the code beside its compiled explanation. Choose **Indentation** or **Braces** to change the code view. The choice carries across files.
+
+## Follow the program
+
+Read [`main.aug`](main.md). Startup binds the console, logger, and application, then resolves the greeter and calls it.
+
+Read [`app/greeter.aug`](app/greeter.md). The greeter receives its logger in the header and delegates the greeting to it. The interface states the console effect.
+
+Read [`logging/export.aug`](logging/export.md). The logging folder exports Logger and ConsoleLogger for callers.
+
+Read [`logging/logger.aug`](logging/logger.md). Logger requires a log method. ConsoleLogger writes the message through its injected console.
 
 ## Project files
 
@@ -26,12 +36,13 @@ Read a file below to see its highlighted source and the Markdown produced by `au
 
 ## Try this project
 
-From a repository checkout with August installed:
+[Download this project](/downloads/hello.zip), then extract the archive in an empty working folder. It contains source, configuration, and compiled specs. [Install August](../../getting-started.md) once, then run these commands. Native libraries are prepared automatically when needed:
 
 ```sh
-aug check examples/hello
-aug spec examples/hello
-aug run examples/hello
+cd hello
+aug check .
+aug spec .
+aug run .
 ```
 
 [Browse all examples](../index.md)

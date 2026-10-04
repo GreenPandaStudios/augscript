@@ -4,10 +4,10 @@
 
 ## Startup
 
-It sets `resource` of type [`Resource`](resource.aug.md#symbol-Resource) to a [`Resource`](resource.aug.md#symbol-Resource). `resource` of type [`Resource`](resource.aug.md#symbol-Resource) owns this value. It prints `"using resource"`.
+It creates [`Resource`](resource.aug.md#symbol-Resource) and stores the result in owned `resource` ([`Resource`](resource.aug.md#symbol-Resource)). It prints `"using resource"`.
 
 ## Dependencies
 
-It uses [`Resource`](resource.aug.md#symbol-Resource) from `resource`. These links explain the full dependency contracts.
+It uses [`Resource`](resource.aug.md#symbol-Resource) from `resource`.
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).

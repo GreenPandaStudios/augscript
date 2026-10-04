@@ -1,7 +1,5 @@
-# August standard library
+# August core library
 
-`@greenpandastudios/aug-stdlib` contains canonical sources for explicit I/O (`august.io`), JSON (`august.json`), clocks (`august.time`) and bounded immutable stores (`august.memory`).
+The compiler installs this matching package for `august.io`: console, file, and command-line capabilities with native adapters. Public contracts and Javadoc are in `august/io`; the [API reference](https://greenpandastudios.github.io/augscript/api/io) explains them.
 
-The CLI installs the matching version. API pages in `docs` are generated from public exports, declarations and Javadoc. `aug-package.json` records compiler compatibility and source location. Native adapters and builtin value semantics live in the compiler/runtime.
-
-See [installation](https://github.com/GreenPandaStudios/augscript/blob/main/docs/packages.md) and [the language wiki](https://GreenPandaStudios.github.io/augscript/).
+JSON, time, stores, web helpers, and crypto are optional source packages. Use [the package guide](https://greenpandastudios.github.io/augscript/packages) to add them from a public repository.

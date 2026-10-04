@@ -2,7 +2,7 @@
 import Console from august.io
 import Logger from logger
 ConsoleLogger() implements Logger {
-    log(resolve Console console, string message) uses Console.write {
+    log(resolve Console console, string message) {
         console.write(value=message)
     }
 }

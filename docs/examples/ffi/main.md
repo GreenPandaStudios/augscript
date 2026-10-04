@@ -54,7 +54,7 @@ It calls [`announce`](native.md#symbol-announce).
 
 ### Dependencies
 
-It uses [`announce`](native.md#symbol-announce) from `native`. These links explain the full dependency contracts.
+It uses [`announce`](native.md#symbol-announce) from `native`.
 
 ::::
 

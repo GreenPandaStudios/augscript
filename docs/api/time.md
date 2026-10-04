@@ -6,10 +6,9 @@ editLink: false
 
 # august.time
 
-Public declarations exported by this module. Import names explicitly from `august.time`. Built-in wire/value types are described in [language constructs](../language-constructs.md).
+Install this source library with `aug add https://github.com/GreenPandaStudios/augscript/src/stdlib/time --as time`, then import its public names from `time`.
 
-- [Clock](#api-Clock)
-- [SystemClock](#api-SystemClock)
+Signatures show result types and checked errors. See [packages](../packages.md) to pin a release and [language constructs](../language-constructs.md) for built-in types.
 
 ## Clock {#api-Clock}
 
@@ -24,10 +23,12 @@ An explicit clock dependency makes time-based behavior replaceable in tests.
 ### Clock.now
 
 ```text
-now() returns int uses Clock.now unless TimeError
+now() returns int unless TimeError
 ```
 
 Read whole Unix seconds in UTC.
+
+Uses `Clock.now`.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/time/contracts.aug#L5)
 
@@ -49,6 +50,6 @@ now() returns int unless TimeError
 
 Read whole Unix seconds in UTC.
 
-Inferred capabilities: `Clock.now`.
+Uses `Clock.now`.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/time/contracts.aug#L9)

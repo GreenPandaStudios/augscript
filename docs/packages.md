@@ -1,184 +1,130 @@
 # Packages and installation
 
-The [augscript monorepo](https://github.com/GreenPandaStudios/augscript) versions the compiler, libraries, documentation, and editor together. Release packages contain the files needed to use them; they do not run install scripts or silently build native libraries.
-
-| Distribution | Package | Provides |
-| --- | --- | --- |
-| CLI | `@greenpandastudios/aug-cli` | `aug`, `aug-cli`, `aug-native`, compiler, language server, C runtime, guides and examples |
-| Standard library | `@greenpandastudios/aug-stdlib` | `august.io`, `august.json`, `august.time`, `august.memory` |
-| Web library | `@greenpandastudios/aug-web` | `august.web`, HTTP capabilities and helpers |
-| Crypto library | `@greenpandastudios/aug-crypto` | `august.crypto`, cryptographic capability, RSA JWK and signed JWT helpers |
-| VS Code | `augscript.augscript` / `.vsix` | Syntax, file icons, hover, completion, fixes, navigation, tests and bundled compiler |
-
-## From a checkout
-
-Requires Node.js 24+, npm, and a C11 compiler. Full web/crypto native builds run on macOS and Linux; the repository's Docker recipes supply the Linux build tools and libraries. Other platforms remain outside the tested support matrix.
-
-```sh
-git clone git@github.com:GreenPandaStudios/augscript.git
-cd augscript
-npm ci
-node scripts/bootstrap-native.mjs --extract-only --only minicoro,yyjson
-node bin/aug.mjs run examples/approved-design
-node scripts/bootstrap-native.mjs
-node bin/aug.mjs run examples/oidc-login
-```
-
-## Install release tarballs
-
-For offline installation, download all four `.tgz` files from the same [GitHub release](https://github.com/GreenPandaStudios/augscript/releases). Install them together, replacing VERSION with the release version:
-
-```sh
-npm install --global ./greenpandastudios-aug-stdlib-VERSION.tgz ./greenpandastudios-aug-web-VERSION.tgz ./greenpandastudios-aug-crypto-VERSION.tgz ./greenpandastudios-aug-cli-VERSION.tgz
-aug --version
-aug --help
-aug-native
-aug check path/to/project
-aug run path/to/project
-```
-
-The CLI depends on exact matching library versions. Import spellings stay `import Crypto from august.crypto`; npm package names never enter August source. The packaged CLI loads the separate installed libraries, and editor navigation opens their real `.aug` files.
-
-Native dependencies use `~/.cache/augscript/native/VERSION/PLATFORM-ARCH` for an installed CLI. Source checkouts use `.aug-native`. `AUG_NATIVE_HOME` selects a shared cache for CLI and VS Code; building dependencies is an explicit command.
-
-For core programs and JSON without web/crypto, `aug-native --extract-only --only minicoro,yyjson` downloads just the portable C sources. Compiler checkpoints use minicoro even in ordinary programs; this source dependency must be present before native execution. Full web/crypto bootstrap is available on macOS and Linux.
+August libraries are source folders with an `export.aug` file. An application imports their public declarations, and the compiler checks those declarations with the application. A library can live in a public Git repository, a local folder, or an npm archive.
 
 ## npm registry
 
-Create a project with the published CLI:
+Install the CLI once:
 
 ```sh
-npx @greenpandastudios/aug-cli@next init hello-august
+npm install --global @greenpandastudios/aug-cli@next
+aug init hello-august
+cd hello-august
+aug run
 ```
 
-`aug init DIRECTORY` creates a checked application with `main.aug`, a public interface and implementation, a same-file test, README, and `.gitignore`. It refuses a nonempty directory. The npm package exposes `aug-cli` as a binary so `npx` can select the executable by package name. The CLI brings its three matching libraries. Early releases use the `next` dist tag. Version 0.19.0 has been published to npm. Registry and Marketplace publication require their own owner accounts; a GitHub account does not grant those identities. See [releasing](releasing.md) for configuration and [getting started](getting-started.md) for the starter command.
+August 0.23.0 needs Node.js 24 or later and npm on macOS 14+ ARM64 or GNU/Linux x64/ARM64 with glibc 2.36+. August downloads a verified LLVM/runtime pack; native package consumers do not install a compiler or SDK. GitHub repository imports use the CLI's HTTPS transport without Git. Other Git servers require a local Git client. [Docker](docker.md) and [Dev Containers](dev-containers.md) provide a Linux workspace.
 
-## VS Code
+`aug run` finds `main.aug`, installs source dependencies declared by imports or `main.yaml`, checks the code, prepares the native libraries it needs, and compiles and starts the executable. Later runs reuse those dependencies. `aug check` and `aug spec` read the installed snapshot without fetching packages. Use `aug install` before those commands in a fresh project.
 
-Install **AugScript** (`augscript.augscript`) from the VS Code Extensions view from its [Marketplace listing](https://marketplace.visualstudio.com/items?itemName=augscript.augscript). Version 0.19.0 is public under August Miller’s publisher profile. Extension updates are uploaded manually from the reviewed GitHub release VSIX as described in [releasing](releasing.md).
-
-For direct installation, download the matching `.vsix` from [GitHub Releases](https://github.com/GreenPandaStudios/augscript/releases) and choose **Extensions → Install from VSIX**.
-
-The extension bundles the same compiler sources, standard declarations, native bootstrap, guides, and examples. Set `augscript.nativeHome` to an existing dependency build directory. Node.js 24+ remains required.
-
-## Package model
-
-`packages/*/package.json` and `aug-package.json` are release manifests. Canonical code lives in `src`, `runtime`, and `src/stdlib`; generated staging directories live under ignored `dist`. `npm run package:packages` builds JavaScript and real npm tarballs. `npm run test:packages` installs those tarballs outside the checkout and checks imports, navigation, native execution, and compatibility.
-
-User packages ship August source, retain their own public boundaries, and compile into the application's native executable. They use npm for archive/registry transport and August for visibility, compatibility, dependency scopes and checking. Changing builtin libraries independently of the compiler is unsupported; general native adapter ABI/version distribution remains future work.
-
-With the full native bootstrap ready, `npm run test:packages -- --native` additionally builds the OIDC example and runs its signed-identity tests using the installed CLI and separate packages.
-
-## Author a package
-
-Create a standalone library; it needs no `main.aug`:
+To use npx instead of a global installation:
 
 ```sh
-aug package init my-math --name @your-npm-name/aug-math
-aug check my-math
-aug test my-math
-aug package pack my-math
+npx @greenpandastudios/aug-cli@next init another-app
+cd another-app
+npx @greenpandastudios/aug-cli@next run
 ```
 
-The scaffold includes `src/arithmetic.aug` with a same-file test, `src/export.aug`, `aug-package.json`, and npm's `package.json`. Public API, Javadoc and tests stay beside the implementation:
+The starters include `AGENTS.md` with instructions for coding agents: read the neighboring specs, keep tests beside the code, and check changes. For a service, [start the weather API](weather-api.md) with `init weather --template weather`.
 
-```text
-// src/arithmetic.aug
-/** Add two integers. @param left First integer. @param right Second integer. */
-add(int left, int right) returns int:
-    return left + right
-
-test add:
-    when addition:
-        it adds:
-            assert(add(left=2, right=3) == 5)
-
-// src/export.aug
-export add from arithmetic
-```
-
-`aug-package.json` owns August metadata and dependency aliases:
-
-```json
-{
-  "format": 1,
-  "name": "@your-npm-name/aug-math",
-  "version": "0.1.0",
-  "compiler": "0.19.0",
-  "source": "src",
-  "dependencies": {}
-}
-```
-
-`package.json` supplies npm transport metadata, description, license, README and the files to include. `aug install` and `aug package pack` synchronize its name, version and dependencies from the August manifest. Keep the source folder and `aug-package.json` in its `files` list. Pack checks every declaration and test closure before creating `.aug-build/packages/your-npm-name-aug-math-0.1.0.tgz`. It checks test code; execute the cases with `aug test` before release.
-
-After authenticating with an npm account that owns the namespace, publish that verified archive:
-
-```sh
-npm publish my-math/.aug-build/packages/your-npm-name-aug-math-0.1.0.tgz --access public
-```
-
-This is an explicit author action; `aug install` never publishes or executes dependency lifecycle scripts. August does not require a new registry account in addition to npm. See [npm's package publishing guide](https://docs.npmjs.com/creating-and-publishing-scoped-public-packages/).
+Pin an exact CLI release for repeatable builds. [GitHub releases](https://github.com/GreenPandaStudios/augscript/releases) list compiler and extension versions.
 
 ## Use a package
 
-In the consuming application's `main.yaml`, choose a readable import alias:
-
-```yaml
-packages:
-  math: "npm:@your-npm-name/aug-math@0.1.0"
-```
-
-Install explicitly, then import the public name:
+Give a public repository a short name:
 
 ```sh
-aug install my-app
-aug run my-app
+aug add https://github.com/GreenPandaStudios/augscript/src/stdlib/json --as json
 ```
+
+This installs the source and adds a `json` alias to `main.yaml`. Import through that alias:
 
 ```text
-// my-app/main.aug
-import add from math
-print(value=add(left=20, right=22))
+import parse from json
 ```
 
-Local development uses the same source syntax. Replace the specification with `"../my-math"`, `"file:../my-math"`, or a path to the `.tgz`. `aug install` snapshots a local directory, so reinstall after editing its source. Check and build never fetch dependencies or silently refresh a local package. There are no symlinked live dependencies.
+Or import the repository URL directly:
 
-Only the source root's `export.aug` is visible to another package. To expose a submodule, write `export folder parsing` there and provide `src/parsing/export.aug`; consumers can then use `import Parser from math.parsing`. Private `_names`, files and folders remain inaccessible. `import everything` follows the same public surface. An alias cannot shadow a local file/folder or use the reserved `august` name.
+```text
+import parse from "https://github.com/GreenPandaStudios/augscript/src/stdlib/json"
+```
 
-Module dependency policies use the alias path (`math` or `math/parsing`) for external edges. Consumer architecture/style lints apply to its own source; they do not impose its conventions on library internals.
+Run the application to install it. GitHub URLs can select a folder inside a repository. Append `#v1.2.3` to choose a release tag, or `#COMMIT` to choose a commit. Without a revision, the first installation selects the repository's current default branch. `aug.lock.json` records the exact commit either way.
 
-Ctrl-click an imported declaration, `from`, or a path segment to open the installed source or its export file. Hover preserves its Javadoc. VS Code recognizes a standalone library from `aug-package.json` and refreshes when the manifest or lock changes.
+Imported names must appear in that folder's `export.aug`. An exported child folder has its own export file. A dependency's private names and unexported files remain inaccessible.
+
+## Official libraries
+
+The compiler supplies `august.io` for console, file, and argument capabilities. JSON, time, in-memory stores, web helpers, and cryptography are optional source packages. Add only what your application uses:
+
+| Alias | Repository folder | API |
+| --- | --- | --- |
+| `json` | `src/stdlib/json` | [Parse JSON](api/json.md) |
+| `time` | `src/stdlib/time` | [Read a clock](api/time.md) |
+| `memory` | `src/stdlib/memory` | [Bounded expiring stores](api/memory.md) |
+| `web` | `src/stdlib/web` | [HTTP client and server helpers](api/web.md) |
+| `crypto` | `src/stdlib/crypto` | [Crypto and signed tokens](api/crypto.md) |
+
+Each folder is under `https://github.com/GreenPandaStudios/augscript/`. For example, use `aug add https://github.com/GreenPandaStudios/augscript/src/stdlib/web --as web`. Endpoints, records, headers, and server-rendered HTML are language features; a simple weather service needs none of these optional packages.
+
+## Author a package
+
+Create a library:
+
+```sh
+aug package init arithmetic
+cd arithmetic
+aug check
+aug test
+aug spec
+```
+
+The starter exports `add` from `src/arithmetic.aug`, keeps its test in that file, and includes agent instructions. Edit `src/export.aug` to choose which declarations others can import. A library needs no `main.aug` and does not start an application when imported.
+
+For a library you write by hand, `export.aug` in the root or a `src` folder is enough. `aug-package.json` is optional; use it when you want to name a package, state its version and compiler, choose another source folder, or declare dependency aliases. npm metadata is only needed for npm distribution.
+
+Commit the source, export file, tests, comments, and dependency lock to your Git repository. Include a license, run `aug check` and `aug test`, then publish a release tag. Other projects can import your repository URL with `#v0.1.0`.
 
 ## Dependencies between libraries
 
-Declare dependencies in the library's August manifest instead of `main.yaml`:
+A library can import another repository URL directly. The installer follows those imports and installs the complete graph. Each library has its own aliases and export boundaries; its dependencies do not become imports in the application automatically.
 
-```json
-"dependencies": {
-  "math": "npm:@your-npm-name/aug-math@0.1.0"
-}
+For local development, use an alias mapped to a folder:
+
+```yaml
+packages:
+  arithmetic: ../arithmetic
 ```
 
-Run `aug install` inside that library and use `import add from math`. Each package sees its own declared aliases. A consuming app cannot import a transitive alias unless it also declares that dependency. Multiple package versions have distinct type identities; duplicate copies of the same version share declarations only when their source and dependencies agree. Changed code with the same package name/version is rejected when conflicting copies would coexist.
-
-Registry dependencies require exact versions. Ranges, latest tags, Git dependencies and arbitrary URLs are unsupported. Local paths are useful within a development workspace; publish registry references for libraries other developers will install.
+Then run `aug install`. Local dependencies inside a library resolve relative to that library's original folder. To share the library remotely, replace development paths with public repository URLs or exact registry versions.
 
 ## Reproducible builds
 
-Commit `aug.lock.json` with your project. It records specifications, the installed graph, exact names/versions, npm integrity metadata, the compiler version, and hashes of source/manifests. `.aug-packages` is an ignored installed snapshot.
+Commit `aug.lock.json`. It records repository commits, registry archive integrity, source hashes, and the dependency graph. Installed sources live in `.aug-packages`; do not edit or commit that directory.
 
 ```sh
-aug install my-app --frozen
-aug check my-app
-aug test my-app
-aug build my-app
+aug install --frozen
+aug check
+aug test
+aug build
 ```
 
-`--frozen` requires a matching lock and unchanged source graph. `--offline` additionally prohibits fetching uncached dependencies; a fresh machine may need one online install before it can work offline. Editing the installed source produces a diagnostic requiring a reinstall. The compiler version must match exactly while the language is experimental.
+A frozen install restores the recorded revisions and rejects changed source contents. `aug install --update` deliberately selects current revisions again. A normal install preserves a matching lock. `aug run --offline` and `aug install --frozen --offline` use previously cached sources and native dependencies; an uncached input produces an error explaining how to prepare it online.
 
-Libraries support `check`, same-file `test`, formatting, explain, editor help, and packing. `run`, `build`, `bench` and server OpenAPI generation belong to an application with `main.aug`. Consumer tests run the consumer's suites; dependency tests are checked and executed by the package author. Arbitrary C source, native build hooks, precompiled August binaries, compiler plugins and stable native ABIs are outside this package format.
+Installation reads Git source blobs without running hooks and extracts registry archives without running lifecycle scripts. Application code can still call native adapters and unsafe operations; review those before running a dependency.
 
-`aug spec` also works on source libraries. `aug pack DIRECTORY` is an alias for `aug package pack DIRECTORY`. Packing refreshes and includes adjacent `.aug.md` files and `.aug-spec/` so the package carries complete source explanations and precise-version offline dependency links. See [compiled specifications](specifications.md).
+## npm archives and releases
 
-The [package example](../examples/packages/README.md) exercises the author and consumer workflow locally. The installer uses [npm aliases](https://docs.npmjs.com/cli/v11/using-npm/package-spec/) and [npm install](https://docs.npmjs.com/cli/v11/commands/npm-install/) with lifecycle scripts disabled and local packages installed as copied archives.
+For npm distribution, use `aug package init arithmetic --name @owner/arithmetic`, then `aug package pack`. Packing checks the library and its test bodies, generates specs, synchronizes npm metadata, and prints the archive path. Run `aug test` yourself before publishing the archive with npm.
+
+Consumers can use `aug add npm:@owner/arithmetic@0.1.0 --as arithmetic` or a local `.tgz` path. Registry versions must be exact. Git, registry, and local dependencies can appear in the same graph.
+
+## VS Code
+
+Install AugScript from the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=augscript.augscript), or install a published `.vsix` from [GitHub Releases](https://github.com/GreenPandaStudios/augscript/releases) using **Extensions: Install from VSIX…** in VS Code. Editor-only patches can have a different version from the CLI; their release notes identify the bundled compiler. The extension bundles that compiler and uses the project's installed source graph for completion, help, and navigation. [The editor guide](editor.md) covers completion, fixes, and inferred type hints.
+
+## Install release tarballs
+
+The CLI tarball requires its matching core stdlib package. npm normally obtains it automatically. For an archive installation, install the matching CLI and stdlib tarballs together; optional web and crypto packages are regular source libraries.
+
+Verified LLVM packs and native artifacts use `~/.cache/augscript/native-artifacts`, keyed by their archive hashes. `AUG_NATIVE_ARTIFACT_CACHE` selects another cache. Source, compiler, runtime, and platform selections remain in `aug.lock.json`. The C migration reference uses the older `AUG_NATIVE_HOME` source-build cache. The [native package guide](native-packages.md) covers ownership, platform requirements, and publishing; [release process](releasing.md) covers the compiler distribution.

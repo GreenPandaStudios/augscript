@@ -27,7 +27,7 @@ This is the exact dependency version used by this example.
 ```aug [Indentation]
 // aug-spec: "arithmetic.aug.md" explains this file. Read it before changes; refresh with aug spec.
 /** Add two integers. @param left First value. @param right Second value. @return Their sum. */
-add(int left, int right) returns int:
+add(int left, int right):
     return left + right
 test add:
     when "addition":
@@ -38,7 +38,7 @@ test add:
 ```aug [Braces]
 // aug-spec: "arithmetic.aug.md" explains this file. Read it before changes; refresh with aug spec.
 /** Add two integers. @param left First value. @param right Second value. @return Their sum. */
-add(int left, int right) returns int {
+add(int left, int right) {
     return left + right
 }
 test add {
@@ -58,13 +58,11 @@ test add {
 
 ## Compiled specification {#specification}
 
-<a id="symbol-add"></a>
-### `add` · [source](arithmetic.md#code)
+### `add` · [source](arithmetic.md#code) {#symbol-add}
 
 Add two integers. It takes `left` as an integer (First value) and `right` as an integer (Second value). It returns `int` — Their sum. It returns `left` plus `right`.
 
-<a id="symbol-test add"></a>
-### `test add` · [source](arithmetic.md#code)
+### `test add` · [source](arithmetic.md#code) {#symbol-test-20-add}
 
 Tests [`add`](arithmetic.md#symbol-add). Each case gets fresh setup and dependencies.
 

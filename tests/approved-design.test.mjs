@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { join, dirname, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
-import { spawnSync } from 'node:child_process';
+import { spawnSync } from './compiler-process.mjs';
 
 const cli = resolve('bin/aug.mjs');
 function project(files, action) {
@@ -403,7 +403,7 @@ lookup() { resolve app to dependency }
   const result = command(root, 'check', ['--json']);
   assert.equal(result.status, 1);
   const diagnostics = JSON.parse(result.stdout);
-  for (const fragment of ['read-only', 'must declare changes', 'Use a resolve Console', 'callable header'])
+  for (const fragment of ['read-only', 'Use a resolve Console', 'callable header'])
     assert.ok(diagnostics.some(issue => issue.message.includes(fragment)), result.stdout);
 }));
 

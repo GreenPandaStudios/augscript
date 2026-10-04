@@ -12,22 +12,24 @@ outline: [2, 3]
 
 Parse, decode, and serialize a typed record 5,000 times.
 
-Read a file below to see its highlighted source and the Markdown produced by `aug spec`. Choose **Indentation** or **Braces** above the code. Both views describe the same checked program; your choice is kept when you open another file.
+Open a file to read the code beside its compiled explanation. Choose **Indentation** or **Braces** to change the code view. The choice carries across files.
 
 ## Project files
 
 - [`main.aug`](main.md)
 - [`data.aug`](data.md)
 
+- [`main.yaml`](main-yaml.md)
 
 ## Try this project
 
-From a repository checkout with August installed:
+[Download this project](/downloads/json-benchmark.zip), then extract the archive in an empty working folder. It contains source, configuration, and compiled specs. [Install August](../../getting-started.md) once, then run these commands. Native libraries are prepared automatically when needed:
 
 ```sh
-aug check benchmarks/json
-aug spec benchmarks/json
-aug run benchmarks/json
+cd json-benchmark
+aug check .
+aug spec .
+aug run .
 ```
 
 See [the performance page](../../performance.md) for measurements, input sizes, and reproduction steps.

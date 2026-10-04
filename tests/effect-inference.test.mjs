@@ -40,11 +40,11 @@ test('implementations and forward private helpers infer capabilities; hover and 
   });
 });
 
-test('inference still enforces pure interfaces and public function contracts', () => {
+test('public functions infer uses while implementations still respect pure interfaces', () => {
   project(declarations.replace('log(string message) uses Console.write', 'log(string message)') +
     'emit(Console console, string message) { _emit(console, message) }\n', ({ issues }) => {
     assert.ok(issues.some(issue => issue.message.includes('signature') || issue.message.includes('compatible')), JSON.stringify(issues));
-    assert.ok(issues.some(issue => issue.code === 'EFFECT' && issue.message.includes('emit is pure')), JSON.stringify(issues));
+    assert.ok(!issues.some(issue => issue.code === 'EFFECT' && issue.message.includes('emit is pure')), JSON.stringify(issues));
   });
 });
 

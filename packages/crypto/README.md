@@ -1,7 +1,11 @@
-# august.crypto
+# August crypto library
 
-`@greenpandastudios/aug-crypto` contains the Crypto capability, GnuTLS adapter, RSA JWK import/export, and signed JWT helpers. Verification requires an explicit algorithm, key id and token type; the consuming protocol validates claims.
+This package contains the source exported by `august/crypto/export.aug`. Import it as a regular August source package, or add the canonical repository folder:
 
-The CLI installs the exact matching version. Run `aug-native` explicitly before native crypto builds. Current native support is macOS. Generated API, guide and gap ledger are included in `docs`.
+```sh
+aug add \
+  https://github.com/GreenPandaStudios/augscript/src/stdlib/crypto \
+  --as crypto
+```
 
-See [the same-app OIDC example](https://github.com/GreenPandaStudios/augscript/tree/main/examples/oidc-login) and [installation](https://github.com/GreenPandaStudios/augscript/blob/main/docs/packages.md).
+Then import public names from `crypto`. [The API reference](https://greenpandastudios.github.io/augscript/api/crypto) describes the operations. `aug run` prepares their required native libraries. The [web guide](https://greenpandastudios.github.io/augscript/web) and [gap ledger](https://greenpandastudios.github.io/augscript/web-library-gaps) describe current behavior and deployment limits.

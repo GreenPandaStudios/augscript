@@ -4,7 +4,7 @@
 
 ## Providers
 
-`Console` is provided by [`SystemConsole`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-SystemConsole). The same instance is shared. `Logger` is provided by [`ConsoleLogger`](console.aug.md#symbol-ConsoleLogger). The same instance is shared.
+`Console` is provided by [`SystemConsole`](.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-SystemConsole). The same instance is shared. `Logger` is provided by [`ConsoleLogger`](console.aug.md#symbol-ConsoleLogger). The same instance is shared.
 
 ## Startup
 
@@ -14,8 +14,6 @@ It prints `count`.
 
 ## Dependencies
 
-It uses [`SystemConsole`](.aug-spec/august/0.19.0/io/contracts.aug.md#symbol-SystemConsole) from `august.io`. It uses [`ConsoleLogger`](console.aug.md#symbol-ConsoleLogger) from `console`. It uses [`Greeter`](greeter.aug.md#symbol-Greeter) ([`greet`](greeter.aug.md#symbol-Greeter.greet)) from `greeter`. It uses [`increment`](math.aug.md#symbol-increment) from `math`.
-
-These links explain the full dependency contracts.
+It uses [`SystemConsole`](.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-SystemConsole) from `august.io`. It uses [`ConsoleLogger`](console.aug.md#symbol-ConsoleLogger) from `console`. It uses [`Greeter`](greeter.aug.md#symbol-Greeter) ([`greet`](greeter.aug.md#symbol-Greeter.greet)) from `greeter`. It uses [`increment`](math.aug.md#symbol-increment) from `math`.
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).

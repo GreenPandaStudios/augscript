@@ -8,4 +8,4 @@ It calls [`announce`](native.aug.md#symbol-announce).
 
 ## Dependencies
 
-It uses [`announce`](native.aug.md#symbol-announce) from `native`. These links explain the full dependency contracts.
+It uses [`announce`](native.aug.md#symbol-announce) from `native`.

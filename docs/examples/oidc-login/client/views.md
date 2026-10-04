@@ -53,9 +53,9 @@ pageClass: aug-example-page
 import SessionClaims from contracts
 import Page from common
 import logout from logout
-LoginPage() returns Html:
+LoginPage():
     return <Page title={"Sign in"}><p>This August app is both an OpenID Connect provider and a login client.</p><p><a href={"/login/start"} style={"display:inline-block;padding:12px 20px;border-radius:10px;background:#4852d7;color:white;text-decoration:none"}>Sign in with OpenID Connect</a></p><p>The server uses authorization codes, S256 PKCE, state and nonce validation. Your session is a separate signed JWT in an HttpOnly cookie.</p></Page>
-Welcome(SessionClaims session) returns Html unless HttpError:
+Welcome(SessionClaims session):
     return <Page title={"Welcome, " + session.name}><p>You are signed in as <strong>{session.name}</strong>.</p><p>Subject: <code>{session.sub}</code></p><p><a href={"/me"}>View the protected JSON endpoint</a></p><form method={"post"} action={"/logout"} onSubmit={handle logout(input from form)}><input type={"hidden"} name={"csrf"} value={session.csrf} /><button type={"submit"} style={"padding:10px 18px;border-radius:10px;border:0;background:#17233a;color:white;font:inherit"}>Sign out</button></form></Page>
 ```
 
@@ -64,10 +64,10 @@ Welcome(SessionClaims session) returns Html unless HttpError:
 import SessionClaims from contracts
 import Page from common
 import logout from logout
-LoginPage() returns Html {
+LoginPage() {
     return <Page title={"Sign in"}><p>This August app is both an OpenID Connect provider and a login client.</p><p><a href={"/login/start"} style={"display:inline-block;padding:12px 20px;border-radius:10px;background:#4852d7;color:white;text-decoration:none"}>Sign in with OpenID Connect</a></p><p>The server uses authorization codes, S256 PKCE, state and nonce validation. Your session is a separate signed JWT in an HttpOnly cookie.</p></Page>
 }
-Welcome(SessionClaims session) returns Html unless HttpError {
+Welcome(SessionClaims session) {
     return <Page title={"Welcome, " + session.name}><p>You are signed in as <strong>{session.name}</strong>.</p><p>Subject: <code>{session.sub}</code></p><p><a href={"/me"}>View the protected JSON endpoint</a></p><form method={"post"} action={"/logout"} onSubmit={handle logout(input from form)}><input type={"hidden"} name={"csrf"} value={session.csrf} /><button type={"submit"} style={"padding:10px 18px;border-radius:10px;border:0;background:#17233a;color:white;font:inherit"}>Sign out</button></form></Page>
 }
 ```
@@ -80,13 +80,11 @@ Welcome(SessionClaims session) returns Html unless HttpError {
 
 ## Compiled specification {#specification}
 
-<a id="symbol-LoginPage"></a>
-### `LoginPage` · [source](views.md#code)
+### `LoginPage` · [source](views.md#code) {#symbol-LoginPage}
 
 It returns the server component [`Page`](../common/views.md#symbol-Page) with `title` = `"Sign in"` containing a paragraph containing `This August app is both an OpenID Connect provider and a login client.` with escaped text, a paragraph containing a link with `href` = `"/login/start"`, `style` = `"display:inline-block;padding:12px 20px;border-radius:10px;background:#4852d7;color:white;text-decoration:none"` containing `Sign in with OpenID Connect` with escaped text with escaped text, a paragraph containing `The server uses authorization codes, S256 PKCE, state and nonce validation. Your session is a separate signed JWT in an HttpOnly cookie.` with escaped text with escaped text.
 
-<a id="symbol-Welcome"></a>
-### `Welcome` · [source](views.md#code)
+### `Welcome` · [source](views.md#code) {#symbol-Welcome}
 
 It takes `session` as [`SessionClaims`](contracts.md#symbol-SessionClaims). Failures can raise `HttpError`.
 
@@ -94,7 +92,7 @@ It returns the server component [`Page`](../common/views.md#symbol-Page) with `t
 
 ### Dependencies
 
-It uses [`SessionClaims`](contracts.md#symbol-SessionClaims) (`csrf`, `name`, and `sub`) from `contracts`. It uses [`logout`](logout.md#symbol-logout) from `logout`. It uses [`Page`](../common/views.md#symbol-Page) from `common`. These links explain the full dependency contracts.
+It uses [`SessionClaims`](contracts.md#symbol-SessionClaims) (`csrf`, `name`, and `sub`) from `contracts`. It uses [`logout`](logout.md#symbol-logout) from `logout`. It uses [`Page`](../common/views.md#symbol-Page) from `common`.
 
 ::::
 
