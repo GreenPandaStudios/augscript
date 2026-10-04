@@ -2,6 +2,7 @@ const vscode = require('vscode');
 const fs = require('node:fs');
 const path = require('node:path');
 const { spawn } = require('node:child_process');
+const {setupError,validateInvocation}=require('./process.cjs');
 const { Server } = require('./server.cjs');
 const { activateDebugging } = require('./debug.cjs');
 
@@ -9,6 +10,16 @@ const diagnostics = vscode.languages.createDiagnosticCollection('augscript');
 const timers = new Map();
 const lastFiles = new Map();
 const servers = new Map();
+const setupFailures=new Set();
+const output=vscode.window.createOutputChannel('August');
+function reportSetupFailure(error){
+  output.appendLine(error.message);
+  if(setupFailures.has(error.message))return;setupFailures.add(error.message);
+  vscode.window.showErrorMessage(error.message,'Open August Settings','Show Output').then(choice=>{
+    if(choice==='Open August Settings')vscode.commands.executeCommand('workbench.action.openSettings','@ext:augscript.augscript');
+    if(choice==='Show Output')output.show(true);
+  });
+}
 
 function projectRoot(file) {
   const snapshot = file.split(path.sep + '.aug-packages' + path.sep)[0];
@@ -50,6 +61,7 @@ function invocation(context, args) {
 function runCompiler(context, args, input) {
   return new Promise((resolve, reject) => {
     const command = invocation(context, args);
+    validateInvocation(command);
     const process = spawn(command.command, command.args, { env:command.env, stdio: ['pipe', 'pipe', 'pipe'] });
     let stdout = '';
     let stderr = '';
@@ -57,7 +69,8 @@ function runCompiler(context, args, input) {
     process.stderr.setEncoding('utf8');
     process.stdout.on('data', chunk => { stdout += chunk; });
     process.stderr.on('data', chunk => { stderr += chunk; });
-    process.on('error', reject);
+    process.on('error', error=>reject(setupError(error,command)));
+    process.stdin.on('error', error=>reject(setupError(error,command)));
     process.on('close', code => resolve({ code, stdout, stderr }));
     process.stdin.end(input ?? '');
   });
@@ -110,7 +123,7 @@ async function refresh(context, document) {
     for (const [file, list] of grouped) diagnostics.set(vscode.Uri.file(file), list);
     lastFiles.set(document.uri.toString(), new Set(grouped.keys()));
   } catch (error) {
-    vscode.window.showErrorMessage(`AugScript compiler: ${error.message}`);
+    reportSetupFailure(error);
   }
 }
 
@@ -450,9 +463,10 @@ async function executeProject(context, command) {
 function activate(context) {
   activateDebugging(vscode, context, projectRoot, runCompiler);
   require('./testing.cjs').activateTesting(vscode, context, projectRoot, runCompiler);
-  context.subscriptions.push(diagnostics);
+  context.subscriptions.push(diagnostics,output);
   context.subscriptions.push(vscode.workspace.onDidChangeConfiguration(event=>{
     if(!['augscript.compilerPath','augscript.nodePath','augscript.nativeHome'].some(key=>event.affectsConfiguration(key)))return;
+    setupFailures.clear();
     for(const connection of servers.values())connection.dispose();servers.clear();
     for(const document of vscode.workspace.textDocuments)scheduleRefresh(context,document);
   }));
@@ -530,6 +544,21 @@ function activate(context) {
       if(result.code!==0)throw new Error(result.stderr||result.stdout||'Syntax migration failed.');
       vscode.window.showInformationMessage(result.stdout.trim()||'Project syntax is current.');
     }catch(error){vscode.window.showErrorMessage(error.message);}
+  }));
+  context.subscriptions.push(vscode.commands.registerCommand('augscript.doctor',async()=>{
+    const file=vscode.window.activeTextEditor?.document.uri.fsPath,root=file?projectRoot(file):vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+    if(!root){vscode.window.showErrorMessage('Open an August project before checking setup.');return;}
+    try{
+      const result=await runCompiler(context,['doctor',root,'--json']);
+      if(result.code===2)throw new Error('This compiler does not provide aug doctor. Install the matching full August release, or select its CLI with augscript.compilerPath.');
+      if(!result.stdout.trim())throw new Error(result.stderr||'The compiler returned no setup report. Check augscript.compilerPath.');
+      const report=JSON.parse(result.stdout);
+      if(report.format!==1||typeof report.ready!=='boolean'||!Array.isArray(report.checks))throw new Error('The compiler returned an incompatible setup report. Check augscript.compilerPath and install matching CLI/editor versions.');
+      output.clear();
+      output.appendLine(`August ${report.compiler} on ${report.host}`);
+      for(const check of report.checks)output.appendLine(`${check.status}: ${check.message}${check.recovery?'\n  '+check.recovery:''}`);
+      output.show(true);return report;
+    }catch(error){reportSetupFailure(error);}
   }));
   context.subscriptions.push(vscode.commands.registerCommand('augscript.installPackages', () => executeProject(context, 'install')));
   context.subscriptions.push(vscode.commands.registerCommand('augscript.run', () => executeProject(context, 'run')));

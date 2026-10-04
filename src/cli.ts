@@ -12,6 +12,7 @@ import {compileLLVM} from './llvm-native.ts';
 import {prepareNativePackages} from './native-artifacts.ts';
 import {prepareLLVMCompiler} from './compiler-packs.ts';
 import {bindNativeHeader} from './native-bindings.ts';
+import {inspectDistribution} from './distribution.ts';
 import { diagnosticHelp } from './help.ts';
 import { loadProject } from './project.ts';
 import { definitionAt } from './navigation.ts';
@@ -30,7 +31,7 @@ import { prepareNativeDependencies } from '../scripts/native-setup.mjs';
 function failureMessage(error: unknown): string {
   const message = error instanceof Error ? error.message : String(error);
   if (error instanceof Error && 'code' in error && ['EACCES', 'EPERM', 'EROFS'].includes(String(error.code)))
-    return `${message}\nAugust needs a writable project and native cache. Check the folder permissions, or set AUG_NATIVE_HOME to a directory you own.`;
+    return `${message}\nAugust needs a writable project and native cache. Check the folder permissions, or set AUG_NATIVE_ARTIFACT_CACHE to a directory you own. Run aug doctor to check setup.`;
   if (error instanceof Error && 'code' in error && error.code === 'ENOSPC')
     return `${message}\nThere is not enough disk space to compile or prepare dependencies. Free space and retry aug run.`;
   return message;
@@ -63,8 +64,9 @@ function printDiagnostics(diagnostics: Diagnostic[], json: boolean, root: string
 
 function usage(): void {
   process.stdout.write(`AugScript compiler\n\n` +
-    `Usage: aug <init|check|build|run|emit-c|emit-llvm|emit-ir|test|openapi|format|migrate|spec|bench|explain|context|lsp|symbols|definition|complete|hover|fixes|semantic-tokens> [project directory] [options] [-- args]\n` +
+    `Usage: aug <init|doctor|check|build|run|emit-c|emit-llvm|emit-ir|test|openapi|format|migrate|spec|bench|explain|context|lsp|symbols|definition|complete|hover|fixes|semantic-tokens> [project directory] [options] [-- args]\n` +
     `New application: aug init DIRECTORY [--template hello|weather]\n` +
+    `Diagnose setup: aug doctor [project directory] [--json] — check without downloading or writing files\n` +
     `Run: aug run [project directory] [--offline] [-- args] — prepare dependencies, compile, and start\n` +
     `Backend: LLVM is the default on macOS 14+ ARM64 and GNU/Linux x64/ARM64 with glibc 2.36+. August installs its compiler pack; no separate native toolchain is needed. --backend c selects the migration reference.\n` +
     `Tests: aug test [project directory] [GROUP_NAME] [--group GROUP_NAME] [--list] [--coverage] [--json] [--timeout milliseconds]\n` +
@@ -82,6 +84,18 @@ function usage(): void {
 export async function main(argv: string[]): Promise<number> {
   if(argv[0]==='pack')return main(['package','pack',...argv.slice(1)]);
   const command = argv[0];
+  if(command==='doctor'){
+    const arguments_=argv.slice(1),paths=arguments_.filter(arg=>!arg.startsWith('-'));
+    if(paths.length>1||arguments_.some(arg=>arg.startsWith('-')&&arg!=='--json')){process.stderr.write('Use aug doctor [project directory] [--json]\n');return 2;}
+    const report=inspectDistribution(resolve(paths[0]??process.cwd()));
+    if(arguments_.includes('--json'))process.stdout.write(JSON.stringify(report)+'\n');
+    else{
+      process.stdout.write(`August ${report.compiler} on ${report.host}\n`);
+      for(const check of report.checks)process.stdout.write(`${check.status}: ${check.message}\n${check.recovery?'  '+check.recovery+'\n':''}`);
+      process.stdout.write(report.ready?'Prerequisites checked. Uncached artifacts still require an online first run.\n':'Resolve the errors above, then retry aug doctor.\n');
+    }
+    return report.ready?0:1;
+  }
   if (command === '--version' || command === 'version') {
     process.stdout.write(JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')).version + '\n');
     return 0;

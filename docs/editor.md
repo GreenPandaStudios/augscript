@@ -2,6 +2,14 @@
 
 Install the [AugScript extension](packages.md#vs-code), open the project folder, and start in `main.aug`. The editor checks unsaved code with the same compiler as the CLI. Install source dependencies with `aug run` or `aug install` so their declarations and documentation are available locally.
 
+## Check setup
+
+The unreleased extension adds **AugScript: Check Setup**. It runs `aug doctor` with the configured compiler and shows the report in the **August** output channel. The published 0.23.0 compiler does not provide that command; an editor-only patch that retains it reports this limit. Install a matching full release to use doctor.
+
+The extension needs Node.js 24 or newer on the machine where its extension host runs. If Node cannot start, the diagnostic offers August settings and the output channel. Set `augscript.nodePath` to the Node executable. If you select a custom CLI, set `augscript.compilerPath` to its `bin/aug.mjs`; otherwise the extension uses its bundled compiler. Correcting either setting restarts the language server. Keep a custom CLI on the same compiler version as your project packages.
+
+In a Dev Container, install Node and the extension in the container. A host Node path cannot start a process there. The [Docker guide](docker.md) uses the prepared August build image for that environment.
+
 ## Complete a call
 
 Type part of a function or method name and choose a completion. The editor inserts its labeled inputs and places the cursor at the first value. Press Tab to move through the values. Injected `resolve` inputs are supplied by DI and do not appear as arguments you must fill in.
@@ -32,4 +40,4 @@ Review the edit before accepting it. A suggested name can be plausible without b
 
 Run **AugScript: Enable File Icons** for the August icon theme. Source files use a burgundy open circle; `main.aug` uses a play symbol, `export.aug` an outward arrow, and `main.yaml` sliders. Each has a light and dark variant. **AugScript: Open Welcome** opens the bundled guide and icon legend.
 
-Same-file cases appear in VS Code's Testing view. Use that view to run a case or group, or run `aug test` in the terminal. [Tests](testing.md) explains fixtures and endpoint tests. [CLI and configuration](tooling.md) describes language-server integration, native cache settings, and command-line tools.
+Same-file cases appear in VS Code's Testing view. **AugScript: Refresh Tests** rebuilds the tree; command clients receive the discovered items and any discovery errors. Use that view to run a case or group, or run `aug test` in the terminal. [Tests](testing.md) explains fixtures and endpoint tests. [CLI and configuration](tooling.md) describes language-server integration, native cache settings, and command-line tools.
