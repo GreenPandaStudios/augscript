@@ -47,7 +47,7 @@ Write text. It takes `path` as a string (File path) and `content` as a string (T
 <a id="symbol-LocalFiles"></a>
 ## `LocalFiles` · class · [source](contracts.aug#L23)
 
-Native files. Operations are explicit; construction opens no files. It implements [`FileReader`](contracts.aug.md#symbol-FileReader) and [`FileWriter`](contracts.aug.md#symbol-FileWriter).
+Native filesystem adapter. Construction opens no files. It implements [`FileReader`](contracts.aug.md#symbol-FileReader) and [`FileWriter`](contracts.aug.md#symbol-FileWriter).
 
 <a id="symbol-LocalFiles.read"></a>
 ### `LocalFiles.read` · [source](contracts.aug#L24)

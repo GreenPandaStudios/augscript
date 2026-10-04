@@ -142,7 +142,7 @@ export async function resolveNativePackages(root:string,lock:PackageLock,cache:s
     for(const p of packages){const directory=await ensureVerifiedArchive(p.artifact,{offline:options.offline});
       const supplied=verifyArtifactFiles(directory,p.artifact);
       for(const path of [...p.artifact.link.libraries,...p.artifact.runtime.files,p.artifact.provenance,p.artifact.notices,...(p.artifact.runtime.closureManifest?[p.artifact.runtime.closureManifest]:[])])if(!supplied[path])throw new Error('NATIVE_INTEGRITY: Artifact is missing declared file '+path);
-      inputs.push({directory,libraries:p.artifact.link.libraries,runtimeFiles:p.artifact.runtime.files,artifactSha256:p.artifact.sha256,
+      inputs.push({directory,target:p.artifact.target,libraries:p.artifact.link.libraries,runtimeFiles:p.artifact.runtime.files,artifactSha256:p.artifact.sha256,
         metadata:[...Object.keys(supplied).filter(path=>!p.artifact.link.libraries.includes(path)&&!p.artifact.runtime.files.includes(path)),p.artifact.fileManifest]});
     }
     if(!options.frozen){native.targets[key]={target,packages};lock.native=native;}

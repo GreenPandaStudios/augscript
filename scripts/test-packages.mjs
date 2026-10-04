@@ -59,6 +59,9 @@ try {
   aug('check', starter);
   assert.equal(JSON.parse(aug('test', starter, '--json')).passed, 1);
   assert.equal(aug('run', starter), 'Hello, August!\n');
+  const ranges=join(directory,'ranges');mkdirSync(ranges);
+  writeFileSync(join(ranges,'main.aug'),'import range and RangeError from august.collections\ntry { print(value=range(end=3, limit=3).length()) } catch RangeError error { exit(status=1) }\n');
+  assert.equal(aug('run',ranges),'3\n');
   // Installed JavaScript must include every setup helper and prepare a genuinely empty source cache.
   const freshNative = join(directory, 'first-use-native');
   mkdirSync(join(freshNative, 'downloads'), { recursive: true });

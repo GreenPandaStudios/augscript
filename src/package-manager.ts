@@ -36,7 +36,8 @@ export interface ProjectPackages {
   specifications: Record<string, string>;
 }
 
-export const compilerVersion = (): string => JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')).version;
+export {compilerVersion} from './compiler-version.ts';
+import {compilerVersion} from './compiler-version.ts';
 export const packageAlias = (name: string): boolean => /^[a-z][a-z0-9_]*$/.test(name) && name !== 'august';
 
 /** Repository imports declare their dependencies beside the code that uses them. */
@@ -314,9 +315,9 @@ export function prepareRunPackages(root: string, offline = false, frozen = false
 }
 
 /** Ordinary CLI runs verify native packages before accepting any new source revision. */
-export async function prepareRunPackagesWithNative(root: string, offline = false, frozen = false): Promise<void> {
+export async function prepareRunPackagesWithNative(root: string, offline = false, frozen = false, onNative?:()=>void): Promise<void> {
   const preparation=runPackagePreparation(root,frozen);
-  if(preparation)await installPackagesWithNative(root,preparation.frozen,offline);
+  if(preparation)await installPackagesWithNative(root,preparation.frozen,offline,false,onNative);
 }
 
 export function installPackages(root: string, frozen = false, offline = false, update = false): PackageLock {
@@ -511,11 +512,12 @@ function publishSourceGraph(root: string, candidate: SourceCandidate): PackageLo
 }
 
 /** Consumers accept a new source lock only after all required native artifacts verify. */
-export async function installPackagesWithNative(root: string, frozen = false, offline = false, update = false): Promise<PackageLock> {
+export async function installPackagesWithNative(root: string, frozen = false, offline = false, update = false, onNative?:()=>void): Promise<PackageLock> {
   return withPackageLockAsync(join(root,'.aug-install.lock'),async()=>{
     const candidate=planInstallation(root,frozen,offline,update);
     try {
       const {resolveNativePackages}=await import('./native-artifacts.ts');
+      onNative?.();
       await resolveNativePackages(root,candidate.lock,candidate.stage,{frozen,offline});
       return publishSourceGraph(root,candidate);
     } finally { rmSync(candidate.stage,{recursive:true,force:true}); }

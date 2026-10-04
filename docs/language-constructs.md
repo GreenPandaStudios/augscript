@@ -1114,7 +1114,7 @@ Match the present case of a nullable value and introduce a read-only non-null na
 task = start loadUsers()
 ```
 
-Start a child Task in a scope. Receiver and arguments evaluate immediately. Cooperative tasks capture references; wait before mutating or moving captured objects. Use start worker calculate(values) to copy data to an isolated heap and run on an OS thread. Both forms use the same waits, sibling cancellation, and scope joins. Worker admission and copied-input limits can raise checked ConcurrencyError at start.
+Contextual keyword: a bare value or input named start remains a value. start followed by a same-line call starts a child Task in a scope. Receiver and arguments evaluate immediately. Cooperative tasks capture references; wait before mutating or moving captured objects. Use start worker calculate(values) to copy data to an isolated heap and run on an OS thread. Both forms use the same waits, sibling cancellation, and scope joins. Worker admission and copied-input limits can raise checked ConcurrencyError at start.
 
 ## streams
 
@@ -1234,7 +1234,7 @@ No return value. A function can omit `returns void`.
 wait for usersTask and ordersTask as users and orders
 ```
 
-Wait for scoped tasks without changing result order. A List<Task<T>> produces List<T> and joins every child in the list. Waiting for one dynamically selected task leaves possible siblings captured until their scope joins them. A wait may encounter an unhandled sibling failure. Grouped waits observe all selected children before rethrowing the first failure. Waiting for I/O suspends a task.
+Contextual keyword: a bare value or input named wait remains a value. wait for joins scoped tasks without changing result order. A List<Task<T>> produces List<T> and joins every child in the list. Waiting for one dynamically selected task leaves possible siblings captured until their scope joins them. A wait may encounter an unhandled sibling failure. Grouped waits observe all selected children before rethrowing the first failure. Waiting for I/O suspends a task.
 
 ## when
 

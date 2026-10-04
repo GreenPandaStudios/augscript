@@ -119,6 +119,8 @@ Keep the executable together with its adjacent `lib` and `share` directories.
 The libraries load relative to the executable. `share/august-native` preserves
 the selected packages' notices, provenance, and file manifests.
 
+**Unreleased:** [`aug bundle`](tooling.md#create-a-deployment-bundle-unreleased) assembles this deployment directory and records its complete file hashes and platform requirements. `aug bundle verify` checks it without running native code.
+
 ## Author a binding
 
 Declare an opaque resource with `extern C resource Handle` and name its release function in `native.abi.json`. The declaration and descriptor must agree. Keep extern calls inside `unsafe`, and export safe August wrappers through `export.aug`.

@@ -12,7 +12,7 @@ Work proceeds through source/tool identities, everyday data and syntax, collecti
 | A04 | Read collections with indexing | Implemented | List checked reads, Map optional lookup, constant Tuple indexing; both-backend and formatting tests |
 | A05 | Record copy with changed fields | Implemented | Immutable record copies evaluate replacements once and rerun the constructor validation; both-backend tests |
 | A06 | Pure parameter defaults | Implemented literal-data profile | Typed literal/fresh collection defaults, explicit-null distinction, interface equality, hover/spec facts; both-backend tests |
-| A07 | Ranges as an ordinary library | Pending | — |
+| A07 | Ranges as an ordinary library | Implemented bounded allocation profile; qualification ongoing | august.collections.range uses ordinary checked source, exclusive list construction, half-open ascending/descending ranges, checked limits and overflow-safe stopping; both-backend edge tests |
 | A08 | Basic loop control | Implemented; qualification ongoing | Cleanup-aware nearest-loop break/continue; task-join, borrow/lock exit, checked cleanup failure and ownership reentry tests on both backends |
 | A09 | Remainder and checked arithmetic helpers | Partial | Signed remainder, checked zero, MIN%-1 safety pass both backends. Checked arithmetic and decimals pending |
 | A10 | Expression forms for decisions | Pending | — |
@@ -41,7 +41,7 @@ Work proceeds through source/tool identities, everyday data and syntax, collecti
 | D03 | Discover libraries by task | Pending | — |
 | D04 | Show why a dependency exists | Implemented initial report; qualification ongoing | Read-only aug dependencies lists installed identities, imports, transitive aliases, source revisions and locked native selections |
 | D05 | Preview dependency updates | Pending | — |
-| D06 | Pin the project's compiler choice | Pending | — |
+| D06 | Pin the project's compiler choice | Implemented explicit selection; qualification ongoing | main.yaml compiler exact version; CLI/editor mismatches diagnosed before installation; automatic compiler switching intentionally absent |
 | D07 | Make authoring a checked local path | Implemented static readiness; qualification ongoing | aug package check checks production/tests, exports, Javadoc, compiler requirement, license and native metadata; clearly reports behavioral/artifact qualification as not run |
 | D08 | Compare package public interfaces | Partial | Checked local aug package diff follows export boundaries and returns both contracts; resolved type identities and remote release selection still pending |
 | D09 | Local multi-package workspaces | Pending | — |
@@ -59,9 +59,9 @@ Work proceeds through source/tool identities, everyday data and syntax, collecti
 | E09 | Typed Python integration through a subprocess | Pending | — |
 | E10 | Typed JavaScript/TypeScript integration | Pending | — |
 | E11 | Generate HTTP clients from OpenAPI | Pending | — |
-| E12 | Build distributable bundles | Pending | — |
+| E12 | Build distributable bundles | Implemented host deployment profile; qualification ongoing | aug bundle publishes verified LLVM executable/lib/share closure with target, source and native identities; read-only verify rejects corruption, extra files, links and traversal. Real JSON/GnuTLS relocation and failure-cleanup tests; runtime TLS paths explicitly unsupported |
 | F01 | A read-only setup report with actionable fixes | Pending | — |
-| F02 | Show run phases clearly | Pending | — |
+| F02 | Show run phases clearly | Implemented CLI/LLVM phases; qualification ongoing | Terminal or --progress events on stderr, elapsed phases and failed stage; both-backend output/error regressions |
 | F03 | Watch and rerun | Pending | — |
 | F04 | Incremental native builds | Pending | — |
 | F05 | Fast selected test execution | Pending | — |
@@ -99,3 +99,6 @@ The 48-test language/package/inference/design run passed before the subsequent r
 Commit 157f3b2 passed 508 of 509 full-suite cases (one cold-download qualification skipped), 25 independent conformance examples in 55 checks, and six C/runtime sanitizer pressure cases. The Standards review identified four contract/UI issues; the Spec review identified two P1 correctness issues. Repairs add binding-preserving rename collision checks, reachable loop-exit freshness, lexical grant unwinding, ordinary-module restrictions, same-file candidate checking for borrow fixes, and precise editor-plan wording. Targeted repairs passed before the subsequent ownership/package additions. Qualification must be rerun for the final candidate.
 
 Checkpoint 2583495 passed the installed C package gates and documentation checks. The full suite passed 522 cases with one obsolete hover-wording assertion, repaired in the 81-case targeted rerun, and one cold-download skip. Review repairs include effective capability context, inferred ownership idiom selection, and inherited public package contracts. Equality assertions and those repairs passed both native backends; final qualification remains outstanding.
+
+
+The next checkpoint ran 554 full-suite cases: 552 passed, one cold-download case skipped, and the new documentation range example failed because it omitted its error import. That example was repaired; the 13-case documentation/bundle/package rerun passed, followed by 572 generated-file drift checks, the site build and installed C package gates. Independent Standards review found three documentation omissions, all repaired; Spec review found cold native failures attributed to source resolution, repaired with an installer phase callback and rollback regression. The range API was visually checked at desktop and 390-pixel widths. These results do not qualify cold default-LLVM installation or the installed editor for this unreleased compiler.

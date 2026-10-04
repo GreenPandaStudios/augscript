@@ -2,7 +2,9 @@ import {createHash} from 'node:crypto';
 import {existsSync,readFileSync} from 'node:fs';
 import {join,relative,resolve} from 'node:path';
 import type {CheckedProject,Ty} from './checker.ts';
-import {tyName} from './types.ts';
+import {tyName,immutableType} from './types.ts';
+import type {TypeRef} from './ast.ts';
+import {schemaType} from './schemas.ts';
 import {loadProject} from './project.ts';
 import {readPackage,readPackageLock,compilerVersion} from './package-manager.ts';
 import {sourceAlias} from './git-packages.ts';
@@ -98,12 +100,16 @@ export function packageInterfaceDiff(beforeDirectory:string,afterDirectory:strin
   const surface=(checked:CheckedProject)=>{
     const facts=new Map(contractFacts(checked).map(fact=>[fact.id,fact]));
     return new Map(packageSurface(checked).map(item=>{
-      const inherited=[...(checked.defaults.get(item.fact.id)?.values()??[])].filter(entry=>!entry.method.name.startsWith('_')).map(entry=>{
+      const entries=item.fact.kind==='interface'||item.fact.kind==='capability' ? [...(checked.interfaceMembers.get(item.fact.id)?.values()??[])].flat().filter(entry=>entry.from!==item.fact.id) : [...(checked.defaults.get(item.fact.id)?.values()??[])];
+      const inherited=entries.filter(entry=>!entry.method.name.startsWith('_')).map(entry=>{
         const original=facts.get(entry.from)?.callables.find(method=>method.name===entry.method.name);
         if(!original)throw new Error('PACKAGE_DIFF: Missing inherited method contract '+entry.method.name);
-        const substitute=(type:Ty):Ty=>type.kind==='param'&&entry.params.has(type.name)?{...entry.params.get(type.name)!,nullable:type.nullable||entry.params.get(type.name)!.nullable}: {...type,args:type.args.map(substitute)};
+        const ownerParams=new Map(entry.params); for(const name of entry.method.typeParams)ownerParams.delete(name);
+        const substitute=(type:Ty):Ty=>type.kind==='param'&&ownerParams.has(type.name)?{...ownerParams.get(type.name)!,nullable:type.nullable||ownerParams.get(type.name)!.nullable,optional:type.optional||ownerParams.get(type.name)!.optional}: {...type,args:type.args.map(substitute)};
+        const inputType=(ref:TypeRef):Ty=>{const base=schemaType(checked.project,ref,entry.file,ownerParams);
+          const type=ownerParams.has(ref.name)?base:{...base,args:ref.args.map(inputType)};return ref.immutable?immutableType(type):type;};
         const contract=checked.callableContracts.get(entry.method);
-        return {...original,inputs:original.inputs.map((input,index)=>({...input,type:tyName(substitute(checked.resolvedTypes.get(entry.method.params[index].type)!))})),
+        return {...original,inputs:original.inputs.map((input,index)=>({...input,type:tyName(inputType(entry.method.params[index].type))})),
           result:(entry.method.returnOwnership==='own'?'own ':'')+tyName(substitute(contract?.result??checked.resolvedTypes.get(entry.method.returns)!)),
           errors:contract?.errors.map(error=>tyName(substitute(error)))??original.errors};
       });

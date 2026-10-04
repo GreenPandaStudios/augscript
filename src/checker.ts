@@ -55,6 +55,8 @@ export interface CheckedProject {
   resolvedCalls: WeakMap<Expr, ResolvedCall>;
   resolvedTypes: WeakMap<TypeRef, Ty>;
   defaults: Map<string, Map<string, InterfaceMethod>>;
+  /** Declaration-time inherited interface requirements, with owner substitutions. */
+  interfaceMembers: Map<string, Map<string, InterfaceMethod[]>>;
   callPlans: WeakMap<Expr, CallPlan>;
   interceptorPlans: Map<MethodDecl | ClassDecl, InterceptorLayer[]>;
   effectContracts: Map<MethodDecl, EffectContract>;
@@ -173,6 +175,7 @@ class Checker {
   readonly resolvedCalls = new WeakMap<Expr, ResolvedCall>();
   readonly resolvedTypes = new WeakMap<TypeRef, Ty>();
   readonly defaults = new Map<string, Map<string, InterfaceMethod>>();
+  readonly interfaceMembers = new Map<string, Map<string, InterfaceMethod[]>>();
   readonly callPlans = new WeakMap<Expr, CallPlan>();
   readonly bindings: BindingInfo[] = [];
   readonly interceptorPlans = new Map<MethodDecl | ClassDecl, InterceptorLayer[]>();
@@ -306,7 +309,7 @@ class Checker {
         layers.slice(index + 1).every(inner => this.layerReturnsFresh(inner));
     }
     return { project: this.project, diagnostics: this.diagnostics, bindings: this.bindings,
-      expressionTypes: this.expressionTypes, resolvedNames:this.resolvedNames, resolvedCalls:this.resolvedCalls, resolvedTypes:this.resolvedTypes, defaults: this.defaults, callPlans: this.callPlans,
+      expressionTypes: this.expressionTypes, resolvedNames:this.resolvedNames, resolvedCalls:this.resolvedCalls, resolvedTypes:this.resolvedTypes, defaults: this.defaults, interfaceMembers:this.interfaceMembers, callPlans: this.callPlans,
       interceptorPlans: this.interceptorPlans, effectContracts: this.effectContracts, callableContracts: this.callableContracts, constructorContracts: this.constructorContracts,
       expressionOrigins: this.expressionOrigins, inferredOwned:this.inferredOwned, scopes: this.scopes, markupCalls: this.markupCalls, actions:this.actions, httpPolicies:this.httpPolicies, native:this.native };
   }
@@ -987,8 +990,8 @@ class Checker {
       if (type.kind !== 'interface') this.report(parent.span,
         `${parent.name} is not an interface`);
     }
-    this.interfaceMethods({ id: def.id, name: def.name, kind: 'interface', def,
-      args: [...params.values()], nullable: false }, new Set());
+    this.interfaceMembers.set(def.id,this.interfaceMethods({ id: def.id, name: def.name, kind: 'interface', def,
+      args: [...params.values()], nullable: false }, new Set()));
   }
 
   private interfaceMethods(type: Ty, visiting: Set<string>): Map<string, InterfaceMethod[]> {

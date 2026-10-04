@@ -13,6 +13,8 @@ Install `aug` once as shown in [Your first project](getting-started.md). Command
 | `package check DIRECTORY [--json]` | **Unreleased:** static package publishing readiness; behavioral tests remain explicit. |
 | `package diff BEFORE AFTER [--json]` | **Unreleased:** compare checked exported interfaces of local revisions. |
 | `check PROJECT [--json]` | Production, tests, module policy, documentation, and configuration diagnostics. |
+| `bundle PROJECT --out DIRECTORY [--offline] [--frozen] [--json]` | **Unreleased:** release executable, runtime libraries, notices and verification manifest. |
+| `bundle verify DIRECTORY [--json]` | **Unreleased:** verify bundle files without executing the application. |
 | `build PROJECT [--out NAME] [--json]` | Native path; JSON contains output and sourceMap. |
 | `run [PROJECT] [--offline] -- args...` | Prepares declared packages and required native libraries, checks, compiles, and runs; program stdout is preserved. |
 | `emit-c PROJECT` | Generated C for inspection. |
@@ -91,6 +93,7 @@ module_dependencies:
 | output | Executable name under .aug-build, or an absolute output path. |
 | optimization | debug (-O0) or release (-O2); both retain debug information. |
 | backend | llvm (default in 0.23.0) or the temporary c migration reference. |
+| compiler | **Unreleased:** optional exact project compiler pin. A mismatch fails checking in the CLI and editor, before dependency installation. |
 | block_style | Formatter braces or indent. |
 | indentation | Formatter spaces (four) or tabs. |
 | assignment | Formatter equals or to; both remain accepted source forms. |
@@ -241,3 +244,22 @@ LSP clients can select `inferredContractHintDetail: "full"` in initialization op
 Context packets can include small independent examples for the constructs in the selected code. Each example includes complete source units, a source digest, and its compiler regression fixture. The catalog covers inferred bindings, field comparisons, labeled calls, checked errors, owned results, borrows, and joined tasks. These examples are not declarations in your project and do not prescribe business values or recovery policy. Budget omissions still apply.
 
 An unknown type named `let` now explains the binding forms. A direct assignment after an `if` or `while` condition explains the difference between `=` and `==`. The diagnostic asks the author to choose the intended operation; it does not rewrite behavior automatically. An actual imported type or function named `let` remains valid.
+
+### Pin a compiler
+
+**Unreleased:** add `compiler: 0.23.0` to `main.yaml` to require that exact compiler. The CLI and editor report both versions when they differ. Use the reported `npx @greenpandastudios/aug-cli@VERSION` command, and configure the editor to use that installation. The pin does not download or silently switch compilers. Changing it is an explicit upgrade; check dependencies, run tests, and refresh the lock.
+
+### Build progress
+
+**Unreleased:** interactive `run`, `build`, `bundle`, and `bench` commands show their current phase and elapsed time on stderr. Add `--progress` to show phases when redirecting output or using a task runner. Source resolution, checking, native artifacts, the compiler pack, lowering, object generation, linking, and execution report separately. The phase that fails is marked failed; the original diagnostic remains visible. Program stdout and JSON reports retain their usual format.
+
+
+## Create a deployment bundle (unreleased)
+
+Run `aug bundle . --out deploy` from an application project. It prepares ordinary package imports, selects the host's verified native artifacts, and compiles an optimized LLVM executable. Add `--frozen --offline` after preparing the recorded host selections to require cached inputs. The C reference backend cannot make bundles.
+
+The new directory contains `app`, its required `lib` files, third-party notices under `share/august-native`, and `bundle.json`. Pure programs can use a static runtime and need no shared-library folder. Copy the complete directory to a compatible host, then run `./deploy/app`. Node.js and compiler tools are not needed there. File paths read by the application still resolve from its working directory; provide application data and secrets separately. TLS configuration that embeds certificate paths is currently rejected because those paths would prevent reliable relocation.
+
+Use `aug bundle verify deploy` before deployment or after transfer. It checks the complete file set, hashes, sizes and executable permission without loading native libraries or running code. Links, special files, malformed manifests and unexpected files fail verification. The manifest records the compiler, source revision, native artifact hashes and minimum operating-system/libc requirements. These hashes check the recorded bytes; they do not authenticate the publisher or test the application.
+
+A bundle destination must be new. Compilation and verification take place in a temporary sibling directory, and a completed directory is published by rename under an August writer lock. Failed builds leave no accepted output. Choose another destination for a subsequent build; review and replace an existing deployment yourself. This command does not promise coordination with external filesystem writers or survival of arbitrary storage failures.

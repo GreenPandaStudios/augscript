@@ -94,7 +94,7 @@ export function loadProject(projectRoot: string, overrides: Map<string, string> 
   }
   const libraries = standardLibraries();
   const stdlibRoot = libraries.root;
-  const libraryFiles = new Set([join(stdlibRoot, 'export.aug'), ...sourceFiles(join(stdlibRoot,'io'))]);
+  const libraryFiles = new Set([join(stdlibRoot, 'export.aug'), ...['io','collections'].flatMap(module=>sourceFiles(join(stdlibRoot,module)))]);
   for (const path of libraryFiles) {
     const parsed = read(path);
     parsed.file.builtin = true;

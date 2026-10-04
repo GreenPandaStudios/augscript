@@ -18,7 +18,7 @@ const copy = (source, destination) => {
   cpSync(from, destination, { recursive: true,
     filter: file => !relative(from, file).split(/[\\/]/).some(part => part.startsWith('.') && part!=='.aug-spec' || part === 'node_modules') });
 };
-const libraryTargets = new Map(['io','json','memory','time','web','crypto'].map(module =>
+const libraryTargets = new Map(['io','collections','json','memory','time','web','crypto'].map(module =>
   [module, join(output,['web','crypto'].includes(module)?module:'stdlib','august',module)]));
 const publishedRoots = new Map(['stdlib','web','crypto','cli'].map(name=>[
   join(output,name),join(output,JSON.parse(readFileSync(join(root,'packages',name,'package.json'),'utf8')).name.split('/').at(-1))]));
@@ -44,7 +44,7 @@ for (const name of ['stdlib', 'web', 'crypto', 'cli']) {
     chmodSync(join(target, 'scripts/bootstrap-native.mjs'), 0o755);
   } else {
     copy(`packages/${name}/aug-package.json`, join(target, 'aug-package.json'));
-    const modules = name === 'stdlib' ? ['io'] : [name];
+    const modules = name === 'stdlib' ? ['io','collections'] : [name];
     for (const module of modules) {
       copy(`src/stdlib/${module}`, join(target, 'august', module));
       copy(`docs/api/${module}.md`, join(target, 'docs', `${module}.md`));

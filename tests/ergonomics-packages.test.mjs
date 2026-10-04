@@ -95,3 +95,37 @@ test('public package diffs ignore private storage names and include inherited de
     assert.ok(changes[0].after.callables.find(method=>method.name==='read').inputs.some(input=>input.label==='adjustment'));
   }finally{rmSync(root,{recursive:true,force:true});}
 });
+
+
+test('package diffs expand inherited interface requirements and substitute class default types',()=>{
+  const root=mkdtempSync(join(tmpdir(),'aug-package-interface-inheritance-'));
+  try {
+    const before=join(root,'before'),after=join(root,'after');
+    for(const directory of [before,after]) {
+      mkdirSync(directory);writeFileSync(join(directory,'aug-package.json'),JSON.stringify({format:1,name:'@example/view',version:'1.0.0',compiler:'0.23.0',source:'.'}));
+      writeFileSync(join(directory,'export.aug'),'export View from view\nexport Counter from view\n');
+      writeFileSync(join(directory,'view.aug'),'interface Reader<T> { read(T input) returns T { return input } }\ninterface View extends Reader<int> {}\nCounter() implements Reader<string> {}\n');
+    }
+    const diff=()=>spawnSync(process.execPath,[cli,'package','diff',before,after,'--json'],{encoding:'utf8'});
+    writeFileSync(join(after,'view.aug'),'interface Reader<T> { read(T input, int adjustment) returns T { return input } }\ninterface View extends Reader<int> {}\nCounter() implements Reader<string> {}\n');
+    const result=diff();assert.equal(result.status,0,result.stderr);const changes=JSON.parse(result.stdout).changes;
+    assert.deepEqual(changes.map(change=>change.name),['Counter','View']);
+    const method=changes.find(change=>change.name==='View').after.callables.find(method=>method.name==='read');
+    assert.equal(method.inputs[0].type,'int');assert.equal(method.result,'int');
+    const defaultMethod=changes.find(change=>change.name==='Counter').after.callables.find(method=>method.name==='read');
+    assert.equal(defaultMethod.inputs[0].type,'string');assert.equal(defaultMethod.result,'string');
+    for(const directory of [before,after]) {
+      writeFileSync(join(directory,'export.aug'),'export View from view\n');
+      writeFileSync(join(directory,'view.aug'),'interface Reader<T implements Data> { read(immutable List<T> input) returns T }\ninterface View extends Reader<int> {}\n');
+    }
+    writeFileSync(join(after,'view.aug'),'interface Reader<T implements Data> { read(immutable List<T> input, int adjustment) returns T }\ninterface View extends Reader<int> {}\n');
+    const immutable=diff();assert.equal(immutable.status,0,immutable.stderr);
+    assert.equal(JSON.parse(immutable.stdout).changes[0].after.callables[0].inputs[0].type,'immutable List<int>');
+    for(const folder of [before,after])writeFileSync(join(folder,'view.aug'),'interface Reader<T> { read(T input) returns T }\ninterface View extends Reader<List<int>> {}\n');
+    writeFileSync(join(after,'view.aug'),'interface Reader<T> { read(T input, int adjustment) returns T }\ninterface View extends Reader<List<int>> {}\n');
+    const collections=diff();assert.equal(collections.status,0,collections.stderr);
+    const inherited=JSON.parse(collections.stdout).changes[0].after.callables[0];
+    assert.equal(inherited.inputs[0].type,'List<int>');assert.equal(inherited.result,'List<int>');
+
+  }finally{rmSync(root,{recursive:true,force:true});}
+});

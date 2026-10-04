@@ -1,3 +1,5 @@
+import {buildBundle,verifyBundle} from './bundle.ts';
+import {BuildProgress} from './progress.ts';
 import {hasRequiredContext} from './context.ts';
 import {dependencyReport,packageReadiness,packageInterfaceDiff} from './package-inspection.ts';
 import { existsSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
@@ -66,12 +68,13 @@ function printDiagnostics(diagnostics: Diagnostic[], json: boolean, root: string
 
 function usage(): void {
   process.stdout.write(`AugScript compiler\n\n` +
-    `Usage: aug <init|doctor|check|build|run|emit-c|emit-llvm|emit-ir|test|openapi|format|migrate|spec|bench|explain|context|lsp|symbols|definition|references|graph|complete|hover|fixes|semantic-tokens> [project directory] [options] [-- args]\n` +
+    `Usage: aug <init|doctor|check|build|bundle|run|emit-c|emit-llvm|emit-ir|test|openapi|format|migrate|spec|bench|explain|context|lsp|symbols|definition|references|graph|complete|hover|fixes|semantic-tokens> [project directory] [options] [-- args]\n` +
     `Inspect dependencies: aug dependencies [PROJECT] [--json]\n` +
     `Package readiness/diff: aug package check DIRECTORY [--json]; aug package diff BEFORE AFTER [--json]\n` +
     `New application: aug init DIRECTORY [--template hello|weather]\n` +
     `Diagnose setup: aug doctor [project directory] [--json] — check without downloading or writing files\n` +
-    `Run: aug run [project directory] [--offline] [-- args] — prepare dependencies, compile, and start\n` +
+    `Run: aug run [project directory] [--offline] [--progress] [-- args] — prepare dependencies, compile, and start\n` +
+    `Deployment: aug bundle PROJECT --out DIRECTORY [--offline] [--frozen]; aug bundle verify DIRECTORY [--json]\n` +
     `Backend: LLVM is the default on macOS 14+ ARM64 and GNU/Linux x64/ARM64 with glibc 2.36+. August installs its compiler pack; no separate native toolchain is needed. --backend c selects the migration reference.\n` +
     `Tests: aug test [project directory] [GROUP_NAME] [--group GROUP_NAME] [--list] [--coverage] [--json] [--timeout milliseconds]\n` +
     `Format: aug format [project directory] [--file path] [--write]\n` +
@@ -89,6 +92,12 @@ function usage(): void {
 export async function main(argv: string[]): Promise<number> {
   if(argv[0]==='pack')return main(['package','pack',...argv.slice(1)]);
   const command = argv[0];
+  if(command==='bundle'&&argv[1]==='verify') {
+    const args=argv.slice(2),paths=args.filter(arg=>!arg.startsWith('-'));
+    if(paths.length!==1||args.some(arg=>arg.startsWith('-')&&arg!=='--json')){process.stderr.write('Use aug bundle verify DIRECTORY [--json]\n');return 2;}
+    try {const report=verifyBundle(paths[0]);process.stdout.write(args.includes('--json')?JSON.stringify(report)+'\n':`Verified ${report.files} files for ${report.target}; executable ${report.executable}.\n${report.trust}\n`);return 0;}
+    catch(error){process.stderr.write(failureMessage(error)+'\n');return 1;}
+  }
   if(command==='dependencies') {
     const args=argv.slice(1),paths=args.filter(arg=>!arg.startsWith('-'));
     if(paths.length>1||args.some(arg=>arg.startsWith('-')&&arg!=='--json')){process.stderr.write('Use aug dependencies [PROJECT] [--json]\n');return 2;}
@@ -212,7 +221,7 @@ export async function main(argv: string[]): Promise<number> {
     } catch (error) { process.stderr.write(failureMessage(error) + '\n'); return 1; }
   }
   if (command === 'lsp') return runLanguageServer(resolve(argv[1] ?? process.cwd()));
-  if (!['check', 'build', 'run', 'emit-c', 'emit-llvm', 'emit-ir', 'test', 'openapi', 'format', 'migrate', 'spec', 'bench', 'explain', 'context', 'symbols', 'definition',
+  if (!['check', 'build', 'bundle', 'run', 'emit-c', 'emit-llvm', 'emit-ir', 'test', 'openapi', 'format', 'migrate', 'spec', 'bench', 'explain', 'context', 'symbols', 'definition',
     'complete', 'hover', 'fixes', 'semantic-tokens', 'references', 'graph'].includes(command)) {
     process.stderr.write(`Unknown command ${command}\n`); usage(); return 2;
   }
@@ -221,7 +230,7 @@ export async function main(argv: string[]): Promise<number> {
   const programArgs = separator >= 0 ? argv.slice(separator + 1) : [];
   if (options.includes('--help')) { usage(); return 0; }
   const valueOptions = new Set(['--backend','--out', '--stdin-file', '--file', '--name', '--offset', '--budget', '--baseline', '--group', '--case', '--timeout', '--iterations', '--warmup']);
-  const booleanOptions = new Set(['--json', '--coverage', '--list', '--write', '--check', '--offline', '--frozen', '--require-complete']);
+  const booleanOptions = new Set(['--json', '--coverage', '--list', '--write', '--check', '--offline', '--frozen', '--require-complete', '--progress']);
   for (let index = 0; index < options.length; index++) {
     const option = options[index];
     if (valueOptions.has(option)) {
@@ -275,7 +284,15 @@ export async function main(argv: string[]): Promise<number> {
   const projectArg = command === 'test' ? firstIsDirectory ? positionals[0] : undefined : positionals[0];
   const group = groupOption ?? (command === 'test' ? positionals[firstIsDirectory ? 1 : 0] : undefined);
   const root = resolve(projectArg ?? process.cwd());
+  const buildCommand=['run','build','bundle','bench'].includes(command);
+  if(options.includes('--progress')&&!buildCommand){process.stderr.write('--progress applies to run, build, bundle and bench.\n');return 2;}
+  const progress=new BuildProgress(buildCommand&&(options.includes('--progress')||!!process.stderr.isTTY&&!json));
   try {
+    if(command==='bundle') {
+      if(!outputOption)throw new Error('BUNDLE_OPTIONS: Use aug bundle PROJECT --out DIRECTORY.');
+      if(existsSync(resolve(outputOption)))throw new Error('BUNDLE_OUTPUT: Destination already exists: '+resolve(outputOption)+'. Choose a new directory.');
+    }
+    if(buildCommand)progress.start('source resolution');
     const overrides = stdinFile ? new Map([[resolve(stdinFile), readFileSync(0, 'utf8')]]) : undefined;
     if (['complete', 'hover', 'fixes', 'semantic-tokens', 'references', 'graph'].includes(command)) {
       if (!sourceFile) throw new Error(`${command} requires --file`);
@@ -290,10 +307,11 @@ export async function main(argv: string[]): Promise<number> {
     }
     if (!existsSync(root) || !statSync(root).isDirectory())
       throw new Error(`Project directory does not exist: ${root}\nUse aug init DIRECTORY to create a project, or run aug run from the folder containing main.aug.`);
-    if (command === 'run') await prepareRunPackagesWithNative(root, options.includes('--offline'), options.includes('--frozen'));
+    if (command === 'run'||command==='bundle') await prepareRunPackagesWithNative(root, options.includes('--offline'), options.includes('--frozen'),()=>progress.start('native artifacts'));
     const project = loadProject(root, overrides);
+    if(buildCommand)progress.start('checking');
     if(backendIndex<0)backend=project.config.backend??'llvm';
-    if (project.library && ['build', 'run', 'bench', 'openapi'].includes(command))
+    if (project.library && ['build', 'bundle', 'run', 'bench', 'openapi'].includes(command))
       throw new Error('This is an August library; use check, test, or package pack. Import its exports from an application with main.aug to run it.');
     if (command === 'format' || command === 'migrate') {
       const files = (sourceFile ? [project.files.get(resolve(sourceFile))].filter(file => !!file) : [...project.files.values()])
@@ -400,7 +418,7 @@ export async function main(argv: string[]): Promise<number> {
     }
     const hasErrors=checked.diagnostics.some(issue => issue.severity !== 'warning');
     printDiagnostics(checked.diagnostics, json && (command === 'check' || command === 'spec' && hasErrors), root);
-    if (hasErrors) return 1;
+    if (hasErrors) {progress.fail();return 1;}
     if (command === 'check') {
       if (!json) process.stdout.write('AugScript check passed\n');
       return 0;
@@ -410,9 +428,9 @@ export async function main(argv: string[]): Promise<number> {
       process.stdout.write(json?JSON.stringify(result)+'\n':result.stale.length?'Stale specifications:\n'+result.stale.map(file=>'  '+file).join('\n')+'\n':`${result.files} specification artifact(s) ${options.includes('--check')?'are current':'generated'}.\n`);
       return result.stale.length?1:0;
     }
-    if(['build','run','bench'].includes(command)&&!options.includes('--frozen')) {
+    if(['build','bundle','run','bench'].includes(command)&&!options.includes('--frozen')) {
       checked=updateSpecHints(checked);
-      if(checked.diagnostics.some(issue=>issue.severity!=='warning')) {printDiagnostics(checked.diagnostics,json,root);return 1;}
+      if(checked.diagnostics.some(issue=>issue.severity!=='warning')) {printDiagnostics(checked.diagnostics,json,root);progress.fail();return 1;}
     }
     if(command==='emit-llvm'){process.stdout.write(generateLLVM(lowerToIR(checked)));return 0;}
     if(command==='emit-ir'){process.stdout.write(JSON.stringify(lowerToIR(checked),null,2)+'\n');return 0;}
@@ -422,37 +440,61 @@ export async function main(argv: string[]): Promise<number> {
     if (command === 'bench' && (!Number.isInteger(iterations) || iterations < 1 || iterations > 1000 ||
       !Number.isInteger(warmup) || warmup < 0 || warmup > 100 || !Number.isInteger(timeout) || timeout < 1))
       throw new Error('bench requires iterations 1–1000, warmup 0–100, and a positive timeout');
+    if(command==='bundle') {
+      if(backend!=='llvm'||!outputOption)throw new Error('BUNDLE_OPTIONS: Use aug bundle PROJECT --out DIRECTORY with the LLVM backend.');
+      progress.start('native artifacts');
+      const inputs=await prepareNativePackages(root,{offline:options.includes('--offline'),frozen:options.includes('--frozen')});
+      progress.start('compiler pack');
+      const toolchain=await prepareLLVMCompiler(options.includes('--offline'),{root,frozen:options.includes('--frozen')});
+      if(!options.includes('--frozen')) {progress.start('specifications');updateSpecs(checked);}
+      const report=buildBundle(checked,outputOption,{native:inputs,toolchain,onPhase:phase=>progress.start(phase)});
+      progress.complete();
+      process.stdout.write(json?JSON.stringify(report)+'\n':`Deployment bundle: ${report.directory}\nRun ${report.executable} with its adjacent lib and share folders.\n`);return 0;
+    }
     let native;
     if(backend==='llvm'){
+      progress.start('native artifacts');
       const inputs=await prepareNativePackages(root,{offline:options.includes('--offline'),frozen:options.includes('--frozen')});
+      progress.start('compiler pack');
       const toolchain=await prepareLLVMCompiler(options.includes('--offline'),{root,frozen:options.includes('--frozen')});
-      native=compileLLVM(checked,{output:outputOption,release:command==='bench'||project.config.optimization==='release',native:inputs,toolchain});
+      native=compileLLVM(checked,{output:outputOption,release:command==='bench'||project.config.optimization==='release',native:inputs,toolchain,onPhase:phase=>progress.start(phase)});
     }else{
+      progress.start('lowering');
       const generated=generateC(checked);
+      progress.start('runtime components');
       await prepareNativeDependencies(generated, { offline: options.includes('--offline') });
+      progress.start('native compilation');
       native = compileNative(root, generated, { output: outputOption, release: command === 'bench' ? true : undefined, checked });
     }
     const output = native.output;
     if (native.status !== 0) {
+      progress.fail();
       if (native.diagnostics.length) printDiagnostics(native.diagnostics, json, root);
       else process.stderr.write(native.error + '\n'); return native.status;
     }
+    progress.start('specifications');
     if(!options.includes('--frozen'))updateSpecs(checked);
+    progress.complete();
     if (command === 'build') {
       process.stdout.write(json ? JSON.stringify({ output, sourceMap: output + '.augmap.json' }) + '\n' : `${output}\n`);
       return 0;
     }
     if (command === 'bench') {
+      progress.start('execution');
       const report = benchmark(output, root, iterations, warmup, programArgs, timeout);
+      progress.complete();
       process.stdout.write(json ? JSON.stringify(report) + '\n' : `Median ${report.median.toFixed(3)}ms; p95 ${report.p95.toFixed(3)}ms (${iterations} native runs, including process startup)\n`);
       return 0;
     }
+    progress.start('execution');
     const run = spawnSync(output, programArgs, { stdio: 'inherit', cwd: root });
     if (run.error) throw new Error(`Cannot start the compiled program ${output}: ${run.error.message}.\nCheck executable permissions and the native shared-library paths.`);
     if (run.signal) process.stderr.write(`Program stopped by ${run.signal}. Check the runtime message above; aug run compiled and started ${output}.\n`);
     else if (run.status !== 0) process.stderr.write(`Program exited with status ${run.status}.\n`);
+    if(run.status===0)progress.complete();else progress.fail();
     return run.status ?? 1;
   } catch (error) {
+    progress.fail();
     if(error instanceof BackendUnsupported||error instanceof IRVerificationError){printDiagnostics([{...error.span,code:error.code,message:error.message}],json,root);return 1;}
     process.stderr.write(failureMessage(error) + '\n');
     return error instanceof Error && 'exitCode' in error && typeof error.exitCode === 'number' ? error.exitCode : 1;

@@ -420,3 +420,24 @@ Use `endsWith(suffix)` for an exact suffix and `replace(search, replacement)` fo
 ### Record copies (unreleased)
 
 `paid = invoice with (paid=true)` creates a new value of the same record type. It evaluates the original once, then replacement expressions once in written order, retains unchanged data, and runs construction validation. Its checked failures remain caller obligations. Labels are the record's constructor inputs; duplicate or unknown replacements and access to private fields are rejected. This operation does not mutate the original or copy an entire unchanged collection. Mutable aliases cannot enter replacements; freeze them explicitly first.
+
+## Bounded integer ranges
+
+**Unreleased:** `import range and RangeError from august.collections` supplies an ordinary library function. `range(end=5)` allocates a new list containing 0, 1, 2, 3 and 4. `range(start=5, end=0, step=-2)` contains 5, 3 and 1. The boundary is excluded. A step facing away from it produces an empty list.
+
+`step` defaults to 1 and must be nonzero. `limit` defaults to 1,000,000 and must be from 1 to 1,000,000; producing more items raises `RangeError`. A step past the int64 boundary ends the range without wrapping values into its output. For very large numeric loops, use `while` to avoid allocating the list.
+
+`start` and `wait` are contextual names: they can name a function or an input. `start calculate(...)` starts work, and `wait for pending` joins it; reading a value named `start` or `wait` does neither.
+
+
+For example, this complete program prints the three values before the exclusive boundary:
+
+```aug project=bounded-ranges file=main.aug
+import range and RangeError from august.collections
+
+try:
+    for value in range(start=1, end=4, limit=3):
+        print(value=value)
+catch RangeError error:
+    print(value=error.message)
+```

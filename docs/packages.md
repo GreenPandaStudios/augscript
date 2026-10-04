@@ -55,7 +55,7 @@ Imported names must appear in that folder's `export.aug`. An exported child fold
 
 ## Official libraries
 
-The compiler supplies `august.io` for console, file, and argument capabilities. JSON, time, in-memory stores, web helpers, and cryptography are optional source packages. Add only what your application uses:
+The compiler supplies `august.io` for console, file, and argument capabilities. **Unreleased:** it also supplies [bounded integer ranges](reference.md#bounded-integer-ranges) through `august.collections`. JSON, time, in-memory stores, web helpers, and cryptography are optional source packages. Add only what your application uses:
 
 | Alias | Repository folder | API |
 | --- | --- | --- |

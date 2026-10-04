@@ -873,7 +873,7 @@ class Parser {
       const start = this.tokens[this.position - 1].span;
       return {kind:'handle', call:this.parseUnary(), span:this.span(start)};
     }
-    if (this.at('start') && this.current(1).kind !== '(' && this.match('start')) {
+    if (this.at('start') && this.current(1).span.line === this.current().endLine && ['identifier','start','wait'].includes(this.current(1).kind) && this.match('start')) {
       const start = this.tokens[this.position - 1].span;
       const worker = this.current().value === 'worker' && ['identifier', 'start', 'wait'].includes(this.current(1).kind) && !!this.take();
       const call = this.parseUnary();
@@ -998,7 +998,7 @@ class Parser {
       return {kind:'interpolation', parts, span:this.span(token.span)};
     }
     if (this.at('jsx_open')) return this.parseMarkup();
-    if (['start', 'wait', 'missing'].includes(token.kind) && this.current(1).kind === '(') {
+    if (['start', 'wait'].includes(token.kind) || token.kind === 'missing' && this.current(1).kind === '(') {
       this.take(); return {kind:'name', name:token.value, span:token.span};
     }
     if (this.match('number')) return { kind: 'literal', value: Number(token.value),

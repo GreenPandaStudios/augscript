@@ -79,5 +79,8 @@
   },
   "worker-guide": {
     "stdout": "10\n5\n"
+  },
+  "bounded-ranges": {
+    "stdout": "1\n2\n3\n"
   }
 }

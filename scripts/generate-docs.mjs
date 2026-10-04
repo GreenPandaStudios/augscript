@@ -7,6 +7,7 @@ import { callableResult, callableErrors } from '../src/contracts.ts';
 import { tyName } from '../src/types.ts';
 import { javadocBefore } from '../src/javadoc.ts';
 import { prepareRunPackages } from '../src/package-manager.ts';
+import { defaultText } from '../src/parameters.ts';
 import { typeName } from '../src/ast.ts';
 import { callableDocumentation } from '../src/documentation.ts';
 import { languageHelp } from '../src/help.ts';
@@ -37,7 +38,7 @@ let project = checked.project;
 const header = source => source.slice(0, source.indexOf('\n') < 0 ? source.length : source.indexOf('\n')).trim().replace(/[:{]\s*$/, '').trimEnd();
 const signature = node => {
   if (node.kind !== 'function' && node.kind !== 'method') return header(project.files.get(node.span.file).source.slice(node.span.start));
-  const params = node.params.map(param => (param.injected ? 'resolve ' : '') + (param.ownership === 'borrow' ? 'borrow ' : param.ownership === 'own' ? 'own ' : '') + typeName(param.type) + ' ' + param.name);
+  const params = node.params.map(param => (param.injected ? 'resolve ' : '') + (param.ownership === 'borrow' ? 'borrow ' : param.ownership === 'own' ? 'own ' : '') + typeName(param.type) + ' ' + (param.label??param.name) + (param.defaultValue?' = '+defaultText(param.defaultValue):''));
   const generic = node.typeParams.length ? '<' + node.typeParams.join(', ') + '>' : '';
   let result = node.name + generic + '(' + params.join(', ') + ')';
   if (result.length > 85 && params.length > 1) result = node.name + generic + '(\n    ' + params.join(',\n    ') + '\n)';
@@ -62,17 +63,19 @@ const link = node => {
   const path = relative(root, node.span.file).split(/[/\\]/).join('/');
   return `[Source](https://github.com/GreenPandaStudios/augscript/blob/main/${path}#L${node.span.line})`;
 };
-for (const module of ['io', 'json', 'memory', 'time', 'web', 'crypto']) {
+for (const module of ['io', 'collections', 'json', 'memory', 'time', 'web', 'crypto']) {
   const folder = join(root, 'src/stdlib', module);
   prepareRunPackages(folder);
   const before = loadProject(folder);
   for (const file of before.files.values()) if (!file.package) sourceOverrides.set(file.path, specHint(file).text);
   checked = checkProject(loadProject(folder, sourceOverrides)); project = checked.project;
   if (checked.diagnostics.some(issue => issue.severity !== 'warning')) throw new Error(JSON.stringify(checked.diagnostics));
-  for (const output of generateSpecs(checked, { manifest: false })) outputs.set(relative(root, output.path), output.text);
+  const owned=[...project.files.values()].filter(file=>!file.package&&file.path.startsWith(folder+'/'));
+  for(const file of owned)outputs.set(relative(root,file.path),specHint(file).text);
+  for (const output of generateSpecs(checked, { manifest: false,files:owned })) outputs.set(relative(root, output.path), output.text);
   const exports = project.files.get(join(folder, 'export.aug')).items.filter(item => item.kind === 'export' && !item.folder);
   const sections = [generated(`src/stdlib/${module}`) + `# august.${module}\n\n` +
-    (module === 'io' ? 'Console and file capabilities supplied with the compiler. Import names from `august.io`.' :
+    (['io','collections'].includes(module) ? (module==='collections'?'**Unreleased:** ':'')+'Supplied with the compiler. Import public names from `august.' + module + '`.' :
       'Install this source library with `aug add https://github.com/GreenPandaStudios/augscript/src/stdlib/' + module + ' --as ' + module + '`, then import its public names from `' + module + '`.') +
     '\n\nSignatures show result types and checked errors. See [packages](../packages.md) to pin a release and [language constructs](../language-constructs.md) for built-in types.'];
   for (const item of exports) {
