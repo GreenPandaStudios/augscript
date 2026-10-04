@@ -73,6 +73,7 @@ export default defineConfig({
         { text: 'Find a library', link: '/library-catalog' },
         { text: 'Native library packages', link: '/native-packages' },
         { text: 'Package compatibility', link: '/package-compatibility' },
+        { text: 'Publish a library', link: '/package-publishing' },
         { text: 'Multicore workers', link: '/workers' },
         { text: 'Docker deployment', link: '/docker' },
         { text: 'VS Code Dev Containers', link: '/dev-containers' },

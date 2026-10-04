@@ -12,6 +12,8 @@ Install `aug` once as shown in [Your first project](getting-started.md). Command
 | `libraries [QUERY] [--json]` | **Unreleased:** search curated task/import/platform/ownership/license/test metadata offline. |
 | `update PROJECT --preview [--offline] [--json]` | **Unreleased:** check proposed dependency contracts, callers and native selections without accepting the update. |
 | `dependencies PROJECT [--json]` | **Unreleased:** explain verified installed source and locked native dependencies without downloads. |
+| `package workflow [DIRECTORY] [--write] [--json]` | **Unreleased:** print or create reviewed consumer CI; current candidate templates require the next compiler release. |
+| `package release [DIRECTORY] --tag vVERSION [--json]` | **Unreleased:** verify the tag, tracked source/specs, public contracts, dependency lock and cached native host artifacts without publication. |
 | `package check DIRECTORY [--json]` | **Unreleased:** static package publishing readiness; behavioral tests remain explicit. |
 | `package diff BEFORE AFTER [--json]` | **Unreleased:** compare resolved public contracts, changed spec prose and native metadata of local revisions. |
 | `check PROJECT [--json]` | Production, tests, module policy, documentation, and configuration diagnostics. |

@@ -32,6 +32,7 @@ import { benchmark, compileNative, writeCoverage } from './native.ts';
 import {generateOpenApi} from './openapi.ts';
 import { addPackageWithNative, initPackage, installPackagesWithNative, preparePackage, packPackage, prepareRunPackagesWithNative, suggestedPackageAlias } from './package-manager.ts';
 import { initProject } from './project-init.ts';
+import {packageRelease,packageWorkflow,writePackageWorkflow} from './package-publishing.ts';
 import {sourceStyle} from './source-style.ts';
 import type {SourceStyle} from './formatter.ts';
 import { prepareNativeDependencies } from '../scripts/native-setup.mjs';
@@ -75,6 +76,7 @@ function usage(): void {
     `Usage: aug <init|doctor|check|build|bundle|run|emit-c|emit-llvm|emit-ir|test|openapi|format|migrate|spec|bench|explain|context|lsp|symbols|definition|references|graph|complete|hover|fixes|semantic-tokens> [project directory] [options] [-- args]\n` +
     `Find libraries: aug libraries [QUERY] [--json] — search the bundled task catalog without downloads\n` +
     `Inspect dependencies: aug dependencies [PROJECT] [--json]; aug update [PROJECT] --preview [--offline] [--json]\n` +
+    `Package maintainers: aug package workflow [DIRECTORY] [--write] [--json]; aug package release [DIRECTORY] --tag vVERSION [--json]\n` +
     `Package readiness/diff: aug package check DIRECTORY [--json]; aug package diff BEFORE AFTER [--json]\n` +
     `New application: aug init DIRECTORY [--template hello|weather] [--block-style indent|braces] [--indentation spaces|tabs] [--assignment equals|to]\n` +
     `Diagnose setup: aug doctor [project directory] [--json] — check without downloading or writing files\n` +
@@ -166,6 +168,36 @@ export async function main(argv: string[]): Promise<number> {
         process.stdout.write('Installed source bytes verified. Native selections come from the lock; no artifacts were downloaded or executed.\n');
       }
       return 0;
+    }catch(error){process.stderr.write(failureMessage(error)+'\n');return 1;}
+  }
+  if(command==='package'&&argv[1]==='workflow') {
+    const args=argv.slice(2),paths=args.filter(arg=>!arg.startsWith('-'));
+    if(paths.length>1||args.some(arg=>arg.startsWith('-')&&!['--json','--write'].includes(arg))){process.stderr.write('Use aug package workflow [DIRECTORY] [--write] [--json]\n');return 2;}
+    try {
+      const root=paths[0]??process.cwd(),report=packageWorkflow(root);
+      const destination=args.includes('--write')?writePackageWorkflow(root,report.workflow):undefined;
+      process.stdout.write(args.includes('--json')?JSON.stringify({...report,...(destination?{destination}:{})})+'\n':destination?'Created '+destination+'; review and commit the workflow.\n':report.workflow);
+      return 0;
+    }catch(error){process.stderr.write(failureMessage(error)+'\n');return 1;}
+  }
+  if(command==='package'&&argv[1]==='release') {
+    const args=argv.slice(2),paths:string[]=[];let tag:string|undefined;
+    for(let index=0;index<args.length;index++) {
+      if(args[index]==='--tag'&&!tag&&args[index+1]&&!args[index+1].startsWith('-'))tag=args[++index];
+      else if(args[index]==='--json')continue;
+      else if(!args[index].startsWith('-'))paths.push(args[index]);
+      else {process.stderr.write('Use aug package release [DIRECTORY] --tag vVERSION [--json]\n');return 2;}
+    }
+    if(!tag||paths.length>1){process.stderr.write('Use aug package release [DIRECTORY] --tag vVERSION [--json]\n');return 2;}
+    try {
+      const report=packageRelease(paths[0]??process.cwd(),tag);
+      if(args.includes('--json'))process.stdout.write(JSON.stringify(report)+'\n');
+      else {
+        process.stdout.write(report.name+'@'+report.version+' / '+report.source.tag+' / '+report.source.commit+'\n');
+        for(const check of report.checks)process.stdout.write(check.status+': '+check.message+'\n'+(check.recovery?'  '+check.recovery+'\n':''));
+        process.stdout.write('This report checks source/contracts and cached host artifacts. Independent tests, other platforms and publication remain separate.\n');
+      }
+      return report.ready?0:1;
     }catch(error){process.stderr.write(failureMessage(error)+'\n');return 1;}
   }
   if(command==='package'&&(argv[1]==='check'||argv[1]==='diff')) {

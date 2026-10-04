@@ -83,7 +83,7 @@ The starter exports `add` from `src/arithmetic.aug`, keeps its test in that file
 
 For a library you write by hand, `export.aug` in the root or a `src` folder is enough. `aug-package.json` is optional; use it when you want to name a package, state its version and compiler, choose another source folder, or declare dependency aliases. npm metadata is only needed for npm distribution.
 
-Commit the source, export file, tests, comments, and dependency lock to your Git repository. Include a license, run `aug check` and `aug test`, then publish a release tag. Other projects can import your repository URL with `#v0.1.0`.
+Commit the source, export file, tests, comments, and dependency lock to your Git repository. Include a license, run `aug check` and `aug test`, then publish a release tag. Other projects can import your repository URL with `#v0.1.0`. The unreleased [publishing guide](package-publishing.md) adds checked release metadata and consumer CI generation.
 
 ## Compiler compatibility
 

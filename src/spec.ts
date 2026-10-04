@@ -2,7 +2,7 @@ import { lex } from './lexer.ts';
 import { defaultText } from './parameters.ts';
 import { callableResult, callableErrors } from './contracts.ts';
 import { createHash } from 'node:crypto';
-import { existsSync, lstatSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, lstatSync, mkdirSync, readFileSync, realpathSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, relative, resolve } from 'node:path';
 import type { BindDecl, ClassDecl, Expr, GenericHeader, MethodDecl, Param, SourceFile, Span, Stmt, TestDecl, TopLevel, TypeRef } from './ast.ts';
 import { fieldsOf, typeName } from './ast.ts';
@@ -36,6 +36,8 @@ export interface SpecOptions { files?: SourceFile[]; manifest?: boolean; declara
 export function generateSpecs(checked: CheckedProject, options: SpecOptions = {}): SpecOutput[] {
   if (checked.diagnostics.some(issue => issue.severity !== 'warning')) throw new Error('Fix compiler errors before generating specifications');
   const project = checked.project;
+  // Library source roots are physical paths; keep dependency copies in that same path space.
+  const outputRoot = project.library ? realpathSync(project.root) : project.root;
   const owned = options.files ?? [...project.files.values()].filter(file => !file.builtin && !file.package);
   const own = new Set(owned.map(file => file.path));
   const hints=owned.map(specHint), offsets=new Map(hints.map(hint=>[hint.file.path,hint.lineOffset]));
@@ -45,7 +47,7 @@ export function generateSpecs(checked: CheckedProject, options: SpecOptions = {}
     const scope = file.package && project.packages.scopes.get(file.package);
     const identity = scope ? join('packages', scope.name, scope.version, relative(scope.sourceRoot, file.path)) :
       join('august', compilerVersion(), libraryRelative(project.libraries, file.path));
-    const source = join(project.root, '.aug-spec', identity);
+    const source = join(outputRoot, '.aug-spec', identity);
     docs.set(file.path, source + '.md'); sources.set(file.path, source);
   }
   const queue = [...owned].sort((a,b) => compare(a.path,b.path));
@@ -53,7 +55,7 @@ export function generateSpecs(checked: CheckedProject, options: SpecOptions = {}
   const contracts=new Map<string,string>();
   for(const [provider,path] of checked.native.providerDescriptors){
     const at=provider.lastIndexOf('@'),name=provider.slice(0,at),version=provider.slice(at+1);
-    const destination=join(project.root,'.aug-spec','packages',name,version,'native.abi.json');contracts.set(provider,destination);
+    const destination=join(outputRoot,'.aug-spec','packages',name,version,'native.abi.json');contracts.set(provider,destination);
     outputs.push({path:destination,text:readFileSync(path,'utf8'),source:path,kind:'native-descriptor'});
   }
   for (let index = 0; index < queue.length; index++) {
@@ -884,7 +886,7 @@ class SpecWriter {
 
 /** Refresh pointers and artifacts atomically, or check drift without writing; protect handwritten documents. */
 export function updateSpecs(checked:CheckedProject, check=false, options:SpecOptions={}): {files:number; stale:string[]} {
-  const outputs=generateSpecs(checked,options), root=checked.project.root;
+  const outputs=generateSpecs(checked,options), root=checked.project.library ? realpathSync(checked.project.root) : checked.project.root;
   const manifest=join(root,'.aug-spec','manifest.json');
   let previous:string[]=[];const previousDescriptors=new Map<string,string>();
   const descriptorPath=(path:string)=>/^\.aug-spec\/packages\/(?:@[^/]+\/)?[^/]+\/[^/]+\/native\.abi\.json$/.test(path)&&!path.includes('\\')&&!path.split('/').some(part=>part==='.'||part==='..');

@@ -83,3 +83,7 @@ A catalog update is a metadata review, separate from artifact or behavior qualif
 ## Dependency preview checks
 
 `aug update --preview` uses the ordinary source resolver in isolated staging and the same public-contract projection as `aug package diff`. Keep the accepted source generations and lock unchanged, and retain checks for concurrent source/configuration/installed-byte changes. Package contracts are checked independently when an application caller fails. Native selection and cache hashes do not qualify execution; report declared size bounds accurately. Test moving Git refs, explicit changed declarations, transitive contracts, unsupported targets, rejected candidates, and pending add recovery. Qualify a real public repository through the installed CLI before release.
+
+## Library maintainer templates
+
+`src/package-publishing.ts` owns repository-root consumer CI and read-only tagged release reports. Keep templates pinned to a compiler release containing every invoked command; the current 0.23.0 candidate template is explicitly staged. Reuse reviewed action pins, test exclusive creation and nested-directory rejection, and retain exact tag/source/configuration/lock/spec evidence. A native report must agree with frozen host selection and verify cached bytes without downloading. Run package-publishing regressions and installed CLI checks; qualify the generated test-copy steps through LLVM. Hosted consumer CI and native artifact-production qualification remain separate.

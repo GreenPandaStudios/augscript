@@ -47,7 +47,7 @@ Work proceeds through source/tool identities, everyday data and syntax, collecti
 | D09 | Local multi-package workspaces | Pending | — |
 | D10 | Deliberate vendoring and air-gapped export | Pending | — |
 | D11 | Explain and manage caches | Pending | — |
-| D12 | Maintain ordinary repository publishing | Pending | — |
+| D12 | Maintain ordinary repository publishing | Implemented repository-root consumer profile; hosted/released qualification pending | aug package workflow previews or exclusively creates pinned CI; release verifies exact tags, tracked source/config/lock/specs, expanded public interfaces and matching cached native host selections. 13 package-maintainer and 24 spec regressions pass, including path aliases and generated LLVM test steps; installed CLI/package gates pass on the C reference. Native artifact-production scaffolds remain E05 |
 | E01 | Give native packages a pleasant August interface | Pending | — |
 | E02 | Standardize library naming | Pending | — |
 | E03 | Typed SQLite/PostgreSQL rows | Pending | — |
