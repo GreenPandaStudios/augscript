@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {mkdtempSync,writeFileSync,rmSync} from 'node:fs';
+import {mkdtempSync,writeFileSync,readFileSync,rmSync} from 'node:fs';
 import {join} from 'node:path';
 import {tmpdir} from 'node:os';
 import {spawnSync} from 'node:child_process';
@@ -68,5 +68,57 @@ test read {
     assert.match(report.tests[0].stderr,/🌍.*\.\.\./s);assert.doesNotMatch(report.tests[0].stderr,/�/);
     assert.ok(report.tests[0].stderr.length<1000);
     assert.match(report.tests[1].stderr,/identity equality/);
+  }finally{rmSync(root,{recursive:true,force:true});}
+});
+
+for(const backend of ['c','llvm'])test('equality differences identify public record and tuple paths without exposing private storage ('+backend+')',()=>{
+  const root=mkdtempSync(join(tmpdir(),'aug-assertion-paths-'));
+  try{
+    writeFileSync(join(root,'main.aug'),'');
+    writeFileSync(join(root,'values.aug'),`record Address(string city, int secret to _secret)
+record Result(Tuple<int, Address> address)
+record SecretBox(Address address to _address)
+record Wide(int ${'field'.repeat(70)})
+read() { return 1 }
+test read {
+ when paths {
+  it nested { assertEqual(actual=Result(address=(1, Address(city="London", secret=123456789))), expected=Result(address=(1, Address(city="Paris", secret=987654321)))) }
+  it hidden { assertEqual(actual=Result(address=(1, Address(city="Paris", secret=123456789))), expected=Result(address=(1, Address(city="Paris", secret=987654321)))) }
+  it deep { assertEqual(actual=(1,(2,(3,(4,(5,6))))), expected=(1,(2,(3,(4,(5,7)))))) }
+  it wide { assertEqual(actual=(${Array(70).fill('0').join(',')},1), expected=(${Array(70).fill('0').join(',')},2)) }
+  it scalar { assertEqual(actual=false, expected=true) }
+  it privateObject { assertEqual(actual=SecretBox(address=Address(city="hidden actual", secret=1)), expected=SecretBox(address=Address(city="hidden expected", secret=2))) }
+  it longField { assertEqual(actual=Wide(${'field'.repeat(70)}=1), expected=Wide(${'field'.repeat(70)}=2)) }
+ }
+}
+`);
+    const result=spawnSync(process.execPath,['bin/aug.mjs','test',root,'--backend',backend,'--json'],{encoding:'utf8'});
+    assert.equal(result.status,1,result.stderr);assert.ok(result.stdout.trim(),result.stderr);const report=JSON.parse(result.stdout);
+    assert.equal(report.failed,7,result.stdout);
+    assert.match(report.tests[0].stderr,/difference at \$\.address\[1\]\.city/);
+    assert.match(report.tests[1].stderr,/difference at \$\.address\[1\]: private field differs/);
+    for(const caseResult of report.tests)assert.doesNotMatch(caseResult.stderr,/_secret|123456789|987654321/);
+    assert.match(report.tests[2].stderr,/difference path unavailable: comparison limit reached/);
+    assert.match(report.tests[3].stderr,/difference path unavailable: comparison limit reached/);
+    assert.match(report.tests[4].stderr,/difference at \$\n/);
+    assert.match(report.tests[5].stderr,/difference at \$: private field differs/);
+    assert.doesNotMatch(report.tests[5].stderr,/hidden actual|hidden expected|_address|city/);
+    assert.match(report.tests[6].stderr,/difference path unavailable: comparison limit reached/);
+    if(backend==='c'&&process.env.AUG_TEST_ASSERTION_SANITIZERS==='1'){
+      for(let index=0;index<report.tests.length;index++){
+        const metadata=JSON.parse(readFileSync(join(root,'.aug-build/tests/test-'+index+'.augmap.json'),'utf8'));
+        const output=join(root,'.aug-build/tests/sanitized-'+index),args=[...metadata.arguments];
+        args[args.indexOf('-o')+1]=output;
+        const optimization=args.indexOf('-O0');if(optimization>=0)args[optimization]='-O1';
+        args.unshift('-fsanitize=address,undefined','-fno-omit-frame-pointer');
+        const compiled=spawnSync(metadata.compiler,args,{encoding:'utf8',timeout:60000});
+        assert.equal(compiled.status,0,compiled.stderr);
+        const sanitized=spawnSync(output,[],{encoding:'utf8',timeout:10000,env:{...process.env,ASAN_OPTIONS:'detect_leaks=0:halt_on_error=1',UBSAN_OPTIONS:'halt_on_error=1'}});
+        assert.equal(sanitized.status,1,sanitized.stderr);
+        assert.match(sanitized.stderr,/assertion failed/);
+        assert.doesNotMatch(sanitized.stderr,/AddressSanitizer|runtime error:|UndefinedBehaviorSanitizer/);
+      }
+      process.stdout.write('Assertion difference paths: seven failing cases passed ASan and UBSan.\n');
+    }
   }finally{rmSync(root,{recursive:true,force:true});}
 });

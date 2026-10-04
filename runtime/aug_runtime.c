@@ -660,7 +660,7 @@ void aug_print(AugValue value) {
   fflush(stdout);
 }
 
-/* Failure output is bounded and never reads private record storage or native
+/* Failure output is bounded and omits private record storage and native
    payloads. Equality retains the ordinary August == contract. */
 static void assertion_text(const char *text, size_t length, size_t *remaining) {
   size_t count = length < *remaining ? length : *remaining;
@@ -711,6 +711,41 @@ static void assertion_value(AugValue value, unsigned depth, size_t *remaining) {
   assertion_literal(")",remaining);
   if(hidden)assertion_literal(" (private fields omitted)",remaining);
 }
+typedef enum { ASSERT_SAME, ASSERT_DIFFERENT, ASSERT_PRIVATE, ASSERT_LIMIT } AssertionDifference;
+/* Diagnostic traversal has its own budget. A limit never implies equality. */
+static AssertionDifference assertion_difference(AugValue left, AugValue right, unsigned depth,
+    size_t *remaining, char *path, size_t length, size_t capacity) {
+  if (!*remaining) return ASSERT_LIMIT;
+  (*remaining)--;
+  if (left.tag != AUG_OBJECT || right.tag != AUG_OBJECT)
+    return equal(left, right) ? ASSERT_SAME : ASSERT_DIFFERENT;
+  AugObject *a = left.as.object, *b = right.as.object;
+  bool record = a->kind == AUG_RECORD_KIND && b->kind == AUG_RECORD_KIND;
+  bool tuple = a->kind == AUG_TUPLE_KIND && b->kind == AUG_TUPLE_KIND;
+  if (!record && !tuple) return a == b ? ASSERT_SAME : ASSERT_DIFFERENT;
+  if ((record && strcmp(a->type_name, b->type_name)) || a->field_count != b->field_count)
+    return ASSERT_DIFFERENT;
+  if (depth >= 4) return ASSERT_LIMIT;
+  for (size_t i = 0; i < a->field_count; i++) {
+    const char *name = record && a->field_names ? a->field_names[i] : NULL;
+    bool hidden = name && name[0] == '_';
+    size_t next = length;
+    if (!hidden) {
+      int count = name ? snprintf(path + length, capacity - length, ".%s", name) :
+        snprintf(path + length, capacity - length, "[%zu]", i);
+      if (count < 0 || (size_t)count >= capacity - length) return ASSERT_LIMIT;
+      next += (size_t)count;
+    }
+    AssertionDifference result = assertion_difference(a->fields[i], b->fields[i], depth + 1,
+      remaining, path, next, capacity);
+    if (result != ASSERT_SAME) {
+      if (hidden) { path[length] = '\0'; return result == ASSERT_LIMIT ? ASSERT_LIMIT : ASSERT_PRIVATE; }
+      return result;
+    }
+    path[length] = '\0';
+  }
+  return ASSERT_SAME;
+}
 void aug_assert_equal(AugValue actual, AugValue expected, const char *expression, const char *file, int line) {
   aug_test_assertions++;
   if(equal(actual,expected))return;
@@ -718,7 +753,11 @@ void aug_assert_equal(AugValue actual, AugValue expected, const char *expression
   fprintf(stderr,"%s:%d: assertion failed: %s\n  actual: ",file,line,expression);
   size_t remaining=1200;assertion_value(actual,0,&remaining);if(!remaining)fputs("...",stderr);
   fputs("\n  expected: ",stderr);remaining=1200;assertion_value(expected,0,&remaining);if(!remaining)fputs("...",stderr);
-  fputs("\n",stderr);
+  char path[256] = "$"; size_t visits = 64;
+  AssertionDifference difference = assertion_difference(actual, expected, 0, &visits, path, 1, sizeof(path));
+  if (difference == ASSERT_LIMIT || difference == ASSERT_SAME)
+    fputs("\n  difference path unavailable: comparison limit reached\n", stderr);
+  else fprintf(stderr, "\n  difference at %s%s\n", path, difference == ASSERT_PRIVATE ? ": private field differs" : "");
   aug_throw(aug_new_object("AssertionError",0,NULL,NULL,0));
 }
 

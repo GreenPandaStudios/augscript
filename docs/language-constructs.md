@@ -326,7 +326,7 @@ Assert a bool in a test case or its setup. Catching an assertion failure cannot 
 assertEqual(actual=any, expected=any) returns void
 ```
 
-Compare actual and expected using August equality in a test. Evaluate each input once in written order. Failures show bounded scalar, record and tuple values; private storage and native contents are omitted. Other objects retain identity equality. Catching the failure cannot make the case pass.
+Compare actual and expected using August equality in a test. Evaluate each input once in written order. Failures show bounded scalar, record and tuple values and the first public difference path. Private field names and values, and native contents, are omitted; bounded searches report when a path is unavailable. Other objects retain identity equality. Catching the failure cannot make the case pass.
 
 ## body
 
