@@ -5,15 +5,16 @@ import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import type { CheckedProject } from './checker.ts';
 import type { Diagnostic } from './ast.ts';
+import type {Config} from './config.ts';
 import { loadConfig } from './config.ts';
 import {generateOpenApi} from './openapi.ts';
 import { nativeHome } from '../scripts/native-home.mjs';
 import { nativeRequirements } from '../scripts/native-setup.mjs';
 import { cCompiler, compilerHelp } from '../scripts/native-toolchain.mjs';
 
-export function compileNative(root: string, generated: string, options: { output?: string; testIndex?: number; release?: boolean; checked?: CheckedProject } = {}) {
-  const config = loadConfig(root).config;
-  const buildDir = join(root, '.aug-build', ...(options.testIndex === undefined ? [] : ['tests']));
+export function compileNative(root: string, generated: string, options: { output?: string; testIndex?: number; release?: boolean; checked?: CheckedProject;config?:Config;buildDirectory?:string } = {}) {
+  const config = options.config ?? loadConfig(root).config;
+  const buildDir = options.buildDirectory ?? join(root, '.aug-build', ...(options.testIndex === undefined ? [] : ['tests']));
   mkdirSync(buildDir, { recursive: true });
   if (config.openapi.enabled && options.checked && options.testIndex === undefined) {
     const target = resolve(root,config.openapi.output); mkdirSync(dirname(target),{recursive:true});

@@ -102,6 +102,12 @@ Next exists only inside around. `next()` forwards original inputs; `next(y=value
 
 See [testing](testing.md) and [native tooling](tooling.md) for executable examples and exact limits.
 
+## Checked changes and forwarding
+
+`FORWARD` means the imported target or inherited contract is outside the initial concrete managed profile. Import a public standalone operation explicitly and keep capabilities, mutation, injection, generics, native linkage, and interceptors out of that alias. `BINDING` identifies an unsupported `let` prefix; use `value = expression` or `Type value = expression`. `COMPARISON` identifies assignment in a condition and offers an equality comparison fix.
+
+Change protocol reports include the exact source/candidate revision. `CHANGE_STALE` requires fresh context; `CHANGE_SCOPE` identifies an occurrence outside the permitted files; `CHANGE_COVERAGE` exposes unresolved required relationships; `CHANGE_PUBLIC_DELTA` reports unexpected contract changes. `CHANGE_BEHAVIOR` means the candidate compiled but failed independently selected finite checks. `CHANGE_BUSY` means a cooperating writer or interrupted transaction blocks readers. See [checked changes](checked-changes.md) for plan inspection and recovery.
+
 ## INFERENCE: add a type anchor
 
 The compiler cannot infer a result when recursive calls have no concrete return evidence, or when generic contracts keep expanding. State a finite `returns T`, `uses`, or `unless` contract at that boundary. Empty collections also need a contextual item type. Other executable bodies continue to infer these clauses.

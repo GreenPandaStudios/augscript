@@ -5,7 +5,7 @@ import type { Ty } from './types.ts';
 export function schemaType(project: Project, ref: TypeRef, file: string, parameters = new Map<string, Ty>()): Ty {
   const param = parameters.get(ref.name);
   if (param) return {...param, nullable: param.nullable || ref.nullable, optional: ref.optional || param.optional};
-  const def = project.scopes.get(file)?.get(ref.name);
+  const def = ref.definitionId?project.definitions.get(ref.definitionId):project.scopes.get(file)?.get(ref.name);
   return {id: def?.id ?? 'builtin:' + ref.name, name: ref.name,
     kind: def?.node.kind === 'class' ? 'class' : def ? 'interface' : 'builtin', def,
     nullable: ref.nullable, optional: ref.optional, args: ref.args.map(arg => schemaType(project, arg, file, parameters))};

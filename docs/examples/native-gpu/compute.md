@@ -82,7 +82,7 @@ test calculate {
 
 ### `calculate` · [source](compute.md#code) {#symbol-calculate}
 
-Add two lists on a GPU and return copied values. GPU resources stay local. It takes `left` and `right` as `List<float>`. Failures can raise `GpuError`.
+Add two lists on a GPU and return copied values. GPU resources stay local. It takes `left` and `right` as `List<float>`. Failures can raise [`GpuError`](dependencies/packages/%40greenpandastudios/aug-gpu/0.1.1/contracts.md#symbol-GpuError).
 
 It calls [`openDevice`](dependencies/packages/%40greenpandastudios/aug-gpu/0.1.1/api.md#symbol-openDevice) and stores the result in owned `device` ([`Device`](dependencies/packages/%40greenpandastudios/aug-gpu/0.1.1/bindings.md#symbol-Device)). It calls [`upload`](dependencies/packages/%40greenpandastudios/aug-gpu/0.1.1/api.md#symbol-upload) with `device` and `values` from `left` and stores the result in owned `first` ([`Buffer`](dependencies/packages/%40greenpandastudios/aug-gpu/0.1.1/bindings.md#symbol-Buffer)). It calls [`upload`](dependencies/packages/%40greenpandastudios/aug-gpu/0.1.1/api.md#symbol-upload) with `device` and `values` from `right` and stores the result in owned `second` ([`Buffer`](dependencies/packages/%40greenpandastudios/aug-gpu/0.1.1/bindings.md#symbol-Buffer)). It calls [`add`](dependencies/packages/%40greenpandastudios/aug-gpu/0.1.1/api.md#symbol-add) with `left` from `first` and `right` from `second` and stores the result in owned `result` ([`Buffer`](dependencies/packages/%40greenpandastudios/aug-gpu/0.1.1/bindings.md#symbol-Buffer)).
 

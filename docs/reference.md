@@ -34,6 +34,10 @@ Application(resolve Console console) implements Runnable:
 
 Run `aug run PROJECT`, or choose **AugScript: Run Project** in VS Code. You need Node.js 24+ and a [supported host](compatibility.md). The CLI obtains its LLVM compiler/runtime pack and package artifacts automatically.
 
+## Forwarding
+
+Transparent operation aliases use `forward Name to ImportedFunction`. They inherit the full supported checked interface and delegate exactly once, unchanged. They belong in ordinary modules, follow the normal privacy/export rules, and currently support concrete managed standalone functions with checked errors and empty capability/mutation contracts. See [checked changes](checked-changes.md) for the development status, profile limits, and verification workflow.
+
 ## Blocks and statement boundaries
 
 Either spelling creates the same block:

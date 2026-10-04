@@ -560,6 +560,14 @@ Login input from form
 
 Decode named application/x-www-form-urlencoded fields into a record. Unknown or repeated scalar fields are rejected. Typed handle actions supply form data with input from form.
 
+## forward
+
+```text
+forward dispatch to importedOperation
+```
+
+Declare a transparent forwarding function in an ordinary module. The explicitly imported public target supplies every input label, resolved type, return value and checked error. Each call delegates once with unchanged arguments. The initial profile requires concrete managed standalone functions with no injection, capabilities, mutation, interceptors, endpoints or native linkage. The name forward remains valid for ordinary functions.
+
 ## freeze
 
 ```text

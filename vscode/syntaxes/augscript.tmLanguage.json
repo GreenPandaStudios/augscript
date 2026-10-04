@@ -234,6 +234,9 @@
     },
     "declarations": {
       "patterns": [
+        {"match":"^\\s*(forward)\\s+([A-Za-z_][A-Za-z0-9_]*)\\s+(to)\\s+([A-Za-z_][A-Za-z0-9_]*)\\s*$","captures":{
+          "1":{"name":"keyword.declaration.augscript"},"2":{"name":"entity.name.function.augscript"},
+          "3":{"name":"keyword.declaration.augscript"},"4":{"name":"entity.name.function.augscript"}}},
         {
           "match": "\\b(extern)\\s+(C)\\s+(resource)\\s+([A-Za-z_][A-Za-z0-9_]*)",
           "captures": {

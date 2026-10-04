@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Add contextual forwarding declarations, inherited contracts and checked-change tooling to the development compiler.
+
 ## 0.23.1 — burgundy artwork
 
 Bundle the unchanged public August 0.23.0 compiler. Editor-only patches now use a separate checked release path.

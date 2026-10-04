@@ -4,6 +4,11 @@
 
 - Normalize decoded LSP input chunks to UTF-8 bytes before accumulating byte-counted frames.
 - Analyze generated C and copied runtime units for adversarial collection, error, task, ownership, JSON, crypto, and HTTP programs, then run them under AddressSanitizer and UBSan in macOS/Linux CI. Harden HTML buffer growth against size overflow and remove unused generated call arrays and execution-context lookups.
+- Add whole-project revision-bearing context with exact function/method/parameter identities, resolved occurrences, separate dependencies/reverse callers, and explicit incomplete graph/packet coverage. Include configuration, dependency and compiler-build identities.
+- Plan standalone managed function renames, body replacements, and verified forwarding conversions against exact revisions. Check isolated candidates, compare intended public interface deltas, and require independent native acceptance before source writes. Return candidate-paired repair diagnostics and tested agent syntax idioms.
+- Coordinate source writers and readers, journal checked commits, and recover interrupted processes without overwriting external conflicts. Record compiler, finite behavior, runtime, proof and engineer-review statuses separately.
+- Add contextual `forward Alias to ImportedFunction`, with inherited resolved labels/types/results/checked errors, native lowering, normal exports, formatter, hover/navigation/completion, specs and interface-diff support. Unsupported ownership/effect/generic/native/DI/layer profiles fail closed.
+- Add experimental bounded scalar-domain enumeration through existing typed test rows, explicit vector/exclusion/provenance records, native mutation detection and revision-checked replay. No comparative AI reliability claim or general proof is made.
 
 Provide two versioned, multi-architecture container bases: `aug-build` with the published CLI and prepared LLVM/runtime, and `aug-runtime` for complete native deployments. Use the build base directly in Dev Containers. Qualify offline builds, specs, tests, crypto and HTTP on native ARM64 and x86-64 runners before registry publication. Compiler contributor tests retain their separate source image.
 

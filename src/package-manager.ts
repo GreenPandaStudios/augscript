@@ -9,6 +9,7 @@ import { parse } from './parser.ts';
 import { isGitSource, materializeGit, sourceAlias, type GitSource } from './git-packages.ts';
 import { agentInstructions } from './project-init.ts';
 import { withPackageLock } from './package-locking.ts';
+import {withSourceWriter} from './source-transaction.ts';
 import {validateNativeManifest, readNativeDescriptor, type NativeManifest} from './native-contracts.ts';
 import type {NativeLock} from './native-artifacts.ts';
 
@@ -250,7 +251,7 @@ export function prepareRunPackages(root: string, offline = false, frozen = false
 }
 
 export function installPackages(root: string, frozen = false, offline = false, update = false): PackageLock {
-  return withPackageLock(join(root, '.aug-install.lock'), () => installLocked(root, frozen, offline, update));
+  return withPackageLock(join(root, '.aug-install.lock'), () => withSourceWriter(root,()=>installLocked(root, frozen, offline, update)));
 }
 function installLocked(root: string, frozen: boolean, offline: boolean, update: boolean): PackageLock {
   if (frozen && update) throw new Error('--frozen and --update cannot be used together.');
@@ -396,7 +397,7 @@ export function initPackage(directory: string, name: string, npmMetadata = false
   writeFileSync(join(directory, 'src/export.aug'), 'export add from arithmetic\n');
   writeFileSync(join(directory, 'src/arithmetic.aug'), '/** Add two integers. @param left First value. @param right Second value. @return Their sum. */\nadd(int left, int right) returns int {\n    return left + right\n}\n\ntest add {\n    when addition {\n        it adds_two_integers {\n            assert(add(left=2, right=3) == 5)\n        }\n    }\n}\n');
   writeFileSync(join(directory, 'README.md'), `# ${name}\n\nAugust ${compilerVersion()} source library. Public exports live in src/export.aug.\n`);
-  writeFileSync(join(directory, '.gitignore'), '.aug-build/\n.aug-packages/\n.aug-install-*/\nnode_modules/\n*.tgz\n');
+  writeFileSync(join(directory, '.gitignore'), '.aug-build/\n.aug-changes/\n.aug-packages/\n.aug-install-*/\nnode_modules/\n*.tgz\n');
 }
 
 /** Synchronize transport metadata; August's manifest owns dependency aliases. */
@@ -428,7 +429,7 @@ export function addPackage(root: string, request: string, alias: string, offline
   const block = 'packages:\n' + Object.entries(ordered(dependencies)).map(([name, value]) => '  ' + name + ': ' + JSON.stringify(value)).join('\n') + '\n';
   const expression = /^packages:[^\n]*(?:\n|$)(?:[ \t][^\n]*(?:\n|$)|\n)*/m;
   const after = expression.test(before) ? before.replace(expression, block) : before.trimEnd() + (before.trim() ? '\n\n' : '') + block;
-  writeFileSync(path, after);
+  withSourceWriter(root,()=>{if((existsSync(path)?readFileSync(path,'utf8'):'')!==before)throw new Error('Configuration changed before adding this package. Retry.');writeFileSync(path, after);});
   try { return installPackages(root, false, offline); }
-  catch (error) { if (existed) writeFileSync(path, before); else rmSync(path, { force: true }); throw error; }
+  catch (error) { withSourceWriter(root,()=>{if(readFileSync(path,'utf8')!==after)throw new Error('Configuration changed after adding the package; its external edit was preserved.');if(existed)writeFileSync(path,before);else rmSync(path,{force:true});});throw error; }
 }

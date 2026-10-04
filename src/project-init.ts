@@ -11,6 +11,12 @@ Keep tests in the file that declares the behavior. Run aug check, aug test, and 
 after a change, and use aug run to compile and run the application. Run prepares required
 source packages and native libraries. Commit aug.lock.json; do not edit .aug-packages.
 
+For a supported standalone operation change, use aug context and the checked change
+protocol. Keep the ordered request and independently authored acceptance cases together.
+Read coverage.requiredContextComplete; unresolved or stale context cannot authorize edits.
+Generated specs describe the starting program and are read only in the agent exchange.
+Use source units for replacements. Keep a rejected candidate with its own diagnostics.
+
 Use labeled inputs, narrow export.aug files, and underscore-prefixed private helpers.
 Leave return types, effects, and errors to inference when an executable body provides
 the answer. Bodyless interfaces still declare their contracts. Use borrow for mutation,
@@ -79,7 +85,7 @@ export function initProject(destination: string, template: 'hello' | 'weather' =
     'AGENTS.md': agentInstructions,
     'main.aug': `import Greeter and SimpleGreeter from greeting\n\nimplement Greeter with SimpleGreeter\nresolve Greeter to greeter\nprint(value=greeter.greet(name="August"))\n`,
     'greeting.aug': `/** Build a greeting for a named person. */\ninterface Greeter:\n    /** Return a greeting for the named person. */\n    greet(string name) returns string\n\n/** A plain-language greeting. */\nSimpleGreeter() implements Greeter:\n    greet(string name):\n        return "Hello, " + name + "!"\n\ntest SimpleGreeter greeter:\n    when greetings:\n        greeter = SimpleGreeter()\n        it greets_a_person:\n            assert(greeter.greet(name="August") == "Hello, August!")\n`,
-    '.gitignore': '.aug-build/\n.aug-spec/\n.aug-packages/\n.aug-install-*/\n*.aug.md\n',
+    '.gitignore': '.aug-build/\n.aug-changes/\n.aug-spec/\n.aug-packages/\n.aug-install-*/\n*.aug.md\n',
     'README.md': `# ${name}\n\nThis is an August application. Start in \`main.aug\`; its dependencies and startup are visible there.\n\n\`greeting.aug\` contains a public interface, its implementation, and a same-file test.\n\n\`\`\`sh\naug run\naug check\naug test\naug spec\n\`\`\`\n\nFor the language guide, see https://GreenPandaStudios.github.io/augscript/getting-started.\n`,
   };
   if (template === 'weather') {

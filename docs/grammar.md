@@ -1,6 +1,6 @@
 # Grammar and line boundaries
 
-Grammar for August 0.21. `Name` is an identifier; bracketed groups are optional. The blocks below describe syntax and are not executable programs.
+Grammar for August 0.23 and the unreleased AUG-0001 development addition. `Name` is an identifier; bracketed groups are optional. The blocks below describe syntax and are not executable programs. Forwarding requires the development build described in [checked changes](checked-changes.md).
 
 ## Blocks and declarations
 
@@ -11,6 +11,8 @@ Block       := "{" Statements "}"
 Function    := [Tags] ["fixture"] Name [Generics] "(" Parameters ")"
                ["returns" ["own"] Type] ["changes" Paths]
                ["uses" Paths] ["unless" Types] (Block | End)
+
+Forward     := "forward" Name "to" Name NEWLINE
 
 Class       := [Tags] Name [Generics] ["(" Fields ")"]
                ["unless" Types] "implements" Type {"," Type} ClassBlock

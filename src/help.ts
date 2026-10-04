@@ -16,6 +16,7 @@ const operator = (detail: string, documentation: string): HelpEntry =>
   ({ detail, documentation, category: 'operator' });
 
 export const languageHelp: Record<string, HelpEntry> = {
+  forward: keyword('forward dispatch to importedOperation', 'Declare a transparent forwarding function in an ordinary module. The explicitly imported public target supplies every input label, resolved type, return value and checked error. Each call delegates once with unchanged arguments. The initial profile requires concrete managed standalone functions with no injection, capabilities, mutation, interceptors, endpoints or native linkage. The name forward remains valid for ordinary functions.'),
   resource: keyword('extern C resource Tensor', 'Declare an opaque native resource and its release operation. The descriptor must match the declaration. Store acquired resources in own bindings; scope exit releases them once. Declare resources in native packages, outside main.aug.'),
   RequireLogin: {category:'tag',detail:'[RequireLogin(authentication=auth)]',documentation:'Verify credentials before typed body decoding. Map auth to an explicit resolve Authentication parameter and infer its authenticate operation. null produces 401; the adapter validates the credential. HTTP policies precede custom parameter interceptors.'},
   RequirePermission: {category:'tag',detail:'[RequirePermission(authentication=auth, authorization=permissions, permission="users.read")]',documentation:'Authenticate the request and authorize one literal permission before decoding. Receive both dependencies through resolve inputs. The handler infers their authenticate and authorize operations. Missing credentials produce 401 and a denied permission produces 403.'},
@@ -184,6 +185,10 @@ for (const operation of builtinFunctions) if (!['int', 'c_int'].includes(operati
   (operation.errors?.length ? ` unless ${operation.errors.join(' and ')}` : ''), operation.documentation);
 
 export const diagnosticHelp: Record<string, string> = {
+  FORWARD:'Import a public concrete managed function explicitly, then use forward Alias to Target in an ordinary module. Unsupported ownership, effects, mutation, injection, native linkage and layers cannot be erased by forwarding.',
+  BINDING:'A first assignment creates an inferred local: value = expression. To state its type, write Type value = expression. August has no let binding prefix.',
+  COMPARISON:'Use == for equality in conditions. The assignment forms = and to belong to statements and labeled arguments.',
+  CHANGE_BUSY:'Wait for the checked writer. After an interrupted transaction, inspect the journal and run aug change recover PROJECT. Recovery preserves conflicting external edits.',
   NATIVE_HEADER: 'The native maintainer header does not match its reviewed ownership descriptor. Check fixed-width types, pointer constness, outputs, release signatures and the error record layout. aug bind header uses an explicitly selected Clang only; package consumers do not need Clang. Header checks do not prove allocator pairing, retention or thread promises.',
   NATIVE_ABI: 'Keep the August declarations and native.abi.json in the same package. Parameter labels, types, resource ownership, checked errors and effects must match. Different packages cannot supply the same physical native symbol.',
   NATIVE_INTEGRITY: 'The source or native archive differs from its pinned digest. Reinstall the exact package version or ask its maintainer to publish a new version. Installation never runs package build scripts.',
