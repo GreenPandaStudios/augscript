@@ -4,7 +4,7 @@
 
 ## Providers
 
-`Console` is provided by [`SystemConsole`](.aug-spec/august/0.20.0/io/contracts.aug.md#symbol-SystemConsole). The same instance is shared. `Logger` is provided by [`ConsoleLogger`](logging/console.aug.md#symbol-ConsoleLogger). The same instance is shared.
+`Console` is provided by [`SystemConsole`](.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-SystemConsole). The same instance is shared. `Logger` is provided by [`ConsoleLogger`](logging/console.aug.md#symbol-ConsoleLogger). The same instance is shared.
 
 `app` is provided by [`Greeter`](app/greeter.aug.md#symbol-Greeter). The same instance is shared. It requires bindings for `Logger`.
 
@@ -14,4 +14,4 @@ It sets `greeter` to the instance provided for `app`. It passes `"AugScript"` to
 
 ## Dependencies
 
-It uses [`SystemConsole`](.aug-spec/august/0.20.0/io/contracts.aug.md#symbol-SystemConsole) from `august.io`. It uses [`Greeter`](app/greeter.aug.md#symbol-Greeter) ([`greet`](app/greeter.aug.md#symbol-Greeter.greet)) from `app`. It uses [`ConsoleLogger`](logging/console.aug.md#symbol-ConsoleLogger) from `logging`.
+It uses [`SystemConsole`](.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-SystemConsole) from `august.io`. It uses [`Greeter`](app/greeter.aug.md#symbol-Greeter) ([`greet`](app/greeter.aug.md#symbol-Greeter.greet)) from `app`. It uses [`ConsoleLogger`](logging/console.aug.md#symbol-ConsoleLogger) from `logging`.

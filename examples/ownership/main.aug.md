@@ -4,7 +4,7 @@
 
 ## Startup
 
-It sets `counter` of type [`Counter`](counter.aug.md#symbol-Counter) to a [`Counter`](counter.aug.md#symbol-Counter) with `value` `1`. `counter` of type [`Counter`](counter.aug.md#symbol-Counter) owns this value. It calls [`counter.increment`](counter.aug.md#symbol-Counter.increment). It prints [`counter.read`](counter.aug.md#symbol-Counter.read).
+It creates [`Counter`](counter.aug.md#symbol-Counter) with `value` `1` and stores the result in owned `counter` ([`Counter`](counter.aug.md#symbol-Counter)). It calls [`counter.increment`](counter.aug.md#symbol-Counter.increment). It prints [`counter.read`](counter.aug.md#symbol-Counter.read).
 
 ## Dependencies
 

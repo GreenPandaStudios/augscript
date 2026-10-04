@@ -22,7 +22,7 @@ test('cold crypto and HTTP setup works through an aliased cache and serves a rea
     const env = { ...process.env, AUG_NATIVE_HOME: alias }, cli = join(root, 'bin/aug.mjs');
     const crypto = join(directory, 'crypto'); cpSync(join(root, 'docker/crypto-smoke'), crypto, { recursive: true });
     prepareRunPackages(crypto);
-    const digest = spawnSync(process.execPath, [cli, 'run', crypto, '--offline'], { env, encoding: 'utf8', timeout: 600000 });
+    const digest = spawnSync(process.execPath, [cli, 'run', crypto, '--backend', 'c', '--offline'], { env, encoding: 'utf8', timeout: 600000 });
     assert.equal(digest.status, 0, digest.stderr);
     assert.equal(digest.stdout, 'ungWv48Bz-pBQUDeXa4iI7ADYaOWF3qctBD_YfIAFa0\n');
     assert.ok(!existsSync(join(actual, 'sources/libwebsockets')), 'crypto must not download HTTP');
@@ -32,7 +32,7 @@ test('cold crypto and HTTP setup works through an aliased cache and serves a rea
     const reservation = createServer(); reservation.listen(0, '127.0.0.1'); await once(reservation, 'listening');
     const port = reservation.address().port; await new Promise(accept => reservation.close(accept));
     writeFileSync(join(web, 'main.aug'), `import health from endpoints\nserve health on port ${port}\n`);
-    const build = spawnSync(process.execPath, [cli, 'build', web, '--offline'], { env, encoding: 'utf8', timeout: 600000 });
+    const build = spawnSync(process.execPath, [cli, 'build', web, '--backend', 'c', '--offline'], { env, encoding: 'utf8', timeout: 600000 });
     assert.equal(build.status, 0, build.stderr);
     server = spawn(build.stdout.trim(), [], { env, stdio: ['ignore', 'ignore', 'pipe'] });
     let errors = ''; server.stderr.on('data', data => errors += data);

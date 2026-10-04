@@ -14,11 +14,13 @@ import { checkUnitTests, discoverTests, mergeTestAnalysis, uniqueDiagnostics } f
 import { formatFile } from './formatter.ts';
 import { interceptorBehavior } from './interceptors.ts';
 import { callableResult, callableErrors } from './contracts.ts';
+import {nativeFact,nativeDependencies,type NativeFunctionFact,type NativeResourceFact} from './native-facts.ts';
 
 const genericFacts = (header: GenericHeader) => header.typeParams.map(name => ({ name,
   variance: header.typeVariance?.[name] ?? 'invariant', constraints: (header.typeConstraints?.[name] ?? []).map(typeName) }));
 
 export interface CallableFact {
+  native?:NativeFunctionFact; nativeDependencies:NativeFunctionFact[]; nativeCoverage:'resolved-standalone-calls';
   name: string; location: Span; inputs: { label: string; name: string; type: string; ownership: string; injected: boolean; source?:Param['source'] }[];
   result: string; genericParameters: ReturnType<typeof genericFacts>; changes: string[]; capabilities: string[]; inferredEffects: boolean; errors: string[];
   http?: {method:string; path:string; status:number; streaming:boolean; errors:{type:string;status:number}[]};
@@ -27,6 +29,7 @@ export interface CallableFact {
     errors: string[]; delegates: boolean; mayShortCircuit: boolean }[];
 }
 export interface ContractFact {
+  native?:NativeResourceFact;
   id: string; name: string; kind: string; location: Span; public: boolean; documentation?: string;
   typeParameters: string[]; genericParameters: ReturnType<typeof genericFacts>; interfaces: string[];
   fields: { label: string; storage: string; type: string; mutable: boolean; injected: boolean; ownership: string }[];
@@ -37,7 +40,9 @@ export function contractFacts(checked: CheckedProject): ContractFact[] {
   const callable = (method: MethodDecl, constructor?: ClassDecl): CallableFact => {
     const contract = checked.effectContracts.get(method);
     const layers = checked.interceptorPlans.get(constructor ?? method) ?? [];
+    const native=nativeFact(checked,method);
     return { name: method.name, location: method.span, genericParameters: genericFacts(method),
+      native:native?.kind==='function'?native:undefined,nativeDependencies:nativeDependencies(checked,method),nativeCoverage:'resolved-standalone-calls',
       inputs: method.params.map(param => ({ label: param.label ?? param.name, name: param.name,
         type: typeName(param.type), ownership: param.ownership, injected: param.injected, source:param.source })),
       http:method.endpoint?{method:method.endpoint.method,path:method.endpoint.path,status:method.endpoint.status,
@@ -46,7 +51,7 @@ export function contractFacts(checked: CheckedProject): ContractFact[] {
         dependencies:policy.dependencies.map(index=>method.params[index]?.label??method.params[index]?.name??'')})),
       result: `${method.returnOwnership === 'own' ? 'own ' : ''}${tyName(callableResult(checked, method))}`,
       changes: [...(contract?.changes ?? method.changes ?? [])],
-      capabilities: [...(contract?.uses.values() ?? [])].map(effect => `${effect.source}.${effect.operation}`).concat(method.externC ? [`C.${method.name}`] : []),
+      capabilities: [...(contract?.uses.values() ?? [])].map(effect => `${effect.source}.${effect.operation}`).concat(method.externC&&!native ? [`C.${method.name}`] : []),
       inferredEffects: !!contract?.inferred,
       errors: constructor ? [...new Set([...(checked.constructorContracts.get(constructor)?.errors.map(tyName) ?? constructor.validationErrors?.map(typeName) ?? []),
         ...layers.flatMap(layer => layer.errors.map(tyName))])].sort() : callableErrors(checked, method),
@@ -78,8 +83,10 @@ export function contractFacts(checked: CheckedProject): ContractFact[] {
       for (const [key, child] of Object.entries(value)) if (!['span', 'nameSpan', 'sourceSpan'].includes(key)) visit(child);
     };
     visit(node);
+    const native=node.kind==='resource'?nativeFact(checked,node):undefined;
     return { id: def.id, name: def.name, kind: node.kind === 'class' && node.record ? 'record' :
       node.kind === 'interface' && node.capability ? 'capability' : node.kind,
+      native:native?.kind==='resource'?native:undefined,
       location: node.span, public: !node.name.startsWith('_'), typeParameters: node.typeParams, genericParameters: genericFacts(node),
       documentation: javadocBefore(file.source, 'annotations' in node ? node.annotations?.[0]?.span.start ?? node.span.start : node.span.start)?.markdown,
       interfaces: node.kind === 'class' ? node.implements.map(typeName) : node.kind === 'interface' ? node.extends.map(typeName) : [],
@@ -89,7 +96,7 @@ export function contractFacts(checked: CheckedProject): ContractFact[] {
         typeConstraints: node.typeConstraints, typeVariance: node.typeVariance, params: node.fields,
         returns: syntheticType(node.name, node.span), returnOwnership: 'managed',
         throws: node.validationErrors ?? [], changes: [], uses: [], body: node.constructorBody, externC: false, span: node.span }, node)] : []),
-        ...methods.filter(method => !method.name.startsWith('_')).map(method => callable(method))], calls,
+        ...methods.filter(method => node.kind==='function'||!method.name.startsWith('_')).map(method => callable(method))], calls,
       tests: file.items.flatMap(item => item.kind === 'test' && item.type.name === def.name ? item.groups.flatMap(group =>
         group.cases.map(test => ({ group: group.name, name: test.name, location: test.span }))) : []) };
   });
@@ -134,7 +141,7 @@ export function describe(checked: CheckedProject, fileName: string, options: { n
     const module: ModuleFact = { file: source.path, dependencies: [...new Set(source.items.flatMap(item => item.kind === 'import' ?
       (checked.project.imports.get(item) ?? []).map(def => def.file) : []))].sort(),
       public: publicFacts.map(fact => ({ name: fact.name, shape: createHash('sha256').update(JSON.stringify({ kind: fact.kind,
-        generics: fact.genericParameters, fields: fact.fields.filter(field => !field.storage.startsWith('_')),
+        native:fact.native,generics: fact.genericParameters, fields: fact.fields.filter(field => !field.storage.startsWith('_')),
         interfaces: fact.interfaces, callables: fact.callables.map(({ location, interceptors, inputs, ...contract }) => ({ ...contract,
           inputs: inputs.map(({ name, ...input }) => input),
           interceptors: interceptors.map(({ location, ...layer }) => layer) })) })).digest('hex') })),

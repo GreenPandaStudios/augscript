@@ -14,10 +14,18 @@ import { collectionOperations } from '../src/builtins.ts';
 import { generateSpecs } from '../src/spec.ts';
 import { specHint } from '../src/spec-hints.ts';
 import { buildExamplePages, examples } from './example-docs.mjs';
+import { benchmarkChartData } from './benchmark-chart-data.mjs';
+import { homepageExample } from './homepage-docs.mjs';
+import {conformancePage} from './conformance-ledger.mjs';
+import { nativePackageExamples } from './native-package-docs.mjs';
 
 const root = resolve(import.meta.dirname, '..');
 const check = process.argv.includes('--check');
 const outputs = new Map();
+outputs.set('docs/.vitepress/theme/benchmark-data.json', benchmarkChartData(root));
+outputs.set('docs/.vitepress/home-example.md', homepageExample(root));
+outputs.set('docs/native-package-examples.md', nativePackageExamples(root));
+outputs.set('docs/conformance-rules.md',conformancePage(root));
 // Analyze the pending source pointers too, so one generation pass has correct API/source links.
 const entry=join(root,'examples/approved-design');
 const initial=checkProject(loadProject(entry));
@@ -43,7 +51,7 @@ const effects = node => {
   const changes = contract?.changes ?? [], uses = [...(contract?.uses.values() ?? [])];
   const sentences = [];
   if (changes.length) sentences.push('May change ' + changes.map(name => '`' + name + '`').join(' and ') + '.');
-  if (uses.length) sentences.push('Requires ' + uses.map(effect => '`' + effect.source + '.' + effect.operation + '`').join(' and ') + '.');
+  if (uses.length) sentences.push('Uses ' + uses.map(effect => '`' + effect.source + '.' + effect.operation + '`').join(' and ') + '.');
   return sentences.length ? '\n\n' + sentences.join(' ') : '';
 };
 const fence = text => `\`\`\`text\n${text}\n\`\`\``;
@@ -66,7 +74,7 @@ for (const module of ['io', 'json', 'memory', 'time', 'web', 'crypto']) {
   const sections = [generated(`src/stdlib/${module}`) + `# august.${module}\n\n` +
     (module === 'io' ? 'Console and file capabilities supplied with the compiler. Import names from `august.io`.' :
       'Install this source library with `aug add https://github.com/GreenPandaStudios/augscript/src/stdlib/' + module + ' --as ' + module + '`, then import its public names from `' + module + '`.') +
-    '\n\nThe signatures below include checked results and failures, including those inferred from a body. See [packages](../packages.md) for revision pinning and [language constructs](../language-constructs.md) for built-in value types.'];
+    '\n\nSignatures show result types and checked errors. See [packages](../packages.md) to pin a release and [language constructs](../language-constructs.md) for built-in types.'];
   for (const item of exports) {
     const def = project.scopes.get(join(folder, `${item.from}.aug`)).get(item.name);
     const node = def.node;
@@ -79,15 +87,19 @@ for (const module of ['io', 'json', 'memory', 'time', 'web', 'crypto']) {
       sections.push(`### ${item.name}.${method.name}\n\n${fence(signature(method))}\n\n${help?.markdown ?? ''}${effects(method)}\n\n${link(method)}`);
     }
   }
-  outputs.set(`docs/api/${module}.md`, sections.join('\n\n') + '\n');
+  outputs.set(`docs/api/${module}.md`, sections.join('\n\n').replace(/\n{3,}/g, '\n\n') + '\n');
 }
-const constructs = [generated('src/help.ts and src/builtins.ts') + '# Language constructs\n\nThis reference uses the same help as VS Code hover and completion. See [the guide](reference.md) for complete, compiler-checked examples.'];
-for (const [name, help] of Object.entries(languageHelp).sort(([a], [b]) => a.localeCompare(b)))
+const constructs = [generated('src/help.ts and src/builtins.ts') + '# Language constructs\n\nSyntax and built-in operations. For complete programs, read [the language reference](reference.md). These descriptions also appear in VS Code help.'];
+const unsupported = new Set(['class','function','bind','throws','missing','&&','||','!','=>','->','?']);
+for (const [name, help] of Object.entries(languageHelp).sort(([a], [b]) => a.localeCompare(b))) {
+  if (unsupported.has(name)) continue;
   constructs.push(`## ${name}\n\n${fence(help.detail)}\n\n${reference(help.documentation)}`);
+}
 for (const [type, operations] of Object.entries(collectionOperations)) {
   constructs.push(`## ${type} operations`);
   for (const operation of operations) constructs.push(`### ${type}.${operation.name}\n\n${operation.documentation}`);
 }
+constructs.push('## Unsupported spellings\n\nUse `and`, `or`, `not`, `unless`, `optional T`, `null`, `implement … with …`, and `initialize`. Declarations start with their name, without a class or function prefix. Symbolic booleans, arrow constructors, and `T?` are rejected. [Diagnostics](diagnostics.md) explains fixes and migration.');
 outputs.set('docs/language-constructs.md', constructs.join('\n\n') + '\n');
 for (const [path, text] of buildExamplePages(sourceOverrides)) outputs.set(path, text);
 const stale = [];

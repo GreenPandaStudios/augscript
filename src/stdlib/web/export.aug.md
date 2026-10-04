@@ -8,4 +8,4 @@ Export the declaration `Principal` from [`contracts.aug`](contracts.aug.md#symbo
 
 Export the declaration `WebRequestLogger` from [`contracts.aug`](contracts.aug.md#symbol-WebRequestLogger). Export the declaration `HttpClient` from [`contracts.aug`](contracts.aug.md#symbol-HttpClient). Export the declaration `WebHttpClient` from [`contracts.aug`](contracts.aug.md#symbol-WebHttpClient). Export the declaration `redirect` from [`contracts.aug`](contracts.aug.md#symbol-redirect).
 
-Export the declaration `urlEncode` from [`contracts.aug`](contracts.aug.md#symbol-urlEncode). Export the declaration `cookie` from [`contracts.aug`](contracts.aug.md#symbol-cookie).
+Export the declaration `urlEncode` from [`contracts.aug`](contracts.aug.md#symbol-urlEncode). Export the declaration `cookie` from [`contracts.aug`](contracts.aug.md#symbol-cookie). Export the declaration `ServerControl` from [`contracts.aug`](contracts.aug.md#symbol-ServerControl). Export the declaration `WebServerControl` from [`contracts.aug`](contracts.aug.md#symbol-WebServerControl).

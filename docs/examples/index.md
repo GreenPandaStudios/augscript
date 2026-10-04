@@ -10,18 +10,27 @@ outline: [2, 3]
 
 # Example projects
 
-Read a complete program, follow its dependencies, and compare the source with its compiled explanation. Every file has highlighted **Indentation** and **Braces** views and the actual output of `aug spec`. Dependency links open the exact version used by the project. Each project has a download you can run with the published npm CLI.
+Explore complete programs with code and compiled explanations side by side. Choose **Indentation** or **Braces** for the code view, follow links to dependencies, or download a project to run it. Native examples list their supported platforms.
 
 Start with [Hello world with dependencies](hello/index.md) to trace a greeting through two folder boundaries. Then [review a change to the tested calculator](../guides/change-a-module.md). For a larger application, the [OpenID Connect example](oidc-login/index.md) combines pages, provider and client endpoints, and a session JWT. It is a development demonstration with documented limits.
 
-If you are learning the language for the first time, use [the book](../learn/index.md). The gallery is for exploring whole projects and looking at the code behind a specific feature or measurement.
+For step-by-step lessons, start with [the book](../learn/index.md).
+
+## Native libraries (LLVM preview)
+
+| Project | What it demonstrates |
+| --- | --- |
+| [CPU tensors with PyTorch](native-pytorch/index.md) | Add two CPU tensors with LibTorch and check the elements and sum. Owned tensors are released at scope exit. |
+| [A database with SQLite](native-sqlite/index.md) | Create an in-memory SQLite database, insert a bound value, and query it. Borrow the database for updates; scope exit closes it. |
+| [Compression with zlib](native-zlib/index.md) | Compress a buffer with zlib and verify the restored bytes. A fixed output limit bounds decompression. |
+| [Hashing with Rust BLAKE3](native-blake3/index.md) | Hash a buffer with the Rust BLAKE3 crate and compare a known digest. |
 
 ## Start here
 
 | Project | What it demonstrates |
 | --- | --- |
-| [Hello world with dependencies](hello/index.md) | The application prints a greeting through an injected logger. Its entry point selects the providers, and each folder exposes a small public surface. |
-| [Labeled calls and injection](new-syntax/index.md) | Constructor injection, named inputs, ordinary functions, and same-file tests. |
+| [Hello world with dependencies](hello/index.md) | Print a greeting through an injected logger. Startup selects the providers, and export files choose what each folder makes public. |
+| [Labeled calls and injection](new-syntax/index.md) | Construct an object with an injected dependency, call functions with labeled inputs, and run same-file tests. |
 | [A small tested application](developer-workflow/index.md) | A calculator logs each addition. Its nearby tests replace the logger and verify both labeled inputs and fresh setup. |
 | [Command-line arguments](cli-args/index.md) | Read arguments, inspect collections, and return a process exit status. |
 
@@ -37,7 +46,7 @@ If you are learning the language for the first time, use [the book](../learn/ind
 | Project | What it demonstrates |
 | --- | --- |
 | [Lists, tuples, sets, and maps](collections/index.md) | Create typed collections and update them through checked mutable access. |
-| [Generic contracts](generics/index.md) | Write reusable records, interfaces, classes, and functions with type parameters. |
+| [Generic types and functions](generics/index.md) | Write reusable records, interfaces, classes, and functions with type parameters. |
 | [Generic dependency injection](generic-di/index.md) | Bind a generic interface and resolve a class that uses it. |
 | [Checked failures](errors/index.md) | Declare errors with unless, catch them, and run cleanup. |
 
@@ -54,9 +63,9 @@ If you are learning the language for the first time, use [the book](../learn/ind
 
 | Project | What it demonstrates |
 | --- | --- |
-| [Modules and composition](approved-design/index.md) | Startup combines narrow domain exports with a scoped counter provider. Records and validation keep data and checked failures visible. |
+| [Modules and composition](approved-design/index.md) | Supply a scoped counter and call a doubling function that rejects negative inputs. |
 | [Function and constructor middleware](interceptors/index.md) | Layer interceptors, map inputs, and keep logging dependencies explicit. |
-| [Create a package](packages-math/index.md) | Publish a small arithmetic library through export.aug and test its public surface. |
+| [Create a package](packages-math/index.md) | Export an arithmetic function from a library and test it. |
 | [Use a package](packages-app/index.md) | Install the neighboring arithmetic package and import it through a local alias. |
 
 ## Native applications
@@ -70,8 +79,23 @@ If you are learning the language for the first time, use [the book](../learn/ind
 
 | Project | What it demonstrates |
 | --- | --- |
-| [Startup benchmark](startup-benchmark/index.md) | The small program used to measure process startup. |
+| [A million greetings](greetings-benchmark/index.md) | Print one million UTF-8 greetings and flush each line, matching the C reference. |
+| [Startup benchmark](startup-benchmark/index.md) | Print one integer and exit to measure process startup. |
+| [Floating-point benchmark](float-benchmark/index.md) | Accumulate exact binary fractions and check the final value. |
+| [Function-call benchmark](calls-benchmark/index.md) | Call a labeled function repeatedly with a dependent integer result. |
+| [List traversal benchmark](list-benchmark/index.md) | Grow a list and sum its snapshot values. |
+| [String processing benchmark](strings-benchmark/index.md) | Split text into parts and sum their byte lengths. |
+| [Map deletion benchmark](map-churn-benchmark/index.md) | Delete, replace and reinsert entries, then check values and insertion order. |
+| [Checked-error benchmark](errors-benchmark/index.md) | Interleave successful calls and caught checked failures. |
+| [Record allocation benchmark](records-benchmark/index.md) | Retain immutable records and sum their fields. |
+| [Task scheduling benchmark](tasks-benchmark/index.md) | Start and join two tasks in each bounded scope. |
 | [CPU benchmark](cpu-benchmark/index.md) | Two million dependent integer steps with a checked result. |
 | [Map and Set benchmark](collections-benchmark/index.md) | Insert, find, and iterate over 20,000 collection entries. |
 | [JSON benchmark](json-benchmark/index.md) | Parse, decode, and serialize a typed record 5,000 times. |
 | [HTTP benchmark](http-benchmark/index.md) | Serve the typed JSON endpoint used in the throughput measurements. |
+
+## Native libraries
+
+| Project | What it demonstrates |
+| --- | --- |
+| [GPU workers](native-gpu/index.md) | Create Metal buffers inside isolated workers, add vectors on the GPU, and return copied results. Requires the August 0.23.0 preview, Apple Silicon, and macOS 14 or later with an available Metal GPU. |

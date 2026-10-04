@@ -241,6 +241,7 @@ async function showContext(context, includeSource) {
 }
 
 const yamlHelp = {
+  backend: 'LLVM is the default on qualified hosts. August downloads its verified compiler/runtime pack. Choose c only for the temporary C reference workflow; checked native ABI packages require LLVM.',
   spec: 'Deterministic specifications are generated beside source files during successful builds. aug spec regenerates them; aug spec --check checks for drift.',
   'spec.require_comments': 'Require Javadoc on none (default), public declarations, or all declarations. Existing interface documentation can be inherited. Missing required comments are compiler errors.',
   assignment: 'Canonical assignments: `equals` or `to`. Both forms are accepted by the language.',
@@ -254,11 +255,15 @@ const yamlHelp = {
   max_dependencies: 'Positive import fan-out threshold used by the architecture warning. Default 8.',
   output: 'Name of the executable built under `.aug-build`. An absolute path is also accepted.',
   optimization: 'Choose `debug` for `-O0` (the default) or `release` for `-O2`.',
-  libraries: 'YAML list of libraries passed to the C linker with `-l`, for example `m`.',
-  library_paths: 'YAML list of linker search paths relative to the project root.',
+  libraries: 'C reference backend only: libraries passed to its linker with -l. LLVM native dependencies belong in package manifests.',
+  library_paths: 'C reference backend only: linker search paths relative to the project root. LLVM uses locked package artifacts.',
   web: 'Native HTTP transport configuration. Defaults to the loopback interface with bounded bodies and responses.',
   'web.host': 'Listening interface. Default `127.0.0.1`; choose an explicit address to expose a service.',
   'web.body_limit': 'Maximum buffered request body, from 1 to 67108864 bytes. Default 1048576. Excess returns 413.',
+  'web.headers_timeout': 'Absolute header reception deadline in milliseconds, 1 through 3600000. Default 30000.',
+  'web.request_timeout': 'Absolute request reception deadline in milliseconds from connection/request start. Default 120000. Stalled uploads return 408.',
+  'web.drain_timeout': 'Network grace period after SIGTERM or SIGINT, in milliseconds. Default 10000. Request cleanup joins before serve returns.',
+  'web.max_requests': 'Maximum admitted exchanges, from 1 through 65536. Default 256. New exchanges over capacity are rejected.',
   'web.response_limit': 'Maximum buffered response or endpoint-test stream collection. Default 4194304 bytes.',
   'web.http3': 'Enable HTTP/3 over QUIC. Default false. Requires a TLS certificate and private key.',
   'web.tls': 'TLS certificate configuration. Paths are relative to the project root.',
@@ -398,7 +403,7 @@ async function signatureHelp(context, document, position) {
 }
 
 const semanticTypes = ['class', 'interface', 'function', 'method', 'property',
-  'variable', 'parameter', 'typeParameter', 'type', 'decorator'];
+  'variable', 'parameter', 'typeParameter', 'type', 'decorator', 'keyword'];
 const semanticLegend = new vscode.SemanticTokensLegend(semanticTypes, ['declaration']);
 
 async function semanticTokens(context, document) {

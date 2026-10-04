@@ -7,39 +7,45 @@ const read = path => readFile(new URL(path, base), 'utf8');
 const inner = svg => svg.replace(/^<svg[^>]*>/, '').replace(/<\/svg>\s*$/, '');
 const render = (svg, path) => sharp(Buffer.from(svg)).png().toFile(fileURLToPath(new URL(path, base)));
 const logo = await read('media/augscript.svg');
-await render(logo, 'media/augscript.png');
+await render(logo, 'media/august-mark.png');
+for (const [name, color] of [['august-mark.svg', '#812E47'], ['august-mark-dark.svg', '#D9A0B1']])
+  await writeFile(new URL('../docs/public/brand/' + name, base), logo.replace('#9E5268', color));
+await writeFile(new URL('../docs/public/brand/favicon.svg', base),
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M10.7 4.7a4.3 4.3 0 1 0 1.5 2.6" fill="none" stroke="#9E5268" stroke-width="1.5" stroke-linecap="round"/></svg>\n');
 const banner = (await read('media/banner.svg')).replace(
-  '<g id="august-logo" transform="translate(54 72) scale(.42)"></g>',
-  `<g transform="translate(54 72) scale(.42)">${inner(logo)}</g>`);
+  '<g id="august-logo" transform="translate(50 45) scale(.45)"></g>',
+  `<g transform="translate(50 45) scale(.45)">${inner(logo)}</g>`);
 await render(banner, 'media/banner.png');
 
-// Use the shipped Explorer icons, so this legend cannot drift from their artwork.
+// Render the actual Explorer assets in both themes, including their 16px size.
 const entries = [
-  ['aug', 'module.aug', 'August source', '#79D3F5'],
-  ['main', 'main.aug', 'Application startup', '#F8B64F'],
-  ['export', 'export.aug', 'Public module surface', '#B58CEB'],
-  ['config', 'main.yaml', 'Project configuration', '#48C7C5'],
+  ['aug', 'source.aug', 'Source'],
+  ['main', 'main.aug', 'Startup'],
+  ['export', 'export.aug', 'Exports'],
+  ['config', 'main.yaml', 'Configuration'],
 ];
-const cards = [];
-for (let index = 0; index < entries.length; index++) {
-  const [icon, filename, description, color] = entries[index];
-  const artwork = inner(await read(`icons/${icon}.svg`));
-  cards.push(`<g transform="translate(${36 + index * 288} 98)">
-    <rect width="264" height="208" rx="16" fill="#132A40" stroke="#26435B"/>
-    <g transform="translate(100 20) scale(4)">${artwork}</g>
-    <text x="132" y="116" text-anchor="middle" fill="${color}" font-size="22" font-weight="700">${filename}</text>
-    <text x="132" y="151" text-anchor="middle" fill="#B7CBDC" font-size="16">${description}</text>
-    <g transform="translate(64 175)">${artwork}</g>
-    <text x="87" y="188" fill="#B7CBDC" font-size="13">Actual 16px size</text>
-  </g>`);
+const rows = [];
+for (const [variant, y, background, foreground, secondary] of [
+  ['', 0, '#201B1D', '#EEE6E1', '#BEB0B3'],
+  ['-light', 184, '#FAF8F5', '#522337', '#76626B'],
+]) {
+  rows.push(`<rect y="${y}" width="1000" height="184" fill="${background}"/>`);
+  for (let index = 0; index < entries.length; index++) {
+    const [icon, filename, description] = entries[index];
+    const artwork = inner(await read(`icons/${icon}${variant}.svg`));
+    const x = 36 + index * 246;
+    rows.push(`<g transform="translate(${x} ${y + 32})">
+      <g transform="translate(0 2) scale(2.5)">${artwork}</g>
+      <text x="0" y="76" fill="${foreground}" font-size="19">${filename}</text>
+      <text x="0" y="102" fill="${secondary}" font-size="14">${description}</text>
+      <g transform="translate(0 119)">${artwork}</g>
+      <text x="25" y="132" fill="${secondary}" font-size="12">16 px</text>
+    </g>`);
+  }
 }
-const legend = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="344" viewBox="0 0 1200 344">
-  <rect width="1200" height="344" rx="24" fill="#0C182B"/>
-  <g font-family="Arial, Helvetica, sans-serif">
-    <text x="40" y="57" fill="#F2F7FC" font-size="26" font-weight="700">Know a file's role at a glance</text>
-    ${cards.join('\n')}
-  </g>
+const legend = `<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="368" viewBox="0 0 1000 368">
+  <g font-family="Arial, Helvetica, sans-serif">${rows.join('\n')}</g>
 </svg>`;
 await writeFile(new URL('media/file-icons.svg', base), legend);
 await render(legend, 'media/file-icons.png');
-process.stdout.write('Rendered August extension logo, banner, and file icon legend.\n');
+process.stdout.write('Rendered August mark, banner, and light/dark file icons.\n');

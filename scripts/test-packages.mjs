@@ -24,9 +24,17 @@ try {
   run('npm', ['install', '--ignore-scripts', '--no-audit', '--no-fund', ...packages.map(pkg => join(artifacts, pkg.filename))]);
   const cliRoot = join(directory, 'node_modules/@greenpandastudios/aug-cli');
   const cli = join(cliRoot, 'bin/aug.mjs');
-  const aug = (...args) => run(process.execPath, [cli, ...args], {
-    env: { ...process.env, AUG_NATIVE_HOME: process.env.AUG_NATIVE_HOME ?? join(root, '.aug-native') }
-  });
+  // Reference-backend bootstrap tests remain independent of release pack
+  // publication. Cold/default LLVM is checked by qualify-native-consumers.mjs.
+  const aug = (...args) => {
+    if(['run','build','test','bench'].includes(args[0])){
+      const separator=args.indexOf('--'),at=separator<0?args.length:separator;
+      args=[...args.slice(0,at),'--backend','c',...args.slice(at)];
+    }
+    return run(process.execPath,[cli,...args],{
+      env:{...process.env,AUG_NATIVE_HOME:process.env.AUG_NATIVE_HOME??join(root,'.aug-native')}
+    });
+  };
   assert.equal(aug('--version').trim(), packages.find(pkg => pkg.directory === 'cli').version);
   const verifySpecs = folder => {
     for(const entry of readdirSync(folder,{withFileTypes:true})) {
@@ -60,7 +68,7 @@ try {
   writeFileSync(join(jsonProject, 'main.aug'), 'import parse from json\ntry:\n    value = parse(input="null")\n    print(value="parsed")\ncatch JsonError error:\n    exit(status=1)\n');
   writeFileSync(join(jsonProject, 'main.yaml'), `packages:\n  json: ${JSON.stringify(join(root,'src/stdlib/json'))}\n`);
   aug('install', jsonProject);
-  assert.equal(run(process.execPath, [cli, 'run', jsonProject, '--offline'], { env: { ...process.env, AUG_NATIVE_HOME: freshNative } }), 'parsed\n');
+  assert.equal(run(process.execPath, [cli, 'run', jsonProject, '--backend', 'c', '--offline'], { env: { ...process.env, AUG_NATIVE_HOME: freshNative } }), 'parsed\n');
   assert.ok(existsSync(join(freshNative, 'sources/yyjson/src/yyjson.c')));
   assert.ok(!existsSync(join(freshNative, 'sources/gnutls')));
   aug('spec', starter);
@@ -93,7 +101,7 @@ try {
     ...packages.map(pkg => join(artifacts, pkg.filename))]);
   const globalAug = join(globalPrefix, 'bin/aug');
   assert.equal(run(globalAug, ['--version']).trim(), packages.find(pkg => pkg.directory === 'cli').version);
-  assert.equal(run(globalAug, ['run', project], {env: {...process.env, AUG_NATIVE_HOME: process.env.AUG_NATIVE_HOME ?? join(root, '.aug-native')}}),
+  assert.equal(run(globalAug, ['run', project, '--backend', 'c'], {env: {...process.env, AUG_NATIVE_HOME: process.env.AUG_NATIVE_HOME ?? join(root, '.aug-native')}}),
     'installed August works\n');
   const editorMain = main + 'import Crypto from crypto\nimport HttpClient from web\n';
   writeFileSync(join(project,'main.yaml'), `packages:\n  crypto: ${JSON.stringify(join(directory,'node_modules/@greenpandastudios/aug-crypto'))}\n  web: ${JSON.stringify(join(directory,'node_modules/@greenpandastudios/aug-web'))}\n`);

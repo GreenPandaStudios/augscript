@@ -201,10 +201,12 @@ test('interrupting setup stops its child process and a subsequent run recovers i
 
 function spawnSync(command, args, options) {
   if (args?.[0]?.endsWith("aug.mjs") && args[2]) prepareLibraryFixtures(args[2]);
+  if(args?.[0]===cli&&args[1]==='run')args=[...args,'--backend','c'];
   return fixtureSpawnSync(command, args, options);
 }
 
 function spawn(command, args, options) {
   if (args?.[0]?.endsWith("aug.mjs") && args[2]) prepareLibraryFixtures(args[2]);
+  if(args?.[0]===cli&&args[1]==='run')args=[...args,'--backend','c'];
   return fixtureSpawn(command, args, options);
 }

@@ -1,27 +1,25 @@
 # Why August exists
 
-Software gets harder to change when its behavior depends on knowledge scattered across a large codebase. A function looks small, yet it reaches a global service, changes shared state, or fails in a way its caller did not expect. A new teammate has to reconstruct those relationships. A coding agent faces the same problem with a limited view of the project.
+August is a statically checked language for native applications. It is designed for code that people and coding agents can understand a module at a time. Calls name their inputs, dependencies appear in declaration headers, and the compiler produces a readable explanation beside each source file.
 
-August's two tenets are **simplicity** and **developer scalability**. A reader should be able to understand a module from its source and a few nearby, linked contracts. The language makes dependencies and behavior visible so a team can review a change without first learning every implementation detail in the application.
+The language's two tenets are **simplicity** and **developer scalability**. Write the code needed for the operation. Let the compiler infer repeated information. Keep the module small enough that a new reader can follow its behavior and find its dependencies.
 
-## What that means in code
+## Code that reads like pseudocode
 
-Calls use labels, such as `total(price=7, quantity=3)`. You can read the role of each input at the call site. Files import the names they use, and folders expose their public surface through `export.aug`. An underscore keeps a name private to its scope.
+A call such as `total(price=7, quantity=3)` names the role of each value. Inputs can appear in any order. `and`, `or`, `not`, `unless`, and `wait for` use ordinary words for conditions, failures, and task coordination.
 
-Interfaces state the operations that callers can use. Application startup selects their implementations, and `resolve` inputs show which dependencies construction or a call requires. Capability contracts describe I/O. The checker infers mutation and checked failures from executable bodies; editor hints and compiled specs display them. Bodyless contracts use `changes` and `unless` to state those limits. Read access can share an object; mutation requires permission expressed in code.
+A folder publishes selected names through `export.aug`. Other folders can import those names; helpers remain internal. Class and function headers identify injected dependencies with `resolve`. When an operation changes an object or performs I/O, the checker tracks that behavior and the editor displays it.
 
-Tests live with the declaration they describe. `aug spec` produces a neighboring Markdown explanation from checked code and links to the exact dependency surfaces. It includes comments when they are present. The explanation supports review; tests and compiler checks still have their own jobs.
-
-The [book](learn/index.md) introduces these choices in runnable programs. The [module review guide](guides/change-a-module.md) shows how to use them when you arrive in an unfamiliar project.
+Tests live beside the code they exercise. `aug spec` writes the module's explanation to `.aug.md`, including links to the dependencies it uses. Read the spec before changing an unfamiliar module, then review the updated explanation with the patch. [Change a module](guides/change-a-module.md) walks through this process.
 
 ## Who should try it
 
-August is for developers exploring how language design can make modular applications easier to understand and maintain. Teams working with coding agents can try its explicit contracts, bounded context tools, and compiled specs in a small project. Hobbyists can start with the same tools and a short application.
+Try August in a small application if you want to explore this way of organizing code. [The book](learn/index.md) starts with a greeting and builds toward modules, errors, state, and tests. Teams using coding agents can use the same examples to assess whether the source and specs help their own review process.
 
-The project does not yet have evidence that August makes every team or coding agent more productive than another language. Demonstrations show how the tools work. Compiler tests show particular rules being checked. Benchmarks measure particular programs. Broader claims need reproducible studies and experience with real projects.
+August's design is intended to make code easier to change. Comparative productivity studies are still needed to measure that effect.
 
 ## Where it stands
 
-The compiler is written in TypeScript. It emits C11 and uses a native managed runtime. The repository also contains the CLI, VS Code extension, standard library, web and crypto libraries, tests, and this documentation. [Packages](packages.md) explains how to install a matching set and create your own source libraries.
+August compiles through LLVM to native executables. [The performance reports](performance.md) compare complete programs with C, Node, and Python, including the source and measurements.
 
-August is a public preview. It has cooperative tasks, explicit ownership operations, checked errors, HTTP endpoints, and source packages, but no stable 1.0 compatibility promise. Read the [readiness review](production-readiness.md), [library gaps](web-library-gaps.md), and [1.0 roadmap](roadmap.md) for the limits that matter to your project.
+The published tools include a CLI, VS Code extension, standard libraries, and native-library packages. August remains experimental and has no stable 1.0 compatibility promise. Check [supported platforms](compatibility.md), [production readiness](production-readiness.md), and the [roadmap](roadmap.md) before choosing it for a deployment.

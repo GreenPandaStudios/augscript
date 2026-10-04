@@ -9,7 +9,7 @@ next:
 
 # Data and failures
 
-A number alone does not explain every result. An order summary has named data, and an invalid order may need a failure rather than a zero total. This project introduces both.
+An order summary needs named fields. An invalid quantity needs an error the caller can handle. This example returns the summary or raises that error.
 
 Create a new folder and save these two files in it:
 
@@ -64,11 +64,13 @@ No name for this identifier
 
 Use a record for a value whose meaning is its data. A class implements an interface and provides behavior; [the next chapter](modules-and-dependencies.md) uses one to supply a service. Records have limits on the types they can store; the [reference](../reference.md#classes-records-and-local-state) gives the complete rule.
 
-## Make failure part of the contract
+## Handle an invalid quantity {#make-failure-part-of-the-contract}
 
-The throw tells the compiler that `summarize` can fail with `InvalidQuantity`. Its return expression supplies the `Order` result type. Hints, hover, and the compiled spec show this contract without repeating it in the header. `InvalidQuantity` is a class that implements `Error` and carries the rejected value. The caller must catch the failure or propagate it through an inferred or explicit contract. Main must handle it. In this application, `try` contains the calls and `catch` prints a message when the second call fails. Operations after a throw in that block do not run.
+`summarize` returns an `Order` or raises `InvalidQuantity`. The compiler infers both from its body. `InvalidQuantity` implements `Error` and stores the rejected quantity.
 
-Try removing the catch while keeping a bare call to `summarize` in `main.aug`. `aug check .` should report the unhandled error. Restore the example afterward. A checked failure tells you what a call can raise; it does not decide how your application should recover.
+A caller must catch the error or allow it to reach its own caller. `main.aug` must handle it. Here, the second call fails and `catch` prints the message. Any remaining statements in the `try` block are skipped.
+
+Try removing the catch while keeping a bare call to `summarize` in `main.aug`. `aug check .` should report the unhandled error. Restore the example afterward. Choose recovery in the caller; the compiler only checks that the error is handled or propagated.
 
 ## Distinguish a value from null
 

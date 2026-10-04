@@ -1,15 +1,15 @@
 # Build a weather API
 
-Create a service that returns five simulated weather forecasts as JSON. This example follows the familiar weather API shape from Microsoft's ASP.NET Core starter: a date, Celsius and Fahrenheit temperatures, and a summary. It uses fixed values so you can reproduce its responses and tests. It does not fetch live weather.
+Create a service that returns five simulated weather forecasts as JSON. Each forecast contains a date, Celsius and Fahrenheit temperatures, and a summary. Fixed values make the responses and tests reproducible. It does not fetch live weather.
 
-You need the [August toolchain](packages.md#npm-registry) and the native HTTP build prerequisites described in the [web guide](web.md). You can also use a [Dev Container](dev-containers.md).
+Install the [August CLI](getting-started.md). The first run obtains the native HTTP components automatically on a supported host. You can also use a [Dev Container](dev-containers.md).
 
 ## Start the service
 
 ```sh
-npx @greenpandastudios/aug-cli@next init weather --template weather
+aug init weather --template weather
 cd weather
-npx @greenpandastudios/aug-cli@next run
+aug run
 ```
 
 The first run prepares the required native dependencies and starts the server on port 8787. Keep it running, then open another terminal:
@@ -36,7 +36,7 @@ import weatherForecast from forecasts
 serve weatherForecast on port 8787
 ```
 
-`forecasts.aug` declares the immutable `WeatherForecast` record, the endpoint, and its tests. The endpoint has no inputs and returns a list of records. August infers that result from its body, serializes it as JSON, and describes the same shape in OpenAPI. You do not need a controller class or a library dependency for this service.
+`forecasts.aug` declares the immutable `WeatherForecast` record, the endpoint, and its tests. The endpoint has no inputs and returns a list of records. August infers that result from its body, serializes it as JSON, and describes the same shape in OpenAPI. The endpoint declaration is enough to serve this response.
 
 A record construction names each field, for example:
 
@@ -56,10 +56,10 @@ The endpoint's route is `GET /weatherforecast`. The test client exercises that r
 In `forecasts.aug`, change the first summary from `Freezing` to `Cold`. Run the application again and check that the first response changed. Then run:
 
 ```sh
-npx @greenpandastudios/aug-cli@next test
-npx @greenpandastudios/aug-cli@next spec
+aug test
+aug spec
 ```
 
-If you installed the CLI globally, the equivalent commands are `aug test` and `aug spec`. Open `forecasts.aug.md` to read the actual compiled explanation. The starter's `AGENTS.md` asks coding agents to read that explanation before changing the code.
+Open `forecasts.aug.md` to read the compiled explanation. The starter's `AGENTS.md` asks coding agents to read that explanation before changing the code.
 
-[Browse the complete weather project](examples/weather-api/index.md) to see the source beside its generated spec, switch between indentation and braces, or download the files. Continue with the [web guide](web.md) to accept typed inputs, return errors, render HTML, or stream a response. See Microsoft's [first web API tutorial](https://learn.microsoft.com/en-us/aspnet/core/tutorials/first-web-api) for the original starter context.
+[Browse the complete weather project](examples/weather-api/index.md) to see the source beside its generated spec, switch between indentation and braces, or download the files. Continue with the [web guide](web.md) to accept typed inputs, return errors, render HTML, or stream a response.

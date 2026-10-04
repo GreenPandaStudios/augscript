@@ -1,0 +1,2 @@
+packages:
+  postgres: "https://github.com/GreenPandaStudios/aug-postgres#v0.1.0"

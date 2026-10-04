@@ -9,7 +9,7 @@ import {createInterface} from 'node:readline';
 import {request} from 'node:http';
 
 const cli = resolve('bin/aug.mjs');
-test('native endpoints bind typed HTTP input and map invalid bodies to problem details', async () => {
+test('native endpoints bind typed HTTP input and map invalid bodies to problem details', {timeout:30000}, async () => {
   const root = mkdtempSync(join(tmpdir(), 'aug-http-'));
   let server;
   try {
@@ -84,7 +84,7 @@ endpoint POST "/complex" as readComplex(Complex input from form) returns Complex
     response = await fetch(`http://127.0.0.1:${port}/complex`, {method:'POST',body:complex});
     assert.equal(response.status,422);
   } finally {
-    if (server && server.exitCode === null) {server.kill('SIGTERM'); await new Promise(resolve => server.once('exit', resolve));}
+    if (server && server.exitCode === null && server.signalCode === null) {server.kill('SIGTERM'); await new Promise(resolve => server.once('exit', resolve));}
     rmSync(root, {recursive:true, force:true});
   }
 });
@@ -122,7 +122,7 @@ endpoint GET "/relay" as relay(HttpRequest request from request, resolve HttpCli
     assert.equal(response.status, 200, errors);
     assert.deepEqual(await response.json(), {message:'provider and client share this process'});
   } finally {
-    if (server && server.exitCode === null) {server.kill('SIGTERM'); await new Promise(resolve => server.once('exit', resolve));}
+    if (server && server.exitCode === null && server.signalCode === null) {server.kill('SIGTERM'); await new Promise(resolve => server.once('exit', resolve));}
     rmSync(root, {recursive:true, force:true});
   }
 });

@@ -9,3 +9,11 @@ docs/.vitepress/dist
 vscode/compiler
 *.vsix
 *.tgz
+
+**/.aug-build
+**/.aug-native
+**/.aug-packages
+.env
+.env.*
+*.key
+*.pem

@@ -8,7 +8,7 @@ editLink: false
 
 Install this source library with `aug add https://github.com/GreenPandaStudios/augscript/src/stdlib/crypto --as crypto`, then import its public names from `crypto`.
 
-The signatures below include checked results and failures, including those inferred from a body. See [packages](../packages.md) for revision pinning and [language constructs](../language-constructs.md) for built-in value types.
+Signatures show result types and checked errors. See [packages](../packages.md) to pin a release and [language constructs](../language-constructs.md) for built-in types.
 
 ## Crypto {#api-Crypto}
 
@@ -28,7 +28,7 @@ random(int size) returns Bytes unless CryptoError
 
 Generate unpredictable bytes with the operating-system-backed GnuTLS RNG.
 
-Requires `Crypto.random`.
+Uses `Crypto.random`.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/contracts.aug#L5)
 
@@ -40,7 +40,7 @@ sha256(Bytes input) returns Bytes unless CryptoError
 
 Hash the complete input using SHA-256.
 
-Requires `Crypto.sha256`.
+Uses `Crypto.sha256`.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/contracts.aug#L7)
 
@@ -52,7 +52,7 @@ generateRsa() returns RsaPrivateKey unless CryptoError
 
 Create a fresh 3072-bit RSA private key. Private material is opaque and scrubbed on reclamation.
 
-Requires `Crypto.generateRsa`.
+Uses `Crypto.generateRsa`.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/contracts.aug#L9)
 
@@ -64,7 +64,7 @@ publicRsa(RsaPrivateKey key) returns RsaPublicKey unless CryptoError
 
 Export the corresponding public key as an opaque immutable value.
 
-Requires `Crypto.publicRsa`.
+Uses `Crypto.publicRsa`.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/contracts.aug#L11)
 
@@ -76,7 +76,7 @@ signRsa(RsaPrivateKey key, Bytes input) returns Bytes unless CryptoError
 
 Sign bytes using RSASSA-PKCS1-v1_5 with SHA-256 (JOSE RS256).
 
-Requires `Crypto.signRsa`.
+Uses `Crypto.signRsa`.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/contracts.aug#L13)
 
@@ -88,9 +88,21 @@ verifyRsa(RsaPublicKey publicKey, Bytes input, Bytes signature) returns bool unl
 
 Verify only RS256. Invalid signatures return false; invalid keys raise CryptoError.
 
-Requires `Crypto.verifyRsa`.
+Uses `Crypto.verifyRsa`.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/contracts.aug#L15)
+
+### Crypto.verifyEd25519
+
+```text
+verifyEd25519(string publicKey, Bytes input, Bytes signature) returns bool unless CryptoError
+```
+
+Verify Ed25519 using a PEM SubjectPublicKeyInfo public key. Invalid signatures return false; invalid or wrong-algorithm keys raise CryptoError.
+
+Uses `Crypto.verifyEd25519`.
+
+[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/contracts.aug#L17)
 
 ### Crypto.decodeBase64url
 
@@ -100,9 +112,9 @@ decodeBase64url(string input) returns Bytes unless CryptoError
 
 Decode canonical unpadded URL-safe base64, rejecting invalid characters and unused bits.
 
-Requires `Crypto.decodeBase64url`.
+Uses `Crypto.decodeBase64url`.
 
-[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/contracts.aug#L17)
+[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/contracts.aug#L19)
 
 ### Crypto.equal
 
@@ -112,9 +124,9 @@ equal(Bytes left, Bytes right) returns bool
 
 Compare bytes without early exit on their contents. Length remains observable.
 
-Requires `Crypto.equal`.
+Uses `Crypto.equal`.
 
-[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/contracts.aug#L19)
+[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/contracts.aug#L21)
 
 ### Crypto.exportRsa
 
@@ -124,9 +136,9 @@ exportRsa(RsaPublicKey publicKey) returns Tuple<Bytes, Bytes> unless CryptoError
 
 Export unsigned big-endian modulus and exponent for an RSA JWK.
 
-Requires `Crypto.exportRsa`.
+Uses `Crypto.exportRsa`.
 
-[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/contracts.aug#L21)
+[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/contracts.aug#L23)
 
 ### Crypto.importRsa
 
@@ -136,9 +148,9 @@ importRsa(Bytes modulus, Bytes exponent) returns RsaPublicKey unless CryptoError
 
 Import canonical public RSA parameters. Keys must have 2048 to 8192 bits.
 
-Requires `Crypto.importRsa`.
+Uses `Crypto.importRsa`.
 
-[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/contracts.aug#L23)
+[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/contracts.aug#L25)
 
 ### Crypto.passwordHash
 
@@ -148,9 +160,9 @@ passwordHash(Bytes password, Bytes salt, int iterations) returns Bytes unless Cr
 
 PBKDF2-HMAC-SHA256, producing 32 bytes. Use a unique 16–64 byte salt; supported work factors are 100,000–2,000,000.
 
-Requires `Crypto.passwordHash`.
+Uses `Crypto.passwordHash`.
 
-[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/contracts.aug#L25)
+[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/contracts.aug#L27)
 
 ## GnuTlsCrypto {#api-GnuTlsCrypto}
 
@@ -160,7 +172,7 @@ GnuTlsCrypto() implements Crypto
 
 GnuTLS-backed capability adapter. Its constructor performs no I/O or key generation.
 
-[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/contracts.aug#L40)
+[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/contracts.aug#L43)
 
 ### GnuTlsCrypto.random
 
@@ -170,9 +182,9 @@ random(int size) returns Bytes unless CryptoError
 
 Generate unpredictable bytes with the operating-system-backed GnuTLS RNG.
 
-Requires `Crypto.random`.
+Uses `Crypto.random`.
 
-[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/contracts.aug#L41)
+[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/contracts.aug#L44)
 
 ### GnuTlsCrypto.sha256
 
@@ -182,9 +194,9 @@ sha256(Bytes input) returns Bytes unless CryptoError
 
 Hash the complete input using SHA-256.
 
-Requires `Crypto.sha256`.
+Uses `Crypto.sha256`.
 
-[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/contracts.aug#L44)
+[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/contracts.aug#L47)
 
 ### GnuTlsCrypto.generateRsa
 
@@ -194,9 +206,9 @@ generateRsa() returns RsaPrivateKey unless CryptoError
 
 Create a fresh 3072-bit RSA private key. Private material is opaque and scrubbed on reclamation.
 
-Requires `Crypto.generateRsa`.
+Uses `Crypto.generateRsa`.
 
-[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/contracts.aug#L47)
+[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/contracts.aug#L50)
 
 ### GnuTlsCrypto.publicRsa
 
@@ -206,9 +218,9 @@ publicRsa(RsaPrivateKey key) returns RsaPublicKey unless CryptoError
 
 Export the corresponding public key as an opaque immutable value.
 
-Requires `Crypto.publicRsa`.
+Uses `Crypto.publicRsa`.
 
-[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/contracts.aug#L50)
+[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/contracts.aug#L53)
 
 ### GnuTlsCrypto.signRsa
 
@@ -218,9 +230,21 @@ signRsa(RsaPrivateKey key, Bytes input) returns Bytes unless CryptoError
 
 Sign bytes using RSASSA-PKCS1-v1_5 with SHA-256 (JOSE RS256).
 
-Requires `Crypto.signRsa`.
+Uses `Crypto.signRsa`.
 
-[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/contracts.aug#L53)
+[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/contracts.aug#L56)
+
+### GnuTlsCrypto.verifyEd25519
+
+```text
+verifyEd25519(string publicKey, Bytes input, Bytes signature) returns bool unless CryptoError
+```
+
+Verify Ed25519 using a PEM SubjectPublicKeyInfo public key. Invalid signatures return false; invalid or wrong-algorithm keys raise CryptoError.
+
+Uses `Crypto.verifyEd25519`.
+
+[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/contracts.aug#L59)
 
 ### GnuTlsCrypto.verifyRsa
 
@@ -230,9 +254,9 @@ verifyRsa(RsaPublicKey publicKey, Bytes input, Bytes signature) returns bool unl
 
 Verify only RS256. Invalid signatures return false; invalid keys raise CryptoError.
 
-Requires `Crypto.verifyRsa`.
+Uses `Crypto.verifyRsa`.
 
-[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/contracts.aug#L56)
+[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/contracts.aug#L62)
 
 ### GnuTlsCrypto.decodeBase64url
 
@@ -242,9 +266,9 @@ decodeBase64url(string input) returns Bytes unless CryptoError
 
 Decode canonical unpadded URL-safe base64, rejecting invalid characters and unused bits.
 
-Requires `Crypto.decodeBase64url`.
+Uses `Crypto.decodeBase64url`.
 
-[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/contracts.aug#L59)
+[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/contracts.aug#L65)
 
 ### GnuTlsCrypto.equal
 
@@ -254,9 +278,9 @@ equal(Bytes left, Bytes right) returns bool
 
 Compare bytes without early exit on their contents. Length remains observable.
 
-Requires `Crypto.equal`.
+Uses `Crypto.equal`.
 
-[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/contracts.aug#L62)
+[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/contracts.aug#L68)
 
 ### GnuTlsCrypto.exportRsa
 
@@ -266,9 +290,9 @@ exportRsa(RsaPublicKey publicKey) returns Tuple<Bytes, Bytes> unless CryptoError
 
 Export unsigned big-endian modulus and exponent for an RSA JWK.
 
-Requires `Crypto.exportRsa`.
+Uses `Crypto.exportRsa`.
 
-[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/contracts.aug#L65)
+[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/contracts.aug#L71)
 
 ### GnuTlsCrypto.importRsa
 
@@ -278,9 +302,9 @@ importRsa(Bytes modulus, Bytes exponent) returns RsaPublicKey unless CryptoError
 
 Import canonical public RSA parameters. Keys must have 2048 to 8192 bits.
 
-Requires `Crypto.importRsa`.
+Uses `Crypto.importRsa`.
 
-[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/contracts.aug#L68)
+[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/contracts.aug#L74)
 
 ### GnuTlsCrypto.passwordHash
 
@@ -290,9 +314,9 @@ passwordHash(Bytes password, Bytes salt, int iterations) returns Bytes unless Cr
 
 PBKDF2-HMAC-SHA256, producing 32 bytes. Use a unique 16–64 byte salt; supported work factors are 100,000–2,000,000.
 
-Requires `Crypto.passwordHash`.
+Uses `Crypto.passwordHash`.
 
-[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/contracts.aug#L71)
+[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/contracts.aug#L77)
 
 ## JwtError {#api-JwtError}
 
@@ -320,8 +344,6 @@ Public signing-key metadata in RFC 7517 / RFC 7518 form.
 record RsaJwks(List<RsaJwk> keys)
 ```
 
-
-
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/jose.aug#L12)
 
 ## rsaJwk {#api-rsaJwk}
@@ -332,7 +354,7 @@ rsaJwk(RsaPublicKey publicKey, string kid, resolve Crypto crypto) returns RsaJwk
 
 Export public parameters. Private key material never enters the JSON document.
 
-Requires `Crypto.exportRsa`.
+Uses `Crypto.exportRsa`.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/jose.aug#L15)
 
@@ -344,7 +366,7 @@ importJwk(RsaJwk jwk, resolve Crypto crypto) returns RsaPublicKey unless JwtErro
 
 Import only an RSA signing key for RS256. The transport caller selects the trusted JWKS URL.
 
-Requires `Crypto.decodeBase64url` and `Crypto.importRsa`.
+Uses `Crypto.decodeBase64url` and `Crypto.importRsa`.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/jose.aug#L20)
 
@@ -362,7 +384,7 @@ signJwt(
 
 Sign immutable JSON with an explicit key id and token type. Claims are validated by the protocol that consumes the token.
 
-Requires `Crypto.signRsa`.
+Uses `Crypto.signRsa`.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/jose.aug#L31)
 
@@ -380,6 +402,69 @@ verifyJwt(
 
 Verify the signature and configured algorithm, key id, and type before exposing the JSON payload. Never follows token-supplied URLs.
 
-Requires `Crypto.decodeBase64url` and `Crypto.verifyRsa`.
+Uses `Crypto.decodeBase64url` and `Crypto.verifyRsa`.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/jose.aug#L44)
+
+## verifyIdentityToken {#api-verifyIdentityToken}
+
+```text
+verifyIdentityToken(
+    string token,
+    string publicKey,
+    string issuer,
+    string audience,
+    string tokenType,
+    int now,
+    int maximumAge,
+    resolve Crypto crypto
+) returns Json unless JwtError
+```
+
+Verify an Ed25519 JWT before exposing its claims. The caller supplies trusted
+issuer, audience, token type, current epoch seconds, and the maximum lifetime.
+sub, iat and exp are required. No token-supplied key location is followed.
+
+Uses `Crypto.decodeBase64url` and `Crypto.verifyEd25519`.
+
+[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/jose.aug#L73)
+
+## IdentityVerifier {#api-IdentityVerifier}
+
+```text
+interface IdentityVerifier
+```
+
+Validate one configured identity-token profile. A failed check exposes no claims.
+
+[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/jose.aug#L120)
+
+### IdentityVerifier.verify
+
+```text
+verify(string token, int now) returns Json unless JwtError
+```
+
+Uses `Crypto.decodeBase64url` and `Crypto.verifyEd25519`.
+
+[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/jose.aug#L121)
+
+## Ed25519IdentityVerifier {#api-Ed25519IdentityVerifier}
+
+```text
+Ed25519IdentityVerifier(resolve Crypto crypto, string publicKey, string issuer, string audience, string tokenType, int maximumAge) implements IdentityVerifier
+```
+
+Bind trusted key and identity settings once. The caller supplies the current epoch seconds for each verification.
+
+[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/jose.aug#L123)
+
+### Ed25519IdentityVerifier.verify
+
+```text
+verify(string token, int now) returns Json unless JwtError
+```
+
+Uses `Crypto.decodeBase64url` and `Crypto.verifyEd25519`.
+
+[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/crypto/jose.aug#L124)

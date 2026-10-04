@@ -83,15 +83,15 @@ It continues without an operation.
 
 ### `make` · [source](resource.md#code) {#symbol-make}
 
-It returns ownership of [`Resource`](resource.md#symbol-Resource). It sets `value` of type [`Resource`](resource.md#symbol-Resource) to a [`Resource`](resource.md#symbol-Resource). `value` of type [`Resource`](resource.md#symbol-Resource) owns this value. It returns `value`.
+It returns ownership of [`Resource`](resource.md#symbol-Resource). It creates [`Resource`](resource.md#symbol-Resource) and stores the result in owned `value` ([`Resource`](resource.md#symbol-Resource)). It returns `value`.
 
 ### `consume` · [source](resource.md#code) {#symbol-consume}
 
-It takes `value` as [`Resource`](resource.md#symbol-Resource) with ownership transferred. It gets `console` ([`Console`](dependencies/august/0.20.0/io/contracts.md#symbol-Console)) from dependency injection. It passes `"consumed"` to [`console.write`](dependencies/august/0.20.0/io/contracts.md#symbol-Console.write).
+It takes `value` as [`Resource`](resource.md#symbol-Resource) with ownership transferred. It gets `console` ([`Console`](dependencies/august/0.23.0/io/contracts.md#symbol-Console)) from dependency injection. It passes `"consumed"` to [`console.write`](dependencies/august/0.23.0/io/contracts.md#symbol-Console.write).
 
 ### Dependencies
 
-It uses [`Console`](dependencies/august/0.20.0/io/contracts.md#symbol-Console) ([`write`](dependencies/august/0.20.0/io/contracts.md#symbol-Console.write)) from `august.io`.
+It uses [`Console`](dependencies/august/0.23.0/io/contracts.md#symbol-Console) ([`write`](dependencies/august/0.23.0/io/contracts.md#symbol-Console.write)) from `august.io`.
 
 ::::
 

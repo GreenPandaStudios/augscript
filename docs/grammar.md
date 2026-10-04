@@ -1,6 +1,6 @@
 # Grammar and line boundaries
 
-This is the compact accepted grammar for 0.20. `Name` is an identifier, and bracketed grammar groups below are optional. These text blocks describe syntax rather than executable snippets.
+Grammar for August 0.21. `Name` is an identifier; bracketed groups are optional. The blocks below describe syntax and are not executable programs.
 
 ## Blocks and declarations
 
@@ -13,7 +13,7 @@ Function    := [Tags] ["fixture"] Name [Generics] "(" Parameters ")"
                ["uses" Paths] ["unless" Types] (Block | End)
 
 Class       := [Tags] Name [Generics] ["(" Fields ")"]
-               "implements" Type {"," Type} ClassBlock
+               ["unless" Types] "implements" Type {"," Type} ClassBlock
 ClassBlock  := BlockOfFieldsAndMethodsWithOptionalInitialize
 Initialize  := "initialize" Block
 
@@ -31,7 +31,7 @@ Endpoint    := [Tags] "endpoint" HttpMethod String "as" Name "(" Parameters ")"
                ["with status" Integer] Block
 ```
 
-An interface/class/interceptor block contains method declarations. A record ends after its header or validation block and has no behavior body. An executable body infers an absent returns clause; no returned value means void. A bodyless signature defaults to void. Omitted changes, uses, and unless clauses are inferred from executable bodies; explicit clauses remain checked bounds. Its body is required for calls, except extern C. There is no class or function prefix.
+An interface/class/interceptor block contains method declarations. A record ends after its header or validation block and has no behavior body. An executable body infers an absent returns clause; no returned value means void. A bodyless signature defaults to void. Omitted changes, uses, and unless clauses are inferred from executable bodies; explicit clauses remain checked bounds. A callable needs a body unless declared `extern C`. There is no class or function prefix.
 
 The implements clause identifies a class. Its initialize block appears inside the class before methods, and runs after field initialization. Records can contain one initialize block for validation. Nested function declarations are not supported. A root `counter()` statement is a call, not a declaration.
 
@@ -64,7 +64,7 @@ Assignment  := [["own" | "borrow"] Type] Target ("=" | "to") Expression End
 Resolve     := "resolve" Key ["<" Types ">"] "to" Name End
 ```
 
-A quoted public repository URL declares a source dependency. A URL can select a tag or commit with #REVISION. See [packages](packages.md) for aliases and commit locks.
+A quoted public repository URL declares a source dependency. A URL can select a tag or commit with `#REVISION`. See [packages](packages.md) for aliases and commit locks.
 
 The formatter uses implement/with and resolve/to, and preserves wildcard imports. Assignment style remains a project preference. Repeated paths/errors can use and or comma; canonical error clauses use and. Collection constructor elements are positional because their order carries meaning. Assert also accepts its single bool positionally.
 
@@ -115,7 +115,8 @@ Optional values have two cases: null and some. Omitted inputs become null. Type?
 | `[Validator] header...` | Interceptor annotation on a declaration. |
 | `receiver.member(label=value)` | Labeled method call. |
 | `receiver.member(value)` | Same-name label shorthand when value is a name. |
-| `start load(input=value)` | A scope-owned task. |
+| `start load(input=value)` | A cooperative scope-owned task. |
+| `start worker calculate(values)` | A scope-owned worker with copied data on an isolated heap. |
 | `wait for first and second` | Ordered task results. |
 | `wait for tasks` | Ordered collection of results. |
 | `handle save(input from form)` | A checked deferred HTTP form action. |
@@ -136,3 +137,5 @@ Function contract clauses may appear in any order, once each; the formatter writ
 - Return expressions begin on the return line; use parentheses to continue one.
 
 The parser owns these rules. The formatter reparses and compares program structure before offering an edit, preserving comments while choosing the project's block and assignment styles.
+
+`start worker name(...)` uses the existing task operations with copied data and an isolated heap. `worker` is contextual here; a function named `worker` can still be called normally. See [workers](workers.md) for checked boundary types and native package requirements.

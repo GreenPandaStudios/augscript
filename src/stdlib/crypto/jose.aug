@@ -66,3 +66,60 @@ verifyJwt(string token, RsaPublicKey publicKey, string kid, string tokenType, re
         throw JwtError()
     catch IndexError error:
         throw JwtError()
+
+/** Verify an Ed25519 JWT before exposing its claims. The caller supplies trusted
+ * issuer, audience, token type, current epoch seconds, and the maximum lifetime.
+ * sub, iat and exp are required. No token-supplied key location is followed. */
+verifyIdentityToken(string token, string publicKey, string issuer, string audience, string tokenType, int now, int maximumAge, resolve Crypto crypto) returns Json:
+    if token.utf16Length() == 0 or token.utf16Length() > 4096 or now < 0 or maximumAge < 1 or maximumAge > 3600:
+        throw JwtError()
+    parts = token.split(separator=".")
+    if parts.length() != 3:
+        throw JwtError()
+    try:
+        first = parts.get(index=0)
+        second = parts.get(index=1)
+        third = parts.get(index=2)
+        header = parse(input=crypto.decodeBase64url(input=first).text())
+        if header.require(name="alg").string() != "EdDSA" or header.require(name="typ").string() != tokenType or header.has(name="crit") or header.has(name="b64"):
+            throw JwtError()
+        signature = crypto.decodeBase64url(input=third)
+        if not crypto.verifyEd25519(publicKey, input=(first + "." + second).bytes(), signature):
+            throw JwtError()
+        claims = parse(input=crypto.decodeBase64url(input=second).text())
+        if claims.require(name="iss").string() != issuer:
+            throw JwtError()
+        target = claims.require(name="aud")
+        allowed = false
+        try:
+            allowed = target.string() == audience
+        catch JsonError error:
+            for entry in target.items():
+                if entry.string() == audience:
+                    allowed = true
+        if not allowed:
+            throw JwtError()
+        subject = claims.require(name="sub").string()
+        issued = claims.require(name="iat").integer()
+        expires = claims.require(name="exp").integer()
+        if subject.trim().utf16Length() == 0 or subject.utf16Length() > 512 or issued < 0 or issued > 9007199254740991 or expires < 0 or expires > 9007199254740991:
+            throw JwtError()
+        if issued > now or now - issued > maximumAge or expires <= now or expires <= issued or expires - issued > maximumAge:
+            throw JwtError()
+        return claims
+    catch CryptoError error:
+        throw JwtError()
+    catch ConversionError error:
+        throw JwtError()
+    catch JsonError error:
+        throw JwtError()
+    catch IndexError error:
+        throw JwtError()
+
+/** Validate one configured identity-token profile. A failed check exposes no claims. */
+interface IdentityVerifier:
+    verify(string token, int now) returns Json unless JwtError uses Crypto.decodeBase64url, Crypto.verifyEd25519
+/** Bind trusted key and identity settings once. The caller supplies the current epoch seconds for each verification. */
+Ed25519IdentityVerifier(resolve Crypto crypto, string publicKey, string issuer, string audience, string tokenType, int maximumAge) implements IdentityVerifier:
+    verify(string token, int now) returns Json:
+        return verifyIdentityToken(token, publicKey, issuer, audience, tokenType, now, maximumAge)

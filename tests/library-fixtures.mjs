@@ -20,6 +20,10 @@ function localCrypto() {
 // Fixtures explicitly install today's library sources. The compiler itself remains read-only.
 export function prepareLibraryFixtures(root) {
   if (!existsSync(root) || !existsSync(join(root, 'main.aug'))) return;
+  if(process.env.AUG_TEST_BACKEND==='llvm'){
+    const file=join(root,'main.yaml'),text=existsSync(file)?readFileSync(file,'utf8'):'';
+    writeFileSync(file,/^backend:/m.test(text)?text.replace(/^backend:[^\n]*/m,'backend: llvm'):'backend: llvm\n'+text);
+  }
   const used = new Set();
   for (const path of sourcePaths(root)) for (const match of readFileSync(path, 'utf8').matchAll(/\bfrom (web|crypto|json|time|memory)\b/g)) used.add(match[1]);
   if (!used.size) return;

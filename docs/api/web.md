@@ -8,7 +8,7 @@ editLink: false
 
 Install this source library with `aug add https://github.com/GreenPandaStudios/augscript/src/stdlib/web --as web`, then import its public names from `web`.
 
-The signatures below include checked results and failures, including those inferred from a body. See [packages](../packages.md) for revision pinning and [language constructs](../language-constructs.md) for built-in value types.
+Signatures show result types and checked errors. See [packages](../packages.md) to pin a release and [language constructs](../language-constructs.md) for built-in types.
 
 ## Principal {#api-Principal}
 
@@ -16,7 +16,7 @@ The signatures below include checked results and failures, including those infer
 record Principal(string subject, List<string> permissions)
 ```
 
-Immutable identity returned by an explicitly injected authentication adapter.
+Immutable identity returned by the authentication adapter.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/web/contracts.aug#L3)
 
@@ -36,8 +36,6 @@ Verify the request's credentials. null means unauthenticated; adapter failures r
 authenticate(HttpRequest request) returns optional Principal unless HttpError
 ```
 
-
-
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/web/contracts.aug#L7)
 
 ## Authorization {#api-Authorization}
@@ -55,8 +53,6 @@ Decide whether a verified identity has one named permission.
 ```text
 authorize(Principal identity, string permission) returns bool unless HttpError
 ```
-
-
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/web/contracts.aug#L11)
 
@@ -76,9 +72,7 @@ Observe a completed HTTP exchange, including failures and disconnects.
 complete(string method, string path, int status, int milliseconds)
 ```
 
-
-
-Requires `RequestLogger.complete`.
+Uses `RequestLogger.complete`.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/web/contracts.aug#L15)
 
@@ -98,9 +92,7 @@ Emit escaped JSON request metadata to standard error. Credentials and query stri
 complete(string method, string path, int status, int milliseconds)
 ```
 
-
-
-Requires `RequestLogger.complete`.
+Uses `RequestLogger.complete`.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/web/contracts.aug#L20)
 
@@ -110,7 +102,7 @@ Requires `RequestLogger.complete`.
 capability HttpClient
 ```
 
-An explicit outbound network capability. TLS verifies the peer and redirects are returned to the caller.
+Make outbound HTTP requests. TLS verifies the peer; callers handle redirects.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/web/contracts.aug#L25)
 
@@ -120,9 +112,9 @@ An explicit outbound network capability. TLS verifies the peer and redirects are
 request(string method, string url, optional Headers headers, optional Bytes body) returns HttpResponse<Bytes> unless HttpError
 ```
 
-Perform an HTTP request with bounded bytes. Inside a task, waiting suspends the task's C stack.
+Perform an HTTP request with bounded bytes. Waiting for a response suspends the calling task.
 
-Requires `HttpClient.request`.
+Uses `HttpClient.request`.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/web/contracts.aug#L27)
 
@@ -142,9 +134,9 @@ Native libwebsockets transport. No socket is opened by construction.
 request(string method, string url, optional Headers headers, optional Bytes body) returns HttpResponse<Bytes> unless HttpError
 ```
 
-Perform an HTTP request with bounded bytes. Inside a task, waiting suspends the task's C stack.
+Perform an HTTP request with bounded bytes. Waiting for a response suspends the calling task.
 
-Requires `HttpClient.request`.
+Uses `HttpClient.request`.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/web/contracts.aug#L33)
 
@@ -177,3 +169,44 @@ cookie(string name, string value, string path, int maxAge, bool secure) returns 
 Construct an HttpOnly, SameSite=Lax session cookie. Secure defaults are chosen explicitly at the call site. Values and paths reject delimiters and controls. maxAge=0 clears the cookie.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/web/contracts.aug#L56)
+
+## ServerControl {#api-ServerControl}
+
+```text
+capability ServerControl
+```
+
+Stop accepting requests, drain admitted exchanges up to the given milliseconds,
+then cancel remaining work. serve returns after request cleanup has joined.
+
+[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/web/contracts.aug#L62)
+
+### ServerControl.stop
+
+```text
+stop(int milliseconds) unless HttpError
+```
+
+Uses `ServerControl.stop`.
+
+[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/web/contracts.aug#L63)
+
+## WebServerControl {#api-WebServerControl}
+
+```text
+WebServerControl() implements ServerControl
+```
+
+Control the server on its event-loop thread. Owned services can be disposed after serve returns.
+
+[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/web/contracts.aug#L67)
+
+### WebServerControl.stop
+
+```text
+stop(int milliseconds) unless HttpError
+```
+
+Uses `ServerControl.stop`.
+
+[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/web/contracts.aug#L68)

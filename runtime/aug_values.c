@@ -1,6 +1,8 @@
 #include "aug_runtime.h"
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
+#include <limits.h>
 
 int64_t aug_string_length(AugValue value) { return (int64_t)value.as.object->text_length; }
 AugValue aug_string_bytes(AugValue value) { return aug_bytes(value.as.object->text, value.as.object->text_length, AUG_BYTES_KIND); }
@@ -25,22 +27,28 @@ AugValue aug_string_split(AugValue value, AugValue separator) {
   AugValue result = roots[1]; aug_frame_leave(&frame); return result;
 }
 int64_t aug_bytes_length(AugValue value) { return (int64_t)value.as.object->text_length; }
-AugValue aug_bytes_text(AugValue value) {
-  const unsigned char *text = (const unsigned char *)value.as.object->text;
-  size_t size = value.as.object->text_length;
+bool aug_valid_utf8(const void *data, size_t size) {
+  if (!data && size) return false;
+  const unsigned char *text = data;
   for (size_t i = 0; i < size;) {
     unsigned char first = text[i++];
     if (first < 0x80) continue;
     int extra = first >= 0xc2 && first <= 0xdf ? 1 : first >= 0xe0 && first <= 0xef ? 2 : first >= 0xf0 && first <= 0xf4 ? 3 : -1;
-    if (extra < 0 || i + (size_t)extra > size) return aug_error_named("ConversionError");
+    if (extra < 0 || (size_t)extra > size - i) return false;
     uint32_t code = first & (extra == 1 ? 0x1f : extra == 2 ? 0x0f : 0x07);
     for (int j = 0; j < extra; j++) {
       unsigned char next = text[i++];
-      if ((next & 0xc0) != 0x80) return aug_error_named("ConversionError");
+      if ((next & 0xc0) != 0x80) return false;
       code = (code << 6) | (next & 0x3f);
     }
-    if (code < (extra == 1 ? 0x80u : extra == 2 ? 0x800u : 0x10000u) || code > 0x10ffff || (code >= 0xd800 && code <= 0xdfff)) return aug_error_named("ConversionError");
+    if (code < (extra == 1 ? 0x80u : extra == 2 ? 0x800u : 0x10000u) || code > 0x10ffff || (code >= 0xd800 && code <= 0xdfff)) return false;
   }
+  return true;
+}
+AugValue aug_bytes_text(AugValue value) {
+  const void *text = value.as.object->text;
+  size_t size = value.as.object->text_length;
+  if (!aug_valid_utf8(text, size)) return aug_error_named("ConversionError");
   return aug_string_n(text, size);
 }
 
@@ -77,4 +85,47 @@ bool aug_string_is_token(AugValue value, int64_t minimum, int64_t maximum) {
   for (size_t i = 0; i < size; i++) {unsigned char c = (unsigned char)value.as.object->text[i];
     if (!((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '-' || c == '_' || c == '.' || c == '~')) return false;
   } return true;
+}
+
+int64_t aug_string_utf16_length(AugValue value) {
+  const unsigned char *p=(const unsigned char *)value.as.object->text;size_t size=value.as.object->text_length;int64_t count=0;
+  for(size_t i=0;i<size;i++)if((p[i]&0xc0)!=0x80)count+=p[i]>=0xf0?2:1;
+  return count;
+}
+bool aug_string_is_decimal(AugValue value) {
+  if(!value.as.object->text_length)return false;
+  for(size_t i=0;i<value.as.object->text_length;i++)if(value.as.object->text[i]<'0'||value.as.object->text[i]>'9')return false;
+  return true;
+}
+int64_t aug_string_compare_decimal(AugValue value,AugValue other) {
+  if(!aug_string_is_decimal(value)||!aug_string_is_decimal(other)){aug_error_named("ConversionError");return 0;}
+  const char *a=value.as.object->text,*b=other.as.object->text;size_t an=value.as.object->text_length,bn=other.as.object->text_length;
+  while(an>1&&*a=='0'){a++;an--;}while(bn>1&&*b=='0'){b++;bn--;}
+  if(an!=bn)return an<bn?-1:1;int order=memcmp(a,b,an);return order<0?-1:order>0?1:0;
+}
+AugValue aug_bytes_slice(AugValue value,int64_t start,int64_t end) {
+  size_t size=value.as.object->text_length;
+  if(start<0||end<start||(uint64_t)end>size)return aug_error_named("IndexError");
+  return aug_bytes(value.as.object->text+(size_t)start,(size_t)(end-start),AUG_BYTES_KIND);
+}
+AugValue aug_bytes_hex(AugValue value) {
+  size_t n=value.as.object->text_length;if(n>(SIZE_MAX-1)/2)abort();
+  char *out=malloc(n*2+1);if(!out)abort();const char *digits="0123456789abcdef";
+  for(size_t i=0;i<n;i++){unsigned char b=(unsigned char)value.as.object->text[i];out[i*2]=digits[b>>4];out[i*2+1]=digits[b&15];}
+  AugValue result=aug_string_n(out,n*2);free(out);return result;
+}
+bool aug_float_is_finite(AugValue value){return isfinite(aug_cfloat(value));}
+AugValue aug_float_float32(AugValue value){double x=aug_cfloat(value);float rounded=(float)x;if(!isfinite(x)||!isfinite(rounded))return aug_error_named("ConversionError");return aug_float((double)rounded);}
+
+static uint32_t text_codepoint(const unsigned char *p,size_t *width) {
+  unsigned char first=p[0];*width=first<0x80?1:first<0xe0?2:first<0xf0?3:4;
+  uint32_t code=first&(*width==1?0x7f:*width==2?0x1f:*width==3?0x0f:0x07);
+  for(size_t i=1;i<*width;i++)code=(code<<6)|(p[i]&63);return code;
+}
+static bool trim_space(uint32_t code) {return (code>=9&&code<=13)||code==32||code==0xa0||code==0x1680||(code>=0x2000&&code<=0x200a)||code==0x2028||code==0x2029||code==0x202f||code==0x205f||code==0x3000||code==0xfeff;}
+AugValue aug_string_trim(AugValue value) {
+  const unsigned char *p=(const unsigned char *)value.as.object->text;size_t begin=0,end=value.as.object->text_length,width;
+  while(begin<end&&trim_space(text_codepoint(p+begin,&width)))begin+=width;
+  while(end>begin){size_t last=end-1;while(last>begin&&(p[last]&0xc0)==0x80)last--;if(!trim_space(text_codepoint(p+last,&width)))break;end=last;}
+  return aug_string_n((const char *)p+begin,end-begin);
 }

@@ -5,7 +5,7 @@
 <a id="symbol-Principal"></a>
 ## `Principal` · immutable record · [source](contracts.aug#L3)
 
-Immutable identity returned by an explicitly injected authentication adapter. It takes `subject` as a string, kept read-only and `permissions` as `List<string>`, kept read-only.
+Immutable identity returned by the authentication adapter. It takes `subject` as a string, kept read-only and `permissions` as `List<string>`, kept read-only.
 
 <a id="symbol-Authentication"></a>
 ## `Authentication` · capability interface · [source](contracts.aug#L6)
@@ -50,12 +50,12 @@ It takes `method` and `path` as strings and `status` and `milliseconds` as integ
 <a id="symbol-HttpClient"></a>
 ## `HttpClient` · capability interface · [source](contracts.aug#L25)
 
-An explicit outbound network capability. TLS verifies the peer and redirects are returned to the caller.
+Make outbound HTTP requests. TLS verifies the peer; callers handle redirects.
 
 <a id="symbol-HttpClient.request"></a>
 ### `HttpClient.request` · [source](contracts.aug#L27)
 
-Perform an HTTP request with bounded bytes. Inside a task, waiting suspends the task's C stack. It takes `method` and `url` as strings, `headers` as `optional Headers`, and `body` as `optional Bytes`. Omitted optional inputs are null.
+Perform an HTTP request with bounded bytes. Waiting for a response suspends the calling task. It takes `method` and `url` as strings, `headers` as `optional Headers`, and `body` as `optional Bytes`. Omitted optional inputs are null.
 
 It returns `HttpResponse<Bytes>`. It can call [`HttpClient.request`](contracts.aug.md#symbol-HttpClient.request). Failures can raise `HttpError`.
 
@@ -67,7 +67,7 @@ Native libwebsockets transport. No socket is opened by construction. It implemen
 <a id="symbol-WebHttpClient.request"></a>
 ### `WebHttpClient.request` · [source](contracts.aug#L33)
 
-Perform an HTTP request with bounded bytes. Inside a task, waiting suspends the task's C stack. It takes `method` and `url` as strings, `headers` as `optional Headers`, and `body` as `optional Bytes`. Omitted optional inputs are null.
+Perform an HTTP request with bounded bytes. Waiting for a response suspends the calling task. It takes `method` and `url` as strings, `headers` as `optional Headers`, and `body` as `optional Bytes`. Omitted optional inputs are null.
 
 Failures can raise `HttpError`. Within an unsafe block, it returns [`_aug_http_request`](contracts.aug.md#symbol-_aug_http_request) with `method`, `url`, `headers`, and `body`. Native operations must satisfy their declared C contracts.
 
@@ -96,6 +96,27 @@ Construct an HttpOnly, SameSite=Lax session cookie. Secure defaults are chosen e
 
 It takes `name`, `value`, and `path` as strings, `maxAge` as an integer, and `secure` as a boolean. Failures can raise `HttpError`. Within an unsafe block, it returns [`_aug_http_cookie`](contracts.aug.md#symbol-_aug_http_cookie) with `name`, `value`, `path`, `maxAge`, and `secure`. Native operations must satisfy their declared C contracts.
 
+<a id="symbol-ServerControl"></a>
+## `ServerControl` · capability interface · [source](contracts.aug#L62)
+
+Stop accepting requests, drain admitted exchanges up to the given milliseconds,
+then cancel remaining work. serve returns after request cleanup has joined.
+
+<a id="symbol-ServerControl.stop"></a>
+### `ServerControl.stop` · [source](contracts.aug#L63)
+
+It takes `milliseconds` as an integer. It can call [`ServerControl.stop`](contracts.aug.md#symbol-ServerControl.stop). Failures can raise `HttpError`.
+
+<a id="symbol-WebServerControl"></a>
+## `WebServerControl` · class · [source](contracts.aug#L67)
+
+Control the server on its event-loop thread. Owned services can be disposed after serve returns. It implements [`ServerControl`](contracts.aug.md#symbol-ServerControl).
+
+<a id="symbol-WebServerControl.stop"></a>
+### `WebServerControl.stop` · [source](contracts.aug#L68)
+
+It takes `milliseconds` as an integer. Failures can raise `HttpError`. Within an unsafe block, it calls [`_aug_http_stop`](contracts.aug.md#symbol-_aug_http_stop) with `milliseconds`. Native operations must satisfy their declared C contracts.
+
 <a id="symbol-_aug_http_log"></a>
 ## `_aug_http_log` · [source](contracts.aug#L17)
 
@@ -119,6 +140,13 @@ Native C implementation; only its declared contract is visible here.
 ## `_aug_http_cookie` · [source](contracts.aug#L54)
 
 It is private to its defining scope. It takes `name`, `value`, and `path` as strings, `maxAge` as an integer, and `secure` as a boolean. It returns `Headers`. Failures can raise `HttpError`.
+
+Native C implementation; only its declared contract is visible here.
+
+<a id="symbol-_aug_http_stop"></a>
+## `_aug_http_stop` · [source](contracts.aug#L65)
+
+It is private to its defining scope. It takes `milliseconds` as an integer. It can call [`ServerControl.stop`](contracts.aug.md#symbol-ServerControl.stop). Failures can raise `HttpError`.
 
 Native C implementation; only its declared contract is visible here.
 

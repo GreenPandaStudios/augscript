@@ -8,7 +8,7 @@ editLink: false
 
 Install this source library with `aug add https://github.com/GreenPandaStudios/augscript/src/stdlib/time --as time`, then import its public names from `time`.
 
-The signatures below include checked results and failures, including those inferred from a body. See [packages](../packages.md) for revision pinning and [language constructs](../language-constructs.md) for built-in value types.
+Signatures show result types and checked errors. See [packages](../packages.md) to pin a release and [language constructs](../language-constructs.md) for built-in types.
 
 ## Clock {#api-Clock}
 
@@ -28,7 +28,7 @@ now() returns int unless TimeError
 
 Read whole Unix seconds in UTC.
 
-Requires `Clock.now`.
+Uses `Clock.now`.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/time/contracts.aug#L5)
 
@@ -50,6 +50,6 @@ now() returns int unless TimeError
 
 Read whole Unix seconds in UTC.
 
-Requires `Clock.now`.
+Uses `Clock.now`.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/time/contracts.aug#L9)
