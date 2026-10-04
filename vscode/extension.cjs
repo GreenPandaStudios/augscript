@@ -159,6 +159,7 @@ async function editorData(context, document, command, offset, options) {
 const completionKinds = {
   class: vscode.CompletionItemKind.Class,
   interface: vscode.CompletionItemKind.Interface,
+  composition: vscode.CompletionItemKind.Module,
   interceptor: vscode.CompletionItemKind.Class,
   function: vscode.CompletionItemKind.Function,
   method: vscode.CompletionItemKind.Method,

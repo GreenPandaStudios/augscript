@@ -86,7 +86,7 @@ export async function runLanguageServer(root: string): Promise<number> {
           paddingLeft: true, tooltip: {kind: 'markdown', value: hint.tooltip},
         }));
       else if (message.method === 'textDocument/completion') result = view.complete(offset).map(item => ({ label: item.label,
-        kind: ({ method: 2, function: 3, variable: 6, class: 7, interface: 8, property: 10, keyword: 14, snippet: 15, type: 25 } as Record<string, number>)[item.kind] ?? 6,
+        kind: ({ method: 2, function: 3, variable: 6, class: 7, interface: 8, composition: 9, property: 10, keyword: 14, snippet: 15, type: 25 } as Record<string, number>)[item.kind] ?? 6,
         detail: item.detail, documentation: { kind: 'markdown', value: item.documentation ?? '' }, insertText: item.insertText ?? item.label,
         insertTextFormat: item.insertText ? 2 : 1, sortText: item.sortText,
         textEdit: item.replacement ? { range: {start:positionAt(view.source,item.replacement.start),end:positionAt(view.source,item.replacement.end)}, newText:item.insertText ?? item.label } : undefined,

@@ -32,6 +32,7 @@ export interface BindingInfo {
   dependencies: string[];
   constructorKeys: string[];
   declaration: BindDecl;
+  includedBy?: Span;
   lifetime: 'shared' | 'fresh' | 'scoped';
   stateful: boolean;
   requiresScope: boolean;
@@ -1137,24 +1138,27 @@ class Checker {
     const main = this.project.main;
     if (!main) return;
     let seenStatement = false;
-    const declarations: BindDecl[] = [];
+    const declarations: {declaration:BindDecl;includedBy?:Span}[] = [];
     for (const item of main.items) {
       if (item.kind === 'import') continue;
       if (item.kind === 'include') {
         if (seenStatement) this.report(item.span, 'Composition includes must precede executable statements', 'DI');
         const def = this.project.scopes.get(main.path)?.get(item.name);
         if (def?.node.kind !== 'composition') this.report(item.span, `${item.name} must be an explicitly imported composition`, 'DI');
-        else declarations.push(...def.node.bindings);
+        else declarations.push(...def.node.bindings.map(declaration=>({declaration,includedBy:item.span})));
         continue;
       }
       if (item.kind !== 'bind') { seenStatement = true; continue; }
       if (seenStatement) this.report(item.span, 'Bindings must precede executable statements', 'DI');
-      declarations.push(item);
+      declarations.push({declaration:item});
     }
-    for (const item of declarations) {
+    for (const {declaration:item,includedBy} of declarations) {
       const key = this.bindingKey(item.key, item.keyTypeArgs);
-      if (this.bindingByKey.has(key)) {
-        this.report(item.span, `Duplicate binding ${key}`, 'DI'); continue;
+      const previous = this.bindingByKey.get(key);
+      if (previous) {
+        const sameInclude=includedBy&&previous.includedBy&&includedBy.file===previous.includedBy.file&&includedBy.start===previous.includedBy.start;
+        const first=sameInclude ? previous.declaration.span : previous.includedBy ?? previous.declaration.span;
+        this.report(sameInclude ? item.span : includedBy ?? item.span, `Duplicate binding ${key}`, 'DI', {related:[{file:first.file,line:first.line,column:first.column,message:`Binding ${key} was first selected here.`}]}); continue;
       }
       const targetType = this.resolveType(item.target, item.span.file);
       const target = targetType.def;
@@ -1178,7 +1182,7 @@ class Checker {
       const stateful = fieldsOf(target.node as ClassDecl).some(field => field.mutable || field.ownership === 'own' || field.type.name === 'Shared') ||
         target.node.methods.some(method => this.effectiveContract(method, target.file, target, new Map(target.node.typeParams.map((name, index) => [name, targetType.args[index] ?? errorTy]))).changes.some(path => path === 'self' || path.startsWith('self.')));
       const info: BindingInfo = { key, target, exposedType, stateful, lifetime: item.lifetime ?? (stateful ? 'fresh' : 'shared'),
-        dependencies: [], constructorKeys: [], declaration: item, requiresScope: item.lifetime === 'scoped' };
+        dependencies: [], constructorKeys: [], declaration: item, includedBy, requiresScope: item.lifetime === 'scoped' };
       this.bindings.push(info);
       this.bindingByKey.set(key, info);
     }

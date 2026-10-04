@@ -32,6 +32,7 @@ Install `aug` once as shown in [Your first project](getting-started.md). Command
 | `bench PROJECT [--iterations N] [--warmup N] [--timeout MS] [--json] -- args...` | Release build with timed native executions. |
 | `explain PROJECT --file PATH [--name NAME]` | Checked contracts, dependencies, layers, origins, tests, and module surface. |
 | `context PROJECT --file PATH [--name NAME] [--budget N] [--require-complete]` | Bounded JSON context, including related declarations and source snippets. |
+| `graph PROJECT --composition [--case TEST_ID] [--json\|--mermaid]` | **Unreleased:** inspect selected application/test providers, lifetimes and constructor dependencies without execution. |
 | `lsp PROJECT` | Persistent language server over stdio. |
 | `init DIRECTORY [--template hello\|weather]` | New application with agent instructions and same-file tests. |
 | `package init DIRECTORY [--name @owner/name]` | Standalone source library with public exports, Javadoc and a same-file test. |

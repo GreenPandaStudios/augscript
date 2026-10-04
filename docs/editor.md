@@ -73,3 +73,7 @@ Recovery actions offer a catch template that rethrows until you supply a policy.
 Formatting, starters and completion templates use `block_style`, `indentation` and `assignment` from `main.yaml`. Bindings follow `equals` or `to`; generated call labels use `=`. Templates come from the completion provider so that a fixed snippet cannot override the project choice.
 
 Missing-method and missing-interceptor actions insert their scaffold, then format the candidate file with those preferences. The formatter verifies that the parsed program is unchanged and retains comments with their source owners. Review the whole edit: a nonvoid method still needs your implementation and return value. Symbol rename changes resolved tokens without rewriting the surrounding layout.
+
+## Reuse a composition (unreleased)
+
+Complete `include` in main or same-file test setup to see visible compositions. A completion can add an ordinary import from a sibling module or exported folder/package. It retains Javadoc, inserts a composition name without call parentheses, and hides names already included in that setup. Other providers are registered only by their source bindings. Inspect the selected wiring with the [composition graph](guides/reuse-services.md#inspect-the-selected-providers).

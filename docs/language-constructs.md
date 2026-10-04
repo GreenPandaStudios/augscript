@@ -418,7 +418,7 @@ State which caller-visible values an operation may change. Bodies infer changes 
 composition Services: implement Logger with Adapter
 ```
 
-Collect dependency bindings in a named composition. Import and include it in main before startup statements. The composition’s file must import every interface and provider it uses.
+Collect dependency bindings in a named composition. Import and include it in main before startup statements. The composition’s file must import every interface and provider it uses. Include completion follows ordinary exports; inspect application or same-file test providers with aug graph --composition.
 
 ## Compress
 

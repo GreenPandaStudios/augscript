@@ -1,3 +1,4 @@
+import {compositionReport,compositionDiagram} from './composition.ts';
 import {withScratch} from './scratch.ts';
 import {buildBundle,verifyBundle} from './bundle.ts';
 import {BuildProgress} from './progress.ts';
@@ -98,6 +99,7 @@ function usage(): void {
     `Specifications: aug spec [project directory] [--check] [--json]\n` +
     `Migration: aug migrate [project directory] [--file path] [--write]\n` +
     `Context: aug context [project directory] [--file path] [--name declaration] [--budget characters] [--require-complete]\n` +
+    `Composition: aug graph [PROJECT] --composition [--case TEST_ID] [--json|--mermaid] — inspect existing application or test wiring\n` +
     `References: aug references [project directory] --file path --offset character; aug graph [project directory] --file path\n` +
     `Benchmark: aug bench [project directory] [--iterations 10] [--warmup 2] [--json] [-- args]\n` +
     `Packages: aug package init DIRECTORY [--name @owner/name] [source style options]; aug package pack DIRECTORY\n` +
@@ -114,6 +116,28 @@ export async function main(argv: string[]): Promise<number> {
     if(paths.length!==1||args.some(arg=>arg.startsWith('-')&&arg!=='--json')){process.stderr.write('Use aug bundle verify DIRECTORY [--json]\n');return 2;}
     try {const report=verifyBundle(paths[0]);process.stdout.write(args.includes('--json')?JSON.stringify(report)+'\n':`Verified ${report.files} files for ${report.target}; executable ${report.executable}.\n${report.trust}\n`);return 0;}
     catch(error){process.stderr.write(failureMessage(error)+'\n');return 1;}
+  }
+  if(command==='graph'&&argv.includes('--composition')) {
+    let path:string|undefined,caseId:string|undefined;const seen=new Set<string>();
+    for(let index=1;index<argv.length;index++) {
+      const arg=argv[index];
+      if(arg==='--case') {if(seen.has(arg)||!argv[index+1]||argv[index+1].startsWith('-')){process.stderr.write('--case needs one same-file test id.\n');return 2;}seen.add(arg);caseId=argv[++index];}
+      else if(['--composition','--json','--mermaid'].includes(arg)){if(seen.has(arg)){process.stderr.write('Duplicate graph option: '+arg+'\n');return 2;}seen.add(arg);}
+      else if(arg.startsWith('-')||path){process.stderr.write('Use aug graph [PROJECT] --composition [--case TEST_ID] [--json|--mermaid]\n');return 2;}
+      else path=arg;
+    }
+    if(seen.has('--json')&&seen.has('--mermaid')){process.stderr.write('Choose --json or --mermaid.\n');return 2;}
+    const root=resolve(path??process.cwd());
+    try {
+      const report=compositionReport(loadProject(root),caseId);
+      if(seen.has('--json'))process.stdout.write(JSON.stringify(report)+'\n');
+      else if(!report.checked)printDiagnostics(report.diagnostics,false,root);
+      else if(seen.has('--mermaid'))process.stdout.write(compositionDiagram(report));
+      else {process.stdout.write(`Checked ${report.scope.kind} composition ${report.scope.id}; behavioral tests not run.\n`);
+        for(const binding of report.bindings)process.stdout.write(`${binding.key} with ${binding.target.name}: ${binding.lifetime}${binding.stateful?', mutable state':''}${binding.requiresScope?', requires scope':''}\n`);
+        for(const edge of report.dependencies)process.stdout.write(`${edge.from} requires ${edge.to} through ${edge.input} (${edge.location.file}:${edge.location.line}).\n`);}
+      return report.checked?0:1;
+    }catch(error){process.stderr.write(failureMessage(error)+'\n');return 1;}
   }
   if(command==='scratch') {
     if(argv.length===2&&argv[1]==='--help'){usage();return 0;}

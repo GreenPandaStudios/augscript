@@ -138,3 +138,5 @@ Test Explorer groups cases by project, declaration, and when group. Parameterize
 Choose **Native tests** to run or **Native coverage** to see merged statement-line coverage when the installed VS Code supports its coverage API. **AugScript: Test Project** runs the project CLI in a task terminal.
 
 Use `try`/`always` for cleanup. Snapshots and nested groups are unsupported. Each selected case compiles a separate native binary.
+
+The unreleased `aug graph --composition --case TEST_ID --json` checks and describes a selected case’s providers without executing it. Use an id from `aug test --list --json`. The [service wiring guide](guides/reuse-services.md) compares application and test compositions; application startup and test execution remain separate checks.

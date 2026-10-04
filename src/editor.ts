@@ -1,7 +1,7 @@
 import { defaultText } from './parameters.ts';
 import { callableResult, callableErrors } from './contracts.ts';
 import { dirname, join, relative, resolve, sep } from 'node:path';
-import type { ClassDecl, Expr, InterceptorDecl, MethodDecl, Param, SourceFile, Span, Stmt, TypeRef } from './ast.ts';
+import type { ClassDecl, Expr, InterceptorDecl, MethodDecl, Param, SourceFile, Span, Stmt, TopLevel, TypeRef } from './ast.ts';
 import { fieldsOf, typeName } from './ast.ts';
 import type { CheckedProject, Ty } from './checker.ts';
 import { tyName } from './checker.ts';
@@ -26,7 +26,8 @@ import {immutableType} from './types.ts';
 export interface EditorItem {
   label: string;
   kind: 'class' | 'interface' | 'interceptor' | 'function' | 'method' | 'property' |
-    'variable' | 'parameter' | 'keyword' | 'type' | 'snippet';
+    'variable' | 'parameter' | 'keyword' | 'type' | 'snippet' | 'composition';
+  declarationKind?: Definition['node']['kind'];
   detail: string;
   documentation?: string;
   signature?: string;
@@ -230,8 +231,9 @@ function definitionItem(checked: CheckedProject, def: Definition): EditorItem {
         'Generic types are inferred from the target. Constructor parameters come from DI. ' +
         'The around body can call next at most once per execution path.'].filter(Boolean).join('\n\n') };
   }
-  if (node.kind === 'composition') return { label: def.name, kind: 'function', detail: `composition ${def.name}`,
-    documentation: node.bindings.map(binding => `implement ${binding.key} with ${typeName(binding.target)}`).join('\n') };
+  if (node.kind === 'composition') return { label: def.name, kind: 'composition', detail: `composition ${def.name}`,
+    documentation: [documentation(checked,def.file,node.span.start)?.markdown,
+      node.bindings.map(binding => `implement ${binding.key} with ${typeName(binding.target)}`).join('\n')].filter(Boolean).join('\n\n') };
   const params = node.fields.map(parameterText);
   const label = `${def.name}${node.typeParams.length ? `<${node.typeParams.join(', ')}>` : ''}(${params.join(', ')})`;
   const doc = declarationDocumentation(checked, node);
@@ -416,13 +418,13 @@ export function importItems(checked: CheckedProject, file: SourceFile): EditorIt
         isPrivateName(sibling.path.slice(currentFolder.length + 1, -4))) continue;
     const from = sibling.path.slice(currentFolder.length + 1, -4);
     for (const item of sibling.items) {
-      if (item.kind !== 'class' && item.kind !== 'interface' && item.kind !== 'function' && item.kind !== 'interceptor') continue;
+      if (item.kind !== 'class' && item.kind !== 'interface' && item.kind !== 'function' && item.kind !== 'interceptor' && item.kind !== 'composition') continue;
       if (isPrivateName(item.name)) continue;
-      items.push({ label: item.name, kind: 'snippet',
+      items.push({ label: item.name, kind: 'snippet', declarationKind:item.kind,
         detail: `import ${item.name} from ${from}`, insertText: `${item.name} from ${from}`,
         signature: definitionItem(checked, project.scopes.get(sibling.path)!.get(item.name)!).signature,
         parameters: definitionItem(checked, project.scopes.get(sibling.path)!.get(item.name)!).parameters,
-        documentation: item.kind === 'interface' ? documentation(checked, sibling.path, item.span.start)?.markdown :
+        documentation: item.kind === 'interface' || item.kind === 'composition' ? documentation(checked, sibling.path, item.span.start)?.markdown :
           declarationDocumentation(checked, item)?.markdown });
     }
   }
@@ -458,7 +460,7 @@ export function importItems(checked: CheckedProject, file: SourceFile): EditorIt
       if (item.kind !== 'export' || item.folder) continue;
       if (isPrivateName(item.name) || (item.from && isPrivateName(item.from))) continue;
       const exported = project.scopes.get(join(folder, `${item.from}.aug`))?.get(item.name);
-      items.push({ label: item.name, kind: 'snippet',
+      items.push({ label: item.name, kind: 'snippet', declarationKind:exported?.node.kind,
         detail: `import ${item.name} from ${from}`, insertText: `${item.name} from ${from}`,
         signature: exported && definitionItem(checked, exported).signature,
         parameters: exported && definitionItem(checked, exported).parameters,
@@ -470,6 +472,35 @@ export function importItems(checked: CheckedProject, file: SourceFile): EditorIt
   return items;
 }
 
+/** Parse a placeholder so completion works for an empty label without accepting nested or late includes. */
+function includePosition(checked:CheckedProject,file:SourceFile,offset:number):{items:TopLevel[];index:number}|undefined {
+  const prefix=file.source.slice(0,offset),lineStart=prefix.lastIndexOf('\n')+1,line=prefix.slice(lineStart);
+  const start=lineStart+line.indexOf('include'),nameStart=start+'include'.length;
+  const end=offset+(/^[A-Za-z_0-9]*/.exec(file.source.slice(offset))?.[0].length??0);
+  const candidate=parse(file.path,file.source.slice(0,nameStart)+' __AugustCompositionCompletion'+file.source.slice(end));
+  const lineNumber=prefix.split('\n').length;
+  if(candidate.diagnostics.some(issue=>issue.line===lineNumber))return;
+  let items:TopLevel[]|undefined;
+  if(file.path===checked.project.main?.path&&candidate.file.items.some(item=>item.kind==='include'&&item.span.start===start))items=candidate.file.items;
+  else for(const item of candidate.file.items)if(item.kind==='test')for(const group of item.groups)
+    if(group.setup.some(item=>item.kind==='include'&&item.span.start===start))items=group.setup;
+  if(!items)return;
+  const index=items.findIndex(item=>item.kind==='include'&&item.span.start===start);
+  if(index<0||items.slice(0,index).some(item=>!['import','bind','include'].includes(item.kind)))return;
+  return {items,index};
+}
+
+/** Auto-imports preserve the ordinary module/export path and do not register providers. */
+function autoImports(file:SourceFile,imports:EditorItem[],visible:Set<string>):EditorItem[] {
+  const importsEnd = file.items.filter(item => item.kind === 'import').at(-1)?.span.end ?? 0;
+  const insertion = importsEnd ? file.source.indexOf('\n', importsEnd) : 0;
+  return imports.filter(item => !visible.has(item.label)).map(item => ({ ...item,
+    kind: item.declarationKind === 'composition' ? 'composition' as const : item.signature ? 'function' as const : 'type' as const,
+    insertText: item.label, sortText: '2-' + item.label,
+    additionalEdits: [{ start: insertion < 0 ? file.source.length : insertion, end: insertion < 0 ? file.source.length : insertion,
+      text: `${importsEnd ? '\n' : ''}${item.detail}${importsEnd ? '' : '\n'}` }] }));
+}
+
 function rawCompletions(checked: CheckedProject, fileName: string, offset: number): EditorItem[] {
   const file = checked.project.files.get(resolve(fileName));
   if (!file) return [];
@@ -477,6 +508,13 @@ function rawCompletions(checked: CheckedProject, fileName: string, offset: numbe
   const line = prefix.slice(prefix.lastIndexOf('\n') + 1);
   const imports = importItems(checked, file);
   if (/^\s*import\s+[A-Za-z_0-9]*$/.test(line)) return imports;
+  if (/^\s*include\s+[A-Za-z_0-9]*$/.test(line)) {
+    const position=includePosition(checked,file,offset);if(!position)return [];
+    const scope=checked.project.scopes.get(file.path);
+    const included=new Set(position.items.slice(0,position.index).flatMap(item=>item.kind==='include'?[item.name]:[]));
+    const definitions=[...(scope?.values()??[])].filter(def=>def.node.kind==='composition'&&!included.has(def.name)).map(def=>definitionItem(checked,def));
+    return unique([...definitions,...autoImports(file,imports.filter(item=>item.declarationKind==='composition'&&!included.has(item.label)),new Set(scope?.keys()))]);
+  }
   const joined = /^\s*import\s+(.+?)\s+and\s+[A-Za-z_0-9]*$/.exec(line);
   if (joined) {
     const used = new Set(joined[1].split(/\s+and\s+/));
@@ -578,13 +616,7 @@ function rawCompletions(checked: CheckedProject, fileName: string, offset: numbe
   if (/\b(?:returns|unless|catch)\s+[A-Za-z_0-9]*$/.test(prefix))
     return all.filter(item => ['class', 'interface', 'type'].includes(item.kind));
   const visible = new Set(all.map(item => item.label));
-  const importsEnd = file.items.filter(item => item.kind === 'import').at(-1)?.span.end ?? 0;
-  const insertion = importsEnd ? file.source.indexOf('\n', importsEnd) : 0;
-  return [...all, ...imports.filter(item => !visible.has(item.label)).map(item => ({ ...item,
-    kind: item.signature ? 'function' as const : 'type' as const,
-    insertText: item.label, sortText: '2-' + item.label,
-    additionalEdits: [{ start: insertion < 0 ? file.source.length : insertion, end: insertion < 0 ? file.source.length : insertion,
-      text: `${importsEnd ? '\n' : ''}${item.detail}${importsEnd ? '' : '\n'}` }] }))];
+  return [...all, ...autoImports(file,imports,visible)];
 }
 
 /** Fill labeled calls, keep dependency imports visible, and replace only the token being completed. */
@@ -592,7 +624,7 @@ export function completions(checked: CheckedProject, fileName: string, offset: n
   const file = checked.project.files.get(resolve(fileName));
   if (!file) return [];
   const prefix = file.source.slice(0, offset), line = prefix.slice(prefix.lastIndexOf('\n') + 1);
-  const typeContext = /\b(?:import|export|implement|implements|extends|returns|unless|catch|resolve)\b[^\n]*$/.test(line);
+  const typeContext = /\b(?:import|export|implement|implements|extends|returns|unless|catch|resolve|include)\b[^\n]*$/.test(line);
   const token = /[A-Za-z_][A-Za-z0-9_]*$/.exec(prefix);
   const start = token ? offset - token[0].length : offset;
   const end = offset + (/^[A-Za-z0-9_]*/.exec(file.source.slice(offset))?.[0].length ?? 0);

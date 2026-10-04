@@ -85,5 +85,9 @@
   },
   "checked-math": {
     "stdout": "0.30\n"
+  },
+  "reusable-services": {
+    "stdout": "9\n",
+    "tests": 1
   }
 }

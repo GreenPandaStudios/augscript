@@ -103,6 +103,10 @@ try {
   aug('spec',project);aug('spec',project,'--check');
   assert.ok(existsSync(join(project,'main.aug.md')));
   assert.equal(aug('run', project), 'installed August works\n');
+  const composition=JSON.parse(aug('graph',project,'--composition','--json'));
+  assert.equal(composition.checked,true);assert.equal(composition.behavioralChecks,'not-run');
+  assert.deepEqual(composition.bindings.map(binding=>[binding.key,binding.target.name,binding.lifetime]),[['Console','SystemConsole','shared']]);
+  assert.match(aug('graph',project,'--composition','--mermaid'),/SystemConsole/);
   const library = join(directory, 'my-math');
   aug('package', 'init', library, '--name', '@example/aug-math', '--assignment', 'to', '--indentation', 'tabs');
   aug('check', library);

@@ -9,6 +9,7 @@ Choose a guide for the task you are doing. If you are learning August for the fi
 | Try an entry fragment without a permanent project | [Try a snippet](try-a-snippet.md) |
 | Review unfamiliar code or an agent's change | [Change a module](change-a-module.md) |
 | Generate and check the neighboring explanations | [Compiled specifications](../specifications.md) |
+| Reuse and inspect application or test providers | [Reuse service wiring](reuse-services.md) |
 | Verify behavior and substitute test dependencies | [Unit tests](../testing.md) |
 | Inspect a diagnostic or find a fix | [Diagnostics](../diagnostics.md) |
 | Use completion, navigation, context, or native builds | [VS Code](../editor.md) and [CLI](../tooling.md) |

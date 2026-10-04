@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+Complete explicit compositions through ordinary exports and imports. Inspect application or selected same-file test wiring with `aug graph --composition`, including lifetimes, constructor dependencies, source revisions and Mermaid diagrams. Duplicate binding diagnostics link the conflicting selections; inspection does not execute or replace providers.
+
 Call diagnostics name the public input, expected and actual types, and related declaration. Label failures list accepted inputs; duplicate arguments link to the first occurrence. Malformed labels are diagnosed before omitted inputs. CLI excerpts and VS Code Problems links use the same checked locations, including unsaved inherited generic declarations.
 
 Add `aug scratch FILE` to check an isolated temporary entry module without downloads or execution. `--prepare` resolves ordinary dependencies; `--run` executes through the normal compiler. Keep source locations, preserve the original file, and remove temporary project output after failures and exits.
