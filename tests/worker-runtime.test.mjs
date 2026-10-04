@@ -27,5 +27,7 @@ for(const optimization of ['-O0','-O2'])test(`worker admission rejects before co
   const binary=join(root,'test'),flags=[...(process.platform==='darwin'?['-isysroot',process.env.AUG_TEST_MACOS_SDK??'/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk']:[]),optimization,'-g','-std=c11','-D_POSIX_C_SOURCE=200809L','-D_DARWIN_C_SOURCE','-D_DEFAULT_SOURCE','-pthread','-I'+runtime,'-I'+join(native,'sources/minicoro'),...(sanitizer?['-fsanitize='+sanitizer,'-fno-omit-frame-pointer']:[])];
   const built=spawnSync(cc,[...flags,resolve('tests/native/worker-admission.c'),...['aug_runtime.c','aug_values.c','aug_tasks.c'].map(file=>join(runtime,file)),...(process.platform==='linux'?['-lm']:[]),'-o',binary],{encoding:'utf8'});assert.equal(built.status,0,built.stderr);
   const result=spawnSync(binary,[],{encoding:'utf8',timeout:15000,env:{...process.env,AUG_WORKERS:'1',AUG_WORKER_PENDING:'1',ASAN_OPTIONS:'detect_leaks=0:halt_on_error=1',TSAN_OPTIONS:'halt_on_error=1'}});assert.equal(result.status,0,result.stderr);assert.equal(result.stdout,'bounded worker admission and copies passed\n');
+  const invalid=spawnSync(binary,['invalid-fields'],{encoding:'utf8',timeout:15000,env:{...process.env,ASAN_OPTIONS:'detect_leaks=0:halt_on_error=1',TSAN_OPTIONS:'halt_on_error=1'}});
+  assert.equal(invalid.status,1,invalid.stderr);assert.match(invalid.stderr,/invalid worker transfer fields/);
  }finally{rmSync(root,{recursive:true,force:true});}
 });
