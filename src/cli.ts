@@ -172,7 +172,12 @@ export async function main(argv: string[]): Promise<number> {
     else{
       process.stdout.write(`August ${report.compiler} on ${report.host}\n`);
       for(const check of report.checks)process.stdout.write(`${check.status}: ${check.message}\n${check.recovery?'  '+check.recovery+'\n':''}`);
-      process.stdout.write(report.ready?'Prerequisites checked. Uncached artifacts still require an online first run.\n':'Resolve the errors above, then retry aug doctor.\n');
+      for(const artifact of report.artifacts){
+        const target=artifact.target,requirements=[target.minimumOS?'macOS '+target.minimumOS+'+':target.libc+' '+(target.minimumLibc??'')+'+',target.cxxRuntime].filter(Boolean);
+        process.stdout.write('  Native requirements: '+requirements.join('; ')+'; runtime files: '+(artifact.runtimeFiles.join(', ')||'none')+'\n');
+      }
+      process.stdout.write(report.ready?'Setup checks passed.\n':'Resolve the errors above, then retry aug doctor.\n');
+      process.stdout.write('LLVM offline inputs: '+(report.offlineReady?'ready':'not ready')+'. Frozen inputs: '+(report.frozenReady?'ready':'not ready')+'. Application execution was not tested.\n');
     }
     return report.ready?0:1;
   }

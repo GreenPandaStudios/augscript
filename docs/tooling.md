@@ -39,9 +39,9 @@ Warnings are nonblocking. Human diagnostics show the source line, a pointer, and
 
 ## Check an installation
 
-The unreleased CLI adds `aug doctor`. It reports the compiler version, Node version, host target, writable project/cache paths, cached compiler/runtime integrity, and source or installed-package errors. Add `--json` for a versioned report. Exit status 1 means a check failed; status 0 can still include warnings.
+The unreleased CLI adds `aug doctor`. It reports the compiler version, Node version, host target, writable project/cache paths, cached compiler/runtime integrity, and source or installed-package errors. Each selected native package includes its target, runtime requirements, cache identity and the files it links or deploys. Cached files are hashed and checked against the source-verified artifact contract. Add `--json` for a versioned report. Exit status 1 means a check failed; status 0 can still include warnings.
 
-Doctor does not download dependencies, create caches, or edit source and locks. An uncached compiler pack is a warning: the first `aug run` still needs network access. Missing project packages require `aug install`. A passing setup report does not test application behavior or guarantee that a future download will succeed.
+Doctor does not download dependencies, create caches, or edit source and locks. An uncached compiler pack is a warning: the first `aug run` still needs network access. Missing project packages require `aug install`. The JSON fields `offlineReady` and `frozenReady` describe LLVM inputs separately from `ready`, which means no setup error was found. Offline readiness requires checked source and verified cached compiler/native bytes. Frozen readiness also requires matching compiler/runtime and native locks for this host, with contributor overrides unset. A passing report does not run the application or guarantee that a future download will succeed.
 
 Set `AUG_NATIVE_ARTIFACT_CACHE` to a writable directory when the default cache is unsuitable. When a verified cache is damaged, stop active builds before removing that entry and running online again. Contributor LLVM/runtime overrides are reported separately; unset them to check the ordinary installation. The published 0.23.0 CLI has no doctor command.
 

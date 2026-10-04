@@ -1,4 +1,4 @@
-import {existsSync,readFileSync} from 'node:fs';
+import {accessSync,constants,existsSync,readFileSync} from 'node:fs';
 import {join,resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {spawnSync} from 'node:child_process';
@@ -31,12 +31,8 @@ export async function prepareLLVMCompiler(offline=false,project?:{root:string;fr
     const previous=lock.native?.compilers?.[host];
     if(project?.frozen&&(!previous||previous.artifactSha256!==pack.archive.sha256))throw new Error('LLVM_LOCK: Frozen build has no matching compiler artifact for '+host+'. Run aug build --backend llvm online once on this host.');
     const directory=await ensureVerifiedArchive(pack.archive,{offline,executables:platform.tools.map(tool=>'bin/'+tool)});
-    const identity=JSON.parse(readFileSync(join(directory,'compiler-pack.json'),'utf8'));
-    if(identity.format!==1||identity.compiler!==manifest.compiler||identity.llvm!==manifest.llvm||identity.host!==host||identity.target!==target.triple)throw new Error('LLVM_TOOLS: Verified archive has a different compiler/host/target identity');
-    const runtime=readRuntimePack(join(directory,'runtime'));
-    if(identity.runtime!==runtime.sourceSha256)throw new Error('LLVM_TOOLS: Compiler pack runtime identity differs from its runtime manifest');
-    const selection:LLVMCompilerLock={version:manifest.compiler,llvm:manifest.llvm,host,target:target.triple,artifactSha256:pack.archive.sha256,runtimeSha256:runtime.sourceSha256};
-    if(project?.frozen&&JSON.stringify(previous)!==JSON.stringify(selection))throw new Error('LLVM_LOCK: Frozen compiler/runtime identity changed for '+host);
+    const selection=compilerPackIdentity(directory,{manifest,pack,host,target});
+    if(project?.frozen&&!compilerLockMatches(selection,previous))throw new Error('LLVM_LOCK: Frozen compiler/runtime identity changed for '+host);
     if(lockFile&&!project?.frozen){
       lock.native??={format:1,targets:{}};lock.native.compilers??={};lock.native.compilers[host]=selection;
       if((existsSync(lockFile)?readFileSync(lockFile,'utf8'):undefined)!==initial)throw new Error('LLVM_LOCK: Source lock changed during compiler installation; retry');
@@ -57,4 +53,29 @@ export function compilerPackSelection(platform=llvmPlatform()){
   if(!pack)throw new Error('NATIVE_TARGET: No compiler pack is published for '+platform.host+'. Available compiler packs: '+manifest.packs.map(p=>p.host).join(', '));
   if(pack.minimumOS!==platform.minimumOS||pack.minimumLibc!==platform.minimumLibc)throw new Error('LLVM_TOOLS: Compiler manifest has a different platform baseline');
   return {manifest,pack,host,target};
+}
+
+/** Compare the closed lock schema by field, independent of JSON key order. */
+export function compilerLockMatches(expected:LLVMCompilerLock,actual:unknown):boolean {
+  if(!actual||typeof actual!=='object'||Array.isArray(actual))return false;
+  const fields=['version','llvm','host','target','artifactSha256','runtimeSha256'] as const;
+  return Object.keys(actual).length===fields.length&&fields.every(key=>(actual as LLVMCompilerLock)[key]===expected[key]);
+}
+
+export class CompilerToolAccessError extends Error {}
+
+/** Read the host/runtime contract after the caller has verified the archive's complete file set. */
+export function compilerPackIdentity(directory:string,selection:ReturnType<typeof compilerPackSelection>):LLVMCompilerLock {
+  const {manifest,pack,host,target}=selection,identity=JSON.parse(readFileSync(join(directory,'compiler-pack.json'),'utf8'));
+  if(identity.format!==1||identity.compiler!==manifest.compiler||identity.llvm!==manifest.llvm||identity.host!==host||identity.target!==target.triple)
+    throw new Error('LLVM_TOOLS: Verified archive has a different compiler/host/target identity');
+  const runtime=readRuntimePack(join(directory,'runtime'));
+  if(identity.runtime!==runtime.sourceSha256)throw new Error('LLVM_TOOLS: Compiler pack runtime identity differs from its runtime manifest');
+  for(const tool of llvmPlatform().tools){
+    const path=join(directory,'bin',tool);
+    if(!existsSync(path))throw new Error('LLVM_TOOLS: Compiler archive has no required tool '+path);
+    try{accessSync(path,constants.X_OK);}
+    catch(error){throw new CompilerToolAccessError('LLVM_TOOLS: Cached tool is not executable: '+path,{cause:error});}
+  }
+  return {version:manifest.compiler,llvm:manifest.llvm,host,target:target.triple,artifactSha256:pack.archive.sha256,runtimeSha256:runtime.sourceSha256};
 }
