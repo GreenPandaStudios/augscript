@@ -1,3 +1,4 @@
+// aug-spec: "logging.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Console from august.io
 /** Writes a message to the application log. */
 interface Logger {
@@ -6,7 +7,7 @@ interface Logger {
 }
 /** Console logger shared by interceptor instances and the application. */
 ConsoleLogger() implements Logger {
-    log(resolve Console console, string message) uses Console.write {
+    log(resolve Console console, string message) {
         console.write(value=message)
     }
 }

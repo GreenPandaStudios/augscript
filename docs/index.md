@@ -2,34 +2,40 @@
 layout: home
 hero:
   name: August
-  text: Code that explains itself.
-  tagline: A statically checked language for developers working with LLMs. Readable modules, clear dependencies, explicit effects, native C output.
+  image:
+    light: /brand/august-mark.svg
+    dark: /brand/august-mark-dark.svg
+    alt: August
+  text: The world runs on language
+  tagline: Code that reads like pseudocode. A human-readable spec compiled from it. Native performance you can measure against C.
   actions:
     - theme: brand
-      text: Learn the language
-      link: /reference
+      text: Get started
+      link: /getting-started
     - theme: alt
-      text: Install and try it
-      link: /packages
-    - theme: alt
-      text: Build a web service
-      link: /web
-    - theme: alt
-      text: See performance graphs
-      link: /performance
+      text: Explore the language
+      link: /learn/
 features:
-  - title: Understand a module in context
-    details: Public exports, labeled inputs, same-file tests, and source comments tell a new reader what the code promises.
-  - title: See dependencies and side effects
-    details: Explicit capabilities, resolve parameters, uses and changes contracts keep behavior visible at the module boundary.
-  - title: Build native applications
-    details: The CLI checks August, emits C11, and invokes the C compiler. First-party HTTP endpoints use narrow native library adapters.
+  - title: Read it like pseudocode
+    details: Calls name their inputs. Imports and declaration headers show which dependencies the code uses.
+  - title: Compile a human-readable spec
+    details: Run aug spec to explain a module in sentences and link to its dependencies. Review the explanation with the code.
+  - title: Run at native speed
+    details: Compile to a native executable. The programs below compare August with C doing the same work.
 ---
 
-## Documentation for the code you run
+<!--@include: ./.vitepress/home-example.md-->
 
-These pages are versioned with the compiler. Guide projects are compiled and tested in CI. Library API pages and language construct help are generated from the same declarations and comments that supply editor hover.
+## Build code other people can understand
 
-Start with the [language guide](reference.md), [built-in testing](testing.md), or [HTTP endpoints](web.md). The [same-app OpenID Connect example](https://github.com/GreenPandaStudios/augscript/tree/main/examples/oidc-login) demonstrates a login page, provider, client, and separate session JWT.
+Start an unfamiliar project at `main.aug`: its imports, dependency bindings, and startup code show how the application is assembled. Read a module's compiled spec to follow its behavior and open the linked dependencies when you need them. Tests stay beside the implementation, so you can check the change in the same file.
 
-August is experimental. The [gap ledger](web-library-gaps.md) records verified limits and remaining work. See [packages](packages.md) for installation and platform support.
+August infers return types, possible failures, and state changes from executable code. The editor shows those facts as hints. You write them explicitly where an interface needs to constrain its implementations.
+
+Start with [your first project](getting-started.md), then follow [the August book](learn/index.md). Use the [task guides](guides/index.md) for packages, HTTP, tests, and deployment, and the [language reference](reference.md) when you need an exact rule. The [project gallery](examples/index.md) puts code and its actual compiled spec side by side.
+
+## Try the public preview
+
+August 0.23.0 is available now. You need Node.js 24 and macOS 14+ on Apple Silicon or GNU/Linux x86-64/ARM64 with glibc 2.36+. August obtains its native compiler and libraries automatically; you do not install LLVM or Clang.
+
+The language is experimental, with no stable 1.0 compatibility promise yet. Cooperative tasks share a heap; worker tasks can run on multiple cores with isolated heaps. Read [supported platforms](compatibility.md), [production readiness](production-readiness.md), and the [roadmap to 1.0](roadmap.md) before choosing it for a deployment. Source and issues are on [GitHub](https://github.com/GreenPandaStudios/augscript).

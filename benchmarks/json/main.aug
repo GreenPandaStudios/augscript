@@ -1,4 +1,5 @@
-import parse from august.json
+// aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
+import parse from json
 import Payload from data
 int checksum = 0
 int index = 0

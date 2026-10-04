@@ -2,8 +2,8 @@
   "name": "augscript",
   "displayName": "AugScript",
   "description": "Language support for AugScript",
-  "icon": "media/augscript.png",
-  "version": "0.18.0",
+  "icon": "media/august-mark.png",
+  "version": "0.23.1",
   "repository": {
     "type": "git",
     "url": "https://github.com/GreenPandaStudios/augscript.git",
@@ -42,10 +42,27 @@
     "artwork": "node scripts/render-artwork.mjs"
   },
   "devDependencies": {
-    "@vscode/vsce": "3.9.2",
+    "@vscode/vsce": "4.0.1-1",
     "sharp": "0.35.4"
   },
   "contributes": {
+    "snippets": [
+      {
+        "language": "augscript",
+        "path": "./augscript.code-snippets"
+      }
+    ],
+    "configurationDefaults": {
+      "[augscript]": {
+        "editor.tabCompletion": "on",
+        "editor.parameterHints.enabled": true,
+        "editor.quickSuggestions": {
+          "other": "on",
+          "comments": "off",
+          "strings": "off"
+        }
+      }
+    },
     "languages": [
       {
         "id": "augscript",
@@ -121,6 +138,18 @@
     ],
     "commands": [
       {
+        "command": "augscript.spec",
+        "title": "AugScript: Generate Specifications"
+      },
+      {
+        "command": "augscript.openSpec",
+        "title": "AugScript: Open Current File Specification"
+      },
+      {
+        "command": "augscript.migrate",
+        "title": "AugScript: Upgrade Project Syntax"
+      },
+      {
         "command": "augscript.openWelcome",
         "title": "AugScript: Open Welcome"
       },
@@ -175,11 +204,20 @@
       {
         "command": "augscript.openWebGuide",
         "title": "AugScript: Open Web and Crypto Guide"
+      },
+      {
+        "command": "augscript.installPackages",
+        "title": "AugScript: Install Source Packages"
       }
     ],
     "configuration": {
       "title": "AugScript",
       "properties": {
+        "augscript.inferredContractHints": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show inferred return types, mutations, capability use, and checked errors as non-editable inline hints. These hints do not change saved source."
+        },
         "augscript.lldbDapPath": {
           "type": "string",
           "default": "",
@@ -198,9 +236,10 @@
         "augscript.nativeHome": {
           "type": "string",
           "default": "",
-          "description": "Absolute path to native dependencies built by scripts/bootstrap-native.mjs. Share this .aug-native directory with the bundled compiler."
+          "description": "Optional absolute native cache directory containing sources/ and prefix/. Native commands prepare required dependencies automatically; use this setting to share a cache with the CLI."
         }
       }
     }
-  }
+  },
+  "augustCompilerVersion": "0.23.0"
 }

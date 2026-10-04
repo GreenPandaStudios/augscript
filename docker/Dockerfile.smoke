@@ -1,0 +1,11 @@
+# syntax=docker/dockerfile:1
+ARG AUG_BUILD_IMAGE=augscript/build:local
+ARG AUG_RUNTIME_IMAGE=augscript/run:local
+FROM ${AUG_BUILD_IMAGE} AS build
+RUN aug init /tmp/hello-august \
+    && aug check /tmp/hello-august \
+    && aug test /tmp/hello-august \
+    && aug build /tmp/hello-august --out /tmp/deploy/program
+
+FROM ${AUG_RUNTIME_IMAGE}
+COPY --from=build --chown=august:august /tmp/deploy/ /app/

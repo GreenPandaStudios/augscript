@@ -1,0 +1,9 @@
+# syntax=docker/dockerfile:1
+ARG AUG_BUILD_IMAGE=augscript/build:local
+ARG AUG_RUNTIME_IMAGE=augscript/run:local
+FROM ${AUG_BUILD_IMAGE} AS build
+COPY --chown=node:node docker/web-smoke /tmp/web-smoke
+RUN aug build /tmp/web-smoke --out /tmp/deploy/program
+
+FROM ${AUG_RUNTIME_IMAGE}
+COPY --from=build --chown=august:august /tmp/deploy/ /app/

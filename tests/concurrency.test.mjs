@@ -1,14 +1,169 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {mkdtempSync, writeFileSync, rmSync} from 'node:fs';
+import {mkdtempSync, writeFileSync, rmSync, openSync, closeSync, readFileSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join, resolve} from 'node:path';
 import {spawnSync} from 'node:child_process';
 import {loadProject} from '../src/project.ts';
 import {checkProject} from '../src/checker.ts';
 const cli = resolve('bin/aug.mjs');
+// Run the same behavioral fixtures with AUG_TEST_BACKEND=llvm during migration.
+function projectRoot(prefix) {
+  const root=mkdtempSync(join(tmpdir(),prefix));
+  if(process.env.AUG_TEST_BACKEND==='llvm')writeFileSync(join(root,'main.yaml'),'backend: llvm\n');
+  return root;
+}
+test('cancellation before task entry releases transferred owned inputs',()=>{
+  const root=projectRoot('aug-task-unstarted-owned-');
+  try{
+    writeFileSync(join(root,'operations.aug'),`interface Disposable:
+    drop()
+Resource() implements Disposable:
+    drop():
+        pass
+consume(own Resource resource):
+    pass
+fail() unless FileError:
+    throw FileError()
+`);
+    writeFileSync(join(root,'main.aug'),`import Resource and consume and fail from operations
+try:
+    scope:
+        own Resource resource = Resource()
+        failing = start fail()
+        consuming = start consume(resource)
+        wait for failing
+catch FileError error:
+    print(value="caught")
+`);
+    const result=spawnSync(process.execPath,[cli,'run',root],{encoding:'utf8',timeout:5000,env:{...process.env,AUG_TRACE_DROPS:'1'}});
+    assert.equal(result.status,0,result.stderr);assert.equal(result.stdout,'caught\n');
+    assert.equal((result.stderr.match(/drop: (?:operations\.aug:)?Resource\n/g)??[]).length,1,result.stderr);
+  }finally{rmSync(root,{recursive:true,force:true});}
+});
+test('an inferred task result cannot silently discard owned return ownership',()=>{
+  const root=projectRoot('aug-task-owned-result-');
+  try{
+    writeFileSync(join(root,'operations.aug'),`interface Disposable:
+    drop()
+Resource() implements Disposable:
+    drop():
+        pass
+create() returns own Resource:
+    return Resource()
+`);
+    writeFileSync(join(root,'main.aug'),'import create from operations\nscope:\n    pending = start create()\n    wait for pending\n');
+    assert.ok(checkProject(loadProject(root)).diagnostics.some(d=>d.code==='CONCURRENCY'&&/cannot return an owned value/.test(d.message)));
+  }finally{rmSync(root,{recursive:true,force:true});}
+});
+test('starting a consuming builtin transfers its input before the scope can drop it',()=>{
+  const root=projectRoot('aug-task-shared-transfer-');
+  try{
+    writeFileSync(join(root,'operations.aug'),`interface Readable:
+    value() returns int
+Resource(int number) implements Readable:
+    value() returns int:
+        return number
+    drop():
+        pass
+`);
+    writeFileSync(join(root,'main.aug'),`import Resource from operations
+optional Shared<Resource> retained = null
+scope:
+    own Resource resource = Resource(number=7)
+    pending = start Shared(value=resource)
+    retained = wait for pending
+match retained:
+    when null:
+        pass
+    when some state:
+        int result = 0
+        lock state as value:
+            result = value.value()
+        print(value=result)
+`);
+    const result=spawnSync(process.execPath,[cli,'run',root],{encoding:'utf8',timeout:5000,env:{...process.env,AUG_TRACE_DROPS:'1'}});
+    assert.equal(result.status,0,result.stderr);assert.equal(result.stdout,'7\n');
+    const shared=result.stderr.indexOf('drop: Shared'),payload=result.stderr.search(/drop: (?:operations\.aug:)?Resource/);
+    assert.ok(shared>=0&&payload>shared,result.stderr);
+  }finally{rmSync(root,{recursive:true,force:true});}
+});
+test('a cancelled parent cannot recover a failure raised by child cancellation cleanup',()=>{
+  const root=projectRoot('aug-task-cancelled-catch-');
+  try{
+    writeFileSync(join(root,'operations.aug'),`import Console from august.io
+leaf() unless HttpError:
+    try:
+        while true:
+            pass
+    always:
+        throw HttpError()
+parent(resolve Console console):
+    scope:
+        child = start leaf()
+        try:
+            wait for child
+        catch HttpError error:
+            console.write(value="incorrectly recovered")
+fail() unless FileError:
+    throw FileError()
+`);
+    writeFileSync(join(root,'main.aug'),`import parent and fail from operations
+import Console and SystemConsole from august.io
+implement Console with SystemConsole
+try:
+    scope:
+        running = start parent()
+        failing = start fail()
+        wait for running
+catch FileError error:
+    print(value="caught")
+catch HttpError error:
+    print(value="caught")
+`);
+    const result=spawnSync(process.execPath,[cli,'run',root],{encoding:'utf8',timeout:5000});
+    assert.equal(result.status,0,result.stderr);assert.equal(result.stdout,'caught\n');
+  }finally{rmSync(root,{recursive:true,force:true});}
+});
+test('try locals drop before always on normal, return and failure exits',()=>{
+  const root=projectRoot('aug-always-owned-order-');
+  try{
+    writeFileSync(join(root,'operations.aug'),`import Console from august.io
+interface Disposable:
+    drop()
+Resource() implements Disposable:
+    drop():
+        pass
+run(int exit, resolve Console console) returns int unless FileError:
+    try:
+        own Resource resource = Resource()
+        if exit == 1:
+            return 1
+        if exit == 2:
+            throw FileError()
+    always:
+        console.write(value="always second")
+    return 0
+`);
+    writeFileSync(join(root,'main.aug'),`import run from operations
+import Console and SystemConsole from august.io
+implement Console with SystemConsole
+for exit in [0, 1, 2]:
+    try:
+        run(exit)
+    catch FileError error:
+        pass
+`);
+    const log=join(root,'execution.log'),fd=openSync(log,'w');
+    let result;
+    try{result=spawnSync(process.execPath,[cli,'run',root],{timeout:5000,stdio:['ignore',fd,fd],env:{...process.env,AUG_TRACE_DROPS:'1'}});}finally{closeSync(fd);}
+    const output=readFileSync(log,'utf8');assert.equal(result.status,0,output);
+    const observed=output.split('\n').filter(line=>line==='always second'||/^drop: (?:operations\.aug:)?Resource$/.test(line)).join('\n')+'\n';
+    assert.equal(observed.replaceAll('operations.aug:Resource','Resource'),'drop: Resource\nalways second\n'.repeat(3));
+  }finally{rmSync(root,{recursive:true,force:true});}
+});
 test('grouped waits observe all selected children including failed cancellation cleanup', () => {
-  const root=mkdtempSync(join(tmpdir(),'aug-group-errors-'));
+  const root = projectRoot('aug-group-errors-');
   try {
     writeFileSync(join(root,'main.aug'),'import outer from operations\nprint(value=outer())\n');
     writeFileSync(join(root,'operations.aug'),`fail() returns int unless FileError:
@@ -37,7 +192,7 @@ outer() returns string:
   } finally {rmSync(root,{recursive:true,force:true});}
 });
 test('task errors are checked at waits and implicit joins, rather than at scheduling', () => {
-  const root = mkdtempSync(join(tmpdir(), 'aug-task-errors-'));
+  const root = projectRoot('aug-task-errors-');
   try {
     writeFileSync(join(root, 'main.aug'), '');
     const failure = 'fail() returns int unless FileError:\n    throw FileError()\n';
@@ -48,7 +203,13 @@ test('task errors are checked at waits and implicit joins, rather than at schedu
         catch FileError error:
             pass
 `);
-    assert.ok(checkProject(loadProject(root)).diagnostics.some(issue => issue.code === 'THROWS' && /FileError/.test(issue.message)), 'implicit join occurs outside the catch');
+    const joined = checkProject(loadProject(root));
+    assert.deepEqual(joined.diagnostics, []);
+    const outer = joined.project.scopes.get(join(root, 'operations.aug')).get('outer').node;
+    assert.ok(joined.callableContracts.get(outer).errors.some(error => error.name === 'FileError'), 'implicit join occurs outside the catch and is inferred as escaping');
+    writeFileSync(join(root, 'main.aug'), 'import outer from operations\nouter()\n');
+    assert.ok(checkProject(loadProject(root)).diagnostics.some(issue => issue.code === 'THROWS' && /FileError/.test(issue.message)), 'main must handle the inferred join failure');
+    writeFileSync(join(root, 'main.aug'), '');
     writeFileSync(join(root, 'operations.aug'), failure + `outer():
     scope:
         pending = start fail()
@@ -69,7 +230,8 @@ test('task errors are checked at waits and implicit joins, rather than at schedu
         catch FileError error:
             pass
 `);
-    assert.ok(checkProject(loadProject(root)).diagnostics.some(issue => issue.code === 'THROWS' && /FileError/.test(issue.message)), 'an earlier caught error leaves the task for the join');
+    const early = checkProject(loadProject(root));
+    assert.ok(early.callableContracts.get(early.project.scopes.get(join(root,'operations.aug')).get('outer').node).errors.some(error => error.name === 'FileError'), 'an earlier caught error leaves the task for the join');
     writeFileSync(join(root, 'operations.aug'), failure + `spin():
     while true:
         pass
@@ -83,11 +245,12 @@ outer():
         catch FileError error:
             pass
 `);
-    assert.ok(checkProject(loadProject(root)).diagnostics.some(issue => issue.code === 'THROWS' && /FileError/.test(issue.message)), 'a wait can observe an unhandled sibling failure');
+    const sibling = checkProject(loadProject(root));
+    assert.ok(sibling.callableContracts.get(sibling.project.scopes.get(join(root,'operations.aug')).get('outer').node).errors.some(error => error.name === 'FileError'), 'a wait can observe an unhandled sibling failure');
   } finally {rmSync(root, {recursive:true, force:true});}
 });
 test('an unrelated owned local does not join children before a later cancellation', () => {
-  const root = mkdtempSync(join(tmpdir(), 'aug-unrelated-resource-'));
+  const root = projectRoot('aug-unrelated-resource-');
   try {
     writeFileSync(join(root, 'operations.aug'), `interface Readable:
     value() returns int
@@ -111,7 +274,7 @@ outer() unless FileError:
   } finally {rmSync(root, {recursive:true, force:true});}
 });
 test('scope exit joins a child before dropping the owned resource it borrowed', () => {
-  const root = mkdtempSync(join(tmpdir(), 'aug-task-resource-'));
+  const root = projectRoot('aug-task-resource-');
   try {
     writeFileSync(join(root, 'operations.aug'), `interface Readable:
     value() returns int
@@ -135,7 +298,7 @@ print(value="joined")
   } finally {rmSync(root, {recursive:true, force:true});}
 });
 test('long pure work inside a shared lock allows other children to finish afterward', () => {
-  const root = mkdtempSync(join(tmpdir(), 'aug-lock-progress-'));
+  const root = projectRoot('aug-lock-progress-');
   try {
     writeFileSync(join(root, 'operations.aug'), `capability Counter:
     increment() uses Counter.increment
@@ -170,7 +333,7 @@ print(value=done)
   } finally {rmSync(root, {recursive:true, force:true});}
 });
 test('a task pins mutable inputs until it is waited for and cannot escape its scope', () => {
-  const root = mkdtempSync(join(tmpdir(), 'aug-task-loans-'));
+  const root = projectRoot('aug-task-loans-');
   try {
     writeFileSync(join(root, 'operations.aug'), 'size(List<int> values) returns int:\n    return values.length()\n');
     const prefix = 'import size from operations\nitems = [1]\nscope:\n    pending = start size(values=items)\n';
@@ -186,8 +349,91 @@ test('a task pins mutable inputs until it is waited for and cannot escape its sc
     assert.notEqual(result.status, 0); assert.match(result.stderr, /scope/);
   } finally {rmSync(root, {recursive:true, force:true});}
 });
+test('tasks track mutable dependencies injected into scheduled calls', () => {
+  const root = projectRoot('aug-injected-task-loans-');
+  try {
+    writeFileSync(join(root, 'operations.aug'), `interface Counter:
+    increment() changes self
+    value() returns int
+CounterImpl() implements Counter:
+    mutable int _count = 0
+    increment() changes self:
+        _count = _count + 1
+    value() returns int:
+        return _count
+read(resolve Counter counter) returns int:
+    return counter.value()
+`);
+    const prefix = `import Counter and CounterImpl and read from operations
+implement Counter with CounterImpl shared mutable
+resolve Counter to counter
+scope:
+    first = start read()
+`;
+    writeFileSync(join(root, 'main.aug'), prefix + '    borrow counter:\n        counter.increment()\n    wait for first\n');
+    let result = spawnSync(process.execPath, [cli, 'check', root], {encoding: 'utf8'});
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /task/i);
+    writeFileSync(join(root, 'main.aug'), prefix + '    wait for first\n    borrow counter:\n        counter.increment()\n');
+    result = spawnSync(process.execPath, [cli, 'run', root], {encoding: 'utf8', timeout: 5000});
+    assert.equal(result.status, 0, result.stderr);
+  } finally { rmSync(root, {recursive: true, force: true}); }
+});
+test('injected read access cannot alias an exclusive written argument', () => {
+  const root = projectRoot('aug-injected-call-alias-');
+  try {
+    writeFileSync(join(root, 'operations.aug'), `interface Counter:
+    increment() changes self
+    value() returns int
+CounterImpl() implements Counter:
+    mutable int _count = 0
+    increment() changes self:
+        _count = _count + 1
+    value() returns int:
+        return _count
+readAndWrite(resolve Counter reader, borrow Counter target) changes target:
+    int previous = reader.value()
+    target.increment()
+`);
+    writeFileSync(join(root, 'main.aug'), `import Counter and CounterImpl and readAndWrite from operations
+implement Counter with CounterImpl shared mutable
+resolve Counter to counter
+borrow counter:
+    readAndWrite(target=counter)
+`);
+    const result = spawnSync(process.execPath, [cli, 'check', root], {encoding: 'utf8'});
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /exclusive argument aliases another argument/);
+  } finally { rmSync(root, {recursive: true, force: true}); }
+});
+test('dropping an owned Shared wrapper drops its transferred payload before later locals', () => {
+  const root = projectRoot('aug-shared-drop-');
+  try {
+    writeFileSync(join(root, 'operations.aug'), `interface Disposable:
+    drop()
+Resource() implements Disposable:
+    drop():
+        pass
+Marker() implements Disposable:
+    drop():
+        pass
+`);
+    writeFileSync(join(root, 'main.aug'), `import Resource and Marker from operations
+scope:
+    own Shared<Resource> state = Shared(value=Resource())
+own Marker marker = Marker()
+`);
+    const result = spawnSync(process.execPath, [cli, 'run', root], {
+      encoding: 'utf8', timeout: 5000, env: {...process.env, AUG_TRACE_DROPS: '1'}
+    });
+    assert.equal(result.status, 0, result.stderr);
+    const resource = result.stderr.search(/drop: (?:operations\.aug:)?Resource/);
+    const marker = result.stderr.search(/drop: (?:operations\.aug:)?Marker/);
+    assert.ok(resource >= 0 && marker > resource, result.stderr);
+  } finally { rmSync(root, {recursive: true, force: true}); }
+});
 test('scope-owned tasks support ordered grouped and collection waits', () => {
-  const root = mkdtempSync(join(tmpdir(), 'aug-tasks-'));
+  const root = projectRoot('aug-tasks-');
   try {
     writeFileSync(join(root, 'operations.aug'), `double(int value) returns int:
     return value * 2
@@ -211,7 +457,7 @@ scope:
 });
 
 test('a failed child cancels its siblings and always cleanup runs before the scope exits', () => {
-  const root = mkdtempSync(join(tmpdir(), 'aug-cancel-'));
+  const root = projectRoot('aug-cancel-');
   try {
     writeFileSync(join(root, 'operations.aug'), `import Console from august.io
 fail() returns int unless FileError:

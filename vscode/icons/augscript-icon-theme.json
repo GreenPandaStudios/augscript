@@ -1,17 +1,77 @@
 {
   "iconDefinitions": {
-    "_file": { "iconPath": "./file.svg" },
-    "_folder": { "iconPath": "./folder.svg" },
-    "_folder_open": { "iconPath": "./folder-open.svg" },
-    "_aug": { "iconPath": "./aug.svg" },
-    "_main": { "iconPath": "./main.svg" },
-    "_export": { "iconPath": "./export.svg" },
-    "_config": { "iconPath": "./config.svg" },
-    "_typescript": { "iconPath": "./typescript.svg" },
-    "_javascript": { "iconPath": "./javascript.svg" },
-    "_native": { "iconPath": "./native.svg" },
-    "_json": { "iconPath": "./json.svg" },
-    "_markdown": { "iconPath": "./markdown.svg" }
+    "_file": {
+      "iconPath": "./file.svg"
+    },
+    "_folder": {
+      "iconPath": "./folder.svg"
+    },
+    "_folder_open": {
+      "iconPath": "./folder-open.svg"
+    },
+    "_aug": {
+      "iconPath": "./aug.svg"
+    },
+    "_main": {
+      "iconPath": "./main.svg"
+    },
+    "_export": {
+      "iconPath": "./export.svg"
+    },
+    "_config": {
+      "iconPath": "./config.svg"
+    },
+    "_typescript": {
+      "iconPath": "./typescript.svg"
+    },
+    "_javascript": {
+      "iconPath": "./javascript.svg"
+    },
+    "_native": {
+      "iconPath": "./native.svg"
+    },
+    "_json": {
+      "iconPath": "./json.svg"
+    },
+    "_markdown": {
+      "iconPath": "./markdown.svg"
+    },
+    "_file_light": {
+      "iconPath": "./file-light.svg"
+    },
+    "_folder_light": {
+      "iconPath": "./folder-light.svg"
+    },
+    "_folder_open_light": {
+      "iconPath": "./folder-open-light.svg"
+    },
+    "_aug_light": {
+      "iconPath": "./aug-light.svg"
+    },
+    "_main_light": {
+      "iconPath": "./main-light.svg"
+    },
+    "_export_light": {
+      "iconPath": "./export-light.svg"
+    },
+    "_config_light": {
+      "iconPath": "./config-light.svg"
+    },
+    "_typescript_light": {
+      "iconPath": "./typescript-light.svg"
+    },
+    "_javascript_light": {
+      "iconPath": "./javascript-light.svg"
+    },
+    "_native_light": {
+      "iconPath": "./native-light.svg"
+    },
+    "_json_light": {
+      "iconPath": "./json-light.svg"
+    },
+    "_markdown_light": {
+      "iconPath": "./markdown-light.svg"
+    }
   },
   "file": "_file",
   "folder": "_folder",
@@ -38,5 +98,33 @@
   },
   "languageIds": {
     "augscript": "_aug"
+  },
+  "light": {
+    "file": "_file_light",
+    "folder": "_folder_light",
+    "folderExpanded": "_folder_open_light",
+    "fileExtensions": {
+      "aug": "_aug_light",
+      "yaml": "_config_light",
+      "yml": "_config_light",
+      "ts": "_typescript_light",
+      "tsx": "_typescript_light",
+      "js": "_javascript_light",
+      "mjs": "_javascript_light",
+      "cjs": "_javascript_light",
+      "c": "_native_light",
+      "h": "_native_light",
+      "json": "_json_light",
+      "md": "_markdown_light"
+    },
+    "fileNames": {
+      "main.aug": "_main_light",
+      "export.aug": "_export_light",
+      "main.yaml": "_config_light",
+      "main.yml": "_config_light"
+    },
+    "languageIds": {
+      "augscript": "_aug_light"
+    }
   }
 }

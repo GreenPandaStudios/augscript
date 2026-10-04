@@ -1,3 +1,4 @@
+// aug-spec: "contracts.aug.md" explains this file. Read it before changes; refresh with aug spec.
 /** A provider request is bound to a browser cookie, a form CSRF token, and a registered client. */
 record AuthorizationRequest(string clientId, string redirectUri, string state, string nonce, string challenge, string browser, string csrf, int expires)
 /** Codes are short-lived, single-use and bound to a redirect URI and S256 challenge. */

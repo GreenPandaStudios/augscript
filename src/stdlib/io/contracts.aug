@@ -1,3 +1,4 @@
+// aug-spec: "contracts.aug.md" explains this file. Read it before changes; refresh with aug spec.
 /** Permission to write to a console, provided by an explicitly selected adapter. */
 capability Console:
     /** Write one line of text. @param value Text to display. */
@@ -18,11 +19,11 @@ capability FileWriter:
     /** Write text. @param path File path. @param content Text. @throws FileError Writing failed. */
     write(string path, string content) uses FileWriter.write unless FileError
 
-/** Native files. Operations are explicit; construction opens no files. */
+/** Native filesystem adapter. Construction opens no files. */
 LocalFiles() implements FileReader, FileWriter:
-    read(string path) returns string unless FileError:
+    read(string path) :
         return read_file(path=path)
-    write(string path, string content) unless FileError:
+    write(string path, string content) :
         write_file(path=path, content=content)
 
 /** Read command-line input through an explicit dependency. */
@@ -31,5 +32,5 @@ capability Arguments:
 
 /** Native command-line arguments. */
 ProcessArguments() implements Arguments:
-    read() returns List<string>:
+    read() :
         return arguments()

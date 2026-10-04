@@ -1,3 +1,4 @@
+// aug-spec: "export.aug.md" explains this file. Read it before changes; refresh with aug spec.
 export Settings from settings
 export settings from settings
 export SigningKeys from keys

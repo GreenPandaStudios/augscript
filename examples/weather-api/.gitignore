@@ -1,0 +1,5 @@
+.aug-build/
+.aug-spec/
+.aug-packages/
+.aug-install-*/
+*.aug.md

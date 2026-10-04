@@ -1,19 +1,23 @@
+import { prepareLibraryFixtures } from './library-fixtures.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {mkdtempSync,writeFileSync,rmSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join,resolve} from 'node:path';
-import {spawn,spawnSync} from 'node:child_process';
+import {spawn,spawnSync as fixtureSpawnSync} from 'node:child_process';
 import {createInterface} from 'node:readline';
 import {get} from 'node:http';
-import {loadProject} from '../src/project.ts';
+import {loadProject as fixtureLoadProject} from '../src/project.ts';
 import {checkProject} from '../src/checker.ts';
-test('HTTP response status literals are bounded and dynamic statuses declare HttpError',()=>{
+test('HTTP response status literals are bounded and dynamic statuses infer HttpError',()=>{
   const root=mkdtempSync(join(tmpdir(),'aug-response-status-'));
   try {
     writeFileSync(join(root,'main.aug'),'');
     writeFileSync(join(root,'response.aug'),'make(int status) returns HttpResponse<string>:\n    return HttpResponse(body="ok", status=status)\n');
-    assert.ok(checkProject(loadProject(root)).diagnostics.some(issue=>issue.code==='THROWS'&&/HttpError/.test(issue.message)));
+    const checked=checkProject(loadProject(root));
+    assert.deepEqual(checked.diagnostics,[]);
+    const method=checked.project.scopes.get(join(root,'response.aug')).get('make').node;
+    assert.deepEqual(checked.callableContracts.get(method).errors.map(error=>error.name),['HttpError']);
     writeFileSync(join(root,'response.aug'),'make() returns HttpResponse<string>:\n    return HttpResponse(body="ok", status=199)\n');
     assert.ok(checkProject(loadProject(root)).diagnostics.some(issue=>issue.code==='HTTP'&&/200.*599/.test(issue.message)));
     writeFileSync(join(root,'response.aug'),'make(int status) returns HttpResponse<string> unless HttpError:\n    return HttpResponse(body="ok", status=status)\n');
@@ -25,17 +29,17 @@ test('HTTP policies guard decoding, bound requests, handle CORS, compress output
   const root=mkdtempSync(join(tmpdir(),'aug-policies-'));let server;
   try {
     writeFileSync(join(root,'main.yaml'),'openapi:\n  enabled: true\n');
-    writeFileSync(join(root,'main.aug'),`import secured and permitted and limited and zipped and slow and slowChild and events and endless and encoded and empty from endpoints
-import Authentication and Authorization and RequestLogger and WebRequestLogger from august.web
+    writeFileSync(join(root,'main.aug'),`import secured and permitted and limited and zipped and slow and slowChild and events and endless and failedHead and encoded and empty from endpoints
+import Authentication and Authorization and RequestLogger and WebRequestLogger from web
 import DemoAuthentication and DemoAuthorization from auth
 implement Authentication with DemoAuthentication
 implement Authorization with DemoAuthorization
 implement RequestLogger with WebRequestLogger scoped
-serve secured and permitted and limited and zipped and slow and slowChild and events and endless and encoded and empty on port 0
+serve secured and permitted and limited and zipped and slow and slowChild and events and endless and failedHead and encoded and empty on port 0
 `);
-    writeFileSync(join(root,'auth.aug'),`import Authentication and Authorization and Principal from august.web
+    writeFileSync(join(root,'auth.aug'),`import Authentication and Authorization and Principal from web
 DemoAuthentication() implements Authentication:
-    authenticate(HttpRequest request) returns Principal? uses Authentication.authenticate unless HttpError:
+    authenticate(HttpRequest request) returns optional Principal uses Authentication.authenticate unless HttpError:
         match request.headers.get(name="authorization"):
             when null:
                 return null
@@ -50,7 +54,7 @@ DemoAuthorization() implements Authorization:
                 return true
         return false
 `);
-    writeFileSync(join(root,'endpoints.aug'),`import Authentication and Authorization and RequestLogger from august.web
+    writeFileSync(join(root,'endpoints.aug'),`import Authentication and Authorization and RequestLogger from web
 record Message(string value)
 [LogRequest(logger=logger)]
 [RequireLogin(authentication=auth)]
@@ -85,10 +89,17 @@ endpoint GET "/events" as events() streams ServerEvent<string> unless HttpError:
     while true:
         pass
 [LogRequest(logger=logger)]
+[Cors(origins=["https://example.test"], credentials=true)]
 [Compress]
 endpoint GET "/endless" as endless(resolve RequestLogger logger) streams Bytes uses logger.complete unless HttpError:
     while true:
         yield "pending".bytes()
+[LogRequest(logger=logger)]
+endpoint GET "/failed-head" as failedHead(resolve RequestLogger logger) streams Bytes uses logger.complete unless HttpError:
+    try:
+        yield "pending".bytes()
+    always:
+        throw HttpError()
 [Compress]
 endpoint GET "/encoded" as encoded() returns HttpResponse<Bytes> unless HttpError:
     return HttpResponse(body="already encoded".bytes(), headers=Headers().with(name="content-encoding", value="identity"))
@@ -117,9 +128,26 @@ endpoint GET "/empty" as empty() returns HttpResponse<string>:
     assert.equal((await request('/slow-child')).status,504);
     assert.equal((await request('/empty')).status,204, 'request group finished after cancelling its child');
     const started=Date.now();response=await request('/events');assert.equal(response.status,200);assert.equal(await response.text(),'data: "started"\n\n');assert.ok(Date.now()-started<2000);
-    await new Promise((resolve,reject)=>{const call=get(`http://127.0.0.1:${port}/endless`,{headers:{'accept-encoding':'gzip'}},incoming=>{incoming.once('data',()=>{incoming.destroy();call.destroy();resolve();});});call.on('error',error=>{if(error.code!=='ECONNRESET')reject(error);});});
+    response=await request('/endless',{method:'HEAD',headers:{origin:'https://example.test'}});
+    assert.equal(response.status,200,'HEAD completes without consuming an endless stream');
+    assert.equal(response.headers.get('access-control-allow-origin'),'https://example.test','HEAD applies CORS once');
+    assert.equal(response.headers.get('access-control-allow-credentials'),'true','HEAD applies credential policy once');
+    assert.equal(response.headers.get('content-encoding'),'gzip');assert.equal(await response.text(),'');
+    assert.equal((await request('/failed-head',{method:'HEAD'})).status,500,'HEAD must preserve a real cleanup failure');
+    await new Promise((resolve,reject)=>{
+      // Multiple compressed chunks cross the managed allocation/collection threshold.
+      let bytes=0,complete=false;
+      const finish=error=>{if(complete)return;complete=true;clearTimeout(timer);server.off('exit',stopped);call.destroy();error?reject(error):resolve();};
+      const stopped=()=>finish(new Error(errors||'server exited during stream'));
+      const timer=setTimeout(()=>finish(new Error(`Stream stopped after ${bytes} bytes: ${errors}`)),5000);
+      server.once('exit',stopped);
+      const call=get(`http://127.0.0.1:${port}/endless`,{headers:{'accept-encoding':'gzip'}},incoming=>{incoming.on('data',chunk=>{bytes+=chunk.length;if(bytes>=65536){incoming.destroy();finish();}});});
+      call.on('error',error=>{if(error.code!=='ECONNRESET')finish(error);});
+    });
     await new Promise((resolve,reject)=>{if(errors.includes('"status":499'))return resolve();const timer=setTimeout(()=>reject(new Error('Disconnected stream was not logged: '+errors)),3000);const listener=()=>{if(errors.includes('"status":499')){clearTimeout(timer);server.stderr.off('data',listener);resolve();}};server.stderr.on('data',listener);});
     const logs=errors.split('\n').filter(line=>line.startsWith('{')).map(line=>JSON.parse(line));assert.deepEqual(logs.filter(log=>log.path==='/secured').map(log=>log.status),[401,400,200]);assert.ok(logs.every(log=>log.milliseconds>=0));
+    assert.deepEqual(logs.filter(log=>log.method==='HEAD'&&log.path==='/endless').map(log=>log.status),[200]);
+    assert.deepEqual(logs.filter(log=>log.method==='HEAD'&&log.path==='/failed-head').map(log=>log.status),[500]);
     assert.equal(server.exitCode,null,errors);
   } finally {if(server&&server.exitCode===null&&server.signalCode===null){server.kill();await new Promise(resolve=>{const timer=setTimeout(()=>server.kill('SIGKILL'),1000);server.once('exit',()=>{clearTimeout(timer);resolve();});});}rmSync(root,{recursive:true,force:true});}
 });
@@ -134,7 +162,7 @@ test('HTTP policy dependencies are canonical capabilities and singleton policies
 endpoint GET "/" as home(resolve Authentication auth) returns string uses auth.authenticate:
     return "ok"
 `);
-    assert.ok(checkProject(loadProject(root)).diagnostics.some(issue=>issue.code==='HTTP'&&/august.web Authentication/.test(issue.message)));
+    assert.ok(checkProject(loadProject(root)).diagnostics.some(issue=>issue.code==='HTTP'&&/compatible Authentication/.test(issue.message)));
     writeFileSync(join(root,'api.aug'),`[Cors(origins=["https://one.test"])]
 [Cors(origins=["https://two.test"])]
 endpoint GET "/" as home() returns string:
@@ -143,3 +171,10 @@ endpoint GET "/" as home() returns string:
     assert.ok(checkProject(loadProject(root)).diagnostics.some(issue=>issue.code==='HTTP'&&/only once/.test(issue.message)));
   } finally {rmSync(root,{recursive:true,force:true});}
 });
+
+function spawnSync(command, args, options) {
+  if (args?.[0]?.endsWith("aug.mjs") && args[2]) prepareLibraryFixtures(args[2]);
+  return fixtureSpawnSync(command, args, options);
+}
+
+function loadProject(root, ...args) { prepareLibraryFixtures(root); return fixtureLoadProject(root, ...args); }

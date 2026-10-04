@@ -1,0 +1,10 @@
+{
+  "format": 1,
+  "files": [
+    ".aug-spec/august/0.23.0/io/contracts.aug",
+    ".aug-spec/august/0.23.0/io/contracts.aug.md",
+    "main.aug.md",
+    "resource.aug.md"
+  ],
+  "digest": "2cd3a428ee15d4b129c2fd5a623dc566f6e67b8638dc4c07d0ed89b06e6f8949"
+}
