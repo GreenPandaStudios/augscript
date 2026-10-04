@@ -12,6 +12,7 @@ import {compileLLVM} from './llvm-native.ts';
 import {prepareNativePackages} from './native-artifacts.ts';
 import {prepareLLVMCompiler} from './compiler-packs.ts';
 import {bindNativeHeader} from './native-bindings.ts';
+import {inspectDistribution} from './distribution.ts';
 import { diagnosticHelp } from './help.ts';
 import { loadProject } from './project.ts';
 import { definitionAt } from './navigation.ts';
@@ -23,14 +24,17 @@ import { updateSpecHints } from './spec-hints.ts';
 import { runLanguageServer } from './lsp.ts';
 import { benchmark, compileNative, writeCoverage } from './native.ts';
 import {generateOpenApi} from './openapi.ts';
-import { addPackage, initPackage, installPackages, preparePackage, packPackage, prepareRunPackages } from './package-manager.ts';
+import { addPackageWithNative, initPackage, installPackagesWithNative, preparePackage, packPackage, prepareRunPackagesWithNative } from './package-manager.ts';
 import { initProject } from './project-init.ts';
 import { prepareNativeDependencies } from '../scripts/native-setup.mjs';
+import {runChangeCommand} from './change-cli.ts';
+import {checkedContext,sourceIdentity,projectRevision,semanticGraph} from './change-context.ts';
+import {atomicSourceWrite,withSourceWriter} from './source-transaction.ts';
 
 function failureMessage(error: unknown): string {
   const message = error instanceof Error ? error.message : String(error);
   if (error instanceof Error && 'code' in error && ['EACCES', 'EPERM', 'EROFS'].includes(String(error.code)))
-    return `${message}\nAugust needs a writable project and native cache. Check the folder permissions, or set AUG_NATIVE_HOME to a directory you own.`;
+    return `${message}\nAugust needs a writable project and native cache. Check the folder permissions, or set AUG_NATIVE_ARTIFACT_CACHE to a directory you own. Run aug doctor to check setup.`;
   if (error instanceof Error && 'code' in error && error.code === 'ENOSPC')
     return `${message}\nThere is not enough disk space to compile or prepare dependencies. Free space and retry aug run.`;
   return message;
@@ -63,8 +67,9 @@ function printDiagnostics(diagnostics: Diagnostic[], json: boolean, root: string
 
 function usage(): void {
   process.stdout.write(`AugScript compiler\n\n` +
-    `Usage: aug <init|check|build|run|emit-c|emit-llvm|emit-ir|test|openapi|format|migrate|spec|bench|explain|context|lsp|symbols|definition|complete|hover|fixes|semantic-tokens> [project directory] [options] [-- args]\n` +
+    `Usage: aug <init|doctor|check|build|run|emit-c|emit-llvm|emit-ir|test|openapi|format|migrate|spec|bench|explain|context|lsp|symbols|definition|complete|hover|fixes|semantic-tokens> [project directory] [options] [-- args]\n` +
     `New application: aug init DIRECTORY [--template hello|weather]\n` +
+    `Diagnose setup: aug doctor [project directory] [--json] — check without downloading or writing files\n` +
     `Run: aug run [project directory] [--offline] [-- args] — prepare dependencies, compile, and start\n` +
     `Backend: LLVM is the default on macOS 14+ ARM64 and GNU/Linux x64/ARM64 with glibc 2.36+. August installs its compiler pack; no separate native toolchain is needed. --backend c selects the migration reference.\n` +
     `Tests: aug test [project directory] [GROUP_NAME] [--group GROUP_NAME] [--list] [--coverage] [--json] [--timeout milliseconds]\n` +
@@ -72,6 +77,8 @@ function usage(): void {
     `Specifications: aug spec [project directory] [--check] [--json]\n` +
     `Migration: aug migrate [project directory] [--file path] [--write]\n` +
     `Context: aug context [project directory] [--file path] [--name declaration] [--budget characters]\n` +
+    `Checked changes: aug change <plan|check|apply> PROJECT request-or-plan.json; aug change recover PROJECT\n` +
+    `Bounded checks: aug evidence <run|replay> PROJECT generator-or-record.json\n` +
     `Benchmark: aug bench [project directory] [--iterations 10] [--warmup 2] [--json] [-- args]\n` +
     `Packages: aug package init DIRECTORY --name @owner/name; aug package pack DIRECTORY\n` +
     `Dependencies: aug add URL --as NAME [--project DIRECTORY]; aug install [project directory] [--frozen|--update] [--offline]\n` +
@@ -82,11 +89,24 @@ function usage(): void {
 export async function main(argv: string[]): Promise<number> {
   if(argv[0]==='pack')return main(['package','pack',...argv.slice(1)]);
   const command = argv[0];
+  if(command==='doctor'){
+    const arguments_=argv.slice(1),paths=arguments_.filter(arg=>!arg.startsWith('-'));
+    if(paths.length>1||arguments_.some(arg=>arg.startsWith('-')&&arg!=='--json')){process.stderr.write('Use aug doctor [project directory] [--json]\n');return 2;}
+    const report=inspectDistribution(resolve(paths[0]??process.cwd()));
+    if(arguments_.includes('--json'))process.stdout.write(JSON.stringify(report)+'\n');
+    else{
+      process.stdout.write(`August ${report.compiler} on ${report.host}\n`);
+      for(const check of report.checks)process.stdout.write(`${check.status}: ${check.message}\n${check.recovery?'  '+check.recovery+'\n':''}`);
+      process.stdout.write(report.ready?'Prerequisites checked. Uncached artifacts still require an online first run.\n':'Resolve the errors above, then retry aug doctor.\n');
+    }
+    return report.ready?0:1;
+  }
   if (command === '--version' || command === 'version') {
     process.stdout.write(JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')).version + '\n');
     return 0;
   }
   if (!command || command === '--help' || command === 'help') { usage(); return 0; }
+  if(command==='change'||command==='evidence')return runChangeCommand(argv);
   if(command==='bind'){
     const boundary=argv.indexOf('--'),arguments_=boundary<0?argv:argv.slice(0,boundary),values:Record<string,string>={};
     if(arguments_[1]!=='header'||!arguments_[2]||arguments_[2].startsWith('--')){process.stderr.write('Use aug bind header HEADER --contract FILE --target TRIPLE --output DIRECTORY --clang PATH\n');return 2;}
@@ -109,8 +129,7 @@ export async function main(argv: string[]): Promise<number> {
     }
     try {
       const alias = argv[aliasIndex + 1], root = resolve(projectIndex < 0 ? process.cwd() : argv[projectIndex + 1]);
-      const lock = addPackage(root, argv[1], alias, argv.includes('--offline'));
-      await prepareNativePackages(root,{offline:argv.includes('--offline')});
+      const lock = await addPackageWithNative(root, argv[1], alias, argv.includes('--offline'));
       process.stdout.write(`Added ${alias}; installed ${lock.packages.length} source package(s).\nImport public names with: import NAME from ${alias}\n`); return 0;
     } catch (error) { process.stderr.write(failureMessage(error) + '\n'); return 1; }
   }
@@ -130,15 +149,14 @@ export async function main(argv: string[]): Promise<number> {
       const root = resolve((command === 'install' ? argv[1] : argv[2]) && !(command === 'install' ? argv[1] : argv[2]).startsWith('--')
         ? (command === 'install' ? argv[1] : argv[2]) : process.cwd());
       if (command === 'install') {
-        const lock = installPackages(root, argv.includes('--frozen'), argv.includes('--offline'), argv.includes('--update'));
-        await prepareNativePackages(root,{offline:argv.includes('--offline'),frozen:argv.includes('--frozen')});
+        const lock = await installPackagesWithNative(root, argv.includes('--frozen'), argv.includes('--offline'), argv.includes('--update'));
         process.stdout.write(`Installed ${lock.packages.length} August package(s); aug.lock.json is current.\n`);
       } else if (argv[1] === 'init') {
         const name = argv.includes('--name') ? argv[argv.indexOf('--name') + 1] : root.split(/[\\/]/).at(-1)!;
         if (!name) throw new Error('Use aug package init DIRECTORY [--name @owner/name]');
         initPackage(root, name, argv.includes('--name')); process.stdout.write(`Created August library ${name} in ${root}\n`);
       } else if (argv[1] === 'pack') {
-        prepareRunPackages(root);
+        await prepareRunPackagesWithNative(root);
         preparePackage(root);
         const project = loadProject(root), checked = checkProject(project);
         const tests = checkUnitTests(project, discoverTests(project).tests);
@@ -229,7 +247,7 @@ export async function main(argv: string[]): Promise<number> {
     }
     if (!existsSync(root) || !statSync(root).isDirectory())
       throw new Error(`Project directory does not exist: ${root}\nUse aug init DIRECTORY to create a project, or run aug run from the folder containing main.aug.`);
-    if (command === 'run') prepareRunPackages(root, options.includes('--offline'), options.includes('--frozen'));
+    if (command === 'run') await prepareRunPackagesWithNative(root, options.includes('--offline'), options.includes('--frozen'));
     const project = loadProject(root, overrides);
     if(backendIndex<0)backend=project.config.backend??'llvm';
     if (project.library && ['build', 'run', 'bench', 'openapi'].includes(command))
@@ -239,7 +257,10 @@ export async function main(argv: string[]): Promise<number> {
         .filter(file => !file.builtin && !file.package);
       if (!files.length) throw new Error('No source files to format');
       const formatted = files.map(file => ({ file: file.path, text: (command==='migrate'?migrateFile:formatFile)(project, file) }));
-      if (options.includes('--write')) formatted.forEach(file => writeFileSync(file.file, file.text));
+      if (options.includes('--write')) {const revision=projectRevision(project).revision;withSourceWriter(root,permit=>{
+        if(projectRevision(loadProject(root,new Map(),undefined,permit)).revision!==revision)throw new Error('Source changed before formatting; retry.');
+        formatted.forEach(file=>atomicSourceWrite(file.file,file.text,statSync(file.file).mode&0o777));
+      });}
       else process.stdout.write(json ? JSON.stringify(formatted) + '\n' : formatted.map(file => file.text).join('\n'));
       return 0;
     }
@@ -309,7 +330,16 @@ export async function main(argv: string[]): Promise<number> {
     if (command === 'explain' || command === 'context') {
       if (budget !== undefined && (!Number.isInteger(budget) || budget < 512 || budget > 100000)) throw new Error('--budget must be an integer from 512 to 100000');
       const baseline = baselinePath ? JSON.parse(readFileSync(baselinePath, 'utf8')) : undefined;
-      const result = describe(checked, sourceFile ?? join(root, 'main.aug'), { name: symbolName, budget, context: command === 'context', baseline });
+      if(command==='context'){
+        if(baselinePath)throw new Error('Use aug change interfaces and aug change diff for revision-bearing public deltas.');
+        const path=resolve(root,sourceFile??'main.aug'),definition=symbolName?project.scopes.get(path)?.get(symbolName):undefined;
+        if(symbolName&&!definition)throw new Error(`No declaration named ${symbolName} in ${sourceFile??'main.aug'}`);
+        const roots=definition?[definition.id]:[...project.definitions.values()].filter(def=>def.file===path&&!def.name.startsWith('_')).map(def=>def.id);
+        if(!roots.length)roots.push('module:'+sourceIdentity(project,path));
+        const result=checkedContext(checked,roots,budget);
+        process.stdout.write(JSON.stringify(result,null,json?undefined:2)+'\n');return result.coverage.requiredContextComplete?0:1;
+      }
+      const result = describe(checked, sourceFile ?? join(root, 'main.aug'), { name: symbolName, budget, baseline });
       process.stdout.write(JSON.stringify(result, null, json ? undefined : 2) + '\n'); return 0;
     }
     if (command === 'definition') {
@@ -329,9 +359,10 @@ export async function main(argv: string[]): Promise<number> {
       return found ? 0 : 1;
     }
     if (command === 'symbols') {
-      const symbols = [...project.definitions.values()].map(def => ({ name: def.name,
+      const facts=new Map(semanticGraph(checked).symbols.map(fact=>[fact.id,fact]));
+      const symbols = [...project.definitions.values()].map(def => ({ id:def.id,name: def.name,
         file: def.file, line: def.node.span.line, column: def.node.span.column,
-        kind: def.node.kind }));
+        kind: facts.get(def.id)?.kind??def.node.kind,contract:facts.get(def.id)?.contract,forwarding:facts.get(def.id)?.forwarding }));
       process.stdout.write(JSON.stringify(symbols) + '\n');
       return checked.diagnostics.some(issue => issue.severity !== 'warning') ? 1 : 0;
     }

@@ -51,6 +51,8 @@ Read the complete projects with their compiled explanations:
 a downloadable project. Native dependency pages link to the exact binding
 descriptor, so ownership and native boundaries stay visible beside the code.
 
+The [ABI reference](native-abi.md) specifies scalar and buffer mappings, the error record, resource lifetimes and thread requirements. [Package compatibility](package-compatibility.md) records the versioned formats and unreleased upgrade/recovery behavior.
+
 ## Check and generate bindings
 
 Binding maintainers can use the preview's `aug bind header` command. Supply a
@@ -101,6 +103,8 @@ does not execute native recipes or npm lifecycle scripts.
 A failed download or extraction leaves no accepted artifact cache. Disk-full
 errors include the CLI's space-recovery guidance; they do not leave a partially
 installed library selected by a lockfile.
+
+**Unreleased:** `aug install`, `aug add` and automatic source preparation in `aug run` verify native artifacts before publishing a new source lock. A rejected artifact preserves the previously accepted graph; `aug add` also restores its dependency aliases.
 
 A missing or incompatible artifact produces an error. Installation never falls back to a source build.
 Use `aug run --offline --frozen` after an online installation to require the

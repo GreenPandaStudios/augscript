@@ -2,6 +2,8 @@
 
 Write tests beside the declaration they check. `aug test` compiles and runs them as native programs. Test bodies are excluded from production executables.
 
+The AUG-0001 development compiler can enumerate bounded literal domains into existing parameterized rows and record concrete replay evidence. Setup and assertions remain independently authored. See [checked changes](checked-changes.md#enumerate-independent-test-inputs) for the experimental protocol, vector limits, exclusions and separate compiler/behavior gates.
+
 Use `test functionName` for a function or `test ClassName subject` for a class. If testing is new to you in August, work through [State and tests](learn/state-and-tests.md) first. For HTTP, use [endpoint tests](web.md#endpoint-tests); they exercise routing and policies, while live sockets and TLS need separate transport tests.
 
 ## A complete function suite

@@ -1,0 +1,8 @@
+{
+  "name": "august-distribution-harness",
+  "version": "1.0.0",
+  "publisher": "august-tests",
+  "engines": {
+    "vscode": "^1.90.0"
+  }
+}

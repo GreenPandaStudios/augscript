@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
 import {mkdtempSync,mkdirSync,writeFileSync,rmSync,realpathSync} from 'node:fs';
-import {join} from 'node:path';
+import {join,resolve} from 'node:path';
 import {tmpdir} from 'node:os';
 import {createHash} from 'node:crypto';
 import {spawnSync} from 'node:child_process';
@@ -32,7 +32,7 @@ function run(source){
     writeFileSync(join(app,'main.yaml'),'packages:\n  boundary: "../library"\n');writeFileSync(join(app,'main.aug'),source);
     installPackages(app,false,true);
     const checked=checkProject(loadProject(app));assert.deepEqual(checked.diagnostics.filter(d=>d.severity!=='warning'),[]);
-    const adapter=join(root,'adapter.c');writeFileSync(adapter,'#include <stdint.h>\n#include <string.h>\ntypedef struct { int32_t code; uint32_t length; char message[512]; } Error;\nint64_t boundary_bounded_v1(int64_t value){return value+1;}\nint32_t boundary_fail_v1(int64_t *out,Error *error){*out=0;error->code=37;error->length=6;memcpy(error->message,"failed",6);return 1;}\n');
+    const adapter=join(root,'adapter.c');writeFileSync(adapter,'#include '+JSON.stringify(resolve(import.meta.dirname,'../native/aug-native-abi-1.h'))+'\n#include <string.h>\nint64_t boundary_bounded_v1(int64_t value){return value+1;}\nint32_t boundary_fail_v1(int64_t *out,aug_native_error_v1 *error){*out=0;error->code=37;error->message_length=6;memcpy(error->message,"failed",6);return 1;}\n');
     const cc=mac?'/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang':'clang';
     const flags=mac?['-isysroot',process.env.AUG_TEST_MACOS_SDK??'/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk','-dynamiclib','-mmacosx-version-min=14.0','-Wl,-install_name,@rpath/'+filename]:['-shared','-fPIC','-Wl,-soname,'+filename];
     const native=spawnSync(cc,[...flags,adapter,'-o',join(root,filename)],{encoding:'utf8'});

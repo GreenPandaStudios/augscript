@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+- Normalize decoded LSP input chunks to UTF-8 bytes before accumulating byte-counted frames.
+- Analyze generated C and copied runtime units for adversarial collection, error, task, ownership, JSON, crypto, and HTTP programs, then run them under AddressSanitizer and UBSan in macOS/Linux CI. Harden HTML buffer growth against size overflow and remove unused generated call arrays and execution-context lookups.
+- Check worker transfer field storage before copying it; malformed native storage fails explicitly. Keep the Linux Clang null-dereference checker enabled.
+- Add whole-project revision-bearing context with exact function/method/parameter identities, resolved occurrences, separate dependencies/reverse callers, and explicit incomplete graph/packet coverage. Include configuration, dependency and compiler-build identities.
+- Plan standalone managed function renames, body replacements, and verified forwarding conversions against exact revisions. Check isolated candidates, compare intended public interface deltas, and require independent native acceptance before source writes. Return candidate-paired repair diagnostics and tested agent syntax idioms.
+- Coordinate source writers and readers, journal checked commits, and recover interrupted processes without overwriting external conflicts. Record compiler, finite behavior, runtime, proof and engineer-review statuses separately.
+- Add contextual `forward Alias to ImportedFunction`, with inherited resolved labels/types/results/checked errors, native lowering, normal exports, formatter, hover/navigation/completion, specs and interface-diff support. Unsupported ownership/effect/generic/native/DI/layer profiles fail closed.
+- Add experimental bounded scalar-domain enumeration through existing typed test rows, explicit vector/exclusion/provenance records, native mutation detection and revision-checked replay. No comparative AI reliability claim or general proof is made.
+
+Add read-only `aug doctor` setup reports and an editor setup command with actionable Node/compiler settings. Handle missing language-server executables and closed pipes without unhandled editor errors. Qualify clean VSIX installs and published-preview upgrades in real extension hosts at the minimum and pinned current VS Code versions on all supported hosts. Gate full and retained-compiler editor releases on their exact reviewed VSIX. Add installed public CLI replacement checks, source/lock preservation, LLVM execution without native tools, frozen offline runs, and archive-bearing qualification reports.
+
+Package authors can declare bounded compiler requirements while first-party packages retain exact release versions. Preserve repository commits during compiler upgrades and dependency additions; use `--update` to advance them. Publish immutable source generations with one lockfile rename after native artifacts verify. Recover terminated writers and interrupted `aug add` configuration changes, reject conflicting package identities, and keep prior source generations available to readers. Ship the public ABI-1 adapter header and document native/package formats with upgrade and recovery qualification on the existing platform gates.
+
 Provide two versioned, multi-architecture container bases: `aug-build` with the published CLI and prepared LLVM/runtime, and `aug-runtime` for complete native deployments. Use the build base directly in Dev Containers. Qualify offline builds, specs, tests, crypto and HTTP on native ARM64 and x86-64 runners before registry publication. Compiler contributor tests retain their separate source image.
 
 ## 0.23.0 — native ingestion boundaries

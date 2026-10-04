@@ -55,6 +55,13 @@ function activateTesting(vscode, context, projectRoot, runCompiler) {
     const roots = new Set(files.map(uri => projectRoot(uri.fsPath)).filter(Boolean));
     controller.items.forEach(item => { if (!roots.has(item.id)) controller.items.delete(item.id); });
     for (const root of roots) await refreshRoot(root);
+    // Return the controller's actual tree for command clients, including errors.
+    const snapshot=collection=>{
+      const items=[];
+      collection.forEach(item=>items.push({id:item.id,label:item.label,file:item.uri?.fsPath,line:item.range?.start.line,error:item.error,children:snapshot(item.children)}));
+      return items;
+    };
+    return snapshot(controller.items);
   }
   controller.resolveHandler = () => refreshWorkspace();
   controller.refreshHandler = () => refreshWorkspace();

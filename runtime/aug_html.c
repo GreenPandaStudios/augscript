@@ -2,11 +2,26 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <strings.h>
 typedef struct {char *text; size_t size, capacity;} HtmlBuffer;
 static void append(HtmlBuffer *buffer, const char *text, size_t size) {
-  if (buffer->size + size + 1 > buffer->capacity) {buffer->capacity = (buffer->size + size + 1) * 2; buffer->text = realloc(buffer->text, buffer->capacity); if (!buffer->text) abort();}
-  memcpy(buffer->text + buffer->size, text, size); buffer->size += size; buffer->text[buffer->size] = 0;
+  if (size >= SIZE_MAX - buffer->size) abort();
+  size_t needed = buffer->size + size + 1;
+  if (needed > buffer->capacity) {
+    size_t capacity = buffer->capacity ? buffer->capacity : 32;
+    while (capacity < needed) {
+      if (capacity > SIZE_MAX / 2) { capacity = needed; break; }
+      capacity *= 2;
+    }
+    char *grown = realloc(buffer->text, capacity);
+    if (!grown) abort();
+    buffer->text = grown;
+    buffer->capacity = capacity;
+  }
+  if (size) memcpy(buffer->text + buffer->size, text, size);
+  buffer->size += size;
+  buffer->text[buffer->size] = 0;
 }
 static void text(HtmlBuffer *buffer, const char *value) {append(buffer, value, strlen(value));}
 static void escape(HtmlBuffer *buffer, const char *value, size_t size) {

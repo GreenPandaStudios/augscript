@@ -40,7 +40,7 @@ function printFile(project: Project, file: SourceFile, migrate: boolean): string
     if (Array.isArray(value)) return value.filter(item => !(item?.kind === 'expr' && item.expr.kind === 'literal' && item.expr.value === null)).map(shape);
     if (!value || typeof value !== 'object') return value;
     const node = value as Record<string, unknown>;
-    return Object.fromEntries(Object.entries(node).filter(([key, value]) => !['span', 'nameSpan', 'sourceSpan', 'headerEnd'].includes(key) && value !== undefined)
+    return Object.fromEntries(Object.entries(node).filter(([key, value]) => !['span', 'nameSpan', 'sourceSpan', 'targetSpan', 'headerEnd'].includes(key) && value !== undefined)
       .sort(([a], [b]) => a.localeCompare(b)).map(([key, value]) => [key, shape(value)]));
   };
   if (JSON.stringify(shape(parsed.file.items)) !== JSON.stringify(shape(verified.file.items)))
@@ -115,6 +115,7 @@ class Printer {
     }
   }
   private method(method: MethodDecl) {
+    if(method.forward){this.before(method.span.start);this.line(`forward ${method.name} to ${method.forward.target}`);return;}
     this.before(method.annotations?.[0]?.span.start ?? method.span.start); this.annotations(method.annotations);
     const header = `${method.endpoint ? `endpoint ${method.endpoint.method} ${JSON.stringify(method.endpoint.path)} as ` : ''}${method.fixture ? 'fixture ' : ''}${method.externC ? 'extern C ' + (method.valueAbi ? 'value ' : '') + (method.nativePure ? 'pure ' : '') : ''}${method.name}${this.generics(method)}` +
       `(${method.params.map(param => this.param(param)).join(', ')})` +

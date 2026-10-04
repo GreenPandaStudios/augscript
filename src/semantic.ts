@@ -14,12 +14,15 @@ import { checkUnitTests, discoverTests, mergeTestAnalysis, uniqueDiagnostics } f
 import { formatFile } from './formatter.ts';
 import { interceptorBehavior } from './interceptors.ts';
 import { callableResult, callableErrors } from './contracts.ts';
+import { forwardingProvenance } from './forwarding.ts';
+import {projectRevision} from './change-context.ts';
 import {nativeFact,nativeDependencies,type NativeFunctionFact,type NativeResourceFact} from './native-facts.ts';
 
 const genericFacts = (header: GenericHeader) => header.typeParams.map(name => ({ name,
   variance: header.typeVariance?.[name] ?? 'invariant', constraints: (header.typeConstraints?.[name] ?? []).map(typeName) }));
 
 export interface CallableFact {
+  forwarding?:ReturnType<typeof forwardingProvenance>;
   native?:NativeFunctionFact; nativeDependencies:NativeFunctionFact[]; nativeCoverage:'resolved-standalone-calls';
   name: string; location: Span; inputs: { label: string; name: string; type: string; ownership: string; injected: boolean; source?:Param['source'] }[];
   result: string; genericParameters: ReturnType<typeof genericFacts>; changes: string[]; capabilities: string[]; inferredEffects: boolean; errors: string[];
@@ -41,7 +44,7 @@ export function contractFacts(checked: CheckedProject): ContractFact[] {
     const contract = checked.effectContracts.get(method);
     const layers = checked.interceptorPlans.get(constructor ?? method) ?? [];
     const native=nativeFact(checked,method);
-    return { name: method.name, location: method.span, genericParameters: genericFacts(method),
+    return { name: method.name, location: method.span, genericParameters: genericFacts(method),forwarding:forwardingProvenance(project,method),
       native:native?.kind==='function'?native:undefined,nativeDependencies:nativeDependencies(checked,method),nativeCoverage:'resolved-standalone-calls',
       inputs: method.params.map(param => ({ label: param.label ?? param.name, name: param.name,
         type: typeName(param.type), ownership: param.ownership, injected: param.injected, source:param.source })),
@@ -85,7 +88,7 @@ export function contractFacts(checked: CheckedProject): ContractFact[] {
     visit(node);
     const native=node.kind==='resource'?nativeFact(checked,node):undefined;
     return { id: def.id, name: def.name, kind: node.kind === 'class' && node.record ? 'record' :
-      node.kind === 'interface' && node.capability ? 'capability' : node.kind,
+      node.kind === 'interface' && node.capability ? 'capability' : node.kind === 'function' && node.forward ? 'forward' : node.kind,
       native:native?.kind==='resource'?native:undefined,
       location: node.span, public: !node.name.startsWith('_'), typeParameters: node.typeParams, genericParameters: genericFacts(node),
       documentation: javadocBefore(file.source, 'annotations' in node ? node.annotations?.[0]?.span.start ?? node.span.start : node.span.start)?.markdown,
@@ -122,7 +125,8 @@ export function describe(checked: CheckedProject, fileName: string, options: { n
   const snippets: { id: string; source: string }[] = [];
   const architecture: ModuleFact[] = [], changes: { file: string; addedDependencies: string[]; removedDependencies: string[]; addedPublic: string[]; removedPublic: string[]; changedPublic: string[]; memberGrowth: number }[] = [];
   let truncated = false;
-  const result = () => ({ file: path, completeness: checked.diagnostics.some(issue => issue.severity !== 'warning') ? 'partial' : 'checked',
+  const result = () => ({ file: path,completeness: checked.diagnostics.some(issue => issue.severity !== 'warning') ? 'partial' : 'checked',
+    ...projectRevision(checked.project),query:{file:path,name:options.name},coverage:{checkedScope:'loaded description scope; document queries may contain only an import closure',graph:'not enumerated',requiredContextComplete:false},
     budget, truncated, imports, contracts: selected, bindings, snippets, architecture, changes });
   const append = <T>(array: T[], value: T) => {
     array.push(value);

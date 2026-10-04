@@ -1,4 +1,5 @@
 {
+  "checked-forwarding": {"stdout": "4\n", "tests": 2},
   "readme": {
     "stdout": "4\n"
   },

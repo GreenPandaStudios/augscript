@@ -27,6 +27,10 @@ When a fix changes a dependency, effect, error, or mutable input, review the cal
 
 Both braces and indentation are accepted. The formatter uses main.yaml preferences and checks that its output parses to the same program before returning an edit.
 
+## Package installation
+
+`PACKAGE_COMPILER` names a library whose compiler requirement excludes the installed release, or explains an invalid requirement. Select a compatible compiler/package; a frozen lock cannot perform an upgrade. `PACKAGE_LOCK` reports an unsupported lock, changed dependency declarations, another active installer or an interrupted `aug add` that needs review. Use `aug install` to recover a terminated writer. If it names later edits to `main.yaml`, `aug.lock.json` or `.aug-add.json`, inspect those files before retrying. The [package compatibility guide](package-compatibility.md) distinguishes currently published and unreleased behavior.
+
 ## Modules and interfaces
 
 | Code | Meaning and remedy |
@@ -101,6 +105,12 @@ Next exists only inside around. `next()` forwards original inputs; `next(y=value
 | NATIVE | A native build or link failure mapped to source or an artifact requirement. Check the named boundary or artifact; use emit-llvm for compiler diagnostics, or emit-c for an explicit C reference build. |
 
 See [testing](testing.md) and [native tooling](tooling.md) for executable examples and exact limits.
+
+## Checked changes and forwarding
+
+`FORWARD` means the imported target or inherited contract is outside the initial concrete managed profile. Import a public standalone operation explicitly and keep capabilities, mutation, injection, generics, native linkage, and interceptors out of that alias. `BINDING` identifies an unsupported `let` prefix; use `value = expression` or `Type value = expression`. `COMPARISON` identifies assignment in a condition and offers an equality comparison fix.
+
+Change protocol reports include the exact source/candidate revision. `CHANGE_STALE` requires fresh context; `CHANGE_SCOPE` identifies an occurrence outside the permitted files; `CHANGE_COVERAGE` exposes unresolved required relationships; `CHANGE_PUBLIC_DELTA` reports unexpected contract changes. `CHANGE_BEHAVIOR` means the candidate compiled but failed independently selected finite checks. `CHANGE_BUSY` means a cooperating writer or interrupted transaction blocks readers. See [checked changes](checked-changes.md) for plan inspection and recovery.
 
 ## INFERENCE: add a type anchor
 

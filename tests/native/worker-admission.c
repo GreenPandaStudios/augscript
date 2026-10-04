@@ -7,7 +7,12 @@ static atomic_bool released;
 static void pending(AugValue *out,const AugValue *self,AugValue *args,int count) {
  (void)self;(void)args;if(count)abort();while(!atomic_load(&released))aug_task_checkpoint();*out=aug_int(7);
 }
-int main(void) {
+int main(int argc,char **argv) {
+ if(argc==2&&!strcmp(argv[1],"invalid-fields")) {
+  AugValue value=aug_new_object("Invalid",1,NULL,NULL,0);
+  free(value.as.object->fields);value.as.object->fields=NULL;
+  aug_transfer_delete(aug_transfer_capture(&value,1));return 0;
+ }
  unsigned char mask[]={0};AugValue values[4]={aug_null(),aug_null(),aug_null(),aug_null()};AugFrame frame;aug_frame_enter(&frame,values,4);
  values[0]=aug_list_new(NULL,0);for(int i=0;i<500;i++)aug_list_append(values[0],aug_int(i));
  if(aug_transfer_capture_bounded(values,1,1024))abort();

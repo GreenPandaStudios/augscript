@@ -23,12 +23,24 @@ node scripts/merge-compiler-packs.mjs .aug-build/release-packs
 npm run package:packages
 npm run test:packages -- --native
 npm run package:extension
+npm run test:editor
+npm run test:upgrade -- --local-compiler
 node scripts/release-artifacts.mjs
 node scripts/publish-release.mjs dist/release --verify-only
 node scripts/publish-extension.mjs dist/release --verify-only
 ```
 
 The merge step requires the exact qualified producer archives and manifests for all three hosts under `.aug-build/release-packs`; `release.yml` obtains them before packaging. Update both changelogs and relevant guides, and commit regenerated docs. The final artifact step combines four installable npm tarballs, a VSIX, compiler packs, offline documentation, package metadata and SHA-256 checksums under `dist/release`. It excludes native caches, private credentials and application build output.
+
+## Installed CLI and editor gates
+
+The unreleased distribution gates qualify the actual install archives. `npm run test:editor` installs the candidate VSIX in an empty profile, then in another profile containing the checksum-pinned published preview. Both runs use a real VS Code extension host and exercise language recognition, labeled completion, Javadoc hover, import navigation, unsaved diagnostics, applied quick fixes, inferred hints, test discovery, formatting, and setup recovery. They activate the installed extension, not the source development extension.
+
+`editor-qualification.yml` repeats these checks on macOS 14 ARM64 and Linux x86-64/ARM64, using VS Code 1.90.0 and the pinned current editor in `scripts/distribution-inputs.json`. Keep that current pin reviewed and aligned with the workflow matrix. Linux uses a virtual display. Full and editor-only release preparation feed their exact reviewed VSIX into this matrix; a failed editor job blocks the draft. Retained-compiler patches check the older compiler's actual features and report an unavailable doctor command rather than claiming it ran.
+
+`npm run test:upgrade` installs the public preview CLI into a temporary npm prefix, creates and runs a project through LLVM, then replaces the CLI and its packages with the candidate archives. It checks source preservation, lock migration, tests, generated specs, setup, source diagnostics, and a frozen offline run. Native tools and SDK paths are unavailable to its CLI processes. Use `--local-compiler` before publication to substitute the exact unpublished compiler archive through the installed verifier; the report records that transport. Omit it after publication to verify the public download.
+
+The minimum-platform consumer jobs run this CLI gate with Xcode removed or in a Linux image without Git, compilers, and headers. Reports retain archive hashes, compiler/editor versions, host, and individual checks as workflow artifacts. A same-version candidate is recorded as a reinstall check; a release-version increase is needed for upgrade evidence. These finite checks do not qualify every VS Code configuration. Existing producer gates separately require source-level LLVM debugger checks; the editor gate does not claim full variable-view debugging.
 
 ## GitHub release
 
@@ -93,7 +105,7 @@ The CLI is published last because its dependencies use exact matching versions. 
 
 Use `node scripts/version.mjs --extension 0.23.1` to change the extension version while retaining the compiler version in `augustCompilerVersion`. Update its changelog, run the contributor checks, and commit the change. Create an `extension-v0.23.1` tag at that reviewed commit and push it. **Prepare extension patch** rejects changes to compiler, runtime, CLI manifest, or bootstrap inputs compared with the retained compiler tag.
 
-The workflow downloads the published compiler's reviewed npm archives and verifies their checksums and manifests. It bundles that exact CLI archive, its matching public standard-library archive, and locked JavaScript dependencies. It compares every compiler file in the VSIX with those verified inputs. It checks editor regressions, documentation, and installed npm packages, then creates a draft containing the VSIX, checksums, and `extension-release.json`. The report records both versions, both source commits, and the compiler and VSIX hashes. It builds no native compiler or library artifacts.
+The workflow downloads the published compiler's reviewed npm archives and verifies their checksums and manifests. It bundles that exact CLI archive, its matching public standard-library archive, and locked JavaScript dependencies. It compares every compiler file in the VSIX with those verified inputs. It checks editor regressions, documentation, installed npm packages and both installed-VSIX workflows on all three hosts, then creates a draft containing the VSIX, checksums, and `extension-release.json`. The report records both versions, both source commits, and the compiler and VSIX hashes. It builds no native compiler or library artifacts.
 
 Review and publish this draft. **Publish VS Code extension** accepts both full compiler tags and extension tags. **Publish npm packages** ignores extension releases. A manual preparation retry takes the existing extension tag and reviewed full SHA; a publication retry must select that extension tag as its workflow ref. Existing published versions remain immutable.
 

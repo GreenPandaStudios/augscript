@@ -1,8 +1,13 @@
 node_modules/
 .aug-native/
 .aug-build/
+.aug-changes/
 .aug-packages/
 .aug-install-*/
+.aug-lock-*/
+.aug-write-*/
+.aug-add.json*
+*.aug.tmp
 .aug-packages-old/
 *.vsix
 vscode/compiler/

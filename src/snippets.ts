@@ -1,5 +1,6 @@
 /** Small starting points for ordinary August declarations and statements. */
 export const snippetCatalog = [
+  {prefix:'forward',description:'Inherit an imported operation’s checked interface',body:'forward ${1:dispatch} to ${2:importedOperation}'},
   {prefix:'record',description:'Immutable data with named fields',body:'record ${1:User}(${2:string name})'},
   {prefix:'interface',description:'A public behavior contract',body:'interface ${1:Greeter}:\n    ${2:greet}(${3:string name}) returns ${4:string}'},
   {prefix:'capability',description:'An explicit I/O contract',body:'capability ${1:Logger}:\n    ${2:log}(${3:string message}) uses ${1:Logger}.${2:log}'},

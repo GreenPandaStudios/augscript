@@ -1,5 +1,6 @@
 import { callableResult, callableErrors } from './contracts.ts';
 import { dirname, join, relative, resolve, sep } from 'node:path';
+import {pathToFileURL} from 'node:url';
 import type { ClassDecl, Expr, InterceptorDecl, MethodDecl, Param, SourceFile, Stmt, TypeRef } from './ast.ts';
 import { fieldsOf, typeName } from './ast.ts';
 import type { CheckedProject, Ty } from './checker.ts';
@@ -18,7 +19,6 @@ import { libraryChild, libraryRelative } from './libraries.ts';
 import { importSource, isGitSource, sourceAlias } from './git-packages.ts';
 import { snippetBody, snippetCatalog } from './snippets.ts';
 import {nativeFact,nativeDependencies,nativeDescription} from './native-facts.ts';
-import {pathToFileURL} from 'node:url';
 
 export interface EditorItem {
   label: string;
@@ -39,8 +39,8 @@ export interface EditorToken {
   line: number;
   start: number;
   length: number;
-  type: 'keyword' | 'class' | 'interface' | 'decorator' | 'function' | 'method' | 'property' |
-    'variable' | 'parameter' | 'typeParameter' | 'type';
+  type: 'class' | 'interface' | 'decorator' | 'function' | 'method' | 'property' |
+    'variable' | 'parameter' | 'typeParameter' | 'type' | 'keyword';
   declaration: boolean;
 }
 
@@ -186,12 +186,14 @@ function methodItem(checked: CheckedProject, method: MethodDecl,
     '[`native.abi.json`]('+pathToFileURL(checked.native.providerDescriptors.get(fact.provider)!).href+')')).join('\n\n');
   return { label: method.name, kind, detail: label, signature: signature(method, true, errors, checked),
     documentation: [doc?.markdown, isPrivateName(method.name) ? 'Private to its declaring type.' : '',
+      method.forward ? `Inherited interface. Immediate target: ${forwardLink(method.forward.targetId)}. Final implementation: ${forwardLink(method.forward.implementationId)}. This declaration forwards each call once, unchanged.` : '',
       injectionHelp, effects, native, interceptorDescription(checked, method), 'Call arguments require labels; their order does not matter.']
       .filter(Boolean).join('\n\n'),
     parameters: method.params.filter(param => !param.injected)
       .map(param => `${param.label ?? param.name}=${typeName(param.type)}`),
     parameterDocumentation: method.params.filter(param => !param.injected)
       .map(param => doc?.parameters.get(param.label ?? param.name)) };
+  function forwardLink(id?:string){const target=id&&checked.project.definitions.get(id);return target?`[${id}](${pathToFileURL(target.file).href}#L${target.node.span.line})`:id??'unresolved';}
 }
 
 function definitionItem(checked: CheckedProject, def: Definition): EditorItem {
@@ -244,7 +246,7 @@ function definitionItem(checked: CheckedProject, def: Definition): EditorItem {
 }
 
 function typeFromRef(checked: CheckedProject, file: string, ref: TypeRef): Ty {
-  const def = checked.project.scopes.get(file)?.get(ref.name);
+  const def = ref.definitionId?checked.project.definitions.get(ref.definitionId):checked.project.scopes.get(file)?.get(ref.name);
   return { id: def?.id ?? `builtin:${ref.name}`, name: ref.name,
     kind: def?.node.kind === 'class' || def?.node.kind === 'interface' || def?.node.kind === 'interceptor' || def?.node.kind==='resource' ? def.node.kind : 'builtin',
     args: ref.args.map(arg => typeFromRef(checked, file, arg)), nullable: ref.nullable, def };
@@ -409,6 +411,9 @@ function rawCompletions(checked: CheckedProject, fileName: string, offset: numbe
   const prefix = file.source.slice(0, offset);
   const line = prefix.slice(prefix.lastIndexOf('\n') + 1);
   const imports = importItems(checked, file);
+  if(/^\s*forward\s+[A-Za-z_]\w*\s+to\s+[A-Za-z_0-9]*$/.test(line))return [...(checked.project.scopes.get(file.path)?.values()??[])].filter(def=>
+    def.node.kind==='function'&&!def.name.startsWith('_')&&file.items.some(item=>item.kind==='import'&&!item.everything&&checked.project.imports.get(item)?.some(imported=>imported.id===def.id)))
+    .map(def=>({...definitionItem(checked,def),insertText:def.name}));
   if (/^\s*import\s+[A-Za-z_0-9]*$/.test(line)) return imports;
   const joined = /^\s*import\s+(.+?)\s+and\s+[A-Za-z_0-9]*$/.exec(line);
   if (joined) {
@@ -522,7 +527,7 @@ export function completions(checked: CheckedProject, fileName: string, offset: n
   const file = checked.project.files.get(resolve(fileName));
   if (!file) return [];
   const prefix = file.source.slice(0, offset), line = prefix.slice(prefix.lastIndexOf('\n') + 1);
-  const typeContext = /\b(?:import|export|implement|implements|extends|returns|unless|catch|resolve)\b[^\n]*$/.test(line);
+  const typeContext = /\b(?:import|export|implement|implements|extends|returns|unless|catch|resolve)\b[^\n]*$/.test(line)||/^\s*forward\s+\w*\s+to\b/.test(line);
   const token = /[A-Za-z_][A-Za-z0-9_]*$/.exec(prefix);
   const start = token ? offset - token[0].length : offset;
   const end = offset + (/^[A-Za-z0-9_]*/.exec(file.source.slice(offset))?.[0].length ?? 0);
@@ -649,7 +654,8 @@ export function hoverInfo(checked: CheckedProject, fileName: string,
     return { ...item, documentation: [item.documentation, languageHelp.around.documentation].filter(Boolean).join('\n\n'), start, end };
   }
   const workerKeyword = token.value === 'worker' && hoverTokens[hoverTokens.indexOf(token) - 1]?.kind === 'start' && ['identifier', 'start', 'wait'].includes(hoverTokens[hoverTokens.indexOf(token) + 1]?.kind);
-  const help = token.value === 'worker' && !workerKeyword ? undefined : languageHelp[token.value];
+  const forwardKeyword = token.value === 'forward' && file.items.some(item => item.kind === 'function' && item.forward && item.span.start === start);
+  const help = (token.value === 'worker' && !workerKeyword) || (token.value === 'forward' && !forwardKeyword) ? undefined : languageHelp[token.value];
   if (help) return { label: token.value,
     kind: help.category === 'type' ? 'type' : help.category === 'function' ? 'function' : 'keyword',
     detail: help.detail, documentation: help.documentation, start, end };
@@ -730,6 +736,7 @@ export function semanticTokens(checked: CheckedProject, fileName: string): Edito
   const typeParameters = new Set<string>();
   const declarationNames = new Map<number, 'class' | 'decorator' | 'function' | 'method'>();
   function markFunction(method: MethodDecl, type: 'function' | 'method'): void {
+    if(method.forward){declarationNames.set(method.forward.nameSpan.start,type);return;}
     const first = tokens.findIndex(token => token.span.start >= method.span.start && token.span.end <= method.span.end && token.value === method.name && token.kind === 'identifier');
     const name = tokens[first];
     if (name?.kind === 'identifier') declarationNames.set(name.span.start, type);
@@ -768,8 +775,7 @@ export function semanticTokens(checked: CheckedProject, fileName: string): Edito
     } else if (item.kind === 'function') {
       markFunction(item, 'function');
       item.typeParams.forEach(name => typeParameters.add(name));
-      item.params.forEach(param => parameters.add(param.name));
-      visitStatements(item.body ?? []);
+      if(!item.forward){item.params.forEach(param => parameters.add(param.name));visitStatements(item.body ?? []);}
     } else if (item.kind === 'test') {
       variables.add(item.name);
       for (const group of item.groups) {
@@ -786,6 +792,7 @@ export function semanticTokens(checked: CheckedProject, fileName: string): Edito
     const previous = tokens[i - 1]?.kind;
     const next = tokens[i + 1]?.kind;
     let type: EditorToken['type'] | undefined;
+    if(token.value==='forward'&&file.items.some(item=>item.kind==='function'&&item.forward&&item.span.start===token.span.start))type='keyword';
     if (token.value === 'worker' && previous === 'start' && ['identifier', 'start', 'wait'].includes(next)) type = 'keyword';
     else if (previous === '.') type = next === '(' || next === '<' ? 'method' : 'property';
     else if (previous === 'interface' || previous === 'capability') type = 'interface';

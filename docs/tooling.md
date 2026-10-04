@@ -2,12 +2,15 @@
 
 The CLI checks, builds, tests, and explains August projects. Commands and configuration are listed below. Start with [the book](learn/index.md) for a first project, or [the module review guide](guides/change-a-module.md) to use context reports during a change.
 
+The `change` and `evidence` commands and revision-bearing context below belong to the AUG-0001 development implementation. See [its guide](checked-changes.md) for availability, supported profiles, acceptance gates, and recovery limits.
+
 ## CLI
 
 Install `aug` once as shown in [Your first project](getting-started.md). Commands take a project folder, defaulting to the current directory. Editor commands also accept --file and --offset; use --help for the command inventory.
 
 | Command | Output |
 | --- | --- |
+| `doctor [PROJECT] [--json]` | Setup report without downloads or writes; unreleased. |
 | `check PROJECT [--json]` | Production, tests, module policy, documentation, and configuration diagnostics. |
 | `build PROJECT [--out NAME] [--json]` | Native path; JSON contains output and sourceMap. |
 | `run [PROJECT] [--offline] -- args...` | Prepares declared packages and required native libraries, checks, compiles, and runs; program stdout is preserved. |
@@ -20,7 +23,13 @@ Install `aug` once as shown in [Your first project](getting-started.md). Command
 | `test PROJECT [--coverage] [--json]` | Isolated native tests and optional statement-line report. |
 | `bench PROJECT [--iterations N] [--warmup N] [--timeout MS] [--json] -- args...` | Release build with timed native executions. |
 | `explain PROJECT --file PATH [--name NAME]` | Checked contracts, dependencies, layers, origins, tests, and module surface. |
-| `context PROJECT --file PATH [--name NAME] [--budget N]` | Bounded JSON context, including related declarations and source snippets. |
+| `context PROJECT --file PATH [--name NAME] [--budget N]` | Revision-bearing contracts, dependencies, reverse callers, occurrences and explicit coverage/omissions. |
+| `change plan PROJECT request.json` | Candidate, exact edits, public delta and agent exchange; no source writes. |
+| `change check PROJECT plan.json` | Independent native verification without source writes. |
+| `change apply PROJECT plan.json` | Recheck, verify and journal the accepted transaction. |
+| `change recover PROJECT` | Recover an interrupted transaction while preserving external conflicts. |
+| `change interfaces PROJECT` / `change diff PROJECT baseline.json` | Resolved public interface snapshots and deltas, including inherited aliases. |
+| `evidence run PROJECT generator.json` / `evidence replay PROJECT evidence.json` | Experimental typed enumeration and concrete finite outcomes/replay. |
 | `lsp PROJECT` | Persistent language server over stdio. |
 | `package init DIRECTORY [--name @owner/name]` | Standalone source library with public exports, Javadoc and a same-file test. |
 | `package pack DIRECTORY` | Checked source archive ready for npm publishing or local installation. |
@@ -28,6 +37,14 @@ Install `aug` once as shown in [Your first project](getting-started.md). Command
 | `install PROJECT [--frozen|--update] [--offline]` | Explicit dependency snapshot and aug.lock.json. |
 
 Warnings are nonblocking. Human diagnostics show the source line, a pointer, and help. Machine diagnostics carry severity, code, file, line, column, message, and help. check/build fail on errors; invalid options and missing option values return status 2. Test failure returns nonzero and includes the case output. Put runtime arguments after `--`, for example `aug run -- --port 8080`.
+
+## Check an installation
+
+The unreleased CLI adds `aug doctor`. It reports the compiler version, Node version, host target, writable project/cache paths, cached compiler/runtime integrity, and source or installed-package errors. Add `--json` for a versioned report. Exit status 1 means a check failed; status 0 can still include warnings.
+
+Doctor does not download dependencies, create caches, or edit source and locks. An uncached compiler pack is a warning: the first `aug run` still needs network access. Missing project packages require `aug install`. A passing setup report does not test application behavior or guarantee that a future download will succeed.
+
+Set `AUG_NATIVE_ARTIFACT_CACHE` to a writable directory when the default cache is unsuitable. When a verified cache is damaged, stop active builds before removing that entry and running online again. Contributor LLVM/runtime overrides are reported separately; unset them to check the ordinary installation. The published 0.23.0 CLI has no doctor command.
 
 ## Native standard libraries
 
@@ -186,7 +203,7 @@ are bundled and work offline. Run
 
 | File | Icon meaning |
 | --- | --- |
-| `.aug` | Blue source file. |
+| `.aug` | Burgundy open circle. |
 | `main.aug` | Amber startup file. |
 | `export.aug` | Purple export file. |
 | `main.yaml` | Teal project configuration. |

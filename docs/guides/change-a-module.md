@@ -30,6 +30,8 @@ npx @greenpandastudios/aug-cli@next context . --file calculator.aug --name Calcu
 
 The report lists the declarations and related code. Check its `truncated` flag: if a needed declaration is missing, increase the budget or open its source link.
 
+The development protocol reports `coverage.requiredContextComplete`, required omissions and unresolved dispatch boundaries. Increase the budget for omitted contracts; unresolved boundaries need explicit investigation. A description from the editor's import closure does not enumerate all reverse callers. See [checked changes](../checked-changes.md) for supported standalone plans and independent acceptance gates.
+
 ## Make and check the change
 
 Add a case to the existing `addition` group. The following is a fragment, not a standalone file:
