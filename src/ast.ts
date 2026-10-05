@@ -289,3 +289,8 @@ export function expressionChildren(expr: Expr): Expr[] {
     default: return [];
   }
 }
+
+/** An applied interceptor is part of the declaration's implementation source. */
+export function declarationSourceSpan(node:{span:Span;annotations?:readonly InterceptorAnnotation[]}):Span {
+  return {...(node.annotations?.[0]?.span??node.span),end:node.span.end};
+}

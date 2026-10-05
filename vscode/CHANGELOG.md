@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add the unreleased local `aug compare` report with exact revisions, resolved contract/source/visibility deltas, known consumers, rejected diagnostics and unexecuted authored tests. Keep implementation function references out of public promises.
+
 - Show the differing inferred interface contract and its permitted declaration in Problems, with bounded source links through checked capability helpers.
 
 - Explain and navigate internal folder contracts, offer sibling entries in export files and keep internal names out of outward import suggestions.

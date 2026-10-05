@@ -2,6 +2,7 @@ import {idiomsFor} from './syntax-idioms.ts';
 import {resolve} from 'node:path';
 import {discoverTests} from './testing.ts';
 import type {Expr,Span,TestDecl,TypeRef} from './ast.ts';
+import {declarationSourceSpan} from './ast.ts';
 import type {CheckedProject,Ty} from './checker.ts';
 import {tyName} from './types.ts';
 import {contractFacts,type ContractFact} from './contract-facts.ts';
@@ -66,7 +67,7 @@ export function contextPacket(checked:CheckedProject,fileName:string,options:Con
     const pending=[...roots],seen=new Set(pending);
     for(let index=0;index<pending.length;index++) {
       const include=(from:string,span:Span)=>{const caller=addConsumer(from,span);if(caller){consumers.add(caller);if(!seen.has(caller)){seen.add(caller);pending.push(caller);}}};
-      for(const edge of graph.relationships)if(['call','callback-call','function-value','implements','inherits','injected','export','internal'].includes(edge.kind)&&declaration(edge.to)===pending[index])include(edge.from,edge.location);
+      for(const edge of graph.relationships)if(['call','callback-call','function-value','implements','inherits','injected','export','internal','interceptor'].includes(edge.kind)&&declaration(edge.to)===pending[index])include(edge.from,edge.location);
       for(const occurrence of graph.occurrences)if(['type','read','write'].includes(occurrence.role)&&occurrence.caller&&declaration(occurrence.symbol)===pending[index])include(occurrence.caller,{...occurrence});
     }
   }
@@ -114,7 +115,7 @@ export function contextPacket(checked:CheckedProject,fileName:string,options:Con
   }
   const contained=(outer:Span,inner:Span)=>outer.file===inner.file&&outer.start<=inner.start&&inner.end<=outer.end;
   const scanSelected=(item:import('./ast.ts').TopLevel)=>{
-    scan(item);const span=location(item.span);selectedSpans.push(span);
+    scan(item);const span=location(declarationSourceSpan(item));selectedSpans.push(span);
     for(const relation of graph.relationships)if(contained(span,relation.location)&&['call','callback-call','function-value','test'].includes(relation.kind))addDependency(declaration(relation.to));
   };
   consumers.forEach(addDependency);
@@ -126,7 +127,7 @@ export function contextPacket(checked:CheckedProject,fileName:string,options:Con
   for(;;) {
     for(;processed<queue.length;processed++) {
       const id=queue[processed],def=definitions.get(id);if(def)scan(def.node);
-      for(const relation of graph.relationships)if(declaration(relation.from)===id&&['call','callback-call','function-value','implements','inherits','injected'].includes(relation.kind))addDependency(declaration(relation.to));
+      for(const relation of graph.relationships)if(declaration(relation.from)===id&&['call','callback-call','function-value','implements','inherits','injected','interceptor'].includes(relation.kind))addDependency(declaration(relation.to));
     }
     let added=false;
     for(const suite of suites)if(!selectedSuites.has(suite)) {
@@ -141,10 +142,10 @@ export function contextPacket(checked:CheckedProject,fileName:string,options:Con
     return Object.fromEntries(Object.entries(value).map(([key,child])=>[key,key==='file'&&typeof child==='string'&&checked.project.files.has(child)?semanticSourcePath(checked,child):normalize(child)])) as T;
   };
   const boundaryRelevant=(span:Span)=>queue.some(id=>{
-    const fact=facts.get(id)!;return semanticSourcePath(checked,fact.location.file)===span.file&&fact.location.start<=span.start&&span.end<=fact.location.end;
+    const selected=declarationSourceSpan(definitions.get(id)!.node);return contained(location(selected),span);
   })||selectedSpans.some(selected=>contained(selected,span))||!roots.length&&span.file===semanticSourcePath(checked,file.path);
   const boundaries=[...graph.boundaries.filter(boundary=>boundaryRelevant(boundary.location)),...effectBoundaries];
-  const callers=graph.relationships.filter(edge=>['call','callback-call','function-value'].includes(edge.kind)&&rootSet.has(declaration(edge.to)??''));
+  const callers=graph.relationships.filter(edge=>['call','callback-call','function-value','interceptor'].includes(edge.kind)&&rootSet.has(declaration(edge.to)??''));
   const full:ContextPacket={schema:3,compiler:graph.compiler,revision:graph.revision,budget,truncated:false,status:'ready',minimumBudget:0,budgetUnit:'utf16-code-units-with-newline',
     query:{file:semanticSourcePath(checked,file.path),name:options.name,roots,mode},
     ordering:'root-contract,root-source,resolved-types,dependency-contracts,callers,occurrences,imports',
@@ -162,8 +163,8 @@ export function contextPacket(checked:CheckedProject,fileName:string,options:Con
       functionValues:graph.relationships.filter(edge=>['function-value','callback-call'].includes(edge.kind)&&declaration(edge.from)===id).map(edge=>({kind:edge.kind,target:edge.to,location:edge.location}))}),required:true});
   };
   const source=(id:string)=>{
-    const fact=facts.get(id)!,sourceFile=checked.project.files.get(fact.location.file)!;
-    units.push({section:'snippets',id,value:{id,source:sourceFile.source.slice(fact.location.start,fact.location.end)},required:true});
+    const fact=facts.get(id)!,sourceFile=checked.project.files.get(fact.location.file)!,span=declarationSourceSpan(definitions.get(id)!.node);
+    units.push({section:'snippets',id,value:{id,source:sourceFile.source.slice(span.start,span.end)},required:true});
   };
   roots.forEach(contract);roots.forEach(source);
   if(!roots.length)units.push({section:'snippets',id:'module:'+semanticSourcePath(checked,file.path),value:{id:'module:'+semanticSourcePath(checked,file.path),source:file.source},required:true});
@@ -173,7 +174,7 @@ export function contextPacket(checked:CheckedProject,fileName:string,options:Con
   for(const [path,items] of [...consumerModules].sort(([left],[right])=>compare(left,right))){
     const sourceFile=filesByIdentity.get(path)!;
     for(const item of [...items].sort((left,right)=>left.span.start-right.span.start))units.push({section:'snippets',id:'module:'+path+':'+item.span.start,
-      value:{id:'module:'+path+':'+item.span.start,source:sourceFile.source.slice(item.span.start,item.span.end)},required:true});
+      value:{id:'module:'+path+':'+item.span.start,source:sourceFile.source.slice(declarationSourceSpan(item).start,item.span.end)},required:true});
   }
   const availableTests=discoverTests(checked.project).tests;
   for(const suite of selectedSuites) {

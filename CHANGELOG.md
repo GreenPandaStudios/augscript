@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add the unreleased local `aug compare` report with exact revisions, resolved contract/source/visibility deltas, known consumers, rejected diagnostics and unexecuted authored tests. Keep implementation function references out of public promises.
+
 - Show expected/actual interface contract fragments and checked capability helper paths. Check explicit methods and selected defaults against every inherited interface, repairing acceptance of incompatible secondary contracts. Generic capability keys retain recursive type identities; colliding diagnostic names show module origins.
 
 - Add contextual `internal Name from sibling` entries in `export.aug`. Strict sibling imports can use these contracts without outward exposure. Opted-in folders check effective exported type/constructor/error surfaces; package, editor, navigation and compiled specs retain the distinction.

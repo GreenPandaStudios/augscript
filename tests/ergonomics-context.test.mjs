@@ -189,3 +189,14 @@ test('review retains foreign boundaries in selected test callers',()=>fixture({
  assert.equal(packet.coverage.graph,'bounded');
  assert.ok(packet.boundaries.some(item=>item.kind==='native-code'&&item.target==='work.aug:puts'));
 }));
+
+
+test('selected source and mandatory budget include interceptor input mappings',()=>fixture({
+ 'main.aug':'', 'model.aug':'interceptor Select() { around(int input) returns int { return input } }\n[Select(input=left)] choose(int left, int right) returns int { return 0 }\n'
+},root=>{
+ const request=(name,budget)=>spawnSync(process.execPath,['bin/aug.mjs','context',root,'--file',join(root,'model.aug'),'--name',name,'--mode','review','--budget',String(budget)],{encoding:'utf8'});
+ for(const name of ['choose','Select']){const result=request(name,100000);assert.equal(result.status,0,result.stderr);const packet=JSON.parse(result.stdout);assert.match(packet.snippets.find(snippet=>snippet.id==='model.aug:choose').source,/^\[Select\(input=left\)\]/);}
+ const complete=request('choose',100000),minimum=JSON.parse(complete.stdout).minimumBudget;
+ const bounded=request('choose',minimum-1);assert.equal(bounded.status,1,bounded.stderr);assert.equal(JSON.parse(bounded.stdout).status,'budget-insufficient');
+ const fits=request('choose',minimum);assert.equal(fits.status,0,fits.stderr);assert.match(JSON.parse(fits.stdout).snippets.find(snippet=>snippet.id==='model.aug:choose').source,/input=left/);
+}));

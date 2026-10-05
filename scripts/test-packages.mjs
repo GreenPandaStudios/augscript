@@ -174,6 +174,12 @@ try {
   assert.equal(context.schema,3);assert.equal(context.status,'ready');assert.equal(context.query.mode,'review');
   assert.ok(context.tests.some(item=>item.source.includes('test greet')));assert.equal(context.evidence.behavior,'not-run');
   assert.ok(context.dependencies.some(item=>item.file==='project/package.json'));
+  const compareBefore=join(directory,'compare-before'),compareAfter=join(directory,'compare-after');
+  for(const [path,result] of [[compareBefore,7],[compareAfter,8]]){mkdirSync(path);writeFileSync(join(path,'main.aug'),'import answer from model\nprint(value=answer())\n');writeFileSync(join(path,'model.aug'),`answer() returns int { return ${result} }\n`);}
+  const comparison=JSON.parse(aug('compare',compareBefore,compareAfter,'--json'));
+  assert.equal(comparison.status,'compared');assert.equal(comparison.evidence.behavior,'not-run');
+  assert.deepEqual(comparison.changes[0].categories,['source']);assert.deepEqual(comparison.changes[0].contractDifferences,[]);
+  assert.ok(comparison.changes[0].impact.after.some(consumer=>consumer.symbol==='module:main.aug'));
   const ranges=join(directory,'ranges');mkdirSync(ranges);
   writeFileSync(join(ranges,'main.aug'),'import range and RangeError from august.collections\ntry { print(value=range(end=3, limit=3).length()) } catch RangeError error { exit(status=1) }\n');
   assert.equal(aug('run',ranges),'3\n');

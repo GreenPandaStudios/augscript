@@ -1,3 +1,4 @@
+import {projectComparison} from './project-comparison.ts';
 import {planChangeRename,planChangeRenameSymbol,applyChangePlan,recoverSourceChanges} from './checked-changes.ts';
 import {recordBindingDefinition} from './binding-patterns.ts';
 import {pruneTestCompilations} from './test-compilation-cache.ts';
@@ -91,11 +92,12 @@ function printDiagnostics(diagnostics: Diagnostic[], json: boolean, root: string
 
 function usage(): void {
   process.stdout.write(`AugScript compiler\n\n` +
-    `Usage: aug <init|doctor|cache|scratch|check|build|bundle|run|emit-c|emit-llvm|emit-ir|test|verify|openapi|format|migrate|spec|bench|explain|context|lsp|symbols|definition|references|graph|complete|hover|fixes|semantic-tokens> [project directory] [options] [-- args]\n` +
+    `Usage: aug <init|doctor|cache|scratch|check|build|bundle|run|emit-c|emit-llvm|emit-ir|test|verify|openapi|format|migrate|spec|bench|explain|context|compare|lsp|symbols|definition|references|graph|complete|hover|fixes|semantic-tokens> [project directory] [options] [-- args]\n` +
     `Scratch: aug scratch FILE [--prepare] [--run] [--offline] [--backend c|llvm] [--json] [-- args] — check a temporary entry module; --run executes it\n` +
     `Find libraries: aug libraries [QUERY] [--json] — search the bundled task catalog without downloads\n` +
     `Inspect dependencies: aug dependencies [PROJECT] [--json]; aug update [PROJECT] --preview [--offline] [--json]\n` +
     `Package maintainers: aug package workflow [DIRECTORY] [--write] [--json]; aug package release [DIRECTORY] --tag vVERSION [--json]\n` +
+    `Compare local projects: aug compare BEFORE AFTER [--json] — checked contracts, source changes and known consumers; no execution\n` +
     `Package readiness/diff: aug package check DIRECTORY [--json]; aug package diff BEFORE AFTER [--json]\n` +
     `New application: aug init DIRECTORY [--template hello|weather] [--block-style indent|braces] [--indentation spaces|tabs] [--assignment equals|to]\n` +
     `Caches: aug cache [PROJECT] [--json]; aug cache prune [PROJECT] [--write] [--json] — inspect caches or clear idle verified test output\n` +
@@ -399,6 +401,25 @@ export async function main(argv: string[]): Promise<number> {
         process.stdout.write('This report checks source/contracts and cached host artifacts. Independent tests, other platforms and publication remain separate.\n');
       }
       return report.ready?0:1;
+    }catch(error){process.stderr.write(failureMessage(error)+'\n');return 1;}
+  }
+  if(command==='compare') {
+    const args=argv.slice(1),paths=args.filter(arg=>!arg.startsWith('-'));
+    if(args.length===1&&args[0]==='--help'){process.stdout.write('Use aug compare BEFORE AFTER [--json] — compare two local, installed projects without execution or writes.\n');return 0;}
+    if(paths.length!==2||args.some(arg=>arg.startsWith('-')&&arg!=='--json')||args.filter(arg=>arg==='--json').length>1) {
+      process.stderr.write('Use aug compare BEFORE AFTER [--json]\n');return 2;
+    }
+    try {
+      const report=projectComparison(paths[0],paths[1]);
+      if(args.includes('--json'))process.stdout.write(JSON.stringify(report)+'\n');
+      else {
+        process.stdout.write(`Checked projects: ${report.before.revision} -> ${report.after.revision}\n`);
+        for(const change of report.changes)process.stdout.write(`${change.id}: ${change.kind}, ${change.categories.join(', ')}; ${change.impact.after.length} known consumer sites after the change\n`);
+        for(const side of ['before','after'] as const)for(const issue of report[side].diagnostics)process.stderr.write(`${side} ${issue.file}:${issue.line}:${issue.column}: ${issue.code}: ${issue.message}\n`);
+        process.stdout.write(`${report.sourceChanges.length} changed source files; ${report.configurationChanges.length} configuration changes; ${report.dependencyChanges.length} dependency metadata changes.\n`);
+        process.stdout.write('Behavior was not tested. Dynamic, native and external boundaries remain in --json.\n');
+      }
+      return report.status==='compared'?0:1;
     }catch(error){process.stderr.write(failureMessage(error)+'\n');return 1;}
   }
   if(command==='package'&&(argv[1]==='check'||argv[1]==='diff')) {

@@ -12,7 +12,7 @@ import {semanticDependencyMetadata,type DependencyMetadata} from './semantic-met
 export interface SemanticSymbol {id:string; name:string; kind:string; location:Span; owner?:string; editable:boolean}
 export interface Occurrence {symbol:string; file:string; start:number; end:number; line:number; column:number;
   role:'declaration'|'read'|'write'|'call'|'import'|'export'|'type'|'argument-label'|'shorthand-label'|'test'; caller?:string}
-export interface SemanticEdge {from:string; to:string; kind:'call'|'callback-call'|'function-value'|'import'|'export'|'implements'|'inherits'|'injected'|'test'|'internal'; location:Span}
+export interface SemanticEdge {from:string; to:string; kind:'call'|'callback-call'|'function-value'|'import'|'export'|'implements'|'inherits'|'injected'|'test'|'internal'|'interceptor'; location:Span}
 export interface SemanticBoundary {kind:'interface-dispatch'|'native-code'|'interceptor-delegation'|'unresolved-call'; location:Span; target?:string}
 export interface SemanticGraph {
   schema:2; compiler:{version:string; sha256:string}; revision:string; ordering:'file-offset-role';
@@ -102,6 +102,10 @@ export function semanticGraph(checked:CheckedProject,wholeProject:boolean,checke
     if(Array.isArray(value)){value.forEach(item=>visit(item,caller,deferred));return;}
     const node=value as {kind?:string;span?:Span;name?:string},expr=value as Expr;
     caller=nodeIds.get(value)??caller;
+    if(node.kind==='function'||node.kind==='class')for(const layer of checked.interceptorPlans.get(value as MethodDecl|import('./ast.ts').ClassDecl)??[]) {
+      globalReference(layer.definition.id,layer.annotation.span,layer.definition.name,'read',caller);
+      edge('interceptor',caller,layer.definition.id,layer.annotation.span);
+    }
     if(expr.kind==='lambda')deferred=true;
     const name=checked.resolvedNames.get(expr);
     if(name) {
@@ -197,7 +201,7 @@ export function semanticGraph(checked:CheckedProject,wholeProject:boolean,checke
   relationships.sort((a,b)=>compare(a.location.file,b.location.file)||a.location.start-b.location.start||compare(a.kind,b.kind));
   for(const relation of relationships) {
     (forwardDependencies[relation.from]??=[]).push(relation);
-    if(['call','callback-call','function-value'].includes(relation.kind))(reverseCallers[relation.to]??=[]).push(relation);
+    if(['call','callback-call','function-value','interceptor'].includes(relation.kind))(reverseCallers[relation.to]??=[]).push(relation);
   }
   const sources=[...project.files.values()].filter(file=>!checkedFiles||checkedFiles.has(file.path)).map(file=>({file:semanticSourcePath(checked,file.path),sha256:digest(file.source)})).sort((a,b)=>compare(a.file,b.file));
   const compiler=compilerIdentity(),errors=checked.diagnostics.filter(issue=>issue.severity!=='warning').length;

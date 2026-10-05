@@ -260,6 +260,7 @@ export const diagnosticHelp: Record<string, string> = {
   MODULE_SURFACE: 'An outward signature cannot mention a folder-internal or inaccessible type. Export its required interface/data type, or keep the implementation internal behind an exported service interface and explicit composition. Constructor inputs, including resolve inputs, are public construction requirements.',
   IMPORT: 'Import a sibling file directly or an exposed name from a folder’s `export.aug`.',
   NAME: 'A name must be declared in this file or explicitly imported before use.',
+  PROJECT_COMPARE_STALE: 'Local source or metadata changed between comparison captures. Retry with stable inputs; this report performs no source edits and does not establish atomic observation of external writers.',
   TYPE: 'Check the types in the expression, parameters, return value, and generic arguments.',
   INTERFACE: 'Every class declares at least one interface with implements. Explicit methods and selected defaults must satisfy every inherited contract: labels, types, defaults and ownership agree; capabilities, mutation and checked errors stay within its bounds. Review the expected/actual fragment and linked declaration.',
   DI: 'Declare implement key with Class in main.aug before executable statements, or in a test when group before setup. Each key has one target class.',

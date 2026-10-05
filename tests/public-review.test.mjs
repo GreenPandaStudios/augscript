@@ -130,3 +130,24 @@ test('public review keeps generic interceptor effects local to each application'
     assert.equal(hover.status,0,hover.stderr);assert.match(JSON.parse(hover.stdout).documentation,/Layer 1 Trace: dependencies Audit<int>;.*uses Audit<int>\.note/);
   }finally{rmSync(root,{recursive:true,force:true});}
 });
+
+
+test('public package review distinguishes a constructor from its same-named method',()=>{
+ const root=mkdtempSync(join(tmpdir(),'aug-public-constructor-'));
+ try {
+  const before=join(root,'before'),after=join(root,'after');
+  for(const [path,version] of [[before,'1.0.0'],[after,'1.1.0']]){library(path,'@example/counter',version);write(path,'export.aug','export Foo from api\n');write(path,'api.aug','interface I { Foo() returns int }\nFoo(int value) implements I { Foo() returns int { return value } }\n');}
+  let result=diff(before,after);assert.equal(result.status,0,result.stderr);assert.deepEqual(JSON.parse(result.stdout).changes,[]);
+  write(after,'api.aug','interface I { Foo() returns int }\nFoo(int value, int extra = 1) implements I { Foo() returns int { return value } }\n');
+  result=diff(before,after);assert.equal(result.status,0,result.stderr);assert.equal(JSON.parse(result.stdout).changes.length,1);
+ } finally {rmSync(root,{recursive:true,force:true});}
+});
+
+test('public package review excludes callable implementation references from promises',()=>{
+ const root=mkdtempSync(join(tmpdir(),'aug-public-callback-'));
+ try {
+  const before=join(root,'before'),after=join(root,'after');
+  for(const [path,target] of [[before,'_positive'],[after,'_negative']]){library(path,'@example/predicate');write(path,'export.aug','export Predicate from api\nexport choose from api\n');write(path,'api.aug','interface Predicate { accepts(int value) returns bool }\n_positive(int value) returns bool { return value > 0 }\n_negative(int value) returns bool { return value < 0 }\nchoose() returns Predicate { return '+target+' }\n');}
+  const result=diff(before,after);assert.equal(result.status,0,result.stderr);assert.deepEqual(JSON.parse(result.stdout).changes,[]);
+ } finally {rmSync(root,{recursive:true,force:true});}
+});

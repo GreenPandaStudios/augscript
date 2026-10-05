@@ -51,7 +51,7 @@ export function publicContract(checked:CheckedProject,fact:ContractFact,allFacts
       ...(inheritedFrom?{inheritedFrom:identity(inheritedFrom)}:{})};
   };
   const ownerParams=parameters(definition.node);
-  const local=fact.callables.map(original=>{const method=definition.node.kind==='function'?definition.node:'methods' in definition.node?definition.node.methods.find(method=>method.name===original.name):undefined;
+  const local=fact.callables.map(original=>{const method=definition.node.kind==='function'?definition.node:'methods' in definition.node?definition.node.methods.find(method=>method.name===original.name&&method.span.start===original.location.start&&method.span.end===original.location.end):undefined;
     return callable(original,method,definition.file,ownerParams);});
   const entries=fact.kind==='interface'||fact.kind==='capability'?[...(checked.interfaceMembers.get(fact.id)?.values()??[])].flat().filter(entry=>entry.from!==fact.id):[...(checked.defaults.get(fact.id)?.values()??[])];
   const inherited=entries.filter(entry=>!entry.method.name.startsWith('_')).map(entry=>{
@@ -61,7 +61,7 @@ export function publicContract(checked:CheckedProject,fact:ContractFact,allFacts
     const params=new Map([...entry.params].map(([name,value])=>[name,canonical(value)]));for(const name of entry.method.typeParams)params.delete(name);
     return callable(original,entry.method,entry.file,params,entry.from);
   });
-  const {id,location,documentation,calls,tests,...publicFact}=fact;
+  const {id,location,documentation,calls,functionValues,tests,...publicFact}=fact;
   const interfaceRefs=definition.node.kind==='class'?definition.node.implements:definition.node.kind==='interface'?definition.node.extends:[];
   return normalize({...publicFact,...(definition.node.kind==='choice'?{alternativeTypes:definition.node.alternatives.map(ref=>resolved(type(ref,definition.file,ownerParams)))}:{}),interfaceTypes:interfaceRefs.map(ref=>resolved(type(ref,definition.file,ownerParams))),
     resolvedConstraints:constraints(definition.node,definition.file,ownerParams),

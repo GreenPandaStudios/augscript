@@ -68,3 +68,9 @@ A useful instruction is:
 Ask the agent to read the spec, inspect the source, and run the checks. Review its patch before accepting it. The unreleased [requirements review](../testing.md#review-requirements-with-test-results) can retain author requirements, exact selected source, its explanation and native test results together. Keep expected behavior in your requirements and tests; the generated explanation describes the proposed implementation.
 
 For a larger boundary example, explore [modules and composition](../examples/approved-design/index.md). For a different task, return to the [guides](index.md).
+
+## Compare two local revisions
+
+The unreleased `aug compare before after --json` compares two local project folders. Install each folder's declared source dependencies first. The command checks both projects and reports changed contracts, source bytes, visibility and metadata, followed by known consumer sites. Each side retains its revision and available authored test cases. Tests are not run by comparison; use the selected cases with `aug test` or an authored acceptance file with `aug verify`.
+
+Read the contract differences separately from source changes. Comments and formatting change source hashes too. A moved declaration appears as a removal and an addition. Interface dispatch, native behavior and unknown external clients require separate review; a report of known callers is not a complete account of those boundaries. For two versions of a published package, use `aug package diff` to compare their exported surface.
