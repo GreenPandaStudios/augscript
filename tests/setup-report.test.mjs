@@ -45,7 +45,13 @@ test('doctor separates missing, verified and changed native bytes from frozen lo
     writeFileSync(join(cache,artifact.sha256,'lib/setup.bin'),'Changed native artifact');const changed=inspect();assert.equal(changed.status,1);
     const failed=changed.report.artifacts.find(entry=>entry.package==='@example/setup@1.0.0');assert.equal(failed.status,'invalid');assert.match(failed.message,/hash mismatch/);
     assert.match(failed.recovery,/Stop active builds/);assert.match(failed.recovery,new RegExp(artifact.sha256));assert.equal(readFileSync(join(cache,artifact.sha256,'lib/setup.bin'),'utf8'),'Changed native artifact');
-    writeFileSync(join(cache,artifact.sha256,'lib/setup.bin'),contents['lib/setup.bin']);
+    const memberPath=join(cache,artifact.sha256,'files.json'),originalMembers=readFileSync(memberPath),members=JSON.parse(originalMembers);
+    members.files['lib/setup.bin']=sha('Changed native artifact');writeFileSync(memberPath,JSON.stringify(members));
+    const regenerated=inspect();assert.equal(regenerated.status,1);assert.match(regenerated.report.artifacts.find(entry=>entry.package==='@example/setup@1.0.0').message,/file manifest differs from its authenticated archive/);
+    const preview=spawnSync(process.execPath,[cli,'update',app,'--preview','--offline','--json'],{env,encoding:'utf8'});
+    assert.equal(preview.status,1,preview.stderr);const previewReport=JSON.parse(preview.stdout);
+    assert.equal(previewReport.native.artifacts[0].status,'invalid');assert.match(previewReport.native.artifacts[0].error,/file manifest differs from its authenticated archive/);
+    writeFileSync(memberPath,originalMembers);writeFileSync(join(cache,artifact.sha256,'lib/setup.bin'),contents['lib/setup.bin']);
     const manifestPath=join(library,'aug-package.json'),manifest=JSON.parse(readFileSync(manifestPath));
     manifest.native.artifacts[0].link.libraries=['lib/absent.bin'];writeFileSync(manifestPath,JSON.stringify(manifest));installPackages(app,false,true);
     const absent=inspect();assert.equal(absent.status,1);assert.match(absent.report.artifacts[0].message,/missing declared file lib\/absent.bin/);assert.match(absent.report.artifacts[0].recovery,/maintainer.*corrected release/);assert.doesNotMatch(absent.report.artifacts[0].recovery,/removing/);

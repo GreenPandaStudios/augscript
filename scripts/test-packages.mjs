@@ -5,6 +5,7 @@ import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, 
 import { dirname, join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import {pathToFileURL} from 'node:url';
+import {testLocalNativeAuthor} from './test-local-native-author.mjs';
 import { spawnSync } from 'node:child_process';
 
 const root = resolve(import.meta.dirname, '..');
@@ -25,6 +26,7 @@ try {
   run('npm', ['install', '--ignore-scripts', '--no-audit', '--no-fund', ...packages.map(pkg => join(artifacts, pkg.filename))]);
   const cliRoot = join(directory, 'node_modules/@greenpandastudios/aug-cli');
   const cli = join(cliRoot, 'bin/aug.mjs');
+  await testLocalNativeAuthor({directory,cliRoot,cli,run});
   // Reference-backend bootstrap tests remain independent of release pack
   // publication. Cold/default LLVM is checked by qualify-native-consumers.mjs.
   const aug = (...args) => {

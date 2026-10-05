@@ -58,6 +58,7 @@ export function inspectCaches(directory:string) {
   try{const selected=compilerPackSelection();compilerSelection={identity:selected.pack.archive.sha256,target:selected.target.triple};nativeIdentities.add(compilerSelection.identity);}catch{/* The setup report retains the platform/manifest error. */}
   // Include current source-verified host selections even before their first lock.
   for(const entry of distribution.artifacts)nativeIdentities.add(entry.sha256);
+  for(const identity of [...nativeIdentities])nativeIdentities.add(identity+'.tar.gz');
   const caches=[
     inventory('sources',resolve(process.env.AUG_PACKAGE_CACHE??join(homedir(),'.cache/augscript/packages')),transportIdentities,'Retained: repository transport may be needed by other projects or frozen restores.'),
     inventory('native',resolve(process.env.AUG_NATIVE_ARTIFACT_CACHE??join(homedir(),'.cache/augscript/native-artifacts')),nativeIdentities,'Retained: shared compiler/runtime and native artifacts may be locked by other projects.'),

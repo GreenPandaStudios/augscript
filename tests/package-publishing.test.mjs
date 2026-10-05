@@ -7,6 +7,7 @@ import {spawnSync} from 'node:child_process';
 import fs from 'node:fs';
 import {syncBuiltinESMExports} from 'node:module';
 import {packageRelease} from '../src/package-publishing.ts';
+import {c as createArchive} from 'tar';
 import {createHash} from 'node:crypto';
 import {nativeHostTarget} from '../src/native-contracts.ts';
 import {nativePackageSelections, nativeTargetKey} from '../src/native-artifacts.ts';
@@ -186,7 +187,12 @@ test('native release evidence requires both verified bytes and matching committe
     const descriptor=JSON.stringify({format:1,profile:'aug-native-abi-1',resources:[],functions:[]});
     const sha=bytes=>createHash('sha256').update(bytes).digest('hex'),target=nativeHostTarget();
     const payload={'library.bin':'Native fixture bytes; not executed','provenance.json':'{}','THIRD_PARTY_NOTICES.md':'Fixture notices'};
-    const artifact={id:'host',target,url:'https://example.invalid/native.tar.gz',sha256:'a'.repeat(64),maximumDownloadBytes:4096,maximumUnpackedBytes:8192,
+    const contents=join(cache,'payload');mkdirSync(contents);
+    for(const [name,bytes] of Object.entries(payload))writeFileSync(join(contents,name),bytes);
+    writeFileSync(join(contents,'files.json'),JSON.stringify({format:1,files:Object.fromEntries(Object.entries(payload).map(([name,bytes])=>[name,sha(bytes)]))}));
+    const transport=join(cache,'fixture.tar.gz');createArchive({file:transport,cwd:contents,gzip:true,sync:true},[...Object.keys(payload),'files.json']);
+    const archiveBytes=readFileSync(transport);
+    const artifact={id:'host',target,url:'https://example.invalid/native.tar.gz',sha256:sha(archiveBytes),maximumDownloadBytes:4096,maximumUnpackedBytes:8192,
       link:{kind:'dynamic',libraries:['library.bin']},runtime:{files:['library.bin'],relocation:'loader-relative'},components:[],fileManifest:'files.json',provenance:'provenance.json',notices:'THIRD_PARTY_NOTICES.md'};
     const manifest=JSON.parse(readFileSync(join(directory,'aug-package.json'),'utf8'));manifest.format=2;
     manifest.native={profile:'aug-native-abi-1',bindings:'native.abi.json',bindingsSha256:sha(descriptor),upstream:{repository:'https://example.invalid/library',version:'1.0.0',sourceRevision:'b'.repeat(40)},artifacts:[artifact]};
@@ -195,7 +201,7 @@ test('native release evidence requires both verified bytes and matching committe
     let result=run('package','release',directory,'--tag','v0.1.0','--json');assert.equal(result.status,1,result.stderr);
     let report=JSON.parse(result.stdout);assert.equal(report.native.selections[0].status,'missing');assert.equal(report.checks.find(check=>check.id==='native-lock').status,'error');
     assert.equal(existsSync(join(cache,artifact.sha256)),false);
-    const output=join(cache,artifact.sha256);mkdirSync(output);
+    const output=join(cache,artifact.sha256);mkdirSync(output);writeFileSync(join(cache,artifact.sha256+'.tar.gz'),archiveBytes);
     for(const [name,bytes] of Object.entries(payload))writeFileSync(join(output,name),bytes);
     writeFileSync(join(output,'files.json'),JSON.stringify({format:1,files:Object.fromEntries(Object.entries(payload).map(([name,bytes])=>[name,sha(bytes)]))}));
     result=run('package','release',directory,'--tag','v0.1.0','--json');assert.equal(result.status,1,result.stderr);
@@ -207,6 +213,9 @@ test('native release evidence requires both verified bytes and matching committe
     assert.equal(report.evidence.behavior,'not-run');assert.equal(report.evidence.otherPlatforms,'not-qualified');
     writeFileSync(join(output,'library.bin'),'Damaged');result=run('package','release',directory,'--tag','v0.1.0','--json');assert.equal(result.status,1,result.stderr);
     report=JSON.parse(result.stdout);assert.equal(report.native.selections[0].status,'invalid');assert.match(report.native.selections[0].error,/hash mismatch/);
+    const members=JSON.parse(readFileSync(join(output,'files.json')));members.files['library.bin']=sha('Damaged');writeFileSync(join(output,'files.json'),JSON.stringify(members));
+    result=run('package','release',directory,'--tag','v0.1.0','--json');assert.equal(result.status,1,result.stderr);
+    report=JSON.parse(result.stdout);assert.equal(report.native.selections[0].status,'invalid');assert.match(report.native.selections[0].error,/file manifest differs from its authenticated archive/);
   }finally{
     if(previous===undefined)delete process.env.AUG_NATIVE_ARTIFACT_CACHE;else process.env.AUG_NATIVE_ARTIFACT_CACHE=previous;
     rmSync(directory,{recursive:true,force:true});rmSync(cache,{recursive:true,force:true});

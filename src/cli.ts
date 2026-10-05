@@ -28,7 +28,7 @@ import {generateLLVM} from './llvm.ts';
 import {lowerToIR,BackendUnsupported} from './ir.ts';
 import {IRVerificationError} from './ir-verify.ts';
 import {compileLLVM} from './llvm-native.ts';
-import {prepareNativePackages} from './native-artifacts.ts';
+import {prepareNativePackages,cacheLocalNativeArtifact} from './native-artifacts.ts';
 import {prepareLLVMCompiler} from './compiler-packs.ts';
 import {bindNativeHeader} from './native-bindings.ts';
 import {inspectDistribution} from './distribution.ts';
@@ -98,6 +98,7 @@ function usage(): void {
     `Scratch: aug scratch FILE [--prepare] [--run] [--offline] [--backend c|llvm] [--json] [-- args] — check a temporary entry module; --run executes it\n` +
     `Find libraries: aug libraries [QUERY] [--json] — search the bundled task catalog without downloads\n` +
     `Inspect dependencies: aug dependencies [PROJECT] [--json]; aug update [PROJECT] --preview [--offline] [--json]\n` +
+    `Local native archives: aug package cache-native [DIRECTORY] --artifact ID --archive FILE [--json]\n` +
     `Package maintainers: aug package workflow [DIRECTORY] [--write] [--json]; aug package release [DIRECTORY] --tag vVERSION [--json]\n` +
     `Compare local projects: aug compare BEFORE AFTER [--json] — checked contracts, source changes and known consumers; no execution\n` +
     `Package readiness/diff: aug package check DIRECTORY [--json]; aug package diff BEFORE AFTER [--json]\n` +
@@ -383,6 +384,25 @@ export async function main(argv: string[]): Promise<number> {
         }
         process.stdout.write('Installed source bytes verified. Native selections come from the lock; no artifacts were downloaded or executed.\n');
       }
+      return 0;
+    }catch(error){process.stderr.write(failureMessage(error)+'\n');return 1;}
+  }
+  if(command==='package'&&argv[1]==='cache-native') {
+    const args=argv.slice(2),values=new Map<string,string>(),seen=new Set<string>();let path:string|undefined;
+    const usage='Use aug package cache-native [DIRECTORY] --artifact ID --archive FILE [--json]\n';
+    for(let index=0;index<args.length;index++) {
+      const arg=args[index];
+      if(['--artifact','--archive'].includes(arg)) {
+        if(seen.has(arg)||!args[index+1]||args[index+1].startsWith('-')){process.stderr.write(usage);return 2;}
+        seen.add(arg);values.set(arg,args[++index]);
+      }else if(arg==='--json'&&!seen.has(arg))seen.add(arg);
+      else if(arg.startsWith('-')||path){process.stderr.write(usage);return 2;}
+      else path=arg;
+    }
+    if(!values.has('--artifact')||!values.has('--archive')){process.stderr.write(usage);return 2;}
+    try {
+      const report=await cacheLocalNativeArtifact(path??process.cwd(),values.get('--artifact')!,values.get('--archive')!);
+      process.stdout.write(seen.has('--json')?JSON.stringify(report)+'\n':`Verified local artifact ${report.artifact.id} for ${report.package} (${report.files} member files). No native code or package scripts ran; nothing was published.\n`);
       return 0;
     }catch(error){process.stderr.write(failureMessage(error)+'\n');return 1;}
   }

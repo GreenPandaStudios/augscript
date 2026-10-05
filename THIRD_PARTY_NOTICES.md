@@ -20,4 +20,4 @@ Applications built using web/crypto link native libraries from the selected depe
 
 ## JavaScript archive dependencies
 
-The CLI depends on `tar` 7.5.22; the VS Code bundle includes it and its runtime dependencies (`chownr`, `yallist`, `minipass`, `minizlib`, and `@isaacs/fs-minipass`). Their package license files are retained in the extension. Exact versions and license declarations are recorded in `package-lock.json`. See the upstream [node-tar source](https://github.com/isaacs/node-tar) for archive behavior and security reports. Native library terms above are separate from these JavaScript packages.
+The CLI depends on `tar` 7.5.22 and `minizlib` 3.1.0; the VS Code bundle includes it and its runtime dependencies (`chownr`, `yallist`, `minipass`, `minizlib`, and `@isaacs/fs-minipass`). Their package license files are retained in the extension. Exact versions and license declarations are recorded in `package-lock.json`. See the upstream [node-tar source](https://github.com/isaacs/node-tar) for archive behavior and security reports. Native library terms above are separate from these JavaScript packages.

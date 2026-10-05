@@ -65,7 +65,7 @@ The process-interruption tests kill installers on both sides of publication. The
 
 Old generations and abandoned staging directories are retained. When no build or editor is using the project, removing `.aug-packages` and `.aug-install-*` reclaims them; `aug install --frozen` restores the active graph from its original sources or verified caches. Keep `aug.lock.json`. A local folder dependency still requires that folder, and offline restoration requires every requested input to have been cached.
 
-Changed installed source is an error during checking and running. An explicit install can restore it from verified inputs. Native caches are immutable by archive digest and are checked again before use; a corrupted native cache must be removed and installed again.
+Changed installed source is an error during checking and running. An explicit install can restore it from verified inputs. Native caches are immutable by archive digest and are checked again before use; a corrupted native cache must be removed and installed again. The unreleased CLI also authenticates each native member manifest against the retained original archive. Legacy caches without that archive require one online restore; regenerating a cached manifest cannot authorize changed native bytes.
 
 ## Qualification
 

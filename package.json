@@ -49,7 +49,8 @@
     "markdown-it-container": "4.0.0",
     "tar": "7.5.22",
     "typescript": "5.9.3",
-    "vitepress": "1.6.4"
+    "vitepress": "1.6.4",
+    "minizlib": "3.1.0"
   },
   "overrides": {
     "vite": "6.4.3"

@@ -100,6 +100,14 @@ SHA-256 checked. Extraction rejects links, traversal, duplicate paths, and
 unexpected files. Cached files are checked again before use. Package installation
 does not execute native recipes or npm lifecycle scripts.
 
+**Unreleased:** cached native file manifests are authenticated against the
+original archive's published checksum before their member hashes are used.
+Changing a library and regenerating its cached manifest is rejected. The cache
+retains the compressed archive outside the extracted library directory. An older
+cache without that archive needs one online `aug install`; offline use rejects
+it. Compiler packs with a compiler-owned manifest pin retain their existing
+verification path.
+
 A failed download or extraction leaves no accepted artifact cache. Disk-full
 errors include the CLI's space-recovery guidance; they do not leave a partially
 installed library selected by a lockfile.
@@ -144,6 +152,39 @@ C++ adapters keep their qualified C++ runtime with the artifact. Source builds
 use Clang, platform headers and Linux relocation tools explicitly, while Rust
 adapters also use their pinned Rust/Cargo toolchain. Consumer installation has
 no automatic source-build fallback.
+
+## Verify a local native build (unreleased)
+
+Build the adapter with the maintainer toolchain recorded in its provenance.
+Prepare a format-2 `aug-package.json` with the archive's real SHA-256 and size
+bounds, the reviewed `native.abi.json`, and the HTTPS URL where you intend to
+publish the archive. The URL does not need to be live for this local check.
+
+From the package repository, run:
+
+```sh
+aug package cache-native . --artifact macos-arm64 \
+  --archive .aug-build/native/macos-arm64.tar.gz --json
+```
+
+Use an artifact ID from your manifest. The command checks the local archive
+against that entry, verifies every file hash and declared link/runtime,
+provenance, notice and closure file, then installs it in the ordinary native
+cache. It checks the supplied archive even when that cache already exists.
+Links and special input files are rejected. A changed package manifest,
+descriptor or configuration rejects the candidate before acceptance.
+
+Point a separate application at the local package with `aug add ../my-library
+--as my_library`. After caching the matching host artifact, `aug run --offline`
+uses the normal package resolver and LLVM backend. That run tests the real
+library; caching alone reports `execution: "not-run"`. A package's other target
+archives can be cached but cannot run on an unsupported host.
+
+The command does not compile source, fetch an archive, run package scripts or
+publish a release. Publish the verified archive at its declared URL, then tag
+and share the source repository through the [ordinary package
+workflow](packages.md). Consumers continue to import that repository and obtain
+its matching prebuilt artifact.
 
 ## Native calls in workers
 
