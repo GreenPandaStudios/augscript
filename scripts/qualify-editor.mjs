@@ -15,9 +15,11 @@ assert.ok(distributionInputs.editors.includes(editor),'Choose a qualified editor
 const retained=args.includes('--retained-compiler'),host=process.platform+'-'+process.arch;
 mkdirSync(join(root,'.aug-build'),{recursive:true});
 const output=join(root,`.aug-build/editor-qualification-${host}-${editor}${retained?'-retained':''}.json`);
+const retainedLogs=join(root,`.aug-build/editor-host-logs-${host}-${editor}${retained?'-retained':''}`);
 const report={format:1,host,editor,compilerMode:retained?'retained-release':'candidate',baseline:distributionInputs.baseline.extension,rendering:process.platform==='linux'?'software':'platform-default',passed:false,checks:[]};
 let directory,stage='candidate manifest';
 try{
+  rmSync(retainedLogs,{recursive:true,force:true});
   const manifest=JSON.parse(readFileSync(join(root,'vscode/package.json'))),candidate=join(root,'vscode',`augscript-${manifest.version}.vsix`);
   report.compiler=manifest.augustCompilerVersion;report.extension=manifest.version;
   assert.ok(existsSync(candidate),'Package the extension before editor qualification');
@@ -67,7 +69,6 @@ finally{
   if(directory&&report.passed)rmSync(directory,{recursive:true,force:true});
   else if(directory){
     // Retain bounded text logs from these disposable profiles, not their caches or credentials.
-    const retainedLogs=join(root,`.aug-build/editor-host-logs-${host}-${editor}${retained?'-retained':''}`);
     let bytes=0,files=0;
     const copyLogs=(source,target,depth=0)=>{
       if(depth>12||!existsSync(source))return;
