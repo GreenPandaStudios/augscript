@@ -87,6 +87,8 @@ Commit the source, export file, tests, comments, and dependency lock to your Git
 
 ## Compiler compatibility
 
+**Unreleased:** library starters direct coding agents to `src/export.aug`, its declarations and neighboring compiled specs. Application starters continue to start in `main.aug`.
+
 A manifest names the compiler that can check the library. Published 0.23.0 requires an exact version. **Unreleased:** the next compiler also accepts bounded requirements such as `~0.23.0` and `^1.0.0`; `aug package init` still starts with an exact version. Authors must test the releases they claim to support. See [package compatibility](package-compatibility.md) for the requirement grammar, lock format and upgrade procedure.
 
 ## Dependencies between libraries

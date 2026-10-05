@@ -53,6 +53,68 @@ descriptor, so ownership and native boundaries stay visible beside the code.
 
 The [ABI reference](native-abi.md) specifies scalar and buffer mappings, the error record, resource lifetimes and thread requirements. [Package compatibility](package-compatibility.md) records the versioned formats and unreleased upgrade/recovery behavior.
 
+## Start a C package
+
+**Unreleased:** the native starter builds a real signed-integer identity function
+on macOS ARM64. It needs a maintainer's Clang, macOS SDK and `ar`; consumers do
+not need these tools. Supply your package name, prospective repository and
+artifact URLs, and a license you are entitled to use:
+
+```sh
+identity_repository=https://github.com/example/aug-identity
+identity_artifact="$identity_repository/releases/download/v0.1.0/macos-arm64.tar.gz"
+aug package init identity --native c \
+  --name @example/identity \
+  --repository "$identity_repository" --artifact-url "$identity_artifact" \
+  --license ./LICENSE \
+  --clang /usr/bin/clang --ar /usr/bin/ar
+```
+
+The URLs describe where you intend to publish; the command creates no repository
+or upload. It builds in isolation and checks the real C header, August bindings
+and same-file tests before creating the project. Build or check failures preserve
+a new or empty destination. A populated or linked destination is rejected. A
+writer-cleanup failure after creation reports `NATIVE_INIT_COMMITTED` and preserves
+the completed project; inspect its remaining lock before retrying.
+
+`src/export.aug` publishes `identity` from `src/api.aug`. That file holds the
+private native declaration, safe wrapper and tests. The C header and implementation
+live in `native/include/api.h` and `native/adapter.c`. Review `native.abi.json`
+and the tool/input record in `native/build.json`; inputs are call-local and
+worker permission is false. This scalar starter owns no native handles.
+
+The measured archive is `.aug-build/native/macos-arm64.tar.gz`, with member
+hashes, checked-header evidence, provenance and your supplied notices. Cache it
+locally, then execute the tests and compile its explanation:
+
+```sh
+cd identity
+aug package cache-native . --artifact macos-arm64 \
+  --archive .aug-build/native/macos-arm64.tar.gz
+aug check
+aug test --backend llvm
+aug spec
+aug package check
+```
+
+The first test run downloads the pinned August compiler and runtime packs if
+they are not cached. The native library comes from the local archive; its
+prospective publication URL is not needed. Later tests can use
+`aug test --offline --backend llvm`. These steps execute the actual C implementation
+through LLVM. Initialization alone does not execute it. A neighboring application can declare
+`identity: "../identity"` under `packages` in `main.yaml`, import
+`identity` from that alias, and call `identity(value=7)`. Run the application
+with `aug run --offline` after caching the archive. Publish that exact archive
+at the declared URL before sharing a tagged repository import.
+
+The starter honors the normal block, indentation and assignment preferences.
+Its `AGENTS.md` starts at the library's export surface and directs tools to
+adjacent compiled specs. Automatic rebuilds after edits, more native types,
+additional author targets and hosted artifact-production jobs remain outside
+this first profile. Use your reviewed maintainer build to extend it and refresh
+all measured pins; installation never runs a package recipe. Existing C++ and
+Rust libraries continue to use their reviewed C adapters.
+
 ## Check and generate bindings
 
 Binding maintainers can use the preview's `aug bind header` command. Supply a

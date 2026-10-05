@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
-import {mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, realpathSync,existsSync} from 'node:fs';
+import {mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, realpathSync,existsSync,symlinkSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {test} from 'node:test';
 import {createHash} from 'node:crypto';
 import {readPackage, compilerVersion,installPackages,projectPackages} from '../src/package-manager.ts';
-import {prepareNativePackages} from '../src/native-artifacts.ts';
+import {prepareNativePackages,nativePackageSelections} from '../src/native-artifacts.ts';
 import {nativeTarget, selectNativeArtifact} from '../src/native-contracts.ts';
 import {loadProject} from '../src/project.ts';
 import {checkProject} from '../src/checker.ts';
@@ -203,4 +203,12 @@ test('native member-manifest pins reject malformed digests and remain tied to ve
   writeFileSync(file,JSON.stringify(lock));
   const rejected=projectPackages(app,lock.specifications);
   assert.equal(rejected.scopes.size,0);assert.match(rejected.diagnostics[0].message,/Native metadata.*differs.*verified source manifest/);
+}));
+
+
+test('a native library has identical selections through a directory alias',()=>fixture(root=>{
+  const alias=join(root,'directory-alias');symlinkSync(root,alias,'dir');
+  const lock={format:1,compiler:compilerVersion(),specifications:{},roots:{},packages:[],npm:{}};
+  const selected=path=>nativePackageSelections(path,lock,join(path,'.aug-packages'),nativeTarget('aarch64-apple-darwin','14.0'));
+  assert.deepEqual(selected(alias),selected(root));
 }));

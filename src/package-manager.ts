@@ -7,7 +7,7 @@ import type { Diagnostic } from './ast.ts';
 import { loadConfig } from './config.ts';
 import { parse } from './parser.ts';
 import { isGitSource, materializeGit, sourceAlias, gitReference, type GitSource } from './git-packages.ts';
-import { agentInstructions } from './project-init.ts';
+import { libraryAgentInstructions } from './project-init.ts';
 import {formatSource, sourceStyle, styleConfiguration} from './source-style.ts';
 import type {SourceStyle} from './formatter.ts';
 import { withPackageLock, withPackageLockAsync } from './package-locking.ts';
@@ -559,7 +559,7 @@ export function initPackage(directory: string, name: string, npmMetadata = false
   const arithmetic = formatSource(join(directory, 'src/arithmetic.aug'),
     '/** Add two integers. @param left First value. @param right Second value. @return Their sum. */\nadd(int left, int right):\n    return left + right\n\ntest add:\n    when addition:\n        it adds_two_integers:\n            assert(add(left=2, right=3) == 5)\n', style);
   mkdirSync(join(directory, 'src'), { recursive: true });
-  writeFileSync(join(directory, 'AGENTS.md'), agentInstructions);
+  writeFileSync(join(directory, 'AGENTS.md'), libraryAgentInstructions);
   writeFileSync(join(directory, 'main.yaml'), styleConfiguration(style));
   const manifest: PackageManifest = { format: 1, name, version: '0.1.0', compiler: compilerVersion(), source: 'src', dependencies: {} };
   writeJson(join(directory, 'aug-package.json'), manifest);

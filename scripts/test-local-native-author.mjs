@@ -56,5 +56,16 @@ export async function testLocalNativeAuthor({directory,cliRoot,cli,run}) {
     const locked=JSON.parse(readFileSync(join(publicApp,'aug.lock.json')));assert.ok(locked.git.some(entry=>entry.request==='https://github.com/GreenPandaStudios/aug-zlib#v0.1.5'&&/^[a-f0-9]{40}$/.test(entry.commit)));
     process.stdout.write('Installed public zlib repository import, authenticated archive and offline LLVM execution passed.\n');
   }
+  if(target.os==='macos'&&target.arch==='arm64'){
+    const starter=join(root,'native-starter'),starterLicense=join(root,'starter-license');writeFileSync(starterLicense,'Author-supplied installed starter license.\n');
+    run(process.execPath,[cli,'package','init',starter,'--native','c','--name','@example/starter','--repository','https://example.invalid/starter','--artifact-url','https://example.invalid/starter-v0.1.0.tar.gz','--license',starterLicense,'--clang',clang,'--ar',ar]);
+    run(process.execPath,[cli,'package','cache-native',starter,'--artifact','macos-arm64','--archive',join(starter,'.aug-build/native/macos-arm64.tar.gz')],{env:{...env,PATH:'/no-native-tools'}});
+    run(process.execPath,[cli,'test',starter,'--offline','--backend','llvm'],{env:{...env,PATH:'/no-native-tools',SDKROOT:'/missing-sdk',DEVELOPER_DIR:'/missing-native-tools'}});
+    const starterApp=join(root,'starter-app');mkdirSync(starterApp);writeFileSync(join(starterApp,'main.yaml'),'packages:\n  identity: "../native-starter"\n');
+    writeFileSync(join(starterApp,'main.aug'),'import identity from identity\nprint(value=identity(value=-9223372036854775808))\nprint(value=identity(value=7))\nprint(value=identity(value=9223372036854775807))\n');
+    assert.equal(run(process.execPath,[cli,'run',starterApp,'--offline','--backend','llvm'],{env:{...env,PATH:'/no-native-tools',SDKROOT:'/missing-sdk',DEVELOPER_DIR:'/missing-native-tools'}}),'-9223372036854775808\n7\n9223372036854775807\n');
+    assert.match(readFileSync(join(starter,'AGENTS.md'),'utf8'),/Start in src\/export\.aug/);
+    process.stdout.write('Installed C native starter, same-file tests and ordinary offline LLVM imports passed.\n');
+  }
   process.stdout.write('Installed native author archive and offline LLVM consumer passed; paired cache tampering rejected.\n');
 }

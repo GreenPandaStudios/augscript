@@ -4,7 +4,7 @@ Reviewed October 5, 2026 against the ergonomics candidate, following the user-su
 
 ## Decisions
 
-Native authoring now has an explicit local archive check through the ordinary cache and package resolver. It verifies source-owned artifact pins and deployment declarations without inventing ownership or running a recipe. The integrity regression also repairs acceptance of a changed library plus a regenerated cached file manifest. Native scaffolding and richer adapter generation remain separate work. See the [author workflow](native-author-workflow.md).
+Native authoring now has an explicit local archive check through the ordinary cache and package resolver. It verifies source-owned artifact pins and deployment declarations without inventing ownership or running a recipe. The integrity regression also repairs acceptance of a changed library plus a regenerated cached file manifest. An initial explicit C starter now supplies checked source, same-file cases, measured artifacts and author provenance on macOS ARM64. Rebuilds, broader adapters and hosted author workflows remain separate work. See the [author workflow](native-author-workflow.md).
 
 Keep compilation deterministic and independent of a model provider. Compiler facts, authored requirements, generated explanations and execution results retain different origins. A language capability never grants an assistant permission to act on the host. Existing narrow imports, labeled calls, immutable data and checked errors remain authoritative.
 

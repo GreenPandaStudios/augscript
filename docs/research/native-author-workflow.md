@@ -92,3 +92,43 @@ neighboring checks. Both reviews verified cold rejection and offline pinned
 reuse; the repaired installed fixture and public zlib consumer passed. Type,
 documentation/site, release archives and version gates passed. The full-suite
 result above belongs to the preceding archive checkpoint.
+
+## Initial C repository layout
+
+The following checkpoint adds `aug package init DIRECTORY --native c` with
+explicit name, repository/artifact URLs, license, Clang and ar. It builds a real
+fixed-width identity library, checks its physical header and August test bodies,
+then promotes a complete source directory. The artifact carries measured outer
+and member pins, all deployment files, author notices and provenance. Consumers
+cache it through the existing explicit command and import normal source aliases.
+Initialization does not run native cases, upload an archive or create a remote
+repository. The first maintainer target is macOS ARM64 with a macOS 14 floor.
+
+The public regression also found source self-selection sliced canonical paths
+using the requested root's length. A directory alias made it read a directory
+or a duplicated library path. Canonical root-relative names now give identical
+selections, and the starter's real same-file LLVM tests run. Generated library
+agent instructions start at src/export.aug and guide readers to the adjacent
+specs, rather than asking them to open a nonexistent application entry.
+
+Build and checking failures leave destinations untouched. Concurrent additions
+are rejected before directory promotion. A filesystem cleanup failure after
+promotion reports its committed output explicitly. Rebuilding edited adapters,
+additional targets, hosted artifact production, resources and C++/Rust scaffolds
+remain separate work; E05 is still partial. This layout makes those prerequisites
+visible instead of creating placeholder artifact identities.
+
+
+The initial native-starter checkpoint passes 41 direct native checks, 21 package
+and preference checks, and 42 author, setup and update checks. Both reviews are
+clear after correcting the first-use compiler/runtime instructions. Independent
+probes reject a corrupted physical header and preserve a concurrent destination
+addition; directory-alias same-file tests and ordinary imports execute real C
+through LLVM. The installed JavaScript gate builds the starter, runs its tests
+and imports it with native tools unavailable to the consumer. The public zlib
+repository/archive gate also passes. These runs use selected contributor LLVM
+and runtime packs, not clean default compiler downloads. The frozen 1001-case
+suite passes 997, skips three optional/cold cases and retains the independently
+reproduced host LLDB launch timeout. Type checking, 608 generated-document drift
+checks, the wiki build, release archives and version checks pass. Rebuilds,
+broader author profiles and hosted production remain pending.

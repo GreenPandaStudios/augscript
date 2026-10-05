@@ -1,3 +1,4 @@
+import {initNativePackage} from './native-init.ts';
 import {BodyEditError,sourceUnitLimit} from './body-edits.ts';
 import {SourceChangeError} from './source-transactions.ts';
 import {projectComparison} from './project-comparison.ts';
@@ -98,6 +99,7 @@ function usage(): void {
     `Scratch: aug scratch FILE [--prepare] [--run] [--offline] [--backend c|llvm] [--json] [-- args] — check a temporary entry module; --run executes it\n` +
     `Find libraries: aug libraries [QUERY] [--json] — search the bundled task catalog without downloads\n` +
     `Inspect dependencies: aug dependencies [PROJECT] [--json]; aug update [PROJECT] --preview [--offline] [--json]\n` +
+    `Native C starter: aug package init DIRECTORY --native c --name @owner/name --repository URL --artifact-url URL --license FILE --clang PATH --ar PATH\n` +
     `Local native archives: aug package cache-native [DIRECTORY] --artifact ID --archive FILE [--json]\n` +
     `Package maintainers: aug package workflow [DIRECTORY] [--write] [--json]; aug package release [DIRECTORY] --tag vVERSION [--json]\n` +
     `Compare local projects: aug compare BEFORE AFTER [--json] — checked contracts, source changes and known consumers; no execution\n` +
@@ -538,9 +540,10 @@ export async function main(argv: string[]): Promise<number> {
     const usage = library ? 'Use aug package init DIRECTORY [--name @owner/name]' : 'Use aug init DIRECTORY [--template hello|weather]';
     const sourceOptions = ' [--block-style indent|braces] [--indentation spaces|tabs] [--assignment equals|to]';
     let style: SourceStyle, template: 'hello'|'weather' = 'hello', name: string | undefined;
+    const nativeValues = new Map<string,string>();
     try {
       if (!argv[pathIndex] || argv[pathIndex].startsWith('-')) throw new Error('Missing project directory.');
-      const values = new Map<string,string>(), allowed = ['--block-style','--indentation','--assignment',library ? '--name' : '--template'];
+      const values = new Map<string,string>(), nativeFlags = ['--native','--repository','--artifact-url','--license','--clang','--ar'], allowed = ['--block-style','--indentation','--assignment',library ? '--name' : '--template',...(library?nativeFlags:[])];
       for (let index = pathIndex + 1; index < argv.length; index += 2) {
         const option = argv[index], value = argv[index+1];
         if (!allowed.includes(option)) throw new Error('Unknown init option: ' + option);
@@ -553,12 +556,20 @@ export async function main(argv: string[]): Promise<number> {
       const requested = values.get('--template') ?? 'hello';
       if (!['hello','weather'].includes(requested)) throw new Error('Unknown template: ' + requested);
       template = requested as 'hello'|'weather'; name = values.get('--name');
+      for(const flag of nativeFlags)if(values.has(flag))nativeValues.set(flag,values.get(flag)!);
+      if(nativeValues.size){
+        if(nativeValues.get('--native')!=='c')throw new Error('Use --native c for the initial native starter.');
+        for(const flag of ['--name',...nativeFlags])if(!values.has(flag))throw new Error('Native initialization requires '+flag+'. It builds only with explicitly selected maintainer tools.');
+      }
     } catch (error) { process.stderr.write(failureMessage(error) + '\n' + usage + sourceOptions + '\n'); return 2; }
     try {
       const root = resolve(argv[pathIndex]);
       if (library) {
         name ??= root.split(/[\\/]/).at(-1)!;
-        initPackage(root,name,!!name && argv.includes('--name'),style);
+        if(nativeValues.size){
+          const report=initNativePackage(root,{name,repository:nativeValues.get('--repository')!,artifactURL:nativeValues.get('--artifact-url')!,license:nativeValues.get('--license')!,clang:nativeValues.get('--clang')!,ar:nativeValues.get('--ar')!,preferences:style});
+          process.stdout.write('Built native artifact '+report.artifact+' at '+report.archive+'\nNative execution and publication have not run. See the generated README for local caching and LLVM tests.\n');
+        }else initPackage(root,name,!!name && argv.includes('--name'),style);
         process.stdout.write(`Created August library ${name} in ${root}\n`);
       } else {
         initProject(root,template,style);

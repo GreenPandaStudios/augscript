@@ -3,15 +3,18 @@ import { basename, join, resolve } from 'node:path';
 import {formatSource, sourceStyle, styleConfiguration} from './source-style.ts';
 import type {SourceStyle} from './formatter.ts';
 
-export const agentInstructions = `# Working on this August project
+function projectAgentInstructions(library:boolean):string {
+  const entry=library?'Start in src/export.aug. It lists the public surface; follow its explicit exports to the declarations and same-file tests.':'Start in main.aug. It shows the imports, dependency bindings, and application startup.';
+  const execution=library?'Import the library from a separate application and use aug run there. Keep library commands focused on aug check, aug test and aug spec.':'Use aug run to compile and run the application. Run prepares required source packages and native libraries.';
+  return `# Working on this August project
 
-Start in main.aug. It shows the imports, dependency bindings, and application startup.
+${entry}
 Read the adjacent .aug.md specification before changing a source file. Generate missing
 or stale explanations with aug spec; they describe checked behavior and link dependencies.
 
 Keep tests in the file that declares the behavior. Run aug check, aug test, and aug spec
-after a change, and use aug run to compile and run the application. Run prepares required
-source packages and native libraries. Commit aug.lock.json; do not edit .aug-packages.
+after a change. ${execution}
+Commit aug.lock.json; do not edit .aug-packages.
 
 Use labeled inputs, narrow export.aug files, and underscore-prefixed private helpers.
 Leave return types, effects, and errors to inference when an executable body provides
@@ -21,6 +24,9 @@ is not evident from the code. Follow the existing indentation or brace style.
 
 Language guide: https://greenpandastudios.github.io/augscript/
 `;
+}
+export const agentInstructions=projectAgentInstructions(false);
+export const libraryAgentInstructions=projectAgentInstructions(true);
 
 export const weatherSource = `/** The JSON shape returned by the forecast endpoint. Temperatures use whole degrees. */
 record WeatherForecast(string date, int temperatureC, int temperatureF, string summary)

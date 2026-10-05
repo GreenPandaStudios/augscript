@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Add an explicit scalar C native starter for macOS ARM64 with checked headers, safe source APIs, same-file tests, measured archives and author provenance. It uses selected maintainer tools and preserves destinations on build/check failures.
+- Library agent instructions start at src/export.aug. Native library selection now hashes canonical root-relative paths, fixing tests through directory aliases.
+
 - Native package artifacts may pin their exact member manifest with `fileManifestSha256`. First installation checks it against the authenticated archive; offline caches verify their members against the source-owned pin. Existing unpinned packages retain the archive verification path.
 
 - Authenticate cached native member manifests against the retained original archive's published checksum. Reject paired library/manifest replacement in installation, doctor, dependency previews and release reports; legacy unanchored caches require one online restore. Keep compiler-owned manifest pins.

@@ -52,7 +52,7 @@ Work proceeds through source/tool identities, everyday data and syntax, collecti
 | E02 | Standardize library naming | Pending | — |
 | E03 | Typed SQLite/PostgreSQL rows | Pending | — |
 | E04 | A SQL-checking package tool | Pending | — |
-| E05 | Native package scaffolding | Partial; author archive verification prerequisite implemented | aug package cache-native verifies local native archives against exact package pins and complete deployment declarations, rechecks author metadata and prepares ordinary offline imports. Cached manifests retain an authenticated archive anchor; new source-owned member pins preserve exact locks and avoid hot-cache decompression. Scaffold/producer and hosted artifact qualification remain pending |
+| E05 | Native package scaffolding | Partial; initial C starter and author archive checks implemented | aug package cache-native verifies local native archives against exact package pins and complete deployment declarations, rechecks author metadata and prepares ordinary offline imports. Cached manifests retain an authenticated archive anchor; new source-owned member pins preserve exact locks and avoid hot-cache decompression. The explicit macOS ARM64 scalar C starter builds and checks real artifacts, safe bindings and same-file tests. Rebuilds, broader adapters/targets and hosted artifact production remain pending |
 | E06 | Expand binding checks without guessing contracts | Pending | — |
 | E07 | Repeatable C++ adapters | Pending | — |
 | E08 | Repeatable Rust adapters | Pending | — |
@@ -171,3 +171,18 @@ The pure retry and named-selection checkpoint passed ten direct policy checks, 7
 The native author archive checkpoint passed 24 direct integrity/local-author cases and 95 neighboring package, setup, binding and cache checks. Independent reviews reproduced and repaired cached FIFO reads, unbounded member reads, and metadata headers that escaped archive accounting; bounded decompression probes also led to smaller compressed input feeds. The installed JavaScript CLI builds and imports a real local C identity library, verifies signed boundary values through LLVM, and rejects paired library/manifest tampering. A separate empty native/source cache downloads the public zlib repository and archive, runs its compression round trip, then repeats offline with native tools absent from PATH. Both review axes are clear. The frozen 989-case suite passed 985, skipped three optional/cold checks and retained the independently reproduced host LLDB launch timeout; all frozen source hashes stayed unchanged. Type checking, 608 generated-document drift checks, the site, archives, installed C/LLVM and version gates passed. Native scaffolding remains partial, and default compiler downloads, installed-editor behavior, hosted author publication and other-platform execution remain unqualified.
 
 The subsequent optional-member-pin checkpoint passed all 38 direct native cases and 91 neighboring package, setup, cache and documentation checks. Source and target locks retain the declared digest, malformed pins and changed locks reject, original archive authentication still precedes installation, and pinned hot caches need no retained transport. Both reviews found the installed fixture still expected the legacy diagnostic; its repaired gate passed real local C and public zlib LLVM consumers. Independent cold probes rejected wrong outer hashes, compressed/unpacked limits and duplicate paths without acceptance. Type checking, 608 generated-document drift checks, the site, release archives, installed C/LLVM and version checks passed. This focused checkpoint follows the recorded 989-case full run; it has not had a separate full-suite run. E05 scaffolding and the stated distribution/platform limits remain outstanding.
+
+
+The initial C native-starter checkpoint passes 41 direct native checks, 21 package
+and preference checks, and 42 author, setup and update checks. Both reviews are
+clear after correcting the first-use compiler/runtime instructions. Independent
+probes reject a corrupted physical header and preserve a concurrent destination
+addition; directory-alias same-file tests and ordinary imports execute real C
+through LLVM. The installed JavaScript gate builds the starter, runs its tests
+and imports it with native tools unavailable to the consumer. The public zlib
+repository/archive gate also passes. These runs use selected contributor LLVM
+and runtime packs, not clean default compiler downloads. The frozen 1001-case
+suite passes 997, skips three optional/cold cases and retains the independently
+reproduced host LLDB launch timeout. Type checking, 608 generated-document drift
+checks, the wiki build, release archives and version checks pass. Rebuilds,
+broader author profiles and hosted production remain pending.

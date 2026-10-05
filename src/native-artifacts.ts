@@ -1,7 +1,7 @@
 import {createHash} from 'node:crypto';
 import {chmodSync,closeSync,existsSync,lstatSync,mkdirSync,mkdtempSync,openSync,readFileSync,readSync,readdirSync,renameSync,realpathSync,rmSync,writeFileSync} from 'node:fs';
 import {homedir} from 'node:os';
-import {dirname,join,resolve} from 'node:path';
+import {dirname,join,relative,resolve} from 'node:path';
 import {archiveFileManifestSha256,stageLocalArchive,readRegularNativeFile,nativeArchiveEntry} from './native-archive.ts';
 import {UnpackSync} from 'tar';
 import {withPackageLockAsync} from './package-locking.ts';
@@ -170,8 +170,8 @@ export function nativePackageSelections(root:string,lock:PackageLock,cache:strin
     const packages=[...new Set(verified.scopes.values())].filter(entry=>entry.native).map(entry=>({sourcePackage:entry.name+'@'+entry.version,sourceDigest:entry.digest,
       sourceCommit:lock.git?.find(g=>entry.path.endsWith('packages/'+sourceAlias(g.request)))?.commit,
       contractSha256:entry.native!.bindingsSha256,artifact:selectNativeArtifact(entry.native!.artifacts,target)}));
-    if(self?.manifest.native){const digest=createHash('sha256');
-      for(const file of ['aug-package.json','native.abi.json',...sourcePaths(self.sourceRoot).map(path=>path.slice(root.length+1))].sort())digest.update(file+'\0').update(readFileSync(join(root,file))).update('\0');
+    if(self?.manifest.native){const digest=createHash('sha256'),sourceDirectory=realpathSync(root);
+      for(const file of ['aug-package.json','native.abi.json',...sourcePaths(self.sourceRoot).map(path=>relative(sourceDirectory,path).replaceAll('\\','/'))].sort())digest.update(file+'\0').update(readFileSync(join(sourceDirectory,file))).update('\0');
       packages.push({sourcePackage:self.manifest.name+'@'+self.manifest.version,sourceDigest:digest.digest('hex'),sourceCommit:undefined,contractSha256:self.manifest.native.bindingsSha256,artifact:selectNativeArtifact(self.manifest.native.artifacts,target)});
     }
     return packages;
