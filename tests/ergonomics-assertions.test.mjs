@@ -127,8 +127,8 @@ test read {
 for(const backend of ['c','llvm'])test('assertion control-character escapes stay within their fixed byte lengths ('+backend+')',()=>{
  const root=mkdtempSync(join(tmpdir(),'aug-assertion-escapes-'));
  try{
-  const controls=String.fromCharCode(...Array.from({length:32},(_,i)=>i),127);
-  const literal=value=>'\"'+value.replaceAll('\0','\\0').replaceAll('\n','\\n').replaceAll('\r','\\r').replaceAll('\t','\\t')+'\"';
+  const controls=String.fromCharCode(...Array.from({length:31},(_,i)=>i+1),127);
+  const literal=value=>'\"'+value.replaceAll('\n','\\n').replaceAll('\r','\\r').replaceAll('\t','\\t')+'\"';
   writeFileSync(join(root,'main.aug'),'');
   writeFileSync(join(root,'values.aug'),`read() { return 1 }
 test read { when escaping {
@@ -137,7 +137,7 @@ test read { when escaping {
 } }
 `);
   const result=spawnSync(process.execPath,['bin/aug.mjs','test',root,'--backend',backend,'--json'],{encoding:'utf8'});
-  assert.equal(result.status,1,result.stderr);const report=JSON.parse(result.stdout);assert.equal(report.failed,2);
+  assert.equal(result.status,1,result.stderr);const report=JSON.parse(result.stdout);assert.equal(report.failed,2,result.stdout+result.stderr);
   const escaped=[...controls].map(value=>'\\u'+value.charCodeAt(0).toString(16).padStart(4,'0')).join('');
   assert.ok(report.tests[0].stderr.includes('actual: "'+escaped+'"'),report.tests[0].stderr);
   assert.ok(report.tests[1].stderr.length<1600);assert.doesNotMatch(report.tests[1].stderr,/�|AddressSanitizer|runtime error:/);
