@@ -28,6 +28,7 @@ Search works offline and writes nothing. The results explain imports, ownership,
 | [PyTorch / LibTorch](#pytorch) | Create CPU float64 tensors, add them, and read sums or values. | Repository package |
 | [SQLite](#sqlite) | Embedded SQL databases with bound parameters and scalar queries. | Repository package |
 | [Clock](#time) | Read wall-clock time through a replaceable capability. | Repository package |
+| [Validated domain values](#values) | Calendar dates, exact durations, identifiers, HTTP URLs, portable paths and bounded UTF-8 text. | Bundled with this compiler |
 | [HTTP client and web helpers](#web) | HTTP capabilities, redirects, cookies and server controls. | Repository package |
 | [zlib](#zlib) | Compress bytes and decompress within an explicit output limit. | Repository package |
 
@@ -361,6 +362,27 @@ This source folder has no declared compiler constraint. Its catalog reference ta
 MIT. [License details](https://github.com/GreenPandaStudios/augscript/blob/v0.23.0/LICENSE).
 
 The LLVM clock consumer binds SystemClock and checks a native wall-clock read. [Read the tests and example](https://github.com/GreenPandaStudios/augscript/blob/main/tests/llvm-backend.test.mjs).
+
+## Validated domain values {#values}
+
+Calendar dates, exact durations, identifiers, HTTP URLs, portable paths and bounded UTF-8 text.
+
+Unreleased; use the matching compiler. Civil dates use years 1–9999, durations exact int64 milliseconds, URLs an ASCII DNS-host profile, and paths a lexical portable-relative profile. Text limits measure bytes.
+
+Import `august.values` from the compiler’s core library. These additions are unreleased.
+
+```text
+import CivilDate and Duration and TokenId and HttpUrl from august.values
+import PortableRelativePath and BoundedText from august.values
+```
+
+Deeply immutable records; constructors, copies and JSON decoding enforce the same invariants.
+
+Declared compiler requirement: `0.23.0`.
+
+MIT. [License details](https://github.com/GreenPandaStudios/augscript/blob/v0.23.0/LICENSE).
+
+Independent calendar/int64 vectors, parser caps, original text, copy/JSON validation and malformed native UTF-8 on both backends. [Read the tests and example](https://greenpandastudios.github.io/augscript/guides/use-domain-values).
 
 ## HTTP client and web helpers {#web}
 

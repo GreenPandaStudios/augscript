@@ -1,3 +1,4 @@
+import {coreLibraryModules} from './library-modules.ts';
 import {coherentSourceRead} from './source-transactions.ts';
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { basename, dirname, join, relative, resolve } from 'node:path';
@@ -99,7 +100,7 @@ function loadProjectRevision(projectRoot:string,overrides:Map<string,string>,cac
   }
   const libraries = standardLibraries();
   const stdlibRoot = libraries.root;
-  const libraryFiles = new Set([join(stdlibRoot, 'export.aug'), ...['io','collections','math','errors'].flatMap(module=>sourceFiles(join(stdlibRoot,module)))]);
+  const libraryFiles = new Set([join(stdlibRoot, 'export.aug'), ...coreLibraryModules.flatMap(module=>sourceFiles(join(stdlibRoot,module)))]);
   for (const path of libraryFiles) {
     const parsed = read(path);
     parsed.file.builtin = true;

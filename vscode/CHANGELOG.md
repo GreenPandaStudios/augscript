@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add Javadoc hover, import completion and compiled-spec contracts for the unreleased `august.values` domain records and operations.
+
 - Complete and explain explicit byte and Unicode 18 grapheme text operations, including their checked UTF-8 failures.
 
 - Complete and explain `sourceLocation()` and the typed `august.errors` library, with repair guidance for unsupported generic catches.

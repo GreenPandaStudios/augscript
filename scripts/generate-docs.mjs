@@ -3,7 +3,7 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync
 import { dirname, join, relative, resolve } from 'node:path';
 import { loadProject } from '../src/project.ts';
 import { checkProject } from '../src/checker.ts';
-import { callableResult, callableErrors } from '../src/contracts.ts';
+import { callableResult, callableErrors, constructorErrors } from '../src/contracts.ts';
 import { tyName } from '../src/types.ts';
 import { javadocBefore } from '../src/javadoc.ts';
 import { prepareRunPackages } from '../src/package-manager.ts';
@@ -20,6 +20,7 @@ import { homepageExample } from './homepage-docs.mjs';
 import {conformancePage} from './conformance-ledger.mjs';
 import { nativePackageExamples } from './native-package-docs.mjs';
 import {libraryCatalogPage} from './library-catalog-docs.mjs';
+import {coreLibraryModules,standardLibraryModules} from '../src/library-modules.ts';
 
 const root = resolve(import.meta.dirname, '..');
 const check = process.argv.includes('--check');
@@ -44,14 +45,27 @@ const rootExport=join(root,'src/stdlib/export.aug');
 for(const output of generateSpecs(checked,{manifest:false,files:coreFiles}))
   if(output.source===rootExport)outputs.set(relative(root,output.path),output.text);
 const header = source => source.slice(0, source.indexOf('\n') < 0 ? source.length : source.indexOf('\n')).trim().replace(/[:{]\s*$/, '').trimEnd();
+const parameter = param => (param.injected ? 'resolve ' : '') +
+  (param.ownership === 'borrow' ? 'borrow ' : param.ownership === 'own' ? 'own ' : '') +
+  typeName(param.type) + ' ' + (param.label ?? param.name) + (param.defaultValue ? ' = ' + defaultText(param.defaultValue) : '');
+const genericParameters = node => node.typeParams.length ? '<' + node.typeParams.map(name =>
+  (node.typeVariance?.[name] ? node.typeVariance[name] + ' ' : '') + name +
+  (node.typeConstraints?.[name]?.length ? ' implements ' + node.typeConstraints[name].map(typeName).join(' and ') : '')).join(', ') + '>' : '';
+const formatHeader = (node, params, prefix = '') => {
+  const name = prefix + node.name + genericParameters(node);
+  const result = name + '(' + params.join(', ') + ')';
+  return result.length > 85 && params.length > 1 ? name + '(\n    ' + params.join(',\n    ') + '\n)' : result;
+};
 const signature = node => {
+  if (node.kind === 'class') {
+    let result = formatHeader(node, node.fields.map(parameter), node.errorShorthand ? 'error ' : node.record ? 'record ' : '');
+    const errors = constructorErrors(checked, node);
+    if (errors.length) result += ' unless ' + errors.join(' and ');
+    if (!node.errorShorthand && node.implements.length) result += ' implements ' + node.implements.map(typeName).join(', ');
+    return result;
+  }
   if (node.kind !== 'function' && node.kind !== 'method') return header(project.files.get(node.span.file).source.slice(node.span.start));
-  const params = node.params.map(param => (param.injected ? 'resolve ' : '') + (param.ownership === 'borrow' ? 'borrow ' : param.ownership === 'own' ? 'own ' : '') + typeName(param.type) + ' ' + (param.label??param.name) + (param.defaultValue?' = '+defaultText(param.defaultValue):''));
-  const generic = node.typeParams.length ? '<' + node.typeParams.map(name =>
-    (node.typeVariance?.[name] ? node.typeVariance[name] + ' ' : '') + name +
-    (node.typeConstraints?.[name]?.length ? ' implements ' + node.typeConstraints[name].map(typeName).join(' and ') : '')).join(', ') + '>' : '';
-  let result = node.name + generic + '(' + params.join(', ') + ')';
-  if (result.length > 85 && params.length > 1) result = node.name + generic + '(\n    ' + params.join(',\n    ') + '\n)';
+  let result = formatHeader(node, node.params.map(parameter));
   const returns = tyName(callableResult(checked, node)), errors = callableErrors(checked, node);
   if (returns !== 'void') result += ' returns ' + returns;
   if (errors.length) result += ' unless ' + errors.join(' and ');
@@ -73,7 +87,7 @@ const link = node => {
   const path = relative(root, node.span.file).split(/[/\\]/).join('/');
   return `[Source](https://github.com/GreenPandaStudios/augscript/blob/main/${path}#L${node.span.line})`;
 };
-for (const module of ['io', 'collections', 'math', 'errors', 'json', 'memory', 'time', 'web', 'crypto']) {
+for (const module of standardLibraryModules) {
   const folder = join(root, 'src/stdlib', module);
   prepareRunPackages(folder);
   const before = loadProject(folder);
@@ -85,7 +99,7 @@ for (const module of ['io', 'collections', 'math', 'errors', 'json', 'memory', '
   for (const output of generateSpecs(checked, { manifest: false,files:owned })) outputs.set(relative(root, output.path), output.text);
   const exports = project.files.get(join(folder, 'export.aug')).items.filter(item => item.kind === 'export' && !item.folder);
   const sections = [generated(`src/stdlib/${module}`) + `# august.${module}\n\n` +
-    (['io','collections','math','errors'].includes(module) ? (module!=='io'?'**Unreleased:** ':'')+'Supplied with the compiler. Import public names from `august.' + module + '`.' :
+    (coreLibraryModules.includes(module) ? (module!=='io'?'**Unreleased:** ':'')+'Supplied with the compiler. Import public names from `august.' + module + '`.' :
       'Install this source library with `aug add https://github.com/GreenPandaStudios/augscript/src/stdlib/' + module + ' --as ' + module + '`, then import its public names from `' + module + '`.') +
     '\n\nSignatures show result types and checked errors. See [packages](../packages.md) to pin a release and [language constructs](../language-constructs.md) for built-in types.'];
   for (const item of exports) {

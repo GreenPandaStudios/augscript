@@ -1,7 +1,7 @@
 {
   "name": "@greenpandastudios/aug-stdlib",
   "version": "0.23.0",
-  "description": "August core modules: explicit I/O, collections, checked mathematics and error context",
+  "description": "August core modules: explicit I/O, collections, checked mathematics, error context and validated values",
   "license": "MIT",
   "files": [
     "august",

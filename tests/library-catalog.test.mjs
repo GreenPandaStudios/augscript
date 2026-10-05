@@ -19,9 +19,10 @@ test('task search is deterministic and includes actionable ordinary imports',()=
   assert.ok(libraryCatalog('sql database').entries.some(entry=>entry.id==='sqlite'));
   assert.deepEqual(libraryCatalog('openMemory').entries.map(entry=>entry.id),['sqlite']);
   assert.equal(libraryCatalog('aarch64-apple-darwin').entries.length,6);
-  assert.equal(libraryCatalog('MIT').entries.length,15);
+  assert.equal(libraryCatalog('MIT').entries.length,16);
   const context=libraryCatalog('errorContext').entries.find(entry=>entry.id==='errors');
   assert.equal(context.source.module,'august.errors');assert.equal(context.install,undefined);assert.match(context.requirements,/Unreleased/);
+  for(const query of ['CivilDate','BoundedText','domain values']) { const entry=libraryCatalog(query).entries.find(item=>item.id==='values'); assert.ok(entry,query);assert.equal(entry.source.module,'august.values');assert.equal(entry.install,undefined);assert.match(entry.requirements,/Unreleased/); }
   assert.ok(libraryCatalog('borrow').entries.some(entry=>entry.id==='sqlite'));
   assert.ok(libraryCatalog('scope exit').entries.some(entry=>entry.id==='pytorch'));
   assert.ok(!libraryCatalog('MIT').entries.every(entry=>/limit/i.test(entry.summary)));

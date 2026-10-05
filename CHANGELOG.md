@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add `august.values`: validated calendar dates, exact millisecond durations, DNS-profile HTTP URLs, token IDs, portable relative paths and byte-bounded UTF-8 text. Constructors, copies and JSON decoding preserve the same invariants; parsers and arithmetic retain specific checked errors.
+
 - Add explicit `byteLength()` and Unicode 18.0.0 default extended `graphemeLength()`/`graphemes()` operations, with checked UTF-8 validation and bundled licensed tables.
 
 - Add `august.errors` for deliberate `ContextError<E>` wrapping and compiler-provided `sourceLocation()` values. Supported generic catches verify every stored cause, including nested contexts; erased or behavioral profiles and generic HTTP status maps reject. Causes keep their concrete checked type; source identities use relative project/package paths.

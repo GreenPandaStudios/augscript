@@ -1,7 +1,7 @@
 import {recordBindingFieldAt} from './binding-patterns.ts';
 import {boundaryInputSnippet} from './test-inputs.ts';
 import { defaultText } from './parameters.ts';
-import { callableResult, callableErrors } from './contracts.ts';
+import { callableResult, callableErrors, constructorErrors } from './contracts.ts';
 import { dirname, join, relative, resolve, sep } from 'node:path';
 import type { BindingPattern, ClassDecl, Expr, InterceptorDecl, MethodDecl, Param, SourceFile, Span, Stmt, TopLevel, TypeRef } from './ast.ts';
 import { bindingNames, expressionChildren, fieldsOf, typeName } from './ast.ts';
@@ -243,8 +243,7 @@ function definitionItem(checked: CheckedProject, def: Definition): EditorItem {
   const explicit = node.fields.filter(field => !field.injected);
   const callSignature = `${def.name}${node.typeParams.length ? `<${node.typeParams.join(', ')}>` : ''}` +
     `(${explicit.map(field => `${field.label ?? field.name}=${typeName(field.type)}`).join(', ')})`;
-  const errors = [...new Set([...(checked.constructorContracts.get(node)?.errors.map(tyName)??node.validationErrors?.map(typeName)??[]),
-    ...(checked.interceptorPlans.get(node) ?? []).flatMap(layer => layer.errors.map(tyName))])];
+  const errors = constructorErrors(checked,node);
   return { label: def.name, kind: 'class', detail: `${node.record?'record ':''}${label}` +
       (errors.length ? ` unless ${errors.join(' and ')}` : '') +
       (node.implements.length?` implements ${node.implements.map(typeName).join(', ')}`:''),

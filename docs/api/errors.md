@@ -13,7 +13,11 @@ Signatures show result types and checked errors. See [packages](../packages.md) 
 ## ContextError {#api-ContextError}
 
 ```text
-error ContextError<E implements Error>(string operation, E cause, Tuple<string, int, int> location)
+error ContextError<E implements Error>(
+    string operation,
+    E cause,
+    Tuple<string,int,int> location
+)
 ```
 
 Keep the original typed error with an operation name and an authored source location.

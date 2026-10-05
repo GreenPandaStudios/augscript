@@ -601,3 +601,7 @@ catch ArithmeticError error:
 catch ConversionError error:
     print(value="Invalid decimal input")
 ```
+
+## Validated domain values
+
+**Unreleased:** `august.values` supplies ordinary immutable `CivilDate`, `Duration`, `TokenId`, `HttpUrl`, `PortableRelativePath` and `BoundedText` records. Constructors, parsers, copies and JSON decoding enforce the same documented bounds. Parsing/validation raises `ConversionError`; duration arithmetic raises `ArithmeticError` on overflow. These values perform no I/O. Read [the domain-value guide](guides/use-domain-values.md) and [complete contracts](api/values.md) for the supported date, URL, path and text profiles.

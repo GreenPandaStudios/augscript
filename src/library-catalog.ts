@@ -1,3 +1,4 @@
+import {coreLibraryModules} from './library-modules.ts';
 import {readFileSync} from 'node:fs';
 import {compilerVersion, type PackageManifest} from './package-manager.ts';
 import {acceptsCompiler} from './package-compatibility.ts';
@@ -66,6 +67,9 @@ const sourceDescriptions:Description[] = [
   {id:'errors',title:'Typed error context',summary:'Retain a concrete error cause with an operation name and source location.',tasks:['error','errors','cause','context','debugging'],
     names:['ContextError','errorContext'],ownership:'Managed read-only context fields retain the original cause and its ordinary ownership rules.',requirements:'Unreleased; use the matching compiler. Capture sourceLocation() at the operation, and choose whether to throw, log or expose context.',license:'MIT.',
     tests:{summary:'Concrete cause propagation, relative source identities, nested worker errors and package aliases on both backends.',url:wiki+'guides/add-error-context'}},
+  {id:'values',title:'Validated domain values',summary:'Calendar dates, exact durations, identifiers, HTTP URLs, portable paths and bounded UTF-8 text.',tasks:['domain values','validation','date','dates','duration','durations','url','urls','identifier','path','text'],
+    names:['CivilDate','Duration','TokenId','HttpUrl','PortableRelativePath','BoundedText'],ownership:'Deeply immutable records; constructors, copies and JSON decoding enforce the same invariants.',requirements:'Unreleased; use the matching compiler. Civil dates use years 1–9999, durations exact int64 milliseconds, URLs an ASCII DNS-host profile, and paths a lexical portable-relative profile. Text limits measure bytes.',license:'MIT.',
+    tests:{summary:'Independent calendar/int64 vectors, parser caps, original text, copy/JSON validation and malformed native UTF-8 on both backends.',url:wiki+'guides/use-domain-values'}},
   {id:'json',title:'JSON',summary:'Parse JSON with strict or bounded ingestion-compatible number handling.',tasks:['json','parsing','serialization','ingestion'],
     names:['parse','parseCompatible'],ownership:'Managed immutable JSON views; extracted text and bytes have checked bounds.',requirements:'Choose strict parse or parseCompatible explicitly. Compatibility retains documented depth and Unicode limits.',license:'MIT August source; yyjson: MIT.',
     tests:{summary:'Parser and ingestion profiles include presence, numbers, malformed inputs and bounds.',url:repository+'/blob/main/tests/ingestion-values.test.mjs'}},
@@ -106,7 +110,7 @@ function nativeSnapshots(): NativeSnapshot[] {
 export function libraryCatalog(query = ''): {format:1;compiler:string;query:string;entries:LibraryEntry[]} {
   const compiler = compilerVersion(),snapshots = nativeSnapshots();
   const entries:LibraryEntry[] = sourceDescriptions.map(description=>{
-    const bundled = ['io','collections','math','errors'].includes(description.id),sourceModule = bundled ? 'august.'+description.id : description.id;
+    const bundled = coreLibraryModules.some(module=>module===description.id),sourceModule = bundled ? 'august.'+description.id : description.id;
     const request = `${repository}/tree/v0.23.0/src/stdlib/${description.id}`;
     return {id:description.id,title:description.title,summary:description.summary,tasks:description.tasks,
       source:bundled ? {kind:'bundled',module:sourceModule} : {kind:'repository',request},

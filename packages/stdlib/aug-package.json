@@ -6,8 +6,9 @@
   "source": "august",
   "modules": [
     "io",
-    "json",
-    "memory",
-    "time"
+    "collections",
+    "math",
+    "errors",
+    "values"
   ]
 }

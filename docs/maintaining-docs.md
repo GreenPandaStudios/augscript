@@ -23,6 +23,8 @@ For dependency-setup changes, run `npm run test:setup-cold` after preparing the 
 
 The installed-package gate uses an isolated npm cache. Its first installation fetches production dependencies; its later global installation runs offline from that cache. This checks both first use and reuse without relying on packages cached by the contributor's machine.
 
+The core and optional source module lists live in `src/library-modules.ts`. Checking, npm assembly, API generation and wiki navigation read that registry; core package module metadata must match it. Add a new core module to the registry, `src/stdlib/export.aug`, the canonical package manifest and its runnable guide, then regenerate.
+
 ## Generated reference
 
 The gallery generator also creates deterministic project archives in `docs/public/downloads`. Each archive includes source, configuration, and generated specs, with neighboring source packages when required. It excludes build state, installed dependencies, locks with temporary host paths, and credentials. Gallery tests extract every archive and check it as an independent project. Public guides use these downloads and the npm CLI; source-workspace commands belong in contributor documentation.

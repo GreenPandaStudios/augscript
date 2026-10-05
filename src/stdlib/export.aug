@@ -3,3 +3,4 @@ export folder io
 export folder collections
 export folder math
 export folder errors
+export folder values

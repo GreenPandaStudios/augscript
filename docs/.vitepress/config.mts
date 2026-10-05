@@ -1,4 +1,5 @@
 import {sourceNavigationTransformer} from './source-navigation.mjs';
+import {standardLibraryModules} from '../../src/library-modules.ts';
 import { defineConfig } from 'vitepress';
 import { copyFileSync, readFileSync } from 'node:fs';
 import { dirname, relative, resolve } from 'node:path';
@@ -74,6 +75,7 @@ export default defineConfig({
         { text: 'Try a snippet', link: '/guides/try-a-snippet' },
         { text: 'Add error context', link: '/guides/add-error-context' },
             { text: 'Measure text', link: '/guides/measure-text' },
+            { text: 'Validate domain values', link: '/guides/use-domain-values' },
         { text: 'Describe a finite choice', link: '/guides/use-choices' },
         { text: 'Pass a small function', link: '/guides/use-callbacks' },
         { text: 'Reuse service wiring', link: '/guides/reuse-services' },
@@ -97,7 +99,7 @@ export default defineConfig({
         { text: 'Native ABI', link: '/native-abi' },
         { text: 'CLI, configuration, and editor', link: '/tooling' }
       ]},
-      { text: 'Library reference', collapsed: true, items: ['io', 'collections', 'math', 'errors', 'json', 'memory', 'time', 'web', 'crypto'].map(module => ({ text: `august.${module}`, link: `/api/${module}` })) },
+      { text: 'Library reference', collapsed: true, items: standardLibraryModules.map(module => ({ text: `august.${module}`, link: `/api/${module}` })) },
       { text: 'About August', collapsed: true, items: [
         { text: 'Why August exists', link: '/about' }, { text: 'Example projects', link: '/examples/' },
         { text: 'Performance', link: '/performance' }, { text: 'Production readiness', link: '/production-readiness' },

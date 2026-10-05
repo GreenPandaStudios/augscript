@@ -1844,6 +1844,21 @@
           "test": "generated properties match every official assignment and default across all Unicode code points"
         }
       ]
+    },
+    {
+      "id": "DOMAIN_VALUES",
+      "summary": "Unreleased ordinary domain records validate constructors, parsers, copies and JSON decoding; formatting is stable and preserves documented units.",
+      "reference": "guides/use-domain-values.md",
+      "productions": [],
+      "cases": [
+        "domain-values"
+      ],
+      "regressions": [
+        {
+          "file": "tests/domain-values.test.mjs",
+          "test": "public domain values retain nominal types, checked errors and useful editor help"
+        }
+      ]
     }
   ]
 }

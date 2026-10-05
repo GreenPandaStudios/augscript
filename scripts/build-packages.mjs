@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { chmodSync, cpSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
+import {coreLibraryModules,standardLibraryModules} from '../src/library-modules.ts';
 import { spawnSync } from 'node:child_process';
 
 const root = resolve(import.meta.dirname, '..');
@@ -18,7 +19,7 @@ const copy = (source, destination) => {
   cpSync(from, destination, { recursive: true,
     filter: file => !relative(from, file).split(/[\\/]/).some(part => part.startsWith('.') && part!=='.aug-spec' || part === 'node_modules') });
 };
-const libraryTargets = new Map(['io','collections','math','errors','json','memory','time','web','crypto'].map(module =>
+const libraryTargets = new Map(standardLibraryModules.map(module =>
   [module, join(output,['web','crypto'].includes(module)?module:'stdlib','august',module)]));
 const publishedRoots = new Map(['stdlib','web','crypto','cli'].map(name=>[
   join(output,name),join(output,JSON.parse(readFileSync(join(root,'packages',name,'package.json'),'utf8')).name.split('/').at(-1))]));
@@ -44,8 +45,9 @@ for (const name of ['stdlib', 'web', 'crypto', 'cli']) {
     for (const file of ['bootstrap-native.mjs', 'native-home.mjs', 'native-setup.mjs', 'native-toolchain.mjs', 'native-dependencies.lock.json']) copy(`scripts/${file}`, join(target, 'scripts', file));
     chmodSync(join(target, 'scripts/bootstrap-native.mjs'), 0o755);
   } else {
+    if(name==='stdlib'&&JSON.stringify(JSON.parse(readFileSync(join(root,'packages/stdlib/aug-package.json'),'utf8')).modules)!==JSON.stringify(coreLibraryModules))throw new Error('Core package module metadata differs from src/library-modules.ts');
     copy(`packages/${name}/aug-package.json`, join(target, 'aug-package.json'));
-    const modules = name === 'stdlib' ? ['io','collections','math','errors'] : [name];
+    const modules = name === 'stdlib' ? coreLibraryModules : [name];
     for (const module of modules) {
       copy(`src/stdlib/${module}`, join(target, 'august', module));
       copy(`docs/api/${module}.md`, join(target, 'docs', `${module}.md`));

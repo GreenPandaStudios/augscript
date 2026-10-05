@@ -83,7 +83,7 @@ Sum values in list order; reject overflow at any intermediate addition. An empty
 ## Decimal {#api-Decimal}
 
 ```text
-record Decimal(int coefficient, int scale)
+record Decimal(int coefficient, int scale) unless ConversionError
 ```
 
 Exact decimal data: coefficient times 10 to the negative scale.

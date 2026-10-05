@@ -123,5 +123,8 @@
   },
   "measure-text-guide": {
     "stdout": "14\n5\n7\n2\né\n👩‍💻\n"
+  },
+  "domain-values-guide": {
+    "stdout": "2000-02-29\nPT1.250S\norder_42\nhttps://api.example.com/orders\ndocs/api/time.md\nRésumé\n"
   }
 }
