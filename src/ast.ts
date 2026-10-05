@@ -145,6 +145,8 @@ export interface ImportDecl {
 
 export interface ExportDecl {
   kind: 'export';
+  /** An explicit sibling contract excluded from outward folder imports. */
+  internal?: boolean;
   name: string;
   from?: string;
   folder: boolean;

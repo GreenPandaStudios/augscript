@@ -44,10 +44,11 @@ Both braces and indentation are accepted. The formatter uses main.yaml preferenc
 | --- | --- |
 | PROJECT / MAIN | Supply main.aug at the root. Keep declarations in other files and imports/bindings before startup. |
 | SYNTAX | Use word booleans, initialize blocks, implement/with, and resolve/to. Preview `aug migrate PROJECT`, then use --write or the editor's verified migration fix. |
-| IMPORT / EXPORT | Import each file's dependencies. Cross-folder access needs export.aug; only exports belong in that file. Wildcards import visible local declarations, never internal imports. |
+| IMPORT / EXPORT | Import each file's dependencies. Cross-folder access needs export.aug. The unreleased internal entries admit explicit sibling imports without exposing the declaration outside the folder. Wildcards import visible local declarations, never internal imports. |
 | NAME | Correct spelling or import a visible declaration. Quick Fix offers an import when a unique accessible source exists. |
 | PRIVATE | A leading _ confines a declaration/member/module to its scope. Private names cannot be imported or exported. Constructor labels can differ from private storage. |
 | INTERFACE | Classes need implements and matching method types, labels, ownership, errors, and effects. Override conflicting defaults. Records are the immutable-data alternative. |
+| MODULE_SURFACE | Unreleased: an exported signature exposes a type that consumers cannot import. Export its required data or service contract, or keep the implementation internal behind an exported service and explicit composition. Constructor inputs, including resolve inputs, remain construction requirements. |
 | MODULE | An import cycle or forbidden folder dependency violates the module contract. The message includes the cycle or allowed dependencies. |
 | LINT | An optional architectural warning: wildcard imports, public helper growth, dependency fan-out, broad errors, discarded errors, or explicit shared state. |
 

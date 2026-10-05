@@ -62,6 +62,7 @@ Variance is accepted only on interfaces; mutable storage applies to class header
 Import      := "import" (Name {"and" Name} | "everything") "from" (DottedPath | RepositoryUrl {"." Name}) End
 Export      := "export" Name "from" SiblingName End
              | "export" "folder" ChildName End
+Internal    := "internal" Name "from" SiblingName End  // unreleased
 Binding     := "implement" Key ["<" Types ">"] "with" Type
                ["shared" | "fresh" | "scoped"] ["mutable"] End
 Include     := "include" Name End

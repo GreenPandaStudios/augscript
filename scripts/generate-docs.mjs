@@ -97,7 +97,7 @@ for (const module of standardLibraryModules) {
   const owned=[...project.files.values()].filter(file=>!file.package&&file.path.startsWith(folder+'/'));
   for(const file of owned)outputs.set(relative(root,file.path),specHint(file).text);
   for (const output of generateSpecs(checked, { manifest: false,files:owned })) outputs.set(relative(root, output.path), output.text);
-  const exports = project.files.get(join(folder, 'export.aug')).items.filter(item => item.kind === 'export' && !item.folder);
+  const exports = project.files.get(join(folder, 'export.aug')).items.filter(item => item.kind === 'export' && !item.internal && !item.folder);
   const sections = [generated(`src/stdlib/${module}`) + `# august.${module}\n\n` +
     (coreLibraryModules.includes(module) ? (module!=='io'?'**Unreleased:** ':'')+'Supplied with the compiler. Import public names from `august.' + module + '`.' :
       'Install this source library with `aug add https://github.com/GreenPandaStudios/augscript/src/stdlib/' + module + ' --as ' + module + '`, then import its public names from `' + module + '`.') +

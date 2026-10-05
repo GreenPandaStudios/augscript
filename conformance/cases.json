@@ -271,6 +271,38 @@
         "main.aug": "import parseCivilDate and formatCivilDate and parseDuration and formatDuration and TokenId and HttpUrl and PortableRelativePath and BoundedText from august.values\ntry:\n    print(value=formatCivilDate(value=parseCivilDate(text=\"2000-02-29\")))\n    print(value=formatDuration(value=parseDuration(text=\"-PT0.001S\")))\n    print(value=TokenId(text=\"order_42\").text)\n    print(value=HttpUrl(text=\"https://example.com?\").text)\n    print(value=PortableRelativePath(text=\"docs/api.md\").text)\n    print(value=BoundedText(text=\"é\", minBytes=2, maxBytes=2).text)\n    parseCivilDate(text=\"1900-02-29\")\ncatch ConversionError failure:\n    print(value=\"invalid date\")\n"
       },
       "stdout": "2000-02-29\n-PT0.001S\norder_42\nhttps://example.com?\ndocs/api.md\né\ninvalid date\n"
+    },
+    {
+      "id": "internal-composition",
+      "files": {
+        "main.aug": "import Greeter and Services from service\n\ninclude Services\nresolve Greeter to greeter\nprint(value=greeter.message())\n",
+        "service/export.aug": "export Greeter from greeting\nexport Services from providers\ninternal Service from greeting\ninternal Repository from repository\ninternal MemoryRepository from repository\n",
+        "service/greeting.aug": "import Repository from repository\n\ninterface Greeter:\n    message() returns string\n\nService(resolve Repository repo to _repo) implements Greeter:\n    message():\n        return _repo.read()\n",
+        "service/repository.aug": "interface Repository:\n    read() returns string\n\nMemoryRepository() implements Repository:\n    read():\n        return \"Hello, Ada!\"\n",
+        "service/providers.aug": "import Greeter and Service from greeting\nimport Repository and MemoryRepository from repository\n\ncomposition Services:\n    implement Repository with MemoryRepository\n    implement Greeter with Service\n"
+      },
+      "stdout": "Hello, Ada!\n"
+    },
+    {
+      "id": "internal-import",
+      "files": {
+        "main.aug": "import Repository from service\n",
+        "service/export.aug": "export Greeter from greeting\nexport Services from providers\ninternal Service from greeting\ninternal Repository from repository\ninternal MemoryRepository from repository\n",
+        "service/greeting.aug": "import Repository from repository\n\ninterface Greeter:\n    message() returns string\n\nService(resolve Repository repo to _repo) implements Greeter:\n    message():\n        return _repo.read()\n",
+        "service/repository.aug": "interface Repository:\n    read() returns string\n\nMemoryRepository() implements Repository:\n    read():\n        return \"Hello, Ada!\"\n",
+        "service/providers.aug": "import Greeter and Service from greeting\nimport Repository and MemoryRepository from repository\n\ncomposition Services:\n    implement Repository with MemoryRepository\n    implement Greeter with Service\n"
+      },
+      "diagnostic": "IMPORT"
+    },
+    {
+      "id": "internal-result",
+      "files": {
+        "main.aug": "",
+        "service/export.aug": "export leak from api\ninternal Hidden from model\n",
+        "service/model.aug": "record Hidden(int value)\n",
+        "service/api.aug": "import Hidden from model\nleak() { return Hidden(value=1) }\n"
+      },
+      "diagnostic": "MODULE_SURFACE"
     }
   ],
   "mutations": [

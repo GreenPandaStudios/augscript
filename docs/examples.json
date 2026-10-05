@@ -122,9 +122,12 @@
     "tests": 2
   },
   "measure-text-guide": {
-    "stdout": "14\n5\n7\n2\né\n👩‍💻\n"
+    "stdout": "14\n5\n7\n2\ne\u0301\n\ud83d\udc69\u200d\ud83d\udcbb\n"
   },
   "domain-values-guide": {
-    "stdout": "2000-02-29\nPT1.250S\norder_42\nhttps://api.example.com/orders\ndocs/api/time.md\nRésumé\n"
+    "stdout": "2000-02-29\nPT1.250S\norder_42\nhttps://api.example.com/orders\ndocs/api/time.md\nR\u00e9sum\u00e9\n"
+  },
+  "internal-service": {
+    "stdout": "Hello, Ada!\n"
   }
 }

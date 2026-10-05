@@ -786,7 +786,7 @@ class SpecWriter {
     const folder=this.file.builtin?libraryChild(this.checked.project.libraries,dirname(this.file.path),item.name):join(dirname(this.file.path),item.name);
     const file=item.folder?join(folder,'export.aug'):join(dirname(this.file.path),item.from+'.aug');
     this.enqueue(file);
-    return `Export ${item.folder?'the folder ':'the declaration '}${code(item.name)} from [${code(basename(file))}](${url(relative(dirname(this.docs.get(this.file.path)!),this.docs.get(file)!))}${item.folder?'':'#'+encodeURIComponent(anchor(item.name))}).`;
+    return `${item.internal?'Make available only inside this folder':'Export'} ${item.folder?'the folder ':'the declaration '}${code(item.name)} from [${code(basename(file))}](${url(relative(dirname(this.docs.get(this.file.path)!),this.docs.get(file)!))}${item.folder?'':'#'+encodeURIComponent(anchor(item.name))}).`;
   }
   private providerLine(item:BindDecl|Extract<TopLevel,{kind:'include'}>): string {
     if(item.kind==='bind')return this.binding(item);
@@ -905,7 +905,7 @@ class SpecWriter {
         (project.config.openapi.enabled?`Serve OpenAPI at ${code(project.config.openapi.path)} and API docs at ${code(project.config.openapi.docs)}. `:''))]));
     }
     // Build the checked explanation first; rendering decides all spacing.
-    if(exports.length)children.push(section('Exports',2,exports.map(item=>paragraph(this.exportLine(item as Extract<TopLevel,{kind:'export'}>)))));
+    if(exports.length)children.push(section(exports.some(item=>item.kind==='export'&&item.internal)?'Folder contract':'Exports',2,exports.map(item=>paragraph(this.exportLine(item as Extract<TopLevel,{kind:'export'}>)))));
     if(providers.length)children.push(section('Providers',2,providers.map(item=>paragraph(this.providerLine(item as BindDecl|Extract<TopLevel,{kind:'include'}>)))));
     if(startup.length)children.push(section('Startup',2,[flow(startup.flatMap(item=>this.statement(item as Stmt)),this.evidence)]));
     children.push(...declarations.sort((a,b)=>Number('name' in a&&a.name.startsWith('_'))-Number('name' in b&&b.name.startsWith('_'))).map(item=>{const tree=this.declaration(item),def='name' in item?this.definition(item.name):undefined;if(def)this.declarationTrees.set(def.id,tree);return tree;}));

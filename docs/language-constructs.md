@@ -530,7 +530,7 @@ Exit from main with a status from 0 to 255 after cancellation and cleanup.
 export Name from sibling;
 ```
 
-Expose a public sibling declaration to other folders. Names, modules, and folders starting with `_` are private and cannot be exported. Export declarations belong only in `export.aug`.
+Expose a public sibling declaration to other folders. Names, modules, and folders starting with `_` are private and cannot be exported. Export and internal declarations belong only in `export.aug`.
 
 ```text
 export Logger from logger;
@@ -799,6 +799,14 @@ interface Name extends Parent { ... }
 ```
 
 Declare a contract. Interfaces may extend several interfaces and may provide default method bodies. A class must implement every method without a default. Method signatures start with their name, for example `log(string message);`.
+
+## internal
+
+```text
+internal Name from sibling
+```
+
+Unreleased: declare a sibling-only folder contract in export.aug. Strict sibling imports may use it; parent, child, other folders and package consumers cannot. Names starting with _ remain private. Exported signatures must not expose internal types. The word internal still names an ordinary function outside this declaration form.
 
 ## it
 

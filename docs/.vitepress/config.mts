@@ -76,6 +76,7 @@ export default defineConfig({
         { text: 'Add error context', link: '/guides/add-error-context' },
             { text: 'Measure text', link: '/guides/measure-text' },
             { text: 'Validate domain values', link: '/guides/use-domain-values' },
+            { text: 'Keep module internals', link: '/guides/keep-module-internals' },
         { text: 'Describe a finite choice', link: '/guides/use-choices' },
         { text: 'Pass a small function', link: '/guides/use-callbacks' },
         { text: 'Reuse service wiring', link: '/guides/reuse-services' },

@@ -117,11 +117,11 @@ function loadProjectRevision(projectRoot:string,overrides:Map<string,string>,cac
     for (const item of file.items) {
       if (isExport && item.kind !== 'export') {
         diagnostics.push(diagnostic(file.path, item.span.line, item.span.column,
-          'export.aug may contain only export declarations', 'EXPORT'));
+          'export.aug may contain only export or internal declarations', 'EXPORT'));
       }
       if (!isExport && item.kind === 'export') {
         diagnostics.push(diagnostic(file.path, item.span.line, item.span.column,
-          'export declarations belong in export.aug', 'EXPORT'));
+          'export and internal declarations belong in export.aug', 'EXPORT'));
       }
       if (file === main && ['class', 'interface', 'choice', 'function', 'interceptor', 'test', 'composition', 'resource'].includes(item.kind)) {
         diagnostics.push(diagnostic(file.path, item.span.line, item.span.column,
@@ -161,7 +161,7 @@ function loadProjectRevision(projectRoot:string,overrides:Map<string,string>,cac
   const exportCache = new Map<string, Map<string, Definition>>();
   function folderExports(folder: string, visiting: Set<string> = new Set()): Map<string, Definition> {
     if (exportCache.has(folder)) return exportCache.get(folder)!;
-    const result = new Map<string, Definition>();
+    const result = new Map<string, Definition>(),entries=new Set<string>();
     const exportFile = files.get(join(folder, 'export.aug'));
     if (!exportFile) return result;
     if (visiting.has(folder)) return result;
@@ -188,10 +188,10 @@ function loadProjectRevision(projectRoot:string,overrides:Map<string,string>,cac
       if (!def) {
         diagnostics.push(diagnostic(exportFile.path, item.span.line, item.span.column,
           `Cannot export ${item.name}: ${item.from}.aug does not define it`, 'EXPORT'));
-      } else if (result.has(item.name)) {
+      } else if (entries.has(item.name)) {
         diagnostics.push(diagnostic(exportFile.path, item.span.line, item.span.column,
-          `Duplicate export ${item.name}`, 'EXPORT'));
-      } else result.set(item.name, def);
+          `Duplicate export or internal entry ${item.name}`, 'EXPORT'));
+      } else {entries.add(item.name);if(!item.internal)result.set(item.name, def);}
     }
     exportCache.set(folder, result);
     visiting.delete(folder);

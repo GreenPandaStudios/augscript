@@ -12,7 +12,7 @@ import {semanticDependencyMetadata,type DependencyMetadata} from './semantic-met
 export interface SemanticSymbol {id:string; name:string; kind:string; location:Span; owner?:string; editable:boolean}
 export interface Occurrence {symbol:string; file:string; start:number; end:number; line:number; column:number;
   role:'declaration'|'read'|'write'|'call'|'import'|'export'|'type'|'argument-label'|'shorthand-label'|'test'; caller?:string}
-export interface SemanticEdge {from:string; to:string; kind:'call'|'callback-call'|'function-value'|'import'|'export'|'implements'|'inherits'|'injected'|'test'; location:Span}
+export interface SemanticEdge {from:string; to:string; kind:'call'|'callback-call'|'function-value'|'import'|'export'|'implements'|'inherits'|'injected'|'test'|'internal'; location:Span}
 export interface SemanticBoundary {kind:'interface-dispatch'|'native-code'|'interceptor-delegation'|'unresolved-call'; location:Span; target?:string}
 export interface SemanticGraph {
   schema:2; compiler:{version:string; sha256:string}; revision:string; ordering:'file-offset-role';
@@ -165,7 +165,7 @@ export function semanticGraph(checked:CheckedProject,wholeProject:boolean,checke
       const item=value as import('./ast.ts').ExportDecl;
       if(!item.folder&&item.from) {
         const file=join(dirname(item.span.file),item.from+'.aug'),def=project.scopes.get(file)?.get(item.name);
-        if(def){globalReference(def.id,item.span,item.name,'export',caller);edge('export',caller,def.id,item.span);}
+        if(def){globalReference(def.id,item.span,item.name,'export',caller);edge(item.internal?'internal':'export',caller,def.id,item.span);}
       }
     }
     if(node.kind==='class') {

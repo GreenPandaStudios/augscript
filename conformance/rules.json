@@ -155,16 +155,28 @@
       "reference": "reference.md#imports-and-visibility",
       "productions": [
         "Import",
-        "Export"
+        "Export",
+        "Internal"
       ],
       "cases": [
         "private-import",
-        "unexported-folder"
+        "unexported-folder",
+        "internal-composition",
+        "internal-import",
+        "internal-result"
       ],
       "regressions": [
         {
           "file": "tests/compiler.test.mjs",
           "test": "every crossed folder boundary must export its child"
+        },
+        {
+          "file": "tests/internal-modules.test.mjs",
+          "test": "a repository package exposes its service and composition without its internal repository"
+        },
+        {
+          "file": "tests/internal-modules.test.mjs",
+          "test": "an outward signature cannot expose a folder-internal type"
         }
       ]
     },

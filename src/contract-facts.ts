@@ -1,3 +1,4 @@
+import {declarationVisibility} from './module-surfaces.ts';
 import {defaultText} from './parameters.ts';
 import type {ClassDecl,GenericHeader,MethodDecl,Param,Span} from './ast.ts';
 import {fieldsOf,syntheticType,typeName} from './ast.ts';
@@ -21,7 +22,7 @@ export interface CallableFact {
 }
 export interface ContractFact {
   native?:NativeResourceFact;
-  id: string; name: string; kind: string; location: Span; public: boolean; documentation?: string;
+  id: string; name: string; kind: string; location: Span; public: boolean; visibility:ReturnType<typeof declarationVisibility>; documentation?: string;
   alternatives?: string[]; typeParameters: string[]; genericParameters: ReturnType<typeof genericFacts>; interfaces: string[];
   fields: { label: string; storage: string; type: string; mutable: boolean; injected: boolean; ownership: string }[];
   callables: CallableFact[]; calls: { target: string; location: Span }[];
@@ -85,7 +86,7 @@ export function contractFacts(checked: CheckedProject): ContractFact[] {
     return { id: def.id, name: def.name, kind: node.kind === 'class' && node.record ? 'record' :
       node.kind === 'interface' && node.capability ? 'capability' : node.kind,
       native:native?.kind==='resource'?native:undefined,...(node.kind==='choice'?{alternatives:node.alternatives.map(typeName)}:{}),
-      location: node.span, public: !node.name.startsWith('_'), typeParameters: node.typeParams, genericParameters: genericFacts(node),
+      location: node.span, public: !node.name.startsWith('_'), visibility:declarationVisibility(project,def), typeParameters: node.typeParams, genericParameters: genericFacts(node),
       documentation: javadocBefore(file.source, 'annotations' in node ? node.annotations?.[0]?.span.start ?? node.span.start : node.span.start)?.markdown,
       interfaces: node.kind === 'class' ? node.implements.map(typeName) : node.kind === 'interface' ? node.extends.map(typeName) : [],
       fields: 'fields' in node ? fieldsOf(node).map(field => ({ label: field.label ?? field.name, storage: field.name, type: typeName(field.type),

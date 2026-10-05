@@ -66,7 +66,7 @@ export function contextPacket(checked:CheckedProject,fileName:string,options:Con
     const pending=[...roots],seen=new Set(pending);
     for(let index=0;index<pending.length;index++) {
       const include=(from:string,span:Span)=>{const caller=addConsumer(from,span);if(caller){consumers.add(caller);if(!seen.has(caller)){seen.add(caller);pending.push(caller);}}};
-      for(const edge of graph.relationships)if(['call','callback-call','function-value','implements','inherits','injected','export'].includes(edge.kind)&&declaration(edge.to)===pending[index])include(edge.from,edge.location);
+      for(const edge of graph.relationships)if(['call','callback-call','function-value','implements','inherits','injected','export','internal'].includes(edge.kind)&&declaration(edge.to)===pending[index])include(edge.from,edge.location);
       for(const occurrence of graph.occurrences)if(['type','read','write'].includes(occurrence.role)&&occurrence.caller&&declaration(occurrence.symbol)===pending[index])include(occurrence.caller,{...occurrence});
     }
   }

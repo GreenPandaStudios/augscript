@@ -2,7 +2,7 @@ import {recordBindingFieldAt} from './binding-patterns.ts';
 import {boundaryInputSnippet} from './test-inputs.ts';
 import { defaultText } from './parameters.ts';
 import { callableResult, callableErrors, constructorErrors } from './contracts.ts';
-import { dirname, join, relative, resolve, sep } from 'node:path';
+import { basename, dirname, join, relative, resolve, sep } from 'node:path';
 import type { BindingPattern, ClassDecl, Expr, InterceptorDecl, MethodDecl, Param, SourceFile, Span, Stmt, TopLevel, TypeRef } from './ast.ts';
 import { bindingNames, expressionChildren, fieldsOf, typeName } from './ast.ts';
 import type { CheckedProject, Ty } from './checker.ts';
@@ -422,6 +422,7 @@ export function importItems(checked: CheckedProject, file: SourceFile): EditorIt
     for (const item of sibling.items) {
       if (item.kind !== 'class' && item.kind !== 'interface' && item.kind !== 'function' && item.kind !== 'interceptor' && item.kind !== 'composition' && item.kind !== 'choice') continue;
       if (isPrivateName(item.name)) continue;
+      if(project.config.strict_modules&&basename(file.path)!=='export.aug'&&!sibling.builtin&&!sibling.package&&!project.files.get(join(currentFolder,'export.aug'))?.items.some(entry=>entry.kind==='export'&&entry.name===item.name&&entry.from===from))continue;
       items.push({ label: item.name, kind: 'snippet', declarationKind:item.kind,
         detail: `import ${item.name} from ${from}`, insertText: `${item.name} from ${from}`,
         signature: definitionItem(checked, project.scopes.get(sibling.path)!.get(item.name)!).signature,
@@ -459,7 +460,7 @@ export function importItems(checked: CheckedProject, file: SourceFile): EditorIt
       const specification = (owner?.specifications ?? project.packages.specifications)[prefix[0]];
       const from = isGitSource(specification ?? '') && prefix[0] === sourceAlias(specification) ? importSource([specification, ...segments]) : [...prefix, ...segments].join('.');
       if (!from) continue;
-      if (item.kind !== 'export' || item.folder) continue;
+      if (item.kind !== 'export' || item.internal || item.folder) continue;
       if (isPrivateName(item.name) || (item.from && isPrivateName(item.from))) continue;
       const exported = project.scopes.get(join(folder, `${item.from}.aug`))?.get(item.name);
       items.push({ label: item.name, kind: 'snippet', declarationKind:exported?.node.kind,
@@ -542,6 +543,12 @@ function rawCompletions(checked: CheckedProject, fileName: string, offset: numbe
   const boundaryCase=boundaryCaseCompletion(checked,file,offset);
   if(boundaryCase)return [boundaryCase];
   const imports = importItems(checked, file);
+  const currentFolder=dirname(file.path);
+  const surfaceEntry=/^\s*(export|internal)\s+[A-Za-z_0-9]*$/.exec(line);
+  if(surfaceEntry&&basename(file.path)==='export.aug')return imports.filter(item=>{
+    const from=item.detail.split(' from ')[1];return /^[A-Za-z_]\w*$/.test(from)&&projectSibling(from);
+  }).map(item=>({...item,detail:item.detail.replace(/^import /,surfaceEntry[1]+' ')}));
+  function projectSibling(from:string){return checked.project.files.has(join(currentFolder,from+'.aug'));}
   if (/^\s*import\s+[A-Za-z_0-9]*$/.test(line)) return imports;
   if (/^\s*include\s+[A-Za-z_0-9]*$/.test(line)) {
     const position=includePosition(checked,file,offset);if(!position)return [];
@@ -804,7 +811,8 @@ export function hoverInfo(checked: CheckedProject, fileName: string,
   }
   const workerKeyword = token.value === 'worker' && hoverTokens[hoverTokens.indexOf(token) - 1]?.kind === 'start' && ['identifier', 'start', 'wait'].includes(hoverTokens[hoverTokens.indexOf(token) + 1]?.kind);
   const choiceKeyword = token.value === 'choice' && file.items.some(item => item.kind === 'choice' && item.span.start === start);
-  const help = token.value === 'worker' && !workerKeyword || token.value === 'choice' && !choiceKeyword ? undefined : languageHelp[token.value];
+  const internalKeyword=token.value==='internal'&&file.items.some(item=>item.kind==='export'&&item.internal&&item.span.start===start);
+  const help = token.value==='internal'&&!internalKeyword||token.value === 'worker' && !workerKeyword || token.value === 'choice' && !choiceKeyword ? undefined : languageHelp[token.value];
   if (help) return { label: token.value,
     kind: help.category === 'type' ? 'type' : help.category === 'function' ? 'function' : 'keyword',
     detail: help.detail, documentation: help.documentation, start, end };
@@ -816,6 +824,15 @@ export function hoverInfo(checked: CheckedProject, fileName: string,
   if (!item) {
     const def = checked.project.scopes.get(file.path)?.get(token.value);
     if (def) item = definitionItem(checked, def);
+  }
+  if (!item) {
+    const exported = file.items.find(entry => entry.kind === 'export' && !entry.folder &&
+      entry.name === token.value && entry.span.start <= start && end <= entry.span.end);
+    if (exported?.kind === 'export' && exported.from) {
+      const def = checked.project.scopes.get(join(dirname(file.path), `${exported.from}.aug`))
+        ?.get(exported.name);
+      if (def) item = {...definitionItem(checked, def),...(exported.internal?{detail:'Internal folder contract: '+definitionItem(checked,def).detail}: {})};
+    }
   }
   item ??= completions(checked, file.path, end).find(entry => entry.label === token.value);
   if (!item) {
@@ -836,15 +853,6 @@ export function hoverInfo(checked: CheckedProject, fileName: string,
             (isPrivateName(field.name) ? ' (private)' : ''),
           documentation: declarationDocumentation(checked, owner)?.parameters.get(field.name) };
       }
-    }
-  }
-  if (!item) {
-    const exported = file.items.find(entry => entry.kind === 'export' && !entry.folder &&
-      entry.name === token.value && entry.span.start <= start && end <= entry.span.end);
-    if (exported?.kind === 'export' && exported.from) {
-      const def = checked.project.scopes.get(join(dirname(file.path), `${exported.from}.aug`))
-        ?.get(exported.name);
-      if (def) item = definitionItem(checked, def);
     }
   }
   if (!item) {
@@ -973,7 +981,8 @@ export function semanticTokens(checked: CheckedProject, fileName: string): Edito
     const previous = tokens[i - 1]?.kind;
     const next = tokens[i + 1]?.kind;
     let type: EditorToken['type'] | undefined;
-    if (token.value === 'worker' && previous === 'start' && ['identifier', 'start', 'wait'].includes(next)) type = 'keyword';
+    if(token.value==='internal'&&file.items.some(item=>item.kind==='export'&&item.internal&&item.span.start===token.span.start))type='keyword';
+    else if (token.value === 'worker' && previous === 'start' && ['identifier', 'start', 'wait'].includes(next)) type = 'keyword';
     else if(patternProperties.has(token.span.start))type='property';
     else if (previous === '.') type = next === '(' || next === '<' ? 'method' : 'property';
     else if (previous === 'interface' || previous === 'capability') type = 'interface';

@@ -1,3 +1,4 @@
+import {moduleSurfaceDiagnostics} from './module-surfaces.ts';
 import {errorMatch, type ErrorMatch} from './error-matches.ts';
 import {choiceMembers} from './choices.ts';
 import type {
@@ -342,10 +343,12 @@ class Checker {
     this.inferring = false;
     this.effectContracts.clear();
     for (const [method, contract] of declarationEffects) this.effectContracts.set(method, contract);
-    return { project: this.project, diagnostics: this.diagnostics, bindings: this.bindings,
+    const checked:CheckedProject = { project: this.project, diagnostics: this.diagnostics, bindings: this.bindings,
       expressionTypes: this.expressionTypes, functionValues:this.functionValues, patternTypes:this.patternTypes, patternFields:this.patternFields, resolvedNames:this.resolvedNames, resolvedCalls:this.resolvedCalls, resolvedTypes:this.resolvedTypes, errorMatches:this.errorMatches, defaults: this.defaults, interfaceMembers:this.interfaceMembers, callPlans: this.callPlans,
       interceptorPlans: this.interceptorPlans, effectContracts: this.effectContracts, callableContracts: this.callableContracts, constructorContracts: this.constructorContracts,
       expressionOrigins: this.expressionOrigins, inferredOwned:this.inferredOwned, scopes: this.scopes, markupCalls: this.markupCalls, actions:this.actions, httpPolicies:this.httpPolicies, native:this.native };
+    this.diagnostics.push(...moduleSurfaceDiagnostics(checked));
+    return checked;
   }
 
   private isStatement(item: { kind: string }): item is Stmt {

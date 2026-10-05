@@ -281,7 +281,7 @@ class Printer {
     const line=this.lines.length+1;
     if (item.kind === 'import') {
       this.line(`import ${item.everything ? 'everything' : item.names.join(' and ')} from ${importSource(item.from)}`);
-    } else if (item.kind === 'export') this.line('export ' + (item.folder ? 'folder ' + item.name : `${item.name} from ${item.from}`));
+    } else if (item.kind === 'export') this.line((item.internal?'internal ':'export ') + (item.folder ? 'folder ' + item.name : `${item.name} from ${item.from}`));
     else if (item.kind === 'include') this.line('include ' + item.name);
     else if (item.kind === 'bind') this.line(`implement ${item.key}${item.keyTypeArgs.length ? '<' + item.keyTypeArgs.map(typeName).join(', ') + '>' : ''} with ${typeName(item.target)}` +
       (item.lifetime ? ' ' + item.lifetime : '') + (item.sharedMutation ? ' mutable' : ''));

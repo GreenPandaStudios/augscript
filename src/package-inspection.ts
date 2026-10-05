@@ -50,7 +50,7 @@ export function packageSurface(checked:CheckedProject) {
   const walk=(folder:string,prefix='')=>{
     if(visited.has(folder))throw new Error('PACKAGE_EXPORT: Repeated public folder');visited.add(folder);
     const file=checked.project.files.get(join(folder,'export.aug'));if(!file)throw new Error('PACKAGE_EXPORT: Missing public export file');
-    for(const item of file.items)if(item.kind==='export') {
+    for(const item of file.items)if(item.kind==='export'&&!item.internal) {
       if(item.folder)walk(join(folder,item.name),prefix+item.name+'.');
       else {
         const def=checked.project.scopes.get(join(folder,item.from+'.aug'))?.get(item.name),fact=def&&facts.get(def.id);

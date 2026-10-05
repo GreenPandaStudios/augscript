@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Explain and navigate internal folder contracts, offer sibling entries in export files and keep internal names out of outward import suggestions.
+
 Use detached compiler responses and whole-project context queries for unsaved source. The schema 3 packet preserves target contracts, reports insufficient budgets and expands known callers and tests for interface changes and review.
 
 - Add Javadoc hover, import completion and compiled-spec contracts for the unreleased `august.values` domain records and operations.

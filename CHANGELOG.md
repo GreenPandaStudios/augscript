@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add contextual `internal Name from sibling` entries in `export.aug`. Strict sibling imports can use these contracts without outward exposure. Opted-in folders check effective exported type/constructor/error surfaces; package, editor, navigation and compiled specs retain the distinction.
+
 - Harden semantic responses against client mutation. Bind graph schema 2 and context schema 3 to physical dependency metadata; reject insufficient target budgets with a required minimum. Add interface-change/review context modes with conservative caller, inheritance and type-use expansion, authored test suites and whole-project LSP parity.
 
 - Add `august.values`: validated calendar dates, exact millisecond durations, DNS-profile HTTP URLs, token IDs, portable relative paths and byte-bounded UTF-8 text. Constructors, copies and JSON decoding preserve the same invariants; parsers and arithmetic retain specific checked errors.

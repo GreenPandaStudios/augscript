@@ -174,6 +174,7 @@ class Parser {
     if (this.at('import')) return this.parseImport();
     if (this.at('endpoint')) return this.parseEndpoint();
     if (this.at('export')) return this.parseExport();
+    if (this.current().value==='internal'&&this.current(1).kind==='identifier'&&this.current(2).kind==='from') return this.parseExport(true);
     if (this.at('bind') || this.at('implement')) return this.parseBind();
     if (this.at('interface') || this.at('capability')) return this.parseInterface();
     if (this.at('interceptor')) return this.parseInterceptor();
@@ -390,9 +391,9 @@ class Parser {
     return { kind: 'import', names, everything, from, span: this.span(start) };
   }
 
-  private parseExport(): ExportDecl {
+  private parseExport(internal=false): ExportDecl {
     const start = this.take().span;
-    if (this.match('folder')) {
+    if (!internal && this.match('folder')) {
       const name = this.expect('identifier').value;
       this.endStatement();
       return { kind: 'export', name, folder: true, span: this.span(start) };
@@ -401,7 +402,7 @@ class Parser {
     this.expect('from');
     const from = this.expect('identifier').value;
     this.endStatement();
-    return { kind: 'export', name, from, folder: false, span: this.span(start) };
+    return { kind: 'export', name, from, folder: false, ...(internal?{internal:true}:{}), span: this.span(start) };
   }
 
   private parseInclude(): IncludeDecl {

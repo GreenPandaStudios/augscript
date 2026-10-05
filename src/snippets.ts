@@ -12,6 +12,7 @@ export const snippetCatalog = [
   {prefix:'import',description:'Import a public declaration',body:'import ${1:Name} from ${2:module}'},
   {prefix:'importurl',description:'Import directly from a public Git repository',body:'import ${1:Name} from "https://github.com/${2:owner}/${3:library}"'},
   {prefix:'export',description:'Expose one declaration from a sibling file',body:'export ${1:Name} from ${2:file}'},
+  {prefix:'internal',description:'Keep a declaration available only to sibling files',body:'internal ${1:Name} from ${2:file}'},
   {prefix:'exportfolder',description:'Expose a child module with its own export.aug',body:'export folder ${1:module}'},
   {prefix:'implement',description:'Select a dependency provider in main.aug',body:'implement ${1:Contract} with ${2:Provider}'},
   {prefix:'resolve',description:'Resolve a dependency explicitly',body:'resolve ${1:Contract} to ${2:service}'},

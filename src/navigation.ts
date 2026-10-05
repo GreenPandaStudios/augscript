@@ -36,7 +36,7 @@ function exportTarget(project: Project, folder: string, name: string,
                       child?: string): NavigationTarget | undefined {
   const file = project.files.get(join(folder, 'export.aug'));
   if (!file) return undefined;
-  const declaration = file.items.find(item => item.kind === 'export' &&
+  const declaration = file.items.find(item => item.kind === 'export' && !item.internal &&
     item.name === (child ?? name) && item.folder === !!child);
   return { name, file: file.path, line: declaration?.span.line ?? 1,
     column: declaration?.span.column ?? 1, kind: 'module' };
@@ -81,7 +81,7 @@ function unfinishedModuleTarget(project: Project, file: SourceFile,
       (token === lineTokens[1] || token === lineTokens[2]))
     return exportTarget(project, file.builtin ? libraryChild(project.libraries, dirname(file.path), lineTokens[2].value) : join(dirname(file.path), lineTokens[2].value),
       lineTokens[2].value);
-  if (!['import', 'export'].includes(lineTokens[0]?.kind ?? '') ||
+  if (!['import', 'export', 'internal'].includes(lineTokens[0]?.value ?? '') ||
       lineTokens[1]?.kind !== 'identifier') return undefined;
   const fromIndex = lineTokens.findIndex(entry => entry.kind === 'from');
   if (fromIndex < 0) return undefined;

@@ -118,3 +118,5 @@ Unicode segmentation uses committed 18.0.0 inputs under `native/unicode/18.0.0`,
 ## Semantic protocol changes
 
 `src/symbols.ts`, `src/context.ts` and `src/semantic.ts` own graph, context and embedding responses. Keep protocol schemas, CLI/LSP transport, relative locations, budget framing, omissions and coverage documented in `docs/tooling.md`. Physical dependency digests come from `src/semantic-metadata.ts`; checked edits and execution evidence reuse that input model. Verify mutation isolation, unsaved CLI/LSP-equivalent snapshots, inheritance/type consumers, exact minimum budgets, stale metadata, source transaction regressions and installed JavaScript commands. Authored test source is available context; execution and independence must remain separate facts.
+
+`src/module-surfaces.ts` owns internal/outward projections and opted-in public type checks. Keep grammar, reference, editor help, package comparisons and generated API filtering aligned; internal entries must never appear in outward import suggestions. Verify resolved contracts, constructor DI, explicit hidden providers, nested/package boundaries and both backends.

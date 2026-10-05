@@ -67,11 +67,24 @@ export ConsoleLogger from console
 export folder nested
 ```
 
-Cross-folder access requires the export entry. A dotted path also requires each crossed child folder to be exposed by its parent. A folder with no export file exposes nothing across its boundary. `export.aug` accepts only exports. Private modules and folders cannot be exported.
+Cross-folder access requires the export entry. A dotted path also requires each crossed child folder to be exposed by its parent. A folder with no export file exposes nothing across its boundary. `export.aug` accepts export declarations and the unreleased internal entries described below. Private modules and folders cannot be exported.
 
 `import Logger and ConsoleLogger from logging` combines imports. `import everything from logging` imports visible declarations and rejects collisions; it never exposes a module's internal imports. The formatter preserves it. Hover shows available names, **Expand to named imports** offers an explicit list, and the [compiled spec](specifications.md) explains dependencies actually used.
 
-Import cycles are errors. Configure allowed module dependencies and export-count warnings in `main.yaml`. `strict_modules: true` also requires sibling imports to appear in the local export file. Ctrl-click `from` or a path segment to open its source file or export file, including `august.io`.
+Import cycles are errors. Configure allowed module dependencies and export-count warnings in `main.yaml`. `strict_modules: true` also requires sibling imports to appear in the local export file, as an export or an unreleased internal entry. Ctrl-click `from` or a path segment to open its source file or export file, including `august.io`.
+
+### Internal folder contracts
+
+**Unreleased:** `internal Name from sibling` names a declaration that other files in the same folder can import under strict checking. It appears in the existing `export.aug`:
+
+```text
+export TicketService from service
+internal TicketRepository from repository
+```
+
+Files in that folder still write `import TicketRepository from repository`. Other folders, including children, and package consumers cannot import the internal entry. Wildcard and dotted imports expose only exports. The `_` privacy rule remains unchanged, and `internal` can still name an ordinary function.
+
+A folder declaring internal entries opts into checking its outward type surface. Exported inputs, results, checked errors, public fields, constructors, generic bounds and interface contracts must use accessible exported types. A `resolve` constructor input is still a construction requirement. Keep an implementation internal and export its service interface with an explicit composition when callers should not construct it. Private initialized state does not become part of that outward surface. See [keep module internals](guides/keep-module-internals.md) for a complete example.
 
 Project dependencies use aliases in `main.yaml`: `packages: math: "npm:@owner/aug-math@1.2.3"` as a nested YAML block. Run `aug install`, then write `import add from math`. A library exposes only its source folder's `export.aug`; internal modules and undeclared transitive dependencies are inaccessible. See [creating and using packages](packages.md#author-a-package).
 
@@ -404,7 +417,7 @@ If `start` runs inside a loop, a wait for one result may leave children from ear
 
 For a collection of tasks, `wait for tasks` joins the whole list. Waiting for one task selected with a dynamic index cannot prove which sibling tasks remain active, so their captures stay pinned until the scope joins them.
 
-When the checker cannot establish separate origins or freshness, it rejects the access. These conservative checks are not a formal ownership proof. Tasks run cooperatively on one OS thread; multicore execution is unsupported.
+When the checker cannot establish separate origins or freshness, it rejects the access. These conservative checks are not a formal ownership proof. Ordinary tasks run cooperatively on one OS thread. `start worker` runs copied data on an OS thread with an isolated heap; the same capture restrictions still apply to cooperative tasks.
 
 ## Null, matching, and checked failures
 

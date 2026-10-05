@@ -109,6 +109,13 @@ try {
   assert.equal(aug('run',domainValues),domainFixture.stdout);
   if(process.env.AUG_LLVM_HOME&&process.env.AUG_RUNTIME_PACK)assert.equal(run(process.execPath,[cli,'run',domainValues,'--backend','llvm']),domainFixture.stdout);
   aug('spec',domainValues);
+  const internalModules=join(directory,'internal-module-consumer');mkdirSync(internalModules);
+  const internalFixture=JSON.parse(readFileSync(join(root,'conformance/cases.json'),'utf8')).cases.find(item=>item.id==='internal-composition');
+  for(const [name,text] of Object.entries(internalFixture.files)){const target=join(internalModules,name);mkdirSync(dirname(target),{recursive:true});writeFileSync(target,text);}
+  writeFileSync(join(internalModules,'main.yaml'),'strict_modules: true\n');
+  assert.equal(aug('run',internalModules),internalFixture.stdout);
+  if(process.env.AUG_LLVM_HOME&&process.env.AUG_RUNTIME_PACK)assert.equal(run(process.execPath,[cli,'run',internalModules,'--backend','llvm']),internalFixture.stdout);
+  aug('spec',internalModules);assert.match(readFileSync(join(internalModules,'service/export.aug.md'),'utf8'),/Make available only inside this folder/);
 
   const callbacks=join(directory,'callback-consumer');mkdirSync(callbacks);
   writeFileSync(join(callbacks,'main.aug'),'import transform from august.collections\nfor value in transform(values=[2, 3], transformation=(int value) => value * 2):\n    print(value=value)\n');
