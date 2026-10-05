@@ -432,6 +432,8 @@ class Parser {
       while (this.match('and') || this.match(',')) validationErrors.push(this.parseType());
     }
     const headerEnd = this.current().span.start;
+    if (this.at('=>')) this.diagnostics.push({...this.current().span, code:'SYNTAX',
+      message:'Use an initialize block inside the class or record instead of =>'});
     let constructorBody = this.match('=>') ? this.parseBlock(start) : undefined;
     let hasBody = !!constructorBody;
     if (!constructorBody && (this.at('{') || this.at(':'))) {
@@ -459,6 +461,8 @@ class Parser {
     const validationErrors:TypeRef[]=[];
     const validationDeclared=!!this.match('unless');
     if(validationDeclared){validationErrors.push(this.parseType());while(this.match('and')||this.match(','))validationErrors.push(this.parseType());}
+    if (this.at('=>')) this.diagnostics.push({...this.current().span, code:'SYNTAX',
+      message:'Use an initialize block inside the class or record instead of =>'});
     let constructorBody = this.match('=>') ? this.parseBlock(start) : undefined;
     const implemented: TypeRef[] = [];
     if (!this.at('implements')) throw new ParseFailure({ ...start, code: 'PARSE',
@@ -1033,8 +1037,24 @@ class Parser {
     return args;
   }
 
+  private looksLikeLambda():boolean {
+    if(!this.at('('))return false;
+    let depth=0;
+    for(let index=this.position;index<this.tokens.length;index++){
+      const token=this.tokens[index];
+      if(token.kind==='(')depth++;
+      if(token.kind===')'&&!--depth)return this.tokens[index+1]?.kind==='=>';
+      if(token.kind==='eof')break;
+    }
+    return false;
+  }
+
   private parsePrimary(): Expr {
     const token = this.current();
+    if(this.looksLikeLambda()){
+      const params=this.parseParams();this.expect('=>');
+      const body=this.parseExpression();return {kind:'lambda',params,body,span:this.span(token.span)};
+    }
     if (token.value === 'input' && this.current(1).kind === 'from' && this.current(2).value === 'form') {
       this.take(); this.take(); this.take(); return {kind:'formInput', span:this.span(token.span)};
     }

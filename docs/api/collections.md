@@ -46,7 +46,7 @@ A range has an invalid step or exceeds its explicit allocation limit.
 interface Predicate<in T implements optional Data>
 ```
 
-A pure decision about one data value.
+A pure decision about one data value. Supply an implementation, a matching standalone function, or a typed expression callback.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/collections/operations.aug#L3)
 

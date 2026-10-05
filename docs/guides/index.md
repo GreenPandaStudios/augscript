@@ -6,6 +6,7 @@ Choose a guide for the task you are doing. If you are learning August for the fi
 
 | Task | Guide |
 | --- | --- |
+| Pass a pure function or capture immutable values | [Pass a small function](use-callbacks.md) |
 | Try an entry fragment without a permanent project | [Try a snippet](try-a-snippet.md) |
 | Review unfamiliar code or an agent's change | [Change a module](change-a-module.md) |
 | Generate and check the neighboring explanations | [Compiled specifications](../specifications.md) |

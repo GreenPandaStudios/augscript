@@ -115,6 +115,7 @@ Optional values have two cases: null and some. Omitted inputs become null. Type?
 ## Expressions and ambiguity
 
 ```text
+Closure     := "(" [Type Name {"," Type Name}] ")" "=>" Expression  // unreleased
 Comprehension := "[" Expression "for" BindingPattern "in" Expression ["if" Expression] "]"
 ```
 
@@ -122,6 +123,7 @@ An unreleased list comprehension has one iteration clause and one optional bool 
 
 | Spelling | Meaning |
 | --- | --- |
+| `(int value) => value > 0` | Unreleased: pure expression callback for an expected single-method interface. |
 | `[a, b]` | List literal. |
 | `[result for pattern in values if condition]` | Unreleased: new list from read-only snapshot items; the condition is optional. |
 | `(a, b)`, `(a,)`, `()` | Tuple literals. |
@@ -144,7 +146,7 @@ An unreleased list comprehension has one iteration clause and one optional bool 
 
 Operators from high to low precedence: member/call, unary minus, multiplication/division/remainder (remainder is unreleased), addition/subtraction, ordered comparisons, equality, not, and, or, otherwise (unreleased). Thus `not count == 0` means `not (count == 0)`. Boolean operations short-circuit from left to right. Only the word spellings are accepted; `&&`, `||`, and unary `!` are syntax errors. `!=` remains accepted. Binary operators associate left. No assignment expression or implicit truthiness is supported. Exponentiation and implicit casts are absent.
 
-Function contract clauses may appear in any order, once each; the formatter writes returns, changes, uses, then unless. Storage aliases apply to class/record/interceptor fields rather than ordinary function parameters.
+Function contract clauses may appear in any order, once each; the formatter writes returns, changes, uses, then unless. Storage aliases apply to class/record/interceptor fields rather than ordinary function parameters or closure inputs. Closure inputs use Type name order; the arrow is a low-precedence expression form. The old constructor arrow remains rejected in favor of initialize.
 
 ## Newlines, indentation, and comments
 

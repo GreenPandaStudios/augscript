@@ -90,6 +90,7 @@ export function checkWorkers(checked:CheckedProject):Diagnostic[] {
       visit(value,node=>{
         if(node.kind==='serve'||node.kind==='handle'||node.kind==='yield')issue(start.span,'HTTP transport and streams remain on their creating heap.');
         if(node.kind==='resolve')issue(start.span,'Worker code cannot resolve bindings from the parent heap. Construct its dependencies locally.');
+        const callback=checked.functionValues.get(node);if(callback?.target)declaration(callback.target);
         if(node.kind!=='call')return;
         const nested=node as Extract<Expr,{kind:'call'}>,plan=checked.callPlans.get(nested);
         if(plan?.bindingKeys.some(Boolean))issue(start.span,'Worker code cannot resolve parent bindings. Construct its dependencies inside the worker and pass them by label.');

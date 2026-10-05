@@ -84,7 +84,7 @@ export function contextPacket(checked:CheckedProject,fileName:string,options:{na
   }
   for(let index=0;index<queue.length;index++) {
     const id=queue[index],def=definitions.get(id);if(def)scan(def.node);
-    for(const relation of graph.relationships)if(declaration(relation.from)===id&&['call','implements','injected'].includes(relation.kind))addDependency(declaration(relation.to));
+    for(const relation of graph.relationships)if(declaration(relation.from)===id&&['call','callback-call','function-value','implements','injected'].includes(relation.kind))addDependency(declaration(relation.to));
   }
   const normalize=<T>(value:T):T=>{
     if(Array.isArray(value))return value.map(normalize) as T;
@@ -95,7 +95,7 @@ export function contextPacket(checked:CheckedProject,fileName:string,options:{na
     const fact=facts.get(id)!;return semanticSourcePath(checked,fact.location.file)===span.file&&fact.location.start<=span.start&&span.end<=fact.location.end;
   })||!roots.length&&span.file===semanticSourcePath(checked,file.path);
   const boundaries=[...graph.boundaries.filter(boundary=>boundaryRelevant(boundary.location)),...effectBoundaries];
-  const callers=graph.relationships.filter(edge=>edge.kind==='call'&&rootSet.has(declaration(edge.to)??''));
+  const callers=graph.relationships.filter(edge=>['call','callback-call','function-value'].includes(edge.kind)&&rootSet.has(declaration(edge.to)??''));
   const full:ContextPacket={schema:2,compiler:graph.compiler,revision:graph.revision,budget,truncated:false,
     query:{file:semanticSourcePath(checked,file.path),name:options.name,roots},
     ordering:'root-contract,root-source,resolved-types,dependency-contracts,callers,occurrences,imports',
@@ -109,7 +109,8 @@ export function contextPacket(checked:CheckedProject,fileName:string,options:{na
   const contract=(id:string)=>{
     const fact=facts.get(id)!;
     units.push({section:'contracts',id,value:normalize({...fact,documentation:undefined,tests:[],
-      calls:graph.relationships.filter(edge=>edge.kind==='call'&&declaration(edge.from)===id).map(edge=>({target:edge.to,location:edge.location}))}),required:true});
+      calls:graph.relationships.filter(edge=>edge.kind==='call'&&declaration(edge.from)===id).map(edge=>({target:edge.to,location:edge.location})),
+      functionValues:graph.relationships.filter(edge=>['function-value','callback-call'].includes(edge.kind)&&declaration(edge.from)===id).map(edge=>({kind:edge.kind,target:edge.to,location:edge.location}))}),required:true});
   };
   const source=(id:string)=>{
     const fact=facts.get(id)!,sourceFile=checked.project.files.get(fact.location.file)!;

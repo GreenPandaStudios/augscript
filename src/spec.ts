@@ -292,7 +292,8 @@ class SpecWriter {
   private expression(expr:Expr, nested=false): string {
     switch(expr.kind) {
       case 'literal':return expr.value===null?'null':code(expr.numericText??JSON.stringify(expr.value));
-      case 'name': {const def=!this.locals.has(expr.name)?this.definition(expr.name):undefined;this.use(def);return def?this.link(def):code(expr.name);}
+      case 'name': {const def=!this.locals.has(expr.name)?this.definition(expr.name):undefined;this.use(def);
+        return this.checked.functionValues.get(expr)?.target&&def?'a pure callback that delegates to '+this.link(def):def?this.link(def):code(expr.name);}
       case 'member': {
         const def=this.receiver(expr.object,expr.name);this.use(def,undefined,expr.name);
         const name=expr.name,receiverType=this.checked.expressionTypes.get(expr.object)?.name;
@@ -300,6 +301,12 @@ class SpecWriter {
         if(property)this.properties.set(receiverType+'.'+name,{...property,type:this.checked.expressionTypes.get(expr)?tyName(this.checked.expressionTypes.get(expr)!):property.type});
         const object=this.expression(expr.object), path=this.memberPath(expr);
         return path?code(path):`${code(name)} of ${object}`;
+      }
+      case 'lambda': {
+        const names=new Map(this.locals);for(const param of expr.params)this.locals.set(param.name,param.type);
+        const result=this.expression(expr.body);this.locals=names;
+        const captures=this.checked.functionValues.get(expr)?.captures??[];
+        return 'a pure callback that returns '+result+(captures.length?', using creation-time values of '+coordinate(captures.map(capture=>code(capture.name))):'');
       }
       case 'comprehension': {
         const input=this.expression(expr.iterable),names=new Map(this.locals),bindings=this.bindingDescription(expr.pattern);

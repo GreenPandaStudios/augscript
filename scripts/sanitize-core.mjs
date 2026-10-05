@@ -12,6 +12,25 @@ if(backend==='llvm')assert.ok(process.env.AUG_LLVM_HOME,'LLVM sanitizer qualific
 
 const fixtures = [
   {
+    name:'stored pure callbacks under collection pressure',
+    files:{
+      'main.aug':`import Predicate from august.collections
+import Limit and make from callbacks
+retained = make(limit=Limit(values=[1, 2, 3]))
+index = 0
+while index < 20000:
+    Predicate<int> discarded = (int value) => value > index
+    index = index + 1
+print(value=retained.accepts(value=2))
+`,
+      'callbacks.aug':`import Predicate from august.collections
+record Limit(List<int> values)
+make(Limit limit) returns Predicate<int>:
+    return (int value) => limit.values.length() > value
+`
+    },expected:'true\n'
+  },
+  {
     name:'owned loop exits and task joins',
     files:{
       'main.aug':`import read from values

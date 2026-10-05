@@ -1,5 +1,5 @@
 // aug-spec: "operations.aug.md" explains this file. Read it before changes; refresh with aug spec.
-/** A pure decision about one data value. */
+/** A pure decision about one data value. Supply an implementation, a matching standalone function, or a typed expression callback. */
 interface Predicate<in T implements optional Data>:
     accepts(T value) returns bool
 

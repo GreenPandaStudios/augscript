@@ -62,6 +62,11 @@ try {
   aug('spec',selection);assert.match(readFileSync(join(selection,'main.aug.md'),'utf8'),/new list.*snapshot/);
   if(process.env.AUG_LLVM_HOME&&process.env.AUG_RUNTIME_PACK)
     assert.equal(run(process.execPath,[cli,'run',collections,'--backend','llvm']),'-1\n0\n7\n1\n');
+  const callbacks=join(directory,'callback-consumer');mkdirSync(callbacks);
+  writeFileSync(join(callbacks,'main.aug'),'import transform from august.collections\nfor value in transform(values=[2, 3], transformation=(int value) => value * 2):\n    print(value=value)\n');
+  assert.equal(aug('run',callbacks),'4\n6\n');
+  if(process.env.AUG_LLVM_HOME&&process.env.AUG_RUNTIME_PACK)assert.equal(run(process.execPath,[cli,'run',callbacks,'--backend','llvm']),'4\n6\n');
+  aug('spec',callbacks);assert.match(readFileSync(join(callbacks,'main.aug.md'),'utf8'),/pure callback/);
   const verifySpecs = folder => {
     for(const entry of readdirSync(folder,{withFileTypes:true})) {
       const file=join(folder,entry.name);

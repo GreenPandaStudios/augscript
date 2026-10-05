@@ -790,6 +790,18 @@ export function hoverInfo(checked: CheckedProject, fileName: string,
     const item = methodItem(checked, around, 'method');
     return { ...item, documentation: [item.documentation, languageHelp.around.documentation].filter(Boolean).join('\n\n'), start, end };
   }
+  const functionValue = [...checked.functionValues].filter(([expr]) => expr.span.file === file.path &&
+    (expr.kind === 'lambda' ? token.kind === '=>' && expr.span.start <= start && end <= expr.span.end : expr.span.start === start && expr.span.end === end))
+    .sort(([left],[right]) => left.span.end-left.span.start-(right.span.end-right.span.start))[0]?.[1];
+  if (functionValue) {
+    const signature = functionValue.signature.method;
+    return {label:token.value,kind:'function',detail:tyName(functionValue.type)+'.'+signature.name+'('+functionValue.inputs.map((type,index) =>
+      tyName(type)+' '+(signature.params[index].label ?? signature.params[index].name)).join(', ')+') returns '+tyName(functionValue.result),
+      documentation:[functionValue.target ? 'Pure callback delegates to '+sourceLink(functionValue.target.node.span,functionValue.target.name)+'.' :
+        'Pure expression callback; invocation uses the interface method and its labels.',
+        functionValue.captures.length ? 'Creation-time captures: '+functionValue.captures.map(capture => sourceLink(capture.expression.span,capture.name)).join(', ')+'.' :
+        'No local values are captured.'].join('\n\n'),start,end};
+  }
   const workerKeyword = token.value === 'worker' && hoverTokens[hoverTokens.indexOf(token) - 1]?.kind === 'start' && ['identifier', 'start', 'wait'].includes(hoverTokens[hoverTokens.indexOf(token) + 1]?.kind);
   const help = token.value === 'worker' && !workerKeyword ? undefined : languageHelp[token.value];
   if (help) return { label: token.value,
@@ -868,7 +880,8 @@ export function semanticTokens(checked: CheckedProject, fileName: string): Edito
   if (!file) return [];
   const tokens = lex(file.path, file.source).tokens;
   const scope = checked.project.scopes.get(file.path);
-  const parameters = new Set<string>();
+  const parameters = new Set<string>(), closureInputs = new Set<string>(), closureTokens = new Set<number>();
+  const expressionNames:Expr[]=[];
   const fields = new Set<string>();
   const variables = new Set<string>();
   const patternProperties=new Set<number>();
@@ -887,6 +900,11 @@ export function semanticTokens(checked: CheckedProject, fileName: string): Edito
     }
   }
   function visitExpression(expr:Expr):void {
+    if(expr.kind==='name')expressionNames.push(expr);
+    if(expr.kind==='lambda')for(const param of expr.params){
+      const span=param.nameSpan ?? param.span;
+      closureInputs.add(span.file+':'+span.start);closureTokens.add(span.start);
+    }
     if(expr.kind==='comprehension'){bindingNames(expr.pattern).forEach(name=>variables.add(name));visitPattern(expr.pattern);}
     if(expr.kind==='matchValue')for(const clause of expr.cases)if(clause.name)variables.add(clause.name);
     expressionChildren(expr).forEach(visitExpression);
@@ -943,6 +961,9 @@ export function semanticTokens(checked: CheckedProject, fileName: string): Edito
     } else if (['expr', 'assign', 'destructure', 'return', 'throw', 'if', 'while', 'for', 'scope', 'match', 'try', 'unsafe', 'borrow', 'lock', 'freeze', 'yield', 'serve'].includes(item.kind))
       visitStatements([item as Stmt]);
   }
+  for(const expr of expressionNames){const resolved=checked.resolvedNames.get(expr);
+    if(resolved && !resolved.global && closureInputs.has(resolved.definition.file+':'+resolved.definition.start))closureTokens.add(expr.span.start);
+  }
   const result: EditorToken[] = [];
   for (let i = 0; i < tokens.length; i++) {
     const token = tokens[i];
@@ -957,6 +978,7 @@ export function semanticTokens(checked: CheckedProject, fileName: string): Edito
     else if (previous === 'record') type = 'class';
     else if (declarationNames.has(token.span.start)) type = declarationNames.get(token.span.start);
     else if (typeParameters.has(token.value)) type = 'typeParameter';
+    else if (closureTokens.has(token.span.start)) type = 'parameter';
     else if (parameters.has(token.value)) type = 'parameter';
     else if (fields.has(token.value)) type = 'property';
     else if (variables.has(token.value)) type = 'variable';

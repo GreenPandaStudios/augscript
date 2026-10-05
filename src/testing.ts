@@ -151,6 +151,7 @@ export function mergeTestAnalysis(checked: CheckedProject, tests: { checked: Che
       const field=value as import('./ast.ts').RecordBindingField,selection=entry.checked.patternFields.get(field);
       if(selection)checked.patternFields.set(field,selection);
       const expr = value as Expr;
+      const functionValue=entry.checked.functionValues.get(expr);if(functionValue)checked.functionValues.set(expr,functionValue);
       const type = entry.checked.expressionTypes.get(expr);
       if (type) checked.expressionTypes.set(expr, type);
       const name=entry.checked.resolvedNames.get(expr);

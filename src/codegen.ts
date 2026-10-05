@@ -5,6 +5,7 @@ import type { Definition } from './project.ts';
 import { builtinProperties, collectionOperations, errorNames } from './builtins.ts';
 import { interceptorChain, InterceptorInvocation } from './interceptors.ts';
 import { NativeSchemas, schemaType } from './schemas.ts';
+import type {FunctionValuePlan} from './function-values.ts';
 import type { Ty } from './types.ts';
 import {resolve} from 'node:path';
 import {generateOpenApi, apiExplorer, apiExplorerScript} from './openapi.ts';
@@ -34,6 +35,25 @@ class CGenerator {
     const name = `aug_task_entry_${this.sequence++}`;
     this.prototypes.push(`static AugValue ${name}(AugValue self, AugValue *args, int count);`);
     this.functions.push(emitter.finish(name, true, count)); return name;
+  }
+  functionValue(expr:Expr) {return this.checked.functionValues.get(expr);}
+  callbackTable(expr:Expr,plan:FunctionValuePlan):{table:string;mask:string;names:string;type:string} {
+    const name='aug_callback_'+this.sequence++,table=name+'_methods',mask=name+'_owned',names=name+'_fields';
+    this.prototypes.push(`static AugValue ${name}(AugValue self, AugValue *args, int count);`);
+    if(plan.target){
+      const args=plan.order.map(index=>`args[${index}]`).join(', ');
+      this.functions.push(`static AugValue ${name}(AugValue self, AugValue *args, int count) { (void)self; (void)args; AugValue ordered[] = {${args||'aug_scalar_null()'}}; return ${this.name(plan.target)}(ordered, count); }`);
+    }else{
+      const body=new BodyEmitter(this,expr.span.file);body.addParameter('self',0);
+      plan.params.forEach((param,index)=>body.addParameter(param.name,index));
+      plan.captures.forEach((capture,index)=>body.addCapture(capture.name,index));
+      body.emitStatement({kind:'return',value:plan.body!,span:plan.body!.span});
+      this.functions.push(body.finish(name,true,plan.params.length));
+    }
+    this.tables.push(`static const AugMethodEntry ${table}[] = {{${cString(plan.signature.method.name)}, ${name}, NULL}};`);
+    this.tables.push(`static const unsigned char ${mask}[] = {${plan.captures.map(()=>0).join(', ')||'0'}};`);
+    this.tables.push(`static const char *const ${names}[] = {${plan.captures.map(capture=>cString(capture.name)).join(', ')||'NULL'}};`);
+    return {table,mask,names,type:'compiler:callback:'+expr.span.file+':'+expr.span.start};
   }
   markupCall(expr: Expr) {return this.checked.markupCalls.get(expr);}
   actionPlan(expr: Expr) {return this.checked.actions.get(expr);}
@@ -401,6 +421,10 @@ class BodyEmitter {
     if (owned) this.owned.add(slot);
   }
 
+  addCapture(name:string,index:number):void {
+    const slot=this.newSlot();this.locals.set(name,slot);this.line(`${this.slot(slot)} = aug_field(self, ${index});`);
+  }
+
   initializeInterceptor(layer: InterceptorLayer, params: Param[], name: string, method: boolean): void {
     this.constructionNext = layer.constructorResultFresh === true;
     const receiver = method ? this.newSlot() : undefined;
@@ -501,6 +525,13 @@ class BodyEmitter {
   }
 
   private emitValueExpr(expr: Expr): number {
+    const callback=this.generator.functionValue(expr);
+    if(callback){
+      const table=this.generator.callbackTable(expr,callback),captures=callback.captures.map(capture=>this.emitExpr(capture.expression)),slot=this.newSlot();
+      this.line(`${this.slot(slot)} = aug_new_object(${cString(table.type)}, ${captures.length}, ${table.mask}, ${table.table}, 1);`);
+      this.line(`${this.slot(slot)}.as.object->field_names = ${table.names};`);
+      captures.forEach((value,index)=>this.line(`aug_set_field(${this.slot(slot)}, ${index}, ${this.slot(value)});`));return slot;
+    }
     if(expr.kind==='comprehension'){
       const value=this.emitExpr(expr.iterable),snapshot=this.newSlot(),result=this.newSlot();
       this.line(`${this.slot(snapshot)} = aug_iter_snapshot(${this.slot(value)});`);

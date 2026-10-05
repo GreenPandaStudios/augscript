@@ -109,5 +109,8 @@
   },
   "comprehension-guide": {
     "stdout": "Ada\nSam\n"
+  },
+  "pure-callbacks-guide": {
+    "stdout": "true\n3\n4\n6\n"
   }
 }

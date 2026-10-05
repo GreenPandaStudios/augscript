@@ -184,7 +184,7 @@
     {
       "id": "text",
       "files": {
-        "main.aug": "print(value=\"👋\".length())\nprint(value=\"café\".bytes().length())\n"
+        "main.aug": "print(value=\"\ud83d\udc4b\".length())\nprint(value=\"caf\u00e9\".bytes().length())\n"
       },
       "stdout": "4\n5\n"
     },
@@ -194,6 +194,29 @@
         "main.aug": "print(value=\"\\0\")\n"
       },
       "diagnostic": "TEXT"
+    },
+    {
+      "id": "callback-snapshot",
+      "files": {
+        "main.aug": "import Predicate and transform from august.collections\nimport positive from rules\nPredicate<int> accepts = positive\nprint(value=accepts.accepts(value=3))\nbase = 7\nfor value in transform(values=[3, 5], transformation=(int value) => value + base):\n    print(value=value)\nbase = 2\nPredicate<int> over = (int value) => value > base\nbase = 99\nprint(value=over.accepts(value=3))\n",
+        "rules.aug": "positive(int value) returns bool:\n    return value > 0\n"
+      },
+      "stdout": "true\n10\n12\ntrue\n"
+    },
+    {
+      "id": "callback-mutable-erasure",
+      "files": {
+        "main.aug": "import Predicate from august.collections\nvalues = [1]\nTuple<Data> box = (values,)\nPredicate<int> callback = (int value) => box.get(index=0) == [value]\n"
+      },
+      "diagnostic": "CALLBACK"
+    },
+    {
+      "id": "interface-override-layout",
+      "files": {
+        "main.aug": "",
+        "rules.aug": "interface Parent:\n    apply(int value) returns string\ninterface Derived extends Parent:\n    apply(string value) returns string\n"
+      },
+      "diagnostic": "INTERFACE"
     }
   ],
   "mutations": [

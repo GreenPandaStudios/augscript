@@ -2,12 +2,12 @@
 
 # `operations.aug`
 
-<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=5a86f7c64a60d56607d72d7be4c5a05a2f747d04392443e62a35826d9f456432 -->
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=18a38b93acf96285098ba6dd738c50b1c7e0ce8202d67354497e8ade30730d20 -->
 
 <a id="symbol-Predicate"></a>
 ## `Predicate` · interface · [source](operations.aug#L3)
 
-A pure decision about one data value. The type parameters are `T` (accepts values) which must satisfy `optional Data`.
+A pure decision about one data value. Supply an implementation, a matching standalone function, or a typed expression callback. The type parameters are `T` (accepts values) which must satisfy `optional Data`.
 
 <a id="symbol-Predicate.accepts"></a>
 ### `Predicate.accepts` · [source](operations.aug#L4)

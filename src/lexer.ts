@@ -155,9 +155,8 @@ export function lex(file: string, source: string, comments = false): { tokens: T
     }
     const two = char + peek(1);
     if (['==', '!=', '<=', '>=', '&&', '||', '->', '=>'].includes(two)) {
-      if (['&&', '||', '=>'].includes(two)) diagnostics.push({file, line: startLine, column: startColumn, code: 'SYNTAX',
-        message: two === '=>' ? 'Use an initialize block inside the class or record instead of =>'
-          : `Use ${two === '&&' ? 'and' : 'or'} instead of ${two}; boolean operators use words`});
+      if (['&&', '||'].includes(two)) diagnostics.push({file, line: startLine, column: startColumn, code: 'SYNTAX',
+        message: `Use ${two === '&&' ? 'and' : 'or'} instead of ${two}; boolean operators use words`});
       advance(); advance(); emit(two, two, start, startLine, startColumn); continue;
     }
     if ('{}();,.:<>?=+-*/%![]'.includes(char)) {

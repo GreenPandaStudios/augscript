@@ -298,3 +298,7 @@ aug package init calculations --block-style indent --assignment to
 ```
 
 The options configure `block_style`, `indentation` and `assignment`; edit those keys later and run `aug format --write` to reformat existing files. They change spelling and layout. Both block forms and both assignment forms retain the same behavior. Invalid, duplicate or missing option values fail before creating the project directory. Initialization writes source and configuration; `aug run` prepares application dependencies.
+
+## Deferred callback dependencies (unreleased)
+
+Semantic graph edges use `function-value` for a standalone function converted to a callback and `callback-call` for a call inside a closure body. Context and explanation contracts keep these in `functionValues`, separately from immediate `calls`, and include their checked dependency contracts. Reverse callers retain the edge kind so a change review can see both invocation sites and callback dependencies. A closure's later interface invocation still has an interface-dispatch boundary; the graph does not invent its runtime target.

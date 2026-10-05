@@ -180,7 +180,11 @@ class Printer {
   private expression(expr: Expr, precedence = 0): string {
     const comment = this.inline(expr.span.start);
     let value: string;
-    if(expr.kind==='comprehension'){
+    if(expr.kind==='lambda'){
+      value='('+expr.params.map(param=>this.param(param)).join(', ')+') => '+this.expression(expr.body);
+      if(precedence)value='('+value+')';
+    }
+    else if(expr.kind==='comprehension'){
       const projection=this.expression(expr.projection),pattern=this.bindingPattern(expr.pattern),iterable=this.expression(expr.iterable);
       const condition=expr.condition?(iterable.includes('\n')?'\n':' ')+'if '+this.expression(expr.condition):'';
       value=this.delimited('[',[projection+(projection.includes('\n')?'\n':' ')+'for '+pattern+' in '+iterable+condition],']',this.inline(expr.span.end));

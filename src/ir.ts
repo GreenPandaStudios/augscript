@@ -77,6 +77,8 @@ export function lowerToIR(checked:CheckedProject,options:{coverage?:boolean}={})
   const ir=new Lowering(checked,options).lower();verifyIR(ir);return ir;
 }
 class Lowering {
+  private callbackSequence = 0;
+  callbackName():string {return 'aug_callback_'+this.callbackSequence++;}
   readonly checked:CheckedProject;readonly names=new Map<string,string>();readonly functions:IrFunction[]=[];
   readonly schemas:DataSchemas;
   readonly components=new Set<string>();
@@ -213,7 +215,7 @@ class FunctionLowering {
     const variable=this.variables.length;this.variables.push({name,slot,span,type,scope:this.debugScope});
     const source=this.source;this.source=span;this.instruction({op:'debug-variable',variable});this.source=source;
   }
-  parameter(param:Param,index:number){const type=irType(schemaType(this.generator.checked.project,param.type,this.file)),slot=this.slot(type);this.parameters[index]=slot;this.locals.set(param.name,slot);this.variables.push({name:param.name,slot,span:param.span,type,argument:index+1});if(param.ownership==='own')this.owned.add(slot);}
+  parameter(param:Param,index:number,supplied?:Ty){const type=irType(supplied??schemaType(this.generator.checked.project,param.type,this.file)),slot=this.slot(type);this.parameters[index]=slot;this.locals.set(param.name,slot);this.variables.push({name:param.name,slot,span:param.span,type,argument:index+1});if(param.ownership==='own')this.owned.add(slot);}
   checkError(){const errors=this.block(),next=this.block();this.terminate({op:'cancel',then:this.returning,otherwise:errors});this.enter(errors);this.terminate({op:'error',failed:this.error,success:next});this.enter(next);}
   runtime(operation:string,args:number[],text?:string,number?:number,check=true){
     if(operation.startsWith('HTTP_'))this.generator.components.add('http');
@@ -261,6 +263,22 @@ class FunctionLowering {
   }
   private expressionValue(expr:Expr):number {
     this.source=expr.span;
+    const callback=this.generator.checked.functionValues.get(expr);
+    if(callback){
+      const captures=callback.captures.map(capture=>this.expression(capture.expression));
+      const name=this.generator.callbackName();
+      const body=new FunctionLowering(this.generator,expr.span.file,expr.span);
+      body.receiver=body.slot(irType(callback.type));body.locals.set('self',body.receiver);
+      callback.params.forEach((param,index)=>body.parameter(param,index,callback.inputs[index]));
+      if(callback.target){const result=body.call(this.generator.name(callback.target),callback.order.map(index=>body.parameters[index]));body.instruction({op:'copy',out:0,input:result});}
+      else{
+        callback.captures.forEach((capture,index)=>body.local(capture.name,body.runtime('FIELD',[body.receiver!],undefined,index),capture.expression.span,irType(capture.type)));
+        body.statement({kind:'return',value:callback.body!,span:callback.body!.span});
+      }
+      this.generator.functions.push(body.finish(name));
+      const out=this.slot(irType(callback.type));this.instruction({op:'object',out,type:'compiler:callback:'+expr.span.file+':'+expr.span.start,fields:callback.captures.map(capture=>capture.name),owned:captures.map(()=>false),methods:[{name:callback.signature.method.name,function:name}],record:false});
+      captures.forEach((value,index)=>this.runtime('SET_FIELD',[out,value],undefined,index));return out;
+    }
     if(expr.kind==='comprehension'){
       const iterable=this.expression(expr.iterable),values=this.runtime('ITER',[iterable]),result=this.runtime('LIST',[]);
       const index=this.slot(scalarType('int')),one=this.literal(null,{kind:'int',text:'1'});

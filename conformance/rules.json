@@ -1743,6 +1743,41 @@
           "test": "comprehensions reject repeated continuation calls, repeated owned transfers and unhandled failures"
         }
       ]
+    },
+    {
+      "id": "FUNCTION_VALUES",
+      "summary": "Pure function references and expression closures match every inherited single-method contract, retain immutable creation-time captures, labels, checked context and isolated-worker boundaries. Incompatible interface overrides reject.",
+      "reference": "reference.md#pure-function-values-unreleased",
+      "productions": [
+        "Closure"
+      ],
+      "cases": [
+        "callback-snapshot",
+        "callback-mutable-erasure",
+        "interface-override-layout"
+      ],
+      "regressions": [
+        {
+          "file": "tests/function-values.test.mjs",
+          "test": "standalone function values reuse checked callback interfaces and match labels independently of order"
+        },
+        {
+          "file": "tests/function-values.test.mjs",
+          "test": "closures reject mutable, owned and borrowed reference captures without moving outer values"
+        },
+        {
+          "file": "tests/function-values.test.mjs",
+          "test": "function values preserve resolved nominal identities and reject larger/default interfaces"
+        },
+        {
+          "file": "tests/function-values.test.mjs",
+          "test": "callbacks created in a worker use its heap and cannot transfer between heaps"
+        },
+        {
+          "file": "tests/function-values.test.mjs",
+          "test": "closure body dependencies are retained as deferred calls in both context APIs"
+        }
+      ]
     }
   ]
 }

@@ -11,7 +11,7 @@ import {libraryRelative} from './libraries.ts';
 export interface SemanticSymbol {id:string; name:string; kind:string; location:Span; owner?:string; editable:boolean}
 export interface Occurrence {symbol:string; file:string; start:number; end:number; line:number; column:number;
   role:'declaration'|'read'|'write'|'call'|'import'|'export'|'type'|'argument-label'|'shorthand-label'|'test'; caller?:string}
-export interface SemanticEdge {from:string; to:string; kind:'call'|'import'|'export'|'implements'|'injected'|'test'; location:Span}
+export interface SemanticEdge {from:string; to:string; kind:'call'|'callback-call'|'function-value'|'import'|'export'|'implements'|'injected'|'test'; location:Span}
 export interface SemanticBoundary {kind:'interface-dispatch'|'native-code'|'interceptor-delegation'|'unresolved-call'; location:Span; target?:string}
 export interface SemanticGraph {
   schema:1; compiler:{version:string; sha256:string}; revision:string; ordering:'file-offset-role';
@@ -95,11 +95,12 @@ export function semanticGraph(checked:CheckedProject,wholeProject:boolean,checke
     const token=selectedToken(span,name,last);if(token)addOccurrence(id,token,role,caller);
   };
   const edge=(kind:SemanticEdge['kind'],from:string,to:string,span:Span)=>relationships.push({kind,from,to,location:location(span)});
-  const visit=(value:unknown,caller:string):void=>{
+  const visit=(value:unknown,caller:string,deferred=false):void=>{
     if(!value||typeof value!=='object')return;
-    if(Array.isArray(value)){value.forEach(item=>visit(item,caller));return;}
+    if(Array.isArray(value)){value.forEach(item=>visit(item,caller,deferred));return;}
     const node=value as {kind?:string;span?:Span;name?:string},expr=value as Expr;
     caller=nodeIds.get(value)??caller;
+    if(expr.kind==='lambda')deferred=true;
     const name=checked.resolvedNames.get(expr);
     if(name) {
       const id=name.global??localIds.get(localKey(name.definition,name.name));
@@ -107,13 +108,14 @@ export function semanticGraph(checked:CheckedProject,wholeProject:boolean,checke
     }
     const type=checked.resolvedTypes.get(value as TypeRef);
     if(type?.def&&node.span)globalReference(type.def.id,node.span,(value as TypeRef).name,'type',caller);
-    if(expr.kind==='markup') {const call=checked.markupCalls.get(expr);if(call)visit(call,caller);}
-    if(expr.kind==='recordCopy') {const target=checked.expressionTypes.get(expr.base)?.def;if(target)edge('call',caller,target.id,expr.span);}
-    if(expr.kind==='handle') {const plan=checked.actions.get(expr);if(plan){globalReference(plan.endpoint.id,expr.call.span,plan.endpoint.name,'call',caller);edge('call',caller,plan.endpoint.id,expr.span);}}
+    const callback=checked.functionValues.get(expr);if(callback?.target)edge('function-value',caller,callback.target.id,expr.span);
+    if(expr.kind==='markup') {const call=checked.markupCalls.get(expr);if(call)visit(call,caller,deferred);}
+    if(expr.kind==='recordCopy') {const target=checked.expressionTypes.get(expr.base)?.def;if(target)edge(deferred?'callback-call':'call',caller,target.id,expr.span);}
+    if(expr.kind==='handle') {const plan=checked.actions.get(expr);if(plan){globalReference(plan.endpoint.id,expr.call.span,plan.endpoint.name,'call',caller);edge(deferred?'callback-call':'call',caller,plan.endpoint.id,expr.span);}}
     if(expr.kind==='call') {
       const call=checked.resolvedCalls.get(expr),target=call&&nodeIds.get(call.node);
       if(target&&call) {
-        globalReference(target,expr.callee.span,call.node.name,'call',caller,true);edge('call',caller,target,expr.span);
+        globalReference(target,expr.callee.span,call.node.name,'call',caller,true);edge(deferred?'callback-call':'call',caller,target,expr.span);
         if(call.dispatch==='interface')boundaries.push({kind:'interface-dispatch',target,location:location(expr.span)});
         if(call.node.kind==='function'&&call.node.externC)boundaries.push({kind:'native-code',target,location:location(expr.span)});
         const plan=checked.callPlans.get(expr);
@@ -177,7 +179,7 @@ export function semanticGraph(checked:CheckedProject,wholeProject:boolean,checke
         const target=checked.resolvedTypes.get(param.type)?.def;if(target)edge('injected',caller,target.id,param.span);
       }
     }
-    for(const [key,child] of Object.entries(value))if(key!=='span'&&!key.endsWith('Span')&&key!=='argLabelSpans')visit(child,caller);
+    for(const [key,child] of Object.entries(value))if(key!=='span'&&!key.endsWith('Span')&&key!=='argLabelSpans')visit(child,caller,deferred);
   };
   for(const file of project.files.values())if(!checkedFiles||checkedFiles.has(file.path))visit(file.items,'module:'+semanticSourcePath(checked,file.path));
   // Callees are both resolved names and call targets; retain the more specific role.
@@ -192,7 +194,7 @@ export function semanticGraph(checked:CheckedProject,wholeProject:boolean,checke
   relationships.sort((a,b)=>compare(a.location.file,b.location.file)||a.location.start-b.location.start||compare(a.kind,b.kind));
   for(const relation of relationships) {
     (forwardDependencies[relation.from]??=[]).push(relation);
-    if(relation.kind==='call')(reverseCallers[relation.to]??=[]).push(relation);
+    if(['call','callback-call','function-value'].includes(relation.kind))(reverseCallers[relation.to]??=[]).push(relation);
   }
   const sources=[...project.files.values()].filter(file=>!checkedFiles||checkedFiles.has(file.path)).map(file=>({file:semanticSourcePath(checked,file.path),sha256:digest(file.source)})).sort((a,b)=>compare(a.file,b.file));
   const compiler=compilerIdentity(),errors=checked.diagnostics.filter(issue=>issue.severity!=='warning').length;

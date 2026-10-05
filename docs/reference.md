@@ -352,6 +352,12 @@ Outside main and test setup, every injected dependency is declared in the callab
 
 Raw `print`, `arguments`, `read_file`, and `write_file` are available to main/test tooling and the trusted standard adapters. Other callables receive explicit capabilities. Pure construction cannot perform these effects.
 
+### Pure function values (unreleased)
+
+An expected concrete single-method interface can receive a managed standalone function name or a typed expression closure: `Predicate<int> positive = (int value) => value > 0`. The interface must have one public abstract pure data method, with no checked failures, ownership transfers, defaults, injection, annotations or native contract. Every inherited entry, including an overridden ancestor, must have that same supported pure signature. Function references match resolved input types and public labels; declaration order can differ. Closures list those labels in order. Calls use the ordinary labeled interface method. Generic call arguments can infer their types from the callback's inputs and result; generic function references remain unsupported.
+
+Closures copy creation-time scalars and retain deeply immutable managed records or frozen collection references. Mutable, owned and borrowed reference captures are rejected. The enclosing class receiver is unavailable; select a permitted field into a local first. Callbacks stay on their creating worker heap; ordinary task scopes and capture checks still apply. See [Pass a small function](guides/use-callbacks.md) for a complete example.
+
 ## Dependency injection and lifetimes
 
 Provide one implementation per key before startup: `implement Logger with ConsoleLogger`. A named key such as `app` selects a class without a type key. `resolve app to program` retrieves it explicitly. Legacy `bind` and assignment-form resolve are rejected; use `aug migrate` or the editor migration fix.

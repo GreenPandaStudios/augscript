@@ -55,7 +55,7 @@ export function describe(checked: CheckedProject, fileName: string, options: { n
   for (let index = 0; index < queue.length; index++) {
     const fact = queue[index]; if (seen.has(fact.id)) continue; seen.add(fact.id);
     if (!append(selected, fact)) continue;
-    if (options.context) for (const call of fact.calls) { const next = facts.find(fact => fact.id === call.target); if (next) queue.push(next); }
+    if (options.context) for (const call of [...fact.calls,...fact.functionValues]) { const next = facts.find(fact => fact.id === call.target); if (next) queue.push(next); }
   }
   checked.bindings.forEach(binding => append(bindings, { key: binding.key, target: binding.target.id, lifetime: binding.lifetime,
     stateful: binding.stateful, dependencies: binding.dependencies, location: binding.declaration.span }));

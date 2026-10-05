@@ -12,6 +12,7 @@ const maximum = (...values: (number | undefined)[]): number | undefined => {
 };
 
 function calls(expr: Expr): number {
+  if(expr.kind==='lambda')return 0;
   if(expr.kind==='comprehension')return add(calls(expr.iterable),calls(expr.projection)+(expr.condition?calls(expr.condition):0)>0?2:0);
   if(expr.kind==='matchValue')return add(calls(expr.value),Math.max(0,...expr.cases.map(clause=>calls(clause.result))));
   if (expr.kind === 'handle' && expr.call.kind === 'call') return Math.min(2,expr.call.args.reduce((sum,arg) => sum + calls(arg),0));
