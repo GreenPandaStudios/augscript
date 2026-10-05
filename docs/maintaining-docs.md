@@ -48,6 +48,8 @@ For CLI, editor, package layout, setup, or release workflow changes, run install
 
 Package the VSIX and run `npm run test:editor`. Repeat `-- --editor 1.90.0` for the declared minimum editor. The automated matrix covers every compiler host and both pinned editor versions; local macOS evidence does not establish Linux results. For editor-only patches retaining the public compiler, add `-- --retained-compiler`. Update the baseline checksums only from reviewed published artifacts. Keep `scripts/distribution-inputs.json` and the editor matrix aligned. Reports and disposable profiles belong in generated directories, not Git.
 
+Linux editor qualification runs under a virtual display with GPU acceleration disabled. The report records software rendering; macOS keeps its normal rendering path. Failed clean/upgrade profiles retain bounded text logs in `.aug-build/editor-host-logs-*` for the workflow artifact. These test settings do not change the installed extension or a developer’s VS Code preferences.
+
 Linux LLVM parity installs the OIDC example's locked GitHub source packages. Pass the runner's `AUG_GITHUB_TOKEN` into that Docker process with `docker exec -e AUG_GITHUB_TOKEN`; a job environment variable alone does not reach the container. The source transport uses the token only for GitHub API reads, so qualification can use authenticated API limits without adding credentials to source snapshots or raw downloads.
 
 ## Repository example gallery

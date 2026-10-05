@@ -69,5 +69,7 @@ jobs:
         with:
           name: editor-${{ matrix.runner }}-${{ matrix.editor }}-${{ inputs.artifact || 'branch' }}
           include-hidden-files: true
-          path: .aug-build/editor-qualification-*.json
+          path: |
+            .aug-build/editor-qualification-*.json
+            .aug-build/editor-host-logs-*/**/*.log
           if-no-files-found: error
