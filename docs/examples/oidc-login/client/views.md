@@ -48,7 +48,7 @@ pageClass: aug-example-page
 
 ::: code-group
 
-```aug [Indentation]
+```aug [Indentation] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiaW5kZW50Iiwic291cmNlU2hhMjU2IjoiZDg0MGRhYmUwMTUwY2RiZjNjYjJhYjBkZjhjMjM1ZDY0Zjg5MzljNzYyY2FlOTcwOGJjZTQ5NWI5YmYxMjRjOSIsImZvcm1hdHRlZFNoYTI1NiI6IjEzZjEwNjIzZDczNDAwNTcyNmU2MTEzOGRmNjU4NDc5NWE2NmEzNjBmOTU3NzJjZjYxNGE4ZjgxZDFlMDAwYmMiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDYiLCJmaXJzdCI6NSwibGFzdCI6NiwiYmFja2xpbmtzIjpbIiNzeW1ib2wtTG9naW5QYWdlIl19LHsiaWQiOiJzb3VyY2UtTDctTDExIiwiZmlyc3QiOjYsImxhc3QiOjYsImJhY2tsaW5rcyI6WyIjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMSJdfSx7ImlkIjoic291cmNlLUwxMyIsImZpcnN0Ijo3LCJsYXN0Ijo4LCJiYWNrbGlua3MiOlsiI3N5bWJvbC1XZWxjb21lIl19LHsiaWQiOiJzb3VyY2UtTDE0LUwyMiIsImZpcnN0Ijo4LCJsYXN0Ijo4LCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTIiXX1dfQ
 // aug-spec: "views.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import SessionClaims from contracts
 import Page from common
@@ -59,7 +59,7 @@ Welcome(SessionClaims session):
     return <Page title={"Welcome, " + session.name}><p>You are signed in as <strong>{session.name}</strong>.</p><p>Subject: <code>{session.sub}</code></p><p><a href={"/me"}>View the protected JSON endpoint</a></p><form method={"post"} action={"/logout"} onSubmit={handle logout(input from form)}><input type={"hidden"} name={"csrf"} value={session.csrf} /><button type={"submit"} style={"padding:10px 18px;border-radius:10px;border:0;background:#17233a;color:white;font:inherit"}>Sign out</button></form></Page>
 ```
 
-```aug [Braces]
+```aug [Braces] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiYnJhY2VzIiwic291cmNlU2hhMjU2IjoiZDg0MGRhYmUwMTUwY2RiZjNjYjJhYjBkZjhjMjM1ZDY0Zjg5MzljNzYyY2FlOTcwOGJjZTQ5NWI5YmYxMjRjOSIsImZvcm1hdHRlZFNoYTI1NiI6IjY4OTFiMjA3YzJkNTA5NjE3YzZhZmE3YWJlNGFkZWU4ODQzMDBjZTIyOTZmZjUwOWQwMDExMzlmMWM4NmU3MjgiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDYiLCJmaXJzdCI6NSwibGFzdCI6NywiYmFja2xpbmtzIjpbIiNzeW1ib2wtTG9naW5QYWdlIl19LHsiaWQiOiJzb3VyY2UtTDctTDExIiwiZmlyc3QiOjYsImxhc3QiOjYsImJhY2tsaW5rcyI6WyIjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMSJdfSx7ImlkIjoic291cmNlLUwxMyIsImZpcnN0Ijo4LCJsYXN0IjoxMCwiYmFja2xpbmtzIjpbIiNzeW1ib2wtV2VsY29tZSJdfSx7ImlkIjoic291cmNlLUwxNC1MMjIiLCJmaXJzdCI6OSwibGFzdCI6OSwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0yIl19XX0
 // aug-spec: "views.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import SessionClaims from contracts
 import Page from common
@@ -80,15 +80,37 @@ Welcome(SessionClaims session) {
 
 ## Compiled specification {#specification}
 
-### `LoginPage` · [source](views.md#code) {#symbol-LoginPage}
+### `LoginPage` · [source](views.md#source-L6) {#symbol-LoginPage}
 
-It returns the server component [`Page`](../common/views.md#symbol-Page) with `title` = `"Sign in"` containing a paragraph containing `This August app is both an OpenID Connect provider and a login client.` with escaped text, a paragraph containing a link with `href` = `"/login/start"`, `style` = `"display:inline-block;padding:12px 20px;border-radius:10px;background:#4852d7;color:white;text-decoration:none"` containing `Sign in with OpenID Connect` with escaped text with escaped text, a paragraph containing `The server uses authorization codes, S256 PKCE, state and nonce validation. Your session is a separate signed JWT in an HttpOnly cookie.` with escaped text with escaped text.
+::: spec-paragraph specification-paragraph-1
+It returns the server component [`Page`](../common/views.md#symbol-Page) with `title` = `"Sign in"` containing a paragraph containing `This August app is both an OpenID Connect provider and a login client.` with escaped text, a paragraph containing a link with `href` = `"/login/start"`, `style` = `"display:inline-block;padding:12px 20px;border-radius:10px;background:#4852d7;color:white;text-decoration:none"` containing `Sign in with OpenID Connect` with escaped text with escaped text, a paragraph containing `The server uses authorization codes, S256 PKCE, state and nonce validation. Your session is a separate signed JWT in an HttpOnly cookie.` with escaped text with escaped text. [source](views.md#source-L7-L11)
+:::
 
-### `Welcome` · [source](views.md#code) {#symbol-Welcome}
+::: details Checked interface
+
+```text
+LoginPage() returns Html
+```
+
+:::
+
+### `Welcome` · [source](views.md#source-L13) {#symbol-Welcome}
+
+It takes `session` as [`SessionClaims`](contracts.md#symbol-SessionClaims).
+
+::: spec-paragraph specification-paragraph-2
+It returns the server component [`Page`](../common/views.md#symbol-Page) with `title` = the text `Welcome, {session.name}` containing a paragraph containing `You are signed in as `, the HTML element `strong` containing `session.name` with escaped text, `.` with escaped text, a paragraph containing `Subject: `, the HTML element `code` containing `session.sub` with escaped text with escaped text, a paragraph containing a link with `href` = `"/me"` containing `View the protected JSON endpoint` with escaped text with escaped text, the HTML element `form` with `method` = `"post"`, `action` = `"/logout"`, `onSubmit` = a form action that sends `POST /logout` to [`logout`](logout.md#symbol-logout) on submission containing the HTML element `input` with `type` = `"hidden"`, `name` = `"csrf"`, `value` = `session.csrf` with escaped text, a button with `type` = `"submit"`, `style` = `"padding:10px 18px;border-radius:10px;border:0;background:#17233a;color:white;font:inherit"` containing `Sign out` with escaped text with escaped text with escaped text. [source](views.md#source-L14-L22)
+:::
+
+::: details Checked interface
+
+```text
+Welcome(SessionClaims session) returns Html unless HttpError
+```
 
 It takes `session` as [`SessionClaims`](contracts.md#symbol-SessionClaims). Failures can raise `HttpError`.
 
-It returns the server component [`Page`](../common/views.md#symbol-Page) with `title` = the text `Welcome, {session.name}` containing a paragraph containing `You are signed in as `, the HTML element `strong` containing `session.name` with escaped text, `.` with escaped text, a paragraph containing `Subject: `, the HTML element `code` containing `session.sub` with escaped text with escaped text, a paragraph containing a link with `href` = `"/me"` containing `View the protected JSON endpoint` with escaped text with escaped text, the HTML element `form` with `method` = `"post"`, `action` = `"/logout"`, `onSubmit` = a form action that sends `POST /logout` to [`logout`](logout.md#symbol-logout) on submission containing the HTML element `input` with `type` = `"hidden"`, `name` = `"csrf"`, `value` = `session.csrf` with escaped text, a button with `type` = `"submit"`, `style` = `"padding:10px 18px;border-radius:10px;border:0;background:#17233a;color:white;font:inherit"` containing `Sign out` with escaped text with escaped text with escaped text.
+:::
 
 ### Dependencies
 

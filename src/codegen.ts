@@ -1,10 +1,13 @@
-import type { ClassDecl, Expr, InterceptorDecl, MethodDecl, Param, Stmt } from './ast.ts';
+import type {ErrorMatch} from './error-matches.ts';
+import type { BindingPattern, RecordBindingField, ClassDecl, Expr, InterceptorDecl, MatchPattern, MethodDecl, Param, Stmt } from './ast.ts';
 import { fieldsOf, initializationOf, isStatement, typeName } from './ast.ts';
 import type { BindingInfo, CheckedProject, InterceptorLayer } from './checker.ts';
+import {sourceFileIdentity} from './source-location.ts';
 import type { Definition } from './project.ts';
 import { builtinProperties, collectionOperations, errorNames } from './builtins.ts';
 import { interceptorChain, InterceptorInvocation } from './interceptors.ts';
 import { NativeSchemas, schemaType } from './schemas.ts';
+import type {FunctionValuePlan} from './function-values.ts';
 import type { Ty } from './types.ts';
 import {resolve} from 'node:path';
 import {generateOpenApi, apiExplorer, apiExplorerScript} from './openapi.ts';
@@ -21,6 +24,12 @@ export function generateC(checked: CheckedProject, options: { coverage?: boolean
 }
 
 class CGenerator {
+  errorCondition(type: import('./ast.ts').TypeRef):string {
+    const plan=this.checked.errorMatches.get(type);if(!plan)throw new Error('Missing checked error match');
+    const valueTest=(match:ErrorMatch,value:string):string=>match.id==='Error'?'1':
+      `(${value}.tag == AUG_OBJECT && ${value}.as.object && !strcmp(${value}.as.object->type_name, ${cString(match.id)})${match.fields.map(field=>' && '+valueTest(field.match,`aug_field(${value}, ${field.index})`)).join('')})`;
+    return `aug_error_is(${cString(plan.id)})${plan.fields.map(field=>' && '+valueTest(field.match,`aug_field(aug_error, ${field.index})`)).join('')}`;
+  }
   private readonly checked: CheckedProject;
   private readonly names = new Map<string, string>();
   private readonly bindings = new Map<string, number>();
@@ -34,6 +43,25 @@ class CGenerator {
     const name = `aug_task_entry_${this.sequence++}`;
     this.prototypes.push(`static AugValue ${name}(AugValue self, AugValue *args, int count);`);
     this.functions.push(emitter.finish(name, true, count)); return name;
+  }
+  functionValue(expr:Expr) {return this.checked.functionValues.get(expr);}
+  callbackTable(expr:Expr,plan:FunctionValuePlan):{table:string;mask:string;names:string;type:string} {
+    const name='aug_callback_'+this.sequence++,table=name+'_methods',mask=name+'_owned',names=name+'_fields';
+    this.prototypes.push(`static AugValue ${name}(AugValue self, AugValue *args, int count);`);
+    if(plan.target){
+      const args=plan.order.map(index=>`args[${index}]`).join(', ');
+      this.functions.push(`static AugValue ${name}(AugValue self, AugValue *args, int count) { (void)self; (void)args; AugValue ordered[] = {${args||'aug_scalar_null()'}}; return ${this.name(plan.target)}(ordered, count); }`);
+    }else{
+      const body=new BodyEmitter(this,expr.span.file);body.addParameter('self',0);
+      plan.params.forEach((param,index)=>body.addParameter(param.name,index));
+      plan.captures.forEach((capture,index)=>body.addCapture(capture.name,index));
+      body.emitStatement({kind:'return',value:plan.body!,span:plan.body!.span});
+      this.functions.push(body.finish(name,true,plan.params.length));
+    }
+    this.tables.push(`static const AugMethodEntry ${table}[] = {{${cString(plan.signature.method.name)}, ${name}, NULL}};`);
+    this.tables.push(`static const unsigned char ${mask}[] = {${plan.captures.map(()=>0).join(', ')||'0'}};`);
+    this.tables.push(`static const char *const ${names}[] = {${plan.captures.map(capture=>cString(capture.name)).join(', ')||'NULL'}};`);
+    return {table,mask,names,type:'compiler:callback:'+expr.span.file+':'+expr.span.start};
   }
   markupCall(expr: Expr) {return this.checked.markupCalls.get(expr);}
   actionPlan(expr: Expr) {return this.checked.actions.get(expr);}
@@ -195,7 +223,7 @@ class CGenerator {
       `  AugValue roots[${cls.fields.length + 1}] = {0};`,
       `  AugFrame frame; aug_frame_enter(&frame, roots, ${cls.fields.length + 1});`,
       ...cls.fields.map((_, index) => `  roots[${index}] = args[${index}];`),
-      `  roots[${cls.fields.length}] = aug_new_object(${cString(cls.kind === 'class' && cls.record ? def.id : cls.name)}, ${fieldsOf(cls).length}, ${ownTableName}, ${tableName}, ${methods.length});`,
+      `  roots[${cls.fields.length}] = aug_new_object(${cString(def.id)}, ${fieldsOf(cls).length}, ${ownTableName}, ${tableName}, ${methods.length});`,
       ...cls.fields.map((_, index) => `  aug_set_field(roots[${cls.fields.length}], ${index}, roots[${index}]);`),
       ...(cls.kind === 'class' && cls.record ? [`  roots[${cls.fields.length}].as.object->kind = AUG_RECORD_KIND;`] : []),
       `  AugValue value = roots[${cls.fields.length}];`,
@@ -276,7 +304,7 @@ class CGenerator {
       `  roots[${count}] = aug_http_response(roots[${count}], ${endpoint.status}); goto finished;`,
       'failed:',
       `  { int status = aug_http_error_status();`,
-      ...endpoint.errors.map(error => `    if (aug_error_is(${cString(error.type.name)})) status = ${error.status};`),
+      ...endpoint.errors.map(error => `    if (aug_error_is(${cString(this.definition(def.file,error.type.name)?.id??error.type.name)})) status = ${error.status};`),
       '    if (status == 500) aug_report_error(); aug_take_error();',
       `    roots[${count}] = aug_http_problem(status); }`,
       'finished:',
@@ -351,18 +379,22 @@ class CGenerator {
     this.coverage.set(`${stmt.span.file}:${stmt.span.line}`, { file: stmt.span.file, line: stmt.span.line });
     return true;
   }
+  patternFieldIndex(field:RecordBindingField):number { return this.checked.patternFields.get(field)!.index; }
+  sourceFileIdentity(file:string):string {return sourceFileIdentity(this.checked.project,file);}
   expressionType(expr: Expr) { return this.checked.expressionTypes.get(expr); }
   schema(type: Ty): string { return this.schemas.request(type); }
   expressionSource(expr: Expr): string {
     return this.checked.project.files.get(expr.span.file)?.source.slice(expr.span.start, expr.span.end) ?? 'condition';
   }
   callPlan(expr: Expr) { return this.checked.callPlans.get(expr); }
+  ownsBinding(stmt:Stmt):boolean {return stmt.kind==='assign'&&(stmt.ownership==='own'||this.checked.inferredOwned.has(stmt));}
   cName(def: Definition): string { return this.name(def); }
   cConstructor(def: Definition): string { return this.constructorName(def); }
   cMethod(def: Definition, method: string): string { return this.methodName(def, method); }
   hasInterceptors(node: MethodDecl): boolean { return !!this.checked.interceptorPlans.get(node)?.length; }
 }
 
+interface LoopExit {label:string; owned:Set<number>; depth:string; locks:string}
 class BodyEmitter {
   private readonly generator: CGenerator;
   private readonly file: string;
@@ -375,6 +407,7 @@ class BodyEmitter {
   private readonly scalarSlots = new Set<number>();
   private slots = 1;
   private labelCounter = 0;
+  private loop?: {breaking:LoopExit; continuing:LoopExit};
   private errorTarget = 'aug_cleanup';
   private returnTarget = 'aug_cleanup';
   private continuation?: InterceptorInvocation;
@@ -395,6 +428,10 @@ class BodyEmitter {
     this.locals.set(name, slot);
     this.lines.push(`roots[${slot}] = ${name === 'self' ? 'self' : `args[${index}]`};`);
     if (owned) this.owned.add(slot);
+  }
+
+  addCapture(name:string,index:number):void {
+    const slot=this.newSlot();this.locals.set(name,slot);this.line(`${this.slot(slot)} = aug_field(self, ${index});`);
   }
 
   initializeInterceptor(layer: InterceptorLayer, params: Param[], name: string, method: boolean): void {
@@ -479,7 +516,79 @@ class BodyEmitter {
     return slot;
   }
 
+  private bindPattern(pattern:BindingPattern,value:number):void {
+    if(pattern.kind==='nameBinding'){this.locals.set(pattern.name,value);return;}
+    if(pattern.kind==='tupleBinding')for(const [index,item] of pattern.items.entries()){
+      const slot=this.newSlot();this.line(`${this.slot(slot)} = aug_tuple_get(${this.slot(value)}, ${index});`);this.bindPattern(item,slot);
+    }else for(const entry of pattern.fields){
+      const slot=this.newSlot();this.line(`${this.slot(slot)} = aug_field(${this.slot(value)}, ${this.generator.patternFieldIndex(entry)});`);this.bindPattern(entry.pattern,slot);
+    }
+  }
+
+  private matchCondition(clause:MatchPattern,value:number,literal:number|undefined):string {
+    const type = clause.type ? this.generator.definition(this.file, clause.type.name) : undefined;
+    return clause.pattern === 'else' ? '1' : clause.pattern === 'null' ? `${this.slot(value)}.tag == AUG_NULL` :
+      clause.pattern === 'some' ? `${this.slot(value)}.tag != AUG_NULL` : clause.pattern === 'type' ?
+        `${this.slot(value)}.tag == AUG_OBJECT && !strcmp(${this.slot(value)}.as.object->type_name, ${cString(type?.id ?? clause.type!.name)})` :
+        `aug_truthy(aug_binary("==", ${this.slot(value)}, ${this.slot(literal!)}))`;
+  }
+
   private emitValueExpr(expr: Expr): number {
+    const callback=this.generator.functionValue(expr);
+    if(callback){
+      const table=this.generator.callbackTable(expr,callback),captures=callback.captures.map(capture=>this.emitExpr(capture.expression)),slot=this.newSlot();
+      this.line(`${this.slot(slot)} = aug_new_object(${cString(table.type)}, ${captures.length}, ${table.mask}, ${table.table}, 1);`);
+      this.line(`${this.slot(slot)}.as.object->field_names = ${table.names};`);
+      captures.forEach((value,index)=>this.line(`aug_set_field(${this.slot(slot)}, ${index}, ${this.slot(value)});`));return slot;
+    }
+    if(expr.kind==='comprehension'){
+      const value=this.emitExpr(expr.iterable),snapshot=this.newSlot(),result=this.newSlot();
+      this.line(`${this.slot(snapshot)} = aug_iter_snapshot(${this.slot(value)});`);
+      this.line(`${this.slot(result)} = aug_list_new(NULL, 0);`);
+      const index=this.label('aug_index'),names=new Map(this.locals);
+      this.line(`for (size_t ${index} = 0; ${index} < ${this.slot(snapshot)}.as.object->field_count; ${index}++) {`);
+      this.line('if (aug_execution->fiber || aug_task_checkpoint_hook) aug_task_checkpoint();');
+      this.line(`if (aug_cancelled) goto ${this.returnTarget};`);
+      const item=this.newSlot();this.line(`${this.slot(item)} = ${this.slot(snapshot)}.as.object->fields[${index}];`);
+      this.bindPattern(expr.pattern,item);
+      if(expr.condition){const condition=this.emitExpr(expr.condition);this.line(`if (aug_truthy(${this.slot(condition)})) {`);}
+      const projected=this.emitExpr(expr.projection);this.line(`aug_list_append(${this.slot(result)}, ${this.slot(projected)});`);
+      if(expr.condition)this.line('}');this.line('}');this.locals=names;return result;
+    }
+    if (expr.kind === 'matchValue') {
+      const value = this.emitExpr(expr.value), slot = this.newSlot();
+      const literals = expr.cases.map(clause => clause.literal ? this.emitExpr(clause.literal) : undefined);
+      for (const [index, clause] of expr.cases.entries()) {
+        const condition = this.matchCondition(clause,value,literals[index]);
+        this.line(`${index ? 'else ' : ''}if (${condition}) {`);
+        const names = new Map(this.locals);if (clause.name) this.locals.set(clause.name, value);
+        const result = this.emitExpr(clause.result);this.line(`${this.slot(slot)} = ${this.slot(result)};`);
+        this.locals = names;this.line('}');
+      }
+      return slot;
+    }
+    if (expr.kind === 'recordCopy') {
+      const base = this.emitExpr(expr.base), def = this.generator.expressionType(expr.base)!.def!;
+      const node = def.node as ClassDecl;
+      const replacements = new Map(expr.fields.map(field => [field.name, this.emitExpr(field.value)]));
+      const args = node.fields.map((field, index) => {
+        const replacement = replacements.get(field.label ?? field.name); if (replacement !== undefined) return replacement;
+        const value = this.newSlot(); this.line(`${this.slot(value)} = aug_field(${this.slot(base)}, ${index});`); return value;
+      });
+      const slot = this.newSlot(), array = this.label('record_args');
+      this.line(`AugValue ${array}[] = {${args.map(arg => this.slot(arg)).join(', ') || 'aug_scalar_null()'}};`);
+      this.line(`${this.slot(slot)} = ${this.generator.cConstructor(def)}(${array}, ${args.length});`);
+      this.line(`if (aug_has_error) goto ${this.errorTarget};`); return slot;
+    }
+    if (expr.kind === 'interpolation') {
+      const slot = this.newSlot(); this.line(`${this.slot(slot)} = aug_string("");`);
+      for (const part of expr.parts) {
+        const value = this.emitExpr('text' in part ? {kind:'literal', value:part.text, span:part.span} : part.value), text = this.newSlot();
+        this.line(`${this.slot(text)} = aug_text(${this.slot(value)});`);
+        this.line(`${this.slot(slot)} = aug_binary("+", ${this.slot(slot)}, ${this.slot(text)});`);
+      }
+      return slot;
+    }
     if (expr.kind === 'handle' && expr.call.kind === 'call') {
       const plan = this.generator.actionPlan(expr)!, endpoint = (plan.endpoint.node as MethodDecl).endpoint!;
       const metadata = {method:endpoint.method,path:endpoint.path,parameters:plan.parameters.map(({param,type,form}) => ({name:param.source?.name ?? param.name,source:param.source?.kind,form,schema:this.generator.actionSchema(type)}))};
@@ -562,6 +671,7 @@ class BodyEmitter {
         this.line(`AugValue ${array}[] = { ${args.map(index => this.slot(index)).join(', ') || 'aug_scalar_null()'} };`);
         this.line(`${this.slot(slot)} = aug_${name.toLowerCase()}_new(${array}, ${args.length});`);
       }
+      if (this.generator.expressionType(expr)?.immutable) this.line(`aug_freeze(${this.slot(slot)});`);
       return slot;
     }
     if (expr.kind === 'resolve') {
@@ -593,6 +703,15 @@ class BodyEmitter {
     }
     if (expr.kind === 'binary') {
       const left = this.emitExpr(expr.left);
+      if (expr.op === 'otherwise') {
+        const slot = this.newSlot();
+        this.line(`${this.slot(slot)} = ${this.slot(left)};`);
+        this.line(`if (${this.slot(left)}.tag == AUG_NULL) {`);
+        const right = this.emitExpr(expr.right);
+        this.line(`${this.slot(slot)} = ${this.slot(right)};`);
+        this.line('}');
+        return slot;
+      }
       if (expr.op === '&&' || expr.op === '||') {
         const slot = this.newSlot();
         this.line(`${this.slot(slot)} = aug_scalar_bool(${this.slot(left)}.as.boolean);`);
@@ -643,6 +762,7 @@ class BodyEmitter {
     const plan = this.generator.callPlan(expr);
     const args = plan ? plan.sourceIndices.map((source, index) => {
       if (source !== undefined) return sourceArgs[source];
+      if (plan.defaults?.[index]) return this.emitExpr(plan.defaults[index]!);
       const dependency = plan.injectionSources?.[index];
       if (dependency) {
         const slot = this.newSlot();
@@ -667,6 +787,12 @@ class BodyEmitter {
       this.line(`AugValue ${array}[] = { ${args.map(index => this.slot(index)).join(', ') || 'aug_scalar_null()'} };`);
       return array;
     };
+    if (expr.callee.kind === 'name' && expr.callee.name === 'sourceLocation') {
+      const path=this.emitExpr({kind:'literal',value:this.generator.sourceFileIdentity(expr.span.file),span:expr.span});
+      const values=this.label('location');
+      this.line(`AugValue ${values}[] = { ${this.slot(path)}, aug_scalar_int(INT64_C(${expr.span.line})), aug_scalar_int(INT64_C(${expr.span.column})) };`);
+      this.line(`${this.slot(slot)} = aug_tuple_new(${values}, 3);`);return slot;
+    }
     if (expr.callee.kind === 'name' && expr.callee.name === 'exit') {
       this.line(`int aug_exit_code_${slot} = (int)aug_cint(${this.slot(args[0])});`);
       this.line(`aug_cancelled = true; aug_shutdown(); exit(aug_exit_code_${slot} >= 0 && aug_exit_code_${slot} <= 255 ? aug_exit_code_${slot} : 1);`);
@@ -702,6 +828,10 @@ class BodyEmitter {
       if (args[0] !== undefined) this.line(`aug_print(${this.slot(args[0])});`);
       this.line(`${this.slot(slot)} = aug_scalar_null();`);
       return slot;
+    }
+    if(expr.callee.kind==='name'&&expr.callee.name==='assertEqual') {
+      this.line(`aug_assert_equal(${this.slot(args[0])}, ${this.slot(args[1])}, ${cString("assertEqual(actual, expected)")}, ${cString(expr.span.file)}, ${expr.span.line});`);
+      this.line(`${this.slot(slot)} = aug_scalar_null();`);this.line(`if (aug_has_error) goto ${this.errorTarget};`);return slot;
     }
     if (expr.callee.kind === 'name' && expr.callee.name === 'assert') {
       this.line(`aug_assert(${this.slot(args[0])}, ${cString(this.generator.expressionSource(expr.args[0]))}, ${cString(expr.span.file)}, ${expr.span.line});`);
@@ -831,21 +961,26 @@ class BodyEmitter {
     if (stmt.kind === 'expr') { this.emitExpr(stmt.expr); return; }
     if (stmt.kind === 'destructure') {
       const value = this.emitExpr(stmt.value);
+      if(stmt.pattern){this.bindPattern(stmt.pattern,value);return;}
       for (const [index, name] of stmt.names.entries()) {
         const slot = this.newSlot(); this.locals.set(name, slot);
         this.line(`${this.slot(slot)} = aug_tuple_get(${this.slot(value)}, ${index});`);
       }
       return;
     }
+    if (stmt.kind === 'break' || stmt.kind === 'continue') {
+      this.loopExit(this.loop![stmt.kind === 'break' ? 'breaking' : 'continuing']); return;
+    }
     if (stmt.kind === 'for') {
       const value = this.emitExpr(stmt.iterable);
       const snapshot = this.newSlot();
       const iterableType = this.generator.expressionType(stmt.iterable);
-      const flatMap = stmt.names.length === 2 && iterableType?.kind === 'builtin' && iterableType.name === 'Map';
+      const flatMap = !stmt.pattern && stmt.names.length === 2 && iterableType?.kind === 'builtin' && iterableType.name === 'Map';
       this.line(`${this.slot(snapshot)} = ${flatMap ? 'aug_map_entries_snapshot' : 'aug_iter_snapshot'}(${this.slot(value)});`);
-      const index = this.label('aug_index');
+      const index = this.label('aug_index'), done = this.label('aug_loop_done'), next = this.label('aug_loop_next');
+      const outerLoop = this.loop; this.loop = this.loopTargets(done, next);
       const names = new Map(this.locals);
-      const slots = stmt.names.map(name => { const slot = this.newSlot(); this.locals.set(name, slot); return slot; });
+      const slots = (stmt.pattern?[]:stmt.names).map(name => { const slot = this.newSlot(); this.locals.set(name, slot); return slot; });
       if (flatMap) slots.forEach((slot, index) => {
         if (this.isScalar(this.generator.expressionType(stmt.iterable)?.args[index])) this.scalarSlots.add(slot);
       });
@@ -855,23 +990,19 @@ class BodyEmitter {
       if (flatMap) slots.forEach((slot, position) => this.line(`${this.slot(slot)} = ${this.slot(snapshot)}.as.object->fields[${index} * 2 + ${position}];`));
       else {
         const item = this.newSlot(); this.line(`${this.slot(item)} = ${this.slot(snapshot)}.as.object->fields[${index}];`);
-        slots.forEach((slot, position) => this.line(`${this.slot(slot)} = ${slots.length === 1 ? this.slot(item) : `aug_tuple_get(${this.slot(item)}, ${position})`};`));
+        if(stmt.pattern)this.bindPattern(stmt.pattern,item);
+        else slots.forEach((slot, position) => this.line(`${this.slot(slot)} = ${slots.length === 1 ? this.slot(item) : `aug_tuple_get(${this.slot(item)}, ${position})`};`));
       }
       this.emitScoped(stmt.body);
-      this.line('}');
-      this.locals = names;
+      this.line(`${next}:;`); this.line('}'); this.line(`${done}:;`);
+      this.loop = outerLoop; this.locals = names;
       return;
     }
     if (stmt.kind === 'match') {
       const value = this.emitExpr(stmt.value);
       const literals = stmt.cases.map(clause => clause.literal ? this.emitExpr(clause.literal) : undefined);
       for (const [index, clause] of stmt.cases.entries()) {
-        const literal = literals[index];
-        const type = clause.type ? this.generator.definition(this.file, clause.type.name) : undefined;
-        const condition = clause.pattern === 'else' ? '1' : clause.pattern === 'null' ? `${this.slot(value)}.tag == AUG_NULL` :
-          clause.pattern === 'some' ? `${this.slot(value)}.tag != AUG_NULL` : clause.pattern === 'type' ?
-            `${this.slot(value)}.tag == AUG_OBJECT && !strcmp(${this.slot(value)}.as.object->type_name, ${cString(type?.node.kind === 'class' && type.node.record ? type.id : clause.type!.name)})` :
-            `aug_truthy(aug_binary("==", ${this.slot(value)}, ${this.slot(literal!)}))`;
+        const condition = this.matchCondition(clause,value,literals[index]);
         this.line(`${index ? 'else ' : ''}if (${condition}) {`);
         const names = new Map(this.locals);
         if (clause.name) this.locals.set(clause.name, value);
@@ -895,13 +1026,13 @@ class BodyEmitter {
           this.line(`${this.slot(target)} = ${this.slot(value)};`);
           if (this.isScalar(this.generator.expressionType(stmt.value)) && (!stmt.declaredType || ['int', 'c_int', 'float', 'bool'].includes(stmt.declaredType.name)))
             this.scalarSlots.add(target);
-          if (stmt.ownership === 'own') this.owned.add(target);
+          if (this.generator.ownsBinding(stmt)) this.owned.add(target);
         }
       } else if (stmt.target.kind === 'member') {
         const object = this.emitExpr(stmt.target.object);
         this.line(`aug_set_field(${this.slot(object)}, ${this.memberIndex(stmt.target.object, stmt.target.name)}, ${this.slot(value)});`);
       }
-      let targetOwns = stmt.ownership === 'own';
+      let targetOwns = this.generator.ownsBinding(stmt);
       if(stmt.target.kind==='name'&&!this.locals.has(stmt.target.name))targetOwns ||= this.ownedClassFields.has(stmt.target.name);
       if (stmt.target.kind === 'member') {
         const memberName = stmt.target.name;
@@ -941,14 +1072,16 @@ class BodyEmitter {
       return;
     }
     if (stmt.kind === 'while') {
+      const done = this.label('aug_loop_done'), next = this.label('aug_loop_next'), outerLoop = this.loop;
+      this.loop = this.loopTargets(done, next);
       this.line('while (1) {');
       this.line('if (aug_execution->fiber || aug_task_checkpoint_hook) aug_task_checkpoint();');
       this.line(`if (aug_cancelled) goto ${this.returnTarget};`);
       const condition = this.emitExpr(stmt.test);
       this.line(`if (!${this.slot(condition)}.as.boolean) break;`);
       this.emitScoped(stmt.body);
-      this.line('}');
-      return;
+      this.line(`${next}:;`); this.line('}'); this.line(`${done}:;`);
+      this.loop = outerLoop; return;
     }
     if (stmt.kind === 'scope') {
       this.line('aug_scope_enter(aug_scoped);');
@@ -987,7 +1120,7 @@ class BodyEmitter {
       for (const slot of this.owned) if (!ownedBefore.has(slot))
         this.line(`if (${this.slot(slot)}.tag != AUG_NULL) { aug_drop(${this.slot(slot)}); ${this.slot(slot)} = aug_scalar_null(); }`);
       for (const clause of stmt.catches) {
-        this.line(`if (aug_error_is(${cString(clause.type.name)})) {`);
+        this.line(`if (${this.generator.errorCondition(clause.type)}) {`);
         const slot = this.newSlot();
         const prior = this.locals.get(clause.name);
         this.locals.set(clause.name, slot);
@@ -1003,8 +1136,24 @@ class BodyEmitter {
     }
   }
 
+  private loopTargets(breaking:string, continuing:string): {breaking:LoopExit; continuing:LoopExit} {
+    const depth=this.label('aug_loop_depth'), locks=this.label('aug_loop_locks'), owned=new Set(this.owned);
+    this.line(`size_t ${depth} = aug_scope_depth(); size_t ${locks} = aug_lock_depth();`);
+    return {breaking:{label:breaking,owned,depth,locks}, continuing:{label:continuing,owned,depth,locks}};
+  }
+  private loopExit(target:LoopExit):void {
+    this.line(`aug_lock_restore(${target.locks});`);
+    this.line(`aug_scope_join_to(${target.depth});`);
+    for(const slot of this.owned) if(!target.owned.has(slot))
+      this.line(`aug_drop(${this.slot(slot)}); ${this.slot(slot)} = aug_scalar_null();`);
+    this.line(`aug_scope_restore(${target.depth});`);
+    this.line(`if (aug_cancelled) goto ${this.returnTarget};`);
+    this.line(`if (aug_has_error) goto ${this.errorTarget};`);
+    this.line(`goto ${target.label};`);
+  }
+
   private emitTryAlways(stmt: Extract<Stmt, {kind: 'try'}>): void {
-    const outerError = this.errorTarget, outerReturn = this.returnTarget;
+    const outerError = this.errorTarget, outerReturn = this.returnTarget, outerLoop = this.loop;
     const ownedBefore = new Set(this.owned);
     const caught = this.label('aug_final_catch'), failed = this.label('aug_final_error'), returned = this.label('aug_final_return');
     const cleanup = this.label('aug_always'), done = this.label('aug_always_done'), after = this.label('aug_always_after');
@@ -1013,6 +1162,8 @@ class BodyEmitter {
     const pending = this.newSlot();
     this.line(`int ${reason} = 0; size_t ${depth} = aug_scope_depth(); bool ${cancellation} = false;`);
     this.line(`size_t ${locks} = aug_lock_depth();`);
+    const breaking = this.label('aug_final_break'), continuing = this.label('aug_final_continue');
+    if (outerLoop) this.loop = {breaking:{label:breaking,owned:ownedBefore,depth,locks}, continuing:{label:continuing,owned:ownedBefore,depth,locks}};
     this.errorTarget = caught; this.returnTarget = returned; this.emitScoped(stmt.body);
     this.line(`goto ${cleanup};`); this.line(`${caught}:;`);
     this.line(`aug_lock_restore(${locks});`);
@@ -1021,12 +1172,13 @@ class BodyEmitter {
       this.line(`aug_drop(${this.slot(slot)}); ${this.slot(slot)} = aug_scalar_null();`);
     this.errorTarget = failed;
     for (const clause of stmt.catches) {
-      this.line(`if (aug_error_is(${cString(clause.type.name)})) {`);
+      this.line(`if (${this.generator.errorCondition(clause.type)}) {`);
       const names = new Map(this.locals), slot = this.newSlot(); this.locals.set(clause.name, slot);
       this.line(`${this.slot(slot)} = aug_take_error();`); this.emitScoped(clause.body); this.locals = names;
       this.line(`goto ${cleanup};`); this.line('}');
     }
     this.line(`goto ${failed};`); this.line(`${returned}: ${reason} = 1; goto ${cleanup};`);
+    if (outerLoop) {this.line(`${breaking}: ${reason} = 3; goto ${cleanup};`); this.line(`${continuing}: ${reason} = 4; goto ${cleanup};`);}
     this.line(`${failed}: ${reason} = 2;`); this.line(`${cleanup}:;`);
     this.line(`aug_lock_restore(${locks});`);
     this.line(`aug_scope_restore(${depth});`);
@@ -1034,11 +1186,16 @@ class BodyEmitter {
       this.line(`aug_drop(${this.slot(slot)}); ${this.slot(slot)} = aug_scalar_null();`);
     this.line(`${this.slot(pending)} = aug_has_error ? aug_take_error() : aug_scalar_null();`);
     this.line(`${cancellation} = aug_cancelled; aug_cancelled = false;`);
-    this.errorTarget = done; this.returnTarget = done; this.emitScoped(stmt.always!);
+    this.loop = undefined; this.errorTarget = done; this.returnTarget = done; this.emitScoped(stmt.always!);
     this.line(`${done}:; aug_cancelled = ${cancellation};`);
     this.line(`if (!aug_has_error && ${this.slot(pending)}.tag != AUG_NULL) aug_throw(${this.slot(pending)});`);
     this.line(`if (aug_cancelled || ${reason} == 1) goto ${outerReturn};`);
     this.line(`if (aug_has_error || ${reason} == 2) goto ${outerError};`);
+    this.errorTarget = outerError; this.returnTarget = outerReturn; this.loop = outerLoop;
+    if (outerLoop) {
+      this.line(`if (${reason} == 3) {`); this.loopExit(outerLoop.breaking); this.line('}');
+      this.line(`if (${reason} == 4) {`); this.loopExit(outerLoop.continuing); this.line('}');
+    }
     this.line(`goto ${after}; ${after}:;`);
     this.errorTarget = outerError; this.returnTarget = outerReturn;
   }

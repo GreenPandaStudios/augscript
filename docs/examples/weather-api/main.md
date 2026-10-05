@@ -28,13 +28,13 @@ pageClass: aug-example-page
 
 ::: code-group
 
-```aug [Indentation]
+```aug [Indentation] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiaW5kZW50Iiwic291cmNlU2hhMjU2IjoiZjExZDNmOWRkZjAxODAzZTRlN2FlOTFiMDNmZTFhZTQ2MGE1NWVmNTY4MjBkYTFhNmY3ZDA0MjQ4MzkxZWQ4YSIsImZvcm1hdHRlZFNoYTI1NiI6IjQ2OWIzZGM3ZTcxNWQ1MWFkMWUwYTRmYWNhNTI2MjkzMDYxZTMzZDI2MGY3OGUyNjU5NmZmYjJiNjA0ZGM2OTYiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDQiLCJmaXJzdCI6MywibGFzdCI6MywiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0xIl19XX0
 // aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import weatherForecast from forecasts
 serve weatherForecast on port 8787
 ```
 
-```aug [Braces]
+```aug [Braces] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiYnJhY2VzIiwic291cmNlU2hhMjU2IjoiZjExZDNmOWRkZjAxODAzZTRlN2FlOTFiMDNmZTFhZTQ2MGE1NWVmNTY4MjBkYTFhNmY3ZDA0MjQ4MzkxZWQ4YSIsImZvcm1hdHRlZFNoYTI1NiI6IjQ2OWIzZGM3ZTcxNWQ1MWFkMWUwYTRmYWNhNTI2MjkzMDYxZTMzZDI2MGY3OGUyNjU5NmZmYjJiNjA0ZGM2OTYiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDQiLCJmaXJzdCI6MywibGFzdCI6MywiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0xIl19XX0
 // aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import weatherForecast from forecasts
 serve weatherForecast on port 8787
@@ -54,7 +54,9 @@ Listen on `127.0.0.1`. Limit request bodies to 1048576 bytes and buffered respon
 
 ### Startup
 
-It serves [`weatherForecast`](forecasts.md#symbol-weatherForecast) on port `8787`.
+::: spec-paragraph specification-paragraph-1
+It serves [`weatherForecast`](forecasts.md#symbol-weatherForecast) on port `8787`. [source](main.md#source-L4)
+:::
 
 ### Dependencies
 

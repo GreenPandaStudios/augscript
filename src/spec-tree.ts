@@ -1,6 +1,7 @@
 /** Behavioral relations remain explicit until sentence planning. No stage ranks or drops steps. */
-type Evidence = { source?: string };
-export type ActionVerb = 'set' | 'store' | 'split' | 'call' | 'construct' | 'evaluate' | 'return' | 'fail' | 'send' | 'freeze' | 'serve' | 'increase' | 'decrease' | 'continue';
+type Evidence = { source?: string; contextSource?:string };
+export interface SourceRange { path: string; line: number; endLine: number }
+export type ActionVerb = 'set' | 'store' | 'split' | 'call' | 'construct' | 'evaluate' | 'return' | 'fail' | 'send' | 'freeze' | 'serve' | 'increase' | 'decrease' | 'continue' | 'leave';
 export type FlowNode = Evidence & (
   | { kind: 'step'; text: string }
   | { kind: 'action'; verb: ActionVerb; object: string }
@@ -15,7 +16,8 @@ export type FlowNode = Evidence & (
 export type SpecNode =
   | { kind: 'section'; title: string; level: number; anchor?: string; source?: string; children: SpecNode[] }
   | { kind: 'paragraph'; text: string }
-  | { kind: 'flow'; steps: FlowNode[] };
+  | { kind: 'flow'; steps: FlowNode[]; links?: Record<string,SourceRange> }
+  | { kind: 'details'; title: string; children: SpecNode[] };
 
 export const step = (text: string): FlowNode => ({ kind: 'step', text });
 export const action = (verb: ActionVerb, object: string): FlowNode => ({kind:'action', verb, object});
@@ -28,7 +30,8 @@ export const attempt = (children: FlowNode[], catches: Extract<FlowNode, {kind:'
   ({kind:'attempt', children, catches, always});
 export const scope = (lead: string, children: FlowNode[], end: string): FlowNode => ({kind:'scope', lead, children, end});
 export const paragraph = (text: string): SpecNode => ({ kind: 'paragraph', text });
-export const flow = (steps: FlowNode[]): SpecNode => ({ kind: 'flow', steps });
+export const flow = (steps: FlowNode[], links?:Record<string,SourceRange>): SpecNode => ({ kind: 'flow', steps, links });
+export const details = (title:string, children:SpecNode[]):SpecNode => ({kind:'details',title,children});
 export const section = (title: string, level: number, children: SpecNode[], anchor?: string, source?: string): SpecNode =>
   ({ kind: 'section', title, level, anchor, source, children });
 
@@ -43,8 +46,8 @@ const bare = (text: string) => clause(text).replace(/^it /, '');
 const visible = (text: string) => text.replace(/\[([^\]]+)\]\([^)]*\)/g, '$1').replace(/[`*_]/g, '');
 const words = (text: string) => visible(text).split(/\s+/).filter(Boolean).length;
 const sentencesIn = (text:string) => (text.replace(/(`+)[\s\S]*?\1/g,'').match(/[.!?](?:\s|$)/g)??[]).length;
-type Sentence = { text: string; sources: string[]; boundary?: boolean; infinitive?: string };
-export interface ProsePlan { paragraphs: string[]; sources: string[] }
+type Sentence = { text: string; sources: string[]; contextSources?:string[]; boundary?: boolean; infinitive?: string };
+export interface ProsePlan { paragraphs: string[]; sources: string[]; paragraphSources: string[][]; paragraphContextSources:string[][] }
 
 /** Small deterministic microplanner. A clause may join only other clauses in its own scope. */
 export function planFlow(nodes: FlowNode[]): ProsePlan {
@@ -131,7 +134,7 @@ export function planFlow(nodes: FlowNode[]): ProsePlan {
     switch (node.kind) {
       case 'step': result = [sentence(node.text)]; break;
       case 'action': {
-        const verbs:Record<ActionVerb,string>={set:'sets',store:'stores',split:'splits',call:'calls',construct:'creates',evaluate:'evaluates',return:'returns',fail:'raises',send:'sends',freeze:'freezes',serve:'serves',increase:'increases',decrease:'decreases',continue:'continues'};
+        const verbs:Record<ActionVerb,string>={set:'sets',store:'stores',split:'splits',call:'calls',construct:'creates',evaluate:'evaluates',return:'returns',fail:'raises',send:'sends',freeze:'freezes',serve:'serves',increase:'increases',decrease:'decreases',continue:'continues',leave:'leaves'};
         const object=node.object?' '+node.object:'';
         const realized=node.verb==='fail'?`It raises ${node.object.replace(/^with /,'')}.`:`It ${verbs[node.verb]}${object}.`;
         result = [{...sentence(realized),infinitive:node.verb==='fail'?'raise '+node.object.replace(/^with /,''):node.verb+object}]; break;
@@ -165,16 +168,25 @@ export function planFlow(nodes: FlowNode[]): ProsePlan {
       }
       case 'scope': result = [...under(node.lead, node.children, ''), ...(node.end?[sentence(node.end)]:[])]; break;
     }
-    if (node.source) result[0].sources.unshift(node.source);
+    if (node.source) {
+      result[0].sources.unshift(node.source);
+      // A condition can generate prose without a child statement (an empty match
+      // case, for example). Link that sentence to its controlling source node,
+      // without duplicating the ordered fact ledger.
+      for(const item of result)if(!item.sources.length)item.contextSources=[...(item.contextSources??[]),node.source];
+    }
+    if(node.contextSource)for(const item of result)if(!item.sources.length)item.contextSources=[...(item.contextSources??[]),node.contextSource];
     return result;
   };
-  const sentences = plan(nodes), paragraphs: string[] = [];
-  let current = '';
+  const sentences = plan(nodes), paragraphs: string[] = [], paragraphSources:string[][]=[], paragraphContextSources:string[][]=[];
+  let current = '', currentSources:string[]=[],currentContextSources:string[]=[];
+  const flush=()=>{if(current){paragraphs.push(current);paragraphSources.push(currentSources);paragraphContextSources.push(currentContextSources);}current='';currentSources=[];currentContextSources=[];};
   for (const item of sentences) {
-    if (current && (item.boundary || words(current + ' ' + item.text) > 110 || sentencesIn(current+' '+item.text)>4)) { paragraphs.push(current); current = ''; }
+    if (current && (item.boundary || words(current + ' ' + item.text) > 110 || sentencesIn(current+' '+item.text)>4)) flush();
     current += (current ? ' ' : '') + item.text;
+    currentSources.push(...item.sources);currentContextSources.push(...(item.contextSources??[]));
   }
-  if (current) paragraphs.push(current);
+  flush();
   const sources=sentences.flatMap(item=>item.sources);
   const evidence=(node:FlowNode):string[]=>{
     const children=node.kind==='branch'?[...node.then,...node.otherwise]:node.kind==='choice'?node.cases.flatMap(item=>item.children):
@@ -183,7 +195,20 @@ export function planFlow(nodes: FlowNode[]): ProsePlan {
     return [...(node.source?[node.source]:[]),...children.flatMap(evidence)];
   };
   if(JSON.stringify(sources)!==JSON.stringify(nodes.flatMap(evidence)))throw new Error('Specification planning lost or reordered source facts');
-  return { paragraphs, sources };
+  return { paragraphs, sources, paragraphSources, paragraphContextSources };
+}
+
+function flowParagraphs(node:Extract<SpecNode,{kind:'flow'}>):string[] {
+  const plan=planFlow(node.steps);
+  return plan.paragraphs.map((text,index)=>{
+    const ranges=[...plan.paragraphSources[index],...plan.paragraphContextSources[index]].map(id=>node.links?.[id]).filter((range):range is SourceRange=>!!range);
+    const paths=[...new Set(ranges.map(range=>range.path))];
+    const links=paths.map(path=>{
+      const selected=ranges.filter(range=>range.path===path), first=Math.min(...selected.map(range=>range.line)), last=Math.max(...selected.map(range=>range.endLine));
+      return `[source](${path}#L${first}${last>first?'-L'+last:''})`;
+    });
+    return text+(links.length?' '+links.join(' · '):'');
+  });
 }
 
 function renderChildren(children:SpecNode[]):string {
@@ -200,7 +225,7 @@ function renderChildren(children:SpecNode[]):string {
   for(const child of children) {
     if(child.kind==='paragraph')add(child.text);
     else if(child.kind==='flow') {
-      const paragraphs=planFlow(child.steps).paragraphs;
+      const paragraphs=flowParagraphs(child);
       if(paragraphs.length)add(paragraphs[0]);
       for(const text of paragraphs.slice(1)) {flush();add(text);}
     }else {flush();blocks.push(renderNode(child));}
@@ -211,7 +236,8 @@ function renderChildren(children:SpecNode[]):string {
 function renderNode(node: SpecNode): string {
   switch (node.kind) {
     case 'paragraph': return node.text.trim();
-    case 'flow': return planFlow(node.steps).paragraphs.join('\n\n');
+    case 'flow': return flowParagraphs(node).join('\n\n');
+    case 'details': return '<details>\n<summary>'+node.title+'</summary>\n\n'+renderChildren(node.children)+'\n\n</details>';
     case 'section': {
       const heading = `${node.anchor ? `<a id="${node.anchor}"></a>\n` : ''}${'#'.repeat(node.level)} ${node.title}${node.source ? ' · ' + node.source : ''}`;
       const body = renderChildren(node.children);
@@ -220,5 +246,5 @@ function renderNode(node: SpecNode): string {
   }
 }
 
-/** Lay out planned prose with one blank line between paragraphs. */
+/** Render readable prose, portable expandable contracts and paragraph source ranges. */
 export function renderSpecTree(root: SpecNode): string { return renderNode(root).trimEnd() + '\n'; }

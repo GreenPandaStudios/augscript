@@ -184,7 +184,7 @@
     {
       "id": "text",
       "files": {
-        "main.aug": "print(value=\"👋\".length())\nprint(value=\"café\".bytes().length())\n"
+        "main.aug": "print(value=\"\ud83d\udc4b\".length())\nprint(value=\"caf\u00e9\".bytes().length())\n"
       },
       "stdout": "4\n5\n"
     },
@@ -194,6 +194,143 @@
         "main.aug": "print(value=\"\\0\")\n"
       },
       "diagnostic": "TEXT"
+    },
+    {
+      "id": "callback-snapshot",
+      "files": {
+        "main.aug": "import Predicate and transform from august.collections\nimport positive from rules\nPredicate<int> accepts = positive\nprint(value=accepts.accepts(value=3))\nbase = 7\nfor value in transform(values=[3, 5], transformation=(int value) => value + base):\n    print(value=value)\nbase = 2\nPredicate<int> over = (int value) => value > base\nbase = 99\nprint(value=over.accepts(value=3))\n",
+        "rules.aug": "positive(int value) returns bool:\n    return value > 0\n"
+      },
+      "stdout": "true\n10\n12\ntrue\n"
+    },
+    {
+      "id": "callback-mutable-erasure",
+      "files": {
+        "main.aug": "import Predicate from august.collections\nvalues = [1]\nTuple<Data> box = (values,)\nPredicate<int> callback = (int value) => box.get(index=0) == [value]\n"
+      },
+      "diagnostic": "CALLBACK"
+    },
+    {
+      "id": "interface-override-layout",
+      "files": {
+        "main.aug": "",
+        "rules.aug": "interface Parent:\n    apply(int value) returns string\ninterface Derived extends Parent:\n    apply(string value) returns string\n"
+      },
+      "diagnostic": "INTERFACE"
+    },
+    {
+      "id": "closed-choices",
+      "files": {
+        "model.aug": "choice Result from Found and Absent\nrecord Found(int value)\nrecord Absent(string reason)\nshow<T implements Result>(optional T result):\n    return match result:\n        when null:\n            \"null\"\n        when Found found:\n            $\"{found.value}\"\n        when Absent absent:\n            absent.reason\n",
+        "main.aug": "import Found and Absent and Result and show from model\nprint(value=show(result=Found(value=42)))\nprint(value=show(result=Absent(reason=\"absent\")))\nprint(value=show<Result>(result=null))\n"
+      },
+      "stdout": "42\nabsent\nnull\n"
+    },
+    {
+      "id": "incomplete-choice",
+      "files": {
+        "main.aug": "",
+        "model.aug": "choice Result from Found and Absent\nrecord Found(int value)\nrecord Absent(string reason)\nshow(Result result):\n    return match result:\n        when Found found:\n            found.value\n"
+      },
+      "diagnostic": "MATCH"
+    },
+    {
+      "id": "error-context",
+      "files": {
+        "main.aug": "import fail and Problem from operation\nimport ContextError from august.errors\ntry:\n    fail()\ncatch ContextError<Problem> error:\n    print(value=error.operation)\n    print(value=error.cause.code)\n    print(value=error.location[0])\n",
+        "operation.aug": "import errorContext from august.errors\nerror Problem(int code)\nfail():\n    throw errorContext(cause=Problem(code=42), operation=\"compute\", location=sourceLocation())\n"
+      },
+      "stdout": "compute\n42\noperation.aug\n"
+    },
+    {
+      "id": "mixed-context-causes",
+      "files": {
+        "main.aug": "import fail and A and B from operation\nimport ContextError from august.errors\ntry { fail() } catch ContextError<A> failure { print(value=\"wrong\") } catch ContextError<B> failure { print(value=failure.cause.message) }\n",
+        "operation.aug": "import errorContext from august.errors\nerror A(int code)\nerror B(string message)\nfail() { throw errorContext(cause=B(message=\"actual B\"), operation=\"compute\", location=sourceLocation()) }\n"
+      },
+      "stdout": "actual B\n"
+    },
+    {
+      "id": "phantom-error-catch",
+      "files": {
+        "main.aug": "import Wrapped from errors\ntry { pass } catch Wrapped<FileError> failure { pass }\n",
+        "errors.aug": "error Wrapped<E implements Error>(string message)\n"
+      },
+      "diagnostic": "ERROR_MATCH"
+    },
+    {
+      "id": "grapheme-boundaries",
+      "files": {
+        "main.aug": "try:\n    text = \"e\u0301\ud83d\udc69\u200d\ud83d\udcbb\"\n    print(value=text.byteLength())\n    print(value=text.graphemeLength())\n    for part in text.graphemes():\n        print(value=part)\n    print(value=\"\u094d\u0915\".graphemeLength())\ncatch ConversionError error:\n    print(value=\"unexpected\")\n"
+      },
+      "stdout": "14\n2\ne\u0301\n\ud83d\udc69\u200d\ud83d\udcbb\n1\n"
+    },
+    {
+      "id": "domain-values",
+      "files": {
+        "main.aug": "import parseCivilDate and formatCivilDate and parseDuration and formatDuration and TokenId and HttpUrl and PortableRelativePath and BoundedText from august.values\ntry:\n    print(value=formatCivilDate(value=parseCivilDate(text=\"2000-02-29\")))\n    print(value=formatDuration(value=parseDuration(text=\"-PT0.001S\")))\n    print(value=TokenId(text=\"order_42\").text)\n    print(value=HttpUrl(text=\"https://example.com?\").text)\n    print(value=PortableRelativePath(text=\"docs/api.md\").text)\n    print(value=BoundedText(text=\"\u00e9\", minBytes=2, maxBytes=2).text)\n    parseCivilDate(text=\"1900-02-29\")\ncatch ConversionError failure:\n    print(value=\"invalid date\")\n"
+      },
+      "stdout": "2000-02-29\n-PT0.001S\norder_42\nhttps://example.com?\ndocs/api.md\n\u00e9\ninvalid date\n"
+    },
+    {
+      "id": "internal-composition",
+      "files": {
+        "main.aug": "import Greeter and Services from service\n\ninclude Services\nresolve Greeter to greeter\nprint(value=greeter.message())\n",
+        "service/export.aug": "export Greeter from greeting\nexport Services from providers\ninternal Service from greeting\ninternal Repository from repository\ninternal MemoryRepository from repository\n",
+        "service/greeting.aug": "import Repository from repository\n\ninterface Greeter:\n    message() returns string\n\nService(resolve Repository repo to _repo) implements Greeter:\n    message():\n        return _repo.read()\n",
+        "service/repository.aug": "interface Repository:\n    read() returns string\n\nMemoryRepository() implements Repository:\n    read():\n        return \"Hello, Ada!\"\n",
+        "service/providers.aug": "import Greeter and Service from greeting\nimport Repository and MemoryRepository from repository\n\ncomposition Services:\n    implement Repository with MemoryRepository\n    implement Greeter with Service\n"
+      },
+      "stdout": "Hello, Ada!\n"
+    },
+    {
+      "id": "internal-import",
+      "files": {
+        "main.aug": "import Repository from service\n",
+        "service/export.aug": "export Greeter from greeting\nexport Services from providers\ninternal Service from greeting\ninternal Repository from repository\ninternal MemoryRepository from repository\n",
+        "service/greeting.aug": "import Repository from repository\n\ninterface Greeter:\n    message() returns string\n\nService(resolve Repository repo to _repo) implements Greeter:\n    message():\n        return _repo.read()\n",
+        "service/repository.aug": "interface Repository:\n    read() returns string\n\nMemoryRepository() implements Repository:\n    read():\n        return \"Hello, Ada!\"\n",
+        "service/providers.aug": "import Greeter and Service from greeting\nimport Repository and MemoryRepository from repository\n\ncomposition Services:\n    implement Repository with MemoryRepository\n    implement Greeter with Service\n"
+      },
+      "diagnostic": "IMPORT"
+    },
+    {
+      "id": "internal-result",
+      "files": {
+        "main.aug": "",
+        "service/export.aug": "export leak from api\ninternal Hidden from model\n",
+        "service/model.aug": "record Hidden(int value)\n",
+        "service/api.aug": "import Hidden from model\nleak() { return Hidden(value=1) }\n"
+      },
+      "diagnostic": "MODULE_SURFACE"
+    },
+    {
+      "id": "interface-all-requirements",
+      "files": {
+        "main.aug": "",
+        "model.aug": "interface TextInput { accept(string value) }\ninterface IntegerInput { accept(int value) }\nOnlyText() implements TextInput, IntegerInput { accept(string value) {} }\n"
+      },
+      "diagnostic": "TYPE"
+    },
+    {
+      "id": "interface-default-requirements",
+      "files": {
+        "main.aug": "",
+        "model.aug": "interface TextInput { accept(string value) {} }\ninterface IntegerInput { accept(int value) }\nOnlyText() implements TextInput, IntegerInput {}\n"
+      },
+      "diagnostic": "INTERFACE"
+    },
+    {
+      "id": "generic-capability-identity",
+      "files": {
+        "main.aug": "",
+        "audit.aug": "capability Audit<T> { note(T value) uses Audit.note }\n",
+        "orders.aug": "record Value(int number)\n",
+        "logging.aug": "record Value(int number)\n",
+        "promises.aug": "import Value from orders\nimport Audit from audit\ninterface Logger<T> { log() uses Audit.note }\ninterface Wanted extends Logger<List<Value>> {}\n",
+        "actual.aug": "import Value from logging\nimport Audit from audit\nimport Wanted from promises\nWrong(resolve Audit<List<Value>> logger) implements Wanted { log() { logger.note(value=[Value(number=1)]) } }\n"
+      },
+      "diagnostic": "TYPE"
     }
   ],
   "mutations": [

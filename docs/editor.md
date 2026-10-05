@@ -22,7 +22,9 @@ Public declarations from nearby modules and installed packages also appear in co
 
 Type `record`, `interface`, `implementation`, or `method` for a declaration template. `test`, `testclass`, and `testendpoint` supply same-file tests. `endpointget`, `endpointpost`, `endpointpatch`, and `endpointdelete` supply route templates. Other templates cover imports, exports, conditions, errors, borrows, tasks, locks, interceptors, and comments.
 
-The completion provider follows `block_style` and `indentation` in `main.yaml`. Templates are starting points: replace their names, values, and bodies before running the program. The extension also supplies VS Code snippets and enables Tab completion for August files.
+The unreleased extension also supplies a `choice` template for [finite record choices](guides/use-choices.md).
+
+The completion provider follows `block_style` and `indentation` in `main.yaml`. Templates are starting points: replace their names, values, and bodies before running the program. Press Tab to move through their inputs.
 
 ## Read help and inferred types {#understand-a-contract}
 
@@ -34,6 +36,8 @@ Hints beside a function or method show its inferred result, state changes, I/O, 
 
 Place the cursor on an error and open the lightbulb with Ctrl+. or Cmd+.. Available fixes include: importing a visible declaration, correcting a nearby name or input label, expanding a wildcard import, adding a required method, or containing a mutable or native operation.
 
+The unreleased compiler links call errors to the input declaration in the Problems view. Imported constructors and inherited generic methods retain their original declaration locations and substituted types. A malformed input label shows the accepted labels before the compiler reports omitted inputs.
+
 Review the edit before accepting it. A suggested name can be plausible without being the name you intended. After a change, run `aug check`, your tests, and `aug spec` to refresh the neighboring explanation.
 
 ## Find the files and run tests
@@ -41,3 +45,43 @@ Review the edit before accepting it. A suggested name can be plausible without b
 Run **AugScript: Enable File Icons** for the August icon theme. Source files use a burgundy open circle; `main.aug` uses a play symbol, `export.aug` an outward arrow, and `main.yaml` sliders. Each has a light and dark variant. **AugScript: Open Welcome** opens the bundled guide and icon legend.
 
 Same-file cases appear in VS Code's Testing view. **AugScript: Refresh Tests** rebuilds the tree; command clients receive the discovered items and any discovery errors. Use that view to run a case or group, or run `aug test` in the terminal. [Tests](testing.md) explains fixtures and endpoint tests. [CLI and configuration](tooling.md) describes language-server integration, native cache settings, and command-line tools.
+
+## Local-aware calls (unreleased)
+
+Call completion uses shorthand when a visible, unmoved local has the input's exact name and a compatible type. It omits defaulted and optional inputs from the initial call; they remain available in label completion and signature help. It never supplies a moved value or silently transfers an owned local to a managed input. Other values remain editable tab stops. Read-only collection views do not suggest mutating methods.
+
+## Borrow fixes and edit consequences (unreleased)
+
+The borrow action wraps the smallest supported statement and checks the candidate project before offering it. Aliases, active tasks, immutable values, and other remaining compiler errors can prevent the action. It honors the project's block style and indentation. Each proposed fix explains its consequence: a borrow grants temporary mutation, propagation changes caller obligations, and a catch must reflect an application recovery decision. Review the preview and check after applying an edit.
+
+## Find references and rename (unreleased)
+
+**Find All References** follows resolved declarations, imports, exports, calls, input labels, and local variables. Comments, string contents, and unrelated declarations with the same spelling are excluded. The project graph lists reverse callers separately from dependencies. Interface calls identify the contract and report a runtime dispatch boundary; callers outside the checked project remain outside its coverage.
+
+**Rename Symbol** first checks the complete candidate project and records the public interface delta in the compiler plan. Its initial profile supports managed standalone functions and local inputs or variables. It rejects collisions, read-only package sources, and unsupported native, injected, generic, effectful, endpoint, interceptor, and member contracts. Renaming a label or local expands shorthand when necessary: `send(message)` can become `send(text=message)` or `send(message=text)`. Input rename updates the selected declaration’s attached `@param` label while preserving descriptions, unrelated comments and strings. Project source fingerprints and open-document versions detect a stale preview. Compilation does not replace the application's behavioral tests.
+
+## Dependencies and ownership at a call (unreleased)
+
+Hover over a call with injected inputs to see its checked provider, binding, and lifetime. Calls inside an implementation show the dependency forwarded from that implementation's header. They do not assume a provider from an unrelated application. Missing or ambiguous dependencies remain errors.
+
+Hover over a local to see its declaration, possible aliases, owned locals, active exclusive borrows, task captures, and previous transfers, with links to the relevant source. Branches can leave several possible relationships; the display says so. Wait for a captured task before access that would conflict with it. A newly declared local receives an ownership hint when the called function requires an owned result. These explanations do not transfer or copy a value.
+
+Contract hints default to compact text, with the complete contract in their tooltip. Set `augscript.inferredContractHintDetail` to `full` to show every clause. **AugScript: Toggle Full Contracts for This File** temporarily expands the active file; repeat the command to restore its configured detail. The existing `augscript.inferredContractHints` setting still controls whether hints appear at all.
+
+Recovery actions offer a catch template that rethrows until you supply a policy. The preview explains that the edit is incomplete. Choose whether to recover, stop, or propagate; the editor does not silently log a failure and continue. Templates follow the project’s block style and indentation.
+
+## Project source preferences (unreleased)
+
+Formatting, starters and completion templates use `block_style`, `indentation` and `assignment` from `main.yaml`. Bindings follow `equals` or `to`; generated call labels use `=`. Templates come from the completion provider so that a fixed snippet cannot override the project choice.
+
+Missing-method and missing-interceptor actions insert their scaffold, then format the candidate file with those preferences. The formatter verifies that the parsed program is unchanged and retains comments with their source owners. Review the whole edit: a nonvoid method still needs your implementation and return value. Symbol rename changes resolved tokens without rewriting the surrounding layout.
+
+## Reuse a composition (unreleased)
+
+Complete `include` in main or same-file test setup to see visible compositions. A completion can add an ordinary import from a sibling module or exported folder/package. It retains Javadoc, inserts a composition name without call parentheses, and hides names already included in that setup. Other providers are registered only by their source bindings. Inspect the selected wiring with the [composition graph](guides/reuse-services.md#inspect-the-selected-providers).
+
+In a same-file function test group, the unreleased `itboundaries` completion proposes representative scalar input rows with an unresolved assertion. Replace that placeholder with a property or independently selected expected result. See [boundary inputs](testing.md#suggest-boundary-inputs) for supported types and limits.
+
+## Pure callback help (unreleased)
+
+Hover over a closure's `=>` or a converted standalone function name to see its checked single-method interface and result. Captures link to the creation-time local reads; function references link to the implementation. Closure input names have their own hover, completion and semantic scope. The `callback` template inserts a typed expression; supply its interface through a typed binding, return or call input. See [Pass a small function](guides/use-callbacks.md).

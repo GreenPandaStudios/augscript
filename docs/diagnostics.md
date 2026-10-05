@@ -8,6 +8,20 @@ If `aug run` cannot prepare or start a program, its message identifies the faile
 
 When a fix changes a dependency, effect, error, or mutable input, review the caller's contract too. A suggested edit can satisfy a language rule without deciding the right recovery or design for your application. [The book](learn/index.md) includes deliberate mistakes you can check and repair yourself.
 
+## Call inputs (unreleased)
+
+A call-input type error names the public input, its expected type and the value’s actual type. Related locations point to the imported function, constructor input or inherited method declaration; VS Code exposes those links in Problems. A duplicate input points to its first occurrence. JSON preserves these facts in `expected`, `actual` and `related`.
+
+For a misspelled or unlabeled input, check the listed caller labels first. The compiler postpones omitted-input and dependent inference errors until that mapping is valid. A spelling fix can correct a label; missing values and recovery decisions still belong to the application author.
+
+## Interface contracts (unreleased)
+
+An implementation must satisfy every inherited interface contract, including when it uses a default method. A mismatch identifies the first differing input, result, ownership, mutation, capability or checked-error fragment and links to the interface declaration. Generic fragments use the substituted types, including explicit capability arguments. When names collide, the fragments include their resolved module origins. JSON retains the same `expected`, `actual` and `related` fields as call diagnostics; VS Code exposes the related locations in Problems.
+
+For example, a pure interface can reject an implementation with `uses Console.write (inferred)`. The diagnostic shows the permitted `uses none` bound and, when exact checked call witnesses are available, a shortest helper path to the capability. Long paths show seven locations and state how many intermediate calls were omitted. These are possible calls that impose a contract, not evidence that a branch ran. Explicit callee bounds still apply when an adapter does no I/O or a helper only recurses. Annotated and generic boundaries can stop the path; the resolved contract comparison still applies.
+
+Choose whether to remove the operation, change the design or deliberately revise the public promise. The diagnostic does not add permissions, mutation rights or recovery behavior automatically. A rejected candidate's inferred errors are not an accepted public contract.
+
 ## Syntax and data
 
 | Code | Meaning and remedy |
@@ -20,6 +34,7 @@ When a fix changes a dependency, effect, error, or mutable input, review the cal
 | CALL | Supply ordinary labels exactly once; resolve inputs are omitted from a call. Inference must be concrete and consistent. |
 | COLLECTION | Empty literals need context. List/Set elements and Map keys/values must fit. Tuple indexes are compile-time constants. |
 | RECORD | Data fields must be deeply immutable. Records cannot retain mutable collections, DI inputs, or ownership; validation cannot replace fields. |
+| LOCATION | Unreleased: call sourceLocation() without inputs or type arguments. Capture at the operation, then pass the location explicitly into a helper. |
 | MATCH | Cover null/bool cases and add else for open type domains. Remove duplicate, incompatible, or unreachable cases. |
 | PATTERN | Tuple destructuring needs matching arity and new names in the current scope. |
 | ITERATION | Iterate List, Set, Map, or a homogeneous Tuple; destructure heterogeneous tuples explicitly. |
@@ -37,10 +52,11 @@ Both braces and indentation are accepted. The formatter uses main.yaml preferenc
 | --- | --- |
 | PROJECT / MAIN | Supply main.aug at the root. Keep declarations in other files and imports/bindings before startup. |
 | SYNTAX | Use word booleans, initialize blocks, implement/with, and resolve/to. Preview `aug migrate PROJECT`, then use --write or the editor's verified migration fix. |
-| IMPORT / EXPORT | Import each file's dependencies. Cross-folder access needs export.aug; only exports belong in that file. Wildcards import visible local declarations, never internal imports. |
+| IMPORT / EXPORT | Import each file's dependencies. Cross-folder access needs export.aug. The unreleased internal entries admit explicit sibling imports without exposing the declaration outside the folder. Wildcards import visible local declarations, never internal imports. |
 | NAME | Correct spelling or import a visible declaration. Quick Fix offers an import when a unique accessible source exists. |
 | PRIVATE | A leading _ confines a declaration/member/module to its scope. Private names cannot be imported or exported. Constructor labels can differ from private storage. |
 | INTERFACE | Classes need implements and matching method types, labels, ownership, errors, and effects. Override conflicting defaults. Records are the immutable-data alternative. |
+| MODULE_SURFACE | Unreleased: an exported signature exposes a type that consumers cannot import. Export its required data or service contract, or keep the implementation internal behind an exported service and explicit composition. Constructor inputs, including resolve inputs, remain construction requirements. |
 | MODULE | An import cycle or forbidden folder dependency violates the module contract. The message includes the cycle or allowed dependencies. |
 | LINT | An optional architectural warning: wildcard imports, public helper growth, dependency fan-out, broad errors, discarded errors, or explicit shared state. |
 
@@ -67,6 +83,21 @@ A helper's dependency belongs in its callable/class header. **Lift into the depe
 An own value moves into an own input/field/return. Do not copy it into managed storage or use it after a move. A mutable borrow is exclusive and cannot escape into a return or storage. Deep read-only values cannot be borrowed to bypass their contract.
 
 Alias tracking includes nested references, call arguments/results, DI identities, branches, and loop re-entry. An exclusive argument cannot overlap another argument or receiver. Quick Fix can wrap a standalone managed mutation in a borrow block when its local access is otherwise legal.
+
+**Unreleased:** conflicting reads, exclusive borrows, moves and call inputs link
+to the borrow, transfer or earlier input that blocks access. Task conflicts also
+link to active capture sites, including writes inside an open borrow and cleanup
+of a captured owned local. These are static possibilities: shared origins mean
+the checker cannot prove the references are separate. A conditional transfer can
+make a later use invalid even when one branch keeps the value.
+
+JSON and LSP diagnostic data retain a specific `rule` alongside `expected`,
+`actual` and `related`. The rule identifies the failed check within `OWN`,
+`BORROW` or `CONCURRENCY`. Related sites are deterministic, contain at most seven
+locations and state any omitted count. Ending a borrow removes its lexical loan.
+Waiting for one statically identified, nonrepeated child or joining its scope
+removes the corresponding task loans; an isolated worker's copied inputs create no shared loan.
+Scoped-retention paths and other diagnostic families retain their existing help.
 
 ### CONCURRENCY
 
@@ -108,7 +139,7 @@ See [testing](testing.md) and [native tooling](tooling.md) for executable exampl
 
 ## Checked changes and forwarding
 
-`FORWARD` means the imported target or inherited contract is outside the initial concrete managed profile. Import a public standalone operation explicitly and keep capabilities, mutation, injection, generics, native linkage, and interceptors out of that alias. `BINDING` identifies an unsupported `let` prefix; use `value = expression` or `Type value = expression`. `COMPARISON` identifies assignment in a condition and offers an equality comparison fix.
+`FORWARD` means the imported target or inherited contract is outside the initial concrete managed profile. Import a public standalone operation explicitly and keep capabilities, mutation, injection, generics, native linkage, and interceptors out of that alias. `BINDING` identifies an unsupported `let` prefix; use `value = expression` or `Type value = expression`. `CONDITION` identifies assignment in a condition. Choose the intended comparison yourself; August does not infer whether you meant equality or another operator.
 
 Change protocol reports include the exact source/candidate revision. `CHANGE_STALE` requires fresh context; `CHANGE_SCOPE` identifies an occurrence outside the permitted files; `CHANGE_COVERAGE` exposes unresolved required relationships; `CHANGE_PUBLIC_DELTA` reports unexpected contract changes. `CHANGE_BEHAVIOR` means the candidate compiled but failed independently selected finite checks. `CHANGE_BUSY` means a cooperating writer or interrupted transaction blocks readers. See [checked changes](checked-changes.md) for plan inspection and recovery.
 

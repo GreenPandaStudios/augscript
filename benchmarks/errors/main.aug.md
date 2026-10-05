@@ -2,13 +2,15 @@
 
 # `main.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=64b0de71d8f2a1f1c6a5e4f6a60958500e85cf63820ea1a1b6dbc17bdc2f44fa -->
+
 ## Startup
 
-It sets `iterations` to `20000`. It sets `index`, `checksum`, and `failures` separately, each to `0`.
+It sets `iterations` to `20000`. It sets `index`, `checksum`, and `failures` separately, each to `0`. [source](main.aug#L3-L6)
 
-While `index` is less than `iterations`, it tries to increase `checksum` by [`validate`](operations.aug.md#symbol-validate) with `value` from `index`. If this work raises `FileError`, it increases `failures` by `1`. It increases `index` by `1`. After the loop, it prints `checksum`.
+While `index` is less than `iterations`, it tries to increase `checksum` by [`validate`](operations.aug.md#symbol-validate) with `value` from `index`. If this work raises `FileError`, it increases `failures` by `1`. It increases `index` by `1`. After the loop, it prints `checksum`. [source](main.aug#L7-L13)
 
-It prints `failures`.
+It prints `failures`. [source](main.aug#L14)
 
 ## Dependencies
 

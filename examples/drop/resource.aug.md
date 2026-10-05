@@ -2,6 +2,8 @@
 
 # `resource.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=64726804301752c354fd514f8d1d4081fd89d3379488df03886632982cc41259 -->
+
 <a id="symbol-Resource"></a>
 ## `Resource` · class · [source](resource.aug#L2)
 
@@ -10,7 +12,16 @@ It implements [`IResource`](resource.aug.md#symbol-IResource).
 <a id="symbol-Resource.drop"></a>
 ### `Resource.drop` · [source](resource.aug#L3)
 
-It continues without an operation.
+It continues without an operation. [source](resource.aug#L4)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+drop() returns void
+```
+
+</details>
 
 <a id="symbol-IResource"></a>
 ## `IResource` · interface · [source](resource.aug#L7)

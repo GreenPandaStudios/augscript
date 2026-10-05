@@ -24,7 +24,8 @@ This is the exact dependency version used by this example.
 
 ::: code-group
 
-```aug [Indentation]
+```aug [Indentation] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiaW5kZW50Iiwic291cmNlU2hhMjU2IjoiNTFkODVkYmFlYmYyODk3NDAxODA5NzQ5ZmI0NDIwYTIzMDdkNGIwNmIzMWQzODA4ZmFiYTU2OTEwYTMwOTc5NSIsImZvcm1hdHRlZFNoYTI1NiI6IjUzMjYwZWM1ODczOTYyZTk0NzQ5Y2Q0NjZjNDJiYzhiODkxMTIwNGY5YWE3MDgxZjU4NWVkNWIyNzI5NjRiNTAiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDQiLCJmaXJzdCI6NCwibGFzdCI6MjYsImJhY2tsaW5rcyI6WyIjc3ltYm9sLUNyeXB0byJdfSx7ImlkIjoic291cmNlLUw2IiwiZmlyc3QiOjYsImxhc3QiOjYsImJhY2tsaW5rcyI6WyIjc3ltYm9sLUNyeXB0by5yYW5kb20iXX0seyJpZCI6InNvdXJjZS1MOCIsImZpcnN0Ijo4LCJsYXN0Ijo4LCJiYWNrbGlua3MiOlsiI3N5bWJvbC1DcnlwdG8uc2hhMjU2Il19LHsiaWQiOiJzb3VyY2UtTDEwIiwiZmlyc3QiOjEwLCJsYXN0IjoxMCwiYmFja2xpbmtzIjpbIiNzeW1ib2wtQ3J5cHRvLmdlbmVyYXRlUnNhIl19LHsiaWQiOiJzb3VyY2UtTDEyIiwiZmlyc3QiOjEyLCJsYXN0IjoxMiwiYmFja2xpbmtzIjpbIiNzeW1ib2wtQ3J5cHRvLnB1YmxpY1JzYSJdfSx7ImlkIjoic291cmNlLUwxNCIsImZpcnN0IjoxNCwibGFzdCI6MTQsImJhY2tsaW5rcyI6WyIjc3ltYm9sLUNyeXB0by5zaWduUnNhIl19LHsiaWQiOiJzb3VyY2UtTDE2IiwiZmlyc3QiOjE2LCJsYXN0IjoxNiwiYmFja2xpbmtzIjpbIiNzeW1ib2wtQ3J5cHRvLnZlcmlmeVJzYSJdfSx7ImlkIjoic291cmNlLUwxOCIsImZpcnN0IjoxOCwibGFzdCI6MTgsImJhY2tsaW5rcyI6WyIjc3ltYm9sLUNyeXB0by5kZWNvZGVCYXNlNjR1cmwiXX0seyJpZCI6InNvdXJjZS1MMjAiLCJmaXJzdCI6MjAsImxhc3QiOjIwLCJiYWNrbGlua3MiOlsiI3N5bWJvbC1DcnlwdG8uZXF1YWwiXX0seyJpZCI6InNvdXJjZS1MMjIiLCJmaXJzdCI6MjIsImxhc3QiOjIyLCJiYWNrbGlua3MiOlsiI3N5bWJvbC1DcnlwdG8uZXhwb3J0UnNhIl19LHsiaWQiOiJzb3VyY2UtTDI0IiwiZmlyc3QiOjI0LCJsYXN0IjoyNCwiYmFja2xpbmtzIjpbIiNzeW1ib2wtQ3J5cHRvLmltcG9ydFJzYSJdfSx7ImlkIjoic291cmNlLUwyNiIsImZpcnN0IjoyNiwibGFzdCI6MjYsImJhY2tsaW5rcyI6WyIjc3ltYm9sLUNyeXB0by5wYXNzd29yZEhhc2giXX0seyJpZCI6InNvdXJjZS1MNDEiLCJmaXJzdCI6MzksImxhc3QiOjcyLCJiYWNrbGlua3MiOlsiI3N5bWJvbC1HbnVUbHNDcnlwdG8iXX0seyJpZCI6InNvdXJjZS1MNDIiLCJmaXJzdCI6NDAsImxhc3QiOjQyLCJiYWNrbGlua3MiOlsiI3N5bWJvbC1HbnVUbHNDcnlwdG8ucmFuZG9tIl19LHsiaWQiOiJzb3VyY2UtTDQzLUw0NCIsImZpcnN0Ijo0MSwibGFzdCI6NDIsImJhY2tsaW5rcyI6WyIjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMSJdfSx7ImlkIjoic291cmNlLUw0NSIsImZpcnN0Ijo0MywibGFzdCI6NDUsImJhY2tsaW5rcyI6WyIjc3ltYm9sLUdudVRsc0NyeXB0by5zaGEyNTYiXX0seyJpZCI6InNvdXJjZS1MNDYtTDQ3IiwiZmlyc3QiOjQ0LCJsYXN0Ijo0NSwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0yIl19LHsiaWQiOiJzb3VyY2UtTDQ4IiwiZmlyc3QiOjQ2LCJsYXN0Ijo0OCwiYmFja2xpbmtzIjpbIiNzeW1ib2wtR251VGxzQ3J5cHRvLmdlbmVyYXRlUnNhIl19LHsiaWQiOiJzb3VyY2UtTDQ5LUw1MCIsImZpcnN0Ijo0NywibGFzdCI6NDgsImJhY2tsaW5rcyI6WyIjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMyJdfSx7ImlkIjoic291cmNlLUw1MSIsImZpcnN0Ijo0OSwibGFzdCI6NTEsImJhY2tsaW5rcyI6WyIjc3ltYm9sLUdudVRsc0NyeXB0by5wdWJsaWNSc2EiXX0seyJpZCI6InNvdXJjZS1MNTItTDUzIiwiZmlyc3QiOjUwLCJsYXN0Ijo1MSwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC00Il19LHsiaWQiOiJzb3VyY2UtTDU0IiwiZmlyc3QiOjUyLCJsYXN0Ijo1NCwiYmFja2xpbmtzIjpbIiNzeW1ib2wtR251VGxzQ3J5cHRvLnNpZ25Sc2EiXX0seyJpZCI6InNvdXJjZS1MNTUtTDU2IiwiZmlyc3QiOjUzLCJsYXN0Ijo1NCwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC01Il19LHsiaWQiOiJzb3VyY2UtTDU3IiwiZmlyc3QiOjU1LCJsYXN0Ijo1NywiYmFja2xpbmtzIjpbIiNzeW1ib2wtR251VGxzQ3J5cHRvLnZlcmlmeVJzYSJdfSx7ImlkIjoic291cmNlLUw1OC1MNTkiLCJmaXJzdCI6NTYsImxhc3QiOjU3LCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTYiXX0seyJpZCI6InNvdXJjZS1MNjAiLCJmaXJzdCI6NTgsImxhc3QiOjYwLCJiYWNrbGlua3MiOlsiI3N5bWJvbC1HbnVUbHNDcnlwdG8uZGVjb2RlQmFzZTY0dXJsIl19LHsiaWQiOiJzb3VyY2UtTDYxLUw2MiIsImZpcnN0Ijo1OSwibGFzdCI6NjAsImJhY2tsaW5rcyI6WyIjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtNyJdfSx7ImlkIjoic291cmNlLUw2MyIsImZpcnN0Ijo2MSwibGFzdCI6NjMsImJhY2tsaW5rcyI6WyIjc3ltYm9sLUdudVRsc0NyeXB0by5lcXVhbCJdfSx7ImlkIjoic291cmNlLUw2NC1MNjUiLCJmaXJzdCI6NjIsImxhc3QiOjYzLCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTgiXX0seyJpZCI6InNvdXJjZS1MNjYiLCJmaXJzdCI6NjQsImxhc3QiOjY2LCJiYWNrbGlua3MiOlsiI3N5bWJvbC1HbnVUbHNDcnlwdG8uZXhwb3J0UnNhIl19LHsiaWQiOiJzb3VyY2UtTDY3LUw2OCIsImZpcnN0Ijo2NSwibGFzdCI6NjYsImJhY2tsaW5rcyI6WyIjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtOSJdfSx7ImlkIjoic291cmNlLUw2OSIsImZpcnN0Ijo2NywibGFzdCI6NjksImJhY2tsaW5rcyI6WyIjc3ltYm9sLUdudVRsc0NyeXB0by5pbXBvcnRSc2EiXX0seyJpZCI6InNvdXJjZS1MNzAtTDcxIiwiZmlyc3QiOjY4LCJsYXN0Ijo2OSwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0xMCJdfSx7ImlkIjoic291cmNlLUw3MiIsImZpcnN0Ijo3MCwibGFzdCI6NzIsImJhY2tsaW5rcyI6WyIjc3ltYm9sLUdudVRsc0NyeXB0by5wYXNzd29yZEhhc2giXX0seyJpZCI6InNvdXJjZS1MNzMtTDc0IiwiZmlyc3QiOjcxLCJsYXN0Ijo3MiwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0xMSJdfSx7ImlkIjoic291cmNlLUwyOCIsImZpcnN0IjoyNywibGFzdCI6MjcsImJhY2tsaW5rcyI6WyIjc3ltYm9sLV9hdWdfY3J5cHRvX3JhbmRvbSJdfSx7ImlkIjoic291cmNlLUwyOSIsImZpcnN0IjoyOCwibGFzdCI6MjgsImJhY2tsaW5rcyI6WyIjc3ltYm9sLV9hdWdfY3J5cHRvX3NoYTI1NiJdfSx7ImlkIjoic291cmNlLUwzMCIsImZpcnN0IjoyOSwibGFzdCI6MjksImJhY2tsaW5rcyI6WyIjc3ltYm9sLV9hdWdfY3J5cHRvX2dlbmVyYXRlX3JzYSJdfSx7ImlkIjoic291cmNlLUwzMSIsImZpcnN0IjozMCwibGFzdCI6MzAsImJhY2tsaW5rcyI6WyIjc3ltYm9sLV9hdWdfY3J5cHRvX3B1YmxpY19yc2EiXX0seyJpZCI6InNvdXJjZS1MMzIiLCJmaXJzdCI6MzEsImxhc3QiOjMxLCJiYWNrbGlua3MiOlsiI3N5bWJvbC1fYXVnX2NyeXB0b19zaWduX3JzYSJdfSx7ImlkIjoic291cmNlLUwzMyIsImZpcnN0IjozMiwibGFzdCI6MzIsImJhY2tsaW5rcyI6WyIjc3ltYm9sLV9hdWdfY3J5cHRvX3ZlcmlmeV9yc2EiXX0seyJpZCI6InNvdXJjZS1MMzQiLCJmaXJzdCI6MzMsImxhc3QiOjMzLCJiYWNrbGlua3MiOlsiI3N5bWJvbC1fYXVnX2NyeXB0b19kZWNvZGVfYmFzZTY0dXJsIl19LHsiaWQiOiJzb3VyY2UtTDM1IiwiZmlyc3QiOjM0LCJsYXN0IjozNCwiYmFja2xpbmtzIjpbIiNzeW1ib2wtX2F1Z19jcnlwdG9fZXF1YWwiXX0seyJpZCI6InNvdXJjZS1MMzYiLCJmaXJzdCI6MzUsImxhc3QiOjM1LCJiYWNrbGlua3MiOlsiI3N5bWJvbC1fYXVnX2NyeXB0b19leHBvcnRfcnNhIl19LHsiaWQiOiJzb3VyY2UtTDM3IiwiZmlyc3QiOjM2LCJsYXN0IjozNiwiYmFja2xpbmtzIjpbIiNzeW1ib2wtX2F1Z19jcnlwdG9faW1wb3J0X3JzYSJdfSx7ImlkIjoic291cmNlLUwzOCIsImZpcnN0IjozNywibGFzdCI6MzcsImJhY2tsaW5rcyI6WyIjc3ltYm9sLV9hdWdfY3J5cHRvX3Bhc3N3b3JkX2hhc2giXX1dfQ
+// Generated by aug spec. This is a copy of the installed dependency source.
 // aug-spec: "contracts.aug.md" explains this file. Read it before changes; refresh with aug spec.
 /** Explicit permission for native cryptographic operations. Keys and bytes are immutable. */
 capability Crypto:
@@ -98,7 +99,8 @@ GnuTlsCrypto() implements Crypto:
             return _aug_crypto_password_hash(password, salt, iterations)
 ```
 
-```aug [Braces]
+```aug [Braces] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiYnJhY2VzIiwic291cmNlU2hhMjU2IjoiNTFkODVkYmFlYmYyODk3NDAxODA5NzQ5ZmI0NDIwYTIzMDdkNGIwNmIzMWQzODA4ZmFiYTU2OTEwYTMwOTc5NSIsImZvcm1hdHRlZFNoYTI1NiI6IjIzYmI2YjIyMjE5ODY3NmJkYzNjZmEyOGQ5NWZhNDg5MGI4YTJlM2YyMzIzNzZhYWQ0MDcxY2JjZDRlODZiMGYiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDQiLCJmaXJzdCI6NCwibGFzdCI6MjcsImJhY2tsaW5rcyI6WyIjc3ltYm9sLUNyeXB0byJdfSx7ImlkIjoic291cmNlLUw2IiwiZmlyc3QiOjYsImxhc3QiOjYsImJhY2tsaW5rcyI6WyIjc3ltYm9sLUNyeXB0by5yYW5kb20iXX0seyJpZCI6InNvdXJjZS1MOCIsImZpcnN0Ijo4LCJsYXN0Ijo4LCJiYWNrbGlua3MiOlsiI3N5bWJvbC1DcnlwdG8uc2hhMjU2Il19LHsiaWQiOiJzb3VyY2UtTDEwIiwiZmlyc3QiOjEwLCJsYXN0IjoxMCwiYmFja2xpbmtzIjpbIiNzeW1ib2wtQ3J5cHRvLmdlbmVyYXRlUnNhIl19LHsiaWQiOiJzb3VyY2UtTDEyIiwiZmlyc3QiOjEyLCJsYXN0IjoxMiwiYmFja2xpbmtzIjpbIiNzeW1ib2wtQ3J5cHRvLnB1YmxpY1JzYSJdfSx7ImlkIjoic291cmNlLUwxNCIsImZpcnN0IjoxNCwibGFzdCI6MTQsImJhY2tsaW5rcyI6WyIjc3ltYm9sLUNyeXB0by5zaWduUnNhIl19LHsiaWQiOiJzb3VyY2UtTDE2IiwiZmlyc3QiOjE2LCJsYXN0IjoxNiwiYmFja2xpbmtzIjpbIiNzeW1ib2wtQ3J5cHRvLnZlcmlmeVJzYSJdfSx7ImlkIjoic291cmNlLUwxOCIsImZpcnN0IjoxOCwibGFzdCI6MTgsImJhY2tsaW5rcyI6WyIjc3ltYm9sLUNyeXB0by5kZWNvZGVCYXNlNjR1cmwiXX0seyJpZCI6InNvdXJjZS1MMjAiLCJmaXJzdCI6MjAsImxhc3QiOjIwLCJiYWNrbGlua3MiOlsiI3N5bWJvbC1DcnlwdG8uZXF1YWwiXX0seyJpZCI6InNvdXJjZS1MMjIiLCJmaXJzdCI6MjIsImxhc3QiOjIyLCJiYWNrbGlua3MiOlsiI3N5bWJvbC1DcnlwdG8uZXhwb3J0UnNhIl19LHsiaWQiOiJzb3VyY2UtTDI0IiwiZmlyc3QiOjI0LCJsYXN0IjoyNCwiYmFja2xpbmtzIjpbIiNzeW1ib2wtQ3J5cHRvLmltcG9ydFJzYSJdfSx7ImlkIjoic291cmNlLUwyNiIsImZpcnN0IjoyNiwibGFzdCI6MjYsImJhY2tsaW5rcyI6WyIjc3ltYm9sLUNyeXB0by5wYXNzd29yZEhhc2giXX0seyJpZCI6InNvdXJjZS1MNDEiLCJmaXJzdCI6NDAsImxhc3QiOjk2LCJiYWNrbGlua3MiOlsiI3N5bWJvbC1HbnVUbHNDcnlwdG8iXX0seyJpZCI6InNvdXJjZS1MNDIiLCJmaXJzdCI6NDEsImxhc3QiOjQ1LCJiYWNrbGlua3MiOlsiI3N5bWJvbC1HbnVUbHNDcnlwdG8ucmFuZG9tIl19LHsiaWQiOiJzb3VyY2UtTDQzLUw0NCIsImZpcnN0Ijo0MiwibGFzdCI6NDQsImJhY2tsaW5rcyI6WyIjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMSJdfSx7ImlkIjoic291cmNlLUw0NSIsImZpcnN0Ijo0NiwibGFzdCI6NTAsImJhY2tsaW5rcyI6WyIjc3ltYm9sLUdudVRsc0NyeXB0by5zaGEyNTYiXX0seyJpZCI6InNvdXJjZS1MNDYtTDQ3IiwiZmlyc3QiOjQ3LCJsYXN0Ijo0OSwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0yIl19LHsiaWQiOiJzb3VyY2UtTDQ4IiwiZmlyc3QiOjUxLCJsYXN0Ijo1NSwiYmFja2xpbmtzIjpbIiNzeW1ib2wtR251VGxzQ3J5cHRvLmdlbmVyYXRlUnNhIl19LHsiaWQiOiJzb3VyY2UtTDQ5LUw1MCIsImZpcnN0Ijo1MiwibGFzdCI6NTQsImJhY2tsaW5rcyI6WyIjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMyJdfSx7ImlkIjoic291cmNlLUw1MSIsImZpcnN0Ijo1NiwibGFzdCI6NjAsImJhY2tsaW5rcyI6WyIjc3ltYm9sLUdudVRsc0NyeXB0by5wdWJsaWNSc2EiXX0seyJpZCI6InNvdXJjZS1MNTItTDUzIiwiZmlyc3QiOjU3LCJsYXN0Ijo1OSwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC00Il19LHsiaWQiOiJzb3VyY2UtTDU0IiwiZmlyc3QiOjYxLCJsYXN0Ijo2NSwiYmFja2xpbmtzIjpbIiNzeW1ib2wtR251VGxzQ3J5cHRvLnNpZ25Sc2EiXX0seyJpZCI6InNvdXJjZS1MNTUtTDU2IiwiZmlyc3QiOjYyLCJsYXN0Ijo2NCwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC01Il19LHsiaWQiOiJzb3VyY2UtTDU3IiwiZmlyc3QiOjY2LCJsYXN0Ijo3MCwiYmFja2xpbmtzIjpbIiNzeW1ib2wtR251VGxzQ3J5cHRvLnZlcmlmeVJzYSJdfSx7ImlkIjoic291cmNlLUw1OC1MNTkiLCJmaXJzdCI6NjcsImxhc3QiOjY5LCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTYiXX0seyJpZCI6InNvdXJjZS1MNjAiLCJmaXJzdCI6NzEsImxhc3QiOjc1LCJiYWNrbGlua3MiOlsiI3N5bWJvbC1HbnVUbHNDcnlwdG8uZGVjb2RlQmFzZTY0dXJsIl19LHsiaWQiOiJzb3VyY2UtTDYxLUw2MiIsImZpcnN0Ijo3MiwibGFzdCI6NzQsImJhY2tsaW5rcyI6WyIjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtNyJdfSx7ImlkIjoic291cmNlLUw2MyIsImZpcnN0Ijo3NiwibGFzdCI6ODAsImJhY2tsaW5rcyI6WyIjc3ltYm9sLUdudVRsc0NyeXB0by5lcXVhbCJdfSx7ImlkIjoic291cmNlLUw2NC1MNjUiLCJmaXJzdCI6NzcsImxhc3QiOjc5LCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTgiXX0seyJpZCI6InNvdXJjZS1MNjYiLCJmaXJzdCI6ODEsImxhc3QiOjg1LCJiYWNrbGlua3MiOlsiI3N5bWJvbC1HbnVUbHNDcnlwdG8uZXhwb3J0UnNhIl19LHsiaWQiOiJzb3VyY2UtTDY3LUw2OCIsImZpcnN0Ijo4MiwibGFzdCI6ODQsImJhY2tsaW5rcyI6WyIjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtOSJdfSx7ImlkIjoic291cmNlLUw2OSIsImZpcnN0Ijo4NiwibGFzdCI6OTAsImJhY2tsaW5rcyI6WyIjc3ltYm9sLUdudVRsc0NyeXB0by5pbXBvcnRSc2EiXX0seyJpZCI6InNvdXJjZS1MNzAtTDcxIiwiZmlyc3QiOjg3LCJsYXN0Ijo4OSwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0xMCJdfSx7ImlkIjoic291cmNlLUw3MiIsImZpcnN0Ijo5MSwibGFzdCI6OTUsImJhY2tsaW5rcyI6WyIjc3ltYm9sLUdudVRsc0NyeXB0by5wYXNzd29yZEhhc2giXX0seyJpZCI6InNvdXJjZS1MNzMtTDc0IiwiZmlyc3QiOjkyLCJsYXN0Ijo5NCwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0xMSJdfSx7ImlkIjoic291cmNlLUwyOCIsImZpcnN0IjoyOCwibGFzdCI6MjgsImJhY2tsaW5rcyI6WyIjc3ltYm9sLV9hdWdfY3J5cHRvX3JhbmRvbSJdfSx7ImlkIjoic291cmNlLUwyOSIsImZpcnN0IjoyOSwibGFzdCI6MjksImJhY2tsaW5rcyI6WyIjc3ltYm9sLV9hdWdfY3J5cHRvX3NoYTI1NiJdfSx7ImlkIjoic291cmNlLUwzMCIsImZpcnN0IjozMCwibGFzdCI6MzAsImJhY2tsaW5rcyI6WyIjc3ltYm9sLV9hdWdfY3J5cHRvX2dlbmVyYXRlX3JzYSJdfSx7ImlkIjoic291cmNlLUwzMSIsImZpcnN0IjozMSwibGFzdCI6MzEsImJhY2tsaW5rcyI6WyIjc3ltYm9sLV9hdWdfY3J5cHRvX3B1YmxpY19yc2EiXX0seyJpZCI6InNvdXJjZS1MMzIiLCJmaXJzdCI6MzIsImxhc3QiOjMyLCJiYWNrbGlua3MiOlsiI3N5bWJvbC1fYXVnX2NyeXB0b19zaWduX3JzYSJdfSx7ImlkIjoic291cmNlLUwzMyIsImZpcnN0IjozMywibGFzdCI6MzMsImJhY2tsaW5rcyI6WyIjc3ltYm9sLV9hdWdfY3J5cHRvX3ZlcmlmeV9yc2EiXX0seyJpZCI6InNvdXJjZS1MMzQiLCJmaXJzdCI6MzQsImxhc3QiOjM0LCJiYWNrbGlua3MiOlsiI3N5bWJvbC1fYXVnX2NyeXB0b19kZWNvZGVfYmFzZTY0dXJsIl19LHsiaWQiOiJzb3VyY2UtTDM1IiwiZmlyc3QiOjM1LCJsYXN0IjozNSwiYmFja2xpbmtzIjpbIiNzeW1ib2wtX2F1Z19jcnlwdG9fZXF1YWwiXX0seyJpZCI6InNvdXJjZS1MMzYiLCJmaXJzdCI6MzYsImxhc3QiOjM2LCJiYWNrbGlua3MiOlsiI3N5bWJvbC1fYXVnX2NyeXB0b19leHBvcnRfcnNhIl19LHsiaWQiOiJzb3VyY2UtTDM3IiwiZmlyc3QiOjM3LCJsYXN0IjozNywiYmFja2xpbmtzIjpbIiNzeW1ib2wtX2F1Z19jcnlwdG9faW1wb3J0X3JzYSJdfSx7ImlkIjoic291cmNlLUwzOCIsImZpcnN0IjozOCwibGFzdCI6MzgsImJhY2tsaW5rcyI6WyIjc3ltYm9sLV9hdWdfY3J5cHRvX3Bhc3N3b3JkX2hhc2giXX1dfQ
+// Generated by aug spec. This is a copy of the installed dependency source.
 // aug-spec: "contracts.aug.md" explains this file. Read it before changes; refresh with aug spec.
 /** Explicit permission for native cryptographic operations. Keys and bytes are immutable. */
 capability Crypto {
@@ -204,207 +206,325 @@ GnuTlsCrypto() implements Crypto {
 
 ## Compiled specification {#specification}
 
-### `Crypto` · capability interface · [source](contracts.md#code) {#symbol-Crypto}
+### `Crypto` · capability interface · [source](contracts.md#source-L4) {#symbol-Crypto}
 
 Explicit permission for native cryptographic operations. Keys and bytes are immutable.
 
-#### `Crypto.random` · [source](contracts.md#code) {#symbol-Crypto.random}
+#### `Crypto.random` · [source](contracts.md#source-L6) {#symbol-Crypto.random}
 
 Generate unpredictable bytes with the operating-system-backed GnuTLS RNG. It takes `size` as an integer.
 
 It returns `Bytes`. It can call [`Crypto.random`](contracts.md#symbol-Crypto.random). Failures can raise `CryptoError`.
 
-#### `Crypto.sha256` · [source](contracts.md#code) {#symbol-Crypto.sha256}
+#### `Crypto.sha256` · [source](contracts.md#source-L8) {#symbol-Crypto.sha256}
 
 Hash the complete input using SHA-256. It takes `input` as `Bytes`.
 
 It returns `Bytes`. It can call [`Crypto.sha256`](contracts.md#symbol-Crypto.sha256). Failures can raise `CryptoError`.
 
-#### `Crypto.generateRsa` · [source](contracts.md#code) {#symbol-Crypto.generateRsa}
+#### `Crypto.generateRsa` · [source](contracts.md#source-L10) {#symbol-Crypto.generateRsa}
 
 Create a fresh 3072-bit RSA private key. Private material is opaque and scrubbed on reclamation.
 
 It returns `RsaPrivateKey`. It can call [`Crypto.generateRsa`](contracts.md#symbol-Crypto.generateRsa). Failures can raise `CryptoError`.
 
-#### `Crypto.publicRsa` · [source](contracts.md#code) {#symbol-Crypto.publicRsa}
+#### `Crypto.publicRsa` · [source](contracts.md#source-L12) {#symbol-Crypto.publicRsa}
 
 Export the corresponding public key as an opaque immutable value. It takes `key` as `RsaPrivateKey`.
 
 It returns `RsaPublicKey`. It can call [`Crypto.publicRsa`](contracts.md#symbol-Crypto.publicRsa). Failures can raise `CryptoError`.
 
-#### `Crypto.signRsa` · [source](contracts.md#code) {#symbol-Crypto.signRsa}
+#### `Crypto.signRsa` · [source](contracts.md#source-L14) {#symbol-Crypto.signRsa}
 
 Sign bytes using RSASSA-PKCS1-v1_5 with SHA-256 (JOSE RS256). It takes `key` as `RsaPrivateKey` and `input` as `Bytes`.
 
 It returns `Bytes`. It can call [`Crypto.signRsa`](contracts.md#symbol-Crypto.signRsa). Failures can raise `CryptoError`.
 
-#### `Crypto.verifyRsa` · [source](contracts.md#code) {#symbol-Crypto.verifyRsa}
+#### `Crypto.verifyRsa` · [source](contracts.md#source-L16) {#symbol-Crypto.verifyRsa}
 
 Verify only RS256. Invalid signatures return false; invalid keys raise CryptoError. It takes `publicKey` as `RsaPublicKey` and `input` and `signature` as `Bytes`.
 
 It returns `bool`. It can call [`Crypto.verifyRsa`](contracts.md#symbol-Crypto.verifyRsa). Failures can raise `CryptoError`.
 
-#### `Crypto.decodeBase64url` · [source](contracts.md#code) {#symbol-Crypto.decodeBase64url}
+#### `Crypto.decodeBase64url` · [source](contracts.md#source-L18) {#symbol-Crypto.decodeBase64url}
 
 Decode canonical unpadded URL-safe base64, rejecting invalid characters and unused bits. It takes `input` as a string.
 
 It returns `Bytes`. It can call [`Crypto.decodeBase64url`](contracts.md#symbol-Crypto.decodeBase64url). Failures can raise `CryptoError`.
 
-#### `Crypto.equal` · [source](contracts.md#code) {#symbol-Crypto.equal}
+#### `Crypto.equal` · [source](contracts.md#source-L20) {#symbol-Crypto.equal}
 
 Compare bytes without early exit on their contents. Length remains observable. It takes `left` and `right` as `Bytes`.
 
 It returns `bool`. It can call [`Crypto.equal`](contracts.md#symbol-Crypto.equal).
 
-#### `Crypto.exportRsa` · [source](contracts.md#code) {#symbol-Crypto.exportRsa}
+#### `Crypto.exportRsa` · [source](contracts.md#source-L22) {#symbol-Crypto.exportRsa}
 
 Export unsigned big-endian modulus and exponent for an RSA JWK. It takes `publicKey` as `RsaPublicKey`.
 
 It returns `Tuple<Bytes,Bytes>`. It can call [`Crypto.exportRsa`](contracts.md#symbol-Crypto.exportRsa). Failures can raise `CryptoError`.
 
-#### `Crypto.importRsa` · [source](contracts.md#code) {#symbol-Crypto.importRsa}
+#### `Crypto.importRsa` · [source](contracts.md#source-L24) {#symbol-Crypto.importRsa}
 
 Import canonical public RSA parameters. Keys must have 2048 to 8192 bits. It takes `modulus` and `exponent` as `Bytes`.
 
 It returns `RsaPublicKey`. It can call [`Crypto.importRsa`](contracts.md#symbol-Crypto.importRsa). Failures can raise `CryptoError`.
 
-#### `Crypto.passwordHash` · [source](contracts.md#code) {#symbol-Crypto.passwordHash}
+#### `Crypto.passwordHash` · [source](contracts.md#source-L26) {#symbol-Crypto.passwordHash}
 
 PBKDF2-HMAC-SHA256, producing 32 bytes. Use a unique 16–64 byte salt; supported work factors are 100,000–2,000,000. It takes `password` and `salt` as `Bytes` and `iterations` as an integer.
 
 It returns `Bytes`. It can call [`Crypto.passwordHash`](contracts.md#symbol-Crypto.passwordHash). Failures can raise `CryptoError`.
 
-### `GnuTlsCrypto` · class · [source](contracts.md#code) {#symbol-GnuTlsCrypto}
+### `GnuTlsCrypto` · class · [source](contracts.md#source-L41) {#symbol-GnuTlsCrypto}
 
 GnuTLS-backed capability adapter. Its constructor performs no I/O or key generation. It implements [`Crypto`](contracts.md#symbol-Crypto).
 
-#### `GnuTlsCrypto.random` · [source](contracts.md#code) {#symbol-GnuTlsCrypto.random}
+#### `GnuTlsCrypto.random` · [source](contracts.md#source-L42) {#symbol-GnuTlsCrypto.random}
 
-Generate unpredictable bytes with the operating-system-backed GnuTLS RNG. It takes `size` as an integer. Failures can raise `CryptoError`.
+::: spec-paragraph specification-paragraph-1
+Generate unpredictable bytes with the operating-system-backed GnuTLS RNG. It takes `size` as an integer. Within an unsafe block, it returns [`_aug_crypto_random`](contracts.md#symbol-_aug_crypto_random) with `size`. Native operations must satisfy their declared C contracts. [source](contracts.md#source-L43-L44)
+:::
 
-Within an unsafe block, it returns [`_aug_crypto_random`](contracts.md#symbol-_aug_crypto_random) with `size`. Native operations must satisfy their declared C contracts.
+::: details Checked interface
 
-#### `GnuTlsCrypto.sha256` · [source](contracts.md#code) {#symbol-GnuTlsCrypto.sha256}
+```text
+random(int size) returns Bytes unless CryptoError uses Crypto.random
+```
 
-Hash the complete input using SHA-256. It takes `input` as `Bytes`. Failures can raise `CryptoError`.
+It takes `size` as an integer. Failures can raise `CryptoError`.
 
-Within an unsafe block, it returns [`_aug_crypto_sha256`](contracts.md#symbol-_aug_crypto_sha256) with `input`. Native operations must satisfy their declared C contracts.
+:::
 
-#### `GnuTlsCrypto.generateRsa` · [source](contracts.md#code) {#symbol-GnuTlsCrypto.generateRsa}
+#### `GnuTlsCrypto.sha256` · [source](contracts.md#source-L45) {#symbol-GnuTlsCrypto.sha256}
 
-Create a fresh 3072-bit RSA private key. Private material is opaque and scrubbed on reclamation. Failures can raise `CryptoError`.
+::: spec-paragraph specification-paragraph-2
+Hash the complete input using SHA-256. It takes `input` as `Bytes`. Within an unsafe block, it returns [`_aug_crypto_sha256`](contracts.md#symbol-_aug_crypto_sha256) with `input`. Native operations must satisfy their declared C contracts. [source](contracts.md#source-L46-L47)
+:::
 
-Within an unsafe block, it returns [`_aug_crypto_generate_rsa`](contracts.md#symbol-_aug_crypto_generate_rsa). Native operations must satisfy their declared C contracts.
+::: details Checked interface
 
-#### `GnuTlsCrypto.publicRsa` · [source](contracts.md#code) {#symbol-GnuTlsCrypto.publicRsa}
+```text
+sha256(Bytes input) returns Bytes unless CryptoError uses Crypto.sha256
+```
 
-Export the corresponding public key as an opaque immutable value. It takes `key` as `RsaPrivateKey`. Failures can raise `CryptoError`.
+It takes `input` as `Bytes`. Failures can raise `CryptoError`.
 
-Within an unsafe block, it returns [`_aug_crypto_public_rsa`](contracts.md#symbol-_aug_crypto_public_rsa) with `key`. Native operations must satisfy their declared C contracts.
+:::
 
-#### `GnuTlsCrypto.signRsa` · [source](contracts.md#code) {#symbol-GnuTlsCrypto.signRsa}
+#### `GnuTlsCrypto.generateRsa` · [source](contracts.md#source-L48) {#symbol-GnuTlsCrypto.generateRsa}
 
-Sign bytes using RSASSA-PKCS1-v1_5 with SHA-256 (JOSE RS256). It takes `key` as `RsaPrivateKey` and `input` as `Bytes`. Failures can raise `CryptoError`.
+::: spec-paragraph specification-paragraph-3
+Create a fresh 3072-bit RSA private key. Private material is opaque and scrubbed on reclamation. Within an unsafe block, it returns [`_aug_crypto_generate_rsa`](contracts.md#symbol-_aug_crypto_generate_rsa). Native operations must satisfy their declared C contracts. [source](contracts.md#source-L49-L50)
+:::
 
-Within an unsafe block, it returns [`_aug_crypto_sign_rsa`](contracts.md#symbol-_aug_crypto_sign_rsa) with `key` and `input`. Native operations must satisfy their declared C contracts.
+::: details Checked interface
 
-#### `GnuTlsCrypto.verifyRsa` · [source](contracts.md#code) {#symbol-GnuTlsCrypto.verifyRsa}
+```text
+generateRsa() returns RsaPrivateKey unless CryptoError uses Crypto.generateRsa
+```
 
-Verify only RS256. Invalid signatures return false; invalid keys raise CryptoError. It takes `publicKey` as `RsaPublicKey` and `input` and `signature` as `Bytes`. Failures can raise `CryptoError`.
+Failures can raise `CryptoError`.
 
-Within an unsafe block, it returns [`_aug_crypto_verify_rsa`](contracts.md#symbol-_aug_crypto_verify_rsa) with `publicKey`, `input`, and `signature`. Native operations must satisfy their declared C contracts.
+:::
 
-#### `GnuTlsCrypto.decodeBase64url` · [source](contracts.md#code) {#symbol-GnuTlsCrypto.decodeBase64url}
+#### `GnuTlsCrypto.publicRsa` · [source](contracts.md#source-L51) {#symbol-GnuTlsCrypto.publicRsa}
 
-Decode canonical unpadded URL-safe base64, rejecting invalid characters and unused bits. It takes `input` as a string. Failures can raise `CryptoError`.
+::: spec-paragraph specification-paragraph-4
+Export the corresponding public key as an opaque immutable value. It takes `key` as `RsaPrivateKey`. Within an unsafe block, it returns [`_aug_crypto_public_rsa`](contracts.md#symbol-_aug_crypto_public_rsa) with `key`. Native operations must satisfy their declared C contracts. [source](contracts.md#source-L52-L53)
+:::
 
-Within an unsafe block, it returns [`_aug_crypto_decode_base64url`](contracts.md#symbol-_aug_crypto_decode_base64url) with `input`. Native operations must satisfy their declared C contracts.
+::: details Checked interface
 
-#### `GnuTlsCrypto.equal` · [source](contracts.md#code) {#symbol-GnuTlsCrypto.equal}
+```text
+publicRsa(RsaPrivateKey key) returns RsaPublicKey unless CryptoError uses Crypto.publicRsa
+```
+
+It takes `key` as `RsaPrivateKey`. Failures can raise `CryptoError`.
+
+:::
+
+#### `GnuTlsCrypto.signRsa` · [source](contracts.md#source-L54) {#symbol-GnuTlsCrypto.signRsa}
+
+::: spec-paragraph specification-paragraph-5
+Sign bytes using RSASSA-PKCS1-v1_5 with SHA-256 (JOSE RS256). It takes `key` as `RsaPrivateKey` and `input` as `Bytes`. Within an unsafe block, it returns [`_aug_crypto_sign_rsa`](contracts.md#symbol-_aug_crypto_sign_rsa) with `key` and `input`. Native operations must satisfy their declared C contracts. [source](contracts.md#source-L55-L56)
+:::
+
+::: details Checked interface
+
+```text
+signRsa(RsaPrivateKey key, Bytes input) returns Bytes unless CryptoError uses Crypto.signRsa
+```
+
+It takes `key` as `RsaPrivateKey` and `input` as `Bytes`. Failures can raise `CryptoError`.
+
+:::
+
+#### `GnuTlsCrypto.verifyRsa` · [source](contracts.md#source-L57) {#symbol-GnuTlsCrypto.verifyRsa}
+
+Verify only RS256. Invalid signatures return false; invalid keys raise CryptoError. It takes `publicKey` as `RsaPublicKey` and `input` and `signature` as `Bytes`.
+
+::: spec-paragraph specification-paragraph-6
+Within an unsafe block, it returns [`_aug_crypto_verify_rsa`](contracts.md#symbol-_aug_crypto_verify_rsa) with `publicKey`, `input`, and `signature`. Native operations must satisfy their declared C contracts. [source](contracts.md#source-L58-L59)
+:::
+
+::: details Checked interface
+
+```text
+verifyRsa(RsaPublicKey publicKey, Bytes input, Bytes signature) returns bool unless CryptoError uses Crypto.verifyRsa
+```
+
+It takes `publicKey` as `RsaPublicKey` and `input` and `signature` as `Bytes`. Failures can raise `CryptoError`.
+
+:::
+
+#### `GnuTlsCrypto.decodeBase64url` · [source](contracts.md#source-L60) {#symbol-GnuTlsCrypto.decodeBase64url}
+
+::: spec-paragraph specification-paragraph-7
+Decode canonical unpadded URL-safe base64, rejecting invalid characters and unused bits. It takes `input` as a string. Within an unsafe block, it returns [`_aug_crypto_decode_base64url`](contracts.md#symbol-_aug_crypto_decode_base64url) with `input`. Native operations must satisfy their declared C contracts. [source](contracts.md#source-L61-L62)
+:::
+
+::: details Checked interface
+
+```text
+decodeBase64url(string input) returns Bytes unless CryptoError uses Crypto.decodeBase64url
+```
+
+It takes `input` as a string. Failures can raise `CryptoError`.
+
+:::
+
+#### `GnuTlsCrypto.equal` · [source](contracts.md#source-L63) {#symbol-GnuTlsCrypto.equal}
 
 Compare bytes without early exit on their contents. Length remains observable. It takes `left` and `right` as `Bytes`.
 
-Within an unsafe block, it returns [`_aug_crypto_equal`](contracts.md#symbol-_aug_crypto_equal) with `left` and `right`. Native operations must satisfy their declared C contracts.
+::: spec-paragraph specification-paragraph-8
+Within an unsafe block, it returns [`_aug_crypto_equal`](contracts.md#symbol-_aug_crypto_equal) with `left` and `right`. Native operations must satisfy their declared C contracts. [source](contracts.md#source-L64-L65)
+:::
 
-#### `GnuTlsCrypto.exportRsa` · [source](contracts.md#code) {#symbol-GnuTlsCrypto.exportRsa}
+::: details Checked interface
 
-Export unsigned big-endian modulus and exponent for an RSA JWK. It takes `publicKey` as `RsaPublicKey`. Failures can raise `CryptoError`.
+```text
+equal(Bytes left, Bytes right) returns bool uses Crypto.equal
+```
 
-Within an unsafe block, it returns [`_aug_crypto_export_rsa`](contracts.md#symbol-_aug_crypto_export_rsa) with `publicKey`. Native operations must satisfy their declared C contracts.
+It takes `left` and `right` as `Bytes`.
 
-#### `GnuTlsCrypto.importRsa` · [source](contracts.md#code) {#symbol-GnuTlsCrypto.importRsa}
+:::
 
-Import canonical public RSA parameters. Keys must have 2048 to 8192 bits. It takes `modulus` and `exponent` as `Bytes`. Failures can raise `CryptoError`.
+#### `GnuTlsCrypto.exportRsa` · [source](contracts.md#source-L66) {#symbol-GnuTlsCrypto.exportRsa}
 
-Within an unsafe block, it returns [`_aug_crypto_import_rsa`](contracts.md#symbol-_aug_crypto_import_rsa) with `modulus` and `exponent`. Native operations must satisfy their declared C contracts.
+::: spec-paragraph specification-paragraph-9
+Export unsigned big-endian modulus and exponent for an RSA JWK. It takes `publicKey` as `RsaPublicKey`. Within an unsafe block, it returns [`_aug_crypto_export_rsa`](contracts.md#symbol-_aug_crypto_export_rsa) with `publicKey`. Native operations must satisfy their declared C contracts. [source](contracts.md#source-L67-L68)
+:::
 
-#### `GnuTlsCrypto.passwordHash` · [source](contracts.md#code) {#symbol-GnuTlsCrypto.passwordHash}
+::: details Checked interface
 
-PBKDF2-HMAC-SHA256, producing 32 bytes. Use a unique 16–64 byte salt; supported work factors are 100,000–2,000,000. It takes `password` and `salt` as `Bytes` and `iterations` as an integer. Failures can raise `CryptoError`.
+```text
+exportRsa(RsaPublicKey publicKey) returns Tuple<Bytes, Bytes> unless CryptoError uses Crypto.exportRsa
+```
 
-Within an unsafe block, it returns [`_aug_crypto_password_hash`](contracts.md#symbol-_aug_crypto_password_hash) with `password`, `salt`, and `iterations`. Native operations must satisfy their declared C contracts.
+It takes `publicKey` as `RsaPublicKey`. Failures can raise `CryptoError`.
 
-### `_aug_crypto_random` · [source](contracts.md#code) {#symbol-_aug_crypto_random}
+:::
+
+#### `GnuTlsCrypto.importRsa` · [source](contracts.md#source-L69) {#symbol-GnuTlsCrypto.importRsa}
+
+Import canonical public RSA parameters. Keys must have 2048 to 8192 bits. It takes `modulus` and `exponent` as `Bytes`.
+
+::: spec-paragraph specification-paragraph-10
+Within an unsafe block, it returns [`_aug_crypto_import_rsa`](contracts.md#symbol-_aug_crypto_import_rsa) with `modulus` and `exponent`. Native operations must satisfy their declared C contracts. [source](contracts.md#source-L70-L71)
+:::
+
+::: details Checked interface
+
+```text
+importRsa(Bytes modulus, Bytes exponent) returns RsaPublicKey unless CryptoError uses Crypto.importRsa
+```
+
+It takes `modulus` and `exponent` as `Bytes`. Failures can raise `CryptoError`.
+
+:::
+
+#### `GnuTlsCrypto.passwordHash` · [source](contracts.md#source-L72) {#symbol-GnuTlsCrypto.passwordHash}
+
+PBKDF2-HMAC-SHA256, producing 32 bytes. Use a unique 16–64 byte salt; supported work factors are 100,000–2,000,000. It takes `password` and `salt` as `Bytes` and `iterations` as an integer.
+
+::: spec-paragraph specification-paragraph-11
+Within an unsafe block, it returns [`_aug_crypto_password_hash`](contracts.md#symbol-_aug_crypto_password_hash) with `password`, `salt`, and `iterations`. Native operations must satisfy their declared C contracts. [source](contracts.md#source-L73-L74)
+:::
+
+::: details Checked interface
+
+```text
+passwordHash(Bytes password, Bytes salt, int iterations) returns Bytes unless CryptoError uses Crypto.passwordHash
+```
+
+It takes `password` and `salt` as `Bytes` and `iterations` as an integer. Failures can raise `CryptoError`.
+
+:::
+
+### `_aug_crypto_random` · [source](contracts.md#source-L28) {#symbol-_aug_crypto_random}
 
 It is private to its defining scope. It takes `size` as an integer.
 
 It returns `Bytes`. It can call [`Crypto.random`](contracts.md#symbol-Crypto.random). Failures can raise `CryptoError`. Native C implementation; only its declared contract is visible here.
 
-### `_aug_crypto_sha256` · [source](contracts.md#code) {#symbol-_aug_crypto_sha256}
+### `_aug_crypto_sha256` · [source](contracts.md#source-L29) {#symbol-_aug_crypto_sha256}
 
 It is private to its defining scope. It takes `input` as `Bytes`.
 
 It returns `Bytes`. It can call [`Crypto.sha256`](contracts.md#symbol-Crypto.sha256). Failures can raise `CryptoError`. Native C implementation; only its declared contract is visible here.
 
-### `_aug_crypto_generate_rsa` · [source](contracts.md#code) {#symbol-_aug_crypto_generate_rsa}
+### `_aug_crypto_generate_rsa` · [source](contracts.md#source-L30) {#symbol-_aug_crypto_generate_rsa}
 
 It is private to its defining scope. It returns `RsaPrivateKey`. It can call [`Crypto.generateRsa`](contracts.md#symbol-Crypto.generateRsa). Failures can raise `CryptoError`.
 
 Native C implementation; only its declared contract is visible here.
 
-### `_aug_crypto_public_rsa` · [source](contracts.md#code) {#symbol-_aug_crypto_public_rsa}
+### `_aug_crypto_public_rsa` · [source](contracts.md#source-L31) {#symbol-_aug_crypto_public_rsa}
 
 It is private to its defining scope. It takes `key` as `RsaPrivateKey`.
 
 It returns `RsaPublicKey`. It can call [`Crypto.publicRsa`](contracts.md#symbol-Crypto.publicRsa). Failures can raise `CryptoError`. Native C implementation; only its declared contract is visible here.
 
-### `_aug_crypto_sign_rsa` · [source](contracts.md#code) {#symbol-_aug_crypto_sign_rsa}
+### `_aug_crypto_sign_rsa` · [source](contracts.md#source-L32) {#symbol-_aug_crypto_sign_rsa}
 
 It is private to its defining scope. It takes `key` as `RsaPrivateKey` and `input` as `Bytes`.
 
 It returns `Bytes`. It can call [`Crypto.signRsa`](contracts.md#symbol-Crypto.signRsa). Failures can raise `CryptoError`. Native C implementation; only its declared contract is visible here.
 
-### `_aug_crypto_verify_rsa` · [source](contracts.md#code) {#symbol-_aug_crypto_verify_rsa}
+### `_aug_crypto_verify_rsa` · [source](contracts.md#source-L33) {#symbol-_aug_crypto_verify_rsa}
 
 It is private to its defining scope. It takes `publicKey` as `RsaPublicKey` and `input` and `signature` as `Bytes`.
 
 It returns `bool`. It can call [`Crypto.verifyRsa`](contracts.md#symbol-Crypto.verifyRsa). Failures can raise `CryptoError`. Native C implementation; only its declared contract is visible here.
 
-### `_aug_crypto_decode_base64url` · [source](contracts.md#code) {#symbol-_aug_crypto_decode_base64url}
+### `_aug_crypto_decode_base64url` · [source](contracts.md#source-L34) {#symbol-_aug_crypto_decode_base64url}
 
 It is private to its defining scope. It takes `input` as a string.
 
 It returns `Bytes`. It can call [`Crypto.decodeBase64url`](contracts.md#symbol-Crypto.decodeBase64url). Failures can raise `CryptoError`. Native C implementation; only its declared contract is visible here.
 
-### `_aug_crypto_equal` · [source](contracts.md#code) {#symbol-_aug_crypto_equal}
+### `_aug_crypto_equal` · [source](contracts.md#source-L35) {#symbol-_aug_crypto_equal}
 
 It is private to its defining scope. It takes `left` and `right` as `Bytes`. It returns `bool`. It can call [`Crypto.equal`](contracts.md#symbol-Crypto.equal).
 
 Native C implementation; only its declared contract is visible here.
 
-### `_aug_crypto_export_rsa` · [source](contracts.md#code) {#symbol-_aug_crypto_export_rsa}
+### `_aug_crypto_export_rsa` · [source](contracts.md#source-L36) {#symbol-_aug_crypto_export_rsa}
 
 It is private to its defining scope. It takes `publicKey` as `RsaPublicKey`.
 
 It returns `Tuple<Bytes,Bytes>`. It can call [`Crypto.exportRsa`](contracts.md#symbol-Crypto.exportRsa). Failures can raise `CryptoError`. Native C implementation; only its declared contract is visible here.
 
-### `_aug_crypto_import_rsa` · [source](contracts.md#code) {#symbol-_aug_crypto_import_rsa}
+### `_aug_crypto_import_rsa` · [source](contracts.md#source-L37) {#symbol-_aug_crypto_import_rsa}
 
 It is private to its defining scope. It takes `modulus` and `exponent` as `Bytes`.
 
 It returns `RsaPublicKey`. It can call [`Crypto.importRsa`](contracts.md#symbol-Crypto.importRsa). Failures can raise `CryptoError`. Native C implementation; only its declared contract is visible here.
 
-### `_aug_crypto_password_hash` · [source](contracts.md#code) {#symbol-_aug_crypto_password_hash}
+### `_aug_crypto_password_hash` · [source](contracts.md#source-L38) {#symbol-_aug_crypto_password_hash}
 
 It is private to its defining scope. It takes `password` and `salt` as `Bytes` and `iterations` as an integer.
 

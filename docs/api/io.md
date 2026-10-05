@@ -6,7 +6,7 @@ editLink: false
 
 # august.io
 
-Console and file capabilities supplied with the compiler. Import names from `august.io`.
+Supplied with the compiler. Import public names from `august.io`.
 
 Signatures show result types and checked errors. See [packages](../packages.md) to pin a release and [language constructs](../language-constructs.md) for built-in types.
 

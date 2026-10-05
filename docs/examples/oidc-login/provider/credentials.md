@@ -48,7 +48,7 @@ pageClass: aug-example-page
 
 ::: code-group
 
-```aug [Indentation]
+```aug [Indentation] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiaW5kZW50Iiwic291cmNlU2hhMjU2IjoiMTMwMmQyYzVjNTk0ZWQ0ODM5YzA5NjQ3NjFlOTg3YTVkZDJhM2Q3NmE3ZTgxYjc0Yjg4MmVmYzM4YjdjZGNiNSIsImZvcm1hdHRlZFNoYTI1NiI6IjQ1OTk2NjgxYjdkYmUwNzYwZTE1MmI5NWVlNmI4Y2RkZmIwN2YxNzFiODAwNzBmODNjY2MzZDBiOGU4Y2Y4NDEiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDQiLCJmaXJzdCI6NCwibGFzdCI6MTUsImJhY2tsaW5rcyI6WyIjc3ltYm9sLXZlcmlmeUNyZWRlbnRpYWxzIl19LHsiaWQiOiJzb3VyY2UtTDUtTDkiLCJmaXJzdCI6NSwibGFzdCI6MTMsImJhY2tsaW5rcyI6WyIjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMSJdfSx7ImlkIjoic291cmNlLUwxMC1MMTEiLCJmaXJzdCI6MTQsImxhc3QiOjE1LCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTIiXX1dfQ
 // aug-spec: "credentials.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Crypto from crypto
 /** One development account with a PBKDF2-HMAC-SHA256 verifier. Production account storage is deliberately a separate capability. */
@@ -66,7 +66,7 @@ verifyCredentials(string username, string password, resolve Crypto crypto):
     return userMatches and passwordMatches
 ```
 
-```aug [Braces]
+```aug [Braces] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiYnJhY2VzIiwic291cmNlU2hhMjU2IjoiMTMwMmQyYzVjNTk0ZWQ0ODM5YzA5NjQ3NjFlOTg3YTVkZDJhM2Q3NmE3ZTgxYjc0Yjg4MmVmYzM4YjdjZGNiNSIsImZvcm1hdHRlZFNoYTI1NiI6IjY1YjZjMjRkZWNhMjVhNjMxMmQzNzE1MDg4N2UwNjkzMzE2ZWQ4ZWQ3ZDhiZWI2YjkyNzQwMDFlOTU0YzhjYzgiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDQiLCJmaXJzdCI6NCwibGFzdCI6MTcsImJhY2tsaW5rcyI6WyIjc3ltYm9sLXZlcmlmeUNyZWRlbnRpYWxzIl19LHsiaWQiOiJzb3VyY2UtTDUtTDkiLCJmaXJzdCI6NSwibGFzdCI6MTQsImJhY2tsaW5rcyI6WyIjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMSJdfSx7ImlkIjoic291cmNlLUwxMC1MMTEiLCJmaXJzdCI6MTUsImxhc3QiOjE2LCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTIiXX1dfQ
 // aug-spec: "credentials.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Crypto from crypto
 /** One development account with a PBKDF2-HMAC-SHA256 verifier. Production account storage is deliberately a separate capability. */
@@ -94,15 +94,27 @@ verifyCredentials(string username, string password, resolve Crypto crypto) {
 
 ## Compiled specification {#specification}
 
-### `verifyCredentials` · [source](credentials.md#code) {#symbol-verifyCredentials}
+### `verifyCredentials` · [source](credentials.md#source-L4) {#symbol-verifyCredentials}
 
 One development account with a PBKDF2-HMAC-SHA256 verifier. Production account storage is deliberately a separate capability. It takes `username` and `password` as strings. It gets `crypto` ([`Crypto`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto)) from dependency injection.
 
-Failures can raise `CryptoError`.
+::: spec-paragraph specification-paragraph-1
+If the byte length of `username` is greater than `64` or the byte length of `password` is greater than `256`, it returns `false`. It sets `actual` to [`crypto.passwordHash`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto.passwordHash) with `password` from the UTF-8 bytes of `password`, `salt` from the UTF-8 bytes of `"August demo salt v1"`, and `iterations` `600000`. It sets `expected` to [`crypto.decodeBase64url`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto.decodeBase64url) with `input` `"s70USYF6WohPz2f7VLA9haS_ZgEtenviSf_HG0o7B_A"`. It sets `userMatches` to [`crypto.equal`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto.equal) with `left` from the UTF-8 bytes of `username` and `right` from the UTF-8 bytes of `"ada"`. [source](credentials.md#source-L5-L9)
+:::
 
-If the byte length of `username` is greater than `64` or the byte length of `password` is greater than `256`, it returns `false`. It sets `actual` to [`crypto.passwordHash`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto.passwordHash) with `password` from the UTF-8 bytes of `password`, `salt` from the UTF-8 bytes of `"August demo salt v1"`, and `iterations` `600000`. It sets `expected` to [`crypto.decodeBase64url`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto.decodeBase64url) with `input` `"s70USYF6WohPz2f7VLA9haS_ZgEtenviSf_HG0o7B_A"`. It sets `userMatches` to [`crypto.equal`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto.equal) with `left` from the UTF-8 bytes of `username` and `right` from the UTF-8 bytes of `"ada"`.
+::: spec-paragraph specification-paragraph-2
+It sets `passwordMatches` to [`crypto.equal`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto.equal) with `left` from `actual` and `right` from `expected`. It returns `userMatches` and `passwordMatches`. [source](credentials.md#source-L10-L11)
+:::
 
-It sets `passwordMatches` to [`crypto.equal`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto.equal) with `left` from `actual` and `right` from `expected`. It returns `userMatches` and `passwordMatches`.
+::: details Checked interface
+
+```text
+verifyCredentials(string username, string password, resolve Crypto crypto) returns bool unless CryptoError uses Crypto.passwordHash, Crypto.decodeBase64url, Crypto.equal
+```
+
+It takes `username` and `password` as strings. It gets `crypto` ([`Crypto`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto)) from dependency injection. Failures can raise `CryptoError`.
+
+:::
 
 ### Dependencies
 

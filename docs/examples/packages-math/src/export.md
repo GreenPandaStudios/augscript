@@ -28,12 +28,12 @@ pageClass: aug-example-page
 
 ::: code-group
 
-```aug [Indentation]
+```aug [Indentation] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiaW5kZW50Iiwic291cmNlU2hhMjU2IjoiMTEzNWVhNmFjM2VmMzg1NjVhNDE4Nzg0MzIyYzdlY2VmMGZhYWE2MjRiNjg4ODc3NWJkYTcxNmFlNjFlODgzNSIsImZvcm1hdHRlZFNoYTI1NiI6IjcwYmVmYjk3Mjk5ZWNjMzBiMDFkYTZkYTA2ZTVhNTMwZTFhYjI3OWFmNzE2MmQ5NWVhOGNhNDIyNzkwMDg5NWUiLCJsaW5rcyI6W119
 // aug-spec: "export.aug.md" explains this file. Read it before changes; refresh with aug spec.
 export add from arithmetic
 ```
 
-```aug [Braces]
+```aug [Braces] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiYnJhY2VzIiwic291cmNlU2hhMjU2IjoiMTEzNWVhNmFjM2VmMzg1NjVhNDE4Nzg0MzIyYzdlY2VmMGZhYWE2MjRiNjg4ODc3NWJkYTcxNmFlNjFlODgzNSIsImZvcm1hdHRlZFNoYTI1NiI6IjcwYmVmYjk3Mjk5ZWNjMzBiMDFkYTZkYTA2ZTVhNTMwZTFhYjI3OWFmNzE2MmQ5NWVhOGNhNDIyNzkwMDg5NWUiLCJsaW5rcyI6W119
 // aug-spec: "export.aug.md" explains this file. Read it before changes; refresh with aug spec.
 export add from arithmetic
 ```

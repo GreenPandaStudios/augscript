@@ -11,6 +11,16 @@ void aug_ir_operation(AugValue *out,int op,AugValue *a,int count,const char *tex
   switch(op) {
     case AUG_IR_PRINT: aug_print(a[0]); break;
     case AUG_IR_BINARY: *out=aug_binary(text,a[0],a[1]); break;
+    case AUG_IR_LIST_JOIN:*out=aug_list_join(a[0],a[1]);break;
+    case AUG_IR_STRING_COMPARE:*out=aug_int(aug_string_compare(a[0],a[1]));break;
+    case AUG_IR_STRING_ENDS_WITH:*out=aug_bool(aug_string_ends_with(a[0],a[1]));break;
+    case AUG_IR_STRING_REPLACE:*out=aug_string_replace(a[0],a[1],a[2]);break;
+    case AUG_IR_STRING_GRAPHEME_LENGTH:*out=aug_int(aug_string_grapheme_length(a[0]));break;
+    case AUG_IR_STRING_GRAPHEMES:*out=aug_string_graphemes(a[0]);break;
+    case AUG_IR_STRING_CODE_POINT_LENGTH:*out=aug_int(aug_string_code_point_length(a[0]));break;
+    case AUG_IR_STRING_PARSE_INTEGER:*out=aug_int(aug_string_parse_integer(a[0]));break;
+    case AUG_IR_STRING_PARSE_FLOAT:*out=aug_string_parse_float(a[0]);break;
+    case AUG_IR_TEXT: *out=aug_text(a[0]); break;
     case AUG_IR_UNARY: *out=aug_unary(text,a[0]); break;
     case AUG_IR_FIELD: *out=aug_field(a[0],(size_t)n); break;
     case AUG_IR_SET_FIELD: aug_set_field(a[0],(size_t)n,a[1]); break;
@@ -104,6 +114,7 @@ void aug_ir_list_at(AugValue *out,const AugValue *list,const AugValue *index){*o
 void aug_ir_map_get(AugValue *out,const AugValue *map,const AugValue *key){*out=aug_map_get(*map,*key);}
 void aug_ir_map_take(AugValue *out,const AugValue *map,const AugValue *key){*out=aug_map_take(*map,*key);}
 void aug_ir_string(AugValue *out,const void *text,uint64_t count){*out=aug_string_n(text,(size_t)count);}
+void aug_ir_assert_equal(const AugValue *actual,const AugValue *expected,const char *expression,const char *file,int line){aug_assert_equal(*actual,*expected,expression,file,line);}
 void aug_ir_assert(const AugValue *condition,const char *expression,const char *file,int line){aug_assert(*condition,expression,file,line);}
 void aug_ir_drop(AugValue *value){aug_drop(*value);*value=aug_null();}
 void aug_ir_failed_result(AugValue *value){if(aug_has_error){aug_drop_partial(*value);*value=aug_null();}}

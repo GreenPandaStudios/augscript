@@ -1,16 +1,17 @@
-import {existsSync,readFileSync} from 'node:fs';
-import {join,resolve} from 'node:path';
+import {accessSync,constants,existsSync,readFileSync,realpathSync,openSync,readSync,closeSync} from 'node:fs';
+import {basename,join,resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {spawnSync} from 'node:child_process';
+import {createHash} from 'node:crypto';
 import {compilerVersion,readPackageLock,type PackageLock} from './package-manager.ts';
-import {ensureVerifiedArchive,type VerifiedArchive,type LLVMCompilerLock} from './native-artifacts.ts';
+import {ensureVerifiedArchive,verifyArtifactFiles,type VerifiedArchive,type LLVMCompilerLock} from './native-artifacts.ts';
 import {nativeHostTarget} from './native-contracts.ts';
 import {withPackageLockAsync} from './package-locking.ts';
 import {replacePackageText} from './package-storage.ts';
 import {readRuntimePack} from './llvm-native.ts';
 import {llvmPlatform} from './llvm-platform.ts';
 
-export interface LLVMToolchain {tools:string;runtime:string;archiveSha256?:string;developmentOverride:boolean}
+export interface LLVMToolchain {tools:string;runtime:string;archiveSha256?:string;developmentOverride:boolean;compilationIdentity?:string}
 /** The CLI owns installation. Packages cannot choose or execute a compiler driver. */
 export async function prepareLLVMCompiler(offline=false,project?:{root:string;frozen?:boolean}):Promise<LLVMToolchain>{
   const compilerRoot=resolve(fileURLToPath(new URL('..',import.meta.url)));
@@ -21,7 +22,13 @@ export async function prepareLLVMCompiler(offline=false,project?:{root:string;fr
     if(version.status!==0||!version.stdout.includes('LLVM version 23.1.2'))throw new Error('LLVM_TOOLS: Contributor override requires LLVM 23.1.2');
     readRuntimePack(runtime);
     if(project?.frozen)throw new Error('LLVM_LOCK: A frozen build requires the pinned compiler pack. Remove contributor toolchain overrides.');
-    return {tools,runtime,developmentOverride:true};
+    let compilationIdentity:string|undefined;
+    try{
+      const selection=compilerPackSelection(platform);
+      if(basename(realpathSync(tools))===selection.pack.archive.sha256)
+        compilationIdentity=compilerToolIdentity(tools,selection,true);
+    }catch{/* Unsealed contributor tools can compile, but cannot supply reusable output. */}
+    return {tools,runtime,developmentOverride:true,compilationIdentity};
   }
   const {manifest,pack,host,target}=compilerPackSelection(platform);
   const prepare=async():Promise<LLVMToolchain>=>{
@@ -31,18 +38,16 @@ export async function prepareLLVMCompiler(offline=false,project?:{root:string;fr
     const previous=lock.native?.compilers?.[host];
     if(project?.frozen&&(!previous||previous.artifactSha256!==pack.archive.sha256))throw new Error('LLVM_LOCK: Frozen build has no matching compiler artifact for '+host+'. Run aug build --backend llvm online once on this host.');
     const directory=await ensureVerifiedArchive(pack.archive,{offline,executables:platform.tools.map(tool=>'bin/'+tool)});
-    const identity=JSON.parse(readFileSync(join(directory,'compiler-pack.json'),'utf8'));
-    if(identity.format!==1||identity.compiler!==manifest.compiler||identity.llvm!==manifest.llvm||identity.host!==host||identity.target!==target.triple)throw new Error('LLVM_TOOLS: Verified archive has a different compiler/host/target identity');
-    const runtime=readRuntimePack(join(directory,'runtime'));
-    if(identity.runtime!==runtime.sourceSha256)throw new Error('LLVM_TOOLS: Compiler pack runtime identity differs from its runtime manifest');
-    const selection:LLVMCompilerLock={version:manifest.compiler,llvm:manifest.llvm,host,target:target.triple,artifactSha256:pack.archive.sha256,runtimeSha256:runtime.sourceSha256};
-    if(project?.frozen&&JSON.stringify(previous)!==JSON.stringify(selection))throw new Error('LLVM_LOCK: Frozen compiler/runtime identity changed for '+host);
+    const selection=compilerPackIdentity(directory,{manifest,pack,host,target});
+    if(project?.frozen&&!compilerLockMatches(selection,previous))throw new Error('LLVM_LOCK: Frozen compiler/runtime identity changed for '+host);
     if(lockFile&&!project?.frozen){
       lock.native??={format:1,targets:{}};lock.native.compilers??={};lock.native.compilers[host]=selection;
       if((existsSync(lockFile)?readFileSync(lockFile,'utf8'):undefined)!==initial)throw new Error('LLVM_LOCK: Source lock changed during compiler installation; retry');
       replacePackageText(lockFile,JSON.stringify(lock,null,2)+'\n');
     }
-    return {tools:directory,runtime:join(directory,'runtime'),archiveSha256:pack.archive.sha256,developmentOverride:false};
+    let compilationIdentity:string|undefined;
+    try{compilationIdentity=compilerToolIdentity(directory,{manifest,pack,host,target},false);}catch{/* A different sealed driver profile still compiles without reuse. */}
+    return {tools:directory,runtime:join(directory,'runtime'),archiveSha256:pack.archive.sha256,developmentOverride:false,compilationIdentity};
   };
   return project?withPackageLockAsync(join(project.root,'.aug-install.lock'),prepare):prepare();
 }
@@ -57,4 +62,54 @@ export function compilerPackSelection(platform=llvmPlatform()){
   if(!pack)throw new Error('NATIVE_TARGET: No compiler pack is published for '+platform.host+'. Available compiler packs: '+manifest.packs.map(p=>p.host).join(', '));
   if(pack.minimumOS!==platform.minimumOS||pack.minimumLibc!==platform.minimumLibc)throw new Error('LLVM_TOOLS: Compiler manifest has a different platform baseline');
   return {manifest,pack,host,target};
+}
+
+/** Compare the closed lock schema by field, independent of JSON key order. */
+export function compilerLockMatches(expected:LLVMCompilerLock,actual:unknown):boolean {
+  if(!actual||typeof actual!=='object'||Array.isArray(actual))return false;
+  const fields=['version','llvm','host','target','artifactSha256','runtimeSha256'] as const;
+  return Object.keys(actual).length===fields.length&&fields.every(key=>(actual as LLVMCompilerLock)[key]===expected[key]);
+}
+
+export class CompilerToolAccessError extends Error {}
+
+/** Read the host/runtime contract after the caller has verified the archive's complete file set. */
+export function compilerPackIdentity(directory:string,selection:ReturnType<typeof compilerPackSelection>):LLVMCompilerLock {
+  const {manifest,pack,host,target}=selection,identity=readCompilerPackMetadata(directory,selection);
+  const runtime=readRuntimePack(join(directory,'runtime'));
+  if(identity.runtime!==runtime.sourceSha256)throw new Error('LLVM_TOOLS: Compiler pack runtime identity differs from its runtime manifest');
+  for(const tool of llvmPlatform().tools){
+    const path=join(directory,'bin',tool);
+    if(!existsSync(path))throw new Error('LLVM_TOOLS: Compiler archive has no required tool '+path);
+    try{accessSync(path,constants.X_OK);}
+    catch(error){throw new CompilerToolAccessError('LLVM_TOOLS: Cached tool is not executable: '+path,{cause:error});}
+  }
+  return {version:manifest.compiler,llvm:manifest.llvm,host,target:target.triple,artifactSha256:pack.archive.sha256,runtimeSha256:runtime.sourceSha256};
+}
+
+/** Only retained compiler packs have a declared, verified complete tool-file closure.
+ * Their maintainer build checks dynamic dependencies against the platform profile.
+ * Arbitrary contributor wrappers and external helper programs stay uncached. */
+function compilerToolIdentity(directory:string,selection:ReturnType<typeof compilerPackSelection>,verify:boolean):string {
+  const {pack}=selection;
+  const memberManifest=readFileSync(join(directory,pack.archive.fileManifest));
+  if(!pack.archive.fileManifestSha256||createHash('sha256').update(memberManifest).digest('hex')!==pack.archive.fileManifestSha256)
+    throw new Error('LLVM_TOOLS: Compilation reuse requires the compiler-owned complete member-manifest pin');
+  const files=verify?verifyArtifactFiles(directory,pack.archive):JSON.parse(memberManifest.toString('utf8')).files as Record<string,string>;
+  const identity=readCompilerPackMetadata(directory,selection);
+  for(const tool of llvmPlatform().tools){
+    if(identity.tools?.[tool]!==files['bin/'+tool])throw new Error('LLVM_TOOLS: Tool-pack member identity differs for '+tool);
+    const input=openSync(join(directory,'bin',tool),'r'),magic=Buffer.alloc(4);
+    try{if(readSync(input,magic,0,4,0)!==4)throw new Error('LLVM_TOOLS: Truncated native tool');}finally{closeSync(input);}
+    if(!['7f454c46','cffaedfe','feedfacf','cafebabe','bebafeca'].includes(magic.toString('hex')))
+      throw new Error('LLVM_TOOLS: Compilation reuse requires the qualified native tool binaries');
+  }
+  return createHash('sha256').update(JSON.stringify(Object.entries(files).sort(([a],[b])=>a<b?-1:a>b?1:0))).digest('hex');
+}
+
+function readCompilerPackMetadata(directory:string,selection:ReturnType<typeof compilerPackSelection>) {
+  const {manifest,host,target}=selection,identity=JSON.parse(readFileSync(join(directory,'compiler-pack.json'),'utf8'));
+  if(!identity||identity.format!==1||identity.compiler!==manifest.compiler||identity.llvm!==manifest.llvm||identity.host!==host||identity.target!==target.triple)
+    throw new Error('LLVM_TOOLS: Verified archive has a different compiler/host/target identity');
+  return identity as {runtime:string;tools?:Record<string,string>};
 }

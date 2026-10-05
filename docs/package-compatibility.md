@@ -46,7 +46,7 @@ These versioned formats are the candidate contracts for 1.0. Changing a native c
 | File | Format | Required information |
 | --- | --- | --- |
 | `aug-package.json` | `1`, source package | Package `name`, exact package `version`, `compiler` requirement and relative `source` folder containing `export.aug`. Optional `dependencies` maps local aliases to package requests. |
-| `aug-package.json` | `2`, native package | The source fields plus `native`: ABI profile, binding file/digest, upstream identity, platform artifacts and optional explicit source-build metadata. |
+| `aug-package.json` | `2`, native package | The source fields plus `native`: ABI profile, binding file/digest, upstream identity, platform artifacts and optional explicit source-build metadata. Unreleased artifact entries may pin the exact member manifest with `fileManifestSha256`. |
 | `native.abi.json` | `1`, profile `aug-native-abi-1` | Resource/release declarations and function contracts: physical symbol, labeled inputs, outputs, status, error, ownership, capabilities, mutation and thread permission. |
 | `aug.lock.json` | `1` | Exact `compiler`, requested `specifications`, root aliases, checked package entries with source digests and resolved dependency paths, registry integrity, and Git revisions. `native` optionally records target and compiler/runtime selections. |
 | Native artifact file manifest | `1` | Exact regular-file paths and SHA-256 digests. The downloaded archive has its own SHA-256 and size bounds. |
@@ -65,7 +65,7 @@ The process-interruption tests kill installers on both sides of publication. The
 
 Old generations and abandoned staging directories are retained. When no build or editor is using the project, removing `.aug-packages` and `.aug-install-*` reclaims them; `aug install --frozen` restores the active graph from its original sources or verified caches. Keep `aug.lock.json`. A local folder dependency still requires that folder, and offline restoration requires every requested input to have been cached.
 
-Changed installed source is an error during checking and running. An explicit install can restore it from verified inputs. Native caches are immutable by archive digest and are checked again before use; a corrupted native cache must be removed and installed again.
+Changed installed source is an error during checking and running. An explicit install can restore it from verified inputs. Native caches are immutable by archive digest and are checked again before use; a corrupted native cache must be removed and installed again. The unreleased CLI also authenticates each native member manifest against its source-owned `fileManifestSha256` when present, otherwise against the retained original archive. Legacy caches without that archive require one online restore; regenerating a cached manifest cannot authorize changed native bytes.
 
 ## Qualification
 

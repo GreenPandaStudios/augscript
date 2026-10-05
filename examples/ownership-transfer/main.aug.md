@@ -2,13 +2,15 @@
 
 # `main.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=356f52dedc5713b85b21c2e7a0cbf939a0a9f33cb60114b331508fbdfaef0f8f -->
+
 ## Providers
 
 `Console` is provided by [`SystemConsole`](.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-SystemConsole). The same instance is shared.
 
 ## Startup
 
-It calls [`make`](resource.aug.md#symbol-make) and stores the result in owned `first` ([`Resource`](resource.aug.md#symbol-Resource)). It calls [`consume`](resource.aug.md#symbol-consume) with `value` from `first` using injected `Console` for `console`. It calls [`make`](resource.aug.md#symbol-make) and stores the result in owned `second` ([`Resource`](resource.aug.md#symbol-Resource)). It prints `"end of main"`.
+It calls [`make`](resource.aug.md#symbol-make) and stores the result in owned `first` ([`Resource`](resource.aug.md#symbol-Resource)). It calls [`consume`](resource.aug.md#symbol-consume) with `value` from `first` using injected `Console` for `console`. It calls [`make`](resource.aug.md#symbol-make) and stores the result in owned `second` ([`Resource`](resource.aug.md#symbol-Resource)). It prints `"end of main"`. [source](main.aug#L7-L10)
 
 ## Dependencies
 

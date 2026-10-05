@@ -1,3 +1,4 @@
+import {choiceMembers} from './choices.ts';
 import type {ClassDecl, Diagnostic, Expr, MethodDecl, Span, TypeRef} from './ast.ts';
 import {fieldsOf, initializationOf} from './ast.ts';
 import type {CheckedProject} from './checker.ts';
@@ -22,13 +23,14 @@ export function checkWorkers(checked:CheckedProject):Diagnostic[] {
     const def=project.scopes.get(file)?.get(ref.name);
     const args=ref.args.map(arg=>resolve(arg,file,parameters));
     if(args.some(arg=>!arg))return;
-    return {id:def?.id??'builtin:'+ref.name,name:ref.name,def,kind:def?.node.kind==='class'?'class':def?.node.kind==='resource'?'resource':'builtin',args:args as Ty[],nullable:ref.nullable};
+    return {id:def?.id??'builtin:'+ref.name,name:ref.name,def,kind:def?.node.kind==='class'?'class':def?.node.kind==='choice'?'choice':def?.node.kind==='resource'?'resource':'builtin',args:args as Ty[],nullable:ref.nullable};
   }
   function copyable(type:Ty|undefined,seen=new Set<string>()):boolean {
     if(!type||['resource','interface','param','error','interceptor'].includes(type.kind))return false;
     if(errorNames.includes(type.name) && type.name !== 'Error')return true;
     if(['int','c_int','float','bool','string','void','null','Bytes','Json'].includes(type.name))return true;
     if(['List','Map','Set','Tuple'].includes(type.name))return type.args.every(arg=>copyable(arg,seen));
+    if(type.kind==='choice'){if(seen.has(type.id))return true;seen.add(type.id);const members=choiceMembers(project,type);return !!members&&members.every(member=>copyable(member,seen));}
     const node=type.def?.node;
     if(node?.kind!=='class'||(!node.record&&!node.implements.some(ref=>ref.name==='Error'))||node.annotations?.length||node.methods.some(method=>method.name==='drop'))return false;
     const fingerprint=(value:Ty):string=>value.id+'<'+value.args.map(fingerprint).join(',')+'>';
@@ -90,6 +92,7 @@ export function checkWorkers(checked:CheckedProject):Diagnostic[] {
       visit(value,node=>{
         if(node.kind==='serve'||node.kind==='handle'||node.kind==='yield')issue(start.span,'HTTP transport and streams remain on their creating heap.');
         if(node.kind==='resolve')issue(start.span,'Worker code cannot resolve bindings from the parent heap. Construct its dependencies locally.');
+        const callback=checked.functionValues.get(node);if(callback?.target)declaration(callback.target);
         if(node.kind!=='call')return;
         const nested=node as Extract<Expr,{kind:'call'}>,plan=checked.callPlans.get(nested);
         if(plan?.bindingKeys.some(Boolean))issue(start.span,'Worker code cannot resolve parent bindings. Construct its dependencies inside the worker and pass them by label.');

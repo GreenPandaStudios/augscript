@@ -1,4 +1,5 @@
 import type { Ty } from './types.ts';
+import {graphemeUnicodeVersion} from './unicode-version.ts';
 
 export const builtinTypes = {
   int: { arity: 0 }, c_int: { arity: 0 }, float: { arity: 0 }, bool: { arity: 0 }, string: { arity: 0 }, void: { arity: 0 },
@@ -53,6 +54,15 @@ export const collectionOperations: Record<string, BuiltinOperation[]> = {
     {name:'float32', parameters:[], returns:'float', errors:['ConversionError'], documentation:'Round to IEEE 754 binary32 and return the rounded value as float. Reject nonfinite input or overflow.',native:'float32'},
   ],
   string: [
+    {name:'byteLength',parameters:[],returns:'int',documentation:'Read the number of UTF-8 bytes, including embedded NUL. This is the explicit-unit spelling of length().',native:'length'},
+    {name:'graphemeLength',parameters:[],returns:'int',errors:['ConversionError'],documentation:`Count default extended grapheme clusters using Unicode ${graphemeUnicodeVersion}. Empty text counts as zero. Reject invalid UTF-8; do not normalize, tailor by locale or measure display width.`,native:'grapheme_length'},
+    {name:'graphemes',parameters:[],returns:'List<string>',errors:['ConversionError'],documentation:`Read ordered, nonempty copies of default extended grapheme clusters using Unicode ${graphemeUnicodeVersion}. Empty text produces an empty list. Reject invalid UTF-8 and preserve every original byte; joining with an empty separator reconstructs the input.`,native:'graphemes'},
+    {name:'compare',parameters:[{label:'other',type:'string'}],returns:'int',documentation:'Compare unsigned UTF-8 bytes lexicographically; return -1, 0 or 1. Preserve embedded NUL, compare a shorter identical prefix first, and perform no locale collation or normalization.',native:'compare'},
+    {name:'endsWith',parameters:[{label:'suffix',type:'string'}],returns:'bool',documentation:'Test an exact UTF-8 suffix, including embedded NUL. An empty suffix matches.',native:'ends_with'},
+    {name:'replace',parameters:[{label:'search',type:'string'},{label:'replacement',type:'string'}],returns:'string',errors:['ConversionError'],documentation:'Return new text with every nonoverlapping exact search replaced, left to right. Reject an empty search. This is not regular-expression replacement.',native:'replace'},
+    {name:'codePointLength',parameters:[],returns:'int',errors:['ConversionError'],documentation:'Count Unicode scalar values in valid UTF-8. Combining marks count separately; this is not grapheme count.',native:'code_point_length'},
+    {name:'parseInteger',parameters:[],returns:'int',errors:['ConversionError'],documentation:'Parse strict signed decimal int64. Permit an optional leading minus and decimal digits; reject whitespace, plus, trailing text, and overflow.',native:'parse_integer'},
+    {name:'parseFloat',parameters:[],returns:'float',errors:['ConversionError'],documentation:'Parse invariant finite binary64 decimal text, with optional minus, fraction, and decimal exponent. Reject whitespace, nonfinite values, malformed text, overflow, and underflow.',native:'parse_float'},
     {name:'trim',parameters:[],returns:'string',documentation:'Remove ECMAScript whitespace and line terminators from both ends; preserve interior text.',native:'trim'},
     {name:'utf16Length',parameters:[],returns:'int',documentation:'Count UTF-16 code units for JavaScript wire limits; supplementary characters count as two.',native:'utf16_length'},
     {name:'isDecimal',parameters:[],returns:'bool',documentation:'Require a nonempty ASCII unsigned decimal string. Leading zeros are allowed.',native:'is_decimal'},
@@ -70,6 +80,7 @@ export const collectionOperations: Record<string, BuiltinOperation[]> = {
     { name: 'base64url', parameters: [], returns: 'string', documentation: 'Encode immutable bytes as unpadded RFC 4648 URL-safe base64.', native: 'base64url' },
   ],
   List: [
+    {name:'join',parameters:[{label:'separator',type:'string'}],returns:'string',documentation:'Join List<string> in list order with exact separators. Empty lists produce empty text. Preserve empty elements and embedded NUL.',native:'join'},
     { name: 'append', parameters: [{ label: 'value', type: 'T' }], returns: 'void', changes: true,
       documentation: 'Append an element with exclusive mutable access. Read-only and owned aliases cannot be stored here.', native: 'append' },
     { name: 'get', parameters: [{ label: 'index', type: 'int' }], returns: 'T', errors: ['IndexError'],
@@ -99,10 +110,12 @@ export function operationType(text: string, receiver: Ty, position?: number): Ty
   return { ...(type ?? builtinType('<error>')), nullable, optional:nullable || undefined };
 }
 export const builtinFunctions: BuiltinOperation[] = [
+  {name:'sourceLocation',parameters:[],returns:'Tuple<string, int, int>',documentation:'Capture this call expression’s source identity and one-based line/column. Applications use project-relative paths; package code uses name@version/source-relative paths. This is compiler-provided data, not a stack trace or a runtime file lookup. A helper captures its own call site.',native:'source_location'},
   {name:'exit', parameters:[{label:'status', type:'int'}], returns:'void', documentation:'Exit from main with a status from 0 to 255 after cancellation and cleanup.', native:'exit'},
   { name: 'c_int', parameters: [{ label: 'value', type: 'int' }], returns: 'c_int', errors: ['ConversionError'], documentation: 'Checked conversion to a signed 32-bit C int. Overflow raises ConversionError. AugScript int maps to int64_t at the C boundary.', native: 'to_c_int' },
   { name: 'int', parameters: [{ label: 'value', type: 'c_int' }], returns: 'int', documentation: 'Widen a C int to the signed 64-bit AugScript integer without loss.', native: 'to_int' },
   { name: 'print', parameters: [{ label: 'value', type: 'any' }], returns: 'void', documentation: 'Write application startup or test output. Other callables receive a Console dependency and call console.write; their bodies infer that capability use.', native: 'print' },
+  { name: 'assertEqual', parameters: [{label:'actual',type:'any'},{label:'expected',type:'any'}], returns:'void', documentation:'Compare actual and expected using August equality in a test. Evaluate each input once in written order. Failures show bounded scalar, record and tuple values and the first public difference path. Private field names and values, and native contents, are omitted; bounded searches report when a path is unavailable. Other objects retain identity equality. Catching the failure cannot make the case pass.', native:'assert_equal' },
   { name: 'assert', parameters: [{ label: 'condition', type: 'bool' }], returns: 'void', documentation: 'Assert a bool in a test case or its setup. Catching an assertion failure cannot make the case pass; every case must execute an assertion.', native: 'assert' },
   { name: 'arguments', parameters: [], returns: 'List<string>', documentation: 'Composition arguments. Other callables receive the Arguments capability.', native: 'arguments' },
   { name: 'read_file', parameters: [{ label: 'path', type: 'string' }], returns: 'string', errors: ['FileError'], documentation: 'Root-only UTF-8 text input. Other callables receive FileReader. Invalid Unicode and NUL raise FileError.', native: 'read_file' },

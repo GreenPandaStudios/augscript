@@ -1,0 +1,1067 @@
+{
+  "format": 1,
+  "packages": [
+    {
+      "id": "blake3",
+      "repository": "https://github.com/GreenPandaStudios/aug-blake3",
+      "tag": "v0.1.5",
+      "commit": "bc1fb7ecda099da583facbe8fae2c89a951e2d9c",
+      "manifest": {
+        "format": 2,
+        "name": "@greenpandastudios/aug-blake3",
+        "version": "0.1.5",
+        "compiler": "0.23.0",
+        "source": "src",
+        "dependencies": {},
+        "native": {
+          "profile": "aug-native-abi-1",
+          "bindings": "native.abi.json",
+          "bindingsSha256": "3bf8dea97cde70a03021bf77ea08314d6d37fe7b4935ff16030b2ab929c21279",
+          "upstream": {
+            "repository": "https://github.com/BLAKE3-team/BLAKE3",
+            "version": "1.8.7",
+            "sourceRevision": "6d9e454fc11f76977dc803893aff6304ed33d6a26efae8696573bea74baa27ae"
+          },
+          "artifacts": [
+            {
+              "id": "linux-arm64",
+              "target": {
+                "triple": "aarch64-unknown-linux-gnu",
+                "os": "linux",
+                "arch": "arm64",
+                "minimumLibc": "2.36",
+                "cpuBaseline": "armv8-a",
+                "libc": "glibc"
+              },
+              "url": "https://github.com/GreenPandaStudios/aug-blake3/releases/download/v0.1.3/native-linux-arm64.tar.gz",
+              "sha256": "69e4de7c1928254c2fb285b0ecd557c4dd1346e9207d0b7ef56e00957caae748",
+              "maximumDownloadBytes": 90298456,
+              "maximumUnpackedBytes": 90976771,
+              "link": {
+                "kind": "dynamic",
+                "libraries": [
+                  "lib/libaug_blake3.so.1"
+                ]
+              },
+              "runtime": {
+                "files": [
+                  "lib/libaug_blake3.so.1",
+                  "lib/libgcc_s.so.1"
+                ],
+                "closureManifest": "runtime-files.json",
+                "relocation": "loader-relative"
+              },
+              "components": [
+                {
+                  "id": "https://github.com/BLAKE3-team/BLAKE3",
+                  "version": "1.8.7",
+                  "compatibilityKey": "aug-blake3-runtime",
+                  "linkage": "static",
+                  "required": true
+                },
+                {
+                  "id": "gcc-runtime",
+                  "version": "12.2.0-14+deb12u1",
+                  "compatibilityKey": "gcc-runtime",
+                  "linkage": "dynamic",
+                  "required": true
+                }
+              ],
+              "fileManifest": "files.json",
+              "provenance": "provenance.json",
+              "notices": "THIRD_PARTY_NOTICES.md"
+            },
+            {
+              "id": "linux-x64",
+              "target": {
+                "triple": "x86_64-unknown-linux-gnu",
+                "os": "linux",
+                "arch": "x64",
+                "minimumLibc": "2.36",
+                "cpuBaseline": "x86-64",
+                "libc": "glibc"
+              },
+              "url": "https://github.com/GreenPandaStudios/aug-blake3/releases/download/v0.1.3/native-linux-x64.tar.gz",
+              "sha256": "67e682239e6133a29e381ee2b0c59beb3070f7cb049a487d0709e4be9714232f",
+              "maximumDownloadBytes": 90330447,
+              "maximumUnpackedBytes": 90846850,
+              "link": {
+                "kind": "dynamic",
+                "libraries": [
+                  "lib/libaug_blake3.so.1"
+                ]
+              },
+              "runtime": {
+                "files": [
+                  "lib/libaug_blake3.so.1",
+                  "lib/libgcc_s.so.1"
+                ],
+                "closureManifest": "runtime-files.json",
+                "relocation": "loader-relative"
+              },
+              "components": [
+                {
+                  "id": "https://github.com/BLAKE3-team/BLAKE3",
+                  "version": "1.8.7",
+                  "compatibilityKey": "aug-blake3-runtime",
+                  "linkage": "static",
+                  "required": true
+                },
+                {
+                  "id": "gcc-runtime",
+                  "version": "12.2.0-14+deb12u1",
+                  "compatibilityKey": "gcc-runtime",
+                  "linkage": "dynamic",
+                  "required": true
+                }
+              ],
+              "fileManifest": "files.json",
+              "provenance": "provenance.json",
+              "notices": "THIRD_PARTY_NOTICES.md"
+            },
+            {
+              "id": "macos-arm64",
+              "target": {
+                "triple": "aarch64-apple-darwin",
+                "os": "macos",
+                "arch": "arm64",
+                "minimumOS": "14.0",
+                "cpuBaseline": "armv8-a",
+                "libc": "libSystem"
+              },
+              "url": "https://github.com/GreenPandaStudios/aug-blake3/releases/download/v0.1.3/native-macos-arm64.tar.gz",
+              "sha256": "2eae982e532845a67077abe9918c4eb736775fcbddfb6eef552303400687ffa5",
+              "maximumDownloadBytes": 169406,
+              "maximumUnpackedBytes": 503261,
+              "link": {
+                "kind": "dynamic",
+                "libraries": [
+                  "lib/libaug_blake3.1.dylib"
+                ]
+              },
+              "runtime": {
+                "files": [
+                  "lib/libaug_blake3.1.dylib"
+                ],
+                "closureManifest": "runtime-files.json",
+                "relocation": "loader-relative"
+              },
+              "components": [
+                {
+                  "id": "https://github.com/BLAKE3-team/BLAKE3",
+                  "version": "1.8.7",
+                  "compatibilityKey": "aug-blake3-runtime",
+                  "linkage": "static",
+                  "required": true
+                }
+              ],
+              "fileManifest": "files.json",
+              "provenance": "provenance.json",
+              "notices": "THIRD_PARTY_NOTICES.md"
+            }
+          ],
+          "sourceBuild": {
+            "recipe": "native/build.json",
+            "inputs": "native/sources.lock.json",
+            "tools": [
+              "Node 24+",
+              "Clang",
+              "macOS: Apple SDK",
+              "GNU/Linux: Docker with the pinned Debian 12 maintainer image and patchelf",
+              "Rust and Cargo 1.98.1"
+            ],
+            "automatic": false
+          }
+        }
+      },
+      "resources": [],
+      "exports": [
+        "HashError",
+        "hash"
+      ],
+      "notices": "BLAKE3 1.8.7 Rust crate and its exact Cargo.lock dependencies. Licenses are retained in native/licenses and the artifact licenses directory. Rust 1.98.1 standard library: MIT OR Apache-2.0. August adapter: MIT.\n",
+      "evidence": {
+        "manifestSha256": "dcd5a8cde08c59a8501a3f399872f41df5a1050a3a4b3a2865a327ce3b17655e",
+        "descriptorSha256": "3bf8dea97cde70a03021bf77ea08314d6d37fe7b4935ff16030b2ab929c21279",
+        "exportsSha256": "e4169caf24caa9fcf21740090c0f617a626281b5deee1d5fd90e925673681e54",
+        "noticesSha256": "fe2815353bef663731a84f03a15d47d0e1373ae5655342e4b30ae4df1635b0a7"
+      }
+    },
+    {
+      "id": "gpu",
+      "repository": "https://github.com/GreenPandaStudios/aug-gpu",
+      "tag": "v0.1.1",
+      "commit": "792efddf2d7debf68ceb8d4800a69299bc73b04e",
+      "manifest": {
+        "format": 2,
+        "name": "@greenpandastudios/aug-gpu",
+        "version": "0.1.1",
+        "compiler": "0.23.0",
+        "source": "src",
+        "dependencies": {},
+        "native": {
+          "profile": "aug-native-abi-1",
+          "bindings": "native.abi.json",
+          "bindingsSha256": "d95e237d8be07df8fd20132ca0f5a45a125fd65b7ba93669e69c0a38db63d60c",
+          "upstream": {
+            "repository": "https://github.com/GreenPandaStudios/aug-gpu",
+            "version": "0.1.0",
+            "sourceRevision": "d055b6a39e98d2f8d871fc9f731ad4b1788f205131ed32b6f76cabbdd5b3b1bd"
+          },
+          "artifacts": [
+            {
+              "id": "macos-arm64",
+              "target": {
+                "triple": "aarch64-apple-darwin",
+                "os": "macos",
+                "arch": "arm64",
+                "minimumOS": "14.0",
+                "cpuBaseline": "armv8-a",
+                "libc": "libSystem"
+              },
+              "url": "https://github.com/GreenPandaStudios/aug-gpu/releases/download/v0.1.0/native-macos-arm64.tar.gz",
+              "sha256": "3a5aac57ea4a48526131e1527b2558ba83539fad613f834396ef36d677cf5dd6",
+              "maximumDownloadBytes": 11723,
+              "maximumUnpackedBytes": 66727,
+              "link": {
+                "kind": "dynamic",
+                "libraries": [
+                  "lib/libaug_gpu.1.dylib"
+                ]
+              },
+              "runtime": {
+                "files": [
+                  "lib/libaug_gpu.1.dylib"
+                ],
+                "closureManifest": "runtime-files.json",
+                "relocation": "loader-relative"
+              },
+              "components": [
+                {
+                  "id": "https://github.com/GreenPandaStudios/aug-gpu",
+                  "version": "0.1.0",
+                  "compatibilityKey": "aug-gpu-runtime",
+                  "linkage": "dynamic",
+                  "required": true
+                }
+              ],
+              "fileManifest": "files.json",
+              "provenance": "provenance.json",
+              "notices": "THIRD_PARTY_NOTICES.md"
+            }
+          ]
+        }
+      },
+      "resources": [
+        "Device",
+        "Buffer"
+      ],
+      "exports": [
+        "Device",
+        "Buffer",
+        "GpuError",
+        "openDevice",
+        "upload",
+        "add",
+        "download"
+      ],
+      "notices": "# Native dependencies\n\nThe August GPU adapter is MIT licensed. It links to the Metal and Foundation frameworks supplied by macOS. Those system frameworks are not redistributed in this package. The archive contains the adapter, its provenance and file hashes, and this notice. No CUDA, third-party shader compiler, or copied upstream library is included in this release.\n",
+      "evidence": {
+        "manifestSha256": "b6977202a75d61cac735a3f0f9b9e84622d8781a160f63d49807de53cfd0cc2d",
+        "descriptorSha256": "d95e237d8be07df8fd20132ca0f5a45a125fd65b7ba93669e69c0a38db63d60c",
+        "exportsSha256": "86c2f563b96adb1c92e7297497985ab586796da273da4384136ebb2e44598e77",
+        "noticesSha256": "357836561a88539f9acd1f9f7e4daa5c082ba5ab578a1aa36a3dd515aefb1747"
+      }
+    },
+    {
+      "id": "postgres",
+      "repository": "https://github.com/GreenPandaStudios/aug-postgres",
+      "tag": "v0.1.0",
+      "commit": "302f953b881522342e29a08584ece5b5b4459c61",
+      "manifest": {
+        "format": 2,
+        "name": "@greenpandastudios/aug-postgres",
+        "version": "0.1.0",
+        "compiler": "0.23.0",
+        "source": "src",
+        "dependencies": {},
+        "native": {
+          "profile": "aug-native-abi-1",
+          "bindings": "native.abi.json",
+          "bindingsSha256": "1d8514d82ea59da8a178a720f859de9478e3099c7bb8485979f40278582bf3ea",
+          "upstream": {
+            "repository": "https://github.com/postgres/postgres",
+            "version": "18.6",
+            "sourceRevision": "555610c24d53e4316da5b7d3fc25c279d96856d5e0e23ee308c328c5fa881d9f"
+          },
+          "artifacts": [
+            {
+              "id": "linux-arm64",
+              "target": {
+                "triple": "aarch64-unknown-linux-gnu",
+                "os": "linux",
+                "arch": "arm64",
+                "minimumLibc": "2.36",
+                "libc": "glibc",
+                "cpuBaseline": "armv8-a"
+              },
+              "url": "https://github.com/GreenPandaStudios/aug-postgres/releases/download/v0.1.0/native-linux-arm64.tar.gz",
+              "sha256": "ec1041eaf9121149d405aa5ab3c1e1dacbd5962c2b86b6ca1a2231d249397242",
+              "maximumDownloadBytes": 2849855,
+              "maximumUnpackedBytes": 6580635,
+              "link": {
+                "kind": "dynamic",
+                "libraries": [
+                  "lib/libaug_postgres.so.1"
+                ]
+              },
+              "runtime": {
+                "files": [
+                  "lib/libaug_postgres.so.1"
+                ],
+                "closureManifest": "runtime-files.json",
+                "relocation": "loader-relative"
+              },
+              "components": [
+                {
+                  "id": "https://github.com/postgres/postgres",
+                  "version": "18.6",
+                  "compatibilityKey": "aug-postgres-libpq",
+                  "linkage": "static",
+                  "required": true
+                },
+                {
+                  "id": "https://github.com/openssl/openssl",
+                  "version": "3.5.9",
+                  "compatibilityKey": "aug-postgres-tls",
+                  "linkage": "static",
+                  "required": true
+                }
+              ],
+              "fileManifest": "files.json",
+              "provenance": "provenance.json",
+              "notices": "THIRD_PARTY_NOTICES.md"
+            },
+            {
+              "id": "linux-x64",
+              "target": {
+                "triple": "x86_64-unknown-linux-gnu",
+                "os": "linux",
+                "arch": "x64",
+                "minimumLibc": "2.36",
+                "libc": "glibc",
+                "cpuBaseline": "x86-64"
+              },
+              "url": "https://github.com/GreenPandaStudios/aug-postgres/releases/download/v0.1.0/native-linux-x64.tar.gz",
+              "sha256": "3a97a995b712620c0427b33cec51d091008273d713e3712133c6b69d127ba879",
+              "maximumDownloadBytes": 2602409,
+              "maximumUnpackedBytes": 7189515,
+              "link": {
+                "kind": "dynamic",
+                "libraries": [
+                  "lib/libaug_postgres.so.1"
+                ]
+              },
+              "runtime": {
+                "files": [
+                  "lib/libaug_postgres.so.1"
+                ],
+                "closureManifest": "runtime-files.json",
+                "relocation": "loader-relative"
+              },
+              "components": [
+                {
+                  "id": "https://github.com/postgres/postgres",
+                  "version": "18.6",
+                  "compatibilityKey": "aug-postgres-libpq",
+                  "linkage": "static",
+                  "required": true
+                },
+                {
+                  "id": "https://github.com/openssl/openssl",
+                  "version": "3.5.9",
+                  "compatibilityKey": "aug-postgres-tls",
+                  "linkage": "static",
+                  "required": true
+                }
+              ],
+              "fileManifest": "files.json",
+              "provenance": "provenance.json",
+              "notices": "THIRD_PARTY_NOTICES.md"
+            },
+            {
+              "id": "macos-arm64",
+              "target": {
+                "triple": "aarch64-apple-darwin",
+                "os": "macos",
+                "arch": "arm64",
+                "minimumOS": "14.0",
+                "libc": "libSystem",
+                "cpuBaseline": "armv8-a"
+              },
+              "url": "https://github.com/GreenPandaStudios/aug-postgres/releases/download/v0.1.0/native-macos-arm64.tar.gz",
+              "sha256": "bc3738c7630385a59f61124e83906e3579c459cdd57b400eacfcd418e13f71c5",
+              "maximumDownloadBytes": 2512014,
+              "maximumUnpackedBytes": 5310874,
+              "link": {
+                "kind": "dynamic",
+                "libraries": [
+                  "lib/libaug_postgres.1.dylib"
+                ]
+              },
+              "runtime": {
+                "files": [
+                  "lib/libaug_postgres.1.dylib"
+                ],
+                "closureManifest": "runtime-files.json",
+                "relocation": "loader-relative"
+              },
+              "components": [
+                {
+                  "id": "https://github.com/postgres/postgres",
+                  "version": "18.6",
+                  "compatibilityKey": "aug-postgres-libpq",
+                  "linkage": "static",
+                  "required": true
+                },
+                {
+                  "id": "https://github.com/openssl/openssl",
+                  "version": "3.5.9",
+                  "compatibilityKey": "aug-postgres-tls",
+                  "linkage": "static",
+                  "required": true
+                }
+              ],
+              "fileManifest": "files.json",
+              "provenance": "provenance.json",
+              "notices": "THIRD_PARTY_NOTICES.md"
+            }
+          ],
+          "sourceBuild": {
+            "recipe": "native/build.json",
+            "inputs": "native/sources.lock.json",
+            "tools": [
+              "Node 24",
+              "Clang, Make, Perl, Bison and Flex",
+              "macOS Apple SDK or pinned Debian 12 maintainer image"
+            ],
+            "automatic": false
+          }
+        }
+      },
+      "resources": [
+        "Pool",
+        "Connection",
+        "Result"
+      ],
+      "exports": [
+        "Pool",
+        "Connection",
+        "Result",
+        "PostgresError",
+        "DatabaseStorage",
+        "NativeDatabaseStorage",
+        "acquire",
+        "query",
+        "rows",
+        "isNull",
+        "text",
+        "bytes",
+        "sqlState"
+      ],
+      "notices": "# Native components\nThe adapter is MIT licensed. Native archives statically include PostgreSQL libpq 18.6 (PostgreSQL License) and OpenSSL 3.5.9 (Apache License 2.0). Their complete notices are included under licenses. Source URLs and SHA-256 digests are recorded in native/sources.lock.json; no source recipe runs during application installation.\n",
+      "evidence": {
+        "manifestSha256": "eeb6644203d67a2e1414d8d64ba2fde6b45455c943cf8686890c60cdfb989f1b",
+        "descriptorSha256": "1d8514d82ea59da8a178a720f859de9478e3099c7bb8485979f40278582bf3ea",
+        "exportsSha256": "5c16189c60bafab8a80f5f4028a07349ceae570a2e96dc21b58fbdbe45813db9",
+        "noticesSha256": "29e93ec7ea7e66ec1cc8c46f1b7560914abe2fcafde55cd87a5a8f868dbc2efa"
+      }
+    },
+    {
+      "id": "pytorch",
+      "repository": "https://github.com/GreenPandaStudios/aug-pytorch",
+      "tag": "v0.1.6",
+      "commit": "f1b6fb1c8d0c964cdd5510d3e303fc35ec915f3a",
+      "manifest": {
+        "format": 2,
+        "name": "@greenpandastudios/aug-pytorch",
+        "version": "0.1.6",
+        "compiler": "0.23.0",
+        "source": "src",
+        "dependencies": {},
+        "native": {
+          "profile": "aug-native-abi-1",
+          "bindings": "native.abi.json",
+          "bindingsSha256": "f07b8cab89ad7cfe368edcd9daf87ecc810adb6a2eed1f446d7b71fb664e91f5",
+          "upstream": {
+            "repository": "https://github.com/pytorch/pytorch",
+            "version": "2.14.1",
+            "sourceRevision": "5c4886908584029761b579af026dcfb627c84070"
+          },
+          "artifacts": [
+            {
+              "id": "linux-arm64",
+              "target": {
+                "triple": "aarch64-unknown-linux-gnu",
+                "os": "linux",
+                "arch": "arm64",
+                "minimumLibc": "2.36",
+                "cpuBaseline": "armv8-a",
+                "libc": "glibc",
+                "cxxRuntime": "bundled-libstdc++",
+                "cxxABI": "itanium-cxx11",
+                "features": [
+                  "cpu",
+                  "float64"
+                ]
+              },
+              "url": "https://github.com/GreenPandaStudios/aug-pytorch/releases/download/v0.1.4/native-linux-arm64.tar.gz",
+              "sha256": "8eb7c5e30635949228548208bda1ac0a7c42801d2299a90ea4d4c2064e700573",
+              "maximumDownloadBytes": 205707311,
+              "maximumUnpackedBytes": 443080682,
+              "link": {
+                "kind": "dynamic",
+                "libraries": [
+                  "lib/libaug_torch.so.1"
+                ]
+              },
+              "runtime": {
+                "files": [
+                  "lib/libarm_compute.so",
+                  "lib/libarm_compute_graph.so",
+                  "lib/libaug_torch.so.1",
+                  "lib/libc10.so",
+                  "lib/libgcc_s.so.1",
+                  "lib/libgfortran.so.5",
+                  "lib/libgomp.so.1",
+                  "lib/libopenblas.so.0",
+                  "lib/libstdc++.so.6",
+                  "lib/libtorch_cpu.so",
+                  "lib/libz.so.1"
+                ],
+                "closureManifest": "runtime-files.json",
+                "relocation": "loader-relative"
+              },
+              "components": [
+                {
+                  "id": "https://github.com/pytorch/pytorch",
+                  "version": "2.14.1",
+                  "compatibilityKey": "aug-pytorch-runtime",
+                  "linkage": "dynamic",
+                  "required": true
+                },
+                {
+                  "id": "gcc-runtime",
+                  "version": "12.2.0-14+deb12u1",
+                  "compatibilityKey": "gcc-runtime",
+                  "linkage": "dynamic",
+                  "required": true
+                },
+                {
+                  "id": "arm-compute",
+                  "version": "53.2.0",
+                  "compatibilityKey": "arm-compute",
+                  "linkage": "dynamic",
+                  "required": true
+                },
+                {
+                  "id": "openblas",
+                  "version": "0.3.34",
+                  "compatibilityKey": "openblas",
+                  "linkage": "dynamic",
+                  "required": true
+                }
+              ],
+              "fileManifest": "files.json",
+              "provenance": "provenance.json",
+              "notices": "THIRD_PARTY_NOTICES.md"
+            },
+            {
+              "id": "linux-x64",
+              "target": {
+                "triple": "x86_64-unknown-linux-gnu",
+                "os": "linux",
+                "arch": "x64",
+                "minimumLibc": "2.36",
+                "cpuBaseline": "x86-64",
+                "libc": "glibc",
+                "cxxRuntime": "bundled-libstdc++",
+                "cxxABI": "itanium-cxx11",
+                "features": [
+                  "cpu",
+                  "float64"
+                ]
+              },
+              "url": "https://github.com/GreenPandaStudios/aug-pytorch/releases/download/v0.1.4/native-linux-x64.tar.gz",
+              "sha256": "e39d75858c158af03bae161d54b3a267b4fcf3dc4568be6467df72e472793f7b",
+              "maximumDownloadBytes": 207516626,
+              "maximumUnpackedBytes": 535024433,
+              "link": {
+                "kind": "dynamic",
+                "libraries": [
+                  "lib/libaug_torch.so.1"
+                ]
+              },
+              "runtime": {
+                "files": [
+                  "lib/libaug_torch.so.1",
+                  "lib/libc10.so",
+                  "lib/libgcc_s.so.1",
+                  "lib/libgomp.so.1",
+                  "lib/libstdc++.so.6",
+                  "lib/libtorch_cpu.so"
+                ],
+                "closureManifest": "runtime-files.json",
+                "relocation": "loader-relative"
+              },
+              "components": [
+                {
+                  "id": "https://github.com/pytorch/pytorch",
+                  "version": "2.14.1",
+                  "compatibilityKey": "aug-pytorch-runtime",
+                  "linkage": "dynamic",
+                  "required": true
+                },
+                {
+                  "id": "gcc-runtime",
+                  "version": "12.2.0-14+deb12u1",
+                  "compatibilityKey": "gcc-runtime",
+                  "linkage": "dynamic",
+                  "required": true
+                }
+              ],
+              "fileManifest": "files.json",
+              "provenance": "provenance.json",
+              "notices": "THIRD_PARTY_NOTICES.md"
+            },
+            {
+              "id": "macos-arm64",
+              "target": {
+                "triple": "aarch64-apple-darwin",
+                "os": "macos",
+                "arch": "arm64",
+                "minimumOS": "14.0",
+                "cpuBaseline": "armv8-a",
+                "libc": "libSystem",
+                "cxxRuntime": "system-libc++",
+                "cxxABI": "apple-libc++",
+                "features": [
+                  "cpu",
+                  "float64"
+                ]
+              },
+              "url": "https://github.com/GreenPandaStudios/aug-pytorch/releases/download/v0.1.4/native-macos-arm64.tar.gz",
+              "sha256": "a130f4a67b574456e5eb0538dc099cb99e5356fdb47ebd4926da6f9b65ccb1e1",
+              "maximumDownloadBytes": 92487957,
+              "maximumUnpackedBytes": 388370911,
+              "link": {
+                "kind": "dynamic",
+                "libraries": [
+                  "lib/libaug_torch.1.dylib"
+                ]
+              },
+              "runtime": {
+                "files": [
+                  "lib/libaug_torch.1.dylib",
+                  "lib/libc10.dylib",
+                  "lib/libomp.dylib",
+                  "lib/libtorch_cpu.dylib"
+                ],
+                "closureManifest": "runtime-files.json",
+                "relocation": "loader-relative"
+              },
+              "components": [
+                {
+                  "id": "https://github.com/pytorch/pytorch",
+                  "version": "2.14.1",
+                  "compatibilityKey": "aug-pytorch-runtime",
+                  "linkage": "dynamic",
+                  "required": true
+                }
+              ],
+              "fileManifest": "files.json",
+              "provenance": "provenance.json",
+              "notices": "THIRD_PARTY_NOTICES.md"
+            }
+          ],
+          "sourceBuild": {
+            "recipe": "native/build.json",
+            "inputs": "native/sources.lock.json",
+            "tools": [
+              "Node 24+",
+              "Clang",
+              "macOS: Apple SDK",
+              "GNU/Linux: Docker with the pinned Debian 12 maintainer image and patchelf"
+            ],
+            "automatic": false
+          }
+        }
+      },
+      "resources": [
+        "Tensor"
+      ],
+      "exports": [
+        "Tensor",
+        "TensorError",
+        "tensor",
+        "add",
+        "sum",
+        "values"
+      ],
+      "notices": "# Native redistribution\n\nPyTorch / LibTorch 2.14.1 uses the BSD-style license in `native/LICENSE.pytorch` and `native/NOTICE.pytorch`. The artifacts retain the collected LibTorch component licenses. The macOS closure also includes OpenMP.\n\nThe Linux ARM64 CPU closure includes OpenBLAS 0.3.34 and Arm Compute Library 53.2.0. Their exact source archives and license files are under the artifact's `sources` and `licenses` directories. The Arm Compute revision reported by its binary is `7b256bb7965f2fd99cdee790a4b0e56dab438a8c`. The source archives are independently pinned in `native/linux-libtorch.lock.json`; the build checks the reported binary versions before accepting a candidate.\n\nLinux artifacts include the required GCC 12 runtime libraries, with full source inputs, Debian patches, copyright files, GPL/LGPL texts and the GCC Runtime Library Exception. GNU dependencies remain replaceable shared files. Preserve these notices and the source/license directories when redistributing a bundle.\n\nThe upstream CPU distribution contains additional statically incorporated components. The collected notices do not constitute an exhaustive binary SBOM. This limit remains part of the preview's qualification record.\n",
+      "evidence": {
+        "manifestSha256": "38faf3e37a55677c85a6a1d3793d13a28a63237c5c78e7755f90584cdcee407d",
+        "descriptorSha256": "f07b8cab89ad7cfe368edcd9daf87ecc810adb6a2eed1f446d7b71fb664e91f5",
+        "exportsSha256": "3789a1729917ad799ac485040ca0c1c328be83ef9de885c99c11945ff7ef1db5",
+        "noticesSha256": "bbd67ea05c7baa875bfc7f0767130756893843fe28d25d25e5d8862bc3b6f2bc"
+      }
+    },
+    {
+      "id": "sqlite",
+      "repository": "https://github.com/GreenPandaStudios/aug-sqlite",
+      "tag": "v0.1.5",
+      "commit": "f5a6bec82f12db8b422f4c1cff8232a66a956991",
+      "manifest": {
+        "format": 2,
+        "name": "@greenpandastudios/aug-sqlite",
+        "version": "0.1.5",
+        "compiler": "0.23.0",
+        "source": "src",
+        "dependencies": {},
+        "native": {
+          "profile": "aug-native-abi-1",
+          "bindings": "native.abi.json",
+          "bindingsSha256": "3c75c2925c85f1b83db06ee00fa04f1d2d37c9fd6edca0d074ce89b4647ffffb",
+          "upstream": {
+            "repository": "https://github.com/sqlite/sqlite",
+            "version": "3.53.4",
+            "sourceRevision": "1e71ddf93849c6a6ecf58b827c0692073d2dd7ee40196158068f7b29f422e87d"
+          },
+          "artifacts": [
+            {
+              "id": "linux-arm64",
+              "target": {
+                "triple": "aarch64-unknown-linux-gnu",
+                "os": "linux",
+                "arch": "arm64",
+                "minimumLibc": "2.36",
+                "cpuBaseline": "armv8-a",
+                "libc": "glibc"
+              },
+              "url": "https://github.com/GreenPandaStudios/aug-sqlite/releases/download/v0.1.3/native-linux-arm64.tar.gz",
+              "sha256": "480c6dfb5a257fc7047a28dd2eb6f2e60bbcb90ae4e301083a180744dadea8f2",
+              "maximumDownloadBytes": 1984618,
+              "maximumUnpackedBytes": 4131708,
+              "link": {
+                "kind": "dynamic",
+                "libraries": [
+                  "lib/libaug_sqlite.so.1"
+                ]
+              },
+              "runtime": {
+                "files": [
+                  "lib/libaug_sqlite.so.1"
+                ],
+                "closureManifest": "runtime-files.json",
+                "relocation": "loader-relative"
+              },
+              "components": [
+                {
+                  "id": "https://github.com/sqlite/sqlite",
+                  "version": "3.53.4",
+                  "compatibilityKey": "aug-sqlite-runtime",
+                  "linkage": "static",
+                  "required": true
+                }
+              ],
+              "fileManifest": "files.json",
+              "provenance": "provenance.json",
+              "notices": "THIRD_PARTY_NOTICES.md"
+            },
+            {
+              "id": "linux-x64",
+              "target": {
+                "triple": "x86_64-unknown-linux-gnu",
+                "os": "linux",
+                "arch": "x64",
+                "minimumLibc": "2.36",
+                "cpuBaseline": "x86-64",
+                "libc": "glibc"
+              },
+              "url": "https://github.com/GreenPandaStudios/aug-sqlite/releases/download/v0.1.3/native-linux-x64.tar.gz",
+              "sha256": "3b38b5d537fbe24462505b85f52ed421c80df7af400ff1dc0567aa3f542e6255",
+              "maximumDownloadBytes": 2178112,
+              "maximumUnpackedBytes": 4509173,
+              "link": {
+                "kind": "dynamic",
+                "libraries": [
+                  "lib/libaug_sqlite.so.1"
+                ]
+              },
+              "runtime": {
+                "files": [
+                  "lib/libaug_sqlite.so.1"
+                ],
+                "closureManifest": "runtime-files.json",
+                "relocation": "loader-relative"
+              },
+              "components": [
+                {
+                  "id": "https://github.com/sqlite/sqlite",
+                  "version": "3.53.4",
+                  "compatibilityKey": "aug-sqlite-runtime",
+                  "linkage": "static",
+                  "required": true
+                }
+              ],
+              "fileManifest": "files.json",
+              "provenance": "provenance.json",
+              "notices": "THIRD_PARTY_NOTICES.md"
+            },
+            {
+              "id": "macos-arm64",
+              "target": {
+                "triple": "aarch64-apple-darwin",
+                "os": "macos",
+                "arch": "arm64",
+                "minimumOS": "14.0",
+                "cpuBaseline": "armv8-a",
+                "libc": "libSystem"
+              },
+              "url": "https://github.com/GreenPandaStudios/aug-sqlite/releases/download/v0.1.3/native-macos-arm64.tar.gz",
+              "sha256": "f79e5ac0751aa612d1119d7769d46ee7a34b904e5ea8a993886fb005311e1ad8",
+              "maximumDownloadBytes": 616575,
+              "maximumUnpackedBytes": 1248410,
+              "link": {
+                "kind": "dynamic",
+                "libraries": [
+                  "lib/libaug_sqlite.1.dylib"
+                ]
+              },
+              "runtime": {
+                "files": [
+                  "lib/libaug_sqlite.1.dylib"
+                ],
+                "closureManifest": "runtime-files.json",
+                "relocation": "loader-relative"
+              },
+              "components": [
+                {
+                  "id": "https://github.com/sqlite/sqlite",
+                  "version": "3.53.4",
+                  "compatibilityKey": "aug-sqlite-runtime",
+                  "linkage": "static",
+                  "required": true
+                }
+              ],
+              "fileManifest": "files.json",
+              "provenance": "provenance.json",
+              "notices": "THIRD_PARTY_NOTICES.md"
+            }
+          ],
+          "sourceBuild": {
+            "recipe": "native/build.json",
+            "inputs": "native/sources.lock.json",
+            "tools": [
+              "Node 24+",
+              "Clang",
+              "macOS: Apple SDK",
+              "GNU/Linux: Docker with the pinned Debian 12 maintainer image and patchelf"
+            ],
+            "automatic": false
+          }
+        }
+      },
+      "resources": [
+        "Database"
+      ],
+      "exports": [
+        "Database",
+        "SqliteError",
+        "open",
+        "execute",
+        "queryScalar",
+        "DatabaseStorage",
+        "NativeDatabaseStorage",
+        "openMemory"
+      ],
+      "notices": "SQLite 3.53.4 core is dedicated to the public domain by its authors. https://www.sqlite.org/copyright.html\nAugust adapter: MIT, see LICENSE.\n",
+      "evidence": {
+        "manifestSha256": "559e42b1d37285b3fe608144be922923ab12c03cff65457b6a26717a8b4f9d36",
+        "descriptorSha256": "3c75c2925c85f1b83db06ee00fa04f1d2d37c9fd6edca0d074ce89b4647ffffb",
+        "exportsSha256": "cc04864d94ed1cb84430b6b6d68154be3977b4293b510b227d84577e7cb6f5f8",
+        "noticesSha256": "5968dddfaaf8e8bc7dd851346cc81b224575a281c8e9715a6e6e3bc870549921"
+      }
+    },
+    {
+      "id": "zlib",
+      "repository": "https://github.com/GreenPandaStudios/aug-zlib",
+      "tag": "v0.1.5",
+      "commit": "b23d72f698aef0b8f77a5acd90cfb054bb108ee9",
+      "manifest": {
+        "format": 2,
+        "name": "@greenpandastudios/aug-zlib",
+        "version": "0.1.5",
+        "compiler": "0.23.0",
+        "source": "src",
+        "dependencies": {},
+        "native": {
+          "profile": "aug-native-abi-1",
+          "bindings": "native.abi.json",
+          "bindingsSha256": "c3d4b36eadcccd13caff71597ed77a8e7307f0cfe3d13660a8e9127efe942b3d",
+          "upstream": {
+            "repository": "https://github.com/madler/zlib",
+            "version": "1.3.2",
+            "sourceRevision": "bb329a0a2cd0274d05519d61c667c062e06990d72e125ee2dfa8de64f0119d16"
+          },
+          "artifacts": [
+            {
+              "id": "linux-arm64",
+              "target": {
+                "triple": "aarch64-unknown-linux-gnu",
+                "os": "linux",
+                "arch": "arm64",
+                "minimumLibc": "2.36",
+                "cpuBaseline": "armv8-a",
+                "libc": "glibc"
+              },
+              "url": "https://github.com/GreenPandaStudios/aug-zlib/releases/download/v0.1.3/native-linux-arm64.tar.gz",
+              "sha256": "6da832fa341a1fba96643244da2bb63957107d2b1413743c363fca002e500c66",
+              "maximumDownloadBytes": 101094,
+              "maximumUnpackedBytes": 248063,
+              "link": {
+                "kind": "dynamic",
+                "libraries": [
+                  "lib/libaug_zlib.so.1"
+                ]
+              },
+              "runtime": {
+                "files": [
+                  "lib/libaug_zlib.so.1"
+                ],
+                "closureManifest": "runtime-files.json",
+                "relocation": "loader-relative"
+              },
+              "components": [
+                {
+                  "id": "https://github.com/madler/zlib",
+                  "version": "1.3.2",
+                  "compatibilityKey": "aug-zlib-runtime",
+                  "linkage": "static",
+                  "required": true
+                }
+              ],
+              "fileManifest": "files.json",
+              "provenance": "provenance.json",
+              "notices": "THIRD_PARTY_NOTICES.md"
+            },
+            {
+              "id": "linux-x64",
+              "target": {
+                "triple": "x86_64-unknown-linux-gnu",
+                "os": "linux",
+                "arch": "x64",
+                "minimumLibc": "2.36",
+                "cpuBaseline": "x86-64",
+                "libc": "glibc"
+              },
+              "url": "https://github.com/GreenPandaStudios/aug-zlib/releases/download/v0.1.3/native-linux-x64.tar.gz",
+              "sha256": "c2a6e6522e3a96e1ee99f1b195f7457a7ab633dc05b65a29020aa5ea1ec7aa5d",
+              "maximumDownloadBytes": 109033,
+              "maximumUnpackedBytes": 205301,
+              "link": {
+                "kind": "dynamic",
+                "libraries": [
+                  "lib/libaug_zlib.so.1"
+                ]
+              },
+              "runtime": {
+                "files": [
+                  "lib/libaug_zlib.so.1"
+                ],
+                "closureManifest": "runtime-files.json",
+                "relocation": "loader-relative"
+              },
+              "components": [
+                {
+                  "id": "https://github.com/madler/zlib",
+                  "version": "1.3.2",
+                  "compatibilityKey": "aug-zlib-runtime",
+                  "linkage": "static",
+                  "required": true
+                }
+              ],
+              "fileManifest": "files.json",
+              "provenance": "provenance.json",
+              "notices": "THIRD_PARTY_NOTICES.md"
+            },
+            {
+              "id": "macos-arm64",
+              "target": {
+                "triple": "aarch64-apple-darwin",
+                "os": "macos",
+                "arch": "arm64",
+                "minimumOS": "14.0",
+                "cpuBaseline": "armv8-a",
+                "libc": "libSystem"
+              },
+              "url": "https://github.com/GreenPandaStudios/aug-zlib/releases/download/v0.1.3/native-macos-arm64.tar.gz",
+              "sha256": "62419afbf81826f939e89be6c025781edb0cae4fe60e43736b2d3fa9fdf28dd4",
+              "maximumDownloadBytes": 39969,
+              "maximumUnpackedBytes": 106060,
+              "link": {
+                "kind": "dynamic",
+                "libraries": [
+                  "lib/libaug_zlib.1.dylib"
+                ]
+              },
+              "runtime": {
+                "files": [
+                  "lib/libaug_zlib.1.dylib"
+                ],
+                "closureManifest": "runtime-files.json",
+                "relocation": "loader-relative"
+              },
+              "components": [
+                {
+                  "id": "https://github.com/madler/zlib",
+                  "version": "1.3.2",
+                  "compatibilityKey": "aug-zlib-runtime",
+                  "linkage": "static",
+                  "required": true
+                }
+              ],
+              "fileManifest": "files.json",
+              "provenance": "provenance.json",
+              "notices": "THIRD_PARTY_NOTICES.md"
+            }
+          ],
+          "sourceBuild": {
+            "recipe": "native/build.json",
+            "inputs": "native/sources.lock.json",
+            "tools": [
+              "Node 24+",
+              "Clang",
+              "macOS: Apple SDK",
+              "GNU/Linux: Docker with the pinned Debian 12 maintainer image and patchelf"
+            ],
+            "automatic": false
+          }
+        }
+      },
+      "resources": [],
+      "exports": [
+        "CompressionError",
+        "compress",
+        "decompress"
+      ],
+      "notices": "zlib 1.3.2, statically embedded from the verified upstream source archive. License: Zlib. See licenses/zlib.txt in the native artifact. August adapter: MIT.\n",
+      "evidence": {
+        "manifestSha256": "548a522a4df474fc77b7ed9ce6c1581199e05f8f2d6e851f5600616f19e673a3",
+        "descriptorSha256": "c3d4b36eadcccd13caff71597ed77a8e7307f0cfe3d13660a8e9127efe942b3d",
+        "exportsSha256": "08c3a05e438279666e3faef812e1b3dc23d390d485cebb552d35ba4ed28403fc",
+        "noticesSha256": "b72d8b0281afe576b2959d0ec418d75758babe18979fec21f85ca1189fa7022d"
+      }
+    }
+  ]
+}

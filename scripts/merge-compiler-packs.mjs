@@ -6,8 +6,21 @@ import {createHash} from 'node:crypto';
 import {copyFileSync,existsSync,mkdirSync,readFileSync,readdirSync,writeFileSync} from 'node:fs';
 import {basename,join,resolve} from 'node:path';
 import {pathToFileURL} from 'node:url';
+import {t as listArchive} from 'tar';
 
 export const releaseHosts=['darwin-arm64','linux-arm64','linux-x64'];
+function memberManifestDigest(path,archive){
+  let digest,members=0,unpacked=0,entries=0;
+  listArchive({file:path,sync:true,strict:true,onReadEntry:entry=>{
+    unpacked+=entry.size;entries++;
+    assert.ok(unpacked<=archive.maximumUnpackedBytes&&entries<=20000,'Compiler archive exceeds its member bounds');
+    if(entry.path!==archive.fileManifest)return;
+    assert.ok(entry.type==='File'&&entry.size<=1024*1024&&++members===1,'Invalid compiler member manifest');
+    const hash=createHash('sha256');entry.on('data',bytes=>hash.update(bytes));entry.on('end',()=>{digest=hash.digest('hex');});
+  }});
+  assert.ok(digest&&members===1,'Missing compiler member manifest');return digest;
+}
+
 export function mergeCompilerPacks(input,root=resolve(import.meta.dirname,'..'),required=releaseHosts){
   const version=JSON.parse(readFileSync(join(root,'package.json'))).version;
   const manifests=[];
@@ -28,11 +41,13 @@ export function mergeCompilerPacks(input,root=resolve(import.meta.dirname,'..'),
     assert.equal(url.href,`https://github.com/GreenPandaStudios/augscript/releases/download/v${version}/aug-llvm-${artifact}.tar.gz`,'Compiler URL must belong to this release');
     assert.equal(pack.archive.fileManifest,'files.json');
     assert.match(pack.archive.sha256,/^[0-9a-f]{64}$/);
+    if(pack.archive.fileManifestSha256!==undefined)assert.match(pack.archive.fileManifestSha256,/^[0-9a-f]{64}$/,'Invalid compiler member-manifest identity');
     assert.ok(Number.isSafeInteger(pack.archive.maximumUnpackedBytes)&&pack.archive.maximumUnpackedBytes>0);
     assert.equal(pack.host==='darwin-arm64'?pack.minimumOS:pack.minimumLibc,pack.host==='darwin-arm64'?'14.0':'2.36');
     const path=join(resolve(file,'..'),filename),bytes=readFileSync(path);
     assert.equal(bytes.length,pack.archive.maximumDownloadBytes,'Compiler archive size differs from its pin');
     assert.equal(createHash('sha256').update(bytes).digest('hex'),pack.archive.sha256,'Compiler archive digest differs from its pin');
+    if(pack.archive.fileManifestSha256!==undefined)assert.equal(memberManifestDigest(path,pack.archive),pack.archive.fileManifestSha256,'Compiler member-manifest digest differs from its source-owned pin');
     packs.set(pack.host,pack);copies.push({path,filename});
   }
   assert.deepEqual([...packs.keys()].sort(),[...required].sort(),'A required compiler host is missing');

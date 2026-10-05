@@ -17,3 +17,7 @@ docs/.vitepress/cache/
 docs/.vitepress/dist/
 docs/.site/
 *.tgz
+
+.aug-changes/
+.aug-change-lock/
+.aug-write-*

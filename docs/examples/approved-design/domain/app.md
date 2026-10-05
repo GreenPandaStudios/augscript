@@ -32,7 +32,7 @@ pageClass: aug-example-page
 
 ::: code-group
 
-```aug [Indentation]
+```aug [Indentation] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiaW5kZW50Iiwic291cmNlU2hhMjU2IjoiYWQzZjFmMWFlOWE2ZWNiNGE2MWIwODY5YjU5OGNmMjlkYjIyNTdhMmZmN2ZlNDRkYTA5MjgxMjJmZDExZGY3YiIsImZvcm1hdHRlZFNoYTI1NiI6ImI3ODU2YmVlNzQ5ZDJlMDY3MjY0NjZjYzdjYmU0ZThmOWE1YzlhNDlhZmZkOWU2MzE3N2I1NjUyMDMxZTUzZTIiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDUiLCJmaXJzdCI6NSwibGFzdCI6NywiYmFja2xpbmtzIjpbIiNzeW1ib2wtQXBwbGljYXRpb24iXX0seyJpZCI6InNvdXJjZS1MNyIsImZpcnN0Ijo3LCJsYXN0Ijo3LCJiYWNrbGlua3MiOlsiI3N5bWJvbC1BcHBsaWNhdGlvbi5zdGFydCJdfSx7ImlkIjoic291cmNlLUw5IiwiZmlyc3QiOjksImxhc3QiOjEzLCJiYWNrbGlua3MiOlsiI3N5bWJvbC1BcHBsaWNhdGlvbkltcGwiXX0seyJpZCI6InNvdXJjZS1MMTAiLCJmaXJzdCI6MTAsImxhc3QiOjEzLCJiYWNrbGlua3MiOlsiI3N5bWJvbC1BcHBsaWNhdGlvbkltcGwuc3RhcnQiXX0seyJpZCI6InNvdXJjZS1MMTEtTDEzIiwiZmlyc3QiOjExLCJsYXN0IjoxMywiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0xIl19XX0
 // aug-spec: "app.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Console from august.io
 import Fruit from models
@@ -48,7 +48,7 @@ ApplicationImpl(resolve Console console) implements Application:
             console.write(value=item.name)
 ```
 
-```aug [Braces]
+```aug [Braces] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiYnJhY2VzIiwic291cmNlU2hhMjU2IjoiYWQzZjFmMWFlOWE2ZWNiNGE2MWIwODY5YjU5OGNmMjlkYjIyNTdhMmZmN2ZlNDRkYTA5MjgxMjJmZDExZGY3YiIsImZvcm1hdHRlZFNoYTI1NiI6ImQ3N2EyYTYxZDMxNTYxNjc5YjFmZWVmNWY1NmZmZmY1MjNiOGNkMmQzOWI1ZmM2NWFlOTgxNjE4MWI3MDFkMzYiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDUiLCJmaXJzdCI6NSwibGFzdCI6OCwiYmFja2xpbmtzIjpbIiNzeW1ib2wtQXBwbGljYXRpb24iXX0seyJpZCI6InNvdXJjZS1MNyIsImZpcnN0Ijo3LCJsYXN0Ijo3LCJiYWNrbGlua3MiOlsiI3N5bWJvbC1BcHBsaWNhdGlvbi5zdGFydCJdfSx7ImlkIjoic291cmNlLUw5IiwiZmlyc3QiOjEwLCJsYXN0IjoxNywiYmFja2xpbmtzIjpbIiNzeW1ib2wtQXBwbGljYXRpb25JbXBsIl19LHsiaWQiOiJzb3VyY2UtTDEwIiwiZmlyc3QiOjExLCJsYXN0IjoxNiwiYmFja2xpbmtzIjpbIiNzeW1ib2wtQXBwbGljYXRpb25JbXBsLnN0YXJ0Il19LHsiaWQiOiJzb3VyY2UtTDExLUwxMyIsImZpcnN0IjoxMiwibGFzdCI6MTUsImJhY2tsaW5rcyI6WyIjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMSJdfV19
 // aug-spec: "app.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Console from august.io
 import Fruit from models
@@ -76,21 +76,31 @@ ApplicationImpl(resolve Console console) implements Application {
 
 ## Compiled specification {#specification}
 
-### `Application` · interface · [source](app.md#code) {#symbol-Application}
+### `Application` · interface · [source](app.md#source-L5) {#symbol-Application}
 
 The application's explicit startup operation.
 
-#### `Application.start` · [source](app.md#code) {#symbol-Application.start}
+#### `Application.start` · [source](app.md#source-L7) {#symbol-Application.start}
 
 Writes the fruit names through the selected console. It can call [`Console.write`](../dependencies/august/0.23.0/io/contracts.md#symbol-Console.write).
 
-### `ApplicationImpl` · class · [source](app.md#code) {#symbol-ApplicationImpl}
+### `ApplicationImpl` · class · [source](app.md#source-L9) {#symbol-ApplicationImpl}
 
 Construction stores dependencies; start performs the visible external work. It implements [`Application`](app.md#symbol-Application). The `console` dependency is injected as [`Console`](../dependencies/august/0.23.0/io/contracts.md#symbol-Console) and stored read-only.
 
-#### `ApplicationImpl.start` · [source](app.md#code) {#symbol-ApplicationImpl.start}
+#### `ApplicationImpl.start` · [source](app.md#source-L10) {#symbol-ApplicationImpl.start}
 
-Writes the fruit names through the selected console. It sets `fruit` to a list containing a [`Fruit`](models.md#symbol-Fruit) with `code` `1` and `name` `"apple"`, a [`Fruit`](models.md#symbol-Fruit) with `name` `"pear"` and `code` `2`. For each `item` in a snapshot of `fruit`, it passes `item.name` to [`console.write`](../dependencies/august/0.23.0/io/contracts.md#symbol-Console.write).
+::: spec-paragraph specification-paragraph-1
+Writes the fruit names through the selected console. It sets `fruit` to a list containing a [`Fruit`](models.md#symbol-Fruit) with `code` `1` and `name` `"apple"`, a [`Fruit`](models.md#symbol-Fruit) with `name` `"pear"` and `code` `2`. For each `item` in a snapshot of `fruit`, it passes `item.name` to [`console.write`](../dependencies/august/0.23.0/io/contracts.md#symbol-Console.write). [source](app.md#source-L11-L13)
+:::
+
+::: details Checked interface
+
+```text
+start() returns void uses Console.write
+```
+
+:::
 
 ### Dependencies
 

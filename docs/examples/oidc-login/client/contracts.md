@@ -48,7 +48,7 @@ pageClass: aug-example-page
 
 ::: code-group
 
-```aug [Indentation]
+```aug [Indentation] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiaW5kZW50Iiwic291cmNlU2hhMjU2IjoiMjMyZjY4MDQyMjQ4YTFmOGQ4NzU1ZmE4MGMwN2Y2OWFjYTIxMjU2YTU1NTE0MTZmYWE1MzQ2YTZjY2ZmZTAxYSIsImZvcm1hdHRlZFNoYTI1NiI6ImIxODg5MmQ0MWUzMzdhNGMyYTYzMDA4OWIxOTFkNjQ3ZDRiNTcxMWVlYzE3ZDk0NzA1NTc3OWFlNGQxMDc4YTAiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDMiLCJmaXJzdCI6MywibGFzdCI6MywiYmFja2xpbmtzIjpbIiNzeW1ib2wtTG9naW5UcmFuc2FjdGlvbiJdfSx7ImlkIjoic291cmNlLUw1IiwiZmlyc3QiOjUsImxhc3QiOjUsImJhY2tsaW5rcyI6WyIjc3ltYm9sLVNlc3Npb25DbGFpbXMiXX0seyJpZCI6InNvdXJjZS1MNiIsImZpcnN0Ijo2LCJsYXN0Ijo2LCJiYWNrbGlua3MiOlsiI3N5bWJvbC1Mb2dvdXRGb3JtIl19LHsiaWQiOiJzb3VyY2UtTDciLCJmaXJzdCI6NywibGFzdCI6OCwiYmFja2xpbmtzIjpbIiNzeW1ib2wtU2Vzc2lvbkVycm9yIl19XX0
 // aug-spec: "contracts.aug.md" explains this file. Read it before changes; refresh with aug spec.
 /** Browser-bound client state, nonce and PKCE verifier, consumed by the callback. */
 record LoginTransaction(string state, string nonce, string verifier, int expires)
@@ -59,7 +59,7 @@ SessionError() implements Error:
     pass
 ```
 
-```aug [Braces]
+```aug [Braces] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiYnJhY2VzIiwic291cmNlU2hhMjU2IjoiMjMyZjY4MDQyMjQ4YTFmOGQ4NzU1ZmE4MGMwN2Y2OWFjYTIxMjU2YTU1NTE0MTZmYWE1MzQ2YTZjY2ZmZTAxYSIsImZvcm1hdHRlZFNoYTI1NiI6ImIzZDJmMjMwNTU0N2EwNmE1ZmU1NDk0Zjc3MDEwMDlkMjVkMGFiN2YyNjg2ZDc4MjlhNjBmOTQ0MDEzNzZjM2UiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDMiLCJmaXJzdCI6MywibGFzdCI6MywiYmFja2xpbmtzIjpbIiNzeW1ib2wtTG9naW5UcmFuc2FjdGlvbiJdfSx7ImlkIjoic291cmNlLUw1IiwiZmlyc3QiOjUsImxhc3QiOjUsImJhY2tsaW5rcyI6WyIjc3ltYm9sLVNlc3Npb25DbGFpbXMiXX0seyJpZCI6InNvdXJjZS1MNiIsImZpcnN0Ijo2LCJsYXN0Ijo2LCJiYWNrbGlua3MiOlsiI3N5bWJvbC1Mb2dvdXRGb3JtIl19LHsiaWQiOiJzb3VyY2UtTDciLCJmaXJzdCI6NywibGFzdCI6OSwiYmFja2xpbmtzIjpbIiNzeW1ib2wtU2Vzc2lvbkVycm9yIl19XX0
 // aug-spec: "contracts.aug.md" explains this file. Read it before changes; refresh with aug spec.
 /** Browser-bound client state, nonce and PKCE verifier, consumed by the callback. */
 record LoginTransaction(string state, string nonce, string verifier, int expires)
@@ -79,19 +79,19 @@ SessionError() implements Error {
 
 ## Compiled specification {#specification}
 
-### `LoginTransaction` · immutable record · [source](contracts.md#code) {#symbol-LoginTransaction}
+### `LoginTransaction` · immutable record · [source](contracts.md#source-L3) {#symbol-LoginTransaction}
 
 Browser-bound client state, nonce and PKCE verifier, consumed by the callback. It takes `state`, `nonce`, and `verifier` as strings, kept read-only and `expires` as an integer, kept read-only.
 
-### `SessionClaims` · immutable record · [source](contracts.md#code) {#symbol-SessionClaims}
+### `SessionClaims` · immutable record · [source](contracts.md#source-L5) {#symbol-SessionClaims}
 
 Sessions require their own issuer, audience, key and JWT type, plus a live registry entry. It takes `iss`, `sub`, and `aud` as strings, kept read-only, `exp` and `iat` as integers, kept read-only, and `jti`, `csrf`, and `name` as strings, kept read-only.
 
-### `LogoutForm` · immutable record · [source](contracts.md#code) {#symbol-LogoutForm}
+### `LogoutForm` · immutable record · [source](contracts.md#source-L6) {#symbol-LogoutForm}
 
 It takes `csrf` as a string, kept read-only.
 
-### `SessionError` · class · [source](contracts.md#code) {#symbol-SessionError}
+### `SessionError` · class · [source](contracts.md#source-L7) {#symbol-SessionError}
 
 It implements `Error`.
 

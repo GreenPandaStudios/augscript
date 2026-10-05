@@ -2,6 +2,8 @@
 
 # `forecasts.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=956657cbdbc6d38c108a6034f3b15e3be1d8dc5e04ef29db191cfb6c33115d46 -->
+
 Plain handler results default to HTTP 200 unless another status is declared. HttpResponse values choose their own status. Unhandled request failures return HTTP 500 and cancel the request tasks.
 
 <a id="symbol-WeatherForecast"></a>
@@ -12,7 +14,16 @@ The JSON shape returned by the forecast endpoint. Temperatures use whole degrees
 <a id="symbol-weatherForecast"></a>
 ## `weatherForecast` · [source](forecasts.aug#L6)
 
-`weatherForecast` handles `GET /weatherforecast`. Return five simulated forecasts. Fixed data keeps the example and its tests reproducible. It returns a list of 5 [`WeatherForecast`](forecasts.aug.md#symbol-WeatherForecast) records, with `(date, temperatureC, temperatureF, summary)` values of `("2026-01-01", 0, 32, "Freezing")`, `("2026-01-02", 10, 50, "Cool")`, `("2026-01-03", 20, 68, "Mild")`, `("2026-01-04", 30, 86, "Warm")`, and `("2026-01-05", 35, 95, "Hot")`, in that order.
+`weatherForecast` handles `GET /weatherforecast`. Return five simulated forecasts. Fixed data keeps the example and its tests reproducible. It returns a list of 5 [`WeatherForecast`](forecasts.aug.md#symbol-WeatherForecast) records, with `(date, temperatureC, temperatureF, summary)` values of `("2026-01-01", 0, 32, "Freezing")`, `("2026-01-02", 10, 50, "Cool")`, `("2026-01-03", 20, 68, "Mild")`, `("2026-01-04", 30, 86, "Warm")`, and `("2026-01-05", 35, 95, "Hot")`, in that order. [source](forecasts.aug#L7-L38)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+weatherForecast() returns List<WeatherForecast>
+```
+
+</details>
 
 <a id="symbol-test weatherForecast client"></a>
 ## `test weatherForecast client` · [source](forecasts.aug#L40)
@@ -23,10 +34,10 @@ Tests [`weatherForecast`](forecasts.aug.md#symbol-weatherForecast). Each case ge
 
 #### `returns_json` · [source](forecasts.aug#L42)
 
-It sets `response` to `client.request` with `method` `"GET"` and `path` `"/weatherforecast"`. The test requires `response.status` equals `200`.
+It sets `response` to `client.request` with `method` `"GET"` and `path` `"/weatherforecast"`. The test requires `response.status` equals `200`. [source](forecasts.aug#L43-L44)
 
 #### `rejects_other_methods` · [source](forecasts.aug#L45)
 
-It sets `response` to `client.request` with `method` `"POST"` and `path` `"/weatherforecast"`. The test requires `response.status` equals `405`.
+It sets `response` to `client.request` with `method` `"POST"` and `path` `"/weatherforecast"`. The test requires `response.status` equals `405`. [source](forecasts.aug#L46-L47)
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).

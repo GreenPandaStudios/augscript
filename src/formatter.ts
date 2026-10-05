@@ -1,21 +1,33 @@
-import type { ClassDecl, Expr, GenericHeader, InterceptorAnnotation, MethodDecl, Param, SourceFile, Span, Stmt, TopLevel } from './ast.ts';
+import type { BindingPattern, ClassDecl, MatchPattern, Expr, GenericHeader, InterceptorAnnotation, MethodDecl, Param, SourceFile, Span, Stmt, TopLevel } from './ast.ts';
 import { typeName } from './ast.ts';
 import { lex } from './lexer.ts';
 import { parse } from './parser.ts';
 import { importSource } from './git-packages.ts';
-import type { Project } from './project.ts';
+import type { Config } from './config.ts';
+
+export type SourceStyle = Pick<Config, 'block_style' | 'indentation' | 'assignment'>;
+type FormattingProject = {config: SourceStyle};
+export interface FormattedSourceMapping {
+  role:string;source:{start:number;end:number;line:number;endLine:number};formatted:{line:number;endLine:number};
+}
+
 
 /** Canonical syntax comes from the parsed program; comments stay with their lexical owner. */
-export function formatFile(project: Project, file: SourceFile): string {
-  return printFile(project, file, false);
+export function formatFile(project: FormattingProject, file: SourceFile): string {
+  return printFile(project, file, false).text;
 }
 
 /** Upgrade rejected legacy spellings without accepting them during compilation. */
-export function migrateFile(project: Project, file: SourceFile): string {
-  return printFile(project, file, true);
+export function migrateFile(project: FormattingProject, file: SourceFile): string {
+  return printFile(project, file, true).text;
 }
 
-function printFile(project: Project, file: SourceFile, migrate: boolean): string {
+/** Format the checked syntax and retain declaration/statement positions in the displayed source. */
+export function formatFileWithSourceMap(project:FormattingProject,file:SourceFile):{text:string;mappings:FormattedSourceMapping[]} {
+  return printFile(project,file,false,true);
+}
+
+function printFile(project: FormattingProject, file: SourceFile, migrate: boolean, mappings=false): {text:string;mappings:FormattedSourceMapping[]} {
   const parsed = parse(file.path, file.source);
   if (parsed.diagnostics.some(issue => !migrate || issue.code !== 'SYNTAX')) throw new Error('Fix syntax errors before formatting this file');
   if(migrate) {
@@ -29,7 +41,7 @@ function printFile(project: Project, file: SourceFile, migrate: boolean): string
     };
     inspect(parsed.file.items);
   }
-  const printer = new Printer(project, file);
+  const printer = new Printer(project, file, mappings);
   const result = printer.print();
   const verified = parse(file.path, result);
   if (verified.diagnostics.length) {
@@ -40,25 +52,38 @@ function printFile(project: Project, file: SourceFile, migrate: boolean): string
     if (Array.isArray(value)) return value.filter(item => !(item?.kind === 'expr' && item.expr.kind === 'literal' && item.expr.value === null)).map(shape);
     if (!value || typeof value !== 'object') return value;
     const node = value as Record<string, unknown>;
-    return Object.fromEntries(Object.entries(node).filter(([key, value]) => !['span', 'nameSpan', 'sourceSpan', 'targetSpan', 'headerEnd'].includes(key) && value !== undefined)
+    return Object.fromEntries(Object.entries(node).filter(([key, value]) => !['span', 'nameSpan', 'labelSpan', 'argLabelSpans', 'sourceSpan', 'targetSpan', 'headerEnd'].includes(key) && value !== undefined)
       .sort(([a], [b]) => a.localeCompare(b)).map(([key, value]) => [key, shape(value)]));
   };
   if (JSON.stringify(shape(parsed.file.items)) !== JSON.stringify(shape(verified.file.items)))
     throw new Error('Formatter would change the parsed program; the file has been left unchanged');
-  return result;
+  return {text:result,mappings:printer.mappings};
 }
 class Printer {
+  readonly mappings:FormattedSourceMapping[]=[];
+  private mapped=false;
+  private sourceTokens:ReturnType<typeof lex>['tokens']=[];
+  private remember(span:Span,role:string,line:number) {
+    if(!this.mapped)return;
+    let low=0,high=this.sourceTokens.length;
+    while(low<high){const middle=(low+high)>>>1;if(this.sourceTokens[middle].span.end<=span.end)low=middle+1;else high=middle;}
+    const last=this.sourceTokens[low-1];
+    const endLine=last&&last.span.start>=span.start?last.endLine:span.line;
+    this.mappings.push({role,source:{start:span.start,end:span.end,line:span.line,endLine},formatted:{line,endLine:this.lines.length}});
+  }
   private comments: ReturnType<typeof lex>['tokens'];
   private lines: string[] = [];
   private level = 0;
   private step: string;
   private indent: boolean;
   private assign: string;
-  private project: Project;
   private file: SourceFile;
-  constructor(project: Project, file: SourceFile) {
-    this.project = project; this.file = file;
-    this.comments = lex(file.path, file.source, true).tokens.filter(token => token.kind === 'comment');
+  constructor(project: FormattingProject, file: SourceFile, mappings=false) {
+    this.mapped=mappings;
+    this.file = file;
+    const tokens=lex(file.path,file.source,true).tokens;
+    this.comments = tokens.filter(token => token.kind === 'comment');
+    if(mappings)this.sourceTokens=tokens.filter(token=>token.kind!=='comment'&&token.kind!=='eof');
     this.step = project.config.indentation === 'tabs' ? '\t' : '    ';
     this.indent = project.config.block_style === 'indent';
     this.assign = project.config.assignment === 'to' ? 'to' : '=';
@@ -78,9 +103,10 @@ class Printer {
       for (const line of comment.split(/\r?\n/)) this.line(line.trimStart());
     }
   }
-  private inline(offset: number): string {
+  private inline(offset: number, parentColumn?:number): string {
     const comments: string[] = [];
     while (this.comments[0]?.span.start < offset) {
+      if(parentColumn!==undefined&&this.comments[0].span.column<=parentColumn)break;
       let comment = this.comments.shift()!.value;
       if (comment.startsWith('//') || comment.startsWith('#')) comment = `/* ${comment.replace(/^(\/\/|#)\s*/, '').replaceAll('*/', '* /')} */`;
       comments.push(comment);
@@ -96,6 +122,12 @@ class Printer {
     if (empty) this.line('pass');
     this.level--; if (!this.indent) this.line('}');
   }
+  private mappedBlock(header:string,body:()=>void,span:Span,role:string) {
+    this.before(span.start);
+    const line=this.lines.length+1;
+    this.block(header,body,span);
+    this.remember(span,role,line);
+  }
   private generics(node: GenericHeader) {
     return node.typeParams.length ? '<' + node.typeParams.map(name =>
       `${node.typeVariance?.[name] ? node.typeVariance[name] + ' ' : ''}${name}` +
@@ -105,7 +137,7 @@ class Printer {
     const label = field ? param.label ?? param.name : param.name;
     return this.inline(param.span.start) + `${param.injected ? 'resolve ' : ''}${param.mutable ? 'mutable ' : ''}` +
       `${param.ownership === 'managed' ? '' : param.ownership + ' '}${typeName(param.type)} ${label}` +
-      (label !== param.name ? ` to ${param.name}` : '') + (param.source ? ` from ${param.source.kind}${param.source.name ? ' ' + JSON.stringify(param.source.name) : ''}` : '') + this.inline(param.span.end);
+      (label !== param.name ? ` to ${param.name}` : '') + (param.source ? ` from ${param.source.kind}${param.source.name ? ' ' + JSON.stringify(param.source.name) : ''}` : '') + (param.defaultValue ? ` ${this.assign} ${this.expression(param.defaultValue)}` : '') + this.inline(param.span.end);
   }
   private annotations(tags: InterceptorAnnotation[] = []) {
     for (const tag of tags) {
@@ -117,6 +149,7 @@ class Printer {
   private method(method: MethodDecl) {
     if(method.forward){this.before(method.span.start);this.line(`forward ${method.name} to ${method.forward.target}`);return;}
     this.before(method.annotations?.[0]?.span.start ?? method.span.start); this.annotations(method.annotations);
+    const line=this.lines.length+1;
     const header = `${method.endpoint ? `endpoint ${method.endpoint.method} ${JSON.stringify(method.endpoint.path)} as ` : ''}${method.fixture ? 'fixture ' : ''}${method.externC ? 'extern C ' + (method.valueAbi ? 'value ' : '') + (method.nativePure ? 'pure ' : '') : ''}${method.name}${this.generics(method)}` +
       `(${method.params.map(param => this.param(param)).join(', ')})` +
       (method.returns.name !== 'void' || method.declared?.returns ? ` ${method.endpoint?.streams ? 'streams' : 'returns'} ${method.returnOwnership === 'own' ? 'own ' : ''}${typeName(method.returns)}` : '') +
@@ -126,11 +159,57 @@ class Printer {
       (method.throws.length ? ` unless ${method.throws.map(type => typeName(type) + (method.endpoint?.errors.find(error => typeName(error.type) === typeName(type)) ? ' with status ' + method.endpoint.errors.find(error => typeName(error.type) === typeName(type))!.status : '')).join(' and ')}` : '');
     if (method.body) this.block(header, () => method.body!.forEach(stmt => this.statement(stmt)), method.span);
     else { this.line(header); this.before(method.span.end); }
+    this.remember(method.span,'function',line);
+  }
+  private bindingPattern(pattern:BindingPattern):string {
+    const comment=this.inline(pattern.span.start);
+    if(pattern.kind==='nameBinding')return comment+pattern.name;
+    if(pattern.kind==='tupleBinding'){
+      const items=pattern.items.map(item=>this.bindingPattern(item));
+      return comment+this.delimited('(',items,')',(items.length===1?',':'')+this.inline(pattern.span.end));
+    }
+    const fields=pattern.fields.map(field=>{
+      const prefix=this.inline(field.nameSpan.start);
+      return prefix+field.name+(field.pattern.kind==='nameBinding'&&field.pattern.name===field.name?'':': '+this.bindingPattern(field.pattern));
+    });
+    return comment+this.delimited('{',fields,'}',this.inline(pattern.span.end));
+  }
+  private matchPattern(clause:MatchPattern):string {
+    return clause.pattern === 'else' ? 'else' : 'when ' + (clause.pattern === 'type' ? typeName(clause.type!) + ' ' + clause.name :
+      clause.pattern === 'some' ? 'some ' + clause.name : clause.pattern === 'null' ? 'null' : this.expression(clause.literal!));
   }
   private expression(expr: Expr, precedence = 0): string {
     const comment = this.inline(expr.span.start);
     let value: string;
-    if (expr.kind === 'markupText') value = expr.text;
+    if(expr.kind==='lambda'){
+      value='('+expr.params.map(param=>this.param(param)).join(', ')+') => '+this.expression(expr.body);
+      if(precedence)value='('+value+')';
+    }
+    else if(expr.kind==='comprehension'){
+      const projection=this.expression(expr.projection),pattern=this.bindingPattern(expr.pattern),iterable=this.expression(expr.iterable);
+      const condition=expr.condition?(iterable.includes('\n')?'\n':' ')+'if '+this.expression(expr.condition):'';
+      value=this.delimited('[',[projection+(projection.includes('\n')?'\n':' ')+'for '+pattern+' in '+iterable+condition],']',this.inline(expr.span.end));
+    }
+    else if (expr.kind === 'matchValue') {
+      const input = this.expression(expr.value,1), lineEnd = this.file.source.indexOf('\n',expr.value.span.end);
+      const headerComment = this.inline(Math.min(lineEnd<0?this.file.source.length:lineEnd,expr.cases[0]?.span.start??expr.span.end));
+      const block = this.indent ? ':' : ' {', close = this.indent ? '' : '\n' + this.step + '}';
+      const cases = expr.cases.map(clause => {
+        const head = this.inline(clause.span.start) + this.matchPattern(clause);
+        const text = this.expression(clause.result), trailing = this.inline(clause.span.end, this.file.source[clause.span.end - 1] === '}' ? undefined : clause.span.column);
+        const result = (text + (trailing ? ' ' + trailing.trimEnd() : '')).replaceAll('\n', '\n' + this.step.repeat(2));
+        return this.step + head + block + '\n' + this.step.repeat(2) + result + close;
+      });
+      value = 'match ' + input + (headerComment ? ' ' + headerComment.trimEnd() : '') + block + '\n' + cases.join('\n') + (this.indent ? '' : '\n}');
+      if (precedence) value = '(' + value + ')';
+    }
+    else if (expr.kind === 'recordCopy') value = this.expression(expr.base, 8) + ' with ' +
+      this.delimited('(', expr.fields.map(field => field.name + '=' + this.expression(field.value)), ')');
+    else if (expr.kind === 'interpolation') value = '$"' + expr.parts.map(part =>
+      'text' in part
+        ? JSON.stringify(part.text).slice(1, -1).replaceAll('{', '{{').replaceAll('}', '}}')
+        : '{' + this.expression(part.value) + '}').join('') + '"';
+    else if (expr.kind === 'markupText') value = expr.text;
     else if (expr.kind === 'markup') value = '<' + expr.tag + expr.attributes.map(attribute => ' ' + attribute.name + '={' + this.expression(attribute.value) + '}').join('') +
       (expr.children.length || !expr.tag ? '>' + expr.children.map(child => child.kind === 'markup' || child.kind === 'markupText' ? this.expression(child) : '{' + this.expression(child) + '}').join('') + '</' + expr.tag + '>' : ' />');
     else if (expr.kind === 'literal') value = expr.numericText ?? JSON.stringify(expr.value);
@@ -141,6 +220,8 @@ class Printer {
     else if (expr.kind === 'wait') value = `wait for ${expr.tasks.map(task => this.expression(task, 8)).join(' and ')}`;
     else if (expr.kind === 'resolve') value = `resolve ${expr.name}` + (expr.typeArgs.length ? '<' + expr.typeArgs.map(typeName).join(', ') + '>' : '');
     else if (expr.kind === 'member') value = `${this.expression(expr.object, 8)}.${expr.name}`;
+    else if (expr.kind === 'call' && expr.indexed && expr.callee.kind === 'member')
+      value = `${this.expression(expr.callee.object, 8)}[${this.expression(expr.args[0])}]`;
     else if (expr.kind === 'call') {
       const open = this.expression(expr.callee, 8) + (expr.typeArgs.length ? '<' + expr.typeArgs.map(typeName).join(', ') + '>' : '') + '(';
       const values = expr.args.map((arg, index) => (expr.argLabels[index] ? expr.argLabels[index] + '=' : '') + this.expression(arg));
@@ -158,7 +239,7 @@ class Printer {
       if (power < precedence) value = '(' + value + ')';
     }
     else {
-      const powers: Record<string, number> = { '||': 1, '&&': 2, '==': 3, '!=': 3, '<': 4, '>': 4, '<=': 4, '>=': 4, '+': 5, '-': 5, '*': 6, '/': 6 };
+      const powers: Record<string, number> = { 'otherwise': 0.5, '||': 1, '&&': 2, '==': 3, '!=': 3, '<': 4, '>': 4, '<=': 4, '>=': 4, '+': 5, '-': 5, '*': 6, '/': 6, '%': 6 };
       const power = powers[expr.op]; value = `${this.expression(expr.left, power)} ${expr.op === '&&' ? 'and' : expr.op === '||' ? 'or' : expr.op} ${this.expression(expr.right, power + 1)}`;
       if (power < precedence) value = '(' + value + ')';
     }
@@ -166,6 +247,7 @@ class Printer {
   }
   private statement(stmt: Stmt) {
     this.before(stmt.span.start);
+    const line=this.lines.length+1;
     if (stmt.kind === 'serve') this.line(`serve ${stmt.names.join(' and ')} on port ${this.expression(stmt.port)}`);
     else if (stmt.kind === 'lock') this.block(`lock ${this.expression(stmt.value)} as ${stmt.name}`, () => stmt.body.forEach(child => this.statement(child)), stmt.span);
     else if (stmt.kind === 'freeze') this.line(`freeze ${this.expression(stmt.value)} as ${stmt.name}`);
@@ -174,31 +256,33 @@ class Printer {
     else if (stmt.kind === 'assign') this.line(stmt.value.kind === 'resolve' && !stmt.declaredType && stmt.target.kind === 'name' ?
       `${this.expression(stmt.value)} to ${stmt.target.name}` : `${stmt.ownership === 'own' ? 'own ' : ''}` +
       `${stmt.declaredType ? typeName(stmt.declaredType) + ' ' : ''}${this.expression(stmt.target)} ${this.assign} ${this.expression(stmt.value)}`);
-    else if (stmt.kind === 'destructure') this.line(`(${stmt.names.join(', ')}) ${this.assign} ${this.expression(stmt.value)}`);
+    else if (stmt.kind === 'destructure') this.line(`${stmt.pattern?this.bindingPattern(stmt.pattern):'('+stmt.names.join(', ')+')'} ${this.assign} ${this.expression(stmt.value)}`);
     else if (stmt.kind === 'return') this.line('return' + (stmt.value ? ' ' + this.expression(stmt.value) : ''));
+    else if (stmt.kind === 'break' || stmt.kind === 'continue') this.line(stmt.kind);
     else if (stmt.kind === 'throw') this.line('throw ' + this.expression(stmt.value));
     else if (stmt.kind === 'if') {
       this.block('if ' + this.expression(stmt.test), () => stmt.then.forEach(child => this.statement(child)));
       if (stmt.otherwise.length) this.block('else', () => stmt.otherwise.forEach(child => this.statement(child)));
     } else if (stmt.kind === 'while') this.block('while ' + this.expression(stmt.test), () => stmt.body.forEach(child => this.statement(child)), stmt.span);
-    else if (stmt.kind === 'for') this.block(`for ${stmt.names.length === 1 ? stmt.names[0] : '(' + stmt.names.join(', ') + ')'} in ${this.expression(stmt.iterable)}`,
+    else if (stmt.kind === 'for') this.block(`for ${stmt.pattern?this.bindingPattern(stmt.pattern):stmt.names.length === 1 ? stmt.names[0] : '(' + stmt.names.join(', ') + ')'} in ${this.expression(stmt.iterable)}`,
       () => stmt.body.forEach(child => this.statement(child)), stmt.span);
-    else if (stmt.kind === 'match') this.block('match ' + this.expression(stmt.value), () => stmt.cases.forEach(clause => {
-      const pattern = clause.pattern === 'else' ? 'else' : 'when ' + (clause.pattern === 'some' ? 'some ' + clause.name :
-        clause.pattern === 'literal' ? this.expression(clause.literal!) : clause.pattern === 'type' ? typeName(clause.type!) + ' ' + clause.name : clause.pattern);
-      this.block(pattern, () => clause.body.forEach(child => this.statement(child)), clause.span);
+    else if (stmt.kind === 'match') this.block('match ' + this.expression(stmt.value,1), () => stmt.cases.forEach(clause => {
+      const pattern = this.matchPattern(clause);
+      this.mappedBlock(pattern, () => clause.body.forEach(child => this.statement(child)), clause.span,'match-case');
     }), stmt.span);
     else if (stmt.kind === 'try') {
       this.block('try', () => stmt.body.forEach(child => this.statement(child)));
-      stmt.catches.forEach(clause => this.block(`catch ${typeName(clause.type)} ${clause.name}`, () => clause.body.forEach(child => this.statement(child)), clause.span));
+      stmt.catches.forEach(clause => this.mappedBlock(`catch ${typeName(clause.type)} ${clause.name}`, () => clause.body.forEach(child => this.statement(child)), clause.span,'catch'));
       if (stmt.always) this.block('always', () => stmt.always!.forEach(child => this.statement(child)), stmt.span);
     } else this.block(stmt.kind + (stmt.kind === 'borrow' ? ' ' + stmt.name : ''), () => stmt.body.forEach(child => this.statement(child)), stmt.span);
+    this.remember(stmt.span,stmt.kind,line);
   }
   private item(item: TopLevel) {
     this.before('annotations' in item ? item.annotations?.[0]?.span.start ?? item.span.start : item.span.start);
+    const line=this.lines.length+1;
     if (item.kind === 'import') {
       this.line(`import ${item.everything ? 'everything' : item.names.join(' and ')} from ${importSource(item.from)}`);
-    } else if (item.kind === 'export') this.line('export ' + (item.folder ? 'folder ' + item.name : `${item.name} from ${item.from}`));
+    } else if (item.kind === 'export') this.line((item.internal?'internal ':'export ') + (item.folder ? 'folder ' + item.name : `${item.name} from ${item.from}`));
     else if (item.kind === 'include') this.line('include ' + item.name);
     else if (item.kind === 'bind') this.line(`implement ${item.key}${item.keyTypeArgs.length ? '<' + item.keyTypeArgs.map(typeName).join(', ') + '>' : ''} with ${typeName(item.target)}` +
       (item.lifetime ? ' ' + item.lifetime : '') + (item.sharedMutation ? ' mutable' : ''));
@@ -207,29 +291,32 @@ class Printer {
     else if (item.kind === 'function') this.method(item);
     else if (item.kind === 'class') {
       this.annotations(item.annotations);
-      const header = `${item.record ? 'record ' : ''}${item.name}${this.generics(item)}(${item.fields.map(field => this.param(field, true)).join(', ')})`;
+      const header = `${item.record ? 'record ' : item.errorShorthand ? 'error ' : ''}${item.name}${this.generics(item)}(${item.fields.map(field => this.param(field, true)).join(', ')})`;
       const errors = item.validationErrors?.length ? ` unless ${item.validationErrors.map(typeName).join(' and ')}` : '';
-      if (item.record) {
+      if (item.errorShorthand) this.line(header);
+      else if (item.record) {
         if (item.constructorBody) this.block(header + errors, () => this.initializer(item), item.span);
         else this.line(header + errors);
       } else {
         this.block(header + errors + ' implements ' + item.implements.map(typeName).join(', '), () => {
-          for (const field of item.stateFields ?? []) { this.before(field.span.start); this.line(`${field.mutable ? 'mutable ' : ''}${typeName(field.type)} ${field.name} = ${this.expression(field.initializer)}`); }
+          for (const field of item.stateFields ?? []) { this.before(field.span.start); this.line(`${field.mutable ? 'mutable ' : ''}${typeName(field.type)} ${field.name} ${this.assign} ${this.expression(field.initializer)}`); }
           if (item.constructorBody) this.initializer(item);
           item.methods.forEach(method => this.method(method));
         }, item.span);
       }
-    } else if (item.kind === 'interface') this.block(`${item.capability ? 'capability' : 'interface'} ${item.name}${this.generics(item)}` +
+    } else if (item.kind === 'choice') this.line('choice '+item.name+' from '+item.alternatives.map(typeName).join(' and '));
+    else if (item.kind === 'interface') this.block(`${item.capability ? 'capability' : 'interface'} ${item.name}${this.generics(item)}` +
       (item.extends.length ? ' extends ' + item.extends.map(typeName).join(', ') : ''), () => item.methods.forEach(method => this.method(method)), item.span);
     else if (item.kind === 'interceptor') this.block(`interceptor ${item.name}${this.generics(item)}(${item.fields.map(field => this.param(field, true)).join(', ')})`,
       () => item.methods.forEach(method => this.method(method)), item.span);
     else if (item.kind === 'test') this.block(`test ${item.endpointSuite ? 'endpoint ' : ''}${typeName(item.type)}${item.functionSuite ? '' : ' ' + item.name}`, () => item.groups.forEach(group =>
-      this.block('when ' + JSON.stringify(group.name), () => {
+      this.mappedBlock('when ' + JSON.stringify(group.name), () => {
         group.setup.forEach(entry => this.item(entry));
-        group.cases.forEach(test => this.block('it ' + JSON.stringify(test.name) + (test.parameters ? ` for (${test.parameters.join(', ')}) in [` +
-          test.rows!.map(row => this.expression(row)).join(', ') + ']' : ''), () => test.body.forEach(stmt => this.statement(stmt)), test.span));
-      }, group.span)), item.span);
+        group.cases.forEach(test => this.mappedBlock('it ' + JSON.stringify(test.name) + (test.parameters ? ` for (${test.parameters.join(', ')}) in [` +
+          test.rows!.map(row => this.expression(row)).join(', ') + ']' : ''), () => test.body.forEach(stmt => this.statement(stmt)), test.span,'test-case'));
+      }, group.span,'test-group')), item.span);
     else this.statement(item);
+    if(['import','export','include','bind','composition','resource','class','interface','choice','interceptor','test'].includes(item.kind))this.remember(item.span,item.kind,line);
   }
   print(): string {
     for (const item of this.file.items) this.item(item);

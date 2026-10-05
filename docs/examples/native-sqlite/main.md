@@ -28,7 +28,7 @@ pageClass: aug-example-page
 
 ::: code-group
 
-```aug [Indentation]
+```aug [Indentation] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiaW5kZW50Iiwic291cmNlU2hhMjU2IjoiYjZjZjAyOTYxMjliNTBhNmNmM2Q3MWFjZTBkMjJmOTgwNWJlZGZlN2E3NTczZTA0N2MwMGFmMTAyMTYzM2E4OSIsImZvcm1hdHRlZFNoYTI1NiI6IjhhODMxZTY3YmQwYjZjNDJjOWI4YzgzMjg4YjQwYTFjZGJlNzc2ZjFiZTkyNWE3MjJjYWRiMTM5ZjUwMTdhNzUiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDUtTDgiLCJmaXJzdCI6NCwibGFzdCI6NywiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0xIl19XX0
 // aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import storedName from database
 import SqliteError from "https://github.com/GreenPandaStudios/aug-sqlite#v0.1.5"
@@ -38,7 +38,7 @@ catch SqliteError error:
     print(value=error.message)
 ```
 
-```aug [Braces]
+```aug [Braces] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiYnJhY2VzIiwic291cmNlU2hhMjU2IjoiYjZjZjAyOTYxMjliNTBhNmNmM2Q3MWFjZTBkMjJmOTgwNWJlZGZlN2E3NTczZTA0N2MwMGFmMTAyMTYzM2E4OSIsImZvcm1hdHRlZFNoYTI1NiI6ImVlOGI1MWRkZWNkYzRlOTIzNTk3OTgwYjAzNWJlOGQxNDU3YmUwMWUyZTIxNjg0ZTg0YmU4YzA5NzJlN2JkZWIiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDUtTDgiLCJmaXJzdCI6NCwibGFzdCI6OSwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0xIl19XX0
 // aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import storedName from database
 import SqliteError from "https://github.com/GreenPandaStudios/aug-sqlite#v0.1.5"
@@ -60,7 +60,9 @@ catch SqliteError error {
 
 ### Startup
 
-It prints [`storedName`](database.md#symbol-storedName). If this work raises [`SqliteError`](dependencies/packages/%40greenpandastudios/aug-sqlite/0.1.5/contracts.md#symbol-SqliteError) as `error`, it prints `error.message`.
+::: spec-paragraph specification-paragraph-1
+It prints [`storedName`](database.md#symbol-storedName). If this work raises [`SqliteError`](dependencies/packages/%40greenpandastudios/aug-sqlite/0.1.5/contracts.md#symbol-SqliteError) as `error`, it prints `error.message`. [source](main.md#source-L5-L8)
+:::
 
 ### Dependencies
 

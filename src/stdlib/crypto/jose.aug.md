@@ -2,6 +2,8 @@
 
 # `jose.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=66375491ee4f9944d6777da1163ce6f132948dcc9af8ca880ab62ca1d8289c09 -->
+
 <a id="symbol-JwtError"></a>
 ## `JwtError` · class · [source](jose.aug#L6)
 
@@ -27,42 +29,84 @@ It takes `keys` as `List<RsaJwk>`, kept read-only.
 
 Export public parameters. Private key material never enters the JSON document. It takes `publicKey` as `RsaPublicKey` and `kid` as a string. It gets `crypto` ([`Crypto`](contracts.aug.md#symbol-Crypto)) from dependency injection.
 
-Failures can raise `CryptoError`. It splits [`crypto.exportRsa`](contracts.aug.md#symbol-Crypto.exportRsa) with `publicKey` into `modulus` and `exponent` in order. It returns a [`RsaJwk`](jose.aug.md#symbol-RsaJwk) with `kty` `"RSA"`, `kid`, `alg` `"RS256"`, `use` `"sig"`, `n` from the URL-safe base64 encoding of `modulus`, and `e` from the URL-safe base64 encoding of `exponent`.
+It reads [`crypto.exportRsa`](contracts.aug.md#symbol-Crypto.exportRsa) with `publicKey` once and binds `[0]` as `modulus` and `[1]` as `exponent`. It returns a [`RsaJwk`](jose.aug.md#symbol-RsaJwk) with `kty` `"RSA"`, `kid`, `alg` `"RS256"`, `use` `"sig"`, `n` from the URL-safe base64 encoding of `modulus`, and `e` from the URL-safe base64 encoding of `exponent`. [source](jose.aug#L16-L17)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+rsaJwk(RsaPublicKey publicKey, string kid, resolve Crypto crypto) returns RsaJwk unless CryptoError uses Crypto.exportRsa
+```
+
+It takes `publicKey` as `RsaPublicKey` and `kid` as a string. It gets `crypto` ([`Crypto`](contracts.aug.md#symbol-Crypto)) from dependency injection. Failures can raise `CryptoError`.
+
+</details>
 
 <a id="symbol-importJwk"></a>
 ## `importJwk` · [source](jose.aug#L20)
 
 Import only an RSA signing key for RS256. The transport caller selects the trusted JWKS URL. It takes `jwk` as [`RsaJwk`](jose.aug.md#symbol-RsaJwk). It gets `crypto` ([`Crypto`](contracts.aug.md#symbol-Crypto)) from dependency injection.
 
-Failures can raise [`JwtError`](jose.aug.md#symbol-JwtError). It checks that `jwk.kty` equals `"RSA"` and `jwk.alg` equals `"RS256"` and `jwk.use` equals `"sig"`. It raises a [`JwtError`](jose.aug.md#symbol-JwtError) at the first failed check.
+It checks that `jwk.kty` equals `"RSA"` and `jwk.alg` equals `"RS256"` and `jwk.use` equals `"sig"`. It raises a [`JwtError`](jose.aug.md#symbol-JwtError) at the first failed check. [source](jose.aug#L21-L22)
 
-It tries to set `modulus` to [`crypto.decodeBase64url`](contracts.aug.md#symbol-Crypto.decodeBase64url) with `input` from `jwk.n`, then set `exponent` to [`crypto.decodeBase64url`](contracts.aug.md#symbol-Crypto.decodeBase64url) with `input` from `jwk.e`, then return [`crypto.importRsa`](contracts.aug.md#symbol-Crypto.importRsa) with `modulus` and `exponent`. If this work raises `CryptoError`, it raises a [`JwtError`](jose.aug.md#symbol-JwtError).
+It tries to set `modulus` to [`crypto.decodeBase64url`](contracts.aug.md#symbol-Crypto.decodeBase64url) with `input` from `jwk.n`, then set `exponent` to [`crypto.decodeBase64url`](contracts.aug.md#symbol-Crypto.decodeBase64url) with `input` from `jwk.e`, then return [`crypto.importRsa`](contracts.aug.md#symbol-Crypto.importRsa) with `modulus` and `exponent`. If this work raises `CryptoError`, it raises a [`JwtError`](jose.aug.md#symbol-JwtError). [source](jose.aug#L23-L28)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+importJwk(RsaJwk jwk, resolve Crypto crypto) returns RsaPublicKey unless JwtError uses Crypto.decodeBase64url, Crypto.importRsa
+```
+
+It takes `jwk` as [`RsaJwk`](jose.aug.md#symbol-RsaJwk). It gets `crypto` ([`Crypto`](contracts.aug.md#symbol-Crypto)) from dependency injection. Failures can raise [`JwtError`](jose.aug.md#symbol-JwtError).
+
+</details>
 
 <a id="symbol-signJwt"></a>
 ## `signJwt` · [source](jose.aug#L31)
 
-Sign immutable JSON with an explicit key id and token type. Claims are validated by the protocol that consumes the token. It takes `key` as `RsaPrivateKey`, `claims` as `Json`, and `kid` and `tokenType` as strings. It gets `crypto` ([`Crypto`](contracts.aug.md#symbol-Crypto)) from dependency injection.
+Sign immutable JSON with an explicit key id and token type. Claims are validated by the protocol that consumes the token. It takes labeled inputs `key`, `claims`, `kid`, and `tokenType`. It gets `crypto` ([`Crypto`](contracts.aug.md#symbol-Crypto)) from dependency injection.
 
-Failures can raise [`JwtError`](jose.aug.md#symbol-JwtError).
+It sets `header` to `stringify` on a `Json` with `value` from a [`JwtHeader`](jose.aug.md#symbol-JwtHeader) with `alg` `"RS256"`, `kid`, and `typ` from `tokenType`. It sets `payload` to `claims.stringify`. It builds `signing` as the text `{the URL-safe base64 encoding of the UTF-8 bytes of header}.{the URL-safe base64 encoding of the UTF-8 bytes of payload}`. It sets `signature` to [`crypto.signRsa`](contracts.aug.md#symbol-Crypto.signRsa) with `key` and `input` from the UTF-8 bytes of `signing`. [source](jose.aug#L32-L41)
 
-It sets `header` to `stringify` on a `Json` with `value` from a [`JwtHeader`](jose.aug.md#symbol-JwtHeader) with `alg` `"RS256"`, `kid`, and `typ` from `tokenType`. It sets `payload` to `claims.stringify`. It builds `signing` as the text `{the URL-safe base64 encoding of the UTF-8 bytes of header}.{the URL-safe base64 encoding of the UTF-8 bytes of payload}`. It sets `signature` to [`crypto.signRsa`](contracts.aug.md#symbol-Crypto.signRsa) with `key` and `input` from the UTF-8 bytes of `signing`.
+It returns the text `{signing}.{the URL-safe base64 encoding of signature}`. If this work raises `CryptoError`, it raises a [`JwtError`](jose.aug.md#symbol-JwtError). If this work raises `JsonError`, it raises a [`JwtError`](jose.aug.md#symbol-JwtError). [source](jose.aug#L37-L41)
 
-It returns the text `{signing}.{the URL-safe base64 encoding of signature}`. If this work raises `CryptoError`, it raises a [`JwtError`](jose.aug.md#symbol-JwtError). If this work raises `JsonError`, it raises a [`JwtError`](jose.aug.md#symbol-JwtError).
+<details>
+<summary>Checked interface</summary>
+
+```text
+signJwt(RsaPrivateKey key, Json claims, string kid, string tokenType, resolve Crypto crypto) returns string unless JwtError uses Crypto.signRsa
+```
+
+It takes `key` as `RsaPrivateKey`, `claims` as `Json`, and `kid` and `tokenType` as strings. It gets `crypto` ([`Crypto`](contracts.aug.md#symbol-Crypto)) from dependency injection. Failures can raise [`JwtError`](jose.aug.md#symbol-JwtError).
+
+</details>
 
 <a id="symbol-verifyJwt"></a>
 ## `verifyJwt` · [source](jose.aug#L44)
 
-Verify the signature and configured algorithm, key id, and type before exposing the JSON payload. Never follows token-supplied URLs. It takes `token` as a string, `publicKey` as `RsaPublicKey`, and `kid` and `tokenType` as strings. It gets `crypto` ([`Crypto`](contracts.aug.md#symbol-Crypto)) from dependency injection.
+Verify the signature and configured algorithm, key id, and type before exposing the JSON payload. Never follows token-supplied URLs. It takes labeled inputs `token`, `publicKey`, `kid`, and `tokenType`. It gets `crypto` ([`Crypto`](contracts.aug.md#symbol-Crypto)) from dependency injection.
 
-Failures can raise [`JwtError`](jose.aug.md#symbol-JwtError). It checks that the byte length of `token` is at most `16384`. It raises a [`JwtError`](jose.aug.md#symbol-JwtError) at the first failed check. It sets `parts` to `token.split` with `separator` `"."`.
+It checks that the byte length of `token` is at most `16384`. It raises a [`JwtError`](jose.aug.md#symbol-JwtError) at the first failed check. It sets `parts` to `token.split` with `separator` `"."`. [source](jose.aug#L45-L47)
 
-It checks that the number of elements in `parts` equals `3`. It raises a [`JwtError`](jose.aug.md#symbol-JwtError) at the first failed check. It sets `first` to the item at index `0` in `parts`. It sets `second` to the item at index `1` in `parts`.
+It checks that the number of elements in `parts` equals `3`. It raises a [`JwtError`](jose.aug.md#symbol-JwtError) at the first failed check. It sets `first` to the item at index `0` in `parts`. It sets `second` to the item at index `1` in `parts`. [source](jose.aug#L48-L68)
 
-It sets `third` to the item at index `2` in `parts`. It sets `header` to `decode` on [`parse`](.aug-spec/packages/%40git/url_2d3c37c690c0fa115be1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-parse) with `input` from `text` on [`crypto.decodeBase64url`](contracts.aug.md#symbol-Crypto.decodeBase64url) with `input` from `first` for [`JwtHeader`](jose.aug.md#symbol-JwtHeader). It checks that `header.alg` equals `"RS256"` and `header.kid` equals `kid` and `header.typ` equals `tokenType`. It raises a [`JwtError`](jose.aug.md#symbol-JwtError) at the first failed check.
+It sets `third` to the item at index `2` in `parts`. It sets `header` to `decode` on [`parse`](.aug-spec/packages/%40git/url_2d3c37c690c0fa115be1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-parse) with `input` from `text` on [`crypto.decodeBase64url`](contracts.aug.md#symbol-Crypto.decodeBase64url) with `input` from `first` for [`JwtHeader`](jose.aug.md#symbol-JwtHeader). It checks that `header.alg` equals `"RS256"` and `header.kid` equals `kid` and `header.typ` equals `tokenType`. It raises a [`JwtError`](jose.aug.md#symbol-JwtError) at the first failed check. [source](jose.aug#L53-L56)
 
-It sets `signature` to [`crypto.decodeBase64url`](contracts.aug.md#symbol-Crypto.decodeBase64url) with `input` from `third`. It checks that [`crypto.verifyRsa`](contracts.aug.md#symbol-Crypto.verifyRsa) with `publicKey`, `input` from the UTF-8 bytes of the text `{first}.{second}`, and `signature` returns true. It raises a [`JwtError`](jose.aug.md#symbol-JwtError) at the first failed check. It returns [`parse`](.aug-spec/packages/%40git/url_2d3c37c690c0fa115be1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-parse) with `input` from `text` on [`crypto.decodeBase64url`](contracts.aug.md#symbol-Crypto.decodeBase64url) with `input` from `second`.
+It sets `signature` to [`crypto.decodeBase64url`](contracts.aug.md#symbol-Crypto.decodeBase64url) with `input` from `third`. It checks that [`crypto.verifyRsa`](contracts.aug.md#symbol-Crypto.verifyRsa) with `publicKey`, `input` from the UTF-8 bytes of the text `{first}.{second}`, and `signature` returns true. It raises a [`JwtError`](jose.aug.md#symbol-JwtError) at the first failed check. It returns [`parse`](.aug-spec/packages/%40git/url_2d3c37c690c0fa115be1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-parse) with `input` from `text` on [`crypto.decodeBase64url`](contracts.aug.md#symbol-Crypto.decodeBase64url) with `input` from `second`. [source](jose.aug#L57-L60)
 
-If this work raises `CryptoError`, it raises a [`JwtError`](jose.aug.md#symbol-JwtError). If this work raises `ConversionError`, it raises a [`JwtError`](jose.aug.md#symbol-JwtError). If this work raises `JsonError`, it raises a [`JwtError`](jose.aug.md#symbol-JwtError). If this work raises `IndexError`, it raises a [`JwtError`](jose.aug.md#symbol-JwtError).
+If this work raises `CryptoError`, it raises a [`JwtError`](jose.aug.md#symbol-JwtError). If this work raises `ConversionError`, it raises a [`JwtError`](jose.aug.md#symbol-JwtError). If this work raises `JsonError`, it raises a [`JwtError`](jose.aug.md#symbol-JwtError). If this work raises `IndexError`, it raises a [`JwtError`](jose.aug.md#symbol-JwtError). [source](jose.aug#L62-L68)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+verifyJwt(string token, RsaPublicKey publicKey, string kid, string tokenType, resolve Crypto crypto) returns Json unless JwtError uses Crypto.decodeBase64url, Crypto.verifyRsa
+```
+
+It takes `token` as a string, `publicKey` as `RsaPublicKey`, and `kid` and `tokenType` as strings. It gets `crypto` ([`Crypto`](contracts.aug.md#symbol-Crypto)) from dependency injection. Failures can raise [`JwtError`](jose.aug.md#symbol-JwtError).
+
+</details>
 
 <a id="symbol-verifyIdentityToken"></a>
 ## `verifyIdentityToken` · [source](jose.aug#L73)
@@ -71,27 +115,38 @@ Verify an Ed25519 JWT before exposing its claims. The caller supplies trusted
 issuer, audience, token type, current epoch seconds, and the maximum lifetime.
 sub, iat and exp are required. No token-supplied key location is followed.
 
+It takes labeled inputs `token`, `publicKey`, `issuer`, `audience`, `tokenType`, `now`, and `maximumAge`. It gets `crypto` ([`Crypto`](contracts.aug.md#symbol-Crypto)) from dependency injection.
+
+It checks that `token.utf16Length` does not equal `0` and `token.utf16Length` is at most `4096` and `now` is at least `0` and `maximumAge` is at least `1` and `maximumAge` is at most `3600`. It raises a [`JwtError`](jose.aug.md#symbol-JwtError) at the first failed check. It sets `parts` to `token.split` with `separator` `"."`. [source](jose.aug#L74-L76)
+
+It checks that the number of elements in `parts` equals `3`. It raises a [`JwtError`](jose.aug.md#symbol-JwtError) at the first failed check. It sets `first` to the item at index `0` in `parts`. It sets `second` to the item at index `1` in `parts`. [source](jose.aug#L77-L117)
+
+It sets `third` to the item at index `2` in `parts`. It sets `header` to [`parse`](.aug-spec/packages/%40git/url_2d3c37c690c0fa115be1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-parse) with `input` from `text` on [`crypto.decodeBase64url`](contracts.aug.md#symbol-Crypto.decodeBase64url) with `input` from `first`. It checks that `string` on `header.require` with `name` `"alg"` equals `"EdDSA"` and `string` on `header.require` with `name` `"typ"` equals `tokenType` and `header.has` with `name` `"crit"` returns false and `header.has` with `name` `"b64"` returns false. It raises a [`JwtError`](jose.aug.md#symbol-JwtError) at the first failed check. [source](jose.aug#L82-L85)
+
+It sets `signature` to [`crypto.decodeBase64url`](contracts.aug.md#symbol-Crypto.decodeBase64url) with `input` from `third`. It checks that [`crypto.verifyEd25519`](contracts.aug.md#symbol-Crypto.verifyEd25519) with `publicKey`, `input` from the UTF-8 bytes of the text `{first}.{second}`, and `signature` returns true. It raises a [`JwtError`](jose.aug.md#symbol-JwtError) at the first failed check. It sets `claims` to [`parse`](.aug-spec/packages/%40git/url_2d3c37c690c0fa115be1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-parse) with `input` from `text` on [`crypto.decodeBase64url`](contracts.aug.md#symbol-Crypto.decodeBase64url) with `input` from `second`. [source](jose.aug#L86-L89)
+
+It checks that `string` on `claims.require` with `name` `"iss"` equals `issuer`. It raises a [`JwtError`](jose.aug.md#symbol-JwtError) at the first failed check. It sets `target` to `claims.require` with `name` `"aud"`. It sets `allowed` to `false`. [source](jose.aug#L90-L93)
+
+It tries to set `allowed` to `target.string` equals `audience`. If this work raises `JsonError`, it for each `entry` in a snapshot of `target.items`, if `entry.string` equals `audience`, it sets `allowed` to `true`. It checks that `allowed` is true. It raises a [`JwtError`](jose.aug.md#symbol-JwtError) at the first failed check. [source](jose.aug#L94-L101)
+
+It sets `subject` to `string` on `claims.require` with `name` `"sub"`. It sets `issued` to `integer` on `claims.require` with `name` `"iat"`. It sets `expires` to `integer` on `claims.require` with `name` `"exp"`. [source](jose.aug#L102-L104)
+
+It checks that `utf16Length` on `subject.trim` does not equal `0` and `subject.utf16Length` is at most `512` and `issued` is at least `0` and `issued` is at most `9007199254740991` and `expires` is at least `0` and `expires` is at most `9007199254740991`. It raises a [`JwtError`](jose.aug.md#symbol-JwtError) at the first failed check. It checks that `issued` is at most `now` and (`now` minus `issued`) is at most `maximumAge` and `expires` is greater than `now` and `expires` is greater than `issued` and (`expires` minus `issued`) is at most `maximumAge`. It raises a [`JwtError`](jose.aug.md#symbol-JwtError) at the first failed check. [source](jose.aug#L105-L108)
+
+It returns `claims`. If this work raises `CryptoError`, it raises a [`JwtError`](jose.aug.md#symbol-JwtError). If this work raises `ConversionError`, it raises a [`JwtError`](jose.aug.md#symbol-JwtError). If this work raises `JsonError`, it raises a [`JwtError`](jose.aug.md#symbol-JwtError). [source](jose.aug#L109-L115)
+
+If this work raises `IndexError`, it raises a [`JwtError`](jose.aug.md#symbol-JwtError). [source](jose.aug#L117)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+verifyIdentityToken(string token, string publicKey, string issuer, string audience, string tokenType, int now, int maximumAge, resolve Crypto crypto) returns Json unless JwtError uses Crypto.decodeBase64url, Crypto.verifyEd25519
+```
+
 It takes `token`, `publicKey`, `issuer`, `audience`, and `tokenType` as strings and `now` and `maximumAge` as integers. It gets `crypto` ([`Crypto`](contracts.aug.md#symbol-Crypto)) from dependency injection. Failures can raise [`JwtError`](jose.aug.md#symbol-JwtError).
 
-It checks that `token.utf16Length` does not equal `0` and `token.utf16Length` is at most `4096` and `now` is at least `0` and `maximumAge` is at least `1` and `maximumAge` is at most `3600`. It raises a [`JwtError`](jose.aug.md#symbol-JwtError) at the first failed check. It sets `parts` to `token.split` with `separator` `"."`.
-
-It checks that the number of elements in `parts` equals `3`. It raises a [`JwtError`](jose.aug.md#symbol-JwtError) at the first failed check. It sets `first` to the item at index `0` in `parts`. It sets `second` to the item at index `1` in `parts`.
-
-It sets `third` to the item at index `2` in `parts`. It sets `header` to [`parse`](.aug-spec/packages/%40git/url_2d3c37c690c0fa115be1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-parse) with `input` from `text` on [`crypto.decodeBase64url`](contracts.aug.md#symbol-Crypto.decodeBase64url) with `input` from `first`. It checks that `string` on `header.require` with `name` `"alg"` equals `"EdDSA"` and `string` on `header.require` with `name` `"typ"` equals `tokenType` and `header.has` with `name` `"crit"` returns false and `header.has` with `name` `"b64"` returns false. It raises a [`JwtError`](jose.aug.md#symbol-JwtError) at the first failed check.
-
-It sets `signature` to [`crypto.decodeBase64url`](contracts.aug.md#symbol-Crypto.decodeBase64url) with `input` from `third`. It checks that [`crypto.verifyEd25519`](contracts.aug.md#symbol-Crypto.verifyEd25519) with `publicKey`, `input` from the UTF-8 bytes of the text `{first}.{second}`, and `signature` returns true. It raises a [`JwtError`](jose.aug.md#symbol-JwtError) at the first failed check. It sets `claims` to [`parse`](.aug-spec/packages/%40git/url_2d3c37c690c0fa115be1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-parse) with `input` from `text` on [`crypto.decodeBase64url`](contracts.aug.md#symbol-Crypto.decodeBase64url) with `input` from `second`.
-
-It checks that `string` on `claims.require` with `name` `"iss"` equals `issuer`. It raises a [`JwtError`](jose.aug.md#symbol-JwtError) at the first failed check. It sets `target` to `claims.require` with `name` `"aud"`. It sets `allowed` to `false`.
-
-It tries to set `allowed` to `target.string` equals `audience`. If this work raises `JsonError`, it for each `entry` in a snapshot of `target.items`, if `entry.string` equals `audience`, it sets `allowed` to `true`. It checks that `allowed` is true. It raises a [`JwtError`](jose.aug.md#symbol-JwtError) at the first failed check.
-
-It sets `subject` to `string` on `claims.require` with `name` `"sub"`. It sets `issued` to `integer` on `claims.require` with `name` `"iat"`. It sets `expires` to `integer` on `claims.require` with `name` `"exp"`.
-
-It checks that `utf16Length` on `subject.trim` does not equal `0` and `subject.utf16Length` is at most `512` and `issued` is at least `0` and `issued` is at most `9007199254740991` and `expires` is at least `0` and `expires` is at most `9007199254740991`. It raises a [`JwtError`](jose.aug.md#symbol-JwtError) at the first failed check. It checks that `issued` is at most `now` and (`now` minus `issued`) is at most `maximumAge` and `expires` is greater than `now` and `expires` is greater than `issued` and (`expires` minus `issued`) is at most `maximumAge`. It raises a [`JwtError`](jose.aug.md#symbol-JwtError) at the first failed check.
-
-It returns `claims`. If this work raises `CryptoError`, it raises a [`JwtError`](jose.aug.md#symbol-JwtError). If this work raises `ConversionError`, it raises a [`JwtError`](jose.aug.md#symbol-JwtError). If this work raises `JsonError`, it raises a [`JwtError`](jose.aug.md#symbol-JwtError).
-
-If this work raises `IndexError`, it raises a [`JwtError`](jose.aug.md#symbol-JwtError).
+</details>
 
 <a id="symbol-IdentityVerifier"></a>
 ## `IdentityVerifier` · interface · [source](jose.aug#L120)
@@ -113,7 +168,18 @@ It takes `publicKey`, `issuer`, `audience`, and `tokenType` as strings, kept rea
 <a id="symbol-Ed25519IdentityVerifier.verify"></a>
 ### `Ed25519IdentityVerifier.verify` · [source](jose.aug#L124)
 
-It takes `token` as a string and `now` as an integer. Failures can raise [`JwtError`](jose.aug.md#symbol-JwtError). It returns [`verifyIdentityToken`](jose.aug.md#symbol-verifyIdentityToken) with `token`, `publicKey`, `issuer`, `audience`, `tokenType`, `now`, and `maximumAge` using injected `self.crypto` for `crypto`.
+It takes `token` as a string and `now` as an integer. It returns [`verifyIdentityToken`](jose.aug.md#symbol-verifyIdentityToken) with `token`, `publicKey`, `issuer`, `audience`, `tokenType`, `now`, and `maximumAge` using injected `self.crypto` for `crypto`. [source](jose.aug#L125)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+verify(string token, int now) returns Json unless JwtError uses Crypto.decodeBase64url, Crypto.verifyEd25519
+```
+
+It takes `token` as a string and `now` as an integer. Failures can raise [`JwtError`](jose.aug.md#symbol-JwtError).
+
+</details>
 
 ## Dependencies
 

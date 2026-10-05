@@ -1,15 +1,19 @@
+import {moduleSurfaceDiagnostics} from './module-surfaces.ts';
+import {errorMatch, type ErrorMatch} from './error-matches.ts';
+import {choiceMembers} from './choices.ts';
 import type {
-  BindDecl, ClassDecl, Diagnostic, Expr, GenericHeader, InterfaceDecl, InterceptorAnnotation, InterceptorDecl, MethodDecl, Param, Span,
-  Stmt, TypeRef,
+  BindDecl, BindingPattern, RecordBindingField, ClassDecl, Diagnostic, Expr, GenericHeader, InterfaceDecl, InterceptorAnnotation, InterceptorDecl, MethodDecl, Param, Span,
+  Stmt, TypeRef, MatchPattern,
 } from './ast.ts';
-import { fieldsOf, initializationOf, syntheticType, typeName } from './ast.ts';
+import { expressionChildren, bindingNames, fieldsOf, initializationOf, syntheticType, typeName } from './ast.ts';
 import { isPrivateName, type Definition, type Project } from './project.ts';
+import { literalDefault, defaultText } from './parameters.ts';
 import { canFallThrough, canRepeatNext } from './continuation.ts';
 import { returnsFresh } from './freshness.ts';
 import { inferType } from './inference.ts';
-import { sameType, tyName, type Ty } from './types.ts';
+import { containsUnknown, sameType, tyName, tyKey, immutableType, type Ty } from './types.ts';
 import { capabilityKey, coversChange, effectContract, type CapabilityEffect, type EffectContract } from './effects.ts';
-import { allocationOrigin, OwnershipFlow, sourceName, unionOrigins, type Origins } from './ownership.ts';
+import { allocationOrigin, overlap, OwnershipFlow, ownershipEvidence, sourceName, unionOrigins, type Origins } from './ownership.ts';
 import { builtinType as builtin, builtinTypes, builtinProperties, collectionOperations, errorNames, operationType } from './builtins.ts';
 import { orderGraph } from './di.ts';
 import { javadocBefore } from './javadoc.ts';
@@ -22,6 +26,7 @@ import {httpPolicyNames,httpPolicyOptions,checkHttpPolicy,type HttpPolicyPlan} f
 import {checkForwardingProfiles} from './forwarding.ts';
 import {nativeDeclarations, type NativeDeclarations} from './native-declarations.ts';
 import {checkWorkers} from './workers.ts';
+import type {FunctionValuePlan} from './function-values.ts';
 import type {NativeFunction,NativeView} from './native-contracts.ts';
 export { tyName, type Ty } from './types.ts';
 
@@ -32,6 +37,7 @@ export interface BindingInfo {
   dependencies: string[];
   constructorKeys: string[];
   declaration: BindDecl;
+  includedBy?: Span;
   lifetime: 'shared' | 'fresh' | 'scoped';
   stateful: boolean;
   requiresScope: boolean;
@@ -44,20 +50,31 @@ export interface InterfaceMethod {
   params: Map<string, Ty>;
 }
 
+export interface ResolvedName { name:string; definition:Span; global?:string; property?:boolean; parameter?:Param; declaration?:Definition }
+export interface ResolvedCall { node:MethodDecl | ClassDecl; params:Param[]; dispatch:'direct' | 'interface' }
 export interface CheckedProject {
   project: Project;
   diagnostics: Diagnostic[];
   bindings: BindingInfo[];
   expressionTypes: WeakMap<Expr, Ty>;
+  functionValues:Map<Expr,FunctionValuePlan>;
+  patternTypes:WeakMap<BindingPattern,Ty>;
+  patternFields:WeakMap<RecordBindingField,{owner:Definition;field:Param;index:number}>;
+  resolvedNames: WeakMap<Expr, ResolvedName>;
+  resolvedCalls: WeakMap<Expr, ResolvedCall>;
+  resolvedTypes: WeakMap<TypeRef, Ty>;
+  errorMatches: WeakMap<TypeRef, ErrorMatch>;
   defaults: Map<string, Map<string, InterfaceMethod>>;
+  /** Declaration-time inherited interface requirements, with owner substitutions. */
+  interfaceMembers: Map<string, Map<string, InterfaceMethod[]>>;
   callPlans: WeakMap<Expr, CallPlan>;
   interceptorPlans: Map<MethodDecl | ClassDecl, InterceptorLayer[]>;
   effectContracts: Map<MethodDecl, EffectContract>;
   callableContracts: Map<MethodDecl, CallableContract>;
   parameterTypes: Map<Param, Ty>;
-  resolvedNames: WeakMap<Expr, {parameter?:Param; definition?:Definition}>;
   constructorContracts: Map<ClassDecl, CallableContract>;
   expressionOrigins: WeakMap<Expr, Origins>;
+  inferredOwned: WeakSet<Stmt>;
   scopes: Map<string, ScopeFact>;
   markupCalls: WeakMap<Expr, Extract<Expr, {kind:'call'}>>;
   actions: Map<Expr, ActionPlan>;
@@ -80,7 +97,7 @@ export interface ActionPlan {
 export interface ScopeFact {
   span: Span;
   locals: { name: string; type: Ty; kind: 'parameter' | 'property' | 'variable'; ownership: string;
-    moved: boolean; definition?: Span; documentation?: string }[];
+    moved: boolean; definition?: Span; documentation?: string; ownershipFacts?: { origins: Span[]; owners: {name:string;span?:Span}[]; aliases:{name:string;span?:Span}[]; borrows:{name:string;span:Span}[]; captures:{span:Span;exclusive:boolean}[]; moves:Span[] } }[];
 }
 
 export interface InterceptorLayer {
@@ -95,6 +112,8 @@ export interface InterceptorLayer {
   types: Map<string, Ty>;
   inputTypes: Ty[];
   outputType: Ty;
+  /** Resolved for this application, rather than the shared around declaration. */
+  effects?: EffectContract;
   errors: Ty[];
   constructorInputIndices: number[];
   argumentInjectionIndices: (number | undefined)[];
@@ -109,6 +128,9 @@ interface NextContext {
 }
 
 export interface CallPlan {
+  /** Invalid labels prevent dependent inference and contract guesses until repaired. */
+  invalidLabels?: boolean;
+  defaults?: (Expr | undefined)[];
   /** Checked declaration identity. Built-ins have no source declaration. */
   target?: { id: string; dispatch: 'direct' | 'interface' | 'constructor' };
   returnOwnership?: 'managed' | 'own';
@@ -119,7 +141,7 @@ export interface CallPlan {
   mutatesReceiver?: boolean;
 }
 
-type Local = { type: Ty; declaredType?: Ty; ownership: 'managed' | 'own' | 'borrow'; moved: boolean; origin?: string; definition?: Span; parameter?:Param };
+type Local = { type: Ty; declaredType?: Ty; ownership: 'managed' | 'own' | 'borrow'; moved: boolean; origin?: string; definition?: Span; moveSites?: Span[]; parameter?:Param };
 interface Context {
   file: string;
   locals: Map<string, Local>;
@@ -141,6 +163,7 @@ interface Context {
   composition?: boolean;
   scope?: Span;
   loopDepth?: number;
+  loop?: { breaks: Context[]; continues: Context[] };
   locked?: boolean;
   stream?: Ty;
   region?: Span;
@@ -166,19 +189,27 @@ class Checker {
   readonly project: Project;
   readonly diagnostics: Diagnostic[];
   readonly expressionTypes = new WeakMap<Expr, Ty>();
+  readonly patternTypes=new WeakMap<BindingPattern,Ty>();
+  readonly patternFields=new WeakMap<RecordBindingField,{owner:Definition;field:Param;index:number}>();
+  readonly resolvedNames = new WeakMap<Expr, ResolvedName>();
+  readonly resolvedCalls = new WeakMap<Expr, ResolvedCall>();
+  readonly resolvedTypes = new WeakMap<TypeRef, Ty>();
+  readonly errorMatches = new WeakMap<TypeRef, ErrorMatch>();
   readonly defaults = new Map<string, Map<string, InterfaceMethod>>();
+  readonly interfaceMembers = new Map<string, Map<string, InterfaceMethod[]>>();
   readonly callPlans = new WeakMap<Expr, CallPlan>();
   readonly bindings: BindingInfo[] = [];
   readonly interceptorPlans = new Map<MethodDecl | ClassDecl, InterceptorLayer[]>();
   readonly effectContracts = new Map<MethodDecl, EffectContract>();
   readonly callableContracts = new Map<MethodDecl, CallableContract>();
   readonly parameterTypes = new Map<Param, Ty>();
-  readonly resolvedNames = new WeakMap<Expr, {parameter?:Param; definition?:Definition}>();
   readonly constructorContracts = new Map<ClassDecl, CallableContract>();
   private readonly initializers = new Map<ClassDecl, MethodDecl>();
   private readonly inferredChanges = new Map<MethodDecl, Set<string>>();
   private readonly contextualResults = new Set<MethodDecl>();
+  readonly functionValues=new Map<Expr,FunctionValuePlan>();
   readonly expressionOrigins = new WeakMap<Expr, Origins>();
+  readonly inferredOwned = new WeakSet<Stmt>();
   readonly scopes = new Map<string, ScopeFact>();
   readonly markupCalls = new WeakMap<Expr, Extract<Expr, {kind:'call'}>>();
   readonly actions = new Map<Expr, ActionPlan>();
@@ -188,6 +219,7 @@ class Checker {
   private readonly constructorFreshness = new Map<ClassDecl, boolean>();
   private readonly constraintStack = new Set<string>();
   private readonly inferredUses = new Map<MethodDecl, Map<string, CapabilityEffect>>();
+  private readonly capabilitySites = new Map<MethodDecl, Map<string, {span:Span;target?:MethodDecl}[]>>();
   private inferring = false;
   private inferenceChanged = false;
   private readonly changingInference = new Set<MethodDecl>();
@@ -219,6 +251,7 @@ class Checker {
     for (const def of this.project.definitions.values()) {
       if (def.node.kind === 'class') this.checkClassShape(def);
       else if (def.node.kind === 'interface') this.checkInterfaceShape(def);
+      else if (def.node.kind === 'choice') this.checkChoiceShape(def);
       else if (def.node.kind === 'function') this.checkFunctionSignature(def.node, def.file, new Map());
     }
     this.checkBindings();
@@ -300,19 +333,58 @@ class Checker {
       for (const [index, layer] of layers.entries()) layer.constructorResultFresh =
         layers.slice(index + 1).every(inner => this.layerReturnsFresh(inner));
     }
-    return { project: this.project, diagnostics: this.diagnostics, bindings: this.bindings,
-      expressionTypes: this.expressionTypes, defaults: this.defaults, callPlans: this.callPlans,
-      interceptorPlans: this.interceptorPlans, effectContracts: this.effectContracts, callableContracts: this.callableContracts, parameterTypes: this.parameterTypes, resolvedNames:this.resolvedNames, constructorContracts: this.constructorContracts,
-      expressionOrigins: this.expressionOrigins, scopes: this.scopes, markupCalls: this.markupCalls, actions:this.actions, httpPolicies:this.httpPolicies, native:this.native };
+    // Call checking specializes these caches. Public facts need declaration
+    // parameters and each interceptor application needs its own bound contract.
+    const declarationEffects = new Map<MethodDecl, EffectContract>();
+    this.inferring = true; // These already-checked names must not duplicate diagnostics.
+    for (const def of this.project.definitions.values()) {
+      const methods = def.node.kind === 'function' ? [def.node] : 'methods' in def.node ? def.node.methods : [];
+      const ownerTypes = this.paramsFor(def.node.typeParams, def.node, def.file);
+      for (const method of methods) {
+        const types = new Map([...ownerTypes, ...this.paramsFor(method.typeParams, method, def.file)]);
+        declarationEffects.set(method, this.effectiveContract(method, def.file, def, types));
+      }
+    }
+    for (const layers of this.interceptorPlans.values()) for (const layer of layers)
+      layer.effects = this.contractFor(layer.around, layer.definition.file, layer.definition, layer.types);
+    this.inferring = false;
+    this.effectContracts.clear();
+    for (const [method, contract] of declarationEffects) this.effectContracts.set(method, contract);
+    const checked:CheckedProject = { project: this.project, diagnostics: this.diagnostics, bindings: this.bindings,
+      expressionTypes: this.expressionTypes, functionValues:this.functionValues, patternTypes:this.patternTypes, patternFields:this.patternFields, resolvedNames:this.resolvedNames, resolvedCalls:this.resolvedCalls, resolvedTypes:this.resolvedTypes, errorMatches:this.errorMatches, defaults: this.defaults, interfaceMembers:this.interfaceMembers, callPlans: this.callPlans,
+      interceptorPlans: this.interceptorPlans, effectContracts: this.effectContracts, callableContracts: this.callableContracts, constructorContracts: this.constructorContracts, parameterTypes:this.parameterTypes,
+      expressionOrigins: this.expressionOrigins, inferredOwned:this.inferredOwned, scopes: this.scopes, markupCalls: this.markupCalls, actions:this.actions, httpPolicies:this.httpPolicies, native:this.native };
+    this.diagnostics.push(...moduleSurfaceDiagnostics(checked));
+    return checked;
   }
 
   private isStatement(item: { kind: string }): item is Stmt {
-    return ['expr', 'assign', 'return', 'throw', 'if', 'while', 'for', 'destructure', 'match', 'try', 'unsafe', 'borrow', 'scope', 'freeze', 'serve', 'lock','yield'].includes(item.kind);
+    return ['expr', 'assign', 'return', 'throw', 'break', 'continue', 'if', 'while', 'for', 'destructure', 'match', 'try', 'unsafe', 'borrow', 'scope', 'freeze', 'serve', 'lock','yield'].includes(item.kind);
   }
 
-  private report(span: Span, message: string, code = 'TYPE'): void {
+  private report(span: Span, message: string, code = 'TYPE', details: Pick<Diagnostic, 'rule' | 'related' | 'expected' | 'actual'> = {}): void {
     if (this.inferring) return;
-    this.diagnostics.push({ file: span.file, line: span.line, column: span.column, message, code });
+    this.diagnostics.push({ file: span.file, line: span.line, column: span.column, message, code, ...details });
+  }
+
+  private typeOrigin(type: Ty): string {
+    return type.id + (type.args.length ? `<${type.args.map(arg => this.typeOrigin(arg)).join(', ')}>` : '');
+  }
+
+  /** Qualify only ambiguous display names, while comparing resolved identities. */
+  private diagnosticTypeNames(types: readonly Ty[], compared: readonly Ty[]): string[] {
+    const identities = new Map<string, Set<string>>();
+    for(const type of [...types,...compared]) {
+      const display = tyName(type), keys = identities.get(display) ?? new Set<string>();
+      keys.add(tyKey(type)); identities.set(display,keys);
+    }
+    return types.map(type => tyName(type) + (identities.get(tyName(type))!.size > 1 ? ` [${this.typeOrigin(type)}]` : ''));
+  }
+
+  private inputDetails(param: Param, expected: Ty, actual: Ty): Pick<Diagnostic, 'related' | 'expected' | 'actual'> {
+    const span = param.labelSpan ?? param.nameSpan ?? param.span;
+    return { expected: this.diagnosticTypeNames([expected],[actual])[0], actual: this.diagnosticTypeNames([actual],[expected])[0],
+      related: [{file:span.file,line:span.line,column:span.column,message:`Input ${param.label ?? param.name} is declared here.`}] };
   }
 
   /** Infer body-derived contracts without changing the cached source AST. */
@@ -430,6 +502,14 @@ class Checker {
   }
 
   private resolveType(ref: TypeRef, file: string, params: Map<string, Ty> = new Map(), validateConstraints = true): Ty {
+    const type = this.resolveTypeBase(ref, file, params, validateConstraints);
+    if (!ref.immutable) {this.resolvedTypes.set(ref,type); return type;}
+    if (!['List', 'Map', 'Set', 'Tuple'].includes(type.name) || !this.immutableData(type))
+      this.report(ref.span, 'immutable qualifies collections of data values; behavioral objects retain their explicit ownership contracts', 'IMMUTABLE');
+    const result=immutableType(type); this.resolvedTypes.set(ref,result); return result;
+  }
+
+  private resolveTypeBase(ref: TypeRef, file: string, params: Map<string, Ty> = new Map(), validateConstraints = true): Ty {
     const param = params.get(ref.name);
     if (param) return { ...param, nullable: ref.nullable || param.nullable, optional: ref.optional || param.optional };
     if (builtinNames.has(ref.name)) {
@@ -454,7 +534,7 @@ class Checker {
         this.report(ref.span, `${ref.name} is an interceptor; apply it with [${ref.name}]`, 'INTERCEPTOR');
         return errorTy;
       }
-      this.report(ref.span, `Unknown type ${ref.name}`);
+      this.report(ref.span,ref.name==='let'?'Unknown type let. Inferred bindings use name = value or name to value; remove let unless it names an imported type.':`Unknown type ${ref.name}`,ref.name==='let'?'BINDING':'TYPE');
       return errorTy;
     }
     const expected = def.node.typeParams.length;
@@ -476,8 +556,14 @@ class Checker {
   private addBounds(params: Map<string, Ty>, header: GenericHeader, file: string): void {
     for (const name of header.typeParams) {
       const type = params.get(name);
-      if (type?.kind === 'param') params.set(name, { ...type,
-        bounds: (header.typeConstraints?.[name] ?? []).map(ref => this.resolveType(ref, file, params, false)) });
+      if (type?.kind === 'param') {
+        const bounds=(header.typeConstraints?.[name] ?? []).map(ref => {
+          const bound=this.resolveType(ref,file,params,false);
+          if(bound.kind==='choice'&&(bound.nullable||bound.optional))this.report(ref.span,'Use a non-null choice bound and optional T for nullable inputs','CHOICE');
+          return bound;
+        });
+        params.set(name,{...type,bounds});
+      }
     }
   }
 
@@ -487,8 +573,8 @@ class Checker {
     this.constraintStack.add(key);
     for (const name of header.typeParams) for (const ref of header.typeConstraints?.[name] ?? []) {
       const constraint = this.resolveType(ref, file, types);
-      if (constraint.kind !== 'interface') this.report(ref.span,
-        `Constraint ${typeName(ref)} must be an interface`, 'GENERIC');
+      if (constraint.kind !== 'interface' && constraint.kind !== 'choice') this.report(ref.span,
+        `Constraint ${typeName(ref)} must be an interface or choice`, 'GENERIC');
       const actual = types.get(name);
       if (actual && !this.assignable(actual, constraint)) this.report(span,
         `Type argument ${name}=${tyName(actual)} must implement ${tyName(constraint)}`, 'GENERIC');
@@ -523,6 +609,24 @@ class Checker {
     });
   }
 
+  private checkDefault(param: Param, file: string, types: Map<string, Ty>, restricted = false): void {
+    if (!param.defaultValue) return;
+    if (restricted || param.injected || param.ownership !== 'managed') {
+      this.report(param.span, 'Defaults require an ordinary managed input; native and HTTP inputs keep their explicit contracts', 'DEFAULT');
+      return;
+    }
+    if (!literalDefault(param.defaultValue)) {
+      this.report(param.defaultValue.span, 'A default is literal data, including collections; compute other values at the call', 'DEFAULT');
+      return;
+    }
+    const expected = this.resolveType(param.type, file, types);
+    const context: Context = {file, locals: new Map(), returns: builtin('void'), returnOwnership: 'managed',
+      allowedErrors: [], unsafe: false, borrowed: new Set(), types, flow: new OwnershipFlow()};
+    const actual = this.checkExpression(param.defaultValue, context, expected);
+    if (!this.assignable(actual, expected)) this.report(param.defaultValue.span,
+      `Default for ${param.label ?? param.name} expects ${tyName(expected)}, got ${tyName(actual)}`, 'DEFAULT');
+  }
+
   private checkFunctionSignature(fn: MethodDecl, file: string, inheritedParams: Map<string, Ty>): void {
     const params = new Map(inheritedParams);
     for (const [key, value] of this.paramsFor(fn.typeParams, fn, file)) {
@@ -538,6 +642,8 @@ class Checker {
       if (param.name === 'next') this.report(param.span, 'next is reserved for interceptor continuations', 'NEXT');
       if (param.injected && param.ownership !== 'managed') this.report(param.span,
         'A resolve parameter cannot also be own or borrow', 'DI');
+      this.resolveType(param.type, file, params);
+      this.checkDefault(param, file, params, !!fn.endpoint || fn.externC);
       this.parameterTypes.set(param, this.resolveType(param.type, file, params));
     }
     this.returnType(fn, file, params);
@@ -565,6 +671,7 @@ class Checker {
         if(!['ServerEvent','Bytes','Html'].includes(result.name)||result.optional||result.nullable) this.report(fn.span,'An endpoint streams ServerEvent<T>, Bytes, or Html','HTTP');
         if(result.name==='ServerEvent'&&!jsonDataType(this.project,result.args[0]))this.report(fn.span,'ServerEvent data uses a concrete JSON data type','HTTP');
       } else if (!jsonDataType(this.project, result) && !['void', 'HttpResponse', 'Html', 'Bytes'].includes(result.name)) this.report(fn.span, `${tyName(result)} cannot be serialized as an HTTP response`, 'HTTP');
+      for(const error of endpoint.errors)if(error.type.args.length)this.report(error.type.span,'Generic errors need an explicit non-generic HTTP error mapping; catch and convert the failure in the endpoint body','HTTP');
       for (const error of endpoint.errors) if (!Number.isInteger(error.status) || error.status < 400 || error.status > 599) this.report(error.type.span, 'Mapped error statuses must be from 400 to 599', 'HTTP');
     }
     for (const changed of fn.changes ?? []) {
@@ -699,7 +806,7 @@ class Checker {
     const shape = (value: unknown): unknown => {
       if (Array.isArray(value)) return value.map(shape);
       if (!value || typeof value !== 'object') return value;
-      return Object.fromEntries(Object.entries(value).filter(([key]) => !['span','nameSpan','headerEnd'].includes(key)).map(([key,child]) => [key,shape(child)]));
+      return Object.fromEntries(Object.entries(value).filter(([key]) => !['span','nameSpan','labelSpan','argLabelSpans','headerEnd'].includes(key)).map(([key,child]) => [key,shape(child)]));
     };
     if (!canonical || !type.def || JSON.stringify(shape(type.def.node)) !== JSON.stringify(shape(canonical))) return false;
     if (name === 'RequestLogger') return true;
@@ -878,8 +985,23 @@ class Checker {
     }
   }
 
+  private checkChoiceShape(def:Definition):void {
+    if(def.node.kind!=='choice')return;
+    if(def.node.alternatives.length<2)this.report(def.node.span,'A choice needs at least two distinct immutable records','CHOICE');
+    const seen=new Set<string>();
+    for(const ref of def.node.alternatives){
+      const type=this.resolveType(ref,def.file);
+      if(ref.nullable||ref.optional||ref.immutable||ref.args.length||type.def?.node.kind!=='class'||!type.def.node.record||type.def.node.typeParams.length)
+        this.report(ref.span,'Choice alternatives must be concrete non-generic immutable records','CHOICE');
+      if(seen.has(type.id))this.report(ref.span,'Repeated choice alternative '+type.name+'; select distinct records','CHOICE');
+      seen.add(type.id);
+    }
+  }
+
   private checkClassShape(def: Definition): void {
     const cls = def.node as ClassDecl;
+    for(const ref of cls.implements)if(this.project.scopes.get(def.file)?.get(ref.name)?.node.kind==='choice')
+      this.report(ref.span,'A choice cannot be implemented; construct one of its declared record alternatives','CHOICE');
     if (!cls.record && cls.implements.length === 0) this.report(cls.span,
       `${cls.name} must implement at least one interface`, 'INTERFACE');
     const params = this.paramsFor(cls.typeParams, cls, def.file);
@@ -890,6 +1012,7 @@ class Checker {
     this.checkVariance(cls, def.file);
     const names = new Set<string>();
     for (const field of fieldsOf(cls)) {
+      this.checkDefault(field, def.file, params);
       if (names.has(field.name)) this.report(field.span, `Duplicate field ${field.name}`);
       names.add(field.name);
       this.resolveType(field.type, def.file, params);
@@ -923,16 +1046,25 @@ class Checker {
     const defaults = new Map<string, InterfaceMethod>();
     for (const [name, methods] of inherited) {
       const own = cls.methods.find(method => method.name === name);
-      const reference = methods[0];
       if (own) {
-        if (!this.sameSignature(own, def.file, params, reference)) this.report(own.span,
-          `Method ${name} does not match the interface signature`);
+        for(const reference of methods) {
+          const mismatch = this.signatureMismatch(own, def.file, params, reference);
+          if (mismatch) this.report(own.span,
+            `Method ${name} does not match the interface signature: expected ${mismatch.expected}; found ${mismatch.actual}`, 'TYPE', mismatch);
+        }
       } else {
         const concrete = methods.filter(entry => !!entry.method.body);
         const unique = new Map(concrete.map(entry => [entry.from, entry.method]));
         if (unique.size > 1) this.report(cls.span,
           `Conflicting default implementations of ${name}; ${cls.name} must override it`, 'INTERFACE');
-        else if (concrete[0]) defaults.set(name, concrete[0]);
+        else if (concrete[0]) {
+          const selected = concrete[0];
+          for(const reference of methods) {
+            const mismatch = this.signatureMismatch(selected.method, selected.file, selected.params, reference);
+            if(mismatch) this.report(cls.span, `Default method ${name} does not match the interface signature: expected ${mismatch.expected}; found ${mismatch.actual}`, 'INTERFACE', mismatch);
+          }
+          defaults.set(name, selected);
+        }
         else this.report(cls.span, `${cls.name} must implement ${name}`, 'INTERFACE');
       }
     }
@@ -940,6 +1072,8 @@ class Checker {
   }
 
   private checkInterfaceShape(def: Definition): void {
+    if(def.node.kind==='interface')for(const ref of def.node.extends)if(this.project.scopes.get(def.file)?.get(ref.name)?.node.kind==='choice')
+      this.report(ref.span,'An interface cannot inherit a closed choice','CHOICE');
     const iface = def.node as InterfaceDecl;
     const params = this.paramsFor(iface.typeParams, iface, def.file);
     this.checkVariance(iface, def.file);
@@ -953,12 +1087,19 @@ class Checker {
       const type = this.resolveType(parent, def.file, params);
       if (type.kind !== 'interface') this.report(parent.span,
         `${parent.name} is not an interface`);
+      else for(const [name,entries] of this.interfaceMethods(type,new Set())) {
+        const own=iface.methods.find(method=>method.name===name);
+        if(own)for(const inherited of entries) {
+          const mismatch = this.signatureMismatch(own, def.file, params, inherited);
+          if(mismatch) this.report(own.span, `Interface override ${name} does not preserve its inherited input, result and effect contract: expected ${mismatch.expected}; found ${mismatch.actual}`, 'INTERFACE', mismatch);
+        }
+      }
     }
-    this.interfaceMethods({ id: def.id, name: def.name, kind: 'interface', def,
-      args: [...params.values()], nullable: false }, new Set());
+    this.interfaceMembers.set(def.id,this.interfaceMethods({ id: def.id, name: def.name, kind: 'interface', def,
+      args: [...params.values()], nullable: false }, new Set()));
   }
 
-  private interfaceMethods(type: Ty, visiting: Set<string>): Map<string, InterfaceMethod[]> {
+  private interfaceMethods(type: Ty, visiting: Set<string>, retainOverrides=false): Map<string, InterfaceMethod[]> {
     const result = new Map<string, InterfaceMethod[]>();
     if (type.id === 'builtin:Error') return result;
     if (!type.def || type.def.node.kind !== 'interface') return result;
@@ -971,49 +1112,109 @@ class Checker {
     const mapping = new Map(iface.typeParams.map((name, index) => [name, type.args[index] ?? errorTy]));
     for (const parent of iface.extends) {
       const parentType = this.resolveType(parent, type.def.file, mapping);
-      for (const [name, entries] of this.interfaceMethods(parentType, visiting))
+      for (const [name, entries] of this.interfaceMethods(parentType, visiting, retainOverrides))
         result.set(name, [...(result.get(name) ?? []), ...entries]);
     }
     for (const method of iface.methods) result.set(method.name,
-      [{ method, from: type.def.id, file: type.def.file, params: mapping }]);
+      [{ method, from: type.def.id, file: type.def.file, params: mapping }, ...(retainOverrides ? result.get(method.name) ?? [] : [])]);
     visiting.delete(type.id);
     return result;
   }
 
   private sameSignature(left: MethodDecl, leftFile: string, leftOwnerParams: Map<string, Ty>,
                         right: InterfaceMethod): boolean {
-    const method = right.method;
-    if (left.params.length !== method.params.length ||
-        left.typeParams.length !== method.typeParams.length) return false;
-    const leftParams = new Map(leftOwnerParams);
-    const rightParams = new Map(right.params);
+    return !this.signatureMismatch(left, leftFile, leftOwnerParams, right);
+  }
+
+  /** Compare the actual checked contract with an interface's permitted bound.
+   * The same comparison drives acceptance and its diagnostic evidence. */
+  private signatureMismatch(left: MethodDecl, leftFile: string, leftOwnerParams: Map<string, Ty>,
+                            right: InterfaceMethod): Pick<Diagnostic, 'related' | 'expected' | 'actual'> | undefined {
+    const method = right.method, rightOwner = this.project.definitions.get(right.from);
+    const fail = (expected: string, actual: string): Pick<Diagnostic, 'related' | 'expected' | 'actual'> => ({expected, actual,
+      related: [{file:method.span.file, line:method.span.line, column:method.span.column,
+        message:`${rightOwner?.name ?? 'Interface'}.${method.name} declares the permitted contract here.`}]});
+    if(left.params.length !== method.params.length) return fail(`${method.params.length} inputs`, `${left.params.length} inputs`);
+    if(left.typeParams.length !== method.typeParams.length) return fail(`${method.typeParams.length} method type parameters`, `${left.typeParams.length} method type parameters`);
+    const leftParams = new Map(leftOwnerParams), rightParams = new Map(right.params);
     for (let i = 0; i < left.typeParams.length; i++) {
-      const placeholder: Ty = { id: `method-param:${i}`, name: `$${i}`, kind: 'param',
-        args: [], nullable: false };
-      leftParams.set(left.typeParams[i], placeholder);
-      rightParams.set(method.typeParams[i], placeholder);
+      const placeholder: Ty = { id: `method-param:${i}`, name: `$${i}`, kind: 'param', args: [], nullable: false };
+      leftParams.set(left.typeParams[i], placeholder); rightParams.set(method.typeParams[i], placeholder);
     }
-    const equalRef = (a: TypeRef, b: TypeRef) => this.sameType(
-      this.resolveType(a, leftFile, leftParams), this.resolveType(b, right.file, rightParams));
-    const constraintsEqual = left.typeParams.every((name, index) => {
-      const a = left.typeConstraints?.[name] ?? [];
-      const b = method.typeConstraints?.[method.typeParams[index]] ?? [];
-      return a.length === b.length && a.every((ref, i) => equalRef(ref, b[i]));
-    });
+    const leftType = (ref: TypeRef) => this.resolveType(ref, leftFile, leftParams);
+    const rightType = (ref: TypeRef) => this.resolveType(ref, right.file, rightParams);
+    for(const [index, name] of left.typeParams.entries()) {
+      const actual = left.typeConstraints?.[name] ?? [], expected = method.typeConstraints?.[method.typeParams[index]] ?? [];
+      if(actual.length !== expected.length || actual.some((ref, i) => !this.sameType(leftType(ref), rightType(expected[i]))))
+        return fail(`type constraints ${this.diagnosticTypeNames(expected.map(rightType),actual.map(leftType)).join(' and ') || 'none'}`,
+          `type constraints ${this.diagnosticTypeNames(actual.map(leftType),expected.map(rightType)).join(' and ') || 'none'}`);
+    }
+    for(const [index, param] of left.params.entries()) {
+      const expected = method.params[index];
+      if(param.name !== expected.name) return fail(`input label ${expected.name}`, `input label ${param.name}`);
+      if(param.injected !== expected.injected) return fail(expected.injected ? `resolve input ${expected.name}` : `caller input ${expected.name}`,
+        param.injected ? `resolve input ${param.name}` : `caller input ${param.name}`);
+      const actualDefault = param.defaultValue && literalDefault(param.defaultValue) ? defaultText(param.defaultValue) : undefined;
+      const expectedDefault = expected.defaultValue && literalDefault(expected.defaultValue) ? defaultText(expected.defaultValue) : undefined;
+      if(actualDefault !== expectedDefault) return fail(`input ${expected.name} default ${expectedDefault ?? 'none'}`, `input ${param.name} default ${actualDefault ?? 'none'}`);
+      if(param.ownership !== expected.ownership) return fail(`input ${expected.name} ownership ${expected.ownership}`, `input ${param.name} ownership ${param.ownership}`);
+      const actualType = leftType(param.type), expectedType = rightType(expected.type);
+      if(!this.sameType(actualType, expectedType)) return fail(`input ${expected.name}: ${this.diagnosticTypeNames([expectedType],[actualType])[0]}`, `input ${param.name}: ${this.diagnosticTypeNames([actualType],[expectedType])[0]}`);
+    }
+    const actualResult = this.returnType(left, leftFile, leftParams), expectedResult = this.returnType(method, right.file, rightParams);
+    if(!this.sameType(actualResult, expectedResult)) return fail(`returns ${this.diagnosticTypeNames([expectedResult],[actualResult])[0]}`, `returns ${this.diagnosticTypeNames([actualResult],[expectedResult])[0]}`);
+    if(left.returnOwnership !== method.returnOwnership) return fail(`result ownership ${method.returnOwnership}`, `result ownership ${left.returnOwnership}`);
     const leftOwner = [...this.project.definitions.values()].find(def => 'methods' in def.node && def.node.methods.includes(left));
-    const rightOwner = this.project.definitions.get(right.from);
-    const leftEffects = this.effectiveContract(left, leftFile, leftOwner, leftParams);
-    const rightEffects = this.effectiveContract(method, right.file, rightOwner, rightParams);
-    const effectsFit = leftEffects.changes.every(change => coversChange(rightEffects.changes, change)) &&
-      [...leftEffects.uses.keys()].every(key => rightEffects.uses.has(key));
-    return constraintsEqual && effectsFit && left.params.every((param, i) => param.name === method.params[i].name &&
-      param.injected === method.params[i].injected &&
-      param.ownership === method.params[i].ownership &&
-      equalRef(param.type, method.params[i].type)) &&
-      this.sameType(this.returnType(left, leftFile, leftParams), this.returnType(method, right.file, rightParams)) &&
-      left.returnOwnership === method.returnOwnership &&
-      this.effectiveErrors(left, leftFile, leftParams).every(thrown =>
-        this.effectiveErrors(method, right.file, rightParams).some(allowed => this.assignable(thrown, allowed)));
+    const actualEffects = this.effectiveContract(left, leftFile, leftOwner, leftParams);
+    const expectedEffects = this.effectiveContract(method, right.file, rightOwner, rightParams);
+    const capabilityName = (effect: CapabilityEffect) => `${effect.capability ? tyName(effect.capability) : effect.source}.${effect.operation}`;
+    const capabilityIdentities = new Map<string, Set<string>>();
+    for(const [key,effect] of [...actualEffects.uses,...expectedEffects.uses]) {
+      const display = capabilityName(effect), keys = capabilityIdentities.get(display) ?? new Set<string>();
+      keys.add(key); capabilityIdentities.set(display,keys);
+    }
+    const effectsText = (contract: EffectContract) => 'uses ' + ([...new Set([...contract.uses].map(([key,effect]) =>
+      (effect.capability?.args.length ? capabilityName(effect) : `${effect.source}.${effect.operation}`) + (capabilityIdentities.get(capabilityName(effect))!.size > 1 ?
+        ` [${effect.capability ? this.typeOrigin(effect.capability) : key}]` : '')))].sort().join(' and ') || 'none') + (contract.inferred ? ' (inferred)' : '');
+    const excess = [...actualEffects.uses.keys()].filter(key => !expectedEffects.uses.has(key)).sort();
+    if(excess.length) {
+      const mismatch = fail(effectsText(expectedEffects), effectsText(actualEffects));
+      const effect = actualEffects.uses.get(excess[0])!;
+      mismatch.related = [...mismatch.related!, ...this.capabilityPath(left, excess[0], `${effect.source}.${effect.operation}`)];
+      return mismatch;
+    }
+    if(actualEffects.changes.some(change => !coversChange(expectedEffects.changes, change)))
+      return fail('changes ' + (expectedEffects.changes.join(' and ') || 'none'),
+        'changes ' + (actualEffects.changes.join(' and ') || 'none') + (actualEffects.inferredChanges ? ' (inferred)' : ''));
+    const actualErrors = this.effectiveErrors(left, leftFile, leftParams), expectedErrors = this.effectiveErrors(method, right.file, rightParams);
+    if(actualErrors.some(thrown => !expectedErrors.some(allowed => this.assignable(thrown, allowed))))
+      return fail('unless ' + (this.diagnosticTypeNames(expectedErrors,actualErrors).sort().join(' and ') || 'none'),
+        'unless ' + (this.diagnosticTypeNames(actualErrors,expectedErrors).sort().join(' and ') || 'none') + (this.callableContracts.get(left)?.inferredErrors ? ' (inferred)' : ''));
+    return undefined;
+  }
+
+  /** Inference records resolved call sites under the exact capability key.
+   * Breadth-first traversal retains a shortest static obligation path, never a
+   * claim that a branch executed. Recursive helpers cannot loop this query. */
+  private capabilityPath(method: MethodDecl, key: string, display: string): NonNullable<Diagnostic['related']> {
+    type Step = {caller:MethodDecl;span:Span;target?:MethodDecl};
+    const pending: {method:MethodDecl;path:Step[]}[] = [{method,path:[]}], seen = new Set([method]);
+    let selected: Step[] = [];
+    for(let index=0;index<pending.length;index++) {
+      const current = pending[index], sites = this.capabilitySites.get(current.method)?.get(key) ?? [];
+      if(!sites.length) { selected = current.path; break; }
+      for(const site of [...sites].sort((a,b) => a.span.start-b.span.start)) {
+        const path = [...current.path, {caller:current.method,...site}];
+        if(!site.target || site.target.uses?.length || !this.capabilitySites.get(site.target)?.get(key)?.length) { selected = path; break; }
+        if(!seen.has(site.target)) { seen.add(site.target); pending.push({method:site.target,path}); }
+      }
+      if(selected.length) break;
+    }
+    const omitted = Math.max(0, selected.length-7);
+    const compact = omitted ? [...selected.slice(0,4),...selected.slice(-3)] : selected;
+    return compact.map((site,index) => ({file:site.span.file,line:site.span.line,column:site.span.column,
+      message:(omitted && index===4 ? `${omitted} intermediate call sites omitted. ` : '') + (site.target ?
+        `${site.caller.name} calls ${site.target.name}; this call requires ${display}.` : `${site.caller.name} requires ${display} here.`)}));
   }
 
   private sameType(left: Ty, right: Ty): boolean {
@@ -1047,11 +1248,18 @@ class Checker {
 
   private assignable(source: Ty, target: Ty): boolean {
     if (source.kind === 'error' || target.kind === 'error') return true;
+    if (target.immutable && source.kind !== 'null' && !source.frozen) return false;
     if (source.kind === 'null') return target.nullable || !!target.optional;
     if ((source.nullable || source.optional) && !target.nullable && !target.optional) return false;
     if (target.id === 'builtin:Data') return this.immutableData({...source, nullable:false, optional:false});
     if (source.id === target.id) return this.compatibleArguments(source, target);
     if (source.kind === 'param' && source.bounds?.some(bound => this.assignable(bound, target))) return true;
+    if(target.kind==='choice'){
+      const members=choiceMembers(this.project,target);if(!members)return false;
+      const sources=source.kind==='choice'?choiceMembers(this.project,source):[source];
+      return !!sources&&sources.every(item=>members.some(member=>this.assignable(item,member)));
+    }
+    if(source.kind==='choice'){const members=choiceMembers(this.project,source);return !!members&&members.every(member=>this.assignable(member,target));}
     if (source.id === 'builtin:c_int' && ['builtin:int', 'builtin:float'].includes(target.id)) return true;
     if (source.id === 'builtin:int' && target.id === 'builtin:float') return true;
     if (target.id === 'builtin:Error' && this.implementsError(source)) return true;
@@ -1063,7 +1271,7 @@ class Checker {
       const mode = source.id === 'builtin:Tuple' ? 'out' : source.def?.node.kind === 'interface' ?
         source.def.node.typeVariance?.[source.def.node.typeParams[index]] : undefined;
       return mode === 'out' ? this.assignable(arg, target.args[index]) :
-        mode === 'in' ? this.assignable(target.args[index], arg) : this.sameType(arg, target.args[index]);
+        mode === 'in' ? this.assignable(target.args[index], arg) : this.sameType(target.immutable && source.frozen ? immutableType(arg) : arg, target.args[index]);
     });
   }
 
@@ -1071,24 +1279,27 @@ class Checker {
     const main = this.project.main;
     if (!main) return;
     let seenStatement = false;
-    const declarations: BindDecl[] = [];
+    const declarations: {declaration:BindDecl;includedBy?:Span}[] = [];
     for (const item of main.items) {
       if (item.kind === 'import') continue;
       if (item.kind === 'include') {
         if (seenStatement) this.report(item.span, 'Composition includes must precede executable statements', 'DI');
         const def = this.project.scopes.get(main.path)?.get(item.name);
         if (def?.node.kind !== 'composition') this.report(item.span, `${item.name} must be an explicitly imported composition`, 'DI');
-        else declarations.push(...def.node.bindings);
+        else declarations.push(...def.node.bindings.map(declaration=>({declaration,includedBy:item.span})));
         continue;
       }
       if (item.kind !== 'bind') { seenStatement = true; continue; }
       if (seenStatement) this.report(item.span, 'Bindings must precede executable statements', 'DI');
-      declarations.push(item);
+      declarations.push({declaration:item});
     }
-    for (const item of declarations) {
+    for (const {declaration:item,includedBy} of declarations) {
       const key = this.bindingKey(item.key, item.keyTypeArgs);
-      if (this.bindingByKey.has(key)) {
-        this.report(item.span, `Duplicate binding ${key}`, 'DI'); continue;
+      const previous = this.bindingByKey.get(key);
+      if (previous) {
+        const sameInclude=includedBy&&previous.includedBy&&includedBy.file===previous.includedBy.file&&includedBy.start===previous.includedBy.start;
+        const first=sameInclude ? previous.declaration.span : previous.includedBy ?? previous.declaration.span;
+        this.report(sameInclude ? item.span : includedBy ?? item.span, `Duplicate binding ${key}`, 'DI', {related:[{file:first.file,line:first.line,column:first.column,message:`Binding ${key} was first selected here.`}]}); continue;
       }
       const targetType = this.resolveType(item.target, item.span.file);
       const target = targetType.def;
@@ -1112,7 +1323,7 @@ class Checker {
       const stateful = fieldsOf(target.node as ClassDecl).some(field => field.mutable || field.ownership === 'own' || field.type.name === 'Shared') ||
         target.node.methods.some(method => this.effectiveContract(method, target.file, target, new Map(target.node.typeParams.map((name, index) => [name, targetType.args[index] ?? errorTy]))).changes.some(path => path === 'self' || path.startsWith('self.')));
       const info: BindingInfo = { key, target, exposedType, stateful, lifetime: item.lifetime ?? (stateful ? 'fresh' : 'shared'),
-        dependencies: [], constructorKeys: [], declaration: item, requiresScope: item.lifetime === 'scoped' };
+        dependencies: [], constructorKeys: [], declaration: item, includedBy, requiresScope: item.lifetime === 'scoped' };
       this.bindings.push(info);
       this.bindingByKey.set(key, info);
     }
@@ -1204,7 +1415,7 @@ class Checker {
       name: field.name, origins: context.flow.origins(field.name), mutable: !!field.mutable || field.ownership === 'own',
     })));
     for (const [name, local] of context.locals) if (local.ownership === 'borrow' && !initializing) {
-      context.flow.borrow(name, fn.span, (span, message) => this.report(span, message, 'BORROW'), true);
+      context.flow.borrow(name, fn.span, (span, message, details) => this.report(span, message, 'BORROW', details), true);
       context.borrowed.add(name);
     }
     context.effects = this.contractFor(fn, file, owner, params);
@@ -1242,7 +1453,11 @@ class Checker {
   private mergeMoved(target: Context, branches: Context[]): void {
     target.flow.join(branches.map(branch => branch.flow));
     for (const [name, local] of target.locals) {
-      if (branches.some(branch => branch.locals.get(name)?.moved)) local.moved = true;
+      if (branches.some(branch => branch.locals.get(name)?.moved)) {
+        local.moved = true;
+        local.moveSites=[...(local.moveSites ?? []),...branches.flatMap(branch=>branch.locals.get(name)?.moveSites ?? [])]
+          .filter((site,index,sites)=>sites.findIndex(other=>other.file===site.file&&other.start===site.start)===index);
+      }
       if (branches.some(branch => branch.locals.get(name)?.type.nullable))
         local.type = local.declaredType ?? { ...local.type, nullable: true };
     }
@@ -1315,9 +1530,13 @@ class Checker {
     return contract;
   }
 
-  private requireUse(key: string, display: string, span: Span, context: Context, effect?: CapabilityEffect): void {
+  private requireUse(key: string, display: string, span: Span, context: Context, effect?: CapabilityEffect, target?: MethodDecl): void {
     if (context.locked) this.report(span, `Release the lock before ${display}; I/O and capability calls cannot hold a lock`, 'CONCURRENCY');
     if (!context.callable) return;
+    const byKey = this.capabilitySites.get(context.callable) ?? new Map<string, {span:Span;target?:MethodDecl}[]>();
+    this.capabilitySites.set(context.callable, byKey);
+    const sites = byKey.get(key) ?? []; byKey.set(key, sites);
+    if(!sites.some(site => site.span === span && site.target === target)) sites.push({span,target});
     const inferred = this.inferring && this.inferredUses.get(context.callable);
     if (inferred) {
       if (!inferred.has(key)) {
@@ -1386,10 +1605,11 @@ class Checker {
 
   private immutableData(type: Ty, seen = new Set<string>()): boolean {
     if (['builtin:int', 'builtin:c_int', 'builtin:float', 'builtin:string', 'builtin:bool', 'null', 'builtin:Data'].includes(type.id)) return true;
-    if (type.kind === 'param') return !!type.bounds?.some(bound => bound.id === 'builtin:Data');
+    if (type.kind === 'param') return !!type.bounds?.some(bound => bound.id === 'builtin:Data' || bound.kind === 'choice' && this.immutableData(bound, seen));
     if (['builtin:Tuple', 'builtin:List', 'builtin:Set', 'builtin:Map'].includes(type.id)) return type.args.every(arg => this.immutableData(arg, seen));
     if (['builtin:Bytes', 'builtin:Json', 'builtin:RsaPrivateKey', 'builtin:RsaPublicKey'].includes(type.id)) return true;
     const node = type.def?.node;
+    if(node?.kind==='choice'){if(seen.has(type.id))return true;seen.add(type.id);const members=choiceMembers(this.project,type);return !!members&&members.every(member=>this.immutableData(member,seen));}
     if (node?.kind !== 'class' || !node.record) return false;
     if (seen.has(type.id)) return true;
     seen.add(type.id);
@@ -1408,15 +1628,42 @@ class Checker {
     return !mutableChildren(type);
   }
 
-  private patternLocals(names: string[], type: Ty, origins: Origins, context: Context, span: Span, source?: string): void {
-    const types = names.length === 1 ? [type] : type.id === 'builtin:Tuple' ? type.args : [];
-    if (types.length !== names.length) this.report(span, `Pattern needs a Tuple with ${names.length} positions`, 'PATTERN');
-    for (const [index, name] of names.entries()) {
-      if (context.locals.has(name)) this.report(span, `Pattern variable ${name} already exists`, 'PATTERN');
-      const item = { ...(types[index] ?? errorTy), readonly: true };
-      context.locals.set(name, { type: item, declaredType: item, ownership: 'managed', moved: false, definition: span });
-      context.flow.declare(name, names.length === 1 ? origins : context.flow.field(origins, String(index)), true, {source});
+  private bindPatternName(name:string,type:Ty,origins:Origins,context:Context,span:Span,source?:string):void {
+    if(name==='next'){this.report(span,'next is reserved for interceptor continuations','NEXT');return;}
+    if(context.locals.has(name)){this.report(span,`Pattern variable ${name} already exists`,'PATTERN');return;}
+    const item={...type,readonly:true};
+    context.locals.set(name,{type:item,declaredType:item,ownership:'managed',moved:false,definition:span});
+    context.flow.declare(name,origins,true,{source,external:context.flow.externalOrigin(origins)});
+  }
+
+  private bindPattern(pattern:BindingPattern,type:Ty,origins:Origins,context:Context,source?:string):void {
+    this.patternTypes.set(pattern,type);
+    if(pattern.kind==='nameBinding'){
+      this.bindPatternName(pattern.name,type,origins,context,pattern.span,source);return;
     }
+    if(type.nullable||type.optional)this.report(pattern.span,'Narrow optional values with a null check or some case before destructuring','PATTERN');
+    if(pattern.kind==='tupleBinding'){
+      if(type.id!=='builtin:Tuple'||type.args.length!==pattern.items.length)this.report(pattern.span,`Pattern needs a Tuple with ${pattern.items.length} positions`,'PATTERN');
+      pattern.items.forEach((item,index)=>this.bindPattern(item,type.id==='builtin:Tuple'?type.args[index]??errorTy:errorTy,context.flow.field(origins,String(index)),context,source));return;
+    }
+    const node=type.def?.node;
+    if(node?.kind!=='class'||!node.record){this.report(pattern.span,'A named field pattern needs an immutable record','PATTERN');return;}
+    const types=new Map(node.typeParams.map((name,index)=>[name,type.args[index]??errorTy])),seen=new Set<string>();
+    for(const entry of pattern.fields){
+      if(seen.has(entry.name))this.report(entry.nameSpan,`Repeated record field ${entry.name}`,'PATTERN');seen.add(entry.name);
+      const index=node.fields.findIndex(field=>field.name===entry.name),field=node.fields[index];
+      if(!field){this.report(entry.nameSpan,`${type.name} has no record field ${entry.name}`,'PATTERN');continue;}
+      this.checkMemberVisibility(type.id,type.name,field.name,entry.nameSpan,context);
+      this.patternFields.set(entry,{owner:type.def!,field,index});
+      this.bindPattern(entry.pattern,this.resolveType(field.type,type.def!.file,types),context.flow.field(origins,field.name),context,source);
+    }
+  }
+
+  private patternLocals(names: string[], type: Ty, origins: Origins, context: Context, span: Span, source?: string, tuplePattern = false): void {
+    const types = names.length === 1 && !tuplePattern ? [type] : type.id === 'builtin:Tuple' ? type.args : [];
+    if (types.length !== names.length) this.report(span, `Pattern needs a Tuple with ${names.length} positions`, 'PATTERN');
+    for (const [index, name] of names.entries())
+      this.bindPatternName(name,types[index]??errorTy,names.length===1&&!tuplePattern?origins:context.flow.field(origins,String(index)),context,span,source);
   }
 
   private captureScope(span: Span, context: Context): void {
@@ -1428,7 +1675,17 @@ class Checker {
     this.scopes.set(`${span.file}:${span.start}:${span.end}`, { span, locals: [...context.locals].map(([name, local]) => {
       const param = parameters.find(param => param.name === name);
       const field = local.origin === 'field' ? fields.find(field => field.name === name) : undefined;
+      const trace=context.flow.describe(name);
+      const references=(names:string[])=>names.map(name=>({name,span:context.locals.get(name)?.definition}));
+      const origins=trace.origins.flatMap(origin=>{
+        const match=/^new:(.*):(\d+)$/.exec(origin),file=match&&this.project.files.get(match[1]);
+        if(!file||!match)return [];
+        const start=Number(match[2]),before=file.source.slice(0,start).split('\n');
+        return [{file:file.path,start,end:start,line:before.length,column:before.at(-1)!.length+1}];
+      });
       return { name, type: local.type, moved: local.moved, ownership: local.ownership, definition: local.definition,
+        ownershipFacts:{origins,owners:references([name,...trace.aliases].filter(other=>context.locals.get(other)?.ownership==='own')),
+          aliases:references(trace.aliases),borrows:trace.borrows,captures:trace.captures,moves:local.moveSites ?? []},
         kind: field ? 'property' : param || name === 'self' ? 'parameter' : 'variable',
         documentation: doc?.parameters.get(param?.label ?? name) ?? fieldDoc?.parameters.get(field?.label ?? name) };
     }) });
@@ -1436,22 +1693,117 @@ class Checker {
 
   private checkStatements(body: Stmt[], context: Context, fallback?: Span, joinsTasks = false): void {
     const names = new Set(context.locals.keys());
+    const breakStart = context.loop?.breaks.length ?? 0, continueStart = context.loop?.continues.length ?? 0;
     const previous = context.region;
     const region = (body as Stmt[] & { span?: Span }).span ?? fallback ?? previous;
     if (region) { context.region = region; this.captureScope({ ...region, end: body[0]?.span.start ?? region.end }, context); }
+    let reachable = true, dead:Context|undefined;
     body.forEach((stmt, index) => {
-      this.captureScope(stmt.span, context);
-      this.checkStatement(stmt, context);
-      if (region) this.captureScope({ ...stmt.span, start: stmt.span.end, end: body[index + 1]?.span.start ?? region.end }, context);
+      // Check unreachable source for editor facts and diagnostics, but do not let
+      // its moves or waits change a reachable exit's ownership/error state.
+      const current = reachable ? context : dead!;
+      this.captureScope(stmt.span, current);
+      this.checkStatement(stmt, current);
+      if (region) this.captureScope({ ...stmt.span, start: stmt.span.end, end: body[index + 1]?.span.start ?? region.end }, current);
+      if (reachable && !canFallThrough([stmt])) {
+        reachable = false; dead = this.cloneContext(context); dead.exceptionalFlows = [];
+        if (context.loop) dead.loop = {breaks:[],continues:[]};
+      }
     });
     if (!joinsTasks) for (const [name, local] of context.locals) if (!names.has(name) && local.ownership === 'own' && !local.moved &&
         context.flow.hasTaskCapture(context.flow.origins(name)))
-      this.report(local.definition ?? fallback!, `Owned ${name} is still borrowed by a task; wait before leaving this block or declare it directly in the task's scope block`, 'CONCURRENCY');
+      this.report(local.definition ?? fallback!, `Owned ${name} is still borrowed by a task; wait before leaving this block or declare it directly in the task's scope block`, 'CONCURRENCY',
+        context.flow.taskEvidence(context.flow.origins(name),'ownership.cleanup-during-task','owned local cleanup after conflicting task loans end'));
+    for (const exit of [...(context.loop?.breaks.slice(breakStart) ?? []), ...(context.loop?.continues.slice(continueStart) ?? [])]) {
+      for (const name of exit.locals.keys()) if (!names.has(name)) exit.locals.delete(name);
+      exit.flow.forgetLocals(names);
+    }
+    for(const name of context.locals.keys())if(!names.has(name))context.locals.delete(name);
+    context.flow.forgetLocals(names);
     context.region = previous;
   }
 
+  private unwindLoopExits(context:Context,breakStart:number,continueStart:number):void {
+    for(const exit of [...(context.loop?.breaks.slice(breakStart)??[]),...(context.loop?.continues.slice(continueStart)??[])]) {
+      exit.flow.restoreLexical(context.flow);exit.borrowed=new Set(context.borrowed);
+      exit.locked=context.locked;exit.scope=context.scope;exit.region=context.region;
+      exit.unsafe=context.unsafe;exit.loopDepth=context.loopDepth;
+    }
+  }
+
+  private matchBranches<T extends MatchPattern>(expression:Expr,value:Ty,cases:T[],context:Context,span:Span):{clause:T;inside:Context}[] {
+    // A choice bound supplies the closed record domain, not a concrete T.
+    // Narrowed branches retain their record identity; they cannot assign back to T.
+    const bound=value.kind==='param'?value.bounds?.find(type=>type.kind==='choice'&&choiceMembers(this.project,type)):undefined;
+    if(bound)value={...bound,nullable:value.nullable||bound.nullable,optional:value.optional||bound.optional};
+    const seen=new Set<string>(),types=new Set<string>(),numbers:Extract<Expr,{kind:'literal'}>[]=[];
+    const branches=cases.map(clause=>{
+      const inside=this.cloneContext(context),literal=clause.literal;
+      const key=clause.pattern==='literal'&&literal?.kind==='literal'?
+        typeof literal.value==='number'&&literal.numericType!=='float'?'int:'+BigInt(literal.numericText??String(literal.value)).toString():JSON.stringify(literal.value):
+        clause.pattern==='type'?typeName(clause.type!):clause.pattern;
+      const repeatedNumber=literal?.kind==='literal'&&typeof literal.value==='number'&&numbers.some(previous=>previous.numericType!=='float'&&literal.numericType!=='float'?
+        BigInt(previous.numericText??String(previous.value))===BigInt(literal.numericText??String(literal.value)):previous.value===literal.value);
+      if(literal?.kind==='literal'&&typeof literal.value==='number')numbers.push(literal);
+      if(seen.has(key)||repeatedNumber||seen.has('else')||seen.has('some')&&clause.pattern!=='null')this.report(clause.span,'Unreachable or repeated match case','MATCH');
+      seen.add(key);let narrowed=value;
+      if(clause.pattern==='null'||clause.pattern==='some'){
+        if(!value.nullable&&!value.optional)this.report(clause.span,'null/some patterns require a nullable or optional value','MATCH');
+        narrowed=clause.pattern==='some'?{...value,nullable:false,optional:false}:nullTy;
+      }else if(clause.pattern==='literal'){
+        const actual=this.checkExpression(clause.literal!,context);if(!this.assignable(actual,value))this.report(clause.span,'Match literal has an incompatible type','MATCH');
+      }else if(clause.pattern==='type'){
+        narrowed=this.resolveType(clause.type!,context.file,context.types);
+        if(types.has(narrowed.id))this.report(clause.span,'Unreachable or repeated resolved type case','MATCH');types.add(narrowed.id);
+        if(narrowed.kind!=='class'||narrowed.args.length||!this.assignable(narrowed,{...value,nullable:true}))this.report(clause.span,'Type patterns require a concrete non-generic class compatible with the matched value','MATCH');
+      }
+      if(expression.kind==='name'&&clause.pattern==='some'){const local=inside.locals.get(expression.name);if(local)local.type=narrowed;}
+      if(clause.name)this.patternLocals([clause.name],narrowed,this.placesOf(expression,context),inside,clause.span,sourceName(expression));
+      return {clause,inside};
+    });
+    const alternatives=choiceMembers(this.project,value);
+    const closed=!!alternatives&&alternatives.every(type=>types.has(type.id))&&(!value.nullable&&!value.optional||seen.has('null'));
+    const exhaustive=closed||seen.has('else')||(value.nullable||value.optional)&&seen.has('null')&&seen.has('some')||
+      !value.nullable&&!value.optional&&value.id==='builtin:bool'&&seen.has('true')&&seen.has('false');
+    if(!exhaustive)this.report(span,alternatives?'Match is incomplete; cover '+alternatives.filter(type=>!types.has(type.id)).map(type=>type.name).concat((value.nullable||value.optional)&&!seen.has('null')?['null']:[]).join(' and ')+', or add else':'Match is incomplete; cover both booleans, null and some, or add else','MATCH');
+    return branches;
+  }
+
+  /** Share snapshot item typing and loop reentry analysis between loops and list selection. */
+  private checkIteration(stmt:{iterable:Expr;pattern?:BindingPattern;names:string[];span:Span},context:Context,
+    body:(inside:Context)=>void,reenters=true):void {
+      const iterable = this.checkExpression(stmt.iterable, context);
+      if (!['builtin:List', 'builtin:Set', 'builtin:Map', 'builtin:Tuple'].includes(iterable.id))
+        this.report(stmt.iterable.span, 'for needs a List, Set, Map, or Tuple', 'ITERATION');
+      const type = iterable.id === 'builtin:Map' ? { ...builtin('Tuple'), args: iterable.args } :
+        iterable.id === 'builtin:Tuple' ? iterable.args[0] ?? errorTy : iterable.args[0] ?? errorTy;
+      if (iterable.id === 'builtin:Tuple' && iterable.args.some(arg => !this.sameType(arg, type)))
+        this.report(stmt.iterable.span, 'Iterated tuple positions must have the same type; destructure heterogeneous tuples', 'ITERATION');
+      const inside = this.cloneContext(context);
+      inside.loopDepth = (context.loopDepth ?? 0) + 1;
+      inside.loop = {breaks:[], continues:[]};
+      if(stmt.pattern)this.bindPattern(stmt.pattern,type,context.flow.field(this.placesOf(stmt.iterable,context)),inside,sourceName(stmt.iterable));
+      else this.patternLocals(stmt.names, type, context.flow.field(this.placesOf(stmt.iterable, context)), inside, stmt.span, sourceName(stmt.iterable));
+      if(stmt.pattern)this.captureScope(stmt.pattern.span,inside);
+      let previous = '';
+      for (let count = 0; count <= context.locals.size * 3 + 3; count++) {
+        body(inside);
+        const signature = JSON.stringify([...inside.locals].map(([name, local]) => [name, local.moved])) + inside.flow.signature();
+        const reentries = [...(reenters ? [inside] : []), ...inside.loop!.continues];
+        if (signature === previous || !reentries.length) break;
+        previous = signature; this.mergeMoved(inside, reentries);
+      }
+      this.mergeMoved(context, [this.cloneContext(context), inside, ...inside.loop!.breaks]);
+  }
+
   private checkStatement(stmt: Stmt, context: Context): void {
+    if (stmt.kind === 'break' || stmt.kind === 'continue') {
+      if (!context.loop) this.report(stmt.span, `${stmt.kind} requires an enclosing for or while loop`, 'LOOP');
+      else context.loop[stmt.kind === 'break' ? 'breaks' : 'continues'].push(this.cloneContext(context));
+      return;
+    }
     if (stmt.kind === 'lock') {
+      const breakStart=context.loop?.breaks.length??0,continueStart=context.loop?.continues.length??0;
       if (context.locked) this.report(stmt.span, 'Nested locks require a single combined shared value to avoid lock-order deadlocks', 'CONCURRENCY');
       const type = this.checkExpression(stmt.value, context);
       if (type.id !== 'builtin:Shared') this.report(stmt.value.span, 'lock requires Shared<T>', 'CONCURRENCY');
@@ -1460,8 +1812,9 @@ class Checker {
       const inside = this.cloneContext(context); inside.locked = true;
       const origins = allocationOrigin(stmt.span); inside.flow.region(origins);
       inside.locals.set(stmt.name, {type: {...(type.args[0] ?? errorTy), readonly: false}, ownership: 'borrow', moved: false, definition: stmt.span});
-      inside.flow.declare(stmt.name, origins, false); inside.flow.borrow(stmt.name, stmt.span, (span, message) => this.report(span, message, 'BORROW'), true);
-      inside.borrowed.add(stmt.name); this.checkStatements(stmt.body, inside, stmt.span); this.mergeMoved(context, [inside]); return;
+      inside.flow.declare(stmt.name, origins, false); inside.flow.borrow(stmt.name, stmt.span, (span, message, details) => this.report(span, message, 'BORROW', details), true);
+      inside.borrowed.add(stmt.name); this.checkStatements(stmt.body, inside, stmt.span);
+      this.unwindLoopExits(context,breakStart,continueStart); this.mergeMoved(context, [inside]); return;
     }
     if (stmt.kind === 'serve') {
       if (context.callable || context.file !== this.project.main?.path) this.report(stmt.span, 'Select served endpoints in main.aug', 'HTTP');
@@ -1488,13 +1841,13 @@ class Checker {
       const origins = this.placesOf(stmt.value, context);
       if (context.locals.has(stmt.name)) this.report(stmt.span, `Variable ${stmt.name} already exists`, 'NAME');
       const root = sourceName(stmt.value);
-      if (root && context.flow.external(root) && context.locals.get(root)?.ownership !== 'own')
-        this.report(stmt.span, 'Freezing an external input requires own ownership', 'OWN');
-      context.flow.freeze(origins, stmt.span, (span, message) => this.report(span, message, 'BORROW'));
+      if (context.flow.externalOrigin(origins) || root && context.flow.external(root) && context.locals.get(root)?.ownership !== 'own')
+        this.report(stmt.span, 'Freezing an external input requires own ownership of every reachable reference', 'OWN');
+      context.flow.freeze(origins, stmt.span, (span, message, details) => this.report(span, message, 'BORROW', details));
       for (const [name, local] of context.locals) if (context.flow.frozen(context.flow.origins(name))) {
-        local.type = {...local.type, readonly: true, frozen: true}; local.ownership = 'managed';
+        local.type = immutableType(local.type); local.ownership = 'managed';
       }
-      context.locals.set(stmt.name, {type: {...type, readonly: true, frozen: true}, ownership: 'managed', moved: false, definition: stmt.span});
+      context.locals.set(stmt.name, {type: immutableType(type), ownership: 'managed', moved: false, definition: stmt.span});
       context.flow.declare(stmt.name, origins, true);
       return;
     }
@@ -1502,6 +1855,7 @@ class Checker {
     if (stmt.kind === 'scope') {
       const inside = this.cloneContext(context); inside.scope = stmt.span; inside.loopDepth = 0;
       const exceptionStart = context.exceptionalFlows?.length ?? 0;
+      const breakStart = context.loop?.breaks.length ?? 0, continueStart = context.loop?.continues.length ?? 0;
       const scope = `tasks:${stmt.span.file}:${stmt.span.start}`;
       inside.flow.region(new Set([scope, ...this.bindings.filter(binding => binding.lifetime === 'scoped').map(binding =>
         `scope:${stmt.span.file}:${stmt.span.start}:${binding.key}`)]));
@@ -1510,85 +1864,52 @@ class Checker {
       inside.flow.joinTasks(scope);
       for (const error of errors) this.checkAllowedError(error, stmt.span, {...context, flow: inside.flow});
       for (const failure of context.exceptionalFlows?.slice(exceptionStart) ?? []) failure.flow.joinTasks(scope);
+      for (const exit of [...(context.loop?.breaks.slice(breakStart) ?? []), ...(context.loop?.continues.slice(continueStart) ?? [])]) {
+        const errors = exit.flow.pendingTaskErrors(scope); exit.flow.joinTasks(scope);
+        for (const error of errors) this.checkAllowedError(error, stmt.span, {...context, flow:exit.flow});
+      }
+      this.unwindLoopExits(context,breakStart,continueStart);
       this.mergeMoved(context, [inside]);
       return;
     }
     if (stmt.kind === 'destructure') {
       const type = this.checkExpression(stmt.value, context);
+      if(stmt.pattern){this.bindPattern(stmt.pattern,type,this.placesOf(stmt.value,context),context,sourceName(stmt.value));return;}
       if (type.id !== 'builtin:Tuple' || type.args.length !== stmt.names.length)
         this.report(stmt.span, `Destructuring needs a Tuple with ${stmt.names.length} positions`, 'PATTERN');
-      this.patternLocals(stmt.names, type, this.placesOf(stmt.value, context), context, stmt.span);
+      this.patternLocals(stmt.names, type, this.placesOf(stmt.value, context), context, stmt.span, sourceName(stmt.value), true);
       return;
     }
     if (stmt.kind === 'for') {
-      const iterable = this.checkExpression(stmt.iterable, context);
-      if (!['builtin:List', 'builtin:Set', 'builtin:Map', 'builtin:Tuple'].includes(iterable.id))
-        this.report(stmt.iterable.span, 'for needs a List, Set, Map, or Tuple', 'ITERATION');
-      const type = iterable.id === 'builtin:Map' ? { ...builtin('Tuple'), args: iterable.args } :
-        iterable.id === 'builtin:Tuple' ? iterable.args[0] ?? errorTy : iterable.args[0] ?? errorTy;
-      if (iterable.id === 'builtin:Tuple' && iterable.args.some(arg => !this.sameType(arg, type)))
-        this.report(stmt.iterable.span, 'Iterated tuple positions must have the same type; destructure heterogeneous tuples', 'ITERATION');
-      const inside = this.cloneContext(context);
-      inside.loopDepth = (context.loopDepth ?? 0) + 1;
-      this.patternLocals(stmt.names, type, context.flow.field(this.placesOf(stmt.iterable, context)), inside, stmt.span, sourceName(stmt.iterable));
-      let previous = '';
-      for (let count = 0; count <= context.locals.size * 3 + 3; count++) {
-        this.checkStatements(stmt.body, inside, stmt.span);
-        const signature = JSON.stringify([...inside.locals].map(([name, local]) => [name, local.moved])) + inside.flow.signature();
-        if (signature === previous || !canFallThrough(stmt.body)) break;
-        previous = signature;
-      }
-      this.mergeMoved(context, [inside]);
-      return;
+      this.checkIteration(stmt,context,inside=>this.checkStatements(stmt.body,inside,stmt.span),canFallThrough(stmt.body));return;
     }
     if (stmt.kind === 'match') {
-      const value = this.checkExpression(stmt.value, context);
-      const seen = new Set<string>();
-      const branches: Context[] = [];
-      for (const clause of stmt.cases) {
-        const inside = this.cloneContext(context);
-        const key = clause.pattern === 'literal' ? JSON.stringify(clause.literal?.kind === 'literal' ? clause.literal.value : '?') :
-          clause.pattern === 'type' ? typeName(clause.type!) : clause.pattern;
-        if (seen.has(key) || seen.has('else') || seen.has('some') && clause.pattern !== 'null')
-          this.report(clause.span, 'Unreachable or repeated match case', 'MATCH');
-        seen.add(key);
-        let narrowed = value;
-        if (clause.pattern === 'null' || clause.pattern === 'some') {
-          if (clause.pattern === 'null' ? !value.nullable : !value.nullable && !value.optional) this.report(clause.span, 'null/some patterns require a nullable or optional value', 'MATCH');
-          narrowed = clause.pattern === 'some' ? { ...value, nullable: false, optional: false } : nullTy;
-        } else if (clause.pattern === 'literal') {
-          const actual = this.checkExpression(clause.literal!, context);
-          if (!this.assignable(actual, value)) this.report(clause.span, 'Match literal has an incompatible type', 'MATCH');
-        } else if (clause.pattern === 'type') {
-          narrowed = this.resolveType(clause.type!, context.file, context.types);
-          if (narrowed.kind !== 'class' || narrowed.args.length || !this.assignable(narrowed, { ...value, nullable: true }))
-            this.report(clause.span, 'Type patterns require a concrete non-generic class compatible with the matched value', 'MATCH');
-        }
-        if (stmt.value.kind === 'name' && clause.pattern === 'some') {
-          const local = inside.locals.get(stmt.value.name);
-          if (local) local.type = narrowed;
-        }
-        if (clause.name) this.patternLocals([clause.name], narrowed, this.placesOf(stmt.value, context), inside, clause.span, sourceName(stmt.value));
-        this.checkStatements(clause.body, inside, clause.span);
-        if (canFallThrough(clause.body)) branches.push(inside);
+      const value=this.checkExpression(stmt.value,context),branches:Context[]=[];
+      for(const {clause,inside} of this.matchBranches(stmt.value,value,stmt.cases,context,stmt.span)){
+        this.checkStatements(clause.body,inside,clause.span);
+        if(canFallThrough(clause.body))branches.push(inside);
       }
-      const exhaustive = seen.has('else') || (value.nullable || value.optional) && seen.has('null') && seen.has('some') ||
-        !value.nullable && !value.optional && value.id === 'builtin:bool' && seen.has('true') && seen.has('false');
-      if (!exhaustive) this.report(stmt.span, 'Match is incomplete; cover both booleans, null and some, or add else', 'MATCH');
-      this.mergeMoved(context, branches);
-      return;
+      this.mergeMoved(context,branches);return;
     }
     if (stmt.kind === 'assign') {
+      if(stmt.target.kind==='name'&&!stmt.declaredType) {
+        const local=context.locals.get(stmt.target.name);
+        if(local?.definition)this.resolvedNames.set(stmt.target,{name:stmt.target.name,definition:local.definition,property:local.origin==='field'});
+      }
       if (stmt.target.kind === 'name' && stmt.target.name === 'next')
         this.report(stmt.target.span, 'next is reserved for interceptor continuations', 'NEXT');
       const expected = stmt.declaredType ? this.resolveType(stmt.declaredType, context.file, context.types) :
         stmt.target.kind === 'name' ? context.locals.get(stmt.target.name)?.declaredType ?? context.locals.get(stmt.target.name)?.type : undefined;
       const value = this.checkExpression(stmt.value, context, expected);
-      if(value.kind==='resource'&&stmt.target.kind==='name'&&stmt.ownership!=='own'&&context.locals.get(stmt.target.name)?.origin!=='field')this.report(stmt.span,'Native resources must be held by own bindings','OWN');
+      const ownership = stmt.ownership === 'own' || stmt.target.kind === 'name' && !context.locals.has(stmt.target.name) &&
+        stmt.value.kind === 'call' && this.ownershipOf(stmt.value,context) === 'own' ? 'own' : 'managed';
+      if (ownership === 'own' && stmt.ownership !== 'own') this.inferredOwned.add(stmt);
+
+      if(value.kind==='resource'&&stmt.target.kind==='name'&&ownership!=='own'&&context.locals.get(stmt.target.name)?.origin!=='field')this.report(stmt.span,'Native resources must be held by own bindings','OWN');
       const source = stmt.value.kind === 'name' ? context.locals.get(stmt.value.name) : undefined;
       const origins = this.placesOf(stmt.value, context);
       const ownedSource = this.ownershipOf(stmt.value, context) === 'own';
-      if (ownedSource && stmt.ownership !== 'own' && stmt.target.kind === 'name' && !context.locals.has(stmt.target.name))
+      if (ownedSource && ownership !== 'own' && stmt.target.kind === 'name' && !context.locals.has(stmt.target.name))
         this.report(stmt.value.span, 'An owned object cannot be copied into a managed variable', 'OWN');
       if (stmt.target.kind === 'name') {
         const existing = context.locals.get(stmt.target.name);
@@ -1597,7 +1918,7 @@ class Checker {
           const target = expected!;
           if (!this.assignable(value, target)) this.report(stmt.value.span,
             `Cannot assign ${tyName(value)} to ${tyName(target)}`);
-          if (stmt.ownership === 'own') {
+          if (ownership === 'own') {
             if (stmt.value.kind === 'member') this.report(stmt.value.span, 'Moving an owned field requires an explicit take operation', 'OWN');
             if (!['own', 'fresh'].includes(this.ownershipOf(stmt.value, context)))
               this.report(stmt.value.span,
@@ -1609,7 +1930,7 @@ class Checker {
             }
           } else if (source?.ownership === 'own') this.report(stmt.value.span,
             `Copying owned value ${stmt.value.kind === 'name' ? stmt.value.name : ''} is forbidden`, 'OWN');
-          context.locals.set(stmt.target.name, { type: { ...target, readonly: value.readonly, frozen: value.frozen }, declaredType: target, ownership: stmt.ownership,
+          context.locals.set(stmt.target.name, { type: { ...target, readonly: value.readonly, frozen: value.frozen }, declaredType: target, ownership,
             moved: false, origin: stmt.value.kind === 'name' ? stmt.value.name : undefined, definition: stmt.target.span });
           context.flow.declare(stmt.target.name, origins, !!value.readonly, { source: sourceName(stmt.value) });
         } else if (existing) {
@@ -1621,14 +1942,16 @@ class Checker {
               !context.initializing && !context.borrowed.has('self') && context.locals.get('self')?.ownership !== 'borrow')
             this.report(stmt.target.span, `Mutating field ${stmt.target.name} requires borrow self`, 'BORROW');
           if (existing.origin === 'field' && context.flow.hasTaskCapture(unionOrigins(context.flow.origins('self'), context.flow.origins(stmt.target.name))))
-            this.report(stmt.target.span, `Cannot mutate ${stmt.target.name} while a task uses it; wait for the task first`, 'CONCURRENCY');
+            this.report(stmt.target.span, `Cannot mutate ${stmt.target.name} while a task uses it; wait for the task first`, 'CONCURRENCY',
+              context.flow.taskEvidence(unionOrigins(context.flow.origins('self'),context.flow.origins(stmt.target.name)),
+                'ownership.mutation-during-task','mutable access after conflicting task loans end'));
           if (existing.origin === 'field' && !context.initializing) {
             const name = stmt.target.name;
             const storage = context.owner && 'fields' in context.owner.node ? fieldsOf(context.owner.node).find(field => field.name === name) : undefined;
             if (!storage?.mutable) this.report(stmt.target.span, `Field ${name} is read-only; declare mutable storage`, 'MUTABILITY');
             if (storage?.mutable && this.isReference(value) && value.readonly)
               this.report(stmt.value.span, 'Read-only references cannot become mutable storage', 'MUTABILITY');
-            context.flow.escape(origins, stmt.value.span, (span, message) => this.report(span, message, 'BORROW'));
+            context.flow.escape(origins, stmt.value.span, (span, message, details) => this.report(span, message, 'BORROW', details));
             this.requireChange(stmt.target, stmt.span, context);
           }
           if (existing.origin === 'field' && context.initializing && context.owner?.node.kind === 'class' && context.owner.node.record)
@@ -1638,8 +1961,8 @@ class Checker {
             `Cannot assign ${tyName(value)} to ${tyName(declared)}`);
           if (existing.origin !== 'field') existing.type = { ...declared, nullable: value.nullable, optional: value.optional, readonly: value.readonly, frozen: value.frozen };
           context.flow.rebind(stmt.target.name, origins, !!value.readonly, stmt.span,
-            (span, message) => this.report(span, message, 'BORROW'), sourceName(stmt.value));
-          existing.moved = false;
+            (span, message, details) => this.report(span, message, 'BORROW', details), sourceName(stmt.value));
+          existing.moved = false; existing.moveSites = undefined;
           if(existing.origin==='field'&&existing.ownership==='own'){
             if(source?.ownership==='own'&&stmt.value.kind==='name')this.moveOwnedLocal(stmt.value.name,stmt.value.span,context);
             else if(!['own','fresh'].includes(this.ownershipOf(stmt.value,context)))this.report(stmt.value.span,'An owned field requires a new object or another owned value','OWN');
@@ -1648,14 +1971,15 @@ class Checker {
           if (source?.ownership === 'own') this.report(stmt.value.span,
             'Cannot copy an owned value into a managed variable', 'OWN');
           context.locals.set(stmt.target.name,
-            { type: value, declaredType: value, ownership: 'managed', moved: false,
+            { type: value, declaredType: value, ownership, moved: false,
               origin: stmt.value.kind === 'name' ? stmt.value.name : undefined, definition: stmt.target.span });
           context.flow.declare(stmt.target.name, origins, !!value.readonly, { source: sourceName(stmt.value) });
         }
       } else if (stmt.target.kind === 'member') {
         const object = this.checkExpression(stmt.target.object, context);
         if (context.flow.hasTaskCapture(this.placesOf(stmt.target.object, context)))
-          this.report(stmt.target.span, 'Cannot mutate a value while a task uses it; wait for the task first', 'CONCURRENCY');
+          this.report(stmt.target.span, 'Cannot mutate a value while a task uses it; wait for the task first', 'CONCURRENCY',
+            context.flow.taskEvidence(this.placesOf(stmt.target.object,context),'ownership.mutation-during-task','mutable access after conflicting task loans end'));
         const target = this.memberType(object, stmt.target.name, stmt.target.span, context);
         if (!this.assignable(value, target)) this.report(stmt.value.span,
           `Cannot assign ${tyName(value)} to ${tyName(target)}`);
@@ -1675,7 +1999,7 @@ class Checker {
           this.report(stmt.target.span, 'A read-only input cannot provide mutable access', 'MUTABILITY');
         if (field?.mutable && this.isReference(value) && value.readonly)
           this.report(stmt.value.span, 'Read-only references cannot become mutable storage', 'MUTABILITY');
-        context.flow.escape(origins, stmt.value.span, (span, message) => this.report(span, message, 'BORROW'));
+        context.flow.escape(origins, stmt.value.span, (span, message, details) => this.report(span, message, 'BORROW', details));
         this.requireChange(stmt.target.object, stmt.span, context);
         if (field?.ownership === 'own') {
           if (source?.ownership === 'own' && stmt.value.kind === 'name')
@@ -1704,7 +2028,7 @@ class Checker {
         `Expected return ${tyName(context.returns)}, got ${tyName(type)}`);
       const ownership = stmt.value ? this.ownershipOf(stmt.value, context) : 'managed';
       if (stmt.value && this.isReference(type)) context.flow.escape(this.placesOf(stmt.value, context), stmt.span,
-        (span, message) => this.report(span, message, 'BORROW'), true,
+        (span, message, details) => this.report(span, message, 'BORROW', details), true,
         this.immutableData(type) && (!!type.frozen || type.def?.node.kind === 'class' && !!type.def.node.record || ['Bytes', 'Json', 'RsaPrivateKey', 'RsaPublicKey'].includes(type.name)));
       if (stmt.value?.kind === 'member' && ownership === 'own') this.report(stmt.span,
         'Moving an owned field requires an explicit take operation', 'OWN');
@@ -1735,7 +2059,10 @@ class Checker {
       if (!this.assignable(test, builtin('bool'))) this.report(stmt.test.span,
         `Condition must be bool, got ${tyName(test)}`);
       const bodyContext = this.cloneContext(context);
-      if (stmt.kind === 'while') bodyContext.loopDepth = (context.loopDepth ?? 0) + 1;
+      if (stmt.kind === 'while') {
+        bodyContext.loopDepth = (context.loopDepth ?? 0) + 1;
+        bodyContext.loop = {breaks:[], continues:[]};
+      }
       this.narrow(stmt.test, true, bodyContext);
       this.checkStatements(stmt.kind === 'if' ? stmt.then : stmt.body, bodyContext, stmt.span);
       if (stmt.kind === 'if') {
@@ -1749,7 +2076,8 @@ class Checker {
         if (!canFallThrough(stmt.then)) this.narrow(stmt.test, false, context);
         if (stmt.otherwise.length && !canFallThrough(stmt.otherwise)) this.narrow(stmt.test, true, context);
       } else {
-        if (canFallThrough(stmt.body)) {
+        if (canFallThrough(stmt.body) || bodyContext.loop!.continues.length) {
+          this.mergeMoved(bodyContext, [...(canFallThrough(stmt.body) ? [bodyContext] : []), ...bodyContext.loop!.continues]);
           let previous = '';
           let iterations = 0;
           const limit = context.locals.size * 3 + 3;
@@ -1760,17 +2088,19 @@ class Checker {
             previous = state;
             const iteration = this.cloneContext(context);
             iteration.loopDepth = (context.loopDepth ?? 0) + 1;
+            iteration.loop = bodyContext.loop;
             this.narrow(stmt.test, true, iteration);
             this.checkExpression(stmt.test, iteration);
             this.checkStatements(stmt.body, iteration, stmt.span);
             this.mergeMoved(bodyContext, [iteration]);
           }
         }
-        this.mergeMoved(context, [bodyContext]);
+        this.mergeMoved(context, [bodyContext, ...bodyContext.loop!.breaks]);
       }
       return;
     }
     if (stmt.kind === 'try') {
+      const breakStart = context.loop?.breaks.length ?? 0, continueStart = context.loop?.continues.length ?? 0;
       const catches = stmt.catches.map(entry => this.resolveType(entry.type, context.file, context.types));
       const inside = this.cloneContext(context);
       inside.allowedErrors = [...inside.allowedErrors, ...catches];
@@ -1781,10 +2111,13 @@ class Checker {
         const clause = stmt.catches[i];
         if (!this.implementsError(catches[i])) this.report(clause.type.span,
           `Catch type ${clause.type.name} must implement Error`);
+        const match = errorMatch(catches[i], type=>this.implementsError(type));
+        if(typeof match==='string')this.report(clause.type.span,match,'ERROR_MATCH');
+        else this.errorMatches.set(clause.type,match);
         const catchContext = this.cloneContext(context);
         const failures = inside.exceptionalFlows.filter(failure => this.assignable(failure.type, catches[i]));
         if (failures.length) catchContext.flow.join(failures.map(failure => failure.flow));
-        catchContext.locals.set(clause.name, { type: catches[i], ownership: 'managed', moved: false });
+        catchContext.locals.set(clause.name, { type: catches[i], ownership: 'managed', moved: false, definition:clause.span });
         catchContext.flow.declare(clause.name, allocationOrigin(clause.span), false);
         this.checkStatements(clause.body, catchContext, clause.span);
         branches.push(catchContext);
@@ -1792,8 +2125,12 @@ class Checker {
       context.exceptionalFlows?.push(...inside.exceptionalFlows.filter(failure => !catches.some(type => this.assignable(failure.type, type))));
       this.mergeMoved(context, branches);
       if (stmt.always) {
-        const cleanup = this.cloneContext(context);
+        const cleanup = this.cloneContext(context); cleanup.loop = undefined;
         this.checkStatements(stmt.always, cleanup, stmt.span);
+        for (const exit of [...(context.loop?.breaks.slice(breakStart) ?? []), ...(context.loop?.continues.slice(continueStart) ?? [])]) {
+          const prior = exit.loop; exit.loop = undefined;
+          this.checkStatements(stmt.always, exit, stmt.span); exit.loop = prior;
+        }
         const exits = (body: Stmt[]): boolean => body.some(statement => statement.kind === 'return' || statement.kind === 'serve' ||
           ('body' in statement && exits(statement.body)) || statement.kind === 'if' && (exits(statement.then) || exits(statement.otherwise)));
         const starts = (value: unknown): boolean => !!value && typeof value === 'object' &&
@@ -1810,13 +2147,15 @@ class Checker {
       return;
     }
     if (stmt.kind === 'borrow') {
+      const breakStart=context.loop?.breaks.length??0,continueStart=context.loop?.continues.length??0;
       const local = context.locals.get(stmt.name);
       if (!local) this.report(stmt.span, `Cannot borrow unknown variable ${stmt.name}`, 'BORROW');
       if (local?.type.readonly) this.report(stmt.span, `Cannot borrow read-only ${stmt.name} for mutation`, 'MUTABILITY');
       const inside = this.cloneContext(context);
-      inside.flow.borrow(stmt.name, stmt.span, (span, message) => this.report(span, message, 'BORROW'));
+      inside.flow.borrow(stmt.name, stmt.span, (span, message, details) => this.report(span, message, 'BORROW', details));
       inside.borrowed.add(stmt.name);
       this.checkStatements(stmt.body, inside, stmt.span);
+      this.unwindLoopExits(context,breakStart,continueStart);
       this.mergeMoved(context, [inside]);
     }
   }
@@ -1850,8 +2189,9 @@ class Checker {
   }
 
   private ownershipOf(expr: Expr, context: Context): 'managed' | 'own' | 'fresh' {
+    if(this.functionValues.has(expr))return 'fresh';
     if (expr.kind === 'name') return context.locals.get(expr.name)?.ownership === 'own' ? 'own' : 'managed';
-    if (expr.kind === 'collection') return 'fresh';
+    if (expr.kind === 'collection' || expr.kind === 'comprehension' || expr.kind === 'recordCopy') return 'fresh';
     if (expr.kind === 'member') {
       const type = this.expressionTypes.get(expr.object);
       const node = type?.def?.node;
@@ -1886,13 +2226,13 @@ class Checker {
     if (!fn.body || seen.has(fn)) return false;
     seen.add(fn);
     const bodyFresh = returnsFresh(fn.body, fields, expr => {
-      if (expr.kind === 'collection') return true;
+      if (expr.kind === 'collection' || expr.kind === 'comprehension' || this.functionValues.has(expr)) return true;
       if (expr.kind !== 'call' || expr.callee.kind !== 'name') return false;
       if (['List', 'Set', 'Map', 'Tuple', 'arguments'].includes(expr.callee.name)) return true;
       const def = this.project.scopes.get(file)?.get(expr.callee.name);
       return def?.node.kind === 'class' ? this.constructorIsFresh(def.node) :
         def?.node.kind === 'function' ? def.node.returnOwnership === 'own' || this.functionIsFresh(def.node, def.file, new Set(), seen) : false;
-    });
+    },!!(fn.returns.immutable||this.callableContracts.get(fn)?.result.immutable));
     return bodyFresh && (this.interceptorPlans.get(fn) ?? []).every(layer => returnsFresh(layer.around.body ?? [],
       new Set(layer.definition.node.kind === 'interceptor' ? layer.definition.node.fields.map(field => field.name) : []),
       expr => expr.kind === 'call' && expr.callee.kind === 'name' && expr.callee.name === 'next'));
@@ -1919,7 +2259,12 @@ class Checker {
 
   private placesOf(expr: Expr, context: Context): Origins {
     if (!this.isReference(this.expressionTypes.get(expr) ?? errorTy)) return new Set();
+    const callback=this.functionValues.get(expr);
+    if(callback){const origins=allocationOrigin(expr.span);context.flow.object(origins,callback.captures.map(capture=>({name:capture.name,origins:this.placesOf(capture.expression,context),mutable:false})));return origins;}
     if (expr.kind === 'name') return context.flow.origins(expr.name);
+    if(expr.kind==='matchValue')return unionOrigins(...expr.cases.map(clause=>this.expressionOrigins.get(clause.result)??new Set<string>()));
+    if (expr.kind === 'binary' && expr.op === 'otherwise')
+      return new Set([...this.placesOf(expr.left, context), ...this.placesOf(expr.right, context)]);
     if (expr.kind === 'start') {
       const origins = allocationOrigin(expr.span);
       context.flow.object(origins, [{name:'scope', origins:new Set([`tasks:${context.scope?.file}:${context.scope?.start}`]), mutable:false},
@@ -1928,6 +2273,19 @@ class Checker {
     }
     if (expr.kind === 'resolve') return this.bindingOrigins(this.bindingKey(expr.name, expr.typeArgs), context, expr.span);
     if (expr.kind === 'member') return context.flow.field(this.placesOf(expr.object, context), expr.name);
+    if (expr.kind === 'recordCopy') {
+      const origins = allocationOrigin(expr.span), base = this.placesOf(expr.base, context), node = this.expressionTypes.get(expr.base)?.def?.node;
+      if (node?.kind === 'class') context.flow.object(origins, node.fields.map(field => {
+        const replacement = expr.fields.find(item => item.name === (field.label ?? field.name));
+        return {name:field.name, origins:replacement ? this.placesOf(replacement.value, context) : context.flow.field(base, field.name), mutable:false};
+      }));
+      return origins;
+    }
+    if(expr.kind==='comprehension'){
+      const origins=allocationOrigin(expr.span);
+      context.flow.object(origins,[{name:'items',origins:this.expressionOrigins.get(expr.projection)??new Set(),mutable:true}]);
+      return origins;
+    }
     if (expr.kind === 'collection') {
       const origins = allocationOrigin(expr.span);
       context.flow.object(origins, expr.items.map((item, index) => ({ name: String(index), origins: this.placesOf(item, context), mutable: expr.collection !== 'Tuple' })));
@@ -1974,7 +2332,11 @@ class Checker {
       const fresh = ['own', 'fresh'].includes(this.ownershipOf(expr, context));
       if (fresh) {
         const origins = allocationOrigin(expr.span);
-        context.flow.object(origins, related.map((origins, index) => ({ name: `capture:${index}`, origins, mutable: true })));
+        const result=this.expressionTypes.get(expr);
+        // A fresh collection of scalar values cannot retain its source containers.
+        // Nested reference elements keep their conservative captures and lifetime checks.
+        const captures=result&&['builtin:List','builtin:Set','builtin:Map','builtin:Tuple'].includes(result.id)&&result.args.every(item=>!this.isReference(item))?[]:related;
+        context.flow.object(origins, captures.map((origins, index) => ({ name: `capture:${index}`, origins, mutable: true })));
         return origins;
       }
       return unionOrigins(...related);
@@ -2077,9 +2439,223 @@ class Checker {
     return { ...builtin(name), args };
   }
 
+  /** Data is a shape bound, not proof that erased storage is immutable. A
+   * capture must preserve that proof through tuple/record/generic children. */
+  private immutableCapture(type:Ty):boolean {
+    if (!this.immutableData(type)) return false;
+    // Record construction deep-freezes every field, including erased/generic
+    // data. That existing storage guarantee is stronger than its source types.
+    if (type.frozen || type.kind==='choice' || type.def?.node.kind === 'class' && type.def.node.record) return true;
+    if (type.kind === 'param') return !!type.bounds?.some(bound=>bound.kind==='choice'&&this.immutableCapture(bound));
+    if (type.id === 'builtin:Data') return false;
+    if (['builtin:List','builtin:Set','builtin:Map'].includes(type.id)) return false;
+    return type.args.every(arg=>this.immutableCapture(arg));
+  }
+
+  /** Adapt a pure callable to an existing single-method interface. Generic call
+   * inputs may supply a partial interface; its method settles the remaining
+   * arguments before an executable plan can be retained. */
+  private checkFunctionValue(expr:Expr, context:Context, expected?:Ty, target?:Definition):Ty {
+    this.functionValues.delete(expr);
+    const reject = (message:string) => this.report(expr.span, message, 'CALLBACK');
+    if (expected?.kind !== 'interface') {
+      reject('A function value needs a single-method interface; declare its type or pass it to a typed input');
+      return errorTy;
+    }
+    const methods = this.interfaceMethods(expected, new Set(), true);
+    if (methods.size !== 1) {
+      reject(`${tyName(expected)} must have exactly one public abstract method for a function value`);
+      return errorTy;
+    }
+    const signatures = [...methods.values()][0], signature = signatures[0], method = signature.method, params = method.params;
+    if (signatures.some(entry => !this.sameSignature(method,signature.file,signature.params,entry) ||
+        !this.sameSignature(entry.method,entry.file,entry.params,signature))) {
+      reject('Every inherited callback signature must have the same resolved labels, types, result and pure contract');
+      return errorTy;
+    }
+    let inputs = params.map(param => this.resolveType(param.type, signature.file, signature.params));
+    let result = this.returnType(method, signature.file, signature.params);
+    const unsupported = (fn:MethodDecl) => fn.typeParams.length || fn.externC || fn.endpoint || fn.annotations?.length ||
+      fn.returnOwnership !== 'managed' || fn.params.some(param => param.injected || param.ownership !== 'managed' || param.defaultValue || param.source);
+    if (signatures.some(entry => entry.method.name.startsWith('_') || entry.method.body || unsupported(entry.method) ||
+        this.effectiveContract(entry.method,entry.file,undefined,entry.params).uses.size ||
+        this.effectiveContract(entry.method,entry.file,undefined,entry.params).changes.length ||
+        this.effectiveErrors(entry.method,entry.file,entry.params).length)) {
+      reject('Function values require one abstract pure data method with managed inputs/result, no checked failures, defaults, injection or native contracts');
+      return errorTy;
+    }
+    const inferred = new Map<string,Ty>();
+    const settle = (template:Ty, actual:Ty):void => {
+      if (template.kind === 'param') {
+        const value = template.optional || template.nullable ? {...actual, optional:false, nullable:false} : actual;
+        const previous = inferred.get(template.id);
+        if (previous && !this.sameType(previous, value)) reject(`Conflicting callback type inference: ${tyName(previous)} and ${tyName(value)}`);
+        else inferred.set(template.id, value);
+      } else if (template.id === actual.id && template.args.length === actual.args.length) {
+        template.args.forEach((arg,index) => settle(arg,actual.args[index]));
+      }
+    };
+    const concrete = (type:Ty):Ty => {
+      const value = type.kind === 'param' ? inferred.get(type.id) : undefined;
+      return value ? {...value, optional:type.optional || value.optional, nullable:type.nullable || value.nullable} :
+        {...type,args:type.args.map(concrete)};
+    };
+    const plan:FunctionValuePlan = {type:expected, signature, params, inputs, result, target, order:[], captures:[]};
+    if (target) {
+      const fn = target.node as MethodDecl, contract = this.effectiveContract(fn,target.file);
+      if (unsupported(fn) || contract.uses.size || contract.changes.length || this.effectiveErrors(fn,target.file,new Map()).length) {
+        reject(`${target.name} cannot become a pure callback: remove unsupported errors, effects, ownership, defaults, injection, annotations or generic/native contracts`);
+        return errorTy;
+      }
+      const positions = fn.params.map(param => params.findIndex(input => (input.label ?? input.name) === (param.label ?? param.name)));
+      if (fn.params.length !== params.length || positions.some(position => position < 0)) {
+        reject(`${target.name} must match ${tyName(expected)}.${method.name}'s public input labels/types and result`);
+        return errorTy;
+      }
+      const actualInputs = fn.params.map(param => this.resolveType(param.type,target.file));
+      actualInputs.forEach((type,index) => settle(inputs[positions[index]],type));
+      const actualResult = this.returnType(fn,target.file);
+      settle(result,actualResult); inputs = inputs.map(concrete); result = concrete(result);
+      if (actualInputs.some((type,index) => !this.sameType(type,inputs[positions[index]])) || !this.assignable(actualResult,result))
+        reject(`${target.name} must match ${tyName(expected)}.${method.name}'s public input labels/types and result`);
+      plan.order = positions;
+    } else if (expr.kind === 'lambda') {
+      if (expr.params.length !== params.length || expr.params.some((param,index) => param.name !== (params[index].label ?? params[index].name) ||
+          param.injected || param.ownership !== 'managed' || param.defaultValue)) {
+        reject(`Closure inputs must match ${tyName(expected)}.${method.name}'s labels/types, with managed inputs and no defaults or injection`);
+        return errorTy;
+      }
+      const actualInputs = expr.params.map(param => this.resolveType(param.type,context.file,context.types));
+      actualInputs.forEach((type,index) => settle(inputs[index],type)); inputs = inputs.map(concrete);
+      if (actualInputs.some((type,index) => !this.sameType(type,inputs[index])))
+        reject(`Closure inputs must match ${tyName(expected)}.${method.name}'s labels/types`);
+      const callable:MethodDecl = {kind:'function',name:'callback',typeParams:[],params:expr.params,returns:method.returns,
+        returnOwnership:'managed',throws:[],externC:false,span:expr.span};
+      const inside = this.cloneContext(context);
+      inside.callable = callable; inside.owner = undefined; inside.self = undefined;
+      // The callback's runtime receiver is its capture object, never the
+      // enclosing behavior receiver. Read a permitted field into a local first.
+      inside.locals.delete('self');
+      inside.effects = {uses:new Map(),changes:[]}; inside.allowedErrors = [];
+      inside.inferredReturns = undefined; inside.deferredErrors = undefined; inside.exceptionalFlows = undefined;
+      inside.scope = undefined; inside.loop = undefined; inside.loopDepth = 0; inside.next = undefined;
+      inside.stream = undefined; inside.initializing = false; inside.unsafe = false; inside.locked = false; inside.borrowed = new Set();
+      inside.returns = concrete(result); inside.returnOwnership = 'managed';
+      for (const [index,param] of expr.params.entries()) {
+        inside.locals.set(param.name,{type:{...inputs[index],readonly:true},ownership:'managed',moved:false,definition:param.nameSpan ?? param.span});
+        inside.flow.declare(param.name,this.isReference(inputs[index]) ? allocationOrigin(param.span) : new Set(),true);
+      }
+      this.captureScope(expr.body.span,inside);
+      const wanted = concrete(result);
+      const actual = this.checkExpression(expr.body,inside,containsUnknown(wanted) ? undefined : wanted);
+      settle(result,actual); result = concrete(result);
+      if (!this.assignable(actual,result)) reject(`Callback result expects ${tyName(result)}, got ${tyName(actual)}`);
+      if (this.ownershipOf(expr.body,inside) === 'own' || actual.kind === 'resource') reject('A pure callback cannot transfer an owned result');
+      const names = new Set(expr.params.map(param => param.name));
+      const visit = (body:Expr):void => {
+        const resolved = this.resolvedNames.get(body);
+        if (body.kind === 'name' && resolved && !resolved.global && !names.has(body.name) && !plan.captures.some(capture => capture.name === body.name)) {
+          const local = context.locals.get(body.name);
+          if (local && local.definition?.start === resolved.definition.start && local.definition.file === resolved.definition.file) {
+            if (local.ownership !== 'managed' || !this.immutableCapture(local.type))
+              reject(`Capture ${body.name} as immutable managed data; mutable/owned references and borrowed inputs cannot escape into callbacks`);
+            this.checkBorrowEscape(body,context);
+            plan.captures.push({name:body.name,expression:body,type:local.type});
+          }
+        }
+        expressionChildren(body).forEach(visit);
+      };
+      visit(expr.body); plan.params = expr.params; plan.body = expr.body;
+    }
+    plan.type = {...concrete(expected),nullable:false,optional:false,readonly:true}; plan.inputs = inputs; plan.result = result;
+    if (containsUnknown(plan.type) || inputs.some(type => containsUnknown(type) || !this.immutableData(type)) ||
+        containsUnknown(result) || result.name !== 'void' && !this.immutableData(result)) {
+      reject('A callback needs concrete managed data inputs and result; use explicit type arguments when its result cannot determine them');
+      return errorTy;
+    }
+    this.functionValues.set(expr,plan);
+    return plan.type;
+  }
+
   private checkExpression(expr: Expr, context: Context, expected?: Ty): Ty {
     let type = errorTy;
-    if (expr.kind === 'markupText') type = builtin('Html');
+    if(expr.kind==='lambda'){
+      type=this.checkFunctionValue(expr,context,expected);
+    }else if(expr.kind==='comprehension'){
+      const names=new Set(context.locals.keys()),wanted=expected?.id==='builtin:List'?expected.args[0]:undefined;
+      let element=errorTy;
+      this.checkIteration({iterable:expr.iterable,pattern:expr.pattern,names:bindingNames(expr.pattern),span:expr.span},context,inside=>{
+        // The iterable is evaluated before these local names exist. Editor scopes
+        // follow evaluation rather than source order: the projection is written first.
+        if(expr.condition){
+          this.captureScope(expr.condition.span,inside);
+          const condition=this.checkExpression(expr.condition,inside);
+          if(!this.assignable(condition,builtin('bool')))this.report(expr.condition.span,`Condition must be bool, got ${tyName(condition)}`);
+        }
+        const selected=this.cloneContext(inside);if(expr.condition)this.narrow(expr.condition,true,selected);
+        this.captureScope(expr.projection.span,selected);
+        element=this.checkExpression(expr.projection,selected,wanted);
+        if(wanted&&!this.assignable(element,wanted))this.report(expr.projection.span,`List item expects ${tyName(wanted)}, got ${tyName(element)}`,'COLLECTION');
+        if(element.id==='builtin:void')this.report(expr.projection.span,'List cannot contain void','COLLECTION');
+        if(element.kind==='resource'||this.ownershipOf(expr.projection,selected)==='own')this.report(expr.projection.span,'List cannot copy an owned value','OWN');
+        if(this.isReference(element))this.checkBorrowEscape(expr.projection,selected,false);
+        this.mergeMoved(inside,expr.condition?[this.cloneContext(inside),selected]:[selected]);
+      });
+      context.flow.forgetLocals(names);
+      const input=this.expressionTypes.get(expr.iterable);
+      if(input?.nullable||input?.optional)this.report(expr.iterable.span,'Narrow an optional collection before list selection','ITERATION');
+      type={...builtin('List'),args:[wanted?{...wanted,readonly:element.readonly,frozen:element.frozen}:element]};
+    }else if(expr.kind==='matchValue'){
+      const input=this.checkExpression(expr.value,context),names=new Set(context.locals.keys());
+      const branches=this.matchBranches(expr.value,input,expr.cases,context,expr.span),types:Ty[]=[];
+      for(const {clause,inside} of branches){
+        this.captureScope(clause.result.span,inside);
+        const actual=this.checkExpression(clause.result,inside,expected);types.push(actual);
+        if(actual.id==='builtin:void')this.report(clause.result.span,'A match expression needs a value in every case; this expression returns void','MATCH');
+        const resultOrigins=this.placesOf(clause.result,inside);
+        const ownedAlias=this.isReference(actual)&&[...inside.locals].some(([name,local])=>local.ownership==='own'&&overlap(resultOrigins,inside.flow.reachable(inside.flow.origins(name))));
+        if(actual.kind==='resource'||this.ownershipOf(clause.result,inside)==='own'||ownedAlias)this.report(clause.result.span,'A match expression does not transfer ownership; use a statement match for owned values','OWN');
+        inside.flow.forgetLocals(names);for(const name of inside.locals.keys())if(!names.has(name))inside.locals.delete(name);
+      }
+      type=expected&&expected.kind!=='error'&&types.every(actual=>this.assignable(actual,expected))?expected:this.inferredReturn(types);
+      for(const [index,actual] of types.entries())if(actual.kind!=='error'&&!this.assignable(actual,type))this.report(expr.cases[index].result.span,`Match result cases need compatible values, got ${tyName(type)} and ${tyName(actual)}`,'MATCH');
+      type={...type,readonly:types.some(actual=>actual.readonly),frozen:types.filter(actual=>actual.kind!=='null').every(actual=>actual.frozen)};
+      this.mergeMoved(context,branches.map(branch=>branch.inside));
+    }else if (expr.kind === 'recordCopy') {
+      const base = this.checkExpression(expr.base, context), node = base.def?.node;
+      if (node?.kind !== 'class' || !node.record || base.nullable || base.optional) {
+        this.report(expr.span, 'with creates a new non-null record; narrow optional values before updating them', 'RECORD');
+        expr.fields.forEach(field => this.checkExpression(field.value, context));
+      } else {
+        const types = new Map(node.typeParams.map((name, index) => [name, base.args[index] ?? errorTy]));
+        const seen = new Set<string>();
+        for (const field of expr.fields) {
+          const input = node.fields.find(input => (input.label ?? input.name) === field.name);
+          if (!input) {this.report(field.span, `${node.name} has no input ${field.name}`, 'RECORD'); this.checkExpression(field.value, context); continue;}
+          this.checkMemberVisibility(base.id, base.name, input.name, field.span, context);
+          if (seen.has(field.name)) this.report(field.span, `Duplicate replacement ${field.name}`, 'RECORD');
+          seen.add(field.name);
+          const expected = this.resolveType(input.type, base.def!.file, types), actual = this.checkExpression(field.value, context, expected);
+          if (!this.assignable(actual, expected)) this.report(field.value.span, `Replacement ${field.name} expects ${tyName(expected)}, got ${tyName(actual)}`, 'RECORD');
+          if (this.ownershipOf(field.value, context) === 'own' || !this.immutableInput(field.value, actual))
+            this.report(field.value.span, 'Record replacements are immutable data; freeze mutable aliases first', 'RECORD');
+        }
+        for (const error of this.effectiveErrors(node, base.def!.file, types)) this.checkAllowedError(error, expr.span, context);
+        type = {...base, readonly:true, frozen:true};
+      }
+    } else if (expr.kind === 'interpolation') {
+      for (const part of expr.parts) {
+        if ('text' in part) {
+          if (part.text.includes('\0') || !part.text.isWellFormed())
+            this.report(part.span, 'Strings are valid Unicode without NUL; use an unsafe byte adapter for binary data', 'TEXT');
+          continue;
+        }
+        const item = this.checkExpression(part.value, context);
+        if (!['int', 'c_int', 'float', 'bool', 'string', 'null'].includes(item.name))
+          this.report(part.span, 'String interpolation accepts scalar values; format structured data explicitly', 'INTERPOLATION');
+      }
+      type = builtin('string');
+    } else if (expr.kind === 'markupText') type = builtin('Html');
     else if (expr.kind === 'markup') {
       if (expr.tag && /^[A-Z]/.test(expr.tag)) {
         const args = expr.attributes.map(attribute => attribute.value), labels = expr.attributes.map(attribute => attribute.name);
@@ -2133,7 +2709,7 @@ class Checker {
             actual.def?.node.kind === 'class' && actual.def.node.record ||
             ['Bytes', 'Json', 'Html', 'Headers', 'RsaPublicKey', 'RsaPrivateKey'].includes(actual.name);
           context.flow.captureTask(task, scope, origins, shareable ? false : exclusive, !!context.loopDepth, span,
-            (at, message) => this.report(at, message, 'CONCURRENCY'));
+            (at, message, details) => this.report(at, message, 'CONCURRENCY', details));
         };
         const capture = (argument: Expr, exclusive: boolean) =>
           captureOrigins(this.placesOf(argument, context), this.expressionTypes.get(argument) ?? errorTy, exclusive, argument.span);
@@ -2177,18 +2753,19 @@ class Checker {
     } else if (expr.kind === 'name') {
       const local = context.locals.get(expr.name);
       if (local) {
-        if(local.parameter)this.resolvedNames.set(expr,{parameter:local.parameter});
-        if (local.moved) this.report(expr.span, `Cannot use moved value ${expr.name}`, 'OWN');
-        context.flow.read(expr.name, expr.span, (span, message) => this.report(span, message, 'BORROW'));
+        if(local.definition||local.parameter)this.resolvedNames.set(expr,{name:expr.name,definition:local.definition!,parameter:local.parameter,property:local.origin==='field'});
+        if (local.moved) this.report(expr.span, `Cannot use moved value ${expr.name}`, 'OWN',
+          this.movedValueEvidence(local));
+        context.flow.read(expr.name, expr.span, (span, message, details) => this.report(span, message, 'BORROW', details));
         type = local.type;
       } else {
         const def = this.project.scopes.get(context.file)?.get(expr.name);
-        if(def)this.resolvedNames.set(expr,{definition:def});
+        if(def)this.resolvedNames.set(expr,{name:def.name,definition:def.node.span,global:def.id,declaration:def});
         if (def?.node.kind === 'class' || def?.node.kind === 'interface')
           type = { id: def.id, name: def.name, kind: def.node.kind, def, args: [], nullable: false };
-        else if (def?.node.kind === 'function') type = builtin('void');
+        else if (def?.node.kind === 'function') type = this.checkFunctionValue(expr,context,expected,def);
         else if (errorNames.includes(expr.name)) type = builtin(expr.name);
-        else if (['print', 'arguments', 'List', 'Map', 'Set', 'Tuple', 'assert', 'read_file', 'write_file', 'c_int', 'int'].includes(expr.name)) type = builtin('void');
+        else if (['sourceLocation', 'print', 'arguments', 'List', 'Map', 'Set', 'Tuple', 'assert', 'assertEqual', 'read_file', 'write_file', 'c_int', 'int'].includes(expr.name)) type = builtin('void');
         else if (expr.name === 'next') this.report(expr.span,
           'next is only callable inside an interceptor around body', 'NEXT');
         else if (def?.node.kind === 'interceptor') this.report(expr.span,
@@ -2226,14 +2803,23 @@ class Checker {
       type = expr.op === '!' ? builtin('bool') : value;
     } else if (expr.kind === 'binary') {
       const left = this.checkExpression(expr.left, context);
-      const rightContext = expr.op === '&&' || expr.op === '||' ? this.cloneContext(context) : context;
-      if (rightContext !== context) this.narrow(expr.left, expr.op === '&&', rightContext);
+      const rightContext = ['&&', '||', 'otherwise'].includes(expr.op) ? this.cloneContext(context) : context;
+      if (expr.op === '&&' || expr.op === '||') this.narrow(expr.left, expr.op === '&&', rightContext);
       const right = this.checkExpression(expr.right, rightContext);
       const numeric = ['builtin:int', 'builtin:c_int', 'builtin:float'];
       const bothNumeric = numeric.includes(left.id) && numeric.includes(right.id);
-      if (expr.op === '/' && !(expr.right.kind === 'literal' && typeof expr.right.value === 'number' && expr.right.value !== 0))
+      if (['/', '%'].includes(expr.op) && !(expr.right.kind === 'literal' && typeof expr.right.value === 'number' && expr.right.value !== 0))
         this.checkAllowedError(builtin('ArithmeticError'), expr.span, context);
-      if (expr.op === '&&' || expr.op === '||') {
+      if (expr.op === 'otherwise') {
+        const present = {...left, nullable: false, optional: false};
+        if (left.kind === 'null') type = right;
+        else if (this.assignable(right, present)) type = {...present, nullable: !!right.nullable, optional: !!right.optional};
+        else if (this.assignable(present, right)) type = right;
+        else this.report(expr.span, `otherwise needs compatible values, got ${tyName(left)} and ${tyName(right)}`, 'TYPE');
+        if (this.ownershipOf(expr.left, context) === 'own' || this.ownershipOf(expr.right, rightContext) === 'own')
+          this.report(expr.span, 'Use an explicit match to choose an owned value; otherwise does not transfer ownership', 'OWN');
+        this.mergeMoved(context, [this.cloneContext(context), rightContext]);
+      } else if (expr.op === '&&' || expr.op === '||') {
         if (left.id !== 'builtin:bool' || right.id !== 'builtin:bool')
           this.report(expr.span, `${expr.op} requires bool operands`);
         type = builtin('bool');
@@ -2247,6 +2833,10 @@ class Checker {
       }
       else if (expr.op === '+' && left.id === 'builtin:string' && right.id === 'builtin:string')
         type = builtin('string');
+      else if (expr.op === '%') {
+        if (!bothNumeric || left.name === 'float' || right.name === 'float') this.report(expr.span, '% remainder requires integer operands', 'TYPE');
+        type = builtin('int');
+      }
       else if (bothNumeric)
         type = left.id === 'builtin:float' || right.id === 'builtin:float' ? builtin('float') : builtin('int');
       else this.report(expr.span, `Operator ${expr.op} does not accept ${tyName(left)} and ${tyName(right)}`);
@@ -2255,12 +2845,19 @@ class Checker {
       const plan=this.callPlans.get(expr);
       if(plan)plan.returnOwnership=this.ownershipOf(expr,context)==='own'?'own':'managed';
     }
+    if (expr.kind === 'collection' && expected?.immutable) {
+      if (!this.immutableData(type) || !this.immutableInput(expr, type))
+        this.report(expr.span, 'Freeze aliased mutable values before creating an immutable collection', 'IMMUTABLE');
+      type = immutableType(type);
+      context.flow.freeze(this.placesOf(expr, context), expr.span, (span, message, details) => this.report(span, message, 'BORROW', details));
+    }
     this.expressionTypes.set(expr, type);
     this.expressionOrigins.set(expr, this.placesOf(expr, context));
     return type;
   }
 
   private memberType(receiver: Ty, name: string, span: Span, context: Context): Ty {
+    if (receiver.kind === 'error') return errorTy;
     if (receiver.kind === 'param') {
       const bound = receiver.bounds?.find(type => this.interfaceMethods(type, new Set()).has(name));
       if (bound) return this.memberType(bound, name, span, context);
@@ -2296,35 +2893,54 @@ class Checker {
         return this.returnType(entry.method, entry.file, entry.params);
       }
     }
-    this.report(span, `${tyName(receiver)} has no member ${name}`);
+    this.report(span, receiver.kind==='choice'?`Match the choice ${receiver.name} before reading an alternative's member ${name}`:`${tyName(receiver)} has no member ${name}`,receiver.kind==='choice'?'CHOICE':'TYPE');
     return errorTy;
   }
 
   private planCall(expr: Extract<Expr, { kind: 'call' }>, params: Param[] | string[],
-                   display: string): CallPlan {
+                   display: string, declaration?: Span): CallPlan {
     const names = params.map(param => typeof param === 'string' ? param : param.label ?? param.name);
     const injected = params.map(param => typeof param !== 'string' && param.injected);
-    const plan: CallPlan = { sourceIndices: names.map(() => undefined),
+    const accepted = names.filter((_, index) => !injected[index]).join(', ') || '(none)';
+    const related = declaration ? [{file:declaration.file,line:declaration.line,column:declaration.column,
+      message:`Caller input labels: ${accepted}.`}] : undefined;
+    const plan: CallPlan = { defaults: params.map(param => typeof param === 'string' ? undefined : param.defaultValue), sourceIndices: names.map(() => undefined),
       bindingKeys: names.map(() => undefined), ownerships:params.map(param => typeof param === 'string' ? undefined : param.ownership) };
+    let invalidLabel = false;
     for (let source = 0; source < expr.args.length; source++) {
       const argument = expr.args[source];
-      const label = expr.argLabels[source] ?? (argument.kind === 'name' ? argument.name : undefined);
+      const label = expr.indexed ? names[0] : expr.argLabels[source] ?? (argument.kind === 'name' ? argument.name : undefined);
+      const details = {related,expected:accepted,actual:label ?? '(unlabeled)'};
       if (!label) {
-        this.report(expr.args[source].span, `${display} arguments require labels`, 'CALL');
+        this.report(argument.span, `${display} arguments require labels`, 'CALL', details);
+        invalidLabel = true;
         continue;
       }
       const index = names.indexOf(label);
-      if (index < 0) this.report(expr.args[source].span,
-        `${display} has no parameter ${label}`, 'CALL');
-      else if (injected[index]) this.report(expr.args[source].span,
-        `${label} is resolved from DI and cannot be passed`, 'CALL');
-      else if (plan.sourceIndices[index] !== undefined) this.report(expr.args[source].span,
-        `Duplicate argument ${label}`, 'CALL');
-      else plan.sourceIndices[index] = source;
+      if (index < 0) {
+        this.report(argument.span, `${display} has no parameter ${label}`, 'CALL', details);
+        invalidLabel = true;
+      } else if (injected[index]) {
+        this.report(argument.span, `${label} is resolved from DI and cannot be passed`, 'CALL', details);
+        invalidLabel = true;
+      } else if (plan.sourceIndices[index] !== undefined) {
+        const first = expr.args[plan.sourceIndices[index]!].span;
+        this.report(argument.span, `Duplicate argument ${label}`, 'CALL', {
+          related:[{file:first.file,line:first.line,column:first.column,message:`Input ${label} was first passed here.`}]});
+        invalidLabel = true;
+      } else plan.sourceIndices[index] = source;
     }
-    for (let index = 0; index < names.length; index++) if (!injected[index] &&
-      !(typeof params[index] !== 'string' && (params[index] as Param).type.optional) && plan.sourceIndices[index] === undefined) this.report(expr.span,
-      `Missing argument ${names[index]} for ${display}`, 'CALL');
+    // A malformed label must be repaired before the compiler can judge omitted inputs.
+    if (!invalidLabel) for (let index = 0; index < names.length; index++) {
+      const param = params[index];
+      if (injected[index] || typeof param !== 'string' && (param.type.optional || param.defaultValue) || plan.sourceIndices[index] !== undefined) continue;
+      const span = typeof param === 'string' ? undefined : param.labelSpan ?? param.nameSpan ?? param.span;
+      // Built-in operations may carry a synthetic parameter at the call location.
+      const location = span && !(span.file === expr.span.file && span.start === expr.span.start && span.end === expr.span.end) ?
+        [{file:span.file,line:span.line,column:span.column,message:`Required input ${names[index]} is declared here.`}] : undefined;
+      this.report(expr.span, `Missing argument ${names[index]} for ${display}`, 'CALL', {related:location});
+    }
+    if (invalidLabel) plan.invalidLabels = true;
     this.callPlans.set(expr, plan);
     return plan;
   }
@@ -2367,7 +2983,8 @@ class Checker {
     let params: Param[] | undefined;
     let file = context.file;
     let types = new Map(context.types);
-    const uninferred = new Set<string>();
+    const uninferred = new Set<string>(), templates = new Map<string,Ty>();
+    if (expr.indexed && receiver) return [receiver.id === 'builtin:Map' ? receiver.args[0] : builtin('int')];
     if (expr.callee.kind === 'name') {
       const name = expr.callee.name;
       if (['List', 'Set', 'Tuple'].includes(name)) return expr.args.map((_, index) => {
@@ -2377,7 +2994,8 @@ class Checker {
       const def = this.project.scopes.get(file)?.get(name);
       if (def?.node.kind === 'class' || def?.node.kind === 'function') {
         params = def.node.kind === 'class' ? def.node.fields : def.node.params;
-        types = this.paramsFor(def.node.typeParams);
+        types = this.paramsFor(def.node.typeParams,def.node,def.file);
+        for (const [name,type] of types) templates.set(name,type);
         def.node.typeParams.forEach((name, index) => {
           if (expr.typeArgs[index]) types.set(name, this.resolveType(expr.typeArgs[index], context.file, context.types));
           else { uninferred.add(name); types.delete(name); }
@@ -2399,6 +3017,7 @@ class Checker {
           params = method.params;
           file = method.span.file;
           types = entry ? new Map(entry.params) : new Map(def.node.typeParams.map((name, index) => [name, receiver.args[index] ?? errorTy]));
+          for (const [name,type] of this.paramsFor(method.typeParams,method,file)) templates.set(name,type);
           method.typeParams.forEach((name, index) => {
             if (expr.typeArgs[index]) types.set(name, this.resolveType(expr.typeArgs[index], context.file, context.types));
             else { uninferred.add(name); types.delete(name); }
@@ -2419,13 +3038,16 @@ class Checker {
       const label = given ?? (expr.args[index].kind === 'name' ? (expr.args[index] as Extract<Expr, {kind: 'name'}>).name : undefined);
       const param = params?.find(param => (param.label ?? param.name) === label);
       const needsInference = (ref: TypeRef): boolean => uninferred.has(ref.name) || ref.args.some(needsInference);
-      if (param && needsInference(param.type)) return undefined;
+      if (param && needsInference(param.type)) {
+        const partial = this.resolveType(param.type,file,new Map([...templates,...types]));
+        return partial.kind === 'interface' ? partial : undefined;
+      }
       return param ? this.resolveType(param.type, file, types) : undefined;
     });
   }
 
   private previewType(expr: Expr, context: Context): Ty | undefined {
-    if (expr.kind === 'name') return context.locals.get(expr.name)?.type;
+    if (expr.kind === 'name') return context.locals.get(expr.name)?.type ?? this.expressionTypes.get(expr);
     if (expr.kind === 'literal') return expr.value === null ? undefined :
       builtin(typeof expr.value === 'string' ? 'string' : typeof expr.value === 'boolean' ? 'bool' : expr.numericType ?? 'int');
     if (expr.kind === 'collection' && expr.items.length) {
@@ -2453,7 +3075,8 @@ class Checker {
 
   private requireMutation(expr: Expr, object: Expr, context: Context, display: string): void {
     if (context.flow.hasTaskCapture(this.placesOf(object, context)))
-      this.report(expr.span, `Cannot mutate ${display} while a task uses it; wait for the task first`, 'CONCURRENCY');
+      this.report(expr.span, `Cannot mutate ${display} while a task uses it; wait for the task first`, 'CONCURRENCY',
+        context.flow.taskEvidence(this.placesOf(object,context),'ownership.mutation-during-task','mutable access after conflicting task loans end'));
     if (this.expressionTypes.get(object)?.readonly) this.report(expr.span,
       `${display} cannot mutate a read-only input or field`, 'MUTABILITY');
     this.requireChange(object, expr.span, context);
@@ -2502,27 +3125,42 @@ class Checker {
   private checkCall(expr: Extract<Expr, { kind: 'call' }>, context: Context): Ty {
     const immediate = context.deferredErrors ? {...context, deferredErrors: undefined} : context;
     let receiverType = expr.callee.kind === 'member' ? this.checkExpression(expr.callee.object, immediate) : undefined;
+    if (receiverType?.kind === 'error') return errorTy;
     if (receiverType?.kind === 'param' && expr.callee.kind === 'member') {
       const name = expr.callee.name;
       receiverType = receiverType.bounds?.find(type => this.interfaceMethods(type, new Set()).has(name)) ?? receiverType;
     }
     if (receiverType?.nullable || receiverType?.optional) this.report(expr.callee.span, `Narrow ${tyName(receiverType)} before calling a method`);
+    if (expr.indexed && !['builtin:List', 'builtin:Map', 'builtin:Tuple'].includes(receiverType?.id ?? ''))
+      this.report(expr.span, 'Indexing reads a List, Map, or Tuple; use an explicit text or byte operation for other values', 'COLLECTION');
     const expectations = this.argumentExpectations(expr, context, receiverType);
-    const requiresContext = (arg: Expr): boolean => arg.kind === 'collection' && (!arg.items.length || arg.items.some(requiresContext));
+    const requiresContext = (arg:Expr):boolean => {
+      if (arg.kind === 'lambda' || arg.kind === 'name' && !context.locals.has(arg.name) &&
+          this.project.scopes.get(context.file)?.get(arg.name)?.node.kind === 'function') return true;
+      if (arg.kind === 'comprehension') return requiresContext(arg.projection);
+      return arg.kind === 'collection' && (!arg.items.length || arg.items.some(requiresContext));
+    };
     const deferred = new Set(expr.args.flatMap((arg, index) => !expectations[index] && requiresContext(arg) ? [index] : []));
     const argTypes = expr.args.map((arg, index) => deferred.has(index) ? errorTy : this.checkExpression(arg, immediate, expectations[index]));
     const inferredExpectations = this.argumentExpectations(expr, context, receiverType);
     for (const index of deferred) argTypes[index] = this.checkExpression(expr.args[index], immediate, inferredExpectations[index]);
     if (expr.callee.kind === 'name' && expr.callee.name === 'next')
       return this.checkNext(expr, argTypes, context);
+    if (expr.callee.kind === 'name' && expr.callee.name === 'sourceLocation') {
+      this.planCall(expr,[],'sourceLocation');
+      if(expr.args.length||expr.typeArgs.length)this.report(expr.span,'sourceLocation takes no inputs or type arguments','LOCATION');
+      return {...builtin('Tuple'),args:[builtin('string'),builtin('int'),builtin('int')],frozen:true,readonly:true};
+    }
     if (expr.callee.kind === 'name' && expr.callee.name === 'exit') {
       if (context.callable || context.file !== this.project.main?.path || context.locked) this.report(expr.span, 'exit belongs in main outside a lock', 'EFFECT');
       const plan = this.planCall(expr, ['status'], 'exit'), index = plan.sourceIndices[0];
+      if (plan.invalidLabels) return errorTy;
       if (index !== undefined && argTypes[index].name !== 'int') this.report(expr.span, 'exit status is an int', 'TYPE');
       return builtin('void');
     }
     if (expr.callee.kind === 'name' && expr.callee.name === 'Json') {
       const plan = this.planCall(expr, ['value'], 'Json'), index = plan.sourceIndices[0];
+      if (plan.invalidLabels) return errorTy;
       if (expr.typeArgs.length) this.report(expr.span, 'Json infers its data type', 'JSON');
       if (index !== undefined) {
         const value = argTypes[index];
@@ -2538,6 +3176,7 @@ class Checker {
     }
     if (expr.callee.kind === 'name' && expr.callee.name === 'Shared') {
       const plan = this.planCall(expr, ['value'], 'Shared'), index = plan.sourceIndices[0];
+      if (plan.invalidLabels) return errorTy;
       plan.ownerships = ['own'];
       const result = index === undefined ? errorTy : argTypes[index];
       if (index !== undefined && !['fresh', 'own'].includes(this.ownershipOf(expr.args[index], context))) this.report(expr.args[index].span, 'Shared takes a fresh value or an owned value; existing mutable aliases cannot survive the transfer', 'OWN');
@@ -2550,6 +3189,7 @@ class Checker {
     if(expr.callee.kind==='name'&&expr.callee.name==='ServerEvent') {
       const params:Param[]=['data','id','event','retry'].map((name,index)=>({name,type:{name:index===0?'T':index===3?'int':'string',args:[],nullable:false,optional:index>0,span:expr.span},injected:false,ownership:'managed',span:expr.span}));
       const plan=this.planCall(expr,params,'ServerEvent'), data=plan.sourceIndices[0], result=expr.typeArgs[0]?this.resolveType(expr.typeArgs[0],context.file,context.types):data===undefined?errorTy:argTypes[data];
+      if (plan.invalidLabels) return errorTy;
       if(expr.typeArgs.length>1||!jsonDataType(this.project,result))this.report(expr.span,'ServerEvent<T> needs JSON data','HTTP');
       if(data!==undefined&&!this.immutableInput(expr.args[data],argTypes[data]))this.report(expr.args[data].span,'Freeze collection data before creating a ServerEvent','HTTP');
       params.forEach((param,index)=>{const source=plan.sourceIndices[index];if(source!==undefined&&!this.assignable(argTypes[source],index===0?result:{...builtin(param.type.name),optional:true}))this.report(expr.args[source].span,`Invalid ${param.name} for ServerEvent`,'HTTP');});
@@ -2561,6 +3201,7 @@ class Checker {
         type: {name: index === 0 ? 'T' : index === 1 ? 'int' : 'Headers', args: [], nullable: false, optional: index > 0, span: expr.span},
         injected: false, ownership: 'managed', span: expr.span}));
       const plan = this.planCall(expr, params, name);
+      if (plan.invalidLabels) return errorTy;
       const body = plan.sourceIndices[0];
       const result = name === 'Headers' ? builtin(name) : {...builtin(name), args: [expr.typeArgs[0] ? this.resolveType(expr.typeArgs[0], context.file, context.types) : body === undefined ? errorTy : argTypes[body]]};
       if (name === 'Headers' && expr.typeArgs.length || name === 'HttpResponse' && expr.typeArgs.length > 1) this.report(expr.span, `${name} has invalid type arguments`, 'HTTP');
@@ -2579,6 +3220,7 @@ class Checker {
     if (expr.callee.kind === 'name' && ['c_int', 'int'].includes(expr.callee.name)) {
       const name = expr.callee.name;
       const plan = this.planCall(expr, ['value'], name);
+      if (plan.invalidLabels) return errorTy;
       const input = plan.sourceIndices[0];
       const expected = builtin(name === 'c_int' ? 'int' : 'c_int');
       if (expr.typeArgs.length || input !== undefined && !this.assignable(argTypes[input], expected))
@@ -2589,6 +3231,18 @@ class Checker {
     if (expr.callee.kind === 'name' && expr.callee.name === 'print') {
       this.intrinsicEffect('print', expr.span, context);
       this.planCall(expr, ['value'], 'print');
+      return builtin('void');
+    }
+    if(expr.callee.kind==='name'&&expr.callee.name==='assertEqual') {
+      if(!this.project.testMode)this.report(expr.span,'assertEqual belongs inside a test case or its setup','TEST');
+      const plan=this.planCall(expr,['actual','expected'],'assertEqual'),actual=plan.sourceIndices[0],expected=plan.sourceIndices[1];
+      if (plan.invalidLabels) return errorTy;
+      if(expr.typeArgs.length)this.report(expr.span,'assertEqual infers its input types; omit type arguments','TEST');
+      if(actual!==undefined&&expected!==undefined) {
+        const left=argTypes[actual],right=argTypes[expected],numeric=(type:Ty)=>['builtin:int','builtin:c_int','builtin:float'].includes(type.id);
+        if(!(numeric(left)&&numeric(right))&&!this.assignable(left,right)&&!this.assignable(right,left))
+          this.report(expr.span,`assertEqual cannot compare actual ${tyName(left)} with expected ${tyName(right)}`,'TEST');
+      }
       return builtin('void');
     }
     if (expr.callee.kind === 'name' && expr.callee.name === 'assert') {
@@ -2608,6 +3262,7 @@ class Checker {
       this.intrinsicEffect(expr.callee.name as 'read_file' | 'write_file', expr.span, context);
       const names = expr.callee.name === 'read_file' ? ['path'] : ['path', 'content'];
       const plan = this.planCall(expr, names, expr.callee.name);
+      if (plan.invalidLabels) return errorTy;
       for (const index of plan.sourceIndices) if (index !== undefined &&
         argTypes[index].id !== 'builtin:string') this.report(expr.args[index].span,
         `${expr.callee.name} requires string arguments`);
@@ -2643,24 +3298,27 @@ class Checker {
       return { ...builtin(name), args: [element] };
     }
     if (expr.callee.kind === 'name' && expr.callee.name === 'Map') {
-      this.planCall(expr, [], 'Map');
+      if (this.planCall(expr, [], 'Map').invalidLabels) return errorTy;
       if (expr.typeArgs.length !== 2) this.report(expr.span,
         'Map constructor requires two type arguments, such as Map<string,int>()');
       if (argTypes.length) this.report(expr.span, 'Map constructor takes no values');
       return { ...builtin('Map'), args: expr.typeArgs.map(arg => this.resolveType(arg, context.file, context.types)) };
     }
     if (expr.callee.kind === 'name' && errorNames.includes(expr.callee.name)) {
-      this.planCall(expr, [], 'FileError');
-      if (argTypes.length || expr.typeArgs.length) this.report(expr.span, 'FileError constructor takes no arguments');
+      if (this.planCall(expr, [], expr.callee.name).invalidLabels) return errorTy;
+      if (argTypes.length || expr.typeArgs.length) this.report(expr.span, `${expr.callee.name} constructor takes no arguments`);
       return builtin(expr.callee.name);
     }
     if (expr.callee.kind === 'member' && receiverType?.id.startsWith('builtin:') && collectionOperations[receiverType.name]) {
       const receiver = receiverType;
       const operation = collectionOperations[receiver.name].find(operation => operation.name === (expr.callee as Extract<Expr, { kind: 'member' }>).name);
       if (!operation) { this.report(expr.callee.span, `${receiver.name} has no method ${expr.callee.name}`); return errorTy; }
+      if (receiver.name === 'List' && operation.name === 'join' && (receiver.args[0]?.id !== 'builtin:string' || receiver.args[0]?.nullable || receiver.args[0]?.optional))
+        this.report(expr.span, 'join requires List<string>; format other values explicitly', 'COLLECTION');
       const decoding = receiver.name === 'Json' && operation.name === 'decode' || receiver.name === 'HttpRequest' && operation.name === 'form';
       if (expr.typeArgs.length && !decoding) this.report(expr.span, 'Collection methods inherit their receiver type arguments', 'GENERIC');
       const plan = this.planCall(expr, operation.parameters.map(param => ({name:param.label,type:{name:param.type.replace(/^optional /,''),args:[],nullable:false,optional:param.type.startsWith('optional '),span:expr.span},injected:false,ownership:'managed' as const,span:expr.span})), `${receiver.name}.${operation.name}`);
+      if (plan.invalidLabels) return errorTy;
       operation.parameters.forEach((param, index) => {
         const source = plan.sourceIndices[index];
         const expected = operationType(param.type, receiver);
@@ -2692,7 +3350,8 @@ class Checker {
         if (result.def?.node.kind === 'class') for (const error of this.effectiveErrors(result.def.node, result.def.file, new Map(result.def.node.typeParams.map((name, index) => [name, result.args[index] ?? errorTy]))))
           this.checkAllowedError(error, expr.span, context);
       }
-      return this.isReference(result) ? { ...result, readonly: true, frozen: decoding || receiver.name === 'Json' } : result;
+      return this.isReference(result) ? (result.frozen || decoding || receiver.name === 'Json' || receiver.frozen && ['get', 'at'].includes(operation.name)
+        ? immutableType(result) : { ...result, readonly: true }) : result;
     }
     let fn: MethodDecl | undefined;
     let fnFile = context.file;
@@ -2701,8 +3360,11 @@ class Checker {
       const def = this.project.scopes.get(context.file)?.get(expr.callee.name);
       if (def?.node.kind === 'class') {
         const cls = def.node;
-        const plan = this.planCall(expr, cls.fields, cls.name);
+        this.resolvedCalls.set(expr,{node:cls,params:cls.fields,dispatch:'direct'});
+        this.resolvedNames.set(expr.callee,{name:def.name,definition:def.node.span,global:def.id,declaration:def});
+        const plan = this.planCall(expr, cls.fields, cls.name, cls.span);
         plan.target = {id: `${def.id}::constructor`, dispatch: 'constructor'};
+        if (plan.invalidLabels) return errorTy;
         const inferred = new Map<string, Ty>();
         for (let i = 0; i < cls.typeParams.length; i++) {
           if (expr.typeArgs[i]) inferred.set(cls.typeParams[i],
@@ -2733,13 +3395,13 @@ class Checker {
         this.planInjections(expr, cls.fields, def.file, inferred, plan, context);
         context.flow.assertDistinct(expr.args.map((argument, index) => ({ origins: this.placesOf(argument, context), span: argument.span,
           exclusive: cls.fields[plan.sourceIndices.indexOf(index)]?.ownership === 'own' })),
-          (span, message) => this.report(span, message, 'BORROW'));
+          (span, message, details) => this.report(span, message, 'BORROW', details));
         for (let i = 0; i < cls.fields.length; i++) {
           const source = plan.sourceIndices[i];
           if (source === undefined) continue;
           const expected = this.resolveType(cls.fields[i].type, def.file, inferred);
           if (!this.assignable(argTypes[source], expected)) this.report(expr.args[source].span,
-            `Expected ${tyName(expected)}, got ${tyName(argTypes[source])}`);
+            `Expected ${tyName(expected)}, got ${tyName(argTypes[source])} for input ${cls.fields[i].label ?? cls.fields[i].name}`, 'TYPE', this.inputDetails(cls.fields[i], expected, argTypes[source]));
           if (this.isReference(argTypes[source])) {
             this.checkBorrowEscape(expr.args[source], context, false);
             if (cls.fields[i].mutable && argTypes[source].readonly)
@@ -2751,6 +3413,7 @@ class Checker {
         return { id: def.id, name: cls.name, kind: 'class', def,
           args: cls.typeParams.map(name => inferred.get(name) ?? errorTy), nullable: false };
       }
+      if(def?.node.kind==='choice'){this.report(expr.callee.span,'A choice has no constructor; construct an alternative record','CHOICE');return errorTy;}
       if (def?.node.kind === 'function') {
         fn = def.node; fnFile = def.file;
         if(fn.endpoint?.streams)this.report(expr.span,'Streaming endpoints are invoked through HTTP; extract an ordinary helper for reusable work','HTTP');
@@ -2800,13 +3463,19 @@ class Checker {
       }
       return errorTy;
     }
+    this.resolvedCalls.set(expr,{node:fn,params:fn.params,dispatch:receiverType?.kind==='interface'?'interface':'direct'});
+    if(expr.callee.kind==='name') {
+      const def=this.project.scopes.get(context.file)?.get(expr.callee.name);
+      if(def)this.resolvedNames.set(expr.callee,{name:def.name,definition:def.node.span,global:def.id,declaration:def});
+    }
     if (fn.externC && !context.unsafe) this.report(expr.span,
       `Call to extern C function ${fn.name} requires unsafe { ... }`, 'FFI');
     if (fn.externC && !fn.nativePure && !this.native.functions.has(fn) && !(fn.valueAbi && fn.uses?.length)) {
       const native = this.project.scopes.get(fnFile)?.get(fn.name);
       this.requireUse(`C:${native?.id ?? fn.name}`, `C.${fn.name}`, expr.span, context);
     }
-    const plan = this.planCall(expr, fn.params, fn.name);
+    const plan = this.planCall(expr, fn.params, fn.name, fn.span);
+    if (plan.invalidLabels) return errorTy;
     const definition = expr.callee.kind === 'name' ? this.project.scopes.get(context.file)?.get(expr.callee.name) :
       [...this.project.definitions.values()].find(def => 'methods' in def.node && def.node.methods.includes(fn!));
     if (definition) plan.target = {id: definition.node.kind === 'function' ? definition.id : `${definition.id}::${fn.name}`,
@@ -2825,7 +3494,7 @@ class Checker {
       this.inferCallType(param.type, argTypes[source], fn.typeParams.filter((_, index) => !expr.typeArgs[index]), params);
       const expected = this.resolveType(param.type, fnFile, params);
       if (!this.assignable(argTypes[source], expected)) this.report(argument.span,
-        `Expected ${tyName(expected)}, got ${tyName(argTypes[source])}`);
+        `Expected ${tyName(expected)}, got ${tyName(argTypes[source])} for input ${param.label ?? param.name}`, 'TYPE', this.inputDetails(param, expected, argTypes[source]));
       this.checkArgumentOwnership(argument, param, context);
       if (fn.typeConstraints?.[param.type.name]?.some(bound => bound.name === 'Data') && !this.immutableInput(argument, argTypes[source]))
         this.report(argument.span, 'Freeze collection values before passing them as immutable Data', 'FREEZE');
@@ -2840,7 +3509,7 @@ class Checker {
     const contract = this.effectiveContract(fn, fnFile, owner, params);
     plan.mutatesReceiver = contract.changes.some(change => change === 'self' || change.startsWith('self.'));
     for (const [key, effect] of contract.uses) this.requireUse(key,
-      `${effect.source}.${effect.operation}`, expr.span, context, effect);
+      `${effect.source}.${effect.operation}`, expr.span, context, effect, fn);
     for (const changed of contract.changes) {
       const root = changed.split('.')[0];
       if (root === 'self' && expr.callee.kind === 'member') this.requireMutation(expr, expr.callee.object, context, `${fn.name} changes self`);
@@ -2867,7 +3536,7 @@ class Checker {
       }),
       ...(expr.callee.kind === 'member' ? [{ origins: this.placesOf(expr.callee.object, context),
         exclusive: contract.changes.some(path => path === 'self' || path.startsWith('self.')), span: expr.callee.span }] : []),
-    ], (span, message) => this.report(span, message, 'BORROW'));
+    ], (span, message, details) => this.report(span, message, 'BORROW', details));
     for (const thrown of this.effectiveErrors(fn, fnFile, params)) this.checkAllowedError(thrown, expr.span, context);
     const result = this.returnType(fn, fnFile, params);
     return this.isReference(result) && fn.returnOwnership !== 'own' && !this.functionIsFresh(fn, fnFile,
@@ -2925,7 +3594,8 @@ class Checker {
       if (argument.kind === 'name') {
         const local = context.locals.get(argument.name);
         if (local?.ownership === 'own') {
-          if (local.moved) this.report(argument.span, `Cannot move ${argument.name} twice`, 'OWN');
+          if (local.moved) this.report(argument.span, `Cannot move ${argument.name} twice`, 'OWN',
+            this.movedValueEvidence(local));
           this.moveOwnedLocal(argument.name, argument.span, context);
         }
         else this.report(argument.span, 'Owned field requires an owned argument', 'OWN');
@@ -2935,7 +3605,8 @@ class Checker {
       this.report(argument.span, 'Cannot copy an owned value into managed storage', 'OWN');
     if (param.ownership === 'borrow') {
       if (context.flow.hasTaskCapture(this.placesOf(argument, context)))
-        this.report(argument.span, 'Cannot pass mutable access while a task uses the value; wait for the task first', 'CONCURRENCY');
+        this.report(argument.span, 'Cannot pass mutable access while a task uses the value; wait for the task first', 'CONCURRENCY',
+          context.flow.taskEvidence(this.placesOf(argument,context),'ownership.borrow-during-task','exclusive access after conflicting task loans end'));
       if (this.expressionTypes.get(argument)?.readonly) this.report(argument.span, 'Cannot borrow a read-only argument', 'BORROW');
       const name = sourceName(argument);
       if (name && !context.flow.activeGrant(name) && !['own', 'borrow'].includes(context.locals.get(name)?.ownership ?? 'managed'))
@@ -2946,14 +3617,19 @@ class Checker {
   }
 
   private checkBorrowEscape(expr: Expr, context: Context, scoped = true): void {
-    context.flow.escape(this.placesOf(expr, context), expr.span, (span, message) => this.report(span, message, 'BORROW'), scoped);
+    context.flow.escape(this.placesOf(expr, context), expr.span, (span, message, details) => this.report(span, message, 'BORROW', details), scoped);
+  }
+
+  private movedValueEvidence(local:Local) {
+    return ownershipEvidence('ownership.use-after-move','an owned value available on every checked path',
+      'ownership may have transferred on a checked path',(local.moveSites??[]).map(span=>({span,message:'Ownership may transfer here.'})));
   }
 
   private moveOwnedLocal(name: string, span: Span, context: Context): void {
     const local = context.locals.get(name);
     if (local?.ownership !== 'own') return;
-    context.flow.assertMove(name, span, (at, message) => this.report(at, message, 'BORROW'));
-    local.moved = true;
+    context.flow.assertMove(name, span, (at, message, details) => this.report(at, message, 'BORROW', details));
+    local.moved = true; local.moveSites=[span];
   }
 
   private bindingKey(name: string, args: TypeRef[]): string {

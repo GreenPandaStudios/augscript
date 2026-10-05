@@ -1,12 +1,16 @@
+import {checkedProjectWithTests} from './refactoring.ts';
+import {defaultText} from './parameters.ts';
+import type {Config} from './config.ts';
 import { resolve } from 'node:path';
 import { typeName, type Diagnostic, type Expr, type MethodDecl, type SourceFile, type Stmt, type TypeRef } from './ast.ts';
-import type { CheckedProject } from './checker.ts';
+import {type CheckedProject} from './checker.ts';
 import { completions, hoverInfo, importItems } from './editor.ts';
 import { importSource } from './git-packages.ts';
 import { languageHelp } from './help.ts';
 import { lex } from './lexer.ts';
+import {parse} from './parser.ts';
 import { tyName } from './types.ts';
-import { migrateFile } from './formatter.ts';
+import { formatFile, migrateFile } from './formatter.ts';
 
 export interface TextFixEdit {
   file: string;
@@ -20,6 +24,15 @@ export interface EditorFix {
   issue: Pick<Diagnostic, 'code' | 'line' | 'column' | 'message'>;
   edits: TextFixEdit[];
   preferred?: boolean;
+  /** Observable consequence shown with the proposed edit. */
+  description?: string;
+}
+
+/** Preserve the candidate's parsed meaning while adapting its complete file to project style. */
+function formattedInsertion(checked: CheckedProject, file: SourceFile, insertion: TextFixEdit): TextFixEdit | undefined {
+  const source = file.source.slice(0,insertion.start) + insertion.text + file.source.slice(insertion.end);
+  try { return {file:file.path,start:0,end:file.source.length,text:formatFile(checked.project,parse(file.path,source).file)}; }
+  catch { return undefined; }
 }
 
 function offsetAt(source: string, line: number, column: number): number {
@@ -92,7 +105,7 @@ function callsIn(file: SourceFile): Extract<Expr,{kind:'call'}>[] {
 }
 
 function wrappedStatement(file: SourceFile, issue: Diagnostic,
-                          opener: string, closer = '}'): TextFixEdit | undefined {
+                          opener: string, closer = '}', config?: Config): TextFixEdit | undefined {
   const stmt = containingStatement(file, offsetAt(file.source, issue.line, issue.column));
   // A declaration moved into a new block would become invisible afterward.
   if (!stmt || (stmt.kind !== 'expr' && !(stmt.kind === 'assign' && !stmt.declaredType)))
@@ -100,10 +113,14 @@ function wrappedStatement(file: SourceFile, issue: Diagnostic,
   const lineStart = file.source.lastIndexOf('\n', stmt.span.start - 1) + 1;
   const before = file.source.slice(lineStart, stmt.span.start);
   const indent = /^[ \t]*$/.test(before) ? before : '';
+  const step = config?.indentation === 'tabs' ? '\t' : '    ';
   const body = file.source.slice(stmt.span.start, stmt.span.end)
-    .replace(/\n/g, `\n${indent}    `);
+    .replace(/\n/g, `\n${indent}${step}`);
+  const indented = config?.block_style === 'indent';
+  const ending = indented ? closer.replace(/^} catch (.+?) \{/, 'catch $1:').replace(/\n}$/, '') : closer;
   return { file: file.path, start: stmt.span.start, end: stmt.span.end,
-    text: `${opener} {\n${indent}    ${body}\n${indent}${closer}` };
+    text: `${opener}${indented ? ':' : ' {'}\n${indent}${step}${body}` +
+      (indented && ending === '}' ? '' : `\n${indent}${ending.replace(/    /g, step)}`) };
 }
 
 /** Deterministic parser repairs also apply to rejected, isolated source units. */
@@ -113,10 +130,6 @@ export function syntaxFixes(file:SourceFile,diagnostics:Diagnostic[]):EditorFix[
     if(issue.code==='BINDING'){
       const match=/^let\s+/.exec(file.source.slice(start));
       if(match)return [{title:'Use an inferred August binding',issue,edits:[{file:file.path,start,end:start+match[0].length,text:''}]}];
-    }
-    if(issue.code==='COMPARISON'){
-      const token=lex(file.path,file.source).tokens.find(token=>token.span.start===start);
-      if(token&&['=','to'].includes(token.kind))return [{title:'Compare for equality with ==',issue,edits:[{file:file.path,start,end:token.span.end,text:'=='}]}];
     }
     return [];
   });
@@ -164,7 +177,7 @@ export function suggestedFixes(checked: CheckedProject, fileName: string): Edito
         };
         const contract = owner.implements.map(ref => find(ref, file.path)).find(Boolean);
         if (contract) {
-          const params = contract.method.params.map(param => `${param.injected ? 'resolve ' : ''}${param.ownership === 'managed' ? '' : param.ownership + ' '}${typeName(substitute(param.type, contract.types))} ${param.name}`);
+          const params = contract.method.params.map(param => `${param.injected ? 'resolve ' : ''}${param.ownership === 'managed' ? '' : param.ownership + ' '}${typeName(substitute(param.type, contract.types))} ${param.name}` + (param.defaultValue ? ' = ' + defaultText(param.defaultValue) : ''));
           const generic = contract.method.typeParams.length ? '<' + contract.method.typeParams.join(', ') + '>' : '';
           const header = `${missing[2]}${generic}(${params.join(', ')}) returns ${contract.method.returnOwnership === 'own' ? 'own ' : ''}${typeName(substitute(contract.method.returns, contract.types))}` +
             (contract.method.throws.length ? ' unless ' + contract.method.throws.map(ref => typeName(substitute(ref, contract.types))).join(', ') : '');
@@ -172,8 +185,8 @@ export function suggestedFixes(checked: CheckedProject, fileName: string): Edito
           const start = owner.headerEnd ?? owner.span.start;
           const braces = file.source[start] === '{' || file.source.slice(owner.span.start, start + 1).trimEnd().endsWith('{');
           const insertion = braces ? file.source.lastIndexOf('}', owner.span.end - 1) : owner.span.end;
-          if (insertion >= owner.span.start) add(`Implement ${missing[2]} in ${owner.name}`, { file: file.path, start: insertion, end: insertion,
-            text: braces ? `\n${unit}${header} {\n${unit}${unit}// TODO: implement ${missing[2]}\n${unit}}\n` : `\n${unit}${header}:\n${unit}${unit}// TODO: implement ${missing[2]}\n${unit}${unit}pass\n` });
+          if (insertion >= owner.span.start) add(`Implement ${missing[2]} in ${owner.name}`, formattedInsertion(checked,file,{ file: file.path, start: insertion, end: insertion,
+            text: braces ? `\n${unit}${header} {\n${unit}${unit}// TODO: implement ${missing[2]}\n${unit}}\n` : `\n${unit}${header}:\n${unit}${unit}// TODO: implement ${missing[2]}\n${unit}${unit}pass\n` }));
         }
       }
     }
@@ -241,17 +254,19 @@ export function suggestedFixes(checked: CheckedProject, fileName: string): Edito
         if (process) add('Rename process to around', { file: file.path, start: process.span.start,
           end: process.span.start + process.name.length, text: 'around' });
         else {
-          const end = file.source.lastIndexOf('}', node.span.end - 1);
-          if (end >= start) {
-            const type = node.typeParams[0];
-            add('Add an around implementation', { file: file.path, start: end, end,
-              text: `\n    around()${type ? ` returns ${type}` : ''} {\n        ${type ? 'return ' : ''}next();\n    }\n` });
+          const block = lex(file.path,file.source).tokens.find(token => token.span.start >= node.span.start &&
+            token.span.start < node.span.end && ['{',':'].includes(token.kind));
+          const braces = block?.kind === '{', end = braces ? file.source.lastIndexOf('}',node.span.end-1) : node.span.end;
+          if (block && end >= start) {
+            const call = node.typeParams[0] ? 'return next()' : 'next()';
+            const insertion = {file:file.path,start:end,end,text:braces ? `\n    around() {\n        ${call}\n    }\n` : `\n    around():\n        ${call}\n`};
+            add('Add an around implementation',formattedInsertion(checked,file,insertion));
           }
         }
       }
     }
     if (issue.code === 'FFI' && /requires unsafe \{ \.\.\. \}/.test(issue.message))
-      add('Wrap statement in unsafe block', wrappedStatement(file, issue, 'unsafe'));
+      add('Wrap statement in unsafe block', wrappedStatement(file, issue, 'unsafe', '}', checked.project.config));
     if (issue.code === 'PARSE' && issue.message === 'Use unless instead of throws in error contracts') {
       const start = offsetAt(file.source, issue.line, issue.column);
       add('Replace throws with unless', { file: file.path, start, end: start + 'throws'.length, text: 'unless' });
@@ -259,7 +274,15 @@ export function suggestedFixes(checked: CheckedProject, fileName: string): Edito
     const borrow = /requires borrow ([A-Za-z_][A-Za-z0-9_]*)/.exec(issue.message);
     if (issue.code === 'BORROW' && borrow) {
       const name = borrow[1];
-      add(`Wrap statement in borrow ${name} block`, wrappedStatement(file, issue, `borrow ${name}`));
+      const edit = wrappedStatement(file, issue, `borrow ${name}`, '}', checked.project.config);
+      if (edit) {
+        const overrides = new Map([...checked.project.files].filter(([,source]) => !source.builtin && !source.package).map(([path,source]) => [path,source.source]));
+        overrides.set(file.path, file.source.slice(0,edit.start) + edit.text + file.source.slice(edit.end));
+        const candidate = checkedProjectWithTests(checked.project.root, overrides);
+        if (!candidate.diagnostics.some(diagnostic => diagnostic.severity !== 'warning')) fixes.push({
+          title:`Wrap statement in borrow ${name} block`, issue, edits:[edit],
+          description:`Grant exclusive mutable access to ${name} for this statement, then release the borrow. The compiler checked aliases, task captures, and the resulting project.`});
+      }
     }
     const thrown = /^Unhandled ([A-Za-z_][A-Za-z0-9_]*); catch it or declare unless/.exec(issue.message);
     const offset = offsetAt(file.source, issue.line, issue.column);
@@ -273,8 +296,12 @@ export function suggestedFixes(checked: CheckedProject, fileName: string): Edito
       const end = callable && headerClose(callable);
       if (callable && end !== undefined) add(`Propagate ${thrown[1]} with unless`, { file: file.path, start: end, end,
         text: `${callable.throws.length ? 'and' : 'unless'} ${thrown[1]} ` });
-      if (!callable) add(`Catch ${thrown[1]} and report the failure`, wrappedStatement(file, issue,
-        'try', `} catch ${thrown[1]} error {\n    print(value=error)\n}`));
+      if (!callable) {
+        const edit = wrappedStatement(file, issue, 'try',
+          `} catch ${thrown[1]} error {\n    // Choose recovery here. Until then, preserve the failure.\n    throw error\n}`, checked.project.config);
+        if (edit) fixes.push({title:`Scaffold recovery for ${thrown[1]}`,issue,edits:[edit],
+          description:'This template rethrows the error. It remains incomplete until you choose a recovery policy; it does not log, discard the failure, or continue startup.'});
+      }
     }
     const policyEffect=/^Declare uses ([\w]+\.[\w]+) for /.exec(issue.message);
     if(issue.code==='HTTP'&&policyEffect&&callable) {
@@ -304,5 +331,10 @@ export function suggestedFixes(checked: CheckedProject, fileName: string): Edito
       }
     }
   }
-  return fixes;
+  return fixes.map(fix => ({...fix, description:fix.description ??
+    (fix.title.startsWith('Catch ') ? 'Report this startup failure and continue. Review the application’s recovery policy before accepting the handler.' :
+      fix.title.startsWith('Propagate ') ? 'Keep this failure checked and make it visible to callers; their catch or propagation obligations may change.' :
+      fix.title.includes('unsafe') ? 'Permit this native call inside an explicit unsafe boundary. The package’s native ownership and error contracts still apply.' :
+      fix.title.startsWith('Import ') ? 'Add an explicit module dependency; existing export and privacy rules still apply.' :
+      'Apply the shown source edit, then check the resulting program.')}));
 }

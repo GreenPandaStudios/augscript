@@ -154,3 +154,34 @@
   }
 }
 .VPHome .vp-doc > p { max-width: 760px; }
+
+/* Source/spec links remain native anchors in both formatted views. */
+.aug-example-code pre[data-aug-source-style] .line { position: relative; scroll-margin-top: 100px; }
+.aug-example-code .aug-spec-backlink { position: absolute; left: -18px; width: 14px; height: 1em; color: var(--vp-c-brand-1); text-decoration: none; }
+.aug-example-code .aug-spec-backlink::before { content: '↗'; }
+.aug-example-code .aug-spec-backlink:focus-visible { outline: 1px solid var(--vp-c-brand-1); outline-offset: 2px; }
+.aug-example-code .aug-source-selected { background-color: var(--vp-c-brand-soft); box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+.aug-spec-paragraph { scroll-margin-top: 100px; }
+
+.aug-spec-backlinks {
+  position: absolute;
+  top: 0;
+  left: -18px;
+  z-index: 2;
+  color: var(--vp-c-brand-1);
+}
+.aug-spec-backlinks summary { list-style: none; cursor: pointer; }
+.aug-spec-backlinks summary::-webkit-details-marker { display: none; }
+.aug-spec-backlinks summary::before { content: "↗"; }
+.aug-spec-backlinks summary:focus-visible { outline: 2px solid var(--vp-c-brand-1); }
+.aug-spec-backlink-list {
+  position: absolute;
+  display: grid;
+  padding: 8px 12px;
+  gap: 4px;
+  background: var(--vp-c-bg);
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 4px;
+  white-space: nowrap;
+  font-family: var(--vp-font-family-base);
+}

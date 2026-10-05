@@ -28,7 +28,7 @@ pageClass: aug-example-page
 
 ::: code-group
 
-```aug [Indentation]
+```aug [Indentation] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiaW5kZW50Iiwic291cmNlU2hhMjU2IjoiZDZiOTU4YTE2NDMzZTRmM2Y4NDlhNTNjMmZiMWVkZTYyZGE1OWQ5Njk5ZDRjZTYxZGRmZTk5NzFkM2ZlZmM5YiIsImZvcm1hdHRlZFNoYTI1NiI6IjM2NzUyMTUzNWI0OTk0NzRhZTcyZTE4N2I5NzQ0MmIyM2QzMDA1NjFhZjlmZmQ5YzBhOThmMWZjZWI3NjhjZGQiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDMtTDgiLCJmaXJzdCI6MywibGFzdCI6NiwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0xIl19XX0
 // aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import load from errors
 try:
@@ -37,7 +37,7 @@ catch FileError error:
     print(value="caught FileError")
 ```
 
-```aug [Braces]
+```aug [Braces] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiYnJhY2VzIiwic291cmNlU2hhMjU2IjoiZDZiOTU4YTE2NDMzZTRmM2Y4NDlhNTNjMmZiMWVkZTYyZGE1OWQ5Njk5ZDRjZTYxZGRmZTk5NzFkM2ZlZmM5YiIsImZvcm1hdHRlZFNoYTI1NiI6IjRjODU1MDg4ZDAwYWI2YjBlM2EzYjI0ZTJlNDFmYjhjYmVjZGEyMTYyMmE4NWRiNzM3OGIwNjE5YTNkNzFkYjUiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDMtTDgiLCJmaXJzdCI6MywibGFzdCI6OCwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0xIl19XX0
 // aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import load from errors
 try {
@@ -58,7 +58,9 @@ catch FileError error {
 
 ### Startup
 
-It prints [`load`](errors.md#symbol-load) with `fail` `true`. If this work raises `FileError`, it prints `"caught FileError"`.
+::: spec-paragraph specification-paragraph-1
+It prints [`load`](errors.md#symbol-load) with `fail` `true`. If this work raises `FileError`, it prints `"caught FileError"`. [source](main.md#source-L3-L8)
+:::
 
 ### Dependencies
 

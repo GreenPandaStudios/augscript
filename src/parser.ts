@@ -1,8 +1,8 @@
 import type {
-  BindDecl, ClassDecl, Diagnostic, ExportDecl, Expr, GenericHeader, ImportDecl, IncludeDecl, InterfaceDecl,
-  InterceptorAnnotation, InterceptorDecl, MethodDecl, Param, SourceFile, Span, Stmt, TestDecl, TestGroup, TopLevel, TypeRef,
+  BindDecl, BindingPattern, ClassDecl, Diagnostic, ExportDecl, Expr, GenericHeader, ImportDecl, IncludeDecl, InterfaceDecl,
+  InterceptorAnnotation, InterceptorDecl, MatchPattern, MethodDecl, Param, SourceFile, Span, Stmt, TestDecl, TestGroup, TopLevel, TypeRef,
 } from './ast.ts';
-import { syntheticType } from './ast.ts';
+import { bindingNames, syntheticType } from './ast.ts';
 import { lex, type Token } from './lexer.ts';
 import { basename } from 'node:path';
 
@@ -176,12 +176,19 @@ class Parser {
     if (this.looksLikeForward()) return this.parseForward();
     if (this.at('endpoint')) return this.parseEndpoint();
     if (this.at('export')) return this.parseExport();
+    if (this.current().value==='internal'&&this.current(1).kind==='identifier'&&this.current(2).kind==='from') return this.parseExport(true);
     if (this.at('bind') || this.at('implement')) return this.parseBind();
     if (this.at('interface') || this.at('capability')) return this.parseInterface();
     if (this.at('interceptor')) return this.parseInterceptor();
     if (this.at('test')) return this.parseTest();
     if (this.match('fixture')) return { ...this.parseFunction(false), fixture: true };
     if (this.at('record')) return this.parseRecord();
+    if (this.current().value === 'choice' && this.current(1).kind === 'identifier' && this.current(2).value === 'from') {
+      const start=this.take().span,name=this.expect('identifier').value;this.expect('from');
+      const alternatives=[this.parseType()];while(this.match('and'))alternatives.push(this.parseType());
+      this.endStatement();return {kind:'choice',name,typeParams:[],alternatives,span:this.span(start)};
+    }
+    if (this.current().value === 'error' && this.current(1).kind === 'identifier') return this.parseError();
     if (this.at('include')) return this.parseInclude();
     if (this.match('composition')) {
       const start = this.tokens[this.position - 1].span;
@@ -396,9 +403,9 @@ class Parser {
     return { kind: 'import', names, everything, from, span: this.span(start) };
   }
 
-  private parseExport(): ExportDecl {
+  private parseExport(internal=false): ExportDecl {
     const start = this.take().span;
-    if (this.match('folder')) {
+    if (!internal && this.match('folder')) {
       const name = this.expect('identifier').value;
       this.endStatement();
       return { kind: 'export', name, folder: true, span: this.span(start) };
@@ -407,7 +414,7 @@ class Parser {
     this.expect('from');
     const from = this.expect('identifier').value;
     this.endStatement();
-    return { kind: 'export', name, from, folder: false, span: this.span(start) };
+    return { kind: 'export', name, from, folder: false, ...(internal?{internal:true}:{}), span: this.span(start) };
   }
 
   private parseInclude(): IncludeDecl {
@@ -443,6 +450,8 @@ class Parser {
       while (this.match('and') || this.match(',')) validationErrors.push(this.parseType());
     }
     const headerEnd = this.current().span.start;
+    if (this.at('=>')) this.diagnostics.push({...this.current().span, code:'SYNTAX',
+      message:'Use an initialize block inside the class or record instead of =>'});
     let constructorBody = this.match('=>') ? this.parseBlock(start) : undefined;
     let hasBody = !!constructorBody;
     if (!constructorBody && (this.at('{') || this.at(':'))) {
@@ -470,6 +479,8 @@ class Parser {
     const validationErrors:TypeRef[]=[];
     const validationDeclared=!!this.match('unless');
     if(validationDeclared){validationErrors.push(this.parseType());while(this.match('and')||this.match(','))validationErrors.push(this.parseType());}
+    if (this.at('=>')) this.diagnostics.push({...this.current().span, code:'SYNTAX',
+      message:'Use an initialize block inside the class or record instead of =>'});
     let constructorBody = this.match('=>') ? this.parseBlock(start) : undefined;
     const implemented: TypeRef[] = [];
     if (!this.at('implements')) throw new ParseFailure({ ...start, code: 'PARSE',
@@ -527,6 +538,15 @@ class Parser {
     }
     this.closeBrace();
     return { kind: 'interface', name, capability: keyword.kind === 'capability', typeParams, typeConstraints, typeVariance, extends: parents, methods, span: this.span(start) };
+  }
+
+  private parseError(): ClassDecl {
+    const start = this.take().span, name = this.expect('identifier').value;
+    const generics = this.parseTypeParams(), fields = this.parseParams(true);
+    if (fields.some(field => field.injected || field.mutable || field.ownership !== 'managed'))
+      throw new ParseFailure({...start, code:'TYPE', message:'An error declaration contains read-only data; use a full Error implementation for other behavior'});
+    this.endStatement();
+    return {kind:'class', errorShorthand:true, name, ...generics, fields, methods:[], implements:[syntheticType('Error', start)], span:this.span(start)};
   }
 
   private parseEndpoint(): MethodDecl {
@@ -629,17 +649,21 @@ class Parser {
       const mutable = !!this.match('mutable');
       const ownership = this.match('own') ? 'own' : this.match('borrow') ? 'borrow' : 'managed';
       const type = this.parseType();
-      const label = /^[A-Za-z_]\w*$/.test(this.current().value) ? this.take().value : this.expect('identifier').value;
-      const name = fields && this.match('to') ? this.expect('identifier').value : label;
+      const labelToken = /^[A-Za-z_]\w*$/.test(this.current().value) ? this.take() : this.expect('identifier');
+      const label = labelToken.value;
+      const nameToken = fields && this.at('to') && this.current(1).kind === 'identifier'
+        ? (this.take(), this.expect('identifier')) : labelToken;
+      const name = nameToken.value;
       let source: Param['source'];
       if (endpoint && this.match('from')) {
         const kind = this.expect('identifier').value as NonNullable<Param['source']>['kind'];
         if (!['path', 'query', 'header', 'body', 'cookie', 'form', 'request'].includes(kind)) this.expect('path, query, header, body, cookie, form, or request');
         source = {kind, name: this.at('string') ? this.take().value : undefined};
       }
+      const defaultValue = this.match('=') || this.match('to') ? this.parseExpression() : undefined;
       if (mutable && !fields) throw new ParseFailure({ ...start, code: 'MUTABILITY',
         message: 'mutable declares class storage; use borrow for a mutable function input' });
-      params.push({ name, label: fields ? label.replace(/^_/, '') : label, mutable, type, ownership, injected, source, span: this.span(start) });
+      params.push({ name, nameSpan:nameToken.span, labelSpan:labelToken.span, label: fields ? label.replace(/^_/, '') : label, mutable, type, ownership, injected, source, defaultValue, span: this.span(start) });
       if (!this.match(',')) break;
     }
     this.expect(')');
@@ -649,6 +673,7 @@ class Parser {
   private parseType(): TypeRef {
     const start = this.current().span;
     const optional = this.match('optional') ? true : undefined;
+    const immutable = this.match('immutable') ? true : undefined;
     const name = this.expect('identifier').value;
     const args: TypeRef[] = [];
     if (this.match('<')) {
@@ -659,7 +684,7 @@ class Parser {
     const legacy = this.match('?');
     if(legacy)this.diagnostics.push({...legacy.span,code:'SYNTAX',message:'Use optional Type instead of Type?; omitted values are null'});
     const nullable = !!optional || !!legacy;
-    return { name, args, nullable, optional:nullable || undefined, span: this.span(start) };
+    return { name, args, nullable, immutable, optional:nullable || undefined, span: this.span(start) };
   }
 
   private parseBlock(header: Span): Stmt[] {
@@ -679,10 +704,15 @@ class Parser {
     return Object.assign(body, { span: this.span(header) });
   }
 
+  private parseCondition():Expr {
+    const test=this.parseExpression();
+    if(this.at('=')||this.at('to'))throw new ParseFailure({...this.current().span,code:'CONDITION',
+      message:'A condition compares values with ==. Assignment with = or to is a separate statement.'});
+    return test;
+  }
+
   private parseStatement(): Stmt {
     const start = this.current().span;
-    if(this.current().value==='let'&&this.tokens[this.position+1]?.kind==='identifier')throw new ParseFailure({...start,code:'BINDING',
-      message:'August creates a local on its first assignment. Remove let: value = expression, or int value = expression.'});
     if(this.match('yield')) {const value=this.parseExpression();this.endStatement();return {kind:'yield',value,span:this.span(start)};}
     if (this.match('serve')) {
       const names = [this.expect('identifier').value];
@@ -699,11 +729,13 @@ class Parser {
       const saved = this.position;
       const value = this.parseUnary();
       if (this.match('to') || this.match('as')) {
-        const names = [this.expect('identifier').value];
-        while (this.match('and') || this.match(',')) names.push(this.expect('identifier').value);
+        const selected = [this.expect('identifier')];
+        while (this.match('and') || this.match(',')) selected.push(this.expect('identifier'));
+        const names=selected.map(token=>token.value);
+        const pattern:BindingPattern={kind:'tupleBinding',items:selected.map(token=>({kind:'nameBinding',name:token.value,span:token.span})),span:{...selected[0].span,end:selected.at(-1)!.span.end}};
         this.endStatement();
         return names.length === 1 ? {kind: 'assign', target: {kind: 'name', name: names[0], span: start}, value, ownership: 'managed', span: this.span(start)} :
-          {kind: 'destructure', names, value, span: this.span(start)};
+          {kind: 'destructure', names, pattern, value, span: this.span(start)};
       }
       this.position = saved;
     }
@@ -716,6 +748,10 @@ class Parser {
         message: 'A nested declaration needs a class header with implements Interface; functions cannot contain declarations' });
     }
     if (this.emptyBody()) return { kind: 'expr', expr: { kind: 'literal', value: null, span: start }, span: this.span(start) };
+    if (this.at('break') || this.at('continue')) {
+      const kind = this.take().kind as 'break' | 'continue'; this.endStatement();
+      return {kind, span:this.span(start)};
+    }
     if (this.match('return')) {
       const value = this.at(';') || this.at('}') || this.at('eof') || this.lineBreak() ? undefined : this.parseExpression();
       this.endStatement();
@@ -726,10 +762,11 @@ class Parser {
       return { kind: 'throw', value, span: this.span(start) };
     }
     if (this.match('for')) {
-      const names = this.patternNames();
+      const selected=this.parseBindingPattern(),names=bindingNames(selected);
+      const pattern=selected.kind==='nameBinding'||selected.kind==='tupleBinding'&&selected.items.length>1&&selected.items.every(item=>item.kind==='nameBinding')?undefined:selected;
       this.expect('in');
       const iterable = this.parseExpression();
-      return { kind: 'for', names, iterable, body: this.parseBlock(start), span: this.span(start) };
+      return { kind: 'for', names, pattern, iterable, body: this.parseBlock(start), span: this.span(start) };
     }
     if (this.match('match')) {
       const value = this.parseExpression();
@@ -737,34 +774,22 @@ class Parser {
       const cases: Extract<Stmt, { kind: 'match' }>['cases'] = [];
       while (!this.at('}') && !this.at('eof')) {
         this.checkBlockIndentation();
-        const caseStart = this.current().span;
-        let pattern: (typeof cases)[number]['pattern'];
-        let literal: Expr | undefined, type: TypeRef | undefined, name: string | undefined;
-        if (this.match('else')) pattern = 'else';
-        else {
-          this.expect('when');
-          if (this.match('missing')) pattern = 'null';
-          else if (this.match('null')) pattern = 'null';
-          else if (this.match('some')) { pattern = 'some'; name = this.expect('identifier').value; }
-          else if (this.at('identifier')) { pattern = 'type'; type = this.parseType(); name = this.expect('identifier').value; }
-          else { pattern = 'literal'; literal = this.parsePrimary(); }
-        }
-        cases.push({ pattern, literal, type, name, body: this.parseBlock(caseStart), span: this.span(caseStart) });
+        const clause=this.parseMatchPattern();
+        const body=this.parseBlock(clause.span);
+        cases.push({...clause,body,span:this.span(clause.span)});
       }
       this.closeBrace();
       return { kind: 'match', value, cases, span: this.span(start) };
     }
     if (this.match('if')) {
-      const test = this.parseExpression();
-      if(this.at('=')||this.at('to'))throw new ParseFailure({...this.current().span,code:'COMPARISON',message:'A condition needs a bool expression. Use == to compare values; = and to assign values in statements.'});
+      const test = this.parseCondition();
       const then = this.parseBlock(start);
       const elseToken = this.match('else');
       const otherwise = elseToken ? (this.at('if') ? [this.parseStatement()] : this.parseBlock(elseToken.span)) : [];
       return { kind: 'if', test, then, otherwise, span: this.span(start) };
     }
     if (this.match('while')) {
-      const test = this.parseExpression();
-      if(this.at('=')||this.at('to'))throw new ParseFailure({...this.current().span,code:'COMPARISON',message:'A condition needs a bool expression. Use == to compare values; = and to assign values in statements.'});
+      const test = this.parseCondition();
       return { kind: 'while', test, body: this.parseBlock(start), span: this.span(start) };
     }
     if (this.match('try')) {
@@ -803,7 +828,7 @@ class Parser {
     }
     const ownership = this.match('own') ? 'own' : 'managed';
     const saved = this.position;
-    if (this.at('identifier') || this.at('optional')) {
+    if (this.at('identifier') || this.at('optional') || this.at('immutable')) {
       try {
         const declaredType = this.parseType();
         if (this.at('identifier') && ['=', 'to'].includes(this.current(1).kind)) {
@@ -822,15 +847,73 @@ class Parser {
       throw new ParseFailure({ file: token.span.file, line: token.span.line, column: token.span.column,
         message: 'own requires a typed variable declaration', code: 'PARSE' });
     }
+    if(this.at('(')||this.at('{')){
+      const saved=this.position;let pattern:BindingPattern|undefined;
+      try{pattern=this.parseBindingPattern();}catch(error){if(!(error instanceof ParseFailure))throw error;}
+      if(pattern&&pattern.kind!=='nameBinding'&&(this.match('=')||this.match('to'))){
+        const value=this.parseExpression();this.endStatement();
+        return {kind:'destructure',names:bindingNames(pattern),pattern,value,span:this.span(start)};
+      }
+      this.position=saved;
+    }
     const target = this.parseExpression();
     if (this.match('=') || this.match('to')) {
       const value = this.parseExpression(); this.endStatement();
       if (target.kind === 'collection' && target.collection === 'Tuple' && target.items.every(item => item.kind === 'name'))
         return { kind: 'destructure', names: target.items.map(item => (item as Extract<Expr, { kind: 'name' }>).name), value, span: this.span(start) };
+      if(target.kind==='collection')throw new ParseFailure({...target.span,code:'PATTERN',message:'A binding pattern contains names, tuple positions, or named record fields'});
       return { kind: 'assign', target, value, ownership, span: this.span(start) };
     }
     this.endStatement();
     return { kind: 'expr', expr: target, span: this.span(start) };
+  }
+
+  private parseBindingPattern():BindingPattern {
+    const start=this.current().span;
+    if(this.match('identifier'))return {kind:'nameBinding',name:this.tokens[this.position-1].value,span:start};
+    if(this.match('(')){
+      const items:BindingPattern[]=[];let comma=false;
+      if(!this.at(')'))do{items.push(this.parseBindingPattern());comma=!!this.match(',');}while(comma&&!this.at(')')&&!this.at('eof'));
+      this.expect(')');if(items.length===1&&!comma)return items[0];
+      return {kind:'tupleBinding',items,span:this.span(start)};
+    }
+    if(this.match('{')){
+      const fields:Extract<BindingPattern,{kind:'recordBinding'}>['fields']=[];
+      if(!this.at('}'))do{
+        const token=this.expect('identifier'),pattern=this.match(':')?this.parseBindingPattern():{kind:'nameBinding' as const,name:token.value,span:token.span};
+        fields.push({name:token.value,pattern,nameSpan:token.span,span:this.span(token.span)});
+      }while(this.match(',')&&!this.at('}')&&!this.at('eof'));
+      this.expect('}');return {kind:'recordBinding',fields,span:this.span(start)};
+    }
+    throw new ParseFailure({...start,code:'PATTERN',message:'A binding pattern contains names, tuple positions, or named record fields'});
+  }
+
+  private parseMatchPattern():MatchPattern {
+    const start=this.current().span;
+    let pattern:MatchPattern['pattern'],literal:Expr|undefined,type:TypeRef|undefined,name:string|undefined;
+    if(this.match('else'))pattern='else';
+    else {
+      this.expect('when');
+      if(this.match('missing')||this.match('null'))pattern='null';
+      else if(this.match('some')){pattern='some';name=this.expect('identifier').value;}
+      else if(this.at('identifier')){pattern='type';type=this.parseType();name=this.expect('identifier').value;}
+      else {pattern='literal';literal=this.parseUnary();if(literal.kind!=='literal')throw new ParseFailure({...literal.span,code:'MATCH',message:'A match pattern needs a scalar literal, null, some name, or Type name'});}
+    }
+    return {pattern,literal,type,name,span:this.span(start)};
+  }
+
+  private parseMatchValue(start:Span):Expr {
+    const value=this.parseExpression();this.openBlock(start);
+    const cases:Extract<Expr,{kind:'matchValue'}>['cases']=[];
+    while(!this.at('}')&&!this.at('eof')){
+      this.checkBlockIndentation();const clause=this.parseMatchPattern();this.openBlock(clause.span);this.checkBlockIndentation();
+      if(['}','return','throw','if','for','while','pass','own','break','continue','scope','try','unsafe','borrow','lock'].includes(this.current().kind))
+        throw new ParseFailure({...this.current().span,code:'MATCH',message:'Each match expression case needs one result expression; use a statement match for operations'});
+      const result=this.parseExpression();this.endStatement();
+      if(!this.at('}'))throw new ParseFailure({...this.current().span,code:'MATCH',message:'Each match expression case needs one result expression; use a statement match for operations'});
+      this.closeBrace();cases.push({...clause,result,span:this.span(clause.span)});
+    }
+    this.closeBrace();return {kind:'matchValue',value,cases,span:this.span(start)};
   }
 
   private patternNames(): string[] {
@@ -843,8 +926,8 @@ class Parser {
 
   private parseExpression(min = 0): Expr {
     let left = this.parseUnary();
-    const precedence: Record<string, number> = { 'or': 1, 'and': 2, '||': 1, '&&': 2, '==': 3, '!=': 3,
-      '<': 4, '>': 4, '<=': 4, '>=': 4, '+': 5, '-': 5, '*': 6, '/': 6 };
+    const precedence: Record<string, number> = { 'otherwise': 0.5, 'or': 1, 'and': 2, '||': 1, '&&': 2, '==': 3, '!=': 3,
+      '<': 4, '>': 4, '<=': 4, '>=': 4, '+': 5, '-': 5, '*': 6, '/': 6, '%': 6 };
     while ((this.expressionDepth > 0 || !this.lineBreak()) && (precedence[this.current().kind] ?? 0) > min) {
       const op = this.take().kind;
       const right = this.parseExpression(precedence[op]);
@@ -863,7 +946,7 @@ class Parser {
       const start = this.tokens[this.position - 1].span;
       return {kind:'handle', call:this.parseUnary(), span:this.span(start)};
     }
-    if (this.at('start') && this.current(1).kind !== '(' && this.match('start')) {
+    if (this.at('start') && this.current(1).span.line === this.current().endLine && ['identifier','start','wait'].includes(this.current(1).kind) && this.match('start')) {
       const start = this.tokens[this.position - 1].span;
       const worker = this.current().value === 'worker' && ['identifier', 'start', 'wait'].includes(this.current(1).kind) && !!this.take();
       const call = this.parseUnary();
@@ -879,7 +962,7 @@ class Parser {
       const token = this.take();
       const value = this.parseUnary();
       if (token.kind === '-' && value.kind === 'literal' && typeof value.value === 'number')
-        return { ...value, value: -value.value, numericText: value.numericText ? `-${value.numericText}` : undefined,
+        return { ...value, value: -value.value, numericText: value.numericText ? value.numericText.startsWith('-') ? value.numericText.slice(1) : `-${value.numericText}` : undefined,
           span: this.span(token.span, value.span) };
       return { kind: 'unary', op: token.kind, value, span: this.span(token.span, value.span) };
     }
@@ -893,6 +976,27 @@ class Parser {
     let expr = this.parsePrimary();
     while (true) {
       if (this.expressionDepth === 0 && this.lineBreak()) break;
+      if (this.match('with')) {
+        this.expect('('); this.expressionDepth++;
+        const fields: Extract<Expr, {kind:'recordCopy'}>['fields'] = [];
+        while (!this.at(')') && !this.at('eof')) {
+          const field = this.expect('identifier');
+          const value = this.match('=') || this.match('to') ? this.parseExpression() : {kind:'name' as const, name:field.value, span:field.span};
+          fields.push({name:field.value, value, span:this.span(field.span)});
+          if (!this.match(',')) break;
+        }
+        this.expect(')'); this.expressionDepth--;
+        expr = {kind:'recordCopy', base:expr, fields, span:this.span(expr.span)}; continue;
+      }
+      if (this.match('[')) {
+        const bracket = this.tokens[this.position - 1].span;
+        this.expressionDepth++;
+        const index = this.parseExpression();
+        this.expect(']'); this.expressionDepth--;
+        expr = {kind: 'call', callee: {kind: 'member', object: expr, name: 'get', span: this.span(expr.span, bracket)},
+          args: [index], argLabels: [undefined], typeArgs: [], indexed: true, span: this.span(expr.span)};
+        continue;
+      }
       if (this.match('.')) {
         const name = /^[A-Za-z_]\w*$/.test(this.current().value) ? this.take() : this.expect('identifier');
         expr = { kind: 'member', object: expr, name: name.value, span: this.span(expr.span, name.span) };
@@ -903,13 +1007,14 @@ class Parser {
         this.expressionDepth++;
         const args: Expr[] = [];
         const argLabels: (string | undefined)[] = [];
+        const argLabelSpans: (Span | undefined)[] = [];
         const argument = () => {
-          let label: string | undefined;
+          let label: string | undefined, labelSpan:Span | undefined;
           if (/^[A-Za-z_]\w*$/.test(this.current().value) && ['=', 'to'].includes(this.current(1).kind)) {
-            label = this.take().value;
+            const token=this.take(); label=token.value; labelSpan=token.span;
             this.take();
           }
-          argLabels.push(label);
+          argLabels.push(label); argLabelSpans.push(labelSpan);
           args.push(this.parseExpression());
         };
         if (!this.at(')')) {
@@ -918,7 +1023,7 @@ class Parser {
         }
         const end = this.expect(')').span;
         this.expressionDepth--;
-        expr = { kind: 'call', callee: expr, args, argLabels, typeArgs,
+        expr = { kind: 'call', callee: expr, args, argLabels, argLabelSpans, typeArgs,
           span: this.span(expr.span, end) };
         continue;
       }
@@ -950,13 +1055,40 @@ class Parser {
     return args;
   }
 
+  private looksLikeLambda():boolean {
+    if(!this.at('('))return false;
+    let depth=0;
+    for(let index=this.position;index<this.tokens.length;index++){
+      const token=this.tokens[index];
+      if(token.kind==='(')depth++;
+      if(token.kind===')'&&!--depth)return this.tokens[index+1]?.kind==='=>';
+      if(token.kind==='eof')break;
+    }
+    return false;
+  }
+
   private parsePrimary(): Expr {
     const token = this.current();
+    if(this.looksLikeLambda()){
+      const params=this.parseParams();this.expect('=>');
+      const body=this.parseExpression();return {kind:'lambda',params,body,span:this.span(token.span)};
+    }
     if (token.value === 'input' && this.current(1).kind === 'from' && this.current(2).value === 'form') {
       this.take(); this.take(); this.take(); return {kind:'formInput', span:this.span(token.span)};
     }
+    if(this.match('match'))return this.parseMatchValue(token.span);
+    if (this.match('interpolation_start')) {
+      const parts: Extract<Expr, {kind:'interpolation'}>['parts'] = [];
+      this.expressionDepth++;
+      while (!this.at('interpolation_end') && !this.at('eof')) {
+        if (this.at('interpolation_text')) {const text = this.take(); parts.push({text:text.value, span:text.span});}
+        else {const start=this.expect('{').span, value=this.parseExpression(); this.expect('}'); parts.push({value,span:this.span(start)});}
+      }
+      this.expect('interpolation_end'); this.expressionDepth--;
+      return {kind:'interpolation', parts, span:this.span(token.span)};
+    }
     if (this.at('jsx_open')) return this.parseMarkup();
-    if (['start', 'wait', 'missing'].includes(token.kind) && this.current(1).kind === '(') {
+    if (['start', 'wait'].includes(token.kind) || token.kind === 'missing' && this.current(1).kind === '(') {
       this.take(); return {kind:'name', name:token.value, span:token.span};
     }
     if (this.match('number')) return { kind: 'literal', value: Number(token.value),
@@ -978,6 +1110,12 @@ class Parser {
       if (!this.at(closing)) {
         do {
           items.push(this.parseExpression());
+          if (opening.kind === '[' && items.length === 1 && this.match('for')) {
+            const pattern=this.parseBindingPattern();this.expect('in');
+            const iterable=this.parseExpression(),condition=this.match('if')?this.parseExpression():undefined;
+            this.expect(']');this.expressionDepth--;
+            return {kind:'comprehension',projection:items[0],pattern,iterable,condition,span:this.span(opening.span)};
+          }
           if (opening.kind === '{') {
             const pair = !!this.match(':');
             const nextKind = pair ? 'Map' : 'Set';

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
-import {existsSync,mkdirSync,mkdtempSync,readFileSync,writeFileSync,readdirSync,rmSync,realpathSync} from 'node:fs';
+import {existsSync,mkdirSync,mkdtempSync,readFileSync,writeFileSync,readdirSync,rmSync,realpathSync,lstatSync,copyFileSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join,resolve} from 'node:path';
 import {spawnSync} from 'node:child_process';
@@ -15,9 +15,11 @@ assert.ok(distributionInputs.editors.includes(editor),'Choose a qualified editor
 const retained=args.includes('--retained-compiler'),host=process.platform+'-'+process.arch;
 mkdirSync(join(root,'.aug-build'),{recursive:true});
 const output=join(root,`.aug-build/editor-qualification-${host}-${editor}${retained?'-retained':''}.json`);
-const report={format:1,host,editor,compilerMode:retained?'retained-release':'candidate',baseline:distributionInputs.baseline.extension,passed:false,checks:[]};
+const retainedLogs=join(root,`.aug-build/editor-host-logs-${host}-${editor}${retained?'-retained':''}`);
+const report={format:1,host,editor,compilerMode:retained?'retained-release':'candidate',baseline:distributionInputs.baseline.extension,rendering:process.platform==='linux'?'software':'platform-default',passed:false,checks:[]};
 let directory,stage='candidate manifest';
 try{
+  rmSync(retainedLogs,{recursive:true,force:true});
   const manifest=JSON.parse(readFileSync(join(root,'vscode/package.json'))),candidate=join(root,'vscode',`augscript-${manifest.version}.vsix`);
   report.compiler=manifest.augustCompilerVersion;report.extension=manifest.version;
   assert.ok(existsSync(candidate),'Package the extension before editor qualification');
@@ -54,7 +56,7 @@ try{
     stage=mode+' installed extension host';
     const evidenceFile=join(profile,'report.json'),cache=join(profile,'artifacts');
     await runTests({vscodeExecutablePath:executable,extensionDevelopmentPath:harness,extensionTestsPath:join(harness,'suite.cjs'),reuseMachineInstall:true,
-      launchArgs:[project,...common,'--skip-welcome','--skip-release-notes','--disable-workspace-trust'],
+      launchArgs:[project,...common,...(process.platform==='linux'?['--disable-gpu']:[]),'--skip-welcome','--skip-release-notes','--disable-workspace-trust'],
       extensionTestsEnv:{AUG_EDITOR_PROJECT:project,AUG_EDITOR_REPORT:evidenceFile,AUG_EDITOR_EXPECTED_VERSION:manifest.version,AUG_EDITOR_EXPECTED_COMPILER:manifest.augustCompilerVersion,
         AUG_EDITOR_RETAINED_COMPILER:retained?'1':undefined,AUG_NATIVE_ARTIFACT_CACHE:cache,AUG_LLVM_HOME:undefined,AUG_RUNTIME_PACK:undefined,ELECTRON_RUN_AS_NODE:undefined}});
     const evidence=JSON.parse(readFileSync(evidenceFile));
@@ -65,6 +67,24 @@ try{
 finally{
   writeFileSync(output,JSON.stringify(report,null,2)+'\n');
   if(directory&&report.passed)rmSync(directory,{recursive:true,force:true});
-  else if(directory)console.error('Failed editor profile retained: '+directory);
+  else if(directory){
+    // Retain bounded text logs from these disposable profiles, not their caches or credentials.
+    let bytes=0,files=0;
+    const copyLogs=(source,target,depth=0)=>{
+      if(depth>12||!existsSync(source))return;
+      for(const entry of readdirSync(source,{withFileTypes:true})){
+        const from=join(source,entry.name),to=join(target,entry.name);
+        if(entry.isDirectory())copyLogs(from,to,depth+1);
+        else if(entry.isFile()&&entry.name.endsWith('.log')){
+          const size=lstatSync(from).size;
+          if(size>2*1024*1024||bytes+size>16*1024*1024||files>=256)continue;
+          mkdirSync(target,{recursive:true});copyFileSync(from,to);bytes+=size;files++;
+        }
+      }
+    };
+    try{for(const mode of ['clean','upgrade'])copyLogs(join(directory,mode,'user/logs'),join(retainedLogs,mode));}
+    catch(error){console.error('Could not retain editor logs: '+error.message);}
+    console.error('Failed editor profile retained: '+directory);
+  }
 }
 console.log((report.passed?'Installed VSIX clean-profile and upgrade qualification passed: ':'Editor qualification failed: ')+output);

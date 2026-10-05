@@ -7,7 +7,7 @@ export function schemaType(project: Project, ref: TypeRef, file: string, paramet
   if (param) return {...param, nullable: param.nullable || ref.nullable, optional: ref.optional || param.optional};
   const def = ref.definitionId?project.definitions.get(ref.definitionId):project.scopes.get(file)?.get(ref.name);
   return {id: def?.id ?? 'builtin:' + ref.name, name: ref.name,
-    kind: def?.node.kind === 'class' ? 'class' : def ? 'interface' : 'builtin', def,
+    kind: def?.node.kind === 'class' ? 'class' : def?.node.kind==='choice'?'choice':def ? 'interface' : 'builtin', def,
     nullable: ref.nullable, optional: ref.optional, args: ref.args.map(arg => schemaType(project, arg, file, parameters))};
 }
 export function jsonDataType(project: Project, type: Ty, seen = new Set<string>()): boolean {

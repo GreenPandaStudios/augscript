@@ -2,9 +2,20 @@
 
 # `errors.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=c2343e213805b3016fd89e18037c7259a94ebb9de3996cddfc233e987b4bfecd -->
+
 <a id="symbol-load"></a>
 ## `load` · [source](errors.aug#L2)
 
+It takes `fail` as a boolean. It checks that `fail` is false. It raises a `FileError` at the first failed check. It returns `"loaded"`. [source](errors.aug#L3-L6)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+load(bool fail) returns string unless FileError
+```
+
 It takes `fail` as a boolean. Failures can raise `FileError`.
 
-It checks that `fail` is false. It raises a `FileError` at the first failed check. It returns `"loaded"`.
+</details>

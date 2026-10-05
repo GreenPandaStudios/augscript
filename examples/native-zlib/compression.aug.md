@@ -2,12 +2,23 @@
 
 # `compression.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=a89932de96a211eae84917098694d0a85836b4dec16e6e628899c6b8a33918e3 -->
+
 <a id="symbol-roundTrip"></a>
 ## `roundTrip` · [source](compression.aug#L5)
 
-Compress text with zlib, then restore its bytes within a fixed output limit. Failures can raise [`CompressionError`](.aug-spec/packages/%40greenpandastudios/aug-zlib/0.1.5/contracts.aug.md#symbol-CompressionError).
+Compress text with zlib, then restore its bytes within a fixed output limit. It sets `input` of type `Bytes` to the UTF-8 bytes of `"The world runs on language"`. It sets `compressed` of type `Bytes` to [`compress`](.aug-spec/packages/%40greenpandastudios/aug-zlib/0.1.5/api.aug.md#symbol-compress) with `input`. It returns [`decompress`](.aug-spec/packages/%40greenpandastudios/aug-zlib/0.1.5/api.aug.md#symbol-decompress) with `input` from `compressed` and `maximumOutput` `4096`. [source](compression.aug#L6-L8)
 
-It sets `input` of type `Bytes` to the UTF-8 bytes of `"The world runs on language"`. It sets `compressed` of type `Bytes` to [`compress`](.aug-spec/packages/%40greenpandastudios/aug-zlib/0.1.5/api.aug.md#symbol-compress) with `input`. It returns [`decompress`](.aug-spec/packages/%40greenpandastudios/aug-zlib/0.1.5/api.aug.md#symbol-decompress) with `input` from `compressed` and `maximumOutput` `4096`.
+<details>
+<summary>Checked interface</summary>
+
+```text
+roundTrip() returns Bytes unless CompressionError
+```
+
+Failures can raise [`CompressionError`](.aug-spec/packages/%40greenpandastudios/aug-zlib/0.1.5/contracts.aug.md#symbol-CompressionError).
+
+</details>
 
 <a id="symbol-test roundTrip"></a>
 ## `test roundTrip` · [source](compression.aug#L10)
@@ -18,7 +29,7 @@ Tests [`roundTrip`](compression.aug.md#symbol-roundTrip). Each case gets fresh s
 
 #### `preserves_the_original_bytes` · [source](compression.aug#L12)
 
-It gets `restored` of type `Bytes` from [`roundTrip`](compression.aug.md#symbol-roundTrip). The test requires `restored.text` equals `"The world runs on language"`. The test requires the byte length of `restored` equals `26`.
+It gets `restored` of type `Bytes` from [`roundTrip`](compression.aug.md#symbol-roundTrip). The test requires `restored.text` equals `"The world runs on language"`. The test requires the byte length of `restored` equals `26`. [source](compression.aug#L13-L15)
 
 ## Dependencies
 

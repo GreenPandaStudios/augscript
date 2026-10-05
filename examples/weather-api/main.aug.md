@@ -2,13 +2,15 @@
 
 # `main.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=f11d3f9ddf01803e4e7ae91b03fe1ae460a55ef56820da1a6f7d04248391ed8a -->
+
 ## HTTP configuration
 
 Listen on `127.0.0.1`. Limit request bodies to 1048576 bytes and buffered responses to 4194304 bytes. Serve OpenAPI at `/openapi.json` and API docs at `/docs`.
 
 ## Startup
 
-It serves [`weatherForecast`](forecasts.aug.md#symbol-weatherForecast) on port `8787`.
+It serves [`weatherForecast`](forecasts.aug.md#symbol-weatherForecast) on port `8787`. [source](main.aug#L4)
 
 ## Dependencies
 

@@ -2,6 +2,8 @@
 
 # `contracts.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=17d4939e10c2009f80a975c2091595dad22f9f23741836a7380924a9f03cdf29 -->
+
 <a id="symbol-Principal"></a>
 ## `Principal` · immutable record · [source](contracts.aug#L3)
 
@@ -45,7 +47,18 @@ Emit escaped JSON request metadata to standard error. Credentials and query stri
 <a id="symbol-WebRequestLogger.complete"></a>
 ### `WebRequestLogger.complete` · [source](contracts.aug#L20)
 
-It takes `method` and `path` as strings and `status` and `milliseconds` as integers. Within an unsafe block, it calls [`_aug_http_log`](contracts.aug.md#symbol-_aug_http_log) with `method`, `path`, `status`, and `milliseconds`. Native operations must satisfy their declared C contracts.
+It takes labeled inputs `method`, `path`, `status`, and `milliseconds`. Within an unsafe block, it calls [`_aug_http_log`](contracts.aug.md#symbol-_aug_http_log) with `method`, `path`, `status`, and `milliseconds`. Native operations must satisfy their declared C contracts. [source](contracts.aug#L21-L22)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+complete(string method, string path, int status, int milliseconds) returns void uses RequestLogger.complete
+```
+
+It takes `method` and `path` as strings and `status` and `milliseconds` as integers.
+
+</details>
 
 <a id="symbol-HttpClient"></a>
 ## `HttpClient` · capability interface · [source](contracts.aug#L25)
@@ -67,34 +80,74 @@ Native libwebsockets transport. No socket is opened by construction. It implemen
 <a id="symbol-WebHttpClient.request"></a>
 ### `WebHttpClient.request` · [source](contracts.aug#L33)
 
-Perform an HTTP request with bounded bytes. Waiting for a response suspends the calling task. It takes `method` and `url` as strings, `headers` as `optional Headers`, and `body` as `optional Bytes`. Omitted optional inputs are null.
+Perform an HTTP request with bounded bytes. Waiting for a response suspends the calling task. It takes labeled inputs `method`, `url`, `headers`, and `body`.
 
-Failures can raise `HttpError`. Within an unsafe block, it returns [`_aug_http_request`](contracts.aug.md#symbol-_aug_http_request) with `method`, `url`, `headers`, and `body`. Native operations must satisfy their declared C contracts.
+Within an unsafe block, it returns [`_aug_http_request`](contracts.aug.md#symbol-_aug_http_request) with `method`, `url`, `headers`, and `body`. Native operations must satisfy their declared C contracts. [source](contracts.aug#L34-L35)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+request(string method, string url, optional Headers headers, optional Bytes body) returns HttpResponse<Bytes> unless HttpError uses HttpClient.request
+```
+
+It takes `method` and `url` as strings, `headers` as `optional Headers`, and `body` as `optional Bytes`. Omitted optional inputs are null. Failures can raise `HttpError`.
+
+</details>
 
 <a id="symbol-redirect"></a>
 ## `redirect` · [source](contracts.aug#L38)
 
 Return a redirect with an explicit status. Location is checked as a header value. It takes `location` as a string and `status` as `optional int`. Omitted optional inputs are null.
 
-Failures can raise `HttpError`.
+It sets `code` to `303`. If `status` is null, it continues without an operation. If `status` is not null, using `value` for it sets `code` to `value`. It sets `headers` to a `Headers` with the header `"location"` set to `location`. [source](contracts.aug#L39-L45)
 
-It sets `code` to `303`. If `status` is null, it continues without an operation. If `status` is not null, using `value` for it sets `code` to `value`. It sets `headers` to a `Headers` with the header `"location"` set to `location`.
+It returns HTTP code with `""` and `headers` headers. [source](contracts.aug#L46)
 
-It returns HTTP code with `""` and `headers` headers.
+<details>
+<summary>Checked interface</summary>
+
+```text
+redirect(string location, optional int status) returns HttpResponse<string> unless HttpError
+```
+
+It takes `location` as a string and `status` as `optional int`. Omitted optional inputs are null. Failures can raise `HttpError`.
+
+</details>
 
 <a id="symbol-urlEncode"></a>
 ## `urlEncode` · [source](contracts.aug#L50)
 
-Encode a UTF-8 value as one URL query or form component using RFC 3986 unreserved characters. It takes `input` as a string. Failures can raise `HttpError`.
+Encode a UTF-8 value as one URL query or form component using RFC 3986 unreserved characters. It takes `input` as a string. Within an unsafe block, it returns [`_aug_http_url_encode`](contracts.aug.md#symbol-_aug_http_url_encode) with `input`. Native operations must satisfy their declared C contracts. [source](contracts.aug#L51-L52)
 
-Within an unsafe block, it returns [`_aug_http_url_encode`](contracts.aug.md#symbol-_aug_http_url_encode) with `input`. Native operations must satisfy their declared C contracts.
+<details>
+<summary>Checked interface</summary>
+
+```text
+urlEncode(string input) returns string unless HttpError
+```
+
+It takes `input` as a string. Failures can raise `HttpError`.
+
+</details>
 
 <a id="symbol-cookie"></a>
 ## `cookie` · [source](contracts.aug#L56)
 
 Construct an HttpOnly, SameSite=Lax session cookie. Secure defaults are chosen explicitly at the call site. Values and paths reject delimiters and controls. maxAge=0 clears the cookie.
 
-It takes `name`, `value`, and `path` as strings, `maxAge` as an integer, and `secure` as a boolean. Failures can raise `HttpError`. Within an unsafe block, it returns [`_aug_http_cookie`](contracts.aug.md#symbol-_aug_http_cookie) with `name`, `value`, `path`, `maxAge`, and `secure`. Native operations must satisfy their declared C contracts.
+It takes labeled inputs `name`, `value`, `path`, `maxAge`, and `secure`. Within an unsafe block, it returns [`_aug_http_cookie`](contracts.aug.md#symbol-_aug_http_cookie) with `name`, `value`, `path`, `maxAge`, and `secure`. Native operations must satisfy their declared C contracts. [source](contracts.aug#L57-L58)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+cookie(string name, string value, string path, int maxAge, bool secure) returns Headers unless HttpError
+```
+
+It takes `name`, `value`, and `path` as strings, `maxAge` as an integer, and `secure` as a boolean. Failures can raise `HttpError`.
+
+</details>
 
 <a id="symbol-ServerControl"></a>
 ## `ServerControl` · capability interface · [source](contracts.aug#L62)
@@ -115,7 +168,18 @@ Control the server on its event-loop thread. Owned services can be disposed afte
 <a id="symbol-WebServerControl.stop"></a>
 ### `WebServerControl.stop` · [source](contracts.aug#L68)
 
-It takes `milliseconds` as an integer. Failures can raise `HttpError`. Within an unsafe block, it calls [`_aug_http_stop`](contracts.aug.md#symbol-_aug_http_stop) with `milliseconds`. Native operations must satisfy their declared C contracts.
+It takes `milliseconds` as an integer. Within an unsafe block, it calls [`_aug_http_stop`](contracts.aug.md#symbol-_aug_http_stop) with `milliseconds`. Native operations must satisfy their declared C contracts. [source](contracts.aug#L69-L70)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+stop(int milliseconds) returns void unless HttpError uses ServerControl.stop
+```
+
+It takes `milliseconds` as an integer. Failures can raise `HttpError`.
+
+</details>
 
 <a id="symbol-_aug_http_log"></a>
 ## `_aug_http_log` · [source](contracts.aug#L17)

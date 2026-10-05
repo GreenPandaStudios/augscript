@@ -28,7 +28,7 @@ pageClass: aug-example-page
 
 ::: code-group
 
-```aug [Indentation]
+```aug [Indentation] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiaW5kZW50Iiwic291cmNlU2hhMjU2IjoiNDg5ODhiZWFkYTcwNTkwZjljZjRkNzJhZTFhMDdmNjZkMTFkZmJkYzAzNGU4OTQyNDQ2YmUzZTY3MWFlM2RjNSIsImZvcm1hdHRlZFNoYTI1NiI6ImQ5NWFlMjJhYjBlMGRiOTI4ZTYwZGUyMTg0YmU0YTQ1YTJkNzQ3NTBhMTMzNGIyNzFmNjRhYmZlMDAzOWNmODEiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDMtTDgiLCJmaXJzdCI6MywibGFzdCI6OCwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0xIl19LHsiaWQiOiJzb3VyY2UtTDktTDEyIiwiZmlyc3QiOjksImxhc3QiOjEyLCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTIiXX1dfQ
 // aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Item from data
 int iterations = 50000
@@ -43,7 +43,7 @@ for item in values:
 print(value=checksum)
 ```
 
-```aug [Braces]
+```aug [Braces] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiYnJhY2VzIiwic291cmNlU2hhMjU2IjoiNDg5ODhiZWFkYTcwNTkwZjljZjRkNzJhZTFhMDdmNjZkMTFkZmJkYzAzNGU4OTQyNDQ2YmUzZTY3MWFlM2RjNSIsImZvcm1hdHRlZFNoYTI1NiI6IjJlMDcyMDBhOTdjYjFjZDc1NmQ4YWJlYjRhNTdlNzQxOGRkZTEzNGNlNGI5Y2E4ZjI2ZmNmYmQ0MzdkZDM2YTMiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDMtTDgiLCJmaXJzdCI6MywibGFzdCI6OSwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0xIl19LHsiaWQiOiJzb3VyY2UtTDktTDEyIiwiZmlyc3QiOjEwLCJsYXN0IjoxNCwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0yIl19XX0
 // aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Item from data
 int iterations = 50000
@@ -70,9 +70,13 @@ print(value=checksum)
 
 ### Startup
 
-It sets `iterations` to `50000`. It stores a list with no items in owned `values` (`List<Item>`). It sets `index` to `0`. While `index` is less than `iterations`, it appends an [`Item`](data.md#symbol-Item) with `id` from `index` and `name` `"August"` to `values`; then it increases `index` by `1`.
+::: spec-paragraph specification-paragraph-1
+It sets `iterations` to `50000`. It stores a list with no items in owned `values` (`List<Item>`). It sets `index` to `0`. While `index` is less than `iterations`, it appends an [`Item`](data.md#symbol-Item) with `id` from `index` and `name` `"August"` to `values`; then it increases `index` by `1`. [source](main.md#source-L3-L8)
+:::
 
-After the loop, it sets `checksum` to `0`. For each `item` in a snapshot of `values`, it increases `checksum` by `item.id`. After the loop, it prints `checksum`.
+::: spec-paragraph specification-paragraph-2
+After the loop, it sets `checksum` to `0`. For each `item` in a snapshot of `values`, it increases `checksum` by `item.id`. After the loop, it prints `checksum`. [source](main.md#source-L9-L12)
+:::
 
 ### Dependencies
 

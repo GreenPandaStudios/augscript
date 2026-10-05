@@ -1,3 +1,5 @@
+import {sourceNavigationTransformer} from './source-navigation.mjs';
+import {standardLibraryModules} from '../../src/library-modules.ts';
 import { defineConfig } from 'vitepress';
 import { copyFileSync, readFileSync } from 'node:fs';
 import { dirname, relative, resolve } from 'node:path';
@@ -21,6 +23,7 @@ export default defineConfig({
   },
   sitemap: { hostname: 'https://GreenPandaStudios.github.io/augscript/' },
   markdown: {
+    codeTransformers: [sourceNavigationTransformer],
     languages: [{ ...grammar, name: 'aug', aliases: ['augscript'] }],
     config(md) {
       md.set({ html: false });
@@ -32,6 +35,10 @@ export default defineConfig({
         if (!chartNames.has(chart)) throw new Error(`Unknown benchmark chart: ${chart}`);
         return `<BenchmarkChart chart="${chart}" />\n`;
       }});
+      md.use(container,'spec-paragraph',{
+        validate: info=>/^spec-paragraph specification-paragraph-[1-9][0-9]*$/.test(info.trim()),
+        render:(tokens,index)=>tokens[index].nesting===1?`<div class="aug-spec-paragraph" id="${tokens[index].info.trim().split(/\s+/)[1]}">\n`:'</div>\n'
+      });
       const render = md.renderer.rules.link_open;
       md.renderer.rules.link_open = (tokens, index, options, env, self) => {
         const token = tokens[index];
@@ -65,14 +72,24 @@ export default defineConfig({
       ]},
       { text: 'Task guides', collapsed: false, items: [
         { text: 'Choose a guide', link: '/guides/' },
+        { text: 'Try a snippet', link: '/guides/try-a-snippet' },
+        { text: 'Add error context', link: '/guides/add-error-context' },
+            { text: 'Measure text', link: '/guides/measure-text' },
+            { text: 'Validate domain values', link: '/guides/use-domain-values' },
+            { text: 'Keep module internals', link: '/guides/keep-module-internals' },
+        { text: 'Describe a finite choice', link: '/guides/use-choices' },
+        { text: 'Pass a small function', link: '/guides/use-callbacks' },
+        { text: 'Reuse service wiring', link: '/guides/reuse-services' },
         { text: 'Weather API', link: '/weather-api' }, { text: 'VS Code', link: '/editor' },
         { text: 'Tests', link: '/testing' }, { text: 'Web applications', link: '/web' },
         { text: 'Native service boundaries', link: '/native-service-boundaries' },
         { text: 'Compiled specifications', link: '/specifications' },
         { text: 'Checked changes', link: '/checked-changes' },
         { text: 'Packages and installation', link: '/packages' },
+        { text: 'Find a library', link: '/library-catalog' },
         { text: 'Native library packages', link: '/native-packages' },
         { text: 'Package compatibility', link: '/package-compatibility' },
+        { text: 'Publish a library', link: '/package-publishing' },
         { text: 'Multicore workers', link: '/workers' },
         { text: 'Docker deployment', link: '/docker' },
         { text: 'VS Code Dev Containers', link: '/dev-containers' },
@@ -84,7 +101,7 @@ export default defineConfig({
         { text: 'Native ABI', link: '/native-abi' },
         { text: 'CLI, configuration, and editor', link: '/tooling' }
       ]},
-      { text: 'Library reference', collapsed: true, items: ['io', 'json', 'memory', 'time', 'web', 'crypto'].map(module => ({ text: `august.${module}`, link: `/api/${module}` })) },
+      { text: 'Library reference', collapsed: true, items: standardLibraryModules.map(module => ({ text: `august.${module}`, link: `/api/${module}` })) },
       { text: 'About August', collapsed: true, items: [
         { text: 'Why August exists', link: '/about' }, { text: 'Example projects', link: '/examples/' },
         { text: 'Performance', link: '/performance' }, { text: 'Production readiness', link: '/production-readiness' },

@@ -1,3 +1,4 @@
+import {planExampleNavigation,exampleSourceViews} from './example-source-links.mjs';
 import {cpSync, existsSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync} from 'node:fs';
 import {basename, dirname, join, relative, resolve} from 'node:path';
 import {tmpdir} from 'node:os';
@@ -5,8 +6,6 @@ import {loadProject} from '../src/project.ts';
 import {checkProject} from '../src/checker.ts';
 import {loadConfig} from '../src/config.ts';
 import {compilerVersion, installPackages, packageSpecifications} from '../src/package-manager.ts';
-import {formatFile} from '../src/formatter.ts';
-import {parse} from '../src/parser.ts';
 import {generateSpecs, updateSpecs} from '../src/spec.ts';
 import {checkUnitTests, discoverTests, mergeTestAnalysis} from '../src/testing.ts';
 import {projectArchive} from './doc-downloads.mjs';
@@ -16,12 +15,11 @@ export const examples=JSON.parse(readFileSync(join(root,'docs/example-projects.j
 const slash=path=>path.replaceAll('\\','/');
 const url=path=>slash(path).split('/').map(encodeURIComponent).join('/');
 const compare=(a,b)=>a<b?-1:a>b?1:0;
-const safeAnchor=id=>id.replace(/[^A-Za-z0-9_.-]/g,char=>'-'+char.codePointAt(0).toString(16)+'-');
 const frontmatter=(title,source,dependency=false,exampleFile=false)=>`---\ntitle: ${JSON.stringify(title)}\ngenerated: true\nsource: ${JSON.stringify(source)}\neditLink: false\nprev: false\nnext: false\noutline: [2, 3]\n${dependency?'search: false\n':''}${exampleFile?'pageClass: aug-example-page\n':''}---\n\n`;
 const code=text=>`\`${text}\``;
-const fence=(source,language='aug',label='')=>{
+const fence=(source,language='aug',label='',metadata='')=>{
   const delimiter='`'.repeat(Math.max(3,1+Math.max(0,...(source.match(/`+/g)??[]).map(part=>part.length))));
-  return `${delimiter}${language}${label?' ['+label+']':''}\n${source.trimEnd()}\n${delimiter}\n`;
+  return `${delimiter}${language}${label?' ['+label+']':''}${metadata?' '+metadata:''}\n${source.trimEnd()}\n${delimiter}\n`;
 };
 const slug=example=>example.path.replace(/^(examples|benchmarks)\//,'').replaceAll('/','-')+(example.path.startsWith('benchmarks/')?'-benchmark':'');
 export const exampleDirectory=example=>'docs/examples/'+slug(example);
@@ -95,6 +93,7 @@ export function buildExamplePages(overrides) {
         '# Native binding contract\n\n'+`[${example.title}](${url(relative(dirname(page),home))})\n\n`+
         'This dependency’s descriptor names native symbols, ownership rules, errors, and ABI types. The compiler checks August declarations against it. Native code must honor the declared rules.\n\n'+fence(output.text,'json'));
     }
+    const navigation=planExampleNavigation(artifacts,docs,sources);
     const nav=files.map(file=>`- [${code(slash(relative(directory,file.path)))}](${url(relative(dirname(home),sources.get(file.path)))})`).join('\n');
     let overview=frontmatter(example.title,example.path)+`# ${example.title}\n\n${example.description}\n\n`+
       'Open a file to read the code beside its compiled explanation. Choose **Indentation** or **Braces** to change the code view. The choice carries across files.\n\n';
@@ -143,25 +142,15 @@ export function buildExamplePages(overrides) {
       const displayName=dependency?identity.replace(/^\.aug-spec\//,''):identity;
       const file=project.files.get(artifact.source);
       if(!file)throw new Error('Cannot find source for '+identity);
-      const hinted=artifacts.find(output=>output.kind==='source-hint'&&output.source===file.path);
-      const displayed=hinted?parse(file.path,hinted.text).file:file;
-      const formats=['indent','braces'].map(style=>formatFile({...project,config:{...project.config,block_style:style,indentation:'spaces'}},displayed));
-      let text=artifact.text.replace(/^<!--[^\n]*-->\n\n# [^\n]+\n\n/,'');
-      text=text.replace(/<a id="([^"]+)"><\/a>\n+(#{2,6} [^\n]+)/g,(_,id,heading)=>heading+' {#'+safeAnchor(id)+'}');
-      // Promote source links to the readable code on the same wiki; keep exact declaration anchors.
-      text=text.replace(/\]\(([^\n)]+)\)/g,(original,href)=>{
-        if(/^(?:https?:|mailto:|#)/.test(href))return original;
-        const [path,anchor]=href.split('#');
-        const target=resolve(dirname(artifact.path),decodeURIComponent(path)), destination=docs.get(target)??sources.get(target);
-        if(!destination)throw new Error('Unmapped specification link: '+href+' in '+identity);
-        return ']('+url(relative(dirname(page),destination))+(sources.has(target)?'#code':anchor?'#'+safeAnchor(decodeURIComponent(anchor)):'')+')';
-      });
-      text=text.replace(/^(#{2,5}) /gm,'$1# ');
+      const sourceArtifact=artifacts.find(output=>output.path===copy);
+      if(!sourceArtifact)throw new Error('Missing canonical source copy: '+identity);
+      const formats=exampleSourceViews(project,file,sourceArtifact.text,navigation.references.get(copy),page);
+      const text=navigation.texts.get(artifact.path);
       const siblings=files.map(file=>`- [${code(slash(relative(directory,file.path)))}](${url(relative(dirname(page),sources.get(file.path)))})`).join('\n');
       add(page,frontmatter(displayName+' · '+example.title,example.path+'/'+identity,dependency,true)+`# ${code(displayName)}\n\n`+
         `[${example.title}](${url(relative(dirname(page),home))}) · ${dependency?'Dependency source and specification':'Source and specification'}\n\n`+
         (dependency?'This is the exact dependency version used by this example.\n\n':`::: details Files in this project\n\n${siblings}\n\n:::\n\n`)+
-        '::::: example-compare\n\n:::: example-code\n\n## Code {#code}\n\n::: code-group\n\n'+fence(formats[0],'aug','Indentation')+'\n'+fence(formats[1],'aug','Braces')+'\n:::\n\n::::\n\n'+
+        '::::: example-compare\n\n:::: example-code\n\n## Code {#code}\n\n::: code-group\n\n'+fence(formats[0].text,'aug','Indentation','aug-source='+formats[0].encoded)+'\n'+fence(formats[1].text,'aug','Braces','aug-source='+formats[1].encoded)+'\n:::\n\n::::\n\n'+
         ':::: example-spec\n\n## Compiled specification {#specification}\n\n'+text+'\n::::\n\n:::::\n');
     }
   },overrides);

@@ -665,7 +665,7 @@ test('editor suggests ordinary argument labels and describes injected fields', (
   assert.deepEqual(completionItems(root, 'main.aug', second).map(item => item.label), ['x']);
   const symbol = completionItems(root, 'main.aug', 'import Greeter from service;\nGreeter')
     .find(item => item.label === 'Greeter');
-  assert.match(symbol.documentation, /Injected from bindings: resolve Logger logger/);
+  assert.match(symbol.documentation, /Injected inputs: resolve Logger logger/);
   assert.equal(symbol.signature, 'Greeter(x=int, y=int)');
 }));
 
@@ -847,10 +847,6 @@ test('quick fixes wrap mutable access, C calls, and checked errors', () => {
         'native.aug': 'extern C puts(string text) returns int;\n' },
       title: 'Wrap statement in unsafe block',
     },
-    {
-      files: { 'main.aug': 'print(value=read_file(path="note.txt"));\n' },
-      title: 'Catch FileError and report the failure',
-    },
   ];
   for (const { files, title } of cases) withProject(files, root => {
     const file = join(root, 'main.aug');
@@ -953,7 +949,7 @@ test('explicit mutable fields are public and require a caller borrow', () => wit
 }));
 
 test('underscore fields and methods are visible only inside their class', () => withProject({
-  'main.aug': 'import Box from types;\nbox = Box(_value=2);\nprint(value=box.read());\n' +
+  'main.aug': 'import Box from types;\nbox = Box(value=2);\nprint(value=box.read());\n' +
     'print(value=box._value);\nbox._hidden();\n',
   'types.aug': 'interface Readable { read() returns int; }\n' +
     'Box(int _value) implements Readable {\n' +

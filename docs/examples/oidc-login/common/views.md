@@ -48,14 +48,14 @@ pageClass: aug-example-page
 
 ::: code-group
 
-```aug [Indentation]
+```aug [Indentation] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiaW5kZW50Iiwic291cmNlU2hhMjU2IjoiZGE2MGQ0NmQ5NTlmNmM0MWU3NjlkZWJhZTllZjM2OGE2ODQ0YWNiMGZiY2VkMWU0MjVjYjRjMzAzNmJlNjljYiIsImZvcm1hdHRlZFNoYTI1NiI6IjFhZjEyYTUxYTVmNWE3NWJiMDk5Mzc1MjNkNTNjYjU0ZWQxZTYyZWZmZjU4NTZhMjVmMmIwOWE0MTFjMjM5ZDEiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDMiLCJmaXJzdCI6MywibGFzdCI6NCwiYmFja2xpbmtzIjpbIiNzeW1ib2wtUGFnZSJdfSx7ImlkIjoic291cmNlLUw0LUwxNyIsImZpcnN0Ijo0LCJsYXN0Ijo0LCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTEiXX1dfQ
 // aug-spec: "views.aug.md" explains this file. Read it before changes; refresh with aug spec.
 /** Small server components keep each page's behavior and dependencies visible. */
 Page(string title, List<Html> children):
     return <html lang={"en"}><head><meta charset={"utf-8"} /><meta name={"viewport"} content={"width=device-width, initial-scale=1"} /><title>{title} — August</title></head><body style={"margin:0;background:#f3f5f9;color:#17233a;font:17px system-ui,sans-serif;line-height:1.6"}><main style={"max-width:640px;margin:48px auto;padding:28px;background:white;border-radius:20px;box-shadow:0 12px 48px #17233a12"}><nav><a href={"/"} style={"color:#4852d7;font-weight:750;text-decoration:none"}>August · OpenID Connect</a></nav><h1>{title}</h1>{children}</main></body></html>
 ```
 
-```aug [Braces]
+```aug [Braces] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiYnJhY2VzIiwic291cmNlU2hhMjU2IjoiZGE2MGQ0NmQ5NTlmNmM0MWU3NjlkZWJhZTllZjM2OGE2ODQ0YWNiMGZiY2VkMWU0MjVjYjRjMzAzNmJlNjljYiIsImZvcm1hdHRlZFNoYTI1NiI6IjM4M2FhNWFmMGY4MjU0ZWM1M2IyNTcwYmUxMmU5M2Q2ZTAwZjYyOTgxMGNhZWI1MzY1NTcyOWVlNmQ2NzcyZDUiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDMiLCJmaXJzdCI6MywibGFzdCI6NSwiYmFja2xpbmtzIjpbIiNzeW1ib2wtUGFnZSJdfSx7ImlkIjoic291cmNlLUw0LUwxNyIsImZpcnN0Ijo0LCJsYXN0Ijo0LCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTEiXX1dfQ
 // aug-spec: "views.aug.md" explains this file. Read it before changes; refresh with aug spec.
 /** Small server components keep each page's behavior and dependencies visible. */
 Page(string title, List<Html> children) {
@@ -71,11 +71,23 @@ Page(string title, List<Html> children) {
 
 ## Compiled specification {#specification}
 
-### `Page` · [source](views.md#code) {#symbol-Page}
+### `Page` · [source](views.md#source-L3) {#symbol-Page}
 
 Small server components keep each page's behavior and dependencies visible. It takes `title` as a string and `children` as `List<Html>`.
 
-It returns the HTML element `html` with `lang` = `"en"` containing the HTML element `head` containing the HTML element `meta` with `charset` = `"utf-8"` with escaped text, the HTML element `meta` with `name` = `"viewport"`, `content` = `"width=device-width, initial-scale=1"` with escaped text, the HTML element `title` containing `title`, ` — August` with escaped text with escaped text, the HTML element `body` with `style` = `"margin:0;background:#f3f5f9;color:#17233a;font:17px system-ui,sans-serif;line-height:1.6"` containing the HTML element `main` with `style` = `"max-width:640px;margin:48px auto;padding:28px;background:white;border-radius:20px;box-shadow:0 12px 48px #17233a12"` containing the HTML element `nav` containing a link with `href` = `"/"`, `style` = `"color:#4852d7;font-weight:750;text-decoration:none"` containing `August · OpenID Connect` with escaped text with escaped text, a heading containing `title` with escaped text, `children` with escaped text with escaped text with escaped text.
+::: spec-paragraph specification-paragraph-1
+It returns the HTML element `html` with `lang` = `"en"` containing the HTML element `head` containing the HTML element `meta` with `charset` = `"utf-8"` with escaped text, the HTML element `meta` with `name` = `"viewport"`, `content` = `"width=device-width, initial-scale=1"` with escaped text, the HTML element `title` containing `title`, ` — August` with escaped text with escaped text, the HTML element `body` with `style` = `"margin:0;background:#f3f5f9;color:#17233a;font:17px system-ui,sans-serif;line-height:1.6"` containing the HTML element `main` with `style` = `"max-width:640px;margin:48px auto;padding:28px;background:white;border-radius:20px;box-shadow:0 12px 48px #17233a12"` containing the HTML element `nav` containing a link with `href` = `"/"`, `style` = `"color:#4852d7;font-weight:750;text-decoration:none"` containing `August · OpenID Connect` with escaped text with escaped text, a heading containing `title` with escaped text, `children` with escaped text with escaped text with escaped text. [source](views.md#source-L4-L17)
+:::
+
+::: details Checked interface
+
+```text
+Page(string title, List<Html> children) returns Html
+```
+
+It takes `title` as a string and `children` as `List<Html>`.
+
+:::
 
 ::::
 

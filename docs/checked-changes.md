@@ -2,7 +2,7 @@
 
 A checked change records the program you started from, the files you may edit, the intended public contract change, and independent tests for the requested behavior. The compiler checks the candidate before writing source. Compiler acceptance and passing tests remain separate results.
 
-This is the experimental AUG-0001 implementation in the development compiler. It is not included in the published 0.20.0 packages. These commands require a build containing the amendment; release notes will identify its first published version. The initial protocol supports one standalone function rename, one implementation body replacement, or one verified forwarding conversion per plan. It does not add inputs, invent argument values, or decide how to handle a new error.
+This is the experimental AUG-0001 implementation in the development compiler. It is not included in the published 0.23.0 packages. These commands require a build containing the amendment; release notes will identify its first published version. The initial protocol supports one standalone function rename, one implementation body replacement, or one verified forwarding conversion per plan. It does not add inputs, invent argument values, or decide how to handle a new error.
 
 ## Forward an operation
 
@@ -44,14 +44,16 @@ Forwarding belongs in ordinary modules and requires an explicitly imported publi
 
 Hover and compiled specs show the inherited contract, immediate target, and final implementation. Navigation from a call goes to the alias; navigation from its target goes to the imported declaration. JSON navigation also includes the implementation location. Each alias has its own identity, such as `dispatch.aug:dispatch`.
 
-## Obtain checked context
+## Obtain context for a request
+
+Use `aug context` for a bounded reading or review packet. The request workflow below uses `aug change context`, whose revision matches `aug change plan`, `check`, and `apply`. Do not exchange revisions between these schemas.
 
 From the example project:
 
 ```sh
 aug check .
 aug test .
-aug context . --file billing.aug --name adjust > context.json
+aug change context . --file billing.aug --name adjust > context.json
 ```
 
 The packet includes its revision, compiler version/build identity, source inventory, configuration/dependency digests, resolved contracts and occurrences, forward dependencies, and reverse callers. It checks the loaded project and its same-file tests, including callers outside the queried import closure. External consumers are not checked. Interface dispatch and foreign implementations remain explicit boundaries; unresolved required coverage rejects a plan.
@@ -113,6 +115,8 @@ Application uses an exclusive cooperating writer and durable journal under `.aug
 ```sh
 aug change recover .
 ```
+
+A cleanup failure after the durable commit point reports `status: committed`, the accepted revision and `recovery: required`, even though the command exits nonzero. Do not reapply that plan. Run recovery to finish publication. Both request and mechanical journals use the same exclusive writer lock.
 
 Before the durable commit point, recovery restores the earlier sources. After it, recovery completes the accepted record. Recovery checks all entries before writing and preserves conflicting external edits. Keep the journal and reconcile conflicts before retrying. Interrupted acquisition or malformed metadata fails closed: inspect `.aug-changes/acquiring` and its recorded process before removing an abandoned acquisition marker.
 

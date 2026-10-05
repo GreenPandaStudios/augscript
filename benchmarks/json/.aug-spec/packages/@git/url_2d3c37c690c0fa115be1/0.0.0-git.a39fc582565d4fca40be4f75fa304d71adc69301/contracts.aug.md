@@ -2,12 +2,25 @@
 
 # `contracts.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=9e78716a7d6333e998bce9c522c847e1bec1d4d590d212b09f4ef6525560ddf4 -->
+
 <a id="symbol-parse"></a>
 ## `parse` · [source](contracts.aug#L4)
 
-Parse strict UTF-8 JSON. Duplicate keys, invalid Unicode, oversized integers, and nesting beyond 64 levels raise JsonError. It takes `input` as a string. Failures can raise `JsonError`.
+Parse strict UTF-8 JSON. Duplicate keys, invalid Unicode, oversized integers, and nesting beyond 64 levels raise JsonError. It takes `input` as a string.
 
-Within an unsafe block, it returns [`_aug_json_parse`](contracts.aug.md#symbol-_aug_json_parse) with `input`. Native operations must satisfy their declared C contracts.
+Within an unsafe block, it returns [`_aug_json_parse`](contracts.aug.md#symbol-_aug_json_parse) with `input`. Native operations must satisfy their declared C contracts. [source](contracts.aug#L5-L6)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+parse(string input) returns Json unless JsonError
+```
+
+It takes `input` as a string. Failures can raise `JsonError`.
+
+</details>
 
 <a id="symbol-_aug_json_parse"></a>
 ## `_aug_json_parse` · [source](contracts.aug#L2)

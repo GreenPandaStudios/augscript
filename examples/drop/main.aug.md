@@ -2,9 +2,11 @@
 
 # `main.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=39b7f2169d3c1b683cdfe52eeea1182b3517b92bb9ac2554823a3a476a9991c9 -->
+
 ## Startup
 
-It creates [`Resource`](resource.aug.md#symbol-Resource) and stores the result in owned `resource` ([`Resource`](resource.aug.md#symbol-Resource)). It prints `"using resource"`.
+It creates [`Resource`](resource.aug.md#symbol-Resource) and stores the result in owned `resource` ([`Resource`](resource.aug.md#symbol-Resource)). It prints `"using resource"`. [source](main.aug#L3-L4)
 
 ## Dependencies
 

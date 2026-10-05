@@ -30,7 +30,7 @@ pageClass: aug-example-page
 
 ::: code-group
 
-```aug [Indentation]
+```aug [Indentation] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiaW5kZW50Iiwic291cmNlU2hhMjU2IjoiZjU2NjM0NTAwMjZmOTQ5YmQxMzk3MjI1YzNiMzQ4NTRjMWJhMDdiMzc4ZWZkNjA3NDNlNWI5YTk2OWZmOGM0NyIsImZvcm1hdHRlZFNoYTI1NiI6IjJkMDk2YWQ1ZDIxM2MzZjQwMzA3M2FmMGI2ZjQ3YmNkN2M2YjY5MDEzODk5MTUzYWM3M2UwZjdhM2RiNDhkNWMiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDEwLUwxNyIsImZpcnN0IjoxMCwibGFzdCI6MTUsImJhY2tsaW5rcyI6WyIjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMSJdfSx7ImlkIjoic291cmNlLUwxOC1MMjMiLCJmaXJzdCI6MTYsImxhc3QiOjE5LCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTIiXX1dfQ
 // aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Console and SystemConsole from august.io
 implement Console with SystemConsole
@@ -52,7 +52,7 @@ catch ValidationError error:
     print(value="rejected")
 ```
 
-```aug [Braces]
+```aug [Braces] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiYnJhY2VzIiwic291cmNlU2hhMjU2IjoiZjU2NjM0NTAwMjZmOTQ5YmQxMzk3MjI1YzNiMzQ4NTRjMWJhMDdiMzc4ZWZkNjA3NDNlNWI5YTk2OWZmOGM0NyIsImZvcm1hdHRlZFNoYTI1NiI6IjlkM2E2MzdiZDVkNjMzODAzNDRjNWEzODcxYmI3ZDA4YzU3NjA1YzU5NmIxNDM1NWQ3MWI2MmQ4YzNhMjg5NTMiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDEwLUwxNyIsImZpcnN0IjoxMCwibGFzdCI6MTcsImJhY2tsaW5rcyI6WyIjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMSJdfSx7ImlkIjoic291cmNlLUwxOC1MMjMiLCJmaXJzdCI6MTgsImxhc3QiOjIzLCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTIiXX1dfQ
 // aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Console and SystemConsole from august.io
 implement Console with SystemConsole
@@ -92,9 +92,13 @@ catch ValidationError error {
 
 ### Startup
 
-It prints [`describe`](app.md#symbol-describe) with `label` `"value"` and `x` `6` using injected `Logger` for `logger` and `Console` for `console`. If this work raises [`ValidationError`](interceptors.md#symbol-ValidationError), it prints `"rejected"`. It sets `greeter` to a [`Greeter`](app.md#symbol-Greeter) with `name` `"AugScript"` using injected `Logger` for `_logger`. It prints [`greeter.greet`](app.md#symbol-Greeter.greet) using injected `Logger` for `logger` and `Console` for `console`.
+::: spec-paragraph specification-paragraph-1
+It prints [`describe`](app.md#symbol-describe) with `label` `"value"` and `x` `6` using injected `Logger` for `logger` and `Console` for `console`. If this work raises [`ValidationError`](interceptors.md#symbol-ValidationError), it prints `"rejected"`. It sets `greeter` to a [`Greeter`](app.md#symbol-Greeter) with `name` `"AugScript"` using injected `Logger` for `_logger`. It prints [`greeter.greet`](app.md#symbol-Greeter.greet) using injected `Logger` for `logger` and `Console` for `console`. [source](main.md#source-L10-L17)
+:::
 
-It tries to call [`describe`](app.md#symbol-describe) with `x` `-1` and `label` `"invalid"` using injected `Logger` for `logger` and `Console` for `console`. If this work raises [`ValidationError`](interceptors.md#symbol-ValidationError), it prints `"rejected"`.
+::: spec-paragraph specification-paragraph-2
+It tries to call [`describe`](app.md#symbol-describe) with `x` `-1` and `label` `"invalid"` using injected `Logger` for `logger` and `Console` for `console`. If this work raises [`ValidationError`](interceptors.md#symbol-ValidationError), it prints `"rejected"`. [source](main.md#source-L18-L23)
+:::
 
 ### Dependencies
 

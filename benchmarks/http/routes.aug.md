@@ -2,6 +2,8 @@
 
 # `routes.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=341c333a282fdd6acb45d60c8440395563904afeb0276b3ddd43788cfef6da32 -->
+
 Plain handler results default to HTTP 200 unless another status is declared. HttpResponse values choose their own status. Unhandled request failures return HTTP 500 and cancel the request tasks.
 
 <a id="symbol-Reply"></a>
@@ -12,4 +14,13 @@ It takes `id` as an integer, kept read-only and `message` as a string, kept read
 <a id="symbol-reply"></a>
 ## `reply` · [source](routes.aug#L3)
 
-`reply` handles `GET /bench`. It returns a [`Reply`](routes.aug.md#symbol-Reply) with `id` `7` and `message` `"hello"`.
+`reply` handles `GET /bench`. It returns a [`Reply`](routes.aug.md#symbol-Reply) with `id` `7` and `message` `"hello"`. [source](routes.aug#L4)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+reply() returns Reply
+```
+
+</details>

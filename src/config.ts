@@ -1,8 +1,10 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Diagnostic } from './ast.ts';
+import {compilerVersion} from './compiler-version.ts';
 
 export interface Config {
+  compiler?: string;
   backend?: 'c' | 'llvm';
   output?: string; optimization: 'debug' | 'release'; libraries: string[]; library_paths: string[];
   assignment: 'equals' | 'to'; block_style: 'braces' | 'indent'; indentation: 'spaces' | 'tabs';
@@ -85,7 +87,7 @@ export function loadConfig(root: string): { config: Config; diagnostics: Diagnos
       }
       continue;
     }
-    if (!entry || !(entry[1] in config || ['output','backend'].includes(entry[1]))) { report(index + 1, `Unsupported configuration line ${JSON.stringify(raw)}`); continue; }
+    if (!entry || !(entry[1] in config || ['output','backend','compiler'].includes(entry[1]))) { report(index + 1, `Unsupported configuration line ${JSON.stringify(raw)}`); continue; }
     const key = entry[1] as keyof Config;
     const value = (entry[2] ?? '').replace(/^(['"])(.*)\1$/, '$2');
     if (seen.has(key)) { report(index + 1, `Duplicate configuration key ${key}`); continue; }
@@ -93,6 +95,12 @@ export function loadConfig(root: string): { config: Config; diagnostics: Diagnos
     if (['libraries', 'library_paths', 'lint', 'module_dependencies'].includes(key)) {
       if (value) report(index + 1, `${key} must be a YAML list`);
       else list = key as 'libraries' | 'library_paths' | 'lint' | 'module_dependencies';
+    } else if (key === 'compiler') {
+      if (!/^\d+\.\d+\.\d+(?:-[A-Za-z0-9.-]+)?$/.test(value)) report(index+1,'compiler must be one exact August version, such as '+compilerVersion());
+      else {
+        config.compiler=value;
+        if(value!==compilerVersion())report(index+1,`This project requires August ${value}; the running compiler is ${compilerVersion()}. Use npx @greenpandastudios/aug-cli@${value}, or deliberately update the project pin and qualify its dependencies.`);
+      }
     } else if (key === 'strict_modules') {
       if (!['true', 'false'].includes(value)) report(index + 1, 'strict_modules must be true or false');
       else config.strict_modules = value === 'true';

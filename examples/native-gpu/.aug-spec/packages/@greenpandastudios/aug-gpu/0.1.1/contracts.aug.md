@@ -2,6 +2,8 @@
 
 # `contracts.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=7db9a52fd594da163175cead6bb19285e2a9233e565f0193df6cc7387dd4d356 -->
+
 <a id="symbol-GpuError"></a>
 ## `GpuError` · class · [source](contracts.aug#L3)
 
@@ -10,4 +12,13 @@ It implements `Error`. It takes `code` as an integer, kept read-only and `messag
 <a id="symbol-GpuError.explain"></a>
 ### `GpuError.explain` · [source](contracts.aug#L4)
 
-It returns `message`.
+It returns `message`. [source](contracts.aug#L5)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+explain() returns string
+```
+
+</details>

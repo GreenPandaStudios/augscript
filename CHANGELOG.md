@@ -2,6 +2,81 @@
 
 ## Unreleased
 
+- Coordinate request-based and mechanical checked edits, formatting, and package writes through one exclusive source writer. Recovery detects either journal format. Reading context and request-plan context use distinct, documented revision schemas.
+- Include forwarding dependencies and inherited interfaces in bounded reading context without exposing generated delegate bodies as editable source.
+
+
+- Link rejected borrows, call-input aliases, moves and task-captured access/cleanup to checked source sites. JSON and LSP retain specific rules and conservative access fragments; witness lists are bounded and explicit about omissions.
+
+- Add an explicit scalar C native starter for macOS ARM64 with checked headers, safe source APIs, same-file tests, measured archives and author provenance. It uses selected maintainer tools and preserves destinations on build/check failures.
+- Library agent instructions start at src/export.aug. Native library selection now hashes canonical root-relative paths, fixing tests through directory aliases.
+
+- Native package artifacts may pin their exact member manifest with `fileManifestSha256`. First installation checks it against the authenticated archive; offline caches verify their members against the source-owned pin. Existing unpinned packages retain the archive verification path.
+
+- Authenticate cached native member manifests against the retained original archive's published checksum. Reject paired library/manifest replacement in installation, doctor, dependency previews and release reports; legacy unanchored caches require one online restore. Keep compiler-owned manifest pins.
+
+- Add `aug package cache-native` for explicit verification of locally built native archives against real package pins and complete deployment declarations. Use the normal offline package path afterward; no build scripts, downloads, execution or publication occur during caching.
+
+- Resolve named checked renames and build their edits from the same checked snapshot. Reject detected declaration moves rather than selecting another function or input at an old offset.
+
+- Add pure `RetryPolicy` values and `retryDelay` to `august.values`. Validate bounded attempts and immutable caller-selected delays across construction, record updates and JSON decoding; preserve copied worker data without scheduling or retry effects.
+
+- Retain checked before/after symbol identities in rename plans and committed reports, including cleanup failures requiring recovery. Include changed owner/coordinate-derived IDs; reject altered maps before publication. Body edits do not guess local correspondence.
+
+- Add `aug change plan-replace-body` for one author-supplied managed standalone function. Preserve its parsed header, neighboring private syntax and checked contracts; retain stage-specific source/revision evidence for rejections. Apply through the existing checked writer and recovery journal. Independent tests remain a separate gate.
+
+- Add the unreleased local `aug compare` report with exact revisions, resolved contract/source/visibility deltas, known consumers, rejected diagnostics and unexecuted authored tests. Keep implementation function references out of public promises.
+
+- Show expected/actual interface contract fragments and checked capability helper paths. Check explicit methods and selected defaults against every inherited interface, repairing acceptance of incompatible secondary contracts. Generic capability keys retain recursive type identities; colliding diagnostic names show module origins.
+
+- Add contextual `internal Name from sibling` entries in `export.aug`. Strict sibling imports can use these contracts without outward exposure. Opted-in folders check effective exported type/constructor/error surfaces; package, editor, navigation and compiled specs retain the distinction.
+
+- Harden semantic responses against client mutation. Bind graph schema 2 and context schema 3 to physical dependency metadata; reject insufficient target budgets with a required minimum. Add interface-change/review context modes with conservative caller, inheritance and type-use expansion, authored test suites and whole-project LSP parity.
+
+- Add `august.values`: validated calendar dates, exact millisecond durations, DNS-profile HTTP URLs, token IDs, portable relative paths and byte-bounded UTF-8 text. Constructors, copies and JSON decoding preserve the same invariants; parsers and arithmetic retain specific checked errors.
+
+- Add explicit `byteLength()` and Unicode 18.0.0 default extended `graphemeLength()`/`graphemes()` operations, with checked UTF-8 validation and bundled licensed tables.
+
+- Add `august.errors` for deliberate `ContextError<E>` wrapping and compiler-provided `sourceLocation()` values. Supported generic catches verify every stored cause, including nested contexts; erased or behavioral profiles and generic HTTP status maps reject. Causes keep their concrete checked type; source identities use relative project/package paths.
+
+Name a closed set of immutable record outcomes with `choice NAME from A and B`. Check resolved alternatives and exhaustive matches, including optional nulls; retain normal constructors, validation, labels, data bounds and worker copies. Explain choices in editor/spec/context/public-contract tools and format both source styles. Serialization requires an explicitly selected record or wire envelope.
+
+Add saved checked rename plans and an explicit apply/recover CLI. Regenerate operations against source, compiler, configuration and dependency revisions; retain expected public deltas and separate behavioral evidence. Coordinate writers, reject partial reader snapshots, preserve file modes and journal synchronized before/after source for rollback or forward recovery after process death. Preserve conflicting external edits. Additional edit operations and platform power-loss qualification remain pending.
+
+
+Add pure managed function references and expression closures through concrete single-method interfaces. Preserve public labels, nominal input/result types, inferred generic call arguments and creation-time scalar/immutable captures. Reject effects, checked failures, mutable/owned/borrowed captures and unsupported native/generic adapters. Check every inherited callback contract and reject interface overrides that change the inherited call layout. Keep callbacks on their worker heap, distinguish function-value dependencies from immediate calls, and lower rooted callback objects through LLVM and C.
+
+Select and project read-only snapshot items with `[result for pattern in values if condition]`. Evaluate the input once, preserve item order, check the condition before the result, and create a new list without mutating the source. Support record/tuple patterns, optional-item narrowing, contextual result types, checked failures and existing worker waits. Reject copied owned results and repeated continuation/owned transfers. Preserve freshness when freezing a new allocation returned under an immutable contract; mutable return annotations retain read-only results and cannot restore permissions through aliases. Format, navigate and explain selection in both code styles.
+
+Preserve external-reference ownership checks when freezing helper results or owned outer copies. Recognize fresh scalar collection results as independent of source containers, permitting their return and freezing after a source borrow.
+
+Add pure data filtering, transformation, aggregation, removal, first-match search and stable sorting to `august.collections`, using ordinary checked callback interfaces. Preserve snapshot order and source lists; document allocation, empty/null results, callback permissions and sorting's checked reads. Add length-aware unsigned UTF-8 `string.compare(other=...)` on LLVM and C, without locale collation or normalization.
+
+Unpack immutable record fields and nested tuples in assignments and snapshot loops. Check each tuple's arity, record fields, private access and new names. Preserve read-only access, borrowed lifetimes and external-input ownership restrictions. Navigate field labels to their declarations, retain comments in formatted patterns, and explain selections in compiled specs.
+
+Add exhaustive value-producing `match` expressions with one result expression per case, compatible inferred results and optional narrowing. Evaluate the input once and only the selected result; preserve checked errors, effects, read-only aliases, borrow boundaries and possible moves. Reject owned/native-resource result transfer. Format both block styles, explain choices in compiled specs, and expose narrowed editor facts. Preserve exact signed integer pattern identities and diagnose repeated numeric cases. Resolve C class matches and error handlers by definition identity, consistent with LLVM, so foreign classes with the same spelling remain distinct.
+
+Follow compiled-spec paragraphs to their highlighted statements in either formatted wiki code style, and return through accessible code-line links. Retain source revisions and original line ranges; validate content-matched navigation metadata and keep copied code unchanged.
+
+Add read-only `aug cache` size, identity and offline-readiness reports, plus previewed `aug cache prune --write` for verified idle test compilation. Coordinate compiler cache reads/writes with pruning; retain active, unknown, damaged, accepted-source and shared native entries.
+
+Reuse verified LLVM compilation for unchanged core-runtime test programs while running each case in a fresh process. Add `aug test --rebuild` and per-case JSON compilation status. Keep source, dependencies, configuration, compiler/runtime, target, tool and build-mode identities; damaged or unavailable private caches fall back to compilation. Runtime-component/native-call tests and unsealed contributor tools remain uncached; qualified LLVM tools use a fixed compilation environment. Pin complete compiler member manifests and verify declared member identities during release assembly, retaining existing archive URLs and checksums.
+
+Record independent acceptance review with `aug verify --requirements FILE`: author requirements, exact selected source, checked dependency contracts, generated explanations and concrete native case results. Reject missing/empty selections and incomplete required context, pair results with the loaded-source revision, and report detected source/configuration/requirement changes as stale. Keep compiler acceptance, finite behavioral evidence and engineer review separate. Normalize source-library case ids through linked project roots.
+
+Suggest representative scalar test inputs with `aug test --suggest-inputs` and `itboundaries` completion. Reports retain exact int64 literals, source revisions, author cases and finite selection limits; assertions remain author-written. Fix one-column tuple destructuring so typed test rows bind their cell.
+
+Complete explicit compositions through ordinary exports and imports. Inspect application or selected same-file test wiring with `aug graph --composition`, including lifetimes, constructor dependencies, source revisions and Mermaid diagrams. Duplicate binding diagnostics link the conflicting selections; inspection does not execute or replace providers.
+
+Call diagnostics name the public input, expected and actual types, and related declaration. Label failures list accepted inputs; duplicate arguments link to the first occurrence. Malformed labels are diagnosed before omitted inputs. CLI excerpts and VS Code Problems links use the same checked locations, including unsaved inherited generic declarations.
+
+Add `aug scratch FILE` to check an isolated temporary entry module without downloads or execution. `--prepare` resolves ordinary dependencies; `--run` executes through the normal compiler. Keep source locations, preserve the original file, and remove temporary project output after failures and exits.
+
+Equality assertion failures identify the first public record field or tuple position that differs. Private differences stop at the public parent; fixed traversal and path limits report when a path is unavailable. Equality, input order and caught-test failure behavior stay the same.
+
+- Generated specifications and package release reports use repository-relative paths when a project is opened through a filesystem alias, including macOS `/var`. Local dependency locks retain their source identities.
+
+Add package-maintainer CI templates and read-only tagged release reports with tracked source/spec hashes, expanded public contracts, exact dependency locks and verified native host selections. Consumer tests run through LLVM in a separate copy; publication remains an explicit maintainer action. Templates generated by the 0.23.0 candidate are staged until the containing compiler release.
 - Normalize decoded LSP input chunks to UTF-8 bytes before accumulating byte-counted frames.
 - Analyze generated C and copied runtime units for adversarial collection, error, task, ownership, JSON, crypto, and HTTP programs, then run them under AddressSanitizer and UBSan in macOS/Linux CI. Harden HTML buffer growth against size overflow and remove unused generated call arrays and execution-context lookups.
 - Check worker transfer field storage before copying it; malformed native storage fails explicitly. Keep the Linux Clang null-dereference checker enabled.

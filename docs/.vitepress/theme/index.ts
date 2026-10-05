@@ -29,8 +29,33 @@ export default {
           blocks?.[index]?.classList.toggle('active', active);
           blocks?.[index]?.setAttribute('aria-hidden', String(!active));
         });
+        // The canonical anchor must belong to the visible style so native and
+        // VitePress scrolling agree, including repeated clicks on the same hash.
+        const selected=preferred==='Braces'?'braces':'indent';
+        for(const pre of group.querySelectorAll<HTMLElement>('pre[data-aug-source-style]')) {
+          for(const anchor of pre.querySelectorAll<HTMLElement>('[data-aug-source-id]'))
+            anchor.id=anchor.dataset.augSourceId!+(pre.dataset.augSourceStyle===selected?'':'-'+pre.dataset.augSourceStyle);
+        }
       }
     };
+    const focusSource = (scroll=true) => {
+      document.querySelectorAll('.aug-source-selected').forEach(line=>line.classList.remove('aug-source-selected'));
+      let anchor:string;
+      try{anchor=decodeURIComponent(location.hash.slice(1));}catch{return;}
+      if(!/^source-L[1-9][0-9]*(?:-L[1-9][0-9]*)?$/.test(anchor))return;
+      const style=preferred==='Braces'?'braces':'indent';
+      for(const pre of document.querySelectorAll<HTMLElement>('pre[data-aug-source-style="'+style+'"]')) {
+        const links=JSON.parse(pre.dataset.augSourceLinks??'[]') as {id:string;first:number;last:number}[];
+        const link=links.find(link=>link.id===anchor);if(!link)continue;
+        let first:HTMLElement|undefined;
+        for(const line of pre.querySelectorAll<HTMLElement>('[data-aug-line]')) {
+          const number=Number(line.dataset.augLine);
+          if(number>=link.first&&number<=link.last){line.classList.add('aug-source-selected');first??=line;}
+        }
+        if(first&&scroll){first.scrollIntoView({block:'center'});first.tabIndex=-1;first.focus({preventScroll:true});}
+      }
+    };
+    const sourceChanged=()=>requestAnimationFrame(()=>focusSource());
     const changed = (event: Event) => {
       const input = event.target;
       if (!(input instanceof HTMLInputElement)) return;
@@ -38,10 +63,10 @@ export default {
       if (!group || !groups().includes(group)) return;
       preferred = Array.from(group.querySelectorAll('.tabs input')).indexOf(input) === 0 ? 'Indentation' : 'Braces';
       try { localStorage.setItem(key, preferred); } catch {}
-      apply();
+      apply();sourceChanged();
     };
-    onContentUpdated(apply);
-    onMounted(() => { apply(); document.addEventListener('change', changed); });
-    onBeforeUnmount(() => document.removeEventListener('change', changed));
+    onContentUpdated(()=>{apply();sourceChanged();});
+    onMounted(() => { apply();sourceChanged();document.addEventListener('change', changed);window.addEventListener('hashchange',sourceChanged); });
+    onBeforeUnmount(() => {document.removeEventListener('change', changed);window.removeEventListener('hashchange',sourceChanged);});
   }
 } satisfies Theme;

@@ -1,5 +1,5 @@
 import type { MethodDecl, Span } from './ast.ts';
-import { tyName, type Ty } from './types.ts';
+import { tyKey, type Ty } from './types.ts';
 
 export interface EffectEnvironment {
   source(path: string): Ty | undefined;
@@ -17,7 +17,7 @@ export interface CapabilityEffect {
 }
 
 export const capabilityKey = (type: Ty, operation: string): string =>
-  `${type.id}<${type.args.map(tyName).join(',')}>.${operation}`;
+  `${type.id}<${type.args.map(tyKey).join(',')}>.${operation}`;
 
 export interface EffectContract {
   changes: readonly string[];

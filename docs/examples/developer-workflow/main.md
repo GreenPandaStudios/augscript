@@ -31,7 +31,7 @@ pageClass: aug-example-page
 
 ::: code-group
 
-```aug [Indentation]
+```aug [Indentation] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiaW5kZW50Iiwic291cmNlU2hhMjU2IjoiNDczOWJlZTc2MTRkNmRiMTk5MjlhYzAzMmY4MzdkZDNiOTBmZjFlMjUxYzM3MDYxNzcyZjZjOGU0OTE5MDA2ZCIsImZvcm1hdHRlZFNoYTI1NiI6ImIwOTg3MzE5ZTM0NzFmNzU2YjVhNmM5ODViNTM2YzhjNGNjNWRmYzdkZGI2NDY5MjVlNzNhNjJjMDI4NmJiY2YiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDctTDI2IiwiZmlyc3QiOjcsImxhc3QiOjI0LCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTEiXX0seyJpZCI6InNvdXJjZS1MMTItTDE1IiwiZmlyc3QiOjEyLCJsYXN0IjoxNywiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0yIl19LHsiaWQiOiJzb3VyY2UtTDE2LUwyNSIsImZpcnN0IjoxOCwibGFzdCI6MjQsImJhY2tsaW5rcyI6WyIjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMyJdfV19
 // aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Console and SystemConsole from august.io
 implement Console with SystemConsole
@@ -58,7 +58,7 @@ catch IndexError error:
     print(value="unexpected index failure")
 ```
 
-```aug [Braces]
+```aug [Braces] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiYnJhY2VzIiwic291cmNlU2hhMjU2IjoiNDczOWJlZTc2MTRkNmRiMTk5MjlhYzAzMmY4MzdkZDNiOTBmZjFlMjUxYzM3MDYxNzcyZjZjOGU0OTE5MDA2ZCIsImZvcm1hdHRlZFNoYTI1NiI6ImI1NDEzYTY5M2QwMWZkYjNlNTIyZTAyYjBiMGNjMDc2MmE1Njk2YTllMzkwNjVlM2QwNjUzNjJmZmU5MjE4NTQiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDctTDI2IiwiZmlyc3QiOjcsImxhc3QiOjI4LCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTEiXX0seyJpZCI6InNvdXJjZS1MMTItTDE1IiwiZmlyc3QiOjEyLCJsYXN0IjoxNywiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0yIl19LHsiaWQiOiJzb3VyY2UtTDE2LUwyNSIsImZpcnN0IjoxOCwibGFzdCI6MjcsImJhY2tsaW5rcyI6WyIjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMyJdfV19
 // aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Console and SystemConsole from august.io
 implement Console with SystemConsole
@@ -103,11 +103,17 @@ catch IndexError error {
 
 ### Startup
 
-It sets `numbers` of type `List<int>` to a list containing `1`, `2`. It sets `pair` of type `Tuple<int,string>` to a tuple containing `1`, `"apple"`. It sets `unique` of type `Set<int>` to a set containing `1`, `2`, `1`. It sets `fruit` of type `Map<int,string>` to a map with `1` mapped to `"apples"`; `2` mapped to `"pears"`.
+::: spec-paragraph specification-paragraph-1
+It sets `numbers` of type `List<int>` to a list containing `1`, `2`. It sets `pair` of type `Tuple<int,string>` to a tuple containing `1`, `"apple"`. It sets `unique` of type `Set<int>` to a set containing `1`, `2`, `1`. It sets `fruit` of type `Map<int,string>` to a map with `1` mapped to `"apples"`; `2` mapped to `"pears"`. [source](main.md#source-L7-L26)
+:::
 
-It sets `calculator` to a [`Calculator`](calculator.md#symbol-Calculator) using injected `Logger` for `_logger`. It prints [`calculator.add`](calculator.md#symbol-Calculator.add) with `right` from the item at index `1` in `numbers` and `left` from the item at index `0` in `numbers` using injected `Console` for `console`. It prints `pair.get` with `index` `1`. It prints the number of elements in `unique`.
+::: spec-paragraph specification-paragraph-2
+It sets `calculator` to a [`Calculator`](calculator.md#symbol-Calculator) using injected `Logger` for `_logger`. It prints [`calculator.add`](calculator.md#symbol-Calculator.add) with `right` from the item at index `1` in `numbers` and `left` from the item at index `0` in `numbers` using injected `Console` for `console`. It prints `pair.get` with `index` `1`. It prints the number of elements in `unique`. [source](main.md#source-L12-L15)
+:::
 
-It prints the value under `2` in `fruit`. It prints [`load`](calculator.md#symbol-load) with `fail` `true`. If this work raises `FileError`, it prints `"load failed as expected"`. If this work raises `IndexError`, it prints `"unexpected index failure"`.
+::: spec-paragraph specification-paragraph-3
+It prints the value under `2` in `fruit`. It prints [`load`](calculator.md#symbol-load) with `fail` `true`. If this work raises `FileError`, it prints `"load failed as expected"`. If this work raises `IndexError`, it prints `"unexpected index failure"`. [source](main.md#source-L16-L25)
+:::
 
 ### Dependencies
 

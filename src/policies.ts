@@ -37,7 +37,7 @@ export function projectPolicies(project: Project): Diagnostic[] {
     }
     modules.set(file.path, { key: file.path, dependencies: [...edges], span: file.items[0]?.span ?? { file: file.path, start: 0, end: 0, line: 1, column: 1 } });
     if (file.package) continue;
-    const publicNodes = file.items.filter(item => ['class', 'interface', 'interceptor', 'function', 'composition'].includes(item.kind) && 'name' in item && !item.name.startsWith('_'));
+    const publicNodes = file.items.filter(item => ['class', 'interface', 'choice', 'interceptor', 'function', 'composition'].includes(item.kind) && 'name' in item && !item.name.startsWith('_'));
     if (enabled('architecture') && edges.size > project.config.max_dependencies)
       report(modules.get(file.path)!.span, `${basename(file.path)} depends on ${edges.size} files; consider a smaller module contract`, 'LINT', true);
     const publicMembers = publicNodes.reduce((count, node) => count + 1 + ('methods' in node ? node.methods.filter(method => !method.name.startsWith('_')).length : 0) +

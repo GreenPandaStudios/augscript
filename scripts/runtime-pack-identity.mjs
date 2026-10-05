@@ -10,7 +10,7 @@ export function runtimeRecipeFiles(platform=process.platform,architecture=proces
     'src/http-policies.ts','src/llvm-platform.ts','src/native-contracts.ts',
     ...(platform==='darwin'?['native/platform/macos-arm64/libSystem.tbd']:
       ['native/platform/linux-'+architecture+'/start.S','native/linux-runtimes.lock.json']),
-    'package.json','LICENSE'];
+    'package.json','LICENSE','runtime/UNICODE-LICENSE.txt'];
 }
 export function runtimeSourceIdentity(root,output,files){
   const digest=createHash('sha256');
@@ -19,7 +19,7 @@ export function runtimeSourceIdentity(root,output,files){
   for(const file of ['minicoro.h','LICENSE'])add('minicoro/'+file,join(root,'.aug-native/sources/minicoro',file));
   for(const file of ['src/yyjson.c','src/yyjson.h','LICENSE'])add('yyjson/'+file,join(root,'.aug-native/sources/yyjson',file));
   for(const file of runtimeRecipeFiles())add(file,join(root,file));
-  const coreNotices=new Set(['licenses/August.txt','licenses/minicoro.txt','licenses/yyjson.txt']);
+  const coreNotices=new Set(['licenses/August.txt','licenses/minicoro.txt','licenses/yyjson.txt','licenses/Unicode.txt']);
   // August inputs come from the current checkout above. Never substitute the
   // old pack's corresponding sources when deciding whether that pack is stale.
   for(const file of files.filter(file=>(file.startsWith('sources/')||file.startsWith('licenses/'))&&!file.startsWith('sources/august/')&&!coreNotices.has(file)).sort())add(file,join(output,file));

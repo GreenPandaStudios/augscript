@@ -51,11 +51,12 @@ run([probe,'-o',binary]);const measurement=spawnSync(binary,[],{encoding:'utf8'}
 const layout=JSON.parse(measurement.stdout);
 if(mac)copyFileSync(join(root,'native/platform/macos-arm64/libSystem.tbd'),join(output,'platform/libSystem.tbd'));
 else {copyFileSync(join(root,'native/platform',platform.entry),join(output,'platform/start.S'));run(['-c',join(output,'platform/start.S'),'-o',join(output,'platform/start.o')]);}
+copyFileSync(join(root,'runtime/UNICODE-LICENSE.txt'),join(output,'licenses/Unicode.txt'));
 copyFileSync(join(root,'LICENSE'),join(output,'licenses/August.txt'));
 copyFileSync(join(minicoro,'LICENSE'),join(output,'licenses/minicoro.txt'));
 copyFileSync(join(yyjson,'LICENSE'),join(output,'licenses/yyjson.txt'));
 const sha=file=>createHash('sha256').update(readFileSync(file)).digest('hex');
-const files=[libraryName,...(mac?['platform/libSystem.tbd']:['platform/start.S','platform/start.o']),'licenses/August.txt','licenses/minicoro.txt','licenses/yyjson.txt'];
+const files=[libraryName,...(mac?['platform/libSystem.tbd']:['platform/start.S','platform/start.o']),'licenses/August.txt','licenses/minicoro.txt','licenses/yyjson.txt','licenses/Unicode.txt'];
 if(staticCore)files.push(staticCore);
 const extra=buildRuntimeComponents({root,output,nativeRoot:resolve(process.env.AUG_LLVM_NATIVE_HOME??join(root,'.aug-native')),compile:run,linuxRuntime});
 files.push(...extra.files);

@@ -2,15 +2,17 @@
 
 # `main.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=f5663450026f949bd1397225c3b34854c1ba07b378efd60743e5b9a969ff8c47 -->
+
 ## Providers
 
 `Console` is provided by [`SystemConsole`](.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-SystemConsole). The same instance is shared. `Logger` is provided by [`ConsoleLogger`](logging.aug.md#symbol-ConsoleLogger). The same instance is shared.
 
 ## Startup
 
-It prints [`describe`](app.aug.md#symbol-describe) with `label` `"value"` and `x` `6` using injected `Logger` for `logger` and `Console` for `console`. If this work raises [`ValidationError`](interceptors.aug.md#symbol-ValidationError), it prints `"rejected"`. It sets `greeter` to a [`Greeter`](app.aug.md#symbol-Greeter) with `name` `"AugScript"` using injected `Logger` for `_logger`. It prints [`greeter.greet`](app.aug.md#symbol-Greeter.greet) using injected `Logger` for `logger` and `Console` for `console`.
+It prints [`describe`](app.aug.md#symbol-describe) with `label` `"value"` and `x` `6` using injected `Logger` for `logger` and `Console` for `console`. If this work raises [`ValidationError`](interceptors.aug.md#symbol-ValidationError), it prints `"rejected"`. It sets `greeter` to a [`Greeter`](app.aug.md#symbol-Greeter) with `name` `"AugScript"` using injected `Logger` for `_logger`. It prints [`greeter.greet`](app.aug.md#symbol-Greeter.greet) using injected `Logger` for `logger` and `Console` for `console`. [source](main.aug#L10-L17)
 
-It tries to call [`describe`](app.aug.md#symbol-describe) with `x` `-1` and `label` `"invalid"` using injected `Logger` for `logger` and `Console` for `console`. If this work raises [`ValidationError`](interceptors.aug.md#symbol-ValidationError), it prints `"rejected"`.
+It tries to call [`describe`](app.aug.md#symbol-describe) with `x` `-1` and `label` `"invalid"` using injected `Logger` for `logger` and `Console` for `console`. If this work raises [`ValidationError`](interceptors.aug.md#symbol-ValidationError), it prints `"rejected"`. [source](main.aug#L18-L23)
 
 ## Dependencies
 

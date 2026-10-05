@@ -2,6 +2,8 @@
 
 # `export.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=1d5c19027d6c41501df3fff0171be95f82095ea7120955f6c22a90b33b0f874b -->
+
 ## Exports
 
 Export the declaration `Clock` from [`contracts.aug`](contracts.aug.md#symbol-Clock). Export the declaration `SystemClock` from [`contracts.aug`](contracts.aug.md#symbol-SystemClock).

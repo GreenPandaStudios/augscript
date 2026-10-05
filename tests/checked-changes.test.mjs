@@ -1,97 +1,290 @@
-import {test} from 'node:test';
-import {strict as assert} from 'node:assert';
-import {mkdtempSync,writeFileSync,readFileSync,mkdirSync,rmSync,existsSync,readdirSync} from 'node:fs';
-import {join} from 'node:path';
+import {spawn} from 'node:child_process';
+import {createHash} from 'node:crypto';
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {mkdtempSync,mkdirSync,writeFileSync,readFileSync,rmSync,existsSync,symlinkSync,chmodSync,statSync} from 'node:fs';
+import {join,dirname,resolve} from 'node:path';
 import {tmpdir} from 'node:os';
-import {spawnSync} from 'node:child_process';
-import {analyzeChangeProject,projectRevision} from '../src/change-context.ts';
-import {planCheckedChange,applyCheckedChange} from '../src/checked-changes.ts';
-import {withSourceWriter,recoverSourceChange,SourceBusy} from '../src/source-transaction.ts';
-import {loadProject} from '../src/project.ts';
+import {spawnSync} from './compiler-process.mjs';
+import {planChangeRename,planChangeRenameSymbol,applyChangePlan,recoverSourceChanges} from '../src/checked-changes.ts';
+import {coherentSourceRead,sourceImage,publishSourceChange,withSourceWriter} from '../src/source-transactions.ts';
+import {checkedProjectWithTests} from '../src/refactoring.ts';
 
+const cli=resolve('bin/aug.mjs');
 const files={
- 'main.aug':'import lower from bridge\nvalue = lower(x=3)\n',
- 'bridge/export.aug':'export lower from core\n',
- 'bridge/core.aug':'// lower is documented here; the comment must stay.\nlower(int x) returns int:\n    return x + 1\n\ntest lower:\n    when "acceptance":\n        it "increments":\n            assert(condition=lower(x=3) == 4)\n',
- 'separate.aug':'import lower from bridge\n\nseparate(int x) returns int:\n    return lower(x=x)\n',
- 'shadow.aug':'import lower from bridge\n\nshadow(string lower) returns string:\n    return lower\n\nunrelated() returns string:\n    return "lower"\n',
- 'same.aug':'lower(string value) returns string:\n    return value\n',
+    'main.aug':'import double from math\nquantity=4\nprint(value=double(quantity))\n',
+    'math/export.aug':'export double from numbers\n',
+    'math/numbers.aug':'double(int quantity):\n    // quantity stays in this comment.\n    text="quantity"\n    return quantity * 2\n\ntest double:\n    when numbers:\n        it "keeps the calculation":\n            assertEqual(actual=double(quantity=3), expected=6)\n',
+    'other.aug':'double(int quantity):\n    return quantity\n',
+    'main.yaml':'block_style: indent\n'
 };
-function fixture(t){const root=mkdtempSync(join(tmpdir(),'aug-change-'));t.after(()=>rmSync(root,{recursive:true,force:true}));
- for(const [file,source]of Object.entries(files)){mkdirSync(join(root,file,'..'),{recursive:true});writeFileSync(join(root,file),source);}return root;}
-const snapshot=root=>Object.fromEntries(Object.keys(files).map(file=>[file,readFileSync(join(root,file),'utf8')]));
-function request(root,operation={kind:'rename',symbol:'bridge/core.aug:lower',name:'higher'}){
- return {baseRevision:projectRevision(analyzeChangeProject(root).project).revision,root:'bridge/core.aug:lower',editScope:Object.keys(files),operations:[operation],
-   expectedPublicDelta:operation.kind==='rename'?{kind:'rename',from:'bridge/core.aug:lower',to:`bridge/core.aug:${operation.name}`}:{kind:'unchanged'},
-   requirements:[{id:'R1',text:'Preserve increment behavior.'}],verification:{tests:[{group:'acceptance',requirements:['R1']}],provenance:{source:'Independently authored increment example',independence:'independent fixture'}}};
+function fixture(run) {
+    const root=mkdtempSync(join(tmpdir(),'aug-changes-'));
+    try {
+        for(const [name,source] of Object.entries(files)){mkdirSync(dirname(join(root,name)),{recursive:true});writeFileSync(join(root,name),source);}
+        const value=run(root);if(value&&typeof value.then==='function')return value.finally(()=>rmSync(root,{recursive:true,force:true}));
+        rmSync(root,{recursive:true,force:true});return value;
+    }catch(error){rmSync(root,{recursive:true,force:true});throw error;}
 }
-test('resolved rename updates declarations, exports, imports, test subjects and callers only',t=>{
- const root=fixture(t),before=snapshot(root),plan=planCheckedChange(root,request(root));assert.deepEqual(snapshot(root),before);
- assert.equal(plan.publicDelta.length,2);const result=applyCheckedChange(root,plan);assert.equal(result.status,'committed');assert.equal(result.evidence.behavior.count,1);
- assert(readFileSync(join(root,'bridge/core.aug'),'utf8').includes('// lower is documented here;'));
- assert.equal(readFileSync(join(root,'same.aug'),'utf8'),before['same.aug']);
- assert.equal(readFileSync(join(root,'shadow.aug'),'utf8'),before['shadow.aug'].replace('import lower from bridge','import higher from bridge'));
- assert(readFileSync(join(root,'separate.aug'),'utf8').includes('higher(x=x)'));
- assert.deepEqual(analyzeChangeProject(root).diagnostics,[]);assert.equal(projectRevision(analyzeChangeProject(root).project).revision,result.revision);
- assert(existsSync(join(root,'.aug-changes/revisions',result.revision+'.json')));
+const plan=root=>planChangeRename(root,'math/numbers.aug',files['math/numbers.aug'].indexOf('quantity'),'amount');
+const snapshot=root=>Object.fromEntries(Object.keys(files).map(file=>[file,readFileSync(join(root,file),'utf8')]));
+const command=(root,args)=>spawnSync(process.execPath,[cli,'change',...args,root],{encoding:'utf8'});
+
+test('a saved rename plan is relative, checked, reviewable and behavior evidence stays separate',()=>fixture(root=>{
+    const before=snapshot(root),proposed=plan(root);
+    assert.equal(proposed.format,1);assert.equal(proposed.operation,'rename');
+    assert.match(proposed.baseRevision,/^[a-f0-9]{64}$/);
+    assert.ok(proposed.edits.every(edit=>!edit.file.startsWith('/')));
+    assert.ok(proposed.edits.some(edit=>edit.file==='main.aug'&&edit.text==='amount=quantity'));
+    assert.ok(proposed.publicDelta.length>0);
+    assert.equal(proposed.behavioralEvidence,'not-run');
+    assert.deepEqual(snapshot(root),before);
+    const accepted=applyChangePlan(root,proposed);
+    assert.equal(accepted.status,'committed');assert.equal(accepted.behavioralEvidence,'not-run');
+    assert.notEqual(accepted.revision,proposed.baseRevision);
+    assert.match(readFileSync(join(root,'math/numbers.aug'),'utf8'),/double\(int amount\)/);
+    assert.match(readFileSync(join(root,'math/numbers.aug'),'utf8'),/comment/);
+    assert.match(readFileSync(join(root,'math/numbers.aug'),'utf8'),/text="quantity"/);
+    assert.equal(readFileSync(join(root,'other.aug'),'utf8'),files['other.aug']);
+    assert.deepEqual(checkedProjectWithTests(root,new Map()).diagnostics,[]);
+    for(const backend of ['c','llvm']) {
+        const run=spawnSync(process.execPath,[cli,'run',root,'--backend',backend],{encoding:'utf8'});
+        assert.equal(run.status,0,run.stderr);assert.equal(run.stdout,'8\n');
+        const tests=spawnSync(process.execPath,[cli,'test',root,'--backend',backend,'--json'],{encoding:'utf8'});
+        assert.equal(tests.status,0,tests.stderr);assert.equal(JSON.parse(tests.stdout).passed,1);
+    }
+}));
+
+test('source, config, dependency and new caller staleness reject before any accepted writes',()=>{
+    for(const [name,change] of [
+        ['source',root=>writeFileSync(join(root,'other.aug'),files['other.aug']+'\n')],
+        ['config',root=>writeFileSync(join(root,'main.yaml'),files['main.yaml']+'# revision\n')],
+        ['dependency',root=>writeFileSync(join(root,'aug.lock.json'),'{}')],
+        ['caller',root=>writeFileSync(join(root,'new.aug'),'import double from math\nread():\n    return double(quantity=9)\n')]
+    ]) fixture(root=>{const proposed=plan(root);change(root);const before=snapshot(root);assert.throws(()=>applyChangePlan(root,proposed),/STALE|revision|check/i,name);assert.deepEqual(snapshot(root),before);assert.equal(existsSync(join(root,'.aug-changes/pending.json')),false);});
 });
-test('stale source, newly discovered files, config and dependency locks reject without accepted writes',t=>{
- for(const [file,text]of [['main.aug','\n// edit\n'],['new.aug','newValue() returns int:\n    return 9\n'],['main.yaml','block_style: braces\n'],['aug.lock.json','{}\n']]){
-  const root=fixture(t),plan=planCheckedChange(root,request(root));writeFileSync(join(root,file),existsSync(join(root,file))?readFileSync(join(root,file),'utf8')+text:text);
-  const before=snapshot(root);assert.throws(()=>applyCheckedChange(root,plan),error=>error.code==='CHANGE_STALE');assert.deepEqual(snapshot(root),before);
-  assert(!existsSync(join(root,'.aug-changes/revisions')));
- }
+
+test('editing plan operations, scope, edits or expected public deltas cannot bypass rechecking',()=>fixture(root=>{
+    const proposed=plan(root),before=snapshot(root);
+    for(const alteration of [
+        {...proposed,edits:[]},
+        {...proposed,scope:['main.aug']},
+        {...proposed,publicDelta:[]},
+        {...proposed,operation:'replace-body'},
+        {...proposed,file:'../outside.aug'},
+        {...proposed,offset:-1},
+        {...proposed,checked:false}
+    ]) assert.throws(()=>applyChangePlan(root,alteration),/CHANGE|plan|scope|delta|operation/i);
+    assert.deepEqual(snapshot(root),before);
+}));
+
+test('failed writes restore the source while readers reject an unfinished revision',()=>fixture(root=>{
+    const proposed=plan(root),before=snapshot(root);let sawReader=false;
+    assert.throws(()=>applyChangePlan(root,proposed,{checkpoint(event){if(event.phase==='written'){
+        assert.throws(()=>checkedProjectWithTests(root,new Map()),/CHANGE_IN_PROGRESS/);sawReader=true;throw new Error('injected process failure');
+    }}}),/injected process failure/);
+    assert.equal(sawReader,true);assert.deepEqual(snapshot(root),before);
+    assert.equal(recoverSourceChanges(root).status,'clean');
+    assert.deepEqual(checkedProjectWithTests(root,new Map()).diagnostics,[]);
+}));
+
+test('a coherent source reader detects a complete concurrent commit instead of mixing revisions',()=>fixture(root=>{
+    const proposed=plan(root);
+    assert.throws(()=>coherentSourceRead(root,()=>{applyChangePlan(root,proposed);return snapshot(root);}),/CHANGE_STALE_READ/);
+    assert.doesNotThrow(()=>coherentSourceRead(root,()=>snapshot(root)));
+}));
+
+test('source edits retain modes and reject symlinked metadata, source parents and forged journals',()=>fixture(root=>{
+    chmodSync(join(root,'math/numbers.aug'),0o640);
+    applyChangePlan(root,plan(root));assert.equal(statSync(join(root,'math/numbers.aug')).mode&0o777,0o640);
+    const bad=mkdtempSync(join(tmpdir(),'aug-foreign-change-'));
+    try {
+        fixture(project=>{symlinkSync(bad,join(project,'.aug-changes'),'dir');assert.throws(()=>applyChangePlan(project,plan(project)),/symlink|regular|metadata|CHANGE/i);});
+        fixture(project=>{const source=join(project,'math/numbers.aug');rmSync(source);writeFileSync(join(bad,'numbers.aug'),files['math/numbers.aug']);symlinkSync(join(bad,'numbers.aug'),source);assert.throws(()=>applyChangePlan(project,plan(project)),/symlink|regular|CHANGE/i);});
+        fixture(project=>{mkdirSync(join(project,'.aug-changes'));writeFileSync(join(project,'.aug-changes/pending.json'),JSON.stringify({format:1,files:[{file:'../outside.aug'}]}));assert.throws(()=>recoverSourceChanges(project),/CHANGE|journal/i);assert.equal(existsSync(join(project,'.aug-changes/pending.json')),true);});
+    } finally {rmSync(bad,{recursive:true,force:true});}
+}));
+
+test('public CLI emits a plan, accepts it once and gives actionable stale and recovery diagnostics',()=>fixture(root=>{
+    const output=join(root,'rename.json');
+    const proposed=command(root,['plan-rename','--file','math/numbers.aug','--offset',String(files['math/numbers.aug'].indexOf('quantity')),'--name','amount','--out',output]);
+    assert.equal(proposed.status,0,proposed.stderr);assert.ok(existsSync(output));
+    const accepted=command(root,['apply','--plan',output,'--json']);assert.equal(accepted.status,0,accepted.stderr);assert.equal(JSON.parse(accepted.stdout).status,'committed');
+    const repeated=command(root,['apply','--plan',output]);assert.notEqual(repeated.status,0);assert.match(repeated.stderr,/STALE|revision/i);
+    const recovery=command(root,['recover','--json']);assert.equal(recovery.status,0,recovery.stderr);assert.equal(JSON.parse(recovery.stdout).status,'clean');
+}));
+
+const changesModule=new URL('../src/checked-changes.ts',import.meta.url).href;
+const crash=(root,phase)=>{
+    const input=join(root,'crash-plan.json');writeFileSync(input,JSON.stringify(plan(root)));
+    const script=`import {readFileSync} from 'node:fs';import {applyChangePlan} from ${JSON.stringify(changesModule)};
+    const [root,input,phase]=process.argv.slice(1);applyChangePlan(root,JSON.parse(readFileSync(input,'utf8')),{checkpoint(event){if(event.phase===phase)process.kill(process.pid,'SIGKILL');}});`;
+    const result=spawnSync(process.execPath,['--input-type=module','-e',script,root,input,phase],{encoding:'utf8',timeout:20000});
+    assert.equal(result.signal,'SIGKILL',result.stdout+result.stderr);
+};
+
+test('process death recovers prepared multi-file changes backward and committed changes forward',()=>{
+    for(const phase of ['prepared','written','committed'])fixture(root=>{
+        const before=snapshot(root);crash(root,phase);
+        assert.equal(existsSync(join(root,'.aug-changes/pending.json')),true);
+        assert.throws(()=>checkedProjectWithTests(root,new Map()),/CHANGE_IN_PROGRESS/);
+        const report=recoverSourceChanges(root);
+        assert.equal(report.status,phase==='committed'?'completed':'rolled-back');
+        assert.equal(existsSync(join(root,'.aug-changes/pending.json')),false);
+        if(phase==='committed')assert.match(readFileSync(join(root,'math/numbers.aug'),'utf8'),/double\(int amount\)/);
+        else assert.deepEqual(snapshot(root),before);
+        assert.deepEqual(checkedProjectWithTests(root,new Map()).diagnostics,[]);
+        assert.equal(recoverSourceChanges(root).status,'clean');
+    });
 });
-test('out-of-scope callers, collisions and tampered plans reject before source writes',t=>{
- const root=fixture(t),before=snapshot(root),out=request(root);out.editScope=out.editScope.filter(file=>file!=='separate.aug');
- assert.throws(()=>planCheckedChange(root,out),error=>error.code==='CHANGE_SCOPE');
- writeFileSync(join(root,'separate.aug'),files['separate.aug']+'\nhigher() returns int:\n    return 0\n');
- assert.throws(()=>planCheckedChange(root,request(root)),error=>error.code==='CHANGE_NAME');writeFileSync(join(root,'separate.aug'),files['separate.aug']);
- const plan=planCheckedChange(root,request(root));plan.candidate.sources[0].source+='\n// tamper\n';assert.throws(()=>applyCheckedChange(root,plan),error=>error.code==='CHANGE_PLAN');assert.deepEqual(snapshot(root),before);
+
+test('recovery preserves all source on an external conflict and succeeds after deliberate reconciliation',()=>fixture(root=>{
+    const before=snapshot(root);crash(root,'written');
+    writeFileSync(join(root,'math/numbers.aug'),files['math/numbers.aug']+'// unrelated editor change\n');
+    const conflicted=snapshot(root);
+    assert.throws(()=>recoverSourceChanges(root),/CHANGE_RECOVERY_CONFLICT/);
+    assert.deepEqual(snapshot(root),conflicted);
+    assert.equal(existsSync(join(root,'.aug-changes/pending.json')),true);
+    writeFileSync(join(root,'math/numbers.aug'),files['math/numbers.aug']);
+    assert.equal(recoverSourceChanges(root).status,'rolled-back');assert.deepEqual(snapshot(root),before);
+}));
+
+test('a metadata or out-of-scope edit during publication rejects the candidate and preserves that external edit',()=>fixture(root=>{
+    const proposed=plan(root),before=snapshot(root);let changed=false;
+    assert.throws(()=>applyChangePlan(root,proposed,{checkpoint(event){if(event.phase==='written'&&!changed){changed=true;writeFileSync(join(root,'main.yaml'),files['main.yaml']+'# external configuration revision\n');}}}),/CHANGE_STALE/);
+    const after=snapshot(root);assert.equal(after['main.yaml'],files['main.yaml']+'# external configuration revision\n');
+    for(const file of Object.keys(files).filter(file=>file!=='main.yaml'))assert.equal(after[file],before[file]);
+    assert.equal(recoverSourceChanges(root).status,'clean');
+}));
+
+test('an interruption after the durable commit point reports acceptance and retains forward recovery',()=>fixture(root=>{
+    assert.throws(()=>applyChangePlan(root,plan(root),{checkpoint(event){if(event.phase==='committed')throw new Error('cleanup interrupted');}}),/CHANGE_COMMITTED_RECOVERY_REQUIRED/);
+    assert.match(readFileSync(join(root,'math/numbers.aug'),'utf8'),/double\(int amount\)/);
+    assert.equal(recoverSourceChanges(root).status,'completed');
+    assert.deepEqual(checkedProjectWithTests(root,new Map()).diagnostics,[]);
+}));
+
+function running(args){
+    const child=spawn(process.execPath,args,{timeout:20000});let stdout='',stderr='';
+    child.stdout.on('data',data=>stdout+=data);child.stderr.on('data',data=>stderr+=data);
+    return {child,done:new Promise((resolve,reject)=>{child.on('error',reject);child.on('close',(status,signal)=>resolve({status,signal,stdout,stderr}));})};
+}
+async function waitFile(path){const end=Date.now()+10000;while(!existsSync(path)){if(Date.now()>end)throw new Error('writer never reached its gate');await new Promise(resolve=>setTimeout(resolve,20));}}
+
+test('competing processes serialize source writers and reject the stale loser; read-only tools block pending images',()=>fixture(async root=>{
+    const input=join(root,'shared-plan.json'),ready=join(root,'writer-ready');writeFileSync(input,JSON.stringify(plan(root)));
+    const script=`import {readFileSync,writeFileSync} from 'node:fs';import {applyChangePlan} from ${JSON.stringify(changesModule)};
+      const [root,input,ready]=process.argv.slice(1);applyChangePlan(root,JSON.parse(readFileSync(input,'utf8')),{checkpoint(event){if(event.phase==='prepared'){writeFileSync(ready,'ready');Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0,1000);}}});`;
+    const winner=running(['--input-type=module','-e',script,root,input,ready]);
+    try {
+        await waitFile(ready);
+        const read=spawnSync(process.execPath,[cli,'check',root],{encoding:'utf8',timeout:10000});assert.notEqual(read.status,0);assert.match(read.stderr,/CHANGE_IN_PROGRESS/);
+        const loser=running([cli,'change','apply',root,'--plan',input,'--json']);
+        const [accepted,rejected]=await Promise.all([winner.done,loser.done]);
+        assert.equal(accepted.status,0,accepted.stderr);assert.equal(rejected.status,1,rejected.stderr);
+        assert.equal(JSON.parse(rejected.stdout).code,'CHANGE_STALE');
+        assert.equal(existsSync(join(root,'.aug-change-lock')),false);
+        assert.deepEqual(checkedProjectWithTests(root,new Map()).diagnostics,[]);
+    }finally{if(winner.child.exitCode===null)winner.child.kill();}
+}));
+
+test('reviewed candidate and original preimages reject changes in the check-to-publication windows',()=>{
+    for(const [phase,file,text] of [
+        ['validated','main.yaml',files['main.yaml']+'optimization: release\n'],
+        ['validated','other.aug',files['other.aug']+'// outside the edit scope\n'],
+        ['candidate-checked','math/numbers.aug',files['math/numbers.aug']+'// new edit must survive\n']
+    ])fixture(root=>{
+        const proposed=plan(root);let changed=false;
+        assert.throws(()=>applyChangePlan(root,proposed,{checkpoint(event){if(event.phase===phase&&!changed){changed=true;writeFileSync(join(root,file),text);}}}),/CHANGE_STALE/);
+        assert.equal(changed,true);assert.equal(readFileSync(join(root,file),'utf8'),text);
+        assert.equal(existsSync(join(root,'.aug-changes/pending.json')),false);
+        for(const other of Object.keys(files).filter(other=>other!==file))assert.equal(readFileSync(join(root,other),'utf8'),files[other]);
+    });
 });
-test('rejections return the exact candidate and its revision-bearing repair diagnostics',t=>{
- const root=fixture(t),before=snapshot(root),change=request(root,{kind:'replace-body',symbol:'bridge/core.aug:lower',source:'lower(int x) returns int:\n    return x + unknown\n'});
- let report;assert.throws(()=>planCheckedChange(root,change),error=>{report=error.report;return error.code==='CHANGE_CANDIDATE';});
- assert(report.candidate.sources.some(source=>source.source.includes('return x + unknown')));assert(report.diagnostics.length>0);
- assert(report.diagnostics.every(issue=>issue.revision===report.candidate.revision));assert.deepEqual(snapshot(root),before);
- assert(report.exchange.specification.readOnly);assert.equal(report.exchange.requirements[0].id,'R1');assert(report.diagnosticSources.some(source=>source.source.includes('return x + unknown')));
- const invalid=request(root,{kind:'replace-body',symbol:'bridge/core.aug:lower',source:'lower(int x) returns int { let value = x; return value }\n'});
- assert.throws(()=>planCheckedChange(root,invalid),error=>{
-  const issue=error.report.diagnostics.find(issue=>issue.code==='BINDING');assert.equal(issue.revision,error.report.candidate.revision);
-  assert.equal(issue.fixes[0].edits[0].file,'bridge/core.aug');assert.equal(issue.fixes[0].edits[0].text,'');assert(error.report.exchange);
-  return error.code==='CHANGE_SOURCE_UNIT';
- });assert.deepEqual(snapshot(root),before);
+
+test('recovery bounds and path restrictions reject before creating an unfinished journal',()=>fixture(root=>{
+    const before=snapshot(root),image=sourceImage(root,'main.aug',files['main.aug']+'\n');
+    assert.throws(()=>sourceImage(root,'main.aug','a'.repeat(16*1024*1024+1)),/limit|bounded|postimage/i);
+    assert.throws(()=>withSourceWriter(root,()=>publishSourceChange(root,Array(4097).fill(image),'a'.repeat(64),'b'.repeat(64),()=>{})),/CHANGE_JOURNAL/);
+    assert.throws(()=>withSourceWriter(root,()=>publishSourceChange(root,[{...image,after:'a'.repeat(16*1024*1024+1)}],'a'.repeat(64),'b'.repeat(64),()=>{})),/CHANGE_JOURNAL/);
+    assert.throws(()=>withSourceWriter(root,()=>publishSourceChange(root,[image,image],'a'.repeat(64),'b'.repeat(64),()=>{})),/CHANGE_JOURNAL/);
+    assert.equal(existsSync(join(root,'.aug-changes/pending.json')),false);assert.deepEqual(snapshot(root),before);
+    const external=mkdtempSync(join(tmpdir(),'aug-external-lock-'));
+    try {symlinkSync(external,join(root,'.aug-change-lock'),'dir');assert.throws(()=>withSourceWriter(root,()=>{}),/symlink/);assert.deepEqual(snapshot(root),before);}
+    finally {rmSync(external,{recursive:true,force:true});}
+}));
+
+test('named selectors resolve functions and public labels through the same checked occurrence planner',()=>fixture(root=>{
+    const selected=planChangeRenameSymbol(root,'math/numbers.aug','double.quantity','amount');assert.deepEqual(selected,plan(root));
+    const renameFunction=planChangeRenameSymbol(root,'math/numbers.aug','double','twice');assert.ok(renameFunction.edits.some(edit=>edit.file==='math/export.aug'));
+    assert.throws(()=>planChangeRenameSymbol(root,'math/numbers.aug','double.missing','amount'),/public input label/);
+    assert.throws(()=>planChangeRenameSymbol(root,'math/numbers.aug','double.quantity.extra','amount'),/Select FUNCTION/);
+}));
+
+test('an installed package main.yaml change is a stale dependency even with unchanged August and accepted lock bytes',()=>fixture(root=>{
+    const library=join(root,'.library');mkdirSync(join(library,'src'),{recursive:true});
+    writeFileSync(join(library,'aug-package.json'),JSON.stringify({format:1,name:'@fixture/data',version:'0.1.0',compiler:'0.23.0',source:'src'}));
+    writeFileSync(join(library,'src/export.aug'),'export Value from data\n');writeFileSync(join(library,'src/data.aug'),'record Value(int amount)\n');
+    writeFileSync(join(root,'main.yaml'),files['main.yaml']+'packages:\n    data: ./.library\n');
+    const install=spawnSync(process.execPath,[cli,'install',root],{encoding:'utf8'});assert.equal(install.status,0,install.stderr);
+    const proposed=plan(root),lock=readFileSync(join(root,'aug.lock.json'),'utf8'),entry=JSON.parse(lock).packages[0];
+    const installed=join(root,'.aug-packages',entry.path,'main.yaml');writeFileSync(installed,'# physical metadata changed\n');
+    const before=snapshot(root);assert.throws(()=>applyChangePlan(root,proposed),/CHANGE_STALE/);assert.deepEqual(snapshot(root),before);
+    assert.equal(readFileSync(join(root,'aug.lock.json'),'utf8'),lock);
+    assert.ok(proposed.dependencyMetadata.some(item=>item.file==='package/@fixture/data@0.1.0/main.yaml'));
+}));
+
+test('public application and library starters ignore revision state, recovery journals, locks and staged files',()=>{
+    for(const library of [false,true]){
+        const container=mkdtempSync(join(tmpdir(),'aug-change-starter-')),root=join(container,'project');
+        try {
+            const init=spawnSync(process.execPath,[cli,...(library?['package','init']:['init']),root],{encoding:'utf8'});assert.equal(init.status,0,init.stderr);
+            const file=library?'src/arithmetic.aug':'greeting.aug',symbol=library?'add.left':'greet.name';
+            const selected=planChangeRenameSymbol(root,file,symbol,'input');applyChangePlan(root,selected);
+            const git=process.env.AUG_GIT??'git';assert.equal(spawnSync(git,['init',root],{encoding:'utf8'}).status,0);
+            for(const path of ['.aug-changes/revision','.aug-changes/pending.json','.aug-change-lock/owner-test','.aug-write-staged']){
+                const ignored=spawnSync(git,['-C',root,'check-ignore',path],{encoding:'utf8'});assert.equal(ignored.status,0,path+': '+ignored.stderr);
+            }
+            const status=spawnSync(git,['-C',root,'status','--porcelain'],{encoding:'utf8'});assert.equal(status.status,0,status.stderr);assert.doesNotMatch(status.stdout,/aug-changes|aug-change-lock|aug-write/);
+        }finally{rmSync(container,{recursive:true,force:true});}
+    }
 });
-test('compiling a wrong implementation does not substitute for independent behavioral acceptance',t=>{
- const root=fixture(t),before=snapshot(root),change=request(root,{kind:'replace-body',symbol:'bridge/core.aug:lower',source:'lower(int x) returns int:\n    return x + 2\n'});
- const plan=planCheckedChange(root,change);assert.throws(()=>applyCheckedChange(root,plan),error=>error.code==='CHANGE_BEHAVIOR'&&error.report.behavior.outcomes[0].passed===false);
- assert.deepEqual(snapshot(root),before);assert(!existsSync(join(root,'.aug-changes/revisions')));
-});
-test('injected write failures roll back and concurrent readers and writers reject',t=>{
- const root=fixture(t),before=snapshot(root),plan=planCheckedChange(root,request(root));
- assert.throws(()=>applyCheckedChange(root,plan,{onPhase(phase,writes){if(phase==='written'&&writes===1)throw new Error('injected failure');}}),/injected failure/);
- assert.deepEqual(snapshot(root),before);assert(!existsSync(join(root,'.aug-changes/journal.json')));
- withSourceWriter(root,permit=>{
-  assert.throws(()=>loadProject(root),SourceBusy);assert.equal(loadProject(root,new Map(),undefined,permit).root,root);
-  assert.throws(()=>withSourceWriter(root,()=>{}),SourceBusy);
- });
- assert.deepEqual(analyzeChangeProject(root).diagnostics,[]);
-});
-test('process death before or after the durable commit point has defined recoverable behavior',t=>{
- for(const phase of ['written','committed']){
-  const root=fixture(t),before=snapshot(root),plan=planCheckedChange(root,request(root)),planFile=join(root,'plan.json');writeFileSync(planFile,JSON.stringify(plan));
-  const module=new URL('../src/checked-changes.ts',import.meta.url).href;
-  const script=`import {readFileSync} from 'node:fs';import {applyCheckedChange} from ${JSON.stringify(module)};const [root,path,phase]=process.argv.slice(1);applyCheckedChange(root,JSON.parse(readFileSync(path,'utf8')),{onPhase(current,writes){if(current===phase&&(phase==='committed'||writes===1))process.kill(process.pid,'SIGKILL');}});`;
-  const child=spawnSync(process.execPath,['--input-type=module','-e',script,root,planFile,phase],{encoding:'utf8',timeout:30000});assert.equal(child.signal,'SIGKILL',child.stderr);
-  assert.throws(()=>loadProject(root),SourceBusy);const recovered=recoverSourceChange(root);assert.equal(recovered.status,phase==='written'?'rolled back':'committed');
-  assert.deepEqual(analyzeChangeProject(root).diagnostics,[]);
-  if(phase==='written'){assert.deepEqual(snapshot(root),before);assert(!existsSync(join(root,'.aug-changes/revisions')));}
-  else assert(existsSync(join(root,'.aug-changes/revisions',plan.candidateRevision+'.json')));
- }
-});
-test('recovery preserves an external edit and leaves the journal for reconciliation',t=>{
- const root=fixture(t),plan=planCheckedChange(root,request(root));
- assert.throws(()=>applyCheckedChange(root,plan,{onPhase(phase){if(phase==='written'){writeFileSync(join(root,'bridge/core.aug'),files['bridge/core.aug']+'\n// outside edit\n');throw new Error('failure');}}}),error=>error.code==='CHANGE_RECOVERY');
- const edited=readFileSync(join(root,'bridge/core.aug'),'utf8');assert.throws(()=>recoverSourceChange(root),SourceBusy);
- assert.equal(readFileSync(join(root,'bridge/core.aug'),'utf8'),edited);assert(existsSync(join(root,'.aug-changes/journal.json')));
-});
+
+test('JSON errors distinguish a committed revision requiring cleanup from rejection',()=>fixture(root=>{
+    const input=join(root,'commit-plan.json'),proposed=plan(root);writeFileSync(input,JSON.stringify(proposed));
+    const script=`import fs from 'node:fs';import {syncBuiltinESMExports} from 'node:module';
+      const rename=fs.renameSync;let failed=false;fs.renameSync=(from,to)=>{const commit=String(to).endsWith('/pending.json')&&fs.readFileSync(from,'utf8').includes('"state":"committed"');rename(from,to);if(commit&&!failed){failed=true;throw new Error('post-commit sync failure');}};syncBuiltinESMExports();
+      const {main}=await import(${JSON.stringify(new URL('../src/cli.ts',import.meta.url).href)});process.exitCode=await main(['change','apply',process.argv[1],'--plan',process.argv[2],'--json']);`;
+    const result=spawnSync(process.execPath,['--input-type=module','-e',script,root,input],{encoding:'utf8',timeout:20000});
+    assert.equal(result.status,1,result.stderr);const report=JSON.parse(result.stdout);
+    assert.equal(report.status,'committed');assert.equal(report.operation,'rename');assert.equal(report.baseRevision,proposed.baseRevision);assert.deepEqual(report.identityMap,proposed.identityMap);assert.equal(report.checked,true);assert.equal(report.recovery,'required');assert.match(report.revision,/^[a-f0-9]{64}$/);
+    assert.equal(report.behavioralEvidence,'not-run');assert.equal(recoverSourceChanges(root).status,'completed');
+    assert.deepEqual(checkedProjectWithTests(root,new Map()).diagnostics,[]);
+}));
+
+
+test('publication reserves the longer committed journal state before any source write',()=>fixture(root=>{
+    const images=[sourceImage(root,'main.aug',''),sourceImage(root,'other.aug','')];
+    const journal={format:1,id:'00000000-0000-0000-0000-000000000000',state:'prepared',baseRevision:'a'.repeat(64),revision:'b'.repeat(64),files:images};
+    const limit=64*1024*1024,overhead=Buffer.byteLength(JSON.stringify(journal)+'\n'),first=16*1024*1024;
+    const remaining=limit-overhead-first*2;
+    images[0].after='"'.repeat(first);images[1].after='"'.repeat(Math.floor(remaining/2))+(remaining%2?'a':'');
+    for(const image of images){assert.ok(Buffer.byteLength(image.after)<=16*1024*1024);image.afterSha256=createHash('sha256').update(image.after).digest('hex');}
+    assert.equal(Buffer.byteLength(JSON.stringify(journal)+'\n'),limit);
+    assert.equal(Buffer.byteLength(JSON.stringify({...journal,state:'committed'})+'\n'),limit+1);
+    const before=snapshot(root);
+    assert.throws(()=>withSourceWriter(root,()=>publishSourceChange(root,images,journal.baseRevision,journal.revision,()=>{})),/64 MiB recovery limit/);
+    assert.deepEqual(snapshot(root),before);assert.equal(existsSync(join(root,'.aug-changes/pending.json')),false);
+}));
+
+test('input rename changes only its attached Javadoc label tokens',()=>fixture(root=>{
+    const file='math/numbers.aug',source='/** quantity in prose. @param quantity The quantity.\n * @returns The quantity.\n */\n'+files[file];
+    writeFileSync(join(root,file),source);
+    const proposed=planChangeRenameSymbol(root,file,'double.quantity','amount');
+    assert.ok(proposed.edits.some(edit=>edit.file===file&&source.slice(edit.start,edit.end)==='quantity'&&edit.start<source.indexOf('double(')));
+    applyChangePlan(root,proposed);
+    const after=readFileSync(join(root,file),'utf8');
+    assert.match(after,/quantity in prose\. @param amount The quantity\./);
+    assert.match(after,/@returns The quantity\./);assert.match(after,/text="quantity"/);
+    assert.deepEqual(checkedProjectWithTests(root,new Map()).diagnostics,[]);
+}));

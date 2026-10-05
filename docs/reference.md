@@ -71,11 +71,24 @@ export ConsoleLogger from console
 export folder nested
 ```
 
-Cross-folder access requires the export entry. A dotted path also requires each crossed child folder to be exposed by its parent. A folder with no export file exposes nothing across its boundary. `export.aug` accepts only exports. Private modules and folders cannot be exported.
+Cross-folder access requires the export entry. A dotted path also requires each crossed child folder to be exposed by its parent. A folder with no export file exposes nothing across its boundary. `export.aug` accepts export declarations and the unreleased internal entries described below. Private modules and folders cannot be exported.
 
 `import Logger and ConsoleLogger from logging` combines imports. `import everything from logging` imports visible declarations and rejects collisions; it never exposes a module's internal imports. The formatter preserves it. Hover shows available names, **Expand to named imports** offers an explicit list, and the [compiled spec](specifications.md) explains dependencies actually used.
 
-Import cycles are errors. Configure allowed module dependencies and export-count warnings in `main.yaml`. `strict_modules: true` also requires sibling imports to appear in the local export file. Ctrl-click `from` or a path segment to open its source file or export file, including `august.io`.
+Import cycles are errors. Configure allowed module dependencies and export-count warnings in `main.yaml`. `strict_modules: true` also requires sibling imports to appear in the local export file, as an export or an unreleased internal entry. Ctrl-click `from` or a path segment to open its source file or export file, including `august.io`.
+
+### Internal folder contracts
+
+**Unreleased:** `internal Name from sibling` names a declaration that other files in the same folder can import under strict checking. It appears in the existing `export.aug`:
+
+```text
+export TicketService from service
+internal TicketRepository from repository
+```
+
+Files in that folder still write `import TicketRepository from repository`. Other folders, including children, and package consumers cannot import the internal entry. Wildcard and dotted imports expose only exports. The `_` privacy rule remains unchanged, and `internal` can still name an ordinary function.
+
+A folder declaring internal entries opts into checking its outward type surface. Exported inputs, results, checked errors, public fields, constructors, generic bounds and interface contracts must use accessible exported types. A `resolve` constructor input is still a construction requirement. Keep an implementation internal and export its service interface with an explicit composition when callers should not construct it. Private initialized state does not become part of that outward surface. See [keep module internals](guides/keep-module-internals.md) for a complete example.
 
 Project dependencies use aliases in `main.yaml`: `packages: math: "npm:@owner/aug-math@1.2.3"` as a nested YAML block. Run `aug install`, then write `import add from math`. A library exposes only its source folder's `export.aug`; internal modules and undeclared transitive dependencies are inaccessible. See [creating and using packages](packages.md#author-a-package).
 
@@ -118,7 +131,7 @@ Constraints name interfaces. Multiple constraints use `and`. Only interfaces dec
 
 ## Classes, records, and local state
 
-A class starts with its name and ends its header with `implements Interface`. There is no `class` or `function` prefix and no class inheritance. Interfaces can extend several interfaces and supply default methods; conflicting inherited defaults require an explicit override. Interfaces have methods and no fields.
+A class starts with its name and ends its header with `implements Interface`. There is no `class` or `function` prefix and no class inheritance. Interfaces can extend several interfaces and supply default methods; conflicting inherited defaults require an explicit override. Each implementation, including a selected default, must satisfy every inherited signature. Inputs, labels, defaults, result and ownership must agree; mutation, capability and error behavior must fit each permitted bound. Interfaces have methods and no fields.
 
 An initializer can reject construction with a checked error. Write the error before `implements`: `Session(own Handle handle) unless SessionError implements ActiveSession`. Callers must catch or propagate it. Class constructors require a written `unless` clause; record validation can infer failures.
 
@@ -179,7 +192,15 @@ match fruit.get(key=7):
 record Point(int x, int y)
 ```
 
-Record fields contain primitives, tuples, and immutable records. They cannot store mutable collections, capabilities, or ownership inputs. Records compare and hash by type and field values. Validation uses `record Positive(int value) unless DomainError { initialize { ... } }`; it may reject an input, and cannot replace immutable fields. Behavioral classes compare by identity.
+Record fields contain data, including safe literal or explicitly frozen collections. A mutable collection alias must be frozen before storage. Records cannot retain capabilities or ownership inputs. Records compare and hash by type and field values. Validation uses `record Positive(int value) unless DomainError { initialize { ... } }`; it may reject an input, and cannot replace immutable fields. Behavioral classes compare by identity.
+
+## Closed record choices (unreleased)
+
+`choice Delivery from Delivered and Failed` names a closed set of at least two distinct, concrete nongeneric immutable records. Define or explicitly import those records in the same module. A choice has no constructor: use an alternative’s ordinary labeled constructor. Assignment, function inputs and results accept exactly those record identities. Generic inputs can use a non-null choice bound; nullable inputs use `optional T`. Records can contain choices, and choices satisfy the data rules for pure callbacks and copied workers.
+
+Match each alternative to access its fields. Every alternative is required for exhaustiveness, plus null when the choice is optional; `some` covers all non-null values and `else` is an explicit fallback. Classes cannot implement a choice, interfaces cannot inherit it, and choices cannot name other choices or nullable/generic alternatives. Normal privacy and export boundaries apply to the choice and its records independently.
+
+There is no implicit JSON tag or discriminator. Match and serialize a concrete record, or define a tagged wire record. Direct JSON decoding and typed HTTP binding to the choice are unsupported. See [Describe a finite choice](guides/use-choices.md) for a complete program and its tests.
 
 ## Collections and iteration
 
@@ -201,7 +222,105 @@ Empty literals require context: `List<int> values = []`, `Set<int> values = {}`,
 
 Managed mutations need a borrow; owned collections mutate directly. Collections cannot store borrowed or owned references by copying them. Reference results grant reading.
 
-Tuple destructuring introduces new local names and checks arity. `for item in values` snapshots List, Set, and homogeneous Tuple elements. `for (key, value) in map` snapshots entries in insertion order. Modifying the original collection does not extend the current iteration. Reference elements remain read-only.
+**Unreleased:** `values[index]` reads a List with the same checked IndexError as get, a Map with an optional result, or a Tuple with a compile-time constant position. Indexing does not grant mutation; text and byte operations stay explicit.
+
+**Unreleased loop control.** `break` leaves the nearest loop; `continue` starts its next iteration. Both run intervening `always` cleanup, join child scopes, release locks and borrows, and drop owned locals. A cleanup error propagates instead of completing the jump. Neither accepts a label. Jumps require an enclosing `for` or `while`; an `always` block cannot jump out of its cleanup.
+
+Tuple destructuring introduces new local names and checks arity. A one-name tuple pattern binds the tuple’s cell; use `(value,)` for a one-cell tuple. A single loop item or wait result still receives its whole value. `for item in values` snapshots List, Set, and homogeneous Tuple elements. `for (key, value) in map` snapshots entries in insertion order. Modifying the original collection does not extend the current iteration. Reference elements remain read-only.
+
+### Record and nested tuple bindings (unreleased)
+
+Select record fields by name, or unpack tuple positions into new local names. `field: name` renames a field; another pattern can unpack the selected value further. This example selects two fields from `Person` and unpacks its ratings:
+
+```aug project=binding-patterns-guide file=main.aug
+import Person from people
+
+person = Person(name="Ada", ratings=(7, 9), age=37)
+{name: displayName, ratings: (first, second)} = person
+print(value=displayName)
+print(value=first + second)
+
+for {name} in [person]:
+    print(value=name)
+```
+
+```aug project=binding-patterns-guide file=people.aug
+record Person(string name, Tuple<int, int> ratings, int age)
+```
+
+The output is `Ada`, `16`, and `Ada`, each on its own line. Omitted record fields need no binding. Every tuple level must match its exact number of positions; `(cell,)` unpacks one position, while `(cell)` groups a name. An empty pattern checks the corresponding record or empty tuple and creates no names.
+
+The source expression runs once. Bindings grant read access without copying their values or transferring ownership. New names cannot repeat or replace an existing local, and a record field cannot appear twice in a pattern. Private fields remain private. Narrow an optional value before unpacking it. A borrowed reference keeps its lifetime restrictions, and a binding cannot freeze an external input or grant mutable access. Named fields require an immutable record; Maps and behavioral classes use their ordinary reading operations.
+
+Use the same patterns after `for` to unpack each snapshot item. Parameterized same-file test rows retain their flat tuple input form. Hover over a renamed field label to read its type and documentation; follow its definition to the record field. The selected local has its own definition in the pattern.
+
+### List comprehensions (unreleased)
+
+Select and transform collection items in one expression:
+
+```aug project=comprehension-guide file=main.aug
+import User from users
+
+users = [
+    User(name="Ada", active=true),
+    User(name="Lin", active=false),
+    User(name="Sam", active=true)
+]
+names = [user.name for user in users if user.active]
+for name in names:
+    print(value=name)
+```
+
+```aug project=comprehension-guide file=users.aug
+record User(string name, bool active)
+```
+
+This prints `Ada` and `Sam`. The expression evaluates `users` once, takes a snapshot, and creates a new list. For each snapshot item it checks the optional `if` condition before evaluating the result expression. Rejected items do not evaluate that expression. An empty input or no matches produces an empty list. Omit `if` to transform every item.
+
+The input accepts the same collections as an ordinary loop: List, Set, Map entries and homogeneous Tuples. Record and tuple [binding patterns](#record-and-nested-tuple-bindings-unreleased) work after `for`. Bound names exist only in the result, condition and pattern; the input expression uses the enclosing scope. They cannot replace an existing name. Narrow optional collections before selecting from them; `if value != null` can narrow optional items for the result.
+
+Items have read-only access. The result has a fresh container; it does not copy referenced objects or grant permission to mutate them. Fresh scalar copies can leave a source borrow and be frozen independently. Selected references retain their source permissions and lifetime restrictions. Freeze a completed result explicitly when a deeply immutable list is required. A factory that freezes its result should infer or declare an immutable result type; a mutable return annotation cannot restore mutation permission.
+
+Calls retain ordinary labeled inputs, inferred effects, checked failures, ownership rules and task scopes. Handle a failing result or predicate as you would a call in a loop. A failure stops selection; enclosing scopes clean up normally. Worker tasks may be selected inside a scope and joined with `wait for`. Owned values cannot be copied into the result, and repeated transfer of an outer owned value is rejected. Use a loop for multiple statements, state updates, early exit or several iteration clauses; this expression has one `for` and at most one `if`.
+
+## Collection functions (unreleased)
+
+Import `filter`, `transform`, `aggregate`, `remove`, `find`, or `sort` from `august.collections` when the operation fits a pure data callback. `Predicate<T>`, `Transformation<T,U>`, `Aggregator<T,U>`, and `Comparator<T>` describe those callbacks through ordinary interfaces. Their `optional Data` constraints also admit null values. They accept data, return data, and permit no I/O, mutation or checked failures. Use an ordinary loop when processing needs those effects.
+
+This program selects positive integers and sorts a separate copy of its input:
+
+```aug project=collection-functions-guide file=main.aug
+import filter and sortIntegers from august.collections
+import Positive from rules
+
+values = [7, -1, 0, 3]
+for value in filter(values, predicate=Positive()):
+    print(value=value)
+
+try:
+    for value in sortIntegers(values):
+        print(value=value)
+catch IndexError error:
+    print(value="A checked position was unavailable")
+```
+
+```aug project=collection-functions-guide file=rules.aug
+import Predicate from august.collections
+
+Positive() implements Predicate<int>:
+    accepts(int value):
+        return value > 0
+```
+
+The output is `7`, `3`, `-1`, `0`, `3`, and `7`, each on its own line. The original list still contains `[7, -1, 0, 3]`. `filter` keeps matching values; `remove` keeps the rest. `transform` produces one result per value. These functions create new lists in snapshot order and return empty lists for empty input. They share selected references with their existing read permissions, rather than copying their contents.
+
+A fresh scalar collection copy can leave its source borrow and be frozen. A copy that retains reference elements keeps their lifetime and read permissions. Owning the new outer list does not grant permission to freeze external objects inside it; every reachable external reference still requires ownership.
+
+`aggregate` combines values from left to right, starting with the explicit `initial` value. Empty input returns that value. `find` stops at the first match and returns null when none matches. A matching null is also null; use a loop when the distinction matters.
+
+`sort` returns a stable copy: equal values keep their input order. The comparator returns a negative integer for before, zero for equal, and a positive integer for after; it must describe a consistent total order. Bottom-up merging takes O(n log n) comparisons and allocates O(n) elements per pass. The runtime determines when previous allocations are collected. `sortIntegers` compares without subtraction, including int64 extremes. `sortText` compares unsigned UTF-8 bytes, with no locale collation or normalization. Sorting retains `IndexError` in its checked contract because its implementation uses checked indexed reads; its indices are bounded by the copied input.
+
+Text can also use `left.compare(other=right)` directly. It returns -1, 0, or 1, orders a shorter identical prefix first, and compares decoded embedded NUL by length. This operation does not change the rules that reject NUL in source literals and text files. See [the collection API](api/collections.md) for full signatures and callback contracts.
 
 ## Functions, effects, and capabilities
 
@@ -226,7 +345,7 @@ announce(resolve Console console, string message):
     console.write(value=message)
 ```
 
-A caller's contract must include the effects of its calls and interceptor layers. Interface implementations cannot add mutation or effects beyond the interface contract. A contract may name `Console.write` when a concrete dependency is exposed through another interface.
+A caller's contract must include the effects of its calls and interceptor layers. Interface implementations cannot add mutation or effects beyond the interface contract. A contract may name `Console.write` when a concrete dependency is exposed through another interface. Capability arguments retain their resolved type identities: records named Value in different modules do not grant the same Audit<Value> operation.
 
 ### Short implementation headers
 
@@ -258,6 +377,12 @@ Outside main and test setup, every injected dependency is declared in the callab
 
 Raw `print`, `arguments`, `read_file`, and `write_file` are available to main/test tooling and the trusted standard adapters. Other callables receive explicit capabilities. Pure construction cannot perform these effects.
 
+### Pure function values (unreleased)
+
+An expected concrete single-method interface can receive a managed standalone function name or a typed expression closure: `Predicate<int> positive = (int value) => value > 0`. The interface must have one public abstract pure data method, with no checked failures, ownership transfers, defaults, injection, annotations or native contract. Every inherited entry, including an overridden ancestor, must have that same supported pure signature. Function references match resolved input types and public labels; declaration order can differ. Closures list those labels in order. Calls use the ordinary labeled interface method. Generic call arguments can infer their types from the callback's inputs and result; generic function references remain unsupported.
+
+Closures copy creation-time scalars and retain deeply immutable managed records or frozen collection references. Mutable, owned and borrowed reference captures are rejected. The enclosing class receiver is unavailable; select a permitted field into a local first. Callbacks stay on their creating worker heap; ordinary task scopes and capture checks still apply. See [Pass a small function](guides/use-callbacks.md) for a complete example.
+
 ## Dependency injection and lifetimes
 
 Provide one implementation per key before startup: `implement Logger with ConsoleLogger`. A named key such as `app` selects a class without a type key. `resolve app to program` retrieves it explicitly. Legacy `bind` and assignment-form resolve are rejected; use `aug migrate` or the editor migration fix.
@@ -278,6 +403,8 @@ See [the scoped composition example](../examples/approved-design/counters.aug).
 
 ## Ownership and read access
 
+**Unreleased:** a new local initialized by a call with an `own` result inherits ownership. For example, `connection = open(path)` has deterministic cleanup when `open` returns an owned connection. Editor hints and the spec show that lifetime. Copies or transfers from an existing owned local still require an explicit `own` destination; a fresh managed result does not imply ownership.
+
 Default objects are managed and reclaimed by the runtime. Ordinary reads require no borrow. An `own` value has exclusive lifetime control; passing it to an own input, field, or return moves it. Using a moved value or copying it into managed storage is rejected.
 
 `borrow value { ... }` or its colon form grants exclusive mutable access. A `borrow Type input` grants it for the call. The compiler tracks aliases, nested references, binding identities, call inputs/results, branch joins, escaping loans, and loop re-entry. Ordinary managed inputs and public reference reads are deep read-only views.
@@ -294,13 +421,44 @@ If `start` runs inside a loop, a wait for one result may leave children from ear
 
 For a collection of tasks, `wait for tasks` joins the whole list. Waiting for one task selected with a dynamic index cannot prove which sibling tasks remain active, so their captures stay pinned until the scope joins them.
 
-When the checker cannot establish separate origins or freshness, it rejects the access. These conservative checks are not a formal ownership proof. Tasks run cooperatively on one OS thread; multicore execution is unsupported.
+When the checker cannot establish separate origins or freshness, it rejects the access. These conservative checks are not a formal ownership proof. Ordinary tasks run cooperatively on one OS thread. `start worker` runs copied data on an OS thread with an isolated heap; the same capture restrictions still apply to cooperative tasks.
 
 ## Null, matching, and checked failures
+
+**Unreleased:** `name otherwise "Guest"` evaluates its right operand only when the left operand is null. Both operands have compatible types. False, zero and empty text remain values; this expression does not catch failures or transfer owned resources. Use an explicit match when selecting ownership.
 
 Nullable locals narrow after null checks, short-circuit conditions, match patterns, and surviving early-return branches. Mutable fields are narrowed conservatively.
 
 `match value` uses `when null`, `when some name`, `when true`, `when false`, or `when Type name`. Nullable and bool matches must cover every case. Open class/interface domains require `else`. Duplicate/unreachable cases and incompatible patterns are errors.
+
+**Unreleased:** A match can also produce a value. Put one result expression in each case. The input is evaluated once; only the selected result is evaluated. Results have compatible types, with null making the result optional. An explicit input or return contract can provide a common interface for results from different implementations. Checked errors, capability calls and possible ownership moves inside the selected expression follow their ordinary rules. Choosing a result does not grant mutable access or transfer ownership; use a statement match to return or move an owned value or native resource.
+
+This program chooses a display name and a number without declaring mutable temporary values:
+
+```aug project=match-values-guide file=main.aug
+optional string name = null
+label = match name:
+    when null:
+        "Guest"
+    when some person:
+        $"Hello, {person}!"
+print(value=label)
+
+score = match true:
+    when true:
+        7
+    when false:
+        0
+print(value=score)
+```
+
+It prints `Guest` and `7` on separate lines. The same case blocks can use braces. Each expression case contains a value rather than a `return` statement; statement matches continue to accept ordinary operations and early returns.
+
+**Unreleased:** `error InvalidQuantity(int value)` declares a data-only Error implementation without an empty body. Its fields, labels, checked propagation and cleanup follow ordinary classes. It cannot contain injected, owned or mutable storage; use a full Error implementation for custom behavior.
+
+**Unreleased error context.** `august.errors.errorContext(cause, operation, location)` constructs `ContextError<E>` without throwing or logging. The concrete cause type, original value and public fields are retained; the caller chooses whether to throw this new error. `sourceLocation()` captures an immutable `Tuple<string, int, int>` containing the source identity and one-based line/column at that call expression. It reads no files and captures no stack. Project paths are relative, and package code uses `name@version/path`. See [error context](guides/add-error-context.md).
+
+**Unreleased generic catches.** A short generic error can be caught by checking every direct, non-null read-only managed field that carries a type parameter. Arguments must be concrete errors, up to 128 nested supported short errors or `Error`. This narrows the stored values; generic public contracts remain invariant. Unsupported generic catches produce `ERROR_MATCH`; generic HTTP status mappings require explicit conversion to a non-generic domain error.
 
 An error satisfies Error. A body infers escaping errors. A bodyless signature or explicit bound names specific errors with `returns T unless FileError and DomainError`. It can throw any value satisfying its declaration; declaring Error accepts any Error implementation. Calls must catch or propagate all effective errors, including interceptor layers; executable callers infer propagation when unless is omitted.
 
@@ -388,3 +546,79 @@ Enable the public_docs lint for missing public descriptions. Keep behavior examp
 Numeric widths, Unicode behavior, FFI, configuration, debugging, benchmarks, and CLI output are specified in [the tooling guide](tooling.md).
 
 First-party endpoints, wire inputs, HTTP policies, streams, server components and actions, scoped tasks, OpenAPI, endpoint tests and cryptographic capabilities are specified in the [web guide](web.md). The [same-app login proof](../examples/oidc-login/README.md) demonstrates these features through an OpenID Connect provider and client in one executable.
+
+### Literal parameter defaults (unreleased)
+
+An ordinary managed input can declare a scalar or collection literal default: `greet(string name = "August")`. The default supplies an omitted label; passing `null` remains an explicit value and requires an optional type. A collection default is created afresh for each call. Defaults cannot read names, call functions, resolve dependencies, or perform effects. They are part of an interface's checked signature and appear in hover and compiled specs. Native, HTTP-bound, injected, borrowed, and owned inputs do not accept defaults in this profile. Constructor inputs follow the same rule; a storage alias precedes its default, as in `int initial to _count = 0`.
+
+### String interpolation (unreleased)
+
+`$"Hello, {name}!"` builds text from checked scalar expressions. Each expression runs once, from left to right. Integers use decimal notation, booleans use `true` or `false`, null uses `null`, and floats use invariant binary64 text with up to 17 significant digits. Double an opening or closing brace to insert it literally. Ordinary quoted strings never interpolate. Records and collections require an explicit formatter. Interpolated text is not HTML or SQL escaping; use the typed markup and parameterized database interfaces for those contexts.
+
+### Integer remainder (unreleased)
+
+`left % right` returns the remainder after integer division truncates toward zero. A nonzero result has the dividend's sign: `-7 % 3` is `-1`. Zero divisors raise checked `ArithmeticError`; the signed minimum divided by `-1` has remainder zero. Floating operands are rejected. Addition, subtraction, and multiplication retain their existing wrapping int64 rules.
+
+### Text helpers (unreleased)
+
+Use `endsWith(suffix)` for an exact suffix and `replace(search, replacement)` for nonoverlapping exact replacement. Replacement rejects an empty search with `ConversionError`. `List<string>.join(separator)` retains order and empty elements; an empty list produces empty text. `codePointLength()` counts Unicode scalar values after checking UTF-8; combining marks remain separate. `byteLength()` explicitly counts UTF-8 bytes, with the same result as `length()`. `utf16Length()` counts UTF-16 units. `graphemeLength()` counts default extended grapheme clusters using Unicode 18.0.0, and `graphemes()` returns their ordered nonempty copies. Both check UTF-8 and raise `ConversionError` for invalid input. Empty text gives zero and an empty list; joining clusters with an empty separator preserves the original bytes. They do not normalize text, tailor boundaries by locale, or measure display width. See [measure text](guides/measure-text.md).
+
+`parseInteger()` accepts decimal digits with an optional leading minus and checks signed int64 bounds. `parseFloat()` accepts finite invariant decimal text, including a fraction and exponent, and rejects overflow and underflow. Both reject whitespace, a leading plus, trailing text, and embedded NUL with `ConversionError`. Trim input explicitly when that is the intended contract.
+
+### Immutable collection contracts (unreleased)
+
+`record Invoice(string number, immutable List<Line> items)` states that a collection and all its reachable data are frozen. Nested collection literals can satisfy this contract directly; their construction freezes the result without copying it. An existing mutable collection must be explicitly frozen first. The qualifier applies to `List`, `Map`, `Set`, and `Tuple` of data values, including immutable records. It does not make a behavioral object immutable. Mutation and mutable borrowing remain rejected through every alias; lookups retain the deep frozen guarantee.
+
+### Record copies (unreleased)
+
+`paid = invoice with (paid=true)` creates a new value of the same record type. It evaluates the original once, then replacement expressions once in written order, retains unchanged data, and runs construction validation. Its checked failures remain caller obligations. Labels are the record's constructor inputs; duplicate or unknown replacements and access to private fields are rejected. This operation does not mutate the original or copy an entire unchanged collection. Mutable aliases cannot enter replacements; freeze them explicitly first.
+
+## Bounded integer ranges
+
+**Unreleased:** `import range and RangeError from august.collections` supplies an ordinary library function. `range(end=5)` allocates a new list containing 0, 1, 2, 3 and 4. `range(start=5, end=0, step=-2)` contains 5, 3 and 1. The boundary is excluded. A step facing away from it produces an empty list.
+
+`step` defaults to 1 and must be nonzero. `limit` defaults to 1,000,000 and must be from 1 to 1,000,000; producing more items raises `RangeError`. A step past the int64 boundary ends the range without wrapping values into its output. For very large numeric loops, use `while` to avoid allocating the list.
+
+`start` and `wait` are contextual names: they can name a function or an input. `start calculate(...)` starts work, and `wait for pending` joins it; reading a value named `start` or `wait` does neither.
+
+
+For example, this complete program prints the three values before the exclusive boundary:
+
+```aug project=bounded-ranges file=main.aug
+import range and RangeError from august.collections
+
+try:
+    for value in range(start=1, end=4, limit=3):
+        print(value=value)
+catch RangeError error:
+    print(value=error.message)
+```
+
+
+## Checked mathematics (unreleased)
+
+Import `checkedAdd`, `checkedSubtract`, `checkedMultiply`, `checkedDivide`, `checkedNegate`, `checkedAbs`, or `checkedSum` from `august.math` when an integer calculation must stay within int64. These ordinary August functions raise `ArithmeticError` on overflow; division also rejects zero. `checkedSum` visits a list in order and rejects an overflowing intermediate sum. Ordinary operators keep their wrapping behavior.
+
+`Decimal(coefficient=1250, scale=2)` represents exactly 12.50. Its signed int64 coefficient and scale from 0 to 18 are immutable record fields. Use `parseDecimal(text="12.50")` and `formatDecimal(value=amount)` for invariant ASCII text. Parsing accepts an optional minus, integer digits, and an optional dot with fractional digits; it rejects whitespace, plus, exponent notation, non-ASCII digits, text over 64 bytes, and an unrepresentable coefficient with `ConversionError`. Formatting preserves trailing zeroes. Negative zero loses its sign.
+
+`addDecimals` and `subtractDecimals` use the greater operand scale. `multiplyDecimals` adds scales. `divideDecimals` requires the output scale explicitly. `rescaleDecimal` adds or removes fractional zeroes exactly. Each coefficient calculation and intermediate alignment must fit int64; excess scale raises `ConversionError`, while overflow, zero division or a discarded nonzero digit raises `ArithmeticError`. There is no implicit rounding or arbitrary-precision fallback. A mathematically representable result can still fail if an intermediate coefficient exceeds int64.
+
+Use `compareDecimals(left, right)` for numerical ordering: it returns -1, 0, or 1 without aligning integer coefficients. Record equality includes scale, so 1.0 and 1.00 are distinct records but compare numerically equal. These functions do not choose currency, precision or rounding policy for an application.
+
+```aug project=checked-math file=main.aug
+import parseDecimal and addDecimals and formatDecimal from august.math
+
+try:
+    price = parseDecimal(text="0.10")
+    tax = parseDecimal(text="0.20")
+    total = addDecimals(left=price, right=tax)
+    print(value=formatDecimal(value=total))
+catch ArithmeticError error:
+    print(value="The exact calculation exceeds its limits")
+catch ConversionError error:
+    print(value="Invalid decimal input")
+```
+
+## Validated domain values
+
+**Unreleased:** `august.values` supplies ordinary immutable `CivilDate`, `Duration`, `TokenId`, `HttpUrl`, `PortableRelativePath` and `BoundedText` records. Constructors, parsers, copies and JSON decoding enforce the same documented bounds. Parsing/validation raises `ConversionError`; duration arithmetic raises `ArithmeticError` on overflow. These values perform no I/O. Read [the domain-value guide](guides/use-domain-values.md) and [complete contracts](api/values.md) for the supported date, URL, path and text profiles.

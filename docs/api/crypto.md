@@ -452,7 +452,14 @@ Uses `Crypto.decodeBase64url` and `Crypto.verifyEd25519`.
 ## Ed25519IdentityVerifier {#api-Ed25519IdentityVerifier}
 
 ```text
-Ed25519IdentityVerifier(resolve Crypto crypto, string publicKey, string issuer, string audience, string tokenType, int maximumAge) implements IdentityVerifier
+Ed25519IdentityVerifier(
+    resolve Crypto crypto,
+    string publicKey,
+    string issuer,
+    string audience,
+    string tokenType,
+    int maximumAge
+) implements IdentityVerifier
 ```
 
 Bind trusted key and identity settings once. The caller supplies the current epoch seconds for each verification.

@@ -2,6 +2,8 @@
 
 # `contracts.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=ab06f08d1b20f7b358a3bc8eea7c125266c404f3dab04f2d312458200c81b2b8 -->
+
 <a id="symbol-SqliteError"></a>
 ## `SqliteError` · class · [source](contracts.aug#L4)
 

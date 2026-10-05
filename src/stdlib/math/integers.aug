@@ -1,0 +1,50 @@
+// aug-spec: "integers.aug.md" explains this file. Read it before changes; refresh with aug spec.
+/** Add signed int64 values; raise ArithmeticError instead of wrapping on overflow. */
+checkedAdd(int left, int right):
+    result = left + right
+    if (right > 0 and result < left) or (right < 0 and result > left):
+        throw ArithmeticError()
+    return result
+
+/** Subtract signed int64 values; raise ArithmeticError instead of wrapping on overflow. */
+checkedSubtract(int left, int right):
+    result = left - right
+    if (right > 0 and result > left) or (right < 0 and result < left):
+        throw ArithmeticError()
+    return result
+
+/** Multiply signed int64 values; raise ArithmeticError if the product cannot fit. */
+checkedMultiply(int left, int right):
+    if left == 0 or right == 0:
+        return 0
+    if (left == -9223372036854775808 and right == -1) or (right == -9223372036854775808 and left == -1):
+        throw ArithmeticError()
+    result = left * right
+    if result / left != right:
+        throw ArithmeticError()
+    return result
+
+/** Divide toward zero; reject a zero divisor and the unrepresentable MIN / -1 result. */
+checkedDivide(int left, int right):
+    if right == 0 or (left == -9223372036854775808 and right == -1):
+        throw ArithmeticError()
+    return left / right
+
+/** Negate a signed int64 value; MIN cannot be negated and raises ArithmeticError. */
+checkedNegate(int value):
+    if value == -9223372036854775808:
+        throw ArithmeticError()
+    return -value
+
+/** Return the absolute value; MIN has no representable absolute value. */
+checkedAbs(int value):
+    if value < 0:
+        return checkedNegate(value)
+    return value
+
+/** Sum values in list order; reject overflow at any intermediate addition. An empty list returns zero. */
+checkedSum(List<int> values):
+    total = 0
+    for value in values:
+        total = checkedAdd(left=total, right=value)
+    return total

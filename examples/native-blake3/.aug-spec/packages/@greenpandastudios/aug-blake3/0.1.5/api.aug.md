@@ -2,12 +2,23 @@
 
 # `api.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=5fb4916314a25c7d9d20ec627abc1465281f6ad40935fe2f2ebb9760a3dc292d -->
+
 <a id="symbol-hash"></a>
 ## `hash` · [source](api.aug#L6)
 
-Return a lowercase 64-character BLAKE3 digest, computed by the Rust crate. It takes `input` as `Bytes`. Failures can raise [`HashError`](contracts.aug.md#symbol-HashError).
+Return a lowercase 64-character BLAKE3 digest, computed by the Rust crate. It takes `input` as `Bytes`. Within an unsafe block, it returns [`_hash`](api.aug.md#symbol-_hash) with `input`. Native operations must satisfy their declared C contracts. [source](api.aug#L7-L8)
 
-Within an unsafe block, it returns [`_hash`](api.aug.md#symbol-_hash) with `input`. Native operations must satisfy their declared C contracts.
+<details>
+<summary>Checked interface</summary>
+
+```text
+hash(Bytes input) returns string unless HashError
+```
+
+It takes `input` as `Bytes`. Failures can raise [`HashError`](contracts.aug.md#symbol-HashError).
+
+</details>
 
 <a id="symbol-_hash"></a>
 ## `_hash` · [source](api.aug#L4)
@@ -25,7 +36,7 @@ Tests [`hash`](api.aug.md#symbol-hash). Each case gets fresh setup and dependenc
 
 #### `hashes_abc` · [source](api.aug#L12)
 
-It sets `input` of type `Bytes` to `bytes` on `"abc"`. The test requires [`hash`](api.aug.md#symbol-hash) with `input` equals `"6437b3ac38465133ffb63b75273a8db548c558465d79db03fd359c6cd5bd9d85"`.
+It sets `input` of type `Bytes` to `bytes` on `"abc"`. The test requires [`hash`](api.aug.md#symbol-hash) with `input` equals `"6437b3ac38465133ffb63b75273a8db548c558465d79db03fd359c6cd5bd9d85"`. [source](api.aug#L13-L14)
 
 ## Dependencies
 

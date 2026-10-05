@@ -2,6 +2,8 @@
 
 # `endpoints.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=71793547d4970ab445c70240004af4f420dbdb663f9d1e5523fae335ed1ac22e -->
+
 Plain handler results default to HTTP 200 unless another status is declared. HttpResponse values choose their own status. Unhandled request failures return HTTP 500 and cancel the request tasks.
 
 <a id="symbol-home"></a>
@@ -9,18 +11,38 @@ Plain handler results default to HTTP 200 unless another status is declared. Htt
 
 `home` handles `GET /`. The app renders a verified session or offers its OIDC login flow. No token claims are displayed before verification.
 
+It takes labeled inputs `token`. It gets `crypto` ([`Crypto`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto)), `clock` ([`Clock`](../.aug-spec/packages/%40git/url_c092cd151499c4e1d8a1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-Clock)), `keys` ([`SigningKeys`](../common/keys.aug.md#symbol-SigningKeys)), and `sessions` ([`ExpiringStore<SessionClaims>`](../.aug-spec/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore)) from dependency injection. It tries to set `session` to [`authenticate`](session.aug.md#symbol-authenticate) with `token` using injected `crypto`, `clock`, `keys`, and `sessions`, then return HTTP 200 with [`Welcome`](views.aug.md#symbol-Welcome) with `session` and [`securityHeaders`](../common/headers.aug.md#symbol-securityHeaders) headers. If this work raises [`SessionError`](contracts.aug.md#symbol-SessionError), it returns HTTP 200 with [`LoginPage`](views.aug.md#symbol-LoginPage) and [`securityHeaders`](../common/headers.aug.md#symbol-securityHeaders) headers. [source](endpoints.aug#L13-L17)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+home(optional string token, resolve Crypto crypto, resolve Clock clock, resolve SigningKeys keys, resolve ExpiringStore<SessionClaims> sessions) returns HttpResponse<Html> unless HttpError and KeyError and TimeError uses SigningKeys.session, Crypto.publicRsa, Clock.now, ExpiringStore<SessionClaims>.get, Crypto.equal, Crypto.decodeBase64url, Crypto.verifyRsa
+```
+
 It takes `token` as `optional string` from the HTTP cookie `aug_session`. It gets `crypto` ([`Crypto`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto)), `clock` ([`Clock`](../.aug-spec/packages/%40git/url_c092cd151499c4e1d8a1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-Clock)), `keys` ([`SigningKeys`](../common/keys.aug.md#symbol-SigningKeys)), and `sessions` ([`ExpiringStore<SessionClaims>`](../.aug-spec/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore)) from dependency injection. Omitted optional inputs are null. It can also raise `HttpError`, `KeyError`, and `TimeError`.
 
-It tries to set `session` to [`authenticate`](session.aug.md#symbol-authenticate) with `token` using injected `crypto`, `clock`, `keys`, and `sessions`, then return HTTP 200 with [`Welcome`](views.aug.md#symbol-Welcome) with `session` and [`securityHeaders`](../common/headers.aug.md#symbol-securityHeaders) headers. If this work raises [`SessionError`](contracts.aug.md#symbol-SessionError), it returns HTTP 200 with [`LoginPage`](views.aug.md#symbol-LoginPage) and [`securityHeaders`](../common/headers.aug.md#symbol-securityHeaders) headers.
+</details>
 
 <a id="symbol-me"></a>
 ## `me` · [source](endpoints.aug#L20)
 
-`me` handles `GET /me`. A protected JSON resource accepts only a live, verified application session.
+`me` handles `GET /me`. A protected JSON resource accepts only a live, verified application session. It takes labeled inputs `token`. It gets `crypto` ([`Crypto`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto)), `clock` ([`Clock`](../.aug-spec/packages/%40git/url_c092cd151499c4e1d8a1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-Clock)), `keys` ([`SigningKeys`](../common/keys.aug.md#symbol-SigningKeys)), and `sessions` ([`ExpiringStore<SessionClaims>`](../.aug-spec/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore)) from dependency injection.
+
+It sets `session` to [`authenticate`](session.aug.md#symbol-authenticate) with `token` using injected `crypto`, `clock`, `keys`, and `sessions`. It returns HTTP 200 with an [`UserInfo`](../provider/contracts.aug.md#symbol-UserInfo) with `session.sub` and `session.name` and [`securityHeaders`](../common/headers.aug.md#symbol-securityHeaders) headers. [source](endpoints.aug#L21-L22)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+me(optional string token, resolve Crypto crypto, resolve Clock clock, resolve SigningKeys keys, resolve ExpiringStore<SessionClaims> sessions) returns HttpResponse<UserInfo> unless HttpError and KeyError and SessionError and TimeError uses SigningKeys.session, Crypto.publicRsa, Clock.now, ExpiringStore<SessionClaims>.get, Crypto.equal, Crypto.decodeBase64url, Crypto.verifyRsa
+```
 
 It takes `token` as `optional string` from the HTTP cookie `aug_session`. It gets `crypto` ([`Crypto`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto)), `clock` ([`Clock`](../.aug-spec/packages/%40git/url_c092cd151499c4e1d8a1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-Clock)), `keys` ([`SigningKeys`](../common/keys.aug.md#symbol-SigningKeys)), and `sessions` ([`ExpiringStore<SessionClaims>`](../.aug-spec/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore)) from dependency injection. Omitted optional inputs are null. The handler responds with HTTP 401 for [`SessionError`](contracts.aug.md#symbol-SessionError).
 
-It can also raise `HttpError`, `KeyError`, and `TimeError`. It sets `session` to [`authenticate`](session.aug.md#symbol-authenticate) with `token` using injected `crypto`, `clock`, `keys`, and `sessions`. It returns HTTP 200 with an [`UserInfo`](../provider/contracts.aug.md#symbol-UserInfo) with `session.sub` and `session.name` and [`securityHeaders`](../common/headers.aug.md#symbol-securityHeaders) headers.
+It can also raise `HttpError`, `KeyError`, and `TimeError`.
+
+</details>
 
 ## Dependencies
 

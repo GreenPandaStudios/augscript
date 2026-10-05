@@ -2,10 +2,23 @@
 
 # `arithmetic.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=81571668305963e8ef80f28cf6c7c9454986bc8218267b9da3d2b6d39bbf24d2 -->
+
 <a id="symbol-add"></a>
 ## `add` · [source](arithmetic.aug#L4)
 
-Add two integers. It takes `left` as an integer (First value) and `right` as an integer (Second value). It returns `int` — Their sum. It returns `left` plus `right`.
+Add two integers. It takes `left` and `right` as integers. It returns `left` plus `right`. [source](arithmetic.aug#L5)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+add(int left, int right) returns int
+```
+
+It takes `left` as an integer (First value) and `right` as an integer (Second value). It returns `int` — Their sum.
+
+</details>
 
 <a id="symbol-test add"></a>
 ## `test add` · [source](arithmetic.aug#L7)
@@ -16,6 +29,6 @@ Tests [`add`](arithmetic.aug.md#symbol-add). Each case gets fresh setup and depe
 
 #### `adds_two_integers` · [source](arithmetic.aug#L9)
 
-The test requires [`add`](arithmetic.aug.md#symbol-add) with `left` `2` and `right` `3` equals `5`.
+The test requires [`add`](arithmetic.aug.md#symbol-add) with `left` `2` and `right` `3` equals `5`. [source](arithmetic.aug#L10)
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).

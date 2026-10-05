@@ -2,9 +2,11 @@
 
 # `main.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=293726ca62e4ffcbb0a43fcb1851d1e40b4508a01db202544d7e772bdeea9a5e -->
+
 ## Startup
 
-It prints `text` on [`roundTrip`](compression.aug.md#symbol-roundTrip). If this work raises [`CompressionError`](.aug-spec/packages/%40greenpandastudios/aug-zlib/0.1.5/contracts.aug.md#symbol-CompressionError) as `error`, it prints `error.message`. If this work raises `ConversionError`, it prints `"Invalid UTF-8"`.
+It prints `text` on [`roundTrip`](compression.aug.md#symbol-roundTrip). If this work raises [`CompressionError`](.aug-spec/packages/%40greenpandastudios/aug-zlib/0.1.5/contracts.aug.md#symbol-CompressionError) as `error`, it prints `error.message`. If this work raises `ConversionError`, it prints `"Invalid UTF-8"`. [source](main.aug#L5-L10)
 
 ## Dependencies
 

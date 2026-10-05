@@ -61,6 +61,13 @@ export function verifyIR(ir:AugustIR):void {
       if(block.terminator.op==='return'&&block.name!=='cleanup'||block.name==='cleanup'&&block.terminator.op!=='return')fail('Return bypasses function cleanup',at);
       for(const target of successors(block.terminator))if(!blocks.has(target))fail('Branch to missing block '+target,at);
       const t=block.terminator;if(t.op==='branch')slot(t.condition);if(t.op==='null')slot(t.input);
+      if(t.op==='error-type'){
+        const match=(plan:import('./error-matches.ts').ErrorMatch,depth=0):void=>{
+          if(depth>128||!plan||typeof plan.id!=='string'||!plan.id||plan.id.includes('\0')||!Array.isArray(plan.fields)||plan.id==='Error'&&plan.fields.length)fail('Invalid checked error match',at);
+          const indices=new Set<number>();
+          for(const field of plan.fields){if(!Number.isSafeInteger(field.index)||field.index<0||indices.has(field.index))fail('Invalid error field witness',at);indices.add(field.index);match(field.match,depth+1);}
+        };match(t.match);
+      }
       for(const instruction of block.instructions){
         if(instruction.debugScope!==undefined&&!scopes.has(instruction.debugScope))fail('Instruction has an unresolved lexical scope',instruction.span);
         if('out' in instruction&&instruction.out!==undefined)slot(instruction.out);
@@ -83,7 +90,7 @@ function verifyInstruction(i:IrInstruction,ir:AugustIR,fn:IrFunction,entry:(name
       if(!(runtimeOperations as readonly string[]).includes(i.operation)&&!(httpOperations as readonly string[]).includes(i.operation))error('Unknown runtime operation '+i.operation);
       const arity=runtimeArities[i.operation as keyof typeof runtimeArities];
       if(arity!=='variadic'&&i.args.length!==arity)error('Runtime argument count differs for '+i.operation);
-      if(i.operation==='BINARY'&&!['+','-','*','/','==','!=','<','>','<=','>='].includes(i.text??''))error('Invalid binary operator');
+      if(i.operation==='BINARY'&&!['+','-','*','/','%','==','!=','<','>','<=','>='].includes(i.text??''))error('Invalid binary operator');
       if(i.operation==='UNARY'&&!['!','-'].includes(i.text??''))error('Invalid unary operator');
       if(i.operation==='IS_TYPE'&&(typeof i.text!=='string'||!i.text||i.text.includes('\0')))error('Missing nominal type identity');
       if(i.operation==='HTTP_ACTION'){try{const action=JSON.parse(i.text!);if(!action||typeof action!=='object')throw new Error();}catch{error('Missing action metadata');}}
@@ -107,6 +114,7 @@ function verifyInstruction(i:IrInstruction,ir:AugustIR,fn:IrFunction,entry:(name
     case 'error-state':slot(i.error);slot(i.cancelled);if(i.error===i.cancelled)error('Overlapping error/cancellation cells');return;
     case 'scope':case 'lock':if(i.depth!==undefined)slot(i.depth);return;
     case 'wait':i.tasks.forEach(slot);if(!i.tasks.length)error('Empty task wait');return;
+    case 'assert-equal':slot(i.actual);slot(i.expected);return;
     case 'assert':slot(i.input);return;
     case 'cover':if(!ir.coverage.some(point=>point.file===i.file&&point.line===i.line))error('Unregistered statement coverage point');return;
     case 'debug-variable':if(!Number.isSafeInteger(i.variable)||i.variable<0||i.variable>=fn.variables.length)error('Unresolved debug variable');return;

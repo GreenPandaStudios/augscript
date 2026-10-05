@@ -2,6 +2,8 @@
 
 # `models.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=8c3b04b653502a106dcbd2d4e0b891124fa46f52642ffd1f1df9461069f6de4c -->
+
 <a id="symbol-Fruit"></a>
 ## `Fruit` · immutable record · [source](models.aug#L3)
 

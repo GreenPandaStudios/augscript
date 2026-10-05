@@ -138,8 +138,15 @@ save(resolve FileWriter files, string path, string content) uses files.write unl
   assert.equal(fact.callables[0].capabilities[0], 'files.write');
   assert.deepEqual(fact.callables[0].errors, ['FileError']);
   const context = command(root, 'context', ['--file', join(root, 'service.aug'), '--budget', '1024', '--json']);
-  assert.equal(context.status, 1, context.stderr);const packet=JSON.parse(context.stdout);
-  assert.equal(packet.coverage.requiredContextComplete,false);assert.equal(packet.status.mandatory,'incomplete');assert(packet.omissions.length>0);
+  assert.equal(context.status, 1, context.stderr); assert.ok(context.stdout.length <= 1024, context.stdout);
+  const short = JSON.parse(context.stdout);
+  assert.equal(short.status, 'budget-insufficient'); assert.ok(short.minimumBudget > 1024);
+  const complete = command(root, 'context', ['--file', join(root, 'service.aug'), '--budget', String(short.minimumBudget), '--json']);
+  assert.equal(complete.status, 0, complete.stderr);
+  const packet = JSON.parse(complete.stdout);
+  assert.equal(packet.status, 'ready');
+  assert.equal(packet.contracts.find(fact => fact.name === 'save').callables[0].capabilities[0], 'files.write');
+  assert.match(packet.snippets.find(item => item.id.endsWith(':save')).source, /files.write\(path=path, content=content\)/);
 }));
 
 test('scoped DI caches within a scope, restores nested scopes, and rejects escape', () => {

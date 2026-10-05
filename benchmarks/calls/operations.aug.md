@@ -2,7 +2,20 @@
 
 # `operations.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=29169972bb9300e4a0e8397f1d5990861928a0a064c0e18ead7c8be32ece784f -->
+
 <a id="symbol-step"></a>
 ## `step` · [source](operations.aug#L2)
 
-It takes `value` as an integer. It sets `product` to (`value` times `48271`) plus `1`. It returns `product` minus ((`product` divided by `2147483647`) times `2147483647`).
+It takes `value` as an integer. It sets `product` to (`value` times `48271`) plus `1`. It returns `product` minus ((`product` divided by `2147483647`) times `2147483647`). [source](operations.aug#L3-L4)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+step(int value) returns int
+```
+
+It takes `value` as an integer.
+
+</details>

@@ -1,8 +1,10 @@
-import { callableResult, callableErrors } from './contracts.ts';
-import { dirname, join, relative, resolve, sep } from 'node:path';
-import {pathToFileURL} from 'node:url';
-import type { ClassDecl, Expr, InterceptorDecl, MethodDecl, Param, SourceFile, Stmt, TypeRef } from './ast.ts';
-import { fieldsOf, typeName } from './ast.ts';
+import {recordBindingFieldAt} from './binding-patterns.ts';
+import {boundaryInputSnippet} from './test-inputs.ts';
+import { defaultText } from './parameters.ts';
+import { callableResult, callableErrors, constructorErrors } from './contracts.ts';
+import { basename, dirname, join, relative, resolve, sep } from 'node:path';
+import type { BindingPattern, ClassDecl, Expr, InterceptorDecl, MethodDecl, Param, SourceFile, Span, Stmt, TopLevel, TypeRef } from './ast.ts';
+import { bindingNames, expressionChildren, fieldsOf, typeName } from './ast.ts';
 import type { CheckedProject, Ty } from './checker.ts';
 import { tyName } from './checker.ts';
 import { lex } from './lexer.ts';
@@ -19,15 +21,21 @@ import { libraryChild, libraryRelative } from './libraries.ts';
 import { importSource, isGitSource, sourceAlias } from './git-packages.ts';
 import { snippetBody, snippetCatalog } from './snippets.ts';
 import {nativeFact,nativeDependencies,nativeDescription} from './native-facts.ts';
+import {pathToFileURL} from 'node:url';
+import {schemaType} from './schemas.ts';
+import {immutableType} from './types.ts';
 
 export interface EditorItem {
   label: string;
   kind: 'class' | 'interface' | 'interceptor' | 'function' | 'method' | 'property' |
-    'variable' | 'parameter' | 'keyword' | 'type' | 'snippet';
+    'variable' | 'parameter' | 'keyword' | 'type' | 'snippet' | 'composition';
+  declarationKind?: Definition['node']['kind'];
   detail: string;
   documentation?: string;
   signature?: string;
   parameters?: string[];
+  optionalParameters?: string[];
+  parameterOwnerships?: Record<string, string>;
   parameterDocumentation?: (string | undefined)[];
   insertText?: string;
   replacement?: { start: number; end: number };
@@ -50,7 +58,7 @@ export interface EditorHover extends EditorItem {
 }
 
 type LocalInfo = { type?: Ty; typeText: string; kind: 'variable' | 'parameter' | 'property';
-  documentation?: string };
+  documentation?: string; moved?: boolean; ownership?: string };
 
 const builtins: EditorItem[] = [
   ...builtinFunctions.map(operation => {
@@ -75,21 +83,21 @@ const keywords: EditorItem[] = [
       documentation: help.documentation })),
   { label: 'try/catch', kind: 'snippet', detail: 'Checked error handler',
     documentation: languageHelp.try.documentation,
-    insertText: 'try {\n    $1\n} catch ${2:Error} ${3:error} {\n    $0\n}' },
+    insertText: 'try:\n    $1\ncatch ${2:Error} ${3:error}:\n    $0' },
   { label: 'borrow block', kind: 'snippet', detail: 'Mutable borrow',
     documentation: languageHelp.borrow.documentation,
-    insertText: 'borrow ${1:value} {\n    $0\n}' },
+    insertText: 'borrow ${1:value}:\n    $0' },
   { label: 'interceptor declaration', kind: 'snippet', detail: 'Generic interceptor wrapping any result type',
     documentation: languageHelp.interceptor.documentation,
-    insertText: 'interceptor ${1:Audit}<T>() {\n    around() {\n        result = next()\n        $0\n        return result\n    }\n}' },
+    insertText: 'interceptor ${1:Audit}<T>():\n    around():\n        result = next()\n        $0\n        return result' },
   { label: 'test suite', kind: 'snippet', detail: 'Same-file class tests with fresh setup per case',
     documentation: languageHelp.test.documentation,
-    insertText: 'test ${1:Worker} ${2:worker} {\n    when ${3:ready} {\n        ${2:worker} = ${1:Worker}()\n        it ${4:works} {\n            assert(${5:true})\n        }\n    }\n}' },
+    insertText: 'test ${1:Worker} ${2:worker}:\n    when ${3:ready}:\n        ${2:worker} = ${1:Worker}()\n        it ${4:works}:\n            assert(${5:true})' },
   { label: 'test group', kind: 'snippet', detail: 'Group setup and cases',
     documentation: languageHelp.when.documentation,
-    insertText: 'when ${1:group} {\n    $0\n    it ${2:works} {\n        assert(${3:true})\n    }\n}' },
+    insertText: 'when ${1:group}:\n    $0\n    it ${2:works}:\n        assert(${3:true})' },
   { label: 'test case', kind: 'snippet', detail: 'Named test case', documentation: languageHelp.it.documentation,
-    insertText: 'it ${1:works} {\n    assert(${2:true})\n}' },
+    insertText: 'it ${1:works}:\n    assert(${2:true})' },
   {label:'endpoint declaration',kind:'snippet',detail:'Named HTTP endpoint with typed input',documentation:languageHelp.endpoint.documentation,
     insertText:'endpoint ${1:GET} "${2:/users/{id}}" as ${3:getUser}(int id from path) returns ${4:User}:\n    $0'},
   {label:'endpoint test',kind:'snippet',detail:'Exercise the HTTP pipeline beside its declaration',documentation:languageHelp.test.documentation,
@@ -103,7 +111,8 @@ const keywords: EditorItem[] = [
 function parameterText(param: Param): string {
   return `${param.injected ? 'resolve ' : param.ownership === 'managed' ? '' : `${param.ownership} `}` +
     `${typeName(param.type)} ${param.label ?? param.name}${param.label && param.label !== param.name ? ` to ${param.name}` : ''}` +
-    (param.source ? ` from ${param.source.kind}${param.source.name ? ' ' + JSON.stringify(param.source.name) : ''}` : '');
+    (param.source ? ` from ${param.source.kind}${param.source.name ? ' ' + JSON.stringify(param.source.name) : ''}` : '') +
+    (param.defaultValue ? ' = ' + defaultText(param.defaultValue) : '');
 }
 
 function signature(method: MethodDecl, callSite = false, additionalErrors: string[] = [], checked?: CheckedProject): string {
@@ -136,8 +145,8 @@ function interceptorDescription(checked: CheckedProject, node: MethodDecl | Clas
   const layerText=layers.length ? `Interceptor chain: ${layers.map(layer => `\`${layer.annotation.name}\``).join(' → ')}. ` +
     'Calls enter in that order; results unwind in reverse.\n\n' + layers.map((layer, index) => {
       const fields = layer.definition.node.kind === 'interceptor' ? layer.definition.node.fields : [];
-      const dependencies = [...new Set([...fields, ...layer.around.params].filter(param => param.injected).map(param => typeName(param.type)))];
-      const effects = checked.effectContracts.get(layer.around);
+      const dependencies = [...new Set([...fields, ...layer.around.params].filter(param => param.injected).map(param => tyName(schemaType(checked.project,param.type,layer.definition.file,layer.types))))];
+      const effects = layer.effects;
       const uses = [...(effects?.uses.values() ?? [])].map(use => `${use.source}.${use.operation}`);
       const behavior = interceptorBehavior(layer.around.body ?? []);
       return `Layer ${index + 1} ${layer.definition.name}: dependencies ${dependencies.join(', ') || 'none'}; ` +
@@ -178,7 +187,7 @@ function methodItem(checked: CheckedProject, method: MethodDecl,
   const label = signature(method, false, errors, checked);
   const injected = method.params.filter(param => param.injected);
   const doc = methodDocumentation(checked, method, owner);
-  const injectionHelp = injected.length ? `Injected from bindings: ${injected.map(parameterText).join(', ')}.` : '';
+  const injectionHelp = injected.length ? `Injected inputs: ${injected.map(parameterText).join(', ')}.` : '';
   const contract = checked.effectContracts.get(method);
   const effects = contract ? `${contract.inferred ? 'Inferred capabilities; effective' : 'Effective'} contract: changes ${contract.changes.join(', ') || 'nothing'}; capabilities ` +
     `${[...contract.uses.values()].map(effect => `${effect.source}.${effect.operation}`).join(', ') || 'none'}.` : '';
@@ -191,6 +200,8 @@ function methodItem(checked: CheckedProject, method: MethodDecl,
       .filter(Boolean).join('\n\n'),
     parameters: method.params.filter(param => !param.injected)
       .map(param => `${param.label ?? param.name}=${typeName(param.type)}`),
+    optionalParameters: method.params.filter(param => !param.injected && (param.defaultValue || param.type.optional)).map(param => param.label ?? param.name),
+    parameterOwnerships: Object.fromEntries(method.params.map(param => [param.label ?? param.name, param.ownership])),
     parameterDocumentation: method.params.filter(param => !param.injected)
       .map(param => doc?.parameters.get(param.label ?? param.name)) };
   function forwardLink(id?:string){const target=id&&checked.project.definitions.get(id);return target?`[${id}](${pathToFileURL(target.file).href}#L${target.node.span.line})`:id??'unresolved';}
@@ -204,6 +215,7 @@ function definitionItem(checked: CheckedProject, def: Definition): EditorItem {
       documentation:native?nativeDescription(native,'[`native.abi.json`]('+pathToFileURL(checked.native.providerDescriptors.get(native.provider)!).href+')'):'Opaque native resource. Its package must declare a release identity.'};
   }
   if (node.kind === 'function') return methodItem(checked, node, 'function');
+  if(node.kind==='choice')return {label:def.name,kind:'type',detail:'choice '+def.name+' from '+node.alternatives.map(typeName).join(' and '),documentation:documentation(checked,def.file,node.span.start)?.markdown};
   if (node.kind === 'interface') return { label: def.name, kind: 'interface',
     detail: `interface ${def.name}${node.typeParams.length ? `<${node.typeParams.join(', ')}>` : ''}`,
     documentation: documentation(checked, def.file, node.span.start)?.markdown };
@@ -224,22 +236,24 @@ function definitionItem(checked: CheckedProject, def: Definition): EditorItem {
         'Generic types are inferred from the target. Constructor parameters come from DI. ' +
         'The around body can call next at most once per execution path.'].filter(Boolean).join('\n\n') };
   }
-  if (node.kind === 'composition') return { label: def.name, kind: 'function', detail: `composition ${def.name}`,
-    documentation: node.bindings.map(binding => `implement ${binding.key} with ${typeName(binding.target)}`).join('\n') };
+  if (node.kind === 'composition') return { label: def.name, kind: 'composition', detail: `composition ${def.name}`,
+    documentation: [documentation(checked,def.file,node.span.start)?.markdown,
+      node.bindings.map(binding => `implement ${binding.key} with ${typeName(binding.target)}`).join('\n')].filter(Boolean).join('\n\n') };
   const params = node.fields.map(parameterText);
   const label = `${def.name}${node.typeParams.length ? `<${node.typeParams.join(', ')}>` : ''}(${params.join(', ')})`;
   const doc = declarationDocumentation(checked, node);
   const explicit = node.fields.filter(field => !field.injected);
   const callSignature = `${def.name}${node.typeParams.length ? `<${node.typeParams.join(', ')}>` : ''}` +
     `(${explicit.map(field => `${field.label ?? field.name}=${typeName(field.type)}`).join(', ')})`;
-  const errors = [...new Set([...(checked.constructorContracts.get(node)?.errors.map(tyName)??node.validationErrors?.map(typeName)??[]),
-    ...(checked.interceptorPlans.get(node) ?? []).flatMap(layer => layer.errors.map(tyName))])];
+  const errors = constructorErrors(checked,node);
   return { label: def.name, kind: 'class', detail: `${node.record?'record ':''}${label}` +
       (errors.length ? ` unless ${errors.join(' and ')}` : '') +
       (node.implements.length?` implements ${node.implements.map(typeName).join(', ')}`:''),
     signature: callSignature + (errors.length ? ` unless ${errors.join(', ')}` : ''), parameters: explicit.map(field => `${field.label ?? field.name}=${typeName(field.type)}`),
+    optionalParameters: explicit.filter(field => field.defaultValue || field.type.optional).map(field => field.label ?? field.name),
+    parameterOwnerships: Object.fromEntries(explicit.map(field => [field.label ?? field.name, field.ownership])),
     documentation: [doc?.markdown,
-      node.fields.some(field => field.injected) ? `Injected from bindings: ${node.fields.filter(field => field.injected).map(parameterText).join(', ')}.` : '',
+      node.fields.some(field => field.injected) ? `Injected inputs: ${node.fields.filter(field => field.injected).map(parameterText).join(', ')}.` : '',
       interceptorDescription(checked, node),
       'Constructor arguments require labels; their order does not matter.'].filter(Boolean).join('\n\n'),
     parameterDocumentation: explicit.map(field => doc?.parameters.get(field.label ?? field.name)) };
@@ -247,9 +261,57 @@ function definitionItem(checked: CheckedProject, def: Definition): EditorItem {
 
 function typeFromRef(checked: CheckedProject, file: string, ref: TypeRef): Ty {
   const def = ref.definitionId?checked.project.definitions.get(ref.definitionId):checked.project.scopes.get(file)?.get(ref.name);
-  return { id: def?.id ?? `builtin:${ref.name}`, name: ref.name,
-    kind: def?.node.kind === 'class' || def?.node.kind === 'interface' || def?.node.kind === 'interceptor' || def?.node.kind==='resource' ? def.node.kind : 'builtin',
-    args: ref.args.map(arg => typeFromRef(checked, file, arg)), nullable: ref.nullable, def };
+  const type: Ty = { id: def?.id ?? `builtin:${ref.name}`, name: ref.name,
+    kind: def?.node.kind === 'class' || def?.node.kind === 'interface' || def?.node.kind === 'choice' || def?.node.kind === 'interceptor' || def?.node.kind==='resource' ? def.node.kind : 'builtin',
+    args: ref.args.map(arg => typeFromRef(checked, file, arg)), nullable: ref.nullable, optional:ref.optional, def };
+  return ref.immutable ? immutableType(type) : type;
+}
+
+function sourceLink(span:Span,label:string):string {
+  return `[${label.replace(/[\[\]\\]/g,'\\$&')}](${pathToFileURL(span.file).href}#L${span.line})`;
+}
+
+function ownershipDescription(local: import('./checker.ts').ScopeFact['locals'][number]):string {
+  const facts=local.ownershipFacts;if(!facts)return '';
+  const named=(entries:{name:string;span?:Span}[])=>entries.map(entry=>entry.span?sourceLink(entry.span,entry.name):'`'+entry.name+'`').join(', ');
+  return [local.definition?`Declared at ${sourceLink(local.definition,local.name)}; ${local.ownership==='own'?'owned by this local, with block cleanup unless transferred':local.ownership==='borrow'?'borrowed access':'managed access'}.`:'',
+    facts.origins.length?`Value originates at ${facts.origins.map(span=>sourceLink(span,'construction')).join(', ')}.`:'',
+    facts.owners.length?`Possible owned locals: ${named(facts.owners)}.`:'',
+    facts.aliases.length?`Possible aliases at this point: ${named(facts.aliases)}.`:'',
+    facts.borrows.length?`Active exclusive borrow: ${facts.borrows.map(borrow=>sourceLink(borrow.span,borrow.name)).join(', ')}.`:'',
+    facts.captures.length?`Active task capture: ${facts.captures.map(capture=>sourceLink(capture.span,capture.exclusive?'mutable access':'read access')).join(', ')}. Wait before conflicting access.`:'',
+    facts.moves.length?`This value may have moved at ${facts.moves.map(span=>sourceLink(span,'transfer')).join(', ')}.`:''].filter(Boolean).join('\n\n');
+}
+
+/** Explain the checked injection plan for this call, rather than guessing from a type name. */
+function injectionDescription(checked:CheckedProject,file:SourceFile,start:number,end:number):string {
+  let call:Extract<Expr,{kind:'call'}>|undefined;
+  const visit=(value:unknown):void=>{
+    if(!value||typeof value!=='object')return;
+    if(Array.isArray(value)){value.forEach(visit);return;}
+    const expr=value as Expr;
+    if(expr.kind==='call'&&expr.callee.span.start<=start&&end<=expr.callee.span.end&&
+      (expr.callee.kind==='name'||expr.callee.kind==='member')&&expr.callee.name===file.source.slice(start,end)&&
+      (!call||expr.span.end-expr.span.start<call.span.end-call.span.start))call=expr;
+    for(const [key,child] of Object.entries(value))if(key!=='span')visit(child);
+  };
+  visit(file.items);if(!call)return '';
+  const selected:Extract<Expr,{kind:'call'}>=call,resolved=checked.resolvedCalls.get(selected),plan=checked.callPlans.get(selected);
+  if(!resolved?.params.some(param=>param.injected))return '';
+  const rejected=checked.diagnostics.filter(issue=>issue.code==='DI'&&issue.file===file.path&&issue.line===selected.span.line&&issue.column===selected.span.column);
+  if(rejected.length)return 'Injection is unresolved: '+rejected.map(issue=>issue.message).join('; ')+'.';
+  return '**Dependencies for this call**\n\n'+resolved.params.flatMap((param,index)=>{
+    if(!param.injected)return [];
+    const source=plan?.injectionSources?.[index],key=plan?.bindingKeys[index],binding=checked.bindings.find(binding=>binding.key===key);
+    if(source) {
+      const owner=file.items.find(node=>node.span.start<=start&&end<=node.span.end);
+      const method=owner?.kind==='function'?owner:owner&&'methods' in owner?owner.methods.find(method=>method.span.start<=start&&end<=method.span.end):undefined;
+      const header=source.startsWith('self.')&&owner&&(owner.kind==='class'||owner.kind==='interceptor')?fieldsOf(owner).find(field=>field.name===source.slice(5)):method?.params.find(input=>input.name===source);
+      return [`Input \`${param.name}\` is supplied by ${header?sourceLink(header.span,source):'`'+source+'`'} in the enclosing header. Its provider is selected by that caller's composition.`];
+    }
+    if(binding)return [`Input \`${param.name}\` is supplied by ${sourceLink(binding.target.node.span,binding.target.name)} through ${sourceLink(binding.declaration.span,'implement '+binding.key)}: ${binding.lifetime} lifetime${binding.stateful?', mutable state':''}${binding.requiresScope?', requires a scope':''}.`];
+    return [`Input \`${param.name}\` has no checked provider in this analysis scope. Check the project composition.`];
+  }).join('\n\n');
 }
 
 function collectLocals(checked: CheckedProject, file: SourceFile, offset: number): Map<string, LocalInfo> {
@@ -257,14 +319,14 @@ function collectLocals(checked: CheckedProject, file: SourceFile, offset: number
     scope.span.start <= offset && offset <= scope.span.end).sort((left, right) =>
       left.span.end - left.span.start - (right.span.end - right.span.start) || right.span.start - left.span.start)[0];
   return new Map(scope?.locals.map(local => [local.name, { type: local.type, typeText: tyName(local.type),
-    kind: local.kind, documentation: [local.documentation, local.moved ? 'This owned value has moved.' : '',
-      local.type.readonly ? 'Read-only access.' : ''].filter(Boolean).join('\n\n') }]) ?? []);
+    kind: local.kind, moved:local.moved, ownership:local.ownership, documentation: [local.documentation, local.moved ? 'This owned value has moved.' : '',
+      local.type.readonly ? 'Read-only access.' : '', ownershipDescription(local)].filter(Boolean).join('\n\n') }]) ?? []);
 }
 
 function memberItems(checked: CheckedProject, file: string, receiver: Ty | undefined,
                      insideClass: boolean, seen = new Set<string>()): EditorItem[] {
   if (!receiver) return [];
-  if (collectionOperations[receiver.name] && receiver.id.startsWith('builtin:')) return collectionOperations[receiver.name].map(operation => {
+  if (collectionOperations[receiver.name] && receiver.id.startsWith('builtin:')) return collectionOperations[receiver.name].filter(operation => !operation.changes || !receiver.readonly).map(operation => {
     const parameters = operation.parameters.map(param => `${param.label}=${tyName(operationType(param.type, receiver))}`);
     const signature = `${operation.name}(${parameters.join(', ')})`;
     return { label: operation.name, kind: 'method' as const, parameters, signature,
@@ -301,6 +363,13 @@ function memberItems(checked: CheckedProject, file: string, receiver: Ty | undef
     return methods;
   }
   return [];
+}
+
+function compatibleLocal(local: LocalInfo | undefined, expected: string, ownership?: string): boolean {
+  if (!local || local.moved || ownership === 'own' && local.ownership !== 'own' || ownership !== 'own' && local.ownership === 'own') return false;
+  const normalize = (type: string) => type.replace(/\s+/g, '');
+  return expected === 'any' || normalize(local.typeText) === normalize(expected) ||
+    expected.startsWith('optional ') && normalize(local.typeText) === normalize(expected.slice(9));
 }
 
 function unique(items: EditorItem[]): EditorItem[] {
@@ -353,13 +422,14 @@ export function importItems(checked: CheckedProject, file: SourceFile): EditorIt
         isPrivateName(sibling.path.slice(currentFolder.length + 1, -4))) continue;
     const from = sibling.path.slice(currentFolder.length + 1, -4);
     for (const item of sibling.items) {
-      if (item.kind !== 'class' && item.kind !== 'interface' && item.kind !== 'function' && item.kind !== 'interceptor') continue;
+      if (item.kind !== 'class' && item.kind !== 'interface' && item.kind !== 'function' && item.kind !== 'interceptor' && item.kind !== 'composition' && item.kind !== 'choice') continue;
       if (isPrivateName(item.name)) continue;
-      items.push({ label: item.name, kind: 'snippet',
+      if(project.config.strict_modules&&basename(file.path)!=='export.aug'&&!sibling.builtin&&!sibling.package&&!project.files.get(join(currentFolder,'export.aug'))?.items.some(entry=>entry.kind==='export'&&entry.name===item.name&&entry.from===from))continue;
+      items.push({ label: item.name, kind: 'snippet', declarationKind:item.kind,
         detail: `import ${item.name} from ${from}`, insertText: `${item.name} from ${from}`,
         signature: definitionItem(checked, project.scopes.get(sibling.path)!.get(item.name)!).signature,
         parameters: definitionItem(checked, project.scopes.get(sibling.path)!.get(item.name)!).parameters,
-        documentation: item.kind === 'interface' ? documentation(checked, sibling.path, item.span.start)?.markdown :
+        documentation: item.kind === 'interface' || item.kind === 'composition' || item.kind === 'choice' ? documentation(checked, sibling.path, item.span.start)?.markdown :
           declarationDocumentation(checked, item)?.markdown });
     }
   }
@@ -392,17 +462,79 @@ export function importItems(checked: CheckedProject, file: SourceFile): EditorIt
       const specification = (owner?.specifications ?? project.packages.specifications)[prefix[0]];
       const from = isGitSource(specification ?? '') && prefix[0] === sourceAlias(specification) ? importSource([specification, ...segments]) : [...prefix, ...segments].join('.');
       if (!from) continue;
-      if (item.kind !== 'export' || item.folder) continue;
+      if (item.kind !== 'export' || item.internal || item.folder) continue;
       if (isPrivateName(item.name) || (item.from && isPrivateName(item.from))) continue;
       const exported = project.scopes.get(join(folder, `${item.from}.aug`))?.get(item.name);
-      items.push({ label: item.name, kind: 'snippet',
+      items.push({ label: item.name, kind: 'snippet', declarationKind:exported?.node.kind,
         detail: `import ${item.name} from ${from}`, insertText: `${item.name} from ${from}`,
         signature: exported && definitionItem(checked, exported).signature,
         parameters: exported && definitionItem(checked, exported).parameters,
+        optionalParameters: exported && definitionItem(checked, exported).optionalParameters,
+        parameterOwnerships: exported && definitionItem(checked, exported).parameterOwnerships,
         documentation: exported && definitionItem(checked, exported).documentation });
     }
   }
   return items;
+}
+
+/** Parse a placeholder so completion works for an empty label without accepting nested or late includes. */
+function includePosition(checked:CheckedProject,file:SourceFile,offset:number):{items:TopLevel[];index:number}|undefined {
+  const prefix=file.source.slice(0,offset),lineStart=prefix.lastIndexOf('\n')+1,line=prefix.slice(lineStart);
+  const start=lineStart+line.indexOf('include'),nameStart=start+'include'.length;
+  const end=offset+(/^[A-Za-z_0-9]*/.exec(file.source.slice(offset))?.[0].length??0);
+  const candidate=parse(file.path,file.source.slice(0,nameStart)+' __AugustCompositionCompletion'+file.source.slice(end));
+  const lineNumber=prefix.split('\n').length;
+  if(candidate.diagnostics.some(issue=>issue.line===lineNumber))return;
+  let items:TopLevel[]|undefined;
+  if(file.path===checked.project.main?.path&&candidate.file.items.some(item=>item.kind==='include'&&item.span.start===start))items=candidate.file.items;
+  else for(const item of candidate.file.items)if(item.kind==='test')for(const group of item.groups)
+    if(group.setup.some(item=>item.kind==='include'&&item.span.start===start))items=group.setup;
+  if(!items)return;
+  const index=items.findIndex(item=>item.kind==='include'&&item.span.start===start);
+  if(index<0||items.slice(0,index).some(item=>!['import','bind','include'].includes(item.kind)))return;
+  return {items,index};
+}
+
+/** Locate a case slot with a parser placeholder, excluding ordinary bodies and nested setup. */
+function boundaryCaseCompletion(checked:CheckedProject,file:SourceFile,offset:number):EditorItem|undefined {
+  const prefix=file.source.slice(0,offset),lineStart=prefix.lastIndexOf('\n')+1,line=prefix.slice(lineStart);
+  if(!/^[ \t]*it[A-Za-z_0-9]*$/.test(line))return;
+  const start=lineStart+(line.match(/^[ \t]*/)?.[0].length??0),end=offset+(file.source.slice(offset).match(/^[A-Za-z_0-9]*/)?.[0].length??0);
+  const parsed=parse(file.path,file.source.slice(0,start)+'it __AugustInputCompletion { assert(condition=true) }'+file.source.slice(end));
+  if(parsed.diagnostics.some(issue=>issue.line===prefix.split('\n').length))return;
+  for(const suite of parsed.file.items)if(suite.kind==='test'&&suite.functionSuite)for(const group of suite.groups)
+    if(group.cases.some(test=>test.span.start===start)){
+      const definition=checked.project.scopes.get(file.path)?.get(suite.type.name);
+      if(!definition||definition.file!==file.path)return;
+      try {
+        const locals=new Set<string>();
+        const setupNames=(value:unknown):void=>{
+          if(!value||typeof value!=='object')return;
+          if(Array.isArray(value)){value.forEach(setupNames);return;}
+          const node=value as Record<string,unknown>;
+          if(node.kind==='assign'&&(node.target as Expr)?.kind==='name')locals.add((node.target as Extract<Expr,{kind:'name'}>).name);
+          if(typeof node.name==='string'&&(node.kind==='lock'||node.kind==='freeze'||Array.isArray(node.body)&&(node.pattern!==undefined||node.kind===undefined&&node.type!==undefined)))locals.add(node.name);
+          if(Array.isArray(node.names))for(const name of node.names)if(typeof name==='string')locals.add(name);
+          for(const [key,child] of Object.entries(node))if(key!=='span')setupNames(child);
+        };
+        setupNames(group.setup);
+        if(locals.has(definition.name))return;
+        const template=boundaryInputSnippet(checked,definition,{locals,cases:group.cases.map(test=>test.name)});
+        return {label:'itboundaries',kind:'snippet',detail:template.rows+' representative scalar input rows',insertText:template.body,
+          documentation:'Version 1 scalar boundaries. Each row is an ordinary same-file test. Replace the assertion placeholder with a property or independently selected expected result. These inputs do not establish application requirements.'};
+      }catch{return;}
+    }
+}
+
+/** Auto-imports preserve the ordinary module/export path and do not register providers. */
+function autoImports(file:SourceFile,imports:EditorItem[],visible:Set<string>):EditorItem[] {
+  const importsEnd = file.items.filter(item => item.kind === 'import').at(-1)?.span.end ?? 0;
+  const insertion = importsEnd ? file.source.indexOf('\n', importsEnd) : 0;
+  return imports.filter(item => !visible.has(item.label)).map(item => ({ ...item,
+    kind: item.declarationKind === 'composition' ? 'composition' as const : item.signature ? 'function' as const : 'type' as const,
+    insertText: item.label, sortText: '2-' + item.label,
+    additionalEdits: [{ start: insertion < 0 ? file.source.length : insertion, end: insertion < 0 ? file.source.length : insertion,
+      text: `${importsEnd ? '\n' : ''}${item.detail}${importsEnd ? '' : '\n'}` }] }));
 }
 
 function rawCompletions(checked: CheckedProject, fileName: string, offset: number): EditorItem[] {
@@ -410,11 +542,26 @@ function rawCompletions(checked: CheckedProject, fileName: string, offset: numbe
   if (!file) return [];
   const prefix = file.source.slice(0, offset);
   const line = prefix.slice(prefix.lastIndexOf('\n') + 1);
+  const boundaryCase=boundaryCaseCompletion(checked,file,offset);
+  if(boundaryCase)return [boundaryCase];
   const imports = importItems(checked, file);
+  const currentFolder=dirname(file.path);
+  const surfaceEntry=/^\s*(export|internal)\s+[A-Za-z_0-9]*$/.exec(line);
+  if(surfaceEntry&&basename(file.path)==='export.aug')return imports.filter(item=>{
+    const from=item.detail.split(' from ')[1];return /^[A-Za-z_]\w*$/.test(from)&&projectSibling(from);
+  }).map(item=>({...item,detail:item.detail.replace(/^import /,surfaceEntry[1]+' ')}));
+  function projectSibling(from:string){return checked.project.files.has(join(currentFolder,from+'.aug'));}
   if(/^\s*forward\s+[A-Za-z_]\w*\s+to\s+[A-Za-z_0-9]*$/.test(line))return [...(checked.project.scopes.get(file.path)?.values()??[])].filter(def=>
     def.node.kind==='function'&&!def.name.startsWith('_')&&file.items.some(item=>item.kind==='import'&&!item.everything&&checked.project.imports.get(item)?.some(imported=>imported.id===def.id)))
     .map(def=>({...definitionItem(checked,def),insertText:def.name}));
   if (/^\s*import\s+[A-Za-z_0-9]*$/.test(line)) return imports;
+  if (/^\s*include\s+[A-Za-z_0-9]*$/.test(line)) {
+    const position=includePosition(checked,file,offset);if(!position)return [];
+    const scope=checked.project.scopes.get(file.path);
+    const included=new Set(position.items.slice(0,position.index).flatMap(item=>item.kind==='include'?[item.name]:[]));
+    const definitions=[...(scope?.values()??[])].filter(def=>def.node.kind==='composition'&&!included.has(def.name)).map(def=>definitionItem(checked,def));
+    return unique([...definitions,...autoImports(file,imports.filter(item=>item.declarationKind==='composition'&&!included.has(item.label)),new Set(scope?.keys()))]);
+  }
   const joined = /^\s*import\s+(.+?)\s+and\s+[A-Za-z_0-9]*$/.exec(line);
   if (joined) {
     const used = new Set(joined[1].split(/\s+and\s+/));
@@ -475,11 +622,14 @@ function rawCompletions(checked: CheckedProject, fileName: string, offset: numbe
     if (entry?.parameters?.length) {
       const used = new Set([...call[2].matchAll(/\b([A-Za-z_][A-Za-z0-9_]*)\s*(?:=|to\b)/g)]
         .map(match => match[1]));
+      call[2].split(',').map(part => part.trim()).filter(part => /^[A-Za-z_]\w*$/.test(part)).forEach(name => used.add(name));
       const labels = entry.parameters.map((parameter, index) => ({ parameter, index,
         name: parameter.split('=')[0] })).filter(item => !used.has(item.name));
       if (labels.length) return labels.map(({ parameter, index, name }) => ({
         label: name, kind: 'snippet' as const, detail: `argument ${parameter}`,
-        insertText: `${name}=`, documentation: entry.parameterDocumentation?.[index] }));
+        insertText: compatibleLocal(locals.get(name), parameter.slice(name.length + 1), entry.parameterOwnerships?.[name]) ? name : `${name}=`,
+        sortText: compatibleLocal(locals.get(name), parameter.slice(name.length + 1), entry.parameterOwnerships?.[name]) ? '0-' + name : '1-' + name,
+        documentation: entry.parameterDocumentation?.[index] }));
     }
   }
   const member = /\b([A-Za-z_][A-Za-z0-9_]*)\s*\.\s*[A-Za-z_0-9]*(?:<[^()]*>)?$/.exec(prefix);
@@ -498,7 +648,7 @@ function rawCompletions(checked: CheckedProject, fileName: string, offset: numbe
     documentation: binding.exposedType.def && definitionItem(checked, binding.exposedType.def).documentation }));
   const definitions = [...(checked.project.scopes.get(file.path)?.values() ?? [])]
     .map(def => definitionItem(checked, def));
-  const localItems: EditorItem[] = [...locals].map(([label, local]) => ({
+  const localItems: EditorItem[] = [...locals].filter(([,local]) => !local.moved).map(([label, local]) => ({
     label, kind: local.kind, detail: `${local.typeText} ${label}`,
     documentation: local.documentation }));
   const inTest = file.items.some(item => item.kind === 'test' && item.span.start <= offset && offset <= item.span.end);
@@ -513,13 +663,7 @@ function rawCompletions(checked: CheckedProject, fileName: string, offset: numbe
   if (/\b(?:returns|unless|catch)\s+[A-Za-z_0-9]*$/.test(prefix))
     return all.filter(item => ['class', 'interface', 'type'].includes(item.kind));
   const visible = new Set(all.map(item => item.label));
-  const importsEnd = file.items.filter(item => item.kind === 'import').at(-1)?.span.end ?? 0;
-  const insertion = importsEnd ? file.source.indexOf('\n', importsEnd) : 0;
-  return [...all, ...imports.filter(item => !visible.has(item.label)).map(item => ({ ...item,
-    kind: item.signature ? 'function' as const : 'type' as const,
-    insertText: item.label, sortText: '2-' + item.label,
-    additionalEdits: [{ start: insertion < 0 ? file.source.length : insertion, end: insertion < 0 ? file.source.length : insertion,
-      text: `${importsEnd ? '\n' : ''}${item.detail}${importsEnd ? '' : '\n'}` }] }))];
+  return [...all, ...autoImports(file,imports,visible)];
 }
 
 /** Fill labeled calls, keep dependency imports visible, and replace only the token being completed. */
@@ -527,24 +671,26 @@ export function completions(checked: CheckedProject, fileName: string, offset: n
   const file = checked.project.files.get(resolve(fileName));
   if (!file) return [];
   const prefix = file.source.slice(0, offset), line = prefix.slice(prefix.lastIndexOf('\n') + 1);
-  const typeContext = /\b(?:import|export|implement|implements|extends|returns|unless|catch|resolve)\b[^\n]*$/.test(line)||/^\s*forward\s+\w*\s+to\b/.test(line);
+  const typeContext = /\b(?:import|export|implement|implements|extends|returns|unless|catch|resolve|include)\b[^\n]*$/.test(line)||/^\s*forward\s+\w*\s+to\b/.test(line);
   const token = /[A-Za-z_][A-Za-z0-9_]*$/.exec(prefix);
   const start = token ? offset - token[0].length : offset;
   const end = offset + (/^[A-Za-z0-9_]*/.exec(file.source.slice(offset))?.[0].length ?? 0);
   const escape = (text: string) => text.replace(/[\\$}]/g, '\\$&');
-  const argument = (parameter: string, index: number) => {
+  const locals = collectLocals(checked, file, offset);
+  let placeholder = 0;
+  const argument = (parameter: string, item: EditorItem) => {
     const [name, type] = parameter.split('=');
+    if (compatibleLocal(locals.get(name), type, item.parameterOwnerships?.[name])) return name;
     const value = type === 'string' ? '""' : type === 'bool' ? 'false' : ['int', 'float', 'c_int'].includes(type) ? '0' : name;
-    return `${name}=\${${index + 1}:${escape(value)}}`;
+    return `${name}=\${${++placeholder}:${escape(value)}}`;
   };
   return rawCompletions(checked, fileName, offset).map(item => {
     const callable = !typeContext && ['function', 'method', 'class'].includes(item.kind) && item.signature &&
       !/^\s*\(/.test(file.source.slice(offset));
-    let insertText = callable ? `${item.label}(${(item.parameters ?? []).map(argument).join(', ')})$0` : item.insertText;
-    const template = snippetCatalog.find(snippet => item.label === snippet.prefix + ' template');
-    if (template) insertText = snippetBody(template.body, checked.project.config.block_style, checked.project.config.indentation === 'tabs');
-    if (item.kind === 'snippet' && insertText && checked.project.config.block_style === 'indent' && insertText.includes('{\n'))
-      insertText = insertText.replace(/^(\s*)\} catch /gm, '$1catch ').replace(/ \{\n/g, ':\n').replace(/^[ \t]*\}\n?/gm, '').trimEnd();
+    placeholder = 0;
+    let insertText = callable ? `${item.label}(${(item.parameters ?? []).filter(parameter => !item.optionalParameters?.includes(parameter.split('=')[0])).map(parameter => argument(parameter, item)).join(', ')})$0` : item.insertText;
+    if (item.kind === 'snippet' && insertText) insertText = snippetBody(insertText,
+      checked.project.config.block_style, checked.project.config.indentation === 'tabs', checked.project.config.assignment);
     let additionalEdits = item.additionalEdits;
     if (additionalEdits?.some(edit => edit.start >= start && edit.start <= end)) {
       insertText = additionalEdits.map(edit => escape(edit.text)).join('') + (insertText ?? item.label);
@@ -577,6 +723,9 @@ export function hoverInfo(checked: CheckedProject, fileName: string,
     entry.kind !== 'eof' && entry.span.start <= offset && offset < entry.span.end);
   if (!token) return undefined;
   const { start, end } = token.span;
+  const selectedField=recordBindingFieldAt(checked,file.path,offset);
+  if(selectedField)return {label:selectedField.field.name,kind:'property',detail:tyName(selectedField.type)+' '+selectedField.owner.name+'.'+selectedField.field.name,
+    documentation:selectedField.owner.node.kind==='class'?declarationDocumentation(checked,selectedField.owner.node)?.parameters.get(selectedField.field.label??selectedField.field.name):undefined,start,end};
   if (['import', 'everything', 'and', 'from'].includes(token.kind)) {
     const declaration = file.items.find(item => item.kind === 'import' && item.span.start <= start && end <= item.span.end);
     if (declaration?.kind === 'import') {
@@ -653,9 +802,23 @@ export function hoverInfo(checked: CheckedProject, fileName: string,
     const item = methodItem(checked, around, 'method');
     return { ...item, documentation: [item.documentation, languageHelp.around.documentation].filter(Boolean).join('\n\n'), start, end };
   }
+  const functionValue = [...checked.functionValues].filter(([expr]) => expr.span.file === file.path &&
+    (expr.kind === 'lambda' ? token.kind === '=>' && expr.span.start <= start && end <= expr.span.end : expr.span.start === start && expr.span.end === end))
+    .sort(([left],[right]) => left.span.end-left.span.start-(right.span.end-right.span.start))[0]?.[1];
+  if (functionValue) {
+    const signature = functionValue.signature.method;
+    return {label:token.value,kind:'function',detail:tyName(functionValue.type)+'.'+signature.name+'('+functionValue.inputs.map((type,index) =>
+      tyName(type)+' '+(signature.params[index].label ?? signature.params[index].name)).join(', ')+') returns '+tyName(functionValue.result),
+      documentation:[functionValue.target ? 'Pure callback delegates to '+sourceLink(functionValue.target.node.span,functionValue.target.name)+'.' :
+        'Pure expression callback; invocation uses the interface method and its labels.',
+        functionValue.captures.length ? 'Creation-time captures: '+functionValue.captures.map(capture => sourceLink(capture.expression.span,capture.name)).join(', ')+'.' :
+        'No local values are captured.'].join('\n\n'),start,end};
+  }
   const workerKeyword = token.value === 'worker' && hoverTokens[hoverTokens.indexOf(token) - 1]?.kind === 'start' && ['identifier', 'start', 'wait'].includes(hoverTokens[hoverTokens.indexOf(token) + 1]?.kind);
+  const choiceKeyword = token.value === 'choice' && file.items.some(item => item.kind === 'choice' && item.span.start === start);
+  const internalKeyword=token.value==='internal'&&file.items.some(item=>item.kind==='export'&&item.internal&&item.span.start===start);
   const forwardKeyword = token.value === 'forward' && file.items.some(item => item.kind === 'function' && item.forward && item.span.start === start);
-  const help = (token.value === 'worker' && !workerKeyword) || (token.value === 'forward' && !forwardKeyword) ? undefined : languageHelp[token.value];
+  const help = token.value==='forward'&&!forwardKeyword||token.value==='internal'&&!internalKeyword||token.value === 'worker' && !workerKeyword || token.value === 'choice' && !choiceKeyword ? undefined : languageHelp[token.value];
   if (help) return { label: token.value,
     kind: help.category === 'type' ? 'type' : help.category === 'function' ? 'function' : 'keyword',
     detail: help.detail, documentation: help.documentation, start, end };
@@ -664,11 +827,20 @@ export function hoverInfo(checked: CheckedProject, fileName: string,
   let item: EditorItem | undefined = local ? { label: token.value, kind: local.kind,
     detail: `${local.typeText} ${token.value}` + (local.kind === 'property' && isPrivateName(token.value) ? ' (private)' : ''),
     documentation: local.documentation } : undefined;
-  item ??= completions(checked, file.path, end).find(entry => entry.label === token.value);
   if (!item) {
     const def = checked.project.scopes.get(file.path)?.get(token.value);
     if (def) item = definitionItem(checked, def);
   }
+  if (!item) {
+    const exported = file.items.find(entry => entry.kind === 'export' && !entry.folder &&
+      entry.name === token.value && entry.span.start <= start && end <= entry.span.end);
+    if (exported?.kind === 'export' && exported.from) {
+      const def = checked.project.scopes.get(join(dirname(file.path), `${exported.from}.aug`))
+        ?.get(exported.name);
+      if (def) item = {...definitionItem(checked, def),...(exported.internal?{detail:'Internal folder contract: '+definitionItem(checked,def).detail}: {})};
+    }
+  }
+  item ??= completions(checked, file.path, end).find(entry => entry.label === token.value);
   if (!item) {
     const owner = file.items.find(entry => (entry.kind === 'class' || entry.kind === 'interface' || entry.kind === 'interceptor') &&
       entry.span.start <= start && end <= entry.span.end);
@@ -687,15 +859,6 @@ export function hoverInfo(checked: CheckedProject, fileName: string,
             (isPrivateName(field.name) ? ' (private)' : ''),
           documentation: declarationDocumentation(checked, owner)?.parameters.get(field.name) };
       }
-    }
-  }
-  if (!item) {
-    const exported = file.items.find(entry => entry.kind === 'export' && !entry.folder &&
-      entry.name === token.value && entry.span.start <= start && end <= entry.span.end);
-    if (exported?.kind === 'export' && exported.from) {
-      const def = checked.project.scopes.get(join(dirname(file.path), `${exported.from}.aug`))
-        ?.get(exported.name);
-      if (def) item = definitionItem(checked, def);
     }
   }
   if (!item) {
@@ -722,6 +885,8 @@ export function hoverInfo(checked: CheckedProject, fileName: string,
       item = { label: token.value, kind: 'type', detail: `type parameter ${token.value}`,
         documentation: 'A generic type placeholder supplied by the caller. It is checked before C generation.' };
   }
+  const injection=injectionDescription(checked,file,start,end);
+  if(item&&injection)item={...item,documentation:[item.documentation,injection].filter(Boolean).join('\n\n')};
   return item ? { ...item, start, end } : undefined;
 }
 
@@ -730,19 +895,45 @@ export function semanticTokens(checked: CheckedProject, fileName: string): Edito
   if (!file) return [];
   const tokens = lex(file.path, file.source).tokens;
   const scope = checked.project.scopes.get(file.path);
-  const parameters = new Set<string>();
+  const parameters = new Set<string>(), closureInputs = new Set<string>(), closureTokens = new Set<number>();
+  const expressionNames:Expr[]=[];
   const fields = new Set<string>();
   const variables = new Set<string>();
+  const patternProperties=new Set<number>();
   const typeParameters = new Set<string>();
-  const declarationNames = new Map<number, 'class' | 'decorator' | 'function' | 'method'>();
+  const declarationNames = new Map<number, 'class' | 'decorator' | 'function' | 'method' | 'keyword' | 'type'>();
   function markFunction(method: MethodDecl, type: 'function' | 'method'): void {
     if(method.forward){declarationNames.set(method.forward.nameSpan.start,type);return;}
     const first = tokens.findIndex(token => token.span.start >= method.span.start && token.span.end <= method.span.end && token.value === method.name && token.kind === 'identifier');
     const name = tokens[first];
     if (name?.kind === 'identifier') declarationNames.set(name.span.start, type);
   }
+  function visitPattern(pattern:BindingPattern):void {
+    if(pattern.kind==='tupleBinding')pattern.items.forEach(visitPattern);
+    else if(pattern.kind==='recordBinding')for(const field of pattern.fields){
+      if(field.pattern.kind!=='nameBinding'||field.pattern.name!==field.name)patternProperties.add(field.nameSpan.start);
+      visitPattern(field.pattern);
+    }
+  }
+  function visitExpression(expr:Expr):void {
+    if(expr.kind==='name')expressionNames.push(expr);
+    if(expr.kind==='lambda')for(const param of expr.params){
+      const span=param.nameSpan ?? param.span;
+      closureInputs.add(span.file+':'+span.start);closureTokens.add(span.start);
+    }
+    if(expr.kind==='comprehension'){bindingNames(expr.pattern).forEach(name=>variables.add(name));visitPattern(expr.pattern);}
+    if(expr.kind==='matchValue')for(const clause of expr.cases)if(clause.name)variables.add(clause.name);
+    expressionChildren(expr).forEach(visitExpression);
+  }
   function visitStatements(statements: Stmt[]): void {
     for (const stmt of statements) {
+      if('pattern' in stmt&&stmt.pattern)visitPattern(stmt.pattern);
+      if('value' in stmt&&stmt.value)visitExpression(stmt.value);
+      if('expr' in stmt)visitExpression(stmt.expr);
+      if('test' in stmt)visitExpression(stmt.test);
+      if('iterable' in stmt)visitExpression(stmt.iterable);
+      if('target' in stmt)visitExpression(stmt.target);
+      if('port' in stmt)visitExpression(stmt.port);
       if (stmt.kind === 'assign' && stmt.target.kind === 'name') variables.add(stmt.target.name);
       if (stmt.kind === 'destructure' || stmt.kind === 'for') stmt.names.forEach(name => variables.add(name));
       if (stmt.kind === 'if') { visitStatements(stmt.then); visitStatements(stmt.otherwise); }
@@ -760,12 +951,13 @@ export function semanticTokens(checked: CheckedProject, fileName: string): Edito
     }
   }
   for (const item of file.items) {
+    if(item.kind==='choice'){declarationNames.set(item.span.start,'keyword');const token=tokens.find(token=>token.span.start>item.span.start&&token.value===item.name);if(token)declarationNames.set(token.span.start,'type');}
     if (item.kind === 'class' || item.kind === 'interface' || item.kind === 'interceptor') {
       if (item.kind === 'class') declarationNames.set(item.span.start, 'class');
       if (item.kind === 'interceptor') declarationNames.set(item.nameSpan.start, 'decorator');
       item.typeParams.forEach(name => typeParameters.add(name));
       if (item.kind === 'class' || item.kind === 'interceptor') fieldsOf(item).forEach(field => fields.add(field.name));
-      if (item.kind === 'class') visitStatements(item.constructorBody ?? []);
+      if (item.kind === 'class') { visitStatements(item.constructorBody ?? []); item.stateFields?.forEach(field=>visitExpression(field.initializer)); }
       for (const method of item.methods) {
         markFunction(method, 'method');
         method.typeParams.forEach(name => typeParameters.add(name));
@@ -782,8 +974,11 @@ export function semanticTokens(checked: CheckedProject, fileName: string): Edito
         visitStatements(group.setup.filter((entry): entry is Stmt => entry.kind !== 'bind' && entry.kind !== 'include'));
         group.cases.forEach(test => visitStatements(test.body));
       }
-    } else if (['expr', 'assign', 'destructure', 'return', 'throw', 'if', 'while', 'for', 'scope', 'match', 'try', 'unsafe', 'borrow', 'lock', 'freeze', 'yield'].includes(item.kind))
+    } else if (['expr', 'assign', 'destructure', 'return', 'throw', 'if', 'while', 'for', 'scope', 'match', 'try', 'unsafe', 'borrow', 'lock', 'freeze', 'yield', 'serve'].includes(item.kind))
       visitStatements([item as Stmt]);
+  }
+  for(const expr of expressionNames){const resolved=checked.resolvedNames.get(expr);
+    if(resolved && !resolved.global && closureInputs.has(resolved.definition.file+':'+resolved.definition.start))closureTokens.add(expr.span.start);
   }
   const result: EditorToken[] = [];
   for (let i = 0; i < tokens.length; i++) {
@@ -793,12 +988,15 @@ export function semanticTokens(checked: CheckedProject, fileName: string): Edito
     const next = tokens[i + 1]?.kind;
     let type: EditorToken['type'] | undefined;
     if(token.value==='forward'&&file.items.some(item=>item.kind==='function'&&item.forward&&item.span.start===token.span.start))type='keyword';
-    if (token.value === 'worker' && previous === 'start' && ['identifier', 'start', 'wait'].includes(next)) type = 'keyword';
+    else if(token.value==='internal'&&file.items.some(item=>item.kind==='export'&&item.internal&&item.span.start===token.span.start))type='keyword';
+    else if (token.value === 'worker' && previous === 'start' && ['identifier', 'start', 'wait'].includes(next)) type = 'keyword';
+    else if(patternProperties.has(token.span.start))type='property';
     else if (previous === '.') type = next === '(' || next === '<' ? 'method' : 'property';
     else if (previous === 'interface' || previous === 'capability') type = 'interface';
     else if (previous === 'record') type = 'class';
     else if (declarationNames.has(token.span.start)) type = declarationNames.get(token.span.start);
     else if (typeParameters.has(token.value)) type = 'typeParameter';
+    else if (closureTokens.has(token.span.start)) type = 'parameter';
     else if (parameters.has(token.value)) type = 'parameter';
     else if (fields.has(token.value)) type = 'property';
     else if (variables.has(token.value)) type = 'variable';
@@ -809,7 +1007,7 @@ export function semanticTokens(checked: CheckedProject, fileName: string): Edito
     else if (['int', 'c_int', 'float', 'bool', 'string', 'void'].includes(token.value)) type = 'type';
     else {
       const def = scope?.get(token.value);
-      if (def) type = def.node.kind === 'resource' ? 'type' : def.node.kind === 'interceptor' ? 'decorator' : def.node.kind === 'composition' ? 'function' : def.node.kind;
+      if (def) type = def.node.kind === 'resource' || def.node.kind==='choice' ? 'type' : def.node.kind === 'interceptor' ? 'decorator' : def.node.kind === 'composition' ? 'function' : def.node.kind;
     }
     if (type) result.push({ line: token.span.line - 1, start: token.span.column - 1,
       length: token.span.end - token.span.start, type,

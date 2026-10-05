@@ -6,8 +6,15 @@ Choose a guide for the task you are doing. If you are learning August for the fi
 
 | Task | Guide |
 | --- | --- |
+| Validate dates, durations, URLs, identifiers, paths or text | [Use domain values](use-domain-values.md) |
+| Choose byte, scalar, UTF-16 or grapheme operations | [Measure text](measure-text.md) |
+| Explain a failure and retain its typed cause | [Add error context](add-error-context.md) |
+| Model a fixed set of data outcomes | [Describe a finite choice](use-choices.md) |
+| Pass a pure function or capture immutable values | [Pass a small function](use-callbacks.md) |
+| Try an entry fragment without a permanent project | [Try a snippet](try-a-snippet.md) |
 | Review unfamiliar code or an agent's change | [Change a module](change-a-module.md) |
 | Generate and check the neighboring explanations | [Compiled specifications](../specifications.md) |
+| Reuse and inspect application or test providers | [Reuse service wiring](reuse-services.md) |
 | Verify behavior and substitute test dependencies | [Unit tests](../testing.md) |
 | Inspect a diagnostic or find a fix | [Diagnostics](../diagnostics.md) |
 | Use completion, navigation, context, or native builds | [VS Code](../editor.md) and [CLI](../tooling.md) |
@@ -27,3 +34,5 @@ For the experimental revision-bearing edit protocol and native evidence gates, s
 | Assess a trial deployment | [Production readiness](../production-readiness.md) |
 
 For exact rules, consult the [language reference](../reference.md) and library API pages. [Complete projects](../examples/index.md) show the files, formatted source, and compiled specs together.
+
+To choose a package by task, start with the [library catalog](../library-catalog.md). It includes ordinary repository imports, native host requirements, ownership and tests.

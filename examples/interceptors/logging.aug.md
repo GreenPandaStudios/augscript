@@ -2,6 +2,8 @@
 
 # `logging.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=3d76c4426c50bd64b5323fe1dbbb16e03ecfcedd4c8bfea28a888f631fbf767a -->
+
 <a id="symbol-Logger"></a>
 ## `Logger` · interface · [source](logging.aug#L4)
 
@@ -20,7 +22,18 @@ Console logger shared by interceptor instances and the application. It implement
 <a id="symbol-ConsoleLogger.log"></a>
 ### `ConsoleLogger.log` · [source](logging.aug#L10)
 
-It takes `message` as a string (Text to display). It gets `console` ([`Console`](.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-Console)) from dependency injection. It passes `message` to [`console.write`](.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-Console.write).
+It takes `message` as a string. It gets `console` ([`Console`](.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-Console)) from dependency injection. It passes `message` to [`console.write`](.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-Console.write). [source](logging.aug#L11)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+log(resolve Console console, string message) returns void uses Console.write
+```
+
+It takes `message` as a string (Text to display). It gets `console` ([`Console`](.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-Console)) from dependency injection.
+
+</details>
 
 ## Dependencies
 

@@ -38,7 +38,7 @@ Optional statement separator. Newlines, a closing block brace, or end of file al
 if condition: ... or {1: "apples"}
 ```
 
-After a block header, introduce a body indented with tabs or spaces. Dedenting ends that body. Each block may independently use braces or indentation. In a map literal, separate a key from its value; collection and parenthesis continuation indentation has no block meaning.
+After a block header, introduce a body indented with tabs or spaces. Dedenting ends that body. Each block may independently use braces or indentation. In a named record pattern, separate a field from its renamed binding or nested pattern. In a map literal, separate a key from its value; collection and parenthesis continuation indentation has no block meaning.
 
 ## !=
 
@@ -62,7 +62,7 @@ Access a method or property. A member starting with `_` is private to its declar
 (1, 2)
 ```
 
-Start a tuple, grouped expression, call argument list, function parameters, or class header. A comma creates a tuple; a single expression without a comma is grouping.
+Start a tuple, grouped expression, call argument list, function parameters, class header or tuple binding pattern. A nested assignment or loop pattern such as (first, (second, third)) checks every tuple shape. A comma creates a tuple; a single expression without a comma is grouping.
 
 ## )
 
@@ -94,7 +94,7 @@ End a list literal or interceptor annotation.
 {1, 2} or {1: "apples"}
 ```
 
-Start a set literal, map literal, or statement block. Comma-separated values create a Set; key: value pairs create a Map. Empty {} needs a declared Set or Map type. Classes, interfaces, interceptors, tests, functions, and control flow use braces for blocks.
+Start a set literal, map literal, statement block, or named record binding pattern. On the left of assignment or after for, {name, address: {city}} reads selected immutable record fields into new names. Comma-separated values create a Set; key: value pairs create a Map. Empty {} needs a declared Set or Map type. Classes, interfaces, interceptors, tests, functions, and control flow use braces for blocks.
 
 ## }
 
@@ -200,6 +200,14 @@ left / right
 
 Divide numbers. Integer division truncates toward zero. A potentially zero divisor raises checked ArithmeticError; a literal nonzero divisor needs no error clause. MIN/-1 wraps to MIN.
 
+## %
+
+```text
+left % right
+```
+
+Read the integer remainder after division toward zero. The result has the dividend’s sign. Zero raises checked ArithmeticError; MIN % -1 is zero without overflow.
+
 ## +
 
 ```text
@@ -286,7 +294,7 @@ Composition arguments. Other callables receive the Arguments capability.
 ArithmeticError implements Error
 ```
 
-Checked failure for division by zero. int arithmetic otherwise wraps in the signed 64-bit range.
+Checked failure for division or remainder by zero and for explicitly checked mathematical operations. Ordinary int arithmetic otherwise wraps in the signed 64-bit range. The unreleased august.math library rejects integer overflow and inexact decimal operations explicitly.
 
 ## around
 
@@ -311,6 +319,14 @@ assert(condition=bool) returns void
 ```
 
 Assert a bool in a test case or its setup. Catching an assertion failure cannot make the case pass; every case must execute an assertion.
+
+## assertEqual
+
+```text
+assertEqual(actual=any, expected=any) returns void
+```
+
+Compare actual and expected using August equality in a test. Evaluate each input once in written order. Failures show bounded scalar, record and tuple values and the first public difference path. Private field names and values, and native contents, are omitted; bounded searches report when a path is unavailable. Other objects retain identity equality. Catching the failure cannot make the case pass.
 
 ## body
 
@@ -339,6 +355,14 @@ Take exclusive mutable access for the duration of this block. Ordinary reads nee
 ```text
 borrow items { items.append(value=1) }
 ```
+
+## break
+
+```text
+break
+```
+
+Leave the nearest for or while loop. Run intervening always blocks, join child scopes, release locks and borrows, and drop owned locals before leaving. A cleanup failure propagates instead of completing the jump.
 
 ## Bytes
 
@@ -388,13 +412,21 @@ increment() changes self
 
 State which caller-visible values an operation may change. Bodies infer changes when omitted, but callers still need mutable access. Bodyless interfaces state permitted changes. Writes to local variables and fresh local objects do not change caller-owned state. An explicit clause limits the body.
 
+## choice
+
+```text
+choice Delivery from Delivered and Failed
+```
+
+Name a closed set of concrete immutable records. Construct an alternative with its normal labeled inputs. Match every alternative, plus null for an optional choice, to read its fields. A choice has no constructor, implementation inheritance, or implicit JSON discriminator. Import the choice and the records explicitly.
+
 ## composition
 
 ```text
 composition Services: implement Logger with Adapter
 ```
 
-Collect dependency bindings in a named composition. Import and include it in main before startup statements. The composition’s file must import every interface and provider it uses.
+Collect dependency bindings in a named composition. Import and include it in main before startup statements. The composition’s file must import every interface and provider it uses. Include completion follows ordinary exports; inspect application or same-file test providers with aug graph --composition.
 
 ## Compress
 
@@ -403,6 +435,14 @@ Collect dependency bindings in a named composition. Import and include it in mai
 ```
 
 Negotiate gzip from Accept-Encoding, respecting q=0. Buffered output and each bounded stream item are compressed with standard gzip members. Adds Content-Encoding and Vary; backpressure remains active.
+
+## continue
+
+```text
+continue
+```
+
+Start the next iteration of the nearest for or while loop after cleanup. for advances its snapshot; while checks its condition again. An owned input moved in one iteration cannot be reused in the next.
 
 ## ConversionError
 
@@ -452,6 +492,14 @@ endpoint GET "/users/{id}" as getUser(int id from path) returns User
 
 Declare a typed HTTP route. Inputs name their wire source; dependencies use resolve. Main explicitly selects which endpoints to serve.
 
+## error
+
+```text
+error InvalidQuantity(int value)
+```
+
+Declare a checked error with read-only named data. This is shorthand for an ordinary Error implementation with no methods. Use the full implementation form for custom behavior. error remains a contextual word; an existing function named error can still be called.
+
 ## Error
 
 ```text
@@ -482,7 +530,7 @@ Exit from main with a status from 0 to 255 after cancellation and cleanup.
 export Name from sibling;
 ```
 
-Expose a public sibling declaration to other folders. Names, modules, and folders starting with `_` are private and cannot be exported. Export declarations belong only in `export.aug`.
+Expose a public sibling declaration to other folders. Names, modules, and folders starting with `_` are private and cannot be exported. Export and internal declarations belong only in `export.aug`.
 
 ```text
 export Logger from logger;
@@ -550,7 +598,7 @@ Expose a public child folder through the current folder’s `export.aug`. A fold
 for item in items: ...
 ```
 
-Traverse a List, Set, homogeneous Tuple, or Map. Map entries are tuples, so for (key, value) in map unpacks them. Iteration snapshots the collection in insertion order and gives elements read-only access.
+Traverse a List, Set, homogeneous Tuple, or Map. Map entries are tuples, so for (key, value) in map unpacks them. Iteration snapshots the collection in insertion order and gives elements read-only access. `[result for item in items if condition]` creates a new list, checking the optional bool condition before each selected result. Bound names stay inside the expression; results retain checked failures, effects and reference lifetimes.
 
 ## form
 
@@ -574,7 +622,7 @@ Declare a transparent forwarding function in an ordinary module. The explicitly 
 freeze ownValue as immutableValue
 ```
 
-Consume owned mutable data and share one deeply frozen object. Surviving aliases cannot mutate it. Literal data can be frozen directly.
+Freeze reachable data for shared reading; surviving aliases cannot mutate it. Literal data and fresh scalar collection copies can be frozen. Every retained external reference requires ownership: owning a new outer container does not grant freezing permission for its borrowed or external elements. Active mutable borrows remain rejected.
 
 ## fresh
 
@@ -664,6 +712,14 @@ if condition: ...
 
 Run a block when its condition is bool. Use braces or a trailing colon and an indented body. Tabs or spaces are accepted; mixed indentation prefixes are rejected.
 
+## immutable
+
+```text
+record Invoice(immutable List<Line> items)
+```
+
+Declare a deeply frozen collection of data. Literal inputs are frozen once at construction. Freeze existing mutable aliases explicitly before passing them; this qualifier never copies a collection or grants mutation.
+
 ## implement
 
 ```text
@@ -678,7 +734,7 @@ Register an implementation in main or test setup. Stateless bindings are shared 
 Name() implements Interface { ... }
 ```
 
-Marks a declaration as a class and lists the interfaces it satisfies. Every class needs at least one interface. Method signatures must match. Conflicting default implementations require an override. Put constructor work in an initialize block inside the class.
+Marks a declaration as a class and lists the interfaces it satisfies. Every class needs at least one interface. Explicit and default methods must satisfy every inherited signature; diagnostics show the differing contract and its declaration. Conflicting default implementations require an override. Put constructor work in an initialize block inside the class.
 
 ## import
 
@@ -752,6 +808,14 @@ interface Name extends Parent { ... }
 
 Declare a contract. Interfaces may extend several interfaces and may provide default method bodies. A class must implement every method without a default. Method signatures start with their name, for example `log(string message);`.
 
+## internal
+
+```text
+internal Name from sibling
+```
+
+Unreleased: declare a sibling-only folder contract in export.aug. Strict sibling imports may use it; parent, child, other folders and package consumers cannot. Names starting with _ remain private. Exported signatures must not expose internal types. The word internal still names an ordinary function outside this declaration form.
+
 ## it
 
 ```text
@@ -806,7 +870,7 @@ Hash map: `{1: "apples", 2: "pears"}` infers Map<int, string>. A typed declarati
 match value: when ...
 ```
 
-Choose a checked case. Cover true and false for bool, null and some for nullable values, or add else. Concrete class cases narrow the named value. Duplicate and unreachable cases are rejected.
+Choose a checked case. Cover true and false for bool, null and some for optional values, or add else. Concrete class cases narrow the named value. A match expression has exactly one result expression per case, evaluates its input once and evaluates only the selected result. Results need compatible types and preserve errors, read-only access and borrows; owned/native resources need a statement match. Duplicate and unreachable cases are rejected.
 
 ## mutable
 
@@ -856,6 +920,14 @@ left or right
 
 Logical OR on bool values. Skip the right operand when the left operand is true. This is the lowest-precedence boolean operator. Symbolic || is rejected.
 
+## otherwise
+
+```text
+value otherwise fallback
+```
+
+Use the fallback only when the value is null. False, zero and empty text remain values. Both operands need compatible types. Checked errors still escape; choose owned values with an explicit match.
+
 ## out
 
 ```text
@@ -870,7 +942,7 @@ Declare a covariant interface type parameter. It may occur only in checked outpu
 own Type name to expression;
 ```
 
-Give a value exclusive ownership and deterministic cleanup at scope exit. Owned values cannot be copied; they can move into `own` parameters, fields, or returns. `=` is also accepted.
+Give a value exclusive ownership and deterministic cleanup at scope exit. A new local initialized by a checked own call result inherits ownership. Owned values cannot be copied; they can move into `own` parameters, fields, or returns. `=` is also accepted.
 
 ```text
 own Resource resource to Resource();
@@ -938,7 +1010,7 @@ Root-only UTF-8 text input. Other callables receive FileReader. Invalid Unicode 
 record Point(int x, int y)
 ```
 
-Declare deeply immutable data with labeled construction and structural equality/hashing. Records contain primitives, tuples and other records. An initialize block validates inputs; its escaping errors are inferred; an explicit unless ErrorType limits permitted failures.
+Declare deeply immutable data with labeled construction and structural equality/hashing. Records contain primitives, tuples and other records. An initialize block validates inputs; its escaping errors are inferred; an explicit unless ErrorType limits permitted failures. The unreleased august.values library supplies checked dates, durations, URLs, identifiers, paths, bounded text and pure retry-policy data.
 
 ## request
 
@@ -1060,13 +1132,21 @@ when some value: ...
 
 Match the present case of a nullable value and introduce a read-only non-null name within the case body. Pair it with when null to cover absence explicitly.
 
+## sourceLocation
+
+```text
+sourceLocation() returns Tuple<string, int, int>
+```
+
+Capture this call expression’s source identity and one-based line/column. Applications use project-relative paths; package code uses name@version/source-relative paths. This is compiler-provided data, not a stack trace or a runtime file lookup. A helper captures its own call site.
+
 ## start
 
 ```text
 task = start loadUsers()
 ```
 
-Start a child Task in a scope. Receiver and arguments evaluate immediately. Cooperative tasks capture references; wait before mutating or moving captured objects. Use start worker calculate(values) to copy data to an isolated heap and run on an OS thread. Both forms use the same waits, sibling cancellation, and scope joins. Worker admission and copied-input limits can raise checked ConcurrencyError at start.
+Contextual keyword: a bare value or input named start remains a value. start followed by a same-line call starts a child Task in a scope. Receiver and arguments evaluate immediately. Cooperative tasks capture references; wait before mutating or moving captured objects. Use start worker calculate(values) to copy data to an isolated heap and run on an OS thread. Both forms use the same waits, sibling cancellation, and scope joins. Worker admission and copied-input limits can raise checked ConcurrencyError at start.
 
 ## streams
 
@@ -1082,7 +1162,7 @@ Declare a bounded streaming HTTP response. Yield values in wire order; disconnec
 string
 ```
 
-Immutable valid Unicode encoded as UTF-8, without embedded NUL. Invalid literals are compile errors and invalid text files raise FileError. The + operator joins strings. C string pointers live only for the unsafe call.
+Immutable valid Unicode encoded as UTF-8. Source literals reject embedded NUL at compilation, and text files reject it with FileError; decoded runtime strings are length-aware. The + operator joins strings. byteLength() and length() count UTF-8 bytes; codePointLength() counts scalars and utf16Length() counts UTF-16 units. graphemeLength() and graphemes() use Unicode 18.0.0 default extended boundaries, reject invalid UTF-8 with ConversionError and preserve original bytes without normalization or display-width interpretation. compare(other=...) returns -1, 0 or 1 by unsigned UTF-8 byte order, including length-aware decoded NUL, without collation or normalization. C string pointers live only for the unsafe call.
 
 ## Task
 
@@ -1098,7 +1178,7 @@ A child computation owned by a scope. wait for reads its result; the scope joins
 test Calculator subject: ... or test add: ... or test endpoint getUser client: ...
 ```
 
-Declare tests beside the class, function, or endpoint. Class suites initialize their subject; function suites omit a subject. Endpoint suites receive a native pipeline client. Parameterized it cases use for (inputs) in tuple rows. Tests are omitted from production executables; aug test selects groups/cases and --coverage records statement lines.
+Declare tests beside the class, function, or endpoint. Class suites initialize their subject; function suites omit a subject. Endpoint suites receive a native pipeline client. Parameterized it cases use for (inputs) in tuple rows. The unreleased --suggest-inputs command and itboundaries completion propose bounded scalar rows; authors supply assertions. A one-column tuple row binds its cell. The unreleased aug verify command maps author requirements to concrete native results and source/spec review, keeping compiler acceptance and engineer review separate. Its runner rejects a different expected source revision before native execution. The unreleased LLVM core-runtime test cache reuses verified compilation, never results; every case executes in a fresh process. --rebuild skips reuse and JSON reports compilation status. aug cache inspects sizes and selected identities; aug cache prune --write clears verified idle compilation under entry locks, retaining source/native archives and active or unknown entries. Component/native-call tests, unsealed contributor tools and the C reference still compile each time. Tests are omitted from production executables; aug test selects groups/cases and --coverage records statement lines.
 
 ## throw
 
@@ -1122,7 +1202,7 @@ Bound the request and its streaming producer with a monotonic deadline. Before o
 destination to value
 ```
 
-Alternative to = in assignments, typed declarations, labeled call arguments and interceptor mappings. Type publicLabel to _storage separates a public constructor input from private storage. resolve app to program retrieves a binding using its declared lifetime. Configure assignment in main.yaml for consistent formatting.
+Alternative to = in assignments, typed declarations, labeled call arguments and interceptor mappings. Type publicLabel to _storage separates a public constructor input from private storage. resolve app to program retrieves a binding using its declared lifetime. Configure assignment in main.yaml for consistent formatting and editor templates. Call labels retain = in generated code.
 
 ## true
 
@@ -1186,7 +1266,7 @@ No return value. A function can omit `returns void`.
 wait for usersTask and ordersTask as users and orders
 ```
 
-Wait for scoped tasks without changing result order. A List<Task<T>> produces List<T> and joins every child in the list. Waiting for one dynamically selected task leaves possible siblings captured until their scope joins them. A wait may encounter an unhandled sibling failure. Grouped waits observe all selected children before rethrowing the first failure. Waiting for I/O suspends a task.
+Contextual keyword: a bare value or input named wait remains a value. wait for joins scoped tasks without changing result order. A List<Task<T>> produces List<T> and joins every child in the list. Waiting for one dynamically selected task leaves possible siblings captured until their scope joins them. A wait may encounter an unhandled sibling failure. Grouped waits observe all selected children before rethrowing the first failure. Waiting for I/O suspends a task.
 
 ## when
 
@@ -1312,6 +1392,42 @@ Round to IEEE 754 binary32 and return the rounded value as float. Reject nonfini
 
 ## string operations
 
+### string.byteLength
+
+Read the number of UTF-8 bytes, including embedded NUL. This is the explicit-unit spelling of length().
+
+### string.graphemeLength
+
+Count default extended grapheme clusters using Unicode 18.0.0. Empty text counts as zero. Reject invalid UTF-8; do not normalize, tailor by locale or measure display width.
+
+### string.graphemes
+
+Read ordered, nonempty copies of default extended grapheme clusters using Unicode 18.0.0. Empty text produces an empty list. Reject invalid UTF-8 and preserve every original byte; joining with an empty separator reconstructs the input.
+
+### string.compare
+
+Compare unsigned UTF-8 bytes lexicographically; return -1, 0 or 1. Preserve embedded NUL, compare a shorter identical prefix first, and perform no locale collation or normalization.
+
+### string.endsWith
+
+Test an exact UTF-8 suffix, including embedded NUL. An empty suffix matches.
+
+### string.replace
+
+Return new text with every nonoverlapping exact search replaced, left to right. Reject an empty search. This is not regular-expression replacement.
+
+### string.codePointLength
+
+Count Unicode scalar values in valid UTF-8. Combining marks count separately; this is not grapheme count.
+
+### string.parseInteger
+
+Parse strict signed decimal int64. Permit an optional leading minus and decimal digits; reject whitespace, plus, trailing text, and overflow.
+
+### string.parseFloat
+
+Parse invariant finite binary64 decimal text, with optional minus, fraction, and decimal exponent. Reject whitespace, nonfinite values, malformed text, overflow, and underflow.
+
 ### string.trim
 
 Remove ECMAScript whitespace and line terminators from both ends; preserve interior text.
@@ -1371,6 +1487,10 @@ Decode UTF-8 strictly. Invalid input raises ConversionError; embedded NUL is pre
 Encode immutable bytes as unpadded RFC 4648 URL-safe base64.
 
 ## List operations
+
+### List.join
+
+Join List<string> in list order with exact separators. Empty lists produce empty text. Preserve empty elements and embedded NUL.
 
 ### List.append
 

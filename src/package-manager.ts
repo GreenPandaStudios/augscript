@@ -7,7 +7,9 @@ import type { Diagnostic } from './ast.ts';
 import { loadConfig } from './config.ts';
 import { parse } from './parser.ts';
 import { isGitSource, materializeGit, sourceAlias, gitReference, type GitSource } from './git-packages.ts';
-import { agentInstructions } from './project-init.ts';
+import { libraryAgentInstructions } from './project-init.ts';
+import {formatSource, sourceStyle, styleConfiguration} from './source-style.ts';
+import type {SourceStyle} from './formatter.ts';
 import { withPackageLock, withPackageLockAsync } from './package-locking.ts';
 import {withSourceWriter,withSourceWriterAsync} from './source-transaction.ts';
 import { acceptsCompiler } from './package-compatibility.ts';
@@ -37,7 +39,8 @@ export interface ProjectPackages {
   specifications: Record<string, string>;
 }
 
-export const compilerVersion = (): string => JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')).version;
+export {compilerVersion} from './compiler-version.ts';
+import {compilerVersion} from './compiler-version.ts';
 export const packageAlias = (name: string): boolean => /^[a-z][a-z0-9_]*$/.test(name) && name !== 'august';
 
 /** Repository imports declare their dependencies beside the code that uses them. */
@@ -156,6 +159,25 @@ export function readPackage(directory: string): { manifest: PackageManifest; sou
   const declared = manifest.dependencies ?? {};
   for (const alias of Object.keys(declared)) assertAlias(sourceRoot, alias);
   return { manifest, sourceRoot };
+}
+
+/** Derive an import spelling without changing the source identity in the lock. */
+export function suggestedPackageAlias(root: string, request: string): string {
+  let name: string;
+  if (isGitSource(request)) {
+    const source = gitReference(request);
+    name = source.folder ? basename(source.folder) : basename(new URL(source.repository).pathname).replace(/\.git$/, '');
+  } else if (request.startsWith('npm:')) {
+    normalizeSpecifier(request, root);
+    name = /^npm:((?:@[^/]+\/)?[^@]+)@/.exec(request)![1];
+  } else {
+    const path = normalizeSpecifier(request, root).slice(5);
+    name = lstatSync(path).isDirectory() && existsSync(join(path, 'aug-package.json'))
+      ? readPackage(path).manifest.name : basename(path).replace(/\.tgz$/, '');
+  }
+  const alias = name.split('/').at(-1)!.toLowerCase().replace(/^(?:august|aug)[-_]/, '').replace(/[^a-z0-9_]+/g, '_');
+  if (!packageAlias(alias)) throw new Error(`Cannot derive an import alias for ${request}; choose one with --as NAME`);
+  return alias;
 }
 
 function assertAlias(root: string, alias: string): void {
@@ -296,9 +318,9 @@ export function prepareRunPackages(root: string, offline = false, frozen = false
 }
 
 /** Ordinary CLI runs verify native packages before accepting any new source revision. */
-export async function prepareRunPackagesWithNative(root: string, offline = false, frozen = false): Promise<void> {
+export async function prepareRunPackagesWithNative(root: string, offline = false, frozen = false, onNative?:()=>void): Promise<void> {
   const preparation=runPackagePreparation(root,frozen);
-  if(preparation)await installPackagesWithNative(root,preparation.frozen,offline);
+  if(preparation)await installPackagesWithNative(root,preparation.frozen,offline,false,onNative);
 }
 
 export function installPackages(root: string, frozen = false, offline = false, update = false): PackageLock {
@@ -307,9 +329,10 @@ export function installPackages(root: string, frozen = false, offline = false, u
     try { return publishSourceGraph(root, candidate); } finally { rmSync(candidate.stage, {recursive:true,force:true}); }
   }));
 }
-function planInstallation(root: string, frozen: boolean, offline: boolean, update: boolean): SourceCandidate {
+function planInstallation(root: string, frozen: boolean, offline: boolean, update: boolean, recover = true): SourceCandidate {
   if (frozen && update) throw new Error('--frozen and --update cannot be used together.');
-  recoverAddConfiguration(root);
+  if (recover) recoverAddConfiguration(root);
+  else if (existsSync(join(root,'.aug-add.json'))) throw new Error('UPDATE_PENDING: A pending aug add transaction needs recovery. Run aug install before previewing updates.');
   const loaded = loadConfig(root);
   if (loaded.diagnostics.length) throw new Error(loaded.diagnostics.map(issue => issue.message).join('\n'));
   const library = isLibrary(root) ? readPackage(root) : undefined;
@@ -323,6 +346,30 @@ function planInstallation(root: string, frozen: boolean, offline: boolean, updat
   const candidate=stageSourceGraph(root, specifications, frozen, offline, previous, update);
   candidate.baseLock=baseLock;
   return candidate;
+}
+
+/** Resolve an isolated update graph. No candidate becomes an accepted snapshot or lock. */
+export function withPackageUpdatePreview<T>(directory:string, offline:boolean,
+  inspect:(candidate:{lock:PackageLock;cache:string;previous:PackageLock})=>T):T {
+  const root=resolve(directory);
+  return withPackageLock(join(root,'.aug-install.lock'),()=>{
+    if(existsSync(join(root,'.aug-add.json')))throw new Error('UPDATE_PENDING: A pending aug add transaction needs recovery. Run aug install before previewing updates.');
+    if(!existsSync(join(root,'aug.lock.json')))throw new Error('UPDATE_LOCK: Preview needs an accepted aug.lock.json. Run aug install or aug run first.');
+    const previous=readPackageLock(join(root,'aug.lock.json')),self=isLibrary(root)?readPackage(root):undefined,sourceRoot=self?.sourceRoot??root;
+    const metadata=['main.yaml','aug-package.json','package.json','native.abi.json','aug.lock.json'];
+    const inputs=[...metadata.map(file=>join(root,file)),...(self?.manifest.native?[join(root,self.manifest.native.bindings)]:[]),
+      ...previous.packages.flatMap(entry=>[...metadata.map(file=>join(root,'.aug-packages',entry.path,file)),...(entry.native?[join(root,'.aug-packages',entry.path,entry.native.bindings)]:[])])];
+    const revision=()=>createHash('sha256').update(JSON.stringify([...new Set([...sourcePaths(root),...inputs])]
+      .sort().map(file=>[relative(root,file),installedText(file)??null]))).digest('hex');
+    const verifyAccepted=()=>projectPackages(root,previous.specifications,sourceRoot).diagnostics;
+    const baseIssues=verifyAccepted();if(baseIssues.length)throw new Error('UPDATE_BASE: The accepted dependency snapshot does not verify. '+baseIssues.map(issue=>issue.message).join('; '));
+    const base=revision(),candidate=planInstallation(root,false,offline,true,false);
+    try {
+      const report=inspect({lock:candidate.lock,cache:candidate.stage,previous:candidate.previous!});
+      if(base!==revision()||verifyAccepted().length)throw new Error('UPDATE_STALE: Source, configuration or the accepted lock changed during preview. No update was accepted; retry the preview.');
+      return report;
+    }finally{rmSync(candidate.stage,{recursive:true,force:true});}
+  });
 }
 
 const isLibrary = (root: string): boolean => existsSync(join(root, 'aug-package.json')) ||
@@ -493,30 +540,36 @@ function publishSourceGraph(root: string, candidate: SourceCandidate): PackageLo
 }
 
 /** Consumers accept a new source lock only after all required native artifacts verify. */
-export async function installPackagesWithNative(root: string, frozen = false, offline = false, update = false): Promise<PackageLock> {
+export async function installPackagesWithNative(root: string, frozen = false, offline = false, update = false, onNative?:()=>void): Promise<PackageLock> {
   return withPackageLockAsync(join(root,'.aug-install.lock'),()=>withSourceWriterAsync(root,async()=>{
     const candidate=planInstallation(root,frozen,offline,update);
     try {
       const {resolveNativePackages}=await import('./native-artifacts.ts');
+      onNative?.();
       await resolveNativePackages(root,candidate.lock,candidate.stage,{frozen,offline});
       return publishSourceGraph(root,candidate);
     } finally { rmSync(candidate.stage,{recursive:true,force:true}); }
   }));
 }
 
-export function initPackage(directory: string, name: string, npmMetadata = false): void {
+/** Create a source library with explicit formatting preferences, public exports and same-file tests. */
+export function initPackage(directory: string, name: string, npmMetadata = false, preferences: Partial<SourceStyle> = {}): void {
+  const style = sourceStyle(preferences);
   if (!npmName.test(name)) throw new Error('Package name must be an npm name, for example @owner/aug-math');
   if (existsSync(directory) && readdirSync(directory).length) throw new Error('Package init requires a new or empty directory');
+  const arithmetic = formatSource(join(directory, 'src/arithmetic.aug'),
+    '/** Add two integers. @param left First value. @param right Second value. @return Their sum. */\nadd(int left, int right):\n    return left + right\n\ntest add:\n    when addition:\n        it adds_two_integers:\n            assert(add(left=2, right=3) == 5)\n', style);
   mkdirSync(join(directory, 'src'), { recursive: true });
-  writeFileSync(join(directory, 'AGENTS.md'), agentInstructions);
+  writeFileSync(join(directory, 'AGENTS.md'), libraryAgentInstructions);
+  writeFileSync(join(directory, 'main.yaml'), styleConfiguration(style));
   const manifest: PackageManifest = { format: 1, name, version: '0.1.0', compiler: compilerVersion(), source: 'src', dependencies: {} };
   writeJson(join(directory, 'aug-package.json'), manifest);
   if (npmMetadata) writeJson(join(directory, 'package.json'), { name, version: manifest.version, description: 'An August source library',
-    files: ['src', '.aug-spec', 'aug-package.json', 'README.md', 'LICENSE'], exports: { './aug-package.json': './aug-package.json' }, dependencies: {} });
+    files: ['src', '.aug-spec', 'aug-package.json', 'main.yaml', 'README.md', 'LICENSE'], exports: { './aug-package.json': './aug-package.json' }, dependencies: {} });
   writeFileSync(join(directory, 'src/export.aug'), 'export add from arithmetic\n');
-  writeFileSync(join(directory, 'src/arithmetic.aug'), '/** Add two integers. @param left First value. @param right Second value. @return Their sum. */\nadd(int left, int right) returns int {\n    return left + right\n}\n\ntest add {\n    when addition {\n        it adds_two_integers {\n            assert(add(left=2, right=3) == 5)\n        }\n    }\n}\n');
+  writeFileSync(join(directory, 'src/arithmetic.aug'), arithmetic);
   writeFileSync(join(directory, 'README.md'), `# ${name}\n\nAugust ${compilerVersion()} source library. Public exports live in src/export.aug.\n`);
-  writeFileSync(join(directory, '.gitignore'), '.aug-build/\n.aug-changes/\n.aug-packages/\n.aug-install-*/\n.aug-lock-*/\n.aug-write-*/\n.aug-add.json*\n*.aug.tmp\nnode_modules/\n*.tgz\n');
+  writeFileSync(join(directory, '.gitignore'), '.aug-build/\n.aug-changes/\n.aug-change-lock/\n.aug-write-*\n.aug-packages/\n.aug-install-*/\n.aug-lock-*/\n.aug-write-*/\n.aug-add.json*\n*.aug.tmp\nnode_modules/\n*.tgz\n');
 }
 
 /** Synchronize transport metadata; August's manifest owns dependency aliases. */
@@ -526,6 +579,7 @@ export function preparePackage(root: string): void {
   transport.name = manifest.name; transport.version = manifest.version;
   transport.dependencies = manifest.dependencies ?? {};
   transport.files = [...new Set([...(Array.isArray(transport.files)?transport.files:['README.md','LICENSE']),manifest.source,'.aug-spec','aug-package.json'])];
+  if(existsSync(join(root,'main.yaml')))transport.files.push('main.yaml');
   if(manifest.native)transport.files.push('native.abi.json','THIRD_PARTY_NOTICES.md');
   writeJson(join(root, 'package.json'), transport);
   readPackage(root);
@@ -560,10 +614,12 @@ function recoverAddConfiguration(root:string,force=false):void {
 }
 
 /** Give a source package a short import name and install its verified dependency graph. */
-function addConfiguration(root: string, request: string, alias: string): void {
+function addConfiguration(root: string, request: string, alias: string, derived = false): void {
   recoverAddConfiguration(root);
   const loaded = loadConfig(root);
   if (loaded.diagnostics.length) throw new Error(loaded.diagnostics.map(issue => issue.message).join('\n'));
+  if (derived && loaded.config.packages[alias] && loaded.config.packages[alias] !== request)
+    throw new Error(`Package alias ${alias} already names ${loaded.config.packages[alias]}; choose a different alias with --as NAME`);
   assertAlias(isLibrary(root) ? readPackage(root).sourceRoot : root, alias); normalizeSpecifier(request, root);
   const path = join(root, 'main.yaml'), existed = existsSync(path), before = existed ? readFileSync(path, 'utf8') : '';
   const dependencies = { ...loaded.config.packages, [alias]: request };
@@ -596,10 +652,10 @@ export function addPackage(root: string, request: string, alias: string, offline
 }
 
 /** An artifact failure restores the prior dependency aliases as well as leaving its lock unchanged. */
-export async function addPackageWithNative(root:string,request:string,alias:string,offline=false):Promise<PackageLock> {
+export async function addPackageWithNative(root:string,request:string,alias:string|undefined,offline=false):Promise<PackageLock> {
   return withPackageLockAsync(join(root,'.aug-install.lock'),()=>withSourceWriterAsync(root,async()=>{
     try {
-      addConfiguration(root,request,alias);
+      addConfiguration(root,request,alias ?? suggestedPackageAlias(root,request),alias === undefined);
       const candidate=planInstallation(root,false,offline,false);
       try{
         const {resolveNativePackages}=await import('./native-artifacts.ts');

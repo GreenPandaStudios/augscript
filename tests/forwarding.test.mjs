@@ -12,7 +12,7 @@ import {generateSpecs} from '../src/spec.ts';
 import {formatFile} from '../src/formatter.ts';
 import {hoverInfo} from '../src/editor.ts';
 import {definitionAt} from '../src/navigation.ts';
-import {planCheckedChange,publicInterfaceDelta} from '../src/checked-changes.ts';
+import {planCheckedChange,publicInterfaceDelta} from '../src/checked-change-requests.ts';
 import {completions,semanticTokens} from '../src/editor.ts';
 
 function fixture(t,files){const root=mkdtempSync(join(tmpdir(),'aug-forward-'));t.after(()=>rmSync(root,{recursive:true,force:true}));

@@ -15,7 +15,7 @@ function fixture(t){const root=mkdtempSync(join(tmpdir(),'aug-change-cli-'));t.a
  writeFileSync(join(root,'gateway.aug'),'import increment from core\nforward dispatch to increment\n\ntest dispatch { when acceptance { it increments { assert(condition=dispatch(value=3) == 4) } } }\n');return root;}
 const run=(root,...args)=>spawnSync(process.execPath,[cli,...args],{cwd:root,encoding:'utf8',timeout:30000});
 test('CLI context, plan, independent check and apply exchange exact revision-bearing JSON',t=>{
- const root=fixture(t),context=run(root,'context',root,'--file','core.aug','--name','increment','--json');assert.equal(context.status,0,context.stderr);
+ const root=fixture(t),context=run(root,'change','context',root,'--file','core.aug','--name','increment','--json');assert.equal(context.status,0,context.stderr);
  const packet=JSON.parse(context.stdout);assert(packet.coverage.requiredContextComplete);assert(packet.compilerBuild);assert(!context.stdout.includes(root));
  const symbols=JSON.parse(run(root,'symbols',root).stdout),alias=symbols.find(symbol=>symbol.id==='gateway.aug:dispatch');
  assert.equal(alias.kind,'forward');assert.equal(alias.contract.inputs[0].label,'value');assert.equal(alias.contract.provenance.inputs,'inherited');
@@ -39,9 +39,11 @@ test('reader epochs and independent processes refuse concurrent writers',async t
 test('binding and assignment-as-condition mistakes have parser diagnostics and deterministic syntax fixes',t=>{
  const root=fixture(t);for(const [source,code,after]of [
  ['example() { let value = 3; return value }\n','BINDING','example() { value = 3; return value }\n'],
- ['example(int x) { if x = 3 { return 1 } return 0 }\n','COMPARISON','example(int x) { if x == 3 { return 1 } return 0 }\n']]){
+ ['example(int x) { if x = 3 { return 1 } return 0 }\n','CONDITION','example(int x) { if x == 3 { return 1 } return 0 }\n']]){
   const file=join(root,'example.aug');writeFileSync(file,source);const checked=analyzeChangeProject(root);assert(checked.diagnostics.some(issue=>issue.code===code));
-  const fix=suggestedFixes(checked,file).find(fix=>fix.issue.code===code);assert(fix);let candidate=source;for(const edit of fix.edits)candidate=candidate.slice(0,edit.start)+edit.text+candidate.slice(edit.end);assert.equal(candidate,after);
+  const fix=suggestedFixes(checked,file).find(fix=>fix.issue.code===code);let candidate=after;
+  if(code==='CONDITION')assert.equal(fix,undefined,'The author must choose the intended comparison.');
+  else {assert(fix);candidate=source;for(const edit of fix.edits)candidate=candidate.slice(0,edit.start)+edit.text+candidate.slice(edit.end);assert.equal(candidate,after);}
   writeFileSync(file,candidate);assert.deepEqual(analyzeChangeProject(root).diagnostics,[]);
  }
 });

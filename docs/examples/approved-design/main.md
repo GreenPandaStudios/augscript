@@ -32,7 +32,7 @@ pageClass: aug-example-page
 
 ::: code-group
 
-```aug [Indentation]
+```aug [Indentation] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiaW5kZW50Iiwic291cmNlU2hhMjU2IjoiMzljNmFkZDU2MWM5ZWUwYTc2N2ZjYWQ2MjNkNzQ4N2RiMDVmNThkNWRkZGNlZjdmMWU3MWEwYjBkNjdhMmEwMyIsImZvcm1hdHRlZFNoYTI1NiI6IjA2NDIwOWJhZjczOGRjMGMyNGQwMTM3YTc1ZDg4NTU4ZDlhODFjMjU3ZjlhN2VjNTQ1Y2ZkMDdjNDA3ZGY0YWUiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDgtTDE1IiwiZmlyc3QiOjgsImxhc3QiOjE1LCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTEiXX0seyJpZCI6InNvdXJjZS1MMTUtTDIyIiwiZmlyc3QiOjE1LCJsYXN0IjoyNCwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0yIl19LHsiaWQiOiJzb3VyY2UtTDE4LUwyNyIsImZpcnN0IjoyMCwibGFzdCI6MjksImJhY2tsaW5rcyI6WyIjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMyJdfSx7ImlkIjoic291cmNlLUwyNS1MMjciLCJmaXJzdCI6MjcsImxhc3QiOjI5LCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTQiXX1dfQ
 // aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Console and SystemConsole from august.io
 import Application and ApplicationImpl and Fruit and double and RangeError from domain
@@ -64,7 +64,7 @@ catch RangeError error:
     print(value="negative amount rejected")
 ```
 
-```aug [Braces]
+```aug [Braces] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiYnJhY2VzIiwic291cmNlU2hhMjU2IjoiMzljNmFkZDU2MWM5ZWUwYTc2N2ZjYWQ2MjNkNzQ4N2RiMDVmNThkNWRkZGNlZjdmMWU3MWEwYjBkNjdhMmEwMyIsImZvcm1hdHRlZFNoYTI1NiI6IjIyYzQ0Mjk1YTVmZWE1MDYzNmM1MWVmZDdhMmNhOWM2ZTU0MjFiZWEyZTk2NTQzM2QwMWMyNmEwNmVkODAzMDAiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDgtTDE1IiwiZmlyc3QiOjgsImxhc3QiOjE4LCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTEiXX0seyJpZCI6InNvdXJjZS1MMTUtTDIyIiwiZmlyc3QiOjE2LCJsYXN0IjoyOSwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0yIl19LHsiaWQiOiJzb3VyY2UtTDE4LUwyNyIsImZpcnN0IjoyMywibGFzdCI6MzYsImJhY2tsaW5rcyI6WyIjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMyJdfSx7ImlkIjoic291cmNlLUwyNS1MMjciLCJmaXJzdCI6MzIsImxhc3QiOjM2LCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTQiXX1dfQ
 // aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Console and SystemConsole from august.io
 import Application and ApplicationImpl and Fruit and double and RangeError from domain
@@ -119,13 +119,21 @@ catch RangeError error {
 
 ### Startup
 
-It sets `app` to the instance provided for `Application`. It calls [`app.start`](domain/app.md#symbol-Application.start). It sets `names` to a map with `1` mapped to `"apple"`; `2` mapped to `"pear"`. If the value under `2` in `names` is null, it prints `"missing fruit"`.
+::: spec-paragraph specification-paragraph-1
+It sets `app` to the instance provided for `Application`. It calls [`app.start`](domain/app.md#symbol-Application.start). It sets `names` to a map with `1` mapped to `"apple"`; `2` mapped to `"pear"`. If the value under `2` in `names` is null, it prints `"missing fruit"`. [source](main.md#source-L8-L15)
+:::
 
-If the value under `2` in `names` is not null, using `name` for it prints `name`. It splits a tuple containing `3`, `"plum"` into `code` and `label` in order. It prints the number of elements in a set containing a [`Fruit`](domain/models.md#symbol-Fruit) with `code` and `name` from `label`, a [`Fruit`](domain/models.md#symbol-Fruit) with `name` from `label` and `code`. Within a task and ownership scope, it sets `counter` to the instance provided for `Counter`.
+::: spec-paragraph specification-paragraph-2
+If the value under `2` in `names` is not null, using `name` for it prints `name`. It reads a tuple containing `3`, `"plum"` once and binds `[0]` as `code` and `[1]` as `label`. It prints the number of elements in a set containing a [`Fruit`](domain/models.md#symbol-Fruit) with `code` and `name` from `label`, a [`Fruit`](domain/models.md#symbol-Fruit) with `name` from `label` and `code`. Within a task and ownership scope, it sets `counter` to the instance provided for `Counter`. [source](main.md#source-L15-L22)
+:::
 
-With temporary permission to change `counter`, it calls [`counter.increment`](counters.md#symbol-Counter.increment). It prints [`counter.value`](counters.md#symbol-Counter.value). On leaving this scope, join its child tasks and release its local values. It prints [`double`](domain/numbers.md#symbol-double) with `amount` `7`.
+::: spec-paragraph specification-paragraph-3
+With temporary permission to change `counter`, it calls [`counter.increment`](counters.md#symbol-Counter.increment). It prints [`counter.value`](counters.md#symbol-Counter.value). On leaving this scope, join its child tasks and release its local values. It prints [`double`](domain/numbers.md#symbol-double) with `amount` `7`. [source](main.md#source-L18-L27)
+:::
 
-It calls [`double`](domain/numbers.md#symbol-double) with `amount` `-1`. If this work raises [`RangeError`](domain/numbers.md#symbol-RangeError), it prints `"negative amount rejected"`.
+::: spec-paragraph specification-paragraph-4
+It calls [`double`](domain/numbers.md#symbol-double) with `amount` `-1`. If this work raises [`RangeError`](domain/numbers.md#symbol-RangeError), it prints `"negative amount rejected"`. [source](main.md#source-L25-L27)
+:::
 
 ### Dependencies
 

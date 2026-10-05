@@ -80,5 +80,58 @@
   },
   "worker-guide": {
     "stdout": "10\n5\n"
+  },
+  "bounded-ranges": {
+    "stdout": "1\n2\n3\n"
+  },
+  "checked-math": {
+    "stdout": "0.30\n"
+  },
+  "reusable-services": {
+    "stdout": "9\n",
+    "tests": 1
+  },
+  "boundary-tests": {
+    "stdout": "-1\n",
+    "tests": 5
+  },
+  "acceptance-review": {
+    "stdout": "8\n",
+    "tests": 3
+  },
+  "match-values-guide": {
+    "stdout": "Guest\n7\n"
+  },
+  "binding-patterns-guide": {
+    "stdout": "Ada\n16\nAda\n"
+  },
+  "collection-functions-guide": {
+    "stdout": "7\n3\n-1\n0\n3\n7\n"
+  },
+  "comprehension-guide": {
+    "stdout": "Ada\nSam\n"
+  },
+  "pure-callbacks-guide": {
+    "stdout": "true\n3\n4\n6\n"
+  },
+  "closed-choices-guide": {
+    "stdout": "receipt-42\nnot available\n",
+    "tests": 2
+  },
+  "error-context-guide": {
+    "stdout": "read settings\nconfig.json\n",
+    "tests": 2
+  },
+  "measure-text-guide": {
+    "stdout": "14\n5\n7\n2\ne\u0301\n\ud83d\udc69\u200d\ud83d\udcbb\n"
+  },
+  "domain-values-guide": {
+    "stdout": "2000-02-29\nPT1.250S\norder_42\nhttps://api.example.com/orders\ndocs/api/time.md\nR\u00e9sum\u00e9\n"
+  },
+  "internal-service": {
+    "stdout": "Hello, Ada!\n"
+  },
+  "retry-policy-guide": {
+    "stdout": "After attempt 1: 100 ms\nAfter attempt 2: 500 ms\nNo attempts remain\n"
   }
 }

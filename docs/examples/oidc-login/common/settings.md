@@ -48,7 +48,7 @@ pageClass: aug-example-page
 
 ::: code-group
 
-```aug [Indentation]
+```aug [Indentation] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiaW5kZW50Iiwic291cmNlU2hhMjU2IjoiNjc2MDFjNGQ5MjQzZDZjZGYyNDEzNTU1NzNkNWM1NGNiZjgzNmFiOTJhMGMyNjY5YzIwYTEzZmFiNTcyMmI3YiIsImZvcm1hdHRlZFNoYTI1NiI6IjU3MjA3MWRhYmExYjFiNGE3OTg3Nzg2MTdkMzlhMjA2ODg2ZDE1MjkzN2JmZWJhZWRiYTRlYWM2OGVkODU5ZGQiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDMiLCJmaXJzdCI6MywibGFzdCI6MywiYmFja2xpbmtzIjpbIiNzeW1ib2wtU2V0dGluZ3MiXX0seyJpZCI6InNvdXJjZS1MNCIsImZpcnN0Ijo0LCJsYXN0IjoxMiwiYmFja2xpbmtzIjpbIiNzeW1ib2wtc2V0dGluZ3MiXX0seyJpZCI6InNvdXJjZS1MNSIsImZpcnN0Ijo1LCJsYXN0IjoxMiwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0xIl19XX0
 // aug-spec: "settings.aug.md" explains this file. Read it before changes; refresh with aug spec.
 /** Explicit loopback development settings. The provider accepts one registered client and its exact callback URI. */
 record Settings(string baseUrl, string issuer, string clientId, string callback, int sessionSeconds, bool secureCookies)
@@ -63,7 +63,7 @@ settings():
     )
 ```
 
-```aug [Braces]
+```aug [Braces] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiYnJhY2VzIiwic291cmNlU2hhMjU2IjoiNjc2MDFjNGQ5MjQzZDZjZGYyNDEzNTU1NzNkNWM1NGNiZjgzNmFiOTJhMGMyNjY5YzIwYTEzZmFiNTcyMmI3YiIsImZvcm1hdHRlZFNoYTI1NiI6IjBhN2VjYzk2ODI3NGQwODYyYzA1ZTBiY2NhZDQ4NWJkM2Q4ZmNmZjYxZjdlMTNjOGNmOTQ5N2ZiZDkzYTVmMzciLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDMiLCJmaXJzdCI6MywibGFzdCI6MywiYmFja2xpbmtzIjpbIiNzeW1ib2wtU2V0dGluZ3MiXX0seyJpZCI6InNvdXJjZS1MNCIsImZpcnN0Ijo0LCJsYXN0IjoxMywiYmFja2xpbmtzIjpbIiNzeW1ib2wtc2V0dGluZ3MiXX0seyJpZCI6InNvdXJjZS1MNSIsImZpcnN0Ijo1LCJsYXN0IjoxMiwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0xIl19XX0
 // aug-spec: "settings.aug.md" explains this file. Read it before changes; refresh with aug spec.
 /** Explicit loopback development settings. The provider accepts one registered client and its exact callback URI. */
 record Settings(string baseUrl, string issuer, string clientId, string callback, int sessionSeconds, bool secureCookies)
@@ -87,13 +87,23 @@ settings() {
 
 ## Compiled specification {#specification}
 
-### `Settings` · immutable record · [source](settings.md#code) {#symbol-Settings}
+### `Settings` · immutable record · [source](settings.md#source-L3) {#symbol-Settings}
 
 Explicit loopback development settings. The provider accepts one registered client and its exact callback URI. It takes `baseUrl`, `issuer`, `clientId`, and `callback` as strings, kept read-only, `sessionSeconds` as an integer, kept read-only, and `secureCookies` as a boolean, kept read-only.
 
-### `settings` · [source](settings.md#code) {#symbol-settings}
+### `settings` · [source](settings.md#source-L4) {#symbol-settings}
 
-It returns a [`Settings`](settings.md#symbol-Settings) with `baseUrl` `"http://127.0.0.1:8787"`, `issuer` `"http://127.0.0.1:8787/provider"`, `clientId` `"august-login-app"`, `callback` `"http://127.0.0.1:8787/login/callback"`, `sessionSeconds` `900`, and `secureCookies` `false`.
+::: spec-paragraph specification-paragraph-1
+It returns a [`Settings`](settings.md#symbol-Settings) with `baseUrl` `"http://127.0.0.1:8787"`, `issuer` `"http://127.0.0.1:8787/provider"`, `clientId` `"august-login-app"`, `callback` `"http://127.0.0.1:8787/login/callback"`, `sessionSeconds` `900`, and `secureCookies` `false`. [source](settings.md#source-L5)
+:::
+
+::: details Checked interface
+
+```text
+settings() returns Settings
+```
+
+:::
 
 ::::
 

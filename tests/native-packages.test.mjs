@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
-import {mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, realpathSync,existsSync} from 'node:fs';
+import {mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, realpathSync,existsSync,symlinkSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {test} from 'node:test';
 import {createHash} from 'node:crypto';
 import {readPackage, compilerVersion,installPackages,projectPackages} from '../src/package-manager.ts';
-import {prepareNativePackages} from '../src/native-artifacts.ts';
+import {prepareNativePackages,nativePackageSelections} from '../src/native-artifacts.ts';
 import {nativeTarget, selectNativeArtifact} from '../src/native-contracts.ts';
 import {loadProject} from '../src/project.ts';
 import {checkProject} from '../src/checker.ts';
@@ -176,4 +176,39 @@ test('fresh native resource results do not retain loans, while managed aliases s
   let errors=checkProject(loadProject(root)).diagnostics.filter(d=>d.severity!=='warning');assert.deepEqual(errors,[]);
   writeFileSync(join(root,'src/api.aug'),prefix+'copy(borrow Handle parent) returns Handle:\n    return parent\n');
   errors=checkProject(loadProject(root)).diagnostics;assert.ok(errors.some(d=>d.code==='BORROW'&&/cannot escape/.test(d.message)),JSON.stringify(errors));
+}));
+
+test('format 2 retains a source-owned member-manifest digest for native selections',()=>fixture((root,manifest,save)=>{
+  manifest.native.artifacts[0]={...artifact,fileManifestSha256:'c'.repeat(64)};save();
+  const selected=readPackage(root).manifest.native.artifacts[0];
+  assert.equal(selected.fileManifestSha256,'c'.repeat(64));
+  const app=join(root,'pinned-consumer');mkdirSync(app);
+  writeFileSync(join(app,'main.yaml'),'packages:\n  library: ".."\n');writeFileSync(join(app,'main.aug'),'');
+  const lock=installPackages(app,false,true);
+  assert.equal(lock.packages[0].native.artifacts[0].fileManifestSha256,'c'.repeat(64));
+  assert.equal([...projectPackages(app,lock.specifications).scopes.values()][0].native.artifacts[0].fileManifestSha256,'c'.repeat(64));
+}));
+
+test('native member-manifest pins reject malformed digests and remain tied to verified source',()=>fixture((root,manifest,save)=>{
+  for(const value of [null,42,'','C'.repeat(64),'c'.repeat(63)]){
+    manifest.native.artifacts[0]={...artifact,fileManifestSha256:value};save();
+    assert.throws(()=>readPackage(root),/artifact.fileManifestSha256 must be a lowercase SHA-256 digest/);
+  }
+  manifest.native.artifacts[0]={...artifact,fileManifestSha256:'c'.repeat(64)};save();
+  const app=join(root,'consumer');mkdirSync(app);
+  writeFileSync(join(app,'main.yaml'),'packages:\n  library: ".."\n');writeFileSync(join(app,'main.aug'),'');
+  installPackages(app,false,true);
+  const file=join(app,'aug.lock.json'),lock=JSON.parse(readFileSync(file));
+  lock.packages[0].native.artifacts[0].fileManifestSha256='d'.repeat(64);
+  writeFileSync(file,JSON.stringify(lock));
+  const rejected=projectPackages(app,lock.specifications);
+  assert.equal(rejected.scopes.size,0);assert.match(rejected.diagnostics[0].message,/Native metadata.*differs.*verified source manifest/);
+}));
+
+
+test('a native library has identical selections through a directory alias',()=>fixture(root=>{
+  const alias=join(root,'directory-alias');symlinkSync(root,alias,'dir');
+  const lock={format:1,compiler:compilerVersion(),specifications:{},roots:{},packages:[],npm:{}};
+  const selected=path=>nativePackageSelections(path,lock,join(path,'.aug-packages'),nativeTarget('aarch64-apple-darwin','14.0'));
+  assert.deepEqual(selected(alias),selected(root));
 }));

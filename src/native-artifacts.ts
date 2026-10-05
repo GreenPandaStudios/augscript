@@ -1,7 +1,8 @@
 import {createHash} from 'node:crypto';
-import {chmodSync,closeSync,existsSync,lstatSync,mkdirSync,mkdtempSync,openSync,readFileSync,readSync,readdirSync,renameSync,rmSync,writeFileSync} from 'node:fs';
+import {chmodSync,closeSync,existsSync,lstatSync,mkdirSync,mkdtempSync,openSync,readFileSync,readSync,readdirSync,renameSync,realpathSync,rmSync,writeFileSync} from 'node:fs';
 import {homedir} from 'node:os';
-import {join,resolve} from 'node:path';
+import {dirname,join,relative,resolve} from 'node:path';
+import {archiveFileManifestSha256,stageLocalArchive,readRegularNativeFile,nativeArchiveEntry} from './native-archive.ts';
 import {UnpackSync} from 'tar';
 import {withPackageLockAsync} from './package-locking.ts';
 import {replacePackageText} from './package-storage.ts';
@@ -10,7 +11,7 @@ import {compilerVersion,readPackage,readPackageLock,sourcePaths,projectPackages,
 import {sourceAlias} from './git-packages.ts';
 import type {NativeLinkInput} from './llvm-native.ts';
 
-export interface VerifiedArchive {url:string;sha256:string;maximumDownloadBytes:number;maximumUnpackedBytes:number;fileManifest:string}
+export interface VerifiedArchive {url:string;sha256:string;maximumDownloadBytes:number;maximumUnpackedBytes:number;fileManifest:string;fileManifestSha256?:string}
 export interface NativePackageLock {sourcePackage:string;sourceDigest:string;sourceCommit?:string;contractSha256:string;artifact:NativeArtifact}
 export interface LLVMCompilerLock {version:string;llvm:string;host:string;target:string;artifactSha256:string;runtimeSha256:string}
 export interface NativeLock {format:1;compilers?:Record<string,LLVMCompilerLock>;targets:Record<string,{target:NativeTarget;packages:NativePackageLock[]}>}
@@ -21,15 +22,27 @@ const files=(directory:string,prefix=''):string[]=>readdirSync(join(directory,pr
   return entry.isDirectory()?files(directory,name):entry.isFile()?[name]:(()=>{throw new Error('NATIVE_INTEGRITY: Native archives require regular files');})();
 });
 
-/** Verify the complete extracted file set. Hashes never authorize arbitrary install scripts. */
+const authenticatedTransport=(directory:string,archive:VerifiedArchive):string=>join(dirname(directory),archive.sha256+'.tar.gz');
+
+/** Verify every member against a compiler/source-owned pin or the authenticated original archive. */
 export function verifyArtifactFiles(directory:string,archive:VerifiedArchive):Record<string,string> {
-  const path=nativePath(archive.fileManifest),manifest=JSON.parse(readFileSync(join(directory,path),'utf8'));
+  const transport=authenticatedTransport(directory,archive);
+  if(archive.fileManifestSha256===undefined&&!existsSync(transport))throw new Error('NATIVE_INTEGRITY: Cached native artifact has no authenticated original archive. Run aug install online once. '+archive.url);
+  const expectedManifest=archive.fileManifestSha256??archiveFileManifestSha256(transport,archive);
+  const path=nativePath(archive.fileManifest),chunks:Buffer[]=[];
+  let remaining=archive.maximumUnpackedBytes;
+  remaining-=readRegularNativeFile(join(directory,path),Math.min(remaining,16*1024*1024),'unpacked',bytes=>chunks.push(Buffer.from(bytes)));
+  const manifestBytes=Buffer.concat(chunks);
+  if(!/^[0-9a-f]{64}$/.test(expectedManifest)||sha(manifestBytes)!==expectedManifest)
+    throw new Error('NATIVE_INTEGRITY: Artifact file manifest differs from its '+(archive.fileManifestSha256===undefined?'authenticated archive':'declared identity'));
+  const manifest=JSON.parse(manifestBytes.toString('utf8'));
   if(manifest.format!==1||!manifest.files||Array.isArray(manifest.files)||typeof manifest.files!=='object')throw new Error('NATIVE_INTEGRITY: Invalid artifact file manifest');
   const expected=manifest.files as Record<string,string>,actual=files(directory).sort();
   if(JSON.stringify(actual)!==JSON.stringify([...Object.keys(expected),path].sort()))throw new Error('NATIVE_INTEGRITY: Artifact file set differs from its manifest');
   for(const [file,digest] of Object.entries(expected)){
-    nativePath(file);if(!/^[0-9a-f]{64}$/.test(digest)||!lstatSync(join(directory,file)).isFile()||sha(readFileSync(join(directory,file)))!==digest)
-      throw new Error('NATIVE_INTEGRITY: Artifact file hash mismatch: '+file);
+    nativePath(file);if(!/^[0-9a-f]{64}$/.test(digest))throw new Error('NATIVE_INTEGRITY: Invalid file hash: '+file);
+    const hash=createHash('sha256');remaining-=readRegularNativeFile(join(directory,file),remaining,'unpacked',bytes=>hash.update(bytes));
+    if(hash.digest('hex')!==digest)throw new Error('NATIVE_INTEGRITY: Artifact file hash mismatch: '+file);
   }
   return expected;
 }
@@ -55,23 +68,36 @@ export async function downloadVerified(archive:VerifiedArchive):Promise<Buffer> 
 
 /** Content-addressed immutable installs; failed extraction never installs an accepted cache. */
 export async function ensureVerifiedArchive(archive:VerifiedArchive,options:{offline?:boolean;cache?:string;executables?:string[]}={}):Promise<string> {
+  return installVerifiedArchive(archive,options);
+}
+
+async function installVerifiedArchive(archive:VerifiedArchive,options:{offline?:boolean;cache?:string;executables?:string[]},local?:{file:string;verify:(directory:string,pinned:VerifiedArchive)=>void;precommit:()=>void}):Promise<string> {
   if(!/^[0-9a-f]{64}$/.test(archive.sha256)||!Number.isSafeInteger(archive.maximumUnpackedBytes)||archive.maximumUnpackedBytes<1)throw new Error('NATIVE_INTEGRITY: Invalid archive digest or unpacked size bound');
   nativePath(archive.fileManifest);
   const cache=resolve(options.cache??process.env.AUG_NATIVE_ARTIFACT_CACHE??join(homedir(),'.cache/augscript/native-artifacts'));
   mkdirSync(cache,{recursive:true});const destination=join(cache,archive.sha256);
   return withPackageLockAsync(destination+'.lock',async()=>{
-    if(existsSync(destination)){if(lstatSync(destination).isSymbolicLink())throw new Error('NATIVE_INTEGRITY: Artifact cache cannot be a symbolic link');verifyArtifactFiles(destination,archive);return destination;}
+    const cached=existsSync(destination),proof=authenticatedTransport(destination,archive);
+    if(cached&&!local){
+      if(lstatSync(destination).isSymbolicLink())throw new Error('NATIVE_INTEGRITY: Artifact cache cannot be a symbolic link');
+      if(archive.fileManifestSha256!==undefined||existsSync(proof)){verifyArtifactFiles(destination,archive);return destination;}
+      if(options.offline)throw new Error('NATIVE_OFFLINE: Cached native artifact has no authenticated original archive. Run aug install online once. '+archive.url);
+    }
     if(options.offline)throw new Error('NATIVE_OFFLINE: Locked native artifact is not cached. Run aug install online once. '+archive.url);
     const stage=mkdtempSync(join(cache,'.install-')),transport=join(stage,'download.tar.gz'),output=join(stage,'files');mkdirSync(output);
     try{
-      writeFileSync(transport,await downloadVerified(archive));const seen=new Set<string>();let unpacked=0;
+      if(local)stageLocalArchive(local.file,transport,archive.maximumDownloadBytes);
+      else writeFileSync(transport,await downloadVerified(archive));
+      const originalManifest=archiveFileManifestSha256(transport,archive);
+      if(archive.fileManifestSha256!==undefined&&originalManifest!==archive.fileManifestSha256)throw new Error('NATIVE_INTEGRITY: Artifact file manifest differs from its declared identity');
+      const pinned={...archive,fileManifestSha256:originalManifest};
+      if(cached){
+        if(lstatSync(destination).isSymbolicLink())throw new Error('NATIVE_INTEGRITY: Artifact cache cannot be a symbolic link');
+        verifyArtifactFiles(destination,pinned);local?.verify(destination,pinned);local?.precommit();renameSync(transport,proof);return destination;
+      }
       const extractor=new UnpackSync({cwd:output,strict:true,preserveOwner:false,filter:(path,entry)=>{
-        const name=path.replace(/\/$/,'');nativePath(name);
         if(!('type' in entry))throw new Error('NATIVE_INTEGRITY: Expected an archive entry');
-        if(!['File','Directory'].includes(entry.type))throw new Error('NATIVE_INTEGRITY: Archive links and special files are forbidden');
-        if(seen.has(name))throw new Error('NATIVE_INTEGRITY: Duplicate archive path '+name);seen.add(name);
-        unpacked+=entry.size;if(seen.size>20000||unpacked>archive.maximumUnpackedBytes)throw new Error('NATIVE_INTEGRITY: Archive exceeds its unpacked size or file limit');
-        return true;
+        nativeArchiveEntry(path,entry.type,entry.size);return true;
       }});
       // tar's synchronous file convenience API has no error listener. A disk
       // write failure can otherwise become an uncaught stream event instead of
@@ -89,11 +115,34 @@ export async function ensureVerifiedArchive(archive:VerifiedArchive,options:{off
         }while(length);
         extractor.end();if(extractionError)throw extractionError;
       }finally{closeSync(input);}
-      verifyArtifactFiles(output,archive);
+      verifyArtifactFiles(output,pinned);
       for(const executable of options.executables??[]){nativePath(executable);if(!lstatSync(join(output,executable)).isFile())throw new Error('NATIVE_INTEGRITY: Missing verified executable '+executable);chmodSync(join(output,executable),0o755);}
+      local?.verify(output,pinned);local?.precommit();
+      if(archive.fileManifestSha256===undefined)renameSync(transport,proof);
       renameSync(output,destination);return destination;
     }finally{rmSync(stage,{recursive:true,force:true});}
   });
+}
+
+/** Verify a locally built artifact using its published package pins; never build, fetch or publish it. */
+export async function cacheLocalNativeArtifact(directory:string,artifactId:string,file:string,options:{cache?:string}={}) {
+  const root=realpathSync(resolve(directory)),metadataFiles=['aug-package.json','native.abi.json','package.json','main.yaml'];
+  const metadata=()=>JSON.stringify(metadataFiles.map(name=>{
+    const path=join(root,name);if(!existsSync(path))return [name,null];
+    const stat=lstatSync(path);if(!stat.isFile()||stat.isSymbolicLink()||stat.size>16*1024*1024)throw new Error('NATIVE_LOCAL: Package metadata must be bounded regular files: '+name);
+    return [name,sha(readFileSync(path))];
+  }));
+  const before=metadata(),{manifest}=readPackage(root);
+  if(!manifest.native)throw new Error('NATIVE_LOCAL: Select a format-2 native package with a reviewed native.abi.json and real artifact pins.');
+  const artifact=manifest.native.artifacts.find(entry=>entry.id===artifactId);
+  if(!artifact)throw new Error('NATIVE_LOCAL: Unknown artifact '+artifactId+'. Available: '+manifest.native.artifacts.map(entry=>entry.id).join(', '));
+  const unchanged=()=>{if(metadata()!==before)throw new Error('NATIVE_LOCAL_STALE: Package metadata changed while caching the artifact. Review the pins and retry.');};
+  unchanged();let count=0;
+  const output=await installVerifiedArchive(artifact,options,{file:resolve(file),precommit:unchanged,
+    verify:(path,pinned)=>{count=Object.keys(verifyNativeArtifact(path,{...artifact,...pinned})).length;}});
+  return {format:1 as const,compiler:compilerVersion(),package:manifest.name+'@'+manifest.version,metadataSha256:sha(Buffer.from(before)),
+    contractSha256:manifest.native.bindingsSha256,artifact:{id:artifact.id,sha256:artifact.sha256,target:artifact.target},directory:output,files:count,
+    status:'verified' as const,execution:'not-run' as const,publication:'not-run' as const};
 }
 
 /** Extend the existing source lock with exact native target selections. */
@@ -113,19 +162,46 @@ export async function prepareNativePackages(root:string,options:{offline?:boolea
   });
 }
 
-/** Validate an isolated source candidate before its installer publishes the accepted revision. */
-export async function resolveNativePackages(root:string,lock:PackageLock,cache:string,options:{offline?:boolean;frozen?:boolean;target?:NativeTarget}={}):Promise<NativeLinkInput[]> {
+/** Resolve source-verified native selections without downloads, cache creation or lock changes. */
+export function nativePackageSelections(root:string,lock:PackageLock,cache:string,target:NativeTarget=nativeHostTarget()):NativePackageLock[] {
     const self=existsSync(join(root,'aug-package.json'))?readPackage(root):undefined;
-    const target=options.target??nativeHostTarget(),key=target.triple+'/'+(target.os==='macos'?'macos14':target.libc);
     const verified=projectPackages(root,lock.specifications,self?.sourceRoot??root,{lock,cache});
     if(verified.diagnostics.length)throw new Error(verified.diagnostics.map(d=>d.message).join('\n'));
     const packages=[...new Set(verified.scopes.values())].filter(entry=>entry.native).map(entry=>({sourcePackage:entry.name+'@'+entry.version,sourceDigest:entry.digest,
       sourceCommit:lock.git?.find(g=>entry.path.endsWith('packages/'+sourceAlias(g.request)))?.commit,
       contractSha256:entry.native!.bindingsSha256,artifact:selectNativeArtifact(entry.native!.artifacts,target)}));
-    if(self?.manifest.native){const digest=createHash('sha256');
-      for(const file of ['aug-package.json','native.abi.json',...sourcePaths(self.sourceRoot).map(path=>path.slice(root.length+1))].sort())digest.update(file+'\0').update(readFileSync(join(root,file))).update('\0');
+    if(self?.manifest.native){const digest=createHash('sha256'),sourceDirectory=realpathSync(root);
+      for(const file of ['aug-package.json','native.abi.json',...sourcePaths(self.sourceRoot).map(path=>relative(sourceDirectory,path).replaceAll('\\','/'))].sort())digest.update(file+'\0').update(readFileSync(join(sourceDirectory,file))).update('\0');
       packages.push({sourcePackage:self.manifest.name+'@'+self.manifest.version,sourceDigest:digest.digest('hex'),sourceCommit:undefined,contractSha256:self.manifest.native.bindingsSha256,artifact:selectNativeArtifact(self.manifest.native.artifacts,target)});
     }
+    return packages;
+}
+
+/** One lock key is shared by diagnosis, frozen restore and installation. */
+export const nativeTargetKey=(target:NativeTarget):string=>target.triple+'/'+(target.os==='macos'?'macos14':target.libc);
+export const nativeSelectionIdentity=(entries:NativePackageLock[]):string=>JSON.stringify([...new Set(entries.map(entry=>JSON.stringify(entry)))].sort());
+
+export class NativeArtifactContractError extends Error {}
+
+/** Verify both file hashes and every file named by the native deployment contract. */
+export function verifyNativeArtifact(directory:string,artifact:NativeArtifact):Record<string,string> {
+  if(lstatSync(directory).isSymbolicLink())throw new Error('NATIVE_INTEGRITY: Artifact cache cannot be a symbolic link');
+  const supplied=verifyArtifactFiles(directory,artifact);
+  for(const path of [...artifact.link.libraries,...artifact.runtime.files,artifact.provenance,artifact.notices,...(artifact.runtime.closureManifest?[artifact.runtime.closureManifest]:[])])
+    if(!supplied[path])throw new NativeArtifactContractError('NATIVE_INTEGRITY: Artifact is missing declared file '+path);
+  return supplied;
+}
+
+/** Required native components must agree even when packages use different artifacts. */
+export function validateNativeComponents(packages:NativePackageLock[]):void {
+  const components=new Map<string,string>();
+  for(const p of packages)for(const c of p.artifact.components)if(c.required){const identity=c.id+'@'+c.version;
+    if(components.has(c.compatibilityKey)&&components.get(c.compatibilityKey)!==identity)throw new Error('NATIVE_CONFLICT: Incompatible native component '+c.compatibilityKey);components.set(c.compatibilityKey,identity);}
+}
+
+/** Validate an isolated source candidate before its installer publishes the accepted revision. */
+export async function resolveNativePackages(root:string,lock:PackageLock,cache:string,options:{offline?:boolean;frozen?:boolean;target?:NativeTarget}={}):Promise<NativeLinkInput[]> {
+    const target=options.target??nativeHostTarget(),key=nativeTargetKey(target),packages=nativePackageSelections(root,lock,cache,target);
     if(!packages.length)return [];
 
     const native=lock.native??{format:1,targets:{}};
@@ -133,16 +209,12 @@ export async function resolveNativePackages(root:string,lock:PackageLock,cache:s
     const previous=native.targets[key];
     // Older locks repeated identical canonical identities. Compare complete selections,
     // so conflicting digests or artifacts remain mismatches, and keep frozen bytes intact.
-    const selections=(entries:NativePackageLock[]):string=>JSON.stringify([...new Set(entries.map(entry=>JSON.stringify(entry)))].sort());
-    if(options.frozen&&(!previous||!Array.isArray(previous.packages)||previous.packages.length>10000||selections(previous.packages)!==selections(packages)))throw new Error('NATIVE_LOCK: Frozen install has no matching native target lock. Run aug install online to record this target.');
-    const components=new Map<string,string>();
-    for(const p of packages)for(const c of p.artifact.components)if(c.required){const identity=c.id+'@'+c.version;
-      if(components.has(c.compatibilityKey)&&components.get(c.compatibilityKey)!==identity)throw new Error('NATIVE_CONFLICT: Incompatible native component '+c.compatibilityKey);components.set(c.compatibilityKey,identity);}
+    if(options.frozen&&(!previous||!Array.isArray(previous.packages)||previous.packages.length>10000||nativeSelectionIdentity(previous.packages)!==nativeSelectionIdentity(packages)))throw new Error('NATIVE_LOCK: Frozen install has no matching native target lock. Run aug install online to record this target.');
+    validateNativeComponents(packages);
     const inputs:NativeLinkInput[]=[];
     for(const p of packages){const directory=await ensureVerifiedArchive(p.artifact,{offline:options.offline});
-      const supplied=verifyArtifactFiles(directory,p.artifact);
-      for(const path of [...p.artifact.link.libraries,...p.artifact.runtime.files,p.artifact.provenance,p.artifact.notices,...(p.artifact.runtime.closureManifest?[p.artifact.runtime.closureManifest]:[])])if(!supplied[path])throw new Error('NATIVE_INTEGRITY: Artifact is missing declared file '+path);
-      inputs.push({directory,libraries:p.artifact.link.libraries,runtimeFiles:p.artifact.runtime.files,artifactSha256:p.artifact.sha256,
+      const supplied=verifyNativeArtifact(directory,p.artifact);
+      inputs.push({directory,target:p.artifact.target,libraries:p.artifact.link.libraries,runtimeFiles:p.artifact.runtime.files,artifactSha256:p.artifact.sha256,
         metadata:[...Object.keys(supplied).filter(path=>!p.artifact.link.libraries.includes(path)&&!p.artifact.runtime.files.includes(path)),p.artifact.fileManifest]});
     }
     if(!options.frozen){native.targets[key]={target,packages};lock.native=native;}

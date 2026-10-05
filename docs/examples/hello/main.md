@@ -32,7 +32,7 @@ pageClass: aug-example-page
 
 ::: code-group
 
-```aug [Indentation]
+```aug [Indentation] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiaW5kZW50Iiwic291cmNlU2hhMjU2IjoiNmE4OGQ2ZGFhOWEzOWE4MmVjNzM0OWQ4NjcxODllMTcwOWI4NGY4YWI4YTcwNzBmODZkY2ExOTJiZDk4ZTY3NCIsImZvcm1hdHRlZFNoYTI1NiI6IjMwNDNhMjRhODhlOTMwNTE2ODhjYTYyYTYxMmQ4YThiYjZlNThiMGNlODBkZTBjZjYzMzU4YjJlYWMxYjAzZjAiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDktTDEwIiwiZmlyc3QiOjksImxhc3QiOjEwLCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTEiXX1dfQ
 // aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Console and SystemConsole from august.io
 implement Console with SystemConsole
@@ -45,7 +45,7 @@ resolve app to greeter
 greeter.greet(name="AugScript")
 ```
 
-```aug [Braces]
+```aug [Braces] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiYnJhY2VzIiwic291cmNlU2hhMjU2IjoiNmE4OGQ2ZGFhOWEzOWE4MmVjNzM0OWQ4NjcxODllMTcwOWI4NGY4YWI4YTcwNzBmODZkY2ExOTJiZDk4ZTY3NCIsImZvcm1hdHRlZFNoYTI1NiI6IjMwNDNhMjRhODhlOTMwNTE2ODhjYTYyYTYxMmQ4YThiYjZlNThiMGNlODBkZTBjZjYzMzU4YjJlYWMxYjAzZjAiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDktTDEwIiwiZmlyc3QiOjksImxhc3QiOjEwLCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTEiXX1dfQ
 // aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Console and SystemConsole from august.io
 implement Console with SystemConsole
@@ -74,7 +74,9 @@ greeter.greet(name="AugScript")
 
 ### Startup
 
-It sets `greeter` to the instance provided for `app`. It passes `"AugScript"` to [`greeter.greet`](app/greeter.md#symbol-Greeter.greet), using injected `Console`.
+::: spec-paragraph specification-paragraph-1
+It sets `greeter` to the instance provided for `app`. It passes `"AugScript"` to [`greeter.greet`](app/greeter.md#symbol-Greeter.greet), using injected `Console`. [source](main.md#source-L9-L10)
+:::
 
 ### Dependencies
 

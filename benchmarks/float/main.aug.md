@@ -2,10 +2,12 @@
 
 # `main.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=e651a84e48d46ee8fe0911a60eb595995941b3e7b06cdb04c6e833e38c4dbd3d -->
+
 ## Startup
 
-It sets `iterations` to `1000000`. It sets `sum` to `0.0`. It sets `index` to `0`. While `index` is less than `iterations`, it sets `remainder` to `index` minus ((`index` divided by `8`) times `8`); then it sets `sum` to (`sum` plus (`remainder` times `0.125`)) plus `0.5`; then it increases `index` by `1`.
+It sets `iterations` to `1000000`. It sets `sum` to `0.0`. It sets `index` to `0`. While `index` is less than `iterations`, it sets `remainder` to `index` minus ((`index` divided by `8`) times `8`); then it sets `sum` to (`sum` plus (`remainder` times `0.125`)) plus `0.5`; then it increases `index` by `1`. [source](main.aug#L2-L8)
 
-After the loop, it prints `sum` equals `937500.0`. It prints `iterations`.
+After the loop, it prints `sum` equals `937500.0`. It prints `iterations`. [source](main.aug#L9-L10)
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).

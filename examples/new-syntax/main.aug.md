@@ -2,15 +2,17 @@
 
 # `main.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=47b9d94b7e94ed7d426538b109161c243c4dc92c7d7f8a2907e995fd1d945c57 -->
+
 ## Providers
 
 `Console` is provided by [`SystemConsole`](.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-SystemConsole). The same instance is shared. `Logger` is provided by [`ConsoleLogger`](console.aug.md#symbol-ConsoleLogger). The same instance is shared.
 
 ## Startup
 
-It sets `greeter` to a [`Greeter`](greeter.aug.md#symbol-Greeter) with `x` `4` using injected `Logger` for `logger`. It passes `"AugScript"` to [`greeter.greet`](greeter.aug.md#symbol-Greeter.greet), using injected `Console`. It sets `count` to `7`. It sets `count` to [`increment`](math.aug.md#symbol-increment) with `value` from `count`.
+It sets `greeter` to a [`Greeter`](greeter.aug.md#symbol-Greeter) with `x` `4` using injected `Logger` for `logger`. It passes `"AugScript"` to [`greeter.greet`](greeter.aug.md#symbol-Greeter.greet), using injected `Console`. It sets `count` to `7`. It sets `count` to [`increment`](math.aug.md#symbol-increment) with `value` from `count`. [source](main.aug#L9-L12)
 
-It prints `count`.
+It prints `count`. [source](main.aug#L13)
 
 ## Dependencies
 

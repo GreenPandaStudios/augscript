@@ -2,6 +2,8 @@
 
 # `settings.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=67601c4d9243d6cdf241355573d5c54cbf836ab92a0c2669c20a13fab5722b7b -->
+
 <a id="symbol-Settings"></a>
 ## `Settings` · immutable record · [source](settings.aug#L3)
 
@@ -10,4 +12,13 @@ Explicit loopback development settings. The provider accepts one registered clie
 <a id="symbol-settings"></a>
 ## `settings` · [source](settings.aug#L4)
 
-It returns a [`Settings`](settings.aug.md#symbol-Settings) with `baseUrl` `"http://127.0.0.1:8787"`, `issuer` `"http://127.0.0.1:8787/provider"`, `clientId` `"august-login-app"`, `callback` `"http://127.0.0.1:8787/login/callback"`, `sessionSeconds` `900`, and `secureCookies` `false`.
+It returns a [`Settings`](settings.aug.md#symbol-Settings) with `baseUrl` `"http://127.0.0.1:8787"`, `issuer` `"http://127.0.0.1:8787/provider"`, `clientId` `"august-login-app"`, `callback` `"http://127.0.0.1:8787/login/callback"`, `sessionSeconds` `900`, and `secureCookies` `false`. [source](settings.aug#L5)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+settings() returns Settings
+```
+
+</details>

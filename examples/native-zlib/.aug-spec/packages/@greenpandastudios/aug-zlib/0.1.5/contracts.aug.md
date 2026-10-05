@@ -2,6 +2,8 @@
 
 # `contracts.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=f6798626fca5d6d903ab67db6aed84f1052cfcaa2f908451533ac773aab06165 -->
+
 <a id="symbol-CompressionError"></a>
 ## `CompressionError` · class · [source](contracts.aug#L3)
 

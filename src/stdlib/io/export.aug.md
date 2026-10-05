@@ -2,6 +2,8 @@
 
 # `export.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=ddbfb4951c17edac57b1fb13c9be9c27bb34fadc44e9649f5bced200a3e71621 -->
+
 ## Exports
 
 Export the declaration `Console` from [`contracts.aug`](contracts.aug.md#symbol-Console). Export the declaration `SystemConsole` from [`contracts.aug`](contracts.aug.md#symbol-SystemConsole). Export the declaration `FileReader` from [`contracts.aug`](contracts.aug.md#symbol-FileReader). Export the declaration `FileWriter` from [`contracts.aug`](contracts.aug.md#symbol-FileWriter).

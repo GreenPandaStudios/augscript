@@ -28,13 +28,13 @@ pageClass: aug-example-page
 
 ::: code-group
 
-```aug [Indentation]
+```aug [Indentation] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiaW5kZW50Iiwic291cmNlU2hhMjU2IjoiNDRjZDgzZGMyYjU2MWViZGVkOGY5NDUyNjY5OGFhOTZlYzJjNWRhMTUzYjBkMDZlOTZhNDBkNzM4ZTgwYjFhOCIsImZvcm1hdHRlZFNoYTI1NiI6ImU5ZjYzZWUzOWRiMmVlN2Y2YWYyM2VjM2FjN2Y3OGFiMzUxOWM4MjdkNTliZGIwNjEyMmJmNTY5YzI5NTcwYWMiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDMiLCJmaXJzdCI6MywibGFzdCI6MywiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0xIl19XX0
 // aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import announce from native
 announce()
 ```
 
-```aug [Braces]
+```aug [Braces] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiYnJhY2VzIiwic291cmNlU2hhMjU2IjoiNDRjZDgzZGMyYjU2MWViZGVkOGY5NDUyNjY5OGFhOTZlYzJjNWRhMTUzYjBkMDZlOTZhNDBkNzM4ZTgwYjFhOCIsImZvcm1hdHRlZFNoYTI1NiI6ImU5ZjYzZWUzOWRiMmVlN2Y2YWYyM2VjM2FjN2Y3OGFiMzUxOWM4MjdkNTliZGIwNjEyMmJmNTY5YzI5NTcwYWMiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDMiLCJmaXJzdCI6MywibGFzdCI6MywiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0xIl19XX0
 // aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import announce from native
 announce()
@@ -50,7 +50,9 @@ announce()
 
 ### Startup
 
-It calls [`announce`](native.md#symbol-announce).
+::: spec-paragraph specification-paragraph-1
+It calls [`announce`](native.md#symbol-announce). [source](main.md#source-L3)
+:::
 
 ### Dependencies
 

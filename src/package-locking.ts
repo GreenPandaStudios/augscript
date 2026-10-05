@@ -5,7 +5,7 @@ import {randomUUID} from 'node:crypto';
 const code = (error: unknown): string | undefined => error && typeof error === 'object' && 'code' in error ? String(error.code) : undefined;
 
 /** Publish an initialized owner directory atomically. Stale recovery removes only the observed owner. */
-function acquire(path: string): (() => void) | undefined {
+export function acquirePackageLock(path: string): (() => void) | undefined {
   const stage = mkdtempSync(join(dirname(path), '.aug-lock-'));
   const owner = 'owner-' + randomUUID();
   try {
@@ -44,7 +44,7 @@ const timeout = (path: string): Error => new Error('PACKAGE_LOCK: Another August
 export function withPackageLock<T>(path: string, action: () => T): T {
   const deadline = Date.now() + 30000;
   while (true) {
-    const release = acquire(path);
+    const release = acquirePackageLock(path);
     if (release) { try { return action(); } finally { release(); } }
     if (Date.now() >= deadline) throw timeout(path);
     Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 100);
@@ -55,9 +55,15 @@ export function withPackageLock<T>(path: string, action: () => T): T {
 export async function withPackageLockAsync<T>(path: string, action: () => Promise<T>): Promise<T> {
   const deadline = Date.now() + 30000;
   while (true) {
-    const release = acquire(path);
+    const release = acquirePackageLock(path);
     if (release) { try { return await action(); } finally { release(); } }
     if (Date.now() >= deadline) throw timeout(path);
     await new Promise(resolve => setTimeout(resolve, 100));
   }
+}
+
+/** Attempt one exclusive operation. A current or recovered writer leaves this attempt unacquired. */
+export function tryPackageLock<T>(path:string,action:()=>T):{acquired:false}|{acquired:true;value:T} {
+  const release=acquirePackageLock(path);if(!release)return {acquired:false};
+  try{return {acquired:true,value:action()};}finally{release();}
 }

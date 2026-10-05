@@ -2,7 +2,20 @@
 
 # `operations.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=d7eca1ed2cfa49fb0860ccd774b3850c0ecb3bb3532c6b37600e25eeac689f5f -->
+
 <a id="symbol-compute"></a>
 ## `compute` · [source](operations.aug#L2)
 
-It takes `value` as an integer. It returns (`value` times `3`) plus `1`.
+It takes `value` as an integer. It returns (`value` times `3`) plus `1`. [source](operations.aug#L3)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+compute(int value) returns int
+```
+
+It takes `value` as an integer.
+
+</details>

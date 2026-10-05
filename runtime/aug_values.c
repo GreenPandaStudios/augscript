@@ -1,8 +1,11 @@
 #include "aug_runtime.h"
+#include "aug_grapheme_data.h"
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
 #include <limits.h>
+#include <errno.h>
+#include <locale.h>
 
 int64_t aug_string_length(AugValue value) { return (int64_t)value.as.object->text_length; }
 AugValue aug_string_bytes(AugValue value) { return aug_bytes(value.as.object->text, value.as.object->text_length, AUG_BYTES_KIND); }
@@ -97,6 +100,11 @@ bool aug_string_is_decimal(AugValue value) {
   for(size_t i=0;i<value.as.object->text_length;i++)if(value.as.object->text[i]<'0'||value.as.object->text[i]>'9')return false;
   return true;
 }
+int64_t aug_string_compare(AugValue value, AugValue other) {
+  size_t left=value.as.object->text_length,right=other.as.object->text_length;
+  int order=memcmp(value.as.object->text,other.as.object->text,left<right?left:right);
+  return order<0?-1:order>0?1:left<right?-1:left>right?1:0;
+}
 int64_t aug_string_compare_decimal(AugValue value,AugValue other) {
   if(!aug_string_is_decimal(value)||!aug_string_is_decimal(other)){aug_error_named("ConversionError");return 0;}
   const char *a=value.as.object->text,*b=other.as.object->text;size_t an=value.as.object->text_length,bn=other.as.object->text_length;
@@ -129,3 +137,141 @@ AugValue aug_string_trim(AugValue value) {
   while(end>begin){size_t last=end-1;while(last>begin&&(p[last]&0xc0)==0x80)last--;if(!trim_space(text_codepoint(p+last,&width)))break;end=last;}
   return aug_string_n((const char *)p+begin,end-begin);
 }
+
+
+bool aug_string_ends_with(AugValue value, AugValue suffix) {
+  size_t size = value.as.object->text_length, count = suffix.as.object->text_length;
+  return count <= size && !memcmp(value.as.object->text + size - count, suffix.as.object->text, count);
+}
+AugValue aug_string_replace(AugValue value, AugValue search, AugValue replacement) {
+  size_t size = value.as.object->text_length, step = search.as.object->text_length, add = replacement.as.object->text_length;
+  if (!step) return aug_error_named("ConversionError");
+  size_t matches = 0;
+  for (size_t i = 0; i <= size && step <= size - i;) {
+    if (!memcmp(value.as.object->text + i, search.as.object->text, step)) {matches++; i += step;} else i++;
+  }
+  size_t length = size - matches * step;
+  if (matches && add > (SIZE_MAX - length - 1) / matches) abort();
+  length += matches * add;
+  char *output = malloc(length + 1); if (!output) abort();
+  size_t position = 0, i = 0;
+  while (i < size) {
+    if (step <= size - i && !memcmp(value.as.object->text + i, search.as.object->text, step)) {
+      memcpy(output + position, replacement.as.object->text, add); position += add; i += step;
+    } else output[position++] = value.as.object->text[i++];
+  }
+  AugValue result = aug_string_n(output, length); free(output); return result;
+}
+AugValue aug_list_join(AugValue list, AugValue separator) {
+  size_t count = list.as.object->field_count, step = separator.as.object->text_length, length = 0;
+  if (count > 1) {if (step > (SIZE_MAX - 1) / (count - 1)) abort(); length = step * (count - 1);}
+  for (size_t i = 0; i < count; i++) {
+    size_t size = list.as.object->fields[i].as.object->text_length;
+    if (size > SIZE_MAX - length - 1) abort(); length += size;
+  }
+  char *output = malloc(length + 1); if (!output) abort(); size_t position = 0;
+  for (size_t i = 0; i < count; i++) {
+    if (i) {memcpy(output + position, separator.as.object->text, step); position += step;}
+    AugObject *item = list.as.object->fields[i].as.object;
+    memcpy(output + position, item->text, item->text_length); position += item->text_length;
+  }
+  AugValue result = aug_string_n(output, length); free(output); return result;
+}
+int64_t aug_string_code_point_length(AugValue value) {
+  const unsigned char *p = (const unsigned char *)value.as.object->text; size_t size = value.as.object->text_length;
+  if (!aug_valid_utf8(p, size)) {aug_error_named("ConversionError"); return 0;}
+  int64_t count = 0;
+  for (size_t i = 0; i < size; i++) if ((p[i] & 0xc0) != 0x80) count++;
+  return count;
+}
+int64_t aug_string_parse_integer(AugValue value) {
+  const char *text = value.as.object->text; size_t size = value.as.object->text_length, begin = size && text[0] == '-' ? 1 : 0;
+  if (begin == size) {aug_error_named("ConversionError"); return 0;}
+  uint64_t number = 0, limit = begin ? UINT64_C(9223372036854775808) : INT64_MAX;
+  for (size_t i = begin; i < size; i++) {
+    if (text[i] < '0' || text[i] > '9') {aug_error_named("ConversionError"); return 0;}
+    unsigned digit = (unsigned)(text[i] - '0');
+    if (number > (limit - digit) / 10) {aug_error_named("ConversionError"); return 0;}
+    number = number * 10 + digit;
+  }
+  return (begin ? number == UINT64_C(9223372036854775808) ? INT64_MIN : -(int64_t)number : (int64_t)number);
+}
+AugValue aug_string_parse_float(AugValue value) {
+  const char *text = value.as.object->text; size_t size = value.as.object->text_length, i = size && text[0] == '-' ? 1 : 0, digits = i;
+  while (i < size && text[i] >= '0' && text[i] <= '9') i++;
+  if (i == digits) return aug_error_named("ConversionError");
+  if (i < size && text[i] == '.') {digits = ++i; while (i < size && text[i] >= '0' && text[i] <= '9') i++; if (i == digits) return aug_error_named("ConversionError");}
+  if (i < size && (text[i] == 'e' || text[i] == 'E')) {
+    i++; if (i < size && (text[i] == '+' || text[i] == '-')) i++;
+    digits = i; while (i < size && text[i] >= '0' && text[i] <= '9') i++; if (i == digits) return aug_error_named("ConversionError");
+  }
+  if (i != size) return aug_error_named("ConversionError");
+  locale_t invariant = newlocale(LC_NUMERIC_MASK, "C", (locale_t)0); if (!invariant) abort();
+  locale_t previous = uselocale(invariant); errno = 0; char *end;
+  double parsed = strtod(text, &end); int failed = errno == ERANGE || end != text + size || !isfinite(parsed);
+  uselocale(previous); freelocale(invariant);
+  return failed ? aug_error_named("ConversionError") : aug_float(parsed);
+}
+
+/* Default extended grapheme boundaries: Unicode 18.0.0, UAX #29 revision 49.
+   The state follows GB9c, GB11 and GB12/13 without rescanning earlier text. */
+typedef struct {
+  unsigned previous;
+  bool regional_odd, pictograph_extend, zwj_after_pictograph, indic_linker;
+} AugGraphemeState;
+static unsigned grapheme_property(uint32_t point) {
+  if (point < 128) return point == 13 ? AUG_GCB_CR : point == 10 ? AUG_GCB_LF : point < 32 || point == 127 ? AUG_GCB_CONTROL : AUG_GCB_OTHER;
+  size_t begin = 0, end = sizeof(aug_grapheme_ranges) / sizeof(aug_grapheme_ranges[0]);
+  while (begin < end) {
+    size_t middle = begin + (end - begin) / 2;
+    const AugGraphemeRange *range = &aug_grapheme_ranges[middle];
+    if (point < range->first) end = middle;
+    else if (point > range->last) begin = middle + 1;
+    else return range->properties;
+  }
+  return 0;
+}
+static bool grapheme_step(AugGraphemeState *state, unsigned property) {
+  unsigned previous = state->previous & AUG_GCB_MASK, next = property & AUG_GCB_MASK;
+  unsigned conjunct = property >> AUG_INCB_SHIFT;
+  bool boundary = true;
+  if (previous == AUG_GCB_CR && next == AUG_GCB_LF) boundary = false; /* GB3 */
+  else if (previous == AUG_GCB_CR || previous == AUG_GCB_LF || previous == AUG_GCB_CONTROL ||
+           next == AUG_GCB_CR || next == AUG_GCB_LF || next == AUG_GCB_CONTROL) boundary = true; /* GB4/5 */
+  else if (previous == AUG_GCB_L && (next == AUG_GCB_L || next == AUG_GCB_V || next == AUG_GCB_LV || next == AUG_GCB_LVT)) boundary = false; /* GB6 */
+  else if ((previous == AUG_GCB_LV || previous == AUG_GCB_V) && (next == AUG_GCB_V || next == AUG_GCB_T)) boundary = false; /* GB7 */
+  else if ((previous == AUG_GCB_LVT || previous == AUG_GCB_T) && next == AUG_GCB_T) boundary = false; /* GB8 */
+  else if (next == AUG_GCB_EXTEND || next == AUG_GCB_ZWJ || next == AUG_GCB_SPACINGMARK || previous == AUG_GCB_PREPEND) boundary = false; /* GB9/9a/9b */
+  else if (conjunct == AUG_INCB_CONSONANT && state->indic_linker) boundary = false; /* GB9c: no leading consonant is required in revision 49 */
+  else if ((property & AUG_EXTENDED_PICTOGRAPHIC) && previous == AUG_GCB_ZWJ && state->zwj_after_pictograph) boundary = false; /* GB11 */
+  else if (previous == AUG_GCB_REGIONAL_INDICATOR && next == AUG_GCB_REGIONAL_INDICATOR && state->regional_odd) boundary = false; /* GB12/13 */
+  state->zwj_after_pictograph = next == AUG_GCB_ZWJ && state->pictograph_extend;
+  state->pictograph_extend = (property & AUG_EXTENDED_PICTOGRAPHIC) || (next == AUG_GCB_EXTEND && state->pictograph_extend);
+  state->indic_linker = conjunct == AUG_INCB_LINKER || (conjunct == AUG_INCB_EXTEND && state->indic_linker);
+  state->regional_odd = next == AUG_GCB_REGIONAL_INDICATOR ? previous == AUG_GCB_REGIONAL_INDICATOR ? !state->regional_odd : true : false;
+  state->previous = property;
+  return boundary;
+}
+static int64_t string_graphemes(AugValue value, AugValue *parts) {
+  const unsigned char *text = (const unsigned char *)value.as.object->text;
+  size_t size = value.as.object->text_length;
+  if (!aug_valid_utf8(text, size)) { aug_error_named("ConversionError"); return 0; }
+  AugValue roots[2] = {value, aug_null()}; AugFrame frame; aug_frame_enter(&frame, roots, 2);
+  if (parts) roots[1] = aug_list_new(NULL, 0);
+  AugGraphemeState state = {0}; int64_t count = 0; size_t start = 0, width;
+  for (size_t position = 0; position < size; position += width) {
+    bool boundary = grapheme_step(&state, grapheme_property(text_codepoint(text + position, &width)));
+    if (!position || boundary) {
+      count++;
+      if (position && parts) aug_list_append(roots[1], aug_string_n(text + start, position - start));
+      start = position;
+    }
+  }
+  if (parts) {
+    if (size) aug_list_append(roots[1], aug_string_n(text + start, size - start));
+    *parts = roots[1];
+  }
+  aug_frame_leave(&frame); return count;
+}
+int64_t aug_string_grapheme_length(AugValue value) { return string_graphemes(value, NULL); }
+AugValue aug_string_graphemes(AugValue value) { AugValue parts = aug_null(); string_graphemes(value, &parts); return parts; }

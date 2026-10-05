@@ -32,13 +32,13 @@ pageClass: aug-example-page
 
 ::: code-group
 
-```aug [Indentation]
+```aug [Indentation] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiaW5kZW50Iiwic291cmNlU2hhMjU2IjoiMzk4MWYwOTQ3NGUwMDc4MGNlZjA4MTEzZTNjM2U1YzAwYTAxMTE5MTE5YzJjNTkzYTE0ZTJkZjliYThlMjM0MSIsImZvcm1hdHRlZFNoYTI1NiI6IjM5ZGZmNmZkYzgxN2RlYmU4NzJlODczM2ExMGY3ODM1OWNjMjgxOTgzMmNlZGRlNTQyMTg5MWVjODUzMGViODQiLCJsaW5rcyI6W119
 // aug-spec: "export.aug.md" explains this file. Read it before changes; refresh with aug spec.
 export Logger from logger
 export ConsoleLogger from console
 ```
 
-```aug [Braces]
+```aug [Braces] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiYnJhY2VzIiwic291cmNlU2hhMjU2IjoiMzk4MWYwOTQ3NGUwMDc4MGNlZjA4MTEzZTNjM2U1YzAwYTAxMTE5MTE5YzJjNTkzYTE0ZTJkZjliYThlMjM0MSIsImZvcm1hdHRlZFNoYTI1NiI6IjM5ZGZmNmZkYzgxN2RlYmU4NzJlODczM2ExMGY3ODM1OWNjMjgxOTgzMmNlZGRlNTQyMTg5MWVjODUzMGViODQiLCJsaW5rcyI6W119
 // aug-spec: "export.aug.md" explains this file. Read it before changes; refresh with aug spec.
 export Logger from logger
 export ConsoleLogger from console

@@ -27,7 +27,7 @@ pageClass: aug-example-page
 
 ::: code-group
 
-```aug [Indentation]
+```aug [Indentation] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiaW5kZW50Iiwic291cmNlU2hhMjU2IjoiZTY1MWE4NGU0OGQ0NmVlOGZlMDkxMWE2MGViNTk1OTk1OTQxYjNlN2IwNmNkYjA0YzZlODMzZTM4YzRkYmQzZCIsImZvcm1hdHRlZFNoYTI1NiI6IjY5NzhiMjExYTM3MWZjMTE1ZmNhYjE2YjNjNGEzZTFlMmQ1OWY2YzUxNTZiYTgxNDg1NWIwYjQ2NmNlYzUyODAiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDItTDgiLCJmaXJzdCI6MiwibGFzdCI6OCwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0xIl19LHsiaWQiOiJzb3VyY2UtTDktTDEwIiwiZmlyc3QiOjksImxhc3QiOjEwLCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTIiXX1dfQ
 // aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 int iterations = 1000000
 float sum = 0.0
@@ -40,7 +40,7 @@ print(value=sum == 937500.0)
 print(value=iterations)
 ```
 
-```aug [Braces]
+```aug [Braces] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiYnJhY2VzIiwic291cmNlU2hhMjU2IjoiZTY1MWE4NGU0OGQ0NmVlOGZlMDkxMWE2MGViNTk1OTk1OTQxYjNlN2IwNmNkYjA0YzZlODMzZTM4YzRkYmQzZCIsImZvcm1hdHRlZFNoYTI1NiI6IjhkZjZhYzk0ZmJiYTE3NmMyNDBmOWRmNzMwMjgwMDZhY2I0MzdiNzJkYjYyNjdlMjE3ZDBmNTU2NGRmOGMyNWIiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDItTDgiLCJmaXJzdCI6MiwibGFzdCI6OSwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0xIl19LHsiaWQiOiJzb3VyY2UtTDktTDEwIiwiZmlyc3QiOjEwLCJsYXN0IjoxMSwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0yIl19XX0
 // aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 int iterations = 1000000
 float sum = 0.0
@@ -64,9 +64,13 @@ print(value=iterations)
 
 ### Startup
 
-It sets `iterations` to `1000000`. It sets `sum` to `0.0`. It sets `index` to `0`. While `index` is less than `iterations`, it sets `remainder` to `index` minus ((`index` divided by `8`) times `8`); then it sets `sum` to (`sum` plus (`remainder` times `0.125`)) plus `0.5`; then it increases `index` by `1`.
+::: spec-paragraph specification-paragraph-1
+It sets `iterations` to `1000000`. It sets `sum` to `0.0`. It sets `index` to `0`. While `index` is less than `iterations`, it sets `remainder` to `index` minus ((`index` divided by `8`) times `8`); then it sets `sum` to (`sum` plus (`remainder` times `0.125`)) plus `0.5`; then it increases `index` by `1`. [source](main.md#source-L2-L8)
+:::
 
-After the loop, it prints `sum` equals `937500.0`. It prints `iterations`.
+::: spec-paragraph specification-paragraph-2
+After the loop, it prints `sum` equals `937500.0`. It prints `iterations`. [source](main.md#source-L9-L10)
+:::
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).
 

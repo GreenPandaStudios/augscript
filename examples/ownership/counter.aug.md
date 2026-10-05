@@ -2,6 +2,8 @@
 
 # `counter.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=2f759821fa03ae23e3c856a266b4f82fe3e2d9e6bf917b0d6f12fcbaa40284a1 -->
+
 <a id="symbol-Counter"></a>
 ## `Counter` · class · [source](counter.aug#L2)
 
@@ -10,12 +12,32 @@ It implements [`ICounter`](counter.aug.md#symbol-ICounter). It takes `value` as 
 <a id="symbol-Counter.increment"></a>
 ### `Counter.increment` · [source](counter.aug#L3)
 
-It may change `self`. With temporary permission to change `self`, it increases `value` by `1`.
+With temporary permission to change `self`, it increases `value` by `1`. [source](counter.aug#L4-L6)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+increment() returns void changes self
+```
+
+It may change `self`.
+
+</details>
 
 <a id="symbol-Counter.read"></a>
 ### `Counter.read` · [source](counter.aug#L8)
 
-It returns `value`.
+It returns `value`. [source](counter.aug#L9)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+read() returns int
+```
+
+</details>
 
 <a id="symbol-ICounter"></a>
 ## `ICounter` · interface · [source](counter.aug#L12)

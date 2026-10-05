@@ -18,7 +18,7 @@ enum AugIrOperation {
   AUG_IR_SHARED, AUG_IR_SHARED_LOCK, AUG_IR_JSON_WRAP, AUG_IR_JSON_PARSE,
   AUG_IR_JSON_STRINGIFY, AUG_IR_JSON_GET, AUG_IR_JSON_REQUIRE, AUG_IR_JSON_STRING,
   AUG_IR_JSON_INTEGER, AUG_IR_JSON_BOOLEAN, AUG_IR_JSON_ITEMS, AUG_IR_TIME_NOW, AUG_IR_EXIT, AUG_IR_TEST_CASE,
-  AUG_IR_STRING_UTF16_LENGTH,AUG_IR_STRING_IS_DECIMAL,AUG_IR_STRING_COMPARE_DECIMAL,AUG_IR_BYTES_SLICE,AUG_IR_BYTES_HEX,AUG_IR_FLOAT_IS_FINITE,AUG_IR_FLOAT_FLOAT32,AUG_IR_JSON_HAS,AUG_IR_JSON_PARSE_COMPATIBLE,AUG_IR_STRING_TRIM
+  AUG_IR_STRING_UTF16_LENGTH,AUG_IR_STRING_IS_DECIMAL,AUG_IR_STRING_COMPARE_DECIMAL,AUG_IR_BYTES_SLICE,AUG_IR_BYTES_HEX,AUG_IR_FLOAT_IS_FINITE,AUG_IR_FLOAT_FLOAT32,AUG_IR_JSON_HAS,AUG_IR_JSON_PARSE_COMPATIBLE,AUG_IR_STRING_TRIM,AUG_IR_TEXT,AUG_IR_LIST_JOIN,AUG_IR_STRING_ENDS_WITH,AUG_IR_STRING_REPLACE,AUG_IR_STRING_CODE_POINT_LENGTH,AUG_IR_STRING_PARSE_INTEGER,AUG_IR_STRING_PARSE_FLOAT,AUG_IR_STRING_COMPARE,AUG_IR_STRING_GRAPHEME_LENGTH,AUG_IR_STRING_GRAPHEMES
 };
 void aug_ir_operation(AugValue *out, int operation, AugValue *args, int count, const char *text, int64_t number);
 /* Specialized services keep managed inputs in the caller's rooted cells. */
@@ -50,6 +50,7 @@ void aug_ir_map_get(AugValue *out,const AugValue *map,const AugValue *key);
 void aug_ir_map_take(AugValue *out,const AugValue *map,const AugValue *key);
 void aug_ir_json_decode(AugValue *out, const AugValue *value, const AugSchema *schema);
 void aug_ir_string(AugValue *out, const void *text, uint64_t count);
+void aug_ir_assert_equal(const AugValue *actual, const AugValue *expected, const char *expression, const char *file, int line);
 void aug_ir_assert(const AugValue *condition, const char *expression, const char *file, int line);
 void aug_ir_drop(AugValue *value);
 void aug_ir_failed_result(AugValue *value);

@@ -1,4 +1,5 @@
 import { relative } from 'node:path';
+import {realpathSync} from 'node:fs';
 import type { Diagnostic, Expr, Stmt, TestCase, TestDecl, TestGroup, TopLevel } from './ast.ts';
 import { typeName } from './ast.ts';
 import { checkProject, type CheckedProject } from './checker.ts';
@@ -55,7 +56,7 @@ export function discoverTests(project: Project): { tests: UnitTest[]; diagnostic
           if (!test.name.trim()) report(test, 'A test case needs a nonempty name');
           if (cases.has(test.name)) report(test, `Duplicate test case ${test.name}`);
           cases.add(test.name);
-          const id = `${relative(project.root, file.path)}:${encodeURIComponent(suiteType)}:${encodeURIComponent(group.name)}:${encodeURIComponent(test.name)}`;
+          const id = `${relative(project.library?realpathSync(project.root):project.root, file.path).replaceAll('\\','/')}:${encodeURIComponent(suiteType)}:${encodeURIComponent(group.name)}:${encodeURIComponent(test.name)}`;
           if (test.rows) {
             if (!test.rows.length) report(test, 'Parameterized cases need at least one row');
             test.rows.forEach((row, rowIndex) => {
@@ -144,13 +145,23 @@ export function mergeTestAnalysis(checked: CheckedProject, tests: { checked: Che
     const visit = (value: unknown): void => {
       if (!value || typeof value !== 'object') return;
       if (Array.isArray(value)) { value.forEach(visit); return; }
+      if(entry.checked.inferredOwned.has(value as import('./ast.ts').Stmt))checked.inferredOwned.add(value as import('./ast.ts').Stmt);
+      const pattern=value as import('./ast.ts').BindingPattern,patternType=entry.checked.patternTypes.get(pattern);
+      if(patternType)checked.patternTypes.set(pattern,patternType);
+      const field=value as import('./ast.ts').RecordBindingField,selection=entry.checked.patternFields.get(field);
+      if(selection)checked.patternFields.set(field,selection);
       const expr = value as Expr;
+      const functionValue=entry.checked.functionValues.get(expr);if(functionValue)checked.functionValues.set(expr,functionValue);
       const type = entry.checked.expressionTypes.get(expr);
       if (type) checked.expressionTypes.set(expr, type);
-      const plan = entry.checked.callPlans.get(expr);
-      if (plan) checked.callPlans.set(expr, plan);
       const name=entry.checked.resolvedNames.get(expr);
       if(name)checked.resolvedNames.set(expr,name);
+      const call=entry.checked.resolvedCalls.get(expr);
+      if(call)checked.resolvedCalls.set(expr,call);
+      const reference=entry.checked.resolvedTypes.get(value as import('./ast.ts').TypeRef);
+      if(reference)checked.resolvedTypes.set(value as import('./ast.ts').TypeRef,reference);
+      const plan = entry.checked.callPlans.get(expr);
+      if (plan) checked.callPlans.set(expr, plan);
       for (const [key, child] of Object.entries(value)) if (key !== 'span') visit(child);
     };
     visit(entry.checked.project.main?.items);

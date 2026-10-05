@@ -1,6 +1,5 @@
 import { cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
-import '../scripts/generate-snippets.mjs';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { x as extract } from 'tar';

@@ -1,0 +1,2 @@
+# Preserve checksummed upstream Unicode bytes, including their original spacing.
+native/unicode/** -whitespace

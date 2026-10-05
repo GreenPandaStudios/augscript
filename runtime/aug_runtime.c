@@ -1,6 +1,7 @@
 #include "aug_runtime.h"
 #include <pthread.h>
 #include <errno.h>
+#include <locale.h>
 
 #include <stdio.h>
 #include <limits.h>
@@ -596,7 +597,7 @@ AugValue aug_binary(const char *op, AugValue left, AugValue right) {
   if (!strcmp(op, ">")) return aug_bool(a > b);
   if (!strcmp(op, "<=")) return aug_bool(a <= b);
   if (!strcmp(op, ">=")) return aug_bool(a >= b);
-  if (!strcmp(op, "/") && b == 0) return checked_error("ArithmeticError");
+  if ((!strcmp(op, "/") || !strcmp(op, "%")) && b == 0) return checked_error("ArithmeticError");
   if (left.tag == AUG_INT && right.tag == AUG_INT) {
     int64_t x = left.as.integer, y = right.as.integer;
     if (!strcmp(op, "<")) return aug_bool(x < y);
@@ -607,6 +608,7 @@ AugValue aug_binary(const char *op, AugValue left, AugValue right) {
     if (!strcmp(op, "-")) return aug_int(signed_bits((uint64_t)x - (uint64_t)y));
     if (!strcmp(op, "*")) return aug_int(signed_bits((uint64_t)x * (uint64_t)y));
     if (!strcmp(op, "/")) return aug_int(x == INT64_MIN && y == -1 ? INT64_MIN : x / y);
+    if (!strcmp(op, "%")) return aug_int(x == INT64_MIN && y == -1 ? 0 : x % y);
   }
   if (!strcmp(op, "+")) return aug_float(a + b);
   if (!strcmp(op, "-")) return aug_float(a - b);
@@ -624,6 +626,25 @@ AugValue aug_unary(const char *op, AugValue value) {
   return aug_null();
 }
 
+AugValue aug_text(AugValue value) {
+  char text[64];
+  switch (value.tag) {
+    case AUG_STRING: return value;
+    case AUG_NULL: return aug_string("null");
+    case AUG_BOOL: return aug_string(value.as.boolean ? "true" : "false");
+    case AUG_INT: snprintf(text, sizeof(text), "%lld", (long long)value.as.integer); break;
+    case AUG_FLOAT: {
+      locale_t invariant = newlocale(LC_NUMERIC_MASK, "C", (locale_t)0);
+      if (!invariant) fail("cannot create invariant numeric locale");
+      locale_t previous = uselocale(invariant);
+      snprintf(text, sizeof(text), "%.17g", value.as.floating);
+      uselocale(previous); freelocale(invariant); break;
+    }
+    default: fail("interpolation requires a scalar value");
+  }
+  return aug_string(text);
+}
+
 void aug_print(AugValue value) {
   switch (value.tag) {
     case AUG_NULL: puts("null"); break;
@@ -637,6 +658,111 @@ void aug_print(AugValue value) {
     default: fail("invalid value");
   }
   fflush(stdout);
+}
+
+/* Failure output is bounded and omits private record storage and native
+   payloads. Equality retains the ordinary August == contract. */
+static void assertion_text(const char *text, size_t length, size_t *remaining) {
+  size_t count = length < *remaining ? length : *remaining;
+  /* Preserve the UTF-8 boundary when a long value is truncated. */
+  if (count < length) while (count && ((unsigned char)text[count] & 0xc0) == 0x80) count--;
+  fwrite(text, 1, count, stderr); *remaining -= count;
+}
+static void assertion_literal(const char *text, size_t *remaining) {
+  assertion_text(text, strlen(text), remaining);
+}
+static void assertion_string(const char *text, size_t length, size_t *remaining) {
+  assertion_literal("\"", remaining);
+  size_t limit = length < 256 ? length : 256;
+  if(limit < length) while(limit && ((unsigned char)text[limit] & 0xc0) == 0x80) limit--;
+  for(size_t i=0;i<limit && *remaining;i++) {
+    unsigned char value=(unsigned char)text[i];
+    if(value=='"'||value=='\\'){assertion_literal("\\",remaining);assertion_text(text+i,1,remaining);}
+    else if(value<32 || value==127){
+      static const char hex[]="0123456789abcdef";
+      const char escape[6]={'\\','u','0','0',hex[value>>4],hex[value&15]};
+      assertion_text(escape,sizeof(escape),remaining);
+    }
+    else {
+      size_t bytes=value<128?1:value<224?2:value<240?3:4;
+      if(bytes>*remaining)break;
+      assertion_text(text+i,bytes,remaining);i+=bytes-1;
+    }
+  }
+  if(limit<length)assertion_literal("...",remaining);
+  assertion_literal("\"",remaining);
+}
+static void assertion_value(AugValue value, unsigned depth, size_t *remaining) {
+  if(!*remaining)return;
+  if(value.tag==AUG_STRING){assertion_string(value.as.object->text,value.as.object->text_length,remaining);return;}
+  if(value.tag!=AUG_OBJECT){AugValue text=aug_text(value);assertion_text(text.as.object->text,text.as.object->text_length,remaining);return;}
+  AugObject *object=value.as.object;
+  if(depth>=4){assertion_literal("...",remaining);return;}
+  if(object->kind!=AUG_RECORD_KIND&&object->kind!=AUG_TUPLE_KIND){
+    assertion_literal("<",remaining);assertion_literal(object->type_name,remaining);assertion_literal("; identity equality>",remaining);return;
+  }
+  bool record=object->kind==AUG_RECORD_KIND,hidden=false;size_t shown=0;
+  if(record)assertion_literal(object->type_name,remaining);
+  assertion_literal("(",remaining);
+  for(size_t i=0;i<object->field_count;i++) {
+    const char *name=record&&object->field_names?object->field_names[i]:NULL;
+    if(name&&name[0]=='_'){hidden=true;continue;}
+    if(shown==8||!*remaining){assertion_literal(", ...",remaining);break;}
+    if(shown++)assertion_literal(", ",remaining);
+    if(name){assertion_literal(name,remaining);assertion_literal("=",remaining);}
+    assertion_value(object->fields[i],depth+1,remaining);
+  }
+  assertion_literal(")",remaining);
+  if(hidden)assertion_literal(" (private fields omitted)",remaining);
+}
+typedef enum { ASSERT_SAME, ASSERT_DIFFERENT, ASSERT_PRIVATE, ASSERT_LIMIT } AssertionDifference;
+/* Diagnostic traversal has its own budget. A limit never implies equality. */
+static AssertionDifference assertion_difference(AugValue left, AugValue right, unsigned depth,
+    size_t *remaining, char *path, size_t length, size_t capacity) {
+  if (!*remaining) return ASSERT_LIMIT;
+  (*remaining)--;
+  if (left.tag != AUG_OBJECT || right.tag != AUG_OBJECT)
+    return equal(left, right) ? ASSERT_SAME : ASSERT_DIFFERENT;
+  AugObject *a = left.as.object, *b = right.as.object;
+  bool record = a->kind == AUG_RECORD_KIND && b->kind == AUG_RECORD_KIND;
+  bool tuple = a->kind == AUG_TUPLE_KIND && b->kind == AUG_TUPLE_KIND;
+  if (!record && !tuple) return a == b ? ASSERT_SAME : ASSERT_DIFFERENT;
+  if ((record && strcmp(a->type_name, b->type_name)) || a->field_count != b->field_count)
+    return ASSERT_DIFFERENT;
+  if (depth >= 4) return ASSERT_LIMIT;
+  for (size_t i = 0; i < a->field_count; i++) {
+    const char *name = record && a->field_names ? a->field_names[i] : NULL;
+    bool hidden = name && name[0] == '_';
+    size_t next = length;
+    if (!hidden) {
+      int count = name ? snprintf(path + length, capacity - length, ".%s", name) :
+        snprintf(path + length, capacity - length, "[%zu]", i);
+      if (count < 0 || (size_t)count >= capacity - length) return ASSERT_LIMIT;
+      next += (size_t)count;
+    }
+    AssertionDifference result = assertion_difference(a->fields[i], b->fields[i], depth + 1,
+      remaining, path, next, capacity);
+    if (result != ASSERT_SAME) {
+      if (hidden) { path[length] = '\0'; return result == ASSERT_LIMIT ? ASSERT_LIMIT : ASSERT_PRIVATE; }
+      return result;
+    }
+    path[length] = '\0';
+  }
+  return ASSERT_SAME;
+}
+void aug_assert_equal(AugValue actual, AugValue expected, const char *expression, const char *file, int line) {
+  aug_test_assertions++;
+  if(equal(actual,expected))return;
+  aug_test_failed=true;
+  fprintf(stderr,"%s:%d: assertion failed: %s\n  actual: ",file,line,expression);
+  size_t remaining=1200;assertion_value(actual,0,&remaining);if(!remaining)fputs("...",stderr);
+  fputs("\n  expected: ",stderr);remaining=1200;assertion_value(expected,0,&remaining);if(!remaining)fputs("...",stderr);
+  char path[256] = "$"; size_t visits = 64;
+  AssertionDifference difference = assertion_difference(actual, expected, 0, &visits, path, 1, sizeof(path));
+  if (difference == ASSERT_LIMIT || difference == ASSERT_SAME)
+    fputs("\n  difference path unavailable: comparison limit reached\n", stderr);
+  else fprintf(stderr, "\n  difference at %s%s\n", path, difference == ASSERT_PRIVATE ? ": private field differs" : "");
+  aug_throw(aug_new_object("AssertionError",0,NULL,NULL,0));
 }
 
 void aug_assert(AugValue condition, const char *expression, const char *file, int line) {

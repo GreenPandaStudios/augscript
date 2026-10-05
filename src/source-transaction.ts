@@ -1,5 +1,7 @@
 import {randomUUID} from 'node:crypto';
-import {closeSync,existsSync,fsyncSync,lstatSync,mkdirSync,openSync,readFileSync,realpathSync,renameSync,rmSync,writeFileSync} from 'node:fs';
+import {pendingSourceReads} from './source-write-state.ts';
+import {acquirePackageLock} from './package-locking.ts';
+import {closeSync,existsSync,fchmodSync,fsyncSync,lstatSync,mkdirSync,openSync,readFileSync,realpathSync,renameSync,rmSync,writeFileSync} from 'node:fs';
 import {dirname,join,relative,resolve,sep} from 'node:path';
 
 export interface SourcePermit {readonly token:string}
@@ -20,8 +22,10 @@ const owner=(root:string):{pid:number;token:string}|undefined=>{
 const alive=(pid:number)=>{if(!Number.isSafeInteger(pid)||pid<1)throw new SourceBusy('Invalid source writer metadata. Inspect .aug-changes before recovery.');
  try{process.kill(pid,0);return true;}catch(error){if((error as NodeJS.ErrnoException).code==='ESRCH')return false;throw error;}};
 
+export function assertNoRequestTransaction(root:string):void {if(owner(root)||existsSync(journalFile(root)))throw new SourceBusy();}
 /** Readers reject a live or interrupted transaction. Epoch checks catch a commit during a read. */
 export function beginSourceRead(root:string,permit?:SourcePermit):string {
+  if(!pendingSourceReads.has(realpathSync(root))&&existsSync(join(directory(root),'pending.json')))throw new SourceBusy('A checked source transaction is unfinished. Run aug change recover after its writer stops.');
   const held=owner(root);
   if(!(permit&&held?.token===permit.token) && (held||existsSync(journalFile(root))))throw new SourceBusy();
   return epoch(root);
@@ -32,7 +36,7 @@ export function finishSourceRead(root:string,start:string,permit?:SourcePermit):
 function syncDirectory(path:string){const fd=openSync(path,'r');try{fsyncSync(fd);}finally{closeSync(fd);}}
 export function atomicSourceWrite(path:string,text:string,mode=0o600):void {
   const temporary=join(dirname(path),`.aug-change-${randomUUID()}.tmp`),fd=openSync(temporary,'wx',mode);
-  try{writeFileSync(fd,text,'utf8');fsyncSync(fd);}catch(error){closeSync(fd);rmSync(temporary,{force:true});throw error;}
+  try{writeFileSync(fd,text,'utf8');fchmodSync(fd,mode);fsyncSync(fd);}catch(error){closeSync(fd);rmSync(temporary,{force:true});throw error;}
   closeSync(fd);
   try{renameSync(temporary,path);syncDirectory(dirname(path));}finally{rmSync(temporary,{force:true});}
 }
@@ -48,7 +52,8 @@ export function checkedSourcePath(root:string,name:string):string {
   return path;
 }
 
-function sourceWriter(root:string,recovery:boolean):{permit:SourcePermit;release:()=>void} {
+function requestWriter(root:string,recovery:boolean):{permit:SourcePermit;release:()=>void} {
+  if(existsSync(join(directory(root),'pending.json')))throw new SourceBusy('A mechanical source transaction needs aug change recover before another write.');
   const folder=directory(root);if(existsSync(folder)&&(!lstatSync(folder).isDirectory()||lstatSync(folder).isSymbolicLink()))throw new SourceBusy('Invalid .aug-changes directory');
   mkdirSync(folder,{recursive:true,mode:0o700});
   // Serialize stale-owner removal as well as acquisition. Two recoverers cannot delete
@@ -71,6 +76,17 @@ function sourceWriter(root:string,recovery:boolean):{permit:SourcePermit;release
     if(owner(root)?.token===permit.token)rmSync(lockFile(root));
     syncDirectory(folder);
   }};
+}
+/** Both edit protocols, formatting, and package installation use this same exclusive lock. */
+function sourceWriter(projectRoot:string,recovery:boolean):{permit:SourcePermit;release:()=>void} {
+  const root=realpathSync(resolve(projectRoot)),lock=join(root,'.aug-change-lock');
+  if(existsSync(lock)&&(!lstatSync(lock).isDirectory()||lstatSync(lock).isSymbolicLink()))throw new SourceBusy('Invalid source writer lock.');
+  const release=acquirePackageLock(lock)??acquirePackageLock(lock);
+  if(!release)throw new SourceBusy();
+  try {
+    const held=requestWriter(root,recovery);
+    return {permit:held.permit,release:()=>{try{held.release();}finally{release();}}};
+  }catch(error){release();throw error;}
 }
 /** Only one cooperating source writer may hold this permit; stale journals require recovery. */
 export function withSourceWriter<T>(root:string,action:(permit:SourcePermit)=>T,recovery=false):T {

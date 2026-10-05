@@ -1,7 +1,9 @@
+import {coreLibraryModules} from './library-modules.ts';
+import {coherentSourceRead} from './source-transactions.ts';
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { basename, dirname, join, relative, resolve } from 'node:path';
 import type {
-  ClassDecl, CompositionDecl, Diagnostic, ExportDecl, ImportDecl, InterfaceDecl, InterceptorDecl, MethodDecl,
+  ClassDecl, ChoiceDecl, CompositionDecl, Diagnostic, ExportDecl, ImportDecl, InterfaceDecl, InterceptorDecl, MethodDecl,
   SourceFile, TopLevel, ResourceDecl,
 } from './ast.ts';
 import { parse } from './parser.ts';
@@ -9,12 +11,12 @@ import { loadConfig, type Config } from './config.ts';
 import { projectPolicies } from './policies.ts';
 import { builtinFunctions, builtinTypes } from './builtins.ts';
 import { libraryChild, libraryRelative, standardLibraries, type StandardLibraries } from './libraries.ts';
-import { packageSpecifications, projectPackages, readPackage, sourcePaths, type ProjectPackages, type PackageManifest } from './package-manager.ts';
+import { packageSpecifications, projectPackages, readPackage, sourcePaths, type ProjectPackages, type PackageManifest, type PackageLock } from './package-manager.ts';
 import { isGitSource, sourceAlias } from './git-packages.ts';
 import {beginSourceRead,finishSourceRead,type SourcePermit} from './source-transaction.ts';
 import {expandForwarding} from './forwarding.ts';
 
-export type DefinitionNode = ClassDecl | InterfaceDecl | InterceptorDecl | MethodDecl | CompositionDecl | ResourceDecl;
+export type DefinitionNode = ClassDecl | InterfaceDecl | ChoiceDecl | InterceptorDecl | MethodDecl | CompositionDecl | ResourceDecl;
 export interface Definition {
   id: string;
   name: string;
@@ -63,7 +65,13 @@ function sourceFiles(root: string): string[] {
 }
 
 export function loadProject(projectRoot: string, overrides: Map<string, string> = new Map(),
-  cache?: Map<string, ReturnType<typeof parse>>, permit?:SourcePermit): Project {
+  cache?: Map<string, ReturnType<typeof parse>>, candidateOrPermit?:{lock:PackageLock;cache:string;specifications?:Record<string,string>}|SourcePermit): Project {
+  return coherentSourceRead(projectRoot,()=>loadProjectRevision(projectRoot,overrides,cache,candidateOrPermit));
+}
+function loadProjectRevision(projectRoot:string,overrides:Map<string,string>,cache?:Map<string,ReturnType<typeof parse>>,
+  candidateOrPermit?:{lock:PackageLock;cache:string;specifications?:Record<string,string>}|SourcePermit):Project {
+  const permit=candidateOrPermit&&'token' in candidateOrPermit?candidateOrPermit:undefined;
+  const packageCandidate=candidateOrPermit&&'lock' in candidateOrPermit?candidateOrPermit:undefined;
   const root = resolve(projectRoot);
   const epoch=beginSourceRead(root,permit);
   const files = new Map<string, SourceFile>();
@@ -77,7 +85,7 @@ export function loadProject(projectRoot: string, overrides: Map<string, string> 
     try { const loaded = readPackage(root); library = loaded.manifest; sourceRoot = loaded.sourceRoot; }
     catch (error) { diagnostics.push(diagnostic(join(root, 'aug-package.json'), 1, 1, (error as Error).message, 'PACKAGE')); }
   }
-  const packages = projectPackages(root, packageSpecifications(sourceRoot, library?.dependencies ?? config.packages, overrides), sourceRoot);
+  const packages = projectPackages(root, packageCandidate?.specifications??packageSpecifications(sourceRoot, library?.dependencies ?? config.packages, overrides), sourceRoot, packageCandidate);
   diagnostics.push(...packages.diagnostics);
   const read = (path: string) => {
     const source = overrides.get(path) ?? readFileSync(path, 'utf8');
@@ -98,7 +106,7 @@ export function loadProject(projectRoot: string, overrides: Map<string, string> 
   }
   const libraries = standardLibraries();
   const stdlibRoot = libraries.root;
-  const libraryFiles = new Set([join(stdlibRoot, 'export.aug'), ...sourceFiles(join(stdlibRoot,'io'))]);
+  const libraryFiles = new Set([join(stdlibRoot, 'export.aug'), ...coreLibraryModules.flatMap(module=>sourceFiles(join(stdlibRoot,module)))]);
   for (const path of libraryFiles) {
     const parsed = read(path);
     parsed.file.builtin = true;
@@ -115,22 +123,22 @@ export function loadProject(projectRoot: string, overrides: Map<string, string> 
     for (const item of file.items) {
       if (isExport && item.kind !== 'export') {
         diagnostics.push(diagnostic(file.path, item.span.line, item.span.column,
-          'export.aug may contain only export declarations', 'EXPORT'));
+          'export.aug may contain only export or internal declarations', 'EXPORT'));
       }
       if (!isExport && item.kind === 'export') {
         diagnostics.push(diagnostic(file.path, item.span.line, item.span.column,
-          'export declarations belong in export.aug', 'EXPORT'));
+          'export and internal declarations belong in export.aug', 'EXPORT'));
       }
-      if (file === main && ['class', 'interface', 'function', 'interceptor', 'test', 'composition', 'resource'].includes(item.kind)) {
+      if (file === main && ['class', 'interface', 'choice', 'function', 'interceptor', 'test', 'composition', 'resource'].includes(item.kind)) {
         diagnostics.push(diagnostic(file.path, item.span.line, item.span.column,
-          'Define classes, interfaces, functions, and interceptors outside main.aug', 'MAIN'));
+          'Define classes, interfaces, choices, functions, and interceptors outside main.aug', 'MAIN'));
       }
-      if (file !== main && ['bind', 'include', 'expr', 'assign', 'return', 'throw', 'if', 'while', 'for', 'destructure', 'match', 'scope', 'freeze', 'serve', 'lock',
+      if (file !== main && ['bind', 'include', 'expr', 'assign', 'return', 'throw', 'break', 'continue', 'if', 'while', 'for', 'destructure', 'match', 'scope', 'freeze', 'serve', 'lock',
         'try', 'unsafe', 'borrow'].includes(item.kind)) {
         diagnostics.push(diagnostic(file.path, item.span.line, item.span.column,
           'Executable statements and bindings belong in main.aug', 'MAIN'));
       }
-      if (item.kind === 'class' || item.kind === 'interface' || item.kind === 'function' || item.kind === 'interceptor' || item.kind === 'composition' || item.kind === 'resource') {
+      if (item.kind === 'class' || item.kind === 'interface' || item.kind === 'choice' || item.kind === 'function' || item.kind === 'interceptor' || item.kind === 'composition' || item.kind === 'resource') {
         if (item.name in builtinTypes || builtinFunctions.some(operation => operation.name === item.name) || item.name === 'next') {
           diagnostics.push(diagnostic(file.path, item.span.line, item.span.column,
             `${item.name} is a reserved built-in name`, 'NAME'));
@@ -159,7 +167,7 @@ export function loadProject(projectRoot: string, overrides: Map<string, string> 
   const exportCache = new Map<string, Map<string, Definition>>();
   function folderExports(folder: string, visiting: Set<string> = new Set()): Map<string, Definition> {
     if (exportCache.has(folder)) return exportCache.get(folder)!;
-    const result = new Map<string, Definition>();
+    const result = new Map<string, Definition>(),entries=new Set<string>();
     const exportFile = files.get(join(folder, 'export.aug'));
     if (!exportFile) return result;
     if (visiting.has(folder)) return result;
@@ -186,10 +194,10 @@ export function loadProject(projectRoot: string, overrides: Map<string, string> 
       if (!def) {
         diagnostics.push(diagnostic(exportFile.path, item.span.line, item.span.column,
           `Cannot export ${item.name}: ${item.from}.aug does not define it`, 'EXPORT'));
-      } else if (result.has(item.name)) {
+      } else if (entries.has(item.name)) {
         diagnostics.push(diagnostic(exportFile.path, item.span.line, item.span.column,
-          `Duplicate export ${item.name}`, 'EXPORT'));
-      } else result.set(item.name, def);
+          `Duplicate export or internal entry ${item.name}`, 'EXPORT'));
+      } else {entries.add(item.name);if(!item.internal)result.set(item.name, def);}
     }
     exportCache.set(folder, result);
     visiting.delete(folder);
@@ -327,9 +335,9 @@ function statExistsDirectory(path: string): boolean {
 
 export function declarations(file: SourceFile): DefinitionNode[] {
   return file.items.filter((item): item is DefinitionNode =>
-    item.kind === 'class' || item.kind === 'interface' || item.kind === 'function' || item.kind === 'interceptor' || item.kind === 'composition');
+    item.kind === 'class' || item.kind === 'interface' || item.kind === 'choice' || item.kind === 'function' || item.kind === 'interceptor' || item.kind === 'composition');
 }
 
 export function statements(file: SourceFile): TopLevel[] {
-  return file.items.filter(item => !['import', 'export', 'class', 'interface', 'function', 'interceptor', 'composition', 'test'].includes(item.kind));
+  return file.items.filter(item => !['import', 'export', 'class', 'interface', 'choice', 'function', 'interceptor', 'composition', 'test'].includes(item.kind));
 }

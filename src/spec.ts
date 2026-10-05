@@ -1,9 +1,11 @@
+import { lex } from './lexer.ts';
+import { defaultText } from './parameters.ts';
 import { callableResult, callableErrors } from './contracts.ts';
 import { createHash } from 'node:crypto';
-import { existsSync, lstatSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, lstatSync, mkdirSync, readFileSync, realpathSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, relative, resolve } from 'node:path';
-import type { BindDecl, ClassDecl, Expr, GenericHeader, MethodDecl, Param, SourceFile, Span, Stmt, TestDecl, TopLevel, TypeRef } from './ast.ts';
-import { fieldsOf, typeName } from './ast.ts';
+import type { BindDecl, BindingPattern, ClassDecl, Expr, GenericHeader, MethodDecl, Param, SourceFile, Span, Stmt, TestDecl, TopLevel, TypeRef } from './ast.ts';
+import { bindingSelections, fieldsOf, typeName } from './ast.ts';
 import { builtinFunctions, builtinProperties, builtinTypes, collectionOperations, operationType, type BuiltinOperation } from './builtins.ts';
 import type { CheckedProject } from './checker.ts';
 import { callableDocumentation } from './documentation.ts';
@@ -13,7 +15,7 @@ import { compilerVersion } from './package-manager.ts';
 import type { Definition } from './project.ts';
 import { tyName } from './types.ts';
 import type { HttpPolicyPlan } from './http-policies.ts';
-import { action, attempt, branch, choice, coordinate, flow, loop, paragraph, renderSpecTree, scope, section, sequence, step, type FlowNode, type SpecNode } from './spec-tree.ts';
+import { action, attempt, branch, choice, coordinate, details, flow, loop, paragraph, renderSpecTree, scope, section, sequence, step, type FlowNode, type SpecNode, type SourceRange } from './spec-tree.ts';
 import { specHint } from './spec-hints.ts';
 import {withSourceWriter,type SourcePermit} from './source-transaction.ts';
 import {nativeFact,nativeDescription} from './native-facts.ts';
@@ -28,23 +30,25 @@ const compare = (left:string, right:string) => left < right ? -1 : left > right 
 const unreachable = (node: never): never => { throw new Error(`No specification renderer for ${(node as {kind?:string}).kind}`); };
 const plain = (text:string) => text.replace(/\[([^\]]+)\]\([^)]*\)/g,'$1').replaceAll('`','');
 
-export interface SpecOutput { path: string; text: string; source: string; kind?: 'source-hint'|'native-descriptor' }
-export interface SpecOptions { files?: SourceFile[]; manifest?: boolean }
+export interface SpecOutput { path: string; text: string; source: string; kind?: 'source-hint'|'native-descriptor'; declarations?: {id:string;tree:SpecNode}[] }
+export interface SpecOptions { files?: SourceFile[]; manifest?: boolean; declarations?:boolean; sourceHints?:boolean }
 
 /** Plan prose, managed source pointers, and versioned dependency copies without writes or execution. */
 export function generateSpecs(checked: CheckedProject, options: SpecOptions = {}): SpecOutput[] {
   if (checked.diagnostics.some(issue => issue.severity !== 'warning')) throw new Error('Fix compiler errors before generating specifications');
   const project = checked.project;
+  // Library source roots are physical paths; keep dependency copies in that same path space.
+  const outputRoot = project.library ? realpathSync(project.root) : project.root;
   const owned = options.files ?? [...project.files.values()].filter(file => !file.builtin && !file.package);
   const own = new Set(owned.map(file => file.path));
-  const hints=owned.map(specHint), offsets=new Map(hints.map(hint=>[hint.file.path,hint.lineOffset]));
+  const hints=options.sourceHints===false?[]:owned.map(specHint), offsets=new Map(hints.map(hint=>[hint.file.path,hint.lineOffset]));
   const docs = new Map<string,string>(), sources = new Map<string,string>();
   for (const file of project.files.values()) {
     if (own.has(file.path)) { docs.set(file.path, file.path + '.md'); sources.set(file.path, file.path); continue; }
     const scope = file.package && project.packages.scopes.get(file.package);
     const identity = scope ? join('packages', scope.name, scope.version, relative(scope.sourceRoot, file.path)) :
       join('august', compilerVersion(), libraryRelative(project.libraries, file.path));
-    const source = join(project.root, '.aug-spec', identity);
+    const source = join(outputRoot, '.aug-spec', identity);
     docs.set(file.path, source + '.md'); sources.set(file.path, source);
   }
   const queue = [...owned].sort((a,b) => compare(a.path,b.path));
@@ -52,7 +56,7 @@ export function generateSpecs(checked: CheckedProject, options: SpecOptions = {}
   const contracts=new Map<string,string>();
   for(const [provider,path] of checked.native.providerDescriptors){
     const at=provider.lastIndexOf('@'),name=provider.slice(0,at),version=provider.slice(at+1);
-    const destination=join(project.root,'.aug-spec','packages',name,version,'native.abi.json');contracts.set(provider,destination);
+    const destination=join(outputRoot,'.aug-spec','packages',name,version,'native.abi.json');contracts.set(provider,destination);
     outputs.push({path:destination,text:readFileSync(path,'utf8'),source:path,kind:'native-descriptor'});
   }
   for (let index = 0; index < queue.length; index++) {
@@ -61,13 +65,15 @@ export function generateSpecs(checked: CheckedProject, options: SpecOptions = {}
       const dependency = project.files.get(path);
       if (dependency && !seen.has(path)) queue.push(dependency);
     });
-    outputs.push({path:docs.get(file.path)!, text:writer.render(), source:file.path});
+    const text=writer.render();
+    outputs.push({path:docs.get(file.path)!,text,source:file.path,...(options.declarations?{declarations:[...writer.declarationTrees].map(([id,tree])=>({id,tree}))}:{})});
     if (!own.has(file.path)) outputs.push({path:sources.get(file.path)!, text:copied + file.source, source:file.path});
   }
   return outputs.sort((a,b) => compare(a.path,b.path));
 }
 
 class SpecWriter {
+  readonly declarationTrees=new Map<string,SpecNode>();
   private checked: CheckedProject;
   private file: SourceFile;
   private docs: Map<string,string>;
@@ -80,6 +86,8 @@ class SpecWriter {
   private builtins = new Map<string,BuiltinOperation>();
   private properties = new Map<string,{type:string;documentation:string}>();
   private locals = new Map<string,TypeRef>();
+  private evidence:Record<string,SourceRange>={};
+  private lexicalSources=new Map<string,ReturnType<typeof lex>['tokens']>();
   constructor(checked:CheckedProject, file:SourceFile, docs:Map<string,string>, sources:Map<string,string>, own:Set<string>, offsets:Map<string,number>, contracts:Map<string,string>, enqueue:(path:string)=>void) {
     this.checked=checked; this.file=file; this.docs=docs; this.sources=sources; this.own=own; this.offsets=offsets;this.contracts=contracts;this.enqueue=enqueue;
   }
@@ -128,7 +136,7 @@ class SpecWriter {
       (node.typeVariance?.[name]?` (${node.typeVariance[name] === 'out' ? 'produces values' : 'accepts values'})`:'')+
       (node.typeConstraints?.[name]?.length?` which must satisfy ${coordinate(node.typeConstraints[name].map(type=>this.type(type,file)))}`:'')))+'.':'';
   }
-  private inputs(params:Param[], fields=false, file=this.file.path, descriptions=new Map<string,string>()): string {
+  private inputs(params:Param[], fields=false, file=this.file.path, descriptions=new Map<string,string>(), concise=false): string {
     if(!params.length)return '';
     if(fields&&params.length===1&&params[0].injected) {
       const param=params[0];this.locals.set(param.name,param.type);
@@ -143,6 +151,7 @@ class SpecWriter {
       const simple:Record<string,string>={int:group.length===1?'an integer':'integers',float:group.length===1?'a number':'numbers',string:group.length===1?'a string':'strings',bool:group.length===1?'a boolean':'booleans'};
       let sentence=param.injected?coordinate(group.map(param=>code(param.name)))+' ('+type+')':name+' as '+(simple[param.type.name]&&!param.type.optional?simple[param.type.name]:type);
       if(param.source)sentence+=` from the HTTP ${param.source.kind}${param.source.name?' '+code(param.source.name):''}`;
+      if(param.defaultValue&&!concise)sentence+=' (when omitted, '+this.expression(param.defaultValue)+')';
       if(param.ownership==='own')sentence+=' with ownership transferred';
       else if(param.ownership==='borrow')sentence+=' with permission to mutate it during the call';
       if(fields)sentence+=`, kept ${param.mutable?'mutable':'read-only'}${param.name.startsWith('_')?' and private':''}${param.label&&param.label!==param.name?' as '+code(param.name):''}`;
@@ -161,7 +170,7 @@ class SpecWriter {
       (typedQueries.length?' It parses '+coordinate(typedQueries.map(param=>code(param.name)+' as '+this.type(param.type,file)))+'.':''):
       supplied.length?'It takes '+coordinate(supplied)+'.':'';
     return [suppliedText,injected.length?'It gets '+coordinate(injected)+' from dependency injection.':'',
-      params.some(param=>param.type.optional)?'Omitted optional inputs are null.':''].filter(Boolean).join(' ');
+      params.some(param=>param.type.optional&&!param.defaultValue)?(params.some(param=>param.defaultValue)?'Omitted optional inputs without defaults are null.':'Omitted optional inputs are null.'):''].filter(Boolean).join(' ');
   }
   private parameterGroups(params:Param[], fields=false, descriptions=new Map<string,string>()): Param[][] {
     const groups:Param[][]=[];
@@ -169,7 +178,7 @@ class SpecWriter {
     const alias=(value:Param)=>fields&&value.label&&value.label!==value.name;
     for(const param of params) {
       const previous=groups.at(-1)?.[0];
-      if(previous&&key(previous)===key(param)&&!descriptions.has(param.name)&&!descriptions.has(previous.name)&&!alias(param)&&!alias(previous))groups.at(-1)!.push(param);
+      if(previous&&key(previous)===key(param)&&!descriptions.has(param.name)&&!descriptions.has(previous.name)&&!alias(param)&&!alias(previous)&&!param.defaultValue&&!previous.defaultValue)groups.at(-1)!.push(param);
       else groups.push([param]);
     }
     return groups;
@@ -270,10 +279,22 @@ class SpecWriter {
     const refs=def.node.kind==='class'?def.node.implements:def.node.kind==='interface'?def.node.extends:[];
     for(const ref of refs){const parent=this.checked.project.scopes.get(def.file)?.get(ref.name);const inherited=parent&&this.method(parent,name,seen);if(inherited)return inherited;}
   }
+  private bindingDescription(pattern:BindingPattern):string {
+    const use=(node:BindingPattern):void=>{
+      if(node.kind==='nameBinding'){const type=this.checked.patternTypes.get(node);if(type)this.locals.set(node.name,{name:type.name,args:[],nullable:type.nullable,optional:type.optional,span:node.span});}
+      else if(node.kind==='tupleBinding')node.items.forEach(use);
+      else if(node.kind==='recordBinding')for(const entry of node.fields){const field=this.checked.patternFields.get(entry);this.use(field?.owner,undefined,field?.field.name);use(entry.pattern);}
+    };use(pattern);
+    return coordinate(bindingSelections(pattern).map(binding=>{
+      const path=binding.path.reduce<string>((text,part)=>typeof part==='number'?text+'['+part+']':text+(text?'.':'')+part,'');
+      return !path||path===binding.name?code(binding.name):code(path)+' as '+code(binding.name);
+    }));
+  }
   private expression(expr:Expr, nested=false): string {
     switch(expr.kind) {
       case 'literal':return expr.value===null?'null':code(expr.numericText??JSON.stringify(expr.value));
-      case 'name': {const def=!this.locals.has(expr.name)?this.definition(expr.name):undefined;this.use(def);return def?this.link(def):code(expr.name);}
+      case 'name': {const def=!this.locals.has(expr.name)?this.definition(expr.name):undefined;this.use(def);
+        return this.checked.functionValues.get(expr)?.target&&def?'a pure callback that delegates to '+this.link(def):def?this.link(def):code(expr.name);}
       case 'member': {
         const def=this.receiver(expr.object,expr.name);this.use(def,undefined,expr.name);
         const name=expr.name,receiverType=this.checked.expressionTypes.get(expr.object)?.name;
@@ -282,6 +303,33 @@ class SpecWriter {
         const object=this.expression(expr.object), path=this.memberPath(expr);
         return path?code(path):`${code(name)} of ${object}`;
       }
+      case 'lambda': {
+        const names=new Map(this.locals);for(const param of expr.params)this.locals.set(param.name,param.type);
+        const result=this.expression(expr.body);this.locals=names;
+        const captures=this.checked.functionValues.get(expr)?.captures??[];
+        return 'a pure callback that returns '+result+(captures.length?', using creation-time values of '+coordinate(captures.map(capture=>code(capture.name))):'');
+      }
+      case 'comprehension': {
+        const input=this.expression(expr.iterable),names=new Map(this.locals),bindings=this.bindingDescription(expr.pattern);
+        const condition=expr.condition?' when '+this.expression(expr.condition):'';
+        const result=this.expression(expr.projection);this.locals=names;
+        return 'a new list of '+result+' for each item in a snapshot of '+input+(bindings?', binding '+bindings:'')+condition;
+      }
+      case 'matchValue': {
+        const input=this.expression(expr.value),parts=expr.cases.map(clause=>{
+          const names=new Map(this.locals);
+          if(clause.name)this.locals.set(clause.name,clause.type??{name:this.checked.expressionTypes.get(expr.value)?.name??'value',args:[],nullable:false,span:clause.span});
+          const result=this.expression(clause.result,true);this.locals=names;
+          const condition=clause.pattern==='else'?'otherwise':clause.pattern==='null'?'when it is null':
+            clause.pattern==='some'?'when it has a value, called '+code(clause.name!):
+            clause.pattern==='type'?'when it is '+this.type(clause.type!)+', called '+code(clause.name!):'when it equals '+this.expression(clause.literal!);
+          return result+' '+condition;
+        });
+        return 'a choice based on '+input+': '+parts.join('; ');
+      }
+      case 'recordCopy': return 'a new ' + this.expression(expr.base) + ' with ' + coordinate(expr.fields.map(field => code(field.name) + ' set to ' + this.expression(field.value))) + ', checked by the record’s validation';
+      case 'interpolation': return 'the text ' + code(expr.parts.map(part => 'text' in part
+        ? part.text.replaceAll('{', '{{').replaceAll('}', '}}') : '{' + plain(this.expression(part.value)) + '}').join(''));
       case 'unary': {
         if(expr.op==='!'&&expr.value.kind==='binary'&&(expr.value.op==='=='||expr.value.op==='!='))
           return `${this.expression(expr.value.left,true)} ${expr.value.op==='=='?'does not equal':'equals'} ${this.expression(expr.value.right,true)}`;
@@ -289,7 +337,8 @@ class SpecWriter {
         return `${expr.op==='!'?'not':'the negative of'} (${this.expression(expr.value)})`;
       }
       case 'binary': {
-        const words:Record<string,string>={'+':'plus','-':'minus','*':'times','/':'divided by','==':'equals','!=':'does not equal','<':'is less than','>':'is greater than','<=':'is at most','>=':'is at least','&&':'and','||':'or'};
+        if (expr.op === 'otherwise') return `${this.expression(expr.left)}, or ${this.expression(expr.right)} when it is null`;
+        const words:Record<string,string>={'+':'plus','-':'minus','*':'times','/':'divided by','%':'remainder after division by','==':'equals','!=':'does not equal','<':'is less than','>':'is greater than','<=':'is at most','>=':'is at least','&&':'and','||':'or'};
         if(!words[expr.op])throw new Error(`No specification renderer for operator ${expr.op}`);
         if(expr.right.kind==='literal'&&expr.right.value===null&&['==','!='].includes(expr.op))
           return this.expression(expr.left)+(expr.op==='=='?' is null':' is not null');
@@ -327,6 +376,8 @@ class SpecWriter {
       }
       case 'resolve':return `the instance provided for ${code(expr.name)}${expr.typeArgs.length?' with type arguments '+expr.typeArgs.map(type=>this.type(type)).join(', '):''}`;
       case 'call': {
+        if (expr.indexed && expr.callee.kind === 'member')
+          return `the value at ${this.expression(expr.args[0])} in ${this.expression(expr.callee.object)}`;
         const action=this.call(expr);
         const known=this.knownValue(expr);if(known)return known;
         if(expr.callee.kind==='member') {
@@ -436,6 +487,10 @@ class SpecWriter {
     return this.expression(expr)+` returns ${expected?'true':'false'}`;
   }
   private call(expr:Extract<Expr,{kind:'call'}>): string {
+    if(expr.callee.kind==='name'&&expr.callee.name==='sourceLocation'){
+      this.builtins.set('sourceLocation',builtinFunctions.find(operation=>operation.name==='sourceLocation')!);
+      return 'this call’s source location';
+    }
     if(expr.callee.kind==='name'&&['List','Set','Map'].includes(expr.callee.name)&&!this.definition(expr.callee.name)) {
       const name=expr.callee.name, types=expr.typeArgs.map(type=>this.type(type));
       const items=expr.args.map(arg=>this.expression(arg));
@@ -536,7 +591,15 @@ class SpecWriter {
   private statement(stmt:Stmt): FlowNode[] {
     const nodes=this.explainStatement(stmt);
     // Source identities survive sentence aggregation. Two identical calls are still two facts.
-    nodes[0].source=`${stmt.span.file}:${stmt.span.start}:${stmt.span.end}`;
+    const identity=`${stmt.span.file}:${stmt.span.start}:${stmt.span.end}`;
+    nodes[0].source=identity;
+    for(const node of nodes.slice(1))node.contextSource=identity;
+    const file=this.checked.project.files.get(stmt.span.file)!, offset=this.own.has(stmt.span.file)?this.offsets.get(stmt.span.file)??0:1;
+    let tokens=this.lexicalSources.get(file.path);
+    if(!tokens){tokens=lex(file.path,file.source).tokens;this.lexicalSources.set(file.path,tokens);}
+    const last=tokens.findLast(token=>token.kind!=='eof'&&token.span.start>=stmt.span.start&&token.span.end<=stmt.span.end);
+    this.evidence[identity]={path:url(relative(dirname(this.docs.get(this.file.path)!),this.sources.get(stmt.span.file)!)),
+      line:stmt.span.line+offset,endLine:(last?.endLine??stmt.span.line)+offset};
     return nodes;
   }
   private explainStatement(stmt:Stmt): FlowNode[] {
@@ -550,7 +613,7 @@ class SpecWriter {
         }
         if(stmt.declaredType)this.type(stmt.declaredType);
         const target=this.expression(stmt.target)+(stmt.declaredType&&!['int','float','string','bool'].includes(stmt.declaredType.name)?' of type '+this.type(stmt.declaredType):'');
-        if(stmt.ownership==='own') {
+        if(stmt.ownership==='own'||this.checked.inferredOwned.has(stmt)) {
           const owned=this.expression(stmt.target)+(stmt.declaredType?' ('+this.type(stmt.declaredType)+')':'');
           if(stmt.value.kind==='call') {
             const invocation=this.call(stmt.value);
@@ -568,13 +631,14 @@ class SpecWriter {
           this.joinedText(target,stmt.value)??(arithmetic&&stmt.value.kind==='binary'?action(stmt.value.op==='+'?'increase':'decrease',`${target} by ${this.expression(stmt.value.right)}`):action('set',`${target} to ${this.expression(stmt.value)}`));
         return [explanation];
       }
-      case 'destructure':return [action('split',`${this.expression(stmt.value)} into ${coordinate(stmt.names.map(code))} in order`)];
+      case 'destructure':return stmt.pattern?[step('It reads '+this.expression(stmt.value)+' once'+(bindingSelections(stmt.pattern).length?' and binds '+this.bindingDescription(stmt.pattern):'; the empty pattern creates no bindings')+'.')]:[action('split',`${this.expression(stmt.value)} into ${coordinate(stmt.names.map(code))} in order`)];
       case 'expr': {
         if(stmt.expr.kind==='literal'&&stmt.expr.value===null)return [action('continue','without an operation')];
         if(stmt.expr.kind==='call') {
           const call=this.call(stmt.expr);
           if(stmt.expr.callee.kind==='name'&&!this.definition(stmt.expr.callee.name)) {
             if(stmt.expr.callee.name==='print')return [step('It prints '+this.expression(stmt.expr.args[0])+'.')];
+            if(stmt.expr.callee.name==='assertEqual') { const call=stmt.expr; const actual=this.argument(call,'actual')!, expected=this.argument(call,'expected')!; return [step('The test requires '+this.expression(actual)+' to equal '+this.expression(expected)+'.')]; }
             if(stmt.expr.callee.name==='assert')return [step('The test requires '+this.condition(stmt.expr.args[0])+'.')];
           }
           if(stmt.expr.callee.kind==='member') {
@@ -614,6 +678,8 @@ class SpecWriter {
         }
         return [action('return',this.expression(stmt.value))];
       }
+      case 'break':return [action('leave','the nearest loop after cleanup')];
+      case 'continue':return [action('continue','with the next iteration of the nearest loop after cleanup')];
       case 'throw':return [action('fail','with '+this.expression(stmt.value))];
       case 'yield':return [action('send',this.expression(stmt.value)+' as the next stream item')];
       case 'if': {
@@ -623,7 +689,7 @@ class SpecWriter {
         return [node];
       }
       case 'while':return [loop('While '+this.condition(stmt.test),nested(stmt.body),'Repeat this loop while its condition remains true.')];
-      case 'for':return [loop('For each '+coordinate(stmt.names.map(code))+' in a snapshot of '+this.expression(stmt.iterable),nested(stmt.body),'Repeat these steps for each remaining item in the snapshot.')];
+      case 'for':return [loop(stmt.pattern?'For each item in a snapshot of '+this.expression(stmt.iterable)+(bindingSelections(stmt.pattern).length?', binding '+this.bindingDescription(stmt.pattern):''):'For each '+coordinate(stmt.names.map(code))+' in a snapshot of '+this.expression(stmt.iterable),nested(stmt.body),'Repeat these steps for each remaining item in the snapshot.')];
       case 'match': {
         const value=this.expression(stmt.value);
         const terminal=(body:Stmt[])=>['return','throw'].includes(body.at(-1)?.kind??'');
@@ -681,6 +747,20 @@ class SpecWriter {
       (binding.sharedMutation?'Shared mutation is allowed. ':'')+
       (info?.dependencies.length?'It requires bindings for '+coordinate(info.dependencies.map(code))+'. ':'')).trimEnd();
   }
+  private signature(method:MethodDecl):string {
+    const params=method.params.map(param=>(param.injected?'resolve ':'')+(param.ownership!=='managed'?param.ownership+' ':'')+
+      typeName(param.type)+' '+(param.label??param.name)+(param.defaultValue?' = '+defaultText(param.defaultValue):''));
+    const generic=method.typeParams.length?'<'+method.typeParams.join(', ')+'>':'';
+    let signature=method.name+generic+'('+params.join(', ')+') returns '+(method.returnOwnership==='own'?'own ':'')+tyName(callableResult(this.checked,method));
+    const errors=callableErrors(this.checked,method), effects=this.checked.effectContracts.get(method);
+    if(errors.length)signature+=' unless '+errors.join(' and ');
+    const uses=[...(effects?.uses.values()??method.uses??[])];
+    if(uses.length)signature+=' uses '+uses.map(effect=>effect.source+'.'+effect.operation).join(', ');
+    const changes=effects?.changes??method.changes??[];
+    if(changes.length)signature+=' changes '+changes.join(', ');
+    const fence='`'.repeat(Math.max(3,1+Math.max(0,...(signature.match(/`+/g)??[]).map(part=>part.length))));
+    return fence+'text\n'+signature+'\n'+fence;
+  }
   private callable(method:MethodDecl, owner?:Definition): SpecNode {
     this.locals=new Map(owner&&'fields' in owner.node?fieldsOf(owner.node as ClassDecl).map(field=>[field.name,field.type]):[]);
     const name=owner&&owner.node.kind!=='function'?`${owner.name}.${method.name}`:method.name;
@@ -690,22 +770,31 @@ class SpecWriter {
     if(method.name.startsWith('_'))children.push(paragraph('It is private to its defining scope.'));
     const notes=this.notes(documentation);
     if(notes)children.push(paragraph(notes));
-    children.push(...this.contract(method,documentation),...this.layers(method));
+    const contract=this.contract(method,documentation);
     if(method.forward){
       const target=method.forward.targetId&&this.checked.project.definitions.get(method.forward.targetId);
       const implementation=method.forward.implementationId&&this.checked.project.definitions.get(method.forward.implementationId);
       children.push(paragraph(`Forward each call to ${target?this.link(target):code(method.forward.target)} exactly once, with the supplied arguments unchanged. `+
         `The inputs, return value, checked errors, and empty capability and mutation contracts are inherited. `+
         (implementation?`The implementation is ${this.link(implementation)} (${this.source(implementation.node.span)}).`:'')));
-    } else if(method.body)children.push(flow(this.statements(method.body)));
-        else if(method.externC){const native=nativeFact(this.checked,method);children.push(paragraph(native?this.nativeDescription(native):'Native C implementation; only its declared contract is visible here.'));}
+      children.push(details('Checked interface',[paragraph(this.signature(method)),...contract]));
+    } else if(method.body) {
+      const supplied=method.params.filter(param=>!param.injected);
+      const short=method.params.length>3 ? [supplied.length?'It takes labeled inputs '+coordinate(supplied.map(param=>code(param.label??param.name)))+'.':'',
+        this.inputs(method.params.filter(param=>param.injected||param.ownership!=='managed'),false,method.span.file,new Map(),true)].filter(Boolean).join(' ') :
+        this.inputs(method.params,false,method.span.file,new Map(),true);
+      if(short)children.push(paragraph(short));
+      children.push(...this.layers(method),flow(this.statements(method.body),this.evidence));
+      children.push(details('Checked interface',[paragraph(this.signature(method)),...contract]));
+    } else children.push(...contract,...this.layers(method));
+    if(!method.body&&method.externC){const native=nativeFact(this.checked,method);children.push(paragraph(native?this.nativeDescription(native):'Native C implementation; only its declared contract is visible here.'));}
     return this.heading(name,method.span,owner&&owner.node.kind!=='function'?3:2,children);
   }
   private exportLine(item:Extract<TopLevel,{kind:'export'}>): string {
     const folder=this.file.builtin?libraryChild(this.checked.project.libraries,dirname(this.file.path),item.name):join(dirname(this.file.path),item.name);
     const file=item.folder?join(folder,'export.aug'):join(dirname(this.file.path),item.from+'.aug');
     this.enqueue(file);
-    return `Export ${item.folder?'the folder ':'the declaration '}${code(item.name)} from [${code(basename(file))}](${url(relative(dirname(this.docs.get(this.file.path)!),this.docs.get(file)!))}${item.folder?'':'#'+encodeURIComponent(anchor(item.name))}).`;
+    return `${item.internal?'Make available only inside this folder':'Export'} ${item.folder?'the folder ':'the declaration '}${code(item.name)} from [${code(basename(file))}](${url(relative(dirname(this.docs.get(this.file.path)!),this.docs.get(file)!))}${item.folder?'':'#'+encodeURIComponent(anchor(item.name))}).`;
   }
   private providerLine(item:BindDecl|Extract<TopLevel,{kind:'include'}>): string {
     if(item.kind==='bind')return this.binding(item);
@@ -731,7 +820,7 @@ class SpecWriter {
         if(errors?.length)children.push(paragraph('Construction can fail with '+errors.map(type=>{this.use(type.def);return type.def?this.link(type.def):code(tyName(type));}).join(', ')+'.'));
         else if(item.validationErrors?.length)children.push(paragraph('Construction can fail with '+item.validationErrors.map(type=>this.type(type)).join(', ')+'.'));
         if(item.stateFields?.length)children.push(...item.stateFields.map(field=>{this.locals.set(field.name,field.type);return paragraph(`The ${field.mutable?'mutable':'read-only'}${field.name.startsWith('_')?', private':''} field ${code(field.name)} has type ${this.type(field.type)} and starts as ${this.expression(field.initializer)}.`);}));
-        if(item.constructorBody)children.push(this.heading(item.name+'.initialize',item.span,3,[flow(this.statements(item.constructorBody))]));
+        if(item.constructorBody)children.push(this.heading(item.name+'.initialize',item.span,3,[flow(this.statements(item.constructorBody),this.evidence)]));
         if(!item.record) {
           const defaults=this.checked.defaults.get(def.id);
           const inherited=[...(defaults?.values()??[])].filter(info=>!item.methods.some(method=>method.name===info.method.name));
@@ -739,6 +828,10 @@ class SpecWriter {
         }
         children.push(...item.methods.map(method=>this.callable(method,def)));
         return this.heading(item.name,item.span,2,children,item.record?'immutable record':'class');
+      }
+      case 'choice': {
+        const notes=this.notes(javadocBefore(this.file.source,item.span.start));
+        return this.heading(item.name,item.span,2,[...(notes?[paragraph(notes)]:[]),paragraph('A value is '+coordinate(item.alternatives.map(type=>this.type(type)),'or')+'. Match these records to read their fields. The choice has no constructor of its own.')],'closed record choice');
       }
       case 'interface':case 'interceptor': {
         const def=this.definition(item.name)!;this.locals=new Map();
@@ -763,7 +856,7 @@ class SpecWriter {
       case 'bind':case 'include':return paragraph(this.providerLine(item));
       case 'export':return paragraph(this.exportLine(item));
       case 'import':return paragraph('');
-      default:return flow(this.statement(item));
+      default:return flow(this.statement(item),this.evidence);
     }
   }
   private tests(suite:TestDecl): SpecNode {
@@ -771,12 +864,12 @@ class SpecWriter {
       for(const group of suite.groups) {
       this.locals=new Map();const groupChildren:SpecNode[]=[];
       if(group.setup.length)groupChildren.push(paragraph('Setup for each case:'),flow(group.setup.flatMap(entry=>
-        entry.kind==='bind'||entry.kind==='include'?[step(this.providerLine(entry))]:this.statement(entry as Stmt))));
+        entry.kind==='bind'||entry.kind==='include'?[step(this.providerLine(entry))]:this.statement(entry as Stmt)),this.evidence));
       const setupLocals=new Map(this.locals);
       for(const test of group.cases) {
         this.locals=new Map(setupLocals);const caseChildren:SpecNode[]=[];
         if(test.parameters)caseChildren.push(paragraph('Run once for each row of '+test.rows!.map(row=>this.expression(row)).join('; ')+'. Bind row positions to '+test.parameters.map(code).join(', ')+'.'));
-        caseChildren.push(flow(this.statements(test.body)));
+        caseChildren.push(flow(this.statements(test.body),this.evidence));
         groupChildren.push(section(code(test.name),4,caseChildren,undefined,this.source(test.span)));
       }
       children.push(section(code(group.name),3,groupChildren));
@@ -805,7 +898,7 @@ class SpecWriter {
   }
   render(): string {
     const exports=this.file.items.filter(item=>item.kind==='export');
-    const declarations=this.file.items.filter(item=>['class','interface','interceptor','function','composition','resource'].includes(item.kind));
+    const declarations=this.file.items.filter(item=>['class','interface','choice','interceptor','function','composition','resource'].includes(item.kind));
     const providers=this.file.items.filter(item=>item.kind==='bind'||item.kind==='include');
     const startup=this.file.items.filter(item=>item.kind!=='import'&&item.kind!=='export'&&item.kind!=='test'&&item.kind!=='bind'&&item.kind!=='include'&&!declarations.includes(item));
     const children:SpecNode[]=[];
@@ -820,10 +913,10 @@ class SpecWriter {
         (project.config.openapi.enabled?`Serve OpenAPI at ${code(project.config.openapi.path)} and API docs at ${code(project.config.openapi.docs)}. `:''))]));
     }
     // Build the checked explanation first; rendering decides all spacing.
-    if(exports.length)children.push(section('Exports',2,exports.map(item=>paragraph(this.exportLine(item as Extract<TopLevel,{kind:'export'}>)))));
+    if(exports.length)children.push(section(exports.some(item=>item.kind==='export'&&item.internal)?'Folder contract':'Exports',2,exports.map(item=>paragraph(this.exportLine(item as Extract<TopLevel,{kind:'export'}>)))));
     if(providers.length)children.push(section('Providers',2,providers.map(item=>paragraph(this.providerLine(item as BindDecl|Extract<TopLevel,{kind:'include'}>)))));
-    if(startup.length)children.push(section('Startup',2,[flow(startup.flatMap(item=>this.statement(item as Stmt)))]));
-    children.push(...declarations.sort((a,b)=>Number('name' in a&&a.name.startsWith('_'))-Number('name' in b&&b.name.startsWith('_'))).map(item=>this.declaration(item)));
+    if(startup.length)children.push(section('Startup',2,[flow(startup.flatMap(item=>this.statement(item as Stmt)),this.evidence)]));
+    children.push(...declarations.sort((a,b)=>Number('name' in a&&a.name.startsWith('_'))-Number('name' in b&&b.name.startsWith('_'))).map(item=>{const tree=this.declaration(item),def='name' in item?this.definition(item.name):undefined;if(def)this.declarationTrees.set(def.id,tree);return tree;}));
     children.push(...this.file.items.filter(item=>item.kind==='test').map(item=>this.declaration(item)));
     if(!children.length)children.push(paragraph('This file declares no operations.'));
     // Links may add inherited operation owners. Walk until the surface is closed.
@@ -832,7 +925,10 @@ class SpecWriter {
     do {size=surfaceSize();surface=this.dependencySurface();} while(surfaceSize()!==size);
     if(surface)children.push(surface);
     const builtins=this.builtinSurface();if(builtins)children.push(builtins);
-    return generated+'\n\n'+renderSpecTree(section(code(basename(this.file.path)),1,children));
+    const text=renderSpecTree(section(code(basename(this.file.path)),1,children));
+    const source=this.own.has(this.file.path)?specHint(this.file).text:copied+this.file.source;
+    const revision=`<!-- August spec revision: schema=1 compiler=${compilerVersion()} source-sha256=${hash(source)} -->`;
+    return generated+'\n\n'+text.replace(/^(#[^\n]+)\n/,(_,heading)=>heading+'\n\n'+revision+'\n');
   }
   private builtinSurface(): SpecNode|undefined {
     if(!this.builtins.size&&!this.properties.size)return;
@@ -843,7 +939,7 @@ class SpecWriter {
 /** Refresh pointers and artifacts atomically, or check drift without writing; protect handwritten documents. */
 export function updateSpecs(checked:CheckedProject, check=false, options:SpecOptions={},permit?:SourcePermit): {files:number; stale:string[]} {
   if(!check&&!permit)return withSourceWriter(checked.project.root,held=>updateSpecs(checked,check,options,held));
-  const outputs=generateSpecs(checked,options), root=checked.project.root;
+  const outputs=generateSpecs(checked,options), root=checked.project.library ? realpathSync(checked.project.root) : checked.project.root;
   const manifest=join(root,'.aug-spec','manifest.json');
   let previous:string[]=[];const previousDescriptors=new Map<string,string>();
   const descriptorPath=(path:string)=>/^\.aug-spec\/packages\/(?:@[^/]+\/)?[^/]+\/[^/]+\/native\.abi\.json$/.test(path)&&!path.includes('\\')&&!path.split('/').some(part=>part==='.'||part==='..');

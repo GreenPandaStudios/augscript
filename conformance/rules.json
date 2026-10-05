@@ -94,18 +94,28 @@
     },
     {
       "id": "INTERFACES",
-      "summary": "Interfaces inherit contracts and defaults; conflicting defaults require an implementation.",
+      "summary": "Explicit methods and selected defaults satisfy every inherited contract; conflicting defaults require an implementation.",
       "reference": "reference.md#classes-records-and-local-state",
       "productions": [
         "Interface"
       ],
       "cases": [
-        "interfaces"
+        "interfaces",
+        "interface-all-requirements",
+        "interface-default-requirements"
       ],
       "regressions": [
         {
           "file": "tests/compiler.test.mjs",
           "test": "multiple interface inheritance uses both defaults"
+        },
+        {
+          "file": "tests/diagnostic-context.test.mjs",
+          "test": "one implementation must satisfy every independently inherited interface contract"
+        },
+        {
+          "file": "tests/diagnostic-context.test.mjs",
+          "test": "a selected default method must also satisfy the other interface requirements"
         }
       ]
     },
@@ -174,16 +184,28 @@
       "reference": "reference.md#imports-and-visibility",
       "productions": [
         "Import",
-        "Export"
+        "Export",
+        "Internal"
       ],
       "cases": [
         "private-import",
-        "unexported-folder"
+        "unexported-folder",
+        "internal-composition",
+        "internal-import",
+        "internal-result"
       ],
       "regressions": [
         {
           "file": "tests/compiler.test.mjs",
           "test": "every crossed folder boundary must export its child"
+        },
+        {
+          "file": "tests/internal-modules.test.mjs",
+          "test": "a repository package exposes its service and composition without its internal repository"
+        },
+        {
+          "file": "tests/internal-modules.test.mjs",
+          "test": "an outward signature cannot expose a folder-internal type"
         }
       ]
     },
@@ -223,18 +245,23 @@
     },
     {
       "id": "EFFECTS",
-      "summary": "Inferred effects remain bounded by public interfaces; constructors stay pure and locks exclude I/O.",
+      "summary": "Inferred effects remain bounded by public interfaces and resolved generic capability identities; constructors stay pure and locks exclude I/O.",
       "reference": "reference.md#functions-effects-and-capabilities",
       "productions": [
         "Paths"
       ],
       "cases": [
-        "capabilities"
+        "capabilities",
+        "generic-capability-identity"
       ],
       "regressions": [
         {
           "file": "tests/effect-inference.test.mjs",
           "test": "explicit uses is an upper bound; constructors and lock regions retain their checks"
+        },
+        {
+          "file": "tests/diagnostic-context.test.mjs",
+          "test": "generic capability bounds distinguish same-spelled arguments from separate modules"
         }
       ]
     },
@@ -274,11 +301,38 @@
       ]
     },
     {
+      "id": "BINDING-PATTERNS",
+      "summary": "Named immutable-record fields and nested tuple positions create fresh read-only bindings; tuple arity, private access and borrowed lifetimes remain checked.",
+      "reference": "reference.md#record-and-nested-tuple-bindings-unreleased",
+      "productions": [
+        "BindingPattern",
+        "FieldPattern"
+      ],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/binding-patterns.test.mjs",
+          "test": "named record and nested tuple patterns bind checked fields"
+        },
+        {
+          "file": "tests/binding-patterns.test.mjs",
+          "test": "patterns reject wrong shapes, duplicate fields/names, existing names and private reads"
+        },
+        {
+          "file": "tests/binding-patterns.test.mjs",
+          "test": "patterns preserve read-only access and borrowed aliases"
+        },
+        {
+          "file": "tests/binding-patterns.test.mjs",
+          "test": "pattern aliases can read borrowed inputs without gaining mutation permission"
+        }
+      ]
+    },
+    {
       "id": "MATCH",
       "summary": "Optional values contain a value or null; checked patterns narrow values and require coverage.",
       "reference": "reference.md#null-matching-and-checked-failures",
       "productions": [
-        "Pattern",
         "MatchCase"
       ],
       "cases": [
@@ -441,7 +495,8 @@
         "Test",
         "Group",
         "Case",
-        "TestName"
+        "TestName",
+        "TestPattern"
       ],
       "cases": [],
       "regressions": [
@@ -1569,6 +1624,285 @@
         {
           "file": "tests/interceptors.test.mjs",
           "test": "two next labels cannot override one target argument"
+        }
+      ]
+    },
+    {
+      "id": "SHORT_ERRORS",
+      "summary": "Short error declarations retain resolved Error identity and checked caller obligations.",
+      "reference": "reference.md#errors",
+      "productions": [
+        "Error"
+      ],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/ergonomics-language.test.mjs",
+          "test": "short error declarations remain checked errors with named data"
+        }
+      ]
+    },
+    {
+      "id": "INDEXING",
+      "summary": "List indexing is checked; Map indexing is optional; Tuple positions are constant.",
+      "reference": "reference.md",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/ergonomics-language.test.mjs",
+          "test": "indexing preserves checked list reads, optional map lookup, and constant tuple reads"
+        }
+      ]
+    },
+    {
+      "id": "NULL_FALLBACK",
+      "summary": "Otherwise evaluates only for null and preserves falsy values.",
+      "reference": "reference.md",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/ergonomics-language.test.mjs",
+          "test": "otherwise evaluates only for null and preserves false, zero and empty text"
+        }
+      ]
+    },
+    {
+      "id": "LITERAL_DEFAULTS",
+      "summary": "Omitted literal defaults are typed and freshly evaluated; explicit null is a value.",
+      "reference": "reference.md",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/ergonomics-language.test.mjs",
+          "test": "literal parameter defaults are typed, labeled, and freshly constructed per call"
+        }
+      ]
+    },
+    {
+      "id": "INTERPOLATION",
+      "summary": "Scalar interpolation evaluates in source order and preserves Unicode text rules.",
+      "reference": "reference.md",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/ergonomics-language.test.mjs",
+          "test": "interpolation and record updates evaluate each input once in source order"
+        }
+      ]
+    },
+    {
+      "id": "REMAINDER",
+      "summary": "Integer remainder checks zero and defines the signed-minimum edge.",
+      "reference": "reference.md",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/ergonomics-language.test.mjs",
+          "test": "integer remainder has signed operands, checked zero, and defined minimum overflow"
+        }
+      ]
+    },
+    {
+      "id": "TEXT_HELPERS",
+      "summary": "Text helpers keep Unicode units explicit and parse bounded numbers strictly.",
+      "reference": "reference.md",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/ergonomics-language.test.mjs",
+          "test": "text helpers preserve Unicode and use checked strict parsing"
+        }
+      ]
+    },
+    {
+      "id": "IMMUTABLE_COLLECTIONS",
+      "summary": "Immutable collection contracts prohibit mutable aliases and preserve deep data access.",
+      "reference": "reference.md",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/ergonomics-language.test.mjs",
+          "test": "immutable collection contracts make deep record data explicit without accepting mutable aliases"
+        }
+      ]
+    },
+    {
+      "id": "RECORD_COPY",
+      "summary": "Record copies preserve type and rerun checked construction validation.",
+      "reference": "reference.md",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/ergonomics-language.test.mjs",
+          "test": "record updates retain identity and unchanged data and rerun checked validation"
+        }
+      ]
+    },
+    {
+      "id": "LOOP_CONTROL",
+      "summary": "Nearest-loop exits run cleanup, join scopes and preserve move/error flow on reentry.",
+      "reference": "reference.md#collections-and-iteration",
+      "productions": [],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/ergonomics-language.test.mjs",
+          "test": "loop exits join child tasks, release borrows and locks, and propagate cleanup failures"
+        },
+        {
+          "file": "tests/ergonomics-language.test.mjs",
+          "test": "unreachable waits cannot erase a checked task failure on a loop exit"
+        }
+      ]
+    },
+    {
+      "id": "COMPREHENSIONS",
+      "summary": "List comprehensions evaluate their input once, select and project read-only snapshot items in order, and preserve checked failures, loans and ownership.",
+      "reference": "reference.md#list-comprehensions-unreleased",
+      "productions": [
+        "Comprehension"
+      ],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/comprehensions.test.mjs",
+          "test": "comprehensions select and project in snapshot order without changing their inputs"
+        },
+        {
+          "file": "tests/comprehensions.test.mjs",
+          "test": "comprehension input runs once, predicates precede selected projections and iteration is a snapshot"
+        },
+        {
+          "file": "tests/comprehensions.test.mjs",
+          "test": "selected references retain read-only access and native ownership cannot enter a comprehension"
+        },
+        {
+          "file": "tests/comprehensions.test.mjs",
+          "test": "comprehensions reject repeated continuation calls, repeated owned transfers and unhandled failures"
+        }
+      ]
+    },
+    {
+      "id": "FUNCTION_VALUES",
+      "summary": "Pure function references and expression closures match every inherited single-method contract, retain immutable creation-time captures, labels, checked context and isolated-worker boundaries. Incompatible interface overrides reject.",
+      "reference": "reference.md#pure-function-values-unreleased",
+      "productions": [
+        "Closure"
+      ],
+      "cases": [
+        "callback-snapshot",
+        "callback-mutable-erasure",
+        "interface-override-layout"
+      ],
+      "regressions": [
+        {
+          "file": "tests/function-values.test.mjs",
+          "test": "standalone function values reuse checked callback interfaces and match labels independently of order"
+        },
+        {
+          "file": "tests/function-values.test.mjs",
+          "test": "closures reject mutable, owned and borrowed reference captures without moving outer values"
+        },
+        {
+          "file": "tests/function-values.test.mjs",
+          "test": "function values preserve resolved nominal identities and reject larger/default interfaces"
+        },
+        {
+          "file": "tests/function-values.test.mjs",
+          "test": "callbacks created in a worker use its heap and cannot transfer between heaps"
+        },
+        {
+          "file": "tests/function-values.test.mjs",
+          "test": "closure body dependencies are retained as deferred calls in both context APIs"
+        }
+      ]
+    },
+    {
+      "id": "CHOICES",
+      "summary": "Unreleased closed choices retain exact immutable record identities and require exhaustive matches, including null for optional values.",
+      "reference": "reference.md#closed-record-choices-unreleased",
+      "productions": [
+        "Choice"
+      ],
+      "cases": [
+        "closed-choices",
+        "incomplete-choice"
+      ],
+      "regressions": [
+        {
+          "file": "tests/choices.test.mjs",
+          "test": "invalid alternatives and incomplete choices fail with checked source diagnostics"
+        },
+        {
+          "file": "tests/choices.test.mjs",
+          "test": "contextual choice names retain typed bindings and ordinary function help; nearby types complete"
+        }
+      ]
+    },
+    {
+      "id": "ERROR_CONTEXT",
+      "summary": "Unreleased explicit context retains concrete error causes and source identities without automatic logging or broad failure conversion.",
+      "reference": "guides/add-error-context.md",
+      "productions": [],
+      "cases": [
+        "error-context",
+        "mixed-context-causes",
+        "phantom-error-catch"
+      ],
+      "regressions": [
+        {
+          "file": "tests/error-context.test.mjs",
+          "test": "context conversion is a chosen checked error rather than implicit Error widening"
+        },
+        {
+          "file": "tests/error-context.test.mjs",
+          "test": "context rejects non-errors, missing locations and incorrect concrete catches"
+        },
+        {
+          "file": "tests/error-context.test.mjs",
+          "test": "generic catch rejects erased, optional, container and behavioral witnesses"
+        }
+      ]
+    },
+    {
+      "id": "GRAPHEME_TEXT",
+      "summary": "Unreleased explicit text units and Unicode 18.0.0 default extended grapheme boundaries preserve original bytes and check UTF-8.",
+      "reference": "guides/measure-text.md",
+      "productions": [],
+      "cases": [
+        "grapheme-boundaries"
+      ],
+      "regressions": [
+        {
+          "file": "tests/graphemes.test.mjs",
+          "test": "grapheme calls require checked failure handling and the returned list grants reading"
+        },
+        {
+          "file": "tests/unicode-data.test.mjs",
+          "test": "generated properties match every official assignment and default across all Unicode code points"
+        }
+      ]
+    },
+    {
+      "id": "DOMAIN_VALUES",
+      "summary": "Unreleased ordinary domain records validate constructors, parsers, copies and JSON decoding; formatting is stable and preserves documented units.",
+      "reference": "guides/use-domain-values.md",
+      "productions": [],
+      "cases": [
+        "domain-values"
+      ],
+      "regressions": [
+        {
+          "file": "tests/domain-values.test.mjs",
+          "test": "public domain values retain nominal types, checked errors and useful editor help"
         }
       ]
     }

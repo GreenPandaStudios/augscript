@@ -1,9 +1,11 @@
+const {createHash} = require('node:crypto');
 const vscode = require('vscode');
 const fs = require('node:fs');
 const path = require('node:path');
 const { spawn } = require('node:child_process');
 const {setupError,validateInvocation}=require('./process.cjs');
 const { Server } = require('./server.cjs');
+const {diagnosticMessage, diagnosticForFix}=require('./diagnostics.cjs');
 const { activateDebugging } = require('./debug.cjs');
 
 const diagnostics = vscode.languages.createDiagnosticCollection('augscript');
@@ -11,6 +13,7 @@ const timers = new Map();
 const lastFiles = new Map();
 const servers = new Map();
 const setupFailures=new Set();
+let focusedContracts;
 const output=vscode.window.createOutputChannel('August');
 function reportSetupFailure(error){
   output.appendLine(error.message);
@@ -108,7 +111,7 @@ async function refresh(context, document) {
       const file = path.resolve(issue.file);
       const range = new vscode.Range(Math.max(0, issue.line - 1), Math.max(0, issue.column - 1),
         Math.max(0, issue.line - 1), Math.max(0, issue.column));
-      const diagnostic = new vscode.Diagnostic(range, issue.message, issue.severity === 'warning' ? vscode.DiagnosticSeverity.Warning : vscode.DiagnosticSeverity.Error);
+      const diagnostic = new vscode.Diagnostic(range, diagnosticMessage(issue), issue.severity === 'warning' ? vscode.DiagnosticSeverity.Warning : vscode.DiagnosticSeverity.Error);
       diagnostic.code = issue.code;
       diagnostic.source = 'AugScript';
       diagnostic.codeDescription = { href: vscode.Uri.file(path.join(context.extensionPath,
@@ -149,12 +152,15 @@ async function editorData(context, document, command, offset, options) {
   if (document.uri.scheme !== 'file') return [];
   const root = projectRoot(document.uri.fsPath);
   if (!root) return [];
-  return server(context, root).query(document, command, offset, options);
+  const connection=server(context,root);
+  for(const open of vscode.workspace.textDocuments)if(open.languageId==='augscript'&&projectRoot(open.uri.fsPath)===root)connection.sync(open);
+  return connection.query(document, command, offset, options);
 }
 
 const completionKinds = {
   class: vscode.CompletionItemKind.Class,
   interface: vscode.CompletionItemKind.Interface,
+  composition: vscode.CompletionItemKind.Module,
   interceptor: vscode.CompletionItemKind.Class,
   function: vscode.CompletionItemKind.Function,
   method: vscode.CompletionItemKind.Method,
@@ -203,20 +209,22 @@ async function codeActions(context, document, actionContext) {
     if (!Array.isArray(fixes)) return [];
     const actions = [];
     for (const fix of fixes) {
-      const diagnostic = actionContext.diagnostics.find(issue =>
-        issue.code === fix.issue.code && issue.message === fix.issue.message &&
-        issue.range.start.line === fix.issue.line - 1 &&
-        issue.range.start.character === fix.issue.column - 1);
+      const diagnostic = diagnosticForFix(actionContext.diagnostics, fix.issue);
       if (!diagnostic && fix.title !== 'Expand to named imports') continue;
       const action = new vscode.CodeAction(fix.title, diagnostic ? vscode.CodeActionKind.QuickFix : vscode.CodeActionKind.RefactorRewrite);
       action.diagnostics = diagnostic ? [diagnostic] : [];
       action.isPreferred = !!fix.preferred;
       action.edit = new vscode.WorkspaceEdit();
+      const changes = new Map();
       for (const edit of fix.edits) {
         const target = path.resolve(edit.file) === document.uri.fsPath ? document : await vscode.workspace.openTextDocument(edit.file);
-        action.edit.replace(target.uri,
-          new vscode.Range(target.positionAt(edit.start), target.positionAt(edit.end)), edit.text);
+        const entries = changes.get(target.uri.toString()) ?? {uri:target.uri, edits:[]};
+        entries.edits.push([vscode.TextEdit.replace(
+          new vscode.Range(target.positionAt(edit.start), target.positionAt(edit.end)), edit.text),
+          {label:fix.title, description:fix.description}]);
+        changes.set(target.uri.toString(), entries);
       }
+      for (const entry of changes.values()) action.edit.set(entry.uri, entry.edits);
       actions.push(action);
     }
     for (const issue of actionContext.diagnostics) {
@@ -255,11 +263,11 @@ async function showContext(context, includeSource) {
 
 const yamlHelp = {
   backend: 'LLVM is the default on qualified hosts. August downloads its verified compiler/runtime pack. Choose c only for the temporary C reference workflow; checked native ABI packages require LLVM.',
-  spec: 'Deterministic specifications are generated beside source files during successful builds. aug spec regenerates them; aug spec --check checks for drift.',
+  spec: 'Deterministic prose specifications are generated beside source files during successful builds. Expand Checked interface for complete contracts; paragraph source links navigate to the code. aug spec regenerates them; aug spec --check checks for drift.',
   'spec.require_comments': 'Require Javadoc on none (default), public declarations, or all declarations. Existing interface documentation can be inherited. Missing required comments are compiler errors.',
-  assignment: 'Canonical assignments: `equals` or `to`. Both forms are accepted by the language.',
-  block_style: 'Formatter block style: `braces` or `indent`. A colon starts an indented block.',
-  indentation: 'Formatter indentation: `spaces` (four) or `tabs`. Mixed prefixes are compiler errors.',
+  assignment: 'Canonical bindings and defaults: `equals` or `to`. Formatting, starters and editor templates share this preference; call labels use `=`.',
+  block_style: 'Block style for formatting, starters and editor templates: `braces` or `indent`. A colon starts an indented block.',
+  indentation: 'Indentation for formatting, starters and editor templates: `spaces` (four) or `tabs`. Mixed prefixes are compiler errors.',
   lint: 'List optional warnings: wildcard_imports, public_helpers, public_docs, broad_errors, discarded_errors, architecture.',
   strict_modules: 'When true, sibling imports must be listed in the folder export.aug.',
   module_dependencies: 'List allowed module edges, for example "domain: contracts, shared". Import cycles are always rejected.',
@@ -436,7 +444,8 @@ async function inlayHints(context, document, range, token) {
   if (!vscode.workspace.getConfiguration('augscript', document.uri).get('inferredContractHints', true)) return [];
   try {
     const hints = await editorData(context, document, 'inlay-hints', 0,
-      {start: document.offsetAt(range.start), end: document.offsetAt(range.end)});
+      {start: document.offsetAt(range.start), end: document.offsetAt(range.end),
+        detail:focusedContracts===document.uri.toString()?'full':vscode.workspace.getConfiguration('augscript',document.uri).get('inferredContractHintDetail','compact')});
     if (token.isCancellationRequested) return [];
     return hints.map(item => {
       const hint = new vscode.InlayHint(document.positionAt(item.offset), item.label, vscode.InlayHintKind.Type);
@@ -481,6 +490,31 @@ function activate(context) {
   context.subscriptions.push(vscode.languages.registerDefinitionProvider('augscript', {
     provideDefinition: (document, position) => definition(context, document, position),
   }));
+  context.subscriptions.push(vscode.languages.registerRenameProvider('augscript', {
+    async provideRenameEdits(document,position,newName) {
+      const version=document.version;
+      const plan=await editorData(context,document,'rename',document.offsetAt(position),{name:newName});
+      if(document.version!==version)throw new Error('The source changed while rename was checked. Retry.');
+      const result=new vscode.WorkspaceEdit();
+      for(const edit of plan.edits) {
+        const target=edit.file===document.uri.fsPath?document:await vscode.workspace.openTextDocument(edit.file);
+        result.replace(target.uri,new vscode.Range(target.positionAt(edit.start),target.positionAt(edit.end)),edit.text);
+      }
+      for(const source of plan.sources) {
+        const open=vscode.workspace.textDocuments.find(document=>document.uri.fsPath===source.file);
+        const text=open?open.getText():fs.readFileSync(source.file,'utf8');
+        if(createHash('sha256').update(text).digest('hex')!==source.sha256)throw new Error('A project source changed while rename was checked. Retry.');
+      }
+      return result;
+    },
+  }));
+  context.subscriptions.push(vscode.languages.registerReferenceProvider('augscript', {
+    async provideReferences(document,position,options) {
+      const found=await editorData(context,document,'references',document.offsetAt(position),{includeDeclaration:options.includeDeclaration});
+      return found.filter(item=>item.file).map(item=>new vscode.Location(vscode.Uri.file(item.file),
+        new vscode.Range(item.line-1,item.column-1,item.line-1,item.column-1+item.end-item.start)));
+    },
+  }));
   context.subscriptions.push(vscode.languages.registerCompletionItemProvider('augscript', {
     provideCompletionItems: (document, position) => complete(context, document, position),
   }, '.', '[', '(', ',', '='));
@@ -488,9 +522,14 @@ function activate(context) {
     provideHover: (document, position) => hover(context, document, position),
   }));
   const hintChanges = new vscode.EventEmitter();
+  context.subscriptions.push(vscode.commands.registerCommand('augscript.focusContracts',()=>{
+    const document=vscode.window.activeTextEditor?.document;
+    if(document?.languageId!=='augscript')return;
+    const uri=document.uri.toString();focusedContracts=focusedContracts===uri?undefined:uri;hintChanges.fire();
+  }));
   context.subscriptions.push(hintChanges,
     vscode.workspace.onDidChangeConfiguration(event => {
-      if (event.affectsConfiguration('augscript.inferredContractHints')) hintChanges.fire();
+      if (event.affectsConfiguration('augscript.inferredContractHints')||event.affectsConfiguration('augscript.inferredContractHintDetail')) hintChanges.fire();
     }),
     vscode.languages.registerInlayHintsProvider('augscript', {
       onDidChangeInlayHints: hintChanges.event,

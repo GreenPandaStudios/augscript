@@ -2,6 +2,8 @@
 
 # `contracts.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=1a542f02b787348b3a002a20a8031331200dca4bcd728e427ed84eb7d754487a -->
+
 <a id="symbol-TensorError"></a>
 ## `TensorError` · class · [source](contracts.aug#L3)
 
@@ -10,4 +12,13 @@ It implements `Error`. It takes `code` as an integer, kept read-only and `messag
 <a id="symbol-TensorError.explain"></a>
 ### `TensorError.explain` · [source](contracts.aug#L5)
 
-Explain the native failure without losing its original message. It returns `message`.
+Explain the native failure without losing its original message. It returns `message`. [source](contracts.aug#L6)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+explain() returns string
+```
+
+</details>

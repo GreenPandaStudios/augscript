@@ -2,6 +2,8 @@
 
 # `contracts.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=8b2eed93d882f4844b83d94715aa4750d97c1473ea0ee8de41ddaf356ce010e1 -->
+
 <a id="symbol-Clock"></a>
 ## `Clock` · capability interface · [source](contracts.aug#L3)
 
@@ -20,7 +22,18 @@ Operating-system wall clock. It implements [`Clock`](contracts.aug.md#symbol-Clo
 <a id="symbol-SystemClock.now"></a>
 ### `SystemClock.now` · [source](contracts.aug#L9)
 
-Read whole Unix seconds in UTC. Failures can raise `TimeError`. Within an unsafe block, it returns [`_aug_time_now`](contracts.aug.md#symbol-_aug_time_now). Native operations must satisfy their declared C contracts.
+Read whole Unix seconds in UTC. Within an unsafe block, it returns [`_aug_time_now`](contracts.aug.md#symbol-_aug_time_now). Native operations must satisfy their declared C contracts. [source](contracts.aug#L10-L11)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+now() returns int unless TimeError uses Clock.now
+```
+
+Failures can raise `TimeError`.
+
+</details>
 
 <a id="symbol-_aug_time_now"></a>
 ## `_aug_time_now` · [source](contracts.aug#L6)

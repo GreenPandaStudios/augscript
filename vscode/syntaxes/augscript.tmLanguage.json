@@ -255,6 +255,20 @@
           }
         },
         {
+          "match": "\\b(choice)\\s+([A-Za-z_][A-Za-z0-9_]*)\\s+(from)\\b",
+          "captures": {
+            "1": {
+              "name": "keyword.declaration.aug"
+            },
+            "2": {
+              "name": "entity.name.type.aug"
+            },
+            "3": {
+              "name": "keyword.control.aug"
+            }
+          }
+        },
+        {
           "match": "\\b(interface|capability|record|composition)\\s+([A-Za-z_][A-Za-z0-9_]*)\\b",
           "captures": {
             "1": {
@@ -393,7 +407,7 @@
       "patterns": [
         {
           "name": "keyword.control.augscript",
-          "match": "\\b(?:if|else|while|for|match|some|in|try|catch|always|throw|return|yield|unless|test|when|it|pass|start|worker|wait|handle|initialize)\\b"
+          "match": "\\b(?:if|else|while|break|continue|for|match|some|in|try|catch|always|throw|return|yield|unless|test|when|it|pass|start|worker|wait|handle|initialize)\\b"
         },
         {
           "name": "keyword.declaration.augscript",
@@ -409,7 +423,7 @@
       "patterns": [
         {
           "name": "keyword.operator.augscript",
-          "match": "\\b(?:and|or|not)\\b|==|!=|<=|>=|[+*/=<>-]"
+          "match": "\\b(?:and|or|not)\\b|=>|==|!=|<=|>=|[+*/=<>-]"
         }
       ]
     },

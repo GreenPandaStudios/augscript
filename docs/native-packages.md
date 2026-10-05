@@ -53,6 +53,68 @@ descriptor, so ownership and native boundaries stay visible beside the code.
 
 The [ABI reference](native-abi.md) specifies scalar and buffer mappings, the error record, resource lifetimes and thread requirements. [Package compatibility](package-compatibility.md) records the versioned formats and unreleased upgrade/recovery behavior.
 
+## Start a C package
+
+**Unreleased:** the native starter builds a real signed-integer identity function
+on macOS ARM64. It needs a maintainer's Clang, macOS SDK and `ar`; consumers do
+not need these tools. Supply your package name, prospective repository and
+artifact URLs, and a license you are entitled to use:
+
+```sh
+identity_repository=https://github.com/example/aug-identity
+identity_artifact="$identity_repository/releases/download/v0.1.0/macos-arm64.tar.gz"
+aug package init identity --native c \
+  --name @example/identity \
+  --repository "$identity_repository" --artifact-url "$identity_artifact" \
+  --license ./LICENSE \
+  --clang /usr/bin/clang --ar /usr/bin/ar
+```
+
+The URLs describe where you intend to publish; the command creates no repository
+or upload. It builds in isolation and checks the real C header, August bindings
+and same-file tests before creating the project. Build or check failures preserve
+a new or empty destination. A populated or linked destination is rejected. A
+writer-cleanup failure after creation reports `NATIVE_INIT_COMMITTED` and preserves
+the completed project; inspect its remaining lock before retrying.
+
+`src/export.aug` publishes `identity` from `src/api.aug`. That file holds the
+private native declaration, safe wrapper and tests. The C header and implementation
+live in `native/include/api.h` and `native/adapter.c`. Review `native.abi.json`
+and the tool/input record in `native/build.json`; inputs are call-local and
+worker permission is false. This scalar starter owns no native handles.
+
+The measured archive is `.aug-build/native/macos-arm64.tar.gz`, with member
+hashes, checked-header evidence, provenance and your supplied notices. Cache it
+locally, then execute the tests and compile its explanation:
+
+```sh
+cd identity
+aug package cache-native . --artifact macos-arm64 \
+  --archive .aug-build/native/macos-arm64.tar.gz
+aug check
+aug test --backend llvm
+aug spec
+aug package check
+```
+
+The first test run downloads the pinned August compiler and runtime packs if
+they are not cached. The native library comes from the local archive; its
+prospective publication URL is not needed. Later tests can use
+`aug test --offline --backend llvm`. These steps execute the actual C implementation
+through LLVM. Initialization alone does not execute it. A neighboring application can declare
+`identity: "../identity"` under `packages` in `main.yaml`, import
+`identity` from that alias, and call `identity(value=7)`. Run the application
+with `aug run --offline` after caching the archive. Publish that exact archive
+at the declared URL before sharing a tagged repository import.
+
+The starter honors the normal block, indentation and assignment preferences.
+Its `AGENTS.md` starts at the library's export surface and directs tools to
+adjacent compiled specs. Automatic rebuilds after edits, more native types,
+additional author targets and hosted artifact-production jobs remain outside
+this first profile. Use your reviewed maintainer build to extend it and refresh
+all measured pins; installation never runs a package recipe. Existing C++ and
+Rust libraries continue to use their reviewed C adapters.
+
 ## Check and generate bindings
 
 Binding maintainers can use the preview's `aug bind header` command. Supply a
@@ -100,6 +162,27 @@ SHA-256 checked. Extraction rejects links, traversal, duplicate paths, and
 unexpected files. Cached files are checked again before use. Package installation
 does not execute native recipes or npm lifecycle scripts.
 
+**Unreleased:** cached native file manifests are authenticated against the
+original archive's published checksum before their member hashes are used when the package has no separate manifest pin.
+Changing a library and regenerating its cached manifest is rejected. The cache
+retains the compressed archive outside the extracted library directory. An older
+cache without that archive needs one online `aug install`; offline use rejects
+it. Compiler packs with a compiler-owned manifest pin retain their existing
+verification path.
+
+**Unreleased:** a native artifact may also declare `fileManifestSha256`, the
+lowercase SHA-256 digest of the exact bytes of its `fileManifest` file. Compute
+it from the archive's final manifest, including its whitespace. The first
+installation checks that pin against the original archive; subsequent cache
+checks use the source-owned pin and verify every member without decompressing
+the archive again. The pin is preserved in both source and native target locks.
+It does not replace the outer archive checksum or download/unpacked bounds.
+
+`maximumUnpackedBytes` limits the total extracted file bytes, including the member manifest. Tar extension metadata has a separate 1 MiB aggregate limit; every header counts toward the 20,000-entry limit. August also bounds the complete expanded transport, including padding. GNU long filenames and PAX metadata therefore work with exact file-size bounds without accepting unbounded metadata.
+
+Older CLI releases reject this new field as unsupported metadata. Packages
+without it continue to use the authenticated original archive.
+
 A failed download or extraction leaves no accepted artifact cache. Disk-full
 errors include the CLI's space-recovery guidance; they do not leave a partially
 installed library selected by a lockfile.
@@ -118,6 +201,8 @@ rejects redirects, and never writes it to source caches or lockfiles.
 Keep the executable together with its adjacent `lib` and `share` directories.
 The libraries load relative to the executable. `share/august-native` preserves
 the selected packages' notices, provenance, and file manifests.
+
+**Unreleased:** [`aug bundle`](tooling.md#create-a-deployment-bundle-unreleased) assembles this deployment directory and records its complete file hashes and platform requirements. `aug bundle verify` checks it without running native code.
 
 ## Author a binding
 
@@ -142,6 +227,39 @@ C++ adapters keep their qualified C++ runtime with the artifact. Source builds
 use Clang, platform headers and Linux relocation tools explicitly, while Rust
 adapters also use their pinned Rust/Cargo toolchain. Consumer installation has
 no automatic source-build fallback.
+
+## Verify a local native build (unreleased)
+
+Build the adapter with the maintainer toolchain recorded in its provenance.
+Prepare a format-2 `aug-package.json` with the archive's real SHA-256 and size
+bounds, the reviewed `native.abi.json`, and the HTTPS URL where you intend to
+publish the archive. The URL does not need to be live for this local check.
+
+From the package repository, run:
+
+```sh
+aug package cache-native . --artifact macos-arm64 \
+  --archive .aug-build/native/macos-arm64.tar.gz --json
+```
+
+Use an artifact ID from your manifest. The command checks the local archive
+against that entry, verifies every file hash and declared link/runtime,
+provenance, notice and closure file, then installs it in the ordinary native
+cache. It checks the supplied archive even when that cache already exists.
+Links and special input files are rejected. A changed package manifest,
+descriptor or configuration rejects the candidate before acceptance.
+
+Point a separate application at the local package with `aug add ../my-library
+--as my_library`. After caching the matching host artifact, `aug run --offline`
+uses the normal package resolver and LLVM backend. That run tests the real
+library; caching alone reports `execution: "not-run"`. A package's other target
+archives can be cached but cannot run on an unsupported host.
+
+The command does not compile source, fetch an archive, run package scripts or
+publish a release. Publish the verified archive at its declared URL, then tag
+and share the source repository through the [ordinary package
+workflow](packages.md). Consumers continue to import that repository and obtain
+its matching prebuilt artifact.
 
 ## Native calls in workers
 

@@ -15,7 +15,8 @@ export function homepageExample(root) {
   const source=style=>formatFile({...checked.project,config:{...checked.project.config,block_style:style,indentation:'spaces',assignment:'equals'}},file)
     .replace(/^\/\/ aug-spec:.*\n/,'').trim();
   const spec=generateSpecs(checked,{manifest:false}).find(output=>output.path===file.path+'.md').text;
-  const paragraph=spec.split('## Startup\n\n')[1].split('\n\nBuilt-in operations')[0];
+  const paragraph=spec.split('## Startup\n\n')[1].split('\n\nBuilt-in operations')[0]
+    .replace(/\[source\]\(main\.aug#[^)]+\)/g,'[source](examples/greetings-benchmark/main.md#code)');
   assert.ok(paragraph.startsWith('It sets `greetings`'));
   const report=JSON.parse(readFileSync(join(root,'docs/greeting-results.json'),'utf8'));
   assert.equal(report.status,'passed');

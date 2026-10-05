@@ -12,6 +12,7 @@ import { checkUnitTests, discoverTests, mergeTestAnalysis, uniqueDiagnostics } f
 import { tyName, type Ty } from './types.ts';
 import {finishSourceRead,type SourcePermit} from './source-transaction.ts';
 import {forwardingProvenance} from './forwarding.ts';
+import {defaultText} from './parameters.ts';
 
 export const CHANGE_SCHEMA = 'august.checked-change/1';
 export const ORDERING = 'root first; dependencies and callers by identity; occurrences by file and offset';
@@ -134,13 +135,14 @@ export function semanticGraph(checked: CheckedProject): SemanticGraph {
     const type = checked.parameterTypes.get(param), fact = type ? resolvedType(project,type) : referenceType(project,param.type,owner);
     const label = param.label ?? param.name, identity = `${id}::parameter:${label}`;
     parameterIds.set(param,identity);
-    const required=!param.injected&&!fact.optional;
+    const required=!param.injected&&!fact.optional&&!param.defaultValue;
+    const defaultValue=param.defaultValue?defaultText(param.defaultValue):undefined;
     symbols.set(identity,{id:identity,name:param.name,kind:'parameter',public:false,owner:id,location:location(project,atName(param.span,param.name,true)),
-      contract:{label,type:fact,ownership:param.ownership,injected:param.injected,required}});
+      contract:{label,type:fact,ownership:param.ownership,injected:param.injected,required,default:defaultValue}});
     if(!(owner.node.kind==='function'&&owner.node.forward))occurrence(identity,'declaration',atName(param.span,param.name,true),id);
     edge(id,identity,'member',param.span);addTypes(id,fact,param.type.span);
     if (param.injected) edge(id,fact.id,'injection',param.span);
-    return {id:identity,label,type:fact,ownership:param.ownership,injected:param.injected,required};
+    return {id:identity,label,type:fact,ownership:param.ownership,injected:param.injected,required,default:defaultValue};
   };
   const callable = (owner: Definition, method: MethodDecl) => {
     const id = callableIdentity(owner,method), contract = checked.callableContracts.get(method), effects = checked.effectContracts.get(method);
@@ -188,7 +190,7 @@ export function semanticGraph(checked: CheckedProject): SemanticGraph {
     }
     if(node.kind==='function')symbols.get(definition.id)!.contract!.genericContracts=genericContracts;
   }
-  const visit = (value: unknown, caller: string, file: string): void => {
+  const visit = (value: unknown, caller: string, file: string, callee=false): void => {
     if (!value || typeof value !== 'object') return;
     if (Array.isArray(value)) {value.forEach(item=>visit(item,caller,file));return;}
     const expr = value as Expr;
@@ -201,9 +203,9 @@ export function semanticGraph(checked: CheckedProject): SemanticGraph {
       if(project.files.get(span.file)?.source.slice(span.start,span.end)===reference.name)occurrence(type.id,'type',span,caller);
     }
     if(expr.kind==='name'){
-      const resolved=checked.resolvedNames.get(expr),id=resolved?.definition?.id??(resolved?.parameter?parameterIds.get(resolved.parameter):undefined);
+      const resolved=checked.resolvedNames.get(expr),id=resolved?.declaration?.id??(resolved?.parameter?parameterIds.get(resolved.parameter):undefined);
       if(id)occurrence(id,'reference',expr.span,caller);
-      if(resolved?.definition?.node.kind==='function'){edge(caller,resolved.definition.id,'reference',expr.span);boundaries.push({caller,kind:'function-value',location:location(project,expr.span),reason:'A function used as a value has no supported direct-call edge in this edit profile.'});}
+      if(!callee&&resolved?.declaration?.node.kind==='function'){edge(caller,resolved.declaration.id,'reference',expr.span);boundaries.push({caller,kind:'function-value',location:location(project,expr.span),reason:'A function used as a value has no supported direct-call edge in this edit profile.'});}
     }
     if (expr.kind === 'call') {
       const target = checked.callPlans.get(expr)?.target;
@@ -231,7 +233,7 @@ export function semanticGraph(checked: CheckedProject): SemanticGraph {
         } else if (!(expr.callee.kind==='name'&&expr.callee.name==='next')) boundaries.push({caller,kind:'unresolved-call',location:location(project,expr.span),reason:'No checked source or intrinsic target identity is available.'});
       }
     }
-    for (const [key,child] of Object.entries(value)) if (!['span','nameSpan','sourceSpan'].includes(key)) visit(child,caller,file);
+    for (const [key,child] of Object.entries(value)) if (!['span','nameSpan','sourceSpan'].includes(key)) visit(child,caller,file,expr.kind==='call'&&key==='callee');
   };
   for (const [file,source] of project.files) {
     const module = `module:${sourceIdentity(project,file)}`;

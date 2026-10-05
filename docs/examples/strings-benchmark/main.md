@@ -27,7 +27,7 @@ pageClass: aug-example-page
 
 ::: code-group
 
-```aug [Indentation]
+```aug [Indentation] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiaW5kZW50Iiwic291cmNlU2hhMjU2IjoiMDgwMWRmMGE2ODRhN2JkY2Q3NDczNTY5ODU5ZGFkNzBmYzlkMTEzMGFkYjEzOWM1MmEwMzQwOGM0OGU2ZjEzYiIsImZvcm1hdHRlZFNoYTI1NiI6ImU5ZjRiOTg0MGQxZTE0YmY3MmM0YWFkMTE4MWJhMjg5ZTA4YTI2NGE3MDljN2ZiNWY3OTQwYjE5M2YzNDM2N2YiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDItTDkiLCJmaXJzdCI6MiwibGFzdCI6OSwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0xIl19LHsiaWQiOiJzb3VyY2UtTDktTDEwIiwiZmlyc3QiOjksImxhc3QiOjEwLCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTIiXX1dfQ
 // aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 int iterations = 20000
 int index = 0
@@ -40,7 +40,7 @@ while index < iterations:
 print(value=checksum)
 ```
 
-```aug [Braces]
+```aug [Braces] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiYnJhY2VzIiwic291cmNlU2hhMjU2IjoiMDgwMWRmMGE2ODRhN2JkY2Q3NDczNTY5ODU5ZGFkNzBmYzlkMTEzMGFkYjEzOWM1MmEwMzQwOGM0OGU2ZjEzYiIsImZvcm1hdHRlZFNoYTI1NiI6ImE5ZmRiZWZjYzMxZTMxYjM5ZjJjZTc1ZDkxMWY1NjY1ODBkNTVkN2Q0ODRkNDdkMWZhNjY0YWY5ZjIxZTZjMWMiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDItTDkiLCJmaXJzdCI6MiwibGFzdCI6MTEsImJhY2tsaW5rcyI6WyIjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMSJdfSx7ImlkIjoic291cmNlLUw5LUwxMCIsImZpcnN0IjoxMCwibGFzdCI6MTIsImJhY2tsaW5rcyI6WyIjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMiJdfV19
 // aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 int iterations = 20000
 int index = 0
@@ -65,9 +65,13 @@ print(value=checksum)
 
 ### Startup
 
-It sets `iterations` to `20000`. It sets `index` and `checksum` separately, each to `0`. While `index` is less than `iterations`, it sets `parts` to `split` on `"August,clear,local,checked"` with `separator` `","`. For each `part` in a snapshot of `parts`, it increases `checksum` by the byte length of `part`.
+::: spec-paragraph specification-paragraph-1
+It sets `iterations` to `20000`. It sets `index` and `checksum` separately, each to `0`. While `index` is less than `iterations`, it sets `parts` to `split` on `"August,clear,local,checked"` with `separator` `","`. For each `part` in a snapshot of `parts`, it increases `checksum` by the byte length of `part`. [source](main.md#source-L2-L9)
+:::
 
-After the loop, it increases `index` by `1`. After the loop, it prints `checksum`.
+::: spec-paragraph specification-paragraph-2
+After the loop, it increases `index` by `1`. After the loop, it prints `checksum`. [source](main.md#source-L9-L10)
+:::
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).
 

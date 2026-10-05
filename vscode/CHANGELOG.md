@@ -2,6 +2,55 @@
 
 ## Unreleased
 
+- Keep argument-label repairs available when Problems shows the language server’s accepted input labels, including clean installs and upgrades.
+
+- Link borrow, move and task-capture conflicts to checked source in Problems, including unsaved edits. Preserve specific ownership rules and conservative access fragments in diagnostic data.
+
+- Bundle the checked rename selection repair for functions and public input labels moved during snapshot capture.
+
+- Show the checked `RetryPolicy` and `retryDelay` contracts through ordinary library hover, imports and generated specs.
+
+- Return detached, checked identity maps from semantic rename plans. Saved CLI renames retain them in normal and recovery-required committed reports.
+
+- Bundle the compiler’s checked standalone body-plan command and stage-specific rejection help. The editor does not automatically apply body replacements.
+
+- Add the unreleased local `aug compare` report with exact revisions, resolved contract/source/visibility deltas, known consumers, rejected diagnostics and unexecuted authored tests. Keep implementation function references out of public promises.
+
+- Show the differing inferred interface contract and its permitted declaration in Problems, with bounded source links through checked capability helpers.
+
+- Explain and navigate internal folder contracts, offer sibling entries in export files and keep internal names out of outward import suggestions.
+
+Use detached compiler responses and whole-project context queries for unsaved source. The schema 3 packet preserves target contracts, reports insufficient budgets and expands known callers and tests for interface changes and review.
+
+- Add Javadoc hover, import completion and compiled-spec contracts for the unreleased `august.values` domain records and operations.
+
+- Complete and explain explicit byte and Unicode 18 grapheme text operations, including their checked UTF-8 failures.
+
+- Complete and explain `sourceLocation()` and the typed `august.errors` library, with repair guidance for unsupported generic catches.
+
+Complete and navigate closed record choices. Distinguish the contextual declaration from functions named `choice`, and show its alternative records in hover.
+
+Show checked pure callback contracts, capture links and delegated implementations in hover. Scope typed closure inputs independently, color the arrow, offer a callback expression template, and explain pure callback diagnostics.
+
+Complete `select` as a list comprehension with project assignment preferences. Show checked item bindings in hover, completion and semantic colors, including record/tuple selections; keyword help explains snapshot order, allocation and checked failures.
+
+Show record binding labels as properties, with field types, Javadoc and definition navigation. Keep selected names as local variables. Add preference-aware record and nested tuple binding templates.
+
+Complete `matchvalue` with project formatting preferences. Narrow optional/type case names in match-expression hover and completion, color those names as variables, and describe result, completeness and ownership rules in keyword help.
+
+Complete `itboundaries` inside a same-file function test group to insert representative scalar input rows and an assertion placeholder. Templates honor project formatting; expected answers remain an author decision.
+
+Complete explicit compositions through ordinary exports and imports. Inspect application or selected same-file test wiring with `aug graph --composition`, including lifetimes, constructor dependencies, source revisions and Mermaid diagrams. Duplicate binding diagnostics link the conflicting selections; inspection does not execute or replace providers.
+
+Link call-input failures to their checked declarations in Problems, with substituted expected/actual types and accepted caller labels. Preserve related locations across unsaved dependency edits; diagnose malformed labels before omitted inputs.
+
+Show each generic interceptor application’s resolved dependencies and effects in hover, independently of other uses.
+
+Completion templates follow the project's block style, indentation and assignment preference. Fixed snippet contributions have been replaced by the completion provider's templates. Missing-method and missing-interceptor actions format their candidate file with those preferences and retain comments; default input values remain in generated method scaffolds.
+
+
+Complete labeled calls with compatible local values, omit defaulted inputs, and hide unavailable mutations. Show fix consequences in previews. Add resolved references and compiler-checked rename for the managed standalone-function profile, preserving label shorthand and rejecting unsupported contracts. Update the renamed input’s attached Javadoc label without changing descriptions.
+
 - Add contextual forwarding declarations, inherited contracts and checked-change tooling to the development compiler.
 Add **AugScript: Check Setup** and the **August** output channel. Explain missing Node/compiler paths, offer settings and output actions, and recover after configuration changes. Test installed VSIX features and preview upgrades in real VS Code hosts. A retained 0.23.0 compiler reports that doctor is unavailable.
 

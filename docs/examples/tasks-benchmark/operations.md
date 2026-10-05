@@ -28,13 +28,13 @@ pageClass: aug-example-page
 
 ::: code-group
 
-```aug [Indentation]
+```aug [Indentation] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiaW5kZW50Iiwic291cmNlU2hhMjU2IjoiZDdlY2ExZWQyY2ZhNDlmYjA4NjBjY2Q3NzRiMzg1MGMwZWNiM2JiMzUzMmM2YjM3NjAwZTI1ZWVhYzY4OWY1ZiIsImZvcm1hdHRlZFNoYTI1NiI6IjZlYjk3ZDQ1NTUxZmQxMTc5NDMyYmRlZjkwYmRhYzk4Yzk2ZmZlZGZjOTM1ZjA5ZDIzYzRkNGM1NjAyYzI4MTQiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDIiLCJmaXJzdCI6MiwibGFzdCI6MywiYmFja2xpbmtzIjpbIiNzeW1ib2wtY29tcHV0ZSJdfSx7ImlkIjoic291cmNlLUwzIiwiZmlyc3QiOjMsImxhc3QiOjMsImJhY2tsaW5rcyI6WyIjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMSJdfV19
 // aug-spec: "operations.aug.md" explains this file. Read it before changes; refresh with aug spec.
 compute(int value) returns int:
     return value * 3 + 1
 ```
 
-```aug [Braces]
+```aug [Braces] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiYnJhY2VzIiwic291cmNlU2hhMjU2IjoiZDdlY2ExZWQyY2ZhNDlmYjA4NjBjY2Q3NzRiMzg1MGMwZWNiM2JiMzUzMmM2YjM3NjAwZTI1ZWVhYzY4OWY1ZiIsImZvcm1hdHRlZFNoYTI1NiI6IjdhODg0ZWFlNDEyZDdiNzhiYmNhZTEwOTkyNTllZGZhZGNhMjgxNjUyZTAxMTU3YzllY2JlYzcxZTk0NmExZDMiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDIiLCJmaXJzdCI6MiwibGFzdCI6NCwiYmFja2xpbmtzIjpbIiNzeW1ib2wtY29tcHV0ZSJdfSx7ImlkIjoic291cmNlLUwzIiwiZmlyc3QiOjMsImxhc3QiOjMsImJhY2tsaW5rcyI6WyIjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMSJdfV19
 // aug-spec: "operations.aug.md" explains this file. Read it before changes; refresh with aug spec.
 compute(int value) returns int {
     return value * 3 + 1
@@ -49,9 +49,21 @@ compute(int value) returns int {
 
 ## Compiled specification {#specification}
 
-### `compute` · [source](operations.md#code) {#symbol-compute}
+### `compute` · [source](operations.md#source-L2) {#symbol-compute}
 
-It takes `value` as an integer. It returns (`value` times `3`) plus `1`.
+::: spec-paragraph specification-paragraph-1
+It takes `value` as an integer. It returns (`value` times `3`) plus `1`. [source](operations.md#source-L3)
+:::
+
+::: details Checked interface
+
+```text
+compute(int value) returns int
+```
+
+It takes `value` as an integer.
+
+:::
 
 ::::
 

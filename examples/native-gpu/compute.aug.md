@@ -2,14 +2,27 @@
 
 # `compute.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=bdb22d6d21ecacff3a28af4081c90b7d70a77e840e791974bdbc914dd5c78d96 -->
+
 <a id="symbol-calculate"></a>
 ## `calculate` · [source](compute.aug#L5)
 
-Add two lists on a GPU and return copied values. GPU resources stay local. It takes `left` and `right` as `List<float>`. Failures can raise [`GpuError`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.1.1/contracts.aug.md#symbol-GpuError).
+Add two lists on a GPU and return copied values. GPU resources stay local. It takes `left` and `right` as `List<float>`.
 
-It calls [`openDevice`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.1.1/api.aug.md#symbol-openDevice) and stores the result in owned `device` ([`Device`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.1.1/bindings.aug.md#symbol-Device)). It calls [`upload`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.1.1/api.aug.md#symbol-upload) with `device` and `values` from `left` and stores the result in owned `first` ([`Buffer`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.1.1/bindings.aug.md#symbol-Buffer)). It calls [`upload`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.1.1/api.aug.md#symbol-upload) with `device` and `values` from `right` and stores the result in owned `second` ([`Buffer`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.1.1/bindings.aug.md#symbol-Buffer)). It calls [`add`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.1.1/api.aug.md#symbol-add) with `left` from `first` and `right` from `second` and stores the result in owned `result` ([`Buffer`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.1.1/bindings.aug.md#symbol-Buffer)).
+It calls [`openDevice`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.1.1/api.aug.md#symbol-openDevice) and stores the result in owned `device` ([`Device`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.1.1/bindings.aug.md#symbol-Device)). It calls [`upload`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.1.1/api.aug.md#symbol-upload) with `device` and `values` from `left` and stores the result in owned `first` ([`Buffer`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.1.1/bindings.aug.md#symbol-Buffer)). It calls [`upload`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.1.1/api.aug.md#symbol-upload) with `device` and `values` from `right` and stores the result in owned `second` ([`Buffer`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.1.1/bindings.aug.md#symbol-Buffer)). It calls [`add`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.1.1/api.aug.md#symbol-add) with `left` from `first` and `right` from `second` and stores the result in owned `result` ([`Buffer`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.1.1/bindings.aug.md#symbol-Buffer)). [source](compute.aug#L6-L9)
 
-It returns [`download`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.1.1/api.aug.md#symbol-download) with `buffer` from `result`.
+It returns [`download`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.1.1/api.aug.md#symbol-download) with `buffer` from `result`. [source](compute.aug#L10)
+
+<details>
+<summary>Checked interface</summary>
+
+```text
+calculate(List<float> left, List<float> right) returns List<float> unless GpuError
+```
+
+It takes `left` and `right` as `List<float>`. Failures can raise [`GpuError`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.1.1/contracts.aug.md#symbol-GpuError).
+
+</details>
 
 <a id="symbol-test calculate"></a>
 ## `test calculate` · [source](compute.aug#L13)
@@ -20,9 +33,9 @@ Tests [`calculate`](compute.aug.md#symbol-calculate). Each case gets fresh setup
 
 #### `copies_the_GPU_result` · [source](compute.aug#L15)
 
-It sets `result` of type `List<float>` to [`calculate`](compute.aug.md#symbol-calculate) with `left` from a list containing `1.0`, `2.0`, `3.0` and `right` from a list containing `4.0`, `5.0`, `6.0`. The test requires the number of elements in `result` equals `3`. The test requires the item at index `0` in `result` equals `5.0`. The test requires the item at index `1` in `result` equals `7.0`.
+It sets `result` of type `List<float>` to [`calculate`](compute.aug.md#symbol-calculate) with `left` from a list containing `1.0`, `2.0`, `3.0` and `right` from a list containing `4.0`, `5.0`, `6.0`. The test requires the number of elements in `result` equals `3`. The test requires the item at index `0` in `result` equals `5.0`. The test requires the item at index `1` in `result` equals `7.0`. [source](compute.aug#L16-L19)
 
-The test requires the item at index `2` in `result` equals `9.0`.
+The test requires the item at index `2` in `result` equals `9.0`. [source](compute.aug#L20)
 
 ## Dependencies
 

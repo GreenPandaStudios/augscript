@@ -101,7 +101,11 @@ test('a native artifact failure preserves the accepted source lock and add resto
     await assert.rejects(addPackageWithNative(app,'../native','native'),/NATIVE_DOWNLOAD.*Missing artifact/);
     assert.equal(readFileSync(lockPath,'utf8'),before);assert.equal(readFileSync(join(app,'main.yaml'),'utf8'),'');
     writeFileSync(join(app,'main.yaml'),'packages:\n  native: "../native"\n');
-    await assert.rejects(installPackagesWithNative(app),/NATIVE_DOWNLOAD.*Missing artifact/);assert.equal(readFileSync(lockPath,'utf8'),before);
+    const phases=[];
+    await assert.rejects(installPackagesWithNative(app,false,false,false,()=>phases.push('native artifacts')),/NATIVE_DOWNLOAD.*Missing artifact/);assert.equal(readFileSync(lockPath,'utf8'),before);assert.deepEqual(phases,['native artifacts']);
+    writeFileSync(join(app,'main.aug'),'');
+    const failedRun=spawnSync(process.execPath,[resolve('bin/aug.mjs'),'run',app,'--offline','--progress'],{encoding:'utf8'});
+    assert.equal(failedRun.status,1);assert.match(failedRun.stderr,/native artifacts: failed/);assert.match(failedRun.stderr,/NATIVE_OFFLINE/);assert.equal(readFileSync(lockPath,'utf8'),before);
     await assert.rejects(installPackagesWithNative(app,false,true),/NATIVE_OFFLINE/);assert.equal(readFileSync(lockPath,'utf8'),before);
     assert.equal(existsSync(join(app,'.aug-install.lock')),false);
   }finally{globalThis.fetch=fetch;rmSync(root,{recursive:true,force:true});}

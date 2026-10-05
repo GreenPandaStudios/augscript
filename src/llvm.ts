@@ -1,3 +1,4 @@
+import type {ErrorMatch} from './error-matches.ts';
 import type {AugustIR,IrFunction,IrInstruction,IrTerminator,IrHttpPolicy} from './ir.ts';
 import type {NativeView} from './native-contracts.ts';
 import {runtimeOperations as operations,httpOperations,schemaKinds} from './runtime-abi.ts';
@@ -200,14 +201,14 @@ class FunctionEmitter {
       return this.floatingOperation(i,left,right);
     if(kind!=='int'||other!=='int')return false;
     const comparison=operator&&comparisons[operator],arithmetic:Record<string,string>={'+':'add','-':'sub','*':'mul'};
-    if(operator==='/'){
+    if(operator==='/'||operator==='%'){
       const a=this.payload(left),b=this.payload(right),zero=this.temp(),failed=this.label('division_zero'),success=this.label('division_value'),done=this.label('division_done');
       this.line(`${zero} = icmp eq i64 ${b}, 0`);this.line(`br i1 ${zero}, label %${failed}, label %${success}`);this.lines.push(failed+':');
-      this.call('aug_ir_binary','void',[{type:'ptr',value:this.ptr(i.out)},{type:'ptr',value:this.module.text('/')},...i.args.map(slot=>({type:'ptr',value:this.ptr(slot)}))]);
+      this.call('aug_ir_binary','void',[{type:'ptr',value:this.ptr(i.out)},{type:'ptr',value:this.module.text(operator)},...i.args.map(slot=>({type:'ptr',value:this.ptr(slot)}))]);
       this.line(`br label %${done}`);this.lines.push(success+':');
       const minimum=this.temp(),negativeOne=this.temp(),overflow=this.temp(),safeDivisor=this.temp(),result=this.temp();
       this.line(`${minimum} = icmp eq i64 ${a}, -9223372036854775808`);this.line(`${negativeOne} = icmp eq i64 ${b}, -1`);this.line(`${overflow} = and i1 ${minimum}, ${negativeOne}`);
-      this.line(`${safeDivisor} = select i1 ${overflow}, i64 1, i64 ${b}`);this.line(`${result} = sdiv i64 ${a}, ${safeDivisor}`);this.boxed(i.out,1,result);
+      this.line(`${safeDivisor} = select i1 ${overflow}, i64 1, i64 ${b}`);this.line(`${result} = ${operator==='%'?'srem':'sdiv'} i64 ${a}, ${safeDivisor}`);this.boxed(i.out,1,result);
       this.line(`br label %${done}`);this.lines.push(done+':');return true;
     }
     if(!comparison&&!arithmetic[operator??''])return false;
@@ -282,6 +283,7 @@ class FunctionEmitter {
       case 'drop':this.call('aug_ir_drop','void',[{type:'ptr',value:this.ptr(i.slot)}]);return;
       case 'throw':this.call('aug_ir_throw','void',[{type:'ptr',value:this.ptr(i.input)}]);return;
       case 'take-error':this.call('aug_ir_take_error','void',[{type:'ptr',value:this.ptr(i.out)}]);return;
+      case 'assert-equal':this.call('aug_ir_assert_equal','void',[{type:'ptr',value:this.ptr(i.actual)},{type:'ptr',value:this.ptr(i.expected)},{type:'ptr',value:this.module.text(i.expression)},{type:'ptr',value:this.module.text(i.span.file)},{type:'i32',value:String(i.span.line)}]);return;
       case 'assert':this.call('aug_ir_assert','void',[{type:'ptr',value:this.ptr(i.input)},{type:'ptr',value:this.module.text(i.expression)},{type:'ptr',value:this.module.text(i.span.file)},{type:'i32',value:String(i.span.line)}]);return;
       case 'object':{
         const table=this.module.table(this.fn.name,i.fields,i.owned,i.methods);
@@ -394,6 +396,34 @@ class FunctionEmitter {
       this.call(fn.result.release??i.resources[fn.result.resource!].release,'void',args);this.line(`br label %${after}`);this.lines.push(after+':');
     }
   }
+  private errorBranch(match:ErrorMatch,yes:string,no:string):void {
+    const condition=this.call('aug_error_is','zeroext i1',[{type:'ptr',value:this.module.text(match.id)}]);
+    if(!match.fields.length){this.line(`br i1 ${condition}, label %${yes}, label %${no}`);return;}
+    const matched=this.label('error_fields');this.line(`br i1 ${condition}, label %${matched}, label %${no}`);this.lines.push(matched+':');
+    // Keep the pending error rooted in its execution throughout these non-allocating
+    // tests. Existing pointer thunks avoid private object-layout assumptions.
+    const value=this.allocate('%AugValue');this.call('aug_ir_take_error','void',[{type:'ptr',value}]);
+    this.call('aug_ir_throw','void',[{type:'ptr',value}]);
+    const steps:{path:number[];id:string}[]=[];
+    const visit=(plan:ErrorMatch,path:number[])=>{
+      if(plan.id!=='Error')steps.push({path,id:plan.id});
+      for(const field of plan.fields)visit(field.match,[...path,field.index]);
+    };
+    for(const field of match.fields)visit(field.match,[field.index]);
+    steps.forEach((step,index)=>{
+      let input=value;
+      for(const offset of step.path){
+        const child=this.allocate('%AugValue');
+        this.call('aug_ir_operation','void',[{type:'ptr',value:child},{type:'i32',value:String(operations.indexOf('FIELD')+1)},{type:'ptr',value:input},{type:'i32',value:'1'},{type:'ptr',value:'null'},{type:'i64',value:String(offset)}]);input=child;
+      }
+      const result=this.allocate('%AugValue');
+      this.call('aug_ir_operation','void',[{type:'ptr',value:result},{type:'i32',value:String(operations.indexOf('IS_TYPE')+1)},{type:'ptr',value:input},{type:'i32',value:'1'},{type:'ptr',value:this.module.text(step.id)},{type:'i64',value:'0'}]);
+      const passed=this.call('aug_ir_truthy','zeroext i1',[{type:'ptr',value:result}]),next=index===steps.length-1?yes:this.label('error_field_next');
+      this.line(`br i1 ${passed}, label %${next}, label %${no}`);if(index<steps.length-1)this.lines.push(next+':');
+    });
+    if(!steps.length)this.line('br label %'+yes);
+  }
+
   private terminator(t:IrTerminator,blockName:string){
     if(t.op==='jump'){this.line('br label %'+t.target);return;}
     if(t.op==='return'){
@@ -416,7 +446,7 @@ class FunctionEmitter {
       if(paired){const cancelled=this.executionFlag(runtimeLayout.executionCancelledOffset),failed=this.executionFlag(runtimeLayout.executionErrorOffset),error=this.temp();this.line(`${error} = select i1 ${failed}, i8 2, i8 0`);this.line(`${paired} = select i1 ${cancelled}, i8 1, i8 ${error}`);condition=cancelled;}else condition=this.executionFlag(runtimeLayout.executionCancelledOffset);
       yes=t.then;no=t.otherwise;
     }
-    else if(t.op==='error-type'){condition=this.call('aug_error_is','zeroext i1',[{type:'ptr',value:this.module.text(t.type)}]);yes=t.then;no=t.otherwise;}
+    else if(t.op==='error-type'){this.errorBranch(t.match,t.then,t.otherwise);return;}
     else if(t.op==='null'){condition=this.call('aug_ir_is_null','zeroext i1',[{type:'ptr',value:this.ptr(t.input)}]);yes=t.then;no=t.otherwise;}
     else{condition=this.scalarKind(t.condition)==='bool'?this.scalarBoolean(t.condition):this.call('aug_ir_truthy','zeroext i1',[{type:'ptr',value:this.ptr(t.condition)}]);yes=t.then;no=t.otherwise;}
     this.line(`br i1 ${condition}, label %${yes}, label %${no}`);

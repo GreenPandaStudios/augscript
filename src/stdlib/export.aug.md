@@ -2,8 +2,10 @@
 
 # `export.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=0c27d1a6238f361ce4608be2f382ace71a434cbfa7605927a9e7671f5a0528d1 -->
+
 ## Exports
 
-Export the folder `io` from [`export.aug`](io/export.aug.md). Export the folder `crypto` from [`export.aug`](crypto/export.aug.md). Export the folder `json` from [`export.aug`](json/export.aug.md). Export the folder `web` from [`export.aug`](web/export.aug.md).
+Export the folder `io` from [`export.aug`](io/export.aug.md). Export the folder `collections` from [`export.aug`](collections/export.aug.md). Export the folder `math` from [`export.aug`](math/export.aug.md). Export the folder `errors` from [`export.aug`](errors/export.aug.md).
 
-Export the folder `time` from [`export.aug`](time/export.aug.md). Export the folder `memory` from [`export.aug`](memory/export.aug.md).
+Export the folder `values` from [`export.aug`](values/export.aug.md).

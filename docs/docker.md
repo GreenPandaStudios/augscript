@@ -61,6 +61,10 @@ The build installs project dependencies, runs same-file tests and compiles the p
 
 Commit `aug.lock.json` to retain exact package revisions. For a deployment with an established Linux lock, change the install step to `aug install . --frozen`. Native package locks must include the Linux target you deploy; a lock created only on macOS may need its first Linux install before it can be frozen. See [reproducible builds](packages.md#reproducible-builds).
 
+### Bundle with the next compiler
+
+**Unreleased:** the next CLI can replace the build command with `aug bundle . --out /tmp/deploy`. Copy that complete directory into the runtime image and set `ENTRYPOINT ["/app/app"]`. Use a build base that contains that compiler release; the published 0.23.0 base has no `bundle` command. Verify the directory with `aug bundle verify /tmp/deploy` before copying it.
+
 ## Deploy an HTTP application
 
 Use the [weather starter](weather-api.md) or a [downloaded web example](examples/index.md), then add the Dockerfile above. Here is a complete health service.

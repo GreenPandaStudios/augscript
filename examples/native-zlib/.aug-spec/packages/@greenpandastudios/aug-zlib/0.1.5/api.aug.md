@@ -2,19 +2,39 @@
 
 # `api.aug`
 
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=40c873c0be7741c736ab19f47c87904e3e396e04af4d10c9818f3d530df998d0 -->
+
 <a id="symbol-compress"></a>
 ## `compress` · [source](api.aug#L7)
 
-Compress bytes with the standard zlib framing. It takes `input` as `Bytes`. Failures can raise [`CompressionError`](contracts.aug.md#symbol-CompressionError).
+Compress bytes with the standard zlib framing. It takes `input` as `Bytes`. Within an unsafe block, it returns [`_compress`](api.aug.md#symbol-_compress) with `input`. Native operations must satisfy their declared C contracts. [source](api.aug#L8-L9)
 
-Within an unsafe block, it returns [`_compress`](api.aug.md#symbol-_compress) with `input`. Native operations must satisfy their declared C contracts.
+<details>
+<summary>Checked interface</summary>
+
+```text
+compress(Bytes input) returns Bytes unless CompressionError
+```
+
+It takes `input` as `Bytes`. Failures can raise [`CompressionError`](contracts.aug.md#symbol-CompressionError).
+
+</details>
 
 <a id="symbol-decompress"></a>
 ## `decompress` · [source](api.aug#L11)
 
-Decompress at most maximumOutput bytes (maximum 256 MiB). It takes `input` as `Bytes` and `maximumOutput` as an integer. Failures can raise [`CompressionError`](contracts.aug.md#symbol-CompressionError).
+Decompress at most maximumOutput bytes (maximum 256 MiB). It takes `input` as `Bytes` and `maximumOutput` as an integer. Within an unsafe block, it returns [`_decompress`](api.aug.md#symbol-_decompress) with `input` and `maximumOutput`. Native operations must satisfy their declared C contracts. [source](api.aug#L12-L13)
 
-Within an unsafe block, it returns [`_decompress`](api.aug.md#symbol-_decompress) with `input` and `maximumOutput`. Native operations must satisfy their declared C contracts.
+<details>
+<summary>Checked interface</summary>
+
+```text
+decompress(Bytes input, int maximumOutput) returns Bytes unless CompressionError
+```
+
+It takes `input` as `Bytes` and `maximumOutput` as an integer. Failures can raise [`CompressionError`](contracts.aug.md#symbol-CompressionError).
+
+</details>
 
 <a id="symbol-_compress"></a>
 ## `_compress` · [source](api.aug#L4)
@@ -39,13 +59,13 @@ Tests [`compress`](api.aug.md#symbol-compress). Each case gets fresh setup and d
 
 #### `preserves_bytes` · [source](api.aug#L17)
 
-It sets `input` of type `Bytes` to `bytes` on `"The world runs on language"`. It sets `packed` of type `Bytes` to [`compress`](api.aug.md#symbol-compress) with `input`. It sets `restored` of type `Bytes` to [`decompress`](api.aug.md#symbol-decompress) with `input` from `packed` and `maximumOutput` `4096`. The test requires `restored.text` equals `"The world runs on language"`.
+It sets `input` of type `Bytes` to `bytes` on `"The world runs on language"`. It sets `packed` of type `Bytes` to [`compress`](api.aug.md#symbol-compress) with `input`. It sets `restored` of type `Bytes` to [`decompress`](api.aug.md#symbol-decompress) with `input` from `packed` and `maximumOutput` `4096`. The test requires `restored.text` equals `"The world runs on language"`. [source](api.aug#L18-L21)
 
 #### `checks_output_limit` · [source](api.aug#L22)
 
-It sets `packed` of type `Bytes` to [`compress`](api.aug.md#symbol-compress) with `input` from `bytes` on `"length limit"`. It sets `rejected` to `false`.
+It sets `packed` of type `Bytes` to [`compress`](api.aug.md#symbol-compress) with `input` from `bytes` on `"length limit"`. It sets `rejected` to `false`. [source](api.aug#L23-L24)
 
-It tries to call [`decompress`](api.aug.md#symbol-decompress) with `input` from `packed` and `maximumOutput` `1`. If this work raises [`CompressionError`](contracts.aug.md#symbol-CompressionError), it sets `rejected` to `true`. The test requires `rejected` is true.
+It tries to call [`decompress`](api.aug.md#symbol-decompress) with `input` from `packed` and `maximumOutput` `1`. If this work raises [`CompressionError`](contracts.aug.md#symbol-CompressionError), it sets `rejected` to `true`. The test requires `rejected` is true. [source](api.aug#L25-L29)
 
 ## Dependencies
 

@@ -30,7 +30,7 @@ pageClass: aug-example-page
 
 ::: code-group
 
-```aug [Indentation]
+```aug [Indentation] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiaW5kZW50Iiwic291cmNlU2hhMjU2IjoiM2Q3NmM0NDI2YzUwYmQ2NGI1MzIzZmUxZGJiYjE2ZTAzZWNmY2VkZDRjOGJmZWEyOGE4ODhmNjMxZmJmNzY3YSIsImZvcm1hdHRlZFNoYTI1NiI6IjIwYzY1N2FkZGNhN2Y3ZWE1ZGE5MzM4YTU3MjI0YTk0NjU4NDg2ZjkwNDkzYjVlM2U2MzNiNDg0NzhlZTRjZTEiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDQiLCJmaXJzdCI6NCwibGFzdCI6NiwiYmFja2xpbmtzIjpbIiNzeW1ib2wtTG9nZ2VyIl19LHsiaWQiOiJzb3VyY2UtTDYiLCJmaXJzdCI6NiwibGFzdCI6NiwiYmFja2xpbmtzIjpbIiNzeW1ib2wtTG9nZ2VyLmxvZyJdfSx7ImlkIjoic291cmNlLUw5IiwiZmlyc3QiOjgsImxhc3QiOjEwLCJiYWNrbGlua3MiOlsiI3N5bWJvbC1Db25zb2xlTG9nZ2VyIl19LHsiaWQiOiJzb3VyY2UtTDEwIiwiZmlyc3QiOjksImxhc3QiOjEwLCJiYWNrbGlua3MiOlsiI3N5bWJvbC1Db25zb2xlTG9nZ2VyLmxvZyJdfSx7ImlkIjoic291cmNlLUwxMSIsImZpcnN0IjoxMCwibGFzdCI6MTAsImJhY2tsaW5rcyI6WyIjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMSJdfV19
 // aug-spec: "logging.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Console from august.io
 /** Writes a message to the application log. */
@@ -43,7 +43,7 @@ ConsoleLogger() implements Logger:
         console.write(value=message)
 ```
 
-```aug [Braces]
+```aug [Braces] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiYnJhY2VzIiwic291cmNlU2hhMjU2IjoiM2Q3NmM0NDI2YzUwYmQ2NGI1MzIzZmUxZGJiYjE2ZTAzZWNmY2VkZDRjOGJmZWEyOGE4ODhmNjMxZmJmNzY3YSIsImZvcm1hdHRlZFNoYTI1NiI6IjA2Zjk4NzQ4ODhlODNhOTljNTZmYWE4ZjM3ZGM1MDNjN2IxMDhhNmViZWIyYzFkN2VlMGZjNDM2NDRjMWU5ZWQiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDQiLCJmaXJzdCI6NCwibGFzdCI6NywiYmFja2xpbmtzIjpbIiNzeW1ib2wtTG9nZ2VyIl19LHsiaWQiOiJzb3VyY2UtTDYiLCJmaXJzdCI6NiwibGFzdCI6NiwiYmFja2xpbmtzIjpbIiNzeW1ib2wtTG9nZ2VyLmxvZyJdfSx7ImlkIjoic291cmNlLUw5IiwiZmlyc3QiOjksImxhc3QiOjEzLCJiYWNrbGlua3MiOlsiI3N5bWJvbC1Db25zb2xlTG9nZ2VyIl19LHsiaWQiOiJzb3VyY2UtTDEwIiwiZmlyc3QiOjEwLCJsYXN0IjoxMiwiYmFja2xpbmtzIjpbIiNzeW1ib2wtQ29uc29sZUxvZ2dlci5sb2ciXX0seyJpZCI6InNvdXJjZS1MMTEiLCJmaXJzdCI6MTEsImxhc3QiOjExLCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTEiXX1dfQ
 // aug-spec: "logging.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Console from august.io
 /** Writes a message to the application log. */
@@ -67,21 +67,33 @@ ConsoleLogger() implements Logger {
 
 ## Compiled specification {#specification}
 
-### `Logger` · interface · [source](logging.md#code) {#symbol-Logger}
+### `Logger` · interface · [source](logging.md#source-L4) {#symbol-Logger}
 
 Writes a message to the application log.
 
-#### `Logger.log` · [source](logging.md#code) {#symbol-Logger.log}
+#### `Logger.log` · [source](logging.md#source-L6) {#symbol-Logger.log}
 
 It takes `message` as a string (Text to display). It gets `console` ([`Console`](dependencies/august/0.23.0/io/contracts.md#symbol-Console)) from dependency injection. It can call [`Console.write`](dependencies/august/0.23.0/io/contracts.md#symbol-Console.write).
 
-### `ConsoleLogger` · class · [source](logging.md#code) {#symbol-ConsoleLogger}
+### `ConsoleLogger` · class · [source](logging.md#source-L9) {#symbol-ConsoleLogger}
 
 Console logger shared by interceptor instances and the application. It implements [`Logger`](logging.md#symbol-Logger).
 
-#### `ConsoleLogger.log` · [source](logging.md#code) {#symbol-ConsoleLogger.log}
+#### `ConsoleLogger.log` · [source](logging.md#source-L10) {#symbol-ConsoleLogger.log}
 
-It takes `message` as a string (Text to display). It gets `console` ([`Console`](dependencies/august/0.23.0/io/contracts.md#symbol-Console)) from dependency injection. It passes `message` to [`console.write`](dependencies/august/0.23.0/io/contracts.md#symbol-Console.write).
+::: spec-paragraph specification-paragraph-1
+It takes `message` as a string. It gets `console` ([`Console`](dependencies/august/0.23.0/io/contracts.md#symbol-Console)) from dependency injection. It passes `message` to [`console.write`](dependencies/august/0.23.0/io/contracts.md#symbol-Console.write). [source](logging.md#source-L11)
+:::
+
+::: details Checked interface
+
+```text
+log(resolve Console console, string message) returns void uses Console.write
+```
+
+It takes `message` as a string (Text to display). It gets `console` ([`Console`](dependencies/august/0.23.0/io/contracts.md#symbol-Console)) from dependency injection.
+
+:::
 
 ### Dependencies
 

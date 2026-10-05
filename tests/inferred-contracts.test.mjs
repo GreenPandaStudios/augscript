@@ -237,3 +237,19 @@ function spawnSync(command, args, options) {
 }
 
 function loadProject(root, ...args) { prepareLibraryFixtures(root); return fixtureLoadProject(root, ...args); }
+
+
+test('contract hints have a compact default and an explicit complete detail view',()=>{
+  const names=Array.from({length:12},(_,i)=>'Fault'+i);
+  const source=names.map(name=>`error ${name}()`).join('\n')+`\nload(int choice) { `+names.map((name,i)=>`if choice == ${i} { throw ${name}() }`).join(' ')+' return 7 }\n';
+  project(source,'',({root,file,issues})=>{
+    assert.deepEqual(issues,[]);
+    const view=new SemanticWorkspace(root).document(file);
+    const compact=view.inlayHints().find(h=>h.label.includes('errors'));
+    assert.ok(compact);assert.ok(compact.label.length<=120);
+    const full=view.inlayHints(0,source.length,{detail:'full'}).find(h=>h.offset===compact.offset);
+    for(const name of names)assert.ok(full.label.includes(name));
+    assert.ok(full.label.length>compact.label.length);assert.equal(full.tooltip,compact.tooltip);
+    assert.equal(view.format().includes('unless'),false);
+  });
+});
