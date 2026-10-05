@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Link rejected borrows, call-input aliases, moves and task-captured access/cleanup to checked source sites. JSON and LSP retain specific rules and conservative access fragments; witness lists are bounded and explicit about omissions.
+
 - Add an explicit scalar C native starter for macOS ARM64 with checked headers, safe source APIs, same-file tests, measured archives and author provenance. It uses selected maintainer tools and preserves destinations on build/check failures.
 - Library agent instructions start at src/export.aug. Native library selection now hashes canonical root-relative paths, fixing tests through directory aliases.
 

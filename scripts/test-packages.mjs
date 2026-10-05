@@ -140,6 +140,18 @@ try {
   assert.equal(violation.expected,'uses none');assert.equal(violation.actual,'uses Console.write (inferred)');
   assert.equal(violation.related[0].line,2);assert.equal(violation.related[1].line,3);
 
+  const ownershipErrors=join(directory,'ownership-diagnostics');mkdirSync(ownershipErrors);
+  writeFileSync(join(ownershipErrors,'main.aug'),'values = [1]\nalias = values\nborrow values:\n    alias.length()\n');
+  const rejectedOwnership=spawnSync(process.execPath,[cli,'check',ownershipErrors,'--json'],{cwd:directory,encoding:'utf8'});
+  assert.equal(rejectedOwnership.status,1,rejectedOwnership.stderr);
+  const ownershipIssue=JSON.parse(rejectedOwnership.stdout).find(issue=>issue.rule==='ownership.read-during-borrow');
+  assert.equal(ownershipIssue.expected,'read access outside conflicting mutable loans');
+  assert.equal(ownershipIssue.actual,'possible overlap with mutable borrow values');
+  assert.equal(ownershipIssue.related[0].file,join(ownershipErrors,'main.aug'));
+  assert.equal(ownershipIssue.related[0].line,3);assert.equal(ownershipIssue.related[0].column,1);
+  writeFileSync(join(ownershipErrors,'main.aug'),'values = [1]\nalias = values\nborrow values:\n    values.append(value=2)\nalias.length()\n');
+  assert.deepEqual(JSON.parse(aug('check',ownershipErrors,'--json')),[]);
+
   const callbacks=join(directory,'callback-consumer');mkdirSync(callbacks);
   writeFileSync(join(callbacks,'main.aug'),'import transform from august.collections\nfor value in transform(values=[2, 3], transformation=(int value) => value * 2):\n    print(value=value)\n');
   assert.equal(aug('run',callbacks),'4\n6\n');

@@ -129,3 +129,15 @@ Pure retry-policy declarations in `src/stdlib/values/retries.aug` map to `guides
 `src/native-archive.ts` authenticates the bounded original archive stream before cached member hashes are trusted. `src/native-artifacts.ts` shares cache writer coordination, extraction and promotion between HTTPS installation and the explicit `aug package cache-native` author command. Compiler-owned manifest pins retain their direct path. Exercise paired library/manifest replacement through installation, doctor, update and release reports; legacy online restoration, missing/changed transports, unsafe paths, size bounds, PAX/GNU metadata accounting, special cached manifests and concurrent author metadata. Set `AUG_TEST_PUBLIC_NATIVE_AUTHOR=1` for the installed public zlib repository/archive gate. `scripts/test-local-native-author.mjs` qualifies the installed JavaScript CLI with an explicitly built and header-checked C archive, normal offline source imports and LLVM execution. It requires maintainer Clang/ar and the selected contributor compiler/runtime; it does not qualify a clean consumer toolchain download, broader native starters or hosted artifact production.
 
 The native-author installed gate also exercises the unreleased scalar C starter on macOS ARM64. It builds with explicitly selected maintainer Clang/ar, caches its measured archive, runs same-file tests and imports from a neighboring application through installed JavaScript and LLVM with native tools absent from the consumer PATH. Other author targets, hosted producer jobs and default compiler downloads remain separate qualification.
+
+
+Ownership diagnostic evidence comes from the existing `OwnershipFlow` loans,
+capture sites and checked move sites. Keep access predicates, joins and runtime
+semantics separate from reporting. `ownershipEvidence` emits deterministic,
+bounded related sites; CLI, immutable semantic revisions and LSP share those
+facts. Map changes to `diagnostics.md`, `src/help.ts` and the editor changelog.
+Exercise conditional aliases, call-input conflicts, outstanding captures and
+owned cleanup, moved values, joined loans, isolated worker copies, omitted counts
+and unsaved source relocation in `tests/ownership-diagnostics.test.mjs` and
+`tests/diagnostic-context.test.mjs`. A bare diagnostic is not independently
+revision-bearing; context and checked-edit envelopes provide that identity.

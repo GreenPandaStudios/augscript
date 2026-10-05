@@ -21,6 +21,8 @@ export interface Diagnostic {
   message: string;
   code: string;
   severity?: 'error' | 'warning';
+  /** A stable checked rule within a diagnostic family; not an execution result. */
+  rule?: string;
   related?: readonly RelatedDiagnostic[];
   expected?: string;
   actual?: string;

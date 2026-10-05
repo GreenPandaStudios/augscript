@@ -85,6 +85,17 @@ test('the language server publishes related declaration locations for unsaved ca
   send('textDocument/didChange',{textDocument:{uri,version:3},contentChanges:[{text}]});
   const updated=(await published(uri,3)).find(issue=>issue.code==='TYPE');
   assert.deepEqual(updated.relatedInformation[0].location.range.start,{line:1,character:9});
+  const borrowed='inspect():\n    values = [1]\n    alias = values\n    borrow values:\n        alias.length()\n';
+  send('textDocument/didChange',{textDocument:{uri,version:4},contentChanges:[{text:borrowed}]});
+  const borrow=(await published(uri,4)).find(issue=>issue.code==='BORROW');
+  assert.equal(borrow.data.rule,'ownership.read-during-borrow');assert.match(borrow.data.actual,/possible overlap/);
+  assert.equal(borrow.relatedInformation[0].location.uri,uri);assert.deepEqual(borrow.relatedInformation[0].location.range.start,{line:3,character:4});
+  send('textDocument/didChange',{textDocument:{uri,version:5},contentChanges:[{text:'\n'+borrowed}]});
+  const relocated=(await published(uri,5)).find(issue=>issue.code==='BORROW');
+  assert.deepEqual(relocated.relatedInformation[0].location.range.start,{line:4,character:4});
+  assert.deepEqual(borrow.relatedInformation[0].location.range.start,{line:3,character:4});
+  send('textDocument/didChange',{textDocument:{uri,version:6},contentChanges:[{text:borrowed.replace('        alias.length()', '        pass\n    alias.length()')}]});
+  assert.deepEqual(await published(uri,6),[]);
   await request('shutdown',{});
  }finally{child.kill();rmSync(root,{recursive:true,force:true});}
 });

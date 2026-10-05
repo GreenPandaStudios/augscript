@@ -1,4 +1,4 @@
-import type { Expr, Span } from './ast.ts';
+import type { Diagnostic, Expr, Span } from './ast.ts';
 import type { Ty } from './types.ts';
 
 export type Origins = ReadonlySet<string>;
@@ -6,9 +6,29 @@ export const unionOrigins = (...sets: Origins[]): Origins => new Set(sets.flatMa
 export const overlap = (left: Origins, right: Origins): boolean => [...left].some(origin => right.has(origin));
 export const allocationOrigin = (span: Span): Origins => new Set([`new:${span.file}:${span.start}`]);
 
+export type OwnershipDiagnosticDetails = Pick<Diagnostic, 'rule' | 'related' | 'expected' | 'actual'>;
+type OwnershipReporter = (span:Span, message:string, details?:OwnershipDiagnosticDetails) => void;
+
+/** Preserve checked source witnesses, without claiming that a path executed or
+ * that possible aliases are identical. Reports retain at most seven distinct
+ * locations and state any omitted count. No flow state is changed by reporting. */
+export function ownershipEvidence(rule:string,expected:string,actual:string,
+  sites:{span:Span;message:string}[]):OwnershipDiagnosticDetails {
+  const locations=sites.map(({span,message})=>({file:span.file,line:span.line,column:span.column,message}))
+    .sort((a,b)=>(a.file<b.file?-1:a.file>b.file?1:0)||a.line-b.line||a.column-b.column||(a.message<b.message?-1:a.message>b.message?1:0))
+    .filter((site,index,all)=>index===0||JSON.stringify(site)!==JSON.stringify(all[index-1]));
+  const related=locations.length<=7?locations:[...locations.slice(0,6),{...locations.at(-1)!,
+    message:locations.at(-1)!.message+' '+(locations.length-7)+' other checked sites omitted.'}];
+  return {rule,expected,actual,...(related.length?{related}:{})};
+}
+
 interface Place { origins: Origins; readonly: boolean; parent?: string; grant?: string; external?: string }
 interface Loan { origins: Origins; implicit: boolean; outerNames: Set<string>; span: Span }
 interface HeapField { origins: Origins; mutable: boolean }
+interface TaskCaptureWitness {origins:Origins;exclusive:boolean;span:Span}
+interface TaskLoan {origins:Origins;exclusive:boolean;scope:string;repeated:boolean;sites:Span[];witnesses:TaskCaptureWitness[]}
+const captureSites=(loan:TaskLoan,origins:Origins)=>loan.witnesses.filter(site=>overlap(site.origins,origins))
+  .map(site=>({span:site.span,message:site.exclusive?'Task may capture mutable access here.':'Task may capture read access here.'}));
 
 /** Stable object origins survive rebinding; loans and branch joins stay private. */
 export class OwnershipFlow {
@@ -18,7 +38,7 @@ export class OwnershipFlow {
   private heap = new Map<string, Map<string, HeapField>>();
   private regions: { origins: Origins; outerNames: Set<string> }[] = [];
   private frozenOrigins = new Set<string>();
-  private taskLoans = new Map<string, {origins: Origins; exclusive: boolean; scope: string; repeated: boolean; sites: Span[]}>();
+  private taskLoans = new Map<string, TaskLoan>();
   private tasks = new Map<string, {scope: string; errors: Ty[]; observed: boolean}>();
 
   clone(): OwnershipFlow {
@@ -58,7 +78,7 @@ export class OwnershipFlow {
 
   origins(name: string): Origins { return this.places.get(name)?.origins ?? new Set(); }
   frozen(origins: Origins): boolean { return overlap(origins, this.frozenOrigins); }
-  freeze(origins: Origins, span: Span, report: (span: Span, message: string) => void): void {
+  freeze(origins: Origins, span: Span, report: OwnershipReporter): void {
     const reachable = this.reachable(origins);
     if ([...this.loans.values()].some(loan => overlap(loan.origins, reachable))) report(span, 'Cannot freeze an active mutable borrow');
     for (const origin of reachable) this.frozenOrigins.add(origin);
@@ -73,14 +93,20 @@ export class OwnershipFlow {
   region(origins: Origins): void { this.regions.push({ origins, outerNames: new Set(this.places.keys()) }); }
 
   captureTask(task: string, scope: string, origins: Origins, exclusive: boolean, repeated: boolean, span: Span,
-    report: (span: Span, message: string) => void): void {
+    report: OwnershipReporter): void {
     const reachable = this.reachable(origins);
-    for (const loan of this.taskLoans.values()) if ((exclusive || loan.exclusive) && overlap(reachable, loan.origins))
-      report(span, 'Task captures overlap an active task with mutable access');
-    const previous = this.taskLoans.get(task);
+    const conflicts=[...this.taskLoans.values()].filter(loan=>(exclusive || loan.exclusive) && overlap(reachable, loan.origins));
+    if(conflicts.length)report(span, 'Task captures overlap an active task with mutable access', ownershipEvidence('ownership.capture-overlap',
+      'task captures with compatible access to separate data', 'possible overlap with an active task capture',
+      conflicts.flatMap(loan=>captureSites(loan,reachable))));
+    const previous = this.taskLoans.get(task),witnesses=[...(previous?.witnesses??[])];
+    const index=witnesses.findIndex(site=>site.span.file===span.file&&site.span.start===span.start);
+    const witness={span,origins:unionOrigins(index<0?new Set():witnesses[index].origins,reachable),
+      exclusive:exclusive||(index>=0&&witnesses[index].exclusive)};
+    if(index<0)witnesses.push(witness);else witnesses[index]=witness;
     this.taskLoans.set(task, {scope, origins:unionOrigins(previous?.origins ?? new Set(), reachable),
       exclusive:exclusive || !!previous?.exclusive, repeated:repeated || !!previous?.repeated,
-      sites:[...(previous?.sites ?? []),span].filter((site,index,sites)=>sites.findIndex(other=>other.file===site.file&&other.start===site.start)===index)});
+      witnesses,sites:[...(previous?.sites ?? []),span].filter((site,index,sites)=>sites.findIndex(other=>other.file===site.file&&other.start===site.start)===index)});
   }
   waitTasks(origins: Origins, all: boolean): void {
     const reachable = this.reachable(origins);
@@ -103,6 +129,14 @@ export class OwnershipFlow {
     const found = [...this.reachable(origins)].flatMap(origin => this.tasks.has(origin) ? [this.tasks.get(origin)!] : []);
     const scopes = new Set(found.map(task => task.scope));
     return found.length ? [...found, ...[...this.tasks.values()].filter(task => !task.observed && scopes.has(task.scope))].flatMap(task => task.errors) : undefined;
+  }
+  /** Related active capture sites for a rejected access. The caller retains its
+   * existing access check; this method only describes the matching flow facts. */
+  taskEvidence(origins:Origins,rule:string,expected:string,access:{exclusiveOnly?:boolean;mutableOnly?:boolean}={}):OwnershipDiagnosticDetails {
+    const reachable=this.reachable(origins,access.mutableOnly);
+    return ownershipEvidence(rule,expected,access.exclusiveOnly?'possible overlap with an active mutable task capture':'possible overlap with an active task capture',
+      [...this.taskLoans.values()].filter(loan=>(!access.exclusiveOnly||loan.exclusive)&&overlap(loan.origins,reachable))
+        .flatMap(loan=>captureSites(loan,reachable)));
   }
   hasTaskCapture(origins: Origins): boolean {
     const reachable = this.reachable(origins);
@@ -151,7 +185,7 @@ export class OwnershipFlow {
   }
 
   rebind(name: string, origins: Origins, readonly: boolean, span: Span,
-    report: (span: Span, message: string) => void, source?: string): void {
+    report: OwnershipReporter, source?: string): void {
     const place = this.places.get(name);
     if (place && !place.parent && [...this.loans.values()].some(loan => overlap(loan.origins, this.reachable(place.origins, true))))
       report(span, `Cannot rebind ${name} while its object is borrowed`);
@@ -162,28 +196,34 @@ export class OwnershipFlow {
     this.declare(name, origins, readonly, { source, external: place?.parent ? place.external : undefined, parent: place?.parent });
   }
 
-  read(name: string, span: Span, report: (span: Span, message: string) => void): void {
+  read(name: string, span: Span, report: OwnershipReporter): void {
     const place = this.places.get(name);
     if (!place) return;
     if (![...place.origins].some(origin => this.taskLoans.has(origin)) &&
         [...this.taskLoans.values()].some(loan => loan.exclusive && overlap(loan.origins, this.reachable(place.origins))))
-      report(span, `Cannot read ${name} while a task has mutable access; wait for the task first`);
+      report(span, `Cannot read ${name} while a task has mutable access; wait for the task first`,
+        this.taskEvidence(place.origins,'ownership.read-during-task','read access after conflicting task loans end',{exclusiveOnly:true}));
     for (const [borrower, loan] of this.loans) {
       if (overlap(loan.origins, this.reachable(place.origins)) && name !== borrower && place.grant !== borrower && place.parent !== borrower)
-        report(span, `Cannot read ${name} while alias ${borrower} is mutably borrowed`);
+        report(span, `Cannot read ${name} while alias ${borrower} is mutably borrowed`,
+          ownershipEvidence('ownership.read-during-borrow','read access outside conflicting mutable loans',
+            'possible overlap with mutable borrow '+borrower,[{span:loan.span,message:'Mutable borrow of '+borrower+' begins here.'}]));
     }
   }
 
-  borrow(name: string, span: Span, report: (span: Span, message: string) => void, implicit = false): void {
+  borrow(name: string, span: Span, report: OwnershipReporter, implicit = false): void {
     const place = this.places.get(name);
     if (!place) return;
     if (place.readonly) report(span, `Cannot mutably borrow read-only ${name}`);
     const reachable = this.reachable(place.origins, true);
     if ([...this.taskLoans.values()].some(loan => overlap(loan.origins, reachable)))
-      report(span, `Cannot borrow ${name} while a task uses it; wait for the task first`);
+      report(span, `Cannot borrow ${name} while a task uses it; wait for the task first`,
+        this.taskEvidence(place.origins,'ownership.borrow-during-task','exclusive access after conflicting task loans end',{mutableOnly:true}));
     for (const [other, loan] of this.loans) if (overlap(loan.origins, reachable) &&
       !(loan.implicit && (other === name || place.parent === other || place.grant === other)))
-      report(span, `${name} aliases active exclusive borrow ${other}`);
+      report(span, `${name} aliases active exclusive borrow ${other}`,
+        ownershipEvidence('ownership.borrow-overlap','exclusive access to separate data','possible overlap with mutable borrow '+other,
+          [{span:loan.span,message:'Mutable borrow of '+other+' begins here.'}]));
     this.loans.set(name, { origins: reachable, implicit, outerNames: new Set(this.places.keys()), span });
   }
 
@@ -195,15 +235,19 @@ export class OwnershipFlow {
     return undefined;
   }
 
-  assertMove(name: string, span: Span, report: (span: Span, message: string) => void): void {
+  assertMove(name: string, span: Span, report: OwnershipReporter): void {
     const place = this.places.get(name);
     if (place && [...this.loans.values()].some(loan => overlap(loan.origins, this.reachable(place.origins, true))))
-      report(span, `Cannot move ${name} while it is borrowed`);
+      report(span, `Cannot move ${name} while it is borrowed`,ownershipEvidence('ownership.move-during-borrow',
+        'move access outside conflicting mutable loans','possible overlap with an active mutable borrow',
+        [...this.loans].filter(([,loan])=>overlap(loan.origins,this.reachable(place.origins,true)))
+          .map(([name,loan])=>({span:loan.span,message:'Mutable borrow of '+name+' begins here.'}))));
     if (place && this.hasTaskCapture(place.origins))
-      report(span, `Cannot move ${name} while a task uses it; wait for the task first`);
+      report(span, `Cannot move ${name} while a task uses it; wait for the task first`,
+        this.taskEvidence(place.origins,'ownership.move-during-task','move access after conflicting task loans end'));
   }
 
-  escape(origins: Origins, span: Span, report: (span: Span, message: string) => void, scoped = true, immutable = false): void {
+  escape(origins: Origins, span: Span, report: OwnershipReporter, scoped = true, immutable = false): void {
     if (immutable) return;
     const reachable = this.reachable(origins);
     if ([...reachable].some(origin => this.borrowedInputs.has(origin)) ||
@@ -213,11 +257,13 @@ export class OwnershipFlow {
   }
 
   assertDistinct(arguments_: { origins: Origins; exclusive: boolean; span: Span }[],
-    report: (span: Span, message: string) => void): void {
+    report: OwnershipReporter): void {
     arguments_.forEach((argument, index) => {
       for (const other of arguments_.slice(0, index)) if ((argument.exclusive || other.exclusive) &&
         overlap(this.reachable(argument.origins, argument.exclusive), this.reachable(other.origins, other.exclusive)))
-        report(argument.span, 'An exclusive argument aliases another argument in this call');
+        report(argument.span, 'An exclusive argument aliases another argument in this call',
+          ownershipEvidence('ownership.argument-overlap','exclusive call inputs and receivers with separate data',
+            'possible overlap with another call input or receiver',[{span:other.span,message:'The other input or receiver is used here.'}]));
     });
   }
 

@@ -27,7 +27,7 @@ export async function runLanguageServer(root: string): Promise<number> {
           ...(issue.related?.length ? {relatedInformation:issue.related.map(location=>({
             location:{uri:pathToFileURL(location.file).href,range:{start:{line:location.line-1,character:location.column-1},end:{line:location.line-1,character:location.column}}},
             message:location.message}))} : {}),
-          data: { help: diagnosticHelp[issue.code], expected:issue.expected, actual:issue.actual } })) } });
+          data: { help: diagnosticHelp[issue.code], expected:issue.expected, actual:issue.actual, rule:issue.rule } })) } });
     }
   };
   let publishTimer: ReturnType<typeof setTimeout> | undefined;

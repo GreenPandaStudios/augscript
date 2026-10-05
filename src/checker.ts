@@ -13,7 +13,7 @@ import { returnsFresh } from './freshness.ts';
 import { inferType } from './inference.ts';
 import { containsUnknown, sameType, tyName, tyKey, immutableType, type Ty } from './types.ts';
 import { capabilityKey, coversChange, effectContract, type CapabilityEffect, type EffectContract } from './effects.ts';
-import { allocationOrigin, overlap, OwnershipFlow, sourceName, unionOrigins, type Origins } from './ownership.ts';
+import { allocationOrigin, overlap, OwnershipFlow, ownershipEvidence, sourceName, unionOrigins, type Origins } from './ownership.ts';
 import { builtinType as builtin, builtinTypes, builtinProperties, collectionOperations, errorNames, operationType } from './builtins.ts';
 import { orderGraph } from './di.ts';
 import { javadocBefore } from './javadoc.ts';
@@ -356,7 +356,7 @@ class Checker {
     return ['expr', 'assign', 'return', 'throw', 'break', 'continue', 'if', 'while', 'for', 'destructure', 'match', 'try', 'unsafe', 'borrow', 'scope', 'freeze', 'serve', 'lock','yield'].includes(item.kind);
   }
 
-  private report(span: Span, message: string, code = 'TYPE', details: Pick<Diagnostic, 'related' | 'expected' | 'actual'> = {}): void {
+  private report(span: Span, message: string, code = 'TYPE', details: Pick<Diagnostic, 'rule' | 'related' | 'expected' | 'actual'> = {}): void {
     if (this.inferring) return;
     this.diagnostics.push({ file: span.file, line: span.line, column: span.column, message, code, ...details });
   }
@@ -1408,7 +1408,7 @@ class Checker {
       name: field.name, origins: context.flow.origins(field.name), mutable: !!field.mutable || field.ownership === 'own',
     })));
     for (const [name, local] of context.locals) if (local.ownership === 'borrow' && !initializing) {
-      context.flow.borrow(name, fn.span, (span, message) => this.report(span, message, 'BORROW'), true);
+      context.flow.borrow(name, fn.span, (span, message, details) => this.report(span, message, 'BORROW', details), true);
       context.borrowed.add(name);
     }
     context.effects = this.contractFor(fn, file, owner, params);
@@ -1705,7 +1705,8 @@ class Checker {
     });
     if (!joinsTasks) for (const [name, local] of context.locals) if (!names.has(name) && local.ownership === 'own' && !local.moved &&
         context.flow.hasTaskCapture(context.flow.origins(name)))
-      this.report(local.definition ?? fallback!, `Owned ${name} is still borrowed by a task; wait before leaving this block or declare it directly in the task's scope block`, 'CONCURRENCY');
+      this.report(local.definition ?? fallback!, `Owned ${name} is still borrowed by a task; wait before leaving this block or declare it directly in the task's scope block`, 'CONCURRENCY',
+        context.flow.taskEvidence(context.flow.origins(name),'ownership.cleanup-during-task','owned local cleanup after conflicting task loans end'));
     for (const exit of [...(context.loop?.breaks.slice(breakStart) ?? []), ...(context.loop?.continues.slice(continueStart) ?? [])]) {
       for (const name of exit.locals.keys()) if (!names.has(name)) exit.locals.delete(name);
       exit.flow.forgetLocals(names);
@@ -1804,7 +1805,7 @@ class Checker {
       const inside = this.cloneContext(context); inside.locked = true;
       const origins = allocationOrigin(stmt.span); inside.flow.region(origins);
       inside.locals.set(stmt.name, {type: {...(type.args[0] ?? errorTy), readonly: false}, ownership: 'borrow', moved: false, definition: stmt.span});
-      inside.flow.declare(stmt.name, origins, false); inside.flow.borrow(stmt.name, stmt.span, (span, message) => this.report(span, message, 'BORROW'), true);
+      inside.flow.declare(stmt.name, origins, false); inside.flow.borrow(stmt.name, stmt.span, (span, message, details) => this.report(span, message, 'BORROW', details), true);
       inside.borrowed.add(stmt.name); this.checkStatements(stmt.body, inside, stmt.span);
       this.unwindLoopExits(context,breakStart,continueStart); this.mergeMoved(context, [inside]); return;
     }
@@ -1835,7 +1836,7 @@ class Checker {
       const root = sourceName(stmt.value);
       if (context.flow.externalOrigin(origins) || root && context.flow.external(root) && context.locals.get(root)?.ownership !== 'own')
         this.report(stmt.span, 'Freezing an external input requires own ownership of every reachable reference', 'OWN');
-      context.flow.freeze(origins, stmt.span, (span, message) => this.report(span, message, 'BORROW'));
+      context.flow.freeze(origins, stmt.span, (span, message, details) => this.report(span, message, 'BORROW', details));
       for (const [name, local] of context.locals) if (context.flow.frozen(context.flow.origins(name))) {
         local.type = immutableType(local.type); local.ownership = 'managed';
       }
@@ -1934,14 +1935,16 @@ class Checker {
               !context.initializing && !context.borrowed.has('self') && context.locals.get('self')?.ownership !== 'borrow')
             this.report(stmt.target.span, `Mutating field ${stmt.target.name} requires borrow self`, 'BORROW');
           if (existing.origin === 'field' && context.flow.hasTaskCapture(unionOrigins(context.flow.origins('self'), context.flow.origins(stmt.target.name))))
-            this.report(stmt.target.span, `Cannot mutate ${stmt.target.name} while a task uses it; wait for the task first`, 'CONCURRENCY');
+            this.report(stmt.target.span, `Cannot mutate ${stmt.target.name} while a task uses it; wait for the task first`, 'CONCURRENCY',
+              context.flow.taskEvidence(unionOrigins(context.flow.origins('self'),context.flow.origins(stmt.target.name)),
+                'ownership.mutation-during-task','mutable access after conflicting task loans end'));
           if (existing.origin === 'field' && !context.initializing) {
             const name = stmt.target.name;
             const storage = context.owner && 'fields' in context.owner.node ? fieldsOf(context.owner.node).find(field => field.name === name) : undefined;
             if (!storage?.mutable) this.report(stmt.target.span, `Field ${name} is read-only; declare mutable storage`, 'MUTABILITY');
             if (storage?.mutable && this.isReference(value) && value.readonly)
               this.report(stmt.value.span, 'Read-only references cannot become mutable storage', 'MUTABILITY');
-            context.flow.escape(origins, stmt.value.span, (span, message) => this.report(span, message, 'BORROW'));
+            context.flow.escape(origins, stmt.value.span, (span, message, details) => this.report(span, message, 'BORROW', details));
             this.requireChange(stmt.target, stmt.span, context);
           }
           if (existing.origin === 'field' && context.initializing && context.owner?.node.kind === 'class' && context.owner.node.record)
@@ -1951,7 +1954,7 @@ class Checker {
             `Cannot assign ${tyName(value)} to ${tyName(declared)}`);
           if (existing.origin !== 'field') existing.type = { ...declared, nullable: value.nullable, optional: value.optional, readonly: value.readonly, frozen: value.frozen };
           context.flow.rebind(stmt.target.name, origins, !!value.readonly, stmt.span,
-            (span, message) => this.report(span, message, 'BORROW'), sourceName(stmt.value));
+            (span, message, details) => this.report(span, message, 'BORROW', details), sourceName(stmt.value));
           existing.moved = false; existing.moveSites = undefined;
           if(existing.origin==='field'&&existing.ownership==='own'){
             if(source?.ownership==='own'&&stmt.value.kind==='name')this.moveOwnedLocal(stmt.value.name,stmt.value.span,context);
@@ -1968,7 +1971,8 @@ class Checker {
       } else if (stmt.target.kind === 'member') {
         const object = this.checkExpression(stmt.target.object, context);
         if (context.flow.hasTaskCapture(this.placesOf(stmt.target.object, context)))
-          this.report(stmt.target.span, 'Cannot mutate a value while a task uses it; wait for the task first', 'CONCURRENCY');
+          this.report(stmt.target.span, 'Cannot mutate a value while a task uses it; wait for the task first', 'CONCURRENCY',
+            context.flow.taskEvidence(this.placesOf(stmt.target.object,context),'ownership.mutation-during-task','mutable access after conflicting task loans end'));
         const target = this.memberType(object, stmt.target.name, stmt.target.span, context);
         if (!this.assignable(value, target)) this.report(stmt.value.span,
           `Cannot assign ${tyName(value)} to ${tyName(target)}`);
@@ -1988,7 +1992,7 @@ class Checker {
           this.report(stmt.target.span, 'A read-only input cannot provide mutable access', 'MUTABILITY');
         if (field?.mutable && this.isReference(value) && value.readonly)
           this.report(stmt.value.span, 'Read-only references cannot become mutable storage', 'MUTABILITY');
-        context.flow.escape(origins, stmt.value.span, (span, message) => this.report(span, message, 'BORROW'));
+        context.flow.escape(origins, stmt.value.span, (span, message, details) => this.report(span, message, 'BORROW', details));
         this.requireChange(stmt.target.object, stmt.span, context);
         if (field?.ownership === 'own') {
           if (source?.ownership === 'own' && stmt.value.kind === 'name')
@@ -2017,7 +2021,7 @@ class Checker {
         `Expected return ${tyName(context.returns)}, got ${tyName(type)}`);
       const ownership = stmt.value ? this.ownershipOf(stmt.value, context) : 'managed';
       if (stmt.value && this.isReference(type)) context.flow.escape(this.placesOf(stmt.value, context), stmt.span,
-        (span, message) => this.report(span, message, 'BORROW'), true,
+        (span, message, details) => this.report(span, message, 'BORROW', details), true,
         this.immutableData(type) && (!!type.frozen || type.def?.node.kind === 'class' && !!type.def.node.record || ['Bytes', 'Json', 'RsaPrivateKey', 'RsaPublicKey'].includes(type.name)));
       if (stmt.value?.kind === 'member' && ownership === 'own') this.report(stmt.span,
         'Moving an owned field requires an explicit take operation', 'OWN');
@@ -2141,7 +2145,7 @@ class Checker {
       if (!local) this.report(stmt.span, `Cannot borrow unknown variable ${stmt.name}`, 'BORROW');
       if (local?.type.readonly) this.report(stmt.span, `Cannot borrow read-only ${stmt.name} for mutation`, 'MUTABILITY');
       const inside = this.cloneContext(context);
-      inside.flow.borrow(stmt.name, stmt.span, (span, message) => this.report(span, message, 'BORROW'));
+      inside.flow.borrow(stmt.name, stmt.span, (span, message, details) => this.report(span, message, 'BORROW', details));
       inside.borrowed.add(stmt.name);
       this.checkStatements(stmt.body, inside, stmt.span);
       this.unwindLoopExits(context,breakStart,continueStart);
@@ -2698,7 +2702,7 @@ class Checker {
             actual.def?.node.kind === 'class' && actual.def.node.record ||
             ['Bytes', 'Json', 'Html', 'Headers', 'RsaPublicKey', 'RsaPrivateKey'].includes(actual.name);
           context.flow.captureTask(task, scope, origins, shareable ? false : exclusive, !!context.loopDepth, span,
-            (at, message) => this.report(at, message, 'CONCURRENCY'));
+            (at, message, details) => this.report(at, message, 'CONCURRENCY', details));
         };
         const capture = (argument: Expr, exclusive: boolean) =>
           captureOrigins(this.placesOf(argument, context), this.expressionTypes.get(argument) ?? errorTy, exclusive, argument.span);
@@ -2743,8 +2747,9 @@ class Checker {
       const local = context.locals.get(expr.name);
       if (local) {
         if(local.definition)this.resolvedNames.set(expr,{name:expr.name,definition:local.definition,property:local.origin==='field'});
-        if (local.moved) this.report(expr.span, `Cannot use moved value ${expr.name}`, 'OWN');
-        context.flow.read(expr.name, expr.span, (span, message) => this.report(span, message, 'BORROW'));
+        if (local.moved) this.report(expr.span, `Cannot use moved value ${expr.name}`, 'OWN',
+          this.movedValueEvidence(local));
+        context.flow.read(expr.name, expr.span, (span, message, details) => this.report(span, message, 'BORROW', details));
         type = local.type;
       } else {
         const def = this.project.scopes.get(context.file)?.get(expr.name);
@@ -2837,7 +2842,7 @@ class Checker {
       if (!this.immutableData(type) || !this.immutableInput(expr, type))
         this.report(expr.span, 'Freeze aliased mutable values before creating an immutable collection', 'IMMUTABLE');
       type = immutableType(type);
-      context.flow.freeze(this.placesOf(expr, context), expr.span, (span, message) => this.report(span, message, 'BORROW'));
+      context.flow.freeze(this.placesOf(expr, context), expr.span, (span, message, details) => this.report(span, message, 'BORROW', details));
     }
     this.expressionTypes.set(expr, type);
     this.expressionOrigins.set(expr, this.placesOf(expr, context));
@@ -3063,7 +3068,8 @@ class Checker {
 
   private requireMutation(expr: Expr, object: Expr, context: Context, display: string): void {
     if (context.flow.hasTaskCapture(this.placesOf(object, context)))
-      this.report(expr.span, `Cannot mutate ${display} while a task uses it; wait for the task first`, 'CONCURRENCY');
+      this.report(expr.span, `Cannot mutate ${display} while a task uses it; wait for the task first`, 'CONCURRENCY',
+        context.flow.taskEvidence(this.placesOf(object,context),'ownership.mutation-during-task','mutable access after conflicting task loans end'));
     if (this.expressionTypes.get(object)?.readonly) this.report(expr.span,
       `${display} cannot mutate a read-only input or field`, 'MUTABILITY');
     this.requireChange(object, expr.span, context);
@@ -3381,7 +3387,7 @@ class Checker {
         this.planInjections(expr, cls.fields, def.file, inferred, plan, context);
         context.flow.assertDistinct(expr.args.map((argument, index) => ({ origins: this.placesOf(argument, context), span: argument.span,
           exclusive: cls.fields[plan.sourceIndices.indexOf(index)]?.ownership === 'own' })),
-          (span, message) => this.report(span, message, 'BORROW'));
+          (span, message, details) => this.report(span, message, 'BORROW', details));
         for (let i = 0; i < cls.fields.length; i++) {
           const source = plan.sourceIndices[i];
           if (source === undefined) continue;
@@ -3518,7 +3524,7 @@ class Checker {
       }),
       ...(expr.callee.kind === 'member' ? [{ origins: this.placesOf(expr.callee.object, context),
         exclusive: contract.changes.some(path => path === 'self' || path.startsWith('self.')), span: expr.callee.span }] : []),
-    ], (span, message) => this.report(span, message, 'BORROW'));
+    ], (span, message, details) => this.report(span, message, 'BORROW', details));
     for (const thrown of this.effectiveErrors(fn, fnFile, params)) this.checkAllowedError(thrown, expr.span, context);
     const result = this.returnType(fn, fnFile, params);
     return this.isReference(result) && fn.returnOwnership !== 'own' && !this.functionIsFresh(fn, fnFile,
@@ -3576,7 +3582,8 @@ class Checker {
       if (argument.kind === 'name') {
         const local = context.locals.get(argument.name);
         if (local?.ownership === 'own') {
-          if (local.moved) this.report(argument.span, `Cannot move ${argument.name} twice`, 'OWN');
+          if (local.moved) this.report(argument.span, `Cannot move ${argument.name} twice`, 'OWN',
+            this.movedValueEvidence(local));
           this.moveOwnedLocal(argument.name, argument.span, context);
         }
         else this.report(argument.span, 'Owned field requires an owned argument', 'OWN');
@@ -3586,7 +3593,8 @@ class Checker {
       this.report(argument.span, 'Cannot copy an owned value into managed storage', 'OWN');
     if (param.ownership === 'borrow') {
       if (context.flow.hasTaskCapture(this.placesOf(argument, context)))
-        this.report(argument.span, 'Cannot pass mutable access while a task uses the value; wait for the task first', 'CONCURRENCY');
+        this.report(argument.span, 'Cannot pass mutable access while a task uses the value; wait for the task first', 'CONCURRENCY',
+          context.flow.taskEvidence(this.placesOf(argument,context),'ownership.borrow-during-task','exclusive access after conflicting task loans end'));
       if (this.expressionTypes.get(argument)?.readonly) this.report(argument.span, 'Cannot borrow a read-only argument', 'BORROW');
       const name = sourceName(argument);
       if (name && !context.flow.activeGrant(name) && !['own', 'borrow'].includes(context.locals.get(name)?.ownership ?? 'managed'))
@@ -3597,13 +3605,18 @@ class Checker {
   }
 
   private checkBorrowEscape(expr: Expr, context: Context, scoped = true): void {
-    context.flow.escape(this.placesOf(expr, context), expr.span, (span, message) => this.report(span, message, 'BORROW'), scoped);
+    context.flow.escape(this.placesOf(expr, context), expr.span, (span, message, details) => this.report(span, message, 'BORROW', details), scoped);
+  }
+
+  private movedValueEvidence(local:Local) {
+    return ownershipEvidence('ownership.use-after-move','an owned value available on every checked path',
+      'ownership may have transferred on a checked path',(local.moveSites??[]).map(span=>({span,message:'Ownership may transfer here.'})));
   }
 
   private moveOwnedLocal(name: string, span: Span, context: Context): void {
     const local = context.locals.get(name);
     if (local?.ownership !== 'own') return;
-    context.flow.assertMove(name, span, (at, message) => this.report(at, message, 'BORROW'));
+    context.flow.assertMove(name, span, (at, message, details) => this.report(at, message, 'BORROW', details));
     local.moved = true; local.moveSites=[span];
   }
 

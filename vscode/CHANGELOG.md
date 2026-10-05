@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Link borrow, move and task-capture conflicts to checked source in Problems, including unsaved edits. Preserve specific ownership rules and conservative access fragments in diagnostic data.
+
 - Bundle the checked rename selection repair for functions and public input labels moved during snapshot capture.
 
 - Show the checked `RetryPolicy` and `retryDelay` contracts through ordinary library hover, imports and generated specs.

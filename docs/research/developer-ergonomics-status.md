@@ -65,7 +65,7 @@ Work proceeds through source/tool identities, everyday data and syntax, collecti
 | F03 | Watch and rerun | Pending | — |
 | F04 | Incremental native builds | Pending | — |
 | F05 | Fast selected test execution | Implemented core-runtime LLVM compilation reuse; broader qualification pending | Verified complete test-program compilation in a private cache; source/configuration/compiler/runtime/tool/target/mode identities, corruption fallback and --rebuild. Only verified complete tool packs qualify; custom scripts compile normally. Each hit executes setup/assertions in a fresh process. Component/native-package reuse remains unqualified; module incremental compilation is F04 |
-| F06 | Return useful errors near the source | Implemented call-input and interface profiles; broader qualification pending | Expected/actual types and caller labels, exact imported constructor/inherited method declarations, duplicate locations, bounded CLI excerpts and LSP links for unsaved revisions. Malformed labels suppress speculative omitted-input errors; deterministic label repairs remain available. Interface errors add resolved expected/actual contract fragments, all inherited requirements, recursive generic capability identities, and bounded shortest capability helper paths. Other diagnostic families retain existing help |
+| F06 | Return useful errors near the source | Implemented call-input and interface profiles; broader qualification pending | Expected/actual types and caller labels, exact imported constructor/inherited method declarations, duplicate locations, bounded CLI excerpts and LSP links for unsaved revisions. Malformed labels suppress speculative omitted-input errors; deterministic label repairs remain available. Interface errors add resolved expected/actual contract fragments, all inherited requirements, recursive generic capability identities, and bounded shortest capability helper paths. Borrow, capture, exclusive-call and move conflicts add conservative access fragments, specific rule IDs and bounded source witnesses, including captured owned cleanup and unsaved LSP locations. Scoped retention and other diagnostic families retain existing help |
 | F07 | Make fixes explain their behavior | Partial | Fix consequences in preview metadata, versioned LSP changes, conservative checked borrow. Recovery scaffolds retain the checked failure until the author chooses policy; broader fix qualification pending |
 | F08 | References and semantic rename | Partial | Compiler-resolved references, imports/exports, public labels, reverse callers and candidate-checked managed-function rename; semantic-reference and LSP tests. Member/type profiles pending |
 | F09 | Move declarations and update imports | Pending | — |
@@ -186,3 +186,20 @@ suite passes 997, skips three optional/cold cases and retains the independently
 reproduced host LLDB launch timeout. Type checking, 608 generated-document drift
 checks, the wiki build, release archives and version checks pass. Rebuilds,
 broader author profiles and hosted production remain pending.
+
+
+The ownership-evidence checkpoint passes 33 focused CLI, immutable embedding and
+persistent unsaved LSP checks. A new exclusive capture retains ordered witnesses
+from all conflicting children, then bounds related sites with an explicit omitted
+count. Earlier call inputs, conditional moves, field mutations and captured owned
+cleanup retain their checked source links; isolated worker copies create no shared
+loan. Independent reviews are clear after repairing capture deduplication and
+clarifying repeated-task joins. The frozen 1016-case suite passes 1012, skips three
+optional/cold cases and retains the independently reproduced host LLDB launch
+timeout. During the run, all 15 frozen file hashes stayed unchanged (base 567b6f9; manifest
+digest
+`dcc7a1060378f17927da739548a6864992913916662043c2cbee61c987677370`).
+Type checking, 608 generated-document drift checks, the wiki build, release
+archives, installed JavaScript C/LLVM and version gates pass. F06 remains partial
+for scoped-retention and deeper lifetime evidence. Clean default distribution,
+installed-editor behavior and comparative model trials remain outstanding.

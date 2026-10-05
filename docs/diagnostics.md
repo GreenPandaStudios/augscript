@@ -84,6 +84,21 @@ An own value moves into an own input/field/return. Do not copy it into managed s
 
 Alias tracking includes nested references, call arguments/results, DI identities, branches, and loop re-entry. An exclusive argument cannot overlap another argument or receiver. Quick Fix can wrap a standalone managed mutation in a borrow block when its local access is otherwise legal.
 
+**Unreleased:** conflicting reads, exclusive borrows, moves and call inputs link
+to the borrow, transfer or earlier input that blocks access. Task conflicts also
+link to active capture sites, including writes inside an open borrow and cleanup
+of a captured owned local. These are static possibilities: shared origins mean
+the checker cannot prove the references are separate. A conditional transfer can
+make a later use invalid even when one branch keeps the value.
+
+JSON and LSP diagnostic data retain a specific `rule` alongside `expected`,
+`actual` and `related`. The rule identifies the failed check within `OWN`,
+`BORROW` or `CONCURRENCY`. Related sites are deterministic, contain at most seven
+locations and state any omitted count. Ending a borrow removes its lexical loan.
+Waiting for one statically identified, nonrepeated child or joining its scope
+removes the corresponding task loans; an isolated worker's copied inputs create no shared loan.
+Scoped-retention paths and other diagnostic families retain their existing help.
+
 ### CONCURRENCY
 
 A child task keeps its captured objects available until `wait for` or its scope join. Wait before changing a captured object through a collection method, a borrowed call, or a field assignment. An already-open `borrow` block does not let the parent mutate while the child uses the object. See the [conformance rules](language-conformance.md).
