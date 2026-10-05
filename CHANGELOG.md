@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Native package artifacts may pin their exact member manifest with `fileManifestSha256`. First installation checks it against the authenticated archive; offline caches verify their members against the source-owned pin. Existing unpinned packages retain the archive verification path.
+
 - Authenticate cached native member manifests against the retained original archive's published checksum. Reject paired library/manifest replacement in installation, doctor, dependency previews and release reports; legacy unanchored caches require one online restore. Keep compiler-owned manifest pins.
 
 - Add `aug package cache-native` for explicit verification of locally built native archives against real package pins and complete deployment declarations. Use the normal offline package path afterward; no build scripts, downloads, execution or publication occur during caching.

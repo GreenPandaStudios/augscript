@@ -120,7 +120,7 @@ test('a compiler-owned member-manifest pin rejects a regenerated self-manifest a
   assert.equal(await ensureVerifiedArchive(pinned,{cache:f.cache,offline:true}),directory);
   writeFileSync(join(directory,'library.dylib'),'different bytes');
   writeFileSync(join(directory,'files.json'),JSON.stringify({format:1,files:{'library.dylib':hash(Buffer.from('different bytes'))}}));
-  await assert.rejects(ensureVerifiedArchive(pinned,{cache:f.cache,offline:true}),/file manifest differs from its compiler-owned identity/);
+  await assert.rejects(ensureVerifiedArchive(pinned,{cache:f.cache,offline:true}),/file manifest differs from its declared identity/);
   assert.equal(f.requests(),1,'Rejected offline cache bytes must not be fetched or accepted again');
 }));
 

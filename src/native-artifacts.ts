@@ -24,7 +24,7 @@ const files=(directory:string,prefix=''):string[]=>readdirSync(join(directory,pr
 
 const authenticatedTransport=(directory:string,archive:VerifiedArchive):string=>join(dirname(directory),archive.sha256+'.tar.gz');
 
-/** Verify every member against a compiler-owned pin or the authenticated original archive. */
+/** Verify every member against a compiler/source-owned pin or the authenticated original archive. */
 export function verifyArtifactFiles(directory:string,archive:VerifiedArchive):Record<string,string> {
   const transport=authenticatedTransport(directory,archive);
   if(archive.fileManifestSha256===undefined&&!existsSync(transport))throw new Error('NATIVE_INTEGRITY: Cached native artifact has no authenticated original archive. Run aug install online once. '+archive.url);
@@ -34,7 +34,7 @@ export function verifyArtifactFiles(directory:string,archive:VerifiedArchive):Re
   remaining-=readRegularNativeFile(join(directory,path),Math.min(remaining,16*1024*1024),'unpacked',bytes=>chunks.push(Buffer.from(bytes)));
   const manifestBytes=Buffer.concat(chunks);
   if(!/^[0-9a-f]{64}$/.test(expectedManifest)||sha(manifestBytes)!==expectedManifest)
-    throw new Error('NATIVE_INTEGRITY: Artifact file manifest differs from its '+(archive.fileManifestSha256===undefined?'authenticated archive':'compiler-owned identity'));
+    throw new Error('NATIVE_INTEGRITY: Artifact file manifest differs from its '+(archive.fileManifestSha256===undefined?'authenticated archive':'declared identity'));
   const manifest=JSON.parse(manifestBytes.toString('utf8'));
   if(manifest.format!==1||!manifest.files||Array.isArray(manifest.files)||typeof manifest.files!=='object')throw new Error('NATIVE_INTEGRITY: Invalid artifact file manifest');
   const expected=manifest.files as Record<string,string>,actual=files(directory).sort();
@@ -89,7 +89,7 @@ async function installVerifiedArchive(archive:VerifiedArchive,options:{offline?:
       if(local)stageLocalArchive(local.file,transport,archive.maximumDownloadBytes);
       else writeFileSync(transport,await downloadVerified(archive));
       const originalManifest=archiveFileManifestSha256(transport,archive);
-      if(archive.fileManifestSha256!==undefined&&originalManifest!==archive.fileManifestSha256)throw new Error('NATIVE_INTEGRITY: Artifact file manifest differs from its compiler-owned identity');
+      if(archive.fileManifestSha256!==undefined&&originalManifest!==archive.fileManifestSha256)throw new Error('NATIVE_INTEGRITY: Artifact file manifest differs from its declared identity');
       const pinned={...archive,fileManifestSha256:originalManifest};
       if(cached){
         if(lstatSync(destination).isSymbolicLink())throw new Error('NATIVE_INTEGRITY: Artifact cache cannot be a symbolic link');

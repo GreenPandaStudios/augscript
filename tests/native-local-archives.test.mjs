@@ -101,3 +101,38 @@ test('cache-hit verification rejects a special member manifest instead of waitin
  result=spawnSync(process.execPath,[cli,'package','cache-native',f.library,'--artifact','host','--archive',f.transport],{encoding:'utf8',timeout:1000,env:{...process.env,AUG_NATIVE_ARTIFACT_CACHE:f.cache}});
  assert.equal(result.error,undefined,'Forbidden cached file types must reject without blocking');assert.equal(result.status,1);assert.match(result.stderr,/regular file|special file/);
 }));
+
+test('a source-owned manifest pin must agree with the original archive before acceptance',()=>fixture(f=>{
+ f.manifest.native.artifacts[0].fileManifestSha256='a'.repeat(64);
+ writeFileSync(join(f.library,'aug-package.json'),JSON.stringify(f.manifest));
+ const result=f.command('--artifact','host','--archive',f.transport);
+ assert.equal(result.status,1);assert.match(result.stderr,/file manifest differs from its declared identity/);
+ assert.equal(existsSync(join(f.cache,f.artifact.sha256)),false);
+ assert.equal(existsSync(join(f.cache,f.artifact.sha256+'.tar.gz')),false);
+}));
+
+test('source-pinned native caches restore offline, retain exact locks and reject paired cache tampering',()=>fixture(async f=>{
+ const pin=sha(readFileSync(join(f.root,'payload/files.json')));
+ f.manifest.native.artifacts[0].fileManifestSha256=pin;
+ writeFileSync(join(f.library,'aug-package.json'),JSON.stringify(f.manifest));
+ const result=f.command('--artifact','host','--archive',f.transport);assert.equal(result.status,0,result.stderr);
+ const directory=join(f.cache,f.artifact.sha256);rmSync(join(f.cache,f.artifact.sha256+'.tar.gz'),{force:true});
+ const app=join(f.root,'consumer');mkdirSync(app);writeFileSync(join(app,'main.yaml'),'packages:\n  library: "../library"\n');writeFileSync(join(app,'main.aug'),'');
+ installPackages(app,false,true);
+ const oldCache=process.env.AUG_NATIVE_ARTIFACT_CACHE,oldFetch=globalThis.fetch;
+ try{
+  process.env.AUG_NATIVE_ARTIFACT_CACHE=f.cache;globalThis.fetch=async()=>{throw new Error('Offline native restoration may not download');};
+  assert.equal((await prepareNativePackages(app,{offline:true})).length,1);
+  const path=join(app,'aug.lock.json'),accepted=readFileSync(path,'utf8'),lock=JSON.parse(accepted);
+  const selection=Object.values(lock.native.targets)[0].packages[0];assert.equal(selection.artifact.fileManifestSha256,pin);
+  assert.equal((await prepareNativePackages(app,{offline:true,frozen:true})).length,1);
+  assert.equal(readFileSync(path,'utf8'),accepted);
+  selection.artifact.fileManifestSha256='e'.repeat(64);writeFileSync(path,JSON.stringify(lock));
+  await assert.rejects(prepareNativePackages(app,{offline:true,frozen:true}),/NATIVE_LOCK.*no matching native target lock/);
+  writeFileSync(path,accepted);
+  writeFileSync(join(directory,'library.a'),'replacement');
+  const members=JSON.parse(readFileSync(join(directory,'files.json')));members.files['library.a']=sha('replacement');writeFileSync(join(directory,'files.json'),JSON.stringify(members));
+  await assert.rejects(prepareNativePackages(app,{offline:true,frozen:true}),/file manifest differs from its declared identity/);
+  assert.equal(readFileSync(path,'utf8'),accepted);
+ }finally{globalThis.fetch=oldFetch;if(oldCache===undefined)delete process.env.AUG_NATIVE_ARTIFACT_CACHE;else process.env.AUG_NATIVE_ARTIFACT_CACHE=oldCache;}
+}));

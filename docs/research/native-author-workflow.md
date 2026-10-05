@@ -41,11 +41,23 @@ restoration preserves their bytes. The explicit local command can supply that
 same original archive without network access.
 
 Retaining and parsing the transport costs cache space and decompression work.
-A future source-owned member-manifest pin could avoid that work for newly
-published artifacts, but cannot authenticate older caches by itself. This
+The subsequent optional source-owned member-manifest pin avoids that work for
+newly published artifacts, but cannot authenticate older caches by itself. This
 checkpoint preserves public manifest and lock compatibility. It does not claim
 protection from an attacker who can also modify trusted source pins or replace
 the compiler.
+
+## Source-owned member pins
+
+The following checkpoint accepts an optional `fileManifestSha256` in a native
+artifact entry. It reuses the compiler-pack verifier: first installation still
+authenticates and checks the full original archive, and hot caches verify exact
+member bytes against the source-owned manifest digest. Source and target locks
+retain it; changing either lock selection cannot bypass source verification.
+Malformed pins, mismatched original manifests and paired cache tampering reject.
+Legacy packages keep the retained-archive path. The installed local C fixture
+uses the new pin while the public zlib consumer retains the old package format.
+This adds no native calling convention or ownership rule.
 
 ## Sources and verification
 
@@ -74,3 +86,9 @@ download. The frozen full suite passed 985 of 989, skipped three optional/cold
 checks and retained the independently reproduced host LLDB launch timeout. Both
 review axes, type checking, documentation/site, archive and installed-package
 gates passed. See the [catalog evidence](developer-ergonomics-status.md).
+
+The subsequent member-pin checkpoint passed 38 direct native cases and 91
+neighboring checks. Both reviews verified cold rejection and offline pinned
+reuse; the repaired installed fixture and public zlib consumer passed. Type,
+documentation/site, release archives and version gates passed. The full-suite
+result above belongs to the preceding archive checkpoint.

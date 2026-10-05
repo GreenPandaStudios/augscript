@@ -16,7 +16,8 @@ export interface NativeArtifact {
   link: {kind:'dynamic'|'static'; libraries:string[]};
   runtime: {files:string[]; relocation:'loader-relative'; closureManifest?:string};
   components: {id:string; version:string; compatibilityKey:string; linkage:'static'|'dynamic'; required:boolean}[];
-  fileManifest:string; provenance:string; notices:string;
+  /** Optional source-owned digest of the exact file-manifest bytes; retained in native locks. */
+  fileManifest:string; fileManifestSha256?:string; provenance:string; notices:string;
 }
 export interface NativeManifest {
   profile:typeof nativeProfile; bindings:string; bindingsSha256:string;
@@ -85,7 +86,7 @@ export function validateNativeManifest(value:unknown):NativeManifest {
   const ids=new Set<string>(), selections=new Set<string>();
   for(const entry of artifacts){
     const artifact=object(entry,'artifact');
-    fields(artifact,['id','target','url','sha256','maximumDownloadBytes','maximumUnpackedBytes','link','runtime','components','fileManifest','provenance','notices'],'artifact');
+    fields(artifact,['id','target','url','sha256','maximumDownloadBytes','maximumUnpackedBytes','link','runtime','components','fileManifest','fileManifestSha256','provenance','notices'],'artifact');
     string(artifact.id,'artifact.id');if(ids.has(artifact.id))fail('Duplicate artifact id '+artifact.id);ids.add(artifact.id);
     const target=object(artifact.target,'artifact.target');
     fields(target,['triple','os','arch','minimumOS','minimumLibc','cpuBaseline','libc','cxxRuntime','cxxABI','features'],'artifact.target');
@@ -100,6 +101,7 @@ export function validateNativeManifest(value:unknown):NativeManifest {
     const selection=JSON.stringify([target.triple,target.minimumOS??'',target.minimumLibc??'',target.features??[]]);
     if(selections.has(selection))fail('Ambiguous artifact selection for '+target.triple);selections.add(selection);
     https(artifact.url,'artifact.url');hash(artifact.sha256,'artifact.sha256');
+    if(artifact.fileManifestSha256!==undefined)hash(artifact.fileManifestSha256,'artifact.fileManifestSha256');
     positive(artifact.maximumDownloadBytes,'maximumDownloadBytes');positive(artifact.maximumUnpackedBytes,'maximumUnpackedBytes');
     const link=object(artifact.link,'link');fields(link,['kind','libraries'],'link');
     if(!['dynamic','static'].includes(link.kind))fail('link.kind must be dynamic or static');

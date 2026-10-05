@@ -101,12 +101,22 @@ unexpected files. Cached files are checked again before use. Package installatio
 does not execute native recipes or npm lifecycle scripts.
 
 **Unreleased:** cached native file manifests are authenticated against the
-original archive's published checksum before their member hashes are used.
+original archive's published checksum before their member hashes are used when the package has no separate manifest pin.
 Changing a library and regenerating its cached manifest is rejected. The cache
 retains the compressed archive outside the extracted library directory. An older
 cache without that archive needs one online `aug install`; offline use rejects
 it. Compiler packs with a compiler-owned manifest pin retain their existing
 verification path.
+
+**Unreleased:** a native artifact may also declare `fileManifestSha256`, the
+lowercase SHA-256 digest of the exact bytes of its `fileManifest` file. Compute
+it from the archive's final manifest, including its whitespace. The first
+installation checks that pin against the original archive; subsequent cache
+checks use the source-owned pin and verify every member without decompressing
+the archive again. The pin is preserved in both source and native target locks.
+It does not replace the outer archive checksum or download/unpacked bounds.
+Older CLI releases reject this new field as unsupported metadata. Packages
+without it continue to use the authenticated original archive.
 
 A failed download or extraction leaves no accepted artifact cache. Disk-full
 errors include the CLI's space-recovery guidance; they do not leave a partially
