@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add `aug change plan-replace-body` for one author-supplied managed standalone function. Preserve its parsed header, neighboring private syntax and checked contracts; retain stage-specific source/revision evidence for rejections. Apply through the existing checked writer and recovery journal. Independent tests remain a separate gate.
+
 - Add the unreleased local `aug compare` report with exact revisions, resolved contract/source/visibility deltas, known consumers, rejected diagnostics and unexecuted authored tests. Keep implementation function references out of public promises.
 
 - Show expected/actual interface contract fragments and checked capability helper paths. Check explicit methods and selected defaults against every inherited interface, repairing acceptance of incompatible secondary contracts. Generic capability keys retain recursive type identities; colliding diagnostic names show module origins.

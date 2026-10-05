@@ -63,6 +63,13 @@ try {
   assert.equal(JSON.parse(aug('change','recover',renames,'--json')).status,'clean');
   if(process.env.AUG_LLVM_HOME&&process.env.AUG_RUNTIME_PACK)
     assert.equal(run(process.execPath,[cli,'run',renames,'--backend','llvm']),'Hello, Ada!\n');
+  writeFileSync(join(renames,'replacement.aug.txt'),'greet(string person):\n    return $"Welcome, {person}!"\n');
+  const bodyPlan=JSON.parse(aug('change','plan-replace-body',renames,'--file','greeter.aug','--symbol','greet','--source','replacement.aug.txt','--out','body.json','--json'));
+  assert.equal(bodyPlan.operation,'replace-body');assert.deepEqual(bodyPlan.publicDelta,[]);assert.equal(bodyPlan.behavioralEvidence,'not-run');
+  const bodyApplied=JSON.parse(aug('change','apply',renames,'--plan','body.json','--json'));assert.equal(bodyApplied.operation,'replace-body');
+  assert.equal(aug('run',renames),'Welcome, Ada!\n');
+  if(process.env.AUG_LLVM_HOME&&process.env.AUG_RUNTIME_PACK)
+    assert.equal(run(process.execPath,[cli,'run',renames,'--backend','llvm']),'Welcome, Ada!\n');
   const patterns=join(directory,'binding-patterns');mkdirSync(patterns);
   writeFileSync(join(patterns,'main.aug'),'import Person from people\nperson = Person(name="Ada", ratings=(7, 9))\n{name: displayName, ratings: (first, second)} = person\nprint(value=displayName)\nprint(value=first + second)\n');
   writeFileSync(join(patterns,'people.aug'),'record Person(string name, Tuple<int, int> ratings)\n');

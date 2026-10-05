@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Bundle the compiler’s checked standalone body-plan command and stage-specific rejection help. The editor does not automatically apply body replacements.
+
 - Add the unreleased local `aug compare` report with exact revisions, resolved contract/source/visibility deltas, known consumers, rejected diagnostics and unexecuted authored tests. Keep implementation function references out of public promises.
 
 - Show the differing inferred interface contract and its permitted declaration in Problems, with bounded source links through checked capability helpers.

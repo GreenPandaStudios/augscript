@@ -9,6 +9,7 @@ import {reservedKeywords} from './lexer.ts';
 import {contractFacts} from './contract-facts.ts';
 import {publicContract} from './public-contracts.ts';
 import {javadocParameterSpans} from './javadoc.ts';
+import type {MethodDecl} from './ast.ts';
 
 export interface CheckedSourceEdit {file:string; start:number; end:number; text:string}
 export interface InterfaceDelta {id:string; before:string|null; after:string|null}
@@ -41,6 +42,12 @@ export function applySourceEdits(source:string,edits:readonly Pick<CheckedSource
   }
   return result;
 }
+/** Shared supported signature; this does not certify implementation behavior. */
+export function requireManagedStandaloneEdit(checked:CheckedProject,fn:MethodDecl):void {
+  const effects=checked.effectContracts.get(fn);
+  if(fn.externC||fn.endpoint||fn.annotations?.length||fn.typeParams.length||fn.returnOwnership==='own'||fn.params.some(param=>param.injected||param.ownership!=='managed')||effects?.uses.size||effects?.changes.length)
+    throw new RefactoringError('This checked edit profile requires a managed standalone function without native linkage, injection, generics, effects, mutation, endpoints, or interceptors.');
+}
 /** Plan a narrow mechanical edit. The caller owns approval and publication; this function writes nothing. */
 export function planRename(checked:CheckedProject,graph:SemanticGraph,file:string,offset:number,name:string):RenamePlan {
   if(!graph.coverage.checkedProject||graph.coverage.reverseCallers!=='complete')throw new RefactoringError('Rename needs a checked whole project and complete caller enumeration. Repair project errors and retry.');
@@ -53,9 +60,7 @@ export function planRename(checked:CheckedProject,graph:SemanticGraph,file:strin
   const ownerId=symbol.owner??symbol.id,owner=checked.project.definitions.get(ownerId.split('/method/')[0]);
   if(symbol.kind==='method'||owner&&owner.node.kind!=='function')throw new RefactoringError('This rename profile supports standalone functions and their local inputs and variables. Member and type edits require implementation coverage.');
   if(owner?.node.kind==='function') {
-    const fn=owner.node,effects=checked.effectContracts.get(fn);
-    if(fn.externC||fn.endpoint||fn.annotations?.length||fn.typeParams.length||fn.returnOwnership==='own'||fn.params.some(param=>param.injected||param.ownership!=='managed')||effects?.uses.size||effects?.changes.length)
-      throw new RefactoringError('This rename profile requires a managed standalone function without native linkage, injection, generics, effects, mutation, endpoints, or interceptors.');
+    requireManagedStandaloneEdit(checked,owner.node);
   }
   const fileByIdentity=new Map([...checked.project.files.keys()].map(path=>[semanticSourcePath(checked,path),path]));
   const edits:CheckedSourceEdit[]=[],seen=new Set<string>();

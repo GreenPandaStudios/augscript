@@ -59,6 +59,12 @@ Compare the edited files with the originals, using your editor or source control
 
 The unreleased [checked-change workflow](../tooling.md#checked-source-changes-unreleased) can rename an ordinary standalone function or its public input across resolved project callers. Save the plan, inspect its files and public contract changes, then apply it against the same revision. A stale or altered plan is rejected. Regenerate specs and run the independent tests afterward. The command does not infer a business value or recovery policy.
 
+## Review a replacement implementation
+
+The unreleased body operation accepts one complete standalone function in a separate UTF-8 source file. Use `aug change plan-replace-body` with the selected project file, function name and `--source` file. Keep its header unchanged and use the project's existing imports. Inspect the embedded source, one-file edit and empty public delta before applying the plan.
+
+This operation rejects changed checked promises and changes to neighboring declarations, including private code. If the implementation needs another import, input, effect or error contract, make that broader change deliberately. After applying the body plan, regenerate the spec and run independent acceptance cases. A checked body can still implement the wrong rule. Rejections retain the exact starting, supplied or candidate source with its corresponding stage and revision; repair that source rather than pairing new diagnostics with an older file.
+
 ## Give a coding agent the same starting point
 
 A useful instruction is:
