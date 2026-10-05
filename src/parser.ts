@@ -180,6 +180,11 @@ class Parser {
     if (this.at('test')) return this.parseTest();
     if (this.match('fixture')) return { ...this.parseFunction(false), fixture: true };
     if (this.at('record')) return this.parseRecord();
+    if (this.current().value === 'choice' && this.current(1).kind === 'identifier' && this.current(2).value === 'from') {
+      const start=this.take().span,name=this.expect('identifier').value;this.expect('from');
+      const alternatives=[this.parseType()];while(this.match('and'))alternatives.push(this.parseType());
+      this.endStatement();return {kind:'choice',name,typeParams:[],alternatives,span:this.span(start)};
+    }
     if (this.current().value === 'error' && this.current(1).kind === 'identifier') return this.parseError();
     if (this.at('include')) return this.parseInclude();
     if (this.match('composition')) {

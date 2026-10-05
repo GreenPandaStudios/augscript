@@ -72,6 +72,7 @@ export default defineConfig({
       { text: 'Task guides', collapsed: false, items: [
         { text: 'Choose a guide', link: '/guides/' },
         { text: 'Try a snippet', link: '/guides/try-a-snippet' },
+        { text: 'Describe a finite choice', link: '/guides/use-choices' },
         { text: 'Pass a small function', link: '/guides/use-callbacks' },
         { text: 'Reuse service wiring', link: '/guides/reuse-services' },
         { text: 'Weather API', link: '/weather-api' }, { text: 'VS Code', link: '/editor' },

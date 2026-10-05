@@ -22,6 +22,8 @@ Public declarations from nearby modules and installed packages also appear in co
 
 Type `record`, `interface`, `implementation`, or `method` for a declaration template. `test`, `testclass`, and `testendpoint` supply same-file tests. `endpointget`, `endpointpost`, `endpointpatch`, and `endpointdelete` supply route templates. Other templates cover imports, exports, conditions, errors, borrows, tasks, locks, interceptors, and comments.
 
+The unreleased extension also supplies a `choice` template for [finite record choices](guides/use-choices.md).
+
 The completion provider follows `block_style` and `indentation` in `main.yaml`. Templates are starting points: replace their names, values, and bodies before running the program. Press Tab to move through their inputs.
 
 ## Read help and inferred types {#understand-a-contract}

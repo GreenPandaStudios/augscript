@@ -1,3 +1,4 @@
+import {choiceMembers} from './choices.ts';
 import type {
   BindDecl, BindingPattern, RecordBindingField, ClassDecl, Diagnostic, Expr, GenericHeader, InterfaceDecl, InterceptorAnnotation, InterceptorDecl, MethodDecl, Param, Span,
   Stmt, TypeRef, MatchPattern,
@@ -239,6 +240,7 @@ class Checker {
     for (const def of this.project.definitions.values()) {
       if (def.node.kind === 'class') this.checkClassShape(def);
       else if (def.node.kind === 'interface') this.checkInterfaceShape(def);
+      else if (def.node.kind === 'choice') this.checkChoiceShape(def);
       else if (def.node.kind === 'function') this.checkFunctionSignature(def.node, def.file, new Map());
     }
     this.checkBindings();
@@ -527,8 +529,14 @@ class Checker {
   private addBounds(params: Map<string, Ty>, header: GenericHeader, file: string): void {
     for (const name of header.typeParams) {
       const type = params.get(name);
-      if (type?.kind === 'param') params.set(name, { ...type,
-        bounds: (header.typeConstraints?.[name] ?? []).map(ref => this.resolveType(ref, file, params, false)) });
+      if (type?.kind === 'param') {
+        const bounds=(header.typeConstraints?.[name] ?? []).map(ref => {
+          const bound=this.resolveType(ref,file,params,false);
+          if(bound.kind==='choice'&&(bound.nullable||bound.optional))this.report(ref.span,'Use a non-null choice bound and optional T for nullable inputs','CHOICE');
+          return bound;
+        });
+        params.set(name,{...type,bounds});
+      }
     }
   }
 
@@ -538,8 +546,8 @@ class Checker {
     this.constraintStack.add(key);
     for (const name of header.typeParams) for (const ref of header.typeConstraints?.[name] ?? []) {
       const constraint = this.resolveType(ref, file, types);
-      if (constraint.kind !== 'interface') this.report(ref.span,
-        `Constraint ${typeName(ref)} must be an interface`, 'GENERIC');
+      if (constraint.kind !== 'interface' && constraint.kind !== 'choice') this.report(ref.span,
+        `Constraint ${typeName(ref)} must be an interface or choice`, 'GENERIC');
       const actual = types.get(name);
       if (actual && !this.assignable(actual, constraint)) this.report(span,
         `Type argument ${name}=${tyName(actual)} must implement ${tyName(constraint)}`, 'GENERIC');
@@ -948,8 +956,23 @@ class Checker {
     }
   }
 
+  private checkChoiceShape(def:Definition):void {
+    if(def.node.kind!=='choice')return;
+    if(def.node.alternatives.length<2)this.report(def.node.span,'A choice needs at least two distinct immutable records','CHOICE');
+    const seen=new Set<string>();
+    for(const ref of def.node.alternatives){
+      const type=this.resolveType(ref,def.file);
+      if(ref.nullable||ref.optional||ref.immutable||ref.args.length||type.def?.node.kind!=='class'||!type.def.node.record||type.def.node.typeParams.length)
+        this.report(ref.span,'Choice alternatives must be concrete non-generic immutable records','CHOICE');
+      if(seen.has(type.id))this.report(ref.span,'Repeated choice alternative '+type.name+'; select distinct records','CHOICE');
+      seen.add(type.id);
+    }
+  }
+
   private checkClassShape(def: Definition): void {
     const cls = def.node as ClassDecl;
+    for(const ref of cls.implements)if(this.project.scopes.get(def.file)?.get(ref.name)?.node.kind==='choice')
+      this.report(ref.span,'A choice cannot be implemented; construct one of its declared record alternatives','CHOICE');
     if (!cls.record && cls.implements.length === 0) this.report(cls.span,
       `${cls.name} must implement at least one interface`, 'INTERFACE');
     const params = this.paramsFor(cls.typeParams, cls, def.file);
@@ -1011,6 +1034,8 @@ class Checker {
   }
 
   private checkInterfaceShape(def: Definition): void {
+    if(def.node.kind==='interface')for(const ref of def.node.extends)if(this.project.scopes.get(def.file)?.get(ref.name)?.node.kind==='choice')
+      this.report(ref.span,'An interface cannot inherit a closed choice','CHOICE');
     const iface = def.node as InterfaceDecl;
     const params = this.paramsFor(iface.typeParams, iface, def.file);
     this.checkVariance(iface, def.file);
@@ -1131,6 +1156,12 @@ class Checker {
     if (target.id === 'builtin:Data') return this.immutableData({...source, nullable:false, optional:false});
     if (source.id === target.id) return this.compatibleArguments(source, target);
     if (source.kind === 'param' && source.bounds?.some(bound => this.assignable(bound, target))) return true;
+    if(target.kind==='choice'){
+      const members=choiceMembers(this.project,target);if(!members)return false;
+      const sources=source.kind==='choice'?choiceMembers(this.project,source):[source];
+      return !!sources&&sources.every(item=>members.some(member=>this.assignable(item,member)));
+    }
+    if(source.kind==='choice'){const members=choiceMembers(this.project,source);return !!members&&members.every(member=>this.assignable(member,target));}
     if (source.id === 'builtin:c_int' && ['builtin:int', 'builtin:float'].includes(target.id)) return true;
     if (source.id === 'builtin:int' && target.id === 'builtin:float') return true;
     if (target.id === 'builtin:Error' && this.implementsError(source)) return true;
@@ -1472,10 +1503,11 @@ class Checker {
 
   private immutableData(type: Ty, seen = new Set<string>()): boolean {
     if (['builtin:int', 'builtin:c_int', 'builtin:float', 'builtin:string', 'builtin:bool', 'null', 'builtin:Data'].includes(type.id)) return true;
-    if (type.kind === 'param') return !!type.bounds?.some(bound => bound.id === 'builtin:Data');
+    if (type.kind === 'param') return !!type.bounds?.some(bound => bound.id === 'builtin:Data' || bound.kind === 'choice' && this.immutableData(bound, seen));
     if (['builtin:Tuple', 'builtin:List', 'builtin:Set', 'builtin:Map'].includes(type.id)) return type.args.every(arg => this.immutableData(arg, seen));
     if (['builtin:Bytes', 'builtin:Json', 'builtin:RsaPrivateKey', 'builtin:RsaPublicKey'].includes(type.id)) return true;
     const node = type.def?.node;
+    if(node?.kind==='choice'){if(seen.has(type.id))return true;seen.add(type.id);const members=choiceMembers(this.project,type);return !!members&&members.every(member=>this.immutableData(member,seen));}
     if (node?.kind !== 'class' || !node.record) return false;
     if (seen.has(type.id)) return true;
     seen.add(type.id);
@@ -1597,7 +1629,11 @@ class Checker {
   }
 
   private matchBranches<T extends MatchPattern>(expression:Expr,value:Ty,cases:T[],context:Context,span:Span):{clause:T;inside:Context}[] {
-    const seen=new Set<string>(),numbers:Extract<Expr,{kind:'literal'}>[]=[];
+    // A choice bound supplies the closed record domain, not a concrete T.
+    // Narrowed branches retain their record identity; they cannot assign back to T.
+    const bound=value.kind==='param'?value.bounds?.find(type=>type.kind==='choice'&&choiceMembers(this.project,type)):undefined;
+    if(bound)value={...bound,nullable:value.nullable||bound.nullable,optional:value.optional||bound.optional};
+    const seen=new Set<string>(),types=new Set<string>(),numbers:Extract<Expr,{kind:'literal'}>[]=[];
     const branches=cases.map(clause=>{
       const inside=this.cloneContext(context),literal=clause.literal;
       const key=clause.pattern==='literal'&&literal?.kind==='literal'?
@@ -1615,15 +1651,18 @@ class Checker {
         const actual=this.checkExpression(clause.literal!,context);if(!this.assignable(actual,value))this.report(clause.span,'Match literal has an incompatible type','MATCH');
       }else if(clause.pattern==='type'){
         narrowed=this.resolveType(clause.type!,context.file,context.types);
+        if(types.has(narrowed.id))this.report(clause.span,'Unreachable or repeated resolved type case','MATCH');types.add(narrowed.id);
         if(narrowed.kind!=='class'||narrowed.args.length||!this.assignable(narrowed,{...value,nullable:true}))this.report(clause.span,'Type patterns require a concrete non-generic class compatible with the matched value','MATCH');
       }
       if(expression.kind==='name'&&clause.pattern==='some'){const local=inside.locals.get(expression.name);if(local)local.type=narrowed;}
       if(clause.name)this.patternLocals([clause.name],narrowed,this.placesOf(expression,context),inside,clause.span,sourceName(expression));
       return {clause,inside};
     });
-    const exhaustive=seen.has('else')||(value.nullable||value.optional)&&seen.has('null')&&seen.has('some')||
+    const alternatives=choiceMembers(this.project,value);
+    const closed=!!alternatives&&alternatives.every(type=>types.has(type.id))&&(!value.nullable&&!value.optional||seen.has('null'));
+    const exhaustive=closed||seen.has('else')||(value.nullable||value.optional)&&seen.has('null')&&seen.has('some')||
       !value.nullable&&!value.optional&&value.id==='builtin:bool'&&seen.has('true')&&seen.has('false');
-    if(!exhaustive)this.report(span,'Match is incomplete; cover both booleans, null and some, or add else','MATCH');
+    if(!exhaustive)this.report(span,alternatives?'Match is incomplete; cover '+alternatives.filter(type=>!types.has(type.id)).map(type=>type.name).concat((value.nullable||value.optional)&&!seen.has('null')?['null']:[]).join(' and ')+', or add else':'Match is incomplete; cover both booleans, null and some, or add else','MATCH');
     return branches;
   }
 
@@ -2297,8 +2336,9 @@ class Checker {
     if (!this.immutableData(type)) return false;
     // Record construction deep-freezes every field, including erased/generic
     // data. That existing storage guarantee is stronger than its source types.
-    if (type.frozen || type.def?.node.kind === 'class' && type.def.node.record) return true;
-    if (type.id === 'builtin:Data' || type.kind === 'param') return false;
+    if (type.frozen || type.kind==='choice' || type.def?.node.kind === 'class' && type.def.node.record) return true;
+    if (type.kind === 'param') return !!type.bounds?.some(bound=>bound.kind==='choice'&&this.immutableCapture(bound));
+    if (type.id === 'builtin:Data') return false;
     if (['builtin:List','builtin:Set','builtin:Map'].includes(type.id)) return false;
     return type.args.every(arg=>this.immutableCapture(arg));
   }
@@ -2743,7 +2783,7 @@ class Checker {
         return this.returnType(entry.method, entry.file, entry.params);
       }
     }
-    this.report(span, `${tyName(receiver)} has no member ${name}`);
+    this.report(span, receiver.kind==='choice'?`Match the choice ${receiver.name} before reading an alternative's member ${name}`:`${tyName(receiver)} has no member ${name}`,receiver.kind==='choice'?'CHOICE':'TYPE');
     return errorTy;
   }
 
@@ -3256,6 +3296,7 @@ class Checker {
         return { id: def.id, name: cls.name, kind: 'class', def,
           args: cls.typeParams.map(name => inferred.get(name) ?? errorTy), nullable: false };
       }
+      if(def?.node.kind==='choice'){this.report(expr.callee.span,'A choice has no constructor; construct an alternative record','CHOICE');return errorTy;}
       if (def?.node.kind === 'function') {
         fn = def.node; fnFile = def.file;
         if(fn.endpoint?.streams)this.report(expr.span,'Streaming endpoints are invoked through HTTP; extract an ordinary helper for reusable work','HTTP');

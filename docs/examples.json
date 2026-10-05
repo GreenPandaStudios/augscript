@@ -112,5 +112,9 @@
   },
   "pure-callbacks-guide": {
     "stdout": "true\n3\n4\n6\n"
+  },
+  "closed-choices-guide": {
+    "stdout": "receipt-42\nnot available\n",
+    "tests": 2
   }
 }

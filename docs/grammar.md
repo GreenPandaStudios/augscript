@@ -19,6 +19,8 @@ Initialize  := "initialize" Block
 
 Error       := "error" Name [Generics] "(" ReadOnlyFields ")" End  // unreleased
 
+Choice      := "choice" Name "from" Type {"and" Type} End  // unreleased
+
 Record      := "record" Name [Generics] "(" Fields ")"
                ["unless" Types] [BlockOfInitialize]
 
@@ -32,6 +34,8 @@ Endpoint    := [Tags] "endpoint" HttpMethod String "as" Name "(" Parameters ")"
                ["unless" Type ["with status" Integer] {"and" Type ["with status" Integer]}]
                ["with status" Integer] Block
 ```
+
+`choice` is contextual: only `choice Name from ...` declares a closed data choice. Ordinary declarations and calls named `choice`, and typed bindings using a type named `choice`, remain valid. The alternatives are at least two distinct concrete nongeneric records. See [finite choices](guides/use-choices.md).
 
 An interface/class/interceptor block contains method declarations. A record ends after its header or validation block and has no behavior body. An executable body infers an absent returns clause; no returned value means void. A bodyless signature defaults to void. Omitted changes, uses, and unless clauses are inferred from executable bodies; explicit clauses remain checked bounds. A callable needs a body unless declared `extern C`. There is no class or function prefix.
 

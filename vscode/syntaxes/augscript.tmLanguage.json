@@ -252,6 +252,20 @@
           }
         },
         {
+          "match": "\\b(choice)\\s+([A-Za-z_][A-Za-z0-9_]*)\\s+(from)\\b",
+          "captures": {
+            "1": {
+              "name": "keyword.declaration.aug"
+            },
+            "2": {
+              "name": "entity.name.type.aug"
+            },
+            "3": {
+              "name": "keyword.control.aug"
+            }
+          }
+        },
+        {
           "match": "\\b(interface|capability|record|composition)\\s+([A-Za-z_][A-Za-z0-9_]*)\\b",
           "captures": {
             "1": {

@@ -303,7 +303,8 @@ class Printer {
           item.methods.forEach(method => this.method(method));
         }, item.span);
       }
-    } else if (item.kind === 'interface') this.block(`${item.capability ? 'capability' : 'interface'} ${item.name}${this.generics(item)}` +
+    } else if (item.kind === 'choice') this.line('choice '+item.name+' from '+item.alternatives.map(typeName).join(' and '));
+    else if (item.kind === 'interface') this.block(`${item.capability ? 'capability' : 'interface'} ${item.name}${this.generics(item)}` +
       (item.extends.length ? ' extends ' + item.extends.map(typeName).join(', ') : ''), () => item.methods.forEach(method => this.method(method)), item.span);
     else if (item.kind === 'interceptor') this.block(`interceptor ${item.name}${this.generics(item)}(${item.fields.map(field => this.param(field, true)).join(', ')})`,
       () => item.methods.forEach(method => this.method(method)), item.span);
@@ -314,7 +315,7 @@ class Printer {
           test.rows!.map(row => this.expression(row)).join(', ') + ']' : ''), () => test.body.forEach(stmt => this.statement(stmt)), test.span,'test-case'));
       }, group.span,'test-group')), item.span);
     else this.statement(item);
-    if(['import','export','include','bind','composition','resource','class','interface','interceptor','test'].includes(item.kind))this.remember(item.span,item.kind,line);
+    if(['import','export','include','bind','composition','resource','class','interface','choice','interceptor','test'].includes(item.kind))this.remember(item.span,item.kind,line);
   }
   print(): string {
     for (const item of this.file.items) this.item(item);

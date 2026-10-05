@@ -817,6 +817,10 @@ class SpecWriter {
         children.push(...item.methods.map(method=>this.callable(method,def)));
         return this.heading(item.name,item.span,2,children,item.record?'immutable record':'class');
       }
+      case 'choice': {
+        const notes=this.notes(javadocBefore(this.file.source,item.span.start));
+        return this.heading(item.name,item.span,2,[...(notes?[paragraph(notes)]:[]),paragraph('A value is '+coordinate(item.alternatives.map(type=>this.type(type)),'or')+'. Match these records to read their fields. The choice has no constructor of its own.')],'closed record choice');
+      }
       case 'interface':case 'interceptor': {
         const def=this.definition(item.name)!;this.locals=new Map();
         const generics=this.generics(item),notes=this.notes(javadocBefore(this.file.source,item.span.start));
@@ -882,7 +886,7 @@ class SpecWriter {
   }
   render(): string {
     const exports=this.file.items.filter(item=>item.kind==='export');
-    const declarations=this.file.items.filter(item=>['class','interface','interceptor','function','composition','resource'].includes(item.kind));
+    const declarations=this.file.items.filter(item=>['class','interface','choice','interceptor','function','composition','resource'].includes(item.kind));
     const providers=this.file.items.filter(item=>item.kind==='bind'||item.kind==='include');
     const startup=this.file.items.filter(item=>item.kind!=='import'&&item.kind!=='export'&&item.kind!=='test'&&item.kind!=='bind'&&item.kind!=='include'&&!declarations.includes(item));
     const children:SpecNode[]=[];

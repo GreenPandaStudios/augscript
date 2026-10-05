@@ -177,6 +177,14 @@ record Point(int x, int y)
 
 Record fields contain data, including safe literal or explicitly frozen collections. A mutable collection alias must be frozen before storage. Records cannot retain capabilities or ownership inputs. Records compare and hash by type and field values. Validation uses `record Positive(int value) unless DomainError { initialize { ... } }`; it may reject an input, and cannot replace immutable fields. Behavioral classes compare by identity.
 
+## Closed record choices (unreleased)
+
+`choice Delivery from Delivered and Failed` names a closed set of at least two distinct, concrete nongeneric immutable records. Define or explicitly import those records in the same module. A choice has no constructor: use an alternative’s ordinary labeled constructor. Assignment, function inputs and results accept exactly those record identities. Generic inputs can use a non-null choice bound; nullable inputs use `optional T`. Records can contain choices, and choices satisfy the data rules for pure callbacks and copied workers.
+
+Match each alternative to access its fields. Every alternative is required for exhaustiveness, plus null when the choice is optional; `some` covers all non-null values and `else` is an explicit fallback. Classes cannot implement a choice, interfaces cannot inherit it, and choices cannot name other choices or nullable/generic alternatives. Normal privacy and export boundaries apply to the choice and its records independently.
+
+There is no implicit JSON tag or discriminator. Match and serialize a concrete record, or define a tagged wire record. Direct JSON decoding and typed HTTP binding to the choice are unsupported. See [Describe a finite choice](guides/use-choices.md) for a complete program and its tests.
+
 ## Collections and iteration
 
 | Literal | Type | Behavior |

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+Complete and navigate closed record choices. Distinguish the contextual declaration from functions named `choice`, and show its alternative records in hover.
+
 Show checked pure callback contracts, capture links and delegated implementations in hover. Scope typed closure inputs independently, color the arrow, offer a callback expression template, and explain pure callback diagnostics.
 
 Complete `select` as a list comprehension with project assignment preferences. Show checked item bindings in hover, completion and semantic colors, including record/tuple selections; keyword help explains snapshot order, allocation and checked failures.

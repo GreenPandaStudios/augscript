@@ -412,6 +412,14 @@ increment() changes self
 
 State which caller-visible values an operation may change. Bodies infer changes when omitted, but callers still need mutable access. Bodyless interfaces state permitted changes. Writes to local variables and fresh local objects do not change caller-owned state. An explicit clause limits the body.
 
+## choice
+
+```text
+choice Delivery from Delivered and Failed
+```
+
+Name a closed set of concrete immutable records. Construct an alternative with its normal labeled inputs. Match every alternative, plus null for an optional choice, to read its fields. A choice has no constructor, implementation inheritance, or implicit JSON discriminator. Import the choice and the records explicitly.
+
 ## composition
 
 ```text

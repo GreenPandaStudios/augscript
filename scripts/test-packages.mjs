@@ -72,6 +72,12 @@ try {
   aug('spec',selection);assert.match(readFileSync(join(selection,'main.aug.md'),'utf8'),/new list.*snapshot/);
   if(process.env.AUG_LLVM_HOME&&process.env.AUG_RUNTIME_PACK)
     assert.equal(run(process.execPath,[cli,'run',collections,'--backend','llvm']),'-1\n0\n7\n1\n');
+  const closedChoices=join(directory,'choice-consumer');mkdirSync(closedChoices);
+  writeFileSync(join(closedChoices,'main.aug'),'import Left and choose from alternatives\nprint(value=choose(value=Left(value=7)))\n');
+  writeFileSync(join(closedChoices,'alternatives.aug'),'choice Side from Left and Right\nrecord Left(int value)\nrecord Right(string text)\nchoose(Side value):\n    return match value { when Left left { $"{left.value}" } when Right right { right.text } }\n');
+  assert.equal(aug('run',closedChoices),'7\n');
+  if(process.env.AUG_LLVM_HOME&&process.env.AUG_RUNTIME_PACK)assert.equal(run(process.execPath,[cli,'run',closedChoices,'--backend','llvm']),'7\n');
+  aug('spec',closedChoices);assert.match(readFileSync(join(closedChoices,'alternatives.aug.md'),'utf8'),/closed record choice/);
   const callbacks=join(directory,'callback-consumer');mkdirSync(callbacks);
   writeFileSync(join(callbacks,'main.aug'),'import transform from august.collections\nfor value in transform(values=[2, 3], transformation=(int value) => value * 2):\n    print(value=value)\n');
   assert.equal(aug('run',callbacks),'4\n6\n');

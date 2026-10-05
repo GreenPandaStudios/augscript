@@ -1778,6 +1778,28 @@
           "test": "closure body dependencies are retained as deferred calls in both context APIs"
         }
       ]
+    },
+    {
+      "id": "CHOICES",
+      "summary": "Unreleased closed choices retain exact immutable record identities and require exhaustive matches, including null for optional values.",
+      "reference": "reference.md#closed-record-choices-unreleased",
+      "productions": [
+        "Choice"
+      ],
+      "cases": [
+        "closed-choices",
+        "incomplete-choice"
+      ],
+      "regressions": [
+        {
+          "file": "tests/choices.test.mjs",
+          "test": "invalid alternatives and incomplete choices fail with checked source diagnostics"
+        },
+        {
+          "file": "tests/choices.test.mjs",
+          "test": "contextual choice names retain typed bindings and ordinary function help; nearby types complete"
+        }
+      ]
     }
   ]
 }

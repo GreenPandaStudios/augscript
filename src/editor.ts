@@ -213,6 +213,7 @@ function definitionItem(checked: CheckedProject, def: Definition): EditorItem {
       documentation:native?nativeDescription(native,'[`native.abi.json`]('+pathToFileURL(checked.native.providerDescriptors.get(native.provider)!).href+')'):'Opaque native resource. Its package must declare a release identity.'};
   }
   if (node.kind === 'function') return methodItem(checked, node, 'function');
+  if(node.kind==='choice')return {label:def.name,kind:'type',detail:'choice '+def.name+' from '+node.alternatives.map(typeName).join(' and '),documentation:documentation(checked,def.file,node.span.start)?.markdown};
   if (node.kind === 'interface') return { label: def.name, kind: 'interface',
     detail: `interface ${def.name}${node.typeParams.length ? `<${node.typeParams.join(', ')}>` : ''}`,
     documentation: documentation(checked, def.file, node.span.start)?.markdown };
@@ -260,7 +261,7 @@ function definitionItem(checked: CheckedProject, def: Definition): EditorItem {
 function typeFromRef(checked: CheckedProject, file: string, ref: TypeRef): Ty {
   const def = checked.project.scopes.get(file)?.get(ref.name);
   const type: Ty = { id: def?.id ?? `builtin:${ref.name}`, name: ref.name,
-    kind: def?.node.kind === 'class' || def?.node.kind === 'interface' || def?.node.kind === 'interceptor' || def?.node.kind==='resource' ? def.node.kind : 'builtin',
+    kind: def?.node.kind === 'class' || def?.node.kind === 'interface' || def?.node.kind === 'choice' || def?.node.kind === 'interceptor' || def?.node.kind==='resource' ? def.node.kind : 'builtin',
     args: ref.args.map(arg => typeFromRef(checked, file, arg)), nullable: ref.nullable, optional:ref.optional, def };
   return ref.immutable ? immutableType(type) : type;
 }
@@ -420,13 +421,13 @@ export function importItems(checked: CheckedProject, file: SourceFile): EditorIt
         isPrivateName(sibling.path.slice(currentFolder.length + 1, -4))) continue;
     const from = sibling.path.slice(currentFolder.length + 1, -4);
     for (const item of sibling.items) {
-      if (item.kind !== 'class' && item.kind !== 'interface' && item.kind !== 'function' && item.kind !== 'interceptor' && item.kind !== 'composition') continue;
+      if (item.kind !== 'class' && item.kind !== 'interface' && item.kind !== 'function' && item.kind !== 'interceptor' && item.kind !== 'composition' && item.kind !== 'choice') continue;
       if (isPrivateName(item.name)) continue;
       items.push({ label: item.name, kind: 'snippet', declarationKind:item.kind,
         detail: `import ${item.name} from ${from}`, insertText: `${item.name} from ${from}`,
         signature: definitionItem(checked, project.scopes.get(sibling.path)!.get(item.name)!).signature,
         parameters: definitionItem(checked, project.scopes.get(sibling.path)!.get(item.name)!).parameters,
-        documentation: item.kind === 'interface' || item.kind === 'composition' ? documentation(checked, sibling.path, item.span.start)?.markdown :
+        documentation: item.kind === 'interface' || item.kind === 'composition' || item.kind === 'choice' ? documentation(checked, sibling.path, item.span.start)?.markdown :
           declarationDocumentation(checked, item)?.markdown });
     }
   }
@@ -803,7 +804,8 @@ export function hoverInfo(checked: CheckedProject, fileName: string,
         'No local values are captured.'].join('\n\n'),start,end};
   }
   const workerKeyword = token.value === 'worker' && hoverTokens[hoverTokens.indexOf(token) - 1]?.kind === 'start' && ['identifier', 'start', 'wait'].includes(hoverTokens[hoverTokens.indexOf(token) + 1]?.kind);
-  const help = token.value === 'worker' && !workerKeyword ? undefined : languageHelp[token.value];
+  const choiceKeyword = token.value === 'choice' && file.items.some(item => item.kind === 'choice' && item.span.start === start);
+  const help = token.value === 'worker' && !workerKeyword || token.value === 'choice' && !choiceKeyword ? undefined : languageHelp[token.value];
   if (help) return { label: token.value,
     kind: help.category === 'type' ? 'type' : help.category === 'function' ? 'function' : 'keyword',
     detail: help.detail, documentation: help.documentation, start, end };
@@ -812,11 +814,11 @@ export function hoverInfo(checked: CheckedProject, fileName: string,
   let item: EditorItem | undefined = local ? { label: token.value, kind: local.kind,
     detail: `${local.typeText} ${token.value}` + (local.kind === 'property' && isPrivateName(token.value) ? ' (private)' : ''),
     documentation: local.documentation } : undefined;
-  item ??= completions(checked, file.path, end).find(entry => entry.label === token.value);
   if (!item) {
     const def = checked.project.scopes.get(file.path)?.get(token.value);
     if (def) item = definitionItem(checked, def);
   }
+  item ??= completions(checked, file.path, end).find(entry => entry.label === token.value);
   if (!item) {
     const owner = file.items.find(entry => (entry.kind === 'class' || entry.kind === 'interface' || entry.kind === 'interceptor') &&
       entry.span.start <= start && end <= entry.span.end);
@@ -886,7 +888,7 @@ export function semanticTokens(checked: CheckedProject, fileName: string): Edito
   const variables = new Set<string>();
   const patternProperties=new Set<number>();
   const typeParameters = new Set<string>();
-  const declarationNames = new Map<number, 'class' | 'decorator' | 'function' | 'method'>();
+  const declarationNames = new Map<number, 'class' | 'decorator' | 'function' | 'method' | 'keyword' | 'type'>();
   function markFunction(method: MethodDecl, type: 'function' | 'method'): void {
     const first = tokens.findIndex(token => token.span.start >= method.span.start && token.span.end <= method.span.end && token.value === method.name && token.kind === 'identifier');
     const name = tokens[first];
@@ -935,6 +937,7 @@ export function semanticTokens(checked: CheckedProject, fileName: string): Edito
     }
   }
   for (const item of file.items) {
+    if(item.kind==='choice'){declarationNames.set(item.span.start,'keyword');const token=tokens.find(token=>token.span.start>item.span.start&&token.value===item.name);if(token)declarationNames.set(token.span.start,'type');}
     if (item.kind === 'class' || item.kind === 'interface' || item.kind === 'interceptor') {
       if (item.kind === 'class') declarationNames.set(item.span.start, 'class');
       if (item.kind === 'interceptor') declarationNames.set(item.nameSpan.start, 'decorator');
@@ -989,7 +992,7 @@ export function semanticTokens(checked: CheckedProject, fileName: string): Edito
     else if (['int', 'c_int', 'float', 'bool', 'string', 'void'].includes(token.value)) type = 'type';
     else {
       const def = scope?.get(token.value);
-      if (def) type = def.node.kind === 'resource' ? 'type' : def.node.kind === 'interceptor' ? 'decorator' : def.node.kind === 'composition' ? 'function' : def.node.kind;
+      if (def) type = def.node.kind === 'resource' || def.node.kind==='choice' ? 'type' : def.node.kind === 'interceptor' ? 'decorator' : def.node.kind === 'composition' ? 'function' : def.node.kind;
     }
     if (type) result.push({ line: token.span.line - 1, start: token.span.column - 1,
       length: token.span.end - token.span.start, type,

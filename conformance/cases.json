@@ -217,6 +217,22 @@
         "rules.aug": "interface Parent:\n    apply(int value) returns string\ninterface Derived extends Parent:\n    apply(string value) returns string\n"
       },
       "diagnostic": "INTERFACE"
+    },
+    {
+      "id": "closed-choices",
+      "files": {
+        "model.aug": "choice Result from Found and Absent\nrecord Found(int value)\nrecord Absent(string reason)\nshow<T implements Result>(optional T result):\n    return match result:\n        when null:\n            \"null\"\n        when Found found:\n            $\"{found.value}\"\n        when Absent absent:\n            absent.reason\n",
+        "main.aug": "import Found and Absent and Result and show from model\nprint(value=show(result=Found(value=42)))\nprint(value=show(result=Absent(reason=\"absent\")))\nprint(value=show<Result>(result=null))\n"
+      },
+      "stdout": "42\nabsent\nnull\n"
+    },
+    {
+      "id": "incomplete-choice",
+      "files": {
+        "main.aug": "",
+        "model.aug": "choice Result from Found and Absent\nrecord Found(int value)\nrecord Absent(string reason)\nshow(Result result):\n    return match result:\n        when Found found:\n            found.value\n"
+      },
+      "diagnostic": "MATCH"
     }
   ],
   "mutations": [

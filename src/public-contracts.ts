@@ -63,7 +63,7 @@ export function publicContract(checked:CheckedProject,fact:ContractFact,allFacts
   });
   const {id,location,documentation,calls,tests,...publicFact}=fact;
   const interfaceRefs=definition.node.kind==='class'?definition.node.implements:definition.node.kind==='interface'?definition.node.extends:[];
-  return normalize({...publicFact,interfaceTypes:interfaceRefs.map(ref=>resolved(type(ref,definition.file,ownerParams))),
+  return normalize({...publicFact,...(definition.node.kind==='choice'?{alternativeTypes:definition.node.alternatives.map(ref=>resolved(type(ref,definition.file,ownerParams)))}:{}),interfaceTypes:interfaceRefs.map(ref=>resolved(type(ref,definition.file,ownerParams))),
     resolvedConstraints:constraints(definition.node,definition.file,ownerParams),
     fields:fact.fields.filter(field=>!field.storage.startsWith('_')).map(({storage,...field})=>{
       const ref=definition.node.kind==='class'||definition.node.kind==='interceptor'?fieldsOf(definition.node).find(input=>input.name===storage)?.type:undefined;
