@@ -1,5 +1,6 @@
 import {declarationVisibility} from './module-surfaces.ts';
 import {defaultText} from './parameters.ts';
+import {forwardingProvenance} from './forwarding.ts';
 import type {ClassDecl,GenericHeader,MethodDecl,Param,Span} from './ast.ts';
 import {fieldsOf,syntheticType,typeName} from './ast.ts';
 import {tyName,type CheckedProject} from './checker.ts';
@@ -12,6 +13,7 @@ const genericFacts = (header: GenericHeader) => header.typeParams.map(name => ({
   variance: header.typeVariance?.[name] ?? 'invariant', constraints: (header.typeConstraints?.[name] ?? []).map(typeName) }));
 
 export interface CallableFact {
+  forwarding?:ReturnType<typeof forwardingProvenance>;
   native?:NativeFunctionFact; nativeDependencies:NativeFunctionFact[]; nativeCoverage:'resolved-standalone-calls';
   name: string; location: Span; inputs: { label: string; name: string; type: string; ownership: string; injected: boolean; default?: string; source?:Param['source'] }[];
   result: string; genericParameters: ReturnType<typeof genericFacts>; changes: string[]; capabilities: string[]; inferredEffects: boolean; errors: string[];
@@ -34,7 +36,7 @@ export function contractFacts(checked: CheckedProject): ContractFact[] {
     const contract = checked.effectContracts.get(method);
     const layers = checked.interceptorPlans.get(constructor ?? method) ?? [];
     const native=nativeFact(checked,method);
-    return { name: method.name, location: method.span, genericParameters: genericFacts(method),
+    return { name: method.name, location: method.span, forwarding:forwardingProvenance(project,method), genericParameters: genericFacts(method),
       native:native?.kind==='function'?native:undefined,nativeDependencies:nativeDependencies(checked,method),nativeCoverage:'resolved-standalone-calls',
       inputs: method.params.map(param => ({ label: param.label ?? param.name, name: param.name,
         type: typeName(param.type), ownership: param.ownership, injected: param.injected, default:param.defaultValue ? defaultText(param.defaultValue) : undefined, source:param.source })),
@@ -84,7 +86,7 @@ export function contractFacts(checked: CheckedProject): ContractFact[] {
     visit(node);
     const native=node.kind==='resource'?nativeFact(checked,node):undefined;
     return { id: def.id, name: def.name, kind: node.kind === 'class' && node.record ? 'record' :
-      node.kind === 'interface' && node.capability ? 'capability' : node.kind,
+      node.kind === 'interface' && node.capability ? 'capability' : node.kind === 'function' && node.forward ? 'forward' : node.kind,
       native:native?.kind==='resource'?native:undefined,...(node.kind==='choice'?{alternatives:node.alternatives.map(typeName)}:{}),
       location: node.span, public: !node.name.startsWith('_'), visibility:declarationVisibility(project,def), typeParameters: node.typeParams, genericParameters: genericFacts(node),
       documentation: javadocBefore(file.source, 'annotations' in node ? node.annotations?.[0]?.span.start ?? node.span.start : node.span.start)?.markdown,

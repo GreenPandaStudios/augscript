@@ -21,6 +21,8 @@ Choose a guide for the task you are doing. If you are learning August for the fi
 
 ## Build and distribute an application
 
+For the experimental revision-bearing edit protocol and native evidence gates, see [Make a checked change](../checked-changes.md).
+
 | Task | Guide |
 | --- | --- |
 | Build your first HTTP service | [Weather API](../weather-api.md) |

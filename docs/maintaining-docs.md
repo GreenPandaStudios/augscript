@@ -14,6 +14,7 @@ For writing and navigation, use [the editorial guide](writing-docs.md). The repo
 | CLI, packages, configuration or supported platform | Tooling/packages/releasing guide, Docker and Dev Container recipes, and package metadata |
 | Runtime lifecycle or qualification behavior | `docs/runtime-reliability.md`, readiness, roadmap, release workflow and changelog |
 | Completed or deferred feature | Implementation map, gap ledger and changelog |
+| Checked-change schema, forwarding, transactions or bounded evidence | `docs/checked-changes.md`, amendment status, tooling/diagnostics guide, help/editor contracts, installed-package and independent mutation/recovery regressions |
 
 Public comments should explain observable behavior, named inputs, errors, side effects, and limits. Keep dependencies explicit in examples. Record incomplete capabilities in the gap ledger; do not imply that an unimplemented proposal is usable.
 
@@ -46,6 +47,8 @@ The generator also runs the deterministic spec compiler for every standard-libra
 For CLI, editor, package layout, setup, or release workflow changes, run installed-package tests and the public replacement gate after packing the candidate: `npm run package:packages`, `npm run test:packages`, and `npm run test:upgrade`. Before publication, add `-- --local-compiler` to the upgrade command when it needs an unpublished compiler pack. Keep reports honest about public versus local transport and reinstall versus version upgrade.
 
 Package the VSIX and run `npm run test:editor`. Repeat `-- --editor 1.90.0` for the declared minimum editor. The automated matrix covers every compiler host and both pinned editor versions; local macOS evidence does not establish Linux results. For editor-only patches retaining the public compiler, add `-- --retained-compiler`. Update the baseline checksums only from reviewed published artifacts. Keep `scripts/distribution-inputs.json` and the editor matrix aligned. Reports and disposable profiles belong in generated directories, not Git.
+
+Linux LLVM parity installs the OIDC example's locked GitHub source packages. Pass the runner's `AUG_GITHUB_TOKEN` into that Docker process with `docker exec -e AUG_GITHUB_TOKEN`; a job environment variable alone does not reach the container. The source transport uses the token only for GitHub API reads, so qualification can use authenticated API limits without adding credentials to source snapshots or raw downloads.
 
 ## Repository example gallery
 

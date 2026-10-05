@@ -46,7 +46,7 @@ export function applySourceEdits(source:string,edits:readonly Pick<CheckedSource
 /** Shared supported signature; this does not certify implementation behavior. */
 export function requireManagedStandaloneEdit(checked:CheckedProject,fn:MethodDecl):void {
   const effects=checked.effectContracts.get(fn);
-  if(fn.externC||fn.endpoint||fn.annotations?.length||fn.typeParams.length||fn.returnOwnership==='own'||fn.params.some(param=>param.injected||param.ownership!=='managed')||effects?.uses.size||effects?.changes.length)
+  if(fn.forward||fn.externC||fn.endpoint||fn.annotations?.length||fn.typeParams.length||fn.returnOwnership==='own'||fn.params.some(param=>param.injected||param.ownership!=='managed')||effects?.uses.size||effects?.changes.length)
     throw new RefactoringError('This checked edit profile requires a managed standalone function without native linkage, injection, generics, effects, mutation, endpoints, or interceptors.');
 }
 /** Plan a narrow mechanical edit. The caller owns approval and publication; this function writes nothing. */

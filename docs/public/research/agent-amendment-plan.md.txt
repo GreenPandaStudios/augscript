@@ -1,0 +1,81 @@
+# Amendment experiment plan
+
+Recorded before the model matrix on 2026-09-30. These are adaptive pilot experiments
+following the September 30 investigation, not a preregistered independent study.
+
+## Questions
+
+1. Does the same local model implement equivalent refund behavior more reliably in
+   familiar TypeScript than August when mechanical contract propagation is prepared?
+2. Does August's existing `aug context` outperform full compiled spec pages? Does a
+   smaller semantic packet retain enough checked facts to reduce context burden?
+3. Can an explicit forwarding declaration eliminate repeated contracts without
+   weakening checked errors or requiring model-generated propagation edits?
+4. Do provenance checks and transactional compiler edits reject stale or ambiguous
+   changes that a text-editing model could accidentally apply?
+5. Can additional behavioral probes reveal gaps that compilation and the original
+   suite miss? Which checks can the language enforce and which remain tests?
+
+## Model matrix
+
+Same installed Gemma 4 8B and DeepSeek Coder 6.7B weights as the prior investigation.
+Claude Code with tools disabled through Ollama. Gemma uses reasoning enabled and
+65,536 allocated context; DeepSeek uses reasoning disabled and 16,384 context.
+Within each model, settings and repair budget are identical across languages/context
+conditions. Each invocation is fresh, with no previous trial conversation.
+
+Four conditions, two samples each, for 16 independent initial proposals:
+
+- August with complete relevant compiled `.aug.md` pages.
+- August with current `aug context` output.
+- August with a compact packet projected from current checked semantic facts.
+- TypeScript with actual dependency source, types, and exports.
+
+All conditions receive actual dependency source and the same ordered behavior task.
+August conditions receive the same checked language writing rules. The model changes
+only the core function. Human-prepared forwarding modules already carry the required
+input/error contracts. This deliberately removes mechanical propagation as a confound;
+it is not a full autonomous 34-module task. Record prompt bytes and truncation flags.
+
+Allow one source-compiler repair after a failed initial proposal. No hidden behavioral
+feedback is provided. Do not select later samples because a condition passed or failed.
+Per-model order rotates deterministically between the two samples. Temperature 0.2,
+output cap 4,096 for Gemma (reasoning budget 1,024), 2,048 for DeepSeek. A six-minute
+invocation deadline is an explicit failure/incomplete result, not silent exclusion.
+
+## Scoring
+
+Freeze the 51 original hidden case bodies, both reference implementations, and the
+reviewed cached dry-run issue before model calls. For repeated August scoring, compile
+all 51 unchanged bodies into one test with independent lexical scopes. First validate
+this bundled runner with both reference controls and deliberate wrong implementations.
+A successful aggregate run establishes all 51 assertions passed; a failed aggregate
+run reports a failed gate, not an invented individual pass count. The original suite
+can be rerun separately on representative successful candidates.
+
+Also check actual source compilation, existing visible tests, and native application.
+Keep hidden files outside model workspaces until generation is complete. Retain prompt
+hashes, settings, initial/repair output, diagnostics, and verification reports. Raw model
+thinking and credentials are never committed or published.
+
+## Compiler prototypes
+
+Keep experimental code under this directory; do not alter shipping parser/runtime.
+A forwarding-declaration lowerer is a feasibility prototype, not an implemented
+language feature. Validate native behavior using the actual August compiler. Reject
+cycles, unsafe/unsupported targets, stale source, and attempts to conceal wrapper
+behavior. Compare the same contract edits with equivalent TypeScript tooling.
+
+A graph/transaction prototype must resolve symbol identities from the compiler's AST
+and scopes rather than search by spelling. Reject stale plans before writing and check
+all candidate source before committing a transaction. Include shadowed and ambiguous
+references and explicit unsupported cases.
+
+## Decision rule
+
+Prefer the smallest amendment that removes observed failure opportunities and preserves
+August's explicit state, capability, checked-error, and export contracts. Separate model
+results, deterministic compiler properties, prototype feasibility, and research inference.
+No small pilot can justify 'best language' or a general AI accuracy advantage. The formal
+proposal must define the acceptance gates needed to earn those claims.
+

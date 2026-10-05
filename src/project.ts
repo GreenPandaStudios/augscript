@@ -13,6 +13,8 @@ import { builtinFunctions, builtinTypes } from './builtins.ts';
 import { libraryChild, libraryRelative, standardLibraries, type StandardLibraries } from './libraries.ts';
 import { packageSpecifications, projectPackages, readPackage, sourcePaths, type ProjectPackages, type PackageManifest, type PackageLock } from './package-manager.ts';
 import { isGitSource, sourceAlias } from './git-packages.ts';
+import {beginSourceRead,finishSourceRead,type SourcePermit} from './source-transaction.ts';
+import {expandForwarding} from './forwarding.ts';
 
 export type DefinitionNode = ClassDecl | InterfaceDecl | ChoiceDecl | InterceptorDecl | MethodDecl | CompositionDecl | ResourceDecl;
 export interface Definition {
@@ -24,6 +26,7 @@ export interface Definition {
 
 export interface Project {
   root: string;
+  sourceRead?:{epoch:string;permit?:SourcePermit};
   files: Map<string, SourceFile>;
   definitions: Map<string, Definition>;
   scopes: Map<string, Map<string, Definition>>;
@@ -62,12 +65,15 @@ function sourceFiles(root: string): string[] {
 }
 
 export function loadProject(projectRoot: string, overrides: Map<string, string> = new Map(),
-  cache?: Map<string, ReturnType<typeof parse>>, packageCandidate?:{lock:PackageLock;cache:string;specifications?:Record<string,string>}): Project {
-  return coherentSourceRead(projectRoot,()=>loadProjectRevision(projectRoot,overrides,cache,packageCandidate));
+  cache?: Map<string, ReturnType<typeof parse>>, candidateOrPermit?:{lock:PackageLock;cache:string;specifications?:Record<string,string>}|SourcePermit): Project {
+  return coherentSourceRead(projectRoot,()=>loadProjectRevision(projectRoot,overrides,cache,candidateOrPermit));
 }
 function loadProjectRevision(projectRoot:string,overrides:Map<string,string>,cache?:Map<string,ReturnType<typeof parse>>,
-  packageCandidate?:{lock:PackageLock;cache:string;specifications?:Record<string,string>}):Project {
+  candidateOrPermit?:{lock:PackageLock;cache:string;specifications?:Record<string,string>}|SourcePermit):Project {
+  const permit=candidateOrPermit&&'token' in candidateOrPermit?candidateOrPermit:undefined;
+  const packageCandidate=candidateOrPermit&&'lock' in candidateOrPermit?candidateOrPermit:undefined;
   const root = resolve(projectRoot);
+  const epoch=beginSourceRead(root,permit);
   const files = new Map<string, SourceFile>();
   const definitions = new Map<string, Definition>();
   const scopes = new Map<string, Map<string, Definition>>();
@@ -89,13 +95,13 @@ function loadProjectRevision(projectRoot:string,overrides:Map<string,string>,cac
   };
   for (const path of new Set([...sourceFiles(sourceRoot), ...[...overrides.keys()].filter(path => path.startsWith(sourceRoot + '/') || path.startsWith(sourceRoot + '\\'))].filter(path => path.endsWith('.aug')))) {
     const parsed = read(path);
-    files.set(path, parsed.file);
+    files.set(path, {...parsed.file,items:[...parsed.file.items]});
     diagnostics.push(...parsed.diagnostics);
   }
   for (const scope of new Set(packages.scopes.values())) for (const path of sourcePaths(scope.sourceRoot)) {
     const parsed = read(path);
     // Cached parse objects can be shared across project revisions.
-    files.set(path, { ...parsed.file, package: scope.path });
+    files.set(path, { ...parsed.file,items:[...parsed.file.items], package: scope.path });
     diagnostics.push(...parsed.diagnostics);
   }
   const libraries = standardLibraries();
@@ -316,8 +322,10 @@ function loadProjectRevision(projectRoot:string,overrides:Map<string,string>,cac
     return select(folderExports(folder), 'does not export');
   }
 
-  const project = { root, sourceRoot, library, packages, files, definitions, scopes, imports, diagnostics, main, stdlibRoot, libraries, config };
+  const project = { root, sourceRead:{epoch,permit},sourceRoot, library, packages, files, definitions, scopes, imports, diagnostics, main, stdlibRoot, libraries, config };
+  expandForwarding(project);
   diagnostics.push(...projectPolicies(project));
+  finishSourceRead(root,epoch,permit);
   return project;
 }
 

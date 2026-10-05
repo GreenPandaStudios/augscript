@@ -2,6 +2,10 @@
 
 The compiler checks one August project, then uses the same resolved program for native code, editor tools, tests, and compiled specifications. This page maps those responsibilities to their canonical source modules. It is intended for compiler contributors; application developers can start with [the book](learn/index.md).
 
+## AUG-0001 development implementation
+
+The development compiler implements revision-bearing whole-project context, resolved standalone rename/body-replacement plans, checked forwarding conversion, durable journal recovery, transparent `forward` declarations, and experimental enumerated typed-row evidence. Editor contracts, specs and public interface snapshots show inherited alias interfaces and targets. [The guide](checked-changes.md) records the supported profile and limits. Qualification remains pending: finite regressions and mutation checks do not establish comparative AI reliability, arbitrary-writer filesystem isolation, or formal business-behavior proof. Ownership, GC, task and security rules are unchanged.
+
 ## From source to an executable
 
 [`project.ts`](../src/project.ts) loads `main.aug`, configuration, modules, and installed packages. [`lexer.ts`](../src/lexer.ts) and [`parser.ts`](../src/parser.ts) produce the source AST for both indentation and braces. [`checker.ts`](../src/checker.ts) resolves declarations and checks types, labels, visibility, dependencies, effects, checked errors, and ownership. [`contracts.ts`](../src/contracts.ts) exposes effective callable contracts, including inferred results and failures.

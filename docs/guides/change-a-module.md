@@ -32,6 +32,8 @@ The report lists declarations and related code. The unreleased compiler rejects 
 
 For an interface change, add `--mode interface-change`; this includes known transitive callers and type consumers. `--mode review` also uses that closure for reviewing a change. Available test source is context, not a test result. Use `--require-complete` when an integration needs all required facts and resolved caller coverage. Dynamic dispatch and consumers outside the project remain explicit boundaries.
 
+The request protocol uses `aug change context` and reports `coverage.requiredContextComplete`, required omissions and unresolved dispatch boundaries. Its revisions belong to `aug change plan`, `check`, and `apply`; the schema 3 reading packet uses a separate revision contract. Increase the budget for omitted contracts; unresolved boundaries need explicit investigation. A description from the editor's import closure does not enumerate all reverse callers. See [checked changes](../checked-changes.md) for supported standalone plans and independent acceptance gates.
+
 ## Make and check the change
 
 Add a case to the existing `addition` group. The following is a fragment, not a standalone file:

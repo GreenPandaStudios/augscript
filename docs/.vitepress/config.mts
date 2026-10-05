@@ -84,6 +84,7 @@ export default defineConfig({
         { text: 'Tests', link: '/testing' }, { text: 'Web applications', link: '/web' },
         { text: 'Native service boundaries', link: '/native-service-boundaries' },
         { text: 'Compiled specifications', link: '/specifications' },
+        { text: 'Checked changes', link: '/checked-changes' },
         { text: 'Packages and installation', link: '/packages' },
         { text: 'Find a library', link: '/library-catalog' },
         { text: 'Native library packages', link: '/native-packages' },

@@ -1,8 +1,9 @@
+import {recoverAnySourceChange} from './source-recovery.ts';
 import {initNativePackage} from './native-init.ts';
 import {BodyEditError,sourceUnitLimit} from './body-edits.ts';
 import {SourceChangeError} from './source-transactions.ts';
 import {projectComparison} from './project-comparison.ts';
-import {planChangeRename,planChangeRenameSymbol,planChangeReplaceBody,applyChangePlan,recoverSourceChanges, type ChangePlan } from './checked-changes.ts';
+import {planChangeRename,planChangeRenameSymbol,planChangeReplaceBody,applyChangePlan, type ChangePlan } from './checked-changes.ts';
 import {recordBindingDefinition} from './binding-patterns.ts';
 import {pruneTestCompilations} from './test-compilation-cache.ts';
 import {inspectCaches} from './cache-management.ts';
@@ -50,6 +51,9 @@ import {packageRelease,packageWorkflow,writePackageWorkflow} from './package-pub
 import {sourceStyle} from './source-style.ts';
 import type {SourceStyle} from './formatter.ts';
 import { prepareNativeDependencies } from '../scripts/native-setup.mjs';
+import {runChangeCommand} from './change-cli.ts';
+import {projectRevision,semanticGraph as requestSemanticGraph} from './change-context.ts';
+import {atomicSourceWrite,withSourceWriter} from './source-transaction.ts';
 
 function failureMessage(error: unknown): string {
   const message = error instanceof Error ? error.message : String(error);
@@ -121,6 +125,8 @@ function usage(): void {
     `References: aug references [project directory] --file path --offset character; aug graph [project directory] --file path\n` +
     `Checked edits: aug change plan-rename [PROJECT] --file FILE (--symbol FUNCTION[.INPUT]|--offset N) --name NAME [--out PLAN] [--json]; aug change apply [PROJECT] --plan PLAN; aug change recover [PROJECT]\n` +
     `Body edits: aug change plan-replace-body [PROJECT] --file FILE --symbol FUNCTION --source SOURCE_UNIT [--out PLAN] [--json]\n` +
+    `Checked changes: aug change <plan|check|apply> PROJECT request-or-plan.json; aug change recover PROJECT\n` +
+    `Bounded checks: aug evidence <run|replay> PROJECT generator-or-record.json\n` +
     `Benchmark: aug bench [project directory] [--iterations 10] [--warmup 2] [--json] [-- args]\n` +
     `Packages: aug package init DIRECTORY [--name @owner/name] [source style options]; aug package pack DIRECTORY\n` +
     `Dependencies: aug add URL [--as NAME] [--project DIRECTORY]; aug install [project directory] [--frozen|--update] [--offline]\n` +
@@ -166,6 +172,7 @@ export async function main(argv: string[]): Promise<number> {
       return report.ready?0:1;
     }catch(error){process.stderr.write(failureMessage(error)+'\n');return 1;}
   }
+  if(command==='evidence'||command==='change'&&(['plan','check','interfaces','diff','context'].includes(argv[1])||argv[1]==='apply'&&!argv.includes('--plan')))return runChangeCommand(argv);
   if(command==='change') {
     const operation=argv[1],values=new Map<string,string>(),flags=new Set<string>();let path:string|undefined;
     for(let index=2;index<argv.length;index++) {
@@ -211,7 +218,7 @@ export async function main(argv: string[]): Promise<number> {
         const report=applyChangePlan(root,JSON.parse(readFileSync(input,'utf8')));
         process.stdout.write(flags.has('--json')?JSON.stringify(report)+'\n':`Committed checked ${report.operation} ${report.transaction}; revision ${report.revision}. Regenerate specs, run independent tests and review the changes.\n`);
       }else {
-        const report=recoverSourceChanges(root);
+        const report=recoverAnySourceChange(root);
         process.stdout.write(flags.has('--json')?JSON.stringify(report)+'\n':`Source transaction recovery: ${report.status}.\n`);
       }
       return 0;
@@ -709,7 +716,10 @@ export async function main(argv: string[]): Promise<number> {
         .filter(file => !file.builtin && !file.package);
       if (!files.length) throw new Error('No source files to format');
       const formatted = files.map(file => ({ file: file.path, text: (command==='migrate'?migrateFile:formatFile)(project, file) }));
-      if (options.includes('--write')) formatted.forEach(file => writeFileSync(file.file, file.text));
+      if (options.includes('--write')) {const revision=projectRevision(project).revision;withSourceWriter(root,permit=>{
+        if(projectRevision(loadProject(root,new Map(),undefined,permit)).revision!==revision)throw new Error('Source changed before formatting; retry.');
+        formatted.forEach(file=>atomicSourceWrite(file.file,file.text,statSync(file.file).mode&0o777));
+      });}
       else process.stdout.write(json ? JSON.stringify(formatted) + '\n' : formatted.map(file => file.text).join('\n'));
       return 0;
     }
@@ -807,9 +817,10 @@ export async function main(argv: string[]): Promise<number> {
       return found ? 0 : 1;
     }
     if (command === 'symbols') {
-      const symbols = [...project.definitions.values()].map(def => ({ name: def.name,
+      const facts=new Map(requestSemanticGraph(checked).symbols.map(fact=>[fact.id,fact]));
+      const symbols = [...project.definitions.values()].map(def => ({ id:def.id,name: def.name,
         file: def.file, line: def.node.span.line, column: def.node.span.column,
-        kind: def.node.kind }));
+        kind: facts.get(def.id)?.kind??def.node.kind,contract:facts.get(def.id)?.contract,forwarding:facts.get(def.id)?.forwarding }));
       process.stdout.write(JSON.stringify(symbols) + '\n');
       return checked.diagnostics.some(issue => issue.severity !== 'warning') ? 1 : 0;
     }

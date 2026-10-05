@@ -165,6 +165,7 @@ class Parser {
       if (this.at('endpoint')) item = this.parseEndpoint();
       else if (this.looksLikeBareClass()) item = this.parseClass();
       else if (this.at('extern')) { this.take(); this.expect('C'); item = this.parseFunction(true); }
+      else if (this.looksLikeForward()) throw new ParseFailure({...this.current().span,code:'FORWARD',message:'Forwarding declarations cannot have interceptor annotations'});
       else if (this.looksLikeBareFunction()) item = this.parseFunction(false);
       else throw new ParseFailure({ ...annotations[0].span, code: 'INTERCEPTOR',
         message: 'Interceptor annotations belong on functions, methods, or class constructors' });
@@ -172,6 +173,7 @@ class Parser {
       return item;
     }
     if (this.at('import')) return this.parseImport();
+    if (this.looksLikeForward()) return this.parseForward();
     if (this.at('endpoint')) return this.parseEndpoint();
     if (this.at('export')) return this.parseExport();
     if (this.current().value==='internal'&&this.current(1).kind==='identifier'&&this.current(2).kind==='from') return this.parseExport(true);
@@ -220,11 +222,21 @@ class Parser {
     const saved = this.position;
     try {
       this.parseAnnotations();
-      return this.looksLikeBareClass() || this.looksLikeBareFunction() || this.at('extern') || this.at('endpoint');
+      return this.looksLikeBareClass() || this.looksLikeBareFunction() || this.looksLikeForward() || this.at('extern') || this.at('endpoint');
     } catch (error) {
       if (!(error instanceof ParseFailure)) throw error;
       return false;
     } finally { this.position = saved; }
+  }
+
+  private looksLikeForward(): boolean {
+    return this.current().value==='forward'&&this.current(1).kind==='identifier'&&this.current(2).value==='to';
+  }
+  private parseForward():MethodDecl {
+    const start=this.take().span,name=this.expect('identifier');this.expect('to');const target=this.expect('identifier');
+    if(!this.at('eof')&&!this.lineBreak())throw new ParseFailure({...this.current().span,code:'FORWARD',message:'A forwarding declaration ends at a newline and cannot have a body or additional clauses'});
+    return {kind:'function',name:name.value,typeParams:[],params:[],returns:syntheticType('void',start),returnOwnership:'managed',throws:[],externC:false,
+      forward:{target:target.value,nameSpan:name.span,targetSpan:target.span},span:this.span(start)};
   }
 
   private testName(): string {

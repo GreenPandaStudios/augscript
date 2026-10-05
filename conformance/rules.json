@@ -38,6 +38,25 @@
       ]
     },
     {
+      "id": "FORWARD",
+      "summary": "Contextual forwarding aliases inherit resolved imported target contracts; unsupported profiles and cycles fail closed.",
+      "reference": "grammar.md#blocks-and-declarations",
+      "productions": [
+        "Forward"
+      ],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/forwarding.test.mjs",
+          "test": "inferred results/errors and omitted optional inputs retain target identities despite same-spelled local types"
+        },
+        {
+          "file": "tests/forwarding.test.mjs",
+          "test": "unsupported profiles, private targets, local targets, bodies, annotations and cycles fail closed"
+        }
+      ]
+    },
+    {
       "id": "CLASSES",
       "summary": "Classes implement interfaces. Fields initialize before initialize and methods.",
       "reference": "reference.md#classes-records-and-local-state",

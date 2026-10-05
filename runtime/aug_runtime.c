@@ -1086,6 +1086,7 @@ AugTransfer *aug_transfer_capture_bounded(AugValue *values, size_t count, size_t
   for (size_t i = 0; i < message->size && !builder.limited; i++) {
     AugObject source = message->objects[i].metadata;
     AugValue *fields = message->objects[i].fields;
+    if (source.field_count && (!fields || !source.fields)) fail("invalid worker transfer fields");
     for (size_t j = 0; j < source.field_count && !builder.limited; j++) fields[j] = transfer_value(&builder, source.fields[j]);
     message->objects[i].metadata.fields = NULL; message->objects[i].metadata.text = NULL;
   }

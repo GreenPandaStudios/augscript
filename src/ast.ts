@@ -29,6 +29,8 @@ export interface Diagnostic {
 }
 
 export interface TypeRef {
+  /** Compiler-inherited references retain definition identity across module scopes. */
+  definitionId?: string;
   name: string;
   args: TypeRef[];
   nullable: boolean;
@@ -74,6 +76,8 @@ export interface InterceptorAnnotation {
 export interface MethodDecl extends GenericHeader {
   kind: 'function';
   name: string;
+  /** A bodyless source declaration; its checked implementation is transparent delegation. */
+  forward?: {target:string;nameSpan:Span;targetSpan:Span;targetId?:string;implementationId?:string;chain?:string[]};
   typeParams: string[];
   params: Param[];
   returns: TypeRef;

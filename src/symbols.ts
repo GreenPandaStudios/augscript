@@ -12,7 +12,7 @@ import {semanticDependencyMetadata,type DependencyMetadata} from './semantic-met
 export interface SemanticSymbol {id:string; name:string; kind:string; location:Span; owner?:string; editable:boolean}
 export interface Occurrence {symbol:string; file:string; start:number; end:number; line:number; column:number;
   role:'declaration'|'read'|'write'|'call'|'import'|'export'|'type'|'argument-label'|'shorthand-label'|'test'; caller?:string}
-export interface SemanticEdge {from:string; to:string; kind:'call'|'callback-call'|'function-value'|'import'|'export'|'implements'|'inherits'|'injected'|'test'|'internal'|'interceptor'; location:Span}
+export interface SemanticEdge {from:string; to:string; kind:'call'|'callback-call'|'function-value'|'import'|'export'|'implements'|'inherits'|'injected'|'test'|'internal'|'interceptor'|'forward'; location:Span}
 export interface SemanticBoundary {kind:'interface-dispatch'|'native-code'|'interceptor-delegation'|'unresolved-call'; location:Span; target?:string}
 export interface SemanticGraph {
   schema:2; compiler:{version:string; sha256:string}; revision:string; ordering:'file-offset-role';
@@ -76,13 +76,19 @@ export function semanticGraph(checked:CheckedProject,wholeProject:boolean,checke
   };
   for(const def of project.definitions.values()) {
     const node=def.node,span=selectedToken(node.span,node.name)??node.span;
-    nodeIds.set(node,def.id);addSymbol(def.id,node.name,node.kind,span);
-    if(node.kind==='function'){registerParams(def.id,node.params);callableSpans.push({id:def.id,span:node.span});}
+    nodeIds.set(node,def.id);addSymbol(def.id,node.name,node.kind==='function'&&node.forward?'forward':node.kind,span);
+    if(node.kind==='function'&&!node.forward){registerParams(def.id,node.params);callableSpans.push({id:def.id,span:node.span});}
     if('fields' in node)registerParams(def.id,node.fields);
     if('methods' in node)for(const method of node.methods) {
       const id=def.id+'/method/'+method.name;nodeIds.set(method,id);callableSpans.push({id,span:method.span});
       addSymbol(id,method.name,'method',selectedToken(method.span,method.name)??method.span,def.id);registerParams(id,method.params);
     }
+  }
+  for(const def of project.definitions.values())if(def.node.kind==='function'&&def.node.forward){
+    const implementation=def.node.forward.implementationId&&project.definitions.get(def.node.forward.implementationId);
+    if(implementation&&implementation.node.kind==='function')def.node.params.forEach((param,index)=>{
+      const id=paramIds.get(implementation.node.kind==='function'?implementation.node.params[index]:param);if(id)paramIds.set(param,id);
+    });
   }
   // Scope facts retain each declaration's identity across shadowing and rebinding.
   for(const scope of checked.scopes.values())for(const local of scope.locals) {
@@ -102,6 +108,11 @@ export function semanticGraph(checked:CheckedProject,wholeProject:boolean,checke
     if(Array.isArray(value)){value.forEach(item=>visit(item,caller,deferred));return;}
     const node=value as {kind?:string;span?:Span;name?:string},expr=value as Expr;
     caller=nodeIds.get(value)??caller;
+    if(node.kind==='function'&&(value as MethodDecl).forward){
+      const forward=(value as MethodDecl).forward!;
+      if(forward.targetId){globalReference(forward.targetId,forward.targetSpan,forward.target,'call',caller);edge('forward',caller,forward.targetId,forward.targetSpan);}
+      return;
+    }
     if(node.kind==='function'||node.kind==='class')for(const layer of checked.interceptorPlans.get(value as MethodDecl|import('./ast.ts').ClassDecl)??[]) {
       globalReference(layer.definition.id,layer.annotation.span,layer.definition.name,'read',caller);
       edge('interceptor',caller,layer.definition.id,layer.annotation.span);
@@ -201,7 +212,7 @@ export function semanticGraph(checked:CheckedProject,wholeProject:boolean,checke
   relationships.sort((a,b)=>compare(a.location.file,b.location.file)||a.location.start-b.location.start||compare(a.kind,b.kind));
   for(const relation of relationships) {
     (forwardDependencies[relation.from]??=[]).push(relation);
-    if(['call','callback-call','function-value','interceptor'].includes(relation.kind))(reverseCallers[relation.to]??=[]).push(relation);
+    if(['call','callback-call','function-value','interceptor','forward'].includes(relation.kind))(reverseCallers[relation.to]??=[]).push(relation);
   }
   const sources=[...project.files.values()].filter(file=>!checkedFiles||checkedFiles.has(file.path)).map(file=>({file:semanticSourcePath(checked,file.path),sha256:digest(file.source)})).sort((a,b)=>compare(a.file,b.file));
   const compiler=compilerIdentity(),errors=checked.diagnostics.filter(issue=>issue.severity!=='warning').length;

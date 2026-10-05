@@ -2,6 +2,8 @@
 
 Grammar for the current August preview; additions marked unreleased are not in 0.23.0. `Name` is an identifier; bracketed groups are optional. The blocks below describe syntax and are not executable programs.
 
+Forwarding requires the unreleased development build described in [checked changes](checked-changes.md).
+
 ## Blocks and declarations
 
 ```text
@@ -11,6 +13,8 @@ Block       := "{" Statements "}"
 Function    := [Tags] ["fixture"] Name [Generics] "(" Parameters ")"
                ["returns" ["own"] Type] ["changes" Paths]
                ["uses" Paths] ["unless" Types] (Block | End)
+
+Forward     := "forward" Name "to" Name NEWLINE
 
 Class       := [Tags] Name [Generics] ["(" Fields ")"]
                ["unless" Types] "implements" Type {"," Type} ClassBlock

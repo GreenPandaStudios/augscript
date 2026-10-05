@@ -16,6 +16,12 @@ Keep tests in the file that declares the behavior. Run aug check, aug test, and 
 after a change. ${execution}
 Commit aug.lock.json; do not edit .aug-packages.
 
+For a supported standalone operation change, use aug context and the checked change
+protocol. Keep the ordered request and independently authored acceptance cases together.
+Read coverage.requiredContextComplete; unresolved or stale context cannot authorize edits.
+Generated specs describe the starting program and are read only in the agent exchange.
+Use source units for replacements. Keep a rejected candidate with its own diagnostics.
+
 Use labeled inputs, narrow export.aug files, and underscore-prefixed private helpers.
 Leave return types, effects, and errors to inference when an executable body provides
 the answer. Bodyless interfaces still declare their contracts. Use borrow for mutation,

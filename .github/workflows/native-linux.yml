@@ -30,7 +30,7 @@ jobs:
     env:
       AUG_GITHUB_TOKEN: ${{ github.token }}
     steps:
-      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - name: Create explicit Debian 12 maintainer toolchain
@@ -48,7 +48,7 @@ jobs:
         run: |
           docker exec qualification npm run check
           docker exec -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools -e AUG_BIND_CLANG=/work/.aug-build/llvm-maintainer/bin/clang -e AUG_REQUIRE_NATIVE_HEADER=1 qualification npm run test:compatibility
-          docker exec -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools -e AUG_REQUIRE_DWARF=1 -e AUG_REQUIRE_DEBUGGER=1 -e AUG_DWARF_TOOL=/work/.aug-build/llvm-maintainer/bin/llvm-dwarfdump qualification node scripts/check-llvm-parity.mjs
+          docker exec -e AUG_GITHUB_TOKEN -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools -e AUG_REQUIRE_DWARF=1 -e AUG_REQUIRE_DEBUGGER=1 -e AUG_DWARF_TOOL=/work/.aug-build/llvm-maintainer/bin/llvm-dwarfdump qualification node scripts/check-llvm-parity.mjs
           docker exec -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools qualification node --test tests/llvm-native-boundaries.test.mjs
           docker exec -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools -e AUG_SANITIZER_CC=/work/.aug-build/llvm-maintainer/bin/clang qualification node scripts/sanitize-core.mjs --backend llvm
       - name: Check independent language contracts and worker races

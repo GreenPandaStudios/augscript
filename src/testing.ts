@@ -114,7 +114,7 @@ export function projectForTest(project: Project, unit: UnitTest): Project {
     if (Array.isArray(value)) { value.forEach(item => visit(item, file)); return; }
     const record = value as Record<string, unknown>;
     if (typeof record.name === 'string') {
-      const def = project.scopes.get(file)?.get(record.name);
+      const def = typeof record.definitionId==='string'?project.definitions.get(record.definitionId):project.scopes.get(file)?.get(record.name);
       if (def) include(def);
     }
     if (record.kind === 'bind' && typeof record.key === 'string') {

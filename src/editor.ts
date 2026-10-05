@@ -47,8 +47,8 @@ export interface EditorToken {
   line: number;
   start: number;
   length: number;
-  type: 'keyword' | 'class' | 'interface' | 'decorator' | 'function' | 'method' | 'property' |
-    'variable' | 'parameter' | 'typeParameter' | 'type';
+  type: 'class' | 'interface' | 'decorator' | 'function' | 'method' | 'property' |
+    'variable' | 'parameter' | 'typeParameter' | 'type' | 'keyword';
   declaration: boolean;
 }
 
@@ -195,6 +195,7 @@ function methodItem(checked: CheckedProject, method: MethodDecl,
     '[`native.abi.json`]('+pathToFileURL(checked.native.providerDescriptors.get(fact.provider)!).href+')')).join('\n\n');
   return { label: method.name, kind, detail: label, signature: signature(method, true, errors, checked),
     documentation: [doc?.markdown, isPrivateName(method.name) ? 'Private to its declaring type.' : '',
+      method.forward ? `Inherited interface. Immediate target: ${forwardLink(method.forward.targetId)}. Final implementation: ${forwardLink(method.forward.implementationId)}. This declaration forwards each call once, unchanged.` : '',
       injectionHelp, effects, native, interceptorDescription(checked, method), 'Call arguments require labels; their order does not matter.']
       .filter(Boolean).join('\n\n'),
     parameters: method.params.filter(param => !param.injected)
@@ -203,6 +204,7 @@ function methodItem(checked: CheckedProject, method: MethodDecl,
     parameterOwnerships: Object.fromEntries(method.params.map(param => [param.label ?? param.name, param.ownership])),
     parameterDocumentation: method.params.filter(param => !param.injected)
       .map(param => doc?.parameters.get(param.label ?? param.name)) };
+  function forwardLink(id?:string){const target=id&&checked.project.definitions.get(id);return target?`[${id}](${pathToFileURL(target.file).href}#L${target.node.span.line})`:id??'unresolved';}
 }
 
 function definitionItem(checked: CheckedProject, def: Definition): EditorItem {
@@ -258,7 +260,7 @@ function definitionItem(checked: CheckedProject, def: Definition): EditorItem {
 }
 
 function typeFromRef(checked: CheckedProject, file: string, ref: TypeRef): Ty {
-  const def = checked.project.scopes.get(file)?.get(ref.name);
+  const def = ref.definitionId?checked.project.definitions.get(ref.definitionId):checked.project.scopes.get(file)?.get(ref.name);
   const type: Ty = { id: def?.id ?? `builtin:${ref.name}`, name: ref.name,
     kind: def?.node.kind === 'class' || def?.node.kind === 'interface' || def?.node.kind === 'choice' || def?.node.kind === 'interceptor' || def?.node.kind==='resource' ? def.node.kind : 'builtin',
     args: ref.args.map(arg => typeFromRef(checked, file, arg)), nullable: ref.nullable, optional:ref.optional, def };
@@ -549,6 +551,9 @@ function rawCompletions(checked: CheckedProject, fileName: string, offset: numbe
     const from=item.detail.split(' from ')[1];return /^[A-Za-z_]\w*$/.test(from)&&projectSibling(from);
   }).map(item=>({...item,detail:item.detail.replace(/^import /,surfaceEntry[1]+' ')}));
   function projectSibling(from:string){return checked.project.files.has(join(currentFolder,from+'.aug'));}
+  if(/^\s*forward\s+[A-Za-z_]\w*\s+to\s+[A-Za-z_0-9]*$/.test(line))return [...(checked.project.scopes.get(file.path)?.values()??[])].filter(def=>
+    def.node.kind==='function'&&!def.name.startsWith('_')&&file.items.some(item=>item.kind==='import'&&!item.everything&&checked.project.imports.get(item)?.some(imported=>imported.id===def.id)))
+    .map(def=>({...definitionItem(checked,def),insertText:def.name}));
   if (/^\s*import\s+[A-Za-z_0-9]*$/.test(line)) return imports;
   if (/^\s*include\s+[A-Za-z_0-9]*$/.test(line)) {
     const position=includePosition(checked,file,offset);if(!position)return [];
@@ -666,7 +671,7 @@ export function completions(checked: CheckedProject, fileName: string, offset: n
   const file = checked.project.files.get(resolve(fileName));
   if (!file) return [];
   const prefix = file.source.slice(0, offset), line = prefix.slice(prefix.lastIndexOf('\n') + 1);
-  const typeContext = /\b(?:import|export|implement|implements|extends|returns|unless|catch|resolve|include)\b[^\n]*$/.test(line);
+  const typeContext = /\b(?:import|export|implement|implements|extends|returns|unless|catch|resolve|include)\b[^\n]*$/.test(line)||/^\s*forward\s+\w*\s+to\b/.test(line);
   const token = /[A-Za-z_][A-Za-z0-9_]*$/.exec(prefix);
   const start = token ? offset - token[0].length : offset;
   const end = offset + (/^[A-Za-z0-9_]*/.exec(file.source.slice(offset))?.[0].length ?? 0);
@@ -812,7 +817,8 @@ export function hoverInfo(checked: CheckedProject, fileName: string,
   const workerKeyword = token.value === 'worker' && hoverTokens[hoverTokens.indexOf(token) - 1]?.kind === 'start' && ['identifier', 'start', 'wait'].includes(hoverTokens[hoverTokens.indexOf(token) + 1]?.kind);
   const choiceKeyword = token.value === 'choice' && file.items.some(item => item.kind === 'choice' && item.span.start === start);
   const internalKeyword=token.value==='internal'&&file.items.some(item=>item.kind==='export'&&item.internal&&item.span.start===start);
-  const help = token.value==='internal'&&!internalKeyword||token.value === 'worker' && !workerKeyword || token.value === 'choice' && !choiceKeyword ? undefined : languageHelp[token.value];
+  const forwardKeyword = token.value === 'forward' && file.items.some(item => item.kind === 'function' && item.forward && item.span.start === start);
+  const help = token.value==='forward'&&!forwardKeyword||token.value==='internal'&&!internalKeyword||token.value === 'worker' && !workerKeyword || token.value === 'choice' && !choiceKeyword ? undefined : languageHelp[token.value];
   if (help) return { label: token.value,
     kind: help.category === 'type' ? 'type' : help.category === 'function' ? 'function' : 'keyword',
     detail: help.detail, documentation: help.documentation, start, end };
@@ -897,6 +903,7 @@ export function semanticTokens(checked: CheckedProject, fileName: string): Edito
   const typeParameters = new Set<string>();
   const declarationNames = new Map<number, 'class' | 'decorator' | 'function' | 'method' | 'keyword' | 'type'>();
   function markFunction(method: MethodDecl, type: 'function' | 'method'): void {
+    if(method.forward){declarationNames.set(method.forward.nameSpan.start,type);return;}
     const first = tokens.findIndex(token => token.span.start >= method.span.start && token.span.end <= method.span.end && token.value === method.name && token.kind === 'identifier');
     const name = tokens[first];
     if (name?.kind === 'identifier') declarationNames.set(name.span.start, type);
@@ -960,8 +967,7 @@ export function semanticTokens(checked: CheckedProject, fileName: string): Edito
     } else if (item.kind === 'function') {
       markFunction(item, 'function');
       item.typeParams.forEach(name => typeParameters.add(name));
-      item.params.forEach(param => parameters.add(param.name));
-      visitStatements(item.body ?? []);
+      if(!item.forward){item.params.forEach(param => parameters.add(param.name));visitStatements(item.body ?? []);}
     } else if (item.kind === 'test') {
       variables.add(item.name);
       for (const group of item.groups) {
@@ -981,7 +987,8 @@ export function semanticTokens(checked: CheckedProject, fileName: string): Edito
     const previous = tokens[i - 1]?.kind;
     const next = tokens[i + 1]?.kind;
     let type: EditorToken['type'] | undefined;
-    if(token.value==='internal'&&file.items.some(item=>item.kind==='export'&&item.internal&&item.span.start===token.span.start))type='keyword';
+    if(token.value==='forward'&&file.items.some(item=>item.kind==='function'&&item.forward&&item.span.start===token.span.start))type='keyword';
+    else if(token.value==='internal'&&file.items.some(item=>item.kind==='export'&&item.internal&&item.span.start===token.span.start))type='keyword';
     else if (token.value === 'worker' && previous === 'start' && ['identifier', 'start', 'wait'].includes(next)) type = 'keyword';
     else if(patternProperties.has(token.span.start))type='property';
     else if (previous === '.') type = next === '(' || next === '<' ? 'method' : 'property';

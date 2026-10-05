@@ -20,7 +20,7 @@ It returns [`download`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.1.1/ap
 calculate(List<float> left, List<float> right) returns List<float> unless GpuError
 ```
 
-It takes `left` and `right` as `List<float>`. Failures can raise `GpuError`.
+It takes `left` and `right` as `List<float>`. Failures can raise [`GpuError`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.1.1/contracts.aug.md#symbol-GpuError).
 
 </details>
 

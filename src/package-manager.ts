@@ -11,6 +11,7 @@ import { libraryAgentInstructions } from './project-init.ts';
 import {formatSource, sourceStyle, styleConfiguration} from './source-style.ts';
 import type {SourceStyle} from './formatter.ts';
 import { withPackageLock, withPackageLockAsync } from './package-locking.ts';
+import {withSourceWriter,withSourceWriterAsync} from './source-transaction.ts';
 import { acceptsCompiler } from './package-compatibility.ts';
 import {replacePackageText,installedText} from './package-storage.ts';
 import {validateNativeManifest, readNativeDescriptor, type NativeManifest} from './native-contracts.ts';
@@ -323,10 +324,10 @@ export async function prepareRunPackagesWithNative(root: string, offline = false
 }
 
 export function installPackages(root: string, frozen = false, offline = false, update = false): PackageLock {
-  return withPackageLock(join(root, '.aug-install.lock'), () => {
+  return withPackageLock(join(root, '.aug-install.lock'), () => withSourceWriter(root,()=>{
     const candidate = planInstallation(root, frozen, offline, update);
     try { return publishSourceGraph(root, candidate); } finally { rmSync(candidate.stage, {recursive:true,force:true}); }
-  });
+  }));
 }
 function planInstallation(root: string, frozen: boolean, offline: boolean, update: boolean, recover = true): SourceCandidate {
   if (frozen && update) throw new Error('--frozen and --update cannot be used together.');
@@ -540,7 +541,7 @@ function publishSourceGraph(root: string, candidate: SourceCandidate): PackageLo
 
 /** Consumers accept a new source lock only after all required native artifacts verify. */
 export async function installPackagesWithNative(root: string, frozen = false, offline = false, update = false, onNative?:()=>void): Promise<PackageLock> {
-  return withPackageLockAsync(join(root,'.aug-install.lock'),async()=>{
+  return withPackageLockAsync(join(root,'.aug-install.lock'),()=>withSourceWriterAsync(root,async()=>{
     const candidate=planInstallation(root,frozen,offline,update);
     try {
       const {resolveNativePackages}=await import('./native-artifacts.ts');
@@ -548,7 +549,7 @@ export async function installPackagesWithNative(root: string, frozen = false, of
       await resolveNativePackages(root,candidate.lock,candidate.stage,{frozen,offline});
       return publishSourceGraph(root,candidate);
     } finally { rmSync(candidate.stage,{recursive:true,force:true}); }
-  });
+  }));
 }
 
 /** Create a source library with explicit formatting preferences, public exports and same-file tests. */
@@ -640,19 +641,19 @@ function finishAdd(root:string):void {
 
 /** Give a source package a short import name and install its verified graph. */
 export function addPackage(root: string, request: string, alias: string, offline = false): PackageLock {
-  return withPackageLock(join(root,'.aug-install.lock'),()=>{
+  return withPackageLock(join(root,'.aug-install.lock'),()=>withSourceWriter(root,()=>{
     try {
       addConfiguration(root,request,alias);
       const candidate=planInstallation(root,false,offline,false);
       try{return publishSourceGraph(root,candidate);}finally{rmSync(candidate.stage,{recursive:true,force:true});}
     } catch(error){recoverAddConfiguration(root,true);throw error;}
     finally{finishAdd(root);}
-  });
+  }));
 }
 
 /** An artifact failure restores the prior dependency aliases as well as leaving its lock unchanged. */
 export async function addPackageWithNative(root:string,request:string,alias:string|undefined,offline=false):Promise<PackageLock> {
-  return withPackageLockAsync(join(root,'.aug-install.lock'),async()=>{
+  return withPackageLockAsync(join(root,'.aug-install.lock'),()=>withSourceWriterAsync(root,async()=>{
     try {
       addConfiguration(root,request,alias ?? suggestedPackageAlias(root,request),alias === undefined);
       const candidate=planInstallation(root,false,offline,false);
@@ -663,5 +664,5 @@ export async function addPackageWithNative(root:string,request:string,alias:stri
       }finally{rmSync(candidate.stage,{recursive:true,force:true});}
     }catch(error){recoverAddConfiguration(root,true);throw error;}
     finally{finishAdd(root);}
-  });
+  }));
 }

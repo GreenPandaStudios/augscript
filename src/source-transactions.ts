@@ -2,6 +2,8 @@ import {constants,openSync,closeSync,readFileSync,writeFileSync,fsyncSync,fchmod
 import {join,dirname,relative,resolve} from 'node:path';
 import {createHash,randomUUID} from 'node:crypto';
 import {withPackageLock} from './package-locking.ts';
+import {pendingSourceReads as permittedReads} from './source-write-state.ts';
+import {assertNoRequestTransaction} from './source-transaction.ts';
 
 export class SourceChangeError extends Error {
   readonly code:string;readonly revision?:string;readonly transaction?:string;
@@ -11,7 +13,7 @@ export interface SourceImage {file:string;before:string;after:string;beforeSha25
 interface SourceJournal {format:1;id:string;state:'prepared'|'committed';baseRevision:string;revision:string;files:SourceImage[]}
 export interface SourceCheckpoint {phase:'validated'|'candidate-checked'|'prepared'|'written'|'committed';file?:string}
 export interface SourceRecovery {status:'clean'|'rolled-back'|'completed';transaction?:string;revision?:string}
-const writers=new Set<string>(),permittedReads=new Set<string>();
+const writers=new Set<string>();
 const hash=(value:string|Buffer)=>createHash('sha256').update(value).digest('hex');
 const failure=(message:string)=>new SourceChangeError('CHANGE_JOURNAL',message);
 const isMissing=(error:unknown)=>!!error&&typeof error==='object'&&'code' in error&&error.code==='ENOENT';
@@ -76,9 +78,10 @@ export function coherentSourceRead<T>(projectRoot:string,read:()=>T):T {
 export function withSourceWriter<T>(projectRoot:string,write:()=>T):T {
   const root=sourceChangeRoot(projectRoot);
   if(writers.has(root))throw failure('A source writer cannot be nested.');
+  assertNoRequestTransaction(root);
   const lock=join(root,'.aug-change-lock');if(lstatExists(lock))localDirectory(lock);
   try{return withPackageLock(lock,()=>{
-    writers.add(root);try{return write();}finally{writers.delete(root);}
+    assertNoRequestTransaction(root);writers.add(root);try{return write();}finally{writers.delete(root);}
   });}catch(error){
     if(error instanceof Error&&error.message.startsWith('PACKAGE_LOCK:'))throw new SourceChangeError(error.message.includes('still running')?'CHANGE_WRITER_BUSY':'CHANGE_JOURNAL',
       error.message.includes('still running')?'Another checked source writer is active. Let it finish and retry; recover only after its process stops.':error.message);
@@ -112,6 +115,7 @@ function validateJournal(root:string,journal:SourceJournal):void {
 }
 function finish(root:string,journal:SourceJournal):void {
   publish(join(metadata(root),'revision'),journal.id+'\n',0o600,randomUUID());
+  publish(join(metadata(root),'epoch'),randomUUID(),0o600,randomUUID());
   unlinkSync(pending(root));syncDirectory(metadata(root));
 }
 function recover(root:string):SourceRecovery {

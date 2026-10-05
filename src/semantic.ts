@@ -20,6 +20,7 @@ import { checkUnitTests, discoverTests, mergeTestAnalysis, uniqueDiagnostics } f
 import { formatFile } from './formatter.ts';
 import { interceptorBehavior } from './interceptors.ts';
 import { callableResult, callableErrors } from './contracts.ts';
+import { forwardingProvenance } from './forwarding.ts';
 import {nativeFact,nativeDependencies,type NativeFunctionFact,type NativeResourceFact} from './native-facts.ts';
 
 export type {CallableFact,ContractFact} from './contract-facts.ts';
@@ -49,7 +50,7 @@ export function describe(checked: CheckedProject, fileName: string, options: { n
   const snippets: { id: string; source: string }[] = [];
   const architecture: ModuleFact[] = [], changes: { file: string; addedDependencies: string[]; removedDependencies: string[]; addedPublic: string[]; removedPublic: string[]; changedPublic: string[]; memberGrowth: number }[] = [];
   let truncated = false;
-  const result = () => ({ file: path, completeness: checked.diagnostics.some(issue => issue.severity !== 'warning') ? 'partial' : 'checked',
+  const result = () => ({ file: path,completeness: checked.diagnostics.some(issue => issue.severity !== 'warning') ? 'partial' : 'checked',
     budget, truncated, imports, contracts: selected, bindings, snippets, architecture, changes });
   const append = <T>(array: T[], value: T) => {
     array.push(value);

@@ -11,13 +11,14 @@ export interface NavigationTarget {
   file: string;
   line: number;
   column: number;
-  kind: 'class' | 'choice' | 'interface' | 'function' | 'composition' | 'interceptor' | 'resource' | 'method' | 'parameter' | 'module';
+  kind: 'class' | 'choice' | 'forward' | 'interface' | 'function' | 'composition' | 'interceptor' | 'resource' | 'method' | 'parameter' | 'module';
+  implementation?:Omit<NavigationTarget,'implementation'>;
 }
 
 function definitionTarget(def: Definition): NavigationTarget {
-  const span = def.node.kind === 'interceptor' ? def.node.nameSpan : def.node.span;
+  const span = def.node.kind === 'interceptor' ? def.node.nameSpan : def.node.kind==='function'&&def.node.forward?def.node.forward.nameSpan:def.node.span;
   return { name: def.name, file: def.file, line: span.line,
-    column: span.column, kind: def.node.kind };
+    column: span.column, kind: def.node.kind==='function'&&def.node.forward?'forward':def.node.kind };
 }
 
 function parameterTarget(project: Project, param: Param): NavigationTarget {
@@ -159,7 +160,8 @@ export function definitionAt(project: Project, fileName: string,
   }
   if (token.kind === 'identifier') {
     const def = project.scopes.get(file.path)?.get(token.value);
-    if (def) return definitionTarget(def);
+    if (def) {const result=definitionTarget(def),implementation=def.node.kind==='function'&&def.node.forward?.implementationId?project.definitions.get(def.node.forward.implementationId):undefined;
+      if(implementation)result.implementation=definitionTarget(implementation);return result;}
   }
   return undefined;
 }

@@ -124,7 +124,7 @@ test('module policy, documentation validation, and configuration run during chec
   assert.ok(issues.some(issue => issue.message.includes('may not depend')), result.stdout);
 }));
 
-test('explain exposes effects and context obeys its output budget', () => project({
+test('explain exposes effects and truncated revision context refuses complete coverage', () => project({
   'main.aug': 'import save from service\n',
   'service.aug': `import FileWriter from august.io
 /** Save text. @see FileWriter */

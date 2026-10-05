@@ -244,6 +244,16 @@ try {
   assert.match(aug('graph',project,'--composition','--mermaid'),/SystemConsole/);
   const library = join(directory, 'my-math');
   aug('package', 'init', library, '--name', '@example/aug-math', '--assignment', 'to', '--indentation', 'tabs');
+  writeFileSync(join(library,'src/arithmetic.aug'),readFileSync(join(library,'src/arithmetic.aug'),'utf8')+`
+record Receipt(int amount)
+ReceiptError() implements Error {}
+/** Return an amount receipt, or reject the requested failure. */
+load(int amount, bool fail) returns Receipt unless ReceiptError {
+    if fail { throw ReceiptError() }
+    return Receipt(amount=amount)
+}
+`);
+  writeFileSync(join(library,'src/export.aug'),readFileSync(join(library,'src/export.aug'),'utf8')+'export load from arithmetic\n');
   aug('check', library);
   const maintainerWorkflow=JSON.parse(aug('package','workflow',library,'--json'));
   assert.equal(maintainerWorkflow.backend,'llvm');assert.match(maintainerWorkflow.workflow,/aug package release/);
@@ -295,6 +305,28 @@ try {
   assert.deepEqual(preview.packages[0].contracts.changes,[]);
   assert.equal(readFileSync(join(consumer,'aug.lock.json'),'utf8'),acceptedConsumer);
 
+  writeFileSync(join(consumer,'transport.aug'),'import load from math\nforward dispatch to load\n');
+  writeFileSync(join(consumer,'main.aug'),`import dispatch from transport
+try { print(value=dispatch(amount=7, fail=false).amount) }
+catch Error error { print(value="unexpected") }
+try { dispatch(amount=7, fail=true) }
+catch Error error { print(value="failed") }
+`);
+  assert.equal(aug('run',consumer,'--offline'),'7\nfailed\n');
+  const forwarding=JSON.parse(aug('change','context',consumer,'--file','transport.aug','--name','dispatch','--json'));
+  assert.equal(forwarding.coverage.requiredContextComplete,true);
+  assert.match(forwarding.facts.find(fact=>fact.id==='transport.aug:dispatch').contract.result.id,/Receipt$/);
+  writeFileSync(join(consumer,'counter.aug'),'increment(int value) returns int { return value + 1 }\ntest increment { when acceptance { it works { assert(condition=increment(value=3) == 4) } } }\n');
+  const requestContext=JSON.parse(aug('change','context',consumer,'--file','counter.aug','--name','increment','--json'));
+  const request={baseRevision:requestContext.revision,root:'counter.aug:increment',editScope:['counter.aug'],operations:[{kind:'rename',symbol:'counter.aug:increment',name:'increase'}],
+    expectedPublicDelta:{kind:'rename',from:'counter.aug:increment',to:'counter.aug:increase'},requirements:[{id:'R1',text:'Preserve the increment examples.'}],
+    verification:{tests:[{group:'acceptance',requirements:['R1']}],provenance:{source:'Independently authored installed example',independence:'independent fixture'}}};
+  const requestFile=join(directory,'change-request.json'),planFile=join(directory,'change-plan.json');writeFileSync(requestFile,JSON.stringify(request));
+  const plan=aug('change','plan',consumer,requestFile);writeFileSync(planFile,plan);
+  assert.equal(JSON.parse(aug('change','check',consumer,planFile)).status,'verified candidate');
+  assert.equal(JSON.parse(aug('change','apply',consumer,planFile)).status,'committed');
+  assert.match(readFileSync(join(consumer,'counter.aug'),'utf8'),/^increase\(/);
+  process.stdout.write('Installed checked changes: packaged forwarding inherits record/error identities; JSON rename checks and commits.\n');
   const globalPrefix = join(directory, 'global');
   run('npm', ['install', '--global', '--prefix', globalPrefix, '--offline', '--ignore-scripts', '--no-audit', '--no-fund',
     ...packages.map(pkg => join(artifacts, pkg.filename))]);

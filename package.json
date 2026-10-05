@@ -20,6 +20,7 @@
     "test:docker": "node scripts/test-docker.mjs",
     "test:sanitizers": "node scripts/sanitize-core.mjs",
     "bench:test-compilation": "node scripts/benchmark-test-compilation.mjs",
+    "test:safety": "node scripts/audit-generated-c.mjs",
     "bench:compare": "node scripts/benchmark-suite.mjs",
     "bench:kernels": "node scripts/benchmark-kernels.mjs",
     "test:gyms": "node scripts/run-gyms.mjs",
@@ -44,11 +45,11 @@
   },
   "devDependencies": {
     "@types/markdown-it-container": "4.0.1",
-    "@types/node": "24.19.0",
+    "@types/node": "26.6.3",
     "@vscode/test-electron": "3.1.0",
     "markdown-it-container": "4.0.0",
     "tar": "7.5.22",
-    "typescript": "5.9.3",
+    "typescript": "7.0.2",
     "vitepress": "1.6.4",
     "minizlib": "3.1.0"
   },

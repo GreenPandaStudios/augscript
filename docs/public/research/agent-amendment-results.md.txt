@@ -1,0 +1,262 @@
+# Testing a language amendment for coding AI
+
+September 30, 2026. Experimental evidence for [AUG-0001: Checked changes and operation
+forwarding](../../docs/proposals/0001-checked-ai-changes.md). No shipping parser,
+runtime, ownership or security behavior was changed.
+
+## Decision
+
+Prioritize **revision-bearing semantic context and checked compiler edits**, retain
+small executable syntax lessons, and make **independent interaction tests** part of
+acceptance. Add transparent forwarding only after evaluating renamed reexports as
+the smaller alternative. TypeScript already supplies equivalent alias behavior.
+
+The tests do not establish a generally superior AI language. Full specs, smaller
+context and a passing compiler each left important behavior wrong. The prototypes
+show that specific mechanical risks can be removed without asking a model to edit
+every occurrence. The formal proposal defines the remaining implementation and
+comparative evaluation gates.
+
+## 1. Fresh model matrix
+
+Sixteen fixed trials: two samples of four context conditions on each of two local
+models, through Claude Code and Ollama. [PLAN.md](PLAN.md) was recorded before the
+matrix. Every invocation started a fresh conversation. One compiler/protocol repair
+was allowed; hidden failures were never sent back. Temperature was 0.2. Gemma had
+4,096 output tokens, reasoning enabled with a 1,024-token budget, and observed 65,536
+runtime context. DeepSeek had 2,048 output tokens, reasoning disabled, and observed
+16,384 runtime context. We did not fix a sampling seed.
+
+The source task was localized to `applyRefund`. Human-prepared routes, adapters,
+bridges, domain errors and required inputs already carried the changed contracts.
+The model received actual dependency source and the ordered behavior requirements.
+August conditions shared the same writing lesson. This isolates some body-generation
+and context issues; it does not measure autonomous repair of the full 34-module service.
+
+**Frozen acceptance** required a valid submitted source unit, source checking,
+visible tests, the original 51 hidden cases, application execution, and the previously
+reviewed cached dry-run receipt regression. Both handwritten references passed all
+gates; seeded missing-reason, threshold and replay-receipt defects were rejected.
+
+| Model | Condition | Final generated source compiles | Frozen acceptance | Both additional grids |
+| --- | --- | --- | --- | --- |
+| DeepSeek Coder 6.7B | August full specs | 1/2 | 0/2 | No candidates advanced |
+| DeepSeek Coder 6.7B | August current context | 1/2 | 0/2 | No candidates advanced |
+| DeepSeek Coder 6.7B | August compact packet | 1/2 | 0/2 | No candidates advanced |
+| DeepSeek Coder 6.7B | TypeScript source | 0/2 valid protocol submissions | 0/2 | No candidates advanced |
+| Gemma 4 8B | August full specs | 2/2 | 1/2 | 0/2 |
+| Gemma 4 8B | August current context | 1/2 | 1/2 | 0/2 |
+| Gemma 4 8B | August compact packet | 0/2 | 0/2 | No candidates advanced |
+| Gemma 4 8B | TypeScript source | 2/2 | 0/2 | No candidates advanced |
+
+The matrix took **37m02s summed trial wall time**, including allowed repair and
+scoring; fixture setup, initial controls and separate prototypes are excluded. Models
+ran sequentially. Different reasoning/context settings mean cross-model rates are
+not a controlled model ranking. Within each model the condition settings matched.
+
+Full records: [matrix results](matrix-v1.results.json), [control scores](matrix-v1.controls.json),
+[case body hashes](matrix-v1.case-manifest.json), [environment](environment.json).
+Prompt archives and every initial/repair candidate are under `outputs`. Failed
+aggregate tests report a failed gate rather than a fabricated individual pass count.
+
+### Context size and coverage
+
+| August condition | Extra context bytes | Complete initial system + prompt bytes |
+| --- | --- | --- |
+| Seven relevant compiled spec pages | 19,058 | 25,963 |
+| Existing `aug context` | 11,789 | 18,694 |
+| Compact contract projection | 6,681 | 13,586 |
+
+TypeScript had a 5,786-byte complete initial prompt, including its actual dependency
+source and strict typing instructions. Actual dependencies added 2,518 bytes for
+August and 2,802 for TypeScript. Different language syntax and intentionally different
+context conditions do not imply equal token use. Byte counts are not token counts.
+
+The compact packet reduced the extra context by approximately **65%** versus the
+spec pages. It contained 16 checked contract records, source digests, fields,
+labels/types/results, and effect/error information. It was a projection of existing
+semantic facts, not a new complete graph. Current context was explicitly **truncated**
+at its 12,000-character budget. Neither compactness nor context availability produced
+a reliable acceptance advantage in this sample. See [context manifest](matrix-v1.context-manifest.json).
+
+### Protocol normalization sensitivity
+
+The strict controller required only one complete function. DeepSeek's TypeScript
+first proposals included imports and were rejected by that decoder. Its saved source
+check consequently checked the unchanged baseline; **that is not a compiled model
+solution**.
+
+The post-hoc sensitivity control parsed exactly one function from each source fence,
+retained its body, used the checked fixture imports, and added only a TypeScript export
+modifier when absent. Both DeepSeek TypeScript initial functions compiled after this
+structural extraction, but both failed behavioral gates. Their final repair outputs
+were not parseable source units. No earlier proposal was selected to replace the final
+one. Across DeepSeek's eight trials, three final normalized functions compiled and none
+passed the added replay grid and original suite. Across Gemma's eight, five compiled
+and one passed that combination; the later order probe rejected that remaining candidate.
+
+Normalization changed protocol handling, not business logic. It is a reason to accept
+parsed source units in the proposed compiler protocol, and a limit on interpreting
+strict decoder failures as language failures. Records: [DeepSeek control](matrix-v1.normalization-v2-deepseek.json),
+[Gemma control](matrix-v1.normalization-v2-gemma.json).
+
+## 2. Syntax calibration
+
+Four fresh Gemma trials with an additional compiler-tested syntax cue all compiled on
+**their first proposal**. Two passed frozen acceptance and both additional grids.
+The comparable matrix context/packet subset had 1/4 final compiling source units,
+1/4 frozen acceptance and 0/4 surviving both grids. These small adaptive cohorts
+suggest a useful prompt improvement; they do not establish a reliable effect size.
+
+| Context condition / sample | First proposal compiles | Frozen acceptance | Both additional grids | Trial wall time |
+| --- | --- | --- | --- | --- |
+| Current context / 1 | Yes | No | Not advanced | 140s |
+| Compact packet / 1 | Yes | Yes | Yes | 135s |
+| Compact packet / 2 | Yes | No | Not advanced | 104s |
+| Current context / 2 | Yes | Yes | Yes | 130s |
+
+Summed trial wall time: **8m29s** including scoring, excluding cohort setup/controls.
+No repair calls were needed. The two accepted sources were not written or patched
+by the investigator. The canonical agent primer was updated after these calls;
+the original matrix writing rules remain frozen for reproduction.
+
+The cue was frozen separately in [CALIBRATION.md](CALIBRATION.md). It teaches bare
+inferred bindings rather than `let`, field equality rather than argument-label syntax,
+and single-line expressions for this source exchange. An unrelated pricing example
+passed two native tests before generation. No refund implementation or acceptance
+failures were added to the cue. The same context-selection algorithms, fixture,
+budgets and repair allowance were used; revision paths changed with the fresh cohort.
+
+This adaptive follow-up is not part of the original matrix. Four trials on one model
+cannot establish a general causal effect. Compilation and behavioral acceptance remain
+different outcomes. See [syntax cue](syntax-cue.txt), [calibration results](calibration-v1.results.json)
+and [additional finalist scores](calibration-v1.finalists.json).
+
+## 3. Behavioral counterexamples
+
+Desired behavior was authored independently of generated implementation specs. The
+reference controls passed both grids; each vector checked all eight input-state fields
+for unwanted mutation. The tests use the actual August native backend and Node's
+TypeScript execution. They are finite enumerations without discarded inputs or shrinking.
+
+### Replay and dry-run grid: 64 vectors
+
+Tenant × dry run × cached tenant match × cached key match × amount match × reason
+match. The oracle distinguishes conflicts, exact replay, dry run and applied state.
+Amounts are 100 or 101 with matching approval proof. This grid does not cover invalid
+base inputs, empty reasons or actor mismatch.
+
+Both references passed. The earlier v10 solution, which passed the original 51 cases,
+failed. Key-only replay, ignored reason conflicts, wrong dry-run receipt and double
+audit mutants also failed. A freshly accepted full-spec Gemma proposal failed because
+it returned on dry run before checking a conflicting cached payload. Another full-spec
+proposal and both compiling Gemma TypeScript proposals failed receipt interactions.
+
+See [vectors](properties-v1.vectors.json), [control scores](properties-v1.results.json),
+[August test program](properties-v1.aug.txt) and [TypeScript test program](properties-v1.test.mjs).
+
+### Validation-order grid: 128 vectors
+
+Valid/negative/unknown-tenant/both-invalid base input × empty reason × actor mismatch
+× matching approval present/absent × cached reason conflict × dry run. Valid requests
+use alpha's threshold amount 200. The independent oracle chooses the **first required
+failure**: InvalidRefund → MissingReason → TenantMismatch → ApprovalRequired →
+ReplayConflict → successful replay. This grid examines failure combinations and
+exact replay; it is not a full new-refund domain.
+
+This was an **adaptive probe**, motivated by model source review after matrix
+generation. It was never supplied as generation feedback. Both references passed.
+A compiled wrong-order mutant failed. Removing only unsupported `let` keywords from
+the first current-context Gemma proposal made it compile, but the order probe still
+failed: syntax repair alone did not fix its behavior.
+
+The matrix's other frozen-suite success passed the 64-vector grid but failed this one:
+it checked reason and actor before base validation. Thus **neither of the matrix's two
+accepted solutions survived both additional grids**. The frozen acceptance results are
+retained above; the later evidence is not silently folded into the original oracle.
+
+See [order vectors](order-v1.vectors.json), [order controls](order-v1.results.json),
+[order test program](order-v1.aug.txt), [matrix finalist scores](matrix-v1.finalists.json).
+
+## 4. Transparent forwarding prototype
+
+An AST/scopes-based converter identified 19 pure wrappers in the eight routes, eight
+adapters and three bridges. Each was one direct return of the imported target with
+unchanged labeled arguments. The prototype replaced repeated source headers/bodies with:
+
+```text
+import applyRefund from billing
+forward dispatch to applyRefund
+```
+
+This is **proposed syntax**. A fixture-specific lowerer expands it back to existing
+August before invoking the real compiler. It recursively inherits concrete managed
+input/output types and checked errors. Adding the required reason and four new errors
+changed all 19 expanded interfaces with **zero alias-source edits**. The source surface
+was 95 versus 38 nonblank lines; that counts these declarations, not architecture quality.
+Both checks, the original 51 native case bodies and the application passed. Cycles,
+unresolved targets and wrappers with additional behavior were rejected.
+
+The prototype rejects generics, ownership, DI, capability/mutation contracts, native
+functions, endpoints, annotations and interceptors. Its fixture emitter imports record
+and error names into a known scope. A production implementation must preserve resolved
+identities and cannot copy unqualified type spellings into arbitrary modules. Required
+business values at real callers still need engineering decisions. Unchanged alias source
+does not mean unchanged public behavior: inherited interface deltas must be reviewed.
+
+The TypeScript control used its existing `export { target as alias }` syntax for the
+same 19 wrappers. It also required zero alias-source edits when the target contract
+changed, and passed strict checking, all 51 tests and the app. **This is parity, not
+a unique August AI advantage.** Removing unnecessary layers is preferable to preserving
+them to justify a feature.
+
+Records: [August forwarding](forwarding-v1.results.json), [lowered sources](forwarding-v1.sources.json),
+[TypeScript aliases](typescript-alias-v1.results.json).
+
+## 5. Semantic rename, provenance and affected callers
+
+The prototype renamed one standalone bridge function using compiler scopes and AST
+occurrences, not spelling search. Eight files and 13 resolved occurrences changed:
+declaration, calls, imports and exports. A separate same-named function, a shadowed
+parameter and a string literal stayed intact. Native acceptance remained passing.
+
+Name collision, edited source and an added source file rejected the plan before accepted
+writes. An injected write failure after the first file restored every original byte.
+This demonstrates process-failure rollback, **not crash or reader atomicity**. A race
+between revision checking and writing remains; shipping needs writer coordination and
+defined recovery/read semantics.
+
+The direct standalone-call prototype found 24 affected caller nodes in the extended
+fixture, including main/test roots and a controlled new caller. Existing `aug context`
+provided no reverse caller set and reported truncation. The prototype does not implement
+sound method/interface/foreign dispatch coverage. This is a concrete reason to expand
+the current semantic API, not to claim a complete production graph.
+
+See [transaction and graph record](transactions-v1.results.json). These deterministic
+tests demonstrate a mechanical capability; models did not use the prototype in the
+matrix, so its AI acceptance benefit remains unmeasured.
+
+## 6. Adoption and claim limits
+
+The formal amendment combines a narrow forwarding declaration with a compiler-owned
+change contract: exact revision, identities, scope, affected occurrences, expected public
+delta, omissions and selected verification. Existing `.aug.md` remains useful checked
+context; it is not the oracle for whether a requested change was correct.
+
+Implement semantic coverage and source-unit validation before broad automated signature
+changes. Keep unsupported edges explicit. Measure engineer time, wrong accepted changes,
+repair rounds and tokens on unrelated paired tasks. Compare against idiomatic TypeScript
+with aliases, compiler refactoring and equally strong behavioral tests. The proposal's
+initial qualification design has at least 400 trials across 20 tasks and two models;
+it still cannot establish “best” against every relevant language.
+
+The current fixture uses immutable snapshots and integration paths, not a deployed service
+with process-global mutation, dynamic plugin loading or foreign implementations. Context
+allocation is not measured prompt occupancy. Larger prompt byte counts, one successful
+candidate, or deterministic refactoring alone do not establish general language readiness.
+
+[Primary-source research](RESEARCH.md) records current August capabilities, retrieval,
+semantic indexing/refactoring, effects, verification and testing precedents. [README.md](README.md)
+describes reproduction and [artifact-manifest.json](artifact-manifest.json) identifies the
+distributed records. Raw model response/thinking files are excluded.
+
