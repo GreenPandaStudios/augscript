@@ -65,6 +65,11 @@ export class OwnershipFlow {
     for (const place of this.places.values()) if (overlap(this.reachable(place.origins), reachable)) place.readonly = true;
   }
   external(name: string): string | undefined { return this.places.get(name)?.external; }
+  /** Retain external-input provenance through selected, repacked and returned aliases. */
+  externalOrigin(origins:Origins):string|undefined {
+    const reachable=this.reachable(origins);
+    return [...this.places.values()].find(place=>place.external&&overlap(reachable,this.reachable(place.origins)))?.external;
+  }
   region(origins: Origins): void { this.regions.push({ origins, outerNames: new Set(this.places.keys()) }); }
 
   captureTask(task: string, scope: string, origins: Origins, exclusive: boolean, repeated: boolean, span: Span,

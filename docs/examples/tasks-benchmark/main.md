@@ -77,7 +77,7 @@ It sets `iterations` to `2000`. It sets `index` and `checksum` separately, each 
 :::
 
 ::: spec-paragraph specification-paragraph-2
-It splits the result of waiting for `first` and `second` in input order; propagate failures into `left` and `right` in order. It sets `checksum` to (`checksum` plus `left`) plus `right`. On leaving this scope, join its child tasks and release its local values. It increases `index` by `1`. [source](main.md#source-L6-L12)
+It reads the result of waiting for `first` and `second` in input order; propagate failures once and binds `[0]` as `left` and `[1]` as `right`. It sets `checksum` to (`checksum` plus `left`) plus `right`. On leaving this scope, join its child tasks and release its local values. It increases `index` by `1`. [source](main.md#source-L6-L12)
 :::
 
 ::: spec-paragraph specification-paragraph-3

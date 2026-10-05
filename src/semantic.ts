@@ -1,3 +1,4 @@
+import {recordBindingDefinition} from './binding-patterns.ts';
 import {contextPacket} from './context.ts';
 import {planRename} from './refactoring.ts';
 import {semanticGraph,semanticSourcePath,semanticConfiguration,occurrencesAt,type SemanticGraph} from './symbols.ts';
@@ -160,6 +161,7 @@ export class SemanticDocument {
   format() { return formatFile(this.checked.project, this.checked.project.files.get(this.path)!); }
   describe(options?: Parameters<typeof describe>[2]) { return options?.context?contextPacket(this.checked,this.path,options,this.graph()):describe(this.checked, this.path, options); }
   definition(offset: number) {
+    const field=recordBindingDefinition(this.checked,this.path,offset);if(field)return field;
     const source = this.checked.project.files.get(this.path)?.source ?? '';
     const token = lex(this.path, source).tokens.find(token => token.span.start <= offset && offset < token.span.end);
     const scopes = [...this.checked.scopes.values()].filter(scope => scope.span.file === this.path && scope.span.start <= offset && offset <= scope.span.end)

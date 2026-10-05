@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+Unpack immutable record fields and nested tuples in assignments and snapshot loops. Check each tuple's arity, record fields, private access and new names. Preserve read-only access, borrowed lifetimes and external-input ownership restrictions. Navigate field labels to their declarations, retain comments in formatted patterns, and explain selections in compiled specs.
+
 Add exhaustive value-producing `match` expressions with one result expression per case, compatible inferred results and optional narrowing. Evaluate the input once and only the selected result; preserve checked errors, effects, read-only aliases, borrow boundaries and possible moves. Reject owned/native-resource result transfer. Format both block styles, explain choices in compiled specs, and expose narrowed editor facts. Preserve exact signed integer pattern identities and diagnose repeated numeric cases. Resolve C class matches and error handlers by definition identity, consistent with LLVM, so foreign classes with the same spelling remain distinct.
 
 Follow compiled-spec paragraphs to their highlighted statements in either formatted wiki code style, and return through accessible code-line links. Retain source revisions and original line ranges; validate content-matched navigation metadata and keep copied code unchanged.

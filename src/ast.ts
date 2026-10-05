@@ -187,6 +187,18 @@ export type Expr =
   | { kind: 'wait'; tasks: Expr[]; span: Span }
   | { kind: 'resolve'; name: string; typeArgs: TypeRef[]; span: Span };
 
+/** A read-only binding of a value, tuple cell, or named immutable-record field. */
+export type BindingPattern =
+  | {kind:'nameBinding';name:string;span:Span}
+  | {kind:'tupleBinding';items:BindingPattern[];span:Span}
+  | {kind:'recordBinding';fields:RecordBindingField[];span:Span};
+export interface RecordBindingField {name:string;pattern:BindingPattern;nameSpan:Span;span:Span}
+export function bindingSelections(pattern:BindingPattern,path:(string|number)[]=[]):{name:string;path:(string|number)[];span:Span}[] {
+  return pattern.kind==='nameBinding'?[{name:pattern.name,path,span:pattern.span}]:pattern.kind==='tupleBinding'?
+    pattern.items.flatMap((item,index)=>bindingSelections(item,[...path,index])):pattern.fields.flatMap(field=>bindingSelections(field.pattern,[...path,field.name]));
+}
+export function bindingNames(pattern:BindingPattern):string[] { return bindingSelections(pattern).map(binding=>binding.name); }
+
 export type Stmt =
   | {kind:'yield'; value: Expr; span: Span}
   | {kind: 'lock'; value: Expr; name: string; body: Stmt[]; span: Span}
@@ -200,8 +212,8 @@ export type Stmt =
   | { kind: 'throw'; value: Expr; span: Span }
   | { kind: 'if'; test: Expr; then: Stmt[]; otherwise: Stmt[]; span: Span }
   | { kind: 'while'; test: Expr; body: Stmt[]; span: Span }
-  | { kind: 'for'; names: string[]; iterable: Expr; body: Stmt[]; span: Span }
-  | { kind: 'destructure'; names: string[]; value: Expr; span: Span }
+  | { kind: 'for'; names: string[]; pattern?:BindingPattern; iterable: Expr; body: Stmt[]; span: Span }
+  | { kind: 'destructure'; names: string[]; pattern?:BindingPattern; value: Expr; span: Span }
   | { kind: 'match'; value: Expr; cases: (MatchPattern & {body:Stmt[]})[]; span: Span }
   | { kind: 'try'; body: Stmt[]; catches: { type: TypeRef; name: string; body: Stmt[]; span: Span }[]; always?: Stmt[]; span: Span }
   | { kind: 'unsafe'; body: Stmt[]; span: Span }

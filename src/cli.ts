@@ -1,3 +1,4 @@
+import {recordBindingDefinition} from './binding-patterns.ts';
 import {pruneTestCompilations} from './test-compilation-cache.ts';
 import {inspectCaches} from './cache-management.ts';
 import {verifyAcceptance,verificationSummary} from './verification.ts';
@@ -676,7 +677,7 @@ export async function main(argv: string[]): Promise<number> {
       if (offsetText !== undefined && (!Number.isInteger(offset) || offset < 0))
         throw new Error('definition requires a nonnegative --offset');
       let found;
-      if (offsetText !== undefined) found = definitionAt(project, sourceFile, offset);
+      if (offsetText !== undefined) found = recordBindingDefinition(checked,sourceFile,offset)??definitionAt(project, sourceFile, offset);
       else {
         const def = project.scopes.get(resolve(sourceFile))?.get(symbolName!);
         found = def && { name: def.name, file: def.file, line: def.node.span.line,

@@ -1,8 +1,9 @@
+import {recordBindingFieldAt} from './binding-patterns.ts';
 import {boundaryInputSnippet} from './test-inputs.ts';
 import { defaultText } from './parameters.ts';
 import { callableResult, callableErrors } from './contracts.ts';
 import { dirname, join, relative, resolve, sep } from 'node:path';
-import type { ClassDecl, Expr, InterceptorDecl, MethodDecl, Param, SourceFile, Span, Stmt, TopLevel, TypeRef } from './ast.ts';
+import type { BindingPattern, ClassDecl, Expr, InterceptorDecl, MethodDecl, Param, SourceFile, Span, Stmt, TopLevel, TypeRef } from './ast.ts';
 import { expressionChildren, fieldsOf, typeName } from './ast.ts';
 import type { CheckedProject, Ty } from './checker.ts';
 import { tyName } from './checker.ts';
@@ -710,6 +711,9 @@ export function hoverInfo(checked: CheckedProject, fileName: string,
     entry.kind !== 'eof' && entry.span.start <= offset && offset < entry.span.end);
   if (!token) return undefined;
   const { start, end } = token.span;
+  const selectedField=recordBindingFieldAt(checked,file.path,offset);
+  if(selectedField)return {label:selectedField.field.name,kind:'property',detail:tyName(selectedField.type)+' '+selectedField.owner.name+'.'+selectedField.field.name,
+    documentation:selectedField.owner.node.kind==='class'?declarationDocumentation(checked,selectedField.owner.node)?.parameters.get(selectedField.field.label??selectedField.field.name):undefined,start,end};
   if (['import', 'everything', 'and', 'from'].includes(token.kind)) {
     const declaration = file.items.find(item => item.kind === 'import' && item.span.start <= start && end <= item.span.end);
     if (declaration?.kind === 'import') {
@@ -867,6 +871,7 @@ export function semanticTokens(checked: CheckedProject, fileName: string): Edito
   const parameters = new Set<string>();
   const fields = new Set<string>();
   const variables = new Set<string>();
+  const patternProperties=new Set<number>();
   const typeParameters = new Set<string>();
   const declarationNames = new Map<number, 'class' | 'decorator' | 'function' | 'method'>();
   function markFunction(method: MethodDecl, type: 'function' | 'method'): void {
@@ -874,12 +879,20 @@ export function semanticTokens(checked: CheckedProject, fileName: string): Edito
     const name = tokens[first];
     if (name?.kind === 'identifier') declarationNames.set(name.span.start, type);
   }
+  function visitPattern(pattern:BindingPattern):void {
+    if(pattern.kind==='tupleBinding')pattern.items.forEach(visitPattern);
+    else if(pattern.kind==='recordBinding')for(const field of pattern.fields){
+      if(field.pattern.kind!=='nameBinding'||field.pattern.name!==field.name)patternProperties.add(field.nameSpan.start);
+      visitPattern(field.pattern);
+    }
+  }
   function visitExpression(expr:Expr):void {
     if(expr.kind==='matchValue')for(const clause of expr.cases)if(clause.name)variables.add(clause.name);
     expressionChildren(expr).forEach(visitExpression);
   }
   function visitStatements(statements: Stmt[]): void {
     for (const stmt of statements) {
+      if('pattern' in stmt&&stmt.pattern)visitPattern(stmt.pattern);
       if('value' in stmt&&stmt.value)visitExpression(stmt.value);
       if('expr' in stmt)visitExpression(stmt.expr);
       if('test' in stmt)visitExpression(stmt.test);
@@ -937,6 +950,7 @@ export function semanticTokens(checked: CheckedProject, fileName: string): Edito
     const next = tokens[i + 1]?.kind;
     let type: EditorToken['type'] | undefined;
     if (token.value === 'worker' && previous === 'start' && ['identifier', 'start', 'wait'].includes(next)) type = 'keyword';
+    else if(patternProperties.has(token.span.start))type='property';
     else if (previous === '.') type = next === '(' || next === '<' ? 'method' : 'property';
     else if (previous === 'interface' || previous === 'capability') type = 'interface';
     else if (previous === 'record') type = 'class';

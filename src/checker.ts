@@ -1,5 +1,5 @@
 import type {
-  BindDecl, ClassDecl, Diagnostic, Expr, GenericHeader, InterfaceDecl, InterceptorAnnotation, InterceptorDecl, MethodDecl, Param, Span,
+  BindDecl, BindingPattern, RecordBindingField, ClassDecl, Diagnostic, Expr, GenericHeader, InterfaceDecl, InterceptorAnnotation, InterceptorDecl, MethodDecl, Param, Span,
   Stmt, TypeRef, MatchPattern,
 } from './ast.ts';
 import { fieldsOf, initializationOf, syntheticType, typeName } from './ast.ts';
@@ -52,6 +52,8 @@ export interface CheckedProject {
   diagnostics: Diagnostic[];
   bindings: BindingInfo[];
   expressionTypes: WeakMap<Expr, Ty>;
+  patternTypes:WeakMap<BindingPattern,Ty>;
+  patternFields:WeakMap<RecordBindingField,{owner:Definition;field:Param;index:number}>;
   resolvedNames: WeakMap<Expr, ResolvedName>;
   resolvedCalls: WeakMap<Expr, ResolvedCall>;
   resolvedTypes: WeakMap<TypeRef, Ty>;
@@ -176,6 +178,8 @@ class Checker {
   readonly project: Project;
   readonly diagnostics: Diagnostic[];
   readonly expressionTypes = new WeakMap<Expr, Ty>();
+  readonly patternTypes=new WeakMap<BindingPattern,Ty>();
+  readonly patternFields=new WeakMap<RecordBindingField,{owner:Definition;field:Param;index:number}>();
   readonly resolvedNames = new WeakMap<Expr, ResolvedName>();
   readonly resolvedCalls = new WeakMap<Expr, ResolvedCall>();
   readonly resolvedTypes = new WeakMap<TypeRef, Ty>();
@@ -331,7 +335,7 @@ class Checker {
     this.effectContracts.clear();
     for (const [method, contract] of declarationEffects) this.effectContracts.set(method, contract);
     return { project: this.project, diagnostics: this.diagnostics, bindings: this.bindings,
-      expressionTypes: this.expressionTypes, resolvedNames:this.resolvedNames, resolvedCalls:this.resolvedCalls, resolvedTypes:this.resolvedTypes, defaults: this.defaults, interfaceMembers:this.interfaceMembers, callPlans: this.callPlans,
+      expressionTypes: this.expressionTypes, patternTypes:this.patternTypes, patternFields:this.patternFields, resolvedNames:this.resolvedNames, resolvedCalls:this.resolvedCalls, resolvedTypes:this.resolvedTypes, defaults: this.defaults, interfaceMembers:this.interfaceMembers, callPlans: this.callPlans,
       interceptorPlans: this.interceptorPlans, effectContracts: this.effectContracts, callableContracts: this.callableContracts, constructorContracts: this.constructorContracts,
       expressionOrigins: this.expressionOrigins, inferredOwned:this.inferredOwned, scopes: this.scopes, markupCalls: this.markupCalls, actions:this.actions, httpPolicies:this.httpPolicies, native:this.native };
   }
@@ -1482,15 +1486,42 @@ class Checker {
     return !mutableChildren(type);
   }
 
+  private bindPatternName(name:string,type:Ty,origins:Origins,context:Context,span:Span,source?:string):void {
+    if(name==='next'){this.report(span,'next is reserved for interceptor continuations','NEXT');return;}
+    if(context.locals.has(name)){this.report(span,`Pattern variable ${name} already exists`,'PATTERN');return;}
+    const item={...type,readonly:true};
+    context.locals.set(name,{type:item,declaredType:item,ownership:'managed',moved:false,definition:span});
+    context.flow.declare(name,origins,true,{source,external:context.flow.externalOrigin(origins)});
+  }
+
+  private bindPattern(pattern:BindingPattern,type:Ty,origins:Origins,context:Context,source?:string):void {
+    this.patternTypes.set(pattern,type);
+    if(pattern.kind==='nameBinding'){
+      this.bindPatternName(pattern.name,type,origins,context,pattern.span,source);return;
+    }
+    if(type.nullable||type.optional)this.report(pattern.span,'Narrow optional values with a null check or some case before destructuring','PATTERN');
+    if(pattern.kind==='tupleBinding'){
+      if(type.id!=='builtin:Tuple'||type.args.length!==pattern.items.length)this.report(pattern.span,`Pattern needs a Tuple with ${pattern.items.length} positions`,'PATTERN');
+      pattern.items.forEach((item,index)=>this.bindPattern(item,type.id==='builtin:Tuple'?type.args[index]??errorTy:errorTy,context.flow.field(origins,String(index)),context,source));return;
+    }
+    const node=type.def?.node;
+    if(node?.kind!=='class'||!node.record){this.report(pattern.span,'A named field pattern needs an immutable record','PATTERN');return;}
+    const types=new Map(node.typeParams.map((name,index)=>[name,type.args[index]??errorTy])),seen=new Set<string>();
+    for(const entry of pattern.fields){
+      if(seen.has(entry.name))this.report(entry.nameSpan,`Repeated record field ${entry.name}`,'PATTERN');seen.add(entry.name);
+      const index=node.fields.findIndex(field=>field.name===entry.name),field=node.fields[index];
+      if(!field){this.report(entry.nameSpan,`${type.name} has no record field ${entry.name}`,'PATTERN');continue;}
+      this.checkMemberVisibility(type.id,type.name,field.name,entry.nameSpan,context);
+      this.patternFields.set(entry,{owner:type.def!,field,index});
+      this.bindPattern(entry.pattern,this.resolveType(field.type,type.def!.file,types),context.flow.field(origins,field.name),context,source);
+    }
+  }
+
   private patternLocals(names: string[], type: Ty, origins: Origins, context: Context, span: Span, source?: string, tuplePattern = false): void {
     const types = names.length === 1 && !tuplePattern ? [type] : type.id === 'builtin:Tuple' ? type.args : [];
     if (types.length !== names.length) this.report(span, `Pattern needs a Tuple with ${names.length} positions`, 'PATTERN');
-    for (const [index, name] of names.entries()) {
-      if (context.locals.has(name)) this.report(span, `Pattern variable ${name} already exists`, 'PATTERN');
-      const item = { ...(types[index] ?? errorTy), readonly: true };
-      context.locals.set(name, { type: item, declaredType: item, ownership: 'managed', moved: false, definition: span });
-      context.flow.declare(name, names.length === 1 && !tuplePattern ? origins : context.flow.field(origins, String(index)), true, {source});
-    }
+    for (const [index, name] of names.entries())
+      this.bindPatternName(name,types[index]??errorTy,names.length===1&&!tuplePattern?origins:context.flow.field(origins,String(index)),context,span,source);
   }
 
   private captureScope(span: Span, context: Context): void {
@@ -1666,9 +1697,10 @@ class Checker {
     }
     if (stmt.kind === 'destructure') {
       const type = this.checkExpression(stmt.value, context);
+      if(stmt.pattern){this.bindPattern(stmt.pattern,type,this.placesOf(stmt.value,context),context,sourceName(stmt.value));return;}
       if (type.id !== 'builtin:Tuple' || type.args.length !== stmt.names.length)
         this.report(stmt.span, `Destructuring needs a Tuple with ${stmt.names.length} positions`, 'PATTERN');
-      this.patternLocals(stmt.names, type, this.placesOf(stmt.value, context), context, stmt.span, undefined, true);
+      this.patternLocals(stmt.names, type, this.placesOf(stmt.value, context), context, stmt.span, sourceName(stmt.value), true);
       return;
     }
     if (stmt.kind === 'for') {
@@ -1682,7 +1714,8 @@ class Checker {
       const inside = this.cloneContext(context);
       inside.loopDepth = (context.loopDepth ?? 0) + 1;
       inside.loop = {breaks:[], continues:[]};
-      this.patternLocals(stmt.names, type, context.flow.field(this.placesOf(stmt.iterable, context)), inside, stmt.span, sourceName(stmt.iterable));
+      if(stmt.pattern)this.bindPattern(stmt.pattern,type,context.flow.field(this.placesOf(stmt.iterable,context)),inside,sourceName(stmt.iterable));
+      else this.patternLocals(stmt.names, type, context.flow.field(this.placesOf(stmt.iterable, context)), inside, stmt.span, sourceName(stmt.iterable));
       let previous = '';
       for (let count = 0; count <= context.locals.size * 3 + 3; count++) {
         this.checkStatements(stmt.body, inside, stmt.span);

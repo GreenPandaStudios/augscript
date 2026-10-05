@@ -126,6 +126,10 @@ export function semanticGraph(checked:CheckedProject,wholeProject:boolean,checke
       } else if(expr.callee.kind==='name'&&expr.callee.name==='next')boundaries.push({kind:'interceptor-delegation',location:location(expr.span)});
       else if(!checked.expressionTypes.get(expr)||checked.expressionTypes.get(expr)?.kind==='error')boundaries.push({kind:'unresolved-call',location:location(expr.span)});
     }
+    if(node.kind==='recordBinding')for(const field of (value as Extract<import('./ast.ts').BindingPattern,{kind:'recordBinding'}>).fields){
+      const selected=checked.patternFields.get(field),id=selected&&paramIds.get(selected.field);
+      if(id)addOccurrence(id,field.nameSpan,'read',caller);
+    }
     if(expr.kind==='member') {
       const receiver=checked.expressionTypes.get(expr.object),owner=receiver?.def;
       if(owner&&'fields' in owner.node) {

@@ -1,4 +1,4 @@
-import type { ClassDecl, Expr, InterceptorDecl, MatchPattern, MethodDecl, Param, Stmt } from './ast.ts';
+import type { BindingPattern, RecordBindingField, ClassDecl, Expr, InterceptorDecl, MatchPattern, MethodDecl, Param, Stmt } from './ast.ts';
 import { fieldsOf, initializationOf, isStatement, typeName } from './ast.ts';
 import type { BindingInfo, CheckedProject, InterceptorLayer } from './checker.ts';
 import type { Definition } from './project.ts';
@@ -351,6 +351,7 @@ class CGenerator {
     this.coverage.set(`${stmt.span.file}:${stmt.span.line}`, { file: stmt.span.file, line: stmt.span.line });
     return true;
   }
+  patternFieldIndex(field:RecordBindingField):number { return this.checked.patternFields.get(field)!.index; }
   expressionType(expr: Expr) { return this.checked.expressionTypes.get(expr); }
   schema(type: Ty): string { return this.schemas.request(type); }
   expressionSource(expr: Expr): string {
@@ -480,6 +481,15 @@ class BodyEmitter {
     // escaped root array lets the C optimizer keep arithmetic in registers.
     if (slot >= firstNewSlot && this.isScalar(this.generator.expressionType(expr))) this.scalarSlots.add(slot);
     return slot;
+  }
+
+  private bindPattern(pattern:BindingPattern,value:number):void {
+    if(pattern.kind==='nameBinding'){this.locals.set(pattern.name,value);return;}
+    if(pattern.kind==='tupleBinding')for(const [index,item] of pattern.items.entries()){
+      const slot=this.newSlot();this.line(`${this.slot(slot)} = aug_tuple_get(${this.slot(value)}, ${index});`);this.bindPattern(item,slot);
+    }else for(const entry of pattern.fields){
+      const slot=this.newSlot();this.line(`${this.slot(slot)} = aug_field(${this.slot(value)}, ${this.generator.patternFieldIndex(entry)});`);this.bindPattern(entry.pattern,slot);
+    }
   }
 
   private matchCondition(clause:MatchPattern,value:number,literal:number|undefined):string {
@@ -886,6 +896,7 @@ class BodyEmitter {
     if (stmt.kind === 'expr') { this.emitExpr(stmt.expr); return; }
     if (stmt.kind === 'destructure') {
       const value = this.emitExpr(stmt.value);
+      if(stmt.pattern){this.bindPattern(stmt.pattern,value);return;}
       for (const [index, name] of stmt.names.entries()) {
         const slot = this.newSlot(); this.locals.set(name, slot);
         this.line(`${this.slot(slot)} = aug_tuple_get(${this.slot(value)}, ${index});`);
@@ -899,12 +910,12 @@ class BodyEmitter {
       const value = this.emitExpr(stmt.iterable);
       const snapshot = this.newSlot();
       const iterableType = this.generator.expressionType(stmt.iterable);
-      const flatMap = stmt.names.length === 2 && iterableType?.kind === 'builtin' && iterableType.name === 'Map';
+      const flatMap = !stmt.pattern && stmt.names.length === 2 && iterableType?.kind === 'builtin' && iterableType.name === 'Map';
       this.line(`${this.slot(snapshot)} = ${flatMap ? 'aug_map_entries_snapshot' : 'aug_iter_snapshot'}(${this.slot(value)});`);
       const index = this.label('aug_index'), done = this.label('aug_loop_done'), next = this.label('aug_loop_next');
       const outerLoop = this.loop; this.loop = this.loopTargets(done, next);
       const names = new Map(this.locals);
-      const slots = stmt.names.map(name => { const slot = this.newSlot(); this.locals.set(name, slot); return slot; });
+      const slots = (stmt.pattern?[]:stmt.names).map(name => { const slot = this.newSlot(); this.locals.set(name, slot); return slot; });
       if (flatMap) slots.forEach((slot, index) => {
         if (this.isScalar(this.generator.expressionType(stmt.iterable)?.args[index])) this.scalarSlots.add(slot);
       });
@@ -914,7 +925,8 @@ class BodyEmitter {
       if (flatMap) slots.forEach((slot, position) => this.line(`${this.slot(slot)} = ${this.slot(snapshot)}.as.object->fields[${index} * 2 + ${position}];`));
       else {
         const item = this.newSlot(); this.line(`${this.slot(item)} = ${this.slot(snapshot)}.as.object->fields[${index}];`);
-        slots.forEach((slot, position) => this.line(`${this.slot(slot)} = ${slots.length === 1 ? this.slot(item) : `aug_tuple_get(${this.slot(item)}, ${position})`};`));
+        if(stmt.pattern)this.bindPattern(stmt.pattern,item);
+        else slots.forEach((slot, position) => this.line(`${this.slot(slot)} = ${slots.length === 1 ? this.slot(item) : `aug_tuple_get(${this.slot(item)}, ${position})`};`));
       }
       this.emitScoped(stmt.body);
       this.line(`${next}:;`); this.line('}'); this.line(`${done}:;`);

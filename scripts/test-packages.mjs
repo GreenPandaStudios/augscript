@@ -44,6 +44,13 @@ try {
   aug('spec',choices);assert.match(readFileSync(join(choices,'values.aug.md'),'utf8'),/choice based on `name`/);
   if(process.env.AUG_LLVM_HOME&&process.env.AUG_RUNTIME_PACK)
     assert.equal(run(process.execPath,[cli,'run',choices,'--backend','llvm']),'Hello, Ada!\n');
+  const patterns=join(directory,'binding-patterns');mkdirSync(patterns);
+  writeFileSync(join(patterns,'main.aug'),'import Person from people\nperson = Person(name="Ada", ratings=(7, 9))\n{name: displayName, ratings: (first, second)} = person\nprint(value=displayName)\nprint(value=first + second)\n');
+  writeFileSync(join(patterns,'people.aug'),'record Person(string name, Tuple<int, int> ratings)\n');
+  assert.equal(aug('run',patterns),'Ada\n16\n');
+  aug('spec',patterns);assert.match(readFileSync(join(patterns,'main.aug.md'),'utf8'),/displayName/);
+  if(process.env.AUG_LLVM_HOME&&process.env.AUG_RUNTIME_PACK)
+    assert.equal(run(process.execPath,[cli,'run',patterns,'--backend','llvm']),'Ada\n16\n');
   const verifySpecs = folder => {
     for(const entry of readdirSync(folder,{withFileTypes:true})) {
       const file=join(folder,entry.name);

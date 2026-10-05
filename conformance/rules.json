@@ -255,11 +255,38 @@
       ]
     },
     {
+      "id": "BINDING-PATTERNS",
+      "summary": "Named immutable-record fields and nested tuple positions create fresh read-only bindings; tuple arity, private access and borrowed lifetimes remain checked.",
+      "reference": "reference.md#record-and-nested-tuple-bindings-unreleased",
+      "productions": [
+        "BindingPattern",
+        "FieldPattern"
+      ],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/binding-patterns.test.mjs",
+          "test": "named record and nested tuple patterns bind checked fields"
+        },
+        {
+          "file": "tests/binding-patterns.test.mjs",
+          "test": "patterns reject wrong shapes, duplicate fields/names, existing names and private reads"
+        },
+        {
+          "file": "tests/binding-patterns.test.mjs",
+          "test": "patterns preserve read-only access and borrowed aliases"
+        },
+        {
+          "file": "tests/binding-patterns.test.mjs",
+          "test": "pattern aliases can read borrowed inputs without gaining mutation permission"
+        }
+      ]
+    },
+    {
       "id": "MATCH",
       "summary": "Optional values contain a value or null; checked patterns narrow values and require coverage.",
       "reference": "reference.md#null-matching-and-checked-failures",
       "productions": [
-        "Pattern",
         "MatchCase"
       ],
       "cases": [
@@ -422,7 +449,8 @@
         "Test",
         "Group",
         "Case",
-        "TestName"
+        "TestName",
+        "TestPattern"
       ],
       "cases": [],
       "regressions": [

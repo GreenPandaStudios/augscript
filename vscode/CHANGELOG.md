@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+Show record binding labels as properties, with field types, Javadoc and definition navigation. Keep selected names as local variables. Add preference-aware record and nested tuple binding templates.
+
 Complete `matchvalue` with project formatting preferences. Narrow optional/type case names in match-expression hover and completion, color those names as variables, and describe result, completeness and ownership rules in keyword help.
 
 Complete `itboundaries` inside a same-file function test group to insert representative scalar input rows and an assertion placeholder. Templates honor project formatting; expected answers remain an author decision.

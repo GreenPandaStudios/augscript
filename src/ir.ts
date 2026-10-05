@@ -1,6 +1,6 @@
 import {createHash} from 'node:crypto';
 import {relative,resolve} from 'node:path';
-import {isStatement,fieldsOf,initializationOf,type Expr,type MethodDecl,type ClassDecl,type MatchPattern,type Stmt,type Span,type Param} from './ast.ts';
+import {isStatement,fieldsOf,initializationOf,type Expr,type MethodDecl,type ClassDecl,type MatchPattern,type BindingPattern,type Stmt,type Span,type Param} from './ast.ts';
 import {typeName} from './ast.ts';
 import type {CheckedProject,CallPlan,InterceptorLayer} from './checker.ts';
 import type {Definition} from './project.ts';
@@ -245,6 +245,11 @@ class FunctionLowering {
     const firstNewSlot=this.slots,result=this.expressionValue(expr),type=this.generator.checked.expressionTypes.get(expr);
     if(result>=firstNewSlot&&type)this.values[result].type=irType(type);
     return result;
+  }
+  private bindPattern(pattern:BindingPattern,value:number):void {
+    if(pattern.kind==='nameBinding'){this.local(pattern.name,value,pattern.span,irType(this.generator.checked.patternTypes.get(pattern)!));return;}
+    if(pattern.kind==='tupleBinding')pattern.items.forEach((item,index)=>this.bindPattern(item,this.runtime('TUPLE_GET',[value,this.literal(null,{kind:'int',text:String(index)})])));
+    else for(const entry of pattern.fields)this.bindPattern(entry.pattern,this.runtime('FIELD',[value],undefined,this.generator.checked.patternFields.get(entry)!.index));
   }
   private matchBranch(clause:MatchPattern,value:number,literal:number|undefined,body:string,next:string):void {
     if(clause.pattern==='else')this.terminate({op:'jump',target:body});
@@ -650,10 +655,10 @@ class FunctionLowering {
     }
     if(stmt.kind==='freeze'){const value=this.expression(stmt.value),out=this.runtime('FREEZE',[value]);this.local(stmt.name,out,stmt.span);if(this.owned.has(value))this.instruction({op:'clear',slot:value});return;}
     if(stmt.kind==='destructure'){
-      const value=this.expression(stmt.value);stmt.names.forEach((name,i)=>this.local(name,this.runtime('TUPLE_GET',[value,this.literal(null,{kind:'int',text:String(i)})]),stmt.span,this.values[value].type.args[i]??dynamicType));return;
+      const value=this.expression(stmt.value);if(stmt.pattern){this.bindPattern(stmt.pattern,value);return;}stmt.names.forEach((name,i)=>this.local(name,this.runtime('TUPLE_GET',[value,this.literal(null,{kind:'int',text:String(i)})]),stmt.span,this.values[value].type.args[i]??dynamicType));return;
     }
     if(stmt.kind==='for'){
-      const iterable=this.expression(stmt.iterable),map=this.generator.checked.expressionTypes.get(stmt.iterable)?.name==='Map'&&stmt.names.length===2;
+      const iterable=this.expression(stmt.iterable),map=this.generator.checked.expressionTypes.get(stmt.iterable)?.name==='Map'&&!stmt.pattern&&stmt.names.length===2;
       const values=this.runtime(map?'MAP_ITER':'ITER',[iterable]),index=this.slot(scalarType('int')),one=this.literal(null,{kind:'int',text:'1'});this.instruction({op:'copy',out:index,input:this.literal(null,{kind:'int',text:'0'})});
       const length=this.runtime('LIST_LENGTH',[values]),test=this.block(),body=this.block(),done=this.block(),outerLoop=this.loop;this.loop=this.loopTargets(done,test);this.terminate({op:'jump',target:test});this.enter(test);
       this.instruction({op:'checkpoint'});this.checkError();
@@ -663,7 +668,7 @@ class FunctionLowering {
         // guards this index; map snapshots contain an even number of cells.
         // Source List.get still retains its checked bounds behavior.
         if(map){stmt.names.forEach((name,i)=>{this.local(name,this.runtime('LIST_AT',[values,index],undefined,undefined,false),stmt.span,this.values[iterable].type.args[i]??dynamicType);this.instruction({op:'copy',out:index,input:this.runtime('BINARY',[index,one],'+')});});}
-        else{const item=this.runtime('LIST_AT',[values,index],undefined,undefined,false);stmt.names.forEach((name,i)=>this.local(name,stmt.names.length===1?item:this.runtime('TUPLE_GET',[item,this.literal(null,{kind:'int',text:String(i)})]),stmt.span,(stmt.names.length===1?this.values[iterable].type.args[0]:this.values[iterable].type.args[0]?.args[i])??dynamicType));this.instruction({op:'copy',out:index,input:this.runtime('BINARY',[index,one],'+')});}
+        else{const item=this.runtime('LIST_AT',[values,index],undefined,undefined,false);if(stmt.pattern)this.bindPattern(stmt.pattern,item);else stmt.names.forEach((name,i)=>this.local(name,stmt.names.length===1?item:this.runtime('TUPLE_GET',[item,this.literal(null,{kind:'int',text:String(i)})]),stmt.span,(stmt.names.length===1?this.values[iterable].type.args[0]:this.values[iterable].type.args[0]?.args[i])??dynamicType));this.instruction({op:'copy',out:index,input:this.runtime('BINARY',[index,one],'+')});}
       },stmt.span);
       if(!this.current.terminator)this.terminate({op:'jump',target:test});this.enter(done);this.loop=outerLoop;return;
     }

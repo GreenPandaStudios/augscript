@@ -123,3 +123,21 @@ test('rename rejects shadow capture even when the candidate still compiles',()=>
   const workspace=new SemanticWorkspace(root),view=workspace.document(join(root,'math.aug'),undefined,true);
   assert.throws(()=>view.rename(view.source.indexOf('quantity'),'amount'),/collision|binding|identity/);
 }));
+
+
+test('renaming shorthand record bindings preserves the selected field identity',()=>fixture({
+ 'main.aug':'import readName from data\n',
+ 'data.aug':`record Row(string name)
+readName(Row row):
+    {name} = row
+    return name
+`
+},root=>{
+ const workspace=new SemanticWorkspace(root),view=workspace.document(join(root,'data.aug'),undefined,true);
+ assert.deepEqual(view.diagnostics,[]);
+ const plan=view.rename(view.source.lastIndexOf('name'),'result');
+ assert.ok(plan.edits.some(edit=>edit.text==='name: result'));
+ assert.ok(plan.edits.some(edit=>edit.text==='result'));
+ assert.deepEqual(plan.publicDelta,[]);
+ assert.equal(workspace.document(join(root,'data.aug'),undefined,true).source,view.source);
+}));

@@ -1,8 +1,8 @@
 import type {
-  BindDecl, ClassDecl, Diagnostic, ExportDecl, Expr, GenericHeader, ImportDecl, IncludeDecl, InterfaceDecl,
+  BindDecl, BindingPattern, ClassDecl, Diagnostic, ExportDecl, Expr, GenericHeader, ImportDecl, IncludeDecl, InterfaceDecl,
   InterceptorAnnotation, InterceptorDecl, MatchPattern, MethodDecl, Param, SourceFile, Span, Stmt, TestDecl, TestGroup, TopLevel, TypeRef,
 } from './ast.ts';
-import { syntheticType } from './ast.ts';
+import { bindingNames, syntheticType } from './ast.ts';
 import { lex, type Token } from './lexer.ts';
 import { basename } from 'node:path';
 
@@ -707,11 +707,13 @@ class Parser {
       const saved = this.position;
       const value = this.parseUnary();
       if (this.match('to') || this.match('as')) {
-        const names = [this.expect('identifier').value];
-        while (this.match('and') || this.match(',')) names.push(this.expect('identifier').value);
+        const selected = [this.expect('identifier')];
+        while (this.match('and') || this.match(',')) selected.push(this.expect('identifier'));
+        const names=selected.map(token=>token.value);
+        const pattern:BindingPattern={kind:'tupleBinding',items:selected.map(token=>({kind:'nameBinding',name:token.value,span:token.span})),span:{...selected[0].span,end:selected.at(-1)!.span.end}};
         this.endStatement();
         return names.length === 1 ? {kind: 'assign', target: {kind: 'name', name: names[0], span: start}, value, ownership: 'managed', span: this.span(start)} :
-          {kind: 'destructure', names, value, span: this.span(start)};
+          {kind: 'destructure', names, pattern, value, span: this.span(start)};
       }
       this.position = saved;
     }
@@ -738,10 +740,11 @@ class Parser {
       return { kind: 'throw', value, span: this.span(start) };
     }
     if (this.match('for')) {
-      const names = this.patternNames();
+      const selected=this.parseBindingPattern(),names=bindingNames(selected);
+      const pattern=selected.kind==='nameBinding'||selected.kind==='tupleBinding'&&selected.items.length>1&&selected.items.every(item=>item.kind==='nameBinding')?undefined:selected;
       this.expect('in');
       const iterable = this.parseExpression();
-      return { kind: 'for', names, iterable, body: this.parseBlock(start), span: this.span(start) };
+      return { kind: 'for', names, pattern, iterable, body: this.parseBlock(start), span: this.span(start) };
     }
     if (this.match('match')) {
       const value = this.parseExpression();
@@ -822,15 +825,45 @@ class Parser {
       throw new ParseFailure({ file: token.span.file, line: token.span.line, column: token.span.column,
         message: 'own requires a typed variable declaration', code: 'PARSE' });
     }
+    if(this.at('(')||this.at('{')){
+      const saved=this.position;let pattern:BindingPattern|undefined;
+      try{pattern=this.parseBindingPattern();}catch(error){if(!(error instanceof ParseFailure))throw error;}
+      if(pattern&&pattern.kind!=='nameBinding'&&(this.match('=')||this.match('to'))){
+        const value=this.parseExpression();this.endStatement();
+        return {kind:'destructure',names:bindingNames(pattern),pattern,value,span:this.span(start)};
+      }
+      this.position=saved;
+    }
     const target = this.parseExpression();
     if (this.match('=') || this.match('to')) {
       const value = this.parseExpression(); this.endStatement();
       if (target.kind === 'collection' && target.collection === 'Tuple' && target.items.every(item => item.kind === 'name'))
         return { kind: 'destructure', names: target.items.map(item => (item as Extract<Expr, { kind: 'name' }>).name), value, span: this.span(start) };
+      if(target.kind==='collection')throw new ParseFailure({...target.span,code:'PATTERN',message:'A binding pattern contains names, tuple positions, or named record fields'});
       return { kind: 'assign', target, value, ownership, span: this.span(start) };
     }
     this.endStatement();
     return { kind: 'expr', expr: target, span: this.span(start) };
+  }
+
+  private parseBindingPattern():BindingPattern {
+    const start=this.current().span;
+    if(this.match('identifier'))return {kind:'nameBinding',name:this.tokens[this.position-1].value,span:start};
+    if(this.match('(')){
+      const items:BindingPattern[]=[];let comma=false;
+      if(!this.at(')'))do{items.push(this.parseBindingPattern());comma=!!this.match(',');}while(comma&&!this.at(')')&&!this.at('eof'));
+      this.expect(')');if(items.length===1&&!comma)return items[0];
+      return {kind:'tupleBinding',items,span:this.span(start)};
+    }
+    if(this.match('{')){
+      const fields:Extract<BindingPattern,{kind:'recordBinding'}>['fields']=[];
+      if(!this.at('}'))do{
+        const token=this.expect('identifier'),pattern=this.match(':')?this.parseBindingPattern():{kind:'nameBinding' as const,name:token.value,span:token.span};
+        fields.push({name:token.value,pattern,nameSpan:token.span,span:this.span(token.span)});
+      }while(this.match(',')&&!this.at('}')&&!this.at('eof'));
+      this.expect('}');return {kind:'recordBinding',fields,span:this.span(start)};
+    }
+    throw new ParseFailure({...start,code:'PATTERN',message:'A binding pattern contains names, tuple positions, or named record fields'});
   }
 
   private parseMatchPattern():MatchPattern {

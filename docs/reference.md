@@ -203,6 +203,32 @@ Managed mutations need a borrow; owned collections mutate directly. Collections 
 
 Tuple destructuring introduces new local names and checks arity. A one-name tuple pattern binds the tuple’s cell; use `(value,)` for a one-cell tuple. A single loop item or wait result still receives its whole value. `for item in values` snapshots List, Set, and homogeneous Tuple elements. `for (key, value) in map` snapshots entries in insertion order. Modifying the original collection does not extend the current iteration. Reference elements remain read-only.
 
+### Record and nested tuple bindings (unreleased)
+
+Select record fields by name, or unpack tuple positions into new local names. `field: name` renames a field; another pattern can unpack the selected value further. This example selects two fields from `Person` and unpacks its ratings:
+
+```aug project=binding-patterns-guide file=main.aug
+import Person from people
+
+person = Person(name="Ada", ratings=(7, 9), age=37)
+{name: displayName, ratings: (first, second)} = person
+print(value=displayName)
+print(value=first + second)
+
+for {name} in [person]:
+    print(value=name)
+```
+
+```aug project=binding-patterns-guide file=people.aug
+record Person(string name, Tuple<int, int> ratings, int age)
+```
+
+The output is `Ada`, `16`, and `Ada`, each on its own line. Omitted record fields need no binding. Every tuple level must match its exact number of positions; `(cell,)` unpacks one position, while `(cell)` groups a name. An empty pattern checks the corresponding record or empty tuple and creates no names.
+
+The source expression runs once. Bindings grant read access without copying their values or transferring ownership. New names cannot repeat or replace an existing local, and a record field cannot appear twice in a pattern. Private fields remain private. Narrow an optional value before unpacking it. A borrowed reference keeps its lifetime restrictions, and a binding cannot freeze an external input or grant mutable access. Named fields require an immutable record; Maps and behavioral classes use their ordinary reading operations.
+
+Use the same patterns after `for` to unpack each snapshot item. Parameterized same-file test rows retain their flat tuple input form. Hover over a renamed field label to read its type and documentation; follow its definition to the record field. The selected local has its own definition in the pattern.
+
 ## Functions, effects, and capabilities
 
 A bare header without `implements` declares a function. A body infers its result from return expressions or an implemented interface. A body with no returned value has a void result; a bodyless signature needs `returns T` for a non-void result. Non-void bodies must return or throw on every path. A bodyless top-level declaration cannot be called unless it is an extern declaration.

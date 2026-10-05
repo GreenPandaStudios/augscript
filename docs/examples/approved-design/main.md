@@ -124,7 +124,7 @@ It sets `app` to the instance provided for `Application`. It calls [`app.start`]
 :::
 
 ::: spec-paragraph specification-paragraph-2
-If the value under `2` in `names` is not null, using `name` for it prints `name`. It splits a tuple containing `3`, `"plum"` into `code` and `label` in order. It prints the number of elements in a set containing a [`Fruit`](domain/models.md#symbol-Fruit) with `code` and `name` from `label`, a [`Fruit`](domain/models.md#symbol-Fruit) with `name` from `label` and `code`. Within a task and ownership scope, it sets `counter` to the instance provided for `Counter`. [source](main.md#source-L15-L22)
+If the value under `2` in `names` is not null, using `name` for it prints `name`. It reads a tuple containing `3`, `"plum"` once and binds `[0]` as `code` and `[1]` as `label`. It prints the number of elements in a set containing a [`Fruit`](domain/models.md#symbol-Fruit) with `code` and `name` from `label`, a [`Fruit`](domain/models.md#symbol-Fruit) with `name` from `label` and `code`. Within a task and ownership scope, it sets `counter` to the instance provided for `Counter`. [source](main.md#source-L15-L22)
 :::
 
 ::: spec-paragraph specification-paragraph-3

@@ -4,8 +4,8 @@ import { callableResult, callableErrors } from './contracts.ts';
 import { createHash } from 'node:crypto';
 import { existsSync, lstatSync, mkdirSync, readFileSync, realpathSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, relative, resolve } from 'node:path';
-import type { BindDecl, ClassDecl, Expr, GenericHeader, MethodDecl, Param, SourceFile, Span, Stmt, TestDecl, TopLevel, TypeRef } from './ast.ts';
-import { fieldsOf, typeName } from './ast.ts';
+import type { BindDecl, BindingPattern, ClassDecl, Expr, GenericHeader, MethodDecl, Param, SourceFile, Span, Stmt, TestDecl, TopLevel, TypeRef } from './ast.ts';
+import { bindingSelections, fieldsOf, typeName } from './ast.ts';
 import { builtinFunctions, builtinProperties, builtinTypes, collectionOperations, operationType, type BuiltinOperation } from './builtins.ts';
 import type { CheckedProject } from './checker.ts';
 import { callableDocumentation } from './documentation.ts';
@@ -277,6 +277,17 @@ class SpecWriter {
     const direct=def.node.methods.find(method=>method.name===name);if(direct)return direct;
     const refs=def.node.kind==='class'?def.node.implements:def.node.kind==='interface'?def.node.extends:[];
     for(const ref of refs){const parent=this.checked.project.scopes.get(def.file)?.get(ref.name);const inherited=parent&&this.method(parent,name,seen);if(inherited)return inherited;}
+  }
+  private bindingDescription(pattern:BindingPattern):string {
+    const use=(node:BindingPattern):void=>{
+      if(node.kind==='nameBinding'){const type=this.checked.patternTypes.get(node);if(type)this.locals.set(node.name,{name:type.name,args:[],nullable:type.nullable,optional:type.optional,span:node.span});}
+      else if(node.kind==='tupleBinding')node.items.forEach(use);
+      else if(node.kind==='recordBinding')for(const entry of node.fields){const field=this.checked.patternFields.get(entry);this.use(field?.owner,undefined,field?.field.name);use(entry.pattern);}
+    };use(pattern);
+    return coordinate(bindingSelections(pattern).map(binding=>{
+      const path=binding.path.reduce<string>((text,part)=>typeof part==='number'?text+'['+part+']':text+(text?'.':'')+part,'');
+      return path===binding.name?code(binding.name):code(path)+' as '+code(binding.name);
+    }));
   }
   private expression(expr:Expr, nested=false): string {
     switch(expr.kind) {
@@ -602,7 +613,7 @@ class SpecWriter {
           this.joinedText(target,stmt.value)??(arithmetic&&stmt.value.kind==='binary'?action(stmt.value.op==='+'?'increase':'decrease',`${target} by ${this.expression(stmt.value.right)}`):action('set',`${target} to ${this.expression(stmt.value)}`));
         return [explanation];
       }
-      case 'destructure':return [action('split',`${this.expression(stmt.value)} into ${coordinate(stmt.names.map(code))} in order`)];
+      case 'destructure':return stmt.pattern?[step('It reads '+this.expression(stmt.value)+' once'+(bindingSelections(stmt.pattern).length?' and binds '+this.bindingDescription(stmt.pattern):'; the empty pattern creates no bindings')+'.')]:[action('split',`${this.expression(stmt.value)} into ${coordinate(stmt.names.map(code))} in order`)];
       case 'expr': {
         if(stmt.expr.kind==='literal'&&stmt.expr.value===null)return [action('continue','without an operation')];
         if(stmt.expr.kind==='call') {
@@ -660,7 +671,7 @@ class SpecWriter {
         return [node];
       }
       case 'while':return [loop('While '+this.condition(stmt.test),nested(stmt.body),'Repeat this loop while its condition remains true.')];
-      case 'for':return [loop('For each '+coordinate(stmt.names.map(code))+' in a snapshot of '+this.expression(stmt.iterable),nested(stmt.body),'Repeat these steps for each remaining item in the snapshot.')];
+      case 'for':return [loop(stmt.pattern?'For each item in a snapshot of '+this.expression(stmt.iterable)+(bindingSelections(stmt.pattern).length?', binding '+this.bindingDescription(stmt.pattern):''):'For each '+coordinate(stmt.names.map(code))+' in a snapshot of '+this.expression(stmt.iterable),nested(stmt.body),'Repeat these steps for each remaining item in the snapshot.')];
       case 'match': {
         const value=this.expression(stmt.value);
         const terminal=(body:Stmt[])=>['return','throw'].includes(body.at(-1)?.kind??'');

@@ -4,6 +4,7 @@ import {checkProject} from './checker.ts';
 import {loadProject} from './project.ts';
 import {checkUnitTests,discoverTests,mergeTestAnalysis,uniqueDiagnostics} from './testing.ts';
 import {semanticGraph,occurrencesAt,semanticSourcePath,type SemanticGraph} from './symbols.ts';
+import {recordBindingFieldAt} from './binding-patterns.ts';
 import {reservedKeywords} from './lexer.ts';
 import {contractFacts} from './contract-facts.ts';
 import {publicContract} from './public-contracts.ts';
@@ -56,6 +57,8 @@ export function planRename(checked:CheckedProject,graph:SemanticGraph,file:strin
     let text=name;
     if(label&&value&&label.symbol!==value.symbol)text=label.symbol===symbol.id?name+'='+checked.project.files.get(path)!.source.slice(reference.start,reference.end):
       checked.project.files.get(path)!.source.slice(reference.start,reference.end)+'='+name;
+    const field=recordBindingFieldAt(checked,path,reference.start);
+    if(field?.shorthand&&reference.role==='declaration')text=field.field.name+': '+name;
     edits.push({file:path,start:reference.start,end:reference.end,text});
   }
   edits.sort((a,b)=>(a.file<b.file?-1:a.file>b.file?1:0)||a.start-b.start);

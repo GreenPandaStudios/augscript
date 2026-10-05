@@ -29,7 +29,7 @@ It takes `keys` as `List<RsaJwk>`, kept read-only.
 
 Export public parameters. Private key material never enters the JSON document. It takes `publicKey` as `RsaPublicKey` and `kid` as a string. It gets `crypto` ([`Crypto`](contracts.aug.md#symbol-Crypto)) from dependency injection.
 
-It splits [`crypto.exportRsa`](contracts.aug.md#symbol-Crypto.exportRsa) with `publicKey` into `modulus` and `exponent` in order. It returns a [`RsaJwk`](jose.aug.md#symbol-RsaJwk) with `kty` `"RSA"`, `kid`, `alg` `"RS256"`, `use` `"sig"`, `n` from the URL-safe base64 encoding of `modulus`, and `e` from the URL-safe base64 encoding of `exponent`. [source](jose.aug#L16-L17)
+It reads [`crypto.exportRsa`](contracts.aug.md#symbol-Crypto.exportRsa) with `publicKey` once and binds `[0]` as `modulus` and `[1]` as `exponent`. It returns a [`RsaJwk`](jose.aug.md#symbol-RsaJwk) with `kty` `"RSA"`, `kid`, `alg` `"RS256"`, `use` `"sig"`, `n` from the URL-safe base64 encoding of `modulus`, and `e` from the URL-safe base64 encoding of `exponent`. [source](jose.aug#L16-L17)
 
 <details>
 <summary>Checked interface</summary>

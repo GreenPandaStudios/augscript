@@ -38,7 +38,7 @@ Optional statement separator. Newlines, a closing block brace, or end of file al
 if condition: ... or {1: "apples"}
 ```
 
-After a block header, introduce a body indented with tabs or spaces. Dedenting ends that body. Each block may independently use braces or indentation. In a map literal, separate a key from its value; collection and parenthesis continuation indentation has no block meaning.
+After a block header, introduce a body indented with tabs or spaces. Dedenting ends that body. Each block may independently use braces or indentation. In a named record pattern, separate a field from its renamed binding or nested pattern. In a map literal, separate a key from its value; collection and parenthesis continuation indentation has no block meaning.
 
 ## !=
 
@@ -62,7 +62,7 @@ Access a method or property. A member starting with `_` is private to its declar
 (1, 2)
 ```
 
-Start a tuple, grouped expression, call argument list, function parameters, or class header. A comma creates a tuple; a single expression without a comma is grouping.
+Start a tuple, grouped expression, call argument list, function parameters, class header or tuple binding pattern. A nested assignment or loop pattern such as (first, (second, third)) checks every tuple shape. A comma creates a tuple; a single expression without a comma is grouping.
 
 ## )
 
@@ -94,7 +94,7 @@ End a list literal or interceptor annotation.
 {1, 2} or {1: "apples"}
 ```
 
-Start a set literal, map literal, or statement block. Comma-separated values create a Set; key: value pairs create a Map. Empty {} needs a declared Set or Map type. Classes, interfaces, interceptors, tests, functions, and control flow use braces for blocks.
+Start a set literal, map literal, statement block, or named record binding pattern. On the left of assignment or after for, {name, address: {city}} reads selected immutable record fields into new names. Comma-separated values create a Set; key: value pairs create a Map. Empty {} needs a declared Set or Map type. Classes, interfaces, interceptors, tests, functions, and control flow use braces for blocks.
 
 ## }
 

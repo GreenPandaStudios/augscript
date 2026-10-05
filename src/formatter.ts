@@ -1,4 +1,4 @@
-import type { ClassDecl, MatchPattern, Expr, GenericHeader, InterceptorAnnotation, MethodDecl, Param, SourceFile, Span, Stmt, TopLevel } from './ast.ts';
+import type { BindingPattern, ClassDecl, MatchPattern, Expr, GenericHeader, InterceptorAnnotation, MethodDecl, Param, SourceFile, Span, Stmt, TopLevel } from './ast.ts';
 import { typeName } from './ast.ts';
 import { lex } from './lexer.ts';
 import { parse } from './parser.ts';
@@ -160,6 +160,19 @@ class Printer {
     else { this.line(header); this.before(method.span.end); }
     this.remember(method.span,'function',line);
   }
+  private bindingPattern(pattern:BindingPattern):string {
+    const comment=this.inline(pattern.span.start);
+    if(pattern.kind==='nameBinding')return comment+pattern.name;
+    if(pattern.kind==='tupleBinding'){
+      const items=pattern.items.map(item=>this.bindingPattern(item));
+      return comment+this.delimited('(',items,')',(items.length===1?',':'')+this.inline(pattern.span.end));
+    }
+    const fields=pattern.fields.map(field=>{
+      const prefix=this.inline(field.nameSpan.start);
+      return prefix+field.name+(field.pattern.kind==='nameBinding'&&field.pattern.name===field.name?'':': '+this.bindingPattern(field.pattern));
+    });
+    return comment+this.delimited('{',fields,'}',this.inline(pattern.span.end));
+  }
   private matchPattern(clause:MatchPattern):string {
     return clause.pattern === 'else' ? 'else' : 'when ' + (clause.pattern === 'type' ? typeName(clause.type!) + ' ' + clause.name :
       clause.pattern === 'some' ? 'some ' + clause.name : clause.pattern === 'null' ? 'null' : this.expression(clause.literal!));
@@ -233,7 +246,7 @@ class Printer {
     else if (stmt.kind === 'assign') this.line(stmt.value.kind === 'resolve' && !stmt.declaredType && stmt.target.kind === 'name' ?
       `${this.expression(stmt.value)} to ${stmt.target.name}` : `${stmt.ownership === 'own' ? 'own ' : ''}` +
       `${stmt.declaredType ? typeName(stmt.declaredType) + ' ' : ''}${this.expression(stmt.target)} ${this.assign} ${this.expression(stmt.value)}`);
-    else if (stmt.kind === 'destructure') this.line(`(${stmt.names.join(', ')}) ${this.assign} ${this.expression(stmt.value)}`);
+    else if (stmt.kind === 'destructure') this.line(`${stmt.pattern?this.bindingPattern(stmt.pattern):'('+stmt.names.join(', ')+')'} ${this.assign} ${this.expression(stmt.value)}`);
     else if (stmt.kind === 'return') this.line('return' + (stmt.value ? ' ' + this.expression(stmt.value) : ''));
     else if (stmt.kind === 'break' || stmt.kind === 'continue') this.line(stmt.kind);
     else if (stmt.kind === 'throw') this.line('throw ' + this.expression(stmt.value));
@@ -241,7 +254,7 @@ class Printer {
       this.block('if ' + this.expression(stmt.test), () => stmt.then.forEach(child => this.statement(child)));
       if (stmt.otherwise.length) this.block('else', () => stmt.otherwise.forEach(child => this.statement(child)));
     } else if (stmt.kind === 'while') this.block('while ' + this.expression(stmt.test), () => stmt.body.forEach(child => this.statement(child)), stmt.span);
-    else if (stmt.kind === 'for') this.block(`for ${stmt.names.length === 1 ? stmt.names[0] : '(' + stmt.names.join(', ') + ')'} in ${this.expression(stmt.iterable)}`,
+    else if (stmt.kind === 'for') this.block(`for ${stmt.pattern?this.bindingPattern(stmt.pattern):stmt.names.length === 1 ? stmt.names[0] : '(' + stmt.names.join(', ') + ')'} in ${this.expression(stmt.iterable)}`,
       () => stmt.body.forEach(child => this.statement(child)), stmt.span);
     else if (stmt.kind === 'match') this.block('match ' + this.expression(stmt.value,1), () => stmt.cases.forEach(clause => {
       const pattern = this.matchPattern(clause);

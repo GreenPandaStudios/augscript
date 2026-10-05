@@ -78,8 +78,8 @@ Statement   := Assignment | Expression End | "pass" End
              | "if" Expression Block ["else" (Block | If)]
              | ("break" | "continue") End
              | "while" Expression Block
-             | "for" Pattern "in" Expression Block
-             | Pattern ("=" | "to") Expression End
+             | "for" BindingPattern "in" Expression Block
+             | BindingPattern ("=" | "to") Expression End
              | "match" Expression BlockOfCases
              | "try" Block {"catch" Type Name Block}
                ["always" Block]
@@ -89,7 +89,10 @@ Statement   := Assignment | Expression End | "pass" End
              | "yield" Expression End
              | "serve" Name {"and" Name} "on port" Expression End
 
-Pattern     := Name | "(" Name {"," Name} [","] ")"
+BindingPattern := Name | "(" [BindingPattern {"," BindingPattern} [","]] ")"
+               | "{" [FieldPattern {"," FieldPattern} [","]] "}"
+FieldPattern   := Name [":" BindingPattern]
+TestPattern    := Name | "(" Name {"," Name} [","] ")"
 MatchCase   := "when" ("null" | "some" Name | ScalarLiteral | Type Name) Block
              | "else" Block
 
@@ -97,11 +100,13 @@ Test        := "test" LocalFunction BlockOfGroups
              | "test" LocalClassType SubjectName BlockOfGroups
              | "test endpoint" LocalEndpoint ClientName BlockOfGroups
 Group       := "when" TestName BlockOfSetupAndCases
-Case        := "it" TestName ["for" Pattern "in" ListOfTupleRows] Block
+Case        := "it" TestName ["for" TestPattern "in" ListOfTupleRows] Block
 TestName    := Identifier | String
 ```
 
 Setup bindings precede setup statements, which precede cases. Empty bodies use pass. Includes are composition/setup operations; declarations and setup ordering are checked beyond parsing.
+
+Unreleased record and nested tuple binding patterns apply to assignment and ordinary loops. A lone parenthesized name groups that name; a trailing comma creates a one-cell tuple pattern. Named fields select immutable record data; tuple arity, private access and new binding names are checked. Parameterized test rows retain TestPattern.
 
 Unreleased expression matches reuse the case patterns above. An expression case block contains exactly one expression, not statements. Signed numeric, text and bool literals are scalar patterns. Result types must be compatible; null makes the result optional. Owned and native-resource results require statement matches.
 

@@ -100,5 +100,8 @@
   },
   "match-values-guide": {
     "stdout": "Guest\n7\n"
+  },
+  "binding-patterns-guide": {
+    "stdout": "Ada\n16\nAda\n"
   }
 }

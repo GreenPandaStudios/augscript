@@ -16,6 +16,8 @@ export const snippetCatalog = [
   {prefix:'resolve',description:'Resolve a dependency explicitly',body:'resolve ${1:Contract} to ${2:service}'},
   {prefix:'if',description:'Conditional code',body:'if ${1:condition}:\n    $0'},
   {prefix:'ifelse',description:'Two alternatives',body:'if ${1:condition}:\n    $2\nelse:\n    $0'},
+  {prefix:'bindrecord',description:'Read selected immutable record fields into new names',body:'{${1:name}: ${2:displayName}} = ${3:person}'},
+  {prefix:'bindtuple',description:'Unpack tuple positions into new names',body:'(${1:first}, (${2:second}, ${3:third})) = ${4:values}'},
   {prefix:'for',description:'Visit collection values',body:'for ${1:item} in ${2:items}:\n    $0'},
   {prefix:'while',description:'Repeat while a condition holds',body:'while ${1:condition}:\n    $0'},
   {prefix:'matchvalue',description:'Choose a value with exhaustive cases',body:'${1:result} = match ${2:condition}:\n    when true:\n        ${3:1}\n    when false:\n        ${4:0}'},
@@ -52,7 +54,7 @@ export function snippetBody(body: string, style: 'braces' | 'indent', tabs = fal
     const edits = lex('snippet.aug', lexical).tokens.filter(token => {
       if (token.kind !== '=') return false;
       const start = lexical.lastIndexOf('\n', token.span.start - 1) + 1;
-      return /^\s*[A-Za-z_]\w*\s*$/.test(lexical.slice(start, token.span.start));
+      return /^\s*(?:[A-Za-z_]\w*|\([^\n]*\)|\{[^\n]*\})\s*$/.test(lexical.slice(start, token.span.start));
     });
     for (const token of edits.reverse()) body = body.slice(0, token.span.start) + 'to' + body.slice(token.span.end);
   }

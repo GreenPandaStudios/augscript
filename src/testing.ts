@@ -146,6 +146,10 @@ export function mergeTestAnalysis(checked: CheckedProject, tests: { checked: Che
       if (!value || typeof value !== 'object') return;
       if (Array.isArray(value)) { value.forEach(visit); return; }
       if(entry.checked.inferredOwned.has(value as import('./ast.ts').Stmt))checked.inferredOwned.add(value as import('./ast.ts').Stmt);
+      const pattern=value as import('./ast.ts').BindingPattern,patternType=entry.checked.patternTypes.get(pattern);
+      if(patternType)checked.patternTypes.set(pattern,patternType);
+      const field=value as import('./ast.ts').RecordBindingField,selection=entry.checked.patternFields.get(field);
+      if(selection)checked.patternFields.set(field,selection);
       const expr = value as Expr;
       const type = entry.checked.expressionTypes.get(expr);
       if (type) checked.expressionTypes.set(expr, type);
