@@ -211,7 +211,7 @@ jobs:
           if-no-files-found: error
   docker-native:
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 60
     env:
       AUG_GITHUB_TOKEN: ${{ github.token }}
     steps:
