@@ -223,7 +223,7 @@ Use `assertEqual(actual=add(left=2, right=3), expected=5)` when the failure need
 
 Failures show bounded scalar, record, and tuple values, followed by the first difference in field order: for example, `difference at $.address[1].city`. Tuple positions start at zero. A difference inside private storage stops at its public parent, without showing private field names or values. The path search visits at most 64 values, descends through four containers, and uses at most 255 bytes for a path. If it reaches a limit, it reports that the path is unavailable.
 
-Long text and nested values are shortened; native payloads are omitted. File and line identify the assertion without printing its source literals. Use a boolean assertion when comparing a specific collection item or application property.
+Long text and nested values are shortened; native payloads are omitted. Control characters appear as fixed-width Unicode escapes, including embedded NUL bytes. File and line identify the assertion without printing its source literals. Use a boolean assertion when comparing a specific collection item or application property.
 
 An uncaught checked error, a native crash, a nonzero exit, or a timeout fails the case. Assertions are test operations, not production contracts.
 

@@ -26,16 +26,18 @@ export function nativeArchiveEntry(path:string,type:string,size:number):string {
   return name;
 }
 
-/** Authenticate tar/gzip bytes, counting all headers and payloads, including PAX/GNU metadata. */
+/** Authenticate tar/gzip bytes with separate member, extension-metadata and header limits. */
 export function archiveFileManifestSha256(file:string,archive:VerifiedArchive):string {
   if(!/^[0-9a-f]{64}$/.test(archive.sha256)||!Number.isSafeInteger(archive.maximumDownloadBytes)||archive.maximumDownloadBytes<1||
     !Number.isSafeInteger(archive.maximumUnpackedBytes)||archive.maximumUnpackedBytes<1)
     throw new Error('NATIVE_INTEGRITY: Invalid archive digest or size bound');
   const manifest=nativePath(archive.fileManifest),digest=createHash('sha256'),member=createHash('sha256'),seen=new Set<string>();
   const metadataTypes=['ExtendedHeader','OldExtendedHeader','GlobalExtendedHeader','NextFileHasLongPath','OldGnuLongPath','NextFileHasLongLinkpath'];
-  const maximumRaw=archive.maximumUnpackedBytes+20000*1024+10240;
+  // Package producers and cache verification count extracted file bytes.
+  // Tar extensions are not extracted files; bound their aggregate separately.
+  const maximumMetadata=1024*1024,maximumRaw=archive.maximumUnpackedBytes+maximumMetadata+20000*1024+10240;
   if(!Number.isSafeInteger(maximumRaw))throw new Error('NATIVE_INTEGRITY: Invalid archive size bound');
-  const headerBytes=Buffer.alloc(512);let filled=0,remaining=0,padding=0,unpacked=0,count=0,raw=0,nulls=0,eof=false,found=false;
+  const headerBytes=Buffer.alloc(512);let filled=0,remaining=0,padding=0,unpacked=0,metadataBytes=0,count=0,raw=0,nulls=0,eof=false,found=false;
   let type='',isManifest=false,metadata:Buffer[]=[],local:Pax|undefined,global:Pax|undefined;
   const finishBody=()=>{
     if(!metadataTypes.includes(type))return;
@@ -62,10 +64,11 @@ export function archiveFileManifestSha256(file:string,archive:VerifiedArchive):s
       if(!header.cksumValid||!header.path)throw new Error('NATIVE_INTEGRITY: Invalid archive header');
       type=header.type;const size=header.size??0,meta=metadataTypes.includes(type);
       if(!Number.isSafeInteger(size)||size<0)throw new Error('NATIVE_INTEGRITY: Invalid archive entry size');
-      unpacked+=size;if(++count>20000||unpacked>archive.maximumUnpackedBytes)throw new Error('NATIVE_INTEGRITY: Archive exceeds its unpacked size or file limit');
+      if(++count>20000)throw new Error('NATIVE_INTEGRITY: Archive exceeds its unpacked size or file limit');
       isManifest=false;
-      if(meta){if(size>1024*1024)throw new Error('NATIVE_INTEGRITY: Archive metadata exceeds its size limit');}
+      if(meta){metadataBytes+=size;if(size>maximumMetadata||metadataBytes>maximumMetadata)throw new Error('NATIVE_INTEGRITY: Archive metadata exceeds its size limit');}
       else {
+        unpacked+=size;if(unpacked>archive.maximumUnpackedBytes)throw new Error('NATIVE_INTEGRITY: Archive exceeds its unpacked size or file limit');
         const name=nativeArchiveEntry(header.path,['OldFile','ContiguousFile'].includes(type)?'File':type,size);
         if(header.linkpath)throw new Error('NATIVE_INTEGRITY: Archive links and special files are forbidden');
         if(seen.has(name))throw new Error('NATIVE_INTEGRITY: Duplicate archive path '+name);seen.add(name);local=undefined;

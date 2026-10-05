@@ -177,6 +177,9 @@ installation checks that pin against the original archive; subsequent cache
 checks use the source-owned pin and verify every member without decompressing
 the archive again. The pin is preserved in both source and native target locks.
 It does not replace the outer archive checksum or download/unpacked bounds.
+
+`maximumUnpackedBytes` limits the total extracted file bytes, including the member manifest. Tar extension metadata has a separate 1 MiB aggregate limit; every header counts toward the 20,000-entry limit. August also bounds the complete expanded transport, including padding. GNU long filenames and PAX metadata therefore work with exact file-size bounds without accepting unbounded metadata.
+
 Older CLI releases reject this new field as unsupported metadata. Packages
 without it continue to use the authenticated original archive.
 

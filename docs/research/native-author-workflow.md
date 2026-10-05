@@ -28,7 +28,14 @@ directory. For unpinned member manifests, a single regular-file descriptor
 supplies both the archive checksum and streamed parser. Only the original
 manifest is hashed; other contents are drained under path, type, count and size
 bounds. The header walk uses the pinned tar library's public header/PAX decoders
-and counts metadata headers and payloads too, including empty metadata. Cached
+and counts every header, including empty metadata. The declared unpacked bound
+covers extracted file bytes, as in compiler-pack production and cache hashing.
+PAX/GNU extension bodies have a separate 1 MiB aggregate limit, and the complete
+expanded stream has a bound that includes headers and padding. The merge
+qualification found 317 bytes of GNU long-path metadata in the public ARM64
+LibTorch archive; charging those bytes to its exact file-size declaration rejected
+a valid package. Separate metadata accounting restores the established manifest
+contract and rejects aggregate metadata floods independently of file size. Cached
 member hashing uses bounded regular-file descriptors; it neither opens a FIFO
 nor allocates a whole native library. Gzip decompression uses the already
 pinned MIT-licensed `minizlib` 3.1.0 as a direct CLI dependency. Its synchronous

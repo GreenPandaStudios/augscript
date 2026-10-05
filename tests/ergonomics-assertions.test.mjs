@@ -122,3 +122,31 @@ test read {
     }
   }finally{rmSync(root,{recursive:true,force:true});}
 });
+
+
+for(const backend of ['c','llvm'])test('assertion control-character escapes stay within their fixed byte lengths ('+backend+')',()=>{
+ const root=mkdtempSync(join(tmpdir(),'aug-assertion-escapes-'));
+ try{
+  const controls=String.fromCharCode(...Array.from({length:32},(_,i)=>i),127);
+  const literal=value=>'\"'+value.replaceAll('\0','\\0').replaceAll('\n','\\n').replaceAll('\r','\\r').replaceAll('\t','\\t')+'\"';
+  writeFileSync(join(root,'main.aug'),'');
+  writeFileSync(join(root,'values.aug'),`read() { return 1 }
+test read { when escaping {
+ it controls { assertEqual(actual=${literal(controls)}, expected="") }
+ it truncated { assertEqual(actual=${literal(controls.repeat(100))}, expected="") }
+} }
+`);
+  const result=spawnSync(process.execPath,['bin/aug.mjs','test',root,'--backend',backend,'--json'],{encoding:'utf8'});
+  assert.equal(result.status,1,result.stderr);const report=JSON.parse(result.stdout);assert.equal(report.failed,2);
+  const escaped=[...controls].map(value=>'\\u'+value.charCodeAt(0).toString(16).padStart(4,'0')).join('');
+  assert.ok(report.tests[0].stderr.includes('actual: "'+escaped+'"'),report.tests[0].stderr);
+  assert.ok(report.tests[1].stderr.length<1600);assert.doesNotMatch(report.tests[1].stderr,/�|AddressSanitizer|runtime error:/);
+  if(backend==='c'&&process.env.AUG_TEST_ASSERTION_SANITIZERS==='1')for(let index=0;index<report.tests.length;index++){
+   const metadata=JSON.parse(readFileSync(join(root,'.aug-build/tests/test-'+index+'.augmap.json'),'utf8')),output=join(root,'.aug-build/tests/sanitized-'+index),args=[...metadata.arguments];
+   args[args.indexOf('-o')+1]=output;const optimization=args.indexOf('-O0');if(optimization>=0)args[optimization]='-O1';args.unshift('-fsanitize=address,undefined','-fno-omit-frame-pointer');
+   const compiled=spawnSync(metadata.compiler,args,{encoding:'utf8',timeout:60000});assert.equal(compiled.status,0,compiled.stderr);
+   const sanitized=spawnSync(output,[],{encoding:'utf8',timeout:10000,env:{...process.env,ASAN_OPTIONS:'detect_leaks=0:halt_on_error=1',UBSAN_OPTIONS:'halt_on_error=1'}});
+   assert.equal(sanitized.status,1,sanitized.stderr);assert.match(sanitized.stderr,/assertion failed/);assert.doesNotMatch(sanitized.stderr,/AddressSanitizer|runtime error:|UndefinedBehaviorSanitizer/);
+  }
+ }finally{rmSync(root,{recursive:true,force:true});}
+});

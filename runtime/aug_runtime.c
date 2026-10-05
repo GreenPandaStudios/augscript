@@ -678,7 +678,11 @@ static void assertion_string(const char *text, size_t length, size_t *remaining)
   for(size_t i=0;i<limit && *remaining;i++) {
     unsigned char value=(unsigned char)text[i];
     if(value=='"'||value=='\\'){assertion_literal("\\",remaining);assertion_text(text+i,1,remaining);}
-    else if(value<32 || value==127){char escape[7];snprintf(escape,sizeof(escape),"\\u%04x",value);assertion_literal(escape,remaining);}
+    else if(value<32 || value==127){
+      static const char hex[]="0123456789abcdef";
+      const char escape[6]={'\\','u','0','0',hex[value>>4],hex[value&15]};
+      assertion_text(escape,sizeof(escape),remaining);
+    }
     else {
       size_t bytes=value<128?1:value<224?2:value<240?3:4;
       if(bytes>*remaining)break;

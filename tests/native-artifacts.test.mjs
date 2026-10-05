@@ -199,14 +199,14 @@ test('cached members exceeding the declared unpacked bound reject before whole-f
 }));
 
 
-test('archive bounds count PAX metadata bytes and every metadata header including empty ones',()=>fixture(async f=>{
+test('archive bounds independently cap aggregate PAX metadata and count every metadata header including empty ones',()=>fixture(async f=>{
  const bytes=Buffer.from(JSON.stringify({format:1,files:{}})),header=new Header({path:'files.json',size:bytes.length,mode:0o644,type:'File'});header.encode();
  const regular=Buffer.concat([header.block,bytes,Buffer.alloc((512-bytes.length%512)%512),Buffer.alloc(1024)]);
  const empty=new Header({path:'PaxHeader',size:0,mode:0o644,type:'ExtendedHeader'});empty.encode();
- for(const [meta,bound] of [[new Pax({comment:'a'.repeat(5632)}).encode(),1024],[Buffer.concat(Array.from({length:20001},()=>empty.block)),1024]]){
+ for(const [meta,bound] of [[Buffer.concat(Array.from({length:3},()=>new Pax({comment:'a'.repeat(512*1024)}).encode())),2*1024*1024],[Buffer.concat(Array.from({length:20001},()=>empty.block)),1024]]){
    const bytes=gzipSync(Buffer.concat([meta,regular]));globalThis.fetch=async()=>new Response(bytes);
    const metadata={...f.metadata,sha256:hash(bytes),maximumDownloadBytes:bytes.length,maximumUnpackedBytes:bound};
-   await assert.rejects(ensureVerifiedArchive(metadata,{cache:f.cache}),/unpacked size|file limit/);
+   await assert.rejects(ensureVerifiedArchive(metadata,{cache:f.cache}),/unpacked size|file limit|metadata.*size limit/);
    assert.equal(existsSync(join(f.cache,metadata.sha256)),false);
  }
 }));
@@ -218,7 +218,30 @@ test('ordinary PAX, global and GNU long-path metadata preserve the authenticated
  const tail=Buffer.concat([header.block,contents,Buffer.alloc((512-contents.length%512)%512),Buffer.alloc(1024)]);
  const long=Buffer.from('files.json\0'),gnu=new Header({path:'LongLink',size:long.length,type:'NextFileHasLongPath',mode:0o644});gnu.encode();
  const cases=[new Pax({path:'files.json'}).encode(),Buffer.concat([new Pax({mtime:new Date('2026-01-01')},true).encode(),new Pax({path:'files.json'}).encode()]),Buffer.concat([gnu.block,long,Buffer.alloc((512-long.length%512)%512)])];
- for(const meta of cases){const bytes=gzipSync(Buffer.concat([meta,tail]));globalThis.fetch=async()=>new Response(bytes);const metadata={...f.metadata,sha256:hash(bytes),maximumDownloadBytes:bytes.length};
+ for(const meta of cases){const bytes=gzipSync(Buffer.concat([meta,tail]));globalThis.fetch=async()=>new Response(bytes);const metadata={...f.metadata,sha256:hash(bytes),maximumDownloadBytes:bytes.length,maximumUnpackedBytes:contents.length};
    const directory=await ensureVerifiedArchive(metadata,{cache:f.cache});assert.deepEqual(readFileSync(join(directory,'files.json')),contents);assert.equal(await ensureVerifiedArchive(metadata,{cache:f.cache,offline:true}),directory);
  }
+}));
+
+
+test('GNU long-path metadata does not consume the declared extracted-file bound',()=>fixture(async f=>{
+ const name='licenses/'+('component-'.repeat(10))+'/LICENSE',data=Buffer.from('Library license'),manifest=Buffer.from(JSON.stringify({format:1,files:{[name]:hash(data)}}));
+ const entry=(path,type,bytes)=>{const header=new Header({path,size:bytes.length,type,mode:0o644});header.encode();return Buffer.concat([header.block,bytes,Buffer.alloc((512-bytes.length%512)%512)]);};
+ const long=entry('LongLink','NextFileHasLongPath',Buffer.from(name+'\0'));
+ const raw=Buffer.concat([long,entry('placeholder','File',data),entry('files.json','File',manifest),Buffer.alloc(1024)]);
+ for(const bytes of [raw,gzipSync(raw)]){
+  globalThis.fetch=async()=>new Response(bytes);const metadata={...f.metadata,sha256:hash(bytes),maximumDownloadBytes:bytes.length,maximumUnpackedBytes:data.length+manifest.length};
+  const directory=await ensureVerifiedArchive(metadata,{cache:f.cache});assert.deepEqual(readFileSync(join(directory,name)),data);
+  assert.equal(await ensureVerifiedArchive(metadata,{cache:f.cache,offline:true}),directory);
+  await assert.rejects(ensureVerifiedArchive({...metadata,maximumUnpackedBytes:metadata.maximumUnpackedBytes-1},{cache:f.cache,offline:true}),/unpacked size/);
+ }
+}));
+
+
+test('archive transport bounds reject excessive zero padding after the terminator',()=>fixture(async f=>{
+ const manifest=Buffer.from(JSON.stringify({format:1,files:{}})),header=new Header({path:'files.json',size:manifest.length,type:'File',mode:0o644});header.encode();
+ const bytes=gzipSync(Buffer.concat([header.block,manifest,Buffer.alloc((512-manifest.length%512)%512),Buffer.alloc(24*1024*1024)]));
+ globalThis.fetch=async()=>new Response(bytes);const metadata={...f.metadata,sha256:hash(bytes),maximumDownloadBytes:bytes.length,maximumUnpackedBytes:manifest.length};
+ await assert.rejects(ensureVerifiedArchive(metadata,{cache:f.cache}),/unpacked size|file limit/);
+ assert.equal(existsSync(join(f.cache,metadata.sha256)),false);
 }));
