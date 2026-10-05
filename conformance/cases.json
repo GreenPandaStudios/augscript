@@ -184,7 +184,7 @@
     {
       "id": "text",
       "files": {
-        "main.aug": "print(value=\"\ud83d\udc4b\".length())\nprint(value=\"caf\u00e9\".bytes().length())\n"
+        "main.aug": "print(value=\"👋\".length())\nprint(value=\"café\".bytes().length())\n"
       },
       "stdout": "4\n5\n"
     },
@@ -257,6 +257,13 @@
         "errors.aug": "error Wrapped<E implements Error>(string message)\n"
       },
       "diagnostic": "ERROR_MATCH"
+    },
+    {
+      "id": "grapheme-boundaries",
+      "files": {
+        "main.aug": "try:\n    text = \"é👩‍💻\"\n    print(value=text.byteLength())\n    print(value=text.graphemeLength())\n    for part in text.graphemes():\n        print(value=part)\n    print(value=\"्क\".graphemeLength())\ncatch ConversionError error:\n    print(value=\"unexpected\")\n"
+      },
+      "stdout": "14\n2\né\n👩‍💻\n1\n"
     }
   ],
   "mutations": [

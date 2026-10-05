@@ -73,6 +73,7 @@ export default defineConfig({
         { text: 'Choose a guide', link: '/guides/' },
         { text: 'Try a snippet', link: '/guides/try-a-snippet' },
         { text: 'Add error context', link: '/guides/add-error-context' },
+            { text: 'Measure text', link: '/guides/measure-text' },
         { text: 'Describe a finite choice', link: '/guides/use-choices' },
         { text: 'Pass a small function', link: '/guides/use-callbacks' },
         { text: 'Reuse service wiring', link: '/guides/reuse-services' },

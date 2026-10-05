@@ -84,6 +84,16 @@ try {
   assert.equal(aug('run',contextualErrors),'compute\n42\noperation.aug\n');
   if(process.env.AUG_LLVM_HOME&&process.env.AUG_RUNTIME_PACK)assert.equal(run(process.execPath,[cli,'run',contextualErrors,'--backend','llvm']),'compute\n42\noperation.aug\n');
   aug('spec',contextualErrors);
+  const measuredText=join(directory,'grapheme-consumer');mkdirSync(measuredText);
+  writeFileSync(join(measuredText,'main.aug'),'try:\n    text = "é👩‍💻"\n    print(value=text.byteLength())\n    print(value=text.graphemeLength())\n    print(value=text.graphemes().join(separator="") == text)\ncatch ConversionError failure:\n    print(value="unexpected")\n');
+  assert.equal(aug('run',measuredText),'14\n2\ntrue\n');
+  assert.match(readFileSync(join(cliRoot,'runtime/UNICODE-LICENSE.txt'),'utf8'),/UNICODE LICENSE V3/);
+  if(process.env.AUG_LLVM_HOME&&process.env.AUG_RUNTIME_PACK){
+    assert.equal(run(process.execPath,[cli,'run',measuredText,'--backend','llvm']),'14\n2\ntrue\n');
+    const pack=JSON.parse(readFileSync(join(process.env.AUG_RUNTIME_PACK,'runtime.json'),'utf8'));
+    assert.equal(readFileSync(join(measuredText,'.aug-build/share/august-native','runtime-'+pack.sourceSha256,'licenses/Unicode.txt'),'utf8'),readFileSync(join(cliRoot,'runtime/UNICODE-LICENSE.txt'),'utf8'));
+  }
+
   const callbacks=join(directory,'callback-consumer');mkdirSync(callbacks);
   writeFileSync(join(callbacks,'main.aug'),'import transform from august.collections\nfor value in transform(values=[2, 3], transformation=(int value) => value * 2):\n    print(value=value)\n');
   assert.equal(aug('run',callbacks),'4\n6\n');

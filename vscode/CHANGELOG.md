@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Complete and explain explicit byte and Unicode 18 grapheme text operations, including their checked UTF-8 failures.
+
 - Complete and explain `sourceLocation()` and the typed `august.errors` library, with repair guidance for unsupported generic catches.
 
 Complete and navigate closed record choices. Distinguish the contextual declaration from functions named `choice`, and show its alternative records in hover.

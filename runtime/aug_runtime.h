@@ -166,6 +166,8 @@ AugValue aug_list_join(AugValue list, AugValue separator);
 bool aug_string_ends_with(AugValue value, AugValue suffix);
 AugValue aug_string_replace(AugValue value, AugValue search, AugValue replacement);
 int64_t aug_string_code_point_length(AugValue value);
+int64_t aug_string_grapheme_length(AugValue value);
+AugValue aug_string_graphemes(AugValue value);
 int64_t aug_string_parse_integer(AugValue value);
 AugValue aug_string_parse_float(AugValue value);
 bool aug_string_starts_with(AugValue value, AugValue prefix);

@@ -38,7 +38,9 @@
     "test:conformance": "node scripts/check-language-conformance.mjs",
     "test:reliability": "node scripts/qualify-runtime.mjs",
     "test:editor": "node scripts/qualify-editor.mjs",
-    "test:upgrade": "node scripts/qualify-cli-upgrade.mjs"
+    "test:upgrade": "node scripts/qualify-cli-upgrade.mjs",
+    "unicode:generate": "node scripts/generate-graphemes.mjs",
+    "unicode:check": "node scripts/generate-graphemes.mjs --check"
   },
   "devDependencies": {
     "@types/markdown-it-container": "4.0.1",

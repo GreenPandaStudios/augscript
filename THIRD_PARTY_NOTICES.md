@@ -1,6 +1,6 @@
 # Native dependency sources
 
-August's compiler/runtime code is MIT licensed. Native dependencies are downloaded explicitly by `aug-native` or `scripts/bootstrap-native.mjs`; their source archives, headers and binaries are not included in these source/npm/VSIX artifacts. Versions and archive checksums are pinned in `scripts/native-dependencies.lock.json`.
+August's compiler/runtime code is MIT licensed. Consumers obtain verified native compiler/runtime packs automatically through `aug run`. Maintainers build pinned dependencies with `aug-native` or `scripts/bootstrap-native.mjs`. The source/npm/VSIX artifacts include August runtime sources and the derived Unicode tables and notice; other native archives and binaries are retained in the separate compiler/runtime packs. Versions and archive checksums are pinned in `scripts/native-dependencies.lock.json`.
 
 | Dependency | Official source and license information |
 | --- | --- |
@@ -13,9 +13,10 @@ August's compiler/runtime code is MIT licensed. Native dependencies are download
 | libwebsockets | [libwebsockets](https://github.com/warmcat/libwebsockets/blob/main/LICENSE), MIT core with additional notices for selected bundled files; `LICENSE` |
 | yyjson | [yyjson](https://github.com/ibireme/yyjson/blob/master/LICENSE), MIT |
 | minicoro | [minicoro](https://github.com/edubart/minicoro/blob/main/LICENSE), public domain or MIT No Attribution |
+| Unicode grapheme data | [Unicode 18.0.0 data](https://www.unicode.org/Public/18.0.0/ucd/) and [Unicode License V3](https://www.unicode.org/license.txt); complete notice in `runtime/UNICODE-LICENSE.txt` and the generated table. Runtime packs and deployed applications retain `licenses/Unicode.txt`. |
 | zlib | Host system library; [zlib](https://zlib.net/zlib_license.html) |
 
-Applications built using web/crypto link native libraries from the selected dependency prefix. Redistributors of compiled applications must preserve the notices and satisfy the licenses of the libraries they include. The release process currently distributes compiler/library source packages and VSIX rather than prebuilt native dependency bundles.
+Applications built using web/crypto link native libraries from the selected dependency prefix. Redistributors of compiled applications must preserve the notices and satisfy the licenses of the libraries they include. Compiler/runtime packs retain native notices and corresponding component sources. LLVM application bundles retain their selected native dependency closure, sources and notices under `share/august-native/`.
 
 ## JavaScript archive dependencies
 

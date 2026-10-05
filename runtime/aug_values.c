@@ -1,4 +1,5 @@
 #include "aug_runtime.h"
+#include "aug_grapheme_data.h"
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
@@ -211,3 +212,66 @@ AugValue aug_string_parse_float(AugValue value) {
   uselocale(previous); freelocale(invariant);
   return failed ? aug_error_named("ConversionError") : aug_float(parsed);
 }
+
+/* Default extended grapheme boundaries: Unicode 18.0.0, UAX #29 revision 49.
+   The state follows GB9c, GB11 and GB12/13 without rescanning earlier text. */
+typedef struct {
+  unsigned previous;
+  bool regional_odd, pictograph_extend, zwj_after_pictograph, indic_linker;
+} AugGraphemeState;
+static unsigned grapheme_property(uint32_t point) {
+  if (point < 128) return point == 13 ? AUG_GCB_CR : point == 10 ? AUG_GCB_LF : point < 32 || point == 127 ? AUG_GCB_CONTROL : AUG_GCB_OTHER;
+  size_t begin = 0, end = sizeof(aug_grapheme_ranges) / sizeof(aug_grapheme_ranges[0]);
+  while (begin < end) {
+    size_t middle = begin + (end - begin) / 2;
+    const AugGraphemeRange *range = &aug_grapheme_ranges[middle];
+    if (point < range->first) end = middle;
+    else if (point > range->last) begin = middle + 1;
+    else return range->properties;
+  }
+  return 0;
+}
+static bool grapheme_step(AugGraphemeState *state, unsigned property) {
+  unsigned previous = state->previous & AUG_GCB_MASK, next = property & AUG_GCB_MASK;
+  unsigned conjunct = property >> AUG_INCB_SHIFT;
+  bool boundary = true;
+  if (previous == AUG_GCB_CR && next == AUG_GCB_LF) boundary = false; /* GB3 */
+  else if (previous == AUG_GCB_CR || previous == AUG_GCB_LF || previous == AUG_GCB_CONTROL ||
+           next == AUG_GCB_CR || next == AUG_GCB_LF || next == AUG_GCB_CONTROL) boundary = true; /* GB4/5 */
+  else if (previous == AUG_GCB_L && (next == AUG_GCB_L || next == AUG_GCB_V || next == AUG_GCB_LV || next == AUG_GCB_LVT)) boundary = false; /* GB6 */
+  else if ((previous == AUG_GCB_LV || previous == AUG_GCB_V) && (next == AUG_GCB_V || next == AUG_GCB_T)) boundary = false; /* GB7 */
+  else if ((previous == AUG_GCB_LVT || previous == AUG_GCB_T) && next == AUG_GCB_T) boundary = false; /* GB8 */
+  else if (next == AUG_GCB_EXTEND || next == AUG_GCB_ZWJ || next == AUG_GCB_SPACINGMARK || previous == AUG_GCB_PREPEND) boundary = false; /* GB9/9a/9b */
+  else if (conjunct == AUG_INCB_CONSONANT && state->indic_linker) boundary = false; /* GB9c: no leading consonant is required in revision 49 */
+  else if ((property & AUG_EXTENDED_PICTOGRAPHIC) && previous == AUG_GCB_ZWJ && state->zwj_after_pictograph) boundary = false; /* GB11 */
+  else if (previous == AUG_GCB_REGIONAL_INDICATOR && next == AUG_GCB_REGIONAL_INDICATOR && state->regional_odd) boundary = false; /* GB12/13 */
+  state->zwj_after_pictograph = next == AUG_GCB_ZWJ && state->pictograph_extend;
+  state->pictograph_extend = (property & AUG_EXTENDED_PICTOGRAPHIC) || (next == AUG_GCB_EXTEND && state->pictograph_extend);
+  state->indic_linker = conjunct == AUG_INCB_LINKER || (conjunct == AUG_INCB_EXTEND && state->indic_linker);
+  state->regional_odd = next == AUG_GCB_REGIONAL_INDICATOR ? previous == AUG_GCB_REGIONAL_INDICATOR ? !state->regional_odd : true : false;
+  state->previous = property;
+  return boundary;
+}
+static int64_t string_graphemes(AugValue value, AugValue *parts) {
+  const unsigned char *text = (const unsigned char *)value.as.object->text;
+  size_t size = value.as.object->text_length;
+  if (!aug_valid_utf8(text, size)) { aug_error_named("ConversionError"); return 0; }
+  AugValue roots[2] = {value, aug_null()}; AugFrame frame; aug_frame_enter(&frame, roots, 2);
+  if (parts) roots[1] = aug_list_new(NULL, 0);
+  AugGraphemeState state = {0}; int64_t count = 0; size_t start = 0, width;
+  for (size_t position = 0; position < size; position += width) {
+    bool boundary = grapheme_step(&state, grapheme_property(text_codepoint(text + position, &width)));
+    if (!position || boundary) {
+      count++;
+      if (position && parts) aug_list_append(roots[1], aug_string_n(text + start, position - start));
+      start = position;
+    }
+  }
+  if (parts) {
+    if (size) aug_list_append(roots[1], aug_string_n(text + start, size - start));
+    *parts = roots[1];
+  }
+  aug_frame_leave(&frame); return count;
+}
+int64_t aug_string_grapheme_length(AugValue value) { return string_graphemes(value, NULL); }
+AugValue aug_string_graphemes(AugValue value) { AugValue parts = aug_null(); string_graphemes(value, &parts); return parts; }

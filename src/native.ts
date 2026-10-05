@@ -27,6 +27,7 @@ export function compileNative(root: string, generated: string, options: { output
   const runtimePath = join(buildDir, 'aug_runtime.c');
   copyFileSync(join(runtimeDir, 'aug_runtime.c'), runtimePath);
   copyFileSync(join(runtimeDir, 'aug_runtime.h'), join(buildDir, 'aug_runtime.h'));
+  copyFileSync(join(runtimeDir, 'aug_grapheme_data.h'), join(buildDir, 'aug_grapheme_data.h'));
   const valuesPath = join(buildDir, 'aug_values.c');
   copyFileSync(join(runtimeDir, 'aug_values.c'), valuesPath);
   const outputName = options.testIndex === undefined ? options.output ?? config.output ?? basename(root) : name;

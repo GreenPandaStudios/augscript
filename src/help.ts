@@ -1,3 +1,4 @@
+import {graphemeUnicodeVersion} from './unicode-version.ts';
 import { builtinFunctions } from './builtins.ts';
 /** Editor help for language constructs. Keep the examples valid AugScript. */
 export interface HelpEntry {
@@ -133,7 +134,7 @@ export const languageHelp: Record<string, HelpEntry> = {
   int: type('int', 'Signed 64-bit integer, from -9223372036854775808 to 9223372036854775807. Literals retain their exact value. Addition, subtraction, multiplication and MIN/-1 division wrap modulo 2^64. Dynamic division requires ArithmeticError handling. Mixed float arithmetic may lose integer precision.'),
   float: type('float', 'Floating point number type. Arithmetic supports `+`, `-`, `*`, and `/`.'),
   bool: type('bool', 'Boolean type used by conditions and logical operators.'),
-  string: type('string', 'Immutable valid Unicode encoded as UTF-8. Source literals reject embedded NUL at compilation, and text files reject it with FileError; decoded runtime strings are length-aware. The + operator joins strings. compare(other=...) returns -1, 0 or 1 by unsigned UTF-8 byte order, including length-aware decoded NUL, without collation or normalization. C string pointers live only for the unsafe call.'),
+  string: type('string', `Immutable valid Unicode encoded as UTF-8. Source literals reject embedded NUL at compilation, and text files reject it with FileError; decoded runtime strings are length-aware. The + operator joins strings. byteLength() and length() count UTF-8 bytes; codePointLength() counts scalars and utf16Length() counts UTF-16 units. graphemeLength() and graphemes() use Unicode ${graphemeUnicodeVersion} default extended boundaries, reject invalid UTF-8 with ConversionError and preserve original bytes without normalization or display-width interpretation. compare(other=...) returns -1, 0 or 1 by unsigned UTF-8 byte order, including length-aware decoded NUL, without collation or normalization. C string pointers live only for the unsafe call.`),
   void: type('void', 'No return value. A function can omit `returns void`.'),
   Error: type('Error', 'Root throwable interface. User defined error classes implement `Error`; `catch Error` handles any throwable type.'),
   FileError: type('FileError', 'Checked failure from text file operations. Catch it or let it propagate.'),

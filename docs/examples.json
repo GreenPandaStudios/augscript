@@ -120,5 +120,8 @@
   "error-context-guide": {
     "stdout": "read settings\nconfig.json\n",
     "tests": 2
+  },
+  "measure-text-guide": {
+    "stdout": "14\n5\n7\n2\né\n👩‍💻\n"
   }
 }

@@ -1825,6 +1825,25 @@
           "test": "generic catch rejects erased, optional, container and behavioral witnesses"
         }
       ]
+    },
+    {
+      "id": "GRAPHEME_TEXT",
+      "summary": "Unreleased explicit text units and Unicode 18.0.0 default extended grapheme boundaries preserve original bytes and check UTF-8.",
+      "reference": "guides/measure-text.md",
+      "productions": [],
+      "cases": [
+        "grapheme-boundaries"
+      ],
+      "regressions": [
+        {
+          "file": "tests/graphemes.test.mjs",
+          "test": "grapheme calls require checked failure handling and the returned list grants reading"
+        },
+        {
+          "file": "tests/unicode-data.test.mjs",
+          "test": "generated properties match every official assignment and default across all Unicode code points"
+        }
+      ]
     }
   ]
 }

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add explicit `byteLength()` and Unicode 18.0.0 default extended `graphemeLength()`/`graphemes()` operations, with checked UTF-8 validation and bundled licensed tables.
+
 - Add `august.errors` for deliberate `ContextError<E>` wrapping and compiler-provided `sourceLocation()` values. Supported generic catches verify every stored cause, including nested contexts; erased or behavioral profiles and generic HTTP status maps reject. Causes keep their concrete checked type; source identities use relative project/package paths.
 
 Name a closed set of immutable record outcomes with `choice NAME from A and B`. Check resolved alternatives and exhaustive matches, including optional nulls; retain normal constructors, validation, labels, data bounds and worker copies. Explain choices in editor/spec/context/public-contract tools and format both source styles. Serialization requires an explicitly selected record or wire envelope.

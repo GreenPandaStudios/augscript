@@ -6,6 +6,7 @@ Choose a guide for the task you are doing. If you are learning August for the fi
 
 | Task | Guide |
 | --- | --- |
+| Choose byte, scalar, UTF-16 or grapheme operations | [Measure text](measure-text.md) |
 | Explain a failure and retain its typed cause | [Add error context](add-error-context.md) |
 | Model a fixed set of data outcomes | [Describe a finite choice](use-choices.md) |
 | Pass a pure function or capture immutable values | [Pass a small function](use-callbacks.md) |

@@ -1,4 +1,5 @@
 import type { Ty } from './types.ts';
+import {graphemeUnicodeVersion} from './unicode-version.ts';
 
 export const builtinTypes = {
   int: { arity: 0 }, c_int: { arity: 0 }, float: { arity: 0 }, bool: { arity: 0 }, string: { arity: 0 }, void: { arity: 0 },
@@ -53,6 +54,9 @@ export const collectionOperations: Record<string, BuiltinOperation[]> = {
     {name:'float32', parameters:[], returns:'float', errors:['ConversionError'], documentation:'Round to IEEE 754 binary32 and return the rounded value as float. Reject nonfinite input or overflow.',native:'float32'},
   ],
   string: [
+    {name:'byteLength',parameters:[],returns:'int',documentation:'Read the number of UTF-8 bytes, including embedded NUL. This is the explicit-unit spelling of length().',native:'length'},
+    {name:'graphemeLength',parameters:[],returns:'int',errors:['ConversionError'],documentation:`Count default extended grapheme clusters using Unicode ${graphemeUnicodeVersion}. Empty text counts as zero. Reject invalid UTF-8; do not normalize, tailor by locale or measure display width.`,native:'grapheme_length'},
+    {name:'graphemes',parameters:[],returns:'List<string>',errors:['ConversionError'],documentation:`Read ordered, nonempty copies of default extended grapheme clusters using Unicode ${graphemeUnicodeVersion}. Empty text produces an empty list. Reject invalid UTF-8 and preserve every original byte; joining with an empty separator reconstructs the input.`,native:'graphemes'},
     {name:'compare',parameters:[{label:'other',type:'string'}],returns:'int',documentation:'Compare unsigned UTF-8 bytes lexicographically; return -1, 0 or 1. Preserve embedded NUL, compare a shorter identical prefix first, and perform no locale collation or normalization.',native:'compare'},
     {name:'endsWith',parameters:[{label:'suffix',type:'string'}],returns:'bool',documentation:'Test an exact UTF-8 suffix, including embedded NUL. An empty suffix matches.',native:'ends_with'},
     {name:'replace',parameters:[{label:'search',type:'string'},{label:'replacement',type:'string'}],returns:'string',errors:['ConversionError'],documentation:'Return new text with every nonoverlapping exact search replaced, left to right. Reject an empty search. This is not regular-expression replacement.',native:'replace'},

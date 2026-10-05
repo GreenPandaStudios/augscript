@@ -1146,7 +1146,7 @@ Declare a bounded streaming HTTP response. Yield values in wire order; disconnec
 string
 ```
 
-Immutable valid Unicode encoded as UTF-8. Source literals reject embedded NUL at compilation, and text files reject it with FileError; decoded runtime strings are length-aware. The + operator joins strings. compare(other=...) returns -1, 0 or 1 by unsigned UTF-8 byte order, including length-aware decoded NUL, without collation or normalization. C string pointers live only for the unsafe call.
+Immutable valid Unicode encoded as UTF-8. Source literals reject embedded NUL at compilation, and text files reject it with FileError; decoded runtime strings are length-aware. The + operator joins strings. byteLength() and length() count UTF-8 bytes; codePointLength() counts scalars and utf16Length() counts UTF-16 units. graphemeLength() and graphemes() use Unicode 18.0.0 default extended boundaries, reject invalid UTF-8 with ConversionError and preserve original bytes without normalization or display-width interpretation. compare(other=...) returns -1, 0 or 1 by unsigned UTF-8 byte order, including length-aware decoded NUL, without collation or normalization. C string pointers live only for the unsafe call.
 
 ## Task
 
@@ -1375,6 +1375,18 @@ Test whether this binary64 value is neither infinity nor NaN.
 Round to IEEE 754 binary32 and return the rounded value as float. Reject nonfinite input or overflow.
 
 ## string operations
+
+### string.byteLength
+
+Read the number of UTF-8 bytes, including embedded NUL. This is the explicit-unit spelling of length().
+
+### string.graphemeLength
+
+Count default extended grapheme clusters using Unicode 18.0.0. Empty text counts as zero. Reject invalid UTF-8; do not normalize, tailor by locale or measure display width.
+
+### string.graphemes
+
+Read ordered, nonempty copies of default extended grapheme clusters using Unicode 18.0.0. Empty text produces an empty list. Reject invalid UTF-8 and preserve every original byte; joining with an empty separator reconstructs the input.
 
 ### string.compare
 

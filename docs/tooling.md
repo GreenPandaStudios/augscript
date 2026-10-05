@@ -137,6 +137,7 @@ Unknown/duplicate keys, invalid values, and unsupported list shapes fail during 
 - float uses IEEE 754 binary64. Literals must be finite. Mixed int/float arithmetic widens to double and can lose integer precision. Runtime floating-point results follow native double behavior.
 - c_int is signed 32-bit and maps to the platform C int, whose width is checked during compilation. c_int(value=wide) raises ConversionError outside its range; int(value=narrow) widens without loss.
 - Source strings are Unicode text, emitted as UTF-8. NUL and unpaired surrogates are compile errors. File text rejects embedded NUL and malformed/overlong UTF-8 as FileError. Binary files need a future byte API.
+- **Unreleased text measurements:** `byteLength()` and `length()` count UTF-8 bytes; `codePointLength()` counts scalars, and `utf16Length()` counts UTF-16 units. `graphemeLength()` and `graphemes()` use pinned Unicode 18.0.0 default extended boundaries. The scalar and grapheme operations reject invalid UTF-8 with `ConversionError`; segmentation preserves original bytes and does not measure display width. See [measure text](guides/measure-text.md).
 - Immutable tuples and records have structural equality/hashing. Behavioral classes and mutable collection objects have identity equality. Map/Set preserve insertion order for iteration.
 
 ## C boundary
