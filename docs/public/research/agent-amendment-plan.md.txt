@@ -78,4 +78,3 @@ August's explicit state, capability, checked-error, and export contracts. Separa
 results, deterministic compiler properties, prototype feasibility, and research inference.
 No small pilot can justify 'best language' or a general AI accuracy advantage. The formal
 proposal must define the acceptance gates needed to earn those claims.
-

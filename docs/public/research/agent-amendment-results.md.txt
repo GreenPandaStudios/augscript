@@ -259,4 +259,3 @@ candidate, or deterministic refactoring alone do not establish general language 
 semantic indexing/refactoring, effects, verification and testing precedents. [README.md](README.md)
 describes reproduction and [artifact-manifest.json](artifact-manifest.json) identifies the
 distributed records. Raw model response/thinking files are excluded.
-
