@@ -47,7 +47,9 @@ const header = source => source.slice(0, source.indexOf('\n') < 0 ? source.lengt
 const signature = node => {
   if (node.kind !== 'function' && node.kind !== 'method') return header(project.files.get(node.span.file).source.slice(node.span.start));
   const params = node.params.map(param => (param.injected ? 'resolve ' : '') + (param.ownership === 'borrow' ? 'borrow ' : param.ownership === 'own' ? 'own ' : '') + typeName(param.type) + ' ' + (param.label??param.name) + (param.defaultValue?' = '+defaultText(param.defaultValue):''));
-  const generic = node.typeParams.length ? '<' + node.typeParams.join(', ') + '>' : '';
+  const generic = node.typeParams.length ? '<' + node.typeParams.map(name =>
+    (node.typeVariance?.[name] ? node.typeVariance[name] + ' ' : '') + name +
+    (node.typeConstraints?.[name]?.length ? ' implements ' + node.typeConstraints[name].map(typeName).join(' and ') : '')).join(', ') + '>' : '';
   let result = node.name + generic + '(' + params.join(', ') + ')';
   if (result.length > 85 && params.length > 1) result = node.name + generic + '(\n    ' + params.join(',\n    ') + '\n)';
   const returns = tyName(callableResult(checked, node)), errors = callableErrors(checked, node);
@@ -71,7 +73,7 @@ const link = node => {
   const path = relative(root, node.span.file).split(/[/\\]/).join('/');
   return `[Source](https://github.com/GreenPandaStudios/augscript/blob/main/${path}#L${node.span.line})`;
 };
-for (const module of ['io', 'collections', 'math', 'json', 'memory', 'time', 'web', 'crypto']) {
+for (const module of ['io', 'collections', 'math', 'errors', 'json', 'memory', 'time', 'web', 'crypto']) {
   const folder = join(root, 'src/stdlib', module);
   prepareRunPackages(folder);
   const before = loadProject(folder);
@@ -83,7 +85,7 @@ for (const module of ['io', 'collections', 'math', 'json', 'memory', 'time', 'we
   for (const output of generateSpecs(checked, { manifest: false,files:owned })) outputs.set(relative(root, output.path), output.text);
   const exports = project.files.get(join(folder, 'export.aug')).items.filter(item => item.kind === 'export' && !item.folder);
   const sections = [generated(`src/stdlib/${module}`) + `# august.${module}\n\n` +
-    (['io','collections','math'].includes(module) ? (module!=='io'?'**Unreleased:** ':'')+'Supplied with the compiler. Import public names from `august.' + module + '`.' :
+    (['io','collections','math','errors'].includes(module) ? (module!=='io'?'**Unreleased:** ':'')+'Supplied with the compiler. Import public names from `august.' + module + '`.' :
       'Install this source library with `aug add https://github.com/GreenPandaStudios/augscript/src/stdlib/' + module + ' --as ' + module + '`, then import its public names from `' + module + '`.') +
     '\n\nSignatures show result types and checked errors. See [packages](../packages.md) to pin a release and [language constructs](../language-constructs.md) for built-in types.'];
   for (const item of exports) {

@@ -486,6 +486,10 @@ class SpecWriter {
     return this.expression(expr)+` returns ${expected?'true':'false'}`;
   }
   private call(expr:Extract<Expr,{kind:'call'}>): string {
+    if(expr.callee.kind==='name'&&expr.callee.name==='sourceLocation'){
+      this.builtins.set('sourceLocation',builtinFunctions.find(operation=>operation.name==='sourceLocation')!);
+      return 'this call’s source location';
+    }
     if(expr.callee.kind==='name'&&['List','Set','Map'].includes(expr.callee.name)&&!this.definition(expr.callee.name)) {
       const name=expr.callee.name, types=expr.typeArgs.map(type=>this.type(type));
       const items=expr.args.map(arg=>this.expression(arg));

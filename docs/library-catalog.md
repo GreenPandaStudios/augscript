@@ -18,6 +18,7 @@ Search works offline and writes nothing. The results explain imports, ownership,
 | [BLAKE3](#blake3) | Hash bytes with the Rust BLAKE3 implementation. | Repository package |
 | [Bounded ranges](#collections) | Construct half-open integer ranges with checked steps and size limits. | Bundled with this compiler |
 | [Cryptography and JWT](#crypto) | Random bytes, digests, key operations and checked JWT helpers. | Repository package |
+| [Typed error context](#errors) | Retain a concrete error cause with an operation name and source location. | Bundled with this compiler |
 | [Metal GPU operations](#gpu) | Upload float32 vectors, add them on a Metal GPU and copy results back. | Repository package |
 | [Console, files and arguments](#io) | Explicit console, file and command-line capabilities. | Bundled with this compiler |
 | [JSON](#json) | Parse JSON with strict or bounded ingestion-compatible number handling. | Repository package |
@@ -105,6 +106,26 @@ This source folder has no declared compiler constraint. Its catalog reference ta
 MIT bindings; GnuTLS and its dependency closure retain their upstream licenses. [License details](https://github.com/GreenPandaStudios/augscript/blob/v0.23.0/THIRD_PARTY_NOTICES.md).
 
 The same-app OpenID Connect example verifies real native signatures and session JWT behavior. [Read the tests and example](https://greenpandastudios.github.io/augscript/examples/oidc-login/index).
+
+## Typed error context {#errors}
+
+Retain a concrete error cause with an operation name and source location.
+
+Unreleased; use the matching compiler. Capture sourceLocation() at the operation, and choose whether to throw, log or expose context.
+
+Import `august.errors` from the compiler’s core library. These additions are unreleased.
+
+```text
+import ContextError and errorContext from august.errors
+```
+
+Managed read-only context fields retain the original cause and its ordinary ownership rules.
+
+Declared compiler requirement: `0.23.0`.
+
+MIT. [License details](https://github.com/GreenPandaStudios/augscript/blob/v0.23.0/LICENSE).
+
+Concrete cause propagation, relative source identities, nested worker errors and package aliases on both backends. [Read the tests and example](https://greenpandastudios.github.io/augscript/guides/add-error-context).
 
 ## Metal GPU operations {#gpu}
 

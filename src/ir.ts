@@ -1,3 +1,5 @@
+import type {ErrorMatch} from './error-matches.ts';
+import {sourceFileIdentity} from './source-location.ts';
 import {createHash} from 'node:crypto';
 import {relative,resolve} from 'node:path';
 import {isStatement,fieldsOf,initializationOf,type Expr,type MethodDecl,type ClassDecl,type MatchPattern,type BindingPattern,type Stmt,type Span,type Param} from './ast.ts';
@@ -47,7 +49,7 @@ export type IrInstruction = {span:Span;debugScope?:string}&(
   {op:'error-state';action:'save'|'restore';error:number;cancelled:number}
 );
 export type IrTerminator = {op:'jump';target:string}|{op:'branch';condition:number;then:string;otherwise:string}|
-  {op:'error';failed:string;success:string}|{op:'error-type';type:string;then:string;otherwise:string}|
+  {op:'error';failed:string;success:string}|{op:'error-type';match:ErrorMatch;then:string;otherwise:string}|
   {op:'cancel';then:string;otherwise:string}|
   {op:'null';input:number;then:string;otherwise:string}|{op:'return'};
 export interface IrBlock {name:string;instructions:IrInstruction[];terminator:IrTerminator}
@@ -430,6 +432,7 @@ class FunctionLowering {
     }
     if(expr.callee.kind!=='name')throw new BackendUnsupported(expr.span,'indirect callable values');
     const name=expr.callee.name;
+    if(name==='sourceLocation')return this.runtime('TUPLE',[this.literal(sourceFileIdentity(this.generator.checked.project,expr.span.file)),this.literal(null,{kind:'int',text:String(expr.span.line)}),this.literal(null,{kind:'int',text:String(expr.span.column)})]);
     if(name==='next'){
       const next=this.continuation!,plan=this.generator.checked.callPlans.get(expr)!;
       const {args:forwarded,transfers}=next.forward(plan.sourceIndices,args);
@@ -588,7 +591,7 @@ class FunctionLowering {
     this.instruction({op:'scope',action:'restore',depth});
     const handlers=this.block();this.terminate({op:'cancel',then:failed,otherwise:handlers});this.enter(handlers);this.error=failed;
     for(const clause of stmt.catches){
-      const handler=this.block(),next=this.block();this.terminate({op:'error-type',type:this.generator.definition(this.file,clause.type.name)?.id??clause.type.name,then:handler,otherwise:next});this.enter(handler);
+      const handler=this.block(),next=this.block();this.terminate({op:'error-type',match:this.generator.checked.errorMatches.get(clause.type)!,then:handler,otherwise:next});this.enter(handler);
       const error=this.slot();this.instruction({op:'take-error',out:error});
       this.scoped(clause.body,false,()=>this.local(clause.name,error,clause.span,irType(schemaType(this.generator.checked.project,clause.type,this.file))),clause.span);
       if(!this.current.terminator)this.terminate({op:'jump',target:cleanup});this.enter(next);
@@ -715,7 +718,7 @@ class FunctionLowering {
       this.instruction({op:'lock',action:'restore',depth:locks});this.instruction({op:'scope',action:'join',depth});
       for(const slot of this.owned)if(!owned.has(slot))this.instruction({op:'drop',slot});
       this.instruction({op:'scope',action:'restore',depth});
-      stmt.catches.forEach(clause=>{const handler=this.block(),next=this.block();this.terminate({op:'error-type',type:this.generator.definition(this.file,clause.type.name)?.id??clause.type.name,then:handler,otherwise:next});this.enter(handler);
+      stmt.catches.forEach(clause=>{const handler=this.block(),next=this.block();this.terminate({op:'error-type',match:this.generator.checked.errorMatches.get(clause.type)!,then:handler,otherwise:next});this.enter(handler);
         const error=this.slot();this.instruction({op:'take-error',out:error});this.scoped(clause.body,false,()=>this.local(clause.name,error,clause.span,irType(schemaType(this.generator.checked.project,clause.type,this.file))),clause.span);
         if(!this.current.terminator)this.terminate({op:'jump',target:done});this.enter(next);
       });this.terminate({op:'jump',target:outer});this.enter(done);return;

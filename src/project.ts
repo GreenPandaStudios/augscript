@@ -99,7 +99,7 @@ function loadProjectRevision(projectRoot:string,overrides:Map<string,string>,cac
   }
   const libraries = standardLibraries();
   const stdlibRoot = libraries.root;
-  const libraryFiles = new Set([join(stdlibRoot, 'export.aug'), ...['io','collections','math'].flatMap(module=>sourceFiles(join(stdlibRoot,module)))]);
+  const libraryFiles = new Set([join(stdlibRoot, 'export.aug'), ...['io','collections','math','errors'].flatMap(module=>sourceFiles(join(stdlibRoot,module)))]);
   for (const path of libraryFiles) {
     const parsed = read(path);
     parsed.file.builtin = true;

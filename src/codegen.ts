@@ -1,6 +1,8 @@
+import type {ErrorMatch} from './error-matches.ts';
 import type { BindingPattern, RecordBindingField, ClassDecl, Expr, InterceptorDecl, MatchPattern, MethodDecl, Param, Stmt } from './ast.ts';
 import { fieldsOf, initializationOf, isStatement, typeName } from './ast.ts';
 import type { BindingInfo, CheckedProject, InterceptorLayer } from './checker.ts';
+import {sourceFileIdentity} from './source-location.ts';
 import type { Definition } from './project.ts';
 import { builtinProperties, collectionOperations, errorNames } from './builtins.ts';
 import { interceptorChain, InterceptorInvocation } from './interceptors.ts';
@@ -22,6 +24,12 @@ export function generateC(checked: CheckedProject, options: { coverage?: boolean
 }
 
 class CGenerator {
+  errorCondition(type: import('./ast.ts').TypeRef):string {
+    const plan=this.checked.errorMatches.get(type);if(!plan)throw new Error('Missing checked error match');
+    const valueTest=(match:ErrorMatch,value:string):string=>match.id==='Error'?'1':
+      `(${value}.tag == AUG_OBJECT && ${value}.as.object && !strcmp(${value}.as.object->type_name, ${cString(match.id)})${match.fields.map(field=>' && '+valueTest(field.match,`aug_field(${value}, ${field.index})`)).join('')})`;
+    return `aug_error_is(${cString(plan.id)})${plan.fields.map(field=>' && '+valueTest(field.match,`aug_field(aug_error, ${field.index})`)).join('')}`;
+  }
   private readonly checked: CheckedProject;
   private readonly names = new Map<string, string>();
   private readonly bindings = new Map<string, number>();
@@ -372,6 +380,7 @@ class CGenerator {
     return true;
   }
   patternFieldIndex(field:RecordBindingField):number { return this.checked.patternFields.get(field)!.index; }
+  sourceFileIdentity(file:string):string {return sourceFileIdentity(this.checked.project,file);}
   expressionType(expr: Expr) { return this.checked.expressionTypes.get(expr); }
   schema(type: Ty): string { return this.schemas.request(type); }
   expressionSource(expr: Expr): string {
@@ -773,6 +782,12 @@ class BodyEmitter {
     const slot = this.newSlot();
     const array = this.label('args');
     this.line(`AugValue ${array}[] = { ${args.map(index => this.slot(index)).join(', ') || 'aug_scalar_null()'} };`);
+    if (expr.callee.kind === 'name' && expr.callee.name === 'sourceLocation') {
+      const path=this.emitExpr({kind:'literal',value:this.generator.sourceFileIdentity(expr.span.file),span:expr.span});
+      const values=this.label('location');
+      this.line(`AugValue ${values}[] = { ${this.slot(path)}, aug_scalar_int(INT64_C(${expr.span.line})), aug_scalar_int(INT64_C(${expr.span.column})) };`);
+      this.line(`${this.slot(slot)} = aug_tuple_new(${values}, 3);`);return slot;
+    }
     if (expr.callee.kind === 'name' && expr.callee.name === 'exit') {
       this.line(`int aug_exit_code_${slot} = (int)aug_cint(${this.slot(args[0])});`);
       this.line(`aug_cancelled = true; aug_shutdown(); exit(aug_exit_code_${slot} >= 0 && aug_exit_code_${slot} <= 255 ? aug_exit_code_${slot} : 1);`);
@@ -1100,7 +1115,7 @@ class BodyEmitter {
       for (const slot of this.owned) if (!ownedBefore.has(slot))
         this.line(`if (${this.slot(slot)}.tag != AUG_NULL) { aug_drop(${this.slot(slot)}); ${this.slot(slot)} = aug_scalar_null(); }`);
       for (const clause of stmt.catches) {
-        this.line(`if (aug_error_is(${cString(this.generator.definition(this.file,clause.type.name)?.id??clause.type.name)})) {`);
+        this.line(`if (${this.generator.errorCondition(clause.type)}) {`);
         const slot = this.newSlot();
         const prior = this.locals.get(clause.name);
         this.locals.set(clause.name, slot);
@@ -1152,7 +1167,7 @@ class BodyEmitter {
       this.line(`aug_drop(${this.slot(slot)}); ${this.slot(slot)} = aug_scalar_null();`);
     this.errorTarget = failed;
     for (const clause of stmt.catches) {
-      this.line(`if (aug_error_is(${cString(this.generator.definition(this.file,clause.type.name)?.id??clause.type.name)})) {`);
+      this.line(`if (${this.generator.errorCondition(clause.type)}) {`);
       const names = new Map(this.locals), slot = this.newSlot(); this.locals.set(clause.name, slot);
       this.line(`${this.slot(slot)} = aug_take_error();`); this.emitScoped(clause.body); this.locals = names;
       this.line(`goto ${cleanup};`); this.line('}');

@@ -61,6 +61,13 @@ export function verifyIR(ir:AugustIR):void {
       if(block.terminator.op==='return'&&block.name!=='cleanup'||block.name==='cleanup'&&block.terminator.op!=='return')fail('Return bypasses function cleanup',at);
       for(const target of successors(block.terminator))if(!blocks.has(target))fail('Branch to missing block '+target,at);
       const t=block.terminator;if(t.op==='branch')slot(t.condition);if(t.op==='null')slot(t.input);
+      if(t.op==='error-type'){
+        const match=(plan:import('./error-matches.ts').ErrorMatch,depth=0):void=>{
+          if(depth>128||!plan||typeof plan.id!=='string'||!plan.id||plan.id.includes('\0')||!Array.isArray(plan.fields)||plan.id==='Error'&&plan.fields.length)fail('Invalid checked error match',at);
+          const indices=new Set<number>();
+          for(const field of plan.fields){if(!Number.isSafeInteger(field.index)||field.index<0||indices.has(field.index))fail('Invalid error field witness',at);indices.add(field.index);match(field.match,depth+1);}
+        };match(t.match);
+      }
       for(const instruction of block.instructions){
         if(instruction.debugScope!==undefined&&!scopes.has(instruction.debugScope))fail('Instruction has an unresolved lexical scope',instruction.span);
         if('out' in instruction&&instruction.out!==undefined)slot(instruction.out);

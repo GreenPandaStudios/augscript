@@ -1,3 +1,4 @@
+import {errorMatch, type ErrorMatch} from './error-matches.ts';
 import {choiceMembers} from './choices.ts';
 import type {
   BindDecl, BindingPattern, RecordBindingField, ClassDecl, Diagnostic, Expr, GenericHeader, InterfaceDecl, InterceptorAnnotation, InterceptorDecl, MethodDecl, Param, Span,
@@ -60,6 +61,7 @@ export interface CheckedProject {
   resolvedNames: WeakMap<Expr, ResolvedName>;
   resolvedCalls: WeakMap<Expr, ResolvedCall>;
   resolvedTypes: WeakMap<TypeRef, Ty>;
+  errorMatches: WeakMap<TypeRef, ErrorMatch>;
   defaults: Map<string, Map<string, InterfaceMethod>>;
   /** Declaration-time inherited interface requirements, with owner substitutions. */
   interfaceMembers: Map<string, Map<string, InterfaceMethod[]>>;
@@ -186,6 +188,7 @@ class Checker {
   readonly resolvedNames = new WeakMap<Expr, ResolvedName>();
   readonly resolvedCalls = new WeakMap<Expr, ResolvedCall>();
   readonly resolvedTypes = new WeakMap<TypeRef, Ty>();
+  readonly errorMatches = new WeakMap<TypeRef, ErrorMatch>();
   readonly defaults = new Map<string, Map<string, InterfaceMethod>>();
   readonly interfaceMembers = new Map<string, Map<string, InterfaceMethod[]>>();
   readonly callPlans = new WeakMap<Expr, CallPlan>();
@@ -340,7 +343,7 @@ class Checker {
     this.effectContracts.clear();
     for (const [method, contract] of declarationEffects) this.effectContracts.set(method, contract);
     return { project: this.project, diagnostics: this.diagnostics, bindings: this.bindings,
-      expressionTypes: this.expressionTypes, functionValues:this.functionValues, patternTypes:this.patternTypes, patternFields:this.patternFields, resolvedNames:this.resolvedNames, resolvedCalls:this.resolvedCalls, resolvedTypes:this.resolvedTypes, defaults: this.defaults, interfaceMembers:this.interfaceMembers, callPlans: this.callPlans,
+      expressionTypes: this.expressionTypes, functionValues:this.functionValues, patternTypes:this.patternTypes, patternFields:this.patternFields, resolvedNames:this.resolvedNames, resolvedCalls:this.resolvedCalls, resolvedTypes:this.resolvedTypes, errorMatches:this.errorMatches, defaults: this.defaults, interfaceMembers:this.interfaceMembers, callPlans: this.callPlans,
       interceptorPlans: this.interceptorPlans, effectContracts: this.effectContracts, callableContracts: this.callableContracts, constructorContracts: this.constructorContracts,
       expressionOrigins: this.expressionOrigins, inferredOwned:this.inferredOwned, scopes: this.scopes, markupCalls: this.markupCalls, actions:this.actions, httpPolicies:this.httpPolicies, native:this.native };
   }
@@ -643,6 +646,7 @@ class Checker {
         if(!['ServerEvent','Bytes','Html'].includes(result.name)||result.optional||result.nullable) this.report(fn.span,'An endpoint streams ServerEvent<T>, Bytes, or Html','HTTP');
         if(result.name==='ServerEvent'&&!jsonDataType(this.project,result.args[0]))this.report(fn.span,'ServerEvent data uses a concrete JSON data type','HTTP');
       } else if (!jsonDataType(this.project, result) && !['void', 'HttpResponse', 'Html', 'Bytes'].includes(result.name)) this.report(fn.span, `${tyName(result)} cannot be serialized as an HTTP response`, 'HTTP');
+      for(const error of endpoint.errors)if(error.type.args.length)this.report(error.type.span,'Generic errors need an explicit non-generic HTTP error mapping; catch and convert the failure in the endpoint body','HTTP');
       for (const error of endpoint.errors) if (!Number.isInteger(error.status) || error.status < 400 || error.status > 599) this.report(error.type.span, 'Mapped error statuses must be from 400 to 599', 'HTTP');
     }
     for (const changed of fn.changes ?? []) {
@@ -2005,6 +2009,9 @@ class Checker {
         const clause = stmt.catches[i];
         if (!this.implementsError(catches[i])) this.report(clause.type.span,
           `Catch type ${clause.type.name} must implement Error`);
+        const match = errorMatch(catches[i], type=>this.implementsError(type));
+        if(typeof match==='string')this.report(clause.type.span,match,'ERROR_MATCH');
+        else this.errorMatches.set(clause.type,match);
         const catchContext = this.cloneContext(context);
         const failures = inside.exceptionalFlows.filter(failure => this.assignable(failure.type, catches[i]));
         if (failures.length) catchContext.flow.join(failures.map(failure => failure.flow));
@@ -2655,7 +2662,7 @@ class Checker {
           type = { id: def.id, name: def.name, kind: def.node.kind, def, args: [], nullable: false };
         else if (def?.node.kind === 'function') type = this.checkFunctionValue(expr,context,expected,def);
         else if (errorNames.includes(expr.name)) type = builtin(expr.name);
-        else if (['print', 'arguments', 'List', 'Map', 'Set', 'Tuple', 'assert', 'assertEqual', 'read_file', 'write_file', 'c_int', 'int'].includes(expr.name)) type = builtin('void');
+        else if (['sourceLocation', 'print', 'arguments', 'List', 'Map', 'Set', 'Tuple', 'assert', 'assertEqual', 'read_file', 'write_file', 'c_int', 'int'].includes(expr.name)) type = builtin('void');
         else if (expr.name === 'next') this.report(expr.span,
           'next is only callable inside an interceptor around body', 'NEXT');
         else if (def?.node.kind === 'interceptor') this.report(expr.span,
@@ -3035,6 +3042,11 @@ class Checker {
     for (const index of deferred) argTypes[index] = this.checkExpression(expr.args[index], immediate, inferredExpectations[index]);
     if (expr.callee.kind === 'name' && expr.callee.name === 'next')
       return this.checkNext(expr, argTypes, context);
+    if (expr.callee.kind === 'name' && expr.callee.name === 'sourceLocation') {
+      this.planCall(expr,[],'sourceLocation');
+      if(expr.args.length||expr.typeArgs.length)this.report(expr.span,'sourceLocation takes no inputs or type arguments','LOCATION');
+      return {...builtin('Tuple'),args:[builtin('string'),builtin('int'),builtin('int')],frozen:true,readonly:true};
+    }
     if (expr.callee.kind === 'name' && expr.callee.name === 'exit') {
       if (context.callable || context.file !== this.project.main?.path || context.locked) this.report(expr.span, 'exit belongs in main outside a lock', 'EFFECT');
       const plan = this.planCall(expr, ['status'], 'exit'), index = plan.sourceIndices[0];

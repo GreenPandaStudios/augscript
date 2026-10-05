@@ -1116,6 +1116,14 @@ when some value: ...
 
 Match the present case of a nullable value and introduce a read-only non-null name within the case body. Pair it with when null to cover absence explicitly.
 
+## sourceLocation
+
+```text
+sourceLocation() returns Tuple<string, int, int>
+```
+
+Capture this call expression’s source identity and one-based line/column. Applications use project-relative paths; package code uses name@version/source-relative paths. This is compiler-provided data, not a stack trace or a runtime file lookup. A helper captures its own call site.
+
 ## start
 
 ```text

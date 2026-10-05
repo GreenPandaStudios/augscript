@@ -233,6 +233,30 @@
         "model.aug": "choice Result from Found and Absent\nrecord Found(int value)\nrecord Absent(string reason)\nshow(Result result):\n    return match result:\n        when Found found:\n            found.value\n"
       },
       "diagnostic": "MATCH"
+    },
+    {
+      "id": "error-context",
+      "files": {
+        "main.aug": "import fail and Problem from operation\nimport ContextError from august.errors\ntry:\n    fail()\ncatch ContextError<Problem> error:\n    print(value=error.operation)\n    print(value=error.cause.code)\n    print(value=error.location[0])\n",
+        "operation.aug": "import errorContext from august.errors\nerror Problem(int code)\nfail():\n    throw errorContext(cause=Problem(code=42), operation=\"compute\", location=sourceLocation())\n"
+      },
+      "stdout": "compute\n42\noperation.aug\n"
+    },
+    {
+      "id": "mixed-context-causes",
+      "files": {
+        "main.aug": "import fail and A and B from operation\nimport ContextError from august.errors\ntry { fail() } catch ContextError<A> failure { print(value=\"wrong\") } catch ContextError<B> failure { print(value=failure.cause.message) }\n",
+        "operation.aug": "import errorContext from august.errors\nerror A(int code)\nerror B(string message)\nfail() { throw errorContext(cause=B(message=\"actual B\"), operation=\"compute\", location=sourceLocation()) }\n"
+      },
+      "stdout": "actual B\n"
+    },
+    {
+      "id": "phantom-error-catch",
+      "files": {
+        "main.aug": "import Wrapped from errors\ntry { pass } catch Wrapped<FileError> failure { pass }\n",
+        "errors.aug": "error Wrapped<E implements Error>(string message)\n"
+      },
+      "diagnostic": "ERROR_MATCH"
     }
   ],
   "mutations": [

@@ -116,5 +116,9 @@
   "closed-choices-guide": {
     "stdout": "receipt-42\nnot available\n",
     "tests": 2
+  },
+  "error-context-guide": {
+    "stdout": "read settings\nconfig.json\n",
+    "tests": 2
   }
 }

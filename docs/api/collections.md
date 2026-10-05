@@ -115,7 +115,7 @@ compare(T left, T right) returns int
 ## filter {#api-filter}
 
 ```text
-filter<T>(List<T> values, Predicate<T> predicate) returns List<T>
+filter<T implements optional Data>(List<T> values, Predicate<T> predicate) returns List<T>
 ```
 
 Return a new list of matching values in snapshot order; an empty input returns an empty list.
@@ -126,7 +126,10 @@ Read references without copying their contents or granting mutable access.
 ## transform {#api-transform}
 
 ```text
-transform<T, U>(List<T> values, Transformation<T,U> transformation) returns List<U>
+transform<T implements optional Data, U implements optional Data>(
+    List<T> values,
+    Transformation<T,U> transformation
+) returns List<U>
 ```
 
 Transform every snapshot value once, preserving order in a new list.
@@ -137,7 +140,11 @@ An empty input returns an empty list. Transformations cannot mutate inputs or pe
 ## aggregate {#api-aggregate}
 
 ```text
-aggregate<T, U>(List<T> values, Aggregator<T,U> aggregator, U initial) returns U
+aggregate<T implements optional Data, U implements optional Data>(
+    List<T> values,
+    Aggregator<T,U> aggregator,
+    U initial
+) returns U
 ```
 
 Combine snapshot values from left to right, starting with initial.
@@ -148,7 +155,7 @@ An empty input returns initial. This operation does not choose a numeric overflo
 ## remove {#api-remove}
 
 ```text
-remove<T>(List<T> values, Predicate<T> predicate) returns List<T>
+remove<T implements optional Data>(List<T> values, Predicate<T> predicate) returns List<T>
 ```
 
 Return a new list without matching values, preserving snapshot order; do not mutate values.
@@ -158,7 +165,7 @@ Return a new list without matching values, preserving snapshot order; do not mut
 ## find {#api-find}
 
 ```text
-find<T>(List<T> values, Predicate<T> predicate) returns optional T
+find<T implements optional Data>(List<T> values, Predicate<T> predicate) returns optional T
 ```
 
 Read the first matching snapshot value or null, stopping after the first match.
@@ -169,7 +176,7 @@ A matching null value is also null; use an explicit loop when presence must be d
 ## sort {#api-sort}
 
 ```text
-sort<T>(List<T> values, Comparator<T> comparator) returns List<T> unless IndexError
+sort<T implements optional Data>(List<T> values, Comparator<T> comparator) returns List<T> unless IndexError
 ```
 
 Return a stably sorted copy. Equal values keep their input order; values remains unchanged.

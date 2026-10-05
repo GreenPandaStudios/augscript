@@ -106,6 +106,7 @@ export function operationType(text: string, receiver: Ty, position?: number): Ty
   return { ...(type ?? builtinType('<error>')), nullable, optional:nullable || undefined };
 }
 export const builtinFunctions: BuiltinOperation[] = [
+  {name:'sourceLocation',parameters:[],returns:'Tuple<string, int, int>',documentation:'Capture this call expression’s source identity and one-based line/column. Applications use project-relative paths; package code uses name@version/source-relative paths. This is compiler-provided data, not a stack trace or a runtime file lookup. A helper captures its own call site.',native:'source_location'},
   {name:'exit', parameters:[{label:'status', type:'int'}], returns:'void', documentation:'Exit from main with a status from 0 to 255 after cancellation and cleanup.', native:'exit'},
   { name: 'c_int', parameters: [{ label: 'value', type: 'int' }], returns: 'c_int', errors: ['ConversionError'], documentation: 'Checked conversion to a signed 32-bit C int. Overflow raises ConversionError. AugScript int maps to int64_t at the C boundary.', native: 'to_c_int' },
   { name: 'int', parameters: [{ label: 'value', type: 'c_int' }], returns: 'int', documentation: 'Widen a C int to the signed 64-bit AugScript integer without loss.', native: 'to_int' },

@@ -78,6 +78,12 @@ try {
   assert.equal(aug('run',closedChoices),'7\n');
   if(process.env.AUG_LLVM_HOME&&process.env.AUG_RUNTIME_PACK)assert.equal(run(process.execPath,[cli,'run',closedChoices,'--backend','llvm']),'7\n');
   aug('spec',closedChoices);assert.match(readFileSync(join(closedChoices,'alternatives.aug.md'),'utf8'),/closed record choice/);
+  const contextualErrors=join(directory,'error-context');mkdirSync(contextualErrors);
+  writeFileSync(join(contextualErrors,'main.aug'),'import fail and Problem from operation\nimport ContextError from august.errors\ntry { fail() } catch ContextError<Problem> error { print(value=error.operation); print(value=error.cause.code); print(value=error.location[0]) }\n');
+  writeFileSync(join(contextualErrors,'operation.aug'),'import errorContext from august.errors\nerror Problem(int code)\nfail():\n    throw errorContext(cause=Problem(code=42), operation="compute", location=sourceLocation())\n');
+  assert.equal(aug('run',contextualErrors),'compute\n42\noperation.aug\n');
+  if(process.env.AUG_LLVM_HOME&&process.env.AUG_RUNTIME_PACK)assert.equal(run(process.execPath,[cli,'run',contextualErrors,'--backend','llvm']),'compute\n42\noperation.aug\n');
+  aug('spec',contextualErrors);
   const callbacks=join(directory,'callback-consumer');mkdirSync(callbacks);
   writeFileSync(join(callbacks,'main.aug'),'import transform from august.collections\nfor value in transform(values=[2, 3], transformation=(int value) => value * 2):\n    print(value=value)\n');
   assert.equal(aug('run',callbacks),'4\n6\n');

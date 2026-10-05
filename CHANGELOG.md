@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add `august.errors` for deliberate `ContextError<E>` wrapping and compiler-provided `sourceLocation()` values. Supported generic catches verify every stored cause, including nested contexts; erased or behavioral profiles and generic HTTP status maps reject. Causes keep their concrete checked type; source identities use relative project/package paths.
+
 Name a closed set of immutable record outcomes with `choice NAME from A and B`. Check resolved alternatives and exhaustive matches, including optional nulls; retain normal constructors, validation, labels, data bounds and worker copies. Explain choices in editor/spec/context/public-contract tools and format both source styles. Serialization requires an explicitly selected record or wire envelope.
 
 Add saved checked rename plans and an explicit apply/recover CLI. Regenerate operations against source, compiler, configuration and dependency revisions; retain expected public deltas and separate behavioral evidence. Coordinate writers, reject partial reader snapshots, preserve file modes and journal synchronized before/after source for rollback or forward recovery after process death. Preserve conflicting external edits. Additional edit operations and platform power-loss qualification remain pending.

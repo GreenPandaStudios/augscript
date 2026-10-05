@@ -63,6 +63,9 @@ const sourceDescriptions:Description[] = [
   {id:'math',title:'Checked integers and decimals',summary:'Checked int64 arithmetic and exact bounded fixed-scale decimals.',tasks:['math','decimal','decimals','money','overflow','integers'],
     names:['checkedAdd','Decimal','parseDecimal','formatDecimal'],ownership:'Integer values and immutable Decimal records.',requirements:'Decimal scale is 0–18 and coefficients are int64. Inexact arithmetic fails; there is no implicit rounding.',license:'MIT.',
     tests:{summary:'Independent BigInt comparison grids, boundary cases, parsing and exact arithmetic.',url:wiki+'reference#checked-mathematics-unreleased'}},
+  {id:'errors',title:'Typed error context',summary:'Retain a concrete error cause with an operation name and source location.',tasks:['error','errors','cause','context','debugging'],
+    names:['ContextError','errorContext'],ownership:'Managed read-only context fields retain the original cause and its ordinary ownership rules.',requirements:'Unreleased; use the matching compiler. Capture sourceLocation() at the operation, and choose whether to throw, log or expose context.',license:'MIT.',
+    tests:{summary:'Concrete cause propagation, relative source identities, nested worker errors and package aliases on both backends.',url:wiki+'guides/add-error-context'}},
   {id:'json',title:'JSON',summary:'Parse JSON with strict or bounded ingestion-compatible number handling.',tasks:['json','parsing','serialization','ingestion'],
     names:['parse','parseCompatible'],ownership:'Managed immutable JSON views; extracted text and bytes have checked bounds.',requirements:'Choose strict parse or parseCompatible explicitly. Compatibility retains documented depth and Unicode limits.',license:'MIT August source; yyjson: MIT.',
     tests:{summary:'Parser and ingestion profiles include presence, numbers, malformed inputs and bounds.',url:repository+'/blob/main/tests/ingestion-values.test.mjs'}},
@@ -103,7 +106,7 @@ function nativeSnapshots(): NativeSnapshot[] {
 export function libraryCatalog(query = ''): {format:1;compiler:string;query:string;entries:LibraryEntry[]} {
   const compiler = compilerVersion(),snapshots = nativeSnapshots();
   const entries:LibraryEntry[] = sourceDescriptions.map(description=>{
-    const bundled = ['io','collections','math'].includes(description.id),sourceModule = bundled ? 'august.'+description.id : description.id;
+    const bundled = ['io','collections','math','errors'].includes(description.id),sourceModule = bundled ? 'august.'+description.id : description.id;
     const request = `${repository}/tree/v0.23.0/src/stdlib/${description.id}`;
     return {id:description.id,title:description.title,summary:description.summary,tasks:description.tasks,
       source:bundled ? {kind:'bundled',module:sourceModule} : {kind:'repository',request},

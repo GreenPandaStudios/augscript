@@ -1800,6 +1800,31 @@
           "test": "contextual choice names retain typed bindings and ordinary function help; nearby types complete"
         }
       ]
+    },
+    {
+      "id": "ERROR_CONTEXT",
+      "summary": "Unreleased explicit context retains concrete error causes and source identities without automatic logging or broad failure conversion.",
+      "reference": "guides/add-error-context.md",
+      "productions": [],
+      "cases": [
+        "error-context",
+        "mixed-context-causes",
+        "phantom-error-catch"
+      ],
+      "regressions": [
+        {
+          "file": "tests/error-context.test.mjs",
+          "test": "context conversion is a chosen checked error rather than implicit Error widening"
+        },
+        {
+          "file": "tests/error-context.test.mjs",
+          "test": "context rejects non-errors, missing locations and incorrect concrete catches"
+        },
+        {
+          "file": "tests/error-context.test.mjs",
+          "test": "generic catch rejects erased, optional, container and behavioral witnesses"
+        }
+      ]
     }
   ]
 }

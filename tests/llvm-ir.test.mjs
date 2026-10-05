@@ -37,6 +37,8 @@ test('IR verification rejects malformed slots, cleanup edges, callbacks and priv
     ir=>{ir.functions[0].values[0].storage='scalar-value';},
     ir=>{ir.functions[0].blocks[0].terminator={op:'jump',target:'missing'};},
     ir=>{ir.functions[0].blocks[0].terminator={op:'return'};},
+    ir=>{ir.functions[0].blocks[0].terminator={op:'error-type',match:{id:'Error',fields:[{index:0,match:{id:'FileError',fields:[]}}]},then:'cleanup',otherwise:'cleanup'};},
+    ir=>{ir.functions[0].blocks[0].terminator={op:'error-type',match:{id:'FileError',fields:[{index:-1,match:{id:'FileError',fields:[]}}]},then:'cleanup',otherwise:'cleanup'};},
     ir=>{ir.functions[0].blocks[0].instructions.push({op:'call',out:0,function:ir.main,args:[0],span:ir.functions[0].span});},
     ir=>{ir.functions[0].blocks[0].instructions.push({op:'runtime',out:0,operation:'BINARY',args:[0],span:ir.functions[0].span});},
     ir=>{ir.functions[0].blocks[0].instructions.push({op:'runtime',out:0,operation:'UNKNOWN',args:[],span:ir.functions[0].span});},

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Complete and explain `sourceLocation()` and the typed `august.errors` library, with repair guidance for unsupported generic catches.
+
 Complete and navigate closed record choices. Distinguish the contextual declaration from functions named `choice`, and show its alternative records in hover.
 
 Show checked pure callback contracts, capture links and delegated implementations in hover. Scope typed closure inputs independently, color the arrow, offer a callback expression template, and explain pure callback diagnostics.

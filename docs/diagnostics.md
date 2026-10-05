@@ -26,6 +26,7 @@ For a misspelled or unlabeled input, check the listed caller labels first. The c
 | CALL | Supply ordinary labels exactly once; resolve inputs are omitted from a call. Inference must be concrete and consistent. |
 | COLLECTION | Empty literals need context. List/Set elements and Map keys/values must fit. Tuple indexes are compile-time constants. |
 | RECORD | Data fields must be deeply immutable. Records cannot retain mutable collections, DI inputs, or ownership; validation cannot replace fields. |
+| LOCATION | Unreleased: call sourceLocation() without inputs or type arguments. Capture at the operation, then pass the location explicitly into a helper. |
 | MATCH | Cover null/bool cases and add else for open type domains. Remove duplicate, incompatible, or unreachable cases. |
 | PATTERN | Tuple destructuring needs matching arity and new names in the current scope. |
 | ITERATION | Iterate List, Set, Map, or a homogeneous Tuple; destructure heterogeneous tuples explicitly. |
