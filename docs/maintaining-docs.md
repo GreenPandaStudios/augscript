@@ -146,3 +146,7 @@ owned cleanup, moved values, joined loans, isolated worker copies, omitted count
 and unsaved source relocation in `tests/ownership-diagnostics.test.mjs` and
 `tests/diagnostic-context.test.mjs`. A bare diagnostic is not independently
 revision-bearing; context and checked-edit envelopes provide that identity.
+
+The PostgreSQL maintainer qualification caches each rebuilt candidate with `aug package cache-native` before running its native and LLVM consumer tests. Keep the authenticated archive next to the extracted members in the package harness’s consumer cache. A manually unpacked directory does not authenticate the manifest, and the rebuilt candidate must not fall back to a different published archive. The public artifact gates remain separate.
+
+Compilation-cache tests require a complete source-pinned compiler pack. `scripts/prepare-qualified-test-tools.mjs` installs the selected released tools and creates `.aug-build/qualified-test-tools`; CI and the compiler-test container use that path with the newly built contributor runtime. Keep the unsealed `.aug-build/llvm-tools` inputs for producing candidate packs. Unsealed contributor tools must continue to compile without reusable output.

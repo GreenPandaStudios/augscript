@@ -80,6 +80,11 @@ jobs:
       - run: node scripts/prepare-llvm-tools.mjs
       - run: node scripts/prepare-llvm-maintainer.mjs
       - run: node scripts/build-runtime-pack.mjs
+      - name: Prepare authenticated compiler tools for cache qualification
+        run: |
+          node scripts/prepare-qualified-test-tools.mjs
+          echo "AUG_LLVM_HOME=$PWD/.aug-build/qualified-test-tools" >> "$GITHUB_ENV"
+          echo "AUG_RUNTIME_PACK=$PWD/.aug-native/llvm/runtime" >> "$GITHUB_ENV"
       - run: npm run check
       - run: npm test
       - name: Independent language conformance in both LLVM modes and block styles
@@ -112,6 +117,7 @@ jobs:
           git -C "$RUNNER_TEMP/aug-postgres" checkout --detach 40b0a671f7c9066fe6b311d931020749949e3f60
           node bin/aug.mjs bind header "$RUNNER_TEMP/aug-postgres/native/include/aug_postgres.h" --contract "$RUNNER_TEMP/aug-postgres/native.abi.json" --target aarch64-apple-darwin --clang clang --output .aug-build/header-check-postgres
           node "$RUNNER_TEMP/aug-postgres/native/build.mjs"
+          AUG_NATIVE_ARTIFACT_CACHE="$RUNNER_TEMP/aug-postgres/.aug-build/native/consumer-cache" node bin/aug.mjs package cache-native "$RUNNER_TEMP/aug-postgres" --artifact macos-arm64 --archive "$RUNNER_TEMP/aug-postgres/.aug-build/native/native-macos-arm64.tar.gz"
           AUG_CLI="$PWD/bin/aug.mjs" AUG_RUNTIME_PACK="$PWD/.aug-native/llvm/runtime" AUG_NATIVE_HOME="$PWD/.aug-native" node "$RUNNER_TEMP/aug-postgres/native/ci-server.mjs"
       - name: Retain PostgreSQL artifact and qualification identities
         if: always()

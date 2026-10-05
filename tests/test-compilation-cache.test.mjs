@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {mkdtempSync,writeFileSync,readFileSync,mkdirSync,rmSync,symlinkSync,chmodSync,cpSync} from 'node:fs';
+import {mkdtempSync,writeFileSync,readFileSync,mkdirSync,rmSync,symlinkSync,chmodSync,cpSync,realpathSync,lstatSync} from 'node:fs';
 import {join,resolve} from 'node:path';
 import {tmpdir} from 'node:os';
 import {spawnSync} from 'node:child_process';
@@ -178,13 +178,15 @@ test('accepted managed package source and configuration identities invalidate re
 
 
 test('self-authored tool-pack manifests cannot qualify a contributor cache even in a retained SHA-named directory',()=>fixture(f=>{
- const original=process.env.AUG_LLVM_HOME,home=join(f.root,'tool-pack',original.split('/').at(-1));cpSync(original,home,{recursive:true});
+ const original=realpathSync(process.env.AUG_LLVM_HOME),before=readFileSync(join(original,'files.json')),home=join(f.root,'tool-pack',original.split('/').at(-1));cpSync(original,home,{recursive:true});
+ assert.equal(lstatSync(home).isSymbolicLink(),false,'The tampering fixture must own its tool files, even when the configured path is a symlink');
  // Real retained native tools still run. A regenerated self-manifest cannot
  // establish the origin of an additional unreviewed tool/helper closure.
  const manifestFile=join(home,'files.json'),manifest=JSON.parse(readFileSync(manifestFile,'utf8'));
  writeFileSync(join(home,'unreviewed-helper'),'unreviewed');manifest.files['unreviewed-helper']=createHash('sha256').update('unreviewed').digest('hex');
  writeFileSync(manifestFile,JSON.stringify(manifest));f.env={AUG_LLVM_HOME:home};
  for(let i=0;i<2;i++){const report=invoke(f);assert.equal(report.tests[0].compilation.cache,'disabled');assert.match(report.tests[0].compilation.reason,/verified complete compiler tool pack/);assert.equal(report.tests[0].stdout,'executed\n');}
+ assert.deepEqual(readFileSync(join(original,'files.json')),before,'Tampering qualification must preserve the accepted tools');
 }));
 
 test('cached owned cleanup executes with the current native-process environment',()=>fixture(f=>{

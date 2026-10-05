@@ -80,6 +80,7 @@ jobs:
           docker exec qualification node bin/aug.mjs bind header /work/aug-postgres/native/include/aug_postgres.h --contract /work/aug-postgres/native.abi.json --target "$(case '${{ matrix.host }}' in linux-x64) echo x86_64-unknown-linux-gnu;; *) echo aarch64-unknown-linux-gnu;; esac)" --clang clang --output /work/.aug-build/header-check-postgres
           docker exec qualification chown -R node:node /work/aug-postgres
           docker exec -u node qualification node /work/aug-postgres/native/build.mjs
+          docker exec -u node -e AUG_NATIVE_ARTIFACT_CACHE="/work/aug-postgres/.aug-build/native-${{ matrix.host }}/consumer-cache" qualification node bin/aug.mjs package cache-native /work/aug-postgres --artifact "${{ matrix.host }}" --archive "/work/aug-postgres/.aug-build/native-${{ matrix.host }}/native-${{ matrix.host }}.tar.gz"
           docker exec -u node -e AUG_CLI=/work/bin/aug.mjs -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools -e AUG_RUNTIME_PACK=/work/.aug-native/llvm/runtime -e AUG_NATIVE_HOME=/work/.aug-native qualification node /work/aug-postgres/native/ci-server.mjs
       - name: Qualify LLVM performance against the C reference
         run: |

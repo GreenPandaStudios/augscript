@@ -42,6 +42,27 @@ test('maintainers cache an exact local native archive for ordinary offline consu
 }));
 
 
+test('rebuilt native candidates require their authenticated archive before offline consumer qualification',()=>fixture(async f=>{
+ const directory=join(f.cache,f.artifact.sha256);mkdirSync(directory,{recursive:true});
+ assert.equal(spawnSync('tar',['-xzf',f.transport,'-C',directory]).status,0);
+ const app=join(f.root,'consumer');mkdirSync(app);writeFileSync(join(app,'main.yaml'),'packages:\n  library: "../library"\n');writeFileSync(join(app,'main.aug'),'');
+ installPackages(app,false,true);
+ const previousCache=process.env.AUG_NATIVE_ARTIFACT_CACHE,previousFetch=globalThis.fetch;
+ try{
+  process.env.AUG_NATIVE_ARTIFACT_CACHE=f.cache;
+  globalThis.fetch=async()=>{throw new Error('A rebuilt candidate must not use a published archive');};
+  await assert.rejects(prepareNativePackages(app,{offline:true}),/NATIVE_OFFLINE.*authenticated original archive/);
+  const result=f.command('--artifact','host','--archive',f.transport,'--json');assert.equal(result.status,0,result.stderr);
+  assert.deepEqual(readFileSync(join(f.cache,f.artifact.sha256+'.tar.gz')),readFileSync(f.transport));
+  // The older package harness unpacks the same archive again before install.
+  assert.equal(spawnSync('tar',['-xzf',f.transport,'-C',directory]).status,0);
+  assert.equal((await prepareNativePackages(app,{offline:true})).length,1);
+ }finally{
+  globalThis.fetch=previousFetch;
+  if(previousCache===undefined)delete process.env.AUG_NATIVE_ARTIFACT_CACHE;else process.env.AUG_NATIVE_ARTIFACT_CACHE=previousCache;
+ }
+}));
+
 test('local cache hits still check the supplied archive and preserve accepted bytes after rejection',()=>fixture(f=>{
  let result=f.command('--artifact','host','--archive',f.transport);assert.equal(result.status,0,result.stderr);
  const path=join(f.cache,f.artifact.sha256),before=readFileSync(join(path,'library.a'));
