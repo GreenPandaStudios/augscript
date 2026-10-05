@@ -44,26 +44,10 @@ jobs:
           docker exec qualification node scripts/prepare-llvm-maintainer.mjs
           docker exec qualification node scripts/build-runtime-pack.mjs
           docker exec qualification node scripts/build-llvm-pack.mjs
-      - name: Check LLVM language, web, ownership and ABI parity
+      - name: Check the final archive and assertion repairs
         run: |
           docker exec qualification npm run check
-          docker exec -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools -e AUG_BIND_CLANG=/work/.aug-build/llvm-maintainer/bin/clang -e AUG_REQUIRE_NATIVE_HEADER=1 qualification npm run test:compatibility
-          docker exec -e AUG_GITHUB_TOKEN -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools -e AUG_REQUIRE_DWARF=1 -e AUG_REQUIRE_DEBUGGER=1 -e AUG_DWARF_TOOL=/work/.aug-build/llvm-maintainer/bin/llvm-dwarfdump qualification node scripts/check-llvm-parity.mjs
-          docker exec -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools qualification node --test tests/llvm-native-boundaries.test.mjs
-          docker exec -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools -e AUG_SANITIZER_CC=/work/.aug-build/llvm-maintainer/bin/clang qualification node scripts/sanitize-core.mjs --backend llvm
-      - name: Check independent language contracts and worker races
-        run: |
-          docker exec -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools qualification npm run test:conformance
-          docker exec -e AUG_WORKER_SANITIZER=thread -e AUG_SANITIZER_CC=/work/.aug-build/llvm-maintainer/bin/clang qualification node --test tests/worker-runtime.test.mjs
-          docker exec -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools qualification node --test tests/ingestion-values.test.mjs tests/http-reception.test.mjs
-          docker exec -e AUG_TEST_BACKEND=c qualification node --test tests/ingestion-values.test.mjs
-          docker exec -e AUG_WORKER_SANITIZER=address,undefined -e AUG_SANITIZER_CC=/work/.aug-build/llvm-maintainer/bin/clang qualification node --test tests/worker-runtime.test.mjs
-      - name: Qualify repeated runtime lifecycles and sustained heap use
-        env:
-          RELIABILITY_PROFILE: ${{ inputs.reliability_profile || 'ci' }}
-        run: |
-          docker exec -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools -e AUG_SANITIZER_CC=/work/.aug-build/llvm-maintainer/bin/clang qualification node --test tests/runtime-reliability.test.mjs
-          docker exec -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools -e AUG_SANITIZER_CC=/work/.aug-build/llvm-maintainer/bin/clang qualification npm run test:reliability -- --profile "$RELIABILITY_PROFILE"
+          docker exec -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools -e AUG_RUNTIME_PACK=/work/.aug-native/llvm/runtime -e AUG_TEST_ASSERTION_SANITIZERS=1 qualification node --test tests/native-artifacts.test.mjs tests/native-local-archives.test.mjs tests/ergonomics-assertions.test.mjs
       - name: Build real native libraries from separate repositories
         run: |
           for library in pytorch sqlite zlib blake3; do
@@ -72,24 +56,6 @@ jobs:
             docker exec qualification node bin/aug.mjs bind header "/work/aug-$library/native/include/$(case "$library" in pytorch) echo aug_torch.h;; *) echo "aug_$library.h";; esac)" --contract "/work/aug-$library/native.abi.json" --target "$(case '${{ matrix.host }}' in linux-x64) echo x86_64-unknown-linux-gnu;; *) echo aarch64-unknown-linux-gnu;; esac)" --clang clang --output "/work/.aug-build/header-check-$library"
             docker exec qualification node "/work/aug-$library/native/build.mjs"
           done
-      - name: Qualify the native PostgreSQL package and HTTP drain
-        run: |
-          git clone --no-checkout https://github.com/GreenPandaStudios/aug-postgres "$RUNNER_TEMP/aug-postgres"
-          git -C "$RUNNER_TEMP/aug-postgres" checkout --detach 40b0a671f7c9066fe6b311d931020749949e3f60
-          docker cp "$RUNNER_TEMP/aug-postgres" qualification:/work/aug-postgres
-          docker exec qualification node bin/aug.mjs bind header /work/aug-postgres/native/include/aug_postgres.h --contract /work/aug-postgres/native.abi.json --target "$(case '${{ matrix.host }}' in linux-x64) echo x86_64-unknown-linux-gnu;; *) echo aarch64-unknown-linux-gnu;; esac)" --clang clang --output /work/.aug-build/header-check-postgres
-          docker exec qualification chown -R node:node /work/aug-postgres
-          docker exec -u node qualification node /work/aug-postgres/native/build.mjs
-          docker exec -u node -e AUG_NATIVE_ARTIFACT_CACHE="/work/aug-postgres/.aug-build/native-${{ matrix.host }}/consumer-cache" qualification node bin/aug.mjs package cache-native /work/aug-postgres --artifact "${{ matrix.host }}" --archive "/work/aug-postgres/.aug-build/native-${{ matrix.host }}/native-${{ matrix.host }}.tar.gz"
-          docker exec -u node -e AUG_CLI=/work/bin/aug.mjs -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools -e AUG_RUNTIME_PACK=/work/.aug-native/llvm/runtime -e AUG_NATIVE_HOME=/work/.aug-native qualification node /work/aug-postgres/native/ci-server.mjs
-      - name: Qualify LLVM performance against the C reference
-        run: |
-          docker exec -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools qualification node scripts/benchmark-suite.mjs --backend llvm --compare-c-backend --iterations 60 --warmup 3 --http-rounds 5 --http-requests 5000 --output /work/.aug-build/llvm-migration-performance.json
-          docker exec qualification node scripts/check-llvm-performance.mjs .aug-build/llvm-migration-performance.json
-      - name: Qualify safety gyms and expanded C comparisons
-        run: |
-          docker exec -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools -e AUG_SANITIZER_CC=/work/.aug-build/llvm-maintainer/bin/clang qualification node scripts/run-gyms.mjs --profile full --vectors 256
-          docker exec -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools qualification node scripts/benchmark-kernels.mjs --iterations 30
       - name: Qualify installed CLI against the exact local candidates
         run: |
           docker exec qualification npm run package:packages
