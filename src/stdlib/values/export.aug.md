@@ -2,7 +2,7 @@
 
 # `export.aug`
 
-<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=46c6e41782680beb1c899c3fdd355ebcc85a10f6df366a48750a68815d9e0807 -->
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=8fd4e5f1d049793492b54cab48ed18e3f65ca03c10e945ced6a6c9cfdc753f92 -->
 
 ## Exports
 
@@ -16,4 +16,6 @@ Export the declaration `formatTokenId` from [`text.aug`](text.aug.md#symbol-form
 
 Export the declaration `HttpUrl` from [`urls.aug`](urls.aug.md#symbol-HttpUrl). Export the declaration `parseHttpUrl` from [`urls.aug`](urls.aug.md#symbol-parseHttpUrl). Export the declaration `formatHttpUrl` from [`urls.aug`](urls.aug.md#symbol-formatHttpUrl). Export the declaration `PortableRelativePath` from [`paths.aug`](paths.aug.md#symbol-PortableRelativePath).
 
-Export the declaration `parsePortableRelativePath` from [`paths.aug`](paths.aug.md#symbol-parsePortableRelativePath). Export the declaration `formatPortableRelativePath` from [`paths.aug`](paths.aug.md#symbol-formatPortableRelativePath). Export the declaration `joinPortablePaths` from [`paths.aug`](paths.aug.md#symbol-joinPortablePaths).
+Export the declaration `parsePortableRelativePath` from [`paths.aug`](paths.aug.md#symbol-parsePortableRelativePath). Export the declaration `formatPortableRelativePath` from [`paths.aug`](paths.aug.md#symbol-formatPortableRelativePath). Export the declaration `joinPortablePaths` from [`paths.aug`](paths.aug.md#symbol-joinPortablePaths). Export the declaration `RetryPolicy` from [`retries.aug`](retries.aug.md#symbol-RetryPolicy).
+
+Export the declaration `retryDelay` from [`retries.aug`](retries.aug.md#symbol-retryDelay).

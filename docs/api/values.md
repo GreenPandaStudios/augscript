@@ -303,3 +303,39 @@ Join two validated paths with one slash and revalidate all byte, segment and nam
 - `ConversionError`: The combined path exceeds the supported bounds.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/values/paths.aug#L27)
+
+## RetryPolicy {#api-RetryPolicy}
+
+```text
+record RetryPolicy(int maxAttempts, immutable List<Duration> delays) unless ConversionError
+```
+
+Caller-selected retry delays, stored as deeply immutable data.
+Attempts are numbered from one; maxAttempts includes the initial attempt.
+
+**Parameters**
+- `maxAttempts`: Total allowed attempts, from 1 to 64.
+- `delays`: Exactly maxAttempts - 1 durations, each from 0 to 604800000 milliseconds.
+Order, duplicates and zero delays are preserved. Construction performs no operation or wait.
+
+**Throws**
+- `ConversionError`: Invalid attempt count, delay count or delay duration.
+
+[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/values/retries.aug#L11)
+
+## retryDelay {#api-retryDelay}
+
+```text
+retryDelay(RetryPolicy policy, int failedAttempt) returns optional Duration unless ConversionError
+```
+
+Read the delay after a failed attempt, or null after the final allowed attempt.
+This only reads policy data: it does not retry, sleep, classify an error or choose a recovery value.
+
+**Parameters**
+- `failedAttempt`: One-based attempt number, from 1 to policy.maxAttempts.
+
+**Throws**
+- `ConversionError`: The attempt number is outside the policy.
+
+[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/values/retries.aug#L26)

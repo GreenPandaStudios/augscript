@@ -116,6 +116,11 @@ try {
   assert.equal(aug('run',domainValues),domainFixture.stdout);
   if(process.env.AUG_LLVM_HOME&&process.env.AUG_RUNTIME_PACK)assert.equal(run(process.execPath,[cli,'run',domainValues,'--backend','llvm']),domainFixture.stdout);
   aug('spec',domainValues);
+  const retryPolicy=join(directory,'retry-policy-consumer');mkdirSync(retryPolicy);
+  writeFileSync(join(retryPolicy,'main.aug'),'import Duration and RetryPolicy and retryDelay from august.values\ntry:\n    policy = RetryPolicy(maxAttempts=2, delays=[Duration(milliseconds=100)])\n    match retryDelay(policy, failedAttempt=1):\n        when some delay:\n            print(value=delay.milliseconds)\n        when null:\n            print(value="unexpected")\n    print(value=retryDelay(policy, failedAttempt=2) == null)\ncatch ConversionError failure:\n    print(value="unexpected")\n');
+  assert.equal(aug('run',retryPolicy),'100\ntrue\n');
+  if(process.env.AUG_LLVM_HOME&&process.env.AUG_RUNTIME_PACK)assert.equal(run(process.execPath,[cli,'run',retryPolicy,'--backend','llvm']),'100\ntrue\n');
+  aug('spec',retryPolicy);
   const internalModules=join(directory,'internal-module-consumer');mkdirSync(internalModules);
   const internalFixture=JSON.parse(readFileSync(join(root,'conformance/cases.json'),'utf8')).cases.find(item=>item.id==='internal-composition');
   for(const [name,text] of Object.entries(internalFixture.files)){const target=join(internalModules,name);mkdirSync(dirname(target),{recursive:true});writeFileSync(target,text);}

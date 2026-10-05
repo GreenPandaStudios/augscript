@@ -22,3 +22,5 @@ export PortableRelativePath from paths
 export parsePortableRelativePath from paths
 export formatPortableRelativePath from paths
 export joinPortablePaths from paths
+export RetryPolicy from retries
+export retryDelay from retries

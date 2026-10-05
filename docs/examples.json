@@ -129,5 +129,8 @@
   },
   "internal-service": {
     "stdout": "Hello, Ada!\n"
+  },
+  "retry-policy-guide": {
+    "stdout": "After attempt 1: 100 ms\nAfter attempt 2: 500 ms\nNo attempts remain\n"
   }
 }

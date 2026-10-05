@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Bundle the checked rename selection repair for functions and public input labels moved during snapshot capture.
+
+- Show the checked `RetryPolicy` and `retryDelay` contracts through ordinary library hover, imports and generated specs.
+
 - Return detached, checked identity maps from semantic rename plans. Saved CLI renames retain them in normal and recovery-required committed reports.
 
 - Bundle the compiler’s checked standalone body-plan command and stage-specific rejection help. The editor does not automatically apply body replacements.

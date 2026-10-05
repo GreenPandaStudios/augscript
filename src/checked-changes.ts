@@ -40,35 +40,39 @@ function snapshot(root:string) {
     throw new SourceChangeError('CHANGE_STALE','Source or dependency metadata changed while taking the checked snapshot. Retry planning.');
   return {checked:refreshed,...second};
 }
+function renameFromSnapshot(root:string,file:string,offset:number,name:string,current:ReturnType<typeof snapshot>):ChangeRenamePlan {
+  const checked=current.checked,graph=current.graph,path=sourceChangePath(root,file),rename=planRename(checked,graph,path,offset,name);
+  const edits=rename.edits.map(edit=>({...edit,file:relative(root,edit.file).replaceAll('\\','/')}));
+  for(const edit of edits)sourceChangePath(root,edit.file);
+  const plan:ChangeRenamePlan={format:1,operation:'rename',baseRevision:current.revision,compiler:graph.compiler,file,offset,name,symbol:rename.symbol,
+    scope:[...new Set(edits.map(edit=>edit.file))].sort(),sources:graph.sources,configuration:graph.configuration,edits,publicDelta:rename.publicDelta,identityMap:rename.identityMap,
+    candidateRevision:'',dependencyMetadata:current.dependencies,coverage:graph.coverage,boundaries:graph.boundaries,checked:true,behavioralEvidence:'not-run'};
+  plan.candidateRevision=revision(candidate(root,plan),graph.configuration).revision;
+  if(snapshot(root).revision!==current.revision)throw new SourceChangeError('CHANGE_STALE','Source changed while planning. Retry without the concurrent edit.');return plan;
+}
 /** Disk source units and package/configuration identities are part of the plan.
  * Planning never writes or executes code; applying regenerates this exact plan. */
 export function planChangeRename(projectRoot:string,file:string,offset:number,name:string):ChangeRenamePlan {
   const root=sourceChangeRoot(projectRoot);
   if(!Number.isSafeInteger(offset)||offset<0)throw new SourceChangeError('CHANGE_PLAN','The selected offset must be a nonnegative source offset.');
-  const path=sourceChangePath(root,file);
+  sourceChangePath(root,file);
   return coherentSourceRead(root,()=>{
-    const current=snapshot(root),checked=current.checked,graph=current.graph,rename=planRename(checked,graph,path,offset,name);
-    const edits=rename.edits.map(edit=>({...edit,file:relative(root,edit.file).replaceAll('\\','/')}));
-    for(const edit of edits)sourceChangePath(root,edit.file);
-    const plan:ChangeRenamePlan={format:1,operation:'rename',baseRevision:current.revision,compiler:graph.compiler,file,offset,name,symbol:rename.symbol,
-      scope:[...new Set(edits.map(edit=>edit.file))].sort(),sources:graph.sources,configuration:graph.configuration,edits,publicDelta:rename.publicDelta,identityMap:rename.identityMap,
-      candidateRevision:'',dependencyMetadata:current.dependencies,coverage:graph.coverage,boundaries:graph.boundaries,checked:true,behavioralEvidence:'not-run'};
-    plan.candidateRevision=revision(candidate(root,plan),graph.configuration).revision;
-    if(snapshot(root).revision!==current.revision)throw new SourceChangeError('CHANGE_STALE','Source changed while planning. Retry without the concurrent edit.');return plan;
+    return renameFromSnapshot(root,file,offset,name,snapshot(root));
   });
 }
 /** Select a declared standalone function, or its qualified public input label,
- * without asking a human to calculate a UTF-16 offset. */
+ * without asking a human to calculate a UTF-16 offset. Selection and edits use
+ * one checked snapshot; detected concurrent source changes reject planning. */
 export function planChangeRenameSymbol(projectRoot:string,file:string,symbol:string,name:string):ChangeRenamePlan {
   const root=sourceChangeRoot(projectRoot),path=sourceChangePath(root,file),parts=symbol.split('.');
   if(parts.length>2||parts.some(part=>!/^[A-Za-z_]\w*$/.test(part)))throw new SourceChangeError('CHANGE_PLAN','Select FUNCTION or FUNCTION.INPUT in the selected source file.');
   return coherentSourceRead(root,()=>{
-    const checked=checkedProjectWithTests(root,new Map()),definition=checked.project.scopes.get(path)?.get(parts[0]);
+    const current=snapshot(root),checked=current.checked,definition=checked.project.scopes.get(path)?.get(parts[0]);
     if(!definition||definition.file!==path||definition.node.kind!=='function')throw new SourceChangeError('CHANGE_PLAN','Select a standalone function declared in this file.');
-    const graph=semanticGraph(checked,true),id=definition.id+(parts.length===2?'/input/'+parts[1]:'');
+    const graph=current.graph,id=definition.id+(parts.length===2?'/input/'+parts[1]:'');
     const target=graph.symbols.find(item=>item.id===id);
     if(!target)throw new SourceChangeError('CHANGE_PLAN','The selected function has no public input label '+parts[1]+'.');
-    return planChangeRename(root,file,target.location.start,name);
+    return renameFromSnapshot(root,file,target.location.start,name,current);
   });
 }
 /** The author supplies a complete function source unit. Only its body is planned;

@@ -1002,7 +1002,7 @@ Root-only UTF-8 text input. Other callables receive FileReader. Invalid Unicode 
 record Point(int x, int y)
 ```
 
-Declare deeply immutable data with labeled construction and structural equality/hashing. Records contain primitives, tuples and other records. An initialize block validates inputs; its escaping errors are inferred; an explicit unless ErrorType limits permitted failures. The unreleased august.values library supplies checked dates, durations, URLs, identifiers, paths and bounded text.
+Declare deeply immutable data with labeled construction and structural equality/hashing. Records contain primitives, tuples and other records. An initialize block validates inputs; its escaping errors are inferred; an explicit unless ErrorType limits permitted failures. The unreleased august.values library supplies checked dates, durations, URLs, identifiers, paths, bounded text and pure retry-policy data.
 
 ## request
 

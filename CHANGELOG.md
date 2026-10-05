@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Resolve named checked renames and build their edits from the same checked snapshot. Reject detected declaration moves rather than selecting another function or input at an old offset.
+
+- Add pure `RetryPolicy` values and `retryDelay` to `august.values`. Validate bounded attempts and immutable caller-selected delays across construction, record updates and JSON decoding; preserve copied worker data without scheduling or retry effects.
+
 - Retain checked before/after symbol identities in rename plans and committed reports, including cleanup failures requiring recovery. Include changed owner/coordinate-derived IDs; reject altered maps before publication. Body edits do not guess local correspondence.
 
 - Add `aug change plan-replace-body` for one author-supplied managed standalone function. Preserve its parsed header, neighboring private syntax and checked contracts; retain stage-specific source/revision evidence for rejections. Apply through the existing checked writer and recovery journal. Independent tests remain a separate gate.
