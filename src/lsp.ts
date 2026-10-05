@@ -69,7 +69,7 @@ export async function runLanguageServer(root: string): Promise<number> {
         const previous = open.get(uri);
         if (!previous || params.version >= previous.version) open.set(uri, { text: params.text, version: params.version });
       }
-      const view = document(uri,['references','graph','rename'].includes(params.command)), offset = params.offset ?? 0;
+      const view = document(uri,['references','graph','rename'].includes(params.command)||params.options?.context===true), offset = params.offset ?? 0;
       result = params.command === 'hover' ? view.hover(offset) ?? null : params.command === 'complete' ? view.complete(offset) :
         params.command === 'rename' ? view.rename(offset,params.options?.name) : params.command === 'references' ? view.references(offset,params.options?.includeDeclaration!==false).map(item=>({...item,file:view.referenceTarget(item.file)})) : params.command === 'graph' ? view.graph() : params.command === 'fixes' ? view.fixes() : params.command === 'semantic-tokens' ? view.tokens() :
           params.command === 'inlay-hints' ? view.inlayHints(params.options?.start, params.options?.end,params.options) :

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+Use detached compiler responses and whole-project context queries for unsaved source. The schema 3 packet preserves target contracts, reports insufficient budgets and expands known callers and tests for interface changes and review.
+
 - Add Javadoc hover, import completion and compiled-spec contracts for the unreleased `august.values` domain records and operations.
 
 - Complete and explain explicit byte and Unicode 18 grapheme text operations, including their checked UTF-8 failures.

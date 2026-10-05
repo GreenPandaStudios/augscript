@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Harden semantic responses against client mutation. Bind graph schema 2 and context schema 3 to physical dependency metadata; reject insufficient target budgets with a required minimum. Add interface-change/review context modes with conservative caller, inheritance and type-use expansion, authored test suites and whole-project LSP parity.
+
 - Add `august.values`: validated calendar dates, exact millisecond durations, DNS-profile HTTP URLs, token IDs, portable relative paths and byte-bounded UTF-8 text. Constructors, copies and JSON decoding preserve the same invariants; parsers and arithmetic retain specific checked errors.
 
 - Add explicit `byteLength()` and Unicode 18.0.0 default extended `graphemeLength()`/`graphemes()` operations, with checked UTF-8 validation and bundled licensed tables.

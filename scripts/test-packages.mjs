@@ -4,6 +4,7 @@ import { createHash } from 'node:crypto';
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
+import {pathToFileURL} from 'node:url';
 import { spawnSync } from 'node:child_process';
 
 const root = resolve(import.meta.dirname, '..');
@@ -41,6 +42,14 @@ try {
   writeFileSync(join(choices,'main.aug'),'import greet from values\nprint(value=greet(name="Ada"))\n');
   writeFileSync(join(choices,'values.aug'),'greet(optional string name):\n    return match name:\n        when null:\n            "Guest"\n        when some person:\n            $"Hello, {person}!"\n');
   assert.equal(aug('run',choices),'Hello, Ada!\n');
+  const {loadProject}=await import(pathToFileURL(join(cliRoot,'src/project.js')));
+  const {checkProject}=await import(pathToFileURL(join(cliRoot,'src/checker.js')));
+  const {contractFacts,describe}=await import(pathToFileURL(join(cliRoot,'src/semantic.js')));
+  const checked=checkProject(loadProject(choices)),file=join(choices,'values.aug');
+  const before=describe(checked,file,{name:'greet',budget:100000});
+  const fact=contractFacts(checked).find(item=>item.name==='greet');
+  fact.location.line=999;fact.typeParameters.push('Imaginary');
+  assert.deepEqual(describe(checked,file,{name:'greet',budget:100000}),before);
   aug('spec',choices);assert.match(readFileSync(join(choices,'values.aug.md'),'utf8'),/choice based on `name`/);
   if(process.env.AUG_LLVM_HOME&&process.env.AUG_RUNTIME_PACK)
     assert.equal(run(process.execPath,[cli,'run',choices,'--backend','llvm']),'Hello, Ada!\n');
@@ -145,6 +154,10 @@ try {
   aug('init',styled,'--block-style','braces','--indentation','tabs','--assignment','to');
   assert.match(readFileSync(join(styled,'greeting.aug'),'utf8'),/greet\(string name\) \{\n\treturn/);
   assert.equal(aug('run',styled),'Hello, August!\n');
+  const context=JSON.parse(aug('context',styled,'--file',join(styled,'greeting.aug'),'--name','greet','--mode','review','--budget','100000'));
+  assert.equal(context.schema,3);assert.equal(context.status,'ready');assert.equal(context.query.mode,'review');
+  assert.ok(context.tests.some(item=>item.source.includes('test greet')));assert.equal(context.evidence.behavior,'not-run');
+  assert.ok(context.dependencies.some(item=>item.file==='project/package.json'));
   const ranges=join(directory,'ranges');mkdirSync(ranges);
   writeFileSync(join(ranges,'main.aug'),'import range and RangeError from august.collections\ntry { print(value=range(end=3, limit=3).length()) } catch RangeError error { exit(status=1) }\n');
   assert.equal(aug('run',ranges),'3\n');

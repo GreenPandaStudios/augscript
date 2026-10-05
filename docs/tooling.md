@@ -35,7 +35,7 @@ Install `aug` once as shown in [Your first project](getting-started.md). Command
 | `test PROJECT [--coverage] [--json]` | Isolated native tests and optional statement-line report; the unreleased core-runtime cache reuses compilation. Add `--rebuild` to compile selected cases again. |
 | `bench PROJECT [--iterations N] [--warmup N] [--timeout MS] [--json] -- args...` | Release build with timed native executions. |
 | `explain PROJECT --file PATH [--name NAME]` | Checked contracts, dependencies, layers, origins, tests, and module surface. |
-| `context PROJECT --file PATH [--name NAME] [--budget N] [--require-complete]` | Bounded JSON context, including related declarations and source snippets. |
+| `context PROJECT --file PATH [--name NAME] [--budget N] [--mode implementation\|interface-change\|review] [--require-complete]` | Bounded JSON context, including related declarations and source snippets. |
 | `graph PROJECT --composition [--case TEST_ID] [--json\|--mermaid]` | **Unreleased:** inspect selected application/test providers, lifetimes and constructor dependencies without execution. |
 | `lsp PROJECT` | Persistent language server over stdio. |
 | `init DIRECTORY [--template hello\|weather]` | New application with agent instructions and same-file tests. |
@@ -205,13 +205,21 @@ Benchmark the compiled executable with a workload representative of your applica
 
 `aug explain` reports a declaration's inputs, result, state changes, I/O, checked errors, dependencies, tests, and source locations. It also reports interceptor order and binding lifetimes. For endpoints, it includes routes, statuses, streaming, input sources, and policy settings.
 
-`aug context` adds related declarations and source snippets. Its character budget ranges from 512 to 100000, with a default of 12000.
+`aug context` adds related declarations, source snippets and available same-file tests. Its budget ranges from 512 to 100000, with a default of 12000. In the unreleased schema 3 protocol, the unit is a UTF-16 code unit in the compact JSON response, including the final newline. This is the emitted character count, not an estimate of model tokens.
 
-The unreleased context packet gives the selected contract and actual implementation priority over import summaries. Resolved type identities, required dependency contracts, reverse callers, source digests, configuration digests, and the compiler identity follow. Locations use project-relative or package-relative paths. `aug explain` retains its declaration report and absolute navigation locations.
+The unreleased context packet gives the selected contract and actual implementation priority over import summaries. Resolved type identities, required dependency contracts, reverse callers, source digests, configuration and physical dependency metadata digests, and the compiler identity follow. Locations use project-relative or package-relative paths. `aug explain` retains its declaration report and absolute navigation locations.
 
-Context coverage has separate fields for project checking, graph boundaries, delivered facts, and reverse callers. A checked import closure cannot claim all project callers. Interface dispatch and native code remain explicit boundaries. A short budget reports omitted sections and identities; if even the inventory cannot fit, the packet reports that omission and marks required context incomplete. Increase the budget before making a change from it.
+The default `--mode implementation` follows the target's checked dependencies. Use `--mode interface-change` when changing an interface: it also expands known transitive callers, inherited implementations and resolved type/field consumers. `--mode review` uses that same conservative impact closure for a change review. Contributing startup and export source units are included without copying unrelated declarations. Available test suites retain their authored source and exact case IDs; their independence is unassessed and their execution remains `not-run`.
 
-Use `--require-complete` in an agent integration to return exit status 1 when required facts, project coverage, reverse callers, or dispatch coverage are incomplete. Receiving a complete packet establishes compiler context. It does not establish that a requested behavior is correct: the packet describes the starting code, says that requirements have not been supplied, and reports behavioral evidence as not run.
+Context coverage has separate fields for project checking, graph boundaries, delivered facts and reverse callers. A checked import closure cannot claim all project callers. Interface dispatch and native code remain explicit boundaries; unavailable downstream consumers are outside the project. The graph is computed before applying the text budget. Optional examples and test suites can be omitted; the report lists omitted sections and fetchable identities when they fit.
+
+A successful `status: "ready"` response always contains the selected contracts and actual implementation. If these and the snapshot envelope do not fit, the command returns status 1 with `status: "budget-insufficient"` and `minimumBudget`. Increase the budget or select one smaller declaration. Required dependency facts can still be incomplete in a ready response. Check `coverage.mandatory`, not just the status.
+
+Use `--require-complete` in an agent integration to return exit status 1 when required facts, project coverage, reverse callers or dispatch coverage are incomplete. A complete packet establishes compiler context about the starting code. Requirements have not been supplied, and behavioral evidence has not run. Select independent acceptance cases with [aug verify](testing.md#review-requirements-with-test-results).
+
+Graph schema 2 and context schema 3 are unreleased protocol versions. Clients must check the schema number, accept unknown fields within a supported version, and reject versions they do not understand. Embedding responses are detached from compiler state; modifying them cannot alter subsequent checks or queries. The CLI and language server use the same packet builder. The `aug/editor` LSP request with `command: "describe"` and `options.context: true` checks the whole project with the current unsaved sources. Local navigation paths in `aug explain` are absolute; portable context and graph locations are relative.
+
+A snapshot retains its captured metadata. A later source, configuration, manifest, lock, binding descriptor or notice change produces a different revision when refreshed. These digests identify the inspected inputs; foreign implementations are not inspected by a type query. Native builds and test receipts carry their own execution evidence.
 
 Save an `aug explain` report and compare a later one with `--baseline previous.json`. The comparison shows changed dependencies, public signatures, and member counts. Both reports must cover the modules being compared.
 

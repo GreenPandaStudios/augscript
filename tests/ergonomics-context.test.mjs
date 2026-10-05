@@ -20,7 +20,7 @@ test('context delivers the root implementation and resolved contracts before unu
   const view=new SemanticWorkspace(root).document(join(root,'work.aug'),undefined,true);
   assert.deepEqual(view.diagnostics,[]);
   const report=view.describe({name:'calculate',context:true,budget:100000});
-  assert.equal(report.schema,2);assert.equal(report.contracts[0].name,'calculate');
+  assert.equal(report.schema,3);assert.equal(report.contracts[0].name,'calculate');
   assert.match(report.snippets[0].source,/input = Input/);
   assert.equal(report.coverage.mandatory,'complete');assert.equal(report.coverage.reverseCallers,'complete');
   assert.ok(report.reverseCallers.some(caller=>caller.location.file==='main.aug'));
@@ -89,4 +89,103 @@ test('native capability promises retain the boundary even without an invocation'
   assert.ok(packet.contracts.some(contract=>contract.name==='puts'));
   assert.equal(packet.coverage.graph,'bounded');
   assert.ok(packet.boundaries.some(boundary=>boundary.kind==='native-code'));
+}));
+
+
+test('a context budget must hold the selected contract and implementation before it succeeds',()=>fixture({
+ 'main.aug':'', 'work.aug':'calculate(int input) returns int { return input + 1 }\n'
+},root=>{
+ const file=join(root,'work.aug'),view=new SemanticWorkspace(root).document(file,undefined,true);
+ const short=view.describe({name:'calculate',context:true,budget:512});
+ assert.equal(short.status,'budget-insufficient');assert.ok(short.minimumBudget>512);
+ assert.ok(JSON.stringify(short).length+1<=512);
+ const adequate=view.describe({name:'calculate',context:true,budget:short.minimumBudget});
+ assert.equal(adequate.status,'ready');assert.equal(adequate.contracts[0].name,'calculate');
+ assert.match(adequate.snippets[0].source,/return input \+ 1/);
+ assert.ok(JSON.stringify(adequate).length+1<=adequate.budget);
+ const cli=spawnSync(process.execPath,['bin/aug.mjs','context',root,'--file',file,'--name','calculate','--budget','512','--json'],{encoding:'utf8'});
+ assert.equal(cli.status,1,cli.stderr);assert.equal(JSON.parse(cli.stdout).status,'budget-insufficient');
+}));
+
+test('interface-change context includes transitive known callers outside the import closure',()=>fixture({
+ 'main.aug':'', 'work.aug':'calculate(int input) returns int { return input + 1 }\n',
+ 'caller.aug':'import calculate from work\nconsume(int number) returns int { return calculate(input=number) }\n',
+ 'outer.aug':'import consume from caller\nrun() returns int { return consume(number=7) }\n'
+},root=>{
+ const view=new SemanticWorkspace(root).document(join(root,'work.aug'),undefined,true);
+ const ordinary=view.describe({name:'calculate',context:true,budget:100000});
+ assert.ok(!ordinary.snippets.some(item=>item.id==='outer.aug:run'));
+ const changed=view.describe({name:'calculate',context:true,mode:'interface-change',budget:100000});
+ assert.equal(changed.query.mode,'interface-change');
+ assert.ok(changed.contracts.some(item=>item.id==='outer.aug:run'));
+ assert.ok(changed.snippets.some(item=>item.id==='caller.aug:consume'&&item.source.includes('calculate(input=number)')));
+ assert.ok(changed.snippets.some(item=>item.id==='outer.aug:run'));
+ assert.equal(changed.coverage.externalCallers,'outside-project');
+ assert.equal(changed.evidence.behavior,'not-run');
+ const cli=spawnSync(process.execPath,['bin/aug.mjs','context',root,'--file',join(root,'work.aug'),'--name','calculate','--mode','interface-change','--budget','100000'],{encoding:'utf8'});
+ assert.equal(cli.status,0,cli.stderr);assert.deepEqual(JSON.parse(cli.stdout),JSON.parse(JSON.stringify(changed)));
+}));
+
+
+test('review context keeps available tests and startup code separate from execution evidence',()=>fixture({
+ 'main.aug':'import calculate from work\nprint(value=calculate(input=4))\n',
+ 'work.aug':'calculate(int input) returns int { return input + 1 }\ntest calculate { when examples { it known { assertEqual(actual=calculate(input=4), expected=5) } } }\n'
+},root=>{
+ const packet=new SemanticWorkspace(root).document(join(root,'work.aug'),undefined,true).describe({name:'calculate',context:true,mode:'review',budget:100000});
+ assert.ok(packet.snippets.some(item=>item.id.startsWith('module:main.aug')&&item.source.includes('print(value=calculate')));
+ assert.ok(!packet.snippets.some(item=>item.id.startsWith('module:work.aug')&&item.source.includes('test calculate')));
+ const suite=packet.tests.find(item=>item.subject==='work.aug:calculate');
+ assert.match(suite.source,/expected=5/);assert.deepEqual(suite.cases,['work.aug:calculate:examples:known']);
+ assert.equal(suite.origin,'author-supplied');assert.equal(suite.independence,'not-assessed');assert.equal(packet.evidence.behavior,'not-run');
+ const small=new SemanticWorkspace(root).document(join(root,'work.aug'),undefined,true).describe({name:'calculate',context:true,mode:'review',budget:packet.minimumBudget});
+ assert.equal(small.contracts[0].name,'calculate');assert.ok(small.omissions.some(item=>item.section==='tests'));
+}));
+
+
+test('interface-change context covers inherited implementations and record type consumers',()=>fixture({
+ 'main.aug':'',
+ 'work.aug':'interface Base { read() returns int }\ninterface Child extends Base {}\nConcrete() implements Child { read() { return 1 } }\nuse(Child input) { return input.read() }\nrecord Info(int value)\ninspect(Info input) { return input.value }\n'
+},root=>{
+ const view=new SemanticWorkspace(root).document(join(root,'work.aug'),undefined,true);assert.deepEqual(view.diagnostics,[]);
+ const inherited=view.describe({name:'Base',context:true,mode:'interface-change',budget:100000});
+ assert.ok(inherited.contracts.some(item=>item.name==='Concrete'));assert.ok(inherited.snippets.some(item=>item.source.includes('Concrete()')));
+ assert.equal(inherited.coverage.graph,'bounded');
+ const data=view.describe({name:'Info',context:true,mode:'interface-change',budget:100000});
+ assert.ok(data.contracts.some(item=>item.name==='inspect'));assert.ok(data.snippets.some(item=>item.source.includes('input.value')));
+}));
+
+
+test('review includes a suite that calls the target under another subject',()=>fixture({
+ 'main.aug':'',
+ 'work.aug':'calculate(int input) returns int { return input + 1 }\nother() returns int { return 0 }\ntest other { when examples { it caller { assertEqual(actual=calculate(input=4), expected=5) } } }\n'
+},root=>{
+ const packet=new SemanticWorkspace(root).document(join(root,'work.aug'),undefined,true).describe({name:'calculate',context:true,mode:'review',budget:100000});
+ const suite=packet.tests.find(item=>item.subject==='work.aug:other');
+ assert.ok(suite);assert.match(suite.source,/calculate\(input=4\)/);
+ assert.deepEqual(suite.cases,['work.aug:other:examples:caller']);
+ assert.equal(packet.evidence.behavior,'not-run');
+}));
+
+test('review includes native contracts and boundaries inside selected startup statements',()=>fixture({
+ 'main.aug':'import calculate and puts from work\nif calculate(input=7) > 0 { unsafe { puts(text="hello") } }\n',
+ 'work.aug':'extern C puts(string text) returns int\ncalculate(int input) returns int { return input + 1 }\n'
+},root=>{
+ const view=new SemanticWorkspace(root).document(join(root,'work.aug'),undefined,true);assert.deepEqual(view.diagnostics,[]);
+ const packet=view.describe({name:'calculate',context:true,mode:'review',budget:100000});
+ assert.ok(packet.snippets.some(item=>item.source.includes('puts(text="hello")')));
+ assert.ok(packet.contracts.some(item=>item.name==='puts'));
+ assert.equal(packet.coverage.graph,'bounded');
+ assert.ok(packet.boundaries.some(item=>item.kind==='native-code'&&item.target==='work.aug:puts'&&item.location.file==='main.aug'));
+}));
+
+test('review retains foreign boundaries in selected test callers',()=>fixture({
+ 'main.aug':'',
+ 'work.aug':'extern C puts(string text) returns int\ncalculate(int input) returns int { return input + 1 }\nother() returns int { return 0 }\ntest other { when examples { it caller { assertEqual(actual=calculate(input=4), expected=5); unsafe { puts(text="hello") } } } }\n'
+},root=>{
+ const view=new SemanticWorkspace(root).document(join(root,'work.aug'),undefined,true);assert.deepEqual(view.diagnostics,[]);
+ const packet=view.describe({name:'calculate',context:true,mode:'review',budget:100000});
+ assert.ok(packet.tests.some(item=>item.subject==='work.aug:other'));
+ assert.ok(packet.contracts.some(item=>item.name==='puts'));
+ assert.equal(packet.coverage.graph,'bounded');
+ assert.ok(packet.boundaries.some(item=>item.kind==='native-code'&&item.target==='work.aug:puts'));
 }));

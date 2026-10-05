@@ -114,3 +114,7 @@ The example gallery retains canonical source ranges through `formatFileWithSourc
 ## Unicode text contracts
 
 Unicode segmentation uses committed 18.0.0 inputs under `native/unicode/18.0.0`, UAX #29 revision 49, and `scripts/generate-graphemes.mjs`. Run `npm run unicode:check` for drift; `npm run unicode:generate` rebuilds the runtime table, version module and full notice. A version update requires a reviewed algorithm change, official input URLs/checksums, exact boundary corpus, public help/reference and deployment notices together. Ordinary application compilation and execution use the bundled table.
+
+## Semantic protocol changes
+
+`src/symbols.ts`, `src/context.ts` and `src/semantic.ts` own graph, context and embedding responses. Keep protocol schemas, CLI/LSP transport, relative locations, budget framing, omissions and coverage documented in `docs/tooling.md`. Physical dependency digests come from `src/semantic-metadata.ts`; checked edits and execution evidence reuse that input model. Verify mutation isolation, unsaved CLI/LSP-equivalent snapshots, inheritance/type consumers, exact minimum budgets, stale metadata, source transaction regressions and installed JavaScript commands. Authored test source is available context; execution and independence must remain separate facts.

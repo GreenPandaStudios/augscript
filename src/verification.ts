@@ -22,7 +22,7 @@ interface CaseResult {id:string;group:string;name:string;passed:boolean;stdout:s
 export interface VerificationReport {
   format:1;status:'passed'|'failed'|'rejected'|'stale'|'incomplete';revision:string;compilerIdentity:SemanticGraph['compiler'];
   compiler:{status:'accepted'|'rejected';diagnostics:Diagnostic[]};
-  source:{files:SemanticGraph['sources'];configuration:SemanticGraph['configuration'];coverage:SemanticGraph['coverage']};
+  source:{files:SemanticGraph['sources'];configuration:SemanticGraph['configuration'];dependencies:SemanticGraph['dependencies'];coverage:SemanticGraph['coverage']};
   requirements:{origin:'author-supplied';independence:'author-declared';file:string;sha256:string;items:(Requirement&{status:EvidenceStatus})[]};
   review:{sources:{file:string;text:string;sha256:string}[];contexts:ContextPacket[];specifications:{file:string;text:string;origin:'source-derived'}[];
     testGroups:{file:string;subject:string;group:string;source:string;cases:string[]}[]};
@@ -140,7 +140,7 @@ export async function verifyAcceptance(rootPath:string,options:VerificationOptio
   const graph=semanticGraph(checked,true,undefined,snapshot.configuration),rejected=checked.diagnostics.some(issue=>issue.severity!=='warning');
   const report:VerificationReport={format:1,status:rejected?'rejected':'incomplete',revision:graph.revision,compilerIdentity:graph.compiler,
     compiler:{status:rejected?'rejected':'accepted',diagnostics:checked.diagnostics},
-    source:{files:graph.sources,configuration:graph.configuration,coverage:graph.coverage},
+    source:{files:graph.sources,configuration:graph.configuration,dependencies:graph.dependencies,coverage:graph.coverage},
     requirements:{origin:'author-supplied',independence:'author-declared',file:semanticSourcePath(checked,path),sha256:digest(text),
       items:requirements.requirements.map(item=>({...item,status:'not-run'}))},
     review:{sources:reviewSources(checked,selected),contexts:[],specifications:[],testGroups:[]},behavior:{status:'not-run',backend,passed:0,failed:0,results:[]},

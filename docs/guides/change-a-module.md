@@ -28,7 +28,9 @@ npx @greenpandastudios/aug-cli@next explain . --file calculator.aug --name Calcu
 npx @greenpandastudios/aug-cli@next context . --file calculator.aug --name Calculator --budget 6000
 ```
 
-The report lists the declarations and related code. Check its `truncated` flag: if a needed declaration is missing, increase the budget or open its source link.
+The report lists declarations and related code. The unreleased compiler rejects a budget that cannot hold the selected contract and implementation, and reports `minimumBudget`. A ready report can still omit dependencies or tests; check its coverage and omissions before editing.
+
+For an interface change, add `--mode interface-change`; this includes known transitive callers and type consumers. `--mode review` also uses that closure for reviewing a change. Available test source is context, not a test result. Use `--require-complete` when an integration needs all required facts and resolved caller coverage. Dynamic dispatch and consumers outside the project remain explicit boundaries.
 
 ## Make and check the change
 

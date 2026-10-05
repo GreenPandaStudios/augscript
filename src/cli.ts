@@ -11,7 +11,7 @@ import {withScratch} from './scratch.ts';
 import {buildBundle,verifyBundle} from './bundle.ts';
 import {BuildProgress} from './progress.ts';
 import {libraryCatalog} from './library-catalog.ts';
-import {hasRequiredContext} from './context.ts';
+import {hasRequiredContext,contextModes,type ContextMode} from './context.ts';
 import {dependencyUpdatePreview} from './package-updates.ts';
 import {dependencyReport,packageReadiness,packageInterfaceDiff} from './package-inspection.ts';
 import { existsSync, readFileSync, realpathSync, rmSync, statSync, writeFileSync } from 'node:fs';
@@ -109,7 +109,7 @@ function usage(): void {
     `Format: aug format [project directory] [--file path] [--write]\n` +
     `Specifications: aug spec [project directory] [--check] [--json]\n` +
     `Migration: aug migrate [project directory] [--file path] [--write]\n` +
-    `Context: aug context [project directory] [--file path] [--name declaration] [--budget characters] [--require-complete]\n` +
+    `Context: aug context [project directory] [--file path] [--name declaration] [--budget characters] [--mode implementation|interface-change|review] [--require-complete]\n` +
     `Composition: aug graph [PROJECT] --composition [--case TEST_ID] [--json|--mermaid] — inspect existing application or test wiring\n` +
     `References: aug references [project directory] --file path --offset character; aug graph [project directory] --file path\n` +
     `Checked edits: aug change plan-rename [PROJECT] --file FILE (--symbol FUNCTION[.INPUT]|--offset N) --name NAME [--out PLAN] [--json]; aug change apply [PROJECT] --plan PLAN; aug change recover [PROJECT]\n` +
@@ -543,7 +543,7 @@ export async function main(argv: string[]): Promise<number> {
   const options = separator >= 0 ? argv.slice(1, separator) : argv.slice(1);
   const programArgs = separator >= 0 ? argv.slice(separator + 1) : [];
   if (options.includes('--help')) { usage(); return 0; }
-  const valueOptions = new Set(['--expected-revision','--backend','--out', '--stdin-file', '--file', '--name', '--offset', '--budget', '--baseline', '--group', '--case', '--timeout', '--iterations', '--warmup']);
+  const valueOptions = new Set(['--mode','--expected-revision','--backend','--out', '--stdin-file', '--file', '--name', '--offset', '--budget', '--baseline', '--group', '--case', '--timeout', '--iterations', '--warmup']);
   const booleanOptions = new Set(['--json', '--coverage', '--list', '--write', '--check', '--offline', '--frozen', '--require-complete', '--progress','--rebuild']);
   for (let index = 0; index < options.length; index++) {
     const option = options[index];
@@ -571,6 +571,8 @@ export async function main(argv: string[]): Promise<number> {
   const symbolName = nameIndex >= 0 ? options[nameIndex + 1] : undefined;
   const offsetIndex = options.indexOf('--offset');
   const offsetText = offsetIndex >= 0 ? options[offsetIndex + 1] : undefined;
+  const modeIndex=options.indexOf('--mode'),contextMode=modeIndex<0?undefined:options[modeIndex+1];
+  if(contextMode!==undefined&&(command!=='context'||options.filter(arg=>arg==='--mode').length!==1||!contextModes.includes(contextMode as ContextMode))) {process.stderr.write('--mode is valid once for aug context: implementation, interface-change or review.\n');return 2;}
   const budgetIndex = options.indexOf('--budget');
   const budget = budgetIndex >= 0 ? Number(options[budgetIndex + 1]) : undefined;
   const baselineIndex = options.indexOf('--baseline');
@@ -595,6 +597,7 @@ export async function main(argv: string[]): Promise<number> {
     (fileIndex < 0 || i !== fileIndex + 1) &&
     (nameIndex < 0 || i !== nameIndex + 1) &&
     (offsetIndex < 0 || i !== offsetIndex + 1) &&
+    (modeIndex < 0 || i !== modeIndex + 1) &&
     (budgetIndex < 0 || i !== budgetIndex + 1) &&
     (baselineIndex < 0 || i !== baselineIndex + 1) &&
     (groupIndex < 0 || i !== groupIndex + 1) &&
@@ -718,9 +721,9 @@ export async function main(argv: string[]): Promise<number> {
       if (budget !== undefined && (!Number.isInteger(budget) || budget < 512 || budget > 100000)) throw new Error('--budget must be an integer from 512 to 100000');
       if(command==='context'&&baselinePath)throw new Error('--baseline compares aug explain reports; context packets are revision-bearing snapshots.');
       const baseline = baselinePath ? JSON.parse(readFileSync(baselinePath, 'utf8')) : undefined;
-      const result = describe(checked, sourceFile ?? join(root, 'main.aug'), { name: symbolName, budget, context: command === 'context', baseline });
+      const result = describe(checked, sourceFile ?? join(root, 'main.aug'), { name: symbolName, budget, mode:contextMode as ContextMode,context: command === 'context', baseline });
       process.stdout.write(JSON.stringify(result, null, command==='context'||json ? undefined : 2) + '\n');
-      return command==='context'&&options.includes('--require-complete')&&('schema' in result&&!hasRequiredContext(result))?1:0;
+      return command==='context'&&'schema' in result&&(result.status==='budget-insufficient'||options.includes('--require-complete')&&!hasRequiredContext(result))?1:0;
     }
     if (command === 'definition') {
       if (!sourceFile || (!symbolName && offsetText === undefined))

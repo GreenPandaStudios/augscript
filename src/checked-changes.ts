@@ -1,9 +1,10 @@
-import {readFileSync,existsSync,lstatSync} from 'node:fs';
+import {readFileSync} from 'node:fs';
 import {join,relative} from 'node:path';
 import {createHash} from 'node:crypto';
 import {checkedProjectWithTests,planRename,applySourceEdits,type CheckedSourceEdit,type InterfaceDelta} from './refactoring.ts';
 import type {CheckedProject} from './checker.ts';
 import {semanticGraph,semanticConfiguration} from './symbols.ts';
+import {semanticDependencyMetadata} from './semantic-metadata.ts';
 import {SourceChangeError,coherentSourceRead,sourceChangeRoot,sourceChangePath,sourceImage,withSourceWriter,publishSourceChange,recoverSourceJournal,type SourceCheckpoint} from './source-transactions.ts';
 
 export interface ChangeRenamePlan {
@@ -18,20 +19,10 @@ function candidate(root:string,plan:ChangeRenamePlan) {
   return checkedProjectWithTests(root,overrides);
 }
 function dependencyMetadata(checked:CheckedProject) {
-  const project=checked.project,identities=new Map<string,string|null>();
-  const selections=[{directory:project.root,identity:'project',bindings:project.library?.native?.bindings},
-    ...[...project.packages.scopes.values()].map(scope=>({directory:scope.directory,identity:`package/${scope.name}@${scope.version}`,bindings:scope.native?.bindings}))];
-  for(const selection of selections)for(const file of new Set(['main.yaml','aug-package.json','package.json','native.abi.json','aug.lock.json','THIRD_PARTY_NOTICES.md',...(selection.bindings?[selection.bindings]:[])])) {
-    const path=join(selection.directory,file),key=selection.identity+'/'+file;let value:string|null=null;
-    if(existsSync(path)) {
-      const stat=lstatSync(path);if(!stat.isFile()||stat.isSymbolicLink()||stat.size>16*1024*1024)throw new SourceChangeError('CHANGE_PLAN','Dependency metadata must be bounded regular files: '+key);
-      value=createHash('sha256').update(readFileSync(path)).digest('hex');
-    }
-    if(identities.has(key)&&identities.get(key)!==value)throw new SourceChangeError('CHANGE_PLAN','Dependency identity has conflicting physical metadata: '+key);
-    identities.set(key,value);
-  }
-  return [...identities].map(([file,sha256])=>({file,sha256})).sort((a,b)=>a.file<b.file?-1:a.file>b.file?1:0);
+  try {return semanticDependencyMetadata(checked.project);}
+  catch(error){throw new SourceChangeError('CHANGE_PLAN',error instanceof Error?error.message:String(error));}
 }
+
 const revision=(checked:CheckedProject,configuration=semanticConfiguration(checked.project.root))=>{
   const graph=semanticGraph(checked,true,undefined,configuration),dependencies=dependencyMetadata(checked);
   return {graph,dependencies,revision:digest(JSON.stringify({semanticRevision:graph.revision,dependencies}))};

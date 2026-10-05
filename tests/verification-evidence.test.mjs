@@ -111,7 +111,7 @@ test('ordinary repository-native imports supply real zlib acceptance evidence th
  assert.equal(report.behavior.passed,1);assert.ok(report.review.contexts[0].boundaries.some(item=>item.kind==='native-code'));assert.equal(report.source.configuration.find(item=>item.file==='aug.lock.json').sha256!==null,true);assert.equal(report.requirements.items[0].status,'passed');
 }));
 
-test('metadata rejected after execution cannot pass with an unchanged source revision',async()=>{
+test('metadata rejected after execution changes the revision and cannot pass',async()=>{
  const root=realpathSync(mkdtempSync(join(tmpdir(),'aug-verification-metadata-')));
  try{
   mkdirSync(join(root,'src'));writeFileSync(join(root,'src/export.aug'),'export double from math\n');writeFileSync(join(root,'src/math.aug'),good);
@@ -120,6 +120,7 @@ test('metadata rejected after execution cannot pass with an unchanged source rev
   writeFileSync(join(root,'aug-package.json'),JSON.stringify({format:2,name:'@test/metadata',version:'0.1.0',compiler:JSON.parse(readFileSync('package.json','utf8')).version,source:'src',dependencies:{},native:{profile:'aug-native-abi-1',bindings:'native.abi.json',bindingsSha256:createHash('sha256').update(bytes).digest('hex'),upstream:{repository:'https://example.invalid/native',version:'1.0.0',sourceRevision:'a'.repeat(40)},artifacts:[{id:'host',target:nativeHostTarget(),url:'https://example.invalid/native.tgz',sha256:'b'.repeat(64),maximumDownloadBytes:4096,maximumUnpackedBytes:8192,link:{kind:'dynamic',libraries:[library]},runtime:{files:[library],relocation:'loader-relative'},components:[{id:'native',version:'1.0.0',compatibilityKey:'native',linkage:'dynamic',required:true}],fileManifest:'files.json',provenance:'provenance.json',notices:'THIRD_PARTY_NOTICES.md'}]}}));
   writeFileSync(join(root,'requirements.json'),JSON.stringify({format:1,requirements:[{id:'twice',description:'Return twice the input.',tests:ids.map(id=>'src/'+id)}]}));
   const report=await runWhileLowering(root,'c',()=>writeFileSync(join(root,'native.abi.json'),bytes+'\n'));
-  assert.equal(report.status,'stale');assert.equal(report.behavior.status,'passed');assert.equal(report.freshness.status,'changed');assert.equal(report.freshness.afterRevision,report.revision);assert.ok(report.freshness.diagnostics.some(issue=>/NATIVE_INTEGRITY/.test(issue.message)));
+  assert.equal(report.status,'stale');assert.equal(report.behavior.status,'passed');assert.equal(report.freshness.status,'changed');assert.notEqual(report.freshness.afterRevision,report.revision);assert.ok(report.freshness.diagnostics.some(issue=>/NATIVE_INTEGRITY/.test(issue.message)));
+  assert.equal(readFileSync(join(root,'src/math.aug'),'utf8'),good);
  }finally{rmSync(root,{recursive:true,force:true});}
 });

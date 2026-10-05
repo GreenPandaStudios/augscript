@@ -1,5 +1,6 @@
 import {recordBindingDefinition} from './binding-patterns.ts';
-import {contextPacket} from './context.ts';
+import {contextPacket,type ContextMode} from './context.ts';
+import {semanticDependencyMetadata,type DependencyMetadata} from './semantic-metadata.ts';
 import {planRename} from './refactoring.ts';
 import {semanticGraph,semanticSourcePath,semanticConfiguration,occurrencesAt,type SemanticGraph} from './symbols.ts';
 import { defaultText } from './parameters.ts';
@@ -21,15 +22,18 @@ import { interceptorBehavior } from './interceptors.ts';
 import { callableResult, callableErrors } from './contracts.ts';
 import {nativeFact,nativeDependencies,type NativeFunctionFact,type NativeResourceFact} from './native-facts.ts';
 
-export {contractFacts,type CallableFact,type ContractFact} from './contract-facts.ts';
-import {contractFacts,type ContractFact} from './contract-facts.ts';
+export type {CallableFact,ContractFact} from './contract-facts.ts';
+import {contractFacts as checkedContractFacts,type ContractFact} from './contract-facts.ts';
+
+/** Public embedding facts are detached from checked compiler state. */
+export function contractFacts(checked:CheckedProject):ContractFact[] {return structuredClone(checkedContractFacts(checked));}
 
 export interface ModuleFact { file: string; dependencies: string[]; public: { name: string; shape: string }[]; members: number }
-export function describe(checked: CheckedProject, fileName: string, options: { name?: string; budget?: number; context?: boolean; baseline?: { architecture?: ModuleFact[] } } = {}) {
+export function describe(checked: CheckedProject, fileName: string, options: { name?: string; budget?: number; context?: boolean; mode?:ContextMode; baseline?: { architecture?: ModuleFact[] } } = {}) {
   if(options.context)return contextPacket(checked,fileName,options);
   const path = resolve(fileName), file = checked.project.files.get(path);
   if (!file) throw new Error(`Unknown source file ${path}`);
-  const facts = contractFacts(checked);
+  const facts = checkedContractFacts(checked);
   const budget = Math.max(512, Math.min(options.budget ?? 12000, 100000));
   const selected: ContractFact[] = [];
   const queue = facts.filter(fact => fact.location.file === path && (options.name ? fact.name === options.name : fact.public));
@@ -83,7 +87,7 @@ export function describe(checked: CheckedProject, fileName: string, options: { n
     const source = checked.project.files.get(fact.location.file)!.source.slice(fact.location.start, fact.location.end);
     append(snippets, { id: fact.id, source });
   }
-  return result();
+  return structuredClone(result());
 }
 
 /** Immutable document revision; compiler internals never escape through editor queries. */
@@ -96,22 +100,23 @@ export class SemanticDocument {
   private wholeProject:boolean;
   private checkedFiles:ReadonlySet<string>;
   private configuration:ReturnType<typeof semanticConfiguration>;
-  constructor(checked: CheckedProject, path: string, revision: string, wholeProject=false, checkedFiles=new Set(checked.project.files.keys()), configuration=semanticConfiguration(checked.project.root)) {
-    this.checked = checked; this.path = path; this.wholeProject=wholeProject; this.checkedFiles=checkedFiles; this.configuration=configuration;
+  private dependencies:DependencyMetadata[];
+  constructor(checked: CheckedProject, path: string, revision: string, wholeProject=false, checkedFiles=new Set(checked.project.files.keys()), configuration=semanticConfiguration(checked.project.root),dependencies=semanticDependencyMetadata(checked.project)) {
+    this.checked = checked; this.path = path; this.wholeProject=wholeProject; this.checkedFiles=checkedFiles; this.configuration=configuration;this.dependencies=dependencies;
     this.revision = revision; this.diagnostics = Object.freeze(checked.diagnostics.map(issue => Object.freeze({ ...issue,
       ...(issue.related ? {related:Object.freeze(issue.related.map(location=>Object.freeze({...location})))} : {}) })));
     this.source = checked.project.files.get(path)?.source ?? '';
   }
-  graph() { return structuredClone(this.graphValue??=semanticGraph(this.checked,this.wholeProject,this.checkedFiles,this.configuration)); }
+  graph() { return structuredClone(this.graphValue??=semanticGraph(this.checked,this.wholeProject,this.checkedFiles,this.configuration,this.dependencies)); }
   references(offset:number,includeDeclaration=true) {
-    return structuredClone(occurrencesAt(this.graphValue??=semanticGraph(this.checked,this.wholeProject,this.checkedFiles,this.configuration),semanticSourcePath(this.checked,this.path),offset,includeDeclaration));
+    return structuredClone(occurrencesAt(this.graphValue??=semanticGraph(this.checked,this.wholeProject,this.checkedFiles,this.configuration,this.dependencies),semanticSourcePath(this.checked,this.path),offset,includeDeclaration));
   }
-  rename(offset:number,name:string) {return planRename(this.checked,this.graph(),this.path,offset,name);}
+  rename(offset:number,name:string) {return structuredClone(planRename(this.checked,this.graph(),this.path,offset,name));}
   referenceTarget(file:string) {return [...this.checked.project.files.keys()].find(path=>semanticSourcePath(this.checked,path)===file);}
-  hover(offset: number) { return hoverInfo(this.checked, this.path, offset); }
-  complete(offset: number) { return completions(this.checked, this.path, offset); }
+  hover(offset: number) { return structuredClone(hoverInfo(this.checked, this.path, offset)); }
+  complete(offset: number) { return structuredClone(completions(this.checked, this.path, offset)); }
   tokens() { return semanticTokens(this.checked, this.path); }
-  fixes() { return suggestedFixes(this.checked, this.path); }
+  fixes() { return structuredClone(suggestedFixes(this.checked, this.path)); }
   /** Non-editable declaration hints. Formatting never adds inferred source clauses. */
   inlayHints(start = 0, end = this.source.length, options:{detail?:'compact'|'full'} = {}) {
     const hints: { offset: number; label: string; tooltip: string }[] = [];
@@ -199,8 +204,8 @@ export class SemanticWorkspace {
     const root = wholeProject || basename(path) === 'main.aug';
     const cachePath=path+(root?':project':':closure');
     const relevant = root ? [...project.files.keys()] : [...closure];
-    const configuration=semanticConfiguration(this.root);
-    const key = createHash('sha256').update(JSON.stringify([project.config, configuration, root, relevant.map(file => [file, project.files.get(file)?.source]),
+    const configuration=semanticConfiguration(this.root),dependencies=semanticDependencyMetadata(project);
+    const key = createHash('sha256').update(JSON.stringify([project.config, configuration, dependencies,root, relevant.map(file => [file, project.files.get(file)?.source]),
       project.diagnostics.filter(issue => relevant.includes(issue.file) || issue.code === 'PACKAGE')])).digest('hex');
     const cached = this.documents.get(cachePath);
     if (cached?.key === key) { this.stats.cacheHits++; return cached.view; }
@@ -212,7 +217,8 @@ export class SemanticWorkspace {
     const tests = checkUnitTests(local, discovered.tests.filter(unit => root || closure.has(unit.file)));
     checked.diagnostics = uniqueDiagnostics([...checked.diagnostics, ...discovered.diagnostics, ...tests.flatMap(test => test.checked.diagnostics)]);
     mergeTestAnalysis(checked, tests);
-    const view = new SemanticDocument(checked, path, key, root, new Set(relevant),configuration);
+    if(JSON.stringify(dependencies)!==JSON.stringify(semanticDependencyMetadata(project))||JSON.stringify(configuration)!==JSON.stringify(semanticConfiguration(this.root)))throw new Error('SEMANTIC_STALE: Configuration or dependency metadata changed while checking. Refresh the document.');
+    const view = new SemanticDocument(checked, path, key, root, new Set(relevant),configuration,dependencies);
     this.documents.set(cachePath, { key, view }); this.stats.analyses++;
     return view;
   }

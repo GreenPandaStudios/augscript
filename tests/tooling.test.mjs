@@ -103,6 +103,13 @@ test('persistent LSP handles split UTF-8 frames, local edits, definitions and ca
     const after = await request('aug/stats', {}); assert.equal(after.analyses, before.analyses); assert.ok(after.cacheHits > before.cacheHits);
     const stale = await request('aug/editor', { uri, text: 'invalid edit', version: 1, command: 'diagnostics' }); assert.deepEqual(stale, []);
     await request('aug/editor',{uri:pathToFileURL(join(root,'main.aug')).href,text:'',version:1,command:'diagnostics'});
+    const contextOptions={context:true,name:'read',mode:'interface-change',budget:100000};
+    const protocolContext=await request('aug/editor',{uri,command:'describe',options:contextOptions});
+    const comparison=new SemanticWorkspace(root);
+    comparison.document(join(root,'main.aug'),{text:'',version:1});
+    const embeddedContext=comparison.document(join(root,'worker.aug'),{text:source,version:4},true).describe(contextOptions);
+    assert.deepEqual(protocolContext,JSON.parse(JSON.stringify(embeddedContext)));
+    assert.equal(protocolContext.coverage.checkedProject,true);assert.equal(protocolContext.schema,3);
     const renameSource='import value from math\nread(int amount):\n    return value() + amount\n';
     await request('aug/editor',{uri,text:renameSource,version:5,command:'diagnostics'});
     const prepare=await request('textDocument/prepareRename',{textDocument:{uri},position:{line:1,character:9}});

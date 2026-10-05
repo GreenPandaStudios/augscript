@@ -7,15 +7,17 @@ import type {CheckedProject} from './checker.ts';
 import {lex} from './lexer.ts';
 import {compilerVersion} from './package-manager.ts';
 import {libraryRelative} from './libraries.ts';
+import {semanticDependencyMetadata,type DependencyMetadata} from './semantic-metadata.ts';
 
 export interface SemanticSymbol {id:string; name:string; kind:string; location:Span; owner?:string; editable:boolean}
 export interface Occurrence {symbol:string; file:string; start:number; end:number; line:number; column:number;
   role:'declaration'|'read'|'write'|'call'|'import'|'export'|'type'|'argument-label'|'shorthand-label'|'test'; caller?:string}
-export interface SemanticEdge {from:string; to:string; kind:'call'|'callback-call'|'function-value'|'import'|'export'|'implements'|'injected'|'test'; location:Span}
+export interface SemanticEdge {from:string; to:string; kind:'call'|'callback-call'|'function-value'|'import'|'export'|'implements'|'inherits'|'injected'|'test'; location:Span}
 export interface SemanticBoundary {kind:'interface-dispatch'|'native-code'|'interceptor-delegation'|'unresolved-call'; location:Span; target?:string}
 export interface SemanticGraph {
-  schema:1; compiler:{version:string; sha256:string}; revision:string; ordering:'file-offset-role';
+  schema:2; compiler:{version:string; sha256:string}; revision:string; ordering:'file-offset-role';
   coverage:{checkedProject:boolean; checkedScope:'project'|'import-closure'; reverseCallers:'complete'|'incomplete'; dispatch:'resolved'|'bounded'; externalCallers:'outside-project'; errors:number};
+  dependencies:DependencyMetadata[];
   sources:{file:string; sha256:string}[]; configuration:{file:string; sha256:string|null}[];
   symbols:SemanticSymbol[]; occurrences:Occurrence[]; relationships:SemanticEdge[]; boundaries:SemanticBoundary[];
   forwardDependencies:Record<string,SemanticEdge[]>; reverseCallers:Record<string,SemanticEdge[]>;
@@ -46,7 +48,7 @@ export function semanticSourcePath(checked:CheckedProject,file:string):string {
 export function semanticConfiguration(root:string) {
   return ['main.yaml','aug-package.json','aug.lock.json'].map(file=>({file,sha256:existsSync(join(root,file))?digest(readFileSync(join(root,file))):null}));
 }
-export function semanticGraph(checked:CheckedProject,wholeProject:boolean,checkedFiles?:ReadonlySet<string>,configuration=semanticConfiguration(checked.project.root)):SemanticGraph {
+export function semanticGraph(checked:CheckedProject,wholeProject:boolean,checkedFiles?:ReadonlySet<string>,configuration=semanticConfiguration(checked.project.root),dependencies=semanticDependencyMetadata(checked.project)):SemanticGraph {
   const project=checked.project,symbols=new Map<string,SemanticSymbol>(),occurrences:Occurrence[]=[],relationships:SemanticEdge[]=[],boundaries:SemanticBoundary[]=[];
   const callableSpans:{id:string;span:Span}[]=[];
   const nodeIds=new WeakMap<object,string>(),paramIds=new WeakMap<Param,string>(),localIds=new Map<string,string>();
@@ -170,6 +172,7 @@ export function semanticGraph(checked:CheckedProject,wholeProject:boolean,checke
       const item=value as import('./ast.ts').ClassDecl;
       for(const type of item.implements){const target=checked.resolvedTypes.get(type)?.def;if(target)edge('implements',caller,target.id,type.span);}
     }
+    if(node.kind==='interface')for(const type of (value as import('./ast.ts').InterfaceDecl).extends){const target=checked.resolvedTypes.get(type)?.def;if(target)edge('inherits',caller,target.id,type.span);}
     if(node.kind==='test') {
       const item=value as import('./ast.ts').TestDecl,target=project.scopes.get(item.span.file)?.get(item.type.name);
       if(target){globalReference(target.id,item.type.span,item.type.name,'test',caller);edge('test',caller,target.id,item.span);}
@@ -199,9 +202,9 @@ export function semanticGraph(checked:CheckedProject,wholeProject:boolean,checke
   const sources=[...project.files.values()].filter(file=>!checkedFiles||checkedFiles.has(file.path)).map(file=>({file:semanticSourcePath(checked,file.path),sha256:digest(file.source)})).sort((a,b)=>compare(a.file,b.file));
   const compiler=compilerIdentity(),errors=checked.diagnostics.filter(issue=>issue.severity!=='warning').length;
   const checkedScope=wholeProject?'project':'import-closure';
-  const revision=digest(JSON.stringify({schema:1,compiler,checkedScope,sources,configuration,config:project.config}));
-  return {schema:1,compiler,revision,ordering:'file-offset-role',coverage:{checkedProject:wholeProject&&!errors,checkedScope,
-    reverseCallers:wholeProject&&!errors?'complete':'incomplete',dispatch:boundaries.length?'bounded':'resolved',externalCallers:'outside-project',errors},sources,configuration,
+  const revision=digest(JSON.stringify({schema:2,compiler,checkedScope,sources,configuration,dependencies,config:project.config}));
+  return {schema:2,compiler,revision,ordering:'file-offset-role',coverage:{checkedProject:wholeProject&&!errors,checkedScope,
+    reverseCallers:wholeProject&&!errors?'complete':'incomplete',dispatch:boundaries.length?'bounded':'resolved',externalCallers:'outside-project',errors},sources,configuration,dependencies,
     symbols:[...symbols.values()].sort((a,b)=>compare(a.location.file,b.location.file)||a.location.start-b.location.start||compare(a.id,b.id)),
     occurrences:ordered,relationships,boundaries,forwardDependencies,reverseCallers};
 }
