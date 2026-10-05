@@ -12,9 +12,10 @@ import {javadocParameterSpans} from './javadoc.ts';
 import type {MethodDecl} from './ast.ts';
 
 export interface CheckedSourceEdit {file:string; start:number; end:number; text:string}
+export interface IdentityMapping {before:string;after:string}
 export interface InterfaceDelta {id:string; before:string|null; after:string|null}
 export interface RenamePlan {format:1; operation:'rename'; revision:string; symbol:string; name:string;
-  scope:string[]; sources:{file:string;sha256:string}[]; edits:CheckedSourceEdit[]; publicDelta:InterfaceDelta[]; checked:true; behavioralEvidence:'not-run'}
+  scope:string[]; sources:{file:string;sha256:string}[]; identityMap:IdentityMapping[]; edits:CheckedSourceEdit[]; publicDelta:InterfaceDelta[]; checked:true; behavioralEvidence:'not-run'}
 export class RefactoringError extends Error {code='REFACTOR'; readonly diagnostics:unknown[]; constructor(message:string,diagnostics:unknown[]=[]){super(message);this.diagnostics=diagnostics;}}
 
 export function checkedProjectWithTests(root:string,overrides:Map<string,string>,project=loadProject(root,overrides)) {
@@ -90,14 +91,15 @@ export function planRename(checked:CheckedProject,graph:SemanticGraph,file:strin
   const candidate=checkedProjectWithTests(checked.project.root,overrides),errors=candidate.diagnostics.filter(issue=>issue.severity!=='warning');
   if(errors.length)throw new RefactoringError('The renamed candidate does not check. No source was written.',errors);
   const after=semanticGraph(candidate,true);
-  verifyRenameBindings(graph,after,edits.map(edit=>({...edit,file:semanticSourcePath(checked,edit.file)})),symbol.id,name);
+  const identityMap=verifyRenameBindings(graph,after,edits.map(edit=>({...edit,file:semanticSourcePath(checked,edit.file)})),symbol.id,name);
   return {format:1,operation:'rename',revision:graph.revision,symbol:symbol.id,name,scope:[...new Set(edits.map(edit=>semanticSourcePath(checked,edit.file)))],
     sources:[...checked.project.files.values()].filter(source=>!source.builtin&&!source.package).map(source=>({file:source.path,sha256:createHash('sha256').update(source.source).digest('hex')})),
-    edits,publicDelta:interfaceDelta(checked,candidate),checked:true,behavioralEvidence:'not-run'};
+    identityMap,edits,publicDelta:interfaceDelta(checked,candidate),checked:true,behavioralEvidence:'not-run'};
 }
 /** A compiling candidate can still capture a name. Preserve declaration and
  * occurrence bindings across the source-coordinate changes, including expanded
- * shorthand labels, before calling a rename mechanical. */
+ * shorthand labels, before returning any identity correspondence. The selected
+ * identity and changed coordinate/owner-derived identities come from this check. */
 function verifyRenameBindings(before:SemanticGraph,after:SemanticGraph,edits:CheckedSourceEdit[],renamed:string,name:string) {
   const translated=(file:string,start:number,end:number)=>{
     let shift=0;
@@ -122,4 +124,6 @@ function verifyRenameBindings(before:SemanticGraph,after:SemanticGraph,edits:Che
       position.start<=item.start&&item.end<=position.end))
       throw new RefactoringError('Rename collision: a resolved occurrence would change its binding. No source was written.');
   }
+  return [...identities].filter(([before,after])=>before===renamed||before!==after)
+    .sort(([a],[b])=>a<b?-1:a>b?1:0).map(([before,after])=>({before,after}));
 }

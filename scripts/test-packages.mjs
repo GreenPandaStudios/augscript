@@ -58,14 +58,14 @@ try {
   writeFileSync(join(renames,'greeter.aug'),'greet(string name):\n    return $"Hello, {name}!"\n');
   const renamePlan=JSON.parse(aug('change','plan-rename',renames,'--file','greeter.aug','--symbol','greet.name','--name','person','--out','rename.json','--json'));
   assert.ok(renamePlan.edits.every(edit=>!edit.file.startsWith('/')));assert.equal(renamePlan.behavioralEvidence,'not-run');
-  const renamed=JSON.parse(aug('change','apply',renames,'--plan','rename.json','--json'));assert.equal(renamed.status,'committed');
+  const renamed=JSON.parse(aug('change','apply',renames,'--plan','rename.json','--json'));assert.equal(renamed.status,'committed');assert.deepEqual(renamed.identityMap,renamePlan.identityMap);assert.ok(renamed.identityMap.some(pair=>pair.before===renamePlan.symbol));
   assert.equal(aug('run',renames),'Hello, Ada!\n');
   assert.equal(JSON.parse(aug('change','recover',renames,'--json')).status,'clean');
   if(process.env.AUG_LLVM_HOME&&process.env.AUG_RUNTIME_PACK)
     assert.equal(run(process.execPath,[cli,'run',renames,'--backend','llvm']),'Hello, Ada!\n');
   writeFileSync(join(renames,'replacement.aug.txt'),'greet(string person):\n    return $"Welcome, {person}!"\n');
   const bodyPlan=JSON.parse(aug('change','plan-replace-body',renames,'--file','greeter.aug','--symbol','greet','--source','replacement.aug.txt','--out','body.json','--json'));
-  assert.equal(bodyPlan.operation,'replace-body');assert.deepEqual(bodyPlan.publicDelta,[]);assert.equal(bodyPlan.behavioralEvidence,'not-run');
+  assert.equal(Object.hasOwn(bodyPlan,'identityMap'),false);assert.equal(bodyPlan.operation,'replace-body');assert.deepEqual(bodyPlan.publicDelta,[]);assert.equal(bodyPlan.behavioralEvidence,'not-run');
   const bodyApplied=JSON.parse(aug('change','apply',renames,'--plan','body.json','--json'));assert.equal(bodyApplied.operation,'replace-body');
   assert.equal(aug('run',renames),'Welcome, Ada!\n');
   if(process.env.AUG_LLVM_HOME&&process.env.AUG_RUNTIME_PACK)

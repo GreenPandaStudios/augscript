@@ -1,7 +1,7 @@
 import {readFileSync} from 'node:fs';
 import {join,relative} from 'node:path';
 import {createHash} from 'node:crypto';
-import {checkedProjectWithTests,planRename,applySourceEdits,type CheckedSourceEdit,type InterfaceDelta} from './refactoring.ts';
+import {checkedProjectWithTests,planRename,applySourceEdits,type CheckedSourceEdit,type InterfaceDelta,type IdentityMapping} from './refactoring.ts';
 import type {CheckedProject} from './checker.ts';
 import {planBodyReplacement} from './body-edits.ts';
 import {checkedChangeRevision} from './change-revisions.ts';
@@ -11,10 +11,10 @@ import {SourceChangeError,coherentSourceRead,sourceChangeRoot,sourceChangePath,s
 
 export interface ChangeRenamePlan {
   format:1;operation:'rename';baseRevision:string;compiler:{version:string;sha256:string};file:string;offset:number;name:string;symbol:string;
-  scope:string[];sources:{file:string;sha256:string}[];configuration:{file:string;sha256:string|null}[];edits:CheckedSourceEdit[];publicDelta:InterfaceDelta[];
+  scope:string[];sources:{file:string;sha256:string}[];configuration:{file:string;sha256:string|null}[];edits:CheckedSourceEdit[];publicDelta:InterfaceDelta[];identityMap:IdentityMapping[];
   candidateRevision:string;dependencyMetadata:{file:string;sha256:string|null}[];coverage:ReturnType<typeof semanticGraph>['coverage'];boundaries:ReturnType<typeof semanticGraph>['boundaries'];checked:true;behavioralEvidence:'not-run';
 }
-export interface ChangeBodyPlan extends Omit<ChangeRenamePlan,'operation'|'offset'|'name'> {
+export interface ChangeBodyPlan extends Omit<ChangeRenamePlan,'operation'|'offset'|'name'|'identityMap'> {
   operation:'replace-body';name:string;replacementSource:string;
 }
 export type ChangePlan=ChangeRenamePlan|ChangeBodyPlan;
@@ -51,7 +51,7 @@ export function planChangeRename(projectRoot:string,file:string,offset:number,na
     const edits=rename.edits.map(edit=>({...edit,file:relative(root,edit.file).replaceAll('\\','/')}));
     for(const edit of edits)sourceChangePath(root,edit.file);
     const plan:ChangeRenamePlan={format:1,operation:'rename',baseRevision:current.revision,compiler:graph.compiler,file,offset,name,symbol:rename.symbol,
-      scope:[...new Set(edits.map(edit=>edit.file))].sort(),sources:graph.sources,configuration:graph.configuration,edits,publicDelta:rename.publicDelta,
+      scope:[...new Set(edits.map(edit=>edit.file))].sort(),sources:graph.sources,configuration:graph.configuration,edits,publicDelta:rename.publicDelta,identityMap:rename.identityMap,
       candidateRevision:'',dependencyMetadata:current.dependencies,coverage:graph.coverage,boundaries:graph.boundaries,checked:true,behavioralEvidence:'not-run'};
     plan.candidateRevision=revision(candidate(root,plan),graph.configuration).revision;
     if(snapshot(root).revision!==current.revision)throw new SourceChangeError('CHANGE_STALE','Source changed while planning. Retry without the concurrent edit.');return plan;
@@ -112,13 +112,18 @@ export function applyChangePlan(projectRoot:string,input:unknown,options:{checkp
     const images=regenerated.scope.map(file=>sourceImage(root,file,after.project.files.get(join(root,file))!.source));
     for(const image of images)if(image.beforeSha256!==digest(before.project.files.get(join(root,image.file))!.source))
       throw new SourceChangeError('CHANGE_STALE','The source preimage differs from the reviewed revision: '+image.file+'. No source was written.');
-    const accepted=publishSourceChange(root,images,current.revision,candidateRevision,()=>{
+    let accepted:ReturnType<typeof publishSourceChange>;
+    try {accepted=publishSourceChange(root,images,current.revision,candidateRevision,()=>{
       const written=checkedProjectWithTests(root,new Map()),actual=revision(written);
       if(!actual.graph.coverage.checkedProject||actual.revision!==candidateRevision)throw new SourceChangeError('CHANGE_STALE','Source or metadata changed before commit. The candidate cannot be accepted.');
       for(const image of images)if(digest(written.project.files.get(join(root,image.file))!.source)!==image.afterSha256)throw new SourceChangeError('CHANGE_STALE','A source postimage changed before commit.');
-    },options.checkpoint);
+    },options.checkpoint);}catch(error){
+      if(error instanceof SourceChangeError&&error.code==='CHANGE_COMMITTED_RECOVERY_REQUIRED')
+        Object.assign(error,{baseRevision:current.revision,operation:regenerated.operation,...(regenerated.operation==='rename'?{identityMap:structuredClone(regenerated.identityMap)}:{})});
+      throw error;
+    }
     return {format:1,status:'committed' as const,operation:plan.operation,baseRevision:current.revision,revision:candidateRevision,transaction:accepted.transaction,scope:plan.scope,
-      publicDelta:plan.publicDelta,checked:true as const,behavioralEvidence:'not-run' as const,review:'required' as const};
+      ...(regenerated.operation==='rename'?{identityMap:regenerated.identityMap}:{}),publicDelta:plan.publicDelta,checked:true as const,behavioralEvidence:'not-run' as const,review:'required' as const};
   });
 }
 export const recoverSourceChanges=recoverSourceJournal;

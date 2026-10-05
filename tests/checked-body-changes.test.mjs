@@ -127,3 +127,13 @@ test('a rejected base carries its starting source and revision rather than repla
  assert.ok(fault.diagnostics.some(issue=>issue.code==='NAME'&&issue.file==='math.aug'));
  assert.ok(!existsSync(join(root,'.aug-changes','pending.json')));
 },{'math.aug':'compute(int value) returns int { return unknownStartingValue }\n'}));
+
+
+test('a committed body recovery report names the operation without inventing local correspondence',()=>fixture(root=>{
+ const packet=plan(root);let fault;
+ try{changes.applyChangePlan(root,packet,{checkpoint:event=>{if(event.phase==='committed')throw new Error('cleanup interrupted');}});}catch(error){fault=error;}
+ assert.equal(fault?.code,'CHANGE_COMMITTED_RECOVERY_REQUIRED');assert.equal(fault.operation,'replace-body');assert.equal(fault.baseRevision,packet.baseRevision);
+ assert.equal(Object.hasOwn(fault,'identityMap'),false);assert.equal(fault.revision,packet.candidateRevision);
+ assert.ok(readFileSync(join(root,'math.aug'),'utf8').includes('return value + 2'));
+ assert.equal(changes.recoverSourceChanges(root).status,'completed');
+}));

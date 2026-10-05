@@ -1,7 +1,7 @@
 import {BodyEditError,sourceUnitLimit} from './body-edits.ts';
 import {SourceChangeError} from './source-transactions.ts';
 import {projectComparison} from './project-comparison.ts';
-import {planChangeRename,planChangeRenameSymbol,planChangeReplaceBody,applyChangePlan,recoverSourceChanges} from './checked-changes.ts';
+import {planChangeRename,planChangeRenameSymbol,planChangeReplaceBody,applyChangePlan,recoverSourceChanges, type ChangePlan } from './checked-changes.ts';
 import {recordBindingDefinition} from './binding-patterns.ts';
 import {pruneTestCompilations} from './test-compilation-cache.ts';
 import {inspectCaches} from './cache-management.ts';
@@ -214,9 +214,9 @@ export async function main(argv: string[]): Promise<number> {
       return 0;
     }catch(error){
       if(flags.has('--json')) {
-        const fault=error as {code?:string;revision?:string;transaction?:string;diagnostics?:unknown[]},committed=fault.code==='CHANGE_COMMITTED_RECOVERY_REQUIRED';
+        const fault=error as {code?:string;revision?:string;baseRevision?:string;transaction?:string;operation?:ChangePlan['operation'];identityMap?:{before:string;after:string}[];diagnostics?:unknown[]},committed=fault.code==='CHANGE_COMMITTED_RECOVERY_REQUIRED';
         process.stdout.write(JSON.stringify({status:committed?'committed':'rejected',code:fault.code??'CHANGE',error:failureMessage(error),
-          ...(committed?{checked:true,recovery:'required',revision:fault.revision,transaction:fault.transaction}:{}),
+          ...(committed?{checked:true,recovery:'required',revision:fault.revision,baseRevision:fault.baseRevision,transaction:fault.transaction,operation:fault.operation,...(fault.identityMap?{identityMap:fault.identityMap}:{})}:{}),
           ...(error instanceof BodyEditError?{stage:error.stage,baseRevision:error.baseRevision,candidateRevision:error.candidateRevision,sourceUnits:error.sourceUnits,rejectedBase:error.rejectedBase,rejectedCandidate:error.rejectedCandidate}:{}),
           diagnostics:fault.diagnostics??[],behavioralEvidence:'not-run'})+'\n');
       }

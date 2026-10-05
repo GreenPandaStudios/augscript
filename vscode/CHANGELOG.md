@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Return detached, checked identity maps from semantic rename plans. Saved CLI renames retain them in normal and recovery-required committed reports.
+
 - Bundle the compiler’s checked standalone body-plan command and stage-specific rejection help. The editor does not automatically apply body replacements.
 
 - Add the unreleased local `aug compare` report with exact revisions, resolved contract/source/visibility deltas, known consumers, rejected diagnostics and unexecuted authored tests. Keep implementation function references out of public promises.

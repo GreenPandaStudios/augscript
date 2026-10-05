@@ -251,13 +251,13 @@ test('public application and library starters ignore revision state, recovery jo
 });
 
 test('JSON errors distinguish a committed revision requiring cleanup from rejection',()=>fixture(root=>{
-    const input=join(root,'commit-plan.json');writeFileSync(input,JSON.stringify(plan(root)));
+    const input=join(root,'commit-plan.json'),proposed=plan(root);writeFileSync(input,JSON.stringify(proposed));
     const script=`import fs from 'node:fs';import {syncBuiltinESMExports} from 'node:module';
       const rename=fs.renameSync;let failed=false;fs.renameSync=(from,to)=>{const commit=String(to).endsWith('/pending.json')&&fs.readFileSync(from,'utf8').includes('"state":"committed"');rename(from,to);if(commit&&!failed){failed=true;throw new Error('post-commit sync failure');}};syncBuiltinESMExports();
       const {main}=await import(${JSON.stringify(new URL('../src/cli.ts',import.meta.url).href)});process.exitCode=await main(['change','apply',process.argv[1],'--plan',process.argv[2],'--json']);`;
     const result=spawnSync(process.execPath,['--input-type=module','-e',script,root,input],{encoding:'utf8',timeout:20000});
     assert.equal(result.status,1,result.stderr);const report=JSON.parse(result.stdout);
-    assert.equal(report.status,'committed');assert.equal(report.checked,true);assert.equal(report.recovery,'required');assert.match(report.revision,/^[a-f0-9]{64}$/);
+    assert.equal(report.status,'committed');assert.equal(report.operation,'rename');assert.equal(report.baseRevision,proposed.baseRevision);assert.deepEqual(report.identityMap,proposed.identityMap);assert.equal(report.checked,true);assert.equal(report.recovery,'required');assert.match(report.revision,/^[a-f0-9]{64}$/);
     assert.equal(report.behavioralEvidence,'not-run');assert.equal(recoverSourceChanges(root).status,'completed');
     assert.deepEqual(checkedProjectWithTests(root,new Map()).diagnostics,[]);
 }));

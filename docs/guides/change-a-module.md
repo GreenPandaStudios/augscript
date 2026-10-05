@@ -57,7 +57,7 @@ Compare the edited files with the originals, using your editor or source control
 
 ## Review a mechanical rename
 
-The unreleased [checked-change workflow](../tooling.md#checked-source-changes-unreleased) can rename an ordinary standalone function or its public input across resolved project callers. Save the plan, inspect its files and public contract changes, then apply it against the same revision. A stale or altered plan is rejected. Regenerate specs and run the independent tests afterward. The command does not infer a business value or recovery policy.
+The unreleased [checked-change workflow](../tooling.md#checked-source-changes-unreleased) can rename an ordinary standalone function or its public input across resolved project callers. Save the plan, inspect its files and public contract changes, then apply it against the same revision. The plan maps the selected and changed derived symbol IDs to their checked replacements; read it with its source revisions. A stale or altered plan is rejected. Regenerate specs and run the independent tests afterward. The command does not infer a business value or recovery policy.
 
 ## Review a replacement implementation
 
