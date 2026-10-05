@@ -606,7 +606,7 @@ Decode named application/x-www-form-urlencoded fields into a record. Unknown or 
 freeze ownValue as immutableValue
 ```
 
-Consume owned mutable data and share one deeply frozen object. Surviving aliases cannot mutate it. Literal data can be frozen directly.
+Freeze reachable data for shared reading; surviving aliases cannot mutate it. Literal data and fresh scalar collection copies can be frozen. Every retained external reference requires ownership: owning a new outer container does not grant freezing permission for its borrowed or external elements. Active mutable borrows remain rejected.
 
 ## fresh
 
@@ -1130,7 +1130,7 @@ Declare a bounded streaming HTTP response. Yield values in wire order; disconnec
 string
 ```
 
-Immutable valid Unicode encoded as UTF-8, without embedded NUL. Invalid literals are compile errors and invalid text files raise FileError. The + operator joins strings. C string pointers live only for the unsafe call.
+Immutable valid Unicode encoded as UTF-8. Source literals reject embedded NUL at compilation, and text files reject it with FileError; decoded runtime strings are length-aware. The + operator joins strings. compare(other=...) returns -1, 0 or 1 by unsigned UTF-8 byte order, including length-aware decoded NUL, without collation or normalization. C string pointers live only for the unsafe call.
 
 ## Task
 
@@ -1359,6 +1359,10 @@ Test whether this binary64 value is neither infinity nor NaN.
 Round to IEEE 754 binary32 and return the rounded value as float. Reject nonfinite input or overflow.
 
 ## string operations
+
+### string.compare
+
+Compare unsigned UTF-8 bytes lexicographically; return -1, 0 or 1. Preserve embedded NUL, compare a shorter identical prefix first, and perform no locale collation or normalization.
 
 ### string.endsWith
 

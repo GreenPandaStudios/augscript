@@ -2,8 +2,14 @@
 
 # `export.aug`
 
-<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=34d0b1798dd1c9868b6496824487f2d288a391f02553c3affc0e733759738770 -->
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=7811931f437036fc52b3b48e7e7fec8de868e5a72bba071cf9946f54c3f18fa8 -->
 
 ## Exports
 
-Export the declaration `range` from [`ranges.aug`](ranges.aug.md#symbol-range). Export the declaration `RangeError` from [`ranges.aug`](ranges.aug.md#symbol-RangeError).
+Export the declaration `range` from [`ranges.aug`](ranges.aug.md#symbol-range). Export the declaration `RangeError` from [`ranges.aug`](ranges.aug.md#symbol-RangeError). Export the declaration `Predicate` from [`operations.aug`](operations.aug.md#symbol-Predicate). Export the declaration `Transformation` from [`operations.aug`](operations.aug.md#symbol-Transformation).
+
+Export the declaration `Aggregator` from [`operations.aug`](operations.aug.md#symbol-Aggregator). Export the declaration `Comparator` from [`operations.aug`](operations.aug.md#symbol-Comparator). Export the declaration `filter` from [`operations.aug`](operations.aug.md#symbol-filter). Export the declaration `transform` from [`operations.aug`](operations.aug.md#symbol-transform).
+
+Export the declaration `aggregate` from [`operations.aug`](operations.aug.md#symbol-aggregate). Export the declaration `remove` from [`operations.aug`](operations.aug.md#symbol-remove). Export the declaration `find` from [`operations.aug`](operations.aug.md#symbol-find). Export the declaration `sort` from [`operations.aug`](operations.aug.md#symbol-sort).
+
+Export the declaration `IntegerOrder` from [`operations.aug`](operations.aug.md#symbol-IntegerOrder). Export the declaration `TextOrder` from [`operations.aug`](operations.aug.md#symbol-TextOrder). Export the declaration `sortIntegers` from [`operations.aug`](operations.aug.md#symbol-sortIntegers). Export the declaration `sortText` from [`operations.aug`](operations.aug.md#symbol-sortText).

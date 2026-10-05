@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+Preserve external-reference ownership checks when freezing helper results or owned outer copies. Recognize fresh scalar collection results as independent of source containers, permitting their return and freezing after a source borrow.
+
+Add pure data filtering, transformation, aggregation, removal, first-match search and stable sorting to `august.collections`, using ordinary checked callback interfaces. Preserve snapshot order and source lists; document allocation, empty/null results, callback permissions and sorting's checked reads. Add length-aware unsigned UTF-8 `string.compare(other=...)` on LLVM and C, without locale collation or normalization.
+
 Unpack immutable record fields and nested tuples in assignments and snapshot loops. Check each tuple's arity, record fields, private access and new names. Preserve read-only access, borrowed lifetimes and external-input ownership restrictions. Navigate field labels to their declarations, retain comments in formatted patterns, and explain selections in compiled specs.
 
 Add exhaustive value-producing `match` expressions with one result expression per case, compatible inferred results and optional narrowing. Evaluate the input once and only the selected result; preserve checked errors, effects, read-only aliases, borrow boundaries and possible moves. Reject owned/native-resource result transfer. Format both block styles, explain choices in compiled specs, and expose narrowed editor facts. Preserve exact signed integer pattern identities and diagnose repeated numeric cases. Resolve C class matches and error handlers by definition identity, consistent with LLVM, so foreign classes with the same spelling remain distinct.

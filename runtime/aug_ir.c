@@ -12,6 +12,7 @@ void aug_ir_operation(AugValue *out,int op,AugValue *a,int count,const char *tex
     case AUG_IR_PRINT: aug_print(a[0]); break;
     case AUG_IR_BINARY: *out=aug_binary(text,a[0],a[1]); break;
     case AUG_IR_LIST_JOIN:*out=aug_list_join(a[0],a[1]);break;
+    case AUG_IR_STRING_COMPARE:*out=aug_int(aug_string_compare(a[0],a[1]));break;
     case AUG_IR_STRING_ENDS_WITH:*out=aug_bool(aug_string_ends_with(a[0],a[1]));break;
     case AUG_IR_STRING_REPLACE:*out=aug_string_replace(a[0],a[1],a[2]);break;
     case AUG_IR_STRING_CODE_POINT_LENGTH:*out=aug_int(aug_string_code_point_length(a[0]));break;

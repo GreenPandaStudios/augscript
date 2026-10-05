@@ -153,6 +153,7 @@ int64_t aug_string_length(AugValue value);
 AugValue aug_string_trim(AugValue value);
 int64_t aug_string_utf16_length(AugValue value);
 bool aug_string_is_decimal(AugValue value);
+int64_t aug_string_compare(AugValue value, AugValue other);
 int64_t aug_string_compare_decimal(AugValue value, AugValue other);
 AugValue aug_bytes_slice(AugValue value, int64_t start, int64_t end);
 AugValue aug_bytes_hex(AugValue value);

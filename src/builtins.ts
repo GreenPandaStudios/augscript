@@ -53,6 +53,7 @@ export const collectionOperations: Record<string, BuiltinOperation[]> = {
     {name:'float32', parameters:[], returns:'float', errors:['ConversionError'], documentation:'Round to IEEE 754 binary32 and return the rounded value as float. Reject nonfinite input or overflow.',native:'float32'},
   ],
   string: [
+    {name:'compare',parameters:[{label:'other',type:'string'}],returns:'int',documentation:'Compare unsigned UTF-8 bytes lexicographically; return -1, 0 or 1. Preserve embedded NUL, compare a shorter identical prefix first, and perform no locale collation or normalization.',native:'compare'},
     {name:'endsWith',parameters:[{label:'suffix',type:'string'}],returns:'bool',documentation:'Test an exact UTF-8 suffix, including embedded NUL. An empty suffix matches.',native:'ends_with'},
     {name:'replace',parameters:[{label:'search',type:'string'},{label:'replacement',type:'string'}],returns:'string',errors:['ConversionError'],documentation:'Return new text with every nonoverlapping exact search replaced, left to right. Reject an empty search. This is not regular-expression replacement.',native:'replace'},
     {name:'codePointLength',parameters:[],returns:'int',errors:['ConversionError'],documentation:'Count Unicode scalar values in valid UTF-8. Combining marks count separately; this is not grapheme count.',native:'code_point_length'},

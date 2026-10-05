@@ -219,7 +219,7 @@ class FunctionLowering {
     if(operation.startsWith('HTTP_'))this.generator.components.add('http');
     const comparisons=['==','!=','<','>','<=','>='],integers=args.length===2&&args.every(slot=>isIRScalar(this.values[slot].type)&&this.values[slot].type.name==='int');
     const binary=operation==='BINARY'&&integers&&(comparisons.includes(text!)||['+','-','*','/'].includes(text!));
-    const integerResult=['LIST_LENGTH','TUPLE_LENGTH','SET_LENGTH','MAP_LENGTH','STRING_LENGTH','BYTES_LENGTH','JSON_INTEGER'].includes(operation);
+    const integerResult=['LIST_LENGTH','TUPLE_LENGTH','SET_LENGTH','MAP_LENGTH','STRING_LENGTH','BYTES_LENGTH','JSON_INTEGER','STRING_COMPARE'].includes(operation);
     const booleanResult=['SET_CONTAINS','MAP_CONTAINS','STRING_STARTS_WITH','STRING_IS_TOKEN','IS_TYPE','JSON_BOOLEAN'].includes(operation);
     const out=this.slot(integerResult?scalarType('int'):booleanResult?scalarType('bool'):binary?scalarType(comparisons.includes(text!)?'bool':'int'):dynamicType);
     this.instruction({op:'runtime',out,operation,args,text,number});
@@ -376,7 +376,7 @@ class FunctionLowering {
       const operations:Record<string,string>={
         'List.length':'LIST_LENGTH','List.get':'LIST_GET','List.at':'LIST_AT','List.append':'LIST_APPEND','Tuple.length':'TUPLE_LENGTH','Tuple.get':'TUPLE_GET',
         'Set.length':'SET_LENGTH','Set.add':'SET_ADD','Set.contains':'SET_CONTAINS','Map.length':'MAP_LENGTH','Map.get':'MAP_GET','Map.take':'MAP_TAKE','Map.contains':'MAP_CONTAINS','Map.set':'MAP_SET',
-        'List.join':'LIST_JOIN','string.endsWith':'STRING_ENDS_WITH','string.replace':'STRING_REPLACE','string.codePointLength':'STRING_CODE_POINT_LENGTH','string.parseInteger':'STRING_PARSE_INTEGER','string.parseFloat':'STRING_PARSE_FLOAT',
+        'List.join':'LIST_JOIN','string.compare':'STRING_COMPARE','string.endsWith':'STRING_ENDS_WITH','string.replace':'STRING_REPLACE','string.codePointLength':'STRING_CODE_POINT_LENGTH','string.parseInteger':'STRING_PARSE_INTEGER','string.parseFloat':'STRING_PARSE_FLOAT',
         'string.length':'STRING_LENGTH','string.bytes':'STRING_BYTES','string.split':'STRING_SPLIT','string.startsWith':'STRING_STARTS_WITH','string.isToken':'STRING_IS_TOKEN',
         'Bytes.slice':'BYTES_SLICE','Bytes.hex':'BYTES_HEX','float.isFinite':'FLOAT_IS_FINITE','float.float32':'FLOAT_FLOAT32','string.trim':'STRING_TRIM','string.utf16Length':'STRING_UTF16_LENGTH','string.isDecimal':'STRING_IS_DECIMAL','string.compareDecimal':'STRING_COMPARE_DECIMAL','Json.has':'JSON_HAS',
         'Bytes.length':'BYTES_LENGTH','Bytes.text':'BYTES_TEXT','Bytes.base64url':'BYTES_BASE64URL',
@@ -385,7 +385,7 @@ class FunctionLowering {
         'Headers.with':'HTTP_HEADERS_WITH','Headers.get':'HTTP_HEADERS_GET','Headers.all':'HTTP_HEADERS_ALL','HttpTestClient.request':'HTTP_CLIENT_REQUEST'
       };
       const operation=operations[type.name+'.'+name];if(operation){
-        const noFailure=['LIST_LENGTH','LIST_AT','LIST_APPEND','TUPLE_LENGTH','SET_LENGTH','SET_ADD','SET_CONTAINS','MAP_LENGTH','MAP_SET','MAP_GET','MAP_TAKE','MAP_CONTAINS','STRING_LENGTH','STRING_BYTES','STRING_SPLIT','STRING_STARTS_WITH','STRING_IS_TOKEN','BYTES_LENGTH','BYTES_BASE64URL'].includes(operation);
+        const noFailure=['LIST_LENGTH','LIST_AT','LIST_APPEND','TUPLE_LENGTH','SET_LENGTH','SET_ADD','SET_CONTAINS','MAP_LENGTH','MAP_SET','MAP_GET','MAP_TAKE','MAP_CONTAINS','STRING_COMPARE','STRING_LENGTH','STRING_BYTES','STRING_SPLIT','STRING_STARTS_WITH','STRING_IS_TOKEN','BYTES_LENGTH','BYTES_BASE64URL'].includes(operation);
         return this.runtime(operation,[receiver!,...args],undefined,undefined,!noFailure);
       }
       args=this.transferArguments(expr,args,false);

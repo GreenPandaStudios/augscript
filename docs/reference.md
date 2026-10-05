@@ -229,6 +229,45 @@ The source expression runs once. Bindings grant read access without copying thei
 
 Use the same patterns after `for` to unpack each snapshot item. Parameterized same-file test rows retain their flat tuple input form. Hover over a renamed field label to read its type and documentation; follow its definition to the record field. The selected local has its own definition in the pattern.
 
+### Collection functions (unreleased)
+
+Import `filter`, `transform`, `aggregate`, `remove`, `find`, or `sort` from `august.collections` when the operation fits a pure data callback. `Predicate<T>`, `Transformation<T,U>`, `Aggregator<T,U>`, and `Comparator<T>` describe those callbacks through ordinary interfaces. Their `optional Data` constraints also admit null values. They accept data, return data, and permit no I/O, mutation or checked failures. Use an ordinary loop when processing needs those effects.
+
+This program selects positive integers and sorts a separate copy of its input:
+
+```aug project=collection-functions-guide file=main.aug
+import filter and sortIntegers from august.collections
+import Positive from rules
+
+values = [7, -1, 0, 3]
+for value in filter(values, predicate=Positive()):
+    print(value=value)
+
+try:
+    for value in sortIntegers(values):
+        print(value=value)
+catch IndexError error:
+    print(value="A checked position was unavailable")
+```
+
+```aug project=collection-functions-guide file=rules.aug
+import Predicate from august.collections
+
+Positive() implements Predicate<int>:
+    accepts(int value):
+        return value > 0
+```
+
+The output is `7`, `3`, `-1`, `0`, `3`, and `7`, each on its own line. The original list still contains `[7, -1, 0, 3]`. `filter` keeps matching values; `remove` keeps the rest. `transform` produces one result per value. These functions create new lists in snapshot order and return empty lists for empty input. They share selected references with their existing read permissions, rather than copying their contents.
+
+A fresh scalar collection copy can leave its source borrow and be frozen. A copy that retains reference elements keeps their lifetime and read permissions. Owning the new outer list does not grant permission to freeze external objects inside it; every reachable external reference still requires ownership.
+
+`aggregate` combines values from left to right, starting with the explicit `initial` value. Empty input returns that value. `find` stops at the first match and returns null when none matches. A matching null is also null; use a loop when the distinction matters.
+
+`sort` returns a stable copy: equal values keep their input order. The comparator returns a negative integer for before, zero for equal, and a positive integer for after; it must describe a consistent total order. Bottom-up merging takes O(n log n) comparisons and allocates O(n) elements per pass. The runtime determines when previous allocations are collected. `sortIntegers` compares without subtraction, including int64 extremes. `sortText` compares unsigned UTF-8 bytes, with no locale collation or normalization. Sorting retains `IndexError` in its checked contract because its implementation uses checked indexed reads; its indices are bounded by the copied input.
+
+Text can also use `left.compare(other=right)` directly. It returns -1, 0, or 1, orders a shorter identical prefix first, and compares decoded embedded NUL by length. This operation does not change the rules that reject NUL in source literals and text files. See [the collection API](api/collections.md) for full signatures and callback contracts.
+
 ## Functions, effects, and capabilities
 
 A bare header without `implements` declares a function. A body infers its result from return expressions or an implemented interface. A body with no returned value has a void result; a bodyless signature needs `returns T` for a non-void result. Non-void bodies must return or throw on every path. A bodyless top-level declaration cannot be called unless it is an extern declaration.

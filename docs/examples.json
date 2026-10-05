@@ -103,5 +103,8 @@
   },
   "binding-patterns-guide": {
     "stdout": "Ada\n16\nAda\n"
+  },
+  "collection-functions-guide": {
+    "stdout": "7\n3\n-1\n0\n3\n7\n"
   }
 }

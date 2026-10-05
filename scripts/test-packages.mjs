@@ -51,6 +51,12 @@ try {
   aug('spec',patterns);assert.match(readFileSync(join(patterns,'main.aug.md'),'utf8'),/displayName/);
   if(process.env.AUG_LLVM_HOME&&process.env.AUG_RUNTIME_PACK)
     assert.equal(run(process.execPath,[cli,'run',patterns,'--backend','llvm']),'Ada\n16\n');
+  const collections=join(directory,'collection-functions');mkdirSync(collections);
+  writeFileSync(join(collections,'main.aug'),'import sortIntegers from august.collections\ntry:\n    for value in sortIntegers(values=[7, -1, 0]):\n        print(value=value)\ncatch IndexError error:\n    print(value="unexpected")\nprint(value="é".compare(other="z"))\n');
+  assert.equal(aug('run',collections),'-1\n0\n7\n1\n');
+  aug('spec',collections);assert.match(readFileSync(join(collections,'main.aug.md'),'utf8'),/sortIntegers/);
+  if(process.env.AUG_LLVM_HOME&&process.env.AUG_RUNTIME_PACK)
+    assert.equal(run(process.execPath,[cli,'run',collections,'--backend','llvm']),'-1\n0\n7\n1\n');
   const verifySpecs = folder => {
     for(const entry of readdirSync(folder,{withFileTypes:true})) {
       const file=join(folder,entry.name);

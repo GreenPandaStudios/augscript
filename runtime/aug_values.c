@@ -99,6 +99,11 @@ bool aug_string_is_decimal(AugValue value) {
   for(size_t i=0;i<value.as.object->text_length;i++)if(value.as.object->text[i]<'0'||value.as.object->text[i]>'9')return false;
   return true;
 }
+int64_t aug_string_compare(AugValue value, AugValue other) {
+  size_t left=value.as.object->text_length,right=other.as.object->text_length;
+  int order=memcmp(value.as.object->text,other.as.object->text,left<right?left:right);
+  return order<0?-1:order>0?1:left<right?-1:left>right?1:0;
+}
 int64_t aug_string_compare_decimal(AugValue value,AugValue other) {
   if(!aug_string_is_decimal(value)||!aug_string_is_decimal(other)){aug_error_named("ConversionError");return 0;}
   const char *a=value.as.object->text,*b=other.as.object->text;size_t an=value.as.object->text_length,bn=other.as.object->text_length;

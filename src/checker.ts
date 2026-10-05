@@ -1664,8 +1664,8 @@ class Checker {
       const origins = this.placesOf(stmt.value, context);
       if (context.locals.has(stmt.name)) this.report(stmt.span, `Variable ${stmt.name} already exists`, 'NAME');
       const root = sourceName(stmt.value);
-      if (root && context.flow.external(root) && context.locals.get(root)?.ownership !== 'own')
-        this.report(stmt.span, 'Freezing an external input requires own ownership', 'OWN');
+      if (context.flow.externalOrigin(origins) || root && context.flow.external(root) && context.locals.get(root)?.ownership !== 'own')
+        this.report(stmt.span, 'Freezing an external input requires own ownership of every reachable reference', 'OWN');
       context.flow.freeze(origins, stmt.span, (span, message) => this.report(span, message, 'BORROW'));
       for (const [name, local] of context.locals) if (context.flow.frozen(context.flow.origins(name))) {
         local.type = immutableType(local.type); local.ownership = 'managed';
@@ -2162,7 +2162,11 @@ class Checker {
       const fresh = ['own', 'fresh'].includes(this.ownershipOf(expr, context));
       if (fresh) {
         const origins = allocationOrigin(expr.span);
-        context.flow.object(origins, related.map((origins, index) => ({ name: `capture:${index}`, origins, mutable: true })));
+        const result=this.expressionTypes.get(expr);
+        // A fresh collection of scalar values cannot retain its source containers.
+        // Nested reference elements keep their conservative captures and lifetime checks.
+        const captures=result&&['builtin:List','builtin:Set','builtin:Map','builtin:Tuple'].includes(result.id)&&result.args.every(item=>!this.isReference(item))?[]:related;
+        context.flow.object(origins, captures.map((origins, index) => ({ name: `capture:${index}`, origins, mutable: true })));
         return origins;
       }
       return unionOrigins(...related);
