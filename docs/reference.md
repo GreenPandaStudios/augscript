@@ -127,7 +127,7 @@ Constraints name interfaces. Multiple constraints use `and`. Only interfaces dec
 
 ## Classes, records, and local state
 
-A class starts with its name and ends its header with `implements Interface`. There is no `class` or `function` prefix and no class inheritance. Interfaces can extend several interfaces and supply default methods; conflicting inherited defaults require an explicit override. Interfaces have methods and no fields.
+A class starts with its name and ends its header with `implements Interface`. There is no `class` or `function` prefix and no class inheritance. Interfaces can extend several interfaces and supply default methods; conflicting inherited defaults require an explicit override. Each implementation, including a selected default, must satisfy every inherited signature. Inputs, labels, defaults, result and ownership must agree; mutation, capability and error behavior must fit each permitted bound. Interfaces have methods and no fields.
 
 An initializer can reject construction with a checked error. Write the error before `implements`: `Session(own Handle handle) unless SessionError implements ActiveSession`. Callers must catch or propagate it. Class constructors require a written `unless` clause; record validation can infer failures.
 
@@ -341,7 +341,7 @@ announce(resolve Console console, string message):
     console.write(value=message)
 ```
 
-A caller's contract must include the effects of its calls and interceptor layers. Interface implementations cannot add mutation or effects beyond the interface contract. A contract may name `Console.write` when a concrete dependency is exposed through another interface.
+A caller's contract must include the effects of its calls and interceptor layers. Interface implementations cannot add mutation or effects beyond the interface contract. A contract may name `Console.write` when a concrete dependency is exposed through another interface. Capability arguments retain their resolved type identities: records named Value in different modules do not grant the same Audit<Value> operation.
 
 ### Short implementation headers
 

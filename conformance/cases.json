@@ -184,7 +184,7 @@
     {
       "id": "text",
       "files": {
-        "main.aug": "print(value=\"👋\".length())\nprint(value=\"café\".bytes().length())\n"
+        "main.aug": "print(value=\"\ud83d\udc4b\".length())\nprint(value=\"caf\u00e9\".bytes().length())\n"
       },
       "stdout": "4\n5\n"
     },
@@ -261,16 +261,16 @@
     {
       "id": "grapheme-boundaries",
       "files": {
-        "main.aug": "try:\n    text = \"é👩‍💻\"\n    print(value=text.byteLength())\n    print(value=text.graphemeLength())\n    for part in text.graphemes():\n        print(value=part)\n    print(value=\"्क\".graphemeLength())\ncatch ConversionError error:\n    print(value=\"unexpected\")\n"
+        "main.aug": "try:\n    text = \"e\u0301\ud83d\udc69\u200d\ud83d\udcbb\"\n    print(value=text.byteLength())\n    print(value=text.graphemeLength())\n    for part in text.graphemes():\n        print(value=part)\n    print(value=\"\u094d\u0915\".graphemeLength())\ncatch ConversionError error:\n    print(value=\"unexpected\")\n"
       },
-      "stdout": "14\n2\né\n👩‍💻\n1\n"
+      "stdout": "14\n2\ne\u0301\n\ud83d\udc69\u200d\ud83d\udcbb\n1\n"
     },
     {
       "id": "domain-values",
       "files": {
-        "main.aug": "import parseCivilDate and formatCivilDate and parseDuration and formatDuration and TokenId and HttpUrl and PortableRelativePath and BoundedText from august.values\ntry:\n    print(value=formatCivilDate(value=parseCivilDate(text=\"2000-02-29\")))\n    print(value=formatDuration(value=parseDuration(text=\"-PT0.001S\")))\n    print(value=TokenId(text=\"order_42\").text)\n    print(value=HttpUrl(text=\"https://example.com?\").text)\n    print(value=PortableRelativePath(text=\"docs/api.md\").text)\n    print(value=BoundedText(text=\"é\", minBytes=2, maxBytes=2).text)\n    parseCivilDate(text=\"1900-02-29\")\ncatch ConversionError failure:\n    print(value=\"invalid date\")\n"
+        "main.aug": "import parseCivilDate and formatCivilDate and parseDuration and formatDuration and TokenId and HttpUrl and PortableRelativePath and BoundedText from august.values\ntry:\n    print(value=formatCivilDate(value=parseCivilDate(text=\"2000-02-29\")))\n    print(value=formatDuration(value=parseDuration(text=\"-PT0.001S\")))\n    print(value=TokenId(text=\"order_42\").text)\n    print(value=HttpUrl(text=\"https://example.com?\").text)\n    print(value=PortableRelativePath(text=\"docs/api.md\").text)\n    print(value=BoundedText(text=\"\u00e9\", minBytes=2, maxBytes=2).text)\n    parseCivilDate(text=\"1900-02-29\")\ncatch ConversionError failure:\n    print(value=\"invalid date\")\n"
       },
-      "stdout": "2000-02-29\n-PT0.001S\norder_42\nhttps://example.com?\ndocs/api.md\né\ninvalid date\n"
+      "stdout": "2000-02-29\n-PT0.001S\norder_42\nhttps://example.com?\ndocs/api.md\n\u00e9\ninvalid date\n"
     },
     {
       "id": "internal-composition",
@@ -303,6 +303,34 @@
         "service/api.aug": "import Hidden from model\nleak() { return Hidden(value=1) }\n"
       },
       "diagnostic": "MODULE_SURFACE"
+    },
+    {
+      "id": "interface-all-requirements",
+      "files": {
+        "main.aug": "",
+        "model.aug": "interface TextInput { accept(string value) }\ninterface IntegerInput { accept(int value) }\nOnlyText() implements TextInput, IntegerInput { accept(string value) {} }\n"
+      },
+      "diagnostic": "TYPE"
+    },
+    {
+      "id": "interface-default-requirements",
+      "files": {
+        "main.aug": "",
+        "model.aug": "interface TextInput { accept(string value) {} }\ninterface IntegerInput { accept(int value) }\nOnlyText() implements TextInput, IntegerInput {}\n"
+      },
+      "diagnostic": "INTERFACE"
+    },
+    {
+      "id": "generic-capability-identity",
+      "files": {
+        "main.aug": "",
+        "audit.aug": "capability Audit<T> { note(T value) uses Audit.note }\n",
+        "orders.aug": "record Value(int number)\n",
+        "logging.aug": "record Value(int number)\n",
+        "promises.aug": "import Value from orders\nimport Audit from audit\ninterface Logger<T> { log() uses Audit.note }\ninterface Wanted extends Logger<List<Value>> {}\n",
+        "actual.aug": "import Value from logging\nimport Audit from audit\nimport Wanted from promises\nWrong(resolve Audit<List<Value>> logger) implements Wanted { log() { logger.note(value=[Value(number=1)]) } }\n"
+      },
+      "diagnostic": "TYPE"
     }
   ],
   "mutations": [

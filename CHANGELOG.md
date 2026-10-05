@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Show expected/actual interface contract fragments and checked capability helper paths. Check explicit methods and selected defaults against every inherited interface, repairing acceptance of incompatible secondary contracts. Generic capability keys retain recursive type identities; colliding diagnostic names show module origins.
+
 - Add contextual `internal Name from sibling` entries in `export.aug`. Strict sibling imports can use these contracts without outward exposure. Opted-in folders check effective exported type/constructor/error surfaces; package, editor, navigation and compiled specs retain the distinction.
 
 - Harden semantic responses against client mutation. Bind graph schema 2 and context schema 3 to physical dependency metadata; reject insufficient target budgets with a required minimum. Add interface-change/review context modes with conservative caller, inheritance and type-use expansion, authored test suites and whole-project LSP parity.

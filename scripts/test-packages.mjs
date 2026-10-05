@@ -117,6 +117,15 @@ try {
   if(process.env.AUG_LLVM_HOME&&process.env.AUG_RUNTIME_PACK)assert.equal(run(process.execPath,[cli,'run',internalModules,'--backend','llvm']),internalFixture.stdout);
   aug('spec',internalModules);assert.match(readFileSync(join(internalModules,'service/export.aug.md'),'utf8'),/Make available only inside this folder/);
 
+  const contractErrors=join(directory,'interface-diagnostics');mkdirSync(contractErrors);
+  writeFileSync(join(contractErrors,'main.aug'),'');
+  writeFileSync(join(contractErrors,'values.aug'),'import Console from august.io\ninterface Quiet { write() }\nLoud(resolve Console console) implements Quiet { write() { console.write(value="hello") } }\n');
+  const rejected=spawnSync(process.execPath,[cli,'check',contractErrors,'--json'],{cwd:directory,encoding:'utf8'});
+  assert.equal(rejected.status,1,rejected.stderr);
+  const violation=JSON.parse(rejected.stdout).find(issue=>/interface signature/.test(issue.message));
+  assert.equal(violation.expected,'uses none');assert.equal(violation.actual,'uses Console.write (inferred)');
+  assert.equal(violation.related[0].line,2);assert.equal(violation.related[1].line,3);
+
   const callbacks=join(directory,'callback-consumer');mkdirSync(callbacks);
   writeFileSync(join(callbacks,'main.aug'),'import transform from august.collections\nfor value in transform(values=[2, 3], transformation=(int value) => value * 2):\n    print(value=value)\n');
   assert.equal(aug('run',callbacks),'4\n6\n');

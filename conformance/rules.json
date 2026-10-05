@@ -75,18 +75,28 @@
     },
     {
       "id": "INTERFACES",
-      "summary": "Interfaces inherit contracts and defaults; conflicting defaults require an implementation.",
+      "summary": "Explicit methods and selected defaults satisfy every inherited contract; conflicting defaults require an implementation.",
       "reference": "reference.md#classes-records-and-local-state",
       "productions": [
         "Interface"
       ],
       "cases": [
-        "interfaces"
+        "interfaces",
+        "interface-all-requirements",
+        "interface-default-requirements"
       ],
       "regressions": [
         {
           "file": "tests/compiler.test.mjs",
           "test": "multiple interface inheritance uses both defaults"
+        },
+        {
+          "file": "tests/diagnostic-context.test.mjs",
+          "test": "one implementation must satisfy every independently inherited interface contract"
+        },
+        {
+          "file": "tests/diagnostic-context.test.mjs",
+          "test": "a selected default method must also satisfy the other interface requirements"
         }
       ]
     },
@@ -216,18 +226,23 @@
     },
     {
       "id": "EFFECTS",
-      "summary": "Inferred effects remain bounded by public interfaces; constructors stay pure and locks exclude I/O.",
+      "summary": "Inferred effects remain bounded by public interfaces and resolved generic capability identities; constructors stay pure and locks exclude I/O.",
       "reference": "reference.md#functions-effects-and-capabilities",
       "productions": [
         "Paths"
       ],
       "cases": [
-        "capabilities"
+        "capabilities",
+        "generic-capability-identity"
       ],
       "regressions": [
         {
           "file": "tests/effect-inference.test.mjs",
           "test": "explicit uses is an upper bound; constructors and lock regions retain their checks"
+        },
+        {
+          "file": "tests/diagnostic-context.test.mjs",
+          "test": "generic capability bounds distinguish same-spelled arguments from separate modules"
         }
       ]
     },

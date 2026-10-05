@@ -726,7 +726,7 @@ Register an implementation in main or test setup. Stateless bindings are shared 
 Name() implements Interface { ... }
 ```
 
-Marks a declaration as a class and lists the interfaces it satisfies. Every class needs at least one interface. Method signatures must match. Conflicting default implementations require an override. Put constructor work in an initialize block inside the class.
+Marks a declaration as a class and lists the interfaces it satisfies. Every class needs at least one interface. Explicit and default methods must satisfy every inherited signature; diagnostics show the differing contract and its declaration. Conflicting default implementations require an override. Put constructor work in an initialize block inside the class.
 
 ## import
 

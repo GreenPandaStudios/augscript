@@ -14,6 +14,14 @@ A call-input type error names the public input, its expected type and the valueâ
 
 For a misspelled or unlabeled input, check the listed caller labels first. The compiler postpones omitted-input and dependent inference errors until that mapping is valid. A spelling fix can correct a label; missing values and recovery decisions still belong to the application author.
 
+## Interface contracts (unreleased)
+
+An implementation must satisfy every inherited interface contract, including when it uses a default method. A mismatch identifies the first differing input, result, ownership, mutation, capability or checked-error fragment and links to the interface declaration. Generic fragments use the substituted types, including explicit capability arguments. When names collide, the fragments include their resolved module origins. JSON retains the same `expected`, `actual` and `related` fields as call diagnostics; VS Code exposes the related locations in Problems.
+
+For example, a pure interface can reject an implementation with `uses Console.write (inferred)`. The diagnostic shows the permitted `uses none` bound and, when exact checked call witnesses are available, a shortest helper path to the capability. Long paths show seven locations and state how many intermediate calls were omitted. These are possible calls that impose a contract, not evidence that a branch ran. Explicit callee bounds still apply when an adapter does no I/O or a helper only recurses. Annotated and generic boundaries can stop the path; the resolved contract comparison still applies.
+
+Choose whether to remove the operation, change the design or deliberately revise the public promise. The diagnostic does not add permissions, mutation rights or recovery behavior automatically. A rejected candidate's inferred errors are not an accepted public contract.
+
 ## Syntax and data
 
 | Code | Meaning and remedy |

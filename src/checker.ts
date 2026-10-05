@@ -11,7 +11,7 @@ import { literalDefault, defaultText } from './parameters.ts';
 import { canFallThrough, canRepeatNext } from './continuation.ts';
 import { returnsFresh } from './freshness.ts';
 import { inferType } from './inference.ts';
-import { containsUnknown, sameType, tyName, immutableType, type Ty } from './types.ts';
+import { containsUnknown, sameType, tyName, tyKey, immutableType, type Ty } from './types.ts';
 import { capabilityKey, coversChange, effectContract, type CapabilityEffect, type EffectContract } from './effects.ts';
 import { allocationOrigin, overlap, OwnershipFlow, sourceName, unionOrigins, type Origins } from './ownership.ts';
 import { builtinType as builtin, builtinTypes, builtinProperties, collectionOperations, errorNames, operationType } from './builtins.ts';
@@ -213,6 +213,7 @@ class Checker {
   private readonly constructorFreshness = new Map<ClassDecl, boolean>();
   private readonly constraintStack = new Set<string>();
   private readonly inferredUses = new Map<MethodDecl, Map<string, CapabilityEffect>>();
+  private readonly capabilitySites = new Map<MethodDecl, Map<string, {span:Span;target?:MethodDecl}[]>>();
   private inferring = false;
   private inferenceChanged = false;
   private readonly changingInference = new Set<MethodDecl>();
@@ -360,9 +361,23 @@ class Checker {
     this.diagnostics.push({ file: span.file, line: span.line, column: span.column, message, code, ...details });
   }
 
+  private typeOrigin(type: Ty): string {
+    return type.id + (type.args.length ? `<${type.args.map(arg => this.typeOrigin(arg)).join(', ')}>` : '');
+  }
+
+  /** Qualify only ambiguous display names, while comparing resolved identities. */
+  private diagnosticTypeNames(types: readonly Ty[], compared: readonly Ty[]): string[] {
+    const identities = new Map<string, Set<string>>();
+    for(const type of [...types,...compared]) {
+      const display = tyName(type), keys = identities.get(display) ?? new Set<string>();
+      keys.add(tyKey(type)); identities.set(display,keys);
+    }
+    return types.map(type => tyName(type) + (identities.get(tyName(type))!.size > 1 ? ` [${this.typeOrigin(type)}]` : ''));
+  }
+
   private inputDetails(param: Param, expected: Ty, actual: Ty): Pick<Diagnostic, 'related' | 'expected' | 'actual'> {
     const span = param.labelSpan ?? param.nameSpan ?? param.span;
-    return { expected: tyName(expected), actual: tyName(actual),
+    return { expected: this.diagnosticTypeNames([expected],[actual])[0], actual: this.diagnosticTypeNames([actual],[expected])[0],
       related: [{file:span.file,line:span.line,column:span.column,message:`Input ${param.label ?? param.name} is declared here.`}] };
   }
 
@@ -1024,16 +1039,25 @@ class Checker {
     const defaults = new Map<string, InterfaceMethod>();
     for (const [name, methods] of inherited) {
       const own = cls.methods.find(method => method.name === name);
-      const reference = methods[0];
       if (own) {
-        if (!this.sameSignature(own, def.file, params, reference)) this.report(own.span,
-          `Method ${name} does not match the interface signature`);
+        for(const reference of methods) {
+          const mismatch = this.signatureMismatch(own, def.file, params, reference);
+          if (mismatch) this.report(own.span,
+            `Method ${name} does not match the interface signature: expected ${mismatch.expected}; found ${mismatch.actual}`, 'TYPE', mismatch);
+        }
       } else {
         const concrete = methods.filter(entry => !!entry.method.body);
         const unique = new Map(concrete.map(entry => [entry.from, entry.method]));
         if (unique.size > 1) this.report(cls.span,
           `Conflicting default implementations of ${name}; ${cls.name} must override it`, 'INTERFACE');
-        else if (concrete[0]) defaults.set(name, concrete[0]);
+        else if (concrete[0]) {
+          const selected = concrete[0];
+          for(const reference of methods) {
+            const mismatch = this.signatureMismatch(selected.method, selected.file, selected.params, reference);
+            if(mismatch) this.report(cls.span, `Default method ${name} does not match the interface signature: expected ${mismatch.expected}; found ${mismatch.actual}`, 'INTERFACE', mismatch);
+          }
+          defaults.set(name, selected);
+        }
         else this.report(cls.span, `${cls.name} must implement ${name}`, 'INTERFACE');
       }
     }
@@ -1058,8 +1082,10 @@ class Checker {
         `${parent.name} is not an interface`);
       else for(const [name,entries] of this.interfaceMethods(type,new Set())) {
         const own=iface.methods.find(method=>method.name===name);
-        if(own)for(const inherited of entries)if(!this.sameSignature(own,def.file,params,inherited))
-          this.report(own.span,`Interface override ${name} does not preserve its inherited input, result and effect contract`,'INTERFACE');
+        if(own)for(const inherited of entries) {
+          const mismatch = this.signatureMismatch(own, def.file, params, inherited);
+          if(mismatch) this.report(own.span, `Interface override ${name} does not preserve its inherited input, result and effect contract: expected ${mismatch.expected}; found ${mismatch.actual}`, 'INTERFACE', mismatch);
+        }
       }
     }
     this.interfaceMembers.set(def.id,this.interfaceMethods({ id: def.id, name: def.name, kind: 'interface', def,
@@ -1090,40 +1116,98 @@ class Checker {
 
   private sameSignature(left: MethodDecl, leftFile: string, leftOwnerParams: Map<string, Ty>,
                         right: InterfaceMethod): boolean {
-    const method = right.method;
-    if (left.params.length !== method.params.length ||
-        left.typeParams.length !== method.typeParams.length) return false;
-    const leftParams = new Map(leftOwnerParams);
-    const rightParams = new Map(right.params);
+    return !this.signatureMismatch(left, leftFile, leftOwnerParams, right);
+  }
+
+  /** Compare the actual checked contract with an interface's permitted bound.
+   * The same comparison drives acceptance and its diagnostic evidence. */
+  private signatureMismatch(left: MethodDecl, leftFile: string, leftOwnerParams: Map<string, Ty>,
+                            right: InterfaceMethod): Pick<Diagnostic, 'related' | 'expected' | 'actual'> | undefined {
+    const method = right.method, rightOwner = this.project.definitions.get(right.from);
+    const fail = (expected: string, actual: string): Pick<Diagnostic, 'related' | 'expected' | 'actual'> => ({expected, actual,
+      related: [{file:method.span.file, line:method.span.line, column:method.span.column,
+        message:`${rightOwner?.name ?? 'Interface'}.${method.name} declares the permitted contract here.`}]});
+    if(left.params.length !== method.params.length) return fail(`${method.params.length} inputs`, `${left.params.length} inputs`);
+    if(left.typeParams.length !== method.typeParams.length) return fail(`${method.typeParams.length} method type parameters`, `${left.typeParams.length} method type parameters`);
+    const leftParams = new Map(leftOwnerParams), rightParams = new Map(right.params);
     for (let i = 0; i < left.typeParams.length; i++) {
-      const placeholder: Ty = { id: `method-param:${i}`, name: `$${i}`, kind: 'param',
-        args: [], nullable: false };
-      leftParams.set(left.typeParams[i], placeholder);
-      rightParams.set(method.typeParams[i], placeholder);
+      const placeholder: Ty = { id: `method-param:${i}`, name: `$${i}`, kind: 'param', args: [], nullable: false };
+      leftParams.set(left.typeParams[i], placeholder); rightParams.set(method.typeParams[i], placeholder);
     }
-    const equalRef = (a: TypeRef, b: TypeRef) => this.sameType(
-      this.resolveType(a, leftFile, leftParams), this.resolveType(b, right.file, rightParams));
-    const constraintsEqual = left.typeParams.every((name, index) => {
-      const a = left.typeConstraints?.[name] ?? [];
-      const b = method.typeConstraints?.[method.typeParams[index]] ?? [];
-      return a.length === b.length && a.every((ref, i) => equalRef(ref, b[i]));
-    });
+    const leftType = (ref: TypeRef) => this.resolveType(ref, leftFile, leftParams);
+    const rightType = (ref: TypeRef) => this.resolveType(ref, right.file, rightParams);
+    for(const [index, name] of left.typeParams.entries()) {
+      const actual = left.typeConstraints?.[name] ?? [], expected = method.typeConstraints?.[method.typeParams[index]] ?? [];
+      if(actual.length !== expected.length || actual.some((ref, i) => !this.sameType(leftType(ref), rightType(expected[i]))))
+        return fail(`type constraints ${this.diagnosticTypeNames(expected.map(rightType),actual.map(leftType)).join(' and ') || 'none'}`,
+          `type constraints ${this.diagnosticTypeNames(actual.map(leftType),expected.map(rightType)).join(' and ') || 'none'}`);
+    }
+    for(const [index, param] of left.params.entries()) {
+      const expected = method.params[index];
+      if(param.name !== expected.name) return fail(`input label ${expected.name}`, `input label ${param.name}`);
+      if(param.injected !== expected.injected) return fail(expected.injected ? `resolve input ${expected.name}` : `caller input ${expected.name}`,
+        param.injected ? `resolve input ${param.name}` : `caller input ${param.name}`);
+      const actualDefault = param.defaultValue && literalDefault(param.defaultValue) ? defaultText(param.defaultValue) : undefined;
+      const expectedDefault = expected.defaultValue && literalDefault(expected.defaultValue) ? defaultText(expected.defaultValue) : undefined;
+      if(actualDefault !== expectedDefault) return fail(`input ${expected.name} default ${expectedDefault ?? 'none'}`, `input ${param.name} default ${actualDefault ?? 'none'}`);
+      if(param.ownership !== expected.ownership) return fail(`input ${expected.name} ownership ${expected.ownership}`, `input ${param.name} ownership ${param.ownership}`);
+      const actualType = leftType(param.type), expectedType = rightType(expected.type);
+      if(!this.sameType(actualType, expectedType)) return fail(`input ${expected.name}: ${this.diagnosticTypeNames([expectedType],[actualType])[0]}`, `input ${param.name}: ${this.diagnosticTypeNames([actualType],[expectedType])[0]}`);
+    }
+    const actualResult = this.returnType(left, leftFile, leftParams), expectedResult = this.returnType(method, right.file, rightParams);
+    if(!this.sameType(actualResult, expectedResult)) return fail(`returns ${this.diagnosticTypeNames([expectedResult],[actualResult])[0]}`, `returns ${this.diagnosticTypeNames([actualResult],[expectedResult])[0]}`);
+    if(left.returnOwnership !== method.returnOwnership) return fail(`result ownership ${method.returnOwnership}`, `result ownership ${left.returnOwnership}`);
     const leftOwner = [...this.project.definitions.values()].find(def => 'methods' in def.node && def.node.methods.includes(left));
-    const rightOwner = this.project.definitions.get(right.from);
-    const leftEffects = this.effectiveContract(left, leftFile, leftOwner, leftParams);
-    const rightEffects = this.effectiveContract(method, right.file, rightOwner, rightParams);
-    const effectsFit = leftEffects.changes.every(change => coversChange(rightEffects.changes, change)) &&
-      [...leftEffects.uses.keys()].every(key => rightEffects.uses.has(key));
-    return constraintsEqual && effectsFit && left.params.every((param, i) => param.name === method.params[i].name &&
-      param.injected === method.params[i].injected &&
-      (param.defaultValue && literalDefault(param.defaultValue) ? defaultText(param.defaultValue) : undefined) ===
-        (method.params[i].defaultValue && literalDefault(method.params[i].defaultValue!) ? defaultText(method.params[i].defaultValue!) : undefined) &&
-      param.ownership === method.params[i].ownership &&
-      equalRef(param.type, method.params[i].type)) &&
-      this.sameType(this.returnType(left, leftFile, leftParams), this.returnType(method, right.file, rightParams)) &&
-      left.returnOwnership === method.returnOwnership &&
-      this.effectiveErrors(left, leftFile, leftParams).every(thrown =>
-        this.effectiveErrors(method, right.file, rightParams).some(allowed => this.assignable(thrown, allowed)));
+    const actualEffects = this.effectiveContract(left, leftFile, leftOwner, leftParams);
+    const expectedEffects = this.effectiveContract(method, right.file, rightOwner, rightParams);
+    const capabilityName = (effect: CapabilityEffect) => `${effect.capability ? tyName(effect.capability) : effect.source}.${effect.operation}`;
+    const capabilityIdentities = new Map<string, Set<string>>();
+    for(const [key,effect] of [...actualEffects.uses,...expectedEffects.uses]) {
+      const display = capabilityName(effect), keys = capabilityIdentities.get(display) ?? new Set<string>();
+      keys.add(key); capabilityIdentities.set(display,keys);
+    }
+    const effectsText = (contract: EffectContract) => 'uses ' + ([...new Set([...contract.uses].map(([key,effect]) =>
+      (effect.capability?.args.length ? capabilityName(effect) : `${effect.source}.${effect.operation}`) + (capabilityIdentities.get(capabilityName(effect))!.size > 1 ?
+        ` [${effect.capability ? this.typeOrigin(effect.capability) : key}]` : '')))].sort().join(' and ') || 'none') + (contract.inferred ? ' (inferred)' : '');
+    const excess = [...actualEffects.uses.keys()].filter(key => !expectedEffects.uses.has(key)).sort();
+    if(excess.length) {
+      const mismatch = fail(effectsText(expectedEffects), effectsText(actualEffects));
+      const effect = actualEffects.uses.get(excess[0])!;
+      mismatch.related = [...mismatch.related!, ...this.capabilityPath(left, excess[0], `${effect.source}.${effect.operation}`)];
+      return mismatch;
+    }
+    if(actualEffects.changes.some(change => !coversChange(expectedEffects.changes, change)))
+      return fail('changes ' + (expectedEffects.changes.join(' and ') || 'none'),
+        'changes ' + (actualEffects.changes.join(' and ') || 'none') + (actualEffects.inferredChanges ? ' (inferred)' : ''));
+    const actualErrors = this.effectiveErrors(left, leftFile, leftParams), expectedErrors = this.effectiveErrors(method, right.file, rightParams);
+    if(actualErrors.some(thrown => !expectedErrors.some(allowed => this.assignable(thrown, allowed))))
+      return fail('unless ' + (this.diagnosticTypeNames(expectedErrors,actualErrors).sort().join(' and ') || 'none'),
+        'unless ' + (this.diagnosticTypeNames(actualErrors,expectedErrors).sort().join(' and ') || 'none') + (this.callableContracts.get(left)?.inferredErrors ? ' (inferred)' : ''));
+    return undefined;
+  }
+
+  /** Inference records resolved call sites under the exact capability key.
+   * Breadth-first traversal retains a shortest static obligation path, never a
+   * claim that a branch executed. Recursive helpers cannot loop this query. */
+  private capabilityPath(method: MethodDecl, key: string, display: string): NonNullable<Diagnostic['related']> {
+    type Step = {caller:MethodDecl;span:Span;target?:MethodDecl};
+    const pending: {method:MethodDecl;path:Step[]}[] = [{method,path:[]}], seen = new Set([method]);
+    let selected: Step[] = [];
+    for(let index=0;index<pending.length;index++) {
+      const current = pending[index], sites = this.capabilitySites.get(current.method)?.get(key) ?? [];
+      if(!sites.length) { selected = current.path; break; }
+      for(const site of [...sites].sort((a,b) => a.span.start-b.span.start)) {
+        const path = [...current.path, {caller:current.method,...site}];
+        if(!site.target || site.target.uses?.length || !this.capabilitySites.get(site.target)?.get(key)?.length) { selected = path; break; }
+        if(!seen.has(site.target)) { seen.add(site.target); pending.push({method:site.target,path}); }
+      }
+      if(selected.length) break;
+    }
+    const omitted = Math.max(0, selected.length-7);
+    const compact = omitted ? [...selected.slice(0,4),...selected.slice(-3)] : selected;
+    return compact.map((site,index) => ({file:site.span.file,line:site.span.line,column:site.span.column,
+      message:(omitted && index===4 ? `${omitted} intermediate call sites omitted. ` : '') + (site.target ?
+        `${site.caller.name} calls ${site.target.name}; this call requires ${display}.` : `${site.caller.name} requires ${display} here.`)}));
   }
 
   private sameType(left: Ty, right: Ty): boolean {
@@ -1439,9 +1523,13 @@ class Checker {
     return contract;
   }
 
-  private requireUse(key: string, display: string, span: Span, context: Context, effect?: CapabilityEffect): void {
+  private requireUse(key: string, display: string, span: Span, context: Context, effect?: CapabilityEffect, target?: MethodDecl): void {
     if (context.locked) this.report(span, `Release the lock before ${display}; I/O and capability calls cannot hold a lock`, 'CONCURRENCY');
     if (!context.callable) return;
+    const byKey = this.capabilitySites.get(context.callable) ?? new Map<string, {span:Span;target?:MethodDecl}[]>();
+    this.capabilitySites.set(context.callable, byKey);
+    const sites = byKey.get(key) ?? []; byKey.set(key, sites);
+    if(!sites.some(site => site.span === span && site.target === target)) sites.push({span,target});
     const inferred = this.inferring && this.inferredUses.get(context.callable);
     if (inferred) {
       if (!inferred.has(key)) {
@@ -3403,7 +3491,7 @@ class Checker {
     const contract = this.effectiveContract(fn, fnFile, owner, params);
     plan.mutatesReceiver = contract.changes.some(change => change === 'self' || change.startsWith('self.'));
     for (const [key, effect] of contract.uses) this.requireUse(key,
-      `${effect.source}.${effect.operation}`, expr.span, context, effect);
+      `${effect.source}.${effect.operation}`, expr.span, context, effect, fn);
     for (const changed of contract.changes) {
       const root = changed.split('.')[0];
       if (root === 'self' && expr.callee.kind === 'member') this.requireMutation(expr, expr.callee.object, context, `${fn.name} changes self`);

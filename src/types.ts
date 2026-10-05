@@ -18,6 +18,15 @@ export function tyName(type: Ty): string {
   return (type.optional || type.nullable ? 'optional ' : '') + (type.immutable ? 'immutable ' : '') + type.name + (type.args.length ? `<${type.args.map(tyName).join(', ')}>` : '');
 }
 
+/** Stable identity for the dimensions compared by sameType. Display spelling
+ * cannot identify generic arguments imported from different modules. */
+export function tyKey(type: Ty): string {
+  type Identity = [string, boolean, boolean, Identity[]];
+  const identity = (value: Ty): Identity => [value.id, value.nullable || !!value.optional,
+    !!value.immutable, value.args.map(identity)];
+  return JSON.stringify(identity(type));
+}
+
 export function sameType(left: Ty, right: Ty): boolean {
   return left.id === right.id && !!left.immutable === !!right.immutable && (left.nullable || !!left.optional) === (right.nullable || !!right.optional) &&
     left.args.length === right.args.length && left.args.every((arg, i) => sameType(arg, right.args[i]));

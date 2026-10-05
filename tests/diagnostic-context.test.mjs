@@ -1,13 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {mkdtempSync,writeFileSync,rmSync} from 'node:fs';
-import {join,resolve} from 'node:path';
+import {mkdtempSync,writeFileSync,rmSync,mkdirSync} from 'node:fs';
+import {join,resolve,dirname} from 'node:path';
 import {tmpdir} from 'node:os';
 import {spawn,spawnSync} from 'node:child_process';
 import {pathToFileURL} from 'node:url';
 import {SemanticWorkspace} from '../src/semantic.ts';
 const cli=resolve('bin/aug.mjs');
-function fixture(files,run){const root=mkdtempSync(join(tmpdir(),'aug-diagnostic-context-'));try{for(const [file,source] of Object.entries(files))writeFileSync(join(root,file),source);return run(root);}finally{rmSync(root,{recursive:true,force:true});}}
+function fixture(files,run){const root=mkdtempSync(join(tmpdir(),'aug-diagnostic-context-'));try{for(const [file,source] of Object.entries(files)){mkdirSync(dirname(join(root,file)),{recursive:true});writeFileSync(join(root,file),source);}return run(root);}finally{rmSync(root,{recursive:true,force:true});}}
 const check=(root,...options)=>spawnSync(process.execPath,[cli,'check',root,...options],{encoding:'utf8'});
 
 test('call type errors name the public input and link to its resolved declaration',()=>fixture({
@@ -126,3 +126,203 @@ test('invalid labels postpone dependent generic and constant-index guesses',()=>
   const repaired=check(root,'--json');assert.equal(repaired.status,0,repaired.stdout+repaired.stderr);
  });
 });
+
+test('an inferred capability exceeding an interface points to the declared bound',()=>fixture({
+ 'main.aug':'',
+ 'values.aug':`import Console from august.io
+interface Logger:
+    log(string message)
+ConsoleLogger(resolve Console console) implements Logger:
+    log(string message):
+        _emit(console, message)
+_emit(Console console, string message):
+    console.write(value=message)
+`
+},root=>{
+ const result=check(root,'--json');assert.equal(result.status,1,result.stderr);
+ const issue=JSON.parse(result.stdout).find(issue=>/interface signature/.test(issue.message));assert.ok(issue,result.stdout);
+ assert.equal(issue.expected,'uses none');assert.equal(issue.actual,'uses Console.write (inferred)');
+ assert.deepEqual(issue.related[0],{file:join(root,'values.aug'),line:3,column:5,message:'Logger.log declares the permitted contract here.'});
+ const human=check(root);assert.match(human.stderr,/uses Console.write/);assert.match(human.stderr,/values.aug:3:5/);
+}));
+
+test('one implementation must satisfy every independently inherited interface contract',()=>fixture({
+ 'main.aug':'',
+ 'values.aug':`interface TextInput:
+    accept(string value)
+interface IntegerInput:
+    accept(int value)
+OnlyText() implements TextInput, IntegerInput:
+    accept(string value):
+        pass
+`
+},root=>{
+ const result=check(root,'--json');assert.equal(result.status,1,result.stderr);
+ const issues=JSON.parse(result.stdout);assert.equal(issues.length,1,result.stdout);
+ assert.equal(issues[0].expected,'input value: int');assert.equal(issues[0].actual,'input value: string');
+ assert.equal(issues[0].related[0].line,4);assert.match(issues[0].related[0].message,/IntegerInput.accept/);
+}));
+
+test('capability diagnostics retain the shortest checked helper path',()=>fixture({
+ 'main.aug':'',
+ 'values.aug':`import Console from august.io
+interface Logger:
+    log()
+Live(resolve Console console) implements Logger:
+    log():
+        _long(console)
+        _short(console)
+_long(Console console):
+    _middle(console)
+_middle(Console console):
+    _short(console)
+_short(Console console):
+    console.write(value="hello")
+`,
+ 'decoy.aug':'_short() {}\n'
+},root=>{
+ const result=check(root,'--json');assert.equal(result.status,1,result.stderr);
+ const issue=JSON.parse(result.stdout).find(issue=>/interface signature/.test(issue.message));assert.ok(issue,result.stdout);
+ assert.deepEqual(issue.related.slice(1).map(site=>[site.file,site.line]),[[join(root,'values.aug'),7],[join(root,'values.aug'),13]]);
+ assert.match(issue.related[1].message,/log calls _short/);assert.match(issue.related[2].message,/_short calls write/);
+}));
+
+test('inherited generic results, ownership, mutation, defaults and escaping errors show their actual contract fragments',()=>{
+ const cases=[
+  [`interface Result<T>:\n    read() returns T\ninterface IntResult extends Result<int> {}\nBad() implements IntResult:\n    read() returns string { return "bad" }\n`,'returns int','returns string',2],
+  [`interface Writer:\n    write(borrow List<int> values) changes values\nBad() implements Writer:\n    write(List<int> values) {}\n`,'input values ownership borrow','input values ownership managed',2],
+  [`interface Reader:\n    read(borrow List<int> values)\nBad() implements Reader:\n    read(borrow List<int> values) { values.append(value=1) }\n`,'changes none','changes values (inferred)',2],
+  [`interface Reader:\n    read(int amount=4) returns int\nBad() implements Reader:\n    read(int amount=7) returns int { return amount }\n`,'input amount default 4','input amount default 7',2],
+  [`interface Reader:\n    read() returns int\nBad() implements Reader:\n    read() returns int:\n        int zero = 0\n        return 1 / zero\n`,'unless none','unless ArithmeticError (inferred)',2]
+ ];
+ for(const [source,expected,actual,line] of cases) fixture({'main.aug':'','values.aug':source},root=>{
+  const result=check(root,'--json');assert.equal(result.status,1,result.stderr);
+  const issues=JSON.parse(result.stdout);assert.equal(issues.length,1,result.stdout);
+  assert.equal(issues[0].expected,expected);assert.equal(issues[0].actual,actual);
+  assert.equal(issues[0].related[0].file,join(root,'values.aug'));assert.equal(issues[0].related[0].line,line);
+ });
+});
+
+test('a selected default method must also satisfy the other interface requirements',()=>fixture({
+ 'main.aug':'',
+ 'values.aug':`interface TextInput:
+    accept(string value) { pass }
+interface IntegerInput:
+    accept(int value)
+OnlyText() implements TextInput, IntegerInput {}
+`
+},root=>{
+ const result=check(root,'--json');assert.equal(result.status,1,result.stderr);
+ const issues=JSON.parse(result.stdout);assert.equal(issues.length,1,result.stdout);
+ assert.equal(issues[0].expected,'input value: int');assert.equal(issues[0].actual,'input value: string');
+ assert.equal(issues[0].related[0].line,4);assert.match(issues[0].message,/Default method accept/);
+}));
+
+test('a helper declared capability remains an obligation even when its body only recurses',()=>fixture({
+ 'main.aug':'',
+ 'values.aug':`import Console from august.io
+interface Logger:
+    log()
+Live(resolve Console console) implements Logger:
+    log():
+        _repeat(console)
+_repeat(Console console) uses Console.write:
+    _repeat(console)
+`
+},root=>{
+ const result=check(root,'--json');assert.equal(result.status,1,result.stderr);
+ const issue=JSON.parse(result.stdout).find(issue=>/interface signature/.test(issue.message));assert.ok(issue,result.stdout);
+ assert.equal(issue.actual,'uses Console.write (inferred)');
+ assert.deepEqual(issue.related.slice(1).map(site=>site.line),[6]);assert.match(issue.related[1].message,/log calls _repeat/);
+}));
+
+test('compatible shared method requirements and substituted defaults execute through both native backends',()=>fixture({
+ 'values.aug':`interface First:
+    read() returns int
+interface Second:
+    read() returns int
+Selected() implements First, Second:
+    read() { return 11 }
+interface DefaultFirst extends First:
+    read() returns int { return 7 }
+BothDefaults() implements DefaultFirst, Second {}
+readFirst(First source) { return source.read() }
+readSecond(Second source) { return source.read() }
+`,
+ 'main.aug':`import Selected and BothDefaults and readFirst and readSecond from values
+value = Selected()
+fallback = BothDefaults()
+print(value=readFirst(source=value))
+print(value=readSecond(source=value))
+print(value=readFirst(source=fallback))
+print(value=readSecond(source=fallback))
+`
+},root=>{
+ for(const backend of ['c','llvm']) {
+  const result=spawnSync(process.execPath,[cli,'run',root,'--backend',backend],{encoding:'utf8'});
+  assert.equal(result.status,0,result.stderr);assert.equal(result.stdout,'11\n11\n7\n7\n');
+ }
+}));
+
+test('unsaved interface revisions refresh contract evidence without changing older snapshots',()=>fixture({
+ 'main.aug':'',
+ 'values.aug':`import Console from august.io
+interface Logger:
+    log()
+Live(resolve Console console) implements Logger:
+    log():
+        console.write(value="hello")
+`
+},root=>{
+ const file=join(root,'values.aug'),workspace=new SemanticWorkspace(root),before=workspace.document(file);
+ const issue=before.diagnostics.find(issue=>/interface signature/.test(issue.message));assert.ok(issue);
+ assert.equal(issue.related[0].line,3);assert.equal(issue.related[1].line,6);
+ assert.throws(()=>{issue.related[1].line=999;},TypeError);
+ const accepted=workspace.document(file,{text:'\nimport Console from august.io\ninterface Logger:\n    log() uses Console.write\nLive(resolve Console console) implements Logger:\n    log():\n        console.write(value="hello")\n',version:1});
+ assert.deepEqual(accepted.diagnostics,[]);assert.notEqual(accepted.revision,before.revision);
+ const rejected=workspace.document(file,{text:'\nimport Console from august.io\ninterface Logger:\n    log()\nLive(resolve Console console) implements Logger:\n    log():\n        console.write(value="hello")\n',version:2});
+ const changed=rejected.diagnostics.find(issue=>/interface signature/.test(issue.message));
+ assert.equal(changed.related[0].line,4);assert.equal(changed.related[1].line,7);
+ assert.equal(issue.related[0].line,3);assert.equal(issue.related[1].line,6);
+}));
+
+test('generic capability bounds distinguish same-spelled arguments from separate modules',()=>fixture({
+ 'main.aug':'',
+ 'audit.aug':'capability Audit<T> { note(T value) uses Audit.note }\n',
+ 'app/export.aug':'export Value from model\n',
+ 'app/model.aug':'record Value(int number)\n',
+ 'logging/export.aug':'export Value from model\n',
+ 'logging/model.aug':'record Value(int number)\n',
+ 'promises.aug':'import Value from app\nimport Audit from audit\ninterface Logger<T> { log() uses Audit.note }\ninterface Wanted extends Logger<Value> {}\n',
+ 'actual.aug':'import Value from logging\nimport Audit from audit\nimport Wanted from promises\nBad(resolve Audit<Value> logger) implements Wanted { log() { logger.note(value=Value(number=1)) } }\n'
+},root=>{
+ const result=check(root,'--json');assert.equal(result.status,1,result.stderr);
+ const issue=JSON.parse(result.stdout).find(issue=>/interface signature/.test(issue.message));assert.ok(issue,result.stdout);
+ assert.equal(issue.related[0].file,join(root,'promises.aug'));
+}));
+
+test('same-spelled nominal types and capabilities retain distinct source identities in mismatch text',()=>{
+ const cases=[
+  {'left.aug':'record Payload(int value)\n','right.aug':'record Payload(int value)\n','promises.aug':'import Payload from left\ninterface Reader { read(Payload value) }\n','actual.aug':'import Payload from right\nimport Reader from promises\nWrong() implements Reader { read(Payload value) {} }\n',expected:'left.aug:Payload',actual:'right.aug:Payload'},
+  {'left.aug':'capability Sink { write() uses Sink.write }\n','right.aug':'capability Sink { write() uses Sink.write }\n','promises.aug':'import Sink from left\ninterface Writer { run() uses Sink.write }\n','actual.aug':'import Sink from right\nimport Writer from promises\nWrong() implements Writer { run() uses Sink.write {} }\n',expected:'left.aug:Sink',actual:'right.aug:Sink'}
+ ];
+ for(const {expected,actual,...files} of cases) fixture({'main.aug':'',...files},root=>{
+  const result=check(root,'--json');assert.equal(result.status,1,result.stderr);
+  const issue=JSON.parse(result.stdout).find(issue=>/interface signature/.test(issue.message));assert.ok(issue,result.stdout);
+  assert.notEqual(issue.expected,issue.actual);assert.ok(issue.expected.includes(expected),issue.expected);assert.ok(issue.actual.includes(actual),issue.actual);
+ });
+});
+
+test('explicit generic capability mismatches show substituted arguments',()=>fixture({
+ 'main.aug':'',
+ 'values.aug':`capability Audit<T> { note(T value) uses Audit.note }
+interface Logger<T> { log() uses Audit.note }
+interface Wanted extends Logger<int> {}
+Bad<T>() implements Wanted { log() uses Audit.note {} }
+`
+},root=>{
+ const result=check(root,'--json');assert.equal(result.status,1,result.stderr);
+ const issue=JSON.parse(result.stdout).find(issue=>/interface signature/.test(issue.message));assert.ok(issue,result.stdout);
+ assert.equal(issue.expected,'uses Audit<int>.note');assert.equal(issue.actual,'uses Audit<T>.note');
+ assert.equal(issue.related[0].file,join(root,'values.aug'));assert.equal(issue.related[0].line,2);
+}));
