@@ -262,6 +262,8 @@ previous version.
 
 The language server implements the [LSP 3.17 protocol](https://github.com/Microsoft/language-server-protocol/blob/gh-pages/_specifications/lsp/3.17/specification.md) over Content-Length framed UTF-8 messages. It handles document versions, diagnostics, hover, completion, definitions, formatting, fixes, and semantic tokens.
 
+Label-error quick fixes remain available after the language server adds accepted input labels to Problems. The extension matches the error code, source location and message from the current document; unrelated errors do not receive the repair.
+
 One server runs per project. Parsed modules and checked import closures are cached by source/configuration revision. Unrelated edits reuse the previous immutable semantic document; dependency edits invalidate its closure. Local files can be checked while main composition is incomplete. Whole-project check/build still validates all bindings and startup.
 
 Compiler and extension development dependencies use exact versions and lockfiles. LLVM source maps record the compiler/runtime identities, target, source revision, native artifacts, executable, and debug files. Source packages use public repository URLs, local folders, or npm archives, with revisions and integrity in `aug.lock.json`; [the package guide](packages.md) covers creation, installation, public imports and frozen builds.

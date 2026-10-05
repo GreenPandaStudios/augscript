@@ -5,6 +5,7 @@ const path = require('node:path');
 const { spawn } = require('node:child_process');
 const {setupError,validateInvocation}=require('./process.cjs');
 const { Server } = require('./server.cjs');
+const {diagnosticMessage, diagnosticForFix}=require('./diagnostics.cjs');
 const { activateDebugging } = require('./debug.cjs');
 
 const diagnostics = vscode.languages.createDiagnosticCollection('augscript');
@@ -110,7 +111,7 @@ async function refresh(context, document) {
       const file = path.resolve(issue.file);
       const range = new vscode.Range(Math.max(0, issue.line - 1), Math.max(0, issue.column - 1),
         Math.max(0, issue.line - 1), Math.max(0, issue.column));
-      const diagnostic = new vscode.Diagnostic(range, issue.message, issue.severity === 'warning' ? vscode.DiagnosticSeverity.Warning : vscode.DiagnosticSeverity.Error);
+      const diagnostic = new vscode.Diagnostic(range, diagnosticMessage(issue), issue.severity === 'warning' ? vscode.DiagnosticSeverity.Warning : vscode.DiagnosticSeverity.Error);
       diagnostic.code = issue.code;
       diagnostic.source = 'AugScript';
       diagnostic.codeDescription = { href: vscode.Uri.file(path.join(context.extensionPath,
@@ -208,10 +209,7 @@ async function codeActions(context, document, actionContext) {
     if (!Array.isArray(fixes)) return [];
     const actions = [];
     for (const fix of fixes) {
-      const diagnostic = actionContext.diagnostics.find(issue =>
-        issue.code === fix.issue.code && issue.message === fix.issue.message &&
-        issue.range.start.line === fix.issue.line - 1 &&
-        issue.range.start.character === fix.issue.column - 1);
+      const diagnostic = diagnosticForFix(actionContext.diagnostics, fix.issue);
       if (!diagnostic && fix.title !== 'Expand to named imports') continue;
       const action = new vscode.CodeAction(fix.title, diagnostic ? vscode.CodeActionKind.QuickFix : vscode.CodeActionKind.RefactorRewrite);
       action.diagnostics = diagnostic ? [diagnostic] : [];
