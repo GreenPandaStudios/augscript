@@ -256,7 +256,7 @@ Hints are enabled by default. Disable `augscript.inferredContractHints` to hide 
 
 `aug graph PROJECT --file PATH` returns a revision-bearing graph with reproducible project/package paths, source and configuration digests, compiler identity, resolved symbols and occurrences, forward dependencies, and reverse callers. Coverage distinguishes checking the project, enumerating its source callers, runtime dispatch boundaries, and callers outside the project. `aug references PROJECT --file PATH --offset N` returns the selected symbol's occurrences with that revision and coverage. Offsets and editor columns use UTF-16 code units.
 
-The language server uses the same graph for Find References and checks rename candidates before returning edits. Standard LSP clients can request versioned `documentChanges`; clients that support change annotations also receive the fix's consequence in its preview. The initial rename profile is described in [the editor guide](editor.md#find-references-and-rename-unreleased). These read-only plans do not yet provide a durable command-line source transaction.
+The language server uses the same graph for Find References and checks rename candidates before returning edits. Standard LSP clients can request versioned `documentChanges`; clients that support change annotations also receive the fix's consequence in its preview. The initial rename profile is described in [the editor guide](editor.md#find-references-and-rename-unreleased). Use the [checked-change commands](#checked-source-changes-unreleased) to save and apply a disk-source plan with a recovery journal. Editor workspace edits still use the LSP client's version checks; they do not enter that command-line transaction.
 
 ### Inferred-hint detail (unreleased)
 
@@ -302,3 +302,28 @@ The options configure `block_style`, `indentation` and `assignment`; edit those 
 ## Deferred callback dependencies (unreleased)
 
 Semantic graph edges use `function-value` for a standalone function converted to a callback and `callback-call` for a call inside a closure body. Context and explanation contracts keep these in `functionValues`, separately from immediate `calls`, and include their checked dependency contracts. Reverse callers retain the edge kind so a change review can see both invocation sites and callback dependencies. A closure's later interface invocation still has an interface-dispatch boundary; the graph does not invent its runtime target.
+
+## Checked source changes (unreleased)
+
+Save a mechanical rename as a reviewable JSON plan, then apply that exact plan:
+
+```sh
+aug change plan-rename . --file greeter.aug --symbol greet --name welcome --out rename.json
+aug change apply . --plan rename.json --json
+aug spec .
+aug test .
+```
+
+`--symbol FUNCTION.INPUT` selects a public input label; `--offset N` instead selects a resolved source occurrence using a UTF-16 offset. Exactly one selector is required. The initial profile covers ordinary managed standalone functions and their inputs and locals. Native linkage, generics, injection, capability effects, declared mutation, endpoints and interceptors remain outside that rename profile. Installed packages and the standard library are read-only. Function references and same-file test callers participate in the resolved edit scope. Renaming an input also updates its attached `@param` label; descriptions and unrelated comments retain their text.
+
+Planning checks the project and its tests without changing source or executing code. The packet includes the compiler identity, root-relative source and dependency identities, configuration and lock digests, physical dependency manifest/configuration/ABI identities, explicit graph boundaries, complete selected occurrences, proposed edits and expected public contract deltas. Apply rejects a different source/configuration/dependency revision or an altered packet. It regenerates the operation, checks the isolated candidate, preserves unrelated names, strings and comments, then checks the published postimage before accepting it. Compiler acceptance, independent test results and engineer review remain separate.
+
+Checked writers share an exclusive project lock. Before the first source rename, the writer synchronizes a recovery journal containing each before/after image and its digest. Readers refuse an unfinished transaction and reject a source generation that changes during loading. A handled failure restores the preimage. After process death, run:
+
+```sh
+aug change recover . --json
+```
+
+Recovery rolls an uncommitted journal backward or finishes a committed journal forward. It first checks every source image; an unrelated editor change that matches neither image stops recovery without writing any file. Keep that edit and the journal, reconcile the conflict deliberately, then recover again. `.aug-changes` and `.aug-change-lock` are local tool state and should be ignored by source control. A completed transaction does not refresh generated specs or run independent behavior checks. If cleanup fails after the commit record, JSON reports `status: "committed"` and `recovery: "required"`, with the accepted revision; the command still exits unsuccessfully so cleanup is not ignored.
+
+This coordination covers August's checked writers and readers. External editors, package installation, formatting/spec generation and other programs do not acquire this source-transaction lock; finish those operations before applying a plan. Detected edits reject acceptance or require conflict recovery. Files must be local regular UTF-8 source units, with no symlinked parents or hard links. The exchange is bounded to 16 MiB per source unit, 4,096 edited files, a 64 MiB recovery journal and a 16 MiB saved plan. Existing file modes are retained. File and directory synchronization is required; process-death recovery is tested on the contributor host, while power-loss durability and other filesystem implementations still require platform qualification. New declarations, file moves, body replacements, package-alias edits and automatic capability propagation need their own checked operations.

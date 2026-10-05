@@ -53,6 +53,10 @@ npx @greenpandastudios/aug-cli@next spec . --check
 
 Compare the edited files with the originals, using your editor or source control. The source change adds a behavior case. The spec change should describe that case. Review both for unexpected exports, I/O, mutation, or dependencies. The new explanation should describe the added case.
 
+## Review a mechanical rename
+
+The unreleased [checked-change workflow](../tooling.md#checked-source-changes-unreleased) can rename an ordinary standalone function or its public input across resolved project callers. Save the plan, inspect its files and public contract changes, then apply it against the same revision. A stale or altered plan is rejected. Regenerate specs and run the independent tests afterward. The command does not infer a business value or recovery policy.
+
 ## Give a coding agent the same starting point
 
 A useful instruction is:

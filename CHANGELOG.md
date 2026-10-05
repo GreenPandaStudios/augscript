@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+Add saved checked rename plans and an explicit apply/recover CLI. Regenerate operations against source, compiler, configuration and dependency revisions; retain expected public deltas and separate behavioral evidence. Coordinate writers, reject partial reader snapshots, preserve file modes and journal synchronized before/after source for rollback or forward recovery after process death. Preserve conflicting external edits. Additional edit operations and platform power-loss qualification remain pending.
+
+
 Add pure managed function references and expression closures through concrete single-method interfaces. Preserve public labels, nominal input/result types, inferred generic call arguments and creation-time scalar/immutable captures. Reject effects, checked failures, mutable/owned/borrowed captures and unsupported native/generic adapters. Check every inherited callback contract and reject interface overrides that change the inherited call layout. Keep callbacks on their worker heap, distinguish function-value dependencies from immediate calls, and lower rooted callback objects through LLVM and C.
 
 Select and project read-only snapshot items with `[result for pattern in values if condition]`. Evaluate the input once, preserve item order, check the condition before the result, and create a new list without mutating the source. Support record/tuple patterns, optional-item narrowing, contextual result types, checked failures and existing worker waits. Reject copied owned results and repeated continuation/owned transfers. Preserve freshness when freezing a new allocation returned under an immutable contract; mutable return annotations retain read-only results and cannot restore permissions through aliases. Format, navigate and explain selection in both code styles.

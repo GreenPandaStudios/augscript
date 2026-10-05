@@ -1,3 +1,4 @@
+import {coherentSourceRead} from './source-transactions.ts';
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { basename, dirname, join, relative, resolve } from 'node:path';
 import type {
@@ -61,6 +62,10 @@ function sourceFiles(root: string): string[] {
 
 export function loadProject(projectRoot: string, overrides: Map<string, string> = new Map(),
   cache?: Map<string, ReturnType<typeof parse>>, packageCandidate?:{lock:PackageLock;cache:string;specifications?:Record<string,string>}): Project {
+  return coherentSourceRead(projectRoot,()=>loadProjectRevision(projectRoot,overrides,cache,packageCandidate));
+}
+function loadProjectRevision(projectRoot:string,overrides:Map<string,string>,cache?:Map<string,ReturnType<typeof parse>>,
+  packageCandidate?:{lock:PackageLock;cache:string;specifications?:Record<string,string>}):Project {
   const root = resolve(projectRoot);
   const files = new Map<string, SourceFile>();
   const definitions = new Map<string, Definition>();

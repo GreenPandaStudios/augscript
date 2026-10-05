@@ -44,6 +44,16 @@ try {
   aug('spec',choices);assert.match(readFileSync(join(choices,'values.aug.md'),'utf8'),/choice based on `name`/);
   if(process.env.AUG_LLVM_HOME&&process.env.AUG_RUNTIME_PACK)
     assert.equal(run(process.execPath,[cli,'run',choices,'--backend','llvm']),'Hello, Ada!\n');
+  const renames=join(directory,'checked-renames');mkdirSync(renames);
+  writeFileSync(join(renames,'main.aug'),'import greet from greeter\nprint(value=greet(name="Ada"))\n');
+  writeFileSync(join(renames,'greeter.aug'),'greet(string name):\n    return $"Hello, {name}!"\n');
+  const renamePlan=JSON.parse(aug('change','plan-rename',renames,'--file','greeter.aug','--symbol','greet.name','--name','person','--out','rename.json','--json'));
+  assert.ok(renamePlan.edits.every(edit=>!edit.file.startsWith('/')));assert.equal(renamePlan.behavioralEvidence,'not-run');
+  const renamed=JSON.parse(aug('change','apply',renames,'--plan','rename.json','--json'));assert.equal(renamed.status,'committed');
+  assert.equal(aug('run',renames),'Hello, Ada!\n');
+  assert.equal(JSON.parse(aug('change','recover',renames,'--json')).status,'clean');
+  if(process.env.AUG_LLVM_HOME&&process.env.AUG_RUNTIME_PACK)
+    assert.equal(run(process.execPath,[cli,'run',renames,'--backend','llvm']),'Hello, Ada!\n');
   const patterns=join(directory,'binding-patterns');mkdirSync(patterns);
   writeFileSync(join(patterns,'main.aug'),'import Person from people\nperson = Person(name="Ada", ratings=(7, 9))\n{name: displayName, ratings: (first, second)} = person\nprint(value=displayName)\nprint(value=first + second)\n');
   writeFileSync(join(patterns,'people.aug'),'record Person(string name, Tuple<int, int> ratings)\n');

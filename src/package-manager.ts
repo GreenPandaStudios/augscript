@@ -568,7 +568,7 @@ export function initPackage(directory: string, name: string, npmMetadata = false
   writeFileSync(join(directory, 'src/export.aug'), 'export add from arithmetic\n');
   writeFileSync(join(directory, 'src/arithmetic.aug'), arithmetic);
   writeFileSync(join(directory, 'README.md'), `# ${name}\n\nAugust ${compilerVersion()} source library. Public exports live in src/export.aug.\n`);
-  writeFileSync(join(directory, '.gitignore'), '.aug-build/\n.aug-packages/\n.aug-install-*/\n.aug-lock-*/\n.aug-write-*/\n.aug-add.json*\n*.aug.tmp\nnode_modules/\n*.tgz\n');
+  writeFileSync(join(directory, '.gitignore'), '.aug-build/\n.aug-changes/\n.aug-change-lock/\n.aug-write-*\n.aug-packages/\n.aug-install-*/\n.aug-lock-*/\n.aug-write-*/\n.aug-add.json*\n*.aug.tmp\nnode_modules/\n*.tgz\n');
 }
 
 /** Synchronize transport metadata; August's manifest owns dependency aliases. */

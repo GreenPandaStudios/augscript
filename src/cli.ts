@@ -1,3 +1,4 @@
+import {planChangeRename,planChangeRenameSymbol,applyChangePlan,recoverSourceChanges} from './checked-changes.ts';
 import {recordBindingDefinition} from './binding-patterns.ts';
 import {pruneTestCompilations} from './test-compilation-cache.ts';
 import {inspectCaches} from './cache-management.ts';
@@ -111,6 +112,7 @@ function usage(): void {
     `Context: aug context [project directory] [--file path] [--name declaration] [--budget characters] [--require-complete]\n` +
     `Composition: aug graph [PROJECT] --composition [--case TEST_ID] [--json|--mermaid] — inspect existing application or test wiring\n` +
     `References: aug references [project directory] --file path --offset character; aug graph [project directory] --file path\n` +
+    `Checked edits: aug change plan-rename [PROJECT] --file FILE (--symbol FUNCTION[.INPUT]|--offset N) --name NAME [--out PLAN] [--json]; aug change apply [PROJECT] --plan PLAN; aug change recover [PROJECT]\n` +
     `Benchmark: aug bench [project directory] [--iterations 10] [--warmup 2] [--json] [-- args]\n` +
     `Packages: aug package init DIRECTORY [--name @owner/name] [source style options]; aug package pack DIRECTORY\n` +
     `Dependencies: aug add URL [--as NAME] [--project DIRECTORY]; aug install [project directory] [--frozen|--update] [--offline]\n` +
@@ -155,6 +157,56 @@ export async function main(argv: string[]): Promise<number> {
       }
       return report.ready?0:1;
     }catch(error){process.stderr.write(failureMessage(error)+'\n');return 1;}
+  }
+  if(command==='change') {
+    const operation=argv[1],values=new Map<string,string>(),flags=new Set<string>();let path:string|undefined;
+    for(let index=2;index<argv.length;index++) {
+      const arg=argv[index];
+      if(['--file','--offset','--symbol','--name','--out','--plan'].includes(arg)) {
+        if(values.has(arg)||!argv[index+1]||argv[index+1].startsWith('--')){process.stderr.write(arg+' needs one value.\n');return 2;}
+        values.set(arg,argv[++index]);
+      }else if(arg==='--json') {
+        if(flags.has(arg)){process.stderr.write('Duplicate change option: '+arg+'\n');return 2;}flags.add(arg);
+      }else if(arg.startsWith('-')||path){process.stderr.write('Use aug change plan-rename|apply|recover [PROJECT] with the operation options.\n');return 2;}
+      else path=arg;
+    }
+    const allowed=operation==='plan-rename'?['--file','--offset','--symbol','--name','--out']:operation==='apply'?['--plan']:operation==='recover'?[]:undefined;
+    if(!allowed||[...values.keys()].some(key=>!allowed.includes(key))||operation==='plan-rename'&&(!values.has('--file')||values.has('--offset')===values.has('--symbol')||!values.has('--name'))||operation==='apply'&&!values.has('--plan')) {
+      process.stderr.write('Use aug change plan-rename [PROJECT] --file FILE (--symbol FUNCTION[.INPUT]|--offset N) --name NAME [--out PLAN] [--json]\nOr aug change apply [PROJECT] --plan PLAN [--json]\nOr aug change recover [PROJECT] [--json]\n');return 2;
+    }
+    const root=resolve(path??process.cwd());
+    try {
+      if(operation==='plan-rename') {
+        if(values.has('--offset')&&!/^\d+$/.test(values.get('--offset')!))throw new Error('CHANGE_PLAN: --offset must be a nonnegative source offset.');
+        const plan=values.has('--symbol')?planChangeRenameSymbol(root,values.get('--file')!,values.get('--symbol')!,values.get('--name')!):
+          planChangeRename(root,values.get('--file')!,Number(values.get('--offset')),values.get('--name')!);
+        if(values.has('--out')) {
+          const output=resolve(root,values.get('--out')!);
+          if(output.endsWith('.aug')||['main.yaml','aug-package.json','aug.lock.json'].includes(output.slice(output.lastIndexOf('/')+1)))throw new Error('CHANGE_PLAN: Save the plan as a separate JSON review file.');
+          writeFileSync(output,JSON.stringify(plan,null,2)+'\n',{flag:'wx',mode:0o600});
+        }
+        if(flags.has('--json'))process.stdout.write(JSON.stringify(plan)+'\n');
+        else {process.stdout.write(`Checked rename plan ${plan.symbol} to ${plan.name}; revision ${plan.baseRevision}.\n`);
+          for(const file of plan.scope)process.stdout.write(`${file}: ${plan.edits.filter(edit=>edit.file===file).length} resolved edits.\n`);
+          process.stdout.write(`${plan.publicDelta.length} public contract deltas. Independent behavioral checks were not run. Review the JSON plan before applying it.\n`);}
+      }else if(operation==='apply') {
+        const input=resolve(root,values.get('--plan')!);
+        if(statSync(input).size>16*1024*1024)throw new Error('CHANGE_PLAN: Plan exceeds the 16 MiB exchange limit.');
+        const report=applyChangePlan(root,JSON.parse(readFileSync(input,'utf8')));
+        process.stdout.write(flags.has('--json')?JSON.stringify(report)+'\n':`Committed checked rename ${report.transaction}; revision ${report.revision}. Regenerate specs, run independent tests and review the changes.\n`);
+      }else {
+        const report=recoverSourceChanges(root);
+        process.stdout.write(flags.has('--json')?JSON.stringify(report)+'\n':`Source transaction recovery: ${report.status}.\n`);
+      }
+      return 0;
+    }catch(error){
+      if(flags.has('--json')) {
+        const fault=error as {code?:string;revision?:string;transaction?:string;diagnostics?:unknown[]},committed=fault.code==='CHANGE_COMMITTED_RECOVERY_REQUIRED';
+        process.stdout.write(JSON.stringify({status:committed?'committed':'rejected',code:fault.code??'CHANGE',error:failureMessage(error),
+          ...(committed?{checked:true,recovery:'required',revision:fault.revision,transaction:fault.transaction}:{}),diagnostics:fault.diagnostics??[],behavioralEvidence:'not-run'})+'\n');
+      }
+      else process.stderr.write(failureMessage(error)+'\n');return 1;
+    }
   }
   if(command==='verify') {
     let path:string|undefined;const values=new Map<string,string>(),seen=new Set<string>();

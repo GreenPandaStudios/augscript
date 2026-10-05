@@ -8,6 +8,7 @@ import {recordBindingFieldAt} from './binding-patterns.ts';
 import {reservedKeywords} from './lexer.ts';
 import {contractFacts} from './contract-facts.ts';
 import {publicContract} from './public-contracts.ts';
+import {javadocParameterSpans} from './javadoc.ts';
 
 export interface CheckedSourceEdit {file:string; start:number; end:number; text:string}
 export interface InterfaceDelta {id:string; before:string|null; after:string|null}
@@ -30,6 +31,16 @@ export function interfaceDelta(before:CheckedProject,after:CheckedProject):Inter
   return [...new Set([...left.keys(),...right.keys()])].sort().flatMap(id=>left.get(id)===right.get(id)?[]:[{id,before:left.get(id)??null,after:right.get(id)??null}]);
 }
 
+/** Apply resolved, disjoint source edits without changing neighboring layout. */
+export function applySourceEdits(source:string,edits:readonly Pick<CheckedSourceEdit,'start'|'end'|'text'>[]):string {
+  let result=source,boundary=source.length;
+  for(const edit of [...edits].sort((a,b)=>b.start-a.start)) {
+    if(!Number.isSafeInteger(edit.start)||!Number.isSafeInteger(edit.end)||edit.start<0||edit.end<edit.start||edit.end>boundary||typeof edit.text!=='string')
+      throw new RefactoringError('Source edits must be resolved, bounded and disjoint. No source was written.');
+    result=result.slice(0,edit.start)+edit.text+result.slice(edit.end);boundary=edit.start;
+  }
+  return result;
+}
 /** Plan a narrow mechanical edit. The caller owns approval and publication; this function writes nothing. */
 export function planRename(checked:CheckedProject,graph:SemanticGraph,file:string,offset:number,name:string):RenamePlan {
   if(!graph.coverage.checkedProject||graph.coverage.reverseCallers!=='complete')throw new RefactoringError('Rename needs a checked whole project and complete caller enumeration. Repair project errors and retry.');
@@ -61,12 +72,15 @@ export function planRename(checked:CheckedProject,graph:SemanticGraph,file:strin
     if(field?.shorthand&&reference.role==='declaration')text=field.field.name+': '+name;
     edits.push({file:path,start:reference.start,end:reference.end,text});
   }
+  if(symbol.kind==='parameter'&&owner?.node.kind==='function') {
+    const source=checked.project.files.get(owner.file)!.source;
+    for(const tag of javadocParameterSpans(source,owner.node.span.start).filter(tag=>tag.name===symbol.name))
+      edits.push({file:owner.file,start:tag.start,end:tag.end,text:name});
+  }
   edits.sort((a,b)=>(a.file<b.file?-1:a.file>b.file?1:0)||a.start-b.start);
   const overrides=new Map([...checked.project.files.values()].filter(source=>!source.builtin&&!source.package).map(source=>[source.path,source.source]));
   for(const path of new Set(edits.map(edit=>edit.file))) {
-    let source=overrides.get(path)!;
-    for(const edit of edits.filter(edit=>edit.file===path).sort((a,b)=>b.start-a.start))source=source.slice(0,edit.start)+edit.text+source.slice(edit.end);
-    overrides.set(path,source);
+    overrides.set(path,applySourceEdits(overrides.get(path)!,edits.filter(edit=>edit.file===path)));
   }
   const candidate=checkedProjectWithTests(checked.project.root,overrides),errors=candidate.diagnostics.filter(issue=>issue.severity!=='warning');
   if(errors.length)throw new RefactoringError('The renamed candidate does not check. No source was written.',errors);

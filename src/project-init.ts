@@ -83,7 +83,7 @@ export function initProject(destination: string, template: 'hello' | 'weather' =
     'main.yaml': styleConfiguration(style),
     'main.aug': `import greet from greeting\n\nprint(value=greet(name="August"))\n`,
     'greeting.aug': `/** Return a greeting for the named person. */\ngreet(string name):\n    return "Hello, " + name + "!"\n\ntest greet:\n    when greetings:\n        it greets_a_person:\n            assert(greet(name="August") == "Hello, August!")\n`,
-    '.gitignore': '.aug-build/\n.aug-spec/\n.aug-packages/\n.aug-install-*/\n.aug-lock-*/\n.aug-write-*/\n.aug-add.json*\n*.aug.tmp\n*.aug.md\n',
+    '.gitignore': '.aug-build/\n.aug-changes/\n.aug-change-lock/\n.aug-write-*\n.aug-spec/\n.aug-packages/\n.aug-install-*/\n.aug-lock-*/\n.aug-write-*/\n.aug-add.json*\n*.aug.tmp\n*.aug.md\n',
     'README.md': `# ${name}\n\nThis is an August application. Start in \`main.aug\`; its dependencies and startup are visible there.\n\n\`greeting.aug\` contains a greeting function and its same-file test.\n\n\`\`\`sh\naug run\naug check\naug test\naug spec\n\`\`\`\n\nFor the language guide, see https://GreenPandaStudios.github.io/augscript/getting-started.\n`,
   };
   if (template === 'weather') {
