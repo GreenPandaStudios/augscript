@@ -286,7 +286,7 @@ class SpecWriter {
     };use(pattern);
     return coordinate(bindingSelections(pattern).map(binding=>{
       const path=binding.path.reduce<string>((text,part)=>typeof part==='number'?text+'['+part+']':text+(text?'.':'')+part,'');
-      return path===binding.name?code(binding.name):code(path)+' as '+code(binding.name);
+      return !path||path===binding.name?code(binding.name):code(path)+' as '+code(binding.name);
     }));
   }
   private expression(expr:Expr, nested=false): string {
@@ -300,6 +300,12 @@ class SpecWriter {
         if(property)this.properties.set(receiverType+'.'+name,{...property,type:this.checked.expressionTypes.get(expr)?tyName(this.checked.expressionTypes.get(expr)!):property.type});
         const object=this.expression(expr.object), path=this.memberPath(expr);
         return path?code(path):`${code(name)} of ${object}`;
+      }
+      case 'comprehension': {
+        const input=this.expression(expr.iterable),names=new Map(this.locals),bindings=this.bindingDescription(expr.pattern);
+        const condition=expr.condition?' when '+this.expression(expr.condition):'';
+        const result=this.expression(expr.projection);this.locals=names;
+        return 'a new list of '+result+' for each item in a snapshot of '+input+(bindings?', binding '+bindings:'')+condition;
       }
       case 'matchValue': {
         const input=this.expression(expr.value),parts=expr.cases.map(clause=>{

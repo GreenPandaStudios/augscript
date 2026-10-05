@@ -114,9 +114,16 @@ Optional values have two cases: null and some. Omitted inputs become null. Type?
 
 ## Expressions and ambiguity
 
+```text
+Comprehension := "[" Expression "for" BindingPattern "in" Expression ["if" Expression] "]"
+```
+
+An unreleased list comprehension has one iteration clause and one optional bool condition. Its input is evaluated once before its local bindings exist. It snapshots the collection, checks the condition for each item, and appends the result only for selected items. The new list retains referenced objects with their existing read permissions and lifetimes. Set and Map comprehensions and multiple iteration clauses are not supported.
+
 | Spelling | Meaning |
 | --- | --- |
 | `[a, b]` | List literal. |
+| `[result for pattern in values if condition]` | Unreleased: new list from read-only snapshot items; the condition is optional. |
 | `(a, b)`, `(a,)`, `()` | Tuple literals. |
 | `(a)` | Grouping. |
 | `{a, b}` | Set literal. |

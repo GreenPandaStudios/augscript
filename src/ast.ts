@@ -167,6 +167,7 @@ export interface MatchPattern {
 }
 
 export type Expr =
+  | {kind:'comprehension';projection:Expr;pattern:BindingPattern;iterable:Expr;condition?:Expr;span:Span}
   | {kind:'matchValue';value:Expr;cases:(MatchPattern & {result:Expr})[];span:Span}
   | {kind: 'recordCopy'; base: Expr; fields: {name: string; value: Expr; span: Span}[]; span: Span}
   | {kind: 'interpolation'; parts: ({text: string; span: Span} | {value: Expr; span: Span})[]; span: Span}
@@ -264,6 +265,7 @@ export function initializationOf(node: ClassDecl): Stmt[] {
 /** Direct expression children, shared by conservative analyses as syntax grows. */
 export function expressionChildren(expr: Expr): Expr[] {
   switch (expr.kind) {
+    case 'comprehension': return [expr.iterable,...(expr.condition?[expr.condition]:[]),expr.projection];
     case 'matchValue': return [expr.value,...expr.cases.flatMap(clause=>[...(clause.literal?[clause.literal]:[]),clause.result])];
     case 'recordCopy': return [expr.base, ...expr.fields.map(field => field.value)];
     case 'interpolation': return expr.parts.flatMap(part => 'value' in part ? [part.value] : []);

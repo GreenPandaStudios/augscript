@@ -2,7 +2,7 @@ import {expressionChildren} from './ast.ts';
 import type { Expr, Stmt } from './ast.ts';
 
 /** Conservative proof that successful returns preserve constructor freshness. */
-export function returnsFresh(body: Stmt[], fields: Set<string>, freshCall: (expr: Expr) => boolean): boolean {
+export function returnsFresh(body: Stmt[], fields: Set<string>, freshCall: (expr: Expr) => boolean, frozenResult=false): boolean {
   let valid = true;
   const fresh = (expr: Expr, locals: Map<string, boolean>): boolean => expr.kind === 'name' ?
     locals.get(expr.name) === true : freshCall(expr);
@@ -12,9 +12,10 @@ export function returnsFresh(body: Stmt[], fields: Set<string>, freshCall: (expr
     else if (expr.kind === 'wait') expr.tasks.forEach(task => escape(task, locals));
     else if (expr.kind === 'handle' && expr.call.kind === 'call') expr.call.args.forEach(child => escape(child,locals));
     else if (expr.kind === 'markup') [...expr.attributes.map(attribute => attribute.value), ...expr.children].forEach(child => escape(child, locals));
-    else if (expr.kind === 'collection') {
-      if (expr.items.some(item => fresh(item, locals))) for (const name of locals.keys()) locals.set(name, false);
-      expr.items.forEach(item => escape(item, locals));
+    else if (expr.kind === 'comprehension' || expr.kind === 'collection') {
+      const children=expressionChildren(expr);
+      if(children.some(item=>fresh(item,locals)))for(const name of locals.keys())locals.set(name,false);
+      children.forEach(item=>escape(item,locals));
     } else if (expr.kind === 'call') {
       const isRead = expr.callee.kind === 'name' && ['next', 'print'].includes(expr.callee.name);
       if (!isRead && expr.args.some(arg => fresh(arg, locals)))
@@ -36,7 +37,13 @@ export function returnsFresh(body: Stmt[], fields: Set<string>, freshCall: (expr
       }
       if (stmt.kind === 'throw') { escape(stmt.value, locals); return false; }
       if (stmt.kind === 'expr') { escape(stmt.expr, locals); continue; }
-      if (stmt.kind === 'freeze') { locals.set(stmt.name, false); continue; }
+      if (stmt.kind === 'freeze') {
+        const allocation=fresh(stmt.value,locals);escape(stmt.value,locals);
+        // This proof tracks freshness, not allocation identities. A mutable
+        // public result must not recover permission through a frozen alias.
+        if(!frozenResult)for(const name of locals.keys())locals.set(name,false);
+        locals.set(stmt.name,frozenResult&&allocation);continue;
+      }
       if (stmt.kind === 'serve') { escape(stmt.port, locals); continue; }
       if (stmt.kind === 'destructure') {
         escape(stmt.value, locals);

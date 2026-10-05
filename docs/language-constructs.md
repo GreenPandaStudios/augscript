@@ -590,7 +590,7 @@ Expose a public child folder through the current folder’s `export.aug`. A fold
 for item in items: ...
 ```
 
-Traverse a List, Set, homogeneous Tuple, or Map. Map entries are tuples, so for (key, value) in map unpacks them. Iteration snapshots the collection in insertion order and gives elements read-only access.
+Traverse a List, Set, homogeneous Tuple, or Map. Map entries are tuples, so for (key, value) in map unpacks them. Iteration snapshots the collection in insertion order and gives elements read-only access. `[result for item in items if condition]` creates a new list, checking the optional bool condition before each selected result. Bound names stay inside the expression; results retain checked failures, effects and reference lifetimes.
 
 ## form
 

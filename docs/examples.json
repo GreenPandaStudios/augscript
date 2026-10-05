@@ -106,5 +106,8 @@
   },
   "collection-functions-guide": {
     "stdout": "7\n3\n-1\n0\n3\n7\n"
+  },
+  "comprehension-guide": {
+    "stdout": "Ada\nSam\n"
   }
 }

@@ -501,6 +501,20 @@ class BodyEmitter {
   }
 
   private emitValueExpr(expr: Expr): number {
+    if(expr.kind==='comprehension'){
+      const value=this.emitExpr(expr.iterable),snapshot=this.newSlot(),result=this.newSlot();
+      this.line(`${this.slot(snapshot)} = aug_iter_snapshot(${this.slot(value)});`);
+      this.line(`${this.slot(result)} = aug_list_new(NULL, 0);`);
+      const index=this.label('aug_index'),names=new Map(this.locals);
+      this.line(`for (size_t ${index} = 0; ${index} < ${this.slot(snapshot)}.as.object->field_count; ${index}++) {`);
+      this.line('if (aug_execution->fiber || aug_task_checkpoint_hook) aug_task_checkpoint();');
+      this.line(`if (aug_cancelled) goto ${this.returnTarget};`);
+      const item=this.newSlot();this.line(`${this.slot(item)} = ${this.slot(snapshot)}.as.object->fields[${index}];`);
+      this.bindPattern(expr.pattern,item);
+      if(expr.condition){const condition=this.emitExpr(expr.condition);this.line(`if (aug_truthy(${this.slot(condition)})) {`);}
+      const projected=this.emitExpr(expr.projection);this.line(`aug_list_append(${this.slot(result)}, ${this.slot(projected)});`);
+      if(expr.condition)this.line('}');this.line('}');this.locals=names;return result;
+    }
     if (expr.kind === 'matchValue') {
       const value = this.emitExpr(expr.value), slot = this.newSlot();
       const literals = expr.cases.map(clause => clause.literal ? this.emitExpr(clause.literal) : undefined);

@@ -229,7 +229,36 @@ The source expression runs once. Bindings grant read access without copying thei
 
 Use the same patterns after `for` to unpack each snapshot item. Parameterized same-file test rows retain their flat tuple input form. Hover over a renamed field label to read its type and documentation; follow its definition to the record field. The selected local has its own definition in the pattern.
 
-### Collection functions (unreleased)
+### List comprehensions (unreleased)
+
+Select and transform collection items in one expression:
+
+```aug project=comprehension-guide file=main.aug
+import User from users
+
+users = [
+    User(name="Ada", active=true),
+    User(name="Lin", active=false),
+    User(name="Sam", active=true)
+]
+names = [user.name for user in users if user.active]
+for name in names:
+    print(value=name)
+```
+
+```aug project=comprehension-guide file=users.aug
+record User(string name, bool active)
+```
+
+This prints `Ada` and `Sam`. The expression evaluates `users` once, takes a snapshot, and creates a new list. For each snapshot item it checks the optional `if` condition before evaluating the result expression. Rejected items do not evaluate that expression. An empty input or no matches produces an empty list. Omit `if` to transform every item.
+
+The input accepts the same collections as an ordinary loop: List, Set, Map entries and homogeneous Tuples. Record and tuple [binding patterns](#record-and-nested-tuple-bindings-unreleased) work after `for`. Bound names exist only in the result, condition and pattern; the input expression uses the enclosing scope. They cannot replace an existing name. Narrow optional collections before selecting from them; `if value != null` can narrow optional items for the result.
+
+Items have read-only access. The result has a fresh container; it does not copy referenced objects or grant permission to mutate them. Fresh scalar copies can leave a source borrow and be frozen independently. Selected references retain their source permissions and lifetime restrictions. Freeze a completed result explicitly when a deeply immutable list is required. A factory that freezes its result should infer or declare an immutable result type; a mutable return annotation cannot restore mutation permission.
+
+Calls retain ordinary labeled inputs, inferred effects, checked failures, ownership rules and task scopes. Handle a failing result or predicate as you would a call in a loop. A failure stops selection; enclosing scopes clean up normally. Worker tasks may be selected inside a scope and joined with `wait for`. Owned values cannot be copied into the result, and repeated transfer of an outer owned value is rejected. Use a loop for multiple statements, state updates, early exit or several iteration clauses; this expression has one `for` and at most one `if`.
+
+## Collection functions (unreleased)
 
 Import `filter`, `transform`, `aggregate`, `remove`, `find`, or `sort` from `august.collections` when the operation fits a pure data callback. `Predicate<T>`, `Transformation<T,U>`, `Aggregator<T,U>`, and `Comparator<T>` describe those callbacks through ordinary interfaces. Their `optional Data` constraints also admit null values. They accept data, return data, and permit no I/O, mutation or checked failures. Use an ordinary loop when processing needs those effects.
 

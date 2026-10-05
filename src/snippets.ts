@@ -18,6 +18,7 @@ export const snippetCatalog = [
   {prefix:'ifelse',description:'Two alternatives',body:'if ${1:condition}:\n    $2\nelse:\n    $0'},
   {prefix:'bindrecord',description:'Read selected immutable record fields into new names',body:'{${1:name}: ${2:displayName}} = ${3:person}'},
   {prefix:'bindtuple',description:'Unpack tuple positions into new names',body:'(${1:first}, (${2:second}, ${3:third})) = ${4:values}'},
+  {prefix:'select',description:'Select values into a new snapshot list',body:'${1:selected} = [${2:item} for ${2:item} in ${3:items} if ${4:true}]'},
   {prefix:'for',description:'Visit collection values',body:'for ${1:item} in ${2:items}:\n    $0'},
   {prefix:'while',description:'Repeat while a condition holds',body:'while ${1:condition}:\n    $0'},
   {prefix:'matchvalue',description:'Choose a value with exhaustive cases',body:'${1:result} = match ${2:condition}:\n    when true:\n        ${3:1}\n    when false:\n        ${4:0}'},

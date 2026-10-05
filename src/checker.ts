@@ -2,7 +2,7 @@ import type {
   BindDecl, BindingPattern, RecordBindingField, ClassDecl, Diagnostic, Expr, GenericHeader, InterfaceDecl, InterceptorAnnotation, InterceptorDecl, MethodDecl, Param, Span,
   Stmt, TypeRef, MatchPattern,
 } from './ast.ts';
-import { fieldsOf, initializationOf, syntheticType, typeName } from './ast.ts';
+import { bindingNames, fieldsOf, initializationOf, syntheticType, typeName } from './ast.ts';
 import { isPrivateName, type Definition, type Project } from './project.ts';
 import { literalDefault, defaultText } from './parameters.ts';
 import { canFallThrough, canRepeatNext } from './continuation.ts';
@@ -1619,6 +1619,33 @@ class Checker {
     return branches;
   }
 
+  /** Share snapshot item typing and loop reentry analysis between loops and list selection. */
+  private checkIteration(stmt:{iterable:Expr;pattern?:BindingPattern;names:string[];span:Span},context:Context,
+    body:(inside:Context)=>void,reenters=true):void {
+      const iterable = this.checkExpression(stmt.iterable, context);
+      if (!['builtin:List', 'builtin:Set', 'builtin:Map', 'builtin:Tuple'].includes(iterable.id))
+        this.report(stmt.iterable.span, 'for needs a List, Set, Map, or Tuple', 'ITERATION');
+      const type = iterable.id === 'builtin:Map' ? { ...builtin('Tuple'), args: iterable.args } :
+        iterable.id === 'builtin:Tuple' ? iterable.args[0] ?? errorTy : iterable.args[0] ?? errorTy;
+      if (iterable.id === 'builtin:Tuple' && iterable.args.some(arg => !this.sameType(arg, type)))
+        this.report(stmt.iterable.span, 'Iterated tuple positions must have the same type; destructure heterogeneous tuples', 'ITERATION');
+      const inside = this.cloneContext(context);
+      inside.loopDepth = (context.loopDepth ?? 0) + 1;
+      inside.loop = {breaks:[], continues:[]};
+      if(stmt.pattern)this.bindPattern(stmt.pattern,type,context.flow.field(this.placesOf(stmt.iterable,context)),inside,sourceName(stmt.iterable));
+      else this.patternLocals(stmt.names, type, context.flow.field(this.placesOf(stmt.iterable, context)), inside, stmt.span, sourceName(stmt.iterable));
+      if(stmt.pattern)this.captureScope(stmt.pattern.span,inside);
+      let previous = '';
+      for (let count = 0; count <= context.locals.size * 3 + 3; count++) {
+        body(inside);
+        const signature = JSON.stringify([...inside.locals].map(([name, local]) => [name, local.moved])) + inside.flow.signature();
+        const reentries = [...(reenters ? [inside] : []), ...inside.loop!.continues];
+        if (signature === previous || !reentries.length) break;
+        previous = signature; this.mergeMoved(inside, reentries);
+      }
+      this.mergeMoved(context, [this.cloneContext(context), inside, ...inside.loop!.breaks]);
+  }
+
   private checkStatement(stmt: Stmt, context: Context): void {
     if (stmt.kind === 'break' || stmt.kind === 'continue') {
       if (!context.loop) this.report(stmt.span, `${stmt.kind} requires an enclosing for or while loop`, 'LOOP');
@@ -1704,28 +1731,7 @@ class Checker {
       return;
     }
     if (stmt.kind === 'for') {
-      const iterable = this.checkExpression(stmt.iterable, context);
-      if (!['builtin:List', 'builtin:Set', 'builtin:Map', 'builtin:Tuple'].includes(iterable.id))
-        this.report(stmt.iterable.span, 'for needs a List, Set, Map, or Tuple', 'ITERATION');
-      const type = iterable.id === 'builtin:Map' ? { ...builtin('Tuple'), args: iterable.args } :
-        iterable.id === 'builtin:Tuple' ? iterable.args[0] ?? errorTy : iterable.args[0] ?? errorTy;
-      if (iterable.id === 'builtin:Tuple' && iterable.args.some(arg => !this.sameType(arg, type)))
-        this.report(stmt.iterable.span, 'Iterated tuple positions must have the same type; destructure heterogeneous tuples', 'ITERATION');
-      const inside = this.cloneContext(context);
-      inside.loopDepth = (context.loopDepth ?? 0) + 1;
-      inside.loop = {breaks:[], continues:[]};
-      if(stmt.pattern)this.bindPattern(stmt.pattern,type,context.flow.field(this.placesOf(stmt.iterable,context)),inside,sourceName(stmt.iterable));
-      else this.patternLocals(stmt.names, type, context.flow.field(this.placesOf(stmt.iterable, context)), inside, stmt.span, sourceName(stmt.iterable));
-      let previous = '';
-      for (let count = 0; count <= context.locals.size * 3 + 3; count++) {
-        this.checkStatements(stmt.body, inside, stmt.span);
-        const signature = JSON.stringify([...inside.locals].map(([name, local]) => [name, local.moved])) + inside.flow.signature();
-        const reentries = [...(canFallThrough(stmt.body) ? [inside] : []), ...inside.loop!.continues];
-        if (signature === previous || !reentries.length) break;
-        previous = signature; this.mergeMoved(inside, reentries);
-      }
-      this.mergeMoved(context, [this.cloneContext(context), inside, ...inside.loop!.breaks]);
-      return;
+      this.checkIteration(stmt,context,inside=>this.checkStatements(stmt.body,inside,stmt.span),canFallThrough(stmt.body));return;
     }
     if (stmt.kind === 'match') {
       const value=this.checkExpression(stmt.value,context),branches:Context[]=[];
@@ -2028,7 +2034,7 @@ class Checker {
 
   private ownershipOf(expr: Expr, context: Context): 'managed' | 'own' | 'fresh' {
     if (expr.kind === 'name') return context.locals.get(expr.name)?.ownership === 'own' ? 'own' : 'managed';
-    if (expr.kind === 'collection' || expr.kind === 'recordCopy') return 'fresh';
+    if (expr.kind === 'collection' || expr.kind === 'comprehension' || expr.kind === 'recordCopy') return 'fresh';
     if (expr.kind === 'member') {
       const type = this.expressionTypes.get(expr.object);
       const node = type?.def?.node;
@@ -2063,13 +2069,13 @@ class Checker {
     if (!fn.body || seen.has(fn)) return false;
     seen.add(fn);
     const bodyFresh = returnsFresh(fn.body, fields, expr => {
-      if (expr.kind === 'collection') return true;
+      if (expr.kind === 'collection' || expr.kind === 'comprehension') return true;
       if (expr.kind !== 'call' || expr.callee.kind !== 'name') return false;
       if (['List', 'Set', 'Map', 'Tuple', 'arguments'].includes(expr.callee.name)) return true;
       const def = this.project.scopes.get(file)?.get(expr.callee.name);
       return def?.node.kind === 'class' ? this.constructorIsFresh(def.node) :
         def?.node.kind === 'function' ? def.node.returnOwnership === 'own' || this.functionIsFresh(def.node, def.file, new Set(), seen) : false;
-    });
+    },!!(fn.returns.immutable||this.callableContracts.get(fn)?.result.immutable));
     return bodyFresh && (this.interceptorPlans.get(fn) ?? []).every(layer => returnsFresh(layer.around.body ?? [],
       new Set(layer.definition.node.kind === 'interceptor' ? layer.definition.node.fields.map(field => field.name) : []),
       expr => expr.kind === 'call' && expr.callee.kind === 'name' && expr.callee.name === 'next'));
@@ -2114,6 +2120,11 @@ class Checker {
         const replacement = expr.fields.find(item => item.name === (field.label ?? field.name));
         return {name:field.name, origins:replacement ? this.placesOf(replacement.value, context) : context.flow.field(base, field.name), mutable:false};
       }));
+      return origins;
+    }
+    if(expr.kind==='comprehension'){
+      const origins=allocationOrigin(expr.span);
+      context.flow.object(origins,[{name:'items',origins:this.expressionOrigins.get(expr.projection)??new Set(),mutable:true}]);
       return origins;
     }
     if (expr.kind === 'collection') {
@@ -2271,7 +2282,31 @@ class Checker {
 
   private checkExpression(expr: Expr, context: Context, expected?: Ty): Ty {
     let type = errorTy;
-    if(expr.kind==='matchValue'){
+    if(expr.kind==='comprehension'){
+      const names=new Set(context.locals.keys()),wanted=expected?.id==='builtin:List'?expected.args[0]:undefined;
+      let element=errorTy;
+      this.checkIteration({iterable:expr.iterable,pattern:expr.pattern,names:bindingNames(expr.pattern),span:expr.span},context,inside=>{
+        // The iterable is evaluated before these local names exist. Editor scopes
+        // follow evaluation rather than source order: the projection is written first.
+        if(expr.condition){
+          this.captureScope(expr.condition.span,inside);
+          const condition=this.checkExpression(expr.condition,inside);
+          if(!this.assignable(condition,builtin('bool')))this.report(expr.condition.span,`Condition must be bool, got ${tyName(condition)}`);
+        }
+        const selected=this.cloneContext(inside);if(expr.condition)this.narrow(expr.condition,true,selected);
+        this.captureScope(expr.projection.span,selected);
+        element=this.checkExpression(expr.projection,selected,wanted);
+        if(wanted&&!this.assignable(element,wanted))this.report(expr.projection.span,`List item expects ${tyName(wanted)}, got ${tyName(element)}`,'COLLECTION');
+        if(element.id==='builtin:void')this.report(expr.projection.span,'List cannot contain void','COLLECTION');
+        if(element.kind==='resource'||this.ownershipOf(expr.projection,selected)==='own')this.report(expr.projection.span,'List cannot copy an owned value','OWN');
+        if(this.isReference(element))this.checkBorrowEscape(expr.projection,selected,false);
+        this.mergeMoved(inside,expr.condition?[this.cloneContext(inside),selected]:[selected]);
+      });
+      context.flow.forgetLocals(names);
+      const input=this.expressionTypes.get(expr.iterable);
+      if(input?.nullable||input?.optional)this.report(expr.iterable.span,'Narrow an optional collection before list selection','ITERATION');
+      type={...builtin('List'),args:[wanted?{...wanted,readonly:element.readonly,frozen:element.frozen}:element]};
+    }else if(expr.kind==='matchValue'){
       const input=this.checkExpression(expr.value,context),names=new Set(context.locals.keys());
       const branches=this.matchBranches(expr.value,input,expr.cases,context,expr.span),types:Ty[]=[];
       for(const {clause,inside} of branches){
@@ -2793,7 +2828,7 @@ class Checker {
     if (expr.indexed && !['builtin:List', 'builtin:Map', 'builtin:Tuple'].includes(receiverType?.id ?? ''))
       this.report(expr.span, 'Indexing reads a List, Map, or Tuple; use an explicit text or byte operation for other values', 'COLLECTION');
     const expectations = this.argumentExpectations(expr, context, receiverType);
-    const requiresContext = (arg: Expr): boolean => arg.kind === 'collection' && (!arg.items.length || arg.items.some(requiresContext));
+    const requiresContext = (arg: Expr): boolean => arg.kind==='comprehension'?requiresContext(arg.projection):arg.kind === 'collection' && (!arg.items.length || arg.items.some(requiresContext));
     const deferred = new Set(expr.args.flatMap((arg, index) => !expectations[index] && requiresContext(arg) ? [index] : []));
     const argTypes = expr.args.map((arg, index) => deferred.has(index) ? errorTy : this.checkExpression(arg, immediate, expectations[index]));
     const inferredExpectations = this.argumentExpectations(expr, context, receiverType);

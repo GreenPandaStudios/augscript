@@ -1716,6 +1716,33 @@
           "test": "unreachable waits cannot erase a checked task failure on a loop exit"
         }
       ]
+    },
+    {
+      "id": "COMPREHENSIONS",
+      "summary": "List comprehensions evaluate their input once, select and project read-only snapshot items in order, and preserve checked failures, loans and ownership.",
+      "reference": "reference.md#list-comprehensions-unreleased",
+      "productions": [
+        "Comprehension"
+      ],
+      "cases": [],
+      "regressions": [
+        {
+          "file": "tests/comprehensions.test.mjs",
+          "test": "comprehensions select and project in snapshot order without changing their inputs"
+        },
+        {
+          "file": "tests/comprehensions.test.mjs",
+          "test": "comprehension input runs once, predicates precede selected projections and iteration is a snapshot"
+        },
+        {
+          "file": "tests/comprehensions.test.mjs",
+          "test": "selected references retain read-only access and native ownership cannot enter a comprehension"
+        },
+        {
+          "file": "tests/comprehensions.test.mjs",
+          "test": "comprehensions reject repeated continuation calls, repeated owned transfers and unhandled failures"
+        }
+      ]
     }
   ]
 }

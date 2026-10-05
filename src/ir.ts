@@ -261,6 +261,23 @@ class FunctionLowering {
   }
   private expressionValue(expr:Expr):number {
     this.source=expr.span;
+    if(expr.kind==='comprehension'){
+      const iterable=this.expression(expr.iterable),values=this.runtime('ITER',[iterable]),result=this.runtime('LIST',[]);
+      const index=this.slot(scalarType('int')),one=this.literal(null,{kind:'int',text:'1'});
+      this.instruction({op:'copy',out:index,input:this.literal(null,{kind:'int',text:'0'})});
+      const length=this.runtime('LIST_LENGTH',[values]),test=this.block(),body=this.block(),next=this.block(),done=this.block();
+      this.terminate({op:'jump',target:test});this.enter(test);this.instruction({op:'checkpoint'});this.checkError();
+      const condition=this.runtime('BINARY',[index,length],'<');this.terminate({op:'branch',condition,then:body,otherwise:done});this.enter(body);
+      const locals=new Map(this.locals),parent=this.debugScope;
+      this.debugScope='scope_'+this.scopes.length;this.scopes.push({name:this.debugScope,parent,span:expr.span});
+      this.bindPattern(expr.pattern,this.runtime('LIST_AT',[values,index],undefined,undefined,false));
+      if(expr.condition){const selected=this.block();this.terminate({op:'branch',condition:this.expression(expr.condition),then:selected,otherwise:next});this.enter(selected);}
+      this.runtime('LIST_APPEND',[result,this.expression(expr.projection)]);
+      this.terminate({op:'jump',target:next});this.enter(next);
+      this.instruction({op:'copy',out:index,input:this.runtime('BINARY',[index,one],'+')});this.terminate({op:'jump',target:test});
+      this.locals.clear();for(const [name,slot] of locals)this.locals.set(name,slot);this.debugScope=parent;
+      this.enter(done);return result;
+    }
     if(expr.kind==='matchValue'){
       const value=this.expression(expr.value),out=this.slot(),done=this.block();
       const literals=expr.cases.map(clause=>clause.literal?this.expression(clause.literal):undefined);

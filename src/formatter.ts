@@ -180,7 +180,12 @@ class Printer {
   private expression(expr: Expr, precedence = 0): string {
     const comment = this.inline(expr.span.start);
     let value: string;
-    if (expr.kind === 'matchValue') {
+    if(expr.kind==='comprehension'){
+      const projection=this.expression(expr.projection),pattern=this.bindingPattern(expr.pattern),iterable=this.expression(expr.iterable);
+      const condition=expr.condition?(iterable.includes('\n')?'\n':' ')+'if '+this.expression(expr.condition):'';
+      value=this.delimited('[',[projection+(projection.includes('\n')?'\n':' ')+'for '+pattern+' in '+iterable+condition],']',this.inline(expr.span.end));
+    }
+    else if (expr.kind === 'matchValue') {
       const input = this.expression(expr.value,1), lineEnd = this.file.source.indexOf('\n',expr.value.span.end);
       const headerComment = this.inline(Math.min(lineEnd<0?this.file.source.length:lineEnd,expr.cases[0]?.span.start??expr.span.end));
       const block = this.indent ? ':' : ' {', close = this.indent ? '' : '\n' + this.step + '}';

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+Complete `select` as a list comprehension with project assignment preferences. Show checked item bindings in hover, completion and semantic colors, including record/tuple selections; keyword help explains snapshot order, allocation and checked failures.
+
 Show record binding labels as properties, with field types, Javadoc and definition navigation. Keep selected names as local variables. Add preference-aware record and nested tuple binding templates.
 
 Complete `matchvalue` with project formatting preferences. Narrow optional/type case names in match-expression hover and completion, color those names as variables, and describe result, completeness and ownership rules in keyword help.

@@ -4,7 +4,7 @@ import { defaultText } from './parameters.ts';
 import { callableResult, callableErrors } from './contracts.ts';
 import { dirname, join, relative, resolve, sep } from 'node:path';
 import type { BindingPattern, ClassDecl, Expr, InterceptorDecl, MethodDecl, Param, SourceFile, Span, Stmt, TopLevel, TypeRef } from './ast.ts';
-import { expressionChildren, fieldsOf, typeName } from './ast.ts';
+import { bindingNames, expressionChildren, fieldsOf, typeName } from './ast.ts';
 import type { CheckedProject, Ty } from './checker.ts';
 import { tyName } from './checker.ts';
 import { lex } from './lexer.ts';
@@ -887,6 +887,7 @@ export function semanticTokens(checked: CheckedProject, fileName: string): Edito
     }
   }
   function visitExpression(expr:Expr):void {
+    if(expr.kind==='comprehension'){bindingNames(expr.pattern).forEach(name=>variables.add(name));visitPattern(expr.pattern);}
     if(expr.kind==='matchValue')for(const clause of expr.cases)if(clause.name)variables.add(clause.name);
     expressionChildren(expr).forEach(visitExpression);
   }

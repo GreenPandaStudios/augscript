@@ -1072,6 +1072,12 @@ class Parser {
       if (!this.at(closing)) {
         do {
           items.push(this.parseExpression());
+          if (opening.kind === '[' && items.length === 1 && this.match('for')) {
+            const pattern=this.parseBindingPattern();this.expect('in');
+            const iterable=this.parseExpression(),condition=this.match('if')?this.parseExpression():undefined;
+            this.expect(']');this.expressionDepth--;
+            return {kind:'comprehension',projection:items[0],pattern,iterable,condition,span:this.span(opening.span)};
+          }
           if (opening.kind === '{') {
             const pair = !!this.match(':');
             const nextKind = pair ? 'Map' : 'Set';

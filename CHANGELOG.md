@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+Select and project read-only snapshot items with `[result for pattern in values if condition]`. Evaluate the input once, preserve item order, check the condition before the result, and create a new list without mutating the source. Support record/tuple patterns, optional-item narrowing, contextual result types, checked failures and existing worker waits. Reject copied owned results and repeated continuation/owned transfers. Preserve freshness when freezing a new allocation returned under an immutable contract; mutable return annotations retain read-only results and cannot restore permissions through aliases. Format, navigate and explain selection in both code styles.
+
 Preserve external-reference ownership checks when freezing helper results or owned outer copies. Recognize fresh scalar collection results as independent of source containers, permitting their return and freezing after a source borrow.
 
 Add pure data filtering, transformation, aggregation, removal, first-match search and stable sorting to `august.collections`, using ordinary checked callback interfaces. Preserve snapshot order and source lists; document allocation, empty/null results, callback permissions and sorting's checked reads. Add length-aware unsigned UTF-8 `string.compare(other=...)` on LLVM and C, without locale collation or normalization.
