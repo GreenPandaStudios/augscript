@@ -10,7 +10,7 @@
 flowchart TD
     n0["Transformation"]
     n1["_mapWorkerChunk"]
-    n1 -->|"calls"| n0
+    n1 -->|"selects concrete transformation"| n0
 ```
 
 <details>
@@ -21,8 +21,8 @@ flowchart TD
     n0["Transformation.apply"]
     n1["_mapWorkerChunk"]
     n2["mapWorkers"]
-    n1 -->|"calls"| n0
-    n2 -->|"calls"| n1
+    n1 -->|"selects concrete transformation"| n0
+    n2 -->|"specializes worker entry"| n1
 ```
 
 </details>

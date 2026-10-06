@@ -51,7 +51,9 @@ export function generateDiagrams(checked:CheckedProject,files:SourceFile[],links
     '['+markdown(text)+']('+url(relative(dirname(page),diagram?paths.get(file.path)!:links.docs.get(file.path)!))+')';
   const related=(edge:SemanticEdge)=>['call','callback-call','forward','injected','implements','inherits','interceptor'].includes(edge.kind);
   const actionSites=new Set([...checked.actions.keys()].map(expr=>semanticSourcePath(checked,expr.span.file)+':'+expr.span.start+':'+expr.span.end));
-  const relationLabel=(edge:SemanticEdge)=>actionSites.has(edge.location.file+':'+edge.location.start+':'+edge.location.end)?'defers HTTP call to':({call:'calls','callback-call':'callback','forward':'forwards to',injected:'depends on',implements:'implements',inherits:'extends',interceptor:'intercepted by'}[edge.kind as 'call'])??edge.kind;
+  const relationLabel=(edge:SemanticEdge)=>workerMapTemplate(project,project.definitions.get(edge.from))
+    ?(project.definitions.get(edge.from)!.name==='_mapWorkerChunk'?'selects concrete transformation':'specializes worker entry')
+    :actionSites.has(edge.location.file+':'+edge.location.start+':'+edge.location.end)?'defers HTTP call to':({call:'calls','callback-call':'callback','forward':'forwards to',injected:'depends on',implements:'implements',inherits:'extends',interceptor:'intercepted by'}[edge.kind as 'call'])??edge.kind;
   const graphNodes=(ids:Set<string>):GraphNode[]=>[...ids].sort(compare).map(id=>{
     const symbol=symbols.get(id);
     return {id,label:symbol?display(symbol):id.replace(/^module:/,'')};

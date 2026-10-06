@@ -282,12 +282,13 @@ test('sequences show evaluated argument values and named returned data',()=>proj
 }));
 
 test('calls on one interface share a service lifeline and preserve inputs and replies',()=>project({
- 'main.aug':'import Reader and Fixed from objects\nReader reader = Fixed()\na = reader.read(id=1)\nb = reader.find(name="two")\nprint(value=a + b)\n',
+ 'main.aug':'import Reader and Fixed from objects\nReader reader = Fixed()\na = reader.read(id=1)\nb = reader.find(name="two")\nReader another = Fixed()\nc = another.read(id=3)\nprint(value=a + b + c)\n',
  'objects.aug':'interface Reader { read(int id) returns int; find(string name) returns int }\nFixed() implements Reader { read(int id) returns int { return id } find(string name) returns int { return 2 } }\n',
 },async(root,checked)=>{
  const page=diagrams(checked).find(item=>item.path===join(root,'main.aug.diagrams.md'));await validMermaid([page]);
  const sequence=page.text.split('### Startup\n')[1];
  assert.equal((sequence.match(/participant p\d+ as reader: Reader\n/g)??[]).length,1);
+ assert.equal((sequence.match(/participant p\d+ as another: Reader\n/g)??[]).length,1);
  assert.match(sequence,/: read\(id=1\)/);assert.match(sequence,/: find\(name=”two”\)/);
  assert.match(sequence,/-->>p0: a: int/);assert.match(sequence,/-->>p0: b: int/);
  assert.doesNotMatch(sequence,/#\d+;/);
