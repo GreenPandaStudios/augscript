@@ -308,4 +308,6 @@ test('the compiled library template explains static data-only worker transfer',(
  assert.doesNotMatch(diagram.text,/_mapWorkerChunk\(values, transformation\)|apply\(value\) · interface dispatch/);
  assert.match(output.text,/compile-time selected transformation/);assert.match(output.text,/only chunk data crosses/);
  assert.doesNotMatch(output.text,/transformation.*with copies of its inputs on a separate heap/);
+ const overview=outputs.find(item=>item.path.endsWith('/.aug-spec/diagrams/index.md'));
+ assert.match(overview.text,/compile-time target placeholder/);assert.doesNotMatch(overview.text,/Transformation\.apply.*interface dispatch/);
 });

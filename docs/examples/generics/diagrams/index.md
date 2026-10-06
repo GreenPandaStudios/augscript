@@ -27,10 +27,10 @@ flowchart TD
 
 | From | To | Operation and inputs | Result |
 | --- | --- | --- | --- |
-| Startup | types | [Box](../types.md) · value: string | Box\<string\> |
-| Startup | types | [Box.get](../types.md) | string |
-| Startup | types | [Formatter.format](../types.md) · value: int · interface dispatch | string |
-| Startup | types | [Formatter.title](../types.md) · interface dispatch | string |
+| Startup | types | [Box](../types.md#symbol-Box) · value: string | Box\<string\> |
+| Startup | types | [Box.get](../types.md#symbol-Box.get) | string |
+| Startup | types | [Formatter.format](../types.md#symbol-Formatter.format) · value: int · interface dispatch | string |
+| Startup | types | [Formatter.title](../types.md#symbol-Formatter.title) · interface dispatch | string |
 
 :::
 

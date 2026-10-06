@@ -66,7 +66,7 @@ const rewriteSpecs = (folder, originalFolder) => {
   for(const entry of readdirSync(folder,{withFileTypes:true})) {
     const file=join(folder,entry.name),original=join(originalFolder,entry.name);
     if(entry.isDirectory())rewriteSpecs(file,original);
-    else if(entry.name.endsWith('.aug.md')||entry.name.endsWith('.aug.diagrams.md')||original.endsWith('/.aug-spec/diagrams/index.md')) {
+    else if(entry.name.endsWith('.aug.md')||entry.name.endsWith('.aug.diagrams.md')||original.includes('/.aug-spec/diagrams/')&&entry.name==='index.md') {
       const text=readFileSync(file,'utf8').replace(/\]\(([^)]+)\)/g,(match,href)=>{
         if(/^[a-z]+:/i.test(href))return match;
         const [path,anchor]=href.split('#'),target=resolve(dirname(original),decodeURIComponent(path));

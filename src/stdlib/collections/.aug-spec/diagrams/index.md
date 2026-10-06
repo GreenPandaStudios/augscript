@@ -6,19 +6,14 @@ Start here to see what moves between the application’s folders. Each arrow nam
 
 ## Data flow
 
-```mermaid
-flowchart TD
-    n0["operations"]
-    n1["workers"]
-    n1 -->|"Transformation.apply(value) → U"| n0
-```
+No calls cross the source files in this view. Follow local operations in the file sequences below.
 
 <details>
 <summary>Data crossing these boundaries (1 contracts)</summary>
 
 | From | To | Operation and inputs | Result |
 | --- | --- | --- | --- |
-| workers | operations | [Transformation.apply](../../operations.aug.md) · value: T · interface dispatch | U |
+| workers | operations | [selected transformation](../../operations.aug.md#symbol-Transformation.apply) · value: T · compile-time target placeholder | U |
 
 </details>
 

@@ -18,7 +18,7 @@ flowchart TD
 
 | From | To | Operation and inputs | Result |
 | --- | --- | --- | --- |
-| Startup | errors | [load](../../errors.aug.md) · fail: bool | string |
+| Startup | errors | [load](../../errors.aug.md#symbol-load) · fail: bool | string |
 
 </details>
 

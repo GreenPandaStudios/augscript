@@ -43,7 +43,7 @@ let project = checked.project;
 const coreFiles=[...project.files.values()].filter(file=>file.builtin);
 const rootExport=join(root,'src/stdlib/export.aug');
 for(const output of generateSpecs(checked,{manifest:false,files:coreFiles,diagramRoot:join(root,'src/stdlib')}))
-  if(output.source===rootExport||output.path===join(root,'src/stdlib/.aug-spec/diagrams/index.md'))outputs.set(relative(root,output.path),output.text);
+  if(output.source===rootExport||output.path.startsWith(join(root,'src/stdlib/.aug-spec/diagrams')+'/'))outputs.set(relative(root,output.path),output.text);
 const header = source => source.slice(0, source.indexOf('\n') < 0 ? source.length : source.indexOf('\n')).trim().replace(/[:{]\s*$/, '').trimEnd();
 const parameter = param => (param.injected ? 'resolve ' : '') +
   (param.ownership === 'borrow' ? 'borrow ' : param.ownership === 'own' ? 'own ' : '') +

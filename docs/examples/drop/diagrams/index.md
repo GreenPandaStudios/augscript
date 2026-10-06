@@ -27,7 +27,7 @@ flowchart TD
 
 | From | To | Operation and inputs | Result |
 | --- | --- | --- | --- |
-| Startup | resource | [Resource](../resource.md) | Resource |
+| Startup | resource | [Resource](../resource.md#symbol-Resource) | Resource |
 
 :::
 

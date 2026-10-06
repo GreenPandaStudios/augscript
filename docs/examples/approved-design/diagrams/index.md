@@ -42,12 +42,12 @@ flowchart LR
 
 | From | To | Operation and inputs | Result |
 | --- | --- | --- | --- |
-| domain | August libraries | [Console.write](../dependencies/august/0.23.0/io/contracts.md) · value: string · interface dispatch | void |
-| Startup | counters | [Counter.increment](../counters.md) · interface dispatch | void |
-| Startup | counters | [Counter.value](../counters.md) · interface dispatch | int |
-| Startup | domain | [Application.start](../domain/app.md) · interface dispatch | void |
-| Startup | domain | [Fruit](../domain/models.md) · code: int, name: string · value construction | Fruit |
-| Startup | domain | [double](../domain/numbers.md) · amount: int | int |
+| domain | August libraries | [Console.write](../dependencies/august/0.23.0/io/contracts.md#symbol-Console.write) · value: string · interface dispatch | void |
+| Startup | counters | [Counter.increment](../counters.md#symbol-Counter.increment) · interface dispatch | void |
+| Startup | counters | [Counter.value](../counters.md#symbol-Counter.value) · interface dispatch | int |
+| Startup | domain | [Application.start](../domain/app.md#symbol-Application.start) · interface dispatch | void |
+| Startup | domain | [Fruit](../domain/models.md#symbol-Fruit) · code: int, name: string · value construction | Fruit |
+| Startup | domain | [double](../domain/numbers.md#symbol-double) · amount: int | int |
 
 :::
 

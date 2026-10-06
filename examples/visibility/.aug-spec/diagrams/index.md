@@ -18,8 +18,8 @@ flowchart TD
 
 | From | To | Operation and inputs | Result |
 | --- | --- | --- | --- |
-| Startup | counter | [Counter](../../counter.aug.md) · value: int | Counter |
-| Startup | counter | [Counter.label](../../counter.aug.md) | string |
+| Startup | counter | [Counter](../../counter.aug.md#symbol-Counter) · value: int | Counter |
+| Startup | counter | [Counter.label](../../counter.aug.md#symbol-Counter.label) | string |
 
 </details>
 

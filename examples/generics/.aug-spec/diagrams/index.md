@@ -18,10 +18,10 @@ flowchart TD
 
 | From | To | Operation and inputs | Result |
 | --- | --- | --- | --- |
-| Startup | types | [Box](../../types.aug.md) · value: string | Box\<string\> |
-| Startup | types | [Box.get](../../types.aug.md) | string |
-| Startup | types | [Formatter.format](../../types.aug.md) · value: int · interface dispatch | string |
-| Startup | types | [Formatter.title](../../types.aug.md) · interface dispatch | string |
+| Startup | types | [Box](../../types.aug.md#symbol-Box) · value: string | Box\<string\> |
+| Startup | types | [Box.get](../../types.aug.md#symbol-Box.get) | string |
+| Startup | types | [Formatter.format](../../types.aug.md#symbol-Formatter.format) · value: int · interface dispatch | string |
+| Startup | types | [Formatter.title](../../types.aug.md#symbol-Formatter.title) · interface dispatch | string |
 
 </details>
 

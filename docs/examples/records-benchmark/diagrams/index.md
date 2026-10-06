@@ -22,7 +22,7 @@ No calls cross the source files in this view. Follow local operations in the fil
 
 | From | To | Operation and inputs | Result |
 | --- | --- | --- | --- |
-| Startup | data | [Item](../data.md) · id: int, name: string · value construction | Item |
+| Startup | data | [Item](../data.md#symbol-Item) · id: int, name: string · value construction | Item |
 
 :::
 

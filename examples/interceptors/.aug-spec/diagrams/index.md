@@ -47,12 +47,12 @@ flowchart LR
 
 | From | To | Operation and inputs | Result |
 | --- | --- | --- | --- |
-| app | August libraries | [Console.write](../august/0.23.0/io/contracts.aug.md) · value: int · interface dispatch | void |
-| interceptors | logging | [Logger.log](../../logging.aug.md) · message: string · interface dispatch | void |
-| logging | August libraries | [Console.write](../august/0.23.0/io/contracts.aug.md) · value: string · interface dispatch | void |
-| Startup | app | [Greeter](../../app.aug.md) · name: string | Greeter |
-| Startup | app | [Greeter.greet](../../app.aug.md) | string |
-| Startup | app | [describe](../../app.aug.md) · x: int, label: string | string |
+| app | August libraries | [Console.write](../august/0.23.0/io/contracts.aug.md#symbol-Console.write) · value: int · interface dispatch | void |
+| interceptors | logging | [Logger.log](../../logging.aug.md#symbol-Logger.log) · message: string · interface dispatch | void |
+| logging | August libraries | [Console.write](../august/0.23.0/io/contracts.aug.md#symbol-Console.write) · value: string · interface dispatch | void |
+| Startup | app | [Greeter](../../app.aug.md#symbol-Greeter) · name: string | Greeter |
+| Startup | app | [Greeter.greet](../../app.aug.md#symbol-Greeter.greet) | string |
+| Startup | app | [describe](../../app.aug.md#symbol-describe) · x: int, label: string | string |
 
 </details>
 

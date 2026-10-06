@@ -18,8 +18,8 @@ flowchart TD
 
 | From | To | Operation and inputs | Result |
 | --- | --- | --- | --- |
-| values | math | [checkedAdd](../../math/integers.aug.md) · left: int, right: int | int |
-| values | math | [checkedMultiply](../../math/integers.aug.md) · left: int, right: int | int |
+| values | math | [checkedAdd](../../math/integers.aug.md#symbol-checkedAdd) · left: int, right: int | int |
+| values | math | [checkedMultiply](../../math/integers.aug.md#symbol-checkedMultiply) · left: int, right: int | int |
 
 </details>
 

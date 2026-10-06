@@ -18,10 +18,10 @@ flowchart TD
 
 | From | To | Operation and inputs | Result |
 | --- | --- | --- | --- |
-| decimals | integers | [checkedAdd](../../integers.aug.md) · left: int, right: int | int |
-| decimals | integers | [checkedDivide](../../integers.aug.md) · left: int, right: int | int |
-| decimals | integers | [checkedMultiply](../../integers.aug.md) · left: int, right: int | int |
-| decimals | integers | [checkedSubtract](../../integers.aug.md) · left: int, right: int | int |
+| decimals | integers | [checkedAdd](../../integers.aug.md#symbol-checkedAdd) · left: int, right: int | int |
+| decimals | integers | [checkedDivide](../../integers.aug.md#symbol-checkedDivide) · left: int, right: int | int |
+| decimals | integers | [checkedMultiply](../../integers.aug.md#symbol-checkedMultiply) · left: int, right: int | int |
+| decimals | integers | [checkedSubtract](../../integers.aug.md#symbol-checkedSubtract) · left: int, right: int | int |
 
 </details>
 

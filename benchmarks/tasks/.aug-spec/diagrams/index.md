@@ -18,7 +18,7 @@ flowchart TD
 
 | From | To | Operation and inputs | Result |
 | --- | --- | --- | --- |
-| Startup | operations | [compute](../../operations.aug.md) · value: int | int |
+| Startup | operations | [compute](../../operations.aug.md#symbol-compute) · value: int | int |
 
 </details>
 

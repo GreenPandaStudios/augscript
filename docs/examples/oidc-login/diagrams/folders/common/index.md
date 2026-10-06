@@ -83,19 +83,19 @@ flowchart LR
 
 | From | To | Operation and inputs | Result |
 | --- | --- | --- | --- |
-| client | headers | [securityHeaders](../../../common/headers.md) | Headers |
-| client | headers | [withCookie](../../../common/headers.md) · headers: Headers, name: string, value: string, path: string, maxAge: int, secure: bool | Headers |
-| client | keys | [SigningKeys.session](../../../common/keys.md) · interface dispatch | RsaPrivateKey |
-| client | settings | [settings](../../../common/settings.md) | Settings |
-| client | views | [Page](../../../common/views.md) · title: string, children: List\<Html\> | Html |
-| headers | web | [cookie](../../../dependencies/packages/%40git/url_897efafd565158fc4908/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.md) · name: string, value: string, path: string, maxAge: int, secure: bool | Headers |
-| keys | crypto | [Crypto.generateRsa](../../../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md) · interface dispatch | RsaPrivateKey |
-| Startup | keys | [initializeKeys](../../../common/keys.md) | void |
-| provider | headers | [securityHeaders](../../../common/headers.md) | Headers |
-| provider | headers | [withCookie](../../../common/headers.md) · headers: Headers, name: string, value: string, path: string, maxAge: int, secure: bool | Headers |
-| provider | keys | [SigningKeys.provider](../../../common/keys.md) · interface dispatch | RsaPrivateKey |
-| provider | settings | [settings](../../../common/settings.md) | Settings |
-| provider | views | [Page](../../../common/views.md) · title: string, children: List\<Html\> | Html |
+| client | headers | [securityHeaders](../../../common/headers.md#symbol-securityHeaders) | Headers |
+| client | headers | [withCookie](../../../common/headers.md#symbol-withCookie) · headers: Headers, name: string, value: string, path: string, maxAge: int, secure: bool | Headers |
+| client | keys | [SigningKeys.session](../../../common/keys.md#symbol-SigningKeys.session) · interface dispatch | RsaPrivateKey |
+| client | settings | [settings](../../../common/settings.md#symbol-settings) | Settings |
+| client | views | [Page](../../../common/views.md#symbol-Page) · title: string, children: List\<Html\> | Html |
+| headers | web | [cookie](../../../dependencies/packages/%40git/url_897efafd565158fc4908/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.md#symbol-cookie) · name: string, value: string, path: string, maxAge: int, secure: bool | Headers |
+| keys | crypto | [Crypto.generateRsa](../../../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto.generateRsa) · interface dispatch | RsaPrivateKey |
+| Startup | keys | [initializeKeys](../../../common/keys.md#symbol-initializeKeys) | void |
+| provider | headers | [securityHeaders](../../../common/headers.md#symbol-securityHeaders) | Headers |
+| provider | headers | [withCookie](../../../common/headers.md#symbol-withCookie) · headers: Headers, name: string, value: string, path: string, maxAge: int, secure: bool | Headers |
+| provider | keys | [SigningKeys.provider](../../../common/keys.md#symbol-SigningKeys.provider) · interface dispatch | RsaPrivateKey |
+| provider | settings | [settings](../../../common/settings.md#symbol-settings) | Settings |
+| provider | views | [Page](../../../common/views.md#symbol-Page) · title: string, children: List\<Html\> | Html |
 
 :::
 

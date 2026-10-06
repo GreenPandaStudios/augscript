@@ -32,8 +32,8 @@ flowchart LR
 
 | From | To | Operation and inputs | Result |
 | --- | --- | --- | --- |
-| calculator | logger | [Logger.log](../../../../logging/logger.aug.md) · message: string · interface dispatch | void |
-| console | august/io | [Console.write](../../../august/0.23.0/io/contracts.aug.md) · value: string · interface dispatch | void |
+| calculator | logger | [Logger.log](../../../../logging/logger.aug.md#symbol-Logger.log) · message: string · interface dispatch | void |
+| console | august/io | [Console.write](../../../august/0.23.0/io/contracts.aug.md#symbol-Console.write) · value: string · interface dispatch | void |
 
 </details>
 

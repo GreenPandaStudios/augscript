@@ -36,11 +36,11 @@ flowchart LR
 
 | From | To | Operation and inputs | Result |
 | --- | --- | --- | --- |
-| console | August libraries | [Console.write](../august/0.23.0/io/contracts.aug.md) · value: string · interface dispatch | void |
-| greeter | logger | [Logger.log](../../logger.aug.md) · message: string · interface dispatch | void |
-| Startup | greeter | [Greeter](../../greeter.aug.md) · x: int | Greeter |
-| Startup | greeter | [Greeter.greet](../../greeter.aug.md) · name: string | void |
-| Startup | math | [increment](../../math.aug.md) · value: int | int |
+| console | August libraries | [Console.write](../august/0.23.0/io/contracts.aug.md#symbol-Console.write) · value: string · interface dispatch | void |
+| greeter | logger | [Logger.log](../../logger.aug.md#symbol-Logger.log) · message: string · interface dispatch | void |
+| Startup | greeter | [Greeter](../../greeter.aug.md#symbol-Greeter) · x: int | Greeter |
+| Startup | greeter | [Greeter.greet](../../greeter.aug.md#symbol-Greeter.greet) · name: string | void |
+| Startup | math | [increment](../../math.aug.md#symbol-increment) · value: int | int |
 
 </details>
 

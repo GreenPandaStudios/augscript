@@ -18,9 +18,9 @@ flowchart TD
 
 | From | To | Operation and inputs | Result |
 | --- | --- | --- | --- |
-| Startup | counter | [Counter](../../counter.aug.md) · value: int | Counter |
-| Startup | counter | [Counter.increment](../../counter.aug.md) | void |
-| Startup | counter | [Counter.read](../../counter.aug.md) | int |
+| Startup | counter | [Counter](../../counter.aug.md#symbol-Counter) · value: int | Counter |
+| Startup | counter | [Counter.increment](../../counter.aug.md#symbol-Counter.increment) | void |
+| Startup | counter | [Counter.read](../../counter.aug.md#symbol-Counter.read) | int |
 
 </details>
 

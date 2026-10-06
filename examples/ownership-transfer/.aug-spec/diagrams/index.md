@@ -10,7 +10,7 @@ Start here to see what moves between the application’s folders. Each arrow nam
 flowchart TD
     n0["Startup"]
     n1["resource"]
-    n0 -->|"consume(value) / make → Resource"| n1
+    n0 -->|"consume(value) / make → own Resource"| n1
 ```
 
 ### Package boundaries
@@ -32,9 +32,9 @@ flowchart LR
 
 | From | To | Operation and inputs | Result |
 | --- | --- | --- | --- |
-| Startup | resource | [consume](../../resource.aug.md) · value: Resource | void |
-| Startup | resource | [make](../../resource.aug.md) | Resource |
-| resource | August libraries | [Console.write](../august/0.23.0/io/contracts.aug.md) · value: string · interface dispatch | void |
+| Startup | resource | [consume](../../resource.aug.md#symbol-consume) · value: own Resource | void |
+| Startup | resource | [make](../../resource.aug.md#symbol-make) | own Resource |
+| resource | August libraries | [Console.write](../august/0.23.0/io/contracts.aug.md#symbol-Console.write) · value: string · interface dispatch | void |
 
 </details>
 

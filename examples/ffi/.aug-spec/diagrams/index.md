@@ -18,7 +18,7 @@ flowchart TD
 
 | From | To | Operation and inputs | Result |
 | --- | --- | --- | --- |
-| Startup | native | [announce](../../native.aug.md) | void |
+| Startup | native | [announce](../../native.aug.md#symbol-announce) | void |
 
 </details>
 

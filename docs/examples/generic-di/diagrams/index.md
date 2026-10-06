@@ -40,8 +40,8 @@ flowchart LR
 
 | From | To | Operation and inputs | Result |
 | --- | --- | --- | --- |
-| Startup | types | [Program.start](../types.md) | void |
-| types | August libraries | [Console.write](../dependencies/august/0.23.0/io/contracts.md) · value: int · interface dispatch | void |
+| Startup | types | [Program.start](../types.md#symbol-Program.start) | void |
+| types | August libraries | [Console.write](../dependencies/august/0.23.0/io/contracts.md#symbol-Console.write) · value: int · interface dispatch | void |
 
 :::
 

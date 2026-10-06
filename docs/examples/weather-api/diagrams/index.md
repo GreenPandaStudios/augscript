@@ -27,7 +27,7 @@ flowchart TD
 
 | From | To | Operation and inputs | Result |
 | --- | --- | --- | --- |
-| HTTP requests | forecasts | [GET /weatherforecast](../forecasts.md) · HTTP endpoint | List\<WeatherForecast\> |
+| HTTP requests | forecasts | [GET /weatherforecast](../forecasts.md#symbol-weatherForecast) · HTTP endpoint | List\<WeatherForecast\> |
 
 :::
 

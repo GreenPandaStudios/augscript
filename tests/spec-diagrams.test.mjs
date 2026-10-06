@@ -313,3 +313,22 @@ test('a folder manifest cannot alias generated paths through dot segments',()=>p
  assert.throws(()=>updateSpecs(checkProject(loadProject(root))),/Invalid generated specification manifest/);
  assert.ok(existsSync(join(root,'.aug-spec/diagrams/folders/app/index.md')));
 }));
+
+test('synthetic worker edges retain the selected function contract rather than the mapper inputs',()=>project({
+ 'main.aug':'import mapWorkers from august.collections\nimport double from rules\ntry { result = mapWorkers(values=[1,2], concurrency=1, chunkSize=1, transformation=double) } catch Error error { pass }\n',
+ 'rules.aug':'double(int value) returns int { return value * 2 }\n',
+},async(root,checked)=>{
+ const output=diagrams(checked).find(item=>item.path===join(root,'.aug-spec/diagrams/index.md'));await validMermaid([output]);
+ const row=output.text.split('\n').find(line=>line.includes('[double]'));
+ assert.match(row,/value: int/);assert.match(row,/isolated worker transformation/);assert.match(row,/\| int \|$/);
+ assert.doesNotMatch(row,/concurrency|chunkSize|transformation:/);assert.doesNotMatch(output.text,/double\(values/);
+}));
+test('record copies expose copied fields and a data result without inventing a service boundary',()=>project({
+ 'main.aug':'import Row from rules\noriginal = Row(value=1)\ncopied = original with (value=2)\nprint(value=copied.value)\n',
+ 'rules.aug':'record Row(int value)\n',
+},async(root,checked)=>{
+ const output=diagrams(checked).find(item=>item.path===join(root,'.aug-spec/diagrams/index.md'));await validMermaid([output]);
+ const rows=output.text.split('\n').filter(line=>line.includes('[Row]'));assert.ok(rows.length);
+ for(const row of rows){assert.match(row,/value: int/);assert.match(row,/value construction/);assert.match(row,/\| Row \|$/);}
+ assert.doesNotMatch(output.text,/declared result|flowchart/);
+}));

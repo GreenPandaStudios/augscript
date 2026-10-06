@@ -18,7 +18,7 @@ flowchart TD
 
 | From | To | Operation and inputs | Result |
 | --- | --- | --- | --- |
-| Startup | operations | [step](../../operations.aug.md) · value: int | int |
+| Startup | operations | [step](../../operations.aug.md#symbol-step) · value: int | int |
 
 </details>
 

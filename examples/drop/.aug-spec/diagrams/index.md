@@ -18,7 +18,7 @@ flowchart TD
 
 | From | To | Operation and inputs | Result |
 | --- | --- | --- | --- |
-| Startup | resource | [Resource](../../resource.aug.md) | Resource |
+| Startup | resource | [Resource](../../resource.aug.md#symbol-Resource) | Resource |
 
 </details>
 

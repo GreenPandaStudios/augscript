@@ -27,8 +27,8 @@ flowchart TD
 
 | From | To | Operation and inputs | Result |
 | --- | --- | --- | --- |
-| Startup | counter | [Counter](../counter.md) · value: int | Counter |
-| Startup | counter | [Counter.label](../counter.md) | string |
+| Startup | counter | [Counter](../counter.md#symbol-Counter) · value: int | Counter |
+| Startup | counter | [Counter.label](../counter.md#symbol-Counter.label) | string |
 
 :::
 

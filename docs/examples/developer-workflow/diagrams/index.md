@@ -42,11 +42,11 @@ flowchart LR
 
 | From | To | Operation and inputs | Result |
 | --- | --- | --- | --- |
-| calculator | logging | [Logger.log](../logging/logger.md) · message: string · interface dispatch | void |
-| logging | August libraries | [Console.write](../dependencies/august/0.23.0/io/contracts.md) · value: string · interface dispatch | void |
-| Startup | calculator | [Calculator](../calculator.md) | Calculator |
-| Startup | calculator | [Calculator.add](../calculator.md) · left: int, right: int | int |
-| Startup | calculator | [load](../calculator.md) · fail: bool | string |
+| calculator | logging | [Logger.log](../logging/logger.md#symbol-Logger.log) · message: string · interface dispatch | void |
+| logging | August libraries | [Console.write](../dependencies/august/0.23.0/io/contracts.md#symbol-Console.write) · value: string · interface dispatch | void |
+| Startup | calculator | [Calculator](../calculator.md#symbol-Calculator) | Calculator |
+| Startup | calculator | [Calculator.add](../calculator.md#symbol-Calculator.add) · left: int, right: int | int |
+| Startup | calculator | [load](../calculator.md#symbol-load) · fail: bool | string |
 
 :::
 

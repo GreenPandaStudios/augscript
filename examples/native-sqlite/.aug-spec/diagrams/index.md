@@ -21,8 +21,8 @@ flowchart TD
 ```mermaid
 flowchart LR
     n0["database"]
-    n1["url_b634d36dc17498f595c5"]
-    n0 -->|"execute(database, sql, …) / openMemory + 1 more → Database / int + 1 more"| n1
+    n1["@greenpandastudios/aug-sqlite"]
+    n0 -->|"execute(database, sql, …) / openMemory + 1 more → int / own Database + 1 more"| n1
 ```
 
 </details>
@@ -32,10 +32,10 @@ flowchart LR
 
 | From | To | Operation and inputs | Result |
 | --- | --- | --- | --- |
-| database | url\_b634d36dc17498f595c5 | [execute](../packages/%40greenpandastudios/aug-sqlite/0.1.5/api.aug.md) · database: Database, sql: string, parameters: List\<string\> | int |
-| database | url\_b634d36dc17498f595c5 | [openMemory](../packages/%40greenpandastudios/aug-sqlite/0.1.5/api.aug.md) | Database |
-| database | url\_b634d36dc17498f595c5 | [queryScalar](../packages/%40greenpandastudios/aug-sqlite/0.1.5/api.aug.md) · database: Database, sql: string, parameters: List\<string\> | string |
-| Startup | database | [storedName](../../database.aug.md) | string |
+| database | @greenpandastudios/aug-sqlite | [execute](../packages/%40greenpandastudios/aug-sqlite/0.1.5/api.aug.md#symbol-execute) · database: borrow Database, sql: string, parameters: List\<string\> | int |
+| database | @greenpandastudios/aug-sqlite | [openMemory](../packages/%40greenpandastudios/aug-sqlite/0.1.5/api.aug.md#symbol-openMemory) | own Database |
+| database | @greenpandastudios/aug-sqlite | [queryScalar](../packages/%40greenpandastudios/aug-sqlite/0.1.5/api.aug.md#symbol-queryScalar) · database: Database, sql: string, parameters: List\<string\> | string |
+| Startup | database | [storedName](../../database.aug.md#symbol-storedName) | string |
 
 </details>
 

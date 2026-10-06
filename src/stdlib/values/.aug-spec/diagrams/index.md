@@ -38,17 +38,17 @@ flowchart LR
 
 | From | To | Operation and inputs | Result |
 | --- | --- | --- | --- |
-| dates | ascii | [asciiSlice](../../ascii.aug.md) · input: Bytes, start: int, end: int | string |
-| durations | August libraries | [checkedAdd](../august/0.23.0/math/integers.aug.md) · left: int, right: int | int |
-| durations | August libraries | [checkedMultiply](../august/0.23.0/math/integers.aug.md) · left: int, right: int | int |
-| durations | ascii | [asciiSlice](../../ascii.aug.md) · input: Bytes, start: int, end: int | string |
-| paths | ascii | [asciiAt](../../ascii.aug.md) · input: Bytes, index: int | string |
-| paths | ascii | [asciiLetter](../../ascii.aug.md) · character: string | bool |
-| paths | ascii | [asciiLower](../../ascii.aug.md) · text: string | string |
-| urls | ascii | [asciiAt](../../ascii.aug.md) · input: Bytes, index: int | string |
-| urls | ascii | [asciiLetter](../../ascii.aug.md) · character: string | bool |
-| urls | ascii | [asciiLower](../../ascii.aug.md) · text: string | string |
-| urls | ascii | [asciiSlice](../../ascii.aug.md) · input: Bytes, start: int, end: int | string |
+| dates | ascii | [asciiSlice](../../ascii.aug.md#symbol-asciiSlice) · input: Bytes, start: int, end: int | string |
+| durations | August libraries | [checkedAdd](../august/0.23.0/math/integers.aug.md#symbol-checkedAdd) · left: int, right: int | int |
+| durations | August libraries | [checkedMultiply](../august/0.23.0/math/integers.aug.md#symbol-checkedMultiply) · left: int, right: int | int |
+| durations | ascii | [asciiSlice](../../ascii.aug.md#symbol-asciiSlice) · input: Bytes, start: int, end: int | string |
+| paths | ascii | [asciiAt](../../ascii.aug.md#symbol-asciiAt) · input: Bytes, index: int | string |
+| paths | ascii | [asciiLetter](../../ascii.aug.md#symbol-asciiLetter) · character: string | bool |
+| paths | ascii | [asciiLower](../../ascii.aug.md#symbol-asciiLower) · text: string | string |
+| urls | ascii | [asciiAt](../../ascii.aug.md#symbol-asciiAt) · input: Bytes, index: int | string |
+| urls | ascii | [asciiLetter](../../ascii.aug.md#symbol-asciiLetter) · character: string | bool |
+| urls | ascii | [asciiLower](../../ascii.aug.md#symbol-asciiLower) · text: string | string |
+| urls | ascii | [asciiSlice](../../ascii.aug.md#symbol-asciiSlice) · input: Bytes, start: int, end: int | string |
 
 </details>
 

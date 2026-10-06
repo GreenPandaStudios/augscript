@@ -31,7 +31,7 @@ flowchart LR
 
 | From | To | Operation and inputs | Result |
 | --- | --- | --- | --- |
-| Startup | math | [add](../dependencies/packages/%40example/aug-math/0.1.0/arithmetic.md) · left: int, right: int | int |
+| Startup | math | [add](../dependencies/packages/%40example/aug-math/0.1.0/arithmetic.md#symbol-add) · left: int, right: int | int |
 
 :::
 

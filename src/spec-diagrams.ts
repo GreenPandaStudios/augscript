@@ -99,7 +99,7 @@ export function generateDiagrams(checked:CheckedProject,files:SourceFile[],links
     if(view.contracts.length)text+='<details>\n<summary>Data crossing these boundaries ('+view.contracts.length+' contracts)</summary>\n\n| From | To | Operation and inputs | Result |\n| --- | --- | --- | --- |\n'+view.contracts.map(contract=>{
       const symbol=symbols.get(contract.target),file=symbol&&sourceFiles.get(symbol.location.file);
       const operation=markdown(contract.operation+(contract.inputs?'('+contract.inputs+')':'()'));
-      const target=file?linkTo(page,file,contract.operation,false):operation;
+      const target=file?linkTo(page,file,contract.operation,false).replace(/\)$/,'#'+encodeURIComponent('symbol-'+display(symbol!))+')'):operation;
       return '| '+markdown(names.get(contract.from)??contract.from)+' | '+markdown(names.get(contract.to)??contract.to)+' | '+(file?target+(contract.inputs?' · '+markdown(contract.inputs):''):operation)+(contract.boundary?' · '+markdown(contract.boundary):'')+' | '+markdown(contract.result)+' |';
     }).join('\n')+'\n\n</details>\n';
     return text;

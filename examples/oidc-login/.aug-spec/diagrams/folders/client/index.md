@@ -126,69 +126,69 @@ flowchart LR
 
 | From | To | Operation and inputs | Result |
 | --- | --- | --- | --- |
-| HTTP requests | endpoints | [GET /](../../../../client/endpoints.aug.md) · token: optional string from cookie · HTTP endpoint | HttpResponse\<Html\> |
-| HTTP requests | endpoints | [GET /me](../../../../client/endpoints.aug.md) · token: optional string from cookie · HTTP endpoint | HttpResponse\<UserInfo\> |
-| HTTP requests | login | [GET /login/callback](../../../../client/login.aug.md) · code: string from query, state: string from query, browser: optional string from cookie · HTTP endpoint | HttpResponse\<Html\> |
-| HTTP requests | login | [GET /login/start](../../../../client/login.aug.md) · HTTP endpoint | HttpResponse\<Html\> |
-| HTTP requests | logout | [POST /logout](../../../../client/logout.aug.md) · input: LogoutForm from form, token: optional string from cookie, origin: optional string from header · HTTP endpoint | HttpResponse\<Html\> |
-| endpoints | session | [authenticate](../../../../client/session.aug.md) · token: optional string | SessionClaims |
-| endpoints | views | [LoginPage](../../../../client/views.aug.md) | Html |
-| endpoints | views | [Welcome](../../../../client/views.aug.md) · session: SessionClaims | Html |
-| endpoints | common | [securityHeaders](../../../../common/headers.aug.md) | Headers |
-| endpoints | provider | [UserInfo](../../../../provider/contracts.aug.md) · sub: string, name: string · value construction | UserInfo |
-| login | contracts | [LoginTransaction](../../../../client/contracts.aug.md) · state: string, nonce: string, verifier: string, expires: int · value construction | LoginTransaction |
-| login | contracts | [SessionClaims](../../../../client/contracts.aug.md) · iss: string, sub: string, aud: string, exp: int, iat: int, jti: string, csrf: string, name: string · value construction | SessionClaims |
-| login | contracts | [SessionError](../../../../client/contracts.aug.md) · value construction | SessionError |
-| login | protocol | [discover](../../../../client/protocol.aug.md) | Discovery |
-| login | protocol | [responseJson](../../../../client/protocol.aug.md) · response: HttpResponse\<Bytes\> | Json |
-| login | protocol | [validateIdentity](../../../../client/protocol.aug.md) · token: string, nonce: string, now: int, jwks: RsaJwks | IdClaims |
-| login | common | [SigningKeys.session](../../../../common/keys.aug.md) · interface dispatch | RsaPrivateKey |
-| login | common | [securityHeaders](../../../../common/headers.aug.md) | Headers |
-| login | common | [settings](../../../../common/settings.aug.md) | Settings |
-| login | common | [withCookie](../../../../common/headers.aug.md) · headers: Headers, name: string, value: string, path: string, maxAge: int, secure: bool | Headers |
-| login | memory | [ExpiringStore.put](../../../packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md) · key: string, value: LoginTransaction, expires: int, now: int · interface dispatch | void |
-| login | memory | [ExpiringStore.put](../../../packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md) · key: string, value: SessionClaims, expires: int, now: int · interface dispatch | void |
-| login | memory | [ExpiringStore.take](../../../packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md) · key: string, now: int · interface dispatch | optional LoginTransaction |
-| login | web | [HttpClient.request](../../../packages/%40git/url_897efafd565158fc4908/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md) · method: string, url: string, headers: Headers, body: Bytes · interface dispatch | HttpResponse\<Bytes\> |
-| login | web | [HttpClient.request](../../../packages/%40git/url_897efafd565158fc4908/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md) · method: string, url: string, headers: Headers, body: optional Bytes · interface dispatch | HttpResponse\<Bytes\> |
-| login | web | [HttpClient.request](../../../packages/%40git/url_897efafd565158fc4908/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md) · method: string, url: string, headers: optional Headers, body: optional Bytes · interface dispatch | HttpResponse\<Bytes\> |
-| login | web | [urlEncode](../../../packages/%40git/url_897efafd565158fc4908/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md) · input: string | string |
-| login | crypto | [Crypto.equal](../../../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md) · left: Bytes, right: Bytes · interface dispatch | bool |
-| login | crypto | [Crypto.random](../../../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md) · size: int · interface dispatch | Bytes |
-| login | crypto | [Crypto.sha256](../../../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md) · input: Bytes · interface dispatch | Bytes |
-| login | crypto | [signJwt](../../../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug.md) · key: RsaPrivateKey, claims: Json, kid: string, tokenType: string | string |
-| login | time | [Clock.now](../../../packages/%40git/url_c092cd151499c4e1d8a1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md) · interface dispatch | int |
-| logout | contracts | [SessionError](../../../../client/contracts.aug.md) · value construction | SessionError |
-| logout | session | [authenticate](../../../../client/session.aug.md) · token: optional string | SessionClaims |
-| logout | common | [securityHeaders](../../../../common/headers.aug.md) | Headers |
-| logout | common | [settings](../../../../common/settings.aug.md) | Settings |
-| logout | common | [withCookie](../../../../common/headers.aug.md) · headers: Headers, name: string, value: string, path: string, maxAge: int, secure: bool | Headers |
-| logout | memory | [ExpiringStore.take](../../../packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md) · key: string, now: int · interface dispatch | optional SessionClaims |
-| logout | crypto | [Crypto.equal](../../../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md) · left: Bytes, right: Bytes · interface dispatch | bool |
-| logout | time | [Clock.now](../../../packages/%40git/url_c092cd151499c4e1d8a1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md) · interface dispatch | int |
-| protocol | contracts | [SessionError](../../../../client/contracts.aug.md) · value construction | SessionError |
-| protocol | common | [settings](../../../../common/settings.aug.md) | Settings |
-| protocol | json | [parse](../../../packages/%40git/url_2d3c37c690c0fa115be1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md) · input: string | Json |
-| protocol | web | [HttpClient.request](../../../packages/%40git/url_897efafd565158fc4908/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md) · method: string, url: string, headers: optional Headers, body: optional Bytes · interface dispatch | HttpResponse\<Bytes\> |
-| protocol | crypto | [Crypto.equal](../../../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md) · left: Bytes, right: Bytes · interface dispatch | bool |
-| protocol | crypto | [Crypto.generateRsa](../../../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md) · interface dispatch | RsaPrivateKey |
-| protocol | crypto | [Crypto.publicRsa](../../../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md) · key: RsaPrivateKey · interface dispatch | RsaPublicKey |
-| protocol | crypto | [RsaJwks](../../../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug.md) · keys: List\<RsaJwk\> · value construction | RsaJwks |
-| protocol | crypto | [importJwk](../../../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug.md) · jwk: RsaJwk | RsaPublicKey |
-| protocol | crypto | [rsaJwk](../../../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug.md) · publicKey: RsaPublicKey, kid: string | RsaJwk |
-| protocol | crypto | [signJwt](../../../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug.md) · key: RsaPrivateKey, claims: Json, kid: string, tokenType: string | string |
-| protocol | crypto | [verifyJwt](../../../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug.md) · token: string, publicKey: RsaPublicKey, kid: string, tokenType: string | Json |
-| protocol | provider | [IdClaims](../../../../provider/contracts.aug.md) · iss: string, sub: string, aud: string, exp: int, iat: int, nonce: string, name: string · value construction | IdClaims |
-| session | contracts | [SessionError](../../../../client/contracts.aug.md) · value construction | SessionError |
-| session | common | [SigningKeys.session](../../../../common/keys.aug.md) · interface dispatch | RsaPrivateKey |
-| session | common | [settings](../../../../common/settings.aug.md) | Settings |
-| session | memory | [ExpiringStore.get](../../../packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md) · key: string, now: int · interface dispatch | optional SessionClaims |
-| session | crypto | [Crypto.equal](../../../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md) · left: Bytes, right: Bytes · interface dispatch | bool |
-| session | crypto | [Crypto.publicRsa](../../../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md) · key: RsaPrivateKey · interface dispatch | RsaPublicKey |
-| session | crypto | [verifyJwt](../../../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug.md) · token: string, publicKey: RsaPublicKey, kid: string, tokenType: string | Json |
-| session | time | [Clock.now](../../../packages/%40git/url_c092cd151499c4e1d8a1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md) · interface dispatch | int |
-| views | logout | [on submission: POST /logout](../../../../client/logout.aug.md) · input: LogoutForm, token: optional string, origin: optional string · deferred HTTP action | HttpResponse\<Html\> |
-| views | common | [Page](../../../../common/views.aug.md) · title: string, children: List\<Html\> | Html |
+| HTTP requests | endpoints | [GET /](../../../../client/endpoints.aug.md#symbol-home) · token: optional string from cookie · HTTP endpoint | HttpResponse\<Html\> |
+| HTTP requests | endpoints | [GET /me](../../../../client/endpoints.aug.md#symbol-me) · token: optional string from cookie · HTTP endpoint | HttpResponse\<UserInfo\> |
+| HTTP requests | login | [GET /login/callback](../../../../client/login.aug.md#symbol-loginCallback) · code: string from query, state: string from query, browser: optional string from cookie · HTTP endpoint | HttpResponse\<Html\> |
+| HTTP requests | login | [GET /login/start](../../../../client/login.aug.md#symbol-startLogin) · HTTP endpoint | HttpResponse\<Html\> |
+| HTTP requests | logout | [POST /logout](../../../../client/logout.aug.md#symbol-logout) · input: LogoutForm from form, token: optional string from cookie, origin: optional string from header · HTTP endpoint | HttpResponse\<Html\> |
+| endpoints | session | [authenticate](../../../../client/session.aug.md#symbol-authenticate) · token: optional string | SessionClaims |
+| endpoints | views | [LoginPage](../../../../client/views.aug.md#symbol-LoginPage) | Html |
+| endpoints | views | [Welcome](../../../../client/views.aug.md#symbol-Welcome) · session: SessionClaims | Html |
+| endpoints | common | [securityHeaders](../../../../common/headers.aug.md#symbol-securityHeaders) | Headers |
+| endpoints | provider | [UserInfo](../../../../provider/contracts.aug.md#symbol-UserInfo) · sub: string, name: string · value construction | UserInfo |
+| login | contracts | [LoginTransaction](../../../../client/contracts.aug.md#symbol-LoginTransaction) · state: string, nonce: string, verifier: string, expires: int · value construction | LoginTransaction |
+| login | contracts | [SessionClaims](../../../../client/contracts.aug.md#symbol-SessionClaims) · iss: string, sub: string, aud: string, exp: int, iat: int, jti: string, csrf: string, name: string · value construction | SessionClaims |
+| login | contracts | [SessionError](../../../../client/contracts.aug.md#symbol-SessionError) · value construction | SessionError |
+| login | protocol | [discover](../../../../client/protocol.aug.md#symbol-discover) | Discovery |
+| login | protocol | [responseJson](../../../../client/protocol.aug.md#symbol-responseJson) · response: HttpResponse\<Bytes\> | Json |
+| login | protocol | [validateIdentity](../../../../client/protocol.aug.md#symbol-validateIdentity) · token: string, nonce: string, now: int, jwks: RsaJwks | IdClaims |
+| login | common | [SigningKeys.session](../../../../common/keys.aug.md#symbol-SigningKeys.session) · interface dispatch | RsaPrivateKey |
+| login | common | [securityHeaders](../../../../common/headers.aug.md#symbol-securityHeaders) | Headers |
+| login | common | [settings](../../../../common/settings.aug.md#symbol-settings) | Settings |
+| login | common | [withCookie](../../../../common/headers.aug.md#symbol-withCookie) · headers: Headers, name: string, value: string, path: string, maxAge: int, secure: bool | Headers |
+| login | memory | [ExpiringStore.put](../../../packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore.put) · key: string, value: LoginTransaction, expires: int, now: int · interface dispatch | void |
+| login | memory | [ExpiringStore.put](../../../packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore.put) · key: string, value: SessionClaims, expires: int, now: int · interface dispatch | void |
+| login | memory | [ExpiringStore.take](../../../packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore.take) · key: string, now: int · interface dispatch | optional LoginTransaction |
+| login | web | [HttpClient.request](../../../packages/%40git/url_897efafd565158fc4908/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-HttpClient.request) · method: string, url: string, headers: Headers, body: Bytes · interface dispatch | HttpResponse\<Bytes\> |
+| login | web | [HttpClient.request](../../../packages/%40git/url_897efafd565158fc4908/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-HttpClient.request) · method: string, url: string, headers: Headers, body: optional Bytes · interface dispatch | HttpResponse\<Bytes\> |
+| login | web | [HttpClient.request](../../../packages/%40git/url_897efafd565158fc4908/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-HttpClient.request) · method: string, url: string, headers: optional Headers, body: optional Bytes · interface dispatch | HttpResponse\<Bytes\> |
+| login | web | [urlEncode](../../../packages/%40git/url_897efafd565158fc4908/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-urlEncode) · input: string | string |
+| login | crypto | [Crypto.equal](../../../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.equal) · left: Bytes, right: Bytes · interface dispatch | bool |
+| login | crypto | [Crypto.random](../../../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.random) · size: int · interface dispatch | Bytes |
+| login | crypto | [Crypto.sha256](../../../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.sha256) · input: Bytes · interface dispatch | Bytes |
+| login | crypto | [signJwt](../../../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug.md#symbol-signJwt) · key: RsaPrivateKey, claims: Json, kid: string, tokenType: string | string |
+| login | time | [Clock.now](../../../packages/%40git/url_c092cd151499c4e1d8a1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-Clock.now) · interface dispatch | int |
+| logout | contracts | [SessionError](../../../../client/contracts.aug.md#symbol-SessionError) · value construction | SessionError |
+| logout | session | [authenticate](../../../../client/session.aug.md#symbol-authenticate) · token: optional string | SessionClaims |
+| logout | common | [securityHeaders](../../../../common/headers.aug.md#symbol-securityHeaders) | Headers |
+| logout | common | [settings](../../../../common/settings.aug.md#symbol-settings) | Settings |
+| logout | common | [withCookie](../../../../common/headers.aug.md#symbol-withCookie) · headers: Headers, name: string, value: string, path: string, maxAge: int, secure: bool | Headers |
+| logout | memory | [ExpiringStore.take](../../../packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore.take) · key: string, now: int · interface dispatch | optional SessionClaims |
+| logout | crypto | [Crypto.equal](../../../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.equal) · left: Bytes, right: Bytes · interface dispatch | bool |
+| logout | time | [Clock.now](../../../packages/%40git/url_c092cd151499c4e1d8a1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-Clock.now) · interface dispatch | int |
+| protocol | contracts | [SessionError](../../../../client/contracts.aug.md#symbol-SessionError) · value construction | SessionError |
+| protocol | common | [settings](../../../../common/settings.aug.md#symbol-settings) | Settings |
+| protocol | json | [parse](../../../packages/%40git/url_2d3c37c690c0fa115be1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-parse) · input: string | Json |
+| protocol | web | [HttpClient.request](../../../packages/%40git/url_897efafd565158fc4908/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-HttpClient.request) · method: string, url: string, headers: optional Headers, body: optional Bytes · interface dispatch | HttpResponse\<Bytes\> |
+| protocol | crypto | [Crypto.equal](../../../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.equal) · left: Bytes, right: Bytes · interface dispatch | bool |
+| protocol | crypto | [Crypto.generateRsa](../../../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.generateRsa) · interface dispatch | RsaPrivateKey |
+| protocol | crypto | [Crypto.publicRsa](../../../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.publicRsa) · key: RsaPrivateKey · interface dispatch | RsaPublicKey |
+| protocol | crypto | [RsaJwks](../../../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug.md#symbol-RsaJwks) · keys: List\<RsaJwk\> · value construction | RsaJwks |
+| protocol | crypto | [importJwk](../../../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug.md#symbol-importJwk) · jwk: RsaJwk | RsaPublicKey |
+| protocol | crypto | [rsaJwk](../../../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug.md#symbol-rsaJwk) · publicKey: RsaPublicKey, kid: string | RsaJwk |
+| protocol | crypto | [signJwt](../../../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug.md#symbol-signJwt) · key: RsaPrivateKey, claims: Json, kid: string, tokenType: string | string |
+| protocol | crypto | [verifyJwt](../../../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug.md#symbol-verifyJwt) · token: string, publicKey: RsaPublicKey, kid: string, tokenType: string | Json |
+| protocol | provider | [IdClaims](../../../../provider/contracts.aug.md#symbol-IdClaims) · iss: string, sub: string, aud: string, exp: int, iat: int, nonce: string, name: string · value construction | IdClaims |
+| session | contracts | [SessionError](../../../../client/contracts.aug.md#symbol-SessionError) · value construction | SessionError |
+| session | common | [SigningKeys.session](../../../../common/keys.aug.md#symbol-SigningKeys.session) · interface dispatch | RsaPrivateKey |
+| session | common | [settings](../../../../common/settings.aug.md#symbol-settings) | Settings |
+| session | memory | [ExpiringStore.get](../../../packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore.get) · key: string, now: int · interface dispatch | optional SessionClaims |
+| session | crypto | [Crypto.equal](../../../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.equal) · left: Bytes, right: Bytes · interface dispatch | bool |
+| session | crypto | [Crypto.publicRsa](../../../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.publicRsa) · key: RsaPrivateKey · interface dispatch | RsaPublicKey |
+| session | crypto | [verifyJwt](../../../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug.md#symbol-verifyJwt) · token: string, publicKey: RsaPublicKey, kid: string, tokenType: string | Json |
+| session | time | [Clock.now](../../../packages/%40git/url_c092cd151499c4e1d8a1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-Clock.now) · interface dispatch | int |
+| views | logout | [on submission: POST /logout](../../../../client/logout.aug.md#symbol-logout) · input: LogoutForm, token: optional string, origin: optional string · deferred HTTP action | HttpResponse\<Html\> |
+| views | common | [Page](../../../../common/views.aug.md#symbol-Page) · title: string, children: List\<Html\> | Html |
 
 </details>
 

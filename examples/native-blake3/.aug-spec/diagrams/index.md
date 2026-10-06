@@ -21,7 +21,7 @@ flowchart TD
 ```mermaid
 flowchart LR
     n0["hashing"]
-    n1["url_b647a258d7fe6bf55049"]
+    n1["@greenpandastudios/aug-blake3"]
     n0 -->|"hash(input) → string"| n1
 ```
 
@@ -32,8 +32,8 @@ flowchart LR
 
 | From | To | Operation and inputs | Result |
 | --- | --- | --- | --- |
-| hashing | url\_b647a258d7fe6bf55049 | [hash](../packages/%40greenpandastudios/aug-blake3/0.1.5/api.aug.md) · input: Bytes | string |
-| Startup | hashing | [hashText](../../hashing.aug.md) · value: string | string |
+| hashing | @greenpandastudios/aug-blake3 | [hash](../packages/%40greenpandastudios/aug-blake3/0.1.5/api.aug.md#symbol-hash) · input: Bytes | string |
+| Startup | hashing | [hashText](../../hashing.aug.md#symbol-hashText) · value: string | string |
 
 </details>
 

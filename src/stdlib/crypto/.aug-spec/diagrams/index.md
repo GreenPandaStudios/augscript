@@ -21,7 +21,7 @@ flowchart TD
 ```mermaid
 flowchart LR
     n0["jose"]
-    n1["url_ac5ce553f84fc815ffc3"]
+    n1["@git/url_2d3c37c690c0fa115be1"]
     n0 -->|"parse(input) → Json"| n1
 ```
 
@@ -32,13 +32,13 @@ flowchart LR
 
 | From | To | Operation and inputs | Result |
 | --- | --- | --- | --- |
-| jose | contracts | [Crypto.decodeBase64url](../../contracts.aug.md) · input: string · interface dispatch | Bytes |
-| jose | contracts | [Crypto.exportRsa](../../contracts.aug.md) · publicKey: RsaPublicKey · interface dispatch | Tuple\<Bytes, Bytes\> |
-| jose | contracts | [Crypto.importRsa](../../contracts.aug.md) · modulus: Bytes, exponent: Bytes · interface dispatch | RsaPublicKey |
-| jose | contracts | [Crypto.signRsa](../../contracts.aug.md) · key: RsaPrivateKey, input: Bytes · interface dispatch | Bytes |
-| jose | contracts | [Crypto.verifyEd25519](../../contracts.aug.md) · publicKey: string, input: Bytes, signature: Bytes · interface dispatch | bool |
-| jose | contracts | [Crypto.verifyRsa](../../contracts.aug.md) · publicKey: RsaPublicKey, input: Bytes, signature: Bytes · interface dispatch | bool |
-| jose | url\_ac5ce553f84fc815ffc3 | [parse](../packages/%40git/url_2d3c37c690c0fa115be1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md) · input: string | Json |
+| jose | contracts | [Crypto.decodeBase64url](../../contracts.aug.md#symbol-Crypto.decodeBase64url) · input: string · interface dispatch | Bytes |
+| jose | contracts | [Crypto.exportRsa](../../contracts.aug.md#symbol-Crypto.exportRsa) · publicKey: RsaPublicKey · interface dispatch | Tuple\<Bytes, Bytes\> |
+| jose | contracts | [Crypto.importRsa](../../contracts.aug.md#symbol-Crypto.importRsa) · modulus: Bytes, exponent: Bytes · interface dispatch | RsaPublicKey |
+| jose | contracts | [Crypto.signRsa](../../contracts.aug.md#symbol-Crypto.signRsa) · key: RsaPrivateKey, input: Bytes · interface dispatch | Bytes |
+| jose | contracts | [Crypto.verifyEd25519](../../contracts.aug.md#symbol-Crypto.verifyEd25519) · publicKey: string, input: Bytes, signature: Bytes · interface dispatch | bool |
+| jose | contracts | [Crypto.verifyRsa](../../contracts.aug.md#symbol-Crypto.verifyRsa) · publicKey: RsaPublicKey, input: Bytes, signature: Bytes · interface dispatch | bool |
+| jose | @git/url\_2d3c37c690c0fa115be1 | [parse](../packages/%40git/url_2d3c37c690c0fa115be1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-parse) · input: string | Json |
 
 </details>
 

@@ -44,11 +44,11 @@ flowchart LR
 
 | From | To | Operation and inputs | Result |
 | --- | --- | --- | --- |
-| console | August libraries | [Console.write](../dependencies/august/0.23.0/io/contracts.md) · value: string · interface dispatch | void |
-| greeter | logger | [Logger.log](../logger.md) · message: string · interface dispatch | void |
-| Startup | greeter | [Greeter](../greeter.md) · x: int | Greeter |
-| Startup | greeter | [Greeter.greet](../greeter.md) · name: string | void |
-| Startup | math | [increment](../math.md) · value: int | int |
+| console | August libraries | [Console.write](../dependencies/august/0.23.0/io/contracts.md#symbol-Console.write) · value: string · interface dispatch | void |
+| greeter | logger | [Logger.log](../logger.md#symbol-Logger.log) · message: string · interface dispatch | void |
+| Startup | greeter | [Greeter](../greeter.md#symbol-Greeter) · x: int | Greeter |
+| Startup | greeter | [Greeter.greet](../greeter.md#symbol-Greeter.greet) · name: string | void |
+| Startup | math | [increment](../math.md#symbol-increment) · value: int | int |
 
 :::
 

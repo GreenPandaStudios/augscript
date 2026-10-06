@@ -27,7 +27,7 @@ flowchart TD
 
 | From | To | Operation and inputs | Result |
 | --- | --- | --- | --- |
-| Startup | operations | [validate](../operations.md) · value: int | int |
+| Startup | operations | [validate](../operations.md#symbol-validate) · value: int | int |
 
 :::
 

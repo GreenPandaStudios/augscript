@@ -1,3 +1,4 @@
+import {workerMapTemplate} from './worker-mapping.ts';
 import {basename,dirname,join,relative} from 'node:path';
 import {type Expr,type MethodDecl,type SourceFile,type Span} from './ast.ts';
 import type {CheckedProject} from './checker.ts';
@@ -31,8 +32,8 @@ export function diagramFolders(root:string,files:SourceFile[]):FolderView[]{
  * arrows or guesses about names. Each view groups one level of the folder tree. */
 export function dataFlowView(checked:CheckedProject,graph:SemanticGraph,files:SourceFile[],root:string,folder=''):DataFlowView{
   const symbols=new Map(graph.symbols.map(symbol=>[symbol.id,symbol])),own=new Map(files.map(file=>[semanticSourcePath(checked,file.path),relative(root,file.path).replaceAll('\\','/')]));
-  const packageNames=new Map([...checked.project.packages.roots].sort(([a],[b])=>compare(a,b)).map(([name,scope])=>['package/'+scope.name+'@'+scope.version,name]));
-  const calls=new Map<string,Extract<Expr,{kind:'call'}>>(),actions=new Set([...checked.actions.keys()].map(expr=>site({...expr.span,file:semanticSourcePath(checked,expr.span.file)})));
+  const packageNames=new Map([...checked.project.packages.roots].sort(([a],[b])=>compare(a,b)).map(([name,scope])=>['package/'+scope.name+'@'+scope.version,/^url_[0-9a-f]{20}$/.test(name)?scope.name:name]));
+  const calls=new Map<string,Extract<Expr,{kind:'call'}>>(),copies=new Map<string,Extract<Expr,{kind:'recordCopy'}>>(),actions=new Set([...checked.actions.keys()].map(expr=>site({...expr.span,file:semanticSourcePath(checked,expr.span.file)})));
   const declarations=new Map<string,MethodDecl>();
   for(const def of checked.project.definitions.values()){if(def.node.kind==='function')declarations.set(def.id,def.node);if('methods' in def.node)for(const method of def.node.methods)declarations.set(def.id+'/method/'+method.name,method);}
   const visit=(value:unknown):void=>{
@@ -40,6 +41,7 @@ export function dataFlowView(checked:CheckedProject,graph:SemanticGraph,files:So
     if(Array.isArray(value)){value.forEach(visit);return;}
     const node=value as {kind?:string;span?:Span};
     if(node.kind==='call'&&node.span)calls.set(site({...node.span,file:semanticSourcePath(checked,node.span.file)}),value as Extract<Expr,{kind:'call'}>);
+    if(node.kind==='recordCopy'&&node.span)copies.set(site({...node.span,file:semanticSourcePath(checked,node.span.file)}),value as Extract<Expr,{kind:'recordCopy'}>);
     for(const [key,child] of Object.entries(value))if(key!=='span'&&key!=='source')visit(child);
   };
   files.forEach(file=>visit(file.items));
@@ -62,17 +64,22 @@ export function dataFlowView(checked:CheckedProject,graph:SemanticGraph,files:So
     const source=symbols.get(edge.from)?.location.file??(edge.from.startsWith('module:')?edge.from.slice(7):undefined),target=symbols.get(edge.to);
     if(!source||!target||!own.has(source)||folder&&!own.get(source)?.startsWith(folder+'/')&&!own.get(target.location.file)?.startsWith(folder+'/'))continue;
     const from=group(source),to=group(target.location.file);if(from===to)continue;
-    const call=calls.get(site(edge.location)),resolved=call&&checked.resolvedCalls.get(call),plan=call&&checked.callPlans.get(call);
-    const declaration=declarations.get(target.id),params=resolved?.params??declaration?.params??[];
+    const call=calls.get(site(edge.location)),copy=copies.get(site(edge.location)),candidate=call&&checked.workerMaps.get(call);
+    const mapping=candidate?.transformation.id===target.id?candidate:undefined;
+    const resolved=!mapping&&call?checked.resolvedCalls.get(call):undefined,plan=!mapping&&call?checked.callPlans.get(call):undefined;
+    const declaration=declarations.get(target.id),constructor=checked.project.definitions.get(target.id)?.node;
+    const params=resolved?.params??declaration?.params??(constructor?.kind==='class'?constructor.fields:[]);
     const inputs=params.flatMap((param,index)=>{
       if(param.injected)return [];
-      const sourceIndex=plan?.sourceIndices[index],type=sourceIndex!==undefined&&call?checked.expressionTypes.get(call.args[sourceIndex]):checked.resolvedTypes.get(param.type);
-      return [(param.label??param.name)+': '+(type?tyName(type):param.type.name)];
+      const sourceIndex=plan?.sourceIndices[index],type=mapping?mapping.input:sourceIndex!==undefined&&call?checked.expressionTypes.get(call.args[sourceIndex]):checked.resolvedTypes.get(param.type);
+      return [(param.label??param.name)+': '+(param.ownership==='own'||param.ownership==='borrow'?param.ownership+' ':'')+(type?tyName(type):param.type.name)];
     }).join(', ');
-    const type=call?checked.expressionTypes.get(call):declaration&&callableResult(checked,declaration);
-    const result=type?tyName(type):edge.kind==='forward'?'inherited result':'declared result';
+    const type=mapping?.result??(copy?checked.expressionTypes.get(copy)??checked.expressionTypes.get(copy.base):call?checked.expressionTypes.get(call):declaration&&callableResult(checked,declaration));
+    const result=type?(declaration?.returnOwnership==='own'?'own ':'')+tyName(type):edge.kind==='forward'?'inherited result':'declared result';
     let operation=(target.owner?symbols.get(target.owner)?.name+'.':'')+target.name;
-    const boundary=resolved?.node.kind==='class'&&(resolved.node.record||resolved.node.implements.some(type=>type.name==='Error'))?'value construction':actions.has(site(edge.location))?'deferred HTTP action':edge.kind==='callback-call'?'deferred callback':resolved?.dispatch==='interface'?'interface dispatch':resolved?.node.kind==='function'&&resolved.node.externC?'native boundary':edge.kind==='forward'?'forwarded contract':'';
+    const template=call?.callee.kind==='member'&&call.callee.object.kind==='name'&&call.callee.object.name==='transformation'&&call.callee.name==='apply'&&workerMapTemplate(checked.project,checked.project.scopes.get(call.span.file)?.get('_mapWorkerChunk'));
+    const boundary=mapping?'isolated worker transformation':template?'compile-time target placeholder':constructor?.kind==='class'&&(constructor.record||constructor.implements.some(type=>type.name==='Error'))?'value construction':actions.has(site(edge.location))?'deferred HTTP action':edge.kind==='callback-call'?'deferred callback':resolved?.dispatch==='interface'?'interface dispatch':resolved?.node.kind==='function'&&resolved.node.externC?'native boundary':edge.kind==='forward'?'forwarded contract':'';
+    if(template)operation='selected transformation';
     if(boundary==='deferred HTTP action'&&declaration?.endpoint)operation='on submission: '+declaration.endpoint.method+' '+declaration.endpoint.path;
     add(from);add(to);contracts.push({from,to,operation,inputs,result,boundary,target:target.id});
   }
@@ -88,7 +95,7 @@ export function dataFlowView(checked:CheckedProject,graph:SemanticGraph,files:So
   // Keep the complete operation contracts in the table. The overview has at most
   // one request and one result arrow per pair of logical units.
   const pairs=new Map<string,DataFlowView['contracts']>();
-  for(const contract of contracts.filter(contract=>contract.boundary!=='value construction')){const key=contract.from+'\0'+contract.to;const list=pairs.get(key)??[];list.push(contract);pairs.set(key,list);}
+  for(const contract of contracts.filter(contract=>contract.boundary!=='value construction'&&contract.boundary!=='compile-time target placeholder')){const key=contract.from+'\0'+contract.to;const list=pairs.get(key)??[];list.push(contract);pairs.set(key,list);}
   const dataLabel=(type:string)=>type.replace(/HttpResponse<([^<>]+)>/g,'$1 response').replace(/List<([^<>]+)>/g,'list of $1').replaceAll('<','‹').replaceAll('>','›');
   const summary=(items:string[])=>{const values=[...new Set(items)].sort(compare);return values.slice(0,2).join(' / ')+(values.length>2?' + '+(values.length-2)+' more':'');};
   for(const entries of pairs.values()){

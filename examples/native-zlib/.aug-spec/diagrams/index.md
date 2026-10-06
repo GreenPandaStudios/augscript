@@ -21,7 +21,7 @@ flowchart TD
 ```mermaid
 flowchart LR
     n0["compression"]
-    n1["url_43eae362d663f91d140b"]
+    n1["@greenpandastudios/aug-zlib"]
     n0 -->|"compress(input) / decompress(input, maximumOutput) → Bytes"| n1
 ```
 
@@ -32,9 +32,9 @@ flowchart LR
 
 | From | To | Operation and inputs | Result |
 | --- | --- | --- | --- |
-| compression | url\_43eae362d663f91d140b | [compress](../packages/%40greenpandastudios/aug-zlib/0.1.5/api.aug.md) · input: Bytes | Bytes |
-| compression | url\_43eae362d663f91d140b | [decompress](../packages/%40greenpandastudios/aug-zlib/0.1.5/api.aug.md) · input: Bytes, maximumOutput: int | Bytes |
-| Startup | compression | [roundTrip](../../compression.aug.md) | Bytes |
+| compression | @greenpandastudios/aug-zlib | [compress](../packages/%40greenpandastudios/aug-zlib/0.1.5/api.aug.md#symbol-compress) · input: Bytes | Bytes |
+| compression | @greenpandastudios/aug-zlib | [decompress](../packages/%40greenpandastudios/aug-zlib/0.1.5/api.aug.md#symbol-decompress) · input: Bytes, maximumOutput: int | Bytes |
+| Startup | compression | [roundTrip](../../compression.aug.md#symbol-roundTrip) | Bytes |
 
 </details>
 

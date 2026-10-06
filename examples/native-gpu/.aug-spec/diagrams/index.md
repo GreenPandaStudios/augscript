@@ -21,8 +21,8 @@ flowchart TD
 ```mermaid
 flowchart LR
     n0["compute"]
-    n1["url_39068e92fef803d998a8"]
-    n0 -->|"add(left, right) / download(buffer) + 2 more → Buffer / Device + 1 more"| n1
+    n1["@greenpandastudios/aug-gpu"]
+    n0 -->|"add(left, right) / download(buffer) + 2 more → list of float / own Buffer + 1 more"| n1
 ```
 
 </details>
@@ -33,7 +33,7 @@ flowchart LR
 ```mermaid
 flowchart LR
     n0["Startup"]
-    n1["url_39068e92fef803d998a8"]
+    n1["@greenpandastudios/aug-gpu"]
     n0 -->|"GpuError.explain → string"| n1
 ```
 
@@ -44,12 +44,12 @@ flowchart LR
 
 | From | To | Operation and inputs | Result |
 | --- | --- | --- | --- |
-| compute | url\_39068e92fef803d998a8 | [add](../packages/%40greenpandastudios/aug-gpu/0.1.1/api.aug.md) · left: Buffer, right: Buffer | Buffer |
-| compute | url\_39068e92fef803d998a8 | [download](../packages/%40greenpandastudios/aug-gpu/0.1.1/api.aug.md) · buffer: Buffer | List\<float\> |
-| compute | url\_39068e92fef803d998a8 | [openDevice](../packages/%40greenpandastudios/aug-gpu/0.1.1/api.aug.md) | Device |
-| compute | url\_39068e92fef803d998a8 | [upload](../packages/%40greenpandastudios/aug-gpu/0.1.1/api.aug.md) · device: Device, values: List\<float\> | Buffer |
-| Startup | compute | [calculate](../../compute.aug.md) · left: List\<float\>, right: List\<float\> | List\<float\> |
-| Startup | url\_39068e92fef803d998a8 | [GpuError.explain](../packages/%40greenpandastudios/aug-gpu/0.1.1/contracts.aug.md) | string |
+| compute | @greenpandastudios/aug-gpu | [add](../packages/%40greenpandastudios/aug-gpu/0.1.1/api.aug.md#symbol-add) · left: Buffer, right: Buffer | own Buffer |
+| compute | @greenpandastudios/aug-gpu | [download](../packages/%40greenpandastudios/aug-gpu/0.1.1/api.aug.md#symbol-download) · buffer: Buffer | List\<float\> |
+| compute | @greenpandastudios/aug-gpu | [openDevice](../packages/%40greenpandastudios/aug-gpu/0.1.1/api.aug.md#symbol-openDevice) | own Device |
+| compute | @greenpandastudios/aug-gpu | [upload](../packages/%40greenpandastudios/aug-gpu/0.1.1/api.aug.md#symbol-upload) · device: Device, values: List\<float\> | own Buffer |
+| Startup | compute | [calculate](../../compute.aug.md#symbol-calculate) · left: List\<float\>, right: List\<float\> | List\<float\> |
+| Startup | @greenpandastudios/aug-gpu | [GpuError.explain](../packages/%40greenpandastudios/aug-gpu/0.1.1/contracts.aug.md#symbol-GpuError.explain) | string |
 
 </details>
 

@@ -27,9 +27,9 @@ flowchart TD
 
 | From | To | Operation and inputs | Result |
 | --- | --- | --- | --- |
-| Startup | counter | [Counter](../counter.md) · value: int | Counter |
-| Startup | counter | [Counter.increment](../counter.md) | void |
-| Startup | counter | [Counter.read](../counter.md) | int |
+| Startup | counter | [Counter](../counter.md#symbol-Counter) · value: int | Counter |
+| Startup | counter | [Counter.increment](../counter.md#symbol-Counter.increment) | void |
+| Startup | counter | [Counter.read](../counter.md#symbol-Counter.read) | int |
 
 :::
 

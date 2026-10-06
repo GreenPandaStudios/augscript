@@ -27,7 +27,7 @@ flowchart TD
 
 | From | To | Operation and inputs | Result |
 | --- | --- | --- | --- |
-| HTTP requests | routes | [GET /bench](../routes.md) · HTTP endpoint | Reply |
+| HTTP requests | routes | [GET /bench](../routes.md#symbol-reply) · HTTP endpoint | Reply |
 
 :::
 

@@ -29,9 +29,9 @@ flowchart TD
 
 ```mermaid
 flowchart LR
-    n0["url_b05554aeae5c0d02f8f8"]
+    n0["@greenpandastudios/aug-pytorch"]
     n1["tensors"]
-    n1 -->|"add(left, right) / sum(tensor) + 2 more → Tensor / float + 1 more"| n0
+    n1 -->|"add(left, right) / sum(tensor) + 2 more → float / list of float + 1 more"| n0
 ```
 
 :::
@@ -40,11 +40,11 @@ flowchart LR
 
 | From | To | Operation and inputs | Result |
 | --- | --- | --- | --- |
-| Startup | tensors | [calculate](../tensors.md) | float |
-| tensors | url\_b05554aeae5c0d02f8f8 | [add](../dependencies/packages/%40greenpandastudios/aug-pytorch/0.1.6/api.md) · left: Tensor, right: Tensor | Tensor |
-| tensors | url\_b05554aeae5c0d02f8f8 | [sum](../dependencies/packages/%40greenpandastudios/aug-pytorch/0.1.6/api.md) · tensor: Tensor | float |
-| tensors | url\_b05554aeae5c0d02f8f8 | [tensor](../dependencies/packages/%40greenpandastudios/aug-pytorch/0.1.6/api.md) · values: List\<float\> | Tensor |
-| tensors | url\_b05554aeae5c0d02f8f8 | [values](../dependencies/packages/%40greenpandastudios/aug-pytorch/0.1.6/api.md) · tensor: Tensor | List\<float\> |
+| Startup | tensors | [calculate](../tensors.md#symbol-calculate) | float |
+| tensors | @greenpandastudios/aug-pytorch | [add](../dependencies/packages/%40greenpandastudios/aug-pytorch/0.1.6/api.md#symbol-add) · left: Tensor, right: Tensor | own Tensor |
+| tensors | @greenpandastudios/aug-pytorch | [sum](../dependencies/packages/%40greenpandastudios/aug-pytorch/0.1.6/api.md#symbol-sum) · tensor: Tensor | float |
+| tensors | @greenpandastudios/aug-pytorch | [tensor](../dependencies/packages/%40greenpandastudios/aug-pytorch/0.1.6/api.md#symbol-tensor) · values: List\<float\> | own Tensor |
+| tensors | @greenpandastudios/aug-pytorch | [values](../dependencies/packages/%40greenpandastudios/aug-pytorch/0.1.6/api.md#symbol-values) · tensor: Tensor | List\<float\> |
 
 :::
 
