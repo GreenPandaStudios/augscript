@@ -43,7 +43,7 @@
   },
   "devDependencies": {
     "@vscode/vsce": "4.0.1-1",
-    "sharp": "0.35.4"
+    "sharp": "0.35.5"
   },
   "contributes": {
     "configurationDefaults": {
