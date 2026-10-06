@@ -562,7 +562,9 @@ class FunctionLowering {
     this.instruction({op:'copy',out:0,input:response});this.terminate({op:'jump',target:finished});
     this.enter(failed);this.instruction({op:'http-failure',out:0,errors:endpoint.errors.map(error=>({type:this.generator.definition(def.file,error.type.name)?.id??error.type.name,status:error.status}))});this.terminate({op:'jump',target:finished});
     this.enter(finished);this.error='cleanup';this.returning='cleanup';
-    const completed=this.runtime('HTTP_FINISH',[0]);this.instruction({op:'copy',out:0,input:completed});
+    // Finish turns request cancellation into its final response. Preserve that
+    // response before cleanup; a generic cancellation branch would discard it.
+    const completed=this.runtime('HTTP_FINISH',[0],undefined,undefined,false);this.instruction({op:'copy',out:0,input:completed});
   }
   private loopTargets(breaking:string, continuing:string): {breaking:LoopExit; continuing:LoopExit} {
     const depth=this.slot(), locks=this.slot(), owned=new Set(this.owned);

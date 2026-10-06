@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Preserve the final HTTP response when LLVM endpoint cancellation completes. Same-file deadline tests now receive 504 and can issue another request after cancellation.
+
+- Expand independent conformance with inferred contracts, interceptor ownership and dependency mappings, strict text parsing, HTML escaping, and native same-file HTTP cases.
+
 - End generated diagram pages with one newline so newly published package specifications pass source whitespace checks.
 
 - Qualify unpublished compiler archives through the ordinary integrity verifier before cache tests. CI builds the sealed archive first and rejects missing or changed candidate transports, including on warm caches.

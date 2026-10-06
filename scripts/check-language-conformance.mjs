@@ -8,6 +8,7 @@ import {createHash} from 'node:crypto';
 import {spawnSync} from 'node:child_process';
 import {loadProject} from '../src/project.ts';
 import {checkProject} from '../src/checker.ts';
+import {discoverTests,projectForTest} from '../src/testing.ts';
 import {formatFile} from '../src/formatter.ts';
 import {conformanceLedger} from './conformance-ledger.mjs';
 import {qualificationIdentity} from './qualification-identity.mjs';
@@ -45,6 +46,12 @@ export function validateCorpus(corpus){
   assert.ok(Object.hasOwn(example,'stdout')!==Object.hasOwn(example,'diagnostic'),'Each case needs exactly one independent oracle');
   if(Object.hasOwn(example,'stdout'))assert.equal(typeof example.stdout,'string');
   else assert.match(example.diagnostic,/^[A-Z][A-Z0-9_]*$/);
+  if(example.diagnosticText!==undefined){
+   assert.ok(example.diagnostic&&typeof example.diagnosticText==='string'&&example.diagnosticText.length,'Diagnostic text requires a rejected source case');
+  }
+  if(example.tests!==undefined){
+   assert.ok(Object.hasOwn(example,'stdout')&&Number.isSafeInteger(example.tests)&&example.tests>0,'Same-file tests need a positive independent expected case count');
+  }
   assert.ok(example.files&&Object.keys(example.files).length&&Object.hasOwn(example.files,'main.aug'),'Each case needs source units including main.aug');
   for(const [file,source] of Object.entries(example.files)){assert.match(file,/^(?:[\w-]+\/)*[\w-]+\.aug$/);assert.equal(typeof source,'string');}
   if(example.drops!==undefined){
@@ -97,7 +104,7 @@ function execute(example,optimization,syntax,toolchain){
   writeFileSync(join(directory,'main.yaml'),`backend: llvm\noptimization: ${optimization}\nblock_style: ${syntax}\n`);
   let project=loadProject(directory),checked=checkProject(project);
   if(example.diagnostic){
-   const errors=checked.diagnostics.filter(d=>d.severity!=='warning');assert.ok(errors.some(d=>d.code===example.diagnostic),`${example.id}: expected ${example.diagnostic}: ${JSON.stringify(errors)}`);
+   const errors=checked.diagnostics.filter(d=>d.severity!=='warning');assert.ok(errors.some(d=>d.code===example.diagnostic&&(!example.diagnosticText||d.message.includes(example.diagnosticText))),`${example.id}: expected ${example.diagnostic}${example.diagnosticText?' / '+example.diagnosticText:''}: ${JSON.stringify(errors)}`);
    return {diagnostics:errors.map(d=>({code:d.code,message:d.message}))};
   }
   assert.deepEqual(checked.diagnostics.filter(d=>d.severity!=='warning'),[],example.id);
@@ -109,7 +116,21 @@ function execute(example,optimization,syntax,toolchain){
   const result=spawnSync(compiled.output,[],{encoding:'utf8',timeout:15000,env:environment});
   assert.equal(result.status,0,example.id+': '+(result.stderr||result.error?.message));
   const drops=example.drops?checkCleanupCounts(example,result.stderr):undefined;
-  return {stdout:result.stdout,...(drops?{drops,dropSequence:dropSequence(result.stderr)}:{})};
+  const tests=[];
+  if(example.tests!==undefined){
+   const discovered=discoverTests(project);
+   assert.deepEqual(discovered.diagnostics,[],example.id+' test discovery');
+   assert.equal(discovered.tests.length,example.tests,example.id+' independently expected same-file cases');
+   for(const unit of discovered.tests){
+    const testChecked=checkProject(projectForTest(project,unit));
+    assert.deepEqual(testChecked.diagnostics.filter(d=>d.severity!=='warning'),[],unit.id);
+    const executable=compileLLVM(testChecked,{release:optimization==='release',toolchain});
+    const observed=spawnSync(executable.output,[],{encoding:'utf8',timeout:15000,env:environment});
+    assert.equal(observed.status,0,unit.id+': '+(observed.stderr||observed.error?.message));
+    tests.push({id:unit.id,status:'passed',stdout:observed.stdout});
+   }
+  }
+  return {stdout:result.stdout,...(drops?{drops,dropSequence:dropSequence(result.stderr)}:{}),...(tests.length?{tests}:{})};
  }finally{rmSync(directory,{recursive:true,force:true});}
 }
 export function runConformance(root=resolve(import.meta.dirname,'..')){

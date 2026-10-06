@@ -85,3 +85,43 @@ test endpoint submit client:
     assert.equal(report.failed, 0);
   } finally {rmSync(root, {recursive:true, force:true});}
 });
+
+test('same-file HTTP deadlines return 504 after cancellation in both backends', () => {
+  const root=mkdtempSync(join(tmpdir(),'aug-endpoint-deadline-'));
+  try {
+    writeFileSync(join(root,'main.aug'),'import slow and child from endpoints\n');
+    writeFileSync(join(root,'endpoints.aug'),`[Timeout(milliseconds=10)]
+endpoint GET "/slow" as slow() returns string:
+    while true:
+        pass
+[Timeout(milliseconds=10)]
+endpoint GET "/child" as child() returns string:
+    scope:
+        pending = start spin()
+        wait for pending
+    return "unreachable"
+spin():
+    while true:
+        pass
+test endpoint slow client:
+    when deadline:
+        it expires:
+            response = client.request(method="GET", path="/slow")
+            assert(condition=response.status == 504)
+            again = client.request(method="GET", path="/slow")
+            assert(condition=again.status == 504)
+test endpoint child client:
+    when deadline:
+        it joins_cancelled_child:
+            response = client.request(method="GET", path="/child")
+            assert(condition=response.status == 504)
+`);
+    prepareLibraryFixtures(root);
+    for(const backend of ['llvm','c'])for(const optimization of ['debug','release']){
+      writeFileSync(join(root,'main.yaml'),`backend: ${backend}\noptimization: ${optimization}\n`);
+      const result=spawnSync(process.execPath,[resolve('bin/aug.mjs'),'test',root,'--json','--backend',backend],{encoding:'utf8',timeout:30000});
+      assert.equal(result.status,0,backend+'/'+optimization+': '+(result.stderr||result.stdout));
+      const report=JSON.parse(result.stdout);assert.equal(report.passed,2);assert.equal(report.failed,0);
+    }
+  }finally{rmSync(root,{recursive:true,force:true});}
+});
