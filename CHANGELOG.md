@@ -4,6 +4,8 @@
 
 - Give every documented ownership and task lifecycle rule an independent acceptance program. Check branch joins, alias mutation, repeated starts, collection waits, captured moves, deferred failures and cancellation cleanup in the LLVM qualification corpus.
 
+- Derive GitHub and npm release channels from the reviewed version: previews remain prereleases on `next`, while qualified releases starting at 1.0 use the stable channel and `latest`. Reject mismatched release metadata and mixed package versions before publication.
+
 - Extend independent language conformance with forwarding chains, binding patterns, defaults, record copies, loop control, task loans and cleanup counts. Qualification fingerprints runtime and acceptance inputs and reports independent coverage separately from linked regressions.
 
 - Show scalar updates and empty rendered branches in generated sequences so calculation-only loops retain readable frames. Preserve checked evaluation order across repeated generation and retain grouped arithmetic and record-copy inputs.

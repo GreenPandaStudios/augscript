@@ -5,6 +5,7 @@ import { pathToFileURL } from 'node:url';
 import { spawnSync } from 'node:child_process';
 import { setTimeout as wait } from 'node:timers/promises';
 import { verifyNpmRelease } from './release-publication.mjs';
+import {releaseChannel} from './release-channel.mjs';
 
 /** Registry failures must not be mistaken for an unpublished version. */
 export function registryMatches(result, integrity) {
@@ -18,12 +19,15 @@ export function registryMatches(result, integrity) {
 }
 
 export async function publishPackages(packages, run = spawnSync, log = text => process.stdout.write(text + '\n'), { pause = wait } = {}) {
+  assert.ok(packages.length,'No release packages supplied');
+  const version=packages[0].version,channel=releaseChannel(version);
+  assert.ok(packages.every(pkg=>pkg.version===version),'All release packages must use one reviewed version');
   // Preflight every existing version before publishing any package.
   const existing = packages.map(pkg => registryMatches(run('npm', ['view', `${pkg.name}@${pkg.version}`, 'dist.integrity',
     '--json', '--registry=https://registry.npmjs.org'], { encoding: 'utf8' }), pkg.integrity));
   for (const [index, pkg] of packages.entries()) {
     if (existing[index]) { log(`Already published: ${pkg.name}@${pkg.version}`); continue; }
-    const result = run('npm', ['publish', pkg.file, '--access', 'public', '--tag', 'next', '--ignore-scripts',
+    const result = run('npm', ['publish', pkg.file, '--access', 'public', '--tag', channel.npmTag, '--ignore-scripts',
       '--registry=https://registry.npmjs.org'], { stdio: 'inherit' });
     assert.equal(result.status, 0, `Publication failed for ${pkg.name}; check its npm trusted publisher for publish-npm.yml / npm`);
     // npm can accept an upload several minutes before its public metadata is visible.

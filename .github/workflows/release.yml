@@ -23,6 +23,7 @@ jobs:
     outputs:
       tag: ${{ steps.source.outputs.tag }}
       sha: ${{ steps.source.outputs.sha }}
+      prerelease: ${{ steps.source.outputs.prerelease }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -287,13 +288,16 @@ jobs:
         with:
           name: reviewed-release
           path: dist/release
-      - name: Upload draft prerelease after all consumer gates
+      - name: Upload reviewed draft after all consumer gates
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ needs.source.outputs.tag }}
           RELEASE_COMMIT: ${{ needs.source.outputs.sha }}
+          RELEASE_PRERELEASE: ${{ needs.source.outputs.prerelease }}
         run: |
           node scripts/release-source.mjs "$RELEASE_TAG" "$RELEASE_COMMIT"
           mkdir -p .aug-build
           git show "$RELEASE_COMMIT:CHANGELOG.md" > .aug-build/release-notes.md
-          gh release create "$RELEASE_TAG" dist/release/* --draft --prerelease --verify-tag --title "August $RELEASE_TAG" --notes-file .aug-build/release-notes.md
+          channel=(--latest=false)
+          if test "$RELEASE_PRERELEASE" = true; then channel+=(--prerelease); fi
+          gh release create "$RELEASE_TAG" dist/release/* --draft "${channel[@]}" --verify-tag --title "August $RELEASE_TAG" --notes-file .aug-build/release-notes.md

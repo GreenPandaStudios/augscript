@@ -5,6 +5,7 @@ import { resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
 import { validateReleaseRequest, validateExtensionReleaseRequest } from './release-publication.mjs';
+import {releaseChannel} from './release-channel.mjs';
 
 export function downloadRelease({ kind, directory, tag, ref, repository, sha }, runner = spawnSync) {
   assert.ok(['npm', 'extension'].includes(kind), 'Choose npm or extension artifacts');
@@ -15,8 +16,9 @@ export function downloadRelease({ kind, directory, tag, ref, repository, sha }, 
     assert.equal(result.status, 0, `GitHub release command failed: ${result.stderr}`);
     return result.stdout;
   };
-  const release = JSON.parse(run(['release', 'view', tag, '--repo', repo, '--json', 'tagName,isDraft,url']));
+  const release = JSON.parse(run(['release', 'view', tag, '--repo', repo, '--json', 'tagName,isDraft,isPrerelease,url']));
   assert.equal(release.tagName, tag); assert.equal(release.isDraft, false, 'Review and publish the GitHub release first');
+  if(kind==='npm')assert.equal(release.isPrerelease,releaseChannel(version).prerelease,'GitHub release channel differs from its reviewed version');
   let object = JSON.parse(run(['api', `repos/${repo}/git/ref/tags/${tag}`])).object;
   for (let depth = 0; object?.type === 'tag' && depth < 8; depth++)
     object = JSON.parse(run(['api', `repos/${repo}/git/tags/${object.sha}`])).object;
