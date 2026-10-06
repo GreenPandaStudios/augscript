@@ -44,7 +44,10 @@
       "productions": [
         "Forward"
       ],
-      "cases": [],
+      "cases": [
+        "forwarding-chain",
+        "forwarding-required-label"
+      ],
       "regressions": [
         {
           "file": "tests/forwarding.test.mjs",
@@ -308,7 +311,11 @@
         "BindingPattern",
         "FieldPattern"
       ],
-      "cases": [],
+      "cases": [
+        "binding-nested-data",
+        "binding-tuple-arity",
+        "binding-readonly"
+      ],
       "regressions": [
         {
           "file": "tests/binding-patterns.test.mjs",
@@ -403,7 +410,8 @@
       "productions": [],
       "cases": [
         "workers",
-        "start-without-scope"
+        "start-without-scope",
+        "task-owned-result-rejected"
       ],
       "regressions": [
         {
@@ -566,7 +574,9 @@
       "summary": "A local owned value is dropped once when its scope throws.",
       "reference": "reference.md#ownership-and-read-access",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "owned-error-cleanup"
+      ],
       "regressions": [
         {
           "file": "tests/language-conformance.test.mjs",
@@ -579,7 +589,9 @@
       "summary": "An owned Shared wrapper drops its transferred payload once.",
       "reference": "reference.md#ownership-and-read-access",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "shared-payload-cleanup"
+      ],
       "regressions": [
         {
           "file": "tests/language-conformance.test.mjs",
@@ -605,7 +617,9 @@
       "summary": "A task read loan pins an alias until wait releases it.",
       "reference": "reference.md#null-matching-and-checked-failures",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "task-loan-released"
+      ],
       "regressions": [
         {
           "file": "tests/language-conformance.test.mjs",
@@ -865,7 +879,9 @@
       "summary": "A public Task<T> parameter exposes Error at a helper wait.",
       "reference": "reference.md#null-matching-and-checked-failures",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "task-public-error-contract"
+      ],
       "regressions": [
         {
           "file": "tests/language-conformance.test.mjs",
@@ -878,7 +894,9 @@
       "summary": "Always executes before a returned result is observed.",
       "reference": "language-conformance.md#what-native-execution-guarantees",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "cleanup-before-result"
+      ],
       "regressions": [
         {
           "file": "tests/language-conformance.test.mjs",
@@ -891,7 +909,9 @@
       "summary": "Returning from a scope joins its child before the caller resumes.",
       "reference": "language-conformance.md#what-native-execution-guarantees",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "scope-joins-before-return"
+      ],
       "regressions": [
         {
           "file": "tests/language-conformance.test.mjs",
@@ -1660,7 +1680,9 @@
       "summary": "Otherwise evaluates only for null and preserves falsy values.",
       "reference": "reference.md",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "defaults-and-fallback"
+      ],
       "regressions": [
         {
           "file": "tests/ergonomics-language.test.mjs",
@@ -1673,7 +1695,9 @@
       "summary": "Omitted literal defaults are typed and freshly evaluated; explicit null is a value.",
       "reference": "reference.md",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "defaults-and-fallback"
+      ],
       "regressions": [
         {
           "file": "tests/ergonomics-language.test.mjs",
@@ -1725,7 +1749,9 @@
       "summary": "Immutable collection contracts prohibit mutable aliases and preserve deep data access.",
       "reference": "reference.md",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "immutable-alias"
+      ],
       "regressions": [
         {
           "file": "tests/ergonomics-language.test.mjs",
@@ -1738,7 +1764,9 @@
       "summary": "Record copies preserve type and rerun checked construction validation.",
       "reference": "reference.md",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "record-copy-validation"
+      ],
       "regressions": [
         {
           "file": "tests/ergonomics-language.test.mjs",
@@ -1751,7 +1779,9 @@
       "summary": "Nearest-loop exits run cleanup, join scopes and preserve move/error flow on reentry.",
       "reference": "reference.md#collections-and-iteration",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "loop-break-continue"
+      ],
       "regressions": [
         {
           "file": "tests/ergonomics-language.test.mjs",

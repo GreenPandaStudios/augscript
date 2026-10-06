@@ -2,7 +2,7 @@
 
 August 0.23.0 provides a published CLI, LLVM native compilation, repository packages, editor support, same-file tests, and deterministic compiled specifications. The supported preview targets are macOS 14+ ARM64 and GNU/Linux x86-64/ARM64 with glibc 2.36+. Real LibTorch, SQLite, zlib, and Rust BLAKE3 packages work on all three targets.
 
-Before the final release freeze, finish generated views that connect the project overview, class interactions, API calls and sequences to the compiled spec and source. These diagrams must be deterministic, retain their checked boundaries, and remain readable as a project grows. See [compiled specifications](specifications.md#move-from-the-overview-to-the-code-unreleased).
+The unreleased compiler now generates linked folder data flows, class interactions and API sequences alongside the compiled spec. The complete generated set has been visually reviewed; release qualification must regenerate and check these artifacts for the final candidate. See [compiled specifications](specifications.md#move-from-the-overview-to-the-code-unreleased).
 
 A 1.0 release will make the documented language and package contracts stable. The table lists the remaining work in implementation order.
 
