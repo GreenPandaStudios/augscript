@@ -32,7 +32,7 @@ flowchart TD
     n7 -->|"depends on"| n5
     n7 -->|"calls"| n6
     n7 -->|"depends on"| n6
-    n7 -->|"calls"| n8
+    n7 -->|"defers HTTP call to"| n8
     n7 -->|"calls"| n10
     n7 -->|"calls"| n11
     n7 -->|"calls"| n14
@@ -80,7 +80,7 @@ flowchart TD
     n10 -->|"calls"| n6
     n10 -->|"calls"| n8
     n10 -->|"calls"| n9
-    n10 -->|"calls"| n11
+    n10 -->|"defers HTTP call to"| n11
     n10 -->|"calls"| n13
     n10 -->|"calls"| n14
     n10 -->|"calls"| n17

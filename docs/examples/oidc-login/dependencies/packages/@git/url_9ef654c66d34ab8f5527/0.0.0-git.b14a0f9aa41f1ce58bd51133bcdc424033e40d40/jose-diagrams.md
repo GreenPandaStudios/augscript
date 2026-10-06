@@ -1,5 +1,5 @@
 ---
-title: "Diagrams · OpenID Connect login application"
+title: "package/@git/url\\_9ef654c66d34ab8f5527@0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug diagrams"
 generated: true
 source: "examples/oidc-login/.aug-spec/packages/@git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug.diagrams.md"
 editLink: false
@@ -8,13 +8,13 @@ next: false
 outline: [2, 3]
 ---
 
-# OpenID Connect login application diagrams
+# package/@git/url\_9ef654c66d34ab8f5527@0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug diagrams
 
 [OpenID Connect login application](../../../../../index.md)
 
 [Project overview](../../../../../diagrams/index.md) · [Compiled explanation](jose.md)
 
-### Class interactions
+## Class interactions
 
 ```mermaid
 flowchart TD
@@ -44,7 +44,7 @@ flowchart TD
     n9 -->|"calls"| n2
 ```
 
-### API calls
+## API calls
 
 ```mermaid
 flowchart TD
@@ -75,11 +75,11 @@ flowchart TD
     n12 -->|"calls"| n6
 ```
 
-### Sequences
+## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
 
-#### JwtError constructor {#sequence-JwtError-20-constructor}
+### JwtError constructor {#sequence-JwtError-20-constructor}
 
 ::: spec-paragraph specification-paragraph-1
 [Source](jose.md#source-L7)
@@ -92,7 +92,7 @@ sequenceDiagram
     Note over p0: No calls in this operation#59; see the source and specification
 ```
 
-#### JwtHeader constructor {#sequence-JwtHeader-20-constructor}
+### JwtHeader constructor {#sequence-JwtHeader-20-constructor}
 
 ::: spec-paragraph specification-paragraph-2
 [Source](jose.md#source-L10)
@@ -102,10 +102,10 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as JwtHeader constructor
 
-    Note over p0: No calls in this operation#59; see the source and specification
+    Note over p0: Receive fields: alg, kid, typ
 ```
 
-#### RsaJwk constructor {#sequence-RsaJwk-20-constructor}
+### RsaJwk constructor {#sequence-RsaJwk-20-constructor}
 
 ::: spec-paragraph specification-paragraph-3
 [Source](jose.md#source-L12)
@@ -115,10 +115,10 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as RsaJwk constructor
 
-    Note over p0: No calls in this operation#59; see the source and specification
+    Note over p0: Receive fields: kty, kid, alg, use, n, e
 ```
 
-#### RsaJwks constructor {#sequence-RsaJwks-20-constructor}
+### RsaJwks constructor {#sequence-RsaJwks-20-constructor}
 
 ::: spec-paragraph specification-paragraph-4
 [Source](jose.md#source-L13)
@@ -128,10 +128,10 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as RsaJwks constructor
 
-    Note over p0: No calls in this operation#59; see the source and specification
+    Note over p0: Receive fields: keys
 ```
 
-#### rsaJwk {#sequence-rsaJwk}
+### rsaJwk {#sequence-rsaJwk}
 
 ::: spec-paragraph specification-paragraph-5
 [Source](jose.md#source-L16)
@@ -152,7 +152,7 @@ sequenceDiagram
     Note over p0: May leave with checked errors: CryptoError
 ```
 
-#### importJwk {#sequence-importJwk}
+### importJwk {#sequence-importJwk}
 
 ::: spec-paragraph specification-paragraph-6
 [Source](jose.md#source-L21)
@@ -185,13 +185,13 @@ sequenceDiagram
     Note over p0: May leave with checked errors: JwtError
 ```
 
-#### signJwt {#sequence-signJwt}
+### signJwt {#sequence-signJwt}
 
 ::: spec-paragraph specification-paragraph-7
 [Source](jose.md#source-L32)
 :::
 
-##### Sequence 1 of 2 (continued)
+#### Sequence 1 of 2 (continued)
 
 ```mermaid
 sequenceDiagram
@@ -225,7 +225,7 @@ sequenceDiagram
     end
 ```
 
-##### Sequence 2 of 2 (continued)
+#### Sequence 2 of 2 (continued)
 
 ```mermaid
 sequenceDiagram
@@ -243,13 +243,13 @@ sequenceDiagram
     Note over p0: May leave with checked errors: JwtError
 ```
 
-#### verifyJwt {#sequence-verifyJwt}
+### verifyJwt {#sequence-verifyJwt}
 
 ::: spec-paragraph specification-paragraph-8
 [Source](jose.md#source-L45)
 :::
 
-##### Sequence 1 of 2 (continued)
+#### Sequence 1 of 2 (continued)
 
 ```mermaid
 sequenceDiagram
@@ -303,7 +303,7 @@ sequenceDiagram
     end
 ```
 
-##### Sequence 2 of 2 (continued)
+#### Sequence 2 of 2 (continued)
 
 ```mermaid
 sequenceDiagram
@@ -336,7 +336,7 @@ sequenceDiagram
     Note over p0: May leave with checked errors: JwtError
 ```
 
-### Called contracts
+## Called contracts
 
 - [parse](../../url_2d3c37c690c0fa115be1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts-diagrams.md#sequence-parse) — package/@git/url\_2d3c37c690c0fa115be1@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug
 - [Crypto](contracts-diagrams.md) — package/@git/url\_9ef654c66d34ab8f5527@0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug

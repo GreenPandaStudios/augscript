@@ -38,7 +38,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 sequenceDiagram
     participant p0 as Counter constructor
 
-    Note over p0: No calls in this operation#59; see the source and specification
+    Note over p0: Receive fields: value
 ```
 
 <a id="sequence-Counter.increment"></a>

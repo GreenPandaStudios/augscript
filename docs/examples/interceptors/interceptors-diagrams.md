@@ -1,5 +1,5 @@
 ---
-title: "Diagrams · Function and constructor middleware"
+title: "interceptors.aug diagrams"
 generated: true
 source: "examples/interceptors/interceptors.aug.diagrams.md"
 editLink: false
@@ -8,13 +8,13 @@ next: false
 outline: [2, 3]
 ---
 
-# Function and constructor middleware diagrams
+# interceptors.aug diagrams
 
 [Function and constructor middleware](index.md)
 
 [Project overview](diagrams/index.md) · [Compiled explanation](interceptors.md)
 
-### Class interactions
+## Class interactions
 
 ```mermaid
 flowchart TD
@@ -29,7 +29,7 @@ flowchart TD
     n3 -->|"calls"| n4
 ```
 
-### API calls
+## API calls
 
 ```mermaid
 flowchart TD
@@ -42,11 +42,11 @@ flowchart TD
     n2 -->|"calls"| n3
 ```
 
-### Sequences
+## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
 
-#### ValidationError constructor {#sequence-ValidationError-20-constructor}
+### ValidationError constructor {#sequence-ValidationError-20-constructor}
 
 ::: spec-paragraph specification-paragraph-1
 [Source](interceptors.md#source-L5)
@@ -56,10 +56,10 @@ Call arrows identify checked targets; loop and branch frames determine when they
 sequenceDiagram
     participant p0 as ValidationError constructor
 
-    Note over p0: No calls in this operation#59; see the source and specification
+    Note over p0: Receive fields: message
 ```
 
-#### Audit.around {#sequence-Audit.around}
+### Audit.around {#sequence-Audit.around}
 
 ::: spec-paragraph specification-paragraph-2
 [Source](interceptors.md#source-L15)
@@ -76,7 +76,7 @@ sequenceDiagram
     Note over p0: Return result#59; required cleanup runs before exit
 ```
 
-#### Positive.around {#sequence-Positive.around}
+### Positive.around {#sequence-Positive.around}
 
 ::: spec-paragraph specification-paragraph-3
 [Source](interceptors.md#source-L28)
@@ -96,7 +96,7 @@ sequenceDiagram
     Note over p0: May leave with checked errors: ValidationError
 ```
 
-#### AddOne.around {#sequence-AddOne.around}
+### AddOne.around {#sequence-AddOne.around}
 
 ::: spec-paragraph specification-paragraph-4
 [Source](interceptors.md#source-L38)
@@ -110,7 +110,7 @@ sequenceDiagram
     Note over p0: Return next(y=y + 1)#59; required cleanup runs before exit
 ```
 
-### Called contracts
+## Called contracts
 
 - [Console](dependencies/august/0.23.0/io/contracts-diagrams.md) — august/io/contracts.aug
 - [ValidationError](interceptors-diagrams.md#sequence-ValidationError-20-constructor) — interceptors.aug

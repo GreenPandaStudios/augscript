@@ -1,5 +1,5 @@
 ---
-title: "Diagrams · Create a package"
+title: "Create a package diagrams"
 generated: true
 source: "examples/packages/math/.aug-spec/diagrams/index.md"
 editLink: false
@@ -16,7 +16,7 @@ Read the areas first, then open a module for its class interactions, API calls a
 
 These are checked static views. Arrows describe possible calls, not an execution trace. Interface implementations, callbacks and foreign internals are not guessed. Tests are described in the adjacent specifications.
 
-### Areas
+## Areas
 
 ```mermaid
 flowchart TD
@@ -24,16 +24,16 @@ flowchart TD
 
 ```
 
-### Modules
+## Modules
 
 ```mermaid
 flowchart TD
     n0["src/arithmetic.aug"]
     n1["src/export.aug"]
-
+    n1 -->|"uses"| n0
 ```
 
-### Open a module
+## Open a module
 
 | Module | Diagrams | Specification |
 | --- | --- | --- |

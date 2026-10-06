@@ -20,7 +20,7 @@ flowchart TD
 flowchart TD
     n0["august/io/contracts.aug"]
     n1["august/io/export.aug"]
-
+    n1 -->|"uses"| n0
 ```
 
 ## Open a module

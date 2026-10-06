@@ -1,5 +1,5 @@
 ---
-title: "Diagrams · GPU workers"
+title: "package/@greenpandastudios/aug-gpu@0.1.1/api.aug diagrams"
 generated: true
 source: "examples/native-gpu/.aug-spec/packages/@greenpandastudios/aug-gpu/0.1.1/api.aug.diagrams.md"
 editLink: false
@@ -8,17 +8,17 @@ next: false
 outline: [2, 3]
 ---
 
-# GPU workers diagrams
+# package/@greenpandastudios/aug-gpu@0.1.1/api.aug diagrams
 
 [GPU workers](../../../../../index.md)
 
 [Project overview](../../../../../diagrams/index.md) · [Compiled explanation](api.md)
 
-### Class interactions
+## Class interactions
 
 No relationships at this level.
 
-### API calls
+## API calls
 
 ```mermaid
 flowchart TD
@@ -37,11 +37,11 @@ flowchart TD
     n8 -->|"calls"| n4
 ```
 
-### Sequences
+## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
 
-#### \_open {#sequence-_open}
+### \_open {#sequence-_open}
 
 ::: spec-paragraph specification-paragraph-1
 [Source](api.md#source-L5)
@@ -55,7 +55,7 @@ sequenceDiagram
     Note over p0: Native implementation#59; only the declared contract is known
 ```
 
-#### \_upload {#sequence-_upload}
+### \_upload {#sequence-_upload}
 
 ::: spec-paragraph specification-paragraph-2
 [Source](api.md#source-L6)
@@ -69,7 +69,7 @@ sequenceDiagram
     Note over p0: Native implementation#59; only the declared contract is known
 ```
 
-#### \_add {#sequence-_add}
+### \_add {#sequence-_add}
 
 ::: spec-paragraph specification-paragraph-3
 [Source](api.md#source-L7)
@@ -83,7 +83,7 @@ sequenceDiagram
     Note over p0: Native implementation#59; only the declared contract is known
 ```
 
-#### \_download {#sequence-_download}
+### \_download {#sequence-_download}
 
 ::: spec-paragraph specification-paragraph-4
 [Source](api.md#source-L8)
@@ -97,7 +97,7 @@ sequenceDiagram
     Note over p0: Native implementation#59; only the declared contract is known
 ```
 
-#### \_live {#sequence-_live}
+### \_live {#sequence-_live}
 
 ::: spec-paragraph specification-paragraph-5
 [Source](api.md#source-L9)
@@ -110,7 +110,7 @@ sequenceDiagram
     Note over p0: Native implementation#59; only the declared contract is known
 ```
 
-#### openDevice {#sequence-openDevice}
+### openDevice {#sequence-openDevice}
 
 ::: spec-paragraph specification-paragraph-6
 [Source](api.md#source-L11)
@@ -129,7 +129,7 @@ sequenceDiagram
     Note over p0: May leave with checked errors: GpuError
 ```
 
-#### upload {#sequence-upload}
+### upload {#sequence-upload}
 
 ::: spec-paragraph specification-paragraph-7
 [Source](api.md#source-L15)
@@ -148,7 +148,7 @@ sequenceDiagram
     Note over p0: May leave with checked errors: GpuError
 ```
 
-#### add {#sequence-add}
+### add {#sequence-add}
 
 ::: spec-paragraph specification-paragraph-8
 [Source](api.md#source-L19)
@@ -167,7 +167,7 @@ sequenceDiagram
     Note over p0: May leave with checked errors: GpuError
 ```
 
-#### download {#sequence-download}
+### download {#sequence-download}
 
 ::: spec-paragraph specification-paragraph-9
 [Source](api.md#source-L23)
@@ -186,7 +186,7 @@ sequenceDiagram
     Note over p0: May leave with checked errors: GpuError
 ```
 
-### Called contracts
+## Called contracts
 
 - [\_add](api-diagrams.md#sequence-_add) — package/@greenpandastudios/aug-gpu@0.1.1/api.aug
 - [\_download](api-diagrams.md#sequence-_download) — package/@greenpandastudios/aug-gpu@0.1.1/api.aug

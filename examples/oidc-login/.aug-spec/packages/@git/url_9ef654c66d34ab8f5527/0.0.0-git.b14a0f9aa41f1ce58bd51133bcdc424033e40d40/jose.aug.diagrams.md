@@ -92,7 +92,7 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as JwtHeader constructor
 
-    Note over p0: No calls in this operation#59; see the source and specification
+    Note over p0: Receive fields: alg, kid, typ
 ```
 
 <a id="sequence-RsaJwk-20-constructor"></a>
@@ -105,7 +105,7 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as RsaJwk constructor
 
-    Note over p0: No calls in this operation#59; see the source and specification
+    Note over p0: Receive fields: kty, kid, alg, use, n, e
 ```
 
 <a id="sequence-RsaJwks-20-constructor"></a>
@@ -118,7 +118,7 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as RsaJwks constructor
 
-    Note over p0: No calls in this operation#59; see the source and specification
+    Note over p0: Receive fields: keys
 ```
 
 <a id="sequence-rsaJwk"></a>

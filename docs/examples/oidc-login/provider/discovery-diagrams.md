@@ -1,5 +1,5 @@
 ---
-title: "Diagrams · OpenID Connect login application"
+title: "provider/discovery.aug diagrams"
 generated: true
 source: "examples/oidc-login/provider/discovery.aug.diagrams.md"
 editLink: false
@@ -8,13 +8,13 @@ next: false
 outline: [2, 3]
 ---
 
-# OpenID Connect login application diagrams
+# provider/discovery.aug diagrams
 
 [OpenID Connect login application](../index.md)
 
 [Project overview](../diagrams/index.md) · [Compiled explanation](discovery.md)
 
-### Class interactions
+## Class interactions
 
 ```mermaid
 flowchart TD
@@ -34,7 +34,7 @@ flowchart TD
     n6 -->|"calls"| n3
 ```
 
-### API calls
+## API calls
 
 ```mermaid
 flowchart TD
@@ -54,11 +54,11 @@ flowchart TD
     n7 -->|"calls"| n4
 ```
 
-### Sequences
+## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
 
-#### Discovery constructor {#sequence-Discovery-20-constructor}
+### Discovery constructor {#sequence-Discovery-20-constructor}
 
 ::: spec-paragraph specification-paragraph-1
 [Source](discovery.md#source-L6)
@@ -68,10 +68,10 @@ Call arrows identify checked targets; loop and branch frames determine when they
 sequenceDiagram
     participant p0 as Discovery constructor
 
-    Note over p0: No calls in this operation#59; see the source and specification
+    Note over p0: Receive fields: issuer, authorization_endpoint, token_endpoint, userinfo_endpoint, jwks_uri, response_types_supported…
 ```
 
-#### discovery {#sequence-discovery}
+### discovery {#sequence-discovery}
 
 ::: spec-paragraph specification-paragraph-2
 [Source](discovery.md#source-L7)
@@ -89,7 +89,7 @@ sequenceDiagram
     Note over p0: HTTP result follows declared response and error mapping#59; unhandled request failure returns 500
 ```
 
-#### jwks {#sequence-jwks}
+### jwks {#sequence-jwks}
 
 ::: spec-paragraph specification-paragraph-3
 [Source](discovery.md#source-L12)
@@ -112,7 +112,7 @@ sequenceDiagram
     Note over p0: HTTP result follows declared response and error mapping#59; unhandled request failure returns 500
 ```
 
-### Called contracts
+## Called contracts
 
 - [SigningKeys](../common/keys-diagrams.md) — common/keys.aug
 - [SigningKeys.provider](../common/keys-diagrams.md#sequence-SigningKeys.provider) — common/keys.aug

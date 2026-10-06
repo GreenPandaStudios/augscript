@@ -1,5 +1,5 @@
 ---
-title: "Diagrams · JSON benchmark"
+title: "main.aug diagrams"
 generated: true
 source: "benchmarks/json/main.aug.diagrams.md"
 editLink: false
@@ -8,17 +8,17 @@ next: false
 outline: [2, 3]
 ---
 
-# JSON benchmark diagrams
+# main.aug diagrams
 
 [JSON benchmark](index.md)
 
 [Project overview](diagrams/index.md) · [Compiled explanation](main.md)
 
-### Class interactions
+## Class interactions
 
 No relationships at this level.
 
-### API calls
+## API calls
 
 ```mermaid
 flowchart TD
@@ -27,11 +27,11 @@ flowchart TD
     n0 -->|"calls"| n1
 ```
 
-### Sequences
+## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
 
-#### Startup {#sequence-Startup}
+### Startup {#sequence-Startup}
 
 ::: spec-paragraph specification-paragraph-1
 [Source](main.md#source-L4)
@@ -62,6 +62,6 @@ sequenceDiagram
     end
 ```
 
-### Called contracts
+## Called contracts
 
 - [parse](dependencies/packages/%40git/url_2d3c37c690c0fa115be1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts-diagrams.md#sequence-parse) — package/@git/url\_2d3c37c690c0fa115be1@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug

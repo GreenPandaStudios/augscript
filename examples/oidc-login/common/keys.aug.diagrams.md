@@ -113,6 +113,7 @@ sequenceDiagram
     participant p2 as Shared
     p0->>p1: Map()
     p0->>p2: Shared(value)
+    Note over p0: Set _keys to Shared(value=Map#60;string, RsaPrivateKey#62;())
 ```
 
 <a id="sequence-MemorySigningKeys.configure"></a>

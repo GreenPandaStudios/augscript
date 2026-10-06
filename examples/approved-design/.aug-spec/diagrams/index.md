@@ -13,6 +13,7 @@ flowchart TD
     n0["August library"]
     n1["Project root"]
     n2["domain"]
+    n1 -->|"uses"| n0
     n1 -->|"uses"| n2
     n2 -->|"uses"| n0
 ```
@@ -30,6 +31,10 @@ flowchart TD
     n6["main.aug"]
     n2 -->|"uses"| n0
     n2 -->|"uses"| n4
+    n3 -->|"uses"| n2
+    n3 -->|"uses"| n4
+    n3 -->|"uses"| n5
+    n6 -->|"uses"| n0
     n6 -->|"uses"| n1
     n6 -->|"uses"| n2
     n6 -->|"uses"| n4

@@ -20,7 +20,7 @@ flowchart TD
 flowchart TD
     n0["main.aug"]
     n1["routes.aug"]
-
+    n0 -->|"uses"| n1
 ```
 
 ## Open a module

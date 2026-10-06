@@ -1,5 +1,5 @@
 ---
-title: "Diagrams · Modules and composition"
+title: "counters.aug diagrams"
 generated: true
 source: "examples/approved-design/counters.aug.diagrams.md"
 editLink: false
@@ -8,13 +8,13 @@ next: false
 outline: [2, 3]
 ---
 
-# Modules and composition diagrams
+# counters.aug diagrams
 
 [Modules and composition](index.md)
 
 [Project overview](diagrams/index.md) · [Compiled explanation](counters.md)
 
-### Class interactions
+## Class interactions
 
 ```mermaid
 flowchart TD
@@ -31,7 +31,7 @@ flowchart TD
     n4 -->|"implements"| n1
 ```
 
-### API calls
+## API calls
 
 ```mermaid
 flowchart TD
@@ -48,11 +48,11 @@ flowchart TD
     n4 -->|"calls"| n2
 ```
 
-### Sequences
+## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
 
-#### State.read {#sequence-State.read}
+### State.read {#sequence-State.read}
 
 ::: spec-paragraph specification-paragraph-1
 [Source](counters.md#source-L4)
@@ -65,7 +65,7 @@ sequenceDiagram
     Note over p0: Interface contract#59; implementation selected at runtime
 ```
 
-#### \_Initial constructor {#sequence-_Initial-20-constructor}
+### \_Initial constructor {#sequence-_Initial-20-constructor}
 
 ::: spec-paragraph specification-paragraph-2
 [Source](counters.md#source-L5)
@@ -78,7 +78,7 @@ sequenceDiagram
     Note over p0: No calls in this operation#59; see the source and specification
 ```
 
-#### \_Initial.read {#sequence-_Initial.read}
+### \_Initial.read {#sequence-_Initial.read}
 
 ::: spec-paragraph specification-paragraph-3
 [Source](counters.md#source-L6)
@@ -91,7 +91,7 @@ sequenceDiagram
     Note over p0: Return 0#59; required cleanup runs before exit
 ```
 
-#### \_Updated constructor {#sequence-_Updated-20-constructor}
+### \_Updated constructor {#sequence-_Updated-20-constructor}
 
 ::: spec-paragraph specification-paragraph-4
 [Source](counters.md#source-L8)
@@ -101,10 +101,10 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as _Updated constructor
 
-    Note over p0: No calls in this operation#59; see the source and specification
+    Note over p0: Receive fields: count
 ```
 
-#### \_Updated.read {#sequence-_Updated.read}
+### \_Updated.read {#sequence-_Updated.read}
 
 ::: spec-paragraph specification-paragraph-5
 [Source](counters.md#source-L9)
@@ -117,7 +117,7 @@ sequenceDiagram
     Note over p0: Return count#59; required cleanup runs before exit
 ```
 
-#### Counter.increment {#sequence-Counter.increment}
+### Counter.increment {#sequence-Counter.increment}
 
 ::: spec-paragraph specification-paragraph-6
 [Source](counters.md#source-L13)
@@ -130,7 +130,7 @@ sequenceDiagram
     Note over p0: Interface contract#59; implementation selected at runtime
 ```
 
-#### Counter.value {#sequence-Counter.value}
+### Counter.value {#sequence-Counter.value}
 
 ::: spec-paragraph specification-paragraph-7
 [Source](counters.md#source-L14)
@@ -143,7 +143,7 @@ sequenceDiagram
     Note over p0: Interface contract#59; implementation selected at runtime
 ```
 
-#### \_Counter constructor {#sequence-_Counter-20-constructor}
+### \_Counter constructor {#sequence-_Counter-20-constructor}
 
 ::: spec-paragraph specification-paragraph-8
 [Source](counters.md#source-L15)
@@ -153,10 +153,10 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as _Counter constructor
 
-    Note over p0: No calls in this operation#59; see the source and specification
+    Note over p0: Receive fields: injected _state
 ```
 
-#### \_Counter.increment {#sequence-_Counter.increment}
+### \_Counter.increment {#sequence-_Counter.increment}
 
 ::: spec-paragraph specification-paragraph-9
 [Source](counters.md#source-L16)
@@ -171,7 +171,7 @@ sequenceDiagram
     p0->>p2: _Updated(count)
 ```
 
-#### \_Counter.value {#sequence-_Counter.value}
+### \_Counter.value {#sequence-_Counter.value}
 
 ::: spec-paragraph specification-paragraph-10
 [Source](counters.md#source-L18)
@@ -185,7 +185,7 @@ sequenceDiagram
     Note over p0: Return _state.read()#59; required cleanup runs before exit
 ```
 
-### Called contracts
+## Called contracts
 
 - [Counter](counters-diagrams.md) — counters.aug
 - [State](counters-diagrams.md) — counters.aug

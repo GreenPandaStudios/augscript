@@ -1,5 +1,5 @@
 ---
-title: "Diagrams · OpenID Connect login application"
+title: "package/@git/url\\_897efafd565158fc4908@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug diagrams"
 generated: true
 source: "examples/oidc-login/.aug-spec/packages/@git/url_897efafd565158fc4908/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.diagrams.md"
 editLink: false
@@ -8,13 +8,13 @@ next: false
 outline: [2, 3]
 ---
 
-# OpenID Connect login application diagrams
+# package/@git/url\_897efafd565158fc4908@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug diagrams
 
 [OpenID Connect login application](../../../../../index.md)
 
 [Project overview](../../../../../diagrams/index.md) · [Compiled explanation](contracts.md)
 
-### Class interactions
+## Class interactions
 
 ```mermaid
 flowchart TD
@@ -33,7 +33,7 @@ flowchart TD
     n6 -->|"calls"| n7
 ```
 
-### API calls
+## API calls
 
 ```mermaid
 flowchart TD
@@ -56,11 +56,11 @@ flowchart TD
     n12 -->|"calls"| n9
 ```
 
-### Sequences
+## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
 
-#### Principal constructor {#sequence-Principal-20-constructor}
+### Principal constructor {#sequence-Principal-20-constructor}
 
 ::: spec-paragraph specification-paragraph-1
 [Source](contracts.md#source-L3)
@@ -70,10 +70,10 @@ Call arrows identify checked targets; loop and branch frames determine when they
 sequenceDiagram
     participant p0 as Principal constructor
 
-    Note over p0: No calls in this operation#59; see the source and specification
+    Note over p0: Receive fields: subject, permissions
 ```
 
-#### Authentication.authenticate {#sequence-Authentication.authenticate}
+### Authentication.authenticate {#sequence-Authentication.authenticate}
 
 ::: spec-paragraph specification-paragraph-2
 [Source](contracts.md#source-L7)
@@ -87,7 +87,7 @@ sequenceDiagram
     Note over p0: Interface contract#59; implementation selected at runtime
 ```
 
-#### Authorization.authorize {#sequence-Authorization.authorize}
+### Authorization.authorize {#sequence-Authorization.authorize}
 
 ::: spec-paragraph specification-paragraph-3
 [Source](contracts.md#source-L11)
@@ -101,7 +101,7 @@ sequenceDiagram
     Note over p0: Interface contract#59; implementation selected at runtime
 ```
 
-#### RequestLogger.complete {#sequence-RequestLogger.complete}
+### RequestLogger.complete {#sequence-RequestLogger.complete}
 
 ::: spec-paragraph specification-paragraph-4
 [Source](contracts.md#source-L15)
@@ -114,7 +114,7 @@ sequenceDiagram
     Note over p0: Interface contract#59; implementation selected at runtime
 ```
 
-#### \_aug\_http\_log {#sequence-_aug_http_log}
+### \_aug\_http\_log {#sequence-_aug_http_log}
 
 ::: spec-paragraph specification-paragraph-5
 [Source](contracts.md#source-L17)
@@ -127,7 +127,7 @@ sequenceDiagram
     Note over p0: Native implementation#59; only the declared contract is known
 ```
 
-#### WebRequestLogger constructor {#sequence-WebRequestLogger-20-constructor}
+### WebRequestLogger constructor {#sequence-WebRequestLogger-20-constructor}
 
 ::: spec-paragraph specification-paragraph-6
 [Source](contracts.md#source-L19)
@@ -140,7 +140,7 @@ sequenceDiagram
     Note over p0: No calls in this operation#59; see the source and specification
 ```
 
-#### WebRequestLogger.complete {#sequence-WebRequestLogger.complete}
+### WebRequestLogger.complete {#sequence-WebRequestLogger.complete}
 
 ::: spec-paragraph specification-paragraph-7
 [Source](contracts.md#source-L20)
@@ -157,7 +157,7 @@ sequenceDiagram
     end
 ```
 
-#### HttpClient.request {#sequence-HttpClient.request}
+### HttpClient.request {#sequence-HttpClient.request}
 
 ::: spec-paragraph specification-paragraph-8
 [Source](contracts.md#source-L27)
@@ -171,7 +171,7 @@ sequenceDiagram
     Note over p0: Interface contract#59; implementation selected at runtime
 ```
 
-#### \_aug\_http\_request {#sequence-_aug_http_request}
+### \_aug\_http\_request {#sequence-_aug_http_request}
 
 ::: spec-paragraph specification-paragraph-9
 [Source](contracts.md#source-L29)
@@ -185,7 +185,7 @@ sequenceDiagram
     Note over p0: Native implementation#59; only the declared contract is known
 ```
 
-#### WebHttpClient constructor {#sequence-WebHttpClient-20-constructor}
+### WebHttpClient constructor {#sequence-WebHttpClient-20-constructor}
 
 ::: spec-paragraph specification-paragraph-10
 [Source](contracts.md#source-L32)
@@ -198,7 +198,7 @@ sequenceDiagram
     Note over p0: No calls in this operation#59; see the source and specification
 ```
 
-#### WebHttpClient.request {#sequence-WebHttpClient.request}
+### WebHttpClient.request {#sequence-WebHttpClient.request}
 
 ::: spec-paragraph specification-paragraph-11
 [Source](contracts.md#source-L33)
@@ -217,7 +217,7 @@ sequenceDiagram
     Note over p0: May leave with checked errors: HttpError
 ```
 
-#### redirect {#sequence-redirect}
+### redirect {#sequence-redirect}
 
 ::: spec-paragraph specification-paragraph-12
 [Source](contracts.md#source-L38)
@@ -239,7 +239,7 @@ sequenceDiagram
     Note over p0: May leave with checked errors: HttpError
 ```
 
-#### \_aug\_http\_url\_encode {#sequence-_aug_http_url_encode}
+### \_aug\_http\_url\_encode {#sequence-_aug_http_url_encode}
 
 ::: spec-paragraph specification-paragraph-13
 [Source](contracts.md#source-L48)
@@ -253,7 +253,7 @@ sequenceDiagram
     Note over p0: Native implementation#59; only the declared contract is known
 ```
 
-#### urlEncode {#sequence-urlEncode}
+### urlEncode {#sequence-urlEncode}
 
 ::: spec-paragraph specification-paragraph-14
 [Source](contracts.md#source-L50)
@@ -272,7 +272,7 @@ sequenceDiagram
     Note over p0: May leave with checked errors: HttpError
 ```
 
-#### \_aug\_http\_cookie {#sequence-_aug_http_cookie}
+### \_aug\_http\_cookie {#sequence-_aug_http_cookie}
 
 ::: spec-paragraph specification-paragraph-15
 [Source](contracts.md#source-L54)
@@ -286,7 +286,7 @@ sequenceDiagram
     Note over p0: Native implementation#59; only the declared contract is known
 ```
 
-#### cookie {#sequence-cookie}
+### cookie {#sequence-cookie}
 
 ::: spec-paragraph specification-paragraph-16
 [Source](contracts.md#source-L56)
@@ -305,7 +305,7 @@ sequenceDiagram
     Note over p0: May leave with checked errors: HttpError
 ```
 
-### Called contracts
+## Called contracts
 
 - [HttpClient](contracts-diagrams.md) — package/@git/url\_897efafd565158fc4908@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug
 - [RequestLogger](contracts-diagrams.md) — package/@git/url\_897efafd565158fc4908@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug

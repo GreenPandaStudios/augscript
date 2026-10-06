@@ -1,5 +1,5 @@
 ---
-title: "Diagrams · OpenID Connect login application"
+title: "OpenID Connect login application diagrams"
 generated: true
 source: "examples/oidc-login/.aug-spec/diagrams/index.md"
 editLink: false
@@ -16,7 +16,7 @@ Read the areas first, then open a module for its class interactions, API calls a
 
 These are checked static views. Arrows describe possible calls, not an execution trace. Interface implementations, callbacks and foreign internals are not guessed. Tests are described in the adjacent specifications.
 
-### Areas
+## Areas
 
 ```mermaid
 flowchart TD
@@ -29,7 +29,13 @@ flowchart TD
     n6["package/@git/url_9ef654c66d34ab8f5527@0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40"]
     n7["package/@git/url_c092cd151499c4e1d8a1@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301"]
     n8["provider"]
+    n0 -->|"uses"| n1
     n0 -->|"uses"| n2
+    n0 -->|"uses"| n3
+    n0 -->|"uses"| n5
+    n0 -->|"uses"| n6
+    n0 -->|"uses"| n7
+    n0 -->|"uses"| n8
     n1 -->|"uses"| n2
     n1 -->|"uses"| n3
     n1 -->|"uses"| n4
@@ -46,62 +52,62 @@ flowchart TD
     n8 -->|"uses"| n7
 ```
 
-### Modules
+## Modules
 
-##### View 1 of 3
+#### View 1 of 4
 
 ```mermaid
 flowchart TD
     n0["client/contracts.aug"]
     n1["client/endpoints.aug"]
-    n2["client/login.aug"]
-    n3["client/logout.aug"]
-    n4["client/protocol.aug"]
-    n5["client/session.aug"]
-    n6["client/views.aug"]
-    n7["common/headers.aug"]
-    n8["common/keys.aug"]
-    n9["common/settings.aug"]
-    n10["package/@git/url_0eb7c89453c87681ed15@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug"]
-    n11["package/@git/url_2d3c37c690c0fa115be1@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug"]
+    n2["client/export.aug"]
+    n3["client/login.aug"]
+    n4["client/logout.aug"]
+    n5["client/protocol.aug"]
+    n6["client/session.aug"]
+    n7["client/views.aug"]
+    n8["common/headers.aug"]
+    n9["common/keys.aug"]
+    n10["common/settings.aug"]
+    n11["package/@git/url_0eb7c89453c87681ed15@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug"]
     n12["package/@git/url_897efafd565158fc4908@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug"]
     n13["package/@git/url_9ef654c66d34ab8f5527@0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug"]
     n14["package/@git/url_9ef654c66d34ab8f5527@0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug"]
     n15["package/@git/url_c092cd151499c4e1d8a1@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug"]
     n16["provider/contracts.aug"]
-    n1 -->|"uses"| n5
+    n1 -->|"uses"| n0
     n1 -->|"uses"| n6
     n1 -->|"uses"| n7
     n1 -->|"uses"| n8
+    n1 -->|"uses"| n9
     n1 -->|"uses"| n10
+    n1 -->|"uses"| n11
     n1 -->|"uses"| n13
     n1 -->|"uses"| n15
     n1 -->|"uses"| n16
     n2 -->|"uses"| n0
+    n2 -->|"uses"| n1
+    n2 -->|"uses"| n3
     n2 -->|"uses"| n4
-    n2 -->|"uses"| n7
-    n2 -->|"uses"| n8
-    n2 -->|"uses"| n9
-    n2 -->|"uses"| n10
-    n2 -->|"uses"| n12
-    n2 -->|"uses"| n13
-    n2 -->|"uses"| n14
-    n2 -->|"uses"| n15
     n3 -->|"uses"| n0
     n3 -->|"uses"| n5
-    n3 -->|"uses"| n7
     n3 -->|"uses"| n8
     n3 -->|"uses"| n9
     n3 -->|"uses"| n10
+    n3 -->|"uses"| n11
+    n3 -->|"uses"| n12
     n3 -->|"uses"| n13
+    n3 -->|"uses"| n14
     n3 -->|"uses"| n15
+    n3 -->|"uses"| n16
     n4 -->|"uses"| n0
+    n4 -->|"uses"| n6
+    n4 -->|"uses"| n8
     n4 -->|"uses"| n9
-    n4 -->|"uses"| n11
-    n4 -->|"uses"| n12
+    n4 -->|"uses"| n10
 ```
 
-##### View 2 of 3
+#### View 2 of 4
 
 ```mermaid
 flowchart TD
@@ -110,88 +116,141 @@ flowchart TD
     n2["client/protocol.aug"]
     n3["client/session.aug"]
     n4["client/views.aug"]
-    n5["common/headers.aug"]
-    n6["common/keys.aug"]
-    n7["common/settings.aug"]
-    n8["common/views.aug"]
-    n9["main.aug"]
+    n5["common/export.aug"]
+    n6["common/headers.aug"]
+    n7["common/keys.aug"]
+    n8["common/settings.aug"]
+    n9["common/views.aug"]
     n10["package/@git/url_0eb7c89453c87681ed15@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug"]
-    n11["package/@git/url_897efafd565158fc4908@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug"]
-    n12["package/@git/url_9ef654c66d34ab8f5527@0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug"]
-    n13["package/@git/url_9ef654c66d34ab8f5527@0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug"]
-    n14["package/@git/url_c092cd151499c4e1d8a1@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug"]
-    n15["provider/authorization.aug"]
+    n11["package/@git/url_2d3c37c690c0fa115be1@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug"]
+    n12["package/@git/url_897efafd565158fc4908@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug"]
+    n13["package/@git/url_9ef654c66d34ab8f5527@0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug"]
+    n14["package/@git/url_9ef654c66d34ab8f5527@0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug"]
+    n15["package/@git/url_c092cd151499c4e1d8a1@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug"]
     n16["provider/contracts.aug"]
-    n17["provider/credentials.aug"]
+    n17["provider/discovery.aug"]
+    n1 -->|"uses"| n10
+    n1 -->|"uses"| n13
+    n1 -->|"uses"| n15
+    n2 -->|"uses"| n0
+    n2 -->|"uses"| n8
+    n2 -->|"uses"| n11
     n2 -->|"uses"| n12
     n2 -->|"uses"| n13
+    n2 -->|"uses"| n14
     n2 -->|"uses"| n16
+    n2 -->|"uses"| n17
     n3 -->|"uses"| n0
-    n3 -->|"uses"| n6
     n3 -->|"uses"| n7
+    n3 -->|"uses"| n8
     n3 -->|"uses"| n10
-    n3 -->|"uses"| n12
     n3 -->|"uses"| n13
     n3 -->|"uses"| n14
+    n3 -->|"uses"| n15
+    n4 -->|"uses"| n0
     n4 -->|"uses"| n1
-    n4 -->|"uses"| n8
-    n5 -->|"uses"| n11
+    n4 -->|"uses"| n9
+    n5 -->|"uses"| n6
+    n5 -->|"uses"| n7
+    n5 -->|"uses"| n8
+    n5 -->|"uses"| n9
     n6 -->|"uses"| n12
-    n9 -->|"uses"| n6
-    n15 -->|"uses"| n5
-    n15 -->|"uses"| n7
-    n15 -->|"uses"| n10
-    n15 -->|"uses"| n11
-    n15 -->|"uses"| n12
-    n15 -->|"uses"| n14
-    n15 -->|"uses"| n16
-    n15 -->|"uses"| n17
+    n7 -->|"uses"| n13
 ```
 
-##### View 3 of 3
+#### View 3 of 4
 
 ```mermaid
 flowchart TD
-    n0["client/export.aug"]
-    n1["common/export.aug"]
-    n2["common/headers.aug"]
-    n3["common/keys.aug"]
-    n4["common/settings.aug"]
-    n5["common/views.aug"]
-    n6["package/@git/url_0eb7c89453c87681ed15@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug"]
-    n7["package/@git/url_9ef654c66d34ab8f5527@0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug"]
-    n8["package/@git/url_9ef654c66d34ab8f5527@0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug"]
-    n9["package/@git/url_c092cd151499c4e1d8a1@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug"]
-    n10["provider/authorization.aug"]
-    n11["provider/contracts.aug"]
-    n12["provider/credentials.aug"]
-    n13["provider/discovery.aug"]
-    n14["provider/export.aug"]
-    n15["provider/token.aug"]
-    n16["provider/userinfo.aug"]
-    n17["provider/views.aug"]
-    n10 -->|"uses"| n17
-    n12 -->|"uses"| n7
-    n13 -->|"uses"| n3
-    n13 -->|"uses"| n4
-    n13 -->|"uses"| n7
-    n13 -->|"uses"| n8
-    n15 -->|"uses"| n2
-    n15 -->|"uses"| n3
-    n15 -->|"uses"| n4
-    n15 -->|"uses"| n6
-    n15 -->|"uses"| n7
-    n15 -->|"uses"| n8
-    n15 -->|"uses"| n9
-    n15 -->|"uses"| n11
-    n16 -->|"uses"| n2
-    n16 -->|"uses"| n6
-    n16 -->|"uses"| n9
-    n16 -->|"uses"| n11
-    n17 -->|"uses"| n5
+    n0["client/contracts.aug"]
+    n1["client/endpoints.aug"]
+    n2["client/login.aug"]
+    n3["client/logout.aug"]
+    n4["common/headers.aug"]
+    n5["common/keys.aug"]
+    n6["common/settings.aug"]
+    n7["main.aug"]
+    n8["package/@git/url_0eb7c89453c87681ed15@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug"]
+    n9["package/@git/url_897efafd565158fc4908@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug"]
+    n10["package/@git/url_9ef654c66d34ab8f5527@0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug"]
+    n11["package/@git/url_c092cd151499c4e1d8a1@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug"]
+    n12["provider/authorization.aug"]
+    n13["provider/contracts.aug"]
+    n14["provider/credentials.aug"]
+    n15["provider/discovery.aug"]
+    n16["provider/token.aug"]
+    n17["provider/userinfo.aug"]
+    n7 -->|"uses"| n0
+    n7 -->|"uses"| n1
+    n7 -->|"uses"| n2
+    n7 -->|"uses"| n3
+    n7 -->|"uses"| n5
+    n7 -->|"uses"| n8
+    n7 -->|"uses"| n9
+    n7 -->|"uses"| n10
+    n7 -->|"uses"| n11
+    n7 -->|"uses"| n12
+    n7 -->|"uses"| n13
+    n7 -->|"uses"| n15
+    n7 -->|"uses"| n16
+    n7 -->|"uses"| n17
+    n12 -->|"uses"| n4
+    n12 -->|"uses"| n6
+    n12 -->|"uses"| n8
+    n12 -->|"uses"| n9
+    n12 -->|"uses"| n10
+    n12 -->|"uses"| n11
+    n12 -->|"uses"| n13
+    n12 -->|"uses"| n14
 ```
 
-### Open a module
+#### View 4 of 4
+
+```mermaid
+flowchart TD
+    n0["common/headers.aug"]
+    n1["common/keys.aug"]
+    n2["common/settings.aug"]
+    n3["common/views.aug"]
+    n4["package/@git/url_0eb7c89453c87681ed15@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug"]
+    n5["package/@git/url_9ef654c66d34ab8f5527@0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug"]
+    n6["package/@git/url_9ef654c66d34ab8f5527@0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug"]
+    n7["package/@git/url_c092cd151499c4e1d8a1@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug"]
+    n8["provider/authorization.aug"]
+    n9["provider/contracts.aug"]
+    n10["provider/credentials.aug"]
+    n11["provider/discovery.aug"]
+    n12["provider/export.aug"]
+    n13["provider/token.aug"]
+    n14["provider/userinfo.aug"]
+    n15["provider/views.aug"]
+    n8 -->|"uses"| n15
+    n10 -->|"uses"| n5
+    n11 -->|"uses"| n1
+    n11 -->|"uses"| n2
+    n11 -->|"uses"| n5
+    n11 -->|"uses"| n6
+    n12 -->|"uses"| n8
+    n12 -->|"uses"| n9
+    n12 -->|"uses"| n11
+    n12 -->|"uses"| n13
+    n12 -->|"uses"| n14
+    n13 -->|"uses"| n0
+    n13 -->|"uses"| n1
+    n13 -->|"uses"| n2
+    n13 -->|"uses"| n4
+    n13 -->|"uses"| n5
+    n13 -->|"uses"| n6
+    n13 -->|"uses"| n7
+    n13 -->|"uses"| n9
+    n14 -->|"uses"| n0
+    n14 -->|"uses"| n4
+    n14 -->|"uses"| n7
+    n14 -->|"uses"| n9
+    n15 -->|"uses"| n3
+```
+
+## Open a module
 
 | Module | Diagrams | Specification |
 | --- | --- | --- |
@@ -218,7 +277,7 @@ flowchart TD
 | provider/userinfo.aug | [Interactions and sequences](../provider/userinfo-diagrams.md) | [Explanation](../provider/userinfo.md) |
 | provider/views.aug | [Interactions and sequences](../provider/views-diagrams.md) | [Explanation](../provider/views.md) |
 
-### HTTP APIs
+## HTTP APIs
 
 | API | Operation |
 | --- | --- |

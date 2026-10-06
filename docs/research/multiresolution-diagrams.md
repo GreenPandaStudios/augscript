@@ -12,7 +12,7 @@ Each graph has at most 18 nodes and 30 edges. Each sequence view has at most 12 
 
 ## Truth and boundaries
 
-Use resolved compiler targets rather than matching names. Preserve nested argument evaluation, short-circuit conditions, branches, loops, early exits, checked failures, explicit recovery and cleanup, task/worker starts and waits, and streaming yields. Display forwarding without inventing wrapper behavior. Constructors show state initialization and validation. Interface dispatch remains an interface call; a configured provider does not prove a runtime receiver identity. Native code remains opaque. Creating a callback or browser handler is not an immediate call.
+Use resolved compiler targets rather than matching names. Preserve nested argument evaluation, short-circuit conditions, branches, loops, early exits, checked failures, explicit recovery and cleanup, task/worker starts and waits, and streaming yields. Display forwarding without inventing wrapper behavior. Constructors show state initialization and validation. Interface dispatch remains an interface call; a configured provider does not prove a runtime receiver identity. Native code remains opaque. Creating a callback or browser handler is not an immediate call. Relationship graphs label browser actions as deferred HTTP calls; their sequences show capture evaluation separately from submission.
 
 Applied interceptors and HTTP policies can short circuit, replace inputs and fail. Handler diagrams name the applied layers and refer to the effective spec rather than inventing an unconditional call chain. The diagrams are static possible-flow views, not observed traces, proofs of behavior or a complete foreign/external call graph. Same-file test behavior remains in the spec.
 

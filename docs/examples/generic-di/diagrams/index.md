@@ -1,5 +1,5 @@
 ---
-title: "Diagrams · Generic dependency injection"
+title: "Generic dependency injection diagrams"
 generated: true
 source: "examples/generic-di/.aug-spec/diagrams/index.md"
 editLink: false
@@ -16,7 +16,7 @@ Read the areas first, then open a module for its class interactions, API calls a
 
 These are checked static views. Arrows describe possible calls, not an execution trace. Interface implementations, callbacks and foreign internals are not guessed. Tests are described in the adjacent specifications.
 
-### Areas
+## Areas
 
 ```mermaid
 flowchart TD
@@ -25,18 +25,19 @@ flowchart TD
     n1 -->|"uses"| n0
 ```
 
-### Modules
+## Modules
 
 ```mermaid
 flowchart TD
     n0["august/io/contracts.aug"]
     n1["main.aug"]
     n2["types.aug"]
+    n1 -->|"uses"| n0
     n1 -->|"uses"| n2
     n2 -->|"uses"| n0
 ```
 
-### Open a module
+## Open a module
 
 | Module | Diagrams | Specification |
 | --- | --- | --- |

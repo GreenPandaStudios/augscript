@@ -1,5 +1,5 @@
 ---
-title: "Diagrams · Use a package"
+title: "Use a package diagrams"
 generated: true
 source: "examples/packages/app/.aug-spec/diagrams/index.md"
 editLink: false
@@ -16,7 +16,7 @@ Read the areas first, then open a module for its class interactions, API calls a
 
 These are checked static views. Arrows describe possible calls, not an execution trace. Interface implementations, callbacks and foreign internals are not guessed. Tests are described in the adjacent specifications.
 
-### Areas
+## Areas
 
 ```mermaid
 flowchart TD
@@ -25,7 +25,7 @@ flowchart TD
     n0 -->|"uses"| n1
 ```
 
-### Modules
+## Modules
 
 ```mermaid
 flowchart TD
@@ -34,7 +34,7 @@ flowchart TD
     n0 -->|"uses"| n1
 ```
 
-### Open a module
+## Open a module
 
 | Module | Diagrams | Specification |
 | --- | --- | --- |

@@ -33,7 +33,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 sequenceDiagram
     participant p0 as LoginTransaction constructor
 
-    Note over p0: No calls in this operation#59; see the source and specification
+    Note over p0: Receive fields: state, nonce, verifier, expires
 ```
 
 <a id="sequence-SessionClaims-20-constructor"></a>
@@ -46,7 +46,7 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as SessionClaims constructor
 
-    Note over p0: No calls in this operation#59; see the source and specification
+    Note over p0: Receive fields: iss, sub, aud, exp, iat, jti, csrf, name
 ```
 
 <a id="sequence-LogoutForm-20-constructor"></a>
@@ -59,7 +59,7 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as LogoutForm constructor
 
-    Note over p0: No calls in this operation#59; see the source and specification
+    Note over p0: Receive fields: csrf
 ```
 
 <a id="sequence-SessionError-20-constructor"></a>

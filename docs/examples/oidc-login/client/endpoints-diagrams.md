@@ -1,5 +1,5 @@
 ---
-title: "Diagrams · OpenID Connect login application"
+title: "client/endpoints.aug diagrams"
 generated: true
 source: "examples/oidc-login/client/endpoints.aug.diagrams.md"
 editLink: false
@@ -8,13 +8,13 @@ next: false
 outline: [2, 3]
 ---
 
-# OpenID Connect login application diagrams
+# client/endpoints.aug diagrams
 
 [OpenID Connect login application](../index.md)
 
 [Project overview](../diagrams/index.md) · [Compiled explanation](endpoints.md)
 
-### Class interactions
+## Class interactions
 
 ```mermaid
 flowchart TD
@@ -46,7 +46,7 @@ flowchart TD
     n1 -->|"calls"| n10
 ```
 
-### API calls
+## API calls
 
 ```mermaid
 flowchart TD
@@ -66,11 +66,11 @@ flowchart TD
     n1 -->|"calls"| n6
 ```
 
-### Sequences
+## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
 
-#### home {#sequence-home}
+### home {#sequence-home}
 
 ::: spec-paragraph specification-paragraph-1
 [Source](endpoints.md#source-L12)
@@ -102,7 +102,7 @@ sequenceDiagram
     Note over p0: HTTP result follows declared response and error mapping#59; unhandled request failure returns 500
 ```
 
-#### me {#sequence-me}
+### me {#sequence-me}
 
 ::: spec-paragraph specification-paragraph-2
 [Source](endpoints.md#source-L20)
@@ -125,7 +125,7 @@ sequenceDiagram
     Note over p0: HTTP result follows declared response and error mapping#59; unhandled request failure returns 500
 ```
 
-### Called contracts
+## Called contracts
 
 - [authenticate](session-diagrams.md#sequence-authenticate) — client/session.aug
 - [LoginPage](views-diagrams.md#sequence-LoginPage) — client/views.aug

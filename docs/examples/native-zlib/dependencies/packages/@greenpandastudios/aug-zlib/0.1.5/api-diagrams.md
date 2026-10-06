@@ -1,5 +1,5 @@
 ---
-title: "Diagrams · Compression with zlib"
+title: "package/@greenpandastudios/aug-zlib@0.1.5/api.aug diagrams"
 generated: true
 source: "examples/native-zlib/.aug-spec/packages/@greenpandastudios/aug-zlib/0.1.5/api.aug.diagrams.md"
 editLink: false
@@ -8,17 +8,17 @@ next: false
 outline: [2, 3]
 ---
 
-# Compression with zlib diagrams
+# package/@greenpandastudios/aug-zlib@0.1.5/api.aug diagrams
 
 [Compression with zlib](../../../../../index.md)
 
 [Project overview](../../../../../diagrams/index.md) · [Compiled explanation](api.md)
 
-### Class interactions
+## Class interactions
 
 No relationships at this level.
 
-### API calls
+## API calls
 
 ```mermaid
 flowchart TD
@@ -30,11 +30,11 @@ flowchart TD
     n3 -->|"calls"| n1
 ```
 
-### Sequences
+## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
 
-#### \_compress {#sequence-_compress}
+### \_compress {#sequence-_compress}
 
 ::: spec-paragraph specification-paragraph-1
 [Source](api.md#source-L4)
@@ -48,7 +48,7 @@ sequenceDiagram
     Note over p0: Native implementation#59; only the declared contract is known
 ```
 
-#### \_decompress {#sequence-_decompress}
+### \_decompress {#sequence-_decompress}
 
 ::: spec-paragraph specification-paragraph-2
 [Source](api.md#source-L5)
@@ -62,7 +62,7 @@ sequenceDiagram
     Note over p0: Native implementation#59; only the declared contract is known
 ```
 
-#### compress {#sequence-compress}
+### compress {#sequence-compress}
 
 ::: spec-paragraph specification-paragraph-3
 [Source](api.md#source-L7)
@@ -81,7 +81,7 @@ sequenceDiagram
     Note over p0: May leave with checked errors: CompressionError
 ```
 
-#### decompress {#sequence-decompress}
+### decompress {#sequence-decompress}
 
 ::: spec-paragraph specification-paragraph-4
 [Source](api.md#source-L11)
@@ -100,7 +100,7 @@ sequenceDiagram
     Note over p0: May leave with checked errors: CompressionError
 ```
 
-### Called contracts
+## Called contracts
 
 - [\_compress](api-diagrams.md#sequence-_compress) — package/@greenpandastudios/aug-zlib@0.1.5/api.aug
 - [\_decompress](api-diagrams.md#sequence-_decompress) — package/@greenpandastudios/aug-zlib@0.1.5/api.aug

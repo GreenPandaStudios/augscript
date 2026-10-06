@@ -1,5 +1,5 @@
 ---
-title: "Diagrams · A database with SQLite"
+title: "package/@greenpandastudios/aug-sqlite@0.1.5/api.aug diagrams"
 generated: true
 source: "examples/native-sqlite/.aug-spec/packages/@greenpandastudios/aug-sqlite/0.1.5/api.aug.diagrams.md"
 editLink: false
@@ -8,13 +8,13 @@ next: false
 outline: [2, 3]
 ---
 
-# A database with SQLite diagrams
+# package/@greenpandastudios/aug-sqlite@0.1.5/api.aug diagrams
 
 [A database with SQLite](../../../../../index.md)
 
 [Project overview](../../../../../diagrams/index.md) · [Compiled explanation](api.md)
 
-### Class interactions
+## Class interactions
 
 ```mermaid
 flowchart TD
@@ -28,7 +28,7 @@ flowchart TD
     n2 -->|"depends on"| n3
 ```
 
-### API calls
+## API calls
 
 ```mermaid
 flowchart TD
@@ -48,11 +48,11 @@ flowchart TD
     n7 -->|"calls"| n3
 ```
 
-### Sequences
+## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
 
-#### \_open {#sequence-_open}
+### \_open {#sequence-_open}
 
 ::: spec-paragraph specification-paragraph-1
 [Source](api.md#source-L5)
@@ -66,7 +66,7 @@ sequenceDiagram
     Note over p0: Native implementation#59; only the declared contract is known
 ```
 
-#### \_execute {#sequence-_execute}
+### \_execute {#sequence-_execute}
 
 ::: spec-paragraph specification-paragraph-2
 [Source](api.md#source-L6)
@@ -80,7 +80,7 @@ sequenceDiagram
     Note over p0: Native implementation#59; only the declared contract is known
 ```
 
-#### \_queryScalar {#sequence-_queryScalar}
+### \_queryScalar {#sequence-_queryScalar}
 
 ::: spec-paragraph specification-paragraph-3
 [Source](api.md#source-L7)
@@ -94,7 +94,7 @@ sequenceDiagram
     Note over p0: Native implementation#59; only the declared contract is known
 ```
 
-#### NativeDatabaseStorage constructor {#sequence-NativeDatabaseStorage-20-constructor}
+### NativeDatabaseStorage constructor {#sequence-NativeDatabaseStorage-20-constructor}
 
 ::: spec-paragraph specification-paragraph-4
 [Source](api.md#source-L9)
@@ -107,7 +107,7 @@ sequenceDiagram
     Note over p0: No calls in this operation#59; see the source and specification
 ```
 
-#### NativeDatabaseStorage.open {#sequence-NativeDatabaseStorage.open}
+### NativeDatabaseStorage.open {#sequence-NativeDatabaseStorage.open}
 
 ::: spec-paragraph specification-paragraph-5
 [Source](api.md#source-L10)
@@ -126,7 +126,7 @@ sequenceDiagram
     Note over p0: May leave with checked errors: SqliteError
 ```
 
-#### open {#sequence-open}
+### open {#sequence-open}
 
 ::: spec-paragraph specification-paragraph-6
 [Source](api.md#source-L13)
@@ -141,7 +141,7 @@ sequenceDiagram
     Note over p0: May leave with checked errors: SqliteError
 ```
 
-#### openMemory {#sequence-openMemory}
+### openMemory {#sequence-openMemory}
 
 ::: spec-paragraph specification-paragraph-7
 [Source](api.md#source-L16)
@@ -160,7 +160,7 @@ sequenceDiagram
     Note over p0: May leave with checked errors: SqliteError
 ```
 
-#### execute {#sequence-execute}
+### execute {#sequence-execute}
 
 ::: spec-paragraph specification-paragraph-8
 [Source](api.md#source-L20)
@@ -179,7 +179,7 @@ sequenceDiagram
     Note over p0: May leave with checked errors: SqliteError
 ```
 
-#### queryScalar {#sequence-queryScalar}
+### queryScalar {#sequence-queryScalar}
 
 ::: spec-paragraph specification-paragraph-9
 [Source](api.md#source-L24)
@@ -198,7 +198,7 @@ sequenceDiagram
     Note over p0: May leave with checked errors: SqliteError
 ```
 
-### Called contracts
+## Called contracts
 
 - [\_execute](api-diagrams.md#sequence-_execute) — package/@greenpandastudios/aug-sqlite@0.1.5/api.aug
 - [\_open](api-diagrams.md#sequence-_open) — package/@greenpandastudios/aug-sqlite@0.1.5/api.aug

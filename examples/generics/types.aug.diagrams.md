@@ -94,7 +94,7 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as Box constructor
 
-    Note over p0: No calls in this operation#59; see the source and specification
+    Note over p0: Receive fields: value
 ```
 
 <a id="sequence-Box.get"></a>

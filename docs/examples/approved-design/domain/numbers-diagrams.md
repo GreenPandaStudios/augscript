@@ -1,5 +1,5 @@
 ---
-title: "Diagrams · Modules and composition"
+title: "domain/numbers.aug diagrams"
 generated: true
 source: "examples/approved-design/domain/numbers.aug.diagrams.md"
 editLink: false
@@ -8,13 +8,13 @@ next: false
 outline: [2, 3]
 ---
 
-# Modules and composition diagrams
+# domain/numbers.aug diagrams
 
 [Modules and composition](../index.md)
 
 [Project overview](../diagrams/index.md) · [Compiled explanation](numbers.md)
 
-### Class interactions
+## Class interactions
 
 ```mermaid
 flowchart TD
@@ -25,7 +25,7 @@ flowchart TD
     n2 -->|"intercepted by"| n0
 ```
 
-### API calls
+## API calls
 
 ```mermaid
 flowchart TD
@@ -39,11 +39,11 @@ flowchart TD
     n4 -->|"calls"| n3
 ```
 
-### Sequences
+## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
 
-#### RangeError constructor {#sequence-RangeError-20-constructor}
+### RangeError constructor {#sequence-RangeError-20-constructor}
 
 ::: spec-paragraph specification-paragraph-1
 [Source](numbers.md#source-L3)
@@ -53,10 +53,10 @@ Call arrows identify checked targets; loop and branch frames determine when they
 sequenceDiagram
     participant p0 as RangeError constructor
 
-    Note over p0: No calls in this operation#59; see the source and specification
+    Note over p0: Receive fields: value
 ```
 
-#### Positive.around {#sequence-Positive.around}
+### Positive.around {#sequence-Positive.around}
 
 ::: spec-paragraph specification-paragraph-2
 [Source](numbers.md#source-L7)
@@ -76,7 +76,7 @@ sequenceDiagram
     Note over p0: May leave with checked errors: RangeError
 ```
 
-#### double {#sequence-double}
+### double {#sequence-double}
 
 ::: spec-paragraph specification-paragraph-3
 [Source](numbers.md#source-L18)
@@ -91,7 +91,7 @@ sequenceDiagram
     Note over p0: May leave with checked errors: RangeError
 ```
 
-### Called contracts
+## Called contracts
 
 - [Positive](numbers-diagrams.md) — domain/numbers.aug
 - [RangeError](numbers-diagrams.md#sequence-RangeError-20-constructor) — domain/numbers.aug

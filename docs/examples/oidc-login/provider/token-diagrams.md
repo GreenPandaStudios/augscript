@@ -1,5 +1,5 @@
 ---
-title: "Diagrams · OpenID Connect login application"
+title: "provider/token.aug diagrams"
 generated: true
 source: "examples/oidc-login/provider/token.aug.diagrams.md"
 editLink: false
@@ -8,13 +8,13 @@ next: false
 outline: [2, 3]
 ---
 
-# OpenID Connect login application diagrams
+# provider/token.aug diagrams
 
 [OpenID Connect login application](../index.md)
 
 [Project overview](../diagrams/index.md) · [Compiled explanation](token.md)
 
-### Class interactions
+## Class interactions
 
 ```mermaid
 flowchart TD
@@ -50,7 +50,7 @@ flowchart TD
     n12 -->|"calls"| n11
 ```
 
-### API calls
+## API calls
 
 ```mermaid
 flowchart TD
@@ -88,11 +88,11 @@ flowchart TD
     n15 -->|"calls"| n14
 ```
 
-### Sequences
+## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
 
-#### \_oauthError {#sequence-_oauthError}
+### \_oauthError {#sequence-_oauthError}
 
 ::: spec-paragraph specification-paragraph-1
 [Source](token.md#source-L8)
@@ -113,13 +113,13 @@ sequenceDiagram
     Note over p0: May leave with checked errors: HttpError
 ```
 
-#### token {#sequence-token}
+### token {#sequence-token}
 
 ::: spec-paragraph specification-paragraph-2
 [Source](token.md#source-L12)
 :::
 
-##### Sequence 1 of 3 (continued)
+#### Sequence 1 of 3 (continued)
 
 ```mermaid
 sequenceDiagram
@@ -173,7 +173,7 @@ sequenceDiagram
     end
 ```
 
-##### Sequence 2 of 3 (continued)
+#### Sequence 2 of 3 (continued)
 
 ```mermaid
 sequenceDiagram
@@ -213,7 +213,7 @@ sequenceDiagram
     end
 ```
 
-##### Sequence 3 of 3 (continued)
+#### Sequence 3 of 3 (continued)
 
 ```mermaid
 sequenceDiagram
@@ -242,7 +242,7 @@ sequenceDiagram
     Note over p0: HTTP result follows declared response and error mapping#59; unhandled request failure returns 500
 ```
 
-### Called contracts
+## Called contracts
 
 - [securityHeaders](../common/headers-diagrams.md#sequence-securityHeaders) — common/headers.aug
 - [SigningKeys](../common/keys-diagrams.md) — common/keys.aug

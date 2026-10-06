@@ -1,5 +1,5 @@
 ---
-title: "Diagrams · OpenID Connect login application"
+title: "provider/credentials.aug diagrams"
 generated: true
 source: "examples/oidc-login/provider/credentials.aug.diagrams.md"
 editLink: false
@@ -8,13 +8,13 @@ next: false
 outline: [2, 3]
 ---
 
-# OpenID Connect login application diagrams
+# provider/credentials.aug diagrams
 
 [OpenID Connect login application](../index.md)
 
 [Project overview](../diagrams/index.md) · [Compiled explanation](credentials.md)
 
-### Class interactions
+## Class interactions
 
 ```mermaid
 flowchart TD
@@ -24,7 +24,7 @@ flowchart TD
     n1 -->|"depends on"| n0
 ```
 
-### API calls
+## API calls
 
 ```mermaid
 flowchart TD
@@ -37,11 +37,11 @@ flowchart TD
     n3 -->|"calls"| n2
 ```
 
-### Sequences
+## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
 
-#### verifyCredentials {#sequence-verifyCredentials}
+### verifyCredentials {#sequence-verifyCredentials}
 
 ::: spec-paragraph specification-paragraph-1
 [Source](credentials.md#source-L4)
@@ -80,7 +80,7 @@ sequenceDiagram
     Note over p0: May leave with checked errors: CryptoError
 ```
 
-### Called contracts
+## Called contracts
 
 - [Crypto](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts-diagrams.md) — package/@git/url\_9ef654c66d34ab8f5527@0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug
 - [Crypto.decodeBase64url](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts-diagrams.md#sequence-Crypto.decodeBase64url) — package/@git/url\_9ef654c66d34ab8f5527@0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug

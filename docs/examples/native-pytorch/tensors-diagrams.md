@@ -1,5 +1,5 @@
 ---
-title: "Diagrams · CPU tensors with PyTorch"
+title: "tensors.aug diagrams"
 generated: true
 source: "examples/native-pytorch/tensors.aug.diagrams.md"
 editLink: false
@@ -8,17 +8,17 @@ next: false
 outline: [2, 3]
 ---
 
-# CPU tensors with PyTorch diagrams
+# tensors.aug diagrams
 
 [CPU tensors with PyTorch](index.md)
 
 [Project overview](diagrams/index.md) · [Compiled explanation](tensors.md)
 
-### Class interactions
+## Class interactions
 
 No relationships at this level.
 
-### API calls
+## API calls
 
 ```mermaid
 flowchart TD
@@ -38,11 +38,11 @@ flowchart TD
     n5 -->|"calls"| n3
 ```
 
-### Sequences
+## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
 
-#### calculate {#sequence-calculate}
+### calculate {#sequence-calculate}
 
 ::: spec-paragraph specification-paragraph-1
 [Source](tensors.md#source-L5)
@@ -65,7 +65,7 @@ sequenceDiagram
     Note over p0: May leave with checked errors: TensorError
 ```
 
-### Called contracts
+## Called contracts
 
 - [add](dependencies/packages/%40greenpandastudios/aug-pytorch/0.1.6/api-diagrams.md#sequence-add) — package/@greenpandastudios/aug-pytorch@0.1.6/api.aug
 - [sum](dependencies/packages/%40greenpandastudios/aug-pytorch/0.1.6/api-diagrams.md#sequence-sum) — package/@greenpandastudios/aug-pytorch@0.1.6/api.aug

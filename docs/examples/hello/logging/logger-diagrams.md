@@ -1,5 +1,5 @@
 ---
-title: "Diagrams · Hello world with dependencies"
+title: "logging/logger.aug diagrams"
 generated: true
 source: "examples/hello/logging/logger.aug.diagrams.md"
 editLink: false
@@ -8,13 +8,13 @@ next: false
 outline: [2, 3]
 ---
 
-# Hello world with dependencies diagrams
+# logging/logger.aug diagrams
 
 [Hello world with dependencies](../index.md)
 
 [Project overview](../diagrams/index.md) · [Compiled explanation](logger.md)
 
-### Class interactions
+## Class interactions
 
 ```mermaid
 flowchart TD
@@ -23,7 +23,7 @@ flowchart TD
     n1 -->|"depends on"| n0
 ```
 
-### API calls
+## API calls
 
 ```mermaid
 flowchart TD
@@ -31,11 +31,11 @@ flowchart TD
 
 ```
 
-### Sequences
+## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
 
-#### Logger.log {#sequence-Logger.log}
+### Logger.log {#sequence-Logger.log}
 
 ::: spec-paragraph specification-paragraph-1
 [Source](logger.md#source-L9)
@@ -48,6 +48,6 @@ sequenceDiagram
     Note over p0: Interface contract#59; implementation selected at runtime
 ```
 
-### Called contracts
+## Called contracts
 
 - [Console](../dependencies/august/0.23.0/io/contracts-diagrams.md) — august/io/contracts.aug

@@ -1,5 +1,5 @@
 ---
-title: "Diagrams · Labeled calls and injection"
+title: "main.aug diagrams"
 generated: true
 source: "examples/new-syntax/main.aug.diagrams.md"
 editLink: false
@@ -8,13 +8,13 @@ next: false
 outline: [2, 3]
 ---
 
-# Labeled calls and injection diagrams
+# main.aug diagrams
 
 [Labeled calls and injection](index.md)
 
 [Project overview](diagrams/index.md) · [Compiled explanation](main.md)
 
-### Class interactions
+## Class interactions
 
 ```mermaid
 flowchart TD
@@ -25,7 +25,7 @@ flowchart TD
     n2 -->|"calls"| n1
 ```
 
-### API calls
+## API calls
 
 ```mermaid
 flowchart TD
@@ -38,11 +38,11 @@ flowchart TD
     n3 -->|"calls"| n2
 ```
 
-### Sequences
+## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
 
-#### Startup {#sequence-Startup}
+### Startup {#sequence-Startup}
 
 ::: spec-paragraph specification-paragraph-1
 [Source](main.md#source-L9)
@@ -61,7 +61,7 @@ sequenceDiagram
     p0->>p4: print(value)
 ```
 
-### Called contracts
+## Called contracts
 
 - [Greeter](greeter-diagrams.md#sequence-Greeter-20-constructor) — greeter.aug
 - [Greeter.greet](greeter-diagrams.md#sequence-Greeter.greet) — greeter.aug

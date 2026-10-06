@@ -1,5 +1,5 @@
 ---
-title: "Diagrams · A database with SQLite"
+title: "A database with SQLite diagrams"
 generated: true
 source: "examples/native-sqlite/.aug-spec/diagrams/index.md"
 editLink: false
@@ -16,7 +16,7 @@ Read the areas first, then open a module for its class interactions, API calls a
 
 These are checked static views. Arrows describe possible calls, not an execution trace. Interface implementations, callbacks and foreign internals are not guessed. Tests are described in the adjacent specifications.
 
-### Areas
+## Areas
 
 ```mermaid
 flowchart TD
@@ -25,18 +25,23 @@ flowchart TD
     n0 -->|"uses"| n1
 ```
 
-### Modules
+## Modules
 
 ```mermaid
 flowchart TD
     n0["database.aug"]
     n1["main.aug"]
     n2["package/@greenpandastudios/aug-sqlite@0.1.5/api.aug"]
+    n3["package/@greenpandastudios/aug-sqlite@0.1.5/bindings.aug"]
+    n4["package/@greenpandastudios/aug-sqlite@0.1.5/contracts.aug"]
     n0 -->|"uses"| n2
+    n0 -->|"uses"| n3
+    n0 -->|"uses"| n4
     n1 -->|"uses"| n0
+    n1 -->|"uses"| n4
 ```
 
-### Open a module
+## Open a module
 
 | Module | Diagrams | Specification |
 | --- | --- | --- |

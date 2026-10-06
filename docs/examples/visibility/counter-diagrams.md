@@ -1,5 +1,5 @@
 ---
-title: "Diagrams · Private state and helpers"
+title: "counter.aug diagrams"
 generated: true
 source: "examples/visibility/counter.aug.diagrams.md"
 editLink: false
@@ -8,13 +8,13 @@ next: false
 outline: [2, 3]
 ---
 
-# Private state and helpers diagrams
+# counter.aug diagrams
 
 [Private state and helpers](index.md)
 
 [Project overview](diagrams/index.md) · [Compiled explanation](counter.md)
 
-### Class interactions
+## Class interactions
 
 ```mermaid
 flowchart TD
@@ -26,7 +26,7 @@ flowchart TD
     n0 -->|"calls"| n2
 ```
 
-### API calls
+## API calls
 
 ```mermaid
 flowchart TD
@@ -38,11 +38,11 @@ flowchart TD
     n1 -->|"calls"| n0
 ```
 
-### Sequences
+## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
 
-#### ICounter.label {#sequence-ICounter.label}
+### ICounter.label {#sequence-ICounter.label}
 
 ::: spec-paragraph specification-paragraph-1
 [Source](counter.md#source-L3)
@@ -55,7 +55,7 @@ sequenceDiagram
     Note over p0: Interface contract#59; implementation selected at runtime
 ```
 
-#### Counter constructor {#sequence-Counter-20-constructor}
+### Counter constructor {#sequence-Counter-20-constructor}
 
 ::: spec-paragraph specification-paragraph-2
 [Source](counter.md#source-L5)
@@ -65,10 +65,10 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as Counter constructor
 
-    Note over p0: No calls in this operation#59; see the source and specification
+    Note over p0: Receive fields: value
 ```
 
-#### Counter.\_label {#sequence-Counter._label}
+### Counter.\_label {#sequence-Counter._label}
 
 ::: spec-paragraph specification-paragraph-3
 [Source](counter.md#source-L6)
@@ -82,7 +82,7 @@ sequenceDiagram
     Note over p0: Return _prefix()#59; required cleanup runs before exit
 ```
 
-#### Counter.label {#sequence-Counter.label}
+### Counter.label {#sequence-Counter.label}
 
 ::: spec-paragraph specification-paragraph-4
 [Source](counter.md#source-L9)
@@ -96,7 +96,7 @@ sequenceDiagram
     Note over p0: Return self._label()#59; required cleanup runs before exit
 ```
 
-#### \_prefix {#sequence-_prefix}
+### \_prefix {#sequence-_prefix}
 
 ::: spec-paragraph specification-paragraph-5
 [Source](counter.md#source-L13)
@@ -109,7 +109,7 @@ sequenceDiagram
     Note over p0: Return #34;count#34;#59; required cleanup runs before exit
 ```
 
-### Called contracts
+## Called contracts
 
 - [Counter.\_label](counter-diagrams.md#sequence-Counter._label) — counter.aug
 - [ICounter](counter-diagrams.md) — counter.aug

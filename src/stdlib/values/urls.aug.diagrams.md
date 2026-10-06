@@ -71,6 +71,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 sequenceDiagram
     participant p0 as HttpUrl constructor
     participant p1 as _validateHttpUrl
+    Note over p0: Receive fields: text
     p0->>p1: _validateHttpUrl(text)
 ```
 

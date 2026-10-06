@@ -22,6 +22,7 @@ flowchart TD
     n0["data.aug"]
     n1["main.aug"]
     n2["package/@git/url_2d3c37c690c0fa115be1@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug"]
+    n1 -->|"uses"| n0
     n1 -->|"uses"| n2
 ```
 

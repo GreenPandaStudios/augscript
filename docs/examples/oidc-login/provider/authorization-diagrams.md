@@ -1,5 +1,5 @@
 ---
-title: "Diagrams · OpenID Connect login application"
+title: "provider/authorization.aug diagrams"
 generated: true
 source: "examples/oidc-login/provider/authorization.aug.diagrams.md"
 editLink: false
@@ -8,13 +8,13 @@ next: false
 outline: [2, 3]
 ---
 
-# OpenID Connect login application diagrams
+# provider/authorization.aug diagrams
 
 [OpenID Connect login application](../index.md)
 
 [Project overview](../diagrams/index.md) · [Compiled explanation](authorization.md)
 
-### Class interactions
+## Class interactions
 
 ```mermaid
 flowchart TD
@@ -42,7 +42,7 @@ flowchart TD
     n7 -->|"depends on"| n5
     n7 -->|"calls"| n6
     n7 -->|"depends on"| n6
-    n7 -->|"calls"| n8
+    n7 -->|"defers HTTP call to"| n8
     n7 -->|"calls"| n10
     n7 -->|"calls"| n11
     n7 -->|"calls"| n14
@@ -61,7 +61,7 @@ flowchart TD
     n8 -->|"calls"| n13
 ```
 
-### API calls
+## API calls
 
 ```mermaid
 flowchart TD
@@ -90,7 +90,7 @@ flowchart TD
     n10 -->|"calls"| n6
     n10 -->|"calls"| n8
     n10 -->|"calls"| n9
-    n10 -->|"calls"| n11
+    n10 -->|"defers HTTP call to"| n11
     n10 -->|"calls"| n13
     n10 -->|"calls"| n14
     n10 -->|"calls"| n17
@@ -108,17 +108,17 @@ flowchart TD
     n11 -->|"calls"| n16
 ```
 
-### Sequences
+## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
 
-#### authorize {#sequence-authorize}
+### authorize {#sequence-authorize}
 
 ::: spec-paragraph specification-paragraph-1
 [Source](authorization.md#source-L12)
 :::
 
-##### Sequence 1 of 2 (continued)
+#### Sequence 1 of 2 (continued)
 
 ```mermaid
 sequenceDiagram
@@ -183,7 +183,7 @@ sequenceDiagram
     p0->>p10: now() · interface dispatch
 ```
 
-##### Sequence 2 of 2 (continued)
+#### Sequence 2 of 2 (continued)
 
 ```mermaid
 sequenceDiagram
@@ -207,13 +207,13 @@ sequenceDiagram
     Note over p0: HTTP result follows declared response and error mapping#59; unhandled request failure returns 500
 ```
 
-#### providerLogin {#sequence-providerLogin}
+### providerLogin {#sequence-providerLogin}
 
 ::: spec-paragraph specification-paragraph-2
 [Source](authorization.md#source-L35)
 :::
 
-##### Sequence 1 of 3 (continued)
+#### Sequence 1 of 3 (continued)
 
 ```mermaid
 sequenceDiagram
@@ -269,7 +269,7 @@ sequenceDiagram
     end
 ```
 
-##### Sequence 2 of 3 (continued)
+#### Sequence 2 of 3 (continued)
 
 ```mermaid
 sequenceDiagram
@@ -316,7 +316,7 @@ sequenceDiagram
     end
 ```
 
-##### Sequence 3 of 3 (continued)
+#### Sequence 3 of 3 (continued)
 
 ```mermaid
 sequenceDiagram
@@ -344,7 +344,7 @@ sequenceDiagram
     Note over p0: HTTP result follows declared response and error mapping#59; unhandled request failure returns 500
 ```
 
-### Called contracts
+## Called contracts
 
 - [securityHeaders](../common/headers-diagrams.md#sequence-securityHeaders) — common/headers.aug
 - [withCookie](../common/headers-diagrams.md#sequence-withCookie) — common/headers.aug

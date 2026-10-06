@@ -1,5 +1,5 @@
 ---
-title: "Diagrams · Generic dependency injection"
+title: "types.aug diagrams"
 generated: true
 source: "examples/generic-di/types.aug.diagrams.md"
 editLink: false
@@ -8,13 +8,13 @@ next: false
 outline: [2, 3]
 ---
 
-# Generic dependency injection diagrams
+# types.aug diagrams
 
 [Generic dependency injection](index.md)
 
 [Project overview](diagrams/index.md) · [Compiled explanation](types.md)
 
-### Class interactions
+## Class interactions
 
 ```mermaid
 flowchart TD
@@ -32,7 +32,7 @@ flowchart TD
     n3 -->|"depends on repository"| n4
 ```
 
-### API calls
+## API calls
 
 ```mermaid
 flowchart TD
@@ -45,11 +45,11 @@ flowchart TD
     n3 -->|"calls"| n4
 ```
 
-### Sequences
+## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
 
-#### Repository.get {#sequence-Repository.get}
+### Repository.get {#sequence-Repository.get}
 
 ::: spec-paragraph specification-paragraph-1
 [Source](types.md#source-L4)
@@ -62,7 +62,7 @@ sequenceDiagram
     Note over p0: Interface contract#59; implementation selected at runtime
 ```
 
-#### NumberRepository constructor {#sequence-NumberRepository-20-constructor}
+### NumberRepository constructor {#sequence-NumberRepository-20-constructor}
 
 ::: spec-paragraph specification-paragraph-2
 [Source](types.md#source-L6)
@@ -75,7 +75,7 @@ sequenceDiagram
     Note over p0: No calls in this operation#59; see the source and specification
 ```
 
-#### NumberRepository.get {#sequence-NumberRepository.get}
+### NumberRepository.get {#sequence-NumberRepository.get}
 
 ::: spec-paragraph specification-paragraph-3
 [Source](types.md#source-L7)
@@ -88,7 +88,7 @@ sequenceDiagram
     Note over p0: Return 7#59; required cleanup runs before exit
 ```
 
-#### Program constructor {#sequence-Program-20-constructor}
+### Program constructor {#sequence-Program-20-constructor}
 
 ::: spec-paragraph specification-paragraph-4
 [Source](types.md#source-L11)
@@ -98,10 +98,10 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as Program constructor
 
-    Note over p0: No calls in this operation#59; see the source and specification
+    Note over p0: Receive fields: injected repository
 ```
 
-#### Program.start {#sequence-Program.start}
+### Program.start {#sequence-Program.start}
 
 ::: spec-paragraph specification-paragraph-5
 [Source](types.md#source-L12)
@@ -116,7 +116,7 @@ sequenceDiagram
     p0->>p2: write(value) · interface dispatch
 ```
 
-#### IProgram.start {#sequence-IProgram.start}
+### IProgram.start {#sequence-IProgram.start}
 
 ::: spec-paragraph specification-paragraph-6
 [Source](types.md#source-L17)
@@ -129,7 +129,7 @@ sequenceDiagram
     Note over p0: Interface contract#59; implementation selected at runtime
 ```
 
-### Called contracts
+## Called contracts
 
 - [Console](dependencies/august/0.23.0/io/contracts-diagrams.md) — august/io/contracts.aug
 - [Console.write](dependencies/august/0.23.0/io/contracts-diagrams.md#sequence-Console.write) — august/io/contracts.aug

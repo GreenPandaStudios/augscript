@@ -1,5 +1,5 @@
 ---
-title: "Diagrams · OpenID Connect login application"
+title: "package/@git/url\\_0eb7c89453c87681ed15@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug diagrams"
 generated: true
 source: "examples/oidc-login/.aug-spec/packages/@git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.diagrams.md"
 editLink: false
@@ -8,13 +8,13 @@ next: false
 outline: [2, 3]
 ---
 
-# OpenID Connect login application diagrams
+# package/@git/url\_0eb7c89453c87681ed15@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug diagrams
 
 [OpenID Connect login application](../../../../../index.md)
 
 [Project overview](../../../../../diagrams/index.md) · [Compiled explanation](store.md)
 
-### Class interactions
+## Class interactions
 
 ```mermaid
 flowchart TD
@@ -27,7 +27,7 @@ flowchart TD
     n1 -->|"calls"| n3
 ```
 
-### API calls
+## API calls
 
 ```mermaid
 flowchart TD
@@ -43,11 +43,11 @@ flowchart TD
     n4 -->|"calls"| n7
 ```
 
-### Sequences
+## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
 
-#### StoreFull constructor {#sequence-StoreFull-20-constructor}
+### StoreFull constructor {#sequence-StoreFull-20-constructor}
 
 ::: spec-paragraph specification-paragraph-1
 [Source](store.md#source-L3)
@@ -60,7 +60,7 @@ sequenceDiagram
     Note over p0: No calls in this operation#59; see the source and specification
 ```
 
-#### \_Entry constructor {#sequence-_Entry-20-constructor}
+### \_Entry constructor {#sequence-_Entry-20-constructor}
 
 ::: spec-paragraph specification-paragraph-2
 [Source](store.md#source-L5)
@@ -70,10 +70,10 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as _Entry constructor
 
-    Note over p0: No calls in this operation#59; see the source and specification
+    Note over p0: Receive fields: value, expires
 ```
 
-#### ExpiringStore.put {#sequence-ExpiringStore.put}
+### ExpiringStore.put {#sequence-ExpiringStore.put}
 
 ::: spec-paragraph specification-paragraph-3
 [Source](store.md#source-L10)
@@ -87,7 +87,7 @@ sequenceDiagram
     Note over p0: Interface contract#59; implementation selected at runtime
 ```
 
-#### ExpiringStore.take {#sequence-ExpiringStore.take}
+### ExpiringStore.take {#sequence-ExpiringStore.take}
 
 ::: spec-paragraph specification-paragraph-4
 [Source](store.md#source-L12)
@@ -100,7 +100,7 @@ sequenceDiagram
     Note over p0: Interface contract#59; implementation selected at runtime
 ```
 
-#### ExpiringStore.get {#sequence-ExpiringStore.get}
+### ExpiringStore.get {#sequence-ExpiringStore.get}
 
 ::: spec-paragraph specification-paragraph-5
 [Source](store.md#source-L14)
@@ -113,7 +113,7 @@ sequenceDiagram
     Note over p0: Interface contract#59; implementation selected at runtime
 ```
 
-#### MemoryStore constructor {#sequence-MemoryStore-20-constructor}
+### MemoryStore constructor {#sequence-MemoryStore-20-constructor}
 
 ::: spec-paragraph specification-paragraph-6
 [Source](store.md#source-L17)
@@ -126,9 +126,10 @@ sequenceDiagram
     participant p2 as Shared
     p0->>p1: Map()
     p0->>p2: Shared(value)
+    Note over p0: Set _entries to Shared(value=Map#60;string, _Entry#60;T#62;#62;())
 ```
 
-#### MemoryStore.put {#sequence-MemoryStore.put}
+### MemoryStore.put {#sequence-MemoryStore.put}
 
 ::: spec-paragraph specification-paragraph-7
 [Source](store.md#source-L19)
@@ -165,7 +166,7 @@ sequenceDiagram
     Note over p0: May leave with checked errors: StoreFull
 ```
 
-#### MemoryStore.take {#sequence-MemoryStore.take}
+### MemoryStore.take {#sequence-MemoryStore.take}
 
 ::: spec-paragraph specification-paragraph-8
 [Source](store.md#source-L28)
@@ -190,7 +191,7 @@ sequenceDiagram
     end
 ```
 
-#### MemoryStore.get {#sequence-MemoryStore.get}
+### MemoryStore.get {#sequence-MemoryStore.get}
 
 ::: spec-paragraph specification-paragraph-9
 [Source](store.md#source-L37)
@@ -215,7 +216,7 @@ sequenceDiagram
     end
 ```
 
-### Called contracts
+## Called contracts
 
 - [ExpiringStore](store-diagrams.md) — package/@git/url\_0eb7c89453c87681ed15@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug
 - [StoreFull](store-diagrams.md#sequence-StoreFull-20-constructor) — package/@git/url\_0eb7c89453c87681ed15@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug

@@ -1,5 +1,5 @@
 ---
-title: "Diagrams · Modules and composition"
+title: "main.aug diagrams"
 generated: true
 source: "examples/approved-design/main.aug.diagrams.md"
 editLink: false
@@ -8,13 +8,13 @@ next: false
 outline: [2, 3]
 ---
 
-# Modules and composition diagrams
+# main.aug diagrams
 
 [Modules and composition](index.md)
 
 [Project overview](diagrams/index.md) · [Compiled explanation](main.md)
 
-### Class interactions
+## Class interactions
 
 ```mermaid
 flowchart TD
@@ -29,7 +29,7 @@ flowchart TD
     n4 -->|"calls"| n3
 ```
 
-### API calls
+## API calls
 
 ```mermaid
 flowchart TD
@@ -46,11 +46,11 @@ flowchart TD
     n5 -->|"calls"| n4
 ```
 
-### Sequences
+## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
 
-#### Startup {#sequence-Startup}
+### Startup {#sequence-Startup}
 
 ::: spec-paragraph specification-paragraph-1
 [Source](main.md#source-L8)
@@ -101,7 +101,7 @@ sequenceDiagram
     end
 ```
 
-### Called contracts
+## Called contracts
 
 - [Counter.increment](counters-diagrams.md#sequence-Counter.increment) — counters.aug
 - [Counter.value](counters-diagrams.md#sequence-Counter.value) — counters.aug

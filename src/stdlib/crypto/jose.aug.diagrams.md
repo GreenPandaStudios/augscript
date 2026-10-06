@@ -111,7 +111,7 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as JwtHeader constructor
 
-    Note over p0: No calls in this operation#59; see the source and specification
+    Note over p0: Receive fields: alg, kid, typ
 ```
 
 <a id="sequence-RsaJwk-20-constructor"></a>
@@ -124,7 +124,7 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as RsaJwk constructor
 
-    Note over p0: No calls in this operation#59; see the source and specification
+    Note over p0: Receive fields: kty, kid, alg, use, n, e
 ```
 
 <a id="sequence-RsaJwks-20-constructor"></a>
@@ -137,7 +137,7 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as RsaJwks constructor
 
-    Note over p0: No calls in this operation#59; see the source and specification
+    Note over p0: Receive fields: keys
 ```
 
 <a id="sequence-rsaJwk"></a>
@@ -538,7 +538,6 @@ sequenceDiagram
     Note over p0: Raise checked failure JwtError()#59; required cleanup runs before exit
     end
     opt Catch IndexError
-    p0->>p2: JwtError()
     end
 ```
 
@@ -547,9 +546,10 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as verifyIdentityToken
-
+    participant p1 as JwtError
     opt Catch IndexError
     Note over p0: Sequence continued from the previous view
+    p0->>p1: JwtError()
     Note over p0: Raise checked failure JwtError()#59; required cleanup runs before exit
     end
     Note over p0: May leave with checked errors: JwtError
@@ -579,7 +579,7 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as Ed25519IdentityVerifier constructor
 
-    Note over p0: No calls in this operation#59; see the source and specification
+    Note over p0: Receive fields: injected crypto, publicKey, issuer, audience, tokenType, maximumAge
 ```
 
 <a id="sequence-Ed25519IdentityVerifier.verify"></a>

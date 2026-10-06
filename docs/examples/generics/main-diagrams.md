@@ -1,5 +1,5 @@
 ---
-title: "Diagrams · Generic types and functions"
+title: "main.aug diagrams"
 generated: true
 source: "examples/generics/main.aug.diagrams.md"
 editLink: false
@@ -8,13 +8,13 @@ next: false
 outline: [2, 3]
 ---
 
-# Generic types and functions diagrams
+# main.aug diagrams
 
 [Generic types and functions](index.md)
 
 [Project overview](diagrams/index.md) · [Compiled explanation](main.md)
 
-### Class interactions
+## Class interactions
 
 ```mermaid
 flowchart TD
@@ -25,7 +25,7 @@ flowchart TD
     n0 -->|"calls"| n2
 ```
 
-### API calls
+## API calls
 
 ```mermaid
 flowchart TD
@@ -40,11 +40,11 @@ flowchart TD
     n0 -->|"calls"| n4
 ```
 
-### Sequences
+## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
 
-#### Startup {#sequence-Startup}
+### Startup {#sequence-Startup}
 
 ::: spec-paragraph specification-paragraph-1
 [Source](main.md#source-L6)
@@ -68,7 +68,7 @@ sequenceDiagram
     p0->>p2: print(value)
 ```
 
-### Called contracts
+## Called contracts
 
 - [Box](types-diagrams.md#sequence-Box-20-constructor) — types.aug
 - [Box.get](types-diagrams.md#sequence-Box.get) — types.aug

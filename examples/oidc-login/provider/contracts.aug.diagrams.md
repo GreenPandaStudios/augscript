@@ -40,7 +40,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 sequenceDiagram
     participant p0 as AuthorizationRequest constructor
 
-    Note over p0: No calls in this operation#59; see the source and specification
+    Note over p0: Receive fields: clientId, redirectUri, state, nonce, challenge, browser, csrf, expires
 ```
 
 <a id="sequence-AuthorizationCode-20-constructor"></a>
@@ -53,7 +53,7 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as AuthorizationCode constructor
 
-    Note over p0: No calls in this operation#59; see the source and specification
+    Note over p0: Receive fields: clientId, redirectUri, challenge, nonce, subject, name, expires
 ```
 
 <a id="sequence-IdClaims-20-constructor"></a>
@@ -66,7 +66,7 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as IdClaims constructor
 
-    Note over p0: No calls in this operation#59; see the source and specification
+    Note over p0: Receive fields: iss, sub, aud, exp, iat, nonce, name
 ```
 
 <a id="sequence-AccessGrant-20-constructor"></a>
@@ -79,7 +79,7 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as AccessGrant constructor
 
-    Note over p0: No calls in this operation#59; see the source and specification
+    Note over p0: Receive fields: subject, name, expires
 ```
 
 <a id="sequence-TokenResponse-20-constructor"></a>
@@ -92,7 +92,7 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as TokenResponse constructor
 
-    Note over p0: No calls in this operation#59; see the source and specification
+    Note over p0: Receive fields: token_type, access_token, id_token, expires_in, scope
 ```
 
 <a id="sequence-OAuthError-20-constructor"></a>
@@ -105,7 +105,7 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as OAuthError constructor
 
-    Note over p0: No calls in this operation#59; see the source and specification
+    Note over p0: Receive fields: error, error_description
 ```
 
 <a id="sequence-TokenForm-20-constructor"></a>
@@ -118,7 +118,7 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as TokenForm constructor
 
-    Note over p0: No calls in this operation#59; see the source and specification
+    Note over p0: Receive fields: grant_type, code, redirect_uri, client_id, code_verifier
 ```
 
 <a id="sequence-LoginForm-20-constructor"></a>
@@ -131,7 +131,7 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as LoginForm constructor
 
-    Note over p0: No calls in this operation#59; see the source and specification
+    Note over p0: Receive fields: request_id, csrf, username, password
 ```
 
 <a id="sequence-UserInfo-20-constructor"></a>
@@ -144,7 +144,7 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as UserInfo constructor
 
-    Note over p0: No calls in this operation#59; see the source and specification
+    Note over p0: Receive fields: sub, name
 ```
 
 <a id="sequence-LoginError-20-constructor"></a>

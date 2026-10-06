@@ -20,7 +20,7 @@ flowchart TD
 flowchart TD
     n0["august/errors/context.aug"]
     n1["august/errors/export.aug"]
-
+    n1 -->|"uses"| n0
 ```
 
 ## Open a module

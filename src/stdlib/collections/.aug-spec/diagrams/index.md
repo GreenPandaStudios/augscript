@@ -21,7 +21,8 @@ flowchart TD
     n0["august/collections/export.aug"]
     n1["august/collections/operations.aug"]
     n2["august/collections/ranges.aug"]
-
+    n0 -->|"uses"| n1
+    n0 -->|"uses"| n2
 ```
 
 ## Open a module

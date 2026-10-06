@@ -14,8 +14,8 @@ async function render(){
     mermaid.initialize({startOnLoad:false,securityLevel:'strict',suppressErrorRendering:true,theme:'base',look:'classic',
       fontFamily:'system-ui, sans-serif',flowchart:{htmlLabels:false},
       themeVariables:isDark.value
-        ?{primaryColor:'#302629',primaryTextColor:'#eee7e5',primaryBorderColor:'#a65c72',lineColor:'#c998a6',secondaryColor:'#272326',tertiaryColor:'#272326',background:'#201e20'}
-        :{primaryColor:'#f5edef',primaryTextColor:'#30272a',primaryBorderColor:'#863f56',lineColor:'#863f56',secondaryColor:'#faf7f4',tertiaryColor:'#faf7f4',background:'#faf7f4'}});
+        ?{primaryColor:'#302629',primaryTextColor:'#eee7e5',primaryBorderColor:'#a65c72',lineColor:'#c998a6',secondaryColor:'#272326',tertiaryColor:'#272326',background:'#201e20',noteBkgColor:'#302629',noteTextColor:'#eee7e5',noteBorderColor:'#a65c72'}
+        :{primaryColor:'#f5edef',primaryTextColor:'#30272a',primaryBorderColor:'#863f56',lineColor:'#863f56',secondaryColor:'#faf7f4',tertiaryColor:'#faf7f4',background:'#faf7f4',noteBkgColor:'#f5edef',noteTextColor:'#30272a',noteBorderColor:'#863f56'}});
     const result=await mermaid.render(id,source.value);
     if(!disposed&&selected===revision){
       const viewBox=result.svg.match(/viewBox="[^"]*?\s([\d.]+)\s+[\d.]+"/);
@@ -56,6 +56,7 @@ onBeforeUnmount(()=>{disposed=true;revision++;observer?.disconnect();resizeObser
 .aug-diagram-controls button:focus-visible,.aug-diagram-viewport:focus-visible { outline:2px solid var(--vp-c-brand-1); outline-offset:2px; }
 .aug-diagram-viewport { overflow:auto; max-height:70vh; padding:1rem; min-height:6rem; }
 .aug-diagram-viewport :deep(svg) { display:block; width:100%; height:auto; max-width:none !important; }
+.aug-diagram-viewport :deep(svg .rect) { fill:var(--vp-c-bg-soft) !important; }
 .aug-diagram-viewport :deep(svg [filter]) { filter:none !important; }
 .aug-diagram details { padding:.5rem .75rem; font-size:.85rem; border-top:1px solid var(--vp-c-divider); }
 .aug-diagram pre { overflow:auto; padding:.75rem; font-size:.8rem; line-height:1.5; }

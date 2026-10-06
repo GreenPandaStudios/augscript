@@ -47,6 +47,7 @@ sequenceDiagram
     participant p0 as CivilDate constructor
     participant p1 as ConversionError
     participant p2 as _daysInMonth
+    Note over p0: Receive fields: year, month, day
     opt Left is false
     end
     opt Left is false

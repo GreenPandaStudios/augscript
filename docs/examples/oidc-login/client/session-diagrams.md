@@ -1,5 +1,5 @@
 ---
-title: "Diagrams · OpenID Connect login application"
+title: "client/session.aug diagrams"
 generated: true
 source: "examples/oidc-login/client/session.aug.diagrams.md"
 editLink: false
@@ -8,13 +8,13 @@ next: false
 outline: [2, 3]
 ---
 
-# OpenID Connect login application diagrams
+# client/session.aug diagrams
 
 [OpenID Connect login application](../index.md)
 
 [Project overview](../diagrams/index.md) · [Compiled explanation](session.md)
 
-### Class interactions
+## Class interactions
 
 ```mermaid
 flowchart TD
@@ -39,7 +39,7 @@ flowchart TD
     n1 -->|"depends on"| n7
 ```
 
-### API calls
+## API calls
 
 ```mermaid
 flowchart TD
@@ -62,17 +62,17 @@ flowchart TD
     n1 -->|"calls"| n8
 ```
 
-### Sequences
+## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
 
-#### authenticate {#sequence-authenticate}
+### authenticate {#sequence-authenticate}
 
 ::: spec-paragraph specification-paragraph-1
 [Source](session.md#source-L9)
 :::
 
-##### Sequence 1 of 2 (continued)
+#### Sequence 1 of 2 (continued)
 
 ```mermaid
 sequenceDiagram
@@ -140,7 +140,7 @@ sequenceDiagram
     end
 ```
 
-##### Sequence 2 of 2 (continued)
+#### Sequence 2 of 2 (continued)
 
 ```mermaid
 sequenceDiagram
@@ -183,7 +183,7 @@ sequenceDiagram
     Note over p0: May leave with checked errors: KeyError, SessionError, TimeError
 ```
 
-### Called contracts
+## Called contracts
 
 - [SessionError](contracts-diagrams.md#sequence-SessionError-20-constructor) — client/contracts.aug
 - [SigningKeys](../common/keys-diagrams.md) — common/keys.aug

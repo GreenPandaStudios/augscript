@@ -1,5 +1,5 @@
 ---
-title: "Diagrams · Hello world with dependencies"
+title: "app/greeter.aug diagrams"
 generated: true
 source: "examples/hello/app/greeter.aug.diagrams.md"
 editLink: false
@@ -8,13 +8,13 @@ next: false
 outline: [2, 3]
 ---
 
-# Hello world with dependencies diagrams
+# app/greeter.aug diagrams
 
 [Hello world with dependencies](../index.md)
 
 [Project overview](../diagrams/index.md) · [Compiled explanation](greeter.md)
 
-### Class interactions
+## Class interactions
 
 ```mermaid
 flowchart TD
@@ -29,7 +29,7 @@ flowchart TD
     n1 -->|"depends on"| n2
 ```
 
-### API calls
+## API calls
 
 ```mermaid
 flowchart TD
@@ -39,11 +39,11 @@ flowchart TD
     n0 -->|"calls"| n2
 ```
 
-### Sequences
+## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
 
-#### Greeter constructor {#sequence-Greeter-20-constructor}
+### Greeter constructor {#sequence-Greeter-20-constructor}
 
 ::: spec-paragraph specification-paragraph-1
 [Source](greeter.md#source-L8)
@@ -53,10 +53,10 @@ Call arrows identify checked targets; loop and branch frames determine when they
 sequenceDiagram
     participant p0 as Greeter constructor
 
-    Note over p0: No calls in this operation#59; see the source and specification
+    Note over p0: Receive fields: injected logger
 ```
 
-#### Greeter.greet {#sequence-Greeter.greet}
+### Greeter.greet {#sequence-Greeter.greet}
 
 ::: spec-paragraph specification-paragraph-2
 [Source](greeter.md#source-L13)
@@ -69,7 +69,7 @@ sequenceDiagram
     p0->>p1: log(message) · interface dispatch
 ```
 
-#### IGreeter.greet {#sequence-IGreeter.greet}
+### IGreeter.greet {#sequence-IGreeter.greet}
 
 ::: spec-paragraph specification-paragraph-3
 [Source](greeter.md#source-L22)
@@ -82,7 +82,7 @@ sequenceDiagram
     Note over p0: Interface contract#59; implementation selected at runtime
 ```
 
-### Called contracts
+## Called contracts
 
 - [IGreeter](greeter-diagrams.md) — app/greeter.aug
 - [Console](../dependencies/august/0.23.0/io/contracts-diagrams.md) — august/io/contracts.aug

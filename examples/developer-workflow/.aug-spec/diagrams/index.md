@@ -32,8 +32,13 @@ flowchart TD
     n1 -->|"uses"| n4
     n2 -->|"uses"| n0
     n2 -->|"uses"| n4
+    n3 -->|"uses"| n2
+    n3 -->|"uses"| n4
     n4 -->|"uses"| n0
+    n5 -->|"uses"| n0
     n5 -->|"uses"| n1
+    n5 -->|"uses"| n2
+    n5 -->|"uses"| n4
 ```
 
 ## Open a module

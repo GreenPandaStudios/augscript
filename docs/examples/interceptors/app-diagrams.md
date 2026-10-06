@@ -1,5 +1,5 @@
 ---
-title: "Diagrams · Function and constructor middleware"
+title: "app.aug diagrams"
 generated: true
 source: "examples/interceptors/app.aug.diagrams.md"
 editLink: false
@@ -8,13 +8,13 @@ next: false
 outline: [2, 3]
 ---
 
-# Function and constructor middleware diagrams
+# app.aug diagrams
 
 [Function and constructor middleware](index.md)
 
 [Project overview](diagrams/index.md) · [Compiled explanation](app.md)
 
-### Class interactions
+## Class interactions
 
 ```mermaid
 flowchart TD
@@ -41,7 +41,7 @@ flowchart TD
     n2 -->|"depends on"| n7
 ```
 
-### API calls
+## API calls
 
 ```mermaid
 flowchart TD
@@ -59,11 +59,11 @@ flowchart TD
     n2 -->|"intercepted by"| n6
 ```
 
-### Sequences
+## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
 
-#### describe {#sequence-describe}
+### describe {#sequence-describe}
 
 ::: spec-paragraph specification-paragraph-1
 [Source](app.md#source-L15)
@@ -79,7 +79,7 @@ sequenceDiagram
     Note over p0: May leave with checked errors: ValidationError
 ```
 
-#### IGreeter.greet {#sequence-IGreeter.greet}
+### IGreeter.greet {#sequence-IGreeter.greet}
 
 ::: spec-paragraph specification-paragraph-2
 [Source](app.md#source-L20)
@@ -92,7 +92,7 @@ sequenceDiagram
     Note over p0: Interface contract#59; implementation selected at runtime
 ```
 
-#### Greeter constructor {#sequence-Greeter-20-constructor}
+### Greeter constructor {#sequence-Greeter-20-constructor}
 
 ::: spec-paragraph specification-paragraph-3
 [Source](app.md#source-L23)
@@ -102,10 +102,10 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as Greeter constructor
 
-    Note over p0: No calls in this operation#59; see the source and specification
+    Note over p0: Receive fields: injected _logger, name
 ```
 
-#### Greeter.greet {#sequence-Greeter.greet}
+### Greeter.greet {#sequence-Greeter.greet}
 
 ::: spec-paragraph specification-paragraph-4
 [Source](app.md#source-L26)
@@ -119,7 +119,7 @@ sequenceDiagram
     Note over p0: Return #34;Hello, #34; + name + #34;!#34;#59; required cleanup runs before exit
 ```
 
-### Called contracts
+## Called contracts
 
 - [IGreeter](app-diagrams.md) — app.aug
 - [Console](dependencies/august/0.23.0/io/contracts-diagrams.md) — august/io/contracts.aug

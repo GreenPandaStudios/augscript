@@ -20,7 +20,7 @@ flowchart TD
 flowchart TD
     n0["src/arithmetic.aug"]
     n1["src/export.aug"]
-
+    n1 -->|"uses"| n0
 ```
 
 ## Open a module

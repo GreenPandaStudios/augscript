@@ -45,6 +45,7 @@ sequenceDiagram
     participant p0 as TokenId constructor
     participant p1 as text.isToken
     participant p2 as ConversionError
+    Note over p0: Receive fields: text
     p0->>p1: text.isToken(min, max)
     alt not text.isToken(min=1, max=128)
     p0->>p2: ConversionError()
@@ -92,6 +93,7 @@ sequenceDiagram
     participant p1 as ConversionError
     participant p2 as text.byteLength
     participant p3 as text.codePointLength
+    Note over p0: Receive fields: text, minBytes, maxBytes
     opt Left is false
     end
     opt Left is false

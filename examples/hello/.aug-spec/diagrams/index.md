@@ -14,7 +14,9 @@ flowchart TD
     n1["Project root"]
     n2["app"]
     n3["logging"]
+    n1 -->|"uses"| n0
     n1 -->|"uses"| n2
+    n1 -->|"uses"| n3
     n2 -->|"uses"| n0
     n2 -->|"uses"| n3
     n3 -->|"uses"| n0
@@ -31,12 +33,18 @@ flowchart TD
     n4["logging/export.aug"]
     n5["logging/logger.aug"]
     n6["main.aug"]
+    n0 -->|"uses"| n1
     n1 -->|"uses"| n2
     n1 -->|"uses"| n5
     n3 -->|"uses"| n2
     n3 -->|"uses"| n5
+    n4 -->|"uses"| n3
+    n4 -->|"uses"| n5
     n5 -->|"uses"| n2
     n6 -->|"uses"| n1
+    n6 -->|"uses"| n2
+    n6 -->|"uses"| n3
+    n6 -->|"uses"| n5
 ```
 
 ## Open a module

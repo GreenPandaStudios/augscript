@@ -1,5 +1,5 @@
 ---
-title: "Diagrams · A native C boundary"
+title: "native.aug diagrams"
 generated: true
 source: "examples/ffi/native.aug.diagrams.md"
 editLink: false
@@ -8,17 +8,17 @@ next: false
 outline: [2, 3]
 ---
 
-# A native C boundary diagrams
+# native.aug diagrams
 
 [A native C boundary](index.md)
 
 [Project overview](diagrams/index.md) · [Compiled explanation](native.md)
 
-### Class interactions
+## Class interactions
 
 No relationships at this level.
 
-### API calls
+## API calls
 
 ```mermaid
 flowchart TD
@@ -27,11 +27,11 @@ flowchart TD
     n0 -->|"calls"| n1
 ```
 
-### Sequences
+## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
 
-#### puts {#sequence-puts}
+### puts {#sequence-puts}
 
 ::: spec-paragraph specification-paragraph-1
 [Source](native.md#source-L2)
@@ -44,7 +44,7 @@ sequenceDiagram
     Note over p0: Native implementation#59; only the declared contract is known
 ```
 
-#### announce {#sequence-announce}
+### announce {#sequence-announce}
 
 ::: spec-paragraph specification-paragraph-2
 [Source](native.md#source-L3)
@@ -61,6 +61,6 @@ sequenceDiagram
     end
 ```
 
-### Called contracts
+## Called contracts
 
 - [puts](native-diagrams.md#sequence-puts) — native.aug

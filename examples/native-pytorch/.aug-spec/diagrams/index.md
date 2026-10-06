@@ -21,9 +21,14 @@ flowchart TD
 flowchart TD
     n0["main.aug"]
     n1["package/@greenpandastudios/aug-pytorch@0.1.6/api.aug"]
-    n2["tensors.aug"]
-    n0 -->|"uses"| n2
-    n2 -->|"uses"| n1
+    n2["package/@greenpandastudios/aug-pytorch@0.1.6/bindings.aug"]
+    n3["package/@greenpandastudios/aug-pytorch@0.1.6/contracts.aug"]
+    n4["tensors.aug"]
+    n0 -->|"uses"| n3
+    n0 -->|"uses"| n4
+    n4 -->|"uses"| n1
+    n4 -->|"uses"| n2
+    n4 -->|"uses"| n3
 ```
 
 ## Open a module

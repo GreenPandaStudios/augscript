@@ -1,5 +1,5 @@
 ---
-title: "Diagrams · OpenID Connect login application"
+title: "client/contracts.aug diagrams"
 generated: true
 source: "examples/oidc-login/client/contracts.aug.diagrams.md"
 editLink: false
@@ -8,13 +8,13 @@ next: false
 outline: [2, 3]
 ---
 
-# OpenID Connect login application diagrams
+# client/contracts.aug diagrams
 
 [OpenID Connect login application](../index.md)
 
 [Project overview](../diagrams/index.md) · [Compiled explanation](contracts.md)
 
-### Class interactions
+## Class interactions
 
 ```mermaid
 flowchart TD
@@ -25,15 +25,15 @@ flowchart TD
 
 ```
 
-### API calls
+## API calls
 
 No relationships at this level.
 
-### Sequences
+## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
 
-#### LoginTransaction constructor {#sequence-LoginTransaction-20-constructor}
+### LoginTransaction constructor {#sequence-LoginTransaction-20-constructor}
 
 ::: spec-paragraph specification-paragraph-1
 [Source](contracts.md#source-L3)
@@ -43,10 +43,10 @@ Call arrows identify checked targets; loop and branch frames determine when they
 sequenceDiagram
     participant p0 as LoginTransaction constructor
 
-    Note over p0: No calls in this operation#59; see the source and specification
+    Note over p0: Receive fields: state, nonce, verifier, expires
 ```
 
-#### SessionClaims constructor {#sequence-SessionClaims-20-constructor}
+### SessionClaims constructor {#sequence-SessionClaims-20-constructor}
 
 ::: spec-paragraph specification-paragraph-2
 [Source](contracts.md#source-L5)
@@ -56,10 +56,10 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as SessionClaims constructor
 
-    Note over p0: No calls in this operation#59; see the source and specification
+    Note over p0: Receive fields: iss, sub, aud, exp, iat, jti, csrf, name
 ```
 
-#### LogoutForm constructor {#sequence-LogoutForm-20-constructor}
+### LogoutForm constructor {#sequence-LogoutForm-20-constructor}
 
 ::: spec-paragraph specification-paragraph-3
 [Source](contracts.md#source-L6)
@@ -69,10 +69,10 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as LogoutForm constructor
 
-    Note over p0: No calls in this operation#59; see the source and specification
+    Note over p0: Receive fields: csrf
 ```
 
-#### SessionError constructor {#sequence-SessionError-20-constructor}
+### SessionError constructor {#sequence-SessionError-20-constructor}
 
 ::: spec-paragraph specification-paragraph-4
 [Source](contracts.md#source-L7)

@@ -60,7 +60,7 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as _Entry constructor
 
-    Note over p0: No calls in this operation#59; see the source and specification
+    Note over p0: Receive fields: value, expires
 ```
 
 <a id="sequence-ExpiringStore.put"></a>
@@ -116,6 +116,7 @@ sequenceDiagram
     participant p2 as Shared
     p0->>p1: Map()
     p0->>p2: Shared(value)
+    Note over p0: Set _entries to Shared(value=Map#60;string, _Entry#60;T#62;#62;())
 ```
 
 <a id="sequence-MemoryStore.put"></a>

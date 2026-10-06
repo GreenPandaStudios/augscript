@@ -22,8 +22,13 @@ flowchart TD
     n0["database.aug"]
     n1["main.aug"]
     n2["package/@greenpandastudios/aug-sqlite@0.1.5/api.aug"]
+    n3["package/@greenpandastudios/aug-sqlite@0.1.5/bindings.aug"]
+    n4["package/@greenpandastudios/aug-sqlite@0.1.5/contracts.aug"]
     n0 -->|"uses"| n2
+    n0 -->|"uses"| n3
+    n0 -->|"uses"| n4
     n1 -->|"uses"| n0
+    n1 -->|"uses"| n4
 ```
 
 ## Open a module

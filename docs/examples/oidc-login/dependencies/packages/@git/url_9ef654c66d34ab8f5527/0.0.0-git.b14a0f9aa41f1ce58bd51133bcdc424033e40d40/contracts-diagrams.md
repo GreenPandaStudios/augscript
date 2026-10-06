@@ -1,5 +1,5 @@
 ---
-title: "Diagrams · OpenID Connect login application"
+title: "package/@git/url\\_9ef654c66d34ab8f5527@0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug diagrams"
 generated: true
 source: "examples/oidc-login/.aug-spec/packages/@git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.diagrams.md"
 editLink: false
@@ -8,13 +8,13 @@ next: false
 outline: [2, 3]
 ---
 
-# OpenID Connect login application diagrams
+# package/@git/url\_9ef654c66d34ab8f5527@0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug diagrams
 
 [OpenID Connect login application](../../../../../index.md)
 
 [Project overview](../../../../../diagrams/index.md) · [Compiled explanation](contracts.md)
 
-### Class interactions
+## Class interactions
 
 ```mermaid
 flowchart TD
@@ -45,9 +45,9 @@ flowchart TD
     n1 -->|"calls"| n12
 ```
 
-### API calls
+## API calls
 
-##### View 1 of 2
+#### View 1 of 2
 
 ```mermaid
 flowchart TD
@@ -80,7 +80,7 @@ flowchart TD
     n8 -->|"calls"| n17
 ```
 
-##### View 2 of 2
+#### View 2 of 2
 
 ```mermaid
 flowchart TD
@@ -103,11 +103,11 @@ flowchart TD
     n12 -->|"calls"| n14
 ```
 
-### Sequences
+## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
 
-#### Crypto.random {#sequence-Crypto.random}
+### Crypto.random {#sequence-Crypto.random}
 
 ::: spec-paragraph specification-paragraph-1
 [Source](contracts.md#source-L6)
@@ -121,7 +121,7 @@ sequenceDiagram
     Note over p0: Interface contract#59; implementation selected at runtime
 ```
 
-#### Crypto.sha256 {#sequence-Crypto.sha256}
+### Crypto.sha256 {#sequence-Crypto.sha256}
 
 ::: spec-paragraph specification-paragraph-2
 [Source](contracts.md#source-L8)
@@ -135,7 +135,7 @@ sequenceDiagram
     Note over p0: Interface contract#59; implementation selected at runtime
 ```
 
-#### Crypto.generateRsa {#sequence-Crypto.generateRsa}
+### Crypto.generateRsa {#sequence-Crypto.generateRsa}
 
 ::: spec-paragraph specification-paragraph-3
 [Source](contracts.md#source-L10)
@@ -149,7 +149,7 @@ sequenceDiagram
     Note over p0: Interface contract#59; implementation selected at runtime
 ```
 
-#### Crypto.publicRsa {#sequence-Crypto.publicRsa}
+### Crypto.publicRsa {#sequence-Crypto.publicRsa}
 
 ::: spec-paragraph specification-paragraph-4
 [Source](contracts.md#source-L12)
@@ -163,7 +163,7 @@ sequenceDiagram
     Note over p0: Interface contract#59; implementation selected at runtime
 ```
 
-#### Crypto.signRsa {#sequence-Crypto.signRsa}
+### Crypto.signRsa {#sequence-Crypto.signRsa}
 
 ::: spec-paragraph specification-paragraph-5
 [Source](contracts.md#source-L14)
@@ -177,7 +177,7 @@ sequenceDiagram
     Note over p0: Interface contract#59; implementation selected at runtime
 ```
 
-#### Crypto.verifyRsa {#sequence-Crypto.verifyRsa}
+### Crypto.verifyRsa {#sequence-Crypto.verifyRsa}
 
 ::: spec-paragraph specification-paragraph-6
 [Source](contracts.md#source-L16)
@@ -191,7 +191,7 @@ sequenceDiagram
     Note over p0: Interface contract#59; implementation selected at runtime
 ```
 
-#### Crypto.decodeBase64url {#sequence-Crypto.decodeBase64url}
+### Crypto.decodeBase64url {#sequence-Crypto.decodeBase64url}
 
 ::: spec-paragraph specification-paragraph-7
 [Source](contracts.md#source-L18)
@@ -205,7 +205,7 @@ sequenceDiagram
     Note over p0: Interface contract#59; implementation selected at runtime
 ```
 
-#### Crypto.equal {#sequence-Crypto.equal}
+### Crypto.equal {#sequence-Crypto.equal}
 
 ::: spec-paragraph specification-paragraph-8
 [Source](contracts.md#source-L20)
@@ -218,7 +218,7 @@ sequenceDiagram
     Note over p0: Interface contract#59; implementation selected at runtime
 ```
 
-#### Crypto.exportRsa {#sequence-Crypto.exportRsa}
+### Crypto.exportRsa {#sequence-Crypto.exportRsa}
 
 ::: spec-paragraph specification-paragraph-9
 [Source](contracts.md#source-L22)
@@ -232,7 +232,7 @@ sequenceDiagram
     Note over p0: Interface contract#59; implementation selected at runtime
 ```
 
-#### Crypto.importRsa {#sequence-Crypto.importRsa}
+### Crypto.importRsa {#sequence-Crypto.importRsa}
 
 ::: spec-paragraph specification-paragraph-10
 [Source](contracts.md#source-L24)
@@ -246,7 +246,7 @@ sequenceDiagram
     Note over p0: Interface contract#59; implementation selected at runtime
 ```
 
-#### Crypto.passwordHash {#sequence-Crypto.passwordHash}
+### Crypto.passwordHash {#sequence-Crypto.passwordHash}
 
 ::: spec-paragraph specification-paragraph-11
 [Source](contracts.md#source-L26)
@@ -260,7 +260,7 @@ sequenceDiagram
     Note over p0: Interface contract#59; implementation selected at runtime
 ```
 
-#### \_aug\_crypto\_random {#sequence-_aug_crypto_random}
+### \_aug\_crypto\_random {#sequence-_aug_crypto_random}
 
 ::: spec-paragraph specification-paragraph-12
 [Source](contracts.md#source-L28)
@@ -274,7 +274,7 @@ sequenceDiagram
     Note over p0: Native implementation#59; only the declared contract is known
 ```
 
-#### \_aug\_crypto\_sha256 {#sequence-_aug_crypto_sha256}
+### \_aug\_crypto\_sha256 {#sequence-_aug_crypto_sha256}
 
 ::: spec-paragraph specification-paragraph-13
 [Source](contracts.md#source-L29)
@@ -288,7 +288,7 @@ sequenceDiagram
     Note over p0: Native implementation#59; only the declared contract is known
 ```
 
-#### \_aug\_crypto\_generate\_rsa {#sequence-_aug_crypto_generate_rsa}
+### \_aug\_crypto\_generate\_rsa {#sequence-_aug_crypto_generate_rsa}
 
 ::: spec-paragraph specification-paragraph-14
 [Source](contracts.md#source-L30)
@@ -302,7 +302,7 @@ sequenceDiagram
     Note over p0: Native implementation#59; only the declared contract is known
 ```
 
-#### \_aug\_crypto\_public\_rsa {#sequence-_aug_crypto_public_rsa}
+### \_aug\_crypto\_public\_rsa {#sequence-_aug_crypto_public_rsa}
 
 ::: spec-paragraph specification-paragraph-15
 [Source](contracts.md#source-L31)
@@ -316,7 +316,7 @@ sequenceDiagram
     Note over p0: Native implementation#59; only the declared contract is known
 ```
 
-#### \_aug\_crypto\_sign\_rsa {#sequence-_aug_crypto_sign_rsa}
+### \_aug\_crypto\_sign\_rsa {#sequence-_aug_crypto_sign_rsa}
 
 ::: spec-paragraph specification-paragraph-16
 [Source](contracts.md#source-L32)
@@ -330,7 +330,7 @@ sequenceDiagram
     Note over p0: Native implementation#59; only the declared contract is known
 ```
 
-#### \_aug\_crypto\_verify\_rsa {#sequence-_aug_crypto_verify_rsa}
+### \_aug\_crypto\_verify\_rsa {#sequence-_aug_crypto_verify_rsa}
 
 ::: spec-paragraph specification-paragraph-17
 [Source](contracts.md#source-L33)
@@ -344,7 +344,7 @@ sequenceDiagram
     Note over p0: Native implementation#59; only the declared contract is known
 ```
 
-#### \_aug\_crypto\_decode\_base64url {#sequence-_aug_crypto_decode_base64url}
+### \_aug\_crypto\_decode\_base64url {#sequence-_aug_crypto_decode_base64url}
 
 ::: spec-paragraph specification-paragraph-18
 [Source](contracts.md#source-L34)
@@ -358,7 +358,7 @@ sequenceDiagram
     Note over p0: Native implementation#59; only the declared contract is known
 ```
 
-#### \_aug\_crypto\_equal {#sequence-_aug_crypto_equal}
+### \_aug\_crypto\_equal {#sequence-_aug_crypto_equal}
 
 ::: spec-paragraph specification-paragraph-19
 [Source](contracts.md#source-L35)
@@ -371,7 +371,7 @@ sequenceDiagram
     Note over p0: Native implementation#59; only the declared contract is known
 ```
 
-#### \_aug\_crypto\_export\_rsa {#sequence-_aug_crypto_export_rsa}
+### \_aug\_crypto\_export\_rsa {#sequence-_aug_crypto_export_rsa}
 
 ::: spec-paragraph specification-paragraph-20
 [Source](contracts.md#source-L36)
@@ -385,7 +385,7 @@ sequenceDiagram
     Note over p0: Native implementation#59; only the declared contract is known
 ```
 
-#### \_aug\_crypto\_import\_rsa {#sequence-_aug_crypto_import_rsa}
+### \_aug\_crypto\_import\_rsa {#sequence-_aug_crypto_import_rsa}
 
 ::: spec-paragraph specification-paragraph-21
 [Source](contracts.md#source-L37)
@@ -399,7 +399,7 @@ sequenceDiagram
     Note over p0: Native implementation#59; only the declared contract is known
 ```
 
-#### \_aug\_crypto\_password\_hash {#sequence-_aug_crypto_password_hash}
+### \_aug\_crypto\_password\_hash {#sequence-_aug_crypto_password_hash}
 
 ::: spec-paragraph specification-paragraph-22
 [Source](contracts.md#source-L38)
@@ -413,7 +413,7 @@ sequenceDiagram
     Note over p0: Native implementation#59; only the declared contract is known
 ```
 
-#### GnuTlsCrypto constructor {#sequence-GnuTlsCrypto-20-constructor}
+### GnuTlsCrypto constructor {#sequence-GnuTlsCrypto-20-constructor}
 
 ::: spec-paragraph specification-paragraph-23
 [Source](contracts.md#source-L41)
@@ -426,7 +426,7 @@ sequenceDiagram
     Note over p0: No calls in this operation#59; see the source and specification
 ```
 
-#### GnuTlsCrypto.random {#sequence-GnuTlsCrypto.random}
+### GnuTlsCrypto.random {#sequence-GnuTlsCrypto.random}
 
 ::: spec-paragraph specification-paragraph-24
 [Source](contracts.md#source-L42)
@@ -445,7 +445,7 @@ sequenceDiagram
     Note over p0: May leave with checked errors: CryptoError
 ```
 
-#### GnuTlsCrypto.sha256 {#sequence-GnuTlsCrypto.sha256}
+### GnuTlsCrypto.sha256 {#sequence-GnuTlsCrypto.sha256}
 
 ::: spec-paragraph specification-paragraph-25
 [Source](contracts.md#source-L45)
@@ -464,7 +464,7 @@ sequenceDiagram
     Note over p0: May leave with checked errors: CryptoError
 ```
 
-#### GnuTlsCrypto.generateRsa {#sequence-GnuTlsCrypto.generateRsa}
+### GnuTlsCrypto.generateRsa {#sequence-GnuTlsCrypto.generateRsa}
 
 ::: spec-paragraph specification-paragraph-26
 [Source](contracts.md#source-L48)
@@ -483,7 +483,7 @@ sequenceDiagram
     Note over p0: May leave with checked errors: CryptoError
 ```
 
-#### GnuTlsCrypto.publicRsa {#sequence-GnuTlsCrypto.publicRsa}
+### GnuTlsCrypto.publicRsa {#sequence-GnuTlsCrypto.publicRsa}
 
 ::: spec-paragraph specification-paragraph-27
 [Source](contracts.md#source-L51)
@@ -502,7 +502,7 @@ sequenceDiagram
     Note over p0: May leave with checked errors: CryptoError
 ```
 
-#### GnuTlsCrypto.signRsa {#sequence-GnuTlsCrypto.signRsa}
+### GnuTlsCrypto.signRsa {#sequence-GnuTlsCrypto.signRsa}
 
 ::: spec-paragraph specification-paragraph-28
 [Source](contracts.md#source-L54)
@@ -521,7 +521,7 @@ sequenceDiagram
     Note over p0: May leave with checked errors: CryptoError
 ```
 
-#### GnuTlsCrypto.verifyRsa {#sequence-GnuTlsCrypto.verifyRsa}
+### GnuTlsCrypto.verifyRsa {#sequence-GnuTlsCrypto.verifyRsa}
 
 ::: spec-paragraph specification-paragraph-29
 [Source](contracts.md#source-L57)
@@ -540,7 +540,7 @@ sequenceDiagram
     Note over p0: May leave with checked errors: CryptoError
 ```
 
-#### GnuTlsCrypto.decodeBase64url {#sequence-GnuTlsCrypto.decodeBase64url}
+### GnuTlsCrypto.decodeBase64url {#sequence-GnuTlsCrypto.decodeBase64url}
 
 ::: spec-paragraph specification-paragraph-30
 [Source](contracts.md#source-L60)
@@ -559,7 +559,7 @@ sequenceDiagram
     Note over p0: May leave with checked errors: CryptoError
 ```
 
-#### GnuTlsCrypto.equal {#sequence-GnuTlsCrypto.equal}
+### GnuTlsCrypto.equal {#sequence-GnuTlsCrypto.equal}
 
 ::: spec-paragraph specification-paragraph-31
 [Source](contracts.md#source-L63)
@@ -577,7 +577,7 @@ sequenceDiagram
     end
 ```
 
-#### GnuTlsCrypto.exportRsa {#sequence-GnuTlsCrypto.exportRsa}
+### GnuTlsCrypto.exportRsa {#sequence-GnuTlsCrypto.exportRsa}
 
 ::: spec-paragraph specification-paragraph-32
 [Source](contracts.md#source-L66)
@@ -596,7 +596,7 @@ sequenceDiagram
     Note over p0: May leave with checked errors: CryptoError
 ```
 
-#### GnuTlsCrypto.importRsa {#sequence-GnuTlsCrypto.importRsa}
+### GnuTlsCrypto.importRsa {#sequence-GnuTlsCrypto.importRsa}
 
 ::: spec-paragraph specification-paragraph-33
 [Source](contracts.md#source-L69)
@@ -615,7 +615,7 @@ sequenceDiagram
     Note over p0: May leave with checked errors: CryptoError
 ```
 
-#### GnuTlsCrypto.passwordHash {#sequence-GnuTlsCrypto.passwordHash}
+### GnuTlsCrypto.passwordHash {#sequence-GnuTlsCrypto.passwordHash}
 
 ::: spec-paragraph specification-paragraph-34
 [Source](contracts.md#source-L72)
@@ -634,7 +634,7 @@ sequenceDiagram
     Note over p0: May leave with checked errors: CryptoError
 ```
 
-### Called contracts
+## Called contracts
 
 - [Crypto](contracts-diagrams.md) — package/@git/url\_9ef654c66d34ab8f5527@0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug
 - [\_aug\_crypto\_decode\_base64url](contracts-diagrams.md#sequence-_aug_crypto_decode_base64url) — package/@git/url\_9ef654c66d34ab8f5527@0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug

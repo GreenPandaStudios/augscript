@@ -1,5 +1,5 @@
 ---
-title: "Diagrams · CPU tensors with PyTorch"
+title: "CPU tensors with PyTorch diagrams"
 generated: true
 source: "examples/native-pytorch/.aug-spec/diagrams/index.md"
 editLink: false
@@ -16,7 +16,7 @@ Read the areas first, then open a module for its class interactions, API calls a
 
 These are checked static views. Arrows describe possible calls, not an execution trace. Interface implementations, callbacks and foreign internals are not guessed. Tests are described in the adjacent specifications.
 
-### Areas
+## Areas
 
 ```mermaid
 flowchart TD
@@ -25,18 +25,23 @@ flowchart TD
     n0 -->|"uses"| n1
 ```
 
-### Modules
+## Modules
 
 ```mermaid
 flowchart TD
     n0["main.aug"]
     n1["package/@greenpandastudios/aug-pytorch@0.1.6/api.aug"]
-    n2["tensors.aug"]
-    n0 -->|"uses"| n2
-    n2 -->|"uses"| n1
+    n2["package/@greenpandastudios/aug-pytorch@0.1.6/bindings.aug"]
+    n3["package/@greenpandastudios/aug-pytorch@0.1.6/contracts.aug"]
+    n4["tensors.aug"]
+    n0 -->|"uses"| n3
+    n0 -->|"uses"| n4
+    n4 -->|"uses"| n1
+    n4 -->|"uses"| n2
+    n4 -->|"uses"| n3
 ```
 
-### Open a module
+## Open a module
 
 | Module | Diagrams | Specification |
 | --- | --- | --- |

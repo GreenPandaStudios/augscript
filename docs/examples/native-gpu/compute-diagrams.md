@@ -1,5 +1,5 @@
 ---
-title: "Diagrams · GPU workers"
+title: "compute.aug diagrams"
 generated: true
 source: "examples/native-gpu/compute.aug.diagrams.md"
 editLink: false
@@ -8,17 +8,17 @@ next: false
 outline: [2, 3]
 ---
 
-# GPU workers diagrams
+# compute.aug diagrams
 
 [GPU workers](index.md)
 
 [Project overview](diagrams/index.md) · [Compiled explanation](compute.md)
 
-### Class interactions
+## Class interactions
 
 No relationships at this level.
 
-### API calls
+## API calls
 
 ```mermaid
 flowchart TD
@@ -35,11 +35,11 @@ flowchart TD
     n1 -->|"calls"| n0
 ```
 
-### Sequences
+## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
 
-#### calculate {#sequence-calculate}
+### calculate {#sequence-calculate}
 
 ::: spec-paragraph specification-paragraph-1
 [Source](compute.md#source-L5)
@@ -65,7 +65,7 @@ sequenceDiagram
     Note over p0: May leave with checked errors: GpuError
 ```
 
-### Called contracts
+## Called contracts
 
 - [calculate](compute-diagrams.md#sequence-calculate) — compute.aug
 - [add](dependencies/packages/%40greenpandastudios/aug-gpu/0.1.1/api-diagrams.md#sequence-add) — package/@greenpandastudios/aug-gpu@0.1.1/api.aug

@@ -17,7 +17,7 @@ flowchart TD
     n2["Welcome · client/views.aug"]
     n3["Page · common/views.aug"]
     n1 -->|"calls"| n3
-    n2 -->|"calls"| n0
+    n2 -->|"defers HTTP call to"| n0
     n2 -->|"calls"| n3
 ```
 

@@ -23,6 +23,8 @@ flowchart TD
     n1["export.aug"]
     n2["jose.aug"]
     n3["package/@git/url_2d3c37c690c0fa115be1@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug"]
+    n1 -->|"uses"| n0
+    n1 -->|"uses"| n2
     n2 -->|"uses"| n0
     n2 -->|"uses"| n3
 ```

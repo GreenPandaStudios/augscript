@@ -1,5 +1,5 @@
 ---
-title: "Diagrams · Modules and composition"
+title: "domain/app.aug diagrams"
 generated: true
 source: "examples/approved-design/domain/app.aug.diagrams.md"
 editLink: false
@@ -8,13 +8,13 @@ next: false
 outline: [2, 3]
 ---
 
-# Modules and composition diagrams
+# domain/app.aug diagrams
 
 [Modules and composition](../index.md)
 
 [Project overview](../diagrams/index.md) · [Compiled explanation](app.md)
 
-### Class interactions
+## Class interactions
 
 ```mermaid
 flowchart TD
@@ -28,7 +28,7 @@ flowchart TD
     n2 -->|"calls"| n3
 ```
 
-### API calls
+## API calls
 
 ```mermaid
 flowchart TD
@@ -40,11 +40,11 @@ flowchart TD
     n2 -->|"calls"| n3
 ```
 
-### Sequences
+## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
 
-#### Application.start {#sequence-Application.start}
+### Application.start {#sequence-Application.start}
 
 ::: spec-paragraph specification-paragraph-1
 [Source](app.md#source-L7)
@@ -57,7 +57,7 @@ sequenceDiagram
     Note over p0: Interface contract#59; implementation selected at runtime
 ```
 
-#### ApplicationImpl constructor {#sequence-ApplicationImpl-20-constructor}
+### ApplicationImpl constructor {#sequence-ApplicationImpl-20-constructor}
 
 ::: spec-paragraph specification-paragraph-2
 [Source](app.md#source-L9)
@@ -67,10 +67,10 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as ApplicationImpl constructor
 
-    Note over p0: No calls in this operation#59; see the source and specification
+    Note over p0: Receive fields: injected console
 ```
 
-#### ApplicationImpl.start {#sequence-ApplicationImpl.start}
+### ApplicationImpl.start {#sequence-ApplicationImpl.start}
 
 ::: spec-paragraph specification-paragraph-3
 [Source](app.md#source-L10)
@@ -88,7 +88,7 @@ sequenceDiagram
     end
 ```
 
-### Called contracts
+## Called contracts
 
 - [Console.write](../dependencies/august/0.23.0/io/contracts-diagrams.md#sequence-Console.write) — august/io/contracts.aug
 - [Application](app-diagrams.md) — domain/app.aug

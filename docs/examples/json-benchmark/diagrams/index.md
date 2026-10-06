@@ -1,5 +1,5 @@
 ---
-title: "Diagrams · JSON benchmark"
+title: "JSON benchmark diagrams"
 generated: true
 source: "benchmarks/json/.aug-spec/diagrams/index.md"
 editLink: false
@@ -16,7 +16,7 @@ Read the areas first, then open a module for its class interactions, API calls a
 
 These are checked static views. Arrows describe possible calls, not an execution trace. Interface implementations, callbacks and foreign internals are not guessed. Tests are described in the adjacent specifications.
 
-### Areas
+## Areas
 
 ```mermaid
 flowchart TD
@@ -25,17 +25,18 @@ flowchart TD
     n0 -->|"uses"| n1
 ```
 
-### Modules
+## Modules
 
 ```mermaid
 flowchart TD
     n0["data.aug"]
     n1["main.aug"]
     n2["package/@git/url_2d3c37c690c0fa115be1@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug"]
+    n1 -->|"uses"| n0
     n1 -->|"uses"| n2
 ```
 
-### Open a module
+## Open a module
 
 | Module | Diagrams | Specification |
 | --- | --- | --- |

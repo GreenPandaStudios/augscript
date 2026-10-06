@@ -22,6 +22,8 @@ flowchart TD
     n1["august/math/export.aug"]
     n2["august/math/integers.aug"]
     n0 -->|"uses"| n2
+    n1 -->|"uses"| n0
+    n1 -->|"uses"| n2
 ```
 
 ## Open a module

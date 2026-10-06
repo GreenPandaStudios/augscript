@@ -35,6 +35,7 @@ sequenceDiagram
     participant p0 as RetryPolicy constructor
     participant p1 as ConversionError
     participant p2 as delays.length
+    Note over p0: Receive fields: maxAttempts, delays
     opt Left is false
     end
     alt maxAttempts #60; 1 or maxAttempts #62; 64

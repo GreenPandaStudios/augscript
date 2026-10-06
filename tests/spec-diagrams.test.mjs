@@ -74,10 +74,11 @@ test('diagrams are portable, deterministic and unchanged by formatter block styl
    assert.deepEqual(diagrams(updated).map(o=>o.text.replace(/#L\d+/g,'#L')),baseline);
  });
 });
-test('large graphs and sequences split without dropping calls or control flow',()=>project({
+const largeProject={
  'main.aug':'import work from many\nprint(value=work(value=1))\n',
  'many.aug':'work(int value) returns int {\n if value > 0 {\n'+Array.from({length:55},(_,i)=>'  value = step'+i+'(value)\n').join('')+' }\n return value\n}\n'+Array.from({length:55},(_,i)=>'step'+i+'(int value) returns int { return value + 1 }\n').join(''),
-},(root,checked)=>{
+};
+test('large graphs and sequences split without dropping calls or control flow',()=>project(largeProject,(root,checked)=>{
  const page=diagrams(checked).find(o=>o.path===join(root,'many.aug.diagrams.md')).text;
  assert.match(page,/continued/);assert.ok((page.match(/sequenceDiagram/g)??[]).length>55);
  for(let i=0;i<55;i++)assert.ok(page.includes(': step'+i+'('),'missing step '+i);
@@ -143,10 +144,7 @@ test('removed modules remove their generated diagrams; rejected code never gener
  writeFileSync(join(root,'app/api.aug'),'broken syntax !!');
  assert.throws(()=>generateSpecs(checkProject(loadProject(root))),/Fix compiler errors/);
 }));
-test('large split Mermaid views all parse with active branch frames',()=>project({
- 'main.aug':'import work from many\nprint(value=work(value=1))\n',
- 'many.aug':'work(int value) returns int {\n if value > 0 {\n'+Array.from({length:55},(_,i)=>'  value = step'+i+'(value)\n').join('')+' }\n return value\n}\n'+Array.from({length:55},(_,i)=>'step'+i+'(int value) returns int { return value + 1 }\n').join(''),
-},async(root,checked)=>{await validMermaid(diagrams(checked));}));
+test('large split Mermaid views all parse with active branch frames',()=>project(largeProject,async(root,checked)=>{await validMermaid(diagrams(checked));}));
 
 test('browser actions evaluate captured inputs but defer the HTTP handler',()=>project({
  'main.aug':'import view and remove from actions\nserve remove on port 0\n',
@@ -157,7 +155,7 @@ view() returns Html { return <button onClick={handle remove(b=second(), a=first(
 `,
 },async(root,checked)=>{
  const page=diagrams(checked).find(o=>o.path===join(root,'actions.aug.diagrams.md'));
- await validMermaid([page]);
+ await validMermaid([page]);assert.match(page.text,/defers HTTP call to/);
  const view=page.text.split('### view\n')[1].split('## Called contracts')[0];
  assert.ok(view.indexOf(': second(')<view.indexOf(': first('));
  assert.match(view,/Create browser action for DELETE/);assert.doesNotMatch(view,/: remove\(/);
@@ -175,4 +173,77 @@ cleanup() {}
  await validMermaid([page]);assert.match(page.text,/Constructor layers: Delegate/);
  assert.match(page.text,/Return#59; required cleanup runs before exit/);assert.match(page.text,/Always: cleanup runs/);
  assert.doesNotMatch(page.text,/break Return/);
+}));
+
+test('terminal paths propagate through nested scopes, branches and cleanup without unreachable calls',()=>project({
+ 'main.aug':'import scopedExit and branched and recovered from exits\nscopedExit()\nbranched(flag=true)\nrecovered()\n',
+ 'exits.aug':`step() {}
+cleanup() {}
+scopedExit() { scope { try { return } always { cleanup() } } step() }
+branched(bool flag) { if flag { scope { return } } else { return } step() }
+recovered() { try { return } always { cleanup() } step() }
+`,
+},async(root,checked)=>{
+ const page=diagrams(checked).find(o=>o.path===join(root,'exits.aug.diagrams.md'));
+ await validMermaid([page]);
+ for(const name of ['scopedExit','branched','recovered']){
+  const section=page.text.split('### '+name+'\n')[1].split(/\n<a id=|\n## Called/)[0];
+  assert.doesNotMatch(section,/: step\(/);assert.match(section,/Return/);
+  if(name!=='branched')assert.match(section,/: cleanup\(/);
+ }
+}));
+test('constructors describe state and record copies call the checked validating constructor',()=>project({
+ 'main.aug':'import Box from objects\nbox = Box()\n',
+ 'objects.aug':`interface Marker {}
+Box() implements Marker { int _value = 1 }
+Invalid() implements Error {}
+record Positive(int value) unless Invalid { initialize { if value < 1 { throw Invalid() } } }
+copy(Positive original) returns Positive unless Invalid { return original with(value=0) }
+`,
+},async(root,checked)=>{
+ const page=diagrams(checked).find(o=>o.path===join(root,'objects.aug.diagrams.md'));
+ await validMermaid([page]);assert.match(page.text,/Set _value to 1/);
+ const section=page.text.split('### copy\n')[1].split('## Called contracts')[0];
+ assert.match(section,/Positive constructor/);assert.match(section,/Construct Positive from copied fields/);
+ assert.ok(section.indexOf('Construct Positive')<section.indexOf('Return'));
+}));
+test('repeated targets count continuation notes inside the sequence step limit',()=>project({
+ 'main.aug':'import repeat from calls\nrepeat()\n',
+ 'calls.aug':'step() {}\nrepeat() {\n'+Array.from({length:50},()=> ' step()\n').join('')+'}\n',
+},async(root,checked)=>{
+ const page=diagrams(checked).find(o=>o.path===join(root,'calls.aug.diagrams.md'));
+ await validMermaid([page]);
+ const section=page.text.split('### repeat\n')[1].split('## Called contracts')[0];
+ assert.equal((section.match(/: step\(/g)??[]).length,50);
+ for(const match of section.matchAll(/\x60\x60\x60mermaid\n([\s\S]*?)\n\x60\x60\x60/g))
+  assert.ok((match[1].match(/^    (?:p\d+[-]|Note )/gm)??[]).length<=24);
+}));
+
+test('loop exits distinguish escaping failures, infinite continuation and reachable breaks',()=>project({
+ 'main.aug':'import terminalLoop and infiniteLoop and mixedLoop and nestedBreak and conditionalReturn and caughtFailure from exits\n',
+ 'exits.aug':`Failure() implements Error {}
+step() {}
+terminalLoop(bool flag) unless Failure { while true { if flag { return } else { throw Failure() } } step() }
+infiniteLoop() { while true { continue } step() }
+mixedLoop(bool flag) { while true { if flag { break } else { return } } step() }
+nestedBreak() { while true { scope { break } step() } step() }
+conditionalReturn(bool flag) { if flag { return } step() }
+caughtFailure() { try { throw Failure() } catch Failure error { step() } step() }
+`,
+},async(root,checked)=>{
+ const page=diagrams(checked).find(o=>o.path===join(root,'exits.aug.diagrams.md'));
+ await validMermaid([page]);
+ const section=name=>page.text.split('### '+name+'\n')[1].split(/\n<a id=|\n## Called/)[0];
+ for(const name of ['terminalLoop','infiniteLoop'])assert.doesNotMatch(section(name),/: step\(/);
+ for(const name of ['mixedLoop','nestedBreak','conditionalReturn'])assert.equal((section(name).match(/: step\(/g)??[]).length,1,name);
+ assert.equal((section('caughtFailure').match(/: step\(/g)??[]).length,2);
+}));
+
+test('project overviews retain imported contracts even without an immediate invocation',()=>project({
+ 'main.aug':'import readValue from data\n',
+ 'data.aug':'readValue() returns int { return 7 }\n',
+},(root,checked)=>{
+ const overview=diagrams(checked).find(o=>o.path===join(root,'.aug-spec/diagrams/index.md')).text;
+ const modules=overview.split('## Modules\n')[1].split('## Open a module')[0];
+ assert.match(modules,/main\.aug/);assert.match(modules,/data\.aug/);assert.match(modules,/-->/);
 }));

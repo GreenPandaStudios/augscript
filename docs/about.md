@@ -6,7 +6,7 @@ The language's two tenets are **simplicity** and **developer scalability**. Writ
 
 ## Understand before changing
 
-An agent can produce an implementation faster than a reviewer can read every line. You still need to find the relevant module, understand its dependencies and decisions, and check the proposed behavior. August organizes that reading at several levels of detail. Use the overview to locate a responsibility, a sequence to follow possible calls, and the source to inspect or adjust the expression that matters.
+When you review an agent's implementation, you need to find the relevant module, understand its dependencies and decisions, and check the proposed behavior. August organizes that reading at several levels of detail. Use the overview to locate a responsibility, a sequence to follow possible calls, and the source to inspect or adjust the expression that matters.
 
 The generated explanation describes the current implementation. Authored requirements and tests describe what it should do. Review them together when accepting a change. [Compiled specifications](specifications.md) explains the reading workflow and the boundaries of each view.
 

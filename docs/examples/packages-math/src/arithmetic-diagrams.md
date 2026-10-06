@@ -1,5 +1,5 @@
 ---
-title: "Diagrams · Create a package"
+title: "src/arithmetic.aug diagrams"
 generated: true
 source: "examples/packages/math/src/arithmetic.aug.diagrams.md"
 editLink: false
@@ -8,17 +8,17 @@ next: false
 outline: [2, 3]
 ---
 
-# Create a package diagrams
+# src/arithmetic.aug diagrams
 
 [Create a package](../index.md)
 
 [Project overview](../diagrams/index.md) · [Compiled explanation](arithmetic.md)
 
-### Class interactions
+## Class interactions
 
 No relationships at this level.
 
-### API calls
+## API calls
 
 ```mermaid
 flowchart TD
@@ -27,11 +27,11 @@ flowchart TD
     n0 -->|"calls"| n1
 ```
 
-### Sequences
+## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
 
-#### add {#sequence-add}
+### add {#sequence-add}
 
 ::: spec-paragraph specification-paragraph-1
 [Source](arithmetic.md#source-L3)
@@ -44,6 +44,6 @@ sequenceDiagram
     Note over p0: Return left + right#59; required cleanup runs before exit
 ```
 
-### Called contracts
+## Called contracts
 
 - [add](arithmetic-diagrams.md#sequence-add) — src/arithmetic.aug

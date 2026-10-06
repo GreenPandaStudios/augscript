@@ -17,6 +17,11 @@ interface DiagramLinks {root?:string;docs:ReadonlyMap<string,string>;sources:Rea
 interface GraphEdge {from:string;to:string;label:string}
 interface GraphNode {id:string;label:string}
 type SequenceToken={kind:'message'|'note';target?:string;text:string;async?:boolean}|{kind:'open';text:string}|{kind:'else';text:string}|{kind:'close'};
+type FlowExit='return'|'throw'|'break'|'continue';
+interface Flow {fallsThrough:boolean;exits:Set<FlowExit>}
+const normalFlow=():Flow=>({fallsThrough:true,exits:new Set()});
+const terminalFlow=(exit:FlowExit):Flow=>({fallsThrough:false,exits:new Set([exit])});
+const mergeFlows=(flows:Flow[]):Flow=>({fallsThrough:flows.some(flow=>flow.fallsThrough),exits:new Set(flows.flatMap(flow=>[...flow.exits]))});
 interface Sequence {name:string;span:Span;tokens:SequenceToken[];participants:Map<string,string>}
 
 /** Deterministic checked relationships and source-order sequences; foreign/dynamic calls remain boundaries. */
@@ -40,7 +45,8 @@ export function generateDiagrams(checked:CheckedProject,files:SourceFile[],links
   const linkTo=(page:string,file:SourceFile,text=semanticSourcePath(checked,file.path),diagram=true)=>
     '['+markdown(text)+']('+url(relative(dirname(page),diagram?paths.get(file.path)!:links.docs.get(file.path)!))+')';
   const related=(edge:SemanticEdge)=>['call','callback-call','forward','injected','implements','inherits','interceptor'].includes(edge.kind);
-  const relationLabel=(kind:SemanticEdge['kind'])=>({call:'calls','callback-call':'callback','forward':'forwards to',injected:'depends on',implements:'implements',inherits:'extends',interceptor:'intercepted by'}[kind as 'call'])??kind;
+  const actionSites=new Set([...checked.actions.keys()].map(expr=>semanticSourcePath(checked,expr.span.file)+':'+expr.span.start+':'+expr.span.end));
+  const relationLabel=(edge:SemanticEdge)=>actionSites.has(edge.location.file+':'+edge.location.start+':'+edge.location.end)?'defers HTTP call to':({call:'calls','callback-call':'callback','forward':'forwards to',injected:'depends on',implements:'implements',inherits:'extends',interceptor:'intercepted by'}[edge.kind as 'call'])??edge.kind;
   const graphNodes=(ids:Set<string>):GraphNode[]=>[...ids].sort(compare).map(id=>{
     const symbol=symbols.get(id);
     return {id,label:symbol?display(symbol)+' · '+symbol.location.file:id.replace(/^module:/,'')};
@@ -51,7 +57,7 @@ export function generateDiagrams(checked:CheckedProject,files:SourceFile[],links
   const area=(path:string)=>path.startsWith('august/')?'August library':path.startsWith('package/')?path.split('/').slice(0,path.split('/')[1].startsWith('@')?3:2).join('/'):path.includes('/')?path.split('/')[0]:'Project root';
   const moduleEdges=new Map<string,GraphEdge>(),areaEdges=new Map<string,GraphEdge>(),areas=new Set<string>();
   for(const file of own)areas.add(area(semanticSourcePath(checked,file.path)));
-  for(const edge of graph.relationships.filter(related)){
+  for(const edge of graph.relationships.filter(edge=>related(edge)||edge.kind==='import'||edge.kind==='export'||edge.kind==='internal')){
     const from=fileOf(edge.from),to=fileOf(edge.to);if(!from||!to||from===to||!ownPaths.has(from))continue;
     moduleEdges.set(from+'\0'+to,{from,to,label:'uses'});
     const a=area(from),b=area(to);areas.add(a);areas.add(b);if(a!==b)areaEdges.set(a+'\0'+b,{from:a,to:b,label:'uses'});
@@ -75,7 +81,7 @@ export function generateDiagrams(checked:CheckedProject,files:SourceFile[],links
     for(const edge of relations){
       const from=owner(edge.from),to=owner(edge.to);
       if(classes.has(from)||['class','interface','interceptor','resource'].includes(symbols.get(to)?.kind??'')){
-        classes.add(from);classes.add(to);classEdges.push({from,to,label:relationLabel(edge.kind)});
+        classes.add(from);classes.add(to);classEdges.push({from,to,label:relationLabel(edge)});
       }
     }
     // Constructor dependencies are fields, not standalone callable parameters.
@@ -83,7 +89,7 @@ export function generateDiagrams(checked:CheckedProject,files:SourceFile[],links
       const target=checked.resolvedTypes.get(field.type)?.def;if(!target)continue;
       classes.add(target.id);classEdges.push({from:def.id,to:target.id,label:(field.injected?'depends on ':'holds ')+field.name});
     }
-    const apiEdges=relations.filter(edge=>['call','callback-call','forward','interceptor'].includes(edge.kind)).map(edge=>({from:edge.from,to:edge.to,label:relationLabel(edge.kind)}));
+    const apiEdges=relations.filter(edge=>['call','callback-call','forward','interceptor'].includes(edge.kind)).map(edge=>({from:edge.from,to:edge.to,label:relationLabel(edge)}));
     const apiIds=new Set(apiEdges.flatMap(edge=>[edge.from,edge.to]));
     for(const def of project.definitions.values())if(def.file===file.path){
       if(def.node.kind==='function')apiIds.add(def.id);
@@ -95,7 +101,8 @@ export function generateDiagrams(checked:CheckedProject,files:SourceFile[],links
       '\n## Sequences\n\nCall arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.\n\n';
     const sequences:Sequence[]=[];
     const build=(name:string,span:Span,body:Stmt[],method?:MethodDecl,constructor?:ClassDecl)=>{
-      const writer=new SequenceWriter(checked,file,nodeIds,symbols);
+      const writer=new SequenceWriter(checked,file,nodeIds,symbols,!!constructor);
+      if(constructor?.fields.length)writer.note('Receive fields: '+constructor.fields.map(field=>(field.injected?'injected ':'')+field.name).join(', '));
       const layers=constructor&&checked.interceptorPlans.get(constructor);
       if(layers?.length)writer.note('Constructor layers: '+layers.map(layer=>layer.definition.name).join(', ')+'; may stop or change delegation; see specification');
       if(method?.endpoint)writer.note(method.endpoint.method+' '+method.endpoint.path+(method.endpoint.streams?' · streaming':''));
@@ -164,8 +171,9 @@ function renderGraphs(nodes:GraphNode[],edges:GraphEdge[]):string{
 class SequenceWriter {
   readonly tokens:SequenceToken[]=[];
   readonly participants=new Map<string,string>();
+  private constructorState:boolean;
   private checked:CheckedProject; private file:SourceFile; private ids:WeakMap<object,string>; private symbols:Map<string,SemanticSymbol>;
-  constructor(checked:CheckedProject,file:SourceFile,ids:WeakMap<object,string>,symbols:Map<string,SemanticSymbol>){this.checked=checked;this.file=file;this.ids=ids;this.symbols=symbols;}
+  constructor(checked:CheckedProject,file:SourceFile,ids:WeakMap<object,string>,symbols:Map<string,SemanticSymbol>,constructorState=false){this.constructorState=constructorState;this.checked=checked;this.file=file;this.ids=ids;this.symbols=symbols;}
   note(text:string){this.tokens.push({kind:'note',text});}
   message(id:string,name:string,text:string,async=false){this.participants.set(id,name);this.tokens.push({kind:'message',target:id,text,async});}
   private text(expr:Expr){return this.file.source.slice(expr.span.start,expr.span.end).replace(/\s+/g,' ');}
@@ -186,6 +194,11 @@ class SequenceWriter {
     if(expr.kind==='handle'){if(expr.call.kind==='call')for(const input of expr.call.args)if(input.kind!=='formInput')this.expression(input);const action=this.checked.actions.get(expr);this.note('Create browser action for '+(action?.endpoint.node.kind==='function'?action.endpoint.node.endpoint?.method+' '+action.endpoint.node.endpoint?.path:this.text(expr.call))+'; called on submission');return;}
     if(expr.kind==='markup'){const call=this.checked.markupCalls.get(expr);if(call){this.expression(call);return;}}
     expressionChildren(expr).forEach(child=>this.expression(child));
+    if(expr.kind==='recordCopy'){
+      const target=this.checked.expressionTypes.get(expr.base)?.def;
+      if(target)this.message(target.id,target.name+' constructor','Construct '+target.name+' from copied fields with '+expr.fields.map(field=>field.name).join(', ')+'; run constructor validation');
+      return;
+    }
     if(expr.kind==='resolve'){this.note('Resolve '+expr.name+' from the declared composition');return;}
     if(expr.kind!=='call')return;
     const resolved=this.checked.resolvedCalls.get(expr),id=resolved&&this.ids.get(resolved.node);
@@ -197,26 +210,72 @@ class SequenceWriter {
       this.message(id,name,resolved.node.name+'('+inputs+')'+(resolved.dispatch==='interface'?' · interface dispatch':'')+(resolved.node.kind==='function'&&resolved.node.externC?' · native boundary':''),async);
     }else this.message('operation:'+this.text(expr.callee),this.text(expr.callee),this.text(expr.callee)+'('+inputs+')'+(expr.callee.kind==='name'&&expr.callee.name==='next'?' · conditional interceptor delegation':''),async);
   }
-  statements(body:Stmt[]):void{
+  statements(body:Stmt[]):Flow {
+    const exits=new Set<FlowExit>();
     for(const stmt of body){
+      let flow=normalFlow();
       switch(stmt.kind){
-        case 'if':this.expression(stmt.test);this.tokens.push({kind:'open',text:'alt '+this.text(stmt.test)});this.statements(stmt.then);if(stmt.otherwise.length){this.tokens.push({kind:'else',text:'otherwise'});this.statements(stmt.otherwise);}this.tokens.push({kind:'close'});break;
-        case 'while':this.block('loop While '+this.text(stmt.test),()=>{this.expression(stmt.test);this.statements(stmt.body);});break;
-        case 'for':this.expression(stmt.iterable);this.block('loop For each item in '+this.text(stmt.iterable),()=>this.statements(stmt.body));break;
-        case 'match':this.expression(stmt.value);stmt.cases.forEach((clause,index)=>{this.tokens.push({kind:index?'else':'open',text:(index?'':'alt ')+'Match '+this.file.source.slice(clause.span.start,clause.body[0]?.span.start??clause.span.end).trim()});this.statements(clause.body);});this.tokens.push({kind:'close'});break;
-        case 'try':this.block('opt Try body; stops on a checked failure',()=>this.statements(stmt.body));for(const handler of stmt.catches)this.block('opt Catch '+handler.type.name,()=>this.statements(handler.body));if(stmt.always)this.block('rect rgb(245, 240, 241)',()=>{this.note('Always: cleanup runs on success or failure');this.statements(stmt.always!);});break;
-        case 'scope':this.block('rect rgb(245, 240, 241)',()=>{this.note('Enter task scope');this.statements(stmt.body);this.note('Join tasks and release scoped resources');});break;
-        case 'borrow':case 'unsafe':case 'lock':this.block('rect rgb(245, 240, 241)',()=>{if(stmt.kind==='lock')this.expression(stmt.value);this.note('Enter '+stmt.kind+' scope');this.statements(stmt.body);this.note('Leave '+stmt.kind+' scope');});break;
-        case 'assign':if(stmt.target.kind==='member')this.expression(stmt.target.object);this.expression(stmt.value);if(stmt.ownership==='own'||this.checked.inferredOwned.has(stmt))this.note('Own '+this.text(stmt.target)+'; release on scope exits');break;
+        case 'if': {
+          this.expression(stmt.test);this.tokens.push({kind:'open',text:'alt '+this.text(stmt.test)});
+          const then=this.statements(stmt.then);let otherwise=normalFlow();
+          if(stmt.otherwise.length){this.tokens.push({kind:'else',text:'otherwise'});otherwise=this.statements(stmt.otherwise);}
+          this.tokens.push({kind:'close'});
+          flow=stmt.test.kind==='literal'&&typeof stmt.test.value==='boolean'?(stmt.test.value?then:otherwise):mergeFlows([then,otherwise]);break;
+        }
+        case 'while': {
+          let bodyFlow=normalFlow();
+          this.block('loop While '+this.text(stmt.test),()=>{this.expression(stmt.test);bodyFlow=this.statements(stmt.body);});
+          if(!(stmt.test.kind==='literal'&&stmt.test.value===false))flow={
+            fallsThrough:stmt.test.kind==='literal'&&stmt.test.value===true?bodyFlow.exits.has('break'):true,
+            exits:new Set([...bodyFlow.exits].filter(exit=>exit==='return'||exit==='throw')),
+          };
+          break;
+        }
+        case 'for': {
+          this.expression(stmt.iterable);let bodyFlow=normalFlow();
+          this.block('loop For each item in '+this.text(stmt.iterable),()=>{bodyFlow=this.statements(stmt.body);});
+          flow={fallsThrough:true,exits:new Set([...bodyFlow.exits].filter(exit=>exit==='return'||exit==='throw'))};break;
+        }
+        case 'match': {
+          this.expression(stmt.value);
+          const branches=stmt.cases.map((clause,index)=>{
+            this.tokens.push({kind:index?'else':'open',text:(index?'':'alt ')+'Match '+this.file.source.slice(clause.span.start,clause.body[0]?.span.start??clause.span.end).trim()});
+            return this.statements(clause.body);
+          });
+          this.tokens.push({kind:'close'});flow=mergeFlows(branches);break;
+        }
+        case 'try': {
+          let bodyFlow=normalFlow(),alwaysFlow=normalFlow();
+          this.block('opt Try body; stops on a checked failure',()=>{bodyFlow=this.statements(stmt.body);});
+          const handlers=stmt.catches.map(handler=>{let caught=normalFlow();this.block('opt Catch '+handler.type.name,()=>{caught=this.statements(handler.body);});return caught;});
+          if(stmt.always)this.block('rect rgb(245, 240, 241)',()=>{this.note('Always: cleanup runs on success, failure, return or cancellation');alwaysFlow=this.statements(stmt.always!);});
+          const pending=mergeFlows([bodyFlow,...handlers]);
+          flow=alwaysFlow.fallsThrough?{fallsThrough:pending.fallsThrough,exits:new Set([...pending.exits,...alwaysFlow.exits])}:alwaysFlow;break;
+        }
+        case 'scope':
+          this.block('rect rgb(245, 240, 241)',()=>{this.note('Enter task scope');flow=this.statements(stmt.body);this.note('Join tasks and release scoped resources');});break;
+        case 'borrow':case 'unsafe':case 'lock':
+          this.block('rect rgb(245, 240, 241)',()=>{if(stmt.kind==='lock')this.expression(stmt.value);this.note('Enter '+stmt.kind+' scope');flow=this.statements(stmt.body);this.note('Leave '+stmt.kind+' scope');});break;
+        case 'assign':
+          if(stmt.target.kind==='member')this.expression(stmt.target.object);
+          this.expression(stmt.value);
+          if(this.constructorState)this.note('Set '+(stmt.target.kind==='name'?stmt.target.name:this.text(stmt.target))+' to '+this.text(stmt.value));
+          if(stmt.ownership==='own'||this.checked.inferredOwned.has(stmt))this.note('Own '+this.text(stmt.target)+'; release on scope exits');break;
         case 'expr':this.expression(stmt.expr);break;
-        case 'return':case 'throw':if(stmt.value)this.expression(stmt.value);this.note((stmt.kind==='return'?'Return'+(stmt.value?' '+this.text(stmt.value):''):'Raise checked failure '+this.text(stmt.value))+'; required cleanup runs before exit');return;
+        case 'return':case 'throw':
+          if(stmt.value)this.expression(stmt.value);
+          this.note((stmt.kind==='return'?'Return'+(stmt.value?' '+this.text(stmt.value):''):'Raise checked failure '+this.text(stmt.value))+'; required cleanup runs before exit');flow=terminalFlow(stmt.kind);break;
         case 'yield':this.expression(stmt.value);this.note('Send one stream item');break;
         case 'destructure':case 'freeze':this.expression(stmt.value);break;
         case 'serve':this.expression(stmt.port);this.note('Serve endpoints: '+stmt.names.join(', '));break;
-        case 'break':case 'continue':this.note(stmt.kind==='break'?'Leave this loop':'Continue with the next iteration');return;
+        case 'break':case 'continue':this.note(stmt.kind==='break'?'Leave this loop':'Continue with the next iteration');flow=terminalFlow(stmt.kind);break;
       }
+      for(const exit of flow.exits)exits.add(exit);
+      if(!flow.fallsThrough)return {fallsThrough:false,exits};
     }
+    return {fallsThrough:true,exits};
   }
+
 }
 
 function renderSequence(sequence:Sequence):string{
@@ -227,7 +286,7 @@ function renderSequence(sequence:Sequence):string{
     chunks.push([...current,...stack.map(()=>({kind:'close' as const}))]);
     current=stack.flatMap(frame=>[{kind:'open' as const,text:frame.text},...(frame.otherwise?[{kind:'else' as const,text:frame.otherwise}]:[])]);
     current.push({kind:'note',text:'Sequence continued from the previous view'});
-    targets=new Set();steps=0;
+    targets=new Set();steps=1;
   };
   for(const token of sequence.tokens){
     if(token.kind==='message'||token.kind==='note'){

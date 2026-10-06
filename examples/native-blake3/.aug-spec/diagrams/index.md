@@ -22,8 +22,11 @@ flowchart TD
     n0["hashing.aug"]
     n1["main.aug"]
     n2["package/@greenpandastudios/aug-blake3@0.1.5/api.aug"]
+    n3["package/@greenpandastudios/aug-blake3@0.1.5/contracts.aug"]
     n0 -->|"uses"| n2
+    n0 -->|"uses"| n3
     n1 -->|"uses"| n0
+    n1 -->|"uses"| n3
 ```
 
 ## Open a module

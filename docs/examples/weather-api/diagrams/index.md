@@ -1,5 +1,5 @@
 ---
-title: "Diagrams · Weather API"
+title: "Weather API diagrams"
 generated: true
 source: "examples/weather-api/.aug-spec/diagrams/index.md"
 editLink: false
@@ -16,7 +16,7 @@ Read the areas first, then open a module for its class interactions, API calls a
 
 These are checked static views. Arrows describe possible calls, not an execution trace. Interface implementations, callbacks and foreign internals are not guessed. Tests are described in the adjacent specifications.
 
-### Areas
+## Areas
 
 ```mermaid
 flowchart TD
@@ -24,23 +24,23 @@ flowchart TD
 
 ```
 
-### Modules
+## Modules
 
 ```mermaid
 flowchart TD
     n0["forecasts.aug"]
     n1["main.aug"]
-
+    n1 -->|"uses"| n0
 ```
 
-### Open a module
+## Open a module
 
 | Module | Diagrams | Specification |
 | --- | --- | --- |
 | forecasts.aug | [Interactions and sequences](../forecasts-diagrams.md) | [Explanation](../forecasts.md) |
 | main.aug | [Interactions and sequences](../main-diagrams.md) | [Explanation](../main.md) |
 
-### HTTP APIs
+## HTTP APIs
 
 | API | Operation |
 | --- | --- |

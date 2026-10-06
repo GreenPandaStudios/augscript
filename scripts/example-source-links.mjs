@@ -35,7 +35,7 @@ export function planExampleNavigation(artifacts,docs,sources) {
       for(const ref of local){const list=references.get(ref.target)??[];list.push({...ref,page,paragraph:id});references.set(ref.target,list);}
       return heading?rewritten:'::: spec-paragraph '+id+'\n'+rewritten+'\n:::';
     }).join('\n');
-    texts.set(artifact.path,text.replace(/^(#{2,5}) /gm,'$1# '));
+    texts.set(artifact.path,artifact.kind==='diagram'?text:text.replace(/^(#{2,5}) /gm,'$1# '));
   }
   return {texts,references};
 }

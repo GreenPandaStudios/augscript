@@ -1,5 +1,5 @@
 ---
-title: "Diagrams · Read access and mutable borrows"
+title: "main.aug diagrams"
 generated: true
 source: "examples/ownership/main.aug.diagrams.md"
 editLink: false
@@ -8,13 +8,13 @@ next: false
 outline: [2, 3]
 ---
 
-# Read access and mutable borrows diagrams
+# main.aug diagrams
 
 [Read access and mutable borrows](index.md)
 
 [Project overview](diagrams/index.md) · [Compiled explanation](main.md)
 
-### Class interactions
+## Class interactions
 
 ```mermaid
 flowchart TD
@@ -23,7 +23,7 @@ flowchart TD
     n1 -->|"calls"| n0
 ```
 
-### API calls
+## API calls
 
 ```mermaid
 flowchart TD
@@ -36,11 +36,11 @@ flowchart TD
     n3 -->|"calls"| n2
 ```
 
-### Sequences
+## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
 
-#### Startup {#sequence-Startup}
+### Startup {#sequence-Startup}
 
 ::: spec-paragraph specification-paragraph-1
 [Source](main.md#source-L3)
@@ -60,7 +60,7 @@ sequenceDiagram
     p0->>p4: print(value)
 ```
 
-### Called contracts
+## Called contracts
 
 - [Counter](counter-diagrams.md#sequence-Counter-20-constructor) — counter.aug
 - [Counter.increment](counter-diagrams.md#sequence-Counter.increment) — counter.aug

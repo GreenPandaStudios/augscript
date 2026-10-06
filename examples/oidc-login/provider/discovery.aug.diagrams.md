@@ -58,7 +58,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 sequenceDiagram
     participant p0 as Discovery constructor
 
-    Note over p0: No calls in this operation#59; see the source and specification
+    Note over p0: Receive fields: issuer, authorization_endpoint, token_endpoint, userinfo_endpoint, jwks_uri, response_types_supported…
 ```
 
 <a id="sequence-discovery"></a>

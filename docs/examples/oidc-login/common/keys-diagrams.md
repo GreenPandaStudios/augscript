@@ -1,5 +1,5 @@
 ---
-title: "Diagrams · OpenID Connect login application"
+title: "common/keys.aug diagrams"
 generated: true
 source: "examples/oidc-login/common/keys.aug.diagrams.md"
 editLink: false
@@ -8,13 +8,13 @@ next: false
 outline: [2, 3]
 ---
 
-# OpenID Connect login application diagrams
+# common/keys.aug diagrams
 
 [OpenID Connect login application](../index.md)
 
 [Project overview](../diagrams/index.md) · [Compiled explanation](keys.md)
 
-### Class interactions
+## Class interactions
 
 ```mermaid
 flowchart TD
@@ -31,7 +31,7 @@ flowchart TD
     n3 -->|"depends on"| n4
 ```
 
-### API calls
+## API calls
 
 ```mermaid
 flowchart TD
@@ -51,11 +51,11 @@ flowchart TD
     n7 -->|"calls"| n8
 ```
 
-### Sequences
+## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
 
-#### KeyError constructor {#sequence-KeyError-20-constructor}
+### KeyError constructor {#sequence-KeyError-20-constructor}
 
 ::: spec-paragraph specification-paragraph-1
 [Source](keys.md#source-L4)
@@ -68,7 +68,7 @@ sequenceDiagram
     Note over p0: No calls in this operation#59; see the source and specification
 ```
 
-#### SigningKeys.configure {#sequence-SigningKeys.configure}
+### SigningKeys.configure {#sequence-SigningKeys.configure}
 
 ::: spec-paragraph specification-paragraph-2
 [Source](keys.md#source-L8)
@@ -82,7 +82,7 @@ sequenceDiagram
     Note over p0: Interface contract#59; implementation selected at runtime
 ```
 
-#### SigningKeys.provider {#sequence-SigningKeys.provider}
+### SigningKeys.provider {#sequence-SigningKeys.provider}
 
 ::: spec-paragraph specification-paragraph-3
 [Source](keys.md#source-L9)
@@ -96,7 +96,7 @@ sequenceDiagram
     Note over p0: Interface contract#59; implementation selected at runtime
 ```
 
-#### SigningKeys.session {#sequence-SigningKeys.session}
+### SigningKeys.session {#sequence-SigningKeys.session}
 
 ::: spec-paragraph specification-paragraph-4
 [Source](keys.md#source-L10)
@@ -110,7 +110,7 @@ sequenceDiagram
     Note over p0: Interface contract#59; implementation selected at runtime
 ```
 
-#### MemorySigningKeys constructor {#sequence-MemorySigningKeys-20-constructor}
+### MemorySigningKeys constructor {#sequence-MemorySigningKeys-20-constructor}
 
 ::: spec-paragraph specification-paragraph-5
 [Source](keys.md#source-L12)
@@ -123,9 +123,10 @@ sequenceDiagram
     participant p2 as Shared
     p0->>p1: Map()
     p0->>p2: Shared(value)
+    Note over p0: Set _keys to Shared(value=Map#60;string, RsaPrivateKey#62;())
 ```
 
-#### MemorySigningKeys.configure {#sequence-MemorySigningKeys.configure}
+### MemorySigningKeys.configure {#sequence-MemorySigningKeys.configure}
 
 ::: spec-paragraph specification-paragraph-6
 [Source](keys.md#source-L14)
@@ -151,7 +152,7 @@ sequenceDiagram
     Note over p0: May leave with checked errors: KeyError
 ```
 
-#### MemorySigningKeys.provider {#sequence-MemorySigningKeys.provider}
+### MemorySigningKeys.provider {#sequence-MemorySigningKeys.provider}
 
 ::: spec-paragraph specification-paragraph-7
 [Source](keys.md#source-L20)
@@ -176,7 +177,7 @@ sequenceDiagram
     Note over p0: May leave with checked errors: KeyError
 ```
 
-#### MemorySigningKeys.session {#sequence-MemorySigningKeys.session}
+### MemorySigningKeys.session {#sequence-MemorySigningKeys.session}
 
 ::: spec-paragraph specification-paragraph-8
 [Source](keys.md#source-L27)
@@ -201,7 +202,7 @@ sequenceDiagram
     Note over p0: May leave with checked errors: KeyError
 ```
 
-#### initializeKeys {#sequence-initializeKeys}
+### initializeKeys {#sequence-initializeKeys}
 
 ::: spec-paragraph specification-paragraph-9
 [Source](keys.md#source-L35)
@@ -218,7 +219,7 @@ sequenceDiagram
     Note over p0: May leave with checked errors: CryptoError, KeyError
 ```
 
-### Called contracts
+## Called contracts
 
 - [KeyError](keys-diagrams.md#sequence-KeyError-20-constructor) — common/keys.aug
 - [SigningKeys](keys-diagrams.md) — common/keys.aug

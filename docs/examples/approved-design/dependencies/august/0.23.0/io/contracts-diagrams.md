@@ -1,5 +1,5 @@
 ---
-title: "Diagrams · Modules and composition"
+title: "august/io/contracts.aug diagrams"
 generated: true
 source: "examples/approved-design/.aug-spec/august/0.23.0/io/contracts.aug.diagrams.md"
 editLink: false
@@ -8,13 +8,13 @@ next: false
 outline: [2, 3]
 ---
 
-# Modules and composition diagrams
+# august/io/contracts.aug diagrams
 
 [Modules and composition](../../../../index.md)
 
 [Project overview](../../../../diagrams/index.md) · [Compiled explanation](contracts.md)
 
-### Class interactions
+## Class interactions
 
 ```mermaid
 flowchart TD
@@ -31,7 +31,7 @@ flowchart TD
     n6 -->|"implements"| n1
 ```
 
-### API calls
+## API calls
 
 ```mermaid
 flowchart TD
@@ -46,11 +46,11 @@ flowchart TD
 
 ```
 
-### Sequences
+## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
 
-#### Console.write {#sequence-Console.write}
+### Console.write {#sequence-Console.write}
 
 ::: spec-paragraph specification-paragraph-1
 [Source](contracts.md#source-L6)
@@ -63,7 +63,7 @@ sequenceDiagram
     Note over p0: Interface contract#59; implementation selected at runtime
 ```
 
-#### SystemConsole constructor {#sequence-SystemConsole-20-constructor}
+### SystemConsole constructor {#sequence-SystemConsole-20-constructor}
 
 ::: spec-paragraph specification-paragraph-2
 [Source](contracts.md#source-L9)
@@ -76,7 +76,7 @@ sequenceDiagram
     Note over p0: No calls in this operation#59; see the source and specification
 ```
 
-#### SystemConsole.write {#sequence-SystemConsole.write}
+### SystemConsole.write {#sequence-SystemConsole.write}
 
 ::: spec-paragraph specification-paragraph-3
 [Source](contracts.md#source-L10)
@@ -89,7 +89,7 @@ sequenceDiagram
     p0->>p1: print(value)
 ```
 
-#### FileReader.read {#sequence-FileReader.read}
+### FileReader.read {#sequence-FileReader.read}
 
 ::: spec-paragraph specification-paragraph-4
 [Source](contracts.md#source-L16)
@@ -103,7 +103,7 @@ sequenceDiagram
     Note over p0: Interface contract#59; implementation selected at runtime
 ```
 
-#### FileWriter.write {#sequence-FileWriter.write}
+### FileWriter.write {#sequence-FileWriter.write}
 
 ::: spec-paragraph specification-paragraph-5
 [Source](contracts.md#source-L21)
@@ -117,7 +117,7 @@ sequenceDiagram
     Note over p0: Interface contract#59; implementation selected at runtime
 ```
 
-#### LocalFiles constructor {#sequence-LocalFiles-20-constructor}
+### LocalFiles constructor {#sequence-LocalFiles-20-constructor}
 
 ::: spec-paragraph specification-paragraph-6
 [Source](contracts.md#source-L24)
@@ -130,7 +130,7 @@ sequenceDiagram
     Note over p0: No calls in this operation#59; see the source and specification
 ```
 
-#### LocalFiles.read {#sequence-LocalFiles.read}
+### LocalFiles.read {#sequence-LocalFiles.read}
 
 ::: spec-paragraph specification-paragraph-7
 [Source](contracts.md#source-L25)
@@ -145,7 +145,7 @@ sequenceDiagram
     Note over p0: May leave with checked errors: FileError
 ```
 
-#### LocalFiles.write {#sequence-LocalFiles.write}
+### LocalFiles.write {#sequence-LocalFiles.write}
 
 ::: spec-paragraph specification-paragraph-8
 [Source](contracts.md#source-L27)
@@ -159,7 +159,7 @@ sequenceDiagram
     Note over p0: May leave with checked errors: FileError
 ```
 
-#### Arguments.read {#sequence-Arguments.read}
+### Arguments.read {#sequence-Arguments.read}
 
 ::: spec-paragraph specification-paragraph-9
 [Source](contracts.md#source-L32)
@@ -172,7 +172,7 @@ sequenceDiagram
     Note over p0: Interface contract#59; implementation selected at runtime
 ```
 
-#### ProcessArguments constructor {#sequence-ProcessArguments-20-constructor}
+### ProcessArguments constructor {#sequence-ProcessArguments-20-constructor}
 
 ::: spec-paragraph specification-paragraph-10
 [Source](contracts.md#source-L35)
@@ -185,7 +185,7 @@ sequenceDiagram
     Note over p0: No calls in this operation#59; see the source and specification
 ```
 
-#### ProcessArguments.read {#sequence-ProcessArguments.read}
+### ProcessArguments.read {#sequence-ProcessArguments.read}
 
 ::: spec-paragraph specification-paragraph-11
 [Source](contracts.md#source-L36)
@@ -199,7 +199,7 @@ sequenceDiagram
     Note over p0: Return arguments()#59; required cleanup runs before exit
 ```
 
-### Called contracts
+## Called contracts
 
 - [Arguments](contracts-diagrams.md) — august/io/contracts.aug
 - [Console](contracts-diagrams.md) — august/io/contracts.aug

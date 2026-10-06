@@ -30,7 +30,10 @@ flowchart TD
     n2 -->|"uses"| n0
     n2 -->|"uses"| n3
     n3 -->|"uses"| n0
+    n4 -->|"uses"| n0
+    n4 -->|"uses"| n1
     n4 -->|"uses"| n2
+    n4 -->|"uses"| n3
     n4 -->|"uses"| n5
 ```
 

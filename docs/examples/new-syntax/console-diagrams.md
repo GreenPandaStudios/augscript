@@ -1,5 +1,5 @@
 ---
-title: "Diagrams · Labeled calls and injection"
+title: "console.aug diagrams"
 generated: true
 source: "examples/new-syntax/console.aug.diagrams.md"
 editLink: false
@@ -8,13 +8,13 @@ next: false
 outline: [2, 3]
 ---
 
-# Labeled calls and injection diagrams
+# console.aug diagrams
 
 [Labeled calls and injection](index.md)
 
 [Project overview](diagrams/index.md) · [Compiled explanation](console.md)
 
-### Class interactions
+## Class interactions
 
 ```mermaid
 flowchart TD
@@ -26,7 +26,7 @@ flowchart TD
     n1 -->|"implements"| n2
 ```
 
-### API calls
+## API calls
 
 ```mermaid
 flowchart TD
@@ -35,11 +35,11 @@ flowchart TD
     n1 -->|"calls"| n0
 ```
 
-### Sequences
+## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
 
-#### ConsoleLogger constructor {#sequence-ConsoleLogger-20-constructor}
+### ConsoleLogger constructor {#sequence-ConsoleLogger-20-constructor}
 
 ::: spec-paragraph specification-paragraph-1
 [Source](console.md#source-L4)
@@ -52,7 +52,7 @@ sequenceDiagram
     Note over p0: No calls in this operation#59; see the source and specification
 ```
 
-#### ConsoleLogger.log {#sequence-ConsoleLogger.log}
+### ConsoleLogger.log {#sequence-ConsoleLogger.log}
 
 ::: spec-paragraph specification-paragraph-2
 [Source](console.md#source-L5)
@@ -65,7 +65,7 @@ sequenceDiagram
     p0->>p1: write(value) · interface dispatch
 ```
 
-### Called contracts
+## Called contracts
 
 - [Console](dependencies/august/0.23.0/io/contracts-diagrams.md) — august/io/contracts.aug
 - [Console.write](dependencies/august/0.23.0/io/contracts-diagrams.md#sequence-Console.write) — august/io/contracts.aug

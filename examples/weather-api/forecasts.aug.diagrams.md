@@ -36,7 +36,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 sequenceDiagram
     participant p0 as WeatherForecast constructor
 
-    Note over p0: No calls in this operation#59; see the source and specification
+    Note over p0: Receive fields: date, temperatureC, temperatureF, summary
 ```
 
 <a id="sequence-weatherForecast"></a>

@@ -144,7 +144,9 @@ export function buildExamplePages(overrides) {
     add(home,overview);
     for(const artifact of artifacts.filter(output=>output.kind==='diagram')){
       const page=docs.get(artifact.path);
-      add(page,frontmatter('Diagrams · '+example.title,example.path+'/'+slash(relative(directory,artifact.path)))+'# '+example.title+' diagrams\n\n['+example.title+']('+url(relative(dirname(page),home))+')\n\n'+navigation.texts.get(artifact.path));
+      const heading=/^# ([^\n]+)/m.exec(artifact.text)?.[1]??example.title+' diagrams';
+      const title=artifact.path.endsWith('/diagrams/index.md')?example.title+' diagrams':heading;
+      add(page,frontmatter(title,example.path+'/'+slash(relative(directory,artifact.path)))+'# '+title+'\n\n['+example.title+']('+url(relative(dirname(page),home))+')\n\n'+navigation.texts.get(artifact.path));
     }
     for(const artifact of artifacts.filter(output=>output.path.endsWith('.aug.md'))) {
       const page=docs.get(artifact.path), local=relative(directory,artifact.path), dependency=local.startsWith('.aug-spec/');

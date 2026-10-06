@@ -78,6 +78,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 sequenceDiagram
     participant p0 as Decimal constructor
     participant p1 as ConversionError
+    Note over p0: Receive fields: coefficient, scale
     opt Left is false
     end
     alt scale #60; 0 or scale #62; 18

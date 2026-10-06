@@ -22,6 +22,7 @@ flowchart TD
     n0["august/io/contracts.aug"]
     n1["main.aug"]
     n2["resource.aug"]
+    n1 -->|"uses"| n0
     n1 -->|"uses"| n2
     n2 -->|"uses"| n0
 ```

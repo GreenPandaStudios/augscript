@@ -1,5 +1,5 @@
 ---
-title: "Diagrams · OpenID Connect login application"
+title: "provider/userinfo.aug diagrams"
 generated: true
 source: "examples/oidc-login/provider/userinfo.aug.diagrams.md"
 editLink: false
@@ -8,13 +8,13 @@ next: false
 outline: [2, 3]
 ---
 
-# OpenID Connect login application diagrams
+# provider/userinfo.aug diagrams
 
 [OpenID Connect login application](../index.md)
 
 [Project overview](../diagrams/index.md) · [Compiled explanation](userinfo.md)
 
-### Class interactions
+## Class interactions
 
 ```mermaid
 flowchart TD
@@ -31,7 +31,7 @@ flowchart TD
     n4 -->|"calls"| n3
 ```
 
-### API calls
+## API calls
 
 ```mermaid
 flowchart TD
@@ -46,11 +46,11 @@ flowchart TD
     n4 -->|"calls"| n3
 ```
 
-### Sequences
+## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
 
-#### userinfo {#sequence-userinfo}
+### userinfo {#sequence-userinfo}
 
 ::: spec-paragraph specification-paragraph-1
 [Source](userinfo.md#source-L8)
@@ -108,7 +108,7 @@ sequenceDiagram
     Note over p0: HTTP result follows declared response and error mapping#59; unhandled request failure returns 500
 ```
 
-### Called contracts
+## Called contracts
 
 - [securityHeaders](../common/headers-diagrams.md#sequence-securityHeaders) — common/headers.aug
 - [ExpiringStore](../dependencies/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store-diagrams.md) — package/@git/url\_0eb7c89453c87681ed15@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug

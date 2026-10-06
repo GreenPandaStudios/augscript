@@ -1,5 +1,5 @@
 ---
-title: "Diagrams · Resource cleanup"
+title: "main.aug diagrams"
 generated: true
 source: "examples/drop/main.aug.diagrams.md"
 editLink: false
@@ -8,13 +8,13 @@ next: false
 outline: [2, 3]
 ---
 
-# Resource cleanup diagrams
+# main.aug diagrams
 
 [Resource cleanup](index.md)
 
 [Project overview](diagrams/index.md) · [Compiled explanation](main.md)
 
-### Class interactions
+## Class interactions
 
 ```mermaid
 flowchart TD
@@ -23,7 +23,7 @@ flowchart TD
     n0 -->|"calls"| n1
 ```
 
-### API calls
+## API calls
 
 ```mermaid
 flowchart TD
@@ -32,11 +32,11 @@ flowchart TD
     n0 -->|"calls"| n1
 ```
 
-### Sequences
+## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
 
-#### Startup {#sequence-Startup}
+### Startup {#sequence-Startup}
 
 ::: spec-paragraph specification-paragraph-1
 [Source](main.md#source-L3)
@@ -52,6 +52,6 @@ sequenceDiagram
     p0->>p2: print(value)
 ```
 
-### Called contracts
+## Called contracts
 
 - [Resource](resource-diagrams.md#sequence-Resource-20-constructor) — resource.aug

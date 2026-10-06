@@ -1,5 +1,5 @@
 ---
-title: "Diagrams · A small tested application"
+title: "calculator.aug diagrams"
 generated: true
 source: "examples/developer-workflow/calculator.aug.diagrams.md"
 editLink: false
@@ -8,13 +8,13 @@ next: false
 outline: [2, 3]
 ---
 
-# A small tested application diagrams
+# calculator.aug diagrams
 
 [A small tested application](index.md)
 
 [Project overview](diagrams/index.md) · [Compiled explanation](calculator.md)
 
-### Class interactions
+## Class interactions
 
 ```mermaid
 flowchart TD
@@ -34,7 +34,7 @@ flowchart TD
     n5 -->|"calls"| n2
 ```
 
-### API calls
+## API calls
 
 ```mermaid
 flowchart TD
@@ -50,11 +50,11 @@ flowchart TD
     n6 -->|"calls"| n2
 ```
 
-### Sequences
+## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
 
-#### Arithmetic.add {#sequence-Arithmetic.add}
+### Arithmetic.add {#sequence-Arithmetic.add}
 
 ::: spec-paragraph specification-paragraph-1
 [Source](calculator.md#source-L6)
@@ -67,7 +67,7 @@ sequenceDiagram
     Note over p0: Interface contract#59; implementation selected at runtime
 ```
 
-#### Calculator constructor {#sequence-Calculator-20-constructor}
+### Calculator constructor {#sequence-Calculator-20-constructor}
 
 ::: spec-paragraph specification-paragraph-2
 [Source](calculator.md#source-L9)
@@ -77,10 +77,10 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as Calculator constructor
 
-    Note over p0: No calls in this operation#59; see the source and specification
+    Note over p0: Receive fields: injected _logger
 ```
 
-#### Calculator.add {#sequence-Calculator.add}
+### Calculator.add {#sequence-Calculator.add}
 
 ::: spec-paragraph specification-paragraph-3
 [Source](calculator.md#source-L16)
@@ -94,7 +94,7 @@ sequenceDiagram
     Note over p0: Return left + right#59; required cleanup runs before exit
 ```
 
-#### load {#sequence-load}
+### load {#sequence-load}
 
 ::: spec-paragraph specification-paragraph-4
 [Source](calculator.md#source-L26)
@@ -112,7 +112,7 @@ sequenceDiagram
     Note over p0: May leave with checked errors: FileError
 ```
 
-#### \_SilentLogger constructor {#sequence-_SilentLogger-20-constructor}
+### \_SilentLogger constructor {#sequence-_SilentLogger-20-constructor}
 
 ::: spec-paragraph specification-paragraph-5
 [Source](calculator.md#source-L33)
@@ -125,7 +125,7 @@ sequenceDiagram
     Note over p0: No calls in this operation#59; see the source and specification
 ```
 
-#### \_SilentLogger.log {#sequence-_SilentLogger.log}
+### \_SilentLogger.log {#sequence-_SilentLogger.log}
 
 ::: spec-paragraph specification-paragraph-6
 [Source](calculator.md#source-L34)
@@ -138,7 +138,7 @@ sequenceDiagram
     Note over p0: No calls in this operation#59; see the source and specification
 ```
 
-### Called contracts
+## Called contracts
 
 - [Console](dependencies/august/0.23.0/io/contracts-diagrams.md) — august/io/contracts.aug
 - [Arithmetic](calculator-diagrams.md) — calculator.aug

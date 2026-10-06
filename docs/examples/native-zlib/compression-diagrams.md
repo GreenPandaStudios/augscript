@@ -1,5 +1,5 @@
 ---
-title: "Diagrams · Compression with zlib"
+title: "compression.aug diagrams"
 generated: true
 source: "examples/native-zlib/compression.aug.diagrams.md"
 editLink: false
@@ -8,17 +8,17 @@ next: false
 outline: [2, 3]
 ---
 
-# Compression with zlib diagrams
+# compression.aug diagrams
 
 [Compression with zlib](index.md)
 
 [Project overview](diagrams/index.md) · [Compiled explanation](compression.md)
 
-### Class interactions
+## Class interactions
 
 No relationships at this level.
 
-### API calls
+## API calls
 
 ```mermaid
 flowchart TD
@@ -31,11 +31,11 @@ flowchart TD
     n1 -->|"calls"| n0
 ```
 
-### Sequences
+## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
 
-#### roundTrip {#sequence-roundTrip}
+### roundTrip {#sequence-roundTrip}
 
 ::: spec-paragraph specification-paragraph-1
 [Source](compression.md#source-L5)
@@ -54,7 +54,7 @@ sequenceDiagram
     Note over p0: May leave with checked errors: CompressionError
 ```
 
-### Called contracts
+## Called contracts
 
 - [roundTrip](compression-diagrams.md#sequence-roundTrip) — compression.aug
 - [compress](dependencies/packages/%40greenpandastudios/aug-zlib/0.1.5/api-diagrams.md#sequence-compress) — package/@greenpandastudios/aug-zlib@0.1.5/api.aug

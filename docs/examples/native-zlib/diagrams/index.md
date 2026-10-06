@@ -1,5 +1,5 @@
 ---
-title: "Diagrams · Compression with zlib"
+title: "Compression with zlib diagrams"
 generated: true
 source: "examples/native-zlib/.aug-spec/diagrams/index.md"
 editLink: false
@@ -16,7 +16,7 @@ Read the areas first, then open a module for its class interactions, API calls a
 
 These are checked static views. Arrows describe possible calls, not an execution trace. Interface implementations, callbacks and foreign internals are not guessed. Tests are described in the adjacent specifications.
 
-### Areas
+## Areas
 
 ```mermaid
 flowchart TD
@@ -25,18 +25,21 @@ flowchart TD
     n0 -->|"uses"| n1
 ```
 
-### Modules
+## Modules
 
 ```mermaid
 flowchart TD
     n0["compression.aug"]
     n1["main.aug"]
     n2["package/@greenpandastudios/aug-zlib@0.1.5/api.aug"]
+    n3["package/@greenpandastudios/aug-zlib@0.1.5/contracts.aug"]
     n0 -->|"uses"| n2
+    n0 -->|"uses"| n3
     n1 -->|"uses"| n0
+    n1 -->|"uses"| n3
 ```
 
-### Open a module
+## Open a module
 
 | Module | Diagrams | Specification |
 | --- | --- | --- |

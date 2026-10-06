@@ -1,5 +1,5 @@
 ---
-title: "Diagrams · Read access and mutable borrows"
+title: "counter.aug diagrams"
 generated: true
 source: "examples/ownership/counter.aug.diagrams.md"
 editLink: false
@@ -8,13 +8,13 @@ next: false
 outline: [2, 3]
 ---
 
-# Read access and mutable borrows diagrams
+# counter.aug diagrams
 
 [Read access and mutable borrows](index.md)
 
 [Project overview](diagrams/index.md) · [Compiled explanation](counter.md)
 
-### Class interactions
+## Class interactions
 
 ```mermaid
 flowchart TD
@@ -23,7 +23,7 @@ flowchart TD
     n0 -->|"implements"| n1
 ```
 
-### API calls
+## API calls
 
 ```mermaid
 flowchart TD
@@ -34,11 +34,11 @@ flowchart TD
 
 ```
 
-### Sequences
+## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
 
-#### Counter constructor {#sequence-Counter-20-constructor}
+### Counter constructor {#sequence-Counter-20-constructor}
 
 ::: spec-paragraph specification-paragraph-1
 [Source](counter.md#source-L2)
@@ -48,10 +48,10 @@ Call arrows identify checked targets; loop and branch frames determine when they
 sequenceDiagram
     participant p0 as Counter constructor
 
-    Note over p0: No calls in this operation#59; see the source and specification
+    Note over p0: Receive fields: value
 ```
 
-#### Counter.increment {#sequence-Counter.increment}
+### Counter.increment {#sequence-Counter.increment}
 
 ::: spec-paragraph specification-paragraph-2
 [Source](counter.md#source-L3)
@@ -67,7 +67,7 @@ sequenceDiagram
     end
 ```
 
-#### Counter.read {#sequence-Counter.read}
+### Counter.read {#sequence-Counter.read}
 
 ::: spec-paragraph specification-paragraph-3
 [Source](counter.md#source-L8)
@@ -80,7 +80,7 @@ sequenceDiagram
     Note over p0: Return value#59; required cleanup runs before exit
 ```
 
-#### ICounter.increment {#sequence-ICounter.increment}
+### ICounter.increment {#sequence-ICounter.increment}
 
 ::: spec-paragraph specification-paragraph-4
 [Source](counter.md#source-L13)
@@ -93,7 +93,7 @@ sequenceDiagram
     Note over p0: Interface contract#59; implementation selected at runtime
 ```
 
-#### ICounter.read {#sequence-ICounter.read}
+### ICounter.read {#sequence-ICounter.read}
 
 ::: spec-paragraph specification-paragraph-5
 [Source](counter.md#source-L14)
@@ -106,6 +106,6 @@ sequenceDiagram
     Note over p0: Interface contract#59; implementation selected at runtime
 ```
 
-### Called contracts
+## Called contracts
 
 - [ICounter](counter-diagrams.md) — counter.aug

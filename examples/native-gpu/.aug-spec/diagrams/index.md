@@ -22,10 +22,12 @@ flowchart TD
     n0["compute.aug"]
     n1["main.aug"]
     n2["package/@greenpandastudios/aug-gpu@0.1.1/api.aug"]
-    n3["package/@greenpandastudios/aug-gpu@0.1.1/contracts.aug"]
+    n3["package/@greenpandastudios/aug-gpu@0.1.1/bindings.aug"]
+    n4["package/@greenpandastudios/aug-gpu@0.1.1/contracts.aug"]
     n0 -->|"uses"| n2
+    n0 -->|"uses"| n3
     n1 -->|"uses"| n0
-    n1 -->|"uses"| n3
+    n1 -->|"uses"| n4
 ```
 
 ## Open a module

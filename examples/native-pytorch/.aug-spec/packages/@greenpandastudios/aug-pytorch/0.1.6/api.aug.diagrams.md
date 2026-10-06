@@ -248,7 +248,7 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as _TensorHolder constructor
 
-    Note over p0: No calls in this operation#59; see the source and specification
+    Note over p0: Receive fields: item
 ```
 
 <a id="sequence-_TensorHolder.total"></a>

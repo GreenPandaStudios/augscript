@@ -1,5 +1,5 @@
 ---
-title: "Diagrams · OpenID Connect login application"
+title: "package/@git/url\\_c092cd151499c4e1d8a1@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug diagrams"
 generated: true
 source: "examples/oidc-login/.aug-spec/packages/@git/url_c092cd151499c4e1d8a1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.diagrams.md"
 editLink: false
@@ -8,13 +8,13 @@ next: false
 outline: [2, 3]
 ---
 
-# OpenID Connect login application diagrams
+# package/@git/url\_c092cd151499c4e1d8a1@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug diagrams
 
 [OpenID Connect login application](../../../../../index.md)
 
 [Project overview](../../../../../diagrams/index.md) · [Compiled explanation](contracts.md)
 
-### Class interactions
+## Class interactions
 
 ```mermaid
 flowchart TD
@@ -25,7 +25,7 @@ flowchart TD
     n1 -->|"calls"| n2
 ```
 
-### API calls
+## API calls
 
 ```mermaid
 flowchart TD
@@ -35,11 +35,11 @@ flowchart TD
     n1 -->|"calls"| n2
 ```
 
-### Sequences
+## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
 
-#### Clock.now {#sequence-Clock.now}
+### Clock.now {#sequence-Clock.now}
 
 ::: spec-paragraph specification-paragraph-1
 [Source](contracts.md#source-L5)
@@ -53,7 +53,7 @@ sequenceDiagram
     Note over p0: Interface contract#59; implementation selected at runtime
 ```
 
-#### \_aug\_time\_now {#sequence-_aug_time_now}
+### \_aug\_time\_now {#sequence-_aug_time_now}
 
 ::: spec-paragraph specification-paragraph-2
 [Source](contracts.md#source-L6)
@@ -67,7 +67,7 @@ sequenceDiagram
     Note over p0: Native implementation#59; only the declared contract is known
 ```
 
-#### SystemClock constructor {#sequence-SystemClock-20-constructor}
+### SystemClock constructor {#sequence-SystemClock-20-constructor}
 
 ::: spec-paragraph specification-paragraph-3
 [Source](contracts.md#source-L8)
@@ -80,7 +80,7 @@ sequenceDiagram
     Note over p0: No calls in this operation#59; see the source and specification
 ```
 
-#### SystemClock.now {#sequence-SystemClock.now}
+### SystemClock.now {#sequence-SystemClock.now}
 
 ::: spec-paragraph specification-paragraph-4
 [Source](contracts.md#source-L9)
@@ -99,7 +99,7 @@ sequenceDiagram
     Note over p0: May leave with checked errors: TimeError
 ```
 
-### Called contracts
+## Called contracts
 
 - [Clock](contracts-diagrams.md) — package/@git/url\_c092cd151499c4e1d8a1@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug
 - [\_aug\_time\_now](contracts-diagrams.md#sequence-_aug_time_now) — package/@git/url\_c092cd151499c4e1d8a1@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug

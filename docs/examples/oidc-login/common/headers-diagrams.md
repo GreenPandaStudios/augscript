@@ -1,5 +1,5 @@
 ---
-title: "Diagrams · OpenID Connect login application"
+title: "common/headers.aug diagrams"
 generated: true
 source: "examples/oidc-login/common/headers.aug.diagrams.md"
 editLink: false
@@ -8,17 +8,17 @@ next: false
 outline: [2, 3]
 ---
 
-# OpenID Connect login application diagrams
+# common/headers.aug diagrams
 
 [OpenID Connect login application](../index.md)
 
 [Project overview](../diagrams/index.md) · [Compiled explanation](headers.md)
 
-### Class interactions
+## Class interactions
 
 No relationships at this level.
 
-### API calls
+## API calls
 
 ```mermaid
 flowchart TD
@@ -28,11 +28,11 @@ flowchart TD
     n1 -->|"calls"| n2
 ```
 
-### Sequences
+## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
 
-#### securityHeaders {#sequence-securityHeaders}
+### securityHeaders {#sequence-securityHeaders}
 
 ::: spec-paragraph specification-paragraph-1
 [Source](headers.md#source-L3)
@@ -57,7 +57,7 @@ sequenceDiagram
     Note over p0: May leave with checked errors: HttpError
 ```
 
-#### withCookie {#sequence-withCookie}
+### withCookie {#sequence-withCookie}
 
 ::: spec-paragraph specification-paragraph-2
 [Source](headers.md#source-L7)
@@ -78,6 +78,6 @@ sequenceDiagram
     Note over p0: May leave with checked errors: HttpError
 ```
 
-### Called contracts
+## Called contracts
 
 - [cookie](../dependencies/packages/%40git/url_897efafd565158fc4908/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts-diagrams.md#sequence-cookie) — package/@git/url\_897efafd565158fc4908@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug

@@ -1,5 +1,5 @@
 ---
-title: "Diagrams · Function-call benchmark"
+title: "operations.aug diagrams"
 generated: true
 source: "benchmarks/calls/operations.aug.diagrams.md"
 editLink: false
@@ -8,17 +8,17 @@ next: false
 outline: [2, 3]
 ---
 
-# Function-call benchmark diagrams
+# operations.aug diagrams
 
 [Function-call benchmark](index.md)
 
 [Project overview](diagrams/index.md) · [Compiled explanation](operations.md)
 
-### Class interactions
+## Class interactions
 
 No relationships at this level.
 
-### API calls
+## API calls
 
 ```mermaid
 flowchart TD
@@ -26,11 +26,11 @@ flowchart TD
 
 ```
 
-### Sequences
+## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
 
-#### step {#sequence-step}
+### step {#sequence-step}
 
 ::: spec-paragraph specification-paragraph-1
 [Source](operations.md#source-L2)
