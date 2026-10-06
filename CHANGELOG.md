@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Extend independent language conformance with forwarding chains, binding patterns, defaults, record copies, loop control, task loans and cleanup counts. Qualification fingerprints runtime and acceptance inputs and reports independent coverage separately from linked regressions.
+
 - Show scalar updates and empty rendered branches in generated sequences so calculation-only loops retain readable frames. Preserve checked evaluation order across repeated generation and retain grouped arithmetic and record-copy inputs.
 
 - Keep diagram value operations on the current lifeline, show evaluated nested results and generic calls, use readable package names, and split sequences at six lifelines without separating a call from its reply. Continuing views show their active branch.

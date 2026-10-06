@@ -184,7 +184,7 @@
     {
       "id": "text",
       "files": {
-        "main.aug": "print(value=\"\ud83d\udc4b\".length())\nprint(value=\"caf\u00e9\".bytes().length())\n"
+        "main.aug": "print(value=\"👋\".length())\nprint(value=\"café\".bytes().length())\n"
       },
       "stdout": "4\n5\n"
     },
@@ -261,16 +261,16 @@
     {
       "id": "grapheme-boundaries",
       "files": {
-        "main.aug": "try:\n    text = \"e\u0301\ud83d\udc69\u200d\ud83d\udcbb\"\n    print(value=text.byteLength())\n    print(value=text.graphemeLength())\n    for part in text.graphemes():\n        print(value=part)\n    print(value=\"\u094d\u0915\".graphemeLength())\ncatch ConversionError error:\n    print(value=\"unexpected\")\n"
+        "main.aug": "try:\n    text = \"é👩‍💻\"\n    print(value=text.byteLength())\n    print(value=text.graphemeLength())\n    for part in text.graphemes():\n        print(value=part)\n    print(value=\"्क\".graphemeLength())\ncatch ConversionError error:\n    print(value=\"unexpected\")\n"
       },
-      "stdout": "14\n2\ne\u0301\n\ud83d\udc69\u200d\ud83d\udcbb\n1\n"
+      "stdout": "14\n2\né\n👩‍💻\n1\n"
     },
     {
       "id": "domain-values",
       "files": {
-        "main.aug": "import parseCivilDate and formatCivilDate and parseDuration and formatDuration and TokenId and HttpUrl and PortableRelativePath and BoundedText from august.values\ntry:\n    print(value=formatCivilDate(value=parseCivilDate(text=\"2000-02-29\")))\n    print(value=formatDuration(value=parseDuration(text=\"-PT0.001S\")))\n    print(value=TokenId(text=\"order_42\").text)\n    print(value=HttpUrl(text=\"https://example.com?\").text)\n    print(value=PortableRelativePath(text=\"docs/api.md\").text)\n    print(value=BoundedText(text=\"\u00e9\", minBytes=2, maxBytes=2).text)\n    parseCivilDate(text=\"1900-02-29\")\ncatch ConversionError failure:\n    print(value=\"invalid date\")\n"
+        "main.aug": "import parseCivilDate and formatCivilDate and parseDuration and formatDuration and TokenId and HttpUrl and PortableRelativePath and BoundedText from august.values\ntry:\n    print(value=formatCivilDate(value=parseCivilDate(text=\"2000-02-29\")))\n    print(value=formatDuration(value=parseDuration(text=\"-PT0.001S\")))\n    print(value=TokenId(text=\"order_42\").text)\n    print(value=HttpUrl(text=\"https://example.com?\").text)\n    print(value=PortableRelativePath(text=\"docs/api.md\").text)\n    print(value=BoundedText(text=\"é\", minBytes=2, maxBytes=2).text)\n    parseCivilDate(text=\"1900-02-29\")\ncatch ConversionError failure:\n    print(value=\"invalid date\")\n"
       },
-      "stdout": "2000-02-29\n-PT0.001S\norder_42\nhttps://example.com?\ndocs/api.md\n\u00e9\ninvalid date\n"
+      "stdout": "2000-02-29\n-PT0.001S\norder_42\nhttps://example.com?\ndocs/api.md\né\ninvalid date\n"
     },
     {
       "id": "internal-composition",
@@ -331,6 +331,141 @@
         "actual.aug": "import Value from logging\nimport Audit from audit\nimport Wanted from promises\nWrong(resolve Audit<List<Value>> logger) implements Wanted { log() { logger.note(value=[Value(number=1)]) } }\n"
       },
       "diagnostic": "TYPE"
+    },
+    {
+      "id": "forwarding-chain",
+      "files": {
+        "main.aug": "import execute from application\nimport Rejected from domain\ntry:\n    print(value=execute(amount=14, fail=false).total)\n    execute(amount=14, fail=true)\ncatch Rejected failure:\n    print(value=failure.amount)\n",
+        "domain.aug": "record Receipt(int total)\nerror Rejected(int amount)\ncalculate(int amount, bool fail) returns Receipt unless Rejected:\n    if fail:\n        throw Rejected(amount=amount)\n    return Receipt(total=amount * 3)\n",
+        "adapter.aug": "import calculate from domain\nforward dispatch to calculate\n",
+        "application.aug": "import dispatch from adapter\nforward execute to dispatch\n"
+      },
+      "stdout": "42\n14\n"
+    },
+    {
+      "id": "forwarding-required-label",
+      "files": {
+        "main.aug": "import dispatch from adapter\nprint(value=dispatch())\n",
+        "adapter.aug": "import calculate from operation\nforward dispatch to calculate\n",
+        "operation.aug": "calculate(int amount) returns int:\n    return amount\n"
+      },
+      "diagnostic": "CALL"
+    },
+    {
+      "id": "binding-nested-data",
+      "files": {
+        "main.aug": "import Invoice and Address from domain\ninvoice = Invoice(address=Address(city=\"Oslo\"), amounts=(11, (7, 5)))\n{address: {city}, amounts: (subtotal, (tax, fee))} = invoice\nprint(value=city)\nprint(value=subtotal + tax + fee)\nfor (label, (first, second)) in {\"paid\": (17, 6)}:\n    print(value=label)\n    print(value=first - second)\n",
+        "domain.aug": "record Address(string city)\nrecord Invoice(Address address, Tuple<int, Tuple<int, int>> amounts)\n"
+      },
+      "stdout": "Oslo\n23\npaid\n11\n"
+    },
+    {
+      "id": "binding-tuple-arity",
+      "files": {
+        "main.aug": "(first, second) = (1, 2, 3)\n"
+      },
+      "diagnostic": "PATTERN"
+    },
+    {
+      "id": "binding-readonly",
+      "files": {
+        "main.aug": "",
+        "operation.aug": "change(Tuple<List<int>> value):\n    (items,) = value\n    items.append(value=9)\n"
+      },
+      "diagnostic": "BORROW"
+    },
+    {
+      "id": "defaults-and-fallback",
+      "files": {
+        "main.aug": "import total from operation\nprint(value=total())\nprint(value=total(values=[9]))\noptional int absent = null\noptional int present = 0\nprint(value=absent otherwise 31)\nprint(value=present otherwise 31)\n",
+        "operation.aug": "total(List<int> values = [2, 5], int offset = 1):\n    result = offset\n    for value in values:\n        result = result + value\n    return result\n"
+      },
+      "stdout": "8\n10\n31\n0\n"
+    },
+    {
+      "id": "record-copy-validation",
+      "files": {
+        "main.aug": "import Order and Invalid from domain\ntry:\n    original = Order(count=3, label=\"draft\")\n    ready = original with (count=7, label=\"ready\")\n    print(value=original.count)\n    print(value=ready.count)\n    print(value=ready.label)\n    invalid = original with (count=-1)\n    print(value=invalid.count)\ncatch Invalid failure:\n    print(value=\"rejected\")\n",
+        "domain.aug": "error Invalid()\nrecord Order(int count, string label):\n    initialize:\n        if count < 0:\n            throw Invalid()\n"
+      },
+      "stdout": "3\n7\nready\nrejected\n"
+    },
+    {
+      "id": "immutable-alias",
+      "files": {
+        "main.aug": "freeze [2, 7] as fixed\nalias = fixed\nborrow alias:\n    alias.append(value=11)\n"
+      },
+      "diagnostic": "BORROW"
+    },
+    {
+      "id": "loop-break-continue",
+      "files": {
+        "main.aug": "total = 0\nfor value in [1, 2, 3, 4, 5, 6]:\n    if value == 2:\n        continue\n    if value == 5:\n        break\n    total = total + value\nprint(value=total)\nindex = 0\nwhile index < 4:\n    index = index + 1\n    if index == 2:\n        continue\n    print(value=index)\n"
+      },
+      "stdout": "8\n1\n3\n4\n"
+    },
+    {
+      "id": "cleanup-before-result",
+      "files": {
+        "main.aug": "import finish from operation\nimport Console and SystemConsole from august.io\nimplement Console with SystemConsole\nprint(value=finish())\n",
+        "operation.aug": "import Console from august.io\nfinish(resolve Console console) returns int:\n    try:\n        return 19\n    always:\n        console.write(value=\"cleanup\")\n"
+      },
+      "stdout": "cleanup\n19\n"
+    },
+    {
+      "id": "owned-error-cleanup",
+      "files": {
+        "main.aug": "import Guard from operation\ntry:\n    scope:\n        own Guard first = Guard()\n        own Guard second = Guard()\n        throw FileError()\ncatch FileError failure:\n    print(value=\"cleaned\")\n",
+        "operation.aug": "interface Disposable:\n    drop()\nGuard() implements Disposable:\n    drop():\n        pass\n"
+      },
+      "stdout": "cleaned\n",
+      "drops": {
+        "Guard": 2
+      }
+    },
+    {
+      "id": "shared-payload-cleanup",
+      "files": {
+        "main.aug": "import Guard from operation\nscope:\n    own Guard payload = Guard()\n    own Shared<Guard> holder = Shared(value=payload)\nprint(value=\"released\")\n",
+        "operation.aug": "interface Disposable:\n    drop()\nGuard() implements Disposable:\n    drop():\n        pass\n"
+      },
+      "stdout": "released\n",
+      "drops": {
+        "Guard": 1,
+        "Shared": 1
+      }
+    },
+    {
+      "id": "scope-joins-before-return",
+      "files": {
+        "main.aug": "import outer from operation\nimport Console and SystemConsole from august.io\nimplement Console with SystemConsole\nprint(value=outer())\n",
+        "operation.aug": "import Console from august.io\nchild(resolve Console console):\n    console.write(value=\"joined\")\nouter(resolve Console console) returns int:\n    scope:\n        pending = start child()\n        return 27\n"
+      },
+      "stdout": "joined\n27\n"
+    },
+    {
+      "id": "task-loan-released",
+      "files": {
+        "main.aug": "import size from operation\nitems = [3, 5]\nalias = items\nscope:\n    pending = start size(values=alias)\n    print(value=wait for pending)\n    borrow items:\n        items.append(value=7)\nprint(value=alias.length())\n",
+        "operation.aug": "size(List<int> values) returns int:\n    return values.length()\n"
+      },
+      "stdout": "2\n3\n"
+    },
+    {
+      "id": "task-owned-result-rejected",
+      "files": {
+        "main.aug": "import create from operation\nscope:\n    pending = start create()\n    wait for pending\n",
+        "operation.aug": "interface Disposable:\n    drop()\nGuard() implements Disposable:\n    drop():\n        pass\ncreate() returns own Guard:\n    return Guard()\n"
+      },
+      "diagnostic": "CONCURRENCY"
+    },
+    {
+      "id": "task-public-error-contract",
+      "files": {
+        "main.aug": "",
+        "operation.aug": "unwrap(Task<int> pending) returns int unless FileError:\n    return wait for pending\n"
+      },
+      "diagnostic": "THROWS"
     }
   ],
   "mutations": [
@@ -347,6 +482,20 @@
       "file": "main.aug",
       "before": "print(value=wrapped.data.row)",
       "after": "print(value=wrapped.data.column)"
+    },
+    {
+      "id": "wrong-loop-boundary",
+      "case": "loop-break-continue",
+      "file": "main.aug",
+      "before": "if value == 5:",
+      "after": "if value == 4:"
+    },
+    {
+      "id": "wrong-record-replacement",
+      "case": "record-copy-validation",
+      "file": "main.aug",
+      "before": "count=7, label=\"ready\"",
+      "after": "count=8, label=\"ready\""
     }
   ]
 }
