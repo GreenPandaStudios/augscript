@@ -12,6 +12,8 @@ import {formatFile} from '../src/formatter.ts';
 import {conformanceLedger} from './conformance-ledger.mjs';
 import {qualificationIdentity} from './qualification-identity.mjs';
 import {readRuntimePack,compileLLVM} from '../src/llvm-native.ts';
+import {llvmPlatform} from '../src/llvm-platform.ts';
+import {nativePath} from '../src/native-contracts.ts';
 const sha=bytes=>createHash('sha256').update(bytes).digest('hex');
 export function compilerIdentity(root){
  const digest=createHash('sha256').update(qualificationIdentity(root).sourceSha256);
@@ -22,6 +24,17 @@ export function compilerIdentity(root){
   digest.update(file+'\0').update(readFileSync(path));
  }
  return digest.digest('hex');
+}
+/** Fingerprint selected native inputs, including manifest changes that keep sourceSha256. */
+export function preparedInputIdentity(tools,runtime,toolNames,runtimeFiles){
+ const digest=createHash('sha256');
+ for(const [directory,files] of [[tools,toolNames.map(name=>'bin/'+name)],[runtime,['runtime.json',...runtimeFiles]]]){
+  for(const file of [...new Set(files)].sort())digest.update(file+'\0').update(readFileSync(join(directory,nativePath(file))));
+ }
+ return digest.digest('hex');
+}
+export function requirePreparedIdentity(expected,tools,runtime,toolNames,runtimeFiles){
+ assert.equal(preparedInputIdentity(tools,runtime,toolNames,runtimeFiles),expected,'Prepared compiler tools or runtime changed during qualification');
 }
 export function validateCorpus(corpus){
  assert.equal(corpus.format,1);assert.ok(typeof corpus.oracle==='string'&&corpus.oracle.length);
@@ -63,7 +76,7 @@ export function coverageSummary(manifest){
   regressionOnlyRules:linked.map(rule=>({id:rule.id,regressions:rule.regressions})),
   regressionExecution:'not executed by this command; required separately by the full test suite'};
 }
-function execute(example,optimization,syntax){
+function execute(example,optimization,syntax,toolchain){
  const directory=mkdtempSync(join(tmpdir(),'aug-conformance-'));
  try{
   for(const [file,source] of Object.entries(example.files)){const path=join(directory,file);mkdirSync(dirname(path),{recursive:true});writeFileSync(path,source);}
@@ -76,7 +89,7 @@ function execute(example,optimization,syntax){
   assert.deepEqual(checked.diagnostics.filter(d=>d.severity!=='warning'),[],example.id);
   for(const unit of project.files.values())if(!unit.builtin&&!unit.package)writeFileSync(unit.path,formatFile(project,unit));
   project=loadProject(directory);checked=checkProject(project);assert.deepEqual(checked.diagnostics.filter(d=>d.severity!=='warning'),[],example.id+' after formatting');
-  const compiled=compileLLVM(checked,{release:optimization==='release'});
+  const compiled=compileLLVM(checked,{release:optimization==='release',toolchain});
   const environment={...process.env,AUG_WORKERS:'2'};delete environment.AUG_TRACE_DROPS;
   if(example.drops)environment.AUG_TRACE_DROPS='1';
   const result=spawnSync(compiled.output,[],{encoding:'utf8',timeout:15000,env:environment});
@@ -93,12 +106,20 @@ export function runConformance(root=resolve(import.meta.dirname,'..')){
   report.compiler=JSON.parse(readFileSync(join(root,'package.json'))).version;report.compilerSha256=compilerIdentity(root);
   const {manifest,corpus}=conformanceLedger(root);validateCorpus(corpus);report.coverage=coverageSummary(manifest);
   report.corpusSha256=sha(readFileSync(join(root,'conformance/cases.json')));report.rulesSha256=sha(readFileSync(join(root,'conformance/rules.json')));report.oracle=corpus.oracle;
-  report.runtimeSha256=readRuntimePack(process.env.AUG_RUNTIME_PACK??join(root,'.aug-native/llvm/runtime')).sourceSha256;
+  assert.ok(process.env.AUG_LLVM_HOME,'Prepare AUG_LLVM_HOME before contributor conformance qualification');
+  const toolchain={tools:resolve(process.env.AUG_LLVM_HOME),runtime:resolve(process.env.AUG_RUNTIME_PACK??join(root,'.aug-native/llvm/runtime')),developmentOverride:true};
+  const pack=readRuntimePack(toolchain.runtime),toolNames=llvmPlatform().tools,runtimeFiles=Object.keys(pack.files);
+  report.runtimeSha256=pack.sourceSha256;report.preparedInputSha256=preparedInputIdentity(toolchain.tools,toolchain.runtime,toolNames,runtimeFiles);
+  report.preparedInputScope={tools:toolNames,runtimeFiles:['runtime.json',...runtimeFiles].sort(),developmentOverride:true};
+  report.omissions.push('Contributor tool overrides may invoke external helpers; their undeclared closure is not qualified by this report. Release producers separately build and seal the complete compiler archive.');
+  const verifyPrepared=()=>requirePreparedIdentity(report.preparedInputSha256,toolchain.tools,toolchain.runtime,toolNames,runtimeFiles);
   for(const example of corpus.cases){
    const variants=example.diagnostic?[['check','fixture']]:['debug','release'].flatMap(mode=>['indent','braces'].map(style=>[mode,style]));
    for(const [optimization,syntax] of variants){
     report.current={case:example.id,optimization,syntax};
-    const result=execute(example,optimization==='check'?'debug':optimization,syntax==='fixture'?'indent':syntax);
+    verifyPrepared();
+    const result=execute(example,optimization==='check'?'debug':optimization,syntax==='fixture'?'indent':syntax,toolchain);
+    verifyPrepared();
     if(!example.diagnostic)assert.equal(result.stdout,example.stdout,example.id);
     report.outcomes.push({...report.current,status:'passed',...result});
    }
@@ -106,9 +127,11 @@ export function runConformance(root=resolve(import.meta.dirname,'..')){
   for(const mutation of corpus.mutations){
    report.current={mutation:mutation.id,case:mutation.case};
    const original=corpus.cases.find(c=>c.id===mutation.case),files={...original.files,[mutation.file]:original.files[mutation.file].replace(mutation.before,mutation.after)};
-   const {stdout}=execute({...original,files},'release','indent');assert.notEqual(stdout,original.stdout,'Independent oracle missed mutation '+mutation.id);
+   verifyPrepared();
+   const {stdout}=execute({...original,files},'release','indent',toolchain);verifyPrepared();assert.notEqual(stdout,original.stdout,'Independent oracle missed mutation '+mutation.id);
    report.mutations.push({id:mutation.id,case:mutation.case,compiled:true,detected:true,stdout});
   }
+  verifyPrepared();
   assert.equal(compilerIdentity(root),report.compilerSha256,'Compiler, runtime, configuration or acceptance inputs changed during qualification');
   delete report.current;report.checked=report.outcomes.length;report.passed=true;report.status='passed';save();
   console.log(`${corpus.cases.length} independent examples passed in ${report.checked} checks on ${report.target}; ${report.mutations.length} valid behavioral mutations detected.`);return report;

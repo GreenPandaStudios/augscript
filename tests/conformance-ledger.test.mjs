@@ -4,7 +4,7 @@ import {mkdtempSync,mkdirSync,cpSync,readFileSync,writeFileSync,rmSync,symlinkSy
 import {tmpdir} from 'node:os';
 import {join,dirname,resolve} from 'node:path';
 import {conformanceLedger} from '../scripts/conformance-ledger.mjs';
-import {validateCorpus,compilerIdentity,checkCleanupCounts,coverageSummary,runConformance} from '../scripts/check-language-conformance.mjs';
+import {validateCorpus,compilerIdentity,checkCleanupCounts,coverageSummary,runConformance,preparedInputIdentity,requirePreparedIdentity} from '../scripts/check-language-conformance.mjs';
 const root=resolve('.');
 function ledger(callback){
  const directory=mkdtempSync(join(tmpdir(),'aug-ledger-')),manifest=JSON.parse(readFileSync('conformance/rules.json'));
@@ -82,5 +82,23 @@ test('a rejected qualification invalidates an earlier passing report before inpu
   assert.throws(()=>runConformance(directory),/must not be symbolic links/);
   const result=JSON.parse(readFileSync(join(directory,'.aug-build/language-conformance.json')));
   assert.equal(result.status,'failed');assert.equal(result.passed,false);assert.match(result.failure,/must not be symbolic links/);
+ }finally{rmSync(directory,{recursive:true,force:true});}
+});
+
+
+test('prepared-input checks reject coherent same-source runtime replacement and tool changes',()=>{
+ const directory=mkdtempSync(join(tmpdir(),'aug-conformance-prepared-')),tools=join(directory,'tools'),runtime=join(directory,'runtime');
+ try{
+  mkdirSync(join(tools,'bin'),{recursive:true});mkdirSync(runtime);
+  writeFileSync(join(tools,'bin/llc'),'tool');writeFileSync(join(runtime,'core.a'),'original');
+  const manifest=bytes=>JSON.stringify({sourceSha256:'a'.repeat(64),files:{'core.a':bytes}});
+  writeFileSync(join(runtime,'runtime.json'),manifest('original-hash'));
+  const expected=preparedInputIdentity(tools,runtime,['llc'],['core.a']);
+  const verify=()=>requirePreparedIdentity(expected,tools,runtime,['llc'],['core.a']);verify();
+  // Replace both manifest and artifact while retaining the source identity.
+  writeFileSync(join(runtime,'runtime.json'),manifest('replacement-hash'));writeFileSync(join(runtime,'core.a'),'replacement');
+  assert.throws(verify,/runtime changed during qualification/);
+  writeFileSync(join(runtime,'runtime.json'),manifest('original-hash'));writeFileSync(join(runtime,'core.a'),'original');verify();
+  writeFileSync(join(tools,'bin/llc'),'replacement');assert.throws(verify,/tools or runtime changed/);
  }finally{rmSync(directory,{recursive:true,force:true});}
 });
