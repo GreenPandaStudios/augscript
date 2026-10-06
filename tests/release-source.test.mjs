@@ -42,12 +42,12 @@ test('release source binds a version tag to a reviewed commit and every package'
     const invalid=git('rev-parse','HEAD');git('tag','-f','v0.21.0',invalid);
     assert.throws(()=>releaseSource('v0.21.0',invalid,root),diagnostic);
   }
-  for(const tag of ['main','--delete','v0.21.0\nsha=bad','v0.21.0;echo bad'])assert.throws(()=>releaseSource(tag,original,root),/existing version tag/);
+  for(const tag of ['main','--delete','v0.21.0\nsha=bad','v0.21.0;echo bad'])assert.throws(()=>releaseSource(tag,original,root),/existing numeric version tag/);
   assert.throws(()=>releaseSource('v0.21.0','short',root),/full commit SHA/);
 });
 
-test('stable and release-candidate tags verify the same complete source contracts',t=>{
-  for(const version of ['1.0.0','1.0.0-rc.1']){
+test('stable tags verify complete source contracts and reject unsupported RC extension versions',t=>{
+  for(const version of ['1.0.0']){
     const root=mkdtempSync(join(tmpdir(),'aug-release-channel-source-'));
     t.after(()=>rmSync(root,{recursive:true,force:true}));
     const git=(...args)=>{
@@ -62,6 +62,7 @@ test('stable and release-candidate tags verify the same complete source contract
     }
     git('add','.');git('commit','-m','Independent stable candidate');const sha=git('rev-parse','HEAD'),tag='v'+version;git('tag',tag);
     assert.deepEqual(releaseSource(tag,sha,root),{tag,sha});
+    assert.throws(()=>releaseSource('v1.0.0-rc.1',sha,root),/do not support RC suffixes/);
     assert.throws(()=>releaseSource(tag,'b'.repeat(40),root),/reviewed commit/);
   }
 });

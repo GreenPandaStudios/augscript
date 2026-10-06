@@ -7,7 +7,7 @@ import {releaseChannel} from './release-channel.mjs';
 
 /** Freeze a release's existing tag before dispatching any producer. */
 export function releaseSource(tag, expectedSha, directory=resolve(import.meta.dirname,'..')) {
-  assert.match(tag,/^v\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/,'Supply an existing version tag, such as v1.0.0 or v1.0.0-rc.1');
+  assert.match(tag,/^v\d+\.\d+\.\d+$/,'Supply an existing numeric version tag, such as v1.0.0; full compiler releases do not support RC suffixes');
   releaseChannel(tag.slice(1));
   assert.match(expectedSha,/^[0-9a-f]{40}$/,'Supply the reviewed full commit SHA');
   const git=(...args)=>{
