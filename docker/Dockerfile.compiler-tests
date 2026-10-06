@@ -9,7 +9,8 @@ RUN npm ci --no-audit --no-fund \
     && node scripts/bootstrap-native.mjs \
     && node scripts/prepare-llvm-tools.mjs \
     && node scripts/build-runtime-pack.mjs \
-    && node scripts/prepare-qualified-test-tools.mjs \
+    && node scripts/build-llvm-pack.mjs \
+    && node scripts/prepare-qualified-test-tools.mjs --local-compiler \
     && chmod +x /opt/augscript/bin/aug.mjs \
     && ln -s /opt/augscript/bin/aug.mjs /usr/local/bin/aug
 ENV AUG_LLVM_HOME=/opt/augscript/.aug-build/qualified-test-tools

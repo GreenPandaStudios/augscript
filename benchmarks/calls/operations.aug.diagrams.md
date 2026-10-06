@@ -16,4 +16,3 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](operations.aug#L2)
 
 Set product to value \* 48271 + 1. Return product - (product / 2147483647) \* 2147483647; required cleanup runs before exit. [Explanation](operations.aug.md).
-

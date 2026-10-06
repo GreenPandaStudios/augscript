@@ -33,4 +33,3 @@ sequenceDiagram
     end
     p0->>p1: print(value=checksum)
 ```
-

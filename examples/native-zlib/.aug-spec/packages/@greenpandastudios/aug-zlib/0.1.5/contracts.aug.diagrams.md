@@ -16,4 +16,3 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](contracts.aug#L3)
 
 Receive fields: code, message. [Explanation](contracts.aug.md).
-

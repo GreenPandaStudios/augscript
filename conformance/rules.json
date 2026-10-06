@@ -379,7 +379,8 @@
         "checked-cleanup",
         "move-use",
         "alias-read",
-        "readonly-write"
+        "readonly-write",
+        "owned-consumed-once"
       ],
       "regressions": [
         {
@@ -604,7 +605,10 @@
       "summary": "A mutable loan excludes alias reads until its block exits.",
       "reference": "reference.md#ownership-and-read-access",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "borrow-alias-release",
+        "alias-read"
+      ],
       "regressions": [
         {
           "file": "tests/language-conformance.test.mjs",
@@ -632,7 +636,9 @@
       "summary": "Starting a child inside a borrow suspends the parent mutation right.",
       "reference": "reference.md#null-matching-and-checked-failures",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "task-active-borrow-mutation"
+      ],
       "regressions": [
         {
           "file": "tests/language-conformance.test.mjs",
@@ -645,7 +651,9 @@
       "summary": "A task reading self blocks a direct field write until wait.",
       "reference": "reference.md#null-matching-and-checked-failures",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "task-self-update"
+      ],
       "regressions": [
         {
           "file": "tests/language-conformance.test.mjs",
@@ -658,7 +666,10 @@
       "summary": "Every branch must wait before the parent regains mutation rights.",
       "reference": "reference.md#null-matching-and-checked-failures",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "task-branch-incomplete",
+        "task-branches-joined"
+      ],
       "regressions": [
         {
           "file": "tests/language-conformance.test.mjs",
@@ -671,7 +682,9 @@
       "summary": "An inner scope join releases its capture before an outer mutation.",
       "reference": "reference.md#null-matching-and-checked-failures",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "task-nested-join"
+      ],
       "regressions": [
         {
           "file": "tests/language-conformance.test.mjs",
@@ -684,7 +697,9 @@
       "summary": "Collection pressure cannot reclaim a resource captured by a child.",
       "reference": "reference.md#null-matching-and-checked-failures",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "task-capture-pressure"
+      ],
       "regressions": [
         {
           "file": "tests/language-conformance.test.mjs",
@@ -697,7 +712,9 @@
       "summary": "Waiting for the last loop child does not release earlier captures.",
       "reference": "reference.md#null-matching-and-checked-failures",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "task-loop-latest-loan"
+      ],
       "regressions": [
         {
           "file": "tests/language-conformance.test.mjs",
@@ -710,7 +727,9 @@
       "summary": "An owned Shared wrapper cannot move while a child borrows it.",
       "reference": "reference.md#null-matching-and-checked-failures",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "task-shared-active-move"
+      ],
       "regressions": [
         {
           "file": "tests/language-conformance.test.mjs",
@@ -723,7 +742,10 @@
       "summary": "Moving an owned Shared wrapper into its child transfers cleanup.",
       "reference": "reference.md#null-matching-and-checked-failures",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "task-owned-transfer",
+        "task-cancel-before-entry"
+      ],
       "regressions": [
         {
           "file": "tests/language-conformance.test.mjs",
@@ -736,7 +758,9 @@
       "summary": "A child capture pins mutable nested fields through aliases.",
       "reference": "reference.md#null-matching-and-checked-failures",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "task-nested-alias-mutation"
+      ],
       "regressions": [
         {
           "file": "tests/language-conformance.test.mjs",
@@ -749,7 +773,9 @@
       "summary": "Shared construction cannot transfer a child-borrowed wrapper.",
       "reference": "reference.md#null-matching-and-checked-failures",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "task-shared-active-wrap"
+      ],
       "regressions": [
         {
           "file": "tests/language-conformance.test.mjs",
@@ -762,7 +788,9 @@
       "summary": "Owned rebinding cannot transfer a child-borrowed wrapper.",
       "reference": "reference.md#null-matching-and-checked-failures",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "task-shared-active-rebind"
+      ],
       "regressions": [
         {
           "file": "tests/language-conformance.test.mjs",
@@ -775,7 +803,9 @@
       "summary": "An owned return cannot outrun a child borrowing its value.",
       "reference": "reference.md#null-matching-and-checked-failures",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "task-shared-active-return"
+      ],
       "regressions": [
         {
           "file": "tests/language-conformance.test.mjs",
@@ -788,7 +818,10 @@
       "summary": "Freeze waits for a child with mutable access.",
       "reference": "reference.md#null-matching-and-checked-failures",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "task-freeze-active",
+        "task-freeze-after-wait"
+      ],
       "regressions": [
         {
           "file": "tests/language-conformance.test.mjs",
@@ -801,7 +834,9 @@
       "summary": "Waiting for one loop iteration does not release earlier children.",
       "reference": "reference.md#null-matching-and-checked-failures",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "task-loop-retains-borrow"
+      ],
       "regressions": [
         {
           "file": "tests/language-conformance.test.mjs",
@@ -814,7 +849,9 @@
       "summary": "A scope inside each loop iteration joins its own child.",
       "reference": "reference.md#null-matching-and-checked-failures",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "task-loop-scopes-join"
+      ],
       "regressions": [
         {
           "file": "tests/language-conformance.test.mjs",
@@ -827,7 +864,9 @@
       "summary": "Throwing an owned error cannot outrun a child borrowing it.",
       "reference": "reference.md#null-matching-and-checked-failures",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "task-owned-active-throw"
+      ],
       "regressions": [
         {
           "file": "tests/language-conformance.test.mjs",
@@ -840,7 +879,9 @@
       "summary": "Waiting for a task that references another task does not join both.",
       "reference": "reference.md#null-matching-and-checked-failures",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "task-reference-is-not-join"
+      ],
       "regressions": [
         {
           "file": "tests/language-conformance.test.mjs",
@@ -853,7 +894,10 @@
       "summary": "Starting defers a checked error until wait or implicit join.",
       "reference": "reference.md#null-matching-and-checked-failures",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "task-error-at-wait",
+        "task-error-at-join"
+      ],
       "regressions": [
         {
           "file": "tests/language-conformance.test.mjs",
@@ -866,7 +910,9 @@
       "summary": "A parent error stays primary while cancelled child cleanup fails.",
       "reference": "reference.md#null-matching-and-checked-failures",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "task-parent-error-priority"
+      ],
       "regressions": [
         {
           "file": "tests/language-conformance.test.mjs",
@@ -924,7 +970,11 @@
       "summary": "Braces and indentation preserve ownership and join behavior.",
       "reference": "reference.md#ownership-and-read-access",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "owned-consumed-once",
+        "task-owned-transfer",
+        "scope-joins-before-return"
+      ],
       "regressions": [
         {
           "file": "tests/language-conformance.test.mjs",
@@ -937,7 +987,10 @@
       "summary": "An unhandled child error cancels siblings and runs always cleanup.",
       "reference": "language-conformance.md#what-native-execution-guarantees",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "task-cancel-sibling-cleanup",
+        "task-cancel-before-entry"
+      ],
       "regressions": [
         {
           "file": "tests/language-conformance.test.mjs",
@@ -950,7 +1003,9 @@
       "summary": "An inner scope failure cancels outer siblings and joins cleanup.",
       "reference": "language-conformance.md#what-native-execution-guarantees",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "task-cancel-outer-cleanup"
+      ],
       "regressions": [
         {
           "file": "tests/language-conformance.test.mjs",
@@ -1933,6 +1988,53 @@
         {
           "file": "tests/domain-values.test.mjs",
           "test": "public domain values retain nominal types, checked errors and useful editor help"
+        }
+      ]
+    },
+    {
+      "id": "OWN-1",
+      "summary": "Moving an owned value invalidates its old name and transfers exactly one cleanup obligation.",
+      "reference": "language-conformance.md",
+      "productions": [],
+      "cases": [
+        "owned-consumed-once",
+        "move-use"
+      ],
+      "regressions": [
+        {
+          "file": "tests/language-conformance.test.mjs",
+          "test": "OWN-1: moving an owned value invalidates its old name and drops it once"
+        }
+      ]
+    },
+    {
+      "id": "TASK-18",
+      "summary": "Waiting for a selected collection element retains sibling loans; a collection wait joins every selected task.",
+      "reference": "language-conformance.md",
+      "productions": [],
+      "cases": [
+        "task-selected-wait-retains-loans",
+        "task-collection-wait-releases-loans"
+      ],
+      "regressions": [
+        {
+          "file": "tests/language-conformance.test.mjs",
+          "test": "TASK-18: waiting for a dynamic collection element does not release sibling captures"
+        }
+      ]
+    },
+    {
+      "id": "TASK-20",
+      "summary": "Scheduling an owned input transfers cleanup immediately; cancellation before entry releases it without running the body.",
+      "reference": "language-conformance.md",
+      "productions": [],
+      "cases": [
+        "task-cancel-before-entry"
+      ],
+      "regressions": [
+        {
+          "file": "tests/concurrency.test.mjs",
+          "test": "cancellation before task entry releases transferred owned inputs"
         }
       ]
     }

@@ -106,4 +106,3 @@ Receive fields: sub, name. [Explanation](contracts.md).
 :::
 
 [Explanation](contracts.md).
-

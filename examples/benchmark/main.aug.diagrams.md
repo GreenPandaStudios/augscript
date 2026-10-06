@@ -44,4 +44,3 @@ sequenceDiagram
     p0-->>p0: length result 2: int
     p0->>p1: print(value=length result == length result 2)
 ```
-

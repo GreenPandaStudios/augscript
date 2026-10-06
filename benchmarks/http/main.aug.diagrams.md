@@ -16,4 +16,3 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](main.aug#L3)
 
 Serve endpoints: reply. [Explanation](main.aug.md).
-

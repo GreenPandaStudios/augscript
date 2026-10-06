@@ -24,4 +24,3 @@ Receive fields: code, message. [Explanation](contracts.aug.md).
 [Source](contracts.aug#L8)
 
 May leave with checked errors: SqliteError. Interface contract; implementation selected at runtime. [Explanation](contracts.aug.md).
-

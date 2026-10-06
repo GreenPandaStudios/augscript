@@ -40,4 +40,3 @@ Receive fields: csrf. [Explanation](contracts.aug.md).
 [Source](contracts.aug#L7)
 
 [Explanation](contracts.aug.md).
-

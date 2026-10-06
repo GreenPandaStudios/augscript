@@ -26,4 +26,3 @@ Call arrows identify checked targets; loop and branch frames determine when they
 :::
 
 Return left + right; required cleanup runs before exit. [Explanation](arithmetic.md).
-

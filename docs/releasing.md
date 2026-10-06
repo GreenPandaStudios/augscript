@@ -12,7 +12,10 @@ node scripts/bootstrap-native.mjs
 node scripts/prepare-llvm-tools.mjs
 node scripts/prepare-llvm-maintainer.mjs
 node scripts/build-runtime-pack.mjs
-export AUG_LLVM_HOME="$PWD/.aug-build/llvm-tools"
+node scripts/build-llvm-pack.mjs
+node scripts/prepare-qualified-test-tools.mjs --local-compiler
+export AUG_LLVM_HOME="$PWD/.aug-build/qualified-test-tools"
+export AUG_RUNTIME_PACK="$PWD/.aug-native/llvm/runtime"
 npm run version:check
 npm run check
 npm test
@@ -31,6 +34,8 @@ node scripts/publish-extension.mjs dist/release --verify-only
 ```
 
 The merge step requires the exact qualified producer archives and manifests for all three hosts under `.aug-build/release-packs`; `release.yml` obtains them before packaging. Update both changelogs and relevant guides, and commit regenerated docs. The final artifact step combines four installable npm tarballs, a VSIX, compiler packs, offline documentation, package metadata and SHA-256 checksums under `dist/release`. It excludes native caches, private credentials and application build output.
+
+Before cache tests, maintainers build the current host’s sealed compiler archive and run `prepare-qualified-test-tools.mjs --local-compiler`. That explicit transport checks the archive against the source-owned SHA-256 even when a verified cache already exists. The normal installer then checks the complete file manifest and tool identities. A missing, modified, oversized or linked archive fails; the command does not fall back to a public download. Omit the flag to check the published compiler transport. CI and release preparation use the local transport while the candidate remains unpublished.
 
 ## Installed CLI and editor gates
 

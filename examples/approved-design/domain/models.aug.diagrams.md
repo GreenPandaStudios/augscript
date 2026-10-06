@@ -16,4 +16,3 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](models.aug#L3)
 
 Receive fields: code, name. [Explanation](models.aug.md).
-
