@@ -217,7 +217,7 @@ export function generateDiagrams(checked:CheckedProject,files:SourceFile[],links
     }).filter(Boolean).join('\n')+'\n';
     outputs.push({path:page,text,source:file.path,kind:'diagram'});
   }
-  return outputs;
+  return outputs.map(output=>({...output,text:output.text.trimEnd()+'\n'}));
 }
 
 function renderGraphs(nodes:GraphNode[],edges:GraphEdge[],direction:'LR'|'TD'='TD',bounds={nodes:limits.nodes,edges:limits.edges}):string{

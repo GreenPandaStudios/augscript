@@ -30,4 +30,3 @@ sequenceDiagram
     p0->>p1: print(value=sum == 937500.0)
     p0->>p1: print(value=iterations)
 ```
-

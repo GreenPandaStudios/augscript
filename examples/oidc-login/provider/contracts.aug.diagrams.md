@@ -96,4 +96,3 @@ Receive fields: sub, name. [Explanation](contracts.aug.md).
 [Source](contracts.aug#L15)
 
 [Explanation](contracts.aug.md).
-

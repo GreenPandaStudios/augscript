@@ -50,4 +50,3 @@ Receive fields: csrf. [Explanation](contracts.md).
 :::
 
 [Explanation](contracts.md).
-
