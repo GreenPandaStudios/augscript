@@ -495,6 +495,12 @@ class SpecWriter {
     return this.expression(expr)+` returns ${expected?'true':'false'}`;
   }
   private call(expr:Extract<Expr,{kind:'call'}>): string {
+    const mapping=this.checked.workerMaps.get(expr);
+    if(mapping){
+      const plan=this.checked.callPlans.get(expr)!,input=(index:number)=>this.expression(expr.args[plan.sourceIndices[index]!]);
+      this.use(mapping.transformation);this.use(expr.callee.kind==='name'?this.definition(expr.callee.name):undefined);
+      return `the results of transforming ${input(0)} with ${this.link(mapping.transformation)} on isolated worker heaps, in input order, with at most ${input(1)} chunk jobs per wave and ${input(2)} values per chunk. Each wave is joined before the next starts; invalid bounds fail before scheduling`;
+    }
     if(expr.callee.kind==='name'&&expr.callee.name==='sourceLocation'){
       this.builtins.set('sourceLocation',builtinFunctions.find(operation=>operation.name==='sourceLocation')!);
       return 'this call’s source location';

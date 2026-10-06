@@ -1,3 +1,4 @@
+import {lowerWorkerMaps,workerMapTemplate} from './worker-mapping.ts';
 import type {ErrorMatch} from './error-matches.ts';
 import {sourceFileIdentity} from './source-location.ts';
 import {createHash} from 'node:crypto';
@@ -76,7 +77,7 @@ export class BackendUnsupported extends Error {
 /** Checked, resolved execution IR. Source AST and semantic facts remain read-only. */
 export function lowerToIR(checked:CheckedProject,options:{coverage?:boolean}={}):AugustIR {
   if(checked.diagnostics.some(d=>d.severity!=='warning'))throw new Error('Cannot lower a rejected August project');
-  const ir=new Lowering(checked,options).lower();verifyIR(ir);return ir;
+  const ir=new Lowering(lowerWorkerMaps(checked),options).lower();verifyIR(ir);return ir;
 }
 class Lowering {
   private callbackSequence = 0;
@@ -96,7 +97,7 @@ class Lowering {
     const visit=(file:string)=>{if(active.has(file))return;active.add(file);for(const item of this.checked.project.files.get(file)?.items??[])if(item.kind==='import')for(const d of this.checked.project.imports.get(item)??[])visit(d.file);};
     for(const file of this.checked.project.files.values())if(!file.builtin)visit(file.path);
     for(const def of this.checked.project.definitions.values()){
-      if(!active.has(def.file))continue;
+      if(!active.has(def.file)||workerMapTemplate(this.checked.project,def))continue;
       const node=def.node;
       if(node.kind==='function'){
         if(node.body)this.add(def,this.name(def),node,node.params,node.body);

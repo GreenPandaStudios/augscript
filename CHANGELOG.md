@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add `august.collections.mapWorkers` with bounded chunk waves, real isolated workers, ordered copied results and checked admission failures. Resolve named pure transformations statically; retain the worker target in context, explanations and diagrams.
+
 - Obtain maintainer GMP and Nettle sources from reachable upstream/mirror endpoints with the existing versions and SHA-256 pins.
 
 - Generate deterministic Mermaid project, class, API-call and sequence views with compiled specs; link the wiki examples from overview to source.

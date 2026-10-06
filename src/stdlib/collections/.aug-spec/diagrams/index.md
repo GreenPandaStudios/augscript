@@ -21,8 +21,11 @@ flowchart TD
     n0["august/collections/export.aug"]
     n1["august/collections/operations.aug"]
     n2["august/collections/ranges.aug"]
+    n3["august/collections/workers.aug"]
     n0 -->|"uses"| n1
     n0 -->|"uses"| n2
+    n0 -->|"uses"| n3
+    n3 -->|"uses"| n1
 ```
 
 ## Open a module
@@ -32,3 +35,4 @@ flowchart TD
 | august/collections/export.aug | [Interactions and sequences](../../export.aug.diagrams.md) | [Explanation](../../export.aug.md) |
 | august/collections/operations.aug | [Interactions and sequences](../../operations.aug.diagrams.md) | [Explanation](../../operations.aug.md) |
 | august/collections/ranges.aug | [Interactions and sequences](../../ranges.aug.diagrams.md) | [Explanation](../../ranges.aug.md) |
+| august/collections/workers.aug | [Interactions and sequences](../../workers.aug.diagrams.md) | [Explanation](../../workers.aug.md) |

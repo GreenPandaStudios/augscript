@@ -152,6 +152,7 @@ export function mergeTestAnalysis(checked: CheckedProject, tests: { checked: Che
       if(selection)checked.patternFields.set(field,selection);
       const expr = value as Expr;
       const functionValue=entry.checked.functionValues.get(expr);if(functionValue)checked.functionValues.set(expr,functionValue);
+      const workerMap=entry.checked.workerMaps.get(expr);if(workerMap)checked.workerMaps.set(expr,workerMap);
       const type = entry.checked.expressionTypes.get(expr);
       if (type) checked.expressionTypes.set(expr, type);
       const name=entry.checked.resolvedNames.get(expr);

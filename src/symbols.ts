@@ -125,6 +125,7 @@ export function semanticGraph(checked:CheckedProject,wholeProject:boolean,checke
     }
     const type=checked.resolvedTypes.get(value as TypeRef);
     if(type?.def&&node.span)globalReference(type.def.id,node.span,(value as TypeRef).name,'type',caller);
+    const mapping=checked.workerMaps.get(expr);if(mapping)edge('callback-call',caller,mapping.transformation.id,expr.span);
     const callback=checked.functionValues.get(expr);if(callback?.target)edge('function-value',caller,callback.target.id,expr.span);
     if(expr.kind==='markup') {const call=checked.markupCalls.get(expr);if(call)visit(call,caller,deferred);}
     if(expr.kind==='recordCopy') {const target=checked.expressionTypes.get(expr.base)?.def;if(target)edge(deferred?'callback-call':'call',caller,target.id,expr.span);}

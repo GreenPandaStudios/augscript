@@ -179,6 +179,12 @@ class SequenceWriter {
   private text(expr:Expr){return this.file.source.slice(expr.span.start,expr.span.end).replace(/\s+/g,' ');}
   private block(text:string,body:()=>void){this.tokens.push({kind:'open',text});body();this.tokens.push({kind:'close'});}
   expression(expr:Expr,async=false):void{
+    const mapping=this.checked.workerMaps.get(expr);
+    if(mapping){
+      expressionChildren(expr).forEach(child=>this.expression(child));
+      this.note('Validate mapping bounds before scheduling; copy contiguous chunks to isolated heaps');
+      this.block('loop Bounded chunk wave',()=>{this.message(mapping.transformation.id,mapping.transformation.name,'Transform each copied value once',true);this.note('Wait in input order; join this wave before starting the next; failure cancels and joins admitted jobs');});return;
+    }
     if(expr.kind==='lambda'){this.note('Create callback; its body runs when invoked: '+this.text(expr));return;}
     if(expr.kind==='start'){this.expression(expr.call,true);this.note(expr.worker?'Worker starts with an isolated heap and copied data':'Task starts in the current scope');return;}
     if(expr.kind==='wait'){expr.tasks.forEach(task=>this.expression(task));this.note('Wait for '+expr.tasks.map(task=>this.text(task)).join(' and ')+'; failure cancels siblings and cleanup joins');return;}

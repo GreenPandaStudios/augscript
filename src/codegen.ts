@@ -1,3 +1,4 @@
+import {lowerWorkerMaps,workerMapTemplate} from './worker-mapping.ts';
 import type {ErrorMatch} from './error-matches.ts';
 import type { BindingPattern, RecordBindingField, ClassDecl, Expr, InterceptorDecl, MatchPattern, MethodDecl, Param, Stmt } from './ast.ts';
 import { fieldsOf, initializationOf, isStatement, typeName } from './ast.ts';
@@ -20,7 +21,7 @@ function cString(value: string): string {
 }
 
 export function generateC(checked: CheckedProject, options: { coverage?: boolean } = {}): string {
-  return new CGenerator(checked, options).generate();
+  return new CGenerator(lowerWorkerMaps(checked), options).generate();
 }
 
 class CGenerator {
@@ -111,7 +112,7 @@ class CGenerator {
 
   generate(): string {
     for (const def of this.checked.project.definitions.values()) {
-      if (!this.activeFiles.has(def.file)) continue;
+      if (!this.activeFiles.has(def.file) || workerMapTemplate(this.checked.project,def)) continue;
       if (def.node.kind === 'class' || def.node.kind === 'interceptor') {
         for (const method of def.node.methods) {
           if (def.node.kind === 'interceptor' && method.name === 'around') continue;
@@ -134,7 +135,7 @@ class CGenerator {
       }
     }
     for (const def of this.checked.project.definitions.values()) {
-      if (!this.activeFiles.has(def.file)) continue;
+      if (!this.activeFiles.has(def.file) || workerMapTemplate(this.checked.project,def)) continue;
       if (def.node.kind === 'class' || def.node.kind === 'interceptor') this.emitClass(def);
       else if (def.node.kind === 'function') {
         if (def.node.body) this.functions.push(this.emitFunction(def.node, def.file, def));
