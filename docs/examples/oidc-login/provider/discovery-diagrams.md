@@ -93,8 +93,8 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as jwks
-    participant p1 as SigningKeys
-    participant p2 as Crypto
+    participant p1 as keys: SigningKeys
+    participant p2 as crypto: Crypto
     participant p3 as rsaJwk
     participant p4 as RsaJwks
     Note over p0: GET /provider/jwks

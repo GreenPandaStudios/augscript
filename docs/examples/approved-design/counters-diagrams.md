@@ -123,7 +123,7 @@ Receive fields: injected \_state. [Explanation](counters.md).
 ```mermaid
 sequenceDiagram
     participant p0 as _Counter.increment
-    participant p1 as State
+    participant p1 as _state: State
     participant p2 as _Updated
     p0->>p1: read() · interface dispatch
     p1-->>p0: int
@@ -140,7 +140,7 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as _Counter.value
-    participant p1 as State
+    participant p1 as _state: State
     p0->>p1: read() · interface dispatch
     p1-->>p0: int
     Note over p0: Return _state.read()； required cleanup runs before exit

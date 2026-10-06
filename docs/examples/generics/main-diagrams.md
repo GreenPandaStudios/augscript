@@ -55,9 +55,10 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ```mermaid
 sequenceDiagram
     participant p0 as Startup
-    participant p1 as Formatter
+    participant p1 as formatter: Formatter
     participant p2 as print
     participant p3 as Box
+    participant p4 as box: Box
     Note over p0: Resolve Formatter from the declared composition
     p0->>p1: title() · interface dispatch
     p1-->>p0: string
@@ -67,8 +68,8 @@ sequenceDiagram
     p0->>p2: print(value=formatter.format‹int›(value=42))
     p0->>p3: Box(value=”inside a generic box”)
     p3-->>p0: box: Box‹string›
-    p0->>p3: get()
-    p3-->>p0: string
+    p0->>p4: get()
+    p4-->>p0: string
     p0->>p2: print(value=box.get())
 ```
 

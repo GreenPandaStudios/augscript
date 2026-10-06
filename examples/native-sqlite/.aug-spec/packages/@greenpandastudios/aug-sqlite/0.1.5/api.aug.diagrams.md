@@ -106,7 +106,7 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as open
-    participant p1 as DatabaseStorage
+    participant p1 as storage: DatabaseStorage
     p0->>p1: open(path=path) · interface dispatch
     p1-->>p0: Database
     Note over p0: Return storage.open(path)； required cleanup runs before exit

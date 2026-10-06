@@ -54,14 +54,15 @@ Call arrows identify checked targets; loop and branch frames determine when they
 sequenceDiagram
     participant p0 as Startup
     participant p1 as Greeter
-    participant p2 as increment
-    participant p3 as print
+    participant p2 as greeter: Greeter
+    participant p3 as increment
+    participant p4 as print
     p0->>p1: Greeter(x=4)
     p1-->>p0: greeter: Greeter
-    p0->>p1: greet(name=”AugScript”)
-    p0->>p2: increment(value=count)
-    p2-->>p0: count: int
-    p0->>p3: print(value=count)
+    p0->>p2: greet(name=”AugScript”)
+    p0->>p3: increment(value=count)
+    p3-->>p0: count: int
+    p0->>p4: print(value=count)
 ```
 
 ## Called contracts

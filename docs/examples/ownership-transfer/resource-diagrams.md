@@ -88,7 +88,7 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as consume
-    participant p1 as Console
+    participant p1 as console: Console
     p0->>p1: write(value=”consumed”) · interface dispatch
 ```
 

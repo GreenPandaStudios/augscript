@@ -271,8 +271,9 @@ class SequenceWriter {
     const symbol=id?this.symbols.get(id):undefined;
     if(resolved&&id){
       const name=symbol?.owner&&this.symbols.has(symbol.owner)?this.symbols.get(symbol.owner)!.name+'.'+symbol.name:resolved.node.name;
-      const participant=symbol?.owner??id;
-      const participantName=symbol?.owner?this.symbols.get(symbol.owner)?.name??name:name;
+      const receiver=symbol?.owner&&expr.callee.kind==='member'?this.text(expr.callee.object):undefined;
+      const participant=receiver?symbol!.owner+'/receiver/'+receiver:symbol?.owner??id;
+      const participantName=symbol?.owner?(receiver?receiver+': ':'')+(this.symbols.get(symbol.owner)?.name??name):name;
       this.message(participant,participantName,resolved.node.name+'('+inputs+')'+(resolved.dispatch==='interface'?' · interface dispatch':'')+(resolved.node.kind==='function'&&resolved.node.externC?' · native boundary':''),async);
       const result=this.checked.expressionTypes.get(expr);
       if(!async&&result&&result.name!=='void')this.tokens.push({kind:'reply',target:participant,text:(resultName?resultName+': ':'')+tyName(result)});

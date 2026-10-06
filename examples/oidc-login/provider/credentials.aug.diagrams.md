@@ -47,7 +47,7 @@ sequenceDiagram
     participant p2 as password.length
     participant p3 as password.bytes
     participant p4 as ”August demo salt v1”.bytes
-    participant p5 as Crypto
+    participant p5 as crypto: Crypto
     participant p6 as username.bytes
     participant p7 as ”ada”.bytes
     p0->>p1: username.length()

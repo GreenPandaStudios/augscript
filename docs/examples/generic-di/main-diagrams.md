@@ -47,7 +47,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ```mermaid
 sequenceDiagram
     participant p0 as Startup
-    participant p1 as Program
+    participant p1 as program: Program
     Note over p0: Resolve app from the declared composition
     p0->>p1: start()
 ```

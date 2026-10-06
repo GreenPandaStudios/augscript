@@ -61,7 +61,7 @@ Receive fields: injected logger, x. [Explanation](greeter.md).
 ```mermaid
 sequenceDiagram
     participant p0 as Greeter.greet
-    participant p1 as Logger
+    participant p1 as logger: Logger
     p0->>p1: log(message=”Hello, ” + name + ”!”) · interface dispatch
 ```
 

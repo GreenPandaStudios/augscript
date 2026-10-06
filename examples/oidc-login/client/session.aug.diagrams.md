@@ -69,16 +69,16 @@ Call arrows identify checked targets; loop and branch frames determine when they
 sequenceDiagram
     participant p0 as authenticate
     participant p1 as SessionError
-    participant p2 as SigningKeys
-    participant p3 as Crypto
+    participant p2 as keys: SigningKeys
+    participant p3 as crypto: Crypto
     participant p4 as verifyJwt
     participant p5 as verifyJwt(token=value, publicKey, kid=”session-1”, tokenType=”august-session+jwt”).decode
     participant p6 as settings
-    participant p7 as Clock
+    participant p7 as clock: Clock
     participant p8 as claims.sub.length
     participant p9 as claims.jti.isToken
     participant p10 as claims.csrf.isToken
-    participant p11 as ExpiringStore
+    participant p11 as sessions: ExpiringStore
     alt Match when null:
     p0->>p1: SessionError()
     p1-->>p0: SessionError
@@ -135,11 +135,11 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as authenticate
-    participant p1 as ExpiringStore
+    participant p1 as sessions: ExpiringStore
     participant p2 as SessionError
     participant p3 as saved.csrf.bytes
     participant p4 as claims.csrf.bytes
-    participant p5 as Crypto
+    participant p5 as crypto: Crypto
     alt Match when null:
     else Match when some value:
     opt Try body； stops on a checked failure

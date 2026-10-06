@@ -112,7 +112,7 @@ Interface contract; implementation selected at runtime. [Explanation](operations
 ```mermaid
 sequenceDiagram
     participant p0 as filter
-    participant p1 as Predicate
+    participant p1 as predicate: Predicate
     participant p2 as selected.append
     loop For each item in values
     p0->>p1: accepts(value=value) · interface dispatch
@@ -137,7 +137,7 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as transform
-    participant p1 as Transformation
+    participant p1 as transformation: Transformation
     participant p2 as transformed.append
     loop For each item in values
     p0->>p1: apply(value=value) · interface dispatch
@@ -160,7 +160,7 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as aggregate
-    participant p1 as Aggregator
+    participant p1 as aggregator: Aggregator
     loop For each item in values
     p0->>p1: combine(total=total, value=value) · interface dispatch
     p1-->>p0: total: U
@@ -177,7 +177,7 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as remove
-    participant p1 as Predicate
+    participant p1 as predicate: Predicate
     participant p2 as remaining.append
     loop For each item in values
     p0->>p1: accepts(value=value) · interface dispatch
@@ -202,7 +202,7 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as find
-    participant p1 as Predicate
+    participant p1 as predicate: Predicate
     loop For each item in values
     p0->>p1: accepts(value=value) · interface dispatch
     p1-->>p0: bool
@@ -225,7 +225,7 @@ sequenceDiagram
     participant p1 as ordered.append
     participant p2 as ordered.length
     participant p3 as ordered.get
-    participant p4 as Comparator
+    participant p4 as comparator: Comparator
     participant p5 as merged.append
     loop For each item in values
     rect rgb(245, 240, 241)

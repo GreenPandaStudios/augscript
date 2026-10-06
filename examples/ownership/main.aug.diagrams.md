@@ -43,14 +43,15 @@ Call arrows identify checked targets; loop and branch frames determine when they
 sequenceDiagram
     participant p0 as Startup
     participant p1 as Counter
-    participant p2 as print
+    participant p2 as counter: Counter
+    participant p3 as print
     p0->>p1: Counter(value=1)
     p1-->>p0: counter: Counter
     Note over p0: Own counter； release on scope exits
-    p0->>p1: increment()
-    p0->>p1: read()
-    p1-->>p0: int
-    p0->>p2: print(value=counter.read())
+    p0->>p2: increment()
+    p0->>p2: read()
+    p2-->>p0: int
+    p0->>p3: print(value=counter.read())
 ```
 
 ## Called contracts

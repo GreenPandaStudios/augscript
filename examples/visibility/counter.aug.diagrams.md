@@ -74,7 +74,7 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as Counter.label
-    participant p1 as Counter
+    participant p1 as self: Counter
     p0->>p1: _label()
     p1-->>p0: string
     Note over p0: Return self._label()； required cleanup runs before exit

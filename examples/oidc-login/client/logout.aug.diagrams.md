@@ -76,9 +76,9 @@ sequenceDiagram
     participant p3 as authenticate
     participant p4 as input.csrf.bytes
     participant p5 as session.csrf.bytes
-    participant p6 as Crypto
-    participant p7 as Clock
-    participant p8 as ExpiringStore
+    participant p6 as crypto: Crypto
+    participant p7 as clock: Clock
+    participant p8 as sessions: ExpiringStore
     participant p9 as securityHeaders
     participant p10 as securityHeaders().with
     participant p11 as withCookie

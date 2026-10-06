@@ -115,7 +115,7 @@ sequenceDiagram
     participant p3 as state.isToken
     participant p4 as nonce.isToken
     participant p5 as code_challenge.length
-    participant p6 as Crypto
+    participant p6 as crypto: Crypto
     participant p7 as crypto.decodeBase64url(input=code_challenge).length
     Note over p0: GET /provider/authorize
     p0->>p1: settings()
@@ -172,11 +172,11 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as authorize
-    participant p1 as Crypto
+    participant p1 as crypto: Crypto
     participant p2 as crypto.random(size=32).base64url
-    participant p3 as Clock
+    participant p3 as clock: Clock
     participant p4 as AuthorizationRequest
-    participant p5 as ExpiringStore
+    participant p5 as requests: ExpiringStore
     participant p6 as securityHeaders
     participant p7 as withCookie
     participant p8 as ProviderLogin
@@ -233,8 +233,8 @@ sequenceDiagram
     participant p2 as ProviderFailure
     participant p3 as securityHeaders
     participant p4 as HttpResponse
-    participant p5 as Clock
-    participant p6 as ExpiringStore
+    participant p5 as clock: Clock
+    participant p6 as requests: ExpiringStore
     Note over p0: POST /provider/login
     p0->>p1: settings()
     p1-->>p0: config: Settings
@@ -277,7 +277,7 @@ sequenceDiagram
     participant p0 as providerLogin
     participant p1 as secret.bytes
     participant p2 as request.browser.bytes
-    participant p3 as Crypto
+    participant p3 as crypto: Crypto
     participant p4 as form.csrf.bytes
     participant p5 as request.csrf.bytes
     participant p6 as ProviderFailure
@@ -329,11 +329,11 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as providerLogin
-    participant p1 as Clock
-    participant p2 as Crypto
+    participant p1 as clock: Clock
+    participant p2 as crypto: Crypto
     participant p3 as crypto.random(size=32).base64url
     participant p4 as AuthorizationCode
-    participant p5 as ExpiringStore
+    participant p5 as codes: ExpiringStore
     participant p6 as urlEncode
     participant p7 as securityHeaders
     participant p8 as securityHeaders().with

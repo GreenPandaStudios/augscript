@@ -115,10 +115,10 @@ sequenceDiagram
     participant p3 as _oauthError
     participant p4 as form.code.isToken
     participant p5 as form.code_verifier.isToken
-    participant p6 as Clock
-    participant p7 as ExpiringStore
+    participant p6 as clock: Clock
+    participant p7 as codes: ExpiringStore
     participant p8 as form.code_verifier.bytes
-    participant p9 as Crypto
+    participant p9 as crypto: Crypto
     Note over p0: POST /provider/token
     p0->>p1: settings()
     p1-->>p0: config: Settings
@@ -163,13 +163,13 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as token
-    participant p1 as Crypto
+    participant p1 as crypto: Crypto
     participant p2 as crypto.sha256(input=form.code_verifier.bytes()).base64url
     participant p3 as challenge.bytes
     participant p4 as grant.challenge.bytes
     participant p5 as _oauthError
     participant p6 as IdClaims
-    participant p7 as SigningKeys
+    participant p7 as keys: SigningKeys
     participant p8 as Json
     participant p9 as signJwt
     participant p10 as crypto.random(size=32).base64url
@@ -214,7 +214,7 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as token
-    participant p1 as ExpiringStore
+    participant p1 as access: ExpiringStore
     participant p2 as TokenResponse
     participant p3 as Json
     participant p4 as securityHeaders

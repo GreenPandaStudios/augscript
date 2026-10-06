@@ -287,7 +287,7 @@ test('calls on one interface share a service lifeline and preserve inputs and re
 },async(root,checked)=>{
  const page=diagrams(checked).find(item=>item.path===join(root,'main.aug.diagrams.md'));await validMermaid([page]);
  const sequence=page.text.split('### Startup\n')[1];
- assert.equal((sequence.match(/participant p\d+ as Reader\n/g)??[]).length,1);
+ assert.equal((sequence.match(/participant p\d+ as reader: Reader\n/g)??[]).length,1);
  assert.match(sequence,/: read\(id=1\)/);assert.match(sequence,/: find\(name=”two”\)/);
  assert.match(sequence,/-->>p0: a: int/);assert.match(sequence,/-->>p0: b: int/);
  assert.doesNotMatch(sequence,/#\d+;/);

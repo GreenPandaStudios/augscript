@@ -63,7 +63,7 @@ Receive fields: message. [Explanation](interceptors.md).
 ```mermaid
 sequenceDiagram
     participant p0 as Audit.around
-    participant p1 as Logger
+    participant p1 as logger: Logger
     participant p2 as next
     p0->>p1: log(message=”before”) · interface dispatch
     p0->>p2: next() · conditional interceptor delegation

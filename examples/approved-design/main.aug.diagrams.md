@@ -52,12 +52,12 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ```mermaid
 sequenceDiagram
     participant p0 as Startup
-    participant p1 as Application
+    participant p1 as app: Application
     participant p2 as names.get
     participant p3 as print
     participant p4 as Fruit
     participant p5 as ｛Fruit(code=code, name=label), Fruit(name=label, code=code)｝.length
-    participant p6 as Counter
+    participant p6 as counter: Counter
     participant p7 as double
     Note over p0: Resolve Application from the declared composition
     p0->>p1: start() · interface dispatch

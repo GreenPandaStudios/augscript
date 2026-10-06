@@ -67,7 +67,7 @@ Interface contract; implementation selected at runtime. [Explanation](logging.md
 ```mermaid
 sequenceDiagram
     participant p0 as ConsoleLogger.log
-    participant p1 as Console
+    participant p1 as console: Console
     p0->>p1: write(value=message) · interface dispatch
 ```
 

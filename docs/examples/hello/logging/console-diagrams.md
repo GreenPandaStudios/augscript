@@ -58,7 +58,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ```mermaid
 sequenceDiagram
     participant p0 as ConsoleLogger.log
-    participant p1 as Console
+    participant p1 as console: Console
     p0->>p1: write(value=message) · interface dispatch
 ```
 

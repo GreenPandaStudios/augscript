@@ -190,8 +190,8 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as initializeKeys
-    participant p1 as Crypto
-    participant p2 as SigningKeys
+    participant p1 as crypto: Crypto
+    participant p2 as keys: SigningKeys
     p0->>p1: generateRsa() · interface dispatch
     p1-->>p0: provider: RsaPrivateKey
     p0->>p1: generateRsa() · interface dispatch

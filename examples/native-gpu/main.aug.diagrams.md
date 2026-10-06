@@ -42,7 +42,7 @@ sequenceDiagram
     participant p0 as Startup
     participant p1 as calculate
     participant p2 as print
-    participant p3 as GpuError
+    participant p3 as error: GpuError
     participant p4 as exit
     opt Try body； stops on a checked failure
     rect rgb(245, 240, 241)

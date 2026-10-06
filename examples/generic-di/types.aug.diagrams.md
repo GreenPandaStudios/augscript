@@ -81,8 +81,8 @@ Receive fields: injected repository. [Explanation](types.aug.md).
 ```mermaid
 sequenceDiagram
     participant p0 as Program.start
-    participant p1 as Repository
-    participant p2 as Console
+    participant p1 as repository: Repository
+    participant p2 as console: Console
     p0->>p1: get() · interface dispatch
     p1-->>p0: int
     p0->>p2: write(value=repository.get()) · interface dispatch

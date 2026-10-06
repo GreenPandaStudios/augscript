@@ -117,7 +117,7 @@ Receive fields: keys. [Explanation](jose.md).
 ```mermaid
 sequenceDiagram
     participant p0 as rsaJwk
-    participant p1 as Crypto
+    participant p1 as crypto: Crypto
     participant p2 as modulus.base64url
     participant p3 as exponent.base64url
     participant p4 as RsaJwk
@@ -141,7 +141,7 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as importJwk
     participant p1 as JwtError
-    participant p2 as Crypto
+    participant p2 as crypto: Crypto
     opt Left is false
     end
     opt Left is false
@@ -188,7 +188,7 @@ sequenceDiagram
     participant p7 as payload.bytes
     participant p8 as payload.bytes().base64url
     participant p9 as signing.bytes
-    participant p10 as Crypto
+    participant p10 as crypto: Crypto
     participant p11 as signature.base64url
     opt Try body； stops on a checked failure
     p0->>p1: JwtHeader(alg=”RS256”, kid=kid, typ=tokenType)
@@ -246,7 +246,7 @@ sequenceDiagram
     participant p3 as token.split
     participant p4 as parts.length
     participant p5 as parts.get
-    participant p6 as Crypto
+    participant p6 as crypto: Crypto
     participant p7 as crypto.decodeBase64url(input=first).text
     participant p8 as parse
     participant p9 as parse(input=crypto.decodeBase64url(input=first).text()).decode
@@ -294,7 +294,7 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as verifyJwt
-    participant p1 as Crypto
+    participant p1 as crypto: Crypto
     participant p2 as JwtError
     participant p3 as crypto.decodeBase64url(input=second).text
     participant p4 as parse

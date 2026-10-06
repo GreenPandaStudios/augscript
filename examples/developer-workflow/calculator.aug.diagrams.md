@@ -69,7 +69,7 @@ Receive fields: injected \_logger. [Explanation](calculator.aug.md).
 ```mermaid
 sequenceDiagram
     participant p0 as Calculator.add
-    participant p1 as Logger
+    participant p1 as _logger: Logger
     p0->>p1: log(message=”adding integers”) · interface dispatch
     Note over p0: Return left + right； required cleanup runs before exit
 ```

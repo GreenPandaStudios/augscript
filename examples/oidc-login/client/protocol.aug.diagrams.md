@@ -145,7 +145,7 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as discover
     participant p1 as settings
-    participant p2 as HttpClient
+    participant p2 as client: HttpClient
     participant p3 as responseJson
     participant p4 as json.decode
     participant p5 as SessionError
@@ -256,7 +256,7 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as validateIdentity
     participant p1 as nonce.bytes
-    participant p2 as Crypto
+    participant p2 as crypto: Crypto
     participant p3 as SessionError
     opt Try body； stops on a checked failure
     Note over p0: Sequence continued from the previous view

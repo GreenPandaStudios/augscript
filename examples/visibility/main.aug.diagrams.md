@@ -41,17 +41,18 @@ Call arrows identify checked targets; loop and branch frames determine when they
 sequenceDiagram
     participant p0 as Startup
     participant p1 as Counter
-    participant p2 as print
+    participant p2 as counter: Counter
+    participant p3 as print
     p0->>p1: Counter(value=1)
     p1-->>p0: counter: Counter
-    p0->>p1: label()
-    p1-->>p0: string
-    p0->>p2: print(value=counter.label())
+    p0->>p2: label()
+    p2-->>p0: string
+    p0->>p3: print(value=counter.label())
     rect rgb(245, 240, 241)
     Note over p0: Enter borrow scope
     Note over p0: Leave borrow scope
     end
-    p0->>p2: print(value=counter.value)
+    p0->>p3: print(value=counter.value)
 ```
 
 ## Called contracts

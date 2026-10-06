@@ -56,8 +56,8 @@ sequenceDiagram
     participant p2 as parts.length
     participant p3 as parts.get
     participant p4 as token.isToken
-    participant p5 as Clock
-    participant p6 as ExpiringStore
+    participant p5 as clock: Clock
+    participant p6 as access: ExpiringStore
     participant p7 as UserInfo
     participant p8 as Json
     participant p9 as securityHeaders

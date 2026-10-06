@@ -47,6 +47,7 @@ sequenceDiagram
     participant p1 as describe
     participant p2 as print
     participant p3 as Greeter
+    participant p4 as greeter: Greeter
     opt Try body； stops on a checked failure
     p0->>p1: describe(label=”value”, x=6)
     p1-->>p0: string
@@ -57,8 +58,8 @@ sequenceDiagram
     end
     p0->>p3: Greeter(name=”AugScript”)
     p3-->>p0: greeter: Greeter
-    p0->>p3: greet()
-    p3-->>p0: string
+    p0->>p4: greet()
+    p4-->>p0: string
     p0->>p2: print(value=greeter.greet())
     opt Try body； stops on a checked failure
     p0->>p1: describe(x=-1, label=”invalid”)

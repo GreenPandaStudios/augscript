@@ -154,11 +154,11 @@ sequenceDiagram
     participant p0 as startLogin
     participant p1 as settings
     participant p2 as discover
-    participant p3 as Crypto
+    participant p3 as crypto: Crypto
     participant p4 as crypto.random(size=32).base64url
-    participant p5 as Clock
+    participant p5 as clock: Clock
     participant p6 as LoginTransaction
-    participant p7 as ExpiringStore
+    participant p7 as transactions: ExpiringStore
     Note over p0: GET /login/start
     p0->>p1: settings()
     p1-->>p0: config: Settings
@@ -191,7 +191,7 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as startLogin
     participant p1 as verifier.bytes
-    participant p2 as Crypto
+    participant p2 as crypto: Crypto
     participant p3 as crypto.sha256(input=verifier.bytes()).base64url
     participant p4 as urlEncode
     participant p5 as securityHeaders
@@ -238,11 +238,11 @@ sequenceDiagram
     participant p1 as code.isToken
     participant p2 as state.isToken
     participant p3 as SessionError
-    participant p4 as Clock
-    participant p5 as ExpiringStore
+    participant p4 as clock: Clock
+    participant p5 as transactions: ExpiringStore
     participant p6 as transaction.state.bytes
     participant p7 as state.bytes
-    participant p8 as Crypto
+    participant p8 as crypto: Crypto
     participant p9 as settings
     Note over p0: GET /login/callback
     p0->>p1: code.isToken(min=43, max=43)
@@ -293,7 +293,7 @@ sequenceDiagram
     participant p4 as Headers
     participant p5 as Headers().with
     participant p6 as body.bytes
-    participant p7 as HttpClient
+    participant p7 as client: HttpClient
     participant p8 as responseJson
     participant p9 as responseJson(response=client.request(method=”POST”, url=document.token_endpoint, headers, body=body.bytes())).decode
     participant p10 as tokens.access_token.isToken
@@ -341,16 +341,16 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as loginCallback
-    participant p1 as HttpClient
+    participant p1 as client: HttpClient
     participant p2 as responseJson
     participant p3 as responseJson(response=client.request(method=”GET”, url=document.jwks_uri)).decode
-    participant p4 as Clock
+    participant p4 as clock: Clock
     participant p5 as validateIdentity
     participant p6 as Headers
     participant p7 as Headers().with
     participant p8 as responseJson(response=client.request(method=”GET”, url=document.userinfo_endpoint, headers=authHeaders)).decode
     participant p9 as SessionError
-    participant p10 as Crypto
+    participant p10 as crypto: Crypto
     alt Match when null:
     else Match when some secret:
     alt Match when null:
@@ -391,12 +391,12 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as loginCallback
     participant p1 as crypto.random(size=32).base64url
-    participant p2 as Crypto
+    participant p2 as crypto: Crypto
     participant p3 as SessionClaims
-    participant p4 as SigningKeys
+    participant p4 as keys: SigningKeys
     participant p5 as Json
     participant p6 as signJwt
-    participant p7 as ExpiringStore
+    participant p7 as sessions: ExpiringStore
     participant p8 as securityHeaders
     participant p9 as securityHeaders().with
     participant p10 as withCookie

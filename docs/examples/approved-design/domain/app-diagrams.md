@@ -69,7 +69,7 @@ Receive fields: injected console. [Explanation](app.md).
 sequenceDiagram
     participant p0 as ApplicationImpl.start
     participant p1 as Fruit
-    participant p2 as Console
+    participant p2 as console: Console
     p0->>p1: Fruit(code=1, name=”apple”)
     p1-->>p0: Fruit
     p0->>p1: Fruit(name=”pear”, code=2)

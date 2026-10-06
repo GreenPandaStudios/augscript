@@ -64,7 +64,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ```mermaid
 sequenceDiagram
     participant p0 as describe
-    participant p1 as Console
+    participant p1 as console: Console
     Note over p0: Applied layers: Audit, Positive, AddOne； may stop or change delegation； see specification
     p0->>p1: write(value=x) · interface dispatch
     Note over p0: Return label； required cleanup runs before exit

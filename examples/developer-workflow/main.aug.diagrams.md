@@ -46,36 +46,37 @@ sequenceDiagram
     participant p0 as Startup
     participant p1 as Calculator
     participant p2 as numbers.get
-    participant p3 as print
-    participant p4 as pair.get
-    participant p5 as unique.length
-    participant p6 as fruit.get
-    participant p7 as load
+    participant p3 as calculator: Calculator
+    participant p4 as print
+    participant p5 as pair.get
+    participant p6 as unique.length
+    participant p7 as fruit.get
+    participant p8 as load
     opt Try body； stops on a checked failure
     p0->>p1: Calculator()
     p1-->>p0: calculator: Calculator
     p0->>p2: numbers.get(index=1)
     p0->>p2: numbers.get(index=0)
-    p0->>p1: add(right=numbers.get(index=1), left=numbers.get(index=0))
-    p1-->>p0: int
-    p0->>p3: print(value=calculator.add(right=numbers.get(index=1), left=numbers.get(index=0)))
-    p0->>p4: pair.get(index=1)
-    p0->>p3: print(value=pair.get(index=1))
-    p0->>p5: unique.length()
-    p0->>p3: print(value=unique.length())
-    p0->>p6: fruit.get(key=2)
-    p0->>p3: print(value=fruit.get(key=2))
+    p0->>p3: add(right=numbers.get(index=1), left=numbers.get(index=0))
+    p3-->>p0: int
+    p0->>p4: print(value=calculator.add(right=numbers.get(index=1), left=numbers.get(index=0)))
+    p0->>p5: pair.get(index=1)
+    p0->>p4: print(value=pair.get(index=1))
+    p0->>p6: unique.length()
+    p0->>p4: print(value=unique.length())
+    p0->>p7: fruit.get(key=2)
+    p0->>p4: print(value=fruit.get(key=2))
     opt Try body； stops on a checked failure
-    p0->>p7: load(fail=true)
-    p7-->>p0: string
-    p0->>p3: print(value=load(fail=true))
+    p0->>p8: load(fail=true)
+    p8-->>p0: string
+    p0->>p4: print(value=load(fail=true))
     end
     opt Catch FileError
-    p0->>p3: print(value=”load failed as expected”)
+    p0->>p4: print(value=”load failed as expected”)
     end
     end
     opt Catch IndexError
-    p0->>p3: print(value=”unexpected index failure”)
+    p0->>p4: print(value=”unexpected index failure”)
     end
 ```
 

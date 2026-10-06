@@ -38,7 +38,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ```mermaid
 sequenceDiagram
     participant p0 as Startup
-    participant p1 as Greeter
+    participant p1 as greeter: Greeter
     Note over p0: Resolve app from the declared composition
     p0->>p1: greet(name=”AugScript”)
 ```
