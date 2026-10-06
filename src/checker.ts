@@ -26,6 +26,7 @@ import {httpPolicyNames,httpPolicyOptions,checkHttpPolicy,type HttpPolicyPlan} f
 import {checkForwardingProfiles} from './forwarding.ts';
 import {nativeDeclarations, type NativeDeclarations} from './native-declarations.ts';
 import {checkWorkers} from './workers.ts';
+import {isWorkerMap,type WorkerMapPlan} from './worker-mapping.ts';
 import type {FunctionValuePlan} from './function-values.ts';
 import type {NativeFunction,NativeView} from './native-contracts.ts';
 export { tyName, type Ty } from './types.ts';
@@ -62,6 +63,7 @@ export interface CheckedProject {
   bindings: BindingInfo[];
   expressionTypes: WeakMap<Expr, Ty>;
   functionValues:Map<Expr,FunctionValuePlan>;
+  workerMaps:Map<Expr,WorkerMapPlan>;
   patternTypes:WeakMap<BindingPattern,Ty>;
   patternFields:WeakMap<RecordBindingField,{owner:Definition;field:Param;index:number}>;
   resolvedNames: WeakMap<Expr, ResolvedName>;
@@ -215,6 +217,7 @@ class Checker {
   private readonly inferredChanges = new Map<MethodDecl, Set<string>>();
   private readonly contextualResults = new Set<MethodDecl>();
   readonly functionValues=new Map<Expr,FunctionValuePlan>();
+  readonly workerMaps=new Map<Expr,WorkerMapPlan>();
   readonly expressionOrigins = new WeakMap<Expr, Origins>();
   readonly inferredOwned = new WeakSet<Stmt>();
   readonly scopes = new Map<string, ScopeFact>();
@@ -358,7 +361,7 @@ class Checker {
     this.effectContracts.clear();
     for (const [method, contract] of declarationEffects) this.effectContracts.set(method, contract);
     const checked:CheckedProject = { project: this.project, diagnostics: this.diagnostics, bindings: this.bindings,
-      expressionTypes: this.expressionTypes, missingInjections:this.missingInjections, functionValues:this.functionValues, patternTypes:this.patternTypes, patternFields:this.patternFields, resolvedNames:this.resolvedNames, resolvedCalls:this.resolvedCalls, resolvedTypes:this.resolvedTypes, errorMatches:this.errorMatches, defaults: this.defaults, interfaceMembers:this.interfaceMembers, callPlans: this.callPlans,
+      expressionTypes: this.expressionTypes, missingInjections:this.missingInjections, functionValues:this.functionValues, workerMaps:this.workerMaps, patternTypes:this.patternTypes, patternFields:this.patternFields, resolvedNames:this.resolvedNames, resolvedCalls:this.resolvedCalls, resolvedTypes:this.resolvedTypes, errorMatches:this.errorMatches, defaults: this.defaults, interfaceMembers:this.interfaceMembers, callPlans: this.callPlans,
       interceptorPlans: this.interceptorPlans, effectContracts: this.effectContracts, callableContracts: this.callableContracts, constructorContracts: this.constructorContracts, parameterTypes:this.parameterTypes,
       expressionOrigins: this.expressionOrigins, inferredOwned:this.inferredOwned, scopes: this.scopes, markupCalls: this.markupCalls, actions:this.actions, httpPolicies:this.httpPolicies, native:this.native };
     this.diagnostics.push(...moduleSurfaceDiagnostics(checked));
@@ -3552,6 +3555,14 @@ class Checker {
     ], (span, message, details) => this.report(span, message, 'BORROW', details));
     for (const thrown of this.effectiveErrors(fn, fnFile, params)) this.checkAllowedError(thrown, expr.span, context);
     const result = this.returnType(fn, fnFile, params);
+    if (isWorkerMap(this.project, definition)) {
+      this.workerMaps.delete(expr);
+      const index=plan.sourceIndices[3],argument=index===undefined?undefined:expr.args[index];
+      const callback=argument&&this.functionValues.get(argument);
+      if(!argument||argument.kind!=='name'||!callback?.target||callback.target.node.kind!=='function'||callback.inputs.length!==1)
+        this.report(argument?.span??expr.span,'mapWorkers requires a directly named concrete pure function with one value input. Stored callbacks, closures and behavior objects stay on their creating heap.','WORKER_MAP');
+      else this.workerMaps.set(expr,{transformation:callback.target,input:callback.inputs[0],result:callback.result,transformationIndex:index!});
+    }
     return this.isReference(result) && fn.returnOwnership !== 'own' && !this.functionIsFresh(fn, fnFile,
       owner && 'fields' in owner.node ? new Set(fieldsOf(owner.node).map(field => field.name)) : new Set()) ?
       { ...result, readonly: true } : result;

@@ -240,3 +240,31 @@ sortText(List<string> values) returns List<string> unless IndexError
 Return a stable ordinal copy of text values.
 
 [Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/collections/operations.aug#L138)
+
+## mapWorkers {#api-mapWorkers}
+
+```text
+mapWorkers<T implements optional Data, U implements optional Data>(
+    List<T> values,
+    int concurrency,
+    int chunkSize,
+    Transformation<T,U> transformation
+) returns List<U> unless ConcurrencyError and ConversionError and IndexError
+```
+
+Transform copied data on isolated worker heaps, preserving input order.
+Supply a directly named concrete pure function with one value input; callbacks and behavior objects are not worker inputs.
+
+**Parameters**
+- `values`: At most 1048576 copied data values; the input remains unchanged.
+- `concurrency`: Number of chunk jobs in a wave, from 1 to 64. This does not reserve pool threads.
+- `chunkSize`: Values per job, from 1 to 65536.
+- `transformation`: A named pure function, with no checked errors, injection, owned inputs, or task starts.
+
+**Throws**
+- `ConversionError`: Invalid bounds, checked before any worker starts, including for an empty input.
+- `ConcurrencyError`: The shared pool cannot admit a job or copy its inputs.
+- `IndexError`: Checked snapshot reads retain this error; indices stay within the snapshot.
+Admission or cancellation joins already admitted jobs before leaving the current wave.
+
+[Source](https://github.com/GreenPandaStudios/augscript/blob/main/src/stdlib/collections/workers.aug#L15)

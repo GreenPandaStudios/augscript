@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Document and complete the unreleased `mapWorkers` package operation, including its named pure-function restriction, copied data boundary and checked failures.
+
 - Generate deterministic Mermaid project, class, API-call and sequence views with compiled specs; link the wiki examples from overview to source.
 
 - Preview checked capability header repairs across the whole unsaved project, with caller edits and public contract review. Acceptance uses a fresh saved CLI plan and its checked transaction.

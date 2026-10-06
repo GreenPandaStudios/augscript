@@ -28,6 +28,7 @@ export interface ContractFact {
   alternatives?: string[]; typeParameters: string[]; genericParameters: ReturnType<typeof genericFacts>; interfaces: string[];
   fields: { label: string; storage: string; type: string; mutable: boolean; injected: boolean; ownership: string }[];
   callables: CallableFact[]; calls: { target: string; location: Span }[];
+  workerMappings:{target:string;input:string;result:string;location:Span;scheduling:"bounded-waves";copied:true}[];
   functionValues: {target:string;location:Span;kind:'reference'|'call'}[]; tests: { group: string; name: string; location: Span }[];
 }
 export function contractFacts(checked: CheckedProject): ContractFact[] {
@@ -62,6 +63,7 @@ export function contractFacts(checked: CheckedProject): ContractFact[] {
   return [...project.definitions.values()].map(def => {
     const node = def.node, file = project.files.get(def.file)!;
     const methods = node.kind === 'function' ? [node] : 'methods' in node ? node.methods : [];
+    const workerMappings:ContractFact['workerMappings']=[];
     const calls: ContractFact['calls'] = [], functionValues:ContractFact['functionValues']=[];
     const visit = (value: unknown, deferred=false) => {
       if (!value || typeof value !== 'object') return;
@@ -69,6 +71,7 @@ export function contractFacts(checked: CheckedProject): ContractFact[] {
       const copy = value as import('./ast.ts').Expr;
       if(copy.kind==='lambda')deferred=true;
       const reference=checked.functionValues.get(copy)?.target;
+      const mapping=checked.workerMaps.get(copy);if(mapping)workerMappings.push({target:mapping.transformation.id,input:tyName(mapping.input),result:tyName(mapping.result),location:copy.span,scheduling:"bounded-waves",copied:true});
       if(reference)functionValues.push({target:reference.id,location:copy.span,kind:'reference'});
       const callFact=(target:string,location:Span)=>deferred?functionValues.push({target,location,kind:'call'}):calls.push({target,location});
       if (copy.kind === 'recordCopy') {const target=checked.expressionTypes.get(copy.base)?.def; if(target)callFact(target.id,copy.span);}
@@ -97,7 +100,7 @@ export function contractFacts(checked: CheckedProject): ContractFact[] {
         typeConstraints: node.typeConstraints, typeVariance: node.typeVariance, params: node.fields,
         returns: syntheticType(node.name, node.span), returnOwnership: 'managed',
         throws: node.validationErrors ?? [], changes: [], uses: [], body: node.constructorBody, externC: false, span: node.span }, node)] : []),
-        ...methods.filter(method => node.kind==='function'||!method.name.startsWith('_')).map(method => callable(method))], calls, functionValues,
+        ...methods.filter(method => node.kind==='function'||!method.name.startsWith('_')).map(method => callable(method))], calls, functionValues, workerMappings,
       tests: file.items.flatMap(item => item.kind === 'test' && item.type.name === def.name ? item.groups.flatMap(group =>
         group.cases.map(test => ({ group: group.name, name: test.name, location: test.span }))) : []) };
   });

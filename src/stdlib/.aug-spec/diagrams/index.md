@@ -38,6 +38,7 @@ flowchart TD
 | august/collections/export.aug | [Flow and sequences](../../collections/export.aug.diagrams.md) · [Explanation](../../collections/export.aug.md) |
 | august/collections/operations.aug | [Flow and sequences](../../collections/operations.aug.diagrams.md) · [Explanation](../../collections/operations.aug.md) |
 | august/collections/ranges.aug | [Flow and sequences](../../collections/ranges.aug.diagrams.md) · [Explanation](../../collections/ranges.aug.md) |
+| august/collections/workers.aug | [Flow and sequences](../../collections/workers.aug.diagrams.md) · [Explanation](../../collections/workers.aug.md) |
 | august/errors/context.aug | [Flow and sequences](../../errors/context.aug.diagrams.md) · [Explanation](../../errors/context.aug.md) |
 | august/errors/export.aug | [Flow and sequences](../../errors/export.aug.diagrams.md) · [Explanation](../../errors/export.aug.md) |
 | august/export.aug | [Flow and sequences](../../export.aug.diagrams.md) · [Explanation](../../export.aug.md) |

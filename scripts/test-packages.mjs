@@ -172,6 +172,11 @@ try {
   writeFileSync(join(folderFlow,'app/model.aug'),'record Item(string name)\n');
   aug('spec',folderFlow);aug('spec',folderFlow,'--check');
   assert.match(readFileSync(join(folderFlow,'.aug-spec/diagrams/folders/app/index.md'),'utf8'),/load/);
+  const workerMapping=join(directory,'worker-mapping-consumer');mkdirSync(workerMapping);
+  writeFileSync(join(workerMapping,'rules.aug'),'double(int value) returns int:\n    return value * 2\n');
+  writeFileSync(join(workerMapping,'main.aug'),'import mapWorkers from august.collections\nimport double from rules\ntry:\n    for value in mapWorkers(values=[1,2,3], concurrency=2, chunkSize=2, transformation=double):\n        print(value)\ncatch Error error:\n    print(value="unexpected")\n');
+  assert.equal(aug('run',workerMapping),'2\n4\n6\n');
+  if(process.env.AUG_LLVM_HOME&&process.env.AUG_RUNTIME_PACK)assert.equal(run(process.execPath,[cli,'run',workerMapping,'--backend','llvm']),'2\n4\n6\n');
   const verifySpecs = folder => {
     for(const entry of readdirSync(folder,{withFileTypes:true})) {
       const file=join(folder,entry.name);

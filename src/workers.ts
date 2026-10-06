@@ -1,4 +1,5 @@
 import {choiceMembers} from './choices.ts';
+import {workerMapTemplate} from './worker-mapping.ts';
 import type {ClassDecl, Diagnostic, Expr, MethodDecl, Span, TypeRef} from './ast.ts';
 import {fieldsOf, initializationOf} from './ast.ts';
 import type {CheckedProject} from './checker.ts';
@@ -48,7 +49,15 @@ export function checkWorkers(checked:CheckedProject):Diagnostic[] {
   // A test has a synthesized entry point and only its reachable declarations.
   // Check that program, rather than unrelated original startup/test bodies.
   visit(project.main?.items,collect);
-  for(const definition of project.definitions.values())visit(definition.node,collect);
+  for(const definition of project.definitions.values())if(!workerMapTemplate(project,definition))visit(definition.node,collect);
+  const mappings=new Set<Extract<Expr,{kind:'start'}>>();
+  for(const [expression,mapping] of checked.workerMaps){
+    const argument:Expr={kind:'name',name:'value',span:expression.span};
+    const call:Extract<Expr,{kind:'call'}>={kind:'call',callee:{kind:'name',name:(expression as Extract<Expr,{kind:'call'}>).args[mapping.transformationIndex].kind==='name'?((expression as Extract<Expr,{kind:'call'}>).args[mapping.transformationIndex] as Extract<Expr,{kind:'name'}>).name:mapping.transformation.name,span:expression.span},args:[argument],argLabels:['value'],typeArgs:[],span:expression.span};
+    checked.expressionTypes.set(argument,mapping.input);checked.expressionTypes.set(call,mapping.result);
+    const start:Extract<Expr,{kind:'start'}>={kind:'start',worker:true,call,span:expression.span};
+    starts.add(start);mappings.add(start);
+  }
   for(const start of starts){
     const call=start.call;if(call.kind!=='call')continue;
     if(call.callee.kind!=='name')issue(start.span,'Start a worker with a standalone function. Construct behavior objects and native resources inside that function.');
@@ -90,11 +99,13 @@ export function checkWorkers(checked:CheckedProject):Diagnostic[] {
     }
     function body(value:unknown,file:string){
       visit(value,node=>{
+        if(mappings.has(start)&&node.kind==='start')issue(start.span,'A mapWorkers transformation cannot start tasks, including through its reachable helpers.');
         if(node.kind==='serve'||node.kind==='handle'||node.kind==='yield')issue(start.span,'HTTP transport and streams remain on their creating heap.');
         if(node.kind==='resolve')issue(start.span,'Worker code cannot resolve bindings from the parent heap. Construct its dependencies locally.');
         const callback=checked.functionValues.get(node);if(callback?.target)declaration(callback.target);
         if(node.kind!=='call')return;
         const nested=node as Extract<Expr,{kind:'call'}>,plan=checked.callPlans.get(nested);
+        const mapping=checked.workerMaps.get(nested);if(mapping){if(mappings.has(start))issue(start.span,'A mapWorkers transformation cannot schedule another worker mapping, including through its reachable helpers.');declaration(mapping.transformation);return;}
         if(plan?.bindingKeys.some(Boolean))issue(start.span,'Worker code cannot resolve parent bindings. Construct its dependencies inside the worker and pass them by label.');
         if(nested.callee.kind==='name'&&nested.callee.name==='arguments')issue(start.span,'Pass command-line data into a worker explicitly.');
         const def=target(nested,file);if(def)declaration(def);

@@ -6,8 +6,21 @@ Start here to see what moves between the application’s folders. Each arrow nam
 
 ## Data flow
 
-No calls cross the source files in this view. Follow local operations in the file sequences below.
+```mermaid
+flowchart TD
+    n0["operations"]
+    n1["workers"]
+    n1 -->|"Transformation.apply(value) → U"| n0
+```
 
+<details>
+<summary>Data crossing these boundaries (1 contracts)</summary>
+
+| From | To | Operation and inputs | Result |
+| --- | --- | --- | --- |
+| workers | operations | [Transformation.apply](../../operations.aug.md) · value: T · interface dispatch | U |
+
+</details>
 
 ## Open a module
 
@@ -16,5 +29,6 @@ No calls cross the source files in this view. Follow local operations in the fil
 | august/collections/export.aug | [Flow and sequences](../../export.aug.diagrams.md) · [Explanation](../../export.aug.md) |
 | august/collections/operations.aug | [Flow and sequences](../../operations.aug.diagrams.md) · [Explanation](../../operations.aug.md) |
 | august/collections/ranges.aug | [Flow and sequences](../../ranges.aug.diagrams.md) · [Explanation](../../ranges.aug.md) |
+| august/collections/workers.aug | [Flow and sequences](../../workers.aug.diagrams.md) · [Explanation](../../workers.aug.md) |
 
 These are static call boundaries, not a request trace. Interface implementations and foreign internals stop at their checked contracts. Dotted arrows defer a callback or browser action. Imports alone do not imply a call.

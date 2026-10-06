@@ -35,6 +35,45 @@ The output is `10` and `5`, each on its own line. A list of worker tasks can als
 
 Ordinary `start` continues to schedule cooperative work on its current heap. `start worker` copies the function's inputs before returning to the caller. The caller can then change its own collection while the worker uses its copy. The worker's result is copied back after it finishes. No August object is shared between worker heaps.
 
+## Map a list in bounded waves
+
+`mapWorkers` is implemented in the unreleased 1.0 candidate. Import it from `august.collections` and supply a named pure function. This example doubles five integers with two values per chunk and at most two chunk jobs in each wave.
+
+```aug project=worker-map-guide file=calculations.aug
+/** Double one integer without changing any state. */
+double(int value) returns int:
+    return value * 2
+```
+
+```aug project=worker-map-guide file=main.aug
+import mapWorkers from august.collections
+import double from calculations
+
+try:
+    doubled = mapWorkers(
+        values=[1, 2, 3, 4, 5],
+        concurrency=2,
+        chunkSize=2,
+        transformation=double
+    )
+    for value in doubled:
+        print(value)
+catch ConversionError error:
+    print(value="Invalid mapping bounds")
+catch ConcurrencyError error:
+    print(value="Worker capacity is exhausted")
+catch IndexError error:
+    print(value="Invalid snapshot index")
+```
+
+The output is `2`, `4`, `6`, `8`, and `10`, each on its own line. The first wave runs two chunks, joins them, then starts the final one-value chunk. Results keep input order even when a later chunk finishes first. The input list is unchanged. `concurrency=1` still runs actual workers; it does not turn the operation into a local loop.
+
+Choose a concurrency from 1 through 64 and a chunk size from 1 through 65536. The input may contain at most 1048576 values. Invalid bounds raise `ConversionError` before any job starts, including with an empty list. A valid empty input returns an empty list. Pool admission and copied-input limits can raise `ConcurrencyError`; jobs already admitted in that wave are cancelled and joined before the error returns. The checked snapshot reads retain `IndexError`, although their indices stay within the snapshot.
+
+Both input and output types must be copied worker data. The transformation has one managed input labeled `value`, with no generic parameters, injection, ownership transfer, checked failures, effects, or reachable task starts. A closure, stored function value, or behavior object cannot be used here. Native calls still need their package's `workerSafe` contract. The compiler resolves the named function and builds a chunk entry that calls it directly, so no callback object crosses the heap boundary. The compiled explanation and diagrams name this function and show the wave boundary.
+
+Concurrency limits this call's chunk jobs; it neither reserves pool threads nor changes process limits. Each wave waits for its slowest chunk. Cancellation prevents later waves and joins the current one. Choose substantial chunks to spread copying and scheduling costs across useful work. These bounds do not limit result bytes, retained output, or worker heap size.
+
 ## Keep dependencies and resources local
 
 Worker boundaries accept scalars, strings, immutable records, bytes, JSON, and lists, sets, maps, or tuples containing copied data. Optional data keeps its value or null. Repeated references within the inputs remain repeated references within the copied graph.
