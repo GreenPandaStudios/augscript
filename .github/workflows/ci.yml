@@ -80,9 +80,10 @@ jobs:
       - run: node scripts/prepare-llvm-tools.mjs
       - run: node scripts/prepare-llvm-maintainer.mjs
       - run: node scripts/build-runtime-pack.mjs
+      - run: node scripts/build-llvm-pack.mjs
       - name: Prepare authenticated compiler tools for cache qualification
         run: |
-          node scripts/prepare-qualified-test-tools.mjs
+          node scripts/prepare-qualified-test-tools.mjs --local-compiler
           echo "AUG_LLVM_HOME=$PWD/.aug-build/qualified-test-tools" >> "$GITHUB_ENV"
           echo "AUG_RUNTIME_PACK=$PWD/.aug-native/llvm/runtime" >> "$GITHUB_ENV"
       - run: npm run check
@@ -110,7 +111,6 @@ jobs:
         env:
           AUG_SANITIZER_CC: ${{ github.workspace }}/.aug-build/llvm-maintainer/bin/clang
         run: node scripts/sanitize-core.mjs --backend llvm
-      - run: node scripts/build-llvm-pack.mjs
       - name: Qualify the native PostgreSQL package and HTTP drain
         run: |
           git clone --no-checkout https://github.com/GreenPandaStudios/aug-postgres "$RUNNER_TEMP/aug-postgres"

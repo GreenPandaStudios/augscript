@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Qualify unpublished compiler archives through the ordinary integrity verifier before cache tests. CI builds the sealed archive first and rejects missing or changed candidate transports, including on warm caches.
+
 - Derive GitHub and npm release channels from the reviewed version: previews remain prereleases on `next`, while qualified releases starting at 1.0 use the stable channel and `latest`. Reject mismatched release metadata and mixed package versions before publication.
 
 - Extend independent language conformance with forwarding chains, binding patterns, defaults, record copies, loop control, task loans and cleanup counts. Qualification fingerprints runtime and acceptance inputs and reports independent coverage separately from linked regressions.

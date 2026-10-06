@@ -168,6 +168,11 @@ jobs:
       - name: Pin every qualified platform before packing npm and VSIX
         run: node scripts/merge-compiler-packs.mjs .aug-build/release-packs
       - run: npm run check
+      - name: Prepare authenticated candidate tools for cache qualification
+        run: |
+          node scripts/prepare-qualified-test-tools.mjs --local-compiler
+          echo "AUG_LLVM_HOME=$PWD/.aug-build/qualified-test-tools" >> "$GITHUB_ENV"
+          echo "AUG_RUNTIME_PACK=$PWD/.aug-native/llvm/runtime" >> "$GITHUB_ENV"
       - run: npm test
       - name: LLVM language, runtime and real application parity
         env:
