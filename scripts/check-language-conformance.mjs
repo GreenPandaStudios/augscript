@@ -52,6 +52,11 @@ export function validateCorpus(corpus){
    assert.ok(example.drops&&typeof example.drops==='object'&&!Array.isArray(example.drops)&&Object.keys(example.drops).length,'Cleanup counts must not be empty');
    for(const [name,count] of Object.entries(example.drops)){assert.match(name,/^[A-Za-z_][A-Za-z0-9_]*$/);assert.ok(Number.isSafeInteger(count)&&count>0,'Cleanup counts must be positive integers');}
   }
+  if(example.dropOrder!==undefined){
+   assert.ok(Array.isArray(example.dropOrder)&&example.dropOrder.length>=2,'Cleanup order requires at least two distinct resources');
+   assert.equal(new Set(example.dropOrder).size,example.dropOrder.length,'Cleanup order must use distinct resources');
+   for(const name of example.dropOrder)assert.equal(example.drops?.[name],1,'Ordered cleanup resources must each have exactly one expected drop');
+  }
  }
  assert.ok(Array.isArray(corpus.mutations)&&corpus.mutations.length>=2,'At least two behavioral detection controls are required');
  const mutationIds=new Set();
@@ -64,10 +69,19 @@ export function validateCorpus(corpus){
  }
  return corpus;
 }
+function dropSequence(stderr){
+ return [...stderr.matchAll(/^drop: (?:[^\n:]+:)?([A-Za-z_][A-Za-z0-9_]*)$/gm)].map(match=>match[1]);
+}
 export function checkCleanupCounts(example,stderr){
- const observed={};
- for(const match of stderr.matchAll(/^drop: (?:[^\n:]+:)?([A-Za-z_][A-Za-z0-9_]*)$/gm))observed[match[1]]=(observed[match[1]]??0)+1;
+ const trace=dropSequence(stderr),counts=new Map();
+ for(const name of trace)counts.set(name,(counts.get(name)??0)+1);
+ const observed=Object.fromEntries(counts);
  for(const [name,count] of Object.entries(example.drops??{}))assert.equal(observed[name]??0,count,`${example.id}: ${name} must drop exactly ${count} times`);
+ let previous=-1;
+ for(const name of example.dropOrder??[]){
+  const index=trace.indexOf(name);
+  assert.ok(index>previous,`${example.id}: cleanup must occur in order: ${example.dropOrder.join(', ')}`);previous=index;
+ }
  return observed;
 }
 export function coverageSummary(manifest){
@@ -95,7 +109,7 @@ function execute(example,optimization,syntax,toolchain){
   const result=spawnSync(compiled.output,[],{encoding:'utf8',timeout:15000,env:environment});
   assert.equal(result.status,0,example.id+': '+(result.stderr||result.error?.message));
   const drops=example.drops?checkCleanupCounts(example,result.stderr):undefined;
-  return {stdout:result.stdout,...(drops?{drops}:{})};
+  return {stdout:result.stdout,...(drops?{drops,dropSequence:dropSequence(result.stderr)}:{})};
  }finally{rmSync(directory,{recursive:true,force:true});}
 }
 export function runConformance(root=resolve(import.meta.dirname,'..')){

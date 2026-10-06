@@ -39,6 +39,9 @@ test('independent conformance oracles reject empty domains, conflicting expectat
  check(c=>c.cases.find(x=>x.stdout!==undefined).drops={});
  check(c=>c.cases.find(x=>x.stdout!==undefined).drops={Guard:0});
  check(c=>c.cases.find(x=>x.diagnostic).drops={Guard:1});
+ check(c=>c.cases.find(x=>x.stdout!==undefined).dropOrder=[]);
+ check(c=>c.cases.find(x=>x.stdout!==undefined).dropOrder=['Guard','Guard']);
+ check(c=>c.cases.find(x=>x.stdout!==undefined).dropOrder=['Guard','Marker']);
 });
 
 
@@ -47,6 +50,12 @@ test('native cleanup oracles reject omitted and repeated destruction',()=>{
  assert.deepEqual(checkCleanupCounts(example,'drop: operation.aug:Guard\ndrop: operation.aug:Guard\ndrop: Shared\n'),{Guard:2,Shared:1});
  for(const stderr of ['','drop: Guard\ndrop: Shared\n','drop: Guard\ndrop: Guard\ndrop: Guard\ndrop: Shared\n'])assert.throws(()=>checkCleanupCounts(example,stderr),/must drop exactly/);
 });
+test('cleanup order rejects eventual release after a later scope marker',()=>{
+ const example={id:'pre-entry-cleanup',drops:{Guard:1,Shared:1,Marker:1},dropOrder:['Shared','Guard','Marker']};
+ assert.deepEqual(checkCleanupCounts(example,'drop: Shared\ndrop: operation.aug:Guard\ndrop: Marker\n'),{Shared:1,Guard:1,Marker:1});
+ // The same counts after shutdown must not pass an immediate cancellation check.
+ assert.throws(()=>checkCleanupCounts(example,'drop: Marker\ndrop: Shared\ndrop: Guard\n'),/cleanup must occur in order/);
+});
 test('conformance coverage separates independent programs from linked regressions',()=>{
  const {manifest}=conformanceLedger(root),coverage=coverageSummary(manifest);
  assert.equal(coverage.totalRules,manifest.rules.length);
@@ -54,6 +63,14 @@ test('conformance coverage separates independent programs from linked regression
  assert.ok(coverage.independentRules.some(rule=>rule.id==='FORWARD'));
  assert.ok(coverage.regressionOnlyRules.some(rule=>rule.id==='NATIVE'));
  assert.match(coverage.regressionExecution,/not executed by this command/);
+});
+test('documented ownership and task lifecycle rules have independent acceptance programs',()=>{
+ const {manifest}=conformanceLedger(root);
+ const required=['OWN-1','OWN-2','SHARED-1','BORROW-1',
+  ...Array.from({length:20},(_,index)=>'TASK-'+(index+1)),
+  'ERROR-1','ERROR-2','ERROR-3','CLEANUP-1','CLEANUP-2','SYNTAX-1','CANCEL-1','CANCEL-2'];
+ for(const id of required)assert.ok(manifest.rules.find(rule=>rule.id===id)?.cases.length,
+  id+' needs an independent program, not only a regression link');
 });
 test('conformance identity includes runtime, dependency pins, oracle and grammar and ignores generated caches',()=>{
  const directory=mkdtempSync(join(tmpdir(),'aug-conformance-identity-'));
