@@ -14,7 +14,7 @@ Save each program’s two files in one folder. Run `aug run` to install its depe
 
 LibTorch creates two float64 tensors, adds them, and sums the result to 21. The test also checks each result element. Each owned handle releases its native tensor at scope exit, including failures. GPU support and wider PyTorch APIs are deferred.
 
-[Package repository](https://github.com/GreenPandaStudios/aug-pytorch/tree/v0.1.6) · [Code, specs, and download](examples/native-pytorch/index.md)
+[Package repository](https://github.com/GreenPandaStudios/aug-pytorch/tree/v0.2.0) · [Code, specs, and download](examples/native-pytorch/index.md)
 
 **main.aug**
 
@@ -65,7 +65,7 @@ aug spec
 
 SQLite opens an in-memory database, creates a table, inserts a bound parameter, and queries it. The query returns August. Updates happen inside a borrow, and the owned database closes when the operation ends.
 
-[Package repository](https://github.com/GreenPandaStudios/aug-sqlite/tree/v0.1.5) · [Code, specs, and download](examples/native-sqlite/index.md)
+[Package repository](https://github.com/GreenPandaStudios/aug-sqlite/tree/v0.2.0) · [Code, specs, and download](examples/native-sqlite/index.md)
 
 **main.aug**
 
@@ -108,7 +108,7 @@ aug spec
 
 zlib compresses a UTF-8 buffer and decompresses it with a 4,096-byte output limit. The test checks the restored text and byte length. The adapter releases the native buffers after copying them.
 
-[Package repository](https://github.com/GreenPandaStudios/aug-zlib/tree/v0.1.5) · [Code, specs, and download](examples/native-zlib/index.md)
+[Package repository](https://github.com/GreenPandaStudios/aug-zlib/tree/v0.2.0) · [Code, specs, and download](examples/native-zlib/index.md)
 
 **main.aug**
 
@@ -153,7 +153,7 @@ aug spec
 
 The Rust BLAKE3 crate hashes abc. Its result must match the published 64-character digest checked by the test. The Rust adapter copies the output and catches unwinding panics before returning through the C ABI.
 
-[Package repository](https://github.com/GreenPandaStudios/aug-blake3/tree/v0.1.5) · [Code, specs, and download](examples/native-blake3/index.md)
+[Package repository](https://github.com/GreenPandaStudios/aug-blake3/tree/v0.2.0) · [Code, specs, and download](examples/native-blake3/index.md)
 
 **main.aug**
 
@@ -193,7 +193,7 @@ aug spec
 The URL in each import selects a release tag; installation resolves it to a source commit and native artifact hashes in `aug.lock.json`. An alias is useful when several files use the package:
 
 ```sh
-aug add https://github.com/GreenPandaStudios/aug-zlib#v0.1.5 --as zlib
+aug add https://github.com/GreenPandaStudios/aug-zlib#v0.2.0 --as zlib
 ```
 
 Then import `compress` and `decompress` from `zlib`. Keep the lock in source control. After an online build on the current host, `aug run --offline --frozen` requires the recorded compiler and library artifacts.

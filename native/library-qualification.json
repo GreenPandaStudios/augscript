@@ -3,67 +3,67 @@
   "targets": {
     "darwin-arm64": {
       "pytorch": {
-        "version": "0.1.6",
-        "commit": "f1b6fb1c8d0c964cdd5510d3e303fc35ec915f3a",
+        "version": "0.2.0",
+        "commit": "e87f57af25ac17662c6299224815d3fd1464ad3e",
         "sha256": "a130f4a67b574456e5eb0538dc099cb99e5356fdb47ebd4926da6f9b65ccb1e1"
       },
       "sqlite": {
-        "version": "0.1.5",
-        "commit": "f5a6bec82f12db8b422f4c1cff8232a66a956991",
+        "version": "0.2.0",
+        "commit": "43d8c33289b6b9310199f8c65fb83d48cd9dc310",
         "sha256": "f79e5ac0751aa612d1119d7769d46ee7a34b904e5ea8a993886fb005311e1ad8"
       },
       "zlib": {
-        "version": "0.1.5",
-        "commit": "b23d72f698aef0b8f77a5acd90cfb054bb108ee9",
+        "version": "0.2.0",
+        "commit": "fce52e3bf536a304fab82d1d4b95ae425c027be1",
         "sha256": "62419afbf81826f939e89be6c025781edb0cae4fe60e43736b2d3fa9fdf28dd4"
       },
       "blake3": {
-        "version": "0.1.5",
-        "commit": "bc1fb7ecda099da583facbe8fae2c89a951e2d9c",
+        "version": "0.2.0",
+        "commit": "e9f7b92d98a2f9c36de530f4dfc1740012fb5e5e",
         "sha256": "2eae982e532845a67077abe9918c4eb736775fcbddfb6eef552303400687ffa5"
       }
     },
     "linux-x64": {
       "pytorch": {
-        "version": "0.1.6",
-        "commit": "f1b6fb1c8d0c964cdd5510d3e303fc35ec915f3a",
+        "version": "0.2.0",
+        "commit": "e87f57af25ac17662c6299224815d3fd1464ad3e",
         "sha256": "e39d75858c158af03bae161d54b3a267b4fcf3dc4568be6467df72e472793f7b"
       },
       "sqlite": {
-        "version": "0.1.5",
-        "commit": "f5a6bec82f12db8b422f4c1cff8232a66a956991",
+        "version": "0.2.0",
+        "commit": "43d8c33289b6b9310199f8c65fb83d48cd9dc310",
         "sha256": "3b38b5d537fbe24462505b85f52ed421c80df7af400ff1dc0567aa3f542e6255"
       },
       "zlib": {
-        "version": "0.1.5",
-        "commit": "b23d72f698aef0b8f77a5acd90cfb054bb108ee9",
+        "version": "0.2.0",
+        "commit": "fce52e3bf536a304fab82d1d4b95ae425c027be1",
         "sha256": "c2a6e6522e3a96e1ee99f1b195f7457a7ab633dc05b65a29020aa5ea1ec7aa5d"
       },
       "blake3": {
-        "version": "0.1.5",
-        "commit": "bc1fb7ecda099da583facbe8fae2c89a951e2d9c",
+        "version": "0.2.0",
+        "commit": "e9f7b92d98a2f9c36de530f4dfc1740012fb5e5e",
         "sha256": "67e682239e6133a29e381ee2b0c59beb3070f7cb049a487d0709e4be9714232f"
       }
     },
     "linux-arm64": {
       "pytorch": {
-        "version": "0.1.6",
-        "commit": "f1b6fb1c8d0c964cdd5510d3e303fc35ec915f3a",
+        "version": "0.2.0",
+        "commit": "e87f57af25ac17662c6299224815d3fd1464ad3e",
         "sha256": "8eb7c5e30635949228548208bda1ac0a7c42801d2299a90ea4d4c2064e700573"
       },
       "sqlite": {
-        "version": "0.1.5",
-        "commit": "f5a6bec82f12db8b422f4c1cff8232a66a956991",
+        "version": "0.2.0",
+        "commit": "43d8c33289b6b9310199f8c65fb83d48cd9dc310",
         "sha256": "480c6dfb5a257fc7047a28dd2eb6f2e60bbcb90ae4e301083a180744dadea8f2"
       },
       "zlib": {
-        "version": "0.1.5",
-        "commit": "b23d72f698aef0b8f77a5acd90cfb054bb108ee9",
+        "version": "0.2.0",
+        "commit": "fce52e3bf536a304fab82d1d4b95ae425c027be1",
         "sha256": "6da832fa341a1fba96643244da2bb63957107d2b1413743c363fca002e500c66"
       },
       "blake3": {
-        "version": "0.1.5",
-        "commit": "bc1fb7ecda099da583facbe8fae2c89a951e2d9c",
+        "version": "0.2.0",
+        "commit": "e9f7b92d98a2f9c36de530f4dfc1740012fb5e5e",
         "sha256": "69e4de7c1928254c2fb285b0ecd557c4dd1346e9207d0b7ef56e00957caae748"
       }
     }

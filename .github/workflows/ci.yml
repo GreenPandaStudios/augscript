@@ -56,7 +56,7 @@ jobs:
       - run: npm run test:packages
   native:
     runs-on: macos-15
-    timeout-minutes: 90
+    timeout-minutes: 150
     env:
       AUG_LLVM_HOME: ${{ github.workspace }}/.aug-build/llvm-tools
       AUG_GITHUB_TOKEN: ${{ github.token }}
@@ -97,7 +97,7 @@ jobs:
       - name: Qualify repeated runtime lifecycles and sustained heap use
         env:
           AUG_SANITIZER_CC: ${{ github.workspace }}/.aug-build/llvm-maintainer/bin/clang
-          RELIABILITY_PROFILE: ${{ inputs.reliability_profile || 'ci' }}
+          RELIABILITY_PROFILE: ${{ inputs.reliability_profile || (github.head_ref == 'codex/v1-release-candidate' && 'soak') || 'ci' }}
         run: npm run test:reliability -- --profile "$RELIABILITY_PROFILE"
       - name: Existing language, runtime and real applications through LLVM
         env:
@@ -114,7 +114,7 @@ jobs:
       - name: Qualify the native PostgreSQL package and HTTP drain
         run: |
           git clone --no-checkout https://github.com/GreenPandaStudios/aug-postgres "$RUNNER_TEMP/aug-postgres"
-          git -C "$RUNNER_TEMP/aug-postgres" checkout --detach 40b0a671f7c9066fe6b311d931020749949e3f60
+          git -C "$RUNNER_TEMP/aug-postgres" checkout --detach a92850a5f9fc0dd04e952d95bfb17e7281586a60
           node bin/aug.mjs bind header "$RUNNER_TEMP/aug-postgres/native/include/aug_postgres.h" --contract "$RUNNER_TEMP/aug-postgres/native.abi.json" --target aarch64-apple-darwin --clang clang --output .aug-build/header-check-postgres
           node "$RUNNER_TEMP/aug-postgres/native/build.mjs"
           AUG_NATIVE_ARTIFACT_CACHE="$RUNNER_TEMP/aug-postgres/.aug-build/native/consumer-cache" node bin/aug.mjs package cache-native "$RUNNER_TEMP/aug-postgres" --artifact macos-arm64 --archive "$RUNNER_TEMP/aug-postgres/.aug-build/native/native-macos-arm64.tar.gz"

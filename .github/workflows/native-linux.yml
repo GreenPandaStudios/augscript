@@ -26,7 +26,7 @@ jobs:
           - runner: ubuntu-24.04-arm
             host: linux-arm64
     runs-on: ${{ matrix.runner }}
-    timeout-minutes: 90
+    timeout-minutes: 150
     env:
       AUG_GITHUB_TOKEN: ${{ github.token }}
     steps:
@@ -60,14 +60,16 @@ jobs:
           docker exec -e AUG_WORKER_SANITIZER=address,undefined -e AUG_SANITIZER_CC=/work/.aug-build/llvm-maintainer/bin/clang qualification node --test tests/worker-runtime.test.mjs
       - name: Qualify repeated runtime lifecycles and sustained heap use
         env:
-          RELIABILITY_PROFILE: ${{ inputs.reliability_profile || 'ci' }}
+          RELIABILITY_PROFILE: ${{ inputs.reliability_profile || (github.head_ref == 'codex/v1-release-candidate' && 'soak') || 'ci' }}
         run: |
           docker exec -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools -e AUG_SANITIZER_CC=/work/.aug-build/llvm-maintainer/bin/clang qualification node --test tests/runtime-reliability.test.mjs
           docker exec -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools -e AUG_SANITIZER_CC=/work/.aug-build/llvm-maintainer/bin/clang qualification npm run test:reliability -- --profile "$RELIABILITY_PROFILE"
       - name: Build real native libraries from separate repositories
         run: |
           for library in pytorch sqlite zlib blake3; do
-            git clone --depth 1 "https://github.com/GreenPandaStudios/aug-$library" "$RUNNER_TEMP/aug-$library"
+            revision=$(node --input-type=module -e 'import fs from "node:fs"; const pins=JSON.parse(fs.readFileSync("native/library-qualification.json")); console.log(pins.targets[process.argv[1]][process.argv[2]].commit);' '${{ matrix.host }}' "$library")
+            git clone --no-checkout "https://github.com/GreenPandaStudios/aug-$library" "$RUNNER_TEMP/aug-$library"
+            git -C "$RUNNER_TEMP/aug-$library" checkout --detach "$revision"
             docker cp "$RUNNER_TEMP/aug-$library" "qualification:/work/aug-$library"
             docker exec qualification node bin/aug.mjs bind header "/work/aug-$library/native/include/$(case "$library" in pytorch) echo aug_torch.h;; *) echo "aug_$library.h";; esac)" --contract "/work/aug-$library/native.abi.json" --target "$(case '${{ matrix.host }}' in linux-x64) echo x86_64-unknown-linux-gnu;; *) echo aarch64-unknown-linux-gnu;; esac)" --clang clang --output "/work/.aug-build/header-check-$library"
             docker exec qualification node "/work/aug-$library/native/build.mjs"
@@ -75,7 +77,7 @@ jobs:
       - name: Qualify the native PostgreSQL package and HTTP drain
         run: |
           git clone --no-checkout https://github.com/GreenPandaStudios/aug-postgres "$RUNNER_TEMP/aug-postgres"
-          git -C "$RUNNER_TEMP/aug-postgres" checkout --detach 40b0a671f7c9066fe6b311d931020749949e3f60
+          git -C "$RUNNER_TEMP/aug-postgres" checkout --detach a92850a5f9fc0dd04e952d95bfb17e7281586a60
           docker cp "$RUNNER_TEMP/aug-postgres" qualification:/work/aug-postgres
           docker exec qualification node bin/aug.mjs bind header /work/aug-postgres/native/include/aug_postgres.h --contract /work/aug-postgres/native.abi.json --target "$(case '${{ matrix.host }}' in linux-x64) echo x86_64-unknown-linux-gnu;; *) echo aarch64-unknown-linux-gnu;; esac)" --clang clang --output /work/.aug-build/header-check-postgres
           docker exec qualification chown -R node:node /work/aug-postgres
