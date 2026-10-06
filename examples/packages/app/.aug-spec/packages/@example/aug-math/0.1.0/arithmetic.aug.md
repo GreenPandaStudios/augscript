@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=81571668305963e8ef80f28cf6c7c9454986bc8218267b9da3d2b6d39bbf24d2 -->
 
+[Interactions and sequences](arithmetic.aug.diagrams.md)
+
 <a id="symbol-add"></a>
 ## `add` · [source](arithmetic.aug#L4)
 

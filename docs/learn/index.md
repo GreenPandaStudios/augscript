@@ -10,6 +10,8 @@ This book teaches you to read, write, and change August programs. It assumes you
 
 Start with a working application. Then add one idea at a time: labeled inputs, data and failures, module boundaries, dependencies, and controlled mutation. Each chapter contains a complete small project. Save its files together, run the commands, and compare your result with the output shown.
 
+If you are reading an existing application, begin with its compiled explanation. The unreleased diagram views also provide a [project overview and linked sequences](../examples/hello/diagrams/index.md). Move down to the source for an exact expression, or back up to see how a module fits the application. [Compiled specifications](../specifications.md) describes this workflow.
+
 ## Read in order
 
 | Chapter | What you will do |

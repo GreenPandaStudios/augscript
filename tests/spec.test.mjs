@@ -368,7 +368,7 @@ welcome(string name) returns string { return "Hello, " + name + "!" }
 },root=>{
   const result=checked(root);valid(result);
   const text=generateSpecs(result).find(output=>output.path.endsWith('text.aug.md')).text;
-  const prose=text.replace(/<details>[\s\S]*?<\/details>/g,'').replace(/ \[source\]\([^)]*\)/g,'').split('\n').filter(line=>line&&!line.startsWith('#')&&!line.startsWith('<')).join('\n');
+  const prose=text.replace(/<details>[\s\S]*?<\/details>/g,'').replace(/ \[source\]\([^)]*\)/g,'').split('\n').filter(line=>line&&!line.startsWith('#')&&!line.startsWith('<')&&!line.startsWith('[Interactions and sequences]')).join('\n');
   assert.equal(prose,'It takes `price` and `quantity` as integers. It returns `price` times `quantity` if `quantity` is positive, or `0` otherwise.\nIt takes `name` as a string. It returns the text `Hello, {name}!`.');
   assert.doesNotMatch(text,/The caller supplies|The result is|It can use|the value from|This ends|execution continues|^\s*[-*] /m);
 }));

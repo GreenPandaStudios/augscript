@@ -1,10 +1,14 @@
 {
   "format": 1,
   "files": [
+    ".aug-spec/diagrams/index.md",
     ".aug-spec/packages/@git/url_2d3c37c690c0fa115be1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug",
+    ".aug-spec/packages/@git/url_2d3c37c690c0fa115be1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.diagrams.md",
     ".aug-spec/packages/@git/url_2d3c37c690c0fa115be1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md",
+    "data.aug.diagrams.md",
     "data.aug.md",
+    "main.aug.diagrams.md",
     "main.aug.md"
   ],
-  "digest": "ff4aa3b52d46b2b6602acc8d32774d45b271bc765b766e71c2a081f7ac31cff1"
+  "digest": "244f296ab94674453905a03d4f3973c78431fba703ab18a2398db4b2395aecbc"
 }

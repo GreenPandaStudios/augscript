@@ -46,6 +46,8 @@ export add from arithmetic
 
 ## Compiled specification {#specification}
 
+[Interactions and sequences](export-diagrams.md)
+
 ### Exports
 
 Export the declaration `add` from [`arithmetic.aug`](arithmetic.md#symbol-add).

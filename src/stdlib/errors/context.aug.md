@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=34233db8b65bbd262f72cdfc8ca85679905c75cc572a42248f11eda91bfb3748 -->
 
+[Interactions and sequences](context.aug.diagrams.md)
+
 <a id="symbol-ContextError"></a>
 ## `ContextError` · class · [source](context.aug#L8)
 

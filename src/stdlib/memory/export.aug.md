@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=8334193addd6d7c090db8416c5c4247c529d3c90775e0e8be147244fa40c8fad -->
 
+[Interactions and sequences](export.aug.diagrams.md)
+
 ## Exports
 
 Export the declaration `StoreFull` from [`store.aug`](store.aug.md#symbol-StoreFull). Export the declaration `ExpiringStore` from [`store.aug`](store.aug.md#symbol-ExpiringStore). Export the declaration `MemoryStore` from [`store.aug`](store.aug.md#symbol-MemoryStore).

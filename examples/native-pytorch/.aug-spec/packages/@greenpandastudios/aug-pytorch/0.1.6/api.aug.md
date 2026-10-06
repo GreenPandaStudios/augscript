@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=9fdd848f656179aef6927c50ae03e9277103c25bbe0c52825f87ba40c1e9f0ee -->
 
+[Interactions and sequences](api.aug.diagrams.md)
+
 <a id="symbol-tensor"></a>
 ## `tensor` · [source](api.aug#L10)
 

@@ -50,6 +50,8 @@ export Greeter from greeter
 
 ## Compiled specification {#specification}
 
+[Interactions and sequences](export-diagrams.md)
+
 ### Exports
 
 Export the declaration `Greeter` from [`greeter.aug`](greeter.md#symbol-Greeter).

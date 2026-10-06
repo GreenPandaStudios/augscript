@@ -17,6 +17,8 @@ Open [the application's entry point](../examples/developer-workflow/main.md). It
 
 The private test adapter implements the public logging contract. It keeps these cases independent of console messages. Test setup chooses its own providers; application startup does not run during a case.
 
+The unreleased compiler also writes `.aug-spec/diagrams/index.md` and adjacent `.aug.diagrams.md` pages. Start with [this project's overview](../examples/developer-workflow/diagrams/index.md), open [the calculator's interactions and sequences](../examples/developer-workflow/calculator-diagrams.md), then follow an operation to its explanation and source. These static views help you locate the change; they do not replace its tests.
+
 ## Trace only what the change needs
 
 Suppose the request is: **also verify addition with a negative operand**. Read the `Arithmetic.add` contract, `Calculator.add`, and the `addition` test group. Follow [the logging contract](../examples/developer-workflow/logging/logger.md) if you need to understand its effect. The spec links to the logging operations used by the calculator.

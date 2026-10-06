@@ -1,8 +1,11 @@
 {
   "format": 1,
   "files": [
+    ".aug-spec/diagrams/index.md",
+    "forecasts.aug.diagrams.md",
     "forecasts.aug.md",
+    "main.aug.diagrams.md",
     "main.aug.md"
   ],
-  "digest": "7e6880919e9d2c9e1b8e6268b8389096fc5d99dcb6c432019c64b29931a27ebc"
+  "digest": "f9ccbd42cdfaea4b739e726036e400e5b7a18312baae9454e3c25b4786d51d1e"
 }

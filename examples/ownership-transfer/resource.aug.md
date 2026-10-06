@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=45f58fe60d054416801b9b64964a2a3c935b9b795e07c4fc9e4e5f002055dabc -->
 
+[Interactions and sequences](resource.aug.diagrams.md)
+
 <a id="symbol-Resource"></a>
 ## `Resource` · class · [source](resource.aug#L3)
 

@@ -28,6 +28,20 @@ Generation also adds one managed comment at the top of each project source file:
 
 The comment points readers and coding agents to the explanation before an edit. Generation updates it after a rename and preserves handwritten comments. Installed dependencies are left unchanged. `aug spec --check` reports missing or outdated pointers without adding them.
 
+## Move from the overview to the code (unreleased)
+
+`aug spec` also generates Mermaid diagrams from the checked program. Open `.aug-spec/diagrams/index.md` to see its areas, modules and HTTP APIs. Each module links to an adjacent `FILE.aug.diagrams.md` containing class interactions, API calls and operation sequences. The prose spec links to that page.
+
+Start with the project overview when you are finding your way around. Open a module to see its relationships, then follow an API sequence to its called contracts. Read the compiled explanation for the complete behavior and open the linked source when you need to change it. The [greeting project](examples/hello/diagrams/index.md) shows the same path through a small application; the [login project](examples/oidc-login/diagrams/index.md) has HTTP handlers and native dependencies.
+
+Graphs split after 18 nodes or 30 edges. Sequence views split after 12 participants or 24 call/note steps, retaining active branch and loop context. Repeated nodes connect the views; calls are not discarded. Long labels end with an ellipsis, and their full expressions remain in the spec and source. A large project has an area overview as well as module detail.
+
+Sequences describe possible control flow, including branches, loops, early exits, errors, recovery, explicit cleanup, task starts and waits. They stop at native and dynamically selected interface contracts. Creating a callback or browser handler does not mean it runs immediately. Applied HTTP policies and interceptors are named with a link to their effective explanation. These are static diagrams, not recorded request traces.
+
+The wiki renders the Mermaid source as a diagram with Fit and zoom controls. On a narrow screen, zoom and scroll to inspect it, or open **Mermaid source**. The example's source still switches between indentation and braces. The downloadable project contains the diagrams too.
+
+Diagram generation shares the spec's offline, deterministic generation and `--check` workflow. It protects handwritten diagram files, removes obsolete generated pages through the manifest, and adds no timestamps or machine paths. Commit the adjacent diagrams with the specs and `.aug-spec/` to keep their links usable.
+
 ## What the document explains
 
 Each declaration gets a short introduction and paragraphs explaining what it does. Implementations keep their complete signatures, defaults, checked errors and capability contracts in an expandable **Checked interface** section. Open it when you need the exact call contract. Bodyless interfaces keep their promises visible because the contract is their behavior. Private helpers and same-file tests are included. For endpoints, the explanation covers routes, request inputs, policies, and HTTP responses.
@@ -87,7 +101,7 @@ Implementation methods can inherit documentation from their interfaces. This set
 
 In VS Code, use **AugScript: Open Compiled Specification** to generate and preview the current file's document. Save sources first. **AugScript: Generate Specifications** generates the project's documents. Language diagnostics and migration actions use the same compiler as the CLI.
 
-`aug pack` includes adjacent specs and their offline dependency documents in the archive. Consumers import August declarations normally; Markdown files do not change the package's public exports or execute code. See [packages](packages.md).
+`aug pack` includes adjacent specs and their offline dependency documents in the archive. The unreleased diagram generator includes adjacent diagrams and the project overview too. Consumers import August declarations normally; Markdown files do not change the package's public exports or execute code. See [packages](packages.md).
 
 ## Determinism and limits
 

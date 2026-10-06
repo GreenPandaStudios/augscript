@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=2f759821fa03ae23e3c856a266b4f82fe3e2d9e6bf917b0d6f12fcbaa40284a1 -->
 
+[Interactions and sequences](counter.aug.diagrams.md)
+
 <a id="symbol-Counter"></a>
 ## `Counter` · class · [source](counter.aug#L2)
 

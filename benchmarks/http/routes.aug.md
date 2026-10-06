@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=341c333a282fdd6acb45d60c8440395563904afeb0276b3ddd43788cfef6da32 -->
 
+[Interactions and sequences](routes.aug.diagrams.md)
+
 Plain handler results default to HTTP 200 unless another status is declared. HttpResponse values choose their own status. Unhandled request failures return HTTP 500 and cancel the request tasks.
 
 <a id="symbol-Reply"></a>

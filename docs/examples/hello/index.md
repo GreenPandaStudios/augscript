@@ -24,6 +24,8 @@ Read [`logging/export.aug`](logging/export.md). The logging folder exports Logge
 
 Read [`logging/logger.aug`](logging/logger.md). Logger requires a log method. ConsoleLogger writes the message through its injected console.
 
+[Explore the generated project diagrams](diagrams/index.md) to move from areas and modules to class interactions and API sequences.
+
 ## Project files
 
 - [`main.aug`](main.md)

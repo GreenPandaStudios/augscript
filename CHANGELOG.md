@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Generate deterministic Mermaid project, class, API-call and sequence views with compiled specs; link the wiki examples from overview to source.
+
 - Coordinate request-based and mechanical checked edits, formatting, and package writes through one exclusive source writer. Recovery detects either journal format. Reading context and request-plan context use distinct, documented revision schemas.
 - Include forwarding dependencies and inherited interfaces in bounded reading context without exposing generated delegate bodies as editable source.
 

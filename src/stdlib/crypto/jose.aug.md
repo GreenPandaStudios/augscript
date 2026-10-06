@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=66375491ee4f9944d6777da1163ce6f132948dcc9af8ca880ab62ca1d8289c09 -->
 
+[Interactions and sequences](jose.aug.diagrams.md)
+
 <a id="symbol-JwtError"></a>
 ## `JwtError` · class · [source](jose.aug#L6)
 

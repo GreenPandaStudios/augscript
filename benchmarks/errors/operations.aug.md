@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=1665588c91eb285e851e8447354a671c3f0611537395ed9ee0b357f67c0e2909 -->
 
+[Interactions and sequences](operations.aug.diagrams.md)
+
 <a id="symbol-validate"></a>
 ## `validate` · [source](operations.aug#L2)
 

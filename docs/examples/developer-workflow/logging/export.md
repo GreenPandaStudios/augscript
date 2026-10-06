@@ -51,6 +51,8 @@ export ConsoleLogger from console
 
 ## Compiled specification {#specification}
 
+[Interactions and sequences](export-diagrams.md)
+
 ### Exports
 
 Export the declaration `Logger` from [`logger.aug`](logger.md#symbol-Logger). Export the declaration `ConsoleLogger` from [`console.aug`](console.md#symbol-ConsoleLogger).

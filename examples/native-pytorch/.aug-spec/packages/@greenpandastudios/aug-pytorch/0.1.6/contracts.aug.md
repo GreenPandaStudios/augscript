@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=1a542f02b787348b3a002a20a8031331200dca4bcd728e427ed84eb7d754487a -->
 
+[Interactions and sequences](contracts.aug.diagrams.md)
+
 <a id="symbol-TensorError"></a>
 ## `TensorError` · class · [source](contracts.aug#L3)
 

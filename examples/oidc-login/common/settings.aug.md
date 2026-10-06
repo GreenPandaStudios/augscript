@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=67601c4d9243d6cdf241355573d5c54cbf836ab92a0c2669c20a13fab5722b7b -->
 
+[Interactions and sequences](settings.aug.diagrams.md)
+
 <a id="symbol-Settings"></a>
 ## `Settings` · immutable record · [source](settings.aug#L3)
 

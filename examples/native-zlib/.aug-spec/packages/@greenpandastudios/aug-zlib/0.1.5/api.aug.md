@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=40c873c0be7741c736ab19f47c87904e3e396e04af4d10c9818f3d530df998d0 -->
 
+[Interactions and sequences](api.aug.diagrams.md)
+
 <a id="symbol-compress"></a>
 ## `compress` · [source](api.aug#L7)
 

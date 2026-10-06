@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=5fb4916314a25c7d9d20ec627abc1465281f6ad40935fe2f2ebb9760a3dc292d -->
 
+[Interactions and sequences](api.aug.diagrams.md)
+
 <a id="symbol-hash"></a>
 ## `hash` · [source](api.aug#L6)
 

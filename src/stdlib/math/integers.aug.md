@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=c020d152544bd9028ddff3ecf358991e9c335407fcdba7463d59d04c6488a7a8 -->
 
+[Interactions and sequences](integers.aug.diagrams.md)
+
 <a id="symbol-checkedAdd"></a>
 ## `checkedAdd` · [source](integers.aug#L3)
 

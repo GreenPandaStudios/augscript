@@ -1,8 +1,11 @@
 {
   "format": 1,
   "files": [
+    ".aug-spec/diagrams/index.md",
+    "src/arithmetic.aug.diagrams.md",
     "src/arithmetic.aug.md",
+    "src/export.aug.diagrams.md",
     "src/export.aug.md"
   ],
-  "digest": "4e5eeac893ef073cea3d764b39959a0193031bd7dc27a1dbd5ef1664f5f1bbe0"
+  "digest": "e0575fe30ea2b04812d1dcc5d52bde67ce78a66377a32d6de178c23874883914"
 }

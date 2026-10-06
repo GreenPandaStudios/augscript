@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=64b0de71d8f2a1f1c6a5e4f6a60958500e85cf63820ea1a1b6dbc17bdc2f44fa -->
 
+[Interactions and sequences](main.aug.diagrams.md)
+
 ## Startup
 
 It sets `iterations` to `20000`. It sets `index`, `checksum`, and `failures` separately, each to `0`. [source](main.aug#L3-L6)

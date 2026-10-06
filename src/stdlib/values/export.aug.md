@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=8fd4e5f1d049793492b54cab48ed18e3f65ca03c10e945ced6a6c9cfdc753f92 -->
 
+[Interactions and sequences](export.aug.diagrams.md)
+
 ## Exports
 
 Export the declaration `CivilDate` from [`dates.aug`](dates.aug.md#symbol-CivilDate). Export the declaration `parseCivilDate` from [`dates.aug`](dates.aug.md#symbol-parseCivilDate). Export the declaration `formatCivilDate` from [`dates.aug`](dates.aug.md#symbol-formatCivilDate). Export the declaration `compareCivilDates` from [`dates.aug`](dates.aug.md#symbol-compareCivilDates).

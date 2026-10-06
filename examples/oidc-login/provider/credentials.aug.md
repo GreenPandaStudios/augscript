@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=1302d2c5c594ed4839c0964761e987a5dd2a3d76a7e81b74b882efc38b7cdcb5 -->
 
+[Interactions and sequences](credentials.aug.diagrams.md)
+
 <a id="symbol-verifyCredentials"></a>
 ## `verifyCredentials` · [source](credentials.aug#L4)
 

@@ -22,6 +22,8 @@ Read [`calculator.aug`](calculator.md). The calculator receives a logger and add
 
 Read [`logging/logger.aug`](logging/logger.md). The production logger and test adapter implement this interface.
 
+[Explore the generated project diagrams](diagrams/index.md) to move from areas and modules to class interactions and API sequences.
+
 ## Project files
 
 - [`main.aug`](main.md)

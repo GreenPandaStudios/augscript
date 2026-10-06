@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=a1a4f3a2bb086ab83037ca8f702b2a3dcfed77ada7d8674fe16736701e7acaab -->
 
+[Interactions and sequences](api.aug.diagrams.md)
+
 <a id="symbol-NativeDatabaseStorage"></a>
 ## `NativeDatabaseStorage` · class · [source](api.aug#L9)
 

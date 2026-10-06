@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=2255867f79972d6ce55b4ef0f9f17fb6b0afaaafaabd3d160bf311b2a51a670b -->
 
+[Interactions and sequences](types.aug.diagrams.md)
+
 <a id="symbol-Repository"></a>
 ## `Repository` · interface · [source](types.aug#L3)
 

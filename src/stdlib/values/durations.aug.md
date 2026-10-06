@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=a4d866c6a130ef7fc93aa590d694a5a34c96c00bcd038d79252e1d59bfec706c -->
 
+[Interactions and sequences](durations.aug.diagrams.md)
+
 <a id="symbol-Duration"></a>
 ## `Duration` · immutable record · [source](durations.aug#L6)
 

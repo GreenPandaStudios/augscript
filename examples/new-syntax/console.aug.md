@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=dd393a651c40b46b5e4d2ea7bdbd62513f267347b2cdb36b479c0fbb33c66734 -->
 
+[Interactions and sequences](console.aug.diagrams.md)
+
 <a id="symbol-ConsoleLogger"></a>
 ## `ConsoleLogger` · class · [source](console.aug#L4)
 

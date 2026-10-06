@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=e188a2a7c6090e96c78a4e40b7771c9c5f4112a395f9f841d654dd54edba9aa2 -->
 
+[Interactions and sequences](main.aug.diagrams.md)
+
 ## Startup
 
 It creates [`Counter`](counter.aug.md#symbol-Counter) with `value` `1` and stores the result in owned `counter` ([`Counter`](counter.aug.md#symbol-Counter)). It calls [`counter.increment`](counter.aug.md#symbol-Counter.increment). It prints [`counter.read`](counter.aug.md#symbol-Counter.read). [source](main.aug#L3-L5)

@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=4c9d42d997404f81c187121bb21586cc73377d2e07450f02a8dc8970da3d59c8 -->
 
+[Interactions and sequences](contracts.aug.diagrams.md)
+
 <a id="symbol-Console"></a>
 ## `Console` · capability interface · [source](contracts.aug#L4)
 

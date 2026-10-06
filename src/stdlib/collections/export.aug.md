@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=7811931f437036fc52b3b48e7e7fec8de868e5a72bba071cf9946f54c3f18fa8 -->
 
+[Interactions and sequences](export.aug.diagrams.md)
+
 ## Exports
 
 Export the declaration `range` from [`ranges.aug`](ranges.aug.md#symbol-range). Export the declaration `RangeError` from [`ranges.aug`](ranges.aug.md#symbol-RangeError). Export the declaration `Predicate` from [`operations.aug`](operations.aug.md#symbol-Predicate). Export the declaration `Transformation` from [`operations.aug`](operations.aug.md#symbol-Transformation).

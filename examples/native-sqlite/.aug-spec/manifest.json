@@ -1,18 +1,24 @@
 {
   "format": 1,
   "files": [
+    ".aug-spec/diagrams/index.md",
     ".aug-spec/packages/@greenpandastudios/aug-sqlite/0.1.5/api.aug",
+    ".aug-spec/packages/@greenpandastudios/aug-sqlite/0.1.5/api.aug.diagrams.md",
     ".aug-spec/packages/@greenpandastudios/aug-sqlite/0.1.5/api.aug.md",
     ".aug-spec/packages/@greenpandastudios/aug-sqlite/0.1.5/bindings.aug",
+    ".aug-spec/packages/@greenpandastudios/aug-sqlite/0.1.5/bindings.aug.diagrams.md",
     ".aug-spec/packages/@greenpandastudios/aug-sqlite/0.1.5/bindings.aug.md",
     ".aug-spec/packages/@greenpandastudios/aug-sqlite/0.1.5/contracts.aug",
+    ".aug-spec/packages/@greenpandastudios/aug-sqlite/0.1.5/contracts.aug.diagrams.md",
     ".aug-spec/packages/@greenpandastudios/aug-sqlite/0.1.5/contracts.aug.md",
     ".aug-spec/packages/@greenpandastudios/aug-sqlite/0.1.5/native.abi.json",
+    "database.aug.diagrams.md",
     "database.aug.md",
+    "main.aug.diagrams.md",
     "main.aug.md"
   ],
   "nativeDescriptors": {
     ".aug-spec/packages/@greenpandastudios/aug-sqlite/0.1.5/native.abi.json": "3c75c2925c85f1b83db06ee00fa04f1d2d37c9fd6edca0d074ce89b4647ffffb"
   },
-  "digest": "57b474c417ef07356c6ef373e579ac9089dd9551263d4e41b96e155fc2c71d84"
+  "digest": "59d2ba0ee8eb6d528c28d69033fcba31999dd145b5cf8576c126330686f07d81"
 }

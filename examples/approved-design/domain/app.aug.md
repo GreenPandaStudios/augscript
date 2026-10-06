@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=ad3f1f1ae9a6ecb4a61b0869b598cf29db2257a2ff7fe44da0928122fd11df7b -->
 
+[Interactions and sequences](app.aug.diagrams.md)
+
 <a id="symbol-Application"></a>
 ## `Application` · interface · [source](app.aug#L5)
 

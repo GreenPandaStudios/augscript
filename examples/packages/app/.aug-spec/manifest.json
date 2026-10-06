@@ -1,9 +1,12 @@
 {
   "format": 1,
   "files": [
+    ".aug-spec/diagrams/index.md",
     ".aug-spec/packages/@example/aug-math/0.1.0/arithmetic.aug",
+    ".aug-spec/packages/@example/aug-math/0.1.0/arithmetic.aug.diagrams.md",
     ".aug-spec/packages/@example/aug-math/0.1.0/arithmetic.aug.md",
+    "main.aug.diagrams.md",
     "main.aug.md"
   ],
-  "digest": "76152e3531ce54250797f535fb55bab3baf0f291020cd904263e11f6118096ae"
+  "digest": "cb2287232e081bc3fb7cd8ce280ce9aa121d208ace6ebc850074d9f3d3aa5ea8"
 }

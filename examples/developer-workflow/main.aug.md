@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=4739bee7614d6db19929ac032f837dd3b90ff1e251c37061772f6c8e4919006d -->
 
+[Interactions and sequences](main.aug.diagrams.md)
+
 ## Providers
 
 `Console` is provided by [`SystemConsole`](.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-SystemConsole). The same instance is shared. `Logger` is provided by [`ConsoleLogger`](logging/console.aug.md#symbol-ConsoleLogger). The same instance is shared.

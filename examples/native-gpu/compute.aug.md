@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=bdb22d6d21ecacff3a28af4081c90b7d70a77e840e791974bdbc914dd5c78d96 -->
 
+[Interactions and sequences](compute.aug.diagrams.md)
+
 <a id="symbol-calculate"></a>
 ## `calculate` · [source](compute.aug#L5)
 

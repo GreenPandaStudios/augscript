@@ -1,8 +1,11 @@
 {
   "format": 1,
   "files": [
+    ".aug-spec/diagrams/index.md",
+    "errors.aug.diagrams.md",
     "errors.aug.md",
+    "main.aug.diagrams.md",
     "main.aug.md"
   ],
-  "digest": "7cffbf40b25071dbc1868760496a812d9716956b38af5a3cf565b467f002465a"
+  "digest": "2377688c54caf63a6b79acdb02f58e287e4eafaf963151ba1fd3d6aba90edc9f"
 }

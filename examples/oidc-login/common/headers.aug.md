@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=be1d4c67c3285711bb99166573bdf85f87491c05d0275c31fb0fb9347a151385 -->
 
+[Interactions and sequences](headers.aug.diagrams.md)
+
 <a id="symbol-securityHeaders"></a>
 ## `securityHeaders` · [source](headers.aug#L3)
 

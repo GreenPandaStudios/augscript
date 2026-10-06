@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=360715f0540859101aeca9b26913834cd7765e51268168032f1af5ca3686366c -->
 
+[Interactions and sequences](main.aug.diagrams.md)
+
 ## HTTP configuration
 
 Listen on `127.0.0.1`. Limit request bodies to 16384 bytes and buffered responses to 1048576 bytes. Serve OpenAPI at `/openapi.json` and API docs at `/docs`.

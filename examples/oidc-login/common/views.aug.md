@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=da60d46d959f6c41e769debae9ef368a6844acb0fbced1e425cb4c3036be69cb -->
 
+[Interactions and sequences](views.aug.diagrams.md)
+
 <a id="symbol-Page"></a>
 ## `Page` · [source](views.aug#L3)
 

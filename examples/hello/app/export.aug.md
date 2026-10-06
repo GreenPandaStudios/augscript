@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=a6fdfe072a65625cb4751940063e1f3304e8d8324fb22e848076ef6d79da7f67 -->
 
+[Interactions and sequences](export.aug.diagrams.md)
+
 ## Exports
 
 Export the declaration `Greeter` from [`greeter.aug`](greeter.aug.md#symbol-Greeter).

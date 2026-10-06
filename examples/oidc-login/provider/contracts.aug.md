@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=7ed36ad621633c554e4a2a4317c25912b83bf8a6882bbb9c8387fabc39b7fc04 -->
 
+[Interactions and sequences](contracts.aug.diagrams.md)
+
 <a id="symbol-AuthorizationRequest"></a>
 ## `AuthorizationRequest` · immutable record · [source](contracts.aug#L3)
 

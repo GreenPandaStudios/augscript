@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=d0918a3e048c1dd9f2f5ffb7a61feb371f4b63f15b76eb53901313b17b8555af -->
 
+[Interactions and sequences](export.aug.diagrams.md)
+
 ## Exports
 
 Export the declaration `checkedAdd` from [`integers.aug`](integers.aug.md#symbol-checkedAdd). Export the declaration `checkedSubtract` from [`integers.aug`](integers.aug.md#symbol-checkedSubtract). Export the declaration `checkedMultiply` from [`integers.aug`](integers.aug.md#symbol-checkedMultiply). Export the declaration `checkedDivide` from [`integers.aug`](integers.aug.md#symbol-checkedDivide).

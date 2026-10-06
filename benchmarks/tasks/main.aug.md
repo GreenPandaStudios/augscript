@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=6b0801b55aea6a16b55ec0b8b6045fff0d53988f54acdc8caa6d81daa4571e0f -->
 
+[Interactions and sequences](main.aug.diagrams.md)
+
 ## Startup
 
 It sets `iterations` to `2000`. It sets `index` and `checksum` separately, each to `0`. While `index` is less than `iterations`, within a task and ownership scope, it sets `first` to a child task running [`compute`](operations.aug.md#symbol-compute) with `value` from `index` with its inputs captured now. It sets `second` to a child task running [`compute`](operations.aug.md#symbol-compute) with `value` from `index` plus `1` with its inputs captured now. [source](main.aug#L3-L12)

@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=5080ac76ee530736e323a4873986096a507006330a11b53cb3690ee2e86ca075 -->
 
+[Interactions and sequences](logger.aug.diagrams.md)
+
 <a id="symbol-Logger"></a>
 ## `Logger` · interface · [source](logger.aug#L4)
 

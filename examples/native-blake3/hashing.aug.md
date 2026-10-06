@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=85e9e1e2429ec565e7cc5d8dcf1105cbd14b9605972454a0c8d89b45e32e6533 -->
 
+[Interactions and sequences](hashing.aug.diagrams.md)
+
 <a id="symbol-hashText"></a>
 ## `hashText` · [source](hashing.aug#L5)
 

@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=90b7ddd1bd8859c5280f6f7b74c20510432c539b262a591467fcd6b382ec3739 -->
 
+[Interactions and sequences](interceptors.aug.diagrams.md)
+
 <a id="symbol-ValidationError"></a>
 ## `ValidationError` · class · [source](interceptors.aug#L5)
 

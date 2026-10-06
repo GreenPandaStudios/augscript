@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=f8ea2007fbfcf8f9abc6b0e3b6df204aae052098623490cac8b29b99244e570a -->
 
+[Interactions and sequences](logout.aug.diagrams.md)
+
 Plain handler results default to HTTP 200 unless another status is declared. HttpResponse values choose their own status. Unhandled request failures return HTTP 500 and cancel the request tasks.
 
 <a id="symbol-logout"></a>

@@ -78,6 +78,8 @@ export loginCallback from login
 
 ## Compiled specification {#specification}
 
+[Interactions and sequences](export-diagrams.md)
+
 ### Exports
 
 Export the declaration `LoginTransaction` from [`contracts.aug`](contracts.md#symbol-LoginTransaction). Export the declaration `SessionClaims` from [`contracts.aug`](contracts.md#symbol-SessionClaims). Export the declaration `home` from [`endpoints.aug`](endpoints.md#symbol-home). Export the declaration `me` from [`endpoints.aug`](endpoints.md#symbol-me).

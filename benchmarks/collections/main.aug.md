@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=e9bfc0bec2cedfb857c0eebd42caf084605f9bd212fd997764a4984d42b22a35 -->
 
+[Interactions and sequences](main.aug.diagrams.md)
+
 ## Startup
 
 It stores a context-typed empty collection with no items in owned `values` (`Map<int,int>`). It stores a context-typed empty collection with no items in owned `unique` (`Set<int>`). It sets `index` to `0`. While `index` is less than `20000`, it stores `index` times `3` in `values` under `index`; then it adds `index` to `unique`; then it increases `index` by `1`. [source](main.aug#L2-L8)

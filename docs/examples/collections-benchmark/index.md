@@ -14,6 +14,8 @@ Insert, find, and iterate over 20,000 collection entries.
 
 Open a file to read the code beside its compiled explanation. Choose **Indentation** or **Braces** to change the code view. The choice carries across files.
 
+[Explore the generated project diagrams](diagrams/index.md) to move from areas and modules to class interactions and API sequences.
+
 ## Project files
 
 - [`main.aug`](main.md)

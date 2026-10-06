@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=8b2eed93d882f4844b83d94715aa4750d97c1473ea0ee8de41ddaf356ce010e1 -->
 
+[Interactions and sequences](contracts.aug.diagrams.md)
+
 <a id="symbol-Clock"></a>
 ## `Clock` · capability interface · [source](contracts.aug#L3)
 

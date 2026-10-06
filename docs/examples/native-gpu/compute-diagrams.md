@@ -1,0 +1,74 @@
+---
+title: "Diagrams · GPU workers"
+generated: true
+source: "examples/native-gpu/compute.aug.diagrams.md"
+editLink: false
+prev: false
+next: false
+outline: [2, 3]
+---
+
+# GPU workers diagrams
+
+[GPU workers](index.md)
+
+[Project overview](diagrams/index.md) · [Compiled explanation](compute.md)
+
+### Class interactions
+
+No relationships at this level.
+
+### API calls
+
+```mermaid
+flowchart TD
+    n0["calculate · compute.aug"]
+    n1["compute.aug"]
+    n2["add · package/@greenpandastudios/aug-gpu@0.1.1/api.aug"]
+    n3["download · package/@greenpandastudios/aug-gpu@0.1.1/api.aug"]
+    n4["openDevice · package/@greenpandastudios/aug-gpu@0.1.1/api.aug"]
+    n5["upload · package/@greenpandastudios/aug-gpu@0.1.1/api.aug"]
+    n0 -->|"calls"| n2
+    n0 -->|"calls"| n3
+    n0 -->|"calls"| n4
+    n0 -->|"calls"| n5
+    n1 -->|"calls"| n0
+```
+
+### Sequences
+
+Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
+
+#### calculate {#sequence-calculate}
+
+::: spec-paragraph specification-paragraph-1
+[Source](compute.md#source-L5)
+:::
+
+```mermaid
+sequenceDiagram
+    participant p0 as calculate
+    participant p1 as openDevice
+    participant p2 as upload
+    participant p3 as add
+    participant p4 as download
+    p0->>p1: openDevice()
+    Note over p0: Own device#59; release on scope exits
+    p0->>p2: upload(device, values)
+    Note over p0: Own first#59; release on scope exits
+    p0->>p2: upload(device, values)
+    Note over p0: Own second#59; release on scope exits
+    p0->>p3: add(left, right)
+    Note over p0: Own result#59; release on scope exits
+    p0->>p4: download(buffer)
+    Note over p0: Return download(buffer=result)#59; required cleanup runs before exit
+    Note over p0: May leave with checked errors: GpuError
+```
+
+### Called contracts
+
+- [calculate](compute-diagrams.md#sequence-calculate) — compute.aug
+- [add](dependencies/packages/%40greenpandastudios/aug-gpu/0.1.1/api-diagrams.md#sequence-add) — package/@greenpandastudios/aug-gpu@0.1.1/api.aug
+- [download](dependencies/packages/%40greenpandastudios/aug-gpu/0.1.1/api-diagrams.md#sequence-download) — package/@greenpandastudios/aug-gpu@0.1.1/api.aug
+- [openDevice](dependencies/packages/%40greenpandastudios/aug-gpu/0.1.1/api-diagrams.md#sequence-openDevice) — package/@greenpandastudios/aug-gpu@0.1.1/api.aug
+- [upload](dependencies/packages/%40greenpandastudios/aug-gpu/0.1.1/api-diagrams.md#sequence-upload) — package/@greenpandastudios/aug-gpu@0.1.1/api.aug

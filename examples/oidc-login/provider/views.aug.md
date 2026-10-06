@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=fb61791986039596b971bc003dae58cfc00ca1fca8e45b46bb04170d0aec7208 -->
 
+[Interactions and sequences](views.aug.diagrams.md)
+
 <a id="symbol-ProviderLogin"></a>
 ## `ProviderLogin` · [source](views.aug#L4)
 
