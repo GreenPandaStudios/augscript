@@ -2,7 +2,7 @@
 
 # `durations.aug`
 
-<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=a4d866c6a130ef7fc93aa590d694a5a34c96c00bcd038d79252e1d59bfec706c -->
+<!-- August spec revision: schema=1 compiler=1.0.0 source-sha256=a4d866c6a130ef7fc93aa590d694a5a34c96c00bcd038d79252e1d59bfec706c -->
 
 [Interactions and sequences](durations.aug.diagrams.md)
 
@@ -70,7 +70,7 @@ It takes `value` as [`Duration`](durations.aug.md#symbol-Duration).
 <a id="symbol-durationFromSeconds"></a>
 ## `durationFromSeconds` · [source](durations.aug#L70)
 
-Convert whole seconds to exact milliseconds. It takes `seconds` as an integer. It returns a [`Duration`](durations.aug.md#symbol-Duration) with `milliseconds` from [`checkedMultiply`](.aug-spec/august/0.23.0/math/integers.aug.md#symbol-checkedMultiply) with `left` from `seconds` and `right` `1000`. [source](durations.aug#L71)
+Convert whole seconds to exact milliseconds. It takes `seconds` as an integer. It returns a [`Duration`](durations.aug.md#symbol-Duration) with `milliseconds` from [`checkedMultiply`](.aug-spec/august/1.0.0/math/integers.aug.md#symbol-checkedMultiply) with `left` from `seconds` and `right` `1000`. [source](durations.aug#L71)
 
 <details>
 <summary>Checked interface</summary>
@@ -86,7 +86,7 @@ It takes `seconds` as an integer. Failures can raise `ArithmeticError` (Multipli
 <a id="symbol-addDurations"></a>
 ## `addDurations` · [source](durations.aug#L76)
 
-Add milliseconds without wrapping. It takes `left` and `right` as [`Duration`](durations.aug.md#symbol-Duration). It returns a [`Duration`](durations.aug.md#symbol-Duration) with `milliseconds` from [`checkedAdd`](.aug-spec/august/0.23.0/math/integers.aug.md#symbol-checkedAdd) with `left` from `left.milliseconds` and `right` from `right.milliseconds`. [source](durations.aug#L77)
+Add milliseconds without wrapping. It takes `left` and `right` as [`Duration`](durations.aug.md#symbol-Duration). It returns a [`Duration`](durations.aug.md#symbol-Duration) with `milliseconds` from [`checkedAdd`](.aug-spec/august/1.0.0/math/integers.aug.md#symbol-checkedAdd) with `left` from `left.milliseconds` and `right` from `right.milliseconds`. [source](durations.aug#L77)
 
 <details>
 <summary>Checked interface</summary>
@@ -117,6 +117,6 @@ It takes `left` and `right` as [`Duration`](durations.aug.md#symbol-Duration).
 
 ## Dependencies
 
-It uses [`checkedAdd`](.aug-spec/august/0.23.0/math/integers.aug.md#symbol-checkedAdd) and [`checkedMultiply`](.aug-spec/august/0.23.0/math/integers.aug.md#symbol-checkedMultiply) from `august.math`. It uses [`asciiSlice`](ascii.aug.md#symbol-asciiSlice) from `ascii`.
+It uses [`checkedAdd`](.aug-spec/august/1.0.0/math/integers.aug.md#symbol-checkedAdd) and [`checkedMultiply`](.aug-spec/august/1.0.0/math/integers.aug.md#symbol-checkedMultiply) from `august.math`. It uses [`asciiSlice`](ascii.aug.md#symbol-asciiSlice) from `ascii`.
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).

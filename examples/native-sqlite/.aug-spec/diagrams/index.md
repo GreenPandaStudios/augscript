@@ -32,9 +32,9 @@ flowchart LR
 
 | From | To | Operation and inputs | Result |
 | --- | --- | --- | --- |
-| database | @greenpandastudios/aug-sqlite | [execute](../packages/%40greenpandastudios/aug-sqlite/0.1.5/api.aug.md#symbol-execute) · database: borrow Database, sql: string, parameters: List\<string\> | int |
-| database | @greenpandastudios/aug-sqlite | [openMemory](../packages/%40greenpandastudios/aug-sqlite/0.1.5/api.aug.md#symbol-openMemory) | own Database |
-| database | @greenpandastudios/aug-sqlite | [queryScalar](../packages/%40greenpandastudios/aug-sqlite/0.1.5/api.aug.md#symbol-queryScalar) · database: Database, sql: string, parameters: List\<string\> | string |
+| database | @greenpandastudios/aug-sqlite | [execute](../packages/%40greenpandastudios/aug-sqlite/0.2.0/api.aug.md#symbol-execute) · database: borrow Database, sql: string, parameters: List\<string\> | int |
+| database | @greenpandastudios/aug-sqlite | [openMemory](../packages/%40greenpandastudios/aug-sqlite/0.2.0/api.aug.md#symbol-openMemory) | own Database |
+| database | @greenpandastudios/aug-sqlite | [queryScalar](../packages/%40greenpandastudios/aug-sqlite/0.2.0/api.aug.md#symbol-queryScalar) · database: Database, sql: string, parameters: List\<string\> | string |
 | Startup | database | [storedName](../../database.aug.md#symbol-storedName) | string |
 
 </details>

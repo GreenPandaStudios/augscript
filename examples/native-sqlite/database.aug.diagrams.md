@@ -39,6 +39,6 @@ sequenceDiagram
 ## Called contracts
 
 - [storedName](database.aug.diagrams.md#sequence-storedName) — database.aug
-- [execute](.aug-spec/packages/%40greenpandastudios/aug-sqlite/0.1.5/api.aug.diagrams.md#sequence-execute) — package/@greenpandastudios/aug-sqlite@0.1.5/api.aug
-- [openMemory](.aug-spec/packages/%40greenpandastudios/aug-sqlite/0.1.5/api.aug.diagrams.md#sequence-openMemory) — package/@greenpandastudios/aug-sqlite@0.1.5/api.aug
-- [queryScalar](.aug-spec/packages/%40greenpandastudios/aug-sqlite/0.1.5/api.aug.diagrams.md#sequence-queryScalar) — package/@greenpandastudios/aug-sqlite@0.1.5/api.aug
+- [execute](.aug-spec/packages/%40greenpandastudios/aug-sqlite/0.2.0/api.aug.diagrams.md#sequence-execute) — package/@greenpandastudios/aug-sqlite@0.2.0/api.aug
+- [openMemory](.aug-spec/packages/%40greenpandastudios/aug-sqlite/0.2.0/api.aug.diagrams.md#sequence-openMemory) — package/@greenpandastudios/aug-sqlite@0.2.0/api.aug
+- [queryScalar](.aug-spec/packages/%40greenpandastudios/aug-sqlite/0.2.0/api.aug.diagrams.md#sequence-queryScalar) — package/@greenpandastudios/aug-sqlite@0.2.0/api.aug

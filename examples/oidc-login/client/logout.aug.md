@@ -2,7 +2,7 @@
 
 # `logout.aug`
 
-<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=f8ea2007fbfcf8f9abc6b0e3b6df204aae052098623490cac8b29b99244e570a -->
+<!-- August spec revision: schema=1 compiler=1.0.0 source-sha256=f8ea2007fbfcf8f9abc6b0e3b6df204aae052098623490cac8b29b99244e570a -->
 
 [Interactions and sequences](logout.aug.diagrams.md)
 

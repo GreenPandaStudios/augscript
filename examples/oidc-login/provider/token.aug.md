@@ -2,7 +2,7 @@
 
 # `token.aug`
 
-<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=97072723ce3c3d273400e655d9b81fc95a25ef88f81ea0516d8950e250f51f7f -->
+<!-- August spec revision: schema=1 compiler=1.0.0 source-sha256=97072723ce3c3d273400e655d9b81fc95a25ef88f81ea0516d8950e250f51f7f -->
 
 [Interactions and sequences](token.aug.diagrams.md)
 

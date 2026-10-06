@@ -1,29 +1,29 @@
 {
   "format": 1,
-  "compiler": "0.23.0",
+  "compiler": "1.0.0",
   "specifications": {
-    "url_43eae362d663f91d140b": "https://github.com/GreenPandaStudios/aug-zlib#v0.1.5"
+    "url_08e6a3e1f2de8aaaefae": "https://github.com/GreenPandaStudios/aug-zlib#fce52e3bf536a304fab82d1d4b95ae425c027be1"
   },
   "roots": {
-    "url_43eae362d663f91d140b": "packages/url_43eae362d663f91d140b"
+    "url_08e6a3e1f2de8aaaefae": "snapshots/b40bb7c1db2e665e80d6e06fce2d823b869a0bcab280eb8605ffbf5e144bcc6c/packages/url_08e6a3e1f2de8aaaefae"
   },
   "npm": {},
   "git": [
     {
-      "request": "https://github.com/GreenPandaStudios/aug-zlib#v0.1.5",
+      "request": "https://github.com/GreenPandaStudios/aug-zlib#fce52e3bf536a304fab82d1d4b95ae425c027be1",
       "repository": "https://github.com/GreenPandaStudios/aug-zlib.git",
-      "revision": "v0.1.5",
+      "revision": "fce52e3bf536a304fab82d1d4b95ae425c027be1",
       "folder": "",
-      "commit": "b23d72f698aef0b8f77a5acd90cfb054bb108ee9"
+      "commit": "fce52e3bf536a304fab82d1d4b95ae425c027be1"
     }
   ],
   "packages": [
     {
-      "path": "packages/url_43eae362d663f91d140b",
+      "path": "snapshots/b40bb7c1db2e665e80d6e06fce2d823b869a0bcab280eb8605ffbf5e144bcc6c/packages/url_08e6a3e1f2de8aaaefae",
       "name": "@greenpandastudios/aug-zlib",
-      "version": "0.1.5",
+      "version": "0.2.0",
       "source": "src",
-      "digest": "e70c3b5215c27e1fa4983e5b4a6fcda6ae80186f08d94c669eec53deb7fba0f7",
+      "digest": "78694cdf2998f04329d9f6d8cb6947113dab1da1a42e66ed1609c51a2032a8df",
       "dependencies": {},
       "native": {
         "profile": "aug-native-abi-1",
@@ -184,9 +184,9 @@
         },
         "packages": [
           {
-            "sourcePackage": "@greenpandastudios/aug-zlib@0.1.5",
-            "sourceDigest": "e70c3b5215c27e1fa4983e5b4a6fcda6ae80186f08d94c669eec53deb7fba0f7",
-            "sourceCommit": "b23d72f698aef0b8f77a5acd90cfb054bb108ee9",
+            "sourcePackage": "@greenpandastudios/aug-zlib@0.2.0",
+            "sourceDigest": "78694cdf2998f04329d9f6d8cb6947113dab1da1a42e66ed1609c51a2032a8df",
+            "sourceCommit": "fce52e3bf536a304fab82d1d4b95ae425c027be1",
             "contractSha256": "c3d4b36eadcccd13caff71597ed77a8e7307f0cfe3d13660a8e9127efe942b3d",
             "artifact": {
               "id": "macos-arm64",

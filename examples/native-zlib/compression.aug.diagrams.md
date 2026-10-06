@@ -32,5 +32,5 @@ sequenceDiagram
 ## Called contracts
 
 - [roundTrip](compression.aug.diagrams.md#sequence-roundTrip) — compression.aug
-- [compress](.aug-spec/packages/%40greenpandastudios/aug-zlib/0.1.5/api.aug.diagrams.md#sequence-compress) — package/@greenpandastudios/aug-zlib@0.1.5/api.aug
-- [decompress](.aug-spec/packages/%40greenpandastudios/aug-zlib/0.1.5/api.aug.diagrams.md#sequence-decompress) — package/@greenpandastudios/aug-zlib@0.1.5/api.aug
+- [compress](.aug-spec/packages/%40greenpandastudios/aug-zlib/0.2.0/api.aug.diagrams.md#sequence-compress) — package/@greenpandastudios/aug-zlib@0.2.0/api.aug
+- [decompress](.aug-spec/packages/%40greenpandastudios/aug-zlib/0.2.0/api.aug.diagrams.md#sequence-decompress) — package/@greenpandastudios/aug-zlib@0.2.0/api.aug

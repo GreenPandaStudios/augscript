@@ -6,7 +6,7 @@ editLink: false
 
 # Use native library packages
 
-Use LibTorch, SQLite, zlib, and Rust BLAKE3 through ordinary repository imports. Install the [August 0.23.0 CLI](getting-started.md) on a [supported host](compatibility.md). It downloads the required native libraries; no separate compiler or SDK is needed.
+Use LibTorch, SQLite, zlib, and Rust BLAKE3 through ordinary repository imports. Install the [August 1.0.0 CLI](getting-started.md) on a [supported host](compatibility.md). It downloads the required native libraries; no separate compiler or SDK is needed.
 
 Save each program’s two files in one folder. Run `aug run` to install its dependencies, compile it, and execute it. Run `aug test` to check the same-file test, or download the complete project from its link below.
 
@@ -20,7 +20,7 @@ LibTorch creates two float64 tensors, adds them, and sums the result to 21. The 
 
 ```text
 import calculate from tensors
-import TensorError from "https://github.com/GreenPandaStudios/aug-pytorch#v0.1.6"
+import TensorError from "https://github.com/GreenPandaStudios/aug-pytorch#e87f57af25ac17662c6299224815d3fd1464ad3e"
 
 try:
     print(value=calculate())
@@ -31,7 +31,7 @@ catch TensorError error:
 **tensors.aug**
 
 ```text
-import Tensor and TensorError and tensor and add and sum and values from "https://github.com/GreenPandaStudios/aug-pytorch#v0.1.6"
+import Tensor and TensorError and tensor and add and sum and values from "https://github.com/GreenPandaStudios/aug-pytorch#e87f57af25ac17662c6299224815d3fd1464ad3e"
 
 /** Add two CPU tensors using LibTorch and return the sum of their elements. */
 calculate() returns float unless TensorError:
@@ -71,7 +71,7 @@ SQLite opens an in-memory database, creates a table, inserts a bound parameter, 
 
 ```text
 import storedName from database
-import SqliteError from "https://github.com/GreenPandaStudios/aug-sqlite#v0.1.5"
+import SqliteError from "https://github.com/GreenPandaStudios/aug-sqlite#43d8c33289b6b9310199f8c65fb83d48cd9dc310"
 
 try:
     print(value=storedName())
@@ -82,7 +82,7 @@ catch SqliteError error:
 **database.aug**
 
 ```text
-import Database and SqliteError and openMemory and execute and queryScalar from "https://github.com/GreenPandaStudios/aug-sqlite#v0.1.5"
+import Database and SqliteError and openMemory and execute and queryScalar from "https://github.com/GreenPandaStudios/aug-sqlite#43d8c33289b6b9310199f8c65fb83d48cd9dc310"
 
 /** Store a bound value in an in-memory SQLite database and read it back. */
 storedName() returns string unless SqliteError:
@@ -114,7 +114,7 @@ zlib compresses a UTF-8 buffer and decompresses it with a 4,096-byte output limi
 
 ```text
 import roundTrip from compression
-import CompressionError from "https://github.com/GreenPandaStudios/aug-zlib#v0.1.5"
+import CompressionError from "https://github.com/GreenPandaStudios/aug-zlib#fce52e3bf536a304fab82d1d4b95ae425c027be1"
 
 try:
     print(value=roundTrip().text())
@@ -127,7 +127,7 @@ catch ConversionError error:
 **compression.aug**
 
 ```text
-import CompressionError and compress and decompress from "https://github.com/GreenPandaStudios/aug-zlib#v0.1.5"
+import CompressionError and compress and decompress from "https://github.com/GreenPandaStudios/aug-zlib#fce52e3bf536a304fab82d1d4b95ae425c027be1"
 
 /** Compress text with zlib, then restore its bytes within a fixed output limit. */
 roundTrip() returns Bytes unless CompressionError:
@@ -159,7 +159,7 @@ The Rust BLAKE3 crate hashes abc. Its result must match the published 64-charact
 
 ```text
 import hashText from hashing
-import HashError from "https://github.com/GreenPandaStudios/aug-blake3#v0.1.5"
+import HashError from "https://github.com/GreenPandaStudios/aug-blake3#e9f7b92d98a2f9c36de530f4dfc1740012fb5e5e"
 
 try:
     print(value=hashText(value="abc"))
@@ -170,7 +170,7 @@ catch HashError error:
 **hashing.aug**
 
 ```text
-import HashError and hash from "https://github.com/GreenPandaStudios/aug-blake3#v0.1.5"
+import HashError and hash from "https://github.com/GreenPandaStudios/aug-blake3#e9f7b92d98a2f9c36de530f4dfc1740012fb5e5e"
 
 /** Hash UTF-8 text with the real Rust BLAKE3 implementation. */
 hashText(string value) returns string unless HashError:

@@ -2,13 +2,13 @@
 
 # `main.aug`
 
-<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=39c6add561c9ee0a767fcad623d7487db05f58d5dddcef7f1e71a0b0d67a2a03 -->
+<!-- August spec revision: schema=1 compiler=1.0.0 source-sha256=39c6add561c9ee0a767fcad623d7487db05f58d5dddcef7f1e71a0b0d67a2a03 -->
 
 [Interactions and sequences](main.aug.diagrams.md)
 
 ## Providers
 
-`Console` is provided by [`SystemConsole`](.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-SystemConsole). The same instance is shared.
+`Console` is provided by [`SystemConsole`](.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-SystemConsole). The same instance is shared.
 
 `Application` is provided by [`ApplicationImpl`](domain/app.aug.md#symbol-ApplicationImpl). The same instance is shared. It requires bindings for `Console`. Include providers from [`Counters`](counters.aug.md#symbol-Counters).
 
@@ -24,6 +24,6 @@ It calls [`double`](domain/numbers.aug.md#symbol-double) with `amount` `-1`. If 
 
 ## Dependencies
 
-It uses [`SystemConsole`](.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-SystemConsole) from `august.io`. It uses [`Counter`](counters.aug.md#symbol-Counter) ([`increment`](counters.aug.md#symbol-Counter.increment) and [`value`](counters.aug.md#symbol-Counter.value)) and [`Counters`](counters.aug.md#symbol-Counters) from `counters`. It uses [`Application`](domain/app.aug.md#symbol-Application) ([`start`](domain/app.aug.md#symbol-Application.start)), [`ApplicationImpl`](domain/app.aug.md#symbol-ApplicationImpl), [`Fruit`](domain/models.aug.md#symbol-Fruit), [`RangeError`](domain/numbers.aug.md#symbol-RangeError), and [`double`](domain/numbers.aug.md#symbol-double) from `domain`.
+It uses [`SystemConsole`](.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-SystemConsole) from `august.io`. It uses [`Counter`](counters.aug.md#symbol-Counter) ([`increment`](counters.aug.md#symbol-Counter.increment) and [`value`](counters.aug.md#symbol-Counter.value)) and [`Counters`](counters.aug.md#symbol-Counters) from `counters`. It uses [`Application`](domain/app.aug.md#symbol-Application) ([`start`](domain/app.aug.md#symbol-Application.start)), [`ApplicationImpl`](domain/app.aug.md#symbol-ApplicationImpl), [`Fruit`](domain/models.aug.md#symbol-Fruit), [`RangeError`](domain/numbers.aug.md#symbol-RangeError), and [`double`](domain/numbers.aug.md#symbol-double) from `domain`.
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).

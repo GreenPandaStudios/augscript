@@ -2,7 +2,7 @@
 
 # `console.aug`
 
-<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=dd393a651c40b46b5e4d2ea7bdbd62513f267347b2cdb36b479c0fbb33c66734 -->
+<!-- August spec revision: schema=1 compiler=1.0.0 source-sha256=dd393a651c40b46b5e4d2ea7bdbd62513f267347b2cdb36b479c0fbb33c66734 -->
 
 [Interactions and sequences](console.aug.diagrams.md)
 
@@ -14,7 +14,7 @@ It implements [`Logger`](logger.aug.md#symbol-Logger).
 <a id="symbol-ConsoleLogger.log"></a>
 ### `ConsoleLogger.log` · [source](console.aug#L5)
 
-Writes one message. It takes `message` as a string. It gets `console` ([`Console`](../.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-Console)) from dependency injection. It passes `message` to [`console.write`](../.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-Console.write). [source](console.aug#L6)
+Writes one message. It takes `message` as a string. It gets `console` ([`Console`](../.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-Console)) from dependency injection. It passes `message` to [`console.write`](../.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-Console.write). [source](console.aug#L6)
 
 <details>
 <summary>Checked interface</summary>
@@ -23,10 +23,10 @@ Writes one message. It takes `message` as a string. It gets `console` ([`Console
 log(resolve Console console, string message) returns void uses Console.write
 ```
 
-It takes `message` as a string (Text to write). It gets `console` ([`Console`](../.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-Console)) from dependency injection.
+It takes `message` as a string (Text to write). It gets `console` ([`Console`](../.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-Console)) from dependency injection.
 
 </details>
 
 ## Dependencies
 
-It uses [`Console`](../.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-Console) ([`write`](../.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-Console.write)) from `august.io`. It uses [`Logger`](logger.aug.md#symbol-Logger) from `logger`.
+It uses [`Console`](../.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-Console) ([`write`](../.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-Console.write)) from `august.io`. It uses [`Logger`](logger.aug.md#symbol-Logger) from `logger`.

@@ -32,7 +32,7 @@ flowchart LR
 
 | From | To | Operation and inputs | Result |
 | --- | --- | --- | --- |
-| hashing | @greenpandastudios/aug-blake3 | [hash](../packages/%40greenpandastudios/aug-blake3/0.1.5/api.aug.md#symbol-hash) · input: Bytes | string |
+| hashing | @greenpandastudios/aug-blake3 | [hash](../packages/%40greenpandastudios/aug-blake3/0.2.0/api.aug.md#symbol-hash) · input: Bytes | string |
 | Startup | hashing | [hashText](../../hashing.aug.md#symbol-hashText) · value: string | string |
 
 </details>

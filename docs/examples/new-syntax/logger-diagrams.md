@@ -37,4 +37,4 @@ Interface contract; implementation selected at runtime. [Explanation](logger.md)
 
 ## Called contracts
 
-- [Console](dependencies/august/0.23.0/io/contracts-diagrams.md) — august/io/contracts.aug
+- [Console](dependencies/august/1.0.0/io/contracts-diagrams.md) — august/io/contracts.aug

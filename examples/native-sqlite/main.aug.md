@@ -2,16 +2,16 @@
 
 # `main.aug`
 
-<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=b6cf0296129b50a6cf3d71ace0d22f9805bedfe7a7573e047c00af1021633a89 -->
+<!-- August spec revision: schema=1 compiler=1.0.0 source-sha256=3d99934e6da0597d289291f0ed56966a2456b6ba8fa9f468d9c7cf911bdc87ae -->
 
 [Interactions and sequences](main.aug.diagrams.md)
 
 ## Startup
 
-It prints [`storedName`](database.aug.md#symbol-storedName). If this work raises [`SqliteError`](.aug-spec/packages/%40greenpandastudios/aug-sqlite/0.1.5/contracts.aug.md#symbol-SqliteError) as `error`, it prints `error.message`. [source](main.aug#L5-L8)
+It prints [`storedName`](database.aug.md#symbol-storedName). If this work raises [`SqliteError`](.aug-spec/packages/%40greenpandastudios/aug-sqlite/0.2.0/contracts.aug.md#symbol-SqliteError) as `error`, it prints `error.message`. [source](main.aug#L5-L8)
 
 ## Dependencies
 
-It uses [`SqliteError`](.aug-spec/packages/%40greenpandastudios/aug-sqlite/0.1.5/contracts.aug.md#symbol-SqliteError) (`message`) from `https://github.com/GreenPandaStudios/aug-sqlite#v0.1.5`. It uses [`storedName`](database.aug.md#symbol-storedName) from `database`.
+It uses [`SqliteError`](.aug-spec/packages/%40greenpandastudios/aug-sqlite/0.2.0/contracts.aug.md#symbol-SqliteError) (`message`) from `https://github.com/GreenPandaStudios/aug-sqlite#43d8c33289b6b9310199f8c65fb83d48cd9dc310`. It uses [`storedName`](database.aug.md#symbol-storedName) from `database`.
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).

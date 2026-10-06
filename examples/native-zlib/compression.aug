@@ -1,5 +1,5 @@
 // aug-spec: "compression.aug.md" explains this file. Read it before changes; refresh with aug spec.
-import CompressionError and compress and decompress from "https://github.com/GreenPandaStudios/aug-zlib#v0.1.5"
+import CompressionError and compress and decompress from "https://github.com/GreenPandaStudios/aug-zlib#fce52e3bf536a304fab82d1d4b95ae425c027be1"
 
 /** Compress text with zlib, then restore its bytes within a fixed output limit. */
 roundTrip() returns Bytes unless CompressionError:

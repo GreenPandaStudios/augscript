@@ -1,14 +1,14 @@
 {
   "format": 1,
   "files": [
-    ".aug-spec/august/0.23.0/io/contracts.aug",
-    ".aug-spec/august/0.23.0/io/contracts.aug.diagrams.md",
-    ".aug-spec/august/0.23.0/io/contracts.aug.md",
+    ".aug-spec/august/1.0.0/io/contracts.aug",
+    ".aug-spec/august/1.0.0/io/contracts.aug.diagrams.md",
+    ".aug-spec/august/1.0.0/io/contracts.aug.md",
     ".aug-spec/diagrams/index.md",
     "main.aug.diagrams.md",
     "main.aug.md",
     "resource.aug.diagrams.md",
     "resource.aug.md"
   ],
-  "digest": "f2fd4c4297a3dbebcece39ee72844f6393eba3424eda10c9bc83aea18066c00a"
+  "digest": "ff53ff4bd870120445346d8fa4e554310f921e172936c21c65b882db61542517"
 }

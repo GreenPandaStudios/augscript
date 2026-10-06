@@ -78,7 +78,7 @@ import range and RangeError from august.collections
 
 A fresh managed List<int>; request bounded exclusive mutation with borrow.
 
-Declared compiler requirement: `0.23.0`.
+Declared compiler requirement: `1.0.0`.
 
 MIT. [License details](https://github.com/GreenPandaStudios/augscript/blob/v0.23.0/LICENSE).
 
@@ -122,7 +122,7 @@ import ContextError and errorContext from august.errors
 
 Managed read-only context fields retain the original cause and its ordinary ownership rules.
 
-Declared compiler requirement: `0.23.0`.
+Declared compiler requirement: `1.0.0`.
 
 MIT. [License details](https://github.com/GreenPandaStudios/augscript/blob/v0.23.0/LICENSE).
 
@@ -171,7 +171,7 @@ import Console and SystemConsole from august.io
 
 Managed capability providers; immutable text and copied file content.
 
-Declared compiler requirement: `0.23.0`.
+Declared compiler requirement: `1.0.0`.
 
 MIT August source; retain the runtime’s redistribution notices. [License details](https://github.com/GreenPandaStudios/augscript/blob/v0.23.0/THIRD_PARTY_NOTICES.md).
 
@@ -216,7 +216,7 @@ import formatDecimal from august.math
 
 Integer values and immutable Decimal records.
 
-Declared compiler requirement: `0.23.0`.
+Declared compiler requirement: `1.0.0`.
 
 MIT. [License details](https://github.com/GreenPandaStudios/augscript/blob/v0.23.0/LICENSE).
 
@@ -378,7 +378,7 @@ import PortableRelativePath and BoundedText from august.values
 
 Deeply immutable records; constructors, copies and JSON decoding enforce the same invariants.
 
-Declared compiler requirement: `0.23.0`.
+Declared compiler requirement: `1.0.0`.
 
 MIT. [License details](https://github.com/GreenPandaStudios/augscript/blob/v0.23.0/LICENSE).
 

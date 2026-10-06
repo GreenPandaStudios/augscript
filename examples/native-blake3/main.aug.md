@@ -2,16 +2,16 @@
 
 # `main.aug`
 
-<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=18ed3135c6358f3032d5fa18b52fef0dd221b5b44102b9f13303ca84aab19a32 -->
+<!-- August spec revision: schema=1 compiler=1.0.0 source-sha256=951922063b765ed45edc0be240619f62810490a8a17fdd03ccff9b818db82aba -->
 
 [Interactions and sequences](main.aug.diagrams.md)
 
 ## Startup
 
-It prints [`hashText`](hashing.aug.md#symbol-hashText) with `value` `"abc"`. If this work raises [`HashError`](.aug-spec/packages/%40greenpandastudios/aug-blake3/0.1.5/contracts.aug.md#symbol-HashError) as `error`, it prints `error.message`. [source](main.aug#L5-L8)
+It prints [`hashText`](hashing.aug.md#symbol-hashText) with `value` `"abc"`. If this work raises [`HashError`](.aug-spec/packages/%40greenpandastudios/aug-blake3/0.2.0/contracts.aug.md#symbol-HashError) as `error`, it prints `error.message`. [source](main.aug#L5-L8)
 
 ## Dependencies
 
-It uses [`HashError`](.aug-spec/packages/%40greenpandastudios/aug-blake3/0.1.5/contracts.aug.md#symbol-HashError) (`message`) from `https://github.com/GreenPandaStudios/aug-blake3#v0.1.5`. It uses [`hashText`](hashing.aug.md#symbol-hashText) from `hashing`.
+It uses [`HashError`](.aug-spec/packages/%40greenpandastudios/aug-blake3/0.2.0/contracts.aug.md#symbol-HashError) (`message`) from `https://github.com/GreenPandaStudios/aug-blake3#e9f7b92d98a2f9c36de530f4dfc1740012fb5e5e`. It uses [`hashText`](hashing.aug.md#symbol-hashText) from `hashing`.
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).

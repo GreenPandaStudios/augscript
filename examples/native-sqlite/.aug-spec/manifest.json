@@ -2,23 +2,23 @@
   "format": 1,
   "files": [
     ".aug-spec/diagrams/index.md",
-    ".aug-spec/packages/@greenpandastudios/aug-sqlite/0.1.5/api.aug",
-    ".aug-spec/packages/@greenpandastudios/aug-sqlite/0.1.5/api.aug.diagrams.md",
-    ".aug-spec/packages/@greenpandastudios/aug-sqlite/0.1.5/api.aug.md",
-    ".aug-spec/packages/@greenpandastudios/aug-sqlite/0.1.5/bindings.aug",
-    ".aug-spec/packages/@greenpandastudios/aug-sqlite/0.1.5/bindings.aug.diagrams.md",
-    ".aug-spec/packages/@greenpandastudios/aug-sqlite/0.1.5/bindings.aug.md",
-    ".aug-spec/packages/@greenpandastudios/aug-sqlite/0.1.5/contracts.aug",
-    ".aug-spec/packages/@greenpandastudios/aug-sqlite/0.1.5/contracts.aug.diagrams.md",
-    ".aug-spec/packages/@greenpandastudios/aug-sqlite/0.1.5/contracts.aug.md",
-    ".aug-spec/packages/@greenpandastudios/aug-sqlite/0.1.5/native.abi.json",
+    ".aug-spec/packages/@greenpandastudios/aug-sqlite/0.2.0/api.aug",
+    ".aug-spec/packages/@greenpandastudios/aug-sqlite/0.2.0/api.aug.diagrams.md",
+    ".aug-spec/packages/@greenpandastudios/aug-sqlite/0.2.0/api.aug.md",
+    ".aug-spec/packages/@greenpandastudios/aug-sqlite/0.2.0/bindings.aug",
+    ".aug-spec/packages/@greenpandastudios/aug-sqlite/0.2.0/bindings.aug.diagrams.md",
+    ".aug-spec/packages/@greenpandastudios/aug-sqlite/0.2.0/bindings.aug.md",
+    ".aug-spec/packages/@greenpandastudios/aug-sqlite/0.2.0/contracts.aug",
+    ".aug-spec/packages/@greenpandastudios/aug-sqlite/0.2.0/contracts.aug.diagrams.md",
+    ".aug-spec/packages/@greenpandastudios/aug-sqlite/0.2.0/contracts.aug.md",
+    ".aug-spec/packages/@greenpandastudios/aug-sqlite/0.2.0/native.abi.json",
     "database.aug.diagrams.md",
     "database.aug.md",
     "main.aug.diagrams.md",
     "main.aug.md"
   ],
   "nativeDescriptors": {
-    ".aug-spec/packages/@greenpandastudios/aug-sqlite/0.1.5/native.abi.json": "3c75c2925c85f1b83db06ee00fa04f1d2d37c9fd6edca0d074ce89b4647ffffb"
+    ".aug-spec/packages/@greenpandastudios/aug-sqlite/0.2.0/native.abi.json": "3c75c2925c85f1b83db06ee00fa04f1d2d37c9fd6edca0d074ce89b4647ffffb"
   },
-  "digest": "7973725728743de159dff75941b2017be21c22cf87d9cb4a7d75ed8c04dbff0e"
+  "digest": "a40f4edd5408a4529e6c6ff6c918c546068240648d730d52827cd573bf06bed9"
 }

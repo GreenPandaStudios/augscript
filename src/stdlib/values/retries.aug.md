@@ -2,7 +2,7 @@
 
 # `retries.aug`
 
-<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=735ff4e7e4470f7cab2253b50c824e6486e12b8ab4db03a6dcff922850a0daa8 -->
+<!-- August spec revision: schema=1 compiler=1.0.0 source-sha256=735ff4e7e4470f7cab2253b50c824e6486e12b8ab4db03a6dcff922850a0daa8 -->
 
 [Interactions and sequences](retries.aug.diagrams.md)
 

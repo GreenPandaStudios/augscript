@@ -107,8 +107,8 @@ Applied layers: Audit; may stop or change delegation; see specification. Return 
 ## Called contracts
 
 - [IGreeter](app-diagrams.md) — app.aug
-- [Console](dependencies/august/0.23.0/io/contracts-diagrams.md) — august/io/contracts.aug
-- [Console.write](dependencies/august/0.23.0/io/contracts-diagrams.md#sequence-Console.write) — august/io/contracts.aug
+- [Console](dependencies/august/1.0.0/io/contracts-diagrams.md) — august/io/contracts.aug
+- [Console.write](dependencies/august/1.0.0/io/contracts-diagrams.md#sequence-Console.write) — august/io/contracts.aug
 - [AddOne](interceptors-diagrams.md) — interceptors.aug
 - [Audit](interceptors-diagrams.md) — interceptors.aug
 - [Positive](interceptors-diagrams.md) — interceptors.aug

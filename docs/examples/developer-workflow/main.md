@@ -101,7 +101,7 @@ catch IndexError error {
 
 ### Providers
 
-`Console` is provided by [`SystemConsole`](dependencies/august/0.23.0/io/contracts.md#symbol-SystemConsole). The same instance is shared. `Logger` is provided by [`ConsoleLogger`](logging/console.md#symbol-ConsoleLogger). The same instance is shared.
+`Console` is provided by [`SystemConsole`](dependencies/august/1.0.0/io/contracts.md#symbol-SystemConsole). The same instance is shared. `Logger` is provided by [`ConsoleLogger`](logging/console.md#symbol-ConsoleLogger). The same instance is shared.
 
 ### Startup
 
@@ -119,7 +119,7 @@ It prints the value under `2` in `fruit`. It prints [`load`](calculator.md#symbo
 
 ### Dependencies
 
-It uses [`SystemConsole`](dependencies/august/0.23.0/io/contracts.md#symbol-SystemConsole) from `august.io`. It uses [`Calculator`](calculator.md#symbol-Calculator) ([`add`](calculator.md#symbol-Calculator.add)) and [`load`](calculator.md#symbol-load) from `calculator`. It uses [`ConsoleLogger`](logging/console.md#symbol-ConsoleLogger) from `logging`.
+It uses [`SystemConsole`](dependencies/august/1.0.0/io/contracts.md#symbol-SystemConsole) from `august.io`. It uses [`Calculator`](calculator.md#symbol-Calculator) ([`add`](calculator.md#symbol-Calculator.add)) and [`load`](calculator.md#symbol-load) from `calculator`. It uses [`ConsoleLogger`](logging/console.md#symbol-ConsoleLogger) from `logging`.
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).
 

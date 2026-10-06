@@ -1,29 +1,29 @@
 {
   "format": 1,
-  "compiler": "0.23.0",
+  "compiler": "1.0.0",
   "specifications": {
-    "url_b647a258d7fe6bf55049": "https://github.com/GreenPandaStudios/aug-blake3#v0.1.5"
+    "url_c430b35d3c2564198092": "https://github.com/GreenPandaStudios/aug-blake3#e9f7b92d98a2f9c36de530f4dfc1740012fb5e5e"
   },
   "roots": {
-    "url_b647a258d7fe6bf55049": "packages/url_b647a258d7fe6bf55049"
+    "url_c430b35d3c2564198092": "snapshots/f4a97184b2f69743cfdb1df29c8d0a2485ed387ea3885cb0de61d801248a5ec7/packages/url_c430b35d3c2564198092"
   },
   "npm": {},
   "git": [
     {
-      "request": "https://github.com/GreenPandaStudios/aug-blake3#v0.1.5",
+      "request": "https://github.com/GreenPandaStudios/aug-blake3#e9f7b92d98a2f9c36de530f4dfc1740012fb5e5e",
       "repository": "https://github.com/GreenPandaStudios/aug-blake3.git",
-      "revision": "v0.1.5",
+      "revision": "e9f7b92d98a2f9c36de530f4dfc1740012fb5e5e",
       "folder": "",
-      "commit": "bc1fb7ecda099da583facbe8fae2c89a951e2d9c"
+      "commit": "e9f7b92d98a2f9c36de530f4dfc1740012fb5e5e"
     }
   ],
   "packages": [
     {
-      "path": "packages/url_b647a258d7fe6bf55049",
+      "path": "snapshots/f4a97184b2f69743cfdb1df29c8d0a2485ed387ea3885cb0de61d801248a5ec7/packages/url_c430b35d3c2564198092",
       "name": "@greenpandastudios/aug-blake3",
-      "version": "0.1.5",
+      "version": "0.2.0",
       "source": "src",
-      "digest": "ac9892c7ece4bf8d366a38ca28d0fa18096f707f9e30a40ed8f2fa031a4ffdbe",
+      "digest": "7e79e30f761d7831eb5dbfb066d07bd73c7300872eef424f700e6f16b906c58e",
       "dependencies": {},
       "native": {
         "profile": "aug-native-abi-1",
@@ -201,9 +201,9 @@
         },
         "packages": [
           {
-            "sourcePackage": "@greenpandastudios/aug-blake3@0.1.5",
-            "sourceDigest": "ac9892c7ece4bf8d366a38ca28d0fa18096f707f9e30a40ed8f2fa031a4ffdbe",
-            "sourceCommit": "bc1fb7ecda099da583facbe8fae2c89a951e2d9c",
+            "sourcePackage": "@greenpandastudios/aug-blake3@0.2.0",
+            "sourceDigest": "7e79e30f761d7831eb5dbfb066d07bd73c7300872eef424f700e6f16b906c58e",
+            "sourceCommit": "e9f7b92d98a2f9c36de530f4dfc1740012fb5e5e",
             "contractSha256": "3bf8dea97cde70a03021bf77ea08314d6d37fe7b4935ff16030b2ab929c21279",
             "artifact": {
               "id": "macos-arm64",

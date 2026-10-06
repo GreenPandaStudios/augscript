@@ -39,8 +39,8 @@ flowchart LR
 | From | To | Operation and inputs | Result |
 | --- | --- | --- | --- |
 | dates | ascii | [asciiSlice](../../ascii.aug.md#symbol-asciiSlice) · input: Bytes, start: int, end: int | string |
-| durations | August libraries | [checkedAdd](../august/0.23.0/math/integers.aug.md#symbol-checkedAdd) · left: int, right: int | int |
-| durations | August libraries | [checkedMultiply](../august/0.23.0/math/integers.aug.md#symbol-checkedMultiply) · left: int, right: int | int |
+| durations | August libraries | [checkedAdd](../august/1.0.0/math/integers.aug.md#symbol-checkedAdd) · left: int, right: int | int |
+| durations | August libraries | [checkedMultiply](../august/1.0.0/math/integers.aug.md#symbol-checkedMultiply) · left: int, right: int | int |
 | durations | ascii | [asciiSlice](../../ascii.aug.md#symbol-asciiSlice) · input: Bytes, start: int, end: int | string |
 | paths | ascii | [asciiAt](../../ascii.aug.md#symbol-asciiAt) · input: Bytes, index: int | string |
 | paths | ascii | [asciiLetter](../../ascii.aug.md#symbol-asciiLetter) · character: string | bool |

@@ -34,7 +34,7 @@ flowchart LR
 
 | From | To | Operation and inputs | Result |
 | --- | --- | --- | --- |
-| domain | August libraries | [Console.write](../august/0.23.0/io/contracts.aug.md#symbol-Console.write) · value: string · interface dispatch | void |
+| domain | August libraries | [Console.write](../august/1.0.0/io/contracts.aug.md#symbol-Console.write) · value: string · interface dispatch | void |
 | Startup | counters | [Counter.increment](../../counters.aug.md#symbol-Counter.increment) · interface dispatch | void |
 | Startup | counters | [Counter.value](../../counters.aug.md#symbol-Counter.value) · interface dispatch | int |
 | Startup | domain | [Application.start](../../domain/app.aug.md#symbol-Application.start) · interface dispatch | void |

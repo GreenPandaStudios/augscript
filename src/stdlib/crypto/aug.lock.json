@@ -1,11 +1,11 @@
 {
   "format": 1,
-  "compiler": "0.23.0",
+  "compiler": "1.0.0",
   "specifications": {
     "url_ac5ce553f84fc815ffc3": "https://github.com/GreenPandaStudios/augscript/src/stdlib/json#v0.19.0"
   },
   "roots": {
-    "url_ac5ce553f84fc815ffc3": "packages/url_ac5ce553f84fc815ffc3"
+    "url_ac5ce553f84fc815ffc3": "snapshots/fc798311fce73bfa5d2810967454ae2eb161712b337a76faeb4f09331bcee01e/packages/url_ac5ce553f84fc815ffc3"
   },
   "npm": {},
   "git": [
@@ -19,11 +19,11 @@
   ],
   "packages": [
     {
-      "path": "packages/url_ac5ce553f84fc815ffc3",
+      "path": "snapshots/fc798311fce73bfa5d2810967454ae2eb161712b337a76faeb4f09331bcee01e/packages/url_ac5ce553f84fc815ffc3",
       "name": "@git/url_2d3c37c690c0fa115be1",
       "version": "0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301",
       "source": ".",
-      "digest": "0d2c50d2290f3c63b1ae54ae5f00725b1d78493c2556027af93a7ce6cab6f846",
+      "digest": "8515d3de9382348f5cc3af07825264de15c98c5127de704f3cf0ddffa3e2f621",
       "dependencies": {}
     }
   ]

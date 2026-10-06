@@ -44,12 +44,12 @@ flowchart LR
 
 | From | To | Operation and inputs | Result |
 | --- | --- | --- | --- |
-| compute | @greenpandastudios/aug-gpu | [add](../packages/%40greenpandastudios/aug-gpu/0.1.1/api.aug.md#symbol-add) · left: Buffer, right: Buffer | own Buffer |
-| compute | @greenpandastudios/aug-gpu | [download](../packages/%40greenpandastudios/aug-gpu/0.1.1/api.aug.md#symbol-download) · buffer: Buffer | List\<float\> |
-| compute | @greenpandastudios/aug-gpu | [openDevice](../packages/%40greenpandastudios/aug-gpu/0.1.1/api.aug.md#symbol-openDevice) | own Device |
-| compute | @greenpandastudios/aug-gpu | [upload](../packages/%40greenpandastudios/aug-gpu/0.1.1/api.aug.md#symbol-upload) · device: Device, values: List\<float\> | own Buffer |
+| compute | @greenpandastudios/aug-gpu | [add](../packages/%40greenpandastudios/aug-gpu/0.2.0/api.aug.md#symbol-add) · left: Buffer, right: Buffer | own Buffer |
+| compute | @greenpandastudios/aug-gpu | [download](../packages/%40greenpandastudios/aug-gpu/0.2.0/api.aug.md#symbol-download) · buffer: Buffer | List\<float\> |
+| compute | @greenpandastudios/aug-gpu | [openDevice](../packages/%40greenpandastudios/aug-gpu/0.2.0/api.aug.md#symbol-openDevice) | own Device |
+| compute | @greenpandastudios/aug-gpu | [upload](../packages/%40greenpandastudios/aug-gpu/0.2.0/api.aug.md#symbol-upload) · device: Device, values: List\<float\> | own Buffer |
 | Startup | compute | [calculate](../../compute.aug.md#symbol-calculate) · left: List\<float\>, right: List\<float\> | List\<float\> |
-| Startup | @greenpandastudios/aug-gpu | [GpuError.explain](../packages/%40greenpandastudios/aug-gpu/0.1.1/contracts.aug.md#symbol-GpuError.explain) | string |
+| Startup | @greenpandastudios/aug-gpu | [GpuError.explain](../packages/%40greenpandastudios/aug-gpu/0.2.0/contracts.aug.md#symbol-GpuError.explain) | string |
 
 </details>
 

@@ -2,23 +2,23 @@
   "format": 1,
   "files": [
     ".aug-spec/diagrams/index.md",
-    ".aug-spec/packages/@greenpandastudios/aug-pytorch/0.1.6/api.aug",
-    ".aug-spec/packages/@greenpandastudios/aug-pytorch/0.1.6/api.aug.diagrams.md",
-    ".aug-spec/packages/@greenpandastudios/aug-pytorch/0.1.6/api.aug.md",
-    ".aug-spec/packages/@greenpandastudios/aug-pytorch/0.1.6/bindings.aug",
-    ".aug-spec/packages/@greenpandastudios/aug-pytorch/0.1.6/bindings.aug.diagrams.md",
-    ".aug-spec/packages/@greenpandastudios/aug-pytorch/0.1.6/bindings.aug.md",
-    ".aug-spec/packages/@greenpandastudios/aug-pytorch/0.1.6/contracts.aug",
-    ".aug-spec/packages/@greenpandastudios/aug-pytorch/0.1.6/contracts.aug.diagrams.md",
-    ".aug-spec/packages/@greenpandastudios/aug-pytorch/0.1.6/contracts.aug.md",
-    ".aug-spec/packages/@greenpandastudios/aug-pytorch/0.1.6/native.abi.json",
+    ".aug-spec/packages/@greenpandastudios/aug-pytorch/0.2.0/api.aug",
+    ".aug-spec/packages/@greenpandastudios/aug-pytorch/0.2.0/api.aug.diagrams.md",
+    ".aug-spec/packages/@greenpandastudios/aug-pytorch/0.2.0/api.aug.md",
+    ".aug-spec/packages/@greenpandastudios/aug-pytorch/0.2.0/bindings.aug",
+    ".aug-spec/packages/@greenpandastudios/aug-pytorch/0.2.0/bindings.aug.diagrams.md",
+    ".aug-spec/packages/@greenpandastudios/aug-pytorch/0.2.0/bindings.aug.md",
+    ".aug-spec/packages/@greenpandastudios/aug-pytorch/0.2.0/contracts.aug",
+    ".aug-spec/packages/@greenpandastudios/aug-pytorch/0.2.0/contracts.aug.diagrams.md",
+    ".aug-spec/packages/@greenpandastudios/aug-pytorch/0.2.0/contracts.aug.md",
+    ".aug-spec/packages/@greenpandastudios/aug-pytorch/0.2.0/native.abi.json",
     "main.aug.diagrams.md",
     "main.aug.md",
     "tensors.aug.diagrams.md",
     "tensors.aug.md"
   ],
   "nativeDescriptors": {
-    ".aug-spec/packages/@greenpandastudios/aug-pytorch/0.1.6/native.abi.json": "f07b8cab89ad7cfe368edcd9daf87ecc810adb6a2eed1f446d7b71fb664e91f5"
+    ".aug-spec/packages/@greenpandastudios/aug-pytorch/0.2.0/native.abi.json": "f07b8cab89ad7cfe368edcd9daf87ecc810adb6a2eed1f446d7b71fb664e91f5"
   },
-  "digest": "2ea035d7e447cf77df40c2d6857d7f13dc829e813596d05607f1e04d1f262b78"
+  "digest": "ca85f59fc22d068418685f57fbfd822f2c3aa42c008068d7206a2f4570745212"
 }

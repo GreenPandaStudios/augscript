@@ -51,6 +51,6 @@ sequenceDiagram
 
 ## Called contracts
 
-- [Console](.aug-spec/august/0.23.0/io/contracts.aug.diagrams.md) — august/io/contracts.aug
-- [Console.write](.aug-spec/august/0.23.0/io/contracts.aug.diagrams.md#sequence-Console.write) — august/io/contracts.aug
+- [Console](.aug-spec/august/1.0.0/io/contracts.aug.diagrams.md) — august/io/contracts.aug
+- [Console.write](.aug-spec/august/1.0.0/io/contracts.aug.diagrams.md#sequence-Console.write) — august/io/contracts.aug
 - [Logger](logging.aug.diagrams.md) — logging.aug

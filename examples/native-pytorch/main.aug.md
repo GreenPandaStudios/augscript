@@ -2,16 +2,16 @@
 
 # `main.aug`
 
-<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=4ae202d406125816a68c907df9e578922b88ecaa6f4bad18311e75444765e3b7 -->
+<!-- August spec revision: schema=1 compiler=1.0.0 source-sha256=78e737ba517c9a90c408bb52d86fe5bba29c5dc8454e7de002b4103bdc419031 -->
 
 [Interactions and sequences](main.aug.diagrams.md)
 
 ## Startup
 
-It prints [`calculate`](tensors.aug.md#symbol-calculate). If this work raises [`TensorError`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.1.6/contracts.aug.md#symbol-TensorError) as `error`, it prints `error.message`. [source](main.aug#L5-L8)
+It prints [`calculate`](tensors.aug.md#symbol-calculate). If this work raises [`TensorError`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.2.0/contracts.aug.md#symbol-TensorError) as `error`, it prints `error.message`. [source](main.aug#L5-L8)
 
 ## Dependencies
 
-It uses [`TensorError`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.1.6/contracts.aug.md#symbol-TensorError) (`message`) from `https://github.com/GreenPandaStudios/aug-pytorch#v0.1.6`. It uses [`calculate`](tensors.aug.md#symbol-calculate) from `tensors`.
+It uses [`TensorError`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.2.0/contracts.aug.md#symbol-TensorError) (`message`) from `https://github.com/GreenPandaStudios/aug-pytorch#e87f57af25ac17662c6299224815d3fd1464ad3e`. It uses [`calculate`](tensors.aug.md#symbol-calculate) from `tensors`.
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).

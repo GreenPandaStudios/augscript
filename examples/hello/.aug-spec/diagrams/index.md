@@ -35,7 +35,7 @@ flowchart LR
 | From | To | Operation and inputs | Result |
 | --- | --- | --- | --- |
 | app | logging | [Logger.log](../../logging/logger.aug.md#symbol-Logger.log) · message: string · interface dispatch | void |
-| logging | August libraries | [Console.write](../august/0.23.0/io/contracts.aug.md#symbol-Console.write) · value: string · interface dispatch | void |
+| logging | August libraries | [Console.write](../august/1.0.0/io/contracts.aug.md#symbol-Console.write) · value: string · interface dispatch | void |
 | Startup | app | [Greeter.greet](../../app/greeter.aug.md#symbol-Greeter.greet) · name: string | void |
 
 </details>

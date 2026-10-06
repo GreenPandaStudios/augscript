@@ -1,29 +1,29 @@
 {
   "format": 1,
-  "compiler": "0.23.0",
+  "compiler": "1.0.0",
   "specifications": {
-    "url_b634d36dc17498f595c5": "https://github.com/GreenPandaStudios/aug-sqlite#v0.1.5"
+    "url_5018d329cfdc9709659d": "https://github.com/GreenPandaStudios/aug-sqlite#43d8c33289b6b9310199f8c65fb83d48cd9dc310"
   },
   "roots": {
-    "url_b634d36dc17498f595c5": "packages/url_b634d36dc17498f595c5"
+    "url_5018d329cfdc9709659d": "snapshots/29765fafd8f0547bae53a41471827810a14208e54a1dec527970080e8b97b270/packages/url_5018d329cfdc9709659d"
   },
   "npm": {},
   "git": [
     {
-      "request": "https://github.com/GreenPandaStudios/aug-sqlite#v0.1.5",
+      "request": "https://github.com/GreenPandaStudios/aug-sqlite#43d8c33289b6b9310199f8c65fb83d48cd9dc310",
       "repository": "https://github.com/GreenPandaStudios/aug-sqlite.git",
-      "revision": "v0.1.5",
+      "revision": "43d8c33289b6b9310199f8c65fb83d48cd9dc310",
       "folder": "",
-      "commit": "f5a6bec82f12db8b422f4c1cff8232a66a956991"
+      "commit": "43d8c33289b6b9310199f8c65fb83d48cd9dc310"
     }
   ],
   "packages": [
     {
-      "path": "packages/url_b634d36dc17498f595c5",
+      "path": "snapshots/29765fafd8f0547bae53a41471827810a14208e54a1dec527970080e8b97b270/packages/url_5018d329cfdc9709659d",
       "name": "@greenpandastudios/aug-sqlite",
-      "version": "0.1.5",
+      "version": "0.2.0",
       "source": "src",
-      "digest": "2f6e8243a64f7ea2db59c1848e0d6a10ae741bb83a42a807bd1467becdcbdebf",
+      "digest": "cee8271ea8ad43c0857950d45e175d5abd3ac664e6522ba1bee9713b6302719e",
       "dependencies": {},
       "native": {
         "profile": "aug-native-abi-1",
@@ -184,9 +184,9 @@
         },
         "packages": [
           {
-            "sourcePackage": "@greenpandastudios/aug-sqlite@0.1.5",
-            "sourceDigest": "2f6e8243a64f7ea2db59c1848e0d6a10ae741bb83a42a807bd1467becdcbdebf",
-            "sourceCommit": "f5a6bec82f12db8b422f4c1cff8232a66a956991",
+            "sourcePackage": "@greenpandastudios/aug-sqlite@0.2.0",
+            "sourceDigest": "cee8271ea8ad43c0857950d45e175d5abd3ac664e6522ba1bee9713b6302719e",
+            "sourceCommit": "43d8c33289b6b9310199f8c65fb83d48cd9dc310",
             "contractSha256": "3c75c2925c85f1b83db06ee00fa04f1d2d37c9fd6edca0d074ce89b4647ffffb",
             "artifact": {
               "id": "macos-arm64",

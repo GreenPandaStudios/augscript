@@ -14,7 +14,7 @@ Create an in-memory SQLite database, insert a bound value, and query it. Borrow 
 
 Open a file to read the code beside its compiled explanation. Choose **Indentation** or **Braces** to change the code view. The choice carries across files.
 
-This project runs with August `0.23.0` on macOS 14+ with Apple Silicon, or GNU/Linux x64 or ARM64 with glibc 2.36+. The CLI obtains the verified compiler and library artifacts automatically.
+This project runs with August `1.0.0` on macOS 14+ with Apple Silicon, or GNU/Linux x64 or ARM64 with glibc 2.36+. The CLI obtains the verified compiler and library artifacts automatically.
 
 [Explore the generated project diagrams](diagrams/index.md) to follow data between folders, then open module interactions and API sequences.
 

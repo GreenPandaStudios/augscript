@@ -30,4 +30,4 @@ sequenceDiagram
 ## Called contracts
 
 - [hashText](hashing.aug.diagrams.md#sequence-hashText) — hashing.aug
-- [hash](.aug-spec/packages/%40greenpandastudios/aug-blake3/0.1.5/api.aug.diagrams.md#sequence-hash) — package/@greenpandastudios/aug-blake3@0.1.5/api.aug
+- [hash](.aug-spec/packages/%40greenpandastudios/aug-blake3/0.2.0/api.aug.diagrams.md#sequence-hash) — package/@greenpandastudios/aug-blake3@0.2.0/api.aug

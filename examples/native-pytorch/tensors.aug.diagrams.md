@@ -36,8 +36,8 @@ sequenceDiagram
 
 ## Called contracts
 
-- [add](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.1.6/api.aug.diagrams.md#sequence-add) — package/@greenpandastudios/aug-pytorch@0.1.6/api.aug
-- [sum](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.1.6/api.aug.diagrams.md#sequence-sum) — package/@greenpandastudios/aug-pytorch@0.1.6/api.aug
-- [tensor](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.1.6/api.aug.diagrams.md#sequence-tensor) — package/@greenpandastudios/aug-pytorch@0.1.6/api.aug
-- [values](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.1.6/api.aug.diagrams.md#sequence-values) — package/@greenpandastudios/aug-pytorch@0.1.6/api.aug
+- [add](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.2.0/api.aug.diagrams.md#sequence-add) — package/@greenpandastudios/aug-pytorch@0.2.0/api.aug
+- [sum](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.2.0/api.aug.diagrams.md#sequence-sum) — package/@greenpandastudios/aug-pytorch@0.2.0/api.aug
+- [tensor](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.2.0/api.aug.diagrams.md#sequence-tensor) — package/@greenpandastudios/aug-pytorch@0.2.0/api.aug
+- [values](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.2.0/api.aug.diagrams.md#sequence-values) — package/@greenpandastudios/aug-pytorch@0.2.0/api.aug
 - [calculate](tensors.aug.diagrams.md#sequence-calculate) — tensors.aug

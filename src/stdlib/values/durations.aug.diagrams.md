@@ -257,7 +257,7 @@ sequenceDiagram
 
 ## Called contracts
 
-- [checkedAdd](.aug-spec/august/0.23.0/math/integers.aug.diagrams.md#sequence-checkedAdd) — august/math/integers.aug
-- [checkedMultiply](.aug-spec/august/0.23.0/math/integers.aug.diagrams.md#sequence-checkedMultiply) — august/math/integers.aug
+- [checkedAdd](.aug-spec/august/1.0.0/math/integers.aug.diagrams.md#sequence-checkedAdd) — august/math/integers.aug
+- [checkedMultiply](.aug-spec/august/1.0.0/math/integers.aug.diagrams.md#sequence-checkedMultiply) — august/math/integers.aug
 - [asciiSlice](ascii.aug.diagrams.md#sequence-asciiSlice) — august/values/ascii.aug
 - [Duration](durations.aug.diagrams.md#sequence-Duration-20-constructor) — august/values/durations.aug

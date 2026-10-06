@@ -2,13 +2,13 @@
 
 # `main.aug`
 
-<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=ddde91efa0d29b18a0b0c7bba9ad47faad7e33bc5c0682eda35252a31e7d0753 -->
+<!-- August spec revision: schema=1 compiler=1.0.0 source-sha256=ddde91efa0d29b18a0b0c7bba9ad47faad7e33bc5c0682eda35252a31e7d0753 -->
 
 [Interactions and sequences](main.aug.diagrams.md)
 
 ## Providers
 
-`Console` is provided by [`SystemConsole`](.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-SystemConsole). The same instance is shared. `Repository<int>` is provided by [`NumberRepository`](types.aug.md#symbol-NumberRepository). The same instance is shared.
+`Console` is provided by [`SystemConsole`](.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-SystemConsole). The same instance is shared. `Repository<int>` is provided by [`NumberRepository`](types.aug.md#symbol-NumberRepository). The same instance is shared.
 
 `app` is provided by [`Program`](types.aug.md#symbol-Program). The same instance is shared. It requires bindings for `Repository<int>`.
 
@@ -18,4 +18,4 @@ It sets `program` to the instance provided for `app`. It calls [`program.start`]
 
 ## Dependencies
 
-It uses [`SystemConsole`](.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-SystemConsole) from `august.io`. It uses [`NumberRepository`](types.aug.md#symbol-NumberRepository) and [`Program`](types.aug.md#symbol-Program) ([`start`](types.aug.md#symbol-Program.start)) from `types`.
+It uses [`SystemConsole`](.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-SystemConsole) from `august.io`. It uses [`NumberRepository`](types.aug.md#symbol-NumberRepository) and [`Program`](types.aug.md#symbol-Program) ([`start`](types.aug.md#symbol-Program.start)) from `types`.

@@ -157,7 +157,7 @@ Adds two integers.
 
 #### `Arithmetic.add` · [source](calculator.md#source-L6) {#symbol-Arithmetic.add}
 
-It takes `left` and `right` as integers. It gets `console` ([`Console`](dependencies/august/0.23.0/io/contracts.md#symbol-Console)) from dependency injection. It returns `int`. It can call [`Console.write`](dependencies/august/0.23.0/io/contracts.md#symbol-Console.write).
+It takes `left` and `right` as integers. It gets `console` ([`Console`](dependencies/august/1.0.0/io/contracts.md#symbol-Console)) from dependency injection. It returns `int`. It can call [`Console.write`](dependencies/august/1.0.0/io/contracts.md#symbol-Console.write).
 
 ### `Calculator` · class · [source](calculator.md#source-L9) {#symbol-Calculator}
 
@@ -165,7 +165,7 @@ Uses the selected logger to describe each addition. It implements [`Arithmetic`]
 
 #### `Calculator.add` · [source](calculator.md#source-L16) {#symbol-Calculator.add}
 
-Adds left and right, logging the operation. It takes `left` and `right` as integers. It gets `console` ([`Console`](dependencies/august/0.23.0/io/contracts.md#symbol-Console)) from dependency injection.
+Adds left and right, logging the operation. It takes `left` and `right` as integers. It gets `console` ([`Console`](dependencies/august/1.0.0/io/contracts.md#symbol-Console)) from dependency injection.
 
 ::: spec-paragraph specification-paragraph-1
 It passes `"adding integers"` to [`_logger.log`](logging/logger.md#symbol-Logger.log), using injected `console`. It returns `left` plus `right`. [source](calculator.md#source-L17-L18)
@@ -177,7 +177,7 @@ It passes `"adding integers"` to [`_logger.log`](logging/logger.md#symbol-Logger
 add(resolve Console console, int left, int right) returns int uses Console.write
 ```
 
-It takes `left` as an integer (First integer) and `right` as an integer (Second integer). It gets `console` ([`Console`](dependencies/august/0.23.0/io/contracts.md#symbol-Console)) from dependency injection. It returns `int` — Sum of the two integers.
+It takes `left` as an integer (First integer) and `right` as an integer (Second integer). It gets `console` ([`Console`](dependencies/august/1.0.0/io/contracts.md#symbol-Console)) from dependency injection. It returns `int` — Sum of the two integers.
 
 :::
 
@@ -206,7 +206,7 @@ Test adapter: keeps calculator tests independent of console output. It implement
 #### `_SilentLogger.log` · [source](calculator.md#source-L34) {#symbol-_SilentLogger.log}
 
 ::: spec-paragraph specification-paragraph-3
-It takes `message` as a string. It gets `console` ([`Console`](dependencies/august/0.23.0/io/contracts.md#symbol-Console)) from dependency injection. It continues without an operation. [source](calculator.md#source-L35)
+It takes `message` as a string. It gets `console` ([`Console`](dependencies/august/1.0.0/io/contracts.md#symbol-Console)) from dependency injection. It continues without an operation. [source](calculator.md#source-L35)
 :::
 
 ::: details Checked interface
@@ -215,7 +215,7 @@ It takes `message` as a string. It gets `console` ([`Console`](dependencies/augu
 log(resolve Console console, string message) returns void uses Console.write
 ```
 
-It takes `message` as a string (Text to write). It gets `console` ([`Console`](dependencies/august/0.23.0/io/contracts.md#symbol-Console)) from dependency injection.
+It takes `message` as a string (Text to write). It gets `console` ([`Console`](dependencies/august/1.0.0/io/contracts.md#symbol-Console)) from dependency injection.
 
 :::
 
@@ -225,7 +225,7 @@ Tests [`Calculator`](calculator.md#symbol-Calculator). Each case gets fresh setu
 
 #### `addition`
 
-Setup for each case: `Console` is provided by [`SystemConsole`](dependencies/august/0.23.0/io/contracts.md#symbol-SystemConsole). Stateless instances are reused; stateful instances are created for each resolve. `Logger` is provided by [`_SilentLogger`](calculator.md#symbol-_SilentLogger). Stateless instances are reused; stateful instances are created for each resolve.
+Setup for each case: `Console` is provided by [`SystemConsole`](dependencies/august/1.0.0/io/contracts.md#symbol-SystemConsole). Stateless instances are reused; stateful instances are created for each resolve. `Logger` is provided by [`_SilentLogger`](calculator.md#symbol-_SilentLogger). Stateless instances are reused; stateful instances are created for each resolve.
 
 ::: spec-paragraph specification-paragraph-4
 It sets `calculator` to a [`Calculator`](calculator.md#symbol-Calculator) using injected `Logger` for `_logger`. It sets `values` of type `List<int>` to a list containing `1`, `2`. [source](calculator.md#source-L42-L43)
@@ -249,7 +249,7 @@ The test requires the number of elements in `values` equals `2`. The test requir
 
 ### Dependencies
 
-It uses [`Console`](dependencies/august/0.23.0/io/contracts.md#symbol-Console) ([`write`](dependencies/august/0.23.0/io/contracts.md#symbol-Console.write)) and [`SystemConsole`](dependencies/august/0.23.0/io/contracts.md#symbol-SystemConsole) from `august.io`. It uses [`Logger`](logging/logger.md#symbol-Logger) ([`log`](logging/logger.md#symbol-Logger.log)) from `logging`.
+It uses [`Console`](dependencies/august/1.0.0/io/contracts.md#symbol-Console) ([`write`](dependencies/august/1.0.0/io/contracts.md#symbol-Console.write)) and [`SystemConsole`](dependencies/august/1.0.0/io/contracts.md#symbol-SystemConsole) from `august.io`. It uses [`Logger`](logging/logger.md#symbol-Logger) ([`log`](logging/logger.md#symbol-Logger.log)) from `logging`.
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).
 
