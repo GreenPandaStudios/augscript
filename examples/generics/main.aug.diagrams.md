@@ -11,27 +11,9 @@ flowchart TD
     n0["main.aug"]
     n1["Box"]
     n2["Formatter"]
-    n0 -->|"calls"| n1
-    n0 -->|"calls"| n2
+    n0 -->|"calls； calls get"| n1
+    n0 -->|"calls format； calls title"| n2
 ```
-
-<details>
-<summary>Call relationships</summary>
-
-```mermaid
-flowchart TD
-    n0["main.aug"]
-    n1["Box"]
-    n2["Box.get"]
-    n3["Formatter.format"]
-    n4["Formatter.title"]
-    n0 -->|"calls"| n1
-    n0 -->|"calls"| n2
-    n0 -->|"calls"| n3
-    n0 -->|"calls"| n4
-```
-
-</details>
 
 ## Sequences
 
@@ -47,21 +29,21 @@ Call arrows identify checked targets; loop and branch frames determine when they
 sequenceDiagram
     participant p0 as Startup
     participant p1 as formatter: Formatter
-    participant p2 as print
+    participant p2 as August runtime
     participant p3 as Box
     participant p4 as box: Box
     Note over p0: Resolve Formatter from the declared composition
     p0->>p1: title() · interface dispatch
-    p1-->>p0: string
-    p0->>p2: print(value=formatter.title())
-    p0->>p1: format(value=42) · interface dispatch
-    p1-->>p0: string
-    p0->>p2: print(value=formatter.format‹int›(value=42))
-    p0->>p3: Box(value=”inside a generic box”)
+    p1-->>p0: title result: string
+    p0->>p2: print(value=title result)
+    p0->>p1: format‹int›(value=42) · interface dispatch
+    p1-->>p0: format result: string
+    p0->>p2: print(value=format result)
+    p0->>p3: Box‹string›(value=”inside a generic box”)
     p3-->>p0: box: Box‹string›
     p0->>p4: get()
-    p4-->>p0: string
-    p0->>p2: print(value=box.get())
+    p4-->>p0: get result: string
+    p0->>p2: print(value=get result)
 ```
 
 ## Called contracts

@@ -27,31 +27,6 @@ flowchart TD
     n1 -->|"holds item"| n3
 ```
 
-::: details Call relationships
-
-```mermaid
-flowchart TD
-    n0["_TensorHolder.total"]
-    n1["_add"]
-    n2["_consumeAndFail"]
-    n3["_sum"]
-    n4["_tensor"]
-    n5["_values"]
-    n6["add"]
-    n7["sum"]
-    n8["tensor"]
-    n9["values"]
-    n10["TensorError"]
-    n0 -->|"calls"| n7
-    n2 -->|"calls"| n10
-    n6 -->|"calls"| n1
-    n7 -->|"calls"| n3
-    n8 -->|"calls"| n4
-    n9 -->|"calls"| n5
-```
-
-:::
-
 ## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
@@ -97,11 +72,11 @@ May leave with checked errors: TensorError. Native implementation; only the decl
 ```mermaid
 sequenceDiagram
     participant p0 as tensor
-    participant p1 as _tensor
+
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _tensor(values=values) · native boundary
-    p1-->>p0: Tensor
+    p0->>p0: _tensor(values=values) · native boundary
+    p0-->>p0: _tensor result: Tensor
     Note over p0: Return _tensor(values)； required cleanup runs before<br/>exit
     Note over p0: Leave unsafe scope
     end
@@ -117,11 +92,11 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as add
-    participant p1 as _add
+
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _add(left=left, right=right) · native boundary
-    p1-->>p0: Tensor
+    p0->>p0: _add(left=left, right=right) · native boundary
+    p0-->>p0: _add result: Tensor
     Note over p0: Return _add(left, right)； required cleanup runs before<br/>exit
     Note over p0: Leave unsafe scope
     end
@@ -137,11 +112,11 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as sum
-    participant p1 as _sum
+
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _sum(tensor=tensor) · native boundary
-    p1-->>p0: float
+    p0->>p0: _sum(tensor=tensor) · native boundary
+    p0-->>p0: _sum result: float
     Note over p0: Return _sum(tensor)； required cleanup runs before exit
     Note over p0: Leave unsafe scope
     end
@@ -157,11 +132,11 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as values
-    participant p1 as _values
+
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _values(tensor=tensor) · native boundary
-    p1-->>p0: List‹float›
+    p0->>p0: _values(tensor=tensor) · native boundary
+    p0-->>p0: _values result: List‹float›
     Note over p0: Return _values(tensor)； required cleanup runs before<br/>exit
     Note over p0: Leave unsafe scope
     end
@@ -193,9 +168,9 @@ Native implementation; only the declared contract is known. [Explanation](api.md
 ```mermaid
 sequenceDiagram
     participant p0 as _consumeAndFail
-    participant p1 as TensorError
-    p0->>p1: TensorError(code=99, message=”expected cleanup test”)
-    p1-->>p0: TensorError
+
+    p0->>p0: TensorError(code=99, message=”expected cleanup test”) ·<br/>construct value
+    p0-->>p0: TensorError result: TensorError
     Note over p0: Raise checked failure TensorError(code=99,<br/>message=”expected cleanup test”)； required cleanup runs<br/>before exit
     Note over p0: May leave with checked errors: TensorError
 ```
@@ -225,9 +200,9 @@ Receive fields: item. [Explanation](api.md).
 ```mermaid
 sequenceDiagram
     participant p0 as _TensorHolder.total
-    participant p1 as sum
-    p0->>p1: sum(tensor=item)
-    p1-->>p0: float
+
+    p0->>p0: sum(tensor=item)
+    p0-->>p0: sum result: float
     Note over p0: Return sum(tensor=item)； required cleanup runs before<br/>exit
     Note over p0: May leave with checked errors: TensorError
 ```
@@ -238,7 +213,7 @@ sequenceDiagram
 [Source](api.md#source-L37)
 :::
 
-[Explanation](api.md).
+Set holder.item to replacement. [Explanation](api.md).
 
 ## Called contracts
 

@@ -20,21 +20,8 @@ outline: [2, 3]
 flowchart TD
     n0["Counter"]
     n1["main.aug"]
-    n1 -->|"calls"| n0
+    n1 -->|"calls； calls label"| n0
 ```
-
-::: details Call relationships
-
-```mermaid
-flowchart TD
-    n0["Counter"]
-    n1["Counter.label"]
-    n2["main.aug"]
-    n2 -->|"calls"| n0
-    n2 -->|"calls"| n1
-```
-
-:::
 
 ## Sequences
 
@@ -51,14 +38,15 @@ sequenceDiagram
     participant p0 as Startup
     participant p1 as Counter
     participant p2 as counter: Counter
-    participant p3 as print
+    participant p3 as August runtime
     p0->>p1: Counter(value=1)
     p1-->>p0: counter: Counter
     p0->>p2: label()
-    p2-->>p0: string
-    p0->>p3: print(value=counter.label())
+    p2-->>p0: label result: string
+    p0->>p3: print(value=label result)
     rect rgb(245, 240, 241)
     Note over p0: Enter borrow scope
+    Note over p0: Set counter.value to 2
     Note over p0: Leave borrow scope
     end
     p0->>p3: print(value=counter.value)

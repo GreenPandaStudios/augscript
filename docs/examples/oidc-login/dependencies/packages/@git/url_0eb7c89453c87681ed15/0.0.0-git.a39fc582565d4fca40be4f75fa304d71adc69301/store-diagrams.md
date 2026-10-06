@@ -20,23 +20,8 @@ outline: [2, 3]
 flowchart TD
     n0["ExpiringStore"]
     n1["MemoryStore"]
-    n2["StoreFull"]
-    n3["_Entry"]
     n1 -->|"implements"| n0
 ```
-
-::: details Call relationships
-
-```mermaid
-flowchart TD
-    n0["MemoryStore.put"]
-    n1["StoreFull"]
-    n2["_Entry"]
-    n0 -->|"calls"| n1
-    n0 -->|"calls"| n2
-```
-
-:::
 
 ## Sequences
 
@@ -91,11 +76,11 @@ Interface contract; implementation selected at runtime. [Explanation](store.md).
 ```mermaid
 sequenceDiagram
     participant p0 as MemoryStore constructor
-    participant p1 as Map
-    participant p2 as Shared
-    p0->>p1: Map()
-    p0->>p2: Shared(value=Map‹string, _Entry‹T››())
-    Note over p0: Set _entries to Shared(value=Map‹string, _Entry‹T››())
+    participant p1 as Shared
+    p0->>p0: Map‹string, _Entry‹T››()
+    p0-->>p0: Map result: Map‹string, _Entry‹T››
+    p0->>p1: Shared(value=Map result)
+    p1-->>p0: _entries: Shared‹Map‹string, _Entry‹T›››
 ```
 
 ### MemoryStore.put {#sequence-MemoryStore.put}
@@ -107,31 +92,29 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as MemoryStore.put
-    participant p1 as _Entry
-    participant p2 as entries.take
-    participant p3 as entries.length
-    participant p4 as entries.contains
-    participant p5 as StoreFull
-    participant p6 as entries.set
-    p0->>p1: _Entry(value=value, expires=expires)
-    p1-->>p0: entry: _Entry‹T›
+
+    p0->>p0: _Entry‹T›(value=value, expires=expires) · construct<br/>value
+    p0-->>p0: entry: _Entry‹T›
     rect rgb(245, 240, 241)
     Note over p0: Enter lock scope
     loop For each item in entries
     alt saved.expires ‹= now
-    p0->>p2: entries.take(key=name)
+    p0->>p0: entries.take(key=name)
+    p0-->>p0: take result: optional _Entry‹T›
     end
     end
-    p0->>p3: entries.length()
+    p0->>p0: entries.length()
+    p0-->>p0: length result: int
     opt Left is true
-    p0->>p4: entries.contains(key=key)
+    p0->>p0: entries.contains(key=key)
+    p0-->>p0: contains result: bool
     end
     alt entries.length() ›= 512 and not entries.contains(key=key)
-    p0->>p5: StoreFull()
-    p5-->>p0: StoreFull
+    p0->>p0: StoreFull() · construct value
+    p0-->>p0: StoreFull result: StoreFull
     Note over p0: Raise checked failure StoreFull()； required cleanup runs<br/>before exit
     end
-    p0->>p6: entries.set(key=key, value=entry)
+    p0->>p0: entries.set(key=key, value=entry)
     Note over p0: Leave lock scope
     end
     Note over p0: May leave with checked errors: StoreFull
@@ -146,10 +129,11 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as MemoryStore.take
-    participant p1 as entries.take
+
     rect rgb(245, 240, 241)
     Note over p0: Enter lock scope
-    p0->>p1: entries.take(key=key)
+    p0->>p0: entries.take(key=key)
+    p0-->>p0: take result: optional _Entry‹T›
     alt Match when null:
     Note over p0: Return null； required cleanup runs before exit
     else Match when some saved:
@@ -171,10 +155,11 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as MemoryStore.get
-    participant p1 as entries.get
+
     rect rgb(245, 240, 241)
     Note over p0: Enter lock scope
-    p0->>p1: entries.get(key=key)
+    p0->>p0: entries.get(key=key)
+    p0-->>p0: get result: optional _Entry‹T›
     alt Match when null:
     Note over p0: Return null； required cleanup runs before exit
     else Match when some saved:

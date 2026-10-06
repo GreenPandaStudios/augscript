@@ -5,21 +5,6 @@
 [Project overview](../../../diagrams/index.md) · [Compiled explanation](integers.aug.md)
 
 
-<details>
-<summary>Call relationships</summary>
-
-```mermaid
-flowchart TD
-    n0["checkedAbs"]
-    n1["checkedAdd"]
-    n2["checkedNegate"]
-    n3["checkedSum"]
-    n0 -->|"calls"| n2
-    n3 -->|"calls"| n1
-```
-
-</details>
-
 ## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
@@ -33,9 +18,11 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ```mermaid
 sequenceDiagram
     participant p0 as checkedAdd
-    participant p1 as ArithmeticError
+
+    Note over p0: Set result to left + right
     alt right › 0 and result ‹ left) or (right ‹ 0 and result › left
-    p0->>p1: ArithmeticError()
+    p0->>p0: ArithmeticError()
+    p0-->>p0: ArithmeticError result: ArithmeticError
     Note over p0: Raise checked failure ArithmeticError()； required<br/>cleanup runs before exit
     end
     Note over p0: Return result； required cleanup runs before exit
@@ -51,9 +38,11 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as checkedSubtract
-    participant p1 as ArithmeticError
+
+    Note over p0: Set result to left - right
     alt right › 0 and result › left) or (right ‹ 0 and result ‹ left
-    p0->>p1: ArithmeticError()
+    p0->>p0: ArithmeticError()
+    p0-->>p0: ArithmeticError result: ArithmeticError
     Note over p0: Raise checked failure ArithmeticError()； required<br/>cleanup runs before exit
     end
     Note over p0: Return result； required cleanup runs before exit
@@ -69,16 +58,19 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as checkedMultiply
-    participant p1 as ArithmeticError
+
     alt left == 0 or right == 0
     Note over p0: Return 0； required cleanup runs before exit
     end
     alt left == -9223372036854775808 and right == -1) or (right == -9223372036854775808 and left == -1
-    p0->>p1: ArithmeticError()
+    p0->>p0: ArithmeticError()
+    p0-->>p0: ArithmeticError result: ArithmeticError
     Note over p0: Raise checked failure ArithmeticError()； required<br/>cleanup runs before exit
     end
+    Note over p0: Set result to left * right
     alt result / left != right
-    p0->>p1: ArithmeticError()
+    p0->>p0: ArithmeticError()
+    p0-->>p0: ArithmeticError result 2: ArithmeticError
     Note over p0: Raise checked failure ArithmeticError()； required<br/>cleanup runs before exit
     end
     Note over p0: Return result； required cleanup runs before exit
@@ -94,9 +86,10 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as checkedDivide
-    participant p1 as ArithmeticError
+
     alt right == 0 or (left == -9223372036854775808 and right == -1
-    p0->>p1: ArithmeticError()
+    p0->>p0: ArithmeticError()
+    p0-->>p0: ArithmeticError result: ArithmeticError
     Note over p0: Raise checked failure ArithmeticError()； required<br/>cleanup runs before exit
     end
     Note over p0: Return left / right； required cleanup runs before exit
@@ -112,9 +105,10 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as checkedNegate
-    participant p1 as ArithmeticError
+
     alt value == -9223372036854775808
-    p0->>p1: ArithmeticError()
+    p0->>p0: ArithmeticError()
+    p0-->>p0: ArithmeticError result: ArithmeticError
     Note over p0: Raise checked failure ArithmeticError()； required<br/>cleanup runs before exit
     end
     Note over p0: Return -value； required cleanup runs before exit
@@ -130,10 +124,10 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as checkedAbs
-    participant p1 as checkedNegate
+
     alt value ‹ 0
-    p0->>p1: checkedNegate(value=value)
-    p1-->>p0: int
+    p0->>p0: checkedNegate(value=value)
+    p0-->>p0: checkedNegate result: int
     Note over p0: Return checkedNegate(value)； required cleanup runs<br/>before exit
     end
     Note over p0: Return value； required cleanup runs before exit
@@ -149,10 +143,11 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as checkedSum
-    participant p1 as checkedAdd
+
+    Note over p0: Set total to 0
     loop For each item in values
-    p0->>p1: checkedAdd(left=total, right=value)
-    p1-->>p0: total: int
+    p0->>p0: checkedAdd(left=total, right=value)
+    p0-->>p0: total: int
     end
     Note over p0: Return total； required cleanup runs before exit
     Note over p0: May leave with checked errors: ArithmeticError

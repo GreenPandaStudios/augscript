@@ -20,21 +20,8 @@ outline: [2, 3]
 flowchart TD
     n0["main.aug"]
     n1["GpuError"]
-    n0 -->|"calls"| n1
+    n0 -->|"calls explain"| n1
 ```
-
-::: details Call relationships
-
-```mermaid
-flowchart TD
-    n0["calculate"]
-    n1["main.aug"]
-    n2["GpuError.explain"]
-    n1 -->|"calls"| n0
-    n1 -->|"calls"| n2
-```
-
-:::
 
 ## Sequences
 
@@ -50,9 +37,8 @@ Call arrows identify checked targets; loop and branch frames determine when they
 sequenceDiagram
     participant p0 as Startup
     participant p1 as compute
-    participant p2 as print
+    participant p2 as August runtime
     participant p3 as error: GpuError
-    participant p4 as exit
     opt Try body； stops on a checked failure
     rect rgb(245, 240, 241)
     Note over p0: Enter task scope
@@ -62,19 +48,19 @@ sequenceDiagram
     Note over p0: Worker starts with an isolated heap and copied data
     Note over p0: Wait for first and second； failure cancels siblings and<br/>cleanup joins
     loop For each item in firstResult
-    p0->>p2: print(input 1=value)
+    p0->>p2: print(value=value)
     end
     loop For each item in secondResult
-    p0->>p2: print(input 1=value)
+    p0->>p2: print(value=value)
     end
     Note over p0: Join tasks and release scoped resources
     end
     end
     opt Catch GpuError
     p0->>p3: explain()
-    p3-->>p0: string
-    p0->>p2: print(value=error.explain())
-    p0->>p4: exit(status=1)
+    p3-->>p0: explain result: string
+    p0->>p2: print(value=explain result)
+    p0->>p2: exit(status=1)
     end
     opt Catch ConcurrencyError
     p0->>p2: print(value=”Worker capacity is exhausted”)

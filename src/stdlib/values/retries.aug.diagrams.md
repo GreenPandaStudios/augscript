@@ -18,21 +18,24 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ```mermaid
 sequenceDiagram
     participant p0 as RetryPolicy constructor
-    participant p1 as ConversionError
-    participant p2 as delays.length
+
     Note over p0: Receive fields: maxAttempts, delays
     alt maxAttempts ‹ 1 or maxAttempts › 64
-    p0->>p1: ConversionError()
+    p0->>p0: ConversionError()
+    p0-->>p0: ConversionError result: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
-    p0->>p2: delays.length()
+    p0->>p0: delays.length()
+    p0-->>p0: length result: int
     alt delays.length() != maxAttempts - 1
-    p0->>p1: ConversionError()
+    p0->>p0: ConversionError()
+    p0-->>p0: ConversionError result 2: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
     loop For each item in delays
     alt delay.milliseconds ‹ 0 or delay.milliseconds › 604800000
-    p0->>p1: ConversionError()
+    p0->>p0: ConversionError()
+    p0-->>p0: ConversionError result 3: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
     end
@@ -47,16 +50,17 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as retryDelay
-    participant p1 as ConversionError
-    participant p2 as policy.delays.at
+
     alt failedAttempt ‹ 1 or failedAttempt › policy.maxAttempts
-    p0->>p1: ConversionError()
+    p0->>p0: ConversionError()
+    p0-->>p0: ConversionError result: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
     alt failedAttempt == policy.maxAttempts
     Note over p0: Return null； required cleanup runs before exit
     end
-    p0->>p2: policy.delays.at(index=failedAttempt - 1)
+    p0->>p0: policy.delays.at(index=failedAttempt - 1)
+    p0-->>p0: at result: optional Duration
     Note over p0: Return policy.delays.at(index=failedAttempt - 1)；<br/>required cleanup runs before exit
     Note over p0: May leave with checked errors: ConversionError
 ```

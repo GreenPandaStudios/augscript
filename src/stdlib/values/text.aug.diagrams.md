@@ -5,21 +5,6 @@
 [Project overview](.aug-spec/diagrams/index.md) · [Compiled explanation](text.aug.md)
 
 
-<details>
-<summary>Call relationships</summary>
-
-```mermaid
-flowchart TD
-    n0["BoundedText"]
-    n1["TokenId"]
-    n2["parseBoundedText"]
-    n3["parseTokenId"]
-    n2 -->|"calls"| n0
-    n3 -->|"calls"| n1
-```
-
-</details>
-
 ## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
@@ -33,12 +18,13 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ```mermaid
 sequenceDiagram
     participant p0 as TokenId constructor
-    participant p1 as text.isToken
-    participant p2 as ConversionError
+
     Note over p0: Receive fields: text
-    p0->>p1: text.isToken(min=1, max=128)
+    p0->>p0: text.isToken(min=1, max=128)
+    p0-->>p0: isToken result: bool
     alt not text.isToken(min=1, max=128)
-    p0->>p2: ConversionError()
+    p0->>p0: ConversionError()
+    p0-->>p0: ConversionError result: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
 ```
@@ -52,9 +38,9 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as parseTokenId
-    participant p1 as TokenId
-    p0->>p1: TokenId(text=text)
-    p1-->>p0: TokenId
+
+    p0->>p0: TokenId(text=text) · construct value
+    p0-->>p0: TokenId result: TokenId
     Note over p0: Return TokenId(text)； required cleanup runs before exit
     Note over p0: May leave with checked errors: ConversionError
 ```
@@ -76,23 +62,26 @@ Return value.text; required cleanup runs before exit. [Explanation](text.aug.md)
 ```mermaid
 sequenceDiagram
     participant p0 as BoundedText constructor
-    participant p1 as ConversionError
-    participant p2 as text.byteLength
-    participant p3 as text.codePointLength
+
     Note over p0: Receive fields: text, minBytes, maxBytes
     alt minBytes ‹ 0 or minBytes › maxBytes or maxBytes › 1048576
-    p0->>p1: ConversionError()
+    p0->>p0: ConversionError()
+    p0-->>p0: ConversionError result: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
-    p0->>p2: text.byteLength()
+    p0->>p0: text.byteLength()
+    p0-->>p0: byteLength result: int
     opt Left is false
-    p0->>p2: text.byteLength()
+    p0->>p0: text.byteLength()
+    p0-->>p0: byteLength result 2: int
     end
     alt text.byteLength() ‹ minBytes or text.byteLength() › maxBytes
-    p0->>p1: ConversionError()
+    p0->>p0: ConversionError()
+    p0-->>p0: ConversionError result 2: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
-    p0->>p3: text.codePointLength()
+    p0->>p0: text.codePointLength()
+    p0-->>p0: codePointLength result: int
 ```
 
 <a id="sequence-parseBoundedText"></a>
@@ -104,9 +93,9 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as parseBoundedText
-    participant p1 as BoundedText
-    p0->>p1: BoundedText(text=text, minBytes=minBytes,<br/>maxBytes=maxBytes)
-    p1-->>p0: BoundedText
+
+    p0->>p0: BoundedText(text=text, minBytes=minBytes,<br/>maxBytes=maxBytes) · construct value
+    p0-->>p0: BoundedText result: BoundedText
     Note over p0: Return BoundedText(text, minBytes, maxBytes)； required<br/>cleanup runs before exit
     Note over p0: May leave with checked errors: ConversionError
 ```

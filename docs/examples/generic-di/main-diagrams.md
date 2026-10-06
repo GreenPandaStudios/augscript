@@ -20,19 +20,8 @@ outline: [2, 3]
 flowchart TD
     n0["main.aug"]
     n1["Program"]
-    n0 -->|"calls"| n1
+    n0 -->|"calls start"| n1
 ```
-
-::: details Call relationships
-
-```mermaid
-flowchart TD
-    n0["main.aug"]
-    n1["Program.start"]
-    n0 -->|"calls"| n1
-```
-
-:::
 
 ## Sequences
 

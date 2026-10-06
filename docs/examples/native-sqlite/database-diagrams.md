@@ -15,23 +15,6 @@ outline: [2, 3]
 [Project overview](diagrams/index.md) · [Compiled explanation](database.md)
 
 
-::: details Call relationships
-
-```mermaid
-flowchart TD
-    n0["storedName"]
-    n1["database.aug"]
-    n2["execute"]
-    n3["openMemory"]
-    n4["queryScalar"]
-    n0 -->|"calls"| n2
-    n0 -->|"calls"| n3
-    n0 -->|"calls"| n4
-    n1 -->|"calls"| n0
-```
-
-:::
-
 ## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
@@ -45,20 +28,20 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ```mermaid
 sequenceDiagram
     participant p0 as storedName
-    participant p1 as @greenpandastudios/aug-sqlite/api
+    participant p1 as aug-sqlite/api
     p0->>p1: openMemory()
     p1-->>p0: database: Database
     Note over p0: Own database； release on scope exits
     rect rgb(245, 240, 241)
     Note over p0: Enter borrow scope
     p0->>p1: execute(database=database, sql=”CREATE TABLE users (name<br/>TEXT NOT NULL)”, parameters=［］)
-    p1-->>p0: int
+    p1-->>p0: execute result: int
     p0->>p1: execute(database=database, sql=”INSERT INTO users (name)<br/>VALUES (?)”, parameters=［”August”］)
-    p1-->>p0: int
+    p1-->>p0: execute result 2: int
     Note over p0: Leave borrow scope
     end
     p0->>p1: queryScalar(database=database, sql=”SELECT name FROM<br/>users”, parameters=［］)
-    p1-->>p0: string
+    p1-->>p0: queryScalar result: string
     Note over p0: Return queryScalar(database, sql=”SELECT name FROM<br/>users”, parameters=［］)； required cleanup runs before<br/>exit
     Note over p0: May leave with checked errors: SqliteError
 ```

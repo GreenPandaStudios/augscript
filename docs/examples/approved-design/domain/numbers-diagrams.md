@@ -19,26 +19,9 @@ outline: [2, 3]
 ```mermaid
 flowchart TD
     n0["Positive"]
-    n1["RangeError"]
-    n2["double"]
-    n2 -->|"intercepted by"| n0
+    n1["double"]
+    n1 -->|"intercepted by"| n0
 ```
-
-::: details Call relationships
-
-```mermaid
-flowchart TD
-    n0["Positive"]
-    n1["Positive.around"]
-    n2["RangeError"]
-    n3["double"]
-    n4["domain/numbers.aug"]
-    n1 -->|"calls"| n2
-    n3 -->|"intercepted by"| n0
-    n4 -->|"calls"| n3
-```
-
-:::
 
 ## Sequences
 
@@ -61,14 +44,14 @@ Receive fields: value. [Explanation](numbers.md).
 ```mermaid
 sequenceDiagram
     participant p0 as Positive.around
-    participant p1 as RangeError
-    participant p2 as next
+    participant p1 as next
     alt amount ‹ 0
-    p0->>p1: RangeError(value=amount)
-    p1-->>p0: RangeError
+    p0->>p0: RangeError(value=amount) · construct value
+    p0-->>p0: RangeError result: RangeError
     Note over p0: Raise checked failure RangeError(value=amount)； required<br/>cleanup runs before exit
     end
-    p0->>p2: next() · conditional interceptor delegation
+    p0->>p1: next() · conditional interceptor delegation
+    p1-->>p0: next result: int
     Note over p0: Return next()； required cleanup runs before exit
     Note over p0: May leave with checked errors: RangeError
 ```

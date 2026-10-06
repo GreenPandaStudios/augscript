@@ -5,21 +5,6 @@
 [Project overview](.aug-spec/diagrams/index.md) · [Compiled explanation](contracts.aug.md)
 
 
-<details>
-<summary>Call relationships</summary>
-
-```mermaid
-flowchart TD
-    n0["_aug_json_parse"]
-    n1["_aug_json_parse_compatible"]
-    n2["parse"]
-    n3["parseCompatible"]
-    n2 -->|"calls"| n0
-    n3 -->|"calls"| n1
-```
-
-</details>
-
 ## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
@@ -41,11 +26,11 @@ May leave with checked errors: JsonError. Native implementation; only the declar
 ```mermaid
 sequenceDiagram
     participant p0 as parse
-    participant p1 as _aug_json_parse
+
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _aug_json_parse(input=input) · native boundary
-    p1-->>p0: Json
+    p0->>p0: _aug_json_parse(input=input) · native boundary
+    p0-->>p0: _aug_json_parse result: Json
     Note over p0: Return _aug_json_parse(input)； required cleanup runs<br/>before exit
     Note over p0: Leave unsafe scope
     end
@@ -69,11 +54,11 @@ May leave with checked errors: JsonError. Native implementation; only the declar
 ```mermaid
 sequenceDiagram
     participant p0 as parseCompatible
-    participant p1 as _aug_json_parse_compatible
+
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _aug_json_parse_compatible(input=input) · native<br/>boundary
-    p1-->>p0: Json
+    p0->>p0: _aug_json_parse_compatible(input=input) · native<br/>boundary
+    p0-->>p0: _aug_json_parse_compatible result: Json
     Note over p0: Return _aug_json_parse_compatible(input)； required<br/>cleanup runs before exit
     Note over p0: Leave unsafe scope
     end

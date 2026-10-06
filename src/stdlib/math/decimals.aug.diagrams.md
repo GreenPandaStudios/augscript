@@ -5,40 +5,6 @@
 [Project overview](.aug-spec/diagrams/index.md) · [Compiled explanation](decimals.aug.md)
 
 
-<details>
-<summary>Call relationships</summary>
-
-```mermaid
-flowchart TD
-    n0["Decimal"]
-    n1["addDecimals"]
-    n2["divideDecimals"]
-    n3["multiplyDecimals"]
-    n4["parseDecimal"]
-    n5["rescaleDecimal"]
-    n6["subtractDecimals"]
-    n7["checkedAdd"]
-    n8["checkedDivide"]
-    n9["checkedMultiply"]
-    n10["checkedSubtract"]
-    n1 -->|"calls"| n0
-    n1 -->|"calls"| n5
-    n1 -->|"calls"| n7
-    n2 -->|"calls"| n0
-    n2 -->|"calls"| n8
-    n2 -->|"calls"| n9
-    n3 -->|"calls"| n0
-    n3 -->|"calls"| n9
-    n4 -->|"calls"| n0
-    n5 -->|"calls"| n0
-    n5 -->|"calls"| n9
-    n6 -->|"calls"| n0
-    n6 -->|"calls"| n5
-    n6 -->|"calls"| n10
-```
-
-</details>
-
 ## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
@@ -52,10 +18,11 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ```mermaid
 sequenceDiagram
     participant p0 as Decimal constructor
-    participant p1 as ConversionError
+
     Note over p0: Receive fields: coefficient, scale
     alt scale ‹ 0 or scale › 18
-    p0->>p1: ConversionError()
+    p0->>p0: ConversionError()
+    p0-->>p0: ConversionError result: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
 ```
@@ -66,59 +33,82 @@ sequenceDiagram
 
 [Source](decimals.aug#L18)
 
+#### Sequence 1 of 2
+
 ```mermaid
 sequenceDiagram
     participant p0 as parseDecimal
-    participant p1 as text.length
-    participant p2 as ConversionError
-    participant p3 as text.split
-    participant p4 as parts.length
-    participant p5 as parts.get
-    participant p6 as fraction.isDecimal
-    participant p7 as fraction.length
-    participant p8 as parts.join
-    participant p9 as parts.join(separator=””).parseInteger
-    participant p10 as Decimal
-    p0->>p1: text.length()
+
+    p0->>p0: text.length()
+    p0-->>p0: length result: int
     opt Left is false
-    p0->>p1: text.length()
+    p0->>p0: text.length()
+    p0-->>p0: length result 2: int
     end
     alt text.length() == 0 or text.length() › 64
-    p0->>p2: ConversionError()
+    p0->>p0: ConversionError()
+    p0-->>p0: ConversionError result: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
-    p0->>p3: text.split(separator=”.”)
-    p0->>p4: parts.length()
+    p0->>p0: text.split(separator=”.”)
+    p0-->>p0: parts: List‹string›
+    p0->>p0: parts.length()
+    p0-->>p0: length result 3: int
     alt parts.length() › 2
-    p0->>p2: ConversionError()
+    p0->>p0: ConversionError()
+    p0-->>p0: ConversionError result 2: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
+    Note over p0: Set scale to 0
     opt Try body； stops on a checked failure
-    p0->>p4: parts.length()
+    p0->>p0: parts.length()
+    p0-->>p0: length result 4: int
     alt parts.length() == 2
-    p0->>p5: parts.get(index=0)
-    p0->>p5: parts.get(index=1)
+    p0->>p0: parts.get(index=0)
+    p0-->>p0: whole: string
+    p0->>p0: parts.get(index=1)
+    p0-->>p0: fraction: string
     opt Left is false
-    p0->>p6: fraction.isDecimal()
+    p0->>p0: fraction.isDecimal()
+    p0-->>p0: isDecimal result: bool
     end
+    end
+    end
+```
+
+#### Sequence 2 of 2 (continued)
+
+```mermaid
+sequenceDiagram
+    participant p0 as parseDecimal
+
+    opt Try body； stops on a checked failure
+    alt parts.length() == 2
     opt Left is false
-    p0->>p7: fraction.length()
+    Note over p0: Sequence continued from the previous view
+    p0->>p0: fraction.length()
+    p0-->>p0: length result 5: int
     end
     alt whole == ”” or whole == ”-” or not fraction.isDecimal() or fraction.length() › 18
-    p0->>p2: ConversionError()
+    p0->>p0: ConversionError()
+    p0-->>p0: ConversionError result 3: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
-    p0->>p7: fraction.length()
+    p0->>p0: fraction.length()
+    p0-->>p0: scale: int
     end
     end
     opt Catch IndexError
-    p0->>p2: ConversionError()
+    p0->>p0: ConversionError()
+    p0-->>p0: ConversionError result 4: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
-    p0->>p8: parts.join(separator=””)
-    p0->>p9: parts.join(separator=””).parseInteger()
-    p0->>p10: Decimal(coefficient=coefficient, scale=scale)
-    p10-->>p0: Decimal
+    p0->>p0: parts.join(separator=””)
+    p0-->>p0: join result: string
+    p0->>p0: join result.parseInteger()
+    p0-->>p0: coefficient: int
+    p0->>p0: Decimal(coefficient=coefficient, scale=scale) ·<br/>construct value
+    p0-->>p0: Decimal result: Decimal
     Note over p0: Return Decimal(coefficient, scale)； required cleanup<br/>runs before exit
     Note over p0: May leave with checked errors: ConversionError
 ```
@@ -133,13 +123,23 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as formatDecimal
 
+    Note over p0: Set remaining to value.coefficient
+    Note over p0: Set written to 0
+    Note over p0: Set result to ””
     loop While remaining != 0 or written ‹= value.scale
     alt written == value.scale and value.scale › 0
+    Note over p0: Set result to ”.” + result
     end
+    Note over p0: Set digit to remaining % 10
     alt digit ‹ 0
+    Note over p0: Set digit to -digit
     end
+    Note over p0: Set result to $”｛digit｝” + result
+    Note over p0: Set remaining to remaining / 10
+    Note over p0: Set written to written + 1
     end
     alt value.coefficient ‹ 0
+    Note over p0: Set result to ”-” + result
     end
     Note over p0: Return result； required cleanup runs before exit
 ```
@@ -153,26 +153,30 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as rescaleDecimal
-    participant p1 as ConversionError
-    participant p2 as august/math/integers
-    participant p3 as ArithmeticError
-    participant p4 as Decimal
+    participant p1 as august/math/integers
     alt scale ‹ 0 or scale › 18
-    p0->>p1: ConversionError()
+    p0->>p0: ConversionError()
+    p0-->>p0: ConversionError result: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
+    Note over p0: Set coefficient to value.coefficient
+    Note over p0: Set current to value.scale
     loop While current ‹ scale
-    p0->>p2: checkedMultiply(left=coefficient, right=10)
-    p2-->>p0: coefficient: int
+    p0->>p1: checkedMultiply(left=coefficient, right=10)
+    p1-->>p0: coefficient: int
+    Note over p0: Set current to current + 1
     end
     loop While current › scale
     alt coefficient % 10 != 0
-    p0->>p3: ArithmeticError()
+    p0->>p0: ArithmeticError()
+    p0-->>p0: ArithmeticError result: ArithmeticError
     Note over p0: Raise checked failure ArithmeticError()； required<br/>cleanup runs before exit
     end
+    Note over p0: Set coefficient to coefficient / 10
+    Note over p0: Set current to current - 1
     end
-    p0->>p4: Decimal(coefficient=coefficient, scale=scale)
-    p4-->>p0: Decimal
+    p0->>p0: Decimal(coefficient=coefficient, scale=scale) ·<br/>construct value
+    p0-->>p0: Decimal result: Decimal
     Note over p0: Return Decimal(coefficient, scale)； required cleanup<br/>runs before exit
     Note over p0: May leave with checked errors: ArithmeticError,<br/>ConversionError
 ```
@@ -186,19 +190,19 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as addDecimals
-    participant p1 as rescaleDecimal
-    participant p2 as august/math/integers
-    participant p3 as Decimal
+    participant p1 as august/math/integers
+    Note over p0: Set scale to left.scale
     alt scale ‹ right.scale
+    Note over p0: Set scale to right.scale
     end
-    p0->>p1: rescaleDecimal(value=left, scale=scale)
-    p1-->>p0: alignedLeft: Decimal
-    p0->>p1: rescaleDecimal(value=right, scale=scale)
-    p1-->>p0: alignedRight: Decimal
-    p0->>p2: checkedAdd(left=alignedLeft.coefficient,<br/>right=alignedRight.coefficient)
-    p2-->>p0: int
-    p0->>p3: Decimal(coefficient=checkedAdd(left=alignedLeft.coefficient,<br/>right=alignedRight.coefficient), scale=scale)
-    p3-->>p0: Decimal
+    p0->>p0: rescaleDecimal(value=left, scale=scale)
+    p0-->>p0: alignedLeft: Decimal
+    p0->>p0: rescaleDecimal(value=right, scale=scale)
+    p0-->>p0: alignedRight: Decimal
+    p0->>p1: checkedAdd(left=alignedLeft.coefficient,<br/>right=alignedRight.coefficient)
+    p1-->>p0: checkedAdd result: int
+    p0->>p0: Decimal(coefficient=checkedAdd result, scale=scale) ·<br/>construct value
+    p0-->>p0: Decimal result: Decimal
     Note over p0: Return<br/>Decimal(coefficient=checkedAdd(left=alignedLeft.coefficient,<br/>right=alignedRight.coefficient), scale=scale)； re…
     Note over p0: May leave with checked errors: ArithmeticError,<br/>ConversionError
 ```
@@ -212,19 +216,19 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as subtractDecimals
-    participant p1 as rescaleDecimal
-    participant p2 as august/math/integers
-    participant p3 as Decimal
+    participant p1 as august/math/integers
+    Note over p0: Set scale to left.scale
     alt scale ‹ right.scale
+    Note over p0: Set scale to right.scale
     end
-    p0->>p1: rescaleDecimal(value=left, scale=scale)
-    p1-->>p0: alignedLeft: Decimal
-    p0->>p1: rescaleDecimal(value=right, scale=scale)
-    p1-->>p0: alignedRight: Decimal
-    p0->>p2: checkedSubtract(left=alignedLeft.coefficient,<br/>right=alignedRight.coefficient)
-    p2-->>p0: int
-    p0->>p3: Decimal(coefficient=checkedSubtract(left=alignedLeft.coefficient,<br/>right=alignedRight.coefficient), scale=scale)
-    p3-->>p0: Decimal
+    p0->>p0: rescaleDecimal(value=left, scale=scale)
+    p0-->>p0: alignedLeft: Decimal
+    p0->>p0: rescaleDecimal(value=right, scale=scale)
+    p0-->>p0: alignedRight: Decimal
+    p0->>p1: checkedSubtract(left=alignedLeft.coefficient,<br/>right=alignedRight.coefficient)
+    p1-->>p0: checkedSubtract result: int
+    p0->>p0: Decimal(coefficient=checkedSubtract result, scale=scale)<br/>· construct value
+    p0-->>p0: Decimal result: Decimal
     Note over p0: Return<br/>Decimal(coefficient=checkedSubtract(left=alignedLeft.coefficient,<br/>right=alignedRight.coefficient), scale=scale…
     Note over p0: May leave with checked errors: ArithmeticError,<br/>ConversionError
 ```
@@ -239,11 +243,10 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as multiplyDecimals
     participant p1 as august/math/integers
-    participant p2 as Decimal
     p0->>p1: checkedMultiply(left=left.coefficient,<br/>right=right.coefficient)
-    p1-->>p0: int
-    p0->>p2: Decimal(coefficient=checkedMultiply(left=left.coefficient,<br/>right=right.coefficient), scale=left.scale +<br/>right.scale)
-    p2-->>p0: Decimal
+    p1-->>p0: checkedMultiply result: int
+    p0->>p0: Decimal(coefficient=checkedMultiply result,<br/>scale=left.scale + right.scale) · construct value
+    p0-->>p0: Decimal result: Decimal
     Note over p0: Return<br/>Decimal(coefficient=checkedMultiply(left=left.coefficient,<br/>right=right.coefficient), scale=left.scale + right.…
     Note over p0: May leave with checked errors: ArithmeticError,<br/>ConversionError
 ```
@@ -257,34 +260,39 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as divideDecimals
-    participant p1 as ConversionError
-    participant p2 as ArithmeticError
-    participant p3 as august/math/integers
-    participant p4 as Decimal
+    participant p1 as august/math/integers
     alt scale ‹ 0 or scale › 18
-    p0->>p1: ConversionError()
+    p0->>p0: ConversionError()
+    p0-->>p0: ConversionError result: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
     alt right.coefficient == 0
-    p0->>p2: ArithmeticError()
+    p0->>p0: ArithmeticError()
+    p0-->>p0: ArithmeticError result: ArithmeticError
     Note over p0: Raise checked failure ArithmeticError()； required<br/>cleanup runs before exit
     end
+    Note over p0: Set numerator to left.coefficient
+    Note over p0: Set denominator to right.coefficient
+    Note over p0: Set adjustment to right.scale - left.scale + scale
     loop While adjustment › 0
-    p0->>p3: checkedMultiply(left=numerator, right=10)
-    p3-->>p0: numerator: int
+    p0->>p1: checkedMultiply(left=numerator, right=10)
+    p1-->>p0: numerator: int
+    Note over p0: Set adjustment to adjustment - 1
     end
     loop While adjustment ‹ 0
-    p0->>p3: checkedMultiply(left=denominator, right=10)
-    p3-->>p0: denominator: int
+    p0->>p1: checkedMultiply(left=denominator, right=10)
+    p1-->>p0: denominator: int
+    Note over p0: Set adjustment to adjustment + 1
     end
     alt numerator % denominator != 0
-    p0->>p2: ArithmeticError()
+    p0->>p0: ArithmeticError()
+    p0-->>p0: ArithmeticError result 2: ArithmeticError
     Note over p0: Raise checked failure ArithmeticError()； required<br/>cleanup runs before exit
     end
-    p0->>p3: checkedDivide(left=numerator, right=denominator)
-    p3-->>p0: int
-    p0->>p4: Decimal(coefficient=checkedDivide(left=numerator,<br/>right=denominator), scale=scale)
-    p4-->>p0: Decimal
+    p0->>p1: checkedDivide(left=numerator, right=denominator)
+    p1-->>p0: checkedDivide result: int
+    p0->>p0: Decimal(coefficient=checkedDivide result, scale=scale) ·<br/>construct value
+    p0-->>p0: Decimal result: Decimal
     Note over p0: Return Decimal(coefficient=checkedDivide(left=numerator,<br/>right=denominator), scale=scale)； required cleanup runs<br/>befo…
     Note over p0: May leave with checked errors: ArithmeticError,<br/>ConversionError
 ```
@@ -298,26 +306,33 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as compareDecimals
-    participant p1 as $”｛left.coefficient｝”.split
-    participant p2 as $”｛left.coefficient｝”.split(separator=”-”).join
-    participant p3 as $”｛right.coefficient｝”.split
-    participant p4 as $”｛right.coefficient｝”.split(separator=”-”).join
-    participant p5 as leftDigits.compareDecimal
+
     alt left.coefficient ‹ 0 and right.coefficient ›= 0
     Note over p0: Return -1； required cleanup runs before exit
     end
     alt left.coefficient ›= 0 and right.coefficient ‹ 0
     Note over p0: Return 1； required cleanup runs before exit
     end
-    p0->>p1: $”｛left.coefficient｝”.split(separator=”-”)
-    p0->>p2: $”｛left.coefficient｝”.split(separator=”-”).join(separator=””)
-    p0->>p3: $”｛right.coefficient｝”.split(separator=”-”)
-    p0->>p4: $”｛right.coefficient｝”.split(separator=”-”).join(separator=””)
+    p0->>p0: $”｛left.coefficient｝”.split(separator=”-”)
+    p0-->>p0: split result: List‹string›
+    p0->>p0: split result.join(separator=””)
+    p0-->>p0: leftDigits: string
+    p0->>p0: $”｛right.coefficient｝”.split(separator=”-”)
+    p0-->>p0: split result 2: List‹string›
+    p0->>p0: split result 2.join(separator=””)
+    p0-->>p0: rightDigits: string
+    Note over p0: Set leftScale to left.scale
+    Note over p0: Set rightScale to right.scale
     loop While leftScale ‹ rightScale
+    Note over p0: Set leftDigits to leftDigits + ”0”
+    Note over p0: Set leftScale to leftScale + 1
     end
     loop While rightScale ‹ leftScale
+    Note over p0: Set rightDigits to rightDigits + ”0”
+    Note over p0: Set rightScale to rightScale + 1
     end
-    p0->>p5: leftDigits.compareDecimal(other=rightDigits)
+    p0->>p0: leftDigits.compareDecimal(other=rightDigits)
+    p0-->>p0: result: int
     alt left.coefficient ‹ 0
     Note over p0: Return -result； required cleanup runs before exit
     end

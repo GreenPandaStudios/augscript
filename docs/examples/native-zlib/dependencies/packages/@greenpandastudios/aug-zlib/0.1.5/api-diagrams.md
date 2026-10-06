@@ -15,20 +15,6 @@ outline: [2, 3]
 [Project overview](../../../../../diagrams/index.md) · [Compiled explanation](api.md)
 
 
-::: details Call relationships
-
-```mermaid
-flowchart TD
-    n0["_compress"]
-    n1["_decompress"]
-    n2["compress"]
-    n3["decompress"]
-    n2 -->|"calls"| n0
-    n3 -->|"calls"| n1
-```
-
-:::
-
 ## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
@@ -58,11 +44,11 @@ May leave with checked errors: CompressionError. Native implementation; only the
 ```mermaid
 sequenceDiagram
     participant p0 as compress
-    participant p1 as _compress
+
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _compress(input=input) · native boundary
-    p1-->>p0: Bytes
+    p0->>p0: _compress(input=input) · native boundary
+    p0-->>p0: _compress result: Bytes
     Note over p0: Return _compress(input)； required cleanup runs before<br/>exit
     Note over p0: Leave unsafe scope
     end
@@ -78,11 +64,11 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as decompress
-    participant p1 as _decompress
+
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _decompress(input=input, maximumOutput=maximumOutput) ·<br/>native boundary
-    p1-->>p0: Bytes
+    p0->>p0: _decompress(input=input, maximumOutput=maximumOutput) ·<br/>native boundary
+    p0-->>p0: _decompress result: Bytes
     Note over p0: Return _decompress(input, maximumOutput)； required<br/>cleanup runs before exit
     Note over p0: Leave unsafe scope
     end

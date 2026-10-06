@@ -15,21 +15,6 @@ outline: [2, 3]
 [Project overview](diagrams/index.md) · [Compiled explanation](compression.md)
 
 
-::: details Call relationships
-
-```mermaid
-flowchart TD
-    n0["roundTrip"]
-    n1["compression.aug"]
-    n2["compress"]
-    n3["decompress"]
-    n0 -->|"calls"| n2
-    n0 -->|"calls"| n3
-    n1 -->|"calls"| n0
-```
-
-:::
-
 ## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
@@ -43,13 +28,13 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ```mermaid
 sequenceDiagram
     participant p0 as roundTrip
-    participant p1 as ”The world runs on language”.bytes
-    participant p2 as @greenpandastudios/aug-zlib/api
-    p0->>p1: ”The world runs on language”.bytes()
-    p0->>p2: compress(input=input)
-    p2-->>p0: compressed: Bytes
-    p0->>p2: decompress(input=compressed, maximumOutput=4096)
-    p2-->>p0: Bytes
+    participant p1 as aug-zlib/api
+    p0->>p0: ”The world runs on language”.bytes()
+    p0-->>p0: input: Bytes
+    p0->>p1: compress(input=input)
+    p1-->>p0: compressed: Bytes
+    p0->>p1: decompress(input=compressed, maximumOutput=4096)
+    p1-->>p0: decompress result: Bytes
     Note over p0: Return decompress(input=compressed, maximumOutput=4096)；<br/>required cleanup runs before exit
     Note over p0: May leave with checked errors: CompressionError
 ```

@@ -13,29 +13,9 @@ flowchart TD
     n2["Clock"]
     n3["userinfo"]
     n3 -->|"calls"| n0
-    n3 -->|"calls"| n1
-    n3 -->|"depends on"| n1
-    n3 -->|"calls"| n2
-    n3 -->|"depends on"| n2
+    n3 -->|"calls get； depends on"| n1
+    n3 -->|"calls now； depends on"| n2
 ```
-
-<details>
-<summary>Call relationships</summary>
-
-```mermaid
-flowchart TD
-    n0["securityHeaders"]
-    n1["ExpiringStore.get"]
-    n2["Clock.now"]
-    n3["UserInfo"]
-    n4["userinfo"]
-    n4 -->|"calls"| n0
-    n4 -->|"calls"| n1
-    n4 -->|"calls"| n2
-    n4 -->|"calls"| n3
-```
-
-</details>
 
 ## Sequences
 
@@ -47,62 +27,51 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](userinfo.aug#L8)
 
-#### Sequence 1 of 2 (continued)
+#### Sequence 1 of 2
 
 ```mermaid
 sequenceDiagram
     participant p0 as userinfo
-    participant p1 as header.split
-    participant p2 as parts.length
-    participant p3 as parts.get
-    participant p4 as token.isToken
-    participant p5 as clock: Clock
-    participant p6 as access: ExpiringStore
-    participant p7 as UserInfo
-    participant p8 as Json
-    participant p9 as common/headers
-    participant p10 as HttpResponse
-    participant p11 as securityHeaders().with
+    participant p1 as clock: Clock
+    participant p2 as access: ExpiringStore
+    participant p3 as common/headers
     Note over p0: GET /provider/userinfo
     alt Match when null:
+    Note over p0: No operations in this branch
     else Match when some header:
-    p0->>p1: header.split(separator=” ”)
-    p0->>p2: parts.length()
+    p0->>p0: header.split(separator=” ”)
+    p0-->>p0: parts: List‹string›
+    p0->>p0: parts.length()
+    p0-->>p0: length result: int
     alt parts.length() == 2
     opt Try body； stops on a checked failure
-    p0->>p3: parts.get(index=0)
+    p0->>p0: parts.get(index=0)
+    p0-->>p0: get result: string
     alt parts.get(index=0) == ”Bearer”
-    p0->>p3: parts.get(index=1)
-    p0->>p4: token.isToken(min=43, max=43)
+    p0->>p0: parts.get(index=1)
+    p0-->>p0: token: string
+    p0->>p0: token.isToken(min=43, max=43)
+    p0-->>p0: isToken result: bool
     alt token.isToken(min=43, max=43)
-    p0->>p5: now() · interface dispatch
-    p5-->>p0: int
-    p0->>p6: get(key=token, now=clock.now()) · interface dispatch
-    p6-->>p0: optional AccessGrant
+    p0->>p1: now() · interface dispatch
+    p1-->>p0: now result: int
+    p0->>p2: get(key=token, now=now result) · interface dispatch
+    p2-->>p0: get result 3: optional AccessGrant
     alt Match when null:
+    Note over p0: No operations in this branch
     else Match when some grant:
-    p0->>p7: UserInfo(sub=grant.subject, name=grant.name)
-    p7-->>p0: UserInfo
-    p0->>p8: Json(value=UserInfo(sub=grant.subject, name=grant.name))
-    p0->>p9: securityHeaders()
-    p9-->>p0: Headers
-    p0->>p10: HttpResponse(body=Json(value=UserInfo(sub=grant.subject,<br/>name=grant.name)), headers=securityHeaders())
-    Note over p0: Return<br/>HttpResponse(body=Json(value=UserInfo(sub=grant.subject,<br/>name=grant.name)), headers=securityHeaders())； requir…
+    p0->>p0: UserInfo(sub=grant.subject, name=grant.name) · construct<br/>value
+    p0-->>p0: UserInfo result: UserInfo
+    p0->>p0: Json(value=UserInfo result)
+    p0-->>p0: Json result: Json
+    p0->>p3: securityHeaders()
+    p3-->>p0: securityHeaders result: Headers
     end
     end
     end
     end
-    opt Catch IndexError
     end
     end
-    end
-    p0->>p9: securityHeaders()
-    p9-->>p0: Headers
-    p0->>p11: securityHeaders().with(name=”www-authenticate”,<br/>value=”Bearer error=＼”invalid_token＼””)
-    p0->>p8: Json(value=｛”error”: ”invalid_token”｝)
-    p0->>p10: HttpResponse(body=Json(value=｛”error”:<br/>”invalid_token”｝), status=401, headers=headers)
-    Note over p0: Return HttpResponse(body=Json(value=｛”error”:<br/>”invalid_token”｝), status=401, headers=headers)；<br/>required cleanup runs …
-    Note over p0: May leave with checked errors: HttpError, TimeError
 ```
 
 #### Sequence 2 of 2 (continued)
@@ -110,8 +79,36 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as userinfo
-
+    participant p1 as common/headers
+    alt Continuing Match when some header:
+    alt parts.length() == 2
+    opt Try body； stops on a checked failure
+    alt parts.get(index=0) == ”Bearer”
+    alt token.isToken(min=43, max=43)
+    alt Continuing Match when some grant:
     Note over p0: Sequence continued from the previous view
+    p0->>p0: HttpResponse(body=Json result, headers=securityHeaders<br/>result)
+    p0-->>p0: HttpResponse result: HttpResponse‹Json›
+    Note over p0: Return<br/>HttpResponse(body=Json(value=UserInfo(sub=grant.subject,<br/>name=grant.name)), headers=securityHeaders())； requir…
+    end
+    end
+    end
+    end
+    opt Catch IndexError
+    Note over p0: No operations in this branch
+    end
+    end
+    end
+    p0->>p1: securityHeaders()
+    p1-->>p0: securityHeaders result 2: Headers
+    p0->>p0: securityHeaders result 2.with(name=”www-authenticate”,<br/>value=”Bearer error=＼”invalid_token＼””)
+    p0-->>p0: headers: Headers
+    p0->>p0: Json(value=｛”error”: ”invalid_token”｝)
+    p0-->>p0: Json result 2: Json
+    p0->>p0: HttpResponse(body=Json result 2, status=401,<br/>headers=headers)
+    p0-->>p0: HttpResponse result 2: HttpResponse‹Json›
+    Note over p0: Return HttpResponse(body=Json(value=｛”error”:<br/>”invalid_token”｝), status=401, headers=headers)；<br/>required cleanup runs …
+    Note over p0: May leave with checked errors: HttpError, TimeError
     Note over p0: HTTP result follows declared response and error mapping；<br/>unhandled request failure returns 500
 ```
 

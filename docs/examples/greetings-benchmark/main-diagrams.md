@@ -28,9 +28,11 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ```mermaid
 sequenceDiagram
     participant p0 as Startup
-    participant p1 as print
+    participant p1 as August runtime
+    Note over p0: Set greetings to 0
     loop While greetings ‹ 1000000
     p0->>p1: print(value=”Hello, August! 👋”)
+    Note over p0: Set greetings to greetings + 1
     end
 ```
 

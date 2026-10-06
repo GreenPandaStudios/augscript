@@ -11,22 +11,9 @@ flowchart TD
     n0["Console"]
     n1["ConsoleLogger"]
     n2["Logger"]
-    n1 -->|"calls"| n0
-    n1 -->|"depends on"| n0
+    n1 -->|"calls write； depends on"| n0
     n1 -->|"implements"| n2
 ```
-
-<details>
-<summary>Call relationships</summary>
-
-```mermaid
-flowchart TD
-    n0["Console.write"]
-    n1["ConsoleLogger.log"]
-    n1 -->|"calls"| n0
-```
-
-</details>
 
 ## Sequences
 

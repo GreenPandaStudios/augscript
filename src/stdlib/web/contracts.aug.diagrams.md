@@ -6,51 +6,39 @@
 
 ## Class interactions
 
-```mermaid
-flowchart TD
-    n0["Authentication"]
-    n1["Authorization"]
-    n2["HttpClient"]
-    n3["Principal"]
-    n4["RequestLogger"]
-    n5["ServerControl"]
-    n6["WebHttpClient"]
-    n7["WebRequestLogger"]
-    n8["WebServerControl"]
-    n9["_aug_http_log"]
-    n10["_aug_http_request"]
-    n11["_aug_http_stop"]
-    n6 -->|"implements"| n2
-    n6 -->|"calls"| n10
-    n7 -->|"implements"| n4
-    n7 -->|"calls"| n9
-    n8 -->|"implements"| n5
-    n8 -->|"calls"| n11
-```
-
-<details>
-<summary>Call relationships</summary>
+### WebHttpClient
 
 ```mermaid
-flowchart TD
-    n0["WebHttpClient.request"]
-    n1["WebRequestLogger.complete"]
-    n2["WebServerControl.stop"]
-    n3["_aug_http_cookie"]
-    n4["_aug_http_log"]
-    n5["_aug_http_request"]
-    n6["_aug_http_stop"]
-    n7["_aug_http_url_encode"]
-    n8["cookie"]
-    n9["urlEncode"]
-    n0 -->|"calls"| n5
-    n1 -->|"calls"| n4
-    n2 -->|"calls"| n6
-    n8 -->|"calls"| n3
-    n9 -->|"calls"| n7
+flowchart LR
+    n0["HttpClient"]
+    n1["WebHttpClient"]
+    n2["_aug_http_request"]
+    n1 -->|"implements"| n0
+    n1 -->|"calls"| n2
 ```
 
-</details>
+### WebRequestLogger
+
+```mermaid
+flowchart LR
+    n0["RequestLogger"]
+    n1["WebRequestLogger"]
+    n2["_aug_http_log"]
+    n1 -->|"implements"| n0
+    n1 -->|"calls"| n2
+```
+
+### WebServerControl
+
+```mermaid
+flowchart LR
+    n0["ServerControl"]
+    n1["WebServerControl"]
+    n2["_aug_http_stop"]
+    n1 -->|"implements"| n0
+    n1 -->|"calls"| n2
+```
+
 
 ## Sequences
 
@@ -113,10 +101,10 @@ Native implementation; only the declared contract is known. [Explanation](contra
 ```mermaid
 sequenceDiagram
     participant p0 as WebRequestLogger.complete
-    participant p1 as _aug_http_log
+
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _aug_http_log(method=method, path=path, status=status,<br/>milliseconds=milliseconds) · native boundary
+    p0->>p0: _aug_http_log(method=method, path=path, status=status,<br/>milliseconds=milliseconds) · native boundary
     Note over p0: Leave unsafe scope
     end
 ```
@@ -154,11 +142,11 @@ May leave with checked errors: HttpError. Native implementation; only the declar
 ```mermaid
 sequenceDiagram
     participant p0 as WebHttpClient.request
-    participant p1 as _aug_http_request
+
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _aug_http_request(method=method, url=url,<br/>headers=headers, body=body) · native boundary
-    p1-->>p0: HttpResponse‹Bytes›
+    p0->>p0: _aug_http_request(method=method, url=url,<br/>headers=headers, body=body) · native boundary
+    p0-->>p0: _aug_http_request result: HttpResponse‹Bytes›
     Note over p0: Return _aug_http_request(method=method, url=url,<br/>headers=headers, body=body)； required cleanup runs<br/>before exit
     Note over p0: Leave unsafe scope
     end
@@ -174,15 +162,19 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as redirect
-    participant p1 as Headers
-    participant p2 as Headers().with
-    participant p3 as HttpResponse
+
+    Note over p0: Set code to 303
     alt Match when null:
+    Note over p0: No operations in this branch
     else Match when some value:
+    Note over p0: Set code to value
     end
-    p0->>p1: Headers()
-    p0->>p2: Headers().with(name=”location”, value=location)
-    p0->>p3: HttpResponse(body=””, status=code, headers=headers)
+    p0->>p0: Headers()
+    p0-->>p0: Headers result: Headers
+    p0->>p0: Headers result.with(name=”location”, value=location)
+    p0-->>p0: headers: Headers
+    p0->>p0: HttpResponse(body=””, status=code, headers=headers)
+    p0-->>p0: HttpResponse result: HttpResponse‹string›
     Note over p0: Return HttpResponse(body=””, status=code,<br/>headers=headers)； required cleanup runs before exit
     Note over p0: May leave with checked errors: HttpError
 ```
@@ -204,11 +196,11 @@ May leave with checked errors: HttpError. Native implementation; only the declar
 ```mermaid
 sequenceDiagram
     participant p0 as urlEncode
-    participant p1 as _aug_http_url_encode
+
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _aug_http_url_encode(input=input) · native boundary
-    p1-->>p0: string
+    p0->>p0: _aug_http_url_encode(input=input) · native boundary
+    p0-->>p0: _aug_http_url_encode result: string
     Note over p0: Return _aug_http_url_encode(input)； required cleanup<br/>runs before exit
     Note over p0: Leave unsafe scope
     end
@@ -232,11 +224,11 @@ May leave with checked errors: HttpError. Native implementation; only the declar
 ```mermaid
 sequenceDiagram
     participant p0 as cookie
-    participant p1 as _aug_http_cookie
+
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _aug_http_cookie(name=name, value=value, path=path,<br/>maxAge=maxAge, secure=secure) · native boundary
-    p1-->>p0: Headers
+    p0->>p0: _aug_http_cookie(name=name, value=value, path=path,<br/>maxAge=maxAge, secure=secure) · native boundary
+    p0-->>p0: _aug_http_cookie result: Headers
     Note over p0: Return _aug_http_cookie(name, value, path, maxAge,<br/>secure)； required cleanup runs before exit
     Note over p0: Leave unsafe scope
     end
@@ -276,10 +268,10 @@ May leave with checked errors: HttpError. Native implementation; only the declar
 ```mermaid
 sequenceDiagram
     participant p0 as WebServerControl.stop
-    participant p1 as _aug_http_stop
+
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _aug_http_stop(milliseconds=milliseconds) · native<br/>boundary
+    p0->>p0: _aug_http_stop(milliseconds=milliseconds) · native<br/>boundary
     Note over p0: Leave unsafe scope
     end
     Note over p0: May leave with checked errors: HttpError

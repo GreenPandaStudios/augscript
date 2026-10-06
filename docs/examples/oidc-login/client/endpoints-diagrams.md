@@ -16,55 +16,57 @@ outline: [2, 3]
 
 ## Class interactions
 
+### home
+
+#### View 1 of 2
+
 ```mermaid
-flowchart TD
+flowchart LR
     n0["home"]
-    n1["me"]
-    n2["authenticate"]
-    n3["LoginPage"]
-    n4["Welcome"]
-    n5["securityHeaders"]
-    n6["SigningKeys"]
-    n7["ExpiringStore"]
-    n8["Crypto"]
-    n9["Clock"]
+    n1["authenticate"]
+    n2["LoginPage"]
+    n3["Welcome"]
+    n4["securityHeaders"]
+    n5["SigningKeys"]
+    n6["ExpiringStore"]
+    n0 -->|"calls"| n1
     n0 -->|"calls"| n2
     n0 -->|"calls"| n3
     n0 -->|"calls"| n4
-    n0 -->|"calls"| n5
+    n0 -->|"depends on"| n5
     n0 -->|"depends on"| n6
-    n0 -->|"depends on"| n7
-    n0 -->|"depends on"| n8
-    n0 -->|"depends on"| n9
-    n1 -->|"calls"| n2
-    n1 -->|"calls"| n5
-    n1 -->|"depends on"| n6
-    n1 -->|"depends on"| n7
-    n1 -->|"depends on"| n8
-    n1 -->|"depends on"| n9
 ```
 
-::: details Call relationships
+#### View 2 of 2
 
 ```mermaid
-flowchart TD
+flowchart LR
     n0["home"]
-    n1["me"]
-    n2["authenticate"]
-    n3["LoginPage"]
-    n4["Welcome"]
-    n5["securityHeaders"]
-    n6["UserInfo"]
-    n0 -->|"calls"| n2
-    n0 -->|"calls"| n3
-    n0 -->|"calls"| n4
-    n0 -->|"calls"| n5
-    n1 -->|"calls"| n2
-    n1 -->|"calls"| n5
-    n1 -->|"calls"| n6
+    n1["Crypto"]
+    n2["Clock"]
+    n0 -->|"depends on"| n1
+    n0 -->|"depends on"| n2
 ```
 
-:::
+### me
+
+```mermaid
+flowchart LR
+    n0["me"]
+    n1["authenticate"]
+    n2["securityHeaders"]
+    n3["SigningKeys"]
+    n4["ExpiringStore"]
+    n5["Crypto"]
+    n6["Clock"]
+    n0 -->|"calls"| n1
+    n0 -->|"calls"| n2
+    n0 -->|"depends on"| n3
+    n0 -->|"depends on"| n4
+    n0 -->|"depends on"| n5
+    n0 -->|"depends on"| n6
+```
+
 
 ## Sequences
 
@@ -82,24 +84,25 @@ sequenceDiagram
     participant p1 as client/session
     participant p2 as client/views
     participant p3 as common/headers
-    participant p4 as HttpResponse
     Note over p0: GET /
     opt Try body； stops on a checked failure
     p0->>p1: authenticate(token=token)
     p1-->>p0: session: SessionClaims
     p0->>p2: Welcome(session=session)
-    p2-->>p0: Html
+    p2-->>p0: Welcome result: Html
     p0->>p3: securityHeaders()
-    p3-->>p0: Headers
-    p0->>p4: HttpResponse(body=Welcome(session),<br/>headers=securityHeaders())
+    p3-->>p0: securityHeaders result: Headers
+    p0->>p0: HttpResponse(body=Welcome result,<br/>headers=securityHeaders result)
+    p0-->>p0: HttpResponse result: HttpResponse‹Html›
     Note over p0: Return HttpResponse(body=Welcome(session),<br/>headers=securityHeaders())； required cleanup runs before<br/>exit
     end
     opt Catch SessionError
     p0->>p2: LoginPage()
-    p2-->>p0: Html
+    p2-->>p0: LoginPage result: Html
     p0->>p3: securityHeaders()
-    p3-->>p0: Headers
-    p0->>p4: HttpResponse(body=LoginPage(),<br/>headers=securityHeaders())
+    p3-->>p0: securityHeaders result 2: Headers
+    p0->>p0: HttpResponse(body=LoginPage result,<br/>headers=securityHeaders result 2)
+    p0-->>p0: HttpResponse result 2: HttpResponse‹Html›
     Note over p0: Return HttpResponse(body=LoginPage(),<br/>headers=securityHeaders())； required cleanup runs before<br/>exit
     end
     Note over p0: May leave with checked errors: HttpError, KeyError,<br/>TimeError
@@ -116,17 +119,16 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as me
     participant p1 as client/session
-    participant p2 as UserInfo
-    participant p3 as common/headers
-    participant p4 as HttpResponse
+    participant p2 as common/headers
     Note over p0: GET /me
     p0->>p1: authenticate(token=token)
     p1-->>p0: session: SessionClaims
-    p0->>p2: UserInfo(sub=session.sub, name=session.name)
-    p2-->>p0: UserInfo
-    p0->>p3: securityHeaders()
-    p3-->>p0: Headers
-    p0->>p4: HttpResponse(body=UserInfo(sub=session.sub,<br/>name=session.name), headers=securityHeaders())
+    p0->>p0: UserInfo(sub=session.sub, name=session.name) · construct<br/>value
+    p0-->>p0: UserInfo result: UserInfo
+    p0->>p2: securityHeaders()
+    p2-->>p0: securityHeaders result: Headers
+    p0->>p0: HttpResponse(body=UserInfo result,<br/>headers=securityHeaders result)
+    p0-->>p0: HttpResponse result: HttpResponse‹UserInfo›
     Note over p0: Return HttpResponse(body=UserInfo(sub=session.sub,<br/>name=session.name), headers=securityHeaders())； required<br/>cleanup r…
     Note over p0: May leave with checked errors: HttpError, KeyError,<br/>SessionError, TimeError
     Note over p0: HTTP result follows declared response and error mapping；<br/>unhandled request failure returns 500

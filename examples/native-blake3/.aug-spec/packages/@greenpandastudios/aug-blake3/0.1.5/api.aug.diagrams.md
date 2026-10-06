@@ -5,18 +5,6 @@
 [Project overview](../../../../diagrams/index.md) · [Compiled explanation](api.aug.md)
 
 
-<details>
-<summary>Call relationships</summary>
-
-```mermaid
-flowchart TD
-    n0["_hash"]
-    n1["hash"]
-    n1 -->|"calls"| n0
-```
-
-</details>
-
 ## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
@@ -38,11 +26,11 @@ May leave with checked errors: HashError. Native implementation; only the declar
 ```mermaid
 sequenceDiagram
     participant p0 as hash
-    participant p1 as _hash
+
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _hash(input=input) · native boundary
-    p1-->>p0: string
+    p0->>p0: _hash(input=input) · native boundary
+    p0-->>p0: _hash result: string
     Note over p0: Return _hash(input)； required cleanup runs before exit
     Note over p0: Leave unsafe scope
     end

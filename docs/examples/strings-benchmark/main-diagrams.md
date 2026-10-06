@@ -28,15 +28,20 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ```mermaid
 sequenceDiagram
     participant p0 as Startup
-    participant p1 as ”August,clear,local,checked”.split
-    participant p2 as part.length
-    participant p3 as print
+    participant p1 as August runtime
+    Note over p0: Set iterations to 20000
+    Note over p0: Set index to 0
+    Note over p0: Set checksum to 0
     loop While index ‹ iterations
-    p0->>p1: ”August,clear,local,checked”.split(separator=”,”)
+    p0->>p0: ”August,clear,local,checked”.split(separator=”,”)
+    p0-->>p0: parts: List‹string›
     loop For each item in parts
-    p0->>p2: part.length()
+    p0->>p0: part.length()
+    p0-->>p0: length result: int
+    Note over p0: Set checksum to checksum + length result
     end
+    Note over p0: Set index to index + 1
     end
-    p0->>p3: print(value=checksum)
+    p0->>p1: print(value=checksum)
 ```
 

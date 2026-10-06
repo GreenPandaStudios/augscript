@@ -18,8 +18,13 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ```mermaid
 sequenceDiagram
     participant p0 as Startup
-    participant p1 as print
+    participant p1 as August runtime
+    Note over p0: Set state to 123
+    Note over p0: Set index to 0
     loop While index ‹ 2000000
+    Note over p0: Set product to state * 48271
+    Note over p0: Set state to product - product / 2147483647 * 2147483647
+    Note over p0: Set index to index + 1
     end
     p0->>p1: print(value=state)
 ```

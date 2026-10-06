@@ -18,33 +18,33 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ```mermaid
 sequenceDiagram
     participant p0 as Startup
-    participant p1 as arguments
-    participant p2 as args.length
-    participant p3 as print
-    participant p4 as args.get
-    participant p5 as List
-    participant p6 as numbers.append
-    participant p7 as numbers.get
+    participant p1 as August runtime
     opt Try body； stops on a checked failure
     p0->>p1: arguments()
-    p0->>p2: args.length()
-    p0->>p3: print(value=args.length())
-    p0->>p2: args.length()
+    p1-->>p0: args: List‹string›
+    p0->>p0: args.length()
+    p0-->>p0: length result: int
+    p0->>p1: print(value=length result)
+    p0->>p0: args.length()
+    p0-->>p0: length result 2: int
     alt args.length() › 0
-    p0->>p4: args.get(index=0)
-    p0->>p3: print(value=args.get(index=0))
+    p0->>p0: args.get(index=0)
+    p0-->>p0: get result: string
+    p0->>p1: print(value=get result)
     end
-    p0->>p5: List(input 1=1, input 2=2)
+    p0->>p0: List‹int›(input 1=1, input 2=2)
+    p0-->>p0: numbers: List‹int›
     rect rgb(245, 240, 241)
     Note over p0: Enter borrow scope
-    p0->>p6: numbers.append(value=3)
+    p0->>p0: numbers.append(value=3)
     Note over p0: Leave borrow scope
     end
-    p0->>p7: numbers.get(index=2)
-    p0->>p3: print(value=numbers.get(index=2))
+    p0->>p0: numbers.get(index=2)
+    p0-->>p0: get result 2: int
+    p0->>p1: print(value=get result 2)
     end
     opt Catch IndexError
-    p0->>p3: print(value=”unexpected index failure”)
+    p0->>p1: print(value=”unexpected index failure”)
     end
 ```
 

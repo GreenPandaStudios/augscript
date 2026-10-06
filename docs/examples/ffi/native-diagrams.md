@@ -15,17 +15,6 @@ outline: [2, 3]
 [Project overview](diagrams/index.md) · [Compiled explanation](native.md)
 
 
-::: details Call relationships
-
-```mermaid
-flowchart TD
-    n0["announce"]
-    n1["puts"]
-    n0 -->|"calls"| n1
-```
-
-:::
-
 ## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
@@ -47,11 +36,11 @@ Native implementation; only the declared contract is known. [Explanation](native
 ```mermaid
 sequenceDiagram
     participant p0 as announce
-    participant p1 as puts
+
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: puts(message=”hello from C FFI”) · native boundary
-    p1-->>p0: c_int
+    p0->>p0: puts(message=”hello from C FFI”) · native boundary
+    p0-->>p0: puts result: c_int
     Note over p0: Leave unsafe scope
     end
 ```

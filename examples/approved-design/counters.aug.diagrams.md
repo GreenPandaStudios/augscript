@@ -14,28 +14,11 @@ flowchart TD
     n3["_Initial"]
     n4["_Updated"]
     n2 -->|"implements"| n0
-    n2 -->|"calls"| n1
-    n2 -->|"depends on _state"| n1
+    n2 -->|"calls read； depends on _state"| n1
     n2 -->|"calls"| n4
     n3 -->|"implements"| n1
     n4 -->|"implements"| n1
 ```
-
-<details>
-<summary>Call relationships</summary>
-
-```mermaid
-flowchart TD
-    n0["State.read"]
-    n1["_Counter.increment"]
-    n2["_Counter.value"]
-    n3["_Updated"]
-    n1 -->|"calls"| n0
-    n1 -->|"calls"| n3
-    n2 -->|"calls"| n0
-```
-
-</details>
 
 ## Sequences
 
@@ -117,8 +100,8 @@ sequenceDiagram
     participant p1 as _state: State
     participant p2 as _Updated
     p0->>p1: read() · interface dispatch
-    p1-->>p0: int
-    p0->>p2: _Updated(count=_state.read() + 1)
+    p1-->>p0: read result: int
+    p0->>p2: _Updated(count=read result + 1)
     p2-->>p0: _state: _Updated
 ```
 
@@ -133,7 +116,7 @@ sequenceDiagram
     participant p0 as _Counter.value
     participant p1 as _state: State
     p0->>p1: read() · interface dispatch
-    p1-->>p0: int
+    p1-->>p0: read result: int
     Note over p0: Return _state.read()； required cleanup runs before exit
 ```
 

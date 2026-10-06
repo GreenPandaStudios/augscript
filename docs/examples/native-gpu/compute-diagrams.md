@@ -15,25 +15,6 @@ outline: [2, 3]
 [Project overview](diagrams/index.md) · [Compiled explanation](compute.md)
 
 
-::: details Call relationships
-
-```mermaid
-flowchart TD
-    n0["calculate"]
-    n1["compute.aug"]
-    n2["add"]
-    n3["download"]
-    n4["openDevice"]
-    n5["upload"]
-    n0 -->|"calls"| n2
-    n0 -->|"calls"| n3
-    n0 -->|"calls"| n4
-    n0 -->|"calls"| n5
-    n1 -->|"calls"| n0
-```
-
-:::
-
 ## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
@@ -47,7 +28,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ```mermaid
 sequenceDiagram
     participant p0 as calculate
-    participant p1 as @greenpandastudios/aug-gpu/api
+    participant p1 as aug-gpu/api
     p0->>p1: openDevice()
     p1-->>p0: device: Device
     Note over p0: Own device； release on scope exits
@@ -61,7 +42,7 @@ sequenceDiagram
     p1-->>p0: result: Buffer
     Note over p0: Own result； release on scope exits
     p0->>p1: download(buffer=result)
-    p1-->>p0: List‹float›
+    p1-->>p0: download result: List‹float›
     Note over p0: Return download(buffer=result)； required cleanup runs<br/>before exit
     Note over p0: May leave with checked errors: GpuError
 ```

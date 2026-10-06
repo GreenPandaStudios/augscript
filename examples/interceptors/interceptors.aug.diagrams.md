@@ -9,29 +9,11 @@
 ```mermaid
 flowchart TD
     n0["Console"]
-    n1["AddOne"]
-    n2["Audit"]
-    n3["Positive"]
-    n4["ValidationError"]
-    n5["Logger"]
-    n2 -->|"depends on"| n0
-    n2 -->|"calls"| n5
+    n1["Audit"]
+    n2["Logger"]
+    n1 -->|"depends on"| n0
+    n1 -->|"calls log"| n2
 ```
-
-<details>
-<summary>Call relationships</summary>
-
-```mermaid
-flowchart TD
-    n0["Audit.around"]
-    n1["Positive.around"]
-    n2["ValidationError"]
-    n3["Logger.log"]
-    n0 -->|"calls"| n3
-    n1 -->|"calls"| n2
-```
-
-</details>
 
 ## Sequences
 
@@ -58,6 +40,7 @@ sequenceDiagram
     participant p2 as next
     p0->>p1: log(message=”before”) · interface dispatch
     p0->>p2: next() · conditional interceptor delegation
+    p2-->>p0: result: string
     p0->>p1: log(message=”after”) · interface dispatch
     Note over p0: Return result； required cleanup runs before exit
 ```
@@ -71,14 +54,14 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as Positive.around
-    participant p1 as ValidationError
-    participant p2 as next
+    participant p1 as next
     alt y ‹ 0
-    p0->>p1: ValidationError(message=”value must be nonnegative”)
-    p1-->>p0: ValidationError
+    p0->>p0: ValidationError(message=”value must be nonnegative”) ·<br/>construct value
+    p0-->>p0: ValidationError result: ValidationError
     Note over p0: Raise checked failure ValidationError(message=”value<br/>must be nonnegative”)； required cleanup runs before exit
     end
-    p0->>p2: next() · conditional interceptor delegation
+    p0->>p1: next() · conditional interceptor delegation
+    p1-->>p0: next result: string
     Note over p0: Return next()； required cleanup runs before exit
     Note over p0: May leave with checked errors: ValidationError
 ```
@@ -94,6 +77,7 @@ sequenceDiagram
     participant p0 as AddOne.around
     participant p1 as next
     p0->>p1: next(y=y + 1) · conditional interceptor delegation
+    p1-->>p0: next result: string
     Note over p0: Return next(y=y + 1)； required cleanup runs before exit
 ```
 

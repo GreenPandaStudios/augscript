@@ -153,3 +153,22 @@ test('every generated gallery diagram parses as Mermaid, including HTTP and nati
   assert.ok(checked.size>100,'must cover the full project gallery');
  }finally{dom.window.close();delete globalThis.window;delete globalThis.document;}
 });
+
+
+test('every generated wiki sequence uses bounded logical lifelines',()=>{
+ let inspected=0;
+ for(const [path,text] of pages())if(path.startsWith('docs/examples/'))for(const match of text.matchAll(/```mermaid\n([\s\S]*?)\n```/g)){
+  if(!match[1].startsWith('sequenceDiagram'))continue;
+  inspected++;
+  const lines=match[1].split('\n'),participants=lines.filter(line=>/^    participant /.test(line));
+  const steps=lines.filter(line=>/Note over|p\d+(?:->>|-->>|-\))p\d+/.test(line));
+  assert.ok(steps.length<=24,path+' exceeds the call/note step budget');
+  assert.doesNotMatch(match[1],/\n\s*(?:loop|alt|opt) [^\n]+\n\s*(?:end|else)/,path+' contains an empty control frame');
+  assert.ok(participants.length<=6,path+' has too many lifelines');
+  for(const participant of participants){
+   assert.doesNotMatch(participant,/url_[0-9a-f]{20}|\([^)]+=/,path+' exposes a cache identity or whole call as a lifeline');
+   if(path.includes('/native-')&&!path.includes('/dependencies/'))assert.doesNotMatch(participant,/ as src\//,path+' hides the native package behind its generic source directory');
+  }
+ }
+ assert.ok(inspected>100,'Check the complete published sequence gallery');
+});

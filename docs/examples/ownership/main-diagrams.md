@@ -20,23 +20,8 @@ outline: [2, 3]
 flowchart TD
     n0["Counter"]
     n1["main.aug"]
-    n1 -->|"calls"| n0
+    n1 -->|"calls； calls increment； calls read"| n0
 ```
-
-::: details Call relationships
-
-```mermaid
-flowchart TD
-    n0["Counter"]
-    n1["Counter.increment"]
-    n2["Counter.read"]
-    n3["main.aug"]
-    n3 -->|"calls"| n0
-    n3 -->|"calls"| n1
-    n3 -->|"calls"| n2
-```
-
-:::
 
 ## Sequences
 
@@ -53,14 +38,14 @@ sequenceDiagram
     participant p0 as Startup
     participant p1 as Counter
     participant p2 as counter: Counter
-    participant p3 as print
+    participant p3 as August runtime
     p0->>p1: Counter(value=1)
     p1-->>p0: counter: Counter
     Note over p0: Own counter； release on scope exits
     p0->>p2: increment()
     p0->>p2: read()
-    p2-->>p0: int
-    p0->>p3: print(value=counter.read())
+    p2-->>p0: read result: int
+    p0->>p3: print(value=read result)
 ```
 
 ## Called contracts

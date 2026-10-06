@@ -24,24 +24,9 @@ flowchart TD
     n3["consume"]
     n4["make"]
     n2 -->|"implements"| n1
-    n3 -->|"calls"| n0
-    n3 -->|"depends on"| n0
+    n3 -->|"calls write； depends on"| n0
     n4 -->|"calls"| n2
 ```
-
-::: details Call relationships
-
-```mermaid
-flowchart TD
-    n0["Console.write"]
-    n1["Resource"]
-    n2["consume"]
-    n3["make"]
-    n2 -->|"calls"| n0
-    n3 -->|"calls"| n1
-```
-
-:::
 
 ## Sequences
 

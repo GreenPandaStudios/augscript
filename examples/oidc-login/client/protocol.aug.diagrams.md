@@ -6,79 +6,51 @@
 
 ## Class interactions
 
+### discover
+
 ```mermaid
-flowchart TD
+flowchart LR
     n0["discover"]
     n1["responseJson"]
-    n2["validateIdentity"]
-    n3["settings"]
-    n4["client/protocol.aug"]
-    n5["HttpClient"]
-    n6["Crypto"]
-    n7["importJwk"]
-    n8["rsaJwk"]
-    n9["signJwt"]
-    n10["verifyJwt"]
+    n2["settings"]
+    n3["HttpClient"]
     n0 -->|"calls"| n1
-    n0 -->|"calls"| n3
-    n0 -->|"calls"| n5
-    n0 -->|"depends on"| n5
-    n2 -->|"calls"| n3
-    n2 -->|"calls"| n6
-    n2 -->|"depends on"| n6
-    n2 -->|"calls"| n7
-    n2 -->|"calls"| n10
-    n4 -->|"calls"| n2
-    n4 -->|"calls"| n3
-    n4 -->|"calls"| n6
-    n4 -->|"calls"| n8
-    n4 -->|"calls"| n9
+    n0 -->|"calls"| n2
+    n0 -->|"calls request； depends on"| n3
 ```
 
-<details>
-<summary>Call relationships</summary>
+### validateIdentity
 
 ```mermaid
-flowchart TD
-    n0["SessionError"]
-    n1["discover"]
-    n2["responseJson"]
-    n3["validateIdentity"]
-    n4["settings"]
-    n5["client/protocol.aug"]
-    n6["parse"]
-    n7["HttpClient.request"]
-    n8["Crypto.equal"]
-    n9["Crypto.generateRsa"]
-    n10["Crypto.publicRsa"]
-    n11["RsaJwks"]
-    n12["importJwk"]
-    n13["rsaJwk"]
-    n14["signJwt"]
-    n15["verifyJwt"]
-    n16["IdClaims"]
-    n1 -->|"calls"| n0
-    n1 -->|"calls"| n2
-    n1 -->|"calls"| n4
-    n1 -->|"calls"| n7
-    n2 -->|"calls"| n0
-    n2 -->|"calls"| n6
-    n3 -->|"calls"| n0
-    n3 -->|"calls"| n4
-    n3 -->|"calls"| n8
-    n3 -->|"calls"| n12
-    n3 -->|"calls"| n15
-    n5 -->|"calls"| n3
-    n5 -->|"calls"| n4
-    n5 -->|"calls"| n9
-    n5 -->|"calls"| n10
-    n5 -->|"calls"| n11
-    n5 -->|"calls"| n13
-    n5 -->|"calls"| n14
-    n5 -->|"calls"| n16
+flowchart LR
+    n0["validateIdentity"]
+    n1["settings"]
+    n2["Crypto"]
+    n3["importJwk"]
+    n4["verifyJwt"]
+    n0 -->|"calls"| n1
+    n0 -->|"calls equal； depends on"| n2
+    n0 -->|"calls"| n3
+    n0 -->|"calls"| n4
 ```
 
-</details>
+### module:client/protocol.aug
+
+```mermaid
+flowchart LR
+    n0["validateIdentity"]
+    n1["settings"]
+    n2["client/protocol.aug"]
+    n3["Crypto"]
+    n4["rsaJwk"]
+    n5["signJwt"]
+    n2 -->|"calls"| n0
+    n2 -->|"calls"| n1
+    n2 -->|"calls generateRsa； calls publicRsa"| n3
+    n2 -->|"calls"| n4
+    n2 -->|"calls"| n5
+```
+
 
 ## Sequences
 
@@ -90,48 +62,58 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](protocol.aug#L10)
 
+#### Sequence 1 of 2
+
 ```mermaid
 sequenceDiagram
     participant p0 as responseJson
-    participant p1 as SessionError
-    participant p2 as response.headers.get
-    participant p3 as contentType.startsWith
-    participant p4 as response.body.text
-    participant p5 as @git/url_2d3c37c690c0fa115be1/contracts
+    participant p1 as json/contracts
     alt response.status != 200
-    p0->>p1: SessionError()
-    p1-->>p0: SessionError
+    p0->>p0: SessionError() · construct value
+    p0-->>p0: SessionError result: SessionError
     Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
     end
-    p0->>p2: response.headers.get(name=”content-type”)
+    p0->>p0: response.headers.get(name=”content-type”)
+    p0-->>p0: get result: optional string
     alt Match when null:
-    p0->>p1: SessionError()
-    p1-->>p0: SessionError
+    p0->>p0: SessionError() · construct value
+    p0-->>p0: SessionError result 2: SessionError
     Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
     else Match when some contentType:
-    p0->>p3: contentType.startsWith(prefix=”application/json”)
+    p0->>p0: contentType.startsWith(prefix=”application/json”)
+    p0-->>p0: startsWith result: bool
     alt not contentType.startsWith(prefix=”application/json”)
-    p0->>p1: SessionError()
-    p1-->>p0: SessionError
+    p0->>p0: SessionError() · construct value
+    p0-->>p0: SessionError result 3: SessionError
     Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
     end
     end
     opt Try body； stops on a checked failure
-    p0->>p4: response.body.text()
-    p0->>p5: parse(input=response.body.text())
-    p5-->>p0: Json
+    p0->>p0: response.body.text()
+    p0-->>p0: text result: string
+    p0->>p1: parse(input=text result)
+    p1-->>p0: parse result: Json
     Note over p0: Return parse(input=response.body.text())； required<br/>cleanup runs before exit
     end
     opt Catch ConversionError
-    p0->>p1: SessionError()
-    p1-->>p0: SessionError
+    p0->>p0: SessionError() · construct value
+    p0-->>p0: SessionError result 4: SessionError
     Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
     end
     opt Catch JsonError
-    p0->>p1: SessionError()
-    p1-->>p0: SessionError
+    p0->>p0: SessionError() · construct value
+    p0-->>p0: SessionError result 5: SessionError
     Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
     end
+```
+
+#### Sequence 2 of 2 (continued)
+
+```mermaid
+sequenceDiagram
+    participant p0 as responseJson
+
+    Note over p0: Sequence continued from the previous view
     Note over p0: May leave with checked errors: SessionError
 ```
 
@@ -146,27 +128,25 @@ sequenceDiagram
     participant p0 as discover
     participant p1 as common/settings
     participant p2 as client: HttpClient
-    participant p3 as responseJson
-    participant p4 as json.decode
-    participant p5 as SessionError
     p0->>p1: settings()
     p1-->>p0: config: Settings
     p0->>p2: request(method=”GET”, url=config.issuer +<br/>”/.well-known/openid-configuration”) · interface<br/>dispatch
-    p2-->>p0: HttpResponse‹Bytes›
-    p0->>p3: responseJson(response=client.request(method=”GET”,<br/>url=config.issuer +<br/>”/.well-known/openid-configuration”))
-    p3-->>p0: json: Json
+    p2-->>p0: request result: HttpResponse‹Bytes›
+    p0->>p0: responseJson(response=request result)
+    p0-->>p0: json: Json
     opt Try body； stops on a checked failure
-    p0->>p4: json.decode()
+    p0->>p0: json.decode‹Discovery›()
+    p0-->>p0: document: Discovery
     alt document.issuer != config.issuer or document.authorization_endpoint != config.issuer + ”/authorize” or document.token…
-    p0->>p5: SessionError()
-    p5-->>p0: SessionError
+    p0->>p0: SessionError() · construct value
+    p0-->>p0: SessionError result: SessionError
     Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
     end
     Note over p0: Return document； required cleanup runs before exit
     end
     opt Catch JsonError
-    p0->>p5: SessionError()
-    p5-->>p0: SessionError
+    p0->>p0: SessionError() · construct value
+    p0-->>p0: SessionError result 2: SessionError
     Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
     end
     Note over p0: May leave with checked errors: HttpError, SessionError
@@ -178,97 +158,107 @@ sequenceDiagram
 
 [Source](protocol.aug#L39)
 
-#### Sequence 1 of 2 (continued)
+#### Sequence 1 of 3
 
 ```mermaid
 sequenceDiagram
     participant p0 as validateIdentity
     participant p1 as common/settings
-    participant p2 as jwks.keys.length
-    participant p3 as SessionError
-    participant p4 as jwks.keys.get
-    participant p5 as @git/url_9ef654c66d34ab8f5527/jose
-    participant p6 as verifyJwt(token, publicKey, kid=”provider-1”, tokenType=”JWT”).decode
-    participant p7 as claims.sub.length
-    participant p8 as claims.nonce.bytes
+    participant p2 as crypto/jose
     p0->>p1: settings()
     p1-->>p0: config: Settings
-    p0->>p2: jwks.keys.length()
+    p0->>p0: jwks.keys.length()
+    p0-->>p0: length result: int
     alt jwks.keys.length() != 1
-    p0->>p3: SessionError()
-    p3-->>p0: SessionError
+    p0->>p0: SessionError() · construct value
+    p0-->>p0: SessionError result: SessionError
     Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
     end
     opt Try body； stops on a checked failure
-    p0->>p4: jwks.keys.get(index=0)
+    p0->>p0: jwks.keys.get(index=0)
+    p0-->>p0: jwk: RsaJwk
     alt jwk.kid != ”provider-1”
-    p0->>p3: SessionError()
-    p3-->>p0: SessionError
+    p0->>p0: SessionError() · construct value
+    p0-->>p0: SessionError result 2: SessionError
     Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
     end
-    p0->>p5: importJwk(jwk=jwk)
-    p5-->>p0: publicKey: RsaPublicKey
-    p0->>p5: verifyJwt(token=token, publicKey=publicKey,<br/>kid=”provider-1”, tokenType=”JWT”)
-    p5-->>p0: Json
-    p0->>p6: verifyJwt(token, publicKey, kid=”provider-1”,<br/>tokenType=”JWT”).decode()
+    p0->>p2: importJwk(jwk=jwk)
+    p2-->>p0: publicKey: RsaPublicKey
+    p0->>p2: verifyJwt(token=token, publicKey=publicKey,<br/>kid=”provider-1”, tokenType=”JWT”)
+    p2-->>p0: verifyJwt result: Json
+    p0->>p0: verifyJwt result.decode‹IdClaims›()
+    p0-->>p0: claims: IdClaims
     opt Left is false
-    p0->>p7: claims.sub.length()
+    p0->>p0: claims.sub.length()
+    p0-->>p0: length result 2: int
     end
     opt Left is false
-    p0->>p7: claims.sub.length()
+    p0->>p0: claims.sub.length()
+    p0-->>p0: length result 3: int
     end
     alt claims.iss != config.issuer or claims.aud != config.clientId or claims.sub.length() == 0 or claims.sub.length() › 255
-    p0->>p3: SessionError()
-    p3-->>p0: SessionError
-    Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
+    p0->>p0: SessionError() · construct value
+    p0-->>p0: SessionError result 3: SessionError
     end
-    alt claims.exp ‹= now or claims.iat ‹ now - 300 or claims.iat › now + 30 or claims.exp ‹= claims.iat or claims.exp › now …
-    p0->>p3: SessionError()
-    p3-->>p0: SessionError
-    Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
-    end
-    p0->>p8: claims.nonce.bytes()
     end
 ```
 
-#### Sequence 2 of 2 (continued)
+#### Sequence 2 of 3 (continued)
 
 ```mermaid
 sequenceDiagram
     participant p0 as validateIdentity
-    participant p1 as nonce.bytes
-    participant p2 as crypto: Crypto
-    participant p3 as SessionError
+    participant p1 as crypto: Crypto
     opt Try body； stops on a checked failure
+    alt claims.iss != config.issuer or claims.aud != config.clientId or claims.sub.length() == 0 or claims.sub.length() › 255
     Note over p0: Sequence continued from the previous view
-    p0->>p1: nonce.bytes()
-    p0->>p2: equal(left=claims.nonce.bytes(), right=nonce.bytes()) ·<br/>interface dispatch
-    p2-->>p0: bool
+    Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
+    end
+    alt claims.exp ‹= now or claims.iat ‹ now - 300 or claims.iat › now + 30 or claims.exp ‹= claims.iat or claims.exp › now …
+    p0->>p0: SessionError() · construct value
+    p0-->>p0: SessionError result 4: SessionError
+    Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
+    end
+    p0->>p0: claims.nonce.bytes()
+    p0-->>p0: bytes result: Bytes
+    p0->>p0: nonce.bytes()
+    p0-->>p0: bytes result 2: Bytes
+    p0->>p1: equal(left=bytes result, right=bytes result 2) ·<br/>interface dispatch
+    p1-->>p0: equal result: bool
     alt not crypto.equal(left=claims.nonce.bytes(), right=nonce.bytes())
-    p0->>p3: SessionError()
-    p3-->>p0: SessionError
+    p0->>p0: SessionError() · construct value
+    p0-->>p0: SessionError result 5: SessionError
     Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
     end
     Note over p0: Return claims； required cleanup runs before exit
     end
     opt Catch JwtError
-    p0->>p3: SessionError()
-    p3-->>p0: SessionError
+    p0->>p0: SessionError() · construct value
+    p0-->>p0: SessionError result 6: SessionError
     Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
     end
     opt Catch JsonError
-    p0->>p3: SessionError()
-    p3-->>p0: SessionError
+    p0->>p0: SessionError() · construct value
+    p0-->>p0: SessionError result 7: SessionError
     Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
     end
     opt Catch IndexError
-    p0->>p3: SessionError()
-    p3-->>p0: SessionError
+    p0->>p0: SessionError() · construct value
+    p0-->>p0: SessionError result 8: SessionError
     Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
     end
+```
+
+#### Sequence 3 of 3 (continued)
+
+```mermaid
+sequenceDiagram
+    participant p0 as validateIdentity
+
     opt Catch CryptoError
-    p0->>p3: SessionError()
-    p3-->>p0: SessionError
+    Note over p0: Sequence continued from the previous view
+    p0->>p0: SessionError() · construct value
+    p0-->>p0: SessionError result 9: SessionError
     Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
     end
     Note over p0: May leave with checked errors: SessionError

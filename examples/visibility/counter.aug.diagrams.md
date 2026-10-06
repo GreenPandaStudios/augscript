@@ -11,24 +11,10 @@ flowchart TD
     n0["Counter"]
     n1["ICounter"]
     n2["_prefix"]
-    n0 -->|"calls"| n0
+    n0 -->|"calls _label"| n0
     n0 -->|"implements"| n1
     n0 -->|"calls"| n2
 ```
-
-<details>
-<summary>Call relationships</summary>
-
-```mermaid
-flowchart TD
-    n0["Counter._label"]
-    n1["Counter.label"]
-    n2["_prefix"]
-    n0 -->|"calls"| n2
-    n1 -->|"calls"| n0
-```
-
-</details>
 
 ## Sequences
 
@@ -59,9 +45,9 @@ Receive fields: value. [Explanation](counter.aug.md).
 ```mermaid
 sequenceDiagram
     participant p0 as Counter._label
-    participant p1 as _prefix
-    p0->>p1: _prefix()
-    p1-->>p0: string
+
+    p0->>p0: _prefix()
+    p0-->>p0: _prefix result: string
     Note over p0: Return _prefix()； required cleanup runs before exit
 ```
 
@@ -76,7 +62,7 @@ sequenceDiagram
     participant p0 as Counter.label
     participant p1 as self: Counter
     p0->>p1: _label()
-    p1-->>p0: string
+    p1-->>p0: _label result: string
     Note over p0: Return self._label()； required cleanup runs before exit
 ```
 

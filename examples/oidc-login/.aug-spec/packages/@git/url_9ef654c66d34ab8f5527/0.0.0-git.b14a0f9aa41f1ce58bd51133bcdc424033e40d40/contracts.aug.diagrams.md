@@ -6,8 +6,12 @@
 
 ## Class interactions
 
+### GnuTlsCrypto
+
+#### View 1 of 2
+
 ```mermaid
-flowchart TD
+flowchart LR
     n0["Crypto"]
     n1["GnuTlsCrypto"]
     n2["_aug_crypto_decode_base64url"]
@@ -15,75 +19,33 @@ flowchart TD
     n4["_aug_crypto_export_rsa"]
     n5["_aug_crypto_generate_rsa"]
     n6["_aug_crypto_import_rsa"]
-    n7["_aug_crypto_password_hash"]
-    n8["_aug_crypto_public_rsa"]
-    n9["_aug_crypto_random"]
-    n10["_aug_crypto_sha256"]
-    n11["_aug_crypto_sign_rsa"]
-    n12["_aug_crypto_verify_rsa"]
     n1 -->|"implements"| n0
     n1 -->|"calls"| n2
     n1 -->|"calls"| n3
     n1 -->|"calls"| n4
     n1 -->|"calls"| n5
     n1 -->|"calls"| n6
-    n1 -->|"calls"| n7
-    n1 -->|"calls"| n8
-    n1 -->|"calls"| n9
-    n1 -->|"calls"| n10
-    n1 -->|"calls"| n11
-    n1 -->|"calls"| n12
-```
-
-<details>
-<summary>Call relationships</summary>
-
-#### View 1 of 2
-
-```mermaid
-flowchart TD
-    n0["GnuTlsCrypto.decodeBase64url"]
-    n1["GnuTlsCrypto.equal"]
-    n2["GnuTlsCrypto.exportRsa"]
-    n3["GnuTlsCrypto.generateRsa"]
-    n4["GnuTlsCrypto.importRsa"]
-    n5["GnuTlsCrypto.passwordHash"]
-    n6["GnuTlsCrypto.publicRsa"]
-    n7["GnuTlsCrypto.random"]
-    n8["GnuTlsCrypto.sha256"]
-    n9["_aug_crypto_decode_base64url"]
-    n10["_aug_crypto_equal"]
-    n11["_aug_crypto_export_rsa"]
-    n12["_aug_crypto_generate_rsa"]
-    n13["_aug_crypto_import_rsa"]
-    n14["_aug_crypto_password_hash"]
-    n15["_aug_crypto_public_rsa"]
-    n16["_aug_crypto_random"]
-    n17["_aug_crypto_sha256"]
-    n0 -->|"calls"| n9
-    n1 -->|"calls"| n10
-    n2 -->|"calls"| n11
-    n3 -->|"calls"| n12
-    n4 -->|"calls"| n13
-    n5 -->|"calls"| n14
-    n6 -->|"calls"| n15
-    n7 -->|"calls"| n16
-    n8 -->|"calls"| n17
 ```
 
 #### View 2 of 2
 
 ```mermaid
-flowchart TD
-    n0["GnuTlsCrypto.signRsa"]
-    n1["GnuTlsCrypto.verifyRsa"]
-    n2["_aug_crypto_sign_rsa"]
-    n3["_aug_crypto_verify_rsa"]
+flowchart LR
+    n0["GnuTlsCrypto"]
+    n1["_aug_crypto_password_hash"]
+    n2["_aug_crypto_public_rsa"]
+    n3["_aug_crypto_random"]
+    n4["_aug_crypto_sha256"]
+    n5["_aug_crypto_sign_rsa"]
+    n6["_aug_crypto_verify_rsa"]
+    n0 -->|"calls"| n1
     n0 -->|"calls"| n2
-    n1 -->|"calls"| n3
+    n0 -->|"calls"| n3
+    n0 -->|"calls"| n4
+    n0 -->|"calls"| n5
+    n0 -->|"calls"| n6
 ```
 
-</details>
 
 ## Sequences
 
@@ -282,11 +244,11 @@ May leave with checked errors: CryptoError. Native implementation; only the decl
 ```mermaid
 sequenceDiagram
     participant p0 as GnuTlsCrypto.random
-    participant p1 as _aug_crypto_random
+
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _aug_crypto_random(size=size) · native boundary
-    p1-->>p0: Bytes
+    p0->>p0: _aug_crypto_random(size=size) · native boundary
+    p0-->>p0: _aug_crypto_random result: Bytes
     Note over p0: Return _aug_crypto_random(size)； required cleanup runs<br/>before exit
     Note over p0: Leave unsafe scope
     end
@@ -302,11 +264,11 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as GnuTlsCrypto.sha256
-    participant p1 as _aug_crypto_sha256
+
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _aug_crypto_sha256(input=input) · native boundary
-    p1-->>p0: Bytes
+    p0->>p0: _aug_crypto_sha256(input=input) · native boundary
+    p0-->>p0: _aug_crypto_sha256 result: Bytes
     Note over p0: Return _aug_crypto_sha256(input)； required cleanup runs<br/>before exit
     Note over p0: Leave unsafe scope
     end
@@ -322,11 +284,11 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as GnuTlsCrypto.generateRsa
-    participant p1 as _aug_crypto_generate_rsa
+
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _aug_crypto_generate_rsa() · native boundary
-    p1-->>p0: RsaPrivateKey
+    p0->>p0: _aug_crypto_generate_rsa() · native boundary
+    p0-->>p0: _aug_crypto_generate_rsa result: RsaPrivateKey
     Note over p0: Return _aug_crypto_generate_rsa()； required cleanup runs<br/>before exit
     Note over p0: Leave unsafe scope
     end
@@ -342,11 +304,11 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as GnuTlsCrypto.publicRsa
-    participant p1 as _aug_crypto_public_rsa
+
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _aug_crypto_public_rsa(key=key) · native boundary
-    p1-->>p0: RsaPublicKey
+    p0->>p0: _aug_crypto_public_rsa(key=key) · native boundary
+    p0-->>p0: _aug_crypto_public_rsa result: RsaPublicKey
     Note over p0: Return _aug_crypto_public_rsa(key)； required cleanup<br/>runs before exit
     Note over p0: Leave unsafe scope
     end
@@ -362,11 +324,11 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as GnuTlsCrypto.signRsa
-    participant p1 as _aug_crypto_sign_rsa
+
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _aug_crypto_sign_rsa(key=key, input=input) · native<br/>boundary
-    p1-->>p0: Bytes
+    p0->>p0: _aug_crypto_sign_rsa(key=key, input=input) · native<br/>boundary
+    p0-->>p0: _aug_crypto_sign_rsa result: Bytes
     Note over p0: Return _aug_crypto_sign_rsa(key, input)； required<br/>cleanup runs before exit
     Note over p0: Leave unsafe scope
     end
@@ -382,11 +344,11 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as GnuTlsCrypto.verifyRsa
-    participant p1 as _aug_crypto_verify_rsa
+
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _aug_crypto_verify_rsa(publicKey=publicKey, input=input,<br/>signature=signature) · native boundary
-    p1-->>p0: bool
+    p0->>p0: _aug_crypto_verify_rsa(publicKey=publicKey, input=input,<br/>signature=signature) · native boundary
+    p0-->>p0: _aug_crypto_verify_rsa result: bool
     Note over p0: Return _aug_crypto_verify_rsa(publicKey, input,<br/>signature)； required cleanup runs before exit
     Note over p0: Leave unsafe scope
     end
@@ -402,11 +364,11 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as GnuTlsCrypto.decodeBase64url
-    participant p1 as _aug_crypto_decode_base64url
+
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _aug_crypto_decode_base64url(input=input) · native<br/>boundary
-    p1-->>p0: Bytes
+    p0->>p0: _aug_crypto_decode_base64url(input=input) · native<br/>boundary
+    p0-->>p0: _aug_crypto_decode_base64url result: Bytes
     Note over p0: Return _aug_crypto_decode_base64url(input)； required<br/>cleanup runs before exit
     Note over p0: Leave unsafe scope
     end
@@ -422,11 +384,11 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as GnuTlsCrypto.equal
-    participant p1 as _aug_crypto_equal
+
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _aug_crypto_equal(left=left, right=right) · native<br/>boundary
-    p1-->>p0: bool
+    p0->>p0: _aug_crypto_equal(left=left, right=right) · native<br/>boundary
+    p0-->>p0: _aug_crypto_equal result: bool
     Note over p0: Return _aug_crypto_equal(left, right)； required cleanup<br/>runs before exit
     Note over p0: Leave unsafe scope
     end
@@ -441,11 +403,11 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as GnuTlsCrypto.exportRsa
-    participant p1 as _aug_crypto_export_rsa
+
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _aug_crypto_export_rsa(publicKey=publicKey) · native<br/>boundary
-    p1-->>p0: Tuple‹Bytes, Bytes›
+    p0->>p0: _aug_crypto_export_rsa(publicKey=publicKey) · native<br/>boundary
+    p0-->>p0: _aug_crypto_export_rsa result: Tuple‹Bytes, Bytes›
     Note over p0: Return _aug_crypto_export_rsa(publicKey)； required<br/>cleanup runs before exit
     Note over p0: Leave unsafe scope
     end
@@ -461,11 +423,11 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as GnuTlsCrypto.importRsa
-    participant p1 as _aug_crypto_import_rsa
+
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _aug_crypto_import_rsa(modulus=modulus,<br/>exponent=exponent) · native boundary
-    p1-->>p0: RsaPublicKey
+    p0->>p0: _aug_crypto_import_rsa(modulus=modulus,<br/>exponent=exponent) · native boundary
+    p0-->>p0: _aug_crypto_import_rsa result: RsaPublicKey
     Note over p0: Return _aug_crypto_import_rsa(modulus, exponent)；<br/>required cleanup runs before exit
     Note over p0: Leave unsafe scope
     end
@@ -481,11 +443,11 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as GnuTlsCrypto.passwordHash
-    participant p1 as _aug_crypto_password_hash
+
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _aug_crypto_password_hash(password=password, salt=salt,<br/>iterations=iterations) · native boundary
-    p1-->>p0: Bytes
+    p0->>p0: _aug_crypto_password_hash(password=password, salt=salt,<br/>iterations=iterations) · native boundary
+    p0-->>p0: _aug_crypto_password_hash result: Bytes
     Note over p0: Return _aug_crypto_password_hash(password, salt,<br/>iterations)； required cleanup runs before exit
     Note over p0: Leave unsafe scope
     end

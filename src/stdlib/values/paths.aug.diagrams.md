@@ -21,30 +21,6 @@ flowchart TD
     n5 -->|"calls"| n4
 ```
 
-<details>
-<summary>Call relationships</summary>
-
-```mermaid
-flowchart TD
-    n0["asciiAt"]
-    n1["asciiLetter"]
-    n2["asciiLower"]
-    n3["PortableRelativePath"]
-    n4["_reserved"]
-    n5["_validatePortablePath"]
-    n6["joinPortablePaths"]
-    n7["parsePortableRelativePath"]
-    n3 -->|"calls"| n5
-    n5 -->|"calls"| n0
-    n5 -->|"calls"| n1
-    n5 -->|"calls"| n2
-    n5 -->|"calls"| n4
-    n6 -->|"calls"| n3
-    n7 -->|"calls"| n3
-```
-
-</details>
-
 ## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
@@ -58,9 +34,9 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ```mermaid
 sequenceDiagram
     participant p0 as PortableRelativePath constructor
-    participant p1 as _validatePortablePath
+
     Note over p0: Receive fields: text
-    p0->>p1: _validatePortablePath(text=text)
+    p0->>p0: _validatePortablePath(text=text)
 ```
 
 <a id="sequence-parsePortableRelativePath"></a>
@@ -72,9 +48,9 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as parsePortableRelativePath
-    participant p1 as PortableRelativePath
-    p0->>p1: PortableRelativePath(text=text)
-    p1-->>p0: PortableRelativePath
+
+    p0->>p0: PortableRelativePath(text=text) · construct value
+    p0-->>p0: PortableRelativePath result: PortableRelativePath
     Note over p0: Return PortableRelativePath(text)； required cleanup runs<br/>before exit
     Note over p0: May leave with checked errors: ConversionError
 ```
@@ -96,9 +72,9 @@ Return value.text; required cleanup runs before exit. [Explanation](paths.aug.md
 ```mermaid
 sequenceDiagram
     participant p0 as joinPortablePaths
-    participant p1 as PortableRelativePath
-    p0->>p1: PortableRelativePath(text=left.text + ”/” + right.text)
-    p1-->>p0: PortableRelativePath
+
+    p0->>p0: PortableRelativePath(text=left.text + ”/” + right.text)<br/>· construct value
+    p0-->>p0: PortableRelativePath result: PortableRelativePath
     Note over p0: Return PortableRelativePath(text=left.text + ”/” +<br/>right.text)； required cleanup runs before exit
     Note over p0: May leave with checked errors: ConversionError
 ```
@@ -109,92 +85,111 @@ sequenceDiagram
 
 [Source](paths.aug#L30)
 
-#### Sequence 1 of 2 (continued)
+#### Sequence 1 of 3
 
 ```mermaid
 sequenceDiagram
     participant p0 as _validatePortablePath
-    participant p1 as text.byteLength
-    participant p2 as ConversionError
-    participant p3 as text.split
-    participant p4 as segments.length
-    participant p5 as segment.byteLength
-    participant p6 as segment.endsWith
-    participant p7 as segment.bytes
-    participant p8 as august/values/ascii
-    participant p9 as character.isDecimal
-    participant p10 as segment.split
-    participant p11 as segment.split(separator=”.”).get
-    p0->>p1: text.byteLength()
+
+    p0->>p0: text.byteLength()
+    p0-->>p0: byteLength result: int
     opt Left is false
-    p0->>p1: text.byteLength()
+    p0->>p0: text.byteLength()
+    p0-->>p0: byteLength result 2: int
     end
     alt text.byteLength() == 0 or text.byteLength() › 1024
-    p0->>p2: ConversionError()
+    p0->>p0: ConversionError()
+    p0-->>p0: ConversionError result: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
-    p0->>p3: text.split(separator=”/”)
-    p0->>p4: segments.length()
+    p0->>p0: text.split(separator=”/”)
+    p0-->>p0: segments: List‹string›
+    p0->>p0: segments.length()
+    p0-->>p0: length result: int
     alt segments.length() › 64
-    p0->>p2: ConversionError()
+    p0->>p0: ConversionError()
+    p0-->>p0: ConversionError result 2: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
     loop For each item in segments
-    p0->>p5: segment.byteLength()
+    p0->>p0: segment.byteLength()
+    p0-->>p0: byteLength result 3: int
     opt Left is false
-    p0->>p5: segment.byteLength()
+    p0->>p0: segment.byteLength()
+    p0-->>p0: byteLength result 4: int
     end
     opt Left is false
-    p0->>p6: segment.endsWith(suffix=”.”)
+    p0->>p0: segment.endsWith(suffix=”.”)
+    p0-->>p0: endsWith result: bool
     end
     alt segment.byteLength() == 0 or segment.byteLength() › 255 or segment == ”.” or segment == ”..” or segment.endsWith(suff…
-    p0->>p2: ConversionError()
+    p0->>p0: ConversionError()
+    p0-->>p0: ConversionError result 3: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
-    end
-    p0->>p7: segment.bytes()
-    loop While index ‹ segment.byteLength()
-    p0->>p5: segment.byteLength()
-    p0->>p8: asciiAt(input=bytes, index=index)
-    p8-->>p0: character: string
-    p0->>p8: asciiLetter(character=character)
-    p8-->>p0: bool
-    opt Left is true
-    p0->>p9: character.isDecimal()
-    end
-    alt not asciiLetter(character) and not character.isDecimal() and character != ”.” and character != ”_” and character != ”-”
-    p0->>p2: ConversionError()
-    Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
-    end
-    end
-    opt Try body； stops on a checked failure
-    p0->>p10: segment.split(separator=”.”)
-    p0->>p11: segment.split(separator=”.”).get(index=0)
     end
     end
 ```
 
-#### Sequence 2 of 2 (continued)
+#### Sequence 2 of 3 (continued)
 
 ```mermaid
 sequenceDiagram
     participant p0 as _validatePortablePath
     participant p1 as august/values/ascii
-    participant p2 as _reserved
-    participant p3 as ConversionError
+    loop For each item in segments
+    Note over p0: Sequence continued from the previous view
+    p0->>p0: segment.bytes()
+    p0-->>p0: bytes: Bytes
+    Note over p0: Set index to 0
+    loop While index ‹ segment.byteLength()
+    p0->>p0: segment.byteLength()
+    p0-->>p0: byteLength result 5: int
+    p0->>p1: asciiAt(input=bytes, index=index)
+    p1-->>p0: character: string
+    p0->>p1: asciiLetter(character=character)
+    p1-->>p0: asciiLetter result: bool
+    opt Left is true
+    p0->>p0: character.isDecimal()
+    p0-->>p0: isDecimal result: bool
+    end
+    alt not asciiLetter(character) and not character.isDecimal() and character != ”.” and character != ”_” and character != ”-”
+    p0->>p0: ConversionError()
+    p0-->>p0: ConversionError result 4: ConversionError
+    Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
+    end
+    Note over p0: Set index to index + 1
+    end
+    opt Try body； stops on a checked failure
+    p0->>p0: segment.split(separator=”.”)
+    p0-->>p0: split result 2: List‹string›
+    p0->>p0: split result 2.get(index=0)
+    p0-->>p0: get result: string
+    p0->>p1: asciiLower(text=get result)
+    p1-->>p0: basename: string
+    p0->>p0: _reserved(basename=basename)
+    p0-->>p0: _reserved result: bool
+    end
+    end
+```
+
+#### Sequence 3 of 3 (continued)
+
+```mermaid
+sequenceDiagram
+    participant p0 as _validatePortablePath
+
     loop For each item in segments
     opt Try body； stops on a checked failure
-    Note over p0: Sequence continued from the previous view
-    p0->>p1: asciiLower(text=segment.split(separator=”.”).get(index=0))
-    p1-->>p0: basename: string
-    p0->>p2: _reserved(basename=basename)
-    p2-->>p0: bool
     alt _reserved(basename)
-    p0->>p3: ConversionError()
+    Note over p0: Sequence continued from the previous view
+    p0->>p0: ConversionError()
+    p0-->>p0: ConversionError result 5: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
     end
     opt Catch IndexError
-    p0->>p3: ConversionError()
+    p0->>p0: ConversionError()
+    p0-->>p0: ConversionError result 6: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
     end

@@ -16,49 +16,49 @@ outline: [2, 3]
 
 ## Class interactions
 
+### Greeter
+
 ```mermaid
-flowchart TD
+flowchart LR
     n0["Greeter"]
     n1["IGreeter"]
-    n2["describe"]
-    n3["Console"]
-    n4["AddOne"]
-    n5["Audit"]
-    n6["Positive"]
-    n7["Logger"]
+    n2["Console"]
+    n3["Audit"]
+    n4["Logger"]
     n0 -->|"implements"| n1
-    n0 -->|"depends on"| n3
-    n0 -->|"intercepted by"| n5
-    n0 -->|"depends on"| n7
-    n0 -->|"depends on _logger"| n7
-    n1 -->|"depends on"| n3
-    n1 -->|"depends on"| n7
-    n2 -->|"calls"| n3
-    n2 -->|"depends on"| n3
-    n2 -->|"intercepted by"| n4
-    n2 -->|"intercepted by"| n5
-    n2 -->|"intercepted by"| n6
-    n2 -->|"depends on"| n7
+    n0 -->|"depends on"| n2
+    n0 -->|"intercepted by"| n3
+    n0 -->|"depends on _logger"| n4
 ```
 
-::: details Call relationships
+### IGreeter
 
 ```mermaid
-flowchart TD
-    n0["Greeter.greet"]
-    n1["describe"]
-    n2["Console.write"]
-    n3["AddOne"]
-    n4["Audit"]
-    n5["Positive"]
-    n0 -->|"intercepted by"| n4
-    n1 -->|"calls"| n2
-    n1 -->|"intercepted by"| n3
-    n1 -->|"intercepted by"| n4
-    n1 -->|"intercepted by"| n5
+flowchart LR
+    n0["IGreeter"]
+    n1["Console"]
+    n2["Logger"]
+    n0 -->|"depends on"| n1
+    n0 -->|"depends on"| n2
 ```
 
-:::
+### describe
+
+```mermaid
+flowchart LR
+    n0["describe"]
+    n1["Console"]
+    n2["AddOne"]
+    n3["Audit"]
+    n4["Positive"]
+    n5["Logger"]
+    n0 -->|"calls write； depends on"| n1
+    n0 -->|"intercepted by"| n2
+    n0 -->|"intercepted by"| n3
+    n0 -->|"intercepted by"| n4
+    n0 -->|"depends on"| n5
+```
+
 
 ## Sequences
 

@@ -27,27 +27,11 @@ flowchart TD
     n1 -->|"depends on"| n0
     n2 -->|"depends on"| n0
     n2 -->|"implements"| n1
-    n2 -->|"calls"| n4
-    n2 -->|"depends on _logger"| n4
+    n2 -->|"calls log； depends on _logger"| n4
     n3 -->|"depends on"| n0
     n3 -->|"implements"| n4
-    n5 -->|"calls"| n2
+    n5 -->|"calls； calls add"| n2
 ```
-
-::: details Call relationships
-
-```mermaid
-flowchart TD
-    n0["Calculator"]
-    n1["Calculator.add"]
-    n2["Logger.log"]
-    n3["calculator.aug"]
-    n1 -->|"calls"| n2
-    n3 -->|"calls"| n0
-    n3 -->|"calls"| n1
-```
-
-:::
 
 ## Sequences
 
@@ -92,9 +76,10 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as load
-    participant p1 as FileError
+
     alt fail
-    p0->>p1: FileError()
+    p0->>p0: FileError()
+    p0-->>p0: FileError result: FileError
     Note over p0: Raise checked failure FileError()； required cleanup runs<br/>before exit
     end
     Note over p0: Return ”loaded”； required cleanup runs before exit
