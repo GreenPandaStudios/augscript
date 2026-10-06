@@ -466,6 +466,257 @@
         "operation.aug": "unwrap(Task<int> pending) returns int unless FileError:\n    return wait for pending\n"
       },
       "diagnostic": "THROWS"
+    },
+    {
+      "id": "owned-consumed-once",
+      "files": {
+        "operation.aug": "interface Readable:\n    read() returns int\n    drop()\nGuard(int value) implements Readable:\n    read() returns int:\n        return value\n    drop():\n        pass\nconsume(own Guard item) returns int:\n    return 61\n",
+        "main.aug": "import Guard and consume from operation\nscope:\n    own Guard item = Guard(value=12)\n    print(value=consume(item))\nprint(value=\"released\")\n"
+      },
+      "stdout": "61\nreleased\n",
+      "drops": {
+        "Guard": 1
+      }
+    },
+    {
+      "id": "borrow-alias-release",
+      "files": {
+        "main.aug": "items = [2, 8]\nalias = items\nborrow items:\n    items.append(value=13)\nprint(value=alias.length())\n"
+      },
+      "stdout": "3\n"
+    },
+    {
+      "id": "task-active-borrow-mutation",
+      "files": {
+        "operation.aug": "size(List<int> values) returns int:\n    return values.length()\n",
+        "main.aug": "import size from operation\nitems = [2, 8]\nscope:\n    borrow items:\n        pending = start size(values=items)\n        items.append(value=13)\n        wait for pending\n"
+      },
+      "diagnostic": "CONCURRENCY"
+    },
+    {
+      "id": "task-self-update",
+      "files": {
+        "operation.aug": "interface Counter:\n    current() returns int\n    increment() changes self\nCount() implements Counter:\n    mutable int _number = 4\n    current() returns int:\n        return _number\n    increment() changes self:\n        scope:\n            pending = start inspect(counter=self)\n            _number = _number + 1\n            wait for pending\ninspect(Counter counter) returns int:\n    return counter.current()\n",
+        "main.aug": "import Count from operation\ncounter = Count()\nborrow counter:\n    counter.increment()\n"
+      },
+      "diagnostic": "CONCURRENCY"
+    },
+    {
+      "id": "task-branch-incomplete",
+      "files": {
+        "operation.aug": "size(List<int> values) returns int:\n    return values.length()\nupdate(bool join, borrow List<int> values) returns int:\n    scope:\n        pending = start size(values)\n        if join:\n            wait for pending\n        values.append(value=13)\n    return values.length()\n",
+        "main.aug": "import update from operation\nitems = [2, 8]\nborrow items:\n    print(value=update(join=true, values=items))\n"
+      },
+      "diagnostic": "CONCURRENCY"
+    },
+    {
+      "id": "task-branches-joined",
+      "files": {
+        "operation.aug": "size(List<int> values) returns int:\n    return values.length()\nupdate(bool join, borrow List<int> values) returns int:\n    scope:\n        pending = start size(values)\n        if join:\n            wait for pending\n        else:\n            wait for pending\n        values.append(value=13)\n    return values.length()\n",
+        "main.aug": "import update from operation\nfirst = [2, 8]\nsecond = [3]\nborrow first:\n    print(value=update(join=true, values=first))\nborrow second:\n    print(value=update(join=false, values=second))\n"
+      },
+      "stdout": "3\n2\n"
+    },
+    {
+      "id": "task-nested-join",
+      "files": {
+        "operation.aug": "size(List<int> values) returns int:\n    return values.length()\n",
+        "main.aug": "import size from operation\nitems = [2, 8]\nscope:\n    scope:\n        pending = start size(values=items)\n    borrow items:\n        items.append(value=13)\n    print(value=items.length())\n"
+      },
+      "stdout": "3\n"
+    },
+    {
+      "id": "task-capture-pressure",
+      "files": {
+        "operation.aug": "interface Readable:\n    read() returns int\n    drop()\nGuard(int value) implements Readable:\n    read() returns int:\n        return value\n    drop():\n        pass\nread(borrow Guard item) returns int:\n    return item.read()\n",
+        "main.aug": "import Guard and read from operation\nscope:\n    own Guard item = Guard(value=73)\n    pending = start read(item)\n    index = 0\n    while index < 4000:\n        temporary = [index, index + 1]\n        index = index + 1\n    print(value=wait for pending)\nprint(value=\"released\")\n"
+      },
+      "stdout": "73\nreleased\n",
+      "drops": {
+        "Guard": 1
+      }
+    },
+    {
+      "id": "task-loop-latest-loan",
+      "files": {
+        "operation.aug": "size(List<int> values) returns int:\n    return values.length()\n",
+        "main.aug": "import size from operation\nitems = [2, 8]\nscope:\n    optional Task<int> latest = null\n    for index in [1, 2, 3]:\n        latest = start size(values=items)\n    match latest:\n        when null:\n            pass\n        when some pending:\n            wait for pending\n    borrow items:\n        items.append(value=13)\n"
+      },
+      "diagnostic": "BORROW"
+    },
+    {
+      "id": "task-shared-active-move",
+      "files": {
+        "operation.aug": "touch(borrow Shared<List<int>> holder):\n    pass\nconsume(own Shared<List<int>> holder):\n    pass\n",
+        "main.aug": "import touch and consume from operation\nscope:\n    own Shared<List<int>> holder = Shared(value=[2, 8])\n    pending = start touch(holder)\n    consume(holder)\n    wait for pending\n"
+      },
+      "diagnostic": "BORROW"
+    },
+    {
+      "id": "task-owned-transfer",
+      "files": {
+        "operation.aug": "interface Readable:\n    read() returns int\n    drop()\nGuard(int value) implements Readable:\n    read() returns int:\n        return value\n    drop():\n        pass\nconsume(own Shared<Guard> holder) returns int:\n    return 91\n",
+        "main.aug": "import Guard and consume from operation\nscope:\n    own Guard item = Guard(value=12)\n    own Shared<Guard> holder = Shared(value=item)\n    pending = start consume(holder)\n    print(value=wait for pending)\n"
+      },
+      "stdout": "91\n",
+      "drops": {
+        "Guard": 1,
+        "Shared": 1
+      }
+    },
+    {
+      "id": "task-nested-alias-mutation",
+      "files": {
+        "operation.aug": "interface View:\n    count() returns int\nBox(mutable List<int> values) implements View:\n    count() returns int:\n        return values.length()\ninspect(View box) returns int:\n    return box.count()\n",
+        "main.aug": "import Box and inspect from operation\nbox = Box(values=[2, 8])\nalias = box\nscope:\n    pending = start inspect(box)\n    borrow alias:\n        alias.values.append(value=13)\n    wait for pending\n"
+      },
+      "diagnostic": "CONCURRENCY"
+    },
+    {
+      "id": "task-shared-active-wrap",
+      "files": {
+        "operation.aug": "touch(borrow Shared<List<int>> holder):\n    pass\nconsume(own Shared<List<int>> holder):\n    pass\n",
+        "main.aug": "import touch from operation\nscope:\n    own Shared<List<int>> holder = Shared(value=[2, 8])\n    pending = start touch(holder)\n    own Shared<Shared<List<int>>> nested = Shared(value=holder)\n    wait for pending\n"
+      },
+      "diagnostic": "BORROW"
+    },
+    {
+      "id": "task-shared-active-rebind",
+      "files": {
+        "operation.aug": "touch(borrow Shared<List<int>> holder):\n    pass\nconsume(own Shared<List<int>> holder):\n    pass\n",
+        "main.aug": "import touch from operation\nscope:\n    own Shared<List<int>> holder = Shared(value=[2, 8])\n    pending = start touch(holder)\n    own Shared<List<int>> moved = holder\n    wait for pending\n"
+      },
+      "diagnostic": "BORROW"
+    },
+    {
+      "id": "task-shared-active-return",
+      "files": {
+        "operation.aug": "touch(borrow Shared<List<int>> holder):\n    pass\nconsume(own Shared<List<int>> holder):\n    pass\nreturnHolder(own Shared<List<int>> holder) returns own Shared<List<int>>:\n    scope:\n        pending = start touch(holder)\n        return holder\n",
+        "main.aug": "import returnHolder from operation\nown Shared<List<int>> holder = returnHolder(holder=Shared(value=[2, 8]))\n"
+      },
+      "diagnostic": "BORROW"
+    },
+    {
+      "id": "task-freeze-active",
+      "files": {
+        "operation.aug": "change(borrow List<int> values):\n    values.append(value=13)\n",
+        "main.aug": "import change from operation\nscope:\n    own List<int> values = [2, 8]\n    pending = start change(values)\n    freeze values as fixed\n    wait for pending\n"
+      },
+      "diagnostic": "BORROW"
+    },
+    {
+      "id": "task-freeze-after-wait",
+      "files": {
+        "operation.aug": "change(borrow List<int> values):\n    values.append(value=13)\n",
+        "main.aug": "import change from operation\nscope:\n    own List<int> values = [2, 8]\n    pending = start change(values)\n    wait for pending\n    freeze values as fixed\n    print(value=fixed.length())\n    for value in fixed:\n        print(value)\n"
+      },
+      "stdout": "3\n2\n8\n13\n"
+    },
+    {
+      "id": "task-loop-retains-borrow",
+      "files": {
+        "operation.aug": "size(List<int> values) returns int:\n    return values.length()\nupdate(borrow List<int> values):\n    scope:\n        optional Task<int> latest = null\n        for index in [1, 2, 3]:\n            latest = start size(values)\n        match latest:\n            when null:\n                return\n            when some pending:\n                wait for pending\n        values.append(value=13)\n",
+        "main.aug": "import update from operation\nitems = [2, 8]\nborrow items:\n    update(values=items)\n"
+      },
+      "diagnostic": "CONCURRENCY"
+    },
+    {
+      "id": "task-loop-scopes-join",
+      "files": {
+        "operation.aug": "size(List<int> values) returns int:\n    return values.length()\n",
+        "main.aug": "import size from operation\nitems = [2, 8]\nfor index in [3, 4, 5]:\n    scope:\n        pending = start size(values=items)\n        print(value=wait for pending)\n    borrow items:\n        items.append(value=index)\nprint(value=items.length())\n"
+      },
+      "stdout": "2\n3\n4\n5\n"
+    },
+    {
+      "id": "task-owned-active-throw",
+      "files": {
+        "operation.aug": "Failure(int code) implements Error:\n    pass\ninspect(Failure failure) returns int:\n    return failure.code\nfail(own Failure failure) unless Failure:\n    scope:\n        pending = start inspect(failure)\n        throw failure\n",
+        "main.aug": "import Failure and fail from operation\ntry:\n    fail(failure=Failure(code=73))\ncatch Failure failure:\n    print(value=failure.code)\n"
+      },
+      "diagnostic": "BORROW"
+    },
+    {
+      "id": "task-selected-wait-retains-loans",
+      "files": {
+        "operation.aug": "size(List<int> values) returns int:\n    return values.length()\n",
+        "main.aug": "import size from operation\nitems = [2, 8]\ntry:\n    scope:\n        first = start size(values=items)\n        second = start size(values=items)\n        tasks = [first, second]\n        index = 0\n        wait for tasks[index]\n        borrow items:\n            items.append(value=13)\ncatch IndexError failure:\n    pass\n"
+      },
+      "diagnostic": "BORROW"
+    },
+    {
+      "id": "task-collection-wait-releases-loans",
+      "files": {
+        "operation.aug": "size(List<int> values) returns int:\n    return values.length()\n",
+        "main.aug": "import size from operation\nitems = [2, 8]\nscope:\n    first = start size(values=items)\n    second = start size(values=items)\n    tasks = [first, second]\n    results = wait for tasks\n    for value in results:\n        print(value)\n    borrow items:\n        items.append(value=13)\nprint(value=items.length())\n"
+      },
+      "stdout": "2\n2\n3\n"
+    },
+    {
+      "id": "task-reference-is-not-join",
+      "files": {
+        "operation.aug": "size(List<int> values) returns int:\n    return values.length()\necho(List<Task<int>> tasks) returns List<Task<int>>:\n    return tasks\n",
+        "main.aug": "import size and echo from operation\nitems = [2, 8]\nscope:\n    reading = start size(values=items)\n    tasks = [reading]\n    containing = start echo(tasks)\n    wait for containing\n    borrow items:\n        items.append(value=13)\n"
+      },
+      "diagnostic": "BORROW"
+    },
+    {
+      "id": "task-error-at-wait",
+      "files": {
+        "operation.aug": "error Failed(int code)\nfail() returns int unless Failed:\n    throw Failed(code=73)\n",
+        "main.aug": "import fail and Failed from operation\nscope:\n    pending = start fail()\n    try:\n        wait for pending\n    catch Failed failure:\n        print(value=failure.code)\n"
+      },
+      "stdout": "73\n"
+    },
+    {
+      "id": "task-error-at-join",
+      "files": {
+        "operation.aug": "error Failed(int code)\nfail() returns int unless Failed:\n    throw Failed(code=73)\n",
+        "main.aug": "import fail from operation\nscope:\n    pending = start fail()\n"
+      },
+      "diagnostic": "THROWS"
+    },
+    {
+      "id": "task-parent-error-priority",
+      "files": {
+        "operation.aug": "import Console from august.io\nerror Primary(int code)\nerror Secondary(int code)\nwaiting(bool spin, resolve Console console) returns int unless Secondary:\n    try:\n        if spin:\n            while true:\n                pass\n        return 1\n    always:\n        console.write(value=\"cleanup failed\")\n        throw Secondary(code=9)\nready() returns int:\n    return 1\nexecute(resolve Console console) unless Primary and Secondary:\n    scope:\n        running = start waiting(spin=true)\n        started = start ready()\n        wait for started\n        throw Primary(code=73)\n",
+        "main.aug": "import waiting and execute and Primary and Secondary from operation\nimport Console and SystemConsole from august.io\nimplement Console with SystemConsole\ntry:\n    waiting(spin=false)\ncatch Secondary failure:\n    print(value=failure.code)\ntry:\n    execute()\ncatch Primary failure:\n    print(value=failure.code)\ncatch Secondary failure:\n    print(value=failure.code)\n"
+      },
+      "stdout": "cleanup failed\n9\ncleanup failed\n73\n"
+    },
+    {
+      "id": "task-cancel-sibling-cleanup",
+      "files": {
+        "operation.aug": "import Console from august.io\nwaiting(resolve Console console):\n    try:\n        while true:\n            pass\n    always:\n        console.write(value=\"stopped\")\nerror Failed(int code)\nfail() returns int unless Failed:\n    throw Failed(code=73)\n",
+        "main.aug": "import waiting and fail and Failed from operation\nimport Console and SystemConsole from august.io\nimplement Console with SystemConsole\ntry:\n    scope:\n        running = start waiting()\n        failing = start fail()\n        wait for running\ncatch Failed failure:\n    print(value=failure.code)\n"
+      },
+      "stdout": "stopped\n73\n"
+    },
+    {
+      "id": "task-cancel-outer-cleanup",
+      "files": {
+        "operation.aug": "import Console from august.io\nwaiting(resolve Console console):\n    try:\n        while true:\n            pass\n    always:\n        console.write(value=\"stopped\")\nerror Failed(int code)\nfail() returns int unless Failed:\n    throw Failed(code=73)\nexecute(resolve Console console):\n    scope:\n        running = start waiting()\n        scope:\n            failing = start fail()\n",
+        "main.aug": "import execute and Failed from operation\nimport Console and SystemConsole from august.io\nimplement Console with SystemConsole\ntry:\n    execute()\ncatch Failed failure:\n    print(value=failure.code)\n"
+      },
+      "stdout": "stopped\n73\n"
+    },
+    {
+      "id": "task-cancel-before-entry",
+      "files": {
+        "operation.aug": "import Console from august.io\ninterface Readable:\n    read() returns int\n    drop()\nGuard(int value) implements Readable:\n    read() returns int:\n        return value\n    drop():\n        pass\nerror Failed(int code)\nfail() returns int unless Failed:\n    throw Failed(code=73)\nconsume(own Shared<Guard> holder, resolve Console console):\n    console.write(value=\"entered\")\ninterface Disposable:\n    drop()\nMarker() implements Disposable:\n    drop():\n        pass\n",
+        "main.aug": "import Guard and Marker and fail and consume and Failed from operation\nimport Console and SystemConsole from august.io\nimplement Console with SystemConsole\ntry:\n    scope:\n        own Guard item = Guard(value=12)\n        own Shared<Guard> holder = Shared(value=item)\n        failing = start fail()\n        consuming = start consume(holder)\n        wait for failing\ncatch Failed failure:\n    own Marker observed = Marker()\n    print(value=failure.code)\n"
+      },
+      "stdout": "73\n",
+      "drops": {
+        "Guard": 1,
+        "Shared": 1,
+        "Marker": 1
+      },
+      "dropOrder": [
+        "Shared",
+        "Guard",
+        "Marker"
+      ]
     }
   ],
   "mutations": [
@@ -496,6 +747,20 @@
       "file": "main.aug",
       "before": "count=7, label=\"ready\"",
       "after": "count=8, label=\"ready\""
+    },
+    {
+      "id": "wrong-task-failure-code",
+      "case": "task-error-at-wait",
+      "file": "operation.aug",
+      "before": "throw Failed(code=73)",
+      "after": "throw Failed(code=74)"
+    },
+    {
+      "id": "missing-child-cleanup-failure",
+      "case": "task-parent-error-priority",
+      "file": "operation.aug",
+      "before": "throw Secondary(code=9)",
+      "after": "pass"
     }
   ]
 }
