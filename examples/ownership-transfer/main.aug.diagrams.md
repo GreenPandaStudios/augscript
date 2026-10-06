@@ -32,17 +32,16 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ```mermaid
 sequenceDiagram
     participant p0 as Startup
-    participant p1 as make
-    participant p2 as consume
-    participant p3 as print
+    participant p1 as resource
+    participant p2 as print
     p0->>p1: make()
     p1-->>p0: first: Resource
     Note over p0: Own first； release on scope exits
-    p0->>p2: consume(value=first)
+    p0->>p1: consume(value=first)
     p0->>p1: make()
     p1-->>p0: second: Resource
     Note over p0: Own second； release on scope exits
-    p0->>p3: print(value=”end of main”)
+    p0->>p2: print(value=”end of main”)
 ```
 
 ## Called contracts

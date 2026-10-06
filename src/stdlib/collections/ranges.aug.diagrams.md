@@ -44,38 +44,24 @@ sequenceDiagram
     alt step == 0
     p0->>p1: RangeError(message=”Range step must not be zero”)
     p1-->>p0: RangeError
-    Note over p0: Raise checked failure RangeError(message=”Range step must not be zero”)； required cleanup runs before exit
-    end
-    opt Left is false
+    Note over p0: Raise checked failure RangeError(message=”Range step<br/>must not be zero”)； required cleanup runs before exit
     end
     alt limit ‹ 1 or limit › 1000000
-    p0->>p1: RangeError(message=”Range limit must be from 1 to 1000000”)
+    p0->>p1: RangeError(message=”Range limit must be from 1 to<br/>1000000”)
     p1-->>p0: RangeError
-    Note over p0: Raise checked failure RangeError(message=”Range limit must be from 1 to 1000000”)； required cleanup runs before exit
+    Note over p0: Raise checked failure RangeError(message=”Range limit<br/>must be from 1 to 1000000”)； required cleanup runs<br/>before exit
     end
     loop While step › 0 and current ‹ end) or (step ‹ 0 and current › end
-    opt Left is true
-    end
-    opt Left is false
-    opt Left is true
-    end
-    end
     p0->>p2: values.length()
     alt values.length() == limit
     p0->>p1: RangeError(message=”Range exceeds its element limit”)
     p1-->>p0: RangeError
-    Note over p0: Raise checked failure RangeError(message=”Range exceeds its element limit”)； required cleanup runs before exit
+    Note over p0: Raise checked failure RangeError(message=”Range exceeds<br/>its element limit”)； required cleanup runs before exit
     end
     rect rgb(245, 240, 241)
     Note over p0: Enter borrow scope
     p0->>p3: values.append(value=current)
     Note over p0: Leave borrow scope
-    end
-    opt Left is true
-    end
-    opt Left is false
-    opt Left is true
-    end
     end
     alt step › 0 and nextValue ‹ current) or (step ‹ 0 and nextValue › current
     Note over p0: Leave this loop

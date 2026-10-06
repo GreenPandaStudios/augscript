@@ -42,11 +42,11 @@ Call arrows identify checked targets; loop and branch frames determine when they
 sequenceDiagram
     participant p0 as hashText
     participant p1 as value.bytes
-    participant p2 as hash
+    participant p2 as @greenpandastudios/aug-blake3/api
     p0->>p1: value.bytes()
     p0->>p2: hash(input=value.bytes())
     p2-->>p0: string
-    Note over p0: Return hash(input=value.bytes())； required cleanup runs before exit
+    Note over p0: Return hash(input=value.bytes())； required cleanup runs<br/>before exit
     Note over p0: May leave with checked errors: HashError
 ```
 

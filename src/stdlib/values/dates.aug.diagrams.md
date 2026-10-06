@@ -48,15 +48,9 @@ sequenceDiagram
     participant p1 as ConversionError
     participant p2 as _daysInMonth
     Note over p0: Receive fields: year, month, day
-    opt Left is false
-    end
-    opt Left is false
-    end
-    opt Left is false
-    end
     alt year ‹ 1 or year › 9999 or month ‹ 1 or month › 12
     p0->>p1: ConversionError()
-    Note over p0: Raise checked failure ConversionError()； required cleanup runs before exit
+    Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
     opt Left is false
     p0->>p2: _daysInMonth(year=year, month=month)
@@ -64,7 +58,7 @@ sequenceDiagram
     end
     alt day ‹ 1 or day › _daysInMonth(year, month)
     p0->>p1: ConversionError()
-    Note over p0: Raise checked failure ConversionError()； required cleanup runs before exit
+    Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
 ```
 
@@ -79,20 +73,10 @@ sequenceDiagram
     participant p0 as _daysInMonth
 
     alt month == 2
-    opt Left is false
-    opt Left is true
-    end
-    end
     alt year % 400 == 0 or (year % 4 == 0 and year % 100 != 0
     Note over p0: Return 29； required cleanup runs before exit
     end
     Note over p0: Return 28； required cleanup runs before exit
-    end
-    opt Left is false
-    end
-    opt Left is false
-    end
-    opt Left is false
     end
     alt month == 4 or month == 6 or month == 9 or month == 11
     Note over p0: Return 30； required cleanup runs before exit
@@ -114,7 +98,7 @@ sequenceDiagram
     participant p1 as text.byteLength
     participant p2 as ConversionError
     participant p3 as text.bytes
-    participant p4 as asciiSlice
+    participant p4 as august/values/ascii
     participant p5 as year.isDecimal
     participant p6 as month.isDecimal
     participant p7 as day.isDecimal
@@ -124,7 +108,7 @@ sequenceDiagram
     p0->>p1: text.byteLength()
     alt text.byteLength() != 10
     p0->>p2: ConversionError()
-    Note over p0: Raise checked failure ConversionError()； required cleanup runs before exit
+    Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
     p0->>p3: text.bytes()
     p0->>p4: asciiSlice(input=bytes, start=0, end=4)
@@ -141,7 +125,7 @@ sequenceDiagram
     end
     alt asciiSlice(input=bytes, start=4, end=5) != ”-” or asciiSlice(input=bytes, start=7, end=8) != ”-”
     p0->>p2: ConversionError()
-    Note over p0: Raise checked failure ConversionError()； required cleanup runs before exit
+    Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
     p0->>p5: year.isDecimal()
     opt Left is false
@@ -152,7 +136,7 @@ sequenceDiagram
     end
     alt not year.isDecimal() or not month.isDecimal() or not day.isDecimal()
     p0->>p2: ConversionError()
-    Note over p0: Raise checked failure ConversionError()； required cleanup runs before exit
+    Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
     p0->>p8: year.parseInteger()
     p0->>p9: month.parseInteger()
@@ -166,9 +150,9 @@ sequenceDiagram
     participant p0 as parseCivilDate
     participant p1 as CivilDate
     Note over p0: Sequence continued from the previous view
-    p0->>p1: CivilDate(year=year.parseInteger(), month=month.parseInteger(), day=day.parseInteger())
+    p0->>p1: CivilDate(year=year.parseInteger(),<br/>month=month.parseInteger(), day=day.parseInteger())
     p1-->>p0: CivilDate
-    Note over p0: Return CivilDate(year=year.parseInteger(), month=month.parseInteger(), day=day.parseInteger())； required cleanup runs…
+    Note over p0: Return CivilDate(year=year.parseInteger(),<br/>month=month.parseInteger(), day=day.parseInteger())；<br/>required cleanup runs…
     Note over p0: May leave with checked errors: ConversionError
 ```
 
@@ -188,7 +172,7 @@ sequenceDiagram
     p1-->>p0: string
     p0->>p1: _pad(value=value.day, width=2)
     p1-->>p0: string
-    Note over p0: Return _pad(value=value.year, width=4) + ”-” + _pad(value=value.month, width=2) + ”-” + _pad(value=value.day, width=2…
+    Note over p0: Return _pad(value=value.year, width=4) + ”-” +<br/>_pad(value=value.month, width=2) + ”-” +<br/>_pad(value=value.day, width=2…
 ```
 
 <a id="sequence-_pad"></a>

@@ -113,7 +113,7 @@ sequenceDiagram
     Note over p0: Enter unsafe scope
     p0->>p1: _upload(device=device, values=values) · native boundary
     p1-->>p0: Buffer
-    Note over p0: Return _upload(device, values)； required cleanup runs before exit
+    Note over p0: Return _upload(device, values)； required cleanup runs<br/>before exit
     Note over p0: Leave unsafe scope
     end
     Note over p0: May leave with checked errors: GpuError
@@ -133,7 +133,7 @@ sequenceDiagram
     Note over p0: Enter unsafe scope
     p0->>p1: _add(left=left, right=right) · native boundary
     p1-->>p0: Buffer
-    Note over p0: Return _add(left, right)； required cleanup runs before exit
+    Note over p0: Return _add(left, right)； required cleanup runs before<br/>exit
     Note over p0: Leave unsafe scope
     end
     Note over p0: May leave with checked errors: GpuError
@@ -153,7 +153,7 @@ sequenceDiagram
     Note over p0: Enter unsafe scope
     p0->>p1: _download(buffer=buffer) · native boundary
     p1-->>p0: List‹float›
-    Note over p0: Return _download(buffer)； required cleanup runs before exit
+    Note over p0: Return _download(buffer)； required cleanup runs before<br/>exit
     Note over p0: Leave unsafe scope
     end
     Note over p0: May leave with checked errors: GpuError

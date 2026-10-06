@@ -69,7 +69,7 @@ sequenceDiagram
     Note over p0: Enter unsafe scope
     p0->>p1: _aug_time_now() · native boundary
     p1-->>p0: int
-    Note over p0: Return _aug_time_now()； required cleanup runs before exit
+    Note over p0: Return _aug_time_now()； required cleanup runs before<br/>exit
     Note over p0: Leave unsafe scope
     end
     Note over p0: May leave with checked errors: TimeError

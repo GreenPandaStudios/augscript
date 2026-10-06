@@ -63,7 +63,7 @@ sequenceDiagram
     Note over p0: Enter unsafe scope
     p0->>p1: _compress(input=input) · native boundary
     p1-->>p0: Bytes
-    Note over p0: Return _compress(input)； required cleanup runs before exit
+    Note over p0: Return _compress(input)； required cleanup runs before<br/>exit
     Note over p0: Leave unsafe scope
     end
     Note over p0: May leave with checked errors: CompressionError
@@ -81,9 +81,9 @@ sequenceDiagram
     participant p1 as _decompress
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _decompress(input=input, maximumOutput=maximumOutput) · native boundary
+    p0->>p1: _decompress(input=input, maximumOutput=maximumOutput) ·<br/>native boundary
     p1-->>p0: Bytes
-    Note over p0: Return _decompress(input, maximumOutput)； required cleanup runs before exit
+    Note over p0: Return _decompress(input, maximumOutput)； required<br/>cleanup runs before exit
     Note over p0: Leave unsafe scope
     end
     Note over p0: May leave with checked errors: CompressionError

@@ -59,19 +59,17 @@ sequenceDiagram
     end
     p0->>p3: password.bytes()
     p0->>p4: ”August demo salt v1”.bytes()
-    p0->>p5: passwordHash(password=password.bytes(), salt=”August demo salt v1”.bytes(), iterations=600000) · interface dispatch
+    p0->>p5: passwordHash(password=password.bytes(), salt=”August<br/>demo salt v1”.bytes(), iterations=600000) · interface<br/>dispatch
     p5-->>p0: actual: Bytes
-    p0->>p5: decodeBase64url(input=”s70USYF6WohPz2f7VLA9haS_ZgEtenviSf_HG0o7B_A”) · interface dispatch
+    p0->>p5: decodeBase64url(input=”s70USYF6WohPz2f7VLA9haS_ZgEtenviSf_HG0o7B_A”)<br/>· interface dispatch
     p5-->>p0: expected: Bytes
     p0->>p6: username.bytes()
     p0->>p7: ”ada”.bytes()
-    p0->>p5: equal(left=username.bytes(), right=”ada”.bytes()) · interface dispatch
+    p0->>p5: equal(left=username.bytes(), right=”ada”.bytes()) ·<br/>interface dispatch
     p5-->>p0: userMatches: bool
     p0->>p5: equal(left=actual, right=expected) · interface dispatch
     p5-->>p0: passwordMatches: bool
-    opt Left is true
-    end
-    Note over p0: Return userMatches and passwordMatches； required cleanup runs before exit
+    Note over p0: Return userMatches and passwordMatches； required cleanup<br/>runs before exit
     Note over p0: May leave with checked errors: CryptoError
 ```
 

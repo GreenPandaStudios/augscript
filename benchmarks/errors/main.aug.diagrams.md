@@ -30,7 +30,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ```mermaid
 sequenceDiagram
     participant p0 as Startup
-    participant p1 as validate
+    participant p1 as operations
     participant p2 as print
     loop While index ‹ iterations
     opt Try body； stops on a checked failure

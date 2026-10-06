@@ -89,7 +89,7 @@ sequenceDiagram
     participant p0 as LocalFiles.read
     participant p1 as read_file
     p0->>p1: read_file(path=path)
-    Note over p0: Return read_file(path=path)； required cleanup runs before exit
+    Note over p0: Return read_file(path=path)； required cleanup runs<br/>before exit
     Note over p0: May leave with checked errors: FileError
 ```
 

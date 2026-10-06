@@ -47,25 +47,22 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ```mermaid
 sequenceDiagram
     participant p0 as calculate
-    participant p1 as openDevice
-    participant p2 as upload
-    participant p3 as add
-    participant p4 as download
+    participant p1 as @greenpandastudios/aug-gpu/api
     p0->>p1: openDevice()
     p1-->>p0: device: Device
     Note over p0: Own device； release on scope exits
-    p0->>p2: upload(device=device, values=left)
-    p2-->>p0: first: Buffer
+    p0->>p1: upload(device=device, values=left)
+    p1-->>p0: first: Buffer
     Note over p0: Own first； release on scope exits
-    p0->>p2: upload(device=device, values=right)
-    p2-->>p0: second: Buffer
+    p0->>p1: upload(device=device, values=right)
+    p1-->>p0: second: Buffer
     Note over p0: Own second； release on scope exits
-    p0->>p3: add(left=first, right=second)
-    p3-->>p0: result: Buffer
+    p0->>p1: add(left=first, right=second)
+    p1-->>p0: result: Buffer
     Note over p0: Own result； release on scope exits
-    p0->>p4: download(buffer=result)
-    p4-->>p0: List‹float›
-    Note over p0: Return download(buffer=result)； required cleanup runs before exit
+    p0->>p1: download(buffer=result)
+    p1-->>p0: List‹float›
+    Note over p0: Return download(buffer=result)； required cleanup runs<br/>before exit
     Note over p0: May leave with checked errors: GpuError
 ```
 

@@ -30,7 +30,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ```mermaid
 sequenceDiagram
     participant p0 as Startup
-    participant p1 as compute
+    participant p1 as operations
     participant p2 as print
     loop While index ‹ iterations
     rect rgb(245, 240, 241)
@@ -39,7 +39,7 @@ sequenceDiagram
     Note over p0: Task starts in the current scope
     p0-)p1: compute(value=index + 1) · start asynchronously
     Note over p0: Task starts in the current scope
-    Note over p0: Wait for first and second； failure cancels siblings and cleanup joins
+    Note over p0: Wait for first and second； failure cancels siblings and<br/>cleanup joins
     Note over p0: Join tasks and release scoped resources
     end
     end

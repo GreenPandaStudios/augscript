@@ -44,14 +44,13 @@ Call arrows identify checked targets; loop and branch frames determine when they
 sequenceDiagram
     participant p0 as roundTrip
     participant p1 as ”The world runs on language”.bytes
-    participant p2 as compress
-    participant p3 as decompress
+    participant p2 as @greenpandastudios/aug-zlib/api
     p0->>p1: ”The world runs on language”.bytes()
     p0->>p2: compress(input=input)
     p2-->>p0: compressed: Bytes
-    p0->>p3: decompress(input=compressed, maximumOutput=4096)
-    p3-->>p0: Bytes
-    Note over p0: Return decompress(input=compressed, maximumOutput=4096)； required cleanup runs before exit
+    p0->>p2: decompress(input=compressed, maximumOutput=4096)
+    p2-->>p0: Bytes
+    Note over p0: Return decompress(input=compressed, maximumOutput=4096)；<br/>required cleanup runs before exit
     Note over p0: May leave with checked errors: CompressionError
 ```
 

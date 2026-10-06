@@ -109,7 +109,7 @@ sequenceDiagram
     participant p1 as storage: DatabaseStorage
     p0->>p1: open(path=path) · interface dispatch
     p1-->>p0: Database
-    Note over p0: Return storage.open(path)； required cleanup runs before exit
+    Note over p0: Return storage.open(path)； required cleanup runs before<br/>exit
     Note over p0: May leave with checked errors: SqliteError
 ```
 
@@ -127,7 +127,7 @@ sequenceDiagram
     Note over p0: Enter unsafe scope
     p0->>p1: _open(path=”:memory:”) · native boundary
     p1-->>p0: Database
-    Note over p0: Return _open(path=”:memory:”)； required cleanup runs before exit
+    Note over p0: Return _open(path=”:memory:”)； required cleanup runs<br/>before exit
     Note over p0: Leave unsafe scope
     end
     Note over p0: May leave with checked errors: SqliteError
@@ -145,9 +145,9 @@ sequenceDiagram
     participant p1 as _execute
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _execute(database=database, sql=sql, parameters=parameters) · native boundary
+    p0->>p1: _execute(database=database, sql=sql,<br/>parameters=parameters) · native boundary
     p1-->>p0: int
-    Note over p0: Return _execute(database, sql, parameters)； required cleanup runs before exit
+    Note over p0: Return _execute(database, sql, parameters)； required<br/>cleanup runs before exit
     Note over p0: Leave unsafe scope
     end
     Note over p0: May leave with checked errors: SqliteError
@@ -165,9 +165,9 @@ sequenceDiagram
     participant p1 as _queryScalar
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _queryScalar(database=database, sql=sql, parameters=parameters) · native boundary
+    p0->>p1: _queryScalar(database=database, sql=sql,<br/>parameters=parameters) · native boundary
     p1-->>p0: string
-    Note over p0: Return _queryScalar(database, sql, parameters)； required cleanup runs before exit
+    Note over p0: Return _queryScalar(database, sql, parameters)； required<br/>cleanup runs before exit
     Note over p0: Leave unsafe scope
     end
     Note over p0: May leave with checked errors: SqliteError

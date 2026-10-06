@@ -116,9 +116,9 @@ sequenceDiagram
     p1-->>p0: Tuple‹Bytes, Bytes›
     p0->>p2: modulus.base64url()
     p0->>p3: exponent.base64url()
-    p0->>p4: RsaJwk(kty=”RSA”, kid=kid, alg=”RS256”, use=”sig”, n=modulus.base64url(), e=exponent.base64url())
+    p0->>p4: RsaJwk(kty=”RSA”, kid=kid, alg=”RS256”, use=”sig”,<br/>n=modulus.base64url(), e=exponent.base64url())
     p4-->>p0: RsaJwk
-    Note over p0: Return RsaJwk(kty=”RSA”, kid=kid, alg=”RS256”, use=”sig”, n=modulus.base64url(), e=exponent.base64url())； required cl…
+    Note over p0: Return RsaJwk(kty=”RSA”, kid=kid, alg=”RS256”,<br/>use=”sig”, n=modulus.base64url(),<br/>e=exponent.base64url())； required cl…
     Note over p0: May leave with checked errors: CryptoError
 ```
 
@@ -133,28 +133,24 @@ sequenceDiagram
     participant p0 as importJwk
     participant p1 as JwtError
     participant p2 as crypto: Crypto
-    opt Left is false
-    end
-    opt Left is false
-    end
     alt jwk.kty != ”RSA” or jwk.alg != ”RS256” or jwk.use != ”sig”
     p0->>p1: JwtError()
     p1-->>p0: JwtError
-    Note over p0: Raise checked failure JwtError()； required cleanup runs before exit
+    Note over p0: Raise checked failure JwtError()； required cleanup runs<br/>before exit
     end
     opt Try body； stops on a checked failure
     p0->>p2: decodeBase64url(input=jwk.n) · interface dispatch
     p2-->>p0: modulus: Bytes
     p0->>p2: decodeBase64url(input=jwk.e) · interface dispatch
     p2-->>p0: exponent: Bytes
-    p0->>p2: importRsa(modulus=modulus, exponent=exponent) · interface dispatch
+    p0->>p2: importRsa(modulus=modulus, exponent=exponent) ·<br/>interface dispatch
     p2-->>p0: RsaPublicKey
-    Note over p0: Return crypto.importRsa(modulus, exponent)； required cleanup runs before exit
+    Note over p0: Return crypto.importRsa(modulus, exponent)； required<br/>cleanup runs before exit
     end
     opt Catch CryptoError
     p0->>p1: JwtError()
     p1-->>p0: JwtError
-    Note over p0: Raise checked failure JwtError()； required cleanup runs before exit
+    Note over p0: Raise checked failure JwtError()； required cleanup runs<br/>before exit
     end
     Note over p0: May leave with checked errors: JwtError
 ```
@@ -184,18 +180,18 @@ sequenceDiagram
     opt Try body； stops on a checked failure
     p0->>p1: JwtHeader(alg=”RS256”, kid=kid, typ=tokenType)
     p1-->>p0: JwtHeader
-    p0->>p2: Json(value=JwtHeader(alg=”RS256”, kid=kid, typ=tokenType))
-    p0->>p3: Json(value=JwtHeader(alg=”RS256”, kid=kid, typ=tokenType)).stringify()
+    p0->>p2: Json(value=JwtHeader(alg=”RS256”, kid=kid,<br/>typ=tokenType))
+    p0->>p3: Json(value=JwtHeader(alg=”RS256”, kid=kid,<br/>typ=tokenType)).stringify()
     p0->>p4: claims.stringify()
     p0->>p5: header.bytes()
     p0->>p6: header.bytes().base64url()
     p0->>p7: payload.bytes()
     p0->>p8: payload.bytes().base64url()
     p0->>p9: signing.bytes()
-    p0->>p10: signRsa(key=key, input=signing.bytes()) · interface dispatch
+    p0->>p10: signRsa(key=key, input=signing.bytes()) · interface<br/>dispatch
     p10-->>p0: signature: Bytes
     p0->>p11: signature.base64url()
-    Note over p0: Return signing + ”.” + signature.base64url()； required cleanup runs before exit
+    Note over p0: Return signing + ”.” + signature.base64url()； required<br/>cleanup runs before exit
     end
     opt Catch CryptoError
     end
@@ -211,12 +207,12 @@ sequenceDiagram
     Note over p0: Sequence continued from the previous view
     p0->>p1: JwtError()
     p1-->>p0: JwtError
-    Note over p0: Raise checked failure JwtError()； required cleanup runs before exit
+    Note over p0: Raise checked failure JwtError()； required cleanup runs<br/>before exit
     end
     opt Catch JsonError
     p0->>p1: JwtError()
     p1-->>p0: JwtError
-    Note over p0: Raise checked failure JwtError()； required cleanup runs before exit
+    Note over p0: Raise checked failure JwtError()； required cleanup runs<br/>before exit
     end
     Note over p0: May leave with checked errors: JwtError
 ```
@@ -239,21 +235,21 @@ sequenceDiagram
     participant p5 as parts.get
     participant p6 as crypto: Crypto
     participant p7 as crypto.decodeBase64url(input=first).text
-    participant p8 as parse
+    participant p8 as @git/url_2d3c37c690c0fa115be1/contracts
     participant p9 as parse(input=crypto.decodeBase64url(input=first).text()).decode
     participant p10 as first + ”.” + second).bytes
     p0->>p1: token.length()
     alt token.length() › 16384
     p0->>p2: JwtError()
     p2-->>p0: JwtError
-    Note over p0: Raise checked failure JwtError()； required cleanup runs before exit
+    Note over p0: Raise checked failure JwtError()； required cleanup runs<br/>before exit
     end
     p0->>p3: token.split(separator=”.”)
     p0->>p4: parts.length()
     alt parts.length() != 3
     p0->>p2: JwtError()
     p2-->>p0: JwtError
-    Note over p0: Raise checked failure JwtError()； required cleanup runs before exit
+    Note over p0: Raise checked failure JwtError()； required cleanup runs<br/>before exit
     end
     opt Try body； stops on a checked failure
     p0->>p5: parts.get(index=0)
@@ -265,14 +261,10 @@ sequenceDiagram
     p0->>p8: parse(input=crypto.decodeBase64url(input=first).text())
     p8-->>p0: Json
     p0->>p9: parse(input=crypto.decodeBase64url(input=first).text()).decode()
-    opt Left is false
-    end
-    opt Left is false
-    end
     alt header.alg != ”RS256” or header.kid != kid or header.typ != tokenType
     p0->>p2: JwtError()
     p2-->>p0: JwtError
-    Note over p0: Raise checked failure JwtError()； required cleanup runs before exit
+    Note over p0: Raise checked failure JwtError()； required cleanup runs<br/>before exit
     end
     p0->>p6: decodeBase64url(input=third) · interface dispatch
     p6-->>p0: signature: Bytes
@@ -288,42 +280,42 @@ sequenceDiagram
     participant p1 as crypto: Crypto
     participant p2 as JwtError
     participant p3 as crypto.decodeBase64url(input=second).text
-    participant p4 as parse
+    participant p4 as @git/url_2d3c37c690c0fa115be1/contracts
     opt Try body； stops on a checked failure
     Note over p0: Sequence continued from the previous view
-    p0->>p1: verifyRsa(publicKey=publicKey, input=first + ”.” + second).bytes(), signature=signature) · interface dispatch
+    p0->>p1: verifyRsa(publicKey=publicKey, input=first + ”.” +<br/>second).bytes(), signature=signature) · interface<br/>dispatch
     p1-->>p0: bool
     alt not crypto.verifyRsa(publicKey=publicKey, input=(first + ”.” + second).bytes(), signature=signature)
     p0->>p2: JwtError()
     p2-->>p0: JwtError
-    Note over p0: Raise checked failure JwtError()； required cleanup runs before exit
+    Note over p0: Raise checked failure JwtError()； required cleanup runs<br/>before exit
     end
     p0->>p1: decodeBase64url(input=second) · interface dispatch
     p1-->>p0: Bytes
     p0->>p3: crypto.decodeBase64url(input=second).text()
     p0->>p4: parse(input=crypto.decodeBase64url(input=second).text())
     p4-->>p0: Json
-    Note over p0: Return parse(input=crypto.decodeBase64url(input=second).text())； required cleanup runs before exit
+    Note over p0: Return<br/>parse(input=crypto.decodeBase64url(input=second).text())；<br/>required cleanup runs before exit
     end
     opt Catch CryptoError
     p0->>p2: JwtError()
     p2-->>p0: JwtError
-    Note over p0: Raise checked failure JwtError()； required cleanup runs before exit
+    Note over p0: Raise checked failure JwtError()； required cleanup runs<br/>before exit
     end
     opt Catch ConversionError
     p0->>p2: JwtError()
     p2-->>p0: JwtError
-    Note over p0: Raise checked failure JwtError()； required cleanup runs before exit
+    Note over p0: Raise checked failure JwtError()； required cleanup runs<br/>before exit
     end
     opt Catch JsonError
     p0->>p2: JwtError()
     p2-->>p0: JwtError
-    Note over p0: Raise checked failure JwtError()； required cleanup runs before exit
+    Note over p0: Raise checked failure JwtError()； required cleanup runs<br/>before exit
     end
     opt Catch IndexError
     p0->>p2: JwtError()
     p2-->>p0: JwtError
-    Note over p0: Raise checked failure JwtError()； required cleanup runs before exit
+    Note over p0: Raise checked failure JwtError()； required cleanup runs<br/>before exit
     end
 ```
 

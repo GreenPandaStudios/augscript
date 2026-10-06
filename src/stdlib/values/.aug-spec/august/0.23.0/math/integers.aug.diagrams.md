@@ -34,15 +34,9 @@ Call arrows identify checked targets; loop and branch frames determine when they
 sequenceDiagram
     participant p0 as checkedAdd
     participant p1 as ArithmeticError
-    opt Left is true
-    end
-    opt Left is false
-    opt Left is true
-    end
-    end
     alt right › 0 and result ‹ left) or (right ‹ 0 and result › left
     p0->>p1: ArithmeticError()
-    Note over p0: Raise checked failure ArithmeticError()； required cleanup runs before exit
+    Note over p0: Raise checked failure ArithmeticError()； required<br/>cleanup runs before exit
     end
     Note over p0: Return result； required cleanup runs before exit
     Note over p0: May leave with checked errors: ArithmeticError
@@ -58,15 +52,9 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as checkedSubtract
     participant p1 as ArithmeticError
-    opt Left is true
-    end
-    opt Left is false
-    opt Left is true
-    end
-    end
     alt right › 0 and result › left) or (right ‹ 0 and result ‹ left
     p0->>p1: ArithmeticError()
-    Note over p0: Raise checked failure ArithmeticError()； required cleanup runs before exit
+    Note over p0: Raise checked failure ArithmeticError()； required<br/>cleanup runs before exit
     end
     Note over p0: Return result； required cleanup runs before exit
     Note over p0: May leave with checked errors: ArithmeticError
@@ -82,24 +70,16 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as checkedMultiply
     participant p1 as ArithmeticError
-    opt Left is false
-    end
     alt left == 0 or right == 0
     Note over p0: Return 0； required cleanup runs before exit
     end
-    opt Left is true
-    end
-    opt Left is false
-    opt Left is true
-    end
-    end
     alt left == -9223372036854775808 and right == -1) or (right == -9223372036854775808 and left == -1
     p0->>p1: ArithmeticError()
-    Note over p0: Raise checked failure ArithmeticError()； required cleanup runs before exit
+    Note over p0: Raise checked failure ArithmeticError()； required<br/>cleanup runs before exit
     end
     alt result / left != right
     p0->>p1: ArithmeticError()
-    Note over p0: Raise checked failure ArithmeticError()； required cleanup runs before exit
+    Note over p0: Raise checked failure ArithmeticError()； required<br/>cleanup runs before exit
     end
     Note over p0: Return result； required cleanup runs before exit
     Note over p0: May leave with checked errors: ArithmeticError
@@ -115,13 +95,9 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as checkedDivide
     participant p1 as ArithmeticError
-    opt Left is false
-    opt Left is true
-    end
-    end
     alt right == 0 or (left == -9223372036854775808 and right == -1
     p0->>p1: ArithmeticError()
-    Note over p0: Raise checked failure ArithmeticError()； required cleanup runs before exit
+    Note over p0: Raise checked failure ArithmeticError()； required<br/>cleanup runs before exit
     end
     Note over p0: Return left / right； required cleanup runs before exit
     Note over p0: May leave with checked errors: ArithmeticError
@@ -139,7 +115,7 @@ sequenceDiagram
     participant p1 as ArithmeticError
     alt value == -9223372036854775808
     p0->>p1: ArithmeticError()
-    Note over p0: Raise checked failure ArithmeticError()； required cleanup runs before exit
+    Note over p0: Raise checked failure ArithmeticError()； required<br/>cleanup runs before exit
     end
     Note over p0: Return -value； required cleanup runs before exit
     Note over p0: May leave with checked errors: ArithmeticError
@@ -158,7 +134,7 @@ sequenceDiagram
     alt value ‹ 0
     p0->>p1: checkedNegate(value=value)
     p1-->>p0: int
-    Note over p0: Return checkedNegate(value)； required cleanup runs before exit
+    Note over p0: Return checkedNegate(value)； required cleanup runs<br/>before exit
     end
     Note over p0: Return value； required cleanup runs before exit
     Note over p0: May leave with checked errors: ArithmeticError

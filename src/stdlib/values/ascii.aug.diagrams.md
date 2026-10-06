@@ -38,11 +38,11 @@ sequenceDiagram
     opt Try body； stops on a checked failure
     p0->>p1: input.slice(input 1=start, input 2=end)
     p0->>p2: input.slice(start, end).text()
-    Note over p0: Return input.slice(start, end).text()； required cleanup runs before exit
+    Note over p0: Return input.slice(start, end).text()； required cleanup<br/>runs before exit
     end
     opt Catch IndexError
     p0->>p3: ConversionError()
-    Note over p0: Raise checked failure ConversionError()； required cleanup runs before exit
+    Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
     Note over p0: May leave with checked errors: ConversionError
 ```
@@ -59,7 +59,7 @@ sequenceDiagram
     participant p1 as asciiSlice
     p0->>p1: asciiSlice(input=input, start=index, end=index + 1)
     p1-->>p0: string
-    Note over p0: Return asciiSlice(input, start=index, end=index + 1)； required cleanup runs before exit
+    Note over p0: Return asciiSlice(input, start=index, end=index + 1)；<br/>required cleanup runs before exit
     Note over p0: May leave with checked errors: ConversionError
 ```
 
@@ -83,7 +83,7 @@ sequenceDiagram
     p0->>p1: character.compare(other=”z”)
     end
     end
-    Note over p0: Return character.compare(other=”A”) ›= 0 and character.compare(other=”Z”) ‹= 0) or (character.compare(other=”a”) ›= 0…
+    Note over p0: Return character.compare(other=”A”) ›= 0 and<br/>character.compare(other=”Z”) ‹= 0) or<br/>(character.compare(other=”a”) ›= 0…
 ```
 
 <a id="sequence-asciiLower"></a>
@@ -106,7 +106,7 @@ sequenceDiagram
     p3-->>p0: string
     p0->>p3: asciiAt(input=lower, index=index)
     p3-->>p0: string
-    p0->>p4: result.replace(search=asciiAt(input=upper, index), replacement=asciiAt(input=lower, index))
+    p0->>p4: result.replace(search=asciiAt(input=upper, index),<br/>replacement=asciiAt(input=lower, index))
     end
     Note over p0: Return result； required cleanup runs before exit
     Note over p0: May leave with checked errors: ConversionError

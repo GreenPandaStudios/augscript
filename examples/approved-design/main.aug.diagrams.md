@@ -58,7 +58,7 @@ sequenceDiagram
     participant p4 as Fruit
     participant p5 as ｛Fruit(code=code, name=label), Fruit(name=label, code=code)｝.length
     participant p6 as counter: Counter
-    participant p7 as double
+    participant p7 as domain/numbers
     Note over p0: Resolve Application from the declared composition
     p0->>p1: start() · interface dispatch
     p0->>p2: names.get(key=2)
@@ -71,8 +71,8 @@ sequenceDiagram
     p4-->>p0: Fruit
     p0->>p4: Fruit(name=label, code=code)
     p4-->>p0: Fruit
-    p0->>p5: ｛Fruit(code=code, name=label), Fruit(name=label, code=code)｝.length()
-    p0->>p3: print(value=｛Fruit(code=code, name=label), Fruit(name=label, code=code)｝.length())
+    p0->>p5: ｛Fruit(code=code, name=label), Fruit(name=label,<br/>code=code)｝.length()
+    p0->>p3: print(value=｛Fruit(code=code, name=label),<br/>Fruit(name=label, code=code)｝.length())
     rect rgb(245, 240, 241)
     Note over p0: Enter task scope
     Note over p0: Resolve Counter from the declared composition
@@ -99,7 +99,7 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as Startup
-    participant p1 as double
+    participant p1 as domain/numbers
     participant p2 as print
     opt Try body； stops on a checked failure
     Note over p0: Sequence continued from the previous view

@@ -30,7 +30,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ```mermaid
 sequenceDiagram
     participant p0 as Startup
-    participant p1 as roundTrip
+    participant p1 as compression
     participant p2 as roundTrip().text
     participant p3 as print
     opt Try body； stops on a checked failure

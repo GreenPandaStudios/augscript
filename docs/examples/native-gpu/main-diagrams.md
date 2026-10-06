@@ -49,18 +49,18 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ```mermaid
 sequenceDiagram
     participant p0 as Startup
-    participant p1 as calculate
+    participant p1 as compute
     participant p2 as print
     participant p3 as error: GpuError
     participant p4 as exit
     opt Try body； stops on a checked failure
     rect rgb(245, 240, 241)
     Note over p0: Enter task scope
-    p0-)p1: calculate(left=［1.0, 2.0, 3.0］, right=［4.0, 5.0, 6.0］) · start asynchronously
+    p0-)p1: calculate(left=［1.0, 2.0, 3.0］, right=［4.0, 5.0, 6.0］) ·<br/>start asynchronously
     Note over p0: Worker starts with an isolated heap and copied data
-    p0-)p1: calculate(left=［10.0, 20.0］, right=［1.0, 2.0］) · start asynchronously
+    p0-)p1: calculate(left=［10.0, 20.0］, right=［1.0, 2.0］) · start<br/>asynchronously
     Note over p0: Worker starts with an isolated heap and copied data
-    Note over p0: Wait for first and second； failure cancels siblings and cleanup joins
+    Note over p0: Wait for first and second； failure cancels siblings and<br/>cleanup joins
     loop For each item in firstResult
     p0->>p2: print(input 1=value)
     end

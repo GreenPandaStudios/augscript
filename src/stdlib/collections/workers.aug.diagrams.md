@@ -50,17 +50,9 @@ sequenceDiagram
     participant p8 as Specialized chunk worker
     participant p9 as results.append
     p0->>p1: values.length()
-    opt Left is false
-    end
-    opt Left is false
-    end
-    opt Left is false
-    end
-    opt Left is false
-    end
     alt concurrency ‹ 1 or concurrency › 64 or chunkSize ‹ 1 or chunkSize › 65536 or length › 1048576
     p0->>p2: ConversionError()
-    Note over p0: Raise checked failure ConversionError()； required cleanup runs before exit
+    Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
     loop For each item in values
     rect rgb(245, 240, 241)
@@ -71,12 +63,8 @@ sequenceDiagram
     end
     loop While offset ‹ length
     loop While count ‹ concurrency and offset ‹ length
-    opt Left is true
-    end
     loop While chunk.length() ‹ chunkSize and offset ‹ length
     p0->>p4: chunk.length()
-    opt Left is true
-    end
     p0->>p5: snapshot.get(index=offset)
     rect rgb(245, 240, 241)
     Note over p0: Enter borrow scope
@@ -94,9 +82,9 @@ sequenceDiagram
     Note over p0: Enter task scope
     loop Each selected item
     p0-)p8: Copy chunk to an isolated heap · start asynchronously
-    Note over p0: Compile-time selected transformation becomes a direct call； only chunk data crosses the heap boundary
+    Note over p0: Compile-time selected transformation becomes a direct<br/>call； only chunk data crosses the heap boundary
     end
-    Note over p0: Wait for jobs； failure cancels siblings and cleanup joins
+    Note over p0: Wait for jobs； failure cancels siblings and cleanup<br/>joins
     loop For each item in completed
     loop For each item in chunk
     rect rgb(245, 240, 241)
@@ -111,8 +99,8 @@ sequenceDiagram
     end
     loop Each selected item
     end
-    Note over p0: Return ［value for value in results］； required cleanup runs before exit
-    Note over p0: May leave with checked errors: ConcurrencyError, ConversionError, IndexError
+    Note over p0: Return ［value for value in results］； required cleanup<br/>runs before exit
+    Note over p0: May leave with checked errors: ConcurrencyError,<br/>ConversionError, IndexError
 ```
 
 <a id="sequence-_mapWorkerChunk"></a>

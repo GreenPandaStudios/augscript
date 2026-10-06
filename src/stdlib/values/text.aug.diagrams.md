@@ -39,7 +39,7 @@ sequenceDiagram
     p0->>p1: text.isToken(min=1, max=128)
     alt not text.isToken(min=1, max=128)
     p0->>p2: ConversionError()
-    Note over p0: Raise checked failure ConversionError()； required cleanup runs before exit
+    Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
 ```
 
@@ -80,13 +80,9 @@ sequenceDiagram
     participant p2 as text.byteLength
     participant p3 as text.codePointLength
     Note over p0: Receive fields: text, minBytes, maxBytes
-    opt Left is false
-    end
-    opt Left is false
-    end
     alt minBytes ‹ 0 or minBytes › maxBytes or maxBytes › 1048576
     p0->>p1: ConversionError()
-    Note over p0: Raise checked failure ConversionError()； required cleanup runs before exit
+    Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
     p0->>p2: text.byteLength()
     opt Left is false
@@ -94,7 +90,7 @@ sequenceDiagram
     end
     alt text.byteLength() ‹ minBytes or text.byteLength() › maxBytes
     p0->>p1: ConversionError()
-    Note over p0: Raise checked failure ConversionError()； required cleanup runs before exit
+    Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
     p0->>p3: text.codePointLength()
 ```
@@ -109,9 +105,9 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as parseBoundedText
     participant p1 as BoundedText
-    p0->>p1: BoundedText(text=text, minBytes=minBytes, maxBytes=maxBytes)
+    p0->>p1: BoundedText(text=text, minBytes=minBytes,<br/>maxBytes=maxBytes)
     p1-->>p0: BoundedText
-    Note over p0: Return BoundedText(text, minBytes, maxBytes)； required cleanup runs before exit
+    Note over p0: Return BoundedText(text, minBytes, maxBytes)； required<br/>cleanup runs before exit
     Note over p0: May leave with checked errors: ConversionError
 ```
 

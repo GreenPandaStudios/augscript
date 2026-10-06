@@ -55,7 +55,7 @@ sequenceDiagram
     participant p3 as text.startsWith
     participant p4 as text.endsWith
     participant p5 as text.bytes
-    participant p6 as asciiSlice
+    participant p6 as august/values/ascii
     participant p7 as body.split
     participant p8 as parts.length
     participant p9 as parts.get
@@ -66,36 +66,36 @@ sequenceDiagram
     end
     alt text.byteLength() ‹ 4 or text.byteLength() › 24
     p0->>p2: ConversionError()
-    Note over p0: Raise checked failure ConversionError()； required cleanup runs before exit
+    Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
     p0->>p3: text.startsWith(prefix=”-”)
     alt negative
     p0->>p3: text.startsWith(prefix=”-PT”)
     alt not text.startsWith(prefix=”-PT”)
     p0->>p2: ConversionError()
-    Note over p0: Raise checked failure ConversionError()； required cleanup runs before exit
+    Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
     else otherwise
     p0->>p3: text.startsWith(prefix=”PT”)
     alt not text.startsWith(prefix=”PT”)
     p0->>p2: ConversionError()
-    Note over p0: Raise checked failure ConversionError()； required cleanup runs before exit
+    Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
     end
     p0->>p4: text.endsWith(suffix=”S”)
     alt not text.endsWith(suffix=”S”)
     p0->>p2: ConversionError()
-    Note over p0: Raise checked failure ConversionError()； required cleanup runs before exit
+    Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
     p0->>p5: text.bytes()
     p0->>p1: text.byteLength()
-    p0->>p6: asciiSlice(input=text.bytes(), start=start, end=text.byteLength() - 1)
+    p0->>p6: asciiSlice(input=text.bytes(), start=start,<br/>end=text.byteLength() - 1)
     p6-->>p0: body: string
     p0->>p7: body.split(separator=”.”)
     p0->>p8: parts.length()
     alt parts.length() › 2
     p0->>p2: ConversionError()
-    Note over p0: Raise checked failure ConversionError()； required cleanup runs before exit
+    Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
     opt Try body； stops on a checked failure
     p0->>p9: parts.get(index=0)
@@ -125,7 +125,7 @@ sequenceDiagram
     end
     alt not whole.isDecimal() or whole.byteLength() › 16
     p0->>p2: ConversionError()
-    Note over p0: Raise checked failure ConversionError()； required cleanup runs before exit
+    Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
     p0->>p3: parts.length()
     alt parts.length() == 2
@@ -136,7 +136,7 @@ sequenceDiagram
     end
     alt not fraction.isDecimal() or fraction.byteLength() › 3
     p0->>p2: ConversionError()
-    Note over p0: Raise checked failure ConversionError()； required cleanup runs before exit
+    Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
     loop While fraction.byteLength() ‹ 3
     p0->>p6: fraction.byteLength()
@@ -147,11 +147,11 @@ sequenceDiagram
     p0->>p7: digits.parseInteger()
     p0->>p8: Duration(milliseconds=digits.parseInteger())
     p8-->>p0: Duration
-    Note over p0: Return Duration(milliseconds=digits.parseInteger())； required cleanup runs before exit
+    Note over p0: Return Duration(milliseconds=digits.parseInteger())；<br/>required cleanup runs before exit
     end
     opt Catch IndexError
     p0->>p2: ConversionError()
-    Note over p0: Raise checked failure ConversionError()； required cleanup runs before exit
+    Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
     Note over p0: May leave with checked errors: ConversionError
 ```
@@ -188,13 +188,13 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as durationFromSeconds
-    participant p1 as checkedMultiply
+    participant p1 as august/math/integers
     participant p2 as Duration
     p0->>p1: checkedMultiply(left=seconds, right=1000)
     p1-->>p0: int
-    p0->>p2: Duration(milliseconds=checkedMultiply(left=seconds, right=1000))
+    p0->>p2: Duration(milliseconds=checkedMultiply(left=seconds,<br/>right=1000))
     p2-->>p0: Duration
-    Note over p0: Return Duration(milliseconds=checkedMultiply(left=seconds, right=1000))； required cleanup runs before exit
+    Note over p0: Return<br/>Duration(milliseconds=checkedMultiply(left=seconds,<br/>right=1000))； required cleanup runs before exit
     Note over p0: May leave with checked errors: ArithmeticError
 ```
 
@@ -207,13 +207,13 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as addDurations
-    participant p1 as checkedAdd
+    participant p1 as august/math/integers
     participant p2 as Duration
-    p0->>p1: checkedAdd(left=left.milliseconds, right=right.milliseconds)
+    p0->>p1: checkedAdd(left=left.milliseconds,<br/>right=right.milliseconds)
     p1-->>p0: int
-    p0->>p2: Duration(milliseconds=checkedAdd(left=left.milliseconds, right=right.milliseconds))
+    p0->>p2: Duration(milliseconds=checkedAdd(left=left.milliseconds,<br/>right=right.milliseconds))
     p2-->>p0: Duration
-    Note over p0: Return Duration(milliseconds=checkedAdd(left=left.milliseconds, right=right.milliseconds))； required cleanup runs bef…
+    Note over p0: Return<br/>Duration(milliseconds=checkedAdd(left=left.milliseconds,<br/>right=right.milliseconds))； required cleanup runs bef…
     Note over p0: May leave with checked errors: ArithmeticError
 ```
 

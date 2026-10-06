@@ -41,21 +41,19 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ```mermaid
 sequenceDiagram
     participant p0 as calculate
-    participant p1 as tensor
-    participant p2 as add
-    participant p3 as sum
+    participant p1 as @greenpandastudios/aug-pytorch/api
     p0->>p1: tensor(values=［1.0, 2.0, 3.0］)
     p1-->>p0: left: Tensor
     Note over p0: Own left； release on scope exits
     p0->>p1: tensor(values=［4.0, 5.0, 6.0］)
     p1-->>p0: right: Tensor
     Note over p0: Own right； release on scope exits
-    p0->>p2: add(left=left, right=right)
-    p2-->>p0: result: Tensor
+    p0->>p1: add(left=left, right=right)
+    p1-->>p0: result: Tensor
     Note over p0: Own result； release on scope exits
-    p0->>p3: sum(tensor=result)
-    p3-->>p0: float
-    Note over p0: Return sum(tensor=result)； required cleanup runs before exit
+    p0->>p1: sum(tensor=result)
+    p1-->>p0: float
+    Note over p0: Return sum(tensor=result)； required cleanup runs before<br/>exit
     Note over p0: May leave with checked errors: TensorError
 ```
 

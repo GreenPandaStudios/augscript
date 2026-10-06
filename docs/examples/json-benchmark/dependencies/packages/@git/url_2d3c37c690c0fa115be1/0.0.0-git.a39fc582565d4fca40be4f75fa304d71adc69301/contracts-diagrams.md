@@ -52,7 +52,7 @@ sequenceDiagram
     Note over p0: Enter unsafe scope
     p0->>p1: _aug_json_parse(input=input) · native boundary
     p1-->>p0: Json
-    Note over p0: Return _aug_json_parse(input)； required cleanup runs before exit
+    Note over p0: Return _aug_json_parse(input)； required cleanup runs<br/>before exit
     Note over p0: Leave unsafe scope
     end
     Note over p0: May leave with checked errors: JsonError

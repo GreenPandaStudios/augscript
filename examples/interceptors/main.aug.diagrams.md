@@ -44,7 +44,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ```mermaid
 sequenceDiagram
     participant p0 as Startup
-    participant p1 as describe
+    participant p1 as app
     participant p2 as print
     participant p3 as Greeter
     participant p4 as greeter: Greeter

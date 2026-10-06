@@ -40,18 +40,18 @@ sequenceDiagram
     participant p0 as weatherForecast
     participant p1 as WeatherForecast
     Note over p0: GET /weatherforecast
-    p0->>p1: WeatherForecast(date=”2026-01-01”, temperatureC=0, temperatureF=32, summary=”Freezing”)
+    p0->>p1: WeatherForecast(date=”2026-01-01”, temperatureC=0,<br/>temperatureF=32, summary=”Freezing”)
     p1-->>p0: WeatherForecast
-    p0->>p1: WeatherForecast(date=”2026-01-02”, temperatureC=10, temperatureF=50, summary=”Cool”)
+    p0->>p1: WeatherForecast(date=”2026-01-02”, temperatureC=10,<br/>temperatureF=50, summary=”Cool”)
     p1-->>p0: WeatherForecast
-    p0->>p1: WeatherForecast(date=”2026-01-03”, temperatureC=20, temperatureF=68, summary=”Mild”)
+    p0->>p1: WeatherForecast(date=”2026-01-03”, temperatureC=20,<br/>temperatureF=68, summary=”Mild”)
     p1-->>p0: WeatherForecast
-    p0->>p1: WeatherForecast(date=”2026-01-04”, temperatureC=30, temperatureF=86, summary=”Warm”)
+    p0->>p1: WeatherForecast(date=”2026-01-04”, temperatureC=30,<br/>temperatureF=86, summary=”Warm”)
     p1-->>p0: WeatherForecast
-    p0->>p1: WeatherForecast(date=”2026-01-05”, temperatureC=35, temperatureF=95, summary=”Hot”)
+    p0->>p1: WeatherForecast(date=”2026-01-05”, temperatureC=35,<br/>temperatureF=95, summary=”Hot”)
     p1-->>p0: WeatherForecast
-    Note over p0: Return ［ WeatherForecast( date=”2026-01-01”, temperatureC=0, temperatureF=32, summary=”Freezing” ), WeatherForecast( …
-    Note over p0: HTTP result follows declared response and error mapping； unhandled request failure returns 500
+    Note over p0: Return ［ WeatherForecast( date=”2026-01-01”,<br/>temperatureC=0, temperatureF=32, summary=”Freezing” ),<br/>WeatherForecast( …
+    Note over p0: HTTP result follows declared response and error mapping；<br/>unhandled request failure returns 500
 ```
 
 ## Called contracts

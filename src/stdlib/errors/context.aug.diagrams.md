@@ -39,9 +39,9 @@ Receive fields: operation, cause, location. [Explanation](context.aug.md).
 sequenceDiagram
     participant p0 as errorContext
     participant p1 as ContextError
-    p0->>p1: ContextError(operation=operation, cause=cause, location=location)
+    p0->>p1: ContextError(operation=operation, cause=cause,<br/>location=location)
     p1-->>p0: ContextError‹E›
-    Note over p0: Return ContextError‹E›(operation, cause, location)； required cleanup runs before exit
+    Note over p0: Return ContextError‹E›(operation, cause, location)；<br/>required cleanup runs before exit
 ```
 
 ## Called contracts

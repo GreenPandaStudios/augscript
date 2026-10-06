@@ -71,9 +71,9 @@ sequenceDiagram
     participant p1 as SessionError
     participant p2 as keys: SigningKeys
     participant p3 as crypto: Crypto
-    participant p4 as verifyJwt
+    participant p4 as @git/url_9ef654c66d34ab8f5527/jose
     participant p5 as verifyJwt(token=value, publicKey, kid=”session-1”, tokenType=”august-session+jwt”).decode
-    participant p6 as settings
+    participant p6 as common/settings
     participant p7 as clock: Clock
     participant p8 as claims.sub.length
     participant p9 as claims.jti.isToken
@@ -82,39 +82,27 @@ sequenceDiagram
     alt Match when null:
     p0->>p1: SessionError()
     p1-->>p0: SessionError
-    Note over p0: Raise checked failure SessionError()； required cleanup runs before exit
+    Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
     else Match when some value:
     opt Try body； stops on a checked failure
     p0->>p2: session() · interface dispatch
     p2-->>p0: RsaPrivateKey
     p0->>p3: publicRsa(key=keys.session()) · interface dispatch
     p3-->>p0: publicKey: RsaPublicKey
-    p0->>p4: verifyJwt(token=value, publicKey=publicKey, kid=”session-1”, tokenType=”august-session+jwt”)
+    p0->>p4: verifyJwt(token=value, publicKey=publicKey,<br/>kid=”session-1”, tokenType=”august-session+jwt”)
     p4-->>p0: Json
-    p0->>p5: verifyJwt(token=value, publicKey, kid=”session-1”, tokenType=”august-session+jwt”).decode()
+    p0->>p5: verifyJwt(token=value, publicKey, kid=”session-1”,<br/>tokenType=”august-session+jwt”).decode()
     p0->>p6: settings()
     p6-->>p0: config: Settings
     p0->>p7: now() · interface dispatch
     p7-->>p0: now: int
     opt Left is false
-    end
-    opt Left is false
     p0->>p8: claims.sub.length()
-    end
-    opt Left is false
-    end
-    opt Left is false
-    end
-    opt Left is false
-    end
-    opt Left is false
-    end
-    opt Left is false
     end
     alt claims.iss != config.baseUrl + ”/app” or claims.aud != ”august-app” or claims.sub.length() == 0 or claims.exp ‹= now …
     p0->>p1: SessionError()
     p1-->>p0: SessionError
-    Note over p0: Raise checked failure SessionError()； required cleanup runs before exit
+    Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
     end
     p0->>p9: claims.jti.isToken(min=43, max=43)
     opt Left is false
@@ -123,7 +111,7 @@ sequenceDiagram
     alt not claims.jti.isToken(min=43, max=43)) or (not claims.csrf.isToken(min=43, max=43)
     p0->>p1: SessionError()
     p1-->>p0: SessionError
-    Note over p0: Raise checked failure SessionError()； required cleanup runs before exit
+    Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
     end
     p0->>p11: get(key=claims.jti, now=now) · interface dispatch
     end
@@ -148,20 +136,18 @@ sequenceDiagram
     alt Match when null:
     p0->>p2: SessionError()
     p2-->>p0: SessionError
-    Note over p0: Raise checked failure SessionError()； required cleanup runs before exit
+    Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
     else Match when some saved:
-    opt Left is false
-    end
     opt Left is false
     p0->>p3: saved.csrf.bytes()
     p0->>p4: claims.csrf.bytes()
-    p0->>p5: equal(left=saved.csrf.bytes(), right=claims.csrf.bytes()) · interface dispatch
+    p0->>p5: equal(left=saved.csrf.bytes(),<br/>right=claims.csrf.bytes()) · interface dispatch
     p5-->>p0: bool
     end
     alt saved.sub != claims.sub or saved.exp != claims.exp or (not crypto.equal(left=saved.csrf.bytes(), right=claims.csrf.by…
     p0->>p2: SessionError()
     p2-->>p0: SessionError
-    Note over p0: Raise checked failure SessionError()； required cleanup runs before exit
+    Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
     end
     Note over p0: Return claims； required cleanup runs before exit
     end
@@ -169,20 +155,20 @@ sequenceDiagram
     opt Catch CryptoError
     p0->>p2: SessionError()
     p2-->>p0: SessionError
-    Note over p0: Raise checked failure SessionError()； required cleanup runs before exit
+    Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
     end
     opt Catch JwtError
     p0->>p2: SessionError()
     p2-->>p0: SessionError
-    Note over p0: Raise checked failure SessionError()； required cleanup runs before exit
+    Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
     end
     opt Catch JsonError
     p0->>p2: SessionError()
     p2-->>p0: SessionError
-    Note over p0: Raise checked failure SessionError()； required cleanup runs before exit
+    Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
     end
     end
-    Note over p0: May leave with checked errors: KeyError, SessionError, TimeError
+    Note over p0: May leave with checked errors: KeyError, SessionError,<br/>TimeError
 ```
 
 ## Called contracts

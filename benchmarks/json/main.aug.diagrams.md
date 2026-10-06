@@ -30,7 +30,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ```mermaid
 sequenceDiagram
     participant p0 as Startup
-    participant p1 as parse
+    participant p1 as @git/url_2d3c37c690c0fa115be1/contracts
     participant p2 as document.decode
     participant p3 as Json
     participant p4 as Json(value=payload).stringify

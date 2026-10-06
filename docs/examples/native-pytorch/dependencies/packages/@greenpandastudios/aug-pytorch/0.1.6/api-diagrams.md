@@ -102,7 +102,7 @@ sequenceDiagram
     Note over p0: Enter unsafe scope
     p0->>p1: _tensor(values=values) · native boundary
     p1-->>p0: Tensor
-    Note over p0: Return _tensor(values)； required cleanup runs before exit
+    Note over p0: Return _tensor(values)； required cleanup runs before<br/>exit
     Note over p0: Leave unsafe scope
     end
     Note over p0: May leave with checked errors: TensorError
@@ -122,7 +122,7 @@ sequenceDiagram
     Note over p0: Enter unsafe scope
     p0->>p1: _add(left=left, right=right) · native boundary
     p1-->>p0: Tensor
-    Note over p0: Return _add(left, right)； required cleanup runs before exit
+    Note over p0: Return _add(left, right)； required cleanup runs before<br/>exit
     Note over p0: Leave unsafe scope
     end
     Note over p0: May leave with checked errors: TensorError
@@ -162,7 +162,7 @@ sequenceDiagram
     Note over p0: Enter unsafe scope
     p0->>p1: _values(tensor=tensor) · native boundary
     p1-->>p0: List‹float›
-    Note over p0: Return _values(tensor)； required cleanup runs before exit
+    Note over p0: Return _values(tensor)； required cleanup runs before<br/>exit
     Note over p0: Leave unsafe scope
     end
     Note over p0: May leave with checked errors: TensorError
@@ -196,7 +196,7 @@ sequenceDiagram
     participant p1 as TensorError
     p0->>p1: TensorError(code=99, message=”expected cleanup test”)
     p1-->>p0: TensorError
-    Note over p0: Raise checked failure TensorError(code=99, message=”expected cleanup test”)； required cleanup runs before exit
+    Note over p0: Raise checked failure TensorError(code=99,<br/>message=”expected cleanup test”)； required cleanup runs<br/>before exit
     Note over p0: May leave with checked errors: TensorError
 ```
 
@@ -228,7 +228,7 @@ sequenceDiagram
     participant p1 as sum
     p0->>p1: sum(tensor=item)
     p1-->>p0: float
-    Note over p0: Return sum(tensor=item)； required cleanup runs before exit
+    Note over p0: Return sum(tensor=item)； required cleanup runs before<br/>exit
     Note over p0: May leave with checked errors: TensorError
 ```
 

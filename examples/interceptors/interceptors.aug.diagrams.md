@@ -76,7 +76,7 @@ sequenceDiagram
     alt y ‹ 0
     p0->>p1: ValidationError(message=”value must be nonnegative”)
     p1-->>p0: ValidationError
-    Note over p0: Raise checked failure ValidationError(message=”value must be nonnegative”)； required cleanup runs before exit
+    Note over p0: Raise checked failure ValidationError(message=”value<br/>must be nonnegative”)； required cleanup runs before exit
     end
     p0->>p2: next() · conditional interceptor delegation
     Note over p0: Return next()； required cleanup runs before exit

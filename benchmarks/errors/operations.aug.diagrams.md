@@ -21,7 +21,7 @@ sequenceDiagram
     participant p1 as FileError
     alt value - (value / 16) * 16 == 0
     p0->>p1: FileError()
-    Note over p0: Raise checked failure FileError()； required cleanup runs before exit
+    Note over p0: Raise checked failure FileError()； required cleanup runs<br/>before exit
     end
     Note over p0: Return value； required cleanup runs before exit
     Note over p0: May leave with checked errors: FileError

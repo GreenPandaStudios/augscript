@@ -57,7 +57,7 @@ sequenceDiagram
     alt amount ‹ 0
     p0->>p1: RangeError(value=amount)
     p1-->>p0: RangeError
-    Note over p0: Raise checked failure RangeError(value=amount)； required cleanup runs before exit
+    Note over p0: Raise checked failure RangeError(value=amount)； required<br/>cleanup runs before exit
     end
     p0->>p2: next() · conditional interceptor delegation
     Note over p0: Return next()； required cleanup runs before exit

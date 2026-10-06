@@ -38,11 +38,11 @@ sequenceDiagram
     participant p6 as Headers().with(name=”cache-control”, value=”no-store”).with(name=”pragma”, value=”no-cache”).with(name=”x-content-typ…
     p0->>p1: Headers()
     p0->>p2: Headers().with(name=”cache-control”, value=”no-store”)
-    p0->>p3: Headers().with(name=”cache-control”, value=”no-store”).with(name=”pragma”, value=”no-cache”)
-    p0->>p4: Headers().with(name=”cache-control”, value=”no-store”).with(name=”pragma”, value=”no-cache”).with(name=”x-content-typ…
-    p0->>p5: Headers().with(name=”cache-control”, value=”no-store”).with(name=”pragma”, value=”no-cache”).with(name=”x-content-typ…
-    p0->>p6: Headers().with(name=”cache-control”, value=”no-store”).with(name=”pragma”, value=”no-cache”).with(name=”x-content-typ…
-    Note over p0: Return Headers().with(name=”cache-control”, value=”no-store”).with(name=”pragma”, value=”no-cache”).with(name=”x-cont…
+    p0->>p3: Headers().with(name=”cache-control”,<br/>value=”no-store”).with(name=”pragma”, value=”no-cache”)
+    p0->>p4: Headers().with(name=”cache-control”,<br/>value=”no-store”).with(name=”pragma”,<br/>value=”no-cache”).with(name=”x-content-typ…
+    p0->>p5: Headers().with(name=”cache-control”,<br/>value=”no-store”).with(name=”pragma”,<br/>value=”no-cache”).with(name=”x-content-typ…
+    p0->>p6: Headers().with(name=”cache-control”,<br/>value=”no-store”).with(name=”pragma”,<br/>value=”no-cache”).with(name=”x-content-typ…
+    Note over p0: Return Headers().with(name=”cache-control”,<br/>value=”no-store”).with(name=”pragma”,<br/>value=”no-cache”).with(name=”x-cont…
     Note over p0: May leave with checked errors: HttpError
 ```
 
@@ -55,12 +55,12 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as withCookie
-    participant p1 as cookie
+    participant p1 as @git/url_897efafd565158fc4908/contracts
     participant p2 as cookie(name, value, path, maxAge, secure).all
     participant p3 as result.with
-    p0->>p1: cookie(name=name, value=value, path=path, maxAge=maxAge, secure=secure)
+    p0->>p1: cookie(name=name, value=value, path=path, maxAge=maxAge,<br/>secure=secure)
     p1-->>p0: Headers
-    p0->>p2: cookie(name, value, path, maxAge, secure).all(name=”set-cookie”)
+    p0->>p2: cookie(name, value, path, maxAge,<br/>secure).all(name=”set-cookie”)
     loop For each item in cookie(name, value, path, maxAge, secure).all(name=”set-cookie”)
     p0->>p3: result.with(name=”set-cookie”, value=content)
     end

@@ -143,8 +143,8 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ```mermaid
 sequenceDiagram
     participant p0 as startLogin
-    participant p1 as settings
-    participant p2 as discover
+    participant p1 as common/settings
+    participant p2 as client/protocol
     participant p3 as crypto: Crypto
     participant p4 as crypto.random(size=32).base64url
     participant p5 as clock: Clock
@@ -169,11 +169,11 @@ sequenceDiagram
     p0->>p4: crypto.random(size=32).base64url()
     p0->>p5: now() · interface dispatch
     p5-->>p0: int
-    p0->>p6: LoginTransaction(state=state, nonce=nonce, verifier=verifier, expires=clock.now() + 300)
+    p0->>p6: LoginTransaction(state=state, nonce=nonce,<br/>verifier=verifier, expires=clock.now() + 300)
     p6-->>p0: transaction: LoginTransaction
     p0->>p5: now() · interface dispatch
     p5-->>p0: int
-    p0->>p7: put(key=browser, value=transaction, expires=transaction.expires, now=clock.now()) · interface dispatch
+    p0->>p7: put(key=browser, value=transaction,<br/>expires=transaction.expires, now=clock.now()) ·<br/>interface dispatch
 ```
 
 #### Sequence 2 of 2 (continued)
@@ -184,11 +184,10 @@ sequenceDiagram
     participant p1 as verifier.bytes
     participant p2 as crypto: Crypto
     participant p3 as crypto.sha256(input=verifier.bytes()).base64url
-    participant p4 as urlEncode
-    participant p5 as securityHeaders
+    participant p4 as @git/url_897efafd565158fc4908/contracts
+    participant p5 as common/headers
     participant p6 as securityHeaders().with
-    participant p7 as withCookie
-    participant p8 as HttpResponse
+    participant p7 as HttpResponse
     Note over p0: Sequence continued from the previous view
     p0->>p1: verifier.bytes()
     p0->>p2: sha256(input=verifier.bytes()) · interface dispatch
@@ -207,12 +206,12 @@ sequenceDiagram
     p0->>p5: securityHeaders()
     p5-->>p0: Headers
     p0->>p6: securityHeaders().with(name=”location”, value=location)
-    p0->>p7: withCookie(headers=securityHeaders().with(name=”location”, value=location), name=”aug_login”, value=browser, path=”/l…
-    p7-->>p0: headers: Headers
-    p0->>p8: HttpResponse(body=‹p›Opening the identity provider.‹/p›, status=303, headers=headers)
-    Note over p0: Return HttpResponse(body=‹p›Opening the identity provider.‹/p›, status=303, headers=headers)； required cleanup runs b…
-    Note over p0: May leave with checked errors: CryptoError, HttpError, SessionError, StoreFull, TimeError
-    Note over p0: HTTP result follows declared response and error mapping； unhandled request failure returns 500
+    p0->>p5: withCookie(headers=securityHeaders().with(name=”location”,<br/>value=location), name=”aug_login”, value=browser,<br/>path=”/l…
+    p5-->>p0: headers: Headers
+    p0->>p7: HttpResponse(body=‹p›Opening the identity provider.‹/p›,<br/>status=303, headers=headers)
+    Note over p0: Return HttpResponse(body=‹p›Opening the identity<br/>provider.‹/p›, status=303, headers=headers)； required<br/>cleanup runs b…
+    Note over p0: May leave with checked errors: CryptoError, HttpError,<br/>SessionError, StoreFull, TimeError
+    Note over p0: HTTP result follows declared response and error mapping；<br/>unhandled request failure returns 500
 ```
 
 <a id="sequence-loginCallback"></a>
@@ -234,7 +233,7 @@ sequenceDiagram
     participant p6 as transaction.state.bytes
     participant p7 as state.bytes
     participant p8 as crypto: Crypto
-    participant p9 as settings
+    participant p9 as common/settings
     Note over p0: GET /login/callback
     p0->>p1: code.isToken(min=43, max=43)
     opt Left is false
@@ -243,12 +242,12 @@ sequenceDiagram
     alt not code.isToken(min=43, max=43)) or (not state.isToken(min=43, max=43)
     p0->>p3: SessionError()
     p3-->>p0: SessionError
-    Note over p0: Raise checked failure SessionError()； required cleanup runs before exit
+    Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
     end
     alt Match when null:
     p0->>p3: SessionError()
     p3-->>p0: SessionError
-    Note over p0: Raise checked failure SessionError()； required cleanup runs before exit
+    Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
     else Match when some secret:
     p0->>p4: now() · interface dispatch
     p4-->>p0: int
@@ -257,16 +256,16 @@ sequenceDiagram
     alt Match when null:
     p0->>p3: SessionError()
     p3-->>p0: SessionError
-    Note over p0: Raise checked failure SessionError()； required cleanup runs before exit
+    Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
     else Match when some transaction:
     p0->>p6: transaction.state.bytes()
     p0->>p7: state.bytes()
-    p0->>p8: equal(left=transaction.state.bytes(), right=state.bytes()) · interface dispatch
+    p0->>p8: equal(left=transaction.state.bytes(),<br/>right=state.bytes()) · interface dispatch
     p8-->>p0: bool
     alt not crypto.equal(left=transaction.state.bytes(), right=state.bytes())
     p0->>p3: SessionError()
     p3-->>p0: SessionError
-    Note over p0: Raise checked failure SessionError()； required cleanup runs before exit
+    Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
     end
     p0->>p9: settings()
     end
@@ -278,17 +277,16 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as loginCallback
-    participant p1 as settings
-    participant p2 as discover
-    participant p3 as urlEncode
+    participant p1 as common/settings
+    participant p2 as client/protocol
+    participant p3 as @git/url_897efafd565158fc4908/contracts
     participant p4 as Headers
     participant p5 as Headers().with
     participant p6 as body.bytes
     participant p7 as client: HttpClient
-    participant p8 as responseJson
-    participant p9 as responseJson(response=client.request(method=”POST”, url=document.token_endpoint, headers, body=body.bytes())).decode
-    participant p10 as tokens.access_token.isToken
-    participant p11 as SessionError
+    participant p8 as responseJson(response=client.request(method=”POST”, url=document.token_endpoint, headers, body=body.bytes())).decode
+    participant p9 as tokens.access_token.isToken
+    participant p10 as SessionError
     alt Match when null:
     else Match when some secret:
     alt Match when null:
@@ -306,22 +304,20 @@ sequenceDiagram
     p0->>p3: urlEncode(input=transaction.verifier)
     p3-->>p0: string
     p0->>p4: Headers()
-    p0->>p5: Headers().with(name=”content-type”, value=”application/x-www-form-urlencoded”)
+    p0->>p5: Headers().with(name=”content-type”,<br/>value=”application/x-www-form-urlencoded”)
     p0->>p6: body.bytes()
-    p0->>p7: request(method=”POST”, url=document.token_endpoint, headers=headers, body=body.bytes()) · interface dispatch
+    p0->>p7: request(method=”POST”, url=document.token_endpoint,<br/>headers=headers, body=body.bytes()) · interface dispatch
     p7-->>p0: HttpResponse‹Bytes›
-    p0->>p8: responseJson(response=client.request(method=”POST”, url=document.token_endpoint, headers, body=body.bytes()))
-    p8-->>p0: Json
-    p0->>p9: responseJson(response=client.request(method=”POST”, url=document.token_endpoint, headers, body=body.bytes())).decode()
+    p0->>p2: responseJson(response=client.request(method=”POST”,<br/>url=document.token_endpoint, headers,<br/>body=body.bytes()))
+    p2-->>p0: Json
+    p0->>p8: responseJson(response=client.request(method=”POST”,<br/>url=document.token_endpoint, headers,<br/>body=body.bytes())).decode()
     opt Left is false
-    p0->>p10: tokens.access_token.isToken(min=43, max=43)
-    end
-    opt Left is false
+    p0->>p9: tokens.access_token.isToken(min=43, max=43)
     end
     alt tokens.token_type != ”Bearer” or (not tokens.access_token.isToken(min=43, max=43)) or tokens.expires_in ‹= 0
-    p0->>p11: SessionError()
-    p11-->>p0: SessionError
-    Note over p0: Raise checked failure SessionError()； required cleanup runs before exit
+    p0->>p10: SessionError()
+    p10-->>p0: SessionError
+    Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
     end
     end
     end
@@ -333,45 +329,44 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as loginCallback
     participant p1 as client: HttpClient
-    participant p2 as responseJson
+    participant p2 as client/protocol
     participant p3 as responseJson(response=client.request(method=”GET”, url=document.jwks_uri)).decode
     participant p4 as clock: Clock
-    participant p5 as validateIdentity
-    participant p6 as Headers
-    participant p7 as Headers().with
-    participant p8 as responseJson(response=client.request(method=”GET”, url=document.userinfo_endpoint, headers=authHeaders)).decode
-    participant p9 as SessionError
-    participant p10 as crypto: Crypto
+    participant p5 as Headers
+    participant p6 as Headers().with
+    participant p7 as responseJson(response=client.request(method=”GET”, url=document.userinfo_endpoint, headers=authHeaders)).decode
+    participant p8 as SessionError
+    participant p9 as crypto: Crypto
     alt Match when null:
     else Match when some secret:
     alt Match when null:
     else Match when some transaction:
     Note over p0: Sequence continued from the previous view
-    p0->>p1: request(method=”GET”, url=document.jwks_uri) · interface dispatch
+    p0->>p1: request(method=”GET”, url=document.jwks_uri) · interface<br/>dispatch
     p1-->>p0: HttpResponse‹Bytes›
-    p0->>p2: responseJson(response=client.request(method=”GET”, url=document.jwks_uri))
+    p0->>p2: responseJson(response=client.request(method=”GET”,<br/>url=document.jwks_uri))
     p2-->>p0: Json
-    p0->>p3: responseJson(response=client.request(method=”GET”, url=document.jwks_uri)).decode()
+    p0->>p3: responseJson(response=client.request(method=”GET”,<br/>url=document.jwks_uri)).decode()
     p0->>p4: now() · interface dispatch
     p4-->>p0: int
-    p0->>p5: validateIdentity(token=tokens.id_token, nonce=transaction.nonce, now=clock.now(), jwks=jwks)
-    p5-->>p0: identity: IdClaims
-    p0->>p6: Headers()
-    p0->>p7: Headers().with(name=”authorization”, value=”Bearer ” + tokens.access_token)
-    p0->>p1: request(method=”GET”, url=document.userinfo_endpoint, headers=authHeaders) · interface dispatch
+    p0->>p2: validateIdentity(token=tokens.id_token,<br/>nonce=transaction.nonce, now=clock.now(), jwks=jwks)
+    p2-->>p0: identity: IdClaims
+    p0->>p5: Headers()
+    p0->>p6: Headers().with(name=”authorization”, value=”Bearer ” +<br/>tokens.access_token)
+    p0->>p1: request(method=”GET”, url=document.userinfo_endpoint,<br/>headers=authHeaders) · interface dispatch
     p1-->>p0: HttpResponse‹Bytes›
-    p0->>p2: responseJson(response=client.request(method=”GET”, url=document.userinfo_endpoint, headers=authHeaders))
+    p0->>p2: responseJson(response=client.request(method=”GET”,<br/>url=document.userinfo_endpoint, headers=authHeaders))
     p2-->>p0: Json
-    p0->>p8: responseJson(response=client.request(method=”GET”, url=document.userinfo_endpoint, headers=authHeaders)).decode()
+    p0->>p7: responseJson(response=client.request(method=”GET”,<br/>url=document.userinfo_endpoint,<br/>headers=authHeaders)).decode()
     alt user.sub != identity.sub
-    p0->>p9: SessionError()
-    p9-->>p0: SessionError
-    Note over p0: Raise checked failure SessionError()； required cleanup runs before exit
+    p0->>p8: SessionError()
+    p8-->>p0: SessionError
+    Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
     end
     p0->>p4: now() · interface dispatch
     p4-->>p0: now: int
-    p0->>p10: random(size=32) · interface dispatch
-    p10-->>p0: Bytes
+    p0->>p9: random(size=32) · interface dispatch
+    p9-->>p0: Bytes
     end
     end
 ```
@@ -386,12 +381,11 @@ sequenceDiagram
     participant p3 as SessionClaims
     participant p4 as keys: SigningKeys
     participant p5 as Json
-    participant p6 as signJwt
+    participant p6 as @git/url_9ef654c66d34ab8f5527/jose
     participant p7 as sessions: ExpiringStore
-    participant p8 as securityHeaders
+    participant p8 as common/headers
     participant p9 as securityHeaders().with
-    participant p10 as withCookie
-    participant p11 as HttpResponse
+    participant p10 as HttpResponse
     alt Match when null:
     else Match when some secret:
     alt Match when null:
@@ -401,27 +395,27 @@ sequenceDiagram
     p0->>p2: random(size=32) · interface dispatch
     p2-->>p0: Bytes
     p0->>p1: crypto.random(size=32).base64url()
-    p0->>p3: SessionClaims(iss=config.baseUrl + ”/app”, sub=identity.sub, aud=”august-app”, exp=now + config.sessionSeconds, iat=n…
+    p0->>p3: SessionClaims(iss=config.baseUrl + ”/app”,<br/>sub=identity.sub, aud=”august-app”, exp=now +<br/>config.sessionSeconds, iat=n…
     p3-->>p0: session: SessionClaims
     p0->>p4: session() · interface dispatch
     p4-->>p0: RsaPrivateKey
     p0->>p5: Json(value=session)
-    p0->>p6: signJwt(key=keys.session(), claims=Json(value=session), kid=”session-1”, tokenType=”august-session+jwt”)
+    p0->>p6: signJwt(key=keys.session(), claims=Json(value=session),<br/>kid=”session-1”, tokenType=”august-session+jwt”)
     p6-->>p0: jwt: string
-    p0->>p7: put(key=session.jti, value=session, expires=session.exp, now=now) · interface dispatch
+    p0->>p7: put(key=session.jti, value=session, expires=session.exp,<br/>now=now) · interface dispatch
     p0->>p8: securityHeaders()
     p8-->>p0: Headers
     p0->>p9: securityHeaders().with(name=”location”, value=”/”)
-    p0->>p10: withCookie(headers=securityHeaders().with(name=”location”, value=”/”), name=”aug_session”, value=jwt, path=”/”, maxAg…
-    p10-->>p0: responseHeaders: Headers
-    p0->>p10: withCookie(headers=responseHeaders, name=”aug_login”, value=””, path=”/login”, maxAge=0, secure=config.secureCookies)
-    p10-->>p0: responseHeaders: Headers
-    p0->>p11: HttpResponse(body=‹p›Signed in.‹/p›, status=303, headers=responseHeaders)
-    Note over p0: Return HttpResponse(body=‹p›Signed in.‹/p›, status=303, headers=responseHeaders)； required cleanup runs before exit
+    p0->>p8: withCookie(headers=securityHeaders().with(name=”location”,<br/>value=”/”), name=”aug_session”, value=jwt, path=”/”,<br/>maxAg…
+    p8-->>p0: responseHeaders: Headers
+    p0->>p8: withCookie(headers=responseHeaders, name=”aug_login”,<br/>value=””, path=”/login”, maxAge=0,<br/>secure=config.secureCookies)
+    p8-->>p0: responseHeaders: Headers
+    p0->>p10: HttpResponse(body=‹p›Signed in.‹/p›, status=303,<br/>headers=responseHeaders)
+    Note over p0: Return HttpResponse(body=‹p›Signed in.‹/p›, status=303,<br/>headers=responseHeaders)； required cleanup runs before<br/>exit
     end
     end
-    Note over p0: May leave with checked errors: CryptoError, HttpError, JsonError, JwtError, KeyError, SessionError, StoreFull, TimeError
-    Note over p0: HTTP result follows declared response and error mapping； unhandled request failure returns 500
+    Note over p0: May leave with checked errors: CryptoError, HttpError,<br/>JsonError, JwtError, KeyError, SessionError, StoreFull,<br/>TimeError
+    Note over p0: HTTP result follows declared response and error mapping；<br/>unhandled request failure returns 500
 ```
 
 ## Called contracts

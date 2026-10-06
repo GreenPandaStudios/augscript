@@ -80,45 +80,44 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ```mermaid
 sequenceDiagram
     participant p0 as logout
-    participant p1 as settings
+    participant p1 as common/settings
     participant p2 as SessionError
-    participant p3 as authenticate
+    participant p3 as client/session
     participant p4 as input.csrf.bytes
     participant p5 as session.csrf.bytes
     participant p6 as crypto: Crypto
     participant p7 as clock: Clock
     participant p8 as sessions: ExpiringStore
-    participant p9 as securityHeaders
+    participant p9 as common/headers
     participant p10 as securityHeaders().with
-    participant p11 as withCookie
     Note over p0: POST /logout
     p0->>p1: settings()
     p1-->>p0: config: Settings
     alt origin != config.baseUrl
     p0->>p2: SessionError()
     p2-->>p0: SessionError
-    Note over p0: Raise checked failure SessionError()； required cleanup runs before exit
+    Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
     end
     p0->>p3: authenticate(token=token)
     p3-->>p0: session: SessionClaims
     p0->>p4: input.csrf.bytes()
     p0->>p5: session.csrf.bytes()
-    p0->>p6: equal(left=input.csrf.bytes(), right=session.csrf.bytes()) · interface dispatch
+    p0->>p6: equal(left=input.csrf.bytes(),<br/>right=session.csrf.bytes()) · interface dispatch
     p6-->>p0: bool
     alt not crypto.equal(left=input.csrf.bytes(), right=session.csrf.bytes())
     p0->>p2: SessionError()
     p2-->>p0: SessionError
-    Note over p0: Raise checked failure SessionError()； required cleanup runs before exit
+    Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
     end
     p0->>p7: now() · interface dispatch
     p7-->>p0: int
-    p0->>p8: take(key=session.jti, now=clock.now()) · interface dispatch
+    p0->>p8: take(key=session.jti, now=clock.now()) · interface<br/>dispatch
     p8-->>p0: optional SessionClaims
     p0->>p9: securityHeaders()
     p9-->>p0: Headers
     p0->>p10: securityHeaders().with(name=”location”, value=”/”)
-    p0->>p11: withCookie(headers=securityHeaders().with(name=”location”, value=”/”), name=”aug_session”, value=””, path=”/”, maxAge…
-    p11-->>p0: headers: Headers
+    p0->>p9: withCookie(headers=securityHeaders().with(name=”location”,<br/>value=”/”), name=”aug_session”, value=””, path=”/”,<br/>maxAge…
+    p9-->>p0: headers: Headers
 ```
 
 #### Sequence 2 of 2 (continued)
@@ -128,10 +127,10 @@ sequenceDiagram
     participant p0 as logout
     participant p1 as HttpResponse
     Note over p0: Sequence continued from the previous view
-    p0->>p1: HttpResponse(body=‹p›Signed out.‹/p›, status=303, headers=headers)
-    Note over p0: Return HttpResponse(body=‹p›Signed out.‹/p›, status=303, headers=headers)； required cleanup runs before exit
-    Note over p0: May leave with checked errors: CryptoError, HttpError, KeyError, SessionError, TimeError
-    Note over p0: HTTP result follows declared response and error mapping； unhandled request failure returns 500
+    p0->>p1: HttpResponse(body=‹p›Signed out.‹/p›, status=303,<br/>headers=headers)
+    Note over p0: Return HttpResponse(body=‹p›Signed out.‹/p›, status=303,<br/>headers=headers)； required cleanup runs before exit
+    Note over p0: May leave with checked errors: CryptoError, HttpError,<br/>KeyError, SessionError, TimeError
+    Note over p0: HTTP result follows declared response and error mapping；<br/>unhandled request failure returns 500
 ```
 
 ## Called contracts

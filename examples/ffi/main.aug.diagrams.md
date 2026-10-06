@@ -30,7 +30,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ```mermaid
 sequenceDiagram
     participant p0 as Startup
-    participant p1 as announce
+    participant p1 as native
     p0->>p1: announce()
 ```
 

@@ -39,7 +39,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ```mermaid
 sequenceDiagram
     participant p0 as Startup
-    participant p1 as add
+    participant p1 as @example/aug-math/arithmetic
     participant p2 as print
     p0->>p1: add(left=20, right=22)
     p1-->>p0: int

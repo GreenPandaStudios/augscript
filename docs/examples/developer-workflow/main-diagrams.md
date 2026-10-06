@@ -60,15 +60,15 @@ sequenceDiagram
     participant p5 as pair.get
     participant p6 as unique.length
     participant p7 as fruit.get
-    participant p8 as load
+    participant p8 as calculator
     opt Try body； stops on a checked failure
     p0->>p1: Calculator()
     p1-->>p0: calculator: Calculator
     p0->>p2: numbers.get(index=1)
     p0->>p2: numbers.get(index=0)
-    p0->>p3: add(right=numbers.get(index=1), left=numbers.get(index=0))
+    p0->>p3: add(right=numbers.get(index=1),<br/>left=numbers.get(index=0))
     p3-->>p0: int
-    p0->>p4: print(value=calculator.add(right=numbers.get(index=1), left=numbers.get(index=0)))
+    p0->>p4: print(value=calculator.add(right=numbers.get(index=1),<br/>left=numbers.get(index=0)))
     p0->>p5: pair.get(index=1)
     p0->>p4: print(value=pair.get(index=1))
     p0->>p6: unique.length()

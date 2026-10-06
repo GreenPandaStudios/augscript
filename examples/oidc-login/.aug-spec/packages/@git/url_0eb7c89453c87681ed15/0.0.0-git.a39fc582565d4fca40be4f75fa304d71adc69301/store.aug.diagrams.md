@@ -120,7 +120,7 @@ sequenceDiagram
     alt entries.length() ›= 512 and not entries.contains(key=key)
     p0->>p5: StoreFull()
     p5-->>p0: StoreFull
-    Note over p0: Raise checked failure StoreFull()； required cleanup runs before exit
+    Note over p0: Raise checked failure StoreFull()； required cleanup runs<br/>before exit
     end
     p0->>p6: entries.set(key=key, value=entry)
     Note over p0: Leave lock scope

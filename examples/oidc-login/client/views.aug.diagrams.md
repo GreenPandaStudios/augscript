@@ -34,10 +34,10 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ```mermaid
 sequenceDiagram
     participant p0 as LoginPage
-    participant p1 as Page
-    p0->>p1: Page(title=”Sign in”, children=‹Page title=”Sign in”› ‹p›This August app is both an OpenID Connect provider and a log…
+    participant p1 as common/views
+    p0->>p1: Page(title=”Sign in”, children=‹Page title=”Sign in”›<br/>‹p›This August app is both an OpenID Connect provider<br/>and a log…
     p1-->>p0: Html
-    Note over p0: Return ‹Page title=”Sign in”› ‹p›This August app is both an OpenID Connect provider and a login client.‹/p› ‹p›‹a hre…
+    Note over p0: Return ‹Page title=”Sign in”› ‹p›This August app is both<br/>an OpenID Connect provider and a login client.‹/p› ‹p›‹a<br/>hre…
 ```
 
 <a id="sequence-Welcome"></a>
@@ -49,11 +49,11 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as Welcome
-    participant p1 as Page
-    Note over p0: Create browser action for POST /logout； called on submission
-    p0->>p1: Page(title=”Welcome, ” + session.name, children=‹Page title=｛”Welcome, ” + session.name｝› ‹p›You are signed in as ‹st…
+    participant p1 as common/views
+    Note over p0: Create browser action for POST /logout； called on<br/>submission
+    p0->>p1: Page(title=”Welcome, ” + session.name, children=‹Page<br/>title=｛”Welcome, ” + session.name｝› ‹p›You are signed in<br/>as ‹st…
     p1-->>p0: Html
-    Note over p0: Return ‹Page title=｛”Welcome, ” + session.name｝› ‹p›You are signed in as ‹strong›｛session.name｝‹/strong›.‹/p› ‹p›Subj…
+    Note over p0: Return ‹Page title=｛”Welcome, ” + session.name｝› ‹p›You<br/>are signed in as ‹strong›｛session.name｝‹/strong›.‹/p›<br/>‹p›Subj…
     Note over p0: May leave with checked errors: HttpError
 ```
 

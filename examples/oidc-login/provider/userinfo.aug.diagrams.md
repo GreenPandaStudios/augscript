@@ -60,7 +60,7 @@ sequenceDiagram
     participant p6 as access: ExpiringStore
     participant p7 as UserInfo
     participant p8 as Json
-    participant p9 as securityHeaders
+    participant p9 as common/headers
     participant p10 as HttpResponse
     participant p11 as securityHeaders().with
     Note over p0: GET /provider/userinfo
@@ -86,8 +86,8 @@ sequenceDiagram
     p0->>p8: Json(value=UserInfo(sub=grant.subject, name=grant.name))
     p0->>p9: securityHeaders()
     p9-->>p0: Headers
-    p0->>p10: HttpResponse(body=Json(value=UserInfo(sub=grant.subject, name=grant.name)), headers=securityHeaders())
-    Note over p0: Return HttpResponse(body=Json(value=UserInfo(sub=grant.subject, name=grant.name)), headers=securityHeaders())； requir…
+    p0->>p10: HttpResponse(body=Json(value=UserInfo(sub=grant.subject,<br/>name=grant.name)), headers=securityHeaders())
+    Note over p0: Return<br/>HttpResponse(body=Json(value=UserInfo(sub=grant.subject,<br/>name=grant.name)), headers=securityHeaders())； requir…
     end
     end
     end
@@ -98,10 +98,10 @@ sequenceDiagram
     end
     p0->>p9: securityHeaders()
     p9-->>p0: Headers
-    p0->>p11: securityHeaders().with(name=”www-authenticate”, value=”Bearer error=＼”invalid_token＼””)
+    p0->>p11: securityHeaders().with(name=”www-authenticate”,<br/>value=”Bearer error=＼”invalid_token＼””)
     p0->>p8: Json(value=｛”error”: ”invalid_token”｝)
-    p0->>p10: HttpResponse(body=Json(value=｛”error”: ”invalid_token”｝), status=401, headers=headers)
-    Note over p0: Return HttpResponse(body=Json(value=｛”error”: ”invalid_token”｝), status=401, headers=headers)； required cleanup runs …
+    p0->>p10: HttpResponse(body=Json(value=｛”error”:<br/>”invalid_token”｝), status=401, headers=headers)
+    Note over p0: Return HttpResponse(body=Json(value=｛”error”:<br/>”invalid_token”｝), status=401, headers=headers)；<br/>required cleanup runs …
     Note over p0: May leave with checked errors: HttpError, TimeError
 ```
 
@@ -112,7 +112,7 @@ sequenceDiagram
     participant p0 as userinfo
 
     Note over p0: Sequence continued from the previous view
-    Note over p0: HTTP result follows declared response and error mapping； unhandled request failure returns 500
+    Note over p0: HTTP result follows declared response and error mapping；<br/>unhandled request failure returns 500
 ```
 
 ## Called contracts

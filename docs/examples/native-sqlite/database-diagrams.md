@@ -45,23 +45,21 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ```mermaid
 sequenceDiagram
     participant p0 as storedName
-    participant p1 as openMemory
-    participant p2 as execute
-    participant p3 as queryScalar
+    participant p1 as @greenpandastudios/aug-sqlite/api
     p0->>p1: openMemory()
     p1-->>p0: database: Database
     Note over p0: Own database； release on scope exits
     rect rgb(245, 240, 241)
     Note over p0: Enter borrow scope
-    p0->>p2: execute(database=database, sql=”CREATE TABLE users (name TEXT NOT NULL)”, parameters=［］)
-    p2-->>p0: int
-    p0->>p2: execute(database=database, sql=”INSERT INTO users (name) VALUES (?)”, parameters=［”August”］)
-    p2-->>p0: int
+    p0->>p1: execute(database=database, sql=”CREATE TABLE users (name<br/>TEXT NOT NULL)”, parameters=［］)
+    p1-->>p0: int
+    p0->>p1: execute(database=database, sql=”INSERT INTO users (name)<br/>VALUES (?)”, parameters=［”August”］)
+    p1-->>p0: int
     Note over p0: Leave borrow scope
     end
-    p0->>p3: queryScalar(database=database, sql=”SELECT name FROM users”, parameters=［］)
-    p3-->>p0: string
-    Note over p0: Return queryScalar(database, sql=”SELECT name FROM users”, parameters=［］)； required cleanup runs before exit
+    p0->>p1: queryScalar(database=database, sql=”SELECT name FROM<br/>users”, parameters=［］)
+    p1-->>p0: string
+    Note over p0: Return queryScalar(database, sql=”SELECT name FROM<br/>users”, parameters=［］)； required cleanup runs before<br/>exit
     Note over p0: May leave with checked errors: SqliteError
 ```
 

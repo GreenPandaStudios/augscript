@@ -39,7 +39,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ```mermaid
 sequenceDiagram
     participant p0 as Startup
-    participant p1 as calculate
+    participant p1 as tensors
     participant p2 as print
     opt Try body； stops on a checked failure
     p0->>p1: calculate()

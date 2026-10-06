@@ -111,7 +111,7 @@ sequenceDiagram
     alt keys.length() != 0
     p0->>p2: KeyError()
     p2-->>p0: KeyError
-    Note over p0: Raise checked failure KeyError()； required cleanup runs before exit
+    Note over p0: Raise checked failure KeyError()； required cleanup runs<br/>before exit
     end
     p0->>p3: keys.set(key=”provider”, value=provider)
     p0->>p3: keys.set(key=”session”, value=session)
@@ -137,7 +137,7 @@ sequenceDiagram
     alt Match when null:
     p0->>p2: KeyError()
     p2-->>p0: KeyError
-    Note over p0: Raise checked failure KeyError()； required cleanup runs before exit
+    Note over p0: Raise checked failure KeyError()； required cleanup runs<br/>before exit
     else Match when some key:
     Note over p0: Return key； required cleanup runs before exit
     end
@@ -163,7 +163,7 @@ sequenceDiagram
     alt Match when null:
     p0->>p2: KeyError()
     p2-->>p0: KeyError
-    Note over p0: Raise checked failure KeyError()； required cleanup runs before exit
+    Note over p0: Raise checked failure KeyError()； required cleanup runs<br/>before exit
     else Match when some key:
     Note over p0: Return key； required cleanup runs before exit
     end
@@ -187,7 +187,7 @@ sequenceDiagram
     p1-->>p0: provider: RsaPrivateKey
     p0->>p1: generateRsa() · interface dispatch
     p1-->>p0: session: RsaPrivateKey
-    p0->>p2: configure(provider=provider, session=session) · interface dispatch
+    p0->>p2: configure(provider=provider, session=session) ·<br/>interface dispatch
     Note over p0: May leave with checked errors: CryptoError, KeyError
 ```
 

@@ -46,7 +46,7 @@ sequenceDiagram
     Note over p0: Enter unsafe scope
     p0->>p1: _aug_json_parse(input=input) · native boundary
     p1-->>p0: Json
-    Note over p0: Return _aug_json_parse(input)； required cleanup runs before exit
+    Note over p0: Return _aug_json_parse(input)； required cleanup runs<br/>before exit
     Note over p0: Leave unsafe scope
     end
     Note over p0: May leave with checked errors: JsonError
@@ -72,9 +72,9 @@ sequenceDiagram
     participant p1 as _aug_json_parse_compatible
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _aug_json_parse_compatible(input=input) · native boundary
+    p0->>p1: _aug_json_parse_compatible(input=input) · native<br/>boundary
     p1-->>p0: Json
-    Note over p0: Return _aug_json_parse_compatible(input)； required cleanup runs before exit
+    Note over p0: Return _aug_json_parse_compatible(input)； required<br/>cleanup runs before exit
     Note over p0: Leave unsafe scope
     end
     Note over p0: May leave with checked errors: JsonError

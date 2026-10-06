@@ -41,10 +41,10 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ```mermaid
 sequenceDiagram
     participant p0 as ProviderLogin
-    participant p1 as Page
-    p0->>p1: Page(title=”Sign in with the August provider”, children=‹Page title=”Sign in with the August provider”› ‹p›｛message｝‹…
+    participant p1 as common/views
+    p0->>p1: Page(title=”Sign in with the August provider”,<br/>children=‹Page title=”Sign in with the August provider”›<br/>‹p›｛message｝‹…
     p1-->>p0: Html
-    Note over p0: Return ‹Page title=”Sign in with the August provider”› ‹p›｛message｝‹/p› ‹p style=”background:＃f3f5f9；padding:12px；bor…
+    Note over p0: Return ‹Page title=”Sign in with the August provider”›<br/>‹p›｛message｝‹/p› ‹p<br/>style=”background:＃f3f5f9；padding:12px；bor…
 ```
 
 ### ProviderFailure {#sequence-ProviderFailure}
@@ -56,10 +56,10 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as ProviderFailure
-    participant p1 as Page
-    p0->>p1: Page(title=”Sign-in could not continue”, children=‹Page title=”Sign-in could not continue”›‹p›｛message｝‹/p›‹a href=”/…
+    participant p1 as common/views
+    p0->>p1: Page(title=”Sign-in could not continue”, children=‹Page<br/>title=”Sign-in could not continue”›‹p›｛message｝‹/p›‹a<br/>href=”/…
     p1-->>p0: Html
-    Note over p0: Return ‹Page title=”Sign-in could not continue”›‹p›｛message｝‹/p›‹a href=”/login/start”›Start a new sign-in‹/a›‹/Page›…
+    Note over p0: Return ‹Page title=”Sign-in could not<br/>continue”›‹p›｛message｝‹/p›‹a href=”/login/start”›Start a<br/>new sign-in‹/a›‹/Page›…
 ```
 
 ## Called contracts

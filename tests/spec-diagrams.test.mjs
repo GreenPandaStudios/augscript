@@ -333,3 +333,42 @@ test('record copies expose copied fields and a data result without inventing a s
  for(const row of rows){assert.match(row,/value: int/);assert.match(row,/value construction/);assert.match(row,/\| Row \|$/);}
  assert.doesNotMatch(output.text,/declared result|flowchart/);
 }));
+
+
+test('long sequence messages wrap without breaking participant or control-flow labels',()=>project({
+ 'main.aug':'import execute from database\nrows = execute(sql="CREATE TABLE users (name TEXT NOT NULL)", parameters="August")\n',
+ 'database.aug':'execute(string sql, string parameters) returns int { if sql == "" { return 0 } return 1 }\n',
+},async(root,checked)=>{
+ const pages=diagrams(checked);await validMermaid(pages);
+ const startup=pages.find(page=>page.path===join(root,'main.aug.diagrams.md')).text.split('### Startup\n')[1];
+ assert.match(startup,/: execute\(sql=”CREATE TABLE users \(name TEXT NOT NULL\)”,<br\/>parameters=”August”\)/);
+ assert.match(startup,/participant p\d+ as database\n/);assert.match(startup,/-->>p0: rows: int/);
+ const implementation=pages.find(page=>page.path===join(root,'database.aug.diagrams.md')).text;
+ assert.match(implementation,/alt sql == ””\n/);
+}));
+
+
+test('imported standalone operations share their module lifeline with exact call messages',()=>project({
+ 'main.aug':'import open and execute from database\nimport close from other\nconnection = open()\nrows = execute(connection)\nclose(connection)\n',
+ 'database.aug':'open() returns int { return 7 }\nexecute(int connection) returns int { return connection }\n',
+ 'other.aug':'close(int connection) { pass }\n',
+},async(root,checked)=>{
+ const pages=diagrams(checked);await validMermaid(pages);
+ const startup=pages.find(page=>page.path===join(root,'main.aug.diagrams.md')).text.split('### Startup\n')[1];
+ assert.equal((startup.match(/participant p\d+ as database\n/g)??[]).length,1);
+ assert.equal((startup.match(/participant p\d+ as other\n/g)??[]).length,1);
+ assert.match(startup,/p0->>p1: open\(\)/);assert.match(startup,/p0->>p1: execute\(connection=connection\)/);
+ assert.match(startup,/p1-->>p0: connection: int/);assert.match(startup,/p1-->>p0: rows: int/);
+ assert.match(startup,/: close\(connection=connection\)/);
+}));
+
+
+test('short-circuit frames contain conditional calls and omit pure comparison noise',()=>project({
+ 'main.aug':'import check from rules\nprint(value=check(value=3))\n',
+ 'rules.aug':'flag() returns bool { return true }\ncheck(int value) returns int { if value < 0 or value > 10 { return 0 } if value == 3 and flag() { return 1 } return 2 }\n',
+},async(root,checked)=>{
+ const page=diagrams(checked).find(item=>item.path===join(root,'rules.aug.diagrams.md'));await validMermaid([page]);
+ const sequence=page.text.split('### check\n')[1];
+ assert.match(sequence,/alt value ‹ 0 or value › 10/);assert.doesNotMatch(sequence,/opt Left is false/);
+ assert.match(sequence,/opt Left is true\n\s+p0->>p\d+: flag\(\)/);
+}));

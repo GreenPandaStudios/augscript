@@ -108,7 +108,7 @@ sequenceDiagram
     participant p1 as _aug_http_log
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _aug_http_log(method=method, path=path, status=status, milliseconds=milliseconds) · native boundary
+    p0->>p1: _aug_http_log(method=method, path=path, status=status,<br/>milliseconds=milliseconds) · native boundary
     Note over p0: Leave unsafe scope
     end
 ```
@@ -149,9 +149,9 @@ sequenceDiagram
     participant p1 as _aug_http_request
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _aug_http_request(method=method, url=url, headers=headers, body=body) · native boundary
+    p0->>p1: _aug_http_request(method=method, url=url,<br/>headers=headers, body=body) · native boundary
     p1-->>p0: HttpResponse‹Bytes›
-    Note over p0: Return _aug_http_request(method=method, url=url, headers=headers, body=body)； required cleanup runs before exit
+    Note over p0: Return _aug_http_request(method=method, url=url,<br/>headers=headers, body=body)； required cleanup runs<br/>before exit
     Note over p0: Leave unsafe scope
     end
     Note over p0: May leave with checked errors: HttpError
@@ -175,7 +175,7 @@ sequenceDiagram
     p0->>p1: Headers()
     p0->>p2: Headers().with(name=”location”, value=location)
     p0->>p3: HttpResponse(body=””, status=code, headers=headers)
-    Note over p0: Return HttpResponse(body=””, status=code, headers=headers)； required cleanup runs before exit
+    Note over p0: Return HttpResponse(body=””, status=code,<br/>headers=headers)； required cleanup runs before exit
     Note over p0: May leave with checked errors: HttpError
 ```
 
@@ -201,7 +201,7 @@ sequenceDiagram
     Note over p0: Enter unsafe scope
     p0->>p1: _aug_http_url_encode(input=input) · native boundary
     p1-->>p0: string
-    Note over p0: Return _aug_http_url_encode(input)； required cleanup runs before exit
+    Note over p0: Return _aug_http_url_encode(input)； required cleanup<br/>runs before exit
     Note over p0: Leave unsafe scope
     end
     Note over p0: May leave with checked errors: HttpError
@@ -227,9 +227,9 @@ sequenceDiagram
     participant p1 as _aug_http_cookie
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _aug_http_cookie(name=name, value=value, path=path, maxAge=maxAge, secure=secure) · native boundary
+    p0->>p1: _aug_http_cookie(name=name, value=value, path=path,<br/>maxAge=maxAge, secure=secure) · native boundary
     p1-->>p0: Headers
-    Note over p0: Return _aug_http_cookie(name, value, path, maxAge, secure)； required cleanup runs before exit
+    Note over p0: Return _aug_http_cookie(name, value, path, maxAge,<br/>secure)； required cleanup runs before exit
     Note over p0: Leave unsafe scope
     end
     Note over p0: May leave with checked errors: HttpError

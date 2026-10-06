@@ -296,7 +296,7 @@ sequenceDiagram
     Note over p0: Enter unsafe scope
     p0->>p1: _aug_crypto_random(size=size) · native boundary
     p1-->>p0: Bytes
-    Note over p0: Return _aug_crypto_random(size)； required cleanup runs before exit
+    Note over p0: Return _aug_crypto_random(size)； required cleanup runs<br/>before exit
     Note over p0: Leave unsafe scope
     end
     Note over p0: May leave with checked errors: CryptoError
@@ -316,7 +316,7 @@ sequenceDiagram
     Note over p0: Enter unsafe scope
     p0->>p1: _aug_crypto_sha256(input=input) · native boundary
     p1-->>p0: Bytes
-    Note over p0: Return _aug_crypto_sha256(input)； required cleanup runs before exit
+    Note over p0: Return _aug_crypto_sha256(input)； required cleanup runs<br/>before exit
     Note over p0: Leave unsafe scope
     end
     Note over p0: May leave with checked errors: CryptoError
@@ -336,7 +336,7 @@ sequenceDiagram
     Note over p0: Enter unsafe scope
     p0->>p1: _aug_crypto_generate_rsa() · native boundary
     p1-->>p0: RsaPrivateKey
-    Note over p0: Return _aug_crypto_generate_rsa()； required cleanup runs before exit
+    Note over p0: Return _aug_crypto_generate_rsa()； required cleanup runs<br/>before exit
     Note over p0: Leave unsafe scope
     end
     Note over p0: May leave with checked errors: CryptoError
@@ -356,7 +356,7 @@ sequenceDiagram
     Note over p0: Enter unsafe scope
     p0->>p1: _aug_crypto_public_rsa(key=key) · native boundary
     p1-->>p0: RsaPublicKey
-    Note over p0: Return _aug_crypto_public_rsa(key)； required cleanup runs before exit
+    Note over p0: Return _aug_crypto_public_rsa(key)； required cleanup<br/>runs before exit
     Note over p0: Leave unsafe scope
     end
     Note over p0: May leave with checked errors: CryptoError
@@ -374,9 +374,9 @@ sequenceDiagram
     participant p1 as _aug_crypto_sign_rsa
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _aug_crypto_sign_rsa(key=key, input=input) · native boundary
+    p0->>p1: _aug_crypto_sign_rsa(key=key, input=input) · native<br/>boundary
     p1-->>p0: Bytes
-    Note over p0: Return _aug_crypto_sign_rsa(key, input)； required cleanup runs before exit
+    Note over p0: Return _aug_crypto_sign_rsa(key, input)； required<br/>cleanup runs before exit
     Note over p0: Leave unsafe scope
     end
     Note over p0: May leave with checked errors: CryptoError
@@ -394,9 +394,9 @@ sequenceDiagram
     participant p1 as _aug_crypto_verify_rsa
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _aug_crypto_verify_rsa(publicKey=publicKey, input=input, signature=signature) · native boundary
+    p0->>p1: _aug_crypto_verify_rsa(publicKey=publicKey, input=input,<br/>signature=signature) · native boundary
     p1-->>p0: bool
-    Note over p0: Return _aug_crypto_verify_rsa(publicKey, input, signature)； required cleanup runs before exit
+    Note over p0: Return _aug_crypto_verify_rsa(publicKey, input,<br/>signature)； required cleanup runs before exit
     Note over p0: Leave unsafe scope
     end
     Note over p0: May leave with checked errors: CryptoError
@@ -414,9 +414,9 @@ sequenceDiagram
     participant p1 as _aug_crypto_decode_base64url
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _aug_crypto_decode_base64url(input=input) · native boundary
+    p0->>p1: _aug_crypto_decode_base64url(input=input) · native<br/>boundary
     p1-->>p0: Bytes
-    Note over p0: Return _aug_crypto_decode_base64url(input)； required cleanup runs before exit
+    Note over p0: Return _aug_crypto_decode_base64url(input)； required<br/>cleanup runs before exit
     Note over p0: Leave unsafe scope
     end
     Note over p0: May leave with checked errors: CryptoError
@@ -434,9 +434,9 @@ sequenceDiagram
     participant p1 as _aug_crypto_equal
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _aug_crypto_equal(left=left, right=right) · native boundary
+    p0->>p1: _aug_crypto_equal(left=left, right=right) · native<br/>boundary
     p1-->>p0: bool
-    Note over p0: Return _aug_crypto_equal(left, right)； required cleanup runs before exit
+    Note over p0: Return _aug_crypto_equal(left, right)； required cleanup<br/>runs before exit
     Note over p0: Leave unsafe scope
     end
 ```
@@ -453,9 +453,9 @@ sequenceDiagram
     participant p1 as _aug_crypto_export_rsa
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _aug_crypto_export_rsa(publicKey=publicKey) · native boundary
+    p0->>p1: _aug_crypto_export_rsa(publicKey=publicKey) · native<br/>boundary
     p1-->>p0: Tuple‹Bytes, Bytes›
-    Note over p0: Return _aug_crypto_export_rsa(publicKey)； required cleanup runs before exit
+    Note over p0: Return _aug_crypto_export_rsa(publicKey)； required<br/>cleanup runs before exit
     Note over p0: Leave unsafe scope
     end
     Note over p0: May leave with checked errors: CryptoError
@@ -473,9 +473,9 @@ sequenceDiagram
     participant p1 as _aug_crypto_import_rsa
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _aug_crypto_import_rsa(modulus=modulus, exponent=exponent) · native boundary
+    p0->>p1: _aug_crypto_import_rsa(modulus=modulus,<br/>exponent=exponent) · native boundary
     p1-->>p0: RsaPublicKey
-    Note over p0: Return _aug_crypto_import_rsa(modulus, exponent)； required cleanup runs before exit
+    Note over p0: Return _aug_crypto_import_rsa(modulus, exponent)；<br/>required cleanup runs before exit
     Note over p0: Leave unsafe scope
     end
     Note over p0: May leave with checked errors: CryptoError
@@ -493,9 +493,9 @@ sequenceDiagram
     participant p1 as _aug_crypto_password_hash
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _aug_crypto_password_hash(password=password, salt=salt, iterations=iterations) · native boundary
+    p0->>p1: _aug_crypto_password_hash(password=password, salt=salt,<br/>iterations=iterations) · native boundary
     p1-->>p0: Bytes
-    Note over p0: Return _aug_crypto_password_hash(password, salt, iterations)； required cleanup runs before exit
+    Note over p0: Return _aug_crypto_password_hash(password, salt,<br/>iterations)； required cleanup runs before exit
     Note over p0: Leave unsafe scope
     end
     Note over p0: May leave with checked errors: CryptoError

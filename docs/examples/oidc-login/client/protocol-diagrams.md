@@ -106,40 +106,40 @@ sequenceDiagram
     participant p2 as response.headers.get
     participant p3 as contentType.startsWith
     participant p4 as response.body.text
-    participant p5 as parse
+    participant p5 as @git/url_2d3c37c690c0fa115be1/contracts
     alt response.status != 200
     p0->>p1: SessionError()
     p1-->>p0: SessionError
-    Note over p0: Raise checked failure SessionError()； required cleanup runs before exit
+    Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
     end
     p0->>p2: response.headers.get(name=”content-type”)
     alt Match when null:
     p0->>p1: SessionError()
     p1-->>p0: SessionError
-    Note over p0: Raise checked failure SessionError()； required cleanup runs before exit
+    Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
     else Match when some contentType:
     p0->>p3: contentType.startsWith(prefix=”application/json”)
     alt not contentType.startsWith(prefix=”application/json”)
     p0->>p1: SessionError()
     p1-->>p0: SessionError
-    Note over p0: Raise checked failure SessionError()； required cleanup runs before exit
+    Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
     end
     end
     opt Try body； stops on a checked failure
     p0->>p4: response.body.text()
     p0->>p5: parse(input=response.body.text())
     p5-->>p0: Json
-    Note over p0: Return parse(input=response.body.text())； required cleanup runs before exit
+    Note over p0: Return parse(input=response.body.text())； required<br/>cleanup runs before exit
     end
     opt Catch ConversionError
     p0->>p1: SessionError()
     p1-->>p0: SessionError
-    Note over p0: Raise checked failure SessionError()； required cleanup runs before exit
+    Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
     end
     opt Catch JsonError
     p0->>p1: SessionError()
     p1-->>p0: SessionError
-    Note over p0: Raise checked failure SessionError()； required cleanup runs before exit
+    Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
     end
     Note over p0: May leave with checked errors: SessionError
 ```
@@ -153,38 +153,30 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as discover
-    participant p1 as settings
+    participant p1 as common/settings
     participant p2 as client: HttpClient
     participant p3 as responseJson
     participant p4 as json.decode
     participant p5 as SessionError
     p0->>p1: settings()
     p1-->>p0: config: Settings
-    p0->>p2: request(method=”GET”, url=config.issuer + ”/.well-known/openid-configuration”) · interface dispatch
+    p0->>p2: request(method=”GET”, url=config.issuer +<br/>”/.well-known/openid-configuration”) · interface<br/>dispatch
     p2-->>p0: HttpResponse‹Bytes›
-    p0->>p3: responseJson(response=client.request(method=”GET”, url=config.issuer + ”/.well-known/openid-configuration”))
+    p0->>p3: responseJson(response=client.request(method=”GET”,<br/>url=config.issuer +<br/>”/.well-known/openid-configuration”))
     p3-->>p0: json: Json
     opt Try body； stops on a checked failure
     p0->>p4: json.decode()
-    opt Left is false
-    end
-    opt Left is false
-    end
-    opt Left is false
-    end
-    opt Left is false
-    end
     alt document.issuer != config.issuer or document.authorization_endpoint != config.issuer + ”/authorize” or document.token…
     p0->>p5: SessionError()
     p5-->>p0: SessionError
-    Note over p0: Raise checked failure SessionError()； required cleanup runs before exit
+    Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
     end
     Note over p0: Return document； required cleanup runs before exit
     end
     opt Catch JsonError
     p0->>p5: SessionError()
     p5-->>p0: SessionError
-    Note over p0: Raise checked failure SessionError()； required cleanup runs before exit
+    Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
     end
     Note over p0: May leave with checked errors: HttpError, SessionError
 ```
@@ -200,62 +192,51 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as validateIdentity
-    participant p1 as settings
+    participant p1 as common/settings
     participant p2 as jwks.keys.length
     participant p3 as SessionError
     participant p4 as jwks.keys.get
-    participant p5 as importJwk
-    participant p6 as verifyJwt
-    participant p7 as verifyJwt(token, publicKey, kid=”provider-1”, tokenType=”JWT”).decode
-    participant p8 as claims.sub.length
-    participant p9 as claims.nonce.bytes
+    participant p5 as @git/url_9ef654c66d34ab8f5527/jose
+    participant p6 as verifyJwt(token, publicKey, kid=”provider-1”, tokenType=”JWT”).decode
+    participant p7 as claims.sub.length
+    participant p8 as claims.nonce.bytes
     p0->>p1: settings()
     p1-->>p0: config: Settings
     p0->>p2: jwks.keys.length()
     alt jwks.keys.length() != 1
     p0->>p3: SessionError()
     p3-->>p0: SessionError
-    Note over p0: Raise checked failure SessionError()； required cleanup runs before exit
+    Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
     end
     opt Try body； stops on a checked failure
     p0->>p4: jwks.keys.get(index=0)
     alt jwk.kid != ”provider-1”
     p0->>p3: SessionError()
     p3-->>p0: SessionError
-    Note over p0: Raise checked failure SessionError()； required cleanup runs before exit
+    Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
     end
     p0->>p5: importJwk(jwk=jwk)
     p5-->>p0: publicKey: RsaPublicKey
-    p0->>p6: verifyJwt(token=token, publicKey=publicKey, kid=”provider-1”, tokenType=”JWT”)
-    p6-->>p0: Json
-    p0->>p7: verifyJwt(token, publicKey, kid=”provider-1”, tokenType=”JWT”).decode()
+    p0->>p5: verifyJwt(token=token, publicKey=publicKey,<br/>kid=”provider-1”, tokenType=”JWT”)
+    p5-->>p0: Json
+    p0->>p6: verifyJwt(token, publicKey, kid=”provider-1”,<br/>tokenType=”JWT”).decode()
     opt Left is false
+    p0->>p7: claims.sub.length()
     end
     opt Left is false
-    p0->>p8: claims.sub.length()
-    end
-    opt Left is false
-    p0->>p8: claims.sub.length()
+    p0->>p7: claims.sub.length()
     end
     alt claims.iss != config.issuer or claims.aud != config.clientId or claims.sub.length() == 0 or claims.sub.length() › 255
     p0->>p3: SessionError()
     p3-->>p0: SessionError
-    Note over p0: Raise checked failure SessionError()； required cleanup runs before exit
-    end
-    opt Left is false
-    end
-    opt Left is false
-    end
-    opt Left is false
-    end
-    opt Left is false
+    Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
     end
     alt claims.exp ‹= now or claims.iat ‹ now - 300 or claims.iat › now + 30 or claims.exp ‹= claims.iat or claims.exp › now …
     p0->>p3: SessionError()
     p3-->>p0: SessionError
-    Note over p0: Raise checked failure SessionError()； required cleanup runs before exit
+    Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
     end
-    p0->>p9: claims.nonce.bytes()
+    p0->>p8: claims.nonce.bytes()
     end
 ```
 
@@ -270,34 +251,34 @@ sequenceDiagram
     opt Try body； stops on a checked failure
     Note over p0: Sequence continued from the previous view
     p0->>p1: nonce.bytes()
-    p0->>p2: equal(left=claims.nonce.bytes(), right=nonce.bytes()) · interface dispatch
+    p0->>p2: equal(left=claims.nonce.bytes(), right=nonce.bytes()) ·<br/>interface dispatch
     p2-->>p0: bool
     alt not crypto.equal(left=claims.nonce.bytes(), right=nonce.bytes())
     p0->>p3: SessionError()
     p3-->>p0: SessionError
-    Note over p0: Raise checked failure SessionError()； required cleanup runs before exit
+    Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
     end
     Note over p0: Return claims； required cleanup runs before exit
     end
     opt Catch JwtError
     p0->>p3: SessionError()
     p3-->>p0: SessionError
-    Note over p0: Raise checked failure SessionError()； required cleanup runs before exit
+    Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
     end
     opt Catch JsonError
     p0->>p3: SessionError()
     p3-->>p0: SessionError
-    Note over p0: Raise checked failure SessionError()； required cleanup runs before exit
+    Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
     end
     opt Catch IndexError
     p0->>p3: SessionError()
     p3-->>p0: SessionError
-    Note over p0: Raise checked failure SessionError()； required cleanup runs before exit
+    Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
     end
     opt Catch CryptoError
     p0->>p3: SessionError()
     p3-->>p0: SessionError
-    Note over p0: Raise checked failure SessionError()； required cleanup runs before exit
+    Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
     end
     Note over p0: May leave with checked errors: SessionError
 ```

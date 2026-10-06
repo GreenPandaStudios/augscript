@@ -64,15 +64,15 @@ Receive fields: issuer, authorization\_endpoint, token\_endpoint, userinfo\_endp
 ```mermaid
 sequenceDiagram
     participant p0 as discovery
-    participant p1 as settings
+    participant p1 as common/settings
     participant p2 as Discovery
     Note over p0: GET /provider/.well-known/openid-configuration
     p0->>p1: settings()
     p1-->>p0: config: Settings
-    p0->>p2: Discovery(issuer=config.issuer, authorization_endpoint=config.issuer + ”/authorize”, token_endpoint=config.issuer + ”…
+    p0->>p2: Discovery(issuer=config.issuer,<br/>authorization_endpoint=config.issuer + ”/authorize”,<br/>token_endpoint=config.issuer + ”…
     p2-->>p0: Discovery
-    Note over p0: Return Discovery(issuer=config.issuer, authorization_endpoint=config.issuer + ”/authorize”, token_endpoint=config.iss…
-    Note over p0: HTTP result follows declared response and error mapping； unhandled request failure returns 500
+    Note over p0: Return Discovery(issuer=config.issuer,<br/>authorization_endpoint=config.issuer + ”/authorize”,<br/>token_endpoint=config.iss…
+    Note over p0: HTTP result follows declared response and error mapping；<br/>unhandled request failure returns 500
 ```
 
 <a id="sequence-jwks"></a>
@@ -86,7 +86,7 @@ sequenceDiagram
     participant p0 as jwks
     participant p1 as keys: SigningKeys
     participant p2 as crypto: Crypto
-    participant p3 as rsaJwk
+    participant p3 as @git/url_9ef654c66d34ab8f5527/jose
     participant p4 as RsaJwks
     Note over p0: GET /provider/jwks
     p0->>p1: provider() · interface dispatch
@@ -95,11 +95,11 @@ sequenceDiagram
     p2-->>p0: publicKey: RsaPublicKey
     p0->>p3: rsaJwk(publicKey=publicKey, kid=”provider-1”)
     p3-->>p0: RsaJwk
-    p0->>p4: RsaJwks(keys=［rsaJwk(publicKey=publicKey, kid=”provider-1”)］)
+    p0->>p4: RsaJwks(keys=［rsaJwk(publicKey=publicKey,<br/>kid=”provider-1”)］)
     p4-->>p0: RsaJwks
-    Note over p0: Return RsaJwks(keys=［rsaJwk(publicKey=publicKey, kid=”provider-1”)］)； required cleanup runs before exit
+    Note over p0: Return RsaJwks(keys=［rsaJwk(publicKey=publicKey,<br/>kid=”provider-1”)］)； required cleanup runs before exit
     Note over p0: May leave with checked errors: CryptoError, KeyError
-    Note over p0: HTTP result follows declared response and error mapping； unhandled request failure returns 500
+    Note over p0: HTTP result follows declared response and error mapping；<br/>unhandled request failure returns 500
 ```
 
 ## Called contracts

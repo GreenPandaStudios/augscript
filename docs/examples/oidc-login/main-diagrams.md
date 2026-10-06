@@ -39,7 +39,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ```mermaid
 sequenceDiagram
     participant p0 as Startup
-    participant p1 as initializeKeys
+    participant p1 as common/keys
     participant p2 as print
     participant p3 as exit
     opt Try body； stops on a checked failure
@@ -53,7 +53,7 @@ sequenceDiagram
     p0->>p2: print(value=”Signing keys could not be initialized”)
     p0->>p3: exit(status=1)
     end
-    Note over p0: Serve endpoints: home, me, logout, startLogin, loginCallback, discovery, jwks, authorize, providerLogin, token, userinfo
+    Note over p0: Serve endpoints: home, me, logout, startLogin,<br/>loginCallback, discovery, jwks, authorize,<br/>providerLogin, token, userinfo
 ```
 
 ## Called contracts

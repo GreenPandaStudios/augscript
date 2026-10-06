@@ -70,11 +70,10 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ```mermaid
 sequenceDiagram
     participant p0 as home
-    participant p1 as authenticate
-    participant p2 as Welcome
-    participant p3 as securityHeaders
+    participant p1 as client/session
+    participant p2 as client/views
+    participant p3 as common/headers
     participant p4 as HttpResponse
-    participant p5 as LoginPage
     Note over p0: GET /
     opt Try body； stops on a checked failure
     p0->>p1: authenticate(token=token)
@@ -83,19 +82,19 @@ sequenceDiagram
     p2-->>p0: Html
     p0->>p3: securityHeaders()
     p3-->>p0: Headers
-    p0->>p4: HttpResponse(body=Welcome(session), headers=securityHeaders())
-    Note over p0: Return HttpResponse(body=Welcome(session), headers=securityHeaders())； required cleanup runs before exit
+    p0->>p4: HttpResponse(body=Welcome(session),<br/>headers=securityHeaders())
+    Note over p0: Return HttpResponse(body=Welcome(session),<br/>headers=securityHeaders())； required cleanup runs before<br/>exit
     end
     opt Catch SessionError
-    p0->>p5: LoginPage()
-    p5-->>p0: Html
+    p0->>p2: LoginPage()
+    p2-->>p0: Html
     p0->>p3: securityHeaders()
     p3-->>p0: Headers
-    p0->>p4: HttpResponse(body=LoginPage(), headers=securityHeaders())
-    Note over p0: Return HttpResponse(body=LoginPage(), headers=securityHeaders())； required cleanup runs before exit
+    p0->>p4: HttpResponse(body=LoginPage(),<br/>headers=securityHeaders())
+    Note over p0: Return HttpResponse(body=LoginPage(),<br/>headers=securityHeaders())； required cleanup runs before<br/>exit
     end
-    Note over p0: May leave with checked errors: HttpError, KeyError, TimeError
-    Note over p0: HTTP result follows declared response and error mapping； unhandled request failure returns 500
+    Note over p0: May leave with checked errors: HttpError, KeyError,<br/>TimeError
+    Note over p0: HTTP result follows declared response and error mapping；<br/>unhandled request failure returns 500
 ```
 
 <a id="sequence-me"></a>
@@ -107,9 +106,9 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as me
-    participant p1 as authenticate
+    participant p1 as client/session
     participant p2 as UserInfo
-    participant p3 as securityHeaders
+    participant p3 as common/headers
     participant p4 as HttpResponse
     Note over p0: GET /me
     p0->>p1: authenticate(token=token)
@@ -118,10 +117,10 @@ sequenceDiagram
     p2-->>p0: UserInfo
     p0->>p3: securityHeaders()
     p3-->>p0: Headers
-    p0->>p4: HttpResponse(body=UserInfo(sub=session.sub, name=session.name), headers=securityHeaders())
-    Note over p0: Return HttpResponse(body=UserInfo(sub=session.sub, name=session.name), headers=securityHeaders())； required cleanup r…
-    Note over p0: May leave with checked errors: HttpError, KeyError, SessionError, TimeError
-    Note over p0: HTTP result follows declared response and error mapping； unhandled request failure returns 500
+    p0->>p4: HttpResponse(body=UserInfo(sub=session.sub,<br/>name=session.name), headers=securityHeaders())
+    Note over p0: Return HttpResponse(body=UserInfo(sub=session.sub,<br/>name=session.name), headers=securityHeaders())； required<br/>cleanup r…
+    Note over p0: May leave with checked errors: HttpError, KeyError,<br/>SessionError, TimeError
+    Note over p0: HTTP result follows declared response and error mapping；<br/>unhandled request failure returns 500
 ```
 
 ## Called contracts

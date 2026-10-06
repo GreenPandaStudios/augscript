@@ -42,8 +42,8 @@ sequenceDiagram
     Note over p0: GET /bench
     p0->>p1: Reply(id=7, message=”hello”)
     p1-->>p0: Reply
-    Note over p0: Return Reply(id=7, message=”hello”)； required cleanup runs before exit
-    Note over p0: HTTP result follows declared response and error mapping； unhandled request failure returns 500
+    Note over p0: Return Reply(id=7, message=”hello”)； required cleanup<br/>runs before exit
+    Note over p0: HTTP result follows declared response and error mapping；<br/>unhandled request failure returns 500
 ```
 
 ## Called contracts

@@ -242,8 +242,6 @@ sequenceDiagram
     alt width ‹ length - middle
     end
     loop While left ‹ middle and right ‹ end
-    opt Left is true
-    end
     p0->>p3: ordered.get(index=left)
     p0->>p3: ordered.get(index=right)
     p0->>p4: compare(left=earlier, right=later) · interface dispatch
@@ -333,7 +331,7 @@ sequenceDiagram
     participant p0 as TextOrder.compare
     participant p1 as left.compare
     p0->>p1: left.compare(other=right)
-    Note over p0: Return left.compare(other=right)； required cleanup runs before exit
+    Note over p0: Return left.compare(other=right)； required cleanup runs<br/>before exit
 ```
 
 <a id="sequence-sortIntegers"></a>
@@ -351,7 +349,7 @@ sequenceDiagram
     p1-->>p0: IntegerOrder
     p0->>p2: sort(values=values, comparator=IntegerOrder())
     p2-->>p0: List‹int›
-    Note over p0: Return sort(values, comparator=IntegerOrder())； required cleanup runs before exit
+    Note over p0: Return sort(values, comparator=IntegerOrder())； required<br/>cleanup runs before exit
     Note over p0: May leave with checked errors: IndexError
 ```
 
@@ -370,7 +368,7 @@ sequenceDiagram
     p1-->>p0: TextOrder
     p0->>p2: sort(values=values, comparator=TextOrder())
     p2-->>p0: List‹string›
-    Note over p0: Return sort(values, comparator=TextOrder())； required cleanup runs before exit
+    Note over p0: Return sort(values, comparator=TextOrder())； required<br/>cleanup runs before exit
     Note over p0: May leave with checked errors: IndexError
 ```
 

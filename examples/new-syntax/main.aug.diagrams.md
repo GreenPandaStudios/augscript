@@ -46,7 +46,7 @@ sequenceDiagram
     participant p0 as Startup
     participant p1 as Greeter
     participant p2 as greeter: Greeter
-    participant p3 as increment
+    participant p3 as math
     participant p4 as print
     p0->>p1: Greeter(x=4)
     p1-->>p0: greeter: Greeter

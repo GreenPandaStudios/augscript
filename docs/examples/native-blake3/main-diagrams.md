@@ -39,7 +39,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ```mermaid
 sequenceDiagram
     participant p0 as Startup
-    participant p1 as hashText
+    participant p1 as hashing
     participant p2 as print
     opt Try body； stops on a checked failure
     p0->>p1: hashText(value=”abc”)
