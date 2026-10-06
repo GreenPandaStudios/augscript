@@ -15,3 +15,4 @@ export IntegerOrder from operations
 export TextOrder from operations
 export sortIntegers from operations
 export sortText from operations
+export mapWorkers from workers

@@ -23,40 +23,38 @@ flowchart TD
     n0["august/collections/export.aug"]
     n1["august/collections/operations.aug"]
     n2["august/collections/ranges.aug"]
-    n3["august/errors/context.aug"]
-    n4["august/errors/export.aug"]
-    n5["august/io/contracts.aug"]
-    n6["august/io/export.aug"]
-    n7["august/math/decimals.aug"]
-    n8["august/math/export.aug"]
-    n9["august/math/integers.aug"]
-    n10["august/values/ascii.aug"]
-    n11["august/values/dates.aug"]
-    n12["august/values/durations.aug"]
-    n13["august/values/export.aug"]
-    n14["august/values/paths.aug"]
-    n15["august/values/retries.aug"]
-    n16["august/values/text.aug"]
-    n17["august/values/urls.aug"]
+    n3["august/collections/workers.aug"]
+    n4["august/errors/context.aug"]
+    n5["august/errors/export.aug"]
+    n6["august/io/contracts.aug"]
+    n7["august/io/export.aug"]
+    n8["august/math/decimals.aug"]
+    n9["august/math/export.aug"]
+    n10["august/math/integers.aug"]
+    n11["august/values/ascii.aug"]
+    n12["august/values/dates.aug"]
+    n13["august/values/durations.aug"]
+    n14["august/values/export.aug"]
+    n15["august/values/paths.aug"]
+    n16["august/values/retries.aug"]
+    n17["august/values/text.aug"]
     n0 -->|"uses"| n1
     n0 -->|"uses"| n2
-    n4 -->|"uses"| n3
-    n6 -->|"uses"| n5
-    n7 -->|"uses"| n9
-    n8 -->|"uses"| n7
-    n8 -->|"uses"| n9
-    n11 -->|"uses"| n10
-    n12 -->|"uses"| n9
-    n12 -->|"uses"| n10
+    n0 -->|"uses"| n3
+    n3 -->|"uses"| n1
+    n5 -->|"uses"| n4
+    n7 -->|"uses"| n6
+    n8 -->|"uses"| n10
+    n9 -->|"uses"| n8
+    n9 -->|"uses"| n10
+    n12 -->|"uses"| n11
+    n13 -->|"uses"| n10
     n13 -->|"uses"| n11
-    n13 -->|"uses"| n12
-    n13 -->|"uses"| n14
-    n13 -->|"uses"| n15
-    n13 -->|"uses"| n16
-    n13 -->|"uses"| n17
-    n14 -->|"uses"| n10
-    n15 -->|"uses"| n12
-    n17 -->|"uses"| n10
+    n14 -->|"uses"| n12
+    n14 -->|"uses"| n13
+    n14 -->|"uses"| n15
+    n14 -->|"uses"| n16
+    n14 -->|"uses"| n17
 ```
 
 #### View 2 of 2
@@ -64,7 +62,16 @@ flowchart TD
 ```mermaid
 flowchart TD
     n0["august/export.aug"]
-
+    n1["august/values/ascii.aug"]
+    n2["august/values/durations.aug"]
+    n3["august/values/export.aug"]
+    n4["august/values/paths.aug"]
+    n5["august/values/retries.aug"]
+    n6["august/values/urls.aug"]
+    n3 -->|"uses"| n6
+    n4 -->|"uses"| n1
+    n5 -->|"uses"| n2
+    n6 -->|"uses"| n1
 ```
 
 ## Open a module
@@ -74,6 +81,7 @@ flowchart TD
 | august/collections/export.aug | [Interactions and sequences](../../collections/export.aug.diagrams.md) | [Explanation](../../collections/export.aug.md) |
 | august/collections/operations.aug | [Interactions and sequences](../../collections/operations.aug.diagrams.md) | [Explanation](../../collections/operations.aug.md) |
 | august/collections/ranges.aug | [Interactions and sequences](../../collections/ranges.aug.diagrams.md) | [Explanation](../../collections/ranges.aug.md) |
+| august/collections/workers.aug | [Interactions and sequences](../../collections/workers.aug.diagrams.md) | [Explanation](../../collections/workers.aug.md) |
 | august/errors/context.aug | [Interactions and sequences](../../errors/context.aug.diagrams.md) | [Explanation](../../errors/context.aug.md) |
 | august/errors/export.aug | [Interactions and sequences](../../errors/export.aug.diagrams.md) | [Explanation](../../errors/export.aug.md) |
 | august/export.aug | [Interactions and sequences](../../export.aug.diagrams.md) | [Explanation](../../export.aug.md) |

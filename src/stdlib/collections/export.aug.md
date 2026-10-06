@@ -2,7 +2,7 @@
 
 # `export.aug`
 
-<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=7811931f437036fc52b3b48e7e7fec8de868e5a72bba071cf9946f54c3f18fa8 -->
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=1eae085f37156f8adfd9bd15bf508ab69e3c6e2fb11c547e00999ba69ddb96c2 -->
 
 [Interactions and sequences](export.aug.diagrams.md)
 
@@ -15,3 +15,5 @@ Export the declaration `Aggregator` from [`operations.aug`](operations.aug.md#sy
 Export the declaration `aggregate` from [`operations.aug`](operations.aug.md#symbol-aggregate). Export the declaration `remove` from [`operations.aug`](operations.aug.md#symbol-remove). Export the declaration `find` from [`operations.aug`](operations.aug.md#symbol-find). Export the declaration `sort` from [`operations.aug`](operations.aug.md#symbol-sort).
 
 Export the declaration `IntegerOrder` from [`operations.aug`](operations.aug.md#symbol-IntegerOrder). Export the declaration `TextOrder` from [`operations.aug`](operations.aug.md#symbol-TextOrder). Export the declaration `sortIntegers` from [`operations.aug`](operations.aug.md#symbol-sortIntegers). Export the declaration `sortText` from [`operations.aug`](operations.aug.md#symbol-sortText).
+
+Export the declaration `mapWorkers` from [`workers.aug`](workers.aug.md#symbol-mapWorkers).

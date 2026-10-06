@@ -165,6 +165,11 @@ try {
   assert.equal(aug('run',callbacks),'4\n6\n');
   if(process.env.AUG_LLVM_HOME&&process.env.AUG_RUNTIME_PACK)assert.equal(run(process.execPath,[cli,'run',callbacks,'--backend','llvm']),'4\n6\n');
   aug('spec',callbacks);assert.match(readFileSync(join(callbacks,'main.aug.diagrams.md'),'utf8'),/sequenceDiagram/);assert.match(readFileSync(join(callbacks,'.aug-spec/diagrams/index.md'),'utf8'),/Project diagrams/);aug('spec',callbacks,'--check');assert.match(readFileSync(join(callbacks,'main.aug.md'),'utf8'),/pure callback/);
+  const workerMapping=join(directory,'worker-mapping-consumer');mkdirSync(workerMapping);
+  writeFileSync(join(workerMapping,'rules.aug'),'double(int value) returns int:\n    return value * 2\n');
+  writeFileSync(join(workerMapping,'main.aug'),'import mapWorkers from august.collections\nimport double from rules\ntry:\n    for value in mapWorkers(values=[1,2,3], concurrency=2, chunkSize=2, transformation=double):\n        print(value)\ncatch Error error:\n    print(value="unexpected")\n');
+  assert.equal(aug('run',workerMapping),'2\n4\n6\n');
+  if(process.env.AUG_LLVM_HOME&&process.env.AUG_RUNTIME_PACK)assert.equal(run(process.execPath,[cli,'run',workerMapping,'--backend','llvm']),'2\n4\n6\n');
   const verifySpecs = folder => {
     for(const entry of readdirSync(folder,{withFileTypes:true})) {
       const file=join(folder,entry.name);

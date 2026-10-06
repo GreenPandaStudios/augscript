@@ -285,6 +285,8 @@ Calls retain ordinary labeled inputs, inferred effects, checked failures, owners
 
 ## Collection functions (unreleased)
 
+The unreleased `mapWorkers` operation runs a named pure transformation on copied data in bounded chunk waves. It preserves result order, joins each wave, and retains checked admission failures. Its stricter callback profile and limits are explained in [the worker guide](workers.md#map-a-list-in-bounded-waves).
+
 Import `filter`, `transform`, `aggregate`, `remove`, `find`, or `sort` from `august.collections` when the operation fits a pure data callback. `Predicate<T>`, `Transformation<T,U>`, `Aggregator<T,U>`, and `Comparator<T>` describe those callbacks through ordinary interfaces. Their `optional Data` constraints also admit null values. They accept data, return data, and permit no I/O, mutation or checked failures. Use an ordinary loop when processing needs those effects.
 
 This program selects positive integers and sorts a separate copy of its input:

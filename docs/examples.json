@@ -1,5 +1,8 @@
 {
-  "checked-forwarding": {"stdout": "4\n", "tests": 2},
+  "checked-forwarding": {
+    "stdout": "4\n",
+    "tests": 2
+  },
   "readme": {
     "stdout": "4\n"
   },
@@ -133,5 +136,8 @@
   },
   "retry-policy-guide": {
     "stdout": "After attempt 1: 100 ms\nAfter attempt 2: 500 ms\nNo attempts remain\n"
+  },
+  "worker-map-guide": {
+    "stdout": "2\n4\n6\n8\n10\n"
   }
 }
