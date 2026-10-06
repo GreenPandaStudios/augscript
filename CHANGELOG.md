@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Give every documented ownership and task lifecycle rule an independent acceptance program. Check branch joins, alias mutation, repeated starts, collection waits, captured moves, deferred failures and cancellation cleanup in the LLVM qualification corpus.
+
 - Extend independent language conformance with forwarding chains, binding patterns, defaults, record copies, loop control, task loans and cleanup counts. Qualification fingerprints runtime and acceptance inputs and reports independent coverage separately from linked regressions.
 
 - Show scalar updates and empty rendered branches in generated sequences so calculation-only loops retain readable frames. Preserve checked evaluation order across repeated generation and retain grouped arithmetic and record-copy inputs.
