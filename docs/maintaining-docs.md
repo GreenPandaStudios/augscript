@@ -152,3 +152,7 @@ The PostgreSQL maintainer qualification caches each rebuilt candidate with `aug 
 Compilation-cache tests require a complete source-pinned compiler pack. `scripts/prepare-qualified-test-tools.mjs` installs the selected released tools and creates `.aug-build/qualified-test-tools`; CI and the compiler-test container use that path with the newly built contributor runtime. Keep the unsealed `.aug-build/llvm-tools` inputs for producing candidate packs. Unsealed contributor tools must continue to compile without reusable output.
 
 The full compiler-test container gate has a 60-minute job limit to cover preparation, the complete regression suite, sanitizers and generated-C analysis. A job time limit is incomplete qualification, even when all completed cases pass; rerun the complete container gate before accepting its evidence.
+
+## Pinned maintainer source downloads
+
+`scripts/native-dependencies.lock.json` records exact archives and SHA-256 digests used to build the runtime. GMP uses its [upstream download](https://gmplib.org/); Nettle uses the kernel.org GNU mirror. These endpoints supply the same pinned bytes. A mirror change must retain the version and checksum, verify the downloaded archive, and pass cold hosted builds. Consumer LLVM/native artifacts keep their separate release pins.
