@@ -153,6 +153,8 @@ Compilation-cache tests require a complete source-pinned compiler pack. `scripts
 
 The full compiler-test container gate has a 60-minute job limit to cover preparation, the complete regression suite, sanitizers and generated-C analysis. A job time limit is incomplete qualification, even when all completed cases pass; rerun the complete container gate before accepting its evidence.
 
+The published container bases must generate their own specification artifacts. The SQLite deployment fixture copies its August source files, then installs, tests and builds with the image's released CLI. Generated specifications from a newer checkout may use a schema that the released compiler cannot read.
+
 ## Pinned maintainer source downloads
 
 `scripts/native-dependencies.lock.json` records exact archives and SHA-256 digests used to build the runtime. GMP and Nettle use the kernel.org GNU mirror. Their versions match the [GMP](https://gmplib.org/) and [Nettle](https://www.lysator.liu.se/~nisse/nettle/) releases; these endpoints supply the same pinned bytes. A mirror change must retain the version and checksum, verify the downloaded archive, and pass cold hosted builds. Consumer LLVM/native artifacts keep their separate release pins.
