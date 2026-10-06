@@ -18,22 +18,23 @@ outline: [2, 3]
 
 ```mermaid
 flowchart TD
-    n0["Clock · package/@git/url_c092cd151499c4e1d8a1@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug"]
-    n1["SystemClock · package/@git/url_c092cd151499c4e1d8a1@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug"]
-    n2["_aug_time_now · package/@git/url_c092cd151499c4e1d8a1@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug"]
+    n0["Clock"]
+    n1["SystemClock"]
+    n2["_aug_time_now"]
     n1 -->|"implements"| n0
     n1 -->|"calls"| n2
 ```
 
-## API calls
+::: details Call relationships
 
 ```mermaid
 flowchart TD
-    n0["Clock.now · package/@git/url_c092cd151499c4e1d8a1@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug"]
-    n1["SystemClock.now · package/@git/url_c092cd151499c4e1d8a1@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug"]
-    n2["_aug_time_now · package/@git/url_c092cd151499c4e1d8a1@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug"]
-    n1 -->|"calls"| n2
+    n0["SystemClock.now"]
+    n1["_aug_time_now"]
+    n0 -->|"calls"| n1
 ```
+
+:::
 
 ## Sequences
 
@@ -45,13 +46,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](contracts.md#source-L5)
 :::
 
-```mermaid
-sequenceDiagram
-    participant p0 as Clock.now
-
-    Note over p0: May leave with checked errors: TimeError
-    Note over p0: Interface contract#59; implementation selected at runtime
-```
+May leave with checked errors: TimeError. Interface contract; implementation selected at runtime. [Explanation](contracts.md).
 
 ### \_aug\_time\_now {#sequence-_aug_time_now}
 
@@ -59,13 +54,7 @@ sequenceDiagram
 [Source](contracts.md#source-L6)
 :::
 
-```mermaid
-sequenceDiagram
-    participant p0 as _aug_time_now
-
-    Note over p0: May leave with checked errors: TimeError
-    Note over p0: Native implementation#59; only the declared contract is known
-```
+May leave with checked errors: TimeError. Native implementation; only the declared contract is known. [Explanation](contracts.md).
 
 ### SystemClock constructor {#sequence-SystemClock-20-constructor}
 
@@ -73,12 +62,7 @@ sequenceDiagram
 [Source](contracts.md#source-L8)
 :::
 
-```mermaid
-sequenceDiagram
-    participant p0 as SystemClock constructor
-
-    Note over p0: No calls in this operation#59; see the source and specification
-```
+[Explanation](contracts.md).
 
 ### SystemClock.now {#sequence-SystemClock.now}
 
@@ -93,7 +77,8 @@ sequenceDiagram
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
     p0->>p1: _aug_time_now() · native boundary
-    Note over p0: Return _aug_time_now()#59; required cleanup runs before exit
+    p1-->>p0: int
+    Note over p0: Return _aug_time_now()； required cleanup runs before<br/>exit
     Note over p0: Leave unsafe scope
     end
     Note over p0: May leave with checked errors: TimeError

@@ -4,23 +4,18 @@
 
 [Project overview](.aug-spec/diagrams/index.md) · [Compiled explanation](main.aug.md)
 
-## Class interactions
+
+<details>
+<summary>Call relationships</summary>
 
 ```mermaid
 flowchart TD
-    n0["Item · data.aug"]
+    n0["Item"]
     n1["main.aug"]
     n1 -->|"calls"| n0
 ```
 
-## API calls
-
-```mermaid
-flowchart TD
-    n0["Item · data.aug"]
-    n1["main.aug"]
-    n1 -->|"calls"| n0
-```
+</details>
 
 ## Sequences
 
@@ -38,14 +33,15 @@ sequenceDiagram
     participant p1 as Item
     participant p2 as values.append
     participant p3 as print
-    Note over p0: Own values#59; release on scope exits
-    loop While index #60; iterations
-    p0->>p1: Item(id, name)
-    p0->>p2: values.append(value)
+    Note over p0: Own values； release on scope exits
+    loop While index ‹ iterations
+    p0->>p1: Item(id=index, name=”August”)
+    p1-->>p0: Item
+    p0->>p2: values.append(value=Item(id=index, name=”August”))
     end
     loop For each item in values
     end
-    p0->>p3: print(value)
+    p0->>p3: print(value=checksum)
 ```
 
 ## Called contracts

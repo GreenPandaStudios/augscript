@@ -8,44 +8,40 @@
 
 ```mermaid
 flowchart TD
-    n0["_TensorContainer · package/@greenpandastudios/aug-pytorch@0.1.6/api.aug"]
-    n1["_TensorHolder · package/@greenpandastudios/aug-pytorch@0.1.6/api.aug"]
-    n2["_consumeAndFail · package/@greenpandastudios/aug-pytorch@0.1.6/api.aug"]
-    n3["sum · package/@greenpandastudios/aug-pytorch@0.1.6/api.aug"]
-    n4["Tensor · package/@greenpandastudios/aug-pytorch@0.1.6/bindings.aug"]
-    n5["TensorError · package/@greenpandastudios/aug-pytorch@0.1.6/contracts.aug"]
+    n0["_TensorContainer"]
+    n1["_TensorHolder"]
+    n2["sum"]
+    n3["Tensor"]
     n1 -->|"implements"| n0
-    n1 -->|"calls"| n3
-    n1 -->|"holds item"| n4
-    n2 -->|"calls"| n5
+    n1 -->|"calls"| n2
+    n1 -->|"holds item"| n3
 ```
 
-## API calls
+<details>
+<summary>Call relationships</summary>
 
 ```mermaid
 flowchart TD
-    n0["_TensorContainer.total · package/@greenpandastudios/aug-pytorch@0.1.6/api.aug"]
-    n1["_TensorHolder.total · package/@greenpandastudios/aug-pytorch@0.1.6/api.aug"]
-    n2["_add · package/@greenpandastudios/aug-pytorch@0.1.6/api.aug"]
-    n3["_consumeAndFail · package/@greenpandastudios/aug-pytorch@0.1.6/api.aug"]
-    n4["_liveBuffers · package/@greenpandastudios/aug-pytorch@0.1.6/api.aug"]
-    n5["_liveTensors · package/@greenpandastudios/aug-pytorch@0.1.6/api.aug"]
-    n6["_replace · package/@greenpandastudios/aug-pytorch@0.1.6/api.aug"]
-    n7["_sum · package/@greenpandastudios/aug-pytorch@0.1.6/api.aug"]
-    n8["_tensor · package/@greenpandastudios/aug-pytorch@0.1.6/api.aug"]
-    n9["_values · package/@greenpandastudios/aug-pytorch@0.1.6/api.aug"]
-    n10["add · package/@greenpandastudios/aug-pytorch@0.1.6/api.aug"]
-    n11["sum · package/@greenpandastudios/aug-pytorch@0.1.6/api.aug"]
-    n12["tensor · package/@greenpandastudios/aug-pytorch@0.1.6/api.aug"]
-    n13["values · package/@greenpandastudios/aug-pytorch@0.1.6/api.aug"]
-    n14["TensorError · package/@greenpandastudios/aug-pytorch@0.1.6/contracts.aug"]
-    n1 -->|"calls"| n11
-    n3 -->|"calls"| n14
-    n10 -->|"calls"| n2
-    n11 -->|"calls"| n7
-    n12 -->|"calls"| n8
-    n13 -->|"calls"| n9
+    n0["_TensorHolder.total"]
+    n1["_add"]
+    n2["_consumeAndFail"]
+    n3["_sum"]
+    n4["_tensor"]
+    n5["_values"]
+    n6["add"]
+    n7["sum"]
+    n8["tensor"]
+    n9["values"]
+    n10["TensorError"]
+    n0 -->|"calls"| n7
+    n2 -->|"calls"| n10
+    n6 -->|"calls"| n1
+    n7 -->|"calls"| n3
+    n8 -->|"calls"| n4
+    n9 -->|"calls"| n5
 ```
+
+</details>
 
 ## Sequences
 
@@ -57,13 +53,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](api.aug#L5)
 
-```mermaid
-sequenceDiagram
-    participant p0 as _tensor
-
-    Note over p0: May leave with checked errors: TensorError
-    Note over p0: Native implementation#59; only the declared contract is known
-```
+May leave with checked errors: TensorError. Native implementation; only the declared contract is known. [Explanation](api.aug.md).
 
 <a id="sequence-_add"></a>
 
@@ -71,13 +61,7 @@ sequenceDiagram
 
 [Source](api.aug#L6)
 
-```mermaid
-sequenceDiagram
-    participant p0 as _add
-
-    Note over p0: May leave with checked errors: TensorError
-    Note over p0: Native implementation#59; only the declared contract is known
-```
+May leave with checked errors: TensorError. Native implementation; only the declared contract is known. [Explanation](api.aug.md).
 
 <a id="sequence-_sum"></a>
 
@@ -85,13 +69,7 @@ sequenceDiagram
 
 [Source](api.aug#L7)
 
-```mermaid
-sequenceDiagram
-    participant p0 as _sum
-
-    Note over p0: May leave with checked errors: TensorError
-    Note over p0: Native implementation#59; only the declared contract is known
-```
+May leave with checked errors: TensorError. Native implementation; only the declared contract is known. [Explanation](api.aug.md).
 
 <a id="sequence-_values"></a>
 
@@ -99,13 +77,7 @@ sequenceDiagram
 
 [Source](api.aug#L8)
 
-```mermaid
-sequenceDiagram
-    participant p0 as _values
-
-    Note over p0: May leave with checked errors: TensorError
-    Note over p0: Native implementation#59; only the declared contract is known
-```
+May leave with checked errors: TensorError. Native implementation; only the declared contract is known. [Explanation](api.aug.md).
 
 <a id="sequence-tensor"></a>
 
@@ -119,8 +91,9 @@ sequenceDiagram
     participant p1 as _tensor
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _tensor(values) · native boundary
-    Note over p0: Return _tensor(values)#59; required cleanup runs before exit
+    p0->>p1: _tensor(values=values) · native boundary
+    p1-->>p0: Tensor
+    Note over p0: Return _tensor(values)； required cleanup runs before<br/>exit
     Note over p0: Leave unsafe scope
     end
     Note over p0: May leave with checked errors: TensorError
@@ -138,8 +111,9 @@ sequenceDiagram
     participant p1 as _add
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _add(left, right) · native boundary
-    Note over p0: Return _add(left, right)#59; required cleanup runs before exit
+    p0->>p1: _add(left=left, right=right) · native boundary
+    p1-->>p0: Tensor
+    Note over p0: Return _add(left, right)； required cleanup runs before<br/>exit
     Note over p0: Leave unsafe scope
     end
     Note over p0: May leave with checked errors: TensorError
@@ -157,8 +131,9 @@ sequenceDiagram
     participant p1 as _sum
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _sum(tensor) · native boundary
-    Note over p0: Return _sum(tensor)#59; required cleanup runs before exit
+    p0->>p1: _sum(tensor=tensor) · native boundary
+    p1-->>p0: float
+    Note over p0: Return _sum(tensor)； required cleanup runs before exit
     Note over p0: Leave unsafe scope
     end
     Note over p0: May leave with checked errors: TensorError
@@ -176,8 +151,9 @@ sequenceDiagram
     participant p1 as _values
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _values(tensor) · native boundary
-    Note over p0: Return _values(tensor)#59; required cleanup runs before exit
+    p0->>p1: _values(tensor=tensor) · native boundary
+    p1-->>p0: List‹float›
+    Note over p0: Return _values(tensor)； required cleanup runs before<br/>exit
     Note over p0: Leave unsafe scope
     end
     Note over p0: May leave with checked errors: TensorError
@@ -189,12 +165,7 @@ sequenceDiagram
 
 [Source](api.aug#L26)
 
-```mermaid
-sequenceDiagram
-    participant p0 as _liveTensors
-
-    Note over p0: Native implementation#59; only the declared contract is known
-```
+Native implementation; only the declared contract is known. [Explanation](api.aug.md).
 
 <a id="sequence-_liveBuffers"></a>
 
@@ -202,12 +173,7 @@ sequenceDiagram
 
 [Source](api.aug#L27)
 
-```mermaid
-sequenceDiagram
-    participant p0 as _liveBuffers
-
-    Note over p0: Native implementation#59; only the declared contract is known
-```
+Native implementation; only the declared contract is known. [Explanation](api.aug.md).
 
 <a id="sequence-_consumeAndFail"></a>
 
@@ -219,8 +185,9 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as _consumeAndFail
     participant p1 as TensorError
-    p0->>p1: TensorError(code, message)
-    Note over p0: Raise checked failure TensorError(code=99, message=#34;expected cleanup test#34;)#59; required cleanup runs before exit
+    p0->>p1: TensorError(code=99, message=”expected cleanup test”)
+    p1-->>p0: TensorError
+    Note over p0: Raise checked failure TensorError(code=99,<br/>message=”expected cleanup test”)； required cleanup runs<br/>before exit
     Note over p0: May leave with checked errors: TensorError
 ```
 
@@ -230,13 +197,7 @@ sequenceDiagram
 
 [Source](api.aug#L33)
 
-```mermaid
-sequenceDiagram
-    participant p0 as _TensorContainer.total
-
-    Note over p0: May leave with checked errors: TensorError
-    Note over p0: Interface contract#59; implementation selected at runtime
-```
+May leave with checked errors: TensorError. Interface contract; implementation selected at runtime. [Explanation](api.aug.md).
 
 <a id="sequence-_TensorHolder-20-constructor"></a>
 
@@ -244,12 +205,7 @@ sequenceDiagram
 
 [Source](api.aug#L34)
 
-```mermaid
-sequenceDiagram
-    participant p0 as _TensorHolder constructor
-
-    Note over p0: Receive fields: item
-```
+Receive fields: item. [Explanation](api.aug.md).
 
 <a id="sequence-_TensorHolder.total"></a>
 
@@ -261,8 +217,9 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as _TensorHolder.total
     participant p1 as sum
-    p0->>p1: sum(tensor)
-    Note over p0: Return sum(tensor=item)#59; required cleanup runs before exit
+    p0->>p1: sum(tensor=item)
+    p1-->>p0: float
+    Note over p0: Return sum(tensor=item)； required cleanup runs before<br/>exit
     Note over p0: May leave with checked errors: TensorError
 ```
 
@@ -272,12 +229,7 @@ sequenceDiagram
 
 [Source](api.aug#L37)
 
-```mermaid
-sequenceDiagram
-    participant p0 as _replace
-
-    Note over p0: No calls in this operation#59; see the source and specification
-```
+[Explanation](api.aug.md).
 
 ## Called contracts
 

@@ -14,21 +14,6 @@ outline: [2, 3]
 
 [Project overview](../../../../../diagrams/index.md) · [Compiled explanation](contracts.md)
 
-## Class interactions
-
-```mermaid
-flowchart TD
-    n0["TensorError · package/@greenpandastudios/aug-pytorch@0.1.6/contracts.aug"]
-
-```
-
-## API calls
-
-```mermaid
-flowchart TD
-    n0["TensorError.explain · package/@greenpandastudios/aug-pytorch@0.1.6/contracts.aug"]
-
-```
 
 ## Sequences
 
@@ -40,12 +25,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](contracts.md#source-L3)
 :::
 
-```mermaid
-sequenceDiagram
-    participant p0 as TensorError constructor
-
-    Note over p0: Receive fields: code, message
-```
+Receive fields: code, message. [Explanation](contracts.md).
 
 ### TensorError.explain {#sequence-TensorError.explain}
 
@@ -53,10 +33,5 @@ sequenceDiagram
 [Source](contracts.md#source-L5)
 :::
 
-```mermaid
-sequenceDiagram
-    participant p0 as TensorError.explain
-
-    Note over p0: Return message#59; required cleanup runs before exit
-```
+Return message; required cleanup runs before exit. [Explanation](contracts.md).
 

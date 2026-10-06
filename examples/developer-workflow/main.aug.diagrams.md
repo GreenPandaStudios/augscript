@@ -8,25 +8,28 @@
 
 ```mermaid
 flowchart TD
-    n0["Calculator · calculator.aug"]
-    n1["load · calculator.aug"]
+    n0["Calculator"]
+    n1["load"]
     n2["main.aug"]
     n2 -->|"calls"| n0
     n2 -->|"calls"| n1
 ```
 
-## API calls
+<details>
+<summary>Call relationships</summary>
 
 ```mermaid
 flowchart TD
-    n0["Calculator · calculator.aug"]
-    n1["Calculator.add · calculator.aug"]
-    n2["load · calculator.aug"]
+    n0["Calculator"]
+    n1["Calculator.add"]
+    n2["load"]
     n3["main.aug"]
     n3 -->|"calls"| n0
     n3 -->|"calls"| n1
     n3 -->|"calls"| n2
 ```
+
+</details>
 
 ## Sequences
 
@@ -43,34 +46,37 @@ sequenceDiagram
     participant p0 as Startup
     participant p1 as Calculator
     participant p2 as numbers.get
-    participant p3 as Calculator.add
+    participant p3 as calculator: Calculator
     participant p4 as print
     participant p5 as pair.get
     participant p6 as unique.length
     participant p7 as fruit.get
-    participant p8 as load
-    opt Try body#59; stops on a checked failure
+    participant p8 as calculator
+    opt Try body； stops on a checked failure
     p0->>p1: Calculator()
-    p0->>p2: numbers.get(index)
-    p0->>p2: numbers.get(index)
-    p0->>p3: add(right, left)
-    p0->>p4: print(value)
-    p0->>p5: pair.get(index)
-    p0->>p4: print(value)
+    p1-->>p0: calculator: Calculator
+    p0->>p2: numbers.get(index=1)
+    p0->>p2: numbers.get(index=0)
+    p0->>p3: add(right=numbers.get(index=1),<br/>left=numbers.get(index=0))
+    p3-->>p0: int
+    p0->>p4: print(value=calculator.add(right=numbers.get(index=1),<br/>left=numbers.get(index=0)))
+    p0->>p5: pair.get(index=1)
+    p0->>p4: print(value=pair.get(index=1))
     p0->>p6: unique.length()
-    p0->>p4: print(value)
-    p0->>p7: fruit.get(key)
-    p0->>p4: print(value)
-    opt Try body#59; stops on a checked failure
-    p0->>p8: load(fail)
-    p0->>p4: print(value)
+    p0->>p4: print(value=unique.length())
+    p0->>p7: fruit.get(key=2)
+    p0->>p4: print(value=fruit.get(key=2))
+    opt Try body； stops on a checked failure
+    p0->>p8: load(fail=true)
+    p8-->>p0: string
+    p0->>p4: print(value=load(fail=true))
     end
     opt Catch FileError
-    p0->>p4: print(value)
+    p0->>p4: print(value=”load failed as expected”)
     end
     end
     opt Catch IndexError
-    p0->>p4: print(value)
+    p0->>p4: print(value=”unexpected index failure”)
     end
 ```
 

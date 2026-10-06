@@ -14,17 +14,6 @@ outline: [2, 3]
 
 [Project overview](diagrams/index.md) · [Compiled explanation](operations.md)
 
-## Class interactions
-
-No relationships at this level.
-
-## API calls
-
-```mermaid
-flowchart TD
-    n0["step · operations.aug"]
-
-```
 
 ## Sequences
 
@@ -36,10 +25,5 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](operations.md#source-L2)
 :::
 
-```mermaid
-sequenceDiagram
-    participant p0 as step
-
-    Note over p0: Return product - (product / 2147483647) * 2147483647#59; required cleanup runs before exit
-```
+Return product - (product / 2147483647) \* 2147483647; required cleanup runs before exit. [Explanation](operations.md).
 

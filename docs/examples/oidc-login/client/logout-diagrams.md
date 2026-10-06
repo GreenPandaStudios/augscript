@@ -18,43 +18,41 @@ outline: [2, 3]
 
 ```mermaid
 flowchart TD
-    n0["SessionError · client/contracts.aug"]
-    n1["logout · client/logout.aug"]
-    n2["authenticate · client/session.aug"]
-    n3["securityHeaders · common/headers.aug"]
-    n4["withCookie · common/headers.aug"]
-    n5["SigningKeys · common/keys.aug"]
-    n6["settings · common/settings.aug"]
-    n7["ExpiringStore · package/@git/url_0eb7c89453c87681ed15@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug"]
-    n8["Crypto · package/@git/url_9ef654c66d34ab8f5527@0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug"]
-    n9["Clock · package/@git/url_c092cd151499c4e1d8a1@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug"]
-    n1 -->|"calls"| n0
-    n1 -->|"calls"| n2
-    n1 -->|"calls"| n3
-    n1 -->|"calls"| n4
-    n1 -->|"depends on"| n5
-    n1 -->|"calls"| n6
-    n1 -->|"calls"| n7
-    n1 -->|"depends on"| n7
-    n1 -->|"calls"| n8
-    n1 -->|"depends on"| n8
-    n1 -->|"calls"| n9
-    n1 -->|"depends on"| n9
+    n0["logout"]
+    n1["authenticate"]
+    n2["securityHeaders"]
+    n3["withCookie"]
+    n4["SigningKeys"]
+    n5["settings"]
+    n6["ExpiringStore"]
+    n7["Crypto"]
+    n8["Clock"]
+    n0 -->|"calls"| n1
+    n0 -->|"calls"| n2
+    n0 -->|"calls"| n3
+    n0 -->|"depends on"| n4
+    n0 -->|"calls"| n5
+    n0 -->|"calls"| n6
+    n0 -->|"depends on"| n6
+    n0 -->|"calls"| n7
+    n0 -->|"depends on"| n7
+    n0 -->|"calls"| n8
+    n0 -->|"depends on"| n8
 ```
 
-## API calls
+::: details Call relationships
 
 ```mermaid
 flowchart TD
-    n0["SessionError · client/contracts.aug"]
-    n1["logout · client/logout.aug"]
-    n2["authenticate · client/session.aug"]
-    n3["securityHeaders · common/headers.aug"]
-    n4["withCookie · common/headers.aug"]
-    n5["settings · common/settings.aug"]
-    n6["ExpiringStore.take · package/@git/url_0eb7c89453c87681ed15@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug"]
-    n7["Crypto.equal · package/@git/url_9ef654c66d34ab8f5527@0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug"]
-    n8["Clock.now · package/@git/url_c092cd151499c4e1d8a1@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug"]
+    n0["SessionError"]
+    n1["logout"]
+    n2["authenticate"]
+    n3["securityHeaders"]
+    n4["withCookie"]
+    n5["settings"]
+    n6["ExpiringStore.take"]
+    n7["Crypto.equal"]
+    n8["Clock.now"]
     n1 -->|"calls"| n0
     n1 -->|"calls"| n2
     n1 -->|"calls"| n3
@@ -64,6 +62,8 @@ flowchart TD
     n1 -->|"calls"| n7
     n1 -->|"calls"| n8
 ```
+
+:::
 
 ## Sequences
 
@@ -80,36 +80,44 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ```mermaid
 sequenceDiagram
     participant p0 as logout
-    participant p1 as settings
+    participant p1 as common/settings
     participant p2 as SessionError
-    participant p3 as authenticate
+    participant p3 as client/session
     participant p4 as input.csrf.bytes
     participant p5 as session.csrf.bytes
-    participant p6 as Crypto.equal
-    participant p7 as Clock.now
-    participant p8 as ExpiringStore.take
-    participant p9 as securityHeaders
+    participant p6 as crypto: Crypto
+    participant p7 as clock: Clock
+    participant p8 as sessions: ExpiringStore
+    participant p9 as common/headers
     participant p10 as securityHeaders().with
-    participant p11 as withCookie
     Note over p0: POST /logout
     p0->>p1: settings()
+    p1-->>p0: config: Settings
     alt origin != config.baseUrl
     p0->>p2: SessionError()
-    Note over p0: Raise checked failure SessionError()#59; required cleanup runs before exit
+    p2-->>p0: SessionError
+    Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
     end
-    p0->>p3: authenticate(token)
+    p0->>p3: authenticate(token=token)
+    p3-->>p0: session: SessionClaims
     p0->>p4: input.csrf.bytes()
     p0->>p5: session.csrf.bytes()
-    p0->>p6: equal(left, right) · interface dispatch
+    p0->>p6: equal(left=input.csrf.bytes(),<br/>right=session.csrf.bytes()) · interface dispatch
+    p6-->>p0: bool
     alt not crypto.equal(left=input.csrf.bytes(), right=session.csrf.bytes())
     p0->>p2: SessionError()
-    Note over p0: Raise checked failure SessionError()#59; required cleanup runs before exit
+    p2-->>p0: SessionError
+    Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
     end
     p0->>p7: now() · interface dispatch
-    p0->>p8: take(key, now) · interface dispatch
+    p7-->>p0: int
+    p0->>p8: take(key=session.jti, now=clock.now()) · interface<br/>dispatch
+    p8-->>p0: optional SessionClaims
     p0->>p9: securityHeaders()
-    p0->>p10: securityHeaders().with(name, value)
-    p0->>p11: withCookie(headers, name, value, path, maxAge, secure)
+    p9-->>p0: Headers
+    p0->>p10: securityHeaders().with(name=”location”, value=”/”)
+    p0->>p9: withCookie(headers=securityHeaders().with(name=”location”,<br/>value=”/”), name=”aug_session”, value=””, path=”/”,<br/>maxAge…
+    p9-->>p0: headers: Headers
 ```
 
 #### Sequence 2 of 2 (continued)
@@ -119,10 +127,10 @@ sequenceDiagram
     participant p0 as logout
     participant p1 as HttpResponse
     Note over p0: Sequence continued from the previous view
-    p0->>p1: HttpResponse(body, status, headers)
-    Note over p0: Return HttpResponse(body=#60;p#62;Signed out.#60;/p#62;, status=303, headers=headers)#59; required cleanup runs before exit
-    Note over p0: May leave with checked errors: CryptoError, HttpError, KeyError, SessionError, TimeError
-    Note over p0: HTTP result follows declared response and error mapping#59; unhandled request failure returns 500
+    p0->>p1: HttpResponse(body=‹p›Signed out.‹/p›, status=303,<br/>headers=headers)
+    Note over p0: Return HttpResponse(body=‹p›Signed out.‹/p›, status=303,<br/>headers=headers)； required cleanup runs before exit
+    Note over p0: May leave with checked errors: CryptoError, HttpError,<br/>KeyError, SessionError, TimeError
+    Note over p0: HTTP result follows declared response and error mapping；<br/>unhandled request failure returns 500
 ```
 
 ## Called contracts

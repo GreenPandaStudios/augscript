@@ -18,17 +18,16 @@ outline: [2, 3]
 
 ```mermaid
 flowchart TD
-    n0["home · client/endpoints.aug"]
-    n1["me · client/endpoints.aug"]
-    n2["authenticate · client/session.aug"]
-    n3["LoginPage · client/views.aug"]
-    n4["Welcome · client/views.aug"]
-    n5["securityHeaders · common/headers.aug"]
-    n6["SigningKeys · common/keys.aug"]
-    n7["ExpiringStore · package/@git/url_0eb7c89453c87681ed15@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug"]
-    n8["Crypto · package/@git/url_9ef654c66d34ab8f5527@0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug"]
-    n9["Clock · package/@git/url_c092cd151499c4e1d8a1@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug"]
-    n10["UserInfo · provider/contracts.aug"]
+    n0["home"]
+    n1["me"]
+    n2["authenticate"]
+    n3["LoginPage"]
+    n4["Welcome"]
+    n5["securityHeaders"]
+    n6["SigningKeys"]
+    n7["ExpiringStore"]
+    n8["Crypto"]
+    n9["Clock"]
     n0 -->|"calls"| n2
     n0 -->|"calls"| n3
     n0 -->|"calls"| n4
@@ -43,20 +42,19 @@ flowchart TD
     n1 -->|"depends on"| n7
     n1 -->|"depends on"| n8
     n1 -->|"depends on"| n9
-    n1 -->|"calls"| n10
 ```
 
-## API calls
+::: details Call relationships
 
 ```mermaid
 flowchart TD
-    n0["home · client/endpoints.aug"]
-    n1["me · client/endpoints.aug"]
-    n2["authenticate · client/session.aug"]
-    n3["LoginPage · client/views.aug"]
-    n4["Welcome · client/views.aug"]
-    n5["securityHeaders · common/headers.aug"]
-    n6["UserInfo · provider/contracts.aug"]
+    n0["home"]
+    n1["me"]
+    n2["authenticate"]
+    n3["LoginPage"]
+    n4["Welcome"]
+    n5["securityHeaders"]
+    n6["UserInfo"]
     n0 -->|"calls"| n2
     n0 -->|"calls"| n3
     n0 -->|"calls"| n4
@@ -65,6 +63,8 @@ flowchart TD
     n1 -->|"calls"| n5
     n1 -->|"calls"| n6
 ```
+
+:::
 
 ## Sequences
 
@@ -79,27 +79,31 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ```mermaid
 sequenceDiagram
     participant p0 as home
-    participant p1 as authenticate
-    participant p2 as Welcome
-    participant p3 as securityHeaders
+    participant p1 as client/session
+    participant p2 as client/views
+    participant p3 as common/headers
     participant p4 as HttpResponse
-    participant p5 as LoginPage
     Note over p0: GET /
-    opt Try body#59; stops on a checked failure
-    p0->>p1: authenticate(token)
-    p0->>p2: Welcome(session)
+    opt Try body； stops on a checked failure
+    p0->>p1: authenticate(token=token)
+    p1-->>p0: session: SessionClaims
+    p0->>p2: Welcome(session=session)
+    p2-->>p0: Html
     p0->>p3: securityHeaders()
-    p0->>p4: HttpResponse(body, headers)
-    Note over p0: Return HttpResponse(body=Welcome(session), headers=securityHeaders())#59; required cleanup runs before exit
+    p3-->>p0: Headers
+    p0->>p4: HttpResponse(body=Welcome(session),<br/>headers=securityHeaders())
+    Note over p0: Return HttpResponse(body=Welcome(session),<br/>headers=securityHeaders())； required cleanup runs before<br/>exit
     end
     opt Catch SessionError
-    p0->>p5: LoginPage()
+    p0->>p2: LoginPage()
+    p2-->>p0: Html
     p0->>p3: securityHeaders()
-    p0->>p4: HttpResponse(body, headers)
-    Note over p0: Return HttpResponse(body=LoginPage(), headers=securityHeaders())#59; required cleanup runs before exit
+    p3-->>p0: Headers
+    p0->>p4: HttpResponse(body=LoginPage(),<br/>headers=securityHeaders())
+    Note over p0: Return HttpResponse(body=LoginPage(),<br/>headers=securityHeaders())； required cleanup runs before<br/>exit
     end
-    Note over p0: May leave with checked errors: HttpError, KeyError, TimeError
-    Note over p0: HTTP result follows declared response and error mapping#59; unhandled request failure returns 500
+    Note over p0: May leave with checked errors: HttpError, KeyError,<br/>TimeError
+    Note over p0: HTTP result follows declared response and error mapping；<br/>unhandled request failure returns 500
 ```
 
 ### me {#sequence-me}
@@ -111,18 +115,21 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as me
-    participant p1 as authenticate
+    participant p1 as client/session
     participant p2 as UserInfo
-    participant p3 as securityHeaders
+    participant p3 as common/headers
     participant p4 as HttpResponse
     Note over p0: GET /me
-    p0->>p1: authenticate(token)
-    p0->>p2: UserInfo(sub, name)
+    p0->>p1: authenticate(token=token)
+    p1-->>p0: session: SessionClaims
+    p0->>p2: UserInfo(sub=session.sub, name=session.name)
+    p2-->>p0: UserInfo
     p0->>p3: securityHeaders()
-    p0->>p4: HttpResponse(body, headers)
-    Note over p0: Return HttpResponse(body=UserInfo(sub=session.sub, name=session.name), headers=securityHeaders())#59; required cleanup r…
-    Note over p0: May leave with checked errors: HttpError, KeyError, SessionError, TimeError
-    Note over p0: HTTP result follows declared response and error mapping#59; unhandled request failure returns 500
+    p3-->>p0: Headers
+    p0->>p4: HttpResponse(body=UserInfo(sub=session.sub,<br/>name=session.name), headers=securityHeaders())
+    Note over p0: Return HttpResponse(body=UserInfo(sub=session.sub,<br/>name=session.name), headers=securityHeaders())； required<br/>cleanup r…
+    Note over p0: May leave with checked errors: HttpError, KeyError,<br/>SessionError, TimeError
+    Note over p0: HTTP result follows declared response and error mapping；<br/>unhandled request failure returns 500
 ```
 
 ## Called contracts

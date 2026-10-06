@@ -14,23 +14,17 @@ outline: [2, 3]
 
 [Project overview](../diagrams/index.md) · [Compiled explanation](settings.md)
 
-## Class interactions
+
+::: details Call relationships
 
 ```mermaid
 flowchart TD
-    n0["Settings · common/settings.aug"]
-    n1["settings · common/settings.aug"]
+    n0["Settings"]
+    n1["settings"]
     n1 -->|"calls"| n0
 ```
 
-## API calls
-
-```mermaid
-flowchart TD
-    n0["Settings · common/settings.aug"]
-    n1["settings · common/settings.aug"]
-    n1 -->|"calls"| n0
-```
+:::
 
 ## Sequences
 
@@ -42,12 +36,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](settings.md#source-L3)
 :::
 
-```mermaid
-sequenceDiagram
-    participant p0 as Settings constructor
-
-    Note over p0: Receive fields: baseUrl, issuer, clientId, callback, sessionSeconds, secureCookies
-```
+Receive fields: baseUrl, issuer, clientId, callback, sessionSeconds, secureCookies. [Explanation](settings.md).
 
 ### settings {#sequence-settings}
 
@@ -59,8 +48,9 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as settings
     participant p1 as Settings
-    p0->>p1: Settings(baseUrl, issuer, clientId, callback, sessionSeconds, secureCookies)
-    Note over p0: Return Settings(baseUrl=#34;http://127.0.0.1:8787#34;, issuer=#34;http://127.0.0.1:8787/provider#34;, clientId=#34;august-login-app#34;…
+    p0->>p1: Settings(baseUrl=”http://127.0.0.1:8787”,<br/>issuer=”http://127.0.0.1:8787/provider”,<br/>clientId=”august-login-app”, callb…
+    p1-->>p0: Settings
+    Note over p0: Return Settings(baseUrl=”http://127.0.0.1:8787”,<br/>issuer=”http://127.0.0.1:8787/provider”,<br/>clientId=”august-login-app”…
 ```
 
 ## Called contracts

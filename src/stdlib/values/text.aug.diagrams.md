@@ -4,31 +4,21 @@
 
 [Project overview](.aug-spec/diagrams/index.md) · [Compiled explanation](text.aug.md)
 
-## Class interactions
+
+<details>
+<summary>Call relationships</summary>
 
 ```mermaid
 flowchart TD
-    n0["BoundedText · august/values/text.aug"]
-    n1["TokenId · august/values/text.aug"]
-    n2["parseBoundedText · august/values/text.aug"]
-    n3["parseTokenId · august/values/text.aug"]
+    n0["BoundedText"]
+    n1["TokenId"]
+    n2["parseBoundedText"]
+    n3["parseTokenId"]
     n2 -->|"calls"| n0
     n3 -->|"calls"| n1
 ```
 
-## API calls
-
-```mermaid
-flowchart TD
-    n0["BoundedText · august/values/text.aug"]
-    n1["TokenId · august/values/text.aug"]
-    n2["formatBoundedText · august/values/text.aug"]
-    n3["formatTokenId · august/values/text.aug"]
-    n4["parseBoundedText · august/values/text.aug"]
-    n5["parseTokenId · august/values/text.aug"]
-    n4 -->|"calls"| n0
-    n5 -->|"calls"| n1
-```
+</details>
 
 ## Sequences
 
@@ -46,10 +36,10 @@ sequenceDiagram
     participant p1 as text.isToken
     participant p2 as ConversionError
     Note over p0: Receive fields: text
-    p0->>p1: text.isToken(min, max)
+    p0->>p1: text.isToken(min=1, max=128)
     alt not text.isToken(min=1, max=128)
     p0->>p2: ConversionError()
-    Note over p0: Raise checked failure ConversionError()#59; required cleanup runs before exit
+    Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
 ```
 
@@ -63,8 +53,9 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as parseTokenId
     participant p1 as TokenId
-    p0->>p1: TokenId(text)
-    Note over p0: Return TokenId(text)#59; required cleanup runs before exit
+    p0->>p1: TokenId(text=text)
+    p1-->>p0: TokenId
+    Note over p0: Return TokenId(text)； required cleanup runs before exit
     Note over p0: May leave with checked errors: ConversionError
 ```
 
@@ -74,12 +65,7 @@ sequenceDiagram
 
 [Source](text.aug#L16)
 
-```mermaid
-sequenceDiagram
-    participant p0 as formatTokenId
-
-    Note over p0: Return value.text#59; required cleanup runs before exit
-```
+Return value.text; required cleanup runs before exit. [Explanation](text.aug.md).
 
 <a id="sequence-BoundedText-20-constructor"></a>
 
@@ -94,21 +80,17 @@ sequenceDiagram
     participant p2 as text.byteLength
     participant p3 as text.codePointLength
     Note over p0: Receive fields: text, minBytes, maxBytes
-    opt Left is false
-    end
-    opt Left is false
-    end
-    alt minBytes #60; 0 or minBytes #62; maxBytes or maxBytes #62; 1048576
+    alt minBytes ‹ 0 or minBytes › maxBytes or maxBytes › 1048576
     p0->>p1: ConversionError()
-    Note over p0: Raise checked failure ConversionError()#59; required cleanup runs before exit
+    Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
     p0->>p2: text.byteLength()
     opt Left is false
     p0->>p2: text.byteLength()
     end
-    alt text.byteLength() #60; minBytes or text.byteLength() #62; maxBytes
+    alt text.byteLength() ‹ minBytes or text.byteLength() › maxBytes
     p0->>p1: ConversionError()
-    Note over p0: Raise checked failure ConversionError()#59; required cleanup runs before exit
+    Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
     p0->>p3: text.codePointLength()
 ```
@@ -123,8 +105,9 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as parseBoundedText
     participant p1 as BoundedText
-    p0->>p1: BoundedText(text, minBytes, maxBytes)
-    Note over p0: Return BoundedText(text, minBytes, maxBytes)#59; required cleanup runs before exit
+    p0->>p1: BoundedText(text=text, minBytes=minBytes,<br/>maxBytes=maxBytes)
+    p1-->>p0: BoundedText
+    Note over p0: Return BoundedText(text, minBytes, maxBytes)； required<br/>cleanup runs before exit
     Note over p0: May leave with checked errors: ConversionError
 ```
 
@@ -134,12 +117,7 @@ sequenceDiagram
 
 [Source](text.aug#L39)
 
-```mermaid
-sequenceDiagram
-    participant p0 as formatBoundedText
-
-    Note over p0: Return value.text#59; required cleanup runs before exit
-```
+Return value.text; required cleanup runs before exit. [Explanation](text.aug.md).
 
 ## Called contracts
 

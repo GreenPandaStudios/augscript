@@ -17,7 +17,7 @@ hero:
       link: /learn/
 features:
   - title: Move from overview to code
-    details: Follow modules, class interactions and API sequences, then open the explanation or source for the detail you need.
+    details: Follow folder data flow, module interactions and API sequences, then open the explanation or source for the detail you need.
   - title: Read it like pseudocode
     details: Calls name their inputs. Imports and declaration headers show which dependencies the code uses.
   - title: Compile a human-readable spec
@@ -34,7 +34,7 @@ features:
 
 August is designed for developers and coding agents working in large codebases. Whether you wrote an implementation or an agent produced it, you need to understand its dependencies, decisions and effects before changing it.
 
-Move through the program at several levels: **project overview → module interactions → API sequences → compiled explanation → source**. Each view comes from the checked program and links to the next level. Start with the overview to find the relevant module, follow a sequence to see which operations it calls, and open the source when you need to inspect or change an expression.
+Move through the program at several levels: **project overview → folder data flow → module interactions → API sequences → compiled explanation → source**. Each view comes from the checked program and links to the next level. Start with the overview to find the relevant folder, open its modules, follow a sequence to see which operations it calls, and open the source when you need to inspect or change an expression.
 
 Generated Mermaid diagrams are being added for 1.0 and are **unreleased**. Explore the [greeting project's diagrams](examples/hello/diagrams/index.md) or follow a larger [login application's APIs](examples/oidc-login/diagrams/index.md). The [compiled-spec guide](specifications.md) explains what each view contains.
 

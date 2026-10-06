@@ -304,8 +304,10 @@ test('the compiled library template explains static data-only worker transfer',(
  const outputs=generateSpecs(checked,{files:[...checked.project.files.values()].filter(file=>file.path.startsWith(checked.project.root+'/'))});
  const output=outputs.find(item=>item.path.endsWith('/workers.aug.md'));
  const diagram=outputs.find(item=>item.path.endsWith('/workers.aug.diagrams.md'));
- assert.match(diagram.text,/only chunk data crosses/);assert.match(diagram.text,/Direct call with value(?:;|#59;) target selected at compile time/);
+ assert.match(diagram.text,/only chunk data crosses/);assert.match(diagram.text,/Direct call with value(?:;|#59;|；) target selected at compile time/);
  assert.doesNotMatch(diagram.text,/_mapWorkerChunk\(values, transformation\)|apply\(value\) · interface dispatch/);
  assert.match(output.text,/compile-time selected transformation/);assert.match(output.text,/only chunk data crosses/);
  assert.doesNotMatch(output.text,/transformation.*with copies of its inputs on a separate heap/);
+ const overview=outputs.find(item=>item.path.endsWith('/.aug-spec/diagrams/index.md'));
+ assert.match(overview.text,/compile-time target placeholder/);assert.doesNotMatch(overview.text,/Transformation\.apply.*interface dispatch/);
 });

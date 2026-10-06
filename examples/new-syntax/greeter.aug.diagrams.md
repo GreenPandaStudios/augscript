@@ -8,10 +8,10 @@
 
 ```mermaid
 flowchart TD
-    n0["Console · august/io/contracts.aug"]
-    n1["Greeter · greeter.aug"]
-    n2["IGreeter · greeter.aug"]
-    n3["Logger · logger.aug"]
+    n0["Console"]
+    n1["Greeter"]
+    n2["IGreeter"]
+    n3["Logger"]
     n1 -->|"depends on"| n0
     n1 -->|"implements"| n2
     n1 -->|"calls"| n3
@@ -19,15 +19,17 @@ flowchart TD
     n2 -->|"depends on"| n0
 ```
 
-## API calls
+<details>
+<summary>Call relationships</summary>
 
 ```mermaid
 flowchart TD
-    n0["Greeter.greet · greeter.aug"]
-    n1["IGreeter.greet · greeter.aug"]
-    n2["Logger.log · logger.aug"]
-    n0 -->|"calls"| n2
+    n0["Greeter.greet"]
+    n1["Logger.log"]
+    n0 -->|"calls"| n1
 ```
+
+</details>
 
 ## Sequences
 
@@ -39,12 +41,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](greeter.aug#L4)
 
-```mermaid
-sequenceDiagram
-    participant p0 as Greeter constructor
-
-    Note over p0: Receive fields: injected logger, x
-```
+Receive fields: injected logger, x. [Explanation](greeter.aug.md).
 
 <a id="sequence-Greeter.greet"></a>
 
@@ -55,8 +52,8 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as Greeter.greet
-    participant p1 as Logger.log
-    p0->>p1: log(message) · interface dispatch
+    participant p1 as logger: Logger
+    p0->>p1: log(message=”Hello, ” + name + ”!”) · interface dispatch
 ```
 
 <a id="sequence-IGreeter.greet"></a>
@@ -65,12 +62,7 @@ sequenceDiagram
 
 [Source](greeter.aug#L10)
 
-```mermaid
-sequenceDiagram
-    participant p0 as IGreeter.greet
-
-    Note over p0: Interface contract#59; implementation selected at runtime
-```
+Interface contract; implementation selected at runtime. [Explanation](greeter.aug.md).
 
 ## Called contracts
 

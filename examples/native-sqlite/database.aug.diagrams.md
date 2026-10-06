@@ -4,24 +4,24 @@
 
 [Project overview](.aug-spec/diagrams/index.md) · [Compiled explanation](database.aug.md)
 
-## Class interactions
 
-No relationships at this level.
-
-## API calls
+<details>
+<summary>Call relationships</summary>
 
 ```mermaid
 flowchart TD
-    n0["storedName · database.aug"]
+    n0["storedName"]
     n1["database.aug"]
-    n2["execute · package/@greenpandastudios/aug-sqlite@0.1.5/api.aug"]
-    n3["openMemory · package/@greenpandastudios/aug-sqlite@0.1.5/api.aug"]
-    n4["queryScalar · package/@greenpandastudios/aug-sqlite@0.1.5/api.aug"]
+    n2["execute"]
+    n3["openMemory"]
+    n4["queryScalar"]
     n0 -->|"calls"| n2
     n0 -->|"calls"| n3
     n0 -->|"calls"| n4
     n1 -->|"calls"| n0
 ```
+
+</details>
 
 ## Sequences
 
@@ -36,19 +36,21 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ```mermaid
 sequenceDiagram
     participant p0 as storedName
-    participant p1 as openMemory
-    participant p2 as execute
-    participant p3 as queryScalar
+    participant p1 as @greenpandastudios/aug-sqlite/api
     p0->>p1: openMemory()
-    Note over p0: Own database#59; release on scope exits
+    p1-->>p0: database: Database
+    Note over p0: Own database； release on scope exits
     rect rgb(245, 240, 241)
     Note over p0: Enter borrow scope
-    p0->>p2: execute(database, sql, parameters)
-    p0->>p2: execute(database, sql, parameters)
+    p0->>p1: execute(database=database, sql=”CREATE TABLE users (name<br/>TEXT NOT NULL)”, parameters=［］)
+    p1-->>p0: int
+    p0->>p1: execute(database=database, sql=”INSERT INTO users (name)<br/>VALUES (?)”, parameters=［”August”］)
+    p1-->>p0: int
     Note over p0: Leave borrow scope
     end
-    p0->>p3: queryScalar(database, sql, parameters)
-    Note over p0: Return queryScalar(database, sql=#34;SELECT name FROM users#34;, parameters=#91;#93;)#59; required cleanup runs before exit
+    p0->>p1: queryScalar(database=database, sql=”SELECT name FROM<br/>users”, parameters=［］)
+    p1-->>p0: string
+    Note over p0: Return queryScalar(database, sql=”SELECT name FROM<br/>users”, parameters=［］)； required cleanup runs before<br/>exit
     Note over p0: May leave with checked errors: SqliteError
 ```
 

@@ -18,21 +18,18 @@ outline: [2, 3]
 
 ```mermaid
 flowchart TD
-    n0["securityHeaders · common/headers.aug"]
-    n1["withCookie · common/headers.aug"]
-    n2["settings · common/settings.aug"]
-    n3["ExpiringStore · package/@git/url_0eb7c89453c87681ed15@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug"]
-    n4["urlEncode · package/@git/url_897efafd565158fc4908@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug"]
-    n5["Crypto · package/@git/url_9ef654c66d34ab8f5527@0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug"]
-    n6["Clock · package/@git/url_c092cd151499c4e1d8a1@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug"]
-    n7["authorize · provider/authorization.aug"]
-    n8["providerLogin · provider/authorization.aug"]
-    n9["AuthorizationCode · provider/contracts.aug"]
-    n10["AuthorizationRequest · provider/contracts.aug"]
-    n11["LoginError · provider/contracts.aug"]
-    n12["verifyCredentials · provider/credentials.aug"]
-    n13["ProviderFailure · provider/views.aug"]
-    n14["ProviderLogin · provider/views.aug"]
+    n0["securityHeaders"]
+    n1["withCookie"]
+    n2["settings"]
+    n3["ExpiringStore"]
+    n4["urlEncode"]
+    n5["Crypto"]
+    n6["Clock"]
+    n7["authorize"]
+    n8["providerLogin"]
+    n9["verifyCredentials"]
+    n10["ProviderFailure"]
+    n11["ProviderLogin"]
     n7 -->|"calls"| n0
     n7 -->|"calls"| n1
     n7 -->|"calls"| n2
@@ -43,9 +40,7 @@ flowchart TD
     n7 -->|"calls"| n6
     n7 -->|"depends on"| n6
     n7 -->|"defers HTTP call to"| n8
-    n7 -->|"calls"| n10
     n7 -->|"calls"| n11
-    n7 -->|"calls"| n14
     n8 -->|"calls"| n0
     n8 -->|"calls"| n1
     n8 -->|"calls"| n2
@@ -57,32 +52,31 @@ flowchart TD
     n8 -->|"calls"| n6
     n8 -->|"depends on"| n6
     n8 -->|"calls"| n9
-    n8 -->|"calls"| n12
-    n8 -->|"calls"| n13
+    n8 -->|"calls"| n10
 ```
 
-## API calls
+::: details Call relationships
 
 ```mermaid
 flowchart TD
-    n0["securityHeaders · common/headers.aug"]
-    n1["withCookie · common/headers.aug"]
-    n2["settings · common/settings.aug"]
-    n3["ExpiringStore.put · package/@git/url_0eb7c89453c87681ed15@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug"]
-    n4["ExpiringStore.take · package/@git/url_0eb7c89453c87681ed15@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug"]
-    n5["urlEncode · package/@git/url_897efafd565158fc4908@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug"]
-    n6["Crypto.decodeBase64url · package/@git/url_9ef654c66d34ab8f5527@0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/con…"]
-    n7["Crypto.equal · package/@git/url_9ef654c66d34ab8f5527@0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug"]
-    n8["Crypto.random · package/@git/url_9ef654c66d34ab8f5527@0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug"]
-    n9["Clock.now · package/@git/url_c092cd151499c4e1d8a1@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug"]
-    n10["authorize · provider/authorization.aug"]
-    n11["providerLogin · provider/authorization.aug"]
-    n12["AuthorizationCode · provider/contracts.aug"]
-    n13["AuthorizationRequest · provider/contracts.aug"]
-    n14["LoginError · provider/contracts.aug"]
-    n15["verifyCredentials · provider/credentials.aug"]
-    n16["ProviderFailure · provider/views.aug"]
-    n17["ProviderLogin · provider/views.aug"]
+    n0["securityHeaders"]
+    n1["withCookie"]
+    n2["settings"]
+    n3["ExpiringStore.put"]
+    n4["ExpiringStore.take"]
+    n5["urlEncode"]
+    n6["Crypto.decodeBase64url"]
+    n7["Crypto.equal"]
+    n8["Crypto.random"]
+    n9["Clock.now"]
+    n10["authorize"]
+    n11["providerLogin"]
+    n12["AuthorizationCode"]
+    n13["AuthorizationRequest"]
+    n14["LoginError"]
+    n15["verifyCredentials"]
+    n16["ProviderFailure"]
+    n17["ProviderLogin"]
     n10 -->|"calls"| n0
     n10 -->|"calls"| n1
     n10 -->|"calls"| n2
@@ -108,6 +102,8 @@ flowchart TD
     n11 -->|"calls"| n16
 ```
 
+:::
+
 ## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
@@ -118,93 +114,108 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](authorization.md#source-L12)
 :::
 
-#### Sequence 1 of 2 (continued)
+#### Sequence 1 of 3 (continued)
 
 ```mermaid
 sequenceDiagram
     participant p0 as authorize
-    participant p1 as settings
+    participant p1 as common/settings
     participant p2 as LoginError
     participant p3 as state.isToken
     participant p4 as nonce.isToken
     participant p5 as code_challenge.length
-    participant p6 as Crypto.decodeBase64url
+    participant p6 as crypto: Crypto
     participant p7 as crypto.decodeBase64url(input=code_challenge).length
-    participant p8 as Crypto.random
-    participant p9 as crypto.random(size=32).base64url
-    participant p10 as Clock.now
     Note over p0: GET /provider/authorize
     p0->>p1: settings()
-    opt Left is false
-    end
-    opt Left is false
-    end
-    opt Left is false
-    end
-    alt client_id != config.clientId or redirect_uri != config.callback or response_type != #34;code#34; or code_challenge_method !…
+    p1-->>p0: config: Settings
+    alt client_id != config.clientId or redirect_uri != config.callback or response_type != ”code” or code_challenge_method !…
     p0->>p2: LoginError()
-    Note over p0: Raise checked failure LoginError()#59; required cleanup runs before exit
+    p2-->>p0: LoginError
+    Note over p0: Raise checked failure LoginError()； required cleanup<br/>runs before exit
     end
-    opt Left is true
-    end
-    alt requestedScope != #34;openid#34; and requestedScope != #34;openid profile#34;
+    alt requestedScope != ”openid” and requestedScope != ”openid profile”
     p0->>p2: LoginError()
-    Note over p0: Raise checked failure LoginError()#59; required cleanup runs before exit
+    p2-->>p0: LoginError
+    Note over p0: Raise checked failure LoginError()； required cleanup<br/>runs before exit
     end
-    p0->>p3: state.isToken(min, max)
+    p0->>p3: state.isToken(min=43, max=128)
     opt Left is false
-    p0->>p4: nonce.isToken(min, max)
+    p0->>p4: nonce.isToken(min=43, max=128)
     end
     opt Left is false
     p0->>p5: code_challenge.length()
     end
     alt not state.isToken(min=43, max=128)) or (not nonce.isToken(min=43, max=128)) or code_challenge.length() != 43
     p0->>p2: LoginError()
-    Note over p0: Raise checked failure LoginError()#59; required cleanup runs before exit
+    p2-->>p0: LoginError
+    Note over p0: Raise checked failure LoginError()； required cleanup<br/>runs before exit
     end
-    opt Try body#59; stops on a checked failure
-    p0->>p6: decodeBase64url(input) · interface dispatch
+    opt Try body； stops on a checked failure
+    p0->>p6: decodeBase64url(input=code_challenge) · interface<br/>dispatch
+    p6-->>p0: Bytes
     p0->>p7: crypto.decodeBase64url(input=code_challenge).length()
     alt crypto.decodeBase64url(input=code_challenge).length() != 32
     p0->>p2: LoginError()
-    Note over p0: Raise checked failure LoginError()#59; required cleanup runs before exit
+    p2-->>p0: LoginError
+    Note over p0: Raise checked failure LoginError()； required cleanup<br/>runs before exit
     end
     end
     opt Catch CryptoError
     p0->>p2: LoginError()
-    Note over p0: Raise checked failure LoginError()#59; required cleanup runs before exit
+    p2-->>p0: LoginError
+    Note over p0: Raise checked failure LoginError()； required cleanup<br/>runs before exit
     end
-    p0->>p8: random(size) · interface dispatch
-    p0->>p9: crypto.random(size=32).base64url()
-    p0->>p8: random(size) · interface dispatch
-    p0->>p9: crypto.random(size=32).base64url()
-    p0->>p8: random(size) · interface dispatch
-    p0->>p9: crypto.random(size=32).base64url()
-    p0->>p10: now() · interface dispatch
 ```
 
-#### Sequence 2 of 2 (continued)
+#### Sequence 2 of 3 (continued)
 
 ```mermaid
 sequenceDiagram
     participant p0 as authorize
-    participant p1 as AuthorizationRequest
-    participant p2 as ExpiringStore.put
-    participant p3 as securityHeaders
-    participant p4 as withCookie
-    participant p5 as ProviderLogin
-    participant p6 as HttpResponse
+    participant p1 as crypto: Crypto
+    participant p2 as crypto.random(size=32).base64url
+    participant p3 as clock: Clock
+    participant p4 as AuthorizationRequest
+    participant p5 as requests: ExpiringStore
+    participant p6 as common/headers
+    participant p7 as provider/views
+    participant p8 as HttpResponse
     Note over p0: Sequence continued from the previous view
-    p0->>p1: AuthorizationRequest(clientId, redirectUri, state, nonce, challenge, browser, csrf, expires)
-    p0->>p2: put(key, value, expires, now) · interface dispatch
-    p0->>p3: securityHeaders()
-    p0->>p4: withCookie(headers, name, value, path, maxAge, secure)
-    Note over p0: Create browser action for POST /provider/login#59; called on submission
-    p0->>p5: ProviderLogin(requestId, csrf, message, submit)
-    p0->>p6: HttpResponse(body, headers)
-    Note over p0: Return HttpResponse(body=ProviderLogin(requestId, csrf, message=#34;Authorize the registered August login app.#34;, submit=…
-    Note over p0: May leave with checked errors: CryptoError, HttpError, LoginError, StoreFull, TimeError
-    Note over p0: HTTP result follows declared response and error mapping#59; unhandled request failure returns 500
+    p0->>p1: random(size=32) · interface dispatch
+    p1-->>p0: Bytes
+    p0->>p2: crypto.random(size=32).base64url()
+    p0->>p1: random(size=32) · interface dispatch
+    p1-->>p0: Bytes
+    p0->>p2: crypto.random(size=32).base64url()
+    p0->>p1: random(size=32) · interface dispatch
+    p1-->>p0: Bytes
+    p0->>p2: crypto.random(size=32).base64url()
+    p0->>p3: now() · interface dispatch
+    p3-->>p0: now: int
+    p0->>p4: AuthorizationRequest(clientId=client_id,<br/>redirectUri=redirect_uri, state=state, nonce=nonce,<br/>challenge=code_challenge…
+    p4-->>p0: request: AuthorizationRequest
+    p0->>p5: put(key=requestId, value=request,<br/>expires=request.expires, now=now) · interface dispatch
+    p0->>p6: securityHeaders()
+    p6-->>p0: Headers
+    p0->>p6: withCookie(headers=securityHeaders(),<br/>name=”aug_authorize”, value=browser, path=”/provider”,<br/>maxAge=300, secure=confi…
+    p6-->>p0: headers: Headers
+    Note over p0: Create browser action for POST /provider/login； called<br/>on submission
+    p0->>p7: ProviderLogin(requestId=requestId, csrf=csrf,<br/>message=”Authorize the registered August login app.”,<br/>submit=handle pro…
+    p7-->>p0: Html
+    p0->>p8: HttpResponse(body=ProviderLogin(requestId, csrf,<br/>message=”Authorize the registered August login app.”,<br/>submit=handle …
+    Note over p0: Return HttpResponse(body=ProviderLogin(requestId, csrf,<br/>message=”Authorize the registered August login app.”,<br/>submit=…
+```
+
+#### Sequence 3 of 3 (continued)
+
+```mermaid
+sequenceDiagram
+    participant p0 as authorize
+
+    Note over p0: Sequence continued from the previous view
+    Note over p0: May leave with checked errors: CryptoError, HttpError,<br/>LoginError, StoreFull, TimeError
+    Note over p0: HTTP result follows declared response and error mapping；<br/>unhandled request failure returns 500
 ```
 
 ### providerLogin {#sequence-providerLogin}
@@ -213,135 +224,167 @@ sequenceDiagram
 [Source](authorization.md#source-L35)
 :::
 
-#### Sequence 1 of 3 (continued)
+#### Sequence 1 of 4 (continued)
 
 ```mermaid
 sequenceDiagram
     participant p0 as providerLogin
-    participant p1 as settings
-    participant p2 as ProviderFailure
-    participant p3 as securityHeaders
+    participant p1 as common/settings
+    participant p2 as provider/views
+    participant p3 as common/headers
     participant p4 as HttpResponse
-    participant p5 as Clock.now
-    participant p6 as ExpiringStore.take
-    participant p7 as secret.bytes
-    participant p8 as request.browser.bytes
-    participant p9 as Crypto.equal
-    participant p10 as form.csrf.bytes
-    participant p11 as request.csrf.bytes
+    participant p5 as clock: Clock
+    participant p6 as requests: ExpiringStore
     Note over p0: POST /provider/login
     p0->>p1: settings()
-    opt Try body#59; stops on a checked failure
+    p1-->>p0: config: Settings
+    opt Try body； stops on a checked failure
     alt origin != config.baseUrl
-    p0->>p2: ProviderFailure(message)
+    p0->>p2: ProviderFailure(message=”The sign-in form must come from<br/>this app.”)
+    p2-->>p0: Html
     p0->>p3: securityHeaders()
-    p0->>p4: HttpResponse(body, status, headers)
-    Note over p0: Return HttpResponse(body=ProviderFailure(message=#34;The sign-in form must come from this app.#34;), status=403, headers=se…
+    p3-->>p0: Headers
+    p0->>p4: HttpResponse(body=ProviderFailure(message=”The sign-in<br/>form must come from this app.”), status=403,<br/>headers=securityH…
+    Note over p0: Return HttpResponse(body=ProviderFailure(message=”The<br/>sign-in form must come from this app.”), status=403,<br/>headers=se…
     end
     p0->>p5: now() · interface dispatch
-    p0->>p6: take(key, now) · interface dispatch
+    p5-->>p0: int
+    p0->>p6: take(key=form.request_id, now=clock.now()) · interface<br/>dispatch
+    p6-->>p0: optional AuthorizationRequest
     alt Match when null:
-    p0->>p2: ProviderFailure(message)
+    p0->>p2: ProviderFailure(message=”The sign-in request expired or<br/>was already used.”)
+    p2-->>p0: Html
     p0->>p3: securityHeaders()
-    p0->>p4: HttpResponse(body, status, headers)
-    Note over p0: Return HttpResponse(body=ProviderFailure(message=#34;The sign-in request expired or was already used.#34;), status=400, hea…
+    p3-->>p0: Headers
+    p0->>p4: HttpResponse(body=ProviderFailure(message=”The sign-in<br/>request expired or was already used.”), status=400,<br/>headers=se…
+    Note over p0: Return HttpResponse(body=ProviderFailure(message=”The<br/>sign-in request expired or was already used.”),<br/>status=400, hea…
     else Match when some request:
     alt Match when null:
-    p0->>p2: ProviderFailure(message)
+    p0->>p2: ProviderFailure(message=”The browser binding is<br/>missing.”)
+    p2-->>p0: Html
     p0->>p3: securityHeaders()
-    p0->>p4: HttpResponse(body, status, headers)
-    Note over p0: Return HttpResponse(body=ProviderFailure(message=#34;The browser binding is missing.#34;), status=403, headers=securityHead…
-    else Match when some secret:
-    p0->>p7: secret.bytes()
-    p0->>p8: request.browser.bytes()
-    p0->>p9: equal(left, right) · interface dispatch
-    opt Left is false
-    p0->>p10: form.csrf.bytes()
-    p0->>p11: request.csrf.bytes()
-    p0->>p9: equal(left, right) · interface dispatch
-    end
-    alt not crypto.equal(left=secret.bytes(), right=request.browser.bytes())) or (not crypto.equal(left=form.csrf.bytes(), ri…
-    p0->>p2: ProviderFailure(message)
-    p0->>p3: securityHeaders()
-    end
+    p3-->>p0: Headers
+    p0->>p4: HttpResponse(body=ProviderFailure(message=”The browser<br/>binding is missing.”), status=403,<br/>headers=securityHeaders())
     end
     end
     end
 ```
 
-#### Sequence 2 of 3 (continued)
+#### Sequence 2 of 4 (continued)
+
+```mermaid
+sequenceDiagram
+    participant p0 as providerLogin
+    participant p1 as secret.bytes
+    participant p2 as request.browser.bytes
+    participant p3 as crypto: Crypto
+    participant p4 as form.csrf.bytes
+    participant p5 as request.csrf.bytes
+    participant p6 as provider/views
+    participant p7 as common/headers
+    participant p8 as HttpResponse
+    participant p9 as provider/credentials
+    opt Try body； stops on a checked failure
+    alt Match when null:
+    else Match when some request:
+    alt Match when null:
+    Note over p0: Sequence continued from the previous view
+    Note over p0: Return HttpResponse(body=ProviderFailure(message=”The<br/>browser binding is missing.”), status=403,<br/>headers=securityHead…
+    else Match when some secret:
+    p0->>p1: secret.bytes()
+    p0->>p2: request.browser.bytes()
+    p0->>p3: equal(left=secret.bytes(),<br/>right=request.browser.bytes()) · interface dispatch
+    p3-->>p0: bool
+    opt Left is false
+    p0->>p4: form.csrf.bytes()
+    p0->>p5: request.csrf.bytes()
+    p0->>p3: equal(left=form.csrf.bytes(),<br/>right=request.csrf.bytes()) · interface dispatch
+    p3-->>p0: bool
+    end
+    alt not crypto.equal(left=secret.bytes(), right=request.browser.bytes())) or (not crypto.equal(left=form.csrf.bytes(), ri…
+    p0->>p6: ProviderFailure(message=”The sign-in form could not be<br/>verified.”)
+    p6-->>p0: Html
+    p0->>p7: securityHeaders()
+    p7-->>p0: Headers
+    p0->>p8: HttpResponse(body=ProviderFailure(message=”The sign-in<br/>form could not be verified.”), status=403,<br/>headers=securityHea…
+    Note over p0: Return HttpResponse(body=ProviderFailure(message=”The<br/>sign-in form could not be verified.”), status=403,<br/>headers=secu…
+    end
+    end
+    p0->>p9: verifyCredentials(username=form.username,<br/>password=form.password)
+    p9-->>p0: bool
+    alt not verifyCredentials(username=form.username, password=form.password)
+    p0->>p6: ProviderFailure(message=”The username or password was<br/>not accepted.”)
+    p6-->>p0: Html
+    p0->>p7: securityHeaders()
+    p7-->>p0: Headers
+    p0->>p8: HttpResponse(body=ProviderFailure(message=”The username<br/>or password was not accepted.”), status=401,<br/>headers=security…
+    Note over p0: Return HttpResponse(body=ProviderFailure(message=”The<br/>username or password was not accepted.”), status=401,<br/>headers=s…
+    end
+    end
+    end
+```
+
+#### Sequence 3 of 4 (continued)
+
+```mermaid
+sequenceDiagram
+    participant p0 as providerLogin
+    participant p1 as clock: Clock
+    participant p2 as crypto: Crypto
+    participant p3 as crypto.random(size=32).base64url
+    participant p4 as AuthorizationCode
+    participant p5 as codes: ExpiringStore
+    participant p6 as @git/url_897efafd565158fc4908/contracts
+    participant p7 as common/headers
+    participant p8 as securityHeaders().with
+    participant p9 as HttpResponse
+    participant p10 as provider/views
+    opt Try body； stops on a checked failure
+    alt Match when null:
+    else Match when some request:
+    Note over p0: Sequence continued from the previous view
+    p0->>p1: now() · interface dispatch
+    p1-->>p0: now: int
+    p0->>p2: random(size=32) · interface dispatch
+    p2-->>p0: Bytes
+    p0->>p3: crypto.random(size=32).base64url()
+    p0->>p4: AuthorizationCode(clientId=request.clientId,<br/>redirectUri=request.redirectUri,<br/>challenge=request.challenge, nonce=requ…
+    p4-->>p0: grant: AuthorizationCode
+    p0->>p5: put(key=code, value=grant, expires=grant.expires,<br/>now=now) · interface dispatch
+    p0->>p6: urlEncode(input=code)
+    p6-->>p0: string
+    p0->>p6: urlEncode(input=request.state)
+    p6-->>p0: string
+    p0->>p7: securityHeaders()
+    p7-->>p0: Headers
+    p0->>p8: securityHeaders().with(name=”location”, value=location)
+    p0->>p7: withCookie(headers=securityHeaders().with(name=”location”,<br/>value=location), name=”aug_authorize”, value=””,<br/>path=”/pr…
+    p7-->>p0: headers: Headers
+    p0->>p9: HttpResponse(body=‹p›Returning to the application.‹/p›,<br/>status=303, headers=headers)
+    Note over p0: Return HttpResponse(body=‹p›Returning to the<br/>application.‹/p›, status=303, headers=headers)； required<br/>cleanup runs be…
+    end
+    end
+    opt Catch HttpError
+    p0->>p10: ProviderFailure(message=”The submitted form is<br/>invalid.”)
+    p10-->>p0: Html
+    p0->>p7: securityHeaders()
+    p7-->>p0: Headers
+    end
+```
+
+#### Sequence 4 of 4 (continued)
 
 ```mermaid
 sequenceDiagram
     participant p0 as providerLogin
     participant p1 as HttpResponse
-    participant p2 as verifyCredentials
-    participant p3 as ProviderFailure
-    participant p4 as securityHeaders
-    participant p5 as Clock.now
-    participant p6 as Crypto.random
-    participant p7 as crypto.random(size=32).base64url
-    participant p8 as AuthorizationCode
-    participant p9 as ExpiringStore.put
-    participant p10 as urlEncode
-    participant p11 as securityHeaders().with
-    opt Try body#59; stops on a checked failure
-    alt Match when null:
-    else Match when some request:
-    alt Match when null:
-    else Match when some secret:
-    alt not crypto.equal(left=secret.bytes(), right=request.browser.bytes())) or (not crypto.equal(left=form.csrf.bytes(), ri…
-    Note over p0: Sequence continued from the previous view
-    p0->>p1: HttpResponse(body, status, headers)
-    Note over p0: Return HttpResponse(body=ProviderFailure(message=#34;The sign-in form could not be verified.#34;), status=403, headers=secu…
-    end
-    end
-    p0->>p2: verifyCredentials(username, password)
-    alt not verifyCredentials(username=form.username, password=form.password)
-    p0->>p3: ProviderFailure(message)
-    p0->>p4: securityHeaders()
-    p0->>p1: HttpResponse(body, status, headers)
-    Note over p0: Return HttpResponse(body=ProviderFailure(message=#34;The username or password was not accepted.#34;), status=401, headers=s…
-    end
-    p0->>p5: now() · interface dispatch
-    p0->>p6: random(size) · interface dispatch
-    p0->>p7: crypto.random(size=32).base64url()
-    p0->>p8: AuthorizationCode(clientId, redirectUri, challenge, nonce, subject, name, expires)
-    p0->>p9: put(key, value, expires, now) · interface dispatch
-    p0->>p10: urlEncode(input)
-    p0->>p10: urlEncode(input)
-    p0->>p4: securityHeaders()
-    p0->>p11: securityHeaders().with(name, value)
-    end
-    end
-```
-
-#### Sequence 3 of 3 (continued)
-
-```mermaid
-sequenceDiagram
-    participant p0 as providerLogin
-    participant p1 as withCookie
-    participant p2 as HttpResponse
-    participant p3 as ProviderFailure
-    participant p4 as securityHeaders
-    opt Try body#59; stops on a checked failure
-    alt Match when null:
-    else Match when some request:
-    Note over p0: Sequence continued from the previous view
-    p0->>p1: withCookie(headers, name, value, path, maxAge, secure)
-    p0->>p2: HttpResponse(body, status, headers)
-    Note over p0: Return HttpResponse(body=#60;p#62;Returning to the application.#60;/p#62;, status=303, headers=headers)#59; required cleanup runs be…
-    end
-    end
     opt Catch HttpError
-    p0->>p3: ProviderFailure(message)
-    p0->>p4: securityHeaders()
-    p0->>p2: HttpResponse(body, status, headers)
-    Note over p0: Return HttpResponse(body=ProviderFailure(message=#34;The submitted form is invalid.#34;), status=400, headers=securityHeade…
+    Note over p0: Sequence continued from the previous view
+    p0->>p1: HttpResponse(body=ProviderFailure(message=”The submitted<br/>form is invalid.”), status=400,<br/>headers=securityHeaders())
+    Note over p0: Return HttpResponse(body=ProviderFailure(message=”The<br/>submitted form is invalid.”), status=400,<br/>headers=securityHeade…
     end
-    Note over p0: May leave with checked errors: CryptoError, HttpError, StoreFull, TimeError
-    Note over p0: HTTP result follows declared response and error mapping#59; unhandled request failure returns 500
+    Note over p0: May leave with checked errors: CryptoError, HttpError,<br/>StoreFull, TimeError
+    Note over p0: HTTP result follows declared response and error mapping；<br/>unhandled request failure returns 500
 ```
 
 ## Called contracts

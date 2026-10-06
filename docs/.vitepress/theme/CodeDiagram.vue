@@ -3,7 +3,8 @@ import {computed,onBeforeUnmount,onMounted,ref,useId,watch} from 'vue';
 import {useData} from 'vitepress';
 const props=defineProps<{encoded:string}>();
 const source=computed(()=>new TextDecoder().decode(Uint8Array.from(atob(props.encoded),char=>char.charCodeAt(0))));
-const {isDark}=useData(),element=ref<HTMLElement>(),viewport=ref<HTMLElement>(),availableWidth=ref(640),svg=ref(''),error=ref(''),zoom=ref(100),naturalWidth=ref(640);
+const {isDark}=useData(),element=ref<HTMLElement>(),viewport=ref<HTMLElement>(),availableWidth=ref(640),svg=ref(''),error=ref(''),zoom=ref(100),naturalWidth=ref(640),fit=ref(false);
+const drawnWidth=computed(()=> (fit.value?Math.min(naturalWidth.value,availableWidth.value):Math.min(naturalWidth.value,Math.max(naturalWidth.value*.8,availableWidth.value)))*(zoom.value/100));
 const id='aug-diagram-'+useId().replace(/[^a-zA-Z0-9_-]/g,'');
 let observer:IntersectionObserver|undefined,resizeObserver:ResizeObserver|undefined,visible=false,disposed=false,revision=0;
 async function render(){
@@ -36,13 +37,13 @@ onBeforeUnmount(()=>{disposed=true;revision++;observer?.disconnect();resizeObser
 <template>
   <figure ref="element" class="aug-diagram" aria-label="Generated code diagram">
     <div class="aug-diagram-controls" aria-label="Diagram magnification">
-      <button type="button" :disabled="zoom <= 100" aria-label="Zoom out" @click="zoom -= 25">−</button>
-      <button type="button" :disabled="zoom >= 400" aria-label="Zoom in" @click="zoom += 25">+</button>
-      <button type="button" @click="zoom = 100">Fit</button><span>{{ zoom }}%</span>
+      <button type="button" :disabled="zoom <= 100" aria-label="Zoom out" @click="fit=false; zoom -= 25">−</button>
+      <button type="button" :disabled="zoom >= 400" aria-label="Zoom in" @click="fit=false; zoom += 25">+</button>
+      <button type="button" @click="fit=true; zoom=100">Fit</button><button type="button" @click="fit=false; zoom=100">Readable</button><span>{{ zoom }}%</span>
     </div>
     <p v-if="error" role="status">{{ error }}</p>
     <div v-else ref="viewport" class="aug-diagram-viewport" tabindex="0" role="region" aria-label="Scrollable diagram">
-      <div :style="{width: Math.min(naturalWidth, availableWidth)*(zoom/100)+'px'}" v-html="svg" />
+      <div :style="{width: drawnWidth+'px'}" v-html="svg" />
     </div>
     <details><summary>Mermaid source</summary><pre>{{ source }}</pre></details>
   </figure>
@@ -50,7 +51,7 @@ onBeforeUnmount(()=>{disposed=true;revision++;observer?.disconnect();resizeObser
 
 <style scoped>
 .aug-diagram { margin:1.5rem 0; border:1px solid var(--vp-c-divider); border-radius:6px; }
-.aug-diagram-controls { display:flex; align-items:center; gap:.5rem; padding:.5rem .75rem; border-bottom:1px solid var(--vp-c-divider); font-size:.8rem; }
+.aug-diagram-controls { display:flex; flex-wrap:wrap; align-items:center; gap:.5rem; padding:.5rem .75rem; border-bottom:1px solid var(--vp-c-divider); font-size:.8rem; }
 .aug-diagram-controls button { padding:.15rem .6rem; border:1px solid var(--vp-c-divider); border-radius:3px; }
 .aug-diagram-controls button:disabled { opacity:.4; }
 .aug-diagram-controls button:focus-visible,.aug-diagram-viewport:focus-visible { outline:2px solid var(--vp-c-brand-1); outline-offset:2px; }

@@ -14,13 +14,6 @@ outline: [2, 3]
 
 [Project overview](diagrams/index.md) · [Compiled explanation](main.md)
 
-## Class interactions
-
-No relationships at this level.
-
-## API calls
-
-No relationships at this level.
 
 ## Sequences
 
@@ -42,26 +35,26 @@ sequenceDiagram
     participant p5 as List
     participant p6 as numbers.append
     participant p7 as numbers.get
-    opt Try body#59; stops on a checked failure
+    opt Try body； stops on a checked failure
     p0->>p1: arguments()
     p0->>p2: args.length()
-    p0->>p3: print(value)
+    p0->>p3: print(value=args.length())
     p0->>p2: args.length()
-    alt args.length() #62; 0
-    p0->>p4: args.get(index)
-    p0->>p3: print(value)
+    alt args.length() › 0
+    p0->>p4: args.get(index=0)
+    p0->>p3: print(value=args.get(index=0))
     end
-    p0->>p5: List(input 1, input 2)
+    p0->>p5: List(input 1=1, input 2=2)
     rect rgb(245, 240, 241)
     Note over p0: Enter borrow scope
-    p0->>p6: numbers.append(value)
+    p0->>p6: numbers.append(value=3)
     Note over p0: Leave borrow scope
     end
-    p0->>p7: numbers.get(index)
-    p0->>p3: print(value)
+    p0->>p7: numbers.get(index=2)
+    p0->>p3: print(value=numbers.get(index=2))
     end
     opt Catch IndexError
-    p0->>p3: print(value)
+    p0->>p3: print(value=”unexpected index failure”)
     end
 ```
 

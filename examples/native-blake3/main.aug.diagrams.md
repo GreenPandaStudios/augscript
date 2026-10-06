@@ -4,18 +4,18 @@
 
 [Project overview](.aug-spec/diagrams/index.md) · [Compiled explanation](main.aug.md)
 
-## Class interactions
 
-No relationships at this level.
-
-## API calls
+<details>
+<summary>Call relationships</summary>
 
 ```mermaid
 flowchart TD
-    n0["hashText · hashing.aug"]
+    n0["hashText"]
     n1["main.aug"]
     n1 -->|"calls"| n0
 ```
+
+</details>
 
 ## Sequences
 
@@ -30,14 +30,15 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ```mermaid
 sequenceDiagram
     participant p0 as Startup
-    participant p1 as hashText
+    participant p1 as hashing
     participant p2 as print
-    opt Try body#59; stops on a checked failure
-    p0->>p1: hashText(value)
-    p0->>p2: print(value)
+    opt Try body； stops on a checked failure
+    p0->>p1: hashText(value=”abc”)
+    p1-->>p0: string
+    p0->>p2: print(value=hashText(value=”abc”))
     end
     opt Catch HashError
-    p0->>p2: print(value)
+    p0->>p2: print(value=error.message)
     end
 ```
 

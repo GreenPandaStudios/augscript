@@ -12,34 +12,45 @@ outline: [2, 3]
 
 [Move ownership](../index.md)
 
-Read the areas first, then open a module for its class interactions, API calls and sequences. Follow an operation to its specification and source.
+Start here to see what moves between the application’s folders. Each arrow names an operation’s inputs and the result it returns to its caller. Open a folder for the next level of detail. Expand the contract list for complete types and dependency links.
 
-These are checked static views. Arrows describe possible calls, not an execution trace. Interface implementations, callbacks and foreign internals are not guessed. Tests are described in the adjacent specifications.
-
-## Areas
+## Data flow
 
 ```mermaid
 flowchart TD
-    n0["August library"]
-    n1["Project root"]
-    n1 -->|"uses"| n0
+    n0["Startup"]
+    n1["resource"]
+    n0 -->|"consume(value) / make → own Resource"| n1
 ```
 
-## Modules
+### Package boundaries
+
+::: details resource package calls
 
 ```mermaid
-flowchart TD
-    n0["august/io/contracts.aug"]
-    n1["main.aug"]
-    n2["resource.aug"]
-    n1 -->|"uses"| n0
-    n1 -->|"uses"| n2
-    n2 -->|"uses"| n0
+flowchart LR
+    n0["August libraries"]
+    n1["resource"]
+    n1 -->|"Console.write(value)"| n0
 ```
+
+:::
+
+::: details Data crossing these boundaries (3 contracts)
+
+| From | To | Operation and inputs | Result |
+| --- | --- | --- | --- |
+| Startup | resource | [consume](../resource.md#symbol-consume) · value: own Resource | void |
+| Startup | resource | [make](../resource.md#symbol-make) | own Resource |
+| resource | August libraries | [Console.write](../dependencies/august/0.23.0/io/contracts.md#symbol-Console.write) · value: string · interface dispatch | void |
+
+:::
 
 ## Open a module
 
-| Module | Diagrams | Specification |
-| --- | --- | --- |
-| main.aug | [Interactions and sequences](../main-diagrams.md) | [Explanation](../main.md) |
-| resource.aug | [Interactions and sequences](../resource-diagrams.md) | [Explanation](../resource.md) |
+| Module | Read |
+| --- | --- |
+| main.aug | [Flow and sequences](../main-diagrams.md) · [Explanation](../main.md) |
+| resource.aug | [Flow and sequences](../resource-diagrams.md) · [Explanation](../resource.md) |
+
+These are static call boundaries, not a request trace. Interface implementations and foreign internals stop at their checked contracts. Dotted arrows defer a callback or browser action. Imports alone do not imply a call.

@@ -4,17 +4,6 @@
 
 [Project overview](.aug-spec/diagrams/index.md) · [Compiled explanation](math.aug.md)
 
-## Class interactions
-
-No relationships at this level.
-
-## API calls
-
-```mermaid
-flowchart TD
-    n0["increment · math.aug"]
-
-```
 
 ## Sequences
 
@@ -26,10 +15,5 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](math.aug#L2)
 
-```mermaid
-sequenceDiagram
-    participant p0 as increment
-
-    Note over p0: Return value + 1#59; required cleanup runs before exit
-```
+Return value + 1; required cleanup runs before exit. [Explanation](math.aug.md).
 

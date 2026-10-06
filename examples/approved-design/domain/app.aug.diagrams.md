@@ -8,27 +8,27 @@
 
 ```mermaid
 flowchart TD
-    n0["Console · august/io/contracts.aug"]
-    n1["Application · domain/app.aug"]
-    n2["ApplicationImpl · domain/app.aug"]
-    n3["Fruit · domain/models.aug"]
+    n0["Console"]
+    n1["Application"]
+    n2["ApplicationImpl"]
     n2 -->|"calls"| n0
     n2 -->|"depends on console"| n0
     n2 -->|"implements"| n1
-    n2 -->|"calls"| n3
 ```
 
-## API calls
+<details>
+<summary>Call relationships</summary>
 
 ```mermaid
 flowchart TD
-    n0["Console.write · august/io/contracts.aug"]
-    n1["Application.start · domain/app.aug"]
-    n2["ApplicationImpl.start · domain/app.aug"]
-    n3["Fruit · domain/models.aug"]
-    n2 -->|"calls"| n0
-    n2 -->|"calls"| n3
+    n0["Console.write"]
+    n1["ApplicationImpl.start"]
+    n2["Fruit"]
+    n1 -->|"calls"| n0
+    n1 -->|"calls"| n2
 ```
+
+</details>
 
 ## Sequences
 
@@ -40,12 +40,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](app.aug#L7)
 
-```mermaid
-sequenceDiagram
-    participant p0 as Application.start
-
-    Note over p0: Interface contract#59; implementation selected at runtime
-```
+Interface contract; implementation selected at runtime. [Explanation](app.aug.md).
 
 <a id="sequence-ApplicationImpl-20-constructor"></a>
 
@@ -53,12 +48,7 @@ sequenceDiagram
 
 [Source](app.aug#L9)
 
-```mermaid
-sequenceDiagram
-    participant p0 as ApplicationImpl constructor
-
-    Note over p0: Receive fields: injected console
-```
+Receive fields: injected console. [Explanation](app.aug.md).
 
 <a id="sequence-ApplicationImpl.start"></a>
 
@@ -70,11 +60,13 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as ApplicationImpl.start
     participant p1 as Fruit
-    participant p2 as Console.write
-    p0->>p1: Fruit(code, name)
-    p0->>p1: Fruit(name, code)
+    participant p2 as console: Console
+    p0->>p1: Fruit(code=1, name=”apple”)
+    p1-->>p0: Fruit
+    p0->>p1: Fruit(name=”pear”, code=2)
+    p1-->>p0: Fruit
     loop For each item in fruit
-    p0->>p2: write(value) · interface dispatch
+    p0->>p2: write(value=item.name) · interface dispatch
     end
 ```
 

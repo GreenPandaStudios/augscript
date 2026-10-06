@@ -12,38 +12,47 @@ outline: [2, 3]
 
 [CPU tensors with PyTorch](../index.md)
 
-Read the areas first, then open a module for its class interactions, API calls and sequences. Follow an operation to its specification and source.
+Start here to see what moves between the application’s folders. Each arrow names an operation’s inputs and the result it returns to its caller. Open a folder for the next level of detail. Expand the contract list for complete types and dependency links.
 
-These are checked static views. Arrows describe possible calls, not an execution trace. Interface implementations, callbacks and foreign internals are not guessed. Tests are described in the adjacent specifications.
-
-## Areas
+## Data flow
 
 ```mermaid
 flowchart TD
-    n0["Project root"]
-    n1["package/@greenpandastudios/aug-pytorch@0.1.6"]
-    n0 -->|"uses"| n1
+    n0["Startup"]
+    n1["tensors"]
+    n0 -->|"calculate → float"| n1
 ```
 
-## Modules
+### Package boundaries
+
+::: details tensors package calls
 
 ```mermaid
-flowchart TD
-    n0["main.aug"]
-    n1["package/@greenpandastudios/aug-pytorch@0.1.6/api.aug"]
-    n2["package/@greenpandastudios/aug-pytorch@0.1.6/bindings.aug"]
-    n3["package/@greenpandastudios/aug-pytorch@0.1.6/contracts.aug"]
-    n4["tensors.aug"]
-    n0 -->|"uses"| n3
-    n0 -->|"uses"| n4
-    n4 -->|"uses"| n1
-    n4 -->|"uses"| n2
-    n4 -->|"uses"| n3
+flowchart LR
+    n0["@greenpandastudios/aug-pytorch"]
+    n1["tensors"]
+    n1 -->|"add(left, right) / sum(tensor) + 2 more → float / list of float + 1 more"| n0
 ```
+
+:::
+
+::: details Data crossing these boundaries (5 contracts)
+
+| From | To | Operation and inputs | Result |
+| --- | --- | --- | --- |
+| Startup | tensors | [calculate](../tensors.md#symbol-calculate) | float |
+| tensors | @greenpandastudios/aug-pytorch | [add](../dependencies/packages/%40greenpandastudios/aug-pytorch/0.1.6/api.md#symbol-add) · left: Tensor, right: Tensor | own Tensor |
+| tensors | @greenpandastudios/aug-pytorch | [sum](../dependencies/packages/%40greenpandastudios/aug-pytorch/0.1.6/api.md#symbol-sum) · tensor: Tensor | float |
+| tensors | @greenpandastudios/aug-pytorch | [tensor](../dependencies/packages/%40greenpandastudios/aug-pytorch/0.1.6/api.md#symbol-tensor) · values: List\<float\> | own Tensor |
+| tensors | @greenpandastudios/aug-pytorch | [values](../dependencies/packages/%40greenpandastudios/aug-pytorch/0.1.6/api.md#symbol-values) · tensor: Tensor | List\<float\> |
+
+:::
 
 ## Open a module
 
-| Module | Diagrams | Specification |
-| --- | --- | --- |
-| main.aug | [Interactions and sequences](../main-diagrams.md) | [Explanation](../main.md) |
-| tensors.aug | [Interactions and sequences](../tensors-diagrams.md) | [Explanation](../tensors.md) |
+| Module | Read |
+| --- | --- |
+| main.aug | [Flow and sequences](../main-diagrams.md) · [Explanation](../main.md) |
+| tensors.aug | [Flow and sequences](../tensors-diagrams.md) · [Explanation](../tensors.md) |
+
+These are static call boundaries, not a request trace. Interface implementations and foreign internals stop at their checked contracts. Dotted arrows defer a callback or browser action. Imports alone do not imply a call.

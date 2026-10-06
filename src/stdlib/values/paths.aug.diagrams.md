@@ -8,14 +8,32 @@
 
 ```mermaid
 flowchart TD
-    n0["asciiAt · august/values/ascii.aug"]
-    n1["asciiLetter · august/values/ascii.aug"]
-    n2["asciiLower · august/values/ascii.aug"]
-    n3["PortableRelativePath · august/values/paths.aug"]
-    n4["_reserved · august/values/paths.aug"]
-    n5["_validatePortablePath · august/values/paths.aug"]
-    n6["joinPortablePaths · august/values/paths.aug"]
-    n7["parsePortableRelativePath · august/values/paths.aug"]
+    n0["asciiAt"]
+    n1["asciiLetter"]
+    n2["asciiLower"]
+    n3["PortableRelativePath"]
+    n4["_reserved"]
+    n5["_validatePortablePath"]
+    n3 -->|"calls"| n5
+    n5 -->|"calls"| n0
+    n5 -->|"calls"| n1
+    n5 -->|"calls"| n2
+    n5 -->|"calls"| n4
+```
+
+<details>
+<summary>Call relationships</summary>
+
+```mermaid
+flowchart TD
+    n0["asciiAt"]
+    n1["asciiLetter"]
+    n2["asciiLower"]
+    n3["PortableRelativePath"]
+    n4["_reserved"]
+    n5["_validatePortablePath"]
+    n6["joinPortablePaths"]
+    n7["parsePortableRelativePath"]
     n3 -->|"calls"| n5
     n5 -->|"calls"| n0
     n5 -->|"calls"| n1
@@ -25,27 +43,7 @@ flowchart TD
     n7 -->|"calls"| n3
 ```
 
-## API calls
-
-```mermaid
-flowchart TD
-    n0["asciiAt · august/values/ascii.aug"]
-    n1["asciiLetter · august/values/ascii.aug"]
-    n2["asciiLower · august/values/ascii.aug"]
-    n3["PortableRelativePath · august/values/paths.aug"]
-    n4["_reserved · august/values/paths.aug"]
-    n5["_validatePortablePath · august/values/paths.aug"]
-    n6["formatPortableRelativePath · august/values/paths.aug"]
-    n7["joinPortablePaths · august/values/paths.aug"]
-    n8["parsePortableRelativePath · august/values/paths.aug"]
-    n3 -->|"calls"| n5
-    n5 -->|"calls"| n0
-    n5 -->|"calls"| n1
-    n5 -->|"calls"| n2
-    n5 -->|"calls"| n4
-    n7 -->|"calls"| n3
-    n8 -->|"calls"| n3
-```
+</details>
 
 ## Sequences
 
@@ -62,7 +60,7 @@ sequenceDiagram
     participant p0 as PortableRelativePath constructor
     participant p1 as _validatePortablePath
     Note over p0: Receive fields: text
-    p0->>p1: _validatePortablePath(text)
+    p0->>p1: _validatePortablePath(text=text)
 ```
 
 <a id="sequence-parsePortableRelativePath"></a>
@@ -75,8 +73,9 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as parsePortableRelativePath
     participant p1 as PortableRelativePath
-    p0->>p1: PortableRelativePath(text)
-    Note over p0: Return PortableRelativePath(text)#59; required cleanup runs before exit
+    p0->>p1: PortableRelativePath(text=text)
+    p1-->>p0: PortableRelativePath
+    Note over p0: Return PortableRelativePath(text)； required cleanup runs<br/>before exit
     Note over p0: May leave with checked errors: ConversionError
 ```
 
@@ -86,12 +85,7 @@ sequenceDiagram
 
 [Source](paths.aug#L21)
 
-```mermaid
-sequenceDiagram
-    participant p0 as formatPortableRelativePath
-
-    Note over p0: Return value.text#59; required cleanup runs before exit
-```
+Return value.text; required cleanup runs before exit. [Explanation](paths.aug.md).
 
 <a id="sequence-joinPortablePaths"></a>
 
@@ -103,8 +97,9 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as joinPortablePaths
     participant p1 as PortableRelativePath
-    p0->>p1: PortableRelativePath(text)
-    Note over p0: Return PortableRelativePath(text=left.text + #34;/#34; + right.text)#59; required cleanup runs before exit
+    p0->>p1: PortableRelativePath(text=left.text + ”/” + right.text)
+    p1-->>p0: PortableRelativePath
+    Note over p0: Return PortableRelativePath(text=left.text + ”/” +<br/>right.text)； required cleanup runs before exit
     Note over p0: May leave with checked errors: ConversionError
 ```
 
@@ -126,23 +121,23 @@ sequenceDiagram
     participant p5 as segment.byteLength
     participant p6 as segment.endsWith
     participant p7 as segment.bytes
-    participant p8 as asciiAt
-    participant p9 as asciiLetter
-    participant p10 as character.isDecimal
-    participant p11 as segment.split
+    participant p8 as august/values/ascii
+    participant p9 as character.isDecimal
+    participant p10 as segment.split
+    participant p11 as segment.split(separator=”.”).get
     p0->>p1: text.byteLength()
     opt Left is false
     p0->>p1: text.byteLength()
     end
-    alt text.byteLength() == 0 or text.byteLength() #62; 1024
+    alt text.byteLength() == 0 or text.byteLength() › 1024
     p0->>p2: ConversionError()
-    Note over p0: Raise checked failure ConversionError()#59; required cleanup runs before exit
+    Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
-    p0->>p3: text.split(separator)
+    p0->>p3: text.split(separator=”/”)
     p0->>p4: segments.length()
-    alt segments.length() #62; 64
+    alt segments.length() › 64
     p0->>p2: ConversionError()
-    Note over p0: Raise checked failure ConversionError()#59; required cleanup runs before exit
+    Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
     loop For each item in segments
     p0->>p5: segment.byteLength()
@@ -150,37 +145,30 @@ sequenceDiagram
     p0->>p5: segment.byteLength()
     end
     opt Left is false
+    p0->>p6: segment.endsWith(suffix=”.”)
     end
-    opt Left is false
-    end
-    opt Left is false
-    p0->>p6: segment.endsWith(suffix)
-    end
-    alt segment.byteLength() == 0 or segment.byteLength() #62; 255 or segment == #34;.#34; or segment == #34;..#34; or segment.endsWith(suff…
+    alt segment.byteLength() == 0 or segment.byteLength() › 255 or segment == ”.” or segment == ”..” or segment.endsWith(suff…
     p0->>p2: ConversionError()
-    Note over p0: Raise checked failure ConversionError()#59; required cleanup runs before exit
+    Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
     p0->>p7: segment.bytes()
-    loop While index #60; segment.byteLength()
+    loop While index ‹ segment.byteLength()
     p0->>p5: segment.byteLength()
-    p0->>p8: asciiAt(input, index)
-    p0->>p9: asciiLetter(character)
+    p0->>p8: asciiAt(input=bytes, index=index)
+    p8-->>p0: character: string
+    p0->>p8: asciiLetter(character=character)
+    p8-->>p0: bool
     opt Left is true
-    p0->>p10: character.isDecimal()
+    p0->>p9: character.isDecimal()
     end
-    opt Left is true
-    end
-    opt Left is true
-    end
-    opt Left is true
-    end
-    alt not asciiLetter(character) and not character.isDecimal() and character != #34;.#34; and character != #34;_#34; and character != #34;-#34;
+    alt not asciiLetter(character) and not character.isDecimal() and character != ”.” and character != ”_” and character != ”-”
     p0->>p2: ConversionError()
-    Note over p0: Raise checked failure ConversionError()#59; required cleanup runs before exit
+    Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
     end
-    opt Try body#59; stops on a checked failure
-    p0->>p11: segment.split(separator)
+    opt Try body； stops on a checked failure
+    p0->>p10: segment.split(separator=”.”)
+    p0->>p11: segment.split(separator=”.”).get(index=0)
     end
     end
 ```
@@ -190,24 +178,24 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as _validatePortablePath
-    participant p1 as segment.split(separator=#34;.#34;).get
-    participant p2 as asciiLower
-    participant p3 as _reserved
-    participant p4 as ConversionError
+    participant p1 as august/values/ascii
+    participant p2 as _reserved
+    participant p3 as ConversionError
     loop For each item in segments
-    opt Try body#59; stops on a checked failure
+    opt Try body； stops on a checked failure
     Note over p0: Sequence continued from the previous view
-    p0->>p1: segment.split(separator=#34;.#34;).get(index)
-    p0->>p2: asciiLower(text)
-    p0->>p3: _reserved(basename)
+    p0->>p1: asciiLower(text=segment.split(separator=”.”).get(index=0))
+    p1-->>p0: basename: string
+    p0->>p2: _reserved(basename=basename)
+    p2-->>p0: bool
     alt _reserved(basename)
-    p0->>p4: ConversionError()
-    Note over p0: Raise checked failure ConversionError()#59; required cleanup runs before exit
+    p0->>p3: ConversionError()
+    Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
     end
     opt Catch IndexError
-    p0->>p4: ConversionError()
-    Note over p0: Raise checked failure ConversionError()#59; required cleanup runs before exit
+    p0->>p3: ConversionError()
+    Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
     end
     Note over p0: May leave with checked errors: ConversionError
@@ -219,54 +207,7 @@ sequenceDiagram
 
 [Source](paths.aug#L53)
 
-```mermaid
-sequenceDiagram
-    participant p0 as _reserved
-
-    opt Left is false
-    end
-    opt Left is false
-    end
-    opt Left is false
-    end
-    opt Left is false
-    end
-    opt Left is false
-    end
-    opt Left is false
-    end
-    opt Left is false
-    end
-    opt Left is false
-    end
-    opt Left is false
-    end
-    opt Left is false
-    end
-    opt Left is false
-    end
-    opt Left is false
-    end
-    opt Left is false
-    end
-    opt Left is false
-    end
-    opt Left is false
-    end
-    opt Left is false
-    end
-    opt Left is false
-    end
-    opt Left is false
-    end
-    opt Left is false
-    end
-    opt Left is false
-    end
-    opt Left is false
-    end
-    Note over p0: Return basename == #34;con#34; or basename == #34;prn#34; or basename == #34;aux#34; or basename == #34;nul#34; or basename == #34;com1#34; or base…
-```
+Return basename == "con" or basename == "prn" or basename == "aux" or basename == "nul" or basename == "com1" or basename == "com2" or basename == "com3" or basename == "com4" or basename == "com5" or basename == "com6" or basename == "com7" or basename == "com8" or basename == "com9" or basename == "lpt1" or basename == "lpt2" or basename == "lpt3" or basename == "lpt4" or basename == "lpt5" or basename == "lpt6" or basename == "lpt7" or basename == "lpt8" or basename == "lpt9"; required cleanup runs before exit. [Explanation](paths.aug.md).
 
 ## Called contracts
 

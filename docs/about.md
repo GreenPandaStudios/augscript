@@ -1,6 +1,6 @@
 # Why August exists
 
-August is a statically checked language for native applications. It is designed to help developers and coding agents understand and change large codebases. You can start with a project overview, follow module and class interactions, examine an API sequence, then read the compiled explanation or inspect the source. These views come from the checked program and link to each other. The diagram views are unreleased work for 1.0.
+August is a statically checked language for native applications. It is designed to help developers and coding agents understand and change large codebases. You can start with a project overview, follow data through its folders and modules, examine an API sequence, then read the compiled explanation or inspect the source. These views come from the checked program and link to each other. The diagram views are unreleased work for 1.0.
 
 The language's two tenets are **simplicity** and **developer scalability**. Write the code needed for the operation. Let the compiler infer repeated information. Keep the module small enough that a new reader can follow its behavior and find its dependencies.
 

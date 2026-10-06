@@ -8,23 +8,26 @@
 
 ```mermaid
 flowchart TD
-    n0["Counter · counter.aug"]
+    n0["Counter"]
     n1["main.aug"]
     n1 -->|"calls"| n0
 ```
 
-## API calls
+<details>
+<summary>Call relationships</summary>
 
 ```mermaid
 flowchart TD
-    n0["Counter · counter.aug"]
-    n1["Counter.increment · counter.aug"]
-    n2["Counter.read · counter.aug"]
+    n0["Counter"]
+    n1["Counter.increment"]
+    n2["Counter.read"]
     n3["main.aug"]
     n3 -->|"calls"| n0
     n3 -->|"calls"| n1
     n3 -->|"calls"| n2
 ```
+
+</details>
 
 ## Sequences
 
@@ -40,14 +43,15 @@ Call arrows identify checked targets; loop and branch frames determine when they
 sequenceDiagram
     participant p0 as Startup
     participant p1 as Counter
-    participant p2 as Counter.increment
-    participant p3 as Counter.read
-    participant p4 as print
-    p0->>p1: Counter(value)
-    Note over p0: Own counter#59; release on scope exits
+    participant p2 as counter: Counter
+    participant p3 as print
+    p0->>p1: Counter(value=1)
+    p1-->>p0: counter: Counter
+    Note over p0: Own counter； release on scope exits
     p0->>p2: increment()
-    p0->>p3: read()
-    p0->>p4: print(value)
+    p0->>p2: read()
+    p2-->>p0: int
+    p0->>p3: print(value=counter.read())
 ```
 
 ## Called contracts

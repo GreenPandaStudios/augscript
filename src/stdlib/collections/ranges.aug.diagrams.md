@@ -4,23 +4,18 @@
 
 [Project overview](.aug-spec/diagrams/index.md) · [Compiled explanation](ranges.aug.md)
 
-## Class interactions
+
+<details>
+<summary>Call relationships</summary>
 
 ```mermaid
 flowchart TD
-    n0["RangeError · august/collections/ranges.aug"]
-    n1["range · august/collections/ranges.aug"]
+    n0["RangeError"]
+    n1["range"]
     n1 -->|"calls"| n0
 ```
 
-## API calls
-
-```mermaid
-flowchart TD
-    n0["RangeError · august/collections/ranges.aug"]
-    n1["range · august/collections/ranges.aug"]
-    n1 -->|"calls"| n0
-```
+</details>
 
 ## Sequences
 
@@ -32,12 +27,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](ranges.aug#L3)
 
-```mermaid
-sequenceDiagram
-    participant p0 as RangeError constructor
-
-    Note over p0: Receive fields: message
-```
+Receive fields: message. [Explanation](ranges.aug.md).
 
 <a id="sequence-range"></a>
 
@@ -52,43 +42,32 @@ sequenceDiagram
     participant p2 as values.length
     participant p3 as values.append
     alt step == 0
-    p0->>p1: RangeError(message)
-    Note over p0: Raise checked failure RangeError(message=#34;Range step must not be zero#34;)#59; required cleanup runs before exit
+    p0->>p1: RangeError(message=”Range step must not be zero”)
+    p1-->>p0: RangeError
+    Note over p0: Raise checked failure RangeError(message=”Range step<br/>must not be zero”)； required cleanup runs before exit
     end
-    opt Left is false
+    alt limit ‹ 1 or limit › 1000000
+    p0->>p1: RangeError(message=”Range limit must be from 1 to<br/>1000000”)
+    p1-->>p0: RangeError
+    Note over p0: Raise checked failure RangeError(message=”Range limit<br/>must be from 1 to 1000000”)； required cleanup runs<br/>before exit
     end
-    alt limit #60; 1 or limit #62; 1000000
-    p0->>p1: RangeError(message)
-    Note over p0: Raise checked failure RangeError(message=#34;Range limit must be from 1 to 1000000#34;)#59; required cleanup runs before exit
-    end
-    loop While step #62; 0 and current #60; end) or (step #60; 0 and current #62; end
-    opt Left is true
-    end
-    opt Left is false
-    opt Left is true
-    end
-    end
+    loop While step › 0 and current ‹ end) or (step ‹ 0 and current › end
     p0->>p2: values.length()
     alt values.length() == limit
-    p0->>p1: RangeError(message)
-    Note over p0: Raise checked failure RangeError(message=#34;Range exceeds its element limit#34;)#59; required cleanup runs before exit
+    p0->>p1: RangeError(message=”Range exceeds its element limit”)
+    p1-->>p0: RangeError
+    Note over p0: Raise checked failure RangeError(message=”Range exceeds<br/>its element limit”)； required cleanup runs before exit
     end
     rect rgb(245, 240, 241)
     Note over p0: Enter borrow scope
-    p0->>p3: values.append(value)
+    p0->>p3: values.append(value=current)
     Note over p0: Leave borrow scope
     end
-    opt Left is true
-    end
-    opt Left is false
-    opt Left is true
-    end
-    end
-    alt step #62; 0 and nextValue #60; current) or (step #60; 0 and nextValue #62; current
+    alt step › 0 and nextValue ‹ current) or (step ‹ 0 and nextValue › current
     Note over p0: Leave this loop
     end
     end
-    Note over p0: Return values#59; required cleanup runs before exit
+    Note over p0: Return values； required cleanup runs before exit
     Note over p0: May leave with checked errors: RangeError
 ```
 

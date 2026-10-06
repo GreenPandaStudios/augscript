@@ -14,18 +14,17 @@ outline: [2, 3]
 
 [Project overview](diagrams/index.md) · [Compiled explanation](main.md)
 
-## Class interactions
 
-No relationships at this level.
-
-## API calls
+::: details Call relationships
 
 ```mermaid
 flowchart TD
-    n0["roundTrip · compression.aug"]
+    n0["roundTrip"]
     n1["main.aug"]
     n1 -->|"calls"| n0
 ```
+
+:::
 
 ## Sequences
 
@@ -40,19 +39,20 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ```mermaid
 sequenceDiagram
     participant p0 as Startup
-    participant p1 as roundTrip
+    participant p1 as compression
     participant p2 as roundTrip().text
     participant p3 as print
-    opt Try body#59; stops on a checked failure
+    opt Try body； stops on a checked failure
     p0->>p1: roundTrip()
+    p1-->>p0: Bytes
     p0->>p2: roundTrip().text()
-    p0->>p3: print(value)
+    p0->>p3: print(value=roundTrip().text())
     end
     opt Catch CompressionError
-    p0->>p3: print(value)
+    p0->>p3: print(value=error.message)
     end
     opt Catch ConversionError
-    p0->>p3: print(value)
+    p0->>p3: print(value=”Invalid UTF-8”)
     end
 ```
 

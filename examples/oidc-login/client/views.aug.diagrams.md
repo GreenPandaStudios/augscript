@@ -4,22 +4,22 @@
 
 [Project overview](../.aug-spec/diagrams/index.md) · [Compiled explanation](views.aug.md)
 
-## Class interactions
 
-No relationships at this level.
-
-## API calls
+<details>
+<summary>Call relationships</summary>
 
 ```mermaid
 flowchart TD
-    n0["logout · client/logout.aug"]
-    n1["LoginPage · client/views.aug"]
-    n2["Welcome · client/views.aug"]
-    n3["Page · common/views.aug"]
+    n0["logout"]
+    n1["LoginPage"]
+    n2["Welcome"]
+    n3["Page"]
     n1 -->|"calls"| n3
     n2 -->|"defers HTTP call to"| n0
     n2 -->|"calls"| n3
 ```
+
+</details>
 
 ## Sequences
 
@@ -34,9 +34,10 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ```mermaid
 sequenceDiagram
     participant p0 as LoginPage
-    participant p1 as Page
-    p0->>p1: Page(title, children)
-    Note over p0: Return #60;Page title=#34;Sign in#34;#62; #60;p#62;This August app is both an OpenID Connect provider and a login client.#60;/p#62; #60;p#62;#60;a hre…
+    participant p1 as common/views
+    p0->>p1: Page(title=”Sign in”, children=‹Page title=”Sign in”›<br/>‹p›This August app is both an OpenID Connect provider<br/>and a log…
+    p1-->>p0: Html
+    Note over p0: Return ‹Page title=”Sign in”› ‹p›This August app is both<br/>an OpenID Connect provider and a login client.‹/p› ‹p›‹a<br/>hre…
 ```
 
 <a id="sequence-Welcome"></a>
@@ -48,10 +49,11 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as Welcome
-    participant p1 as Page
-    Note over p0: Create browser action for POST /logout#59; called on submission
-    p0->>p1: Page(title, children)
-    Note over p0: Return #60;Page title=#123;#34;Welcome, #34; + session.name#125;#62; #60;p#62;You are signed in as #60;strong#62;#123;session.name#125;#60;/strong#62;.#60;/p#62; #60;p#62;Subj…
+    participant p1 as common/views
+    Note over p0: Create browser action for POST /logout； called on<br/>submission
+    p0->>p1: Page(title=”Welcome, ” + session.name, children=‹Page<br/>title=｛”Welcome, ” + session.name｝› ‹p›You are signed in<br/>as ‹st…
+    p1-->>p0: Html
+    Note over p0: Return ‹Page title=｛”Welcome, ” + session.name｝› ‹p›You<br/>are signed in as ‹strong›｛session.name｝‹/strong›.‹/p›<br/>‹p›Subj…
     Note over p0: May leave with checked errors: HttpError
 ```
 

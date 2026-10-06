@@ -14,20 +14,19 @@ outline: [2, 3]
 
 [Project overview](diagrams/index.md) · [Compiled explanation](main.md)
 
-## Class interactions
 
-No relationships at this level.
-
-## API calls
+::: details Call relationships
 
 ```mermaid
 flowchart TD
     n0["main.aug"]
-    n1["consume · resource.aug"]
-    n2["make · resource.aug"]
+    n1["consume"]
+    n2["make"]
     n0 -->|"calls"| n1
     n0 -->|"calls"| n2
 ```
+
+:::
 
 ## Sequences
 
@@ -42,15 +41,16 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ```mermaid
 sequenceDiagram
     participant p0 as Startup
-    participant p1 as make
-    participant p2 as consume
-    participant p3 as print
+    participant p1 as resource
+    participant p2 as print
     p0->>p1: make()
-    Note over p0: Own first#59; release on scope exits
-    p0->>p2: consume(value)
+    p1-->>p0: first: Resource
+    Note over p0: Own first； release on scope exits
+    p0->>p1: consume(value=first)
     p0->>p1: make()
-    Note over p0: Own second#59; release on scope exits
-    p0->>p3: print(value)
+    p1-->>p0: second: Resource
+    Note over p0: Own second； release on scope exits
+    p0->>p2: print(value=”end of main”)
 ```
 
 ## Called contracts

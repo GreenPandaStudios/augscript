@@ -16,7 +16,7 @@ Open a file to read the code beside its compiled explanation. Choose **Indentati
 
 This project runs with August `0.23.0` on macOS 14+ with Apple Silicon, or GNU/Linux x64 or ARM64 with glibc 2.36+. The CLI obtains the verified compiler and library artifacts automatically.
 
-[Explore the generated project diagrams](diagrams/index.md) to move from areas and modules to class interactions and API sequences.
+[Explore the generated project diagrams](diagrams/index.md) to follow data between folders, then open module interactions and API sequences.
 
 ## Project files
 

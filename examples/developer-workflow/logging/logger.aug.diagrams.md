@@ -8,17 +8,9 @@
 
 ```mermaid
 flowchart TD
-    n0["Console · august/io/contracts.aug"]
-    n1["Logger · logging/logger.aug"]
+    n0["Console"]
+    n1["Logger"]
     n1 -->|"depends on"| n0
-```
-
-## API calls
-
-```mermaid
-flowchart TD
-    n0["Logger.log · logging/logger.aug"]
-
 ```
 
 ## Sequences
@@ -31,12 +23,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](logger.aug#L6)
 
-```mermaid
-sequenceDiagram
-    participant p0 as Logger.log
-
-    Note over p0: Interface contract#59; implementation selected at runtime
-```
+Interface contract; implementation selected at runtime. [Explanation](logger.aug.md).
 
 ## Called contracts
 

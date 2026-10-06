@@ -14,18 +14,17 @@ outline: [2, 3]
 
 [Project overview](diagrams/index.md) · [Compiled explanation](main.md)
 
-## Class interactions
 
-No relationships at this level.
-
-## API calls
+::: details Call relationships
 
 ```mermaid
 flowchart TD
     n0["main.aug"]
-    n1["announce · native.aug"]
+    n1["announce"]
     n0 -->|"calls"| n1
 ```
+
+:::
 
 ## Sequences
 
@@ -40,7 +39,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ```mermaid
 sequenceDiagram
     participant p0 as Startup
-    participant p1 as announce
+    participant p1 as native
     p0->>p1: announce()
 ```
 

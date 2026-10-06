@@ -14,17 +14,6 @@ outline: [2, 3]
 
 [Project overview](../../../../../diagrams/index.md) · [Compiled explanation](bindings.md)
 
-## Class interactions
-
-```mermaid
-flowchart TD
-    n0["Tensor · package/@greenpandastudios/aug-pytorch@0.1.6/bindings.aug"]
-
-```
-
-## API calls
-
-No relationships at this level.
 
 ## Sequences
 

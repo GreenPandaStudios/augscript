@@ -2,58 +2,59 @@
 
 # Project diagrams
 
-Read the areas first, then open a module for its class interactions, API calls and sequences. Follow an operation to its specification and source.
+Start here to see what moves between the application’s folders. Each arrow names an operation’s inputs and the result it returns to its caller. Open a folder for the next level of detail. Expand the contract list for complete types and dependency links.
 
-These are checked static views. Arrows describe possible calls, not an execution trace. Interface implementations, callbacks and foreign internals are not guessed. Tests are described in the adjacent specifications.
-
-## Areas
+## Data flow
 
 ```mermaid
 flowchart TD
-    n0["August library"]
-    n1["Project root"]
-    n2["app"]
-    n3["logging"]
-    n1 -->|"uses"| n0
-    n1 -->|"uses"| n2
-    n1 -->|"uses"| n3
-    n2 -->|"uses"| n0
-    n2 -->|"uses"| n3
-    n3 -->|"uses"| n0
+    n0["app"]
+    n1["logging"]
+    n2["Startup"]
+    n0 -->|"Logger.log(message)"| n1
+    n2 -->|"Greeter.greet(name)"| n0
 ```
 
-## Modules
+### Package boundaries
+
+<details>
+<summary>logging package calls</summary>
 
 ```mermaid
-flowchart TD
-    n0["app/export.aug"]
-    n1["app/greeter.aug"]
-    n2["august/io/contracts.aug"]
-    n3["logging/console.aug"]
-    n4["logging/export.aug"]
-    n5["logging/logger.aug"]
-    n6["main.aug"]
-    n0 -->|"uses"| n1
-    n1 -->|"uses"| n2
-    n1 -->|"uses"| n5
-    n3 -->|"uses"| n2
-    n3 -->|"uses"| n5
-    n4 -->|"uses"| n3
-    n4 -->|"uses"| n5
-    n5 -->|"uses"| n2
-    n6 -->|"uses"| n1
-    n6 -->|"uses"| n2
-    n6 -->|"uses"| n3
-    n6 -->|"uses"| n5
+flowchart LR
+    n0["August libraries"]
+    n1["logging"]
+    n1 -->|"Console.write(value)"| n0
 ```
+
+</details>
+
+<details>
+<summary>Data crossing these boundaries (3 contracts)</summary>
+
+| From | To | Operation and inputs | Result |
+| --- | --- | --- | --- |
+| app | logging | [Logger.log](../../logging/logger.aug.md#symbol-Logger.log) · message: string · interface dispatch | void |
+| logging | August libraries | [Console.write](../august/0.23.0/io/contracts.aug.md#symbol-Console.write) · value: string · interface dispatch | void |
+| Startup | app | [Greeter.greet](../../app/greeter.aug.md#symbol-Greeter.greet) · name: string | void |
+
+</details>
+
+## Open a folder
+
+| Folder | Read |
+| --- | --- |
+| logging | [Folder data flow](folders/logging/index.md) |
 
 ## Open a module
 
-| Module | Diagrams | Specification |
-| --- | --- | --- |
-| app/export.aug | [Interactions and sequences](../../app/export.aug.diagrams.md) | [Explanation](../../app/export.aug.md) |
-| app/greeter.aug | [Interactions and sequences](../../app/greeter.aug.diagrams.md) | [Explanation](../../app/greeter.aug.md) |
-| logging/console.aug | [Interactions and sequences](../../logging/console.aug.diagrams.md) | [Explanation](../../logging/console.aug.md) |
-| logging/export.aug | [Interactions and sequences](../../logging/export.aug.diagrams.md) | [Explanation](../../logging/export.aug.md) |
-| logging/logger.aug | [Interactions and sequences](../../logging/logger.aug.diagrams.md) | [Explanation](../../logging/logger.aug.md) |
-| main.aug | [Interactions and sequences](../../main.aug.diagrams.md) | [Explanation](../../main.aug.md) |
+| Module | Read |
+| --- | --- |
+| app/export.aug | [Flow and sequences](../../app/export.aug.diagrams.md) · [Explanation](../../app/export.aug.md) |
+| app/greeter.aug | [Flow and sequences](../../app/greeter.aug.diagrams.md) · [Explanation](../../app/greeter.aug.md) |
+| logging/console.aug | [Flow and sequences](../../logging/console.aug.diagrams.md) · [Explanation](../../logging/console.aug.md) |
+| logging/export.aug | [Flow and sequences](../../logging/export.aug.diagrams.md) · [Explanation](../../logging/export.aug.md) |
+| logging/logger.aug | [Flow and sequences](../../logging/logger.aug.diagrams.md) · [Explanation](../../logging/logger.aug.md) |
+| main.aug | [Flow and sequences](../../main.aug.diagrams.md) · [Explanation](../../main.aug.md) |
+
+These are static call boundaries, not a request trace. Interface implementations and foreign internals stop at their checked contracts. Dotted arrows defer a callback or browser action. Imports alone do not imply a call.

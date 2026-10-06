@@ -2,45 +2,67 @@
 
 # Project diagrams
 
-Read the areas first, then open a module for its class interactions, API calls and sequences. Follow an operation to its specification and source.
+Start here to see what moves between the application’s folders. Each arrow names an operation’s inputs and the result it returns to its caller. Open a folder for the next level of detail. Expand the contract list for complete types and dependency links.
 
-These are checked static views. Arrows describe possible calls, not an execution trace. Interface implementations, callbacks and foreign internals are not guessed. Tests are described in the adjacent specifications.
-
-## Areas
+## Data flow
 
 ```mermaid
 flowchart TD
-    n0["August library"]
-    n1["Project root"]
-    n1 -->|"uses"| n0
+    n0["app"]
+    n1["interceptors"]
+    n2["logging"]
+    n3["Startup"]
+    n1 -->|"Logger.log(message)"| n2
+    n3 -->|"Greeter(name) / Greeter.greet + 1 more → Greeter / string"| n0
 ```
 
-## Modules
+### Package boundaries
+
+<details>
+<summary>app package calls</summary>
 
 ```mermaid
-flowchart TD
-    n0["app.aug"]
-    n1["august/io/contracts.aug"]
-    n2["interceptors.aug"]
-    n3["logging.aug"]
-    n4["main.aug"]
-    n0 -->|"uses"| n1
-    n0 -->|"uses"| n2
-    n0 -->|"uses"| n3
-    n2 -->|"uses"| n1
-    n2 -->|"uses"| n3
-    n3 -->|"uses"| n1
-    n4 -->|"uses"| n0
-    n4 -->|"uses"| n1
-    n4 -->|"uses"| n2
-    n4 -->|"uses"| n3
+flowchart LR
+    n0["August libraries"]
+    n1["app"]
+    n1 -->|"Console.write(value)"| n0
 ```
+
+</details>
+
+<details>
+<summary>logging package calls</summary>
+
+```mermaid
+flowchart LR
+    n0["August libraries"]
+    n1["logging"]
+    n1 -->|"Console.write(value)"| n0
+```
+
+</details>
+
+<details>
+<summary>Data crossing these boundaries (6 contracts)</summary>
+
+| From | To | Operation and inputs | Result |
+| --- | --- | --- | --- |
+| app | August libraries | [Console.write](../august/0.23.0/io/contracts.aug.md#symbol-Console.write) · value: int · interface dispatch | void |
+| interceptors | logging | [Logger.log](../../logging.aug.md#symbol-Logger.log) · message: string · interface dispatch | void |
+| logging | August libraries | [Console.write](../august/0.23.0/io/contracts.aug.md#symbol-Console.write) · value: string · interface dispatch | void |
+| Startup | app | [Greeter](../../app.aug.md#symbol-Greeter) · name: string | Greeter |
+| Startup | app | [Greeter.greet](../../app.aug.md#symbol-Greeter.greet) | string |
+| Startup | app | [describe](../../app.aug.md#symbol-describe) · x: int, label: string | string |
+
+</details>
 
 ## Open a module
 
-| Module | Diagrams | Specification |
-| --- | --- | --- |
-| app.aug | [Interactions and sequences](../../app.aug.diagrams.md) | [Explanation](../../app.aug.md) |
-| interceptors.aug | [Interactions and sequences](../../interceptors.aug.diagrams.md) | [Explanation](../../interceptors.aug.md) |
-| logging.aug | [Interactions and sequences](../../logging.aug.diagrams.md) | [Explanation](../../logging.aug.md) |
-| main.aug | [Interactions and sequences](../../main.aug.diagrams.md) | [Explanation](../../main.aug.md) |
+| Module | Read |
+| --- | --- |
+| app.aug | [Flow and sequences](../../app.aug.diagrams.md) · [Explanation](../../app.aug.md) |
+| interceptors.aug | [Flow and sequences](../../interceptors.aug.diagrams.md) · [Explanation](../../interceptors.aug.md) |
+| logging.aug | [Flow and sequences](../../logging.aug.diagrams.md) · [Explanation](../../logging.aug.md) |
+| main.aug | [Flow and sequences](../../main.aug.diagrams.md) · [Explanation](../../main.aug.md) |
+
+These are static call boundaries, not a request trace. Interface implementations and foreign internals stop at their checked contracts. Dotted arrows defer a callback or browser action. Imports alone do not imply a call.

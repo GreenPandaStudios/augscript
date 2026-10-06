@@ -8,81 +8,77 @@
 
 ```mermaid
 flowchart TD
-    n0["parse · package/@git/url_2d3c37c690c0fa115be1@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug"]
-    n1["Crypto · contracts.aug"]
-    n2["Ed25519IdentityVerifier · jose.aug"]
-    n3["IdentityVerifier · jose.aug"]
-    n4["JwtError · jose.aug"]
-    n5["JwtHeader · jose.aug"]
-    n6["RsaJwk · jose.aug"]
-    n7["RsaJwks · jose.aug"]
-    n8["importJwk · jose.aug"]
-    n9["rsaJwk · jose.aug"]
-    n10["signJwt · jose.aug"]
-    n11["verifyIdentityToken · jose.aug"]
-    n12["verifyJwt · jose.aug"]
+    n0["parse"]
+    n1["Crypto"]
+    n2["Ed25519IdentityVerifier"]
+    n3["IdentityVerifier"]
+    n4["JwtError"]
+    n5["JwtHeader"]
+    n6["RsaJwk"]
+    n7["RsaJwks"]
+    n8["importJwk"]
+    n9["rsaJwk"]
+    n10["signJwt"]
+    n11["verifyIdentityToken"]
+    n12["verifyJwt"]
     n2 -->|"depends on crypto"| n1
     n2 -->|"implements"| n3
     n2 -->|"calls"| n11
     n8 -->|"calls"| n1
     n8 -->|"depends on"| n1
-    n8 -->|"calls"| n4
     n9 -->|"calls"| n1
     n9 -->|"depends on"| n1
-    n9 -->|"calls"| n6
     n10 -->|"calls"| n1
     n10 -->|"depends on"| n1
-    n10 -->|"calls"| n4
-    n10 -->|"calls"| n5
     n11 -->|"calls"| n0
     n11 -->|"calls"| n1
     n11 -->|"depends on"| n1
-    n11 -->|"calls"| n4
     n12 -->|"calls"| n0
     n12 -->|"calls"| n1
     n12 -->|"depends on"| n1
-    n12 -->|"calls"| n4
 ```
 
-## API calls
+<details>
+<summary>Call relationships</summary>
 
 ```mermaid
 flowchart TD
-    n0["parse · package/@git/url_2d3c37c690c0fa115be1@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug"]
-    n1["Crypto.decodeBase64url · contracts.aug"]
-    n2["Crypto.exportRsa · contracts.aug"]
-    n3["Crypto.importRsa · contracts.aug"]
-    n4["Crypto.signRsa · contracts.aug"]
-    n5["Crypto.verifyEd25519 · contracts.aug"]
-    n6["Crypto.verifyRsa · contracts.aug"]
-    n7["Ed25519IdentityVerifier.verify · jose.aug"]
-    n8["IdentityVerifier.verify · jose.aug"]
-    n9["JwtError · jose.aug"]
-    n10["JwtHeader · jose.aug"]
-    n11["RsaJwk · jose.aug"]
-    n12["importJwk · jose.aug"]
-    n13["rsaJwk · jose.aug"]
-    n14["signJwt · jose.aug"]
-    n15["verifyIdentityToken · jose.aug"]
-    n16["verifyJwt · jose.aug"]
-    n7 -->|"calls"| n15
-    n12 -->|"calls"| n1
-    n12 -->|"calls"| n3
-    n12 -->|"calls"| n9
-    n13 -->|"calls"| n2
-    n13 -->|"calls"| n11
-    n14 -->|"calls"| n4
-    n14 -->|"calls"| n9
-    n14 -->|"calls"| n10
+    n0["parse"]
+    n1["Crypto.decodeBase64url"]
+    n2["Crypto.exportRsa"]
+    n3["Crypto.importRsa"]
+    n4["Crypto.signRsa"]
+    n5["Crypto.verifyEd25519"]
+    n6["Crypto.verifyRsa"]
+    n7["Ed25519IdentityVerifier.verify"]
+    n8["JwtError"]
+    n9["JwtHeader"]
+    n10["RsaJwk"]
+    n11["importJwk"]
+    n12["rsaJwk"]
+    n13["signJwt"]
+    n14["verifyIdentityToken"]
+    n15["verifyJwt"]
+    n7 -->|"calls"| n14
+    n11 -->|"calls"| n1
+    n11 -->|"calls"| n3
+    n11 -->|"calls"| n8
+    n12 -->|"calls"| n2
+    n12 -->|"calls"| n10
+    n13 -->|"calls"| n4
+    n13 -->|"calls"| n8
+    n13 -->|"calls"| n9
+    n14 -->|"calls"| n0
+    n14 -->|"calls"| n1
+    n14 -->|"calls"| n5
+    n14 -->|"calls"| n8
     n15 -->|"calls"| n0
     n15 -->|"calls"| n1
-    n15 -->|"calls"| n5
-    n15 -->|"calls"| n9
-    n16 -->|"calls"| n0
-    n16 -->|"calls"| n1
-    n16 -->|"calls"| n6
-    n16 -->|"calls"| n9
+    n15 -->|"calls"| n6
+    n15 -->|"calls"| n8
 ```
+
+</details>
 
 ## Sequences
 
@@ -94,12 +90,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](jose.aug#L6)
 
-```mermaid
-sequenceDiagram
-    participant p0 as JwtError constructor
-
-    Note over p0: No calls in this operation#59; see the source and specification
-```
+[Explanation](jose.aug.md).
 
 <a id="sequence-JwtHeader-20-constructor"></a>
 
@@ -107,12 +98,7 @@ sequenceDiagram
 
 [Source](jose.aug#L9)
 
-```mermaid
-sequenceDiagram
-    participant p0 as JwtHeader constructor
-
-    Note over p0: Receive fields: alg, kid, typ
-```
+Receive fields: alg, kid, typ. [Explanation](jose.aug.md).
 
 <a id="sequence-RsaJwk-20-constructor"></a>
 
@@ -120,12 +106,7 @@ sequenceDiagram
 
 [Source](jose.aug#L11)
 
-```mermaid
-sequenceDiagram
-    participant p0 as RsaJwk constructor
-
-    Note over p0: Receive fields: kty, kid, alg, use, n, e
-```
+Receive fields: kty, kid, alg, use, n, e. [Explanation](jose.aug.md).
 
 <a id="sequence-RsaJwks-20-constructor"></a>
 
@@ -133,12 +114,7 @@ sequenceDiagram
 
 [Source](jose.aug#L12)
 
-```mermaid
-sequenceDiagram
-    participant p0 as RsaJwks constructor
-
-    Note over p0: Receive fields: keys
-```
+Receive fields: keys. [Explanation](jose.aug.md).
 
 <a id="sequence-rsaJwk"></a>
 
@@ -149,15 +125,17 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as rsaJwk
-    participant p1 as Crypto.exportRsa
+    participant p1 as crypto: Crypto
     participant p2 as modulus.base64url
     participant p3 as exponent.base64url
     participant p4 as RsaJwk
-    p0->>p1: exportRsa(publicKey) · interface dispatch
+    p0->>p1: exportRsa(publicKey=publicKey) · interface dispatch
+    p1-->>p0: Tuple‹Bytes, Bytes›
     p0->>p2: modulus.base64url()
     p0->>p3: exponent.base64url()
-    p0->>p4: RsaJwk(kty, kid, alg, use, n, e)
-    Note over p0: Return RsaJwk(kty=#34;RSA#34;, kid=kid, alg=#34;RS256#34;, use=#34;sig#34;, n=modulus.base64url(), e=exponent.base64url())#59; required cl…
+    p0->>p4: RsaJwk(kty=”RSA”, kid=kid, alg=”RS256”, use=”sig”,<br/>n=modulus.base64url(), e=exponent.base64url())
+    p4-->>p0: RsaJwk
+    Note over p0: Return RsaJwk(kty=”RSA”, kid=kid, alg=”RS256”,<br/>use=”sig”, n=modulus.base64url(),<br/>e=exponent.base64url())； required cl…
     Note over p0: May leave with checked errors: CryptoError
 ```
 
@@ -171,25 +149,25 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as importJwk
     participant p1 as JwtError
-    participant p2 as Crypto.decodeBase64url
-    participant p3 as Crypto.importRsa
-    opt Left is false
-    end
-    opt Left is false
-    end
-    alt jwk.kty != #34;RSA#34; or jwk.alg != #34;RS256#34; or jwk.use != #34;sig#34;
+    participant p2 as crypto: Crypto
+    alt jwk.kty != ”RSA” or jwk.alg != ”RS256” or jwk.use != ”sig”
     p0->>p1: JwtError()
-    Note over p0: Raise checked failure JwtError()#59; required cleanup runs before exit
+    p1-->>p0: JwtError
+    Note over p0: Raise checked failure JwtError()； required cleanup runs<br/>before exit
     end
-    opt Try body#59; stops on a checked failure
-    p0->>p2: decodeBase64url(input) · interface dispatch
-    p0->>p2: decodeBase64url(input) · interface dispatch
-    p0->>p3: importRsa(modulus, exponent) · interface dispatch
-    Note over p0: Return crypto.importRsa(modulus, exponent)#59; required cleanup runs before exit
+    opt Try body； stops on a checked failure
+    p0->>p2: decodeBase64url(input=jwk.n) · interface dispatch
+    p2-->>p0: modulus: Bytes
+    p0->>p2: decodeBase64url(input=jwk.e) · interface dispatch
+    p2-->>p0: exponent: Bytes
+    p0->>p2: importRsa(modulus=modulus, exponent=exponent) ·<br/>interface dispatch
+    p2-->>p0: RsaPublicKey
+    Note over p0: Return crypto.importRsa(modulus, exponent)； required<br/>cleanup runs before exit
     end
     opt Catch CryptoError
     p0->>p1: JwtError()
-    Note over p0: Raise checked failure JwtError()#59; required cleanup runs before exit
+    p1-->>p0: JwtError
+    Note over p0: Raise checked failure JwtError()； required cleanup runs<br/>before exit
     end
     Note over p0: May leave with checked errors: JwtError
 ```
@@ -207,28 +185,30 @@ sequenceDiagram
     participant p0 as signJwt
     participant p1 as JwtHeader
     participant p2 as Json
-    participant p3 as Json(value=JwtHeader(alg=#34;RS256#34;, kid=kid, typ=tokenType)).stringify
+    participant p3 as Json(value=JwtHeader(alg=”RS256”, kid=kid, typ=tokenType)).stringify
     participant p4 as claims.stringify
     participant p5 as header.bytes
     participant p6 as header.bytes().base64url
     participant p7 as payload.bytes
     participant p8 as payload.bytes().base64url
     participant p9 as signing.bytes
-    participant p10 as Crypto.signRsa
+    participant p10 as crypto: Crypto
     participant p11 as signature.base64url
-    opt Try body#59; stops on a checked failure
-    p0->>p1: JwtHeader(alg, kid, typ)
-    p0->>p2: Json(value)
-    p0->>p3: Json(value=JwtHeader(alg=#34;RS256#34;, kid=kid, typ=tokenType)).stringify()
+    opt Try body； stops on a checked failure
+    p0->>p1: JwtHeader(alg=”RS256”, kid=kid, typ=tokenType)
+    p1-->>p0: JwtHeader
+    p0->>p2: Json(value=JwtHeader(alg=”RS256”, kid=kid,<br/>typ=tokenType))
+    p0->>p3: Json(value=JwtHeader(alg=”RS256”, kid=kid,<br/>typ=tokenType)).stringify()
     p0->>p4: claims.stringify()
     p0->>p5: header.bytes()
     p0->>p6: header.bytes().base64url()
     p0->>p7: payload.bytes()
     p0->>p8: payload.bytes().base64url()
     p0->>p9: signing.bytes()
-    p0->>p10: signRsa(key, input) · interface dispatch
+    p0->>p10: signRsa(key=key, input=signing.bytes()) · interface<br/>dispatch
+    p10-->>p0: signature: Bytes
     p0->>p11: signature.base64url()
-    Note over p0: Return signing + #34;.#34; + signature.base64url()#59; required cleanup runs before exit
+    Note over p0: Return signing + ”.” + signature.base64url()； required<br/>cleanup runs before exit
     end
     opt Catch CryptoError
     end
@@ -243,11 +223,13 @@ sequenceDiagram
     opt Catch CryptoError
     Note over p0: Sequence continued from the previous view
     p0->>p1: JwtError()
-    Note over p0: Raise checked failure JwtError()#59; required cleanup runs before exit
+    p1-->>p0: JwtError
+    Note over p0: Raise checked failure JwtError()； required cleanup runs<br/>before exit
     end
     opt Catch JsonError
     p0->>p1: JwtError()
-    Note over p0: Raise checked failure JwtError()#59; required cleanup runs before exit
+    p1-->>p0: JwtError
+    Note over p0: Raise checked failure JwtError()； required cleanup runs<br/>before exit
     end
     Note over p0: May leave with checked errors: JwtError
 ```
@@ -258,7 +240,7 @@ sequenceDiagram
 
 [Source](jose.aug#L44)
 
-#### Sequence 1 of 2 (continued)
+#### Sequence 1 of 3 (continued)
 
 ```mermaid
 sequenceDiagram
@@ -268,80 +250,99 @@ sequenceDiagram
     participant p3 as token.split
     participant p4 as parts.length
     participant p5 as parts.get
-    participant p6 as Crypto.decodeBase64url
+    participant p6 as crypto: Crypto
     participant p7 as crypto.decodeBase64url(input=first).text
-    participant p8 as parse
+    participant p8 as @git/url_2d3c37c690c0fa115be1/contracts
     participant p9 as parse(input=crypto.decodeBase64url(input=first).text()).decode
-    participant p10 as first + #34;.#34; + second).bytes
-    participant p11 as Crypto.verifyRsa
+    participant p10 as first + ”.” + second).bytes
     p0->>p1: token.length()
-    alt token.length() #62; 16384
+    alt token.length() › 16384
     p0->>p2: JwtError()
-    Note over p0: Raise checked failure JwtError()#59; required cleanup runs before exit
+    p2-->>p0: JwtError
+    Note over p0: Raise checked failure JwtError()； required cleanup runs<br/>before exit
     end
-    p0->>p3: token.split(separator)
+    p0->>p3: token.split(separator=”.”)
     p0->>p4: parts.length()
     alt parts.length() != 3
     p0->>p2: JwtError()
-    Note over p0: Raise checked failure JwtError()#59; required cleanup runs before exit
+    p2-->>p0: JwtError
+    Note over p0: Raise checked failure JwtError()； required cleanup runs<br/>before exit
     end
-    opt Try body#59; stops on a checked failure
-    p0->>p5: parts.get(index)
-    p0->>p5: parts.get(index)
-    p0->>p5: parts.get(index)
-    p0->>p6: decodeBase64url(input) · interface dispatch
+    opt Try body； stops on a checked failure
+    p0->>p5: parts.get(index=0)
+    p0->>p5: parts.get(index=1)
+    p0->>p5: parts.get(index=2)
+    p0->>p6: decodeBase64url(input=first) · interface dispatch
+    p6-->>p0: Bytes
     p0->>p7: crypto.decodeBase64url(input=first).text()
-    p0->>p8: parse(input)
+    p0->>p8: parse(input=crypto.decodeBase64url(input=first).text())
+    p8-->>p0: Json
     p0->>p9: parse(input=crypto.decodeBase64url(input=first).text()).decode()
-    opt Left is false
-    end
-    opt Left is false
-    end
-    alt header.alg != #34;RS256#34; or header.kid != kid or header.typ != tokenType
+    alt header.alg != ”RS256” or header.kid != kid or header.typ != tokenType
     p0->>p2: JwtError()
-    Note over p0: Raise checked failure JwtError()#59; required cleanup runs before exit
+    p2-->>p0: JwtError
+    Note over p0: Raise checked failure JwtError()； required cleanup runs<br/>before exit
     end
-    p0->>p6: decodeBase64url(input) · interface dispatch
-    p0->>p10: first + #34;.#34; + second).bytes()
-    p0->>p11: verifyRsa(publicKey, input, signature) · interface dispatch
-    alt not crypto.verifyRsa(publicKey=publicKey, input=(first + #34;.#34; + second).bytes(), signature=signature)
-    p0->>p2: JwtError()
-    Note over p0: Raise checked failure JwtError()#59; required cleanup runs before exit
-    end
-    p0->>p6: decodeBase64url(input) · interface dispatch
+    p0->>p6: decodeBase64url(input=third) · interface dispatch
+    p6-->>p0: signature: Bytes
+    p0->>p10: first + ”.” + second).bytes()
     end
 ```
 
-#### Sequence 2 of 2 (continued)
+#### Sequence 2 of 3 (continued)
 
 ```mermaid
 sequenceDiagram
     participant p0 as verifyJwt
-    participant p1 as crypto.decodeBase64url(input=second).text
-    participant p2 as parse
-    participant p3 as JwtError
-    opt Try body#59; stops on a checked failure
+    participant p1 as crypto: Crypto
+    participant p2 as JwtError
+    participant p3 as crypto.decodeBase64url(input=second).text
+    participant p4 as @git/url_2d3c37c690c0fa115be1/contracts
+    opt Try body； stops on a checked failure
     Note over p0: Sequence continued from the previous view
-    p0->>p1: crypto.decodeBase64url(input=second).text()
-    p0->>p2: parse(input)
-    Note over p0: Return parse(input=crypto.decodeBase64url(input=second).text())#59; required cleanup runs before exit
+    p0->>p1: verifyRsa(publicKey=publicKey, input=first + ”.” +<br/>second).bytes(), signature=signature) · interface<br/>dispatch
+    p1-->>p0: bool
+    alt not crypto.verifyRsa(publicKey=publicKey, input=(first + ”.” + second).bytes(), signature=signature)
+    p0->>p2: JwtError()
+    p2-->>p0: JwtError
+    Note over p0: Raise checked failure JwtError()； required cleanup runs<br/>before exit
+    end
+    p0->>p1: decodeBase64url(input=second) · interface dispatch
+    p1-->>p0: Bytes
+    p0->>p3: crypto.decodeBase64url(input=second).text()
+    p0->>p4: parse(input=crypto.decodeBase64url(input=second).text())
+    p4-->>p0: Json
+    Note over p0: Return<br/>parse(input=crypto.decodeBase64url(input=second).text())；<br/>required cleanup runs before exit
     end
     opt Catch CryptoError
-    p0->>p3: JwtError()
-    Note over p0: Raise checked failure JwtError()#59; required cleanup runs before exit
+    p0->>p2: JwtError()
+    p2-->>p0: JwtError
+    Note over p0: Raise checked failure JwtError()； required cleanup runs<br/>before exit
     end
     opt Catch ConversionError
-    p0->>p3: JwtError()
-    Note over p0: Raise checked failure JwtError()#59; required cleanup runs before exit
+    p0->>p2: JwtError()
+    p2-->>p0: JwtError
+    Note over p0: Raise checked failure JwtError()； required cleanup runs<br/>before exit
     end
     opt Catch JsonError
-    p0->>p3: JwtError()
-    Note over p0: Raise checked failure JwtError()#59; required cleanup runs before exit
+    p0->>p2: JwtError()
+    p2-->>p0: JwtError
+    Note over p0: Raise checked failure JwtError()； required cleanup runs<br/>before exit
     end
     opt Catch IndexError
-    p0->>p3: JwtError()
-    Note over p0: Raise checked failure JwtError()#59; required cleanup runs before exit
+    p0->>p2: JwtError()
+    p2-->>p0: JwtError
+    Note over p0: Raise checked failure JwtError()； required cleanup runs<br/>before exit
     end
+```
+
+#### Sequence 3 of 3 (continued)
+
+```mermaid
+sequenceDiagram
+    participant p0 as verifyJwt
+
+    Note over p0: Sequence continued from the previous view
     Note over p0: May leave with checked errors: JwtError
 ```
 
@@ -361,44 +362,42 @@ sequenceDiagram
     participant p3 as token.split
     participant p4 as parts.length
     participant p5 as parts.get
-    participant p6 as Crypto.decodeBase64url
+    participant p6 as crypto: Crypto
     participant p7 as crypto.decodeBase64url(input=first).text
-    participant p8 as parse
+    participant p8 as @git/url_2d3c37c690c0fa115be1/contracts
     participant p9 as header.require
-    participant p10 as header.require(name=#34;alg#34;).string
-    participant p11 as header.require(name=#34;typ#34;).string
+    participant p10 as header.require(name=”alg”).string
+    participant p11 as header.require(name=”typ”).string
     p0->>p1: token.utf16Length()
     opt Left is false
     p0->>p1: token.utf16Length()
     end
-    opt Left is false
-    end
-    opt Left is false
-    end
-    opt Left is false
-    end
-    alt token.utf16Length() == 0 or token.utf16Length() #62; 4096 or now #60; 0 or maximumAge #60; 1 or maximumAge #62; 3600
+    alt token.utf16Length() == 0 or token.utf16Length() › 4096 or now ‹ 0 or maximumAge ‹ 1 or maximumAge › 3600
     p0->>p2: JwtError()
-    Note over p0: Raise checked failure JwtError()#59; required cleanup runs before exit
+    p2-->>p0: JwtError
+    Note over p0: Raise checked failure JwtError()； required cleanup runs<br/>before exit
     end
-    p0->>p3: token.split(separator)
+    p0->>p3: token.split(separator=”.”)
     p0->>p4: parts.length()
     alt parts.length() != 3
     p0->>p2: JwtError()
-    Note over p0: Raise checked failure JwtError()#59; required cleanup runs before exit
+    p2-->>p0: JwtError
+    Note over p0: Raise checked failure JwtError()； required cleanup runs<br/>before exit
     end
-    opt Try body#59; stops on a checked failure
-    p0->>p5: parts.get(index)
-    p0->>p5: parts.get(index)
-    p0->>p5: parts.get(index)
-    p0->>p6: decodeBase64url(input) · interface dispatch
+    opt Try body； stops on a checked failure
+    p0->>p5: parts.get(index=0)
+    p0->>p5: parts.get(index=1)
+    p0->>p5: parts.get(index=2)
+    p0->>p6: decodeBase64url(input=first) · interface dispatch
+    p6-->>p0: Bytes
     p0->>p7: crypto.decodeBase64url(input=first).text()
-    p0->>p8: parse(input)
-    p0->>p9: header.require(name)
-    p0->>p10: header.require(name=#34;alg#34;).string()
+    p0->>p8: parse(input=crypto.decodeBase64url(input=first).text())
+    p8-->>p0: header: Json
+    p0->>p9: header.require(name=”alg”)
+    p0->>p10: header.require(name=”alg”).string()
     opt Left is false
-    p0->>p9: header.require(name)
-    p0->>p11: header.require(name=#34;typ#34;).string()
+    p0->>p9: header.require(name=”typ”)
+    p0->>p11: header.require(name=”typ”).string()
     end
     opt Left is false
     end
@@ -412,51 +411,46 @@ sequenceDiagram
     participant p0 as verifyIdentityToken
     participant p1 as header.has
     participant p2 as JwtError
-    participant p3 as Crypto.decodeBase64url
-    participant p4 as first + #34;.#34; + second).bytes
-    participant p5 as Crypto.verifyEd25519
-    participant p6 as crypto.decodeBase64url(input=second).text
-    participant p7 as parse
-    participant p8 as claims.require
-    participant p9 as claims.require(name=#34;iss#34;).string
-    participant p10 as target.string
-    participant p11 as target.items
-    opt Try body#59; stops on a checked failure
+    participant p3 as crypto: Crypto
+    participant p4 as first + ”.” + second).bytes
+    participant p5 as crypto.decodeBase64url(input=second).text
+    participant p6 as @git/url_2d3c37c690c0fa115be1/contracts
+    participant p7 as claims.require
+    participant p8 as claims.require(name=”iss”).string
+    opt Try body； stops on a checked failure
     opt Left is false
     Note over p0: Sequence continued from the previous view
-    p0->>p1: header.has(name)
+    p0->>p1: header.has(name=”crit”)
     end
     opt Left is false
-    p0->>p1: header.has(name)
+    p0->>p1: header.has(name=”b64”)
     end
-    alt header.require(name=#34;alg#34;).string() != #34;EdDSA#34; or header.require(name=#34;typ#34;).string() != tokenType or header.has(name…
+    alt header.require(name=”alg”).string() != ”EdDSA” or header.require(name=”typ”).string() != tokenType or header.has(name…
     p0->>p2: JwtError()
-    Note over p0: Raise checked failure JwtError()#59; required cleanup runs before exit
+    p2-->>p0: JwtError
+    Note over p0: Raise checked failure JwtError()； required cleanup runs<br/>before exit
     end
-    p0->>p3: decodeBase64url(input) · interface dispatch
-    p0->>p4: first + #34;.#34; + second).bytes()
-    p0->>p5: verifyEd25519(publicKey, input, signature) · interface dispatch
-    alt not crypto.verifyEd25519(publicKey, input=(first + #34;.#34; + second).bytes(), signature)
+    p0->>p3: decodeBase64url(input=third) · interface dispatch
+    p3-->>p0: signature: Bytes
+    p0->>p4: first + ”.” + second).bytes()
+    p0->>p3: verifyEd25519(publicKey=publicKey, input=first + ”.” +<br/>second).bytes(), signature=signature) · interface<br/>dispatch
+    p3-->>p0: bool
+    alt not crypto.verifyEd25519(publicKey, input=(first + ”.” + second).bytes(), signature)
     p0->>p2: JwtError()
-    Note over p0: Raise checked failure JwtError()#59; required cleanup runs before exit
+    p2-->>p0: JwtError
+    Note over p0: Raise checked failure JwtError()； required cleanup runs<br/>before exit
     end
-    p0->>p3: decodeBase64url(input) · interface dispatch
-    p0->>p6: crypto.decodeBase64url(input=second).text()
-    p0->>p7: parse(input)
-    p0->>p8: claims.require(name)
-    p0->>p9: claims.require(name=#34;iss#34;).string()
-    alt claims.require(name=#34;iss#34;).string() != issuer
+    p0->>p3: decodeBase64url(input=second) · interface dispatch
+    p3-->>p0: Bytes
+    p0->>p5: crypto.decodeBase64url(input=second).text()
+    p0->>p6: parse(input=crypto.decodeBase64url(input=second).text())
+    p6-->>p0: claims: Json
+    p0->>p7: claims.require(name=”iss”)
+    p0->>p8: claims.require(name=”iss”).string()
+    alt claims.require(name=”iss”).string() != issuer
     p0->>p2: JwtError()
-    Note over p0: Raise checked failure JwtError()#59; required cleanup runs before exit
-    end
-    p0->>p8: claims.require(name)
-    opt Try body#59; stops on a checked failure
-    p0->>p10: target.string()
-    end
-    opt Catch JsonError
-    p0->>p11: target.items()
-    loop For each item in target.items()
-    end
+    p2-->>p0: JwtError
+    Note over p0: Raise checked failure JwtError()； required cleanup runs<br/>before exit
     end
     end
 ```
@@ -466,78 +460,60 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as verifyIdentityToken
-    participant p1 as entry.string
-    participant p2 as JwtError
-    participant p3 as claims.require
-    participant p4 as claims.require(name=#34;sub#34;).string
-    participant p5 as claims.require(name=#34;iat#34;).integer
-    participant p6 as claims.require(name=#34;exp#34;).integer
-    participant p7 as subject.trim
-    participant p8 as subject.trim().utf16Length
-    participant p9 as subject.utf16Length
-    opt Try body#59; stops on a checked failure
-    opt Catch JsonError
-    loop For each item in target.items()
+    participant p1 as claims.require
+    participant p2 as target.string
+    participant p3 as target.items
+    participant p4 as entry.string
+    participant p5 as JwtError
+    participant p6 as claims.require(name=”sub”).string
+    participant p7 as claims.require(name=”iat”).integer
+    participant p8 as claims.require(name=”exp”).integer
+    participant p9 as subject.trim
+    participant p10 as subject.trim().utf16Length
+    participant p11 as subject.utf16Length
+    opt Try body； stops on a checked failure
     Note over p0: Sequence continued from the previous view
-    p0->>p1: entry.string()
+    p0->>p1: claims.require(name=”aud”)
+    opt Try body； stops on a checked failure
+    p0->>p2: target.string()
+    end
+    opt Catch JsonError
+    p0->>p3: target.items()
+    loop For each item in target.items()
+    p0->>p4: entry.string()
     alt entry.string() == audience
     end
     end
     end
     alt not allowed
-    p0->>p2: JwtError()
-    Note over p0: Raise checked failure JwtError()#59; required cleanup runs before exit
+    p0->>p5: JwtError()
+    p5-->>p0: JwtError
+    Note over p0: Raise checked failure JwtError()； required cleanup runs<br/>before exit
     end
-    p0->>p3: claims.require(name)
-    p0->>p4: claims.require(name=#34;sub#34;).string()
-    p0->>p3: claims.require(name)
-    p0->>p5: claims.require(name=#34;iat#34;).integer()
-    p0->>p3: claims.require(name)
-    p0->>p6: claims.require(name=#34;exp#34;).integer()
-    p0->>p7: subject.trim()
-    p0->>p8: subject.trim().utf16Length()
+    p0->>p1: claims.require(name=”sub”)
+    p0->>p6: claims.require(name=”sub”).string()
+    p0->>p1: claims.require(name=”iat”)
+    p0->>p7: claims.require(name=”iat”).integer()
+    p0->>p1: claims.require(name=”exp”)
+    p0->>p8: claims.require(name=”exp”).integer()
+    p0->>p9: subject.trim()
+    p0->>p10: subject.trim().utf16Length()
     opt Left is false
-    p0->>p9: subject.utf16Length()
+    p0->>p11: subject.utf16Length()
     end
-    opt Left is false
+    alt subject.trim().utf16Length() == 0 or subject.utf16Length() › 512 or issued ‹ 0 or issued › 9007199254740991 or expire…
+    p0->>p5: JwtError()
+    p5-->>p0: JwtError
+    Note over p0: Raise checked failure JwtError()； required cleanup runs<br/>before exit
     end
-    opt Left is false
+    alt issued › now or now - issued › maximumAge or expires ‹= now or expires ‹= issued or expires - issued › maximumAge
+    p0->>p5: JwtError()
+    p5-->>p0: JwtError
+    Note over p0: Raise checked failure JwtError()； required cleanup runs<br/>before exit
     end
-    opt Left is false
-    end
-    opt Left is false
-    end
-    alt subject.trim().utf16Length() == 0 or subject.utf16Length() #62; 512 or issued #60; 0 or issued #62; 9007199254740991 or expire…
-    p0->>p2: JwtError()
-    Note over p0: Raise checked failure JwtError()#59; required cleanup runs before exit
-    end
-    opt Left is false
-    end
-    opt Left is false
-    end
-    opt Left is false
-    end
-    opt Left is false
-    end
-    alt issued #62; now or now - issued #62; maximumAge or expires #60;= now or expires #60;= issued or expires - issued #62; maximumAge
-    p0->>p2: JwtError()
-    Note over p0: Raise checked failure JwtError()#59; required cleanup runs before exit
-    end
-    Note over p0: Return claims#59; required cleanup runs before exit
+    Note over p0: Return claims； required cleanup runs before exit
     end
     opt Catch CryptoError
-    p0->>p2: JwtError()
-    Note over p0: Raise checked failure JwtError()#59; required cleanup runs before exit
-    end
-    opt Catch ConversionError
-    p0->>p2: JwtError()
-    Note over p0: Raise checked failure JwtError()#59; required cleanup runs before exit
-    end
-    opt Catch JsonError
-    p0->>p2: JwtError()
-    Note over p0: Raise checked failure JwtError()#59; required cleanup runs before exit
-    end
-    opt Catch IndexError
     end
 ```
 
@@ -547,10 +523,26 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as verifyIdentityToken
     participant p1 as JwtError
-    opt Catch IndexError
+    opt Catch CryptoError
     Note over p0: Sequence continued from the previous view
     p0->>p1: JwtError()
-    Note over p0: Raise checked failure JwtError()#59; required cleanup runs before exit
+    p1-->>p0: JwtError
+    Note over p0: Raise checked failure JwtError()； required cleanup runs<br/>before exit
+    end
+    opt Catch ConversionError
+    p0->>p1: JwtError()
+    p1-->>p0: JwtError
+    Note over p0: Raise checked failure JwtError()； required cleanup runs<br/>before exit
+    end
+    opt Catch JsonError
+    p0->>p1: JwtError()
+    p1-->>p0: JwtError
+    Note over p0: Raise checked failure JwtError()； required cleanup runs<br/>before exit
+    end
+    opt Catch IndexError
+    p0->>p1: JwtError()
+    p1-->>p0: JwtError
+    Note over p0: Raise checked failure JwtError()； required cleanup runs<br/>before exit
     end
     Note over p0: May leave with checked errors: JwtError
 ```
@@ -561,13 +553,7 @@ sequenceDiagram
 
 [Source](jose.aug#L121)
 
-```mermaid
-sequenceDiagram
-    participant p0 as IdentityVerifier.verify
-
-    Note over p0: May leave with checked errors: JwtError
-    Note over p0: Interface contract#59; implementation selected at runtime
-```
+May leave with checked errors: JwtError. Interface contract; implementation selected at runtime. [Explanation](jose.aug.md).
 
 <a id="sequence-Ed25519IdentityVerifier-20-constructor"></a>
 
@@ -575,12 +561,7 @@ sequenceDiagram
 
 [Source](jose.aug#L123)
 
-```mermaid
-sequenceDiagram
-    participant p0 as Ed25519IdentityVerifier constructor
-
-    Note over p0: Receive fields: injected crypto, publicKey, issuer, audience, tokenType, maximumAge
-```
+Receive fields: injected crypto, publicKey, issuer, audience, tokenType, maximumAge. [Explanation](jose.aug.md).
 
 <a id="sequence-Ed25519IdentityVerifier.verify"></a>
 
@@ -592,8 +573,9 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as Ed25519IdentityVerifier.verify
     participant p1 as verifyIdentityToken
-    p0->>p1: verifyIdentityToken(token, publicKey, issuer, audience, tokenType, now, maximumAge)
-    Note over p0: Return verifyIdentityToken(token, publicKey, issuer, audience, tokenType, now, maximumAge)#59; required cleanup runs bef…
+    p0->>p1: verifyIdentityToken(token=token, publicKey=publicKey,<br/>issuer=issuer, audience=audience, tokenType=tokenType,<br/>now=now,…
+    p1-->>p0: Json
+    Note over p0: Return verifyIdentityToken(token, publicKey, issuer,<br/>audience, tokenType, now, maximumAge)； required cleanup<br/>runs bef…
     Note over p0: May leave with checked errors: JwtError
 ```
 

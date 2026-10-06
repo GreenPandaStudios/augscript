@@ -18,20 +18,9 @@ outline: [2, 3]
 
 ```mermaid
 flowchart TD
-    n0["Counter · counter.aug"]
-    n1["ICounter · counter.aug"]
+    n0["Counter"]
+    n1["ICounter"]
     n0 -->|"implements"| n1
-```
-
-## API calls
-
-```mermaid
-flowchart TD
-    n0["Counter.increment · counter.aug"]
-    n1["Counter.read · counter.aug"]
-    n2["ICounter.increment · counter.aug"]
-    n3["ICounter.read · counter.aug"]
-
 ```
 
 ## Sequences
@@ -44,12 +33,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](counter.md#source-L2)
 :::
 
-```mermaid
-sequenceDiagram
-    participant p0 as Counter constructor
-
-    Note over p0: Receive fields: value
-```
+Receive fields: value. [Explanation](counter.md).
 
 ### Counter.increment {#sequence-Counter.increment}
 
@@ -73,12 +57,7 @@ sequenceDiagram
 [Source](counter.md#source-L8)
 :::
 
-```mermaid
-sequenceDiagram
-    participant p0 as Counter.read
-
-    Note over p0: Return value#59; required cleanup runs before exit
-```
+Return value; required cleanup runs before exit. [Explanation](counter.md).
 
 ### ICounter.increment {#sequence-ICounter.increment}
 
@@ -86,12 +65,7 @@ sequenceDiagram
 [Source](counter.md#source-L13)
 :::
 
-```mermaid
-sequenceDiagram
-    participant p0 as ICounter.increment
-
-    Note over p0: Interface contract#59; implementation selected at runtime
-```
+Interface contract; implementation selected at runtime. [Explanation](counter.md).
 
 ### ICounter.read {#sequence-ICounter.read}
 
@@ -99,12 +73,7 @@ sequenceDiagram
 [Source](counter.md#source-L14)
 :::
 
-```mermaid
-sequenceDiagram
-    participant p0 as ICounter.read
-
-    Note over p0: Interface contract#59; implementation selected at runtime
-```
+Interface contract; implementation selected at runtime. [Explanation](counter.md).
 
 ## Called contracts
 

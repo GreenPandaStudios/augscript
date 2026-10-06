@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Generated diagrams now start with folder data flow, show named inputs and returned values, link nested folder views, group package calls by their import names, and omit one-note helper diagrams. Sequences group imported operations by module and wrap long messages; pure comparisons do not add empty frames. The wiki provides readable, fit and zoom controls.
 - Add `august.collections.mapWorkers` with bounded chunk waves, real isolated workers, ordered copied results and checked admission failures. Resolve named pure transformations statically; retain the worker target in context, explanations and diagrams.
 
 - Obtain maintainer GMP and Nettle sources from reachable upstream/mirror endpoints with the existing versions and SHA-256 pins.

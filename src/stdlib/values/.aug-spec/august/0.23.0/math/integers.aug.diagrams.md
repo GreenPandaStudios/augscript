@@ -4,24 +4,21 @@
 
 [Project overview](../../../diagrams/index.md) · [Compiled explanation](integers.aug.md)
 
-## Class interactions
 
-No relationships at this level.
-
-## API calls
+<details>
+<summary>Call relationships</summary>
 
 ```mermaid
 flowchart TD
-    n0["checkedAbs · august/math/integers.aug"]
-    n1["checkedAdd · august/math/integers.aug"]
-    n2["checkedDivide · august/math/integers.aug"]
-    n3["checkedMultiply · august/math/integers.aug"]
-    n4["checkedNegate · august/math/integers.aug"]
-    n5["checkedSubtract · august/math/integers.aug"]
-    n6["checkedSum · august/math/integers.aug"]
-    n0 -->|"calls"| n4
-    n6 -->|"calls"| n1
+    n0["checkedAbs"]
+    n1["checkedAdd"]
+    n2["checkedNegate"]
+    n3["checkedSum"]
+    n0 -->|"calls"| n2
+    n3 -->|"calls"| n1
 ```
+
+</details>
 
 ## Sequences
 
@@ -37,17 +34,11 @@ Call arrows identify checked targets; loop and branch frames determine when they
 sequenceDiagram
     participant p0 as checkedAdd
     participant p1 as ArithmeticError
-    opt Left is true
-    end
-    opt Left is false
-    opt Left is true
-    end
-    end
-    alt right #62; 0 and result #60; left) or (right #60; 0 and result #62; left
+    alt right › 0 and result ‹ left) or (right ‹ 0 and result › left
     p0->>p1: ArithmeticError()
-    Note over p0: Raise checked failure ArithmeticError()#59; required cleanup runs before exit
+    Note over p0: Raise checked failure ArithmeticError()； required<br/>cleanup runs before exit
     end
-    Note over p0: Return result#59; required cleanup runs before exit
+    Note over p0: Return result； required cleanup runs before exit
     Note over p0: May leave with checked errors: ArithmeticError
 ```
 
@@ -61,17 +52,11 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as checkedSubtract
     participant p1 as ArithmeticError
-    opt Left is true
-    end
-    opt Left is false
-    opt Left is true
-    end
-    end
-    alt right #62; 0 and result #62; left) or (right #60; 0 and result #60; left
+    alt right › 0 and result › left) or (right ‹ 0 and result ‹ left
     p0->>p1: ArithmeticError()
-    Note over p0: Raise checked failure ArithmeticError()#59; required cleanup runs before exit
+    Note over p0: Raise checked failure ArithmeticError()； required<br/>cleanup runs before exit
     end
-    Note over p0: Return result#59; required cleanup runs before exit
+    Note over p0: Return result； required cleanup runs before exit
     Note over p0: May leave with checked errors: ArithmeticError
 ```
 
@@ -85,26 +70,18 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as checkedMultiply
     participant p1 as ArithmeticError
-    opt Left is false
-    end
     alt left == 0 or right == 0
-    Note over p0: Return 0#59; required cleanup runs before exit
-    end
-    opt Left is true
-    end
-    opt Left is false
-    opt Left is true
-    end
+    Note over p0: Return 0； required cleanup runs before exit
     end
     alt left == -9223372036854775808 and right == -1) or (right == -9223372036854775808 and left == -1
     p0->>p1: ArithmeticError()
-    Note over p0: Raise checked failure ArithmeticError()#59; required cleanup runs before exit
+    Note over p0: Raise checked failure ArithmeticError()； required<br/>cleanup runs before exit
     end
     alt result / left != right
     p0->>p1: ArithmeticError()
-    Note over p0: Raise checked failure ArithmeticError()#59; required cleanup runs before exit
+    Note over p0: Raise checked failure ArithmeticError()； required<br/>cleanup runs before exit
     end
-    Note over p0: Return result#59; required cleanup runs before exit
+    Note over p0: Return result； required cleanup runs before exit
     Note over p0: May leave with checked errors: ArithmeticError
 ```
 
@@ -118,15 +95,11 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as checkedDivide
     participant p1 as ArithmeticError
-    opt Left is false
-    opt Left is true
-    end
-    end
     alt right == 0 or (left == -9223372036854775808 and right == -1
     p0->>p1: ArithmeticError()
-    Note over p0: Raise checked failure ArithmeticError()#59; required cleanup runs before exit
+    Note over p0: Raise checked failure ArithmeticError()； required<br/>cleanup runs before exit
     end
-    Note over p0: Return left / right#59; required cleanup runs before exit
+    Note over p0: Return left / right； required cleanup runs before exit
     Note over p0: May leave with checked errors: ArithmeticError
 ```
 
@@ -142,9 +115,9 @@ sequenceDiagram
     participant p1 as ArithmeticError
     alt value == -9223372036854775808
     p0->>p1: ArithmeticError()
-    Note over p0: Raise checked failure ArithmeticError()#59; required cleanup runs before exit
+    Note over p0: Raise checked failure ArithmeticError()； required<br/>cleanup runs before exit
     end
-    Note over p0: Return -value#59; required cleanup runs before exit
+    Note over p0: Return -value； required cleanup runs before exit
     Note over p0: May leave with checked errors: ArithmeticError
 ```
 
@@ -158,11 +131,12 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as checkedAbs
     participant p1 as checkedNegate
-    alt value #60; 0
-    p0->>p1: checkedNegate(value)
-    Note over p0: Return checkedNegate(value)#59; required cleanup runs before exit
+    alt value ‹ 0
+    p0->>p1: checkedNegate(value=value)
+    p1-->>p0: int
+    Note over p0: Return checkedNegate(value)； required cleanup runs<br/>before exit
     end
-    Note over p0: Return value#59; required cleanup runs before exit
+    Note over p0: Return value； required cleanup runs before exit
     Note over p0: May leave with checked errors: ArithmeticError
 ```
 
@@ -177,9 +151,10 @@ sequenceDiagram
     participant p0 as checkedSum
     participant p1 as checkedAdd
     loop For each item in values
-    p0->>p1: checkedAdd(left, right)
+    p0->>p1: checkedAdd(left=total, right=value)
+    p1-->>p0: total: int
     end
-    Note over p0: Return total#59; required cleanup runs before exit
+    Note over p0: Return total； required cleanup runs before exit
     Note over p0: May leave with checked errors: ArithmeticError
 ```
 

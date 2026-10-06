@@ -14,18 +14,17 @@ outline: [2, 3]
 
 [Project overview](../diagrams/index.md) · [Compiled explanation](arithmetic.md)
 
-## Class interactions
 
-No relationships at this level.
-
-## API calls
+::: details Call relationships
 
 ```mermaid
 flowchart TD
     n0["src/arithmetic.aug"]
-    n1["add · src/arithmetic.aug"]
+    n1["add"]
     n0 -->|"calls"| n1
 ```
+
+:::
 
 ## Sequences
 
@@ -37,12 +36,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](arithmetic.md#source-L3)
 :::
 
-```mermaid
-sequenceDiagram
-    participant p0 as add
-
-    Note over p0: Return left + right#59; required cleanup runs before exit
-```
+Return left + right; required cleanup runs before exit. [Explanation](arithmetic.md).
 
 ## Called contracts
 

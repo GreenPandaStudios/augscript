@@ -4,17 +4,6 @@
 
 [Project overview](.aug-spec/diagrams/index.md) · [Compiled explanation](data.aug.md)
 
-## Class interactions
-
-```mermaid
-flowchart TD
-    n0["Payload · data.aug"]
-
-```
-
-## API calls
-
-No relationships at this level.
 
 ## Sequences
 
@@ -26,10 +15,5 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](data.aug#L2)
 
-```mermaid
-sequenceDiagram
-    participant p0 as Payload constructor
-
-    Note over p0: Receive fields: id, message, values
-```
+Receive fields: id, message, values. [Explanation](data.aug.md).
 

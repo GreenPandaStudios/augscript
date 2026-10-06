@@ -8,18 +8,18 @@
 
 ```mermaid
 flowchart TD
-    n0["Authentication · contracts.aug"]
-    n1["Authorization · contracts.aug"]
-    n2["HttpClient · contracts.aug"]
-    n3["Principal · contracts.aug"]
-    n4["RequestLogger · contracts.aug"]
-    n5["ServerControl · contracts.aug"]
-    n6["WebHttpClient · contracts.aug"]
-    n7["WebRequestLogger · contracts.aug"]
-    n8["WebServerControl · contracts.aug"]
-    n9["_aug_http_log · contracts.aug"]
-    n10["_aug_http_request · contracts.aug"]
-    n11["_aug_http_stop · contracts.aug"]
+    n0["Authentication"]
+    n1["Authorization"]
+    n2["HttpClient"]
+    n3["Principal"]
+    n4["RequestLogger"]
+    n5["ServerControl"]
+    n6["WebHttpClient"]
+    n7["WebRequestLogger"]
+    n8["WebServerControl"]
+    n9["_aug_http_log"]
+    n10["_aug_http_request"]
+    n11["_aug_http_stop"]
     n6 -->|"implements"| n2
     n6 -->|"calls"| n10
     n7 -->|"implements"| n4
@@ -28,32 +28,29 @@ flowchart TD
     n8 -->|"calls"| n11
 ```
 
-## API calls
+<details>
+<summary>Call relationships</summary>
 
 ```mermaid
 flowchart TD
-    n0["Authentication.authenticate · contracts.aug"]
-    n1["Authorization.authorize · contracts.aug"]
-    n2["HttpClient.request · contracts.aug"]
-    n3["RequestLogger.complete · contracts.aug"]
-    n4["ServerControl.stop · contracts.aug"]
-    n5["WebHttpClient.request · contracts.aug"]
-    n6["WebRequestLogger.complete · contracts.aug"]
-    n7["WebServerControl.stop · contracts.aug"]
-    n8["_aug_http_cookie · contracts.aug"]
-    n9["_aug_http_log · contracts.aug"]
-    n10["_aug_http_request · contracts.aug"]
-    n11["_aug_http_stop · contracts.aug"]
-    n12["_aug_http_url_encode · contracts.aug"]
-    n13["cookie · contracts.aug"]
-    n14["redirect · contracts.aug"]
-    n15["urlEncode · contracts.aug"]
-    n5 -->|"calls"| n10
-    n6 -->|"calls"| n9
-    n7 -->|"calls"| n11
-    n13 -->|"calls"| n8
-    n15 -->|"calls"| n12
+    n0["WebHttpClient.request"]
+    n1["WebRequestLogger.complete"]
+    n2["WebServerControl.stop"]
+    n3["_aug_http_cookie"]
+    n4["_aug_http_log"]
+    n5["_aug_http_request"]
+    n6["_aug_http_stop"]
+    n7["_aug_http_url_encode"]
+    n8["cookie"]
+    n9["urlEncode"]
+    n0 -->|"calls"| n5
+    n1 -->|"calls"| n4
+    n2 -->|"calls"| n6
+    n8 -->|"calls"| n3
+    n9 -->|"calls"| n7
 ```
+
+</details>
 
 ## Sequences
 
@@ -65,12 +62,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](contracts.aug#L3)
 
-```mermaid
-sequenceDiagram
-    participant p0 as Principal constructor
-
-    Note over p0: Receive fields: subject, permissions
-```
+Receive fields: subject, permissions. [Explanation](contracts.aug.md).
 
 <a id="sequence-Authentication.authenticate"></a>
 
@@ -78,13 +70,7 @@ sequenceDiagram
 
 [Source](contracts.aug#L7)
 
-```mermaid
-sequenceDiagram
-    participant p0 as Authentication.authenticate
-
-    Note over p0: May leave with checked errors: HttpError
-    Note over p0: Interface contract#59; implementation selected at runtime
-```
+May leave with checked errors: HttpError. Interface contract; implementation selected at runtime. [Explanation](contracts.aug.md).
 
 <a id="sequence-Authorization.authorize"></a>
 
@@ -92,13 +78,7 @@ sequenceDiagram
 
 [Source](contracts.aug#L11)
 
-```mermaid
-sequenceDiagram
-    participant p0 as Authorization.authorize
-
-    Note over p0: May leave with checked errors: HttpError
-    Note over p0: Interface contract#59; implementation selected at runtime
-```
+May leave with checked errors: HttpError. Interface contract; implementation selected at runtime. [Explanation](contracts.aug.md).
 
 <a id="sequence-RequestLogger.complete"></a>
 
@@ -106,12 +86,7 @@ sequenceDiagram
 
 [Source](contracts.aug#L15)
 
-```mermaid
-sequenceDiagram
-    participant p0 as RequestLogger.complete
-
-    Note over p0: Interface contract#59; implementation selected at runtime
-```
+Interface contract; implementation selected at runtime. [Explanation](contracts.aug.md).
 
 <a id="sequence-_aug_http_log"></a>
 
@@ -119,12 +94,7 @@ sequenceDiagram
 
 [Source](contracts.aug#L17)
 
-```mermaid
-sequenceDiagram
-    participant p0 as _aug_http_log
-
-    Note over p0: Native implementation#59; only the declared contract is known
-```
+Native implementation; only the declared contract is known. [Explanation](contracts.aug.md).
 
 <a id="sequence-WebRequestLogger-20-constructor"></a>
 
@@ -132,12 +102,7 @@ sequenceDiagram
 
 [Source](contracts.aug#L19)
 
-```mermaid
-sequenceDiagram
-    participant p0 as WebRequestLogger constructor
-
-    Note over p0: No calls in this operation#59; see the source and specification
-```
+[Explanation](contracts.aug.md).
 
 <a id="sequence-WebRequestLogger.complete"></a>
 
@@ -151,7 +116,7 @@ sequenceDiagram
     participant p1 as _aug_http_log
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _aug_http_log(method, path, status, milliseconds) · native boundary
+    p0->>p1: _aug_http_log(method=method, path=path, status=status,<br/>milliseconds=milliseconds) · native boundary
     Note over p0: Leave unsafe scope
     end
 ```
@@ -162,13 +127,7 @@ sequenceDiagram
 
 [Source](contracts.aug#L27)
 
-```mermaid
-sequenceDiagram
-    participant p0 as HttpClient.request
-
-    Note over p0: May leave with checked errors: HttpError
-    Note over p0: Interface contract#59; implementation selected at runtime
-```
+May leave with checked errors: HttpError. Interface contract; implementation selected at runtime. [Explanation](contracts.aug.md).
 
 <a id="sequence-_aug_http_request"></a>
 
@@ -176,13 +135,7 @@ sequenceDiagram
 
 [Source](contracts.aug#L29)
 
-```mermaid
-sequenceDiagram
-    participant p0 as _aug_http_request
-
-    Note over p0: May leave with checked errors: HttpError
-    Note over p0: Native implementation#59; only the declared contract is known
-```
+May leave with checked errors: HttpError. Native implementation; only the declared contract is known. [Explanation](contracts.aug.md).
 
 <a id="sequence-WebHttpClient-20-constructor"></a>
 
@@ -190,12 +143,7 @@ sequenceDiagram
 
 [Source](contracts.aug#L32)
 
-```mermaid
-sequenceDiagram
-    participant p0 as WebHttpClient constructor
-
-    Note over p0: No calls in this operation#59; see the source and specification
-```
+[Explanation](contracts.aug.md).
 
 <a id="sequence-WebHttpClient.request"></a>
 
@@ -209,8 +157,9 @@ sequenceDiagram
     participant p1 as _aug_http_request
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _aug_http_request(method, url, headers, body) · native boundary
-    Note over p0: Return _aug_http_request(method=method, url=url, headers=headers, body=body)#59; required cleanup runs before exit
+    p0->>p1: _aug_http_request(method=method, url=url,<br/>headers=headers, body=body) · native boundary
+    p1-->>p0: HttpResponse‹Bytes›
+    Note over p0: Return _aug_http_request(method=method, url=url,<br/>headers=headers, body=body)； required cleanup runs<br/>before exit
     Note over p0: Leave unsafe scope
     end
     Note over p0: May leave with checked errors: HttpError
@@ -232,9 +181,9 @@ sequenceDiagram
     else Match when some value:
     end
     p0->>p1: Headers()
-    p0->>p2: Headers().with(name, value)
-    p0->>p3: HttpResponse(body, status, headers)
-    Note over p0: Return HttpResponse(body=#34;#34;, status=code, headers=headers)#59; required cleanup runs before exit
+    p0->>p2: Headers().with(name=”location”, value=location)
+    p0->>p3: HttpResponse(body=””, status=code, headers=headers)
+    Note over p0: Return HttpResponse(body=””, status=code,<br/>headers=headers)； required cleanup runs before exit
     Note over p0: May leave with checked errors: HttpError
 ```
 
@@ -244,13 +193,7 @@ sequenceDiagram
 
 [Source](contracts.aug#L48)
 
-```mermaid
-sequenceDiagram
-    participant p0 as _aug_http_url_encode
-
-    Note over p0: May leave with checked errors: HttpError
-    Note over p0: Native implementation#59; only the declared contract is known
-```
+May leave with checked errors: HttpError. Native implementation; only the declared contract is known. [Explanation](contracts.aug.md).
 
 <a id="sequence-urlEncode"></a>
 
@@ -264,8 +207,9 @@ sequenceDiagram
     participant p1 as _aug_http_url_encode
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _aug_http_url_encode(input) · native boundary
-    Note over p0: Return _aug_http_url_encode(input)#59; required cleanup runs before exit
+    p0->>p1: _aug_http_url_encode(input=input) · native boundary
+    p1-->>p0: string
+    Note over p0: Return _aug_http_url_encode(input)； required cleanup<br/>runs before exit
     Note over p0: Leave unsafe scope
     end
     Note over p0: May leave with checked errors: HttpError
@@ -277,13 +221,7 @@ sequenceDiagram
 
 [Source](contracts.aug#L54)
 
-```mermaid
-sequenceDiagram
-    participant p0 as _aug_http_cookie
-
-    Note over p0: May leave with checked errors: HttpError
-    Note over p0: Native implementation#59; only the declared contract is known
-```
+May leave with checked errors: HttpError. Native implementation; only the declared contract is known. [Explanation](contracts.aug.md).
 
 <a id="sequence-cookie"></a>
 
@@ -297,8 +235,9 @@ sequenceDiagram
     participant p1 as _aug_http_cookie
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _aug_http_cookie(name, value, path, maxAge, secure) · native boundary
-    Note over p0: Return _aug_http_cookie(name, value, path, maxAge, secure)#59; required cleanup runs before exit
+    p0->>p1: _aug_http_cookie(name=name, value=value, path=path,<br/>maxAge=maxAge, secure=secure) · native boundary
+    p1-->>p0: Headers
+    Note over p0: Return _aug_http_cookie(name, value, path, maxAge,<br/>secure)； required cleanup runs before exit
     Note over p0: Leave unsafe scope
     end
     Note over p0: May leave with checked errors: HttpError
@@ -310,13 +249,7 @@ sequenceDiagram
 
 [Source](contracts.aug#L63)
 
-```mermaid
-sequenceDiagram
-    participant p0 as ServerControl.stop
-
-    Note over p0: May leave with checked errors: HttpError
-    Note over p0: Interface contract#59; implementation selected at runtime
-```
+May leave with checked errors: HttpError. Interface contract; implementation selected at runtime. [Explanation](contracts.aug.md).
 
 <a id="sequence-_aug_http_stop"></a>
 
@@ -324,13 +257,7 @@ sequenceDiagram
 
 [Source](contracts.aug#L65)
 
-```mermaid
-sequenceDiagram
-    participant p0 as _aug_http_stop
-
-    Note over p0: May leave with checked errors: HttpError
-    Note over p0: Native implementation#59; only the declared contract is known
-```
+May leave with checked errors: HttpError. Native implementation; only the declared contract is known. [Explanation](contracts.aug.md).
 
 <a id="sequence-WebServerControl-20-constructor"></a>
 
@@ -338,12 +265,7 @@ sequenceDiagram
 
 [Source](contracts.aug#L67)
 
-```mermaid
-sequenceDiagram
-    participant p0 as WebServerControl constructor
-
-    Note over p0: No calls in this operation#59; see the source and specification
-```
+[Explanation](contracts.aug.md).
 
 <a id="sequence-WebServerControl.stop"></a>
 
@@ -357,7 +279,7 @@ sequenceDiagram
     participant p1 as _aug_http_stop
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _aug_http_stop(milliseconds) · native boundary
+    p0->>p1: _aug_http_stop(milliseconds=milliseconds) · native<br/>boundary
     Note over p0: Leave unsafe scope
     end
     Note over p0: May leave with checked errors: HttpError

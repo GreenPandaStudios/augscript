@@ -4,23 +4,18 @@
 
 [Project overview](.aug-spec/diagrams/index.md) · [Compiled explanation](context.aug.md)
 
-## Class interactions
+
+<details>
+<summary>Call relationships</summary>
 
 ```mermaid
 flowchart TD
-    n0["ContextError · august/errors/context.aug"]
-    n1["errorContext · august/errors/context.aug"]
+    n0["ContextError"]
+    n1["errorContext"]
     n1 -->|"calls"| n0
 ```
 
-## API calls
-
-```mermaid
-flowchart TD
-    n0["ContextError · august/errors/context.aug"]
-    n1["errorContext · august/errors/context.aug"]
-    n1 -->|"calls"| n0
-```
+</details>
 
 ## Sequences
 
@@ -32,12 +27,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](context.aug#L8)
 
-```mermaid
-sequenceDiagram
-    participant p0 as ContextError constructor
-
-    Note over p0: Receive fields: operation, cause, location
-```
+Receive fields: operation, cause, location. [Explanation](context.aug.md).
 
 <a id="sequence-errorContext"></a>
 
@@ -49,8 +39,9 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as errorContext
     participant p1 as ContextError
-    p0->>p1: ContextError(operation, cause, location)
-    Note over p0: Return ContextError#60;E#62;(operation, cause, location)#59; required cleanup runs before exit
+    p0->>p1: ContextError(operation=operation, cause=cause,<br/>location=location)
+    p1-->>p0: ContextError‹E›
+    Note over p0: Return ContextError‹E›(operation, cause, location)；<br/>required cleanup runs before exit
 ```
 
 ## Called contracts

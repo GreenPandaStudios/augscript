@@ -8,20 +8,20 @@
 
 ```mermaid
 flowchart TD
-    n0["Aggregator · august/collections/operations.aug"]
-    n1["Comparator · august/collections/operations.aug"]
-    n2["IntegerOrder · august/collections/operations.aug"]
-    n3["Predicate · august/collections/operations.aug"]
-    n4["TextOrder · august/collections/operations.aug"]
-    n5["Transformation · august/collections/operations.aug"]
-    n6["aggregate · august/collections/operations.aug"]
-    n7["filter · august/collections/operations.aug"]
-    n8["find · august/collections/operations.aug"]
-    n9["remove · august/collections/operations.aug"]
-    n10["sort · august/collections/operations.aug"]
-    n11["sortIntegers · august/collections/operations.aug"]
-    n12["sortText · august/collections/operations.aug"]
-    n13["transform · august/collections/operations.aug"]
+    n0["Aggregator"]
+    n1["Comparator"]
+    n2["IntegerOrder"]
+    n3["Predicate"]
+    n4["TextOrder"]
+    n5["Transformation"]
+    n6["aggregate"]
+    n7["filter"]
+    n8["find"]
+    n9["remove"]
+    n10["sort"]
+    n11["sortIntegers"]
+    n12["sortText"]
+    n13["transform"]
     n2 -->|"implements"| n1
     n4 -->|"implements"| n1
     n6 -->|"calls"| n0
@@ -34,37 +34,38 @@ flowchart TD
     n13 -->|"calls"| n5
 ```
 
-## API calls
+<details>
+<summary>Call relationships</summary>
 
 ```mermaid
 flowchart TD
-    n0["Aggregator.combine · august/collections/operations.aug"]
-    n1["Comparator.compare · august/collections/operations.aug"]
-    n2["IntegerOrder · august/collections/operations.aug"]
-    n3["IntegerOrder.compare · august/collections/operations.aug"]
-    n4["Predicate.accepts · august/collections/operations.aug"]
-    n5["TextOrder · august/collections/operations.aug"]
-    n6["TextOrder.compare · august/collections/operations.aug"]
-    n7["Transformation.apply · august/collections/operations.aug"]
-    n8["aggregate · august/collections/operations.aug"]
-    n9["filter · august/collections/operations.aug"]
-    n10["find · august/collections/operations.aug"]
-    n11["remove · august/collections/operations.aug"]
-    n12["sort · august/collections/operations.aug"]
-    n13["sortIntegers · august/collections/operations.aug"]
-    n14["sortText · august/collections/operations.aug"]
-    n15["transform · august/collections/operations.aug"]
-    n8 -->|"calls"| n0
-    n9 -->|"calls"| n4
-    n10 -->|"calls"| n4
-    n11 -->|"calls"| n4
-    n12 -->|"calls"| n1
-    n13 -->|"calls"| n2
-    n13 -->|"calls"| n12
-    n14 -->|"calls"| n5
-    n14 -->|"calls"| n12
-    n15 -->|"calls"| n7
+    n0["Aggregator.combine"]
+    n1["Comparator.compare"]
+    n2["IntegerOrder"]
+    n3["Predicate.accepts"]
+    n4["TextOrder"]
+    n5["Transformation.apply"]
+    n6["aggregate"]
+    n7["filter"]
+    n8["find"]
+    n9["remove"]
+    n10["sort"]
+    n11["sortIntegers"]
+    n12["sortText"]
+    n13["transform"]
+    n6 -->|"calls"| n0
+    n7 -->|"calls"| n3
+    n8 -->|"calls"| n3
+    n9 -->|"calls"| n3
+    n10 -->|"calls"| n1
+    n11 -->|"calls"| n2
+    n11 -->|"calls"| n10
+    n12 -->|"calls"| n4
+    n12 -->|"calls"| n10
+    n13 -->|"calls"| n5
 ```
+
+</details>
 
 ## Sequences
 
@@ -76,12 +77,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](operations.aug#L4)
 
-```mermaid
-sequenceDiagram
-    participant p0 as Predicate.accepts
-
-    Note over p0: Interface contract#59; implementation selected at runtime
-```
+Interface contract; implementation selected at runtime. [Explanation](operations.aug.md).
 
 <a id="sequence-Transformation.apply"></a>
 
@@ -89,12 +85,7 @@ sequenceDiagram
 
 [Source](operations.aug#L8)
 
-```mermaid
-sequenceDiagram
-    participant p0 as Transformation.apply
-
-    Note over p0: Interface contract#59; implementation selected at runtime
-```
+Interface contract; implementation selected at runtime. [Explanation](operations.aug.md).
 
 <a id="sequence-Aggregator.combine"></a>
 
@@ -102,12 +93,7 @@ sequenceDiagram
 
 [Source](operations.aug#L12)
 
-```mermaid
-sequenceDiagram
-    participant p0 as Aggregator.combine
-
-    Note over p0: Interface contract#59; implementation selected at runtime
-```
+Interface contract; implementation selected at runtime. [Explanation](operations.aug.md).
 
 <a id="sequence-Comparator.compare"></a>
 
@@ -115,12 +101,7 @@ sequenceDiagram
 
 [Source](operations.aug#L16)
 
-```mermaid
-sequenceDiagram
-    participant p0 as Comparator.compare
-
-    Note over p0: Interface contract#59; implementation selected at runtime
-```
+Interface contract; implementation selected at runtime. [Explanation](operations.aug.md).
 
 <a id="sequence-filter"></a>
 
@@ -131,19 +112,20 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as filter
-    participant p1 as Predicate.accepts
+    participant p1 as predicate: Predicate
     participant p2 as selected.append
     loop For each item in values
-    p0->>p1: accepts(value) · interface dispatch
+    p0->>p1: accepts(value=value) · interface dispatch
+    p1-->>p0: bool
     alt predicate.accepts(value)
     rect rgb(245, 240, 241)
     Note over p0: Enter borrow scope
-    p0->>p2: selected.append(input 1)
+    p0->>p2: selected.append(input 1=value)
     Note over p0: Leave borrow scope
     end
     end
     end
-    Note over p0: Return selected#59; required cleanup runs before exit
+    Note over p0: Return selected； required cleanup runs before exit
 ```
 
 <a id="sequence-transform"></a>
@@ -155,17 +137,18 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as transform
-    participant p1 as Transformation.apply
+    participant p1 as transformation: Transformation
     participant p2 as transformed.append
     loop For each item in values
-    p0->>p1: apply(value) · interface dispatch
+    p0->>p1: apply(value=value) · interface dispatch
+    p1-->>p0: result: U
     rect rgb(245, 240, 241)
     Note over p0: Enter borrow scope
-    p0->>p2: transformed.append(value)
+    p0->>p2: transformed.append(value=result)
     Note over p0: Leave borrow scope
     end
     end
-    Note over p0: Return transformed#59; required cleanup runs before exit
+    Note over p0: Return transformed； required cleanup runs before exit
 ```
 
 <a id="sequence-aggregate"></a>
@@ -177,11 +160,12 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as aggregate
-    participant p1 as Aggregator.combine
+    participant p1 as aggregator: Aggregator
     loop For each item in values
-    p0->>p1: combine(total, value) · interface dispatch
+    p0->>p1: combine(total=total, value=value) · interface dispatch
+    p1-->>p0: total: U
     end
-    Note over p0: Return total#59; required cleanup runs before exit
+    Note over p0: Return total； required cleanup runs before exit
 ```
 
 <a id="sequence-remove"></a>
@@ -193,19 +177,20 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as remove
-    participant p1 as Predicate.accepts
+    participant p1 as predicate: Predicate
     participant p2 as remaining.append
     loop For each item in values
-    p0->>p1: accepts(value) · interface dispatch
+    p0->>p1: accepts(value=value) · interface dispatch
+    p1-->>p0: bool
     alt not predicate.accepts(value)
     rect rgb(245, 240, 241)
     Note over p0: Enter borrow scope
-    p0->>p2: remaining.append(input 1)
+    p0->>p2: remaining.append(input 1=value)
     Note over p0: Leave borrow scope
     end
     end
     end
-    Note over p0: Return remaining#59; required cleanup runs before exit
+    Note over p0: Return remaining； required cleanup runs before exit
 ```
 
 <a id="sequence-find"></a>
@@ -217,14 +202,15 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as find
-    participant p1 as Predicate.accepts
+    participant p1 as predicate: Predicate
     loop For each item in values
-    p0->>p1: accepts(value) · interface dispatch
+    p0->>p1: accepts(value=value) · interface dispatch
+    p1-->>p0: bool
     alt predicate.accepts(value)
-    Note over p0: Return value#59; required cleanup runs before exit
+    Note over p0: Return value； required cleanup runs before exit
     end
     end
-    Note over p0: Return null#59; required cleanup runs before exit
+    Note over p0: Return null； required cleanup runs before exit
 ```
 
 <a id="sequence-sort"></a>
@@ -239,64 +225,63 @@ sequenceDiagram
     participant p1 as ordered.append
     participant p2 as ordered.length
     participant p3 as ordered.get
-    participant p4 as Comparator.compare
+    participant p4 as comparator: Comparator
     participant p5 as merged.append
     loop For each item in values
     rect rgb(245, 240, 241)
     Note over p0: Enter borrow scope
-    p0->>p1: ordered.append(input 1)
+    p0->>p1: ordered.append(input 1=value)
     Note over p0: Leave borrow scope
     end
     end
     p0->>p2: ordered.length()
-    loop While width #60; length
-    loop While start #60; length
-    alt width #60; length - start
+    loop While width ‹ length
+    loop While start ‹ length
+    alt width ‹ length - start
     end
-    alt width #60; length - middle
+    alt width ‹ length - middle
     end
-    loop While left #60; middle and right #60; end
-    opt Left is true
-    end
-    p0->>p3: ordered.get(index)
-    p0->>p3: ordered.get(index)
-    p0->>p4: compare(left, right) · interface dispatch
-    alt comparator.compare(left=earlier, right=later) #60;= 0
+    loop While left ‹ middle and right ‹ end
+    p0->>p3: ordered.get(index=left)
+    p0->>p3: ordered.get(index=right)
+    p0->>p4: compare(left=earlier, right=later) · interface dispatch
+    p4-->>p0: int
+    alt comparator.compare(left=earlier, right=later) ‹= 0
     rect rgb(245, 240, 241)
     Note over p0: Enter borrow scope
-    p0->>p5: merged.append(value)
+    p0->>p5: merged.append(value=earlier)
     Note over p0: Leave borrow scope
     end
     else otherwise
     rect rgb(245, 240, 241)
     Note over p0: Enter borrow scope
-    p0->>p5: merged.append(value)
+    p0->>p5: merged.append(value=later)
     Note over p0: Leave borrow scope
     end
     end
     end
-    loop While left #60; middle
-    p0->>p3: ordered.get(index)
+    loop While left ‹ middle
+    p0->>p3: ordered.get(index=left)
     rect rgb(245, 240, 241)
     Note over p0: Enter borrow scope
-    p0->>p5: merged.append(input 1)
+    p0->>p5: merged.append(input 1=value)
     Note over p0: Leave borrow scope
     end
     end
-    loop While right #60; end
-    p0->>p3: ordered.get(index)
+    loop While right ‹ end
+    p0->>p3: ordered.get(index=right)
     rect rgb(245, 240, 241)
     Note over p0: Enter borrow scope
-    p0->>p5: merged.append(input 1)
+    p0->>p5: merged.append(input 1=value)
     Note over p0: Leave borrow scope
     end
     end
     end
-    alt width #62;= length - width
+    alt width ›= length - width
     else otherwise
     end
     end
-    Note over p0: Return ordered#59; required cleanup runs before exit
+    Note over p0: Return ordered； required cleanup runs before exit
     Note over p0: May leave with checked errors: IndexError
 ```
 
@@ -306,12 +291,7 @@ sequenceDiagram
 
 [Source](operations.aug#L120)
 
-```mermaid
-sequenceDiagram
-    participant p0 as IntegerOrder constructor
-
-    Note over p0: No calls in this operation#59; see the source and specification
-```
+[Explanation](operations.aug.md).
 
 <a id="sequence-IntegerOrder.compare"></a>
 
@@ -323,13 +303,13 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as IntegerOrder.compare
 
-    alt left #60; right
-    Note over p0: Return -1#59; required cleanup runs before exit
+    alt left ‹ right
+    Note over p0: Return -1； required cleanup runs before exit
     end
-    alt left #62; right
-    Note over p0: Return 1#59; required cleanup runs before exit
+    alt left › right
+    Note over p0: Return 1； required cleanup runs before exit
     end
-    Note over p0: Return 0#59; required cleanup runs before exit
+    Note over p0: Return 0； required cleanup runs before exit
 ```
 
 <a id="sequence-TextOrder-20-constructor"></a>
@@ -338,12 +318,7 @@ sequenceDiagram
 
 [Source](operations.aug#L129)
 
-```mermaid
-sequenceDiagram
-    participant p0 as TextOrder constructor
-
-    Note over p0: No calls in this operation#59; see the source and specification
-```
+[Explanation](operations.aug.md).
 
 <a id="sequence-TextOrder.compare"></a>
 
@@ -355,8 +330,8 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as TextOrder.compare
     participant p1 as left.compare
-    p0->>p1: left.compare(other)
-    Note over p0: Return left.compare(other=right)#59; required cleanup runs before exit
+    p0->>p1: left.compare(other=right)
+    Note over p0: Return left.compare(other=right)； required cleanup runs<br/>before exit
 ```
 
 <a id="sequence-sortIntegers"></a>
@@ -371,8 +346,10 @@ sequenceDiagram
     participant p1 as IntegerOrder
     participant p2 as sort
     p0->>p1: IntegerOrder()
-    p0->>p2: sort(values, comparator)
-    Note over p0: Return sort(values, comparator=IntegerOrder())#59; required cleanup runs before exit
+    p1-->>p0: IntegerOrder
+    p0->>p2: sort(values=values, comparator=IntegerOrder())
+    p2-->>p0: List‹int›
+    Note over p0: Return sort(values, comparator=IntegerOrder())； required<br/>cleanup runs before exit
     Note over p0: May leave with checked errors: IndexError
 ```
 
@@ -388,8 +365,10 @@ sequenceDiagram
     participant p1 as TextOrder
     participant p2 as sort
     p0->>p1: TextOrder()
-    p0->>p2: sort(values, comparator)
-    Note over p0: Return sort(values, comparator=TextOrder())#59; required cleanup runs before exit
+    p1-->>p0: TextOrder
+    p0->>p2: sort(values=values, comparator=TextOrder())
+    p2-->>p0: List‹string›
+    Note over p0: Return sort(values, comparator=TextOrder())； required<br/>cleanup runs before exit
     Note over p0: May leave with checked errors: IndexError
 ```
 

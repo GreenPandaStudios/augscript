@@ -14,18 +14,17 @@ outline: [2, 3]
 
 [Project overview](diagrams/index.md) · [Compiled explanation](main.md)
 
-## Class interactions
 
-No relationships at this level.
-
-## API calls
+::: details Call relationships
 
 ```mermaid
 flowchart TD
-    n0["load · errors.aug"]
+    n0["load"]
     n1["main.aug"]
     n1 -->|"calls"| n0
 ```
+
+:::
 
 ## Sequences
 
@@ -40,14 +39,15 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ```mermaid
 sequenceDiagram
     participant p0 as Startup
-    participant p1 as load
+    participant p1 as errors
     participant p2 as print
-    opt Try body#59; stops on a checked failure
-    p0->>p1: load(fail)
-    p0->>p2: print(value)
+    opt Try body； stops on a checked failure
+    p0->>p1: load(fail=true)
+    p1-->>p0: string
+    p0->>p2: print(value=load(fail=true))
     end
     opt Catch FileError
-    p0->>p2: print(value)
+    p0->>p2: print(value=”caught FileError”)
     end
 ```
 

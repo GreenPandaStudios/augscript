@@ -4,13 +4,6 @@
 
 [Project overview](.aug-spec/diagrams/index.md) · [Compiled explanation](main.aug.md)
 
-## Class interactions
-
-No relationships at this level.
-
-## API calls
-
-No relationships at this level.
 
 ## Sequences
 
@@ -31,20 +24,20 @@ sequenceDiagram
     participant p4 as print
     participant p5 as values.length
     participant p6 as unique.length
-    Note over p0: Own values#59; release on scope exits
-    Note over p0: Own unique#59; release on scope exits
-    loop While index #60; 20000
-    p0->>p1: values.set(key, value)
-    p0->>p2: unique.add(value)
+    Note over p0: Own values； release on scope exits
+    Note over p0: Own unique； release on scope exits
+    loop While index ‹ 20000
+    p0->>p1: values.set(key=index, value=index * 3)
+    p0->>p2: unique.add(value=index)
     end
     loop For each item in values
-    p0->>p3: unique.contains(value)
+    p0->>p3: unique.contains(value=key)
     alt unique.contains(value=key)
     end
     end
-    p0->>p4: print(value)
+    p0->>p4: print(value=checksum)
     p0->>p5: values.length()
     p0->>p6: unique.length()
-    p0->>p4: print(value)
+    p0->>p4: print(value=values.length() == unique.length())
 ```
 

@@ -4,17 +4,6 @@
 
 [Project overview](../../../../diagrams/index.md) · [Compiled explanation](bindings.aug.md)
 
-## Class interactions
-
-```mermaid
-flowchart TD
-    n0["Database · package/@greenpandastudios/aug-sqlite@0.1.5/bindings.aug"]
-
-```
-
-## API calls
-
-No relationships at this level.
 
 ## Sequences
 

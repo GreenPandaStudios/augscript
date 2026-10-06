@@ -18,34 +18,30 @@ outline: [2, 3]
 
 ```mermaid
 flowchart TD
-    n0["SigningKeys · common/keys.aug"]
-    n1["Crypto · package/@git/url_9ef654c66d34ab8f5527@0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug"]
-    n2["RsaJwks · package/@git/url_9ef654c66d34ab8f5527@0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug"]
-    n3["rsaJwk · package/@git/url_9ef654c66d34ab8f5527@0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug"]
-    n4["Discovery · provider/discovery.aug"]
-    n5["discovery · provider/discovery.aug"]
-    n6["jwks · provider/discovery.aug"]
-    n5 -->|"calls"| n4
-    n6 -->|"calls"| n0
-    n6 -->|"depends on"| n0
-    n6 -->|"calls"| n1
-    n6 -->|"depends on"| n1
-    n6 -->|"calls"| n2
-    n6 -->|"calls"| n3
+    n0["SigningKeys"]
+    n1["Crypto"]
+    n2["rsaJwk"]
+    n3["Discovery"]
+    n4["jwks"]
+    n4 -->|"calls"| n0
+    n4 -->|"depends on"| n0
+    n4 -->|"calls"| n1
+    n4 -->|"depends on"| n1
+    n4 -->|"calls"| n2
 ```
 
-## API calls
+::: details Call relationships
 
 ```mermaid
 flowchart TD
-    n0["SigningKeys.provider · common/keys.aug"]
-    n1["settings · common/settings.aug"]
-    n2["Crypto.publicRsa · package/@git/url_9ef654c66d34ab8f5527@0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts…"]
-    n3["RsaJwks · package/@git/url_9ef654c66d34ab8f5527@0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug"]
-    n4["rsaJwk · package/@git/url_9ef654c66d34ab8f5527@0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug"]
-    n5["Discovery · provider/discovery.aug"]
-    n6["discovery · provider/discovery.aug"]
-    n7["jwks · provider/discovery.aug"]
+    n0["SigningKeys.provider"]
+    n1["settings"]
+    n2["Crypto.publicRsa"]
+    n3["RsaJwks"]
+    n4["rsaJwk"]
+    n5["Discovery"]
+    n6["discovery"]
+    n7["jwks"]
     n6 -->|"calls"| n1
     n6 -->|"calls"| n5
     n7 -->|"calls"| n0
@@ -53,6 +49,8 @@ flowchart TD
     n7 -->|"calls"| n3
     n7 -->|"calls"| n4
 ```
+
+:::
 
 ## Sequences
 
@@ -64,12 +62,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](discovery.md#source-L6)
 :::
 
-```mermaid
-sequenceDiagram
-    participant p0 as Discovery constructor
-
-    Note over p0: Receive fields: issuer, authorization_endpoint, token_endpoint, userinfo_endpoint, jwks_uri, response_types_supported…
-```
+Receive fields: issuer, authorization\_endpoint, token\_endpoint, userinfo\_endpoint, jwks\_uri, response\_types\_supported, grant\_types\_supported, subject\_types\_supported, id\_token\_signing\_alg\_values\_supported, token\_endpoint\_auth\_methods\_supported, scopes\_supported, claims\_supported, code\_challenge\_methods\_supported. [Explanation](discovery.md).
 
 ### discovery {#sequence-discovery}
 
@@ -80,13 +73,15 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as discovery
-    participant p1 as settings
+    participant p1 as common/settings
     participant p2 as Discovery
     Note over p0: GET /provider/.well-known/openid-configuration
     p0->>p1: settings()
-    p0->>p2: Discovery(issuer, authorization_endpoint, token_endpoint, userinfo_endpoint, jwks_uri, response_types_supported, gran…
-    Note over p0: Return Discovery(issuer=config.issuer, authorization_endpoint=config.issuer + #34;/authorize#34;, token_endpoint=config.iss…
-    Note over p0: HTTP result follows declared response and error mapping#59; unhandled request failure returns 500
+    p1-->>p0: config: Settings
+    p0->>p2: Discovery(issuer=config.issuer,<br/>authorization_endpoint=config.issuer + ”/authorize”,<br/>token_endpoint=config.issuer + ”…
+    p2-->>p0: Discovery
+    Note over p0: Return Discovery(issuer=config.issuer,<br/>authorization_endpoint=config.issuer + ”/authorize”,<br/>token_endpoint=config.iss…
+    Note over p0: HTTP result follows declared response and error mapping；<br/>unhandled request failure returns 500
 ```
 
 ### jwks {#sequence-jwks}
@@ -98,18 +93,22 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as jwks
-    participant p1 as SigningKeys.provider
-    participant p2 as Crypto.publicRsa
-    participant p3 as rsaJwk
+    participant p1 as keys: SigningKeys
+    participant p2 as crypto: Crypto
+    participant p3 as @git/url_9ef654c66d34ab8f5527/jose
     participant p4 as RsaJwks
     Note over p0: GET /provider/jwks
     p0->>p1: provider() · interface dispatch
-    p0->>p2: publicRsa(key) · interface dispatch
-    p0->>p3: rsaJwk(publicKey, kid)
-    p0->>p4: RsaJwks(keys)
-    Note over p0: Return RsaJwks(keys=#91;rsaJwk(publicKey=publicKey, kid=#34;provider-1#34;)#93;)#59; required cleanup runs before exit
+    p1-->>p0: RsaPrivateKey
+    p0->>p2: publicRsa(key=keys.provider()) · interface dispatch
+    p2-->>p0: publicKey: RsaPublicKey
+    p0->>p3: rsaJwk(publicKey=publicKey, kid=”provider-1”)
+    p3-->>p0: RsaJwk
+    p0->>p4: RsaJwks(keys=［rsaJwk(publicKey=publicKey,<br/>kid=”provider-1”)］)
+    p4-->>p0: RsaJwks
+    Note over p0: Return RsaJwks(keys=［rsaJwk(publicKey=publicKey,<br/>kid=”provider-1”)］)； required cleanup runs before exit
     Note over p0: May leave with checked errors: CryptoError, KeyError
-    Note over p0: HTTP result follows declared response and error mapping#59; unhandled request failure returns 500
+    Note over p0: HTTP result follows declared response and error mapping；<br/>unhandled request failure returns 500
 ```
 
 ## Called contracts

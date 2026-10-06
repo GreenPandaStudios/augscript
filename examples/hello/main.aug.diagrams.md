@@ -8,19 +8,22 @@
 
 ```mermaid
 flowchart TD
-    n0["Greeter · app/greeter.aug"]
+    n0["Greeter"]
     n1["main.aug"]
     n1 -->|"calls"| n0
 ```
 
-## API calls
+<details>
+<summary>Call relationships</summary>
 
 ```mermaid
 flowchart TD
-    n0["Greeter.greet · app/greeter.aug"]
+    n0["Greeter.greet"]
     n1["main.aug"]
     n1 -->|"calls"| n0
 ```
+
+</details>
 
 ## Sequences
 
@@ -35,9 +38,9 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ```mermaid
 sequenceDiagram
     participant p0 as Startup
-    participant p1 as Greeter.greet
+    participant p1 as greeter: Greeter
     Note over p0: Resolve app from the declared composition
-    p0->>p1: greet(name)
+    p0->>p1: greet(name=”AugScript”)
 ```
 
 ## Called contracts

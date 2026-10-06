@@ -4,21 +4,20 @@
 
 [Project overview](.aug-spec/diagrams/index.md) · [Compiled explanation](ascii.aug.md)
 
-## Class interactions
 
-No relationships at this level.
-
-## API calls
+<details>
+<summary>Call relationships</summary>
 
 ```mermaid
 flowchart TD
-    n0["asciiAt · august/values/ascii.aug"]
-    n1["asciiLetter · august/values/ascii.aug"]
-    n2["asciiLower · august/values/ascii.aug"]
-    n3["asciiSlice · august/values/ascii.aug"]
-    n0 -->|"calls"| n3
-    n2 -->|"calls"| n0
+    n0["asciiAt"]
+    n1["asciiLower"]
+    n2["asciiSlice"]
+    n0 -->|"calls"| n2
+    n1 -->|"calls"| n0
 ```
+
+</details>
 
 ## Sequences
 
@@ -36,14 +35,14 @@ sequenceDiagram
     participant p1 as input.slice
     participant p2 as input.slice(start, end).text
     participant p3 as ConversionError
-    opt Try body#59; stops on a checked failure
-    p0->>p1: input.slice(input 1, input 2)
+    opt Try body； stops on a checked failure
+    p0->>p1: input.slice(input 1=start, input 2=end)
     p0->>p2: input.slice(start, end).text()
-    Note over p0: Return input.slice(start, end).text()#59; required cleanup runs before exit
+    Note over p0: Return input.slice(start, end).text()； required cleanup<br/>runs before exit
     end
     opt Catch IndexError
     p0->>p3: ConversionError()
-    Note over p0: Raise checked failure ConversionError()#59; required cleanup runs before exit
+    Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
     Note over p0: May leave with checked errors: ConversionError
 ```
@@ -58,8 +57,9 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as asciiAt
     participant p1 as asciiSlice
-    p0->>p1: asciiSlice(input, start, end)
-    Note over p0: Return asciiSlice(input, start=index, end=index + 1)#59; required cleanup runs before exit
+    p0->>p1: asciiSlice(input=input, start=index, end=index + 1)
+    p1-->>p0: string
+    Note over p0: Return asciiSlice(input, start=index, end=index + 1)；<br/>required cleanup runs before exit
     Note over p0: May leave with checked errors: ConversionError
 ```
 
@@ -73,17 +73,17 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as asciiLetter
     participant p1 as character.compare
-    p0->>p1: character.compare(other)
+    p0->>p1: character.compare(other=”A”)
     opt Left is true
-    p0->>p1: character.compare(other)
+    p0->>p1: character.compare(other=”Z”)
     end
     opt Left is false
-    p0->>p1: character.compare(other)
+    p0->>p1: character.compare(other=”a”)
     opt Left is true
-    p0->>p1: character.compare(other)
+    p0->>p1: character.compare(other=”z”)
     end
     end
-    Note over p0: Return character.compare(other=#34;A#34;) #62;= 0 and character.compare(other=#34;Z#34;) #60;= 0) or (character.compare(other=#34;a#34;) #62;= 0…
+    Note over p0: Return character.compare(other=”A”) ›= 0 and<br/>character.compare(other=”Z”) ‹= 0) or<br/>(character.compare(other=”a”) ›= 0…
 ```
 
 <a id="sequence-asciiLower"></a>
@@ -95,18 +95,20 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as asciiLower
-    participant p1 as #34;ABCDEFGHIJKLMNOPQRSTUVWXYZ#34;.bytes
-    participant p2 as #34;abcdefghijklmnopqrstuvwxyz#34;.bytes
+    participant p1 as ”ABCDEFGHIJKLMNOPQRSTUVWXYZ”.bytes
+    participant p2 as ”abcdefghijklmnopqrstuvwxyz”.bytes
     participant p3 as asciiAt
     participant p4 as result.replace
-    p0->>p1: #34;ABCDEFGHIJKLMNOPQRSTUVWXYZ#34;.bytes()
-    p0->>p2: #34;abcdefghijklmnopqrstuvwxyz#34;.bytes()
-    loop While index #60; 26
-    p0->>p3: asciiAt(input, index)
-    p0->>p3: asciiAt(input, index)
-    p0->>p4: result.replace(search, replacement)
+    p0->>p1: ”ABCDEFGHIJKLMNOPQRSTUVWXYZ”.bytes()
+    p0->>p2: ”abcdefghijklmnopqrstuvwxyz”.bytes()
+    loop While index ‹ 26
+    p0->>p3: asciiAt(input=upper, index=index)
+    p3-->>p0: string
+    p0->>p3: asciiAt(input=lower, index=index)
+    p3-->>p0: string
+    p0->>p4: result.replace(search=asciiAt(input=upper, index),<br/>replacement=asciiAt(input=lower, index))
     end
-    Note over p0: Return result#59; required cleanup runs before exit
+    Note over p0: Return result； required cleanup runs before exit
     Note over p0: May leave with checked errors: ConversionError
 ```
 

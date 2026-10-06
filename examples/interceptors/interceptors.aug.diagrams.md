@@ -8,29 +8,30 @@
 
 ```mermaid
 flowchart TD
-    n0["Console · august/io/contracts.aug"]
-    n1["AddOne · interceptors.aug"]
-    n2["Audit · interceptors.aug"]
-    n3["Positive · interceptors.aug"]
-    n4["ValidationError · interceptors.aug"]
-    n5["Logger · logging.aug"]
+    n0["Console"]
+    n1["AddOne"]
+    n2["Audit"]
+    n3["Positive"]
+    n4["ValidationError"]
+    n5["Logger"]
     n2 -->|"depends on"| n0
     n2 -->|"calls"| n5
-    n3 -->|"calls"| n4
 ```
 
-## API calls
+<details>
+<summary>Call relationships</summary>
 
 ```mermaid
 flowchart TD
-    n0["AddOne.around · interceptors.aug"]
-    n1["Audit.around · interceptors.aug"]
-    n2["Positive.around · interceptors.aug"]
-    n3["ValidationError · interceptors.aug"]
-    n4["Logger.log · logging.aug"]
-    n1 -->|"calls"| n4
-    n2 -->|"calls"| n3
+    n0["Audit.around"]
+    n1["Positive.around"]
+    n2["ValidationError"]
+    n3["Logger.log"]
+    n0 -->|"calls"| n3
+    n1 -->|"calls"| n2
 ```
+
+</details>
 
 ## Sequences
 
@@ -42,12 +43,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](interceptors.aug#L5)
 
-```mermaid
-sequenceDiagram
-    participant p0 as ValidationError constructor
-
-    Note over p0: Receive fields: message
-```
+Receive fields: message. [Explanation](interceptors.aug.md).
 
 <a id="sequence-Audit.around"></a>
 
@@ -58,12 +54,12 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as Audit.around
-    participant p1 as Logger.log
+    participant p1 as logger: Logger
     participant p2 as next
-    p0->>p1: log(message) · interface dispatch
+    p0->>p1: log(message=”before”) · interface dispatch
     p0->>p2: next() · conditional interceptor delegation
-    p0->>p1: log(message) · interface dispatch
-    Note over p0: Return result#59; required cleanup runs before exit
+    p0->>p1: log(message=”after”) · interface dispatch
+    Note over p0: Return result； required cleanup runs before exit
 ```
 
 <a id="sequence-Positive.around"></a>
@@ -77,12 +73,13 @@ sequenceDiagram
     participant p0 as Positive.around
     participant p1 as ValidationError
     participant p2 as next
-    alt y #60; 0
-    p0->>p1: ValidationError(message)
-    Note over p0: Raise checked failure ValidationError(message=#34;value must be nonnegative#34;)#59; required cleanup runs before exit
+    alt y ‹ 0
+    p0->>p1: ValidationError(message=”value must be nonnegative”)
+    p1-->>p0: ValidationError
+    Note over p0: Raise checked failure ValidationError(message=”value<br/>must be nonnegative”)； required cleanup runs before exit
     end
     p0->>p2: next() · conditional interceptor delegation
-    Note over p0: Return next()#59; required cleanup runs before exit
+    Note over p0: Return next()； required cleanup runs before exit
     Note over p0: May leave with checked errors: ValidationError
 ```
 
@@ -96,8 +93,8 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as AddOne.around
     participant p1 as next
-    p0->>p1: next(y) · conditional interceptor delegation
-    Note over p0: Return next(y=y + 1)#59; required cleanup runs before exit
+    p0->>p1: next(y=y + 1) · conditional interceptor delegation
+    Note over p0: Return next(y=y + 1)； required cleanup runs before exit
 ```
 
 ## Called contracts

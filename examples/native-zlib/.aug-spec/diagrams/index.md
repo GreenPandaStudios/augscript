@@ -2,36 +2,47 @@
 
 # Project diagrams
 
-Read the areas first, then open a module for its class interactions, API calls and sequences. Follow an operation to its specification and source.
+Start here to see what moves between the application’s folders. Each arrow names an operation’s inputs and the result it returns to its caller. Open a folder for the next level of detail. Expand the contract list for complete types and dependency links.
 
-These are checked static views. Arrows describe possible calls, not an execution trace. Interface implementations, callbacks and foreign internals are not guessed. Tests are described in the adjacent specifications.
-
-## Areas
+## Data flow
 
 ```mermaid
 flowchart TD
-    n0["Project root"]
-    n1["package/@greenpandastudios/aug-zlib@0.1.5"]
-    n0 -->|"uses"| n1
+    n0["compression"]
+    n1["Startup"]
+    n1 -->|"roundTrip → Bytes"| n0
 ```
 
-## Modules
+### Package boundaries
+
+<details>
+<summary>compression package calls</summary>
 
 ```mermaid
-flowchart TD
-    n0["compression.aug"]
-    n1["main.aug"]
-    n2["package/@greenpandastudios/aug-zlib@0.1.5/api.aug"]
-    n3["package/@greenpandastudios/aug-zlib@0.1.5/contracts.aug"]
-    n0 -->|"uses"| n2
-    n0 -->|"uses"| n3
-    n1 -->|"uses"| n0
-    n1 -->|"uses"| n3
+flowchart LR
+    n0["compression"]
+    n1["@greenpandastudios/aug-zlib"]
+    n0 -->|"compress(input) / decompress(input, maximumOutput) → Bytes"| n1
 ```
+
+</details>
+
+<details>
+<summary>Data crossing these boundaries (3 contracts)</summary>
+
+| From | To | Operation and inputs | Result |
+| --- | --- | --- | --- |
+| compression | @greenpandastudios/aug-zlib | [compress](../packages/%40greenpandastudios/aug-zlib/0.1.5/api.aug.md#symbol-compress) · input: Bytes | Bytes |
+| compression | @greenpandastudios/aug-zlib | [decompress](../packages/%40greenpandastudios/aug-zlib/0.1.5/api.aug.md#symbol-decompress) · input: Bytes, maximumOutput: int | Bytes |
+| Startup | compression | [roundTrip](../../compression.aug.md#symbol-roundTrip) | Bytes |
+
+</details>
 
 ## Open a module
 
-| Module | Diagrams | Specification |
-| --- | --- | --- |
-| compression.aug | [Interactions and sequences](../../compression.aug.diagrams.md) | [Explanation](../../compression.aug.md) |
-| main.aug | [Interactions and sequences](../../main.aug.diagrams.md) | [Explanation](../../main.aug.md) |
+| Module | Read |
+| --- | --- |
+| compression.aug | [Flow and sequences](../../compression.aug.diagrams.md) · [Explanation](../../compression.aug.md) |
+| main.aug | [Flow and sequences](../../main.aug.diagrams.md) · [Explanation](../../main.aug.md) |
+
+These are static call boundaries, not a request trace. Interface implementations and foreign internals stop at their checked contracts. Dotted arrows defer a callback or browser action. Imports alone do not imply a call.

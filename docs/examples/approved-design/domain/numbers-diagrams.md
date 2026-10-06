@@ -18,26 +18,27 @@ outline: [2, 3]
 
 ```mermaid
 flowchart TD
-    n0["Positive · domain/numbers.aug"]
-    n1["RangeError · domain/numbers.aug"]
-    n2["double · domain/numbers.aug"]
-    n0 -->|"calls"| n1
+    n0["Positive"]
+    n1["RangeError"]
+    n2["double"]
     n2 -->|"intercepted by"| n0
 ```
 
-## API calls
+::: details Call relationships
 
 ```mermaid
 flowchart TD
-    n0["Positive · domain/numbers.aug"]
-    n1["Positive.around · domain/numbers.aug"]
-    n2["RangeError · domain/numbers.aug"]
-    n3["double · domain/numbers.aug"]
+    n0["Positive"]
+    n1["Positive.around"]
+    n2["RangeError"]
+    n3["double"]
     n4["domain/numbers.aug"]
     n1 -->|"calls"| n2
     n3 -->|"intercepted by"| n0
     n4 -->|"calls"| n3
 ```
+
+:::
 
 ## Sequences
 
@@ -49,12 +50,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](numbers.md#source-L3)
 :::
 
-```mermaid
-sequenceDiagram
-    participant p0 as RangeError constructor
-
-    Note over p0: Receive fields: value
-```
+Receive fields: value. [Explanation](numbers.md).
 
 ### Positive.around {#sequence-Positive.around}
 
@@ -67,12 +63,13 @@ sequenceDiagram
     participant p0 as Positive.around
     participant p1 as RangeError
     participant p2 as next
-    alt amount #60; 0
-    p0->>p1: RangeError(value)
-    Note over p0: Raise checked failure RangeError(value=amount)#59; required cleanup runs before exit
+    alt amount ‹ 0
+    p0->>p1: RangeError(value=amount)
+    p1-->>p0: RangeError
+    Note over p0: Raise checked failure RangeError(value=amount)； required<br/>cleanup runs before exit
     end
     p0->>p2: next() · conditional interceptor delegation
-    Note over p0: Return next()#59; required cleanup runs before exit
+    Note over p0: Return next()； required cleanup runs before exit
     Note over p0: May leave with checked errors: RangeError
 ```
 
@@ -82,14 +79,7 @@ sequenceDiagram
 [Source](numbers.md#source-L18)
 :::
 
-```mermaid
-sequenceDiagram
-    participant p0 as double
-
-    Note over p0: Applied layers: Positive#59; may stop or change delegation#59; see specification
-    Note over p0: Return amount * 2#59; required cleanup runs before exit
-    Note over p0: May leave with checked errors: RangeError
-```
+Applied layers: Positive; may stop or change delegation; see specification. Return amount \* 2; required cleanup runs before exit. May leave with checked errors: RangeError. [Explanation](numbers.md).
 
 ## Called contracts
 

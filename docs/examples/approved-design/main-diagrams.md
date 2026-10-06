@@ -18,26 +18,24 @@ outline: [2, 3]
 
 ```mermaid
 flowchart TD
-    n0["Counter · counters.aug"]
-    n1["Application · domain/app.aug"]
-    n2["Fruit · domain/models.aug"]
-    n3["double · domain/numbers.aug"]
-    n4["main.aug"]
-    n4 -->|"calls"| n0
-    n4 -->|"calls"| n1
-    n4 -->|"calls"| n2
-    n4 -->|"calls"| n3
+    n0["Counter"]
+    n1["Application"]
+    n2["double"]
+    n3["main.aug"]
+    n3 -->|"calls"| n0
+    n3 -->|"calls"| n1
+    n3 -->|"calls"| n2
 ```
 
-## API calls
+::: details Call relationships
 
 ```mermaid
 flowchart TD
-    n0["Counter.increment · counters.aug"]
-    n1["Counter.value · counters.aug"]
-    n2["Application.start · domain/app.aug"]
-    n3["Fruit · domain/models.aug"]
-    n4["double · domain/numbers.aug"]
+    n0["Counter.increment"]
+    n1["Counter.value"]
+    n2["Application.start"]
+    n3["Fruit"]
+    n4["double"]
     n5["main.aug"]
     n5 -->|"calls"| n0
     n5 -->|"calls"| n1
@@ -45,6 +43,8 @@ flowchart TD
     n5 -->|"calls"| n3
     n5 -->|"calls"| n4
 ```
+
+:::
 
 ## Sequences
 
@@ -56,29 +56,32 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](main.md#source-L8)
 :::
 
+#### Sequence 1 of 2 (continued)
+
 ```mermaid
 sequenceDiagram
     participant p0 as Startup
-    participant p1 as Application.start
+    participant p1 as app: Application
     participant p2 as names.get
     participant p3 as print
     participant p4 as Fruit
-    participant p5 as #123;Fruit(code=code, name=label), Fruit(name=label, code=code)#125;.length
-    participant p6 as Counter.increment
-    participant p7 as Counter.value
-    participant p8 as double
+    participant p5 as ｛Fruit(code=code, name=label), Fruit(name=label, code=code)｝.length
+    participant p6 as counter: Counter
+    participant p7 as domain/numbers
     Note over p0: Resolve Application from the declared composition
     p0->>p1: start() · interface dispatch
-    p0->>p2: names.get(key)
+    p0->>p2: names.get(key=2)
     alt Match when null:
-    p0->>p3: print(value)
+    p0->>p3: print(value=”missing fruit”)
     else Match when some name:
-    p0->>p3: print(value)
+    p0->>p3: print(value=name)
     end
-    p0->>p4: Fruit(code, name)
-    p0->>p4: Fruit(name, code)
-    p0->>p5: #123;Fruit(code=code, name=label), Fruit(name=label, code=code)#125;.length()
-    p0->>p3: print(value)
+    p0->>p4: Fruit(code=code, name=label)
+    p4-->>p0: Fruit
+    p0->>p4: Fruit(name=label, code=code)
+    p4-->>p0: Fruit
+    p0->>p5: ｛Fruit(code=code, name=label), Fruit(name=label,<br/>code=code)｝.length()
+    p0->>p3: print(value=｛Fruit(code=code, name=label),<br/>Fruit(name=label, code=code)｝.length())
     rect rgb(245, 240, 241)
     Note over p0: Enter task scope
     Note over p0: Resolve Counter from the declared composition
@@ -87,17 +90,32 @@ sequenceDiagram
     p0->>p6: increment() · interface dispatch
     Note over p0: Leave borrow scope
     end
-    p0->>p7: value() · interface dispatch
-    p0->>p3: print(value)
+    p0->>p6: value() · interface dispatch
+    p6-->>p0: int
+    p0->>p3: print(value=counter.value())
     Note over p0: Join tasks and release scoped resources
     end
-    opt Try body#59; stops on a checked failure
-    p0->>p8: double(amount)
-    p0->>p3: print(value)
-    p0->>p8: double(amount)
+    opt Try body； stops on a checked failure
+    p0->>p7: double(amount=7)
+    p7-->>p0: int
+    p0->>p3: print(value=double(amount=7))
+    p0->>p7: double(amount=-1)
+    end
+```
+
+#### Sequence 2 of 2 (continued)
+
+```mermaid
+sequenceDiagram
+    participant p0 as Startup
+    participant p1 as domain/numbers
+    participant p2 as print
+    opt Try body； stops on a checked failure
+    Note over p0: Sequence continued from the previous view
+    p1-->>p0: int
     end
     opt Catch RangeError
-    p0->>p3: print(value)
+    p0->>p2: print(value=”negative amount rejected”)
     end
 ```
 

@@ -14,21 +14,20 @@ outline: [2, 3]
 
 [Project overview](../../../../../diagrams/index.md) · [Compiled explanation](api.md)
 
-## Class interactions
 
-No relationships at this level.
-
-## API calls
+::: details Call relationships
 
 ```mermaid
 flowchart TD
-    n0["_compress · package/@greenpandastudios/aug-zlib@0.1.5/api.aug"]
-    n1["_decompress · package/@greenpandastudios/aug-zlib@0.1.5/api.aug"]
-    n2["compress · package/@greenpandastudios/aug-zlib@0.1.5/api.aug"]
-    n3["decompress · package/@greenpandastudios/aug-zlib@0.1.5/api.aug"]
+    n0["_compress"]
+    n1["_decompress"]
+    n2["compress"]
+    n3["decompress"]
     n2 -->|"calls"| n0
     n3 -->|"calls"| n1
 ```
+
+:::
 
 ## Sequences
 
@@ -40,13 +39,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](api.md#source-L4)
 :::
 
-```mermaid
-sequenceDiagram
-    participant p0 as _compress
-
-    Note over p0: May leave with checked errors: CompressionError
-    Note over p0: Native implementation#59; only the declared contract is known
-```
+May leave with checked errors: CompressionError. Native implementation; only the declared contract is known. [Explanation](api.md).
 
 ### \_decompress {#sequence-_decompress}
 
@@ -54,13 +47,7 @@ sequenceDiagram
 [Source](api.md#source-L5)
 :::
 
-```mermaid
-sequenceDiagram
-    participant p0 as _decompress
-
-    Note over p0: May leave with checked errors: CompressionError
-    Note over p0: Native implementation#59; only the declared contract is known
-```
+May leave with checked errors: CompressionError. Native implementation; only the declared contract is known. [Explanation](api.md).
 
 ### compress {#sequence-compress}
 
@@ -74,8 +61,9 @@ sequenceDiagram
     participant p1 as _compress
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _compress(input) · native boundary
-    Note over p0: Return _compress(input)#59; required cleanup runs before exit
+    p0->>p1: _compress(input=input) · native boundary
+    p1-->>p0: Bytes
+    Note over p0: Return _compress(input)； required cleanup runs before<br/>exit
     Note over p0: Leave unsafe scope
     end
     Note over p0: May leave with checked errors: CompressionError
@@ -93,8 +81,9 @@ sequenceDiagram
     participant p1 as _decompress
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _decompress(input, maximumOutput) · native boundary
-    Note over p0: Return _decompress(input, maximumOutput)#59; required cleanup runs before exit
+    p0->>p1: _decompress(input=input, maximumOutput=maximumOutput) ·<br/>native boundary
+    p1-->>p0: Bytes
+    Note over p0: Return _decompress(input, maximumOutput)； required<br/>cleanup runs before exit
     Note over p0: Leave unsafe scope
     end
     Note over p0: May leave with checked errors: CompressionError

@@ -4,20 +4,6 @@
 
 [Project overview](../.aug-spec/diagrams/index.md) · [Compiled explanation](contracts.aug.md)
 
-## Class interactions
-
-```mermaid
-flowchart TD
-    n0["LoginTransaction · client/contracts.aug"]
-    n1["LogoutForm · client/contracts.aug"]
-    n2["SessionClaims · client/contracts.aug"]
-    n3["SessionError · client/contracts.aug"]
-
-```
-
-## API calls
-
-No relationships at this level.
 
 ## Sequences
 
@@ -29,12 +15,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](contracts.aug#L3)
 
-```mermaid
-sequenceDiagram
-    participant p0 as LoginTransaction constructor
-
-    Note over p0: Receive fields: state, nonce, verifier, expires
-```
+Receive fields: state, nonce, verifier, expires. [Explanation](contracts.aug.md).
 
 <a id="sequence-SessionClaims-20-constructor"></a>
 
@@ -42,12 +23,7 @@ sequenceDiagram
 
 [Source](contracts.aug#L5)
 
-```mermaid
-sequenceDiagram
-    participant p0 as SessionClaims constructor
-
-    Note over p0: Receive fields: iss, sub, aud, exp, iat, jti, csrf, name
-```
+Receive fields: iss, sub, aud, exp, iat, jti, csrf, name. [Explanation](contracts.aug.md).
 
 <a id="sequence-LogoutForm-20-constructor"></a>
 
@@ -55,12 +31,7 @@ sequenceDiagram
 
 [Source](contracts.aug#L6)
 
-```mermaid
-sequenceDiagram
-    participant p0 as LogoutForm constructor
-
-    Note over p0: Receive fields: csrf
-```
+Receive fields: csrf. [Explanation](contracts.aug.md).
 
 <a id="sequence-SessionError-20-constructor"></a>
 
@@ -68,10 +39,5 @@ sequenceDiagram
 
 [Source](contracts.aug#L7)
 
-```mermaid
-sequenceDiagram
-    participant p0 as SessionError constructor
-
-    Note over p0: No calls in this operation#59; see the source and specification
-```
+[Explanation](contracts.aug.md).
 

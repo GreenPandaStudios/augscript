@@ -8,32 +8,17 @@
 
 ```mermaid
 flowchart TD
-    n0["Arguments · august/io/contracts.aug"]
-    n1["Console · august/io/contracts.aug"]
-    n2["FileReader · august/io/contracts.aug"]
-    n3["FileWriter · august/io/contracts.aug"]
-    n4["LocalFiles · august/io/contracts.aug"]
-    n5["ProcessArguments · august/io/contracts.aug"]
-    n6["SystemConsole · august/io/contracts.aug"]
+    n0["Arguments"]
+    n1["Console"]
+    n2["FileReader"]
+    n3["FileWriter"]
+    n4["LocalFiles"]
+    n5["ProcessArguments"]
+    n6["SystemConsole"]
     n4 -->|"implements"| n2
     n4 -->|"implements"| n3
     n5 -->|"implements"| n0
     n6 -->|"implements"| n1
-```
-
-## API calls
-
-```mermaid
-flowchart TD
-    n0["Arguments.read · august/io/contracts.aug"]
-    n1["Console.write · august/io/contracts.aug"]
-    n2["FileReader.read · august/io/contracts.aug"]
-    n3["FileWriter.write · august/io/contracts.aug"]
-    n4["LocalFiles.read · august/io/contracts.aug"]
-    n5["LocalFiles.write · august/io/contracts.aug"]
-    n6["ProcessArguments.read · august/io/contracts.aug"]
-    n7["SystemConsole.write · august/io/contracts.aug"]
-
 ```
 
 ## Sequences
@@ -46,12 +31,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](contracts.aug#L5)
 
-```mermaid
-sequenceDiagram
-    participant p0 as Console.write
-
-    Note over p0: Interface contract#59; implementation selected at runtime
-```
+Interface contract; implementation selected at runtime. [Explanation](contracts.aug.md).
 
 <a id="sequence-SystemConsole-20-constructor"></a>
 
@@ -59,12 +39,7 @@ sequenceDiagram
 
 [Source](contracts.aug#L8)
 
-```mermaid
-sequenceDiagram
-    participant p0 as SystemConsole constructor
-
-    Note over p0: No calls in this operation#59; see the source and specification
-```
+[Explanation](contracts.aug.md).
 
 <a id="sequence-SystemConsole.write"></a>
 
@@ -76,7 +51,7 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as SystemConsole.write
     participant p1 as print
-    p0->>p1: print(value)
+    p0->>p1: print(value=value)
 ```
 
 <a id="sequence-FileReader.read"></a>
@@ -85,13 +60,7 @@ sequenceDiagram
 
 [Source](contracts.aug#L15)
 
-```mermaid
-sequenceDiagram
-    participant p0 as FileReader.read
-
-    Note over p0: May leave with checked errors: FileError
-    Note over p0: Interface contract#59; implementation selected at runtime
-```
+May leave with checked errors: FileError. Interface contract; implementation selected at runtime. [Explanation](contracts.aug.md).
 
 <a id="sequence-FileWriter.write"></a>
 
@@ -99,13 +68,7 @@ sequenceDiagram
 
 [Source](contracts.aug#L20)
 
-```mermaid
-sequenceDiagram
-    participant p0 as FileWriter.write
-
-    Note over p0: May leave with checked errors: FileError
-    Note over p0: Interface contract#59; implementation selected at runtime
-```
+May leave with checked errors: FileError. Interface contract; implementation selected at runtime. [Explanation](contracts.aug.md).
 
 <a id="sequence-LocalFiles-20-constructor"></a>
 
@@ -113,12 +76,7 @@ sequenceDiagram
 
 [Source](contracts.aug#L23)
 
-```mermaid
-sequenceDiagram
-    participant p0 as LocalFiles constructor
-
-    Note over p0: No calls in this operation#59; see the source and specification
-```
+[Explanation](contracts.aug.md).
 
 <a id="sequence-LocalFiles.read"></a>
 
@@ -130,8 +88,8 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as LocalFiles.read
     participant p1 as read_file
-    p0->>p1: read_file(path)
-    Note over p0: Return read_file(path=path)#59; required cleanup runs before exit
+    p0->>p1: read_file(path=path)
+    Note over p0: Return read_file(path=path)； required cleanup runs<br/>before exit
     Note over p0: May leave with checked errors: FileError
 ```
 
@@ -145,7 +103,7 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as LocalFiles.write
     participant p1 as write_file
-    p0->>p1: write_file(path, content)
+    p0->>p1: write_file(path=path, content=content)
     Note over p0: May leave with checked errors: FileError
 ```
 
@@ -155,12 +113,7 @@ sequenceDiagram
 
 [Source](contracts.aug#L31)
 
-```mermaid
-sequenceDiagram
-    participant p0 as Arguments.read
-
-    Note over p0: Interface contract#59; implementation selected at runtime
-```
+Interface contract; implementation selected at runtime. [Explanation](contracts.aug.md).
 
 <a id="sequence-ProcessArguments-20-constructor"></a>
 
@@ -168,12 +121,7 @@ sequenceDiagram
 
 [Source](contracts.aug#L34)
 
-```mermaid
-sequenceDiagram
-    participant p0 as ProcessArguments constructor
-
-    Note over p0: No calls in this operation#59; see the source and specification
-```
+[Explanation](contracts.aug.md).
 
 <a id="sequence-ProcessArguments.read"></a>
 
@@ -186,7 +134,7 @@ sequenceDiagram
     participant p0 as ProcessArguments.read
     participant p1 as arguments
     p0->>p1: arguments()
-    Note over p0: Return arguments()#59; required cleanup runs before exit
+    Note over p0: Return arguments()； required cleanup runs before exit
 ```
 
 ## Called contracts

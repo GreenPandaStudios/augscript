@@ -14,18 +14,17 @@ outline: [2, 3]
 
 [Project overview](diagrams/index.md) · [Compiled explanation](native.md)
 
-## Class interactions
 
-No relationships at this level.
-
-## API calls
+::: details Call relationships
 
 ```mermaid
 flowchart TD
-    n0["announce · native.aug"]
-    n1["puts · native.aug"]
+    n0["announce"]
+    n1["puts"]
     n0 -->|"calls"| n1
 ```
+
+:::
 
 ## Sequences
 
@@ -37,12 +36,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](native.md#source-L2)
 :::
 
-```mermaid
-sequenceDiagram
-    participant p0 as puts
-
-    Note over p0: Native implementation#59; only the declared contract is known
-```
+Native implementation; only the declared contract is known. [Explanation](native.md).
 
 ### announce {#sequence-announce}
 
@@ -56,7 +50,8 @@ sequenceDiagram
     participant p1 as puts
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: puts(message) · native boundary
+    p0->>p1: puts(message=”hello from C FFI”) · native boundary
+    p1-->>p0: c_int
     Note over p0: Leave unsafe scope
     end
 ```

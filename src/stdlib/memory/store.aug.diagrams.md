@@ -8,30 +8,26 @@
 
 ```mermaid
 flowchart TD
-    n0["ExpiringStore · store.aug"]
-    n1["MemoryStore · store.aug"]
-    n2["StoreFull · store.aug"]
-    n3["_Entry · store.aug"]
+    n0["ExpiringStore"]
+    n1["MemoryStore"]
+    n2["StoreFull"]
+    n3["_Entry"]
     n1 -->|"implements"| n0
-    n1 -->|"calls"| n2
-    n1 -->|"calls"| n3
 ```
 
-## API calls
+<details>
+<summary>Call relationships</summary>
 
 ```mermaid
 flowchart TD
-    n0["ExpiringStore.get · store.aug"]
-    n1["ExpiringStore.put · store.aug"]
-    n2["ExpiringStore.take · store.aug"]
-    n3["MemoryStore.get · store.aug"]
-    n4["MemoryStore.put · store.aug"]
-    n5["MemoryStore.take · store.aug"]
-    n6["StoreFull · store.aug"]
-    n7["_Entry · store.aug"]
-    n4 -->|"calls"| n6
-    n4 -->|"calls"| n7
+    n0["MemoryStore.put"]
+    n1["StoreFull"]
+    n2["_Entry"]
+    n0 -->|"calls"| n1
+    n0 -->|"calls"| n2
 ```
+
+</details>
 
 ## Sequences
 
@@ -43,12 +39,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](store.aug#L3)
 
-```mermaid
-sequenceDiagram
-    participant p0 as StoreFull constructor
-
-    Note over p0: No calls in this operation#59; see the source and specification
-```
+[Explanation](store.aug.md).
 
 <a id="sequence-_Entry-20-constructor"></a>
 
@@ -56,12 +47,7 @@ sequenceDiagram
 
 [Source](store.aug#L5)
 
-```mermaid
-sequenceDiagram
-    participant p0 as _Entry constructor
-
-    Note over p0: Receive fields: value, expires
-```
+Receive fields: value, expires. [Explanation](store.aug.md).
 
 <a id="sequence-ExpiringStore.put"></a>
 
@@ -69,13 +55,7 @@ sequenceDiagram
 
 [Source](store.aug#L10)
 
-```mermaid
-sequenceDiagram
-    participant p0 as ExpiringStore.put
-
-    Note over p0: May leave with checked errors: StoreFull
-    Note over p0: Interface contract#59; implementation selected at runtime
-```
+May leave with checked errors: StoreFull. Interface contract; implementation selected at runtime. [Explanation](store.aug.md).
 
 <a id="sequence-ExpiringStore.take"></a>
 
@@ -83,12 +63,7 @@ sequenceDiagram
 
 [Source](store.aug#L12)
 
-```mermaid
-sequenceDiagram
-    participant p0 as ExpiringStore.take
-
-    Note over p0: Interface contract#59; implementation selected at runtime
-```
+Interface contract; implementation selected at runtime. [Explanation](store.aug.md).
 
 <a id="sequence-ExpiringStore.get"></a>
 
@@ -96,12 +71,7 @@ sequenceDiagram
 
 [Source](store.aug#L14)
 
-```mermaid
-sequenceDiagram
-    participant p0 as ExpiringStore.get
-
-    Note over p0: Interface contract#59; implementation selected at runtime
-```
+Interface contract; implementation selected at runtime. [Explanation](store.aug.md).
 
 <a id="sequence-MemoryStore-20-constructor"></a>
 
@@ -115,8 +85,8 @@ sequenceDiagram
     participant p1 as Map
     participant p2 as Shared
     p0->>p1: Map()
-    p0->>p2: Shared(value)
-    Note over p0: Set _entries to Shared(value=Map#60;string, _Entry#60;T#62;#62;())
+    p0->>p2: Shared(value=Map‹string, _Entry‹T››())
+    Note over p0: Set _entries to Shared(value=Map‹string, _Entry‹T››())
 ```
 
 <a id="sequence-MemoryStore.put"></a>
@@ -134,23 +104,25 @@ sequenceDiagram
     participant p4 as entries.contains
     participant p5 as StoreFull
     participant p6 as entries.set
-    p0->>p1: _Entry(value, expires)
+    p0->>p1: _Entry(value=value, expires=expires)
+    p1-->>p0: entry: _Entry‹T›
     rect rgb(245, 240, 241)
     Note over p0: Enter lock scope
     loop For each item in entries
-    alt saved.expires #60;= now
-    p0->>p2: entries.take(key)
+    alt saved.expires ‹= now
+    p0->>p2: entries.take(key=name)
     end
     end
     p0->>p3: entries.length()
     opt Left is true
-    p0->>p4: entries.contains(key)
+    p0->>p4: entries.contains(key=key)
     end
-    alt entries.length() #62;= 512 and not entries.contains(key=key)
+    alt entries.length() ›= 512 and not entries.contains(key=key)
     p0->>p5: StoreFull()
-    Note over p0: Raise checked failure StoreFull()#59; required cleanup runs before exit
+    p5-->>p0: StoreFull
+    Note over p0: Raise checked failure StoreFull()； required cleanup runs<br/>before exit
     end
-    p0->>p6: entries.set(key, value)
+    p0->>p6: entries.set(key=key, value=entry)
     Note over p0: Leave lock scope
     end
     Note over p0: May leave with checked errors: StoreFull
@@ -168,14 +140,14 @@ sequenceDiagram
     participant p1 as entries.take
     rect rgb(245, 240, 241)
     Note over p0: Enter lock scope
-    p0->>p1: entries.take(key)
+    p0->>p1: entries.take(key=key)
     alt Match when null:
-    Note over p0: Return null#59; required cleanup runs before exit
+    Note over p0: Return null； required cleanup runs before exit
     else Match when some saved:
-    alt saved.expires #60;= now
-    Note over p0: Return null#59; required cleanup runs before exit
+    alt saved.expires ‹= now
+    Note over p0: Return null； required cleanup runs before exit
     end
-    Note over p0: Return saved.value#59; required cleanup runs before exit
+    Note over p0: Return saved.value； required cleanup runs before exit
     end
     Note over p0: Leave lock scope
     end
@@ -193,14 +165,14 @@ sequenceDiagram
     participant p1 as entries.get
     rect rgb(245, 240, 241)
     Note over p0: Enter lock scope
-    p0->>p1: entries.get(key)
+    p0->>p1: entries.get(key=key)
     alt Match when null:
-    Note over p0: Return null#59; required cleanup runs before exit
+    Note over p0: Return null； required cleanup runs before exit
     else Match when some saved:
-    alt saved.expires #60;= now
-    Note over p0: Return null#59; required cleanup runs before exit
+    alt saved.expires ‹= now
+    Note over p0: Return null； required cleanup runs before exit
     end
-    Note over p0: Return saved.value#59; required cleanup runs before exit
+    Note over p0: Return saved.value； required cleanup runs before exit
     end
     Note over p0: Leave lock scope
     end

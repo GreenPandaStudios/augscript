@@ -4,21 +4,6 @@
 
 [Project overview](.aug-spec/diagrams/index.md) · [Compiled explanation](retries.aug.md)
 
-## Class interactions
-
-```mermaid
-flowchart TD
-    n0["RetryPolicy · august/values/retries.aug"]
-
-```
-
-## API calls
-
-```mermaid
-flowchart TD
-    n0["retryDelay · august/values/retries.aug"]
-
-```
 
 ## Sequences
 
@@ -36,23 +21,19 @@ sequenceDiagram
     participant p1 as ConversionError
     participant p2 as delays.length
     Note over p0: Receive fields: maxAttempts, delays
-    opt Left is false
-    end
-    alt maxAttempts #60; 1 or maxAttempts #62; 64
+    alt maxAttempts ‹ 1 or maxAttempts › 64
     p0->>p1: ConversionError()
-    Note over p0: Raise checked failure ConversionError()#59; required cleanup runs before exit
+    Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
     p0->>p2: delays.length()
     alt delays.length() != maxAttempts - 1
     p0->>p1: ConversionError()
-    Note over p0: Raise checked failure ConversionError()#59; required cleanup runs before exit
+    Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
     loop For each item in delays
-    opt Left is false
-    end
-    alt delay.milliseconds #60; 0 or delay.milliseconds #62; 604800000
+    alt delay.milliseconds ‹ 0 or delay.milliseconds › 604800000
     p0->>p1: ConversionError()
-    Note over p0: Raise checked failure ConversionError()#59; required cleanup runs before exit
+    Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
     end
 ```
@@ -68,17 +49,15 @@ sequenceDiagram
     participant p0 as retryDelay
     participant p1 as ConversionError
     participant p2 as policy.delays.at
-    opt Left is false
-    end
-    alt failedAttempt #60; 1 or failedAttempt #62; policy.maxAttempts
+    alt failedAttempt ‹ 1 or failedAttempt › policy.maxAttempts
     p0->>p1: ConversionError()
-    Note over p0: Raise checked failure ConversionError()#59; required cleanup runs before exit
+    Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
     alt failedAttempt == policy.maxAttempts
-    Note over p0: Return null#59; required cleanup runs before exit
+    Note over p0: Return null； required cleanup runs before exit
     end
-    p0->>p2: policy.delays.at(index)
-    Note over p0: Return policy.delays.at(index=failedAttempt - 1)#59; required cleanup runs before exit
+    p0->>p2: policy.delays.at(index=failedAttempt - 1)
+    Note over p0: Return policy.delays.at(index=failedAttempt - 1)；<br/>required cleanup runs before exit
     Note over p0: May leave with checked errors: ConversionError
 ```
 

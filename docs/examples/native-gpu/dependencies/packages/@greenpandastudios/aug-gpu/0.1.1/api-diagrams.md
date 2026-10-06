@@ -14,28 +14,26 @@ outline: [2, 3]
 
 [Project overview](../../../../../diagrams/index.md) · [Compiled explanation](api.md)
 
-## Class interactions
 
-No relationships at this level.
-
-## API calls
+::: details Call relationships
 
 ```mermaid
 flowchart TD
-    n0["_add · package/@greenpandastudios/aug-gpu@0.1.1/api.aug"]
-    n1["_download · package/@greenpandastudios/aug-gpu@0.1.1/api.aug"]
-    n2["_live · package/@greenpandastudios/aug-gpu@0.1.1/api.aug"]
-    n3["_open · package/@greenpandastudios/aug-gpu@0.1.1/api.aug"]
-    n4["_upload · package/@greenpandastudios/aug-gpu@0.1.1/api.aug"]
-    n5["add · package/@greenpandastudios/aug-gpu@0.1.1/api.aug"]
-    n6["download · package/@greenpandastudios/aug-gpu@0.1.1/api.aug"]
-    n7["openDevice · package/@greenpandastudios/aug-gpu@0.1.1/api.aug"]
-    n8["upload · package/@greenpandastudios/aug-gpu@0.1.1/api.aug"]
-    n5 -->|"calls"| n0
-    n6 -->|"calls"| n1
+    n0["_add"]
+    n1["_download"]
+    n2["_open"]
+    n3["_upload"]
+    n4["add"]
+    n5["download"]
+    n6["openDevice"]
+    n7["upload"]
+    n4 -->|"calls"| n0
+    n5 -->|"calls"| n1
+    n6 -->|"calls"| n2
     n7 -->|"calls"| n3
-    n8 -->|"calls"| n4
 ```
+
+:::
 
 ## Sequences
 
@@ -47,13 +45,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](api.md#source-L5)
 :::
 
-```mermaid
-sequenceDiagram
-    participant p0 as _open
-
-    Note over p0: May leave with checked errors: GpuError
-    Note over p0: Native implementation#59; only the declared contract is known
-```
+May leave with checked errors: GpuError. Native implementation; only the declared contract is known. [Explanation](api.md).
 
 ### \_upload {#sequence-_upload}
 
@@ -61,13 +53,7 @@ sequenceDiagram
 [Source](api.md#source-L6)
 :::
 
-```mermaid
-sequenceDiagram
-    participant p0 as _upload
-
-    Note over p0: May leave with checked errors: GpuError
-    Note over p0: Native implementation#59; only the declared contract is known
-```
+May leave with checked errors: GpuError. Native implementation; only the declared contract is known. [Explanation](api.md).
 
 ### \_add {#sequence-_add}
 
@@ -75,13 +61,7 @@ sequenceDiagram
 [Source](api.md#source-L7)
 :::
 
-```mermaid
-sequenceDiagram
-    participant p0 as _add
-
-    Note over p0: May leave with checked errors: GpuError
-    Note over p0: Native implementation#59; only the declared contract is known
-```
+May leave with checked errors: GpuError. Native implementation; only the declared contract is known. [Explanation](api.md).
 
 ### \_download {#sequence-_download}
 
@@ -89,13 +69,7 @@ sequenceDiagram
 [Source](api.md#source-L8)
 :::
 
-```mermaid
-sequenceDiagram
-    participant p0 as _download
-
-    Note over p0: May leave with checked errors: GpuError
-    Note over p0: Native implementation#59; only the declared contract is known
-```
+May leave with checked errors: GpuError. Native implementation; only the declared contract is known. [Explanation](api.md).
 
 ### \_live {#sequence-_live}
 
@@ -103,12 +77,7 @@ sequenceDiagram
 [Source](api.md#source-L9)
 :::
 
-```mermaid
-sequenceDiagram
-    participant p0 as _live
-
-    Note over p0: Native implementation#59; only the declared contract is known
-```
+Native implementation; only the declared contract is known. [Explanation](api.md).
 
 ### openDevice {#sequence-openDevice}
 
@@ -123,7 +92,8 @@ sequenceDiagram
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
     p0->>p1: _open() · native boundary
-    Note over p0: Return _open()#59; required cleanup runs before exit
+    p1-->>p0: Device
+    Note over p0: Return _open()； required cleanup runs before exit
     Note over p0: Leave unsafe scope
     end
     Note over p0: May leave with checked errors: GpuError
@@ -141,8 +111,9 @@ sequenceDiagram
     participant p1 as _upload
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _upload(device, values) · native boundary
-    Note over p0: Return _upload(device, values)#59; required cleanup runs before exit
+    p0->>p1: _upload(device=device, values=values) · native boundary
+    p1-->>p0: Buffer
+    Note over p0: Return _upload(device, values)； required cleanup runs<br/>before exit
     Note over p0: Leave unsafe scope
     end
     Note over p0: May leave with checked errors: GpuError
@@ -160,8 +131,9 @@ sequenceDiagram
     participant p1 as _add
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _add(left, right) · native boundary
-    Note over p0: Return _add(left, right)#59; required cleanup runs before exit
+    p0->>p1: _add(left=left, right=right) · native boundary
+    p1-->>p0: Buffer
+    Note over p0: Return _add(left, right)； required cleanup runs before<br/>exit
     Note over p0: Leave unsafe scope
     end
     Note over p0: May leave with checked errors: GpuError
@@ -179,8 +151,9 @@ sequenceDiagram
     participant p1 as _download
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _download(buffer) · native boundary
-    Note over p0: Return _download(buffer)#59; required cleanup runs before exit
+    p0->>p1: _download(buffer=buffer) · native boundary
+    p1-->>p0: List‹float›
+    Note over p0: Return _download(buffer)； required cleanup runs before<br/>exit
     Note over p0: Leave unsafe scope
     end
     Note over p0: May leave with checked errors: GpuError

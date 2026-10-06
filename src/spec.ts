@@ -970,9 +970,10 @@ export function updateSpecs(checked:CheckedProject, check=false, options:SpecOpt
   const manifest=join(root,'.aug-spec','manifest.json');
   let previous:string[]=[];const previousDescriptors=new Map<string,string>();
   const descriptorPath=(path:string)=>/^\.aug-spec\/packages\/(?:@[^/]+\/)?[^/]+\/[^/]+\/native\.abi\.json$/.test(path)&&!path.includes('\\')&&!path.split('/').some(part=>part==='.'||part==='..');
+  const diagramPath=(path:string)=>/^\.aug-spec\/diagrams\/(?:folders\/(?:[^/]+\/)+)?index\.md$/.test(path)&&!path.includes('\\')&&!path.split('/').some(part=>part==='.'||part==='..');
   if(options.manifest!==false&&existsSync(manifest)) {
     const saved=JSON.parse(readFileSync(manifest,'utf8')) as {format:number;files:string[];nativeDescriptors?:Record<string,string>};
-    if(saved.format!==1||!Array.isArray(saved.files)||saved.files.some(path=>typeof path!=='string'||relative(root,resolve(root,path)).startsWith('..')||!path.endsWith('.aug')&&!path.endsWith('.aug.md')&&!path.endsWith('.aug.diagrams.md')&&path!=='.aug-spec/diagrams/index.md'&&!descriptorPath(path)))
+    if(saved.format!==1||!Array.isArray(saved.files)||saved.files.some(path=>typeof path!=='string'||relative(root,resolve(root,path)).startsWith('..')||!path.endsWith('.aug')&&!path.endsWith('.aug.md')&&!path.endsWith('.aug.diagrams.md')&&!diagramPath(path)&&!descriptorPath(path)))
       throw new Error('Invalid generated specification manifest');
     previous=saved.files.map(path=>resolve(root,path));
     for(const [path,digest] of Object.entries(saved.nativeDescriptors??{})){

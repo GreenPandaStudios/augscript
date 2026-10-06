@@ -8,21 +8,24 @@
 
 ```mermaid
 flowchart TD
-    n0["Transformation · august/collections/operations.aug"]
-    n1["_mapWorkerChunk · august/collections/workers.aug"]
-    n1 -->|"calls"| n0
+    n0["Transformation"]
+    n1["_mapWorkerChunk"]
+    n1 -->|"selects concrete transformation"| n0
 ```
 
-## API calls
+<details>
+<summary>Call relationships</summary>
 
 ```mermaid
 flowchart TD
-    n0["Transformation.apply · august/collections/operations.aug"]
-    n1["_mapWorkerChunk · august/collections/workers.aug"]
-    n2["mapWorkers · august/collections/workers.aug"]
-    n1 -->|"calls"| n0
-    n2 -->|"calls"| n1
+    n0["Transformation.apply"]
+    n1["_mapWorkerChunk"]
+    n2["mapWorkers"]
+    n1 -->|"selects concrete transformation"| n0
+    n2 -->|"specializes worker entry"| n1
 ```
+
+</details>
 
 ## Sequences
 
@@ -47,43 +50,31 @@ sequenceDiagram
     participant p8 as Specialized chunk worker
     participant p9 as results.append
     p0->>p1: values.length()
-    opt Left is false
-    end
-    opt Left is false
-    end
-    opt Left is false
-    end
-    opt Left is false
-    end
-    alt concurrency #60; 1 or concurrency #62; 64 or chunkSize #60; 1 or chunkSize #62; 65536 or length #62; 1048576
+    alt concurrency ‹ 1 or concurrency › 64 or chunkSize ‹ 1 or chunkSize › 65536 or length › 1048576
     p0->>p2: ConversionError()
-    Note over p0: Raise checked failure ConversionError()#59; required cleanup runs before exit
+    Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
     loop For each item in values
     rect rgb(245, 240, 241)
     Note over p0: Enter borrow scope
-    p0->>p3: snapshot.append(input 1)
+    p0->>p3: snapshot.append(input 1=value)
     Note over p0: Leave borrow scope
     end
     end
-    loop While offset #60; length
-    loop While count #60; concurrency and offset #60; length
-    opt Left is true
-    end
-    loop While chunk.length() #60; chunkSize and offset #60; length
+    loop While offset ‹ length
+    loop While count ‹ concurrency and offset ‹ length
+    loop While chunk.length() ‹ chunkSize and offset ‹ length
     p0->>p4: chunk.length()
-    opt Left is true
-    end
-    p0->>p5: snapshot.get(index)
+    p0->>p5: snapshot.get(index=offset)
     rect rgb(245, 240, 241)
     Note over p0: Enter borrow scope
-    p0->>p6: chunk.append(input 1)
+    p0->>p6: chunk.append(input 1=value)
     Note over p0: Leave borrow scope
     end
     end
     rect rgb(245, 240, 241)
     Note over p0: Enter borrow scope
-    p0->>p7: wave.append(value)
+    p0->>p7: wave.append(value=chunk)
     Note over p0: Leave borrow scope
     end
     end
@@ -91,14 +82,14 @@ sequenceDiagram
     Note over p0: Enter task scope
     loop Each selected item
     p0-)p8: Copy chunk to an isolated heap · start asynchronously
-    Note over p0: Compile-time selected transformation becomes a direct call#59; only chunk data crosses the heap boundary
+    Note over p0: Compile-time selected transformation becomes a direct<br/>call； only chunk data crosses the heap boundary
     end
-    Note over p0: Wait for jobs#59; failure cancels siblings and cleanup joins
+    Note over p0: Wait for jobs； failure cancels siblings and cleanup<br/>joins
     loop For each item in completed
     loop For each item in chunk
     rect rgb(245, 240, 241)
     Note over p0: Enter borrow scope
-    p0->>p9: results.append(input 1)
+    p0->>p9: results.append(input 1=value)
     Note over p0: Leave borrow scope
     end
     end
@@ -108,8 +99,8 @@ sequenceDiagram
     end
     loop Each selected item
     end
-    Note over p0: Return #91;value for value in results#93;#59; required cleanup runs before exit
-    Note over p0: May leave with checked errors: ConcurrencyError, ConversionError, IndexError
+    Note over p0: Return ［value for value in results］； required cleanup<br/>runs before exit
+    Note over p0: May leave with checked errors: ConcurrencyError,<br/>ConversionError, IndexError
 ```
 
 <a id="sequence-_mapWorkerChunk"></a>
@@ -124,14 +115,14 @@ sequenceDiagram
     participant p1 as Selected transformation
     participant p2 as results.append
     loop For each item in values
-    p0->>p1: Direct call with value#59; target selected at compile time
+    p0->>p1: Direct call with value； target selected at compile time
     rect rgb(245, 240, 241)
     Note over p0: Enter borrow scope
-    p0->>p2: results.append(value)
+    p0->>p2: results.append(value=transformed)
     Note over p0: Leave borrow scope
     end
     end
-    Note over p0: Return results#59; required cleanup runs before exit
+    Note over p0: Return results； required cleanup runs before exit
 ```
 
 ## Called contracts

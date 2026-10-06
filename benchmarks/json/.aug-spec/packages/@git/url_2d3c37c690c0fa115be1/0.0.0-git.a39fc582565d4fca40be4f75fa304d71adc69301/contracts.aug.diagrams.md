@@ -4,18 +4,18 @@
 
 [Project overview](../../../../diagrams/index.md) · [Compiled explanation](contracts.aug.md)
 
-## Class interactions
 
-No relationships at this level.
-
-## API calls
+<details>
+<summary>Call relationships</summary>
 
 ```mermaid
 flowchart TD
-    n0["_aug_json_parse · package/@git/url_2d3c37c690c0fa115be1@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug"]
-    n1["parse · package/@git/url_2d3c37c690c0fa115be1@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug"]
+    n0["_aug_json_parse"]
+    n1["parse"]
     n1 -->|"calls"| n0
 ```
+
+</details>
 
 ## Sequences
 
@@ -27,13 +27,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](contracts.aug#L2)
 
-```mermaid
-sequenceDiagram
-    participant p0 as _aug_json_parse
-
-    Note over p0: May leave with checked errors: JsonError
-    Note over p0: Native implementation#59; only the declared contract is known
-```
+May leave with checked errors: JsonError. Native implementation; only the declared contract is known. [Explanation](contracts.aug.md).
 
 <a id="sequence-parse"></a>
 
@@ -47,8 +41,9 @@ sequenceDiagram
     participant p1 as _aug_json_parse
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _aug_json_parse(input) · native boundary
-    Note over p0: Return _aug_json_parse(input)#59; required cleanup runs before exit
+    p0->>p1: _aug_json_parse(input=input) · native boundary
+    p1-->>p0: Json
+    Note over p0: Return _aug_json_parse(input)； required cleanup runs<br/>before exit
     Note over p0: Leave unsafe scope
     end
     Note over p0: May leave with checked errors: JsonError

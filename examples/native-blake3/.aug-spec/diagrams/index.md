@@ -2,36 +2,46 @@
 
 # Project diagrams
 
-Read the areas first, then open a module for its class interactions, API calls and sequences. Follow an operation to its specification and source.
+Start here to see what moves between the application’s folders. Each arrow names an operation’s inputs and the result it returns to its caller. Open a folder for the next level of detail. Expand the contract list for complete types and dependency links.
 
-These are checked static views. Arrows describe possible calls, not an execution trace. Interface implementations, callbacks and foreign internals are not guessed. Tests are described in the adjacent specifications.
-
-## Areas
+## Data flow
 
 ```mermaid
 flowchart TD
-    n0["Project root"]
-    n1["package/@greenpandastudios/aug-blake3@0.1.5"]
-    n0 -->|"uses"| n1
+    n0["hashing"]
+    n1["Startup"]
+    n1 -->|"hashText(value) → string"| n0
 ```
 
-## Modules
+### Package boundaries
+
+<details>
+<summary>hashing package calls</summary>
 
 ```mermaid
-flowchart TD
-    n0["hashing.aug"]
-    n1["main.aug"]
-    n2["package/@greenpandastudios/aug-blake3@0.1.5/api.aug"]
-    n3["package/@greenpandastudios/aug-blake3@0.1.5/contracts.aug"]
-    n0 -->|"uses"| n2
-    n0 -->|"uses"| n3
-    n1 -->|"uses"| n0
-    n1 -->|"uses"| n3
+flowchart LR
+    n0["hashing"]
+    n1["@greenpandastudios/aug-blake3"]
+    n0 -->|"hash(input) → string"| n1
 ```
+
+</details>
+
+<details>
+<summary>Data crossing these boundaries (2 contracts)</summary>
+
+| From | To | Operation and inputs | Result |
+| --- | --- | --- | --- |
+| hashing | @greenpandastudios/aug-blake3 | [hash](../packages/%40greenpandastudios/aug-blake3/0.1.5/api.aug.md#symbol-hash) · input: Bytes | string |
+| Startup | hashing | [hashText](../../hashing.aug.md#symbol-hashText) · value: string | string |
+
+</details>
 
 ## Open a module
 
-| Module | Diagrams | Specification |
-| --- | --- | --- |
-| hashing.aug | [Interactions and sequences](../../hashing.aug.diagrams.md) | [Explanation](../../hashing.aug.md) |
-| main.aug | [Interactions and sequences](../../main.aug.diagrams.md) | [Explanation](../../main.aug.md) |
+| Module | Read |
+| --- | --- |
+| hashing.aug | [Flow and sequences](../../hashing.aug.diagrams.md) · [Explanation](../../hashing.aug.md) |
+| main.aug | [Flow and sequences](../../main.aug.diagrams.md) · [Explanation](../../main.aug.md) |
+
+These are static call boundaries, not a request trace. Interface implementations and foreign internals stop at their checked contracts. Dotted arrows defer a callback or browser action. Imports alone do not imply a call.
