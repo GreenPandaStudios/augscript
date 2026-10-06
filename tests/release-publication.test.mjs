@@ -1,3 +1,4 @@
+import {releaseChannel} from '../scripts/release-channel.mjs';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
@@ -67,7 +68,7 @@ test('release requests reject branches, mismatched versions and invalid tag inpu
 test('download gates reject drafts, moved tags and other repositories before fetching assets', t => {
   const tag = 'v' + read(join(repositoryRoot, 'package.json')).version;
   const request = { kind: 'npm', directory: fixture(t), tag, ref: `refs/tags/${tag}`, repository: 'GreenPandaStudios/augscript', sha: 'a'.repeat(40) };
-  for (const failure of ['draft', 'moved', 'repository', 'branch', 'service']) {
+  for (const failure of ['draft', 'moved', 'repository', 'branch', 'service', 'channel']) {
     const calls = [], candidate = { ...request };
     if (failure === 'repository') candidate.repository = 'other/augscript';
     if (failure === 'branch') candidate.ref = 'refs/heads/main';
@@ -75,9 +76,9 @@ test('download gates reject drafts, moved tags and other repositories before fet
       calls.push(args);
       if (failure === 'service') return { status: 1, stderr: 'service failure' };
       if (args[0] === 'api') return result(0, { object: { type: 'commit', sha: 'b'.repeat(40) } });
-      return result(0, { tagName: tag, isDraft: failure === 'draft' });
+      return result(0, { tagName: tag, isDraft: failure === 'draft', isPrerelease: failure==='channel'?!releaseChannel(tag.slice(1)).prerelease:releaseChannel(tag.slice(1)).prerelease });
     };
-    assert.throws(() => downloadRelease(candidate, run), undefined, failure);
+    assert.throws(() => downloadRelease(candidate, run), failure==='channel'?/release channel differs/:undefined, failure);
     assert(!calls.some(args => args[1] === 'download'));
   }
 });
@@ -88,7 +89,7 @@ test('downloads resolve annotated tags and select reviewed archives for each des
     const calls = [], run = (command, args) => {
       calls.push(args);
       if (args[0] === 'api') return result(0, { object: args[1].includes('/git/ref/') ? { type: 'tag', sha: 'b'.repeat(40) } : { type: 'commit', sha } });
-      return result(0, { tagName: tag, isDraft: false, url: 'https://github.com/GreenPandaStudios/augscript/releases/tag/' + tag });
+      return result(0, { tagName: tag, isDraft: false, isPrerelease: releaseChannel(tag.slice(1)).prerelease, url: 'https://github.com/GreenPandaStudios/augscript/releases/tag/' + tag });
     };
     downloadRelease({ kind, directory: fixture(t), tag, ref: `refs/tags/${tag}`, repository: 'GreenPandaStudios/augscript', sha }, run);
     const download = calls.at(-1); assert.equal(download[1], 'download');
@@ -166,7 +167,7 @@ test('npm preflights every package before writes and resumes a partial publicati
   await publishPackages(packages, run, () => {});
   assert(calls.slice(0, 4).every(args => args[0] === 'view'));
   assert.deepEqual(calls.filter(args => args[0] === 'publish').map(args => args[1]), packages.slice(1).map(pkg => pkg.file));
-  assert(calls.filter(args => args[0] === 'publish').every(args => args.includes('--ignore-scripts') && args.includes('next')));
+  assert(calls.filter(args => args[0] === 'publish').every(args => args.includes('--ignore-scripts') && args[args.indexOf('--tag')+1]===releaseChannel(packages[0].version).npmTag));
   calls.length = 0; await publishPackages(packages, run, () => {}); assert.equal(calls.length, 4);
   published.set(packages[3].name, 'sha512-unreviewed'); calls.length = 0;
   await assert.rejects(publishPackages(packages, run, () => {}), /differs/);

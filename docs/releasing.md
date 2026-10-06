@@ -51,7 +51,7 @@ git tag v0.23.0
 git push origin main v0.23.0
 ```
 
-`release.yml` validates the tag against every manifest, runs compiler/native/docs/package gates, and uploads artifacts to a **draft prerelease**. Review the draft and publish it in GitHub Releases. Publishing starts **Publish npm packages** and **Publish VS Code extension** automatically. Each workflow deploys the archives attached to that release. Changing an asset after review invalidates its checksum.
+`release.yml` validates the tag against every manifest, runs compiler/native/docs/package gates, and uploads artifacts to a **draft release**. Preview versions (`0.x` and prerelease versions such as `1.0.0-rc.1`) are marked as prereleases; a complete version starting at `1.0.0` uses the stable channel. The draft is never published automatically. All producer, clean-consumer and installed-editor gates remain required for either channel. Review the draft and publish it in GitHub Releases. Publishing starts **Publish npm packages** and **Publish VS Code extension** automatically. Each workflow deploys the archives attached to that release. Changing an asset after review invalidates its checksum.
 
 If release preparation fails, **Prepare release** also accepts a manual retry on `main`. Supply the existing version tag and its reviewed full commit SHA. The controller rejects a moved tag or mismatched package, compiler, dependency or root lock version before starting producers. Every build checks out that same commit and repeats the full language, sanitizer, performance, gym and consumer gates; it does not move the tag or reuse unqualified binaries.
 
@@ -93,13 +93,19 @@ Use npm CLI 11.5.1+ and GitHub-hosted runners. The workflow grants `id-token: wr
 
 The job downloads the four reviewed tarballs, `packages.json` and `SHA256SUMS`. It checks every archive's SHA-256 and SHA-512 integrity, exact version and complete manifest against the tagged source before publishing anything.
 
-It checks all existing registry versions, then publishes standard library, web, crypto and CLI in that order with public access and the `next` dist tag. Lifecycle scripts are disabled. No rebuild or dependency installation runs in the npm deployment job.
+It checks all existing registry versions, then publishes standard library, web, crypto and CLI in that order with public access. Preview versions use `next`; stable versions starting at `1.0.0` use `latest`. The download gate rejects a GitHub prerelease flag that disagrees with the reviewed compiler version. Lifecycle scripts are disabled. No rebuild or dependency installation runs in the npm deployment job.
 
 Retries skip a version only when its registry integrity matches the release archive. A registry failure or a different published archive stops deployment. Each new publication is checked against the registry before proceeding.
 
 npm may accept an upload several minutes before its public metadata becomes available. The publisher on main checks visibility at five-second intervals for about five minutes per package; it retries only missing-version responses and uploads each archive once. If that wait expires, let npm finish processing before retrying the same release.
 
-The CLI is published last because its dependencies use exact matching versions. An interrupted run can leave some libraries published; retry the same release to finish. Retries leave already-published versions and their dist tags alone. This pipeline publishes preview packages to `next`; promoting a release to `latest` remains a separate maintainer decision.
+The CLI is published last because its dependencies use exact matching versions. An interrupted run can leave some libraries published; retry the same release to finish. Retries leave already-published versions and their dist tags alone. The pipeline derives the channel from the reviewed version before any registry access. It rejects empty or mixed-version package sets. Retries do not move existing dist tags; if a previously published version needs promotion, review and perform that registry change separately.
+
+## Stable release review
+
+A `1.0.0` version is an intended compatibility promise, not qualification evidence. Before tagging, close every [roadmap gate](roadmap.md), update the support and compatibility pages, review dependency notices and advisories, and obtain independent review of the final source. The release pipeline repeats language conformance, the 30-minute runtime soak, worker sanitizers, source debugger checks, safety gyms, performance limits, public native imports, relocation, installed CLI upgrades and both supported editor versions on all three targets. A failed job stops draft creation.
+
+Review the exact compiler, npm, VSIX and documentation archives and retained qualification reports before publishing the draft. Publishing a stable draft starts verified npm publication to `latest`; publishing a preview draft starts publication to `next`. Keep the original tag and artifacts for retries. Source changes require a new version and another qualification run. GitHub's latest-release designation is a separate review choice; preparation does not move it.
 
 ## Editor-only patches
 
