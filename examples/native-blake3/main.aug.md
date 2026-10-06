@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=18ed3135c6358f3032d5fa18b52fef0dd221b5b44102b9f13303ca84aab19a32 -->
 
+[Interactions and sequences](main.aug.diagrams.md)
+
 ## Startup
 
 It prints [`hashText`](hashing.aug.md#symbol-hashText) with `value` `"abc"`. If this work raises [`HashError`](.aug-spec/packages/%40greenpandastudios/aug-blake3/0.1.5/contracts.aug.md#symbol-HashError) as `error`, it prints `error.message`. [source](main.aug#L5-L8)

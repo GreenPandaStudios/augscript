@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=0801df0a684a7bdcd7473569859dad70fc9d1130adb139c52a03408c48e6f13b -->
 
+[Interactions and sequences](main.aug.diagrams.md)
+
 ## Startup
 
 It sets `iterations` to `20000`. It sets `index` and `checksum` separately, each to `0`. While `index` is less than `iterations`, it sets `parts` to `split` on `"August,clear,local,checked"` with `separator` `","`. For each `part` in a snapshot of `parts`, it increases `checksum` by the byte length of `part`. [source](main.aug#L2-L9)

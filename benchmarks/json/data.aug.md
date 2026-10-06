@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=8672e852b3d385ecd7b6126e2bee536f83e10068e8c2c075b099f243d58fc659 -->
 
+[Interactions and sequences](data.aug.diagrams.md)
+
 <a id="symbol-Payload"></a>
 ## `Payload` · immutable record · [source](data.aug#L2)
 

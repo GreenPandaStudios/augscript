@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=54fe0288ceaaa7ca2df6765f7a9a4cafbf551b46cb514a0b15bd9314dcff3eda -->
 
+[Interactions and sequences](export.aug.diagrams.md)
+
 ## Exports
 
 Export the declaration `Crypto` from [`contracts.aug`](contracts.aug.md#symbol-Crypto). Export the declaration `GnuTlsCrypto` from [`contracts.aug`](contracts.aug.md#symbol-GnuTlsCrypto). Export the declaration `JwtError` from [`jose.aug`](jose.aug.md#symbol-JwtError). Export the declaration `RsaJwk` from [`jose.aug`](jose.aug.md#symbol-RsaJwk).

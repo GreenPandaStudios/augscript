@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=b6cf0296129b50a6cf3d71ace0d22f9805bedfe7a7573e047c00af1021633a89 -->
 
+[Interactions and sequences](main.aug.diagrams.md)
+
 ## Startup
 
 It prints [`storedName`](database.aug.md#symbol-storedName). If this work raises [`SqliteError`](.aug-spec/packages/%40greenpandastudios/aug-sqlite/0.1.5/contracts.aug.md#symbol-SqliteError) as `error`, it prints `error.message`. [source](main.aug#L5-L8)

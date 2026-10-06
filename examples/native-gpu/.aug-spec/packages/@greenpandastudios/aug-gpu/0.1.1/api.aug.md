@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=d21e00dcda2871bbb78f4fc481132a87f5d2c8d1c58e8d346fa4194cb6123c83 -->
 
+[Interactions and sequences](api.aug.diagrams.md)
+
 <a id="symbol-openDevice"></a>
 ## `openDevice` · [source](api.aug#L11)
 

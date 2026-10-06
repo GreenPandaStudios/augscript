@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=8a9c469ea8de5f422f4315855b8e9be193228d9fb778b41d4b2b514a940d9f2b -->
 
+[Interactions and sequences](types.aug.diagrams.md)
+
 <a id="symbol-Formatter"></a>
 ## `Formatter` · interface · [source](types.aug#L2)
 

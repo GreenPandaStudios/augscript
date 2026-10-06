@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=f67db467aa6ff7c38ec76a2298cbc356fa72f32a5c62f7a5dbc96d3ea1eecf4e -->
 
+[Interactions and sequences](database.aug.diagrams.md)
+
 <a id="symbol-storedName"></a>
 ## `storedName` · [source](database.aug#L5)
 

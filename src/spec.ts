@@ -1,4 +1,5 @@
 import { lex } from './lexer.ts';
+import {generateDiagrams} from './spec-diagrams.ts';
 import { defaultText } from './parameters.ts';
 import { callableResult, callableErrors } from './contracts.ts';
 import { createHash } from 'node:crypto';
@@ -30,10 +31,10 @@ const compare = (left:string, right:string) => left < right ? -1 : left > right 
 const unreachable = (node: never): never => { throw new Error(`No specification renderer for ${(node as {kind?:string}).kind}`); };
 const plain = (text:string) => text.replace(/\[([^\]]+)\]\([^)]*\)/g,'$1').replaceAll('`','');
 
-export interface SpecOutput { path: string; text: string; source: string; kind?: 'source-hint'|'native-descriptor'; declarations?: {id:string;tree:SpecNode}[] }
-export interface SpecOptions { files?: SourceFile[]; manifest?: boolean; declarations?:boolean; sourceHints?:boolean }
+export interface SpecOutput { path: string; text: string; source: string; kind?: 'source-hint'|'native-descriptor'|'diagram'; declarations?: {id:string;tree:SpecNode}[] }
+export interface SpecOptions { files?: SourceFile[]; manifest?: boolean; declarations?:boolean; sourceHints?:boolean; diagrams?:boolean; diagramRoot?:string }
 
-/** Plan prose, managed source pointers, and versioned dependency copies without writes or execution. */
+/** Plan prose, diagrams, managed source pointers, and versioned dependency copies without writes or execution. */
 export function generateSpecs(checked: CheckedProject, options: SpecOptions = {}): SpecOutput[] {
   if (checked.diagnostics.some(issue => issue.severity !== 'warning')) throw new Error('Fix compiler errors before generating specifications');
   const project = checked.project;
@@ -68,6 +69,13 @@ export function generateSpecs(checked: CheckedProject, options: SpecOptions = {}
     const text=writer.render();
     outputs.push({path:docs.get(file.path)!,text,source:file.path,...(options.declarations?{declarations:[...writer.declarationTrees].map(([id,tree])=>({id,tree}))}:{})});
     if (!own.has(file.path)) outputs.push({path:sources.get(file.path)!, text:copied + file.source, source:file.path});
+  }
+  if(options.diagrams!==false){
+    outputs.push(...generateDiagrams(checked,[...seen].map(path=>project.files.get(path)!),{docs,sources,offsets,root:options.diagramRoot}));
+    for(const output of outputs)if(output.path.endsWith('.aug.md')){
+      const diagram=output.path.slice(0,-3)+'.diagrams.md';
+      output.text=output.text.replace(/(<!-- August spec revision: [^\n]*-->\n)/, '$1\n[Interactions and sequences]('+url(relative(dirname(output.path),diagram))+')\n');
+    }
   }
   return outputs.sort((a,b) => compare(a.path,b.path));
 }
@@ -945,7 +953,7 @@ export function updateSpecs(checked:CheckedProject, check=false, options:SpecOpt
   const descriptorPath=(path:string)=>/^\.aug-spec\/packages\/(?:@[^/]+\/)?[^/]+\/[^/]+\/native\.abi\.json$/.test(path)&&!path.includes('\\')&&!path.split('/').some(part=>part==='.'||part==='..');
   if(options.manifest!==false&&existsSync(manifest)) {
     const saved=JSON.parse(readFileSync(manifest,'utf8')) as {format:number;files:string[];nativeDescriptors?:Record<string,string>};
-    if(saved.format!==1||!Array.isArray(saved.files)||saved.files.some(path=>typeof path!=='string'||relative(root,resolve(root,path)).startsWith('..')||!path.endsWith('.aug')&&!path.endsWith('.aug.md')&&!descriptorPath(path)))
+    if(saved.format!==1||!Array.isArray(saved.files)||saved.files.some(path=>typeof path!=='string'||relative(root,resolve(root,path)).startsWith('..')||!path.endsWith('.aug')&&!path.endsWith('.aug.md')&&!path.endsWith('.aug.diagrams.md')&&path!=='.aug-spec/diagrams/index.md'&&!descriptorPath(path)))
       throw new Error('Invalid generated specification manifest');
     previous=saved.files.map(path=>resolve(root,path));
     for(const [path,digest] of Object.entries(saved.nativeDescriptors??{})){

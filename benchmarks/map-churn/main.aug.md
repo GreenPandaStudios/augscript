@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=76e9eebde5befa845dc8d545e806f987ad48e722c0b9c9b64cf7eba2ad654cf7 -->
 
+[Interactions and sequences](main.aug.diagrams.md)
+
 ## Startup
 
 It sets `iterations` to `4000`. It stores a context-typed empty collection with no items in owned `entries` (`Map<int,int>`). It sets `index` to `0`. While `index` is less than `iterations`, it stores `index` times `3` in `entries` under `index`; then it increases `index` by `1`. [source](main.aug#L2-L7)

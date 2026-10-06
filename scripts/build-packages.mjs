@@ -52,7 +52,10 @@ for (const name of ['stdlib', 'web', 'crypto', 'cli']) {
       copy(`src/stdlib/${module}`, join(target, 'august', module));
       copy(`docs/api/${module}.md`, join(target, 'docs', `${module}.md`));
     }
-    if (name === 'stdlib') copy('src/stdlib/export.aug', join(target, 'august/export.aug'));
+    if (name === 'stdlib') {
+      for(const file of ['export.aug','export.aug.md','export.aug.diagrams.md'])copy('src/stdlib/'+file,join(target,'august',file));
+      copy('src/stdlib/.aug-spec/diagrams',join(target,'august/.aug-spec/diagrams'));
+    }
     else for (const file of ['web.md', 'web-library-gaps.md']) copy(`docs/${file}`, join(target, 'docs', file));
   }
   if (name !== 'stdlib') copy('THIRD_PARTY_NOTICES.md', join(target, 'THIRD_PARTY_NOTICES.md'));
@@ -63,12 +66,12 @@ const rewriteSpecs = (folder, originalFolder) => {
   for(const entry of readdirSync(folder,{withFileTypes:true})) {
     const file=join(folder,entry.name),original=join(originalFolder,entry.name);
     if(entry.isDirectory())rewriteSpecs(file,original);
-    else if(entry.name.endsWith('.aug.md')) {
+    else if(entry.name.endsWith('.aug.md')||entry.name.endsWith('.aug.diagrams.md')||original.endsWith('/.aug-spec/diagrams/index.md')) {
       const text=readFileSync(file,'utf8').replace(/\]\(([^)]+)\)/g,(match,href)=>{
         if(/^[a-z]+:/i.test(href))return match;
         const [path,anchor]=href.split('#'),target=resolve(dirname(original),decodeURIComponent(path));
         const libraryPath=relative(join(root,'src/stdlib'),target).split(/[\\/]/);
-        const destination=libraryPath.length===1&&libraryPath[0].startsWith('export.aug')?join(output,'stdlib','august',libraryPath[0]):
+        const destination=libraryPath[0]==='.aug-spec'?join(output,'stdlib','august',...libraryPath):libraryPath.length===1&&libraryPath[0].startsWith('export.aug')?join(output,'stdlib','august',libraryPath[0]):
           libraryTargets.has(libraryPath[0])?join(libraryTargets.get(libraryPath[0]),...libraryPath.slice(1)):undefined;
         if(!destination)return match;
         const link=relative(dirname(publishedPath(file)),publishedPath(destination)).split(/[\\/]/).map(encodeURIComponent).join('/');

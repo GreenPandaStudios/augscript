@@ -28,7 +28,7 @@ pageClass: aug-example-page
 
 ::: code-group
 
-```aug [Indentation] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiaW5kZW50Iiwic291cmNlU2hhMjU2IjoiMTY2NTU4OGM5MWViMjg1ZTg1MWU4NDQ3MzU0YTY3MWMzZjA2MTE1MzczOTVlZDllZTBiMzU3ZjY3YzBlMjkwOSIsImZvcm1hdHRlZFNoYTI1NiI6IjkyNDZhNDg3NjkwNTNkZDI0NWJkYTRkZjhiMTBkMDUzYmNmZjliMWRlNjdjMjQyNDg4MmYyN2FjZGU1ZTMwODciLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDIiLCJmaXJzdCI6MiwibGFzdCI6NSwiYmFja2xpbmtzIjpbIiNzeW1ib2wtdmFsaWRhdGUiXX0seyJpZCI6InNvdXJjZS1MMy1MNSIsImZpcnN0IjozLCJsYXN0Ijo1LCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTEiXX1dfQ
+```aug [Indentation] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiaW5kZW50Iiwic291cmNlU2hhMjU2IjoiMTY2NTU4OGM5MWViMjg1ZTg1MWU4NDQ3MzU0YTY3MWMzZjA2MTE1MzczOTVlZDllZTBiMzU3ZjY3YzBlMjkwOSIsImZvcm1hdHRlZFNoYTI1NiI6IjkyNDZhNDg3NjkwNTNkZDI0NWJkYTRkZjhiMTBkMDUzYmNmZjliMWRlNjdjMjQyNDg4MmYyN2FjZGU1ZTMwODciLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDIiLCJmaXJzdCI6MiwibGFzdCI6NSwiYmFja2xpbmtzIjpbIm9wZXJhdGlvbnMtZGlhZ3JhbXMubWQjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMSIsIiNzeW1ib2wtdmFsaWRhdGUiXX0seyJpZCI6InNvdXJjZS1MMy1MNSIsImZpcnN0IjozLCJsYXN0Ijo1LCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTEiXX1dfQ
 // aug-spec: "operations.aug.md" explains this file. Read it before changes; refresh with aug spec.
 validate(int value) returns int unless FileError:
     if value - value / 16 * 16 == 0:
@@ -36,7 +36,7 @@ validate(int value) returns int unless FileError:
     return value
 ```
 
-```aug [Braces] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiYnJhY2VzIiwic291cmNlU2hhMjU2IjoiMTY2NTU4OGM5MWViMjg1ZTg1MWU4NDQ3MzU0YTY3MWMzZjA2MTE1MzczOTVlZDllZTBiMzU3ZjY3YzBlMjkwOSIsImZvcm1hdHRlZFNoYTI1NiI6IjZmNzgwZmJiNWU3ZjIwNzExYmYwNGNhYjU2NDk5Y2FjMTk1ZDI1OTMzZTQ1NzVjODc1ZTA5NTRkZmJmNWM3MTMiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDIiLCJmaXJzdCI6MiwibGFzdCI6NywiYmFja2xpbmtzIjpbIiNzeW1ib2wtdmFsaWRhdGUiXX0seyJpZCI6InNvdXJjZS1MMy1MNSIsImZpcnN0IjozLCJsYXN0Ijo2LCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTEiXX1dfQ
+```aug [Braces] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiYnJhY2VzIiwic291cmNlU2hhMjU2IjoiMTY2NTU4OGM5MWViMjg1ZTg1MWU4NDQ3MzU0YTY3MWMzZjA2MTE1MzczOTVlZDllZTBiMzU3ZjY3YzBlMjkwOSIsImZvcm1hdHRlZFNoYTI1NiI6IjZmNzgwZmJiNWU3ZjIwNzExYmYwNGNhYjU2NDk5Y2FjMTk1ZDI1OTMzZTQ1NzVjODc1ZTA5NTRkZmJmNWM3MTMiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDIiLCJmaXJzdCI6MiwibGFzdCI6NywiYmFja2xpbmtzIjpbIm9wZXJhdGlvbnMtZGlhZ3JhbXMubWQjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMSIsIiNzeW1ib2wtdmFsaWRhdGUiXX0seyJpZCI6InNvdXJjZS1MMy1MNSIsImZpcnN0IjozLCJsYXN0Ijo2LCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTEiXX1dfQ
 // aug-spec: "operations.aug.md" explains this file. Read it before changes; refresh with aug spec.
 validate(int value) returns int unless FileError {
     if value - value / 16 * 16 == 0 {
@@ -53,6 +53,8 @@ validate(int value) returns int unless FileError {
 :::: example-spec
 
 ## Compiled specification {#specification}
+
+[Interactions and sequences](operations-diagrams.md)
 
 ### `validate` · [source](operations.md#source-L2) {#symbol-validate}
 

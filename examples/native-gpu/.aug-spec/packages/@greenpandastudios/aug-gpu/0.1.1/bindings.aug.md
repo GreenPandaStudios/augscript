@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=22cf9d10224c9906324ea4b5fa52cce51175331caa648d28a535a7353c226c73 -->
 
+[Interactions and sequences](bindings.aug.diagrams.md)
+
 <a id="symbol-Device"></a>
 ## `Device` · native resource · [source](bindings.aug#L3)
 

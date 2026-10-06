@@ -156,12 +156,12 @@ try {
   writeFileSync(join(callbacks,'main.aug'),'import transform from august.collections\nfor value in transform(values=[2, 3], transformation=(int value) => value * 2):\n    print(value=value)\n');
   assert.equal(aug('run',callbacks),'4\n6\n');
   if(process.env.AUG_LLVM_HOME&&process.env.AUG_RUNTIME_PACK)assert.equal(run(process.execPath,[cli,'run',callbacks,'--backend','llvm']),'4\n6\n');
-  aug('spec',callbacks);assert.match(readFileSync(join(callbacks,'main.aug.md'),'utf8'),/pure callback/);
+  aug('spec',callbacks);assert.match(readFileSync(join(callbacks,'main.aug.diagrams.md'),'utf8'),/sequenceDiagram/);assert.match(readFileSync(join(callbacks,'.aug-spec/diagrams/index.md'),'utf8'),/Project diagrams/);aug('spec',callbacks,'--check');assert.match(readFileSync(join(callbacks,'main.aug.md'),'utf8'),/pure callback/);
   const verifySpecs = folder => {
     for(const entry of readdirSync(folder,{withFileTypes:true})) {
       const file=join(folder,entry.name);
       if(entry.isDirectory())verifySpecs(file);
-      else if(entry.name.endsWith('.aug.md'))for(const match of readFileSync(file,'utf8').matchAll(/\]\(([^)]+)\)/g)) {
+      else if(entry.name.endsWith('.aug.md')||entry.name.endsWith('.aug.diagrams.md')||file.endsWith('/.aug-spec/diagrams/index.md'))for(const match of readFileSync(file,'utf8').matchAll(/\]\(([^)]+)\)/g)) {
         if(/^[a-z]+:/i.test(match[1]))continue;
         const [href,anchor]=match[1].split('#'),target=resolve(dirname(file),decodeURIComponent(href));
         assert.ok(existsSync(target),`Broken installed spec link ${match[1]} in ${file}`);

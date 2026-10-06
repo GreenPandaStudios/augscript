@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=fcd233d617f93a7d6b51792b1b82a1829e7bc2637af1370d251ae842217a365b -->
 
+[Interactions and sequences](main.aug.diagrams.md)
+
 ## Startup
 
 It sets `numbers` to a list of `int` containing `2`, `4`. With temporary permission to change `numbers`, it appends `6` to `numbers`. It prints the number of elements in `numbers`. It prints the item at index `1` in `numbers`. [source](main.aug#L2-L19)

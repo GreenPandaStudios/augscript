@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=ddde91efa0d29b18a0b0c7bba9ad47faad7e33bc5c0682eda35252a31e7d0753 -->
 
+[Interactions and sequences](main.aug.diagrams.md)
+
 ## Providers
 
 `Console` is provided by [`SystemConsole`](.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-SystemConsole). The same instance is shared. `Repository<int>` is provided by [`NumberRepository`](types.aug.md#symbol-NumberRepository). The same instance is shared.

@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=29ba318c0beed1591b9bb296cd6331898dcd5b31a98bda11fe12ced574595b0e -->
 
+[Interactions and sequences](ascii.aug.diagrams.md)
+
 <a id="symbol-asciiSlice"></a>
 ## `asciiSlice` · [source](ascii.aug#L3)
 

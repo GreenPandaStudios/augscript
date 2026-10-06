@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=5514e9f965acdc98ded3afa25d075e0f3f5639d34d079bfb761591e0e9e4ce8e -->
 
+[Interactions and sequences](tensors.aug.diagrams.md)
+
 <a id="symbol-calculate"></a>
 ## `calculate` · [source](tensors.aug#L5)
 

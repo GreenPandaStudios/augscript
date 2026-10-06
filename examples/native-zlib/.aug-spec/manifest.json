@@ -1,16 +1,21 @@
 {
   "format": 1,
   "files": [
+    ".aug-spec/diagrams/index.md",
     ".aug-spec/packages/@greenpandastudios/aug-zlib/0.1.5/api.aug",
+    ".aug-spec/packages/@greenpandastudios/aug-zlib/0.1.5/api.aug.diagrams.md",
     ".aug-spec/packages/@greenpandastudios/aug-zlib/0.1.5/api.aug.md",
     ".aug-spec/packages/@greenpandastudios/aug-zlib/0.1.5/contracts.aug",
+    ".aug-spec/packages/@greenpandastudios/aug-zlib/0.1.5/contracts.aug.diagrams.md",
     ".aug-spec/packages/@greenpandastudios/aug-zlib/0.1.5/contracts.aug.md",
     ".aug-spec/packages/@greenpandastudios/aug-zlib/0.1.5/native.abi.json",
+    "compression.aug.diagrams.md",
     "compression.aug.md",
+    "main.aug.diagrams.md",
     "main.aug.md"
   ],
   "nativeDescriptors": {
     ".aug-spec/packages/@greenpandastudios/aug-zlib/0.1.5/native.abi.json": "c3d4b36eadcccd13caff71597ed77a8e7307f0cfe3d13660a8e9127efe942b3d"
   },
-  "digest": "90eecf80f746caf09a49f0b1f8d54204787918ca1e16aa74743a34891d061903"
+  "digest": "808f77621596a67dad6eada8c66244f1bcad220f3bb7857679e08ced5ef8bbfb"
 }

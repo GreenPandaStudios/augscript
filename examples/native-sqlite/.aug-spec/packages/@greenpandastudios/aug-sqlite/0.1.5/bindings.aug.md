@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=110093ec5d7874a87733aaff99250639354b75933be7bc3773d415fc1d03d5af -->
 
+[Interactions and sequences](bindings.aug.diagrams.md)
+
 <a id="symbol-Database"></a>
 ## `Database` · native resource · [source](bindings.aug#L3)
 

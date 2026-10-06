@@ -1,8 +1,11 @@
 {
   "format": 1,
   "files": [
+    ".aug-spec/diagrams/index.md",
+    "main.aug.diagrams.md",
     "main.aug.md",
+    "operations.aug.diagrams.md",
     "operations.aug.md"
   ],
-  "digest": "7864dc95e5a2a0d29e70115b8955439b32a9e897c929465eabb08d9e9f19369d"
+  "digest": "8d432544687f9722a15535bdeb90492dc8d283f44b48980e3ad423cb7fbc6342"
 }

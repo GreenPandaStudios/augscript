@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=08ce55ec635b3d1fda11967bdfc4f7aaa605d81bd4dd1d6550deb81b38ad8553 -->
 
+[Interactions and sequences](export.aug.diagrams.md)
+
 ## Exports
 
 Export the declaration `Application` from [`app.aug`](app.aug.md#symbol-Application). Export the declaration `ApplicationImpl` from [`app.aug`](app.aug.md#symbol-ApplicationImpl). Export the declaration `Fruit` from [`models.aug`](models.aug.md#symbol-Fruit). Export the declaration `double` from [`numbers.aug`](numbers.aug.md#symbol-double).

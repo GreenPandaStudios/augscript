@@ -29,7 +29,7 @@ const downloadFiles=directory=>readdirSync(directory,{withFileTypes:true}).flatM
   if(entry.name.startsWith('.')&&entry.name!=='.aug-spec'||['node_modules','dist'].includes(entry.name))return [];
   const file=join(directory,entry.name);
   if(entry.isDirectory())return downloadFiles(file);
-  return /(?:\.aug(?:\.md)?|\.yaml|\.json|\.c|\.h|\.http)$/.test(entry.name)||['AGENTS.md','README.md'].includes(entry.name)?[file]:[];
+  return /(?:\.aug(?:\.md|\.diagrams\.md)?|\.yaml|\.json|\.c|\.h|\.http)$/.test(entry.name)||['AGENTS.md','README.md'].includes(entry.name)||file.includes('/.aug-spec/diagrams/')&&file.endsWith('.md')?[file]:[];
 });
 
 function checkedProject(project) {
@@ -51,7 +51,7 @@ export function withExampleProject(example, action, overrides) {
     cpSync(origin,destination,{recursive:true,filter:path=>{
       if(path===origin)return true;
       const name=basename(path);
-      return !name.startsWith('.')&&!['node_modules','dist'].includes(name)&&!name.endsWith('.aug.md')&&!/\.(?:tgz|tar\.gz)$/.test(name);
+      return !name.startsWith('.')&&!['node_modules','dist'].includes(name)&&!name.endsWith('.aug.md')&&!name.endsWith('.aug.diagrams.md')&&!/\.(?:tgz|tar\.gz)$/.test(name);
     }});
     const directory=packages?join(destination,basename(source)):destination;
     if(Object.keys(packageSpecifications(directory,loadConfig(directory).config.packages)).length)installPackages(directory,existsSync(join(directory,'aug.lock.json')),false);
@@ -93,6 +93,11 @@ export function buildExamplePages(overrides) {
         '# Native binding contract\n\n'+`[${example.title}](${url(relative(dirname(page),home))})\n\n`+
         'This dependency’s descriptor names native symbols, ownership rules, errors, and ABI types. The compiler checks August declarations against it. Native code must honor the declared rules.\n\n'+fence(output.text,'json'));
     }
+    for(const artifact of artifacts.filter(output=>output.kind==='diagram')){
+      const name=slash(relative(directory,artifact.path));
+      const page=name==='.aug-spec/diagrams/index.md'?join(base,'diagrams/index.md'):join(base,name.replace(/^\.aug-spec\//,'dependencies/').replace(/\.aug\.diagrams\.md$/,'-diagrams.md'));
+      docs.set(artifact.path,page);
+    }
     const navigation=planExampleNavigation(artifacts,docs,sources);
     const nav=files.map(file=>`- [${code(slash(relative(directory,file.path)))}](${url(relative(dirname(home),sources.get(file.path)))})`).join('\n');
     let overview=frontmatter(example.title,example.path)+`# ${example.title}\n\n${example.description}\n\n`+
@@ -107,6 +112,7 @@ export function buildExamplePages(overrides) {
         overview+=`Read [${code(step.file)}](${url(relative(dirname(home),sources.get(file.path)))}). ${step.explanation}\n\n`;
       }
     }
+    overview+='[Explore the generated project diagrams](diagrams/index.md) to move from areas and modules to class interactions and API sequences.\n\n';
     overview+=`## Project files\n\n${nav}\n\n`;
     const auxiliary=['main.yaml','aug-package.json','package.json'].filter(name=>existsSync(join(source,name)));
     for(const name of auxiliary) {
@@ -136,6 +142,12 @@ export function buildExamplePages(overrides) {
     if(example.group==='Measured programs')overview+='See [the performance page](../../performance.md) for measurements, input sizes, and reproduction steps.\n\n';
     overview+='[Browse all examples](../index.md)\n';
     add(home,overview);
+    for(const artifact of artifacts.filter(output=>output.kind==='diagram')){
+      const page=docs.get(artifact.path);
+      const heading=/^# ([^\n]+)/m.exec(artifact.text)?.[1]??example.title+' diagrams';
+      const title=artifact.path.endsWith('/diagrams/index.md')?example.title+' diagrams':heading;
+      add(page,frontmatter(title,example.path+'/'+slash(relative(directory,artifact.path)))+'# '+title+'\n\n['+example.title+']('+url(relative(dirname(page),home))+')\n\n'+navigation.texts.get(artifact.path));
+    }
     for(const artifact of artifacts.filter(output=>output.path.endsWith('.aug.md'))) {
       const page=docs.get(artifact.path), local=relative(directory,artifact.path), dependency=local.startsWith('.aug-spec/');
       const copy=artifact.path.slice(0,-3), identity=slash(relative(directory,copy));

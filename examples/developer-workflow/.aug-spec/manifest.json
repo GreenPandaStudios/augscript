@@ -2,12 +2,19 @@
   "format": 1,
   "files": [
     ".aug-spec/august/0.23.0/io/contracts.aug",
+    ".aug-spec/august/0.23.0/io/contracts.aug.diagrams.md",
     ".aug-spec/august/0.23.0/io/contracts.aug.md",
+    ".aug-spec/diagrams/index.md",
+    "calculator.aug.diagrams.md",
     "calculator.aug.md",
+    "logging/console.aug.diagrams.md",
     "logging/console.aug.md",
+    "logging/export.aug.diagrams.md",
     "logging/export.aug.md",
+    "logging/logger.aug.diagrams.md",
     "logging/logger.aug.md",
+    "main.aug.diagrams.md",
     "main.aug.md"
   ],
-  "digest": "f094dda82bd271d57859fb217bb813a1f1b9b4f43a49b73576b816245a383b9f"
+  "digest": "93bd6d1c75201a029fa0855486650dec92ccf92c1c4a747080d73afe1df006c8"
 }

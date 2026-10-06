@@ -90,6 +90,8 @@ export userinfo from userinfo
 
 ## Compiled specification {#specification}
 
+[Interactions and sequences](export-diagrams.md)
+
 ### Exports
 
 Export the declaration `AuthorizationRequest` from [`contracts.aug`](contracts.md#symbol-AuthorizationRequest). Export the declaration `AuthorizationCode` from [`contracts.aug`](contracts.md#symbol-AuthorizationCode). Export the declaration `AccessGrant` from [`contracts.aug`](contracts.md#symbol-AccessGrant). Export the declaration `IdClaims` from [`contracts.aug`](contracts.md#symbol-IdClaims).

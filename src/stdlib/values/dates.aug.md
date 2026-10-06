@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=e67defd0ffda146dbf9e0c6bba28b453adb4af7797e598ee497858a25de381d0 -->
 
+[Interactions and sequences](dates.aug.diagrams.md)
+
 <a id="symbol-CivilDate"></a>
 ## `CivilDate` · immutable record · [source](dates.aug#L10)
 

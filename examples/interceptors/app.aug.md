@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=963457a355f2bea9e0e756ea0392806e845a54e6abe4095921ee83ecc2060f7c -->
 
+[Interactions and sequences](app.aug.diagrams.md)
+
 <a id="symbol-describe"></a>
 ## `describe` · [source](app.aug#L15)
 

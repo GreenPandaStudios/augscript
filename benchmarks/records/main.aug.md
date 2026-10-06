@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=48988beada70590f9cf4d72ae1a07f66d11dfbdc034e8942446be3e671ae3dc5 -->
 
+[Interactions and sequences](main.aug.diagrams.md)
+
 ## Startup
 
 It sets `iterations` to `50000`. It stores a list with no items in owned `values` (`List<Item>`). It sets `index` to `0`. While `index` is less than `iterations`, it appends an [`Item`](data.aug.md#symbol-Item) with `id` from `index` and `name` `"August"` to `values`; then it increases `index` by `1`. [source](main.aug#L3-L8)

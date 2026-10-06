@@ -139,3 +139,17 @@ test('every generated source link has revision-matched ranges and explanation ba
   assert.ok(!withoutFences(text).includes('#code)'),path+': source links retain line identities');
  }
 });
+
+test('every generated gallery diagram parses as Mermaid, including HTTP and native packages',async()=>{
+ const {JSDOM}=await import('jsdom'),dom=new JSDOM('');
+ globalThis.window=dom.window;globalThis.document=dom.window.document;
+ try {
+  const {default:mermaid}=await import('mermaid');mermaid.initialize({startOnLoad:false,securityLevel:'strict'});
+  const checked=new Set();
+  for(const [path,text] of pages())if(path.startsWith('docs/examples/'))for(const match of text.matchAll(/\x60\x60\x60mermaid\n([\s\S]*?)\n\x60\x60\x60/g)){
+   if(checked.has(match[1]))continue;checked.add(match[1]);
+   await assert.doesNotReject(()=>mermaid.parse(match[1]),path+'\n'+match[1]);
+  }
+  assert.ok(checked.size>100,'must cover the full project gallery');
+ }finally{dom.window.close();delete globalThis.window;delete globalThis.document;}
+});

@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=87e2f9cb517f68e00ed8a399c85747ba4d2953d9ab95f800e625b1b28c692873 -->
 
+[Interactions and sequences](export.aug.diagrams.md)
+
 ## Exports
 
 Export the declaration `ContextError` from [`context.aug`](context.aug.md#symbol-ContextError). Export the declaration `errorContext` from [`context.aug`](context.aug.md#symbol-errorContext).

@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=44cd83dc2b561ebded8f94526698aa96ec2c5da153b0d06e96a40d738e80b1a8 -->
 
+[Interactions and sequences](main.aug.diagrams.md)
+
 ## Startup
 
 It calls [`announce`](native.aug.md#symbol-announce). [source](main.aug#L3)

@@ -7,7 +7,7 @@ hero:
     dark: /brand/august-mark-dark.svg
     alt: August
   text: The world runs on language
-  tagline: Code that reads like pseudocode. A human-readable spec compiled from it. Native performance you can measure against C.
+  tagline: Understand a codebase from its overview to its source. Readable code, compiled explanations and diagrams, with measured native performance.
   actions:
     - theme: brand
       text: Get started
@@ -16,6 +16,8 @@ hero:
       text: Explore the language
       link: /learn/
 features:
+  - title: Move from overview to code
+    details: Follow modules, class interactions and API sequences, then open the explanation or source for the detail you need.
   - title: Read it like pseudocode
     details: Calls name their inputs. Imports and declaration headers show which dependencies the code uses.
   - title: Compile a human-readable spec
@@ -26,9 +28,17 @@ features:
 
 <!--@include: ./.vitepress/home-example.md-->
 
-## Build code other people can understand
+<!--@include: ./.vitepress/home-diagram.md-->
 
-Start an unfamiliar project at `main.aug`: its imports, dependency bindings, and startup code show how the application is assembled. Read a module's compiled spec to follow its behavior and open the linked dependencies when you need them. Tests stay beside the implementation, so you can check the change in the same file.
+## Understand a codebase at the level you need
+
+August is designed for developers and coding agents working in large codebases. Whether you wrote an implementation or an agent produced it, you need to understand its dependencies, decisions and effects before changing it.
+
+Move through the program at several levels: **project overview → module interactions → API sequences → compiled explanation → source**. Each view comes from the checked program and links to the next level. Start with the overview to find the relevant module, follow a sequence to see which operations it calls, and open the source when you need to inspect or change an expression.
+
+Generated Mermaid diagrams are being added for 1.0 and are **unreleased**. Explore the [greeting project's diagrams](examples/hello/diagrams/index.md) or follow a larger [login application's APIs](examples/oidc-login/diagrams/index.md). The [compiled-spec guide](specifications.md) explains what each view contains.
+
+Imports, dependency bindings and startup code remain together in `main.aug`. Tests stay beside the implementation, so the behavior and its acceptance cases are close to the code you change.
 
 August infers return types, possible failures, and state changes from executable code. The editor shows those facts as hints. You write them explicitly where an interface needs to constrain its implementations.
 

@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=b2e6be529ca13450e699e3524f2a84ca4a3e4d6536482ca3bc08976ccab5ef7e -->
 
+[Interactions and sequences](main.aug.diagrams.md)
+
 ## Providers
 
 `Formatter` is provided by [`TextFormatter`](types.aug.md#symbol-TextFormatter). The same instance is shared.

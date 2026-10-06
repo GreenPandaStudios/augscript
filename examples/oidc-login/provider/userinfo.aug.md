@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=f383af4ce642dc3a039efd7370614c214d5eb4a8e07d1be8fc7245e15ab2222f -->
 
+[Interactions and sequences](userinfo.aug.diagrams.md)
+
 Plain handler results default to HTTP 200 unless another status is declared. HttpResponse values choose their own status. Unhandled request failures return HTTP 500 and cancel the request tasks.
 
 <a id="symbol-userinfo"></a>

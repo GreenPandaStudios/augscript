@@ -118,7 +118,7 @@ function usage(): void {
     `Acceptance: aug verify [PROJECT] --requirements FILE [--backend c|llvm] [--timeout MS] [--offline] [--frozen] [--json] — check source and run author-selected cases\n` +
     `Test inputs: aug test [PROJECT] --suggest-inputs FUNCTION --file FILE [--cases JSON_FILE] [--combinations] [--limit N] [--json] — propose checked inputs; author supplies assertions\n` +
     `Format: aug format [project directory] [--file path] [--write]\n` +
-    `Specifications: aug spec [project directory] [--check] [--json]\n` +
+    `Specifications and diagrams: aug spec [project directory] [--check] [--json]\n` +
     `Migration: aug migrate [project directory] [--file path] [--write]\n` +
     `Context: aug context [project directory] [--file path] [--name declaration] [--budget characters] [--mode implementation|interface-change|review] [--require-complete]\n` +
     `Composition: aug graph [PROJECT] --composition [--case TEST_ID] [--json|--mermaid] — inspect existing application or test wiring\n` +

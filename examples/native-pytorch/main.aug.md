@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=4ae202d406125816a68c907df9e578922b88ecaa6f4bad18311e75444765e3b7 -->
 
+[Interactions and sequences](main.aug.diagrams.md)
+
 ## Startup
 
 It prints [`calculate`](tensors.aug.md#symbol-calculate). If this work raises [`TensorError`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.1.6/contracts.aug.md#symbol-TensorError) as `error`, it prints `error.message`. [source](main.aug#L5-L8)

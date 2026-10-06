@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=a89932de96a211eae84917098694d0a85836b4dec16e6e628899c6b8a33918e3 -->
 
+[Interactions and sequences](compression.aug.diagrams.md)
+
 <a id="symbol-roundTrip"></a>
 ## `roundTrip` · [source](compression.aug#L5)
 

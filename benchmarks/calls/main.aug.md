@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=a588feb486572bf6f19825b2207fecd9b49417a8aa024ee2c798a81a922ab785 -->
 
+[Interactions and sequences](main.aug.diagrams.md)
+
 ## Startup
 
 It sets `iterations` to `200000`. It sets `state` to `123`. It sets `index` to `0`. While `index` is less than `iterations`, it sets `state` to [`step`](operations.aug.md#symbol-step) with `value` from `state`; then it increases `index` by `1`. [source](main.aug#L3-L8)

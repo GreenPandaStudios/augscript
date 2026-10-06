@@ -46,6 +46,8 @@ extern C resource Buffer
 
 ## Compiled specification {#specification}
 
+[Interactions and sequences](bindings-diagrams.md)
+
 ### `Device` · native resource · [source](bindings.md#source-L3) {#symbol-Device}
 
 Native implementation: `@greenpandastudios/aug-gpu@0.1.1`, `0.1.0`. Supported targets: macos arm64 14.0+. Binding contract: [`native.abi.json`](native.abi-json.md) (SHA-256 `d95e237d8be07df8fd20132ca0f5a45a125fd65b7ba93669e69c0a38db63d60c`). An owned value releases its opaque handle through `aug_gpu_device_release_v1` when its scope ends, including error and return paths.

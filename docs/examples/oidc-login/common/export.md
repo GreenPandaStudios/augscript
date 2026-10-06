@@ -82,6 +82,8 @@ export withCookie from headers
 
 ## Compiled specification {#specification}
 
+[Interactions and sequences](export-diagrams.md)
+
 ### Exports
 
 Export the declaration `Settings` from [`settings.aug`](settings.md#symbol-Settings). Export the declaration `settings` from [`settings.aug`](settings.md#symbol-settings). Export the declaration `SigningKeys` from [`keys.aug`](keys.md#symbol-SigningKeys). Export the declaration `MemorySigningKeys` from [`keys.aug`](keys.md#symbol-MemorySigningKeys).

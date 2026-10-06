@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=7a3e062aad8f883e11173c8cbc56ae37f43d802712c8907e63c9972a3a758055 -->
 
+[Interactions and sequences](contracts.aug.diagrams.md)
+
 <a id="symbol-parse"></a>
 ## `parse` · [source](contracts.aug#L4)
 

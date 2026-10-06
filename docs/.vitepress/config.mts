@@ -27,6 +27,10 @@ export default defineConfig({
     languages: [{ ...grammar, name: 'aug', aliases: ['augscript'] }],
     config(md) {
       md.set({ html: false });
+      const fence=md.renderer.rules.fence!;
+      md.renderer.rules.fence=(tokens,index,options,env,self)=>tokens[index].info.trim()==='mermaid'
+        ? '<CodeDiagram encoded="'+Buffer.from(tokens[index].content).toString('base64')+'" />\n'
+        : fence(tokens,index,options,env,self);
       for (const name of ['example-compare', 'example-code', 'example-spec'])
         md.use(container, name, { render: (tokens, index) => `<${tokens[index].nesting === 1 ? 'div' : '/div'}${tokens[index].nesting === 1 ? ` class="aug-${name}"` : ''}>\n` });
       md.use(container, 'benchmark-chart', {render: (tokens, index) => {

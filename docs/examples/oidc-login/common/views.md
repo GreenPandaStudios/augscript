@@ -48,14 +48,14 @@ pageClass: aug-example-page
 
 ::: code-group
 
-```aug [Indentation] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiaW5kZW50Iiwic291cmNlU2hhMjU2IjoiZGE2MGQ0NmQ5NTlmNmM0MWU3NjlkZWJhZTllZjM2OGE2ODQ0YWNiMGZiY2VkMWU0MjVjYjRjMzAzNmJlNjljYiIsImZvcm1hdHRlZFNoYTI1NiI6IjFhZjEyYTUxYTVmNWE3NWJiMDk5Mzc1MjNkNTNjYjU0ZWQxZTYyZWZmZjU4NTZhMjVmMmIwOWE0MTFjMjM5ZDEiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDMiLCJmaXJzdCI6MywibGFzdCI6NCwiYmFja2xpbmtzIjpbIiNzeW1ib2wtUGFnZSJdfSx7ImlkIjoic291cmNlLUw0LUwxNyIsImZpcnN0Ijo0LCJsYXN0Ijo0LCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTEiXX1dfQ
+```aug [Indentation] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiaW5kZW50Iiwic291cmNlU2hhMjU2IjoiZGE2MGQ0NmQ5NTlmNmM0MWU3NjlkZWJhZTllZjM2OGE2ODQ0YWNiMGZiY2VkMWU0MjVjYjRjMzAzNmJlNjljYiIsImZvcm1hdHRlZFNoYTI1NiI6IjFhZjEyYTUxYTVmNWE3NWJiMDk5Mzc1MjNkNTNjYjU0ZWQxZTYyZWZmZjU4NTZhMjVmMmIwOWE0MTFjMjM5ZDEiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDMiLCJmaXJzdCI6MywibGFzdCI6NCwiYmFja2xpbmtzIjpbInZpZXdzLWRpYWdyYW1zLm1kI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTEiLCIjc3ltYm9sLVBhZ2UiXX0seyJpZCI6InNvdXJjZS1MNC1MMTciLCJmaXJzdCI6NCwibGFzdCI6NCwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0xIl19XX0
 // aug-spec: "views.aug.md" explains this file. Read it before changes; refresh with aug spec.
 /** Small server components keep each page's behavior and dependencies visible. */
 Page(string title, List<Html> children):
     return <html lang={"en"}><head><meta charset={"utf-8"} /><meta name={"viewport"} content={"width=device-width, initial-scale=1"} /><title>{title} — August</title></head><body style={"margin:0;background:#f3f5f9;color:#17233a;font:17px system-ui,sans-serif;line-height:1.6"}><main style={"max-width:640px;margin:48px auto;padding:28px;background:white;border-radius:20px;box-shadow:0 12px 48px #17233a12"}><nav><a href={"/"} style={"color:#4852d7;font-weight:750;text-decoration:none"}>August · OpenID Connect</a></nav><h1>{title}</h1>{children}</main></body></html>
 ```
 
-```aug [Braces] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiYnJhY2VzIiwic291cmNlU2hhMjU2IjoiZGE2MGQ0NmQ5NTlmNmM0MWU3NjlkZWJhZTllZjM2OGE2ODQ0YWNiMGZiY2VkMWU0MjVjYjRjMzAzNmJlNjljYiIsImZvcm1hdHRlZFNoYTI1NiI6IjM4M2FhNWFmMGY4MjU0ZWM1M2IyNTcwYmUxMmU5M2Q2ZTAwZjYyOTgxMGNhZWI1MzY1NTcyOWVlNmQ2NzcyZDUiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDMiLCJmaXJzdCI6MywibGFzdCI6NSwiYmFja2xpbmtzIjpbIiNzeW1ib2wtUGFnZSJdfSx7ImlkIjoic291cmNlLUw0LUwxNyIsImZpcnN0Ijo0LCJsYXN0Ijo0LCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTEiXX1dfQ
+```aug [Braces] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiYnJhY2VzIiwic291cmNlU2hhMjU2IjoiZGE2MGQ0NmQ5NTlmNmM0MWU3NjlkZWJhZTllZjM2OGE2ODQ0YWNiMGZiY2VkMWU0MjVjYjRjMzAzNmJlNjljYiIsImZvcm1hdHRlZFNoYTI1NiI6IjM4M2FhNWFmMGY4MjU0ZWM1M2IyNTcwYmUxMmU5M2Q2ZTAwZjYyOTgxMGNhZWI1MzY1NTcyOWVlNmQ2NzcyZDUiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDMiLCJmaXJzdCI6MywibGFzdCI6NSwiYmFja2xpbmtzIjpbInZpZXdzLWRpYWdyYW1zLm1kI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTEiLCIjc3ltYm9sLVBhZ2UiXX0seyJpZCI6InNvdXJjZS1MNC1MMTciLCJmaXJzdCI6NCwibGFzdCI6NCwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0xIl19XX0
 // aug-spec: "views.aug.md" explains this file. Read it before changes; refresh with aug spec.
 /** Small server components keep each page's behavior and dependencies visible. */
 Page(string title, List<Html> children) {
@@ -70,6 +70,8 @@ Page(string title, List<Html> children) {
 :::: example-spec
 
 ## Compiled specification {#specification}
+
+[Interactions and sequences](views-diagrams.md)
 
 ### `Page` · [source](views.md#source-L3) {#symbol-Page}
 

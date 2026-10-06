@@ -3,10 +3,11 @@ import {inBrowser, onContentUpdated, type Theme} from 'vitepress';
 import {onBeforeUnmount, onMounted} from 'vue';
 import './style.css';
 import BenchmarkChart from './BenchmarkChart.vue';
+import CodeDiagram from './CodeDiagram.vue';
 
 export default {
   extends: DefaultTheme,
-  enhanceApp({app}) { app.component('BenchmarkChart', BenchmarkChart); },
+  enhanceApp({app}) { app.component('BenchmarkChart', BenchmarkChart); app.component('CodeDiagram',CodeDiagram); },
   setup() {
     if (!inBrowser) return;
     const key = 'august-example-block-style';

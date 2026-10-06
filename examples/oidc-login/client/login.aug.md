@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=c66aae38db6cd1c01d85002633346c6978f7d18002f26c08e163011fe4ae6d2b -->
 
+[Interactions and sequences](login.aug.diagrams.md)
+
 Plain handler results default to HTTP 200 unless another status is declared. HttpResponse values choose their own status. Unhandled request failures return HTTP 500 and cancel the request tasks.
 
 <a id="symbol-startLogin"></a>

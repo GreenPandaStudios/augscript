@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=956657cbdbc6d38c108a6034f3b15e3be1d8dc5e04ef29db191cfb6c33115d46 -->
 
+[Interactions and sequences](forecasts.aug.diagrams.md)
+
 Plain handler results default to HTTP 200 unless another status is declared. HttpResponse values choose their own status. Unhandled request failures return HTTP 500 and cancel the request tasks.
 
 <a id="symbol-WeatherForecast"></a>

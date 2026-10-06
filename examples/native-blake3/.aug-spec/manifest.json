@@ -1,16 +1,21 @@
 {
   "format": 1,
   "files": [
+    ".aug-spec/diagrams/index.md",
     ".aug-spec/packages/@greenpandastudios/aug-blake3/0.1.5/api.aug",
+    ".aug-spec/packages/@greenpandastudios/aug-blake3/0.1.5/api.aug.diagrams.md",
     ".aug-spec/packages/@greenpandastudios/aug-blake3/0.1.5/api.aug.md",
     ".aug-spec/packages/@greenpandastudios/aug-blake3/0.1.5/contracts.aug",
+    ".aug-spec/packages/@greenpandastudios/aug-blake3/0.1.5/contracts.aug.diagrams.md",
     ".aug-spec/packages/@greenpandastudios/aug-blake3/0.1.5/contracts.aug.md",
     ".aug-spec/packages/@greenpandastudios/aug-blake3/0.1.5/native.abi.json",
+    "hashing.aug.diagrams.md",
     "hashing.aug.md",
+    "main.aug.diagrams.md",
     "main.aug.md"
   ],
   "nativeDescriptors": {
     ".aug-spec/packages/@greenpandastudios/aug-blake3/0.1.5/native.abi.json": "3bf8dea97cde70a03021bf77ea08314d6d37fe7b4935ff16030b2ab929c21279"
   },
-  "digest": "f27621fe9974d824e8a5d6abc22e394baba9d354e983779374285c8e194b55a2"
+  "digest": "5117e9f322cd3792e6e23c33a54884229bd4b207dcb125ef2a4a9573e2b666bd"
 }

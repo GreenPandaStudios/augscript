@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=8682a971736dc55a124a7b15f4bc00004b8569b53ee07dbce418569fc60f0f04 -->
 
+[Interactions and sequences](decimals.aug.diagrams.md)
+
 <a id="symbol-Decimal"></a>
 ## `Decimal` · immutable record · [source](decimals.aug#L9)
 

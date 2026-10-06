@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=f67dc292dbe7231311ac266631b5a47116ff8e2aeec2dcb2d2c81d2f36845b6b -->
 
+[Interactions and sequences](contracts.aug.diagrams.md)
+
 <a id="symbol-Crypto"></a>
 ## `Crypto` · capability interface · [source](contracts.aug#L3)
 

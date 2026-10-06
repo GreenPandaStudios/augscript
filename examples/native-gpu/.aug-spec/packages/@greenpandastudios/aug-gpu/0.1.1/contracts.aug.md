@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=7db9a52fd594da163175cead6bb19285e2a9233e565f0193df6cc7387dd4d356 -->
 
+[Interactions and sequences](contracts.aug.diagrams.md)
+
 <a id="symbol-GpuError"></a>
 ## `GpuError` · class · [source](contracts.aug#L3)
 

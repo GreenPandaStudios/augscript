@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=9aa3c6c12346c051d701e94d06655577e9d301a0ed81cd93ff423deb799f1116 -->
 
+[Interactions and sequences](main.aug.diagrams.md)
+
 ## Startup
 
 It prints `7`. [source](main.aug#L2)

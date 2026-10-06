@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=f029955724bd5650d0f440700ac639e9f56a7404f1049ee2f99b5489133d4b15 -->
 
+[Interactions and sequences](greeter.aug.diagrams.md)
+
 <a id="symbol-Greeter"></a>
 ## `Greeter` · class · [source](greeter.aug#L8)
 

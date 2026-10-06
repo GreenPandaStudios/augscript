@@ -2,9 +2,13 @@
   "format": 1,
   "files": [
     ".aug-spec/august/0.23.0/io/contracts.aug",
+    ".aug-spec/august/0.23.0/io/contracts.aug.diagrams.md",
     ".aug-spec/august/0.23.0/io/contracts.aug.md",
+    ".aug-spec/diagrams/index.md",
+    "main.aug.diagrams.md",
     "main.aug.md",
+    "resource.aug.diagrams.md",
     "resource.aug.md"
   ],
-  "digest": "8626a4b32d32a922f90b2d2aa680429b7c2594efe65b1ffe37c2fb6c9101ac7f"
+  "digest": "200efe445bb4406a4aa9646403fe82b66210b9dea154ff2483c6377018d67a90"
 }

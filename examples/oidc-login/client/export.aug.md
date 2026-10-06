@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=e8c19f3a1aad0e4ed0c9fee1409c62ca7a522ab73ce1e2caa7861d114de3deec -->
 
+[Interactions and sequences](export.aug.diagrams.md)
+
 ## Exports
 
 Export the declaration `LoginTransaction` from [`contracts.aug`](contracts.aug.md#symbol-LoginTransaction). Export the declaration `SessionClaims` from [`contracts.aug`](contracts.aug.md#symbol-SessionClaims). Export the declaration `home` from [`endpoints.aug`](endpoints.aug.md#symbol-home). Export the declaration `me` from [`endpoints.aug`](endpoints.aug.md#symbol-me).

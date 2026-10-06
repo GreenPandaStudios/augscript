@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=df71631078c70b94e00e229ca5f88438d0ac86c75cad6185686d5da0920012d3 -->
 
+[Interactions and sequences](main.aug.diagrams.md)
+
 ## Startup
 
 It sets `args` to `arguments`. It prints the number of elements in `args`. If the number of elements in `args` is positive, it prints the item at index `0` in `args`. It sets `numbers` to a list of `int` containing `1`, `2`. [source](main.aug#L2-L16)

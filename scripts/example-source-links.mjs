@@ -9,7 +9,7 @@ const safeAnchor=id=>id.replace(/[^A-Za-z0-9_.-]/g,char=>'-'+char.codePointAt(0)
 /** Preserve source line identities while each wiki view uses the real formatter. */
 export function planExampleNavigation(artifacts,docs,sources) {
   const texts=new Map(),references=new Map();
-  for(const artifact of artifacts.filter(output=>output.path.endsWith('.aug.md'))){
+  for(const artifact of artifacts.filter(output=>output.path.endsWith('.aug.md')||output.kind==='diagram')){
     const page=docs.get(artifact.path);let paragraph=0;
     let text=artifact.text.replace(/^<!--[^\n]*-->\n\n# [^\n]+\n\n/,'')
       .replace(/^<!-- August spec revision: [^\n]*-->\n\n/gm,'')
@@ -35,7 +35,7 @@ export function planExampleNavigation(artifacts,docs,sources) {
       for(const ref of local){const list=references.get(ref.target)??[];list.push({...ref,page,paragraph:id});references.set(ref.target,list);}
       return heading?rewritten:'::: spec-paragraph '+id+'\n'+rewritten+'\n:::';
     }).join('\n');
-    texts.set(artifact.path,text.replace(/^(#{2,5}) /gm,'$1# '));
+    texts.set(artifact.path,artifact.kind==='diagram'?text:text.replace(/^(#{2,5}) /gm,'$1# '));
   }
   return {texts,references};
 }

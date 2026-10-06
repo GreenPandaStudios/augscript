@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=17d4939e10c2009f80a975c2091595dad22f9f23741836a7380924a9f03cdf29 -->
 
+[Interactions and sequences](contracts.aug.diagrams.md)
+
 <a id="symbol-Principal"></a>
 ## `Principal` · immutable record · [source](contracts.aug#L3)
 

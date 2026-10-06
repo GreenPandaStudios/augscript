@@ -58,6 +58,8 @@ export RangeError from numbers
 
 ## Compiled specification {#specification}
 
+[Interactions and sequences](export-diagrams.md)
+
 ### Exports
 
 Export the declaration `Application` from [`app.aug`](app.md#symbol-Application). Export the declaration `ApplicationImpl` from [`app.aug`](app.md#symbol-ApplicationImpl). Export the declaration `Fruit` from [`models.aug`](models.md#symbol-Fruit). Export the declaration `double` from [`numbers.aug`](numbers.md#symbol-double).

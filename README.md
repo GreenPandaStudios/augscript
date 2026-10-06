@@ -4,7 +4,7 @@
 
 AugScript is an experimental, statically checked language for developers working with LLMs. Its tenets are **simplicity** and **developer scalability**: a module should explain its dependencies, state changes, errors, and public behavior in the code itself.
 
-August reads like pseudocode, compiles a human-readable specification, and runs as a native executable. The [homepage](https://greenpandastudios.github.io/augscript/) shows the same program as source and compiled prose beside a measured C comparison. The TypeScript compiler lowers checked August through LLVM. This repository includes the compiler, managed runtime, CLI, standard capabilities, examples, tests, documentation, two Docker base images, and VS Code extension. Public exports, labeled inputs, checked errors, same-file tests, and generated specifications keep behavior close to the code that implements it.
+August is designed to help developers and coding agents understand and change large codebases. It reads like pseudocode, compiles a human-readable specification, and runs as a native executable. The unreleased diagram compiler adds linked project, module, class and API-sequence views, so readers can move from an overview to the explanation and source. The [homepage](https://greenpandastudios.github.io/augscript/) shows the same program as source and compiled prose beside a measured C comparison. The TypeScript compiler lowers checked August through LLVM. This repository includes the compiler, managed runtime, CLI, standard capabilities, examples, tests, documentation, two Docker base images, and VS Code extension. Public exports, labeled inputs, checked errors, same-file tests, and generated specifications keep behavior close to the code that implements it.
 
 ## Start a project
 

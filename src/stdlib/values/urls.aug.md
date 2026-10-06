@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=753b9bff63b917ad0e86751a0a4cc84c5b597c266d777d855fe38eee70865ea1 -->
 
+[Interactions and sequences](urls.aug.diagrams.md)
+
 <a id="symbol-HttpUrl"></a>
 ## `HttpUrl` · immutable record · [source](urls.aug#L10)
 

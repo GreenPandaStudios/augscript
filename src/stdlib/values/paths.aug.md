@@ -4,6 +4,8 @@
 
 <!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=6b3ca2164f07534c02ef9285039f467839be5a7795f9cf34d84cdccd3b147186 -->
 
+[Interactions and sequences](paths.aug.diagrams.md)
+
 <a id="symbol-PortableRelativePath"></a>
 ## `PortableRelativePath` · immutable record · [source](paths.aug#L10)
 
