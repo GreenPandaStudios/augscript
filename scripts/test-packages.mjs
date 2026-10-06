@@ -55,6 +55,14 @@ try {
   aug('spec',choices);assert.match(readFileSync(join(choices,'values.aug.md'),'utf8'),/choice based on `name`/);
   if(process.env.AUG_LLVM_HOME&&process.env.AUG_RUNTIME_PACK)
     assert.equal(run(process.execPath,[cli,'run',choices,'--backend','llvm']),'Hello, Ada!\n');
+  const dependencies=join(directory,'checked-dependencies');mkdirSync(dependencies);
+  writeFileSync(join(dependencies,'main.aug'),'import Console and SystemConsole from august.io\nimport launch from report\nimplement Console with SystemConsole\nlaunch()\n');
+  writeFileSync(join(dependencies,'report.aug'),'import Console from august.io\nreport(resolve Console console) { console.write(value="Ready") }\nlaunch() { report() }\n');
+  const dependencyPlan=JSON.parse(aug('change','plan-dependency',dependencies,'--file','report.aug','--symbol','launch','--capability','Console','--name','console','--out','console.json','--json'));
+  assert.equal(dependencyPlan.operation,'add-dependency');assert.equal(dependencyPlan.coverage.checkedProject,true);assert.ok(dependencyPlan.headers.some(header=>header.symbol==='report.aug:launch'));
+  assert.equal(JSON.parse(aug('change','apply',dependencies,'--plan','console.json','--json')).status,'committed');
+  assert.equal(aug('run',dependencies),'Ready\n');
+  if(process.env.AUG_LLVM_HOME&&process.env.AUG_RUNTIME_PACK)assert.equal(run(process.execPath,[cli,'run',dependencies,'--backend','llvm']),'Ready\n');
   const renames=join(directory,'checked-renames');mkdirSync(renames);
   writeFileSync(join(renames,'main.aug'),'import greet from greeter\nprint(value=greet(name="Ada"))\n');
   writeFileSync(join(renames,'greeter.aug'),'greet(string name):\n    return $"Hello, {name}!"\n');

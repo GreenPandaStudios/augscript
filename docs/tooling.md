@@ -40,6 +40,7 @@ Install `aug` once as shown in [Your first project](getting-started.md). Command
 | `explain PROJECT --file PATH [--name NAME]` | Checked contracts, dependencies, layers, origins, tests, and module surface. |
 | `context PROJECT --file PATH [--name NAME] [--budget N] [--mode implementation\|interface-change\|review] [--require-complete]` | Bounded JSON context, including related declarations and source snippets. |
 | `graph PROJECT --composition [--case TEST_ID] [--json\|--mermaid]` | **Unreleased:** inspect selected application/test providers, lifetimes and constructor dependencies without execution. |
+| `change plan-dependency PROJECT --file FILE --symbol CALLABLE --capability TYPE --name INPUT` | Review missing capability inputs, imports, reverse callers and public changes before source writes. |
 | `change plan PROJECT request.json` | Candidate, exact edits, public delta and agent exchange; no source writes. |
 | `change check PROJECT plan.json` | Independent native verification without source writes. |
 | `change apply PROJECT plan.json` | Recheck, verify and journal the accepted transaction. |
@@ -344,6 +345,25 @@ Rename plans and committed JSON reports include `identityMap`: the selected symb
 
 Planning checks the project and its tests without changing source or executing code. The packet includes the compiler identity, root-relative source and dependency identities, configuration and lock digests, physical dependency manifest/configuration/ABI identities, explicit graph boundaries, complete selected occurrences, proposed edits and expected public contract deltas. Apply rejects a different source/configuration/dependency revision or an altered packet. It regenerates the operation, checks the isolated candidate, preserves unrelated names, strings and comments, then checks the published postimage before accepting it. Compiler acceptance, independent test results and engineer review remain separate.
 
+### Add a missing capability dependency
+
+When a helper requires an injected capability, each caller needs a matching header dependency. For example, `report(resolve Console console)` can write a message, but `launch() { report() }` cannot obtain its console from a body lookup. Its header needs `resolve Console console` too. The application still chooses `SystemConsole` or another adapter explicitly in `main.aug`.
+
+Plan that change and review its caller edits:
+
+```sh
+aug change plan-dependency . --file app.aug --symbol launch --capability Console --name console --out console.json --json
+aug change apply . --plan console.json --json
+aug spec .
+aug test .
+```
+
+The plan adds the selected missing capability, legal imports, and the matching dependency in every affected caller. A class method receives the dependency through its class constructor; select it with `--symbol Class.method`. Generic capability arguments retain their resolved identities. Added names avoid existing declarations and references; an explicit name that would capture a binding is rejected. Function bodies, ordinary argument values, provider bindings, comments and strings keep their source text.
+
+The JSON contains the original diagnostics, each added header input, complete candidate caller coverage, and every changed public contract. Its starting project may have missing-header diagnostics. Unrelated errors, ambiguous dependencies, missing application or test providers, private imports, incompatible interface bounds and worker restrictions prevent a checked plan. Installed packages, interface defaults and interceptor headers require a separate explicit edit. A same-spelled capability from another module cannot substitute for the selected type; an ambiguous spelling requires the exact `typeIdentity` from checked context. Propagation is bounded to 512 headers and 64 added inputs per header.
+
+The editor offers **Review TYPE dependency and callers** when the whole unsaved project produces a valid candidate. It opens a JSON preview with public contract changes, candidate edits, and the CLI arguments for a fresh plan. It does not apply workspace edits. Save project source and configuration buffers, generate and review the CLI plan, then apply it through the revision, writer coordination and recovery checks described below. Other LSP clients receive a disabled action with the same review facts. Neither the preview nor the plan chooses a provider or establishes business behavior; run the independent tests after applying the change.
+
 For an author-written implementation change, put one complete replacement function in a UTF-8 file and save a body plan:
 
 ```sh
@@ -365,6 +385,6 @@ aug change recover . --json
 
 Recovery rolls an uncommitted journal backward or finishes a committed journal forward. It first checks every source image; an unrelated editor change that matches neither image stops recovery without writing any file. Keep that edit and the journal, reconcile the conflict deliberately, then recover again. `.aug-changes` and `.aug-change-lock` are local tool state and should be ignored by source control. A completed transaction does not refresh generated specs or run independent behavior checks. If cleanup fails after the commit record, JSON reports `status: "committed"` and `recovery: "required"`, with the base/accepted revisions, operation and verified rename map; the command still exits unsuccessfully so cleanup is not ignored.
 
-This coordination covers August's checked writers and readers. External editors, package installation, formatting/spec generation and other programs do not acquire this source-transaction lock; finish those operations before applying a plan. Detected edits reject acceptance or require conflict recovery. Files must be local regular UTF-8 source units, with no symlinked parents or hard links. The exchange is bounded to 16 MiB per source unit, 4,096 edited files, a 64 MiB recovery journal and a 16 MiB saved plan. Existing file modes are retained. File and directory synchronization is required; process-death recovery is tested on the contributor host, while power-loss durability and other filesystem implementations still require platform qualification. New declarations, member bodies, file moves, package-alias edits and automatic capability propagation need their own checked operations.
+This coordination covers August's checked writers and readers. External editors, package installation, formatting/spec generation and other programs do not acquire this source-transaction lock; finish those operations before applying a plan. Detected edits reject acceptance or require conflict recovery. Files must be local regular UTF-8 source units, with no symlinked parents or hard links. The exchange is bounded to 16 MiB per source unit, 4,096 edited files, a 64 MiB recovery journal and a 16 MiB saved plan. Existing file modes are retained. File and directory synchronization is required; process-death recovery is tested on the contributor host, while power-loss durability and other filesystem implementations still require platform qualification. New declarations, member bodies, file moves and package-alias edits need their own checked operations.
 
 Name-based checked renames resolve the function or input label and construct edits from one checked snapshot. A detected source move during capture rejects planning; an old declaration offset cannot select a different function.

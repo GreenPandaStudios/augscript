@@ -1042,7 +1042,7 @@ Authenticate the request and authorize one literal permission before decoding. R
 resolve Logger logger; resolve app to program
 ```
 
-Declare a dependency in a class or callable header. Callers omit its argument and forward the matching header dependency. Only main and test setup retrieve bindings directly with resolve app to program. Assignment-form resolve is rejected. Scoped dependencies require a scope block.
+Declare a dependency in a class or callable header. Callers omit its argument and forward the matching header dependency. Only main and test setup retrieve bindings directly with resolve app to program. Assignment-form resolve is rejected. Scoped dependencies require a scope block. A checked dependency plan can add missing capability headers and update callers without choosing bindings.
 
 ## resource
 

@@ -156,6 +156,8 @@ export function mergeTestAnalysis(checked: CheckedProject, tests: { checked: Che
       if (type) checked.expressionTypes.set(expr, type);
       const name=entry.checked.resolvedNames.get(expr);
       if(name)checked.resolvedNames.set(expr,name);
+      const needs=entry.checked.missingInjections.get(expr);
+      if(needs)checked.missingInjections.set(expr,needs);
       const call=entry.checked.resolvedCalls.get(expr);
       if(call)checked.resolvedCalls.set(expr,call);
       const reference=entry.checked.resolvedTypes.get(value as import('./ast.ts').TypeRef);

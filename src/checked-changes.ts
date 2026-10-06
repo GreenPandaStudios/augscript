@@ -3,6 +3,7 @@ import {join,relative} from 'node:path';
 import {createHash} from 'node:crypto';
 import {checkedProjectWithTests,planRename,applySourceEdits,type CheckedSourceEdit,type InterfaceDelta,type IdentityMapping} from './refactoring.ts';
 import type {CheckedProject} from './checker.ts';
+import {planDependencyEdits,type DependencyHeader} from './dependency-edits.ts';
 import {planBodyReplacement} from './body-edits.ts';
 import {checkedChangeRevision} from './change-revisions.ts';
 import {semanticGraph,semanticConfiguration} from './symbols.ts';
@@ -17,7 +18,11 @@ export interface ChangeRenamePlan {
 export interface ChangeBodyPlan extends Omit<ChangeRenamePlan,'operation'|'offset'|'name'|'identityMap'> {
   operation:'replace-body';name:string;replacementSource:string;
 }
-export type ChangePlan=ChangeRenamePlan|ChangeBodyPlan;
+export interface ChangeDependencyPlan extends Omit<ChangeRenamePlan,'operation'|'offset'|'identityMap'> {
+  operation:'add-dependency';symbolName:string;capability:string;headers:DependencyHeader[];
+  baseDiagnostics:CheckedProject['diagnostics'];
+}
+export type ChangePlan=ChangeRenamePlan|ChangeBodyPlan|ChangeDependencyPlan;
 const digest=(text:string)=>createHash('sha256').update(text).digest('hex');
 function candidate(root:string,plan:ChangePlan) {
   const overrides=new Map<string,string>();
@@ -95,15 +100,34 @@ export function planChangeReplaceBody(projectRoot:string,file:string,name:string
   });
 }
 
+/** Add a selected missing capability and propagate its resolved requirement to
+ * every checked caller. Provider selection and behavioral evidence stay explicit. */
+export function planChangeDependency(projectRoot:string,file:string,symbolName:string,capability:string,name:string):ChangeDependencyPlan {
+  const root=sourceChangeRoot(projectRoot),path=sourceChangePath(root,file);
+  return coherentSourceRead(root,()=>{
+    const current=snapshot(root),dependency=planDependencyEdits(current.checked,path,symbolName,capability,name);
+    const edits=dependency.edits.map(edit=>({...edit,file:relative(root,edit.file).replaceAll('\\','/')}));
+    const plan:ChangeDependencyPlan={format:1,operation:'add-dependency',baseRevision:current.revision,compiler:current.graph.compiler,
+      file,name,symbolName,capability:dependency.capability,symbol:dependency.symbol,headers:dependency.headers,
+      baseDiagnostics:current.checked.diagnostics.map(issue=>({...issue,file:relative(root,issue.file).replaceAll('\\','/')})),
+      scope:[...new Set(edits.map(edit=>edit.file))].sort(),sources:current.graph.sources,configuration:current.graph.configuration,
+      edits,publicDelta:dependency.publicDelta,candidateRevision:'',dependencyMetadata:current.dependencies,coverage:dependency.coverage,
+      boundaries:dependency.boundaries,checked:true,behavioralEvidence:'not-run'};
+    plan.candidateRevision=revision(candidate(root,plan),current.graph.configuration).revision;
+    if(snapshot(root).revision!==current.revision)throw new SourceChangeError('CHANGE_STALE','Source changed while planning dependency propagation. Retry against stable inputs.');
+    return plan;
+  });
+}
+
 export function applyChangePlan(projectRoot:string,input:unknown,options:{checkpoint?:(event:SourceCheckpoint)=>void}={}) {
   const root=sourceChangeRoot(projectRoot),plan=input as ChangePlan;
-  if(!plan||plan.format!==1||!['rename','replace-body'].includes(plan.operation)||typeof plan.file!=='string'||typeof plan.name!=='string'||
-    (plan.operation==='rename'? !Number.isSafeInteger(plan.offset)||plan.offset<0:typeof plan.replacementSource!=='string')||
+  if(!plan||plan.format!==1||!['rename','replace-body','add-dependency'].includes(plan.operation)||typeof plan.file!=='string'||typeof plan.name!=='string'||
+    (plan.operation==='rename'? !Number.isSafeInteger(plan.offset)||plan.offset<0:plan.operation==='replace-body'?typeof plan.replacementSource!=='string':typeof plan.capability!=='string'||typeof plan.symbolName!=='string')||
     !/^[a-f0-9]{64}$/.test(plan.baseRevision)||plan.checked!==true||plan.behavioralEvidence!=='not-run')throw new SourceChangeError('CHANGE_PLAN','Use a supported checked source plan. No source was written.');
   return withSourceWriter(root,()=>{
     const current=snapshot(root),before=current.checked,graph=current.graph;
     if(current.revision!==plan.baseRevision)throw new SourceChangeError('CHANGE_STALE','The source, compiler, configuration or dependency revision differs from the plan. Make and review a fresh plan. No source was written.');
-    const regenerated=plan.operation==='rename'?planChangeRename(root,plan.file,plan.offset,plan.name):planChangeReplaceBody(root,plan.file,plan.name,plan.replacementSource);
+    const regenerated=plan.operation==='rename'?planChangeRename(root,plan.file,plan.offset,plan.name):plan.operation==='replace-body'?planChangeReplaceBody(root,plan.file,plan.name,plan.replacementSource):planChangeDependency(root,plan.file,plan.symbolName,plan.capability,plan.name);
     // Compare the entire review packet: do not trust supplied edits, flags,
     // scope, source claims or public deltas merely because a plan says checked.
     const keys=Object.keys(regenerated).sort();

@@ -67,6 +67,32 @@ exports.run=async()=>{
   const formatting=await vscode.commands.executeCommand('vscode.executeFormatDocumentProvider',main,{tabSize:4,insertSpaces:true});assert.ok(formatting.length>0);
   const formatted=new vscode.WorkspaceEdit();formatted.set(main,formatting);assert.equal(await vscode.workspace.applyEdit(formatted),true);
   assert.ok(document.getText().includes('name="August"'));assert.notEqual(document.getText(),source.replace('name="August"','name = "August"'));await document.save();
+
+  if(!process.env.AUG_EDITOR_RETAINED_COMPILER){
+    const capabilityRoot=path.join(root,'dependency-review');fs.mkdirSync(capabilityRoot);
+    const sources={
+      'main.aug':'import Reader and FixedReader and load from app\nimplement Reader with FixedReader\nprint(value=load())\n',
+      'app.aug':'capability Reader { read() returns int }\nFixedReader() implements Reader { read() { return 4 } }\nfetch(resolve Reader reader) { return reader.read() }\nload() { return fetch() }\n'
+    };
+    for(const [file,content] of Object.entries(sources))fs.writeFileSync(path.join(capabilityRoot,file),content);
+    const app=vscode.Uri.file(path.join(capabilityRoot,'app.aug')),appDocument=await vscode.workspace.openTextDocument(app);
+    await vscode.window.showTextDocument(appDocument);
+    await eventually(()=>vscode.languages.getDiagnostics(app).some(issue=>issue.code==='DI'),'a missing capability header diagnostic');
+    const review=await eventually(async()=>{
+      const actions=await vscode.commands.executeCommand('vscode.executeCodeActionProvider',app,new vscode.Range(appDocument.positionAt(0),appDocument.positionAt(appDocument.getText().length)),vscode.CodeActionKind.QuickFix.value);
+      return actions.find(action=>/Review Reader dependency/.test(action.title));
+    },'a checked dependency review');
+    assert.equal(review.edit,undefined);assert.equal(review.command.command,'augscript.reviewDependency');
+    const preview=await vscode.commands.executeCommand(review.command.command,...review.command.arguments);
+    assert.equal(preview.status,'preview-only');assert.ok(preview.publicDelta.length>0);
+    assert.equal(vscode.window.activeTextEditor.document.uri.scheme,'august-dependency-preview');
+    assert.equal(vscode.window.activeTextEditor.document.isDirty,false);
+    assert.ok(preview.commands[0].includes('plan-dependency'));assert.ok(preview.commands[1].includes('apply'));
+    for(const [file,content] of Object.entries(sources))assert.equal(fs.readFileSync(path.join(capabilityRoot,file),'utf8'),content);
+    assert.equal(appDocument.getText(),sources['app.aug']);
+    await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+    await vscode.window.showTextDocument(document);
+  }
   assert.ok(extension.packageJSON.contributes.breakpoints.some(item=>item.language==='augscript'));
   fs.writeFileSync(process.env.AUG_EDITOR_REPORT,JSON.stringify({passed:true,extensionPath:extension.extensionPath,language:true,completion:true,hover:true,navigation:true,unsavedDiagnostics:true,quickFix:true,inlayHints:true,testDiscovery:true,formatting:true,setupReport:hasDoctor,setupRecovery:hasDoctor})+'\n');
 };

@@ -30,6 +30,8 @@ export interface EditorItem {
   kind: 'class' | 'interface' | 'interceptor' | 'function' | 'method' | 'property' |
     'variable' | 'parameter' | 'keyword' | 'type' | 'snippet' | 'composition';
   declarationKind?: Definition['node']['kind'];
+  /** Resolved import identity; spelling alone is not enough for mechanical edits. */
+  definitionId?: string;
   detail: string;
   documentation?: string;
   signature?: string;
@@ -425,7 +427,7 @@ export function importItems(checked: CheckedProject, file: SourceFile): EditorIt
       if (item.kind !== 'class' && item.kind !== 'interface' && item.kind !== 'function' && item.kind !== 'interceptor' && item.kind !== 'composition' && item.kind !== 'choice') continue;
       if (isPrivateName(item.name)) continue;
       if(project.config.strict_modules&&basename(file.path)!=='export.aug'&&!sibling.builtin&&!sibling.package&&!project.files.get(join(currentFolder,'export.aug'))?.items.some(entry=>entry.kind==='export'&&entry.name===item.name&&entry.from===from))continue;
-      items.push({ label: item.name, kind: 'snippet', declarationKind:item.kind,
+      items.push({ label: item.name, kind: 'snippet', declarationKind:item.kind, definitionId:project.scopes.get(sibling.path)?.get(item.name)?.id,
         detail: `import ${item.name} from ${from}`, insertText: `${item.name} from ${from}`,
         signature: definitionItem(checked, project.scopes.get(sibling.path)!.get(item.name)!).signature,
         parameters: definitionItem(checked, project.scopes.get(sibling.path)!.get(item.name)!).parameters,
@@ -465,7 +467,7 @@ export function importItems(checked: CheckedProject, file: SourceFile): EditorIt
       if (item.kind !== 'export' || item.internal || item.folder) continue;
       if (isPrivateName(item.name) || (item.from && isPrivateName(item.from))) continue;
       const exported = project.scopes.get(join(folder, `${item.from}.aug`))?.get(item.name);
-      items.push({ label: item.name, kind: 'snippet', declarationKind:exported?.node.kind,
+      items.push({ label: item.name, kind: 'snippet', declarationKind:exported?.node.kind, definitionId:exported?.id,
         detail: `import ${item.name} from ${from}`, insertText: `${item.name} from ${from}`,
         signature: exported && definitionItem(checked, exported).signature,
         parameters: exported && definitionItem(checked, exported).parameters,
