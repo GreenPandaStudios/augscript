@@ -44,7 +44,7 @@ sequenceDiagram
     participant p5 as snapshot.get
     participant p6 as chunk.append
     participant p7 as wave.append
-    participant p8 as _mapWorkerChunk
+    participant p8 as Specialized chunk worker
     participant p9 as results.append
     p0->>p1: values.length()
     opt Left is false
@@ -90,8 +90,8 @@ sequenceDiagram
     rect rgb(245, 240, 241)
     Note over p0: Enter task scope
     loop Each selected item
-    p0-)p8: _mapWorkerChunk(values, transformation) · start asynchronously
-    Note over p0: Worker starts with an isolated heap and copied data
+    p0-)p8: Copy chunk to an isolated heap · start asynchronously
+    Note over p0: Compile-time selected transformation becomes a direct call#59; only chunk data crosses the heap boundary
     end
     Note over p0: Wait for jobs#59; failure cancels siblings and cleanup joins
     loop For each item in completed
@@ -116,15 +116,15 @@ sequenceDiagram
 
 ### \_mapWorkerChunk
 
-[Source](workers.aug#L49)
+[Source](workers.aug#L52)
 
 ```mermaid
 sequenceDiagram
     participant p0 as _mapWorkerChunk
-    participant p1 as Transformation.apply
+    participant p1 as Selected transformation
     participant p2 as results.append
     loop For each item in values
-    p0->>p1: apply(value) · interface dispatch
+    p0->>p1: Direct call with value#59; target selected at compile time
     rect rgb(245, 240, 241)
     Note over p0: Enter borrow scope
     p0->>p2: results.append(value)

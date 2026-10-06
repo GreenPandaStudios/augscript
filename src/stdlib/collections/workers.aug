@@ -46,6 +46,9 @@ mapWorkers<T implements optional Data, U implements optional Data>(List<T> value
 
 // The compiler specializes this private entry with a direct call to the named
 // transformation. Only the chunk crosses the heap boundary, never the interface.
+/** Compiler template specialized for each named transformation before native lowering.
+ * The generated worker entry receives copied chunk data. Compilation replaces transformation.apply with a direct call.
+ */
 _mapWorkerChunk<T implements optional Data, U implements optional Data>(List<T> values, Transformation<T, U> transformation) returns List<U>:
     List<U> results = []
     for value in values:

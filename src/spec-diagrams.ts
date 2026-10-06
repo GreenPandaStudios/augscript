@@ -1,3 +1,4 @@
+import {workerMapTemplate} from './worker-mapping.ts';
 import {dirname,join,relative} from 'node:path';
 import {realpathSync} from 'node:fs';
 import {expressionChildren,initializationOf,isStatement,type ClassDecl,type Expr,type MethodDecl,type SourceFile,type Span,type Stmt} from './ast.ts';
@@ -186,6 +187,15 @@ class SequenceWriter {
       this.block('loop Bounded chunk wave',()=>{this.message(mapping.transformation.id,mapping.transformation.name,'Transform each copied value once',true);this.note('Wait in input order; join this wave before starting the next; failure cancels and joins admitted jobs');});return;
     }
     if(expr.kind==='lambda'){this.note('Create callback; its body runs when invoked: '+this.text(expr));return;}
+    if(expr.kind==='start'&&expr.worker&&expr.call.kind==='call'&&expr.call.callee.kind==='name'){
+      const target=this.checked.project.scopes.get(this.file.path)?.get(expr.call.callee.name);
+      if(workerMapTemplate(this.checked.project,target)&&target?.name==='_mapWorkerChunk'){
+        const index=this.checked.callPlans.get(expr.call)?.sourceIndices[0];
+        if(index!==undefined)this.expression(expr.call.args[index]);
+        this.message(target.id,'Specialized chunk worker','Copy '+(index===undefined?'chunk data':this.text(expr.call.args[index]))+' to an isolated heap',true);
+        this.note('Compile-time selected transformation becomes a direct call; only chunk data crosses the heap boundary');return;
+      }
+    }
     if(expr.kind==='start'){this.expression(expr.call,true);this.note(expr.worker?'Worker starts with an isolated heap and copied data':'Task starts in the current scope');return;}
     if(expr.kind==='wait'){expr.tasks.forEach(task=>this.expression(task));this.note('Wait for '+expr.tasks.map(task=>this.text(task)).join(' and ')+'; failure cancels siblings and cleanup joins');return;}
     if(expr.kind==='binary'&&(expr.op==='&&'||expr.op==='||'||expr.op==='otherwise')){
@@ -207,6 +217,9 @@ class SequenceWriter {
     }
     if(expr.kind==='resolve'){this.note('Resolve '+expr.name+' from the declared composition');return;}
     if(expr.kind!=='call')return;
+    if(expr.callee.kind==='member'&&expr.callee.object.kind==='name'&&expr.callee.object.name==='transformation'&&expr.callee.name==='apply'&&workerMapTemplate(this.checked.project,this.checked.project.scopes.get(this.file.path)?.get('_mapWorkerChunk'))){
+      this.message('selected-transformation','Selected transformation','Direct call with '+this.text(expr.args[0])+'; target selected at compile time');return;
+    }
     const resolved=this.checked.resolvedCalls.get(expr),id=resolved&&this.ids.get(resolved.node);
     const plan=this.checked.callPlans.get(expr);
     const inputs=expr.args.map((_,index)=>{const param=resolved?.params.find((_,parameter)=>plan?.sourceIndices[parameter]===index);return expr.argLabels[index]??(param?.label??param?.name)??'input '+(index+1);}).join(', ');

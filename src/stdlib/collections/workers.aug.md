@@ -2,7 +2,7 @@
 
 # `workers.aug`
 
-<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=a6a55636deef4b27606cc18cec0e90992ed6e2fe0c97488806b695cfde556c53 -->
+<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=a8f58f5d8d855c00030697757effe254c6bf5404bc8fd1db1df8ff73a89842a4 -->
 
 [Interactions and sequences](workers.aug.diagrams.md)
 
@@ -20,7 +20,7 @@ For each `value` in a snapshot of `values`, with temporary permission to change 
 
 It sets `count` to `0`. While `count` is less than `concurrency` and `offset` is less than `length`, it sets `chunk` of type `List<T>` to a list with no items. While the number of elements in `chunk` is less than `chunkSize` and `offset` is less than `length`, it sets `value` to the item at index `offset` in `snapshot`. With temporary permission to change `chunk`, it appends `value` to `chunk`. [source](workers.aug#L27-L37)
 
-It increases `offset` by `1`. After the loop, with temporary permission to change `wave`, it appends `chunk` to `wave`. It increases `count` by `1`. After the loop, within a task and ownership scope, it sets `jobs` to a new list of a worker task running [`_mapWorkerChunk`](workers.aug.md#symbol-_mapWorkerChunk) with `values` from `chunk` and `transformation` with copies of its inputs on a separate heap for each item in a snapshot of `wave`, binding `chunk`. [source](workers.aug#L34-L44)
+It increases `offset` by `1`. After the loop, with temporary permission to change `wave`, it appends `chunk` to `wave`. It increases `count` by `1`. After the loop, within a task and ownership scope, it sets `jobs` to a new list of a specialized worker task applying the compile-time selected transformation to copies of `chunk` on a separate heap; only chunk data crosses the heap boundary for each item in a snapshot of `wave`, binding `chunk`. [source](workers.aug#L34-L44)
 
 It sets `completed` to the result of waiting for `jobs`; propagate failures. For each `chunk` in a snapshot of `completed`, for each `value` in a snapshot of `chunk`, with temporary permission to change `results`, it appends `value` to `results`. On leaving this scope, join its child tasks and release its local values. After the loop, it returns a new list of `value` for each item in a snapshot of `results`, binding `value`. [source](workers.aug#L25-L45)
 
@@ -39,11 +39,16 @@ Admission or cancellation joins already admitted jobs before leaving the current
 </details>
 
 <a id="symbol-_mapWorkerChunk"></a>
-## `_mapWorkerChunk` · [source](workers.aug#L49)
+## `_mapWorkerChunk` · [source](workers.aug#L52)
 
-It is private to its defining scope. It takes `values` as `List<T>` and `transformation` as [`Transformation<T,U>`](operations.aug.md#symbol-Transformation).
+It is private to its defining scope.
 
-It sets `results` of type `List<U>` to a list with no items. For each `value` in a snapshot of `values`, it sets `transformed` to [`transformation.apply`](operations.aug.md#symbol-Transformation.apply) with `value`. With temporary permission to change `results`, it appends `transformed` to `results`. After the loop, it returns `results`. [source](workers.aug#L50-L55)
+Compiler template specialized for each named transformation before native lowering.
+The generated worker entry receives copied chunk data. Compilation replaces transformation.apply with a direct call.
+
+It takes `values` as `List<T>` and `transformation` as [`Transformation<T,U>`](operations.aug.md#symbol-Transformation).
+
+It sets `results` of type `List<U>` to a list with no items. For each `value` in a snapshot of `values`, it sets `transformed` to the compile-time selected transformation called directly with `value`. With temporary permission to change `results`, it appends `transformed` to `results`. After the loop, it returns `results`. [source](workers.aug#L53-L58)
 
 <details>
 <summary>Checked interface</summary>
@@ -58,6 +63,6 @@ The type parameters are `T` which must satisfy `optional Data` and `U` which mus
 
 ## Dependencies
 
-It uses [`Transformation`](operations.aug.md#symbol-Transformation) ([`apply`](operations.aug.md#symbol-Transformation.apply)) from `operations`.
+It uses [`Transformation`](operations.aug.md#symbol-Transformation) from `operations`.
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).

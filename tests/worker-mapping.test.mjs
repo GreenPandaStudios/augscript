@@ -7,6 +7,7 @@ import {spawnSync} from './compiler-process.mjs';
 import {loadProject} from '../src/project.ts';
 import {checkProject} from '../src/checker.ts';
 import {lowerToIR} from '../src/ir.ts';
+import {generateSpecs} from '../src/spec.ts';
 const cli=resolve('bin/aug.mjs');
 function fixture(main,functions,run){const root=mkdtempSync(join(tmpdir(),'aug-worker-map-'));try{writeFileSync(join(root,'main.aug'),main);writeFileSync(join(root,'rules.aug'),functions);return run(root);}finally{rmSync(root,{recursive:true,force:true});}}
 const double='double(int value) returns int:\n    return value * 2\n';
@@ -297,3 +298,14 @@ for(const backend of ['c','llvm'])test(`specialization retains immutable collect
 test('caught nested mapping is still a reachable scheduling operation and cannot be a transformation',()=>fixture('import mapWorkers from august.collections\nimport nested from rules\ntry:\n    mapWorkers(values=[1], concurrency=1, chunkSize=1, transformation=nested)\ncatch Error error:\n    pass\n','import mapWorkers from august.collections\nleaf(int value) returns int:\n    return value\nnested(int value) returns int:\n    try:\n        result = mapWorkers(values=[value], concurrency=1, chunkSize=1, transformation=leaf)\n        return result.get(index=0)\n    catch Error error:\n        return 0\n',root=>{
  const diagnostics=checkProject(loadProject(root)).diagnostics;assert.ok(diagnostics.some(issue=>issue.code==='WORKER'&&issue.message.includes('another worker mapping')),JSON.stringify(diagnostics));
 }));
+
+test('the compiled library template explains static data-only worker transfer',()=>{
+ const checked=checkProject(loadProject(resolve('src/stdlib/collections')));
+ const outputs=generateSpecs(checked,{files:[...checked.project.files.values()].filter(file=>file.path.startsWith(checked.project.root+'/'))});
+ const output=outputs.find(item=>item.path.endsWith('/workers.aug.md'));
+ const diagram=outputs.find(item=>item.path.endsWith('/workers.aug.diagrams.md'));
+ assert.match(diagram.text,/only chunk data crosses/);assert.match(diagram.text,/Direct call with value(?:;|#59;) target selected at compile time/);
+ assert.doesNotMatch(diagram.text,/_mapWorkerChunk\(values, transformation\)|apply\(value\) · interface dispatch/);
+ assert.match(output.text,/compile-time selected transformation/);assert.match(output.text,/only chunk data crosses/);
+ assert.doesNotMatch(output.text,/transformation.*with copies of its inputs on a separate heap/);
+});

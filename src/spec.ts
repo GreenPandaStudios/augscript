@@ -1,3 +1,4 @@
+import {workerMapTemplate} from './worker-mapping.ts';
 import { lex } from './lexer.ts';
 import {generateDiagrams} from './spec-diagrams.ts';
 import { defaultText } from './parameters.ts';
@@ -386,6 +387,8 @@ class SpecWriter {
       case 'call': {
         if (expr.indexed && expr.callee.kind === 'member')
           return `the value at ${this.expression(expr.args[0])} in ${this.expression(expr.callee.object)}`;
+        if(expr.callee.kind==='member'&&expr.callee.object.kind==='name'&&expr.callee.object.name==='transformation'&&expr.callee.name==='apply'&&workerMapTemplate(this.checked.project,this.definition('_mapWorkerChunk')))
+          return 'the compile-time selected transformation called directly with '+this.expression(expr.args[0]);
         const action=this.call(expr);
         const known=this.knownValue(expr);if(known)return known;
         if(expr.callee.kind==='member') {
@@ -401,7 +404,17 @@ class SpecWriter {
         return action.startsWith('construct ')?(/^[AEIOU]/i.test(name)?'an ':'a ')+action.slice('construct '.length):
           action.startsWith('call ')?action.slice('call '.length):action;
       }
-      case 'start':return expr.worker ? `a worker task running ${this.expression(expr.call)} with copies of its inputs on a separate heap` : `a child task running ${this.expression(expr.call)} with its inputs captured now`;
+      case 'start': {
+        if(expr.worker&&expr.call.kind==='call'&&expr.call.callee.kind==='name'){
+          const target=this.definition(expr.call.callee.name);
+          if(workerMapTemplate(this.checked.project,target)&&target?.name==='_mapWorkerChunk'){
+            this.use(target);
+            const index=this.checked.callPlans.get(expr.call)?.sourceIndices[0],values=index===undefined?'the chunk':this.expression(expr.call.args[index]);
+            return `a specialized worker task applying the compile-time selected transformation to copies of ${values} on a separate heap; only chunk data crosses the heap boundary`;
+          }
+        }
+        return expr.worker ? `a worker task running ${this.expression(expr.call)} with copies of its inputs on a separate heap` : `a child task running ${this.expression(expr.call)} with its inputs captured now`;
+      }
       case 'wait':return `the result of waiting for ${expr.tasks.map(task=>this.expression(task)).join(' and ')}${expr.tasks.length>1?' in input order':''}; propagate failures`;
       case 'handle': {const plan=this.checked.actions.get(expr), endpoint=plan?.endpoint.node.kind==='function'?plan.endpoint.node.endpoint:undefined;
         const captures=expr.call.kind==='call'?expr.call.args.filter(value=>value.kind!=='formInput').map(value=>this.expression(value)):[];
