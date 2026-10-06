@@ -1,7 +1,9 @@
+import {planDependencyEdits} from './dependency-edits.ts';
+import {tyKey} from './types.ts';
 import {checkedProjectWithTests} from './refactoring.ts';
 import {defaultText} from './parameters.ts';
 import type {Config} from './config.ts';
-import { resolve } from 'node:path';
+import { relative, resolve } from 'node:path';
 import { typeName, type Diagnostic, type Expr, type MethodDecl, type SourceFile, type Stmt, type TypeRef } from './ast.ts';
 import {type CheckedProject} from './checker.ts';
 import { completions, hoverInfo, importItems } from './editor.ts';
@@ -26,6 +28,10 @@ export interface EditorFix {
   preferred?: boolean;
   /** Observable consequence shown with the proposed edit. */
   description?: string;
+  /** Preview only: source acceptance requires the revision-checked CLI transaction. */
+  review?: Pick<ReturnType<typeof planDependencyEdits>,'headers'|'publicDelta'|'coverage'|'boundaries'> & {
+    request:{file:string;symbol:string;capability:string;name:string};
+  };
 }
 
 /** Preserve the candidate's parsed meaning while adapting its complete file to project style. */
@@ -139,6 +145,22 @@ export function suggestedFixes(checked: CheckedProject, fileName: string): Edito
   const file = checked.project.files.get(resolve(fileName));
   if (!file) return [];
   const fixes: EditorFix[] = syntaxFixes(file,checked.diagnostics);
+  const seenDependencies=new Set<string>();
+  for(const needs of checked.missingInjections.values())for(const need of needs) {
+    if(need.call.span.file!==file.path||need.type.def?.node.kind!=='interface'||!need.type.def.node.capability)continue;
+    const key=need.callable.span.start+':'+tyKey(need.type);if(seenDependencies.has(key))continue;seenDependencies.add(key);
+    const owner=need.owner?.node.kind==='class'?need.owner.node:undefined;
+    const symbol=owner?owner.name+'.'+need.callable.name:need.callable.name;
+    const issue=checked.diagnostics.find(issue=>issue.file===file.path&&issue.code==='DI'&&issue.line===need.call.span.line&&issue.column===need.call.span.column);
+    if(!issue)continue;
+    try {
+      const plan=planDependencyEdits(checked,file.path,symbol,tyKey(need.type));
+      const {headers,publicDelta,coverage,boundaries}=plan;
+      fixes.push({title:'Review '+tyName(need.type)+' dependency and callers',issue,edits:plan.edits,
+        description:'Preview explicit resolve inputs and legal imports in '+headers.length+' headers and '+publicDelta.length+' public contract changes. Save project buffers, then plan and apply with aug change for revision checks. Existing provider choices and function bodies are preserved; independent behavior tests have not run.',
+        review:{headers,publicDelta,coverage,boundaries,request:{file:relative(checked.project.root,file.path).replaceAll('\\','/'),symbol,capability:plan.capability,name:headers.find(header=>header.symbol===plan.symbol)!.name}}});
+    }catch { /* An unresolved boundary or rejected candidate supplies no mechanical fix. */ }
+  }
   const syntaxIssue = checked.diagnostics.find(issue => issue.file === file.path && issue.code === 'SYNTAX');
   if (syntaxIssue) {
     try {

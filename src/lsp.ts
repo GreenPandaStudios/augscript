@@ -69,13 +69,13 @@ export async function runLanguageServer(root: string): Promise<number> {
         const previous = open.get(uri);
         if (!previous || params.version >= previous.version) open.set(uri, { text: params.text, version: params.version });
       }
-      const view = document(uri,['references','graph','rename'].includes(params.command)||params.options?.context===true), offset = params.offset ?? 0;
+      const view = document(uri,['references','graph','rename','fixes'].includes(params.command)||params.options?.context===true), offset = params.offset ?? 0;
       result = params.command === 'hover' ? view.hover(offset) ?? null : params.command === 'complete' ? view.complete(offset) :
         params.command === 'rename' ? view.rename(offset,params.options?.name) : params.command === 'references' ? view.references(offset,params.options?.includeDeclaration!==false).map(item=>({...item,file:view.referenceTarget(item.file)})) : params.command === 'graph' ? view.graph() : params.command === 'fixes' ? view.fixes() : params.command === 'semantic-tokens' ? view.tokens() :
           params.command === 'inlay-hints' ? view.inlayHints(params.options?.start, params.options?.end,params.options) :
           params.command === 'format' ? view.format() : params.command === 'definition' ? view.definition(offset) ?? null : params.command === 'diagnostics' ? view.diagnostics.map(issue => ({ ...issue, help: diagnosticHelp[issue.code] })) : view.describe(params.options);
     } else if (message.method.startsWith('textDocument/')) {
-      const view = document(params.textDocument.uri,['textDocument/references','textDocument/rename','textDocument/prepareRename'].includes(message.method));
+      const view = document(params.textDocument.uri,['textDocument/references','textDocument/rename','textDocument/prepareRename','textDocument/codeAction'].includes(message.method));
       const offset = params.position ? offsetAt(view.source, params.position) : 0;
       if (message.method === 'textDocument/hover') {
         const hover = view.hover(offset); result = hover ? { contents: { kind: 'markdown', value: `\`\`\`augscript\n${hover.detail}\n\`\`\`\n\n${hover.documentation ?? ''}` } } : null;
@@ -112,6 +112,10 @@ export async function runLanguageServer(root: string): Promise<number> {
       else if (message.method === 'textDocument/formatting') result = [{ range: { start: { line: 0, character: 0 }, end: positionAt(view.source, view.source.length) }, newText: view.format() }];
       else if (message.method === 'textDocument/codeAction') result = view.fixes().filter(fix =>
         !params.range || fix.issue.line - 1 >= params.range.start.line && fix.issue.line - 1 <= params.range.end.line).map(fix => {
+        if(fix.review)return {title:fix.title,kind:'quickfix',
+          disabled:{reason:'Save project buffers, then use aug change plan-dependency and aug change apply for revision-checked source acceptance.'},
+          data:{revision:view.revision,review:fix.review,candidateEdits:fix.edits},
+          diagnostics:[{code:fix.issue.code,message:fix.issue.message,range:{start:{line:fix.issue.line-1,character:fix.issue.column-1},end:{line:fix.issue.line-1,character:fix.issue.column}}}]};
         const changes: Record<string, { range: unknown; newText: string }[]> = {};
         for (const edit of fix.edits) { const source = workspace.document(edit.file).source, uri = pathToFileURL(edit.file).href;
           (changes[uri] ??= []).push({ range: { start: positionAt(source, edit.start), end: positionAt(source, edit.end) }, newText: edit.text }); }

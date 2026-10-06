@@ -4,6 +4,8 @@
 
 - Generate deterministic Mermaid project, class, API-call and sequence views with compiled specs; link the wiki examples from overview to source.
 
+- Preview checked capability header repairs across the whole unsaved project, with caller edits and public contract review. Acceptance uses a fresh saved CLI plan and its checked transaction.
+
 - Keep argument-label repairs available when Problems shows the language server’s accepted input labels, including clean installs and upgrades.
 
 - Link borrow, move and task-capture conflicts to checked source in Problems, including unsaved edits. Preserve specific ownership rules and conservative access fragments in diagnostic data.

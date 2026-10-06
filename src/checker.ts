@@ -52,6 +52,10 @@ export interface InterfaceMethod {
 
 export interface ResolvedName { name:string; definition:Span; global?:string; property?:boolean; parameter?:Param; declaration?:Definition }
 export interface ResolvedCall { node:MethodDecl | ClassDecl; params:Param[]; dispatch:'direct' | 'interface' }
+export interface MissingInjection {
+  call: Extract<Expr,{kind:'call'}>; parameter: Param; type: Ty; callable: MethodDecl; owner?: Definition;
+}
+
 export interface CheckedProject {
   project: Project;
   diagnostics: Diagnostic[];
@@ -62,6 +66,8 @@ export interface CheckedProject {
   patternFields:WeakMap<RecordBindingField,{owner:Definition;field:Param;index:number}>;
   resolvedNames: WeakMap<Expr, ResolvedName>;
   resolvedCalls: WeakMap<Expr, ResolvedCall>;
+  /** Resolved unsatisfied header requirements, retained for checked dependency edits. */
+  missingInjections: Map<Expr, MissingInjection[]>;
   resolvedTypes: WeakMap<TypeRef, Ty>;
   errorMatches: WeakMap<TypeRef, ErrorMatch>;
   defaults: Map<string, Map<string, InterfaceMethod>>;
@@ -193,6 +199,7 @@ class Checker {
   readonly patternFields=new WeakMap<RecordBindingField,{owner:Definition;field:Param;index:number}>();
   readonly resolvedNames = new WeakMap<Expr, ResolvedName>();
   readonly resolvedCalls = new WeakMap<Expr, ResolvedCall>();
+  readonly missingInjections = new Map<Expr, MissingInjection[]>();
   readonly resolvedTypes = new WeakMap<TypeRef, Ty>();
   readonly errorMatches = new WeakMap<TypeRef, ErrorMatch>();
   readonly defaults = new Map<string, Map<string, InterfaceMethod>>();
@@ -351,7 +358,7 @@ class Checker {
     this.effectContracts.clear();
     for (const [method, contract] of declarationEffects) this.effectContracts.set(method, contract);
     const checked:CheckedProject = { project: this.project, diagnostics: this.diagnostics, bindings: this.bindings,
-      expressionTypes: this.expressionTypes, functionValues:this.functionValues, patternTypes:this.patternTypes, patternFields:this.patternFields, resolvedNames:this.resolvedNames, resolvedCalls:this.resolvedCalls, resolvedTypes:this.resolvedTypes, errorMatches:this.errorMatches, defaults: this.defaults, interfaceMembers:this.interfaceMembers, callPlans: this.callPlans,
+      expressionTypes: this.expressionTypes, missingInjections:this.missingInjections, functionValues:this.functionValues, patternTypes:this.patternTypes, patternFields:this.patternFields, resolvedNames:this.resolvedNames, resolvedCalls:this.resolvedCalls, resolvedTypes:this.resolvedTypes, errorMatches:this.errorMatches, defaults: this.defaults, interfaceMembers:this.interfaceMembers, callPlans: this.callPlans,
       interceptorPlans: this.interceptorPlans, effectContracts: this.effectContracts, callableContracts: this.callableContracts, constructorContracts: this.constructorContracts, parameterTypes:this.parameterTypes,
       expressionOrigins: this.expressionOrigins, inferredOwned:this.inferredOwned, scopes: this.scopes, markupCalls: this.markupCalls, actions:this.actions, httpPolicies:this.httpPolicies, native:this.native };
     this.diagnostics.push(...moduleSurfaceDiagnostics(checked));
@@ -1015,7 +1022,7 @@ class Checker {
       this.checkDefault(field, def.file, params);
       if (names.has(field.name)) this.report(field.span, `Duplicate field ${field.name}`);
       names.add(field.name);
-      this.resolveType(field.type, def.file, params);
+      this.parameterTypes.set(field, this.resolveType(field.type, def.file, params));
       if(this.resolveType(field.type,def.file,params).kind==='resource'&&field.ownership!=='own')
         this.report(field.span,'Native resource fields require own ownership','OWN');
       if (cls.record && (field.mutable || field.injected || field.ownership !== 'managed'))
@@ -2947,6 +2954,7 @@ class Checker {
 
   private planInjections(expr: Extract<Expr, { kind: 'call' }>, params: Param[],
                          file: string, types: Map<string, Ty>, plan: CallPlan, context: Context): void {
+    this.missingInjections.delete(expr);
     params.forEach((param, index) => {
       if (!param.injected) return;
       const type = this.resolveType(param.type, file, types);
@@ -2958,6 +2966,11 @@ class Checker {
         if (context.owner && 'fields' in context.owner.node) for (const field of context.owner.node.fields.filter(field => field.injected))
           candidates.push({ name: `self.${field.name}`, type: this.resolveType(field.type, context.owner.file, context.types) });
         const matches = candidates.filter(candidate => this.assignable(candidate.type, type));
+        if (!matches.length && !this.inferring) {
+          const needs=this.missingInjections.get(expr) ?? [];
+          needs.push({call:expr,parameter:param,type,callable:context.callable,owner:context.owner});
+          this.missingInjections.set(expr,needs);
+        }
         if (matches.length !== 1) this.report(expr.span, matches.length ?
           `Ambiguous header dependencies for ${tyName(type)}; pass an ordinary labeled input` :
           `Declare a resolve ${tyName(type)} dependency in ${context.callable.name}'s header`, 'DI');

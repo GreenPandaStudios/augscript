@@ -3,7 +3,8 @@ import {initNativePackage} from './native-init.ts';
 import {BodyEditError,sourceUnitLimit} from './body-edits.ts';
 import {SourceChangeError} from './source-transactions.ts';
 import {projectComparison} from './project-comparison.ts';
-import {planChangeRename,planChangeRenameSymbol,planChangeReplaceBody,applyChangePlan, type ChangePlan } from './checked-changes.ts';
+import {DependencyEditError} from './dependency-edits.ts';
+import {planChangeRename,planChangeRenameSymbol,planChangeReplaceBody,planChangeDependency,applyChangePlan, type ChangePlan } from './checked-changes.ts';
 import {recordBindingDefinition} from './binding-patterns.ts';
 import {pruneTestCompilations} from './test-compilation-cache.ts';
 import {inspectCaches} from './cache-management.ts';
@@ -124,6 +125,7 @@ function usage(): void {
     `Composition: aug graph [PROJECT] --composition [--case TEST_ID] [--json|--mermaid] — inspect existing application or test wiring\n` +
     `References: aug references [project directory] --file path --offset character; aug graph [project directory] --file path\n` +
     `Checked edits: aug change plan-rename [PROJECT] --file FILE (--symbol FUNCTION[.INPUT]|--offset N) --name NAME [--out PLAN] [--json]; aug change apply [PROJECT] --plan PLAN; aug change recover [PROJECT]\n` +
+    `Dependency edits: aug change plan-dependency [PROJECT] --file FILE --symbol CALLABLE --capability TYPE --name INPUT [--out PLAN] [--json]\n` +
     `Body edits: aug change plan-replace-body [PROJECT] --file FILE --symbol FUNCTION --source SOURCE_UNIT [--out PLAN] [--json]\n` +
     `Checked changes: aug change <plan|check|apply> PROJECT request-or-plan.json; aug change recover PROJECT\n` +
     `Bounded checks: aug evidence <run|replay> PROJECT generator-or-record.json\n` +
@@ -177,21 +179,21 @@ export async function main(argv: string[]): Promise<number> {
     const operation=argv[1],values=new Map<string,string>(),flags=new Set<string>();let path:string|undefined;
     for(let index=2;index<argv.length;index++) {
       const arg=argv[index];
-      if(['--file','--offset','--symbol','--name','--source','--out','--plan'].includes(arg)) {
+      if(['--file','--offset','--symbol','--name','--source','--capability','--out','--plan'].includes(arg)) {
         if(values.has(arg)||!argv[index+1]||argv[index+1].startsWith('--')){process.stderr.write(arg+' needs one value.\n');return 2;}
         values.set(arg,argv[++index]);
       }else if(arg==='--json') {
         if(flags.has(arg)){process.stderr.write('Duplicate change option: '+arg+'\n');return 2;}flags.add(arg);
-      }else if(arg.startsWith('-')||path){process.stderr.write('Use aug change plan-rename|plan-replace-body|apply|recover [PROJECT] with the operation options.\n');return 2;}
+      }else if(arg.startsWith('-')||path){process.stderr.write('Use aug change plan-rename|plan-replace-body|plan-dependency|apply|recover [PROJECT] with the operation options.\n');return 2;}
       else path=arg;
     }
-    const allowed=operation==='plan-rename'?['--file','--offset','--symbol','--name','--out']:operation==='plan-replace-body'?['--file','--symbol','--source','--out']:operation==='apply'?['--plan']:operation==='recover'?[]:undefined;
-    if(!allowed||[...values.keys()].some(key=>!allowed.includes(key))||operation==='plan-rename'&&(!values.has('--file')||values.has('--offset')===values.has('--symbol')||!values.has('--name'))||operation==='plan-replace-body'&&(!values.has('--file')||!values.has('--symbol')||!values.has('--source'))||operation==='apply'&&!values.has('--plan')) {
-      process.stderr.write('Use aug change plan-rename [PROJECT] --file FILE (--symbol FUNCTION[.INPUT]|--offset N) --name NAME [--out PLAN] [--json]\nOr aug change plan-replace-body [PROJECT] --file FILE --symbol FUNCTION --source SOURCE_UNIT [--out PLAN] [--json]\nOr aug change apply [PROJECT] --plan PLAN [--json]\nOr aug change recover [PROJECT] [--json]\n');return 2;
+    const allowed=operation==='plan-rename'?['--file','--offset','--symbol','--name','--out']:operation==='plan-replace-body'?['--file','--symbol','--source','--out']:operation==='plan-dependency'?['--file','--symbol','--capability','--name','--out']:operation==='apply'?['--plan']:operation==='recover'?[]:undefined;
+    if(!allowed||[...values.keys()].some(key=>!allowed.includes(key))||operation==='plan-rename'&&(!values.has('--file')||values.has('--offset')===values.has('--symbol')||!values.has('--name'))||operation==='plan-replace-body'&&(!values.has('--file')||!values.has('--symbol')||!values.has('--source'))||operation==='plan-dependency'&&(!values.has('--file')||!values.has('--symbol')||!values.has('--capability')||!values.has('--name'))||operation==='apply'&&!values.has('--plan')) {
+      process.stderr.write('Use aug change plan-rename [PROJECT] --file FILE (--symbol FUNCTION[.INPUT]|--offset N) --name NAME [--out PLAN] [--json]\nOr aug change plan-replace-body [PROJECT] --file FILE --symbol FUNCTION --source SOURCE_UNIT [--out PLAN] [--json]\nOr aug change plan-dependency [PROJECT] --file FILE --symbol CALLABLE --capability TYPE --name INPUT [--out PLAN] [--json]\nOr aug change apply [PROJECT] --plan PLAN [--json]\nOr aug change recover [PROJECT] [--json]\n');return 2;
     }
     const root=resolve(path??process.cwd());
     try {
-      if(operation==='plan-rename'||operation==='plan-replace-body') {
+      if(operation==='plan-rename'||operation==='plan-replace-body'||operation==='plan-dependency') {
         let sourceUnit:string|undefined;
         if(operation==='plan-replace-body') {
           const sourcePath=resolve(root,values.get('--source')!),stat=statSync(sourcePath);
@@ -201,7 +203,7 @@ export async function main(argv: string[]): Promise<number> {
           try{sourceUnit=new TextDecoder('utf-8',{fatal:true,ignoreBOM:true}).decode(bytes);}catch{throw new SourceChangeError('CHANGE_SOURCE_UNIT','Source unit must contain valid UTF-8 text.');}
         }
         if(values.has('--offset')&&!/^\d+$/.test(values.get('--offset')!))throw new Error('CHANGE_PLAN: --offset must be a nonnegative source offset.');
-        const plan=operation==='plan-replace-body'?planChangeReplaceBody(root,values.get('--file')!,values.get('--symbol')!,sourceUnit!):values.has('--symbol')?planChangeRenameSymbol(root,values.get('--file')!,values.get('--symbol')!,values.get('--name')!):
+        const plan=operation==='plan-dependency'?planChangeDependency(root,values.get('--file')!,values.get('--symbol')!,values.get('--capability')!,values.get('--name')!):operation==='plan-replace-body'?planChangeReplaceBody(root,values.get('--file')!,values.get('--symbol')!,sourceUnit!):values.has('--symbol')?planChangeRenameSymbol(root,values.get('--file')!,values.get('--symbol')!,values.get('--name')!):
           planChangeRename(root,values.get('--file')!,Number(values.get('--offset')),values.get('--name')!);
         if(values.has('--out')) {
           const output=resolve(root,values.get('--out')!);
@@ -209,7 +211,7 @@ export async function main(argv: string[]): Promise<number> {
           writeFileSync(output,JSON.stringify(plan,null,2)+'\n',{flag:'wx',mode:0o600});
         }
         if(flags.has('--json'))process.stdout.write(JSON.stringify(plan)+'\n');
-        else {process.stdout.write(plan.operation==='rename'?`Checked rename plan ${plan.symbol} to ${plan.name}; revision ${plan.baseRevision}.\n`:`Checked body replacement for ${plan.symbol}; revision ${plan.baseRevision}.\n`);
+        else {process.stdout.write(plan.operation==='rename'?`Checked rename plan ${plan.symbol} to ${plan.name}; revision ${plan.baseRevision}.\n`:plan.operation==='add-dependency'?`Checked dependency plan for ${plan.symbol}; revision ${plan.baseRevision}.\n`:`Checked body replacement for ${plan.symbol}; revision ${plan.baseRevision}.\n`);
           for(const file of plan.scope)process.stdout.write(`${file}: ${plan.edits.filter(edit=>edit.file===file).length} resolved edits.\n`);
           process.stdout.write(`${plan.publicDelta.length} public contract deltas. Independent behavioral checks were not run. Review the JSON plan before applying it.\n`);}
       }else if(operation==='apply') {
@@ -228,6 +230,7 @@ export async function main(argv: string[]): Promise<number> {
         process.stdout.write(JSON.stringify({status:committed?'committed':'rejected',code:fault.code??'CHANGE',error:failureMessage(error),
           ...(committed?{checked:true,recovery:'required',revision:fault.revision,baseRevision:fault.baseRevision,transaction:fault.transaction,operation:fault.operation,...(fault.identityMap?{identityMap:fault.identityMap}:{})}:{}),
           ...(error instanceof BodyEditError?{stage:error.stage,baseRevision:error.baseRevision,candidateRevision:error.candidateRevision,sourceUnits:error.sourceUnits,rejectedBase:error.rejectedBase,rejectedCandidate:error.rejectedCandidate}:{}),
+          ...(error instanceof DependencyEditError?{stage:error.stage,rejectedSources:error.rejectedSources}:{}),
           diagnostics:fault.diagnostics??[],behavioralEvidence:'not-run'})+'\n');
       }
       else process.stderr.write(failureMessage(error)+'\n');return 1;

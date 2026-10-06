@@ -214,6 +214,10 @@ async function codeActions(context, document, actionContext) {
       const action = new vscode.CodeAction(fix.title, diagnostic ? vscode.CodeActionKind.QuickFix : vscode.CodeActionKind.RefactorRewrite);
       action.diagnostics = diagnostic ? [diagnostic] : [];
       action.isPreferred = !!fix.preferred;
+      if(fix.review){
+        action.command={title:fix.title,command:'augscript.reviewDependency',arguments:[document.uri.fsPath,fix]};
+        actions.push(action);continue;
+      }
       action.edit = new vscode.WorkspaceEdit();
       const changes = new Map();
       for (const edit of fix.edits) {
@@ -558,6 +562,18 @@ function activate(context) {
   context.subscriptions.push(vscode.languages.registerDocumentSemanticTokensProvider('augscript', {
     provideDocumentSemanticTokens: document => semanticTokens(context, document),
   }, semanticLegend));
+  context.subscriptions.push(vscode.commands.registerCommand('augscript.reviewDependency',async(file,fix)=>{
+    if(!fix?.review)return;
+    const root=projectRoot(file),request=fix.review.request;
+    const preview={format:'august-dependency-preview',status:'preview-only',project:root,
+      instruction:'Save all project source and configuration buffers. Generate a fresh checked plan, review it, then apply it through aug change. This unsaved-source preview is not an accepted plan.',
+      commands:[['aug','change','plan-dependency',root,'--file',request.file,'--symbol',request.symbol,'--capability',request.capability,'--name',request.name,'--out','dependency.json','--json'],
+        ['aug','change','apply',root,'--plan','dependency.json','--json']],
+      ...fix.review,candidateEdits:fix.edits};
+    const document=await vscode.workspace.openTextDocument({language:'json',content:JSON.stringify(preview,null,2)+'\n'});
+    await vscode.window.showTextDocument(document,{preview:true});
+    return preview;
+  }));
   context.subscriptions.push(vscode.commands.registerCommand('augscript.build', () => executeProject(context, 'build')));
   context.subscriptions.push(vscode.commands.registerCommand('augscript.spec', () => executeProject(context, 'spec')));
   context.subscriptions.push(vscode.commands.registerCommand('augscript.openSpec', async () => {

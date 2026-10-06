@@ -6,6 +6,8 @@
 
 - Generate deterministic Mermaid project, class, API-call and sequence views with compiled specs; link the wiki examples from overview to source.
 
+- Add reviewed capability scaffolding with `aug change plan-dependency`: resolved imports, generic function/class header requirements, complete caller propagation and public deltas. Apply uses the existing stale-plan, writer and recovery checks; providers and function bodies remain explicit.
+
 - Coordinate request-based and mechanical checked edits, formatting, and package writes through one exclusive source writer. Recovery detects either journal format. Reading context and request-plan context use distinct, documented revision schemas.
 - Include forwarding dependencies and inherited interfaces in bounded reading context without exposing generated delegate bodies as editable source.
 
