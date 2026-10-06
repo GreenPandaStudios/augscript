@@ -35,4 +35,3 @@ sequenceDiagram
     Note over p0: Set greetings to greetings + 1
     end
 ```
-

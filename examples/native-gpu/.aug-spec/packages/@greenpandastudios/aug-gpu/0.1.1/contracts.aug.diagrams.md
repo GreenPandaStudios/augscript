@@ -24,4 +24,3 @@ Receive fields: code, message. [Explanation](contracts.aug.md).
 [Source](contracts.aug#L4)
 
 Return message; required cleanup runs before exit. [Explanation](contracts.aug.md).
-

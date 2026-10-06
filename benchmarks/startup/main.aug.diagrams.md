@@ -21,4 +21,3 @@ sequenceDiagram
     participant p1 as August runtime
     p0->>p1: print(value=7)
 ```
-

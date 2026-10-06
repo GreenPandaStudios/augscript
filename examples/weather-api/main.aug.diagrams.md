@@ -16,4 +16,3 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](main.aug#L4)
 
 Serve endpoints: weatherForecast. [Explanation](main.aug.md).
-

@@ -59,4 +59,3 @@ sequenceDiagram
     p0-->>p0: length result: int
     p0->>p1: print(value=length result)
 ```
-

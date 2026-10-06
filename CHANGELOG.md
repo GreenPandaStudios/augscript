@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- End generated diagram pages with one newline so newly published package specifications pass source whitespace checks.
+
 - Qualify unpublished compiler archives through the ordinary integrity verifier before cache tests. CI builds the sealed archive first and rejects missing or changed candidate transports, including on warm caches.
 
 - Give every documented ownership and task lifecycle rule an independent acceptance program. Check branch joins, alias mutation, repeated starts, collection waits, captured moves, deferred failures and cancellation cleanup in the LLVM qualification corpus.

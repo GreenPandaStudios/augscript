@@ -27,4 +27,3 @@ sequenceDiagram
     Note over p0: Return ”loaded”； required cleanup runs before exit
     Note over p0: May leave with checked errors: FileError
 ```
-

@@ -34,4 +34,3 @@ Receive fields: code, message. [Explanation](contracts.md).
 :::
 
 May leave with checked errors: SqliteError. Interface contract; implementation selected at runtime. [Explanation](contracts.md).
-

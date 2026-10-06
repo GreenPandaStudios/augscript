@@ -16,4 +16,3 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](arithmetic.aug#L4)
 
 Return left + right; required cleanup runs before exit. [Explanation](arithmetic.aug.md).
-

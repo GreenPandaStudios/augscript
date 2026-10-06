@@ -26,4 +26,3 @@ Call arrows identify checked targets; loop and branch frames determine when they
 :::
 
 Receive fields: id, message, values. [Explanation](data.md).
-

@@ -34,4 +34,3 @@ Receive fields: code, message. [Explanation](contracts.md).
 :::
 
 Return message; required cleanup runs before exit. [Explanation](contracts.md).
-

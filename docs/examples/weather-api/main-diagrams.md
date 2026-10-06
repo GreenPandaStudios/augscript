@@ -26,4 +26,3 @@ Call arrows identify checked targets; loop and branch frames determine when they
 :::
 
 Serve endpoints: weatherForecast. [Explanation](main.md).
-
