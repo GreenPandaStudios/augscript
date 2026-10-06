@@ -1,6 +1,6 @@
 {
   "name": "@greenpandastudios/aug-crypto",
-  "version": "0.23.0",
+  "version": "1.0.0",
   "description": "August cryptographic capabilities, RSA JWK and signed JWT helpers",
   "license": "MIT",
   "files": [
@@ -14,7 +14,7 @@
     "./aug-package.json": "./aug-package.json"
   },
   "dependencies": {
-    "@greenpandastudios/aug-stdlib": "0.23.0"
+    "@greenpandastudios/aug-stdlib": "1.0.0"
   },
   "publishConfig": {
     "access": "public",

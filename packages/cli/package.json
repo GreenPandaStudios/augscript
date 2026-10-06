@@ -1,6 +1,6 @@
 {
   "name": "@greenpandastudios/aug-cli",
-  "version": "0.23.0",
+  "version": "1.0.0",
   "description": "August compiler, native build CLI, tests and language server",
   "type": "module",
   "license": "MIT",
@@ -24,7 +24,7 @@
     "THIRD_PARTY_NOTICES.md"
   ],
   "dependencies": {
-    "@greenpandastudios/aug-stdlib": "0.23.0",
+    "@greenpandastudios/aug-stdlib": "1.0.0",
     "tar": "7.5.22",
     "minizlib": "3.1.0"
   },

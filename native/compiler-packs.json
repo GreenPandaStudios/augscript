@@ -1,6 +1,6 @@
 {
   "format": 1,
-  "compiler": "0.23.0",
+  "compiler": "1.0.0",
   "llvm": "23.1.2",
   "packs": [
     {
@@ -8,38 +8,12 @@
       "target": "aarch64-apple-darwin",
       "minimumOS": "14.0",
       "archive": {
-        "url": "https://github.com/GreenPandaStudios/augscript/releases/download/v0.23.0/aug-llvm-macos-arm64.tar.gz",
-        "sha256": "e9d72b9cbd89be0286518af47f94a9b42df75a8be95ec84426f604233755e266",
-        "maximumDownloadBytes": 217079416,
-        "maximumUnpackedBytes": 579079884,
+        "url": "https://github.com/GreenPandaStudios/augscript/releases/download/v1.0.0/aug-llvm-macos-arm64.tar.gz",
+        "sha256": "da3afa3a6832af876c04e6ec9dccbd062f5c089d5e6db96144d4f784c13124a4",
+        "maximumDownloadBytes": 217155337,
+        "maximumUnpackedBytes": 579170726,
         "fileManifest": "files.json",
-        "fileManifestSha256": "b2cc8f5e9b4411247795979f5b43f9bb4a6c10f8cdf14638bfaed050c21ea042"
-      }
-    },
-    {
-      "host": "linux-arm64",
-      "target": "aarch64-unknown-linux-gnu",
-      "minimumLibc": "2.36",
-      "archive": {
-        "url": "https://github.com/GreenPandaStudios/augscript/releases/download/v0.23.0/aug-llvm-linux-arm64.tar.gz",
-        "sha256": "a53c7b1d236683a320c8a70998d0d67b55ce3a228c0088ff9ab0d684a1e9aac6",
-        "maximumDownloadBytes": 441648886,
-        "maximumUnpackedBytes": 876755742,
-        "fileManifest": "files.json",
-        "fileManifestSha256": "dde4956acf296695339c38a4ce57ab854bc66f00367a80ef4978dbf7fe7fe828"
-      }
-    },
-    {
-      "host": "linux-x64",
-      "target": "x86_64-unknown-linux-gnu",
-      "minimumLibc": "2.36",
-      "archive": {
-        "url": "https://github.com/GreenPandaStudios/augscript/releases/download/v0.23.0/aug-llvm-linux-x64.tar.gz",
-        "sha256": "61fdab95554c1cd631d5f3a696d9f39679fddc6a78c5c484175068334f49a761",
-        "maximumDownloadBytes": 448664419,
-        "maximumUnpackedBytes": 910454417,
-        "fileManifest": "files.json",
-        "fileManifestSha256": "5153259c9e7c4d3f8965771ee06e14a48e3c7ff000fb2fb366081d0a1529389d"
+        "fileManifestSha256": "d6c2f3ad68bc22f25a7f7dd7532539fd6729eb4f9367ba83d75459fec6a3ac6a"
       }
     }
   ]
