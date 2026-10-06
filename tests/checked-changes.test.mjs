@@ -1,3 +1,4 @@
+import {compilerVersion} from '../src/compiler-version.ts';
 import {spawn} from 'node:child_process';
 import {createHash} from 'node:crypto';
 import test from 'node:test';
@@ -223,7 +224,7 @@ test('named selectors resolve functions and public labels through the same check
 
 test('an installed package main.yaml change is a stale dependency even with unchanged August and accepted lock bytes',()=>fixture(root=>{
     const library=join(root,'.library');mkdirSync(join(library,'src'),{recursive:true});
-    writeFileSync(join(library,'aug-package.json'),JSON.stringify({format:1,name:'@fixture/data',version:'0.1.0',compiler:'0.23.0',source:'src'}));
+    writeFileSync(join(library,'aug-package.json'),JSON.stringify({format:1,name:'@fixture/data',version:'0.1.0',compiler:compilerVersion(),source:'src'}));
     writeFileSync(join(library,'src/export.aug'),'export Value from data\n');writeFileSync(join(library,'src/data.aug'),'record Value(int amount)\n');
     writeFileSync(join(root,'main.yaml'),files['main.yaml']+'packages:\n    data: ./.library\n');
     const install=spawnSync(process.execPath,[cli,'install',root],{encoding:'utf8'});assert.equal(install.status,0,install.stderr);

@@ -114,7 +114,7 @@ jobs:
       - name: Qualify the native PostgreSQL package and HTTP drain
         run: |
           git clone --no-checkout https://github.com/GreenPandaStudios/aug-postgres "$RUNNER_TEMP/aug-postgres"
-          git -C "$RUNNER_TEMP/aug-postgres" checkout --detach a92850a5f9fc0dd04e952d95bfb17e7281586a60
+          git -C "$RUNNER_TEMP/aug-postgres" checkout --detach 2402fa51232a45dac51a1769a8d36c635a11cec2
           node bin/aug.mjs bind header "$RUNNER_TEMP/aug-postgres/native/include/aug_postgres.h" --contract "$RUNNER_TEMP/aug-postgres/native.abi.json" --target aarch64-apple-darwin --clang clang --output .aug-build/header-check-postgres
           node "$RUNNER_TEMP/aug-postgres/native/build.mjs"
           AUG_NATIVE_ARTIFACT_CACHE="$RUNNER_TEMP/aug-postgres/.aug-build/native/consumer-cache" node bin/aug.mjs package cache-native "$RUNNER_TEMP/aug-postgres" --artifact macos-arm64 --archive "$RUNNER_TEMP/aug-postgres/.aug-build/native/native-macos-arm64.tar.gz"

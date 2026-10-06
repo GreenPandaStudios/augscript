@@ -47,13 +47,15 @@ export async function testLocalNativeAuthor({directory,cliRoot,cli,run}) {
   const rejected=spawnSync(process.execPath,[cli,'doctor',app,'--json'],{env,encoding:'utf8'});assert.equal(rejected.status,1,rejected.stderr);
   assert.ok(JSON.parse(rejected.stdout).artifacts.some(item=>item.status==='invalid'&&/declared identity/.test(item.message)));
   if(process.env.AUG_TEST_PUBLIC_NATIVE_AUTHOR==='1'){
+    const catalog=await import(pathToFileURL(join(cliRoot,'src/library-catalog.js')));
+    const request=catalog.libraryCatalog('compression').entries.find(entry=>entry.id==='zlib').source.request;
     const publicApp=join(root,'public-zlib');mkdirSync(publicApp);
-    writeFileSync(join(publicApp,'main.aug'),'import CompressionError and compress and decompress from "https://github.com/GreenPandaStudios/aug-zlib#v0.1.5"\ntry:\n    Bytes input = "The world runs on language".bytes()\n    Bytes compressed = compress(input)\n    Bytes restored = decompress(input=compressed, maximumOutput=4096)\n    print(value=restored.text())\ncatch CompressionError error:\n    print(value=error.message)\ncatch ConversionError error:\n    print(value="Invalid UTF-8")\n');
+    writeFileSync(join(publicApp,'main.aug'),'import CompressionError and compress and decompress from '+JSON.stringify(request)+'\ntry:\n    Bytes input = "The world runs on language".bytes()\n    Bytes compressed = compress(input)\n    Bytes restored = decompress(input=compressed, maximumOutput=4096)\n    print(value=restored.text())\ncatch CompressionError error:\n    print(value=error.message)\ncatch ConversionError error:\n    print(value="Invalid UTF-8")\n');
     const consumerEnv={...env,PATH:'/no-native-tools',SDKROOT:'/no-sdk',DEVELOPER_DIR:'/no-sdk',AUG_PACKAGE_CACHE:join(root,'public-sources')};
     delete consumerEnv.AUG_GIT;
     run(process.execPath,[cli,'install',publicApp],{env:consumerEnv});
     assert.equal(run(process.execPath,[cli,'run',publicApp,'--backend','llvm','--offline'],{env:consumerEnv}),'The world runs on language\n');
-    const locked=JSON.parse(readFileSync(join(publicApp,'aug.lock.json')));assert.ok(locked.git.some(entry=>entry.request==='https://github.com/GreenPandaStudios/aug-zlib#v0.1.5'&&/^[a-f0-9]{40}$/.test(entry.commit)));
+    const locked=JSON.parse(readFileSync(join(publicApp,'aug.lock.json')));assert.ok(locked.git.some(entry=>entry.request===request&&/^[a-f0-9]{40}$/.test(entry.commit)));
     process.stdout.write('Installed public zlib repository import, authenticated archive and offline LLVM execution passed.\n');
   }
   if(target.os==='macos'&&target.arch==='arm64'){

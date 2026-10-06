@@ -14,9 +14,12 @@ August's compiler/runtime code is MIT licensed. Consumers obtain verified native
 | yyjson | [yyjson](https://github.com/ibireme/yyjson/blob/master/LICENSE), MIT |
 | minicoro | [minicoro](https://github.com/edubart/minicoro/blob/main/LICENSE), public domain or MIT No Attribution |
 | Unicode grapheme data | [Unicode 18.0.0 data](https://www.unicode.org/Public/18.0.0/ucd/) and [Unicode License V3](https://www.unicode.org/license.txt); complete notice in `runtime/UNICODE-LICENSE.txt` and the generated table. Runtime packs and deployed applications retain `licenses/Unicode.txt`. |
-| zlib | Host system library; [zlib](https://zlib.net/zlib_license.html) |
+| zlib | macOS system library or bundled Debian 12 zlib 1.2.13 on GNU/Linux; [zlib license](https://zlib.net/zlib_license.html), retained Debian copyright and exact source/package inputs |
+| GCC runtime libraries | Bundled GNU/Linux GCC 12.2 runtime libraries; [GCC Runtime Library Exception](https://www.gnu.org/licenses/gcc-exception-3.1.html), GPL/LGPL texts, Debian copyright and original source/package inputs. The C++ runtime includes the retained aligned-allocation overflow backport and maintainer recipe. |
+| ICU, compiler tools only | Bundled ICU 70.1 in the GNU/Linux LLVM tool closure; [ICU licensing](https://unicode-org.github.io/icu/userguide/icu/design.html#licensing), retained upstream source and Ubuntu package/copyright inputs |
+| XZ/liblzma, compiler tools only | Bundled Debian liblzma 5.4.1 in the GNU/Linux LLVM tool closure; [XZ copying information](https://tukaani.org/xz/), retained upstream source and Debian package/copyright inputs |
 
-Applications built using web/crypto link native libraries from the selected dependency prefix. Redistributors of compiled applications must preserve the notices and satisfy the licenses of the libraries they include. Compiler/runtime packs retain native notices and corresponding component sources. LLVM application bundles retain their selected native dependency closure, sources and notices under `share/august-native/`.
+Applications built using web/crypto link native libraries from the selected dependency prefix. Redistributors of compiled applications must preserve the notices and satisfy the licenses of the libraries they include. Compiler/runtime packs retain native notices and corresponding component sources. LLVM application bundles retain their selected native dependency closure, sources and notices under `share/august-native/`. Compiler-only ICU and liblzma remain in the compiler pack; they are not deployed merely because an application uses LLVM. GNU runtime libraries remain replaceable dynamic files. Package provenance records exact shipped member hashes separately from retained input materials.
 
 ## JavaScript archive dependencies
 

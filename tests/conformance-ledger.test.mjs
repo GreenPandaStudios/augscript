@@ -39,6 +39,10 @@ test('independent conformance oracles reject empty domains, conflicting expectat
  check(c=>c.cases.find(x=>x.stdout!==undefined).drops={});
  check(c=>c.cases.find(x=>x.stdout!==undefined).drops={Guard:0});
  check(c=>c.cases.find(x=>x.diagnostic).drops={Guard:1});
+ check(c=>c.cases.find(x=>x.diagnostic).diagnosticText='');
+ check(c=>c.cases.find(x=>x.stdout!==undefined).diagnosticText='unrelated error');
+ check(c=>c.cases.find(x=>x.stdout!==undefined).tests=0);
+ check(c=>c.cases.find(x=>x.diagnostic).tests=1);
  check(c=>c.cases.find(x=>x.stdout!==undefined).dropOrder=[]);
  check(c=>c.cases.find(x=>x.stdout!==undefined).dropOrder=['Guard','Guard']);
  check(c=>c.cases.find(x=>x.stdout!==undefined).dropOrder=['Guard','Marker']);

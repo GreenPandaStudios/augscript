@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- Build the bundled Linux C++ runtime with the upstream aligned-allocation overflow fix. Require preserved versioned exports, the glibc 2.36 floor, and real allocation/thread regressions before sealing compiler or LibTorch artifacts. Retain the source patch, recipe and measured build receipt.
+
+- Keep library discovery aligned with the installed compiler and exact reviewed repository revisions. Catalog metadata distinguishes source snapshots from verified artifact execution.
+
+- Preserve the final HTTP response when LLVM endpoint cancellation completes. Same-file deadline tests now receive 504 and can issue another request after cancellation.
+
+- Expand independent conformance with inferred contracts, interceptor ownership and dependency mappings, strict text parsing, HTML escaping, and native same-file HTTP cases.
+
 - End generated diagram pages with one newline so newly published package specifications pass source whitespace checks.
 
 - Qualify unpublished compiler archives through the ordinary integrity verifier before cache tests. CI builds the sealed archive first and rejects missing or changed candidate transports, including on warm caches.

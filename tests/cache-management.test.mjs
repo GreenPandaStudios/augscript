@@ -1,3 +1,4 @@
+import {compilerVersion} from '../src/compiler-version.ts';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {mkdtempSync,mkdirSync,writeFileSync,readFileSync,readdirSync,existsSync,rmSync,symlinkSync,chmodSync} from 'node:fs';
@@ -49,7 +50,7 @@ test('cache commands reject ambiguous and unsupported options before writing',()
 }));
 
 test('cache inventory keeps exact accepted source identities and lock bytes during inspection and pruning',()=>fixture(f=>{
- const library=join(f.root,'library');mkdirSync(library);writeFileSync(join(library,'aug-package.json'),JSON.stringify({format:1,name:'@example/cache-library',version:'1.0.0',compiler:'0.23.0',source:'.'}));writeFileSync(join(library,'export.aug'),'export answer from api\n');writeFileSync(join(library,'api.aug'),'answer() { return 42 }\n');
+ const library=join(f.root,'library');mkdirSync(library);writeFileSync(join(library,'aug-package.json'),JSON.stringify({format:1,name:'@example/cache-library',version:'1.0.0',compiler:compilerVersion(),source:'.'}));writeFileSync(join(library,'export.aug'),'export answer from api\n');writeFileSync(join(library,'api.aug'),'answer() { return 42 }\n');
  writeFileSync(join(f.project,'main.yaml'),'packages:\n  answers: "../library"\n');writeFileSync(join(f.project,'main.aug'),'import answer from answers\nprint(value=answer())\n');
  const installed=spawnSync(process.execPath,[cli,'install',f.project,'--offline'],{encoding:'utf8',env:f.env});assert.equal(installed.status,0,installed.stderr);
  const path=join(f.project,'aug.lock.json'),before=readFileSync(path,'utf8'),lock=JSON.parse(before),result=invoke(f);assert.equal(result.status,0,result.stderr);const report=JSON.parse(result.stdout);
@@ -64,7 +65,7 @@ test('an invalid accepted lock still returns cache sizes and failed readiness wi
 
 test('real locked repository transports are marked selected without fetching or changing the cache',()=>fixture(f=>{
  const git=process.env.AUG_GIT??'git',library=join(f.root,'repository');mkdirSync(library);
- for(const [name,value] of [['aug-package.json',JSON.stringify({format:1,name:'@example/cache-git',version:'1.0.0',compiler:'0.23.0',source:'.'})],['export.aug','export answer from api\n'],['api.aug','answer() { return 42 }\n']])writeFileSync(join(library,name),value);
+ for(const [name,value] of [['aug-package.json',JSON.stringify({format:1,name:'@example/cache-git',version:'1.0.0',compiler:compilerVersion(),source:'.'})],['export.aug','export answer from api\n'],['api.aug','answer() { return 42 }\n']])writeFileSync(join(library,name),value);
  for(const args of [['init'],['add','.'],['-c','user.name=Fixture','-c','user.email=fixture@example.invalid','commit','-m','Library'],['tag','v1.0.0']]){const result=spawnSync(git,['-c','core.hooksPath=/dev/null',...args],{cwd:library,encoding:'utf8'});assert.equal(result.status,0,result.stderr);}
  const request='git+file://'+library+'#v1.0.0';writeFileSync(join(f.project,'main.yaml'),'packages:\n  answers: '+JSON.stringify(request)+'\n');writeFileSync(join(f.project,'main.aug'),'import answer from answers\nprint(value=answer())\n');f.env.AUG_GIT=git;
  const installed=spawnSync(process.execPath,[cli,'install',f.project],{encoding:'utf8',env:f.env});assert.equal(installed.status,0,installed.stderr);const lock=JSON.parse(readFileSync(join(f.project,'aug.lock.json'))),before=readdirSync(f.env.AUG_PACKAGE_CACHE);

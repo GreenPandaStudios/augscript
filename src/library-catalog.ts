@@ -5,7 +5,7 @@ import {acceptsCompiler} from './package-compatibility.ts';
 import {validateNativeManifest, type NativeArtifact} from './native-contracts.ts';
 
 interface NativeSnapshot {
-  id:string; repository:string; tag:string; commit:string; manifest:PackageManifest;
+  id:string; repository:string; tag?:string; commit:string; manifest:PackageManifest;
   resources:string[]; exports:string[]; notices:string;
   evidence:{manifestSha256:string;descriptorSha256:string;exportsSha256:string;noticesSha256:string};
 }
@@ -15,7 +15,7 @@ export interface LibraryEntry {
   version:string; compilerRequirement?:string; testedCompiler?:string; compilerCompatible:boolean|null; install?:string; example:string;
   requirements:string; ownership:string; license:{summary:string;url:string};
   artifacts:NativeArtifact[]; tests:{summary:string;url:string};
-  evidence:{metadata:'bundled-source'|'curated-source-reference'|'tagged-source-snapshot';artifactBytes:'not-checked-by-catalog';sourceDigests?:NativeSnapshot['evidence']};
+  evidence:{metadata:'bundled-source'|'curated-source-reference'|'tagged-source-snapshot'|'reviewed-source-snapshot';artifactBytes:'not-checked-by-catalog';sourceDigests?:NativeSnapshot['evidence']};
 }
 interface Description {
   id:string; title:string; summary:string; tasks:string[]; names:string[];
@@ -35,7 +35,7 @@ const nativeDescriptions:Description[] = [
     ownership:'Own pools, connection leases and results on their creating worker. Borrow a lease for a query; scope exit releases native resources and rolls back unfinished transactions.',
     requirements:'A reachable PostgreSQL server and explicit DatabaseStorage provider. Supply deadlines, row limits and copied-result byte limits.',
     license:'August adapter: MIT. libpq: PostgreSQL License. OpenSSL: Apache-2.0.',
-    tests:{summary:'Live database tests include bound data, bytea, SQLSTATE, transactions, cancellation and HTTP drain.',url:'https://github.com/GreenPandaStudios/aug-postgres/tree/v0.1.0/tests'}},
+    tests:{summary:'Live database tests include bound data, bytea, SQLSTATE, transactions, cancellation and HTTP drain.',url:'tests'}},
   {id:'zlib',title:'zlib',summary:'Compress bytes and decompress within an explicit output limit.',tasks:['compression','decompression','bytes','buffers'],
     names:['CompressionError','compress','decompress'],ownership:'Managed Bytes inputs and copied Bytes results; the adapter releases temporary native buffers.',
     requirements:'Choose maximumOutput explicitly when decompressing.',license:'zlib: Zlib license. August adapter: MIT.',
@@ -106,34 +106,34 @@ function nativeSnapshots(): NativeSnapshot[] {
   return value.packages;
 }
 
-/** Search curated metadata offline. The catalog never resolves, installs or executes a dependency. */
+/** Search reviewed tag or commit metadata offline; do not install or verify artifact bytes. */
 export function libraryCatalog(query = ''): {format:1;compiler:string;query:string;entries:LibraryEntry[]} {
   const compiler = compilerVersion(),snapshots = nativeSnapshots();
   const entries:LibraryEntry[] = sourceDescriptions.map(description=>{
     const bundled = coreLibraryModules.some(module=>module===description.id),sourceModule = bundled ? 'august.'+description.id : description.id;
-    const request = `${repository}/tree/v0.23.0/src/stdlib/${description.id}`;
+    const request = `${repository}/tree/v${compiler}/src/stdlib/${description.id}`;
     return {id:description.id,title:description.title,summary:description.summary,tasks:description.tasks,
       source:bundled ? {kind:'bundled',module:sourceModule} : {kind:'repository',request},
-      version:bundled ? compiler : 'v0.23.0 source',compilerRequirement:bundled ? compiler : undefined,testedCompiler:bundled ? compiler : '0.23.0',
+      version:bundled ? compiler : 'v'+compiler+' source',compilerRequirement:bundled ? compiler : undefined,testedCompiler:compiler,
       compilerCompatible:bundled ? true : null,
       install:bundled ? undefined : `aug add "${request}" --as ${description.id}`,
       example:importExample(description.names,sourceModule),
-      ownership:description.ownership,requirements:description.requirements,license:{summary:description.license,url:repository+'/blob/v0.23.0/'+(['io','json','web','crypto'].includes(description.id)?'THIRD_PARTY_NOTICES.md':'LICENSE')},
+      ownership:description.ownership,requirements:description.requirements,license:{summary:description.license,url:repository+'/blob/v'+compiler+'/'+(['io','json','web','crypto'].includes(description.id)?'THIRD_PARTY_NOTICES.md':'LICENSE')},
       artifacts:[],tests:description.tests,evidence:{metadata:bundled ? 'bundled-source' : 'curated-source-reference',artifactBytes:'not-checked-by-catalog'}};
   });
   for(const description of nativeDescriptions) {
     const snapshot = snapshots.find(entry=>entry.id===description.id);
     if(!snapshot)throw new Error('CATALOG: Missing '+description.id+' snapshot');
     if(description.names.some(name=>!snapshot.exports.includes(name)))throw new Error('CATALOG: Import example no longer matches '+description.id+' exports');
-    const request = snapshot.repository+'#'+snapshot.tag;
+    const request = snapshot.repository+'#'+(snapshot.tag??snapshot.commit);
     entries.push({id:description.id,title:description.title,summary:description.summary,tasks:description.tasks,
       source:{kind:'repository',request,commit:snapshot.commit},version:snapshot.manifest.version,
       compilerRequirement:snapshot.manifest.compiler,compilerCompatible:acceptsCompiler(snapshot.manifest.compiler,compiler),
       install:`aug add "${request}" --as ${description.id}`,example:importExample(description.names,description.id),
       requirements:description.requirements,ownership:description.ownership,
-      license:{summary:description.license,url:snapshot.repository+'/blob/'+snapshot.tag+'/THIRD_PARTY_NOTICES.md'},
-      artifacts:snapshot.manifest.native!.artifacts,tests:description.tests,
-      evidence:{metadata:'tagged-source-snapshot',artifactBytes:'not-checked-by-catalog',sourceDigests:snapshot.evidence}});
+      license:{summary:description.license,url:snapshot.repository+'/blob/'+(snapshot.tag??snapshot.commit)+'/THIRD_PARTY_NOTICES.md'},
+      artifacts:snapshot.manifest.native!.artifacts,tests:{...description.tests,url:description.tests.url==='tests'?snapshot.repository+'/tree/'+(snapshot.tag??snapshot.commit)+'/tests':description.tests.url},
+      evidence:{metadata:snapshot.tag?'tagged-source-snapshot':'reviewed-source-snapshot',artifactBytes:'not-checked-by-catalog',sourceDigests:snapshot.evidence}});
   }
   const words = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
   return {format:1,compiler,query,entries:entries.filter(entry=>{

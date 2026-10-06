@@ -77,7 +77,7 @@ jobs:
       - name: Qualify the native PostgreSQL package and HTTP drain
         run: |
           git clone --no-checkout https://github.com/GreenPandaStudios/aug-postgres "$RUNNER_TEMP/aug-postgres"
-          git -C "$RUNNER_TEMP/aug-postgres" checkout --detach a92850a5f9fc0dd04e952d95bfb17e7281586a60
+          git -C "$RUNNER_TEMP/aug-postgres" checkout --detach 2402fa51232a45dac51a1769a8d36c635a11cec2
           docker cp "$RUNNER_TEMP/aug-postgres" qualification:/work/aug-postgres
           docker exec qualification node bin/aug.mjs bind header /work/aug-postgres/native/include/aug_postgres.h --contract /work/aug-postgres/native.abi.json --target "$(case '${{ matrix.host }}' in linux-x64) echo x86_64-unknown-linux-gnu;; *) echo aarch64-unknown-linux-gnu;; esac)" --clang clang --output /work/.aug-build/header-check-postgres
           docker exec qualification chown -R node:node /work/aug-postgres

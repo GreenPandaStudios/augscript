@@ -1,3 +1,4 @@
+import {compilerVersion} from '../src/compiler-version.ts';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {mkdtempSync, readFileSync, writeFileSync, rmSync, realpathSync, mkdirSync, symlinkSync, existsSync, cpSync} from 'node:fs';
@@ -45,7 +46,9 @@ test('authors preview and create pinned CI without overwriting an existing workf
   const directory=fixture();
   try{
     const report=JSON.parse(ok('package','workflow',directory,'--json'));
-    assert.equal(report.backend,'llvm');assert.equal(report.availability,'requires-next-compiler-release');assert.match(report.workflow,/# STAGED:/);assert.deepEqual(report.jobs.map(job=>job.runner),['ubuntu-24.04']);
+    assert.equal(report.backend,'llvm');
+    if(compilerVersion()==='0.23.0'){assert.equal(report.availability,'requires-next-compiler-release');assert.match(report.workflow,/# STAGED:/);}
+    else {assert.equal(report.availability,'requires-containing-published-release');assert.doesNotMatch(report.workflow,/# STAGED:/);}assert.deepEqual(report.jobs.map(job=>job.runner),['ubuntu-24.04']);
     assert.match(report.workflow,/permissions:\n  contents: read/);
     assert.match(report.workflow,/persist-credentials: false/);
     assert.match(report.workflow,/--ignore-scripts/);

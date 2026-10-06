@@ -1,0 +1,35 @@
+{
+  "format": 1,
+  "packages": [
+    {
+      "id": "blake3",
+      "version": "0.2.0",
+      "ref": "e9f7b92d98a2f9c36de530f4dfc1740012fb5e5e"
+    },
+    {
+      "id": "gpu",
+      "version": "0.2.0",
+      "ref": "ebc288b8d88b30213715bdbcd3d4647ff81a5462"
+    },
+    {
+      "id": "postgres",
+      "version": "0.2.0",
+      "ref": "2402fa51232a45dac51a1769a8d36c635a11cec2"
+    },
+    {
+      "id": "pytorch",
+      "version": "0.2.0",
+      "ref": "e2b74b1968fb11972e260ef3796a1cd849c1f702"
+    },
+    {
+      "id": "sqlite",
+      "version": "0.2.0",
+      "ref": "43d8c33289b6b9310199f8c65fb83d48cd9dc310"
+    },
+    {
+      "id": "zlib",
+      "version": "0.2.0",
+      "ref": "fce52e3bf536a304fab82d1d4b95ae425c027be1"
+    }
+  ]
+}

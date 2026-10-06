@@ -83,9 +83,9 @@ For package compatibility changes, run `npm run test:compatibility` and installe
 
 ## Curated library catalog
 
-`src/library-catalog.ts` owns task descriptions, safe import examples, ownership summaries, license notes and test links. `native/library-catalog.json` retains the tagged native manifests, exports, source commits and notice digests. The CLI and generated `docs/library-catalog.md` use those inputs.
+`src/library-catalog.ts` owns task descriptions, safe import examples, ownership summaries, license notes and test links. `native/library-catalog-inputs.json` selects public tags or exact reviewed commits. `native/library-catalog.json` retains their native manifests, exports, source commits and notice digests. The CLI and generated `docs/library-catalog.md` use those inputs.
 
-A catalog update is a metadata review, separate from artifact or behavior qualification. Run `node scripts/update-library-catalog.mjs` to refresh the explicitly selected public native tags; it reads metadata without building or installing packages. Review upstream notices, source identities, public exports, host constraints and existing qualification records, then run `npm run docs:generate`, catalog tests and installed-package gates. Preserve reusable native artifact pins when a source-only tag refers to an older artifact release. Adding a link to a catalog does not qualify its downloaded bytes.
+A catalog update is a metadata review, separate from artifact or behavior qualification. Run `node scripts/update-library-catalog.mjs` to refresh those exact public native references; it reads metadata without building or installing packages. Review upstream notices, source identities, public exports, host constraints and existing qualification records, then run `npm run docs:generate`, catalog tests and installed-package gates. Preserve reusable native artifact pins when a source-only tag refers to an older artifact release. Adding a link to a catalog does not qualify its downloaded bytes.
 
 ## Dependency preview checks
 

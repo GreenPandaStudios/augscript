@@ -1,20 +1,22 @@
 #!/usr/bin/env node
 // Maintainer-only metadata refresh. It does not download libraries or run package recipes.
 import {createHash} from 'node:crypto';
-import {writeFileSync} from 'node:fs';
+import {readFileSync,writeFileSync} from 'node:fs';
 import {parse} from '../src/parser.ts';
 import {validateNativeManifest} from '../src/native-contracts.ts';
-const versions = {blake3:'0.1.5',gpu:'0.1.1',postgres:'0.1.0',pytorch:'0.1.6',sqlite:'0.1.5',zlib:'0.1.5'};
+const inputs = JSON.parse(readFileSync(new URL('../native/library-catalog-inputs.json',import.meta.url),'utf8'));
+if(inputs.format!==1||!Array.isArray(inputs.packages)||inputs.packages.length!==6)throw new Error('Review the six catalog source selections');
+const ids=new Set();for(const {id,version,ref} of inputs.packages){if(!/^[a-z][a-z0-9]*$/.test(id)||ids.has(id)||!/^\d+\.\d+\.\d+$/.test(version)||!(/^[a-f0-9]{40}$/.test(ref)||ref==='v'+version))throw new Error('Invalid catalog selection: '+id);ids.add(id);}
 const hash = text => createHash('sha256').update(text).digest('hex');
 const read = async url => {
   const response = await fetch(url,{headers:{'User-Agent':'August-library-catalog'},signal:AbortSignal.timeout(20000)});
   if(!response.ok)throw new Error(`Cannot read ${url}: HTTP ${response.status}`);
   return response.text();
 };
-const packages = await Promise.all(Object.entries(versions).map(async([id,version])=>{
-  const repository = `https://github.com/GreenPandaStudios/aug-${id}`,tag = 'v'+version;
-  const commit = JSON.parse(await read(`https://api.github.com/repos/GreenPandaStudios/aug-${id}/commits/${tag}`)).sha;
-  if(!/^[0-9a-f]{40}$/.test(commit))throw new Error('Missing commit for '+tag);
+const packages = await Promise.all(inputs.packages.map(async({id,version,ref})=>{
+  const repository = `https://github.com/GreenPandaStudios/aug-${id}`,tag = ref.startsWith('v')?ref:undefined;
+  const commit = JSON.parse(await read(`https://api.github.com/repos/GreenPandaStudios/aug-${id}/commits/${ref}`)).sha;
+  if(!/^[0-9a-f]{40}$/.test(commit)||(!tag&&commit!==ref))throw new Error('Missing commit for '+ref);
   const raw = `https://raw.githubusercontent.com/GreenPandaStudios/aug-${id}/${commit}/`;
   const [manifestText,descriptorText,exportsText,notices] = await Promise.all(
     ['aug-package.json','native.abi.json','src/export.aug','THIRD_PARTY_NOTICES.md'].map(path=>read(raw+path)));
@@ -28,4 +30,4 @@ const packages = await Promise.all(Object.entries(versions).map(async([id,versio
     evidence:{manifestSha256:hash(manifestText),descriptorSha256:hash(descriptorText),exportsSha256:hash(exportsText),noticesSha256:hash(notices)}};
 }));
 writeFileSync(new URL('../native/library-catalog.json',import.meta.url),JSON.stringify({format:1,packages},null,2)+'\n');
-console.log('Refreshed six tagged native package snapshots. Review licenses, contracts, tests and artifact availability before committing.');
+console.log('Refreshed six native package snapshots from exact public references. Review licenses, contracts, tests and artifact availability before committing.');

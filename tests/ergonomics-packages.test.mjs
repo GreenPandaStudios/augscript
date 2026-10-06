@@ -1,3 +1,4 @@
+import {compilerVersion} from '../src/compiler-version.ts';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {mkdtempSync,mkdirSync,writeFileSync,readFileSync,rmSync} from 'node:fs';
@@ -12,7 +13,7 @@ test('aug add derives an ordinary alias and refuses to replace a different packa
     const app=join(root,'app'),one=join(root,'one'),two=join(root,'two');
     for(const folder of [app,one,two])mkdirSync(folder);
     for(const folder of [one,two]){
-      writeFileSync(join(folder,'aug-package.json'),JSON.stringify({format:1,name:'@example/aug-fruit',version:'1.0.0',compiler:'>=0.23.0 <1.0.0',source:'.'}));
+      writeFileSync(join(folder,'aug-package.json'),JSON.stringify({format:1,name:'@example/aug-fruit',version:'1.0.0',compiler:`>=${compilerVersion()} <${Number(compilerVersion().split('.')[0])+1}.0.0`,source:'.'}));
       writeFileSync(join(folder,'export.aug'),'export apple from values\n');
       writeFileSync(join(folder,'values.aug'),'apple():\n    return "apple"\n');
     }
@@ -62,7 +63,7 @@ test('package interface diffs use exports and report required input changes rath
     const before=join(root,'before'),after=join(root,'after');
     for(const [directory,version] of [[before,'1.0.0'],[after,'1.1.0']]) {
       mkdirSync(directory);
-      writeFileSync(join(directory,'aug-package.json'),JSON.stringify({format:1,name:'@example/math',version,compiler:'0.23.0',source:'.'}));
+      writeFileSync(join(directory,'aug-package.json'),JSON.stringify({format:1,name:'@example/math',version,compiler:compilerVersion(),source:'.'}));
       writeFileSync(join(directory,'export.aug'),'export add from math\n');
       writeFileSync(join(directory,'math.aug'),'add(int left, int right):\n    return left + right\nhelper():\n    return 1\n');
     }
@@ -82,7 +83,7 @@ test('public package diffs ignore private storage names and include inherited de
   try {
     const before=join(root,'before'),after=join(root,'after');
     for(const directory of [before,after]) {
-      mkdirSync(directory);writeFileSync(join(directory,'aug-package.json'),JSON.stringify({format:1,name:'@example/counter',version:'1.0.0',compiler:'0.23.0',source:'.'}));
+      mkdirSync(directory);writeFileSync(join(directory,'aug-package.json'),JSON.stringify({format:1,name:'@example/counter',version:'1.0.0',compiler:compilerVersion(),source:'.'}));
       writeFileSync(join(directory,'export.aug'),'export Counter from counter\n');
       writeFileSync(join(directory,'counter.aug'),'interface View { read(int input) returns int { return input } }\nCounter(int value to _value) implements View { }\n');
     }
@@ -102,7 +103,7 @@ test('package diffs expand inherited interface requirements and substitute class
   try {
     const before=join(root,'before'),after=join(root,'after');
     for(const directory of [before,after]) {
-      mkdirSync(directory);writeFileSync(join(directory,'aug-package.json'),JSON.stringify({format:1,name:'@example/view',version:'1.0.0',compiler:'0.23.0',source:'.'}));
+      mkdirSync(directory);writeFileSync(join(directory,'aug-package.json'),JSON.stringify({format:1,name:'@example/view',version:'1.0.0',compiler:compilerVersion(),source:'.'}));
       writeFileSync(join(directory,'export.aug'),'export View from view\nexport Counter from view\n');
       writeFileSync(join(directory,'view.aug'),'interface Reader<T> { read(T input) returns T { return input } }\ninterface View extends Reader<int> {}\nCounter() implements Reader<string> {}\n');
     }

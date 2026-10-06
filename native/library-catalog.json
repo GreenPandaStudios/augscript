@@ -4,13 +4,12 @@
     {
       "id": "blake3",
       "repository": "https://github.com/GreenPandaStudios/aug-blake3",
-      "tag": "v0.1.5",
-      "commit": "bc1fb7ecda099da583facbe8fae2c89a951e2d9c",
+      "commit": "e9f7b92d98a2f9c36de530f4dfc1740012fb5e5e",
       "manifest": {
         "format": 2,
         "name": "@greenpandastudios/aug-blake3",
-        "version": "0.1.5",
-        "compiler": "0.23.0",
+        "version": "0.2.0",
+        "compiler": "1.0.0",
         "source": "src",
         "dependencies": {},
         "native": {
@@ -181,7 +180,7 @@
       ],
       "notices": "BLAKE3 1.8.7 Rust crate and its exact Cargo.lock dependencies. Licenses are retained in native/licenses and the artifact licenses directory. Rust 1.98.1 standard library: MIT OR Apache-2.0. August adapter: MIT.\n",
       "evidence": {
-        "manifestSha256": "dcd5a8cde08c59a8501a3f399872f41df5a1050a3a4b3a2865a327ce3b17655e",
+        "manifestSha256": "60dde4cc790d6b12a20591c5e2c4c0e24427843024c8d7f90854c9d4a5ba3d50",
         "descriptorSha256": "3bf8dea97cde70a03021bf77ea08314d6d37fe7b4935ff16030b2ab929c21279",
         "exportsSha256": "e4169caf24caa9fcf21740090c0f617a626281b5deee1d5fd90e925673681e54",
         "noticesSha256": "fe2815353bef663731a84f03a15d47d0e1373ae5655342e4b30ae4df1635b0a7"
@@ -190,13 +189,12 @@
     {
       "id": "gpu",
       "repository": "https://github.com/GreenPandaStudios/aug-gpu",
-      "tag": "v0.1.1",
-      "commit": "792efddf2d7debf68ceb8d4800a69299bc73b04e",
+      "commit": "ebc288b8d88b30213715bdbcd3d4647ff81a5462",
       "manifest": {
         "format": 2,
         "name": "@greenpandastudios/aug-gpu",
-        "version": "0.1.1",
-        "compiler": "0.23.0",
+        "version": "0.2.0",
+        "compiler": "1.0.0",
         "source": "src",
         "dependencies": {},
         "native": {
@@ -267,7 +265,7 @@
       ],
       "notices": "# Native dependencies\n\nThe August GPU adapter is MIT licensed. It links to the Metal and Foundation frameworks supplied by macOS. Those system frameworks are not redistributed in this package. The archive contains the adapter, its provenance and file hashes, and this notice. No CUDA, third-party shader compiler, or copied upstream library is included in this release.\n",
       "evidence": {
-        "manifestSha256": "b6977202a75d61cac735a3f0f9b9e84622d8781a160f63d49807de53cfd0cc2d",
+        "manifestSha256": "479f687fcfabd8fae13baed003efc1f603db677d5d5f0bd65243ed2be42587f7",
         "descriptorSha256": "d95e237d8be07df8fd20132ca0f5a45a125fd65b7ba93669e69c0a38db63d60c",
         "exportsSha256": "86c2f563b96adb1c92e7297497985ab586796da273da4384136ebb2e44598e77",
         "noticesSha256": "357836561a88539f9acd1f9f7e4daa5c082ba5ab578a1aa36a3dd515aefb1747"
@@ -276,13 +274,12 @@
     {
       "id": "postgres",
       "repository": "https://github.com/GreenPandaStudios/aug-postgres",
-      "tag": "v0.1.0",
-      "commit": "302f953b881522342e29a08584ece5b5b4459c61",
+      "commit": "2402fa51232a45dac51a1769a8d36c635a11cec2",
       "manifest": {
         "format": 2,
         "name": "@greenpandastudios/aug-postgres",
-        "version": "0.1.0",
-        "compiler": "0.23.0",
+        "version": "0.2.0",
+        "compiler": "1.0.0",
         "source": "src",
         "dependencies": {},
         "native": {
@@ -305,9 +302,9 @@
                 "libc": "glibc",
                 "cpuBaseline": "armv8-a"
               },
-              "url": "https://github.com/GreenPandaStudios/aug-postgres/releases/download/v0.1.0/native-linux-arm64.tar.gz",
-              "sha256": "ec1041eaf9121149d405aa5ab3c1e1dacbd5962c2b86b6ca1a2231d249397242",
-              "maximumDownloadBytes": 2849855,
+              "url": "https://github.com/GreenPandaStudios/aug-postgres/releases/download/v0.2.0/native-linux-arm64.tar.gz",
+              "sha256": "0b5c0e87c7ef503ddb6c91bf333003c192dc533a5f7afd74b8125ab90d91d0d3",
+              "maximumDownloadBytes": 2849920,
               "maximumUnpackedBytes": 6580635,
               "link": {
                 "kind": "dynamic",
@@ -352,8 +349,8 @@
                 "libc": "glibc",
                 "cpuBaseline": "x86-64"
               },
-              "url": "https://github.com/GreenPandaStudios/aug-postgres/releases/download/v0.1.0/native-linux-x64.tar.gz",
-              "sha256": "3a97a995b712620c0427b33cec51d091008273d713e3712133c6b69d127ba879",
+              "url": "https://github.com/GreenPandaStudios/aug-postgres/releases/download/v0.2.0/native-linux-x64.tar.gz",
+              "sha256": "f6a5a26177d3a4f2ed879531b49e6c69e759767605988191c47920fecf2e28f4",
               "maximumDownloadBytes": 2602409,
               "maximumUnpackedBytes": 7189515,
               "link": {
@@ -399,9 +396,9 @@
                 "libc": "libSystem",
                 "cpuBaseline": "armv8-a"
               },
-              "url": "https://github.com/GreenPandaStudios/aug-postgres/releases/download/v0.1.0/native-macos-arm64.tar.gz",
-              "sha256": "bc3738c7630385a59f61124e83906e3579c459cdd57b400eacfcd418e13f71c5",
-              "maximumDownloadBytes": 2512014,
+              "url": "https://github.com/GreenPandaStudios/aug-postgres/releases/download/v0.2.0/native-macos-arm64.tar.gz",
+              "sha256": "d105c0d937d10fcf29bb5f58d2567525d3861cc74cf99158b54cb8e25e4f1317",
+              "maximumDownloadBytes": 2512039,
               "maximumUnpackedBytes": 5310874,
               "link": {
                 "kind": "dynamic",
@@ -471,7 +468,7 @@
       ],
       "notices": "# Native components\nThe adapter is MIT licensed. Native archives statically include PostgreSQL libpq 18.6 (PostgreSQL License) and OpenSSL 3.5.9 (Apache License 2.0). Their complete notices are included under licenses. Source URLs and SHA-256 digests are recorded in native/sources.lock.json; no source recipe runs during application installation.\n",
       "evidence": {
-        "manifestSha256": "eeb6644203d67a2e1414d8d64ba2fde6b45455c943cf8686890c60cdfb989f1b",
+        "manifestSha256": "48111c0558513aa5581e03b25aea8e4406f7ba6145d53cb9e37e294948524b55",
         "descriptorSha256": "1d8514d82ea59da8a178a720f859de9478e3099c7bb8485979f40278582bf3ea",
         "exportsSha256": "5c16189c60bafab8a80f5f4028a07349ceae570a2e96dc21b58fbdbe45813db9",
         "noticesSha256": "29e93ec7ea7e66ec1cc8c46f1b7560914abe2fcafde55cd87a5a8f868dbc2efa"
@@ -480,13 +477,12 @@
     {
       "id": "pytorch",
       "repository": "https://github.com/GreenPandaStudios/aug-pytorch",
-      "tag": "v0.1.6",
-      "commit": "f1b6fb1c8d0c964cdd5510d3e303fc35ec915f3a",
+      "commit": "e2b74b1968fb11972e260ef3796a1cd849c1f702",
       "manifest": {
         "format": 2,
         "name": "@greenpandastudios/aug-pytorch",
-        "version": "0.1.6",
-        "compiler": "0.23.0",
+        "version": "0.2.0",
+        "compiler": "1.0.0",
         "source": "src",
         "dependencies": {},
         "native": {
@@ -515,10 +511,10 @@
                   "float64"
                 ]
               },
-              "url": "https://github.com/GreenPandaStudios/aug-pytorch/releases/download/v0.1.4/native-linux-arm64.tar.gz",
-              "sha256": "8eb7c5e30635949228548208bda1ac0a7c42801d2299a90ea4d4c2064e700573",
-              "maximumDownloadBytes": 205707311,
-              "maximumUnpackedBytes": 443080682,
+              "url": "https://github.com/GreenPandaStudios/aug-pytorch/releases/download/v0.2.0/native-linux-arm64.tar.gz",
+              "sha256": "b5991acfad3ab45adffac749dd3dda2bea746835b83335914ee0cfff1c3d6d60",
+              "maximumDownloadBytes": 205880321,
+              "maximumUnpackedBytes": 443895551,
               "link": {
                 "kind": "dynamic",
                 "libraries": [
@@ -592,10 +588,10 @@
                   "float64"
                 ]
               },
-              "url": "https://github.com/GreenPandaStudios/aug-pytorch/releases/download/v0.1.4/native-linux-x64.tar.gz",
-              "sha256": "e39d75858c158af03bae161d54b3a267b4fcf3dc4568be6467df72e472793f7b",
-              "maximumDownloadBytes": 207516626,
-              "maximumUnpackedBytes": 535024433,
+              "url": "https://github.com/GreenPandaStudios/aug-pytorch/releases/download/v0.2.0/native-linux-x64.tar.gz",
+              "sha256": "3907dcab58256f216016f0fa4ed0e56f9884c99605ce9597eefe5c46bfa72077",
+              "maximumDownloadBytes": 207666480,
+              "maximumUnpackedBytes": 535714677,
               "link": {
                 "kind": "dynamic",
                 "libraries": [
@@ -650,10 +646,10 @@
                   "float64"
                 ]
               },
-              "url": "https://github.com/GreenPandaStudios/aug-pytorch/releases/download/v0.1.4/native-macos-arm64.tar.gz",
-              "sha256": "a130f4a67b574456e5eb0538dc099cb99e5356fdb47ebd4926da6f9b65ccb1e1",
-              "maximumDownloadBytes": 92487957,
-              "maximumUnpackedBytes": 388370911,
+              "url": "https://github.com/GreenPandaStudios/aug-pytorch/releases/download/v0.2.0/native-macos-arm64.tar.gz",
+              "sha256": "f345b9d52c2614abdd02ca3dd60c7a2c1fe530b7a36c84da1f7399fd0a107a0a",
+              "maximumDownloadBytes": 92504052,
+              "maximumUnpackedBytes": 388427196,
               "link": {
                 "kind": "dynamic",
                 "libraries": [
@@ -708,24 +704,23 @@
         "sum",
         "values"
       ],
-      "notices": "# Native redistribution\n\nPyTorch / LibTorch 2.14.1 uses the BSD-style license in `native/LICENSE.pytorch` and `native/NOTICE.pytorch`. The artifacts retain the collected LibTorch component licenses. The macOS closure also includes OpenMP.\n\nThe Linux ARM64 CPU closure includes OpenBLAS 0.3.34 and Arm Compute Library 53.2.0. Their exact source archives and license files are under the artifact's `sources` and `licenses` directories. The Arm Compute revision reported by its binary is `7b256bb7965f2fd99cdee790a4b0e56dab438a8c`. The source archives are independently pinned in `native/linux-libtorch.lock.json`; the build checks the reported binary versions before accepting a candidate.\n\nLinux artifacts include the required GCC 12 runtime libraries, with full source inputs, Debian patches, copyright files, GPL/LGPL texts and the GCC Runtime Library Exception. GNU dependencies remain replaceable shared files. Preserve these notices and the source/license directories when redistributing a bundle.\n\nThe upstream CPU distribution contains additional statically incorporated components. The collected notices do not constitute an exhaustive binary SBOM. This limit remains part of the preview's qualification record.\n",
+      "notices": "# Native redistribution\n\nPyTorch / LibTorch 2.14.1 uses the BSD-style license in `native/LICENSE.pytorch` and `native/NOTICE.pytorch`. The artifacts retain the collected LibTorch component licenses. The macOS closure also includes OpenMP.\n\nThe Linux ARM64 CPU closure includes OpenBLAS 0.3.34 and Arm Compute Library 53.2.0. Their exact source archives and license files are under the artifact's `sources` and `licenses` directories. The Arm Compute revision reported by its binary is `7b256bb7965f2fd99cdee790a4b0e56dab438a8c`. The source archives are independently pinned in `native/linux-libtorch.lock.json`; the build checks the reported binary versions before accepting a candidate.\n\nLinux artifacts include the required GCC 12 runtime libraries, with full source inputs, Debian patches, copyright files, GPL/LGPL texts and the GCC Runtime Library Exception. GNU dependencies remain replaceable shared files. Preserve these notices and the source/license directories when redistributing a bundle.\n\nThe upstream CPU distribution contains additional statically incorporated components. The collected notices do not constitute an exhaustive binary SBOM. Each artifact records its bounded review scope; it is not an exhaustive upstream static link map or legal clearance.\n\nThe Linux C++ runtime includes the retained GCC aligned-allocation overflow backport. Its source, patch, maintainer recipe and native regression receipt accompany the replaceable shared runtime. Linux LibTorch DSOs are shipped without additional loader rewrites.\n",
       "evidence": {
-        "manifestSha256": "38faf3e37a55677c85a6a1d3793d13a28a63237c5c78e7755f90584cdcee407d",
+        "manifestSha256": "594647ab7d3734b66f290c4e1d6682e9e43f2b7f480b41142f4666882d49365b",
         "descriptorSha256": "f07b8cab89ad7cfe368edcd9daf87ecc810adb6a2eed1f446d7b71fb664e91f5",
         "exportsSha256": "3789a1729917ad799ac485040ca0c1c328be83ef9de885c99c11945ff7ef1db5",
-        "noticesSha256": "bbd67ea05c7baa875bfc7f0767130756893843fe28d25d25e5d8862bc3b6f2bc"
+        "noticesSha256": "bf32aa383d99977c926a7dbfcf0dd2f7e87ebb1a2acb5b471db09acf19ad05e2"
       }
     },
     {
       "id": "sqlite",
       "repository": "https://github.com/GreenPandaStudios/aug-sqlite",
-      "tag": "v0.1.5",
-      "commit": "f5a6bec82f12db8b422f4c1cff8232a66a956991",
+      "commit": "43d8c33289b6b9310199f8c65fb83d48cd9dc310",
       "manifest": {
         "format": 2,
         "name": "@greenpandastudios/aug-sqlite",
-        "version": "0.1.5",
-        "compiler": "0.23.0",
+        "version": "0.2.0",
+        "compiler": "1.0.0",
         "source": "src",
         "dependencies": {},
         "native": {
@@ -887,7 +882,7 @@
       ],
       "notices": "SQLite 3.53.4 core is dedicated to the public domain by its authors. https://www.sqlite.org/copyright.html\nAugust adapter: MIT, see LICENSE.\n",
       "evidence": {
-        "manifestSha256": "559e42b1d37285b3fe608144be922923ab12c03cff65457b6a26717a8b4f9d36",
+        "manifestSha256": "8e95e9ee9ec5f2933ab3a23c235d411d219d5b0bb0a18a021b0a23f2beed8b62",
         "descriptorSha256": "3c75c2925c85f1b83db06ee00fa04f1d2d37c9fd6edca0d074ce89b4647ffffb",
         "exportsSha256": "cc04864d94ed1cb84430b6b6d68154be3977b4293b510b227d84577e7cb6f5f8",
         "noticesSha256": "5968dddfaaf8e8bc7dd851346cc81b224575a281c8e9715a6e6e3bc870549921"
@@ -896,13 +891,12 @@
     {
       "id": "zlib",
       "repository": "https://github.com/GreenPandaStudios/aug-zlib",
-      "tag": "v0.1.5",
-      "commit": "b23d72f698aef0b8f77a5acd90cfb054bb108ee9",
+      "commit": "fce52e3bf536a304fab82d1d4b95ae425c027be1",
       "manifest": {
         "format": 2,
         "name": "@greenpandastudios/aug-zlib",
-        "version": "0.1.5",
-        "compiler": "0.23.0",
+        "version": "0.2.0",
+        "compiler": "1.0.0",
         "source": "src",
         "dependencies": {},
         "native": {
@@ -1057,7 +1051,7 @@
       ],
       "notices": "zlib 1.3.2, statically embedded from the verified upstream source archive. License: Zlib. See licenses/zlib.txt in the native artifact. August adapter: MIT.\n",
       "evidence": {
-        "manifestSha256": "548a522a4df474fc77b7ed9ce6c1581199e05f8f2d6e851f5600616f19e673a3",
+        "manifestSha256": "d1213511e22bbaed965db35010d998ac40684033a73266cd9faad13f9df085e8",
         "descriptorSha256": "c3d4b36eadcccd13caff71597ed77a8e7307f0cfe3d13660a8e9127efe942b3d",
         "exportsSha256": "08c3a05e438279666e3faef812e1b3dc23d390d485cebb552d35ba4ed28403fc",
         "noticesSha256": "b72d8b0281afe576b2959d0ec418d75758babe18979fec21f85ca1189fa7022d"

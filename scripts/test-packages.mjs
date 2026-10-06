@@ -207,7 +207,7 @@ try {
   assert.equal(aug('run', starter), 'Hello, August!\n');
   const catalog=JSON.parse(aug('libraries','compression','--json'));
   assert.equal(catalog.entries[0].id,'zlib');
-  assert.match(catalog.entries[0].source.request,/aug-zlib#v0.1.5/);
+  assert.match(catalog.entries[0].source.request,/aug-zlib#(?:v0\.2\.0|[a-f0-9]{40})/);
   const scratchFile=join(directory,'scratch.aug');writeFileSync(scratchFile,'print(value=42)\n');
   const scratchReport=JSON.parse(aug('scratch',scratchFile,'--json'));
   assert.equal(scratchReport.checked,true);assert.equal(scratchReport.executed,false);assert.equal(scratchReport.prepared,false);
