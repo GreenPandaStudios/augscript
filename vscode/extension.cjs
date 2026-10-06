@@ -14,6 +14,8 @@ const lastFiles = new Map();
 const servers = new Map();
 const setupFailures=new Set();
 let focusedContracts;
+const dependencyPreviews=new Map();
+let dependencyPreviewSequence=0;
 const output=vscode.window.createOutputChannel('August');
 function reportSetupFailure(error){
   output.appendLine(error.message);
@@ -562,6 +564,11 @@ function activate(context) {
   context.subscriptions.push(vscode.languages.registerDocumentSemanticTokensProvider('augscript', {
     provideDocumentSemanticTokens: document => semanticTokens(context, document),
   }, semanticLegend));
+  context.subscriptions.push(vscode.workspace.registerTextDocumentContentProvider('august-dependency-preview',{
+    provideTextDocumentContent:uri=>dependencyPreviews.get(uri.toString())??'',
+  }),vscode.workspace.onDidCloseTextDocument(document=>{
+    if(document.uri.scheme==='august-dependency-preview')dependencyPreviews.delete(document.uri.toString());
+  }));
   context.subscriptions.push(vscode.commands.registerCommand('augscript.reviewDependency',async(file,fix)=>{
     if(!fix?.review)return;
     const root=projectRoot(file),request=fix.review.request;
@@ -570,7 +577,10 @@ function activate(context) {
       commands:[['aug','change','plan-dependency',root,'--file',request.file,'--symbol',request.symbol,'--capability',request.capability,'--name',request.name,'--out','dependency.json','--json'],
         ['aug','change','apply',root,'--plan','dependency.json','--json']],
       ...fix.review,candidateEdits:fix.edits};
-    const document=await vscode.workspace.openTextDocument({language:'json',content:JSON.stringify(preview,null,2)+'\n'});
+    const uri=vscode.Uri.parse('august-dependency-preview:review-'+(++dependencyPreviewSequence)+'.json');
+    dependencyPreviews.set(uri.toString(),JSON.stringify(preview,null,2)+'\n');
+    const document=await vscode.workspace.openTextDocument(uri);
+    await vscode.languages.setTextDocumentLanguage(document,'json');
     await vscode.window.showTextDocument(document,{preview:true});
     return preview;
   }));

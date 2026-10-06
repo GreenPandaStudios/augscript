@@ -85,6 +85,8 @@ exports.run=async()=>{
     assert.equal(review.edit,undefined);assert.equal(review.command.command,'augscript.reviewDependency');
     const preview=await vscode.commands.executeCommand(review.command.command,...review.command.arguments);
     assert.equal(preview.status,'preview-only');assert.ok(preview.publicDelta.length>0);
+    assert.equal(vscode.window.activeTextEditor.document.uri.scheme,'august-dependency-preview');
+    assert.equal(vscode.window.activeTextEditor.document.isDirty,false);
     assert.ok(preview.commands[0].includes('plan-dependency'));assert.ok(preview.commands[1].includes('apply'));
     for(const [file,content] of Object.entries(sources))assert.equal(fs.readFileSync(path.join(capabilityRoot,file),'utf8'),content);
     assert.equal(appDocument.getText(),sources['app.aug']);

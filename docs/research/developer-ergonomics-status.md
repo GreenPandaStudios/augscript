@@ -203,3 +203,5 @@ Type checking, 608 generated-document drift checks, the wiki build, release
 archives, installed JavaScript C/LLVM and version gates pass. F06 remains partial
 for scoped-retention and deeper lifetime evidence. Clean default distribution,
 installed-editor behavior and comparative model trials remain outstanding.
+
+The capability-header checkpoint passed 11 direct plan/candidate cases, 62 neighboring checked-edit/editor/semantic cases, and 38 integrated capability/diagram/tooling cases. Independent review found and repaired explicit-name capture and an editor transaction bypass. Project actions now show read-only review facts; accepted source changes require a fresh saved CLI plan and its writer/revision checks. Installed CLI archives passed checked dependency plans and C/LLVM execution; the actual VSIX passed clean and upgrade profiles on macOS ARM64 with VS Code 1.90.0, including the read-only preview. Type checking, 990 generated-document drift checks and the wiki build passed. Other hosted platforms and final release qualification remain pending.
