@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Update extension artwork tooling to sharp 0.35.5 with patched librsvg binaries.
+
 - Document and complete the unreleased `mapWorkers` package operation, including its named pure-function restriction, copied data boundary and checked failures.
 
 - Generate deterministic Mermaid project, class, API-call and sequence views with compiled specs; link the wiki examples from overview to source.

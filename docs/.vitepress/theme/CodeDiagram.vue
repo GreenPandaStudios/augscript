@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {computed,onBeforeUnmount,onMounted,ref,useId,watch} from 'vue';
+import {computed,nextTick,onBeforeUnmount,onMounted,ref,useId,watch} from 'vue';
 import {useData} from 'vitepress';
 const props=defineProps<{encoded:string}>();
 const source=computed(()=>new TextDecoder().decode(Uint8Array.from(atob(props.encoded),char=>char.charCodeAt(0))));
@@ -23,6 +23,10 @@ async function render(){
       naturalWidth.value=viewBox?Number(viewBox[1]):640;svg.value=result.svg;
     }
   }catch{if(!disposed&&selected===revision){svg.value='';error.value='This diagram could not be drawn. Its Mermaid source is available below.';}}
+  if(!disposed&&selected===revision){
+    await nextTick();
+    if(!disposed&&selected===revision)window.dispatchEvent(new Event('august:diagram-layout'));
+  }
 }
 onMounted(()=>{
   resizeObserver=new ResizeObserver(entries=>{if(entries[0])availableWidth.value=entries[0].contentRect.width;});
