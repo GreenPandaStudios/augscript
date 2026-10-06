@@ -4,13 +4,6 @@
 
 [Project overview](.aug-spec/diagrams/index.md) · [Compiled explanation](main.aug.md)
 
-## Class interactions
-
-No relationships at this level.
-
-## API calls
-
-No relationships at this level.
 
 ## Sequences
 
@@ -25,15 +18,15 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ```mermaid
 sequenceDiagram
     participant p0 as Startup
-    participant p1 as #34;August,clear,local,checked#34;.split
+    participant p1 as ”August,clear,local,checked”.split
     participant p2 as part.length
     participant p3 as print
-    loop While index #60; iterations
-    p0->>p1: #34;August,clear,local,checked#34;.split(separator)
+    loop While index ‹ iterations
+    p0->>p1: ”August,clear,local,checked”.split(separator=”,”)
     loop For each item in parts
     p0->>p2: part.length()
     end
     end
-    p0->>p3: print(value)
+    p0->>p3: print(value=checksum)
 ```
 

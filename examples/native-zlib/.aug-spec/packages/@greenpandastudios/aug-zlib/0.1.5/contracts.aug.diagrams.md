@@ -4,17 +4,6 @@
 
 [Project overview](../../../../diagrams/index.md) · [Compiled explanation](contracts.aug.md)
 
-## Class interactions
-
-```mermaid
-flowchart TD
-    n0["CompressionError · package/@greenpandastudios/aug-zlib@0.1.5/contracts.aug"]
-
-```
-
-## API calls
-
-No relationships at this level.
 
 ## Sequences
 
@@ -26,10 +15,5 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](contracts.aug#L3)
 
-```mermaid
-sequenceDiagram
-    participant p0 as CompressionError constructor
-
-    Note over p0: Receive fields: code, message
-```
+Receive fields: code, message. [Explanation](contracts.aug.md).
 

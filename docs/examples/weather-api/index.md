@@ -20,7 +20,7 @@ Read [`main.aug`](main.md). Import the forecast endpoint and serve it on port 87
 
 Read [`forecasts.aug`](forecasts.md). Read the response record, five fixed forecasts, and cases that exercise the endpoint pipeline.
 
-[Explore the generated project diagrams](diagrams/index.md) to move from areas and modules to class interactions and API sequences.
+[Explore the generated project diagrams](diagrams/index.md) to follow data between folders, then open module interactions and API sequences.
 
 ## Project files
 

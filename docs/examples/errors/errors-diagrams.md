@@ -14,17 +14,6 @@ outline: [2, 3]
 
 [Project overview](diagrams/index.md) · [Compiled explanation](errors.md)
 
-## Class interactions
-
-No relationships at this level.
-
-## API calls
-
-```mermaid
-flowchart TD
-    n0["load · errors.aug"]
-
-```
 
 ## Sequences
 
@@ -42,9 +31,9 @@ sequenceDiagram
     participant p1 as FileError
     alt fail
     p0->>p1: FileError()
-    Note over p0: Raise checked failure FileError()#59; required cleanup runs before exit
+    Note over p0: Raise checked failure FileError()； required cleanup runs before exit
     end
-    Note over p0: Return #34;loaded#34;#59; required cleanup runs before exit
+    Note over p0: Return ”loaded”； required cleanup runs before exit
     Note over p0: May leave with checked errors: FileError
 ```
 

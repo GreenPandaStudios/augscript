@@ -4,17 +4,6 @@
 
 [Project overview](../.aug-spec/diagrams/index.md) · [Compiled explanation](models.aug.md)
 
-## Class interactions
-
-```mermaid
-flowchart TD
-    n0["Fruit · domain/models.aug"]
-
-```
-
-## API calls
-
-No relationships at this level.
 
 ## Sequences
 
@@ -26,10 +15,5 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](models.aug#L3)
 
-```mermaid
-sequenceDiagram
-    participant p0 as Fruit constructor
-
-    Note over p0: Receive fields: code, name
-```
+Receive fields: code, name. [Explanation](models.aug.md).
 

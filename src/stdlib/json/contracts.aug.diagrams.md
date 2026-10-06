@@ -4,21 +4,21 @@
 
 [Project overview](.aug-spec/diagrams/index.md) · [Compiled explanation](contracts.aug.md)
 
-## Class interactions
 
-No relationships at this level.
-
-## API calls
+<details>
+<summary>Call relationships</summary>
 
 ```mermaid
 flowchart TD
-    n0["_aug_json_parse · contracts.aug"]
-    n1["_aug_json_parse_compatible · contracts.aug"]
-    n2["parse · contracts.aug"]
-    n3["parseCompatible · contracts.aug"]
+    n0["_aug_json_parse"]
+    n1["_aug_json_parse_compatible"]
+    n2["parse"]
+    n3["parseCompatible"]
     n2 -->|"calls"| n0
     n3 -->|"calls"| n1
 ```
+
+</details>
 
 ## Sequences
 
@@ -30,13 +30,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](contracts.aug#L2)
 
-```mermaid
-sequenceDiagram
-    participant p0 as _aug_json_parse
-
-    Note over p0: May leave with checked errors: JsonError
-    Note over p0: Native implementation#59; only the declared contract is known
-```
+May leave with checked errors: JsonError. Native implementation; only the declared contract is known. [Explanation](contracts.aug.md).
 
 <a id="sequence-parse"></a>
 
@@ -50,8 +44,9 @@ sequenceDiagram
     participant p1 as _aug_json_parse
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _aug_json_parse(input) · native boundary
-    Note over p0: Return _aug_json_parse(input)#59; required cleanup runs before exit
+    p0->>p1: _aug_json_parse(input=input) · native boundary
+    p1-->>p0: Json
+    Note over p0: Return _aug_json_parse(input)； required cleanup runs before exit
     Note over p0: Leave unsafe scope
     end
     Note over p0: May leave with checked errors: JsonError
@@ -63,13 +58,7 @@ sequenceDiagram
 
 [Source](contracts.aug#L8)
 
-```mermaid
-sequenceDiagram
-    participant p0 as _aug_json_parse_compatible
-
-    Note over p0: May leave with checked errors: JsonError
-    Note over p0: Native implementation#59; only the declared contract is known
-```
+May leave with checked errors: JsonError. Native implementation; only the declared contract is known. [Explanation](contracts.aug.md).
 
 <a id="sequence-parseCompatible"></a>
 
@@ -83,8 +72,9 @@ sequenceDiagram
     participant p1 as _aug_json_parse_compatible
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _aug_json_parse_compatible(input) · native boundary
-    Note over p0: Return _aug_json_parse_compatible(input)#59; required cleanup runs before exit
+    p0->>p1: _aug_json_parse_compatible(input=input) · native boundary
+    p1-->>p0: Json
+    Note over p0: Return _aug_json_parse_compatible(input)； required cleanup runs before exit
     Note over p0: Leave unsafe scope
     end
     Note over p0: May leave with checked errors: JsonError

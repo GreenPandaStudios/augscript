@@ -14,24 +14,23 @@ outline: [2, 3]
 
 [Project overview](diagrams/index.md) · [Compiled explanation](database.md)
 
-## Class interactions
 
-No relationships at this level.
-
-## API calls
+::: details Call relationships
 
 ```mermaid
 flowchart TD
-    n0["storedName · database.aug"]
+    n0["storedName"]
     n1["database.aug"]
-    n2["execute · package/@greenpandastudios/aug-sqlite@0.1.5/api.aug"]
-    n3["openMemory · package/@greenpandastudios/aug-sqlite@0.1.5/api.aug"]
-    n4["queryScalar · package/@greenpandastudios/aug-sqlite@0.1.5/api.aug"]
+    n2["execute"]
+    n3["openMemory"]
+    n4["queryScalar"]
     n0 -->|"calls"| n2
     n0 -->|"calls"| n3
     n0 -->|"calls"| n4
     n1 -->|"calls"| n0
 ```
+
+:::
 
 ## Sequences
 
@@ -50,15 +49,19 @@ sequenceDiagram
     participant p2 as execute
     participant p3 as queryScalar
     p0->>p1: openMemory()
-    Note over p0: Own database#59; release on scope exits
+    p1-->>p0: database: Database
+    Note over p0: Own database； release on scope exits
     rect rgb(245, 240, 241)
     Note over p0: Enter borrow scope
-    p0->>p2: execute(database, sql, parameters)
-    p0->>p2: execute(database, sql, parameters)
+    p0->>p2: execute(database=database, sql=”CREATE TABLE users (name TEXT NOT NULL)”, parameters=［］)
+    p2-->>p0: int
+    p0->>p2: execute(database=database, sql=”INSERT INTO users (name) VALUES (?)”, parameters=［”August”］)
+    p2-->>p0: int
     Note over p0: Leave borrow scope
     end
-    p0->>p3: queryScalar(database, sql, parameters)
-    Note over p0: Return queryScalar(database, sql=#34;SELECT name FROM users#34;, parameters=#91;#93;)#59; required cleanup runs before exit
+    p0->>p3: queryScalar(database=database, sql=”SELECT name FROM users”, parameters=［］)
+    p3-->>p0: string
+    Note over p0: Return queryScalar(database, sql=”SELECT name FROM users”, parameters=［］)； required cleanup runs before exit
     Note over p0: May leave with checked errors: SqliteError
 ```
 

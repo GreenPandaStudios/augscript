@@ -4,18 +4,18 @@
 
 [Project overview](.aug-spec/diagrams/index.md) · [Compiled explanation](main.aug.md)
 
-## Class interactions
 
-No relationships at this level.
-
-## API calls
+<details>
+<summary>Call relationships</summary>
 
 ```mermaid
 flowchart TD
     n0["main.aug"]
-    n1["add · package/@example/aug-math@0.1.0/arithmetic.aug"]
+    n1["add"]
     n0 -->|"calls"| n1
 ```
+
+</details>
 
 ## Sequences
 
@@ -32,8 +32,9 @@ sequenceDiagram
     participant p0 as Startup
     participant p1 as add
     participant p2 as print
-    p0->>p1: add(left, right)
-    p0->>p2: print(value)
+    p0->>p1: add(left=20, right=22)
+    p1-->>p0: int
+    p0->>p2: print(value=add(left=20, right=22))
 ```
 
 ## Called contracts

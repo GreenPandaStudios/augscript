@@ -8,20 +8,20 @@
 
 ```mermaid
 flowchart TD
-    n0["Crypto · contracts.aug"]
-    n1["GnuTlsCrypto · contracts.aug"]
-    n2["_aug_crypto_decode_base64url · contracts.aug"]
-    n3["_aug_crypto_equal · contracts.aug"]
-    n4["_aug_crypto_export_rsa · contracts.aug"]
-    n5["_aug_crypto_generate_rsa · contracts.aug"]
-    n6["_aug_crypto_import_rsa · contracts.aug"]
-    n7["_aug_crypto_password_hash · contracts.aug"]
-    n8["_aug_crypto_public_rsa · contracts.aug"]
-    n9["_aug_crypto_random · contracts.aug"]
-    n10["_aug_crypto_sha256 · contracts.aug"]
-    n11["_aug_crypto_sign_rsa · contracts.aug"]
-    n12["_aug_crypto_verify_ed25519 · contracts.aug"]
-    n13["_aug_crypto_verify_rsa · contracts.aug"]
+    n0["Crypto"]
+    n1["GnuTlsCrypto"]
+    n2["_aug_crypto_decode_base64url"]
+    n3["_aug_crypto_equal"]
+    n4["_aug_crypto_export_rsa"]
+    n5["_aug_crypto_generate_rsa"]
+    n6["_aug_crypto_import_rsa"]
+    n7["_aug_crypto_password_hash"]
+    n8["_aug_crypto_public_rsa"]
+    n9["_aug_crypto_random"]
+    n10["_aug_crypto_sha256"]
+    n11["_aug_crypto_sign_rsa"]
+    n12["_aug_crypto_verify_ed25519"]
+    n13["_aug_crypto_verify_rsa"]
     n1 -->|"implements"| n0
     n1 -->|"calls"| n2
     n1 -->|"calls"| n3
@@ -37,30 +37,31 @@ flowchart TD
     n1 -->|"calls"| n13
 ```
 
-## API calls
+<details>
+<summary>Call relationships</summary>
 
 #### View 1 of 2
 
 ```mermaid
 flowchart TD
-    n0["GnuTlsCrypto.decodeBase64url · contracts.aug"]
-    n1["GnuTlsCrypto.equal · contracts.aug"]
-    n2["GnuTlsCrypto.exportRsa · contracts.aug"]
-    n3["GnuTlsCrypto.generateRsa · contracts.aug"]
-    n4["GnuTlsCrypto.importRsa · contracts.aug"]
-    n5["GnuTlsCrypto.passwordHash · contracts.aug"]
-    n6["GnuTlsCrypto.publicRsa · contracts.aug"]
-    n7["GnuTlsCrypto.random · contracts.aug"]
-    n8["GnuTlsCrypto.sha256 · contracts.aug"]
-    n9["_aug_crypto_decode_base64url · contracts.aug"]
-    n10["_aug_crypto_equal · contracts.aug"]
-    n11["_aug_crypto_export_rsa · contracts.aug"]
-    n12["_aug_crypto_generate_rsa · contracts.aug"]
-    n13["_aug_crypto_import_rsa · contracts.aug"]
-    n14["_aug_crypto_password_hash · contracts.aug"]
-    n15["_aug_crypto_public_rsa · contracts.aug"]
-    n16["_aug_crypto_random · contracts.aug"]
-    n17["_aug_crypto_sha256 · contracts.aug"]
+    n0["GnuTlsCrypto.decodeBase64url"]
+    n1["GnuTlsCrypto.equal"]
+    n2["GnuTlsCrypto.exportRsa"]
+    n3["GnuTlsCrypto.generateRsa"]
+    n4["GnuTlsCrypto.importRsa"]
+    n5["GnuTlsCrypto.passwordHash"]
+    n6["GnuTlsCrypto.publicRsa"]
+    n7["GnuTlsCrypto.random"]
+    n8["GnuTlsCrypto.sha256"]
+    n9["_aug_crypto_decode_base64url"]
+    n10["_aug_crypto_equal"]
+    n11["_aug_crypto_export_rsa"]
+    n12["_aug_crypto_generate_rsa"]
+    n13["_aug_crypto_import_rsa"]
+    n14["_aug_crypto_password_hash"]
+    n15["_aug_crypto_public_rsa"]
+    n16["_aug_crypto_random"]
+    n17["_aug_crypto_sha256"]
     n0 -->|"calls"| n9
     n1 -->|"calls"| n10
     n2 -->|"calls"| n11
@@ -76,28 +77,18 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    n0["Crypto.decodeBase64url · contracts.aug"]
-    n1["Crypto.equal · contracts.aug"]
-    n2["Crypto.exportRsa · contracts.aug"]
-    n3["Crypto.generateRsa · contracts.aug"]
-    n4["Crypto.importRsa · contracts.aug"]
-    n5["Crypto.passwordHash · contracts.aug"]
-    n6["Crypto.publicRsa · contracts.aug"]
-    n7["Crypto.random · contracts.aug"]
-    n8["Crypto.sha256 · contracts.aug"]
-    n9["Crypto.signRsa · contracts.aug"]
-    n10["Crypto.verifyEd25519 · contracts.aug"]
-    n11["Crypto.verifyRsa · contracts.aug"]
-    n12["GnuTlsCrypto.signRsa · contracts.aug"]
-    n13["GnuTlsCrypto.verifyEd25519 · contracts.aug"]
-    n14["GnuTlsCrypto.verifyRsa · contracts.aug"]
-    n15["_aug_crypto_sign_rsa · contracts.aug"]
-    n16["_aug_crypto_verify_ed25519 · contracts.aug"]
-    n17["_aug_crypto_verify_rsa · contracts.aug"]
-    n12 -->|"calls"| n15
-    n13 -->|"calls"| n16
-    n14 -->|"calls"| n17
+    n0["GnuTlsCrypto.signRsa"]
+    n1["GnuTlsCrypto.verifyEd25519"]
+    n2["GnuTlsCrypto.verifyRsa"]
+    n3["_aug_crypto_sign_rsa"]
+    n4["_aug_crypto_verify_ed25519"]
+    n5["_aug_crypto_verify_rsa"]
+    n0 -->|"calls"| n3
+    n1 -->|"calls"| n4
+    n2 -->|"calls"| n5
 ```
+
+</details>
 
 ## Sequences
 
@@ -109,13 +100,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](contracts.aug#L5)
 
-```mermaid
-sequenceDiagram
-    participant p0 as Crypto.random
-
-    Note over p0: May leave with checked errors: CryptoError
-    Note over p0: Interface contract#59; implementation selected at runtime
-```
+May leave with checked errors: CryptoError. Interface contract; implementation selected at runtime. [Explanation](contracts.aug.md).
 
 <a id="sequence-Crypto.sha256"></a>
 
@@ -123,13 +108,7 @@ sequenceDiagram
 
 [Source](contracts.aug#L7)
 
-```mermaid
-sequenceDiagram
-    participant p0 as Crypto.sha256
-
-    Note over p0: May leave with checked errors: CryptoError
-    Note over p0: Interface contract#59; implementation selected at runtime
-```
+May leave with checked errors: CryptoError. Interface contract; implementation selected at runtime. [Explanation](contracts.aug.md).
 
 <a id="sequence-Crypto.generateRsa"></a>
 
@@ -137,13 +116,7 @@ sequenceDiagram
 
 [Source](contracts.aug#L9)
 
-```mermaid
-sequenceDiagram
-    participant p0 as Crypto.generateRsa
-
-    Note over p0: May leave with checked errors: CryptoError
-    Note over p0: Interface contract#59; implementation selected at runtime
-```
+May leave with checked errors: CryptoError. Interface contract; implementation selected at runtime. [Explanation](contracts.aug.md).
 
 <a id="sequence-Crypto.publicRsa"></a>
 
@@ -151,13 +124,7 @@ sequenceDiagram
 
 [Source](contracts.aug#L11)
 
-```mermaid
-sequenceDiagram
-    participant p0 as Crypto.publicRsa
-
-    Note over p0: May leave with checked errors: CryptoError
-    Note over p0: Interface contract#59; implementation selected at runtime
-```
+May leave with checked errors: CryptoError. Interface contract; implementation selected at runtime. [Explanation](contracts.aug.md).
 
 <a id="sequence-Crypto.signRsa"></a>
 
@@ -165,13 +132,7 @@ sequenceDiagram
 
 [Source](contracts.aug#L13)
 
-```mermaid
-sequenceDiagram
-    participant p0 as Crypto.signRsa
-
-    Note over p0: May leave with checked errors: CryptoError
-    Note over p0: Interface contract#59; implementation selected at runtime
-```
+May leave with checked errors: CryptoError. Interface contract; implementation selected at runtime. [Explanation](contracts.aug.md).
 
 <a id="sequence-Crypto.verifyRsa"></a>
 
@@ -179,13 +140,7 @@ sequenceDiagram
 
 [Source](contracts.aug#L15)
 
-```mermaid
-sequenceDiagram
-    participant p0 as Crypto.verifyRsa
-
-    Note over p0: May leave with checked errors: CryptoError
-    Note over p0: Interface contract#59; implementation selected at runtime
-```
+May leave with checked errors: CryptoError. Interface contract; implementation selected at runtime. [Explanation](contracts.aug.md).
 
 <a id="sequence-Crypto.verifyEd25519"></a>
 
@@ -193,13 +148,7 @@ sequenceDiagram
 
 [Source](contracts.aug#L17)
 
-```mermaid
-sequenceDiagram
-    participant p0 as Crypto.verifyEd25519
-
-    Note over p0: May leave with checked errors: CryptoError
-    Note over p0: Interface contract#59; implementation selected at runtime
-```
+May leave with checked errors: CryptoError. Interface contract; implementation selected at runtime. [Explanation](contracts.aug.md).
 
 <a id="sequence-Crypto.decodeBase64url"></a>
 
@@ -207,13 +156,7 @@ sequenceDiagram
 
 [Source](contracts.aug#L19)
 
-```mermaid
-sequenceDiagram
-    participant p0 as Crypto.decodeBase64url
-
-    Note over p0: May leave with checked errors: CryptoError
-    Note over p0: Interface contract#59; implementation selected at runtime
-```
+May leave with checked errors: CryptoError. Interface contract; implementation selected at runtime. [Explanation](contracts.aug.md).
 
 <a id="sequence-Crypto.equal"></a>
 
@@ -221,12 +164,7 @@ sequenceDiagram
 
 [Source](contracts.aug#L21)
 
-```mermaid
-sequenceDiagram
-    participant p0 as Crypto.equal
-
-    Note over p0: Interface contract#59; implementation selected at runtime
-```
+Interface contract; implementation selected at runtime. [Explanation](contracts.aug.md).
 
 <a id="sequence-Crypto.exportRsa"></a>
 
@@ -234,13 +172,7 @@ sequenceDiagram
 
 [Source](contracts.aug#L23)
 
-```mermaid
-sequenceDiagram
-    participant p0 as Crypto.exportRsa
-
-    Note over p0: May leave with checked errors: CryptoError
-    Note over p0: Interface contract#59; implementation selected at runtime
-```
+May leave with checked errors: CryptoError. Interface contract; implementation selected at runtime. [Explanation](contracts.aug.md).
 
 <a id="sequence-Crypto.importRsa"></a>
 
@@ -248,13 +180,7 @@ sequenceDiagram
 
 [Source](contracts.aug#L25)
 
-```mermaid
-sequenceDiagram
-    participant p0 as Crypto.importRsa
-
-    Note over p0: May leave with checked errors: CryptoError
-    Note over p0: Interface contract#59; implementation selected at runtime
-```
+May leave with checked errors: CryptoError. Interface contract; implementation selected at runtime. [Explanation](contracts.aug.md).
 
 <a id="sequence-Crypto.passwordHash"></a>
 
@@ -262,13 +188,7 @@ sequenceDiagram
 
 [Source](contracts.aug#L27)
 
-```mermaid
-sequenceDiagram
-    participant p0 as Crypto.passwordHash
-
-    Note over p0: May leave with checked errors: CryptoError
-    Note over p0: Interface contract#59; implementation selected at runtime
-```
+May leave with checked errors: CryptoError. Interface contract; implementation selected at runtime. [Explanation](contracts.aug.md).
 
 <a id="sequence-_aug_crypto_random"></a>
 
@@ -276,13 +196,7 @@ sequenceDiagram
 
 [Source](contracts.aug#L29)
 
-```mermaid
-sequenceDiagram
-    participant p0 as _aug_crypto_random
-
-    Note over p0: May leave with checked errors: CryptoError
-    Note over p0: Native implementation#59; only the declared contract is known
-```
+May leave with checked errors: CryptoError. Native implementation; only the declared contract is known. [Explanation](contracts.aug.md).
 
 <a id="sequence-_aug_crypto_sha256"></a>
 
@@ -290,13 +204,7 @@ sequenceDiagram
 
 [Source](contracts.aug#L30)
 
-```mermaid
-sequenceDiagram
-    participant p0 as _aug_crypto_sha256
-
-    Note over p0: May leave with checked errors: CryptoError
-    Note over p0: Native implementation#59; only the declared contract is known
-```
+May leave with checked errors: CryptoError. Native implementation; only the declared contract is known. [Explanation](contracts.aug.md).
 
 <a id="sequence-_aug_crypto_generate_rsa"></a>
 
@@ -304,13 +212,7 @@ sequenceDiagram
 
 [Source](contracts.aug#L31)
 
-```mermaid
-sequenceDiagram
-    participant p0 as _aug_crypto_generate_rsa
-
-    Note over p0: May leave with checked errors: CryptoError
-    Note over p0: Native implementation#59; only the declared contract is known
-```
+May leave with checked errors: CryptoError. Native implementation; only the declared contract is known. [Explanation](contracts.aug.md).
 
 <a id="sequence-_aug_crypto_public_rsa"></a>
 
@@ -318,13 +220,7 @@ sequenceDiagram
 
 [Source](contracts.aug#L32)
 
-```mermaid
-sequenceDiagram
-    participant p0 as _aug_crypto_public_rsa
-
-    Note over p0: May leave with checked errors: CryptoError
-    Note over p0: Native implementation#59; only the declared contract is known
-```
+May leave with checked errors: CryptoError. Native implementation; only the declared contract is known. [Explanation](contracts.aug.md).
 
 <a id="sequence-_aug_crypto_sign_rsa"></a>
 
@@ -332,13 +228,7 @@ sequenceDiagram
 
 [Source](contracts.aug#L33)
 
-```mermaid
-sequenceDiagram
-    participant p0 as _aug_crypto_sign_rsa
-
-    Note over p0: May leave with checked errors: CryptoError
-    Note over p0: Native implementation#59; only the declared contract is known
-```
+May leave with checked errors: CryptoError. Native implementation; only the declared contract is known. [Explanation](contracts.aug.md).
 
 <a id="sequence-_aug_crypto_verify_ed25519"></a>
 
@@ -346,13 +236,7 @@ sequenceDiagram
 
 [Source](contracts.aug#L34)
 
-```mermaid
-sequenceDiagram
-    participant p0 as _aug_crypto_verify_ed25519
-
-    Note over p0: May leave with checked errors: CryptoError
-    Note over p0: Native implementation#59; only the declared contract is known
-```
+May leave with checked errors: CryptoError. Native implementation; only the declared contract is known. [Explanation](contracts.aug.md).
 
 <a id="sequence-_aug_crypto_verify_rsa"></a>
 
@@ -360,13 +244,7 @@ sequenceDiagram
 
 [Source](contracts.aug#L35)
 
-```mermaid
-sequenceDiagram
-    participant p0 as _aug_crypto_verify_rsa
-
-    Note over p0: May leave with checked errors: CryptoError
-    Note over p0: Native implementation#59; only the declared contract is known
-```
+May leave with checked errors: CryptoError. Native implementation; only the declared contract is known. [Explanation](contracts.aug.md).
 
 <a id="sequence-_aug_crypto_decode_base64url"></a>
 
@@ -374,13 +252,7 @@ sequenceDiagram
 
 [Source](contracts.aug#L36)
 
-```mermaid
-sequenceDiagram
-    participant p0 as _aug_crypto_decode_base64url
-
-    Note over p0: May leave with checked errors: CryptoError
-    Note over p0: Native implementation#59; only the declared contract is known
-```
+May leave with checked errors: CryptoError. Native implementation; only the declared contract is known. [Explanation](contracts.aug.md).
 
 <a id="sequence-_aug_crypto_equal"></a>
 
@@ -388,12 +260,7 @@ sequenceDiagram
 
 [Source](contracts.aug#L37)
 
-```mermaid
-sequenceDiagram
-    participant p0 as _aug_crypto_equal
-
-    Note over p0: Native implementation#59; only the declared contract is known
-```
+Native implementation; only the declared contract is known. [Explanation](contracts.aug.md).
 
 <a id="sequence-_aug_crypto_export_rsa"></a>
 
@@ -401,13 +268,7 @@ sequenceDiagram
 
 [Source](contracts.aug#L38)
 
-```mermaid
-sequenceDiagram
-    participant p0 as _aug_crypto_export_rsa
-
-    Note over p0: May leave with checked errors: CryptoError
-    Note over p0: Native implementation#59; only the declared contract is known
-```
+May leave with checked errors: CryptoError. Native implementation; only the declared contract is known. [Explanation](contracts.aug.md).
 
 <a id="sequence-_aug_crypto_import_rsa"></a>
 
@@ -415,13 +276,7 @@ sequenceDiagram
 
 [Source](contracts.aug#L39)
 
-```mermaid
-sequenceDiagram
-    participant p0 as _aug_crypto_import_rsa
-
-    Note over p0: May leave with checked errors: CryptoError
-    Note over p0: Native implementation#59; only the declared contract is known
-```
+May leave with checked errors: CryptoError. Native implementation; only the declared contract is known. [Explanation](contracts.aug.md).
 
 <a id="sequence-_aug_crypto_password_hash"></a>
 
@@ -429,13 +284,7 @@ sequenceDiagram
 
 [Source](contracts.aug#L40)
 
-```mermaid
-sequenceDiagram
-    participant p0 as _aug_crypto_password_hash
-
-    Note over p0: May leave with checked errors: CryptoError
-    Note over p0: Native implementation#59; only the declared contract is known
-```
+May leave with checked errors: CryptoError. Native implementation; only the declared contract is known. [Explanation](contracts.aug.md).
 
 <a id="sequence-GnuTlsCrypto-20-constructor"></a>
 
@@ -443,12 +292,7 @@ sequenceDiagram
 
 [Source](contracts.aug#L43)
 
-```mermaid
-sequenceDiagram
-    participant p0 as GnuTlsCrypto constructor
-
-    Note over p0: No calls in this operation#59; see the source and specification
-```
+[Explanation](contracts.aug.md).
 
 <a id="sequence-GnuTlsCrypto.random"></a>
 
@@ -462,8 +306,9 @@ sequenceDiagram
     participant p1 as _aug_crypto_random
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _aug_crypto_random(size) · native boundary
-    Note over p0: Return _aug_crypto_random(size)#59; required cleanup runs before exit
+    p0->>p1: _aug_crypto_random(size=size) · native boundary
+    p1-->>p0: Bytes
+    Note over p0: Return _aug_crypto_random(size)； required cleanup runs before exit
     Note over p0: Leave unsafe scope
     end
     Note over p0: May leave with checked errors: CryptoError
@@ -481,8 +326,9 @@ sequenceDiagram
     participant p1 as _aug_crypto_sha256
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _aug_crypto_sha256(input) · native boundary
-    Note over p0: Return _aug_crypto_sha256(input)#59; required cleanup runs before exit
+    p0->>p1: _aug_crypto_sha256(input=input) · native boundary
+    p1-->>p0: Bytes
+    Note over p0: Return _aug_crypto_sha256(input)； required cleanup runs before exit
     Note over p0: Leave unsafe scope
     end
     Note over p0: May leave with checked errors: CryptoError
@@ -501,7 +347,8 @@ sequenceDiagram
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
     p0->>p1: _aug_crypto_generate_rsa() · native boundary
-    Note over p0: Return _aug_crypto_generate_rsa()#59; required cleanup runs before exit
+    p1-->>p0: RsaPrivateKey
+    Note over p0: Return _aug_crypto_generate_rsa()； required cleanup runs before exit
     Note over p0: Leave unsafe scope
     end
     Note over p0: May leave with checked errors: CryptoError
@@ -519,8 +366,9 @@ sequenceDiagram
     participant p1 as _aug_crypto_public_rsa
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _aug_crypto_public_rsa(key) · native boundary
-    Note over p0: Return _aug_crypto_public_rsa(key)#59; required cleanup runs before exit
+    p0->>p1: _aug_crypto_public_rsa(key=key) · native boundary
+    p1-->>p0: RsaPublicKey
+    Note over p0: Return _aug_crypto_public_rsa(key)； required cleanup runs before exit
     Note over p0: Leave unsafe scope
     end
     Note over p0: May leave with checked errors: CryptoError
@@ -538,8 +386,9 @@ sequenceDiagram
     participant p1 as _aug_crypto_sign_rsa
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _aug_crypto_sign_rsa(key, input) · native boundary
-    Note over p0: Return _aug_crypto_sign_rsa(key, input)#59; required cleanup runs before exit
+    p0->>p1: _aug_crypto_sign_rsa(key=key, input=input) · native boundary
+    p1-->>p0: Bytes
+    Note over p0: Return _aug_crypto_sign_rsa(key, input)； required cleanup runs before exit
     Note over p0: Leave unsafe scope
     end
     Note over p0: May leave with checked errors: CryptoError
@@ -557,8 +406,9 @@ sequenceDiagram
     participant p1 as _aug_crypto_verify_ed25519
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _aug_crypto_verify_ed25519(publicKey, input, signature) · native boundary
-    Note over p0: Return _aug_crypto_verify_ed25519(publicKey, input, signature)#59; required cleanup runs before exit
+    p0->>p1: _aug_crypto_verify_ed25519(publicKey=publicKey, input=input, signature=signature) · native boundary
+    p1-->>p0: bool
+    Note over p0: Return _aug_crypto_verify_ed25519(publicKey, input, signature)； required cleanup runs before exit
     Note over p0: Leave unsafe scope
     end
     Note over p0: May leave with checked errors: CryptoError
@@ -576,8 +426,9 @@ sequenceDiagram
     participant p1 as _aug_crypto_verify_rsa
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _aug_crypto_verify_rsa(publicKey, input, signature) · native boundary
-    Note over p0: Return _aug_crypto_verify_rsa(publicKey, input, signature)#59; required cleanup runs before exit
+    p0->>p1: _aug_crypto_verify_rsa(publicKey=publicKey, input=input, signature=signature) · native boundary
+    p1-->>p0: bool
+    Note over p0: Return _aug_crypto_verify_rsa(publicKey, input, signature)； required cleanup runs before exit
     Note over p0: Leave unsafe scope
     end
     Note over p0: May leave with checked errors: CryptoError
@@ -595,8 +446,9 @@ sequenceDiagram
     participant p1 as _aug_crypto_decode_base64url
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _aug_crypto_decode_base64url(input) · native boundary
-    Note over p0: Return _aug_crypto_decode_base64url(input)#59; required cleanup runs before exit
+    p0->>p1: _aug_crypto_decode_base64url(input=input) · native boundary
+    p1-->>p0: Bytes
+    Note over p0: Return _aug_crypto_decode_base64url(input)； required cleanup runs before exit
     Note over p0: Leave unsafe scope
     end
     Note over p0: May leave with checked errors: CryptoError
@@ -614,8 +466,9 @@ sequenceDiagram
     participant p1 as _aug_crypto_equal
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _aug_crypto_equal(left, right) · native boundary
-    Note over p0: Return _aug_crypto_equal(left, right)#59; required cleanup runs before exit
+    p0->>p1: _aug_crypto_equal(left=left, right=right) · native boundary
+    p1-->>p0: bool
+    Note over p0: Return _aug_crypto_equal(left, right)； required cleanup runs before exit
     Note over p0: Leave unsafe scope
     end
 ```
@@ -632,8 +485,9 @@ sequenceDiagram
     participant p1 as _aug_crypto_export_rsa
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _aug_crypto_export_rsa(publicKey) · native boundary
-    Note over p0: Return _aug_crypto_export_rsa(publicKey)#59; required cleanup runs before exit
+    p0->>p1: _aug_crypto_export_rsa(publicKey=publicKey) · native boundary
+    p1-->>p0: Tuple‹Bytes, Bytes›
+    Note over p0: Return _aug_crypto_export_rsa(publicKey)； required cleanup runs before exit
     Note over p0: Leave unsafe scope
     end
     Note over p0: May leave with checked errors: CryptoError
@@ -651,8 +505,9 @@ sequenceDiagram
     participant p1 as _aug_crypto_import_rsa
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _aug_crypto_import_rsa(modulus, exponent) · native boundary
-    Note over p0: Return _aug_crypto_import_rsa(modulus, exponent)#59; required cleanup runs before exit
+    p0->>p1: _aug_crypto_import_rsa(modulus=modulus, exponent=exponent) · native boundary
+    p1-->>p0: RsaPublicKey
+    Note over p0: Return _aug_crypto_import_rsa(modulus, exponent)； required cleanup runs before exit
     Note over p0: Leave unsafe scope
     end
     Note over p0: May leave with checked errors: CryptoError
@@ -670,8 +525,9 @@ sequenceDiagram
     participant p1 as _aug_crypto_password_hash
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _aug_crypto_password_hash(password, salt, iterations) · native boundary
-    Note over p0: Return _aug_crypto_password_hash(password, salt, iterations)#59; required cleanup runs before exit
+    p0->>p1: _aug_crypto_password_hash(password=password, salt=salt, iterations=iterations) · native boundary
+    p1-->>p0: Bytes
+    Note over p0: Return _aug_crypto_password_hash(password, salt, iterations)； required cleanup runs before exit
     Note over p0: Leave unsafe scope
     end
     Note over p0: May leave with checked errors: CryptoError

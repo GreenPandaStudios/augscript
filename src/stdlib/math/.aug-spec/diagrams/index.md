@@ -2,34 +2,35 @@
 
 # Project diagrams
 
-Read the areas first, then open a module for its class interactions, API calls and sequences. Follow an operation to its specification and source.
+Start here to see what moves between the application’s folders. Each arrow names an operation’s inputs and the result it returns to its caller. Open a folder for the next level of detail. Expand the contract list for complete types and dependency links.
 
-These are checked static views. Arrows describe possible calls, not an execution trace. Interface implementations, callbacks and foreign internals are not guessed. Tests are described in the adjacent specifications.
-
-## Areas
+## Data flow
 
 ```mermaid
 flowchart TD
-    n0["August library"]
-
+    n0["decimals"]
+    n1["integers"]
+    n0 -->|"checkedAdd(left, right) / checkedDivide(left, right) + 2 more → int"| n1
 ```
 
-## Modules
+<details>
+<summary>Data crossing these boundaries (4 contracts)</summary>
 
-```mermaid
-flowchart TD
-    n0["august/math/decimals.aug"]
-    n1["august/math/export.aug"]
-    n2["august/math/integers.aug"]
-    n0 -->|"uses"| n2
-    n1 -->|"uses"| n0
-    n1 -->|"uses"| n2
-```
+| From | To | Operation and inputs | Result |
+| --- | --- | --- | --- |
+| decimals | integers | [checkedAdd](../../integers.aug.md) · left: int, right: int | int |
+| decimals | integers | [checkedDivide](../../integers.aug.md) · left: int, right: int | int |
+| decimals | integers | [checkedMultiply](../../integers.aug.md) · left: int, right: int | int |
+| decimals | integers | [checkedSubtract](../../integers.aug.md) · left: int, right: int | int |
+
+</details>
 
 ## Open a module
 
-| Module | Diagrams | Specification |
-| --- | --- | --- |
-| august/math/decimals.aug | [Interactions and sequences](../../decimals.aug.diagrams.md) | [Explanation](../../decimals.aug.md) |
-| august/math/export.aug | [Interactions and sequences](../../export.aug.diagrams.md) | [Explanation](../../export.aug.md) |
-| august/math/integers.aug | [Interactions and sequences](../../integers.aug.diagrams.md) | [Explanation](../../integers.aug.md) |
+| Module | Read |
+| --- | --- |
+| august/math/decimals.aug | [Flow and sequences](../../decimals.aug.diagrams.md) · [Explanation](../../decimals.aug.md) |
+| august/math/export.aug | [Flow and sequences](../../export.aug.diagrams.md) · [Explanation](../../export.aug.md) |
+| august/math/integers.aug | [Flow and sequences](../../integers.aug.diagrams.md) · [Explanation](../../integers.aug.md) |
+
+These are static call boundaries, not a request trace. Interface implementations and foreign internals stop at their checked contracts. Dotted arrows defer a callback or browser action. Imports alone do not imply a call.

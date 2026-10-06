@@ -18,17 +18,9 @@ outline: [2, 3]
 
 ```mermaid
 flowchart TD
-    n0["IResource · resource.aug"]
-    n1["Resource · resource.aug"]
+    n0["IResource"]
+    n1["Resource"]
     n1 -->|"implements"| n0
-```
-
-## API calls
-
-```mermaid
-flowchart TD
-    n0["Resource.drop · resource.aug"]
-
 ```
 
 ## Sequences
@@ -41,12 +33,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](resource.md#source-L2)
 :::
 
-```mermaid
-sequenceDiagram
-    participant p0 as Resource constructor
-
-    Note over p0: No calls in this operation#59; see the source and specification
-```
+[Explanation](resource.md).
 
 ### Resource.drop {#sequence-Resource.drop}
 
@@ -54,12 +41,7 @@ sequenceDiagram
 [Source](resource.md#source-L3)
 :::
 
-```mermaid
-sequenceDiagram
-    participant p0 as Resource.drop
-
-    Note over p0: No calls in this operation#59; see the source and specification
-```
+[Explanation](resource.md).
 
 ## Called contracts
 

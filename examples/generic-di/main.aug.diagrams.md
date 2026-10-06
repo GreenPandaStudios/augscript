@@ -9,18 +9,21 @@
 ```mermaid
 flowchart TD
     n0["main.aug"]
-    n1["Program · types.aug"]
+    n1["Program"]
     n0 -->|"calls"| n1
 ```
 
-## API calls
+<details>
+<summary>Call relationships</summary>
 
 ```mermaid
 flowchart TD
     n0["main.aug"]
-    n1["Program.start · types.aug"]
+    n1["Program.start"]
     n0 -->|"calls"| n1
 ```
+
+</details>
 
 ## Sequences
 
@@ -35,7 +38,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ```mermaid
 sequenceDiagram
     participant p0 as Startup
-    participant p1 as Program.start
+    participant p1 as Program
     Note over p0: Resolve app from the declared composition
     p0->>p1: start()
 ```

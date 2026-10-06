@@ -8,24 +8,27 @@
 
 ```mermaid
 flowchart TD
-    n0["Crypto · package/@git/url_9ef654c66d34ab8f5527@0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug"]
-    n1["verifyCredentials · provider/credentials.aug"]
+    n0["Crypto"]
+    n1["verifyCredentials"]
     n1 -->|"calls"| n0
     n1 -->|"depends on"| n0
 ```
 
-## API calls
+<details>
+<summary>Call relationships</summary>
 
 ```mermaid
 flowchart TD
-    n0["Crypto.decodeBase64url · package/@git/url_9ef654c66d34ab8f5527@0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/con…"]
-    n1["Crypto.equal · package/@git/url_9ef654c66d34ab8f5527@0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug"]
-    n2["Crypto.passwordHash · package/@git/url_9ef654c66d34ab8f5527@0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contra…"]
-    n3["verifyCredentials · provider/credentials.aug"]
+    n0["Crypto.decodeBase64url"]
+    n1["Crypto.equal"]
+    n2["Crypto.passwordHash"]
+    n3["verifyCredentials"]
     n3 -->|"calls"| n0
     n3 -->|"calls"| n1
     n3 -->|"calls"| n2
 ```
+
+</details>
 
 ## Sequences
 
@@ -43,30 +46,32 @@ sequenceDiagram
     participant p1 as username.length
     participant p2 as password.length
     participant p3 as password.bytes
-    participant p4 as #34;August demo salt v1#34;.bytes
-    participant p5 as Crypto.passwordHash
-    participant p6 as Crypto.decodeBase64url
-    participant p7 as username.bytes
-    participant p8 as #34;ada#34;.bytes
-    participant p9 as Crypto.equal
+    participant p4 as ”August demo salt v1”.bytes
+    participant p5 as Crypto
+    participant p6 as username.bytes
+    participant p7 as ”ada”.bytes
     p0->>p1: username.length()
     opt Left is false
     p0->>p2: password.length()
     end
-    alt username.length() #62; 64 or password.length() #62; 256
-    Note over p0: Return false#59; required cleanup runs before exit
+    alt username.length() › 64 or password.length() › 256
+    Note over p0: Return false； required cleanup runs before exit
     end
     p0->>p3: password.bytes()
-    p0->>p4: #34;August demo salt v1#34;.bytes()
-    p0->>p5: passwordHash(password, salt, iterations) · interface dispatch
-    p0->>p6: decodeBase64url(input) · interface dispatch
-    p0->>p7: username.bytes()
-    p0->>p8: #34;ada#34;.bytes()
-    p0->>p9: equal(left, right) · interface dispatch
-    p0->>p9: equal(left, right) · interface dispatch
+    p0->>p4: ”August demo salt v1”.bytes()
+    p0->>p5: passwordHash(password=password.bytes(), salt=”August demo salt v1”.bytes(), iterations=600000) · interface dispatch
+    p5-->>p0: actual: Bytes
+    p0->>p5: decodeBase64url(input=”s70USYF6WohPz2f7VLA9haS_ZgEtenviSf_HG0o7B_A”) · interface dispatch
+    p5-->>p0: expected: Bytes
+    p0->>p6: username.bytes()
+    p0->>p7: ”ada”.bytes()
+    p0->>p5: equal(left=username.bytes(), right=”ada”.bytes()) · interface dispatch
+    p5-->>p0: userMatches: bool
+    p0->>p5: equal(left=actual, right=expected) · interface dispatch
+    p5-->>p0: passwordMatches: bool
     opt Left is true
     end
-    Note over p0: Return userMatches and passwordMatches#59; required cleanup runs before exit
+    Note over p0: Return userMatches and passwordMatches； required cleanup runs before exit
     Note over p0: May leave with checked errors: CryptoError
 ```
 

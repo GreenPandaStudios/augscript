@@ -14,17 +14,6 @@ outline: [2, 3]
 
 [Project overview](../diagrams/index.md) · [Compiled explanation](views.md)
 
-## Class interactions
-
-No relationships at this level.
-
-## API calls
-
-```mermaid
-flowchart TD
-    n0["Page · common/views.aug"]
-
-```
 
 ## Sequences
 
@@ -36,10 +25,5 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](views.md#source-L3)
 :::
 
-```mermaid
-sequenceDiagram
-    participant p0 as Page
-
-    Note over p0: Return #60;html lang=#34;en#34;#62; #60;head#62; #60;meta charset=#34;utf-8#34; /#62; #60;meta name=#34;viewport#34; content=#34;width=device-width, initial-sc…
-```
+Return \<html lang="en"\> \<head\> \<meta charset="utf-8" /\> \<meta name="viewport" content="width=device-width, initial-scale=1" /\> \<title\>{title} — August\</title\> \</head\> \<body style="margin:0;background:#f3f5f9;color:#17233a;font:17px system-ui,sans-serif;line-height:1.6"\> \<main style="max-width:640px;margin:48px auto;padding:28px;background:white;border-radius:20px;box-shadow:0 12px 48px #17233a12"\> \<nav\>\<a href="/" style="color:#4852d7;font-weight:750;text-decoration:none"\>August · OpenID Connect\</a\>\</nav\> \<h1\>{title}\</h1\> {children} \</main\> \</body\> \</html\>; required cleanup runs before exit. [Explanation](views.md).
 

@@ -14,13 +14,6 @@ outline: [2, 3]
 
 [Project overview](diagrams/index.md) · [Compiled explanation](main.md)
 
-## Class interactions
-
-No relationships at this level.
-
-## API calls
-
-No relationships at this level.
 
 ## Sequences
 
@@ -36,8 +29,8 @@ Call arrows identify checked targets; loop and branch frames determine when they
 sequenceDiagram
     participant p0 as Startup
     participant p1 as print
-    loop While greetings #60; 1000000
-    p0->>p1: print(value)
+    loop While greetings ‹ 1000000
+    p0->>p1: print(value=”Hello, August! 👋”)
     end
 ```
 

@@ -19,20 +19,22 @@ outline: [2, 3]
 ```mermaid
 flowchart TD
     n0["main.aug"]
-    n1["GpuError · package/@greenpandastudios/aug-gpu@0.1.1/contracts.aug"]
+    n1["GpuError"]
     n0 -->|"calls"| n1
 ```
 
-## API calls
+::: details Call relationships
 
 ```mermaid
 flowchart TD
-    n0["calculate · compute.aug"]
+    n0["calculate"]
     n1["main.aug"]
-    n2["GpuError.explain · package/@greenpandastudios/aug-gpu@0.1.1/contracts.aug"]
+    n2["GpuError.explain"]
     n1 -->|"calls"| n0
     n1 -->|"calls"| n2
 ```
+
+:::
 
 ## Sequences
 
@@ -49,32 +51,33 @@ sequenceDiagram
     participant p0 as Startup
     participant p1 as calculate
     participant p2 as print
-    participant p3 as GpuError.explain
+    participant p3 as GpuError
     participant p4 as exit
-    opt Try body#59; stops on a checked failure
+    opt Try body； stops on a checked failure
     rect rgb(245, 240, 241)
     Note over p0: Enter task scope
-    p0-)p1: calculate(left, right) · start asynchronously
+    p0-)p1: calculate(left=［1.0, 2.0, 3.0］, right=［4.0, 5.0, 6.0］) · start asynchronously
     Note over p0: Worker starts with an isolated heap and copied data
-    p0-)p1: calculate(left, right) · start asynchronously
+    p0-)p1: calculate(left=［10.0, 20.0］, right=［1.0, 2.0］) · start asynchronously
     Note over p0: Worker starts with an isolated heap and copied data
-    Note over p0: Wait for first and second#59; failure cancels siblings and cleanup joins
+    Note over p0: Wait for first and second； failure cancels siblings and cleanup joins
     loop For each item in firstResult
-    p0->>p2: print(input 1)
+    p0->>p2: print(input 1=value)
     end
     loop For each item in secondResult
-    p0->>p2: print(input 1)
+    p0->>p2: print(input 1=value)
     end
     Note over p0: Join tasks and release scoped resources
     end
     end
     opt Catch GpuError
     p0->>p3: explain()
-    p0->>p2: print(value)
-    p0->>p4: exit(status)
+    p3-->>p0: string
+    p0->>p2: print(value=error.explain())
+    p0->>p4: exit(status=1)
     end
     opt Catch ConcurrencyError
-    p0->>p2: print(value)
+    p0->>p2: print(value=”Worker capacity is exhausted”)
     end
 ```
 

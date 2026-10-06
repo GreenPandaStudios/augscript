@@ -18,11 +18,11 @@ outline: [2, 3]
 
 ```mermaid
 flowchart TD
-    n0["Counter · counters.aug"]
-    n1["State · counters.aug"]
-    n2["_Counter · counters.aug"]
-    n3["_Initial · counters.aug"]
-    n4["_Updated · counters.aug"]
+    n0["Counter"]
+    n1["State"]
+    n2["_Counter"]
+    n3["_Initial"]
+    n4["_Updated"]
     n2 -->|"implements"| n0
     n2 -->|"calls"| n1
     n2 -->|"depends on _state"| n1
@@ -31,22 +31,20 @@ flowchart TD
     n4 -->|"implements"| n1
 ```
 
-## API calls
+::: details Call relationships
 
 ```mermaid
 flowchart TD
-    n0["Counter.increment · counters.aug"]
-    n1["Counter.value · counters.aug"]
-    n2["State.read · counters.aug"]
-    n3["_Counter.increment · counters.aug"]
-    n4["_Counter.value · counters.aug"]
-    n5["_Initial.read · counters.aug"]
-    n6["_Updated · counters.aug"]
-    n7["_Updated.read · counters.aug"]
-    n3 -->|"calls"| n2
-    n3 -->|"calls"| n6
-    n4 -->|"calls"| n2
+    n0["State.read"]
+    n1["_Counter.increment"]
+    n2["_Counter.value"]
+    n3["_Updated"]
+    n1 -->|"calls"| n0
+    n1 -->|"calls"| n3
+    n2 -->|"calls"| n0
 ```
+
+:::
 
 ## Sequences
 
@@ -58,12 +56,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](counters.md#source-L4)
 :::
 
-```mermaid
-sequenceDiagram
-    participant p0 as State.read
-
-    Note over p0: Interface contract#59; implementation selected at runtime
-```
+Interface contract; implementation selected at runtime. [Explanation](counters.md).
 
 ### \_Initial constructor {#sequence-_Initial-20-constructor}
 
@@ -71,12 +64,7 @@ sequenceDiagram
 [Source](counters.md#source-L5)
 :::
 
-```mermaid
-sequenceDiagram
-    participant p0 as _Initial constructor
-
-    Note over p0: No calls in this operation#59; see the source and specification
-```
+[Explanation](counters.md).
 
 ### \_Initial.read {#sequence-_Initial.read}
 
@@ -84,12 +72,7 @@ sequenceDiagram
 [Source](counters.md#source-L6)
 :::
 
-```mermaid
-sequenceDiagram
-    participant p0 as _Initial.read
-
-    Note over p0: Return 0#59; required cleanup runs before exit
-```
+Return 0; required cleanup runs before exit. [Explanation](counters.md).
 
 ### \_Updated constructor {#sequence-_Updated-20-constructor}
 
@@ -97,12 +80,7 @@ sequenceDiagram
 [Source](counters.md#source-L8)
 :::
 
-```mermaid
-sequenceDiagram
-    participant p0 as _Updated constructor
-
-    Note over p0: Receive fields: count
-```
+Receive fields: count. [Explanation](counters.md).
 
 ### \_Updated.read {#sequence-_Updated.read}
 
@@ -110,12 +88,7 @@ sequenceDiagram
 [Source](counters.md#source-L9)
 :::
 
-```mermaid
-sequenceDiagram
-    participant p0 as _Updated.read
-
-    Note over p0: Return count#59; required cleanup runs before exit
-```
+Return count; required cleanup runs before exit. [Explanation](counters.md).
 
 ### Counter.increment {#sequence-Counter.increment}
 
@@ -123,12 +96,7 @@ sequenceDiagram
 [Source](counters.md#source-L13)
 :::
 
-```mermaid
-sequenceDiagram
-    participant p0 as Counter.increment
-
-    Note over p0: Interface contract#59; implementation selected at runtime
-```
+Interface contract; implementation selected at runtime. [Explanation](counters.md).
 
 ### Counter.value {#sequence-Counter.value}
 
@@ -136,12 +104,7 @@ sequenceDiagram
 [Source](counters.md#source-L14)
 :::
 
-```mermaid
-sequenceDiagram
-    participant p0 as Counter.value
-
-    Note over p0: Interface contract#59; implementation selected at runtime
-```
+Interface contract; implementation selected at runtime. [Explanation](counters.md).
 
 ### \_Counter constructor {#sequence-_Counter-20-constructor}
 
@@ -149,12 +112,7 @@ sequenceDiagram
 [Source](counters.md#source-L15)
 :::
 
-```mermaid
-sequenceDiagram
-    participant p0 as _Counter constructor
-
-    Note over p0: Receive fields: injected _state
-```
+Receive fields: injected \_state. [Explanation](counters.md).
 
 ### \_Counter.increment {#sequence-_Counter.increment}
 
@@ -165,10 +123,12 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as _Counter.increment
-    participant p1 as State.read
+    participant p1 as State
     participant p2 as _Updated
     p0->>p1: read() · interface dispatch
-    p0->>p2: _Updated(count)
+    p1-->>p0: int
+    p0->>p2: _Updated(count=_state.read() + 1)
+    p2-->>p0: _state: _Updated
 ```
 
 ### \_Counter.value {#sequence-_Counter.value}
@@ -180,9 +140,10 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as _Counter.value
-    participant p1 as State.read
+    participant p1 as State
     p0->>p1: read() · interface dispatch
-    Note over p0: Return _state.read()#59; required cleanup runs before exit
+    p1-->>p0: int
+    Note over p0: Return _state.read()； required cleanup runs before exit
 ```
 
 ## Called contracts

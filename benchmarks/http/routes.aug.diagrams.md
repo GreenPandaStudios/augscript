@@ -4,23 +4,18 @@
 
 [Project overview](.aug-spec/diagrams/index.md) · [Compiled explanation](routes.aug.md)
 
-## Class interactions
+
+<details>
+<summary>Call relationships</summary>
 
 ```mermaid
 flowchart TD
-    n0["Reply · routes.aug"]
-    n1["reply · routes.aug"]
+    n0["Reply"]
+    n1["reply"]
     n1 -->|"calls"| n0
 ```
 
-## API calls
-
-```mermaid
-flowchart TD
-    n0["Reply · routes.aug"]
-    n1["reply · routes.aug"]
-    n1 -->|"calls"| n0
-```
+</details>
 
 ## Sequences
 
@@ -32,12 +27,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](routes.aug#L2)
 
-```mermaid
-sequenceDiagram
-    participant p0 as Reply constructor
-
-    Note over p0: Receive fields: id, message
-```
+Receive fields: id, message. [Explanation](routes.aug.md).
 
 <a id="sequence-reply"></a>
 
@@ -50,9 +40,10 @@ sequenceDiagram
     participant p0 as reply
     participant p1 as Reply
     Note over p0: GET /bench
-    p0->>p1: Reply(id, message)
-    Note over p0: Return Reply(id=7, message=#34;hello#34;)#59; required cleanup runs before exit
-    Note over p0: HTTP result follows declared response and error mapping#59; unhandled request failure returns 500
+    p0->>p1: Reply(id=7, message=”hello”)
+    p1-->>p0: Reply
+    Note over p0: Return Reply(id=7, message=”hello”)； required cleanup runs before exit
+    Note over p0: HTTP result follows declared response and error mapping； unhandled request failure returns 500
 ```
 
 ## Called contracts

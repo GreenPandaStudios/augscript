@@ -2,38 +2,48 @@
 
 # Project diagrams
 
-Read the areas first, then open a module for its class interactions, API calls and sequences. Follow an operation to its specification and source.
+Start here to see what moves between the application’s folders. Each arrow names an operation’s inputs and the result it returns to its caller. Open a folder for the next level of detail. Expand the contract list for complete types and dependency links.
 
-These are checked static views. Arrows describe possible calls, not an execution trace. Interface implementations, callbacks and foreign internals are not guessed. Tests are described in the adjacent specifications.
-
-## Areas
+## Data flow
 
 ```mermaid
 flowchart TD
-    n0["Project root"]
-    n1["package/@greenpandastudios/aug-sqlite@0.1.5"]
-    n0 -->|"uses"| n1
+    n0["database"]
+    n1["Startup"]
+    n1 -->|"storedName → string"| n0
 ```
 
-## Modules
+### Package boundaries
+
+<details>
+<summary>database package calls</summary>
 
 ```mermaid
-flowchart TD
-    n0["database.aug"]
-    n1["main.aug"]
-    n2["package/@greenpandastudios/aug-sqlite@0.1.5/api.aug"]
-    n3["package/@greenpandastudios/aug-sqlite@0.1.5/bindings.aug"]
-    n4["package/@greenpandastudios/aug-sqlite@0.1.5/contracts.aug"]
-    n0 -->|"uses"| n2
-    n0 -->|"uses"| n3
-    n0 -->|"uses"| n4
-    n1 -->|"uses"| n0
-    n1 -->|"uses"| n4
+flowchart LR
+    n0["database"]
+    n1["url_b634d36dc17498f595c5"]
+    n0 -->|"execute(database, sql, …) / openMemory + 1 more → Database / int + 1 more"| n1
 ```
+
+</details>
+
+<details>
+<summary>Data crossing these boundaries (4 contracts)</summary>
+
+| From | To | Operation and inputs | Result |
+| --- | --- | --- | --- |
+| database | url\_b634d36dc17498f595c5 | [execute](../packages/%40greenpandastudios/aug-sqlite/0.1.5/api.aug.md) · database: Database, sql: string, parameters: List\<string\> | int |
+| database | url\_b634d36dc17498f595c5 | [openMemory](../packages/%40greenpandastudios/aug-sqlite/0.1.5/api.aug.md) | Database |
+| database | url\_b634d36dc17498f595c5 | [queryScalar](../packages/%40greenpandastudios/aug-sqlite/0.1.5/api.aug.md) · database: Database, sql: string, parameters: List\<string\> | string |
+| Startup | database | [storedName](../../database.aug.md) | string |
+
+</details>
 
 ## Open a module
 
-| Module | Diagrams | Specification |
-| --- | --- | --- |
-| database.aug | [Interactions and sequences](../../database.aug.diagrams.md) | [Explanation](../../database.aug.md) |
-| main.aug | [Interactions and sequences](../../main.aug.diagrams.md) | [Explanation](../../main.aug.md) |
+| Module | Read |
+| --- | --- |
+| database.aug | [Flow and sequences](../../database.aug.diagrams.md) · [Explanation](../../database.aug.md) |
+| main.aug | [Flow and sequences](../../main.aug.diagrams.md) · [Explanation](../../main.aug.md) |
+
+These are static call boundaries, not a request trace. Interface implementations and foreign internals stop at their checked contracts. Dotted arrows defer a callback or browser action. Imports alone do not imply a call.

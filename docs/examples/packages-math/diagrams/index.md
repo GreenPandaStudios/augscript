@@ -12,30 +12,18 @@ outline: [2, 3]
 
 [Create a package](../index.md)
 
-Read the areas first, then open a module for its class interactions, API calls and sequences. Follow an operation to its specification and source.
+Start here to see what moves between the application’s folders. Each arrow names an operation’s inputs and the result it returns to its caller. Open a folder for the next level of detail. Expand the contract list for complete types and dependency links.
 
-These are checked static views. Arrows describe possible calls, not an execution trace. Interface implementations, callbacks and foreign internals are not guessed. Tests are described in the adjacent specifications.
+## Data flow
 
-## Areas
+No calls cross the source files in this view. Follow local operations in the file sequences below.
 
-```mermaid
-flowchart TD
-    n0["src"]
-
-```
-
-## Modules
-
-```mermaid
-flowchart TD
-    n0["src/arithmetic.aug"]
-    n1["src/export.aug"]
-    n1 -->|"uses"| n0
-```
 
 ## Open a module
 
-| Module | Diagrams | Specification |
-| --- | --- | --- |
-| src/arithmetic.aug | [Interactions and sequences](../src/arithmetic-diagrams.md) | [Explanation](../src/arithmetic.md) |
-| src/export.aug | [Interactions and sequences](../src/export-diagrams.md) | [Explanation](../src/export.md) |
+| Module | Read |
+| --- | --- |
+| src/arithmetic.aug | [Flow and sequences](../src/arithmetic-diagrams.md) · [Explanation](../src/arithmetic.md) |
+| src/export.aug | [Flow and sequences](../src/export-diagrams.md) · [Explanation](../src/export.md) |
+
+These are static call boundaries, not a request trace. Interface implementations and foreign internals stop at their checked contracts. Dotted arrows defer a callback or browser action. Imports alone do not imply a call.

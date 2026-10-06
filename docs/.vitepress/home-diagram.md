@@ -2,10 +2,10 @@
 
 ```mermaid
 flowchart TD
-    n0["Greeter · app/greeter.aug"]
-    n1["IGreeter · app/greeter.aug"]
-    n2["Console · august/io/contracts.aug"]
-    n3["Logger · logging/logger.aug"]
+    n0["Greeter"]
+    n1["IGreeter"]
+    n2["Console"]
+    n3["Logger"]
     n0 -->|"implements"| n1
     n0 -->|"depends on"| n2
     n0 -->|"calls"| n3

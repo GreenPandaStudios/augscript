@@ -12,33 +12,33 @@ outline: [2, 3]
 
 [Weather API](../index.md)
 
-Read the areas first, then open a module for its class interactions, API calls and sequences. Follow an operation to its specification and source.
+Start here to see what moves between the application’s folders. Each arrow names an operation’s inputs and the result it returns to its caller. Open a folder for the next level of detail. Expand the contract list for complete types and dependency links.
 
-These are checked static views. Arrows describe possible calls, not an execution trace. Interface implementations, callbacks and foreign internals are not guessed. Tests are described in the adjacent specifications.
-
-## Areas
+## Data flow
 
 ```mermaid
 flowchart TD
-    n0["Project root"]
-
+    n0["HTTP requests"]
+    n1["forecasts"]
+    n0 -->|"GET /weatherforecast → list of WeatherForecast"| n1
 ```
 
-## Modules
+::: details Data crossing these boundaries (1 contracts)
 
-```mermaid
-flowchart TD
-    n0["forecasts.aug"]
-    n1["main.aug"]
-    n1 -->|"uses"| n0
-```
+| From | To | Operation and inputs | Result |
+| --- | --- | --- | --- |
+| HTTP requests | forecasts | [GET /weatherforecast](../forecasts.md) · HTTP endpoint | List\<WeatherForecast\> |
+
+:::
 
 ## Open a module
 
-| Module | Diagrams | Specification |
-| --- | --- | --- |
-| forecasts.aug | [Interactions and sequences](../forecasts-diagrams.md) | [Explanation](../forecasts.md) |
-| main.aug | [Interactions and sequences](../main-diagrams.md) | [Explanation](../main.md) |
+| Module | Read |
+| --- | --- |
+| forecasts.aug | [Flow and sequences](../forecasts-diagrams.md) · [Explanation](../forecasts.md) |
+| main.aug | [Flow and sequences](../main-diagrams.md) · [Explanation](../main.md) |
+
+These are static call boundaries, not a request trace. Interface implementations and foreign internals stop at their checked contracts. Dotted arrows defer a callback or browser action. Imports alone do not imply a call.
 
 ## HTTP APIs
 

@@ -53,7 +53,7 @@ Consumer(Reader reader) implements Reader { read() returns int { return reader.r
  await validMermaid(outputs);
  assert.ok(outputs.some(output=>output.path===join(root,'.aug-spec/diagrams/index.md')));
  const page=outputs.find(output=>output.path===join(root,'app/api.aug.diagrams.md')).text;
- assert.match(page,/GET.*\/value/);assert.match(page,/sequenceDiagram/);assert.match(page,/alt.*value #62; 0/);
+ assert.match(page,/GET.*\/value/);assert.match(page,/sequenceDiagram/);assert.match(page,/alt.*value › 0/);
  const calls=outputs.find(output=>output.path===join(root,'app/service.aug.diagrams.md')).text;
  const sequence=calls.slice(calls.indexOf('### compute'),calls.indexOf('### increment'));
  assert.ok(sequence.indexOf(': increment')<sequence.indexOf(': twice'),'arguments evaluate before their enclosing call');
@@ -80,7 +80,7 @@ const largeProject={
 };
 test('large graphs and sequences split without dropping calls or control flow',()=>project(largeProject,(root,checked)=>{
  const page=diagrams(checked).find(o=>o.path===join(root,'many.aug.diagrams.md')).text;
- assert.match(page,/continued/);assert.ok((page.match(/sequenceDiagram/g)??[]).length>55);
+ assert.match(page,/continued/);assert.ok((page.match(/sequenceDiagram/g)??[]).length<=10,'value-only helpers must not produce separate diagrams');
  for(let i=0;i<55;i++)assert.ok(page.includes(': step'+i+'('),'missing step '+i);
  for(const diagram of page.matchAll(/```mermaid\n([\s\S]*?)\n```/g)){
    if(diagram[1].startsWith('flowchart'))assert.ok((diagram[1].match(/^    n\d+\[/gm)??[]).length<=18);
@@ -171,7 +171,7 @@ cleanup() {}
 },async(root,checked)=>{
  const page=diagrams(checked).find(o=>o.path===join(root,'objects.aug.diagrams.md'));
  await validMermaid([page]);assert.match(page.text,/Constructor layers: Delegate/);
- assert.match(page.text,/Return#59; required cleanup runs before exit/);assert.match(page.text,/Always: cleanup runs/);
+ assert.match(page.text,/Return； required cleanup runs before exit/);assert.match(page.text,/Always: cleanup runs/);
  assert.doesNotMatch(page.text,/break Return/);
 }));
 
@@ -202,7 +202,7 @@ copy(Positive original) returns Positive unless Invalid { return original with(v
 `,
 },async(root,checked)=>{
  const page=diagrams(checked).find(o=>o.path===join(root,'objects.aug.diagrams.md'));
- await validMermaid([page]);assert.match(page.text,/Set _value to 1/);
+ await validMermaid([page]);assert.match(page.text,/Set \\_value to 1/);
  const section=page.text.split('### copy\n')[1].split('## Called contracts')[0];
  assert.match(section,/Positive constructor/);assert.match(section,/Construct Positive from copied fields/);
  assert.ok(section.indexOf('Construct Positive')<section.indexOf('Return'));
@@ -244,6 +244,72 @@ test('project overviews retain imported contracts even without an immediate invo
  'data.aug':'readValue() returns int { return 7 }\n',
 },(root,checked)=>{
  const overview=diagrams(checked).find(o=>o.path===join(root,'.aug-spec/diagrams/index.md')).text;
- const modules=overview.split('## Modules\n')[1].split('## Open a module')[0];
- assert.match(modules,/main\.aug/);assert.match(modules,/data\.aug/);assert.match(modules,/-->/);
+ assert.match(overview,/main\.aug/);assert.match(overview,/data\.aug/);
+ const flow=overview.split('## Data flow\n')[1].split('## Open a module')[0];assert.doesNotMatch(flow,/-->/,'an unused import must not look like an executed call');
+}));
+
+// Folder summaries retain checked data contracts and expose both incoming and
+// outgoing boundaries, while leaf folders remain accessible through their files.
+test('folder views summarize inputs/results and stop at the next folder level',()=>project({
+ 'main.aug':'import load from api\nprint(value=load(id=4))\n',
+ 'api/export.aug':'export load from handler\n',
+ 'api/handler.aug':'import lookup from data\nload(int id) returns string { return lookup(id) }\n',
+ 'api/types.aug':'record Request(int id)\n',
+ 'data/export.aug':'export lookup from store\n',
+ 'data/store.aug':'lookup(int id) returns string { return "item" }\n',
+ 'data/types.aug':'record Item(string name)\n',
+ 'api/internal/work.aug':'work(int value) returns int { return value }\n',
+ 'api/internal/other.aug':'record Value(int number)\n',
+},async(root,checked)=>{
+ const outputs=diagrams(checked);await validMermaid(outputs);
+ const overview=outputs.find(output=>output.path===join(root,'.aug-spec/diagrams/index.md')).text;
+ const diagram=overview.match(/```mermaid\n([\s\S]*?)\n```/)[1];
+ assert.match(diagram,/"api"/);assert.match(diagram,/"data"/);assert.doesNotMatch(diagram,/handler|store|export\.aug/);
+ assert.match(diagram,/load\(id\)|lookup\(id\)/);assert.match(diagram,/→ string/);
+ const folder=outputs.find(output=>output.path===join(root,'.aug-spec/diagrams/folders/api/index.md')).text;
+ assert.match(folder,/handler/);assert.match(folder,/api\/internal/);assert.match(folder,/Startup/);assert.match(folder,/lookup/);
+ assert.ok(outputs.some(output=>output.path===join(root,'.aug-spec/diagrams/folders/api/internal/index.md')));
+ updateSpecs(checked);assert.deepEqual(updateSpecs(checkProject(loadProject(root)),true).stale,[]);
+ rmSync(join(root,'api/internal/other.aug'));updateSpecs(checkProject(loadProject(root)));
+ assert.ok(!existsSync(join(root,'.aug-spec/diagrams/folders/api/internal/index.md')));
+}));
+test('sequences show evaluated argument values and named returned data',()=>project({
+ 'main.aug':'import load from data\nname = load(id=7)\nprint(value=name)\n',
+ 'data.aug':'load(int id) returns string { return "item" }\n',
+},async(root,checked)=>{
+ const output=diagrams(checked).find(item=>item.path===join(root,'main.aug.diagrams.md'));await validMermaid([output]);
+ assert.match(output.text,/: load\(id=7\)/);assert.match(output.text,/-->>p0: name: string/);
+}));
+
+test('calls on one interface share a service lifeline and preserve inputs and replies',()=>project({
+ 'main.aug':'import Reader and Fixed from objects\nReader reader = Fixed()\na = reader.read(id=1)\nb = reader.find(name="two")\nprint(value=a + b)\n',
+ 'objects.aug':'interface Reader { read(int id) returns int; find(string name) returns int }\nFixed() implements Reader { read(int id) returns int { return id } find(string name) returns int { return 2 } }\n',
+},async(root,checked)=>{
+ const page=diagrams(checked).find(item=>item.path===join(root,'main.aug.diagrams.md'));await validMermaid([page]);
+ const sequence=page.text.split('### Startup\n')[1];
+ assert.equal((sequence.match(/participant p\d+ as Reader\n/g)??[]).length,1);
+ assert.match(sequence,/: read\(id=1\)/);assert.match(sequence,/: find\(name=”two”\)/);
+ assert.match(sequence,/-->>p0: a: int/);assert.match(sequence,/-->>p0: b: int/);
+ assert.doesNotMatch(sequence,/#\d+;/);
+}));
+test('dense folder views keep each HTTP entry with its called modules',()=>{
+ const source={'main.aug':'import route0 from api\nprint(value=route0(id=1))\n','api/export.aug':'export route0 from handler0\n'};
+ for(let i=0;i<4;i++){
+  source[`api/handler${i}.aug`]=`import get${i} from store${i}\nendpoint GET "/item${i}" as route${i}(int id from query) returns int { return get${i}(id) }\n`;
+  source[`api/store${i}.aug`]=`get${i}(int id) returns int { return id }\n`;
+ }
+ return project(source,async(root,checked)=>{
+  const output=diagrams(checked).find(item=>item.path===join(root,'.aug-spec/diagrams/folders/api/index.md'));await validMermaid([output]);
+  for(let i=0;i<4;i++){
+   const part=output.text.split(`### handler${i} request flow\n`)[1]?.split('### ')[0];assert.ok(part,`Missing handler ${i}`);
+   assert.match(part,/HTTP requests/);assert.match(part,new RegExp(`GET /item${i}\\(id\\)`));assert.match(part,new RegExp(`get${i}\\(id\\) → int`));
+  }
+ });
+});
+test('a folder manifest cannot alias generated paths through dot segments',()=>project(files,(root,checked)=>{
+ updateSpecs(checked);
+ const manifest=join(root,'.aug-spec/manifest.json'),saved=JSON.parse(readFileSync(manifest,'utf8'));
+ saved.files.push('.aug-spec/diagrams/folders/api/../api/index.md');writeFileSync(manifest,JSON.stringify(saved));
+ assert.throws(()=>updateSpecs(checkProject(loadProject(root))),/Invalid generated specification manifest/);
+ assert.ok(existsSync(join(root,'.aug-spec/diagrams/folders/app/index.md')));
 }));

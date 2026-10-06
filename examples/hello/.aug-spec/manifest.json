@@ -4,6 +4,7 @@
     ".aug-spec/august/0.23.0/io/contracts.aug",
     ".aug-spec/august/0.23.0/io/contracts.aug.diagrams.md",
     ".aug-spec/august/0.23.0/io/contracts.aug.md",
+    ".aug-spec/diagrams/folders/logging/index.md",
     ".aug-spec/diagrams/index.md",
     "app/export.aug.diagrams.md",
     "app/export.aug.md",
@@ -18,5 +19,5 @@
     "main.aug.diagrams.md",
     "main.aug.md"
   ],
-  "digest": "59328dadd2b64fead03ead25990a8248bac27ff2078fea657991f1081bb22f5e"
+  "digest": "7e769a772378e2b9796c581411ef2ccc31169f6242923c2ae7fd2c2c87aa7c8c"
 }

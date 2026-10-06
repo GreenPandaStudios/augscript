@@ -14,18 +14,17 @@ outline: [2, 3]
 
 [Project overview](../../../../../diagrams/index.md) · [Compiled explanation](api.md)
 
-## Class interactions
 
-No relationships at this level.
-
-## API calls
+::: details Call relationships
 
 ```mermaid
 flowchart TD
-    n0["_hash · package/@greenpandastudios/aug-blake3@0.1.5/api.aug"]
-    n1["hash · package/@greenpandastudios/aug-blake3@0.1.5/api.aug"]
+    n0["_hash"]
+    n1["hash"]
     n1 -->|"calls"| n0
 ```
+
+:::
 
 ## Sequences
 
@@ -37,13 +36,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](api.md#source-L4)
 :::
 
-```mermaid
-sequenceDiagram
-    participant p0 as _hash
-
-    Note over p0: May leave with checked errors: HashError
-    Note over p0: Native implementation#59; only the declared contract is known
-```
+May leave with checked errors: HashError. Native implementation; only the declared contract is known. [Explanation](api.md).
 
 ### hash {#sequence-hash}
 
@@ -57,8 +50,9 @@ sequenceDiagram
     participant p1 as _hash
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _hash(input) · native boundary
-    Note over p0: Return _hash(input)#59; required cleanup runs before exit
+    p0->>p1: _hash(input=input) · native boundary
+    p1-->>p0: string
+    Note over p0: Return _hash(input)； required cleanup runs before exit
     Note over p0: Leave unsafe scope
     end
     Note over p0: May leave with checked errors: HashError

@@ -18,11 +18,11 @@ outline: [2, 3]
 
 ```mermaid
 flowchart TD
-    n0["Console · august/io/contracts.aug"]
-    n1["Arithmetic · calculator.aug"]
-    n2["Calculator · calculator.aug"]
-    n3["_SilentLogger · calculator.aug"]
-    n4["Logger · logging/logger.aug"]
+    n0["Console"]
+    n1["Arithmetic"]
+    n2["Calculator"]
+    n3["_SilentLogger"]
+    n4["Logger"]
     n5["calculator.aug"]
     n1 -->|"depends on"| n0
     n2 -->|"depends on"| n0
@@ -34,21 +34,20 @@ flowchart TD
     n5 -->|"calls"| n2
 ```
 
-## API calls
+::: details Call relationships
 
 ```mermaid
 flowchart TD
-    n0["Arithmetic.add · calculator.aug"]
-    n1["Calculator · calculator.aug"]
-    n2["Calculator.add · calculator.aug"]
-    n3["_SilentLogger.log · calculator.aug"]
-    n4["load · calculator.aug"]
-    n5["Logger.log · logging/logger.aug"]
-    n6["calculator.aug"]
-    n2 -->|"calls"| n5
-    n6 -->|"calls"| n1
-    n6 -->|"calls"| n2
+    n0["Calculator"]
+    n1["Calculator.add"]
+    n2["Logger.log"]
+    n3["calculator.aug"]
+    n1 -->|"calls"| n2
+    n3 -->|"calls"| n0
+    n3 -->|"calls"| n1
 ```
+
+:::
 
 ## Sequences
 
@@ -60,12 +59,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](calculator.md#source-L6)
 :::
 
-```mermaid
-sequenceDiagram
-    participant p0 as Arithmetic.add
-
-    Note over p0: Interface contract#59; implementation selected at runtime
-```
+Interface contract; implementation selected at runtime. [Explanation](calculator.md).
 
 ### Calculator constructor {#sequence-Calculator-20-constructor}
 
@@ -73,12 +67,7 @@ sequenceDiagram
 [Source](calculator.md#source-L9)
 :::
 
-```mermaid
-sequenceDiagram
-    participant p0 as Calculator constructor
-
-    Note over p0: Receive fields: injected _logger
-```
+Receive fields: injected \_logger. [Explanation](calculator.md).
 
 ### Calculator.add {#sequence-Calculator.add}
 
@@ -89,9 +78,9 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as Calculator.add
-    participant p1 as Logger.log
-    p0->>p1: log(message) · interface dispatch
-    Note over p0: Return left + right#59; required cleanup runs before exit
+    participant p1 as Logger
+    p0->>p1: log(message=”adding integers”) · interface dispatch
+    Note over p0: Return left + right； required cleanup runs before exit
 ```
 
 ### load {#sequence-load}
@@ -106,9 +95,9 @@ sequenceDiagram
     participant p1 as FileError
     alt fail
     p0->>p1: FileError()
-    Note over p0: Raise checked failure FileError()#59; required cleanup runs before exit
+    Note over p0: Raise checked failure FileError()； required cleanup runs before exit
     end
-    Note over p0: Return #34;loaded#34;#59; required cleanup runs before exit
+    Note over p0: Return ”loaded”； required cleanup runs before exit
     Note over p0: May leave with checked errors: FileError
 ```
 
@@ -118,12 +107,7 @@ sequenceDiagram
 [Source](calculator.md#source-L33)
 :::
 
-```mermaid
-sequenceDiagram
-    participant p0 as _SilentLogger constructor
-
-    Note over p0: No calls in this operation#59; see the source and specification
-```
+[Explanation](calculator.md).
 
 ### \_SilentLogger.log {#sequence-_SilentLogger.log}
 
@@ -131,12 +115,7 @@ sequenceDiagram
 [Source](calculator.md#source-L34)
 :::
 
-```mermaid
-sequenceDiagram
-    participant p0 as _SilentLogger.log
-
-    Note over p0: No calls in this operation#59; see the source and specification
-```
+[Explanation](calculator.md).
 
 ## Called contracts
 

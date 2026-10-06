@@ -4,19 +4,18 @@
 
 [Project overview](../.aug-spec/diagrams/index.md) · [Compiled explanation](headers.aug.md)
 
-## Class interactions
 
-No relationships at this level.
-
-## API calls
+<details>
+<summary>Call relationships</summary>
 
 ```mermaid
 flowchart TD
-    n0["securityHeaders · common/headers.aug"]
-    n1["withCookie · common/headers.aug"]
-    n2["cookie · package/@git/url_897efafd565158fc4908@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug"]
-    n1 -->|"calls"| n2
+    n0["withCookie"]
+    n1["cookie"]
+    n0 -->|"calls"| n1
 ```
+
+</details>
 
 ## Sequences
 
@@ -33,17 +32,17 @@ sequenceDiagram
     participant p0 as securityHeaders
     participant p1 as Headers
     participant p2 as Headers().with
-    participant p3 as Headers().with(name=#34;cache-control#34;, value=#34;no-store#34;).with
-    participant p4 as Headers().with(name=#34;cache-control#34;, value=#34;no-store#34;).with(name=#34;pragma#34;, value=#34;no-cache#34;).with
-    participant p5 as Headers().with(name=#34;cache-control#34;, value=#34;no-store#34;).with(name=#34;pragma#34;, value=#34;no-cache#34;).with(name=#34;x-content-typ…
-    participant p6 as Headers().with(name=#34;cache-control#34;, value=#34;no-store#34;).with(name=#34;pragma#34;, value=#34;no-cache#34;).with(name=#34;x-content-typ…
+    participant p3 as Headers().with(name=”cache-control”, value=”no-store”).with
+    participant p4 as Headers().with(name=”cache-control”, value=”no-store”).with(name=”pragma”, value=”no-cache”).with
+    participant p5 as Headers().with(name=”cache-control”, value=”no-store”).with(name=”pragma”, value=”no-cache”).with(name=”x-content-typ…
+    participant p6 as Headers().with(name=”cache-control”, value=”no-store”).with(name=”pragma”, value=”no-cache”).with(name=”x-content-typ…
     p0->>p1: Headers()
-    p0->>p2: Headers().with(name, value)
-    p0->>p3: Headers().with(name=#34;cache-control#34;, value=#34;no-store#34;).with(name, value)
-    p0->>p4: Headers().with(name=#34;cache-control#34;, value=#34;no-store#34;).with(name=#34;pragma#34;, value=#34;no-cache#34;).with(name, value)
-    p0->>p5: Headers().with(name=#34;cache-control#34;, value=#34;no-store#34;).with(name=#34;pragma#34;, value=#34;no-cache#34;).with(name=#34;x-content-typ…
-    p0->>p6: Headers().with(name=#34;cache-control#34;, value=#34;no-store#34;).with(name=#34;pragma#34;, value=#34;no-cache#34;).with(name=#34;x-content-typ…
-    Note over p0: Return Headers().with(name=#34;cache-control#34;, value=#34;no-store#34;).with(name=#34;pragma#34;, value=#34;no-cache#34;).with(name=#34;x-cont…
+    p0->>p2: Headers().with(name=”cache-control”, value=”no-store”)
+    p0->>p3: Headers().with(name=”cache-control”, value=”no-store”).with(name=”pragma”, value=”no-cache”)
+    p0->>p4: Headers().with(name=”cache-control”, value=”no-store”).with(name=”pragma”, value=”no-cache”).with(name=”x-content-typ…
+    p0->>p5: Headers().with(name=”cache-control”, value=”no-store”).with(name=”pragma”, value=”no-cache”).with(name=”x-content-typ…
+    p0->>p6: Headers().with(name=”cache-control”, value=”no-store”).with(name=”pragma”, value=”no-cache”).with(name=”x-content-typ…
+    Note over p0: Return Headers().with(name=”cache-control”, value=”no-store”).with(name=”pragma”, value=”no-cache”).with(name=”x-cont…
     Note over p0: May leave with checked errors: HttpError
 ```
 
@@ -59,12 +58,13 @@ sequenceDiagram
     participant p1 as cookie
     participant p2 as cookie(name, value, path, maxAge, secure).all
     participant p3 as result.with
-    p0->>p1: cookie(name, value, path, maxAge, secure)
-    p0->>p2: cookie(name, value, path, maxAge, secure).all(name)
-    loop For each item in cookie(name, value, path, maxAge, secure).all(name=#34;set-cookie#34;)
-    p0->>p3: result.with(name, value)
+    p0->>p1: cookie(name=name, value=value, path=path, maxAge=maxAge, secure=secure)
+    p1-->>p0: Headers
+    p0->>p2: cookie(name, value, path, maxAge, secure).all(name=”set-cookie”)
+    loop For each item in cookie(name, value, path, maxAge, secure).all(name=”set-cookie”)
+    p0->>p3: result.with(name=”set-cookie”, value=content)
     end
-    Note over p0: Return result#59; required cleanup runs before exit
+    Note over p0: Return result； required cleanup runs before exit
     Note over p0: May leave with checked errors: HttpError
 ```
 

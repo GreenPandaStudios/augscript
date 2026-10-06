@@ -13,7 +13,7 @@ export function planExampleNavigation(artifacts,docs,sources) {
     const page=docs.get(artifact.path);let paragraph=0;
     let text=artifact.text.replace(/^<!--[^\n]*-->\n\n# [^\n]+\n\n/,'')
       .replace(/^<!-- August spec revision: [^\n]*-->\n\n/gm,'')
-      .replace(/^<details>\n<summary>Checked interface<\/summary>\n([\s\S]*?)\n<\/details>$/gm,(_,body)=>'::: details Checked interface\n'+body+'\n:::')
+      .replace(/^<details>\n<summary>([^<>\n]+)<\/summary>\n([\s\S]*?)\n<\/details>$/gm,(_,title,body)=>'::: details '+title+'\n'+body+'\n:::')
       .replace(/<a id="([^"]+)"><\/a>\n+(#{2,6} [^\n]+)/g,(_,id,heading)=>heading+' {#'+safeAnchor(id)+'}');
     text=text.split('\n').map(line=>{
       const local=[];

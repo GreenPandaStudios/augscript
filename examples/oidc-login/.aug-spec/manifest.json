@@ -1,6 +1,9 @@
 {
   "format": 1,
   "files": [
+    ".aug-spec/diagrams/folders/client/index.md",
+    ".aug-spec/diagrams/folders/common/index.md",
+    ".aug-spec/diagrams/folders/provider/index.md",
     ".aug-spec/diagrams/index.md",
     ".aug-spec/packages/@git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug",
     ".aug-spec/packages/@git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.diagrams.md",
@@ -65,5 +68,5 @@
     "provider/views.aug.diagrams.md",
     "provider/views.aug.md"
   ],
-  "digest": "7d29424e03803804730c61e9341aaf60d7e9d41458e060c3ebd982f6d74ce420"
+  "digest": "bd69fb5454e3e81c62b0d8acbc2832f6abfcccb2bd082d8a9b2836ebab188d8e"
 }

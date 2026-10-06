@@ -4,13 +4,6 @@
 
 [Project overview](.aug-spec/diagrams/index.md) · [Compiled explanation](export.aug.md)
 
-## Class interactions
-
-No relationships at this level.
-
-## API calls
-
-No relationships at this level.
 
 ## Sequences
 

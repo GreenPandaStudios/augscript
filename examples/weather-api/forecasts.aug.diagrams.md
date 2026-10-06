@@ -4,23 +4,18 @@
 
 [Project overview](.aug-spec/diagrams/index.md) · [Compiled explanation](forecasts.aug.md)
 
-## Class interactions
+
+<details>
+<summary>Call relationships</summary>
 
 ```mermaid
 flowchart TD
-    n0["WeatherForecast · forecasts.aug"]
-    n1["weatherForecast · forecasts.aug"]
+    n0["WeatherForecast"]
+    n1["weatherForecast"]
     n1 -->|"calls"| n0
 ```
 
-## API calls
-
-```mermaid
-flowchart TD
-    n0["WeatherForecast · forecasts.aug"]
-    n1["weatherForecast · forecasts.aug"]
-    n1 -->|"calls"| n0
-```
+</details>
 
 ## Sequences
 
@@ -32,12 +27,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](forecasts.aug#L3)
 
-```mermaid
-sequenceDiagram
-    participant p0 as WeatherForecast constructor
-
-    Note over p0: Receive fields: date, temperatureC, temperatureF, summary
-```
+Receive fields: date, temperatureC, temperatureF, summary. [Explanation](forecasts.aug.md).
 
 <a id="sequence-weatherForecast"></a>
 
@@ -50,13 +40,18 @@ sequenceDiagram
     participant p0 as weatherForecast
     participant p1 as WeatherForecast
     Note over p0: GET /weatherforecast
-    p0->>p1: WeatherForecast(date, temperatureC, temperatureF, summary)
-    p0->>p1: WeatherForecast(date, temperatureC, temperatureF, summary)
-    p0->>p1: WeatherForecast(date, temperatureC, temperatureF, summary)
-    p0->>p1: WeatherForecast(date, temperatureC, temperatureF, summary)
-    p0->>p1: WeatherForecast(date, temperatureC, temperatureF, summary)
-    Note over p0: Return #91; WeatherForecast( date=#34;2026-01-01#34;, temperatureC=0, temperatureF=32, summary=#34;Freezing#34; ), WeatherForecast( …
-    Note over p0: HTTP result follows declared response and error mapping#59; unhandled request failure returns 500
+    p0->>p1: WeatherForecast(date=”2026-01-01”, temperatureC=0, temperatureF=32, summary=”Freezing”)
+    p1-->>p0: WeatherForecast
+    p0->>p1: WeatherForecast(date=”2026-01-02”, temperatureC=10, temperatureF=50, summary=”Cool”)
+    p1-->>p0: WeatherForecast
+    p0->>p1: WeatherForecast(date=”2026-01-03”, temperatureC=20, temperatureF=68, summary=”Mild”)
+    p1-->>p0: WeatherForecast
+    p0->>p1: WeatherForecast(date=”2026-01-04”, temperatureC=30, temperatureF=86, summary=”Warm”)
+    p1-->>p0: WeatherForecast
+    p0->>p1: WeatherForecast(date=”2026-01-05”, temperatureC=35, temperatureF=95, summary=”Hot”)
+    p1-->>p0: WeatherForecast
+    Note over p0: Return ［ WeatherForecast( date=”2026-01-01”, temperatureC=0, temperatureF=32, summary=”Freezing” ), WeatherForecast( …
+    Note over p0: HTTP result follows declared response and error mapping； unhandled request failure returns 500
 ```
 
 ## Called contracts

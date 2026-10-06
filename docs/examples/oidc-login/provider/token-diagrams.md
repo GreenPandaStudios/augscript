@@ -18,58 +18,49 @@ outline: [2, 3]
 
 ```mermaid
 flowchart TD
-    n0["securityHeaders · common/headers.aug"]
-    n1["SigningKeys · common/keys.aug"]
-    n2["settings · common/settings.aug"]
-    n3["ExpiringStore · package/@git/url_0eb7c89453c87681ed15@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug"]
-    n4["Crypto · package/@git/url_9ef654c66d34ab8f5527@0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug"]
-    n5["signJwt · package/@git/url_9ef654c66d34ab8f5527@0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug"]
-    n6["Clock · package/@git/url_c092cd151499c4e1d8a1@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug"]
-    n7["AccessGrant · provider/contracts.aug"]
-    n8["IdClaims · provider/contracts.aug"]
-    n9["OAuthError · provider/contracts.aug"]
-    n10["TokenResponse · provider/contracts.aug"]
-    n11["_oauthError · provider/token.aug"]
-    n12["token · provider/token.aug"]
-    n11 -->|"calls"| n0
-    n11 -->|"calls"| n9
-    n12 -->|"calls"| n0
-    n12 -->|"calls"| n1
-    n12 -->|"depends on"| n1
-    n12 -->|"calls"| n2
-    n12 -->|"calls"| n3
-    n12 -->|"depends on"| n3
-    n12 -->|"calls"| n4
-    n12 -->|"depends on"| n4
-    n12 -->|"calls"| n5
-    n12 -->|"calls"| n6
-    n12 -->|"depends on"| n6
-    n12 -->|"calls"| n7
-    n12 -->|"calls"| n8
-    n12 -->|"calls"| n10
-    n12 -->|"calls"| n11
+    n0["securityHeaders"]
+    n1["SigningKeys"]
+    n2["settings"]
+    n3["ExpiringStore"]
+    n4["Crypto"]
+    n5["signJwt"]
+    n6["Clock"]
+    n7["_oauthError"]
+    n8["token"]
+    n8 -->|"calls"| n0
+    n8 -->|"calls"| n1
+    n8 -->|"depends on"| n1
+    n8 -->|"calls"| n2
+    n8 -->|"calls"| n3
+    n8 -->|"depends on"| n3
+    n8 -->|"calls"| n4
+    n8 -->|"depends on"| n4
+    n8 -->|"calls"| n5
+    n8 -->|"calls"| n6
+    n8 -->|"depends on"| n6
+    n8 -->|"calls"| n7
 ```
 
-## API calls
+::: details Call relationships
 
 ```mermaid
 flowchart TD
-    n0["securityHeaders · common/headers.aug"]
-    n1["SigningKeys.provider · common/keys.aug"]
-    n2["settings · common/settings.aug"]
-    n3["ExpiringStore.put · package/@git/url_0eb7c89453c87681ed15@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug"]
-    n4["ExpiringStore.take · package/@git/url_0eb7c89453c87681ed15@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug"]
-    n5["Crypto.equal · package/@git/url_9ef654c66d34ab8f5527@0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug"]
-    n6["Crypto.random · package/@git/url_9ef654c66d34ab8f5527@0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug"]
-    n7["Crypto.sha256 · package/@git/url_9ef654c66d34ab8f5527@0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug"]
-    n8["signJwt · package/@git/url_9ef654c66d34ab8f5527@0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug"]
-    n9["Clock.now · package/@git/url_c092cd151499c4e1d8a1@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug"]
-    n10["AccessGrant · provider/contracts.aug"]
-    n11["IdClaims · provider/contracts.aug"]
-    n12["OAuthError · provider/contracts.aug"]
-    n13["TokenResponse · provider/contracts.aug"]
-    n14["_oauthError · provider/token.aug"]
-    n15["token · provider/token.aug"]
+    n0["securityHeaders"]
+    n1["SigningKeys.provider"]
+    n2["settings"]
+    n3["ExpiringStore.put"]
+    n4["ExpiringStore.take"]
+    n5["Crypto.equal"]
+    n6["Crypto.random"]
+    n7["Crypto.sha256"]
+    n8["signJwt"]
+    n9["Clock.now"]
+    n10["AccessGrant"]
+    n11["IdClaims"]
+    n12["OAuthError"]
+    n13["TokenResponse"]
+    n14["_oauthError"]
+    n15["token"]
     n14 -->|"calls"| n0
     n14 -->|"calls"| n12
     n15 -->|"calls"| n0
@@ -88,6 +79,8 @@ flowchart TD
     n15 -->|"calls"| n14
 ```
 
+:::
+
 ## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
@@ -105,10 +98,12 @@ sequenceDiagram
     participant p2 as Json
     participant p3 as securityHeaders
     participant p4 as HttpResponse
-    p0->>p1: OAuthError(error, error_description)
-    p0->>p2: Json(value)
+    p0->>p1: OAuthError(error=code, error_description=description)
+    p1-->>p0: OAuthError
+    p0->>p2: Json(value=OAuthError(error=code, error_description=description))
     p0->>p3: securityHeaders()
-    p0->>p4: HttpResponse(body, status, headers)
+    p3-->>p0: Headers
+    p0->>p4: HttpResponse(body=Json(value=OAuthError(error=code, error_description=description)), status=400, headers=securityHead…
     Note over p0: Return HttpResponse(body=Json(value=OAuthError(error=code, error_description=description)), status=400, headers=secur…
     Note over p0: May leave with checked errors: HttpError
 ```
@@ -129,46 +124,45 @@ sequenceDiagram
     participant p3 as _oauthError
     participant p4 as form.code.isToken
     participant p5 as form.code_verifier.isToken
-    participant p6 as Clock.now
-    participant p7 as ExpiringStore.take
+    participant p6 as Clock
+    participant p7 as ExpiringStore
     participant p8 as form.code_verifier.bytes
-    participant p9 as Crypto.sha256
-    participant p10 as crypto.sha256(input=form.code_verifier.bytes()).base64url
-    participant p11 as challenge.bytes
+    participant p9 as Crypto
     Note over p0: POST /provider/token
     p0->>p1: settings()
-    opt Try body#59; stops on a checked failure
+    p1-->>p0: config: Settings
+    opt Try body； stops on a checked failure
     p0->>p2: http.form()
-    alt form.grant_type != #34;authorization_code#34;
-    p0->>p3: _oauthError(code, description)
-    Note over p0: Return _oauthError(code=#34;unsupported_grant_type#34;, description=#34;Only authorization_code is supported.#34;)#59; required clea…
+    alt form.grant_type != ”authorization_code”
+    p0->>p3: _oauthError(code=”unsupported_grant_type”, description=”Only authorization_code is supported.”)
+    p3-->>p0: HttpResponse‹Json›
+    Note over p0: Return _oauthError(code=”unsupported_grant_type”, description=”Only authorization_code is supported.”)； required clea…
     end
     alt form.client_id != config.clientId
-    p0->>p3: _oauthError(code, description)
-    Note over p0: Return _oauthError(code=#34;invalid_client#34;, description=#34;The registered client is required.#34;)#59; required cleanup runs be…
+    p0->>p3: _oauthError(code=”invalid_client”, description=”The registered client is required.”)
+    p3-->>p0: HttpResponse‹Json›
+    Note over p0: Return _oauthError(code=”invalid_client”, description=”The registered client is required.”)； required cleanup runs be…
     end
-    p0->>p4: form.code.isToken(min, max)
+    p0->>p4: form.code.isToken(min=43, max=43)
     opt Left is false
-    p0->>p5: form.code_verifier.isToken(min, max)
+    p0->>p5: form.code_verifier.isToken(min=43, max=128)
     end
     alt not form.code.isToken(min=43, max=43)) or (not form.code_verifier.isToken(min=43, max=128)
-    p0->>p3: _oauthError(code, description)
-    Note over p0: Return _oauthError(code=#34;invalid_grant#34;, description=#34;The authorization grant is invalid.#34;)#59; required cleanup runs be…
+    p0->>p3: _oauthError(code=”invalid_grant”, description=”The authorization grant is invalid.”)
+    p3-->>p0: HttpResponse‹Json›
+    Note over p0: Return _oauthError(code=”invalid_grant”, description=”The authorization grant is invalid.”)； required cleanup runs be…
     end
     p0->>p6: now() · interface dispatch
-    p0->>p7: take(key, now) · interface dispatch
+    p6-->>p0: now: int
+    p0->>p7: take(key=form.code, now=now) · interface dispatch
+    p7-->>p0: optional AuthorizationCode
     alt Match when null:
-    p0->>p3: _oauthError(code, description)
-    Note over p0: Return _oauthError(code=#34;invalid_grant#34;, description=#34;The authorization grant is invalid.#34;)#59; required cleanup runs be…
+    p0->>p3: _oauthError(code=”invalid_grant”, description=”The authorization grant is invalid.”)
+    p3-->>p0: HttpResponse‹Json›
+    Note over p0: Return _oauthError(code=”invalid_grant”, description=”The authorization grant is invalid.”)； required cleanup runs be…
     else Match when some grant:
     p0->>p8: form.code_verifier.bytes()
-    p0->>p9: sha256(input) · interface dispatch
-    p0->>p10: crypto.sha256(input=form.code_verifier.bytes()).base64url()
-    opt Left is false
-    end
-    opt Left is false
-    p0->>p11: challenge.bytes()
-    end
+    p0->>p9: sha256(input=form.code_verifier.bytes()) · interface dispatch
     end
     end
 ```
@@ -178,37 +172,48 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as token
-    participant p1 as grant.challenge.bytes
-    participant p2 as Crypto.equal
-    participant p3 as _oauthError
-    participant p4 as IdClaims
-    participant p5 as SigningKeys.provider
-    participant p6 as Json
-    participant p7 as signJwt
-    participant p8 as Crypto.random
-    participant p9 as crypto.random(size=32).base64url
-    participant p10 as AccessGrant
-    participant p11 as ExpiringStore.put
-    opt Try body#59; stops on a checked failure
+    participant p1 as Crypto
+    participant p2 as crypto.sha256(input=form.code_verifier.bytes()).base64url
+    participant p3 as challenge.bytes
+    participant p4 as grant.challenge.bytes
+    participant p5 as _oauthError
+    participant p6 as IdClaims
+    participant p7 as SigningKeys
+    participant p8 as Json
+    participant p9 as signJwt
+    participant p10 as crypto.random(size=32).base64url
+    participant p11 as AccessGrant
+    opt Try body； stops on a checked failure
     alt Match when null:
     else Match when some grant:
-    opt Left is false
     Note over p0: Sequence continued from the previous view
-    p0->>p1: grant.challenge.bytes()
-    p0->>p2: equal(left, right) · interface dispatch
+    p1-->>p0: Bytes
+    p0->>p2: crypto.sha256(input=form.code_verifier.bytes()).base64url()
+    opt Left is false
+    end
+    opt Left is false
+    p0->>p3: challenge.bytes()
+    p0->>p4: grant.challenge.bytes()
+    p0->>p1: equal(left=challenge.bytes(), right=grant.challenge.bytes()) · interface dispatch
+    p1-->>p0: bool
     end
     alt grant.clientId != form.client_id or grant.redirectUri != form.redirect_uri or (not crypto.equal(left=challenge.bytes(…
-    p0->>p3: _oauthError(code, description)
-    Note over p0: Return _oauthError(code=#34;invalid_grant#34;, description=#34;The authorization grant is invalid.#34;)#59; required cleanup runs be…
+    p0->>p5: _oauthError(code=”invalid_grant”, description=”The authorization grant is invalid.”)
+    p5-->>p0: HttpResponse‹Json›
+    Note over p0: Return _oauthError(code=”invalid_grant”, description=”The authorization grant is invalid.”)； required cleanup runs be…
     end
-    p0->>p4: IdClaims(iss, sub, aud, exp, iat, nonce, name)
-    p0->>p5: provider() · interface dispatch
-    p0->>p6: Json(value)
-    p0->>p7: signJwt(key, claims, kid, tokenType)
-    p0->>p8: random(size) · interface dispatch
-    p0->>p9: crypto.random(size=32).base64url()
-    p0->>p10: AccessGrant(subject, name, expires)
-    p0->>p11: put(key, value, expires, now) · interface dispatch
+    p0->>p6: IdClaims(iss=config.issuer, sub=grant.subject, aud=grant.clientId, exp=now + 300, iat=now, nonce=grant.nonce, name=gr…
+    p6-->>p0: claims: IdClaims
+    p0->>p7: provider() · interface dispatch
+    p7-->>p0: RsaPrivateKey
+    p0->>p8: Json(value=claims)
+    p0->>p9: signJwt(key=keys.provider(), claims=Json(value=claims), kid=”provider-1”, tokenType=”JWT”)
+    p9-->>p0: idToken: string
+    p0->>p1: random(size=32) · interface dispatch
+    p1-->>p0: Bytes
+    p0->>p10: crypto.random(size=32).base64url()
+    p0->>p11: AccessGrant(subject=grant.subject, name=grant.name, expires=now + 300)
+    p11-->>p0: value: AccessGrant
     end
     end
 ```
@@ -218,28 +223,33 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as token
-    participant p1 as TokenResponse
-    participant p2 as Json
-    participant p3 as securityHeaders
-    participant p4 as HttpResponse
-    participant p5 as _oauthError
-    opt Try body#59; stops on a checked failure
+    participant p1 as ExpiringStore
+    participant p2 as TokenResponse
+    participant p3 as Json
+    participant p4 as securityHeaders
+    participant p5 as HttpResponse
+    participant p6 as _oauthError
+    opt Try body； stops on a checked failure
     alt Match when null:
     else Match when some grant:
     Note over p0: Sequence continued from the previous view
-    p0->>p1: TokenResponse(token_type, access_token, id_token, expires_in, scope)
-    p0->>p2: Json(value)
-    p0->>p3: securityHeaders()
-    p0->>p4: HttpResponse(body, headers)
-    Note over p0: Return HttpResponse(body=Json(value=body), headers=securityHeaders())#59; required cleanup runs before exit
+    p0->>p1: put(key=accessToken, value=value, expires=value.expires, now=now) · interface dispatch
+    p0->>p2: TokenResponse(token_type=”Bearer”, access_token=accessToken, id_token=idToken, expires_in=300, scope=”openid profile”)
+    p2-->>p0: body: TokenResponse
+    p0->>p3: Json(value=body)
+    p0->>p4: securityHeaders()
+    p4-->>p0: Headers
+    p0->>p5: HttpResponse(body=Json(value=body), headers=securityHeaders())
+    Note over p0: Return HttpResponse(body=Json(value=body), headers=securityHeaders())； required cleanup runs before exit
     end
     end
     opt Catch HttpError
-    p0->>p5: _oauthError(code, description)
-    Note over p0: Return _oauthError(code=#34;invalid_request#34;, description=#34;Submit the required URL-encoded token fields once each.#34;)#59; re…
+    p0->>p6: _oauthError(code=”invalid_request”, description=”Submit the required URL-encoded token fields once each.”)
+    p6-->>p0: HttpResponse‹Json›
+    Note over p0: Return _oauthError(code=”invalid_request”, description=”Submit the required URL-encoded token fields once each.”)； re…
     end
     Note over p0: May leave with checked errors: CryptoError, HttpError, JwtError, KeyError, StoreFull, TimeError
-    Note over p0: HTTP result follows declared response and error mapping#59; unhandled request failure returns 500
+    Note over p0: HTTP result follows declared response and error mapping； unhandled request failure returns 500
 ```
 
 ## Called contracts

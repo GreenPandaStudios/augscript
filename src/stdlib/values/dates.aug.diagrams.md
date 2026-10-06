@@ -8,29 +8,29 @@
 
 ```mermaid
 flowchart TD
-    n0["CivilDate · august/values/dates.aug"]
-    n1["_daysInMonth · august/values/dates.aug"]
-    n2["parseCivilDate · august/values/dates.aug"]
+    n0["CivilDate"]
+    n1["_daysInMonth"]
     n0 -->|"calls"| n1
-    n2 -->|"calls"| n0
 ```
 
-## API calls
+<details>
+<summary>Call relationships</summary>
 
 ```mermaid
 flowchart TD
-    n0["asciiSlice · august/values/ascii.aug"]
-    n1["CivilDate · august/values/dates.aug"]
-    n2["_daysInMonth · august/values/dates.aug"]
-    n3["_pad · august/values/dates.aug"]
-    n4["compareCivilDates · august/values/dates.aug"]
-    n5["formatCivilDate · august/values/dates.aug"]
-    n6["parseCivilDate · august/values/dates.aug"]
+    n0["asciiSlice"]
+    n1["CivilDate"]
+    n2["_daysInMonth"]
+    n3["_pad"]
+    n4["formatCivilDate"]
+    n5["parseCivilDate"]
     n1 -->|"calls"| n2
-    n5 -->|"calls"| n3
-    n6 -->|"calls"| n0
-    n6 -->|"calls"| n1
+    n4 -->|"calls"| n3
+    n5 -->|"calls"| n0
+    n5 -->|"calls"| n1
 ```
+
+</details>
 
 ## Sequences
 
@@ -54,16 +54,17 @@ sequenceDiagram
     end
     opt Left is false
     end
-    alt year #60; 1 or year #62; 9999 or month #60; 1 or month #62; 12
+    alt year ‹ 1 or year › 9999 or month ‹ 1 or month › 12
     p0->>p1: ConversionError()
-    Note over p0: Raise checked failure ConversionError()#59; required cleanup runs before exit
+    Note over p0: Raise checked failure ConversionError()； required cleanup runs before exit
     end
     opt Left is false
-    p0->>p2: _daysInMonth(year, month)
+    p0->>p2: _daysInMonth(year=year, month=month)
+    p2-->>p0: int
     end
-    alt day #60; 1 or day #62; _daysInMonth(year, month)
+    alt day ‹ 1 or day › _daysInMonth(year, month)
     p0->>p1: ConversionError()
-    Note over p0: Raise checked failure ConversionError()#59; required cleanup runs before exit
+    Note over p0: Raise checked failure ConversionError()； required cleanup runs before exit
     end
 ```
 
@@ -83,9 +84,9 @@ sequenceDiagram
     end
     end
     alt year % 400 == 0 or (year % 4 == 0 and year % 100 != 0
-    Note over p0: Return 29#59; required cleanup runs before exit
+    Note over p0: Return 29； required cleanup runs before exit
     end
-    Note over p0: Return 28#59; required cleanup runs before exit
+    Note over p0: Return 28； required cleanup runs before exit
     end
     opt Left is false
     end
@@ -94,9 +95,9 @@ sequenceDiagram
     opt Left is false
     end
     alt month == 4 or month == 6 or month == 9 or month == 11
-    Note over p0: Return 30#59; required cleanup runs before exit
+    Note over p0: Return 30； required cleanup runs before exit
     end
-    Note over p0: Return 31#59; required cleanup runs before exit
+    Note over p0: Return 31； required cleanup runs before exit
 ```
 
 <a id="sequence-parseCivilDate"></a>
@@ -104,6 +105,8 @@ sequenceDiagram
 ### parseCivilDate
 
 [Source](dates.aug#L29)
+
+#### Sequence 1 of 2 (continued)
 
 ```mermaid
 sequenceDiagram
@@ -118,23 +121,27 @@ sequenceDiagram
     participant p8 as year.parseInteger
     participant p9 as month.parseInteger
     participant p10 as day.parseInteger
-    participant p11 as CivilDate
     p0->>p1: text.byteLength()
     alt text.byteLength() != 10
     p0->>p2: ConversionError()
-    Note over p0: Raise checked failure ConversionError()#59; required cleanup runs before exit
+    Note over p0: Raise checked failure ConversionError()； required cleanup runs before exit
     end
     p0->>p3: text.bytes()
-    p0->>p4: asciiSlice(input, start, end)
-    p0->>p4: asciiSlice(input, start, end)
-    p0->>p4: asciiSlice(input, start, end)
-    p0->>p4: asciiSlice(input, start, end)
+    p0->>p4: asciiSlice(input=bytes, start=0, end=4)
+    p4-->>p0: year: string
+    p0->>p4: asciiSlice(input=bytes, start=5, end=7)
+    p4-->>p0: month: string
+    p0->>p4: asciiSlice(input=bytes, start=8, end=10)
+    p4-->>p0: day: string
+    p0->>p4: asciiSlice(input=bytes, start=4, end=5)
+    p4-->>p0: string
     opt Left is false
-    p0->>p4: asciiSlice(input, start, end)
+    p0->>p4: asciiSlice(input=bytes, start=7, end=8)
+    p4-->>p0: string
     end
-    alt asciiSlice(input=bytes, start=4, end=5) != #34;-#34; or asciiSlice(input=bytes, start=7, end=8) != #34;-#34;
+    alt asciiSlice(input=bytes, start=4, end=5) != ”-” or asciiSlice(input=bytes, start=7, end=8) != ”-”
     p0->>p2: ConversionError()
-    Note over p0: Raise checked failure ConversionError()#59; required cleanup runs before exit
+    Note over p0: Raise checked failure ConversionError()； required cleanup runs before exit
     end
     p0->>p5: year.isDecimal()
     opt Left is false
@@ -145,13 +152,23 @@ sequenceDiagram
     end
     alt not year.isDecimal() or not month.isDecimal() or not day.isDecimal()
     p0->>p2: ConversionError()
-    Note over p0: Raise checked failure ConversionError()#59; required cleanup runs before exit
+    Note over p0: Raise checked failure ConversionError()； required cleanup runs before exit
     end
     p0->>p8: year.parseInteger()
     p0->>p9: month.parseInteger()
     p0->>p10: day.parseInteger()
-    p0->>p11: CivilDate(year, month, day)
-    Note over p0: Return CivilDate(year=year.parseInteger(), month=month.parseInteger(), day=day.parseInteger())#59; required cleanup runs…
+```
+
+#### Sequence 2 of 2 (continued)
+
+```mermaid
+sequenceDiagram
+    participant p0 as parseCivilDate
+    participant p1 as CivilDate
+    Note over p0: Sequence continued from the previous view
+    p0->>p1: CivilDate(year=year.parseInteger(), month=month.parseInteger(), day=day.parseInteger())
+    p1-->>p0: CivilDate
+    Note over p0: Return CivilDate(year=year.parseInteger(), month=month.parseInteger(), day=day.parseInteger())； required cleanup runs…
     Note over p0: May leave with checked errors: ConversionError
 ```
 
@@ -165,10 +182,13 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as formatCivilDate
     participant p1 as _pad
-    p0->>p1: _pad(value, width)
-    p0->>p1: _pad(value, width)
-    p0->>p1: _pad(value, width)
-    Note over p0: Return _pad(value=value.year, width=4) + #34;-#34; + _pad(value=value.month, width=2) + #34;-#34; + _pad(value=value.day, width=2…
+    p0->>p1: _pad(value=value.year, width=4)
+    p1-->>p0: string
+    p0->>p1: _pad(value=value.month, width=2)
+    p1-->>p0: string
+    p0->>p1: _pad(value=value.day, width=2)
+    p1-->>p0: string
+    Note over p0: Return _pad(value=value.year, width=4) + ”-” + _pad(value=value.month, width=2) + ”-” + _pad(value=value.day, width=2…
 ```
 
 <a id="sequence-_pad"></a>
@@ -181,10 +201,10 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as _pad
     participant p1 as text.byteLength
-    loop While text.byteLength() #60; width
+    loop While text.byteLength() ‹ width
     p0->>p1: text.byteLength()
     end
-    Note over p0: Return text#59; required cleanup runs before exit
+    Note over p0: Return text； required cleanup runs before exit
 ```
 
 <a id="sequence-compareCivilDates"></a>
@@ -197,25 +217,25 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as compareCivilDates
 
-    alt left.year #60; right.year
-    Note over p0: Return -1#59; required cleanup runs before exit
+    alt left.year ‹ right.year
+    Note over p0: Return -1； required cleanup runs before exit
     end
-    alt left.year #62; right.year
-    Note over p0: Return 1#59; required cleanup runs before exit
+    alt left.year › right.year
+    Note over p0: Return 1； required cleanup runs before exit
     end
-    alt left.month #60; right.month
-    Note over p0: Return -1#59; required cleanup runs before exit
+    alt left.month ‹ right.month
+    Note over p0: Return -1； required cleanup runs before exit
     end
-    alt left.month #62; right.month
-    Note over p0: Return 1#59; required cleanup runs before exit
+    alt left.month › right.month
+    Note over p0: Return 1； required cleanup runs before exit
     end
-    alt left.day #60; right.day
-    Note over p0: Return -1#59; required cleanup runs before exit
+    alt left.day ‹ right.day
+    Note over p0: Return -1； required cleanup runs before exit
     end
-    alt left.day #62; right.day
-    Note over p0: Return 1#59; required cleanup runs before exit
+    alt left.day › right.day
+    Note over p0: Return 1； required cleanup runs before exit
     end
-    Note over p0: Return 0#59; required cleanup runs before exit
+    Note over p0: Return 0； required cleanup runs before exit
 ```
 
 ## Called contracts

@@ -18,25 +18,26 @@ outline: [2, 3]
 
 ```mermaid
 flowchart TD
-    n0["Counter · counter.aug"]
-    n1["ICounter · counter.aug"]
-    n2["_prefix · counter.aug"]
+    n0["Counter"]
+    n1["ICounter"]
+    n2["_prefix"]
     n0 -->|"calls"| n0
     n0 -->|"implements"| n1
     n0 -->|"calls"| n2
 ```
 
-## API calls
+::: details Call relationships
 
 ```mermaid
 flowchart TD
-    n0["Counter._label · counter.aug"]
-    n1["Counter.label · counter.aug"]
-    n2["ICounter.label · counter.aug"]
-    n3["_prefix · counter.aug"]
-    n0 -->|"calls"| n3
+    n0["Counter._label"]
+    n1["Counter.label"]
+    n2["_prefix"]
+    n0 -->|"calls"| n2
     n1 -->|"calls"| n0
 ```
+
+:::
 
 ## Sequences
 
@@ -48,12 +49,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](counter.md#source-L3)
 :::
 
-```mermaid
-sequenceDiagram
-    participant p0 as ICounter.label
-
-    Note over p0: Interface contract#59; implementation selected at runtime
-```
+Interface contract; implementation selected at runtime. [Explanation](counter.md).
 
 ### Counter constructor {#sequence-Counter-20-constructor}
 
@@ -61,12 +57,7 @@ sequenceDiagram
 [Source](counter.md#source-L5)
 :::
 
-```mermaid
-sequenceDiagram
-    participant p0 as Counter constructor
-
-    Note over p0: Receive fields: value
-```
+Receive fields: value. [Explanation](counter.md).
 
 ### Counter.\_label {#sequence-Counter._label}
 
@@ -79,7 +70,8 @@ sequenceDiagram
     participant p0 as Counter._label
     participant p1 as _prefix
     p0->>p1: _prefix()
-    Note over p0: Return _prefix()#59; required cleanup runs before exit
+    p1-->>p0: string
+    Note over p0: Return _prefix()； required cleanup runs before exit
 ```
 
 ### Counter.label {#sequence-Counter.label}
@@ -91,9 +83,10 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as Counter.label
-    participant p1 as Counter._label
+    participant p1 as Counter
     p0->>p1: _label()
-    Note over p0: Return self._label()#59; required cleanup runs before exit
+    p1-->>p0: string
+    Note over p0: Return self._label()； required cleanup runs before exit
 ```
 
 ### \_prefix {#sequence-_prefix}
@@ -102,12 +95,7 @@ sequenceDiagram
 [Source](counter.md#source-L13)
 :::
 
-```mermaid
-sequenceDiagram
-    participant p0 as _prefix
-
-    Note over p0: Return #34;count#34;#59; required cleanup runs before exit
-```
+Return "count"; required cleanup runs before exit. [Explanation](counter.md).
 
 ## Called contracts
 

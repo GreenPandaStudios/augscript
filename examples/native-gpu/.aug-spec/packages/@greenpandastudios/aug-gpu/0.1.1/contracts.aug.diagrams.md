@@ -4,21 +4,6 @@
 
 [Project overview](../../../../diagrams/index.md) · [Compiled explanation](contracts.aug.md)
 
-## Class interactions
-
-```mermaid
-flowchart TD
-    n0["GpuError · package/@greenpandastudios/aug-gpu@0.1.1/contracts.aug"]
-
-```
-
-## API calls
-
-```mermaid
-flowchart TD
-    n0["GpuError.explain · package/@greenpandastudios/aug-gpu@0.1.1/contracts.aug"]
-
-```
 
 ## Sequences
 
@@ -30,12 +15,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](contracts.aug#L3)
 
-```mermaid
-sequenceDiagram
-    participant p0 as GpuError constructor
-
-    Note over p0: Receive fields: code, message
-```
+Receive fields: code, message. [Explanation](contracts.aug.md).
 
 <a id="sequence-GpuError.explain"></a>
 
@@ -43,10 +23,5 @@ sequenceDiagram
 
 [Source](contracts.aug#L4)
 
-```mermaid
-sequenceDiagram
-    participant p0 as GpuError.explain
-
-    Note over p0: Return message#59; required cleanup runs before exit
-```
+Return message; required cleanup runs before exit. [Explanation](contracts.aug.md).
 

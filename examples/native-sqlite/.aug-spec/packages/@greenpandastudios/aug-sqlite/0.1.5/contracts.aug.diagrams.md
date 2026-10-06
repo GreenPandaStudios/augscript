@@ -4,22 +4,6 @@
 
 [Project overview](../../../../diagrams/index.md) · [Compiled explanation](contracts.aug.md)
 
-## Class interactions
-
-```mermaid
-flowchart TD
-    n0["DatabaseStorage · package/@greenpandastudios/aug-sqlite@0.1.5/contracts.aug"]
-    n1["SqliteError · package/@greenpandastudios/aug-sqlite@0.1.5/contracts.aug"]
-
-```
-
-## API calls
-
-```mermaid
-flowchart TD
-    n0["DatabaseStorage.open · package/@greenpandastudios/aug-sqlite@0.1.5/contracts.aug"]
-
-```
 
 ## Sequences
 
@@ -31,12 +15,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](contracts.aug#L4)
 
-```mermaid
-sequenceDiagram
-    participant p0 as SqliteError constructor
-
-    Note over p0: Receive fields: code, message
-```
+Receive fields: code, message. [Explanation](contracts.aug.md).
 
 <a id="sequence-DatabaseStorage.open"></a>
 
@@ -44,11 +23,5 @@ sequenceDiagram
 
 [Source](contracts.aug#L8)
 
-```mermaid
-sequenceDiagram
-    participant p0 as DatabaseStorage.open
-
-    Note over p0: May leave with checked errors: SqliteError
-    Note over p0: Interface contract#59; implementation selected at runtime
-```
+May leave with checked errors: SqliteError. Interface contract; implementation selected at runtime. [Explanation](contracts.aug.md).
 

@@ -2,37 +2,52 @@
 
 # Project diagrams
 
-Read the areas first, then open a module for its class interactions, API calls and sequences. Follow an operation to its specification and source.
+Start here to see what moves between the application’s folders. Each arrow names an operation’s inputs and the result it returns to its caller. Open a folder for the next level of detail. Expand the contract list for complete types and dependency links.
 
-These are checked static views. Arrows describe possible calls, not an execution trace. Interface implementations, callbacks and foreign internals are not guessed. Tests are described in the adjacent specifications.
-
-## Areas
+## Data flow
 
 ```mermaid
 flowchart TD
-    n0["Project root"]
-    n1["package/@git/url_2d3c37c690c0fa115be1@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301"]
-    n0 -->|"uses"| n1
+    n0["contracts"]
+    n1["jose"]
+    n1 -->|"Crypto.decodeBase64url(input) / Crypto.exportRsa(publicKey) + 4 more → Bytes / RsaPublicKey + 2 more"| n0
 ```
 
-## Modules
+### Package boundaries
+
+<details>
+<summary>jose package calls</summary>
 
 ```mermaid
-flowchart TD
-    n0["contracts.aug"]
-    n1["export.aug"]
-    n2["jose.aug"]
-    n3["package/@git/url_2d3c37c690c0fa115be1@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug"]
-    n1 -->|"uses"| n0
-    n1 -->|"uses"| n2
-    n2 -->|"uses"| n0
-    n2 -->|"uses"| n3
+flowchart LR
+    n0["jose"]
+    n1["url_ac5ce553f84fc815ffc3"]
+    n0 -->|"parse(input) → Json"| n1
 ```
+
+</details>
+
+<details>
+<summary>Data crossing these boundaries (7 contracts)</summary>
+
+| From | To | Operation and inputs | Result |
+| --- | --- | --- | --- |
+| jose | contracts | [Crypto.decodeBase64url](../../contracts.aug.md) · input: string · interface dispatch | Bytes |
+| jose | contracts | [Crypto.exportRsa](../../contracts.aug.md) · publicKey: RsaPublicKey · interface dispatch | Tuple\<Bytes, Bytes\> |
+| jose | contracts | [Crypto.importRsa](../../contracts.aug.md) · modulus: Bytes, exponent: Bytes · interface dispatch | RsaPublicKey |
+| jose | contracts | [Crypto.signRsa](../../contracts.aug.md) · key: RsaPrivateKey, input: Bytes · interface dispatch | Bytes |
+| jose | contracts | [Crypto.verifyEd25519](../../contracts.aug.md) · publicKey: string, input: Bytes, signature: Bytes · interface dispatch | bool |
+| jose | contracts | [Crypto.verifyRsa](../../contracts.aug.md) · publicKey: RsaPublicKey, input: Bytes, signature: Bytes · interface dispatch | bool |
+| jose | url\_ac5ce553f84fc815ffc3 | [parse](../packages/%40git/url_2d3c37c690c0fa115be1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md) · input: string | Json |
+
+</details>
 
 ## Open a module
 
-| Module | Diagrams | Specification |
-| --- | --- | --- |
-| contracts.aug | [Interactions and sequences](../../contracts.aug.diagrams.md) | [Explanation](../../contracts.aug.md) |
-| export.aug | [Interactions and sequences](../../export.aug.diagrams.md) | [Explanation](../../export.aug.md) |
-| jose.aug | [Interactions and sequences](../../jose.aug.diagrams.md) | [Explanation](../../jose.aug.md) |
+| Module | Read |
+| --- | --- |
+| contracts.aug | [Flow and sequences](../../contracts.aug.diagrams.md) · [Explanation](../../contracts.aug.md) |
+| export.aug | [Flow and sequences](../../export.aug.diagrams.md) · [Explanation](../../export.aug.md) |
+| jose.aug | [Flow and sequences](../../jose.aug.diagrams.md) · [Explanation](../../jose.aug.md) |
+
+These are static call boundaries, not a request trace. Interface implementations and foreign internals stop at their checked contracts. Dotted arrows defer a callback or browser action. Imports alone do not imply a call.

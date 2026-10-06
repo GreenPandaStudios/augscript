@@ -2,54 +2,67 @@
 
 # Project diagrams
 
-Read the areas first, then open a module for its class interactions, API calls and sequences. Follow an operation to its specification and source.
+Start here to see what moves between the application’s folders. Each arrow names an operation’s inputs and the result it returns to its caller. Open a folder for the next level of detail. Expand the contract list for complete types and dependency links.
 
-These are checked static views. Arrows describe possible calls, not an execution trace. Interface implementations, callbacks and foreign internals are not guessed. Tests are described in the adjacent specifications.
-
-## Areas
+## Data flow
 
 ```mermaid
 flowchart TD
-    n0["August library"]
-
+    n0["ascii"]
+    n1["dates"]
+    n2["durations"]
+    n3["paths"]
+    n4["urls"]
+    n1 -->|"asciiSlice(input, start, …) → string"| n0
+    n2 -->|"asciiSlice(input, start, …) → string"| n0
+    n3 -->|"asciiAt(input, index) / asciiLetter(character) + 1 more → bool / string"| n0
+    n4 -->|"asciiAt(input, index) / asciiLetter(character) + 2 more → bool / string"| n0
 ```
 
-## Modules
+### Package boundaries
+
+<details>
+<summary>durations package calls</summary>
 
 ```mermaid
-flowchart TD
-    n0["august/math/integers.aug"]
-    n1["august/values/ascii.aug"]
-    n2["august/values/dates.aug"]
-    n3["august/values/durations.aug"]
-    n4["august/values/export.aug"]
-    n5["august/values/paths.aug"]
-    n6["august/values/retries.aug"]
-    n7["august/values/text.aug"]
-    n8["august/values/urls.aug"]
-    n2 -->|"uses"| n1
-    n3 -->|"uses"| n0
-    n3 -->|"uses"| n1
-    n4 -->|"uses"| n2
-    n4 -->|"uses"| n3
-    n4 -->|"uses"| n5
-    n4 -->|"uses"| n6
-    n4 -->|"uses"| n7
-    n4 -->|"uses"| n8
-    n5 -->|"uses"| n1
-    n6 -->|"uses"| n3
-    n8 -->|"uses"| n1
+flowchart LR
+    n0["August libraries"]
+    n1["durations"]
+    n1 -->|"checkedAdd(left, right) / checkedMultiply(left, right) → int"| n0
 ```
+
+</details>
+
+<details>
+<summary>Data crossing these boundaries (11 contracts)</summary>
+
+| From | To | Operation and inputs | Result |
+| --- | --- | --- | --- |
+| dates | ascii | [asciiSlice](../../ascii.aug.md) · input: Bytes, start: int, end: int | string |
+| durations | August libraries | [checkedAdd](../august/0.23.0/math/integers.aug.md) · left: int, right: int | int |
+| durations | August libraries | [checkedMultiply](../august/0.23.0/math/integers.aug.md) · left: int, right: int | int |
+| durations | ascii | [asciiSlice](../../ascii.aug.md) · input: Bytes, start: int, end: int | string |
+| paths | ascii | [asciiAt](../../ascii.aug.md) · input: Bytes, index: int | string |
+| paths | ascii | [asciiLetter](../../ascii.aug.md) · character: string | bool |
+| paths | ascii | [asciiLower](../../ascii.aug.md) · text: string | string |
+| urls | ascii | [asciiAt](../../ascii.aug.md) · input: Bytes, index: int | string |
+| urls | ascii | [asciiLetter](../../ascii.aug.md) · character: string | bool |
+| urls | ascii | [asciiLower](../../ascii.aug.md) · text: string | string |
+| urls | ascii | [asciiSlice](../../ascii.aug.md) · input: Bytes, start: int, end: int | string |
+
+</details>
 
 ## Open a module
 
-| Module | Diagrams | Specification |
-| --- | --- | --- |
-| august/values/ascii.aug | [Interactions and sequences](../../ascii.aug.diagrams.md) | [Explanation](../../ascii.aug.md) |
-| august/values/dates.aug | [Interactions and sequences](../../dates.aug.diagrams.md) | [Explanation](../../dates.aug.md) |
-| august/values/durations.aug | [Interactions and sequences](../../durations.aug.diagrams.md) | [Explanation](../../durations.aug.md) |
-| august/values/export.aug | [Interactions and sequences](../../export.aug.diagrams.md) | [Explanation](../../export.aug.md) |
-| august/values/paths.aug | [Interactions and sequences](../../paths.aug.diagrams.md) | [Explanation](../../paths.aug.md) |
-| august/values/retries.aug | [Interactions and sequences](../../retries.aug.diagrams.md) | [Explanation](../../retries.aug.md) |
-| august/values/text.aug | [Interactions and sequences](../../text.aug.diagrams.md) | [Explanation](../../text.aug.md) |
-| august/values/urls.aug | [Interactions and sequences](../../urls.aug.diagrams.md) | [Explanation](../../urls.aug.md) |
+| Module | Read |
+| --- | --- |
+| august/values/ascii.aug | [Flow and sequences](../../ascii.aug.diagrams.md) · [Explanation](../../ascii.aug.md) |
+| august/values/dates.aug | [Flow and sequences](../../dates.aug.diagrams.md) · [Explanation](../../dates.aug.md) |
+| august/values/durations.aug | [Flow and sequences](../../durations.aug.diagrams.md) · [Explanation](../../durations.aug.md) |
+| august/values/export.aug | [Flow and sequences](../../export.aug.diagrams.md) · [Explanation](../../export.aug.md) |
+| august/values/paths.aug | [Flow and sequences](../../paths.aug.diagrams.md) · [Explanation](../../paths.aug.md) |
+| august/values/retries.aug | [Flow and sequences](../../retries.aug.diagrams.md) · [Explanation](../../retries.aug.md) |
+| august/values/text.aug | [Flow and sequences](../../text.aug.diagrams.md) · [Explanation](../../text.aug.md) |
+| august/values/urls.aug | [Flow and sequences](../../urls.aug.diagrams.md) · [Explanation](../../urls.aug.md) |
+
+These are static call boundaries, not a request trace. Interface implementations and foreign internals stop at their checked contracts. Dotted arrows defer a callback or browser action. Imports alone do not imply a call.

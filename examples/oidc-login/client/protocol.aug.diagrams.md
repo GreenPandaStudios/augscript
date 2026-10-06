@@ -8,64 +8,55 @@
 
 ```mermaid
 flowchart TD
-    n0["SessionError · client/contracts.aug"]
-    n1["discover · client/protocol.aug"]
-    n2["responseJson · client/protocol.aug"]
-    n3["validateIdentity · client/protocol.aug"]
-    n4["settings · common/settings.aug"]
-    n5["client/protocol.aug"]
-    n6["parse · package/@git/url_2d3c37c690c0fa115be1@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug"]
-    n7["HttpClient · package/@git/url_897efafd565158fc4908@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug"]
-    n8["Crypto · package/@git/url_9ef654c66d34ab8f5527@0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug"]
-    n9["RsaJwks · package/@git/url_9ef654c66d34ab8f5527@0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug"]
-    n10["importJwk · package/@git/url_9ef654c66d34ab8f5527@0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug"]
-    n11["rsaJwk · package/@git/url_9ef654c66d34ab8f5527@0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug"]
-    n12["signJwt · package/@git/url_9ef654c66d34ab8f5527@0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug"]
-    n13["verifyJwt · package/@git/url_9ef654c66d34ab8f5527@0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug"]
-    n14["IdClaims · provider/contracts.aug"]
-    n1 -->|"calls"| n0
-    n1 -->|"calls"| n2
-    n1 -->|"calls"| n4
-    n1 -->|"calls"| n7
-    n1 -->|"depends on"| n7
-    n2 -->|"calls"| n0
+    n0["discover"]
+    n1["responseJson"]
+    n2["validateIdentity"]
+    n3["settings"]
+    n4["client/protocol.aug"]
+    n5["HttpClient"]
+    n6["Crypto"]
+    n7["importJwk"]
+    n8["rsaJwk"]
+    n9["signJwt"]
+    n10["verifyJwt"]
+    n0 -->|"calls"| n1
+    n0 -->|"calls"| n3
+    n0 -->|"calls"| n5
+    n0 -->|"depends on"| n5
+    n2 -->|"calls"| n3
     n2 -->|"calls"| n6
-    n3 -->|"calls"| n0
-    n3 -->|"calls"| n4
-    n3 -->|"calls"| n8
-    n3 -->|"depends on"| n8
-    n3 -->|"calls"| n10
-    n3 -->|"calls"| n13
-    n5 -->|"calls"| n3
-    n5 -->|"calls"| n4
-    n5 -->|"calls"| n8
-    n5 -->|"calls"| n9
-    n5 -->|"calls"| n11
-    n5 -->|"calls"| n12
-    n5 -->|"calls"| n14
+    n2 -->|"depends on"| n6
+    n2 -->|"calls"| n7
+    n2 -->|"calls"| n10
+    n4 -->|"calls"| n2
+    n4 -->|"calls"| n3
+    n4 -->|"calls"| n6
+    n4 -->|"calls"| n8
+    n4 -->|"calls"| n9
 ```
 
-## API calls
+<details>
+<summary>Call relationships</summary>
 
 ```mermaid
 flowchart TD
-    n0["SessionError · client/contracts.aug"]
-    n1["discover · client/protocol.aug"]
-    n2["responseJson · client/protocol.aug"]
-    n3["validateIdentity · client/protocol.aug"]
-    n4["settings · common/settings.aug"]
+    n0["SessionError"]
+    n1["discover"]
+    n2["responseJson"]
+    n3["validateIdentity"]
+    n4["settings"]
     n5["client/protocol.aug"]
-    n6["parse · package/@git/url_2d3c37c690c0fa115be1@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug"]
-    n7["HttpClient.request · package/@git/url_897efafd565158fc4908@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contrac…"]
-    n8["Crypto.equal · package/@git/url_9ef654c66d34ab8f5527@0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug"]
-    n9["Crypto.generateRsa · package/@git/url_9ef654c66d34ab8f5527@0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contrac…"]
-    n10["Crypto.publicRsa · package/@git/url_9ef654c66d34ab8f5527@0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts…"]
-    n11["RsaJwks · package/@git/url_9ef654c66d34ab8f5527@0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug"]
-    n12["importJwk · package/@git/url_9ef654c66d34ab8f5527@0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug"]
-    n13["rsaJwk · package/@git/url_9ef654c66d34ab8f5527@0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug"]
-    n14["signJwt · package/@git/url_9ef654c66d34ab8f5527@0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug"]
-    n15["verifyJwt · package/@git/url_9ef654c66d34ab8f5527@0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug"]
-    n16["IdClaims · provider/contracts.aug"]
+    n6["parse"]
+    n7["HttpClient.request"]
+    n8["Crypto.equal"]
+    n9["Crypto.generateRsa"]
+    n10["Crypto.publicRsa"]
+    n11["RsaJwks"]
+    n12["importJwk"]
+    n13["rsaJwk"]
+    n14["signJwt"]
+    n15["verifyJwt"]
+    n16["IdClaims"]
     n1 -->|"calls"| n0
     n1 -->|"calls"| n2
     n1 -->|"calls"| n4
@@ -87,6 +78,8 @@ flowchart TD
     n5 -->|"calls"| n16
 ```
 
+</details>
+
 ## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
@@ -107,31 +100,37 @@ sequenceDiagram
     participant p5 as parse
     alt response.status != 200
     p0->>p1: SessionError()
-    Note over p0: Raise checked failure SessionError()#59; required cleanup runs before exit
+    p1-->>p0: SessionError
+    Note over p0: Raise checked failure SessionError()； required cleanup runs before exit
     end
-    p0->>p2: response.headers.get(name)
+    p0->>p2: response.headers.get(name=”content-type”)
     alt Match when null:
     p0->>p1: SessionError()
-    Note over p0: Raise checked failure SessionError()#59; required cleanup runs before exit
+    p1-->>p0: SessionError
+    Note over p0: Raise checked failure SessionError()； required cleanup runs before exit
     else Match when some contentType:
-    p0->>p3: contentType.startsWith(prefix)
-    alt not contentType.startsWith(prefix=#34;application/json#34;)
+    p0->>p3: contentType.startsWith(prefix=”application/json”)
+    alt not contentType.startsWith(prefix=”application/json”)
     p0->>p1: SessionError()
-    Note over p0: Raise checked failure SessionError()#59; required cleanup runs before exit
+    p1-->>p0: SessionError
+    Note over p0: Raise checked failure SessionError()； required cleanup runs before exit
     end
     end
-    opt Try body#59; stops on a checked failure
+    opt Try body； stops on a checked failure
     p0->>p4: response.body.text()
-    p0->>p5: parse(input)
-    Note over p0: Return parse(input=response.body.text())#59; required cleanup runs before exit
+    p0->>p5: parse(input=response.body.text())
+    p5-->>p0: Json
+    Note over p0: Return parse(input=response.body.text())； required cleanup runs before exit
     end
     opt Catch ConversionError
     p0->>p1: SessionError()
-    Note over p0: Raise checked failure SessionError()#59; required cleanup runs before exit
+    p1-->>p0: SessionError
+    Note over p0: Raise checked failure SessionError()； required cleanup runs before exit
     end
     opt Catch JsonError
     p0->>p1: SessionError()
-    Note over p0: Raise checked failure SessionError()#59; required cleanup runs before exit
+    p1-->>p0: SessionError
+    Note over p0: Raise checked failure SessionError()； required cleanup runs before exit
     end
     Note over p0: May leave with checked errors: SessionError
 ```
@@ -146,14 +145,17 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as discover
     participant p1 as settings
-    participant p2 as HttpClient.request
+    participant p2 as HttpClient
     participant p3 as responseJson
     participant p4 as json.decode
     participant p5 as SessionError
     p0->>p1: settings()
-    p0->>p2: request(method, url) · interface dispatch
-    p0->>p3: responseJson(response)
-    opt Try body#59; stops on a checked failure
+    p1-->>p0: config: Settings
+    p0->>p2: request(method=”GET”, url=config.issuer + ”/.well-known/openid-configuration”) · interface dispatch
+    p2-->>p0: HttpResponse‹Bytes›
+    p0->>p3: responseJson(response=client.request(method=”GET”, url=config.issuer + ”/.well-known/openid-configuration”))
+    p3-->>p0: json: Json
+    opt Try body； stops on a checked failure
     p0->>p4: json.decode()
     opt Left is false
     end
@@ -163,15 +165,17 @@ sequenceDiagram
     end
     opt Left is false
     end
-    alt document.issuer != config.issuer or document.authorization_endpoint != config.issuer + #34;/authorize#34; or document.token…
+    alt document.issuer != config.issuer or document.authorization_endpoint != config.issuer + ”/authorize” or document.token…
     p0->>p5: SessionError()
-    Note over p0: Raise checked failure SessionError()#59; required cleanup runs before exit
+    p5-->>p0: SessionError
+    Note over p0: Raise checked failure SessionError()； required cleanup runs before exit
     end
-    Note over p0: Return document#59; required cleanup runs before exit
+    Note over p0: Return document； required cleanup runs before exit
     end
     opt Catch JsonError
     p0->>p5: SessionError()
-    Note over p0: Raise checked failure SessionError()#59; required cleanup runs before exit
+    p5-->>p0: SessionError
+    Note over p0: Raise checked failure SessionError()； required cleanup runs before exit
     end
     Note over p0: May leave with checked errors: HttpError, SessionError
 ```
@@ -193,26 +197,29 @@ sequenceDiagram
     participant p4 as jwks.keys.get
     participant p5 as importJwk
     participant p6 as verifyJwt
-    participant p7 as verifyJwt(token, publicKey, kid=#34;provider-1#34;, tokenType=#34;JWT#34;).decode
+    participant p7 as verifyJwt(token, publicKey, kid=”provider-1”, tokenType=”JWT”).decode
     participant p8 as claims.sub.length
     participant p9 as claims.nonce.bytes
-    participant p10 as nonce.bytes
-    participant p11 as Crypto.equal
     p0->>p1: settings()
+    p1-->>p0: config: Settings
     p0->>p2: jwks.keys.length()
     alt jwks.keys.length() != 1
     p0->>p3: SessionError()
-    Note over p0: Raise checked failure SessionError()#59; required cleanup runs before exit
+    p3-->>p0: SessionError
+    Note over p0: Raise checked failure SessionError()； required cleanup runs before exit
     end
-    opt Try body#59; stops on a checked failure
-    p0->>p4: jwks.keys.get(index)
-    alt jwk.kid != #34;provider-1#34;
+    opt Try body； stops on a checked failure
+    p0->>p4: jwks.keys.get(index=0)
+    alt jwk.kid != ”provider-1”
     p0->>p3: SessionError()
-    Note over p0: Raise checked failure SessionError()#59; required cleanup runs before exit
+    p3-->>p0: SessionError
+    Note over p0: Raise checked failure SessionError()； required cleanup runs before exit
     end
-    p0->>p5: importJwk(jwk)
-    p0->>p6: verifyJwt(token, publicKey, kid, tokenType)
-    p0->>p7: verifyJwt(token, publicKey, kid=#34;provider-1#34;, tokenType=#34;JWT#34;).decode()
+    p0->>p5: importJwk(jwk=jwk)
+    p5-->>p0: publicKey: RsaPublicKey
+    p0->>p6: verifyJwt(token=token, publicKey=publicKey, kid=”provider-1”, tokenType=”JWT”)
+    p6-->>p0: Json
+    p0->>p7: verifyJwt(token, publicKey, kid=”provider-1”, tokenType=”JWT”).decode()
     opt Left is false
     end
     opt Left is false
@@ -221,9 +228,10 @@ sequenceDiagram
     opt Left is false
     p0->>p8: claims.sub.length()
     end
-    alt claims.iss != config.issuer or claims.aud != config.clientId or claims.sub.length() == 0 or claims.sub.length() #62; 255
+    alt claims.iss != config.issuer or claims.aud != config.clientId or claims.sub.length() == 0 or claims.sub.length() › 255
     p0->>p3: SessionError()
-    Note over p0: Raise checked failure SessionError()#59; required cleanup runs before exit
+    p3-->>p0: SessionError
+    Note over p0: Raise checked failure SessionError()； required cleanup runs before exit
     end
     opt Left is false
     end
@@ -233,24 +241,12 @@ sequenceDiagram
     end
     opt Left is false
     end
-    alt claims.exp #60;= now or claims.iat #60; now - 300 or claims.iat #62; now + 30 or claims.exp #60;= claims.iat or claims.exp #62; now …
+    alt claims.exp ‹= now or claims.iat ‹ now - 300 or claims.iat › now + 30 or claims.exp ‹= claims.iat or claims.exp › now …
     p0->>p3: SessionError()
-    Note over p0: Raise checked failure SessionError()#59; required cleanup runs before exit
+    p3-->>p0: SessionError
+    Note over p0: Raise checked failure SessionError()； required cleanup runs before exit
     end
     p0->>p9: claims.nonce.bytes()
-    p0->>p10: nonce.bytes()
-    p0->>p11: equal(left, right) · interface dispatch
-    alt not crypto.equal(left=claims.nonce.bytes(), right=nonce.bytes())
-    p0->>p3: SessionError()
-    Note over p0: Raise checked failure SessionError()#59; required cleanup runs before exit
-    end
-    Note over p0: Return claims#59; required cleanup runs before exit
-    end
-    opt Catch JwtError
-    p0->>p3: SessionError()
-    Note over p0: Raise checked failure SessionError()#59; required cleanup runs before exit
-    end
-    opt Catch JsonError
     end
 ```
 
@@ -259,19 +255,40 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as validateIdentity
-    participant p1 as SessionError
-    opt Catch JsonError
+    participant p1 as nonce.bytes
+    participant p2 as Crypto
+    participant p3 as SessionError
+    opt Try body； stops on a checked failure
     Note over p0: Sequence continued from the previous view
-    p0->>p1: SessionError()
-    Note over p0: Raise checked failure SessionError()#59; required cleanup runs before exit
+    p0->>p1: nonce.bytes()
+    p0->>p2: equal(left=claims.nonce.bytes(), right=nonce.bytes()) · interface dispatch
+    p2-->>p0: bool
+    alt not crypto.equal(left=claims.nonce.bytes(), right=nonce.bytes())
+    p0->>p3: SessionError()
+    p3-->>p0: SessionError
+    Note over p0: Raise checked failure SessionError()； required cleanup runs before exit
+    end
+    Note over p0: Return claims； required cleanup runs before exit
+    end
+    opt Catch JwtError
+    p0->>p3: SessionError()
+    p3-->>p0: SessionError
+    Note over p0: Raise checked failure SessionError()； required cleanup runs before exit
+    end
+    opt Catch JsonError
+    p0->>p3: SessionError()
+    p3-->>p0: SessionError
+    Note over p0: Raise checked failure SessionError()； required cleanup runs before exit
     end
     opt Catch IndexError
-    p0->>p1: SessionError()
-    Note over p0: Raise checked failure SessionError()#59; required cleanup runs before exit
+    p0->>p3: SessionError()
+    p3-->>p0: SessionError
+    Note over p0: Raise checked failure SessionError()； required cleanup runs before exit
     end
     opt Catch CryptoError
-    p0->>p1: SessionError()
-    Note over p0: Raise checked failure SessionError()#59; required cleanup runs before exit
+    p0->>p3: SessionError()
+    p3-->>p0: SessionError
+    Note over p0: Raise checked failure SessionError()； required cleanup runs before exit
     end
     Note over p0: May leave with checked errors: SessionError
 ```

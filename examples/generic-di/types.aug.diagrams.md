@@ -8,11 +8,11 @@
 
 ```mermaid
 flowchart TD
-    n0["Console · august/io/contracts.aug"]
-    n1["IProgram · types.aug"]
-    n2["NumberRepository · types.aug"]
-    n3["Program · types.aug"]
-    n4["Repository · types.aug"]
+    n0["Console"]
+    n1["IProgram"]
+    n2["NumberRepository"]
+    n3["Program"]
+    n4["Repository"]
     n1 -->|"depends on"| n0
     n2 -->|"implements"| n4
     n3 -->|"calls"| n0
@@ -22,18 +22,19 @@ flowchart TD
     n3 -->|"depends on repository"| n4
 ```
 
-## API calls
+<details>
+<summary>Call relationships</summary>
 
 ```mermaid
 flowchart TD
-    n0["Console.write · august/io/contracts.aug"]
-    n1["IProgram.start · types.aug"]
-    n2["NumberRepository.get · types.aug"]
-    n3["Program.start · types.aug"]
-    n4["Repository.get · types.aug"]
-    n3 -->|"calls"| n0
-    n3 -->|"calls"| n4
+    n0["Console.write"]
+    n1["Program.start"]
+    n2["Repository.get"]
+    n1 -->|"calls"| n0
+    n1 -->|"calls"| n2
 ```
+
+</details>
 
 ## Sequences
 
@@ -45,12 +46,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](types.aug#L4)
 
-```mermaid
-sequenceDiagram
-    participant p0 as Repository.get
-
-    Note over p0: Interface contract#59; implementation selected at runtime
-```
+Interface contract; implementation selected at runtime. [Explanation](types.aug.md).
 
 <a id="sequence-NumberRepository-20-constructor"></a>
 
@@ -58,12 +54,7 @@ sequenceDiagram
 
 [Source](types.aug#L6)
 
-```mermaid
-sequenceDiagram
-    participant p0 as NumberRepository constructor
-
-    Note over p0: No calls in this operation#59; see the source and specification
-```
+[Explanation](types.aug.md).
 
 <a id="sequence-NumberRepository.get"></a>
 
@@ -71,12 +62,7 @@ sequenceDiagram
 
 [Source](types.aug#L7)
 
-```mermaid
-sequenceDiagram
-    participant p0 as NumberRepository.get
-
-    Note over p0: Return 7#59; required cleanup runs before exit
-```
+Return 7; required cleanup runs before exit. [Explanation](types.aug.md).
 
 <a id="sequence-Program-20-constructor"></a>
 
@@ -84,12 +70,7 @@ sequenceDiagram
 
 [Source](types.aug#L11)
 
-```mermaid
-sequenceDiagram
-    participant p0 as Program constructor
-
-    Note over p0: Receive fields: injected repository
-```
+Receive fields: injected repository. [Explanation](types.aug.md).
 
 <a id="sequence-Program.start"></a>
 
@@ -100,10 +81,11 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as Program.start
-    participant p1 as Repository.get
-    participant p2 as Console.write
+    participant p1 as Repository
+    participant p2 as Console
     p0->>p1: get() · interface dispatch
-    p0->>p2: write(value) · interface dispatch
+    p1-->>p0: int
+    p0->>p2: write(value=repository.get()) · interface dispatch
 ```
 
 <a id="sequence-IProgram.start"></a>
@@ -112,12 +94,7 @@ sequenceDiagram
 
 [Source](types.aug#L17)
 
-```mermaid
-sequenceDiagram
-    participant p0 as IProgram.start
-
-    Note over p0: Interface contract#59; implementation selected at runtime
-```
+Interface contract; implementation selected at runtime. [Explanation](types.aug.md).
 
 ## Called contracts
 

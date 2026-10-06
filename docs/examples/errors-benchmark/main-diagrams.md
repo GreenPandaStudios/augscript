@@ -14,18 +14,17 @@ outline: [2, 3]
 
 [Project overview](diagrams/index.md) · [Compiled explanation](main.md)
 
-## Class interactions
 
-No relationships at this level.
-
-## API calls
+::: details Call relationships
 
 ```mermaid
 flowchart TD
     n0["main.aug"]
-    n1["validate · operations.aug"]
+    n1["validate"]
     n0 -->|"calls"| n1
 ```
+
+:::
 
 ## Sequences
 
@@ -42,15 +41,16 @@ sequenceDiagram
     participant p0 as Startup
     participant p1 as validate
     participant p2 as print
-    loop While index #60; iterations
-    opt Try body#59; stops on a checked failure
-    p0->>p1: validate(value)
+    loop While index ‹ iterations
+    opt Try body； stops on a checked failure
+    p0->>p1: validate(value=index)
+    p1-->>p0: int
     end
     opt Catch FileError
     end
     end
-    p0->>p2: print(value)
-    p0->>p2: print(value)
+    p0->>p2: print(value=checksum)
+    p0->>p2: print(value=failures)
 ```
 
 ## Called contracts

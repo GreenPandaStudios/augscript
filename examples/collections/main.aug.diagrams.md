@@ -4,13 +4,6 @@
 
 [Project overview](.aug-spec/diagrams/index.md) · [Compiled explanation](main.aug.md)
 
-## Class interactions
-
-No relationships at this level.
-
-## API calls
-
-No relationships at this level.
 
 ## Sequences
 
@@ -35,32 +28,32 @@ sequenceDiagram
     participant p8 as scores.contains
     participant p9 as scores.get
     participant p10 as scores.length
-    opt Try body#59; stops on a checked failure
-    p0->>p1: List(input 1, input 2)
+    opt Try body； stops on a checked failure
+    p0->>p1: List(input 1=2, input 2=4)
     rect rgb(245, 240, 241)
     Note over p0: Enter borrow scope
-    p0->>p2: numbers.append(value)
+    p0->>p2: numbers.append(value=6)
     Note over p0: Leave borrow scope
     end
     p0->>p3: numbers.length()
-    p0->>p4: print(value)
-    p0->>p5: numbers.get(index)
-    p0->>p4: print(value)
+    p0->>p4: print(value=numbers.length())
+    p0->>p5: numbers.get(index=1)
+    p0->>p4: print(value=numbers.get(index=1))
     p0->>p6: Map()
     rect rgb(245, 240, 241)
     Note over p0: Enter borrow scope
-    p0->>p7: scores.set(value, key)
+    p0->>p7: scores.set(value=42, key=”ada”)
     Note over p0: Leave borrow scope
     end
-    p0->>p8: scores.contains(key)
-    p0->>p4: print(value)
-    p0->>p9: scores.get(key)
-    p0->>p4: print(value)
+    p0->>p8: scores.contains(key=”ada”)
+    p0->>p4: print(value=scores.contains(key=”ada”))
+    p0->>p9: scores.get(key=”ada”)
+    p0->>p4: print(value=scores.get(key=”ada”))
     p0->>p10: scores.length()
-    p0->>p4: print(value)
+    p0->>p4: print(value=scores.length())
     end
     opt Catch IndexError
-    p0->>p4: print(value)
+    p0->>p4: print(value=”unexpected index failure”)
     end
 ```
 

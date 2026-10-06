@@ -19,18 +19,20 @@ outline: [2, 3]
 ```mermaid
 flowchart TD
     n0["main.aug"]
-    n1["Resource · resource.aug"]
+    n1["Resource"]
     n0 -->|"calls"| n1
 ```
 
-## API calls
+::: details Call relationships
 
 ```mermaid
 flowchart TD
     n0["main.aug"]
-    n1["Resource · resource.aug"]
+    n1["Resource"]
     n0 -->|"calls"| n1
 ```
+
+:::
 
 ## Sequences
 
@@ -48,8 +50,9 @@ sequenceDiagram
     participant p1 as Resource
     participant p2 as print
     p0->>p1: Resource()
-    Note over p0: Own resource#59; release on scope exits
-    p0->>p2: print(value)
+    p1-->>p0: resource: Resource
+    Note over p0: Own resource； release on scope exits
+    p0->>p2: print(value=”using resource”)
 ```
 
 ## Called contracts

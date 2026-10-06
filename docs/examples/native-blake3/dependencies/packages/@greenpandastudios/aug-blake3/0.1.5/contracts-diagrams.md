@@ -14,17 +14,6 @@ outline: [2, 3]
 
 [Project overview](../../../../../diagrams/index.md) · [Compiled explanation](contracts.md)
 
-## Class interactions
-
-```mermaid
-flowchart TD
-    n0["HashError · package/@greenpandastudios/aug-blake3@0.1.5/contracts.aug"]
-
-```
-
-## API calls
-
-No relationships at this level.
 
 ## Sequences
 
@@ -36,10 +25,5 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](contracts.md#source-L3)
 :::
 
-```mermaid
-sequenceDiagram
-    participant p0 as HashError constructor
-
-    Note over p0: Receive fields: code, message
-```
+Receive fields: code, message. [Explanation](contracts.md).
 

@@ -18,33 +18,33 @@ outline: [2, 3]
 
 ```mermaid
 flowchart TD
-    n0["securityHeaders · common/headers.aug"]
-    n1["ExpiringStore · package/@git/url_0eb7c89453c87681ed15@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug"]
-    n2["Clock · package/@git/url_c092cd151499c4e1d8a1@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug"]
-    n3["UserInfo · provider/contracts.aug"]
-    n4["userinfo · provider/userinfo.aug"]
-    n4 -->|"calls"| n0
-    n4 -->|"calls"| n1
-    n4 -->|"depends on"| n1
-    n4 -->|"calls"| n2
-    n4 -->|"depends on"| n2
-    n4 -->|"calls"| n3
+    n0["securityHeaders"]
+    n1["ExpiringStore"]
+    n2["Clock"]
+    n3["userinfo"]
+    n3 -->|"calls"| n0
+    n3 -->|"calls"| n1
+    n3 -->|"depends on"| n1
+    n3 -->|"calls"| n2
+    n3 -->|"depends on"| n2
 ```
 
-## API calls
+::: details Call relationships
 
 ```mermaid
 flowchart TD
-    n0["securityHeaders · common/headers.aug"]
-    n1["ExpiringStore.get · package/@git/url_0eb7c89453c87681ed15@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug"]
-    n2["Clock.now · package/@git/url_c092cd151499c4e1d8a1@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug"]
-    n3["UserInfo · provider/contracts.aug"]
-    n4["userinfo · provider/userinfo.aug"]
+    n0["securityHeaders"]
+    n1["ExpiringStore.get"]
+    n2["Clock.now"]
+    n3["UserInfo"]
+    n4["userinfo"]
     n4 -->|"calls"| n0
     n4 -->|"calls"| n1
     n4 -->|"calls"| n2
     n4 -->|"calls"| n3
 ```
+
+:::
 
 ## Sequences
 
@@ -56,6 +56,8 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](userinfo.md#source-L8)
 :::
 
+#### Sequence 1 of 2 (continued)
+
 ```mermaid
 sequenceDiagram
     participant p0 as userinfo
@@ -63,8 +65,8 @@ sequenceDiagram
     participant p2 as parts.length
     participant p3 as parts.get
     participant p4 as token.isToken
-    participant p5 as Clock.now
-    participant p6 as ExpiringStore.get
+    participant p5 as Clock
+    participant p6 as ExpiringStore
     participant p7 as UserInfo
     participant p8 as Json
     participant p9 as securityHeaders
@@ -73,24 +75,28 @@ sequenceDiagram
     Note over p0: GET /provider/userinfo
     alt Match when null:
     else Match when some header:
-    p0->>p1: header.split(separator)
+    p0->>p1: header.split(separator=” ”)
     p0->>p2: parts.length()
     alt parts.length() == 2
-    opt Try body#59; stops on a checked failure
-    p0->>p3: parts.get(index)
-    alt parts.get(index=0) == #34;Bearer#34;
-    p0->>p3: parts.get(index)
-    p0->>p4: token.isToken(min, max)
+    opt Try body； stops on a checked failure
+    p0->>p3: parts.get(index=0)
+    alt parts.get(index=0) == ”Bearer”
+    p0->>p3: parts.get(index=1)
+    p0->>p4: token.isToken(min=43, max=43)
     alt token.isToken(min=43, max=43)
     p0->>p5: now() · interface dispatch
-    p0->>p6: get(key, now) · interface dispatch
+    p5-->>p0: int
+    p0->>p6: get(key=token, now=clock.now()) · interface dispatch
+    p6-->>p0: optional AccessGrant
     alt Match when null:
     else Match when some grant:
-    p0->>p7: UserInfo(sub, name)
-    p0->>p8: Json(value)
+    p0->>p7: UserInfo(sub=grant.subject, name=grant.name)
+    p7-->>p0: UserInfo
+    p0->>p8: Json(value=UserInfo(sub=grant.subject, name=grant.name))
     p0->>p9: securityHeaders()
-    p0->>p10: HttpResponse(body, headers)
-    Note over p0: Return HttpResponse(body=Json(value=UserInfo(sub=grant.subject, name=grant.name)), headers=securityHeaders())#59; requir…
+    p9-->>p0: Headers
+    p0->>p10: HttpResponse(body=Json(value=UserInfo(sub=grant.subject, name=grant.name)), headers=securityHeaders())
+    Note over p0: Return HttpResponse(body=Json(value=UserInfo(sub=grant.subject, name=grant.name)), headers=securityHeaders())； requir…
     end
     end
     end
@@ -100,12 +106,22 @@ sequenceDiagram
     end
     end
     p0->>p9: securityHeaders()
-    p0->>p11: securityHeaders().with(name, value)
-    p0->>p8: Json(value)
-    p0->>p10: HttpResponse(body, status, headers)
-    Note over p0: Return HttpResponse(body=Json(value=#123;#34;error#34;: #34;invalid_token#34;#125;), status=401, headers=headers)#59; required cleanup runs …
+    p9-->>p0: Headers
+    p0->>p11: securityHeaders().with(name=”www-authenticate”, value=”Bearer error=＼”invalid_token＼””)
+    p0->>p8: Json(value=｛”error”: ”invalid_token”｝)
+    p0->>p10: HttpResponse(body=Json(value=｛”error”: ”invalid_token”｝), status=401, headers=headers)
+    Note over p0: Return HttpResponse(body=Json(value=｛”error”: ”invalid_token”｝), status=401, headers=headers)； required cleanup runs …
     Note over p0: May leave with checked errors: HttpError, TimeError
-    Note over p0: HTTP result follows declared response and error mapping#59; unhandled request failure returns 500
+```
+
+#### Sequence 2 of 2 (continued)
+
+```mermaid
+sequenceDiagram
+    participant p0 as userinfo
+
+    Note over p0: Sequence continued from the previous view
+    Note over p0: HTTP result follows declared response and error mapping； unhandled request failure returns 500
 ```
 
 ## Called contracts

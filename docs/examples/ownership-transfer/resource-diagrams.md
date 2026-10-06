@@ -18,29 +18,30 @@ outline: [2, 3]
 
 ```mermaid
 flowchart TD
-    n0["Console · august/io/contracts.aug"]
-    n1["IResource · resource.aug"]
-    n2["Resource · resource.aug"]
-    n3["consume · resource.aug"]
-    n4["make · resource.aug"]
+    n0["Console"]
+    n1["IResource"]
+    n2["Resource"]
+    n3["consume"]
+    n4["make"]
     n2 -->|"implements"| n1
     n3 -->|"calls"| n0
     n3 -->|"depends on"| n0
     n4 -->|"calls"| n2
 ```
 
-## API calls
+::: details Call relationships
 
 ```mermaid
 flowchart TD
-    n0["Console.write · august/io/contracts.aug"]
-    n1["Resource · resource.aug"]
-    n2["Resource.drop · resource.aug"]
-    n3["consume · resource.aug"]
-    n4["make · resource.aug"]
-    n3 -->|"calls"| n0
-    n4 -->|"calls"| n1
+    n0["Console.write"]
+    n1["Resource"]
+    n2["consume"]
+    n3["make"]
+    n2 -->|"calls"| n0
+    n3 -->|"calls"| n1
 ```
+
+:::
 
 ## Sequences
 
@@ -52,12 +53,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](resource.md#source-L3)
 :::
 
-```mermaid
-sequenceDiagram
-    participant p0 as Resource constructor
-
-    Note over p0: No calls in this operation#59; see the source and specification
-```
+[Explanation](resource.md).
 
 ### Resource.drop {#sequence-Resource.drop}
 
@@ -65,12 +61,7 @@ sequenceDiagram
 [Source](resource.md#source-L4)
 :::
 
-```mermaid
-sequenceDiagram
-    participant p0 as Resource.drop
-
-    Note over p0: No calls in this operation#59; see the source and specification
-```
+[Explanation](resource.md).
 
 ### make {#sequence-make}
 
@@ -83,8 +74,9 @@ sequenceDiagram
     participant p0 as make
     participant p1 as Resource
     p0->>p1: Resource()
-    Note over p0: Own value#59; release on scope exits
-    Note over p0: Return value#59; required cleanup runs before exit
+    p1-->>p0: value: Resource
+    Note over p0: Own value； release on scope exits
+    Note over p0: Return value； required cleanup runs before exit
 ```
 
 ### consume {#sequence-consume}
@@ -96,8 +88,8 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as consume
-    participant p1 as Console.write
-    p0->>p1: write(value) · interface dispatch
+    participant p1 as Console
+    p0->>p1: write(value=”consumed”) · interface dispatch
 ```
 
 ## Called contracts

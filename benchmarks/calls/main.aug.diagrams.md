@@ -4,18 +4,18 @@
 
 [Project overview](.aug-spec/diagrams/index.md) · [Compiled explanation](main.aug.md)
 
-## Class interactions
 
-No relationships at this level.
-
-## API calls
+<details>
+<summary>Call relationships</summary>
 
 ```mermaid
 flowchart TD
     n0["main.aug"]
-    n1["step · operations.aug"]
+    n1["step"]
     n0 -->|"calls"| n1
 ```
+
+</details>
 
 ## Sequences
 
@@ -32,10 +32,11 @@ sequenceDiagram
     participant p0 as Startup
     participant p1 as step
     participant p2 as print
-    loop While index #60; iterations
-    p0->>p1: step(value)
+    loop While index ‹ iterations
+    p0->>p1: step(value=state)
+    p1-->>p0: state: int
     end
-    p0->>p2: print(value)
+    p0->>p2: print(value=state)
 ```
 
 ## Called contracts

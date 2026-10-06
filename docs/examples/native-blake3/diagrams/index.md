@@ -12,36 +12,44 @@ outline: [2, 3]
 
 [Hashing with Rust BLAKE3](../index.md)
 
-Read the areas first, then open a module for its class interactions, API calls and sequences. Follow an operation to its specification and source.
+Start here to see what moves between the application’s folders. Each arrow names an operation’s inputs and the result it returns to its caller. Open a folder for the next level of detail. Expand the contract list for complete types and dependency links.
 
-These are checked static views. Arrows describe possible calls, not an execution trace. Interface implementations, callbacks and foreign internals are not guessed. Tests are described in the adjacent specifications.
-
-## Areas
+## Data flow
 
 ```mermaid
 flowchart TD
-    n0["Project root"]
-    n1["package/@greenpandastudios/aug-blake3@0.1.5"]
-    n0 -->|"uses"| n1
+    n0["hashing"]
+    n1["Startup"]
+    n1 -->|"hashText(value) → string"| n0
 ```
 
-## Modules
+### Package boundaries
+
+::: details hashing package calls
 
 ```mermaid
-flowchart TD
-    n0["hashing.aug"]
-    n1["main.aug"]
-    n2["package/@greenpandastudios/aug-blake3@0.1.5/api.aug"]
-    n3["package/@greenpandastudios/aug-blake3@0.1.5/contracts.aug"]
-    n0 -->|"uses"| n2
-    n0 -->|"uses"| n3
-    n1 -->|"uses"| n0
-    n1 -->|"uses"| n3
+flowchart LR
+    n0["hashing"]
+    n1["url_b647a258d7fe6bf55049"]
+    n0 -->|"hash(input) → string"| n1
 ```
+
+:::
+
+::: details Data crossing these boundaries (2 contracts)
+
+| From | To | Operation and inputs | Result |
+| --- | --- | --- | --- |
+| hashing | url\_b647a258d7fe6bf55049 | [hash](../dependencies/packages/%40greenpandastudios/aug-blake3/0.1.5/api.md) · input: Bytes | string |
+| Startup | hashing | [hashText](../hashing.md) · value: string | string |
+
+:::
 
 ## Open a module
 
-| Module | Diagrams | Specification |
-| --- | --- | --- |
-| hashing.aug | [Interactions and sequences](../hashing-diagrams.md) | [Explanation](../hashing.md) |
-| main.aug | [Interactions and sequences](../main-diagrams.md) | [Explanation](../main.md) |
+| Module | Read |
+| --- | --- |
+| hashing.aug | [Flow and sequences](../hashing-diagrams.md) · [Explanation](../hashing.md) |
+| main.aug | [Flow and sequences](../main-diagrams.md) · [Explanation](../main.md) |
+
+These are static call boundaries, not a request trace. Interface implementations and foreign internals stop at their checked contracts. Dotted arrows defer a callback or browser action. Imports alone do not imply a call.

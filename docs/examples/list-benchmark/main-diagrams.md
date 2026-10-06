@@ -14,13 +14,6 @@ outline: [2, 3]
 
 [Project overview](diagrams/index.md) · [Compiled explanation](main.md)
 
-## Class interactions
-
-No relationships at this level.
-
-## API calls
-
-No relationships at this level.
 
 ## Sequences
 
@@ -37,12 +30,12 @@ sequenceDiagram
     participant p0 as Startup
     participant p1 as values.append
     participant p2 as print
-    Note over p0: Own values#59; release on scope exits
-    loop While index #60; iterations
-    p0->>p1: values.append(value)
+    Note over p0: Own values； release on scope exits
+    loop While index ‹ iterations
+    p0->>p1: values.append(value=index * 3)
     end
     loop For each item in values
     end
-    p0->>p2: print(value)
+    p0->>p2: print(value=checksum)
 ```
 

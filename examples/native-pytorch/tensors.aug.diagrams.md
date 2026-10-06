@@ -4,20 +4,18 @@
 
 [Project overview](.aug-spec/diagrams/index.md) · [Compiled explanation](tensors.aug.md)
 
-## Class interactions
 
-No relationships at this level.
-
-## API calls
+<details>
+<summary>Call relationships</summary>
 
 ```mermaid
 flowchart TD
     n0["tensors.aug"]
-    n1["add · package/@greenpandastudios/aug-pytorch@0.1.6/api.aug"]
-    n2["sum · package/@greenpandastudios/aug-pytorch@0.1.6/api.aug"]
-    n3["tensor · package/@greenpandastudios/aug-pytorch@0.1.6/api.aug"]
-    n4["values · package/@greenpandastudios/aug-pytorch@0.1.6/api.aug"]
-    n5["calculate · tensors.aug"]
+    n1["add"]
+    n2["sum"]
+    n3["tensor"]
+    n4["values"]
+    n5["calculate"]
     n0 -->|"calls"| n1
     n0 -->|"calls"| n2
     n0 -->|"calls"| n3
@@ -27,6 +25,8 @@ flowchart TD
     n5 -->|"calls"| n2
     n5 -->|"calls"| n3
 ```
+
+</details>
 
 ## Sequences
 
@@ -44,14 +44,18 @@ sequenceDiagram
     participant p1 as tensor
     participant p2 as add
     participant p3 as sum
-    p0->>p1: tensor(values)
-    Note over p0: Own left#59; release on scope exits
-    p0->>p1: tensor(values)
-    Note over p0: Own right#59; release on scope exits
-    p0->>p2: add(left, right)
-    Note over p0: Own result#59; release on scope exits
-    p0->>p3: sum(tensor)
-    Note over p0: Return sum(tensor=result)#59; required cleanup runs before exit
+    p0->>p1: tensor(values=［1.0, 2.0, 3.0］)
+    p1-->>p0: left: Tensor
+    Note over p0: Own left； release on scope exits
+    p0->>p1: tensor(values=［4.0, 5.0, 6.0］)
+    p1-->>p0: right: Tensor
+    Note over p0: Own right； release on scope exits
+    p0->>p2: add(left=left, right=right)
+    p2-->>p0: result: Tensor
+    Note over p0: Own result； release on scope exits
+    p0->>p3: sum(tensor=result)
+    p3-->>p0: float
+    Note over p0: Return sum(tensor=result)； required cleanup runs before exit
     Note over p0: May leave with checked errors: TensorError
 ```
 

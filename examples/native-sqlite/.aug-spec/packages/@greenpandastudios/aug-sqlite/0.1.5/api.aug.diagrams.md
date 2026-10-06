@@ -8,35 +8,38 @@
 
 ```mermaid
 flowchart TD
-    n0["NativeDatabaseStorage · package/@greenpandastudios/aug-sqlite@0.1.5/api.aug"]
-    n1["_open · package/@greenpandastudios/aug-sqlite@0.1.5/api.aug"]
-    n2["open · package/@greenpandastudios/aug-sqlite@0.1.5/api.aug"]
-    n3["DatabaseStorage · package/@greenpandastudios/aug-sqlite@0.1.5/contracts.aug"]
+    n0["NativeDatabaseStorage"]
+    n1["_open"]
+    n2["open"]
+    n3["DatabaseStorage"]
     n0 -->|"calls"| n1
     n0 -->|"implements"| n3
     n2 -->|"calls"| n3
     n2 -->|"depends on"| n3
 ```
 
-## API calls
+<details>
+<summary>Call relationships</summary>
 
 ```mermaid
 flowchart TD
-    n0["NativeDatabaseStorage.open · package/@greenpandastudios/aug-sqlite@0.1.5/api.aug"]
-    n1["_execute · package/@greenpandastudios/aug-sqlite@0.1.5/api.aug"]
-    n2["_open · package/@greenpandastudios/aug-sqlite@0.1.5/api.aug"]
-    n3["_queryScalar · package/@greenpandastudios/aug-sqlite@0.1.5/api.aug"]
-    n4["execute · package/@greenpandastudios/aug-sqlite@0.1.5/api.aug"]
-    n5["open · package/@greenpandastudios/aug-sqlite@0.1.5/api.aug"]
-    n6["openMemory · package/@greenpandastudios/aug-sqlite@0.1.5/api.aug"]
-    n7["queryScalar · package/@greenpandastudios/aug-sqlite@0.1.5/api.aug"]
-    n8["DatabaseStorage.open · package/@greenpandastudios/aug-sqlite@0.1.5/contracts.aug"]
+    n0["NativeDatabaseStorage.open"]
+    n1["_execute"]
+    n2["_open"]
+    n3["_queryScalar"]
+    n4["execute"]
+    n5["open"]
+    n6["openMemory"]
+    n7["queryScalar"]
+    n8["DatabaseStorage.open"]
     n0 -->|"calls"| n2
     n4 -->|"calls"| n1
     n5 -->|"calls"| n8
     n6 -->|"calls"| n2
     n7 -->|"calls"| n3
 ```
+
+</details>
 
 ## Sequences
 
@@ -48,13 +51,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](api.aug#L5)
 
-```mermaid
-sequenceDiagram
-    participant p0 as _open
-
-    Note over p0: May leave with checked errors: SqliteError
-    Note over p0: Native implementation#59; only the declared contract is known
-```
+May leave with checked errors: SqliteError. Native implementation; only the declared contract is known. [Explanation](api.aug.md).
 
 <a id="sequence-_execute"></a>
 
@@ -62,13 +59,7 @@ sequenceDiagram
 
 [Source](api.aug#L6)
 
-```mermaid
-sequenceDiagram
-    participant p0 as _execute
-
-    Note over p0: May leave with checked errors: SqliteError
-    Note over p0: Native implementation#59; only the declared contract is known
-```
+May leave with checked errors: SqliteError. Native implementation; only the declared contract is known. [Explanation](api.aug.md).
 
 <a id="sequence-_queryScalar"></a>
 
@@ -76,13 +67,7 @@ sequenceDiagram
 
 [Source](api.aug#L7)
 
-```mermaid
-sequenceDiagram
-    participant p0 as _queryScalar
-
-    Note over p0: May leave with checked errors: SqliteError
-    Note over p0: Native implementation#59; only the declared contract is known
-```
+May leave with checked errors: SqliteError. Native implementation; only the declared contract is known. [Explanation](api.aug.md).
 
 <a id="sequence-NativeDatabaseStorage-20-constructor"></a>
 
@@ -90,12 +75,7 @@ sequenceDiagram
 
 [Source](api.aug#L9)
 
-```mermaid
-sequenceDiagram
-    participant p0 as NativeDatabaseStorage constructor
-
-    Note over p0: No calls in this operation#59; see the source and specification
-```
+[Explanation](api.aug.md).
 
 <a id="sequence-NativeDatabaseStorage.open"></a>
 
@@ -109,8 +89,9 @@ sequenceDiagram
     participant p1 as _open
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _open(path) · native boundary
-    Note over p0: Return _open(path)#59; required cleanup runs before exit
+    p0->>p1: _open(path=path) · native boundary
+    p1-->>p0: Database
+    Note over p0: Return _open(path)； required cleanup runs before exit
     Note over p0: Leave unsafe scope
     end
     Note over p0: May leave with checked errors: SqliteError
@@ -125,9 +106,10 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as open
-    participant p1 as DatabaseStorage.open
-    p0->>p1: open(path) · interface dispatch
-    Note over p0: Return storage.open(path)#59; required cleanup runs before exit
+    participant p1 as DatabaseStorage
+    p0->>p1: open(path=path) · interface dispatch
+    p1-->>p0: Database
+    Note over p0: Return storage.open(path)； required cleanup runs before exit
     Note over p0: May leave with checked errors: SqliteError
 ```
 
@@ -143,8 +125,9 @@ sequenceDiagram
     participant p1 as _open
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _open(path) · native boundary
-    Note over p0: Return _open(path=#34;:memory:#34;)#59; required cleanup runs before exit
+    p0->>p1: _open(path=”:memory:”) · native boundary
+    p1-->>p0: Database
+    Note over p0: Return _open(path=”:memory:”)； required cleanup runs before exit
     Note over p0: Leave unsafe scope
     end
     Note over p0: May leave with checked errors: SqliteError
@@ -162,8 +145,9 @@ sequenceDiagram
     participant p1 as _execute
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _execute(database, sql, parameters) · native boundary
-    Note over p0: Return _execute(database, sql, parameters)#59; required cleanup runs before exit
+    p0->>p1: _execute(database=database, sql=sql, parameters=parameters) · native boundary
+    p1-->>p0: int
+    Note over p0: Return _execute(database, sql, parameters)； required cleanup runs before exit
     Note over p0: Leave unsafe scope
     end
     Note over p0: May leave with checked errors: SqliteError
@@ -181,8 +165,9 @@ sequenceDiagram
     participant p1 as _queryScalar
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _queryScalar(database, sql, parameters) · native boundary
-    Note over p0: Return _queryScalar(database, sql, parameters)#59; required cleanup runs before exit
+    p0->>p1: _queryScalar(database=database, sql=sql, parameters=parameters) · native boundary
+    p1-->>p0: string
+    Note over p0: Return _queryScalar(database, sql, parameters)； required cleanup runs before exit
     Note over p0: Leave unsafe scope
     end
     Note over p0: May leave with checked errors: SqliteError

@@ -18,12 +18,11 @@ outline: [2, 3]
 
 ```mermaid
 flowchart TD
-    n0["KeyError · common/keys.aug"]
-    n1["MemorySigningKeys · common/keys.aug"]
-    n2["SigningKeys · common/keys.aug"]
-    n3["initializeKeys · common/keys.aug"]
-    n4["Crypto · package/@git/url_9ef654c66d34ab8f5527@0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug"]
-    n1 -->|"calls"| n0
+    n0["KeyError"]
+    n1["MemorySigningKeys"]
+    n2["SigningKeys"]
+    n3["initializeKeys"]
+    n4["Crypto"]
     n1 -->|"implements"| n2
     n3 -->|"calls"| n2
     n3 -->|"depends on"| n2
@@ -31,25 +30,25 @@ flowchart TD
     n3 -->|"depends on"| n4
 ```
 
-## API calls
+::: details Call relationships
 
 ```mermaid
 flowchart TD
-    n0["KeyError · common/keys.aug"]
-    n1["MemorySigningKeys.configure · common/keys.aug"]
-    n2["MemorySigningKeys.provider · common/keys.aug"]
-    n3["MemorySigningKeys.session · common/keys.aug"]
-    n4["SigningKeys.configure · common/keys.aug"]
-    n5["SigningKeys.provider · common/keys.aug"]
-    n6["SigningKeys.session · common/keys.aug"]
-    n7["initializeKeys · common/keys.aug"]
-    n8["Crypto.generateRsa · package/@git/url_9ef654c66d34ab8f5527@0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contrac…"]
+    n0["KeyError"]
+    n1["MemorySigningKeys.configure"]
+    n2["MemorySigningKeys.provider"]
+    n3["MemorySigningKeys.session"]
+    n4["SigningKeys.configure"]
+    n5["initializeKeys"]
+    n6["Crypto.generateRsa"]
     n1 -->|"calls"| n0
     n2 -->|"calls"| n0
     n3 -->|"calls"| n0
-    n7 -->|"calls"| n4
-    n7 -->|"calls"| n8
+    n5 -->|"calls"| n4
+    n5 -->|"calls"| n6
 ```
+
+:::
 
 ## Sequences
 
@@ -61,12 +60,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](keys.md#source-L4)
 :::
 
-```mermaid
-sequenceDiagram
-    participant p0 as KeyError constructor
-
-    Note over p0: No calls in this operation#59; see the source and specification
-```
+[Explanation](keys.md).
 
 ### SigningKeys.configure {#sequence-SigningKeys.configure}
 
@@ -74,13 +68,7 @@ sequenceDiagram
 [Source](keys.md#source-L8)
 :::
 
-```mermaid
-sequenceDiagram
-    participant p0 as SigningKeys.configure
-
-    Note over p0: May leave with checked errors: KeyError
-    Note over p0: Interface contract#59; implementation selected at runtime
-```
+May leave with checked errors: KeyError. Interface contract; implementation selected at runtime. [Explanation](keys.md).
 
 ### SigningKeys.provider {#sequence-SigningKeys.provider}
 
@@ -88,13 +76,7 @@ sequenceDiagram
 [Source](keys.md#source-L9)
 :::
 
-```mermaid
-sequenceDiagram
-    participant p0 as SigningKeys.provider
-
-    Note over p0: May leave with checked errors: KeyError
-    Note over p0: Interface contract#59; implementation selected at runtime
-```
+May leave with checked errors: KeyError. Interface contract; implementation selected at runtime. [Explanation](keys.md).
 
 ### SigningKeys.session {#sequence-SigningKeys.session}
 
@@ -102,13 +84,7 @@ sequenceDiagram
 [Source](keys.md#source-L10)
 :::
 
-```mermaid
-sequenceDiagram
-    participant p0 as SigningKeys.session
-
-    Note over p0: May leave with checked errors: KeyError
-    Note over p0: Interface contract#59; implementation selected at runtime
-```
+May leave with checked errors: KeyError. Interface contract; implementation selected at runtime. [Explanation](keys.md).
 
 ### MemorySigningKeys constructor {#sequence-MemorySigningKeys-20-constructor}
 
@@ -122,8 +98,8 @@ sequenceDiagram
     participant p1 as Map
     participant p2 as Shared
     p0->>p1: Map()
-    p0->>p2: Shared(value)
-    Note over p0: Set _keys to Shared(value=Map#60;string, RsaPrivateKey#62;())
+    p0->>p2: Shared(value=Map‹string, RsaPrivateKey›())
+    Note over p0: Set _keys to Shared(value=Map‹string, RsaPrivateKey›())
 ```
 
 ### MemorySigningKeys.configure {#sequence-MemorySigningKeys.configure}
@@ -143,10 +119,11 @@ sequenceDiagram
     p0->>p1: keys.length()
     alt keys.length() != 0
     p0->>p2: KeyError()
-    Note over p0: Raise checked failure KeyError()#59; required cleanup runs before exit
+    p2-->>p0: KeyError
+    Note over p0: Raise checked failure KeyError()； required cleanup runs before exit
     end
-    p0->>p3: keys.set(key, value)
-    p0->>p3: keys.set(key, value)
+    p0->>p3: keys.set(key=”provider”, value=provider)
+    p0->>p3: keys.set(key=”session”, value=session)
     Note over p0: Leave lock scope
     end
     Note over p0: May leave with checked errors: KeyError
@@ -165,12 +142,13 @@ sequenceDiagram
     participant p2 as KeyError
     rect rgb(245, 240, 241)
     Note over p0: Enter lock scope
-    p0->>p1: keys.get(key)
+    p0->>p1: keys.get(key=”provider”)
     alt Match when null:
     p0->>p2: KeyError()
-    Note over p0: Raise checked failure KeyError()#59; required cleanup runs before exit
+    p2-->>p0: KeyError
+    Note over p0: Raise checked failure KeyError()； required cleanup runs before exit
     else Match when some key:
-    Note over p0: Return key#59; required cleanup runs before exit
+    Note over p0: Return key； required cleanup runs before exit
     end
     Note over p0: Leave lock scope
     end
@@ -190,12 +168,13 @@ sequenceDiagram
     participant p2 as KeyError
     rect rgb(245, 240, 241)
     Note over p0: Enter lock scope
-    p0->>p1: keys.get(key)
+    p0->>p1: keys.get(key=”session”)
     alt Match when null:
     p0->>p2: KeyError()
-    Note over p0: Raise checked failure KeyError()#59; required cleanup runs before exit
+    p2-->>p0: KeyError
+    Note over p0: Raise checked failure KeyError()； required cleanup runs before exit
     else Match when some key:
-    Note over p0: Return key#59; required cleanup runs before exit
+    Note over p0: Return key； required cleanup runs before exit
     end
     Note over p0: Leave lock scope
     end
@@ -211,11 +190,13 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as initializeKeys
-    participant p1 as Crypto.generateRsa
-    participant p2 as SigningKeys.configure
+    participant p1 as Crypto
+    participant p2 as SigningKeys
     p0->>p1: generateRsa() · interface dispatch
+    p1-->>p0: provider: RsaPrivateKey
     p0->>p1: generateRsa() · interface dispatch
-    p0->>p2: configure(provider, session) · interface dispatch
+    p1-->>p0: session: RsaPrivateKey
+    p0->>p2: configure(provider=provider, session=session) · interface dispatch
     Note over p0: May leave with checked errors: CryptoError, KeyError
 ```
 

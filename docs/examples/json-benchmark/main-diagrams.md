@@ -14,18 +14,17 @@ outline: [2, 3]
 
 [Project overview](diagrams/index.md) · [Compiled explanation](main.md)
 
-## Class interactions
 
-No relationships at this level.
-
-## API calls
+::: details Call relationships
 
 ```mermaid
 flowchart TD
     n0["main.aug"]
-    n1["parse · package/@git/url_2d3c37c690c0fa115be1@0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug"]
+    n1["parse"]
     n0 -->|"calls"| n1
 ```
+
+:::
 
 ## Sequences
 
@@ -47,18 +46,19 @@ sequenceDiagram
     participant p5 as encoded.length
     participant p6 as print
     participant p7 as exit
-    opt Try body#59; stops on a checked failure
-    loop While index #60; 5000
-    p0->>p1: parse(input)
+    opt Try body； stops on a checked failure
+    loop While index ‹ 5000
+    p0->>p1: parse(input=”｛＼”id＼”:7,＼”message＼”:＼”hello＼”,＼”values＼”:［1,2,3］｝”)
+    p1-->>p0: document: Json
     p0->>p2: document.decode()
-    p0->>p3: Json(value)
+    p0->>p3: Json(value=payload)
     p0->>p4: Json(value=payload).stringify()
     p0->>p5: encoded.length()
     end
-    p0->>p6: print(value)
+    p0->>p6: print(value=checksum)
     end
     opt Catch JsonError
-    p0->>p7: exit(status)
+    p0->>p7: exit(status=1)
     end
 ```
 

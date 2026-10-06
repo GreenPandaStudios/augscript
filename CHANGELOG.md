@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Generated diagrams now start with folder data flow, show named inputs and returned values, link nested folder views, group package calls by their import names, and omit one-note helper diagrams.
+
 - Obtain maintainer GMP and Nettle sources from reachable upstream/mirror endpoints with the existing versions and SHA-256 pins.
 
 - Generate deterministic Mermaid project, class, API-call and sequence views with compiled specs; link the wiki examples from overview to source.

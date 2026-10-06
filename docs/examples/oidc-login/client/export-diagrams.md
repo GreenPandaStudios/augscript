@@ -14,13 +14,6 @@ outline: [2, 3]
 
 [Project overview](../diagrams/index.md) · [Compiled explanation](export.md)
 
-## Class interactions
-
-No relationships at this level.
-
-## API calls
-
-No relationships at this level.
 
 ## Sequences
 

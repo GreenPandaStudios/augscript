@@ -4,18 +4,18 @@
 
 [Project overview](.aug-spec/diagrams/index.md) · [Compiled explanation](main.aug.md)
 
-## Class interactions
 
-No relationships at this level.
-
-## API calls
+<details>
+<summary>Call relationships</summary>
 
 ```mermaid
 flowchart TD
     n0["main.aug"]
-    n1["calculate · tensors.aug"]
+    n1["calculate"]
     n0 -->|"calls"| n1
 ```
+
+</details>
 
 ## Sequences
 
@@ -32,12 +32,13 @@ sequenceDiagram
     participant p0 as Startup
     participant p1 as calculate
     participant p2 as print
-    opt Try body#59; stops on a checked failure
+    opt Try body； stops on a checked failure
     p0->>p1: calculate()
-    p0->>p2: print(value)
+    p1-->>p0: float
+    p0->>p2: print(value=calculate())
     end
     opt Catch TensorError
-    p0->>p2: print(value)
+    p0->>p2: print(value=error.message)
     end
 ```
 

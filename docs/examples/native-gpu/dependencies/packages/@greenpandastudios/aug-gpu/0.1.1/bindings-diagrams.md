@@ -14,18 +14,6 @@ outline: [2, 3]
 
 [Project overview](../../../../../diagrams/index.md) · [Compiled explanation](bindings.md)
 
-## Class interactions
-
-```mermaid
-flowchart TD
-    n0["Buffer · package/@greenpandastudios/aug-gpu@0.1.1/bindings.aug"]
-    n1["Device · package/@greenpandastudios/aug-gpu@0.1.1/bindings.aug"]
-
-```
-
-## API calls
-
-No relationships at this level.
 
 ## Sequences
 

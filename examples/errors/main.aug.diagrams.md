@@ -4,18 +4,18 @@
 
 [Project overview](.aug-spec/diagrams/index.md) · [Compiled explanation](main.aug.md)
 
-## Class interactions
 
-No relationships at this level.
-
-## API calls
+<details>
+<summary>Call relationships</summary>
 
 ```mermaid
 flowchart TD
-    n0["load · errors.aug"]
+    n0["load"]
     n1["main.aug"]
     n1 -->|"calls"| n0
 ```
+
+</details>
 
 ## Sequences
 
@@ -32,12 +32,13 @@ sequenceDiagram
     participant p0 as Startup
     participant p1 as load
     participant p2 as print
-    opt Try body#59; stops on a checked failure
-    p0->>p1: load(fail)
-    p0->>p2: print(value)
+    opt Try body； stops on a checked failure
+    p0->>p1: load(fail=true)
+    p1-->>p0: string
+    p0->>p2: print(value=load(fail=true))
     end
     opt Catch FileError
-    p0->>p2: print(value)
+    p0->>p2: print(value=”caught FileError”)
     end
 ```
 

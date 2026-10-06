@@ -8,24 +8,12 @@
 
 ```mermaid
 flowchart TD
-    n0["Box · types.aug"]
-    n1["Formatter · types.aug"]
-    n2["IBox · types.aug"]
-    n3["TextFormatter · types.aug"]
+    n0["Box"]
+    n1["Formatter"]
+    n2["IBox"]
+    n3["TextFormatter"]
     n0 -->|"implements"| n2
     n3 -->|"implements"| n1
-```
-
-## API calls
-
-```mermaid
-flowchart TD
-    n0["Box.get · types.aug"]
-    n1["Formatter.format · types.aug"]
-    n2["Formatter.title · types.aug"]
-    n3["IBox.get · types.aug"]
-    n4["TextFormatter.format · types.aug"]
-
 ```
 
 ## Sequences
@@ -38,12 +26,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](types.aug#L3)
 
-```mermaid
-sequenceDiagram
-    participant p0 as Formatter.format
-
-    Note over p0: Interface contract#59; implementation selected at runtime
-```
+Interface contract; implementation selected at runtime. [Explanation](types.aug.md).
 
 <a id="sequence-Formatter.title"></a>
 
@@ -51,12 +34,7 @@ sequenceDiagram
 
 [Source](types.aug#L4)
 
-```mermaid
-sequenceDiagram
-    participant p0 as Formatter.title
-
-    Note over p0: Return #34;formatted#34;#59; required cleanup runs before exit
-```
+Return "formatted"; required cleanup runs before exit. [Explanation](types.aug.md).
 
 <a id="sequence-TextFormatter-20-constructor"></a>
 
@@ -64,12 +42,7 @@ sequenceDiagram
 
 [Source](types.aug#L8)
 
-```mermaid
-sequenceDiagram
-    participant p0 as TextFormatter constructor
-
-    Note over p0: No calls in this operation#59; see the source and specification
-```
+[Explanation](types.aug.md).
 
 <a id="sequence-TextFormatter.format"></a>
 
@@ -77,12 +50,7 @@ sequenceDiagram
 
 [Source](types.aug#L9)
 
-```mermaid
-sequenceDiagram
-    participant p0 as TextFormatter.format
-
-    Note over p0: Return #34;generic method called#34;#59; required cleanup runs before exit
-```
+Return "generic method called"; required cleanup runs before exit. [Explanation](types.aug.md).
 
 <a id="sequence-Box-20-constructor"></a>
 
@@ -90,12 +58,7 @@ sequenceDiagram
 
 [Source](types.aug#L13)
 
-```mermaid
-sequenceDiagram
-    participant p0 as Box constructor
-
-    Note over p0: Receive fields: value
-```
+Receive fields: value. [Explanation](types.aug.md).
 
 <a id="sequence-Box.get"></a>
 
@@ -103,12 +66,7 @@ sequenceDiagram
 
 [Source](types.aug#L14)
 
-```mermaid
-sequenceDiagram
-    participant p0 as Box.get
-
-    Note over p0: Return value#59; required cleanup runs before exit
-```
+Return value; required cleanup runs before exit. [Explanation](types.aug.md).
 
 <a id="sequence-IBox.get"></a>
 
@@ -116,12 +74,7 @@ sequenceDiagram
 
 [Source](types.aug#L19)
 
-```mermaid
-sequenceDiagram
-    participant p0 as IBox.get
-
-    Note over p0: Interface contract#59; implementation selected at runtime
-```
+Interface contract; implementation selected at runtime. [Explanation](types.aug.md).
 
 ## Called contracts
 

@@ -165,11 +165,18 @@ try {
   assert.equal(aug('run',callbacks),'4\n6\n');
   if(process.env.AUG_LLVM_HOME&&process.env.AUG_RUNTIME_PACK)assert.equal(run(process.execPath,[cli,'run',callbacks,'--backend','llvm']),'4\n6\n');
   aug('spec',callbacks);assert.match(readFileSync(join(callbacks,'main.aug.diagrams.md'),'utf8'),/sequenceDiagram/);assert.match(readFileSync(join(callbacks,'.aug-spec/diagrams/index.md'),'utf8'),/Project diagrams/);aug('spec',callbacks,'--check');assert.match(readFileSync(join(callbacks,'main.aug.md'),'utf8'),/pure callback/);
+  const folderFlow=join(directory,'folder-flow-consumer');mkdirSync(join(folderFlow,'app'),{recursive:true});
+  writeFileSync(join(folderFlow,'main.aug'),'import load from app\nprint(value=load(id=7))\n');
+  writeFileSync(join(folderFlow,'app/export.aug'),'export load from work\n');
+  writeFileSync(join(folderFlow,'app/work.aug'),'load(int id) returns string { return "item" }\n');
+  writeFileSync(join(folderFlow,'app/model.aug'),'record Item(string name)\n');
+  aug('spec',folderFlow);aug('spec',folderFlow,'--check');
+  assert.match(readFileSync(join(folderFlow,'.aug-spec/diagrams/folders/app/index.md'),'utf8'),/load/);
   const verifySpecs = folder => {
     for(const entry of readdirSync(folder,{withFileTypes:true})) {
       const file=join(folder,entry.name);
       if(entry.isDirectory())verifySpecs(file);
-      else if(entry.name.endsWith('.aug.md')||entry.name.endsWith('.aug.diagrams.md')||file.endsWith('/.aug-spec/diagrams/index.md'))for(const match of readFileSync(file,'utf8').matchAll(/\]\(([^)]+)\)/g)) {
+      else if(entry.name.endsWith('.aug.md')||entry.name.endsWith('.aug.diagrams.md')||file.includes('/.aug-spec/diagrams/')&&entry.name==='index.md')for(const match of readFileSync(file,'utf8').matchAll(/\]\(([^)]+)\)/g)) {
         if(/^[a-z]+:/i.test(match[1]))continue;
         const [href,anchor]=match[1].split('#'),target=resolve(dirname(file),decodeURIComponent(href));
         assert.ok(existsSync(target),`Broken installed spec link ${match[1]} in ${file}`);
@@ -177,6 +184,7 @@ try {
       }
     }
   };
+  verifySpecs(folderFlow);
   for(const name of ['stdlib','web','crypto'])verifySpecs(join(directory,`node_modules/@greenpandastudios/aug-${name}/august`));
   assert.match(aug('--help'), /Usage: aug/);
   const cacheEnv={...process.env,AUG_PACKAGE_CACHE:join(directory,'source-cache'),AUG_NATIVE_ARTIFACT_CACHE:join(directory,'native-cache'),AUG_COMPILATION_CACHE:join(directory,'empty-compilation-cache')};

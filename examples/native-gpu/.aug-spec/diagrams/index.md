@@ -2,37 +2,62 @@
 
 # Project diagrams
 
-Read the areas first, then open a module for its class interactions, API calls and sequences. Follow an operation to its specification and source.
+Start here to see what moves between the application’s folders. Each arrow names an operation’s inputs and the result it returns to its caller. Open a folder for the next level of detail. Expand the contract list for complete types and dependency links.
 
-These are checked static views. Arrows describe possible calls, not an execution trace. Interface implementations, callbacks and foreign internals are not guessed. Tests are described in the adjacent specifications.
-
-## Areas
+## Data flow
 
 ```mermaid
 flowchart TD
-    n0["Project root"]
-    n1["package/@greenpandastudios/aug-gpu@0.1.1"]
-    n0 -->|"uses"| n1
+    n0["compute"]
+    n1["Startup"]
+    n1 -->|"calculate(left, right) → list of float"| n0
 ```
 
-## Modules
+### Package boundaries
+
+<details>
+<summary>compute package calls</summary>
 
 ```mermaid
-flowchart TD
-    n0["compute.aug"]
-    n1["main.aug"]
-    n2["package/@greenpandastudios/aug-gpu@0.1.1/api.aug"]
-    n3["package/@greenpandastudios/aug-gpu@0.1.1/bindings.aug"]
-    n4["package/@greenpandastudios/aug-gpu@0.1.1/contracts.aug"]
-    n0 -->|"uses"| n2
-    n0 -->|"uses"| n3
-    n1 -->|"uses"| n0
-    n1 -->|"uses"| n4
+flowchart LR
+    n0["compute"]
+    n1["url_39068e92fef803d998a8"]
+    n0 -->|"add(left, right) / download(buffer) + 2 more → Buffer / Device + 1 more"| n1
 ```
+
+</details>
+
+<details>
+<summary>Startup package calls</summary>
+
+```mermaid
+flowchart LR
+    n0["Startup"]
+    n1["url_39068e92fef803d998a8"]
+    n0 -->|"GpuError.explain → string"| n1
+```
+
+</details>
+
+<details>
+<summary>Data crossing these boundaries (6 contracts)</summary>
+
+| From | To | Operation and inputs | Result |
+| --- | --- | --- | --- |
+| compute | url\_39068e92fef803d998a8 | [add](../packages/%40greenpandastudios/aug-gpu/0.1.1/api.aug.md) · left: Buffer, right: Buffer | Buffer |
+| compute | url\_39068e92fef803d998a8 | [download](../packages/%40greenpandastudios/aug-gpu/0.1.1/api.aug.md) · buffer: Buffer | List\<float\> |
+| compute | url\_39068e92fef803d998a8 | [openDevice](../packages/%40greenpandastudios/aug-gpu/0.1.1/api.aug.md) | Device |
+| compute | url\_39068e92fef803d998a8 | [upload](../packages/%40greenpandastudios/aug-gpu/0.1.1/api.aug.md) · device: Device, values: List\<float\> | Buffer |
+| Startup | compute | [calculate](../../compute.aug.md) · left: List\<float\>, right: List\<float\> | List\<float\> |
+| Startup | url\_39068e92fef803d998a8 | [GpuError.explain](../packages/%40greenpandastudios/aug-gpu/0.1.1/contracts.aug.md) | string |
+
+</details>
 
 ## Open a module
 
-| Module | Diagrams | Specification |
-| --- | --- | --- |
-| compute.aug | [Interactions and sequences](../../compute.aug.diagrams.md) | [Explanation](../../compute.aug.md) |
-| main.aug | [Interactions and sequences](../../main.aug.diagrams.md) | [Explanation](../../main.aug.md) |
+| Module | Read |
+| --- | --- |
+| compute.aug | [Flow and sequences](../../compute.aug.diagrams.md) · [Explanation](../../compute.aug.md) |
+| main.aug | [Flow and sequences](../../main.aug.diagrams.md) · [Explanation](../../main.aug.md) |
+
+These are static call boundaries, not a request trace. Interface implementations and foreign internals stop at their checked contracts. Dotted arrows defer a callback or browser action. Imports alone do not imply a call.

@@ -19,26 +19,28 @@ outline: [2, 3]
 ```mermaid
 flowchart TD
     n0["main.aug"]
-    n1["Box · types.aug"]
-    n2["Formatter · types.aug"]
+    n1["Box"]
+    n2["Formatter"]
     n0 -->|"calls"| n1
     n0 -->|"calls"| n2
 ```
 
-## API calls
+::: details Call relationships
 
 ```mermaid
 flowchart TD
     n0["main.aug"]
-    n1["Box · types.aug"]
-    n2["Box.get · types.aug"]
-    n3["Formatter.format · types.aug"]
-    n4["Formatter.title · types.aug"]
+    n1["Box"]
+    n2["Box.get"]
+    n3["Formatter.format"]
+    n4["Formatter.title"]
     n0 -->|"calls"| n1
     n0 -->|"calls"| n2
     n0 -->|"calls"| n3
     n0 -->|"calls"| n4
 ```
+
+:::
 
 ## Sequences
 
@@ -53,19 +55,21 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ```mermaid
 sequenceDiagram
     participant p0 as Startup
-    participant p1 as Formatter.title
+    participant p1 as Formatter
     participant p2 as print
-    participant p3 as Formatter.format
-    participant p4 as Box
-    participant p5 as Box.get
+    participant p3 as Box
     Note over p0: Resolve Formatter from the declared composition
     p0->>p1: title() · interface dispatch
-    p0->>p2: print(value)
-    p0->>p3: format(value) · interface dispatch
-    p0->>p2: print(value)
-    p0->>p4: Box(value)
-    p0->>p5: get()
-    p0->>p2: print(value)
+    p1-->>p0: string
+    p0->>p2: print(value=formatter.title())
+    p0->>p1: format(value=42) · interface dispatch
+    p1-->>p0: string
+    p0->>p2: print(value=formatter.format‹int›(value=42))
+    p0->>p3: Box(value=”inside a generic box”)
+    p3-->>p0: box: Box‹string›
+    p0->>p3: get()
+    p3-->>p0: string
+    p0->>p2: print(value=box.get())
 ```
 
 ## Called contracts

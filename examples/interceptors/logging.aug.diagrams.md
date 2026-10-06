@@ -8,24 +8,26 @@
 
 ```mermaid
 flowchart TD
-    n0["Console · august/io/contracts.aug"]
-    n1["ConsoleLogger · logging.aug"]
-    n2["Logger · logging.aug"]
+    n0["Console"]
+    n1["ConsoleLogger"]
+    n2["Logger"]
     n1 -->|"calls"| n0
     n1 -->|"depends on"| n0
     n1 -->|"implements"| n2
     n2 -->|"depends on"| n0
 ```
 
-## API calls
+<details>
+<summary>Call relationships</summary>
 
 ```mermaid
 flowchart TD
-    n0["Console.write · august/io/contracts.aug"]
-    n1["ConsoleLogger.log · logging.aug"]
-    n2["Logger.log · logging.aug"]
+    n0["Console.write"]
+    n1["ConsoleLogger.log"]
     n1 -->|"calls"| n0
 ```
+
+</details>
 
 ## Sequences
 
@@ -37,12 +39,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](logging.aug#L6)
 
-```mermaid
-sequenceDiagram
-    participant p0 as Logger.log
-
-    Note over p0: Interface contract#59; implementation selected at runtime
-```
+Interface contract; implementation selected at runtime. [Explanation](logging.aug.md).
 
 <a id="sequence-ConsoleLogger-20-constructor"></a>
 
@@ -50,12 +47,7 @@ sequenceDiagram
 
 [Source](logging.aug#L9)
 
-```mermaid
-sequenceDiagram
-    participant p0 as ConsoleLogger constructor
-
-    Note over p0: No calls in this operation#59; see the source and specification
-```
+[Explanation](logging.aug.md).
 
 <a id="sequence-ConsoleLogger.log"></a>
 
@@ -66,8 +58,8 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as ConsoleLogger.log
-    participant p1 as Console.write
-    p0->>p1: write(value) · interface dispatch
+    participant p1 as Console
+    p0->>p1: write(value=message) · interface dispatch
 ```
 
 ## Called contracts

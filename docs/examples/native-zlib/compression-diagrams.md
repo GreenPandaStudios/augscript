@@ -14,22 +14,21 @@ outline: [2, 3]
 
 [Project overview](diagrams/index.md) · [Compiled explanation](compression.md)
 
-## Class interactions
 
-No relationships at this level.
-
-## API calls
+::: details Call relationships
 
 ```mermaid
 flowchart TD
-    n0["roundTrip · compression.aug"]
+    n0["roundTrip"]
     n1["compression.aug"]
-    n2["compress · package/@greenpandastudios/aug-zlib@0.1.5/api.aug"]
-    n3["decompress · package/@greenpandastudios/aug-zlib@0.1.5/api.aug"]
+    n2["compress"]
+    n3["decompress"]
     n0 -->|"calls"| n2
     n0 -->|"calls"| n3
     n1 -->|"calls"| n0
 ```
+
+:::
 
 ## Sequences
 
@@ -44,13 +43,15 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ```mermaid
 sequenceDiagram
     participant p0 as roundTrip
-    participant p1 as #34;The world runs on language#34;.bytes
+    participant p1 as ”The world runs on language”.bytes
     participant p2 as compress
     participant p3 as decompress
-    p0->>p1: #34;The world runs on language#34;.bytes()
-    p0->>p2: compress(input)
-    p0->>p3: decompress(input, maximumOutput)
-    Note over p0: Return decompress(input=compressed, maximumOutput=4096)#59; required cleanup runs before exit
+    p0->>p1: ”The world runs on language”.bytes()
+    p0->>p2: compress(input=input)
+    p2-->>p0: compressed: Bytes
+    p0->>p3: decompress(input=compressed, maximumOutput=4096)
+    p3-->>p0: Bytes
+    Note over p0: Return decompress(input=compressed, maximumOutput=4096)； required cleanup runs before exit
     Note over p0: May leave with checked errors: CompressionError
 ```
 

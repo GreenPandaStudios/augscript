@@ -4,20 +4,20 @@
 
 [Project overview](../.aug-spec/diagrams/index.md) · [Compiled explanation](views.aug.md)
 
-## Class interactions
 
-No relationships at this level.
-
-## API calls
+<details>
+<summary>Call relationships</summary>
 
 ```mermaid
 flowchart TD
-    n0["Page · common/views.aug"]
-    n1["ProviderFailure · provider/views.aug"]
-    n2["ProviderLogin · provider/views.aug"]
+    n0["Page"]
+    n1["ProviderFailure"]
+    n2["ProviderLogin"]
     n1 -->|"calls"| n0
     n2 -->|"calls"| n0
 ```
+
+</details>
 
 ## Sequences
 
@@ -33,8 +33,9 @@ Call arrows identify checked targets; loop and branch frames determine when they
 sequenceDiagram
     participant p0 as ProviderLogin
     participant p1 as Page
-    p0->>p1: Page(title, children)
-    Note over p0: Return #60;Page title=#34;Sign in with the August provider#34;#62; #60;p#62;#123;message#125;#60;/p#62; #60;p style=#34;background:#35;f3f5f9#59;padding:12px#59;bor…
+    p0->>p1: Page(title=”Sign in with the August provider”, children=‹Page title=”Sign in with the August provider”› ‹p›｛message｝‹…
+    p1-->>p0: Html
+    Note over p0: Return ‹Page title=”Sign in with the August provider”› ‹p›｛message｝‹/p› ‹p style=”background:＃f3f5f9；padding:12px；bor…
 ```
 
 <a id="sequence-ProviderFailure"></a>
@@ -47,8 +48,9 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as ProviderFailure
     participant p1 as Page
-    p0->>p1: Page(title, children)
-    Note over p0: Return #60;Page title=#34;Sign-in could not continue#34;#62;#60;p#62;#123;message#125;#60;/p#62;#60;a href=#34;/login/start#34;#62;Start a new sign-in#60;/a#62;#60;/Page#62;…
+    p0->>p1: Page(title=”Sign-in could not continue”, children=‹Page title=”Sign-in could not continue”›‹p›｛message｝‹/p›‹a href=”/…
+    p1-->>p0: Html
+    Note over p0: Return ‹Page title=”Sign-in could not continue”›‹p›｛message｝‹/p›‹a href=”/login/start”›Start a new sign-in‹/a›‹/Page›…
 ```
 
 ## Called contracts

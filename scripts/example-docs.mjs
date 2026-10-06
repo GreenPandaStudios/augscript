@@ -95,7 +95,7 @@ export function buildExamplePages(overrides) {
     }
     for(const artifact of artifacts.filter(output=>output.kind==='diagram')){
       const name=slash(relative(directory,artifact.path));
-      const page=name==='.aug-spec/diagrams/index.md'?join(base,'diagrams/index.md'):join(base,name.replace(/^\.aug-spec\//,'dependencies/').replace(/\.aug\.diagrams\.md$/,'-diagrams.md'));
+      const page=name.startsWith('.aug-spec/diagrams/')?join(base,name.slice('.aug-spec/'.length)):join(base,name.replace(/^\.aug-spec\//,'dependencies/').replace(/\.aug\.diagrams\.md$/,'-diagrams.md'));
       docs.set(artifact.path,page);
     }
     const navigation=planExampleNavigation(artifacts,docs,sources);
@@ -112,7 +112,7 @@ export function buildExamplePages(overrides) {
         overview+=`Read [${code(step.file)}](${url(relative(dirname(home),sources.get(file.path)))}). ${step.explanation}\n\n`;
       }
     }
-    overview+='[Explore the generated project diagrams](diagrams/index.md) to move from areas and modules to class interactions and API sequences.\n\n';
+    overview+='[Explore the generated project diagrams](diagrams/index.md) to follow data between folders, then open module interactions and API sequences.\n\n';
     overview+=`## Project files\n\n${nav}\n\n`;
     const auxiliary=['main.yaml','aug-package.json','package.json'].filter(name=>existsSync(join(source,name)));
     for(const name of auxiliary) {

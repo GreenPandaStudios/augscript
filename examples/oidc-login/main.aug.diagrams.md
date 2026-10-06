@@ -4,18 +4,18 @@
 
 [Project overview](.aug-spec/diagrams/index.md) · [Compiled explanation](main.aug.md)
 
-## Class interactions
 
-No relationships at this level.
-
-## API calls
+<details>
+<summary>Call relationships</summary>
 
 ```mermaid
 flowchart TD
-    n0["initializeKeys · common/keys.aug"]
+    n0["initializeKeys"]
     n1["main.aug"]
     n1 -->|"calls"| n0
 ```
+
+</details>
 
 ## Sequences
 
@@ -33,16 +33,16 @@ sequenceDiagram
     participant p1 as initializeKeys
     participant p2 as print
     participant p3 as exit
-    opt Try body#59; stops on a checked failure
+    opt Try body； stops on a checked failure
     p0->>p1: initializeKeys()
     end
     opt Catch CryptoError
-    p0->>p2: print(value)
-    p0->>p3: exit(status)
+    p0->>p2: print(value=”Cryptographic initialization failed”)
+    p0->>p3: exit(status=1)
     end
     opt Catch KeyError
-    p0->>p2: print(value)
-    p0->>p3: exit(status)
+    p0->>p2: print(value=”Signing keys could not be initialized”)
+    p0->>p3: exit(status=1)
     end
     Note over p0: Serve endpoints: home, me, logout, startLogin, loginCallback, discovery, jwks, authorize, providerLogin, token, userinfo
 ```
