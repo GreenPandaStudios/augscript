@@ -5,28 +5,6 @@
 [Project overview](.aug-spec/diagrams/index.md) · [Compiled explanation](durations.aug.md)
 
 
-<details>
-<summary>Call relationships</summary>
-
-```mermaid
-flowchart TD
-    n0["checkedAdd"]
-    n1["checkedMultiply"]
-    n2["asciiSlice"]
-    n3["Duration"]
-    n4["addDurations"]
-    n5["durationFromSeconds"]
-    n6["parseDuration"]
-    n4 -->|"calls"| n0
-    n4 -->|"calls"| n3
-    n5 -->|"calls"| n1
-    n5 -->|"calls"| n3
-    n6 -->|"calls"| n2
-    n6 -->|"calls"| n3
-```
-
-</details>
-
 ## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
@@ -45,112 +23,147 @@ Receive fields: milliseconds. [Explanation](durations.aug.md).
 
 [Source](durations.aug#L13)
 
-#### Sequence 1 of 2 (continued)
+#### Sequence 1 of 4
 
 ```mermaid
 sequenceDiagram
     participant p0 as parseDuration
-    participant p1 as text.byteLength
-    participant p2 as ConversionError
-    participant p3 as text.startsWith
-    participant p4 as text.endsWith
-    participant p5 as text.bytes
-    participant p6 as august/values/ascii
-    participant p7 as body.split
-    participant p8 as parts.length
-    participant p9 as parts.get
-    participant p10 as whole.isDecimal
-    p0->>p1: text.byteLength()
+
+    p0->>p0: text.byteLength()
+    p0-->>p0: byteLength result: int
     opt Left is false
-    p0->>p1: text.byteLength()
+    p0->>p0: text.byteLength()
+    p0-->>p0: byteLength result 2: int
     end
     alt text.byteLength() ‹ 4 or text.byteLength() › 24
-    p0->>p2: ConversionError()
+    p0->>p0: ConversionError()
+    p0-->>p0: ConversionError result: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
-    p0->>p3: text.startsWith(prefix=”-”)
+    p0->>p0: text.startsWith(prefix=”-”)
+    p0-->>p0: negative: bool
+    Note over p0: Set start to 2
     alt negative
-    p0->>p3: text.startsWith(prefix=”-PT”)
+    p0->>p0: text.startsWith(prefix=”-PT”)
+    p0-->>p0: startsWith result 2: bool
     alt not text.startsWith(prefix=”-PT”)
-    p0->>p2: ConversionError()
+    p0->>p0: ConversionError()
+    p0-->>p0: ConversionError result 2: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
+    Note over p0: Set start to 3
     else otherwise
-    p0->>p3: text.startsWith(prefix=”PT”)
+    p0->>p0: text.startsWith(prefix=”PT”)
+    p0-->>p0: startsWith result 3: bool
     alt not text.startsWith(prefix=”PT”)
-    p0->>p2: ConversionError()
+    p0->>p0: ConversionError()
+    p0-->>p0: ConversionError result 3: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
     end
-    p0->>p4: text.endsWith(suffix=”S”)
+    p0->>p0: text.endsWith(suffix=”S”)
+    p0-->>p0: endsWith result: bool
+```
+
+#### Sequence 2 of 4 (continued)
+
+```mermaid
+sequenceDiagram
+    participant p0 as parseDuration
+    participant p1 as august/values/ascii
     alt not text.endsWith(suffix=”S”)
-    p0->>p2: ConversionError()
+    Note over p0: Sequence continued from the previous view
+    p0->>p0: ConversionError()
+    p0-->>p0: ConversionError result 4: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
-    p0->>p5: text.bytes()
-    p0->>p1: text.byteLength()
-    p0->>p6: asciiSlice(input=text.bytes(), start=start,<br/>end=text.byteLength() - 1)
-    p6-->>p0: body: string
-    p0->>p7: body.split(separator=”.”)
-    p0->>p8: parts.length()
+    p0->>p0: text.bytes()
+    p0-->>p0: bytes result: Bytes
+    p0->>p0: text.byteLength()
+    p0-->>p0: byteLength result 3: int
+    p0->>p1: asciiSlice(input=bytes result, start=start,<br/>end=byteLength result 3 - 1)
+    p1-->>p0: body: string
+    p0->>p0: body.split(separator=”.”)
+    p0-->>p0: parts: List‹string›
+    p0->>p0: parts.length()
+    p0-->>p0: length result: int
     alt parts.length() › 2
-    p0->>p2: ConversionError()
+    p0->>p0: ConversionError()
+    p0-->>p0: ConversionError result 5: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
     opt Try body； stops on a checked failure
-    p0->>p9: parts.get(index=0)
-    p0->>p10: whole.isDecimal()
+    p0->>p0: parts.get(index=0)
+    p0-->>p0: whole: string
+    p0->>p0: whole.isDecimal()
+    p0-->>p0: isDecimal result: bool
     opt Left is false
+    p0->>p0: whole.byteLength()
+    p0-->>p0: byteLength result 4: int
     end
     end
 ```
 
-#### Sequence 2 of 2 (continued)
+#### Sequence 3 of 4 (continued)
 
 ```mermaid
 sequenceDiagram
     participant p0 as parseDuration
-    participant p1 as whole.byteLength
-    participant p2 as ConversionError
-    participant p3 as parts.length
-    participant p4 as parts.get
-    participant p5 as fraction.isDecimal
-    participant p6 as fraction.byteLength
-    participant p7 as digits.parseInteger
-    participant p8 as Duration
+
     opt Try body； stops on a checked failure
-    opt Left is false
-    Note over p0: Sequence continued from the previous view
-    p0->>p1: whole.byteLength()
-    end
     alt not whole.isDecimal() or whole.byteLength() › 16
-    p0->>p2: ConversionError()
+    Note over p0: Sequence continued from the previous view
+    p0->>p0: ConversionError()
+    p0-->>p0: ConversionError result 6: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
-    p0->>p3: parts.length()
+    Note over p0: Set fraction to ”000”
+    p0->>p0: parts.length()
+    p0-->>p0: length result 2: int
     alt parts.length() == 2
-    p0->>p4: parts.get(index=1)
-    p0->>p5: fraction.isDecimal()
+    p0->>p0: parts.get(index=1)
+    p0-->>p0: fraction: string
+    p0->>p0: fraction.isDecimal()
+    p0-->>p0: isDecimal result 2: bool
     opt Left is false
-    p0->>p6: fraction.byteLength()
+    p0->>p0: fraction.byteLength()
+    p0-->>p0: byteLength result 5: int
     end
     alt not fraction.isDecimal() or fraction.byteLength() › 3
-    p0->>p2: ConversionError()
+    p0->>p0: ConversionError()
+    p0-->>p0: ConversionError result 7: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
     loop While fraction.byteLength() ‹ 3
-    p0->>p6: fraction.byteLength()
+    p0->>p0: fraction.byteLength()
+    p0-->>p0: byteLength result 6: int
+    Note over p0: Set fraction to fraction + ”0”
     end
     end
+    Note over p0: Set digits to whole + fraction
     alt negative
+    Note over p0: Set digits to ”-” + digits
     end
-    p0->>p7: digits.parseInteger()
-    p0->>p8: Duration(milliseconds=digits.parseInteger())
-    p8-->>p0: Duration
+    p0->>p0: digits.parseInteger()
+    p0-->>p0: parseInteger result: int
+    end
+```
+
+#### Sequence 4 of 4 (continued)
+
+```mermaid
+sequenceDiagram
+    participant p0 as parseDuration
+
+    opt Try body； stops on a checked failure
+    Note over p0: Sequence continued from the previous view
+    p0->>p0: Duration(milliseconds=parseInteger result) · construct<br/>value
+    p0-->>p0: Duration result: Duration
     Note over p0: Return Duration(milliseconds=digits.parseInteger())；<br/>required cleanup runs before exit
     end
     opt Catch IndexError
-    p0->>p2: ConversionError()
+    p0->>p0: ConversionError()
+    p0-->>p0: ConversionError result 8: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
     Note over p0: May leave with checked errors: ConversionError
@@ -165,14 +178,22 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as formatDuration
-    participant p1 as fraction.byteLength
+
+    Note over p0: Set seconds to value.milliseconds / 1000
+    Note over p0: Set remainder to value.milliseconds % 1000
     alt seconds ‹ 0
+    Note over p0: Set seconds to -seconds
     end
     alt remainder ‹ 0
+    Note over p0: Set remainder to -remainder
     end
+    Note over p0: Set fraction to $”｛remainder｝”
     loop While fraction.byteLength() ‹ 3
-    p0->>p1: fraction.byteLength()
+    p0->>p0: fraction.byteLength()
+    p0-->>p0: byteLength result: int
+    Note over p0: Set fraction to ”0” + fraction
     end
+    Note over p0: Set result to $”PT｛seconds｝.｛fraction｝S”
     alt value.milliseconds ‹ 0
     Note over p0: Return ”-” + result； required cleanup runs before exit
     end
@@ -189,11 +210,10 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as durationFromSeconds
     participant p1 as august/math/integers
-    participant p2 as Duration
     p0->>p1: checkedMultiply(left=seconds, right=1000)
-    p1-->>p0: int
-    p0->>p2: Duration(milliseconds=checkedMultiply(left=seconds,<br/>right=1000))
-    p2-->>p0: Duration
+    p1-->>p0: checkedMultiply result: int
+    p0->>p0: Duration(milliseconds=checkedMultiply result) ·<br/>construct value
+    p0-->>p0: Duration result: Duration
     Note over p0: Return<br/>Duration(milliseconds=checkedMultiply(left=seconds,<br/>right=1000))； required cleanup runs before exit
     Note over p0: May leave with checked errors: ArithmeticError
 ```
@@ -208,11 +228,10 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as addDurations
     participant p1 as august/math/integers
-    participant p2 as Duration
     p0->>p1: checkedAdd(left=left.milliseconds,<br/>right=right.milliseconds)
-    p1-->>p0: int
-    p0->>p2: Duration(milliseconds=checkedAdd(left=left.milliseconds,<br/>right=right.milliseconds))
-    p2-->>p0: Duration
+    p1-->>p0: checkedAdd result: int
+    p0->>p0: Duration(milliseconds=checkedAdd result) · construct<br/>value
+    p0-->>p0: Duration result: Duration
     Note over p0: Return<br/>Duration(milliseconds=checkedAdd(left=left.milliseconds,<br/>right=right.milliseconds))； required cleanup runs bef…
     Note over p0: May leave with checked errors: ArithmeticError
 ```

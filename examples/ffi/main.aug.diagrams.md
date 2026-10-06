@@ -5,18 +5,6 @@
 [Project overview](.aug-spec/diagrams/index.md) · [Compiled explanation](main.aug.md)
 
 
-<details>
-<summary>Call relationships</summary>
-
-```mermaid
-flowchart TD
-    n0["main.aug"]
-    n1["announce"]
-    n0 -->|"calls"| n1
-```
-
-</details>
-
 ## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.

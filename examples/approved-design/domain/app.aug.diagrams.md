@@ -11,24 +11,9 @@ flowchart TD
     n0["Console"]
     n1["Application"]
     n2["ApplicationImpl"]
-    n2 -->|"calls"| n0
-    n2 -->|"depends on console"| n0
+    n2 -->|"calls write； depends on console"| n0
     n2 -->|"implements"| n1
 ```
-
-<details>
-<summary>Call relationships</summary>
-
-```mermaid
-flowchart TD
-    n0["Console.write"]
-    n1["ApplicationImpl.start"]
-    n2["Fruit"]
-    n1 -->|"calls"| n0
-    n1 -->|"calls"| n2
-```
-
-</details>
 
 ## Sequences
 
@@ -59,14 +44,14 @@ Receive fields: injected console. [Explanation](app.aug.md).
 ```mermaid
 sequenceDiagram
     participant p0 as ApplicationImpl.start
-    participant p1 as Fruit
-    participant p2 as console: Console
-    p0->>p1: Fruit(code=1, name=”apple”)
-    p1-->>p0: Fruit
-    p0->>p1: Fruit(name=”pear”, code=2)
-    p1-->>p0: Fruit
+    participant p1 as console: Console
+    p0->>p0: Fruit(code=1, name=”apple”) · construct value
+    p0-->>p0: Fruit result: Fruit
+    p0->>p0: Fruit(name=”pear”, code=2) · construct value
+    p0-->>p0: Fruit result 2: Fruit
+    Note over p0: Set fruit to ［Fruit result, Fruit result 2］
     loop For each item in fruit
-    p0->>p2: write(value=item.name) · interface dispatch
+    p0->>p1: write(value=item.name) · interface dispatch
     end
 ```
 

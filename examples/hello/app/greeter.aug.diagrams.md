@@ -14,22 +14,9 @@ flowchart TD
     n3["Logger"]
     n0 -->|"implements"| n1
     n0 -->|"depends on"| n2
-    n0 -->|"calls"| n3
-    n0 -->|"depends on logger"| n3
+    n0 -->|"calls log； depends on logger"| n3
     n1 -->|"depends on"| n2
 ```
-
-<details>
-<summary>Call relationships</summary>
-
-```mermaid
-flowchart TD
-    n0["Greeter.greet"]
-    n1["Logger.log"]
-    n0 -->|"calls"| n1
-```
-
-</details>
 
 ## Sequences
 

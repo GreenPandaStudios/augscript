@@ -11,25 +11,9 @@ flowchart TD
     n0["Calculator"]
     n1["load"]
     n2["main.aug"]
-    n2 -->|"calls"| n0
+    n2 -->|"calls； calls add"| n0
     n2 -->|"calls"| n1
 ```
-
-<details>
-<summary>Call relationships</summary>
-
-```mermaid
-flowchart TD
-    n0["Calculator"]
-    n1["Calculator.add"]
-    n2["load"]
-    n3["main.aug"]
-    n3 -->|"calls"| n0
-    n3 -->|"calls"| n1
-    n3 -->|"calls"| n2
-```
-
-</details>
 
 ## Sequences
 
@@ -41,42 +25,62 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](main.aug#L7)
 
+#### Sequence 1 of 2
+
 ```mermaid
 sequenceDiagram
     participant p0 as Startup
     participant p1 as Calculator
-    participant p2 as numbers.get
-    participant p3 as calculator: Calculator
-    participant p4 as print
-    participant p5 as pair.get
-    participant p6 as unique.length
-    participant p7 as fruit.get
-    participant p8 as calculator
+    participant p2 as calculator: Calculator
+    participant p3 as August runtime
+    participant p4 as calculator
     opt Try body； stops on a checked failure
+    Note over p0: Set numbers to ［1, 2］
+    Note over p0: Set pair to (1, ”apple”)
+    Note over p0: Set unique to ｛1, 2, 1｝
+    Note over p0: Set fruit to ｛1: ”apples”, 2: ”pears”｝
     p0->>p1: Calculator()
     p1-->>p0: calculator: Calculator
-    p0->>p2: numbers.get(index=1)
-    p0->>p2: numbers.get(index=0)
-    p0->>p3: add(right=numbers.get(index=1),<br/>left=numbers.get(index=0))
-    p3-->>p0: int
-    p0->>p4: print(value=calculator.add(right=numbers.get(index=1),<br/>left=numbers.get(index=0)))
-    p0->>p5: pair.get(index=1)
-    p0->>p4: print(value=pair.get(index=1))
-    p0->>p6: unique.length()
-    p0->>p4: print(value=unique.length())
-    p0->>p7: fruit.get(key=2)
-    p0->>p4: print(value=fruit.get(key=2))
+    p0->>p0: numbers.get(index=1)
+    p0-->>p0: get result: int
+    p0->>p0: numbers.get(index=0)
+    p0-->>p0: get result 2: int
+    p0->>p2: add(right=get result, left=get result 2)
+    p2-->>p0: add result: int
+    p0->>p3: print(value=add result)
+    p0->>p0: pair.get(index=1)
+    p0-->>p0: get result 3: string
+    p0->>p3: print(value=get result 3)
+    p0->>p0: unique.length()
+    p0-->>p0: length result: int
+    p0->>p3: print(value=length result)
+    p0->>p0: fruit.get(key=2)
+    p0-->>p0: get result 4: optional string
+    p0->>p3: print(value=get result 4)
     opt Try body； stops on a checked failure
-    p0->>p8: load(fail=true)
-    p8-->>p0: string
-    p0->>p4: print(value=load(fail=true))
+    p0->>p4: load(fail=true)
+    p4-->>p0: load result: string
+    end
+    end
+```
+
+#### Sequence 2 of 2 (continued)
+
+```mermaid
+sequenceDiagram
+    participant p0 as Startup
+    participant p1 as August runtime
+    opt Try body； stops on a checked failure
+    opt Try body； stops on a checked failure
+    Note over p0: Sequence continued from the previous view
+    p0->>p1: print(value=load result)
     end
     opt Catch FileError
-    p0->>p4: print(value=”load failed as expected”)
+    p0->>p1: print(value=”load failed as expected”)
     end
     end
     opt Catch IndexError
-    p0->>p4: print(value=”unexpected index failure”)
+    p0->>p1: print(value=”unexpected index failure”)
     end
 ```
 

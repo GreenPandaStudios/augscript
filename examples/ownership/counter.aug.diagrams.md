@@ -37,6 +37,7 @@ sequenceDiagram
 
     rect rgb(245, 240, 241)
     Note over p0: Enter borrow scope
+    Note over p0: Set value to value + 1
     Note over p0: Leave borrow scope
     end
 ```

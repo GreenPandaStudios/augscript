@@ -5,20 +5,6 @@
 [Project overview](.aug-spec/diagrams/index.md) · [Compiled explanation](ascii.aug.md)
 
 
-<details>
-<summary>Call relationships</summary>
-
-```mermaid
-flowchart TD
-    n0["asciiAt"]
-    n1["asciiLower"]
-    n2["asciiSlice"]
-    n0 -->|"calls"| n2
-    n1 -->|"calls"| n0
-```
-
-</details>
-
 ## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
@@ -32,16 +18,17 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ```mermaid
 sequenceDiagram
     participant p0 as asciiSlice
-    participant p1 as input.slice
-    participant p2 as input.slice(start, end).text
-    participant p3 as ConversionError
+
     opt Try body； stops on a checked failure
-    p0->>p1: input.slice(input 1=start, input 2=end)
-    p0->>p2: input.slice(start, end).text()
+    p0->>p0: input.slice(start=start, end=end)
+    p0-->>p0: slice result: Bytes
+    p0->>p0: slice result.text()
+    p0-->>p0: text result: string
     Note over p0: Return input.slice(start, end).text()； required cleanup<br/>runs before exit
     end
     opt Catch IndexError
-    p0->>p3: ConversionError()
+    p0->>p0: ConversionError()
+    p0-->>p0: ConversionError result: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
     Note over p0: May leave with checked errors: ConversionError
@@ -56,9 +43,9 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as asciiAt
-    participant p1 as asciiSlice
-    p0->>p1: asciiSlice(input=input, start=index, end=index + 1)
-    p1-->>p0: string
+
+    p0->>p0: asciiSlice(input=input, start=index, end=index + 1)
+    p0-->>p0: asciiSlice result: string
     Note over p0: Return asciiSlice(input, start=index, end=index + 1)；<br/>required cleanup runs before exit
     Note over p0: May leave with checked errors: ConversionError
 ```
@@ -72,15 +59,19 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as asciiLetter
-    participant p1 as character.compare
-    p0->>p1: character.compare(other=”A”)
+
+    p0->>p0: character.compare(other=”A”)
+    p0-->>p0: compare result: int
     opt Left is true
-    p0->>p1: character.compare(other=”Z”)
+    p0->>p0: character.compare(other=”Z”)
+    p0-->>p0: compare result 2: int
     end
     opt Left is false
-    p0->>p1: character.compare(other=”a”)
+    p0->>p0: character.compare(other=”a”)
+    p0-->>p0: compare result 3: int
     opt Left is true
-    p0->>p1: character.compare(other=”z”)
+    p0->>p0: character.compare(other=”z”)
+    p0-->>p0: compare result 4: int
     end
     end
     Note over p0: Return character.compare(other=”A”) ›= 0 and<br/>character.compare(other=”Z”) ‹= 0) or<br/>(character.compare(other=”a”) ›= 0…
@@ -95,18 +86,21 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as asciiLower
-    participant p1 as ”ABCDEFGHIJKLMNOPQRSTUVWXYZ”.bytes
-    participant p2 as ”abcdefghijklmnopqrstuvwxyz”.bytes
-    participant p3 as asciiAt
-    participant p4 as result.replace
-    p0->>p1: ”ABCDEFGHIJKLMNOPQRSTUVWXYZ”.bytes()
-    p0->>p2: ”abcdefghijklmnopqrstuvwxyz”.bytes()
+
+    Note over p0: Set result to text
+    p0->>p0: ”ABCDEFGHIJKLMNOPQRSTUVWXYZ”.bytes()
+    p0-->>p0: upper: Bytes
+    p0->>p0: ”abcdefghijklmnopqrstuvwxyz”.bytes()
+    p0-->>p0: lower: Bytes
+    Note over p0: Set index to 0
     loop While index ‹ 26
-    p0->>p3: asciiAt(input=upper, index=index)
-    p3-->>p0: string
-    p0->>p3: asciiAt(input=lower, index=index)
-    p3-->>p0: string
-    p0->>p4: result.replace(search=asciiAt(input=upper, index),<br/>replacement=asciiAt(input=lower, index))
+    p0->>p0: asciiAt(input=upper, index=index)
+    p0-->>p0: asciiAt result: string
+    p0->>p0: asciiAt(input=lower, index=index)
+    p0-->>p0: asciiAt result 2: string
+    p0->>p0: result.replace(search=asciiAt result,<br/>replacement=asciiAt result 2)
+    p0-->>p0: result: string
+    Note over p0: Set index to index + 1
     end
     Note over p0: Return result； required cleanup runs before exit
     Note over p0: May leave with checked errors: ConversionError

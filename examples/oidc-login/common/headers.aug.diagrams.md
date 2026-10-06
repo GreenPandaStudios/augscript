@@ -5,18 +5,6 @@
 [Project overview](../.aug-spec/diagrams/index.md) · [Compiled explanation](headers.aug.md)
 
 
-<details>
-<summary>Call relationships</summary>
-
-```mermaid
-flowchart TD
-    n0["withCookie"]
-    n1["cookie"]
-    n0 -->|"calls"| n1
-```
-
-</details>
-
 ## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
@@ -30,18 +18,19 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ```mermaid
 sequenceDiagram
     participant p0 as securityHeaders
-    participant p1 as Headers
-    participant p2 as Headers().with
-    participant p3 as Headers().with(name=”cache-control”, value=”no-store”).with
-    participant p4 as Headers().with(name=”cache-control”, value=”no-store”).with(name=”pragma”, value=”no-cache”).with
-    participant p5 as Headers().with(name=”cache-control”, value=”no-store”).with(name=”pragma”, value=”no-cache”).with(name=”x-content-typ…
-    participant p6 as Headers().with(name=”cache-control”, value=”no-store”).with(name=”pragma”, value=”no-cache”).with(name=”x-content-typ…
-    p0->>p1: Headers()
-    p0->>p2: Headers().with(name=”cache-control”, value=”no-store”)
-    p0->>p3: Headers().with(name=”cache-control”,<br/>value=”no-store”).with(name=”pragma”, value=”no-cache”)
-    p0->>p4: Headers().with(name=”cache-control”,<br/>value=”no-store”).with(name=”pragma”,<br/>value=”no-cache”).with(name=”x-content-typ…
-    p0->>p5: Headers().with(name=”cache-control”,<br/>value=”no-store”).with(name=”pragma”,<br/>value=”no-cache”).with(name=”x-content-typ…
-    p0->>p6: Headers().with(name=”cache-control”,<br/>value=”no-store”).with(name=”pragma”,<br/>value=”no-cache”).with(name=”x-content-typ…
+
+    p0->>p0: Headers()
+    p0-->>p0: Headers result: Headers
+    p0->>p0: Headers result.with(name=”cache-control”,<br/>value=”no-store”)
+    p0-->>p0: with result: Headers
+    p0->>p0: with result.with(name=”pragma”, value=”no-cache”)
+    p0-->>p0: with result 2: Headers
+    p0->>p0: with result 2.with(name=”x-content-type-options”,<br/>value=”nosniff”)
+    p0-->>p0: with result 3: Headers
+    p0->>p0: with result 3.with(name=”referrer-policy”,<br/>value=”no-referrer”)
+    p0-->>p0: with result 4: Headers
+    p0->>p0: with result 4.with(name=”content-security-policy”,<br/>value=”default-src 'self'； style-src 'unsafe-inline'；<br/>script-src '…
+    p0-->>p0: with result 5: Headers
     Note over p0: Return Headers().with(name=”cache-control”,<br/>value=”no-store”).with(name=”pragma”,<br/>value=”no-cache”).with(name=”x-cont…
     Note over p0: May leave with checked errors: HttpError
 ```
@@ -55,14 +44,15 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as withCookie
-    participant p1 as @git/url_897efafd565158fc4908/contracts
-    participant p2 as cookie(name, value, path, maxAge, secure).all
-    participant p3 as result.with
+    participant p1 as web/contracts
+    Note over p0: Set result to headers
     p0->>p1: cookie(name=name, value=value, path=path, maxAge=maxAge,<br/>secure=secure)
-    p1-->>p0: Headers
-    p0->>p2: cookie(name, value, path, maxAge,<br/>secure).all(name=”set-cookie”)
+    p1-->>p0: cookie result: Headers
+    p0->>p0: cookie result.all(name=”set-cookie”)
+    p0-->>p0: all result: List‹string›
     loop For each item in cookie(name, value, path, maxAge, secure).all(name=”set-cookie”)
-    p0->>p3: result.with(name=”set-cookie”, value=content)
+    p0->>p0: result.with(name=”set-cookie”, value=content)
+    p0-->>p0: result: Headers
     end
     Note over p0: Return result； required cleanup runs before exit
     Note over p0: May leave with checked errors: HttpError

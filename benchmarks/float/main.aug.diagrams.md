@@ -18,8 +18,14 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ```mermaid
 sequenceDiagram
     participant p0 as Startup
-    participant p1 as print
+    participant p1 as August runtime
+    Note over p0: Set iterations to 1000000
+    Note over p0: Set sum to 0.0
+    Note over p0: Set index to 0
     loop While index ‹ iterations
+    Note over p0: Set remainder to index - index / 8 * 8
+    Note over p0: Set sum to sum + remainder * 0.125 + 0.5
+    Note over p0: Set index to index + 1
     end
     p0->>p1: print(value=sum == 937500.0)
     p0->>p1: print(value=iterations)

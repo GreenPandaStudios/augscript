@@ -21,24 +21,9 @@ flowchart TD
     n0["Greeter"]
     n1["describe"]
     n2["main.aug"]
-    n2 -->|"calls"| n0
+    n2 -->|"calls； calls greet"| n0
     n2 -->|"calls"| n1
 ```
-
-::: details Call relationships
-
-```mermaid
-flowchart TD
-    n0["Greeter"]
-    n1["Greeter.greet"]
-    n2["describe"]
-    n3["main.aug"]
-    n3 -->|"calls"| n0
-    n3 -->|"calls"| n1
-    n3 -->|"calls"| n2
-```
-
-:::
 
 ## Sequences
 
@@ -54,13 +39,13 @@ Call arrows identify checked targets; loop and branch frames determine when they
 sequenceDiagram
     participant p0 as Startup
     participant p1 as app
-    participant p2 as print
+    participant p2 as August runtime
     participant p3 as Greeter
     participant p4 as greeter: Greeter
     opt Try body； stops on a checked failure
     p0->>p1: describe(label=”value”, x=6)
-    p1-->>p0: string
-    p0->>p2: print(value=describe(label=”value”, x=6))
+    p1-->>p0: describe result: string
+    p0->>p2: print(value=describe result)
     end
     opt Catch ValidationError
     p0->>p2: print(value=”rejected”)
@@ -68,11 +53,11 @@ sequenceDiagram
     p0->>p3: Greeter(name=”AugScript”)
     p3-->>p0: greeter: Greeter
     p0->>p4: greet()
-    p4-->>p0: string
-    p0->>p2: print(value=greeter.greet())
+    p4-->>p0: greet result: string
+    p0->>p2: print(value=greet result)
     opt Try body； stops on a checked failure
     p0->>p1: describe(x=-1, label=”invalid”)
-    p1-->>p0: string
+    p1-->>p0: describe result 2: string
     end
     opt Catch ValidationError
     p0->>p2: print(value=”rejected”)

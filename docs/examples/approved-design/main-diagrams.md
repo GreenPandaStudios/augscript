@@ -22,29 +22,10 @@ flowchart TD
     n1["Application"]
     n2["double"]
     n3["main.aug"]
-    n3 -->|"calls"| n0
-    n3 -->|"calls"| n1
+    n3 -->|"calls increment； calls value"| n0
+    n3 -->|"calls start"| n1
     n3 -->|"calls"| n2
 ```
-
-::: details Call relationships
-
-```mermaid
-flowchart TD
-    n0["Counter.increment"]
-    n1["Counter.value"]
-    n2["Application.start"]
-    n3["Fruit"]
-    n4["double"]
-    n5["main.aug"]
-    n5 -->|"calls"| n0
-    n5 -->|"calls"| n1
-    n5 -->|"calls"| n2
-    n5 -->|"calls"| n3
-    n5 -->|"calls"| n4
-```
-
-:::
 
 ## Sequences
 
@@ -56,50 +37,43 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](main.md#source-L8)
 :::
 
-#### Sequence 1 of 2 (continued)
+#### Sequence 1 of 2
 
 ```mermaid
 sequenceDiagram
     participant p0 as Startup
     participant p1 as app: Application
-    participant p2 as names.get
-    participant p3 as print
-    participant p4 as Fruit
-    participant p5 as ｛Fruit(code=code, name=label), Fruit(name=label, code=code)｝.length
-    participant p6 as counter: Counter
-    participant p7 as domain/numbers
+    participant p2 as August runtime
+    participant p3 as counter: Counter
     Note over p0: Resolve Application from the declared composition
     p0->>p1: start() · interface dispatch
-    p0->>p2: names.get(key=2)
+    Note over p0: Set names to ｛1: ”apple”, 2: ”pear”｝
+    p0->>p0: names.get(key=2)
+    p0-->>p0: get result: optional string
     alt Match when null:
-    p0->>p3: print(value=”missing fruit”)
+    p0->>p2: print(value=”missing fruit”)
     else Match when some name:
-    p0->>p3: print(value=name)
+    p0->>p2: print(value=name)
     end
-    p0->>p4: Fruit(code=code, name=label)
-    p4-->>p0: Fruit
-    p0->>p4: Fruit(name=label, code=code)
-    p4-->>p0: Fruit
-    p0->>p5: ｛Fruit(code=code, name=label), Fruit(name=label,<br/>code=code)｝.length()
-    p0->>p3: print(value=｛Fruit(code=code, name=label),<br/>Fruit(name=label, code=code)｝.length())
+    p0->>p0: Fruit(code=code, name=label) · construct value
+    p0-->>p0: Fruit result: Fruit
+    p0->>p0: Fruit(name=label, code=code) · construct value
+    p0-->>p0: Fruit result 2: Fruit
+    p0->>p0: ｛Fruit result, Fruit result 2｝.length()
+    p0-->>p0: length result: int
+    p0->>p2: print(value=length result)
     rect rgb(245, 240, 241)
     Note over p0: Enter task scope
     Note over p0: Resolve Counter from the declared composition
     rect rgb(245, 240, 241)
     Note over p0: Enter borrow scope
-    p0->>p6: increment() · interface dispatch
+    p0->>p3: increment() · interface dispatch
     Note over p0: Leave borrow scope
     end
-    p0->>p6: value() · interface dispatch
-    p6-->>p0: int
-    p0->>p3: print(value=counter.value())
+    p0->>p3: value() · interface dispatch
+    p3-->>p0: value result: int
+    p0->>p2: print(value=value result)
     Note over p0: Join tasks and release scoped resources
-    end
-    opt Try body； stops on a checked failure
-    p0->>p7: double(amount=7)
-    p7-->>p0: int
-    p0->>p3: print(value=double(amount=7))
-    p0->>p7: double(amount=-1)
     end
 ```
 
@@ -109,10 +83,14 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as Startup
     participant p1 as domain/numbers
-    participant p2 as print
+    participant p2 as August runtime
     opt Try body； stops on a checked failure
     Note over p0: Sequence continued from the previous view
-    p1-->>p0: int
+    p0->>p1: double(amount=7)
+    p1-->>p0: double result: int
+    p0->>p2: print(value=double result)
+    p0->>p1: double(amount=-1)
+    p1-->>p0: double result 2: int
     end
     opt Catch RangeError
     p0->>p2: print(value=”negative amount rejected”)

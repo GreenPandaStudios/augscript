@@ -15,17 +15,6 @@ outline: [2, 3]
 [Project overview](../../../../../diagrams/index.md) · [Compiled explanation](contracts.md)
 
 
-::: details Call relationships
-
-```mermaid
-flowchart TD
-    n0["_aug_json_parse"]
-    n1["parse"]
-    n1 -->|"calls"| n0
-```
-
-:::
-
 ## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
@@ -47,11 +36,11 @@ May leave with checked errors: JsonError. Native implementation; only the declar
 ```mermaid
 sequenceDiagram
     participant p0 as parse
-    participant p1 as _aug_json_parse
+
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _aug_json_parse(input=input) · native boundary
-    p1-->>p0: Json
+    p0->>p0: _aug_json_parse(input=input) · native boundary
+    p0-->>p0: _aug_json_parse result: Json
     Note over p0: Return _aug_json_parse(input)； required cleanup runs<br/>before exit
     Note over p0: Leave unsafe scope
     end

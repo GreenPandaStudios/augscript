@@ -6,56 +6,45 @@
 
 ## Class interactions
 
-```mermaid
-flowchart TD
-    n0["asciiAt"]
-    n1["asciiLetter"]
-    n2["asciiLower"]
-    n3["asciiSlice"]
-    n4["HttpUrl"]
-    n5["_hex"]
-    n6["_pathCharacter"]
-    n7["_validateAuthority"]
-    n8["_validateHttpUrl"]
-    n4 -->|"calls"| n8
-    n7 -->|"calls"| n0
-    n7 -->|"calls"| n1
-    n8 -->|"calls"| n0
-    n8 -->|"calls"| n2
-    n8 -->|"calls"| n3
-    n8 -->|"calls"| n5
-    n8 -->|"calls"| n6
-    n8 -->|"calls"| n7
-```
-
-<details>
-<summary>Call relationships</summary>
+### HttpUrl
 
 ```mermaid
-flowchart TD
-    n0["asciiAt"]
-    n1["asciiLetter"]
-    n2["asciiLower"]
-    n3["asciiSlice"]
-    n4["HttpUrl"]
-    n5["_hex"]
-    n6["_pathCharacter"]
-    n7["_validateAuthority"]
-    n8["_validateHttpUrl"]
-    n9["parseHttpUrl"]
-    n4 -->|"calls"| n8
-    n7 -->|"calls"| n0
-    n7 -->|"calls"| n1
-    n8 -->|"calls"| n0
-    n8 -->|"calls"| n2
-    n8 -->|"calls"| n3
-    n8 -->|"calls"| n5
-    n8 -->|"calls"| n6
-    n8 -->|"calls"| n7
-    n9 -->|"calls"| n4
+flowchart LR
+    n0["HttpUrl"]
+    n1["_validateHttpUrl"]
+    n0 -->|"calls"| n1
 ```
 
-</details>
+### \_validateAuthority
+
+```mermaid
+flowchart LR
+    n0["asciiAt"]
+    n1["asciiLetter"]
+    n2["_validateAuthority"]
+    n2 -->|"calls"| n0
+    n2 -->|"calls"| n1
+```
+
+### \_validateHttpUrl
+
+```mermaid
+flowchart LR
+    n0["asciiAt"]
+    n1["asciiLower"]
+    n2["asciiSlice"]
+    n3["_hex"]
+    n4["_pathCharacter"]
+    n5["_validateAuthority"]
+    n6["_validateHttpUrl"]
+    n6 -->|"calls"| n0
+    n6 -->|"calls"| n1
+    n6 -->|"calls"| n2
+    n6 -->|"calls"| n3
+    n6 -->|"calls"| n4
+    n6 -->|"calls"| n5
+```
+
 
 ## Sequences
 
@@ -70,9 +59,9 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ```mermaid
 sequenceDiagram
     participant p0 as HttpUrl constructor
-    participant p1 as _validateHttpUrl
+
     Note over p0: Receive fields: text
-    p0->>p1: _validateHttpUrl(text=text)
+    p0->>p0: _validateHttpUrl(text=text)
 ```
 
 <a id="sequence-parseHttpUrl"></a>
@@ -84,9 +73,9 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as parseHttpUrl
-    participant p1 as HttpUrl
-    p0->>p1: HttpUrl(text=text)
-    p1-->>p0: HttpUrl
+
+    p0->>p0: HttpUrl(text=text) · construct value
+    p0-->>p0: HttpUrl result: HttpUrl
     Note over p0: Return HttpUrl(text)； required cleanup runs before exit
     Note over p0: May leave with checked errors: ConversionError
 ```
@@ -105,103 +94,128 @@ Return value.text; required cleanup runs before exit. [Explanation](urls.aug.md)
 
 [Source](urls.aug#L24)
 
-#### Sequence 1 of 2 (continued)
-
-```mermaid
-sequenceDiagram
-    participant p0 as _validateHttpUrl
-    participant p1 as text.byteLength
-    participant p2 as ConversionError
-    participant p3 as text.bytes
-    participant p4 as august/values/ascii
-    participant p5 as _validateAuthority
-    p0->>p1: text.byteLength()
-    opt Left is false
-    p0->>p1: text.byteLength()
-    end
-    alt text.byteLength() ‹ 8 or text.byteLength() › 8192
-    p0->>p2: ConversionError()
-    Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
-    end
-    p0->>p3: text.bytes()
-    p0->>p4: asciiSlice(input=bytes, start=0, end=7)
-    p4-->>p0: string
-    p0->>p4: asciiLower(text=asciiSlice(input=bytes, start=0, end=7))
-    p4-->>p0: scheme: string
-    alt scheme != ”http://”
-    p0->>p1: text.byteLength()
-    opt Left is false
-    p0->>p4: asciiSlice(input=bytes, start=0, end=8)
-    p4-->>p0: string
-    p0->>p4: asciiLower(text=asciiSlice(input=bytes, start=0, end=8))
-    p4-->>p0: string
-    end
-    alt text.byteLength() ‹ 9 or asciiLower(text=asciiSlice(input=bytes, start=0, end=8)) != ”https://”
-    p0->>p2: ConversionError()
-    Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
-    end
-    end
-    loop While end ‹ text.byteLength()
-    p0->>p1: text.byteLength()
-    p0->>p4: asciiAt(input=bytes, index=end)
-    p4-->>p0: character: string
-    alt character == ”/” or character == ”?”
-    Note over p0: Leave this loop
-    end
-    end
-    p0->>p4: asciiSlice(input=bytes, start=start, end=end)
-    p4-->>p0: authority: string
-    p0->>p5: _validateAuthority(authority=authority)
-    loop While index ‹ text.byteLength()
-    p0->>p1: text.byteLength()
-    end
-```
-
-#### Sequence 2 of 2 (continued)
+#### Sequence 1 of 3
 
 ```mermaid
 sequenceDiagram
     participant p0 as _validateHttpUrl
     participant p1 as august/values/ascii
-    participant p2 as text.byteLength
-    participant p3 as ConversionError
-    participant p4 as _hex
-    participant p5 as _pathCharacter
-    loop While index ‹ text.byteLength()
+    p0->>p0: text.byteLength()
+    p0-->>p0: byteLength result: int
+    opt Left is false
+    p0->>p0: text.byteLength()
+    p0-->>p0: byteLength result 2: int
+    end
+    alt text.byteLength() ‹ 8 or text.byteLength() › 8192
+    p0->>p0: ConversionError()
+    p0-->>p0: ConversionError result: ConversionError
+    Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
+    end
+    p0->>p0: text.bytes()
+    p0-->>p0: bytes: Bytes
+    Note over p0: Set start to 7
+    p0->>p1: asciiSlice(input=bytes, start=0, end=7)
+    p1-->>p0: asciiSlice result: string
+    p0->>p1: asciiLower(text=asciiSlice result)
+    p1-->>p0: scheme: string
+    alt scheme != ”http://”
+    p0->>p0: text.byteLength()
+    p0-->>p0: byteLength result 3: int
+    opt Left is false
+    p0->>p1: asciiSlice(input=bytes, start=0, end=8)
+    p1-->>p0: asciiSlice result 2: string
+    p0->>p1: asciiLower(text=asciiSlice result 2)
+    p1-->>p0: asciiLower result 2: string
+    end
+    alt text.byteLength() ‹ 9 or asciiLower(text=asciiSlice(input=bytes, start=0, end=8)) != ”https://”
+    p0->>p0: ConversionError()
+    p0-->>p0: ConversionError result 2: ConversionError
+    Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
+    end
+    Note over p0: Set start to 8
+    end
+```
+
+#### Sequence 2 of 3 (continued)
+
+```mermaid
+sequenceDiagram
+    participant p0 as _validateHttpUrl
+    participant p1 as august/values/ascii
     Note over p0: Sequence continued from the previous view
+    Note over p0: Set end to start
+    loop While end ‹ text.byteLength()
+    p0->>p0: text.byteLength()
+    p0-->>p0: byteLength result 4: int
+    p0->>p1: asciiAt(input=bytes, index=end)
+    p1-->>p0: character: string
+    alt character == ”/” or character == ”?”
+    Note over p0: Leave this loop
+    end
+    Note over p0: Set end to end + 1
+    end
+    p0->>p1: asciiSlice(input=bytes, start=start, end=end)
+    p1-->>p0: authority: string
+    p0->>p0: _validateAuthority(authority=authority)
+    Note over p0: Set index to end
+    loop While index ‹ text.byteLength()
+    p0->>p0: text.byteLength()
+    p0-->>p0: byteLength result 5: int
     p0->>p1: asciiAt(input=bytes, index=index)
     p1-->>p0: character: string
     alt character == ”?”
+    Note over p0: No operations in this branch
     else otherwise
     alt character == ”%”
-    p0->>p2: text.byteLength()
+    p0->>p0: text.byteLength()
+    p0-->>p0: byteLength result 6: int
     alt index + 2 ›= text.byteLength()
-    p0->>p3: ConversionError()
+    p0->>p0: ConversionError()
+    p0-->>p0: ConversionError result 3: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
     p0->>p1: asciiAt(input=bytes, index=index + 1)
-    p1-->>p0: string
-    p0->>p4: _hex(character=asciiAt(input=bytes, index=index + 1))
-    p4-->>p0: bool
+    p1-->>p0: asciiAt result 3: string
+    end
+    end
+    end
+```
+
+#### Sequence 3 of 3 (continued)
+
+```mermaid
+sequenceDiagram
+    participant p0 as _validateHttpUrl
+    participant p1 as august/values/ascii
+    loop While index ‹ text.byteLength()
+    alt Continuing otherwise
+    alt character == ”%”
+    Note over p0: Sequence continued from the previous view
+    p0->>p0: _hex(character=asciiAt result 3)
+    p0-->>p0: _hex result: bool
     opt Left is false
     p0->>p1: asciiAt(input=bytes, index=index + 2)
-    p1-->>p0: string
-    p0->>p4: _hex(character=asciiAt(input=bytes, index=index + 2))
-    p4-->>p0: bool
+    p1-->>p0: asciiAt result 4: string
+    p0->>p0: _hex(character=asciiAt result 4)
+    p0-->>p0: _hex result 2: bool
     end
     alt not _hex(character=asciiAt(input=bytes, index=index + 1)) or not _hex(character=asciiAt(input=bytes, index=index + 2))
-    p0->>p3: ConversionError()
+    p0->>p0: ConversionError()
+    p0-->>p0: ConversionError result 4: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
+    Note over p0: Set index to index + 2
     else otherwise
-    p0->>p5: _pathCharacter(character=character)
-    p5-->>p0: bool
+    p0->>p0: _pathCharacter(character=character)
+    p0-->>p0: _pathCharacter result: bool
     alt not _pathCharacter(character) and character != ”/”
-    p0->>p3: ConversionError()
+    p0->>p0: ConversionError()
+    p0-->>p0: ConversionError result 5: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
     end
     end
+    Note over p0: Set index to index + 1
     end
     Note over p0: May leave with checked errors: ConversionError
 ```
@@ -212,110 +226,137 @@ sequenceDiagram
 
 [Source](urls.aug#L59)
 
-#### Sequence 1 of 2 (continued)
+#### Sequence 1 of 3
 
 ```mermaid
 sequenceDiagram
     participant p0 as _validateAuthority
-    participant p1 as authority.split
-    participant p2 as parts.length
-    participant p3 as ConversionError
-    participant p4 as parts.get
-    participant p5 as host.byteLength
-    participant p6 as host.split
-    participant p7 as label.byteLength
-    participant p8 as label.bytes
-    participant p9 as august/values/ascii
-    participant p10 as character.isDecimal
-    p0->>p1: authority.split(separator=”:”)
-    p0->>p2: parts.length()
+
+    p0->>p0: authority.split(separator=”:”)
+    p0-->>p0: parts: List‹string›
+    p0->>p0: parts.length()
+    p0-->>p0: length result: int
     alt parts.length() › 2
-    p0->>p3: ConversionError()
+    p0->>p0: ConversionError()
+    p0-->>p0: ConversionError result: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
     opt Try body； stops on a checked failure
-    p0->>p4: parts.get(index=0)
-    p0->>p5: host.byteLength()
+    p0->>p0: parts.get(index=0)
+    p0-->>p0: host: string
+    p0->>p0: host.byteLength()
+    p0-->>p0: byteLength result: int
     opt Left is false
-    p0->>p5: host.byteLength()
+    p0->>p0: host.byteLength()
+    p0-->>p0: byteLength result 2: int
     end
     alt host.byteLength() == 0 or host.byteLength() › 253
-    p0->>p3: ConversionError()
+    p0->>p0: ConversionError()
+    p0-->>p0: ConversionError result 2: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
-    p0->>p6: host.split(separator=”.”)
+    Note over p0: Set hasLetter to false
+    p0->>p0: host.split(separator=”.”)
+    p0-->>p0: split result 2: List‹string›
     loop For each item in host.split(separator=”.”)
-    p0->>p7: label.byteLength()
+    p0->>p0: label.byteLength()
+    p0-->>p0: byteLength result 3: int
     opt Left is false
-    p0->>p7: label.byteLength()
+    p0->>p0: label.byteLength()
+    p0-->>p0: byteLength result 4: int
     end
-    alt label.byteLength() == 0 or label.byteLength() › 63
-    p0->>p3: ConversionError()
-    Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
-    end
-    p0->>p8: label.bytes()
-    loop While index ‹ label.byteLength()
-    p0->>p7: label.byteLength()
-    p0->>p9: asciiAt(input=bytes, index=index)
-    p9-->>p0: character: string
-    p0->>p9: asciiLetter(character=character)
-    p9-->>p0: letter: bool
-    opt Left is false
-    p0->>p10: character.isDecimal()
-    end
-    opt Left is true
-    opt Left is false
-    p0->>p7: label.byteLength()
-    end
-    end
-    alt not alphanumeric and (character != ”-” or index == 0 or index == label.byteLength() - 1
-    p0->>p3: ConversionError()
-    Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
-    end
-    end
-    end
-    alt not hasLetter
     end
     end
 ```
 
-#### Sequence 2 of 2 (continued)
+#### Sequence 2 of 3 (continued)
 
 ```mermaid
 sequenceDiagram
     participant p0 as _validateAuthority
-    participant p1 as ConversionError
-    participant p2 as parts.length
-    participant p3 as parts.get
-    participant p4 as port.isDecimal
-    participant p5 as port.byteLength
-    participant p6 as port.parseInteger
+    participant p1 as august/values/ascii
+    opt Try body； stops on a checked failure
+    loop For each item in host.split(separator=”.”)
+    alt label.byteLength() == 0 or label.byteLength() › 63
+    Note over p0: Sequence continued from the previous view
+    p0->>p0: ConversionError()
+    p0-->>p0: ConversionError result 3: ConversionError
+    Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
+    end
+    p0->>p0: label.bytes()
+    p0-->>p0: bytes: Bytes
+    Note over p0: Set index to 0
+    loop While index ‹ label.byteLength()
+    p0->>p0: label.byteLength()
+    p0-->>p0: byteLength result 5: int
+    p0->>p1: asciiAt(input=bytes, index=index)
+    p1-->>p0: character: string
+    p0->>p1: asciiLetter(character=character)
+    p1-->>p0: letter: bool
+    opt Left is false
+    p0->>p0: character.isDecimal()
+    p0-->>p0: isDecimal result: bool
+    end
+    Note over p0: Set alphanumeric to letter or isDecimal result
+    opt Left is true
+    opt Left is false
+    p0->>p0: label.byteLength()
+    p0-->>p0: byteLength result 6: int
+    end
+    end
+    alt not alphanumeric and (character != ”-” or index == 0 or index == label.byteLength() - 1
+    p0->>p0: ConversionError()
+    p0-->>p0: ConversionError result 4: ConversionError
+    Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
+    end
+    Note over p0: Set hasLetter to hasLetter or letter
+    Note over p0: Set index to index + 1
+    end
+    end
+    end
+```
+
+#### Sequence 3 of 3 (continued)
+
+```mermaid
+sequenceDiagram
+    participant p0 as _validateAuthority
+
     opt Try body； stops on a checked failure
     alt not hasLetter
     Note over p0: Sequence continued from the previous view
-    p0->>p1: ConversionError()
+    p0->>p0: ConversionError()
+    p0-->>p0: ConversionError result 5: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
-    p0->>p2: parts.length()
+    p0->>p0: parts.length()
+    p0-->>p0: length result 2: int
     alt parts.length() == 2
-    p0->>p3: parts.get(index=1)
-    p0->>p4: port.isDecimal()
+    p0->>p0: parts.get(index=1)
+    p0-->>p0: port: string
+    p0->>p0: port.isDecimal()
+    p0-->>p0: isDecimal result 2: bool
     opt Left is false
-    p0->>p5: port.byteLength()
+    p0->>p0: port.byteLength()
+    p0-->>p0: byteLength result 7: int
     end
     alt not port.isDecimal() or port.byteLength() › 5
-    p0->>p1: ConversionError()
+    p0->>p0: ConversionError()
+    p0-->>p0: ConversionError result 6: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
-    p0->>p6: port.parseInteger()
+    p0->>p0: port.parseInteger()
+    p0-->>p0: number: int
     alt number ‹ 1 or number › 65535
-    p0->>p1: ConversionError()
+    p0->>p0: ConversionError()
+    p0-->>p0: ConversionError result 7: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
     end
     end
     opt Catch IndexError
-    p0->>p1: ConversionError()
+    p0->>p0: ConversionError()
+    p0-->>p0: ConversionError result 8: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
     Note over p0: May leave with checked errors: ConversionError
@@ -330,8 +371,9 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as _pathCharacter
-    participant p1 as character.isToken
-    p0->>p1: character.isToken(min=1, max=1)
+
+    p0->>p0: character.isToken(min=1, max=1)
+    p0-->>p0: isToken result: bool
     Note over p0: Return character.isToken(min=1, max=1) or character ==<br/>”:” or character == ”@” or character == ”!” or character<br/>== ”$…
 ```
 
@@ -344,19 +386,23 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as _hex
-    participant p1 as character.isDecimal
-    participant p2 as character.compare
-    p0->>p1: character.isDecimal()
+
+    p0->>p0: character.isDecimal()
+    p0-->>p0: isDecimal result: bool
     opt Left is false
-    p0->>p2: character.compare(other=”A”)
+    p0->>p0: character.compare(other=”A”)
+    p0-->>p0: compare result: int
     opt Left is true
-    p0->>p2: character.compare(other=”F”)
+    p0->>p0: character.compare(other=”F”)
+    p0-->>p0: compare result 2: int
     end
     end
     opt Left is false
-    p0->>p2: character.compare(other=”a”)
+    p0->>p0: character.compare(other=”a”)
+    p0-->>p0: compare result 3: int
     opt Left is true
-    p0->>p2: character.compare(other=”f”)
+    p0->>p0: character.compare(other=”f”)
+    p0-->>p0: compare result 4: int
     end
     end
     Note over p0: Return character.isDecimal() or<br/>(character.compare(other=”A”) ›= 0 and<br/>character.compare(other=”F”) ‹= 0) or (charact…

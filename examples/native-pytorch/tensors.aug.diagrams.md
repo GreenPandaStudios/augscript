@@ -5,29 +5,6 @@
 [Project overview](.aug-spec/diagrams/index.md) · [Compiled explanation](tensors.aug.md)
 
 
-<details>
-<summary>Call relationships</summary>
-
-```mermaid
-flowchart TD
-    n0["tensors.aug"]
-    n1["add"]
-    n2["sum"]
-    n3["tensor"]
-    n4["values"]
-    n5["calculate"]
-    n0 -->|"calls"| n1
-    n0 -->|"calls"| n2
-    n0 -->|"calls"| n3
-    n0 -->|"calls"| n4
-    n0 -->|"calls"| n5
-    n5 -->|"calls"| n1
-    n5 -->|"calls"| n2
-    n5 -->|"calls"| n3
-```
-
-</details>
-
 ## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
@@ -41,7 +18,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ```mermaid
 sequenceDiagram
     participant p0 as calculate
-    participant p1 as @greenpandastudios/aug-pytorch/api
+    participant p1 as aug-pytorch/api
     p0->>p1: tensor(values=［1.0, 2.0, 3.0］)
     p1-->>p0: left: Tensor
     Note over p0: Own left； release on scope exits
@@ -52,7 +29,7 @@ sequenceDiagram
     p1-->>p0: result: Tensor
     Note over p0: Own result； release on scope exits
     p0->>p1: sum(tensor=result)
-    p1-->>p0: float
+    p1-->>p0: sum result: float
     Note over p0: Return sum(tensor=result)； required cleanup runs before<br/>exit
     Note over p0: May leave with checked errors: TensorError
 ```

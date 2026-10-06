@@ -28,26 +28,30 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ```mermaid
 sequenceDiagram
     participant p0 as Startup
-    participant p1 as values.set
-    participant p2 as unique.add
-    participant p3 as unique.contains
-    participant p4 as print
-    participant p5 as values.length
-    participant p6 as unique.length
+    participant p1 as August runtime
+    Note over p0: Set values to ｛｝
     Note over p0: Own values； release on scope exits
+    Note over p0: Set unique to ｛｝
     Note over p0: Own unique； release on scope exits
+    Note over p0: Set index to 0
     loop While index ‹ 20000
-    p0->>p1: values.set(key=index, value=index * 3)
-    p0->>p2: unique.add(value=index)
+    p0->>p0: values.set(key=index, value=index * 3)
+    p0->>p0: unique.add(value=index)
+    Note over p0: Set index to index + 1
     end
+    Note over p0: Set checksum to 0
     loop For each item in values
-    p0->>p3: unique.contains(value=key)
+    p0->>p0: unique.contains(value=key)
+    p0-->>p0: contains result: bool
     alt unique.contains(value=key)
+    Note over p0: Set checksum to checksum + value
     end
     end
-    p0->>p4: print(value=checksum)
-    p0->>p5: values.length()
-    p0->>p6: unique.length()
-    p0->>p4: print(value=values.length() == unique.length())
+    p0->>p1: print(value=checksum)
+    p0->>p0: values.length()
+    p0-->>p0: length result: int
+    p0->>p0: unique.length()
+    p0-->>p0: length result 2: int
+    p0->>p1: print(value=length result == length result 2)
 ```
 

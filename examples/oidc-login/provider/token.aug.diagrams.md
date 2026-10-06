@@ -6,71 +6,38 @@
 
 ## Class interactions
 
+### token
+
+#### View 1 of 2
+
 ```mermaid
-flowchart TD
+flowchart LR
     n0["securityHeaders"]
     n1["SigningKeys"]
     n2["settings"]
     n3["ExpiringStore"]
     n4["Crypto"]
     n5["signJwt"]
-    n6["Clock"]
-    n7["_oauthError"]
-    n8["token"]
-    n8 -->|"calls"| n0
-    n8 -->|"calls"| n1
-    n8 -->|"depends on"| n1
-    n8 -->|"calls"| n2
-    n8 -->|"calls"| n3
-    n8 -->|"depends on"| n3
-    n8 -->|"calls"| n4
-    n8 -->|"depends on"| n4
-    n8 -->|"calls"| n5
-    n8 -->|"calls"| n6
-    n8 -->|"depends on"| n6
-    n8 -->|"calls"| n7
+    n6["token"]
+    n6 -->|"calls"| n0
+    n6 -->|"calls provider； depends on"| n1
+    n6 -->|"calls"| n2
+    n6 -->|"calls put； calls take； depends on"| n3
+    n6 -->|"calls equal； calls random； calls sha256； depends on"| n4
+    n6 -->|"calls"| n5
 ```
 
-<details>
-<summary>Call relationships</summary>
+#### View 2 of 2
 
 ```mermaid
-flowchart TD
-    n0["securityHeaders"]
-    n1["SigningKeys.provider"]
-    n2["settings"]
-    n3["ExpiringStore.put"]
-    n4["ExpiringStore.take"]
-    n5["Crypto.equal"]
-    n6["Crypto.random"]
-    n7["Crypto.sha256"]
-    n8["signJwt"]
-    n9["Clock.now"]
-    n10["AccessGrant"]
-    n11["IdClaims"]
-    n12["OAuthError"]
-    n13["TokenResponse"]
-    n14["_oauthError"]
-    n15["token"]
-    n14 -->|"calls"| n0
-    n14 -->|"calls"| n12
-    n15 -->|"calls"| n0
-    n15 -->|"calls"| n1
-    n15 -->|"calls"| n2
-    n15 -->|"calls"| n3
-    n15 -->|"calls"| n4
-    n15 -->|"calls"| n5
-    n15 -->|"calls"| n6
-    n15 -->|"calls"| n7
-    n15 -->|"calls"| n8
-    n15 -->|"calls"| n9
-    n15 -->|"calls"| n10
-    n15 -->|"calls"| n11
-    n15 -->|"calls"| n13
-    n15 -->|"calls"| n14
+flowchart LR
+    n0["Clock"]
+    n1["_oauthError"]
+    n2["token"]
+    n2 -->|"calls now； depends on"| n0
+    n2 -->|"calls"| n1
 ```
 
-</details>
 
 ## Sequences
 
@@ -85,16 +52,15 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ```mermaid
 sequenceDiagram
     participant p0 as _oauthError
-    participant p1 as OAuthError
-    participant p2 as Json
-    participant p3 as common/headers
-    participant p4 as HttpResponse
-    p0->>p1: OAuthError(error=code, error_description=description)
-    p1-->>p0: OAuthError
-    p0->>p2: Json(value=OAuthError(error=code,<br/>error_description=description))
-    p0->>p3: securityHeaders()
-    p3-->>p0: Headers
-    p0->>p4: HttpResponse(body=Json(value=OAuthError(error=code,<br/>error_description=description)), status=400,<br/>headers=securityHead…
+    participant p1 as common/headers
+    p0->>p0: OAuthError(error=code, error_description=description) ·<br/>construct value
+    p0-->>p0: OAuthError result: OAuthError
+    p0->>p0: Json(value=OAuthError result)
+    p0-->>p0: Json result: Json
+    p0->>p1: securityHeaders()
+    p1-->>p0: securityHeaders result: Headers
+    p0->>p0: HttpResponse(body=Json result, status=400,<br/>headers=securityHeaders result)
+    p0-->>p0: HttpResponse result: HttpResponse‹Json›
     Note over p0: Return<br/>HttpResponse(body=Json(value=OAuthError(error=code,<br/>error_description=description)), status=400,<br/>headers=secur…
     Note over p0: May leave with checked errors: HttpError
 ```
@@ -105,55 +71,48 @@ sequenceDiagram
 
 [Source](token.aug#L12)
 
-#### Sequence 1 of 3 (continued)
+#### Sequence 1 of 3
 
 ```mermaid
 sequenceDiagram
     participant p0 as token
     participant p1 as common/settings
-    participant p2 as http.form
-    participant p3 as _oauthError
-    participant p4 as form.code.isToken
-    participant p5 as form.code_verifier.isToken
-    participant p6 as clock: Clock
-    participant p7 as codes: ExpiringStore
-    participant p8 as form.code_verifier.bytes
-    participant p9 as crypto: Crypto
+    participant p2 as clock: Clock
+    participant p3 as codes: ExpiringStore
     Note over p0: POST /provider/token
     p0->>p1: settings()
     p1-->>p0: config: Settings
     opt Try body； stops on a checked failure
-    p0->>p2: http.form()
+    p0->>p0: http.form‹TokenForm›()
+    p0-->>p0: form: TokenForm
     alt form.grant_type != ”authorization_code”
-    p0->>p3: _oauthError(code=”unsupported_grant_type”,<br/>description=”Only authorization_code is supported.”)
-    p3-->>p0: HttpResponse‹Json›
+    p0->>p0: _oauthError(code=”unsupported_grant_type”,<br/>description=”Only authorization_code is supported.”)
+    p0-->>p0: _oauthError result: HttpResponse‹Json›
     Note over p0: Return _oauthError(code=”unsupported_grant_type”,<br/>description=”Only authorization_code is supported.”)；<br/>required clea…
     end
     alt form.client_id != config.clientId
-    p0->>p3: _oauthError(code=”invalid_client”, description=”The<br/>registered client is required.”)
-    p3-->>p0: HttpResponse‹Json›
+    p0->>p0: _oauthError(code=”invalid_client”, description=”The<br/>registered client is required.”)
+    p0-->>p0: _oauthError result 2: HttpResponse‹Json›
     Note over p0: Return _oauthError(code=”invalid_client”,<br/>description=”The registered client is required.”)；<br/>required cleanup runs be…
     end
-    p0->>p4: form.code.isToken(min=43, max=43)
+    p0->>p0: form.code.isToken(min=43, max=43)
+    p0-->>p0: isToken result: bool
     opt Left is false
-    p0->>p5: form.code_verifier.isToken(min=43, max=128)
+    p0->>p0: form.code_verifier.isToken(min=43, max=128)
+    p0-->>p0: isToken result 2: bool
     end
     alt not form.code.isToken(min=43, max=43)) or (not form.code_verifier.isToken(min=43, max=128)
-    p0->>p3: _oauthError(code=”invalid_grant”, description=”The<br/>authorization grant is invalid.”)
-    p3-->>p0: HttpResponse‹Json›
+    p0->>p0: _oauthError(code=”invalid_grant”, description=”The<br/>authorization grant is invalid.”)
+    p0-->>p0: _oauthError result 3: HttpResponse‹Json›
     Note over p0: Return _oauthError(code=”invalid_grant”,<br/>description=”The authorization grant is invalid.”)；<br/>required cleanup runs be…
     end
-    p0->>p6: now() · interface dispatch
-    p6-->>p0: now: int
-    p0->>p7: take(key=form.code, now=now) · interface dispatch
-    p7-->>p0: optional AuthorizationCode
+    p0->>p2: now() · interface dispatch
+    p2-->>p0: now: int
+    p0->>p3: take(key=form.code, now=now) · interface dispatch
+    p3-->>p0: take result: optional AuthorizationCode
     alt Match when null:
-    p0->>p3: _oauthError(code=”invalid_grant”, description=”The<br/>authorization grant is invalid.”)
-    p3-->>p0: HttpResponse‹Json›
-    Note over p0: Return _oauthError(code=”invalid_grant”,<br/>description=”The authorization grant is invalid.”)；<br/>required cleanup runs be…
-    else Match when some grant:
-    p0->>p8: form.code_verifier.bytes()
-    p0->>p9: sha256(input=form.code_verifier.bytes()) · interface<br/>dispatch
+    p0->>p0: _oauthError(code=”invalid_grant”, description=”The<br/>authorization grant is invalid.”)
+    p0-->>p0: _oauthError result 4: HttpResponse‹Json›
     end
     end
 ```
@@ -164,45 +123,37 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as token
     participant p1 as crypto: Crypto
-    participant p2 as crypto.sha256(input=form.code_verifier.bytes()).base64url
-    participant p3 as challenge.bytes
-    participant p4 as grant.challenge.bytes
-    participant p5 as _oauthError
-    participant p6 as IdClaims
-    participant p7 as keys: SigningKeys
-    participant p8 as Json
-    participant p9 as @git/url_9ef654c66d34ab8f5527/jose
-    participant p10 as crypto.random(size=32).base64url
-    participant p11 as AccessGrant
+    participant p2 as keys: SigningKeys
     opt Try body； stops on a checked failure
     alt Match when null:
-    else Match when some grant:
     Note over p0: Sequence continued from the previous view
-    p1-->>p0: Bytes
-    p0->>p2: crypto.sha256(input=form.code_verifier.bytes()).base64url()
+    Note over p0: Return _oauthError(code=”invalid_grant”,<br/>description=”The authorization grant is invalid.”)；<br/>required cleanup runs be…
+    else Match when some grant:
+    p0->>p0: form.code_verifier.bytes()
+    p0-->>p0: bytes result: Bytes
+    p0->>p1: sha256(input=bytes result) · interface dispatch
+    p1-->>p0: sha256 result: Bytes
+    p0->>p0: sha256 result.base64url()
+    p0-->>p0: challenge: string
     opt Left is false
-    p0->>p3: challenge.bytes()
-    p0->>p4: grant.challenge.bytes()
-    p0->>p1: equal(left=challenge.bytes(),<br/>right=grant.challenge.bytes()) · interface dispatch
-    p1-->>p0: bool
+    p0->>p0: challenge.bytes()
+    p0-->>p0: bytes result 2: Bytes
+    p0->>p0: grant.challenge.bytes()
+    p0-->>p0: bytes result 3: Bytes
+    p0->>p1: equal(left=bytes result 2, right=bytes result 3) ·<br/>interface dispatch
+    p1-->>p0: equal result: bool
     end
     alt grant.clientId != form.client_id or grant.redirectUri != form.redirect_uri or (not crypto.equal(left=challenge.bytes(…
-    p0->>p5: _oauthError(code=”invalid_grant”, description=”The<br/>authorization grant is invalid.”)
-    p5-->>p0: HttpResponse‹Json›
+    p0->>p0: _oauthError(code=”invalid_grant”, description=”The<br/>authorization grant is invalid.”)
+    p0-->>p0: _oauthError result 5: HttpResponse‹Json›
     Note over p0: Return _oauthError(code=”invalid_grant”,<br/>description=”The authorization grant is invalid.”)；<br/>required cleanup runs be…
     end
-    p0->>p6: IdClaims(iss=config.issuer, sub=grant.subject,<br/>aud=grant.clientId, exp=now + 300, iat=now,<br/>nonce=grant.nonce, name=gr…
-    p6-->>p0: claims: IdClaims
-    p0->>p7: provider() · interface dispatch
-    p7-->>p0: RsaPrivateKey
-    p0->>p8: Json(value=claims)
-    p0->>p9: signJwt(key=keys.provider(), claims=Json(value=claims),<br/>kid=”provider-1”, tokenType=”JWT”)
-    p9-->>p0: idToken: string
-    p0->>p1: random(size=32) · interface dispatch
-    p1-->>p0: Bytes
-    p0->>p10: crypto.random(size=32).base64url()
-    p0->>p11: AccessGrant(subject=grant.subject, name=grant.name,<br/>expires=now + 300)
-    p11-->>p0: value: AccessGrant
+    p0->>p0: IdClaims(iss=config.issuer, sub=grant.subject,<br/>aud=grant.clientId, exp=now + 300, iat=now,<br/>nonce=grant.nonce, name=gr…
+    p0-->>p0: claims: IdClaims
+    p0->>p2: provider() · interface dispatch
+    p2-->>p0: provider result: RsaPrivateKey
+    p0->>p0: Json(value=claims)
+    p0-->>p0: Json result: Json
     end
     end
 ```
@@ -212,29 +163,36 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as token
-    participant p1 as access: ExpiringStore
-    participant p2 as TokenResponse
-    participant p3 as Json
+    participant p1 as crypto/jose
+    participant p2 as crypto: Crypto
+    participant p3 as access: ExpiringStore
     participant p4 as common/headers
-    participant p5 as HttpResponse
-    participant p6 as _oauthError
     opt Try body； stops on a checked failure
-    alt Match when null:
-    else Match when some grant:
+    alt Continuing Match when some grant:
     Note over p0: Sequence continued from the previous view
-    p0->>p1: put(key=accessToken, value=value, expires=value.expires,<br/>now=now) · interface dispatch
-    p0->>p2: TokenResponse(token_type=”Bearer”,<br/>access_token=accessToken, id_token=idToken,<br/>expires_in=300, scope=”openid profile”)
-    p2-->>p0: body: TokenResponse
-    p0->>p3: Json(value=body)
+    p0->>p1: signJwt(key=provider result, claims=Json result,<br/>kid=”provider-1”, tokenType=”JWT”)
+    p1-->>p0: idToken: string
+    p0->>p2: random(size=32) · interface dispatch
+    p2-->>p0: random result: Bytes
+    p0->>p0: random result.base64url()
+    p0-->>p0: accessToken: string
+    p0->>p0: AccessGrant(subject=grant.subject, name=grant.name,<br/>expires=now + 300) · construct value
+    p0-->>p0: value: AccessGrant
+    p0->>p3: put(key=accessToken, value=value, expires=value.expires,<br/>now=now) · interface dispatch
+    p0->>p0: TokenResponse(token_type=”Bearer”,<br/>access_token=accessToken, id_token=idToken,<br/>expires_in=300, scope=”openid profile”…
+    p0-->>p0: body: TokenResponse
+    p0->>p0: Json(value=body)
+    p0-->>p0: Json result 2: Json
     p0->>p4: securityHeaders()
-    p4-->>p0: Headers
-    p0->>p5: HttpResponse(body=Json(value=body),<br/>headers=securityHeaders())
+    p4-->>p0: securityHeaders result: Headers
+    p0->>p0: HttpResponse(body=Json result 2, headers=securityHeaders<br/>result)
+    p0-->>p0: HttpResponse result: HttpResponse‹Json›
     Note over p0: Return HttpResponse(body=Json(value=body),<br/>headers=securityHeaders())； required cleanup runs before<br/>exit
     end
     end
     opt Catch HttpError
-    p0->>p6: _oauthError(code=”invalid_request”, description=”Submit<br/>the required URL-encoded token fields once each.”)
-    p6-->>p0: HttpResponse‹Json›
+    p0->>p0: _oauthError(code=”invalid_request”, description=”Submit<br/>the required URL-encoded token fields once each.”)
+    p0-->>p0: _oauthError result 6: HttpResponse‹Json›
     Note over p0: Return _oauthError(code=”invalid_request”,<br/>description=”Submit the required URL-encoded token<br/>fields once each.”)； re…
     end
     Note over p0: May leave with checked errors: CryptoError, HttpError,<br/>JwtError, KeyError, StoreFull, TimeError

@@ -16,20 +16,35 @@ outline: [2, 3]
 
 ## Class interactions
 
+### LocalFiles
+
 ```mermaid
-flowchart TD
-    n0["Arguments"]
-    n1["Console"]
-    n2["FileReader"]
-    n3["FileWriter"]
-    n4["LocalFiles"]
-    n5["ProcessArguments"]
-    n6["SystemConsole"]
-    n4 -->|"implements"| n2
-    n4 -->|"implements"| n3
-    n5 -->|"implements"| n0
-    n6 -->|"implements"| n1
+flowchart LR
+    n0["FileReader"]
+    n1["FileWriter"]
+    n2["LocalFiles"]
+    n2 -->|"implements"| n0
+    n2 -->|"implements"| n1
 ```
+
+### ProcessArguments
+
+```mermaid
+flowchart LR
+    n0["Arguments"]
+    n1["ProcessArguments"]
+    n1 -->|"implements"| n0
+```
+
+### SystemConsole
+
+```mermaid
+flowchart LR
+    n0["Console"]
+    n1["SystemConsole"]
+    n1 -->|"implements"| n0
+```
+
 
 ## Sequences
 
@@ -60,7 +75,7 @@ Interface contract; implementation selected at runtime. [Explanation](contracts.
 ```mermaid
 sequenceDiagram
     participant p0 as SystemConsole.write
-    participant p1 as print
+    participant p1 as August runtime
     p0->>p1: print(value=value)
 ```
 
@@ -97,8 +112,9 @@ May leave with checked errors: FileError. Interface contract; implementation sel
 ```mermaid
 sequenceDiagram
     participant p0 as LocalFiles.read
-    participant p1 as read_file
+    participant p1 as August runtime
     p0->>p1: read_file(path=path)
+    p1-->>p0: read_file result: string
     Note over p0: Return read_file(path=path)； required cleanup runs<br/>before exit
     Note over p0: May leave with checked errors: FileError
 ```
@@ -112,7 +128,7 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as LocalFiles.write
-    participant p1 as write_file
+    participant p1 as August runtime
     p0->>p1: write_file(path=path, content=content)
     Note over p0: May leave with checked errors: FileError
 ```
@@ -142,8 +158,9 @@ Interface contract; implementation selected at runtime. [Explanation](contracts.
 ```mermaid
 sequenceDiagram
     participant p0 as ProcessArguments.read
-    participant p1 as arguments
+    participant p1 as August runtime
     p0->>p1: arguments()
+    p1-->>p0: arguments result: List‹string›
     Note over p0: Return arguments()； required cleanup runs before exit
 ```
 

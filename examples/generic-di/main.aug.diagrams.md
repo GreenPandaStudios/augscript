@@ -10,20 +10,8 @@
 flowchart TD
     n0["main.aug"]
     n1["Program"]
-    n0 -->|"calls"| n1
+    n0 -->|"calls start"| n1
 ```
-
-<details>
-<summary>Call relationships</summary>
-
-```mermaid
-flowchart TD
-    n0["main.aug"]
-    n1["Program.start"]
-    n0 -->|"calls"| n1
-```
-
-</details>
 
 ## Sequences
 

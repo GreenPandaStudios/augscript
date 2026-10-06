@@ -6,8 +6,10 @@
 
 ## Class interactions
 
+### authenticate
+
 ```mermaid
-flowchart TD
+flowchart LR
     n0["authenticate"]
     n1["SigningKeys"]
     n2["settings"]
@@ -15,43 +17,14 @@ flowchart TD
     n4["Crypto"]
     n5["verifyJwt"]
     n6["Clock"]
-    n0 -->|"calls"| n1
-    n0 -->|"depends on"| n1
+    n0 -->|"calls session； depends on"| n1
     n0 -->|"calls"| n2
-    n0 -->|"calls"| n3
-    n0 -->|"depends on"| n3
-    n0 -->|"calls"| n4
-    n0 -->|"depends on"| n4
+    n0 -->|"calls get； depends on"| n3
+    n0 -->|"calls equal； calls publicRsa； depends on"| n4
     n0 -->|"calls"| n5
-    n0 -->|"calls"| n6
-    n0 -->|"depends on"| n6
+    n0 -->|"calls now； depends on"| n6
 ```
 
-<details>
-<summary>Call relationships</summary>
-
-```mermaid
-flowchart TD
-    n0["SessionError"]
-    n1["authenticate"]
-    n2["SigningKeys.session"]
-    n3["settings"]
-    n4["ExpiringStore.get"]
-    n5["Crypto.equal"]
-    n6["Crypto.publicRsa"]
-    n7["verifyJwt"]
-    n8["Clock.now"]
-    n1 -->|"calls"| n0
-    n1 -->|"calls"| n2
-    n1 -->|"calls"| n3
-    n1 -->|"calls"| n4
-    n1 -->|"calls"| n5
-    n1 -->|"calls"| n6
-    n1 -->|"calls"| n7
-    n1 -->|"calls"| n8
-```
-
-</details>
 
 ## Sequences
 
@@ -63,108 +36,117 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](session.aug#L9)
 
-#### Sequence 1 of 2 (continued)
+#### Sequence 1 of 3
 
 ```mermaid
 sequenceDiagram
     participant p0 as authenticate
-    participant p1 as SessionError
-    participant p2 as keys: SigningKeys
-    participant p3 as crypto: Crypto
-    participant p4 as @git/url_9ef654c66d34ab8f5527/jose
-    participant p5 as verifyJwt(token=value, publicKey, kid=”session-1”, tokenType=”august-session+jwt”).decode
-    participant p6 as common/settings
-    participant p7 as clock: Clock
-    participant p8 as claims.sub.length
-    participant p9 as claims.jti.isToken
-    participant p10 as claims.csrf.isToken
-    participant p11 as sessions: ExpiringStore
+    participant p1 as keys: SigningKeys
+    participant p2 as crypto: Crypto
+    participant p3 as crypto/jose
+    participant p4 as common/settings
+    participant p5 as clock: Clock
     alt Match when null:
-    p0->>p1: SessionError()
-    p1-->>p0: SessionError
+    p0->>p0: SessionError() · construct value
+    p0-->>p0: SessionError result: SessionError
     Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
     else Match when some value:
     opt Try body； stops on a checked failure
-    p0->>p2: session() · interface dispatch
-    p2-->>p0: RsaPrivateKey
-    p0->>p3: publicRsa(key=keys.session()) · interface dispatch
-    p3-->>p0: publicKey: RsaPublicKey
-    p0->>p4: verifyJwt(token=value, publicKey=publicKey,<br/>kid=”session-1”, tokenType=”august-session+jwt”)
-    p4-->>p0: Json
-    p0->>p5: verifyJwt(token=value, publicKey, kid=”session-1”,<br/>tokenType=”august-session+jwt”).decode()
-    p0->>p6: settings()
-    p6-->>p0: config: Settings
-    p0->>p7: now() · interface dispatch
-    p7-->>p0: now: int
+    p0->>p1: session() · interface dispatch
+    p1-->>p0: session result: RsaPrivateKey
+    p0->>p2: publicRsa(key=session result) · interface dispatch
+    p2-->>p0: publicKey: RsaPublicKey
+    p0->>p3: verifyJwt(token=value, publicKey=publicKey,<br/>kid=”session-1”, tokenType=”august-session+jwt”)
+    p3-->>p0: verifyJwt result: Json
+    p0->>p0: verifyJwt result.decode‹SessionClaims›()
+    p0-->>p0: claims: SessionClaims
+    p0->>p4: settings()
+    p4-->>p0: config: Settings
+    p0->>p5: now() · interface dispatch
+    p5-->>p0: now: int
     opt Left is false
-    p0->>p8: claims.sub.length()
+    p0->>p0: claims.sub.length()
+    p0-->>p0: length result: int
     end
     alt claims.iss != config.baseUrl + ”/app” or claims.aud != ”august-app” or claims.sub.length() == 0 or claims.exp ‹= now …
-    p0->>p1: SessionError()
-    p1-->>p0: SessionError
+    p0->>p0: SessionError() · construct value
+    p0-->>p0: SessionError result 2: SessionError
     Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
     end
-    p0->>p9: claims.jti.isToken(min=43, max=43)
+    p0->>p0: claims.jti.isToken(min=43, max=43)
+    p0-->>p0: isToken result: bool
     opt Left is false
-    p0->>p10: claims.csrf.isToken(min=43, max=43)
+    p0->>p0: claims.csrf.isToken(min=43, max=43)
+    p0-->>p0: isToken result 2: bool
     end
-    alt not claims.jti.isToken(min=43, max=43)) or (not claims.csrf.isToken(min=43, max=43)
-    p0->>p1: SessionError()
-    p1-->>p0: SessionError
-    Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
-    end
-    p0->>p11: get(key=claims.jti, now=now) · interface dispatch
     end
     end
 ```
 
-#### Sequence 2 of 2 (continued)
+#### Sequence 2 of 3 (continued)
 
 ```mermaid
 sequenceDiagram
     participant p0 as authenticate
     participant p1 as sessions: ExpiringStore
-    participant p2 as SessionError
-    participant p3 as saved.csrf.bytes
-    participant p4 as claims.csrf.bytes
-    participant p5 as crypto: Crypto
-    alt Match when null:
-    else Match when some value:
+    participant p2 as crypto: Crypto
+    alt Continuing Match when some value:
     opt Try body； stops on a checked failure
+    alt not claims.jti.isToken(min=43, max=43)) or (not claims.csrf.isToken(min=43, max=43)
     Note over p0: Sequence continued from the previous view
-    p1-->>p0: optional SessionClaims
+    p0->>p0: SessionError() · construct value
+    p0-->>p0: SessionError result 3: SessionError
+    Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
+    end
+    p0->>p1: get(key=claims.jti, now=now) · interface dispatch
+    p1-->>p0: get result: optional SessionClaims
     alt Match when null:
-    p0->>p2: SessionError()
-    p2-->>p0: SessionError
+    p0->>p0: SessionError() · construct value
+    p0-->>p0: SessionError result 4: SessionError
     Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
     else Match when some saved:
     opt Left is false
-    p0->>p3: saved.csrf.bytes()
-    p0->>p4: claims.csrf.bytes()
-    p0->>p5: equal(left=saved.csrf.bytes(),<br/>right=claims.csrf.bytes()) · interface dispatch
-    p5-->>p0: bool
+    p0->>p0: saved.csrf.bytes()
+    p0-->>p0: bytes result: Bytes
+    p0->>p0: claims.csrf.bytes()
+    p0-->>p0: bytes result 2: Bytes
+    p0->>p2: equal(left=bytes result, right=bytes result 2) ·<br/>interface dispatch
+    p2-->>p0: equal result: bool
     end
     alt saved.sub != claims.sub or saved.exp != claims.exp or (not crypto.equal(left=saved.csrf.bytes(), right=claims.csrf.by…
-    p0->>p2: SessionError()
-    p2-->>p0: SessionError
+    p0->>p0: SessionError() · construct value
+    p0-->>p0: SessionError result 5: SessionError
     Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
     end
     Note over p0: Return claims； required cleanup runs before exit
     end
     end
     opt Catch CryptoError
-    p0->>p2: SessionError()
-    p2-->>p0: SessionError
+    p0->>p0: SessionError() · construct value
+    p0-->>p0: SessionError result 6: SessionError
     Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
     end
     opt Catch JwtError
-    p0->>p2: SessionError()
-    p2-->>p0: SessionError
+    p0->>p0: SessionError() · construct value
+    p0-->>p0: SessionError result 7: SessionError
+    end
+    end
+```
+
+#### Sequence 3 of 3 (continued)
+
+```mermaid
+sequenceDiagram
+    participant p0 as authenticate
+
+    alt Continuing Match when some value:
+    opt Catch JwtError
+    Note over p0: Sequence continued from the previous view
     Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
     end
     opt Catch JsonError
-    p0->>p2: SessionError()
-    p2-->>p0: SessionError
+    p0->>p0: SessionError() · construct value
+    p0-->>p0: SessionError result 8: SessionError
     Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
     end
     end

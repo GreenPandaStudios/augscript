@@ -14,32 +14,8 @@ flowchart TD
     n3["DatabaseStorage"]
     n0 -->|"calls"| n1
     n0 -->|"implements"| n3
-    n2 -->|"calls"| n3
-    n2 -->|"depends on"| n3
+    n2 -->|"calls open； depends on"| n3
 ```
-
-<details>
-<summary>Call relationships</summary>
-
-```mermaid
-flowchart TD
-    n0["NativeDatabaseStorage.open"]
-    n1["_execute"]
-    n2["_open"]
-    n3["_queryScalar"]
-    n4["execute"]
-    n5["open"]
-    n6["openMemory"]
-    n7["queryScalar"]
-    n8["DatabaseStorage.open"]
-    n0 -->|"calls"| n2
-    n4 -->|"calls"| n1
-    n5 -->|"calls"| n8
-    n6 -->|"calls"| n2
-    n7 -->|"calls"| n3
-```
-
-</details>
 
 ## Sequences
 
@@ -86,11 +62,11 @@ May leave with checked errors: SqliteError. Native implementation; only the decl
 ```mermaid
 sequenceDiagram
     participant p0 as NativeDatabaseStorage.open
-    participant p1 as _open
+
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _open(path=path) · native boundary
-    p1-->>p0: Database
+    p0->>p0: _open(path=path) · native boundary
+    p0-->>p0: _open result: Database
     Note over p0: Return _open(path)； required cleanup runs before exit
     Note over p0: Leave unsafe scope
     end
@@ -108,7 +84,7 @@ sequenceDiagram
     participant p0 as open
     participant p1 as storage: DatabaseStorage
     p0->>p1: open(path=path) · interface dispatch
-    p1-->>p0: Database
+    p1-->>p0: open result: Database
     Note over p0: Return storage.open(path)； required cleanup runs before<br/>exit
     Note over p0: May leave with checked errors: SqliteError
 ```
@@ -122,11 +98,11 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as openMemory
-    participant p1 as _open
+
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _open(path=”:memory:”) · native boundary
-    p1-->>p0: Database
+    p0->>p0: _open(path=”:memory:”) · native boundary
+    p0-->>p0: _open result: Database
     Note over p0: Return _open(path=”:memory:”)； required cleanup runs<br/>before exit
     Note over p0: Leave unsafe scope
     end
@@ -142,11 +118,11 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as execute
-    participant p1 as _execute
+
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _execute(database=database, sql=sql,<br/>parameters=parameters) · native boundary
-    p1-->>p0: int
+    p0->>p0: _execute(database=database, sql=sql,<br/>parameters=parameters) · native boundary
+    p0-->>p0: _execute result: int
     Note over p0: Return _execute(database, sql, parameters)； required<br/>cleanup runs before exit
     Note over p0: Leave unsafe scope
     end
@@ -162,11 +138,11 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as queryScalar
-    participant p1 as _queryScalar
+
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _queryScalar(database=database, sql=sql,<br/>parameters=parameters) · native boundary
-    p1-->>p0: string
+    p0->>p0: _queryScalar(database=database, sql=sql,<br/>parameters=parameters) · native boundary
+    p0-->>p0: _queryScalar result: string
     Note over p0: Return _queryScalar(database, sql, parameters)； required<br/>cleanup runs before exit
     Note over p0: Leave unsafe scope
     end

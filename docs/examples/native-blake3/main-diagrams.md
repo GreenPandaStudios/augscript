@@ -15,17 +15,6 @@ outline: [2, 3]
 [Project overview](diagrams/index.md) · [Compiled explanation](main.md)
 
 
-::: details Call relationships
-
-```mermaid
-flowchart TD
-    n0["hashText"]
-    n1["main.aug"]
-    n1 -->|"calls"| n0
-```
-
-:::
-
 ## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
@@ -40,11 +29,11 @@ Call arrows identify checked targets; loop and branch frames determine when they
 sequenceDiagram
     participant p0 as Startup
     participant p1 as hashing
-    participant p2 as print
+    participant p2 as August runtime
     opt Try body； stops on a checked failure
     p0->>p1: hashText(value=”abc”)
-    p1-->>p0: string
-    p0->>p2: print(value=hashText(value=”abc”))
+    p1-->>p0: hashText result: string
+    p0->>p2: print(value=hashText result)
     end
     opt Catch HashError
     p0->>p2: print(value=error.message)

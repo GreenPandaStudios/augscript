@@ -5,18 +5,6 @@
 [Project overview](.aug-spec/diagrams/index.md) · [Compiled explanation](main.aug.md)
 
 
-<details>
-<summary>Call relationships</summary>
-
-```mermaid
-flowchart TD
-    n0["main.aug"]
-    n1["parse"]
-    n0 -->|"calls"| n1
-```
-
-</details>
-
 ## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
@@ -30,26 +18,29 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ```mermaid
 sequenceDiagram
     participant p0 as Startup
-    participant p1 as @git/url_2d3c37c690c0fa115be1/contracts
-    participant p2 as document.decode
-    participant p3 as Json
-    participant p4 as Json(value=payload).stringify
-    participant p5 as encoded.length
-    participant p6 as print
-    participant p7 as exit
+    participant p1 as json/contracts
+    participant p2 as August runtime
+    Note over p0: Set checksum to 0
+    Note over p0: Set index to 0
     opt Try body； stops on a checked failure
     loop While index ‹ 5000
     p0->>p1: parse(input=”｛＼”id＼”:7,＼”message＼”:＼”hello＼”,＼”values＼”:［1,2,3］｝”)
     p1-->>p0: document: Json
-    p0->>p2: document.decode()
-    p0->>p3: Json(value=payload)
-    p0->>p4: Json(value=payload).stringify()
-    p0->>p5: encoded.length()
+    p0->>p0: document.decode‹Payload›()
+    p0-->>p0: payload: Payload
+    p0->>p0: Json(value=payload)
+    p0-->>p0: Json result: Json
+    p0->>p0: Json result.stringify()
+    p0-->>p0: encoded: string
+    p0->>p0: encoded.length()
+    p0-->>p0: length result: int
+    Note over p0: Set checksum to checksum + payload.id + length result
+    Note over p0: Set index to index + 1
     end
-    p0->>p6: print(value=checksum)
+    p0->>p2: print(value=checksum)
     end
     opt Catch JsonError
-    p0->>p7: exit(status=1)
+    p0->>p2: exit(status=1)
     end
 ```
 

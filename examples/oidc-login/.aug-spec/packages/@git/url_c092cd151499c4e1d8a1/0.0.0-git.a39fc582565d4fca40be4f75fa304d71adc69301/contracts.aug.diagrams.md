@@ -15,18 +15,6 @@ flowchart TD
     n1 -->|"calls"| n2
 ```
 
-<details>
-<summary>Call relationships</summary>
-
-```mermaid
-flowchart TD
-    n0["SystemClock.now"]
-    n1["_aug_time_now"]
-    n0 -->|"calls"| n1
-```
-
-</details>
-
 ## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
@@ -64,11 +52,11 @@ May leave with checked errors: TimeError. Native implementation; only the declar
 ```mermaid
 sequenceDiagram
     participant p0 as SystemClock.now
-    participant p1 as _aug_time_now
+
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _aug_time_now() · native boundary
-    p1-->>p0: int
+    p0->>p0: _aug_time_now() · native boundary
+    p0-->>p0: _aug_time_now result: int
     Note over p0: Return _aug_time_now()； required cleanup runs before<br/>exit
     Note over p0: Leave unsafe scope
     end

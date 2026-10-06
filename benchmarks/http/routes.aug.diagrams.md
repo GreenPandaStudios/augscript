@@ -5,18 +5,6 @@
 [Project overview](.aug-spec/diagrams/index.md) · [Compiled explanation](routes.aug.md)
 
 
-<details>
-<summary>Call relationships</summary>
-
-```mermaid
-flowchart TD
-    n0["Reply"]
-    n1["reply"]
-    n1 -->|"calls"| n0
-```
-
-</details>
-
 ## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
@@ -38,10 +26,10 @@ Receive fields: id, message. [Explanation](routes.aug.md).
 ```mermaid
 sequenceDiagram
     participant p0 as reply
-    participant p1 as Reply
+
     Note over p0: GET /bench
-    p0->>p1: Reply(id=7, message=”hello”)
-    p1-->>p0: Reply
+    p0->>p0: Reply(id=7, message=”hello”) · construct value
+    p0-->>p0: Reply result: Reply
     Note over p0: Return Reply(id=7, message=”hello”)； required cleanup<br/>runs before exit
     Note over p0: HTTP result follows declared response and error mapping；<br/>unhandled request failure returns 500
 ```

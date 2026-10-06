@@ -15,26 +15,6 @@ outline: [2, 3]
 [Project overview](../../../../../diagrams/index.md) · [Compiled explanation](api.md)
 
 
-::: details Call relationships
-
-```mermaid
-flowchart TD
-    n0["_add"]
-    n1["_download"]
-    n2["_open"]
-    n3["_upload"]
-    n4["add"]
-    n5["download"]
-    n6["openDevice"]
-    n7["upload"]
-    n4 -->|"calls"| n0
-    n5 -->|"calls"| n1
-    n6 -->|"calls"| n2
-    n7 -->|"calls"| n3
-```
-
-:::
-
 ## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
@@ -88,11 +68,11 @@ Native implementation; only the declared contract is known. [Explanation](api.md
 ```mermaid
 sequenceDiagram
     participant p0 as openDevice
-    participant p1 as _open
+
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _open() · native boundary
-    p1-->>p0: Device
+    p0->>p0: _open() · native boundary
+    p0-->>p0: _open result: Device
     Note over p0: Return _open()； required cleanup runs before exit
     Note over p0: Leave unsafe scope
     end
@@ -108,11 +88,11 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as upload
-    participant p1 as _upload
+
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _upload(device=device, values=values) · native boundary
-    p1-->>p0: Buffer
+    p0->>p0: _upload(device=device, values=values) · native boundary
+    p0-->>p0: _upload result: Buffer
     Note over p0: Return _upload(device, values)； required cleanup runs<br/>before exit
     Note over p0: Leave unsafe scope
     end
@@ -128,11 +108,11 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as add
-    participant p1 as _add
+
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _add(left=left, right=right) · native boundary
-    p1-->>p0: Buffer
+    p0->>p0: _add(left=left, right=right) · native boundary
+    p0-->>p0: _add result: Buffer
     Note over p0: Return _add(left, right)； required cleanup runs before<br/>exit
     Note over p0: Leave unsafe scope
     end
@@ -148,11 +128,11 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as download
-    participant p1 as _download
+
     rect rgb(245, 240, 241)
     Note over p0: Enter unsafe scope
-    p0->>p1: _download(buffer=buffer) · native boundary
-    p1-->>p0: List‹float›
+    p0->>p0: _download(buffer=buffer) · native boundary
+    p0-->>p0: _download result: List‹float›
     Note over p0: Return _download(buffer)； required cleanup runs before<br/>exit
     Note over p0: Leave unsafe scope
     end

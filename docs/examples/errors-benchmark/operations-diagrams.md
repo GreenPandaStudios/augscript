@@ -28,9 +28,10 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ```mermaid
 sequenceDiagram
     participant p0 as validate
-    participant p1 as FileError
+
     alt value - (value / 16) * 16 == 0
-    p0->>p1: FileError()
+    p0->>p0: FileError()
+    p0-->>p0: FileError result: FileError
     Note over p0: Raise checked failure FileError()； required cleanup runs<br/>before exit
     end
     Note over p0: Return value； required cleanup runs before exit

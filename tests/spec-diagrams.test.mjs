@@ -204,7 +204,8 @@ copy(Positive original) returns Positive unless Invalid { return original with(v
  const page=diagrams(checked).find(o=>o.path===join(root,'objects.aug.diagrams.md'));
  await validMermaid([page]);assert.match(page.text,/Set \\_value to 1/);
  const section=page.text.split('### copy\n')[1].split('## Called contracts')[0];
- assert.match(section,/Positive constructor/);assert.match(section,/Construct Positive from copied fields/);
+ assert.doesNotMatch(section,/participant.*Positive constructor/);assert.match(section,/Construct Positive from original with value=0/);
+ assert.match(section,/p0-->>p0: Positive result: Positive/);
  assert.ok(section.indexOf('Construct Positive')<section.indexOf('Return'));
 }));
 test('repeated targets count continuation notes inside the sequence step limit',()=>project({
@@ -371,4 +372,132 @@ test('short-circuit frames contain conditional calls and omit pure comparison no
  const sequence=page.text.split('### check\n')[1];
  assert.match(sequence,/alt value ‹ 0 or value › 10/);assert.doesNotMatch(sequence,/opt Left is false/);
  assert.match(sequence,/opt Left is true\n\s+p0->>p\d+: flag\(\)/);
+}));
+
+
+test('nested value operations keep concise lifelines, generic results and one evaluation',()=>project({
+ 'main.aug':'import load from data\ntry { value = load(); print(value) } catch JsonError error { pass }\n',
+ 'data.aug':'record Value(int count)\nmake() returns Json { return Json(value=Value(count=7)) }\nload() returns int { decoded = make().decode<Value>(); return decoded.count }\n',
+},async(root,checked)=>{
+ const page=diagrams(checked).find(output=>output.path===join(root,'data.aug.diagrams.md'));await validMermaid([page]);
+ const section=page.text.split('### load\n')[1].split('## Called contracts')[0];
+ assert.equal((section.match(/: make\(/g)??[]).length,1);
+ assert.match(section,/p0->>p0: make result.decode‹Value›\(\)/);
+ assert.match(section,/p0-->>p0: decoded: Value/);
+ assert.doesNotMatch(section,/participant .*make\(\)/);
+}));
+test('sequence splits keep each direct call beside its returned data',()=>project({
+ 'main.aug':'import run from work\nprint(value=run())\n',
+ 'work.aug':'read(int value) returns int { return value }\nrun() returns int {\n'+Array.from({length:30},(_,i)=>' value'+i+' = read(value='+i+')\n').join('')+' return value29\n}\n',
+},async(root,checked)=>{
+ const output=diagrams(checked).find(output=>output.path===join(root,'work.aug.diagrams.md'));await validMermaid([output]);
+ const section=output.text.split('### run\n')[1];
+ for(const match of section.matchAll(/```mermaid\n([\s\S]*?)\n```/g)){
+  const lines=match[1].split('\n');
+  for(let i=0;i<lines.length;i++)if(/p0->>p0: read\(/.test(lines[i]))assert.match(lines[i+1],/p0-->>p0: value\d+: int/);
+  assert.ok((match[1].match(/^    participant /gm)??[]).length<=6);
+ }
+ assert.match(section,/Sequence 1 of \d+\n/);assert.doesNotMatch(section,/Sequence 1 of \d+ \(continued\)/);
+}));
+
+
+test('class views merge duplicate field dependencies and omit disconnected values',()=>project({
+ 'main.aug':'import Consumer and Fixed from objects\nconsumer = Consumer(reader=Fixed())\nprint(value=consumer.read())\n',
+ 'objects.aug':'interface Reader { read() returns int }\nFixed() implements Reader { read() returns int { return 7 } }\nConsumer(Reader reader) implements Reader { read() returns int { return reader.read() } }\nUnused() implements Error {}\n',
+},async(root,checked)=>{
+ const page=diagrams(checked).find(output=>output.path===join(root,'objects.aug.diagrams.md'));await validMermaid([page]);
+ const view=page.text.split('## Class interactions\n')[1].split('## Sequences')[0];
+ assert.doesNotMatch(view,/Unused/);assert.match(view,/calls read/);assert.match(view,/holds reader/);
+ for(const match of view.matchAll(/```mermaid\n([\s\S]*?)\n```/g)){
+  const pairs=[...match[1].matchAll(/(n\d+) -->(?:.*?) (n\d+)/g)].map(edge=>edge[1]+'>'+edge[2]);
+  assert.equal(new Set(pairs).size,pairs.length,'one relationship arrow per pair');
+ }
+}));
+
+
+test('scalar computation and empty branches keep control frames readable',()=>project({
+ 'main.aug':`index = 0
+state = 1
+while index < 4 {
+    state = state * 3 + index
+    index = index + 1
+}
+if state > 0 {} else { print(value=state) }
+`,
+},async(root,checked)=>{
+ const page=diagrams(checked).find(output=>output.path===join(root,'main.aug.diagrams.md')).text;
+ assert.match(page,/Note over p0: Set index to 0/);
+ assert.doesNotMatch(page,/Set index =/);
+ assert.match(page,/loop While index ‹ 4\n\s+Note over p0: Set state to state \* 3 \+ index/);
+ assert.match(page,/Note over p0: Set index to index \+ 1/);
+ assert.match(page,/alt state › 0\n\s+Note over p0: No operations in this branch\n\s+else otherwise/);
+ for(const diagram of page.matchAll(/```mermaid\n([\s\S]*?)\n```/g))assert.doesNotMatch(diagram[1],/\n\s*(?:loop|alt|opt) [^\n]+\n\s*(?:end|else)/);
+ await validMermaid(diagrams(checked));
+}));
+
+
+test('a calculated assignment names the already evaluated call result',()=>project({
+ 'values.aug':'increment(int value) returns int { return value + 1 }\n',
+ 'main.aug':`import increment from values
+checksum = 0
+checksum = checksum + increment(value=4)
+print(value=checksum)
+`,
+},(root,checked)=>{
+ const page=diagrams(checked).find(output=>output.path===join(root,'main.aug.diagrams.md')).text;
+ assert.match(page,/increment\(value=4\)/);
+ assert.match(page,/Set checksum to checksum \+ increment result/);
+ assert.equal((page.match(/: increment\(value=4\)/g)??[]).length,1);
+}));
+
+
+test('repeated generation preserves checked collection order and grouped values',()=>project({
+ 'main.aug':'import run from probe\nprint(value=run())\n',
+ 'probe.aug':`get(int value) returns int { return value }
+run() returns int {
+    size = [get(value=1), get(value=2)].length()
+    b = get(value=3) + (get(value=4) * 2)
+    c = (get(value=5) + get(value=6)) * 2
+    return b + c + size
+}
+`,
+},(root,checked)=>{
+ const first=generateSpecs(checked),second=generateSpecs(checked);
+ assert.deepEqual(second,first,'Presentation must not mutate the checked tree or reorder evaluations');
+ const page=first.find(output=>output.path===join(root,'probe.aug.diagrams.md')).text;
+ assert.ok(page.indexOf(': get(value=1)')<page.indexOf(': get(value=2)'));
+ assert.match(page,/Set b to get result 3 \+ get result 4 \* 2/);
+ assert.match(page,/Set c to \(get result 5 \+ get result 6\) \* 2/);
+}));
+
+test('builtin errors and record copies are local values with typed results',()=>project({
+ 'main.aug':`import Row from rules
+original = Row(value=1)
+copied = original with(value=2)
+try { throw ConversionError() } catch ConversionError error { print(value=copied.value) }
+`,
+ 'rules.aug':'record Row(int value)\n',
+},(root,checked)=>{
+ const page=diagrams(checked).find(output=>output.path===join(root,'main.aug.diagrams.md')).text;
+ assert.doesNotMatch(page,/participant p[1-9].*Row|participant p[1-9].*ConversionError/);
+ assert.match(page,/p0-->>p0: copied: Row/);
+ assert.match(page,/Construct Row from original with value=2/);
+ assert.doesNotMatch(page,/Set copied to copied/);
+ assert.match(page,/p0->>p0: ConversionError\(\)/);
+}));
+
+
+test('opening a branch at a split keeps all rendered steps inside the budget',()=>project({
+ 'main.aug':Array.from({length:24},()=> 'print(value=1)').join('\n')+'\nif true { if true { print(value=2) } }\n',
+},async(root,checked)=>{
+ const outputs=diagrams(checked),page=outputs.find(output=>output.path===join(root,'main.aug.diagrams.md')).text;
+ const chunks=[...page.matchAll(/```mermaid\n(sequenceDiagram[\s\S]*?)\n```/g)];
+ assert.equal(chunks.length,2);
+ for(const chunk of chunks){
+   const steps=chunk[1].split('\n').filter(line=>/Note over|->>|-->>|^-\)/.test(line));
+   assert.ok(steps.length<=24,chunk[1]);
+   assert.doesNotMatch(chunk[1],/\n\s*(?:loop|alt|opt) [^\n]+\n\s*end/);
+ }
+ assert.doesNotMatch(chunks[0][1],/alt true/);
+ await validMermaid(outputs);
 }));

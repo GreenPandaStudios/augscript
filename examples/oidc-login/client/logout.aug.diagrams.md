@@ -6,8 +6,12 @@
 
 ## Class interactions
 
+### logout
+
+#### View 1 of 2
+
 ```mermaid
-flowchart TD
+flowchart LR
     n0["logout"]
     n1["authenticate"]
     n2["securityHeaders"]
@@ -15,46 +19,25 @@ flowchart TD
     n4["SigningKeys"]
     n5["settings"]
     n6["ExpiringStore"]
-    n7["Crypto"]
-    n8["Clock"]
     n0 -->|"calls"| n1
     n0 -->|"calls"| n2
     n0 -->|"calls"| n3
     n0 -->|"depends on"| n4
     n0 -->|"calls"| n5
-    n0 -->|"calls"| n6
-    n0 -->|"depends on"| n6
-    n0 -->|"calls"| n7
-    n0 -->|"depends on"| n7
-    n0 -->|"calls"| n8
-    n0 -->|"depends on"| n8
+    n0 -->|"calls take； depends on"| n6
 ```
 
-<details>
-<summary>Call relationships</summary>
+#### View 2 of 2
 
 ```mermaid
-flowchart TD
-    n0["SessionError"]
-    n1["logout"]
-    n2["authenticate"]
-    n3["securityHeaders"]
-    n4["withCookie"]
-    n5["settings"]
-    n6["ExpiringStore.take"]
-    n7["Crypto.equal"]
-    n8["Clock.now"]
-    n1 -->|"calls"| n0
-    n1 -->|"calls"| n2
-    n1 -->|"calls"| n3
-    n1 -->|"calls"| n4
-    n1 -->|"calls"| n5
-    n1 -->|"calls"| n6
-    n1 -->|"calls"| n7
-    n1 -->|"calls"| n8
+flowchart LR
+    n0["logout"]
+    n1["Crypto"]
+    n2["Clock"]
+    n0 -->|"calls equal； depends on"| n1
+    n0 -->|"calls now； depends on"| n2
 ```
 
-</details>
 
 ## Sequences
 
@@ -66,49 +49,41 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](logout.aug#L10)
 
-#### Sequence 1 of 2 (continued)
+#### Sequence 1 of 2
 
 ```mermaid
 sequenceDiagram
     participant p0 as logout
     participant p1 as common/settings
-    participant p2 as SessionError
-    participant p3 as client/session
-    participant p4 as input.csrf.bytes
-    participant p5 as session.csrf.bytes
-    participant p6 as crypto: Crypto
-    participant p7 as clock: Clock
-    participant p8 as sessions: ExpiringStore
-    participant p9 as common/headers
-    participant p10 as securityHeaders().with
+    participant p2 as client/session
+    participant p3 as crypto: Crypto
+    participant p4 as clock: Clock
+    participant p5 as sessions: ExpiringStore
     Note over p0: POST /logout
     p0->>p1: settings()
     p1-->>p0: config: Settings
     alt origin != config.baseUrl
-    p0->>p2: SessionError()
-    p2-->>p0: SessionError
+    p0->>p0: SessionError() · construct value
+    p0-->>p0: SessionError result: SessionError
     Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
     end
-    p0->>p3: authenticate(token=token)
-    p3-->>p0: session: SessionClaims
-    p0->>p4: input.csrf.bytes()
-    p0->>p5: session.csrf.bytes()
-    p0->>p6: equal(left=input.csrf.bytes(),<br/>right=session.csrf.bytes()) · interface dispatch
-    p6-->>p0: bool
+    p0->>p2: authenticate(token=token)
+    p2-->>p0: session: SessionClaims
+    p0->>p0: input.csrf.bytes()
+    p0-->>p0: bytes result: Bytes
+    p0->>p0: session.csrf.bytes()
+    p0-->>p0: bytes result 2: Bytes
+    p0->>p3: equal(left=bytes result, right=bytes result 2) ·<br/>interface dispatch
+    p3-->>p0: equal result: bool
     alt not crypto.equal(left=input.csrf.bytes(), right=session.csrf.bytes())
-    p0->>p2: SessionError()
-    p2-->>p0: SessionError
+    p0->>p0: SessionError() · construct value
+    p0-->>p0: SessionError result 2: SessionError
     Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
     end
-    p0->>p7: now() · interface dispatch
-    p7-->>p0: int
-    p0->>p8: take(key=session.jti, now=clock.now()) · interface<br/>dispatch
-    p8-->>p0: optional SessionClaims
-    p0->>p9: securityHeaders()
-    p9-->>p0: Headers
-    p0->>p10: securityHeaders().with(name=”location”, value=”/”)
-    p0->>p9: withCookie(headers=securityHeaders().with(name=”location”,<br/>value=”/”), name=”aug_session”, value=””, path=”/”,<br/>maxAge…
-    p9-->>p0: headers: Headers
+    p0->>p4: now() · interface dispatch
+    p4-->>p0: now result: int
+    p0->>p5: take(key=session.jti, now=now result) · interface<br/>dispatch
+    p5-->>p0: take result: optional SessionClaims
 ```
 
 #### Sequence 2 of 2 (continued)
@@ -116,9 +91,16 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as logout
-    participant p1 as HttpResponse
+    participant p1 as common/headers
     Note over p0: Sequence continued from the previous view
-    p0->>p1: HttpResponse(body=‹p›Signed out.‹/p›, status=303,<br/>headers=headers)
+    p0->>p1: securityHeaders()
+    p1-->>p0: securityHeaders result: Headers
+    p0->>p0: securityHeaders result.with(name=”location”, value=”/”)
+    p0-->>p0: with result: Headers
+    p0->>p1: withCookie(headers=with result, name=”aug_session”,<br/>value=””, path=”/”, maxAge=0,<br/>secure=config.secureCookies)
+    p1-->>p0: headers: Headers
+    p0->>p0: HttpResponse(body=‹p›Signed out.‹/p›, status=303,<br/>headers=headers)
+    p0-->>p0: HttpResponse result: HttpResponse‹Html›
     Note over p0: Return HttpResponse(body=‹p›Signed out.‹/p›, status=303,<br/>headers=headers)； required cleanup runs before exit
     Note over p0: May leave with checked errors: CryptoError, HttpError,<br/>KeyError, SessionError, TimeError
     Note over p0: HTTP result follows declared response and error mapping；<br/>unhandled request failure returns 500

@@ -13,25 +13,6 @@ flowchart TD
     n0 -->|"calls"| n1
 ```
 
-<details>
-<summary>Call relationships</summary>
-
-```mermaid
-flowchart TD
-    n0["asciiSlice"]
-    n1["CivilDate"]
-    n2["_daysInMonth"]
-    n3["_pad"]
-    n4["formatCivilDate"]
-    n5["parseCivilDate"]
-    n1 -->|"calls"| n2
-    n4 -->|"calls"| n3
-    n5 -->|"calls"| n0
-    n5 -->|"calls"| n1
-```
-
-</details>
-
 ## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
@@ -45,19 +26,20 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ```mermaid
 sequenceDiagram
     participant p0 as CivilDate constructor
-    participant p1 as ConversionError
-    participant p2 as _daysInMonth
+
     Note over p0: Receive fields: year, month, day
     alt year ‹ 1 or year › 9999 or month ‹ 1 or month › 12
-    p0->>p1: ConversionError()
+    p0->>p0: ConversionError()
+    p0-->>p0: ConversionError result: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
     opt Left is false
-    p0->>p2: _daysInMonth(year=year, month=month)
-    p2-->>p0: int
+    p0->>p0: _daysInMonth(year=year, month=month)
+    p0-->>p0: _daysInMonth result: int
     end
     alt day ‹ 1 or day › _daysInMonth(year, month)
-    p0->>p1: ConversionError()
+    p0->>p0: ConversionError()
+    p0-->>p0: ConversionError result 2: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
 ```
@@ -90,57 +72,44 @@ sequenceDiagram
 
 [Source](dates.aug#L29)
 
-#### Sequence 1 of 2 (continued)
+#### Sequence 1 of 2
 
 ```mermaid
 sequenceDiagram
     participant p0 as parseCivilDate
-    participant p1 as text.byteLength
-    participant p2 as ConversionError
-    participant p3 as text.bytes
-    participant p4 as august/values/ascii
-    participant p5 as year.isDecimal
-    participant p6 as month.isDecimal
-    participant p7 as day.isDecimal
-    participant p8 as year.parseInteger
-    participant p9 as month.parseInteger
-    participant p10 as day.parseInteger
-    p0->>p1: text.byteLength()
+    participant p1 as august/values/ascii
+    p0->>p0: text.byteLength()
+    p0-->>p0: byteLength result: int
     alt text.byteLength() != 10
-    p0->>p2: ConversionError()
+    p0->>p0: ConversionError()
+    p0-->>p0: ConversionError result: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
-    p0->>p3: text.bytes()
-    p0->>p4: asciiSlice(input=bytes, start=0, end=4)
-    p4-->>p0: year: string
-    p0->>p4: asciiSlice(input=bytes, start=5, end=7)
-    p4-->>p0: month: string
-    p0->>p4: asciiSlice(input=bytes, start=8, end=10)
-    p4-->>p0: day: string
-    p0->>p4: asciiSlice(input=bytes, start=4, end=5)
-    p4-->>p0: string
+    p0->>p0: text.bytes()
+    p0-->>p0: bytes: Bytes
+    p0->>p1: asciiSlice(input=bytes, start=0, end=4)
+    p1-->>p0: year: string
+    p0->>p1: asciiSlice(input=bytes, start=5, end=7)
+    p1-->>p0: month: string
+    p0->>p1: asciiSlice(input=bytes, start=8, end=10)
+    p1-->>p0: day: string
+    p0->>p1: asciiSlice(input=bytes, start=4, end=5)
+    p1-->>p0: asciiSlice result 4: string
     opt Left is false
-    p0->>p4: asciiSlice(input=bytes, start=7, end=8)
-    p4-->>p0: string
+    p0->>p1: asciiSlice(input=bytes, start=7, end=8)
+    p1-->>p0: asciiSlice result 5: string
     end
     alt asciiSlice(input=bytes, start=4, end=5) != ”-” or asciiSlice(input=bytes, start=7, end=8) != ”-”
-    p0->>p2: ConversionError()
+    p0->>p0: ConversionError()
+    p0-->>p0: ConversionError result 2: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
-    p0->>p5: year.isDecimal()
+    p0->>p0: year.isDecimal()
+    p0-->>p0: isDecimal result: bool
     opt Left is false
-    p0->>p6: month.isDecimal()
+    p0->>p0: month.isDecimal()
+    p0-->>p0: isDecimal result 2: bool
     end
-    opt Left is false
-    p0->>p7: day.isDecimal()
-    end
-    alt not year.isDecimal() or not month.isDecimal() or not day.isDecimal()
-    p0->>p2: ConversionError()
-    Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
-    end
-    p0->>p8: year.parseInteger()
-    p0->>p9: month.parseInteger()
-    p0->>p10: day.parseInteger()
 ```
 
 #### Sequence 2 of 2 (continued)
@@ -148,10 +117,25 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as parseCivilDate
-    participant p1 as CivilDate
+
+    opt Left is false
     Note over p0: Sequence continued from the previous view
-    p0->>p1: CivilDate(year=year.parseInteger(),<br/>month=month.parseInteger(), day=day.parseInteger())
-    p1-->>p0: CivilDate
+    p0->>p0: day.isDecimal()
+    p0-->>p0: isDecimal result 3: bool
+    end
+    alt not year.isDecimal() or not month.isDecimal() or not day.isDecimal()
+    p0->>p0: ConversionError()
+    p0-->>p0: ConversionError result 3: ConversionError
+    Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
+    end
+    p0->>p0: year.parseInteger()
+    p0-->>p0: parseInteger result: int
+    p0->>p0: month.parseInteger()
+    p0-->>p0: parseInteger result 2: int
+    p0->>p0: day.parseInteger()
+    p0-->>p0: parseInteger result 3: int
+    p0->>p0: CivilDate(year=parseInteger result, month=parseInteger<br/>result 2, day=parseInteger result 3) · construct value
+    p0-->>p0: CivilDate result: CivilDate
     Note over p0: Return CivilDate(year=year.parseInteger(),<br/>month=month.parseInteger(), day=day.parseInteger())；<br/>required cleanup runs…
     Note over p0: May leave with checked errors: ConversionError
 ```
@@ -165,13 +149,13 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as formatCivilDate
-    participant p1 as _pad
-    p0->>p1: _pad(value=value.year, width=4)
-    p1-->>p0: string
-    p0->>p1: _pad(value=value.month, width=2)
-    p1-->>p0: string
-    p0->>p1: _pad(value=value.day, width=2)
-    p1-->>p0: string
+
+    p0->>p0: _pad(value=value.year, width=4)
+    p0-->>p0: _pad result: string
+    p0->>p0: _pad(value=value.month, width=2)
+    p0-->>p0: _pad result 2: string
+    p0->>p0: _pad(value=value.day, width=2)
+    p0-->>p0: _pad result 3: string
     Note over p0: Return _pad(value=value.year, width=4) + ”-” +<br/>_pad(value=value.month, width=2) + ”-” +<br/>_pad(value=value.day, width=2…
 ```
 
@@ -184,9 +168,12 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as _pad
-    participant p1 as text.byteLength
+
+    Note over p0: Set text to $”｛value｝”
     loop While text.byteLength() ‹ width
-    p0->>p1: text.byteLength()
+    p0->>p0: text.byteLength()
+    p0-->>p0: byteLength result: int
+    Note over p0: Set text to ”0” + text
     end
     Note over p0: Return text； required cleanup runs before exit
 ```

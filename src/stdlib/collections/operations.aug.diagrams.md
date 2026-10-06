@@ -6,66 +6,96 @@
 
 ## Class interactions
 
+### IntegerOrder
+
 ```mermaid
-flowchart TD
+flowchart LR
+    n0["Comparator"]
+    n1["IntegerOrder"]
+    n1 -->|"implements"| n0
+```
+
+### TextOrder
+
+```mermaid
+flowchart LR
+    n0["Comparator"]
+    n1["TextOrder"]
+    n1 -->|"implements"| n0
+```
+
+### aggregate
+
+```mermaid
+flowchart LR
     n0["Aggregator"]
-    n1["Comparator"]
-    n2["IntegerOrder"]
-    n3["Predicate"]
-    n4["TextOrder"]
-    n5["Transformation"]
-    n6["aggregate"]
-    n7["filter"]
-    n8["find"]
-    n9["remove"]
-    n10["sort"]
-    n11["sortIntegers"]
-    n12["sortText"]
-    n13["transform"]
-    n2 -->|"implements"| n1
-    n4 -->|"implements"| n1
-    n6 -->|"calls"| n0
-    n7 -->|"calls"| n3
-    n8 -->|"calls"| n3
-    n9 -->|"calls"| n3
-    n10 -->|"calls"| n1
-    n11 -->|"calls"| n2
-    n12 -->|"calls"| n4
-    n13 -->|"calls"| n5
+    n1["aggregate"]
+    n1 -->|"calls combine"| n0
 ```
 
-<details>
-<summary>Call relationships</summary>
+### filter
 
 ```mermaid
-flowchart TD
-    n0["Aggregator.combine"]
-    n1["Comparator.compare"]
-    n2["IntegerOrder"]
-    n3["Predicate.accepts"]
-    n4["TextOrder"]
-    n5["Transformation.apply"]
-    n6["aggregate"]
-    n7["filter"]
-    n8["find"]
-    n9["remove"]
-    n10["sort"]
-    n11["sortIntegers"]
-    n12["sortText"]
-    n13["transform"]
-    n6 -->|"calls"| n0
-    n7 -->|"calls"| n3
-    n8 -->|"calls"| n3
-    n9 -->|"calls"| n3
-    n10 -->|"calls"| n1
-    n11 -->|"calls"| n2
-    n11 -->|"calls"| n10
-    n12 -->|"calls"| n4
-    n12 -->|"calls"| n10
-    n13 -->|"calls"| n5
+flowchart LR
+    n0["Predicate"]
+    n1["filter"]
+    n1 -->|"calls accepts"| n0
 ```
 
-</details>
+### find
+
+```mermaid
+flowchart LR
+    n0["Predicate"]
+    n1["find"]
+    n1 -->|"calls accepts"| n0
+```
+
+### remove
+
+```mermaid
+flowchart LR
+    n0["Predicate"]
+    n1["remove"]
+    n1 -->|"calls accepts"| n0
+```
+
+### sort
+
+```mermaid
+flowchart LR
+    n0["Comparator"]
+    n1["sort"]
+    n1 -->|"calls compare"| n0
+```
+
+### sortIntegers
+
+```mermaid
+flowchart LR
+    n0["IntegerOrder"]
+    n1["sortIntegers"]
+    n1 -->|"calls"| n0
+```
+
+### sortText
+
+```mermaid
+flowchart LR
+    n0["TextOrder"]
+    n1["sortText"]
+    n1 -->|"calls"| n0
+```
+
+### transform
+
+```mermaid
+flowchart LR
+    n0["Transformation"]
+    n1["transform"]
+    n1 -->|"calls apply"| n0
+```
+
 
 ## Sequences
 
@@ -113,14 +143,14 @@ Interface contract; implementation selected at runtime. [Explanation](operations
 sequenceDiagram
     participant p0 as filter
     participant p1 as predicate: Predicate
-    participant p2 as selected.append
+    Note over p0: Set selected to ［］
     loop For each item in values
     p0->>p1: accepts(value=value) · interface dispatch
-    p1-->>p0: bool
+    p1-->>p0: accepts result: bool
     alt predicate.accepts(value)
     rect rgb(245, 240, 241)
     Note over p0: Enter borrow scope
-    p0->>p2: selected.append(input 1=value)
+    p0->>p0: selected.append(value=value)
     Note over p0: Leave borrow scope
     end
     end
@@ -138,13 +168,13 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as transform
     participant p1 as transformation: Transformation
-    participant p2 as transformed.append
+    Note over p0: Set transformed to ［］
     loop For each item in values
     p0->>p1: apply(value=value) · interface dispatch
     p1-->>p0: result: U
     rect rgb(245, 240, 241)
     Note over p0: Enter borrow scope
-    p0->>p2: transformed.append(value=result)
+    p0->>p0: transformed.append(value=result)
     Note over p0: Leave borrow scope
     end
     end
@@ -161,6 +191,7 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as aggregate
     participant p1 as aggregator: Aggregator
+    Note over p0: Set total to initial
     loop For each item in values
     p0->>p1: combine(total=total, value=value) · interface dispatch
     p1-->>p0: total: U
@@ -178,14 +209,14 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as remove
     participant p1 as predicate: Predicate
-    participant p2 as remaining.append
+    Note over p0: Set remaining to ［］
     loop For each item in values
     p0->>p1: accepts(value=value) · interface dispatch
-    p1-->>p0: bool
+    p1-->>p0: accepts result: bool
     alt not predicate.accepts(value)
     rect rgb(245, 240, 241)
     Note over p0: Enter borrow scope
-    p0->>p2: remaining.append(input 1=value)
+    p0->>p0: remaining.append(value=value)
     Note over p0: Leave borrow scope
     end
     end
@@ -205,7 +236,7 @@ sequenceDiagram
     participant p1 as predicate: Predicate
     loop For each item in values
     p0->>p1: accepts(value=value) · interface dispatch
-    p1-->>p0: bool
+    p1-->>p0: accepts result: bool
     alt predicate.accepts(value)
     Note over p0: Return value； required cleanup runs before exit
     end
@@ -219,66 +250,104 @@ sequenceDiagram
 
 [Source](operations.aug#L71)
 
+#### Sequence 1 of 2
+
 ```mermaid
 sequenceDiagram
     participant p0 as sort
-    participant p1 as ordered.append
-    participant p2 as ordered.length
-    participant p3 as ordered.get
-    participant p4 as comparator: Comparator
-    participant p5 as merged.append
+    participant p1 as comparator: Comparator
+    Note over p0: Set ordered to ［］
     loop For each item in values
     rect rgb(245, 240, 241)
     Note over p0: Enter borrow scope
-    p0->>p1: ordered.append(input 1=value)
+    p0->>p0: ordered.append(value=value)
     Note over p0: Leave borrow scope
     end
     end
-    p0->>p2: ordered.length()
+    p0->>p0: ordered.length()
+    p0-->>p0: length: int
+    Note over p0: Set width to 1
     loop While width ‹ length
+    Note over p0: Set merged to ［］
+    Note over p0: Set start to 0
     loop While start ‹ length
+    Note over p0: Set middle to length
     alt width ‹ length - start
+    Note over p0: Set middle to start + width
     end
+    Note over p0: Set end to length
     alt width ‹ length - middle
+    Note over p0: Set end to middle + width
     end
+    Note over p0: Set left to start
+    Note over p0: Set right to middle
     loop While left ‹ middle and right ‹ end
-    p0->>p3: ordered.get(index=left)
-    p0->>p3: ordered.get(index=right)
-    p0->>p4: compare(left=earlier, right=later) · interface dispatch
-    p4-->>p0: int
+    p0->>p0: ordered.get(index=left)
+    p0-->>p0: earlier: T
+    p0->>p0: ordered.get(index=right)
+    p0-->>p0: later: T
+    p0->>p1: compare(left=earlier, right=later) · interface dispatch
+    p1-->>p0: compare result: int
     alt comparator.compare(left=earlier, right=later) ‹= 0
     rect rgb(245, 240, 241)
     Note over p0: Enter borrow scope
-    p0->>p5: merged.append(value=earlier)
+    p0->>p0: merged.append(value=earlier)
     Note over p0: Leave borrow scope
     end
+    end
+    end
+    end
+    end
+```
+
+#### Sequence 2 of 2 (continued)
+
+```mermaid
+sequenceDiagram
+    participant p0 as sort
+
+    loop While width ‹ length
+    loop While start ‹ length
+    loop While left ‹ middle and right ‹ end
+    alt comparator.compare(left=earlier, right=later) ‹= 0
+    Note over p0: Sequence continued from the previous view
+    Note over p0: Set left to left + 1
     else otherwise
     rect rgb(245, 240, 241)
     Note over p0: Enter borrow scope
-    p0->>p5: merged.append(value=later)
+    p0->>p0: merged.append(value=later)
     Note over p0: Leave borrow scope
     end
+    Note over p0: Set right to right + 1
     end
     end
     loop While left ‹ middle
-    p0->>p3: ordered.get(index=left)
+    p0->>p0: ordered.get(index=left)
+    p0-->>p0: value: T
     rect rgb(245, 240, 241)
     Note over p0: Enter borrow scope
-    p0->>p5: merged.append(input 1=value)
+    p0->>p0: merged.append(value=value)
     Note over p0: Leave borrow scope
     end
+    Note over p0: Set left to left + 1
     end
     loop While right ‹ end
-    p0->>p3: ordered.get(index=right)
+    p0->>p0: ordered.get(index=right)
+    p0-->>p0: value: T
     rect rgb(245, 240, 241)
     Note over p0: Enter borrow scope
-    p0->>p5: merged.append(input 1=value)
+    p0->>p0: merged.append(value=value)
     Note over p0: Leave borrow scope
     end
+    Note over p0: Set right to right + 1
     end
+    Note over p0: Set start to end
     end
+    Note over p0: Set ordered to merged
     alt width ›= length - width
+    Note over p0: Set width to length
     else otherwise
+    Note over p0: Set width to width + width
     end
     end
     Note over p0: Return ordered； required cleanup runs before exit
@@ -329,8 +398,9 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant p0 as TextOrder.compare
-    participant p1 as left.compare
-    p0->>p1: left.compare(other=right)
+
+    p0->>p0: left.compare(other=right)
+    p0-->>p0: compare result: int
     Note over p0: Return left.compare(other=right)； required cleanup runs<br/>before exit
 ```
 
@@ -344,11 +414,10 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as sortIntegers
     participant p1 as IntegerOrder
-    participant p2 as sort
     p0->>p1: IntegerOrder()
-    p1-->>p0: IntegerOrder
-    p0->>p2: sort(values=values, comparator=IntegerOrder())
-    p2-->>p0: List‹int›
+    p1-->>p0: IntegerOrder result: IntegerOrder
+    p0->>p0: sort(values=values, comparator=IntegerOrder result)
+    p0-->>p0: sort result: List‹int›
     Note over p0: Return sort(values, comparator=IntegerOrder())； required<br/>cleanup runs before exit
     Note over p0: May leave with checked errors: IndexError
 ```
@@ -363,11 +432,10 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as sortText
     participant p1 as TextOrder
-    participant p2 as sort
     p0->>p1: TextOrder()
-    p1-->>p0: TextOrder
-    p0->>p2: sort(values=values, comparator=TextOrder())
-    p2-->>p0: List‹string›
+    p1-->>p0: TextOrder result: TextOrder
+    p0->>p0: sort(values=values, comparator=TextOrder result)
+    p0-->>p0: sort result: List‹string›
     Note over p0: Return sort(values, comparator=TextOrder())； required<br/>cleanup runs before exit
     Note over p0: May leave with checked errors: IndexError
 ```

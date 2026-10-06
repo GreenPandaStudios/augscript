@@ -28,7 +28,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ```mermaid
 sequenceDiagram
     participant p0 as Startup
-    participant p1 as print
+    participant p1 as August runtime
     p0->>p1: print(value=7)
 ```
 

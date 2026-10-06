@@ -10,22 +10,8 @@
 flowchart TD
     n0["Transformation"]
     n1["_mapWorkerChunk"]
-    n1 -->|"selects concrete transformation"| n0
+    n1 -->|"calls apply"| n0
 ```
-
-<details>
-<summary>Call relationships</summary>
-
-```mermaid
-flowchart TD
-    n0["Transformation.apply"]
-    n1["_mapWorkerChunk"]
-    n2["mapWorkers"]
-    n1 -->|"selects concrete transformation"| n0
-    n2 -->|"specializes worker entry"| n1
-```
-
-</details>
 
 ## Sequences
 
@@ -37,59 +23,81 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](workers.aug#L15)
 
+#### Sequence 1 of 2
+
 ```mermaid
 sequenceDiagram
     participant p0 as mapWorkers
-    participant p1 as values.length
-    participant p2 as ConversionError
-    participant p3 as snapshot.append
-    participant p4 as chunk.length
-    participant p5 as snapshot.get
-    participant p6 as chunk.append
-    participant p7 as wave.append
-    participant p8 as Specialized chunk worker
-    participant p9 as results.append
-    p0->>p1: values.length()
+
+    p0->>p0: values.length()
+    p0-->>p0: length: int
     alt concurrency ‹ 1 or concurrency › 64 or chunkSize ‹ 1 or chunkSize › 65536 or length › 1048576
-    p0->>p2: ConversionError()
+    p0->>p0: ConversionError()
+    p0-->>p0: ConversionError result: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
+    Note over p0: Set snapshot to ［］
     loop For each item in values
     rect rgb(245, 240, 241)
     Note over p0: Enter borrow scope
-    p0->>p3: snapshot.append(input 1=value)
+    p0->>p0: snapshot.append(value=value)
     Note over p0: Leave borrow scope
     end
     end
+    Note over p0: Set results to ［］
+    Note over p0: Set offset to 0
+    loop While offset ‹ length
+    Note over p0: Set wave to ［］
+    Note over p0: Set count to 0
+    loop While count ‹ concurrency and offset ‹ length
+    Note over p0: Set chunk to ［］
+    loop While chunk.length() ‹ chunkSize and offset ‹ length
+    p0->>p0: chunk.length()
+    p0-->>p0: length result 2: int
+    p0->>p0: snapshot.get(index=offset)
+    p0-->>p0: value: T
+    rect rgb(245, 240, 241)
+    Note over p0: Enter borrow scope
+    p0->>p0: chunk.append(value=value)
+    Note over p0: Leave borrow scope
+    end
+    Note over p0: Set offset to offset + 1
+    end
+    rect rgb(245, 240, 241)
+    Note over p0: Enter borrow scope
+    p0->>p0: wave.append(value=chunk)
+    end
+    end
+    end
+```
+
+#### Sequence 2 of 2 (continued)
+
+```mermaid
+sequenceDiagram
+    participant p0 as mapWorkers
+    participant p1 as Specialized chunk worker
     loop While offset ‹ length
     loop While count ‹ concurrency and offset ‹ length
-    loop While chunk.length() ‹ chunkSize and offset ‹ length
-    p0->>p4: chunk.length()
-    p0->>p5: snapshot.get(index=offset)
     rect rgb(245, 240, 241)
-    Note over p0: Enter borrow scope
-    p0->>p6: chunk.append(input 1=value)
+    Note over p0: Sequence continued from the previous view
     Note over p0: Leave borrow scope
     end
-    end
-    rect rgb(245, 240, 241)
-    Note over p0: Enter borrow scope
-    p0->>p7: wave.append(value=chunk)
-    Note over p0: Leave borrow scope
-    end
+    Note over p0: Set count to count + 1
     end
     rect rgb(245, 240, 241)
     Note over p0: Enter task scope
     loop Each selected item
-    p0-)p8: Copy chunk to an isolated heap · start asynchronously
+    p0-)p1: Copy chunk to an isolated heap · start asynchronously
     Note over p0: Compile-time selected transformation becomes a direct<br/>call； only chunk data crosses the heap boundary
     end
+    Note over p0: Set jobs to ［start worker _mapWorkerChunk(values=chunk,<br/>transformation) for chunk in wave］
     Note over p0: Wait for jobs； failure cancels siblings and cleanup<br/>joins
     loop For each item in completed
     loop For each item in chunk
     rect rgb(245, 240, 241)
     Note over p0: Enter borrow scope
-    p0->>p9: results.append(input 1=value)
+    p0->>p0: results.append(value=value)
     Note over p0: Leave borrow scope
     end
     end
@@ -98,6 +106,7 @@ sequenceDiagram
     end
     end
     loop Each selected item
+    Note over p0: No operations in this branch
     end
     Note over p0: Return ［value for value in results］； required cleanup<br/>runs before exit
     Note over p0: May leave with checked errors: ConcurrencyError,<br/>ConversionError, IndexError
@@ -113,12 +122,12 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as _mapWorkerChunk
     participant p1 as Selected transformation
-    participant p2 as results.append
+    Note over p0: Set results to ［］
     loop For each item in values
     p0->>p1: Direct call with value； target selected at compile time
     rect rgb(245, 240, 241)
     Note over p0: Enter borrow scope
-    p0->>p2: results.append(value=transformed)
+    p0->>p0: results.append(value=transformed)
     Note over p0: Leave borrow scope
     end
     end

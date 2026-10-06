@@ -18,14 +18,19 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ```mermaid
 sequenceDiagram
     participant p0 as Startup
-    participant p1 as values.append
-    participant p2 as print
+    participant p1 as August runtime
+    Note over p0: Set iterations to 100000
+    Note over p0: Set values to ［］
     Note over p0: Own values； release on scope exits
+    Note over p0: Set index to 0
     loop While index ‹ iterations
-    p0->>p1: values.append(value=index * 3)
+    p0->>p0: values.append(value=index * 3)
+    Note over p0: Set index to index + 1
     end
+    Note over p0: Set checksum to 0
     loop For each item in values
+    Note over p0: Set checksum to checksum + value
     end
-    p0->>p2: print(value=checksum)
+    p0->>p1: print(value=checksum)
 ```
 

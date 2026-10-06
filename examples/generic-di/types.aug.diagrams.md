@@ -15,26 +15,10 @@ flowchart TD
     n4["Repository"]
     n1 -->|"depends on"| n0
     n2 -->|"implements"| n4
-    n3 -->|"calls"| n0
-    n3 -->|"depends on"| n0
+    n3 -->|"calls write； depends on"| n0
     n3 -->|"implements"| n1
-    n3 -->|"calls"| n4
-    n3 -->|"depends on repository"| n4
+    n3 -->|"calls get； depends on repository"| n4
 ```
-
-<details>
-<summary>Call relationships</summary>
-
-```mermaid
-flowchart TD
-    n0["Console.write"]
-    n1["Program.start"]
-    n2["Repository.get"]
-    n1 -->|"calls"| n0
-    n1 -->|"calls"| n2
-```
-
-</details>
 
 ## Sequences
 
@@ -84,8 +68,8 @@ sequenceDiagram
     participant p1 as repository: Repository
     participant p2 as console: Console
     p0->>p1: get() · interface dispatch
-    p1-->>p0: int
-    p0->>p2: write(value=repository.get()) · interface dispatch
+    p1-->>p0: get result: int
+    p0->>p2: write(value=get result) · interface dispatch
 ```
 
 <a id="sequence-IProgram.start"></a>

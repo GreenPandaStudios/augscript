@@ -5,18 +5,6 @@
 [Project overview](.aug-spec/diagrams/index.md) · [Compiled explanation](main.aug.md)
 
 
-<details>
-<summary>Call relationships</summary>
-
-```mermaid
-flowchart TD
-    n0["initializeKeys"]
-    n1["main.aug"]
-    n1 -->|"calls"| n0
-```
-
-</details>
-
 ## Sequences
 
 Call arrows identify checked targets; loop and branch frames determine when they run. Open that target’s module to follow its implementation. Branches describe alternatives; loops describe repeated work. Native calls and interface dispatch stop at their declared contracts. Exit notes end that path; enclosing recovery and cleanup remain visible.
@@ -31,18 +19,17 @@ Call arrows identify checked targets; loop and branch frames determine when they
 sequenceDiagram
     participant p0 as Startup
     participant p1 as common/keys
-    participant p2 as print
-    participant p3 as exit
+    participant p2 as August runtime
     opt Try body； stops on a checked failure
     p0->>p1: initializeKeys()
     end
     opt Catch CryptoError
     p0->>p2: print(value=”Cryptographic initialization failed”)
-    p0->>p3: exit(status=1)
+    p0->>p2: exit(status=1)
     end
     opt Catch KeyError
     p0->>p2: print(value=”Signing keys could not be initialized”)
-    p0->>p3: exit(status=1)
+    p0->>p2: exit(status=1)
     end
     Note over p0: Serve endpoints: home, me, logout, startLogin,<br/>loginCallback, discovery, jwks, authorize,<br/>providerLogin, token, userinfo
 ```

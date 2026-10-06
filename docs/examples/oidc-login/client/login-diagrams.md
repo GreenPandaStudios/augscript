@@ -16,126 +16,89 @@ outline: [2, 3]
 
 ## Class interactions
 
+### loginCallback
+
+#### View 1 of 3
+
 ```mermaid
-flowchart TD
+flowchart LR
     n0["loginCallback"]
-    n1["startLogin"]
-    n2["discover"]
-    n3["responseJson"]
-    n4["validateIdentity"]
-    n5["securityHeaders"]
-    n6["withCookie"]
-    n7["SigningKeys"]
-    n8["settings"]
-    n9["ExpiringStore"]
-    n10["HttpClient"]
-    n11["urlEncode"]
-    n12["Crypto"]
-    n13["signJwt"]
-    n14["Clock"]
+    n1["discover"]
+    n2["responseJson"]
+    n3["validateIdentity"]
+    n4["securityHeaders"]
+    n5["withCookie"]
+    n6["SigningKeys"]
+    n0 -->|"calls"| n1
     n0 -->|"calls"| n2
     n0 -->|"calls"| n3
     n0 -->|"calls"| n4
     n0 -->|"calls"| n5
-    n0 -->|"calls"| n6
-    n0 -->|"calls"| n7
-    n0 -->|"depends on"| n7
-    n0 -->|"calls"| n8
-    n0 -->|"calls"| n9
-    n0 -->|"depends on"| n9
-    n0 -->|"calls"| n10
-    n0 -->|"depends on"| n10
-    n0 -->|"calls"| n11
-    n0 -->|"calls"| n12
-    n0 -->|"depends on"| n12
-    n0 -->|"calls"| n13
-    n0 -->|"calls"| n14
-    n0 -->|"depends on"| n14
-    n1 -->|"calls"| n2
-    n1 -->|"calls"| n5
-    n1 -->|"calls"| n6
-    n1 -->|"calls"| n8
-    n1 -->|"calls"| n9
-    n1 -->|"depends on"| n9
-    n1 -->|"depends on"| n10
-    n1 -->|"calls"| n11
-    n1 -->|"calls"| n12
-    n1 -->|"depends on"| n12
-    n1 -->|"calls"| n14
-    n1 -->|"depends on"| n14
+    n0 -->|"calls session； depends on"| n6
 ```
 
-::: details Call relationships
+#### View 2 of 3
+
+```mermaid
+flowchart LR
+    n0["loginCallback"]
+    n1["settings"]
+    n2["ExpiringStore"]
+    n3["HttpClient"]
+    n4["urlEncode"]
+    n5["Crypto"]
+    n6["signJwt"]
+    n0 -->|"calls"| n1
+    n0 -->|"calls put； calls take； depends on"| n2
+    n0 -->|"calls request； depends on"| n3
+    n0 -->|"calls"| n4
+    n0 -->|"calls equal； calls random； depends on"| n5
+    n0 -->|"calls"| n6
+```
+
+#### View 3 of 3
+
+```mermaid
+flowchart LR
+    n0["loginCallback"]
+    n1["Clock"]
+    n0 -->|"calls now； depends on"| n1
+```
+
+### startLogin
 
 #### View 1 of 2
 
 ```mermaid
-flowchart TD
-    n0["SessionClaims"]
-    n1["SessionError"]
-    n2["loginCallback"]
-    n3["discover"]
-    n4["responseJson"]
-    n5["validateIdentity"]
-    n6["securityHeaders"]
-    n7["withCookie"]
-    n8["SigningKeys.session"]
-    n9["settings"]
-    n10["ExpiringStore.put"]
-    n11["ExpiringStore.take"]
-    n12["HttpClient.request"]
-    n13["urlEncode"]
-    n14["Crypto.equal"]
-    n15["Crypto.random"]
-    n16["signJwt"]
-    n17["Clock.now"]
-    n2 -->|"calls"| n0
-    n2 -->|"calls"| n1
-    n2 -->|"calls"| n3
-    n2 -->|"calls"| n4
-    n2 -->|"calls"| n5
-    n2 -->|"calls"| n6
-    n2 -->|"calls"| n7
-    n2 -->|"calls"| n8
-    n2 -->|"calls"| n9
-    n2 -->|"calls"| n10
-    n2 -->|"calls"| n11
-    n2 -->|"calls"| n12
-    n2 -->|"calls"| n13
-    n2 -->|"calls"| n14
-    n2 -->|"calls"| n15
-    n2 -->|"calls"| n16
-    n2 -->|"calls"| n17
+flowchart LR
+    n0["startLogin"]
+    n1["discover"]
+    n2["securityHeaders"]
+    n3["withCookie"]
+    n4["settings"]
+    n5["ExpiringStore"]
+    n6["HttpClient"]
+    n0 -->|"calls"| n1
+    n0 -->|"calls"| n2
+    n0 -->|"calls"| n3
+    n0 -->|"calls"| n4
+    n0 -->|"calls put； depends on"| n5
+    n0 -->|"depends on"| n6
 ```
 
 #### View 2 of 2
 
 ```mermaid
-flowchart TD
-    n0["LoginTransaction"]
-    n1["startLogin"]
-    n2["discover"]
-    n3["securityHeaders"]
-    n4["withCookie"]
-    n5["settings"]
-    n6["ExpiringStore.put"]
-    n7["urlEncode"]
-    n8["Crypto.random"]
-    n9["Crypto.sha256"]
-    n10["Clock.now"]
-    n1 -->|"calls"| n0
-    n1 -->|"calls"| n2
-    n1 -->|"calls"| n3
-    n1 -->|"calls"| n4
-    n1 -->|"calls"| n5
-    n1 -->|"calls"| n6
-    n1 -->|"calls"| n7
-    n1 -->|"calls"| n8
-    n1 -->|"calls"| n9
-    n1 -->|"calls"| n10
+flowchart LR
+    n0["startLogin"]
+    n1["urlEncode"]
+    n2["Crypto"]
+    n3["Clock"]
+    n0 -->|"calls"| n1
+    n0 -->|"calls random； calls sha256； depends on"| n2
+    n0 -->|"calls now； depends on"| n3
 ```
 
-:::
 
 ## Sequences
 
@@ -147,7 +110,7 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](login.md#source-L12)
 :::
 
-#### Sequence 1 of 2 (continued)
+#### Sequence 1 of 3
 
 ```mermaid
 sequenceDiagram
@@ -155,69 +118,81 @@ sequenceDiagram
     participant p1 as common/settings
     participant p2 as client/protocol
     participant p3 as crypto: Crypto
-    participant p4 as crypto.random(size=32).base64url
-    participant p5 as clock: Clock
-    participant p6 as LoginTransaction
-    participant p7 as transactions: ExpiringStore
+    participant p4 as clock: Clock
     Note over p0: GET /login/start
     p0->>p1: settings()
     p1-->>p0: config: Settings
     p0->>p2: discover()
     p2-->>p0: document: Discovery
     p0->>p3: random(size=32) · interface dispatch
-    p3-->>p0: Bytes
-    p0->>p4: crypto.random(size=32).base64url()
+    p3-->>p0: random result: Bytes
+    p0->>p0: random result.base64url()
+    p0-->>p0: browser: string
     p0->>p3: random(size=32) · interface dispatch
-    p3-->>p0: Bytes
-    p0->>p4: crypto.random(size=32).base64url()
+    p3-->>p0: random result 2: Bytes
+    p0->>p0: random result 2.base64url()
+    p0-->>p0: state: string
     p0->>p3: random(size=32) · interface dispatch
-    p3-->>p0: Bytes
-    p0->>p4: crypto.random(size=32).base64url()
+    p3-->>p0: random result 3: Bytes
+    p0->>p0: random result 3.base64url()
+    p0-->>p0: nonce: string
     p0->>p3: random(size=32) · interface dispatch
-    p3-->>p0: Bytes
-    p0->>p4: crypto.random(size=32).base64url()
-    p0->>p5: now() · interface dispatch
-    p5-->>p0: int
-    p0->>p6: LoginTransaction(state=state, nonce=nonce,<br/>verifier=verifier, expires=clock.now() + 300)
-    p6-->>p0: transaction: LoginTransaction
-    p0->>p5: now() · interface dispatch
-    p5-->>p0: int
-    p0->>p7: put(key=browser, value=transaction,<br/>expires=transaction.expires, now=clock.now()) ·<br/>interface dispatch
+    p3-->>p0: random result 4: Bytes
+    p0->>p0: random result 4.base64url()
+    p0-->>p0: verifier: string
+    p0->>p4: now() · interface dispatch
+    p4-->>p0: now result: int
 ```
 
-#### Sequence 2 of 2 (continued)
+#### Sequence 2 of 3 (continued)
 
 ```mermaid
 sequenceDiagram
     participant p0 as startLogin
-    participant p1 as verifier.bytes
-    participant p2 as crypto: Crypto
-    participant p3 as crypto.sha256(input=verifier.bytes()).base64url
-    participant p4 as @git/url_897efafd565158fc4908/contracts
-    participant p5 as common/headers
-    participant p6 as securityHeaders().with
-    participant p7 as HttpResponse
+    participant p1 as clock: Clock
+    participant p2 as transactions: ExpiringStore
+    participant p3 as crypto: Crypto
+    participant p4 as web/contracts
     Note over p0: Sequence continued from the previous view
-    p0->>p1: verifier.bytes()
-    p0->>p2: sha256(input=verifier.bytes()) · interface dispatch
-    p2-->>p0: Bytes
-    p0->>p3: crypto.sha256(input=verifier.bytes()).base64url()
+    p0->>p0: LoginTransaction(state=state, nonce=nonce,<br/>verifier=verifier, expires=now result + 300) · construct<br/>value
+    p0-->>p0: transaction: LoginTransaction
+    p0->>p1: now() · interface dispatch
+    p1-->>p0: now result 2: int
+    p0->>p2: put(key=browser, value=transaction,<br/>expires=transaction.expires, now=now result 2) ·<br/>interface dispatch
+    p0->>p0: verifier.bytes()
+    p0-->>p0: bytes result: Bytes
+    p0->>p3: sha256(input=bytes result) · interface dispatch
+    p3-->>p0: sha256 result: Bytes
+    p0->>p0: sha256 result.base64url()
+    p0-->>p0: challenge: string
     p0->>p4: urlEncode(input=config.clientId)
-    p4-->>p0: string
+    p4-->>p0: urlEncode result: string
     p0->>p4: urlEncode(input=config.callback)
-    p4-->>p0: string
+    p4-->>p0: urlEncode result 2: string
     p0->>p4: urlEncode(input=state)
-    p4-->>p0: string
+    p4-->>p0: urlEncode result 3: string
     p0->>p4: urlEncode(input=nonce)
-    p4-->>p0: string
+    p4-->>p0: urlEncode result 4: string
     p0->>p4: urlEncode(input=challenge)
-    p4-->>p0: string
-    p0->>p5: securityHeaders()
-    p5-->>p0: Headers
-    p0->>p6: securityHeaders().with(name=”location”, value=location)
-    p0->>p5: withCookie(headers=securityHeaders().with(name=”location”,<br/>value=location), name=”aug_login”, value=browser,<br/>path=”/l…
-    p5-->>p0: headers: Headers
-    p0->>p7: HttpResponse(body=‹p›Opening the identity provider.‹/p›,<br/>status=303, headers=headers)
+    p4-->>p0: urlEncode result 5: string
+    Note over p0: Set location to document.authorization_endpoint +<br/>”?response_type=code＆client_id=” + urlEncode result +<br/>”＆redirect_ur…
+```
+
+#### Sequence 3 of 3 (continued)
+
+```mermaid
+sequenceDiagram
+    participant p0 as startLogin
+    participant p1 as common/headers
+    Note over p0: Sequence continued from the previous view
+    p0->>p1: securityHeaders()
+    p1-->>p0: securityHeaders result: Headers
+    p0->>p0: securityHeaders result.with(name=”location”,<br/>value=location)
+    p0-->>p0: with result: Headers
+    p0->>p1: withCookie(headers=with result, name=”aug_login”,<br/>value=browser, path=”/login”, maxAge=300,<br/>secure=config.secureCookies)
+    p1-->>p0: headers: Headers
+    p0->>p0: HttpResponse(body=‹p›Opening the identity provider.‹/p›,<br/>status=303, headers=headers)
+    p0-->>p0: HttpResponse result: HttpResponse‹Html›
     Note over p0: Return HttpResponse(body=‹p›Opening the identity<br/>provider.‹/p›, status=303, headers=headers)； required<br/>cleanup runs b…
     Note over p0: May leave with checked errors: CryptoError, HttpError,<br/>SessionError, StoreFull, TimeError
     Note over p0: HTTP result follows declared response and error mapping；<br/>unhandled request failure returns 500
@@ -229,197 +204,201 @@ sequenceDiagram
 [Source](login.md#source-L27)
 :::
 
-#### Sequence 1 of 4 (continued)
+#### Sequence 1 of 5
 
 ```mermaid
 sequenceDiagram
     participant p0 as loginCallback
-    participant p1 as code.isToken
-    participant p2 as state.isToken
-    participant p3 as SessionError
-    participant p4 as clock: Clock
-    participant p5 as transactions: ExpiringStore
-    participant p6 as transaction.state.bytes
-    participant p7 as state.bytes
-    participant p8 as crypto: Crypto
-    participant p9 as common/settings
+    participant p1 as clock: Clock
+    participant p2 as transactions: ExpiringStore
+    participant p3 as crypto: Crypto
     Note over p0: GET /login/callback
-    p0->>p1: code.isToken(min=43, max=43)
+    p0->>p0: code.isToken(min=43, max=43)
+    p0-->>p0: isToken result: bool
     opt Left is false
-    p0->>p2: state.isToken(min=43, max=43)
+    p0->>p0: state.isToken(min=43, max=43)
+    p0-->>p0: isToken result 2: bool
     end
     alt not code.isToken(min=43, max=43)) or (not state.isToken(min=43, max=43)
-    p0->>p3: SessionError()
-    p3-->>p0: SessionError
+    p0->>p0: SessionError() · construct value
+    p0-->>p0: SessionError result: SessionError
     Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
     end
     alt Match when null:
-    p0->>p3: SessionError()
-    p3-->>p0: SessionError
+    p0->>p0: SessionError() · construct value
+    p0-->>p0: SessionError result 2: SessionError
     Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
     else Match when some secret:
-    p0->>p4: now() · interface dispatch
-    p4-->>p0: int
-    p0->>p5: take(key=secret, now=clock.now()) · interface dispatch
-    p5-->>p0: optional LoginTransaction
+    p0->>p1: now() · interface dispatch
+    p1-->>p0: now result: int
+    p0->>p2: take(key=secret, now=now result) · interface dispatch
+    p2-->>p0: take result: optional LoginTransaction
     alt Match when null:
-    p0->>p3: SessionError()
-    p3-->>p0: SessionError
+    p0->>p0: SessionError() · construct value
+    p0-->>p0: SessionError result 3: SessionError
     Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
     else Match when some transaction:
-    p0->>p6: transaction.state.bytes()
-    p0->>p7: state.bytes()
-    p0->>p8: equal(left=transaction.state.bytes(),<br/>right=state.bytes()) · interface dispatch
-    p8-->>p0: bool
-    alt not crypto.equal(left=transaction.state.bytes(), right=state.bytes())
-    p0->>p3: SessionError()
-    p3-->>p0: SessionError
-    Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
-    end
-    p0->>p9: settings()
+    p0->>p0: transaction.state.bytes()
+    p0-->>p0: bytes result: Bytes
+    p0->>p0: state.bytes()
+    p0-->>p0: bytes result 2: Bytes
+    p0->>p3: equal(left=bytes result, right=bytes result 2) ·<br/>interface dispatch
+    p3-->>p0: equal result: bool
     end
     end
 ```
 
-#### Sequence 2 of 4 (continued)
+#### Sequence 2 of 5 (continued)
 
 ```mermaid
 sequenceDiagram
     participant p0 as loginCallback
     participant p1 as common/settings
     participant p2 as client/protocol
-    participant p3 as @git/url_897efafd565158fc4908/contracts
-    participant p4 as Headers
-    participant p5 as Headers().with
-    participant p6 as body.bytes
-    participant p7 as client: HttpClient
-    participant p8 as responseJson(response=client.request(method=”POST”, url=document.token_endpoint, headers, body=body.bytes())).decode
-    participant p9 as tokens.access_token.isToken
-    participant p10 as SessionError
-    alt Match when null:
-    else Match when some secret:
-    alt Match when null:
-    else Match when some transaction:
+    participant p3 as web/contracts
+    alt Continuing Match when some secret:
+    alt Continuing Match when some transaction:
+    alt not crypto.equal(left=transaction.state.bytes(), right=state.bytes())
     Note over p0: Sequence continued from the previous view
+    p0->>p0: SessionError() · construct value
+    p0-->>p0: SessionError result 4: SessionError
+    Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
+    end
+    p0->>p1: settings()
     p1-->>p0: config: Settings
     p0->>p2: discover()
     p2-->>p0: document: Discovery
     p0->>p3: urlEncode(input=code)
-    p3-->>p0: string
+    p3-->>p0: urlEncode result: string
     p0->>p3: urlEncode(input=config.callback)
-    p3-->>p0: string
+    p3-->>p0: urlEncode result 2: string
     p0->>p3: urlEncode(input=config.clientId)
-    p3-->>p0: string
+    p3-->>p0: urlEncode result 3: string
     p0->>p3: urlEncode(input=transaction.verifier)
-    p3-->>p0: string
-    p0->>p4: Headers()
-    p0->>p5: Headers().with(name=”content-type”,<br/>value=”application/x-www-form-urlencoded”)
-    p0->>p6: body.bytes()
-    p0->>p7: request(method=”POST”, url=document.token_endpoint,<br/>headers=headers, body=body.bytes()) · interface dispatch
-    p7-->>p0: HttpResponse‹Bytes›
-    p0->>p2: responseJson(response=client.request(method=”POST”,<br/>url=document.token_endpoint, headers,<br/>body=body.bytes()))
-    p2-->>p0: Json
-    p0->>p8: responseJson(response=client.request(method=”POST”,<br/>url=document.token_endpoint, headers,<br/>body=body.bytes())).decode()
-    opt Left is false
-    p0->>p9: tokens.access_token.isToken(min=43, max=43)
-    end
-    alt tokens.token_type != ”Bearer” or (not tokens.access_token.isToken(min=43, max=43)) or tokens.expires_in ‹= 0
-    p0->>p10: SessionError()
-    p10-->>p0: SessionError
-    Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
-    end
+    p3-->>p0: urlEncode result 4: string
+    Note over p0: Set body to ”grant_type=authorization_code＆code=” +<br/>urlEncode result + ”＆redirect_uri=” + urlEncode result 2<br/>+ ”＆clie…
+    p0->>p0: Headers()
+    p0-->>p0: Headers result: Headers
+    p0->>p0: Headers result.with(name=”content-type”,<br/>value=”application/x-www-form-urlencoded”)
+    p0-->>p0: headers: Headers
+    p0->>p0: body.bytes()
+    p0-->>p0: bytes result 3: Bytes
     end
     end
 ```
 
-#### Sequence 3 of 4 (continued)
+#### Sequence 3 of 5 (continued)
 
 ```mermaid
 sequenceDiagram
     participant p0 as loginCallback
     participant p1 as client: HttpClient
     participant p2 as client/protocol
-    participant p3 as responseJson(response=client.request(method=”GET”, url=document.jwks_uri)).decode
-    participant p4 as clock: Clock
-    participant p5 as Headers
-    participant p6 as Headers().with
-    participant p7 as responseJson(response=client.request(method=”GET”, url=document.userinfo_endpoint, headers=authHeaders)).decode
-    participant p8 as SessionError
-    participant p9 as crypto: Crypto
-    alt Match when null:
-    else Match when some secret:
-    alt Match when null:
-    else Match when some transaction:
+    participant p3 as clock: Clock
+    alt Continuing Match when some secret:
+    alt Continuing Match when some transaction:
     Note over p0: Sequence continued from the previous view
-    p0->>p1: request(method=”GET”, url=document.jwks_uri) · interface<br/>dispatch
-    p1-->>p0: HttpResponse‹Bytes›
-    p0->>p2: responseJson(response=client.request(method=”GET”,<br/>url=document.jwks_uri))
-    p2-->>p0: Json
-    p0->>p3: responseJson(response=client.request(method=”GET”,<br/>url=document.jwks_uri)).decode()
-    p0->>p4: now() · interface dispatch
-    p4-->>p0: int
-    p0->>p2: validateIdentity(token=tokens.id_token,<br/>nonce=transaction.nonce, now=clock.now(), jwks=jwks)
-    p2-->>p0: identity: IdClaims
-    p0->>p5: Headers()
-    p0->>p6: Headers().with(name=”authorization”, value=”Bearer ” +<br/>tokens.access_token)
-    p0->>p1: request(method=”GET”, url=document.userinfo_endpoint,<br/>headers=authHeaders) · interface dispatch
-    p1-->>p0: HttpResponse‹Bytes›
-    p0->>p2: responseJson(response=client.request(method=”GET”,<br/>url=document.userinfo_endpoint, headers=authHeaders))
-    p2-->>p0: Json
-    p0->>p7: responseJson(response=client.request(method=”GET”,<br/>url=document.userinfo_endpoint,<br/>headers=authHeaders)).decode()
-    alt user.sub != identity.sub
-    p0->>p8: SessionError()
-    p8-->>p0: SessionError
+    p0->>p1: request(method=”POST”, url=document.token_endpoint,<br/>headers=headers, body=bytes result 3) · interface<br/>dispatch
+    p1-->>p0: request result: HttpResponse‹Bytes›
+    p0->>p2: responseJson(response=request result)
+    p2-->>p0: responseJson result: Json
+    p0->>p0: responseJson result.decode‹TokenResponse›()
+    p0-->>p0: tokens: TokenResponse
+    opt Left is false
+    p0->>p0: tokens.access_token.isToken(min=43, max=43)
+    p0-->>p0: isToken result 3: bool
+    end
+    alt tokens.token_type != ”Bearer” or (not tokens.access_token.isToken(min=43, max=43)) or tokens.expires_in ‹= 0
+    p0->>p0: SessionError() · construct value
+    p0-->>p0: SessionError result 5: SessionError
     Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
     end
-    p0->>p4: now() · interface dispatch
-    p4-->>p0: now: int
-    p0->>p9: random(size=32) · interface dispatch
-    p9-->>p0: Bytes
+    p0->>p1: request(method=”GET”, url=document.jwks_uri) · interface<br/>dispatch
+    p1-->>p0: request result 2: HttpResponse‹Bytes›
+    p0->>p2: responseJson(response=request result 2)
+    p2-->>p0: responseJson result 2: Json
+    p0->>p0: responseJson result 2.decode‹RsaJwks›()
+    p0-->>p0: jwks: RsaJwks
+    p0->>p3: now() · interface dispatch
+    p3-->>p0: now result 2: int
+    p0->>p2: validateIdentity(token=tokens.id_token,<br/>nonce=transaction.nonce, now=now result 2, jwks=jwks)
+    p2-->>p0: identity: IdClaims
+    p0->>p0: Headers()
+    p0-->>p0: Headers result 2: Headers
     end
     end
 ```
 
-#### Sequence 4 of 4 (continued)
+#### Sequence 4 of 5 (continued)
 
 ```mermaid
 sequenceDiagram
     participant p0 as loginCallback
-    participant p1 as crypto.random(size=32).base64url
-    participant p2 as crypto: Crypto
-    participant p3 as SessionClaims
-    participant p4 as keys: SigningKeys
-    participant p5 as Json
-    participant p6 as @git/url_9ef654c66d34ab8f5527/jose
-    participant p7 as sessions: ExpiringStore
-    participant p8 as common/headers
-    participant p9 as securityHeaders().with
-    participant p10 as HttpResponse
-    alt Match when null:
-    else Match when some secret:
-    alt Match when null:
-    else Match when some transaction:
+    participant p1 as client: HttpClient
+    participant p2 as client/protocol
+    participant p3 as clock: Clock
+    participant p4 as crypto: Crypto
+    alt Continuing Match when some secret:
+    alt Continuing Match when some transaction:
     Note over p0: Sequence continued from the previous view
-    p0->>p1: crypto.random(size=32).base64url()
-    p0->>p2: random(size=32) · interface dispatch
-    p2-->>p0: Bytes
-    p0->>p1: crypto.random(size=32).base64url()
-    p0->>p3: SessionClaims(iss=config.baseUrl + ”/app”,<br/>sub=identity.sub, aud=”august-app”, exp=now +<br/>config.sessionSeconds, iat=n…
-    p3-->>p0: session: SessionClaims
-    p0->>p4: session() · interface dispatch
-    p4-->>p0: RsaPrivateKey
-    p0->>p5: Json(value=session)
-    p0->>p6: signJwt(key=keys.session(), claims=Json(value=session),<br/>kid=”session-1”, tokenType=”august-session+jwt”)
-    p6-->>p0: jwt: string
-    p0->>p7: put(key=session.jti, value=session, expires=session.exp,<br/>now=now) · interface dispatch
-    p0->>p8: securityHeaders()
-    p8-->>p0: Headers
-    p0->>p9: securityHeaders().with(name=”location”, value=”/”)
-    p0->>p8: withCookie(headers=securityHeaders().with(name=”location”,<br/>value=”/”), name=”aug_session”, value=jwt, path=”/”,<br/>maxAg…
-    p8-->>p0: responseHeaders: Headers
-    p0->>p8: withCookie(headers=responseHeaders, name=”aug_login”,<br/>value=””, path=”/login”, maxAge=0,<br/>secure=config.secureCookies)
-    p8-->>p0: responseHeaders: Headers
-    p0->>p10: HttpResponse(body=‹p›Signed in.‹/p›, status=303,<br/>headers=responseHeaders)
+    p0->>p0: Headers result 2.with(name=”authorization”,<br/>value=”Bearer ” + tokens.access_token)
+    p0-->>p0: authHeaders: Headers
+    p0->>p1: request(method=”GET”, url=document.userinfo_endpoint,<br/>headers=authHeaders) · interface dispatch
+    p1-->>p0: request result 3: HttpResponse‹Bytes›
+    p0->>p2: responseJson(response=request result 3)
+    p2-->>p0: responseJson result 3: Json
+    p0->>p0: responseJson result 3.decode‹UserInfo›()
+    p0-->>p0: user: UserInfo
+    alt user.sub != identity.sub
+    p0->>p0: SessionError() · construct value
+    p0-->>p0: SessionError result 6: SessionError
+    Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
+    end
+    p0->>p3: now() · interface dispatch
+    p3-->>p0: now: int
+    p0->>p4: random(size=32) · interface dispatch
+    p4-->>p0: random result: Bytes
+    p0->>p0: random result.base64url()
+    p0-->>p0: base64url result: string
+    p0->>p4: random(size=32) · interface dispatch
+    p4-->>p0: random result 2: Bytes
+    p0->>p0: random result 2.base64url()
+    p0-->>p0: base64url result 2: string
+    p0->>p0: SessionClaims(iss=config.baseUrl + ”/app”,<br/>sub=identity.sub, aud=”august-app”, exp=now +<br/>config.sessionSeconds, iat=n…
+    p0-->>p0: session: SessionClaims
+    end
+    end
+```
+
+#### Sequence 5 of 5 (continued)
+
+```mermaid
+sequenceDiagram
+    participant p0 as loginCallback
+    participant p1 as keys: SigningKeys
+    participant p2 as crypto/jose
+    participant p3 as sessions: ExpiringStore
+    participant p4 as common/headers
+    alt Continuing Match when some secret:
+    alt Continuing Match when some transaction:
+    Note over p0: Sequence continued from the previous view
+    p0->>p1: session() · interface dispatch
+    p1-->>p0: session result: RsaPrivateKey
+    p0->>p0: Json(value=session)
+    p0-->>p0: Json result: Json
+    p0->>p2: signJwt(key=session result, claims=Json result,<br/>kid=”session-1”, tokenType=”august-session+jwt”)
+    p2-->>p0: jwt: string
+    p0->>p3: put(key=session.jti, value=session, expires=session.exp,<br/>now=now) · interface dispatch
+    p0->>p4: securityHeaders()
+    p4-->>p0: securityHeaders result: Headers
+    p0->>p0: securityHeaders result.with(name=”location”, value=”/”)
+    p0-->>p0: with result 3: Headers
+    p0->>p4: withCookie(headers=with result 3, name=”aug_session”,<br/>value=jwt, path=”/”, maxAge=config.sessionSeconds,<br/>secure=confi…
+    p4-->>p0: responseHeaders: Headers
+    p0->>p4: withCookie(headers=responseHeaders, name=”aug_login”,<br/>value=””, path=”/login”, maxAge=0,<br/>secure=config.secureCookies)
+    p4-->>p0: responseHeaders: Headers
+    p0->>p0: HttpResponse(body=‹p›Signed in.‹/p›, status=303,<br/>headers=responseHeaders)
+    p0-->>p0: HttpResponse result: HttpResponse‹Html›
     Note over p0: Return HttpResponse(body=‹p›Signed in.‹/p›, status=303,<br/>headers=responseHeaders)； required cleanup runs before<br/>exit
     end
     end

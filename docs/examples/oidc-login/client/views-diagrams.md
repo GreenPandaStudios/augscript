@@ -15,20 +15,7 @@ outline: [2, 3]
 [Project overview](../diagrams/index.md) · [Compiled explanation](views.md)
 
 
-::: details Call relationships
-
-```mermaid
-flowchart TD
-    n0["logout"]
-    n1["LoginPage"]
-    n2["Welcome"]
-    n3["Page"]
-    n1 -->|"calls"| n3
-    n2 -->|"defers HTTP call to"| n0
-    n2 -->|"calls"| n3
-```
-
-:::
+A browser action defers HTTP call to its handler until submission.
 
 ## Sequences
 
@@ -45,7 +32,7 @@ sequenceDiagram
     participant p0 as LoginPage
     participant p1 as common/views
     p0->>p1: Page(title=”Sign in”, children=‹Page title=”Sign in”›<br/>‹p›This August app is both an OpenID Connect provider<br/>and a log…
-    p1-->>p0: Html
+    p1-->>p0: Page result: Html
     Note over p0: Return ‹Page title=”Sign in”› ‹p›This August app is both<br/>an OpenID Connect provider and a login client.‹/p› ‹p›‹a<br/>hre…
 ```
 
@@ -61,7 +48,7 @@ sequenceDiagram
     participant p1 as common/views
     Note over p0: Create browser action for POST /logout； called on<br/>submission
     p0->>p1: Page(title=”Welcome, ” + session.name, children=‹Page<br/>title=｛”Welcome, ” + session.name｝› ‹p›You are signed in<br/>as ‹st…
-    p1-->>p0: Html
+    p1-->>p0: Page result: Html
     Note over p0: Return ‹Page title=｛”Welcome, ” + session.name｝› ‹p›You<br/>are signed in as ‹strong›｛session.name｝‹/strong›.‹/p›<br/>‹p›Subj…
     Note over p0: May leave with checked errors: HttpError
 ```
