@@ -1,15 +1,18 @@
 import DefaultTheme from 'vitepress/theme';
-import {inBrowser, onContentUpdated, type Theme} from 'vitepress';
+import {inBrowser, onContentUpdated, useData, type Theme} from 'vitepress';
 import {onBeforeUnmount, onMounted} from 'vue';
 import './style.css';
 import BenchmarkChart from './BenchmarkChart.vue';
 import CodeDiagram from './CodeDiagram.vue';
+import {createDiagramNavigation} from './diagram-navigation';
 
 export default {
   extends: DefaultTheme,
   enhanceApp({app}) { app.component('BenchmarkChart', BenchmarkChart); app.component('CodeDiagram',CodeDiagram); },
   setup() {
     if (!inBrowser) return;
+    const {site}=useData();
+    let diagramNavigation:ReturnType<typeof createDiagramNavigation>|undefined;
     const key = 'august-example-block-style';
     let preferred = 'Indentation';
     try { if (localStorage.getItem(key) === 'Braces') preferred = 'Braces'; } catch {}
@@ -66,8 +69,8 @@ export default {
       try { localStorage.setItem(key, preferred); } catch {}
       apply();sourceChanged();
     };
-    onContentUpdated(()=>{apply();sourceChanged();});
-    onMounted(() => { apply();sourceChanged();document.addEventListener('change', changed);window.addEventListener('hashchange',sourceChanged); });
-    onBeforeUnmount(() => {document.removeEventListener('change', changed);window.removeEventListener('hashchange',sourceChanged);});
+    onContentUpdated(()=>{apply();sourceChanged();diagramNavigation?.select();});
+    onMounted(() => { diagramNavigation=createDiagramNavigation(window,document,()=>site.value.scrollOffset);apply();sourceChanged();document.addEventListener('change', changed);window.addEventListener('hashchange',sourceChanged); });
+    onBeforeUnmount(() => {diagramNavigation?.stop();document.removeEventListener('change', changed);window.removeEventListener('hashchange',sourceChanged);});
   }
 } satisfies Theme;
