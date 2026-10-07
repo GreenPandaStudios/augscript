@@ -99,7 +99,7 @@ for (const module of standardLibraryModules) {
   for (const output of generateSpecs(checked, { manifest: false,files:owned })) outputs.set(relative(root, output.path), output.text);
   const exports = project.files.get(join(folder, 'export.aug')).items.filter(item => item.kind === 'export' && !item.internal && !item.folder);
   const sections = [generated(`src/stdlib/${module}`) + `# august.${module}\n\n` +
-    (coreLibraryModules.includes(module) ? (module!=='io'?'**Unreleased:** ':'')+'Supplied with the compiler. Import public names from `august.' + module + '`.' :
+    (coreLibraryModules.includes(module) ? (module!=='io'?'**August 1.0:** ':'')+'Supplied with the compiler. Import public names from `august.' + module + '`.' :
       'Install this source library with `aug add https://github.com/GreenPandaStudios/augscript/src/stdlib/' + module + ' --as ' + module + '`, then import its public names from `' + module + '`.') +
     '\n\nSignatures show result types and checked errors. See [packages](../packages.md) to pin a release and [language constructs](../language-constructs.md) for built-in types.'];
   for (const item of exports) {
@@ -131,7 +131,7 @@ outputs.set('docs/language-constructs.md', constructs.join('\n\n') + '\n');
 for (const [path, text] of buildExamplePages(sourceOverrides)) outputs.set(path, text);
 const greetingDiagram=outputs.get('docs/examples/hello/app/greeter-diagrams.md')?.match(/```mermaid\n[\s\S]*?\n```/);
 if(!greetingDiagram)throw new Error('Missing generated greeting interaction diagram');
-outputs.set('docs/.vitepress/home-diagram.md','## Follow the program’s interactions\n\n'+greetingDiagram[0]+'\n\nThis class view is generated from the greeting project. Start at its [project overview](examples/hello/diagrams/index.md), then follow the calls to their [sequence and explanation](examples/hello/app/greeter-diagrams.md). Generated diagrams are unreleased.\n');
+outputs.set('docs/.vitepress/home-diagram.md','## Follow the program’s interactions\n\n'+greetingDiagram[0]+'\n\nThis class view is generated from the greeting project. Start at its [project overview](examples/hello/diagrams/index.md), then follow the calls to their [sequence and explanation](examples/hello/app/greeter-diagrams.md). August 1.0 generates these diagrams.\n');
 const stale = [];
 for (const [path, content] of outputs) {
   const file = join(root, path);

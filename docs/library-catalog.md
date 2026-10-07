@@ -3,7 +3,7 @@
 
 Search by the task you need to perform: SQL, compression, JSON, hashing or tensors. The curated catalog includes bundled modules and ordinary repository packages. Native entries identify reviewed public tags or exact repository commits and their declared artifact pins.
 
-**Unreleased CLI command:**
+August 1.0 provides the catalog command:
 
 ```sh
 aug libraries sql
@@ -70,7 +70,7 @@ Construct half-open integer ranges with checked steps and size limits.
 
 Set an allocation limit appropriate to the operation; the default is one million values.
 
-Import `august.collections` from the compiler’s core library. These additions are unreleased.
+Import `august.collections` from the compiler’s core library.
 
 ```text
 import range and RangeError from august.collections
@@ -112,9 +112,9 @@ The same-app OpenID Connect example verifies real native signatures and session 
 
 Retain a concrete error cause with an operation name and source location.
 
-Unreleased; use the matching compiler. Capture sourceLocation() at the operation, and choose whether to throw, log or expose context.
+August 1.0; use a matching compiler. Capture sourceLocation() at the operation, and choose whether to throw, log or expose context.
 
-Import `august.errors` from the compiler’s core library. These additions are unreleased.
+Import `august.errors` from the compiler’s core library.
 
 ```text
 import ContextError and errorContext from august.errors
@@ -163,7 +163,7 @@ Explicit console, file and command-line capabilities.
 
 Implement the capabilities the application needs in main.aug.
 
-Import `august.io` from the compiler’s core library. 
+Import `august.io` from the compiler’s core library.
 
 ```text
 import Console and SystemConsole from august.io
@@ -207,7 +207,7 @@ Checked int64 arithmetic and exact bounded fixed-scale decimals.
 
 Decimal scale is 0–18 and coefficients are int64. Inexact arithmetic fails; there is no implicit rounding.
 
-Import `august.math` from the compiler’s core library. These additions are unreleased.
+Import `august.math` from the compiler’s core library.
 
 ```text
 import checkedAdd and Decimal and parseDecimal from august.math
@@ -367,9 +367,9 @@ The LLVM clock consumer binds SystemClock and checks a native wall-clock read. [
 
 Calendar dates, exact durations, identifiers, HTTP URLs, portable paths and bounded UTF-8 text.
 
-Unreleased; use the matching compiler. Civil dates use years 1–9999, durations exact int64 milliseconds, URLs an ASCII DNS-host profile, and paths a lexical portable-relative profile. Text limits measure bytes.
+August 1.0; use a matching compiler. Civil dates use years 1–9999, durations exact int64 milliseconds, URLs an ASCII DNS-host profile, and paths a lexical portable-relative profile. Text limits measure bytes.
 
-Import `august.values` from the compiler’s core library. These additions are unreleased.
+Import `august.values` from the compiler’s core library.
 
 ```text
 import CivilDate and Duration and TokenId and HttpUrl from august.values

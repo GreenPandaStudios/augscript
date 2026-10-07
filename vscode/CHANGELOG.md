@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Describe implemented internal exports and pure callbacks directly in hover help.
+
 - Verify the extension's fresh compiler artifact pins against a checksum-covered assembled release catalog, while retaining the tagged compiler and platform contracts. Reject missing, changed or mismatched catalogs before publication.
 
 - Describe the generated data-flow, interaction and API sequence diagrams in the extension README, with links to supported platforms and deployment limits.

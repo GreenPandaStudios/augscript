@@ -6,7 +6,7 @@ editLink: false
 
 # august.errors
 
-**Unreleased:** Supplied with the compiler. Import public names from `august.errors`.
+**August 1.0:** Supplied with the compiler. Import public names from `august.errors`.
 
 Signatures show result types and checked errors. See [packages](../packages.md) to pin a release and [language constructs](../language-constructs.md) for built-in types.
 
