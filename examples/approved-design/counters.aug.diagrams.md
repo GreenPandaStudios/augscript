@@ -30,6 +30,8 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](counters.aug#L4)
 
+It returns `int`.
+
 Interface contract; implementation selected at runtime. [Explanation](counters.aug.md).
 
 <a id="sequence-_Initial-20-constructor"></a>
@@ -37,6 +39,8 @@ Interface contract; implementation selected at runtime. [Explanation](counters.a
 ### \_Initial constructor
 
 [Source](counters.aug#L5)
+
+It implements [`State`](counters.aug.md#symbol-State). It is private to this file.
 
 [Explanation](counters.aug.md).
 
@@ -54,6 +58,10 @@ Return 0; required cleanup runs before exit. [Explanation](counters.aug.md).
 
 [Source](counters.aug#L8)
 
+It implements [`State`](counters.aug.md#symbol-State). It is private to this file.
+
+It takes `count` as an integer, kept read-only.
+
 Receive fields: count. [Explanation](counters.aug.md).
 
 <a id="sequence-_Updated.read"></a>
@@ -70,6 +78,8 @@ Return count; required cleanup runs before exit. [Explanation](counters.aug.md).
 
 [Source](counters.aug#L13)
 
+It may change `self`.
+
 Interface contract; implementation selected at runtime. [Explanation](counters.aug.md).
 
 <a id="sequence-Counter.value"></a>
@@ -77,6 +87,8 @@ Interface contract; implementation selected at runtime. [Explanation](counters.a
 ### Counter.value
 
 [Source](counters.aug#L14)
+
+It returns `int`.
 
 Interface contract; implementation selected at runtime. [Explanation](counters.aug.md).
 
@@ -86,6 +98,10 @@ Interface contract; implementation selected at runtime. [Explanation](counters.a
 
 [Source](counters.aug#L15)
 
+It implements [`Counter`](counters.aug.md#symbol-Counter). It is private to this file.
+
+The `_state` dependency is injected as [`State`](counters.aug.md#symbol-State) and stored mutably and privately.
+
 Receive fields: injected \_state. [Explanation](counters.aug.md).
 
 <a id="sequence-_Counter.increment"></a>
@@ -93,6 +109,8 @@ Receive fields: injected \_state. [Explanation](counters.aug.md).
 ### \_Counter.increment
 
 [Source](counters.aug#L16)
+
+It may change `self`.
 
 ```mermaid
 sequenceDiagram

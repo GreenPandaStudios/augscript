@@ -9,7 +9,7 @@
 <a id="symbol-calculate"></a>
 ## `calculate` · [source](compute.aug#L5)
 
-Add two lists on a GPU and return copied values. GPU resources stay local. It takes `left` and `right` as `List<float>`.
+Add two lists on a GPU and return copied values. GPU resources stay local. It takes `left` and `right` as `List<float>`. Failures can raise [`GpuError`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.2.0/contracts.aug.md#symbol-GpuError).
 
 It calls [`openDevice`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.2.0/api.aug.md#symbol-openDevice) and stores the result in owned `device` ([`Device`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.2.0/bindings.aug.md#symbol-Device)). It calls [`upload`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.2.0/api.aug.md#symbol-upload) with `device` and `values` from `left` and stores the result in owned `first` ([`Buffer`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.2.0/bindings.aug.md#symbol-Buffer)). It calls [`upload`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.2.0/api.aug.md#symbol-upload) with `device` and `values` from `right` and stores the result in owned `second` ([`Buffer`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.2.0/bindings.aug.md#symbol-Buffer)). It calls [`add`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.2.0/api.aug.md#symbol-add) with `left` from `first` and `right` from `second` and stores the result in owned `result` ([`Buffer`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.2.0/bindings.aug.md#symbol-Buffer)). [source](compute.aug#L6-L9)
 

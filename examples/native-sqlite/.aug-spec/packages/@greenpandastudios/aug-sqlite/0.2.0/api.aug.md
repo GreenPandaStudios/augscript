@@ -14,7 +14,9 @@ Open a serialized connection. Use :memory: for an in-memory database. It impleme
 <a id="symbol-NativeDatabaseStorage.open"></a>
 ### `NativeDatabaseStorage.open` · [source](api.aug#L10)
 
-It takes `path` as a string. Within an unsafe block, it returns [`_open`](api.aug.md#symbol-_open) with `path`. Native operations must satisfy their declared C contracts. [source](api.aug#L11-L12)
+It takes `path` as a string. It returns ownership of [`Database`](bindings.aug.md#symbol-Database). It can call [`DatabaseStorage.open`](contracts.aug.md#symbol-DatabaseStorage.open). Failures can raise [`SqliteError`](contracts.aug.md#symbol-SqliteError).
+
+Within an unsafe block, it returns [`_open`](api.aug.md#symbol-_open) with `path`. Native operations must satisfy their declared C contracts. [source](api.aug#L11-L12)
 
 <details>
 <summary>Checked interface</summary>
@@ -23,14 +25,16 @@ It takes `path` as a string. Within an unsafe block, it returns [`_open`](api.au
 open(string path) returns own Database unless SqliteError uses DatabaseStorage.open
 ```
 
-It takes `path` as a string. It returns ownership of [`Database`](bindings.aug.md#symbol-Database). Failures can raise [`SqliteError`](contracts.aug.md#symbol-SqliteError).
+It takes `path` as a string. It returns ownership of [`Database`](bindings.aug.md#symbol-Database). It can call [`DatabaseStorage.open`](contracts.aug.md#symbol-DatabaseStorage.open). Failures can raise [`SqliteError`](contracts.aug.md#symbol-SqliteError).
 
 </details>
 
 <a id="symbol-open"></a>
 ## `open` · [source](api.aug#L13)
 
-It takes `path` as a string. It gets `storage` ([`DatabaseStorage`](contracts.aug.md#symbol-DatabaseStorage)) from dependency injection. It returns [`storage.open`](contracts.aug.md#symbol-DatabaseStorage.open) with `path`. [source](api.aug#L14)
+It takes `path` as a string. It gets `storage` ([`DatabaseStorage`](contracts.aug.md#symbol-DatabaseStorage)) from dependency injection.
+
+It returns ownership of [`Database`](bindings.aug.md#symbol-Database). It can call [`DatabaseStorage.open`](contracts.aug.md#symbol-DatabaseStorage.open). Failures can raise [`SqliteError`](contracts.aug.md#symbol-SqliteError). It returns [`storage.open`](contracts.aug.md#symbol-DatabaseStorage.open) with `path`. [source](api.aug#L14)
 
 <details>
 <summary>Checked interface</summary>
@@ -39,14 +43,18 @@ It takes `path` as a string. It gets `storage` ([`DatabaseStorage`](contracts.au
 open(resolve DatabaseStorage storage, string path) returns own Database unless SqliteError uses DatabaseStorage.open
 ```
 
-It takes `path` as a string. It gets `storage` ([`DatabaseStorage`](contracts.aug.md#symbol-DatabaseStorage)) from dependency injection. It returns ownership of [`Database`](bindings.aug.md#symbol-Database). Failures can raise [`SqliteError`](contracts.aug.md#symbol-SqliteError).
+It takes `path` as a string. It gets `storage` ([`DatabaseStorage`](contracts.aug.md#symbol-DatabaseStorage)) from dependency injection.
+
+It returns ownership of [`Database`](bindings.aug.md#symbol-Database). It can call [`DatabaseStorage.open`](contracts.aug.md#symbol-DatabaseStorage.open). Failures can raise [`SqliteError`](contracts.aug.md#symbol-SqliteError).
 
 </details>
 
 <a id="symbol-openMemory"></a>
 ## `openMemory` · [source](api.aug#L16)
 
-Open an in-memory database without filesystem permission. Within an unsafe block, it returns [`_open`](api.aug.md#symbol-_open) with `path` `":memory:"`. Native operations must satisfy their declared C contracts. [source](api.aug#L17-L18)
+Open an in-memory database without filesystem permission. It returns ownership of [`Database`](bindings.aug.md#symbol-Database). Failures can raise [`SqliteError`](contracts.aug.md#symbol-SqliteError).
+
+Within an unsafe block, it returns [`_open`](api.aug.md#symbol-_open) with `path` `":memory:"`. Native operations must satisfy their declared C contracts. [source](api.aug#L17-L18)
 
 <details>
 <summary>Checked interface</summary>
@@ -64,7 +72,7 @@ It returns ownership of [`Database`](bindings.aug.md#symbol-Database). Failures 
 
 Execute one parameterized statement. Return the number of changed rows. It takes `database` as [`Database`](bindings.aug.md#symbol-Database) with permission to mutate it during the call, `sql` as a string, and `parameters` as `List<string>`.
 
-Within an unsafe block, it returns [`_execute`](api.aug.md#symbol-_execute) with `database`, `sql`, and `parameters`. Native operations must satisfy their declared C contracts. [source](api.aug#L21-L22)
+It may change `database`. Failures can raise [`SqliteError`](contracts.aug.md#symbol-SqliteError). Within an unsafe block, it returns [`_execute`](api.aug.md#symbol-_execute) with `database`, `sql`, and `parameters`. Native operations must satisfy their declared C contracts. [source](api.aug#L21-L22)
 
 <details>
 <summary>Checked interface</summary>
@@ -82,7 +90,7 @@ It takes `database` as [`Database`](bindings.aug.md#symbol-Database) with permis
 
 Query one non-null text value with SELECT. Reject PRAGMAs, transactions, savepoints and writes before execution. Copy the result before finalization. It takes `database` as [`Database`](bindings.aug.md#symbol-Database), `sql` as a string, and `parameters` as `List<string>`.
 
-Within an unsafe block, it returns [`_queryScalar`](api.aug.md#symbol-_queryScalar) with `database`, `sql`, and `parameters`. Native operations must satisfy their declared C contracts. [source](api.aug#L25-L26)
+Failures can raise [`SqliteError`](contracts.aug.md#symbol-SqliteError). Within an unsafe block, it returns [`_queryScalar`](api.aug.md#symbol-_queryScalar) with `database`, `sql`, and `parameters`. Native operations must satisfy their declared C contracts. [source](api.aug#L25-L26)
 
 <details>
 <summary>Checked interface</summary>

@@ -169,8 +169,10 @@ test openDevice {
 
 ### `openDevice` · [source](api.md#source-L11) {#symbol-openDevice}
 
+Open a Metal GPU on the current worker. No device means GpuError. It returns ownership of [`Device`](bindings.md#symbol-Device). Failures can raise [`GpuError`](contracts.md#symbol-GpuError).
+
 ::: spec-paragraph specification-paragraph-1
-Open a Metal GPU on the current worker. No device means GpuError. Within an unsafe block, it returns [`_open`](api.md#symbol-_open). Native operations must satisfy their declared C contracts. [source](api.md#source-L12-L13)
+Within an unsafe block, it returns [`_open`](api.md#symbol-_open). Native operations must satisfy their declared C contracts. [source](api.md#source-L12-L13)
 :::
 
 ::: details Checked interface
@@ -188,7 +190,7 @@ It returns ownership of [`Device`](bindings.md#symbol-Device). Failures can rais
 Copy finite numbers to an owned float32 GPU buffer. Values round to float32. It takes `device` as [`Device`](bindings.md#symbol-Device) and `values` as `List<float>`.
 
 ::: spec-paragraph specification-paragraph-2
-Within an unsafe block, it returns [`_upload`](api.md#symbol-_upload) with `device` and `values`. Native operations must satisfy their declared C contracts. [source](api.md#source-L16-L17)
+It returns ownership of [`Buffer`](bindings.md#symbol-Buffer). Failures can raise [`GpuError`](contracts.md#symbol-GpuError). Within an unsafe block, it returns [`_upload`](api.md#symbol-_upload) with `device` and `values`. Native operations must satisfy their declared C contracts. [source](api.md#source-L16-L17)
 :::
 
 ::: details Checked interface
@@ -206,7 +208,7 @@ It takes `device` as [`Device`](bindings.md#symbol-Device) and `values` as `List
 Add equally sized buffers on the GPU. Wait for device completion before returning. It takes `left` and `right` as [`Buffer`](bindings.md#symbol-Buffer).
 
 ::: spec-paragraph specification-paragraph-3
-Within an unsafe block, it returns [`_add`](api.md#symbol-_add) with `left` and `right`. Native operations must satisfy their declared C contracts. [source](api.md#source-L20-L21)
+It returns ownership of [`Buffer`](bindings.md#symbol-Buffer). Failures can raise [`GpuError`](contracts.md#symbol-GpuError). Within an unsafe block, it returns [`_add`](api.md#symbol-_add) with `left` and `right`. Native operations must satisfy their declared C contracts. [source](api.md#source-L20-L21)
 :::
 
 ::: details Checked interface
@@ -221,8 +223,10 @@ It takes `left` and `right` as [`Buffer`](bindings.md#symbol-Buffer). It returns
 
 ### `download` · [source](api.md#source-L23) {#symbol-download}
 
+Copy float32 GPU values into an August list of floats. It takes `buffer` as [`Buffer`](bindings.md#symbol-Buffer). Failures can raise [`GpuError`](contracts.md#symbol-GpuError).
+
 ::: spec-paragraph specification-paragraph-4
-Copy float32 GPU values into an August list of floats. It takes `buffer` as [`Buffer`](bindings.md#symbol-Buffer). Within an unsafe block, it returns [`_download`](api.md#symbol-_download) with `buffer`. Native operations must satisfy their declared C contracts. [source](api.md#source-L24-L25)
+Within an unsafe block, it returns [`_download`](api.md#symbol-_download) with `buffer`. Native operations must satisfy their declared C contracts. [source](api.md#source-L24-L25)
 :::
 
 ::: details Checked interface

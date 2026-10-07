@@ -12,15 +12,15 @@ outline: [2, 3]
 
 Supply a scoped counter and call a doubling function that rejects negative inputs.
 
-Open a file to read the code beside its compiled explanation. Choose **Indentation** or **Braces** to change the code view. The choice carries across files.
+Start with the [project overview](diagrams/index.md), then open an operation’s sequence or explanation. Source stays beside its spec when you need to inspect an expression. Choose **Indentation** or **Braces** for that code view; the choice carries across files.
 
 ## Follow the program
 
-Read [`main.aug`](main.md). Follow the domain imports, provider choices, explicit scope, and checked failure before opening the implementation files.
+Read the explanation of [`main.aug`](main.md#specification). Follow the domain imports, provider choices, explicit scope, and checked failure before opening the implementation files.
 
-Read [`domain/export.aug`](domain/export.md). The export file chooses the declarations callers can import.
+Read the explanation of [`domain/export.aug`](domain/export.md#specification). The export file chooses the declarations callers can import.
 
-Read [`domain/numbers.aug`](domain/numbers.md). The validation interceptor rejects a negative input. Tests cover successful doubling and recovery from that failure.
+Read the explanation of [`domain/numbers.aug`](domain/numbers.md#specification). The validation interceptor rejects a negative input. Tests cover successful doubling and recovery from that failure.
 
 [Explore the generated project diagrams](diagrams/index.md) to follow data between folders, then open module interactions and API sequences.
 

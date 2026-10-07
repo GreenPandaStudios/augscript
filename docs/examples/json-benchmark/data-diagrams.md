@@ -25,4 +25,6 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](data.md#source-L2)
 :::
 
+It takes `id` as an integer, kept read-only, `message` as a string, kept read-only, and `values` as `List<int>`, kept read-only.
+
 Receive fields: id, message, values. [Explanation](data.md).

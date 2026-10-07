@@ -15,12 +15,18 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](decimals.aug#L9)
 
+Exact decimal data: coefficient times 10 to the negative scale.
+
+It takes `coefficient` as an integer, kept read-only (Signed int64 digits; no floating-point conversion occurs) and `scale` as an integer, kept read-only (Fractional digits from 0 to 18. Scale remains part of record equality).
+
+Construction can fail with `ConversionError`.
+
 ```mermaid
 sequenceDiagram
     participant p0 as Decimal constructor
 
     Note over p0: Receive fields: coefficient, scale
-    alt scale ‹ 0 or scale › 18
+    alt scale is negative or scale is greater than 18
     p0->>p0: ConversionError()
     p0-->>p0: ConversionError result: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
@@ -33,6 +39,13 @@ sequenceDiagram
 
 [Source](decimals.aug#L18)
 
+Parse up to 64 ASCII characters: optional minus, integer digits, and an optional dot with 1 to 18 fractional digits.
+Leading zeroes are accepted. Plus, whitespace, exponent notation and non-ASCII digits are rejected.
+
+It takes `text` as a string.
+
+Failures can raise `ConversionError` (Invalid text, scale, or int64 coefficient. Negative zero loses its sign).
+
 #### Sequence 1 of 2
 
 ```mermaid
@@ -41,11 +54,11 @@ sequenceDiagram
 
     p0->>p0: text.length()
     p0-->>p0: length result: int
-    opt Left is false
+    opt (length result == 0) is false
     p0->>p0: text.length()
     p0-->>p0: length result 2: int
     end
-    alt text.length() == 0 or text.length() › 64
+    alt the byte length of text equals 0 or the byte length of<br/>text is greater than 64
     p0->>p0: ConversionError()
     p0-->>p0: ConversionError result: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
@@ -54,7 +67,7 @@ sequenceDiagram
     p0-->>p0: parts: List‹string›
     p0->>p0: parts.length()
     p0-->>p0: length result 3: int
-    alt parts.length() › 2
+    alt the number of elements in parts is greater than 2
     p0->>p0: ConversionError()
     p0-->>p0: ConversionError result 2: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
@@ -63,12 +76,12 @@ sequenceDiagram
     opt Try body； stops on a checked failure
     p0->>p0: parts.length()
     p0-->>p0: length result 4: int
-    alt parts.length() == 2
+    alt the number of elements in parts equals 2
     p0->>p0: parts.get(index=0)
     p0-->>p0: whole: string
     p0->>p0: parts.get(index=1)
     p0-->>p0: fraction: string
-    opt Left is false
+    opt (whole == ”” or whole == ”-”) is false
     p0->>p0: fraction.isDecimal()
     p0-->>p0: isDecimal result: bool
     end
@@ -83,13 +96,13 @@ sequenceDiagram
     participant p0 as parseDecimal
 
     opt Try body； stops on a checked failure
-    alt parts.length() == 2
-    opt Left is false
+    alt the number of elements in parts equals 2
+    opt (whole == ”” or whole == ”-” or not isDecimal result) is<br/>false
     Note over p0: Sequence continued from the previous view
     p0->>p0: fraction.length()
     p0-->>p0: length result 5: int
     end
-    alt whole == ”” or whole == ”-” or not fraction.isDecimal() or fraction.length() › 18
+    alt whole equals ”” or whole equals ”-” or<br/>fraction.isDecimal returns false or the byte length of<br/>fraction is greater than 18
     p0->>p0: ConversionError()
     p0-->>p0: ConversionError result 3: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
@@ -119,6 +132,10 @@ sequenceDiagram
 
 [Source](decimals.aug#L38)
 
+Format invariant ASCII text with the recorded scale, including trailing fractional zeroes.
+
+It takes `value` as [`Decimal`](decimals.aug.md#symbol-Decimal).
+
 ```mermaid
 sequenceDiagram
     participant p0 as formatDecimal
@@ -127,18 +144,18 @@ sequenceDiagram
     Note over p0: Set written to 0
     Note over p0: Set result to ””
     loop While remaining != 0 or written ‹= value.scale
-    alt written == value.scale and value.scale › 0
+    alt written equals value.scale and value.scale is positive
     Note over p0: Set result to ”.” + result
     end
     Note over p0: Set digit to remaining % 10
-    alt digit ‹ 0
+    alt digit is negative
     Note over p0: Set digit to -digit
     end
     Note over p0: Set result to $”｛digit｝” + result
     Note over p0: Set remaining to remaining / 10
     Note over p0: Set written to written + 1
     end
-    alt value.coefficient ‹ 0
+    alt value.coefficient is negative
     Note over p0: Set result to ”-” + result
     end
     Note over p0: Return result； required cleanup runs before exit
@@ -150,11 +167,17 @@ sequenceDiagram
 
 [Source](decimals.aug#L59)
 
+Change fractional scale exactly, adding or removing trailing zeroes without rounding.
+
+It takes `value` as [`Decimal`](decimals.aug.md#symbol-Decimal) and `scale` as an integer.
+
+Failures can raise `ArithmeticError` (Precision would be discarded or an intermediate coefficient would overflow) and `ConversionError` (Invalid target scale).
+
 ```mermaid
 sequenceDiagram
     participant p0 as rescaleDecimal
     participant p1 as august/math/integers
-    alt scale ‹ 0 or scale › 18
+    alt scale is negative or scale is greater than 18
     p0->>p0: ConversionError()
     p0-->>p0: ConversionError result: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
@@ -167,7 +190,7 @@ sequenceDiagram
     Note over p0: Set current to current + 1
     end
     loop While current › scale
-    alt coefficient % 10 != 0
+    alt (coefficient remainder after division by 10) does not<br/>equal 0
     p0->>p0: ArithmeticError()
     p0-->>p0: ArithmeticError result: ArithmeticError
     Note over p0: Raise checked failure ArithmeticError()； required<br/>cleanup runs before exit
@@ -187,12 +210,18 @@ sequenceDiagram
 
 [Source](decimals.aug#L75)
 
+Add at the greater operand scale. Alignment and the sum must each fit int64.
+
+It takes `left` and `right` as [`Decimal`](decimals.aug.md#symbol-Decimal).
+
+Failures can raise `ArithmeticError` and `ConversionError`.
+
 ```mermaid
 sequenceDiagram
     participant p0 as addDecimals
     participant p1 as august/math/integers
     Note over p0: Set scale to left.scale
-    alt scale ‹ right.scale
+    alt scale is less than right.scale
     Note over p0: Set scale to right.scale
     end
     p0->>p0: rescaleDecimal(value=left, scale=scale)
@@ -203,7 +232,7 @@ sequenceDiagram
     p1-->>p0: checkedAdd result: int
     p0->>p0: Decimal(coefficient=checkedAdd result, scale=scale) ·<br/>construct value
     p0-->>p0: Decimal result: Decimal
-    Note over p0: Return<br/>Decimal(coefficient=checkedAdd(left=alignedLeft.coefficient,<br/>right=alignedRight.coefficient), scale=scale)； re…
+    Note over p0: Return<br/>Decimal(coefficient=checkedAdd(left=alignedLeft.coefficient,<br/>right=alignedRight.coefficient), scale=scale)； required<br/>cleanup runs before exit
     Note over p0: May leave with checked errors: ArithmeticError,<br/>ConversionError
 ```
 
@@ -213,12 +242,18 @@ sequenceDiagram
 
 [Source](decimals.aug#L84)
 
+Subtract at the greater operand scale. Alignment and the difference must each fit int64.
+
+It takes `left` and `right` as [`Decimal`](decimals.aug.md#symbol-Decimal).
+
+Failures can raise `ArithmeticError` and `ConversionError`.
+
 ```mermaid
 sequenceDiagram
     participant p0 as subtractDecimals
     participant p1 as august/math/integers
     Note over p0: Set scale to left.scale
-    alt scale ‹ right.scale
+    alt scale is less than right.scale
     Note over p0: Set scale to right.scale
     end
     p0->>p0: rescaleDecimal(value=left, scale=scale)
@@ -229,7 +264,7 @@ sequenceDiagram
     p1-->>p0: checkedSubtract result: int
     p0->>p0: Decimal(coefficient=checkedSubtract result, scale=scale)<br/>· construct value
     p0-->>p0: Decimal result: Decimal
-    Note over p0: Return<br/>Decimal(coefficient=checkedSubtract(left=alignedLeft.coefficient,<br/>right=alignedRight.coefficient), scale=scale…
+    Note over p0: Return<br/>Decimal(coefficient=checkedSubtract(left=alignedLeft.coefficient,<br/>right=alignedRight.coefficient), scale=scale)； required<br/>cleanup runs before exit
     Note over p0: May leave with checked errors: ArithmeticError,<br/>ConversionError
 ```
 
@@ -239,6 +274,12 @@ sequenceDiagram
 
 [Source](decimals.aug#L93)
 
+Multiply coefficients and add scales. Reject a scale above 18 or an int64 product overflow.
+
+It takes `left` and `right` as [`Decimal`](decimals.aug.md#symbol-Decimal).
+
+Failures can raise `ArithmeticError` and `ConversionError`.
+
 ```mermaid
 sequenceDiagram
     participant p0 as multiplyDecimals
@@ -247,7 +288,7 @@ sequenceDiagram
     p1-->>p0: checkedMultiply result: int
     p0->>p0: Decimal(coefficient=checkedMultiply result,<br/>scale=left.scale + right.scale) · construct value
     p0-->>p0: Decimal result: Decimal
-    Note over p0: Return<br/>Decimal(coefficient=checkedMultiply(left=left.coefficient,<br/>right=right.coefficient), scale=left.scale + right.…
+    Note over p0: Return<br/>Decimal(coefficient=checkedMultiply(left=left.coefficient,<br/>right=right.coefficient), scale=left.scale +<br/>right.scale)； required cleanup runs before exit
     Note over p0: May leave with checked errors: ArithmeticError,<br/>ConversionError
 ```
 
@@ -257,16 +298,22 @@ sequenceDiagram
 
 [Source](decimals.aug#L100)
 
+Divide at an explicit scale, requiring an exact result. No rounding mode is chosen implicitly.
+
+It takes `left` and `right` as [`Decimal`](decimals.aug.md#symbol-Decimal) and `scale` as an integer.
+
+Failures can raise `ArithmeticError` (Zero divisor, inexact result, or an intermediate int64 overflow) and `ConversionError` (Target scale is outside 0 to 18).
+
 ```mermaid
 sequenceDiagram
     participant p0 as divideDecimals
     participant p1 as august/math/integers
-    alt scale ‹ 0 or scale › 18
+    alt scale is negative or scale is greater than 18
     p0->>p0: ConversionError()
     p0-->>p0: ConversionError result: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
-    alt right.coefficient == 0
+    alt right.coefficient equals 0
     p0->>p0: ArithmeticError()
     p0-->>p0: ArithmeticError result: ArithmeticError
     Note over p0: Raise checked failure ArithmeticError()； required<br/>cleanup runs before exit
@@ -284,7 +331,7 @@ sequenceDiagram
     p1-->>p0: denominator: int
     Note over p0: Set adjustment to adjustment + 1
     end
-    alt numerator % denominator != 0
+    alt (numerator remainder after division by denominator) does<br/>not equal 0
     p0->>p0: ArithmeticError()
     p0-->>p0: ArithmeticError result 2: ArithmeticError
     Note over p0: Raise checked failure ArithmeticError()； required<br/>cleanup runs before exit
@@ -293,7 +340,7 @@ sequenceDiagram
     p1-->>p0: checkedDivide result: int
     p0->>p0: Decimal(coefficient=checkedDivide result, scale=scale) ·<br/>construct value
     p0-->>p0: Decimal result: Decimal
-    Note over p0: Return Decimal(coefficient=checkedDivide(left=numerator,<br/>right=denominator), scale=scale)； required cleanup runs<br/>befo…
+    Note over p0: Return Decimal(coefficient=checkedDivide(left=numerator,<br/>right=denominator), scale=scale)； required cleanup runs<br/>before exit
     Note over p0: May leave with checked errors: ArithmeticError,<br/>ConversionError
 ```
 
@@ -303,14 +350,21 @@ sequenceDiagram
 
 [Source](decimals.aug#L121)
 
+Compare numeric decimal values; return -1, 0, or 1. Equal values can have different recorded scales.
+Digit comparison avoids coefficient-alignment overflow. No floating-point conversion occurs.
+
+It takes `left` and `right` as [`Decimal`](decimals.aug.md#symbol-Decimal).
+
+Failures can raise `ConversionError`.
+
 ```mermaid
 sequenceDiagram
     participant p0 as compareDecimals
 
-    alt left.coefficient ‹ 0 and right.coefficient ›= 0
+    alt left.coefficient is negative and right.coefficient is at<br/>least 0
     Note over p0: Return -1； required cleanup runs before exit
     end
-    alt left.coefficient ›= 0 and right.coefficient ‹ 0
+    alt left.coefficient is at least 0 and right.coefficient is<br/>negative
     Note over p0: Return 1； required cleanup runs before exit
     end
     p0->>p0: $”｛left.coefficient｝”.split(separator=”-”)
@@ -333,7 +387,7 @@ sequenceDiagram
     end
     p0->>p0: leftDigits.compareDecimal(other=rightDigits)
     p0-->>p0: result: int
-    alt left.coefficient ‹ 0
+    alt left.coefficient is negative
     Note over p0: Return -result； required cleanup runs before exit
     end
     Note over p0: Return result； required cleanup runs before exit

@@ -108,8 +108,10 @@ test compress {
 
 ### `compress` · [source](api.md#source-L7) {#symbol-compress}
 
+Compress bytes with the standard zlib framing. It takes `input` as `Bytes`. Failures can raise [`CompressionError`](contracts.md#symbol-CompressionError).
+
 ::: spec-paragraph specification-paragraph-1
-Compress bytes with the standard zlib framing. It takes `input` as `Bytes`. Within an unsafe block, it returns [`_compress`](api.md#symbol-_compress) with `input`. Native operations must satisfy their declared C contracts. [source](api.md#source-L8-L9)
+Within an unsafe block, it returns [`_compress`](api.md#symbol-_compress) with `input`. Native operations must satisfy their declared C contracts. [source](api.md#source-L8-L9)
 :::
 
 ::: details Checked interface
@@ -124,8 +126,10 @@ It takes `input` as `Bytes`. Failures can raise [`CompressionError`](contracts.m
 
 ### `decompress` · [source](api.md#source-L11) {#symbol-decompress}
 
+Decompress at most maximumOutput bytes (maximum 256 MiB). It takes `input` as `Bytes` and `maximumOutput` as an integer. Failures can raise [`CompressionError`](contracts.md#symbol-CompressionError).
+
 ::: spec-paragraph specification-paragraph-2
-Decompress at most maximumOutput bytes (maximum 256 MiB). It takes `input` as `Bytes` and `maximumOutput` as an integer. Within an unsafe block, it returns [`_decompress`](api.md#symbol-_decompress) with `input` and `maximumOutput`. Native operations must satisfy their declared C contracts. [source](api.md#source-L12-L13)
+Within an unsafe block, it returns [`_decompress`](api.md#symbol-_decompress) with `input` and `maximumOutput`. Native operations must satisfy their declared C contracts. [source](api.md#source-L12-L13)
 :::
 
 ::: details Checked interface

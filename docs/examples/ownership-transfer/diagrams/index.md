@@ -12,7 +12,21 @@ outline: [2, 3]
 
 [Move ownership](../index.md)
 
-Start here to see what moves between the application’s folders. Each arrow names an operation’s inputs and the result it returns to its caller. Open a folder for the next level of detail. Expand the contract list for complete types and dependency links.
+Start with how the application begins, then follow data between its folders. Open an operation to see its decisions, calls, failures and cleanup. Its explanation supplies the exact contract and linked dependencies.
+
+This view includes 2 application source files. Package and interface boundaries show checked contracts; their runtime implementations are not expanded. The views describe the checked program, not desired requirements or a recorded execution.
+
+## Where execution begins
+
+### Providers {#providers}
+
+`Console` is provided by [`SystemConsole`](../dependencies/august/1.0.0/io/contracts.md#symbol-SystemConsole). The same instance is shared.
+
+### Startup {#startup}
+
+::: spec-paragraph specification-paragraph-1
+It calls [`make`](../resource.md#symbol-make) and stores the result in owned `first` ([`Resource`](../resource.md#symbol-Resource)). It calls [`consume`](../resource.md#symbol-consume) with `value` from `first` using injected `Console` for `console`. It calls [`make`](../resource.md#symbol-make) and stores the result in owned `second` ([`Resource`](../resource.md#symbol-Resource)). It prints `"end of main"`. [source](../main.md#source-L7-L10)
+:::
 
 ## Data flow
 
@@ -36,15 +50,54 @@ flowchart LR
 
 :::
 
-::: details Data crossing these boundaries (3 contracts)
+### Follow the data
 
-| From | To | Operation and inputs | Result |
+Each row opens the complete operations and call sites behind one pair of logical units. A grouped arrow records calls between those units; connected arrows need not belong to the same execution path.
+
+| From | To | Operations | Read |
 | --- | --- | --- | --- |
-| Startup | resource | [consume](../resource.md#symbol-consume) · value: own Resource | void |
-| Startup | resource | [make](../resource.md#symbol-make) | own Resource |
-| resource | August libraries | [Console.write](../dependencies/august/1.0.0/io/contracts.md#symbol-Console.write) · value: string · interface dispatch | void |
+| Startup | resource | 2 | [Inputs, results and call sites](index.md#boundary-9f88528d62a1) |
+| resource | August libraries | 1 | [Inputs, results and call sites](index.md#boundary-ed30e8b2fe83) |
+
+#### Data crossing these boundaries (3 contracts)
+
+#### Startup → resource {#boundary-9f88528d62a1}
+
+::: details 2 operations, 3 sites
+
+**[consume](../resource.md#symbol-consume)**
+
+Inputs: value: own Resource. Result: void.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| Startup | [Call site](../main.md#source-L8) · [Caller explanation](../main.md#startup) |
+
+**[make](../resource.md#symbol-make)**
+
+No caller-supplied inputs. Result: own Resource.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| Startup | [Call site](../main.md#source-L7) · [Caller explanation](../main.md#startup) |
+| Startup | [Call site](../main.md#source-L9) · [Caller explanation](../main.md#startup) |
 
 :::
+
+#### resource → August libraries {#boundary-ed30e8b2fe83}
+
+::: details 1 operation, 1 site
+
+**[Console.write](../dependencies/august/1.0.0/io/contracts.md#symbol-Console.write)** · interface dispatch
+
+Inputs: value: string. Result: void.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| consume | [Call site](../resource.md#source-L16) · [Caller explanation](../resource.md#symbol-consume) |
+
+:::
+
 
 ## Open a module
 

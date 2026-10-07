@@ -10,6 +10,7 @@
 
 Listen on `127.0.0.1`. Limit request bodies to 16384 bytes and buffered responses to 1048576 bytes. Serve OpenAPI at `/openapi.json` and API docs at `/docs`.
 
+<a id="providers"></a>
 ## Providers
 
 `Crypto` is provided by [`GnuTlsCrypto`](.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-GnuTlsCrypto). The same instance is shared. `Clock` is provided by [`SystemClock`](.aug-spec/packages/%40git/url_c092cd151499c4e1d8a1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-SystemClock). The same instance is shared.
@@ -28,6 +29,7 @@ Listen on `127.0.0.1`. Limit request bodies to 16384 bytes and buffered response
 
 `ExpiringStore<AccessGrant>` is provided by [`MemoryStore<AccessGrant>`](.aug-spec/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-MemoryStore). The same instance is shared. Shared mutation is allowed.
 
+<a id="startup"></a>
 ## Startup
 
 It tries to call [`initializeKeys`](common/keys.aug.md#symbol-initializeKeys) using injected `Crypto` for `crypto` and `SigningKeys` for `keys`. If this work raises `CryptoError`, it prints `"Cryptographic initialization failed"`; then it calls `exit` with `status` `1`. If this work raises [`KeyError`](common/keys.aug.md#symbol-KeyError), it prints `"Signing keys could not be initialized"`; then it calls `exit` with `status` `1`. It serves [`home`](client/endpoints.aug.md#symbol-home), [`me`](client/endpoints.aug.md#symbol-me), [`logout`](client/logout.aug.md#symbol-logout), [`startLogin`](client/login.aug.md#symbol-startLogin), [`loginCallback`](client/login.aug.md#symbol-loginCallback), [`discovery`](provider/discovery.aug.md#symbol-discovery), [`jwks`](provider/discovery.aug.md#symbol-jwks), [`authorize`](provider/authorization.aug.md#symbol-authorize), [`providerLogin`](provider/authorization.aug.md#symbol-providerLogin), [`token`](provider/token.aug.md#symbol-token), and [`userinfo`](provider/userinfo.aug.md#symbol-userinfo) on port `8787`. [source](main.aug#L20-L29)

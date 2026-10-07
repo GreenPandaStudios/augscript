@@ -15,6 +15,10 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](ranges.aug#L3)
 
+A range has an invalid step or exceeds its explicit allocation limit. It implements `Error`.
+
+It takes `message` as a string, kept read-only.
+
 Receive fields: message. [Explanation](ranges.aug.md).
 
 <a id="sequence-range"></a>
@@ -23,26 +27,33 @@ Receive fields: message. [Explanation](ranges.aug.md).
 
 [Source](ranges.aug#L13)
 
+Return a new list of integers from start up to, but excluding, end.
+A step past the int64 boundary stops before producing a wrapped value.
+
+It takes `end` as an integer, `start` as an integer (when omitted, `0`), `step` as an integer (when omitted, `1`), and `limit` as an integer (when omitted, `1000000`).
+
+Failures can raise [`RangeError`](ranges.aug.md#symbol-RangeError) (Invalid step, invalid limit, or too many elements).
+
 ```mermaid
 sequenceDiagram
     participant p0 as range
 
-    alt step == 0
+    alt step equals 0
     p0->>p0: RangeError(message=”Range step must not be zero”) ·<br/>construct value
     p0-->>p0: RangeError result: RangeError
     Note over p0: Raise checked failure RangeError(message=”Range step<br/>must not be zero”)； required cleanup runs before exit
     end
-    alt limit ‹ 1 or limit › 1000000
+    alt limit is less than 1 or limit is greater than 1000000
     p0->>p0: RangeError(message=”Range limit must be from 1 to<br/>1000000”) · construct value
     p0-->>p0: RangeError result 2: RangeError
     Note over p0: Raise checked failure RangeError(message=”Range limit<br/>must be from 1 to 1000000”)； required cleanup runs<br/>before exit
     end
     Note over p0: Set values to ［］
     Note over p0: Set current to start
-    loop While step › 0 and current ‹ end) or (step ‹ 0 and current › end
+    loop While step › 0 and current ‹ end) or (step ‹ 0 and<br/>current › end
     p0->>p0: values.length()
     p0-->>p0: length result: int
-    alt values.length() == limit
+    alt the number of elements in values equals limit
     p0->>p0: RangeError(message=”Range exceeds its element limit”) ·<br/>construct value
     p0-->>p0: RangeError result 3: RangeError
     Note over p0: Raise checked failure RangeError(message=”Range exceeds<br/>its element limit”)； required cleanup runs before exit
@@ -53,7 +64,7 @@ sequenceDiagram
     Note over p0: Leave borrow scope
     end
     Note over p0: Set nextValue to current + step
-    alt step › 0 and nextValue ‹ current) or (step ‹ 0 and nextValue › current
+    alt (step is positive and nextValue is less than current) or<br/>(step is negative and nextValue is greater than current)
     Note over p0: Leave this loop
     end
     Note over p0: Set current to nextValue

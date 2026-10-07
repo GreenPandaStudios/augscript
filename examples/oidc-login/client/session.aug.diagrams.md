@@ -36,6 +36,12 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](session.aug#L9)
 
+An app session has its own key, issuer, audience and token type. A live registry entry is required so logout revokes a signed token immediately.
+
+It takes `token` as `optional string`. It gets `crypto` ([`Crypto`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto)), `clock` ([`Clock`](../.aug-spec/packages/%40git/url_c092cd151499c4e1d8a1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-Clock)), `keys` ([`SigningKeys`](../common/keys.aug.md#symbol-SigningKeys)), and `sessions` ([`ExpiringStore<SessionClaims>`](../.aug-spec/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore)) from dependency injection. Omitted optional inputs are null.
+
+It can call [`SigningKeys.session`](../common/keys.aug.md#symbol-SigningKeys.session), [`Crypto.publicRsa`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.publicRsa), [`Clock.now`](../.aug-spec/packages/%40git/url_c092cd151499c4e1d8a1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-Clock.now), [`ExpiringStore<SessionClaims>.get`](../.aug-spec/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore.get), [`Crypto.equal`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.equal), [`Crypto.decodeBase64url`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.decodeBase64url), and [`Crypto.verifyRsa`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.verifyRsa). Failures can raise [`KeyError`](../common/keys.aug.md#symbol-KeyError), [`SessionError`](contracts.aug.md#symbol-SessionError), and `TimeError`.
+
 #### Sequence 1 of 3
 
 ```mermaid
@@ -64,18 +70,18 @@ sequenceDiagram
     p4-->>p0: config: Settings
     p0->>p5: now() · interface dispatch
     p5-->>p0: now: int
-    opt Left is false
+    opt (claims.iss != config.baseUrl + ”/app” or claims.aud !=<br/>”august-app”) is false
     p0->>p0: claims.sub.length()
     p0-->>p0: length result: int
     end
-    alt claims.iss != config.baseUrl + ”/app” or claims.aud != ”august-app” or claims.sub.length() == 0 or claims.exp ‹= now …
+    alt claims.iss does not equal the text ｛config.baseUrl｝/app<br/>or claims.aud does not equal ”august-app” or the byte<br/>length of claims.sub equals 0 or claims.exp is at most<br/>now or claims.iat is greater than (now plus 30) or<br/>claims.iat is less than (now minus<br/>config.sessionSeconds) or claims.exp is at most<br/>claims.iat or claims.exp is greater than ((now plus<br/>config.sessionSeconds) plus 30)
     p0->>p0: SessionError() · construct value
     p0-->>p0: SessionError result 2: SessionError
     Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
     end
     p0->>p0: claims.jti.isToken(min=43, max=43)
     p0-->>p0: isToken result: bool
-    opt Left is false
+    opt (not isToken result) is false
     p0->>p0: claims.csrf.isToken(min=43, max=43)
     p0-->>p0: isToken result 2: bool
     end
@@ -92,7 +98,7 @@ sequenceDiagram
     participant p2 as crypto: Crypto
     alt Continuing Match when some value:
     opt Try body； stops on a checked failure
-    alt not claims.jti.isToken(min=43, max=43)) or (not claims.csrf.isToken(min=43, max=43)
+    alt claims.jti is not a URL-safe ASCII token with 43 to 43<br/>characters or claims.csrf is not a URL-safe ASCII token<br/>with 43 to 43 characters
     Note over p0: Sequence continued from the previous view
     p0->>p0: SessionError() · construct value
     p0-->>p0: SessionError result 3: SessionError
@@ -105,7 +111,7 @@ sequenceDiagram
     p0-->>p0: SessionError result 4: SessionError
     Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
     else Match when some saved:
-    opt Left is false
+    opt (saved.sub != claims.sub or saved.exp != claims.exp) is<br/>false
     p0->>p0: saved.csrf.bytes()
     p0-->>p0: bytes result: Bytes
     p0->>p0: claims.csrf.bytes()
@@ -113,7 +119,7 @@ sequenceDiagram
     p0->>p2: equal(left=bytes result, right=bytes result 2) ·<br/>interface dispatch
     p2-->>p0: equal result: bool
     end
-    alt saved.sub != claims.sub or saved.exp != claims.exp or (not crypto.equal(left=saved.csrf.bytes(), right=claims.csrf.by…
+    alt saved.sub does not equal claims.sub or saved.exp does<br/>not equal claims.exp or crypto.equal with left from the<br/>UTF-8 bytes of saved.csrf and right from the UTF-8 bytes<br/>of claims.csrf returns false
     p0->>p0: SessionError() · construct value
     p0-->>p0: SessionError result 5: SessionError
     Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit

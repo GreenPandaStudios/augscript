@@ -25,4 +25,10 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](arithmetic.md#source-L4)
 :::
 
+Add two integers.
+
+It takes `left` and `right` as integers.
+
+It returns `int` — Their sum.
+
 Return left + right; required cleanup runs before exit. [Explanation](arithmetic.md).

@@ -25,4 +25,6 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](data.md#source-L2)
 :::
 
+It takes `id` as an integer, kept read-only and `name` as a string, kept read-only.
+
 Receive fields: id, name. [Explanation](data.md).

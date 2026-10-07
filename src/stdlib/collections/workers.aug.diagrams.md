@@ -23,6 +23,14 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](workers.aug#L15)
 
+Transform copied data on isolated worker heaps, preserving input order.
+Supply a directly named concrete pure function with one value input; callbacks and behavior objects are not worker inputs.
+
+It takes `values` as `List<T>`, `concurrency` and `chunkSize` as integers, and `transformation` as [`Transformation<T,U>`](operations.aug.md#symbol-Transformation).
+
+Failures can raise `ConcurrencyError` (The shared pool cannot admit a job or copy its inputs), `ConversionError` (Invalid bounds, checked before any worker starts, including for an empty input), and `IndexError` (Checked snapshot reads retain this error; indices stay within the snapshot.
+Admission or cancellation joins already admitted jobs before leaving the current wave).
+
 #### Sequence 1 of 2
 
 ```mermaid
@@ -31,7 +39,7 @@ sequenceDiagram
 
     p0->>p0: values.length()
     p0-->>p0: length: int
-    alt concurrency ‹ 1 or concurrency › 64 or chunkSize ‹ 1 or chunkSize › 65536 or length › 1048576
+    alt concurrency is less than 1 or concurrency is greater<br/>than 64 or chunkSize is less than 1 or chunkSize is<br/>greater than 65536 or length is greater than 1048576
     p0->>p0: ConversionError()
     p0-->>p0: ConversionError result: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
@@ -117,6 +125,13 @@ sequenceDiagram
 ### \_mapWorkerChunk
 
 [Source](workers.aug#L52)
+
+It is private to its defining scope.
+
+Compiler template specialized for each named transformation before native lowering.
+The generated worker entry receives copied chunk data. Compilation replaces transformation.apply with a direct call.
+
+It takes `values` as `List<T>` and `transformation` as [`Transformation<T,U>`](operations.aug.md#symbol-Transformation).
 
 ```mermaid
 sequenceDiagram

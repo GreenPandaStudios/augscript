@@ -23,7 +23,7 @@ LoginPage() returns Html
 <a id="symbol-Welcome"></a>
 ## `Welcome` · [source](views.aug#L13)
 
-It takes `session` as [`SessionClaims`](contracts.aug.md#symbol-SessionClaims).
+It takes `session` as [`SessionClaims`](contracts.aug.md#symbol-SessionClaims). Failures can raise `HttpError`.
 
 It returns the server component [`Page`](../common/views.aug.md#symbol-Page) with `title` = the text `Welcome, {session.name}` containing a paragraph containing `You are signed in as `, the HTML element `strong` containing `session.name` with escaped text, `.` with escaped text, a paragraph containing `Subject: `, the HTML element `code` containing `session.sub` with escaped text with escaped text, a paragraph containing a link with `href` = `"/me"` containing `View the protected JSON endpoint` with escaped text with escaped text, the HTML element `form` with `method` = `"post"`, `action` = `"/logout"`, `onSubmit` = a form action that sends `POST /logout` to [`logout`](logout.aug.md#symbol-logout) on submission containing the HTML element `input` with `type` = `"hidden"`, `name` = `"csrf"`, `value` = `session.csrf` with escaped text, a button with `type` = `"submit"`, `style` = `"padding:10px 18px;border-radius:10px;border:0;background:#17233a;color:white;font:inherit"` containing `Sign out` with escaped text with escaped text with escaped text. [source](views.aug#L14-L22)
 

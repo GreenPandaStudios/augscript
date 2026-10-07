@@ -27,6 +27,14 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](api.aug#L5)
 
+It is private to its defining scope.
+
+It takes `values` as `List<float>`.
+
+It returns ownership of [`Tensor`](bindings.aug.md#symbol-Tensor). Failures can raise [`TensorError`](contracts.aug.md#symbol-TensorError).
+
+Native implementation: `@greenpandastudios/aug-pytorch@0.2.0`, `2.14.1`. Supported targets: linux arm64 glibc 2.36+ itanium-cxx11, linux x64 glibc 2.36+ itanium-cxx11, macos arm64 14.0+ apple-libc++. Binding contract: [`native.abi.json`](native.abi.json) (SHA-256 `f07b8cab89ad7cfe368edcd9daf87ecc810adb6a2eed1f446d7b71fb664e91f5`). It calls `aug_torch_tensor_from_f64_v1` through the C ABI on the caller thread; a blocking native call blocks that thread. The caller owns the returned handle. Its contract does not permit worker entry. The compiler checks the provider, descriptor digest, signature and ownership at August call sites. The native author promises not to retain inputs, enter August from foreign threads, or unwind across the C boundary; internal native workers may run. The compiler does not prove those promises.
+
 May leave with checked errors: TensorError. Native implementation; only the declared contract is known. [Explanation](api.aug.md).
 
 <a id="sequence-_add"></a>
@@ -34,6 +42,14 @@ May leave with checked errors: TensorError. Native implementation; only the decl
 ### \_add
 
 [Source](api.aug#L6)
+
+It is private to its defining scope.
+
+It takes `left` and `right` as [`Tensor`](bindings.aug.md#symbol-Tensor).
+
+It returns ownership of [`Tensor`](bindings.aug.md#symbol-Tensor). Failures can raise [`TensorError`](contracts.aug.md#symbol-TensorError).
+
+Native implementation: `@greenpandastudios/aug-pytorch@0.2.0`, `2.14.1`. Supported targets: linux arm64 glibc 2.36+ itanium-cxx11, linux x64 glibc 2.36+ itanium-cxx11, macos arm64 14.0+ apple-libc++. Binding contract: [`native.abi.json`](native.abi.json) (SHA-256 `f07b8cab89ad7cfe368edcd9daf87ecc810adb6a2eed1f446d7b71fb664e91f5`). It calls `aug_torch_tensor_add_v1` through the C ABI on the caller thread; a blocking native call blocks that thread. `left` lends read access for this call; `right` lends read access for this call. The caller owns the returned handle. Its contract does not permit worker entry. The compiler checks the provider, descriptor digest, signature and ownership at August call sites. The native author promises not to retain inputs, enter August from foreign threads, or unwind across the C boundary; internal native workers may run. The compiler does not prove those promises.
 
 May leave with checked errors: TensorError. Native implementation; only the declared contract is known. [Explanation](api.aug.md).
 
@@ -43,6 +59,14 @@ May leave with checked errors: TensorError. Native implementation; only the decl
 
 [Source](api.aug#L7)
 
+It is private to its defining scope.
+
+It takes `tensor` as [`Tensor`](bindings.aug.md#symbol-Tensor).
+
+It returns `float`. Failures can raise [`TensorError`](contracts.aug.md#symbol-TensorError).
+
+Native implementation: `@greenpandastudios/aug-pytorch@0.2.0`, `2.14.1`. Supported targets: linux arm64 glibc 2.36+ itanium-cxx11, linux x64 glibc 2.36+ itanium-cxx11, macos arm64 14.0+ apple-libc++. Binding contract: [`native.abi.json`](native.abi.json) (SHA-256 `f07b8cab89ad7cfe368edcd9daf87ecc810adb6a2eed1f446d7b71fb664e91f5`). It calls `aug_torch_tensor_sum_v1` through the C ABI on the caller thread; a blocking native call blocks that thread. `tensor` lends read access for this call. Its contract does not permit worker entry. The compiler checks the provider, descriptor digest, signature and ownership at August call sites. The native author promises not to retain inputs, enter August from foreign threads, or unwind across the C boundary; internal native workers may run. The compiler does not prove those promises.
+
 May leave with checked errors: TensorError. Native implementation; only the declared contract is known. [Explanation](api.aug.md).
 
 <a id="sequence-_values"></a>
@@ -51,6 +75,14 @@ May leave with checked errors: TensorError. Native implementation; only the decl
 
 [Source](api.aug#L8)
 
+It is private to its defining scope.
+
+It takes `tensor` as [`Tensor`](bindings.aug.md#symbol-Tensor).
+
+It returns `List<float>`. Failures can raise [`TensorError`](contracts.aug.md#symbol-TensorError).
+
+Native implementation: `@greenpandastudios/aug-pytorch@0.2.0`, `2.14.1`. Supported targets: linux arm64 glibc 2.36+ itanium-cxx11, linux x64 glibc 2.36+ itanium-cxx11, macos arm64 14.0+ apple-libc++. Binding contract: [`native.abi.json`](native.abi.json) (SHA-256 `f07b8cab89ad7cfe368edcd9daf87ecc810adb6a2eed1f446d7b71fb664e91f5`). It calls `aug_torch_tensor_values_v1` through the C ABI on the caller thread; a blocking native call blocks that thread. `tensor` lends read access for this call. August copies the returned buffer, then calls `aug_torch_values_release_v1` to release it. Its contract does not permit worker entry. The compiler checks the provider, descriptor digest, signature and ownership at August call sites. The native author promises not to retain inputs, enter August from foreign threads, or unwind across the C boundary; internal native workers may run. The compiler does not prove those promises.
+
 May leave with checked errors: TensorError. Native implementation; only the declared contract is known. [Explanation](api.aug.md).
 
 <a id="sequence-tensor"></a>
@@ -58,6 +90,12 @@ May leave with checked errors: TensorError. Native implementation; only the decl
 ### tensor
 
 [Source](api.aug#L10)
+
+Copy a list of float64 values into a CPU tensor.
+
+It takes `values` as `List<float>`.
+
+It returns ownership of [`Tensor`](bindings.aug.md#symbol-Tensor). Failures can raise [`TensorError`](contracts.aug.md#symbol-TensorError).
 
 ```mermaid
 sequenceDiagram
@@ -79,6 +117,12 @@ sequenceDiagram
 
 [Source](api.aug#L14)
 
+Add tensors without changing either input.
+
+It takes `left` and `right` as [`Tensor`](bindings.aug.md#symbol-Tensor).
+
+It returns ownership of [`Tensor`](bindings.aug.md#symbol-Tensor). Failures can raise [`TensorError`](contracts.aug.md#symbol-TensorError).
+
 ```mermaid
 sequenceDiagram
     participant p0 as add
@@ -98,6 +142,12 @@ sequenceDiagram
 ### sum
 
 [Source](api.aug#L18)
+
+Sum every element.
+
+It takes `tensor` as [`Tensor`](bindings.aug.md#symbol-Tensor).
+
+Failures can raise [`TensorError`](contracts.aug.md#symbol-TensorError).
 
 ```mermaid
 sequenceDiagram
@@ -119,6 +169,12 @@ sequenceDiagram
 
 [Source](api.aug#L22)
 
+Copy tensor values into an August list.
+
+It takes `tensor` as [`Tensor`](bindings.aug.md#symbol-Tensor).
+
+Failures can raise [`TensorError`](contracts.aug.md#symbol-TensorError).
+
 ```mermaid
 sequenceDiagram
     participant p0 as values
@@ -139,6 +195,12 @@ sequenceDiagram
 
 [Source](api.aug#L26)
 
+It is private to its defining scope.
+
+It returns `int`.
+
+Native implementation: `@greenpandastudios/aug-pytorch@0.2.0`, `2.14.1`. Supported targets: linux arm64 glibc 2.36+ itanium-cxx11, linux x64 glibc 2.36+ itanium-cxx11, macos arm64 14.0+ apple-libc++. Binding contract: [`native.abi.json`](native.abi.json) (SHA-256 `f07b8cab89ad7cfe368edcd9daf87ecc810adb6a2eed1f446d7b71fb664e91f5`). It calls `aug_probe_live_tensors_v1` through the C ABI on the caller thread; a blocking native call blocks that thread. Its contract does not permit worker entry. The compiler checks the provider, descriptor digest, signature and ownership at August call sites. The native author promises not to retain inputs, enter August from foreign threads, or unwind across the C boundary; internal native workers may run. The compiler does not prove those promises.
+
 Native implementation; only the declared contract is known. [Explanation](api.aug.md).
 
 <a id="sequence-_liveBuffers"></a>
@@ -147,6 +209,12 @@ Native implementation; only the declared contract is known. [Explanation](api.au
 
 [Source](api.aug#L27)
 
+It is private to its defining scope.
+
+It returns `int`.
+
+Native implementation: `@greenpandastudios/aug-pytorch@0.2.0`, `2.14.1`. Supported targets: linux arm64 glibc 2.36+ itanium-cxx11, linux x64 glibc 2.36+ itanium-cxx11, macos arm64 14.0+ apple-libc++. Binding contract: [`native.abi.json`](native.abi.json) (SHA-256 `f07b8cab89ad7cfe368edcd9daf87ecc810adb6a2eed1f446d7b71fb664e91f5`). It calls `aug_probe_live_buffers_v1` through the C ABI on the caller thread; a blocking native call blocks that thread. Its contract does not permit worker entry. The compiler checks the provider, descriptor digest, signature and ownership at August call sites. The native author promises not to retain inputs, enter August from foreign threads, or unwind across the C boundary; internal native workers may run. The compiler does not prove those promises.
+
 Native implementation; only the declared contract is known. [Explanation](api.aug.md).
 
 <a id="sequence-_consumeAndFail"></a>
@@ -154,6 +222,12 @@ Native implementation; only the declared contract is known. [Explanation](api.au
 ### \_consumeAndFail
 
 [Source](api.aug#L29)
+
+It is private to its defining scope.
+
+It takes `value` as [`Tensor`](bindings.aug.md#symbol-Tensor) with ownership transferred.
+
+Failures can raise [`TensorError`](contracts.aug.md#symbol-TensorError).
 
 ```mermaid
 sequenceDiagram
@@ -171,6 +245,8 @@ sequenceDiagram
 
 [Source](api.aug#L33)
 
+It returns `float`. Failures can raise [`TensorError`](contracts.aug.md#symbol-TensorError).
+
 May leave with checked errors: TensorError. Interface contract; implementation selected at runtime. [Explanation](api.aug.md).
 
 <a id="sequence-_TensorHolder-20-constructor"></a>
@@ -179,6 +255,10 @@ May leave with checked errors: TensorError. Interface contract; implementation s
 
 [Source](api.aug#L34)
 
+It implements [`_TensorContainer`](api.aug.md#symbol-_TensorContainer). It is private to this file.
+
+It takes `item` as [`Tensor`](bindings.aug.md#symbol-Tensor) with ownership transferred, kept mutable.
+
 Receive fields: item. [Explanation](api.aug.md).
 
 <a id="sequence-_TensorHolder.total"></a>
@@ -186,6 +266,8 @@ Receive fields: item. [Explanation](api.aug.md).
 ### \_TensorHolder.total
 
 [Source](api.aug#L35)
+
+Failures can raise [`TensorError`](contracts.aug.md#symbol-TensorError).
 
 ```mermaid
 sequenceDiagram
@@ -202,6 +284,12 @@ sequenceDiagram
 ### \_replace
 
 [Source](api.aug#L37)
+
+It is private to its defining scope.
+
+It takes `holder` as [`_TensorHolder`](api.aug.md#symbol-_TensorHolder) with permission to mutate it during the call and `replacement` as [`Tensor`](bindings.aug.md#symbol-Tensor) with ownership transferred.
+
+It may change `holder`.
 
 Set holder.item to replacement. [Explanation](api.aug.md).
 

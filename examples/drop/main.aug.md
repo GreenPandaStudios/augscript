@@ -6,6 +6,7 @@
 
 [Interactions and sequences](main.aug.diagrams.md)
 
+<a id="startup"></a>
 ## Startup
 
 It creates [`Resource`](resource.aug.md#symbol-Resource) and stores the result in owned `resource` ([`Resource`](resource.aug.md#symbol-Resource)). It prints `"using resource"`. [source](main.aug#L3-L4)

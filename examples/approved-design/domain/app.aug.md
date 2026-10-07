@@ -24,7 +24,7 @@ Construction stores dependencies; start performs the visible external work. It i
 <a id="symbol-ApplicationImpl.start"></a>
 ### `ApplicationImpl.start` · [source](app.aug#L10)
 
-Writes the fruit names through the selected console. It sets `fruit` to a list containing a [`Fruit`](models.aug.md#symbol-Fruit) with `code` `1` and `name` `"apple"`, a [`Fruit`](models.aug.md#symbol-Fruit) with `name` `"pear"` and `code` `2`. For each `item` in a snapshot of `fruit`, it passes `item.name` to [`console.write`](../.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-Console.write). [source](app.aug#L11-L13)
+Writes the fruit names through the selected console. It can call [`Console.write`](../.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-Console.write). It sets `fruit` to a list containing a [`Fruit`](models.aug.md#symbol-Fruit) with `code` `1` and `name` `"apple"`, a [`Fruit`](models.aug.md#symbol-Fruit) with `name` `"pear"` and `code` `2`. For each `item` in a snapshot of `fruit`, it passes `item.name` to [`console.write`](../.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-Console.write). [source](app.aug#L11-L13)
 
 <details>
 <summary>Checked interface</summary>
@@ -32,6 +32,8 @@ Writes the fruit names through the selected console. It sets `fruit` to a list c
 ```text
 start() returns void uses Console.write
 ```
+
+It can call [`Console.write`](../.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-Console.write).
 
 </details>
 

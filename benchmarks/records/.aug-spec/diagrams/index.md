@@ -2,20 +2,50 @@
 
 # Project diagrams
 
-Start here to see what moves between the application’s folders. Each arrow names an operation’s inputs and the result it returns to its caller. Open a folder for the next level of detail. Expand the contract list for complete types and dependency links.
+Start with how the application begins, then follow data between its folders. Open an operation to see its decisions, calls, failures and cleanup. Its explanation supplies the exact contract and linked dependencies.
+
+This view includes 2 application source files. Package and interface boundaries show checked contracts; their runtime implementations are not expanded. The views describe the checked program, not desired requirements or a recorded execution.
+
+## Where execution begins
+
+<a id="startup"></a>
+### Startup
+
+It sets `iterations` to `50000`. It stores a list with no items in owned `values` (`List<Item>`). It sets `index` to `0`. While `index` is less than `iterations`, it appends an [`Item`](../../data.aug.md#symbol-Item) with `id` from `index` and `name` `"August"` to `values`; then it increases `index` by `1`. [source](../../main.aug#L3-L8)
+
+After the loop, it sets `checksum` to `0`. For each `item` in a snapshot of `values`, it increases `checksum` by `item.id`. After the loop, it prints `checksum`. [source](../../main.aug#L9-L12)
 
 ## Data flow
 
 No calls cross the source files in this view. Follow local operations in the file sequences below.
 
-<details>
-<summary>Data crossing these boundaries (1 contracts)</summary>
+### Follow the data
 
-| From | To | Operation and inputs | Result |
+Each row opens the complete operations and call sites behind one pair of logical units. A grouped arrow records calls between those units; connected arrows need not belong to the same execution path.
+
+| From | To | Operations | Read |
 | --- | --- | --- | --- |
-| Startup | data | [Item](../../data.aug.md#symbol-Item) · id: int, name: string · value construction | Item |
+| Startup | data | 1 | [Inputs, results and call sites](index.md#boundary-40804e85a313) |
+
+#### Data crossing these boundaries (1 contracts)
+
+<a id="boundary-40804e85a313"></a>
+
+#### Startup → data
+
+<details>
+<summary>1 operation, 1 site</summary>
+
+**[Item](../../data.aug.md#symbol-Item)** · value construction
+
+Inputs: id: int, name: string. Result: Item.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| Startup | [Call site](../../main.aug#L7) · [Caller explanation](../../main.aug.md#startup) |
 
 </details>
+
 
 ## Open a module
 

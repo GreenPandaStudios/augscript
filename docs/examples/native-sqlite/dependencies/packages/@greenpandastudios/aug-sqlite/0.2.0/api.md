@@ -211,8 +211,10 @@ Open a serialized connection. Use :memory: for an in-memory database. It impleme
 
 #### `NativeDatabaseStorage.open` · [source](api.md#source-L10) {#symbol-NativeDatabaseStorage.open}
 
+It takes `path` as a string. It returns ownership of [`Database`](bindings.md#symbol-Database). It can call [`DatabaseStorage.open`](contracts.md#symbol-DatabaseStorage.open). Failures can raise [`SqliteError`](contracts.md#symbol-SqliteError).
+
 ::: spec-paragraph specification-paragraph-1
-It takes `path` as a string. Within an unsafe block, it returns [`_open`](api.md#symbol-_open) with `path`. Native operations must satisfy their declared C contracts. [source](api.md#source-L11-L12)
+Within an unsafe block, it returns [`_open`](api.md#symbol-_open) with `path`. Native operations must satisfy their declared C contracts. [source](api.md#source-L11-L12)
 :::
 
 ::: details Checked interface
@@ -221,14 +223,16 @@ It takes `path` as a string. Within an unsafe block, it returns [`_open`](api.md
 open(string path) returns own Database unless SqliteError uses DatabaseStorage.open
 ```
 
-It takes `path` as a string. It returns ownership of [`Database`](bindings.md#symbol-Database). Failures can raise [`SqliteError`](contracts.md#symbol-SqliteError).
+It takes `path` as a string. It returns ownership of [`Database`](bindings.md#symbol-Database). It can call [`DatabaseStorage.open`](contracts.md#symbol-DatabaseStorage.open). Failures can raise [`SqliteError`](contracts.md#symbol-SqliteError).
 
 :::
 
 ### `open` · [source](api.md#source-L13) {#symbol-open}
 
+It takes `path` as a string. It gets `storage` ([`DatabaseStorage`](contracts.md#symbol-DatabaseStorage)) from dependency injection.
+
 ::: spec-paragraph specification-paragraph-2
-It takes `path` as a string. It gets `storage` ([`DatabaseStorage`](contracts.md#symbol-DatabaseStorage)) from dependency injection. It returns [`storage.open`](contracts.md#symbol-DatabaseStorage.open) with `path`. [source](api.md#source-L14)
+It returns ownership of [`Database`](bindings.md#symbol-Database). It can call [`DatabaseStorage.open`](contracts.md#symbol-DatabaseStorage.open). Failures can raise [`SqliteError`](contracts.md#symbol-SqliteError). It returns [`storage.open`](contracts.md#symbol-DatabaseStorage.open) with `path`. [source](api.md#source-L14)
 :::
 
 ::: details Checked interface
@@ -237,14 +241,18 @@ It takes `path` as a string. It gets `storage` ([`DatabaseStorage`](contracts.md
 open(resolve DatabaseStorage storage, string path) returns own Database unless SqliteError uses DatabaseStorage.open
 ```
 
-It takes `path` as a string. It gets `storage` ([`DatabaseStorage`](contracts.md#symbol-DatabaseStorage)) from dependency injection. It returns ownership of [`Database`](bindings.md#symbol-Database). Failures can raise [`SqliteError`](contracts.md#symbol-SqliteError).
+It takes `path` as a string. It gets `storage` ([`DatabaseStorage`](contracts.md#symbol-DatabaseStorage)) from dependency injection.
+
+It returns ownership of [`Database`](bindings.md#symbol-Database). It can call [`DatabaseStorage.open`](contracts.md#symbol-DatabaseStorage.open). Failures can raise [`SqliteError`](contracts.md#symbol-SqliteError).
 
 :::
 
 ### `openMemory` · [source](api.md#source-L16) {#symbol-openMemory}
 
+Open an in-memory database without filesystem permission. It returns ownership of [`Database`](bindings.md#symbol-Database). Failures can raise [`SqliteError`](contracts.md#symbol-SqliteError).
+
 ::: spec-paragraph specification-paragraph-3
-Open an in-memory database without filesystem permission. Within an unsafe block, it returns [`_open`](api.md#symbol-_open) with `path` `":memory:"`. Native operations must satisfy their declared C contracts. [source](api.md#source-L17-L18)
+Within an unsafe block, it returns [`_open`](api.md#symbol-_open) with `path` `":memory:"`. Native operations must satisfy their declared C contracts. [source](api.md#source-L17-L18)
 :::
 
 ::: details Checked interface
@@ -262,7 +270,7 @@ It returns ownership of [`Database`](bindings.md#symbol-Database). Failures can 
 Execute one parameterized statement. Return the number of changed rows. It takes `database` as [`Database`](bindings.md#symbol-Database) with permission to mutate it during the call, `sql` as a string, and `parameters` as `List<string>`.
 
 ::: spec-paragraph specification-paragraph-4
-Within an unsafe block, it returns [`_execute`](api.md#symbol-_execute) with `database`, `sql`, and `parameters`. Native operations must satisfy their declared C contracts. [source](api.md#source-L21-L22)
+It may change `database`. Failures can raise [`SqliteError`](contracts.md#symbol-SqliteError). Within an unsafe block, it returns [`_execute`](api.md#symbol-_execute) with `database`, `sql`, and `parameters`. Native operations must satisfy their declared C contracts. [source](api.md#source-L21-L22)
 :::
 
 ::: details Checked interface
@@ -280,7 +288,7 @@ It takes `database` as [`Database`](bindings.md#symbol-Database) with permission
 Query one non-null text value with SELECT. Reject PRAGMAs, transactions, savepoints and writes before execution. Copy the result before finalization. It takes `database` as [`Database`](bindings.md#symbol-Database), `sql` as a string, and `parameters` as `List<string>`.
 
 ::: spec-paragraph specification-paragraph-5
-Within an unsafe block, it returns [`_queryScalar`](api.md#symbol-_queryScalar) with `database`, `sql`, and `parameters`. Native operations must satisfy their declared C contracts. [source](api.md#source-L25-L26)
+Failures can raise [`SqliteError`](contracts.md#symbol-SqliteError). Within an unsafe block, it returns [`_queryScalar`](api.md#symbol-_queryScalar) with `database`, `sql`, and `parameters`. Native operations must satisfy their declared C contracts. [source](api.md#source-L25-L26)
 :::
 
 ::: details Checked interface

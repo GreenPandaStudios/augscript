@@ -23,6 +23,10 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](numbers.aug#L3)
 
+Raised when an input is outside the operation's domain. It implements `Error`.
+
+It takes `value` as an integer, kept read-only.
+
 Receive fields: value. [Explanation](numbers.aug.md).
 
 <a id="sequence-Positive.around"></a>
@@ -31,11 +35,15 @@ Receive fields: value. [Explanation](numbers.aug.md).
 
 [Source](numbers.aug#L7)
 
+It takes `amount` as an integer.
+
+Failures can raise [`RangeError`](numbers.aug.md#symbol-RangeError).
+
 ```mermaid
 sequenceDiagram
     participant p0 as Positive.around
     participant p1 as next
-    alt amount ‹ 0
+    alt amount is negative
     p0->>p0: RangeError(value=amount) · construct value
     p0-->>p0: RangeError result: RangeError
     Note over p0: Raise checked failure RangeError(value=amount)； required<br/>cleanup runs before exit
@@ -51,6 +59,14 @@ sequenceDiagram
 ### double
 
 [Source](numbers.aug#L18)
+
+Double a nonnegative amount.
+
+It takes `amount` as an integer.
+
+It returns `int` — Twice the amount, with defined integer wrapping. Failures can raise [`RangeError`](numbers.aug.md#symbol-RangeError) (A validation layer rejected a negative input).
+
+Layers run in the declared order. Call [`Positive.around`](numbers.aug.md#symbol-Positive.around).
 
 Applied layers: Positive; may stop or change delegation; see specification. Return amount \* 2; required cleanup runs before exit. May leave with checked errors: RangeError. [Explanation](numbers.aug.md).
 

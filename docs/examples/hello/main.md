@@ -32,7 +32,7 @@ pageClass: aug-example-page
 
 ::: code-group
 
-```aug [Indentation] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiaW5kZW50Iiwic291cmNlU2hhMjU2IjoiNmE4OGQ2ZGFhOWEzOWE4MmVjNzM0OWQ4NjcxODllMTcwOWI4NGY4YWI4YTcwNzBmODZkY2ExOTJiZDk4ZTY3NCIsImZvcm1hdHRlZFNoYTI1NiI6IjMwNDNhMjRhODhlOTMwNTE2ODhjYTYyYTYxMmQ4YThiYjZlNThiMGNlODBkZTBjZjYzMzU4YjJlYWMxYjAzZjAiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDkiLCJmaXJzdCI6OSwibGFzdCI6OSwiYmFja2xpbmtzIjpbIm1haW4tZGlhZ3JhbXMubWQjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMSJdfSx7ImlkIjoic291cmNlLUw5LUwxMCIsImZpcnN0Ijo5LCJsYXN0IjoxMCwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0xIl19XX0
+```aug [Indentation] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiaW5kZW50Iiwic291cmNlU2hhMjU2IjoiNmE4OGQ2ZGFhOWEzOWE4MmVjNzM0OWQ4NjcxODllMTcwOWI4NGY4YWI4YTcwNzBmODZkY2ExOTJiZDk4ZTY3NCIsImZvcm1hdHRlZFNoYTI1NiI6IjMwNDNhMjRhODhlOTMwNTE2ODhjYTYyYTYxMmQ4YThiYjZlNThiMGNlODBkZTBjZjYzMzU4YjJlYWMxYjAzZjAiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDktTDEwIiwiZmlyc3QiOjksImxhc3QiOjEwLCJiYWNrbGlua3MiOlsiZGlhZ3JhbXMvaW5kZXgubWQjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMSIsIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0xIl19LHsiaWQiOiJzb3VyY2UtTDEwIiwiZmlyc3QiOjEwLCJsYXN0IjoxMCwiYmFja2xpbmtzIjpbImRpYWdyYW1zL2luZGV4Lm1kI2JvdW5kYXJ5LTUwMjJjZjg0ZDg5NSJdfSx7ImlkIjoic291cmNlLUw5IiwiZmlyc3QiOjksImxhc3QiOjksImJhY2tsaW5rcyI6WyJtYWluLWRpYWdyYW1zLm1kI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTEiXX1dfQ
 // aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Console and SystemConsole from august.io
 implement Console with SystemConsole
@@ -45,7 +45,7 @@ resolve app to greeter
 greeter.greet(name="AugScript")
 ```
 
-```aug [Braces] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiYnJhY2VzIiwic291cmNlU2hhMjU2IjoiNmE4OGQ2ZGFhOWEzOWE4MmVjNzM0OWQ4NjcxODllMTcwOWI4NGY4YWI4YTcwNzBmODZkY2ExOTJiZDk4ZTY3NCIsImZvcm1hdHRlZFNoYTI1NiI6IjMwNDNhMjRhODhlOTMwNTE2ODhjYTYyYTYxMmQ4YThiYjZlNThiMGNlODBkZTBjZjYzMzU4YjJlYWMxYjAzZjAiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDkiLCJmaXJzdCI6OSwibGFzdCI6OSwiYmFja2xpbmtzIjpbIm1haW4tZGlhZ3JhbXMubWQjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMSJdfSx7ImlkIjoic291cmNlLUw5LUwxMCIsImZpcnN0Ijo5LCJsYXN0IjoxMCwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0xIl19XX0
+```aug [Braces] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiYnJhY2VzIiwic291cmNlU2hhMjU2IjoiNmE4OGQ2ZGFhOWEzOWE4MmVjNzM0OWQ4NjcxODllMTcwOWI4NGY4YWI4YTcwNzBmODZkY2ExOTJiZDk4ZTY3NCIsImZvcm1hdHRlZFNoYTI1NiI6IjMwNDNhMjRhODhlOTMwNTE2ODhjYTYyYTYxMmQ4YThiYjZlNThiMGNlODBkZTBjZjYzMzU4YjJlYWMxYjAzZjAiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDktTDEwIiwiZmlyc3QiOjksImxhc3QiOjEwLCJiYWNrbGlua3MiOlsiZGlhZ3JhbXMvaW5kZXgubWQjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMSIsIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0xIl19LHsiaWQiOiJzb3VyY2UtTDEwIiwiZmlyc3QiOjEwLCJsYXN0IjoxMCwiYmFja2xpbmtzIjpbImRpYWdyYW1zL2luZGV4Lm1kI2JvdW5kYXJ5LTUwMjJjZjg0ZDg5NSJdfSx7ImlkIjoic291cmNlLUw5IiwiZmlyc3QiOjksImxhc3QiOjksImJhY2tsaW5rcyI6WyJtYWluLWRpYWdyYW1zLm1kI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTEiXX1dfQ
 // aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Console and SystemConsole from august.io
 implement Console with SystemConsole
@@ -68,13 +68,13 @@ greeter.greet(name="AugScript")
 
 [Interactions and sequences](main-diagrams.md)
 
-### Providers
+### Providers {#providers}
 
 `Console` is provided by [`SystemConsole`](dependencies/august/1.0.0/io/contracts.md#symbol-SystemConsole). The same instance is shared. `Logger` is provided by [`ConsoleLogger`](logging/console.md#symbol-ConsoleLogger). The same instance is shared.
 
 `app` is provided by [`Greeter`](app/greeter.md#symbol-Greeter). The same instance is shared. It requires bindings for `Logger`.
 
-### Startup
+### Startup {#startup}
 
 ::: spec-paragraph specification-paragraph-1
 It sets `greeter` to the instance provided for `app`. It passes `"AugScript"` to [`greeter.greet`](app/greeter.md#symbol-Greeter.greet), using injected `Console`. [source](main.md#source-L9-L10)

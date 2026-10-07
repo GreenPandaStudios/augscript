@@ -79,6 +79,8 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](jose.aug#L6)
 
+A failed JOSE validation reveals no unverified claims. It implements `Error`.
+
 [Explanation](jose.aug.md).
 
 <a id="sequence-JwtHeader-20-constructor"></a>
@@ -86,6 +88,10 @@ Call arrows identify checked targets; loop and branch frames determine when they
 ### JwtHeader constructor
 
 [Source](jose.aug#L9)
+
+This profile accepts only RS256, a configured key id, and an explicit token type.
+
+It takes `alg`, `kid`, and `typ` as strings, kept read-only.
 
 Receive fields: alg, kid, typ. [Explanation](jose.aug.md).
 
@@ -95,6 +101,10 @@ Receive fields: alg, kid, typ. [Explanation](jose.aug.md).
 
 [Source](jose.aug#L11)
 
+Public signing-key metadata in RFC 7517 / RFC 7518 form.
+
+It takes `kty`, `kid`, `alg`, `use`, `n`, and `e` as strings, kept read-only.
+
 Receive fields: kty, kid, alg, use, n, e. [Explanation](jose.aug.md).
 
 <a id="sequence-RsaJwks-20-constructor"></a>
@@ -103,6 +113,8 @@ Receive fields: kty, kid, alg, use, n, e. [Explanation](jose.aug.md).
 
 [Source](jose.aug#L12)
 
+It takes `keys` as `List<RsaJwk>`, kept read-only.
+
 Receive fields: keys. [Explanation](jose.aug.md).
 
 <a id="sequence-rsaJwk"></a>
@@ -110,6 +122,12 @@ Receive fields: keys. [Explanation](jose.aug.md).
 ### rsaJwk
 
 [Source](jose.aug#L15)
+
+Export public parameters. Private key material never enters the JSON document.
+
+It takes `publicKey` as `RsaPublicKey` and `kid` as a string. It gets `crypto` ([`Crypto`](contracts.aug.md#symbol-Crypto)) from dependency injection.
+
+It can call [`Crypto.exportRsa`](contracts.aug.md#symbol-Crypto.exportRsa). Failures can raise `CryptoError`.
 
 ```mermaid
 sequenceDiagram
@@ -123,7 +141,7 @@ sequenceDiagram
     p0-->>p0: base64url result 2: string
     p0->>p0: RsaJwk(kty=”RSA”, kid=kid, alg=”RS256”, use=”sig”,<br/>n=base64url result, e=base64url result 2) · construct<br/>value
     p0-->>p0: RsaJwk result: RsaJwk
-    Note over p0: Return RsaJwk(kty=”RSA”, kid=kid, alg=”RS256”,<br/>use=”sig”, n=modulus.base64url(),<br/>e=exponent.base64url())； required cl…
+    Note over p0: Return RsaJwk(kty=”RSA”, kid=kid, alg=”RS256”,<br/>use=”sig”, n=modulus.base64url(),<br/>e=exponent.base64url())； required cleanup runs before<br/>exit
     Note over p0: May leave with checked errors: CryptoError
 ```
 
@@ -133,11 +151,17 @@ sequenceDiagram
 
 [Source](jose.aug#L20)
 
+Import only an RSA signing key for RS256. The transport caller selects the trusted JWKS URL.
+
+It takes `jwk` as [`RsaJwk`](jose.aug.md#symbol-RsaJwk). It gets `crypto` ([`Crypto`](contracts.aug.md#symbol-Crypto)) from dependency injection.
+
+It can call [`Crypto.decodeBase64url`](contracts.aug.md#symbol-Crypto.decodeBase64url) and [`Crypto.importRsa`](contracts.aug.md#symbol-Crypto.importRsa). Failures can raise [`JwtError`](jose.aug.md#symbol-JwtError).
+
 ```mermaid
 sequenceDiagram
     participant p0 as importJwk
     participant p1 as crypto: Crypto
-    alt jwk.kty != ”RSA” or jwk.alg != ”RS256” or jwk.use != ”sig”
+    alt jwk.kty does not equal ”RSA” or jwk.alg does not equal<br/>”RS256” or jwk.use does not equal ”sig”
     p0->>p0: JwtError() · construct value
     p0-->>p0: JwtError result: JwtError
     Note over p0: Raise checked failure JwtError()； required cleanup runs<br/>before exit
@@ -164,6 +188,12 @@ sequenceDiagram
 ### signJwt
 
 [Source](jose.aug#L31)
+
+Sign immutable JSON with an explicit key id and token type. Claims are validated by the protocol that consumes the token.
+
+It takes `key` as `RsaPrivateKey`, `claims` as `Json`, and `kid` and `tokenType` as strings. It gets `crypto` ([`Crypto`](contracts.aug.md#symbol-Crypto)) from dependency injection.
+
+It can call [`Crypto.signRsa`](contracts.aug.md#symbol-Crypto.signRsa). Failures can raise [`JwtError`](jose.aug.md#symbol-JwtError).
 
 #### Sequence 1 of 2
 
@@ -225,6 +255,12 @@ sequenceDiagram
 
 [Source](jose.aug#L44)
 
+Verify the signature and configured algorithm, key id, and type before exposing the JSON payload. Never follows token-supplied URLs.
+
+It takes `token` as a string, `publicKey` as `RsaPublicKey`, and `kid` and `tokenType` as strings. It gets `crypto` ([`Crypto`](contracts.aug.md#symbol-Crypto)) from dependency injection.
+
+It can call [`Crypto.decodeBase64url`](contracts.aug.md#symbol-Crypto.decodeBase64url) and [`Crypto.verifyRsa`](contracts.aug.md#symbol-Crypto.verifyRsa). Failures can raise [`JwtError`](jose.aug.md#symbol-JwtError).
+
 #### Sequence 1 of 3
 
 ```mermaid
@@ -234,7 +270,7 @@ sequenceDiagram
     participant p2 as source package/contracts
     p0->>p0: token.length()
     p0-->>p0: length result: int
-    alt token.length() › 16384
+    alt the byte length of token is greater than 16384
     p0->>p0: JwtError() · construct value
     p0-->>p0: JwtError result: JwtError
     Note over p0: Raise checked failure JwtError()； required cleanup runs<br/>before exit
@@ -243,7 +279,7 @@ sequenceDiagram
     p0-->>p0: parts: List‹string›
     p0->>p0: parts.length()
     p0-->>p0: length result 2: int
-    alt parts.length() != 3
+    alt the number of elements in parts does not equal 3
     p0->>p0: JwtError() · construct value
     p0-->>p0: JwtError result 2: JwtError
     Note over p0: Raise checked failure JwtError()； required cleanup runs<br/>before exit
@@ -275,7 +311,7 @@ sequenceDiagram
     Note over p0: Sequence continued from the previous view
     p0->>p0: parse result.decode‹JwtHeader›()
     p0-->>p0: header: JwtHeader
-    alt header.alg != ”RS256” or header.kid != kid or header.typ != tokenType
+    alt header.alg does not equal ”RS256” or header.kid does not<br/>equal kid or header.typ does not equal tokenType
     p0->>p0: JwtError() · construct value
     p0-->>p0: JwtError result 3: JwtError
     Note over p0: Raise checked failure JwtError()； required cleanup runs<br/>before exit
@@ -286,7 +322,7 @@ sequenceDiagram
     p0-->>p0: bytes result: Bytes
     p0->>p1: verifyRsa(publicKey=publicKey, input=bytes result,<br/>signature=signature) · interface dispatch
     p1-->>p0: verifyRsa result: bool
-    alt not crypto.verifyRsa(publicKey=publicKey, input=(first + ”.” + second).bytes(), signature=signature)
+    alt crypto.verifyRsa with publicKey, input from the UTF-8<br/>bytes of the text ｛first｝.｛second｝, and signature<br/>returns false
     p0->>p0: JwtError() · construct value
     p0-->>p0: JwtError result 4: JwtError
     Note over p0: Raise checked failure JwtError()； required cleanup runs<br/>before exit
@@ -339,6 +375,14 @@ sequenceDiagram
 
 [Source](jose.aug#L73)
 
+Verify an Ed25519 JWT before exposing its claims. The caller supplies trusted
+issuer, audience, token type, current epoch seconds, and the maximum lifetime.
+sub, iat and exp are required. No token-supplied key location is followed.
+
+It takes `token`, `publicKey`, `issuer`, `audience`, and `tokenType` as strings and `now` and `maximumAge` as integers. It gets `crypto` ([`Crypto`](contracts.aug.md#symbol-Crypto)) from dependency injection.
+
+It can call [`Crypto.decodeBase64url`](contracts.aug.md#symbol-Crypto.decodeBase64url) and [`Crypto.verifyEd25519`](contracts.aug.md#symbol-Crypto.verifyEd25519). Failures can raise [`JwtError`](jose.aug.md#symbol-JwtError).
+
 #### Sequence 1 of 6
 
 ```mermaid
@@ -347,11 +391,11 @@ sequenceDiagram
     participant p1 as crypto: Crypto
     p0->>p0: token.utf16Length()
     p0-->>p0: utf16Length result: int
-    opt Left is false
+    opt (utf16Length result == 0) is false
     p0->>p0: token.utf16Length()
     p0-->>p0: utf16Length result 2: int
     end
-    alt token.utf16Length() == 0 or token.utf16Length() › 4096 or now ‹ 0 or maximumAge ‹ 1 or maximumAge › 3600
+    alt token.utf16Length equals 0 or token.utf16Length is<br/>greater than 4096 or now is negative or maximumAge is<br/>less than 1 or maximumAge is greater than 3600
     p0->>p0: JwtError() · construct value
     p0-->>p0: JwtError result: JwtError
     Note over p0: Raise checked failure JwtError()； required cleanup runs<br/>before exit
@@ -360,7 +404,7 @@ sequenceDiagram
     p0-->>p0: parts: List‹string›
     p0->>p0: parts.length()
     p0-->>p0: length result: int
-    alt parts.length() != 3
+    alt the number of elements in parts does not equal 3
     p0->>p0: JwtError() · construct value
     p0-->>p0: JwtError result 2: JwtError
     Note over p0: Raise checked failure JwtError()； required cleanup runs<br/>before exit
@@ -394,21 +438,21 @@ sequenceDiagram
     p0-->>p0: require result: Json
     p0->>p0: require result.string()
     p0-->>p0: string result: string
-    opt Left is false
+    opt (string result != ”EdDSA”) is false
     p0->>p0: header.require(name=”typ”)
     p0-->>p0: require result 2: Json
     p0->>p0: require result 2.string()
     p0-->>p0: string result 2: string
     end
-    opt Left is false
+    opt (string result != ”EdDSA” or string result 2 !=<br/>tokenType) is false
     p0->>p0: header.has(name=”crit”)
     p0-->>p0: has result: bool
     end
-    opt Left is false
+    opt (string result != ”EdDSA” or string result 2 !=<br/>tokenType or has result) is false
     p0->>p0: header.has(name=”b64”)
     p0-->>p0: has result 2: bool
     end
-    alt header.require(name=”alg”).string() != ”EdDSA” or header.require(name=”typ”).string() != tokenType or header.has(name…
+    alt string on header.require with name ”alg” does not equal<br/>”EdDSA” or string on header.require with name ”typ” does<br/>not equal tokenType or header.has with name ”crit” or<br/>header.has with name ”b64”
     p0->>p0: JwtError() · construct value
     p0-->>p0: JwtError result 3: JwtError
     Note over p0: Raise checked failure JwtError()； required cleanup runs<br/>before exit
@@ -430,7 +474,7 @@ sequenceDiagram
     participant p1 as crypto: Crypto
     participant p2 as source package/contracts
     opt Try body； stops on a checked failure
-    alt not crypto.verifyEd25519(publicKey, input=(first + ”.” + second).bytes(), signature)
+    alt crypto.verifyEd25519 with publicKey, input from the<br/>UTF-8 bytes of the text ｛first｝.｛second｝, and signature<br/>returns false
     Note over p0: Sequence continued from the previous view
     p0->>p0: JwtError() · construct value
     p0-->>p0: JwtError result 4: JwtError
@@ -446,7 +490,7 @@ sequenceDiagram
     p0-->>p0: require result 3: Json
     p0->>p0: require result 3.string()
     p0-->>p0: string result 3: string
-    alt claims.require(name=”iss”).string() != issuer
+    alt string on claims.require with name ”iss” does not equal<br/>issuer
     p0->>p0: JwtError() · construct value
     p0-->>p0: JwtError result 5: JwtError
     Note over p0: Raise checked failure JwtError()； required cleanup runs<br/>before exit
@@ -476,12 +520,12 @@ sequenceDiagram
     loop For each item in target.items()
     p0->>p0: entry.string()
     p0-->>p0: string result 5: string
-    alt entry.string() == audience
+    alt entry.string equals audience
     Note over p0: Set allowed to true
     end
     end
     end
-    alt not allowed
+    alt not (allowed)
     p0->>p0: JwtError() · construct value
     p0-->>p0: JwtError result 6: JwtError
     Note over p0: Raise checked failure JwtError()； required cleanup runs<br/>before exit
@@ -513,16 +557,16 @@ sequenceDiagram
     Note over p0: Sequence continued from the previous view
     p0->>p0: trim result.utf16Length()
     p0-->>p0: utf16Length result 3: int
-    opt Left is false
+    opt (utf16Length result 3 == 0) is false
     p0->>p0: subject.utf16Length()
     p0-->>p0: utf16Length result 4: int
     end
-    alt subject.trim().utf16Length() == 0 or subject.utf16Length() › 512 or issued ‹ 0 or issued › 9007199254740991 or expire…
+    alt utf16Length on subject.trim equals 0 or<br/>subject.utf16Length is greater than 512 or issued is<br/>negative or issued is greater than 9007199254740991 or<br/>expires is negative or expires is greater than<br/>9007199254740991
     p0->>p0: JwtError() · construct value
     p0-->>p0: JwtError result 7: JwtError
     Note over p0: Raise checked failure JwtError()； required cleanup runs<br/>before exit
     end
-    alt issued › now or now - issued › maximumAge or expires ‹= now or expires ‹= issued or expires - issued › maximumAge
+    alt issued is greater than now or (now minus issued) is<br/>greater than maximumAge or expires is at most now or<br/>expires is at most issued or (expires minus issued) is<br/>greater than maximumAge
     p0->>p0: JwtError() · construct value
     p0-->>p0: JwtError result 8: JwtError
     Note over p0: Raise checked failure JwtError()； required cleanup runs<br/>before exit
@@ -567,6 +611,10 @@ sequenceDiagram
 
 [Source](jose.aug#L121)
 
+It takes `token` as a string and `now` as an integer.
+
+It returns `Json`. It can call [`Crypto.decodeBase64url`](contracts.aug.md#symbol-Crypto.decodeBase64url) and [`Crypto.verifyEd25519`](contracts.aug.md#symbol-Crypto.verifyEd25519). Failures can raise [`JwtError`](jose.aug.md#symbol-JwtError).
+
 May leave with checked errors: JwtError. Interface contract; implementation selected at runtime. [Explanation](jose.aug.md).
 
 <a id="sequence-Ed25519IdentityVerifier-20-constructor"></a>
@@ -574,6 +622,10 @@ May leave with checked errors: JwtError. Interface contract; implementation sele
 ### Ed25519IdentityVerifier constructor
 
 [Source](jose.aug#L123)
+
+Bind trusted key and identity settings once. The caller supplies the current epoch seconds for each verification. It implements [`IdentityVerifier`](jose.aug.md#symbol-IdentityVerifier).
+
+It takes `publicKey`, `issuer`, `audience`, and `tokenType` as strings, kept read-only and `maximumAge` as an integer, kept read-only. It gets `crypto` ([`Crypto`](contracts.aug.md#symbol-Crypto)), kept read-only from dependency injection.
 
 Receive fields: injected crypto, publicKey, issuer, audience, tokenType, maximumAge. [Explanation](jose.aug.md).
 
@@ -583,13 +635,17 @@ Receive fields: injected crypto, publicKey, issuer, audience, tokenType, maximum
 
 [Source](jose.aug#L124)
 
+It takes `token` as a string and `now` as an integer.
+
+It can call [`Crypto.decodeBase64url`](contracts.aug.md#symbol-Crypto.decodeBase64url) and [`Crypto.verifyEd25519`](contracts.aug.md#symbol-Crypto.verifyEd25519). Failures can raise [`JwtError`](jose.aug.md#symbol-JwtError).
+
 ```mermaid
 sequenceDiagram
     participant p0 as Ed25519IdentityVerifier.verify
 
-    p0->>p0: verifyIdentityToken(token=token, publicKey=publicKey,<br/>issuer=issuer, audience=audience, tokenType=tokenType,<br/>now=now,…
+    p0->>p0: verifyIdentityToken(token=token, publicKey=publicKey,<br/>issuer=issuer, audience=audience, tokenType=tokenType,<br/>now=now, maximumAge=maximumAge)
     p0-->>p0: verifyIdentityToken result: Json
-    Note over p0: Return verifyIdentityToken(token, publicKey, issuer,<br/>audience, tokenType, now, maximumAge)； required cleanup<br/>runs bef…
+    Note over p0: Return verifyIdentityToken(token, publicKey, issuer,<br/>audience, tokenType, now, maximumAge)； required cleanup<br/>runs before exit
     Note over p0: May leave with checked errors: JwtError
 ```
 

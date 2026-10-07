@@ -95,6 +95,18 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](authorization.md#source-L12)
 :::
 
+`authorize` handles `GET /provider/authorize`.
+
+Validate the registered client before offering a login form. A malformed redirect is never followed.
+
+It reads `response_type`, `client_id`, `redirect_uri`, `scope`, `state`, `nonce`, `code_challenge`, and `code_challenge_method` from the HTTP query. `scope` is called `requestedScope` here. It gets `crypto` ([`Crypto`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto)), `clock` ([`Clock`](../dependencies/packages/%40git/url_c092cd151499c4e1d8a1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.md#symbol-Clock)), and `requests` ([`ExpiringStore<AuthorizationRequest>`](../dependencies/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.md#symbol-ExpiringStore)) from dependency injection.
+
+It can call [`Crypto.decodeBase64url`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto.decodeBase64url), [`Crypto.random`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto.random), [`Clock.now`](../dependencies/packages/%40git/url_c092cd151499c4e1d8a1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.md#symbol-Clock.now), and [`ExpiringStore<AuthorizationRequest>.put`](../dependencies/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.md#symbol-ExpiringStore.put).
+
+The handler responds with HTTP 400 for [`LoginError`](contracts.md#symbol-LoginError), HTTP 503 for `CryptoError`, HTTP 503 for `TimeError`, and HTTP 503 for [`StoreFull`](../dependencies/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.md#symbol-StoreFull).
+
+It can also raise `HttpError`.
+
 #### Sequence 1 of 3
 
 ```mermaid
@@ -105,27 +117,27 @@ sequenceDiagram
     Note over p0: GET /provider/authorize
     p0->>p1: settings()
     p1-->>p0: config: Settings
-    alt client_id != config.clientId or redirect_uri != config.callback or response_type != ”code” or code_challenge_method !…
+    alt client_id does not equal config.clientId or redirect_uri<br/>does not equal config.callback or response_type does not<br/>equal ”code” or code_challenge_method does not equal<br/>”S256”
     p0->>p0: LoginError() · construct value
     p0-->>p0: LoginError result: LoginError
     Note over p0: Raise checked failure LoginError()； required cleanup<br/>runs before exit
     end
-    alt requestedScope != ”openid” and requestedScope != ”openid profile”
+    alt requestedScope does not equal ”openid” and<br/>requestedScope does not equal ”openid profile”
     p0->>p0: LoginError() · construct value
     p0-->>p0: LoginError result 2: LoginError
     Note over p0: Raise checked failure LoginError()； required cleanup<br/>runs before exit
     end
     p0->>p0: state.isToken(min=43, max=128)
     p0-->>p0: isToken result: bool
-    opt Left is false
+    opt (not isToken result) is false
     p0->>p0: nonce.isToken(min=43, max=128)
     p0-->>p0: isToken result 2: bool
     end
-    opt Left is false
+    opt (not isToken result or not isToken result 2) is false
     p0->>p0: code_challenge.length()
     p0-->>p0: length result: int
     end
-    alt not state.isToken(min=43, max=128)) or (not nonce.isToken(min=43, max=128)) or code_challenge.length() != 43
+    alt state is not a URL-safe ASCII token with 43 to 128<br/>characters or nonce is not a URL-safe ASCII token with<br/>43 to 128 characters or the byte length of<br/>code_challenge does not equal 43
     p0->>p0: LoginError() · construct value
     p0-->>p0: LoginError result 3: LoginError
     Note over p0: Raise checked failure LoginError()； required cleanup<br/>runs before exit
@@ -135,7 +147,7 @@ sequenceDiagram
     p2-->>p0: decodeBase64url result: Bytes
     p0->>p0: decodeBase64url result.length()
     p0-->>p0: length result 2: int
-    alt crypto.decodeBase64url(input=code_challenge).length() != 32
+    alt the byte length of crypto.decodeBase64url with input<br/>from code_challenge does not equal 32
     p0->>p0: LoginError() · construct value
     p0-->>p0: LoginError result 4: LoginError
     end
@@ -152,7 +164,7 @@ sequenceDiagram
     participant p3 as requests: ExpiringStore
     participant p4 as common/headers
     opt Try body； stops on a checked failure
-    alt crypto.decodeBase64url(input=code_challenge).length() != 32
+    alt the byte length of crypto.decodeBase64url with input<br/>from code_challenge does not equal 32
     Note over p0: Sequence continued from the previous view
     Note over p0: Raise checked failure LoginError()； required cleanup<br/>runs before exit
     end
@@ -176,7 +188,7 @@ sequenceDiagram
     p0-->>p0: csrf: string
     p0->>p2: now() · interface dispatch
     p2-->>p0: now: int
-    p0->>p0: AuthorizationRequest(clientId=client_id,<br/>redirectUri=redirect_uri, state=state, nonce=nonce,<br/>challenge=code_challenge…
+    p0->>p0: AuthorizationRequest(clientId=client_id,<br/>redirectUri=redirect_uri, state=state, nonce=nonce,<br/>challenge=code_challenge, browser=browser, csrf=csrf,<br/>expires=now + 300) · construct value
     p0-->>p0: request: AuthorizationRequest
     p0->>p3: put(key=requestId, value=request,<br/>expires=request.expires, now=now) · interface dispatch
     p0->>p4: securityHeaders()
@@ -191,14 +203,14 @@ sequenceDiagram
     participant p1 as common/headers
     participant p2 as provider/views
     Note over p0: Sequence continued from the previous view
-    p0->>p1: withCookie(headers=securityHeaders result,<br/>name=”aug_authorize”, value=browser, path=”/provider”,<br/>maxAge=300, secure=…
+    p0->>p1: withCookie(headers=securityHeaders result,<br/>name=”aug_authorize”, value=browser, path=”/provider”,<br/>maxAge=300, secure=config.secureCookies)
     p1-->>p0: headers: Headers
     Note over p0: Create browser action for POST /provider/login； called<br/>on submission
-    p0->>p2: ProviderLogin(requestId=requestId, csrf=csrf,<br/>message=”Authorize the registered August login app.”,<br/>submit=handle pro…
+    p0->>p2: ProviderLogin(requestId=requestId, csrf=csrf,<br/>message=”Authorize the registered August login app.”,<br/>submit=handle providerLogin(input from form))
     p2-->>p0: ProviderLogin result: Html
     p0->>p0: HttpResponse(body=ProviderLogin result, headers=headers)
     p0-->>p0: HttpResponse result: HttpResponse‹Html›
-    Note over p0: Return HttpResponse(body=ProviderLogin(requestId, csrf,<br/>message=”Authorize the registered August login app.”,<br/>submit=…
+    Note over p0: Return HttpResponse(body=ProviderLogin(requestId, csrf,<br/>message=”Authorize the registered August login app.”,<br/>submit=handle providerLogin(input from form)),<br/>headers=headers)； required cleanup runs before exit
     Note over p0: May leave with checked errors: CryptoError, HttpError,<br/>LoginError, StoreFull, TimeError
     Note over p0: HTTP result follows declared response and error mapping；<br/>unhandled request failure returns 500
 ```
@@ -208,6 +220,18 @@ sequenceDiagram
 ::: spec-paragraph specification-paragraph-2
 [Source](authorization.md#source-L35)
 :::
+
+`providerLogin` handles `POST /provider/login`.
+
+The browser binding and CSRF token are checked before credentials. Each form request is consumed once.
+
+It takes `form` as [`LoginForm`](contracts.md#symbol-LoginForm) from the HTTP form, `browser` as `optional string` from the HTTP cookie `aug_authorize`, and `origin` as `optional string` from the HTTP header `origin`. It gets `crypto` ([`Crypto`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto)), `clock` ([`Clock`](../dependencies/packages/%40git/url_c092cd151499c4e1d8a1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.md#symbol-Clock)), `requests` ([`ExpiringStore<AuthorizationRequest>`](../dependencies/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.md#symbol-ExpiringStore)), and `codes` ([`ExpiringStore<AuthorizationCode>`](../dependencies/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.md#symbol-ExpiringStore)) from dependency injection. Omitted optional inputs are null.
+
+It can call [`Clock.now`](../dependencies/packages/%40git/url_c092cd151499c4e1d8a1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.md#symbol-Clock.now), [`ExpiringStore<AuthorizationRequest>.take`](../dependencies/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.md#symbol-ExpiringStore.take), [`Crypto.equal`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto.equal), [`Crypto.random`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto.random), [`ExpiringStore<AuthorizationCode>.put`](../dependencies/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.md#symbol-ExpiringStore.put), [`Crypto.passwordHash`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto.passwordHash), and [`Crypto.decodeBase64url`](../dependencies/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.md#symbol-Crypto.decodeBase64url).
+
+The handler responds with HTTP 503 for `CryptoError`, HTTP 503 for `TimeError`, and HTTP 503 for [`StoreFull`](../dependencies/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.md#symbol-StoreFull).
+
+It can also raise `HttpError`.
 
 #### Sequence 1 of 5
 
@@ -223,14 +247,14 @@ sequenceDiagram
     p0->>p1: settings()
     p1-->>p0: config: Settings
     opt Try body； stops on a checked failure
-    alt origin != config.baseUrl
+    alt origin does not equal config.baseUrl
     p0->>p2: ProviderFailure(message=”The sign-in form must come from<br/>this app.”)
     p2-->>p0: ProviderFailure result: Html
     p0->>p3: securityHeaders()
     p3-->>p0: securityHeaders result: Headers
     p0->>p0: HttpResponse(body=ProviderFailure result, status=403,<br/>headers=securityHeaders result)
     p0-->>p0: HttpResponse result: HttpResponse‹Html›
-    Note over p0: Return HttpResponse(body=ProviderFailure(message=”The<br/>sign-in form must come from this app.”), status=403,<br/>headers=se…
+    Note over p0: Return HttpResponse(body=ProviderFailure(message=”The<br/>sign-in form must come from this app.”), status=403,<br/>headers=securityHeaders())； required cleanup runs before<br/>exit
     end
     p0->>p4: now() · interface dispatch
     p4-->>p0: now result: int
@@ -243,7 +267,7 @@ sequenceDiagram
     p3-->>p0: securityHeaders result 2: Headers
     p0->>p0: HttpResponse(body=ProviderFailure result 2, status=400,<br/>headers=securityHeaders result 2)
     p0-->>p0: HttpResponse result 2: HttpResponse‹Html›
-    Note over p0: Return HttpResponse(body=ProviderFailure(message=”The<br/>sign-in request expired or was already used.”),<br/>status=400, hea…
+    Note over p0: Return HttpResponse(body=ProviderFailure(message=”The<br/>sign-in request expired or was already used.”),<br/>status=400, headers=securityHeaders())； required cleanup<br/>runs before exit
     else Match when some request:
     alt Match when null:
     p0->>p2: ProviderFailure(message=”The browser binding is<br/>missing.”)
@@ -269,7 +293,7 @@ sequenceDiagram
     p1-->>p0: securityHeaders result 3: Headers
     p0->>p0: HttpResponse(body=ProviderFailure result 3, status=403,<br/>headers=securityHeaders result 3)
     p0-->>p0: HttpResponse result 3: HttpResponse‹Html›
-    Note over p0: Return HttpResponse(body=ProviderFailure(message=”The<br/>browser binding is missing.”), status=403,<br/>headers=securityHead…
+    Note over p0: Return HttpResponse(body=ProviderFailure(message=”The<br/>browser binding is missing.”), status=403,<br/>headers=securityHeaders())； required cleanup runs before<br/>exit
     else Match when some secret:
     p0->>p0: secret.bytes()
     p0-->>p0: bytes result: Bytes
@@ -277,7 +301,7 @@ sequenceDiagram
     p0-->>p0: bytes result 2: Bytes
     p0->>p2: equal(left=bytes result, right=bytes result 2) ·<br/>interface dispatch
     p2-->>p0: equal result: bool
-    opt Left is false
+    opt (not equal result) is false
     p0->>p0: form.csrf.bytes()
     p0-->>p0: bytes result 3: Bytes
     p0->>p0: request.csrf.bytes()
@@ -285,7 +309,7 @@ sequenceDiagram
     p0->>p2: equal(left=bytes result 3, right=bytes result 4) ·<br/>interface dispatch
     p2-->>p0: equal result 2: bool
     end
-    alt not crypto.equal(left=secret.bytes(), right=request.browser.bytes())) or (not crypto.equal(left=form.csrf.bytes(), ri…
+    alt crypto.equal with left from the UTF-8 bytes of secret<br/>and right from the UTF-8 bytes of request.browser<br/>returns false or crypto.equal with left from the UTF-8<br/>bytes of form.csrf and right from the UTF-8 bytes of<br/>request.csrf returns false
     p0->>p3: ProviderFailure(message=”The sign-in form could not be<br/>verified.”)
     p3-->>p0: ProviderFailure result 4: Html
     p0->>p1: securityHeaders()
@@ -311,21 +335,21 @@ sequenceDiagram
     opt Try body； stops on a checked failure
     alt Continuing Match when some request:
     alt Continuing Match when some secret:
-    alt not crypto.equal(left=secret.bytes(), right=request.browser.bytes())) or (not crypto.equal(left=form.csrf.bytes(), ri…
+    alt crypto.equal with left from the UTF-8 bytes of secret<br/>and right from the UTF-8 bytes of request.browser<br/>returns false or crypto.equal with left from the UTF-8<br/>bytes of form.csrf and right from the UTF-8 bytes of<br/>request.csrf returns false
     Note over p0: Sequence continued from the previous view
-    Note over p0: Return HttpResponse(body=ProviderFailure(message=”The<br/>sign-in form could not be verified.”), status=403,<br/>headers=secu…
+    Note over p0: Return HttpResponse(body=ProviderFailure(message=”The<br/>sign-in form could not be verified.”), status=403,<br/>headers=securityHeaders())； required cleanup runs before<br/>exit
     end
     end
     p0->>p1: verifyCredentials(username=form.username,<br/>password=form.password)
     p1-->>p0: verifyCredentials result: bool
-    alt not verifyCredentials(username=form.username, password=form.password)
+    alt verifyCredentials with form.username and form.password<br/>using injected crypto returns false
     p0->>p2: ProviderFailure(message=”The username or password was<br/>not accepted.”)
     p2-->>p0: ProviderFailure result 5: Html
     p0->>p3: securityHeaders()
     p3-->>p0: securityHeaders result 5: Headers
     p0->>p0: HttpResponse(body=ProviderFailure result 5, status=401,<br/>headers=securityHeaders result 5)
     p0-->>p0: HttpResponse result 5: HttpResponse‹Html›
-    Note over p0: Return HttpResponse(body=ProviderFailure(message=”The<br/>username or password was not accepted.”), status=401,<br/>headers=s…
+    Note over p0: Return HttpResponse(body=ProviderFailure(message=”The<br/>username or password was not accepted.”), status=401,<br/>headers=securityHeaders())； required cleanup runs before<br/>exit
     end
     p0->>p4: now() · interface dispatch
     p4-->>p0: now: int
@@ -333,7 +357,7 @@ sequenceDiagram
     p5-->>p0: random result: Bytes
     p0->>p0: random result.base64url()
     p0-->>p0: code: string
-    p0->>p0: AuthorizationCode(clientId=request.clientId,<br/>redirectUri=request.redirectUri,<br/>challenge=request.challenge, nonce=requ…
+    p0->>p0: AuthorizationCode(clientId=request.clientId,<br/>redirectUri=request.redirectUri,<br/>challenge=request.challenge, nonce=request.nonce,<br/>subject=”demo-ada”, name=”Ada”, expires=now + 60) ·<br/>construct value
     p0-->>p0: grant: AuthorizationCode
     end
     end
@@ -365,7 +389,7 @@ sequenceDiagram
     p3-->>p0: headers: Headers
     p0->>p0: HttpResponse(body=‹p›Returning to the application.‹/p›,<br/>status=303, headers=headers)
     p0-->>p0: HttpResponse result 6: HttpResponse‹Html›
-    Note over p0: Return HttpResponse(body=‹p›Returning to the<br/>application.‹/p›, status=303, headers=headers)； required<br/>cleanup runs be…
+    Note over p0: Return HttpResponse(body=‹p›Returning to the<br/>application.‹/p›, status=303, headers=headers)； required<br/>cleanup runs before exit
     end
     end
     opt Catch HttpError
@@ -375,7 +399,7 @@ sequenceDiagram
     p3-->>p0: securityHeaders result 7: Headers
     p0->>p0: HttpResponse(body=ProviderFailure result 6, status=400,<br/>headers=securityHeaders result 7)
     p0-->>p0: HttpResponse result 7: HttpResponse‹Html›
-    Note over p0: Return HttpResponse(body=ProviderFailure(message=”The<br/>submitted form is invalid.”), status=400,<br/>headers=securityHeade…
+    Note over p0: Return HttpResponse(body=ProviderFailure(message=”The<br/>submitted form is invalid.”), status=400,<br/>headers=securityHeaders())； required cleanup runs before<br/>exit
     end
     Note over p0: May leave with checked errors: CryptoError, HttpError,<br/>StoreFull, TimeError
 ```

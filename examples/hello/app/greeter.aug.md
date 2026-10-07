@@ -14,7 +14,9 @@ Welcomes a user through the configured logger. It implements [`IGreeter`](greete
 <a id="symbol-Greeter.greet"></a>
 ### `Greeter.greet` · [source](greeter.aug#L13)
 
-Prints a personalized greeting. It takes `name` as a string. It gets `console` ([`Console`](../.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-Console)) from dependency injection. It passes the text `Hello, {name}!` to [`logger.log`](../logging/logger.aug.md#symbol-Logger.log), using injected `console`. [source](greeter.aug#L14)
+Prints a personalized greeting. It takes `name` as a string. It gets `console` ([`Console`](../.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-Console)) from dependency injection. It can call [`Console.write`](../.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-Console.write).
+
+It passes the text `Hello, {name}!` to [`logger.log`](../logging/logger.aug.md#symbol-Logger.log), using injected `console`. [source](greeter.aug#L14)
 
 <details>
 <summary>Checked interface</summary>
@@ -23,7 +25,7 @@ Prints a personalized greeting. It takes `name` as a string. It gets `console` (
 greet(resolve Console console, string name) returns void uses Console.write
 ```
 
-It takes `name` as a string (the user to welcome). It gets `console` ([`Console`](../.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-Console)) from dependency injection.
+It takes `name` as a string (the user to welcome). It gets `console` ([`Console`](../.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-Console)) from dependency injection. It can call [`Console.write`](../.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-Console.write).
 
 </details>
 

@@ -24,7 +24,7 @@ Console logger shared by interceptor instances and the application. It implement
 <a id="symbol-ConsoleLogger.log"></a>
 ### `ConsoleLogger.log` · [source](logging.aug#L10)
 
-It takes `message` as a string. It gets `console` ([`Console`](.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-Console)) from dependency injection. It passes `message` to [`console.write`](.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-Console.write). [source](logging.aug#L11)
+It takes `message` as a string. It gets `console` ([`Console`](.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-Console)) from dependency injection. It can call [`Console.write`](.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-Console.write). It passes `message` to [`console.write`](.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-Console.write). [source](logging.aug#L11)
 
 <details>
 <summary>Checked interface</summary>
@@ -33,7 +33,7 @@ It takes `message` as a string. It gets `console` ([`Console`](.aug-spec/august/
 log(resolve Console console, string message) returns void uses Console.write
 ```
 
-It takes `message` as a string (Text to display). It gets `console` ([`Console`](.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-Console)) from dependency injection.
+It takes `message` as a string (Text to display). It gets `console` ([`Console`](.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-Console)) from dependency injection. It can call [`Console.write`](.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-Console.write).
 
 </details>
 

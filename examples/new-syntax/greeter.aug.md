@@ -14,7 +14,7 @@ It implements [`IGreeter`](greeter.aug.md#symbol-IGreeter). It takes `x` as an i
 <a id="symbol-Greeter.greet"></a>
 ### `Greeter.greet` · [source](greeter.aug#L5)
 
-It takes `name` as a string. It gets `console` ([`Console`](.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-Console)) from dependency injection. It passes the text `Hello, {name}!` to [`logger.log`](logger.aug.md#symbol-Logger.log), using injected `console`. [source](greeter.aug#L6)
+It takes `name` as a string. It gets `console` ([`Console`](.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-Console)) from dependency injection. It can call [`Console.write`](.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-Console.write). It passes the text `Hello, {name}!` to [`logger.log`](logger.aug.md#symbol-Logger.log), using injected `console`. [source](greeter.aug#L6)
 
 <details>
 <summary>Checked interface</summary>
@@ -23,7 +23,7 @@ It takes `name` as a string. It gets `console` ([`Console`](.aug-spec/august/1.0
 greet(resolve Console console, string name) returns void uses Console.write
 ```
 
-It takes `name` as a string. It gets `console` ([`Console`](.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-Console)) from dependency injection.
+It takes `name` as a string. It gets `console` ([`Console`](.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-Console)) from dependency injection. It can call [`Console.write`](.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-Console.write).
 
 </details>
 

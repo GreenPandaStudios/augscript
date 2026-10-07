@@ -36,14 +36,52 @@ flowchart LR
 
 :::
 
-::: details Data crossing these boundaries (2 contracts)
+### Follow the data
 
-| From | To | Operation and inputs | Result |
+Each row opens the complete operations and call sites behind one pair of logical units. A grouped arrow records calls between those units; connected arrows need not belong to the same execution path.
+
+| From | To | Operations | Read |
 | --- | --- | --- | --- |
-| app | logger | [Logger.log](../../../logging/logger.md#symbol-Logger.log) · message: string · interface dispatch | void |
-| console | august/io | [Console.write](../../../dependencies/august/1.0.0/io/contracts.md#symbol-Console.write) · value: string · interface dispatch | void |
+| app | logger | 1 | [Inputs, results and call sites](index.md#boundary-aacb87f500fc) |
+| console | august/io | 1 | [Inputs, results and call sites](index.md#boundary-211d6d32ce6e) |
+
+#### Data crossing these boundaries (2 contracts)
+
+#### app → logger {#boundary-aacb87f500fc}
+
+::: details 1 operation, 1 site
+
+**[Logger.log](../../../logging/logger.md#symbol-Logger.log)** · interface dispatch
+
+Inputs: message: string. Result: void.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| Greeter.greet | [Call site](../../../app/greeter.md#source-L14) · [Caller explanation](../../../app/greeter.md#symbol-Greeter.greet) |
 
 :::
+
+#### console → august/io {#boundary-211d6d32ce6e}
+
+::: details 1 operation, 1 site
+
+**[Console.write](../../../dependencies/august/1.0.0/io/contracts.md#symbol-Console.write)** · interface dispatch
+
+Inputs: value: string. Result: void.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| ConsoleLogger.log | [Call site](../../../logging/console.md#source-L6) · [Caller explanation](../../../logging/console.md#symbol-ConsoleLogger.log) |
+
+:::
+
+
+## What this folder exposes
+
+### Exports
+
+Export the declaration `Logger` from [`logger.aug`](../../../logging/logger.md#symbol-Logger). Export the declaration `ConsoleLogger` from [`console.aug`](../../../logging/console.md#symbol-ConsoleLogger).
+
 
 ## Files in this folder
 

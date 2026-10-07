@@ -128,7 +128,7 @@ The native standard-output adapter. Construction performs no output. It implemen
 #### `SystemConsole.write` · [source](contracts.md#source-L10) {#symbol-SystemConsole.write}
 
 ::: spec-paragraph specification-paragraph-1
-Write one line of text. It takes `value` as `T`. It prints `value`. [source](contracts.md#source-L11)
+Write one line of text. It takes `value` as `T`. It can call [`Console.write`](contracts.md#symbol-Console.write). It prints `value`. [source](contracts.md#source-L11)
 :::
 
 ::: details Checked interface
@@ -137,7 +137,7 @@ Write one line of text. It takes `value` as `T`. It prints `value`. [source](con
 write<T>(T value) returns void uses Console.write
 ```
 
-The type parameters are `T`. It takes `value` as `T` (Text to display).
+The type parameters are `T`. It takes `value` as `T` (Text to display). It can call [`Console.write`](contracts.md#symbol-Console.write).
 
 :::
 
@@ -165,8 +165,10 @@ Native filesystem adapter. Construction opens no files. It implements [`FileRead
 
 #### `LocalFiles.read` · [source](contracts.md#source-L25) {#symbol-LocalFiles.read}
 
+Read text. It takes `path` as a string. It can call [`FileReader.read`](contracts.md#symbol-FileReader.read). Failures can raise `FileError` (The file could not be read).
+
 ::: spec-paragraph specification-paragraph-2
-Read text. It takes `path` as a string. It returns `read_file` with `path`. [source](contracts.md#source-L26)
+It returns `read_file` with `path`. [source](contracts.md#source-L26)
 :::
 
 ::: details Checked interface
@@ -175,14 +177,16 @@ Read text. It takes `path` as a string. It returns `read_file` with `path`. [sou
 read(string path) returns string unless FileError uses FileReader.read
 ```
 
-It takes `path` as a string (File path). Failures can raise `FileError` (The file could not be read).
+It takes `path` as a string (File path). It can call [`FileReader.read`](contracts.md#symbol-FileReader.read). Failures can raise `FileError` (The file could not be read).
 
 :::
 
 #### `LocalFiles.write` · [source](contracts.md#source-L27) {#symbol-LocalFiles.write}
 
+Write text. It takes `path` and `content` as strings. It can call [`FileWriter.write`](contracts.md#symbol-FileWriter.write). Failures can raise `FileError` (Writing failed).
+
 ::: spec-paragraph specification-paragraph-3
-Write text. It takes `path` and `content` as strings. It calls `write_file` with `path` and `content`. [source](contracts.md#source-L28)
+It calls `write_file` with `path` and `content`. [source](contracts.md#source-L28)
 :::
 
 ::: details Checked interface
@@ -191,7 +195,7 @@ Write text. It takes `path` and `content` as strings. It calls `write_file` with
 write(string path, string content) returns void unless FileError uses FileWriter.write
 ```
 
-It takes `path` as a string (File path) and `content` as a string (Text). Failures can raise `FileError` (Writing failed).
+It takes `path` as a string (File path) and `content` as a string (Text). It can call [`FileWriter.write`](contracts.md#symbol-FileWriter.write). Failures can raise `FileError` (Writing failed).
 
 :::
 
@@ -210,7 +214,7 @@ Native command-line arguments. It implements [`Arguments`](contracts.md#symbol-A
 #### `ProcessArguments.read` · [source](contracts.md#source-L36) {#symbol-ProcessArguments.read}
 
 ::: spec-paragraph specification-paragraph-4
-It returns `arguments`. [source](contracts.md#source-L37)
+It can call [`Arguments.read`](contracts.md#symbol-Arguments.read). It returns `arguments`. [source](contracts.md#source-L37)
 :::
 
 ::: details Checked interface
@@ -218,6 +222,8 @@ It returns `arguments`. [source](contracts.md#source-L37)
 ```text
 read() returns List<string> uses Arguments.read
 ```
+
+It can call [`Arguments.read`](contracts.md#symbol-Arguments.read).
 
 :::
 

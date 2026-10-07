@@ -25,6 +25,12 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](hashing.md#source-L5)
 :::
 
+Hash UTF-8 text with the real Rust BLAKE3 implementation.
+
+It takes `value` as a string.
+
+Failures can raise [`HashError`](dependencies/packages/%40greenpandastudios/aug-blake3/0.2.0/contracts.md#symbol-HashError).
+
 ```mermaid
 sequenceDiagram
     participant p0 as hashText

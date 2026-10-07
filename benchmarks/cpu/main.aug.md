@@ -6,6 +6,7 @@
 
 [Interactions and sequences](main.aug.diagrams.md)
 
+<a id="startup"></a>
 ## Startup
 
 It sets `state` to `123`. It sets `index` to `0`. While `index` is less than `2000000`, it sets `product` to `state` times `48271`; then it sets `state` to `product` minus ((`product` divided by `2147483647`) times `2147483647`); then it increases `index` by `1`. After the loop, it prints `state`. [source](main.aug#L3-L9)

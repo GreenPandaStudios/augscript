@@ -6,6 +6,7 @@
 
 [Interactions and sequences](main.aug.diagrams.md)
 
+<a id="startup"></a>
 ## Startup
 
 It sets `args` to `arguments`. It prints the number of elements in `args`. If the number of elements in `args` is positive, it prints the item at index `0` in `args`. It sets `numbers` to a list of `int` containing `1`, `2`. [source](main.aug#L2-L16)

@@ -25,11 +25,15 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](errors.md#source-L2)
 :::
 
+It takes `fail` as a boolean.
+
+Failures can raise `FileError`.
+
 ```mermaid
 sequenceDiagram
     participant p0 as load
 
-    alt fail
+    alt fail is true
     p0->>p0: FileError()
     p0-->>p0: FileError result: FileError
     Note over p0: Raise checked failure FileError()； required cleanup runs<br/>before exit

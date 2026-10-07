@@ -6,10 +6,12 @@
 
 [Interactions and sequences](main.aug.diagrams.md)
 
+<a id="providers"></a>
 ## Providers
 
 `Console` is provided by [`SystemConsole`](.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-SystemConsole). The same instance is shared. `Logger` is provided by [`ConsoleLogger`](console.aug.md#symbol-ConsoleLogger). The same instance is shared.
 
+<a id="startup"></a>
 ## Startup
 
 It sets `greeter` to a [`Greeter`](greeter.aug.md#symbol-Greeter) with `x` `4` using injected `Logger` for `logger`. It passes `"AugScript"` to [`greeter.greet`](greeter.aug.md#symbol-Greeter.greet), using injected `Console`. It sets `count` to `7`. It sets `count` to [`increment`](math.aug.md#symbol-increment) with `value` from `count`. [source](main.aug#L9-L12)

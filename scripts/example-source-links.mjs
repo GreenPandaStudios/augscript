@@ -10,7 +10,7 @@ const safeAnchor=id=>id.replace(/[^A-Za-z0-9_.-]/g,char=>'-'+char.codePointAt(0)
 export function planExampleNavigation(artifacts,docs,sources) {
   const texts=new Map(),references=new Map();
   for(const artifact of artifacts.filter(output=>output.path.endsWith('.aug.md')||output.kind==='diagram')){
-    const page=docs.get(artifact.path);let paragraph=0;
+    const page=docs.get(artifact.path);let paragraph=0,readingAnchor;
     let text=artifact.text.replace(/^<!--[^\n]*-->\n\n# [^\n]+\n\n/,'')
       .replace(/^<!-- August spec revision: [^\n]*-->\n\n/gm,'')
       .replace(/^<details>\n<summary>([^<>\n]+)<\/summary>\n([\s\S]*?)\n<\/details>$/gm,(_,title,body)=>'::: details '+title+'\n'+body+'\n:::')
@@ -30,10 +30,14 @@ export function planExampleNavigation(artifacts,docs,sources) {
         }
         return ']('+url(relative(dirname(page),destination))+(anchor?'#'+safeAnchor(decodeURIComponent(anchor)):'')+')';
       });
+      const heading=/^#{2,6} .+ \{#([A-Za-z0-9_.-]+)\}$/.exec(rewritten);
+      if(heading)readingAnchor=heading[1];
       if(!local.length)return rewritten;
-      const heading=/^#{2,6} .+ \{#([A-Za-z0-9_.-]+)\}$/.exec(rewritten),id=heading?.[1]??'specification-paragraph-'+(++paragraph);
+      const table=/^\s*\|/.test(rewritten);
+      if(table&&!readingAnchor)throw new Error('Source-linked table needs a named reading section: '+artifact.path);
+      const id=table?readingAnchor:heading?.[1]??'specification-paragraph-'+(++paragraph);
       for(const ref of local){const list=references.get(ref.target)??[];list.push({...ref,page,paragraph:id});references.set(ref.target,list);}
-      return heading?rewritten:'::: spec-paragraph '+id+'\n'+rewritten+'\n:::';
+      return heading||table?rewritten:'::: spec-paragraph '+id+'\n'+rewritten+'\n:::';
     }).join('\n');
     texts.set(artifact.path,artifact.kind==='diagram'?text:text.replace(/^(#{2,5}) /gm,'$1# '));
   }

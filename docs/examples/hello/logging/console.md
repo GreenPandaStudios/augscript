@@ -32,7 +32,7 @@ pageClass: aug-example-page
 
 ::: code-group
 
-```aug [Indentation] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiaW5kZW50Iiwic291cmNlU2hhMjU2IjoiZGQzOTNhNjUxYzQwYjQ2YjVlNGQyZWE3YmRiZDYyNTEzZjI2NzM0N2IyY2RiMzZiNDc5YzBmYmIzM2M2NjczNCIsImZvcm1hdHRlZFNoYTI1NiI6IjNkMTE1ZTNiMTc0MjUxOWQwZTk5YjM0MzgzY2FlMmU3NDYwM2I5MDhlYWU2MGEyZWFmZmNlZjJkYjJlODhkMjAiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDQiLCJmaXJzdCI6NCwibGFzdCI6NiwiYmFja2xpbmtzIjpbImNvbnNvbGUtZGlhZ3JhbXMubWQjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMSIsIiNzeW1ib2wtQ29uc29sZUxvZ2dlciJdfSx7ImlkIjoic291cmNlLUw1IiwiZmlyc3QiOjUsImxhc3QiOjYsImJhY2tsaW5rcyI6WyJjb25zb2xlLWRpYWdyYW1zLm1kI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTIiLCIjc3ltYm9sLUNvbnNvbGVMb2dnZXIubG9nIl19LHsiaWQiOiJzb3VyY2UtTDYiLCJmaXJzdCI6NiwibGFzdCI6NiwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0xIl19XX0
+```aug [Indentation] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiaW5kZW50Iiwic291cmNlU2hhMjU2IjoiZGQzOTNhNjUxYzQwYjQ2YjVlNGQyZWE3YmRiZDYyNTEzZjI2NzM0N2IyY2RiMzZiNDc5YzBmYmIzM2M2NjczNCIsImZvcm1hdHRlZFNoYTI1NiI6IjNkMTE1ZTNiMTc0MjUxOWQwZTk5YjM0MzgzY2FlMmU3NDYwM2I5MDhlYWU2MGEyZWFmZmNlZjJkYjJlODhkMjAiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDYiLCJmaXJzdCI6NiwibGFzdCI6NiwiYmFja2xpbmtzIjpbIi4uL2RpYWdyYW1zL2ZvbGRlcnMvbG9nZ2luZy9pbmRleC5tZCNib3VuZGFyeS0yMTFkNmQzMmNlNmUiLCIuLi9kaWFncmFtcy9pbmRleC5tZCNib3VuZGFyeS1mMTQzYzZmZmUwMzUiLCIjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMSJdfSx7ImlkIjoic291cmNlLUw0IiwiZmlyc3QiOjQsImxhc3QiOjYsImJhY2tsaW5rcyI6WyJjb25zb2xlLWRpYWdyYW1zLm1kI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTEiLCIjc3ltYm9sLUNvbnNvbGVMb2dnZXIiXX0seyJpZCI6InNvdXJjZS1MNSIsImZpcnN0Ijo1LCJsYXN0Ijo2LCJiYWNrbGlua3MiOlsiY29uc29sZS1kaWFncmFtcy5tZCNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0yIiwiI3N5bWJvbC1Db25zb2xlTG9nZ2VyLmxvZyJdfV19
 // aug-spec: "console.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Console from august.io
 import Logger from logger
@@ -41,7 +41,7 @@ ConsoleLogger() implements Logger:
         console.write(value=message)
 ```
 
-```aug [Braces] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiYnJhY2VzIiwic291cmNlU2hhMjU2IjoiZGQzOTNhNjUxYzQwYjQ2YjVlNGQyZWE3YmRiZDYyNTEzZjI2NzM0N2IyY2RiMzZiNDc5YzBmYmIzM2M2NjczNCIsImZvcm1hdHRlZFNoYTI1NiI6IjAyMDVmMGNmOTVhZDYzMGZkOTNiZTk0YTY4MTRiODI3Njc4YWU3ZTExYTllN2FjNTg2NTBlN2JiZjQ3MTBhZWYiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDQiLCJmaXJzdCI6NCwibGFzdCI6OCwiYmFja2xpbmtzIjpbImNvbnNvbGUtZGlhZ3JhbXMubWQjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMSIsIiNzeW1ib2wtQ29uc29sZUxvZ2dlciJdfSx7ImlkIjoic291cmNlLUw1IiwiZmlyc3QiOjUsImxhc3QiOjcsImJhY2tsaW5rcyI6WyJjb25zb2xlLWRpYWdyYW1zLm1kI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTIiLCIjc3ltYm9sLUNvbnNvbGVMb2dnZXIubG9nIl19LHsiaWQiOiJzb3VyY2UtTDYiLCJmaXJzdCI6NiwibGFzdCI6NiwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0xIl19XX0
+```aug [Braces] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiYnJhY2VzIiwic291cmNlU2hhMjU2IjoiZGQzOTNhNjUxYzQwYjQ2YjVlNGQyZWE3YmRiZDYyNTEzZjI2NzM0N2IyY2RiMzZiNDc5YzBmYmIzM2M2NjczNCIsImZvcm1hdHRlZFNoYTI1NiI6IjAyMDVmMGNmOTVhZDYzMGZkOTNiZTk0YTY4MTRiODI3Njc4YWU3ZTExYTllN2FjNTg2NTBlN2JiZjQ3MTBhZWYiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDYiLCJmaXJzdCI6NiwibGFzdCI6NiwiYmFja2xpbmtzIjpbIi4uL2RpYWdyYW1zL2ZvbGRlcnMvbG9nZ2luZy9pbmRleC5tZCNib3VuZGFyeS0yMTFkNmQzMmNlNmUiLCIuLi9kaWFncmFtcy9pbmRleC5tZCNib3VuZGFyeS1mMTQzYzZmZmUwMzUiLCIjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMSJdfSx7ImlkIjoic291cmNlLUw0IiwiZmlyc3QiOjQsImxhc3QiOjgsImJhY2tsaW5rcyI6WyJjb25zb2xlLWRpYWdyYW1zLm1kI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTEiLCIjc3ltYm9sLUNvbnNvbGVMb2dnZXIiXX0seyJpZCI6InNvdXJjZS1MNSIsImZpcnN0Ijo1LCJsYXN0Ijo3LCJiYWNrbGlua3MiOlsiY29uc29sZS1kaWFncmFtcy5tZCNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0yIiwiI3N5bWJvbC1Db25zb2xlTG9nZ2VyLmxvZyJdfV19
 // aug-spec: "console.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import Console from august.io
 import Logger from logger
@@ -68,8 +68,10 @@ It implements [`Logger`](logger.md#symbol-Logger).
 
 #### `ConsoleLogger.log` · [source](console.md#source-L5) {#symbol-ConsoleLogger.log}
 
+Writes one message. It takes `message` as a string. It gets `console` ([`Console`](../dependencies/august/1.0.0/io/contracts.md#symbol-Console)) from dependency injection. It can call [`Console.write`](../dependencies/august/1.0.0/io/contracts.md#symbol-Console.write).
+
 ::: spec-paragraph specification-paragraph-1
-Writes one message. It takes `message` as a string. It gets `console` ([`Console`](../dependencies/august/1.0.0/io/contracts.md#symbol-Console)) from dependency injection. It passes `message` to [`console.write`](../dependencies/august/1.0.0/io/contracts.md#symbol-Console.write). [source](console.md#source-L6)
+It passes `message` to [`console.write`](../dependencies/august/1.0.0/io/contracts.md#symbol-Console.write). [source](console.md#source-L6)
 :::
 
 ::: details Checked interface
@@ -78,7 +80,7 @@ Writes one message. It takes `message` as a string. It gets `console` ([`Console
 log(resolve Console console, string message) returns void uses Console.write
 ```
 
-It takes `message` as a string (Text to write). It gets `console` ([`Console`](../dependencies/august/1.0.0/io/contracts.md#symbol-Console)) from dependency injection.
+It takes `message` as a string (Text to write). It gets `console` ([`Console`](../dependencies/august/1.0.0/io/contracts.md#symbol-Console)) from dependency injection. It can call [`Console.write`](../dependencies/august/1.0.0/io/contracts.md#symbol-Console.write).
 
 :::
 

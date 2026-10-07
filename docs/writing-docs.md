@@ -65,3 +65,11 @@ Describe current behavior. Keep obsolete benchmark comparisons, delivery histori
 Use the open-circle mark, burgundy accents, warm off-white surfaces and charcoal dark mode. Keep typography quiet, borders thin and illustrations useful. Navigation, buttons, code tabs, examples and benchmark controls should belong to the same palette. Avoid decorative gradients, glows, shadows and card stacks. File roles are distinguished by shape, with consistent strokes that remain readable at 16 pixels. Preserve visible focus, readable contrast and functional controls in both themes and on narrow screens.
 
 The canonical mark is `vscode/media/augscript.svg`. `npm --prefix vscode run artwork` renders Marketplace PNGs and the actual light/dark file-icon legend. The same command derives wiki SVGs under `docs/public/brand`; regenerate them with the mark and inspect the homepage, a lesson, a code/spec comparison and the performance charts before publishing. Benchmark data and source examples retain their measured contents when their presentation changes.
+
+## Explain the program at several resolutions
+
+Begin with the question a reader needs to answer. Project views explain startup and boundaries; folder views explain public surfaces and data exchange; operation views explain possible execution; neighboring prose explains detailed behavior. Source is the editing view. Link in both directions so a reader can move to the amount of detail they need.
+
+Use a single checked program for a welcome comparison of code, prose and diagrams. Name the operation and expected output. Keep measured performance examples distinct, with their actual source and environment. Never substitute a hand-written summary for a generated example without labeling it.
+
+A folder arrow can combine calls from unrelated methods. Describe it as a checked boundary, and link its contributing operations and sites. Distinguish author intent, source-derived behavior, a native contract, an authored test and an executed result. Prefer clear paragraphs to a list of extracted syntax nodes. See [Understand a project](guides/understand-a-project.md).

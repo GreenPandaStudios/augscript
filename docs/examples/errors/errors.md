@@ -58,8 +58,10 @@ load(bool fail) {
 
 ### `load` · [source](errors.md#source-L2) {#symbol-load}
 
+It takes `fail` as a boolean. Failures can raise `FileError`.
+
 ::: spec-paragraph specification-paragraph-1
-It takes `fail` as a boolean. It checks that `fail` is false. It raises a `FileError` at the first failed check. It returns `"loaded"`. [source](errors.md#source-L3-L6)
+It checks that `fail` is false. It raises a `FileError` at the first failed check. It returns `"loaded"`. [source](errors.md#source-L3-L6)
 :::
 
 ::: details Checked interface

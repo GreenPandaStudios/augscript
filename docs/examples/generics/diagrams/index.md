@@ -12,7 +12,25 @@ outline: [2, 3]
 
 [Generic types and functions](../index.md)
 
-Start here to see what moves between the application’s folders. Each arrow names an operation’s inputs and the result it returns to its caller. Open a folder for the next level of detail. Expand the contract list for complete types and dependency links.
+Start with how the application begins, then follow data between its folders. Open an operation to see its decisions, calls, failures and cleanup. Its explanation supplies the exact contract and linked dependencies.
+
+This view includes 2 application source files. Package and interface boundaries show checked contracts; their runtime implementations are not expanded. The views describe the checked program, not desired requirements or a recorded execution.
+
+## Where execution begins
+
+### Providers {#providers}
+
+`Formatter` is provided by [`TextFormatter`](../types.md#symbol-TextFormatter). The same instance is shared.
+
+### Startup {#startup}
+
+::: spec-paragraph specification-paragraph-1
+It sets `formatter` to the instance provided for `Formatter`. It prints [`formatter.title`](../types.md#symbol-Formatter.title). It prints [`formatter.format`](../types.md#symbol-Formatter.format) for `int` with `value` `42`. It sets `box` to a [`Box`](../types.md#symbol-Box) for `string` with `value` `"inside a generic box"`. [source](../main.md#source-L6-L9)
+:::
+
+::: spec-paragraph specification-paragraph-2
+It prints [`box.get`](../types.md#symbol-Box.get). [source](../main.md#source-L10)
+:::
 
 ## Data flow
 
@@ -23,16 +41,54 @@ flowchart TD
     n0 -->|"Box(value) / Box.get + 2 more → Box‹string› / string"| n1
 ```
 
-::: details Data crossing these boundaries (4 contracts)
+### Follow the data
 
-| From | To | Operation and inputs | Result |
+Each row opens the complete operations and call sites behind one pair of logical units. A grouped arrow records calls between those units; connected arrows need not belong to the same execution path.
+
+| From | To | Operations | Read |
 | --- | --- | --- | --- |
-| Startup | types | [Box](../types.md#symbol-Box) · value: string | Box\<string\> |
-| Startup | types | [Box.get](../types.md#symbol-Box.get) | string |
-| Startup | types | [Formatter.format](../types.md#symbol-Formatter.format) · value: int · interface dispatch | string |
-| Startup | types | [Formatter.title](../types.md#symbol-Formatter.title) · interface dispatch | string |
+| Startup | types | 4 | [Inputs, results and call sites](index.md#boundary-0f6d1d161bd4) |
+
+#### Data crossing these boundaries (4 contracts)
+
+#### Startup → types {#boundary-0f6d1d161bd4}
+
+::: details 4 operations, 4 sites
+
+**[Box](../types.md#symbol-Box)**
+
+Inputs: value: string. Result: Box\<string\>.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| Startup | [Call site](../main.md#source-L9) · [Caller explanation](../main.md#startup) |
+
+**[Box.get](../types.md#symbol-Box.get)**
+
+No caller-supplied inputs. Result: string.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| Startup | [Call site](../main.md#source-L10) · [Caller explanation](../main.md#startup) |
+
+**[Formatter.format](../types.md#symbol-Formatter.format)** · interface dispatch
+
+Inputs: value: int. Result: string.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| Startup | [Call site](../main.md#source-L8) · [Caller explanation](../main.md#startup) |
+
+**[Formatter.title](../types.md#symbol-Formatter.title)** · interface dispatch
+
+No caller-supplied inputs. Result: string.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| Startup | [Call site](../main.md#source-L7) · [Caller explanation](../main.md#startup) |
 
 :::
+
 
 ## Open a module
 

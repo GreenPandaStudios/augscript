@@ -6,6 +6,7 @@
 
 [Interactions and sequences](main.aug.diagrams.md)
 
+<a id="startup"></a>
 ## Startup
 
 It sets `iterations` to `20000`. It sets `index` and `checksum` separately, each to `0`. While `index` is less than `iterations`, it sets `parts` to `split` on `"August,clear,local,checked"` with `separator` `","`. For each `part` in a snapshot of `parts`, it increases `checksum` by the byte length of `part`. [source](main.aug#L2-L9)

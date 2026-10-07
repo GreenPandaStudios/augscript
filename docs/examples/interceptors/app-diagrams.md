@@ -70,6 +70,14 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](app.md#source-L15)
 :::
 
+Prints a number and returns its label.
+
+It takes `x` as an integer and `label` as a string. It gets `logger` ([`Logger`](logging.md#symbol-Logger)) and `console` ([`Console`](dependencies/august/1.0.0/io/contracts.md#symbol-Console)) from dependency injection.
+
+It can call [`Console.write`](dependencies/august/1.0.0/io/contracts.md#symbol-Console.write). Failures can raise `ValidationError`.
+
+Layers run in the declared order. Call [`Audit.around`](interceptors.md#symbol-Audit.around). Call [`Positive.around`](interceptors.md#symbol-Positive.around). Map `x` to `y`. Call [`AddOne.around`](interceptors.md#symbol-AddOne.around). Map `x` to `y`.
+
 ```mermaid
 sequenceDiagram
     participant p0 as describe
@@ -86,6 +94,10 @@ sequenceDiagram
 [Source](app.md#source-L20)
 :::
 
+It gets `logger` ([`Logger`](logging.md#symbol-Logger)) and `console` ([`Console`](dependencies/august/1.0.0/io/contracts.md#symbol-Console)) from dependency injection.
+
+It returns `string`. It can call [`Console.write`](dependencies/august/1.0.0/io/contracts.md#symbol-Console.write).
+
 Interface contract; implementation selected at runtime. [Explanation](app.md).
 
 ### Greeter constructor {#sequence-Greeter-20-constructor}
@@ -94,6 +106,10 @@ Interface contract; implementation selected at runtime. [Explanation](app.md).
 [Source](app.md#source-L23)
 :::
 
+Construction stores its inputs; startup is visible in the greet call. It implements [`IGreeter`](app.md#symbol-IGreeter).
+
+It takes `name` as a string, kept read-only. It gets `_logger` ([`Logger`](logging.md#symbol-Logger)), kept read-only and private as `_logger` from dependency injection.
+
 Receive fields: injected \_logger, name. [Explanation](app.md).
 
 ### Greeter.greet {#sequence-Greeter.greet}
@@ -101,6 +117,14 @@ Receive fields: injected \_logger, name. [Explanation](app.md).
 ::: spec-paragraph specification-paragraph-4
 [Source](app.md#source-L26)
 :::
+
+Method annotations wrap each method invocation separately.
+
+It gets `logger` ([`Logger`](logging.md#symbol-Logger)) and `console` ([`Console`](dependencies/august/1.0.0/io/contracts.md#symbol-Console)) from dependency injection.
+
+It can call [`Console.write`](dependencies/august/1.0.0/io/contracts.md#symbol-Console.write).
+
+Layers run in the declared order. Call [`Audit.around`](interceptors.md#symbol-Audit.around).
 
 Applied layers: Audit; may stop or change delegation; see specification. Return "Hello, " + name + "!"; required cleanup runs before exit. [Explanation](app.md).
 

@@ -9,7 +9,7 @@
 <a id="symbol-checkedAdd"></a>
 ## `checkedAdd` · [source](integers.aug#L3)
 
-Add signed int64 values; raise ArithmeticError instead of wrapping on overflow. It takes `left` and `right` as integers.
+Add signed int64 values; raise ArithmeticError instead of wrapping on overflow. It takes `left` and `right` as integers. Failures can raise `ArithmeticError`.
 
 It sets `result` to `left` plus `right`. It checks that (`right` is at most `0` or `result` is at least `left`) and (`right` is at least `0` or `result` is at most `left`). It raises an `ArithmeticError` at the first failed check. It returns `result`. [source](integers.aug#L4-L7)
 
@@ -27,7 +27,7 @@ It takes `left` and `right` as integers. Failures can raise `ArithmeticError`.
 <a id="symbol-checkedSubtract"></a>
 ## `checkedSubtract` · [source](integers.aug#L10)
 
-Subtract signed int64 values; raise ArithmeticError instead of wrapping on overflow. It takes `left` and `right` as integers.
+Subtract signed int64 values; raise ArithmeticError instead of wrapping on overflow. It takes `left` and `right` as integers. Failures can raise `ArithmeticError`.
 
 It sets `result` to `left` minus `right`. It checks that (`right` is at most `0` or `result` is at most `left`) and (`right` is at least `0` or `result` is at least `left`). It raises an `ArithmeticError` at the first failed check. It returns `result`. [source](integers.aug#L11-L14)
 
@@ -45,7 +45,7 @@ It takes `left` and `right` as integers. Failures can raise `ArithmeticError`.
 <a id="symbol-checkedMultiply"></a>
 ## `checkedMultiply` · [source](integers.aug#L17)
 
-Multiply signed int64 values; raise ArithmeticError if the product cannot fit. It takes `left` and `right` as integers.
+Multiply signed int64 values; raise ArithmeticError if the product cannot fit. It takes `left` and `right` as integers. Failures can raise `ArithmeticError`.
 
 If `left` equals `0` or `right` equals `0`, it returns `0`. It checks that (`left` does not equal `-9223372036854775808` or `right` does not equal `-1`) and (`right` does not equal `-9223372036854775808` or `left` does not equal `-1`). It raises an `ArithmeticError` at the first failed check. It sets `result` to `left` times `right`. [source](integers.aug#L18-L22)
 
@@ -65,7 +65,7 @@ It takes `left` and `right` as integers. Failures can raise `ArithmeticError`.
 <a id="symbol-checkedDivide"></a>
 ## `checkedDivide` · [source](integers.aug#L28)
 
-Divide toward zero; reject a zero divisor and the unrepresentable MIN / -1 result. It takes `left` and `right` as integers.
+Divide toward zero; reject a zero divisor and the unrepresentable MIN / -1 result. It takes `left` and `right` as integers. Failures can raise `ArithmeticError`.
 
 It checks that `right` does not equal `0` and (`left` does not equal `-9223372036854775808` or `right` does not equal `-1`). It raises an `ArithmeticError` at the first failed check. It returns `left` divided by `right`. [source](integers.aug#L29-L31)
 
@@ -83,7 +83,7 @@ It takes `left` and `right` as integers. Failures can raise `ArithmeticError`.
 <a id="symbol-checkedNegate"></a>
 ## `checkedNegate` · [source](integers.aug#L34)
 
-Negate a signed int64 value; MIN cannot be negated and raises ArithmeticError. It takes `value` as an integer.
+Negate a signed int64 value; MIN cannot be negated and raises ArithmeticError. It takes `value` as an integer. Failures can raise `ArithmeticError`.
 
 It checks that `value` does not equal `-9223372036854775808`. It raises an `ArithmeticError` at the first failed check. It returns the negative of (`value`). [source](integers.aug#L35-L37)
 
@@ -101,7 +101,7 @@ It takes `value` as an integer. Failures can raise `ArithmeticError`.
 <a id="symbol-checkedAbs"></a>
 ## `checkedAbs` · [source](integers.aug#L40)
 
-Return the absolute value; MIN has no representable absolute value. It takes `value` as an integer. It returns [`checkedNegate`](integers.aug.md#symbol-checkedNegate) with `value` if `value` is negative, or `value` otherwise. [source](integers.aug#L41-L43)
+Return the absolute value; MIN has no representable absolute value. It takes `value` as an integer. Failures can raise `ArithmeticError`. It returns [`checkedNegate`](integers.aug.md#symbol-checkedNegate) with `value` if `value` is negative, or `value` otherwise. [source](integers.aug#L41-L43)
 
 <details>
 <summary>Checked interface</summary>
@@ -117,7 +117,7 @@ It takes `value` as an integer. Failures can raise `ArithmeticError`.
 <a id="symbol-checkedSum"></a>
 ## `checkedSum` · [source](integers.aug#L46)
 
-Sum values in list order; reject overflow at any intermediate addition. An empty list returns zero. It takes `values` as `List<int>`.
+Sum values in list order; reject overflow at any intermediate addition. An empty list returns zero. It takes `values` as `List<int>`. Failures can raise `ArithmeticError`.
 
 It sets `total` to `0`. For each `value` in a snapshot of `values`, it sets `total` to [`checkedAdd`](integers.aug.md#symbol-checkedAdd) with `left` from `total` and `right` from `value`. After the loop, it returns `total`. [source](integers.aug#L47-L50)
 

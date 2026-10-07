@@ -49,6 +49,18 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](logout.aug#L10)
 
+`logout` handles `POST /logout`.
+
+POST logout checks the origin and session-bound CSRF value, then removes the live registry entry before clearing the cookie.
+
+It takes `input` as [`LogoutForm`](contracts.aug.md#symbol-LogoutForm) from the HTTP form, `token` as `optional string` from the HTTP cookie `aug_session`, and `origin` as `optional string` from the HTTP header. It gets `crypto` ([`Crypto`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto)), `clock` ([`Clock`](../.aug-spec/packages/%40git/url_c092cd151499c4e1d8a1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-Clock)), `keys` ([`SigningKeys`](../common/keys.aug.md#symbol-SigningKeys)), and `sessions` ([`ExpiringStore<SessionClaims>`](../.aug-spec/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore)) from dependency injection. Omitted optional inputs are null.
+
+It can call [`Crypto.equal`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.equal), [`Clock.now`](../.aug-spec/packages/%40git/url_c092cd151499c4e1d8a1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-Clock.now), [`ExpiringStore<SessionClaims>.take`](../.aug-spec/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore.take), [`SigningKeys.session`](../common/keys.aug.md#symbol-SigningKeys.session), [`Crypto.publicRsa`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.publicRsa), [`ExpiringStore<SessionClaims>.get`](../.aug-spec/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore.get), [`Crypto.decodeBase64url`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.decodeBase64url), and [`Crypto.verifyRsa`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.verifyRsa).
+
+The handler responds with HTTP 403 for [`SessionError`](contracts.aug.md#symbol-SessionError).
+
+It can also raise `CryptoError`, `HttpError`, `KeyError`, and `TimeError`.
+
 #### Sequence 1 of 2
 
 ```mermaid
@@ -62,7 +74,7 @@ sequenceDiagram
     Note over p0: POST /logout
     p0->>p1: settings()
     p1-->>p0: config: Settings
-    alt origin != config.baseUrl
+    alt origin does not equal config.baseUrl
     p0->>p0: SessionError() · construct value
     p0-->>p0: SessionError result: SessionError
     Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
@@ -75,7 +87,7 @@ sequenceDiagram
     p0-->>p0: bytes result 2: Bytes
     p0->>p3: equal(left=bytes result, right=bytes result 2) ·<br/>interface dispatch
     p3-->>p0: equal result: bool
-    alt not crypto.equal(left=input.csrf.bytes(), right=session.csrf.bytes())
+    alt crypto.equal with left from the UTF-8 bytes of<br/>input.csrf and right from the UTF-8 bytes of<br/>session.csrf returns false
     p0->>p0: SessionError() · construct value
     p0-->>p0: SessionError result 2: SessionError
     Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit

@@ -5,14 +5,14 @@ import {readFileSync,mkdirSync,mkdtempSync,writeFileSync,rmSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {resolve,join} from 'node:path';
 import {captureQualificationInputs} from '../scripts/qualification-identity.mjs';
-import {homepageExample} from '../scripts/homepage-docs.mjs';
+import {homepageExample,homepageBenchmark,homepageDiagrams} from '../scripts/homepage-docs.mjs';
 import {nativePackageExamples} from '../scripts/native-package-docs.mjs';
 import {loadProject} from '../src/project.ts';
 import {checkProject} from '../src/checker.ts';
 import {generateSpecs} from '../src/spec.ts';
 
 test('homepage publishes the checked program’s actual spec and fully verified measurement',()=>{
-  const root=resolve('.'),page=homepageExample(root);
+  const root=resolve('.'),page=homepageBenchmark(root);
   const checked=checkProject(loadProject(resolve('benchmarks/greetings')));
   const spec=generateSpecs(checked,{manifest:false}).find(output=>output.path.endsWith('/main.aug.md')).text;
   const paragraph=spec.split('## Startup\n\n')[1].split('\n\nBuilt-in operations')[0];
@@ -55,4 +55,24 @@ test('benchmark snapshots reject source changes during preparation or compilatio
     writeFileSync(join(root,'benchmarks/reference.c'),'int main(void) { return 1; }\n');
     assert.throws(snapshot.verify,/Sources changed/);
   } finally {rmSync(root,{recursive:true,force:true});}
+});
+
+test('welcome code, specification and both diagram resolutions come from one checked project',()=>{
+  const root=resolve('.'),paths=['docs/examples/hello/app/greeter.md','docs/examples/hello/app/greeter-diagrams.md','docs/examples/hello/diagrams/index.md'];
+  const pages=new Map(paths.map(path=>[path,readFileSync(path,'utf8')]));
+  const welcome=homepageExample(root,pages),views=homepageDiagrams(root,pages),checked=checkProject(loadProject(resolve('examples/hello')));
+  const outputs=generateSpecs(checked,{declarations:true});
+  const spec=outputs.find(output=>output.path.endsWith('/app/greeter.aug.md'));
+  const tree=spec.declarations.find(item=>item.tree.anchor==='symbol-Greeter').tree;
+  const plain=text=>text.replace(/\[([^\]]+)\]\([^)]*\)/g,'$1').replaceAll(String.fromCharCode(96),'');
+  const paragraphs=node=>node.kind==='paragraph'?[node.text]:node.kind==='section'||node.kind==='details'?node.children.flatMap(paragraphs):[];
+  for(const paragraph of paragraphs(tree).filter(text=>!text.startsWith(String.fromCharCode(96).repeat(3))))assert.ok(plain(welcome).includes(plain(paragraph)),paragraph);
+  for(const filename of ['/.aug-spec/diagrams/index.md','/app/greeter.aug.diagrams.md']){
+    const page=outputs.find(output=>output.path.endsWith(filename)).text;
+    const source=filename.endsWith('/index.md')?page:page.slice(page.indexOf('### Greeter.greet'));
+    const fence=String.fromCharCode(96).repeat(3),diagram=source.match(new RegExp(fence+'mermaid\\n[\\s\\S]*?\\n'+fence))[0];
+    assert.ok(views.includes(diagram),'Welcome diagram differs from the actual checked example');
+  }
+  assert.match(welcome,/Hello, AugScript!/);
+  assert.match(views,/Interface dispatch remains visible/);
 });

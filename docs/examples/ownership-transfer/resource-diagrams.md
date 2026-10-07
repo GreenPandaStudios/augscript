@@ -38,6 +38,8 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](resource.md#source-L3)
 :::
 
+It implements [`IResource`](resource.md#symbol-IResource).
+
 [Explanation](resource.md).
 
 ### Resource.drop {#sequence-Resource.drop}
@@ -54,6 +56,8 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](resource.md#source-L11)
 :::
 
+It returns ownership of [`Resource`](resource.md#symbol-Resource).
+
 ```mermaid
 sequenceDiagram
     participant p0 as make
@@ -69,6 +73,10 @@ sequenceDiagram
 ::: spec-paragraph specification-paragraph-4
 [Source](resource.md#source-L15)
 :::
+
+It takes `value` as [`Resource`](resource.md#symbol-Resource) with ownership transferred. It gets `console` ([`Console`](dependencies/august/1.0.0/io/contracts.md#symbol-Console)) from dependency injection.
+
+It can call [`Console.write`](dependencies/august/1.0.0/io/contracts.md#symbol-Console.write).
 
 ```mermaid
 sequenceDiagram

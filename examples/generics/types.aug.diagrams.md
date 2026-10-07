@@ -26,6 +26,12 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](types.aug#L3)
 
+The type parameters are `T`.
+
+It takes `value` as `T`.
+
+It returns `string`.
+
 Interface contract; implementation selected at runtime. [Explanation](types.aug.md).
 
 <a id="sequence-Formatter.title"></a>
@@ -42,6 +48,10 @@ Return "formatted"; required cleanup runs before exit. [Explanation](types.aug.m
 
 [Source](types.aug#L8)
 
+It implements [`Formatter`](types.aug.md#symbol-Formatter).
+
+It inherits the default implementations of [`Formatter.title`](types.aug.md#symbol-Formatter.title).
+
 [Explanation](types.aug.md).
 
 <a id="sequence-TextFormatter.format"></a>
@@ -50,6 +60,8 @@ Return "formatted"; required cleanup runs before exit. [Explanation](types.aug.m
 
 [Source](types.aug#L9)
 
+It takes `value` as `T`.
+
 Return "generic method called"; required cleanup runs before exit. [Explanation](types.aug.md).
 
 <a id="sequence-Box-20-constructor"></a>
@@ -57,6 +69,10 @@ Return "generic method called"; required cleanup runs before exit. [Explanation]
 ### Box constructor
 
 [Source](types.aug#L13)
+
+It implements [`IBox<T>`](types.aug.md#symbol-IBox). The type parameters are `T`.
+
+It takes `value` as `T`, kept read-only.
 
 Receive fields: value. [Explanation](types.aug.md).
 
@@ -73,6 +89,8 @@ Return value; required cleanup runs before exit. [Explanation](types.aug.md).
 ### IBox.get
 
 [Source](types.aug#L19)
+
+It returns `T`.
 
 Interface contract; implementation selected at runtime. [Explanation](types.aug.md).
 

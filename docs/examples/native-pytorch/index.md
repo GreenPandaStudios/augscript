@@ -12,7 +12,7 @@ outline: [2, 3]
 
 Add two CPU tensors with LibTorch and check the elements and sum. Owned tensors are released at scope exit.
 
-Open a file to read the code beside its compiled explanation. Choose **Indentation** or **Braces** to change the code view. The choice carries across files.
+Start with the [project overview](diagrams/index.md), then open an operation’s sequence or explanation. Source stays beside its spec when you need to inspect an expression. Choose **Indentation** or **Braces** for that code view; the choice carries across files.
 
 This project runs with August `1.0.0` on macOS 14+ with Apple Silicon, or GNU/Linux x64 or ARM64 with glibc 2.36+. The CLI obtains the verified compiler and library artifacts automatically.
 

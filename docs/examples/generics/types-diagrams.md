@@ -36,6 +36,12 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](types.md#source-L3)
 :::
 
+The type parameters are `T`.
+
+It takes `value` as `T`.
+
+It returns `string`.
+
 Interface contract; implementation selected at runtime. [Explanation](types.md).
 
 ### Formatter.title {#sequence-Formatter.title}
@@ -52,6 +58,10 @@ Return "formatted"; required cleanup runs before exit. [Explanation](types.md).
 [Source](types.md#source-L8)
 :::
 
+It implements [`Formatter`](types.md#symbol-Formatter).
+
+It inherits the default implementations of [`Formatter.title`](types.md#symbol-Formatter.title).
+
 [Explanation](types.md).
 
 ### TextFormatter.format {#sequence-TextFormatter.format}
@@ -60,6 +70,8 @@ Return "formatted"; required cleanup runs before exit. [Explanation](types.md).
 [Source](types.md#source-L9)
 :::
 
+It takes `value` as `T`.
+
 Return "generic method called"; required cleanup runs before exit. [Explanation](types.md).
 
 ### Box constructor {#sequence-Box-20-constructor}
@@ -67,6 +79,10 @@ Return "generic method called"; required cleanup runs before exit. [Explanation]
 ::: spec-paragraph specification-paragraph-5
 [Source](types.md#source-L13)
 :::
+
+It implements [`IBox<T>`](types.md#symbol-IBox). The type parameters are `T`.
+
+It takes `value` as `T`, kept read-only.
 
 Receive fields: value. [Explanation](types.md).
 
@@ -83,6 +99,8 @@ Return value; required cleanup runs before exit. [Explanation](types.md).
 ::: spec-paragraph specification-paragraph-7
 [Source](types.md#source-L19)
 :::
+
+It returns `T`.
 
 Interface contract; implementation selected at runtime. [Explanation](types.md).
 

@@ -25,6 +25,10 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](app.aug#L7)
 
+Writes the fruit names through the selected console.
+
+It can call [`Console.write`](../.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-Console.write).
+
 Interface contract; implementation selected at runtime. [Explanation](app.aug.md).
 
 <a id="sequence-ApplicationImpl-20-constructor"></a>
@@ -33,6 +37,10 @@ Interface contract; implementation selected at runtime. [Explanation](app.aug.md
 
 [Source](app.aug#L9)
 
+Construction stores dependencies; start performs the visible external work. It implements [`Application`](app.aug.md#symbol-Application).
+
+The `console` dependency is injected as [`Console`](../.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-Console) and stored read-only.
+
 Receive fields: injected console. [Explanation](app.aug.md).
 
 <a id="sequence-ApplicationImpl.start"></a>
@@ -40,6 +48,10 @@ Receive fields: injected console. [Explanation](app.aug.md).
 ### ApplicationImpl.start
 
 [Source](app.aug#L10)
+
+Writes the fruit names through the selected console.
+
+It can call [`Console.write`](../.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-Console.write).
 
 ```mermaid
 sequenceDiagram

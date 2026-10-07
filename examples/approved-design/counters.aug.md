@@ -84,7 +84,7 @@ It implements [`Counter`](counters.aug.md#symbol-Counter). It is private to this
 <a id="symbol-_Counter.increment"></a>
 ### `_Counter.increment` · [source](counters.aug#L16)
 
-It sets `_state` to a [`_Updated`](counters.aug.md#symbol-_Updated) with `count` from [`_state.read`](counters.aug.md#symbol-State.read) plus `1`. [source](counters.aug#L17)
+It may change `self`. It sets `_state` to a [`_Updated`](counters.aug.md#symbol-_Updated) with `count` from [`_state.read`](counters.aug.md#symbol-State.read) plus `1`. [source](counters.aug#L17)
 
 <details>
 <summary>Checked interface</summary>

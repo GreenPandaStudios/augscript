@@ -1,3 +1,4 @@
+import {verifyReadingCoverage} from '../src/spec-reading.ts';
 import { prepareLibraryFixtures } from './library-fixtures.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -522,4 +523,31 @@ test('owned bindings explain their types and ordered calls once, including neste
   assert.ok(body.indexOf('owned `first`')<body.indexOf('owned `second`'));
   assert.equal((body.match(/stores /g)??[]).length,2);
   assert.doesNotMatch(body,/owns this value/);
+}));
+
+test('statement coverage checks extraction independently from a successful prose plan',()=>project({
+ 'main.aug':'import inspect from rules\nprint(value=inspect(value=4))\n',
+ 'rules.aug':'inspect(int value) returns int { if value < 0 { return 0 } return value * 2 }\n',
+},(root)=>{
+ const analysis=checked(root);valid(analysis);
+ const file=analysis.project.files.get(join(root,'rules.aug'));
+ const artifact=generateSpecs(analysis,{declarations:true}).find(output=>output.source===file.path&&output.path.endsWith('.aug.md'));
+ const tree=structuredClone(artifact.declarations[0].tree);
+ assert.doesNotThrow(()=>verifyReadingCoverage(tree,file));
+ const body=tree.children.find(node=>node.kind==='flow');
+ const remove=node=>{if(node.kind==='branch')node.then=[];};
+ body.steps.forEach(remove);
+ assert.throws(()=>verifyReadingCoverage(tree,file),/Specification omitted statement evidence/);
+}));
+
+
+test('query-only input explanations preserve optional types and omitted null',()=>project({
+ 'main.aug':'import search from api\nprint(value=search(term=null, limit=20))\n',
+ 'api.aug':'endpoint GET "/search" as search(optional string term from query, int limit from query) returns int { return limit }\n',
+},root=>{
+ const analysis=checked(root);valid(analysis);
+ const text=generateSpecs(analysis).find(page=>page.path.endsWith('/api.aug.md')).text;
+ const visible=text.split('<details>')[0];
+ assert.match(visible,/term.*optional string/);assert.match(visible,/limit.*int/);
+ assert.match(visible,/Omitted optional inputs are null/);
 }));

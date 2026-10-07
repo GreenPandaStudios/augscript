@@ -6,6 +6,7 @@
 
 [Interactions and sequences](main.aug.diagrams.md)
 
+<a id="startup"></a>
 ## Startup
 
 It sets `iterations` to `200000`. It sets `state` to `123`. It sets `index` to `0`. While `index` is less than `iterations`, it sets `state` to [`step`](operations.aug.md#symbol-step) with `value` from `state`; then it increases `index` by `1`. [source](main.aug#L3-L8)

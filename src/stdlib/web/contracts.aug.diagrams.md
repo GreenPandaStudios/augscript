@@ -50,6 +50,10 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](contracts.aug#L3)
 
+Immutable identity returned by the authentication adapter.
+
+It takes `subject` as a string, kept read-only and `permissions` as `List<string>`, kept read-only.
+
 Receive fields: subject, permissions. [Explanation](contracts.aug.md).
 
 <a id="sequence-Authentication.authenticate"></a>
@@ -57,6 +61,10 @@ Receive fields: subject, permissions. [Explanation](contracts.aug.md).
 ### Authentication.authenticate
 
 [Source](contracts.aug#L7)
+
+It takes `request` as `HttpRequest`.
+
+It returns [`optional Principal`](contracts.aug.md#symbol-Principal). It can call [`Authentication.authenticate`](contracts.aug.md#symbol-Authentication.authenticate). Failures can raise `HttpError`.
 
 May leave with checked errors: HttpError. Interface contract; implementation selected at runtime. [Explanation](contracts.aug.md).
 
@@ -66,6 +74,10 @@ May leave with checked errors: HttpError. Interface contract; implementation sel
 
 [Source](contracts.aug#L11)
 
+It takes `identity` as [`Principal`](contracts.aug.md#symbol-Principal) and `permission` as a string.
+
+It returns `bool`. It can call [`Authorization.authorize`](contracts.aug.md#symbol-Authorization.authorize). Failures can raise `HttpError`.
+
 May leave with checked errors: HttpError. Interface contract; implementation selected at runtime. [Explanation](contracts.aug.md).
 
 <a id="sequence-RequestLogger.complete"></a>
@@ -73,6 +85,10 @@ May leave with checked errors: HttpError. Interface contract; implementation sel
 ### RequestLogger.complete
 
 [Source](contracts.aug#L15)
+
+It takes `method` and `path` as strings and `status` and `milliseconds` as integers.
+
+It can call [`RequestLogger.complete`](contracts.aug.md#symbol-RequestLogger.complete).
 
 Interface contract; implementation selected at runtime. [Explanation](contracts.aug.md).
 
@@ -82,6 +98,14 @@ Interface contract; implementation selected at runtime. [Explanation](contracts.
 
 [Source](contracts.aug#L17)
 
+It is private to its defining scope.
+
+It takes `method` and `path` as strings and `status` and `milliseconds` as integers.
+
+It can call [`RequestLogger.complete`](contracts.aug.md#symbol-RequestLogger.complete).
+
+Native C implementation; only its declared contract is visible here.
+
 Native implementation; only the declared contract is known. [Explanation](contracts.aug.md).
 
 <a id="sequence-WebRequestLogger-20-constructor"></a>
@@ -90,6 +114,8 @@ Native implementation; only the declared contract is known. [Explanation](contra
 
 [Source](contracts.aug#L19)
 
+Emit escaped JSON request metadata to standard error. Credentials and query strings are excluded. It implements [`RequestLogger`](contracts.aug.md#symbol-RequestLogger).
+
 [Explanation](contracts.aug.md).
 
 <a id="sequence-WebRequestLogger.complete"></a>
@@ -97,6 +123,10 @@ Native implementation; only the declared contract is known. [Explanation](contra
 ### WebRequestLogger.complete
 
 [Source](contracts.aug#L20)
+
+It takes `method` and `path` as strings and `status` and `milliseconds` as integers.
+
+It can call [`RequestLogger.complete`](contracts.aug.md#symbol-RequestLogger.complete).
 
 ```mermaid
 sequenceDiagram
@@ -115,6 +145,12 @@ sequenceDiagram
 
 [Source](contracts.aug#L27)
 
+Perform an HTTP request with bounded bytes. Waiting for a response suspends the calling task.
+
+It takes `method` and `url` as strings, `headers` as `optional Headers`, and `body` as `optional Bytes`. Omitted optional inputs are null.
+
+It returns `HttpResponse<Bytes>`. It can call [`HttpClient.request`](contracts.aug.md#symbol-HttpClient.request). Failures can raise `HttpError`.
+
 May leave with checked errors: HttpError. Interface contract; implementation selected at runtime. [Explanation](contracts.aug.md).
 
 <a id="sequence-_aug_http_request"></a>
@@ -122,6 +158,14 @@ May leave with checked errors: HttpError. Interface contract; implementation sel
 ### \_aug\_http\_request
 
 [Source](contracts.aug#L29)
+
+It is private to its defining scope.
+
+It takes `method` and `url` as strings, `headers` as `optional Headers`, and `body` as `optional Bytes`. Omitted optional inputs are null.
+
+It returns `HttpResponse<Bytes>`. It can call [`HttpClient.request`](contracts.aug.md#symbol-HttpClient.request). Failures can raise `HttpError`.
+
+Native C implementation; only its declared contract is visible here.
 
 May leave with checked errors: HttpError. Native implementation; only the declared contract is known. [Explanation](contracts.aug.md).
 
@@ -131,6 +175,8 @@ May leave with checked errors: HttpError. Native implementation; only the declar
 
 [Source](contracts.aug#L32)
 
+Native libwebsockets transport. No socket is opened by construction. It implements [`HttpClient`](contracts.aug.md#symbol-HttpClient).
+
 [Explanation](contracts.aug.md).
 
 <a id="sequence-WebHttpClient.request"></a>
@@ -138,6 +184,12 @@ May leave with checked errors: HttpError. Native implementation; only the declar
 ### WebHttpClient.request
 
 [Source](contracts.aug#L33)
+
+Perform an HTTP request with bounded bytes. Waiting for a response suspends the calling task.
+
+It takes `method` and `url` as strings, `headers` as `optional Headers`, and `body` as `optional Bytes`. Omitted optional inputs are null.
+
+It can call [`HttpClient.request`](contracts.aug.md#symbol-HttpClient.request). Failures can raise `HttpError`.
 
 ```mermaid
 sequenceDiagram
@@ -158,6 +210,12 @@ sequenceDiagram
 ### redirect
 
 [Source](contracts.aug#L38)
+
+Return a redirect with an explicit status. Location is checked as a header value.
+
+It takes `location` as a string and `status` as `optional int`. Omitted optional inputs are null.
+
+Failures can raise `HttpError`.
 
 ```mermaid
 sequenceDiagram
@@ -185,6 +243,14 @@ sequenceDiagram
 
 [Source](contracts.aug#L48)
 
+It is private to its defining scope.
+
+It takes `input` as a string.
+
+It returns `string`. Failures can raise `HttpError`.
+
+Native C implementation; only its declared contract is visible here.
+
 May leave with checked errors: HttpError. Native implementation; only the declared contract is known. [Explanation](contracts.aug.md).
 
 <a id="sequence-urlEncode"></a>
@@ -192,6 +258,12 @@ May leave with checked errors: HttpError. Native implementation; only the declar
 ### urlEncode
 
 [Source](contracts.aug#L50)
+
+Encode a UTF-8 value as one URL query or form component using RFC 3986 unreserved characters.
+
+It takes `input` as a string.
+
+Failures can raise `HttpError`.
 
 ```mermaid
 sequenceDiagram
@@ -213,6 +285,14 @@ sequenceDiagram
 
 [Source](contracts.aug#L54)
 
+It is private to its defining scope.
+
+It takes `name`, `value`, and `path` as strings, `maxAge` as an integer, and `secure` as a boolean.
+
+It returns `Headers`. Failures can raise `HttpError`.
+
+Native C implementation; only its declared contract is visible here.
+
 May leave with checked errors: HttpError. Native implementation; only the declared contract is known. [Explanation](contracts.aug.md).
 
 <a id="sequence-cookie"></a>
@@ -220,6 +300,12 @@ May leave with checked errors: HttpError. Native implementation; only the declar
 ### cookie
 
 [Source](contracts.aug#L56)
+
+Construct an HttpOnly, SameSite=Lax session cookie. Secure defaults are chosen explicitly at the call site. Values and paths reject delimiters and controls. maxAge=0 clears the cookie.
+
+It takes `name`, `value`, and `path` as strings, `maxAge` as an integer, and `secure` as a boolean.
+
+Failures can raise `HttpError`.
 
 ```mermaid
 sequenceDiagram
@@ -241,6 +327,10 @@ sequenceDiagram
 
 [Source](contracts.aug#L63)
 
+It takes `milliseconds` as an integer.
+
+It can call [`ServerControl.stop`](contracts.aug.md#symbol-ServerControl.stop). Failures can raise `HttpError`.
+
 May leave with checked errors: HttpError. Interface contract; implementation selected at runtime. [Explanation](contracts.aug.md).
 
 <a id="sequence-_aug_http_stop"></a>
@@ -248,6 +338,14 @@ May leave with checked errors: HttpError. Interface contract; implementation sel
 ### \_aug\_http\_stop
 
 [Source](contracts.aug#L65)
+
+It is private to its defining scope.
+
+It takes `milliseconds` as an integer.
+
+It can call [`ServerControl.stop`](contracts.aug.md#symbol-ServerControl.stop). Failures can raise `HttpError`.
+
+Native C implementation; only its declared contract is visible here.
 
 May leave with checked errors: HttpError. Native implementation; only the declared contract is known. [Explanation](contracts.aug.md).
 
@@ -257,6 +355,8 @@ May leave with checked errors: HttpError. Native implementation; only the declar
 
 [Source](contracts.aug#L67)
 
+Control the server on its event-loop thread. Owned services can be disposed after serve returns. It implements [`ServerControl`](contracts.aug.md#symbol-ServerControl).
+
 [Explanation](contracts.aug.md).
 
 <a id="sequence-WebServerControl.stop"></a>
@@ -264,6 +364,10 @@ May leave with checked errors: HttpError. Native implementation; only the declar
 ### WebServerControl.stop
 
 [Source](contracts.aug#L68)
+
+It takes `milliseconds` as an integer.
+
+It can call [`ServerControl.stop`](contracts.aug.md#symbol-ServerControl.stop). Failures can raise `HttpError`.
 
 ```mermaid
 sequenceDiagram

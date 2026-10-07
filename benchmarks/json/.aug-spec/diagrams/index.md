@@ -2,7 +2,18 @@
 
 # Project diagrams
 
-Start here to see what moves between the application’s folders. Each arrow names an operation’s inputs and the result it returns to its caller. Open a folder for the next level of detail. Expand the contract list for complete types and dependency links.
+Start with how the application begins, then follow data between its folders. Open an operation to see its decisions, calls, failures and cleanup. Its explanation supplies the exact contract and linked dependencies.
+
+This view includes 2 application source files. Package and interface boundaries show checked contracts; their runtime implementations are not expanded. The views describe the checked program, not desired requirements or a recorded execution.
+
+## Where execution begins
+
+<a id="startup"></a>
+### Startup
+
+It sets `checksum` and `index` separately, each to `0`. While `index` is less than `5000`, it sets `document` to [`parse`](../packages/%40git/url_2d3c37c690c0fa115be1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-parse) with `input` `"{\"id\":7,\"message\":\"hello\",\"values\":[1,2,3]}"`. It sets `payload` to `document.decode` for [`Payload`](../../data.aug.md#symbol-Payload). It sets `encoded` to `stringify` on a `Json` with `value` from `payload`. [source](../../main.aug#L4-L15)
+
+It sets `checksum` to (`checksum` plus `payload.id`) plus the byte length of `encoded`. It increases `index` by `1`. After the loop, it prints `checksum`. If this work raises `JsonError`, it calls `exit` with `status` `1`. [source](../../main.aug#L11-L15)
 
 ## Data flow
 
@@ -17,14 +28,33 @@ flowchart LR
     n0 -->|"parse(input) → Json"| n1
 ```
 
-<details>
-<summary>Data crossing these boundaries (1 contracts)</summary>
+### Follow the data
 
-| From | To | Operation and inputs | Result |
+Each row opens the complete operations and call sites behind one pair of logical units. A grouped arrow records calls between those units; connected arrows need not belong to the same execution path.
+
+| From | To | Operations | Read |
 | --- | --- | --- | --- |
-| Startup | json | [parse](../packages/%40git/url_2d3c37c690c0fa115be1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-parse) · input: string | Json |
+| Startup | json | 1 | [Inputs, results and call sites](index.md#boundary-61534c742ca4) |
+
+#### Data crossing these boundaries (1 contracts)
+
+<a id="boundary-61534c742ca4"></a>
+
+#### Startup → json
+
+<details>
+<summary>1 operation, 1 site</summary>
+
+**[parse](../packages/%40git/url_2d3c37c690c0fa115be1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-parse)**
+
+Inputs: input: string. Result: Json.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| Startup | [Call site](../../main.aug#L8) · [Caller explanation](../../main.aug.md#startup) |
 
 </details>
+
 
 ## Open a module
 

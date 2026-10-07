@@ -2,7 +2,16 @@
 
 # Project diagrams
 
-Start here to see what moves between the application’s folders. Each arrow names an operation’s inputs and the result it returns to its caller. Open a folder for the next level of detail. Expand the contract list for complete types and dependency links.
+Start with how the application begins, then follow data between its folders. Open an operation to see its decisions, calls, failures and cleanup. Its explanation supplies the exact contract and linked dependencies.
+
+This view includes 2 application source files. Package and interface boundaries show checked contracts; their runtime implementations are not expanded. The views describe the checked program, not desired requirements or a recorded execution.
+
+## Where execution begins
+
+<a id="startup"></a>
+### Startup
+
+It calls [`announce`](../../native.aug.md#symbol-announce). [source](../../main.aug#L3)
 
 ## Data flow
 
@@ -13,14 +22,33 @@ flowchart TD
     n0 -->|"announce"| n1
 ```
 
-<details>
-<summary>Data crossing these boundaries (1 contracts)</summary>
+### Follow the data
 
-| From | To | Operation and inputs | Result |
+Each row opens the complete operations and call sites behind one pair of logical units. A grouped arrow records calls between those units; connected arrows need not belong to the same execution path.
+
+| From | To | Operations | Read |
 | --- | --- | --- | --- |
-| Startup | native | [announce](../../native.aug.md#symbol-announce) | void |
+| Startup | native | 1 | [Inputs, results and call sites](index.md#boundary-d7b6db656ff0) |
+
+#### Data crossing these boundaries (1 contracts)
+
+<a id="boundary-d7b6db656ff0"></a>
+
+#### Startup → native
+
+<details>
+<summary>1 operation, 1 site</summary>
+
+**[announce](../../native.aug.md#symbol-announce)**
+
+No caller-supplied inputs. Result: void.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| Startup | [Call site](../../main.aug#L3) · [Caller explanation](../../main.aug.md#startup) |
 
 </details>
+
 
 ## Open a module
 

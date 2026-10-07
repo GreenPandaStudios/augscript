@@ -2,7 +2,16 @@
 
 # Project diagrams
 
-Start here to see what moves between the application’s folders. Each arrow names an operation’s inputs and the result it returns to its caller. Open a folder for the next level of detail. Expand the contract list for complete types and dependency links.
+Start with how the application begins, then follow data between its folders. Open an operation to see its decisions, calls, failures and cleanup. Its explanation supplies the exact contract and linked dependencies.
+
+This view includes 2 application source files. Package and interface boundaries show checked contracts; their runtime implementations are not expanded. The views describe the checked program, not desired requirements or a recorded execution.
+
+## Where execution begins
+
+<a id="startup"></a>
+### Startup
+
+It prints [`storedName`](../../database.aug.md#symbol-storedName). If this work raises [`SqliteError`](../packages/%40greenpandastudios/aug-sqlite/0.2.0/contracts.aug.md#symbol-SqliteError) as `error`, it prints `error.message`. [source](../../main.aug#L5-L8)
 
 ## Data flow
 
@@ -27,17 +36,68 @@ flowchart LR
 
 </details>
 
-<details>
-<summary>Data crossing these boundaries (4 contracts)</summary>
+### Follow the data
 
-| From | To | Operation and inputs | Result |
+Each row opens the complete operations and call sites behind one pair of logical units. A grouped arrow records calls between those units; connected arrows need not belong to the same execution path.
+
+| From | To | Operations | Read |
 | --- | --- | --- | --- |
-| database | @greenpandastudios/aug-sqlite | [execute](../packages/%40greenpandastudios/aug-sqlite/0.2.0/api.aug.md#symbol-execute) · database: borrow Database, sql: string, parameters: List\<string\> | int |
-| database | @greenpandastudios/aug-sqlite | [openMemory](../packages/%40greenpandastudios/aug-sqlite/0.2.0/api.aug.md#symbol-openMemory) | own Database |
-| database | @greenpandastudios/aug-sqlite | [queryScalar](../packages/%40greenpandastudios/aug-sqlite/0.2.0/api.aug.md#symbol-queryScalar) · database: Database, sql: string, parameters: List\<string\> | string |
-| Startup | database | [storedName](../../database.aug.md#symbol-storedName) | string |
+| database | @greenpandastudios/aug-sqlite | 3 | [Inputs, results and call sites](index.md#boundary-c8873ccb5f91) |
+| Startup | database | 1 | [Inputs, results and call sites](index.md#boundary-d4cf01580fdb) |
+
+#### Data crossing these boundaries (4 contracts)
+
+<a id="boundary-c8873ccb5f91"></a>
+
+#### database → @greenpandastudios/aug-sqlite
+
+<details>
+<summary>3 operations, 4 sites</summary>
+
+**[execute](../packages/%40greenpandastudios/aug-sqlite/0.2.0/api.aug.md#symbol-execute)**
+
+Inputs: database: borrow Database, sql: string, parameters: List\<string\>. Result: int.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| storedName | [Call site](../../database.aug#L8) · [Caller explanation](../../database.aug.md#symbol-storedName) |
+| storedName | [Call site](../../database.aug#L9) · [Caller explanation](../../database.aug.md#symbol-storedName) |
+
+**[openMemory](../packages/%40greenpandastudios/aug-sqlite/0.2.0/api.aug.md#symbol-openMemory)**
+
+No caller-supplied inputs. Result: own Database.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| storedName | [Call site](../../database.aug#L6) · [Caller explanation](../../database.aug.md#symbol-storedName) |
+
+**[queryScalar](../packages/%40greenpandastudios/aug-sqlite/0.2.0/api.aug.md#symbol-queryScalar)**
+
+Inputs: database: Database, sql: string, parameters: List\<string\>. Result: string.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| storedName | [Call site](../../database.aug#L10) · [Caller explanation](../../database.aug.md#symbol-storedName) |
 
 </details>
+
+<a id="boundary-d4cf01580fdb"></a>
+
+#### Startup → database
+
+<details>
+<summary>1 operation, 1 site</summary>
+
+**[storedName](../../database.aug.md#symbol-storedName)**
+
+No caller-supplied inputs. Result: string.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| Startup | [Call site](../../main.aug#L6) · [Caller explanation](../../main.aug.md#startup) |
+
+</details>
+
 
 ## Open a module
 

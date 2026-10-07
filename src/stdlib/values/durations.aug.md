@@ -17,7 +17,7 @@ Exact signed int64 milliseconds. This value has no calendar, clock or scheduling
 Parse a seconds-only duration: optional minus, PT, 1 to 16 integer digits, optional 1 to 3 fractional digits, then S.
 Leading zeroes are accepted; other units, plus signs, spaces and excess precision are rejected.
 
-It takes `text` as a string.
+It takes `text` as a string. Failures can raise `ConversionError` (Invalid syntax or a millisecond value outside int64).
 
 It checks that `text.byteLength` is at least `4` and `text.byteLength` is at most `24`. It raises a `ConversionError` at the first failed check. It sets `negative` to `text.startsWith` with `prefix` `"-"`. It sets `start` to `2`. [source](durations.aug#L14-L17)
 
@@ -70,7 +70,7 @@ It takes `value` as [`Duration`](durations.aug.md#symbol-Duration).
 <a id="symbol-durationFromSeconds"></a>
 ## `durationFromSeconds` · [source](durations.aug#L70)
 
-Convert whole seconds to exact milliseconds. It takes `seconds` as an integer. It returns a [`Duration`](durations.aug.md#symbol-Duration) with `milliseconds` from [`checkedMultiply`](.aug-spec/august/1.0.0/math/integers.aug.md#symbol-checkedMultiply) with `left` from `seconds` and `right` `1000`. [source](durations.aug#L71)
+Convert whole seconds to exact milliseconds. It takes `seconds` as an integer. Failures can raise `ArithmeticError` (Multiplication by 1000 overflows int64). It returns a [`Duration`](durations.aug.md#symbol-Duration) with `milliseconds` from [`checkedMultiply`](.aug-spec/august/1.0.0/math/integers.aug.md#symbol-checkedMultiply) with `left` from `seconds` and `right` `1000`. [source](durations.aug#L71)
 
 <details>
 <summary>Checked interface</summary>
@@ -86,7 +86,7 @@ It takes `seconds` as an integer. Failures can raise `ArithmeticError` (Multipli
 <a id="symbol-addDurations"></a>
 ## `addDurations` · [source](durations.aug#L76)
 
-Add milliseconds without wrapping. It takes `left` and `right` as [`Duration`](durations.aug.md#symbol-Duration). It returns a [`Duration`](durations.aug.md#symbol-Duration) with `milliseconds` from [`checkedAdd`](.aug-spec/august/1.0.0/math/integers.aug.md#symbol-checkedAdd) with `left` from `left.milliseconds` and `right` from `right.milliseconds`. [source](durations.aug#L77)
+Add milliseconds without wrapping. It takes `left` and `right` as [`Duration`](durations.aug.md#symbol-Duration). Failures can raise `ArithmeticError` (The total cannot fit int64). It returns a [`Duration`](durations.aug.md#symbol-Duration) with `milliseconds` from [`checkedAdd`](.aug-spec/august/1.0.0/math/integers.aug.md#symbol-checkedAdd) with `left` from `left.milliseconds` and `right` from `right.milliseconds`. [source](durations.aug#L77)
 
 <details>
 <summary>Checked interface</summary>

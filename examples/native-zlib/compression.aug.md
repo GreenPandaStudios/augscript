@@ -9,7 +9,9 @@
 <a id="symbol-roundTrip"></a>
 ## `roundTrip` · [source](compression.aug#L5)
 
-Compress text with zlib, then restore its bytes within a fixed output limit. It sets `input` of type `Bytes` to the UTF-8 bytes of `"The world runs on language"`. It sets `compressed` of type `Bytes` to [`compress`](.aug-spec/packages/%40greenpandastudios/aug-zlib/0.2.0/api.aug.md#symbol-compress) with `input`. It returns [`decompress`](.aug-spec/packages/%40greenpandastudios/aug-zlib/0.2.0/api.aug.md#symbol-decompress) with `input` from `compressed` and `maximumOutput` `4096`. [source](compression.aug#L6-L8)
+Compress text with zlib, then restore its bytes within a fixed output limit. Failures can raise [`CompressionError`](.aug-spec/packages/%40greenpandastudios/aug-zlib/0.2.0/contracts.aug.md#symbol-CompressionError).
+
+It sets `input` of type `Bytes` to the UTF-8 bytes of `"The world runs on language"`. It sets `compressed` of type `Bytes` to [`compress`](.aug-spec/packages/%40greenpandastudios/aug-zlib/0.2.0/api.aug.md#symbol-compress) with `input`. It returns [`decompress`](.aug-spec/packages/%40greenpandastudios/aug-zlib/0.2.0/api.aug.md#symbol-decompress) with `input` from `compressed` and `maximumOutput` `4096`. [source](compression.aug#L6-L8)
 
 <details>
 <summary>Checked interface</summary>

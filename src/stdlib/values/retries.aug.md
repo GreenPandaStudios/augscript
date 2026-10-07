@@ -28,7 +28,9 @@ It checks that `maxAttempts` is at least `1` and `maxAttempts` is at most `64` a
 Read the delay after a failed attempt, or null after the final allowed attempt.
 This only reads policy data: it does not retry, sleep, classify an error or choose a recovery value.
 
-It takes `policy` as [`RetryPolicy`](retries.aug.md#symbol-RetryPolicy) and `failedAttempt` as an integer. It checks that `failedAttempt` is at least `1` and `failedAttempt` is at most `policy.maxAttempts`. It raises a `ConversionError` at the first failed check. It returns null if `failedAttempt` equals `policy.maxAttempts`, or `policy.delays.at` with `index` from `failedAttempt` minus `1` otherwise. [source](retries.aug#L27-L31)
+It takes `policy` as [`RetryPolicy`](retries.aug.md#symbol-RetryPolicy) and `failedAttempt` as an integer. Failures can raise `ConversionError` (The attempt number is outside the policy).
+
+It checks that `failedAttempt` is at least `1` and `failedAttempt` is at most `policy.maxAttempts`. It raises a `ConversionError` at the first failed check. It returns null if `failedAttempt` equals `policy.maxAttempts`, or `policy.delays.at` with `index` from `failedAttempt` minus `1` otherwise. [source](retries.aug#L27-L31)
 
 <details>
 <summary>Checked interface</summary>

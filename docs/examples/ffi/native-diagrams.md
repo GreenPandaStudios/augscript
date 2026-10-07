@@ -25,6 +25,12 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](native.md#source-L2)
 :::
 
+It takes `message` as a string.
+
+It returns `c_int`.
+
+Native C implementation; only its declared contract is visible here.
+
 Native implementation; only the declared contract is known. [Explanation](native.md).
 
 ### announce {#sequence-announce}
@@ -32,6 +38,8 @@ Native implementation; only the declared contract is known. [Explanation](native
 ::: spec-paragraph specification-paragraph-2
 [Source](native.md#source-L3)
 :::
+
+It can call `C.puts`.
 
 ```mermaid
 sequenceDiagram

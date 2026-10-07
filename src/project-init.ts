@@ -8,9 +8,14 @@ function projectAgentInstructions(library:boolean):string {
   const execution=library?'Import the library from a separate application and use aug run there. Keep library commands focused on aug check, aug test and aug spec.':'Use aug run to compile and run the application. Run prepares required source packages and native libraries.';
   return `# Working on this August project
 
+Start with .aug-spec/diagrams/index.md to see startup and folder data flow. Follow the
+folder views and operation sequences to the neighboring .aug.md explanations. Generate
+missing or stale views with aug spec. They describe checked behavior, not acceptance
+requirements or a recorded execution. Follow dependency contracts and failure paths.
+
 ${entry}
-Read the adjacent .aug.md specification before changing a source file. Generate missing
-or stale explanations with aug spec; they describe checked behavior and link dependencies.
+Read the adjacent .aug.md specification before changing a source file. Open source when
+you need to edit an expression or investigate a detail the generated views do not cover.
 
 Keep tests in the file that declares the behavior. Run aug check, aug test, and aug spec
 after a change. ${execution}

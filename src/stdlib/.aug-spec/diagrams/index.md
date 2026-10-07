@@ -2,7 +2,9 @@
 
 # Project diagrams
 
-Start here to see what moves between the application’s folders. Each arrow names an operation’s inputs and the result it returns to its caller. Open a folder for the next level of detail. Expand the contract list for complete types and dependency links.
+Start with how the application begins, then follow data between its folders. Open an operation to see its decisions, calls, failures and cleanup. Its explanation supplies the exact contract and linked dependencies.
+
+This view includes 20 application source files. Package and interface boundaries show checked contracts; their runtime implementations are not expanded. The views describe the checked program, not desired requirements or a recorded execution.
 
 ## Data flow
 
@@ -13,15 +15,41 @@ flowchart TD
     n1 -->|"checkedAdd(left, right) / checkedMultiply(left, right) → int"| n0
 ```
 
-<details>
-<summary>Data crossing these boundaries (2 contracts)</summary>
+### Follow the data
 
-| From | To | Operation and inputs | Result |
+Each row opens the complete operations and call sites behind one pair of logical units. A grouped arrow records calls between those units; connected arrows need not belong to the same execution path.
+
+| From | To | Operations | Read |
 | --- | --- | --- | --- |
-| values | math | [checkedAdd](../../math/integers.aug.md#symbol-checkedAdd) · left: int, right: int | int |
-| values | math | [checkedMultiply](../../math/integers.aug.md#symbol-checkedMultiply) · left: int, right: int | int |
+| values | math | 2 | [Inputs, results and call sites](index.md#boundary-235ce8fd64bc) |
+
+#### Data crossing these boundaries (2 contracts)
+
+<a id="boundary-235ce8fd64bc"></a>
+
+#### values → math
+
+<details>
+<summary>2 operations, 2 sites</summary>
+
+**[checkedAdd](../../math/integers.aug.md#symbol-checkedAdd)**
+
+Inputs: left: int, right: int. Result: int.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| addDurations | [Call site](../../values/durations.aug#L77) · [Caller explanation](../../values/durations.aug.md#symbol-addDurations) |
+
+**[checkedMultiply](../../math/integers.aug.md#symbol-checkedMultiply)**
+
+Inputs: left: int, right: int. Result: int.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| durationFromSeconds | [Call site](../../values/durations.aug#L71) · [Caller explanation](../../values/durations.aug.md#symbol-durationFromSeconds) |
 
 </details>
+
 
 ## Open a folder
 

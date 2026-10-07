@@ -6,6 +6,7 @@
 
 [Interactions and sequences](main.aug.diagrams.md)
 
+<a id="startup"></a>
 ## Startup
 
 It prints [`storedName`](database.aug.md#symbol-storedName). If this work raises [`SqliteError`](.aug-spec/packages/%40greenpandastudios/aug-sqlite/0.2.0/contracts.aug.md#symbol-SqliteError) as `error`, it prints `error.message`. [source](main.aug#L5-L8)

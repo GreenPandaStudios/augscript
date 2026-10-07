@@ -15,12 +15,18 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](integers.aug#L4)
 
+Add signed int64 values; raise ArithmeticError instead of wrapping on overflow.
+
+It takes `left` and `right` as integers.
+
+Failures can raise `ArithmeticError`.
+
 ```mermaid
 sequenceDiagram
     participant p0 as checkedAdd
 
     Note over p0: Set result to left + right
-    alt right › 0 and result ‹ left) or (right ‹ 0 and result › left
+    alt (right is positive and result is less than left) or<br/>(right is negative and result is greater than left)
     p0->>p0: ArithmeticError()
     p0-->>p0: ArithmeticError result: ArithmeticError
     Note over p0: Raise checked failure ArithmeticError()； required<br/>cleanup runs before exit
@@ -35,12 +41,18 @@ sequenceDiagram
 
 [Source](integers.aug#L11)
 
+Subtract signed int64 values; raise ArithmeticError instead of wrapping on overflow.
+
+It takes `left` and `right` as integers.
+
+Failures can raise `ArithmeticError`.
+
 ```mermaid
 sequenceDiagram
     participant p0 as checkedSubtract
 
     Note over p0: Set result to left - right
-    alt right › 0 and result › left) or (right ‹ 0 and result ‹ left
+    alt (right is positive and result is greater than left) or<br/>(right is negative and result is less than left)
     p0->>p0: ArithmeticError()
     p0-->>p0: ArithmeticError result: ArithmeticError
     Note over p0: Raise checked failure ArithmeticError()； required<br/>cleanup runs before exit
@@ -55,20 +67,26 @@ sequenceDiagram
 
 [Source](integers.aug#L18)
 
+Multiply signed int64 values; raise ArithmeticError if the product cannot fit.
+
+It takes `left` and `right` as integers.
+
+Failures can raise `ArithmeticError`.
+
 ```mermaid
 sequenceDiagram
     participant p0 as checkedMultiply
 
-    alt left == 0 or right == 0
+    alt left equals 0 or right equals 0
     Note over p0: Return 0； required cleanup runs before exit
     end
-    alt left == -9223372036854775808 and right == -1) or (right == -9223372036854775808 and left == -1
+    alt (left equals -9223372036854775808 and right equals -1)<br/>or (right equals -9223372036854775808 and left equals<br/>-1)
     p0->>p0: ArithmeticError()
     p0-->>p0: ArithmeticError result: ArithmeticError
     Note over p0: Raise checked failure ArithmeticError()； required<br/>cleanup runs before exit
     end
     Note over p0: Set result to left * right
-    alt result / left != right
+    alt (result divided by left) does not equal right
     p0->>p0: ArithmeticError()
     p0-->>p0: ArithmeticError result 2: ArithmeticError
     Note over p0: Raise checked failure ArithmeticError()； required<br/>cleanup runs before exit
@@ -83,11 +101,17 @@ sequenceDiagram
 
 [Source](integers.aug#L29)
 
+Divide toward zero; reject a zero divisor and the unrepresentable MIN / -1 result.
+
+It takes `left` and `right` as integers.
+
+Failures can raise `ArithmeticError`.
+
 ```mermaid
 sequenceDiagram
     participant p0 as checkedDivide
 
-    alt right == 0 or (left == -9223372036854775808 and right == -1
+    alt right equals 0 or (left equals -9223372036854775808 and<br/>right equals -1)
     p0->>p0: ArithmeticError()
     p0-->>p0: ArithmeticError result: ArithmeticError
     Note over p0: Raise checked failure ArithmeticError()； required<br/>cleanup runs before exit
@@ -102,11 +126,17 @@ sequenceDiagram
 
 [Source](integers.aug#L35)
 
+Negate a signed int64 value; MIN cannot be negated and raises ArithmeticError.
+
+It takes `value` as an integer.
+
+Failures can raise `ArithmeticError`.
+
 ```mermaid
 sequenceDiagram
     participant p0 as checkedNegate
 
-    alt value == -9223372036854775808
+    alt value equals -9223372036854775808
     p0->>p0: ArithmeticError()
     p0-->>p0: ArithmeticError result: ArithmeticError
     Note over p0: Raise checked failure ArithmeticError()； required<br/>cleanup runs before exit
@@ -121,11 +151,17 @@ sequenceDiagram
 
 [Source](integers.aug#L41)
 
+Return the absolute value; MIN has no representable absolute value.
+
+It takes `value` as an integer.
+
+Failures can raise `ArithmeticError`.
+
 ```mermaid
 sequenceDiagram
     participant p0 as checkedAbs
 
-    alt value ‹ 0
+    alt value is negative
     p0->>p0: checkedNegate(value=value)
     p0-->>p0: checkedNegate result: int
     Note over p0: Return checkedNegate(value)； required cleanup runs<br/>before exit
@@ -139,6 +175,12 @@ sequenceDiagram
 ### checkedSum
 
 [Source](integers.aug#L47)
+
+Sum values in list order; reject overflow at any intermediate addition. An empty list returns zero.
+
+It takes `values` as `List<int>`.
+
+Failures can raise `ArithmeticError`.
 
 ```mermaid
 sequenceDiagram

@@ -25,6 +25,10 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](database.md#source-L5)
 :::
 
+Store a bound value in an in-memory SQLite database and read it back.
+
+Failures can raise [`SqliteError`](dependencies/packages/%40greenpandastudios/aug-sqlite/0.2.0/contracts.md#symbol-SqliteError).
+
 ```mermaid
 sequenceDiagram
     participant p0 as storedName

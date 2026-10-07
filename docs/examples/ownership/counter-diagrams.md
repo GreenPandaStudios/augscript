@@ -33,6 +33,10 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](counter.md#source-L2)
 :::
 
+It implements [`ICounter`](counter.md#symbol-ICounter).
+
+It takes `value` as an integer, kept mutable.
+
 Receive fields: value. [Explanation](counter.md).
 
 ### Counter.increment {#sequence-Counter.increment}
@@ -40,6 +44,8 @@ Receive fields: value. [Explanation](counter.md).
 ::: spec-paragraph specification-paragraph-2
 [Source](counter.md#source-L3)
 :::
+
+It may change `self`.
 
 ```mermaid
 sequenceDiagram
@@ -66,6 +72,8 @@ Return value; required cleanup runs before exit. [Explanation](counter.md).
 [Source](counter.md#source-L13)
 :::
 
+It may change `self`.
+
 Interface contract; implementation selected at runtime. [Explanation](counter.md).
 
 ### ICounter.read {#sequence-ICounter.read}
@@ -73,6 +81,8 @@ Interface contract; implementation selected at runtime. [Explanation](counter.md
 ::: spec-paragraph specification-paragraph-5
 [Source](counter.md#source-L14)
 :::
+
+It returns `int`.
 
 Interface contract; implementation selected at runtime. [Explanation](counter.md).
 

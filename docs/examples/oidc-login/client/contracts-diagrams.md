@@ -25,6 +25,10 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](contracts.md#source-L3)
 :::
 
+Browser-bound client state, nonce and PKCE verifier, consumed by the callback.
+
+It takes `state`, `nonce`, and `verifier` as strings, kept read-only and `expires` as an integer, kept read-only.
+
 Receive fields: state, nonce, verifier, expires. [Explanation](contracts.md).
 
 ### SessionClaims constructor {#sequence-SessionClaims-20-constructor}
@@ -32,6 +36,10 @@ Receive fields: state, nonce, verifier, expires. [Explanation](contracts.md).
 ::: spec-paragraph specification-paragraph-2
 [Source](contracts.md#source-L5)
 :::
+
+Sessions require their own issuer, audience, key and JWT type, plus a live registry entry.
+
+It takes `iss`, `sub`, and `aud` as strings, kept read-only, `exp` and `iat` as integers, kept read-only, and `jti`, `csrf`, and `name` as strings, kept read-only.
 
 Receive fields: iss, sub, aud, exp, iat, jti, csrf, name. [Explanation](contracts.md).
 
@@ -41,6 +49,8 @@ Receive fields: iss, sub, aud, exp, iat, jti, csrf, name. [Explanation](contract
 [Source](contracts.md#source-L6)
 :::
 
+It takes `csrf` as a string, kept read-only.
+
 Receive fields: csrf. [Explanation](contracts.md).
 
 ### SessionError constructor {#sequence-SessionError-20-constructor}
@@ -48,5 +58,7 @@ Receive fields: csrf. [Explanation](contracts.md).
 ::: spec-paragraph specification-paragraph-4
 [Source](contracts.md#source-L7)
 :::
+
+It implements `Error`.
 
 [Explanation](contracts.md).

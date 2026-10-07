@@ -15,6 +15,10 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](durations.aug#L6)
 
+Exact signed int64 milliseconds. This value has no calendar, clock or scheduling effects.
+
+It takes `milliseconds` as an integer, kept read-only.
+
 Receive fields: milliseconds. [Explanation](durations.aug.md).
 
 <a id="sequence-parseDuration"></a>
@@ -22,6 +26,13 @@ Receive fields: milliseconds. [Explanation](durations.aug.md).
 ### parseDuration
 
 [Source](durations.aug#L13)
+
+Parse a seconds-only duration: optional minus, PT, 1 to 16 integer digits, optional 1 to 3 fractional digits, then S.
+Leading zeroes are accepted; other units, plus signs, spaces and excess precision are rejected.
+
+It takes `text` as a string.
+
+Failures can raise `ConversionError` (Invalid syntax or a millisecond value outside int64).
 
 #### Sequence 1 of 4
 
@@ -31,11 +42,11 @@ sequenceDiagram
 
     p0->>p0: text.byteLength()
     p0-->>p0: byteLength result: int
-    opt Left is false
+    opt (byteLength result ‹ 4) is false
     p0->>p0: text.byteLength()
     p0-->>p0: byteLength result 2: int
     end
-    alt text.byteLength() ‹ 4 or text.byteLength() › 24
+    alt text.byteLength is less than 4 or text.byteLength is<br/>greater than 24
     p0->>p0: ConversionError()
     p0-->>p0: ConversionError result: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
@@ -43,10 +54,10 @@ sequenceDiagram
     p0->>p0: text.startsWith(prefix=”-”)
     p0-->>p0: negative: bool
     Note over p0: Set start to 2
-    alt negative
+    alt negative is true
     p0->>p0: text.startsWith(prefix=”-PT”)
     p0-->>p0: startsWith result 2: bool
-    alt not text.startsWith(prefix=”-PT”)
+    alt text.startsWith with prefix ”-PT” returns false
     p0->>p0: ConversionError()
     p0-->>p0: ConversionError result 2: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
@@ -55,7 +66,7 @@ sequenceDiagram
     else otherwise
     p0->>p0: text.startsWith(prefix=”PT”)
     p0-->>p0: startsWith result 3: bool
-    alt not text.startsWith(prefix=”PT”)
+    alt text.startsWith with prefix ”PT” returns false
     p0->>p0: ConversionError()
     p0-->>p0: ConversionError result 3: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
@@ -71,7 +82,7 @@ sequenceDiagram
 sequenceDiagram
     participant p0 as parseDuration
     participant p1 as august/values/ascii
-    alt not text.endsWith(suffix=”S”)
+    alt text.endsWith with suffix ”S” returns false
     Note over p0: Sequence continued from the previous view
     p0->>p0: ConversionError()
     p0-->>p0: ConversionError result 4: ConversionError
@@ -87,7 +98,7 @@ sequenceDiagram
     p0-->>p0: parts: List‹string›
     p0->>p0: parts.length()
     p0-->>p0: length result: int
-    alt parts.length() › 2
+    alt the number of elements in parts is greater than 2
     p0->>p0: ConversionError()
     p0-->>p0: ConversionError result 5: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
@@ -97,7 +108,7 @@ sequenceDiagram
     p0-->>p0: whole: string
     p0->>p0: whole.isDecimal()
     p0-->>p0: isDecimal result: bool
-    opt Left is false
+    opt (not isDecimal result) is false
     p0->>p0: whole.byteLength()
     p0-->>p0: byteLength result 4: int
     end
@@ -111,7 +122,7 @@ sequenceDiagram
     participant p0 as parseDuration
 
     opt Try body； stops on a checked failure
-    alt not whole.isDecimal() or whole.byteLength() › 16
+    alt whole.isDecimal returns false or whole.byteLength is<br/>greater than 16
     Note over p0: Sequence continued from the previous view
     p0->>p0: ConversionError()
     p0-->>p0: ConversionError result 6: ConversionError
@@ -120,16 +131,16 @@ sequenceDiagram
     Note over p0: Set fraction to ”000”
     p0->>p0: parts.length()
     p0-->>p0: length result 2: int
-    alt parts.length() == 2
+    alt the number of elements in parts equals 2
     p0->>p0: parts.get(index=1)
     p0-->>p0: fraction: string
     p0->>p0: fraction.isDecimal()
     p0-->>p0: isDecimal result 2: bool
-    opt Left is false
+    opt (not isDecimal result 2) is false
     p0->>p0: fraction.byteLength()
     p0-->>p0: byteLength result 5: int
     end
-    alt not fraction.isDecimal() or fraction.byteLength() › 3
+    alt fraction.isDecimal returns false or fraction.byteLength<br/>is greater than 3
     p0->>p0: ConversionError()
     p0-->>p0: ConversionError result 7: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
@@ -141,7 +152,7 @@ sequenceDiagram
     end
     end
     Note over p0: Set digits to whole + fraction
-    alt negative
+    alt negative is true
     Note over p0: Set digits to ”-” + digits
     end
     p0->>p0: digits.parseInteger()
@@ -175,16 +186,21 @@ sequenceDiagram
 
 [Source](durations.aug#L52)
 
+Format exact milliseconds as optional minus and PTseconds.fffS, including three fractional digits.
+Zero has no sign; the complete int64 range is representable without rounding.
+
+It takes `value` as [`Duration`](durations.aug.md#symbol-Duration).
+
 ```mermaid
 sequenceDiagram
     participant p0 as formatDuration
 
     Note over p0: Set seconds to value.milliseconds / 1000
     Note over p0: Set remainder to value.milliseconds % 1000
-    alt seconds ‹ 0
+    alt seconds is negative
     Note over p0: Set seconds to -seconds
     end
-    alt remainder ‹ 0
+    alt remainder is negative
     Note over p0: Set remainder to -remainder
     end
     Note over p0: Set fraction to $”｛remainder｝”
@@ -194,7 +210,7 @@ sequenceDiagram
     Note over p0: Set fraction to ”0” + fraction
     end
     Note over p0: Set result to $”PT｛seconds｝.｛fraction｝S”
-    alt value.milliseconds ‹ 0
+    alt value.milliseconds is negative
     Note over p0: Return ”-” + result； required cleanup runs before exit
     end
     Note over p0: Return result； required cleanup runs before exit
@@ -205,6 +221,12 @@ sequenceDiagram
 ### durationFromSeconds
 
 [Source](durations.aug#L70)
+
+Convert whole seconds to exact milliseconds.
+
+It takes `seconds` as an integer.
+
+Failures can raise `ArithmeticError` (Multiplication by 1000 overflows int64).
 
 ```mermaid
 sequenceDiagram
@@ -224,6 +246,12 @@ sequenceDiagram
 
 [Source](durations.aug#L76)
 
+Add milliseconds without wrapping.
+
+It takes `left` and `right` as [`Duration`](durations.aug.md#symbol-Duration).
+
+Failures can raise `ArithmeticError` (The total cannot fit int64).
+
 ```mermaid
 sequenceDiagram
     participant p0 as addDurations
@@ -232,7 +260,7 @@ sequenceDiagram
     p1-->>p0: checkedAdd result: int
     p0->>p0: Duration(milliseconds=checkedAdd result) · construct<br/>value
     p0-->>p0: Duration result: Duration
-    Note over p0: Return<br/>Duration(milliseconds=checkedAdd(left=left.milliseconds,<br/>right=right.milliseconds))； required cleanup runs bef…
+    Note over p0: Return<br/>Duration(milliseconds=checkedAdd(left=left.milliseconds,<br/>right=right.milliseconds))； required cleanup runs before<br/>exit
     Note over p0: May leave with checked errors: ArithmeticError
 ```
 
@@ -242,14 +270,18 @@ sequenceDiagram
 
 [Source](durations.aug#L80)
 
+Compare exact millisecond values; return -1, 0 or 1.
+
+It takes `left` and `right` as [`Duration`](durations.aug.md#symbol-Duration).
+
 ```mermaid
 sequenceDiagram
     participant p0 as compareDurations
 
-    alt left.milliseconds ‹ right.milliseconds
+    alt left.milliseconds is less than right.milliseconds
     Note over p0: Return -1； required cleanup runs before exit
     end
-    alt left.milliseconds › right.milliseconds
+    alt left.milliseconds is greater than right.milliseconds
     Note over p0: Return 1； required cleanup runs before exit
     end
     Note over p0: Return 0； required cleanup runs before exit

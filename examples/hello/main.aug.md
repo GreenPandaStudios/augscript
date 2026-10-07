@@ -6,12 +6,14 @@
 
 [Interactions and sequences](main.aug.diagrams.md)
 
+<a id="providers"></a>
 ## Providers
 
 `Console` is provided by [`SystemConsole`](.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-SystemConsole). The same instance is shared. `Logger` is provided by [`ConsoleLogger`](logging/console.aug.md#symbol-ConsoleLogger). The same instance is shared.
 
 `app` is provided by [`Greeter`](app/greeter.aug.md#symbol-Greeter). The same instance is shared. It requires bindings for `Logger`.
 
+<a id="startup"></a>
 ## Startup
 
 It sets `greeter` to the instance provided for `app`. It passes `"AugScript"` to [`greeter.greet`](app/greeter.aug.md#symbol-Greeter.greet), using injected `Console`. [source](main.aug#L9-L10)

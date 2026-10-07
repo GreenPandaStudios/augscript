@@ -33,7 +33,7 @@ sequenceDiagram
     loop For each item in values
     p0->>p0: unique.contains(value=key)
     p0-->>p0: contains result: bool
-    alt unique.contains(value=key)
+    alt whether unique contains key returns true
     Note over p0: Set checksum to checksum + value
     end
     end

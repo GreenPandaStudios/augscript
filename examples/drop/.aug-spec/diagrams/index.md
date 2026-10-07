@@ -2,7 +2,16 @@
 
 # Project diagrams
 
-Start here to see what moves between the application’s folders. Each arrow names an operation’s inputs and the result it returns to its caller. Open a folder for the next level of detail. Expand the contract list for complete types and dependency links.
+Start with how the application begins, then follow data between its folders. Open an operation to see its decisions, calls, failures and cleanup. Its explanation supplies the exact contract and linked dependencies.
+
+This view includes 2 application source files. Package and interface boundaries show checked contracts; their runtime implementations are not expanded. The views describe the checked program, not desired requirements or a recorded execution.
+
+## Where execution begins
+
+<a id="startup"></a>
+### Startup
+
+It creates [`Resource`](../../resource.aug.md#symbol-Resource) and stores the result in owned `resource` ([`Resource`](../../resource.aug.md#symbol-Resource)). It prints `"using resource"`. [source](../../main.aug#L3-L4)
 
 ## Data flow
 
@@ -13,14 +22,33 @@ flowchart TD
     n0 -->|"Resource → Resource"| n1
 ```
 
-<details>
-<summary>Data crossing these boundaries (1 contracts)</summary>
+### Follow the data
 
-| From | To | Operation and inputs | Result |
+Each row opens the complete operations and call sites behind one pair of logical units. A grouped arrow records calls between those units; connected arrows need not belong to the same execution path.
+
+| From | To | Operations | Read |
 | --- | --- | --- | --- |
-| Startup | resource | [Resource](../../resource.aug.md#symbol-Resource) | Resource |
+| Startup | resource | 1 | [Inputs, results and call sites](index.md#boundary-9f88528d62a1) |
+
+#### Data crossing these boundaries (1 contracts)
+
+<a id="boundary-9f88528d62a1"></a>
+
+#### Startup → resource
+
+<details>
+<summary>1 operation, 1 site</summary>
+
+**[Resource](../../resource.aug.md#symbol-Resource)**
+
+No caller-supplied inputs. Result: Resource.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| Startup | [Call site](../../main.aug#L3) · [Caller explanation](../../main.aug.md#startup) |
 
 </details>
+
 
 ## Open a module
 

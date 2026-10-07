@@ -14,7 +14,7 @@ It takes `message` as a string. It returns `c_int`. Native C implementation; onl
 <a id="symbol-announce"></a>
 ## `announce` · [source](native.aug#L3)
 
-Within an unsafe block, it calls [`puts`](native.aug.md#symbol-puts) with `message` `"hello from C FFI"`. Native operations must satisfy their declared C contracts. [source](native.aug#L4-L6)
+It can call `C.puts`. Within an unsafe block, it calls [`puts`](native.aug.md#symbol-puts) with `message` `"hello from C FFI"`. Native operations must satisfy their declared C contracts. [source](native.aug#L4-L6)
 
 <details>
 <summary>Checked interface</summary>
@@ -22,5 +22,7 @@ Within an unsafe block, it calls [`puts`](native.aug.md#symbol-puts) with `messa
 ```text
 announce() returns void uses C.puts
 ```
+
+It can call `C.puts`.
 
 </details>

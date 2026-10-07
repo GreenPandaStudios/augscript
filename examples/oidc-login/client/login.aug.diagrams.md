@@ -100,6 +100,18 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](login.aug#L12)
 
+`startLogin` handles `GET /login/start`.
+
+Start a browser-bound, short-lived transaction. The PKCE verifier stays on the server.
+
+It gets `crypto` ([`Crypto`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto)), `clock` ([`Clock`](../.aug-spec/packages/%40git/url_c092cd151499c4e1d8a1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-Clock)), `client` ([`HttpClient`](../.aug-spec/packages/%40git/url_897efafd565158fc4908/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-HttpClient)), and `transactions` ([`ExpiringStore<LoginTransaction>`](../.aug-spec/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore)) from dependency injection.
+
+It can call [`Crypto.random`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.random), [`Clock.now`](../.aug-spec/packages/%40git/url_c092cd151499c4e1d8a1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-Clock.now), [`ExpiringStore<LoginTransaction>.put`](../.aug-spec/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore.put), [`Crypto.sha256`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.sha256), and [`HttpClient.request`](../.aug-spec/packages/%40git/url_897efafd565158fc4908/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-HttpClient.request).
+
+The handler responds with HTTP 502 for [`SessionError`](contracts.aug.md#symbol-SessionError), HTTP 503 for `CryptoError`, HTTP 503 for `TimeError`, and HTTP 503 for [`StoreFull`](../.aug-spec/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-StoreFull).
+
+It can also raise `HttpError`.
+
 #### Sequence 1 of 3
 
 ```mermaid
@@ -165,7 +177,7 @@ sequenceDiagram
     p4-->>p0: urlEncode result 4: string
     p0->>p4: urlEncode(input=challenge)
     p4-->>p0: urlEncode result 5: string
-    Note over p0: Set location to document.authorization_endpoint +<br/>”?response_type=code＆client_id=” + urlEncode result +<br/>”＆redirect_ur…
+    Note over p0: Set location to document.authorization_endpoint +<br/>”?response_type=code＆client_id=” + urlEncode result +<br/>”＆redirect_uri=” + urlEncode result 2 +<br/>”＆scope=openid%20profile＆state=” + urlEncode result 3 +<br/>”＆nonce=” + urlEncode result 4 + ”＆code_challenge=” +<br/>urlEncode result 5 + ”＆code_challenge_method=S256”
 ```
 
 #### Sequence 3 of 3 (continued)
@@ -183,7 +195,7 @@ sequenceDiagram
     p1-->>p0: headers: Headers
     p0->>p0: HttpResponse(body=‹p›Opening the identity provider.‹/p›,<br/>status=303, headers=headers)
     p0-->>p0: HttpResponse result: HttpResponse‹Html›
-    Note over p0: Return HttpResponse(body=‹p›Opening the identity<br/>provider.‹/p›, status=303, headers=headers)； required<br/>cleanup runs b…
+    Note over p0: Return HttpResponse(body=‹p›Opening the identity<br/>provider.‹/p›, status=303, headers=headers)； required<br/>cleanup runs before exit
     Note over p0: May leave with checked errors: CryptoError, HttpError,<br/>SessionError, StoreFull, TimeError
     Note over p0: HTTP result follows declared response and error mapping；<br/>unhandled request failure returns 500
 ```
@@ -193,6 +205,18 @@ sequenceDiagram
 ### loginCallback
 
 [Source](login.aug#L27)
+
+`loginCallback` handles `GET /login/callback`.
+
+Exchange a one-use code over HTTP, verify the provider JWT/JWKS and UserInfo subject, then issue a distinct app-session JWT.
+
+It takes `code` and `state` as strings from the HTTP query and `browser` as `optional string` from the HTTP cookie `aug_login`. It gets `crypto` ([`Crypto`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto)), `clock` ([`Clock`](../.aug-spec/packages/%40git/url_c092cd151499c4e1d8a1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-Clock)), `client` ([`HttpClient`](../.aug-spec/packages/%40git/url_897efafd565158fc4908/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-HttpClient)), `keys` ([`SigningKeys`](../common/keys.aug.md#symbol-SigningKeys)), `transactions` ([`ExpiringStore<LoginTransaction>`](../.aug-spec/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore)), and `sessions` ([`ExpiringStore<SessionClaims>`](../.aug-spec/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore)) from dependency injection. Omitted optional inputs are null.
+
+It can call [`Clock.now`](../.aug-spec/packages/%40git/url_c092cd151499c4e1d8a1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-Clock.now), [`ExpiringStore<LoginTransaction>.take`](../.aug-spec/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore.take), [`Crypto.equal`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.equal), [`HttpClient.request`](../.aug-spec/packages/%40git/url_897efafd565158fc4908/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-HttpClient.request), [`Crypto.random`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.random), [`SigningKeys.session`](../common/keys.aug.md#symbol-SigningKeys.session), [`ExpiringStore<SessionClaims>.put`](../.aug-spec/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore.put), [`Crypto.signRsa`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.signRsa), [`Crypto.decodeBase64url`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.decodeBase64url), [`Crypto.importRsa`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.importRsa), and [`Crypto.verifyRsa`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.verifyRsa).
+
+The handler responds with HTTP 400 for [`SessionError`](contracts.aug.md#symbol-SessionError), HTTP 503 for `CryptoError`, HTTP 503 for `TimeError`, and HTTP 503 for [`StoreFull`](../.aug-spec/packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-StoreFull).
+
+It can also raise `HttpError`, `JsonError`, `JwtError`, and `KeyError`.
 
 #### Sequence 1 of 5
 
@@ -205,11 +229,11 @@ sequenceDiagram
     Note over p0: GET /login/callback
     p0->>p0: code.isToken(min=43, max=43)
     p0-->>p0: isToken result: bool
-    opt Left is false
+    opt (not isToken result) is false
     p0->>p0: state.isToken(min=43, max=43)
     p0-->>p0: isToken result 2: bool
     end
-    alt not code.isToken(min=43, max=43)) or (not state.isToken(min=43, max=43)
+    alt code is not a URL-safe ASCII token with 43 to 43<br/>characters or state is not a URL-safe ASCII token with<br/>43 to 43 characters
     p0->>p0: SessionError() · construct value
     p0-->>p0: SessionError result: SessionError
     Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
@@ -248,7 +272,7 @@ sequenceDiagram
     participant p3 as web/contracts
     alt Continuing Match when some secret:
     alt Continuing Match when some transaction:
-    alt not crypto.equal(left=transaction.state.bytes(), right=state.bytes())
+    alt crypto.equal with left from the UTF-8 bytes of<br/>transaction.state and right from the UTF-8 bytes of<br/>state returns false
     Note over p0: Sequence continued from the previous view
     p0->>p0: SessionError() · construct value
     p0-->>p0: SessionError result 4: SessionError
@@ -266,7 +290,7 @@ sequenceDiagram
     p3-->>p0: urlEncode result 3: string
     p0->>p3: urlEncode(input=transaction.verifier)
     p3-->>p0: urlEncode result 4: string
-    Note over p0: Set body to ”grant_type=authorization_code＆code=” +<br/>urlEncode result + ”＆redirect_uri=” + urlEncode result 2<br/>+ ”＆clie…
+    Note over p0: Set body to ”grant_type=authorization_code＆code=” +<br/>urlEncode result + ”＆redirect_uri=” + urlEncode result 2<br/>+ ”＆client_id=” + urlEncode result 3 + ”＆code_verifier=”<br/>+ urlEncode result 4
     p0->>p0: Headers()
     p0-->>p0: Headers result: Headers
     p0->>p0: Headers result.with(name=”content-type”,<br/>value=”application/x-www-form-urlencoded”)
@@ -294,11 +318,11 @@ sequenceDiagram
     p2-->>p0: responseJson result: Json
     p0->>p0: responseJson result.decode‹TokenResponse›()
     p0-->>p0: tokens: TokenResponse
-    opt Left is false
+    opt (tokens.token_type != ”Bearer”) is false
     p0->>p0: tokens.access_token.isToken(min=43, max=43)
     p0-->>p0: isToken result 3: bool
     end
-    alt tokens.token_type != ”Bearer” or (not tokens.access_token.isToken(min=43, max=43)) or tokens.expires_in ‹= 0
+    alt tokens.token_type does not equal ”Bearer” or<br/>tokens.access_token is not a URL-safe ASCII token with<br/>43 to 43 characters or tokens.expires_in is at most 0
     p0->>p0: SessionError() · construct value
     p0-->>p0: SessionError result 5: SessionError
     Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
@@ -339,7 +363,7 @@ sequenceDiagram
     p2-->>p0: responseJson result 3: Json
     p0->>p0: responseJson result 3.decode‹UserInfo›()
     p0-->>p0: user: UserInfo
-    alt user.sub != identity.sub
+    alt user.sub does not equal identity.sub
     p0->>p0: SessionError() · construct value
     p0-->>p0: SessionError result 6: SessionError
     Note over p0: Raise checked failure SessionError()； required cleanup<br/>runs before exit
@@ -354,7 +378,7 @@ sequenceDiagram
     p4-->>p0: random result 2: Bytes
     p0->>p0: random result 2.base64url()
     p0-->>p0: base64url result 2: string
-    p0->>p0: SessionClaims(iss=config.baseUrl + ”/app”,<br/>sub=identity.sub, aud=”august-app”, exp=now +<br/>config.sessionSeconds, iat=n…
+    p0->>p0: SessionClaims(iss=config.baseUrl + ”/app”,<br/>sub=identity.sub, aud=”august-app”, exp=now +<br/>config.sessionSeconds, iat=now, jti=base64url result,<br/>csrf=base64url result 2, name=user.name) · construct<br/>value
     p0-->>p0: session: SessionClaims
     end
     end
@@ -383,7 +407,7 @@ sequenceDiagram
     p4-->>p0: securityHeaders result: Headers
     p0->>p0: securityHeaders result.with(name=”location”, value=”/”)
     p0-->>p0: with result 3: Headers
-    p0->>p4: withCookie(headers=with result 3, name=”aug_session”,<br/>value=jwt, path=”/”, maxAge=config.sessionSeconds,<br/>secure=confi…
+    p0->>p4: withCookie(headers=with result 3, name=”aug_session”,<br/>value=jwt, path=”/”, maxAge=config.sessionSeconds,<br/>secure=config.secureCookies)
     p4-->>p0: responseHeaders: Headers
     p0->>p4: withCookie(headers=responseHeaders, name=”aug_login”,<br/>value=””, path=”/login”, maxAge=0,<br/>secure=config.secureCookies)
     p4-->>p0: responseHeaders: Headers

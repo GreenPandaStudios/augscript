@@ -2,7 +2,16 @@
 
 # Project diagrams
 
-Start here to see what moves between the application’s folders. Each arrow names an operation’s inputs and the result it returns to its caller. Open a folder for the next level of detail. Expand the contract list for complete types and dependency links.
+Start with how the application begins, then follow data between its folders. Open an operation to see its decisions, calls, failures and cleanup. Its explanation supplies the exact contract and linked dependencies.
+
+This view includes 2 application source files. Package and interface boundaries show checked contracts; their runtime implementations are not expanded. The views describe the checked program, not desired requirements or a recorded execution.
+
+## Where execution begins
+
+<a id="startup"></a>
+### Startup
+
+It prints [`hashText`](../../hashing.aug.md#symbol-hashText) with `value` `"abc"`. If this work raises [`HashError`](../packages/%40greenpandastudios/aug-blake3/0.2.0/contracts.aug.md#symbol-HashError) as `error`, it prints `error.message`. [source](../../main.aug#L5-L8)
 
 ## Data flow
 
@@ -27,15 +36,51 @@ flowchart LR
 
 </details>
 
-<details>
-<summary>Data crossing these boundaries (2 contracts)</summary>
+### Follow the data
 
-| From | To | Operation and inputs | Result |
+Each row opens the complete operations and call sites behind one pair of logical units. A grouped arrow records calls between those units; connected arrows need not belong to the same execution path.
+
+| From | To | Operations | Read |
 | --- | --- | --- | --- |
-| hashing | @greenpandastudios/aug-blake3 | [hash](../packages/%40greenpandastudios/aug-blake3/0.2.0/api.aug.md#symbol-hash) · input: Bytes | string |
-| Startup | hashing | [hashText](../../hashing.aug.md#symbol-hashText) · value: string | string |
+| hashing | @greenpandastudios/aug-blake3 | 1 | [Inputs, results and call sites](index.md#boundary-479434ce6417) |
+| Startup | hashing | 1 | [Inputs, results and call sites](index.md#boundary-0e1c118a244b) |
+
+#### Data crossing these boundaries (2 contracts)
+
+<a id="boundary-479434ce6417"></a>
+
+#### hashing → @greenpandastudios/aug-blake3
+
+<details>
+<summary>1 operation, 1 site</summary>
+
+**[hash](../packages/%40greenpandastudios/aug-blake3/0.2.0/api.aug.md#symbol-hash)**
+
+Inputs: input: Bytes. Result: string.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| hashText | [Call site](../../hashing.aug#L6) · [Caller explanation](../../hashing.aug.md#symbol-hashText) |
 
 </details>
+
+<a id="boundary-0e1c118a244b"></a>
+
+#### Startup → hashing
+
+<details>
+<summary>1 operation, 1 site</summary>
+
+**[hashText](../../hashing.aug.md#symbol-hashText)**
+
+Inputs: value: string. Result: string.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| Startup | [Call site](../../main.aug#L6) · [Caller explanation](../../main.aug.md#startup) |
+
+</details>
+
 
 ## Open a module
 

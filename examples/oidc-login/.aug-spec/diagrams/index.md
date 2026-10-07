@@ -2,7 +2,39 @@
 
 # Project diagrams
 
-Start here to see what moves between the application’s folders. Each arrow names an operation’s inputs and the result it returns to its caller. Open a folder for the next level of detail. Expand the contract list for complete types and dependency links.
+Start with how the application begins, then follow data between its folders. Open an operation to see its decisions, calls, failures and cleanup. Its explanation supplies the exact contract and linked dependencies.
+
+This view includes 22 application source files. Package and interface boundaries show checked contracts; their runtime implementations are not expanded. The views describe the checked program, not desired requirements or a recorded execution.
+
+## Where execution begins
+
+### HTTP configuration
+
+Listen on `127.0.0.1`. Limit request bodies to 16384 bytes and buffered responses to 1048576 bytes. Serve OpenAPI at `/openapi.json` and API docs at `/docs`.
+
+<a id="providers"></a>
+### Providers
+
+`Crypto` is provided by [`GnuTlsCrypto`](../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-GnuTlsCrypto). The same instance is shared. `Clock` is provided by [`SystemClock`](../packages/%40git/url_c092cd151499c4e1d8a1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-SystemClock). The same instance is shared.
+
+`HttpClient` is provided by [`WebHttpClient`](../packages/%40git/url_897efafd565158fc4908/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-WebHttpClient). The same instance is shared.
+
+`SigningKeys` is provided by [`MemorySigningKeys`](../../common/keys.aug.md#symbol-MemorySigningKeys). The same instance is shared. Shared mutation is allowed.
+
+`ExpiringStore<LoginTransaction>` is provided by [`MemoryStore<LoginTransaction>`](../packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-MemoryStore). The same instance is shared. Shared mutation is allowed.
+
+`ExpiringStore<AuthorizationRequest>` is provided by [`MemoryStore<AuthorizationRequest>`](../packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-MemoryStore). The same instance is shared. Shared mutation is allowed.
+
+`ExpiringStore<AuthorizationCode>` is provided by [`MemoryStore<AuthorizationCode>`](../packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-MemoryStore). The same instance is shared. Shared mutation is allowed.
+
+`ExpiringStore<SessionClaims>` is provided by [`MemoryStore<SessionClaims>`](../packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-MemoryStore). The same instance is shared. Shared mutation is allowed.
+
+`ExpiringStore<AccessGrant>` is provided by [`MemoryStore<AccessGrant>`](../packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-MemoryStore). The same instance is shared. Shared mutation is allowed.
+
+<a id="startup"></a>
+### Startup
+
+It tries to call [`initializeKeys`](../../common/keys.aug.md#symbol-initializeKeys) using injected `Crypto` for `crypto` and `SigningKeys` for `keys`. If this work raises `CryptoError`, it prints `"Cryptographic initialization failed"`; then it calls `exit` with `status` `1`. If this work raises [`KeyError`](../../common/keys.aug.md#symbol-KeyError), it prints `"Signing keys could not be initialized"`; then it calls `exit` with `status` `1`. It serves [`home`](../../client/endpoints.aug.md#symbol-home), [`me`](../../client/endpoints.aug.md#symbol-me), [`logout`](../../client/logout.aug.md#symbol-logout), [`startLogin`](../../client/login.aug.md#symbol-startLogin), [`loginCallback`](../../client/login.aug.md#symbol-loginCallback), [`discovery`](../../provider/discovery.aug.md#symbol-discovery), [`jwks`](../../provider/discovery.aug.md#symbol-jwks), [`authorize`](../../provider/authorization.aug.md#symbol-authorize), [`providerLogin`](../../provider/authorization.aug.md#symbol-providerLogin), [`token`](../../provider/token.aug.md#symbol-token), and [`userinfo`](../../provider/userinfo.aug.md#symbol-userinfo) on port `8787`. [source](../../main.aug#L20-L29)
 
 ## Data flow
 
@@ -36,7 +68,7 @@ flowchart LR
     n0 -->|"ExpiringStore.get(key, now) / ExpiringStore.put(key, value, …) + 1 more → optional LoginTransaction / optional Sessio…"| n1
     n0 -->|"parse(input) → Json"| n2
     n0 -->|"HttpClient.request(method, url, …) / urlEncode(input) → Bytes response / string"| n3
-    n0 -->|"Crypto.equal(left, right) / Crypto.generateRsa + 7 more → Bytes / Json + 5 more"| n4
+    n0 -->|"Crypto.equal(left, right) / Crypto.publicRsa(key) + 5 more → Bytes / Json + 3 more"| n4
     n0 -->|"Clock.now → int"| n5
 ```
 
@@ -74,77 +106,775 @@ flowchart LR
 
 </details>
 
-<details>
-<summary>Data crossing these boundaries (64 contracts)</summary>
+### Follow the data
 
-| From | To | Operation and inputs | Result |
+Each row opens the complete operations and call sites behind one pair of logical units. A grouped arrow records calls between those units; connected arrows need not belong to the same execution path.
+
+| From | To | Operations | Read |
 | --- | --- | --- | --- |
-| HTTP requests | client | [GET /](../../client/endpoints.aug.md#symbol-home) · token: optional string from cookie · HTTP endpoint | HttpResponse\<Html\> |
-| HTTP requests | client | [GET /login/callback](../../client/login.aug.md#symbol-loginCallback) · code: string from query, state: string from query, browser: optional string from cookie · HTTP endpoint | HttpResponse\<Html\> |
-| HTTP requests | client | [GET /login/start](../../client/login.aug.md#symbol-startLogin) · HTTP endpoint | HttpResponse\<Html\> |
-| HTTP requests | client | [GET /me](../../client/endpoints.aug.md#symbol-me) · token: optional string from cookie · HTTP endpoint | HttpResponse\<UserInfo\> |
-| HTTP requests | client | [POST /logout](../../client/logout.aug.md#symbol-logout) · input: LogoutForm from form, token: optional string from cookie, origin: optional string from header · HTTP endpoint | HttpResponse\<Html\> |
-| HTTP requests | provider | [GET /provider/.well-known/openid-configuration](../../provider/discovery.aug.md#symbol-discovery) · HTTP endpoint | Discovery |
-| HTTP requests | provider | [GET /provider/authorize](../../provider/authorization.aug.md#symbol-authorize) · response\_type: string from query, client\_id: string from query, redirect\_uri: string from query, requestedScope: string from query, state: string from query, nonce: string from query, code\_challenge: string from query, code\_challenge\_method: string from query · HTTP endpoint | HttpResponse\<Html\> |
-| HTTP requests | provider | [GET /provider/jwks](../../provider/discovery.aug.md#symbol-jwks) · HTTP endpoint | RsaJwks |
-| HTTP requests | provider | [GET /provider/userinfo](../../provider/userinfo.aug.md#symbol-userinfo) · authorization: optional string from header · HTTP endpoint | HttpResponse\<Json\> |
-| HTTP requests | provider | [POST /provider/login](../../provider/authorization.aug.md#symbol-providerLogin) · form: LoginForm from form, browser: optional string from cookie, origin: optional string from header · HTTP endpoint | HttpResponse\<Html\> |
-| HTTP requests | provider | [POST /provider/token](../../provider/token.aug.md#symbol-token) · http: HttpRequest from request · HTTP endpoint | HttpResponse\<Json\> |
-| client | common | [Page](../../common/views.aug.md#symbol-Page) · title: string, children: List\<Html\> | Html |
-| client | common | [SigningKeys.session](../../common/keys.aug.md#symbol-SigningKeys.session) · interface dispatch | RsaPrivateKey |
-| client | common | [securityHeaders](../../common/headers.aug.md#symbol-securityHeaders) | Headers |
-| client | common | [settings](../../common/settings.aug.md#symbol-settings) | Settings |
-| client | common | [withCookie](../../common/headers.aug.md#symbol-withCookie) · headers: Headers, name: string, value: string, path: string, maxAge: int, secure: bool | Headers |
-| client | memory | [ExpiringStore.get](../packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore.get) · key: string, now: int · interface dispatch | optional SessionClaims |
-| client | memory | [ExpiringStore.put](../packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore.put) · key: string, value: LoginTransaction, expires: int, now: int · interface dispatch | void |
-| client | memory | [ExpiringStore.put](../packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore.put) · key: string, value: SessionClaims, expires: int, now: int · interface dispatch | void |
-| client | memory | [ExpiringStore.take](../packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore.take) · key: string, now: int · interface dispatch | optional LoginTransaction |
-| client | memory | [ExpiringStore.take](../packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore.take) · key: string, now: int · interface dispatch | optional SessionClaims |
-| client | json | [parse](../packages/%40git/url_2d3c37c690c0fa115be1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-parse) · input: string | Json |
-| client | web | [HttpClient.request](../packages/%40git/url_897efafd565158fc4908/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-HttpClient.request) · method: string, url: string, headers: Headers, body: Bytes · interface dispatch | HttpResponse\<Bytes\> |
-| client | web | [HttpClient.request](../packages/%40git/url_897efafd565158fc4908/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-HttpClient.request) · method: string, url: string, headers: Headers, body: optional Bytes · interface dispatch | HttpResponse\<Bytes\> |
-| client | web | [HttpClient.request](../packages/%40git/url_897efafd565158fc4908/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-HttpClient.request) · method: string, url: string, headers: optional Headers, body: optional Bytes · interface dispatch | HttpResponse\<Bytes\> |
-| client | web | [urlEncode](../packages/%40git/url_897efafd565158fc4908/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-urlEncode) · input: string | string |
-| client | crypto | [Crypto.equal](../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.equal) · left: Bytes, right: Bytes · interface dispatch | bool |
-| client | crypto | [Crypto.generateRsa](../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.generateRsa) · interface dispatch | RsaPrivateKey |
-| client | crypto | [Crypto.publicRsa](../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.publicRsa) · key: RsaPrivateKey · interface dispatch | RsaPublicKey |
-| client | crypto | [Crypto.random](../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.random) · size: int · interface dispatch | Bytes |
-| client | crypto | [Crypto.sha256](../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.sha256) · input: Bytes · interface dispatch | Bytes |
-| client | crypto | [RsaJwks](../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug.md#symbol-RsaJwks) · keys: List\<RsaJwk\> · value construction | RsaJwks |
-| client | crypto | [importJwk](../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug.md#symbol-importJwk) · jwk: RsaJwk | RsaPublicKey |
-| client | crypto | [rsaJwk](../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug.md#symbol-rsaJwk) · publicKey: RsaPublicKey, kid: string | RsaJwk |
-| client | crypto | [signJwt](../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug.md#symbol-signJwt) · key: RsaPrivateKey, claims: Json, kid: string, tokenType: string | string |
-| client | crypto | [verifyJwt](../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug.md#symbol-verifyJwt) · token: string, publicKey: RsaPublicKey, kid: string, tokenType: string | Json |
-| client | time | [Clock.now](../packages/%40git/url_c092cd151499c4e1d8a1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-Clock.now) · interface dispatch | int |
-| client | provider | [IdClaims](../../provider/contracts.aug.md#symbol-IdClaims) · iss: string, sub: string, aud: string, exp: int, iat: int, nonce: string, name: string · value construction | IdClaims |
-| client | provider | [UserInfo](../../provider/contracts.aug.md#symbol-UserInfo) · sub: string, name: string · value construction | UserInfo |
-| common | web | [cookie](../packages/%40git/url_897efafd565158fc4908/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-cookie) · name: string, value: string, path: string, maxAge: int, secure: bool | Headers |
-| common | crypto | [Crypto.generateRsa](../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.generateRsa) · interface dispatch | RsaPrivateKey |
-| Startup | common | [initializeKeys](../../common/keys.aug.md#symbol-initializeKeys) | void |
-| provider | common | [Page](../../common/views.aug.md#symbol-Page) · title: string, children: List\<Html\> | Html |
-| provider | common | [SigningKeys.provider](../../common/keys.aug.md#symbol-SigningKeys.provider) · interface dispatch | RsaPrivateKey |
-| provider | common | [securityHeaders](../../common/headers.aug.md#symbol-securityHeaders) | Headers |
-| provider | common | [settings](../../common/settings.aug.md#symbol-settings) | Settings |
-| provider | common | [withCookie](../../common/headers.aug.md#symbol-withCookie) · headers: Headers, name: string, value: string, path: string, maxAge: int, secure: bool | Headers |
-| provider | memory | [ExpiringStore.get](../packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore.get) · key: string, now: int · interface dispatch | optional AccessGrant |
-| provider | memory | [ExpiringStore.put](../packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore.put) · key: string, value: AccessGrant, expires: int, now: int · interface dispatch | void |
-| provider | memory | [ExpiringStore.put](../packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore.put) · key: string, value: AuthorizationCode, expires: int, now: int · interface dispatch | void |
-| provider | memory | [ExpiringStore.put](../packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore.put) · key: string, value: AuthorizationRequest, expires: int, now: int · interface dispatch | void |
-| provider | memory | [ExpiringStore.take](../packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore.take) · key: string, now: int · interface dispatch | optional AuthorizationRequest |
-| provider | memory | [ExpiringStore.take](../packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore.take) · key: string, now: int · interface dispatch | optional AuthorizationCode |
-| provider | web | [urlEncode](../packages/%40git/url_897efafd565158fc4908/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-urlEncode) · input: string | string |
-| provider | crypto | [Crypto.decodeBase64url](../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.decodeBase64url) · input: string · interface dispatch | Bytes |
-| provider | crypto | [Crypto.equal](../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.equal) · left: Bytes, right: Bytes · interface dispatch | bool |
-| provider | crypto | [Crypto.passwordHash](../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.passwordHash) · password: Bytes, salt: Bytes, iterations: int · interface dispatch | Bytes |
-| provider | crypto | [Crypto.publicRsa](../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.publicRsa) · key: RsaPrivateKey · interface dispatch | RsaPublicKey |
-| provider | crypto | [Crypto.random](../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.random) · size: int · interface dispatch | Bytes |
-| provider | crypto | [Crypto.sha256](../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.sha256) · input: Bytes · interface dispatch | Bytes |
-| provider | crypto | [RsaJwks](../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug.md#symbol-RsaJwks) · keys: List\<RsaJwk\> · value construction | RsaJwks |
-| provider | crypto | [rsaJwk](../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug.md#symbol-rsaJwk) · publicKey: RsaPublicKey, kid: string | RsaJwk |
-| provider | crypto | [signJwt](../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug.md#symbol-signJwt) · key: RsaPrivateKey, claims: Json, kid: string, tokenType: string | string |
-| provider | time | [Clock.now](../packages/%40git/url_c092cd151499c4e1d8a1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-Clock.now) · interface dispatch | int |
+| HTTP requests | client | 5 | [Inputs, results and call sites](index.md#boundary-3a2232a5f5e0) |
+| HTTP requests | provider | 6 | [Inputs, results and call sites](index.md#boundary-3cd184d08464) |
+| client | common | 5 | [Inputs, results and call sites](index.md#boundary-0581e7d5c82e) |
+| client | memory | 5 | [Inputs, results and call sites](index.md#boundary-4e2b8177ce42) |
+| client | json | 1 | [Inputs, results and call sites](index.md#boundary-355763c17585) |
+| client | web | 4 | [Inputs, results and call sites](index.md#boundary-dde5b5558455) |
+| client | crypto | 10 | [Inputs, results and call sites](index.md#boundary-412fec56df12) |
+| client | time | 1 | [Inputs, results and call sites](index.md#boundary-1ba581de07f0) |
+| client | provider | 2 | [Inputs, results and call sites](index.md#boundary-466b327d97f9) |
+| common | web | 1 | [Inputs, results and call sites](index.md#boundary-061d64468607) |
+| common | crypto | 1 | [Inputs, results and call sites](index.md#boundary-4246365de112) |
+| Startup | common | 1 | [Inputs, results and call sites](index.md#boundary-5ff699d0f9ec) |
+| provider | common | 5 | [Inputs, results and call sites](index.md#boundary-8b3d9000aeea) |
+| provider | memory | 6 | [Inputs, results and call sites](index.md#boundary-274701e13a7d) |
+| provider | web | 1 | [Inputs, results and call sites](index.md#boundary-efa3025f773d) |
+| provider | crypto | 9 | [Inputs, results and call sites](index.md#boundary-9a2abb1c79c3) |
+| provider | time | 1 | [Inputs, results and call sites](index.md#boundary-4b2495f1924c) |
+
+#### Data crossing these boundaries (64 contracts)
+
+<a id="boundary-3a2232a5f5e0"></a>
+
+#### HTTP requests → client
+
+<details>
+<summary>5 operations, 5 sites</summary>
+
+**[GET /](../../client/endpoints.aug.md#symbol-home)** · HTTP endpoint
+
+Inputs: token: optional string from cookie. Result: HttpResponse\<Html\>.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| HTTP requests | [Declaration](../../client/endpoints.aug#L12) · [Caller explanation](../../client/endpoints.aug.md#symbol-home) |
+
+**[GET /login/callback](../../client/login.aug.md#symbol-loginCallback)** · HTTP endpoint
+
+Inputs: code: string from query, state: string from query, browser: optional string from cookie. Result: HttpResponse\<Html\>.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| HTTP requests | [Declaration](../../client/login.aug#L27) · [Caller explanation](../../client/login.aug.md#symbol-loginCallback) |
+
+**[GET /login/start](../../client/login.aug.md#symbol-startLogin)** · HTTP endpoint
+
+No caller-supplied inputs. Result: HttpResponse\<Html\>.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| HTTP requests | [Declaration](../../client/login.aug#L12) · [Caller explanation](../../client/login.aug.md#symbol-startLogin) |
+
+**[GET /me](../../client/endpoints.aug.md#symbol-me)** · HTTP endpoint
+
+Inputs: token: optional string from cookie. Result: HttpResponse\<UserInfo\>.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| HTTP requests | [Declaration](../../client/endpoints.aug#L20) · [Caller explanation](../../client/endpoints.aug.md#symbol-me) |
+
+**[POST /logout](../../client/logout.aug.md#symbol-logout)** · HTTP endpoint
+
+Inputs: input: LogoutForm from form, token: optional string from cookie, origin: optional string from header. Result: HttpResponse\<Html\>.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| HTTP requests | [Declaration](../../client/logout.aug#L10) · [Caller explanation](../../client/logout.aug.md#symbol-logout) |
 
 </details>
+
+<a id="boundary-3cd184d08464"></a>
+
+#### HTTP requests → provider
+
+<details>
+<summary>6 operations, 6 sites</summary>
+
+**[GET /provider/.well-known/openid-configuration](../../provider/discovery.aug.md#symbol-discovery)** · HTTP endpoint
+
+No caller-supplied inputs. Result: Discovery.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| HTTP requests | [Declaration](../../provider/discovery.aug#L7) · [Caller explanation](../../provider/discovery.aug.md#symbol-discovery) |
+
+**[GET /provider/authorize](../../provider/authorization.aug.md#symbol-authorize)** · HTTP endpoint
+
+Inputs: response\_type: string from query, client\_id: string from query, redirect\_uri: string from query, requestedScope: string from query, state: string from query, nonce: string from query, code\_challenge: string from query, code\_challenge\_method: string from query. Result: HttpResponse\<Html\>.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| HTTP requests | [Declaration](../../provider/authorization.aug#L12) · [Caller explanation](../../provider/authorization.aug.md#symbol-authorize) |
+
+**[GET /provider/jwks](../../provider/discovery.aug.md#symbol-jwks)** · HTTP endpoint
+
+No caller-supplied inputs. Result: RsaJwks.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| HTTP requests | [Declaration](../../provider/discovery.aug#L12) · [Caller explanation](../../provider/discovery.aug.md#symbol-jwks) |
+
+**[GET /provider/userinfo](../../provider/userinfo.aug.md#symbol-userinfo)** · HTTP endpoint
+
+Inputs: authorization: optional string from header. Result: HttpResponse\<Json\>.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| HTTP requests | [Declaration](../../provider/userinfo.aug#L8) · [Caller explanation](../../provider/userinfo.aug.md#symbol-userinfo) |
+
+**[POST /provider/login](../../provider/authorization.aug.md#symbol-providerLogin)** · HTTP endpoint
+
+Inputs: form: LoginForm from form, browser: optional string from cookie, origin: optional string from header. Result: HttpResponse\<Html\>.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| HTTP requests | [Declaration](../../provider/authorization.aug#L35) · [Caller explanation](../../provider/authorization.aug.md#symbol-providerLogin) |
+
+**[POST /provider/token](../../provider/token.aug.md#symbol-token)** · HTTP endpoint
+
+Inputs: http: HttpRequest from request. Result: HttpResponse\<Json\>.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| HTTP requests | [Declaration](../../provider/token.aug#L12) · [Caller explanation](../../provider/token.aug.md#symbol-token) |
+
+</details>
+
+<a id="boundary-0581e7d5c82e"></a>
+
+#### client → common
+
+<details>
+<summary>5 operations, 21 sites</summary>
+
+**[Page](../../common/views.aug.md#symbol-Page)**
+
+Inputs: title: string, children: List\<Html\>. Result: Html.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| LoginPage | [Call site](../../client/views.aug#L7) · [Caller explanation](../../client/views.aug.md#symbol-LoginPage) |
+| Welcome | [Call site](../../client/views.aug#L14) · [Caller explanation](../../client/views.aug.md#symbol-Welcome) |
+
+**[SigningKeys.session](../../common/keys.aug.md#symbol-SigningKeys.session)** · interface dispatch
+
+No caller-supplied inputs. Result: RsaPrivateKey.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| loginCallback | [Call site](../../client/login.aug#L55) · [Caller explanation](../../client/login.aug.md#symbol-loginCallback) |
+| authenticate | [Call site](../../client/session.aug#L15) · [Caller explanation](../../client/session.aug.md#symbol-authenticate) |
+
+**[securityHeaders](../../common/headers.aug.md#symbol-securityHeaders)**
+
+No caller-supplied inputs. Result: Headers.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| home | [Call site](../../client/endpoints.aug#L15) · [Caller explanation](../../client/endpoints.aug.md#symbol-home) |
+| home | [Call site](../../client/endpoints.aug#L17) · [Caller explanation](../../client/endpoints.aug.md#symbol-home) |
+| me | [Call site](../../client/endpoints.aug#L22) · [Caller explanation](../../client/endpoints.aug.md#symbol-me) |
+| startLogin | [Call site](../../client/login.aug#L23) · [Caller explanation](../../client/login.aug.md#symbol-startLogin) |
+| loginCallback | [Call site](../../client/login.aug#L57) · [Caller explanation](../../client/login.aug.md#symbol-loginCallback) |
+| logout | [Call site](../../client/logout.aug#L18) · [Caller explanation](../../client/logout.aug.md#symbol-logout) |
+
+**[settings](../../common/settings.aug.md#symbol-settings)**
+
+No caller-supplied inputs. Result: Settings.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| startLogin | [Call site](../../client/login.aug#L13) · [Caller explanation](../../client/login.aug.md#symbol-startLogin) |
+| loginCallback | [Call site](../../client/login.aug#L40) · [Caller explanation](../../client/login.aug.md#symbol-loginCallback) |
+| logout | [Call site](../../client/logout.aug#L11) · [Caller explanation](../../client/logout.aug.md#symbol-logout) |
+| discover | [Call site](../../client/protocol.aug#L28) · [Caller explanation](../../client/protocol.aug.md#symbol-discover) |
+| validateIdentity | [Call site](../../client/protocol.aug#L40) · [Caller explanation](../../client/protocol.aug.md#symbol-validateIdentity) |
+| test validateIdentity | [Call site](../../client/protocol.aug#L72) · [Caller explanation](../../client/protocol.aug.md#symbol-test%20validateIdentity) |
+| authenticate | [Call site](../../client/session.aug#L17) · [Caller explanation](../../client/session.aug.md#symbol-authenticate) |
+
+**[withCookie](../../common/headers.aug.md#symbol-withCookie)**
+
+Inputs: headers: Headers, name: string, value: string, path: string, maxAge: int, secure: bool. Result: Headers.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| startLogin | [Call site](../../client/login.aug#L23) · [Caller explanation](../../client/login.aug.md#symbol-startLogin) |
+| loginCallback | [Call site](../../client/login.aug#L57) · [Caller explanation](../../client/login.aug.md#symbol-loginCallback) |
+| loginCallback | [Call site](../../client/login.aug#L58) · [Caller explanation](../../client/login.aug.md#symbol-loginCallback) |
+| logout | [Call site](../../client/logout.aug#L18) · [Caller explanation](../../client/logout.aug.md#symbol-logout) |
+
+</details>
+
+<a id="boundary-4e2b8177ce42"></a>
+
+#### client → memory
+
+<details>
+<summary>5 operations, 5 sites</summary>
+
+**[ExpiringStore.get](../packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore.get)** · interface dispatch
+
+Inputs: key: string, now: int. Result: optional SessionClaims.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| authenticate | [Call site](../../client/session.aug#L23) · [Caller explanation](../../client/session.aug.md#symbol-authenticate) |
+
+**[ExpiringStore.put](../packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore.put)** · interface dispatch
+
+Inputs: key: string, value: LoginTransaction, expires: int, now: int. Result: void.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| startLogin | [Call site](../../client/login.aug#L20) · [Caller explanation](../../client/login.aug.md#symbol-startLogin) |
+
+**[ExpiringStore.put](../packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore.put)** · interface dispatch
+
+Inputs: key: string, value: SessionClaims, expires: int, now: int. Result: void.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| loginCallback | [Call site](../../client/login.aug#L56) · [Caller explanation](../../client/login.aug.md#symbol-loginCallback) |
+
+**[ExpiringStore.take](../packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore.take)** · interface dispatch
+
+Inputs: key: string, now: int. Result: optional LoginTransaction.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| loginCallback | [Call site](../../client/login.aug#L34) · [Caller explanation](../../client/login.aug.md#symbol-loginCallback) |
+
+**[ExpiringStore.take](../packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore.take)** · interface dispatch
+
+Inputs: key: string, now: int. Result: optional SessionClaims.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| logout | [Call site](../../client/logout.aug#L17) · [Caller explanation](../../client/logout.aug.md#symbol-logout) |
+
+</details>
+
+<a id="boundary-355763c17585"></a>
+
+#### client → json
+
+<details>
+<summary>1 operation, 1 site</summary>
+
+**[parse](../packages/%40git/url_2d3c37c690c0fa115be1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-parse)**
+
+Inputs: input: string. Result: Json.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| responseJson | [Call site](../../client/protocol.aug#L20) · [Caller explanation](../../client/protocol.aug.md#symbol-responseJson) |
+
+</details>
+
+<a id="boundary-dde5b5558455"></a>
+
+#### client → web
+
+<details>
+<summary>4 operations, 13 sites</summary>
+
+**[HttpClient.request](../packages/%40git/url_897efafd565158fc4908/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-HttpClient.request)** · interface dispatch
+
+Inputs: method: string, url: string, headers: Headers, body: Bytes. Result: HttpResponse\<Bytes\>.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| loginCallback | [Call site](../../client/login.aug#L44) · [Caller explanation](../../client/login.aug.md#symbol-loginCallback) |
+
+**[HttpClient.request](../packages/%40git/url_897efafd565158fc4908/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-HttpClient.request)** · interface dispatch
+
+Inputs: method: string, url: string, headers: Headers, body: optional Bytes. Result: HttpResponse\<Bytes\>.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| loginCallback | [Call site](../../client/login.aug#L50) · [Caller explanation](../../client/login.aug.md#symbol-loginCallback) |
+
+**[HttpClient.request](../packages/%40git/url_897efafd565158fc4908/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-HttpClient.request)** · interface dispatch
+
+Inputs: method: string, url: string, headers: optional Headers, body: optional Bytes. Result: HttpResponse\<Bytes\>.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| loginCallback | [Call site](../../client/login.aug#L47) · [Caller explanation](../../client/login.aug.md#symbol-loginCallback) |
+| discover | [Call site](../../client/protocol.aug#L29) · [Caller explanation](../../client/protocol.aug.md#symbol-discover) |
+
+**[urlEncode](../packages/%40git/url_897efafd565158fc4908/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-urlEncode)**
+
+Inputs: input: string. Result: string.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| startLogin | [Call site](../../client/login.aug#L22) · [Caller explanation](../../client/login.aug.md#symbol-startLogin) |
+| startLogin | [Call site](../../client/login.aug#L22) · [Caller explanation](../../client/login.aug.md#symbol-startLogin) |
+| startLogin | [Call site](../../client/login.aug#L22) · [Caller explanation](../../client/login.aug.md#symbol-startLogin) |
+| startLogin | [Call site](../../client/login.aug#L22) · [Caller explanation](../../client/login.aug.md#symbol-startLogin) |
+| startLogin | [Call site](../../client/login.aug#L22) · [Caller explanation](../../client/login.aug.md#symbol-startLogin) |
+| loginCallback | [Call site](../../client/login.aug#L42) · [Caller explanation](../../client/login.aug.md#symbol-loginCallback) |
+| loginCallback | [Call site](../../client/login.aug#L42) · [Caller explanation](../../client/login.aug.md#symbol-loginCallback) |
+| loginCallback | [Call site](../../client/login.aug#L42) · [Caller explanation](../../client/login.aug.md#symbol-loginCallback) |
+| loginCallback | [Call site](../../client/login.aug#L42) · [Caller explanation](../../client/login.aug.md#symbol-loginCallback) |
+
+</details>
+
+<a id="boundary-412fec56df12"></a>
+
+#### client → crypto
+
+<details>
+<summary>10 operations, 23 sites</summary>
+
+**[Crypto.equal](../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.equal)** · interface dispatch
+
+Inputs: left: Bytes, right: Bytes. Result: bool.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| loginCallback | [Call site](../../client/login.aug#L38) · [Caller explanation](../../client/login.aug.md#symbol-loginCallback) |
+| logout | [Call site](../../client/logout.aug#L15) · [Caller explanation](../../client/logout.aug.md#symbol-logout) |
+| validateIdentity | [Call site](../../client/protocol.aug#L53) · [Caller explanation](../../client/protocol.aug.md#symbol-validateIdentity) |
+| authenticate | [Call site](../../client/session.aug#L27) · [Caller explanation](../../client/session.aug.md#symbol-authenticate) |
+
+**[Crypto.generateRsa](../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.generateRsa)** · interface dispatch
+
+No caller-supplied inputs. Result: RsaPrivateKey.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| test validateIdentity | [Call site](../../client/protocol.aug#L69) · [Caller explanation](../../client/protocol.aug.md#symbol-test%20validateIdentity) |
+
+**[Crypto.publicRsa](../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.publicRsa)** · interface dispatch
+
+Inputs: key: RsaPrivateKey. Result: RsaPublicKey.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| test validateIdentity | [Call site](../../client/protocol.aug#L70) · [Caller explanation](../../client/protocol.aug.md#symbol-test%20validateIdentity) |
+| authenticate | [Call site](../../client/session.aug#L15) · [Caller explanation](../../client/session.aug.md#symbol-authenticate) |
+
+**[Crypto.random](../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.random)** · interface dispatch
+
+Inputs: size: int. Result: Bytes.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| startLogin | [Call site](../../client/login.aug#L15) · [Caller explanation](../../client/login.aug.md#symbol-startLogin) |
+| startLogin | [Call site](../../client/login.aug#L16) · [Caller explanation](../../client/login.aug.md#symbol-startLogin) |
+| startLogin | [Call site](../../client/login.aug#L17) · [Caller explanation](../../client/login.aug.md#symbol-startLogin) |
+| startLogin | [Call site](../../client/login.aug#L18) · [Caller explanation](../../client/login.aug.md#symbol-startLogin) |
+| loginCallback | [Call site](../../client/login.aug#L54) · [Caller explanation](../../client/login.aug.md#symbol-loginCallback) |
+| loginCallback | [Call site](../../client/login.aug#L54) · [Caller explanation](../../client/login.aug.md#symbol-loginCallback) |
+
+**[Crypto.sha256](../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.sha256)** · interface dispatch
+
+Inputs: input: Bytes. Result: Bytes.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| startLogin | [Call site](../../client/login.aug#L21) · [Caller explanation](../../client/login.aug.md#symbol-startLogin) |
+
+**[RsaJwks](../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug.md#symbol-RsaJwks)** · value construction
+
+Inputs: keys: List\<RsaJwk\>. Result: RsaJwks.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| test validateIdentity | [Call site](../../client/protocol.aug#L71) · [Caller explanation](../../client/protocol.aug.md#symbol-test%20validateIdentity) |
+
+**[importJwk](../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug.md#symbol-importJwk)**
+
+Inputs: jwk: RsaJwk. Result: RsaPublicKey.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| validateIdentity | [Call site](../../client/protocol.aug#L47) · [Caller explanation](../../client/protocol.aug.md#symbol-validateIdentity) |
+
+**[rsaJwk](../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug.md#symbol-rsaJwk)**
+
+Inputs: publicKey: RsaPublicKey, kid: string. Result: RsaJwk.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| test validateIdentity | [Call site](../../client/protocol.aug#L71) · [Caller explanation](../../client/protocol.aug.md#symbol-test%20validateIdentity) |
+
+**[signJwt](../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug.md#symbol-signJwt)**
+
+Inputs: key: RsaPrivateKey, claims: Json, kid: string, tokenType: string. Result: string.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| loginCallback | [Call site](../../client/login.aug#L55) · [Caller explanation](../../client/login.aug.md#symbol-loginCallback) |
+| test validateIdentity | [Call site](../../client/protocol.aug#L78) · [Caller explanation](../../client/protocol.aug.md#symbol-test%20validateIdentity) |
+| test validateIdentity | [Call site](../../client/protocol.aug#L93) · [Caller explanation](../../client/protocol.aug.md#symbol-test%20validateIdentity) |
+| test validateIdentity | [Call site](../../client/protocol.aug#L102) · [Caller explanation](../../client/protocol.aug.md#symbol-test%20validateIdentity) |
+
+**[verifyJwt](../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug.md#symbol-verifyJwt)**
+
+Inputs: token: string, publicKey: RsaPublicKey, kid: string, tokenType: string. Result: Json.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| validateIdentity | [Call site](../../client/protocol.aug#L48) · [Caller explanation](../../client/protocol.aug.md#symbol-validateIdentity) |
+| authenticate | [Call site](../../client/session.aug#L16) · [Caller explanation](../../client/session.aug.md#symbol-authenticate) |
+
+</details>
+
+<a id="boundary-1ba581de07f0"></a>
+
+#### client → time
+
+<details>
+<summary>1 operation, 7 sites</summary>
+
+**[Clock.now](../packages/%40git/url_c092cd151499c4e1d8a1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-Clock.now)** · interface dispatch
+
+No caller-supplied inputs. Result: int.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| startLogin | [Call site](../../client/login.aug#L19) · [Caller explanation](../../client/login.aug.md#symbol-startLogin) |
+| startLogin | [Call site](../../client/login.aug#L20) · [Caller explanation](../../client/login.aug.md#symbol-startLogin) |
+| loginCallback | [Call site](../../client/login.aug#L34) · [Caller explanation](../../client/login.aug.md#symbol-loginCallback) |
+| loginCallback | [Call site](../../client/login.aug#L48) · [Caller explanation](../../client/login.aug.md#symbol-loginCallback) |
+| loginCallback | [Call site](../../client/login.aug#L53) · [Caller explanation](../../client/login.aug.md#symbol-loginCallback) |
+| logout | [Call site](../../client/logout.aug#L17) · [Caller explanation](../../client/logout.aug.md#symbol-logout) |
+| authenticate | [Call site](../../client/session.aug#L18) · [Caller explanation](../../client/session.aug.md#symbol-authenticate) |
+
+</details>
+
+<a id="boundary-466b327d97f9"></a>
+
+#### client → provider
+
+<details>
+<summary>2 operations, 4 sites</summary>
+
+**[IdClaims](../../provider/contracts.aug.md#symbol-IdClaims)** · value construction
+
+Inputs: iss: string, sub: string, aud: string, exp: int, iat: int, nonce: string, name: string. Result: IdClaims.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| test validateIdentity | [Call site](../../client/protocol.aug#L77) · [Caller explanation](../../client/protocol.aug.md#symbol-test%20validateIdentity) |
+| test validateIdentity | [Call site](../../client/protocol.aug#L92) · [Caller explanation](../../client/protocol.aug.md#symbol-test%20validateIdentity) |
+| test validateIdentity | [Call site](../../client/protocol.aug#L101) · [Caller explanation](../../client/protocol.aug.md#symbol-test%20validateIdentity) |
+
+**[UserInfo](../../provider/contracts.aug.md#symbol-UserInfo)** · value construction
+
+Inputs: sub: string, name: string. Result: UserInfo.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| me | [Call site](../../client/endpoints.aug#L22) · [Caller explanation](../../client/endpoints.aug.md#symbol-me) |
+
+</details>
+
+<a id="boundary-061d64468607"></a>
+
+#### common → web
+
+<details>
+<summary>1 operation, 1 site</summary>
+
+**[cookie](../packages/%40git/url_897efafd565158fc4908/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-cookie)**
+
+Inputs: name: string, value: string, path: string, maxAge: int, secure: bool. Result: Headers.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| withCookie | [Call site](../../common/headers.aug#L9) · [Caller explanation](../../common/headers.aug.md#symbol-withCookie) |
+
+</details>
+
+<a id="boundary-4246365de112"></a>
+
+#### common → crypto
+
+<details>
+<summary>1 operation, 2 sites</summary>
+
+**[Crypto.generateRsa](../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.generateRsa)** · interface dispatch
+
+No caller-supplied inputs. Result: RsaPrivateKey.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| initializeKeys | [Call site](../../common/keys.aug#L36) · [Caller explanation](../../common/keys.aug.md#symbol-initializeKeys) |
+| initializeKeys | [Call site](../../common/keys.aug#L37) · [Caller explanation](../../common/keys.aug.md#symbol-initializeKeys) |
+
+</details>
+
+<a id="boundary-5ff699d0f9ec"></a>
+
+#### Startup → common
+
+<details>
+<summary>1 operation, 1 site</summary>
+
+**[initializeKeys](../../common/keys.aug.md#symbol-initializeKeys)**
+
+No caller-supplied inputs. Result: void.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| Startup | [Call site](../../main.aug#L21) · [Caller explanation](../../main.aug.md#startup) |
+
+</details>
+
+<a id="boundary-8b3d9000aeea"></a>
+
+#### provider → common
+
+<details>
+<summary>5 operations, 22 sites</summary>
+
+**[Page](../../common/views.aug.md#symbol-Page)**
+
+Inputs: title: string, children: List\<Html\>. Result: Html.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| ProviderLogin | [Call site](../../provider/views.aug#L5) · [Caller explanation](../../provider/views.aug.md#symbol-ProviderLogin) |
+| ProviderFailure | [Call site](../../provider/views.aug#L19) · [Caller explanation](../../provider/views.aug.md#symbol-ProviderFailure) |
+
+**[SigningKeys.provider](../../common/keys.aug.md#symbol-SigningKeys.provider)** · interface dispatch
+
+No caller-supplied inputs. Result: RsaPrivateKey.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| jwks | [Call site](../../provider/discovery.aug#L13) · [Caller explanation](../../provider/discovery.aug.md#symbol-jwks) |
+| token | [Call site](../../provider/token.aug#L31) · [Caller explanation](../../provider/token.aug.md#symbol-token) |
+
+**[securityHeaders](../../common/headers.aug.md#symbol-securityHeaders)**
+
+No caller-supplied inputs. Result: Headers.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| authorize | [Call site](../../provider/authorization.aug#L31) · [Caller explanation](../../provider/authorization.aug.md#symbol-authorize) |
+| providerLogin | [Call site](../../provider/authorization.aug#L39) · [Caller explanation](../../provider/authorization.aug.md#symbol-providerLogin) |
+| providerLogin | [Call site](../../provider/authorization.aug#L42) · [Caller explanation](../../provider/authorization.aug.md#symbol-providerLogin) |
+| providerLogin | [Call site](../../provider/authorization.aug#L46) · [Caller explanation](../../provider/authorization.aug.md#symbol-providerLogin) |
+| providerLogin | [Call site](../../provider/authorization.aug#L49) · [Caller explanation](../../provider/authorization.aug.md#symbol-providerLogin) |
+| providerLogin | [Call site](../../provider/authorization.aug#L51) · [Caller explanation](../../provider/authorization.aug.md#symbol-providerLogin) |
+| providerLogin | [Call site](../../provider/authorization.aug#L57) · [Caller explanation](../../provider/authorization.aug.md#symbol-providerLogin) |
+| providerLogin | [Call site](../../provider/authorization.aug#L60) · [Caller explanation](../../provider/authorization.aug.md#symbol-providerLogin) |
+| \_oauthError | [Call site](../../provider/token.aug#L9) · [Caller explanation](../../provider/token.aug.md#symbol-_oauthError) |
+| token | [Call site](../../provider/token.aug#L36) · [Caller explanation](../../provider/token.aug.md#symbol-token) |
+| userinfo | [Call site](../../provider/userinfo.aug#L23) · [Caller explanation](../../provider/userinfo.aug.md#symbol-userinfo) |
+| userinfo | [Call site](../../provider/userinfo.aug#L26) · [Caller explanation](../../provider/userinfo.aug.md#symbol-userinfo) |
+
+**[settings](../../common/settings.aug.md#symbol-settings)**
+
+No caller-supplied inputs. Result: Settings.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| authorize | [Call site](../../provider/authorization.aug#L13) · [Caller explanation](../../provider/authorization.aug.md#symbol-authorize) |
+| providerLogin | [Call site](../../provider/authorization.aug#L36) · [Caller explanation](../../provider/authorization.aug.md#symbol-providerLogin) |
+| discovery | [Call site](../../provider/discovery.aug#L8) · [Caller explanation](../../provider/discovery.aug.md#symbol-discovery) |
+| token | [Call site](../../provider/token.aug#L13) · [Caller explanation](../../provider/token.aug.md#symbol-token) |
+
+**[withCookie](../../common/headers.aug.md#symbol-withCookie)**
+
+Inputs: headers: Headers, name: string, value: string, path: string, maxAge: int, secure: bool. Result: Headers.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| authorize | [Call site](../../provider/authorization.aug#L31) · [Caller explanation](../../provider/authorization.aug.md#symbol-authorize) |
+| providerLogin | [Call site](../../provider/authorization.aug#L57) · [Caller explanation](../../provider/authorization.aug.md#symbol-providerLogin) |
+
+</details>
+
+<a id="boundary-274701e13a7d"></a>
+
+#### provider → memory
+
+<details>
+<summary>6 operations, 6 sites</summary>
+
+**[ExpiringStore.get](../packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore.get)** · interface dispatch
+
+Inputs: key: string, now: int. Result: optional AccessGrant.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| userinfo | [Call site](../../provider/userinfo.aug#L19) · [Caller explanation](../../provider/userinfo.aug.md#symbol-userinfo) |
+
+**[ExpiringStore.put](../packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore.put)** · interface dispatch
+
+Inputs: key: string, value: AccessGrant, expires: int, now: int. Result: void.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| token | [Call site](../../provider/token.aug#L34) · [Caller explanation](../../provider/token.aug.md#symbol-token) |
+
+**[ExpiringStore.put](../packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore.put)** · interface dispatch
+
+Inputs: key: string, value: AuthorizationCode, expires: int, now: int. Result: void.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| providerLogin | [Call site](../../provider/authorization.aug#L55) · [Caller explanation](../../provider/authorization.aug.md#symbol-providerLogin) |
+
+**[ExpiringStore.put](../packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore.put)** · interface dispatch
+
+Inputs: key: string, value: AuthorizationRequest, expires: int, now: int. Result: void.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| authorize | [Call site](../../provider/authorization.aug#L30) · [Caller explanation](../../provider/authorization.aug.md#symbol-authorize) |
+
+**[ExpiringStore.take](../packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore.take)** · interface dispatch
+
+Inputs: key: string, now: int. Result: optional AuthorizationRequest.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| providerLogin | [Call site](../../provider/authorization.aug#L40) · [Caller explanation](../../provider/authorization.aug.md#symbol-providerLogin) |
+
+**[ExpiringStore.take](../packages/%40git/url_0eb7c89453c87681ed15/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/store.aug.md#symbol-ExpiringStore.take)** · interface dispatch
+
+Inputs: key: string, now: int. Result: optional AuthorizationCode.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| token | [Call site](../../provider/token.aug#L23) · [Caller explanation](../../provider/token.aug.md#symbol-token) |
+
+</details>
+
+<a id="boundary-efa3025f773d"></a>
+
+#### provider → web
+
+<details>
+<summary>1 operation, 2 sites</summary>
+
+**[urlEncode](../packages/%40git/url_897efafd565158fc4908/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-urlEncode)**
+
+Inputs: input: string. Result: string.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| providerLogin | [Call site](../../provider/authorization.aug#L56) · [Caller explanation](../../provider/authorization.aug.md#symbol-providerLogin) |
+| providerLogin | [Call site](../../provider/authorization.aug#L56) · [Caller explanation](../../provider/authorization.aug.md#symbol-providerLogin) |
+
+</details>
+
+<a id="boundary-9a2abb1c79c3"></a>
+
+#### provider → crypto
+
+<details>
+<summary>9 operations, 18 sites</summary>
+
+**[Crypto.decodeBase64url](../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.decodeBase64url)** · interface dispatch
+
+Inputs: input: string. Result: Bytes.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| authorize | [Call site](../../provider/authorization.aug#L21) · [Caller explanation](../../provider/authorization.aug.md#symbol-authorize) |
+| verifyCredentials | [Call site](../../provider/credentials.aug#L8) · [Caller explanation](../../provider/credentials.aug.md#symbol-verifyCredentials) |
+
+**[Crypto.equal](../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.equal)** · interface dispatch
+
+Inputs: left: Bytes, right: Bytes. Result: bool.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| providerLogin | [Call site](../../provider/authorization.aug#L48) · [Caller explanation](../../provider/authorization.aug.md#symbol-providerLogin) |
+| providerLogin | [Call site](../../provider/authorization.aug#L48) · [Caller explanation](../../provider/authorization.aug.md#symbol-providerLogin) |
+| verifyCredentials | [Call site](../../provider/credentials.aug#L9) · [Caller explanation](../../provider/credentials.aug.md#symbol-verifyCredentials) |
+| verifyCredentials | [Call site](../../provider/credentials.aug#L10) · [Caller explanation](../../provider/credentials.aug.md#symbol-verifyCredentials) |
+| token | [Call site](../../provider/token.aug#L28) · [Caller explanation](../../provider/token.aug.md#symbol-token) |
+
+**[Crypto.passwordHash](../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.passwordHash)** · interface dispatch
+
+Inputs: password: Bytes, salt: Bytes, iterations: int. Result: Bytes.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| verifyCredentials | [Call site](../../provider/credentials.aug#L7) · [Caller explanation](../../provider/credentials.aug.md#symbol-verifyCredentials) |
+
+**[Crypto.publicRsa](../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.publicRsa)** · interface dispatch
+
+Inputs: key: RsaPrivateKey. Result: RsaPublicKey.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| jwks | [Call site](../../provider/discovery.aug#L13) · [Caller explanation](../../provider/discovery.aug.md#symbol-jwks) |
+
+**[Crypto.random](../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.random)** · interface dispatch
+
+Inputs: size: int. Result: Bytes.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| authorize | [Call site](../../provider/authorization.aug#L25) · [Caller explanation](../../provider/authorization.aug.md#symbol-authorize) |
+| authorize | [Call site](../../provider/authorization.aug#L26) · [Caller explanation](../../provider/authorization.aug.md#symbol-authorize) |
+| authorize | [Call site](../../provider/authorization.aug#L27) · [Caller explanation](../../provider/authorization.aug.md#symbol-authorize) |
+| providerLogin | [Call site](../../provider/authorization.aug#L53) · [Caller explanation](../../provider/authorization.aug.md#symbol-providerLogin) |
+| token | [Call site](../../provider/token.aug#L32) · [Caller explanation](../../provider/token.aug.md#symbol-token) |
+
+**[Crypto.sha256](../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.sha256)** · interface dispatch
+
+Inputs: input: Bytes. Result: Bytes.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| token | [Call site](../../provider/token.aug#L27) · [Caller explanation](../../provider/token.aug.md#symbol-token) |
+
+**[RsaJwks](../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug.md#symbol-RsaJwks)** · value construction
+
+Inputs: keys: List\<RsaJwk\>. Result: RsaJwks.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| jwks | [Call site](../../provider/discovery.aug#L14) · [Caller explanation](../../provider/discovery.aug.md#symbol-jwks) |
+
+**[rsaJwk](../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug.md#symbol-rsaJwk)**
+
+Inputs: publicKey: RsaPublicKey, kid: string. Result: RsaJwk.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| jwks | [Call site](../../provider/discovery.aug#L14) · [Caller explanation](../../provider/discovery.aug.md#symbol-jwks) |
+
+**[signJwt](../packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/jose.aug.md#symbol-signJwt)**
+
+Inputs: key: RsaPrivateKey, claims: Json, kid: string, tokenType: string. Result: string.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| token | [Call site](../../provider/token.aug#L31) · [Caller explanation](../../provider/token.aug.md#symbol-token) |
+
+</details>
+
+<a id="boundary-4b2495f1924c"></a>
+
+#### provider → time
+
+<details>
+<summary>1 operation, 5 sites</summary>
+
+**[Clock.now](../packages/%40git/url_c092cd151499c4e1d8a1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-Clock.now)** · interface dispatch
+
+No caller-supplied inputs. Result: int.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| authorize | [Call site](../../provider/authorization.aug#L28) · [Caller explanation](../../provider/authorization.aug.md#symbol-authorize) |
+| providerLogin | [Call site](../../provider/authorization.aug#L40) · [Caller explanation](../../provider/authorization.aug.md#symbol-providerLogin) |
+| providerLogin | [Call site](../../provider/authorization.aug#L52) · [Caller explanation](../../provider/authorization.aug.md#symbol-providerLogin) |
+| token | [Call site](../../provider/token.aug#L22) · [Caller explanation](../../provider/token.aug.md#symbol-token) |
+| userinfo | [Call site](../../provider/userinfo.aug#L19) · [Caller explanation](../../provider/userinfo.aug.md#symbol-userinfo) |
+
+</details>
+
 
 ## Open a folder
 

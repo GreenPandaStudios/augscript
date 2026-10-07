@@ -2,7 +2,20 @@
 
 # Project diagrams
 
-Start here to see what moves between the application’s folders. Each arrow names an operation’s inputs and the result it returns to its caller. Open a folder for the next level of detail. Expand the contract list for complete types and dependency links.
+Start with how the application begins, then follow data between its folders. Open an operation to see its decisions, calls, failures and cleanup. Its explanation supplies the exact contract and linked dependencies.
+
+This view includes 2 application source files. Package and interface boundaries show checked contracts; their runtime implementations are not expanded. The views describe the checked program, not desired requirements or a recorded execution.
+
+## Where execution begins
+
+<a id="startup"></a>
+### Startup
+
+Within a task and ownership scope, it sets `first` to a worker task running [`calculate`](../../compute.aug.md#symbol-calculate) with `left` from a list containing `1.0`, `2.0`, `3.0` and `right` from a list containing `4.0`, `5.0`, `6.0` with copies of its inputs on a separate heap. It sets `second` to a worker task running [`calculate`](../../compute.aug.md#symbol-calculate) with `left` from a list containing `10.0`, `20.0` and `right` from a list containing `1.0`, `2.0` with copies of its inputs on a separate heap. It reads the result of waiting for `first` and `second` in input order; propagate failures once and binds `[0]` as `firstResult` and `[1]` as `secondResult`. [source](../../main.aug#L5-L18)
+
+For each `value` in a snapshot of `firstResult`, it prints `value`. After the loop, for each `value` in a snapshot of `secondResult`, it prints `value`. On leaving this scope, join its child tasks and release its local values. If this work raises [`GpuError`](../packages/%40greenpandastudios/aug-gpu/0.2.0/contracts.aug.md#symbol-GpuError) as `error`, it prints [`error.explain`](../packages/%40greenpandastudios/aug-gpu/0.2.0/contracts.aug.md#symbol-GpuError.explain); then it calls `exit` with `status` `1`. [source](../../main.aug#L5-L18)
+
+If this work raises `ConcurrencyError`, it prints `"Worker capacity is exhausted"`. [source](../../main.aug#L18)
 
 ## Data flow
 
@@ -39,19 +52,95 @@ flowchart LR
 
 </details>
 
-<details>
-<summary>Data crossing these boundaries (6 contracts)</summary>
+### Follow the data
 
-| From | To | Operation and inputs | Result |
+Each row opens the complete operations and call sites behind one pair of logical units. A grouped arrow records calls between those units; connected arrows need not belong to the same execution path.
+
+| From | To | Operations | Read |
 | --- | --- | --- | --- |
-| compute | @greenpandastudios/aug-gpu | [add](../packages/%40greenpandastudios/aug-gpu/0.2.0/api.aug.md#symbol-add) · left: Buffer, right: Buffer | own Buffer |
-| compute | @greenpandastudios/aug-gpu | [download](../packages/%40greenpandastudios/aug-gpu/0.2.0/api.aug.md#symbol-download) · buffer: Buffer | List\<float\> |
-| compute | @greenpandastudios/aug-gpu | [openDevice](../packages/%40greenpandastudios/aug-gpu/0.2.0/api.aug.md#symbol-openDevice) | own Device |
-| compute | @greenpandastudios/aug-gpu | [upload](../packages/%40greenpandastudios/aug-gpu/0.2.0/api.aug.md#symbol-upload) · device: Device, values: List\<float\> | own Buffer |
-| Startup | compute | [calculate](../../compute.aug.md#symbol-calculate) · left: List\<float\>, right: List\<float\> | List\<float\> |
-| Startup | @greenpandastudios/aug-gpu | [GpuError.explain](../packages/%40greenpandastudios/aug-gpu/0.2.0/contracts.aug.md#symbol-GpuError.explain) | string |
+| compute | @greenpandastudios/aug-gpu | 4 | [Inputs, results and call sites](index.md#boundary-5693d34962ca) |
+| Startup | compute | 1 | [Inputs, results and call sites](index.md#boundary-c2d7970ccd8f) |
+| Startup | @greenpandastudios/aug-gpu | 1 | [Inputs, results and call sites](index.md#boundary-0ba4fcceaa8a) |
+
+#### Data crossing these boundaries (6 contracts)
+
+<a id="boundary-5693d34962ca"></a>
+
+#### compute → @greenpandastudios/aug-gpu
+
+<details>
+<summary>4 operations, 5 sites</summary>
+
+**[add](../packages/%40greenpandastudios/aug-gpu/0.2.0/api.aug.md#symbol-add)**
+
+Inputs: left: Buffer, right: Buffer. Result: own Buffer.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| calculate | [Call site](../../compute.aug#L9) · [Caller explanation](../../compute.aug.md#symbol-calculate) |
+
+**[download](../packages/%40greenpandastudios/aug-gpu/0.2.0/api.aug.md#symbol-download)**
+
+Inputs: buffer: Buffer. Result: List\<float\>.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| calculate | [Call site](../../compute.aug#L10) · [Caller explanation](../../compute.aug.md#symbol-calculate) |
+
+**[openDevice](../packages/%40greenpandastudios/aug-gpu/0.2.0/api.aug.md#symbol-openDevice)**
+
+No caller-supplied inputs. Result: own Device.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| calculate | [Call site](../../compute.aug#L6) · [Caller explanation](../../compute.aug.md#symbol-calculate) |
+
+**[upload](../packages/%40greenpandastudios/aug-gpu/0.2.0/api.aug.md#symbol-upload)**
+
+Inputs: device: Device, values: List\<float\>. Result: own Buffer.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| calculate | [Call site](../../compute.aug#L7) · [Caller explanation](../../compute.aug.md#symbol-calculate) |
+| calculate | [Call site](../../compute.aug#L8) · [Caller explanation](../../compute.aug.md#symbol-calculate) |
 
 </details>
+
+<a id="boundary-c2d7970ccd8f"></a>
+
+#### Startup → compute
+
+<details>
+<summary>1 operation, 2 sites</summary>
+
+**[calculate](../../compute.aug.md#symbol-calculate)**
+
+Inputs: left: List\<float\>, right: List\<float\>. Result: List\<float\>.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| Startup | [Call site](../../main.aug#L7) · [Caller explanation](../../main.aug.md#startup) |
+| Startup | [Call site](../../main.aug#L8) · [Caller explanation](../../main.aug.md#startup) |
+
+</details>
+
+<a id="boundary-0ba4fcceaa8a"></a>
+
+#### Startup → @greenpandastudios/aug-gpu
+
+<details>
+<summary>1 operation, 1 site</summary>
+
+**[GpuError.explain](../packages/%40greenpandastudios/aug-gpu/0.2.0/contracts.aug.md#symbol-GpuError.explain)**
+
+No caller-supplied inputs. Result: string.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| Startup | [Call site](../../main.aug#L15) · [Caller explanation](../../main.aug.md#startup) |
+
+</details>
+
 
 ## Open a module
 

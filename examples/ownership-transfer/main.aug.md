@@ -6,10 +6,12 @@
 
 [Interactions and sequences](main.aug.diagrams.md)
 
+<a id="providers"></a>
 ## Providers
 
 `Console` is provided by [`SystemConsole`](.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-SystemConsole). The same instance is shared.
 
+<a id="startup"></a>
 ## Startup
 
 It calls [`make`](resource.aug.md#symbol-make) and stores the result in owned `first` ([`Resource`](resource.aug.md#symbol-Resource)). It calls [`consume`](resource.aug.md#symbol-consume) with `value` from `first` using injected `Console` for `console`. It calls [`make`](resource.aug.md#symbol-make) and stores the result in owned `second` ([`Resource`](resource.aug.md#symbol-Resource)). It prints `"end of main"`. [source](main.aug#L7-L10)

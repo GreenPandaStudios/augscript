@@ -6,6 +6,7 @@
 
 [Interactions and sequences](main.aug.diagrams.md)
 
+<a id="startup"></a>
 ## Startup
 
 It prints [`hashText`](hashing.aug.md#symbol-hashText) with `value` `"abc"`. If this work raises [`HashError`](.aug-spec/packages/%40greenpandastudios/aug-blake3/0.2.0/contracts.aug.md#symbol-HashError) as `error`, it prints `error.message`. [source](main.aug#L5-L8)

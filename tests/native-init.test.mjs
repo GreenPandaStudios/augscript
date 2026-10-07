@@ -19,7 +19,8 @@ test('a native C starter builds real artifacts with checked public bindings',{sk
   const result=run('package','init',library,'--native','c','--name','@example/identity','--repository','https://example.invalid/identity','--artifact-url','https://example.invalid/identity-v0.1.0.tar.gz','--license',license,'--clang','/usr/bin/clang','--ar','/usr/bin/ar');
   assert.equal(result.status,0,result.stderr);
   const manifest=JSON.parse(readFileSync(join(library,'aug-package.json'))),artifact=manifest.native.artifacts[0];
-  assert.match(readFileSync(join(library,'AGENTS.md'),'utf8'),/Start in src\/export\.aug/);
+  const instructions=readFileSync(join(library,'AGENTS.md'),'utf8');assert.match(instructions,/Start in src\/export\.aug/);
+  assert.match(instructions,/\.aug-spec\/diagrams\/index\.md/);assert.match(instructions,/dependency contracts and failure paths/);
   assert.equal(manifest.format,2);assert.equal(manifest.name,'@example/identity');assert.equal(artifact.target.minimumOS,'14.0');
   assert.match(artifact.fileManifestSha256,/^[0-9a-f]{64}$/);
   const archive=join(library,'.aug-build/native/macos-arm64.tar.gz');assert.equal(existsSync(archive),true);

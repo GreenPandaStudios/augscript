@@ -2,7 +2,9 @@
 
 # Project diagrams
 
-Start here to see what moves between the application’s folders. Each arrow names an operation’s inputs and the result it returns to its caller. Open a folder for the next level of detail. Expand the contract list for complete types and dependency links.
+Start with how the application begins, then follow data between its folders. Open an operation to see its decisions, calls, failures and cleanup. Its explanation supplies the exact contract and linked dependencies.
+
+This view includes 3 application source files. Package and interface boundaries show checked contracts; their runtime implementations are not expanded. The views describe the checked program, not desired requirements or a recorded execution.
 
 ## Data flow
 
@@ -27,20 +29,101 @@ flowchart LR
 
 </details>
 
-<details>
-<summary>Data crossing these boundaries (7 contracts)</summary>
+### Follow the data
 
-| From | To | Operation and inputs | Result |
+Each row opens the complete operations and call sites behind one pair of logical units. A grouped arrow records calls between those units; connected arrows need not belong to the same execution path.
+
+| From | To | Operations | Read |
 | --- | --- | --- | --- |
-| jose | contracts | [Crypto.decodeBase64url](../../contracts.aug.md#symbol-Crypto.decodeBase64url) · input: string · interface dispatch | Bytes |
-| jose | contracts | [Crypto.exportRsa](../../contracts.aug.md#symbol-Crypto.exportRsa) · publicKey: RsaPublicKey · interface dispatch | Tuple\<Bytes, Bytes\> |
-| jose | contracts | [Crypto.importRsa](../../contracts.aug.md#symbol-Crypto.importRsa) · modulus: Bytes, exponent: Bytes · interface dispatch | RsaPublicKey |
-| jose | contracts | [Crypto.signRsa](../../contracts.aug.md#symbol-Crypto.signRsa) · key: RsaPrivateKey, input: Bytes · interface dispatch | Bytes |
-| jose | contracts | [Crypto.verifyEd25519](../../contracts.aug.md#symbol-Crypto.verifyEd25519) · publicKey: string, input: Bytes, signature: Bytes · interface dispatch | bool |
-| jose | contracts | [Crypto.verifyRsa](../../contracts.aug.md#symbol-Crypto.verifyRsa) · publicKey: RsaPublicKey, input: Bytes, signature: Bytes · interface dispatch | bool |
-| jose | @git/url\_2d3c37c690c0fa115be1 | [parse](../packages/%40git/url_2d3c37c690c0fa115be1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-parse) · input: string | Json |
+| jose | contracts | 6 | [Inputs, results and call sites](index.md#boundary-a113507d85eb) |
+| jose | @git/url\_2d3c37c690c0fa115be1 | 1 | [Inputs, results and call sites](index.md#boundary-5b414984de9a) |
+
+#### Data crossing these boundaries (7 contracts)
+
+<a id="boundary-a113507d85eb"></a>
+
+#### jose → contracts
+
+<details>
+<summary>6 operations, 13 sites</summary>
+
+**[Crypto.decodeBase64url](../../contracts.aug.md#symbol-Crypto.decodeBase64url)** · interface dispatch
+
+Inputs: input: string. Result: Bytes.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| importJwk | [Call site](../../jose.aug#L24) · [Caller explanation](../../jose.aug.md#symbol-importJwk) |
+| importJwk | [Call site](../../jose.aug#L25) · [Caller explanation](../../jose.aug.md#symbol-importJwk) |
+| verifyJwt | [Call site](../../jose.aug#L54) · [Caller explanation](../../jose.aug.md#symbol-verifyJwt) |
+| verifyJwt | [Call site](../../jose.aug#L57) · [Caller explanation](../../jose.aug.md#symbol-verifyJwt) |
+| verifyJwt | [Call site](../../jose.aug#L60) · [Caller explanation](../../jose.aug.md#symbol-verifyJwt) |
+| verifyIdentityToken | [Call site](../../jose.aug#L83) · [Caller explanation](../../jose.aug.md#symbol-verifyIdentityToken) |
+| verifyIdentityToken | [Call site](../../jose.aug#L86) · [Caller explanation](../../jose.aug.md#symbol-verifyIdentityToken) |
+| verifyIdentityToken | [Call site](../../jose.aug#L89) · [Caller explanation](../../jose.aug.md#symbol-verifyIdentityToken) |
+
+**[Crypto.exportRsa](../../contracts.aug.md#symbol-Crypto.exportRsa)** · interface dispatch
+
+Inputs: publicKey: RsaPublicKey. Result: Tuple\<Bytes, Bytes\>.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| rsaJwk | [Call site](../../jose.aug#L16) · [Caller explanation](../../jose.aug.md#symbol-rsaJwk) |
+
+**[Crypto.importRsa](../../contracts.aug.md#symbol-Crypto.importRsa)** · interface dispatch
+
+Inputs: modulus: Bytes, exponent: Bytes. Result: RsaPublicKey.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| importJwk | [Call site](../../jose.aug#L26) · [Caller explanation](../../jose.aug.md#symbol-importJwk) |
+
+**[Crypto.signRsa](../../contracts.aug.md#symbol-Crypto.signRsa)** · interface dispatch
+
+Inputs: key: RsaPrivateKey, input: Bytes. Result: Bytes.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| signJwt | [Call site](../../jose.aug#L36) · [Caller explanation](../../jose.aug.md#symbol-signJwt) |
+
+**[Crypto.verifyEd25519](../../contracts.aug.md#symbol-Crypto.verifyEd25519)** · interface dispatch
+
+Inputs: publicKey: string, input: Bytes, signature: Bytes. Result: bool.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| verifyIdentityToken | [Call site](../../jose.aug#L87) · [Caller explanation](../../jose.aug.md#symbol-verifyIdentityToken) |
+
+**[Crypto.verifyRsa](../../contracts.aug.md#symbol-Crypto.verifyRsa)** · interface dispatch
+
+Inputs: publicKey: RsaPublicKey, input: Bytes, signature: Bytes. Result: bool.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| verifyJwt | [Call site](../../jose.aug#L58) · [Caller explanation](../../jose.aug.md#symbol-verifyJwt) |
 
 </details>
+
+<a id="boundary-5b414984de9a"></a>
+
+#### jose → @git/url\_2d3c37c690c0fa115be1
+
+<details>
+<summary>1 operation, 4 sites</summary>
+
+**[parse](../packages/%40git/url_2d3c37c690c0fa115be1/0.0.0-git.a39fc582565d4fca40be4f75fa304d71adc69301/contracts.aug.md#symbol-parse)**
+
+Inputs: input: string. Result: Json.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| verifyJwt | [Call site](../../jose.aug#L54) · [Caller explanation](../../jose.aug.md#symbol-verifyJwt) |
+| verifyJwt | [Call site](../../jose.aug#L60) · [Caller explanation](../../jose.aug.md#symbol-verifyJwt) |
+| verifyIdentityToken | [Call site](../../jose.aug#L83) · [Caller explanation](../../jose.aug.md#symbol-verifyIdentityToken) |
+| verifyIdentityToken | [Call site](../../jose.aug#L89) · [Caller explanation](../../jose.aug.md#symbol-verifyIdentityToken) |
+
+</details>
+
 
 ## Open a module
 

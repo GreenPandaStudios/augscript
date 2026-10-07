@@ -33,6 +33,10 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](calculator.aug#L6)
 
+It takes `left` and `right` as integers. It gets `console` ([`Console`](.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-Console)) from dependency injection.
+
+It returns `int`. It can call [`Console.write`](.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-Console.write).
+
 Interface contract; implementation selected at runtime. [Explanation](calculator.aug.md).
 
 <a id="sequence-Calculator-20-constructor"></a>
@@ -41,6 +45,10 @@ Interface contract; implementation selected at runtime. [Explanation](calculator
 
 [Source](calculator.aug#L9)
 
+Uses the selected logger to describe each addition. It implements [`Arithmetic`](calculator.aug.md#symbol-Arithmetic).
+
+The `_logger` dependency is injected as [`Logger`](logging/logger.aug.md#symbol-Logger) and stored read-only and privately.
+
 Receive fields: injected \_logger. [Explanation](calculator.aug.md).
 
 <a id="sequence-Calculator.add"></a>
@@ -48,6 +56,12 @@ Receive fields: injected \_logger. [Explanation](calculator.aug.md).
 ### Calculator.add
 
 [Source](calculator.aug#L16)
+
+Adds left and right, logging the operation.
+
+It takes `left` and `right` as integers. It gets `console` ([`Console`](.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-Console)) from dependency injection.
+
+It returns `int` — Sum of the two integers. It can call [`Console.write`](.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-Console.write).
 
 ```mermaid
 sequenceDiagram
@@ -63,11 +77,17 @@ sequenceDiagram
 
 [Source](calculator.aug#L26)
 
+Demonstrates a checked failure instead of a successful result.
+
+It takes `fail` as a boolean.
+
+Failures can raise `FileError` (when fail is true).
+
 ```mermaid
 sequenceDiagram
     participant p0 as load
 
-    alt fail
+    alt fail is true
     p0->>p0: FileError()
     p0-->>p0: FileError result: FileError
     Note over p0: Raise checked failure FileError()； required cleanup runs<br/>before exit
@@ -82,6 +102,8 @@ sequenceDiagram
 
 [Source](calculator.aug#L33)
 
+Test adapter: keeps calculator tests independent of console output. It implements [`Logger`](logging/logger.aug.md#symbol-Logger). It is private to this file.
+
 [Explanation](calculator.aug.md).
 
 <a id="sequence-_SilentLogger.log"></a>
@@ -89,6 +111,10 @@ sequenceDiagram
 ### \_SilentLogger.log
 
 [Source](calculator.aug#L34)
+
+It takes `message` as a string. It gets `console` ([`Console`](.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-Console)) from dependency injection.
+
+It can call [`Console.write`](.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-Console.write).
 
 [Explanation](calculator.aug.md).
 

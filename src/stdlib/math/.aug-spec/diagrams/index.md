@@ -2,7 +2,9 @@
 
 # Project diagrams
 
-Start here to see what moves between the application’s folders. Each arrow names an operation’s inputs and the result it returns to its caller. Open a folder for the next level of detail. Expand the contract list for complete types and dependency links.
+Start with how the application begins, then follow data between its folders. Open an operation to see its decisions, calls, failures and cleanup. Its explanation supplies the exact contract and linked dependencies.
+
+This view includes 3 application source files. Package and interface boundaries show checked contracts; their runtime implementations are not expanded. The views describe the checked program, not desired requirements or a recorded execution.
 
 ## Data flow
 
@@ -13,17 +15,60 @@ flowchart TD
     n0 -->|"checkedAdd(left, right) / checkedDivide(left, right) + 2 more → int"| n1
 ```
 
-<details>
-<summary>Data crossing these boundaries (4 contracts)</summary>
+### Follow the data
 
-| From | To | Operation and inputs | Result |
+Each row opens the complete operations and call sites behind one pair of logical units. A grouped arrow records calls between those units; connected arrows need not belong to the same execution path.
+
+| From | To | Operations | Read |
 | --- | --- | --- | --- |
-| decimals | integers | [checkedAdd](../../integers.aug.md#symbol-checkedAdd) · left: int, right: int | int |
-| decimals | integers | [checkedDivide](../../integers.aug.md#symbol-checkedDivide) · left: int, right: int | int |
-| decimals | integers | [checkedMultiply](../../integers.aug.md#symbol-checkedMultiply) · left: int, right: int | int |
-| decimals | integers | [checkedSubtract](../../integers.aug.md#symbol-checkedSubtract) · left: int, right: int | int |
+| decimals | integers | 4 | [Inputs, results and call sites](index.md#boundary-7c348feb60b9) |
+
+#### Data crossing these boundaries (4 contracts)
+
+<a id="boundary-7c348feb60b9"></a>
+
+#### decimals → integers
+
+<details>
+<summary>4 operations, 7 sites</summary>
+
+**[checkedAdd](../../integers.aug.md#symbol-checkedAdd)**
+
+Inputs: left: int, right: int. Result: int.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| addDecimals | [Call site](../../decimals.aug#L81) · [Caller explanation](../../decimals.aug.md#symbol-addDecimals) |
+
+**[checkedDivide](../../integers.aug.md#symbol-checkedDivide)**
+
+Inputs: left: int, right: int. Result: int.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| divideDecimals | [Call site](../../decimals.aug#L116) · [Caller explanation](../../decimals.aug.md#symbol-divideDecimals) |
+
+**[checkedMultiply](../../integers.aug.md#symbol-checkedMultiply)**
+
+Inputs: left: int, right: int. Result: int.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| rescaleDecimal | [Call site](../../decimals.aug#L65) · [Caller explanation](../../decimals.aug.md#symbol-rescaleDecimal) |
+| multiplyDecimals | [Call site](../../decimals.aug#L94) · [Caller explanation](../../decimals.aug.md#symbol-multiplyDecimals) |
+| divideDecimals | [Call site](../../decimals.aug#L109) · [Caller explanation](../../decimals.aug.md#symbol-divideDecimals) |
+| divideDecimals | [Call site](../../decimals.aug#L112) · [Caller explanation](../../decimals.aug.md#symbol-divideDecimals) |
+
+**[checkedSubtract](../../integers.aug.md#symbol-checkedSubtract)**
+
+Inputs: left: int, right: int. Result: int.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| subtractDecimals | [Call site](../../decimals.aug#L90) · [Caller explanation](../../decimals.aug.md#symbol-subtractDecimals) |
 
 </details>
+
 
 ## Open a module
 

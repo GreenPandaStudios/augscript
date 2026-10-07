@@ -2,7 +2,20 @@
 
 # Project diagrams
 
-Start here to see what moves between the application’s folders. Each arrow names an operation’s inputs and the result it returns to its caller. Open a folder for the next level of detail. Expand the contract list for complete types and dependency links.
+Start with how the application begins, then follow data between its folders. Open an operation to see its decisions, calls, failures and cleanup. Its explanation supplies the exact contract and linked dependencies.
+
+This view includes 2 application source files. Package and interface boundaries show checked contracts; their runtime implementations are not expanded. The views describe the checked program, not desired requirements or a recorded execution.
+
+## Where execution begins
+
+### HTTP configuration
+
+Listen on `127.0.0.1`. Limit request bodies to 1048576 bytes and buffered responses to 4194304 bytes. Serve OpenAPI at `/openapi.json` and API docs at `/docs`.
+
+<a id="startup"></a>
+### Startup
+
+It serves [`weatherForecast`](../../forecasts.aug.md#symbol-weatherForecast) on port `8787`. [source](../../main.aug#L4)
 
 ## Data flow
 
@@ -13,14 +26,33 @@ flowchart TD
     n0 -->|"GET /weatherforecast → list of WeatherForecast"| n1
 ```
 
-<details>
-<summary>Data crossing these boundaries (1 contracts)</summary>
+### Follow the data
 
-| From | To | Operation and inputs | Result |
+Each row opens the complete operations and call sites behind one pair of logical units. A grouped arrow records calls between those units; connected arrows need not belong to the same execution path.
+
+| From | To | Operations | Read |
 | --- | --- | --- | --- |
-| HTTP requests | forecasts | [GET /weatherforecast](../../forecasts.aug.md#symbol-weatherForecast) · HTTP endpoint | List\<WeatherForecast\> |
+| HTTP requests | forecasts | 1 | [Inputs, results and call sites](index.md#boundary-cd260563d9a4) |
+
+#### Data crossing these boundaries (1 contracts)
+
+<a id="boundary-cd260563d9a4"></a>
+
+#### HTTP requests → forecasts
+
+<details>
+<summary>1 operation, 1 site</summary>
+
+**[GET /weatherforecast](../../forecasts.aug.md#symbol-weatherForecast)** · HTTP endpoint
+
+No caller-supplied inputs. Result: List\<WeatherForecast\>.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| HTTP requests | [Declaration](../../forecasts.aug#L6) · [Caller explanation](../../forecasts.aug.md#symbol-weatherForecast) |
 
 </details>
+
 
 ## Open a module
 

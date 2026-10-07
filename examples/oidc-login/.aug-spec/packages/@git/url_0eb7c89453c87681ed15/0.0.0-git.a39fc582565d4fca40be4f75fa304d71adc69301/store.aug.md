@@ -43,7 +43,9 @@ A synchronized table with short critical sections and no I/O while locked. It im
 <a id="symbol-MemoryStore.put"></a>
 ### `MemoryStore.put` · [source](store.aug#L19)
 
-Remove expired entries, then store at most 512 live entries. Time is supplied by the caller. It takes labeled inputs `key`, `value`, `expires`, and `now`.
+Remove expired entries, then store at most 512 live entries. Time is supplied by the caller. It takes `key` as a string, `value` as `T`, and `expires` and `now` as integers.
+
+It can call [`ExpiringStore<T>.put`](store.aug.md#symbol-ExpiringStore.put). Failures can raise [`StoreFull`](store.aug.md#symbol-StoreFull).
 
 It sets `entry` to a [`_Entry`](store.aug.md#symbol-_Entry) for `T` with `value` and `expires`. While holding the lock on `_entries` as mutable `entries`, for each `name` and `saved` in a snapshot of `entries`, if `saved.expires` is at most `now`, it removes the key `name` from `entries`. After the loop, it checks that the number of elements in `entries` is less than `512` or whether `entries` contains the key `key` returns true. It raises a [`StoreFull`](store.aug.md#symbol-StoreFull) at the first failed check. [source](store.aug#L20-L27)
 
@@ -56,14 +58,14 @@ It stores `entry` in `entries` under `key`. Release this lock when the block exi
 put(string key, T value, int expires, int now) returns void unless StoreFull uses ExpiringStore<T>.put
 ```
 
-It takes `key` as a string, `value` as `T`, and `expires` and `now` as integers. Failures can raise [`StoreFull`](store.aug.md#symbol-StoreFull).
+It takes `key` as a string, `value` as `T`, and `expires` and `now` as integers. It can call [`ExpiringStore<T>.put`](store.aug.md#symbol-ExpiringStore.put). Failures can raise [`StoreFull`](store.aug.md#symbol-StoreFull).
 
 </details>
 
 <a id="symbol-MemoryStore.take"></a>
 ### `MemoryStore.take` · [source](store.aug#L28)
 
-Atomically remove a value. Expired or absent entries return null. It takes `key` as a string and `now` as an integer.
+Atomically remove a value. Expired or absent entries return null. It takes `key` as a string and `now` as an integer. It can call [`ExpiringStore<T>.take`](store.aug.md#symbol-ExpiringStore.take).
 
 While holding the lock on `_entries` as mutable `entries`, it obtains `entries.take` with `key`. If no value is found, it returns null. The non-null result becomes `saved`. It returns null if `saved.expires` is at most `now`, or `saved.value` otherwise. [source](store.aug#L29-L36)
 
@@ -76,14 +78,14 @@ Release this lock when the block exits, including on return or failure. [source]
 take(string key, int now) returns optional T uses ExpiringStore<T>.take
 ```
 
-It takes `key` as a string and `now` as an integer.
+It takes `key` as a string and `now` as an integer. It can call [`ExpiringStore<T>.take`](store.aug.md#symbol-ExpiringStore.take).
 
 </details>
 
 <a id="symbol-MemoryStore.get"></a>
 ### `MemoryStore.get` · [source](store.aug#L37)
 
-Read a live value without consuming it. It takes `key` as a string and `now` as an integer.
+Read a live value without consuming it. It takes `key` as a string and `now` as an integer. It can call [`ExpiringStore<T>.get`](store.aug.md#symbol-ExpiringStore.get).
 
 While holding the lock on `_entries` as mutable `entries`, it obtains the value under `key` in `entries`. If no value is found, it returns null. The non-null result becomes `saved`. It returns null if `saved.expires` is at most `now`, or `saved.value` otherwise. [source](store.aug#L38-L45)
 
@@ -96,7 +98,7 @@ Release this lock when the block exits, including on return or failure. [source]
 get(string key, int now) returns optional T uses ExpiringStore<T>.get
 ```
 
-It takes `key` as a string and `now` as an integer.
+It takes `key` as a string and `now` as an integer. It can call [`ExpiringStore<T>.get`](store.aug.md#symbol-ExpiringStore.get).
 
 </details>
 

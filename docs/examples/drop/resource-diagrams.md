@@ -33,6 +33,8 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](resource.md#source-L2)
 :::
 
+It implements [`IResource`](resource.md#symbol-IResource).
+
 [Explanation](resource.md).
 
 ### Resource.drop {#sequence-Resource.drop}

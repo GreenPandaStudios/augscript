@@ -9,7 +9,7 @@
 <a id="symbol-calculate"></a>
 ## `calculate` · [source](tensors.aug#L5)
 
-Add two CPU tensors using LibTorch and return the sum of their elements.
+Add two CPU tensors using LibTorch and return the sum of their elements. Failures can raise [`TensorError`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.2.0/contracts.aug.md#symbol-TensorError).
 
 It calls [`tensor`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.2.0/api.aug.md#symbol-tensor) with `values` from a list containing `1.0`, `2.0`, `3.0` and stores the result in owned `left` ([`Tensor`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.2.0/bindings.aug.md#symbol-Tensor)). It calls [`tensor`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.2.0/api.aug.md#symbol-tensor) with `values` from a list containing `4.0`, `5.0`, `6.0` and stores the result in owned `right` ([`Tensor`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.2.0/bindings.aug.md#symbol-Tensor)). It calls [`add`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.2.0/api.aug.md#symbol-add) with `left` and `right` and stores the result in owned `result` ([`Tensor`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.2.0/bindings.aug.md#symbol-Tensor)). It returns [`sum`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.2.0/api.aug.md#symbol-sum) with `tensor` from `result`. [source](tensors.aug#L6-L9)
 

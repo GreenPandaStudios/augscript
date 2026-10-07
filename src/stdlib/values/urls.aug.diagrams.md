@@ -56,6 +56,13 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](urls.aug#L10)
 
+Absolute HTTP(S) URL in August's ASCII DNS-host profile; preserve the original spelling.
+
+It takes `text` as a string, kept read-only (1 to 8192 bytes. Hosts use 1 to 253 bytes, labels of 1 to 63 letters/digits/hyphens and at least one letter.
+Optional ports are 1 to 65535. Path/query use RFC 3986 characters and checked percent triplets).
+
+Construction can fail with `ConversionError`.
+
 ```mermaid
 sequenceDiagram
     participant p0 as HttpUrl constructor
@@ -69,6 +76,12 @@ sequenceDiagram
 ### parseHttpUrl
 
 [Source](urls.aug#L17)
+
+Parse the same ASCII HTTP(S)/DNS profile as HttpUrl, preserving case, escapes and an empty query.
+
+It takes `text` as a string.
+
+Failures can raise `ConversionError` (Invalid or unsupported URL syntax).
 
 ```mermaid
 sequenceDiagram
@@ -86,6 +99,10 @@ sequenceDiagram
 
 [Source](urls.aug#L21)
 
+Return the original URL text without decoding, normalizing or accessing a network.
+
+It takes `value` as [`HttpUrl`](urls.aug.md#symbol-HttpUrl).
+
 Return value.text; required cleanup runs before exit. [Explanation](urls.aug.md).
 
 <a id="sequence-_validateHttpUrl"></a>
@@ -93,6 +110,12 @@ Return value.text; required cleanup runs before exit. [Explanation](urls.aug.md)
 ### \_validateHttpUrl
 
 [Source](urls.aug#L24)
+
+It is private to its defining scope.
+
+It takes `text` as a string.
+
+Failures can raise `ConversionError`.
 
 #### Sequence 1 of 3
 
@@ -102,11 +125,11 @@ sequenceDiagram
     participant p1 as august/values/ascii
     p0->>p0: text.byteLength()
     p0-->>p0: byteLength result: int
-    opt Left is false
+    opt (byteLength result ‹ 8) is false
     p0->>p0: text.byteLength()
     p0-->>p0: byteLength result 2: int
     end
-    alt text.byteLength() ‹ 8 or text.byteLength() › 8192
+    alt text.byteLength is less than 8 or text.byteLength is<br/>greater than 8192
     p0->>p0: ConversionError()
     p0-->>p0: ConversionError result: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
@@ -118,16 +141,16 @@ sequenceDiagram
     p1-->>p0: asciiSlice result: string
     p0->>p1: asciiLower(text=asciiSlice result)
     p1-->>p0: scheme: string
-    alt scheme != ”http://”
+    alt scheme does not equal ”http://”
     p0->>p0: text.byteLength()
     p0-->>p0: byteLength result 3: int
-    opt Left is false
+    opt (byteLength result 3 ‹ 9) is false
     p0->>p1: asciiSlice(input=bytes, start=0, end=8)
     p1-->>p0: asciiSlice result 2: string
     p0->>p1: asciiLower(text=asciiSlice result 2)
     p1-->>p0: asciiLower result 2: string
     end
-    alt text.byteLength() ‹ 9 or asciiLower(text=asciiSlice(input=bytes, start=0, end=8)) != ”https://”
+    alt text.byteLength is less than 9 or asciiLower with text<br/>from asciiSlice with input from bytes, start 0, and end<br/>8 does not equal ”https://”
     p0->>p0: ConversionError()
     p0-->>p0: ConversionError result 2: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
@@ -149,7 +172,7 @@ sequenceDiagram
     p0-->>p0: byteLength result 4: int
     p0->>p1: asciiAt(input=bytes, index=end)
     p1-->>p0: character: string
-    alt character == ”/” or character == ”?”
+    alt character equals ”/” or character equals ”?”
     Note over p0: Leave this loop
     end
     Note over p0: Set end to end + 1
@@ -163,13 +186,13 @@ sequenceDiagram
     p0-->>p0: byteLength result 5: int
     p0->>p1: asciiAt(input=bytes, index=index)
     p1-->>p0: character: string
-    alt character == ”?”
+    alt character equals ”?”
     Note over p0: No operations in this branch
     else otherwise
-    alt character == ”%”
+    alt character equals ”%”
     p0->>p0: text.byteLength()
     p0-->>p0: byteLength result 6: int
-    alt index + 2 ›= text.byteLength()
+    alt (index plus 2) is at least text.byteLength
     p0->>p0: ConversionError()
     p0-->>p0: ConversionError result 3: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
@@ -189,17 +212,17 @@ sequenceDiagram
     participant p1 as august/values/ascii
     loop While index ‹ text.byteLength()
     alt Continuing otherwise
-    alt character == ”%”
+    alt character equals ”%”
     Note over p0: Sequence continued from the previous view
     p0->>p0: _hex(character=asciiAt result 3)
     p0-->>p0: _hex result: bool
-    opt Left is false
+    opt (not _hex result) is false
     p0->>p1: asciiAt(input=bytes, index=index + 2)
     p1-->>p0: asciiAt result 4: string
     p0->>p0: _hex(character=asciiAt result 4)
     p0-->>p0: _hex result 2: bool
     end
-    alt not _hex(character=asciiAt(input=bytes, index=index + 1)) or not _hex(character=asciiAt(input=bytes, index=index + 2))
+    alt _hex with character from asciiAt with input from bytes<br/>and index from index plus 1 returns false or _hex with<br/>character from asciiAt with input from bytes and index<br/>from index plus 2 returns false
     p0->>p0: ConversionError()
     p0-->>p0: ConversionError result 4: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
@@ -208,7 +231,7 @@ sequenceDiagram
     else otherwise
     p0->>p0: _pathCharacter(character=character)
     p0-->>p0: _pathCharacter result: bool
-    alt not _pathCharacter(character) and character != ”/”
+    alt _pathCharacter with character returns false and<br/>character does not equal ”/”
     p0->>p0: ConversionError()
     p0-->>p0: ConversionError result 5: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
@@ -226,6 +249,12 @@ sequenceDiagram
 
 [Source](urls.aug#L59)
 
+It is private to its defining scope.
+
+It takes `authority` as a string.
+
+Failures can raise `ConversionError`.
+
 #### Sequence 1 of 3
 
 ```mermaid
@@ -236,7 +265,7 @@ sequenceDiagram
     p0-->>p0: parts: List‹string›
     p0->>p0: parts.length()
     p0-->>p0: length result: int
-    alt parts.length() › 2
+    alt the number of elements in parts is greater than 2
     p0->>p0: ConversionError()
     p0-->>p0: ConversionError result: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
@@ -246,11 +275,11 @@ sequenceDiagram
     p0-->>p0: host: string
     p0->>p0: host.byteLength()
     p0-->>p0: byteLength result: int
-    opt Left is false
+    opt (byteLength result == 0) is false
     p0->>p0: host.byteLength()
     p0-->>p0: byteLength result 2: int
     end
-    alt host.byteLength() == 0 or host.byteLength() › 253
+    alt host.byteLength equals 0 or host.byteLength is greater<br/>than 253
     p0->>p0: ConversionError()
     p0-->>p0: ConversionError result 2: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
@@ -261,7 +290,7 @@ sequenceDiagram
     loop For each item in host.split(separator=”.”)
     p0->>p0: label.byteLength()
     p0-->>p0: byteLength result 3: int
-    opt Left is false
+    opt (byteLength result 3 == 0) is false
     p0->>p0: label.byteLength()
     p0-->>p0: byteLength result 4: int
     end
@@ -277,7 +306,7 @@ sequenceDiagram
     participant p1 as august/values/ascii
     opt Try body； stops on a checked failure
     loop For each item in host.split(separator=”.”)
-    alt label.byteLength() == 0 or label.byteLength() › 63
+    alt label.byteLength equals 0 or label.byteLength is greater<br/>than 63
     Note over p0: Sequence continued from the previous view
     p0->>p0: ConversionError()
     p0-->>p0: ConversionError result 3: ConversionError
@@ -293,18 +322,18 @@ sequenceDiagram
     p1-->>p0: character: string
     p0->>p1: asciiLetter(character=character)
     p1-->>p0: letter: bool
-    opt Left is false
+    opt (letter) is false
     p0->>p0: character.isDecimal()
     p0-->>p0: isDecimal result: bool
     end
     Note over p0: Set alphanumeric to letter or isDecimal result
-    opt Left is true
-    opt Left is false
+    opt (not alphanumeric) is true
+    opt (character != ”-” or index == 0) is false
     p0->>p0: label.byteLength()
     p0-->>p0: byteLength result 6: int
     end
     end
-    alt not alphanumeric and (character != ”-” or index == 0 or index == label.byteLength() - 1
+    alt not (alphanumeric) and (character does not equal ”-” or<br/>index equals 0 or index equals (label.byteLength minus<br/>1))
     p0->>p0: ConversionError()
     p0-->>p0: ConversionError result 4: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
@@ -323,7 +352,7 @@ sequenceDiagram
     participant p0 as _validateAuthority
 
     opt Try body； stops on a checked failure
-    alt not hasLetter
+    alt not (hasLetter)
     Note over p0: Sequence continued from the previous view
     p0->>p0: ConversionError()
     p0-->>p0: ConversionError result 5: ConversionError
@@ -331,23 +360,23 @@ sequenceDiagram
     end
     p0->>p0: parts.length()
     p0-->>p0: length result 2: int
-    alt parts.length() == 2
+    alt the number of elements in parts equals 2
     p0->>p0: parts.get(index=1)
     p0-->>p0: port: string
     p0->>p0: port.isDecimal()
     p0-->>p0: isDecimal result 2: bool
-    opt Left is false
+    opt (not isDecimal result 2) is false
     p0->>p0: port.byteLength()
     p0-->>p0: byteLength result 7: int
     end
-    alt not port.isDecimal() or port.byteLength() › 5
+    alt port.isDecimal returns false or port.byteLength is<br/>greater than 5
     p0->>p0: ConversionError()
     p0-->>p0: ConversionError result 6: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
     end
     p0->>p0: port.parseInteger()
     p0-->>p0: number: int
-    alt number ‹ 1 or number › 65535
+    alt number is less than 1 or number is greater than 65535
     p0->>p0: ConversionError()
     p0-->>p0: ConversionError result 7: ConversionError
     Note over p0: Raise checked failure ConversionError()； required<br/>cleanup runs before exit
@@ -368,13 +397,17 @@ sequenceDiagram
 
 [Source](urls.aug#L93)
 
+It is private to its defining scope.
+
+It takes `character` as a string.
+
 ```mermaid
 sequenceDiagram
     participant p0 as _pathCharacter
 
     p0->>p0: character.isToken(min=1, max=1)
     p0-->>p0: isToken result: bool
-    Note over p0: Return character.isToken(min=1, max=1) or character ==<br/>”:” or character == ”@” or character == ”!” or character<br/>== ”$…
+    Note over p0: Return character.isToken(min=1, max=1) or character ==<br/>”:” or character == ”@” or character == ”!” or character<br/>== ”$” or character == ”＆” or character == ”'” or<br/>character == ”(” or character == ”)” or character == ”*”<br/>or character == ”+” or character == ”,” or character ==<br/>”；” or character == ”=”； required cleanup runs before<br/>exit
 ```
 
 <a id="sequence-_hex"></a>
@@ -383,29 +416,33 @@ sequenceDiagram
 
 [Source](urls.aug#L111)
 
+It is private to its defining scope.
+
+It takes `character` as a string.
+
 ```mermaid
 sequenceDiagram
     participant p0 as _hex
 
     p0->>p0: character.isDecimal()
     p0-->>p0: isDecimal result: bool
-    opt Left is false
+    opt (isDecimal result) is false
     p0->>p0: character.compare(other=”A”)
     p0-->>p0: compare result: int
-    opt Left is true
+    opt (compare result ›= 0) is true
     p0->>p0: character.compare(other=”F”)
     p0-->>p0: compare result 2: int
     end
     end
-    opt Left is false
+    opt (isDecimal result or compare result ›= 0 and compare<br/>result 2 ‹= 0) is false
     p0->>p0: character.compare(other=”a”)
     p0-->>p0: compare result 3: int
-    opt Left is true
+    opt (compare result 3 ›= 0) is true
     p0->>p0: character.compare(other=”f”)
     p0-->>p0: compare result 4: int
     end
     end
-    Note over p0: Return character.isDecimal() or<br/>(character.compare(other=”A”) ›= 0 and<br/>character.compare(other=”F”) ‹= 0) or (charact…
+    Note over p0: Return character.isDecimal() or<br/>(character.compare(other=”A”) ›= 0 and<br/>character.compare(other=”F”) ‹= 0) or<br/>(character.compare(other=”a”) ›= 0 and<br/>character.compare(other=”f”) ‹= 0； required cleanup runs<br/>before exit
 ```
 
 ## Called contracts

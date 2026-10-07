@@ -12,7 +12,7 @@ outline: [2, 3]
 
 Install the neighboring arithmetic package and import it through a local alias.
 
-Open a file to read the code beside its compiled explanation. Choose **Indentation** or **Braces** to change the code view. The choice carries across files.
+Start with the [project overview](diagrams/index.md), then open an operation’s sequence or explanation. Source stays beside its spec when you need to inspect an expression. Choose **Indentation** or **Braces** for that code view; the choice carries across files.
 
 [Explore the generated project diagrams](diagrams/index.md) to follow data between folders, then open module interactions and API sequences.
 

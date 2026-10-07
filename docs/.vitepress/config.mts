@@ -79,6 +79,7 @@ export default defineConfig({
       ]},
       { text: 'Task guides', collapsed: false, items: [
         { text: 'Choose a guide', link: '/guides/' },
+        { text: 'Understand a project', link: '/guides/understand-a-project' },
         { text: 'Try a snippet', link: '/guides/try-a-snippet' },
         { text: 'Add error context', link: '/guides/add-error-context' },
             { text: 'Measure text', link: '/guides/measure-text' },

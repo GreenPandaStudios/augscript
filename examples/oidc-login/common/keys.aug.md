@@ -39,7 +39,7 @@ It implements [`SigningKeys`](keys.aug.md#symbol-SigningKeys). The read-only, pr
 <a id="symbol-MemorySigningKeys.configure"></a>
 ### `MemorySigningKeys.configure` · [source](keys.aug#L14)
 
-It takes `provider` and `session` as `RsaPrivateKey`.
+It takes `provider` and `session` as `RsaPrivateKey`. It can call [`SigningKeys.configure`](keys.aug.md#symbol-SigningKeys.configure). Failures can raise [`KeyError`](keys.aug.md#symbol-KeyError).
 
 While holding the lock on `_keys` as mutable `keys`, it checks that the number of elements in `keys` equals `0`. It raises a [`KeyError`](keys.aug.md#symbol-KeyError) at the first failed check. It stores `provider` in `keys` under `"provider"`. It stores `session` in `keys` under `"session"`. [source](keys.aug#L15-L19)
 
@@ -52,12 +52,14 @@ Release this lock when the block exits, including on return or failure. [source]
 configure(RsaPrivateKey provider, RsaPrivateKey session) returns void unless KeyError uses SigningKeys.configure
 ```
 
-It takes `provider` and `session` as `RsaPrivateKey`. Failures can raise [`KeyError`](keys.aug.md#symbol-KeyError).
+It takes `provider` and `session` as `RsaPrivateKey`. It can call [`SigningKeys.configure`](keys.aug.md#symbol-SigningKeys.configure). Failures can raise [`KeyError`](keys.aug.md#symbol-KeyError).
 
 </details>
 
 <a id="symbol-MemorySigningKeys.provider"></a>
 ### `MemorySigningKeys.provider` · [source](keys.aug#L20)
+
+It can call [`SigningKeys.provider`](keys.aug.md#symbol-SigningKeys.provider). Failures can raise [`KeyError`](keys.aug.md#symbol-KeyError).
 
 While holding the lock on `_keys` as mutable `keys`, it obtains the value under `"provider"` in `keys`. If no value is found, it raises a [`KeyError`](keys.aug.md#symbol-KeyError). The non-null result becomes `key`. It returns `key`. [source](keys.aug#L21-L26)
 
@@ -70,12 +72,14 @@ Release this lock when the block exits, including on return or failure. [source]
 provider() returns RsaPrivateKey unless KeyError uses SigningKeys.provider
 ```
 
-Failures can raise [`KeyError`](keys.aug.md#symbol-KeyError).
+It can call [`SigningKeys.provider`](keys.aug.md#symbol-SigningKeys.provider). Failures can raise [`KeyError`](keys.aug.md#symbol-KeyError).
 
 </details>
 
 <a id="symbol-MemorySigningKeys.session"></a>
 ### `MemorySigningKeys.session` · [source](keys.aug#L27)
+
+It can call [`SigningKeys.session`](keys.aug.md#symbol-SigningKeys.session). Failures can raise [`KeyError`](keys.aug.md#symbol-KeyError).
 
 While holding the lock on `_keys` as mutable `keys`, it obtains the value under `"session"` in `keys`. If no value is found, it raises a [`KeyError`](keys.aug.md#symbol-KeyError). The non-null result becomes `key`. It returns `key`. [source](keys.aug#L28-L33)
 
@@ -88,14 +92,16 @@ Release this lock when the block exits, including on return or failure. [source]
 session() returns RsaPrivateKey unless KeyError uses SigningKeys.session
 ```
 
-Failures can raise [`KeyError`](keys.aug.md#symbol-KeyError).
+It can call [`SigningKeys.session`](keys.aug.md#symbol-SigningKeys.session). Failures can raise [`KeyError`](keys.aug.md#symbol-KeyError).
 
 </details>
 
 <a id="symbol-initializeKeys"></a>
 ## `initializeKeys` · [source](keys.aug#L35)
 
-It gets `crypto` ([`Crypto`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto)) and `keys` ([`SigningKeys`](keys.aug.md#symbol-SigningKeys)) from dependency injection. It sets `provider` and `session` separately, each to [`crypto.generateRsa`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.generateRsa). It calls [`keys.configure`](keys.aug.md#symbol-SigningKeys.configure) with `provider` and `session`. [source](keys.aug#L36-L38)
+It gets `crypto` ([`Crypto`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto)) and `keys` ([`SigningKeys`](keys.aug.md#symbol-SigningKeys)) from dependency injection. It can call [`Crypto.generateRsa`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.generateRsa) and [`SigningKeys.configure`](keys.aug.md#symbol-SigningKeys.configure). Failures can raise `CryptoError` and [`KeyError`](keys.aug.md#symbol-KeyError).
+
+It sets `provider` and `session` separately, each to [`crypto.generateRsa`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.generateRsa). It calls [`keys.configure`](keys.aug.md#symbol-SigningKeys.configure) with `provider` and `session`. [source](keys.aug#L36-L38)
 
 <details>
 <summary>Checked interface</summary>
@@ -104,7 +110,7 @@ It gets `crypto` ([`Crypto`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f55
 initializeKeys(resolve Crypto crypto, resolve SigningKeys keys) returns void unless CryptoError and KeyError uses Crypto.generateRsa, SigningKeys.configure
 ```
 
-It gets `crypto` ([`Crypto`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto)) and `keys` ([`SigningKeys`](keys.aug.md#symbol-SigningKeys)) from dependency injection. Failures can raise `CryptoError` and [`KeyError`](keys.aug.md#symbol-KeyError).
+It gets `crypto` ([`Crypto`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto)) and `keys` ([`SigningKeys`](keys.aug.md#symbol-SigningKeys)) from dependency injection. It can call [`Crypto.generateRsa`](../.aug-spec/packages/%40git/url_9ef654c66d34ab8f5527/0.0.0-git.b14a0f9aa41f1ce58bd51133bcdc424033e40d40/contracts.aug.md#symbol-Crypto.generateRsa) and [`SigningKeys.configure`](keys.aug.md#symbol-SigningKeys.configure). Failures can raise `CryptoError` and [`KeyError`](keys.aug.md#symbol-KeyError).
 
 </details>
 

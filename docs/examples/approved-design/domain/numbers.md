@@ -130,7 +130,7 @@ A pure validation layer, shared by any compatible callable. The type parameters 
 #### `Positive.around` · [source](numbers.md#source-L7) {#symbol-Positive.around}
 
 ::: spec-paragraph specification-paragraph-1
-It takes `amount` as an integer. If `amount` is negative, it raises a [`RangeError`](numbers.md#symbol-RangeError) with `value` from `amount`. It returns `next`. [source](numbers.md#source-L8-L10)
+It takes `amount` as an integer. Failures can raise [`RangeError`](numbers.md#symbol-RangeError). If `amount` is negative, it raises a [`RangeError`](numbers.md#symbol-RangeError) with `value` from `amount`. It returns `next`. [source](numbers.md#source-L8-L10)
 :::
 
 ::: details Checked interface
@@ -145,10 +145,10 @@ It takes `amount` as an integer. Failures can raise [`RangeError`](numbers.md#sy
 
 ### `double` · [source](numbers.md#source-L18) {#symbol-double}
 
-Double a nonnegative amount. It takes `amount` as an integer. Layers run in the declared order. Call [`Positive.around`](numbers.md#symbol-Positive.around).
+Double a nonnegative amount. It takes `amount` as an integer. It returns `int` — Twice the amount, with defined integer wrapping. Failures can raise [`RangeError`](numbers.md#symbol-RangeError) (A validation layer rejected a negative input).
 
 ::: spec-paragraph specification-paragraph-2
-It returns `amount` times `2`. [source](numbers.md#source-L19)
+Layers run in the declared order. Call [`Positive.around`](numbers.md#symbol-Positive.around). It returns `amount` times `2`. [source](numbers.md#source-L19)
 :::
 
 ::: details Checked interface

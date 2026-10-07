@@ -2,7 +2,18 @@
 
 # Project diagrams
 
-Start here to see what moves between the application’s folders. Each arrow names an operation’s inputs and the result it returns to its caller. Open a folder for the next level of detail. Expand the contract list for complete types and dependency links.
+Start with how the application begins, then follow data between its folders. Open an operation to see its decisions, calls, failures and cleanup. Its explanation supplies the exact contract and linked dependencies.
+
+This view includes 2 application source files. Package and interface boundaries show checked contracts; their runtime implementations are not expanded. The views describe the checked program, not desired requirements or a recorded execution.
+
+## Where execution begins
+
+<a id="startup"></a>
+### Startup
+
+It sets `iterations` to `200000`. It sets `state` to `123`. It sets `index` to `0`. While `index` is less than `iterations`, it sets `state` to [`step`](../../operations.aug.md#symbol-step) with `value` from `state`; then it increases `index` by `1`. [source](../../main.aug#L3-L8)
+
+After the loop, it prints `state`. [source](../../main.aug#L9)
 
 ## Data flow
 
@@ -13,14 +24,33 @@ flowchart TD
     n0 -->|"step(value) → int"| n1
 ```
 
-<details>
-<summary>Data crossing these boundaries (1 contracts)</summary>
+### Follow the data
 
-| From | To | Operation and inputs | Result |
+Each row opens the complete operations and call sites behind one pair of logical units. A grouped arrow records calls between those units; connected arrows need not belong to the same execution path.
+
+| From | To | Operations | Read |
 | --- | --- | --- | --- |
-| Startup | operations | [step](../../operations.aug.md#symbol-step) · value: int | int |
+| Startup | operations | 1 | [Inputs, results and call sites](index.md#boundary-94c63ff1f839) |
+
+#### Data crossing these boundaries (1 contracts)
+
+<a id="boundary-94c63ff1f839"></a>
+
+#### Startup → operations
+
+<details>
+<summary>1 operation, 1 site</summary>
+
+**[step](../../operations.aug.md#symbol-step)**
+
+Inputs: value: int. Result: int.
+
+| Caller or entry | Evidence |
+| --- | --- |
+| Startup | [Call site](../../main.aug#L7) · [Caller explanation](../../main.aug.md#startup) |
 
 </details>
+
 
 ## Open a module
 

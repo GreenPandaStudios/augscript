@@ -63,7 +63,7 @@ It takes `message` as a string. It returns `c_int`. Native C implementation; onl
 ### `announce` · [source](native.md#source-L3) {#symbol-announce}
 
 ::: spec-paragraph specification-paragraph-1
-Within an unsafe block, it calls [`puts`](native.md#symbol-puts) with `message` `"hello from C FFI"`. Native operations must satisfy their declared C contracts. [source](native.md#source-L4-L6)
+It can call `C.puts`. Within an unsafe block, it calls [`puts`](native.md#symbol-puts) with `message` `"hello from C FFI"`. Native operations must satisfy their declared C contracts. [source](native.md#source-L4-L6)
 :::
 
 ::: details Checked interface
@@ -71,6 +71,8 @@ Within an unsafe block, it calls [`puts`](native.md#symbol-puts) with `message` 
 ```text
 announce() returns void uses C.puts
 ```
+
+It can call `C.puts`.
 
 :::
 

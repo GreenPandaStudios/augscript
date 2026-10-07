@@ -6,6 +6,7 @@
 
 [Interactions and sequences](main.aug.diagrams.md)
 
+<a id="startup"></a>
 ## Startup
 
 It sets `iterations` to `2000`. It sets `index` and `checksum` separately, each to `0`. While `index` is less than `iterations`, within a task and ownership scope, it sets `first` to a child task running [`compute`](operations.aug.md#symbol-compute) with `value` from `index` with its inputs captured now. It sets `second` to a child task running [`compute`](operations.aug.md#symbol-compute) with `value` from `index` plus `1` with its inputs captured now. [source](main.aug#L3-L12)

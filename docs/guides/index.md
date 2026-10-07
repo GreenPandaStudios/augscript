@@ -6,6 +6,7 @@ Choose a guide for the task you are doing. If you are learning August for the fi
 
 | Task | Guide |
 | --- | --- |
+| Explore a codebase through its generated views | [Understand a project](understand-a-project.md) |
 | Validate dates, durations, URLs, identifiers, paths or text | [Use domain values](use-domain-values.md) |
 | Choose byte, scalar, UTF-16 or grapheme operations | [Measure text](measure-text.md) |
 | Explain a failure and retain its typed cause | [Add error context](add-error-context.md) |

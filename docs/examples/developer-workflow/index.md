@@ -12,15 +12,15 @@ outline: [2, 3]
 
 A calculator logs each addition. Its nearby tests replace the logger and verify both labeled inputs and fresh setup.
 
-Open a file to read the code beside its compiled explanation. Choose **Indentation** or **Braces** to change the code view. The choice carries across files.
+Start with the [project overview](diagrams/index.md), then open an operation’s sequence or explanation. Source stays beside its spec when you need to inspect an expression. Choose **Indentation** or **Braces** for that code view; the choice carries across files.
 
 ## Follow the program
 
-Read [`main.aug`](main.md). Startup supplies providers, uses collections, invokes the calculator, and catches a simulated load failure.
+Read the explanation of [`main.aug`](main.md#specification). Startup supplies providers, uses collections, invokes the calculator, and catches a simulated load failure.
 
-Read [`calculator.aug`](calculator.md). The calculator receives a logger and adds two inputs. Its tests supply a private silent logger.
+Read the explanation of [`calculator.aug`](calculator.md#specification). The calculator receives a logger and adds two inputs. Its tests supply a private silent logger.
 
-Read [`logging/logger.aug`](logging/logger.md). The production logger and test adapter implement this interface.
+Read the explanation of [`logging/logger.aug`](logging/logger.md#specification). The production logger and test adapter implement this interface.
 
 [Explore the generated project diagrams](diagrams/index.md) to follow data between folders, then open module interactions and API sequences.
 

@@ -22,7 +22,7 @@ The `logger` dependency is injected as [`Logger`](logging.aug.md#symbol-Logger) 
 <a id="symbol-Audit.around"></a>
 ### `Audit.around` · [source](interceptors.aug#L15)
 
-Wrap a call without changing its result. It gets `console` ([`Console`](.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-Console)) from dependency injection.
+Wrap a call without changing its result. It gets `console` ([`Console`](.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-Console)) from dependency injection. It can call [`Console.write`](.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-Console.write).
 
 It passes `"before"` to [`logger.log`](logging.aug.md#symbol-Logger.log), using injected `console`. It sets `result` of type `T` to `next`. It passes `"after"` to [`logger.log`](logging.aug.md#symbol-Logger.log), using injected `console`. It returns `result`. [source](interceptors.aug#L16-L19)
 
@@ -33,7 +33,7 @@ It passes `"before"` to [`logger.log`](logging.aug.md#symbol-Logger.log), using 
 around(resolve Console console) returns T uses Console.write
 ```
 
-It gets `console` ([`Console`](.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-Console)) from dependency injection.
+It gets `console` ([`Console`](.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-Console)) from dependency injection. It can call [`Console.write`](.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-Console.write).
 
 </details>
 
@@ -45,7 +45,7 @@ Rejects negative numbers before the target executes. The type parameters are `T`
 <a id="symbol-Positive.around"></a>
 ### `Positive.around` · [source](interceptors.aug#L28)
 
-It takes `y` as an integer. If `y` is negative, it raises a [`ValidationError`](interceptors.aug.md#symbol-ValidationError) with `message` `"value must be nonnegative"`. It returns `next`. [source](interceptors.aug#L29-L32)
+It takes `y` as an integer. Failures can raise [`ValidationError`](interceptors.aug.md#symbol-ValidationError) (when the selected value is negative). If `y` is negative, it raises a [`ValidationError`](interceptors.aug.md#symbol-ValidationError) with `message` `"value must be nonnegative"`. It returns `next`. [source](interceptors.aug#L29-L32)
 
 <details>
 <summary>Checked interface</summary>

@@ -9,7 +9,9 @@
 <a id="symbol-hash"></a>
 ## `hash` · [source](api.aug#L6)
 
-Return a lowercase 64-character BLAKE3 digest, computed by the Rust crate. It takes `input` as `Bytes`. Within an unsafe block, it returns [`_hash`](api.aug.md#symbol-_hash) with `input`. Native operations must satisfy their declared C contracts. [source](api.aug#L7-L8)
+Return a lowercase 64-character BLAKE3 digest, computed by the Rust crate. It takes `input` as `Bytes`. Failures can raise [`HashError`](contracts.aug.md#symbol-HashError).
+
+Within an unsafe block, it returns [`_hash`](api.aug.md#symbol-_hash) with `input`. Native operations must satisfy their declared C contracts. [source](api.aug#L7-L8)
 
 <details>
 <summary>Checked interface</summary>

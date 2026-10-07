@@ -14,7 +14,7 @@ It implements [`ICounter`](counter.aug.md#symbol-ICounter). It takes `value` as 
 <a id="symbol-Counter.increment"></a>
 ### `Counter.increment` · [source](counter.aug#L3)
 
-With temporary permission to change `self`, it increases `value` by `1`. [source](counter.aug#L4-L6)
+It may change `self`. With temporary permission to change `self`, it increases `value` by `1`. [source](counter.aug#L4-L6)
 
 <details>
 <summary>Checked interface</summary>

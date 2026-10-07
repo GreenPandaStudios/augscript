@@ -25,4 +25,6 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](math.md#source-L2)
 :::
 
+It takes `value` as an integer.
+
 Return value + 1; required cleanup runs before exit. [Explanation](math.md).

@@ -15,6 +15,12 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](ascii.aug#L3)
 
+Internal bounded byte slice; retain a single ConversionError parsing boundary.
+
+It takes `input` as `Bytes` and `start` and `end` as integers.
+
+Failures can raise `ConversionError`.
+
 ```mermaid
 sequenceDiagram
     participant p0 as asciiSlice
@@ -40,6 +46,12 @@ sequenceDiagram
 
 [Source](ascii.aug#L10)
 
+Internal single-byte read. Multibyte UTF-8 fragments are rejected.
+
+It takes `input` as `Bytes` and `index` as an integer.
+
+Failures can raise `ConversionError`.
+
 ```mermaid
 sequenceDiagram
     participant p0 as asciiAt
@@ -56,25 +68,29 @@ sequenceDiagram
 
 [Source](ascii.aug#L14)
 
+Internal ASCII letter classification.
+
+It takes `character` as a string.
+
 ```mermaid
 sequenceDiagram
     participant p0 as asciiLetter
 
     p0->>p0: character.compare(other=”A”)
     p0-->>p0: compare result: int
-    opt Left is true
+    opt (compare result ›= 0) is true
     p0->>p0: character.compare(other=”Z”)
     p0-->>p0: compare result 2: int
     end
-    opt Left is false
+    opt (compare result ›= 0 and compare result 2 ‹= 0) is false
     p0->>p0: character.compare(other=”a”)
     p0-->>p0: compare result 3: int
-    opt Left is true
+    opt (compare result 3 ›= 0) is true
     p0->>p0: character.compare(other=”z”)
     p0-->>p0: compare result 4: int
     end
     end
-    Note over p0: Return character.compare(other=”A”) ›= 0 and<br/>character.compare(other=”Z”) ‹= 0) or<br/>(character.compare(other=”a”) ›= 0…
+    Note over p0: Return character.compare(other=”A”) ›= 0 and<br/>character.compare(other=”Z”) ‹= 0) or<br/>(character.compare(other=”a”) ›= 0 and<br/>character.compare(other=”z”) ‹= 0； required cleanup runs<br/>before exit
 ```
 
 <a id="sequence-asciiLower"></a>
@@ -82,6 +98,12 @@ sequenceDiagram
 ### asciiLower
 
 [Source](ascii.aug#L21)
+
+Internal case folding for already validated ASCII components only.
+
+It takes `text` as a string.
+
+Failures can raise `ConversionError`.
 
 ```mermaid
 sequenceDiagram

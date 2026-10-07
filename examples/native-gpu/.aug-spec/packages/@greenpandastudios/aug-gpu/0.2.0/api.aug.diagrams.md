@@ -15,6 +15,12 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](api.aug#L5)
 
+It is private to its defining scope.
+
+It returns ownership of [`Device`](bindings.aug.md#symbol-Device). Failures can raise [`GpuError`](contracts.aug.md#symbol-GpuError).
+
+Native implementation: `@greenpandastudios/aug-gpu@0.2.0`, `0.1.0`. Supported targets: macos arm64 14.0+. Binding contract: [`native.abi.json`](native.abi.json) (SHA-256 `d95e237d8be07df8fd20132ca0f5a45a125fd65b7ba93669e69c0a38db63d60c`). It calls `aug_gpu_open_v1` through the C ABI on the caller thread; a blocking native call blocks that thread. The caller owns the returned handle. Its maintainer permits independent instances on worker threads. The compiler checks the provider, descriptor digest, signature and ownership at August call sites. The native author promises not to retain inputs, enter August from foreign threads, or unwind across the C boundary; internal native workers may run. The compiler does not prove those promises.
+
 May leave with checked errors: GpuError. Native implementation; only the declared contract is known. [Explanation](api.aug.md).
 
 <a id="sequence-_upload"></a>
@@ -22,6 +28,14 @@ May leave with checked errors: GpuError. Native implementation; only the declare
 ### \_upload
 
 [Source](api.aug#L6)
+
+It is private to its defining scope.
+
+It takes `device` as [`Device`](bindings.aug.md#symbol-Device) and `values` as `List<float>`.
+
+It returns ownership of [`Buffer`](bindings.aug.md#symbol-Buffer). Failures can raise [`GpuError`](contracts.aug.md#symbol-GpuError).
+
+Native implementation: `@greenpandastudios/aug-gpu@0.2.0`, `0.1.0`. Supported targets: macos arm64 14.0+. Binding contract: [`native.abi.json`](native.abi.json) (SHA-256 `d95e237d8be07df8fd20132ca0f5a45a125fd65b7ba93669e69c0a38db63d60c`). It calls `aug_gpu_upload_v1` through the C ABI on the caller thread; a blocking native call blocks that thread. `device` lends read access for this call. The caller owns the returned handle. Its maintainer permits independent instances on worker threads. The compiler checks the provider, descriptor digest, signature and ownership at August call sites. The native author promises not to retain inputs, enter August from foreign threads, or unwind across the C boundary; internal native workers may run. The compiler does not prove those promises.
 
 May leave with checked errors: GpuError. Native implementation; only the declared contract is known. [Explanation](api.aug.md).
 
@@ -31,6 +45,14 @@ May leave with checked errors: GpuError. Native implementation; only the declare
 
 [Source](api.aug#L7)
 
+It is private to its defining scope.
+
+It takes `left` and `right` as [`Buffer`](bindings.aug.md#symbol-Buffer).
+
+It returns ownership of [`Buffer`](bindings.aug.md#symbol-Buffer). Failures can raise [`GpuError`](contracts.aug.md#symbol-GpuError).
+
+Native implementation: `@greenpandastudios/aug-gpu@0.2.0`, `0.1.0`. Supported targets: macos arm64 14.0+. Binding contract: [`native.abi.json`](native.abi.json) (SHA-256 `d95e237d8be07df8fd20132ca0f5a45a125fd65b7ba93669e69c0a38db63d60c`). It calls `aug_gpu_add_v1` through the C ABI on the caller thread; a blocking native call blocks that thread. `left` lends read access for this call; `right` lends read access for this call. The caller owns the returned handle. Its maintainer permits independent instances on worker threads. The compiler checks the provider, descriptor digest, signature and ownership at August call sites. The native author promises not to retain inputs, enter August from foreign threads, or unwind across the C boundary; internal native workers may run. The compiler does not prove those promises.
+
 May leave with checked errors: GpuError. Native implementation; only the declared contract is known. [Explanation](api.aug.md).
 
 <a id="sequence-_download"></a>
@@ -38,6 +60,14 @@ May leave with checked errors: GpuError. Native implementation; only the declare
 ### \_download
 
 [Source](api.aug#L8)
+
+It is private to its defining scope.
+
+It takes `buffer` as [`Buffer`](bindings.aug.md#symbol-Buffer).
+
+It returns `List<float>`. Failures can raise [`GpuError`](contracts.aug.md#symbol-GpuError).
+
+Native implementation: `@greenpandastudios/aug-gpu@0.2.0`, `0.1.0`. Supported targets: macos arm64 14.0+. Binding contract: [`native.abi.json`](native.abi.json) (SHA-256 `d95e237d8be07df8fd20132ca0f5a45a125fd65b7ba93669e69c0a38db63d60c`). It calls `aug_gpu_download_v1` through the C ABI on the caller thread; a blocking native call blocks that thread. `buffer` lends read access for this call. August copies the returned buffer, then calls `aug_gpu_values_release_v1` to release it. Its maintainer permits independent instances on worker threads. The compiler checks the provider, descriptor digest, signature and ownership at August call sites. The native author promises not to retain inputs, enter August from foreign threads, or unwind across the C boundary; internal native workers may run. The compiler does not prove those promises.
 
 May leave with checked errors: GpuError. Native implementation; only the declared contract is known. [Explanation](api.aug.md).
 
@@ -47,6 +77,12 @@ May leave with checked errors: GpuError. Native implementation; only the declare
 
 [Source](api.aug#L9)
 
+It is private to its defining scope.
+
+It returns `int`.
+
+Native implementation: `@greenpandastudios/aug-gpu@0.2.0`, `0.1.0`. Supported targets: macos arm64 14.0+. Binding contract: [`native.abi.json`](native.abi.json) (SHA-256 `d95e237d8be07df8fd20132ca0f5a45a125fd65b7ba93669e69c0a38db63d60c`). It calls `aug_gpu_live_resources_v1` through the C ABI on the caller thread; a blocking native call blocks that thread. Its maintainer permits independent instances on worker threads. The compiler checks the provider, descriptor digest, signature and ownership at August call sites. The native author promises not to retain inputs, enter August from foreign threads, or unwind across the C boundary; internal native workers may run. The compiler does not prove those promises.
+
 Native implementation; only the declared contract is known. [Explanation](api.aug.md).
 
 <a id="sequence-openDevice"></a>
@@ -54,6 +90,10 @@ Native implementation; only the declared contract is known. [Explanation](api.au
 ### openDevice
 
 [Source](api.aug#L11)
+
+Open a Metal GPU on the current worker. No device means GpuError.
+
+It returns ownership of [`Device`](bindings.aug.md#symbol-Device). Failures can raise [`GpuError`](contracts.aug.md#symbol-GpuError).
 
 ```mermaid
 sequenceDiagram
@@ -75,6 +115,12 @@ sequenceDiagram
 
 [Source](api.aug#L15)
 
+Copy finite numbers to an owned float32 GPU buffer. Values round to float32.
+
+It takes `device` as [`Device`](bindings.aug.md#symbol-Device) and `values` as `List<float>`.
+
+It returns ownership of [`Buffer`](bindings.aug.md#symbol-Buffer). Failures can raise [`GpuError`](contracts.aug.md#symbol-GpuError).
+
 ```mermaid
 sequenceDiagram
     participant p0 as upload
@@ -95,6 +141,12 @@ sequenceDiagram
 
 [Source](api.aug#L19)
 
+Add equally sized buffers on the GPU. Wait for device completion before returning.
+
+It takes `left` and `right` as [`Buffer`](bindings.aug.md#symbol-Buffer).
+
+It returns ownership of [`Buffer`](bindings.aug.md#symbol-Buffer). Failures can raise [`GpuError`](contracts.aug.md#symbol-GpuError).
+
 ```mermaid
 sequenceDiagram
     participant p0 as add
@@ -114,6 +166,12 @@ sequenceDiagram
 ### download
 
 [Source](api.aug#L23)
+
+Copy float32 GPU values into an August list of floats.
+
+It takes `buffer` as [`Buffer`](bindings.aug.md#symbol-Buffer).
+
+Failures can raise [`GpuError`](contracts.aug.md#symbol-GpuError).
 
 ```mermaid
 sequenceDiagram

@@ -26,6 +26,8 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](counter.aug#L3)
 
+It returns `string`.
+
 Interface contract; implementation selected at runtime. [Explanation](counter.aug.md).
 
 <a id="sequence-Counter-20-constructor"></a>
@@ -34,6 +36,10 @@ Interface contract; implementation selected at runtime. [Explanation](counter.au
 
 [Source](counter.aug#L5)
 
+It implements [`ICounter`](counter.aug.md#symbol-ICounter).
+
+It takes `value` as an integer, kept mutable.
+
 Receive fields: value. [Explanation](counter.aug.md).
 
 <a id="sequence-Counter._label"></a>
@@ -41,6 +47,8 @@ Receive fields: value. [Explanation](counter.aug.md).
 ### Counter.\_label
 
 [Source](counter.aug#L6)
+
+It is private to its defining scope.
 
 ```mermaid
 sequenceDiagram
@@ -71,6 +79,8 @@ sequenceDiagram
 ### \_prefix
 
 [Source](counter.aug#L13)
+
+It is private to its defining scope.
 
 Return "count"; required cleanup runs before exit. [Explanation](counter.aug.md).
 

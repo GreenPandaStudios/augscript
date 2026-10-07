@@ -15,6 +15,8 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](routes.aug#L2)
 
+It takes `id` as an integer, kept read-only and `message` as a string, kept read-only.
+
 Receive fields: id, message. [Explanation](routes.aug.md).
 
 <a id="sequence-reply"></a>
@@ -22,6 +24,8 @@ Receive fields: id, message. [Explanation](routes.aug.md).
 ### reply
 
 [Source](routes.aug#L3)
+
+`reply` handles `GET /bench`.
 
 ```mermaid
 sequenceDiagram

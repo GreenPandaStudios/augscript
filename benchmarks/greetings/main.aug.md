@@ -6,6 +6,7 @@
 
 [Interactions and sequences](main.aug.diagrams.md)
 
+<a id="startup"></a>
 ## Startup
 
 It sets `greetings` to `0`. While `greetings` is less than `1000000`, it prints `"Hello, August! 👋"`; then it increases `greetings` by `1`. [source](main.aug#L2-L5)

@@ -46,6 +46,14 @@ Call arrows identify checked targets; loop and branch frames determine when they
 
 [Source](contracts.aug#L5)
 
+Write one line of text.
+
+The type parameters are `T`.
+
+It takes `value` as `T` (Text to display).
+
+It can call [`Console.write`](contracts.aug.md#symbol-Console.write).
+
 Interface contract; implementation selected at runtime. [Explanation](contracts.aug.md).
 
 <a id="sequence-SystemConsole-20-constructor"></a>
@@ -54,6 +62,8 @@ Interface contract; implementation selected at runtime. [Explanation](contracts.
 
 [Source](contracts.aug#L8)
 
+The native standard-output adapter. Construction performs no output. It implements [`Console`](contracts.aug.md#symbol-Console).
+
 [Explanation](contracts.aug.md).
 
 <a id="sequence-SystemConsole.write"></a>
@@ -61,6 +71,12 @@ Interface contract; implementation selected at runtime. [Explanation](contracts.
 ### SystemConsole.write
 
 [Source](contracts.aug#L9)
+
+Write one line of text.
+
+It takes `value` as `T`.
+
+It can call [`Console.write`](contracts.aug.md#symbol-Console.write).
 
 ```mermaid
 sequenceDiagram
@@ -75,6 +91,12 @@ sequenceDiagram
 
 [Source](contracts.aug#L15)
 
+Read text.
+
+It takes `path` as a string (File path).
+
+It returns `string`. It can call [`FileReader.read`](contracts.aug.md#symbol-FileReader.read). Failures can raise `FileError` (The file could not be read).
+
 May leave with checked errors: FileError. Interface contract; implementation selected at runtime. [Explanation](contracts.aug.md).
 
 <a id="sequence-FileWriter.write"></a>
@@ -82,6 +104,12 @@ May leave with checked errors: FileError. Interface contract; implementation sel
 ### FileWriter.write
 
 [Source](contracts.aug#L20)
+
+Write text.
+
+It takes `path` as a string (File path) and `content` as a string (Text).
+
+It can call [`FileWriter.write`](contracts.aug.md#symbol-FileWriter.write). Failures can raise `FileError` (Writing failed).
 
 May leave with checked errors: FileError. Interface contract; implementation selected at runtime. [Explanation](contracts.aug.md).
 
@@ -91,6 +119,8 @@ May leave with checked errors: FileError. Interface contract; implementation sel
 
 [Source](contracts.aug#L23)
 
+Native filesystem adapter. Construction opens no files. It implements [`FileReader`](contracts.aug.md#symbol-FileReader) and [`FileWriter`](contracts.aug.md#symbol-FileWriter).
+
 [Explanation](contracts.aug.md).
 
 <a id="sequence-LocalFiles.read"></a>
@@ -98,6 +128,12 @@ May leave with checked errors: FileError. Interface contract; implementation sel
 ### LocalFiles.read
 
 [Source](contracts.aug#L24)
+
+Read text.
+
+It takes `path` as a string.
+
+It can call [`FileReader.read`](contracts.aug.md#symbol-FileReader.read). Failures can raise `FileError` (The file could not be read).
 
 ```mermaid
 sequenceDiagram
@@ -115,6 +151,12 @@ sequenceDiagram
 
 [Source](contracts.aug#L26)
 
+Write text.
+
+It takes `path` and `content` as strings.
+
+It can call [`FileWriter.write`](contracts.aug.md#symbol-FileWriter.write). Failures can raise `FileError` (Writing failed).
+
 ```mermaid
 sequenceDiagram
     participant p0 as LocalFiles.write
@@ -129,6 +171,8 @@ sequenceDiagram
 
 [Source](contracts.aug#L31)
 
+It returns `List<string>`. It can call [`Arguments.read`](contracts.aug.md#symbol-Arguments.read).
+
 Interface contract; implementation selected at runtime. [Explanation](contracts.aug.md).
 
 <a id="sequence-ProcessArguments-20-constructor"></a>
@@ -137,6 +181,8 @@ Interface contract; implementation selected at runtime. [Explanation](contracts.
 
 [Source](contracts.aug#L34)
 
+Native command-line arguments. It implements [`Arguments`](contracts.aug.md#symbol-Arguments).
+
 [Explanation](contracts.aug.md).
 
 <a id="sequence-ProcessArguments.read"></a>
@@ -144,6 +190,8 @@ Interface contract; implementation selected at runtime. [Explanation](contracts.
 ### ProcessArguments.read
 
 [Source](contracts.aug#L35)
+
+It can call [`Arguments.read`](contracts.aug.md#symbol-Arguments.read).
 
 ```mermaid
 sequenceDiagram

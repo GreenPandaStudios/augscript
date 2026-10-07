@@ -56,6 +56,14 @@ Call arrows identify checked targets; loop and branch frames determine when they
 [Source](contracts.md#source-L6)
 :::
 
+Write one line of text.
+
+The type parameters are `T`.
+
+It takes `value` as `T` (Text to display).
+
+It can call [`Console.write`](contracts.md#symbol-Console.write).
+
 Interface contract; implementation selected at runtime. [Explanation](contracts.md).
 
 ### SystemConsole constructor {#sequence-SystemConsole-20-constructor}
@@ -64,6 +72,8 @@ Interface contract; implementation selected at runtime. [Explanation](contracts.
 [Source](contracts.md#source-L9)
 :::
 
+The native standard-output adapter. Construction performs no output. It implements [`Console`](contracts.md#symbol-Console).
+
 [Explanation](contracts.md).
 
 ### SystemConsole.write {#sequence-SystemConsole.write}
@@ -71,6 +81,12 @@ Interface contract; implementation selected at runtime. [Explanation](contracts.
 ::: spec-paragraph specification-paragraph-3
 [Source](contracts.md#source-L10)
 :::
+
+Write one line of text.
+
+It takes `value` as `T`.
+
+It can call [`Console.write`](contracts.md#symbol-Console.write).
 
 ```mermaid
 sequenceDiagram
@@ -85,6 +101,12 @@ sequenceDiagram
 [Source](contracts.md#source-L16)
 :::
 
+Read text.
+
+It takes `path` as a string (File path).
+
+It returns `string`. It can call [`FileReader.read`](contracts.md#symbol-FileReader.read). Failures can raise `FileError` (The file could not be read).
+
 May leave with checked errors: FileError. Interface contract; implementation selected at runtime. [Explanation](contracts.md).
 
 ### FileWriter.write {#sequence-FileWriter.write}
@@ -92,6 +114,12 @@ May leave with checked errors: FileError. Interface contract; implementation sel
 ::: spec-paragraph specification-paragraph-5
 [Source](contracts.md#source-L21)
 :::
+
+Write text.
+
+It takes `path` as a string (File path) and `content` as a string (Text).
+
+It can call [`FileWriter.write`](contracts.md#symbol-FileWriter.write). Failures can raise `FileError` (Writing failed).
 
 May leave with checked errors: FileError. Interface contract; implementation selected at runtime. [Explanation](contracts.md).
 
@@ -101,6 +129,8 @@ May leave with checked errors: FileError. Interface contract; implementation sel
 [Source](contracts.md#source-L24)
 :::
 
+Native filesystem adapter. Construction opens no files. It implements [`FileReader`](contracts.md#symbol-FileReader) and [`FileWriter`](contracts.md#symbol-FileWriter).
+
 [Explanation](contracts.md).
 
 ### LocalFiles.read {#sequence-LocalFiles.read}
@@ -108,6 +138,12 @@ May leave with checked errors: FileError. Interface contract; implementation sel
 ::: spec-paragraph specification-paragraph-7
 [Source](contracts.md#source-L25)
 :::
+
+Read text.
+
+It takes `path` as a string.
+
+It can call [`FileReader.read`](contracts.md#symbol-FileReader.read). Failures can raise `FileError` (The file could not be read).
 
 ```mermaid
 sequenceDiagram
@@ -125,6 +161,12 @@ sequenceDiagram
 [Source](contracts.md#source-L27)
 :::
 
+Write text.
+
+It takes `path` and `content` as strings.
+
+It can call [`FileWriter.write`](contracts.md#symbol-FileWriter.write). Failures can raise `FileError` (Writing failed).
+
 ```mermaid
 sequenceDiagram
     participant p0 as LocalFiles.write
@@ -139,6 +181,8 @@ sequenceDiagram
 [Source](contracts.md#source-L32)
 :::
 
+It returns `List<string>`. It can call [`Arguments.read`](contracts.md#symbol-Arguments.read).
+
 Interface contract; implementation selected at runtime. [Explanation](contracts.md).
 
 ### ProcessArguments constructor {#sequence-ProcessArguments-20-constructor}
@@ -147,6 +191,8 @@ Interface contract; implementation selected at runtime. [Explanation](contracts.
 [Source](contracts.md#source-L35)
 :::
 
+Native command-line arguments. It implements [`Arguments`](contracts.md#symbol-Arguments).
+
 [Explanation](contracts.md).
 
 ### ProcessArguments.read {#sequence-ProcessArguments.read}
@@ -154,6 +200,8 @@ Interface contract; implementation selected at runtime. [Explanation](contracts.
 ::: spec-paragraph specification-paragraph-11
 [Source](contracts.md#source-L36)
 :::
+
+It can call [`Arguments.read`](contracts.md#symbol-Arguments.read).
 
 ```mermaid
 sequenceDiagram
