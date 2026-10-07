@@ -55,7 +55,8 @@ function vsixFixture(t, transform = entries => entries) {
   ]));
   const name = `${manifest.name}-${manifest.version}.vsix`, file = join(root, name);
   writeFileSync(file, projectArchive(entries));
-  checksums(root, [name]); return { root, file, entries };
+  writeFileSync(join(root, 'compiler-packs.json'), readFileSync(join(repositoryRoot, 'native/compiler-packs.json')));
+  checksums(root, [name, 'compiler-packs.json']); return { root, file, entries };
 }
 
 test('release requests reject branches, mismatched versions and invalid tag inputs', () => {
@@ -94,6 +95,7 @@ test('downloads resolve annotated tags and select reviewed archives for each des
     downloadRelease({ kind, directory: fixture(t), tag, ref: `refs/tags/${tag}`, repository: 'GreenPandaStudios/augscript', sha }, run);
     const download = calls.at(-1); assert.equal(download[1], 'download');
     assert(download.includes('SHA256SUMS')); assert(download.includes(kind === 'npm' ? 'packages.json' : `augscript-${read(join(repositoryRoot, 'vscode/package.json')).version}.vsix`));
+    if (kind === 'extension') assert(download.includes('compiler-packs.json'));
   }
 });
 
@@ -238,6 +240,54 @@ test('VSIX verification checks complete identity, artwork and bundled compiler',
     entries => { const manifest = JSON.parse(entries.get('extension/package.json')); manifest.publisher = 'other'; entries.set('extension/package.json', Buffer.from(JSON.stringify(manifest))); return entries; },
   ]) assert.throws(() => verifyExtensionRelease(vsixFixture(t, transform).root));
   writeFileSync(fixture.file, 'tampered'); assert.throws(() => verifyExtensionRelease(fixture.root), /checksum/);
+});
+
+test('assembled compiler pins verify from the immutable source checkout', t => {
+  const catalog = read(join(repositoryRoot, 'native/compiler-packs.json'));
+  const pack = catalog.packs[0], nativeBytes = Buffer.from('independently sealed producer fixture');
+  pack.archive.sha256 = digest(nativeBytes);
+  pack.archive.fileManifestSha256 = 'e'.repeat(64);
+  pack.archive.maximumDownloadBytes = nativeBytes.length;
+  pack.archive.maximumUnpackedBytes += 1;
+  const serialized = JSON.stringify(catalog, null, 2) + '\n';
+  const {root, file} = vsixFixture(t, entries => {
+    entries.set('extension/compiler/native/compiler-packs.json', Buffer.from(serialized)); return entries;
+  });
+  // A matching outer VSIX checksum cannot hide stale or missing assembly metadata.
+  assert.throws(() => verifyExtensionRelease(root), /verified release catalog/);
+  writeFileSync(join(root, 'compiler-packs.json'), serialized);
+  const nativeName = new URL(pack.archive.url).pathname.split('/').at(-1);
+  writeFileSync(join(root, nativeName), nativeBytes);
+  const names = [file.split('/').at(-1), 'compiler-packs.json', nativeName];
+  checksums(root, names);
+  assert.equal(verifyExtensionRelease(root).compilerVersion, catalog.compiler);
+  writeFileSync(join(root, 'compiler-packs.json'), serialized + ' ');
+  assert.throws(() => verifyExtensionRelease(root), /checksum/);
+  writeFileSync(join(root, 'compiler-packs.json'), serialized);
+  writeFileSync(join(root, nativeName), 'different sealed archive'); checksums(root, names);
+  assert.throws(() => verifyExtensionRelease(root), /archive checksum/);
+  rmSync(join(root, 'compiler-packs.json'));
+  assert.throws(() => verifyExtensionRelease(root), /ENOENT/);
+});
+
+test('authenticated release catalogs cannot change supported platform contracts', t => {
+  for (const mutate of [
+    catalog => { catalog.compiler = '0.0.1'; },
+    catalog => { catalog.packs[0].target = 'unsupported-target'; },
+    catalog => { catalog.packs[0].archive.url = 'https://example.org/compiler.tar.gz'; },
+    catalog => { catalog.packs.pop(); },
+    catalog => { catalog.packs[0].archive.maximumDownloadBytes = 0; },
+    catalog => { catalog.packs[0].archive.fileManifestSha256 = 'invalid'; },
+  ]) {
+    const catalog = read(join(repositoryRoot, 'native/compiler-packs.json')); mutate(catalog);
+    const serialized = JSON.stringify(catalog);
+    const {root, file} = vsixFixture(t, entries => {
+      entries.set('extension/compiler/native/compiler-packs.json', Buffer.from(serialized)); return entries;
+    });
+    writeFileSync(join(root, 'compiler-packs.json'), serialized);
+    checksums(root, [file.split('/').at(-1), 'compiler-packs.json']);
+    assert.throws(() => verifyExtensionRelease(root));
+  }
 });
 
 test('Marketplace retries compare extension contents while permitting service signatures', t => {

@@ -26,7 +26,7 @@ export function downloadRelease({ kind, directory, tag, ref, repository, sha }, 
   assert.equal(object.sha, sha, 'Release tag moved since this workflow began; use a fresh verified release');
   mkdirSync(resolve(directory), { recursive: true });
   run(['release', 'download', tag, '--repo', repo, '--pattern', 'SHA256SUMS',
-    ...(kind === 'npm' ? ['--pattern', '*.tgz', '--pattern', 'packages.json'] : ['--pattern', `augscript-${version}.vsix`]),
+    ...(kind === 'npm' ? ['--pattern', '*.tgz', '--pattern', 'packages.json'] : ['--pattern', `augscript-${version}.vsix`, '--pattern', 'compiler-packs.json']),
     '--dir', resolve(directory)]);
   return release.url;
 }

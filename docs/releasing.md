@@ -122,7 +122,11 @@ GitHub does not start another workflow from a tag written with its workflow toke
 
 A `1.0.0` version is an intended compatibility promise, not qualification evidence. Before tagging, close every [roadmap gate](roadmap.md), update the support and compatibility pages, review dependency notices and advisories, and obtain independent review of the final source. The release pipeline repeats language conformance, the 30-minute runtime soak, worker sanitizers, source debugger checks, safety gyms, performance limits, public native imports, relocation, installed CLI upgrades and both supported editor versions on all three targets. A failed job stops draft creation.
 
-Review the exact compiler, npm, VSIX and documentation archives and retained qualification reports before publishing the draft. Publishing a stable draft starts verified npm publication to `latest`; publishing a preview draft starts publication to `next`. Keep the original tag and artifacts for retries. Source changes require a new version and another qualification run. GitHub's latest-release designation is a separate review choice; preparation does not move it.
+Review the exact compiler, npm, VSIX and documentation archives and retained qualification reports before publishing the draft.
+
+Assembly also publishes the exact `compiler-packs.json` catalog under `SHA256SUMS`. Extension publication verifies this release catalog against the compiler and platform contracts, then requires the bundled catalog to match it exactly. Fresh producer hashes can differ from the immutable source checkout; they must match the assembled release. An editor-only patch derives the catalog from its verified public compiler archive.
+
+Publishing a stable draft starts verified npm publication to `latest`; publishing a preview draft starts publication to `next`. Keep the original tag and artifacts for retries. Source changes require a new version and another qualification run. GitHub's latest-release designation is a separate review choice; preparation does not move it.
 
 ## Editor-only patches
 

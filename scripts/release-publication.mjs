@@ -98,6 +98,29 @@ export function vsixEntries(file) {
   return result;
 }
 
+// Assembly seals fresh producer pins after the immutable source tag exists.
+// The checksum-covered release catalog is authoritative for those artifact bytes;
+// the source catalog still fixes the compiler and supported platform contracts.
+function verifiedCompilerCatalog(directory, checksums, root) {
+  const {contents} = verifiedFile(directory, 'compiler-packs.json', checksums);
+  const catalog = JSON.parse(contents), source = json(join(root, 'native/compiler-packs.json'));
+  const contracts = manifest => ({...manifest, packs: manifest.packs.map(pack => {
+    const {sha256, maximumDownloadBytes, maximumUnpackedBytes, fileManifestSha256, ...archiveContract} = pack.archive;
+    return {...pack, archive: archiveContract};
+  })});
+  for (const {archive} of catalog.packs) {
+    assert.match(archive.sha256, /^[0-9a-f]{64}$/, 'Invalid released compiler archive digest');
+    assert.match(archive.fileManifestSha256, /^[0-9a-f]{64}$/, 'Invalid released compiler member manifest digest');
+    for (const bound of [archive.maximumDownloadBytes, archive.maximumUnpackedBytes])
+      assert.ok(Number.isSafeInteger(bound) && bound > 0, 'Invalid released compiler archive size');
+    const filename = new URL(archive.url).pathname.split('/').at(-1);
+    if (checksums.has(filename))
+      assert.equal(archive.sha256, checksums.get(filename), 'Released compiler pin differs from its archive checksum');
+  }
+  assert.deepEqual(contracts(catalog), contracts(source), 'Released compiler platform contracts differ from source');
+  return contents.toString('utf8');
+}
+
 export function verifyExtensionRelease(directory, root = repositoryRoot) {
   const expected = json(join(root, 'vscode/package.json'));
   assert.equal(expected.augustCompilerVersion, json(join(root, 'package.json')).version, 'Extension compiler pin mismatch');
@@ -112,7 +135,7 @@ export function verifyExtensionRelease(directory, root = repositoryRoot) {
   const catalog = entries.get('extension/compiler/native/compiler-packs.json');
   assert.ok(catalog, 'VSIX is missing compiler artifact pins');
   assert.equal(JSON.parse(catalog).compiler, expected.augustCompilerVersion, 'Bundled LLVM compiler version mismatch');
-  assert.equal(catalog.toString(), readFileSync(join(root, 'native/compiler-packs.json'), 'utf8'), 'Bundled LLVM artifact pins differ from the reviewed catalog');
+  assert.equal(catalog.toString(), verifiedCompilerCatalog(directory, releaseChecksums(directory), root), 'Bundled LLVM artifact pins differ from the verified release catalog');
   return { file: artifact.file, entries, name: expected.name, publisher: expected.publisher, version: expected.version, compilerVersion: expected.augustCompilerVersion };
 }
 

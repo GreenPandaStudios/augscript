@@ -21,10 +21,11 @@ if (process.argv.includes('--compiler')) {
   // The published compiler supplies this catalog; source metadata cannot replace it.
   const catalog = entries.get('extension/compiler/native/compiler-packs.json');
   assert.ok(catalog, 'Missing released compiler catalog');
+  writeFileSync(join(output, 'compiler-packs.json'), catalog);
   const report = { schema: 1, ...source, compilerPackage: { name: cli.name, version: cli.version, sha256: cli.sha256,
     integrity: cli.integrity }, stdlibPackage: {name:stdlib.name,version:stdlib.version,sha256:stdlib.sha256,integrity:stdlib.integrity}, javascriptDependencies: Object.fromEntries(['tar','chownr','yallist','minipass','minizlib','@isaacs/fs-minipass'].map(name=>[name,JSON.parse(readFileSync(join(root,'package-lock.json'),'utf8')).packages['node_modules/'+name]])), vsix: { filename: name, sha256: createHash('sha256').update(readFileSync(join(output, name))).digest('hex') } };
   writeFileSync(join(output, 'extension-release.json'), JSON.stringify(report, null, 2) + '\n');
-  const names = [name, 'extension-release.json'];
+  const names = [name, 'extension-release.json', 'compiler-packs.json'];
   writeFileSync(join(output, 'SHA256SUMS'), names.map(file => createHash('sha256').update(readFileSync(join(output, file))).digest('hex') + '  ' + file).join('\n') + '\n');
   verifyExtensionRelease(output);
   process.stdout.write('Prepared extension ' + source.version + ' with released compiler ' + source.compiler + '\n');
