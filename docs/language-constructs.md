@@ -294,7 +294,7 @@ Composition arguments. Other callables receive the Arguments capability.
 ArithmeticError implements Error
 ```
 
-Checked failure for division or remainder by zero and for explicitly checked mathematical operations. Ordinary int arithmetic otherwise wraps in the signed 64-bit range. The unreleased august.math library rejects integer overflow and inexact decimal operations explicitly.
+Checked failure for division or remainder by zero and for explicitly checked mathematical operations. Ordinary int arithmetic otherwise wraps in the signed 64-bit range. The august.math library rejects integer overflow and inexact decimal operations explicitly.
 
 ## around
 
@@ -426,7 +426,7 @@ Name a closed set of concrete immutable records. Construct an alternative with i
 composition Services: implement Logger with Adapter
 ```
 
-Collect dependency bindings in a named composition. Import and include it in main before startup statements. The composition’s file must import every interface and provider it uses. Include completion follows ordinary exports; inspect application or same-file test providers with aug graph --composition. The unreleased aug spec diagrams connect a project folder overview to nested folder data flow, module interactions, API input/result sequences, the compiled explanation and source. Sequences use import names, keep value operations local and pair each call with its returned data across bounded views.
+Collect dependency bindings in a named composition. Import and include it in main before startup statements. The composition’s file must import every interface and provider it uses. Include completion follows ordinary exports; inspect application or same-file test providers with aug graph --composition. The aug spec diagrams connect a project folder overview to nested folder data flow, module interactions, API input/result sequences, the compiled explanation and source. Sequences use import names, keep value operations local and pair each call with its returned data across bounded views.
 
 ## Compress
 
@@ -1010,7 +1010,7 @@ Root-only UTF-8 text input. Other callables receive FileReader. Invalid Unicode 
 record Point(int x, int y)
 ```
 
-Declare deeply immutable data with labeled construction and structural equality/hashing. Records contain primitives, tuples and other records. An initialize block validates inputs; its escaping errors are inferred; an explicit unless ErrorType limits permitted failures. The unreleased august.values library supplies checked dates, durations, URLs, identifiers, paths, bounded text and pure retry-policy data.
+Declare deeply immutable data with labeled construction and structural equality/hashing. Records contain primitives, tuples and other records. An initialize block validates inputs; its escaping errors are inferred; an explicit unless ErrorType limits permitted failures. The august.values library supplies checked dates, durations, URLs, identifiers, paths, bounded text and pure retry-policy data.
 
 ## request
 
@@ -1178,7 +1178,7 @@ A child computation owned by a scope. wait for reads its result; the scope joins
 test Calculator subject: ... or test add: ... or test endpoint getUser client: ...
 ```
 
-Declare tests beside the class, function, or endpoint. Class suites initialize their subject; function suites omit a subject. Endpoint suites receive a native pipeline client. Parameterized it cases use for (inputs) in tuple rows. The unreleased --suggest-inputs command and itboundaries completion propose bounded scalar rows; authors supply assertions. A one-column tuple row binds its cell. The unreleased aug verify command maps author requirements to concrete native results and source/spec review, keeping compiler acceptance and engineer review separate. Its runner rejects a different expected source revision before native execution. The unreleased LLVM core-runtime test cache reuses verified compilation, never results; every case executes in a fresh process. --rebuild skips reuse and JSON reports compilation status. aug cache inspects sizes and selected identities; aug cache prune --write clears verified idle compilation under entry locks, retaining source/native archives and active or unknown entries. Component/native-call tests, unsealed contributor tools and the C reference still compile each time. Tests are omitted from production executables; aug test selects groups/cases and --coverage records statement lines.
+Declare tests beside the class, function, or endpoint. Class suites initialize their subject; function suites omit a subject. Endpoint suites receive a native pipeline client. Parameterized it cases use for (inputs) in tuple rows. The --suggest-inputs command and itboundaries completion propose bounded scalar rows; authors supply assertions. A one-column tuple row binds its cell. The aug verify command maps author requirements to concrete native results and source/spec review, keeping compiler acceptance and engineer review separate. Its runner rejects a different expected source revision before native execution. The LLVM core-runtime test cache reuses verified compilation, never results; every case executes in a fresh process. --rebuild skips reuse and JSON reports compilation status. aug cache inspects sizes and selected identities; aug cache prune --write clears verified idle compilation under entry locks, retaining source/native archives and active or unknown entries. Component/native-call tests, unsealed contributor tools and the C reference still compile each time. Tests are omitted from production executables; aug test selects groups/cases and --coverage records statement lines.
 
 ## throw
 

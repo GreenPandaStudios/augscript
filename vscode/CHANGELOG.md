@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Describe the selected compiler's implemented features directly in hover help; keep release availability in the installation guide.
+
 - Update extension artwork tooling to sharp 0.35.5 with patched librsvg binaries.
 
 - Document and complete the unreleased `mapWorkers` package operation, including its named pure-function restriction, copied data boundary and checked failures.
