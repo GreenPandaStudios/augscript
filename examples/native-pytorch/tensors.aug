@@ -1,5 +1,5 @@
 // aug-spec: "tensors.aug.md" explains this file. Read it before changes; refresh with aug spec.
-import Tensor and TensorError and tensor and add and sum and values from "https://github.com/GreenPandaStudios/aug-pytorch#e87f57af25ac17662c6299224815d3fd1464ad3e"
+import Tensor and TensorError and tensor and add and sum and values from "https://github.com/GreenPandaStudios/aug-pytorch#e2b74b1968fb11972e260ef3796a1cd849c1f702"
 
 /** Add two CPU tensors using LibTorch and return the sum of their elements. */
 calculate() returns float unless TensorError:

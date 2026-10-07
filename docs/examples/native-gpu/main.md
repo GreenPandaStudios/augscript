@@ -28,10 +28,10 @@ pageClass: aug-example-page
 
 ::: code-group
 
-```aug [Indentation] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiaW5kZW50Iiwic291cmNlU2hhMjU2IjoiZGVlOTU1ZTZkY2M4NGEzYmZjYzkyNzQwZDE5MzcyYTQ2MTYyMDMxNjhlNmEyM2UyNTU0MTA1MThlZjZhZWExMSIsImZvcm1hdHRlZFNoYTI1NiI6IjAzZjU0ZGNjYzQxZDE0MDZiY2UxNjBlNDQ4ODM1MWYzZjk2NzQ5NzcxYjg2YTIzMzZhMzM2MGZmZTE4NTQzNTYiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDUiLCJmaXJzdCI6NCwibGFzdCI6MTcsImJhY2tsaW5rcyI6WyJtYWluLWRpYWdyYW1zLm1kI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTEiXX0seyJpZCI6InNvdXJjZS1MNS1MMTgiLCJmaXJzdCI6NCwibGFzdCI6MTcsImJhY2tsaW5rcyI6WyIjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMSIsIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0yIl19LHsiaWQiOiJzb3VyY2UtTDE4IiwiZmlyc3QiOjE3LCJsYXN0IjoxNywiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0zIl19XX0
+```aug [Indentation] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiaW5kZW50Iiwic291cmNlU2hhMjU2IjoiOTkzYzM2ODkwZTM5NTIyZmI3NzkzYzM4YjZkOGVmYmQ0NTY1MjAwNmJmNjI0YjMwMTM5ZGFmNmE3M2E4ZDYyNiIsImZvcm1hdHRlZFNoYTI1NiI6Ijc4NTBlNzlmNjZkZjhmMzI0OGM1MjMyZjQ2YTBmOTJlMDI0NDI0M2M5ZThkNmM4MDUzZmY3Mzc2Yjk0YzhjNTgiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDUiLCJmaXJzdCI6NCwibGFzdCI6MTcsImJhY2tsaW5rcyI6WyJtYWluLWRpYWdyYW1zLm1kI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTEiXX0seyJpZCI6InNvdXJjZS1MNS1MMTgiLCJmaXJzdCI6NCwibGFzdCI6MTcsImJhY2tsaW5rcyI6WyIjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMSIsIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0yIl19LHsiaWQiOiJzb3VyY2UtTDE4IiwiZmlyc3QiOjE3LCJsYXN0IjoxNywiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0zIl19XX0
 // aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import calculate from compute
-import GpuError from "https://github.com/GreenPandaStudios/aug-gpu#4a7ce9d4c74de8b355b49926d100d7e185923f2c"
+import GpuError from "https://github.com/GreenPandaStudios/aug-gpu#ebc288b8d88b30213715bdbcd3d4647ff81a5462"
 try:
     scope:
         first = start worker calculate(left=[1.0, 2.0, 3.0], right=[4.0, 5.0, 6.0])
@@ -48,10 +48,10 @@ catch ConcurrencyError error:
     print(value="Worker capacity is exhausted")
 ```
 
-```aug [Braces] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiYnJhY2VzIiwic291cmNlU2hhMjU2IjoiZGVlOTU1ZTZkY2M4NGEzYmZjYzkyNzQwZDE5MzcyYTQ2MTYyMDMxNjhlNmEyM2UyNTU0MTA1MThlZjZhZWExMSIsImZvcm1hdHRlZFNoYTI1NiI6IjVmZDZhZmYwNWZhYTFmODEyOTY2NGUzYWU5ZDQ5MWE3MWM2NGFiMzk0OWY2NjgyYjBlNDRjMDQwMTgxNGRkMTkiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDUiLCJmaXJzdCI6NCwibGFzdCI6MjMsImJhY2tsaW5rcyI6WyJtYWluLWRpYWdyYW1zLm1kI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTEiXX0seyJpZCI6InNvdXJjZS1MNS1MMTgiLCJmaXJzdCI6NCwibGFzdCI6MjMsImJhY2tsaW5rcyI6WyIjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMSIsIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0yIl19LHsiaWQiOiJzb3VyY2UtTDE4IiwiZmlyc3QiOjIyLCJsYXN0IjoyMiwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0zIl19XX0
+```aug [Braces] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiYnJhY2VzIiwic291cmNlU2hhMjU2IjoiOTkzYzM2ODkwZTM5NTIyZmI3NzkzYzM4YjZkOGVmYmQ0NTY1MjAwNmJmNjI0YjMwMTM5ZGFmNmE3M2E4ZDYyNiIsImZvcm1hdHRlZFNoYTI1NiI6IjdkYWZmYWIwMjg0OTdkN2FmZmFhY2MzZGY3NzEzYzRiOTBlYmJkNmQwY2I0YTlhMTdlZmJiZTY2ODEyYjllN2IiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDUiLCJmaXJzdCI6NCwibGFzdCI6MjMsImJhY2tsaW5rcyI6WyJtYWluLWRpYWdyYW1zLm1kI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTEiXX0seyJpZCI6InNvdXJjZS1MNS1MMTgiLCJmaXJzdCI6NCwibGFzdCI6MjMsImJhY2tsaW5rcyI6WyIjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMSIsIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0yIl19LHsiaWQiOiJzb3VyY2UtTDE4IiwiZmlyc3QiOjIyLCJsYXN0IjoyMiwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0zIl19XX0
 // aug-spec: "main.aug.md" explains this file. Read it before changes; refresh with aug spec.
 import calculate from compute
-import GpuError from "https://github.com/GreenPandaStudios/aug-gpu#4a7ce9d4c74de8b355b49926d100d7e185923f2c"
+import GpuError from "https://github.com/GreenPandaStudios/aug-gpu#ebc288b8d88b30213715bdbcd3d4647ff81a5462"
 try {
     scope {
         first = start worker calculate(left=[1.0, 2.0, 3.0], right=[4.0, 5.0, 6.0])
@@ -100,7 +100,7 @@ If this work raises `ConcurrencyError`, it prints `"Worker capacity is exhausted
 
 ### Dependencies
 
-It uses [`GpuError`](dependencies/packages/%40greenpandastudios/aug-gpu/0.2.0/contracts.md#symbol-GpuError) ([`explain`](dependencies/packages/%40greenpandastudios/aug-gpu/0.2.0/contracts.md#symbol-GpuError.explain)) from `https://github.com/GreenPandaStudios/aug-gpu#4a7ce9d4c74de8b355b49926d100d7e185923f2c`. It uses [`calculate`](compute.md#symbol-calculate) from `compute`.
+It uses [`GpuError`](dependencies/packages/%40greenpandastudios/aug-gpu/0.2.0/contracts.md#symbol-GpuError) ([`explain`](dependencies/packages/%40greenpandastudios/aug-gpu/0.2.0/contracts.md#symbol-GpuError.explain)) from `https://github.com/GreenPandaStudios/aug-gpu#ebc288b8d88b30213715bdbcd3d4647ff81a5462`. It uses [`calculate`](compute.md#symbol-calculate) from `compute`.
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).
 

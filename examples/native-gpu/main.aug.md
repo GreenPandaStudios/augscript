@@ -2,7 +2,7 @@
 
 # `main.aug`
 
-<!-- August spec revision: schema=1 compiler=1.0.0 source-sha256=dee955e6dcc84a3bfcc92740d19372a4616203168e6a23e255410518ef6aea11 -->
+<!-- August spec revision: schema=1 compiler=1.0.0 source-sha256=993c36890e39522fb7793c38b6d8efbd45652006bf624b30139daf6a73a8d626 -->
 
 [Interactions and sequences](main.aug.diagrams.md)
 
@@ -16,6 +16,6 @@ If this work raises `ConcurrencyError`, it prints `"Worker capacity is exhausted
 
 ## Dependencies
 
-It uses [`GpuError`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.2.0/contracts.aug.md#symbol-GpuError) ([`explain`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.2.0/contracts.aug.md#symbol-GpuError.explain)) from `https://github.com/GreenPandaStudios/aug-gpu#4a7ce9d4c74de8b355b49926d100d7e185923f2c`. It uses [`calculate`](compute.aug.md#symbol-calculate) from `compute`.
+It uses [`GpuError`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.2.0/contracts.aug.md#symbol-GpuError) ([`explain`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.2.0/contracts.aug.md#symbol-GpuError.explain)) from `https://github.com/GreenPandaStudios/aug-gpu#ebc288b8d88b30213715bdbcd3d4647ff81a5462`. It uses [`calculate`](compute.aug.md#symbol-calculate) from `compute`.
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).

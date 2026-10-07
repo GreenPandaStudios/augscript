@@ -97,7 +97,7 @@ jobs:
       - name: Qualify repeated runtime lifecycles and sustained heap use
         env:
           AUG_SANITIZER_CC: ${{ github.workspace }}/.aug-build/llvm-maintainer/bin/clang
-          RELIABILITY_PROFILE: ${{ inputs.reliability_profile || (github.head_ref == 'codex/v1-release-candidate' && 'soak') || 'ci' }}
+          RELIABILITY_PROFILE: ${{ inputs.reliability_profile || ((github.head_ref == 'codex/v1-release-candidate' || github.ref == 'refs/heads/main') && 'soak') || 'ci' }}
         run: npm run test:reliability -- --profile "$RELIABILITY_PROFILE"
       - name: Existing language, runtime and real applications through LLVM
         env:

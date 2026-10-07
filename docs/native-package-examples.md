@@ -20,7 +20,7 @@ LibTorch creates two float64 tensors, adds them, and sums the result to 21. The 
 
 ```text
 import calculate from tensors
-import TensorError from "https://github.com/GreenPandaStudios/aug-pytorch#e87f57af25ac17662c6299224815d3fd1464ad3e"
+import TensorError from "https://github.com/GreenPandaStudios/aug-pytorch#e2b74b1968fb11972e260ef3796a1cd849c1f702"
 
 try:
     print(value=calculate())
@@ -31,7 +31,7 @@ catch TensorError error:
 **tensors.aug**
 
 ```text
-import Tensor and TensorError and tensor and add and sum and values from "https://github.com/GreenPandaStudios/aug-pytorch#e87f57af25ac17662c6299224815d3fd1464ad3e"
+import Tensor and TensorError and tensor and add and sum and values from "https://github.com/GreenPandaStudios/aug-pytorch#e2b74b1968fb11972e260ef3796a1cd849c1f702"
 
 /** Add two CPU tensors using LibTorch and return the sum of their elements. */
 calculate() returns float unless TensorError:
@@ -190,7 +190,7 @@ aug spec
 
 ## Reuse a short import name
 
-The URL in each import selects a release tag; installation resolves it to a source commit and native artifact hashes in `aug.lock.json`. An alias is useful when several files use the package:
+The URL in each import selects a release tag or exact commit; installation records its source commit and native artifact hashes in `aug.lock.json`. An alias is useful when several files use the package:
 
 ```sh
 aug add https://github.com/GreenPandaStudios/aug-zlib#v0.2.0 --as zlib

@@ -33,7 +33,7 @@ The independent `TASK-20` case checks that a cancelled consumer never enters its
 until the public task type has an owned-result transfer contract. Both backends
 exercise these cases in the concurrency suite.
 
-Run the focused suite with `node --test tests/language-conformance.test.mjs`. The full repository test command also runs existing [concurrency](../tests/concurrency.test.mjs), ownership, errors, formatter, and generated-spec tests. Additional adversarial cases and independent review are still needed before 1.0. See the [roadmap](roadmap.md).
+Run the focused suite with `node --test tests/language-conformance.test.mjs`. The full repository test command also runs existing [concurrency](../tests/concurrency.test.mjs), ownership, errors, formatter, and generated-spec tests. The 1.0.0 candidate passed the expanded grammar ledger and independent acceptance programs on all three supported hosts. Final source and tagged builds repeat these checks; the [roadmap](roadmap.md) links the candidate runs and remaining release gates.
 
 ## Independent acceptance and platform gates
 

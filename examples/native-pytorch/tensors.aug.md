@@ -2,7 +2,7 @@
 
 # `tensors.aug`
 
-<!-- August spec revision: schema=1 compiler=1.0.0 source-sha256=e99120e22baaa827ba63134a51915e6ec5846e1d78a0fe6d525ffa25cc9d532f -->
+<!-- August spec revision: schema=1 compiler=1.0.0 source-sha256=c2fa5c4b9e7226e2354e5d9d838bb1e0d247aec140a0836ee994ebda444f78e8 -->
 
 [Interactions and sequences](tensors.aug.diagrams.md)
 
@@ -41,6 +41,6 @@ The test requires [`sum`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.
 
 ## Dependencies
 
-It uses [`add`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.2.0/api.aug.md#symbol-add), [`sum`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.2.0/api.aug.md#symbol-sum), [`tensor`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.2.0/api.aug.md#symbol-tensor), [`values`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.2.0/api.aug.md#symbol-values), [`Tensor`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.2.0/bindings.aug.md#symbol-Tensor), and [`TensorError`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.2.0/contracts.aug.md#symbol-TensorError) from `https://github.com/GreenPandaStudios/aug-pytorch#e87f57af25ac17662c6299224815d3fd1464ad3e`.
+It uses [`add`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.2.0/api.aug.md#symbol-add), [`sum`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.2.0/api.aug.md#symbol-sum), [`tensor`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.2.0/api.aug.md#symbol-tensor), [`values`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.2.0/api.aug.md#symbol-values), [`Tensor`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.2.0/bindings.aug.md#symbol-Tensor), and [`TensorError`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.2.0/contracts.aug.md#symbol-TensorError) from `https://github.com/GreenPandaStudios/aug-pytorch#e2b74b1968fb11972e260ef3796a1cd849c1f702`.
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).

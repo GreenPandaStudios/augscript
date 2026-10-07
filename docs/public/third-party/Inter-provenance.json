@@ -1,0 +1,66 @@
+{
+  "name": "Inter",
+  "version": "4.000",
+  "sourceCommit": "a521315959ee183f0c1195149335a0720edc403f",
+  "license": "OFL-1.1",
+  "licenseUrl": "https://raw.githubusercontent.com/rsms/inter/a521315959ee183f0c1195149335a0720edc403f/LICENSE.txt",
+  "licenseSha256": "262481e844521b326f5ecd053e59b98c8b2da78c8ee1bdbb6e8174305e54935a",
+  "fonts": [
+    {
+      "file": "inter-italic-cyrillic-ext.woff2",
+      "sha256": "3f2ea09e148441f83171eae388d00da780b24b9bd155c141d0b5fbb0d803871d"
+    },
+    {
+      "file": "inter-italic-cyrillic.woff2",
+      "sha256": "2a1c3126375078cd85d262aad635ac9d9ff9ac2c18b8143b2d21d540f9cd3dfb"
+    },
+    {
+      "file": "inter-italic-greek-ext.woff2",
+      "sha256": "bae39b1cc79168c9ac47f120c3eaa82cb634dc17e457cdd484725d8c7a60ab3e"
+    },
+    {
+      "file": "inter-italic-greek.woff2",
+      "sha256": "138cf731e5a284e262c576f765a6cb8f58045cb798d16693091e2251a0f63559"
+    },
+    {
+      "file": "inter-italic-latin-ext.woff2",
+      "sha256": "3e166de9aeff2d6a3d13c9228e03f7ff76369f5fa95fe0ab1d1d44235d5516aa"
+    },
+    {
+      "file": "inter-italic-latin.woff2",
+      "sha256": "3570e65005ccd9ecd87c6ccc7c713fc474a80ff7c3abbb1063f0e8ab4f8dc891"
+    },
+    {
+      "file": "inter-italic-vietnamese.woff2",
+      "sha256": "a0aae13c473b99b63f3c0b8b692b3b2a4023145171aa86964f268235573e4ce5"
+    },
+    {
+      "file": "inter-roman-cyrillic-ext.woff2",
+      "sha256": "a49e47fb34f94acf8ceb57603cb2fc4c01861527a9a304de3a0236b7b67da2c6"
+    },
+    {
+      "file": "inter-roman-cyrillic.woff2",
+      "sha256": "d888610b6342164a592e59a4ce91a3755126a6ca2ee4e0d75c8e915eebaeed68"
+    },
+    {
+      "file": "inter-roman-greek-ext.woff2",
+      "sha256": "7b7519f21aff6b3a011099999cec8a9d4c99173a8c9adeecffb0bd032fc49f69"
+    },
+    {
+      "file": "inter-roman-greek.woff2",
+      "sha256": "1a1997dfdcd7a9e0d2b26944b4b7fd1f1b2fde91bb405cb7a5870f93b45d2e05"
+    },
+    {
+      "file": "inter-roman-latin-ext.woff2",
+      "sha256": "539d139f99942e93bead7bbcd18bc00f5a73932eb3a8997367f2b79f4f75bc60"
+    },
+    {
+      "file": "inter-roman-latin.woff2",
+      "sha256": "f7ab715caa2c78facb4334b211c81ee66f037cf9c99ca3f24acd543e84a93278"
+    },
+    {
+      "file": "inter-roman-vietnamese.woff2",
+      "sha256": "b315417b28ce251a54000a824d73c5af36798a88b3c05594f28dada0cbffab5a"
+    }
+  ]
+}

@@ -2,7 +2,7 @@
 
 # `main.aug`
 
-<!-- August spec revision: schema=1 compiler=1.0.0 source-sha256=78e737ba517c9a90c408bb52d86fe5bba29c5dc8454e7de002b4103bdc419031 -->
+<!-- August spec revision: schema=1 compiler=1.0.0 source-sha256=4d2ee7ef9879aec4724380f8508b6b6f2fe1aaae5fa216a0ec56dbcfb7ccf84e -->
 
 [Interactions and sequences](main.aug.diagrams.md)
 
@@ -12,6 +12,6 @@ It prints [`calculate`](tensors.aug.md#symbol-calculate). If this work raises [`
 
 ## Dependencies
 
-It uses [`TensorError`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.2.0/contracts.aug.md#symbol-TensorError) (`message`) from `https://github.com/GreenPandaStudios/aug-pytorch#e87f57af25ac17662c6299224815d3fd1464ad3e`. It uses [`calculate`](tensors.aug.md#symbol-calculate) from `tensors`.
+It uses [`TensorError`](.aug-spec/packages/%40greenpandastudios/aug-pytorch/0.2.0/contracts.aug.md#symbol-TensorError) (`message`) from `https://github.com/GreenPandaStudios/aug-pytorch#e2b74b1968fb11972e260ef3796a1cd849c1f702`. It uses [`calculate`](tensors.aug.md#symbol-calculate) from `tensors`.
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).

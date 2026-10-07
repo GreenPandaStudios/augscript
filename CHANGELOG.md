@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- Record completed three-host candidate gates and the 1.x compatibility contract. Stable publication still requires final-source and tagged-artifact qualification.
+
+- Select the freshly qualified macOS ARM64 and GNU/Linux ARM64/x64 compiler archives. Retain exact member, repair-material and lifecycle audit reports; final tagged qualification remains a separate gate.
+
+- Refresh the wiki’s 1.0 candidate performance and full safety-gym evidence. Retain raw timings and exact measured source identities; remove host checkout prefixes from public diagnostic paths.
+
+- Preserve full third-party license texts and exact inputs in the hosted and offline wiki. Reject missing package notices and changed Inter font bytes during documentation builds.
+
+- Add checked pipeline tag creation after the exact main source passes all three qualification workflows. Reject stale source, missing or failed evidence, version mismatches and existing tag conflicts before release preparation.
+
 - Build the bundled Linux C++ runtime with the upstream aligned-allocation overflow fix. Require preserved versioned exports, the glibc 2.36 floor, and real allocation/thread regressions before sealing compiler or LibTorch artifacts. Retain the source patch, recipe and measured build receipt.
 
 - Keep library discovery aligned with the installed compiler and exact reviewed repository revisions. Catalog metadata distinguishes source snapshots from verified artifact execution.

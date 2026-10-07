@@ -2,7 +2,7 @@
 
 # `compute.aug`
 
-<!-- August spec revision: schema=1 compiler=1.0.0 source-sha256=69b758813f7b7a73178daa1f2fbde9ae312fa85af7e10911984cc25448cd9c5b -->
+<!-- August spec revision: schema=1 compiler=1.0.0 source-sha256=c9c6eb64f18515d5b54853477dfffa70ce85efb7816b43c1591d7b4ac2098e40 -->
 
 [Interactions and sequences](compute.aug.diagrams.md)
 
@@ -41,6 +41,6 @@ The test requires the item at index `2` in `result` equals `9.0`. [source](compu
 
 ## Dependencies
 
-It uses [`add`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.2.0/api.aug.md#symbol-add), [`download`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.2.0/api.aug.md#symbol-download), [`openDevice`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.2.0/api.aug.md#symbol-openDevice), [`upload`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.2.0/api.aug.md#symbol-upload), [`Buffer`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.2.0/bindings.aug.md#symbol-Buffer), and [`Device`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.2.0/bindings.aug.md#symbol-Device) from `https://github.com/GreenPandaStudios/aug-gpu#4a7ce9d4c74de8b355b49926d100d7e185923f2c`. It uses [`GpuError`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.2.0/contracts.aug.md#symbol-GpuError).
+It uses [`add`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.2.0/api.aug.md#symbol-add), [`download`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.2.0/api.aug.md#symbol-download), [`openDevice`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.2.0/api.aug.md#symbol-openDevice), [`upload`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.2.0/api.aug.md#symbol-upload), [`Buffer`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.2.0/bindings.aug.md#symbol-Buffer), and [`Device`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.2.0/bindings.aug.md#symbol-Device) from `https://github.com/GreenPandaStudios/aug-gpu#ebc288b8d88b30213715bdbcd3d4647ff81a5462`. It uses [`GpuError`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.2.0/contracts.aug.md#symbol-GpuError).
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).

@@ -1,0 +1,39 @@
+name: Create qualified release tag
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Numeric version tag, such as v1.0.0; existing tags are never moved
+        type: string
+        required: true
+      commit:
+        description: Reviewed main commit SHA after all qualification workflows pass
+        type: string
+        required: true
+permissions:
+  contents: read
+concurrency:
+  group: qualified-release-tag
+  cancel-in-progress: false
+jobs:
+  tag:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Verify source and qualification before creating the tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.tag }}
+          RELEASE_COMMIT: ${{ inputs.commit }}
+        run: node scripts/create-release-tag.mjs "$RELEASE_TAG" "$RELEASE_COMMIT"

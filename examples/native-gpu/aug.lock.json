@@ -2,24 +2,24 @@
   "format": 1,
   "compiler": "1.0.0",
   "specifications": {
-    "url_1aa7db7f6a65c10a5d8f": "https://github.com/GreenPandaStudios/aug-gpu#4a7ce9d4c74de8b355b49926d100d7e185923f2c"
+    "url_dd4c25535a8d0362a9be": "https://github.com/GreenPandaStudios/aug-gpu#ebc288b8d88b30213715bdbcd3d4647ff81a5462"
   },
   "roots": {
-    "url_1aa7db7f6a65c10a5d8f": "snapshots/c54aae2f3c77037788379b792bad7eae9371cd4436aa38ac24d5356b8f539e41/packages/url_1aa7db7f6a65c10a5d8f"
+    "url_dd4c25535a8d0362a9be": "snapshots/ea23121327216b6d67e8272cf12237fc916fd68ab3f654d2c4e7cc57bdbbedfb/packages/url_dd4c25535a8d0362a9be"
   },
   "npm": {},
   "git": [
     {
-      "request": "https://github.com/GreenPandaStudios/aug-gpu#4a7ce9d4c74de8b355b49926d100d7e185923f2c",
+      "request": "https://github.com/GreenPandaStudios/aug-gpu#ebc288b8d88b30213715bdbcd3d4647ff81a5462",
       "repository": "https://github.com/GreenPandaStudios/aug-gpu.git",
-      "revision": "4a7ce9d4c74de8b355b49926d100d7e185923f2c",
+      "revision": "ebc288b8d88b30213715bdbcd3d4647ff81a5462",
       "folder": "",
-      "commit": "4a7ce9d4c74de8b355b49926d100d7e185923f2c"
+      "commit": "ebc288b8d88b30213715bdbcd3d4647ff81a5462"
     }
   ],
   "packages": [
     {
-      "path": "snapshots/c54aae2f3c77037788379b792bad7eae9371cd4436aa38ac24d5356b8f539e41/packages/url_1aa7db7f6a65c10a5d8f",
+      "path": "snapshots/ea23121327216b6d67e8272cf12237fc916fd68ab3f654d2c4e7cc57bdbbedfb/packages/url_dd4c25535a8d0362a9be",
       "name": "@greenpandastudios/aug-gpu",
       "version": "0.2.0",
       "source": "src",
@@ -95,7 +95,7 @@
           {
             "sourcePackage": "@greenpandastudios/aug-gpu@0.2.0",
             "sourceDigest": "c0741b46f6780ece15553d4c293319280c704b7090917b972765f872b22962ea",
-            "sourceCommit": "4a7ce9d4c74de8b355b49926d100d7e185923f2c",
+            "sourceCommit": "ebc288b8d88b30213715bdbcd3d4647ff81a5462",
             "contractSha256": "d95e237d8be07df8fd20132ca0f5a45a125fd65b7ba93669e69c0a38db63d60c",
             "artifact": {
               "id": "macos-arm64",
@@ -139,6 +139,16 @@
             }
           }
         ]
+      }
+    },
+    "compilers": {
+      "darwin-arm64": {
+        "version": "1.0.0",
+        "llvm": "23.1.2",
+        "host": "darwin-arm64",
+        "target": "aarch64-apple-darwin",
+        "artifactSha256": "4d84935235f59a30775479a56d42bc3e26238acb5a1568db1484e15032bf4534",
+        "runtimeSha256": "00847a9a7921b3ecd2b1a355d6ea4192e32fba5addc6a8a1c341e4e580362722"
       }
     }
   }

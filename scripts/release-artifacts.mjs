@@ -23,7 +23,9 @@ for(const pack of manifest.packs){
   copyFileSync(compilerPack,join(output,filename));compilerPacks++;
 }
 if(process.env.AUG_RELEASE_NATIVE_REQUIRED==='1'&&!compilerPacks)throw new Error('Missing compiler packs');
-for (const path of ['dist/release/packages.json', `vscode/augscript-${extensionVersion}.vsix`, 'docs/.vitepress/dist/index.html'])
+for (const path of ['dist/release/packages.json', `vscode/augscript-${extensionVersion}.vsix`, 'docs/.vitepress/dist/index.html',
+  'docs/.vitepress/dist/third-party/NOTICE.txt', 'docs/.vitepress/dist/third-party/manifest.json',
+  'docs/.vitepress/dist/third-party/Inter-OFL-1.1.txt'])
   if (!existsSync(join(root, path))) throw new Error(`Missing ${path}; build all packages, extension and docs first.`);
 copyFileSync(join(root, `vscode/augscript-${extensionVersion}.vsix`), join(output, `augscript-${extensionVersion}.vsix`));
 // Publishing a pack with one pin and a CLI/editor with another would make
@@ -39,7 +41,7 @@ rmSync(site, {recursive: true, force: true});
 mkdirSync(site, {recursive: true});
 cpSync(join(root, 'docs/.vitepress/dist'), join(site, 'augscript'), {recursive: true});
 writeFileSync(join(site, 'augscript/LOCAL_PREVIEW.txt'), 'Serve the parent directory of augscript/ with a static HTTP server, then open /augscript/. All documentation assets and search data are local. Source links require GitHub.\n');
-const tar = spawnSync('tar', ['-czf', archive, '-C', site, 'augscript'], { encoding: 'utf8' });
+const tar = spawnSync('tar', ['-czf', archive, '-C', site, 'augscript'], { encoding: 'utf8', env: {...process.env, COPYFILE_DISABLE: '1'} });
 if (tar.status !== 0) throw new Error(tar.stderr);
 const files = readdirSync(output).filter(file => file !== 'SHA256SUMS').sort();
 writeFileSync(join(output, 'SHA256SUMS'), files.map(file =>

@@ -17,6 +17,19 @@ export function releaseSource(tag, expectedSha, directory=resolve(import.meta.di
   };
   const sha=git('rev-parse','--verify',`refs/tags/${tag}^{commit}`);
   assert.equal(sha,expectedSha,'Release tag differs from the reviewed commit; no artifacts will be built');
+  return verifyReleaseVersions(tag,sha,directory);
+}
+
+/** Verify full-compiler manifests at an exact source identity, before any tag exists. */
+export function verifyReleaseVersions(tag,sha,directory=resolve(import.meta.dirname,'..')) {
+  assert.match(tag,/^v\d+\.\d+\.\d+$/,'Use a numeric full compiler version tag');
+  assert.match(sha,/^[0-9a-f]{40}$/,'Supply the reviewed full commit SHA');
+  releaseChannel(tag.slice(1));
+  const git=(...args)=>{
+    const result=spawnSync('git',args,{cwd:directory,encoding:'utf8'});
+    assert.equal(result.status,0,'Cannot read the requested release source: '+result.stderr);
+    return result.stdout.trim();
+  };
   const version=tag.slice(1);
   const read=file=>JSON.parse(git('show',`${sha}:${file}`));
   for(const file of ['package.json','vscode/package.json',...['cli','stdlib','web','crypto'].map(name=>`packages/${name}/package.json`),...['stdlib','web','crypto'].map(name=>`packages/${name}/aug-package.json`)]) {

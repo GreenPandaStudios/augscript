@@ -60,7 +60,7 @@ jobs:
           docker exec -e AUG_WORKER_SANITIZER=address,undefined -e AUG_SANITIZER_CC=/work/.aug-build/llvm-maintainer/bin/clang qualification node --test tests/worker-runtime.test.mjs
       - name: Qualify repeated runtime lifecycles and sustained heap use
         env:
-          RELIABILITY_PROFILE: ${{ inputs.reliability_profile || (github.head_ref == 'codex/v1-release-candidate' && 'soak') || 'ci' }}
+          RELIABILITY_PROFILE: ${{ inputs.reliability_profile || ((github.head_ref == 'codex/v1-release-candidate' || github.ref == 'refs/heads/main') && 'soak') || 'ci' }}
         run: |
           docker exec -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools -e AUG_SANITIZER_CC=/work/.aug-build/llvm-maintainer/bin/clang qualification node --test tests/runtime-reliability.test.mjs
           docker exec -e AUG_LLVM_HOME=/work/.aug-build/llvm-tools -e AUG_SANITIZER_CC=/work/.aug-build/llvm-maintainer/bin/clang qualification npm run test:reliability -- --profile "$RELIABILITY_PROFILE"

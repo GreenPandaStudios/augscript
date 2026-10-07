@@ -5,7 +5,7 @@ Release the compiler and first-party npm packages together. Full compiler releas
 ## Verify and create artifacts
 
 ```sh
-node scripts/version.mjs 0.23.0
+node scripts/version.mjs 1.0.0
 npm ci
 npm --prefix vscode ci
 node scripts/bootstrap-native.mjs
@@ -33,7 +33,7 @@ node scripts/publish-release.mjs dist/release --verify-only
 node scripts/publish-extension.mjs dist/release --verify-only
 ```
 
-The merge step requires the exact qualified producer archives and manifests for all three hosts under `.aug-build/release-packs`; `release.yml` obtains them before packaging. Update both changelogs and relevant guides, and commit regenerated docs. The final artifact step combines four installable npm tarballs, a VSIX, compiler packs, offline documentation, package metadata and SHA-256 checksums under `dist/release`. It excludes native caches, private credentials and application build output.
+Choose the reviewed release version before running these maintainer commands. `1.0.0` is the current candidate; running them does not publish it or establish stability. The merge step requires the exact qualified producer archives and manifests for all three hosts under `.aug-build/release-packs`; `release.yml` obtains them before packaging. Update both changelogs and relevant guides, and commit regenerated docs. The final artifact step combines four installable npm tarballs, a VSIX, compiler packs, offline documentation, package metadata and SHA-256 checksums under `dist/release`. It excludes native caches, private credentials and application build output.
 
 Before tagging 1.0, the release-candidate branch runs the 30-minute lifecycle profile on macOS and both Linux architectures. Producer jobs allow 150 minutes for the full regression, sanitizer, performance and soak gates; a timeout is incomplete qualification. Public native consumer checks import the exact reviewed repository commits from `native/library-qualification.json`; an unpublished package tag is not substituted for a source identity. The ordinary installer still verifies the source manifest, artifact and lock.
 
@@ -107,6 +107,16 @@ Retries skip a version only when its registry integrity matches the release arch
 npm may accept an upload several minutes before its public metadata becomes available. The publisher on main checks visibility at five-second intervals for about five minutes per package; it retries only missing-version responses and uploads each archive once. If that wait expires, let npm finish processing before retrying the same release.
 
 The CLI is published last because its dependencies use exact matching versions. An interrupted run can leave some libraries published; retry the same release to finish. Retries leave already-published versions and their dist tags alone. The pipeline derives the channel from the reviewed version before any registry access. It rejects empty or mixed-version package sets. Retries do not move existing dist tags; if a previously published version needs promotion, review and perform that registry change separately.
+
+## Create a qualified version tag
+
+The candidate workflow **Create qualified release tag** accepts a numeric tag and the reviewed full main commit SHA. It verifies the checkout and all full-release package versions. The latest push runs of CI, GNU/Linux qualification and installed-editor qualification must succeed for that SHA. Main push qualification includes the three-host 30-minute soak; truncated or missing evidence rejects the request.
+
+Immediately before creating or accepting a tag, the workflow checks main again. It creates one lightweight tag and verifies its identity. Retries retain a matching tag and reject a different one. It never moves a tag or publishes a release.
+
+GitHub has no atomic comparison of main and tag creation. A simultaneous push can leave the tag on the reviewed qualified source while main advances. The tag still identifies that exact source; release preparation does not follow a moving branch.
+
+GitHub does not start another workflow from a tag written with its workflow token. After the tag succeeds, dispatch **Prepare release** with the same tag and commit. Its producer, consumer and exact-release editor gates remain required before draft creation. Review the draft archives and reports before publication.
 
 ## Stable release review
 

@@ -41,7 +41,7 @@ The exact versions, archive URLs, and SHA-256 values are in [`native-dependencie
 
 The LLVM compiler, runtime, and public native packages work on macOS ARM64 and GNU/Linux x86-64/ARM64. Installed-package tests cover public downloads, locked and offline builds, relocated executables, and resource cleanup without native development tools. Windows, musl, and cross-compilation remain unsupported.
 
-Before 1.0, the project needs broader language conformance tests, repeated runtime stress tests, stable ABI and package formats, and repeatable releases. Isolated multicore workers have platform conformance and sanitizer gates that each release must repeat. The [roadmap](roadmap.md) gives the order and acceptance criteria.
+The 1.0.0 candidate implements the language conformance ledger, repeated runtime stress gates, public ABI and package contracts, and checked release preparation. All three supported targets passed candidate qualification; final-source and tagged-artifact checks, review and publication remain required before the stability promise takes effect. Isolated multicore workers have platform conformance and sanitizer gates that each release must repeat. The [roadmap](roadmap.md) gives the order and acceptance criteria.
 
 HTTP and identity services need additional protocol testing, durable credentials and keys, rotation, and long-running load tests. Those requirements are listed in [web and crypto limits](web-library-gaps.md).
 

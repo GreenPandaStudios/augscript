@@ -23,7 +23,7 @@ export function nativePackageExamples(root) {
     lines.push('```sh','aug run','aug test','aug spec','```');
   }
   lines.push('','## Reuse a short import name','',
-    'The URL in each import selects a release tag; installation resolves it to a source commit and native artifact hashes in `aug.lock.json`. An alias is useful when several files use the package:','',
+    'The URL in each import selects a release tag or exact commit; installation records its source commit and native artifact hashes in `aug.lock.json`. An alias is useful when several files use the package:','',
     '```sh',`aug add https://github.com/GreenPandaStudios/aug-zlib#v${packages.zlib.version} --as zlib`,'```','',
     'Then import `compress` and `decompress` from `zlib`. Keep the lock in source control. After an online build on the current host, `aug run --offline --frozen` requires the recorded compiler and library artifacts.','',
     '## Author and publish a binding','',

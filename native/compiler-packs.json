@@ -9,11 +9,11 @@
       "minimumOS": "14.0",
       "archive": {
         "url": "https://github.com/GreenPandaStudios/augscript/releases/download/v1.0.0/aug-llvm-macos-arm64.tar.gz",
-        "sha256": "4d84935235f59a30775479a56d42bc3e26238acb5a1568db1484e15032bf4534",
-        "maximumDownloadBytes": 217160444,
-        "maximumUnpackedBytes": 579185417,
+        "sha256": "a9357fd10ed0263202bfbaebd4371480c785a02564ab788cedc4d70609479811",
+        "maximumDownloadBytes": 217142917,
+        "maximumUnpackedBytes": 579261938,
         "fileManifest": "files.json",
-        "fileManifestSha256": "5f5aa850ef76470de06ac8880e0412a89722505ea3e6ff27b3457ef2177bb386"
+        "fileManifestSha256": "551bb027c84466c50d0566d6d3bf477cf34fcbd4e5eb7e0ce226c3800fab3851"
       }
     },
     {
@@ -22,11 +22,11 @@
       "minimumLibc": "2.36",
       "archive": {
         "url": "https://github.com/GreenPandaStudios/augscript/releases/download/v1.0.0/aug-llvm-linux-arm64.tar.gz",
-        "sha256": "3d946ce5b640ad3034e4ca45ed7865130bb062771ca4e83a8bf13b107d18bf0c",
-        "maximumDownloadBytes": 441720298,
-        "maximumUnpackedBytes": 877041373,
+        "sha256": "2ee6e3e11cdb6c147108a945c56ca9562c4c5f92c8583b0ad98cb01b8be2f1a5",
+        "maximumDownloadBytes": 441878498,
+        "maximumUnpackedBytes": 877806673,
         "fileManifest": "files.json",
-        "fileManifestSha256": "5ebf2b6a2920471c3187fbe218920e73efc7b4b987dc0b37d42ba9279f5aff7d"
+        "fileManifestSha256": "52197c8eba32fd3f5c79734fc270a0d0a70d053732e8c1e3057ae5c66b8f4ec5"
       }
     },
     {
@@ -35,11 +35,11 @@
       "minimumLibc": "2.36",
       "archive": {
         "url": "https://github.com/GreenPandaStudios/augscript/releases/download/v1.0.0/aug-llvm-linux-x64.tar.gz",
-        "sha256": "c8fdeb11f43c3048e64eb78fac3f8607887fa449c539395857a19142efadac30",
-        "maximumDownloadBytes": 448736052,
-        "maximumUnpackedBytes": 910642160,
+        "sha256": "5ccc4b3662727aa2d446d995c44c6d48fc01f9d80f18161d293bc99489828c1e",
+        "maximumDownloadBytes": 448880055,
+        "maximumUnpackedBytes": 911284574,
         "fileManifest": "files.json",
-        "fileManifestSha256": "4313ef2883b82dfbdd69a3ce505a3b4e997a81db6deee1368d5cd07e71fb21cd"
+        "fileManifestSha256": "199cfe758f144fe1bff65a51bdad74680447016f6d3bb17f329224a5ac7d5a4c"
       }
     }
   ]
