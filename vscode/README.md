@@ -4,7 +4,7 @@
 
 ![August — readable code, clear dependencies](media/banner.png)
 
-The extension bundles the current compiler, runtime, native bootstrap, language wiki, generated library API guides, and deterministic source specifications.
+The extension bundles the current compiler, runtime, native bootstrap, language wiki, generated library API guides, and deterministic source specifications with linked Mermaid diagrams.
 
 ## Editing
 
@@ -28,7 +28,7 @@ Open a .aug file, then use the Command Palette:
 | AugScript: Open Welcome | Open the illustrated local overview, icons, and bundled guides. |
 | AugScript: Enable File Icons | Select the August file icon theme for the current workspace. |
 | AugScript: Build Project | Compile the complete project through LLVM to a native executable. |
-| AugScript: Generate Specifications | Compile adjacent Markdown explanations and offline dependency docs. |
+| AugScript: Generate Specifications | Generate Markdown explanations, data-flow and interaction diagrams, API sequences, and offline dependency docs. |
 | AugScript: Open Compiled Specification | Generate and preview the current source file's specification. |
 | AugScript: Migrate Project Syntax | Convert rejected legacy spellings after sources are saved. |
 | AugScript: Run Project | Build and execute startup. |
@@ -69,7 +69,7 @@ Node.js 24+ is required. Configure `augscript.nodePath` if Node is not on VS Cod
 
 Ordinary build, run and test commands download verified LLVM/runtime packs and native package artifacts on macOS 14+ ARM64 and GNU/Linux x86-64 or ARM64 with glibc 2.36+. No separate C compiler, LLVM installation or SDK is required on those hosts. The first build needs network access and a writable artifact cache. Use `--offline` after the required downloads are cached; unsupported platforms and missing artifacts produce diagnostics. C reference builds and native package authoring require maintainer tools. `augscript.nativeHome` configures that separate source-build cache.
 
-Use the guide commands to read the bundled documentation. Core I/O ships with the CLI; web, crypto, JSON, time and memory are ordinary source packages. A library needs an `export.aug` file and can be imported from a public Git URL. Package navigation and Javadoc help follow those imports. Executable bodies show inferred contracts in hover and inline hints. Cooperative tasks share their scheduler; `start worker` runs copied values on multiple cores with a private heap per worker. Channels and inbound streaming remain unimplemented. August is a preview; consult the performance measurements and library limits for your workload.
+Use the guide commands to read the bundled documentation. Core I/O ships with the CLI; web, crypto, JSON, time and memory are ordinary source packages. A library needs an `export.aug` file and can be imported from a public Git URL. Package navigation and Javadoc help follow those imports. Executable bodies show inferred contracts in hover and inline hints. Cooperative tasks share their scheduler; `start worker` runs copied values on multiple cores with a private heap per worker. Channels and inbound streaming remain unimplemented. Read the [compatibility contract](https://greenpandastudios.github.io/augscript/compatibility), [performance measurements](https://greenpandastudios.github.io/augscript/performance), and [library limits](https://greenpandastudios.github.io/augscript/web-library-gaps) when choosing a deployment.
 
 ## Inferred contract hints
 

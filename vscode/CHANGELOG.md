@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Describe the generated data-flow, interaction and API sequence diagrams in the extension README, with links to supported platforms and deployment limits.
+
 - Describe the selected compiler's implemented features directly in hover help; keep release availability in the installation guide.
 
 - Update extension artwork tooling to sharp 0.35.5 with patched librsvg binaries.

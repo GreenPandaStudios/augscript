@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Align the shipped CLI README with the greeting starter and stable installation command; describe generated diagrams and deployment limits in the extension README.
+
 - Describe implemented compiler features directly in hover help and the standard-package README. Publication status remains in the release and installation guides.
 
 - Record completed three-host candidate gates and the 1.x compatibility contract. Stable publication still requires final-source and tagged-artifact qualification.
