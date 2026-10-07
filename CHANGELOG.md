@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Verify the extension's fresh compiler artifact pins against a checksum-covered assembled release catalog, while retaining the tagged compiler and platform contracts. Reject missing, changed or mismatched catalogs before publication.
+- Verify the extension's fresh compiler artifact pins against a checksum-covered assembled release catalog, while retaining the tagged compiler and platform contracts. Reject missing, changed or mismatched catalogs before publication. Give full release assembly the same 150-minute execution budget as native producers; retain every qualification gate and frozen limit.
 
 - Align the shipped CLI README with the greeting starter and stable installation command; describe generated diagrams and deployment limits in the extension README.
 

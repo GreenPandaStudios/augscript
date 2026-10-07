@@ -135,7 +135,7 @@ jobs:
   release:
     needs: [source, compiler-packs]
     runs-on: macos-15
-    timeout-minutes: 60
+    timeout-minutes: 150
     env:
       AUG_LLVM_HOME: ${{ github.workspace }}/.aug-build/llvm-tools
       AUG_RELEASE_NATIVE_REQUIRED: '1'
