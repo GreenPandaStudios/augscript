@@ -143,15 +143,16 @@ const prepareCandidateProject=project=>{
   const used=new Set();
   const visit=directory=>{for(const entry of readdirSync(directory,{withFileTypes:true})){
     const path=join(directory,entry.name);if(entry.isDirectory()&&!entry.name.startsWith('.'))visit(path);
-    else if(entry.name.endsWith('.aug'))writeFileSync(path,readFileSync(path,'utf8').replace(/"https:\/\/github.com\/GreenPandaStudios\/aug-(pytorch|sqlite|zlib|blake3)#v[^"\n]+"/g,(_,name)=>{used.add(name);return name;}));
+    else if(entry.name.endsWith('.aug'))writeFileSync(path,readFileSync(path,'utf8').replace(/"https:\/\/github.com\/GreenPandaStudios\/aug-(pytorch|sqlite|zlib|blake3)#(?:v[^"\n]+|[0-9a-f]{40})"/g,(_,name)=>{used.add(name);return name;}));
   }};visit(project);
   writeFileSync(join(project,'main.yaml'),'packages:\n'+cases.filter(fixture=>used.has(fixture.name)).map(fixture=>'  '+fixture.name+': '+JSON.stringify(fixture.sourceDirectory)).join('\n')+'\n');
 };
-const pytorchRepository=candidateRoot?'pytorch':JSON.stringify('https://github.com/GreenPandaStudios/aug-pytorch#v'+cases.find(fixture=>fixture.name==='pytorch').version);
+const repositoryFor=fixture=>'https://github.com/GreenPandaStudios/aug-'+fixture.name+'#'+(fixture.commit??'v'+(fixture.version??'0.1.1'));
+const pytorchRepository=candidateRoot?'pytorch':JSON.stringify(repositoryFor(cases.find(fixture=>fixture.name==='pytorch')));
 const outcomes=[];
 for(const fixture of cases){
   const project=join(directory,fixture.name);mkdirSync(project);
-  const repository=`https://github.com/GreenPandaStudios/aug-${fixture.name}#v${fixture.version??'0.1.1'}`;
+  const repository=repositoryFor(fixture);
   writeFileSync(join(project,'main.aug'),fixture.source.replace('REPOSITORY',JSON.stringify(repository)));
   prepareCandidateProject(project);
   assert.equal(aug('run',project),fixture.expected);
@@ -208,7 +209,7 @@ for(const fixture of cases){
   const project=join(directory,'gallery-'+fixture.name);
   cpSync(join(root,'examples/native-'+fixture.name),project,{recursive:true,filter:path=>!path.split('/').some(part=>['.aug-build','.aug-packages','node_modules'].includes(part))});
   if(!candidateRoot)for(const name of readdirSync(project).filter(name=>name.endsWith('.aug'))){
-    const path=join(project,name);writeFileSync(path,readFileSync(path,'utf8').replace(/^(import [^\n]+ from )"https:\/\/github.com\/GreenPandaStudios\/aug-(pytorch|sqlite|zlib|blake3)#v[^"\n]+"/gm,(_,prefix,library)=>prefix+JSON.stringify('https://github.com/GreenPandaStudios/aug-'+library+'#v'+cases.find(fixture=>fixture.name===library).version)));
+    const path=join(project,name);writeFileSync(path,readFileSync(path,'utf8').replace(/^(import [^\n]+ from )"https:\/\/github.com\/GreenPandaStudios\/aug-(pytorch|sqlite|zlib|blake3)#(?:v[^"\n]+|[0-9a-f]{40})"/gm,(_,prefix,library)=>prefix+JSON.stringify(repositoryFor(cases.find(fixture=>fixture.name===library)))));
   }
   prepareCandidateProject(project);
   aug('install',project);aug('check',project);aug('spec',project);aug('spec',project,'--check');

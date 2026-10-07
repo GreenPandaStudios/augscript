@@ -507,7 +507,9 @@
         "TestName",
         "TestPattern"
       ],
-      "cases": [],
+      "cases": [
+        "same-file-tests"
+      ],
       "regressions": [
         {
           "file": "tests/approved-design.test.mjs",
@@ -523,7 +525,9 @@
         "Endpoint",
         "PolicyOption"
       ],
-      "cases": [],
+      "cases": [
+        "http-wire-cases"
+      ],
       "regressions": [
         {
           "file": "tests/web-testing.test.mjs",
@@ -536,7 +540,9 @@
       "summary": "Components escape text and attributes and check deferred HTTP actions.",
       "reference": "web.md",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "html-escaping"
+      ],
       "regressions": [
         {
           "file": "tests/web-foundation.test.mjs",
@@ -1018,7 +1024,11 @@
       "summary": "Records, destructuring, snapshot iteration and checked matching run natively.",
       "reference": "reference.md#types-labels-and-generics",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "records",
+        "collections",
+        "closed-choices"
+      ],
       "regressions": [
         {
           "file": "tests/approved-design.test.mjs",
@@ -1031,7 +1041,10 @@
       "summary": "Stateful DI is fresh by default, scopes cache locally, and compositions are imported explicitly.",
       "reference": "reference.md#types-labels-and-generics",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "dependency-scopes",
+        "internal-composition"
+      ],
       "regressions": [
         {
           "file": "tests/approved-design.test.mjs",
@@ -1057,7 +1070,11 @@
       "summary": "Ownership rejects alias overlap, escaping loans, and moves on loop re-entry.",
       "reference": "reference.md#types-labels-and-generics",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "alias-read",
+        "task-loop-retains-borrow",
+        "move-use"
+      ],
       "regressions": [
         {
           "file": "tests/approved-design.test.mjs",
@@ -1083,7 +1100,10 @@
       "summary": "Indented declarations, constructor bodies, interceptors and same-file tests compile.",
       "reference": "reference.md#types-labels-and-generics",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "interceptor-injected-constructor",
+        "same-file-tests"
+      ],
       "regressions": [
         {
           "file": "tests/approved-design.test.mjs",
@@ -1096,7 +1116,9 @@
       "summary": "Generic constraints permit interface methods and explicit checked variance permits producers.",
       "reference": "reference.md#types-labels-and-generics",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "interfaces"
+      ],
       "regressions": [
         {
           "file": "tests/approved-design.test.mjs",
@@ -1109,7 +1131,9 @@
       "summary": "Non-null branches, short-circuit conditions and early return guards narrow local values.",
       "reference": "reference.md#types-labels-and-generics",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "optional-guards"
+      ],
       "regressions": [
         {
           "file": "tests/approved-design.test.mjs",
@@ -1122,7 +1146,9 @@
       "summary": "Explicit capabilities and header DI forward dependencies through class and function calls.",
       "reference": "reference.md#types-labels-and-generics",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "capabilities"
+      ],
       "regressions": [
         {
           "file": "tests/approved-design.test.mjs",
@@ -1135,7 +1161,9 @@
       "summary": "Declared mutation and private storage use public constructor labels and caller borrow.",
       "reference": "reference.md#types-labels-and-generics",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "inferred-contracts"
+      ],
       "regressions": [
         {
           "file": "tests/approved-design.test.mjs",
@@ -1200,7 +1228,9 @@
       "summary": "Public bodies infer forward generic results, capabilities and escaping errors; specs and hints agree.",
       "reference": "reference.md#types-labels-and-generics",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "inferred-contracts"
+      ],
       "regressions": [
         {
           "file": "tests/inferred-contracts.test.mjs",
@@ -1213,7 +1243,10 @@
       "summary": "Mutation inference follows aliases and calls while managed access and pure interfaces stay checked.",
       "reference": "reference.md#types-labels-and-generics",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "inferred-contracts",
+        "readonly-write"
+      ],
       "regressions": [
         {
           "file": "tests/inferred-contracts.test.mjs",
@@ -1226,7 +1259,10 @@
       "summary": "Recursive results need an anchor and inferred results still require all paths to return.",
       "reference": "reference.md#types-labels-and-generics",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "inference-recursive-unanchored",
+        "inference-partial-return"
+      ],
       "regressions": [
         {
           "file": "tests/inferred-contracts.test.mjs",
@@ -1265,7 +1301,9 @@
       "summary": "Concise contracts compile to native C, preserve mutation, checked errors and generic values.",
       "reference": "reference.md#types-labels-and-generics",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "inferred-contracts"
+      ],
       "regressions": [
         {
           "file": "tests/inferred-contracts.test.mjs",
@@ -1278,7 +1316,9 @@
       "summary": "A forwarding interceptor infers the target result independently for each application.",
       "reference": "reference.md#types-labels-and-generics",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "interceptor-generic-dispatch"
+      ],
       "regressions": [
         {
           "file": "tests/inferred-contracts.test.mjs",
@@ -1317,7 +1357,10 @@
       "summary": "Inherited default bodies and nested interceptor errors participate in the inference fixed point.",
       "reference": "reference.md#types-labels-and-generics",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "interceptor-generic-dispatch",
+        "interceptor-short-circuit"
+      ],
       "regressions": [
         {
           "file": "tests/inferred-contracts.test.mjs",
@@ -1330,7 +1373,10 @@
       "summary": "Empty result literals need an anchor; other returns can supply their item type.",
       "reference": "reference.md#types-labels-and-generics",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "inferred-empty-list",
+        "inferred-unanchored-empty"
+      ],
       "regressions": [
         {
           "file": "tests/inferred-contracts.test.mjs",
@@ -1343,7 +1389,9 @@
       "summary": "Pure local synchronized storage needs no artificial effect clause.",
       "reference": "reference.md#types-labels-and-generics",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "inferred-empty-list"
+      ],
       "regressions": [
         {
           "file": "tests/inferred-contracts.test.mjs",
@@ -1369,7 +1417,9 @@
       "summary": "Constructor interceptor failure releases the completed object and its owned fields before catch.",
       "reference": "reference.md#interceptors",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "interceptor-constructor-cleanup"
+      ],
       "regressions": [
         {
           "file": "tests/interceptors.test.mjs",
@@ -1382,7 +1432,10 @@
       "summary": "Interceptor layers enter in order, map subsets, override inputs, and unwind results.",
       "reference": "reference.md#interceptors",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "interceptor-order-and-mapping",
+        "interceptor-repeated-next"
+      ],
       "regressions": [
         {
           "file": "tests/interceptors.test.mjs",
@@ -1395,7 +1448,9 @@
       "summary": "Next without overrides preserves original arguments even after parameter reassignment.",
       "reference": "reference.md#interceptors",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "interceptor-original-inputs"
+      ],
       "regressions": [
         {
           "file": "tests/interceptors.test.mjs",
@@ -1408,7 +1463,9 @@
       "summary": "Generic interceptors wrap constructors, methods, void calls, and default interface dispatch.",
       "reference": "reference.md#interceptors",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "interceptor-generic-dispatch"
+      ],
       "regressions": [
         {
           "file": "tests/interceptors.test.mjs",
@@ -1421,7 +1478,9 @@
       "summary": "Constructor interceptor dependencies participate in eager DI ordering.",
       "reference": "reference.md#interceptors",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "interceptor-injected-constructor"
+      ],
       "regressions": [
         {
           "file": "tests/interceptors.test.mjs",
@@ -1434,7 +1493,9 @@
       "summary": "A fresh interceptor instance is created for each invocation.",
       "reference": "reference.md#interceptors",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "interceptor-fresh-instance"
+      ],
       "regressions": [
         {
           "file": "tests/interceptors.test.mjs",
@@ -1447,7 +1508,9 @@
       "summary": "A processor can short circuit without calling its target.",
       "reference": "reference.md#interceptors",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "interceptor-short-circuit"
+      ],
       "regressions": [
         {
           "file": "tests/interceptors.test.mjs",
@@ -1460,7 +1523,10 @@
       "summary": "Interceptor errors are checked on functions and constructor calls.",
       "reference": "reference.md#interceptors",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "interceptor-checked-failures",
+        "interceptor-unhandled-failure"
+      ],
       "regressions": [
         {
           "file": "tests/interceptors.test.mjs",
@@ -1473,7 +1539,9 @@
       "summary": "Next errors can be handled by an interceptor.",
       "reference": "reference.md#interceptors",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "interceptor-short-circuit"
+      ],
       "regressions": [
         {
           "file": "tests/interceptors.test.mjs",
@@ -1486,7 +1554,9 @@
       "summary": "Incompatible labels, mappings, results, and next overrides fail before C compilation.",
       "reference": "reference.md#interceptors",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "interceptor-invalid-mapping"
+      ],
       "regressions": [
         {
           "file": "tests/interceptors.test.mjs",
@@ -1499,7 +1569,9 @@
       "summary": "Owned inputs are forwarded once or dropped on short circuit.",
       "reference": "reference.md#interceptors",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "interceptor-owned-inputs"
+      ],
       "regressions": [
         {
           "file": "tests/interceptors.test.mjs",
@@ -1512,7 +1584,9 @@
       "summary": "Using a moved interceptor input after next is a compile error.",
       "reference": "reference.md#interceptors",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "interceptor-moved-input"
+      ],
       "regressions": [
         {
           "file": "tests/interceptors.test.mjs",
@@ -1525,7 +1599,9 @@
       "summary": "Interceptor errors must respect implemented interface contracts.",
       "reference": "reference.md#interceptors",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "interceptor-interface-error"
+      ],
       "regressions": [
         {
           "file": "tests/interceptors.test.mjs",
@@ -1538,7 +1614,10 @@
       "summary": "Interceptors import and export normally, and private interceptors stay file scoped.",
       "reference": "reference.md#interceptors",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "interceptor-export",
+        "interceptor-private-import"
+      ],
       "regressions": [
         {
           "file": "tests/interceptors.test.mjs",
@@ -1551,7 +1630,10 @@
       "summary": "Annotated native functions retain the unsafe requirement and wrap the native call.",
       "reference": "reference.md#interceptors",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "interceptor-native",
+        "interceptor-native-unsafe"
+      ],
       "regressions": [
         {
           "file": "tests/interceptors.test.mjs",
@@ -1564,7 +1646,9 @@
       "summary": "Generic inferred and explicit interceptor inputs work with nested collection types.",
       "reference": "reference.md#interceptors",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "interceptor-generic-inputs"
+      ],
       "regressions": [
         {
           "file": "tests/interceptors.test.mjs",
@@ -1577,7 +1661,9 @@
       "summary": "Owned return contracts survive an interceptor chain.",
       "reference": "reference.md#interceptors",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "interceptor-owned-return"
+      ],
       "regressions": [
         {
           "file": "tests/interceptors.test.mjs",
@@ -1590,7 +1676,9 @@
       "summary": "Interceptor constructor DI cycles are rejected.",
       "reference": "reference.md#interceptors",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "interceptor-di-cycle"
+      ],
       "regressions": [
         {
           "file": "tests/interceptors.test.mjs",
@@ -1603,7 +1691,9 @@
       "summary": "Generic interceptor inputs infer interface arguments from concrete classes.",
       "reference": "reference.md#interceptors",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "interceptor-generic-inputs"
+      ],
       "regressions": [
         {
           "file": "tests/interceptors.test.mjs",
@@ -1616,7 +1706,9 @@
       "summary": "Transparent constructor interception preserves a fresh result for ownership.",
       "reference": "reference.md#interceptors",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "interceptor-owned-return"
+      ],
       "regressions": [
         {
           "file": "tests/interceptors.test.mjs",
@@ -1629,7 +1721,9 @@
       "summary": "Constructor interception returning an existing input cannot claim fresh ownership.",
       "reference": "reference.md#interceptors",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "interceptor-owned-alias"
+      ],
       "regressions": [
         {
           "file": "tests/interceptors.test.mjs",
@@ -1642,7 +1736,9 @@
       "summary": "Nonvoid around bodies must return or throw on every path.",
       "reference": "reference.md#interceptors",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "interceptor-partial-return"
+      ],
       "regressions": [
         {
           "file": "tests/interceptors.test.mjs",
@@ -1655,7 +1751,9 @@
       "summary": "Constructor and interceptor roots survive repeated garbage collection.",
       "reference": "reference.md#interceptors",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "interceptor-root-pressure"
+      ],
       "regressions": [
         {
           "file": "tests/interceptors.test.mjs",
@@ -1668,7 +1766,9 @@
       "summary": "Around resolve parameters use DI and are omitted from argument mappings.",
       "reference": "reference.md#interceptors",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "interceptor-injected-constructor"
+      ],
       "regressions": [
         {
           "file": "tests/interceptors.test.mjs",
@@ -1681,7 +1781,9 @@
       "summary": "Private interceptor declarations cannot be imported or exported.",
       "reference": "reference.md#interceptors",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "interceptor-private-import"
+      ],
       "regressions": [
         {
           "file": "tests/interceptors.test.mjs",
@@ -1694,7 +1796,9 @@
       "summary": "Two next labels cannot override one target argument.",
       "reference": "reference.md#interceptors",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "interceptor-overlapping-next-labels"
+      ],
       "regressions": [
         {
           "file": "tests/interceptors.test.mjs",
@@ -1709,7 +1813,10 @@
       "productions": [
         "Error"
       ],
-      "cases": [],
+      "cases": [
+        "interceptor-short-circuit",
+        "record-copy-validation"
+      ],
       "regressions": [
         {
           "file": "tests/ergonomics-language.test.mjs",
@@ -1722,7 +1829,9 @@
       "summary": "List indexing is checked; Map indexing is optional; Tuple positions are constant.",
       "reference": "reference.md",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "indexing-and-remainder"
+      ],
       "regressions": [
         {
           "file": "tests/ergonomics-language.test.mjs",
@@ -1765,7 +1874,9 @@
       "summary": "Scalar interpolation evaluates in source order and preserves Unicode text rules.",
       "reference": "reference.md",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "interpolation-order"
+      ],
       "regressions": [
         {
           "file": "tests/ergonomics-language.test.mjs",
@@ -1778,7 +1889,9 @@
       "summary": "Integer remainder checks zero and defines the signed-minimum edge.",
       "reference": "reference.md",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "indexing-and-remainder"
+      ],
       "regressions": [
         {
           "file": "tests/ergonomics-language.test.mjs",
@@ -1791,7 +1904,9 @@
       "summary": "Text helpers keep Unicode units explicit and parse bounded numbers strictly.",
       "reference": "reference.md",
       "productions": [],
-      "cases": [],
+      "cases": [
+        "strict-text-helpers"
+      ],
       "regressions": [
         {
           "file": "tests/ergonomics-language.test.mjs",
@@ -1855,7 +1970,9 @@
       "productions": [
         "Comprehension"
       ],
-      "cases": [],
+      "cases": [
+        "comprehension-order"
+      ],
       "regressions": [
         {
           "file": "tests/comprehensions.test.mjs",

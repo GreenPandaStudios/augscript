@@ -1,5 +1,5 @@
 // aug-spec: "database.aug.md" explains this file. Read it before changes; refresh with aug spec.
-import Database and SqliteError and openMemory and execute and queryScalar from "https://github.com/GreenPandaStudios/aug-sqlite#v0.1.5"
+import Database and SqliteError and openMemory and execute and queryScalar from "https://github.com/GreenPandaStudios/aug-sqlite#43d8c33289b6b9310199f8c65fb83d48cd9dc310"
 
 /** Store a bound value in an in-memory SQLite database and read it back. */
 storedName() returns string unless SqliteError:

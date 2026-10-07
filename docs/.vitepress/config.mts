@@ -1,3 +1,4 @@
+import {writeWikiNotices, rejectBuildOnlyWikiInputs} from '../../scripts/wiki-notices.mjs';
 import {sourceNavigationTransformer} from './source-navigation.mjs';
 import {standardLibraryModules} from '../../src/library-modules.ts';
 import { defineConfig } from 'vitepress';
@@ -18,9 +19,11 @@ export default defineConfig({
   head: [['link', {rel: 'icon', type: 'image/svg+xml', href: (process.env.AUG_DOCS_BASE ?? '/augscript/') + 'brand/favicon.svg'}]],
   lastUpdated: true,
   buildEnd(site) {
+    writeWikiNotices(root, site.outDir);
     for (const file of ['benchmark-results.json', 'benchmark-baseline.json', 'benchmarks.json', 'greeting-results.json', 'kernel-results.json', 'gym-results.json', 'dgx-performance.json', 'dgx-kernels.json', 'dgx-gyms.json', 'dgx-consumers.json', 'release-macos-public-consumers.json', 'release-dgx-public-consumers.json', 'ci-linux-arm64-qualified.json.gz', 'ci-linux-arm64-rejected.json.gz', 'ci-linux-arm64-repeat.json.gz'])
       copyFileSync(resolve(root, 'docs', file), resolve(site.outDir, file));
   },
+  vite: {plugins: [{name: 'august-wiki-build-only-inputs', generateBundle(_options, bundle) {rejectBuildOnlyWikiInputs(bundle);}}]},
   sitemap: { hostname: 'https://GreenPandaStudios.github.io/augscript/' },
   markdown: {
     codeTransformers: [sourceNavigationTransformer],
@@ -112,7 +115,8 @@ export default defineConfig({
         { text: 'Safety gyms', link: '/safety-gyms' },
         { text: 'DGX Spark results', link: '/dgx-spark' },
         { text: 'Roadmap to 1.0', link: '/roadmap' }, { text: 'Compatibility', link: '/compatibility' },
-        { text: 'Library gaps', link: '/web-library-gaps' }
+        { text: 'Library gaps', link: '/web-library-gaps' },
+        { text: 'Licenses', link: '/licenses' }
       ]},
       { text: 'Contribute', collapsed: true, items: [
         { text: 'Release process', link: '/releasing' },
@@ -126,6 +130,6 @@ export default defineConfig({
     ],
     editLink: { pattern: `${repo}/edit/main/docs/:path`, text: 'Edit this page on GitHub' },
     socialLinks: [{ icon: 'github', link: repo }],
-    footer: { message: 'The world runs on language', copyright: 'MIT · August contributors' }
+    footer: { message: 'The world runs on language', copyright: `MIT · August contributors · <a href="${process.env.AUG_DOCS_BASE ?? '/augscript/'}licenses">Licenses</a>` }
   }
 });

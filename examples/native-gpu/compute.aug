@@ -1,5 +1,5 @@
 // aug-spec: "compute.aug.md" explains this file. Read it before changes; refresh with aug spec.
-import Device and Buffer and openDevice and upload and add and download from "https://github.com/GreenPandaStudios/aug-gpu#v0.1.1"
+import Device and Buffer and openDevice and upload and add and download from "https://github.com/GreenPandaStudios/aug-gpu#ebc288b8d88b30213715bdbcd3d4647ff81a5462"
 
 /** Add two lists on a GPU and return copied values. GPU resources stay local. */
 calculate(List<float> left, List<float> right) returns List<float>:

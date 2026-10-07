@@ -47,9 +47,9 @@ flowchart LR
 
 | From | To | Operation and inputs | Result |
 | --- | --- | --- | --- |
-| app | August libraries | [Console.write](../august/0.23.0/io/contracts.aug.md#symbol-Console.write) · value: int · interface dispatch | void |
+| app | August libraries | [Console.write](../august/1.0.0/io/contracts.aug.md#symbol-Console.write) · value: int · interface dispatch | void |
 | interceptors | logging | [Logger.log](../../logging.aug.md#symbol-Logger.log) · message: string · interface dispatch | void |
-| logging | August libraries | [Console.write](../august/0.23.0/io/contracts.aug.md#symbol-Console.write) · value: string · interface dispatch | void |
+| logging | August libraries | [Console.write](../august/1.0.0/io/contracts.aug.md#symbol-Console.write) · value: string · interface dispatch | void |
 | Startup | app | [Greeter](../../app.aug.md#symbol-Greeter) · name: string | Greeter |
 | Startup | app | [Greeter.greet](../../app.aug.md#symbol-Greeter.greet) | string |
 | Startup | app | [describe](../../app.aug.md#symbol-describe) · x: int, label: string | string |

@@ -1,3 +1,4 @@
+import {compilerVersion} from '../src/compiler-version.ts';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {mkdtempSync,writeFileSync,readFileSync,mkdirSync,rmSync,symlinkSync,chmodSync,cpSync,realpathSync,lstatSync} from 'node:fs';
@@ -161,7 +162,7 @@ test check { when external { it reads {
 
 
 test('accepted managed package source and configuration identities invalidate reuse through ordinary imports',()=>fixture(f=>{
- const library=join(f.root,'library');mkdirSync(library);writeFileSync(join(library,'aug-package.json'),JSON.stringify({format:1,name:'@test/aug-value',version:'0.1.0',compiler:'>=0.23.0 <1.0.0',source:'.'}));
+ const library=join(f.root,'library');mkdirSync(library);writeFileSync(join(library,'aug-package.json'),JSON.stringify({format:1,name:'@test/aug-value',version:'0.1.0',compiler:`>=${compilerVersion()} <${Number(compilerVersion().split('.')[0])+1}.0.0`,source:'.'}));
  writeFileSync(join(library,'export.aug'),'export value from api\n');writeFileSync(join(library,'api.aug'),'value() { return 7 }\n');
  writeFileSync(join(f.project,'main.yaml'),'packages:\n  values: "../library"\n');writeFileSync(join(f.project,'counter.aug'),'import value from values\ncheck() { pass }\ntest check { when imported { it reads { assert(value() == 7); print(value="imported") } } }\n');
  const install=()=>{const installed=spawnSync(process.execPath,[cli,'install',f.project,'--offline'],{encoding:'utf8'});assert.equal(installed.status,0,installed.stderr);};

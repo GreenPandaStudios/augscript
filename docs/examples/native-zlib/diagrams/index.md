@@ -40,8 +40,8 @@ flowchart LR
 
 | From | To | Operation and inputs | Result |
 | --- | --- | --- | --- |
-| compression | @greenpandastudios/aug-zlib | [compress](../dependencies/packages/%40greenpandastudios/aug-zlib/0.1.5/api.md#symbol-compress) · input: Bytes | Bytes |
-| compression | @greenpandastudios/aug-zlib | [decompress](../dependencies/packages/%40greenpandastudios/aug-zlib/0.1.5/api.md#symbol-decompress) · input: Bytes, maximumOutput: int | Bytes |
+| compression | @greenpandastudios/aug-zlib | [compress](../dependencies/packages/%40greenpandastudios/aug-zlib/0.2.0/api.md#symbol-compress) · input: Bytes | Bytes |
+| compression | @greenpandastudios/aug-zlib | [decompress](../dependencies/packages/%40greenpandastudios/aug-zlib/0.2.0/api.md#symbol-decompress) · input: Bytes, maximumOutput: int | Bytes |
 | Startup | compression | [roundTrip](../compression.md#symbol-roundTrip) | Bytes |
 
 :::

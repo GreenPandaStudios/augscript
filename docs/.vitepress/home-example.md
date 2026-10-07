@@ -73,7 +73,7 @@ int main(void) {
 ::: benchmark-chart greetings
 :::
 
-On Apple M5, August takes **1023.91 ms** and C takes **971.61 ms** (median of 30 runs after 3 warmups). Both programs use release optimization, write to a file, and flush each line. Every run must produce the same 20 MB output. The times include process startup and file I/O.
+August 1.0.0 on Apple M5 takes **1023.47 ms** and C takes **977.46 ms** (median of 30 runs after 3 warmups). Both programs use release optimization, write to a file, and flush each line. Every run must produce the same 20 MB output. The times include process startup and file I/O.
 
 The [performance reports](performance.md) compare more programs: integer loops, collections, JSON, and HTTP. Results vary by workload; use the sources to build a comparison for your own application.
 

@@ -2,14 +2,14 @@
 
 # `hashing.aug`
 
-<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=85e9e1e2429ec565e7cc5d8dcf1105cbd14b9605972454a0c8d89b45e32e6533 -->
+<!-- August spec revision: schema=1 compiler=1.0.0 source-sha256=edb5da1c7cbad03a427d0a81e51da0e6ae9a25635609cdd3492d6c4e649a1944 -->
 
 [Interactions and sequences](hashing.aug.diagrams.md)
 
 <a id="symbol-hashText"></a>
 ## `hashText` · [source](hashing.aug#L5)
 
-Hash UTF-8 text with the real Rust BLAKE3 implementation. It takes `value` as a string. It returns [`hash`](.aug-spec/packages/%40greenpandastudios/aug-blake3/0.1.5/api.aug.md#symbol-hash) with `input` from the UTF-8 bytes of `value`. [source](hashing.aug#L6)
+Hash UTF-8 text with the real Rust BLAKE3 implementation. It takes `value` as a string. It returns [`hash`](.aug-spec/packages/%40greenpandastudios/aug-blake3/0.2.0/api.aug.md#symbol-hash) with `input` from the UTF-8 bytes of `value`. [source](hashing.aug#L6)
 
 <details>
 <summary>Checked interface</summary>
@@ -18,7 +18,7 @@ Hash UTF-8 text with the real Rust BLAKE3 implementation. It takes `value` as a 
 hashText(string value) returns string unless HashError
 ```
 
-It takes `value` as a string. Failures can raise [`HashError`](.aug-spec/packages/%40greenpandastudios/aug-blake3/0.1.5/contracts.aug.md#symbol-HashError).
+It takes `value` as a string. Failures can raise [`HashError`](.aug-spec/packages/%40greenpandastudios/aug-blake3/0.2.0/contracts.aug.md#symbol-HashError).
 
 </details>
 
@@ -35,6 +35,6 @@ The test requires [`hashText`](hashing.aug.md#symbol-hashText) with `value` `"ab
 
 ## Dependencies
 
-It uses [`hash`](.aug-spec/packages/%40greenpandastudios/aug-blake3/0.1.5/api.aug.md#symbol-hash) and [`HashError`](.aug-spec/packages/%40greenpandastudios/aug-blake3/0.1.5/contracts.aug.md#symbol-HashError) from `https://github.com/GreenPandaStudios/aug-blake3#v0.1.5`.
+It uses [`hash`](.aug-spec/packages/%40greenpandastudios/aug-blake3/0.2.0/api.aug.md#symbol-hash) and [`HashError`](.aug-spec/packages/%40greenpandastudios/aug-blake3/0.2.0/contracts.aug.md#symbol-HashError) from `https://github.com/GreenPandaStudios/aug-blake3#e9f7b92d98a2f9c36de530f4dfc1740012fb5e5e`.
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).

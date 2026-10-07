@@ -1,12 +1,12 @@
 # Compatibility and supported platforms
 
-August 0.23.0 is a preview. Its supported platforms are listed below. The proposed 1.0 policy explains which language rules, commands, and package formats will become stable; the [roadmap](roadmap.md) lists the work needed before that commitment.
+This page defines the compatibility contract for August 1.x. It takes effect when the qualified 1.0.0 stable release is published. The current published release, 0.23.0, remains a preview; [the roadmap](roadmap.md) records candidate evidence and remaining publication gates.
 
 The [ownership and task conformance page](language-conformance.md) records checked preview behavior for moves, aliasing, cleanup, cancellation, and delayed errors.
 
 ## What a 1.0 release will keep stable
 
-| Area | Proposed 1.x guarantee |
+| Area | 1.x contract |
 | --- | --- |
 | August source | Accepted syntax, import visibility, labeled calls, types, ownership, effects, checked errors, tasks, and same-file tests keep their documented meaning through 1.x. Minor releases can add syntax or APIs. |
 | CLI and project files | Documented `aug` commands, `main.yaml` keys, `aug-package.json`, and `aug.lock.json` retain compatible reading within 1.x. New fields have defaults; removing or changing a field requires a major release. |
@@ -32,11 +32,11 @@ Rebuild native executables and private dependencies for the target platform afte
 
 | Target | Preview evidence | 1.0 support decision |
 | --- | --- | --- |
-| macOS 14+ ARM64 | Installed CLI and real public native libraries pass on macOS 14 with Xcode and Command Line Tools removed. | Candidate; every release must repeat language, debugger, sanitizer, performance and consumer gates. |
-| GNU/Linux ARM64, glibc 2.36+ | Debian 12 CI runs LLVM language/runtime regressions and public imports in a consumer image without compilers, Git or headers. A [physical DGX Spark](dgx-spark.md) passed parity, safety gyms, benchmarks and real library imports. | Candidate; qualify each compiler candidate and deployment bundle. |
-| GNU/Linux x86-64, glibc 2.36+ | The same Debian 12 CI and clean-consumer profile passes on native x86-64 runners. | Candidate; qualify each compiler candidate and deployment bundle. |
-| Windows and other targets | No full native verification. | Outside the proposed 1.0 support matrix. |
+| macOS 14+ ARM64 | Installed CLI and real public native libraries pass on macOS 14 with Xcode and Command Line Tools removed. | Selected for 1.0; every release repeats language, debugger, sanitizer, performance and consumer gates. |
+| GNU/Linux ARM64, glibc 2.36+ | Debian 12 CI runs LLVM language/runtime regressions and public imports in a consumer image without compilers, Git or headers. A [physical DGX Spark](dgx-spark.md) passed parity, safety gyms, benchmarks and real library imports. | Selected for 1.0; qualify each compiler candidate and deployment bundle. |
+| GNU/Linux x86-64, glibc 2.36+ | The same Debian 12 CI and clean-consumer profile passes on native x86-64 runners. | Selected for 1.0; qualify each compiler candidate and deployment bundle. |
+| Windows and other targets | No full native verification. | Outside the 1.0 support matrix. |
 
 The 0.23.0 consumer workflow requires Node.js 24+ and a supported host. August downloads its pinned compiler/runtime and package artifacts; consumers do not install Clang, LLVM or an SDK. Explicit C reference builds and binding authoring require their [maintainer tools](tooling.md). Musl, Windows and cross compilation are outside this profile. Cooperative tasks share their current thread and heap. Worker tasks run on OS threads with isolated heaps and copied inputs and results. HTTP and OIDC library conformance is tracked separately in the [web and crypto gap ledger](web-library-gaps.md); that library work is tracked separately from the core language's 1.0 requirements.
 
-The 1.0 support matrix becomes a commitment only after each candidate target has green CI, installed-package and native integration tests, dependency/license review, and a documented update path. See [production readiness](production-readiness.md) for present limits.
+All three selected hosts passed candidate qualification. The final source and assembled artifacts must repeat CI, installed-package and native integration gates before stable publication; dependency/license review and the documented update path remain release requirements. See [production readiness](production-readiness.md) for present limits.

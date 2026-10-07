@@ -1,0 +1,184 @@
+{
+  "format": 1,
+  "sourceCommit": "bcdd157927f489645301ced4f9c4d8ac4c003d59",
+  "workflowRun": 37548152499,
+  "host": "linux-arm64",
+  "scope": "Pre-tag candidate archive and retained workflow evidence; final tagged producers repeat qualification. Not a general safety certification.",
+  "archive": {
+    "url": "https://github.com/GreenPandaStudios/augscript/releases/download/v1.0.0/aug-llvm-linux-arm64.tar.gz",
+    "sha256": "2ee6e3e11cdb6c147108a945c56ca9562c4c5f92c8583b0ad98cb01b8be2f1a5",
+    "maximumDownloadBytes": 441878498,
+    "maximumUnpackedBytes": 877806673,
+    "fileManifest": "files.json",
+    "fileManifestSha256": "52197c8eba32fd3f5c79734fc270a0d0a70d053732e8c1e3057ae5c66b8f4ec5"
+  },
+  "filesVerified": 123,
+  "runtimeInputProvenance": {
+    "recordedButIntentionallyNotDeployed": [
+      "lib/libgomp.so.1",
+      "lib/libstdc++.so.6"
+    ],
+    "retainedRecipeMatchesCanonical": true,
+    "limit": "These two provenance entries describe build inputs. Their binary output hashes are not independently verified by this archive audit because those binaries are not shipped in the runtime. Every deployed runtime.json and component member is verified."
+  },
+  "gcc": {
+    "compiler": {
+      "identity": {
+        "format": 1,
+        "architecture": "arm64",
+        "compiler": "12.2.0",
+        "cCompiler": "12.2.0",
+        "target": "aarch64-linux-gnu",
+        "sourceSha256": "b8298be16aeeb96a889c6afed0a8e2241b47452e89cc81fe65ea849d5c740fcb",
+        "originalLibrarySha256": "532f3a12d7b8fef6cc7a064ea106b6c4ab2365674b73e743e4a385d4ffb6c8ab",
+        "patchSha256": "e1b0ba173860d3f0c3a468e166328b2f2acc05938726cf752c5e1ae2bc3fe261",
+        "testSha256": "9db8b72822f75033e5c89367f31d1e1e27634626463c60905448d9aea490c312",
+        "recipeSha256": "512ec3840084266d506014a8a8e218f23460396170c6621d7920f595cfe27aa3"
+      },
+      "librarySha256": "a2e313df5a6e0fc41942e67ab1e3dd65bd1a13db7c3532dde731d13b17806d67",
+      "requiredDynamicExports": 5974,
+      "providedDynamicExports": 5974,
+      "requiredVersionedExports": 5928,
+      "minimumLibc": "2.36",
+      "regressionPassed": true,
+      "correction": {
+        "advisory": "CVE-2026-95619",
+        "upstreamCommit": "59d235ffa5a69231eb42e5290d52dc8c90d28b7a",
+        "upstream": "https://github.com/gcc-mirror/gcc/commit/59d235ffa5a69231eb42e5290d52dc8c90d28b7a"
+      }
+    },
+    "runtime": {
+      "identity": {
+        "format": 1,
+        "architecture": "arm64",
+        "compiler": "12.2.0",
+        "cCompiler": "12.2.0",
+        "target": "aarch64-linux-gnu",
+        "sourceSha256": "b8298be16aeeb96a889c6afed0a8e2241b47452e89cc81fe65ea849d5c740fcb",
+        "originalLibrarySha256": "532f3a12d7b8fef6cc7a064ea106b6c4ab2365674b73e743e4a385d4ffb6c8ab",
+        "patchSha256": "e1b0ba173860d3f0c3a468e166328b2f2acc05938726cf752c5e1ae2bc3fe261",
+        "testSha256": "9db8b72822f75033e5c89367f31d1e1e27634626463c60905448d9aea490c312",
+        "recipeSha256": "512ec3840084266d506014a8a8e218f23460396170c6621d7920f595cfe27aa3"
+      },
+      "librarySha256": "d5146c93fda47c96312fa7b75d447e10f8a6e2efd7433d2b37e032663d35ae0b",
+      "requiredDynamicExports": 5974,
+      "providedDynamicExports": 5974,
+      "requiredVersionedExports": 5928,
+      "minimumLibc": "2.36",
+      "regressionPassed": true,
+      "correction": {
+        "advisory": "CVE-2026-95619",
+        "upstreamCommit": "59d235ffa5a69231eb42e5290d52dc8c90d28b7a",
+        "upstream": "https://github.com/gcc-mirror/gcc/commit/59d235ffa5a69231eb42e5290d52dc8c90d28b7a"
+      }
+    }
+  },
+  "gnutls": {
+    "librarySha256": "4b5b909ec6310b180d05f91be045b8804916f4653f907e444e550ae71ee452dd",
+    "matchesRetainedSymbolReview": true,
+    "publicExpanderSymbol": false,
+    "limit": "Affected ASN.1 expansion code remains a local symbol; absence from public bindings is not code removal."
+  },
+  "soak": {
+    "seconds": [
+      1800.011151543
+    ],
+    "quiescentLiveBlocks": 0,
+    "quiescentLiveBytes": 0
+  },
+  "checks": {
+    "publicNativePackages": [
+      {
+        "package": "pytorch",
+        "repository": "https://github.com/GreenPandaStudios/aug-pytorch#e2b74b1968fb11972e260ef3796a1cd849c1f702",
+        "commit": "e2b74b1968fb11972e260ef3796a1cd849c1f702",
+        "artifactSha256": "b5991acfad3ab45adffac749dd3dda2bea746835b83335914ee0cfff1c3d6d60",
+        "stdout": "5\n7\n9\n21\n",
+        "urlImport": true,
+        "namedAlias": true,
+        "frozenOffline": true,
+        "relocatedBundle": true,
+        "repeatedSpec": true,
+        "backend": "llvm"
+      },
+      {
+        "package": "sqlite",
+        "repository": "https://github.com/GreenPandaStudios/aug-sqlite#43d8c33289b6b9310199f8c65fb83d48cd9dc310",
+        "commit": "43d8c33289b6b9310199f8c65fb83d48cd9dc310",
+        "artifactSha256": "480c6dfb5a257fc7047a28dd2eb6f2e60bbcb90ae4e301083a180744dadea8f2",
+        "stdout": "August\n",
+        "urlImport": true,
+        "namedAlias": true,
+        "frozenOffline": true,
+        "relocatedBundle": true,
+        "repeatedSpec": true,
+        "backend": "llvm"
+      },
+      {
+        "package": "zlib",
+        "repository": "https://github.com/GreenPandaStudios/aug-zlib#fce52e3bf536a304fab82d1d4b95ae425c027be1",
+        "commit": "fce52e3bf536a304fab82d1d4b95ae425c027be1",
+        "artifactSha256": "6da832fa341a1fba96643244da2bb63957107d2b1413743c363fca002e500c66",
+        "stdout": "The world runs on language\n",
+        "urlImport": true,
+        "namedAlias": true,
+        "frozenOffline": true,
+        "relocatedBundle": true,
+        "repeatedSpec": true,
+        "backend": "llvm"
+      },
+      {
+        "package": "blake3",
+        "repository": "https://github.com/GreenPandaStudios/aug-blake3#e9f7b92d98a2f9c36de530f4dfc1740012fb5e5e",
+        "commit": "e9f7b92d98a2f9c36de530f4dfc1740012fb5e5e",
+        "artifactSha256": "69e4de7c1928254c2fb285b0ecd557c4dd1346e9207d0b7ef56e00957caae748",
+        "stdout": "6437b3ac38465133ffb63b75273a8db548c558465d79db03fd359c6cd5bd9d85\n",
+        "urlImport": true,
+        "namedAlias": true,
+        "frozenOffline": true,
+        "relocatedBundle": true,
+        "repeatedSpec": true,
+        "backend": "llvm"
+      }
+    ],
+    "cli-upgrade-qualification-linux-arm64.json": {
+      "passed": true,
+      "baseline": "0.23.0",
+      "candidate": "1.0.0",
+      "frozenOffline": true,
+      "nativeToolsOnPath": false
+    },
+    "worker-consumer-qualification.json": {
+      "passed": true,
+      "compiler": "1.0.0"
+    },
+    "language-conformance.json": {
+      "status": "passed",
+      "passed": true,
+      "compiler": "1.0.0"
+    },
+    "gyms.json": {
+      "status": "passed",
+      "compiler": "1.0.0",
+      "sourceSha256": "03f57b3438303bf660ff216609f74cab94de9e12c3cb9ce624912b60c13266bb"
+    },
+    "kernels.json": {
+      "status": "passed",
+      "compiler": "1.0.0",
+      "sourceSha256": "03f57b3438303bf660ff216609f74cab94de9e12c3cb9ce624912b60c13266bb"
+    },
+    "postgres-qualification.json": {
+      "status": "passed",
+      "compiler": {
+        "compiler": "1.0.0",
+        "sourceSha256": "03f57b3438303bf660ff216609f74cab94de9e12c3cb9ce624912b60c13266bb",
+        "platform": "linux",
+        "architecture": "arm64",
+        "os": "6.17.0-1022-azure",
+        "cpu": "unknown",
+        "node": "v24.21.0",
+        "runtimeSha256": "eb3a4fd1b804da83d468d9eb49bc4e26a59e1532e1bbdcc760fa721ffd75cdbe"
+      }
+    }
+  }
+}

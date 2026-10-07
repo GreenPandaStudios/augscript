@@ -112,7 +112,7 @@ It returns ownership of [`Resource`](resource.md#symbol-Resource).
 ### `consume` · [source](resource.md#source-L15) {#symbol-consume}
 
 ::: spec-paragraph specification-paragraph-3
-It takes `value` as [`Resource`](resource.md#symbol-Resource) with ownership transferred. It gets `console` ([`Console`](dependencies/august/0.23.0/io/contracts.md#symbol-Console)) from dependency injection. It passes `"consumed"` to [`console.write`](dependencies/august/0.23.0/io/contracts.md#symbol-Console.write). [source](resource.md#source-L16)
+It takes `value` as [`Resource`](resource.md#symbol-Resource) with ownership transferred. It gets `console` ([`Console`](dependencies/august/1.0.0/io/contracts.md#symbol-Console)) from dependency injection. It passes `"consumed"` to [`console.write`](dependencies/august/1.0.0/io/contracts.md#symbol-Console.write). [source](resource.md#source-L16)
 :::
 
 ::: details Checked interface
@@ -121,13 +121,13 @@ It takes `value` as [`Resource`](resource.md#symbol-Resource) with ownership tra
 consume(resolve Console console, own Resource value) returns void uses Console.write
 ```
 
-It takes `value` as [`Resource`](resource.md#symbol-Resource) with ownership transferred. It gets `console` ([`Console`](dependencies/august/0.23.0/io/contracts.md#symbol-Console)) from dependency injection.
+It takes `value` as [`Resource`](resource.md#symbol-Resource) with ownership transferred. It gets `console` ([`Console`](dependencies/august/1.0.0/io/contracts.md#symbol-Console)) from dependency injection.
 
 :::
 
 ### Dependencies
 
-It uses [`Console`](dependencies/august/0.23.0/io/contracts.md#symbol-Console) ([`write`](dependencies/august/0.23.0/io/contracts.md#symbol-Console.write)) from `august.io`.
+It uses [`Console`](dependencies/august/1.0.0/io/contracts.md#symbol-Console) ([`write`](dependencies/august/1.0.0/io/contracts.md#symbol-Console.write)) from `august.io`.
 
 ::::
 

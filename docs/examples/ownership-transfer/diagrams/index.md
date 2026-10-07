@@ -42,7 +42,7 @@ flowchart LR
 | --- | --- | --- | --- |
 | Startup | resource | [consume](../resource.md#symbol-consume) · value: own Resource | void |
 | Startup | resource | [make](../resource.md#symbol-make) | own Resource |
-| resource | August libraries | [Console.write](../dependencies/august/0.23.0/io/contracts.md#symbol-Console.write) · value: string · interface dispatch | void |
+| resource | August libraries | [Console.write](../dependencies/august/1.0.0/io/contracts.md#symbol-Console.write) · value: string · interface dispatch | void |
 
 :::
 

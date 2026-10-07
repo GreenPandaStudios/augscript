@@ -2,7 +2,7 @@
 
 # `routes.aug`
 
-<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=341c333a282fdd6acb45d60c8440395563904afeb0276b3ddd43788cfef6da32 -->
+<!-- August spec revision: schema=1 compiler=1.0.0 source-sha256=341c333a282fdd6acb45d60c8440395563904afeb0276b3ddd43788cfef6da32 -->
 
 [Interactions and sequences](routes.aug.diagrams.md)
 

@@ -27,7 +27,7 @@ const lines=[
   'generatedBy: scripts/render-qualification.mjs',
   '---',
   '# Extended performance and safety results','',
-  'These results cover the August '+benchmark.compiler+' preview on **'+benchmark.cpu+'**, '+benchmark.platform+' '+benchmark.os+' '+benchmark.architecture+', recorded '+benchmark.recordedAt.slice(0,10)+'. August uses LLVM '+benchmark.llvm+'. Every measured program produced its expected result. These measurements apply to this host and workload.','',
+  'These results cover August '+benchmark.compiler+' on **'+benchmark.cpu+'**, '+benchmark.platform+' '+benchmark.os+' '+benchmark.architecture+', recorded '+benchmark.recordedAt.slice(0,10)+'. August uses LLVM '+benchmark.llvm+'. Every measured program produced its expected result. These measurements apply to this host and workload.','',
   '## Eight more C comparisons','',
   '::: benchmark-chart kernels',':::','',
   'Each value is the median of '+benchmark.methodology.iterations+' fresh executable processes after '+benchmark.methodology.warmup+' warmups. Order rotates within a separate measurement process. Timings include startup and exclude compilation. Both implementations use O2 without LTO or fast-math. [Raw samples, build times and code sizes](kernel-results.json) also include the same August programs compiled through the C migration backend.','',
@@ -56,7 +56,7 @@ lines.push('',
   '| Additional circuit | Executed tests | Skipped tests | Result |',
   '| --- | ---: | ---: | --- |',
 );
-for(const circuit of gyms.circuits)lines.push('| '+circuit.id+' | '+(circuit.totals.tests===undefined?'4 instrumented programs + LLVM negative control':circuit.totals.pass)+' | '+(circuit.totals.skipped??0)+' | '+circuit.status+' |');
+for(const circuit of gyms.circuits)lines.push('| '+circuit.id+' | '+(circuit.totals.tests===undefined?'LLVM instrumentation + overflow negative control':circuit.totals.pass)+' | '+(circuit.totals.skipped??0)+' | '+circuit.status+' |');
 lines.push('',
   '[The full report](gym-results.json) includes original and faulty source units, inputs, expected and actual results, cleanup counts, compiler source identity and commands. Source mutation includes 5,000 parser cases and 1,000 checker cases. Core sanitizers instrument August LLVM accesses and the C runtime; they do not instrument the interiors of prebuilt foreign libraries or establish a whole-process leak proof.',
   '',

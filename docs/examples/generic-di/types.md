@@ -107,7 +107,7 @@ It implements [`IProgram`](types.md#symbol-IProgram). The `repository` dependenc
 #### `Program.start` · [source](types.md#source-L12) {#symbol-Program.start}
 
 ::: spec-paragraph specification-paragraph-2
-It gets `console` ([`Console`](dependencies/august/0.23.0/io/contracts.md#symbol-Console)) from dependency injection. It passes [`repository.get`](types.md#symbol-Repository.get) to [`console.write`](dependencies/august/0.23.0/io/contracts.md#symbol-Console.write). [source](types.md#source-L13)
+It gets `console` ([`Console`](dependencies/august/1.0.0/io/contracts.md#symbol-Console)) from dependency injection. It passes [`repository.get`](types.md#symbol-Repository.get) to [`console.write`](dependencies/august/1.0.0/io/contracts.md#symbol-Console.write). [source](types.md#source-L13)
 :::
 
 ::: details Checked interface
@@ -116,7 +116,7 @@ It gets `console` ([`Console`](dependencies/august/0.23.0/io/contracts.md#symbol
 start(resolve Console console) returns void uses Console.write
 ```
 
-It gets `console` ([`Console`](dependencies/august/0.23.0/io/contracts.md#symbol-Console)) from dependency injection.
+It gets `console` ([`Console`](dependencies/august/1.0.0/io/contracts.md#symbol-Console)) from dependency injection.
 
 :::
 
@@ -124,11 +124,11 @@ It gets `console` ([`Console`](dependencies/august/0.23.0/io/contracts.md#symbol
 
 #### `IProgram.start` · [source](types.md#source-L17) {#symbol-IProgram.start}
 
-It gets `console` ([`Console`](dependencies/august/0.23.0/io/contracts.md#symbol-Console)) from dependency injection. It can call [`Console.write`](dependencies/august/0.23.0/io/contracts.md#symbol-Console.write).
+It gets `console` ([`Console`](dependencies/august/1.0.0/io/contracts.md#symbol-Console)) from dependency injection. It can call [`Console.write`](dependencies/august/1.0.0/io/contracts.md#symbol-Console.write).
 
 ### Dependencies
 
-It uses [`Console`](dependencies/august/0.23.0/io/contracts.md#symbol-Console) ([`write`](dependencies/august/0.23.0/io/contracts.md#symbol-Console.write)) from `august.io`.
+It uses [`Console`](dependencies/august/1.0.0/io/contracts.md#symbol-Console) ([`write`](dependencies/august/1.0.0/io/contracts.md#symbol-Console.write)) from `august.io`.
 
 ::::
 

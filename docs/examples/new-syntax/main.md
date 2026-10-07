@@ -75,7 +75,7 @@ print(value=count)
 
 ### Providers
 
-`Console` is provided by [`SystemConsole`](dependencies/august/0.23.0/io/contracts.md#symbol-SystemConsole). The same instance is shared. `Logger` is provided by [`ConsoleLogger`](console.md#symbol-ConsoleLogger). The same instance is shared.
+`Console` is provided by [`SystemConsole`](dependencies/august/1.0.0/io/contracts.md#symbol-SystemConsole). The same instance is shared. `Logger` is provided by [`ConsoleLogger`](console.md#symbol-ConsoleLogger). The same instance is shared.
 
 ### Startup
 
@@ -89,7 +89,7 @@ It prints `count`. [source](main.md#source-L13)
 
 ### Dependencies
 
-It uses [`SystemConsole`](dependencies/august/0.23.0/io/contracts.md#symbol-SystemConsole) from `august.io`. It uses [`ConsoleLogger`](console.md#symbol-ConsoleLogger) from `console`. It uses [`Greeter`](greeter.md#symbol-Greeter) ([`greet`](greeter.md#symbol-Greeter.greet)) from `greeter`. It uses [`increment`](math.md#symbol-increment) from `math`.
+It uses [`SystemConsole`](dependencies/august/1.0.0/io/contracts.md#symbol-SystemConsole) from `august.io`. It uses [`ConsoleLogger`](console.md#symbol-ConsoleLogger) from `console`. It uses [`Greeter`](greeter.md#symbol-Greeter) ([`greet`](greeter.md#symbol-Greeter.greet)) from `greeter`. It uses [`increment`](math.md#symbol-increment) from `math`.
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).
 

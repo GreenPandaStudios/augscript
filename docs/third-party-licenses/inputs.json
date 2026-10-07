@@ -1,0 +1,158 @@
+{
+  "schema": 1,
+  "packages": [
+    {
+      "name": "@algolia/autocomplete-core",
+      "version": "1.17.7",
+      "file": "algolia-autocomplete.txt",
+      "sha256": "1e605499213e06118cc81abc00b32bbb33ead185d9b0e190f2662588e8806f02",
+      "source": "https://raw.githubusercontent.com/algolia/autocomplete/8467b7a316ac6030f3e5cce6bdfdaf3068818d73/LICENSE",
+      "sourceIntegrity": "sha512-BjiPOW6ks90UKl7TwMv7oNQMnzU+t/wk9mgIDi6b1tXpUek7MW0lbNOUHpvam9pe3lVCf4xPFT+lK7s+e+fs7Q=="
+    },
+    {
+      "name": "@algolia/autocomplete-plugin-algolia-insights",
+      "version": "1.17.7",
+      "file": "algolia-autocomplete.txt",
+      "sha256": "1e605499213e06118cc81abc00b32bbb33ead185d9b0e190f2662588e8806f02",
+      "source": "https://raw.githubusercontent.com/algolia/autocomplete/8467b7a316ac6030f3e5cce6bdfdaf3068818d73/LICENSE",
+      "sourceIntegrity": "sha512-Jca5Ude6yUOuyzjnz57og7Et3aXjbwCSDf/8onLHSQgw1qW3ALl9mrMWaXb5FmPVkV3EtkD2F/+NkT6VHyPu9A=="
+    },
+    {
+      "name": "@algolia/autocomplete-preset-algolia",
+      "version": "1.17.7",
+      "file": "algolia-autocomplete.txt",
+      "sha256": "1e605499213e06118cc81abc00b32bbb33ead185d9b0e190f2662588e8806f02",
+      "source": "https://raw.githubusercontent.com/algolia/autocomplete/8467b7a316ac6030f3e5cce6bdfdaf3068818d73/LICENSE",
+      "sourceIntegrity": "sha512-ggOQ950+nwbWROq2MOCIL71RE0DdQZsceqrg32UqnhDz8FlO9rL8ONHNsI2R1MH0tkgVIDKI/D0sMiUchsFdWA=="
+    },
+    {
+      "name": "@algolia/autocomplete-shared",
+      "version": "1.17.7",
+      "file": "algolia-autocomplete.txt",
+      "sha256": "1e605499213e06118cc81abc00b32bbb33ead185d9b0e190f2662588e8806f02",
+      "source": "https://raw.githubusercontent.com/algolia/autocomplete/8467b7a316ac6030f3e5cce6bdfdaf3068818d73/LICENSE",
+      "sourceIntegrity": "sha512-o/1Vurr42U/qskRSuhBH+VKxMvkkUVTLU6WZQr+L5lGZZLYWyhdzWjW0iGXY7EkwRTjBqvN2EsR81yCTGV/kmg=="
+    },
+    {
+      "name": "@docsearch/css",
+      "version": "3.8.2",
+      "file": "algolia-docsearch.txt",
+      "sha256": "1e605499213e06118cc81abc00b32bbb33ead185d9b0e190f2662588e8806f02",
+      "source": "https://raw.githubusercontent.com/algolia/docsearch/a425f6f4e5714e9454ea172dc5ada5e4a0da27af/LICENSE",
+      "sourceIntegrity": "sha512-y05ayQFyUmCXze79+56v/4HpycYF3uFqB78pLPrSV5ZKAlDuIAAJNhaRi8tTdRNXh05yxX/TyNnzD6LwSM89vQ=="
+    },
+    {
+      "name": "@docsearch/js",
+      "version": "3.8.2",
+      "file": "algolia-docsearch.txt",
+      "sha256": "1e605499213e06118cc81abc00b32bbb33ead185d9b0e190f2662588e8806f02",
+      "source": "https://raw.githubusercontent.com/algolia/docsearch/a425f6f4e5714e9454ea172dc5ada5e4a0da27af/LICENSE",
+      "sourceIntegrity": "sha512-Q5wY66qHn0SwA7Taa0aDbHiJvaFJLOJyHmooQ7y8hlwwQLQ/5WwCcoX0g7ii04Qi2DJlHsd0XXzJ8Ypw9+9YmQ=="
+    },
+    {
+      "name": "@docsearch/react",
+      "version": "3.8.2",
+      "file": "algolia-docsearch.txt",
+      "sha256": "1e605499213e06118cc81abc00b32bbb33ead185d9b0e190f2662588e8806f02",
+      "source": "https://raw.githubusercontent.com/algolia/docsearch/a425f6f4e5714e9454ea172dc5ada5e4a0da27af/LICENSE",
+      "sourceIntegrity": "sha512-xCRrJQlTt8N9GU0DG4ptwHRkfnSnD/YpdeaXe02iKfqs97TkZJv60yE+1eq/tjPcVnTW8dP5qLP7itifFVV5eg=="
+    },
+    {
+      "name": "@iconify-json/simple-icons",
+      "version": "1.2.98",
+      "file": "simple-icons.txt",
+      "sha256": "9046848b63a5c92bff14e4accca80bd987e0623b74adf9226ce5198d312b79d5",
+      "source": "https://raw.githubusercontent.com/simple-icons/simple-icons/e01988cc57a3aca39621023f9881e9b733ebcd77/LICENSE.md",
+      "sourceIntegrity": "sha512-35CEBG1H/3nsohVgJaRWtOZ/P5syRTL++ZXTISdQSC76o1mAFXngFoSm9EOnnBiDApKPu8WN/DY+z69yCycL9A=="
+    },
+    {
+      "name": "saxes",
+      "version": "6.0.0",
+      "file": "saxes.txt",
+      "sha256": "0fac2374380621b22e6b50451057721a9c52935b02d16d106a9f04897f061d0e",
+      "source": "https://raw.githubusercontent.com/lddubeau/saxes/211fa0ebec9b628affc09219199639887174bfc3/LICENSE",
+      "sourceIntegrity": "sha512-xAg7SOnEhrm5zI3puOOKyy1OMcMlIJZYNJY7xLBwSze0UjhPLnWfj2GF2EpT0jmzaJKIWKHLsaSSajf35bcYnA=="
+    },
+    {
+      "name": "@esbuild/darwin-arm64",
+      "version": "0.25.12",
+      "file": "esbuild-bundled.txt",
+      "sha256": "b40ec5baec7bb34fa5b1c09521fa3cd52d5fad7adafed74932a2010d3612a681",
+      "source": "node_modules/esbuild/LICENSE.md at version 0.25.12",
+      "sourceIntegrity": "sha512-N3zl+lxHCifgIlcMUP5016ESkeQjLj/959RxxNYIthIg+CQHInujFuXeWbWMgnTo4cp5XVHqFPmpyu9J65C1Yg=="
+    },
+    {
+      "name": "@esbuild/linux-x64",
+      "version": "0.25.12",
+      "file": "esbuild-bundled.txt",
+      "sha256": "b40ec5baec7bb34fa5b1c09521fa3cd52d5fad7adafed74932a2010d3612a681",
+      "source": "node_modules/esbuild/LICENSE.md at version 0.25.12",
+      "sourceIntegrity": "sha512-uqZMTLr/zR/ed4jIGnwSLkaHmPjOjJvnm6TVVitAa08SLS9Z0VM8wIRx7gWbJB5/J54YuIMInDquWyYvQLZkgw=="
+    },
+    {
+      "name": "@esbuild/linux-arm64",
+      "version": "0.25.12",
+      "file": "esbuild-bundled.txt",
+      "sha256": "b40ec5baec7bb34fa5b1c09521fa3cd52d5fad7adafed74932a2010d3612a681",
+      "source": "node_modules/esbuild/LICENSE.md at version 0.25.12",
+      "sourceIntegrity": "sha512-8bwX7a8FghIgrupcxb4aUmYDLp8pX06rGh5HqDT7bB+8Rdells6mHvrFHHW2JAOPZUbnjUpKTLg6ECyzvas2AQ=="
+    },
+    {
+      "name": "@rollup/rollup-darwin-arm64",
+      "version": "4.63.5",
+      "file": "rollup-bundled.txt",
+      "sha256": "fa1bd040c5bdeefe65b3821cebf474f2733ce65df13089bd151dda1778e62fe8",
+      "source": "node_modules/rollup/LICENSE.md at version 4.63.5",
+      "sourceIntegrity": "sha512-wlJEERGfeuHeBavCL2qVnNacOK43NDoZM4sjkeRPymd04OAE9T1zBqDJgmZ+CIsPTYKwdzpUC8vmOw84dwY4Tg=="
+    },
+    {
+      "name": "@rollup/rollup-linux-x64-gnu",
+      "version": "4.63.5",
+      "file": "rollup-bundled.txt",
+      "sha256": "fa1bd040c5bdeefe65b3821cebf474f2733ce65df13089bd151dda1778e62fe8",
+      "source": "node_modules/rollup/LICENSE.md at version 4.63.5",
+      "sourceIntegrity": "sha512-3W9bTFcQNJn71cSJVM9RKIiZOy8DO/XLDii8Uv/Pm6WKqDRj7JV3ZfuXIEfyuy5LXpIzAbB/1M4Ukp9GKNa7nA=="
+    },
+    {
+      "name": "@rollup/rollup-linux-arm64-gnu",
+      "version": "4.63.5",
+      "file": "rollup-bundled.txt",
+      "sha256": "fa1bd040c5bdeefe65b3821cebf474f2733ce65df13089bd151dda1778e62fe8",
+      "source": "node_modules/rollup/LICENSE.md at version 4.63.5",
+      "sourceIntegrity": "sha512-VcPr/szv/1BFw112Kt//fxulXt/JPqzzidU84iW68L2DdjnOO8QFUv2zTSYBEPHD6movBD4z+bbr5y60GYM7Jw=="
+    },
+    {
+      "name": "isarray",
+      "version": "1.0.0",
+      "file": "isarray-readme.txt",
+      "sha256": "ff138e683771b187f3629c383db72ee7d632009010a36d08e18e8d2a34222ec7",
+      "source": "node_modules/isarray/README.md at version 1.0.0; contains the original full MIT text.",
+      "sourceIntegrity": "sha512-VLghIWNM6ELQzo7zwmcg0NmTVyWKYjvIeM83yjp0wRDTmUnrM678fQbcKBo6n2CJEF0szoG//ytg+TKla89ALQ=="
+    },
+    {
+      "name": "@rollup/rollup-linux-x64-musl",
+      "version": "4.63.5",
+      "file": "rollup-bundled.txt",
+      "sha256": "fa1bd040c5bdeefe65b3821cebf474f2733ce65df13089bd151dda1778e62fe8",
+      "source": "node_modules/rollup/LICENSE.md at version 4.63.5",
+      "sourceIntegrity": "sha512-VDC7rRJlee/scpki96GZ27Omf6yU87s1YXwVTpjE5841faVlDYYT565rgfmoR1U0sqL7z5ivQSDjcsF6VRXyBA=="
+    },
+    {
+      "name": "@rollup/rollup-linux-arm64-musl",
+      "version": "4.63.5",
+      "file": "rollup-bundled.txt",
+      "sha256": "fa1bd040c5bdeefe65b3821cebf474f2733ce65df13089bd151dda1778e62fe8",
+      "source": "node_modules/rollup/LICENSE.md at version 4.63.5",
+      "sourceIntegrity": "sha512-BnxtJ5/91BrIHYIkGrmjz/lbMhqEHt1dPFqIxIFR+jPn0xVc/oUSCtIT089zfp5ufwGDlYz2UC+Fe1SRBpYFbQ=="
+    }
+  ],
+  "buildOnly": [
+    {
+      "name": "@napi-rs/lzma-linux-x64-gnu",
+      "version": "1.5.1",
+      "sourceIntegrity": "sha512-oTXEIha4SsuXdTA4Iyskj0kpdx2yVXdhd75c2v3xGrHFfVMsbhTPZU/nMPL4sWKo4pBHm3aucLaqGlF696dTyQ==",
+      "source": "https://github.com/Brooooooklyn/lzma/tree/f164df92d83e095f195d628b1a68a141ae2eb638",
+      "reason": "Optional native helper of the documentation build tool Rollup. Its pinned archive and upstream source have no standalone license text. It is not included in website or offline assets; the wiki build rejects it in emitted module graphs."
+    }
+  ]
+}

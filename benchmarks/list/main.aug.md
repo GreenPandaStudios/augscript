@@ -2,7 +2,7 @@
 
 # `main.aug`
 
-<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=7208c2c3bc0cdabd7e1ba2573b0bbe62e3193b7318733144d2636814db3c1443 -->
+<!-- August spec revision: schema=1 compiler=1.0.0 source-sha256=7208c2c3bc0cdabd7e1ba2573b0bbe62e3193b7318733144d2636814db3c1443 -->
 
 [Interactions and sequences](main.aug.diagrams.md)
 

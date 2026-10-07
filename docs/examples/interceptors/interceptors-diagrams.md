@@ -93,6 +93,6 @@ sequenceDiagram
 
 ## Called contracts
 
-- [Console](dependencies/august/0.23.0/io/contracts-diagrams.md) — august/io/contracts.aug
+- [Console](dependencies/august/1.0.0/io/contracts-diagrams.md) — august/io/contracts.aug
 - [ValidationError](interceptors-diagrams.md#sequence-ValidationError-20-constructor) — interceptors.aug
 - [Logger.log](logging-diagrams.md#sequence-Logger.log) — logging.aug

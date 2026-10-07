@@ -1,0 +1,22 @@
+{
+  "format": 1,
+  "compiler": "1.0.0",
+  "specifications": {
+    "math": "../math"
+  },
+  "roots": {
+    "math": "snapshots/da7b2e7e4b43cb2288128f92b9b365257c4015d34ae47a8b6c50603ab38be1d0/packages/url_46dee08cd12256ebc176"
+  },
+  "npm": {},
+  "git": [],
+  "packages": [
+    {
+      "path": "snapshots/da7b2e7e4b43cb2288128f92b9b365257c4015d34ae47a8b6c50603ab38be1d0/packages/url_46dee08cd12256ebc176",
+      "name": "@example/aug-math",
+      "version": "0.1.0",
+      "source": "src",
+      "digest": "35db417839afd801fd97c542119793720c90af65f87d1f250009ee0979dc4b3b",
+      "dependencies": {}
+    }
+  ]
+}

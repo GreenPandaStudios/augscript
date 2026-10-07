@@ -2,7 +2,7 @@
 
 # `main.aug`
 
-<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=d7392af83beb9307ee2648c7a42914476ca02906480b6373556eb661e80c935c -->
+<!-- August spec revision: schema=1 compiler=1.0.0 source-sha256=993c36890e39522fb7793c38b6d8efbd45652006bf624b30139daf6a73a8d626 -->
 
 [Interactions and sequences](main.aug.diagrams.md)
 
@@ -10,12 +10,12 @@
 
 Within a task and ownership scope, it sets `first` to a worker task running [`calculate`](compute.aug.md#symbol-calculate) with `left` from a list containing `1.0`, `2.0`, `3.0` and `right` from a list containing `4.0`, `5.0`, `6.0` with copies of its inputs on a separate heap. It sets `second` to a worker task running [`calculate`](compute.aug.md#symbol-calculate) with `left` from a list containing `10.0`, `20.0` and `right` from a list containing `1.0`, `2.0` with copies of its inputs on a separate heap. It reads the result of waiting for `first` and `second` in input order; propagate failures once and binds `[0]` as `firstResult` and `[1]` as `secondResult`. [source](main.aug#L5-L18)
 
-For each `value` in a snapshot of `firstResult`, it prints `value`. After the loop, for each `value` in a snapshot of `secondResult`, it prints `value`. On leaving this scope, join its child tasks and release its local values. If this work raises [`GpuError`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.1.1/contracts.aug.md#symbol-GpuError) as `error`, it prints [`error.explain`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.1.1/contracts.aug.md#symbol-GpuError.explain); then it calls `exit` with `status` `1`. [source](main.aug#L5-L18)
+For each `value` in a snapshot of `firstResult`, it prints `value`. After the loop, for each `value` in a snapshot of `secondResult`, it prints `value`. On leaving this scope, join its child tasks and release its local values. If this work raises [`GpuError`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.2.0/contracts.aug.md#symbol-GpuError) as `error`, it prints [`error.explain`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.2.0/contracts.aug.md#symbol-GpuError.explain); then it calls `exit` with `status` `1`. [source](main.aug#L5-L18)
 
 If this work raises `ConcurrencyError`, it prints `"Worker capacity is exhausted"`. [source](main.aug#L18)
 
 ## Dependencies
 
-It uses [`GpuError`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.1.1/contracts.aug.md#symbol-GpuError) ([`explain`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.1.1/contracts.aug.md#symbol-GpuError.explain)) from `https://github.com/GreenPandaStudios/aug-gpu#v0.1.1`. It uses [`calculate`](compute.aug.md#symbol-calculate) from `compute`.
+It uses [`GpuError`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.2.0/contracts.aug.md#symbol-GpuError) ([`explain`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.2.0/contracts.aug.md#symbol-GpuError.explain)) from `https://github.com/GreenPandaStudios/aug-gpu#ebc288b8d88b30213715bdbcd3d4647ff81a5462`. It uses [`calculate`](compute.aug.md#symbol-calculate) from `compute`.
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).

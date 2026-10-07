@@ -78,4 +78,10 @@ Shared CI hosts can produce inconsistent timings even with identical binaries. P
 
 `npm run bench:greetings` compiles the canonical million-greeting project through LLVM and the independent C reference. It runs three warmups and thirty measured samples per implementation in alternating order. Both flush every line and write to a regular temporary file. Every sample verifies the full 20 MB output against an independently constructed SHA-256 outside timing. Compilation and verification are excluded; process startup and file I/O are included.
 
-The command writes `docs/greeting-results.json`. `npm run docs:generate` checks source equality and generates the homepage source, actual compiled spec, median text, and HTML chart from that report. Publish a full run, not a short exploratory sample. This workload measures printing throughput; it does not measure repeated string concatenation or general CPU speed.
+The command writes `docs/greeting-results.json`. Keep the compiler version, measured source identity, host, sample count and output digest with the results. `npm run docs:generate` checks source equality and generates the homepage source, actual compiled spec, median text, and HTML chart from that report. Publish a full run, not a short exploratory sample. This workload measures printing throughput; it does not measure repeated string concatenation or general CPU speed.
+
+## Refresh a release’s measurements
+
+Run the full batch/HTTP, extended-kernel, greeting and safety suites against the candidate compiler. Keep failed reports separate; replace wiki evidence only after every required case passes. Extended kernels and safety gyms must use the same measured source fingerprint. Pin the maintainer Clang to the LLVM version being instrumented: another Clang’s sanitizer runtime can fail to link the generated LLVM objects.
+
+Retain the raw gym report and logs in the ignored build directory. When publishing its JSON, replace only the checkout’s absolute path prefix with a project-relative path. Preserve diagnostics, witnesses, results, counts and source identity. Render the tables, generate the chart summary and inspect the homepage and performance pages before publication. Reports describe their recorded snapshot; do not change their source hash to match a later documentation edit.

@@ -1,29 +1,29 @@
 {
   "format": 1,
-  "compiler": "0.23.0",
+  "compiler": "1.0.0",
   "specifications": {
-    "url_b05554aeae5c0d02f8f8": "https://github.com/GreenPandaStudios/aug-pytorch#v0.1.6"
+    "url_2bcd0abf6dcbea93d93f": "https://github.com/GreenPandaStudios/aug-pytorch#e2b74b1968fb11972e260ef3796a1cd849c1f702"
   },
   "roots": {
-    "url_b05554aeae5c0d02f8f8": "packages/url_b05554aeae5c0d02f8f8"
+    "url_2bcd0abf6dcbea93d93f": "snapshots/4e80b01b0d0b3eb5dda44a654b06a360896a8644e1f26738bc1894140e46285d/packages/url_2bcd0abf6dcbea93d93f"
   },
   "npm": {},
   "git": [
     {
-      "request": "https://github.com/GreenPandaStudios/aug-pytorch#v0.1.6",
+      "request": "https://github.com/GreenPandaStudios/aug-pytorch#e2b74b1968fb11972e260ef3796a1cd849c1f702",
       "repository": "https://github.com/GreenPandaStudios/aug-pytorch.git",
-      "revision": "v0.1.6",
+      "revision": "e2b74b1968fb11972e260ef3796a1cd849c1f702",
       "folder": "",
-      "commit": "f1b6fb1c8d0c964cdd5510d3e303fc35ec915f3a"
+      "commit": "e2b74b1968fb11972e260ef3796a1cd849c1f702"
     }
   ],
   "packages": [
     {
-      "path": "packages/url_b05554aeae5c0d02f8f8",
+      "path": "snapshots/4e80b01b0d0b3eb5dda44a654b06a360896a8644e1f26738bc1894140e46285d/packages/url_2bcd0abf6dcbea93d93f",
       "name": "@greenpandastudios/aug-pytorch",
-      "version": "0.1.6",
+      "version": "0.2.0",
       "source": "src",
-      "digest": "9b89d38b6b2fdc6560b944f27957a67a78aadc51f4a2e6da2829b536205bbd62",
+      "digest": "f96181850783fd8aa75695594276bfbcf1ad5549cd54ccf7e4a4c2dee54e14f9",
       "dependencies": {},
       "native": {
         "profile": "aug-native-abi-1",
@@ -51,10 +51,10 @@
                 "float64"
               ]
             },
-            "url": "https://github.com/GreenPandaStudios/aug-pytorch/releases/download/v0.1.4/native-linux-arm64.tar.gz",
-            "sha256": "8eb7c5e30635949228548208bda1ac0a7c42801d2299a90ea4d4c2064e700573",
-            "maximumDownloadBytes": 205707311,
-            "maximumUnpackedBytes": 443080682,
+            "url": "https://github.com/GreenPandaStudios/aug-pytorch/releases/download/v0.2.0/native-linux-arm64.tar.gz",
+            "sha256": "b5991acfad3ab45adffac749dd3dda2bea746835b83335914ee0cfff1c3d6d60",
+            "maximumDownloadBytes": 205880321,
+            "maximumUnpackedBytes": 443895551,
             "link": {
               "kind": "dynamic",
               "libraries": [
@@ -128,10 +128,10 @@
                 "float64"
               ]
             },
-            "url": "https://github.com/GreenPandaStudios/aug-pytorch/releases/download/v0.1.4/native-linux-x64.tar.gz",
-            "sha256": "e39d75858c158af03bae161d54b3a267b4fcf3dc4568be6467df72e472793f7b",
-            "maximumDownloadBytes": 207516626,
-            "maximumUnpackedBytes": 535024433,
+            "url": "https://github.com/GreenPandaStudios/aug-pytorch/releases/download/v0.2.0/native-linux-x64.tar.gz",
+            "sha256": "3907dcab58256f216016f0fa4ed0e56f9884c99605ce9597eefe5c46bfa72077",
+            "maximumDownloadBytes": 207666480,
+            "maximumUnpackedBytes": 535714677,
             "link": {
               "kind": "dynamic",
               "libraries": [
@@ -186,10 +186,10 @@
                 "float64"
               ]
             },
-            "url": "https://github.com/GreenPandaStudios/aug-pytorch/releases/download/v0.1.4/native-macos-arm64.tar.gz",
-            "sha256": "a130f4a67b574456e5eb0538dc099cb99e5356fdb47ebd4926da6f9b65ccb1e1",
-            "maximumDownloadBytes": 92487957,
-            "maximumUnpackedBytes": 388370911,
+            "url": "https://github.com/GreenPandaStudios/aug-pytorch/releases/download/v0.2.0/native-macos-arm64.tar.gz",
+            "sha256": "f345b9d52c2614abdd02ca3dd60c7a2c1fe530b7a36c84da1f7399fd0a107a0a",
+            "maximumDownloadBytes": 92504052,
+            "maximumUnpackedBytes": 388427196,
             "link": {
               "kind": "dynamic",
               "libraries": [
@@ -248,9 +248,9 @@
         },
         "packages": [
           {
-            "sourcePackage": "@greenpandastudios/aug-pytorch@0.1.6",
-            "sourceDigest": "9b89d38b6b2fdc6560b944f27957a67a78aadc51f4a2e6da2829b536205bbd62",
-            "sourceCommit": "f1b6fb1c8d0c964cdd5510d3e303fc35ec915f3a",
+            "sourcePackage": "@greenpandastudios/aug-pytorch@0.2.0",
+            "sourceDigest": "f96181850783fd8aa75695594276bfbcf1ad5549cd54ccf7e4a4c2dee54e14f9",
+            "sourceCommit": "e2b74b1968fb11972e260ef3796a1cd849c1f702",
             "contractSha256": "f07b8cab89ad7cfe368edcd9daf87ecc810adb6a2eed1f446d7b71fb664e91f5",
             "artifact": {
               "id": "macos-arm64",
@@ -268,10 +268,10 @@
                   "float64"
                 ]
               },
-              "url": "https://github.com/GreenPandaStudios/aug-pytorch/releases/download/v0.1.4/native-macos-arm64.tar.gz",
-              "sha256": "a130f4a67b574456e5eb0538dc099cb99e5356fdb47ebd4926da6f9b65ccb1e1",
-              "maximumDownloadBytes": 92487957,
-              "maximumUnpackedBytes": 388370911,
+              "url": "https://github.com/GreenPandaStudios/aug-pytorch/releases/download/v0.2.0/native-macos-arm64.tar.gz",
+              "sha256": "f345b9d52c2614abdd02ca3dd60c7a2c1fe530b7a36c84da1f7399fd0a107a0a",
+              "maximumDownloadBytes": 92504052,
+              "maximumUnpackedBytes": 388427196,
               "link": {
                 "kind": "dynamic",
                 "libraries": [
@@ -303,6 +303,16 @@
             }
           }
         ]
+      }
+    },
+    "compilers": {
+      "darwin-arm64": {
+        "version": "1.0.0",
+        "llvm": "23.1.2",
+        "host": "darwin-arm64",
+        "target": "aarch64-apple-darwin",
+        "artifactSha256": "4d84935235f59a30775479a56d42bc3e26238acb5a1568db1484e15032bf4534",
+        "runtimeSha256": "00847a9a7921b3ecd2b1a355d6ea4192e32fba5addc6a8a1c341e4e580362722"
       }
     }
   }

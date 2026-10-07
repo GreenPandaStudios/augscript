@@ -94,7 +94,7 @@ sequenceDiagram
 
 ## Called contracts
 
-- [Console](.aug-spec/august/0.23.0/io/contracts.aug.diagrams.md) — august/io/contracts.aug
+- [Console](.aug-spec/august/1.0.0/io/contracts.aug.diagrams.md) — august/io/contracts.aug
 - [Arithmetic](calculator.aug.diagrams.md) — calculator.aug
 - [Calculator](calculator.aug.diagrams.md#sequence-Calculator-20-constructor) — calculator.aug
 - [Calculator.add](calculator.aug.diagrams.md#sequence-Calculator.add) — calculator.aug

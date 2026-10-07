@@ -41,10 +41,10 @@ flowchart LR
 | From | To | Operation and inputs | Result |
 | --- | --- | --- | --- |
 | Startup | tensors | [calculate](../tensors.md#symbol-calculate) | float |
-| tensors | @greenpandastudios/aug-pytorch | [add](../dependencies/packages/%40greenpandastudios/aug-pytorch/0.1.6/api.md#symbol-add) · left: Tensor, right: Tensor | own Tensor |
-| tensors | @greenpandastudios/aug-pytorch | [sum](../dependencies/packages/%40greenpandastudios/aug-pytorch/0.1.6/api.md#symbol-sum) · tensor: Tensor | float |
-| tensors | @greenpandastudios/aug-pytorch | [tensor](../dependencies/packages/%40greenpandastudios/aug-pytorch/0.1.6/api.md#symbol-tensor) · values: List\<float\> | own Tensor |
-| tensors | @greenpandastudios/aug-pytorch | [values](../dependencies/packages/%40greenpandastudios/aug-pytorch/0.1.6/api.md#symbol-values) · tensor: Tensor | List\<float\> |
+| tensors | @greenpandastudios/aug-pytorch | [add](../dependencies/packages/%40greenpandastudios/aug-pytorch/0.2.0/api.md#symbol-add) · left: Tensor, right: Tensor | own Tensor |
+| tensors | @greenpandastudios/aug-pytorch | [sum](../dependencies/packages/%40greenpandastudios/aug-pytorch/0.2.0/api.md#symbol-sum) · tensor: Tensor | float |
+| tensors | @greenpandastudios/aug-pytorch | [tensor](../dependencies/packages/%40greenpandastudios/aug-pytorch/0.2.0/api.md#symbol-tensor) · values: List\<float\> | own Tensor |
+| tensors | @greenpandastudios/aug-pytorch | [values](../dependencies/packages/%40greenpandastudios/aug-pytorch/0.2.0/api.md#symbol-values) · tensor: Tensor | List\<float\> |
 
 :::
 

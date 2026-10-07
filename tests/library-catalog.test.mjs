@@ -1,3 +1,4 @@
+import {compilerVersion} from '../src/compiler-version.ts';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {spawnSync} from 'node:child_process';
@@ -10,7 +11,7 @@ const run = (...args) => spawnSync(process.execPath,['bin/aug.mjs','libraries',.
 test('task search is deterministic and includes actionable ordinary imports',()=>{
   const result=libraryCatalog('compression');assert.equal(result.format,1);assert.ok(result.compiler);
   assert.deepEqual(result.entries.map(entry=>entry.id),['zlib']);
-  const entry=result.entries[0];assert.match(entry.install,/aug add.*aug-zlib#v0.1.5.*--as zlib/);
+  const entry=result.entries[0];assert.match(entry.install,/aug add.*aug-zlib#(?:v0\.2\.0|[a-f0-9]{40}).*--as zlib/);
   assert.match(entry.example,/import .*compress.* from zlib/);assert.match(entry.ownership,/copied|managed/i);
   assert.ok(entry.license.summary);assert.match(entry.tests.url,/native-zlib|aug-zlib/);
   assert.equal(JSON.stringify(result),JSON.stringify(libraryCatalog('compression')));
@@ -34,7 +35,11 @@ test('native entries preserve the exact qualified revisions, hashes and host req
     const entry=entries.find(entry=>entry.id===id);assert.ok(entry,id);
     assert.equal(entry.source.commit,qualification.targets['darwin-arm64'][id].commit);
     assert.equal(entry.version,qualification.targets['darwin-arm64'][id].version);
-    assert.equal(entry.compilerRequirement,'0.23.0');
+    assert.equal(entry.compilerRequirement,compilerVersion());
+    assert.equal(entry.compilerCompatible,true);
+    assert.equal(entry.source.request,entry.source.request.split('#')[0]+'#'+entry.source.commit);
+    assert.ok(entry.license.url.includes('/blob/'+entry.source.commit+'/'));
+    assert.equal(entry.evidence.metadata,'reviewed-source-snapshot');
     for(const [host,selection] of Object.entries(qualification.targets)) {
       const triple={'darwin-arm64':'aarch64-apple-darwin','linux-x64':'x86_64-unknown-linux-gnu','linux-arm64':'aarch64-unknown-linux-gnu'}[host];
       const artifact=entry.artifacts.find(artifact=>artifact.target.triple===triple);

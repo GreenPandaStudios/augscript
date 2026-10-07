@@ -1,2 +1,6 @@
 # Preserve checksummed upstream Unicode bytes, including their original spacing.
 native/unicode/** -whitespace
+
+# Preserve checksummed upstream license texts without rewriting their bytes.
+docs/third-party-licenses/*.txt -whitespace
+docs/public/third-party/*.txt -whitespace

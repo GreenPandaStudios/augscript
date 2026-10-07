@@ -70,4 +70,4 @@ sequenceDiagram
 ## Called contracts
 
 - [calculate](compute-diagrams.md#sequence-calculate) — compute.aug
-- [GpuError.explain](dependencies/packages/%40greenpandastudios/aug-gpu/0.1.1/contracts-diagrams.md#sequence-GpuError.explain) — package/@greenpandastudios/aug-gpu@0.1.1/contracts.aug
+- [GpuError.explain](dependencies/packages/%40greenpandastudios/aug-gpu/0.2.0/contracts-diagrams.md#sequence-GpuError.explain) — package/@greenpandastudios/aug-gpu@0.2.0/contracts.aug

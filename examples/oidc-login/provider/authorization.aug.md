@@ -2,7 +2,7 @@
 
 # `authorization.aug`
 
-<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=cb5bed62dc7c9ac33e5c09843d12557c6ff0c389f4cee6e26cbea9f0c162a267 -->
+<!-- August spec revision: schema=1 compiler=1.0.0 source-sha256=cb5bed62dc7c9ac33e5c09843d12557c6ff0c389f4cee6e26cbea9f0c162a267 -->
 
 [Interactions and sequences](authorization.aug.diagrams.md)
 

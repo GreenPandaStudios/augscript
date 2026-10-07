@@ -67,6 +67,6 @@ sequenceDiagram
 
 ## Called contracts
 
-- [Console.write](../dependencies/august/0.23.0/io/contracts-diagrams.md#sequence-Console.write) — august/io/contracts.aug
+- [Console.write](../dependencies/august/1.0.0/io/contracts-diagrams.md#sequence-Console.write) — august/io/contracts.aug
 - [Application](app-diagrams.md) — domain/app.aug
 - [Fruit](models-diagrams.md#sequence-Fruit-20-constructor) — domain/models.aug

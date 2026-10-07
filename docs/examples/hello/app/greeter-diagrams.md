@@ -64,5 +64,5 @@ Interface contract; implementation selected at runtime. [Explanation](greeter.md
 ## Called contracts
 
 - [IGreeter](greeter-diagrams.md) — app/greeter.aug
-- [Console](../dependencies/august/0.23.0/io/contracts-diagrams.md) — august/io/contracts.aug
+- [Console](../dependencies/august/1.0.0/io/contracts-diagrams.md) — august/io/contracts.aug
 - [Logger.log](../logging/logger-diagrams.md#sequence-Logger.log) — logging/logger.aug

@@ -2,7 +2,7 @@
 
 # `compute.aug`
 
-<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=bdb22d6d21ecacff3a28af4081c90b7d70a77e840e791974bdbc914dd5c78d96 -->
+<!-- August spec revision: schema=1 compiler=1.0.0 source-sha256=c9c6eb64f18515d5b54853477dfffa70ce85efb7816b43c1591d7b4ac2098e40 -->
 
 [Interactions and sequences](compute.aug.diagrams.md)
 
@@ -11,9 +11,9 @@
 
 Add two lists on a GPU and return copied values. GPU resources stay local. It takes `left` and `right` as `List<float>`.
 
-It calls [`openDevice`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.1.1/api.aug.md#symbol-openDevice) and stores the result in owned `device` ([`Device`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.1.1/bindings.aug.md#symbol-Device)). It calls [`upload`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.1.1/api.aug.md#symbol-upload) with `device` and `values` from `left` and stores the result in owned `first` ([`Buffer`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.1.1/bindings.aug.md#symbol-Buffer)). It calls [`upload`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.1.1/api.aug.md#symbol-upload) with `device` and `values` from `right` and stores the result in owned `second` ([`Buffer`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.1.1/bindings.aug.md#symbol-Buffer)). It calls [`add`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.1.1/api.aug.md#symbol-add) with `left` from `first` and `right` from `second` and stores the result in owned `result` ([`Buffer`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.1.1/bindings.aug.md#symbol-Buffer)). [source](compute.aug#L6-L9)
+It calls [`openDevice`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.2.0/api.aug.md#symbol-openDevice) and stores the result in owned `device` ([`Device`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.2.0/bindings.aug.md#symbol-Device)). It calls [`upload`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.2.0/api.aug.md#symbol-upload) with `device` and `values` from `left` and stores the result in owned `first` ([`Buffer`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.2.0/bindings.aug.md#symbol-Buffer)). It calls [`upload`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.2.0/api.aug.md#symbol-upload) with `device` and `values` from `right` and stores the result in owned `second` ([`Buffer`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.2.0/bindings.aug.md#symbol-Buffer)). It calls [`add`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.2.0/api.aug.md#symbol-add) with `left` from `first` and `right` from `second` and stores the result in owned `result` ([`Buffer`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.2.0/bindings.aug.md#symbol-Buffer)). [source](compute.aug#L6-L9)
 
-It returns [`download`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.1.1/api.aug.md#symbol-download) with `buffer` from `result`. [source](compute.aug#L10)
+It returns [`download`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.2.0/api.aug.md#symbol-download) with `buffer` from `result`. [source](compute.aug#L10)
 
 <details>
 <summary>Checked interface</summary>
@@ -22,7 +22,7 @@ It returns [`download`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.1.1/ap
 calculate(List<float> left, List<float> right) returns List<float> unless GpuError
 ```
 
-It takes `left` and `right` as `List<float>`. Failures can raise [`GpuError`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.1.1/contracts.aug.md#symbol-GpuError).
+It takes `left` and `right` as `List<float>`. Failures can raise [`GpuError`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.2.0/contracts.aug.md#symbol-GpuError).
 
 </details>
 
@@ -41,6 +41,6 @@ The test requires the item at index `2` in `result` equals `9.0`. [source](compu
 
 ## Dependencies
 
-It uses [`add`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.1.1/api.aug.md#symbol-add), [`download`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.1.1/api.aug.md#symbol-download), [`openDevice`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.1.1/api.aug.md#symbol-openDevice), [`upload`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.1.1/api.aug.md#symbol-upload), [`Buffer`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.1.1/bindings.aug.md#symbol-Buffer), and [`Device`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.1.1/bindings.aug.md#symbol-Device) from `https://github.com/GreenPandaStudios/aug-gpu#v0.1.1`. It uses [`GpuError`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.1.1/contracts.aug.md#symbol-GpuError).
+It uses [`add`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.2.0/api.aug.md#symbol-add), [`download`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.2.0/api.aug.md#symbol-download), [`openDevice`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.2.0/api.aug.md#symbol-openDevice), [`upload`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.2.0/api.aug.md#symbol-upload), [`Buffer`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.2.0/bindings.aug.md#symbol-Buffer), and [`Device`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.2.0/bindings.aug.md#symbol-Device) from `https://github.com/GreenPandaStudios/aug-gpu#ebc288b8d88b30213715bdbcd3d4647ff81a5462`. It uses [`GpuError`](.aug-spec/packages/%40greenpandastudios/aug-gpu/0.2.0/contracts.aug.md#symbol-GpuError).
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).

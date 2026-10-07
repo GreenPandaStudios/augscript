@@ -2,13 +2,13 @@
 
 # `main.aug`
 
-<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=356f52dedc5713b85b21c2e7a0cbf939a0a9f33cb60114b331508fbdfaef0f8f -->
+<!-- August spec revision: schema=1 compiler=1.0.0 source-sha256=356f52dedc5713b85b21c2e7a0cbf939a0a9f33cb60114b331508fbdfaef0f8f -->
 
 [Interactions and sequences](main.aug.diagrams.md)
 
 ## Providers
 
-`Console` is provided by [`SystemConsole`](.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-SystemConsole). The same instance is shared.
+`Console` is provided by [`SystemConsole`](.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-SystemConsole). The same instance is shared.
 
 ## Startup
 
@@ -16,6 +16,6 @@ It calls [`make`](resource.aug.md#symbol-make) and stores the result in owned `f
 
 ## Dependencies
 
-It uses [`SystemConsole`](.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-SystemConsole) from `august.io`. It uses [`Resource`](resource.aug.md#symbol-Resource), [`consume`](resource.aug.md#symbol-consume), and [`make`](resource.aug.md#symbol-make) from `resource`.
+It uses [`SystemConsole`](.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-SystemConsole) from `august.io`. It uses [`Resource`](resource.aug.md#symbol-Resource), [`consume`](resource.aug.md#symbol-consume), and [`make`](resource.aug.md#symbol-make) from `resource`.
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).

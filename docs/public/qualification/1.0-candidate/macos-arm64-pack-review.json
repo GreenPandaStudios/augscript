@@ -1,0 +1,114 @@
+{
+  "format": 1,
+  "host": "darwin-arm64",
+  "sourceCommit": "bcdd157927f489645301ced4f9c4d8ac4c003d59",
+  "workflowRun": 37548152234,
+  "archive": {
+    "url": "https://github.com/GreenPandaStudios/augscript/releases/download/v1.0.0/aug-llvm-macos-arm64.tar.gz",
+    "sha256": "a9357fd10ed0263202bfbaebd4371480c785a02564ab788cedc4d70609479811",
+    "maximumDownloadBytes": 217142917,
+    "maximumUnpackedBytes": 579261938,
+    "fileManifest": "files.json",
+    "fileManifestSha256": "551bb027c84466c50d0566d6d3bf477cf34fcbd4e5eb7e0ce226c3800fab3851"
+  },
+  "filesVerified": 78,
+  "soakSeconds": [
+    1800.00898875
+  ],
+  "reports": {
+    "language-conformance.json": {
+      "status": "passed",
+      "sourceSha256": null
+    },
+    "gyms/results.json": {
+      "status": "passed",
+      "sourceSha256": "a2596b4ca78f643365af33663052e740561baaeb07910ec2242f8d871fce7cdd"
+    },
+    "kernels/results.json": {
+      "status": "passed",
+      "sourceSha256": "a2596b4ca78f643365af33663052e740561baaeb07910ec2242f8d871fce7cdd"
+    },
+    "runtime-reliability/results.json": {
+      "status": "passed",
+      "sourceSha256": "a2596b4ca78f643365af33663052e740561baaeb07910ec2242f8d871fce7cdd"
+    },
+    "postgres-evidence/qualification.json": {
+      "status": "passed",
+      "sourceSha256": null
+    }
+  },
+  "scope": "Producer archive, passing retained reports, and macOS 14 installed consumers without developer tools. Core compiler transport uses the reviewed local candidate archive; native libraries use public release assets. Final tagged producers and consumers repeat qualification.",
+  "minimumPlatformConsumer": {
+    "workflowRun": 37548152234,
+    "job": 112588849814,
+    "artifact": 11456125610,
+    "artifactZipSha256": "f3683dd090227125d813d26539ebd4894a3c76862c229dd0b49ce987456ff6eb",
+    "osRelease": "23.6.0",
+    "nativeToolsOnPath": false,
+    "freshCaches": true,
+    "libraryTransport": "public-release-assets",
+    "compilerTransport": "local-release-asset",
+    "libraries": [
+      {
+        "package": "pytorch",
+        "commit": "e2b74b1968fb11972e260ef3796a1cd849c1f702",
+        "artifactSha256": "f345b9d52c2614abdd02ca3dd60c7a2c1fe530b7a36c84da1f7399fd0a107a0a",
+        "stdout": "5\n7\n9\n21\n",
+        "urlImport": true,
+        "frozenOffline": true,
+        "relocatedBundle": true
+      },
+      {
+        "package": "sqlite",
+        "commit": "43d8c33289b6b9310199f8c65fb83d48cd9dc310",
+        "artifactSha256": "f79e5ac0751aa612d1119d7769d46ee7a34b904e5ea8a993886fb005311e1ad8",
+        "stdout": "August\n",
+        "urlImport": true,
+        "frozenOffline": true,
+        "relocatedBundle": true
+      },
+      {
+        "package": "zlib",
+        "commit": "fce52e3bf536a304fab82d1d4b95ae425c027be1",
+        "artifactSha256": "62419afbf81826f939e89be6c025781edb0cae4fe60e43736b2d3fa9fdf28dd4",
+        "stdout": "The world runs on language\n",
+        "urlImport": true,
+        "frozenOffline": true,
+        "relocatedBundle": true
+      },
+      {
+        "package": "blake3",
+        "commit": "e9f7b92d98a2f9c36de530f4dfc1740012fb5e5e",
+        "artifactSha256": "2eae982e532845a67077abe9918c4eb736775fcbddfb6eef552303400687ffa5",
+        "stdout": "6437b3ac38465133ffb63b75273a8db548c558465d79db03fd359c6cd5bd9d85\n",
+        "urlImport": true,
+        "frozenOffline": true,
+        "relocatedBundle": true
+      }
+    ],
+    "isolatedWorkers": [
+      {
+        "program": "cpu-workers",
+        "optimization": "debug",
+        "passed": true
+      },
+      {
+        "program": "cpu-workers",
+        "optimization": "release",
+        "passed": true
+      }
+    ],
+    "upgrade": {
+      "baseline": "0.23.0",
+      "candidate": "1.0.0",
+      "passed": true,
+      "sourcePreserved": true,
+      "frozenOffline": true
+    },
+    "reportSha256": {
+      "cli-upgrade-qualification-darwin-arm64.json": "0c99696fb4adc03795b3a188da761a647de24c9a8fd838c56105b1e3488136a9",
+      "native-consumer-qualification.json": "d811aeabd797d58d1a769a1ee2fe7afdbd49a16fbdf436431abd2722e3079a9c",
+      "worker-consumer-qualification.json": "32864650792157c65ef3979680d4d5152cff30703251af5eae601f7f2c1970f5"
+    }
+  }
+}

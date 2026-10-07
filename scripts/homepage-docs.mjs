@@ -83,7 +83,7 @@ ${report.sources.c.trim()}
 ::: benchmark-chart greetings
 :::
 
-On ${report.cpu}, August takes **${time('August')} ms** and C takes **${time('C')} ms** (median of ${report.methodology.iterations} runs after ${report.methodology.warmup} warmups). Both programs use release optimization, write to a file, and flush each line. Every run must produce the same 20 MB output. The times include process startup and file I/O.
+August ${report.compiler} on ${report.cpu} takes **${time('August')} ms** and C takes **${time('C')} ms** (median of ${report.methodology.iterations} runs after ${report.methodology.warmup} warmups). Both programs use release optimization, write to a file, and flush each line. Every run must produce the same 20 MB output. The times include process startup and file I/O.
 
 The [performance reports](performance.md) compare more programs: integer loops, collections, JSON, and HTTP. Results vary by workload; use the sources to build a comparison for your own application.
 

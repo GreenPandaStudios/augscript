@@ -4,7 +4,7 @@ import {mkdtempSync,mkdirSync,writeFileSync,rmSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join,dirname} from 'node:path';
 import {spawnSync} from 'node:child_process';
-import {releaseSource} from '../scripts/release-source.mjs';
+import {releaseSource,verifyReleaseVersions} from '../scripts/release-source.mjs';
 
 test('release source binds a version tag to a reviewed commit and every package',t=>{
   const root=mkdtempSync(join(tmpdir(),'aug-release-source-'));
@@ -20,7 +20,7 @@ test('release source binds a version tag to a reviewed commit and every package'
   for(const file of ['package-lock.json','vscode/package-lock.json'])write(file,{version:'0.21.0',packages:{'':{version:'0.21.0'}}});
   write('examples/packages/math/aug-package.json',{version:'1.0.0',compiler:'0.21.0'});
   git('add','.');git('commit','-m','Independent release fixture');
-  const original=git('rev-parse','HEAD');git('tag','-a','v0.21.0','-m','Reviewed release');
+  const original=git('rev-parse','HEAD');assert.deepEqual(verifyReleaseVersions('v0.21.0',original,root),{tag:'v0.21.0',sha:original});git('tag','-a','v0.21.0','-m','Reviewed release');
   assert.deepEqual(releaseSource('v0.21.0',original,root),{tag:'v0.21.0',sha:original});
   writeFileSync(join(root,'packages/web/package.json'),JSON.stringify({version:'0.21.1'}));
   git('add','.');git('commit','-m','A different package');const changed=git('rev-parse','HEAD');
@@ -29,6 +29,7 @@ test('release source binds a version tag to a reviewed commit and every package'
   assert.throws(()=>releaseSource('v0.21.0',original,root),/differs from the reviewed commit/);
   assert.throws(()=>releaseSource('v0.21.0',changed,root),/manifest version differs: packages\/web/);
   const rejected=[
+    ['vscode/package.json',{version:'0.21.1'},/manifest version differs: vscode/],
     ['packages/web/aug-package.json',{version:'0.21.1'},/manifest version differs/],
     ['packages/stdlib/aug-package.json',{version:'0.21.0',compiler:'0.20.1'},/compiler version differs/],
     ['packages/cli/package.json',{version:'0.21.0',dependencies:{'@greenpandastudios/aug-stdlib':'0.20.1'}},/dependency version differs/],

@@ -2,7 +2,7 @@
 
 Compare August programs with C, Node, and Python versions doing the same tasks. Read the graphs, inspect the source, or download a program to measure work that resembles your application.
 
-The suite measures August 0.21.0 with LLVM 23.1.2. Results apply to the shown workloads and host. For reliability and deployment limits, see [production readiness](production-readiness.md).
+These measurements use the August 1.0.0 candidate with LLVM 23.1.2. Results apply to the shown workloads and host. For reliability and deployment limits, see [production readiness](production-readiness.md).
 
 The [extended qualification](qualification-results.md) adds eight C comparisons for numeric, collection and application work. The [safety gyms](safety-gyms.md) exercise results, rejected operations, cleanup and memory checks separately. Each measured program has a downloadable project and a code/spec view in the [gallery](examples/index.md#measured-programs).
 
@@ -12,7 +12,7 @@ The [DGX Spark results](dgx-spark.md) record a second physical ARM64 host, inclu
 
 Execution and memory bars use **lower is better**. HTTP throughput uses **higher is better**. Read the workload name and units before comparing: a 20,000-entry map and a two-million-step CPU loop do different amounts of work. The execution panels have separate linear scales; compare implementations within a panel. Toggle implementations to compare them without changing the measurements. Select “Show observed ranges” to see the recorded minimum and maximum; these are not confidence intervals. Expand the chart’s values for a selectable data table.
 
-All results below were recorded on October 2, 2026 (UTC): Apple M5, macOS Darwin 25.6.0, ARM64, LLVM 23.1.2 for August, Apple Clang 21 for the C reference, Node 24.18.0, and CPython 3.12.14. August and C use `-O2` without LTO. [Raw samples, checksums, build timings and environment](benchmark-results.json) include the LLVM tool and runtime identities.
+All results below were recorded on October 7, 2026 (UTC): Apple M5, macOS Darwin 25.6.0, ARM64, LLVM 23.1.2 for August, Apple clang version 21.0.0 (clang-2100.3.34.2), Node 24.21.0, and Python 3.9.6. August and C use `-O2` without LTO. [Raw samples, checksums, build timings and environment](benchmark-results.json) include the LLVM tool and runtime identities.
 
 ## Execution time
 
@@ -23,11 +23,11 @@ All results below were recorded on October 2, 2026 (UTC): Apple M5, macOS Darwin
 
 | Workload | August | C | Node | Python |
 | --- | ---: | ---: | ---: | ---: |
-| Startup | 1.43 ms | 1.19 ms | 19.31 ms | 16.18 ms |
-| CPU · 2 million iterations | 7.74 ms | 8.38 ms | 30.64 ms | 252.62 ms |
-| Map + Set · 20,000 entries | 2.71 ms | 1.64 ms | 22.58 ms | 18.81 ms |
-| Map + Set · 200,000 entries | 16.81 ms | 6.31 ms | 37.96 ms | 40.36 ms |
-| JSON · 5,000 round trips | 7.23 ms | 1.94 ms | 21.16 ms | 31.84 ms |
+| Startup | 1.42 ms | 1.17 ms | 19.35 ms | 15.98 ms |
+| CPU · 2 million iterations | 7.63 ms | 8.10 ms | 30.37 ms | 248.07 ms |
+| Map + Set · 20,000 entries | 2.74 ms | 1.66 ms | 22.84 ms | 18.81 ms |
+| Map + Set · 200,000 entries | 17.09 ms | 6.29 ms | 38.36 ms | 40.88 ms |
+| JSON · 5,000 round trips | 7.57 ms | 1.95 ms | 21.35 ms | 32.27 ms |
 
 [benchmark-execution-end]: #
 
@@ -39,7 +39,7 @@ The C reference is tailored to these inputs: it preallocates integer tables and 
 
 [benchmark-summary-start]: #
 
-The CPU program takes **7.74 ms** in August and **8.38 ms** in C on this host. The large-collection program takes **16.81 ms** in August. The JSON timings include interpreter startup for Node and Python. Compare these results within their workloads.
+The CPU program takes **7.63 ms** in August and **8.10 ms** in C on this host. The large-collection program takes **17.09 ms** in August. The JSON timings include interpreter startup for Node and Python. Compare these results within their workloads.
 
 [benchmark-summary-end]: #
 
@@ -164,9 +164,9 @@ packages:
 
 | Clients | August req/sec | Node req/sec | August p95 latency | Node p95 latency |
 | ---: | ---: | ---: | ---: | ---: |
-| 1 | 21,046 | 23,679 | 0.06 ms | 0.05 ms |
-| 16 | 58,708 | 55,557 | 0.46 ms | 0.49 ms |
-| 64 | 54,436 | 51,730 | 2.08 ms | 1.94 ms |
+| 1 | 21,090 | 23,900 | 0.06 ms | 0.05 ms |
+| 16 | 57,162 | 55,639 | 0.47 ms | 0.49 ms |
+| 64 | 52,201 | 54,076 | 2.17 ms | 1.78 ms |
 
 [benchmark-http-end]: #
 
@@ -311,11 +311,11 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1
 
 | Workload | August | C | Node | Python |
 | --- | ---: | ---: | ---: | ---: |
-| Startup | 1.3 MiB | 1.3 MiB | 46.0 MiB | 8.4 MiB |
-| CPU · 2 million iterations | 1.3 MiB | 1.3 MiB | 52.2 MiB | 8.4 MiB |
-| Map + Set · 20,000 entries | 4.7 MiB | 4.4 MiB | 56.9 MiB | 13.2 MiB |
-| Map + Set · 200,000 entries | 36.8 MiB | 25.4 MiB | 91.1 MiB | 55.3 MiB |
-| JSON · 5,000 round trips | 1.8 MiB | 1.5 MiB | 47.4 MiB | 9.7 MiB |
+| Startup | 1.3 MiB | 1.3 MiB | 46.5 MiB | 8.3 MiB |
+| CPU · 2 million iterations | 1.3 MiB | 1.3 MiB | 52.5 MiB | 8.4 MiB |
+| Map + Set · 20,000 entries | 4.7 MiB | 4.4 MiB | 57.4 MiB | 13.2 MiB |
+| Map + Set · 200,000 entries | 36.9 MiB | 25.4 MiB | 91.4 MiB | 55.3 MiB |
+| JSON · 5,000 round trips | 1.9 MiB | 1.5 MiB | 47.9 MiB | 9.7 MiB |
 
 [benchmark-memory-end]: #
 

@@ -2,7 +2,7 @@
 
 # `forecasts.aug`
 
-<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=956657cbdbc6d38c108a6034f3b15e3be1d8dc5e04ef29db191cfb6c33115d46 -->
+<!-- August spec revision: schema=1 compiler=1.0.0 source-sha256=956657cbdbc6d38c108a6034f3b15e3be1d8dc5e04ef29db191cfb6c33115d46 -->
 
 [Interactions and sequences](forecasts.aug.diagrams.md)
 

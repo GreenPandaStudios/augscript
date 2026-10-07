@@ -102,12 +102,12 @@ Greeter(resolve Logger logger to _logger, string name) implements IGreeter {
 
 ### `describe` · [source](app.md#source-L15) {#symbol-describe}
 
-Prints a number and returns its label. It takes labeled inputs `x` and `label`. It gets `logger` ([`Logger`](logging.md#symbol-Logger)) and `console` ([`Console`](dependencies/august/0.23.0/io/contracts.md#symbol-Console)) from dependency injection.
+Prints a number and returns its label. It takes labeled inputs `x` and `label`. It gets `logger` ([`Logger`](logging.md#symbol-Logger)) and `console` ([`Console`](dependencies/august/1.0.0/io/contracts.md#symbol-Console)) from dependency injection.
 
 Layers run in the declared order. Call [`Audit.around`](interceptors.md#symbol-Audit.around). Call [`Positive.around`](interceptors.md#symbol-Positive.around). Map `x` to `y`. Call [`AddOne.around`](interceptors.md#symbol-AddOne.around). Map `x` to `y`.
 
 ::: spec-paragraph specification-paragraph-1
-It passes `x` to [`console.write`](dependencies/august/0.23.0/io/contracts.md#symbol-Console.write). It returns `label`. [source](app.md#source-L16-L17)
+It passes `x` to [`console.write`](dependencies/august/1.0.0/io/contracts.md#symbol-Console.write). It returns `label`. [source](app.md#source-L16-L17)
 :::
 
 ::: details Checked interface
@@ -116,7 +116,7 @@ It passes `x` to [`console.write`](dependencies/august/0.23.0/io/contracts.md#sy
 describe(resolve Logger logger, resolve Console console, int x, string label) returns string unless ValidationError uses Console.write
 ```
 
-It takes `x` as an integer (the numeric input, validated and incremented by the chain) and `label` as a string (Text forwarded through each layer unchanged). It gets `logger` ([`Logger`](logging.md#symbol-Logger)) and `console` ([`Console`](dependencies/august/0.23.0/io/contracts.md#symbol-Console)) from dependency injection. Failures can raise `ValidationError`.
+It takes `x` as an integer (the numeric input, validated and incremented by the chain) and `label` as a string (Text forwarded through each layer unchanged). It gets `logger` ([`Logger`](logging.md#symbol-Logger)) and `console` ([`Console`](dependencies/august/1.0.0/io/contracts.md#symbol-Console)) from dependency injection. Failures can raise `ValidationError`.
 
 :::
 
@@ -124,7 +124,7 @@ It takes `x` as an integer (the numeric input, validated and incremented by the 
 
 #### `IGreeter.greet` · [source](app.md#source-L20) {#symbol-IGreeter.greet}
 
-It gets `logger` ([`Logger`](logging.md#symbol-Logger)) and `console` ([`Console`](dependencies/august/0.23.0/io/contracts.md#symbol-Console)) from dependency injection. It returns `string`. It can call [`Console.write`](dependencies/august/0.23.0/io/contracts.md#symbol-Console.write).
+It gets `logger` ([`Logger`](logging.md#symbol-Logger)) and `console` ([`Console`](dependencies/august/1.0.0/io/contracts.md#symbol-Console)) from dependency injection. It returns `string`. It can call [`Console.write`](dependencies/august/1.0.0/io/contracts.md#symbol-Console.write).
 
 ### `Greeter` · class · [source](app.md#source-L23) {#symbol-Greeter}
 
@@ -132,7 +132,7 @@ Construction stores its inputs; startup is visible in the greet call. It impleme
 
 #### `Greeter.greet` · [source](app.md#source-L26) {#symbol-Greeter.greet}
 
-Method annotations wrap each method invocation separately. It gets `logger` ([`Logger`](logging.md#symbol-Logger)) and `console` ([`Console`](dependencies/august/0.23.0/io/contracts.md#symbol-Console)) from dependency injection. Layers run in the declared order. Call [`Audit.around`](interceptors.md#symbol-Audit.around).
+Method annotations wrap each method invocation separately. It gets `logger` ([`Logger`](logging.md#symbol-Logger)) and `console` ([`Console`](dependencies/august/1.0.0/io/contracts.md#symbol-Console)) from dependency injection. Layers run in the declared order. Call [`Audit.around`](interceptors.md#symbol-Audit.around).
 
 ::: spec-paragraph specification-paragraph-2
 It returns the text `Hello, {name}!`. [source](app.md#source-L27)
@@ -144,13 +144,13 @@ It returns the text `Hello, {name}!`. [source](app.md#source-L27)
 greet(resolve Logger logger, resolve Console console) returns string uses Console.write
 ```
 
-It gets `logger` ([`Logger`](logging.md#symbol-Logger)) and `console` ([`Console`](dependencies/august/0.23.0/io/contracts.md#symbol-Console)) from dependency injection.
+It gets `logger` ([`Logger`](logging.md#symbol-Logger)) and `console` ([`Console`](dependencies/august/1.0.0/io/contracts.md#symbol-Console)) from dependency injection.
 
 :::
 
 ### Dependencies
 
-It uses [`Console`](dependencies/august/0.23.0/io/contracts.md#symbol-Console) ([`write`](dependencies/august/0.23.0/io/contracts.md#symbol-Console.write)) from `august.io`. It uses [`AddOne`](interceptors.md#symbol-AddOne) ([`around`](interceptors.md#symbol-AddOne.around)), [`Audit`](interceptors.md#symbol-Audit) ([`around`](interceptors.md#symbol-Audit.around)), and [`Positive`](interceptors.md#symbol-Positive) ([`around`](interceptors.md#symbol-Positive.around)) from `interceptors`. It uses [`Logger`](logging.md#symbol-Logger) from `logging`.
+It uses [`Console`](dependencies/august/1.0.0/io/contracts.md#symbol-Console) ([`write`](dependencies/august/1.0.0/io/contracts.md#symbol-Console.write)) from `august.io`. It uses [`AddOne`](interceptors.md#symbol-AddOne) ([`around`](interceptors.md#symbol-AddOne.around)), [`Audit`](interceptors.md#symbol-Audit) ([`around`](interceptors.md#symbol-Audit.around)), and [`Positive`](interceptors.md#symbol-Positive) ([`around`](interceptors.md#symbol-Positive.around)) from `interceptors`. It uses [`Logger`](logging.md#symbol-Logger) from `logging`.
 
 ::::
 

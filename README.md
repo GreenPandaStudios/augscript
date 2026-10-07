@@ -69,9 +69,9 @@ npm run docs:build
 npm run package:packages
 npm run test:packages
 npm run package:extension
-code --install-extension vscode/augscript-0.21.0.vsix --force
+code --install-extension vscode/augscript-1.0.0.vsix --force
 ```
 
 Development dependency versions are pinned in both manifests and lockfiles. The extension bundles the same compiler, runtime, guides and native bootstrap. Native commands prepare required libraries automatically; contributors can prewarm all dependencies with `node scripts/bootstrap-native.mjs`. Set `augscript.nativeHome` to this repository's `.aug-native` directory to share it with the bundled compiler.
 
-August is experimental. Tasks currently run on one OS thread, and some ownership and resource-lifetime cases remain incomplete. Developers can create and import source packages with public exports and frozen dependency locks. The [production readiness review](docs/production-readiness.md), [roadmap](docs/roadmap.md), and [gap ledger](docs/web-library-gaps.md) state current limits and release gates.
+August is experimental until the 1.0 candidate completes qualification. Cooperative tasks share their current heap and thread. Worker tasks run on OS threads with isolated heaps and copied inputs/results. Developers can create and import source packages with public exports and frozen dependency locks. The [production readiness review](docs/production-readiness.md), [roadmap](docs/roadmap.md), and [gap ledger](docs/web-library-gaps.md) state current limits and release gates.

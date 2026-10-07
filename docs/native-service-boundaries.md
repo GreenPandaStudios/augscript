@@ -1,6 +1,6 @@
 # Native service boundaries
 
-This guide describes ingestion support in the published [August 0.23.0 preview](https://github.com/GreenPandaStudios/augscript/releases/tag/v0.23.0). A [clean Linux ARM64 install](./public/qualification/0.23.0/native-ingestion-linux-arm64.json) downloaded the public compiler and native package, compiled these operations through LLVM, and checked their results and cleanup. See [library limits](web-library-gaps.md) for remaining transport and deployment work.
+This guide describes ingestion support in the published [August 0.23.0 preview](https://github.com/GreenPandaStudios/augscript/releases/tag/v0.23.0). A [clean Linux ARM64 install](./qualification/0.23.0/native-ingestion-linux-arm64.json) downloaded the public compiler and native package, compiled these operations through LLVM, and checked their results and cleanup. See [library limits](web-library-gaps.md) for remaining transport and deployment work.
 
 ## Authenticate before reading the upload
 

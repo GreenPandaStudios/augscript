@@ -2,7 +2,7 @@
 
 # `logger.aug`
 
-<!-- August spec revision: schema=1 compiler=0.23.0 source-sha256=9493728d3022d02ca0090412637efd9be197768aa76d88bc132eb387e7e2ec32 -->
+<!-- August spec revision: schema=1 compiler=1.0.0 source-sha256=9493728d3022d02ca0090412637efd9be197768aa76d88bc132eb387e7e2ec32 -->
 
 [Interactions and sequences](logger.aug.diagrams.md)
 
@@ -14,8 +14,8 @@ Receives a message describing an application operation.
 <a id="symbol-Logger.log"></a>
 ### `Logger.log` · [source](logger.aug#L6)
 
-It takes `message` as a string (Text to write). It gets `console` ([`Console`](../.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-Console)) from dependency injection. It can call [`Console.write`](../.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-Console.write).
+It takes `message` as a string (Text to write). It gets `console` ([`Console`](../.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-Console)) from dependency injection. It can call [`Console.write`](../.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-Console.write).
 
 ## Dependencies
 
-It uses [`Console`](../.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-Console) ([`write`](../.aug-spec/august/0.23.0/io/contracts.aug.md#symbol-Console.write)) from `august.io`.
+It uses [`Console`](../.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-Console) ([`write`](../.aug-spec/august/1.0.0/io/contracts.aug.md#symbol-Console.write)) from `august.io`.

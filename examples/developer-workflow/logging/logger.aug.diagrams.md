@@ -27,4 +27,4 @@ Interface contract; implementation selected at runtime. [Explanation](logger.aug
 
 ## Called contracts
 
-- [Console](../.aug-spec/august/0.23.0/io/contracts.aug.diagrams.md) — august/io/contracts.aug
+- [Console](../.aug-spec/august/1.0.0/io/contracts.aug.diagrams.md) — august/io/contracts.aug

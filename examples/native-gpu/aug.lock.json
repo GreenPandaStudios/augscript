@@ -1,29 +1,29 @@
 {
   "format": 1,
-  "compiler": "0.23.0",
+  "compiler": "1.0.0",
   "specifications": {
-    "url_39068e92fef803d998a8": "https://github.com/GreenPandaStudios/aug-gpu#v0.1.1"
+    "url_dd4c25535a8d0362a9be": "https://github.com/GreenPandaStudios/aug-gpu#ebc288b8d88b30213715bdbcd3d4647ff81a5462"
   },
   "roots": {
-    "url_39068e92fef803d998a8": "packages/url_39068e92fef803d998a8"
+    "url_dd4c25535a8d0362a9be": "snapshots/ea23121327216b6d67e8272cf12237fc916fd68ab3f654d2c4e7cc57bdbbedfb/packages/url_dd4c25535a8d0362a9be"
   },
   "npm": {},
   "git": [
     {
-      "request": "https://github.com/GreenPandaStudios/aug-gpu#v0.1.1",
+      "request": "https://github.com/GreenPandaStudios/aug-gpu#ebc288b8d88b30213715bdbcd3d4647ff81a5462",
       "repository": "https://github.com/GreenPandaStudios/aug-gpu.git",
-      "revision": "v0.1.1",
+      "revision": "ebc288b8d88b30213715bdbcd3d4647ff81a5462",
       "folder": "",
-      "commit": "792efddf2d7debf68ceb8d4800a69299bc73b04e"
+      "commit": "ebc288b8d88b30213715bdbcd3d4647ff81a5462"
     }
   ],
   "packages": [
     {
-      "path": "packages/url_39068e92fef803d998a8",
+      "path": "snapshots/ea23121327216b6d67e8272cf12237fc916fd68ab3f654d2c4e7cc57bdbbedfb/packages/url_dd4c25535a8d0362a9be",
       "name": "@greenpandastudios/aug-gpu",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "source": "src",
-      "digest": "b57cf11bcbd943cf85f78d2eab3d02d6a9c0269a2d9d423d9a871bd477921b1a",
+      "digest": "c0741b46f6780ece15553d4c293319280c704b7090917b972765f872b22962ea",
       "dependencies": {},
       "native": {
         "profile": "aug-native-abi-1",
@@ -93,9 +93,9 @@
         },
         "packages": [
           {
-            "sourcePackage": "@greenpandastudios/aug-gpu@0.1.1",
-            "sourceDigest": "b57cf11bcbd943cf85f78d2eab3d02d6a9c0269a2d9d423d9a871bd477921b1a",
-            "sourceCommit": "792efddf2d7debf68ceb8d4800a69299bc73b04e",
+            "sourcePackage": "@greenpandastudios/aug-gpu@0.2.0",
+            "sourceDigest": "c0741b46f6780ece15553d4c293319280c704b7090917b972765f872b22962ea",
+            "sourceCommit": "ebc288b8d88b30213715bdbcd3d4647ff81a5462",
             "contractSha256": "d95e237d8be07df8fd20132ca0f5a45a125fd65b7ba93669e69c0a38db63d60c",
             "artifact": {
               "id": "macos-arm64",
@@ -139,6 +139,16 @@
             }
           }
         ]
+      }
+    },
+    "compilers": {
+      "darwin-arm64": {
+        "version": "1.0.0",
+        "llvm": "23.1.2",
+        "host": "darwin-arm64",
+        "target": "aarch64-apple-darwin",
+        "artifactSha256": "4d84935235f59a30775479a56d42bc3e26238acb5a1568db1484e15032bf4534",
+        "runtimeSha256": "00847a9a7921b3ecd2b1a355d6ea4192e32fba5addc6a8a1c341e4e580362722"
       }
     }
   }

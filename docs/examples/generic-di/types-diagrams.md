@@ -92,8 +92,8 @@ Interface contract; implementation selected at runtime. [Explanation](types.md).
 
 ## Called contracts
 
-- [Console](dependencies/august/0.23.0/io/contracts-diagrams.md) — august/io/contracts.aug
-- [Console.write](dependencies/august/0.23.0/io/contracts-diagrams.md#sequence-Console.write) — august/io/contracts.aug
+- [Console](dependencies/august/1.0.0/io/contracts-diagrams.md) — august/io/contracts.aug
+- [Console.write](dependencies/august/1.0.0/io/contracts-diagrams.md#sequence-Console.write) — august/io/contracts.aug
 - [IProgram](types-diagrams.md) — types.aug
 - [Repository](types-diagrams.md) — types.aug
 - [Repository.get](types-diagrams.md#sequence-Repository.get) — types.aug

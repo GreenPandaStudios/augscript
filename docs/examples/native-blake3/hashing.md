@@ -28,9 +28,9 @@ pageClass: aug-example-page
 
 ::: code-group
 
-```aug [Indentation] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiaW5kZW50Iiwic291cmNlU2hhMjU2IjoiODVlOWUxZTI0MjllYzU2NWU3Y2M1ZDhkY2YxMTA1Y2JkMTRiOTYwNTk3MjQ1NGEwYzhkODliNDVlMzJlNjUzMyIsImZvcm1hdHRlZFNoYTI1NiI6ImFiYWRmNGNlYWY1ODFkMGRkNGZlOGQwZDUxNjcwYTkxMTE0ZTIzNTMzYWNjMmJiY2QyN2Y3NzRmMDk0YmE0YTAiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDUiLCJmaXJzdCI6NCwibGFzdCI6NSwiYmFja2xpbmtzIjpbImhhc2hpbmctZGlhZ3JhbXMubWQjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMSIsIiNzeW1ib2wtaGFzaFRleHQiXX0seyJpZCI6InNvdXJjZS1MNiIsImZpcnN0Ijo1LCJsYXN0Ijo1LCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTEiXX0seyJpZCI6InNvdXJjZS1MOCIsImZpcnN0Ijo2LCJsYXN0IjoxMSwiYmFja2xpbmtzIjpbIiNzeW1ib2wtdGVzdC0yMC1oYXNoVGV4dCJdfSx7ImlkIjoic291cmNlLUwxMCIsImZpcnN0Ijo4LCJsYXN0IjoxMSwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0yIl19LHsiaWQiOiJzb3VyY2UtTDExIiwiZmlyc3QiOjksImxhc3QiOjExLCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTMiXX1dfQ
+```aug [Indentation] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiaW5kZW50Iiwic291cmNlU2hhMjU2IjoiZWRiNWRhMWM3Y2JhZDAzYTQyN2QwYTgxZTUxZGEwZTZhZTlhMjU2MzU2MDljZGQzNDkyZDZjNGU2NDlhMTk0NCIsImZvcm1hdHRlZFNoYTI1NiI6IjBiMmNlZmU3MTRiZWM2NzNiOWNmNmFhNTVlMDg5ZjFmN2RlM2YwNWQ4NmMyNTRhNjJjMTFiNDhmMGIxNjVkYTYiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDUiLCJmaXJzdCI6NCwibGFzdCI6NSwiYmFja2xpbmtzIjpbImhhc2hpbmctZGlhZ3JhbXMubWQjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMSIsIiNzeW1ib2wtaGFzaFRleHQiXX0seyJpZCI6InNvdXJjZS1MNiIsImZpcnN0Ijo1LCJsYXN0Ijo1LCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTEiXX0seyJpZCI6InNvdXJjZS1MOCIsImZpcnN0Ijo2LCJsYXN0IjoxMSwiYmFja2xpbmtzIjpbIiNzeW1ib2wtdGVzdC0yMC1oYXNoVGV4dCJdfSx7ImlkIjoic291cmNlLUwxMCIsImZpcnN0Ijo4LCJsYXN0IjoxMSwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0yIl19LHsiaWQiOiJzb3VyY2UtTDExIiwiZmlyc3QiOjksImxhc3QiOjExLCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTMiXX1dfQ
 // aug-spec: "hashing.aug.md" explains this file. Read it before changes; refresh with aug spec.
-import HashError and hash from "https://github.com/GreenPandaStudios/aug-blake3#v0.1.5"
+import HashError and hash from "https://github.com/GreenPandaStudios/aug-blake3#e9f7b92d98a2f9c36de530f4dfc1740012fb5e5e"
 /** Hash UTF-8 text with the real Rust BLAKE3 implementation. */
 hashText(string value) returns string unless HashError:
     return hash(input=value.bytes())
@@ -42,9 +42,9 @@ test hashText:
             )
 ```
 
-```aug [Braces] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiYnJhY2VzIiwic291cmNlU2hhMjU2IjoiODVlOWUxZTI0MjllYzU2NWU3Y2M1ZDhkY2YxMTA1Y2JkMTRiOTYwNTk3MjQ1NGEwYzhkODliNDVlMzJlNjUzMyIsImZvcm1hdHRlZFNoYTI1NiI6Ijg1YjY4Nzk1OGE0ZTliZDM1ZjkyYmVjMTBiMzE2YzI3YzBiOWEzYTc1NDVlNThkOWI5ZDJkMTEyM2QzMjQ4NjkiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDUiLCJmaXJzdCI6NCwibGFzdCI6NiwiYmFja2xpbmtzIjpbImhhc2hpbmctZGlhZ3JhbXMubWQjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMSIsIiNzeW1ib2wtaGFzaFRleHQiXX0seyJpZCI6InNvdXJjZS1MNiIsImZpcnN0Ijo1LCJsYXN0Ijo1LCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTEiXX0seyJpZCI6InNvdXJjZS1MOCIsImZpcnN0Ijo3LCJsYXN0IjoxNSwiYmFja2xpbmtzIjpbIiNzeW1ib2wtdGVzdC0yMC1oYXNoVGV4dCJdfSx7ImlkIjoic291cmNlLUwxMCIsImZpcnN0Ijo5LCJsYXN0IjoxMywiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0yIl19LHsiaWQiOiJzb3VyY2UtTDExIiwiZmlyc3QiOjEwLCJsYXN0IjoxMiwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0zIl19XX0
+```aug [Braces] aug-source=eyJmb3JtYXQiOjEsInN0eWxlIjoiYnJhY2VzIiwic291cmNlU2hhMjU2IjoiZWRiNWRhMWM3Y2JhZDAzYTQyN2QwYTgxZTUxZGEwZTZhZTlhMjU2MzU2MDljZGQzNDkyZDZjNGU2NDlhMTk0NCIsImZvcm1hdHRlZFNoYTI1NiI6ImZmYmNjZDU4NjMyNDExN2FkODUxYzg5ZWIzMjMwNWZiNDhkYjAyMzEwMTFjMzg4ZjYxODBjOTIyNzA4ZTg5ODkiLCJsaW5rcyI6W3siaWQiOiJzb3VyY2UtTDUiLCJmaXJzdCI6NCwibGFzdCI6NiwiYmFja2xpbmtzIjpbImhhc2hpbmctZGlhZ3JhbXMubWQjc3BlY2lmaWNhdGlvbi1wYXJhZ3JhcGgtMSIsIiNzeW1ib2wtaGFzaFRleHQiXX0seyJpZCI6InNvdXJjZS1MNiIsImZpcnN0Ijo1LCJsYXN0Ijo1LCJiYWNrbGlua3MiOlsiI3NwZWNpZmljYXRpb24tcGFyYWdyYXBoLTEiXX0seyJpZCI6InNvdXJjZS1MOCIsImZpcnN0Ijo3LCJsYXN0IjoxNSwiYmFja2xpbmtzIjpbIiNzeW1ib2wtdGVzdC0yMC1oYXNoVGV4dCJdfSx7ImlkIjoic291cmNlLUwxMCIsImZpcnN0Ijo5LCJsYXN0IjoxMywiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0yIl19LHsiaWQiOiJzb3VyY2UtTDExIiwiZmlyc3QiOjEwLCJsYXN0IjoxMiwiYmFja2xpbmtzIjpbIiNzcGVjaWZpY2F0aW9uLXBhcmFncmFwaC0zIl19XX0
 // aug-spec: "hashing.aug.md" explains this file. Read it before changes; refresh with aug spec.
-import HashError and hash from "https://github.com/GreenPandaStudios/aug-blake3#v0.1.5"
+import HashError and hash from "https://github.com/GreenPandaStudios/aug-blake3#e9f7b92d98a2f9c36de530f4dfc1740012fb5e5e"
 /** Hash UTF-8 text with the real Rust BLAKE3 implementation. */
 hashText(string value) returns string unless HashError {
     return hash(input=value.bytes())
@@ -73,7 +73,7 @@ test hashText {
 ### `hashText` · [source](hashing.md#source-L5) {#symbol-hashText}
 
 ::: spec-paragraph specification-paragraph-1
-Hash UTF-8 text with the real Rust BLAKE3 implementation. It takes `value` as a string. It returns [`hash`](dependencies/packages/%40greenpandastudios/aug-blake3/0.1.5/api.md#symbol-hash) with `input` from the UTF-8 bytes of `value`. [source](hashing.md#source-L6)
+Hash UTF-8 text with the real Rust BLAKE3 implementation. It takes `value` as a string. It returns [`hash`](dependencies/packages/%40greenpandastudios/aug-blake3/0.2.0/api.md#symbol-hash) with `input` from the UTF-8 bytes of `value`. [source](hashing.md#source-L6)
 :::
 
 ::: details Checked interface
@@ -82,7 +82,7 @@ Hash UTF-8 text with the real Rust BLAKE3 implementation. It takes `value` as a 
 hashText(string value) returns string unless HashError
 ```
 
-It takes `value` as a string. Failures can raise [`HashError`](dependencies/packages/%40greenpandastudios/aug-blake3/0.1.5/contracts.md#symbol-HashError).
+It takes `value` as a string. Failures can raise [`HashError`](dependencies/packages/%40greenpandastudios/aug-blake3/0.2.0/contracts.md#symbol-HashError).
 
 :::
 
@@ -102,7 +102,7 @@ The test requires [`hashText`](hashing.md#symbol-hashText) with `value` `"abc"` 
 
 ### Dependencies
 
-It uses [`hash`](dependencies/packages/%40greenpandastudios/aug-blake3/0.1.5/api.md#symbol-hash) and [`HashError`](dependencies/packages/%40greenpandastudios/aug-blake3/0.1.5/contracts.md#symbol-HashError) from `https://github.com/GreenPandaStudios/aug-blake3#v0.1.5`.
+It uses [`hash`](dependencies/packages/%40greenpandastudios/aug-blake3/0.2.0/api.md#symbol-hash) and [`HashError`](dependencies/packages/%40greenpandastudios/aug-blake3/0.2.0/contracts.md#symbol-HashError) from `https://github.com/GreenPandaStudios/aug-blake3#e9f7b92d98a2f9c36de530f4dfc1740012fb5e5e`.
 
 Built-in operations follow the [language reference](https://greenpandastudios.github.io/augscript/language-constructs).
 

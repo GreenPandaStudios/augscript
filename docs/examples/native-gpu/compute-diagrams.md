@@ -50,7 +50,7 @@ sequenceDiagram
 ## Called contracts
 
 - [calculate](compute-diagrams.md#sequence-calculate) — compute.aug
-- [add](dependencies/packages/%40greenpandastudios/aug-gpu/0.1.1/api-diagrams.md#sequence-add) — package/@greenpandastudios/aug-gpu@0.1.1/api.aug
-- [download](dependencies/packages/%40greenpandastudios/aug-gpu/0.1.1/api-diagrams.md#sequence-download) — package/@greenpandastudios/aug-gpu@0.1.1/api.aug
-- [openDevice](dependencies/packages/%40greenpandastudios/aug-gpu/0.1.1/api-diagrams.md#sequence-openDevice) — package/@greenpandastudios/aug-gpu@0.1.1/api.aug
-- [upload](dependencies/packages/%40greenpandastudios/aug-gpu/0.1.1/api-diagrams.md#sequence-upload) — package/@greenpandastudios/aug-gpu@0.1.1/api.aug
+- [add](dependencies/packages/%40greenpandastudios/aug-gpu/0.2.0/api-diagrams.md#sequence-add) — package/@greenpandastudios/aug-gpu@0.2.0/api.aug
+- [download](dependencies/packages/%40greenpandastudios/aug-gpu/0.2.0/api-diagrams.md#sequence-download) — package/@greenpandastudios/aug-gpu@0.2.0/api.aug
+- [openDevice](dependencies/packages/%40greenpandastudios/aug-gpu/0.2.0/api-diagrams.md#sequence-openDevice) — package/@greenpandastudios/aug-gpu@0.2.0/api.aug
+- [upload](dependencies/packages/%40greenpandastudios/aug-gpu/0.2.0/api-diagrams.md#sequence-upload) — package/@greenpandastudios/aug-gpu@0.2.0/api.aug

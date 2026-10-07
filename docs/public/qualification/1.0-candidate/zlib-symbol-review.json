@@ -1,0 +1,37 @@
+{
+  "format": 1,
+  "scope": "Exact Linux zlib artifact symbol exclusion; not a complete security assessment",
+  "sourceCommit": "fce52e3bf536a304fab82d1d4b95ae425c027be1",
+  "artifacts": [
+    {
+      "id": "linux-arm64",
+      "url": "https://github.com/GreenPandaStudios/aug-zlib/releases/download/v0.1.3/native-linux-arm64.tar.gz",
+      "archiveSha256": "6da832fa341a1fba96643244da2bb63957107d2b1413743c363fca002e500c66",
+      "bytes": 101094,
+      "library": "lib/libaug_zlib.so.1",
+      "librarySha256": "5c32ec115d78d2e82f63543e9e97ed7d2b9181e506e8f8bc0b10ce64c9aa0338",
+      "symbolTableSha256": "2ddc82cf2affffa35e7afb3b292a68e4a2f75fdac49992fe5043cb18e47d8ddb",
+      "fullSymbolCount": 366,
+      "gzSymbolCount": 0,
+      "compress2": true,
+      "inflate": true
+    },
+    {
+      "id": "linux-x64",
+      "url": "https://github.com/GreenPandaStudios/aug-zlib/releases/download/v0.1.3/native-linux-x64.tar.gz",
+      "archiveSha256": "c2a6e6522e3a96e1ee99f1b195f7457a7ab633dc05b65a29020aa5ea1ec7aa5d",
+      "bytes": 109033,
+      "library": "lib/libaug_zlib.so.1",
+      "librarySha256": "9bdcd2f0580f5dc563d8ee62faaefb117fa051a2b667ce1b6bf0a6acdd75f2cd",
+      "symbolTableSha256": "b2c14f3afb6203aaa8b60345fd89e57ebfb72e17c5150d19ade2ec6824bf252e",
+      "fullSymbolCount": 167,
+      "gzSymbolCount": 0,
+      "compress2": true,
+      "inflate": true
+    }
+  ],
+  "reviewedDate": "2026-10-06",
+  "node": "24.21.0",
+  "packageVersion": "0.2.0",
+  "method": "Verify archive size/SHA-256 against source-owned catalog; inspect full unstripped ELF symbol tables with GNU readelf; require compress2/inflate and absence of every gz-prefixed symbol."
+}

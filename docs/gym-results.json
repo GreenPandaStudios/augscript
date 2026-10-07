@@ -1,14 +1,14 @@
 {
   "format": 1,
   "generatorVersion": 1,
-  "recordedAt": "2026-10-02T09:53:01.078Z",
-  "compiler": "0.21.0",
-  "sourceSha256": "23c9155410c0af115173e99c583e86374df5b83e22d9ce82aeabeb19405384a0",
+  "recordedAt": "2026-10-07T01:18:29.475Z",
+  "compiler": "1.0.0",
+  "sourceSha256": "b0908546922a5b6d88fe4bc0436629dc67331d96049d935989a9b85bef0a1b44",
   "platform": "darwin",
   "architecture": "arm64",
   "os": "25.6.0",
   "cpu": "Apple M5",
-  "node": "v24.18.0",
+  "node": "v24.21.0",
   "backend": "llvm",
   "profile": "full",
   "seed": 877966,
@@ -196,7 +196,7 @@
       "vectors": 258,
       "source": ".aug-build/gyms/replays/877966-256/arithmetic/debug",
       "status": "passed",
-      "elapsedMs": 568.436958,
+      "elapsedMs": 1190.95275,
       "exitStatus": 0,
       "stderr": "",
       "actual": "false\ntrue\n0\n1\n-9007199254740986\n7\n9151314442816847864\n-7\n-9223372036854775808\n1\n-9223372036854775807\n-9223372036854775802\n7\n-63050394783186950\n0\n-7\n0\n0\n0\n9007199254740994\n9160321642071588851\n-1\n-7\n0\n-9223372036854775808\n9223372036854775800\n-9223372036854775808\n-9214364837600034807\n9160321642071588857\n0\n9007199254740994\n9214364837600034815\n1\n-9223372036854775808\n0\n-1\n-6\n-1\n7907034202911913691\n-1\n-7\n0\n-9214364837600034799\n-9223372036854775808\n9223372036854775807\n63050394783187007\n-7\n-9223372036854775808\n9007199254740994\n1\n0\n0\n0\n-1\n-7\n0\n0\n-9223372036854775808\n7907034202911913691\n7\n9160321642071588856\n9007199254740994\n-9223372036854775808\n0\n18014398509481994\n1\n9160321642071588856\n7\n9160321642071588863\n0\n-7\n-9223372036854775808\n0\n9223372036854775807\n-1\n0\n9160321642071588857\n-7\n0\n9214364837600034830\n-9223372036854775808\n0\n1\n-7\n6\n0\n7\n0\n-9223372036854775801\n-9151314442816847849\n-9133300044307365879\n-7\n-9223372036854775808\n-7\n-9223372036854775808\n0\n-1\n-7\n-9223372036854775808\n0\n0\n0\n-9133300044307365879\n0\n-1023\n1\n8\n-9223372036854775808\n0\n-9214364837600034800\n7\n-9007199254740993\n0\n1\n9223372036854775801\n9223372036854775800\n1\n1\n1\n0\n8782019273372467102\n-9223372036854775802\n-1\n0\n0\n-9223372036854775808\n0\n18014398509481985\n-7\n9214364837600034815\n0\n-7\n0\n-9214364837600034806\n0\n2\n-9223372036854775808\n9007199254740994\n-9223372036854775808\n-9214364837600034815\n0\n0\n-1\n-7\n0\n-9205357638345293829\n0\n9007199254740994\n-9223372036854775808\n0\n0\n-1\n-6\n1\n0\n-1\n9007199254741002\n0\n7\n-1\n-9223372036854775802\n-7\n9214364837600034815\n63050394783186958\n-9214364837600034807\n63050394783186958\n-1\n-189151184349560846\n-7\n0\n9214364837600034815\n-7\n-9223372036854775808\n0\n9223372036854775801\n63050394783186958\n0\n9007199254740999\n-9223372036854775807\n0\n0\n-9223372036854775807\n-1\n-9223372036854775808\n0\n0\n-1\n-7\n-9223372036854775808\n0\n1\n0\n9169328841326329850\n9214364837600034815\n-7\n-9223372036854775808\n0\n0\n-1\n-7\n0\n0\n-1\n-7\n-9160321642071588794\n9223372036854775802\n0\n9160321642071588856\n1\n-9160321642071588801\n0\n-1\n18014398509481994\n-7\n0\n-189151184349560846\n-9223372036854775802\n-1\n0\n0\n-189151184349560846\n-7\n-9205357638345293813\n5267924821272803032\n9223372036854775807\n-1\n0\n-9223372036854775759\n0\n-9223372036854775808\n-9205357638345293814\n-1\n-9223372036854775802\n0\n0\n7\n9223372036854775801\n0\n-9205357638345293814\n-9223372036854775808\n0\n0\n-1317624576693539400\n-9214364837600034814\n-1\n9007199254740993\n9223372036854775759\n-9223372036854775802\n9214364837600034815\n63050394783186958\n0\n-9223372036854775808\n-63050394783178760\n0\n-1\n9223372036854775806\n9160321642071588857\n-9223372036854775802\n",
@@ -208,7 +208,7 @@
       "vectors": 258,
       "source": ".aug-build/gyms/replays/877966-256/arithmetic/release",
       "status": "passed",
-      "elapsedMs": 1906.6913749999999,
+      "elapsedMs": 2609.316,
       "exitStatus": 0,
       "stderr": "",
       "actual": "false\ntrue\n0\n1\n-9007199254740986\n7\n9151314442816847864\n-7\n-9223372036854775808\n1\n-9223372036854775807\n-9223372036854775802\n7\n-63050394783186950\n0\n-7\n0\n0\n0\n9007199254740994\n9160321642071588851\n-1\n-7\n0\n-9223372036854775808\n9223372036854775800\n-9223372036854775808\n-9214364837600034807\n9160321642071588857\n0\n9007199254740994\n9214364837600034815\n1\n-9223372036854775808\n0\n-1\n-6\n-1\n7907034202911913691\n-1\n-7\n0\n-9214364837600034799\n-9223372036854775808\n9223372036854775807\n63050394783187007\n-7\n-9223372036854775808\n9007199254740994\n1\n0\n0\n0\n-1\n-7\n0\n0\n-9223372036854775808\n7907034202911913691\n7\n9160321642071588856\n9007199254740994\n-9223372036854775808\n0\n18014398509481994\n1\n9160321642071588856\n7\n9160321642071588863\n0\n-7\n-9223372036854775808\n0\n9223372036854775807\n-1\n0\n9160321642071588857\n-7\n0\n9214364837600034830\n-9223372036854775808\n0\n1\n-7\n6\n0\n7\n0\n-9223372036854775801\n-9151314442816847849\n-9133300044307365879\n-7\n-9223372036854775808\n-7\n-9223372036854775808\n0\n-1\n-7\n-9223372036854775808\n0\n0\n0\n-9133300044307365879\n0\n-1023\n1\n8\n-9223372036854775808\n0\n-9214364837600034800\n7\n-9007199254740993\n0\n1\n9223372036854775801\n9223372036854775800\n1\n1\n1\n0\n8782019273372467102\n-9223372036854775802\n-1\n0\n0\n-9223372036854775808\n0\n18014398509481985\n-7\n9214364837600034815\n0\n-7\n0\n-9214364837600034806\n0\n2\n-9223372036854775808\n9007199254740994\n-9223372036854775808\n-9214364837600034815\n0\n0\n-1\n-7\n0\n-9205357638345293829\n0\n9007199254740994\n-9223372036854775808\n0\n0\n-1\n-6\n1\n0\n-1\n9007199254741002\n0\n7\n-1\n-9223372036854775802\n-7\n9214364837600034815\n63050394783186958\n-9214364837600034807\n63050394783186958\n-1\n-189151184349560846\n-7\n0\n9214364837600034815\n-7\n-9223372036854775808\n0\n9223372036854775801\n63050394783186958\n0\n9007199254740999\n-9223372036854775807\n0\n0\n-9223372036854775807\n-1\n-9223372036854775808\n0\n0\n-1\n-7\n-9223372036854775808\n0\n1\n0\n9169328841326329850\n9214364837600034815\n-7\n-9223372036854775808\n0\n0\n-1\n-7\n0\n0\n-1\n-7\n-9160321642071588794\n9223372036854775802\n0\n9160321642071588856\n1\n-9160321642071588801\n0\n-1\n18014398509481994\n-7\n0\n-189151184349560846\n-9223372036854775802\n-1\n0\n0\n-189151184349560846\n-7\n-9205357638345293813\n5267924821272803032\n9223372036854775807\n-1\n0\n-9223372036854775759\n0\n-9223372036854775808\n-9205357638345293814\n-1\n-9223372036854775802\n0\n0\n7\n9223372036854775801\n0\n-9205357638345293814\n-9223372036854775808\n0\n0\n-1317624576693539400\n-9214364837600034814\n-1\n9007199254740993\n9223372036854775759\n-9223372036854775802\n9214364837600034815\n63050394783186958\n0\n-9223372036854775808\n-63050394783178760\n0\n-1\n9223372036854775806\n9160321642071588857\n-9223372036854775802\n",
@@ -220,7 +220,7 @@
       "vectors": 260,
       "source": ".aug-build/gyms/replays/877966-256/floating-point/debug",
       "status": "passed",
-      "elapsedMs": 566.5722089999999,
+      "elapsedMs": 1290.4113339999994,
       "exitStatus": 0,
       "stderr": "",
       "actual": "true\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\nzero\ntrue\ntrue\ntrue\nzero\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\nzero\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\nzero\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\nzero\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\nzero\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\nzero\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\nzero\ntrue\ntrue\ntrue\nzero\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\nzero\ntrue\ntrue\ntrue\nzero\ntrue\ntrue\ntrue\nzero\ntrue\ntrue\ntrue\nzero\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\nfalse\n",
@@ -232,7 +232,7 @@
       "vectors": 260,
       "source": ".aug-build/gyms/replays/877966-256/floating-point/release",
       "status": "passed",
-      "elapsedMs": 1593.5716249999996,
+      "elapsedMs": 2169.1857500000006,
       "exitStatus": 0,
       "stderr": "",
       "actual": "true\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\nzero\ntrue\ntrue\ntrue\nzero\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\nzero\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\nzero\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\nzero\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\nzero\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\nzero\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\nzero\ntrue\ntrue\ntrue\nzero\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\nzero\ntrue\ntrue\ntrue\nzero\ntrue\ntrue\ntrue\nzero\ntrue\ntrue\ntrue\nzero\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\nfalse\n",
@@ -244,7 +244,7 @@
       "vectors": 258,
       "source": ".aug-build/gyms/replays/877966-256/collections/debug",
       "status": "passed",
-      "elapsedMs": 439.6847909999997,
+      "elapsedMs": 1121.0897920000007,
       "exitStatus": 0,
       "stderr": "",
       "actual": "7\n0\nnull\nfalse\n0\n0\nnull\nfalse\nnull\nfalse\n1\n1\nnull\nfalse\nnull\nfalse\n2\n2\nnull\nfalse\n473\ntrue\n3\n2\nnull\nfalse\nnull\nfalse\n4\n3\n-399\nfalse\nnull\nfalse\n5\n4\nnull\nfalse\nnull\nfalse\n6\n5\nnull\nfalse\nnull\nfalse\n6\n6\nnull\nfalse\nnull\nfalse\n7\n7\nnull\nfalse\nnull\nfalse\n8\n8\nnull\nfalse\nnull\nfalse\n9\n9\nnull\nfalse\nnull\nfalse\n10\n9\nnull\nfalse\nnull\nfalse\n11\n10\nnull\nfalse\nnull\nfalse\n12\n11\nnull\nfalse\nnull\ntrue\n12\n12\nnull\nfalse\nnull\nfalse\n13\n12\nnull\nfalse\nnull\ntrue\n14\n13\nnull\ntrue\nnull\ntrue\n15\n14\nnull\nfalse\nnull\ntrue\n16\n15\n-399\nfalse\nnull\nfalse\n17\n15\n33\nfalse\nnull\nfalse\n18\n15\nnull\ntrue\nnull\nfalse\n18\n16\nnull\nfalse\nnull\ntrue\n19\n17\nnull\nfalse\nnull\ntrue\n20\n18\n-247\nfalse\nnull\ntrue\n21\n18\nnull\ntrue\nnull\ntrue\n22\n19\nnull\nfalse\nnull\ntrue\n22\n20\nnull\nfalse\nnull\ntrue\n23\n21\nnull\ntrue\nnull\ntrue\n24\n22\nnull\ntrue\nnull\nfalse\n24\n22\n-439\ntrue\nnull\ntrue\n24\n22\n-167\nfalse\nnull\ntrue\n25\n23\n-399\ntrue\n",
@@ -256,7 +256,7 @@
       "vectors": 258,
       "source": ".aug-build/gyms/replays/877966-256/collections/release",
       "status": "passed",
-      "elapsedMs": 625.5422920000001,
+      "elapsedMs": 1313.2725000000028,
       "exitStatus": 0,
       "stderr": "",
       "actual": "7\n0\nnull\nfalse\n0\n0\nnull\nfalse\nnull\nfalse\n1\n1\nnull\nfalse\nnull\nfalse\n2\n2\nnull\nfalse\n473\ntrue\n3\n2\nnull\nfalse\nnull\nfalse\n4\n3\n-399\nfalse\nnull\nfalse\n5\n4\nnull\nfalse\nnull\nfalse\n6\n5\nnull\nfalse\nnull\nfalse\n6\n6\nnull\nfalse\nnull\nfalse\n7\n7\nnull\nfalse\nnull\nfalse\n8\n8\nnull\nfalse\nnull\nfalse\n9\n9\nnull\nfalse\nnull\nfalse\n10\n9\nnull\nfalse\nnull\nfalse\n11\n10\nnull\nfalse\nnull\nfalse\n12\n11\nnull\nfalse\nnull\ntrue\n12\n12\nnull\nfalse\nnull\nfalse\n13\n12\nnull\nfalse\nnull\ntrue\n14\n13\nnull\ntrue\nnull\ntrue\n15\n14\nnull\nfalse\nnull\ntrue\n16\n15\n-399\nfalse\nnull\nfalse\n17\n15\n33\nfalse\nnull\nfalse\n18\n15\nnull\ntrue\nnull\nfalse\n18\n16\nnull\nfalse\nnull\ntrue\n19\n17\nnull\nfalse\nnull\ntrue\n20\n18\n-247\nfalse\nnull\ntrue\n21\n18\nnull\ntrue\nnull\ntrue\n22\n19\nnull\nfalse\nnull\ntrue\n22\n20\nnull\nfalse\nnull\ntrue\n23\n21\nnull\ntrue\nnull\ntrue\n24\n22\nnull\ntrue\nnull\nfalse\n24\n22\n-439\ntrue\nnull\ntrue\n24\n22\n-167\nfalse\nnull\ntrue\n25\n23\n-399\ntrue\n",
@@ -268,7 +268,7 @@
       "vectors": 258,
       "source": ".aug-build/gyms/replays/877966-256/control-flow/debug",
       "status": "passed",
-      "elapsedMs": 495.131542000001,
+      "elapsedMs": 1162.0919159999976,
       "exitStatus": 0,
       "stderr": "",
       "actual": "-9\n3\n-141\n61\n51\n-147\n61\n25\n21\n-135\n111\n-75\n25\n9\n-57\n-111\n15\n13\n-33\n29\n57\n41\n17\n17\n15\n1\n29\n-87\n41\n41\n-45\n57\n53\n-3\n-81\n21\n41\n-63\n-57\n17\n-21\n-135\n17\n21\n87\n-99\n-57\n9\n41\n45\n13\n-39\n21\n-63\n-57\n-123\n-33\n57\n5\n9\n3\n-75\n73\n45\n21\n73\n21\n-63\n29\n13\n-117\n45\n-141\n-147\n-105\n25\n-141\n21\n5\n-3\n5\n-87\n5\n-75\n-129\n69\n-33\n-3\n21\n-99\n-141\n-147\n17\n25\n25\n1\n53\n-135\n-57\n5\n41\n41\n-81\n-87\n13\n57\n89\n17\n37\n21\n41\n-135\n-129\n-39\n-69\n37\n41\n61\n-129\n37\n3\n-123\n-81\n21\n13\n17\n-45\n13\n53\n41\n21\n-27\n49\n1\n61\n1\n51\n-111\n-69\n33\n5\n9\n25\n-39\n-57\n-99\n-57\n-147\n41\n81\n27\n73\n-105\n81\n-117\n-27\n9\n9\n39\n-51\n29\n-63\n-81\n69\n21\n29\n-105\n33\n-33\n21\n21\n17\n-129\n-111\n37\n53\n3\n-135\n25\n-135\n25\n-147\n3\n-63\n-9\n85\n-9\n77\n49\n21\n1\n37\n123\n49\n-129\n-135\n21\n81\n-129\n53\n-105\n41\n63\n-135\n25\n61\n-45\n33\n-21\n25\n-93\n81\n-105\n25\n41\n77\n9\n45\n-45\n65\n-21\n-63\n25\n57\n-21\n61\n73\n45\n33\n5\n-33\n-51\n-33\n-123\n33\n-123\n61\n65\n-141\n1\n-141\n25\n-69\n41\n-45\n49\n17\n5\n51\n33\n-117\n17\n49\n-63\n53\n53\n13\n9\n",
@@ -280,7 +280,7 @@
       "vectors": 258,
       "source": ".aug-build/gyms/replays/877966-256/control-flow/release",
       "status": "passed",
-      "elapsedMs": 846.7641660000008,
+      "elapsedMs": 1517.943374999999,
       "exitStatus": 0,
       "stderr": "",
       "actual": "-9\n3\n-141\n61\n51\n-147\n61\n25\n21\n-135\n111\n-75\n25\n9\n-57\n-111\n15\n13\n-33\n29\n57\n41\n17\n17\n15\n1\n29\n-87\n41\n41\n-45\n57\n53\n-3\n-81\n21\n41\n-63\n-57\n17\n-21\n-135\n17\n21\n87\n-99\n-57\n9\n41\n45\n13\n-39\n21\n-63\n-57\n-123\n-33\n57\n5\n9\n3\n-75\n73\n45\n21\n73\n21\n-63\n29\n13\n-117\n45\n-141\n-147\n-105\n25\n-141\n21\n5\n-3\n5\n-87\n5\n-75\n-129\n69\n-33\n-3\n21\n-99\n-141\n-147\n17\n25\n25\n1\n53\n-135\n-57\n5\n41\n41\n-81\n-87\n13\n57\n89\n17\n37\n21\n41\n-135\n-129\n-39\n-69\n37\n41\n61\n-129\n37\n3\n-123\n-81\n21\n13\n17\n-45\n13\n53\n41\n21\n-27\n49\n1\n61\n1\n51\n-111\n-69\n33\n5\n9\n25\n-39\n-57\n-99\n-57\n-147\n41\n81\n27\n73\n-105\n81\n-117\n-27\n9\n9\n39\n-51\n29\n-63\n-81\n69\n21\n29\n-105\n33\n-33\n21\n21\n17\n-129\n-111\n37\n53\n3\n-135\n25\n-135\n25\n-147\n3\n-63\n-9\n85\n-9\n77\n49\n21\n1\n37\n123\n49\n-129\n-135\n21\n81\n-129\n53\n-105\n41\n63\n-135\n25\n61\n-45\n33\n-21\n25\n-93\n81\n-105\n25\n41\n77\n9\n45\n-45\n65\n-21\n-63\n25\n57\n-21\n61\n73\n45\n33\n5\n-33\n-51\n-33\n-123\n33\n-123\n61\n65\n-141\n1\n-141\n25\n-69\n41\n-45\n49\n17\n5\n51\n33\n-117\n17\n49\n-63\n53\n53\n13\n9\n",
@@ -292,7 +292,7 @@
       "vectors": 260,
       "source": ".aug-build/gyms/replays/877966-256/checked-bounds/debug",
       "status": "passed",
-      "elapsedMs": 720.1232920000002,
+      "elapsedMs": 1446.8068749999984,
       "exitStatus": 0,
       "stderr": "",
       "actual": "bounds\n1\n7\nbounds\n7\nbounds\n1\nbounds\nbounds\nbounds\n1\n5\n3\n7\nbounds\n7\nbounds\nbounds\nbounds\nbounds\n1\nbounds\n3\nbounds\n7\n7\n7\nbounds\nbounds\nbounds\n5\nbounds\n1\nbounds\n5\n7\n1\nbounds\n3\n1\nbounds\nbounds\n7\nbounds\n5\nbounds\n3\nbounds\nbounds\nbounds\nbounds\n1\nbounds\n7\n7\nbounds\n5\nbounds\nbounds\n1\nbounds\n5\n3\n5\nbounds\nbounds\nbounds\n5\n3\n7\n7\nbounds\n5\nbounds\nbounds\nbounds\nbounds\n3\n7\n5\nbounds\n1\nbounds\n7\nbounds\nbounds\nbounds\n3\nbounds\nbounds\n3\n5\nbounds\nbounds\nbounds\n7\n1\nbounds\n7\nbounds\n7\n3\n5\nbounds\nbounds\nbounds\n3\nbounds\nbounds\n3\nbounds\nbounds\n3\n3\n5\n1\nbounds\nbounds\n7\n5\n5\n5\nbounds\nbounds\nbounds\n1\n5\n5\n5\nbounds\nbounds\nbounds\n5\n1\nbounds\n5\nbounds\n1\n5\n7\nbounds\n7\nbounds\n5\nbounds\n5\nbounds\nbounds\nbounds\nbounds\nbounds\n1\nbounds\nbounds\nbounds\nbounds\n3\n7\nbounds\n3\n3\nbounds\nbounds\nbounds\nbounds\n7\nbounds\n1\nbounds\n5\nbounds\n3\nbounds\n5\nbounds\nbounds\nbounds\n7\nbounds\nbounds\nbounds\n5\n1\n5\n7\n3\n1\nbounds\n1\n7\nbounds\nbounds\nbounds\nbounds\nbounds\nbounds\nbounds\nbounds\n7\nbounds\n1\nbounds\nbounds\nbounds\n7\n3\nbounds\nbounds\n7\n5\nbounds\n7\nbounds\n5\n3\n1\nbounds\n1\nbounds\n5\n1\n7\nbounds\n3\n5\nbounds\nbounds\nbounds\nbounds\nbounds\n1\nbounds\nbounds\nbounds\nbounds\nbounds\nbounds\n3\n7\nbounds\nbounds\n1\nbounds\nbounds\nbounds\nbounds\nbounds\nbounds\n1\nbounds\nbounds\n5\nbounds\n7\n3\n1\nbounds\n1\nbounds\nbounds\n",
@@ -304,7 +304,7 @@
       "vectors": 260,
       "source": ".aug-build/gyms/replays/877966-256/checked-bounds/release",
       "status": "passed",
-      "elapsedMs": 2826.408292,
+      "elapsedMs": 3633.3999170000025,
       "exitStatus": 0,
       "stderr": "",
       "actual": "bounds\n1\n7\nbounds\n7\nbounds\n1\nbounds\nbounds\nbounds\n1\n5\n3\n7\nbounds\n7\nbounds\nbounds\nbounds\nbounds\n1\nbounds\n3\nbounds\n7\n7\n7\nbounds\nbounds\nbounds\n5\nbounds\n1\nbounds\n5\n7\n1\nbounds\n3\n1\nbounds\nbounds\n7\nbounds\n5\nbounds\n3\nbounds\nbounds\nbounds\nbounds\n1\nbounds\n7\n7\nbounds\n5\nbounds\nbounds\n1\nbounds\n5\n3\n5\nbounds\nbounds\nbounds\n5\n3\n7\n7\nbounds\n5\nbounds\nbounds\nbounds\nbounds\n3\n7\n5\nbounds\n1\nbounds\n7\nbounds\nbounds\nbounds\n3\nbounds\nbounds\n3\n5\nbounds\nbounds\nbounds\n7\n1\nbounds\n7\nbounds\n7\n3\n5\nbounds\nbounds\nbounds\n3\nbounds\nbounds\n3\nbounds\nbounds\n3\n3\n5\n1\nbounds\nbounds\n7\n5\n5\n5\nbounds\nbounds\nbounds\n1\n5\n5\n5\nbounds\nbounds\nbounds\n5\n1\nbounds\n5\nbounds\n1\n5\n7\nbounds\n7\nbounds\n5\nbounds\n5\nbounds\nbounds\nbounds\nbounds\nbounds\n1\nbounds\nbounds\nbounds\nbounds\n3\n7\nbounds\n3\n3\nbounds\nbounds\nbounds\nbounds\n7\nbounds\n1\nbounds\n5\nbounds\n3\nbounds\n5\nbounds\nbounds\nbounds\n7\nbounds\nbounds\nbounds\n5\n1\n5\n7\n3\n1\nbounds\n1\n7\nbounds\nbounds\nbounds\nbounds\nbounds\nbounds\nbounds\nbounds\n7\nbounds\n1\nbounds\nbounds\nbounds\n7\n3\nbounds\nbounds\n7\n5\nbounds\n7\nbounds\n5\n3\n1\nbounds\n1\nbounds\n5\n1\n7\nbounds\n3\n5\nbounds\nbounds\nbounds\nbounds\nbounds\n1\nbounds\nbounds\nbounds\nbounds\nbounds\nbounds\n3\n7\nbounds\nbounds\n1\nbounds\nbounds\nbounds\nbounds\nbounds\nbounds\n1\nbounds\nbounds\n5\nbounds\n7\n3\n1\nbounds\n1\nbounds\nbounds\n",
@@ -316,7 +316,7 @@
       "vectors": 256,
       "source": ".aug-build/gyms/replays/877966-256/cleanup/debug",
       "status": "passed",
-      "elapsedMs": 400.13729199999943,
+      "elapsedMs": 1049.1180409999943,
       "exitStatus": 0,
       "stderr": "drop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\n",
       "actual": "caught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ndone\n",
@@ -330,7 +330,7 @@
       "vectors": 256,
       "source": ".aug-build/gyms/replays/877966-256/cleanup/release",
       "status": "passed",
-      "elapsedMs": 449.328042000001,
+      "elapsedMs": 1073.4398749999964,
       "exitStatus": 0,
       "stderr": "drop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: resources.aug:Resource\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\ndrop: FileError\n",
       "actual": "caught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ncaught\ndone\n",
@@ -344,7 +344,7 @@
       "vectors": 256,
       "source": ".aug-build/gyms/replays/877966-256/tasks/debug",
       "status": "passed",
-      "elapsedMs": 431.55379200000243,
+      "elapsedMs": 1081.403750000005,
       "exitStatus": 0,
       "stderr": "",
       "actual": "66048\n",
@@ -356,7 +356,7 @@
       "vectors": 256,
       "source": ".aug-build/gyms/replays/877966-256/tasks/release",
       "status": "passed",
-      "elapsedMs": 409.2202500000021,
+      "elapsedMs": 1067.5400829999999,
       "exitStatus": 0,
       "stderr": "",
       "actual": "66048\n",
@@ -374,7 +374,18 @@
           "column": 14,
           "message": "Cannot use moved value item",
           "code": "OWN",
-          "help": "An `own` value has one owner; move it into another `own` location or use ordinary managed storage."
+          "rule": "ownership.use-after-move",
+          "expected": "an owned value available on every checked path",
+          "actual": "ownership may have transferred on a checked path",
+          "related": [
+            {
+              "file": ".aug-build/gyms/replays/877966-256/rejected/move-twice/main.aug",
+              "line": 3,
+              "column": 14,
+              "message": "Ownership may transfer here."
+            }
+          ],
+          "help": "An `own` value has one owner. Move it into another `own` input, field, or return; do not copy it into managed storage or use its old name after the move. Related locations identify checked paths that may already have transferred ownership."
         },
         {
           "file": ".aug-build/gyms/replays/877966-256/rejected/move-twice/main.aug",
@@ -382,7 +393,18 @@
           "column": 14,
           "message": "Cannot move item twice",
           "code": "OWN",
-          "help": "An `own` value has one owner; move it into another `own` location or use ordinary managed storage."
+          "rule": "ownership.use-after-move",
+          "expected": "an owned value available on every checked path",
+          "actual": "ownership may have transferred on a checked path",
+          "related": [
+            {
+              "file": ".aug-build/gyms/replays/877966-256/rejected/move-twice/main.aug",
+              "line": 3,
+              "column": 14,
+              "message": "Ownership may transfer here."
+            }
+          ],
+          "help": "An `own` value has one owner. Move it into another `own` input, field, or return; do not copy it into managed storage or use its old name after the move. Related locations identify checked paths that may already have transferred ownership."
         }
       ],
       "source": ".aug-build/gyms/replays/877966-256/rejected/move-twice"
@@ -397,7 +419,18 @@
           "column": 17,
           "message": "Cannot read alias while alias items is mutably borrowed",
           "code": "BORROW",
-          "help": "Use `borrow value { ... }` around a mutation of a process managed value."
+          "rule": "ownership.read-during-borrow",
+          "expected": "read access outside conflicting mutable loans",
+          "actual": "possible overlap with mutable borrow items",
+          "related": [
+            {
+              "file": ".aug-build/gyms/replays/877966-256/rejected/alias-during-borrow/main.aug",
+              "line": 3,
+              "column": 1,
+              "message": "Mutable borrow of items begins here."
+            }
+          ],
+          "help": "Mutable access requires an exclusive borrow or ownership. The checker cannot prove references are separate when their possible origins overlap. Related sites identify conflicting borrows, inputs or task captures where available. End the loan or join the task before conflicting access; read-only contracts cannot be bypassed with a borrow."
         }
       ],
       "source": ".aug-build/gyms/replays/877966-256/rejected/alias-during-borrow"
@@ -427,15 +460,17 @@
           "column": 8,
           "message": "accept arguments require labels",
           "code": "CALL",
-          "help": "Use a label for each ordinary argument, such as `Greeter(x=4)`. Omit parameters marked `resolve`."
-        },
-        {
-          "file": ".aug-build/gyms/replays/877966-256/rejected/unlabeled-input/main.aug",
-          "line": 2,
-          "column": 1,
-          "message": "Missing argument value for accept",
-          "code": "CALL",
-          "help": "Use a label for each ordinary argument, such as `Greeter(x=4)`. Omit parameters marked `resolve`."
+          "related": [
+            {
+              "file": ".aug-build/gyms/replays/877966-256/rejected/unlabeled-input/operations.aug",
+              "line": 1,
+              "column": 1,
+              "message": "Caller input labels: value."
+            }
+          ],
+          "expected": "value",
+          "actual": "(unlabeled)",
+          "help": "Use a label for each ordinary argument, such as `Greeter(x=4)`. Omit parameters marked `resolve`. Check the listed caller labels and related declaration; fix a malformed label before supplying omitted inputs."
         }
       ],
       "source": ".aug-build/gyms/replays/877966-256/rejected/unlabeled-input"
@@ -456,8 +491,18 @@
           "file": ".aug-build/gyms/replays/877966-256/rejected/native-without-unsafe/main.aug",
           "line": 2,
           "column": 14,
-          "message": "Expected c_int, got int",
+          "message": "Expected c_int, got int for input value",
           "code": "TYPE",
+          "expected": "c_int",
+          "actual": "int",
+          "related": [
+            {
+              "file": ".aug-build/gyms/replays/877966-256/rejected/native-without-unsafe/native.aug",
+              "line": 1,
+              "column": 23,
+              "message": "Input value is declared here."
+            }
+          ],
           "help": "Check the types in the expression, parameters, return value, and generic arguments."
         }
       ],
@@ -473,7 +518,7 @@
           "column": 11,
           "message": "Start a task inside a scope block, which joins every child before leaving",
           "code": "CONCURRENCY",
-          "help": "Use scope for child-task lifetimes, start a labeled call, and wait for its result before mutating or moving any object the child captured. This includes writes inside an existing borrow block. A task may consume owned inputs, but cannot return an owned value; release resources inside it and return immutable data. A start inside a loop can create several children; use a scope inside the loop to join each iteration. Use Shared<T> and a short lock block for shared mutation; release the lock before I/O, waits, or starting tasks."
+          "help": "Use scope for child-task lifetimes, start a labeled call, and wait for its result before mutating or moving any object the child captured. This includes writes inside an existing borrow block. Related locations identify active capture sites where available; these are checked possibilities, not proof that a task executed. A task may consume owned inputs, but cannot return an owned value; release resources inside it and return immutable data. A start inside a loop can create several children; use a scope inside the loop to join each iteration. Use Shared<T> and a short lock block for shared mutation; release the lock before I/O, waits, or starting tasks."
         },
         {
           "file": ".aug-build/gyms/replays/877966-256/rejected/task-outside-scope/main.aug",
@@ -496,7 +541,7 @@
           "column": 1,
           "message": "Mutating item requires borrow item",
           "code": "BORROW",
-          "help": "Use `borrow value { ... }` around a mutation of a process managed value."
+          "help": "Mutable access requires an exclusive borrow or ownership. The checker cannot prove references are separate when their possible origins overlap. Related sites identify conflicting borrows, inputs or task captures where available. End the loan or join the task before conflicting access; read-only contracts cannot be bypassed with a borrow."
         },
         {
           "file": ".aug-build/gyms/replays/877966-256/rejected/immutable-record/main.aug",
@@ -677,7 +722,7 @@
         "--test-reporter=tap",
         "tests/robustness.test.mjs"
       ],
-      "elapsedMs": 5170.754375,
+      "elapsedMs": 135027.368291,
       "log": ".aug-build/gyms/replays/877966-256/source-mutations.log",
       "totals": {
         "tests": 3,
@@ -697,7 +742,7 @@
         "tests/concurrency.test.mjs",
         "tests/runtime-optimization.test.mjs"
       ],
-      "elapsedMs": 11799.299290999996,
+      "elapsedMs": 33613.853,
       "log": ".aug-build/gyms/replays/877966-256/ownership-concurrency.log",
       "totals": {
         "tests": 53,
@@ -715,7 +760,7 @@
         "--test-reporter=tap",
         "tests/llvm-native-boundaries.test.mjs"
       ],
-      "elapsedMs": 1042.7249999999985,
+      "elapsedMs": 1571.1517910000111,
       "log": ".aug-build/gyms/replays/877966-256/native-boundaries.log",
       "totals": {
         "tests": 2,
@@ -736,11 +781,11 @@
         "tests/native-artifacts.test.mjs",
         "tests/native-source-identity.test.mjs"
       ],
-      "elapsedMs": 615.9260419999991,
+      "elapsedMs": 2848.296209000022,
       "log": ".aug-build/gyms/replays/877966-256/package-integrity.log",
       "totals": {
-        "tests": 19,
-        "pass": 19,
+        "tests": 37,
+        "pass": 37,
         "fail": 0,
         "skipped": 0
       }
@@ -757,7 +802,7 @@
         "tests/web-streams.test.mjs",
         "tests/web-tls.test.mjs"
       ],
-      "elapsedMs": 3181.883958000006,
+      "elapsedMs": 4297.9286250000005,
       "log": ".aug-build/gyms/replays/877966-256/http-boundaries.log",
       "totals": {
         "tests": 6,
@@ -775,7 +820,7 @@
         "--backend",
         "llvm"
       ],
-      "elapsedMs": 53421.18016699999,
+      "elapsedMs": 152395.721709,
       "log": ".aug-build/gyms/replays/877966-256/sanitizers.log",
       "totals": {}
     }

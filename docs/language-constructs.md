@@ -702,7 +702,7 @@ A typed HTTP body with explicit status and headers. HttpResponse(body=value, sta
 test endpoint getUser client: ...
 ```
 
-A suite-supplied HTTP pipeline client. request(method="GET", path="/users/1", headers=..., body=...) returns HttpResponse<Bytes>. It exercises routing, decoding, request DI, policies, and serialization without a listening socket. Streaming collection is bounded by web.response_limit. Each it case runs with fresh test bindings.
+A suite-supplied HTTP pipeline client. request(method="GET", path="/users/1", headers=..., body=...) returns HttpResponse<Bytes>. It exercises routing, decoding, request DI, policies, and serialization without a listening socket. Deadline expiry before output returns 504 after child cleanup, matching live endpoint dispatch. Streaming collection is bounded by web.response_limit. Each it case runs with fresh test bindings.
 
 ## if
 
@@ -1320,7 +1320,7 @@ Send a value from a streaming endpoint. Backpressure suspends the producer until
 
 ### HttpTestClient.request
 
-Run this suite’s endpoint through native routing, typed binding, request-scoped DI, policies, and response serialization. No listening socket is opened. Streaming output is collected up to the configured response limit.
+Run this suite’s endpoint through native routing, typed binding, request-scoped DI, policies, and response serialization. No listening socket is opened. Deadline expiry before output returns 504 after child cleanup; subsequent requests use fresh request scopes. Streaming output is collected up to the configured response limit.
 
 ## HttpRequest operations
 

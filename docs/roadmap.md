@@ -4,15 +4,17 @@ August 0.23.0 provides a published CLI, LLVM native compilation, repository pack
 
 The unreleased compiler now generates linked folder data flows, class interactions and API sequences alongside the compiled spec. The complete generated set has been visually reviewed; release qualification must regenerate and check these artifacts for the final candidate. See [compiled specifications](specifications.md#move-from-the-overview-to-the-code-unreleased).
 
-A 1.0 release will make the documented language and package contracts stable. The table lists the remaining work in implementation order.
+The 1.0.0 candidate has completed the implementation gates below. Its [compatibility contract](compatibility.md) takes effect when the qualified stable release is published. August 0.23.0 remains the published preview. Final source and artifact qualification, review, and publication are still required.
 
-| Order | Remaining gate | Completion evidence |
+| Order | Gate | Candidate evidence and remaining release check |
 | --- | --- | --- |
-| 1 | Language conformance | Independent coverage of every documented construct, ownership transition, alias, checked failure, and task lifecycle. Adversarial cases and regressions pass in both optimization modes on every supported target. |
-| 2 | Runtime reliability | Repeated cleanup, cancellation, allocation-pressure, and long-running heap tests. Sanitizer results and generated safety cases are reproducible, with omissions reported. |
-| 3 | Native and package compatibility | The [candidate contracts](package-compatibility.md), ABI header, bounded compiler requirements and upgrade/interruption tests are implemented in the unreleased compiler. Repeat compatibility, public import, offline, artifact and relocation gates on all candidate targets before the 1.0 freeze. |
-| 4 | Developer distribution | The unreleased [installed CLI and editor gates](releasing.md#installed-cli-and-editor-gates) check clean profiles, preview replacement, source diagnostics and setup recovery. Repeat the three-host matrix and actual version upgrade for the release candidate. Existing LLVM debugger qualification remains required; full editor variable inspection remains incomplete. |
-| 5 | Stable release policy | Publish the final support matrix, compatibility rules, and known limits. All release gates, documentation checks, dependency reviews, and independent reviews pass for the release candidate. |
+| 1 | Language conformance | The grammar ledger, independent acceptance programs, and adversarial regressions passed on all three targets in debug/release and braces/indentation forms. The final source and tagged builds must repeat them. |
+| 2 | Runtime reliability | Each target passed the 30-minute lifecycle circuit with balanced core allocations and resources, plus worker race/memory instrumentation and full safety gyms. Tagged builds repeat the same requirements. |
+| 3 | Native and package compatibility | The ABI header, bounded compiler requirements, checked artifact members, and install recovery are implemented. Real public imports, offline reuse, relocation, and 0.23.0-to-1.0.0 CLI upgrades passed on all three hosts. Final assembled install archives remain a separate gate. |
+| 4 | Developer distribution | Installed-editor qualification passed on all three hosts with VS Code 1.90.0 and 1.139.1. macOS 14 consumers passed with Xcode and Command Line Tools removed; Linux consumers passed on glibc 2.36 without native tools. The exact release VSIX, npm archives and published containers must still be qualified. Existing LLVM source-debugger qualification remains required; full editor variable inspection remains incomplete. |
+| 5 | Stable release policy | The support matrix, source/package compatibility rules, ABI and known limits define the 1.0 contract. Dependency and archive reviews retain exact evidence and attribution limits. Final independent source review, main/tag qualification, reviewed draft publication and public-install checks complete this gate. |
+
+Candidate evidence comes from [CI 37548152234](https://github.com/GreenPandaStudios/augscript/actions/runs/37548152234), [Linux qualification 37548152499](https://github.com/GreenPandaStudios/augscript/actions/runs/37548152499), and [installed-editor qualification 37548152269](https://github.com/GreenPandaStudios/augscript/actions/runs/37548152269). These runs identify source `bcdd157927f489645301ced4f9c4d8ac4c003d59`; they do not qualify later source edits. Exact selected compiler archives and clean-consumer evidence are linked from [the dependency review](research/v1-dependency-review.md).
 
 The [conformance suite](language-conformance.md), [runtime reliability gate](runtime-reliability.md), [safety gyms](safety-gyms.md), [performance reports](performance.md), and [release process](releasing.md) provide current evidence. Passing a finite suite does not establish that every program is correct or safe.
 

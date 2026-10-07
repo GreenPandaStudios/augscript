@@ -717,6 +717,342 @@
         "Guard",
         "Marker"
       ]
+    },
+    {
+      "id": "inferred-contracts",
+      "files": {
+        "operation.aug": "interface Counter:\n    add(int amount) changes self\n    read() returns int\nCount(mutable int initial to _value) implements Counter:\n    add(int amount):\n        _value = _value + amount\n    read():\n        return _value\nupdate(borrow Counter counter, int amount):\n    counter.add(amount)\nidentity<T>(T value):\n    return value\nload(bool fail):\n    return _load(fail)\n_load(bool fail):\n    if fail:\n        throw FileError()\n    return \"loaded\"\n",
+        "main.aug": "import Count and update and identity and load from operation\ncounter = Count(initial=3)\nborrow counter:\n    update(counter, amount=8)\nprint(value=identity(value=counter.read()))\nprint(value=identity(value=[\"pear\", \"fig\"]).length())\ntry:\n    print(value=load(fail=false))\n    load(fail=true)\ncatch FileError failure:\n    print(value=\"checked failure\")\n"
+      },
+      "stdout": "11\n2\nloaded\nchecked failure\n"
+    },
+    {
+      "id": "optional-guards",
+      "files": {
+        "operation.aug": "length(optional string text):\n    if text == null:\n        return 0\n    if text.length() > 2:\n        return text.length()\n    return 1\nlongEnough(optional string text):\n    return text != null and text.length() > 2\n",
+        "main.aug": "import length and longEnough from operation\nprint(value=length(text=null))\nprint(value=length(text=\"x\"))\nprint(value=length(text=\"plum\"))\nprint(value=longEnough(text=null))\nprint(value=longEnough(text=\"plum\"))\n"
+      },
+      "stdout": "0\n1\n4\nfalse\ntrue\n"
+    },
+    {
+      "id": "indexing-and-remainder",
+      "files": {
+        "main.aug": "try:\n    words = [\"first\", \"second\"]\n    names = {1: \"pear\"}\n    pair = (12, \"tuple\")\n    print(value=words[1])\n    print(value=names[9])\n    print(value=pair[0])\n    print(value=-11 % 4)\n    print(value=11 % -4)\n    print(value=-9223372036854775808 % -1)\n    words[2]\ncatch IndexError failure:\n    print(value=\"bounded\")\ntry:\n    print(value=1 % 0)\ncatch ArithmeticError failure:\n    print(value=\"zero rejected\")\n"
+      },
+      "stdout": "second\nnull\n12\n-3\n3\n0\nbounded\nzero rejected\n"
+    },
+    {
+      "id": "interpolation-order",
+      "files": {
+        "operation.aug": "import Console from august.io\nnumber(resolve Console output, int value):\n    output.write(value=value)\n    return value\n",
+        "main.aug": "import number from operation\nimport Console and SystemConsole from august.io\nimplement Console with SystemConsole\nprint(value=$\"values {number(value=2)} and {number(value=7)}\")\nprint(value=$\"{{literal}} {false} {null} 👋\")\n"
+      },
+      "stdout": "2\n7\nvalues 2 and 7\n{literal} false null 👋\n"
+    },
+    {
+      "id": "comprehension-order",
+      "files": {
+        "operation.aug": "import Console from august.io\nsource(resolve Console output):\n    output.write(value=\"source\")\n    return [1, 2, 3]\nkeep(borrow List<int> inputs, int value):\n    inputs.append(value=9)\n    return value > 1\nproject(resolve Console output, int value):\n    output.write(value=$\"select {value}\")\n    return value * 10\n",
+        "main.aug": "import source and keep and project from operation\nimport Console and SystemConsole from august.io\nimplement Console with SystemConsole\ninputs = source()\nborrow inputs:\n    selected = [project(value) for value in inputs if keep(inputs, value)]\n    for value in selected:\n        print(value)\n    print(value=inputs.length())\nList<optional int> options = [null, 0, 4]\nfor value in [value + 1 for value in options if value != null]:\n    print(value)\n"
+      },
+      "stdout": "source\nselect 2\nselect 3\n20\n30\n6\n1\n5\n"
+    },
+    {
+      "id": "interceptor-order-and-mapping",
+      "files": {
+        "operation.aug": "import Console from august.io\ninterceptor Outer<T>:\n    around(resolve Console output) returns T:\n        output.write(value=\"outer enters\")\n        T result = next()\n        output.write(value=\"outer leaves\")\n        return result\ninterceptor Adjust:\n    around(resolve Console output, int selected) returns string:\n        output.write(value=\"inner enters\")\n        string result = next(selected=selected + 3)\n        output.write(value=\"inner leaves\")\n        return result + \"!\"\n[Outer]\n[Adjust(selected=amount)]\nshow(resolve Console output, int amount, string label):\n    output.write(value=amount)\n    return label\n",
+        "main.aug": "import show from operation\nimport Console and SystemConsole from august.io\nimplement Console with SystemConsole\nprint(value=show(label=\"done\", amount=4))\n"
+      },
+      "stdout": "outer enters\ninner enters\n7\ninner leaves\nouter leaves\ndone!\n"
+    },
+    {
+      "id": "interceptor-original-inputs",
+      "files": {
+        "operation.aug": "interceptor LocalChange:\n    around(int selected) returns int:\n        selected = 99\n        return next()\n[LocalChange(selected=amount)]\nidentity(int amount):\n    return amount\n",
+        "main.aug": "import identity from operation\nprint(value=identity(amount=6))\nprint(value=identity(amount=2))\n"
+      },
+      "stdout": "6\n2\n"
+    },
+    {
+      "id": "interceptor-short-circuit",
+      "files": {
+        "operation.aug": "error Denied(int code)\ninterceptor Recover:\n    around() returns int:\n        try:\n            return next()\n        catch Denied failure:\n            return failure.code\n[Recover]\nfailed() returns int:\n    throw Denied(code=41)\ninterceptor Cached:\n    around() returns int:\n        return 29\n[Cached]\nunused() returns int:\n    throw Denied(code=99)\n",
+        "main.aug": "import failed and unused and Denied from operation\ntry:\n    print(value=failed())\n    print(value=unused())\ncatch Denied failure:\n    print(value=\"unexpected target\")\n"
+      },
+      "stdout": "41\n29\n"
+    },
+    {
+      "id": "interceptor-generic-dispatch",
+      "files": {
+        "operation.aug": "import Console from august.io\ninterceptor Trace<T>:\n    around(resolve Console output) returns T:\n        output.write(value=\"before\")\n        T result = next()\n        output.write(value=\"after\")\n        return result\ninterface Operation:\n    run(resolve Console output) uses Console.write\n    [Trace]\n    defaultRun(resolve Console output) uses Console.write:\n        output.write(value=\"default\")\ninterceptor Construct<T>:\n    around() returns T:\n        return next()\n[Construct]\nWork(int number) implements Operation:\n    initialize:\n        number = number + 2\n    [Trace]\n    run(resolve Console output):\n        output.write(value=number)\n",
+        "main.aug": "import Operation and Work from operation\nimport Console and SystemConsole from august.io\nimplement Console with SystemConsole\nOperation work = Work(number=5)\nwork.run()\nwork.defaultRun()\n"
+      },
+      "stdout": "before\n7\nafter\nbefore\ndefault\nafter\n"
+    },
+    {
+      "id": "interceptor-generic-inputs",
+      "files": {
+        "operation.aug": "import Console from august.io\ninterface Source<T>:\n    get() returns T\nBox<T>(T value) implements Source<T>:\n    get():\n        return value\ninterceptor Inspect<T>:\n    around(resolve Console output, Source<T> input) returns T:\n        output.write(value=input.get())\n        return next()\n[Inspect(input=box)]\nread(resolve Console output, Box<int> box):\n    return box.get()\ninterceptor Size<T>:\n    around(List<T> values) returns int:\n        return next() + values.length()\n[Size<int>(values=items)]\ncount(List<int> items):\n    return items.length()\n",
+        "main.aug": "import Box and read and count from operation\nimport Console and SystemConsole from august.io\nimplement Console with SystemConsole\nprint(value=read(box=Box(value=13)))\nprint(value=count(items=[2, 7, 9]))\n"
+      },
+      "stdout": "13\n13\n6\n"
+    },
+    {
+      "id": "interceptor-owned-return",
+      "files": {
+        "operation.aug": "interface Disposable:\n    value() returns int\n    drop()\ninterceptor Transparent<T>:\n    around() returns T:\n        T created = next()\n        return created\n[Transparent]\nResource(int number) implements Disposable:\n    value():\n        return number\n    drop():\n        pass\ninterceptor Owned<T>:\n    around() returns own T:\n        return next()\n[Owned]\ncreate() returns own Resource:\n    return Resource(number=17)\n",
+        "main.aug": "import create and Resource from operation\nown Resource first = Resource(number=8)\nown Resource second = create()\nprint(value=first.value())\nprint(value=second.value())\n"
+      },
+      "stdout": "8\n17\n",
+      "drops": {
+        "Resource": 2
+      }
+    },
+    {
+      "id": "interceptor-constructor-cleanup",
+      "files": {
+        "operation.aug": "interface Disposable:\n    drop()\nResource() implements Disposable:\n    drop():\n        pass\ninterface Container:\n    pass\ninterceptor Reject<T>:\n    around() returns T unless FileError:\n        T created = next()\n        throw FileError()\n[Reject]\nBox(own Resource value) unless FileError implements Container:\n    pass\nMarker() implements Disposable:\n    drop():\n        pass\n",
+        "main.aug": "import Resource and Box and Marker from operation\ntry:\n    own Resource value = Resource()\n    own Box container = Box(value)\ncatch FileError failure:\n    own Marker observed = Marker()\n    print(value=\"caught\")\n"
+      },
+      "stdout": "caught\n",
+      "drops": {
+        "Box": 1,
+        "Resource": 1,
+        "Marker": 1
+      },
+      "dropOrder": [
+        "Box",
+        "Resource",
+        "Marker"
+      ]
+    },
+    {
+      "id": "interceptor-native",
+      "files": {
+        "operation.aug": "interceptor Prefix:\n    around(string text) returns c_int:\n        return next(text=\"native: \" + text)\n[Prefix]\nextern C puts(string text) returns c_int\n",
+        "main.aug": "import puts from operation\nunsafe:\n    puts(text=\"August\")\n"
+      },
+      "stdout": "native: August\n"
+    },
+    {
+      "id": "interceptor-export",
+      "files": {
+        "tools/export.aug": "export Raise from wrapping\n",
+        "tools/wrapping.aug": "interceptor Raise:\n    around(int value) returns int:\n        return next(value=value + 2)\n",
+        "operation.aug": "import Raise from tools\n[Raise]\ndouble(int value):\n    return value * 2\n",
+        "main.aug": "import double from operation\nprint(value=double(value=3))\n"
+      },
+      "stdout": "10\n"
+    },
+    {
+      "id": "interceptor-root-pressure",
+      "files": {
+        "operation.aug": "interceptor Transparent<T>:\n    around() returns T:\n        return next()\ninterface Value:\n    read() returns int\n[Transparent]\nBox(int value) implements Value:\n    initialize:\n        temporary = [value, value + 1]\n    read():\n        return value\n",
+        "main.aug": "import Box from operation\nint index = 0\nint total = 0\nwhile index < 2000:\n    total = total + Box(value=3).read()\n    index = index + 1\nprint(value=total)\n"
+      },
+      "stdout": "6000\n"
+    },
+    {
+      "id": "inference-recursive-unanchored",
+      "files": {
+        "main.aug": "",
+        "operation.aug": "first():\n    return second()\nsecond():\n    return first()\n"
+      },
+      "diagnostic": "INFERENCE",
+      "diagnosticText": "Cannot infer first's return type"
+    },
+    {
+      "id": "inference-partial-return",
+      "files": {
+        "main.aug": "",
+        "operation.aug": "partial(bool yes):\n    if yes:\n        return 3\n"
+      },
+      "diagnostic": "TYPE",
+      "diagnosticText": "partial must return"
+    },
+    {
+      "id": "interceptor-invalid-mapping",
+      "files": {
+        "main.aug": "",
+        "operation.aug": "interceptor Adjust:\n    around(int amount) returns int:\n        return next()\n[Adjust(amount=missing)]\nread(int value):\n    return value\n"
+      },
+      "diagnostic": "INTERCEPTOR",
+      "diagnosticText": "read has no parameter missing"
+    },
+    {
+      "id": "interceptor-repeated-next",
+      "files": {
+        "main.aug": "",
+        "operation.aug": "interceptor Retry:\n    around():\n        next()\n        next()\n[Retry]\nwork():\n    pass\n"
+      },
+      "diagnostic": "NEXT",
+      "diagnosticText": "at most once"
+    },
+    {
+      "id": "interceptor-overlapping-next-labels",
+      "files": {
+        "main.aug": "",
+        "operation.aug": "interceptor Alias:\n    around(int first, int second) returns int:\n        return next(first=first, second=second)\n[Alias(first=value, second=value)]\nread(int value):\n    return value\n"
+      },
+      "diagnostic": "NEXT",
+      "diagnosticText": "same target parameter"
+    },
+    {
+      "id": "interceptor-moved-input",
+      "files": {
+        "main.aug": "",
+        "operation.aug": "interface Marker:\n    pass\nResource() implements Marker:\n    pass\ninterceptor Invalid:\n    around(own Resource value):\n        next()\n        print(value=value)\n[Invalid]\nconsume(own Resource value):\n    pass\n"
+      },
+      "diagnostic": "OWN",
+      "diagnosticText": "moved value value"
+    },
+    {
+      "id": "interceptor-interface-error",
+      "files": {
+        "main.aug": "",
+        "operation.aug": "error Failed(int code)\ninterceptor Reject:\n    around() unless Failed:\n        throw Failed(code=7)\ninterface Work:\n    run()\nAction() implements Work:\n    [Reject]\n    run():\n        pass\n"
+      },
+      "diagnostic": "TYPE",
+      "diagnosticText": "interface signature"
+    },
+    {
+      "id": "interceptor-private-import",
+      "files": {
+        "main.aug": "import _Wrap from wrapping\n",
+        "wrapping.aug": "interceptor _Wrap:\n    around():\n        next()\n"
+      },
+      "diagnostic": "PRIVATE",
+      "diagnosticText": "Cannot import private name _Wrap"
+    },
+    {
+      "id": "interceptor-native-unsafe",
+      "files": {
+        "main.aug": "import puts from operation\nputs(text=\"unsafe\")\n",
+        "operation.aug": "interceptor Pass:\n    around(string text) returns c_int:\n        return next()\n[Pass]\nextern C puts(string text) returns c_int\n"
+      },
+      "diagnostic": "FFI",
+      "diagnosticText": "requires unsafe"
+    },
+    {
+      "id": "interceptor-owned-alias",
+      "files": {
+        "main.aug": "",
+        "operation.aug": "interface Marker:\n    pass\ninterceptor Reuse:\n    around(Resource existing) returns Resource:\n        return existing\n[Reuse]\nResource(Resource existing) implements Marker:\n    pass\nadopt(Resource original):\n    own Resource value = Resource(existing=original)\n"
+      },
+      "diagnostic": "OWN",
+      "diagnosticText": "new object or another owned value"
+    },
+    {
+      "id": "interceptor-partial-return",
+      "files": {
+        "main.aug": "",
+        "operation.aug": "interceptor Incomplete:\n    around(bool yes) returns int:\n        if yes:\n            return next()\n"
+      },
+      "diagnostic": "INTERCEPTOR",
+      "diagnosticText": "every execution path"
+    },
+    {
+      "id": "interceptor-di-cycle",
+      "files": {
+        "main.aug": "import Service and App from operation\nimplement Service with App\n",
+        "operation.aug": "interface Service:\n    pass\ninterceptor Cycle<T>(resolve Service service):\n    around() returns T:\n        return next()\n[Cycle]\nApp(resolve Service service) implements Service:\n    pass\n"
+      },
+      "diagnostic": "DI",
+      "diagnosticText": "Dependency cycle"
+    },
+    {
+      "id": "same-file-tests",
+      "files": {
+        "main.aug": "",
+        "operation.aug": "interface Counter:\n    add(int amount) changes self\n    read() returns int\nCount() implements Counter:\n    mutable int _value = 0\n    add(int amount):\n        _value = _value + amount\n    read():\n        return _value\ntest Count counter:\n    when independent_setup:\n        counter = Count()\n        it changes_its_own_case:\n            borrow counter:\n                counter.add(amount=7)\n            assert(counter.read() == 7)\n        it starts_fresh:\n            assert(counter.read() == 0)\ndouble(int value):\n    return value * 2\ntest double:\n    when arithmetic:\n        it rows for (value, expected) in [(0, 0), (-3, -6), (5, 10)]:\n            assert(double(value) == expected)\n"
+      },
+      "stdout": "",
+      "tests": 5
+    },
+    {
+      "id": "http-wire-cases",
+      "files": {
+        "main.aug": "import save and updates and form from api\n",
+        "api.aug": "record Incoming(string title)\nrecord Saved(int key, string title)\n[Timeout(milliseconds=1000)]\nendpoint POST \"/items/{key}\" as save(int key from path, Incoming input from body) returns Saved with status 201:\n    return Saved(key=key, title=input.title)\ntest endpoint save client:\n    when wire:\n        it creates:\n            response = client.request(method=\"POST\", path=\"/items/23\", headers=Headers().with(name=\"content-type\", value=\"application/json\"), body=\"{\\\"title\\\":\\\"pear\\\"}\".bytes())\n            assert(condition=response.status == 201)\n            assert(condition=response.body.text() == \"{\\\"key\\\":23,\\\"title\\\":\\\"pear\\\"}\")\n        it rejects_path:\n            response = client.request(method=\"POST\", path=\"/items/not-an-integer\", headers=Headers().with(name=\"content-type\", value=\"application/json\"), body=\"{\\\"title\\\":\\\"pear\\\"}\".bytes())\n            assert(condition=response.status == 400)\n        it rejects_method:\n            response = client.request(method=\"DELETE\", path=\"/items/23\")\n            assert(condition=response.status == 405)\n        it rejects_field_type:\n            response = client.request(method=\"POST\", path=\"/items/23\", headers=Headers().with(name=\"content-type\", value=\"application/json\"), body=\"{\\\"title\\\":false}\".bytes())\n            assert(condition=response.status == 422)\nendpoint GET \"/updates\" as updates() streams ServerEvent<string> unless HttpError:\n    yield ServerEvent(data=\"pear\", id=\"23\")\ntest endpoint updates client:\n    when wire:\n        it streams:\n            response = client.request(method=\"GET\", path=\"/updates\")\n            assert(condition=response.status == 200)\n            assert(condition=response.body.text() == \"id: 23\\ndata: \\\"pear\\\"\\n\\n\")\nendpoint POST \"/form\" as form(Incoming input from form) returns Incoming:\n    return input\ntest endpoint form client:\n    when wire:\n        it decodes:\n            response = client.request(method=\"POST\", path=\"/form\", headers=Headers().with(name=\"content-type\", value=\"application/x-www-form-urlencoded\"), body=\"title=pear%20tree\".bytes())\n            assert(condition=response.status == 200)\n            assert(condition=response.body.text() == \"{\\\"title\\\":\\\"pear tree\\\"}\")\n[Timeout(milliseconds=50)]\nendpoint GET \"/slow\" as slow() returns string:\n    while true:\n        pass\ntest endpoint slow client:\n    when deadline:\n        it expires:\n            response = client.request(method=\"GET\", path=\"/slow\")\n            assert(condition=response.status == 504)\n"
+      },
+      "stdout": "",
+      "tests": 7
+    },
+    {
+      "id": "html-escaping",
+      "files": {
+        "pages.aug": "Frame(string title, List<Html> children) returns Html:\n    return <section><h2>{title}</h2>{children}</section>\nCard(string label) returns Html:\n    return <Frame title={label}><p>{label}</p><input name=\"label\" value={label} /></Frame>\n",
+        "main.aug": "import Card from pages\nprint(value=Card(label=\"<pear> & \\\"\"))\n"
+      },
+      "stdout": "<section><h2>&lt;pear&gt; &amp; &quot;</h2><p>&lt;pear&gt; &amp; &quot;</p><input name=\"label\" value=\"&lt;pear&gt; &amp; &quot;\"></section>\n"
+    },
+    {
+      "id": "strict-text-helpers",
+      "files": {
+        "main.aug": "print(value=\"orange\".endsWith(suffix=\"ange\"))\nprint(value=[\"red\", \"\", \"blue\"].join(separator=\":\"))\ntry:\n    print(value=\"pear pear\".replace(search=\"pear\", replacement=\"fig\"))\n    print(value=\"🌳á\".codePointLength())\n    print(value=\"-27\".parseInteger())\n    print(value=\"2.5e1\".parseFloat())\ncatch ConversionError error:\n    print(value=\"unexpected\")\ntry:\n    \"27x\".parseInteger()\ncatch ConversionError error:\n    print(value=\"trailing text rejected\")\ntry:\n    \" 27\".parseInteger()\ncatch ConversionError error:\n    print(value=\"leading whitespace rejected\")\ntry:\n    \"pear\".replace(search=\"\", replacement=\"fig\")\ncatch ConversionError error:\n    print(value=\"empty search rejected\")\ntry:\n    \"+27\".parseInteger()\ncatch ConversionError error:\n    print(value=\"leading plus rejected\")\n"
+      },
+      "stdout": "true\nred::blue\nfig fig\n3\n-27\n25\ntrailing text rejected\nleading whitespace rejected\nempty search rejected\nleading plus rejected\n"
+    },
+    {
+      "id": "interceptor-fresh-instance",
+      "files": {
+        "main.aug": "import Choice and Original and work from operations\nimplement Choice with Original\nprint(value=work())\nprint(value=work())\n",
+        "operations.aug": "interface Choice:\n    name() returns string\nOriginal() implements Choice:\n    name() returns string:\n        return \"original\"\nReplacement() implements Choice:\n    name() returns string:\n        return \"replacement\"\ninterceptor Fresh(resolve mutable Choice _choice):\n    around() returns string changes self:\n        string chosen = _choice.name()\n        borrow self:\n            _choice = Replacement()\n        return chosen + next()\n[Fresh]\nwork(resolve Choice choice) returns string:\n    return \".\"\n"
+      },
+      "stdout": "original.\noriginal.\n"
+    },
+    {
+      "id": "interceptor-owned-inputs",
+      "files": {
+        "main.aug": "import Resource and consume and skip from operations\nown Resource first = Resource()\nprint(value=consume(item=first))\nown Resource second = Resource()\nprint(value=skip(item=second))\n",
+        "operations.aug": "interface Disposable:\n    drop()\nResource() implements Disposable:\n    drop():\n        pass\ninterceptor Pass():\n    around(own Resource item) returns int:\n        return next()\ninterceptor Stop():\n    around() returns int:\n        return 99\n[Pass]\nconsume(own Resource item) returns int:\n    return 71\n[Stop]\nskip(own Resource item) returns int:\n    return -1\n"
+      },
+      "stdout": "71\n99\n",
+      "drops": {
+        "Resource": 2
+      }
+    },
+    {
+      "id": "interceptor-injected-constructor",
+      "files": {
+        "main.aug": "import Console and SystemConsole from august.io\nimplement Console with SystemConsole\nimport Port and NativePort and Service and read from operations\nimplement Port with NativePort\nservice = Service(amount=5)\nprint(value=service.value())\nprint(value=read())\n",
+        "operations.aug": "import Console from august.io\ninterface Port:\n    number() returns int\nNativePort() implements Port:\n    number() returns int:\n        return 73\ninterface ServiceContract:\n    value() returns int\ninterceptor Adjust<T>(resolve Port port):\n    around(resolve Port second, int amount) returns T:\n        return next(amount=amount + port.number() + second.number())\ninterceptor Observe<T>(resolve Port port):\n    around(resolve Port second, resolve Console output) returns T:\n        output.write(value=port.number() + second.number())\n        return next()\n[Adjust]\nService(resolve Port port, int amount) implements ServiceContract:\n    value() returns int:\n        return amount\n[Observe]\nread(resolve Port port, resolve Console output) returns int:\n    return 29\n"
+      },
+      "stdout": "151\n146\n29\n"
+    },
+    {
+      "id": "interceptor-checked-failures",
+      "files": {
+        "main.aug": "import read and Object and Failure from operations\ntry:\n    read(value=3)\ncatch Failure error:\n    print(value=\"function rejected\")\ntry:\n    Object(value=3)\ncatch Failure error:\n    print(value=\"constructor rejected\")\n",
+        "operations.aug": "Failure() implements Error:\n    pass\ninterceptor Reject<T>():\n    around(int value) returns T unless Failure:\n        throw Failure()\n[Reject]\nread(int value) returns int:\n    return value\ninterface Marker:\n    pass\n[Reject]\nObject(int value) implements Marker:\n    pass\n"
+      },
+      "stdout": "function rejected\nconstructor rejected\n"
+    },
+    {
+      "id": "inferred-empty-list",
+      "files": {
+        "main.aug": "import selected and local from operations\nprint(value=selected(yes=true).length())\nprint(value=selected(yes=false).length())\nprint(value=local())\n",
+        "operations.aug": "selected(bool yes):\n    if yes:\n        return []\n    return [5]\nlocal():\n    storage = Shared(value=[1])\n    int result = 0\n    lock storage as values:\n        values.append(value=2)\n        result = values.length()\n    return result\n"
+      },
+      "stdout": "0\n1\n2\n"
+    },
+    {
+      "id": "inferred-unanchored-empty",
+      "files": {
+        "main.aug": "import empty from operations\n",
+        "operations.aug": "empty():\n    return []\n"
+      },
+      "diagnostic": "INFERENCE",
+      "diagnosticText": "empty"
+    },
+    {
+      "id": "interceptor-unhandled-failure",
+      "files": {
+        "main.aug": "import read from operations\nread()\n",
+        "operations.aug": "Failure() implements Error:\n    pass\ninterceptor Reject():\n    around() returns int unless Failure:\n        throw Failure()\n[Reject]\nread() returns int:\n    return 1\n"
+      },
+      "diagnostic": "THROWS",
+      "diagnosticText": "Unhandled Failure"
     }
   ],
   "mutations": [
@@ -761,6 +1097,13 @@
       "file": "operation.aug",
       "before": "throw Secondary(code=9)",
       "after": "pass"
+    },
+    {
+      "id": "wrong-interceptor-mapping",
+      "case": "interceptor-order-and-mapping",
+      "file": "operation.aug",
+      "before": "next(selected=selected + 3)",
+      "after": "next(selected=selected + 4)"
     }
   ]
 }

@@ -73,9 +73,10 @@ test('runtime identity detects changed component headers, sources, locks, platfo
     const archived='sources/august/runtime/aug_http_ir.h';cpSync(join(root,'runtime/aug_http_ir.h'),join(output,archived));
     const before=runtimeSourceIdentity(directory,output,[archived]);
     assert.ok(runtimeRecipeFiles().includes('scripts/runtime-pack-identity.mjs'),'Rebuild recipe omits its helper');
-    for(const platform of ['darwin','linux'])assert.ok(runtimeRecipeFiles(platform,'arm64').includes('scripts/prepare-linux-runtimes.mjs'),'Static import omitted from '+platform+' recipe');
+    for(const platform of ['darwin','linux'])for(const file of ['scripts/prepare-linux-runtimes.mjs','scripts/prepare-patched-libstdcxx.mjs','native/gcc12-aligned-new.patch','native/tests/aligned-new-overflow.cpp'])
+      assert.ok(runtimeRecipeFiles(platform,'arm64').includes(file),'Static import or patched runtime material omitted from '+platform+' recipe: '+file);
     const platform=runtimeRecipeFiles().find(file=>file.startsWith('native/platform/'));
-    for(const path of ['runtime/aug_http_ir.h','runtime/aug_crypto.c','scripts/native-dependencies.lock.json',platform]){
+    for(const path of ['runtime/aug_http_ir.h','runtime/aug_crypto.c','scripts/native-dependencies.lock.json','scripts/prepare-patched-libstdcxx.mjs','native/gcc12-aligned-new.patch','native/tests/aligned-new-overflow.cpp',platform]){
       const file=join(directory,path),original=readFileSync(file);
       writeFileSync(file,Buffer.concat([original,Buffer.from('\nchanged build input\n')]));
       assert.notEqual(runtimeSourceIdentity(directory,output,[archived]),before,path);writeFileSync(file,original);
