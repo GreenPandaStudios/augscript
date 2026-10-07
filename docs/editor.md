@@ -28,6 +28,8 @@ The completion provider follows `block_style` and `indentation` in `main.yaml`. 
 
 ## Read help and inferred types {#understand-a-contract}
 
+Hover help describes the compiler selected by your extension (bundled by default). Use a matching CLI version when you run the project outside the editor.
+
 Hover over a declaration, a call, a keyword, or a built-in operation. Help includes Javadoc when it is present. Ctrl-click, or Cmd-click on macOS, opens the declaration. In an import, clicking `from` opens the sibling file or the package's `export.aug`.
 
 Hints beside a function or method show its inferred result, state changes, I/O, and possible errors. They stay out of saved source. Hover over a long hint to expand it. Set `augscript.inferredContractHints` to false to hide them. Bodyless interfaces and foreign declarations still state their contracts in code.

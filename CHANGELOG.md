@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Describe implemented compiler features directly in hover help and the standard-package README. Publication status remains in the release and installation guides.
+
 - Record completed three-host candidate gates and the 1.x compatibility contract. Stable publication still requires final-source and tagged-artifact qualification.
 
 - Select the freshly qualified macOS ARM64 and GNU/Linux ARM64/x64 compiler archives. Retain exact member, repair-material and lifecycle audit reports; final tagged qualification remains a separate gate.
