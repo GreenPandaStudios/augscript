@@ -51,12 +51,7 @@ The minimum-platform consumer jobs run this CLI gate with Xcode removed or in a 
 
 ## GitHub release
 
-After verification and committing, create and push the version tag:
-
-```sh
-git tag v0.23.0
-git push origin main v0.23.0
-```
+After the reviewed main commit passes all required workflows, dispatch **Create qualified release tag** with the numeric version tag and that full commit SHA. The workflow verifies those facts before creating a tag; see [the tag checks](#create-a-qualified-version-tag). Then dispatch **Prepare release** with the same tag and commit.
 
 `release.yml` validates the tag against every manifest, runs compiler/native/docs/package gates, and uploads artifacts to a **draft release**. Preview versions (`0.x`) are marked as prereleases; a complete version starting at `1.0.0` uses the stable channel. Full compiler releases use numeric `major.minor.patch` versions. RC suffixes are not supported by this path because the extension shares the release version and Marketplace [requires a numeric version](https://code.visualstudio.com/api/working-with-extensions/publishing-extension#prerelease-extensions). A separate RC/editor version policy is deferred. The draft is never published automatically. All producer, clean-consumer and installed-editor gates remain required for either channel. Review the draft and publish it in GitHub Releases. Publishing starts **Publish npm packages** and **Publish VS Code extension** automatically. Each workflow deploys the archives attached to that release. Changing an asset after review invalidates its checksum.
 

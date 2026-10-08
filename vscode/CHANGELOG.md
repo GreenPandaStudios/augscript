@@ -1,6 +1,10 @@
 # Changelog
 
-## Unreleased
+## 1.0.0
+
+The extension bundles August 1.0 and its checked language contracts. Completion, hover, navigation, diagnostics and repair previews use the same compiler as the CLI. Generated explanations and data-flow diagrams link the project overview to individual operations.
+
+### Changes since 0.23.1
 
 - Describe implemented internal exports and pure callbacks directly in hover help.
 
@@ -12,7 +16,7 @@
 
 - Update extension artwork tooling to sharp 0.35.5 with patched librsvg binaries.
 
-- Document and complete the unreleased `mapWorkers` package operation, including its named pure-function restriction, copied data boundary and checked failures.
+- Document and complete the `mapWorkers` package operation, including its named pure-function restriction, copied data boundary and checked failures.
 
 - Generate deterministic Mermaid project, class, API-call and sequence views with compiled specs; link the wiki examples from overview to source.
 
@@ -30,7 +34,7 @@
 
 - Bundle the compiler’s checked standalone body-plan command and stage-specific rejection help. The editor does not automatically apply body replacements.
 
-- Add the unreleased local `aug compare` report with exact revisions, resolved contract/source/visibility deltas, known consumers, rejected diagnostics and unexecuted authored tests. Keep implementation function references out of public promises.
+- Add the local `aug compare` report with exact revisions, resolved contract/source/visibility deltas, known consumers, rejected diagnostics and unexecuted authored tests. Keep implementation function references out of public promises.
 
 - Show the differing inferred interface contract and its permitted declaration in Problems, with bounded source links through checked capability helpers.
 
@@ -38,7 +42,7 @@
 
 Use detached compiler responses and whole-project context queries for unsaved source. The schema 3 packet preserves target contracts, reports insufficient budgets and expands known callers and tests for interface changes and review.
 
-- Add Javadoc hover, import completion and compiled-spec contracts for the unreleased `august.values` domain records and operations.
+- Add Javadoc hover, import completion and compiled-spec contracts for the `august.values` domain records and operations.
 
 - Complete and explain explicit byte and Unicode 18 grapheme text operations, including their checked UTF-8 failures.
 
@@ -67,7 +71,7 @@ Completion templates follow the project's block style, indentation and assignmen
 
 Complete labeled calls with compatible local values, omit defaulted inputs, and hide unavailable mutations. Show fix consequences in previews. Add resolved references and compiler-checked rename for the managed standalone-function profile, preserving label shorthand and rejecting unsupported contracts. Update the renamed input’s attached Javadoc label without changing descriptions.
 
-- Add contextual forwarding declarations, inherited contracts and checked-change tooling to the development compiler.
+- Add contextual forwarding declarations, inherited contracts and checked-change tooling to August 1.0.
 Add **AugScript: Check Setup** and the **August** output channel. Explain missing Node/compiler paths, offer settings and output actions, and recover after configuration changes. Test installed VSIX features and preview upgrades in real VS Code hosts. A retained 0.23.0 compiler reports that doctor is unavailable.
 
 ## 0.23.1 — burgundy artwork
