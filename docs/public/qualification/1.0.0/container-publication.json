@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "version": "1.0.0",
+  "runId": 37832531461,
+  "url": "https://github.com/GreenPandaStudios/augscript/actions/runs/37832531461",
+  "sourceCommit": "87c48bc999d0297f802f5b2d339862843ed15f6a",
+  "compilerSourceCommit": "9e8be2926e83f551c365f1db1154f0ba2a43c11f",
+  "conclusion": "success",
+  "completedAt": "2026-10-08T19:53:07Z",
+  "jobs": [
+    {
+      "id": 113501229656,
+      "name": "source",
+      "conclusion": "success"
+    },
+    {
+      "id": 113508314427,
+      "name": "build (ubuntu-24.04-arm, arm64)",
+      "conclusion": "success"
+    },
+    {
+      "id": 113508314455,
+      "name": "build (ubuntu-24.04, amd64)",
+      "conclusion": "success"
+    },
+    {
+      "id": 113509314443,
+      "name": "publish",
+      "conclusion": "success"
+    }
+  ],
+  "images": [
+    {
+      "repository": "ghcr.io/greenpandastudios/aug-build",
+      "manifestDigest": "sha256:b39429e460c1a49b06384ddcaf7a757aa1e35e5938a46a307899534515adbd01",
+      "platforms": [
+        {
+          "platform": "linux/amd64",
+          "digest": "sha256:231645010453cce06b0020773c9d1b818b4575b26f0f26b94b033e4365c218d9"
+        },
+        {
+          "platform": "linux/arm64",
+          "digest": "sha256:8698e8ff09f3fce5bceb176956e768da15b72c9a68a7354ce5c2812ee42b22f9"
+        }
+      ],
+      "tag": "1.0.0",
+      "anonymousPulls": true
+    },
+    {
+      "repository": "ghcr.io/greenpandastudios/aug-runtime",
+      "manifestDigest": "sha256:d7938c51429af33da1d795b40d8a4fb12cc10fa70af5140b3aed669f70fca1fb",
+      "platforms": [
+        {
+          "platform": "linux/amd64",
+          "digest": "sha256:8248c504b3cc4f920a73ab94e4bb6052e7fb960b1f064280ad24dc4c6681781f"
+        },
+        {
+          "platform": "linux/arm64",
+          "digest": "sha256:acadae416b5134d02445962f28223c902df0c3b6387c29c6dc70f0a2e08f3206"
+        }
+      ],
+      "tag": "1.0.0",
+      "anonymousPulls": true
+    }
+  ],
+  "scope": "Both bases were built and exercised on native Linux ARM64 and x86-64 runners; the exact retained images were published, and all four anonymous platform pulls succeeded. macOS uses Linux containers."
+}

@@ -3,7 +3,7 @@
   "tag": "v1.0.0",
   "sourceCommit": "9e8be2926e83f551c365f1db1154f0ba2a43c11f",
   "taggedRun": 37800823512,
-  "status": "Tagged qualification, final archive reviews and anonymous public native consumer passed; GitHub release published; npm, Marketplace and Docker publication pending",
+  "status": "GitHub, all four npm packages and both Docker images published; tagged qualification, archive reviews, public native downloads, empty-cache npm starter and anonymous container pulls passed. The 1.0 VSIX is public; Marketplace publication awaits CAPTCHA approval after its trusted-publishing service rejected OIDC.",
   "compilerArtifacts": [
     {
       "host": "darwin-arm64",
@@ -263,7 +263,10 @@
         "sha256": "965587157cecede16231433ba48ba5076096ba96dc1f9b6bfad2c5b20899e3f0"
       }
     ],
-    "latest": true
+    "latest": true,
+    "npmConclusion": "success",
+    "containerRun": 37832531461,
+    "marketplaceStatus": "Automated publication failed: Marketplace rejected OIDC trusted publishing. Verified 1.0 VSIX is public and selected in the signed-in publisher; Upload is blocked by automatic review pending fresh CAPTCHA approval."
   },
   "documentation": {
     "format": 1,
@@ -305,5 +308,43 @@
     "nativeToolsOnPath": false,
     "minimumOSQualification": false,
     "scope": "Exact reviewed npm archives installed with empty npm/source/native caches; anonymous public compiler and real library downloads; local host is newer than minimum supported macOS."
+  },
+  "registry": {
+    "file": "npm-registry-verification.json",
+    "sha256": "4e81757d291a666abdf690867aac54b980ed8fc79d70640cbce92fb6aaa2c569",
+    "allVersions": "1.0.0",
+    "allLatest": true,
+    "reviewedIntegrityMatches": true
+  },
+  "npmStarter": {
+    "file": "npm-starter-verification.json",
+    "sha256": "bec325f2d01d9749051e1db6f25d86451fb39fe97ca98e26cefeffb86ba4a759",
+    "nativeToolsOnPath": false,
+    "cache": "fresh",
+    "scope": "Public npm latest installation and public compiler download on local macOS ARM64; starter, AGENTS.md, same-file test, compiled spec and frozen/offline run."
+  },
+  "postQualificationDeadlineCheck": {
+    "file": "http-deadline-replay.json",
+    "sha256": "6397ec3f4d656b9e97c0a3fa9ce5c5dff3ff35c8def0cffba3eab9b01094e892",
+    "scope": "Superseded documentation CI timed out its whole C release test process at 30 seconds. Original runner cause remains unconfirmed; both optimized native fixtures passed 40 replays per backend locally. Main regression separates compile budget from stricter native case execution limits; compiler/runtime bytes unchanged."
+  },
+  "containers": {
+    "file": "container-publication.json",
+    "sha256": "456686a47d177efcd8ff9f3c6197b884bf30e425e69ea56c69174fe95d93adf7",
+    "run": 37832531461,
+    "conclusion": "success",
+    "architectures": [
+      "linux/amd64",
+      "linux/arm64"
+    ],
+    "anonymousPulls": true
+  },
+  "marketplace": {
+    "run": 37829680432,
+    "conclusion": "failure",
+    "reason": "Marketplace OIDC token exchange: Trusted Publishing is not supported.",
+    "publicVersion": "0.23.1",
+    "qualifiedVsixVersion": "1.0.0",
+    "manualUpload": "pending fresh CAPTCHA approval"
   }
 }

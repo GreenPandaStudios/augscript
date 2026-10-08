@@ -182,3 +182,5 @@ For human or coding-agent evaluation, give readers an unfamiliar program and ask
 Each documentation deployment compares its built source revision with current main immediately before publishing and skips publication if they differ. Manual deployments use the same revision check.
 
 Highlighted code backlinks use HTML page routes with their original paragraph fragments. Compiler navigation metadata retains Markdown paths for non-wiki readers. Check cross-page navigation in the built site as well as same-page anchors.
+
+Same-file HTTP deadline regressions budget compilation separately from case execution. The parent process in `tests/web-testing.test.mjs` allows 120 seconds to compile and run both cases; each native case has a five-second execution limit. The ten-millisecond endpoint policies and HTTP 504 assertions remain part of the fixture, including consecutive requests and cancelled child joins. A parent timeout reports its process error. Qualify both backends and optimization modes before attributing a runner timeout to native cancellation.

@@ -1,0 +1,35 @@
+{
+  "format": 1,
+  "host": "darwin-arm64",
+  "originalCiFailure": {
+    "run": 37824245480,
+    "job": 113472824949,
+    "mode": "c/release",
+    "outerProcessLimitMs": 30000,
+    "status": null
+  },
+  "outcomes": [
+    {
+      "backend": "llvm",
+      "optimization": "release",
+      "compileAndRunMs": 2544.1205419999997,
+      "caseReplays": 40,
+      "maximumNativeCaseMs": 28.180125000000317,
+      "nativeCaseTimeoutMs": 5000,
+      "assertions": "Each case asserts HTTP 504; slow case includes consecutive requests; child case joins cancelled nested work."
+    },
+    {
+      "backend": "c",
+      "optimization": "release",
+      "compileAndRunMs": 12430.249457999998,
+      "caseReplays": 40,
+      "maximumNativeCaseMs": 33.994832999998835,
+      "nativeCaseTimeoutMs": 5000,
+      "assertions": "Each case asserts HTTP 504; slow case includes consecutive requests; child case joins cancelled nested work."
+    }
+  ],
+  "conclusion": "Original CI timeout not reproduced locally; optimized native case replays pass. Compile/runtime limits are measured separately; this does not establish the original runner cause.",
+  "compilerSourceCommit": "9e8be2926e83f551c365f1db1154f0ba2a43c11f",
+  "fixtureSourceCommit": "9e8be2926e83f551c365f1db1154f0ba2a43c11f",
+  "repositoryCommit": "a9084074991b733d2f2f50de4bda4def9b700863"
+}

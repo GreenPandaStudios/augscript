@@ -119,8 +119,10 @@ test endpoint child client:
     prepareLibraryFixtures(root);
     for(const backend of ['llvm','c'])for(const optimization of ['debug','release']){
       writeFileSync(join(root,'main.yaml'),`backend: ${backend}\noptimization: ${optimization}\n`);
-      const result=spawnSync(process.execPath,[resolve('bin/aug.mjs'),'test',root,'--json','--backend',backend],{encoding:'utf8',timeout:30000});
-      assert.equal(result.status,0,backend+'/'+optimization+': '+(result.stderr||result.stdout));
+      // Compiling two full HTTP cases has a separate process budget. Each
+      // native case still has a strict limit, including cancellation and joins.
+      const result=spawnSync(process.execPath,[resolve('bin/aug.mjs'),'test',root,'--json','--backend',backend,'--timeout','5000'],{encoding:'utf8',timeout:120000});
+      assert.equal(result.status,0,backend+'/'+optimization+': '+(result.error?.message||result.stderr||result.stdout));
       const report=JSON.parse(result.stdout);assert.equal(report.passed,2);assert.equal(report.failed,0);
     }
   }finally{rmSync(root,{recursive:true,force:true});}
