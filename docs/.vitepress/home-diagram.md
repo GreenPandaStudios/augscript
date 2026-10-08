@@ -12,4 +12,4 @@ flowchart TD
     n1 -->|"depends on"| n2
 ```
 
-This class view is generated from the greeting project. Start at its [project overview](examples/hello/diagrams/index.md), then follow the calls to their [sequence and explanation](examples/hello/app/greeter-diagrams.md). Generated diagrams are unreleased.
+This class view is generated from the greeting project. Start at its [project overview](examples/hello/diagrams/index.md), then follow the calls to their [sequence and explanation](examples/hello/app/greeter-diagrams.md). August 1.0 generates these diagrams.

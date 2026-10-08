@@ -6,7 +6,7 @@ editLink: false
 
 # august.values
 
-**Unreleased:** Supplied with the compiler. Import public names from `august.values`.
+**August 1.0:** Supplied with the compiler. Import public names from `august.values`.
 
 Signatures show result types and checked errors. See [packages](../packages.md) to pin a release and [language constructs](../language-constructs.md) for built-in types.
 

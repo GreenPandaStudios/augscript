@@ -28,6 +28,8 @@ The core and optional source module lists live in `src/library-modules.ts`. Chec
 
 ## Generated reference
 
+Before creating a release tag, describe implemented features directly in compiler and editor help. Give a required compiler version in generated API and catalog pages when it matters. Keep publication status in installation and release guides.
+
 The gallery generator also creates deterministic project archives in `docs/public/downloads`. Each archive includes source, configuration, and generated specs, with neighboring source packages when required. It excludes build state, installed dependencies, locks with temporary host paths, and credentials. Gallery tests extract every archive and check it as an independent project. Public guides use these downloads and the npm CLI; source-workspace commands belong in contributor documentation.
 
 ```sh

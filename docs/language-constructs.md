@@ -814,7 +814,7 @@ Declare a contract. Interfaces may extend several interfaces and may provide def
 internal Name from sibling
 ```
 
-Unreleased: declare a sibling-only folder contract in export.aug. Strict sibling imports may use it; parent, child, other folders and package consumers cannot. Names starting with _ remain private. Exported signatures must not expose internal types. The word internal still names an ordinary function outside this declaration form.
+Declare a sibling-only folder contract in export.aug. Strict sibling imports may use it; parent, child, other folders and package consumers cannot. Names starting with _ remain private. Exported signatures must not expose internal types. The word internal still names an ordinary function outside this declaration form.
 
 ## it
 

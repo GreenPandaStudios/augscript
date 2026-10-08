@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Identify 1.0 features in bundled help and generated reference pages without retaining unreleased labels after publication.
+
+- Verify the extension's fresh compiler artifact pins against a checksum-covered assembled release catalog, while retaining the tagged compiler and platform contracts. Reject missing, changed or mismatched catalogs before publication. Give full release assembly the same 150-minute execution budget as native producers; retain every qualification gate and frozen limit.
+
 - Align the shipped CLI README with the greeting starter and stable installation command; describe generated diagrams and deployment limits in the extension README.
 
 - Describe implemented compiler features directly in hover help and the standard-package README. Publication status remains in the release and installation guides.

@@ -35,6 +35,8 @@ if(compilerPacks){
   const expected=readFileSync(join(root,'native/compiler-packs.json'),'utf8');
   verifyLLVMCompilerPins(output,expected);
 }
+// Retain the exact assembled catalog for verification from an immutable tag.
+copyFileSync(join(root, 'native/compiler-packs.json'), join(output, 'compiler-packs.json'));
 const archive = join(output, `augscript-docs-${version}.tar.gz`);
 const site = join(root, 'dist/docs');
 rmSync(site, {recursive: true, force: true});
