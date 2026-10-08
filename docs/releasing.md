@@ -121,6 +121,8 @@ Review the exact compiler, npm, VSIX and documentation archives and retained qua
 
 Assembly also publishes the exact `compiler-packs.json` catalog under `SHA256SUMS`. Extension publication verifies this release catalog against the compiler and platform contracts, then requires the bundled catalog to match it exactly. Fresh producer hashes can differ from the immutable source checkout; they must match the assembled release. An editor-only patch derives the catalog from its verified public compiler archive.
 
+The manual **Extract release review files** workflow accepts a successful Prepare release run, its immutable tag and the same full source SHA. It checks the run identity and tag, downloads the existing combined artifact, and runs both publication verifiers before copying its npm archives, VSIX, offline wiki, catalogs and checksums into a compact review artifact. This supports review tools with bounded downloads. The compiler archives remain in the original qualified artifact and release; their checksums remain in the copied manifest.
+
 Publishing a stable draft starts verified npm publication to `latest`; publishing a preview draft starts publication to `next`. Keep the original tag and artifacts for retries. Source changes require a new version and another qualification run. GitHub's latest-release designation is a separate review choice; preparation does not move it.
 
 ## Editor-only patches
