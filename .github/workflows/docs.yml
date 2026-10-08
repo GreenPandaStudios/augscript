@@ -12,6 +12,8 @@ concurrency:
   cancel-in-progress: false
 jobs:
   build:
+    outputs:
+      source: ${{ steps.revision.outputs.source }}
     if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_repository.full_name == github.repository)
     runs-on: ubuntu-24.04
     steps:
@@ -24,6 +26,8 @@ jobs:
         with:
           node-version: '24'
           package-manager-cache: false
+      - id: revision
+        run: echo "source=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
       - uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
       - run: npm ci
       - run: npm run docs:check
@@ -35,12 +39,27 @@ jobs:
     needs: build
     runs-on: ubuntu-24.04
     permissions:
+      contents: read
       pages: write
       id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      - name: Check current main revision
+        id: current
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_SHA: ${{ needs.build.outputs.source }}
+        run: |
+          current=$(gh api repos/GreenPandaStudios/augscript/git/ref/heads/main --jq '.object.sha')
+          if [ "$current" = "$SOURCE_SHA" ]; then
+            echo "current=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Skip superseded documentation revision $SOURCE_SHA"
+            echo "current=false" >> "$GITHUB_OUTPUT"
+          fi
       - name: Deploy language wiki
+        if: steps.current.outputs.current == 'true'
         id: deployment
         uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1

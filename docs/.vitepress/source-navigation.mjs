@@ -37,7 +37,7 @@ export const sourceNavigationTransformer={
     this.lines.forEach((node,index)=>{const line=index+1;
     const links=value.links.filter(link=>link.first===line);
     for(const link of links)node.children.unshift({type:'element',tagName:'span',properties:{id:link.id+(value.style==='braces'?'-braces':''),'aria-hidden':'true','data-aug-source-id':link.id},children:[]});
-    const destinations=[...new Set(links.sort((a,b)=>(a.last-a.first)-(b.last-b.first)).flatMap(link=>link.backlinks))];
+    const destinations=[...new Set(links.sort((a,b)=>(a.last-a.first)-(b.last-b.first)).flatMap(link=>link.backlinks))].map(href=>href.replace(/\.md(?=#)/,'.html'));
     destinations.sort((a,b)=>Number(!a.startsWith('#'))-Number(!b.startsWith('#')));
     if(destinations.length===1)node.children.unshift({type:'element',tagName:'a',properties:{class:'aug-spec-backlink',href:destinations[0],'aria-label':'Read the explanation for this code',title:'Read the explanation for this code'},children:[]});
     else if(destinations.length>1)node.children.unshift({type:'element',tagName:'details',properties:{class:'aug-spec-backlinks vp-copy-ignore'},children:[

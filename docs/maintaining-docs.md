@@ -178,3 +178,7 @@ Treat the project, folder, operation and prose views as connected reading interf
 Review the rendered greeting and login examples at desktop and phone widths. Confirm that startup, exports, inputs, results, failures and state changes can be found without opening source. Check every contributing caller link and the next resolution. Detailed sequence text must wrap without silently removing an argument or condition. Large views must keep complete facts accessible beneath their summaries.
 
 For human or coding-agent evaluation, give readers an unfamiliar program and ask them to predict outputs, validation order, failure and cleanup paths, and the site of a requested change. Score answers against independently authored expectations and executed cases. Record source openings, elapsed time and wrong answers. Compare the generated views with a source-only baseline using the same tasks and budgets. Syntax validity, attractive diagrams and reduced word counts are separate checks; they do not establish comprehension or productivity.
+
+Highlighted code backlinks use HTML page routes with their original paragraph fragments. Compiler navigation metadata retains Markdown paths for non-wiki readers. Check cross-page navigation in the built site as well as same-page anchors.
+
+Each documentation deployment compares its built source revision with current main immediately before publishing and skips publication if they differ. Manual deployments use the same revision check.

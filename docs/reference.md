@@ -456,6 +456,8 @@ print(value=score)
 
 It prints `Guest` and `7` on separate lines. The same case blocks can use braces. Each expression case contains a value rather than a `return` statement; statement matches continue to accept ordinary operations and early returns.
 
+### Checked failures {#errors}
+
 **Unreleased:** `error InvalidQuantity(int value)` declares a data-only Error implementation without an empty body. Its fields, labels, checked propagation and cleanup follow ordinary classes. It cannot contain injected, owned or mutable storage; use a full Error implementation for custom behavior.
 
 **Unreleased error context.** `august.errors.errorContext(cause, operation, location)` constructs `ContextError<E>` without throwing or logging. The concrete cause type, original value and public fields are retained; the caller chooses whether to throw this new error. `sourceLocation()` captures an immutable `Tuple<string, int, int>` containing the source identity and one-based line/column at that call expression. It reads no files and captures no stack. Project paths are relative, and package code uses `name@version/path`. See [error context](guides/add-error-context.md).

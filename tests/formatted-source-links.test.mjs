@@ -86,3 +86,17 @@ test('source-linked evidence tables retain table structure and backlink to their
  assert.doesNotMatch(rendered,/spec-paragraph|<a id=/);
  assert.equal(plan.references.get(sourcePath)[0].paragraph,'boundary-one');
 });
+
+
+test('cross-page code backlinks use real HTML routes and preserve paragraph fragments in both styles',async()=>{
+ const {exampleSourceViews}=await import('../scripts/example-source-links.mjs'),{sourceNavigationTransformer}=await import('../docs/.vitepress/source-navigation.mjs'),{createHighlighter}=await import('shiki');
+ const references=[{id:'source-L2',sourceFirst:2,sourceLast:2,page:'docs/examples/demo/hello-diagrams.md',paragraph:'specification-paragraph-1'},{id:'source-L2',sourceFirst:2,sourceLast:2,page:'docs/examples/demo/diagrams/index.md',paragraph:'boundary-one'}];
+ const highlighter=await createHighlighter({themes:['github-light'],langs:[]});
+ try{for(const refs of [references.slice(0,1),references])for(const view of exampleSourceViews({config:{block_style:'indent',indentation:'spaces',assignment:'equals'}},parse('hello.aug',source).file,source,refs,'docs/examples/demo/hello.md')){
+  const html=highlighter.codeToHtml(view.text,{lang:'text',theme:'github-light',transformers:[sourceNavigationTransformer],meta:{__raw:'aug-source='+view.encoded}});
+  assert.match(html,/href="hello-diagrams\.html#specification-paragraph-1"/);
+  if(refs.length===2)assert.match(html,/href="diagrams\/index\.html#boundary-one"/);
+  assert.doesNotMatch(html,/href="[^"]*\.md#/);
+  assert.ok(view.metadata.links.every(link=>link.backlinks.every(target=>target.includes('.md#'))),'Compiler Markdown metadata remains usable outside the wiki');
+ }}finally{highlighter.dispose();}
+});
